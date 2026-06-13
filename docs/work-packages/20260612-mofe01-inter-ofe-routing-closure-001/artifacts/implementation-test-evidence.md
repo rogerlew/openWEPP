@@ -1,8 +1,58 @@
 # implementation test evidence
 
-Status: M-E1 complete; package active for M-E2+
+Status: M-E2 complete for scoped executor increment; package active for M-E3+
 
 Evidence mode: Ran + Static
+
+## M-E2 ran
+
+M-E2 implemented the sequential OFE lane executor around the existing phase
+graph. It did not wire that executor into the runner CLI path, persist dynamic
+state, produce per-OFE WB13 records, or flip WAT publication.
+
+- `cargo fmt --check`
+  - PASS.
+- `cargo test -p openwepp-hillslope-orchestrator mofe01_me2 -- --nocapture`
+  - PASS; 6 focused M-E2 tests passed.
+- `cargo test -p openwepp-runner mofe01_me1 -- --nocapture`
+  - PASS; M-E1 runner tests remain green.
+- `cargo clippy --workspace --all-targets -- -D warnings`
+  - PASS.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - PASS; all four contract-derived tests passed.
+- `cargo test -p openwepp-hillslope-orchestrator --lib writeback:: -- --nocapture`
+  - PASS; existing writeback tests plus M-E2 tests passed: 10 total.
+- `cargo deny check`
+  - PASS; `advisories ok, bans ok, licenses ok, sources ok`.
+- `bash tools/release/check_authority_suite_antievasion.sh`
+  - PASS; authority suite anti-evasion checks passed.
+- `cargo test --workspace`
+  - PASS.
+- `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --format plain`
+  - PASS; 33 files validated, 0 errors, 0 warnings after final M-E2
+    verification records.
+- `cargo build -p openwepp-runner --bin openwepp-cli-hill`
+  - PASS.
+- Final local H1-H36 replay/comparison without comparator subagent
+  - PASS runtime execution: `/tmp/openwepp_mofe01_me2_final/exit-codes.tsv`
+    has 36/36 exit code `0`, with 36 manifests and 144 output files.
+  - PASS local owcmp command execution:
+    `/tmp/openwepp_mofe01_me2_final/owcmp/summary.json` reports
+    `execution_verdict=PASS`.
+  - FAIL semantic comparison as expected for the unchanged aggregate WAT
+    publication boundary: `semantic_pass_count=0/36`,
+    `structural_row_key_failures=350720`, first divergent H1 key
+    `[1, 1, 2000]`, and focus columns all have zero failures and max diff
+    `0.0`.
+  - PASS no-publication-flip audit:
+    `/tmp/openwepp_mofe01_me2_final/m-e2-publication-audit.json` reports
+    36/36 matching manifests, aggregate policy unchanged, dynamic per-OFE
+    flags false, and `per_ofe_record_count=0`.
+  - PASS single-OFE anchor comparison:
+    `/tmp/openwepp_mofe01_me2_final/single-ofe-anchor-cmp.tsv` has 28/28
+    byte-identical output files for H8/H15/H19/H20/H22/H23/H28 against M-E1.
+
+Detailed evidence: `m-e2-sequential-ofe-lane-executor-evidence.md`.
 
 ## M-E1 ran
 

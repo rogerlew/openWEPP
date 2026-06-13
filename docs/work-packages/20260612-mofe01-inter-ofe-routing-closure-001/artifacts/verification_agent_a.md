@@ -6,6 +6,58 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-E2 Verification Record
+
+Agent: `019ebfbe-9c1c-73e2-a773-943a7cfac82b`
+
+Static/Ran read-only verification of M-E2 code scope, focused tests, saved
+runtime evidence, and package gate taxonomy. The verifier ran
+`cargo test -p openwepp-hillslope-orchestrator mofe01_me2 -- --nocapture` and
+`cargo fmt --check`. The verifier did not edit files and did not invoke the
+comparator subagent.
+
+Verified:
+
+- Code scope matches M-E2 executor-only: Rust diff is confined to
+  `openwepp-hillslope-orchestrator` exports, scheduler, and scheduler tests.
+- No runner CLI or WAT publication flip was present. Saved
+  `/tmp/openwepp_mofe01_me2_final/m-e2-publication-audit.json` reports 36/36
+  manifests preserving `single-row-canonicalized-hillslope-aggregate`, dynamic
+  per-OFE flags `false`, and `per_ofe_record_count=0`.
+- Focused M-E2 tests exist and passed locally: two-OFE handoff, area ratio,
+  stale current output rejection, malformed arrays, overflow totals, and
+  nonsequential lanes.
+- Saved `/tmp/openwepp_mofe01_me2_final` evidence matches recorded runtime
+  claims: 36/36 zero exits, 36 manifests, 144 output files, owcmp execution
+  `PASS`, expected semantic `FAIL`, and 28/28 single-OFE anchor comparisons
+  `PASS`.
+
+Findings:
+
+1. **High:** M-E2 dual verification was overclaimed before M-E2 verification
+   records existed in `verification_agent_a.md` and
+   `verification_agent_b.md`.
+2. **High:** `gate-results.md` mixed scoped M-E2 acceptance rows with expected
+   residual publication-boundary `FAIL` and future identity `BLOCKED` rows.
+3. **Low:** The central M-E2 evidence artifact was untracked in `git status`
+   while referenced by gate results.
+
+Disposition:
+
+- Accepted and fixed the dual-verification overclaim by adding this M-E2
+  verification record and the matching M-E2 record in `verification_agent_b.md`.
+- Accepted and fixed the gate taxonomy by splitting M-E2 scoped acceptance
+  gates from residual future-boundary checks in `gate-results.md` and
+  `m-e2-sequential-ofe-lane-executor-evidence.md`.
+- Accepted the artifact tracking note. The new evidence file is listed in
+  `owned-file-manifest.md` and remains visible as an untracked file until the
+  eventual staging/commit step.
+
+Residual risk:
+
+- The saved `/tmp` evidence is local-only; future verification will need those
+  files or a rerun.
+
 ## M-E1 Verification Record
 
 Agent: `019ebf71-817a-72c0-815b-ccebe735f76d`

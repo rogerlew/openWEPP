@@ -1,10 +1,32 @@
 # disposition
 
-Status: M-E1 complete; package remains open for M-E2+
+Status: M-E2 complete; package remains open for M-E3+
 
 Evidence mode: Ran + Static
 
 ## Disposition
+
+Increment M-E2 is complete for its sequential OFE lane executor scope. It added
+ordered same-day OFE lane execution around the existing scheduler phase graph,
+explicit `TransferInput` overlay, explicit `TransferOutput` extraction,
+downstream area-ratio scaling, stale current-output rejection, finite/nonnegative
+transfer validation, overflowed-total rejection, and focused two-OFE synthetic
+handoff tests.
+
+M-E2 did not persist dynamic per-OFE state across days, produce per-OFE WB13
+records, or flip WAT publication. Final H1-H36 execution passed under
+`/tmp/openwepp_mofe01_me2_final`, single-OFE anchors remained byte-identical to
+M-E1, and the no-publication-flip audit passed. Local owcmp command execution
+passed without the comparator subagent, while semantic comparison still fails
+at the expected publication boundary (`semantic_pass_count=0/36`,
+`structural_row_key_failures=350720`).
+
+The next lawful increment is M-E3: persist OFE-local dynamic daily state behind
+the executor without manufacturing per-OFE records from aggregate WB13/WAT
+rows. M-E2 must not be treated as routing identity closure; per-element and
+runtime transfer identities remain blocked until real dynamic records exist.
+
+## M-E1 disposition
 
 Increment M-E1 is complete for its data-model shadow-state scope. It added the
 typed per-OFE daily water-balance record/collection model, transfer
@@ -22,11 +44,7 @@ execution passed, while semantic comparison still fails at the expected
 publication boundary (`semantic_pass_count=0/36`,
 `structural_row_key_failures=350720`).
 
-The next lawful increment is M-E2: begin wiring real dynamic per-OFE daily
-state population/sequential OFE handoff per the M-D breakdown, behind fresh
-contract-derived behavioral gates. M-E1 must not be treated as routing identity
-closure; per-element and transfer identities remain blocked until real dynamic
-records exist.
+At the M-E1 boundary, the next lawful increment was M-E2 executor wiring.
 
 ## M-E0 disposition
 
@@ -135,6 +153,6 @@ Legacy calibration is complete for the available H1-H36 WAT files. The expected 
 
 ## Next disposition
 
-Execute M-E2 per the M-D sub-increment breakdown. Preserve the M-E1
+Execute M-E3 per the M-D sub-increment breakdown. Preserve the M-E2
 no-publication-flip boundary until real dynamic per-OFE records are populated
 and identity tests can measure OFE-local state and adjacent transfer handoff.

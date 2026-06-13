@@ -1,8 +1,54 @@
 # gate results
 
-Status: M-E1 complete; package active for M-E2+
+Status: M-E2 complete for scoped executor increment; package active for M-E3+
 
 Evidence mode: Ran + Static
+
+## M-E2 scoped acceptance gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| M-E2 scope boundary | PASS | Added sequential OFE lane executor only; no dynamic per-OFE state persistence, WB13 record production, or WAT publication flip. |
+| Sequential OFE lane executor | PASS | `execute_ofe_sequence_with_kernel` runs the existing phase graph once per ordered OFE lane and carries `TransferOutput` downstream as `TransferInput`. |
+| Transfer input overlay | PASS | Executor writes explicit `UpStrmQ`, `SubRIn`, `wb12_runon_input`, `wb12_runoff_carryover`, enabled flag, area ratio, and 24-slot upstream surface/lateral arrays before each lane run. |
+| Transfer output extraction | PASS | Executor reads `ui_SCrunf_0001..0024` and `ui_LfCrf_0001..0024` after each lane run into `TransferOutput`. |
+| Two-OFE synthetic transfer vector | PASS | Focused test proves OFE 2 receives non-zero `UpStrmQ`/`SubRIn` only from OFE 1 transfer arrays, despite stale downstream scalars/arrays seeded before execution. |
+| Downstream area-ratio scaling | PASS | Focused test proves OFE 2 receives scaled transfer totals when its upstream area ratio is `2.0`. |
+| Stale current output rejection | PASS | Focused test proves stale current output arrays are cleared before extraction and missing fresh output fails closed. |
+| Malformed transfer arrays | PASS | Negative current transfer array slot returns typed `OfeLaneSequenceError::InvalidTransferValue`. |
+| Overflowed transfer totals | PASS | Finite per-hour slots whose daily total overflows are rejected as typed `InvalidTransferValue`. |
+| Non-sequential lane IDs | PASS | First lane `ofe_id=2` returns typed `OfeLaneSequenceError::NonSequentialLaneOfeId`. |
+| `cargo fmt --check` | PASS | Final post-format run. |
+| `cargo test -p openwepp-hillslope-orchestrator mofe01_me2 -- --nocapture` | PASS | 6 M-E2 focused tests passed. |
+| `cargo test -p openwepp-runner mofe01_me1 -- --nocapture` | PASS | M-E1 runner tests remain green. |
+| `cargo test --test mofe01_per_ofe_state_contract -- --nocapture` | PASS | Contract-derived per-OFE structural target remains green. |
+| `cargo test -p openwepp-hillslope-orchestrator --lib writeback:: -- --nocapture` | PASS | Existing writeback tests plus M-E2 tests passed: 10 total. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Workspace clippy passed. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| `bash tools/release/check_authority_suite_antievasion.sh` | PASS | Authority suite anti-evasion checks passed. |
+| `cargo test --workspace` | PASS | Full Rust closure loop passed. |
+| `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --format plain` | PASS | 33 files validated, 0 errors, 0 warnings after final M-E2 verification records. |
+| `cargo build -p openwepp-runner --bin openwepp-cli-hill` | PASS | Built final hillslope CLI before replay. |
+| Final H1-H36 CLI batch | PASS | 36/36 exit code `0`; 36 manifests; 144 output files under `/tmp/openwepp_mofe01_me2_final`. |
+| Local owcmp H1-H36 command execution, no comparator subagent | PASS | User explicitly directed comparisons without the comparator subagent because GPT-5.3-Codex-Spark quota was exhausted; `execution_verdict=PASS`. |
+| No-publication-flip audit | PASS | 36/36 manifests preserve aggregate publication policy, dynamic per-OFE flags false, `per_ofe_record_count=0`, and static slice count equal to contributor count. |
+| Single-OFE anchor comparison | PASS | H8/H15/H19/H20/H22/H23/H28 byte-identical to M-E1 outputs for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`. |
+| Aggregate identity unchanged | PASS | M-E2 is not CLI-wired; fresh replay stayed green, single-OFE anchors stayed byte-identical, and owcmp focus-column diffs remained zero. |
+| Dual review | PASS | Review A and Review B findings were accepted and fixed; see `review_agent_a.md`, `review_agent_b.md`, and `m-e2-sequential-ofe-lane-executor-evidence.md`. |
+| Dual verification | PASS | Verification A and Verification B findings were accepted and fixed; see `verification_agent_a.md` and `verification_agent_b.md`. |
+
+## M-E2 residual future-boundary checks
+
+These checks are not M-E2 acceptance gates. They are recorded to preserve
+truthful comparison and identity posture before M-E3/M-E4/M-E5.
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Local owcmp H1-H36 semantic comparison | FAIL | Expected publication-boundary fail: `semantic_pass_count=0/36`, `structural_row_key_failures=350720`, first divergent H1 key `[1, 1, 2000]`; focus columns all zero diff. |
+| Per-element identity gate | BLOCKED | Still not measurable until M-E3/M-E4 persist OFE-local dynamic state and produce authoritative per-OFE daily records. |
+| Transfer identity gate | BLOCKED | M-E2 proves same-day executor handoff on synthetic vectors; full runtime transfer identity remains blocked until dynamic per-OFE records exist. |
+
+Detailed evidence: `m-e2-sequential-ofe-lane-executor-evidence.md`.
 
 ## M-E1 ran
 

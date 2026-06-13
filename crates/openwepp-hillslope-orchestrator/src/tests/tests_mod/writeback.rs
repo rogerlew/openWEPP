@@ -258,3 +258,450 @@ fn execute_with_kernel_rejects_kernel_phase_mismatch() {
         WritebackDecisionOutcome::Reject
     );
 }
+
+#[test]
+fn mofe01_me2_sequential_executor_carries_first_ofe_arrays_to_second_lane() {
+    #[derive(Default)]
+    struct TransferProbeKernel {
+        normalization_call_count: usize,
+        observed_inputs: Vec<(f64, f64, f64, f64)>,
+    }
+
+    impl HillslopeKernel for TransferProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            if request.phase_name == "normalization" {
+                self.normalization_call_count += 1;
+                self.observed_inputs.push((
+                    request_state_scalar(request, "UpStrmQ"),
+                    request_state_scalar(request, "SubRIn"),
+                    request_state_scalar(request, "ui_SUrunf_0001"),
+                    request_state_scalar(request, "ui_LfUrf_0004"),
+                ));
+            }
+
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-MOFE-ME2-TRANSFER",
+            )
+            .expect("status should construct");
+
+            if request.phase_name != "closure_diagnostics" {
+                return KernelRunResponse::new(status, KernelWritebackPayload::empty());
+            }
+
+            let state_updates = match self.normalization_call_count {
+                1 => transfer_current_state_updates(&[(1, 0.25), (2, 0.50)], &[(4, 0.75)]),
+                2 => transfer_current_state_updates(&[], &[]),
+                lane => panic!("unexpected lane count {lane}"),
+            };
+            KernelRunResponse::new(
+                status,
+                KernelWritebackPayload::with_updates(state_updates, Vec::new()),
+            )
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = TransferProbeKernel::default();
+    let lane_inputs = vec![
+        OfeLaneExecutionInput::new(1, stale_current_transfer_surface()),
+        OfeLaneExecutionInput::new(2, stale_downstream_transfer_surface()),
+    ];
+
+    let report = scheduler
+        .execute_ofe_sequence_with_kernel(&topology_report, &mut kernel, lane_inputs)
+        .expect("two-OFE transfer sequence should execute");
+
+    assert_eq!(report.lane_count(), 2);
+    assert_eq!(
+        kernel.observed_inputs,
+        vec![(0.0, 0.0, 0.0, 0.0), (0.75, 0.75, 0.25, 0.75)],
+        "OFE 2 must receive only the explicit OFE 1 transfer arrays"
+    );
+    assert_eq!(report.lane_reports[0].ofe_id, 1);
+    assert_eq!(
+        report.lane_reports[0]
+            .current_transfer_output
+            .recipient_ofe_id,
+        Some(2)
+    );
+    assert!((report.lane_reports[0].current_transfer_output.qofe - 0.75).abs() < 1.0e-12);
+    assert!(
+        (report.lane_reports[0]
+            .current_transfer_output
+            .lateral_export
+            - 0.75)
+            .abs()
+            < 1.0e-12
+    );
+    assert_eq!(
+        report.lane_reports[1].upstream_transfer_input.source_ofe_id,
+        Some(1)
+    );
+    assert!((report.lane_reports[1].upstream_transfer_input.upstrmq - 0.75).abs() < 1.0e-12);
+    assert!((report.lane_reports[1].upstream_transfer_input.subrin - 0.75).abs() < 1.0e-12);
+    assert_eq!(
+        report.lane_reports[1]
+            .current_transfer_output
+            .recipient_ofe_id,
+        None
+    );
+}
+
+#[test]
+fn mofe01_me2_sequential_executor_applies_downstream_area_ratio() {
+    #[derive(Default)]
+    struct ScalingProbeKernel {
+        normalization_call_count: usize,
+        observed_inputs: Vec<(f64, f64)>,
+    }
+
+    impl HillslopeKernel for ScalingProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            if request.phase_name == "normalization" {
+                self.normalization_call_count += 1;
+                self.observed_inputs.push((
+                    request_state_scalar(request, "UpStrmQ"),
+                    request_state_scalar(request, "SubRIn"),
+                ));
+            }
+
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-MOFE-ME2-SCALING",
+            )
+            .expect("status should construct");
+
+            if request.phase_name != "closure_diagnostics" {
+                return KernelRunResponse::new(status, KernelWritebackPayload::empty());
+            }
+
+            let state_updates = match self.normalization_call_count {
+                1 => transfer_current_state_updates(&[(1, 0.25)], &[(1, 0.50)]),
+                2 => transfer_current_state_updates(&[], &[]),
+                lane => panic!("unexpected lane count {lane}"),
+            };
+            KernelRunResponse::new(
+                status,
+                KernelWritebackPayload::with_updates(state_updates, Vec::new()),
+            )
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = ScalingProbeKernel::default();
+    let lane_inputs = vec![
+        OfeLaneExecutionInput::new(1, HillslopeWritebackSurface::default()),
+        OfeLaneExecutionInput::with_upstream_area_ratio(
+            2,
+            2.0,
+            HillslopeWritebackSurface::default(),
+        ),
+    ];
+
+    let report = scheduler
+        .execute_ofe_sequence_with_kernel(&topology_report, &mut kernel, lane_inputs)
+        .expect("two-OFE transfer sequence should execute with area scaling");
+
+    assert_eq!(kernel.observed_inputs, vec![(0.0, 0.0), (0.50, 1.0)]);
+    assert!((report.lane_reports[1].upstream_transfer_input.area_ratio - 2.0).abs() < 1.0e-12);
+    assert!((report.lane_reports[1].upstream_transfer_input.upstrmq - 0.50).abs() < 1.0e-12);
+    assert!((report.lane_reports[1].upstream_transfer_input.subrin - 1.0).abs() < 1.0e-12);
+}
+
+#[test]
+fn mofe01_me2_sequential_executor_rejects_stale_current_output_arrays() {
+    struct NoCurrentOutputKernel;
+
+    impl HillslopeKernel for NoCurrentOutputKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-MOFE-ME2-NO-CURRENT-OUTPUT",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoCurrentOutputKernel;
+    let lane_inputs = vec![
+        OfeLaneExecutionInput::new(1, stale_current_transfer_surface()),
+        OfeLaneExecutionInput::new(2, HillslopeWritebackSurface::default()),
+    ];
+
+    let error = scheduler
+        .execute_ofe_sequence_with_kernel(&topology_report, &mut kernel, lane_inputs)
+        .expect_err("stale current output arrays must be cleared before extraction");
+
+    assert!(matches!(
+        error,
+        OfeLaneSequenceError::InvalidTransferValue {
+            ofe_id: 1,
+            hour: Some(1),
+            value,
+            ..
+        } if value.is_nan()
+    ));
+}
+
+#[test]
+fn mofe01_me2_sequential_executor_rejects_malformed_transfer_arrays() {
+    struct MalformedTransferKernel;
+
+    impl HillslopeKernel for MalformedTransferKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-MOFE-ME2-MALFORMED",
+            )
+            .expect("status should construct");
+
+            if request.phase_name != "closure_diagnostics" {
+                return KernelRunResponse::new(status, KernelWritebackPayload::empty());
+            }
+
+            let mut state_updates = transfer_current_state_updates(&[], &[]);
+            state_updates.push(WritebackField::unbounded("ui_SCrunf_0002", -0.10));
+            KernelRunResponse::new(
+                status,
+                KernelWritebackPayload::with_updates(state_updates, Vec::new()),
+            )
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = MalformedTransferKernel;
+    let lane_inputs = vec![
+        OfeLaneExecutionInput::new(1, HillslopeWritebackSurface::default()),
+        OfeLaneExecutionInput::new(2, HillslopeWritebackSurface::default()),
+    ];
+
+    let error = scheduler
+        .execute_ofe_sequence_with_kernel(&topology_report, &mut kernel, lane_inputs)
+        .expect_err("negative transfer array slot must fail closed");
+
+    assert!(matches!(
+        error,
+        OfeLaneSequenceError::InvalidTransferValue {
+            ofe_id: 1,
+            hour: Some(2),
+            value,
+            ..
+        } if (value + 0.10).abs() < 1.0e-12
+    ));
+}
+
+#[test]
+fn mofe01_me2_sequential_executor_rejects_transfer_total_overflow() {
+    struct OverflowTransferKernel;
+
+    impl HillslopeKernel for OverflowTransferKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-MOFE-ME2-OVERFLOW",
+            )
+            .expect("status should construct");
+
+            if request.phase_name != "closure_diagnostics" {
+                return KernelRunResponse::new(status, KernelWritebackPayload::empty());
+            }
+
+            KernelRunResponse::new(
+                status,
+                KernelWritebackPayload::with_updates(
+                    transfer_current_state_updates_uniform(f64::MAX, 0.0),
+                    Vec::new(),
+                ),
+            )
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = OverflowTransferKernel;
+    let lane_inputs = vec![
+        OfeLaneExecutionInput::new(1, HillslopeWritebackSurface::default()),
+        OfeLaneExecutionInput::new(2, HillslopeWritebackSurface::default()),
+    ];
+
+    let error = scheduler
+        .execute_ofe_sequence_with_kernel(&topology_report, &mut kernel, lane_inputs)
+        .expect_err("overflowed transfer totals must fail closed");
+
+    assert!(matches!(
+        error,
+        OfeLaneSequenceError::InvalidTransferValue {
+            ofe_id: 1,
+            hour: None,
+            value,
+            ..
+        } if value.is_infinite()
+    ));
+}
+
+#[test]
+fn mofe01_me2_sequential_executor_rejects_nonsequential_lane_ids() {
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-MOFE-ME2-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let lane_inputs = vec![OfeLaneExecutionInput::new(
+        2,
+        HillslopeWritebackSurface::default(),
+    )];
+
+    let error = scheduler
+        .execute_ofe_sequence_with_kernel(&topology_report, &mut kernel, lane_inputs)
+        .expect_err("sequence must start at OFE 1");
+
+    assert!(matches!(
+        error,
+        OfeLaneSequenceError::NonSequentialLaneOfeId {
+            expected_ofe_id: 1,
+            observed_ofe_id: 2
+        }
+    ));
+}
+
+fn stale_current_transfer_surface() -> HillslopeWritebackSurface {
+    let mut surface = HillslopeWritebackSurface::default();
+    for hour in 1..=24 {
+        surface.state_surface.insert(
+            BoundarySymbol::from(hourly_symbol("ui_SCrunf", hour)),
+            BoundaryValue::scalar(999.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(hourly_symbol("ui_LfCrf", hour)),
+            BoundaryValue::scalar(999.0),
+        );
+    }
+    surface
+}
+
+fn request_state_scalar(request: &HillslopeKernelRequest<'_>, symbol: &str) -> f64 {
+    request
+        .state_surface
+        .get(&BoundarySymbol::from(symbol))
+        .copied()
+        .map_or(0.0, BoundaryValue::as_f64)
+}
+
+fn transfer_current_state_updates(
+    surface_values: &[(usize, f64)],
+    lateral_values: &[(usize, f64)],
+) -> Vec<WritebackField> {
+    let mut updates = Vec::new();
+    for hour in 1..=24 {
+        updates.push(WritebackField::bounded(
+            hourly_symbol("ui_SCrunf", hour),
+            hourly_value(surface_values, hour),
+            Some(0.0),
+            None,
+        ));
+        updates.push(WritebackField::bounded(
+            hourly_symbol("ui_LfCrf", hour),
+            hourly_value(lateral_values, hour),
+            Some(0.0),
+            None,
+        ));
+    }
+    updates
+}
+
+fn transfer_current_state_updates_uniform(
+    surface_value: f64,
+    lateral_value: f64,
+) -> Vec<WritebackField> {
+    let mut updates = Vec::new();
+    for hour in 1..=24 {
+        updates.push(WritebackField::bounded(
+            hourly_symbol("ui_SCrunf", hour),
+            surface_value,
+            Some(0.0),
+            None,
+        ));
+        updates.push(WritebackField::bounded(
+            hourly_symbol("ui_LfCrf", hour),
+            lateral_value,
+            Some(0.0),
+            None,
+        ));
+    }
+    updates
+}
+
+fn stale_downstream_transfer_surface() -> HillslopeWritebackSurface {
+    let mut surface = HillslopeWritebackSurface::default();
+    surface.state_surface.insert(
+        BoundarySymbol::from("UpStrmQ"),
+        BoundaryValue::scalar(999.0),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("SubRIn"), BoundaryValue::scalar(999.0));
+    for hour in 1..=24 {
+        surface.state_surface.insert(
+            BoundarySymbol::from(hourly_symbol("ui_SUrunf", hour)),
+            BoundaryValue::scalar(999.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(hourly_symbol("ui_LfUrf", hour)),
+            BoundaryValue::scalar(999.0),
+        );
+    }
+    surface
+}
+
+fn hourly_value(values: &[(usize, f64)], hour: usize) -> f64 {
+    values
+        .iter()
+        .find_map(|(candidate_hour, value)| {
+            if *candidate_hour == hour {
+                Some(*value)
+            } else {
+                None
+            }
+        })
+        .unwrap_or(0.0)
+}
+
+fn hourly_symbol(root: &str, hour: usize) -> String {
+    format!("{root}_{hour:04}")
+}

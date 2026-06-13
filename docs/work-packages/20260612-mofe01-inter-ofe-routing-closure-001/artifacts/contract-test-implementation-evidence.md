@@ -1,8 +1,29 @@
 # contract test implementation evidence
 
-Status: M-E1 structural tests green
+Status: M-E2 structural executor tests green
 
 Evidence mode: Ran + Static
+
+## M-E2
+
+M-E2 adds focused contract-derived executor tests in
+`crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/writeback.rs`:
+
+- `mofe01_me2_sequential_executor_carries_first_ofe_arrays_to_second_lane`,
+- `mofe01_me2_sequential_executor_applies_downstream_area_ratio`,
+- `mofe01_me2_sequential_executor_rejects_stale_current_output_arrays`,
+- `mofe01_me2_sequential_executor_rejects_malformed_transfer_arrays`,
+- `mofe01_me2_sequential_executor_rejects_transfer_total_overflow`,
+- `mofe01_me2_sequential_executor_rejects_nonsequential_lane_ids`.
+
+Ran:
+
+- `cargo test -p openwepp-hillslope-orchestrator mofe01_me2 -- --nocapture`
+  - PASS; 6 passed.
+- `cargo test -p openwepp-hillslope-orchestrator --lib writeback:: -- --nocapture`
+  - PASS; 10 passed.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - PASS; 4 passed.
 
 ## M-E1
 

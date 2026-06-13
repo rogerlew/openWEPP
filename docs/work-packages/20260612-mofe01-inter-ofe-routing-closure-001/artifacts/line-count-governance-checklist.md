@@ -1,8 +1,22 @@
 # line count governance checklist
 
-Status: checked through M-E1
+Status: checked through M-E2
 
 Evidence mode: Ran
+
+## M-E2
+
+Ran `wc -l` over touched Rust files.
+
+| File group | Lines | Disposition |
+| --- | ---: | --- |
+| `crates/openwepp-hillslope-orchestrator/src/scheduler.rs` | 1819 | OK; below 2000-line warning threshold. |
+| `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/writeback.rs` | 707 | OK. |
+| `crates/openwepp-hillslope-orchestrator/src/lib.rs` | 65 | OK. |
+| `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/mod.rs` | 56 | OK. |
+
+No touched Rust source file crossed the 2000-line warning threshold or
+3000-line non-exempt threshold.
 
 ## M-E1
 

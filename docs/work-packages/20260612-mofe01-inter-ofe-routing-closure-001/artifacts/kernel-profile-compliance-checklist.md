@@ -1,8 +1,36 @@
 # kernel profile compliance checklist
 
-Status: checked through M-E1
+Status: checked through M-E2
 
 Evidence mode: Ran + Static
+
+## M-E2 checklist
+
+- Production edits: yes; orchestrator scheduler sequential OFE lane executor
+  and public exports.
+- Science-contract edits: none.
+- Test edits: yes; focused M-E2 orchestrator writeback tests.
+- Typed errors in production: added `OfeLaneSequenceError` for invalid lane
+  count/order, invalid transfer values, daily sum mismatch, scheduler failure,
+  and lane execution failure.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: unchanged.
+- Runtime publication paths: unchanged; aggregate WB13/WAT publication
+  preserved.
+
+Validation:
+
+- `cargo fmt --check`: PASS.
+- `cargo test -p openwepp-hillslope-orchestrator mofe01_me2 -- --nocapture`:
+  PASS.
+- `cargo clippy --workspace --all-targets -- -D warnings`: PASS.
+- `cargo test --workspace`: PASS.
+- `cargo deny check`: PASS.
+- `bash tools/release/check_authority_suite_antievasion.sh`: PASS.
+- Final H1-H36 replay/comparison: PASS runtime execution; expected `owcmp`
+  semantic FAIL remains at the unchanged aggregate-publication boundary.
 
 ## M-E1 checklist
 

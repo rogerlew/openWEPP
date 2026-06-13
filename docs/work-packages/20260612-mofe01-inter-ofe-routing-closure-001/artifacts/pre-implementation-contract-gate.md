@@ -1,8 +1,23 @@
 # pre implementation contract gate
 
-Status: satisfied through M-E1 data-model implementation
+Status: satisfied through M-E2 sequential executor implementation
 
 Evidence mode: Static
+
+M-E2 gate:
+- Reopened. M-E2 reread the package, staged plan, M-D architecture artifact,
+  M-E0/M-E1 evidence, work-package governance, science-contract governance,
+  crate/test governance, and the scheduler transfer/writeback seams touched by
+  the sequential executor.
+- Satisfied for the sequential executor scope. M-E2 implements ordered
+  per-OFE lane execution around the existing phase graph and explicit
+  `TransferInput`/`TransferOutput` overlay/extraction under the authority of
+  `SC-RUNOFFPART-001#INV-RUNOFFPART-029`,
+  `SC-WATBAL-001#INV-WATBAL-097`, and
+  `SC-SYSTEM-001#INV-SYSTEM-030`.
+- Held before dynamic-state persistence and WAT publication. M-E2 deliberately
+  does not persist per-OFE dynamic state across days, produce WB13 records, or
+  flip public WAT rows.
 
 M-E1 gate:
 - Reopened. M-E1 reread the package, staged plan, M-D architecture artifact,

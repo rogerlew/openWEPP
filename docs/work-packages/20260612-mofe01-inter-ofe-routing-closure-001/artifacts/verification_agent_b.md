@@ -6,6 +6,44 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-E2 Verification Record
+
+Agent: `019ebfbe-9d0e-7a90-bd0d-f8c4304fd135`
+
+Static read-only QA verification of final M-E2 evidence and gates. The verifier
+did not edit files and did not invoke `comparator_suite_runner` or the
+comparator subagent.
+
+Verified:
+
+- Package status is consistent: package, gate results, and disposition all say
+  M-E2 is complete only for its scoped executor increment and the package
+  remains open for M-E3+.
+- M-E2 scope is not overclaimed: evidence states no dynamic per-OFE
+  persistence, no per-OFE WB13 records, and no WAT publication flip.
+- Saved `/tmp/openwepp_mofe01_me2_final` evidence matches recorded counts:
+  36/36 zero exits, 144 output files, 36 manifests, 28/28 single-OFE anchor
+  PASS, owcmp execution PASS with expected semantic FAIL `0/36`, and
+  no-publication-flip audit PASS.
+- Blocked identity gates are truthfully recorded: per-element and runtime
+  transfer identities remain blocked until M-E3/M-E4 dynamic per-OFE records
+  exist.
+
+Findings:
+
+1. **High:** M-E2 dual verification was claimed but not supported by M-E2
+   records in `verification_agent_a.md` and `verification_agent_b.md`.
+
+Disposition:
+
+- Accepted and fixed by adding this M-E2 verification record and the matching
+  M-E2 record in `verification_agent_a.md`.
+
+Residual risk:
+
+- The saved `/tmp` evidence is local-only; future verification will need those
+  files or a rerun.
+
 ## M-E1 Verification Record
 
 Agent: `019ebf71-a16c-7d32-8b14-f057ddee818f`

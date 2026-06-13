@@ -1,6 +1,12 @@
 #[allow(clippy::wildcard_imports)]
 use super::*;
-use crate::constants::PHASE_COUNT;
+use crate::constants::{
+    MOFE_HOURLY_CARRY_ARRAY_COUNT, MOFE_HOURLY_CARRY_ARRAYS_ENABLED_SYMBOL,
+    MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT, MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+    MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL, MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT,
+    MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT, PHASE_COUNT, WB11_ZERO_THRESHOLD,
+    WB12_SYMBOL_RUNOFF_CARRYOVER, WB12_SYMBOL_RUNON_INPUT,
+};
 
 /// Explicit scheduler dependency edge.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -245,13 +251,17 @@ pub struct HillslopeWritebackSurface {
 }
 
 /// Hourly slots carried between adjacent OFE lanes.
-pub const MOFE_TRANSFER_HOUR_COUNT: usize = 24;
+pub const MOFE_TRANSFER_HOUR_COUNT: usize = MOFE_HOURLY_CARRY_ARRAY_COUNT;
+
+const MOFE_TRANSFER_INPUT_UPSTRMQ_SYMBOL: &str = "UpStrmQ";
+const MOFE_TRANSFER_INPUT_SUBRIN_SYMBOL: &str = "SubRIn";
 
 /// Same-day upstream water-transfer input for one OFE lane.
 #[derive(Debug, Clone, PartialEq)]
 pub struct TransferInput {
     pub source_ofe_id: Option<usize>,
     pub recipient_ofe_id: usize,
+    pub area_ratio: f64,
     pub surface_carry: [f64; MOFE_TRANSFER_HOUR_COUNT],
     pub lateral_carry: [f64; MOFE_TRANSFER_HOUR_COUNT],
     pub upstrmq: f64,
@@ -264,6 +274,7 @@ impl TransferInput {
         Self {
             source_ofe_id: None,
             recipient_ofe_id: 1,
+            area_ratio: 1.0,
             surface_carry: [0.0; MOFE_TRANSFER_HOUR_COUNT],
             lateral_carry: [0.0; MOFE_TRANSFER_HOUR_COUNT],
             upstrmq: 0.0,
@@ -303,6 +314,20 @@ impl TransferOutput {
     /// Returns `PerOfeDailyWaterBalanceError` when the output is terminal or
     /// names a non-adjacent recipient.
     pub fn as_downstream_input(&self) -> Result<TransferInput, PerOfeDailyWaterBalanceError> {
+        self.as_downstream_input_with_area_ratio(1.0)
+    }
+
+    /// Convert a nonterminal transfer output into the next OFE's input with
+    /// explicit upstream-area scaling.
+    ///
+    /// # Errors
+    ///
+    /// Returns `PerOfeDailyWaterBalanceError` when the output is terminal or
+    /// names a non-adjacent recipient.
+    pub fn as_downstream_input_with_area_ratio(
+        &self,
+        area_ratio: f64,
+    ) -> Result<TransferInput, PerOfeDailyWaterBalanceError> {
         let Some(expected_recipient_ofe_id) = self.source_ofe_id.checked_add(1) else {
             return Err(PerOfeDailyWaterBalanceError::InvalidTransferSourceOfeId {
                 source_ofe_id: self.source_ofe_id,
@@ -330,10 +355,11 @@ impl TransferOutput {
         Ok(TransferInput {
             source_ofe_id: Some(self.source_ofe_id),
             recipient_ofe_id,
+            area_ratio,
             surface_carry: self.surface_carry,
             lateral_carry: self.lateral_carry,
-            upstrmq: self.surface_carry.iter().sum(),
-            subrin: self.lateral_carry.iter().sum(),
+            upstrmq: self.surface_carry.iter().sum::<f64>() * area_ratio,
+            subrin: self.lateral_carry.iter().sum::<f64>() * area_ratio,
         })
     }
 }
@@ -674,6 +700,156 @@ impl fmt::Display for PerOfeDailyWaterBalanceError {
 }
 
 impl Error for PerOfeDailyWaterBalanceError {}
+
+/// One OFE lane's starting surface for sequential same-day execution.
+#[derive(Debug, Clone)]
+pub struct OfeLaneExecutionInput {
+    pub ofe_id: usize,
+    pub upstream_area_ratio: f64,
+    pub writeback_surface: HillslopeWritebackSurface,
+}
+
+impl OfeLaneExecutionInput {
+    #[must_use]
+    pub fn new(ofe_id: usize, writeback_surface: HillslopeWritebackSurface) -> Self {
+        Self {
+            ofe_id,
+            upstream_area_ratio: 1.0,
+            writeback_surface,
+        }
+    }
+
+    #[must_use]
+    pub fn with_upstream_area_ratio(
+        ofe_id: usize,
+        upstream_area_ratio: f64,
+        writeback_surface: HillslopeWritebackSurface,
+    ) -> Self {
+        Self {
+            ofe_id,
+            upstream_area_ratio,
+            writeback_surface,
+        }
+    }
+}
+
+/// One OFE lane's scheduler result and explicit adjacent-transfer evidence.
+#[derive(Debug, Clone)]
+pub struct OfeLaneExecutionReport {
+    pub ofe_id: usize,
+    pub upstream_transfer_input: TransferInput,
+    pub current_transfer_output: TransferOutput,
+    pub kernel_report: HillslopeKernelExecutionReport,
+}
+
+/// Sequential OFE lane execution report for one simulation day.
+#[derive(Debug, Clone)]
+pub struct OfeLaneSequenceExecutionReport {
+    pub lane_reports: Vec<OfeLaneExecutionReport>,
+}
+
+impl OfeLaneSequenceExecutionReport {
+    #[must_use]
+    pub fn lane_count(&self) -> usize {
+        self.lane_reports.len()
+    }
+}
+
+/// Fail-closed errors for M-E2 sequential OFE lane execution.
+#[derive(Debug)]
+pub enum OfeLaneSequenceError {
+    InvalidLaneCount {
+        lane_count: usize,
+    },
+    NonSequentialLaneOfeId {
+        expected_ofe_id: usize,
+        observed_ofe_id: usize,
+    },
+    Transfer(PerOfeDailyWaterBalanceError),
+    InvalidTransferValue {
+        ofe_id: usize,
+        symbol: String,
+        hour: Option<usize>,
+        value: f64,
+    },
+    TransferDailySumMismatch {
+        ofe_id: usize,
+        symbol: &'static str,
+        expected: f64,
+        observed: f64,
+    },
+    LaneScheduler {
+        ofe_id: usize,
+        source: HillslopeSchedulerError,
+    },
+    LaneExecutionFailed {
+        ofe_id: usize,
+        status: SimulationStatus,
+    },
+}
+
+impl fmt::Display for OfeLaneSequenceError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidLaneCount { lane_count } => {
+                write!(
+                    f,
+                    "OFE lane sequence requires at least one lane, observed {lane_count}"
+                )
+            }
+            Self::NonSequentialLaneOfeId {
+                expected_ofe_id,
+                observed_ofe_id,
+            } => write!(
+                f,
+                "OFE lanes must execute in 1-based adjacent order; expected {expected_ofe_id}, observed {observed_ofe_id}"
+            ),
+            Self::Transfer(source) => write!(f, "OFE transfer validation failed: {source}"),
+            Self::InvalidTransferValue {
+                ofe_id,
+                symbol,
+                hour,
+                value,
+            } => write!(
+                f,
+                "OFE {ofe_id} transfer symbol {symbol} hour {hour:?} must be finite and non-negative, observed {value}"
+            ),
+            Self::TransferDailySumMismatch {
+                ofe_id,
+                symbol,
+                expected,
+                observed,
+            } => write!(
+                f,
+                "OFE {ofe_id} transfer daily {symbol} mismatch: expected {expected}, observed {observed}"
+            ),
+            Self::LaneScheduler { ofe_id, source } => {
+                write!(f, "OFE {ofe_id} lane scheduler failed: {source}")
+            }
+            Self::LaneExecutionFailed { ofe_id, status } => write!(
+                f,
+                "OFE {ofe_id} lane execution did not complete successfully: {}",
+                status.message_id()
+            ),
+        }
+    }
+}
+
+impl Error for OfeLaneSequenceError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::Transfer(source) => Some(source),
+            Self::LaneScheduler { source, .. } => Some(source),
+            _ => None,
+        }
+    }
+}
+
+impl From<PerOfeDailyWaterBalanceError> for OfeLaneSequenceError {
+    fn from(value: PerOfeDailyWaterBalanceError) -> Self {
+        Self::Transfer(value)
+    }
+}
 
 /// Per-phase kernel/writeback execution evidence.
 #[derive(Debug, Clone)]
@@ -1241,6 +1417,399 @@ impl HillslopePhaseScheduler {
             writeback_surface,
         })
     }
+
+    /// Execute one simulation day by running the existing phase graph once per
+    /// OFE lane and carrying explicit same-day transfer arrays downstream.
+    ///
+    /// M-E2 intentionally stops at sequence wiring: it does not persist OFE
+    /// dynamic state across days and does not flip public WAT publication.
+    ///
+    /// # Errors
+    ///
+    /// Returns `OfeLaneSequenceError` when lane ordering, transfer payloads,
+    /// transfer array values, or a lane scheduler result is invalid.
+    pub fn execute_ofe_sequence_with_kernel<K>(
+        &self,
+        topology_report: &TopologyValidationReport,
+        kernel: &mut K,
+        lane_inputs: Vec<OfeLaneExecutionInput>,
+    ) -> Result<OfeLaneSequenceExecutionReport, OfeLaneSequenceError>
+    where
+        K: HillslopeKernel,
+    {
+        if lane_inputs.is_empty() {
+            return Err(OfeLaneSequenceError::InvalidLaneCount { lane_count: 0 });
+        }
+
+        let lane_count = lane_inputs.len();
+        let mut lane_reports = Vec::with_capacity(lane_count);
+        let mut next_transfer_input = TransferInput::zero_for_first_ofe();
+
+        for (index, mut lane_input) in lane_inputs.into_iter().enumerate() {
+            let expected_ofe_id = index + 1;
+            if lane_input.ofe_id != expected_ofe_id {
+                return Err(OfeLaneSequenceError::NonSequentialLaneOfeId {
+                    expected_ofe_id,
+                    observed_ofe_id: lane_input.ofe_id,
+                });
+            }
+
+            next_transfer_input.area_ratio = lane_input.upstream_area_ratio;
+            rescale_transfer_input_daily_totals(&mut next_transfer_input)?;
+            apply_transfer_input_to_lane_surface(
+                lane_input.ofe_id,
+                &next_transfer_input,
+                &mut lane_input.writeback_surface,
+            )?;
+            let upstream_transfer_input = next_transfer_input.clone();
+            let kernel_report = self
+                .execute_with_kernel(topology_report, kernel, lane_input.writeback_surface)
+                .map_err(|source| OfeLaneSequenceError::LaneScheduler {
+                    ofe_id: lane_input.ofe_id,
+                    source,
+                })?;
+
+            if !kernel_report.scheduler_report.is_success() {
+                return Err(OfeLaneSequenceError::LaneExecutionFailed {
+                    ofe_id: lane_input.ofe_id,
+                    status: kernel_report.scheduler_report.scheduler_status.clone(),
+                });
+            }
+
+            let is_terminal = lane_input.ofe_id == lane_count;
+            let current_transfer_output = extract_transfer_output_from_lane_surface(
+                lane_input.ofe_id,
+                is_terminal,
+                &kernel_report.writeback_surface,
+            )?;
+
+            if !is_terminal {
+                next_transfer_input = current_transfer_output
+                    .as_downstream_input_with_area_ratio(lane_input.upstream_area_ratio)?;
+            }
+
+            lane_reports.push(OfeLaneExecutionReport {
+                ofe_id: lane_input.ofe_id,
+                upstream_transfer_input,
+                current_transfer_output,
+                kernel_report,
+            });
+        }
+
+        Ok(OfeLaneSequenceExecutionReport { lane_reports })
+    }
+}
+
+fn apply_transfer_input_to_lane_surface(
+    ofe_id: usize,
+    input: &TransferInput,
+    writeback_surface: &mut HillslopeWritebackSurface,
+) -> Result<(), OfeLaneSequenceError> {
+    validate_transfer_input_for_lane(ofe_id, input)?;
+    clear_current_transfer_arrays(writeback_surface);
+
+    writeback_surface.state_surface.insert(
+        BoundarySymbol::from(MOFE_HOURLY_CARRY_ARRAYS_ENABLED_SYMBOL),
+        BoundaryValue::scalar(1.0),
+    );
+    writeback_surface.state_surface.insert(
+        BoundarySymbol::from(MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL),
+        BoundaryValue::scalar(input.area_ratio),
+    );
+    writeback_surface.state_surface.insert(
+        BoundarySymbol::from(MOFE_TRANSFER_INPUT_UPSTRMQ_SYMBOL),
+        BoundaryValue::scalar(input.upstrmq),
+    );
+    writeback_surface.state_surface.insert(
+        BoundarySymbol::from(MOFE_TRANSFER_INPUT_SUBRIN_SYMBOL),
+        BoundaryValue::scalar(input.subrin),
+    );
+    let daily_transfer_total =
+        validate_combined_transfer_total(ofe_id, input.upstrmq, input.subrin)?;
+    writeback_surface.state_surface.insert(
+        BoundarySymbol::from(WB12_SYMBOL_RUNON_INPUT),
+        BoundaryValue::scalar(daily_transfer_total),
+    );
+    writeback_surface.flux_surface.insert(
+        BoundarySymbol::from(WB12_SYMBOL_RUNOFF_CARRYOVER),
+        BoundaryValue::scalar(daily_transfer_total),
+    );
+
+    for (index, value) in input.surface_carry.iter().copied().enumerate() {
+        writeback_surface.state_surface.insert(
+            mofe_hourly_symbol(MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT, index + 1),
+            BoundaryValue::scalar(value),
+        );
+    }
+    for (index, value) in input.lateral_carry.iter().copied().enumerate() {
+        writeback_surface.state_surface.insert(
+            mofe_hourly_symbol(MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT, index + 1),
+            BoundaryValue::scalar(value),
+        );
+    }
+
+    Ok(())
+}
+
+fn validate_transfer_input_for_lane(
+    ofe_id: usize,
+    input: &TransferInput,
+) -> Result<(), OfeLaneSequenceError> {
+    if input.recipient_ofe_id != ofe_id {
+        return Err(PerOfeDailyWaterBalanceError::TransferRecipientMismatch {
+            ofe_id,
+            recipient_ofe_id: input.recipient_ofe_id,
+        }
+        .into());
+    }
+    let expected_source = if ofe_id == 1 { None } else { Some(ofe_id - 1) };
+    if input.source_ofe_id != expected_source {
+        return Err(PerOfeDailyWaterBalanceError::TransferInputSourceMismatch {
+            ofe_id,
+            expected_source_ofe_id: expected_source,
+            observed_source_ofe_id: input.source_ofe_id,
+        }
+        .into());
+    }
+
+    let surface_total = validate_transfer_array(
+        ofe_id,
+        MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT,
+        &input.surface_carry,
+    )?;
+    let lateral_total = validate_transfer_array(
+        ofe_id,
+        MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT,
+        &input.lateral_carry,
+    )?;
+    validate_positive_transfer_scalar(
+        ofe_id,
+        MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL,
+        input.area_ratio,
+    )?;
+    validate_transfer_scalar(ofe_id, MOFE_TRANSFER_INPUT_UPSTRMQ_SYMBOL, input.upstrmq)?;
+    validate_transfer_scalar(ofe_id, MOFE_TRANSFER_INPUT_SUBRIN_SYMBOL, input.subrin)?;
+    validate_transfer_daily_sum(
+        ofe_id,
+        MOFE_TRANSFER_INPUT_UPSTRMQ_SYMBOL,
+        scaled_transfer_total(
+            ofe_id,
+            MOFE_TRANSFER_INPUT_UPSTRMQ_SYMBOL,
+            surface_total,
+            input.area_ratio,
+        )?,
+        input.upstrmq,
+    )?;
+    validate_transfer_daily_sum(
+        ofe_id,
+        MOFE_TRANSFER_INPUT_SUBRIN_SYMBOL,
+        scaled_transfer_total(
+            ofe_id,
+            MOFE_TRANSFER_INPUT_SUBRIN_SYMBOL,
+            lateral_total,
+            input.area_ratio,
+        )?,
+        input.subrin,
+    )?;
+
+    Ok(())
+}
+
+fn rescale_transfer_input_daily_totals(
+    input: &mut TransferInput,
+) -> Result<(), OfeLaneSequenceError> {
+    validate_positive_transfer_scalar(
+        input.recipient_ofe_id,
+        MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL,
+        input.area_ratio,
+    )?;
+    let surface_total: f64 = input.surface_carry.iter().sum();
+    let lateral_total: f64 = input.lateral_carry.iter().sum();
+    input.upstrmq = scaled_transfer_total(
+        input.recipient_ofe_id,
+        MOFE_TRANSFER_INPUT_UPSTRMQ_SYMBOL,
+        surface_total,
+        input.area_ratio,
+    )?;
+    input.subrin = scaled_transfer_total(
+        input.recipient_ofe_id,
+        MOFE_TRANSFER_INPUT_SUBRIN_SYMBOL,
+        lateral_total,
+        input.area_ratio,
+    )?;
+    Ok(())
+}
+
+fn extract_transfer_output_from_lane_surface(
+    ofe_id: usize,
+    is_terminal: bool,
+    writeback_surface: &HillslopeWritebackSurface,
+) -> Result<TransferOutput, OfeLaneSequenceError> {
+    let surface_carry = read_transfer_array_from_state_surface(
+        ofe_id,
+        MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+        writeback_surface,
+    )?;
+    let lateral_carry = read_transfer_array_from_state_surface(
+        ofe_id,
+        MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+        writeback_surface,
+    )?;
+    let qofe = validate_transfer_array(
+        ofe_id,
+        MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+        &surface_carry,
+    )?;
+    let lateral_export = validate_transfer_array(
+        ofe_id,
+        MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+        &lateral_carry,
+    )?;
+
+    Ok(TransferOutput {
+        source_ofe_id: ofe_id,
+        recipient_ofe_id: if is_terminal { None } else { Some(ofe_id + 1) },
+        surface_carry,
+        lateral_carry,
+        qofe,
+        lateral_export,
+    })
+}
+
+fn read_transfer_array_from_state_surface(
+    ofe_id: usize,
+    root: &str,
+    writeback_surface: &HillslopeWritebackSurface,
+) -> Result<[f64; MOFE_TRANSFER_HOUR_COUNT], OfeLaneSequenceError> {
+    let mut values = [0.0; MOFE_TRANSFER_HOUR_COUNT];
+    for (index, value) in values.iter_mut().enumerate() {
+        let hour = index + 1;
+        let symbol = mofe_hourly_symbol(root, hour);
+        let Some(raw_value) = writeback_surface.state_surface.get(&symbol).copied() else {
+            return Err(OfeLaneSequenceError::InvalidTransferValue {
+                ofe_id,
+                symbol: symbol.as_str().to_owned(),
+                hour: Some(hour),
+                value: f64::NAN,
+            });
+        };
+        let scalar = raw_value.as_f64();
+        validate_transfer_value(ofe_id, symbol.as_str(), Some(hour), scalar)?;
+        *value = scalar;
+    }
+    Ok(values)
+}
+
+fn validate_transfer_array(
+    ofe_id: usize,
+    root: &str,
+    values: &[f64; MOFE_TRANSFER_HOUR_COUNT],
+) -> Result<f64, OfeLaneSequenceError> {
+    let mut total = 0.0;
+    for (index, value) in values.iter().copied().enumerate() {
+        let hour = index + 1;
+        let symbol = mofe_hourly_symbol(root, hour);
+        validate_transfer_value(ofe_id, symbol.as_str(), Some(hour), value)?;
+        total += value;
+    }
+    validate_transfer_value(ofe_id, root, None, total)?;
+    Ok(total)
+}
+
+fn validate_transfer_scalar(
+    ofe_id: usize,
+    symbol: &'static str,
+    value: f64,
+) -> Result<(), OfeLaneSequenceError> {
+    validate_transfer_value(ofe_id, symbol, None, value)
+}
+
+fn validate_positive_transfer_scalar(
+    ofe_id: usize,
+    symbol: &'static str,
+    value: f64,
+) -> Result<(), OfeLaneSequenceError> {
+    if !value.is_finite() || value <= WB11_ZERO_THRESHOLD {
+        return Err(OfeLaneSequenceError::InvalidTransferValue {
+            ofe_id,
+            symbol: symbol.to_owned(),
+            hour: None,
+            value,
+        });
+    }
+    Ok(())
+}
+
+fn validate_transfer_value(
+    ofe_id: usize,
+    symbol: &str,
+    hour: Option<usize>,
+    value: f64,
+) -> Result<(), OfeLaneSequenceError> {
+    if !value.is_finite() || value < -WB11_ZERO_THRESHOLD {
+        return Err(OfeLaneSequenceError::InvalidTransferValue {
+            ofe_id,
+            symbol: symbol.to_owned(),
+            hour,
+            value,
+        });
+    }
+    Ok(())
+}
+
+fn validate_combined_transfer_total(
+    ofe_id: usize,
+    upstrmq: f64,
+    subrin: f64,
+) -> Result<f64, OfeLaneSequenceError> {
+    let total = upstrmq + subrin;
+    validate_transfer_value(ofe_id, WB12_SYMBOL_RUNOFF_CARRYOVER, None, total)?;
+    Ok(total)
+}
+
+fn scaled_transfer_total(
+    ofe_id: usize,
+    symbol: &'static str,
+    total: f64,
+    area_ratio: f64,
+) -> Result<f64, OfeLaneSequenceError> {
+    let scaled = total * area_ratio;
+    validate_transfer_value(ofe_id, symbol, None, scaled)?;
+    Ok(scaled)
+}
+
+fn clear_current_transfer_arrays(writeback_surface: &mut HillslopeWritebackSurface) {
+    for hour in 1..=MOFE_TRANSFER_HOUR_COUNT {
+        writeback_surface.state_surface.remove(&mofe_hourly_symbol(
+            MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+            hour,
+        ));
+        writeback_surface.state_surface.remove(&mofe_hourly_symbol(
+            MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+            hour,
+        ));
+    }
+}
+
+fn validate_transfer_daily_sum(
+    ofe_id: usize,
+    symbol: &'static str,
+    expected: f64,
+    observed: f64,
+) -> Result<(), OfeLaneSequenceError> {
+    if (expected - observed).abs() > WB11_ZERO_THRESHOLD {
+        return Err(OfeLaneSequenceError::TransferDailySumMismatch {
+            ofe_id,
+            symbol,
+            expected,
+            observed,
+        });
+    }
+    Ok(())
+}
+
+fn mofe_hourly_symbol(root: &str, hour: usize) -> BoundarySymbol {
+    BoundarySymbol::from(format!("{root}_{hour:04}"))
 }
 
 impl Default for HillslopePhaseScheduler {

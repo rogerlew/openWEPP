@@ -1,10 +1,33 @@
 # worker handoff
 
-Status: M-E1 complete; M-E2 implementation next
+Status: M-E2 complete; M-E3 implementation next
 
 Evidence mode: Ran + Static
 
 ## Summary
+
+M-E2 completed the sequential OFE lane executor increment:
+
+- Added `OfeLaneExecutionInput`, `OfeLaneExecutionReport`,
+  `OfeLaneSequenceExecutionReport`, and `OfeLaneSequenceError`.
+- Added `HillslopePhaseScheduler::execute_ofe_sequence_with_kernel`, which
+  runs the existing scheduler phase graph once per ordered OFE lane.
+- Added explicit transfer overlay/extraction for `TransferInput` and
+  `TransferOutput`, including downstream area-ratio scaling.
+- Added fail-closed guards for lane order, source/recipient identity, stale
+  current output arrays, malformed transfer slots, and overflowed transfer
+  totals.
+- Final gates passed: fmt, focused M-E2 tests, existing writeback tests,
+  M-E1 runner tests, per-OFE contract tests, clippy, full workspace tests,
+  cargo-deny, authority anti-evasion script, final H1-H36 batch,
+  no-publication-flip audit, and single-OFE anchor comparison.
+- Local owcmp ran without comparator subagent per operator instruction:
+  execution PASS; semantic FAIL remains expected at the publication boundary
+  (`semantic_pass_count=0/36`, row-key failures `350720`).
+- M-E2 did not wire the executor into public CLI publication, persist dynamic
+  per-OFE state across days, or produce per-OFE WB13 records.
+
+## M-E1 summary
 
 M-E1 completed the data-model shadow-state increment:
 
@@ -149,6 +172,13 @@ Local-only temp lane:
 - `/tmp/openwepp_mofe01_me1_final/owcmp/summary.json`
 - `/tmp/openwepp_mofe01_me1_final/owcmp/summary.md`
 - `/tmp/openwepp_mofe01_me1_final/single-ofe-anchor-cmp.tsv`
+- `/tmp/openwepp_mofe01_me2_final/exit-codes.tsv`
+- `/tmp/openwepp_mofe01_me2_final/output/H*.{hbp,loss.json,plot.parquet,wat.parquet}`
+- `/tmp/openwepp_mofe01_me2_final/manifests/H*.manifest.json`
+- `/tmp/openwepp_mofe01_me2_final/owcmp/summary.json`
+- `/tmp/openwepp_mofe01_me2_final/owcmp/summary.md`
+- `/tmp/openwepp_mofe01_me2_final/m-e2-publication-audit.json`
+- `/tmp/openwepp_mofe01_me2_final/single-ofe-anchor-cmp.tsv`
 - `/tmp/openwepp_mofe01_ma/current/exit-codes.tsv`
 - `/tmp/openwepp_mofe01_ma/current/logs/H*.stderr.txt`
 - `/tmp/openwepp_mofe01_ma/current/manifests/H*.json` for passing 1-OFE surfaces.
@@ -158,7 +188,6 @@ These are not committed artifacts.
 
 ## Next worker focus
 
-Execute M-E2 per the M-D breakdown. Start from the M-E1 typed data model and
-wire real dynamic per-OFE daily records/sequential OFE handoff without flipping
-WAT publication prematurely or manufacturing records from aggregate WB13/WAT
-state.
+Execute M-E3 per the M-D breakdown. Start from the M-E2 sequential executor and
+persist real OFE-local dynamic daily state without flipping WAT publication
+prematurely or manufacturing records from aggregate WB13/WAT state.

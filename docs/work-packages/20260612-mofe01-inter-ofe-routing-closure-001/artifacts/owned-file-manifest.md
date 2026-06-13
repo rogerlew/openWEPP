@@ -1,8 +1,44 @@
 # owned file manifest
 
-Status: updated through M-E1
+Status: updated through M-E2
 
 Evidence mode: Static
+
+## M-E2 edited files
+
+Rust implementation:
+
+- `crates/openwepp-hillslope-orchestrator/src/lib.rs`
+- `crates/openwepp-hillslope-orchestrator/src/scheduler.rs`
+
+Tests:
+
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/mod.rs`
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/writeback.rs`
+
+Work-package files/artifacts:
+
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/package.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/m-e2-sequential-ofe-lane-executor-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/README.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/gate-results.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/disposition.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/worker-handoff.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/implementation-test-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/pre-implementation-contract-gate.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-test-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/kernel-profile-compliance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/line-count-governance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/owned-file-manifest.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_b.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_b.md`
+
+No science contract, dependency, legacy, runner CLI, publication, dynamic
+state persistence, external-authority suite, or `/wc1` substrate file was
+edited in M-E2.
 
 ## M-E1 edited files
 

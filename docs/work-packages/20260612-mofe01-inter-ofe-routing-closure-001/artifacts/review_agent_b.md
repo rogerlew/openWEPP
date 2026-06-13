@@ -6,6 +6,31 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-E2 Review Record
+
+Agent: `019ebf9f-af1e-7e21-aff4-27b56f855bac`
+
+Static/Ran QA review of M-E2 implementation and evidence. The reviewer did not
+invoke the comparator subagent.
+
+Findings:
+
+1. **High:** M-E2 artifacts were still in M-E1/pending state, creating a
+   non-deferral gap between code and recorded evidence.
+2. **Medium:** Stale current output arrays on a lane input could be accepted as
+   freshly produced current transfer output if the kernel did not publish those
+   arrays.
+3. **Residual:** M-E2 was unit/API-visible only before the final local replay;
+   runtime comparison evidence still needed to be generated locally.
+
+### M-E2 Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | Artifact/gate evidence stale | accepted | Updated package status, M-E2 evidence, gate results, implementation evidence, checklists, disposition, and handoff with final M-E2 results. |
+| 2 | Stale current output arrays could masquerade as fresh output | accepted | `apply_transfer_input_to_lane_surface` now clears current transfer output arrays before lane execution; added `mofe01_me2_sequential_executor_rejects_stale_current_output_arrays`. |
+| 3 | Missing local runtime comparison evidence | accepted | Ran fresh H1-H36 and local `owcmp` without comparator subagent under `/tmp/openwepp_mofe01_me2_final`; recorded expected publication-boundary result and no-publication-flip audit. |
+
 ## M-E1 Review Record
 
 Agent: `019ebf53-586e-78a1-af99-319bd9dbb231`

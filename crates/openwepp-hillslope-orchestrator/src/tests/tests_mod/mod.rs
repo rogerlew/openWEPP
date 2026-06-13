@@ -37,7 +37,8 @@ use crate::{
     scheduler::{
         HillslopeKernelExecutionReport, HillslopeKernelPhaseReport, HillslopePhaseGraph,
         HillslopePhaseOutcome, HillslopePhaseScheduler, HillslopeSchedulerError,
-        HillslopeSchedulerReport, HillslopeWritebackSurface, SchedulerOutcomeClass,
+        HillslopeSchedulerReport, HillslopeWritebackSurface, OfeLaneExecutionInput,
+        OfeLaneSequenceError, SchedulerOutcomeClass,
     },
 };
 use crate::{

@@ -6,6 +6,30 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-E2 Review Record
+
+Agent: `019ebf9f-8afb-7dc2-9442-82de35f532bf`
+
+Static/Ran read-only review of M-E2 code, artifacts, and gate posture. The
+reviewer did not invoke the comparator subagent.
+
+Findings:
+
+1. **High:** M-E2 evidence/gate rows still showed pending final gates and stale
+   three-test counts after implementation.
+2. **Medium:** Sequential handoff used an implicit area ratio of `1.0`, leaving
+   downstream area-ratio semantics under-documented and untested.
+3. **Medium:** Transfer totals were not independently guarded against
+   non-finite overflow after per-hour slot validation.
+
+### M-E2 Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | M-E2 evidence and gate rows stale | accepted | Refreshed `m-e2-sequential-ofe-lane-executor-evidence.md`, `gate-results.md`, implementation evidence, and checklists with final focused tests, workspace, H1-H36, owcmp, publication-audit, and single-OFE-anchor results. |
+| 2 | Area-ratio semantics implicit | accepted | Added `TransferInput.area_ratio`, `OfeLaneExecutionInput::with_upstream_area_ratio`, area-ratio overlay, scaled transfer totals, and a focused area-ratio test. |
+| 3 | Transfer daily total overflow insufficiently guarded | accepted | Added finite daily-total validation for transfer arrays/combined totals and a focused overflow rejection test. |
+
 ## M-E1 Review Record
 
 Agent: `019ebf52-df8f-7a63-8b81-2645bbebaa3e`

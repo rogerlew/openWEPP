@@ -1,8 +1,29 @@
 # contract implementation evidence
 
-Status: M-E1 implemented against M-E0 contract authority
+Status: M-E2 implemented against M-E0 contract authority
 
 Evidence mode: Ran + Static
+
+## M-E2
+
+M-E2 consumes the M-E0/M-D contract authority without amending canonical
+contracts. The increment adds executor wiring for the already-declared
+`TransferInput`/`TransferOutput` semantics:
+
+- same-day upstream transfer arrays are overlaid before each OFE lane run,
+- current-lane transfer arrays are extracted after the lane run,
+- source/recipient identity and malformed transfer values fail closed,
+- downstream area-ratio scaling is explicit in the transfer input,
+- stale current-lane output arrays are cleared before each lane run so missing
+  fresh output fails closed,
+- non-finite or overflowed transfer totals fail closed,
+- dynamic state persistence and per-OFE daily WB record production remain
+  later M-E gates.
+
+The M-E2 focused tests prove the required two-OFE synthetic handoff and
+malformed-array rejection without changing WAT publication. Final H1-H36
+runtime replay and no-publication-flip audit confirm the executor increment
+does not perturb the current public aggregate WB13/WAT path.
 
 ## M-E1
 
