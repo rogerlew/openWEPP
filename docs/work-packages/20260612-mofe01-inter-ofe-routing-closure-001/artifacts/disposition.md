@@ -1,10 +1,42 @@
 # disposition
 
-Status: M-E4-REDO executed; package remains open for M-F publication
+Status: M-F executed-hold; package remains open for M-F-REDO surface carry
+closure
 
 Evidence mode: Ran + Static
 
 ## Disposition
+
+Increment M-F is executed-hold, not complete. It landed the public per-OFE WAT
+row shape and provenance required to expose the next defect: representative
+multi-OFE runs now emit one row per OFE per day, row keys align with baseline
+for H1/H6/H9/H11, and `QOFE` is no longer the aggregate `Q` alias.
+
+The M-F acceptance gate still fails because the surface carry producer remains
+zero on real multi-OFE runs. Direct WAT audit under `/tmp/openwepp_mofe01_mf`
+reports `max_upstrmq=0.0` and zero downstream nonzero `UpStrmQ` rows for
+H1/H6/H9/H11. The apparent surface handoff residual of `0.0` is zero-on-zero
+equality, not conservation evidence. Lateral handoff has nonzero downstream
+`SubRIn` rows and closes, so the remaining blocker is localized to the current
+surface export producer feeding per-OFE `QOFE`/`UpStrmQ`.
+
+Local semantic comparisons were run directly with `tools/owcmp/semantic_wat.py`
+and `--candidate-year-offset 1999`, without the comparator subagent. Row-key
+coverage is now complete for the smoke surfaces, but semantic comparison still
+fails on value families: H1 has `UpStrmQ` fail count `730` with max absolute
+diff `342.5` mm, and H6/H9/H11 show the same class of surface-carry failure.
+
+Final Rust gates passed (`cargo fmt --check`, `cargo clippy --workspace
+--all-targets -- -D warnings`, `cargo test --workspace`, `cargo deny check`,
+and `git diff --check`). These gates prove the partial implementation is
+internally buildable and tested; they do not override the failed M-F surface
+publication acceptance gate.
+
+The next lawful increment is M-F-REDO: implement the contract-backed current
+surface export producer, prove nonzero active `UpStrmQ` handoff, rerun
+H1/H6/H9/H11 local comparisons, and rerun the single-OFE anchor before M-G/M-H.
+
+## M-E4-REDO disposition
 
 Increment M-E4-REDO closes the blocking M-E4 review finding. The per-OFE WB13
 record production from M-E4 stands, and the identity validation now measures
@@ -35,10 +67,9 @@ alias/self-built checks as acceptance evidence. Focused tests prove storage
 mismatch rejection, independent transfer mismatch rejection, and frost-active
 per-OFE storage closure.
 
-M-E4-REDO preserves public aggregate WB13/WAT publication:
-`publication_ofe_policy=single-row-canonicalized-hillslope-aggregate`. The
-next lawful increment is M-F: build public WB13/WAT rows from the internal
-per-OFE records and retire the transitional aggregate publication lifecycle.
+M-E4-REDO preserved public aggregate WB13/WAT publication:
+`publication_ofe_policy=single-row-canonicalized-hillslope-aggregate`. M-F has
+since flipped public row shape and exposed the surface carry producer blocker.
 
 ## M-E3 disposition
 

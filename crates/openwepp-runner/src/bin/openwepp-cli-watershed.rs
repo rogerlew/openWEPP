@@ -53,7 +53,11 @@ const HILLSLOPE_RUN_MANIFEST_SCHEMA_ID: &str = "openwepp-hillslope-run-manifest-
 const DEFAULT_DTCHR_SECONDS: f64 = 3_600.0;
 const DEFAULT_NTCHR: f64 = 24.0;
 const MOFE04_PUBLICATION_OFE_POLICY: &str = "single-row-canonicalized-hillslope-aggregate";
+const MF_PUBLICATION_OFE_POLICY: &str = "per-ofe-dynamic-water-balance-state";
 const MOFE04_PUBLICATION_AREA_POLICY: &str = "sum-ofe-geometry-area";
+const MF_STORAGE_LINEAGE_POLICY: &str = "per-ofe-dynamic-wb-state";
+const MF_PER_OFE_STATE_POLICY: &str = "published-per-ofe-wb13-records";
+const MF_IDENTITY_STATUS: &str = "pass-published-per-ofe-wb13-records";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
 const MOFE_HOURLY_CARRY_ARRAY_COUNT: u64 = 24;
 const MOFE_HOURLY_REQUIRED_ARRAYS: [&str; 4] = ["ui_SUrunf", "ui_SCrunf", "ui_LfUrf", "ui_LfCrf"];
@@ -1252,12 +1256,16 @@ fn validate_manifest_publication_metadata(
                 manifest_file_path.display()
             )
         })?;
-    if publication_policy != MOFE04_PUBLICATION_OFE_POLICY {
+    if !matches!(
+        publication_policy,
+        MOFE04_PUBLICATION_OFE_POLICY | MF_PUBLICATION_OFE_POLICY
+    ) {
         return Err(format!(
-            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has unsupported publication_ofe_policy '{}' (expected '{}')",
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has unsupported publication_ofe_policy '{}' (expected '{}' or '{}')",
             manifest_file_path.display(),
             publication_policy,
-            MOFE04_PUBLICATION_OFE_POLICY
+            MOFE04_PUBLICATION_OFE_POLICY,
+            MF_PUBLICATION_OFE_POLICY
         ));
     }
 
@@ -1318,12 +1326,234 @@ fn validate_manifest_publication_metadata(
         ));
     }
 
+    if publication_policy == MF_PUBLICATION_OFE_POLICY {
+        validate_manifest_per_ofe_wb13_publication_metadata(
+            hillslope_id,
+            contributor_ofe_count,
+            manifest_file_path,
+            &manifest,
+        )?;
+    }
+
     validate_manifest_mofe_hourly_carry_metadata(
         hillslope_id,
         contributor_nofe,
         manifest_file_path,
         &manifest,
     )?;
+
+    Ok(())
+}
+
+fn validate_manifest_per_ofe_wb13_publication_metadata(
+    hillslope_id: u32,
+    contributor_ofe_count: u64,
+    manifest_file_path: &Path,
+    manifest: &Value,
+) -> Result<(), String> {
+    validate_manifest_per_ofe_wb13_publication_policies(
+        hillslope_id,
+        manifest_file_path,
+        manifest,
+    )?;
+    validate_manifest_per_ofe_wb13_publication_counts(
+        hillslope_id,
+        contributor_ofe_count,
+        manifest_file_path,
+        manifest,
+    )?;
+    validate_manifest_per_ofe_wb13_publication_keys(
+        hillslope_id,
+        contributor_ofe_count,
+        manifest_file_path,
+        manifest,
+    )
+}
+
+fn validate_manifest_per_ofe_wb13_publication_policies(
+    hillslope_id: u32,
+    manifest_file_path: &Path,
+    manifest: &Value,
+) -> Result<(), String> {
+    let storage_lineage = manifest
+        .pointer("/wb13_publication/storage_lineage_policy")
+        .and_then(Value::as_str)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing string /wb13_publication/storage_lineage_policy",
+                manifest_file_path.display()
+            )
+        })?;
+    if storage_lineage != MF_STORAGE_LINEAGE_POLICY {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has unsupported storage_lineage_policy '{}' (expected '{}')",
+            manifest_file_path.display(),
+            storage_lineage,
+            MF_STORAGE_LINEAGE_POLICY
+        ));
+    }
+
+    let state_policy = manifest
+        .pointer("/wb13_publication/per_ofe_state_policy")
+        .and_then(Value::as_str)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing string /wb13_publication/per_ofe_state_policy",
+                manifest_file_path.display()
+            )
+        })?;
+    if state_policy != MF_PER_OFE_STATE_POLICY {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has unsupported per_ofe_state_policy '{}' (expected '{}')",
+            manifest_file_path.display(),
+            state_policy,
+            MF_PER_OFE_STATE_POLICY
+        ));
+    }
+
+    for pointer in [
+        "/wb13_publication/transfer_identity_status",
+        "/wb13_publication/per_element_identity_status",
+        "/wb13_publication/aggregate_identity_status",
+    ] {
+        let status = manifest.pointer(pointer).and_then(Value::as_str).ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing string {pointer}",
+                manifest_file_path.display()
+            )
+        })?;
+        if status != MF_IDENTITY_STATUS {
+            return Err(format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has unsupported {pointer} '{}' (expected '{}')",
+                manifest_file_path.display(),
+                status,
+                MF_IDENTITY_STATUS
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn validate_manifest_per_ofe_wb13_publication_counts(
+    hillslope_id: u32,
+    contributor_ofe_count: u64,
+    manifest_file_path: &Path,
+    manifest: &Value,
+) -> Result<(), String> {
+    let row_count = manifest
+        .pointer("/wb13_publication/row_count")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing integer /wb13_publication/row_count",
+                manifest_file_path.display()
+            )
+        })?;
+    let per_ofe_record_count = manifest
+        .pointer("/wb13_publication/per_ofe_record_count")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing integer /wb13_publication/per_ofe_record_count",
+                manifest_file_path.display()
+            )
+        })?;
+    let expected_record_count = manifest
+        .pointer("/wb13_publication/per_ofe_expected_record_count")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing integer /wb13_publication/per_ofe_expected_record_count",
+                manifest_file_path.display()
+            )
+        })?;
+    let day_count = manifest
+        .pointer("/wb13_publication/per_ofe_internal_day_count")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing integer /wb13_publication/per_ofe_internal_day_count",
+                manifest_file_path.display()
+            )
+        })?;
+
+    if row_count == 0 || per_ofe_record_count == 0 {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has empty per-OFE WB13 publication row counts",
+            manifest_file_path.display()
+        ));
+    }
+    if row_count != per_ofe_record_count || row_count != expected_record_count {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' per-OFE WB13 row counts disagree: row_count={row_count}, per_ofe_record_count={per_ofe_record_count}, expected_record_count={expected_record_count}",
+            manifest_file_path.display()
+        ));
+    }
+    let expected_from_days = day_count
+        .checked_mul(contributor_ofe_count)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' per-OFE WB13 expected row count overflowed",
+                manifest_file_path.display()
+            )
+        })?;
+    if row_count != expected_from_days {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' per-OFE WB13 row_count={row_count} does not equal day_count={day_count} * contributor_ofe_count={contributor_ofe_count}",
+            manifest_file_path.display()
+        ));
+    }
+
+    Ok(())
+}
+
+fn validate_manifest_per_ofe_wb13_publication_keys(
+    hillslope_id: u32,
+    contributor_ofe_count: u64,
+    manifest_file_path: &Path,
+    manifest: &Value,
+) -> Result<(), String> {
+    let monotonic = manifest
+        .pointer("/wb13_publication/sim_day_index_monotonic")
+        .and_then(Value::as_bool)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing bool /wb13_publication/sim_day_index_monotonic",
+                manifest_file_path.display()
+            )
+        })?;
+    if !monotonic {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' marks per-OFE WB13 row keys non-monotonic",
+            manifest_file_path.display()
+        ));
+    }
+
+    let first_ofe = manifest
+        .pointer("/wb13_publication/first_row_key/ofe")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing integer /wb13_publication/first_row_key/ofe",
+                manifest_file_path.display()
+            )
+        })?;
+    let last_ofe = manifest
+        .pointer("/wb13_publication/last_row_key/ofe")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing integer /wb13_publication/last_row_key/ofe",
+                manifest_file_path.display()
+            )
+        })?;
+    if first_ofe != 1 || last_ofe != contributor_ofe_count {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' per-OFE WB13 first/last OFE keys are {first_ofe}/{last_ofe}; expected 1/{contributor_ofe_count}",
+            manifest_file_path.display()
+        ));
+    }
 
     Ok(())
 }

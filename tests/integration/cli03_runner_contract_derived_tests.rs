@@ -1,4 +1,5 @@
 use std::fs;
+use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
@@ -6,6 +7,9 @@ use openwepp_runner::{
     HillslopeCliError, HillslopeRunReport, HillslopeRunRequest, SidecarPolicy,
     execute_hillslope_run,
 };
+use parquet::file::reader::{FileReader, SerializedFileReader};
+use parquet::record::{Row, RowAccessor};
+use serde_json::Value;
 
 const RUNFILE_CONTRACT: &str =
     include_str!("../../docs/contracts/openwepp-hillslope-runfile-contract.md");
@@ -622,7 +626,7 @@ loss = "output/H1.loss.json"
 }
 
 #[test]
-fn cli03_mofe04_multiofe_publication_uses_canonicalized_oferow_and_total_area() {
+fn cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"
 run_name = "cli03-mofe04-publication-multiofe"
@@ -638,6 +642,7 @@ wepp_ui = false
 [outputs]
 pass = "output/H1.hbp"
 loss = "output/H1.loss.json"
+wat = "output/H1.wat.parquet"
 "#;
 
     let (report, _temp_run_dir) = execute_fixture_with_runfile_report_with_mode_and_customizer(
@@ -656,28 +661,107 @@ loss = "output/H1.loss.json"
 
     let manifest =
         fs::read_to_string(&report.manifest_path).expect("manifest file should be readable");
-    assert!(
-        manifest.contains(
-            "\"publication_ofe_policy\": \"single-row-canonicalized-hillslope-aggregate\""
-        ),
-        "manifest missing MOFE04 publication policy marker: {manifest}"
+    let manifest_json: Value =
+        serde_json::from_str(&manifest).expect("manifest file should parse as JSON");
+    assert_mf_multiofe_publication_manifest(&manifest_json, &manifest);
+
+    let wat_output = report
+        .optional_outputs
+        .iter()
+        .find(|path| path.file_name().and_then(|name| name.to_str()) == Some("H1.wat.parquet"))
+        .expect("WAT output should be present");
+    assert_mf_multiofe_publication_wat_rows(wat_output);
+}
+
+fn assert_mf_multiofe_publication_manifest(manifest_json: &Value, manifest: &str) {
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/publication_ofe_policy")
+            .and_then(Value::as_str),
+        Some("per-ofe-dynamic-water-balance-state"),
+        "manifest missing M-F publication policy marker: {manifest}"
     );
-    assert!(
-        manifest.contains("\"area_policy\": \"sum-ofe-geometry-area\""),
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/area_policy")
+            .and_then(Value::as_str),
+        Some("sum-ofe-geometry-area"),
         "manifest missing MOFE04 area policy marker: {manifest}"
     );
-    assert!(
-        manifest.contains("\"contributor_ofe_count\": 3"),
-        "manifest missing MOFE04 contributor OFE count marker: {manifest}"
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/contributor_ofe_count")
+            .and_then(Value::as_u64),
+        Some(3),
+        "manifest missing M-F contributor OFE count marker: {manifest}"
     );
-    assert!(
-        manifest.contains("\"publication_area_m2\": 3600.0"),
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/publication_area_m2")
+            .and_then(Value::as_f64),
+        Some(3600.0),
         "manifest missing MOFE04 publication area marker for multi-OFE case: {manifest}"
     );
-    assert!(
-        manifest.contains("\"storage_lineage_policy\": \"single-runtime-wb11-state\""),
-        "manifest missing HPHYS0255 storage-lineage policy marker: {manifest}"
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/storage_lineage_policy")
+            .and_then(Value::as_str),
+        Some("per-ofe-dynamic-wb-state"),
+        "manifest missing M-F storage-lineage policy marker: {manifest}"
     );
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/per_ofe_state_policy")
+            .and_then(Value::as_str),
+        Some("published-per-ofe-wb13-records"),
+        "manifest missing M-F per-OFE state policy marker: {manifest}"
+    );
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/row_count")
+            .and_then(Value::as_u64),
+        Some(6),
+        "manifest missing M-F public per-OFE row_count marker: {manifest}"
+    );
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/per_ofe_record_count")
+            .and_then(Value::as_u64),
+        Some(6),
+        "manifest missing M-F per-OFE record count marker: {manifest}"
+    );
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/per_ofe_expected_record_count")
+            .and_then(Value::as_u64),
+        Some(6),
+        "manifest missing M-F expected per-OFE record count marker: {manifest}"
+    );
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/sim_day_index_monotonic")
+            .and_then(Value::as_bool),
+        Some(true),
+        "manifest must mark grouped per-OFE day/OFE keys monotonic: {manifest}"
+    );
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/first_row_key/ofe")
+            .and_then(Value::as_u64),
+        Some(1),
+        "manifest first public per-OFE row must be OFE 1: {manifest}"
+    );
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/last_row_key/ofe")
+            .and_then(Value::as_u64),
+        Some(3),
+        "manifest last public per-OFE row must be outlet OFE 3: {manifest}"
+    );
+    assert_mf_multiofe_publication_carry_manifest(manifest);
+}
+
+fn assert_mf_multiofe_publication_carry_manifest(manifest: &str) {
     for expected in [
         "\"mofe_hourly_carry\"",
         "\"policy\": \"baseline-wathour-24-slot-copy-forward\"",
@@ -695,14 +779,33 @@ loss = "output/H1.loss.json"
             "manifest missing HPHYS0241 MOFE carry marker {expected}: {manifest}"
         );
     }
+}
 
-    assert!(
-        manifest.contains("\"first_row_key\""),
-        "manifest missing first_row_key marker: {manifest}"
+fn assert_mf_multiofe_publication_wat_rows(wat_output: &Path) {
+    let wat_rows = read_parquet_rows(wat_output);
+    assert_eq!(
+        wat_rows.len(),
+        6,
+        "M-F multi-OFE WAT publication must emit days * nofe rows"
     );
+    let ofe_ids = wat_rows
+        .iter()
+        .map(|row| row_i32_value(row, "ofe_id"))
+        .collect::<Vec<_>>();
+    assert_eq!(ofe_ids, vec![1, 2, 3, 1, 2, 3]);
+    let ofe_column = wat_rows
+        .iter()
+        .map(|row| row_i32_value(row, "OFE"))
+        .collect::<Vec<_>>();
+    assert_eq!(ofe_column, ofe_ids);
+    let sim_day_indices = wat_rows
+        .iter()
+        .map(|row| row_i32_value(row, "sim_day_index"))
+        .collect::<Vec<_>>();
+    assert_eq!(sim_day_indices, vec![1, 1, 1, 2, 2, 2]);
     assert!(
-        manifest.contains("\"ofe\": 1"),
-        "WB13 first-row OFE key must remain canonicalized to 1: {manifest}"
+        (row_f64_value(&wat_rows[0], "QOFE") - row_f64_value(&wat_rows[0], "Q")).abs() > 1.0,
+        "multi-OFE WAT publication must not alias QOFE to local Q"
     );
 }
 
@@ -737,6 +840,12 @@ loss = "output/H1.loss.json"
 
     let manifest =
         fs::read_to_string(&report.manifest_path).expect("manifest file should be readable");
+    assert!(
+        manifest.contains(
+            "\"publication_ofe_policy\": \"single-row-canonicalized-hillslope-aggregate\""
+        ),
+        "single-OFE manifest should remain on aggregate publication policy: {manifest}"
+    );
     assert!(
         manifest.contains("\"contributor_ofe_count\": 1"),
         "manifest missing MOFE04 contributor OFE count marker: {manifest}"
@@ -996,6 +1105,83 @@ fn write_three_ofe_management(path: &Path) {
     ))
     .expect("three-OFE management fixture should be readable");
     fs::write(path, payload).expect("three-OFE management fixture should be writable");
+}
+
+fn read_parquet_rows(path: &Path) -> Vec<Row> {
+    let file = File::open(path).unwrap_or_else(|error| {
+        panic!(
+            "parquet output should be readable ({}): {error}",
+            path.display()
+        )
+    });
+    let reader = SerializedFileReader::new(file).unwrap_or_else(|error| {
+        panic!("parquet output should parse ({}): {error}", path.display())
+    });
+    reader
+        .get_row_iter(None)
+        .unwrap_or_else(|error| {
+            panic!(
+                "parquet row iterator should open ({}): {error}",
+                path.display()
+            )
+        })
+        .map(|row| {
+            row.unwrap_or_else(|error| {
+                panic!("parquet row should decode ({}): {error}", path.display())
+            })
+        })
+        .collect()
+}
+
+fn row_index(row: &Row, column_name: &str) -> usize {
+    row.get_column_iter()
+        .enumerate()
+        .find(|(_, (name, _))| name.as_str() == column_name)
+        .map_or_else(
+            || panic!("missing required parquet column '{column_name}'"),
+            |(index, _)| index,
+        )
+}
+
+fn row_i32_value(row: &Row, column_name: &str) -> i32 {
+    let index = row_index(row, column_name);
+    if let Ok(value) = row.get_byte(index) {
+        return i32::from(value);
+    }
+    if let Ok(value) = row.get_short(index) {
+        return i32::from(value);
+    }
+    if let Ok(value) = row.get_int(index) {
+        return value;
+    }
+    if let Ok(value) = row.get_long(index) {
+        return i32::try_from(value)
+            .unwrap_or_else(|_| panic!("column '{column_name}' value {value} out of i32 range"));
+    }
+    panic!("column '{column_name}' does not decode as integer");
+}
+
+fn row_f64_value(row: &Row, column_name: &str) -> f64 {
+    let index = row_index(row, column_name);
+    if let Ok(value) = row.get_double(index) {
+        return value;
+    }
+    if let Ok(value) = row.get_float(index) {
+        return f64::from(value);
+    }
+    if let Ok(value) = row.get_int(index) {
+        return f64::from(value);
+    }
+    if let Ok(value) = row.get_short(index) {
+        return f64::from(value);
+    }
+    if let Ok(value) = row.get_long(index) {
+        let value = i32::try_from(value).unwrap_or_else(|_| {
+            panic!("column '{column_name}' value {value} out of f64-safe range")
+        });
+        return f64::from(value);
+    }
+    panic!("column '{column_name}' does not decode as numeric");
 }
 
 fn runner_execution_lock() -> &'static Mutex<()> {

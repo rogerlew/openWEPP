@@ -1,8 +1,30 @@
 # gate results
 
-Status: M-E4-REDO executed; non-tautological internal WB13 identity validation closed; package active for M-F publication
+Status: M-F executed-hold; public per-OFE row shape landed, surface `UpStrmQ`
+producer still blocked; package active for M-F-REDO
 
 Evidence mode: Ran + Static
+
+## M-F scoped acceptance gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Public per-OFE row cardinality | PASS | H1/H6/H9/H11 row counts equal `day_count * contributor_ofe_count`; H1 has 10960 rows for 2192 days * 5 OFEs. |
+| Manifest per-OFE publication metadata | PASS | Manifests report `publication_ofe_policy=per-ofe-dynamic-water-balance-state`, `storage_lineage_policy=per-ofe-dynamic-wb-state`, grouped first/last OFE keys, and matching row counts. |
+| No `QOFE=Q` alias | PASS | Direct WAT audit reports max `abs(QOFE-Q)` greater than 129 mm on each smoke run. |
+| Surface handoff identity | STRUCTURAL PASS / ACCEPTANCE FAIL | `current UpStrmQ == previous QOFE` residual is `0.0`, but only because candidate surface carry is zero. |
+| No downstream `UpStrmQ=0` | FAIL | H1/H6/H9/H11 all have `max_upstrmq=0.0` and zero downstream nonzero `UpStrmQ` rows. |
+| Lateral handoff identity | PASS | `current SubRIn == previous latqcc` residual is `0.0` with nonzero downstream `SubRIn` rows observed. |
+| Local semantic comparisons, no comparator subagent | FAIL | Row keys align, but value families fail: H1 `UpStrmQ` fail count `730`, max diff `342.5`; H6/H9/H11 also fail. |
+| Single-OFE anchor | PARTIAL | Single-OFE code path stayed aggregate and focused/full Rust tests pass; substrate byte-identity anchor was not rerun because the multi-OFE surface gate failed. |
+| `cargo fmt --check` | PASS | Final post-edit run. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Final post-edit run. |
+| `cargo test --workspace` | PASS | Full Rust closure loop passed. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| `git diff --check` | PASS | Final whitespace check passed. |
+| Line count governance | WARN | `openwepp-cli-watershed.rs` is 2012 lines and `scheduler_seed_and_runtime.rs` is 2115 lines; both crossed the 2000-line warning threshold but remain below 3000. |
+
+Detailed evidence: `m-f-per-ofe-wat-publication-evidence.md`.
 
 ## M-E4-REDO scoped acceptance gates
 

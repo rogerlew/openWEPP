@@ -45,7 +45,9 @@ use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
     SidecarRequirement, adapt_sidecar_bindings,
 };
-use openwepp_summary_accumulator::{SummaryScalarSurface, Wb13DailyWaterBalanceRow};
+use openwepp_summary_accumulator::{
+    SummaryScalarSurface, WB13_PER_OFE_PUBLICATION_POLICY_SYMBOL, Wb13DailyWaterBalanceRow,
+};
 use openwepp_topology::{TopologyGraph, validate_pre_execution_topology};
 use serde::{Deserialize, Serialize};
 
@@ -269,6 +271,18 @@ struct DailyExecutionResult {
     coupling_vectors: HillslopeCouplingVectorProvenance,
     wb13_row: SimulationOwnedWb13Row,
     runtime_surface: HillslopeWritebackSurface,
+    kernel_phase_message_ids: Vec<String>,
+    erod14_wave2_kernel_status_seen: bool,
+    hphys0245_trace_rows: Vec<Hphys0245TraceRow>,
+}
+
+#[derive(Debug)]
+struct PersistentDailyExecutionResult {
+    scheduler_outcome_class: SchedulerOutcomeClass,
+    scheduler_status_message_id: String,
+    coupling_vectors: HillslopeCouplingVectorProvenance,
+    runtime_surface: HillslopeWritebackSurface,
+    internal_wb13_collection: DailyInternalPerOfeWb13Collection,
     kernel_phase_message_ids: Vec<String>,
     erod14_wave2_kernel_status_seen: bool,
     hphys0245_trace_rows: Vec<Hphys0245TraceRow>,
@@ -1169,7 +1183,8 @@ pub fn execute_hillslope_run(
     let mut runtime_surface = static_runtime_surface;
     let mut runtime_swe_publication_state_m =
         require_runtime_surface_scalar(&runtime_surface, "snow.runtime_swe")?;
-    let mut wb13_rows = Vec::with_capacity(climate_span.days.len());
+    let mut wb13_rows =
+        Vec::with_capacity(climate_span.days.len() * contributor_ofe_count.max(1));
     let mut coupling_vectors = None;
     let mut erod14_wave2_kernel_status_seen = false;
     let mut scheduler_outcome_class = SchedulerOutcomeClass::Completed;
@@ -1198,8 +1213,11 @@ pub fn execute_hillslope_run(
 
         let simulation_year =
             simulation_year_from_calendar_year(day_projection.year, climate_span.first_day.year)?;
+        previous_climate_symbols.clear();
+        previous_climate_symbols.extend(climate_surface.state_surface.keys().cloned());
+
         if let Some(lane_state) = persistent_lane_state.as_mut() {
-            let daily_internal_wb13 = execute_persistent_scheduler_kernel_lifecycle(
+            let persistent_result = execute_persistent_scheduler_kernel_lifecycle(
                 lane_state,
                 &climate_surface,
                 &stale_climate_symbols,
@@ -1229,54 +1247,80 @@ pub fn execute_hillslope_run(
                 }
                 other => other,
             })?;
-            per_ofe_internal_wb13_summary.observe_day(&daily_internal_wb13)?;
-        }
-
-        previous_climate_symbols.clear();
-        previous_climate_symbols.extend(climate_surface.state_surface.keys().cloned());
-        runtime_surface =
-            crate::hillslope::intake_lane_setup::merge_runtime_surfaces(runtime_surface, climate_surface);
-        let execution_result = execute_scheduler_kernel_lifecycle(
-            runtime_surface,
-            SchedulerLifecycleContext {
-                run_name: &runfile.run_name,
-                execution_lane: lane_context.lane,
-                publication_area_m2,
-                simulation_year,
-                sim_day_index: day_index + 1,
-                calendar_day: day_projection,
-                runtime_swe_before_m: runtime_swe_publication_state_m,
-                hphys0245_trace_config: hphys0245_trace_config.as_ref(),
-            },
-        )
-        .map_err(|error| match error {
-            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
-                HillslopeCliError::RuntimeSurfaceFailure {
-                    surface,
-                    detail: format!(
-                        "{detail} [sim_day_index={}, calendar_year={}, julian_day={}]",
-                        day_index + 1,
-                        day_projection.year,
-                        day_projection.julian_day
-                    ),
-                }
+            per_ofe_internal_wb13_summary.observe_day(
+                &persistent_result.internal_wb13_collection,
+            )?;
+            runtime_swe_publication_state_m = persistent_result
+                .internal_wb13_collection
+                .outlet_row()
+                .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "per_ofe_internal_wb13",
+                    detail: format!("{SIMPIPE_GUARD_ID} internal WB13 collection has no outlet row"),
+                })?
+                .wb13_row
+                .snow_water
+                / 1_000.0;
+            persistent_result
+                .internal_wb13_collection
+                .append_publication_rows_to(&mut wb13_rows);
+            runtime_surface = persistent_result.runtime_surface;
+            scheduler_outcome_class = persistent_result.scheduler_outcome_class;
+            scheduler_status_message_id = persistent_result.scheduler_status_message_id;
+            coupling_vectors = Some(persistent_result.coupling_vectors);
+            for message_id in persistent_result.kernel_phase_message_ids {
+                kernel_phase_message_ids.insert(message_id);
             }
-            other => other,
-        })?;
-        runtime_surface = execution_result.runtime_surface;
-        runtime_swe_publication_state_m = execution_result.wb13_row.wb13_row.snow_water / 1_000.0;
-        scheduler_outcome_class = execution_result.scheduler_outcome_class;
-        scheduler_status_message_id = execution_result.scheduler_status_message_id;
-        coupling_vectors = Some(execution_result.coupling_vectors);
-        for message_id in execution_result.kernel_phase_message_ids {
-            kernel_phase_message_ids.insert(message_id);
+            erod14_wave2_kernel_status_seen |=
+                persistent_result.erod14_wave2_kernel_status_seen;
+            hphys0245_trace_rows.extend(persistent_result.hphys0245_trace_rows);
+        } else {
+            runtime_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
+                runtime_surface,
+                climate_surface,
+            );
+            let execution_result = execute_scheduler_kernel_lifecycle(
+                runtime_surface,
+                SchedulerLifecycleContext {
+                    run_name: &runfile.run_name,
+                    execution_lane: lane_context.lane,
+                    publication_area_m2,
+                    simulation_year,
+                    sim_day_index: day_index + 1,
+                    calendar_day: day_projection,
+                    runtime_swe_before_m: runtime_swe_publication_state_m,
+                    hphys0245_trace_config: hphys0245_trace_config.as_ref(),
+                },
+            )
+            .map_err(|error| match error {
+                HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                    HillslopeCliError::RuntimeSurfaceFailure {
+                        surface,
+                        detail: format!(
+                            "{detail} [sim_day_index={}, calendar_year={}, julian_day={}]",
+                            day_index + 1,
+                            day_projection.year,
+                            day_projection.julian_day
+                        ),
+                    }
+                }
+                other => other,
+            })?;
+            runtime_surface = execution_result.runtime_surface;
+            runtime_swe_publication_state_m =
+                execution_result.wb13_row.wb13_row.snow_water / 1_000.0;
+            scheduler_outcome_class = execution_result.scheduler_outcome_class;
+            scheduler_status_message_id = execution_result.scheduler_status_message_id;
+            coupling_vectors = Some(execution_result.coupling_vectors);
+            for message_id in execution_result.kernel_phase_message_ids {
+                kernel_phase_message_ids.insert(message_id);
+            }
+            erod14_wave2_kernel_status_seen |= execution_result.erod14_wave2_kernel_status_seen;
+            hphys0245_trace_rows.extend(execution_result.hphys0245_trace_rows);
+            wb13_rows.push(execution_result.wb13_row);
         }
-        erod14_wave2_kernel_status_seen |= execution_result.erod14_wave2_kernel_status_seen;
-        hphys0245_trace_rows.extend(execution_result.hphys0245_trace_rows);
-        wb13_rows.push(execution_result.wb13_row);
     }
 
-    let executed_day_count = wb13_rows.len();
+    let executed_day_count = climate_span.days.len();
     let coupling_vectors = coupling_vectors.ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
         surface: "execution_provenance",
         detail: format!(

@@ -1,8 +1,43 @@
 # implementation test evidence
 
-Status: M-E4-REDO complete for non-tautological internal identity validation; package active for M-F
+Status: M-F executed-hold; public row shape tested, surface carry acceptance
+blocked
 
 Evidence mode: Ran + Static
+
+## M-F ran
+
+M-F wired public WAT/WB13 publication to internal per-OFE records, then held on
+the surface `UpStrmQ` acceptance gate.
+
+- `cargo fmt --check`
+  - PASS.
+- `cargo clippy --workspace --all-targets -- -D warnings`
+  - PASS.
+- `cargo test --workspace`
+  - PASS.
+- `cargo deny check`
+  - PASS; `advisories ok, bans ok, licenses ok, sources ok`.
+- `git diff --check`
+  - PASS.
+- Focused/publication coverage inside the full workspace run
+  - PASS:
+    `cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows`.
+  - PASS:
+    `watershed_cli_mf_accepts_valid_per_ofe_publication_metadata`.
+  - PASS:
+    `mofe01_mf_current_architecture_requires_public_per_ofe_wat_publication`.
+- Required local H smoke without comparator subagent
+  - PASS runtime execution: H1/H6/H9/H11 exited zero under
+    `/tmp/openwepp_mofe01_mf`.
+  - PASS row cardinality/provenance: H1/H6/H9/H11 row counts equal
+    `day_count * contributor_ofe_count`.
+  - FAIL acceptance: all four smoke runs report `max_upstrmq=0.0` and zero
+    downstream nonzero `UpStrmQ` rows.
+  - FAIL semantic comparison: row keys align, but `UpStrmQ`, `SubRIn`, and
+    `QOFE` value comparisons remain failing.
+
+Detailed evidence: `m-f-per-ofe-wat-publication-evidence.md`.
 
 ## M-E4-REDO ran
 

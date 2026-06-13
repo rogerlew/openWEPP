@@ -53,6 +53,14 @@ impl PerOfeInternalWb13RunSummary {
 }
 
 impl DailyInternalPerOfeWb13Collection {
+    pub(super) fn append_publication_rows_to(&self, rows: &mut Vec<SimulationOwnedWb13Row>) {
+        rows.extend(self.records.iter().map(|record| record.row.clone()));
+    }
+
+    pub(super) fn outlet_row(&self) -> Option<&SimulationOwnedWb13Row> {
+        self.records.last().map(|record| &record.row)
+    }
+
     fn from_sequence_report(
         sequence_report: &OfeLaneSequenceExecutionReport,
         lane_areas_m2: &[f64],
@@ -90,11 +98,14 @@ impl DailyInternalPerOfeWb13Collection {
             let row = build_simulation_owned_wb13_row_for_ofe(
                 &lane_report.kernel_report.writeback_surface,
                 *lane_area_m2,
-                context.simulation_year,
-                context.sim_day_index,
-                context.calendar_day,
-                ofe_id,
-                lane_report.upstream_transfer_input.upstrmq,
+                Wb13OfePublicationContext {
+                    simulation_year: context.simulation_year,
+                    sim_day_index: context.sim_day_index,
+                    calendar_day: context.calendar_day,
+                    ofe_id,
+                    upstream_runon_m: lane_report.upstream_transfer_input.upstrmq,
+                    qofe_override_m: Some(lane_report.current_transfer_output.qofe),
+                },
             )?;
 
             records.push(InternalPerOfeWb13Record {

@@ -1,8 +1,46 @@
 # owned file manifest
 
-Status: updated through M-E4-REDO
+Status: updated through M-F executed-hold
 
 Evidence mode: Static
+
+## M-F edited files
+
+Rust implementation:
+
+- `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`
+- `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs`
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_publication.rs`
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs`
+- `crates/openwepp-summary-accumulator/src/lib.rs`
+
+Tests:
+
+- `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs`
+- `tests/integration/cli03_runner_contract_derived_tests.rs`
+- `tests/integration/mofe01_per_ofe_state_contract.rs`
+
+Work-package files/artifacts:
+
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/package.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/m-f-per-ofe-wat-publication-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/README.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/gate-results.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/disposition.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/worker-handoff.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/implementation-test-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-test-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/kernel-profile-compliance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/line-count-governance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/owned-file-manifest.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/required-reading-map.md`
+
+No science contract, dependency, legacy, external-authority suite, or `/wc1`
+substrate file was edited in M-F.
 
 ## M-E4-REDO edited files
 

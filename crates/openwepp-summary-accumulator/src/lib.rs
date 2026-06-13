@@ -53,6 +53,7 @@ pub const WB13_H5_WAT_COLUMNS: [&str; 25] = [
 ];
 
 const WB13_NON_NEGATIVE_ROUNDOFF_TOLERANCE: f64 = 1.0e-12;
+pub const WB13_PER_OFE_PUBLICATION_POLICY_SYMBOL: &str = "wb13_per_ofe_publication_policy";
 
 /// Summary accumulation windows.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -274,7 +275,10 @@ impl Wb13DailyWaterBalanceRow {
         let profile_fc_store = require_output_symbol(surface, "ProfileFCStore", Some(0.0), None)?;
         let profile_wp_store = require_output_symbol(surface, "ProfileWPStore", Some(0.0), None)?;
 
-        if (qofe - q).abs() > 1.0e-9 {
+        let per_ofe_publication_policy = surface
+            .value(WB13_PER_OFE_PUBLICATION_POLICY_SYMBOL)
+            .is_some_and(|value| value >= 0.5);
+        if !per_ofe_publication_policy && (qofe - q).abs() > 1.0e-9 {
             return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
                 symbol: "QOFE".to_string(),
                 value: qofe,

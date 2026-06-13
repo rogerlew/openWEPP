@@ -143,6 +143,7 @@ fn runtime_source_tokens(repo_root: &str) -> Vec<String> {
         "crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs",
         "crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs",
         "crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_publication.rs",
+        "crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs",
         "crates/openwepp-hillslope-output/src/manifest.rs",
         "crates/openwepp-hillslope-output/src/hillslope_wat.rs",
         "crates/openwepp-hillslope-output/src/writers.rs",
@@ -341,5 +342,34 @@ fn mofe01_me4_redo_current_architecture_requires_non_tautological_internal_wb13_
     assert!(
         has_non_tautological_internal_wb13_checks,
         "M-E4-REDO red gate: internal WB13 identity checks must use pre-day storage and adjacent sent/received transfer operands, not row aliases or self-built transfer inputs"
+    );
+}
+
+#[test]
+fn mofe01_mf_current_architecture_requires_public_per_ofe_wat_publication() {
+    let repo_root = env!("CARGO_MANIFEST_DIR");
+    let tokens = runtime_source_tokens(repo_root);
+
+    let has_public_per_ofe_wat_publication = [
+        "PersistentDailyExecutionResult",
+        "append_publication_rows_to",
+        "outlet_row",
+        "MF_PUBLICATION_OFE_POLICY",
+        "MF_STORAGE_LINEAGE_POLICY",
+        "MF_PER_OFE_STATE_POLICY",
+        "MF_IDENTITY_STATUS",
+        "per_ofe_dynamic_water_balance_state",
+        "per_ofe_dynamic_wb_state",
+        "per_ofe_record_count",
+        "per_ofe_expected_record_count",
+        "row_count",
+        "sim_day_index_monotonic",
+    ]
+    .iter()
+    .all(|required_token| has_token(&tokens, required_token));
+
+    assert!(
+        has_public_per_ofe_wat_publication,
+        "M-F red gate: current publication path must publish internal per-OFE WB13 records into public WAT/WB13 rows with per-OFE policy, storage lineage, and row-cardinality manifest guards"
     );
 }

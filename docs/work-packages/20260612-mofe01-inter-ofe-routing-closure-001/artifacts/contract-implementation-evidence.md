@@ -1,8 +1,35 @@
 # contract implementation evidence
 
-Status: M-E4-REDO implemented against amended SC-WATBAL-001 authority
+Status: M-F implemented public per-OFE row shape; acceptance held on
+contract-backed surface carry producer
 
 Evidence mode: Ran + Static
+
+## M-F
+
+M-F consumes the M-E0/M-E4-REDO authority without amending canonical contracts.
+The implementation publishes public WAT/WB13 rows from internal per-OFE records
+instead of splitting aggregate WB13 rows:
+
+- multi-OFE runner paths append rows from `DailyInternalPerOfeWb13Collection`;
+- aggregate single-OFE publication remains unchanged;
+- publication provenance validates `day_count * contributor_ofe_count` row
+  cardinality, grouped OFE keys, and per-OFE storage lineage;
+- per-OFE `QOFE` uses the current transfer output source instead of the
+  aggregate `Q` alias;
+- watershed contributor validation checks the new per-OFE metadata shape.
+
+The contract implementation remains incomplete because the authoritative
+surface export producer still publishes zero current surface carry on real
+multi-OFE runs. M-F-REDO must close that producer before the M-F publication
+transition can be accepted.
+
+Validation:
+
+- `cargo clippy --workspace --all-targets -- -D warnings`: PASS.
+- `cargo test --workspace`: PASS.
+- H1/H6/H9/H11 smoke row cardinality/provenance: PASS.
+- H1/H6/H9/H11 surface `UpStrmQ` acceptance: FAIL.
 
 ## M-E4-REDO
 

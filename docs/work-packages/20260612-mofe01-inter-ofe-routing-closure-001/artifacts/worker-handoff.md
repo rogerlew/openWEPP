@@ -1,10 +1,42 @@
 # worker handoff
 
-Status: M-E4-REDO complete; M-F publication flip next
+Status: M-F executed-hold; M-F-REDO surface carry producer next
 
 Evidence mode: Ran + Static
 
 ## Summary
+
+M-F landed public per-OFE WAT/WB13 row shape but did not close publication
+acceptance:
+
+- Multi-OFE runs now publish one public WAT row per OFE per day from internal
+  per-OFE WB13 records.
+- Manifests report `publication_ofe_policy=per-ofe-dynamic-water-balance-state`,
+  `storage_lineage_policy=per-ofe-dynamic-wb-state`, matching per-OFE row
+  counts, grouped first/last OFE keys, and monotonic row ordering.
+- `QOFE` no longer aliases aggregate/local `Q`; direct smoke audit reports max
+  `abs(QOFE-Q)` greater than 129 mm for H1/H6/H9/H11.
+- Required H smoke ran under `/tmp/openwepp_mofe01_mf`; H1/H6/H9/H11 all exited
+  zero.
+- Blocking finding: all four smoke runs still have `max_upstrmq=0.0` and zero
+  downstream nonzero `UpStrmQ` rows. The surface handoff residual of `0.0` is
+  zero-on-zero equality, not conservation evidence.
+- Lateral handoff is active: downstream nonzero `SubRIn` rows are observed and
+  `current SubRIn == previous latqcc` residuals close.
+- Local semantic comparisons ran without comparator subagent using
+  `tools/owcmp/semantic_wat.py --candidate-year-offset 1999`; row keys align,
+  but value comparisons fail on `UpStrmQ`, `SubRIn`, and `QOFE`.
+- Final Rust gates passed: `cargo fmt --check`, `cargo clippy --workspace
+  --all-targets -- -D warnings`, `cargo test --workspace`, `cargo deny check`,
+  and `git diff --check`.
+- Line-count governance warning: touched `openwepp-cli-watershed.rs` and
+  `scheduler_seed_and_runtime.rs` are above 2000 lines but below 3000.
+
+Next increment: M-F-REDO must implement the authoritative current surface
+export producer feeding per-OFE `QOFE`/`UpStrmQ`. Do not repair by synthesizing
+`UpStrmQ` or `QOFE` in the WAT writer from local `Q`.
+
+## M-E4-REDO summary
 
 M-E4-REDO completed the non-tautological internal per-OFE WB13 identity
 increment:
@@ -33,10 +65,8 @@ increment:
   (28/28 PASS at
   `/tmp/openwepp_mofe01_me4_redo_single_anchors/single-ofe-anchor-cmp.tsv`).
 
-Next increment: M-F should build public WB13/WAT rows from the internal
-per-OFE records and update provenance/summary guards. M-F must also retire
-the transitional aggregate-publication lifecycle so the doubled multi-OFE path
-does not become permanent.
+M-F has since built the public row shape and exposed the current surface carry
+producer blocker.
 
 ## M-E3 summary
 

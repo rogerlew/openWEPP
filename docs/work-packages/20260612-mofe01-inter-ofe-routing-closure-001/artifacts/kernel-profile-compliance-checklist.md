@@ -1,8 +1,35 @@
 # kernel profile compliance checklist
 
-Status: checked through M-E4-REDO
+Status: checked through M-F executed-hold
 
 Evidence mode: Ran + Static
+
+## M-F checklist
+
+- Production edits: yes; public per-OFE WB13/WAT publication from internal
+  per-OFE records, per-OFE `QOFE` source override, publication provenance, and
+  watershed manifest validation.
+- Science-contract edits: none.
+- Test edits: yes; focused M-F public row-shape tests and source guard.
+- Typed errors in production: new publication/cardinality/key failures map to
+  typed `HillslopeCliError::RuntimeSurfaceFailure` paths; watershed manifest
+  failures remain typed string diagnostics for the CLI validator.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: unchanged.
+- Runtime publication paths: multi-OFE public WAT row shape changed; acceptance
+  held because the current surface carry producer still emits zero `UpStrmQ`.
+
+Validation:
+
+- `cargo fmt --check`: PASS.
+- `cargo clippy --workspace --all-targets -- -D warnings`: PASS.
+- `cargo test --workspace`: PASS.
+- `cargo deny check`: PASS.
+- `git diff --check`: PASS.
+- Required H1/H6/H9/H11 runtime smoke: PASS execution and row cardinality.
+- Surface `UpStrmQ` acceptance: FAIL; M-F-REDO required.
 
 ## M-E4-REDO checklist
 

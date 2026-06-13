@@ -1,8 +1,29 @@
 # line count governance checklist
 
-Status: checked through M-E4-REDO
+Status: checked through M-F executed-hold
 
 Evidence mode: Ran
+
+## M-F
+
+Ran `wc -l` over touched Rust files after the final clippy refactor.
+
+| File group | Lines | Disposition |
+| --- | ---: | --- |
+| `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs` | 2012 | WARN; crossed 2000-line warning threshold, below 3000. |
+| `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs` | 1567 | OK. |
+| `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs` | 1726 | OK. |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs` | 357 | OK. |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_publication.rs` | 527 | OK. |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs` | 2115 | WARN; crossed 2000-line warning threshold, below 3000. |
+| `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs` | 1394 | OK. |
+| `crates/openwepp-summary-accumulator/src/lib.rs` | 1222 | OK. |
+| `tests/integration/cli03_runner_contract_derived_tests.rs` | 1266 | OK. |
+| `tests/integration/mofe01_per_ofe_state_contract.rs` | 375 | OK. |
+
+No touched Rust source file crossed the 3000-line non-exempt threshold.
+M-F-REDO should prefer extraction over further growth in
+`scheduler_seed_and_runtime.rs` and `openwepp-cli-watershed.rs`.
 
 ## M-E4-REDO
 

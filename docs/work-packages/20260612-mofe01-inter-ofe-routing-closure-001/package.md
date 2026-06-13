@@ -1,6 +1,7 @@
 # MOFE01 — Inter-OFE Routing Closure (rung 3)
 
-Status: active; M-E4-REDO executed (non-tautological internal identity validation closed); M-F publication pending
+Status: active; M-F executed-hold (public per-OFE row shape landed; surface
+`UpStrmQ` producer still blocked); M-F-REDO required before M-G/M-H
 
 Package type: staged implementation/closure package (FDHP01 execution shape:
 scope-then-staged-increments, per-increment conservation hard stops)

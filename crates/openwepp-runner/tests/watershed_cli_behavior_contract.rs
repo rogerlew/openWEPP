@@ -767,6 +767,44 @@ fn watershed_cli_mofe05_accepts_valid_multiofe_metadata_and_emits_outputs() {
     assert_all_watershed_outputs_exist(&output_dir);
 }
 
+#[test]
+fn watershed_cli_mf_accepts_valid_per_ofe_publication_metadata() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("ws_cli_mf_valid_per_ofe_manifest");
+    write_hbp_fixture_with_nofe(
+        run_dir.join("H1.hbp"),
+        1,
+        3,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile_with_manifest(&run_dir, &[1], true);
+    write_hillslope_manifest_per_ofe_fixture(run_dir.join("H1.manifest.json"), 3, 3_600.0, 6);
+    prepare_output_guard_fixture(&run_dir);
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        output.status.success(),
+        "watershed CLI should accept M-F per-OFE publication metadata; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("CLIWAT-E-037"),
+        "valid M-F per-OFE publication metadata should not trigger manifest guard codes, observed: {stderr}"
+    );
+    assert_all_watershed_outputs_exist(&output_dir);
+}
+
 fn build_watershed_fixture_dir(prefix: &str) -> PathBuf {
     let timestamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -928,6 +966,53 @@ fn write_hillslope_manifest_fixture(path: PathBuf, contributor_ofe_count: usize,
 "#
     );
     fs::write(path, payload).expect("hillslope manifest fixture should be writable");
+}
+
+fn write_hillslope_manifest_per_ofe_fixture(
+    path: PathBuf,
+    contributor_ofe_count: usize,
+    area_m2: f64,
+    row_count: usize,
+) {
+    let carry_active = contributor_ofe_count > 1;
+    let day_count = row_count / contributor_ofe_count;
+    let payload = format!(
+        r#"{{
+  "schema": "openwepp-hillslope-run-manifest-v1",
+  "wb13_publication": {{
+    "publication_ofe_policy": "per-ofe-dynamic-water-balance-state",
+    "contributor_ofe_count": {contributor_ofe_count},
+    "area_policy": "sum-ofe-geometry-area",
+    "publication_area_m2": {area_m2},
+    "storage_lineage_policy": "per-ofe-dynamic-wb-state",
+    "per_ofe_state_policy": "published-per-ofe-wb13-records",
+    "transfer_identity_status": "pass-published-per-ofe-wb13-records",
+    "per_element_identity_status": "pass-published-per-ofe-wb13-records",
+    "aggregate_identity_status": "pass-published-per-ofe-wb13-records",
+    "row_count": {row_count},
+    "per_ofe_record_count": {row_count},
+    "per_ofe_expected_record_count": {row_count},
+    "per_ofe_internal_day_count": {day_count},
+    "sim_day_index_monotonic": true,
+    "first_row_key": {{
+      "ofe": 1
+    }},
+    "last_row_key": {{
+      "ofe": {contributor_ofe_count}
+    }}
+  }},
+  "mofe_hourly_carry": {{
+    "policy": "baseline-wathour-24-slot-copy-forward",
+    "active": {carry_active},
+    "substep_count": 24,
+    "required_arrays": ["ui_SUrunf", "ui_SCrunf", "ui_LfUrf", "ui_LfCrf"],
+    "upstream_carry_total_m": 0.0,
+    "current_carry_total_m": 0.0
+  }}
+}}
+"#
+    );
+    fs::write(path, payload).expect("hillslope per-OFE manifest fixture should be writable");
 }
 
 fn write_hillslope_manifest_fixture_missing_count(path: PathBuf) {

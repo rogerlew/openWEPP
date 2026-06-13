@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: updated through M-E4-REDO completion
+Status: updated through M-F executed-hold
 
 Evidence and disposition artifacts for
 `20260612-mofe01-inter-ofe-routing-closure-001`.
@@ -35,6 +35,9 @@ Evidence and disposition artifacts for
 - `m-e4-internal-wb13-record-evidence.md`: M-E4 internal per-OFE WB13 record
   evidence, M-E4-REDO non-tautological identity closure, local comparison
   results, and publication-boundary disposition.
+- `m-f-per-ofe-wat-publication-evidence.md`: M-F public per-OFE WAT
+  publication evidence, including row-cardinality/provenance success and the
+  blocking zero surface `UpStrmQ` producer finding.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`, `contract-test-implementation-evidence.md`,
   `pre-implementation-contract-gate.md`, `implementation-test-evidence.md`:

@@ -40,6 +40,16 @@ struct HbpHeaderInput {
 
 const WB13_DEEP_PERCOLATION_ROUNDOFF_TOLERANCE_M: f64 = 1.0e-11;
 
+#[derive(Clone, Copy)]
+struct Wb13OfePublicationContext<'a> {
+    simulation_year: i32,
+    sim_day_index: usize,
+    calendar_day: &'a ClimateDayProjection,
+    ofe_id: u16,
+    upstream_runon_m: f64,
+    qofe_override_m: Option<f64>,
+}
+
 fn build_hbp_output(
     output_pass: &Path,
     wb13_rows: &[SimulationOwnedWb13Row],
@@ -749,11 +759,14 @@ fn build_simulation_owned_wb13_row(
     build_simulation_owned_wb13_row_for_ofe(
         runtime_surface,
         publication_area_m2,
-        simulation_year,
-        sim_day_index,
-        calendar_day,
-        1,
-        0.0,
+        Wb13OfePublicationContext {
+            simulation_year,
+            sim_day_index,
+            calendar_day,
+            ofe_id: 1,
+            upstream_runon_m: 0.0,
+            qofe_override_m: None,
+        },
     )
 }
 
@@ -761,34 +774,41 @@ fn build_simulation_owned_wb13_row(
 fn build_simulation_owned_wb13_row_for_ofe(
     runtime_surface: &HillslopeWritebackSurface,
     publication_area_m2: f64,
-    simulation_year: i32,
-    sim_day_index: usize,
-    calendar_day: &ClimateDayProjection,
-    ofe_id: u16,
-    upstream_runon_m: f64,
+    context: Wb13OfePublicationContext<'_>,
 ) -> Result<SimulationOwnedWb13Row, HillslopeCliError> {
-    if simulation_year <= 0 {
+    if context.simulation_year <= 0 {
         return Err(wb13_simout_failure(format!(
-            "simulation-year key must be >= 1, observed {simulation_year}"
+            "simulation-year key must be >= 1, observed {}",
+            context.simulation_year
         )));
     }
-    if ofe_id == 0 {
+    if context.ofe_id == 0 {
         return Err(wb13_simout_failure("WB13 OFE id must be >= 1"));
     }
-    if !upstream_runon_m.is_finite() || upstream_runon_m < 0.0 {
+    if !context.upstream_runon_m.is_finite() || context.upstream_runon_m < 0.0 {
         return Err(wb13_simout_failure(format!(
-            "UpStrmQ source must be finite and >= 0.0, observed {upstream_runon_m}"
+            "UpStrmQ source must be finite and >= 0.0, observed {}",
+            context.upstream_runon_m
+        )));
+    }
+    if context
+        .qofe_override_m
+        .is_some_and(|value| !value.is_finite() || value < 0.0)
+    {
+        return Err(wb13_simout_failure(format!(
+            "QOFE source must be finite and >= 0.0, observed {:?}",
+            context.qofe_override_m
         )));
     }
 
-    let calendar_year = calendar_day.year;
-    let month = calendar_day.month;
-    let day_of_month = calendar_day.day_of_month;
+    let calendar_year = context.calendar_day.year;
+    let month = context.calendar_day.month;
+    let day_of_month = context.calendar_day.day_of_month;
     let julian_day = day_of_year(calendar_year, month, day_of_month)?;
-    if julian_day != calendar_day.julian_day {
+    if julian_day != context.calendar_day.julian_day {
         return Err(wb13_simout_failure(format!(
             "calendar day projection mismatch: computed julian {julian_day} differs from projected {}",
-            calendar_day.julian_day
+            context.calendar_day.julian_day
         )));
     }
 
@@ -997,6 +1017,7 @@ fn build_simulation_owned_wb13_row_for_ofe(
     let tile = tile_m * 1_000.0;
     let qd = qd_source_m * 1_000.0;
     let sub_r_in = sub_r_in_m * 1_000.0;
+    let qofe = context.qofe_override_m.map_or(q, |value| value * 1_000.0);
     if (qd - (latqcc + tile)).abs() > 1.0e-6 {
         return Err(wb13_simout_failure(format!(
             "Qd coupling closure violated: Qd ({qd}) must equal latqcc + Tile ({})",
@@ -1014,20 +1035,28 @@ fn build_simulation_owned_wb13_row_for_ofe(
         ("Es", es),
         ("Er", er),
         ("Dp", dp),
-        ("UpStrmQ", upstream_runon_m * 1_000.0),
+        ("UpStrmQ", context.upstream_runon_m * 1_000.0),
         ("SubRIn", sub_r_in),
         ("latqcc", latqcc),
         ("Total-Soil", total_soil),
         ("frozwt", frozwt),
         ("frdp", frdp_mm),
         ("Snow-Water", snow_water),
-        ("QOFE", q),
+        ("QOFE", qofe),
         ("Tile", tile),
         ("Irr", irrigation_mm),
         ("Area", area),
         (
             "wb11_et_seed_branch_evappm",
             if evappm_pmet_branch { 1.0 } else { 0.0 },
+        ),
+        (
+            WB13_PER_OFE_PUBLICATION_POLICY_SYMBOL,
+            if context.qofe_override_m.is_some() {
+                1.0
+            } else {
+                0.0
+            },
         ),
         ("SoilWaterTotal", soil_water_total),
         ("ProfileDepth", profile_depth_mm),
@@ -1040,9 +1069,9 @@ fn build_simulation_owned_wb13_row_for_ofe(
     })?;
 
     let wb13_row = Wb13DailyWaterBalanceRow::from_surface(
-        ofe_id,
+        context.ofe_id,
         julian_day,
-        simulation_year,
+        context.simulation_year,
         &row_surface,
     )
     .map_err(|error| wb13_simout_failure(format!("failed building WB13 row: {error}")))?;
@@ -1067,9 +1096,10 @@ fn build_simulation_owned_wb13_row_for_ofe(
             "water-year out of i16 range for WB13 publication: {water_year}"
         ))
     })?;
-    let sim_day_index_i32 = i32::try_from(sim_day_index).map_err(|_| {
+    let sim_day_index_i32 = i32::try_from(context.sim_day_index).map_err(|_| {
         wb13_simout_failure(format!(
-            "sim_day_index out of i32 range for WB13 publication: {sim_day_index}"
+            "sim_day_index out of i32 range for WB13 publication: {}",
+            context.sim_day_index
         ))
     })?;
 

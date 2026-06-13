@@ -1,6 +1,6 @@
 # Required Reading Map — MOFE01
 
-Status: updated through M-E4-REDO complete
+Status: updated through M-F executed-hold
 
 Agents executing or authoring the package maintain this as a living control
 artifact (tiers, rationale, read timing); a stale map is a governance defect.
@@ -48,3 +48,4 @@ artifact (tiers, rationale, read timing); a stale map is a governance defect.
 | 2026-06-13 | Codex | Executed M-E3; reread M-E2 evidence, M-D M-E3 scope, runner daily lifecycle, scheduler persistent/sequence seams, WB13 publication provenance, package/work-package/science/crate/test governance, and current comparison posture. |
 | 2026-06-13 | Codex | Executed M-E4; reread M-E3 evidence, M-D M-E4 scope, runner persistent lifecycle, scheduler sequence reports, WB13 internal/publication paths, package/work-package/science/crate/test governance, and current comparison posture. |
 | 2026-06-13 | Codex | Executed M-E4-REDO; reread the Claude blocking review, M-E4-REDO staged requirements, `SC-WATBAL-001`, internal WB13 identity code, scheduler persistence seam, focused tests, work-package evidence, and comparison posture. |
+| 2026-06-13 | Codex | Executed M-F; reread the staged M-F scope, M-E4-REDO evidence, WB13 publication/provenance paths, summary accumulator guards, watershed manifest validation, local comparison tooling, and work-package governance before recording executed-hold. |

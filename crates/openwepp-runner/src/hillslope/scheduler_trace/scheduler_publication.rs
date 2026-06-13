@@ -149,33 +149,30 @@ pub(super) fn build_simimpl10_coupling_vector_provenance(
 }
 
 pub(super) const MOFE04_PUBLICATION_OFE_POLICY: &str = "single-row-canonicalized-hillslope-aggregate";
+pub(super) const MF_PUBLICATION_OFE_POLICY: &str = "per-ofe-dynamic-water-balance-state";
 pub(super) const MOFE04_PUBLICATION_AREA_POLICY: &str = "sum-ofe-geometry-area";
 pub(super) const HPHYS0255_STORAGE_LINEAGE_POLICY: &str = "single-runtime-wb11-state";
+pub(super) const MF_STORAGE_LINEAGE_POLICY: &str = "per-ofe-dynamic-wb-state";
 pub(super) const ME1_PER_OFE_STATE_POLICY: &str = "shadow-static-slices-only";
 pub(super) const ME1_IDENTITY_STATUS: &str = "not-run-shadow-state-only";
 pub(super) const ME3_PER_OFE_STATE_POLICY: &str = "persistent-dynamic-state-shadow";
 pub(super) const ME3_IDENTITY_STATUS: &str = "not-run-dynamic-state-only";
 pub(super) const ME4_PER_OFE_STATE_POLICY: &str = "internal-per-ofe-wb13-records";
 pub(super) const ME4_IDENTITY_STATUS: &str = "pass-internal-wb13-records";
+pub(super) const MF_PER_OFE_STATE_POLICY: &str = "published-per-ofe-wb13-records";
+pub(super) const MF_IDENTITY_STATUS: &str = "pass-published-per-ofe-wb13-records";
 
-pub(super) fn build_wb13_publication_provenance(
+fn validate_wb13_publication_common_inputs(
     rows: &[SimulationOwnedWb13Row],
     contributor_ofe_count: usize,
     static_per_ofe_slice_count: usize,
     publication_area_m2: f64,
-    per_ofe_dynamic_state_executed: bool,
-    per_ofe_internal_wb13_summary: Option<&PerOfeInternalWb13RunSummary>,
-) -> Result<HillslopeWb13PublicationProvenance, HillslopeCliError> {
-    let Some(first_row) = rows.first() else {
+) -> Result<(), HillslopeCliError> {
+    if rows.is_empty() {
         return Err(wb13_simout_failure(
             "WB13 publication requires at least one executed-day row",
         ));
-    };
-    let Some(last_row) = rows.last() else {
-        return Err(wb13_simout_failure(
-            "WB13 publication requires at least one executed-day row",
-        ));
-    };
+    }
     if rows.iter().any(|row| row.sim_day_index <= 0) {
         return Err(wb13_simout_failure(
             "sim_day_index must be positive for every WB13 publication row",
@@ -196,30 +193,183 @@ pub(super) fn build_wb13_publication_provenance(
             "publication_area_m2 must be finite and > 0.0, observed {publication_area_m2}"
         )));
     }
+    Ok(())
+}
+
+fn validate_per_ofe_wb13_publication_rows(
+    rows: &[SimulationOwnedWb13Row],
+    contributor_ofe_count: usize,
+    summary: &PerOfeInternalWb13RunSummary,
+) -> Result<(), HillslopeCliError> {
+    if rows.len() != summary.record_count {
+        return Err(wb13_simout_failure(format!(
+            "per-OFE WB13 publication row_count {} must equal internal record_count {}",
+            rows.len(),
+            summary.record_count
+        )));
+    }
+    if rows.len() != summary.expected_record_count {
+        return Err(wb13_simout_failure(format!(
+            "per-OFE WB13 publication row_count {} must equal expected_record_count {}",
+            rows.len(),
+            summary.expected_record_count
+        )));
+    }
+    let expected_published_rows =
+        summary
+            .day_count
+            .checked_mul(contributor_ofe_count)
+            .ok_or_else(|| {
+                wb13_simout_failure("per-OFE WB13 publication expected row count overflowed usize")
+            })?;
+    if rows.len() != expected_published_rows {
+        return Err(wb13_simout_failure(format!(
+            "per-OFE WB13 publication row_count {} must equal day_count {} * contributor_ofe_count {}",
+            rows.len(),
+            summary.day_count,
+            contributor_ofe_count
+        )));
+    }
+    validate_per_ofe_wb13_publication_chunks(rows, contributor_ofe_count)
+}
+
+fn validate_per_ofe_wb13_publication_chunks(
+    rows: &[SimulationOwnedWb13Row],
+    contributor_ofe_count: usize,
+) -> Result<(), HillslopeCliError> {
+    for (chunk_index, chunk) in rows.chunks(contributor_ofe_count).enumerate() {
+        if chunk.len() != contributor_ofe_count {
+            return Err(wb13_simout_failure(format!(
+                "per-OFE WB13 publication chunk {chunk_index} has {} rows; expected {contributor_ofe_count}",
+                chunk.len()
+            )));
+        }
+        let sim_day_index = chunk[0].sim_day_index;
+        for (ofe_index, row) in chunk.iter().enumerate() {
+            let expected_ofe = u16::try_from(ofe_index + 1).map_err(|_| {
+                wb13_simout_failure(format!(
+                    "per-OFE WB13 expected OFE {} is outside u16 domain",
+                    ofe_index + 1
+                ))
+            })?;
+            if row.sim_day_index != sim_day_index {
+                return Err(wb13_simout_failure(format!(
+                    "per-OFE WB13 publication chunk {chunk_index} mixes sim_day_index {} and {}",
+                    sim_day_index, row.sim_day_index
+                )));
+            }
+            if row.wb13_row.ofe != expected_ofe {
+                return Err(wb13_simout_failure(format!(
+                    "per-OFE WB13 publication chunk {chunk_index} expected OFE {expected_ofe}, observed {}",
+                    row.wb13_row.ofe
+                )));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn validate_aggregate_wb13_publication_rows(
+    rows: &[SimulationOwnedWb13Row],
+) -> Result<(), HillslopeCliError> {
     if rows.iter().any(|row| row.wb13_row.ofe != 1) {
         return Err(wb13_simout_failure(
             "MOFE04 canonicalized publication policy requires WB13 OFE key = 1 for all rows",
         ));
     }
-    let sim_day_index_monotonic = rows
-        .windows(2)
-        .all(|window| window[1].sim_day_index > window[0].sim_day_index);
-    let per_ofe_record_count = per_ofe_internal_wb13_summary
-        .map_or(0usize, |summary| summary.record_count);
-    let per_ofe_state_policy = if per_ofe_internal_wb13_summary.is_some() {
+    Ok(())
+}
+
+fn wb13_publication_sim_day_index_monotonic(
+    rows: &[SimulationOwnedWb13Row],
+    publishes_per_ofe_records: bool,
+) -> bool {
+    if publishes_per_ofe_records {
+        rows.windows(2).all(|window| {
+            window[1].sim_day_index > window[0].sim_day_index
+                || (window[1].sim_day_index == window[0].sim_day_index
+                    && window[1].wb13_row.ofe > window[0].wb13_row.ofe)
+        })
+    } else {
+        rows.windows(2)
+            .all(|window| window[1].sim_day_index > window[0].sim_day_index)
+    }
+}
+
+fn wb13_per_ofe_state_policy(
+    publishes_per_ofe_records: bool,
+    per_ofe_dynamic_state_executed: bool,
+    per_ofe_internal_wb13_summary: Option<&PerOfeInternalWb13RunSummary>,
+) -> &'static str {
+    if publishes_per_ofe_records {
+        MF_PER_OFE_STATE_POLICY
+    } else if per_ofe_internal_wb13_summary.is_some() {
         ME4_PER_OFE_STATE_POLICY
     } else if per_ofe_dynamic_state_executed {
         ME3_PER_OFE_STATE_POLICY
     } else {
         ME1_PER_OFE_STATE_POLICY
-    };
-    let identity_status = if per_ofe_internal_wb13_summary.is_some() {
+    }
+}
+
+fn wb13_identity_status(
+    publishes_per_ofe_records: bool,
+    per_ofe_dynamic_state_executed: bool,
+    per_ofe_internal_wb13_summary: Option<&PerOfeInternalWb13RunSummary>,
+) -> &'static str {
+    if publishes_per_ofe_records {
+        MF_IDENTITY_STATUS
+    } else if per_ofe_internal_wb13_summary.is_some() {
         ME4_IDENTITY_STATUS
     } else if per_ofe_dynamic_state_executed {
         ME3_IDENTITY_STATUS
     } else {
         ME1_IDENTITY_STATUS
-    };
+    }
+}
+
+pub(super) fn build_wb13_publication_provenance(
+    rows: &[SimulationOwnedWb13Row],
+    contributor_ofe_count: usize,
+    static_per_ofe_slice_count: usize,
+    publication_area_m2: f64,
+    per_ofe_dynamic_state_executed: bool,
+    per_ofe_internal_wb13_summary: Option<&PerOfeInternalWb13RunSummary>,
+) -> Result<HillslopeWb13PublicationProvenance, HillslopeCliError> {
+    validate_wb13_publication_common_inputs(
+        rows,
+        contributor_ofe_count,
+        static_per_ofe_slice_count,
+        publication_area_m2,
+    )?;
+    let first_row = &rows[0];
+    let last_row = &rows[rows.len() - 1];
+    let publishes_per_ofe_records =
+        contributor_ofe_count > 1 && per_ofe_internal_wb13_summary.is_some();
+    if publishes_per_ofe_records {
+        let Some(summary) = per_ofe_internal_wb13_summary else {
+            return Err(wb13_simout_failure(
+                "per-OFE WB13 publication requires internal WB13 summary",
+            ));
+        };
+        validate_per_ofe_wb13_publication_rows(rows, contributor_ofe_count, summary)?;
+    } else {
+        validate_aggregate_wb13_publication_rows(rows)?;
+    }
+    let sim_day_index_monotonic =
+        wb13_publication_sim_day_index_monotonic(rows, publishes_per_ofe_records);
+    let per_ofe_record_count =
+        per_ofe_internal_wb13_summary.map_or(0usize, |summary| summary.record_count);
+    let per_ofe_state_policy = wb13_per_ofe_state_policy(
+        publishes_per_ofe_records,
+        per_ofe_dynamic_state_executed,
+        per_ofe_internal_wb13_summary,
+    );
+    let identity_status = wb13_identity_status(
+        publishes_per_ofe_records,
+        per_ofe_dynamic_state_executed,
+        per_ofe_internal_wb13_summary,
+    );
     let per_ofe_internal_day_count =
         per_ofe_internal_wb13_summary.map_or(0usize, |summary| summary.day_count);
     let per_ofe_expected_record_count =
@@ -239,7 +389,12 @@ pub(super) fn build_wb13_publication_provenance(
             WB13_REPLAY_CANDIDATE_SURFACE_WAT.to_string(),
             WB13_REPLAY_CANDIDATE_SURFACE_PASS.to_string(),
         ],
-        publication_ofe_policy: MOFE04_PUBLICATION_OFE_POLICY.to_string(),
+        publication_ofe_policy: if publishes_per_ofe_records {
+            MF_PUBLICATION_OFE_POLICY
+        } else {
+            MOFE04_PUBLICATION_OFE_POLICY
+        }
+        .to_string(),
         contributor_ofe_count,
         static_per_ofe_slice_count,
         per_ofe_state_policy: per_ofe_state_policy.to_string(),
@@ -250,7 +405,12 @@ pub(super) fn build_wb13_publication_provenance(
         per_element_identity_status: identity_status.to_string(),
         aggregate_identity_status: identity_status.to_string(),
         area_policy: MOFE04_PUBLICATION_AREA_POLICY.to_string(),
-        storage_lineage_policy: HPHYS0255_STORAGE_LINEAGE_POLICY.to_string(),
+        storage_lineage_policy: if publishes_per_ofe_records {
+            MF_STORAGE_LINEAGE_POLICY
+        } else {
+            HPHYS0255_STORAGE_LINEAGE_POLICY
+        }
+        .to_string(),
         per_ofe_internal_day_count,
         per_ofe_expected_record_count,
         transfer_identity_max_abs_mm,

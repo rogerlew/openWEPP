@@ -211,6 +211,10 @@ output. None tests `INV-WATBAL-096`. Before M-F:
 
 ## Increment M-F — per-OFE WAT publication
 
+Status: executed-hold 2026-06-13; row cardinality/publication provenance
+landed, but surface run-on publication remains blocked by zero current surface
+carry on real multi-OFE runs.
+
 - On real per-OFE state (M-E), publish per-OFE rows: no `UpStrmQ=0` for
   downstream OFEs, no `QOFE=Q` aliasing, one row per OFE per day or an
   explicitly contracted equivalent; handoff-to-printed-precision checks
@@ -218,6 +222,61 @@ output. None tests `INV-WATBAL-096`. Before M-F:
   genuine publication of existing state, not synthesis.
 - Gates: scope red tests; the three identities still at noise; single-OFE
   anchor; full loop.
+
+M-F execution produced real public per-OFE row shape:
+
+- H1/H6/H9/H11 emit `day_count * contributor_ofe_count` public WAT rows.
+- Manifest provenance reports
+  `publication_ofe_policy=per-ofe-dynamic-water-balance-state`,
+  `storage_lineage_policy=per-ofe-dynamic-wb-state`, and grouped first/last
+  OFE keys.
+- `QOFE` is no longer the aggregate `Q` alias in per-OFE publication.
+
+M-F does **not** close because the surface export producer is still hollow:
+direct WAT audits show `max_upstrmq=0.0` and zero downstream nonzero `UpStrmQ`
+rows for H1/H6/H9/H11. The apparent surface handoff residual of `0.0` is
+zero-on-zero equality, not conservation evidence. Lateral `SubRIn` handoff has
+nonzero rows and closes, so the blocker is localized to current surface carry
+publication. Detailed evidence:
+`m-f-per-ofe-wat-publication-evidence.md`.
+
+## Increment M-F-REDO — per-OFE record distinctness + surface export closure
+
+**Root cause deepened by Claude review (2026-06-13):** the M-F blocker is not
+only the surface export producer. On the H1 M-F cohort, **every hydrology
+column is identical across all 5 OFEs** (`Es`/`Ep`/`Dp`/`SoilWaterTotal`/`P`
+identical; `Q` ≤2 distinct values/day; `QOFE=0`, `UpStrmQ=0`) — the published
+per-OFE records are **aggregate-duplicated clones**, not distinct per-OFE
+hydrology. `UpStrmQ=0` is a symptom. M-E4-REDO's genuine identities passed on
+the clones because internal consistency cannot detect duplication — the legacy
+comparator caught what conservation could not (see
+`m-f-per-ofe-wat-publication-evidence.md` Claude review). M-F-REDO must
+root-cause the duplication, and a latent M-E3 question (are the lanes actually
+differentiated, or does M-F publish from the aggregate path?) is in scope.
+
+M-F-REDO owns the M-F blocker before M-G/M-H may proceed:
+
+- **First: trace the per-OFE record source** (read the seam, cite lines). Do
+  the M-E3 lane records carry distinct per-OFE values pre-publication, or does
+  M-F read aggregate? Fix the root: either M-E3 lane differentiation (static
+  per-OFE soil/slope/cover slices applied; run-on delivered to the lane kernel)
+  or the M-F publication source.
+- **Anti-clone gate** (structural analog of the M-E4-REDO anti-tautology TOL):
+  multi-OFE published `Q`/`Es`/`Ep`/`Dp`/`SoilWaterTotal` must be **distinct
+  across OFEs** on a routed hillslope — pin it in `SC-WATBAL-001`/
+  `SC-SYSTEM-001`; all-OFE-identical hydrology hard-fails.
+- Implement a contract-backed current surface export producer feeding
+  `MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT` and per-OFE `QOFE` from the
+  authoritative runoff/surface-routing state, not from public WAT synthesis.
+- Add red tests requiring downstream nonzero `UpStrmQ` on active multi-OFE
+  surface-runoff days and proving `current UpStrmQ == previous QOFE` with
+  nonzero operands.
+- Preserve M-F row cardinality/provenance, `QOFE != Q`, and lateral handoff.
+- Preserve M-E4-REDO non-tautological internal WB13 identities.
+- Rerun H1/H6/H9/H11 local comparisons without the comparator subagent if the
+  Spark quota remains exhausted, and rerun the single-OFE anchor.
+- Gate: no zero-on-zero surface handoff acceptance; exact `0.0` residual is
+  valid only when paired with evidence of nonzero active surface transfer rows.
 
 ## Increment M-G — erosion `qin`/sediment coupling decision (scope §"M-D erosion qin and sediment coupling")
 
@@ -235,7 +294,7 @@ output. None tests `INV-WATBAL-096`. Before M-F:
 
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-C2|M-D|M-E|M-E4-REDO|M-F|M-G|M-H> of
+Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-C2|M-D|M-E|M-E4-REDO|M-F|M-F-REDO|M-G|M-H> of
 `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
 `mofe-routing-port-scope.md` (once it exists); the FDHP01 staged plan

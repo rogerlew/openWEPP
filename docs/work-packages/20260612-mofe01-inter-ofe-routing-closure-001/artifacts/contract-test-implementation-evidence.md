@@ -1,8 +1,32 @@
 # contract test implementation evidence
 
-Status: M-E4-REDO internal WB13 identity tests green
+Status: M-F publication tests green for row shape; acceptance held on surface
+carry producer
 
 Evidence mode: Ran + Static
+
+## M-F
+
+M-F adds public per-OFE publication coverage without weakening the M-E4-REDO
+identity tests:
+
+- `cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows`
+  - Asserts multi-OFE WAT output emits `days * nofe` rows, grouped OFE keys,
+    M-F manifest policy/storage markers, and `QOFE != Q`.
+- `watershed_cli_mf_accepts_valid_per_ofe_publication_metadata`
+  - Asserts watershed contributor manifest validation accepts the M-F per-OFE
+    metadata shape when counts and keys are coherent.
+- `mofe01_mf_current_architecture_requires_public_per_ofe_wat_publication`
+  - Source guard requiring the M-F publication policy and public per-OFE WAT
+    publication seam.
+
+Ran:
+
+- `cargo test --workspace`
+  - PASS; includes the three M-F coverage points above.
+
+Runtime acceptance remains held by the real-run `UpStrmQ` audit, not by missing
+test registration.
 
 ## M-E4-REDO
 
