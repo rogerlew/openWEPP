@@ -1,8 +1,20 @@
 # contract implementation evidence
 
-Status: M-B contract implementation complete
+Status: M-C held; M-B contract implementation complete
 
 Evidence mode: Ran + Static
+
+## M-C
+
+No contract edits were made in M-C. The increment reached a contract/design
+boundary: current `SC-WATBAL-001` still contains the older MOFE04 single-row
+aggregate publication policy, while the staged M-C scope requires per-OFE WAT
+semantics or an explicitly contracted equivalent.
+
+Changing that authority without adding a real per-OFE runtime state surface
+would only bless surrogate output synthesis, so the increment is held.
+
+## M-B
 
 M-B revised:
 

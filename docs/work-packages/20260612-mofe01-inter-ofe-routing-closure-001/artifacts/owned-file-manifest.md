@@ -1,8 +1,30 @@
 # owned file manifest
 
-Status: updated through M-B
+Status: updated through M-C
 
 Evidence mode: Static
+
+## M-C edited files
+
+Work-package artifacts only:
+
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/m-c-wat-publication-closure-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/gate-results.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/disposition.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/worker-handoff.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/implementation-test-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/pre-implementation-contract-gate.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-test-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/owned-file-manifest.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/line-count-governance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/kernel-profile-compliance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/required-reading-map.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/README.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_b.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_b.md`
 
 ## M-B edited files
 

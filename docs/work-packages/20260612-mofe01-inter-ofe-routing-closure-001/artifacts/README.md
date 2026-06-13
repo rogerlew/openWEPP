@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: scaffolded
+Status: updated through M-C executed-hold
 
 Evidence and disposition artifacts for
 `20260612-mofe01-inter-ofe-routing-closure-001`.
@@ -12,6 +12,8 @@ Evidence and disposition artifacts for
   behavior on the substrate (M-A).
 - `legacy-per-ofe-closure-calibration.md`: legacy's measured per-OFE-count
   closure defect — the comparator-trust calibration (M-A).
+- `m-c-wat-publication-closure-evidence.md`: M-C current-boundary publication
+  audit and executed-hold rationale.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`, `contract-test-implementation-evidence.md`,
   `pre-implementation-contract-gate.md`, `implementation-test-evidence.md`:

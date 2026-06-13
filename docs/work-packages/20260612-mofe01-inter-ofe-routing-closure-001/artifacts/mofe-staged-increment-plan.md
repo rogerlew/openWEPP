@@ -87,14 +87,51 @@ authority for seams/symbols/red tests):
   valid input); the three identities at noise on every executing surface;
   single-OFE anchor bit-identical; full Rust closure loop.
 
-## Increment M-C — per-OFE WAT publication closure (scope §"M-C WAT publication closure")
+## Increment restructure after M-C (2026-06-12) — the real physics increment is runtime-state, not publication
 
-- Per-OFE publication semantics pinned in contract (no `UpStrmQ = 0` for
-  downstream OFEs; no `QOFE = Q` aliasing; one row per OFE per day or an
-  explicitly contracted equivalent); handoff-to-printed-precision checks
-  against the M-A calibration (legacy-clean at 1–5, so usable here).
-- Gates: scope red tests; identities still at noise; single-OFE anchor;
-  full loop.
+M-C executed-hold with the correct verdict and surfaced the load-bearing
+architectural finding (M-C evidence + Claude addendum): openWEPP runs **one
+scheduler lifecycle per day over a 1-node topology** and **collapses the
+daily WB output writeback to aggregate global scalars** (`UpStrmQ=0`,
+`QOFE=Q`, single `OFE=1` row). MOFE machinery is real at the hourly-array
+level (per-OFE seeds, `mofe_hourly_carry_arrays`), but **no per-OFE daily WB
+output state is retained**. Synthesizing per-OFE rows from the aggregate
+would be surrogate physics (correctly refused).
+
+Re-framing: M-B = execution-unblock + **aggregate** hillslope closure (real,
+holds). The **per-element and transfer identities — the actual definition of
+routing closure — are still unproven** and unevaluable until per-OFE daily
+state exists. The increments are therefore reordered: the per-OFE runtime
+state increment comes BEFORE publication, because publication has nothing
+real to publish without it.
+
+## Increment M-C2 — per-OFE daily WB output state (runtime-state increment, the real MOFE physics)
+
+- **Scoping first (no production edit until the seam is read):** answer the
+  M-C open question — do the existing hourly carry arrays already produce
+  genuine per-OFE daily balances (then this is "retain + expose through the
+  writeback", narrower), or are per-OFE daily balances currently coupled so
+  that distinct per-element accumulation must be built (broader)? Read the
+  writeback and carry seams; cite lines.
+- Contract-first: pin per-OFE daily WB output state semantics and the
+  per-element + transfer identities as measurable surfaces.
+- Implement: retain distinct per-OFE daily WB output state through the
+  writeback (the topology/scheduler may need >1 node, or the writeback may
+  need per-OFE accumulation — the scoping decides). No surrogate synthesis.
+- Gates: per-element identity AND transfer identity (Σ run-off sent ≡ Σ
+  run-on received) measurable and at the noise floor on the 1–5 ladder;
+  aggregate identity unchanged; single-OFE anchor bit-identical; full loop.
+  This is where "routing closure" is first actually proven.
+
+## Increment M-C3 — per-OFE WAT publication
+
+- On real per-OFE state (M-C2), publish per-OFE rows: no `UpStrmQ=0` for
+  downstream OFEs, no `QOFE=Q` aliasing, one row per OFE per day or an
+  explicitly contracted equivalent; handoff-to-printed-precision checks
+  against the M-A calibration (legacy-clean at 1–5, so usable here). This is
+  now a genuine publication of existing state, not synthesis.
+- Gates: scope red tests; the three identities still at noise; single-OFE
+  anchor; full loop.
 
 ## Increment M-D — erosion `qin`/sediment coupling decision (scope §"M-D erosion qin and sediment coupling")
 
@@ -112,7 +149,7 @@ authority for seams/symbols/red tests):
 
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-D|M-E> of
+Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-C2|M-C3|M-D|M-E> of
 `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
 `mofe-routing-port-scope.md` (once it exists); the FDHP01 staged plan

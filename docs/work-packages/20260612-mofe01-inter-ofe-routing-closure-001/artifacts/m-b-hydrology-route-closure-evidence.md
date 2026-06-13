@@ -1,6 +1,6 @@
 # M-B hydrology route closure evidence
 
-Status: M-B executed; hydrology route closure green; package remains open for M-C publication closure
+Status: M-B executed; execution blocker retired; full identity acceptance incomplete
 
 Evidence mode: Ran + Static
 
@@ -28,7 +28,12 @@ Evidence mode: Ran + Static
 
 ## Disposition
 
-M-B retired the current valid-input fail-closed blocker identified in M-A: all 29 multi-OFE arboreal-dendrite surfaces now execute through the full 2192-day run. The local owcmp semantic failure is the expected M-C row-key/per-OFE WAT publication closure flag, not an M-B hydrology-route rejection.
+M-B retired the current valid-input fail-closed blocker identified in M-A: all
+29 multi-OFE arboreal-dendrite surfaces now execute through the full 2192-day
+run. This is execution-route progress, not full closure acceptance. The local
+owcmp semantic failure is the expected row-key/per-OFE WAT publication flag,
+and the transfer/true per-element identities remain unevidenced until a real
+per-OFE publication surface exists.
 
 ## Claude review addendum — independent conservation audit (2026-06-12)
 

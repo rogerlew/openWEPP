@@ -1,8 +1,26 @@
 # implementation test evidence
 
-Status: M-B implementation tests complete
+Status: M-C executed-hold; no implementation tests added
 
-Evidence mode: Ran
+Evidence mode: Ran + Static
+
+## M-C ran
+
+- Fresh H1-H36 CLI batch with `target/debug/openwepp-cli-hill --policy compat --legacy-sidecar-discovery`
+  - PASS; 36/36 exit code `0`.
+- Local owcmp H1-H36 semantic batch without comparator subagent
+  - PASS execution; semantic FAIL due structural per-OFE WAT publication mismatch.
+  - Ran locally under explicit operator direction because
+    GPT-5.3-Codex-Spark weekly quota was exhausted.
+- Direct parquet publication audit
+  - FAIL M-C red tests: all 29 multi-OFE surfaces still publish one `OFE=1`
+    row/day, `UpStrmQ=0`, and `QOFE=Q`.
+- Single-OFE anchor comparison to M-B
+  - PASS; H8/H15/H19/H20/H22/H23/H28 byte-identical for `.hbp`,
+    `.loss.json`, `.plot.parquet`, and `.wat.parquet`.
+
+No M-C production implementation or tests were added. The increment is held at
+the real per-OFE state boundary.
 
 ## M-B ran
 
@@ -18,6 +36,8 @@ Evidence mode: Ran
   - PASS; 36/36 exit code `0`.
 - Local owcmp H1-H36 semantic batch without comparator subagent
   - PASS execution; semantic FAIL due structural row-key/per-OFE WAT publication mismatch assigned to M-C.
+  - Ran locally under explicit operator direction because
+    GPT-5.3-Codex-Spark weekly quota was exhausted.
 
 ## M-A ran
 

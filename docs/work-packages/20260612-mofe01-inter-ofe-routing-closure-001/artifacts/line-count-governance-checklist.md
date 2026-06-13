@@ -1,8 +1,13 @@
 # line count governance checklist
 
-Status: checked through M-B
+Status: checked through M-C
 
 Evidence mode: Ran
+
+## M-C
+
+M-C edited work-package artifacts only. No Rust source line-count governance was
+triggered.
 
 ## M-B
 

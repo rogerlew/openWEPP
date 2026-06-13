@@ -1,8 +1,25 @@
 # kernel profile compliance checklist
 
-Status: checked for M-B implementation
+Status: checked through M-C
 
 Evidence mode: Ran + Static
+
+## M-C checklist
+
+- Production edits: none.
+- Typed errors: unchanged.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: unchanged.
+- Runtime publication paths: unchanged because current aggregate-only WB13/WAT
+  surface cannot support real per-OFE publication semantics.
+
+Validation:
+- Full Rust closure loop was not rerun for M-C because no production Rust,
+  contract, test, or dependency files were edited.
+- M-C output comparison and publication audit were run separately and are
+  recorded in `m-c-wat-publication-closure-evidence.md`.
 
 ## M-B checklist
 
@@ -11,7 +28,9 @@ Evidence mode: Ran + Static
 - Unsafe: none introduced.
 - Bounded canonicalization: top-layer saturation excess is relocated to the explicit current saturation carry under M-B contract authority; no silent default or mask was added.
 - Kernel math: limited to contract-pinned inter-OFE routing/carry plumbing and saturation excess conservation.
-- Runtime publication paths: updated to purge stale aggregate carry before MOFE hourly-array execution and publish separated `UpStrmQ`/`SubRIn` lineage.
+- Runtime carry paths: updated to purge stale aggregate carry before MOFE
+  hourly-array execution and preserve separated `UpStrmQ`/`SubRIn` lineage in
+  runtime state. WAT publication remains aggregate-only and is held in M-C.
 
 Validation:
 - `cargo clippy --workspace --all-targets -- -D warnings`: PASS.

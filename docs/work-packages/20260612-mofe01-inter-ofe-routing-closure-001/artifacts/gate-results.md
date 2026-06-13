@@ -1,8 +1,26 @@
 # gate results
 
-Status: M-B executed; hydrology gates green; M-C publication gate open
+Status: M-C executed-hold; execution green; publication and identity gates blocked
 
 Evidence mode: Ran + Static
+
+## M-C ran
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Fresh H1-H36 current batch | PASS execution | 36/36 exit code `0` under `/tmp/openwepp_mofe01_mc`; no production edits were made during M-C. |
+| Local owcmp H1-H36 semantic batch, no comparator subagent | PASS execution, FAIL semantic | Operator explicitly directed local comparison because GPT-5.3-Codex-Spark weekly quota was exhausted. `execution_verdict=PASS`; `semantic_verdict=FAIL`; `semantic_pass_count=0/36`; `structural_row_key_failures=350720`; first divergent H1 key `[1,1,2000]`. |
+| M-C direct publication audit | FAIL | All 29 multi-OFE surfaces still publish a single `OFE=1` row/day, `UpStrmQ=0`, `QOFE=Q`, and `publication_ofe_policy=single-row-canonicalized-hillslope-aggregate`. |
+| H1 day-1 five-row publication red test | FAIL | Candidate H1 day 1 publishes only `OFE=1`; legacy-compatible M-C lane requires five OFE rows or a contracted equivalent per-OFE surface. |
+| Downstream handoff printed-precision red test | BLOCKED | No downstream OFE rows are emitted, so current `UpStrmQ == previous QOFE` and current `SubRIn == previous latqcc` cannot be observed on WAT output. |
+| Single-OFE anchor comparison | PASS | H8/H15/H19/H20/H22/H23/H28 byte-identical to M-B outputs for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`. |
+| Full three-identity acceptance | BLOCKED | Aggregate annual identity remains at noise on M-B smoke representatives, but transfer and true per-element identities require real per-OFE publication. |
+| Dual review | PASS with accepted findings | Review A found M-B overclaim and missing comparator-subagent override disclosure; Review B found missing override disclosure in implementation evidence and stale reading-map status. Findings accepted and fixed. |
+| Dual verification | PASS | Verification A found low wording/status cleanup items that were fixed; Verification B reported no findings. |
+| Full Rust closure loop | NOT RUN | M-C made no production Rust, science-contract, dependency, or test edits. |
+| `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --format plain` | PASS | 27 files validated, 0 errors, 0 warnings. |
+
+Detailed evidence: `m-c-wat-publication-closure-evidence.md`.
 
 ## M-B ran
 
@@ -40,5 +58,5 @@ Detailed evidence: `m-b-hydrology-route-closure-evidence.md`.
 | `cargo clippy --workspace --all-targets -- -D warnings` | M-A made documentation/evidence edits only; no production Rust edits. |
 | `cargo test --workspace` | M-A made documentation/evidence edits only; no production Rust edits. |
 | `cargo deny check` | M-A made documentation/evidence edits only; no dependency edits. |
-| `bash tools/release/check_authority_suite_antievasion.sh` | No external-authority suite posture, cohort fixture binding, or required-case binding was edited by M-A or M-B. |
+| `bash tools/release/check_authority_suite_antievasion.sh` | No external-authority suite posture, cohort fixture binding, or required-case binding was edited by M-A, M-B, or M-C. |
 | `cargo test --test auth11_required_suite_obligation_guards_contract` | Same anti-evasion non-trigger as above; the full workspace test did include this target and it passed. |
