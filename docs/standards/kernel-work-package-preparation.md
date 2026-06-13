@@ -52,6 +52,11 @@ requirement, not optional package style guidance.
 - Status (`queued`), objective, rationale, included/excluded scope, explicit
   deliverables, dependencies, intended write set, phase plan, exit criteria,
   and security-impact gate.
+- Exit criteria must obey the Gate Evidence Non-Deferral Rule (canonical
+  statement: `docs/work-packages/AGENTS.md`): every gate that determines
+  package/phase/increment completion must be measurable and evidenced inside
+  that same package/phase/increment. If evidence requires a later increment,
+  encode the current increment as a hold boundary, not as completable.
 - For DC-ExecPlans, encode the Correction Authority Envelope, conversion rule,
   seven-gate bar, `HOLD`-legitimacy boundaries, and defect-shaped handoff.
 - Explicitly encode autonomous execution intent: the package must contain enough
@@ -63,6 +68,9 @@ requirement, not optional package style guidance.
   4. production code edits.
 - Explicitly require dual reviews, finding disposition, and verification that no
   review findings remain undispositioned before final package disposition.
+- Explicitly require reviews and verifications to check gate legitimacy, not
+  just artifact presence: an unmet required gate cannot be deferred into later
+  work while the current package/phase/increment is marked complete.
 - If dual review/verification, comparator execution, or other package-required
   work depends on delegated agents, explicitly authorize subagent
   spawning/delegation. Name the role(s), scope, expected compact outputs, and
@@ -138,6 +146,11 @@ requirement, not optional package style guidance.
 - Kickoff prompt must instruct autonomous progression through the package phase
   plan and artifact updates through disposition without asking the user for
   "next steps" unless blocked.
+- Kickoff prompt must state that a phase/increment may be marked complete only
+  when all of its own required gates have direct current evidence. If a required
+  gate depends on later work, the agent must stop at `HOLD` / `executed-hold`
+  with the blocker named; it may not relabel the missing evidence as future
+  scope after execution begins.
 - Kickoff prompt must include an explicit end-to-end execution statement (use
   `Autonomy:` line) for the declared scope.
 - Kickoff prompt must include a `Subagent authorization:` line. Use `none` when

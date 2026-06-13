@@ -27,6 +27,28 @@
 5. Update artifacts truthfully as work proceeds; label `Static:` vs `Ran:` evidence.
 6. Complete dual independent reviews, explicit finding disposition, dual verification, line-count governance, and final disposition before closure.
 
+## Gate Evidence Non-Deferral Rule
+- A package, phase, or staged increment is complete only when every required
+  exit criterion and gate in its own scope has direct evidence in the current
+  artifact set.
+- If a required gate can be proven only by a later phase/increment, the current
+  phase is not complete. It must be marked `HOLD` / `executed-hold` with the
+  later dependency named as the blocker.
+- Do not reclassify an unmet current gate as "next increment scope" after
+  execution has started. Allowed alternatives are:
+  1. execute the missing evidence in the current scope,
+  2. amend the package/plan before implementation with explicit review that the
+     gate is no longer current-scope acceptance, or
+  3. hold with a named blocker and a defect-shaped follow-on.
+- Gate tables must classify each required criterion as `PASS`, `FAIL`,
+  `BLOCKED`, or `NOT RUN`; any `FAIL`, `BLOCKED`, or unjustified `NOT RUN`
+  prevents `complete` disposition.
+- Review and verification artifacts must check this rule explicitly. A review
+  that verifies artifact presence but not gate legitimacy is incomplete.
+- Handoff language such as "lands in the next increment" is valid only for work
+  that was not a current required gate. If it was a current required gate, that
+  phrase must be paired with a hold disposition and blocker rationale.
+
 ## Subagent Delegation Authorization
 - Work packages that require delegated review, verification, comparator execution, or parallel agent work must explicitly authorize subagent spawning/delegation in `package.md` and the active kickoff prompt.
 - Use direct wording: `Subagent authorization: this package explicitly authorizes spawning/delegating to <role> subagents for <scope>; expected outputs are <artifacts>; write access is <read-only|bounded write-set>.`
@@ -38,6 +60,10 @@
 - Add or update `docs/work-packages/README.md` so intent is discoverable.
 - Scaffold `package.md`, `prompts/active/`, `prompts/archived/`, and `artifacts/` with queued placeholders.
 - Encode status, objective, rationale, included/excluded scope, deliverables, dependencies, intended write set, phase plan, exit criteria, and security-impact gate.
+- Encode exit criteria so each required gate is measurable inside the package or
+  explicitly declared as a hold boundary before work starts. Do not author
+  staged plans where an increment's required gate depends on a later increment's
+  evidence while still allowing the earlier increment to close as complete.
 - Encode explicit subagent authorization when package-required work depends on delegated reviewers, verifiers, comparator runners, or other role agents.
 - Require dual reviews with finding disposition: `accepted`, `rejected`, `deferred`, or `follow-up`.
 - Require `.rs` line-count governance: 2000+ lines is `WARN`; 3000+ non-exempt files require refactor before closure.
@@ -57,6 +83,8 @@
 
 ## Validation Checklist
 - Package-specific gates from `package.md`.
+- Gate evidence non-deferral: each required current-scope gate has current
+  direct evidence, or the package/phase is held with a named blocker.
 - Required Rust closure loop when implementation or mechanical refactor scope requires it.
 - Doc-path integrity checks when moving documentation or required-reading lists.
 - Source-level anti-evasion guards when touching external-authority suite posture, cohort fixtures, or required-case bindings.
@@ -65,6 +93,8 @@
 ## Common Pitfalls
 - Do not close a package while accepted review findings remain unfixed or undispositioned.
 - Do not mark gates as run when they were reasoned about or partially executed.
+- Do not mark an increment complete when one of its required acceptance gates is
+  waiting on a later increment's evidence.
 - Do not use package artifacts to override canonical contract authority.
 - Do not split a package solely to defer a known in-envelope correction.
 

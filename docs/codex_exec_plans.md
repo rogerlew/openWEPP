@@ -16,6 +16,17 @@ must explain why no change is required. Deferred or follow-up findings must be
 linked from the disposition and worker-handoff artifacts. Package closure is
 blocked while any review finding is undispositioned.
 
+Every openWEPP work-package ExecPlan must also enforce the **Gate Evidence
+Non-Deferral Rule** (canonical statement: `docs/work-packages/AGENTS.md`).
+A package, phase, or staged increment may be marked complete only
+when every required current-scope exit criterion has direct evidence in the
+current artifact set. If required evidence depends on a later phase/increment,
+the current phase is `HOLD` / `executed-hold` with that dependency named as the
+blocker. Plans may narrow or move a gate only before implementation begins and
+with explicit artifact/review justification; after execution starts, an unmet
+current gate cannot be rebranded as "next increment scope." Reviews and
+verifications must check this rule explicitly.
+
 When an ExecPlan expects delegated reviewers, verifiers, comparator runners, or
 other role agents, it must explicitly authorize subagent spawning/delegation in
 both the package body and kickoff prompt. The authorization must name the
