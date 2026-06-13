@@ -1,10 +1,37 @@
 # worker handoff
 
-Status: M-E3 complete; M-E4 implementation next
+Status: M-E4 complete; M-E5 publication flip next
 
 Evidence mode: Ran + Static
 
 ## Summary
+
+M-E4 completed the internal per-OFE WB13 record increment:
+
+- Added internal per-OFE WB13 record production from the persisted lane state.
+- Closed the transfer input identity, per-element storage identity, and
+  aggregate internal-transfer cancellation identity before persistent state
+  replacement.
+- Multi-OFE manifests for H1/H6/H9/H11 now report
+  `per_ofe_state_policy=internal-per-ofe-wb13-records`,
+  `per_ofe_record_count == row_count * contributor_ofe_count`, identity pass
+  statuses, and all three residual maxima at `0.0` mm.
+- Public WB13/WAT publication remains aggregate-only:
+  `publication_ofe_policy=single-row-canonicalized-hillslope-aggregate`.
+- Required H smoke passed under `/tmp/openwepp_mofe01_me4_runtime_smoke`:
+  H1/H6/H9/H11 exited zero.
+- Local owcmp ran without comparator subagent per operator instruction:
+  execution PASS for H1/H6/H9/H11; semantic FAIL remains expected at the
+  aggregate-publication boundary with focus-column diffs zero.
+- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 are byte-identical to M-E2
+  outputs for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`.
+
+Next increment: M-E5 should build public WB13/WAT rows from the internal
+per-OFE records and update provenance/summary guards. M-E5 must also retire
+the transitional aggregate-publication lifecycle so the doubled multi-OFE path
+does not become permanent.
+
+## M-E3 summary
 
 M-E3 completed the dynamic state persistence increment:
 

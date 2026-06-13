@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: updated through M-E3 completion
+Status: updated through M-E4 completion
 
 Evidence and disposition artifacts for
 `20260612-mofe01-inter-ofe-routing-closure-001`.
@@ -31,6 +31,9 @@ Evidence and disposition artifacts for
   disposition.
 - `m-e3-dynamic-state-persistence-evidence.md`: M-E3 dynamic per-OFE state
   persistence evidence, real H smoke results, local comparison results, and
+  publication-boundary disposition.
+- `m-e4-internal-wb13-record-evidence.md`: M-E4 internal per-OFE WB13 record
+  evidence, identity residual audit, local comparison results, and
   publication-boundary disposition.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`, `contract-test-implementation-evidence.md`,

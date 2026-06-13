@@ -1,8 +1,39 @@
 # gate results
 
-Status: M-E3 complete for dynamic-state persistence scope; package active for M-E4+
+Status: M-E4 executed-hold (Claude review: identity checks tautological — see m-e4 evidence) for internal WB13 record scope; package active for M-E5
 
 Evidence mode: Ran + Static
+
+## M-E4 scoped acceptance gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| M-E4 scope boundary | PASS | Internal per-OFE WB13 records are produced from persisted lane state; public WAT publication remains aggregate-only for M-E5. |
+| Internal per-OFE WB13 records | PASS | Added authoritative internal records and run summary with transfer, per-element, and aggregate internal-transfer cancellation checks. |
+| Identity manifest audit | PASS | H1/H6/H9/H11 report record counts equal to `row_count * contributor_ofe_count` and all three residual maxima at `0.0` mm. |
+| `cargo fmt --check` | PASS | Post-edit run. |
+| `cargo test -p openwepp-runner mofe01_me4 -- --nocapture` | PASS | 3 focused M-E4 tests passed. |
+| `cargo test -p openwepp-runner mofe01 -- --nocapture` | PASS | 11 runner per-OFE tests passed. |
+| `cargo test --test mofe01_per_ofe_state_contract -- --nocapture` | PASS | 4 contract-derived tests passed. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Full workspace clippy passed. |
+| `cargo test --workspace` | PASS | Full Rust closure loop passed. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| `bash tools/release/check_authority_suite_antievasion.sh` | PASS | Authority suite anti-evasion checks passed. |
+| `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --format plain` | PASS | 35 files validated, 0 errors, 0 warnings. |
+| Required H smoke | PASS | H1/H6/H9/H11 exited zero under `/tmp/openwepp_mofe01_me4_runtime_smoke`; elapsed H1 `281s`, H6 `169s`, H9 `219s`, H11 `122s`. |
+| Local owcmp smoke command execution, no comparator subagent | PASS | User explicitly directed comparisons without the comparator subagent because GPT-5.3-Codex-Spark quota was exhausted; H1/H6/H9/H11 returned `execution_verdict=PASS`. |
+| Local owcmp smoke semantic comparison | FAIL | Expected publication-boundary fail: each smoke surface remained `semantic_pass_count=0/1`; focus columns all zero diff. |
+| Single-OFE anchor comparison | PASS | H8/H15/H19/H20/H22/H23/H28 byte-identical to M-E2 for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 pass). |
+| Line count governance | PASS | Touched Rust files remain below the 2000-line warning threshold; `scheduler.rs` is still a near-threshold watch item at 1994 lines. |
+
+## M-E4 residual future-boundary checks
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Public WAT row-cardinality gate | BLOCKED | Remains M-E5 publication-policy scope. |
+| Full H1-H36 replay | NOT RUN | The staged M-E4 gate names targeted identity fixtures; full-cohort replay under the doubled debug path remains M-E6/performance-hardening scope unless M-E5 requires it. |
+
+Detailed evidence: `m-e4-internal-wb13-record-evidence.md`.
 
 ## M-E3 scoped acceptance gates
 

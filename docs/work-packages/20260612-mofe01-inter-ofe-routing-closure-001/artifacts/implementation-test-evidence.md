@@ -1,8 +1,48 @@
 # implementation test evidence
 
-Status: M-E3 complete for dynamic-state persistence increment; package active for M-E4+
+Status: M-E4 complete for internal WB13 record increment; package active for M-E5
 
 Evidence mode: Ran + Static
+
+## M-E4 ran
+
+M-E4 implemented internal per-OFE WB13 records from persisted lane state. It
+did not flip public WAT publication.
+
+- `cargo fmt --check`
+  - PASS.
+- `cargo test -p openwepp-runner mofe01_me4 -- --nocapture`
+  - PASS; 3 focused M-E4 tests passed.
+- `cargo test -p openwepp-runner mofe01 -- --nocapture`
+  - PASS; 11 runner per-OFE tests passed.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - PASS; all four contract-derived tests passed.
+- `cargo clippy --workspace --all-targets -- -D warnings`
+  - PASS.
+- `cargo test --workspace`
+  - PASS.
+- `cargo deny check`
+  - PASS; `advisories ok, bans ok, licenses ok, sources ok`.
+- `bash tools/release/check_authority_suite_antievasion.sh`
+  - PASS.
+- `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --format plain`
+  - PASS; 35 files validated, 0 errors, 0 warnings.
+- Required local H smoke without comparator subagent
+  - PASS runtime execution: H1/H6/H9/H11 exited zero under
+    `/tmp/openwepp_mofe01_me4_runtime_smoke`.
+  - PASS manifest audit:
+    `/tmp/openwepp_mofe01_me4_runtime_smoke/m-e4-internal-wb13-audit.json`
+    reports internal record counts equal to `row_count * contributor_ofe_count`
+    and all identity residual maxima at `0.0` mm.
+  - PASS local owcmp command execution for H1/H6/H9/H11.
+  - FAIL semantic comparison as expected for unchanged aggregate WAT
+    publication: each smoke surface has `semantic_pass_count=0/1`; focus
+    columns have zero failures and max diff `0.0`.
+- Single-OFE anchors
+  - PASS: H8/H15/H19/H20/H22/H23/H28 are byte-identical to M-E2 outputs for
+    `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 pass).
+
+Detailed evidence: `m-e4-internal-wb13-record-evidence.md`.
 
 ## M-E3 ran
 

@@ -1,8 +1,33 @@
 # contract implementation evidence
 
-Status: M-E3 implemented against M-E0 contract authority
+Status: M-E4 implemented against M-E0 contract authority
 
 Evidence mode: Ran + Static
+
+## M-E4
+
+M-E4 consumes the M-E0/M-D contract authority without amending canonical
+contracts. The increment makes internal per-OFE WB13 records authoritative for
+the persisted OFE lane state:
+
+- each multi-OFE lane report is converted to an OFE-keyed internal WB13 row,
+- `UpStrmQ` and `SubRIn` are checked against the recorded upstream
+  `TransferInput`,
+- `SoilWaterTotal` is checked against `Total-Soil` per element,
+- internal sent/received transfers cancel in aggregate,
+- manifests expose internal record counts, expected counts, identity statuses,
+  and residual maxima.
+
+M-E4 deliberately preserves public aggregate WB13/WAT publication. M-E5 owns
+the public publication policy flip.
+
+Validation:
+
+- `cargo test -p openwepp-runner mofe01_me4 -- --nocapture`: PASS.
+- Required H smoke H1/H6/H9/H11: PASS runtime execution and identity manifest
+  audit.
+- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28: PASS byte-identical to M-E2
+  outputs.
 
 ## M-E3
 

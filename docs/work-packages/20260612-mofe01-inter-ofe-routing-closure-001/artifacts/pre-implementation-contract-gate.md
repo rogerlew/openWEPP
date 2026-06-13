@@ -1,8 +1,21 @@
 # pre implementation contract gate
 
-Status: satisfied through M-E3 dynamic-state persistence implementation
+Status: satisfied through M-E4 internal WB13 record implementation
 
 Evidence mode: Static
+
+M-E4 gate:
+- Reopened. M-E4 reread the package, staged plan, M-D architecture artifact,
+  M-E3 evidence, work-package governance, science-contract governance,
+  crate/test governance, runner persistent lifecycle, scheduler sequence
+  reports, WB13 publication provenance, and current comparison posture.
+- Satisfied for internal WB13 record production. M-E4 produces internal
+  OFE-keyed WB13 records from persisted lane state under the authority of
+  `SC-RUNOFFPART-001#INV-RUNOFFPART-029`,
+  `SC-WATBAL-001#INV-WATBAL-097`, and
+  `SC-SYSTEM-001#INV-SYSTEM-030`.
+- Held before public WAT publication flip. M-E4 deliberately preserves the
+  aggregate public publication policy; M-E5 owns public row cardinality.
 
 M-E3 gate:
 - Reopened. M-E3 reread the package, staged plan, M-D architecture artifact,

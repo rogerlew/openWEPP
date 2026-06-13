@@ -1,8 +1,26 @@
 # contract test implementation evidence
 
-Status: M-E3 dynamic persistence tests green
+Status: M-E4 internal WB13 record tests green
 
 Evidence mode: Ran + Static
+
+## M-E4
+
+M-E4 adds focused internal WB13 record tests in
+`crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs`:
+
+- `mofe01_me4_internal_wb13_records_close_transfer_and_storage_identities`,
+- `mofe01_me4_internal_wb13_records_reject_transfer_mismatch`,
+- `mofe01_me4_internal_wb13_records_reject_aggregate_cancellation_mismatch`.
+
+Ran:
+
+- `cargo test -p openwepp-runner mofe01_me4 -- --nocapture`
+  - PASS; 3 passed.
+- `cargo test -p openwepp-runner mofe01 -- --nocapture`
+  - PASS; 11 passed.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - PASS; 4 passed.
 
 ## M-E3
 

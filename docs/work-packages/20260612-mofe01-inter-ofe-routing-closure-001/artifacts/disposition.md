@@ -1,10 +1,35 @@
 # disposition
 
-Status: M-E3 complete; package remains open for M-E4+
+Status: M-E4 executed-hold (Claude review: identity checks tautological — see m-e4 evidence); package remains open for M-E5
 
 Evidence mode: Ran + Static
 
 ## Disposition
+
+Increment M-E4 is complete for its internal WB13 record scope. Multi-OFE
+hillslope runs now produce internal per-OFE WB13 daily records from the
+persisted OFE lane state. The M-E4 record path checks transfer input identity,
+per-element storage identity, and aggregate internal-transfer cancellation
+before persistent lane state replacement.
+
+Required H smoke passed for H1/H6/H9/H11 under
+`/tmp/openwepp_mofe01_me4_runtime_smoke`. The manifest audit reports internal
+record counts equal to `row_count * contributor_ofe_count` for the 5-, 3-, 4-,
+and 2-OFE smoke cases and all three residual maxima at `0.0` mm. Local owcmp
+was run directly, without the comparator subagent, and command execution passed
+for each smoke surface. Semantic comparison still fails at the expected public
+aggregate-publication boundary (`semantic_pass_count=0/1` per smoke surface;
+focus columns zero diff).
+
+Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 remain byte-identical to M-E2
+for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 pass).
+
+M-E4 preserves public aggregate WB13/WAT publication:
+`publication_ofe_policy=single-row-canonicalized-hillslope-aggregate`. The
+next lawful increment is M-E5: build public WB13/WAT rows from the internal
+per-OFE records and retire the transitional aggregate publication lifecycle.
+
+## M-E3 disposition
 
 Increment M-E3 is complete for its dynamic state persistence scope. Multi-OFE
 hillslope runs now carry an `OfeLanePersistentStateSequence` across days behind

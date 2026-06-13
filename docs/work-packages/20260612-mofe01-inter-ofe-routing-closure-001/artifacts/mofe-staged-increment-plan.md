@@ -180,6 +180,31 @@ lines, do not infer from symbol tables, recorded Dh lesson):
   is where "routing closure" is first actually proven** — no sub-increment
   closes `complete` until its own identities are evidenced (non-deferral).
 
+## Increment M-E4-REDO — non-tautological identity validation (Claude blocking review 2026-06-13)
+
+M-E4 produced correct per-OFE WB13 *record production* (cardinality, ordering,
+full row fields) but its identity *validation* is tautological (residuals
+exactly 0.0): per-element checks `soil_water_total==total_soil` (same-row
+alias), transfer checks the row's `UpStrmQ` vs the input it was built from,
+aggregate cancellation compares input vs output where input was built from
+output. None tests `INV-WATBAL-096`. Before M-E5:
+
+- Rebuild the per-element identity to measure the real balance **per OFE**:
+  inflows (RM/Irr/UpStrmQ/SubRIn) − outflows (Interception/Q/Ep/Es/Er/Dp/
+  latqcc/Tile) − **independently-measured** `ΔSoilWaterTotal` (day-over-day
+  from the OFE's own state, not derived from fluxes) = residual at the noise
+  floor. The record fields already exist.
+- Rebuild the transfer identity as a true cross-OFE check on a 2-OFE fixture:
+  OFE i's **sent** runoff vs OFE i+1's **received** run-on as
+  independently-sourced quantities (not built from each other).
+- Pin the numeric tolerance in `SC-WATBAL-001` (FDHP01-grade ~1e-11/1e-13 mm,
+  the E0 deferral), replacing the `1.0e-6` code constant.
+- Add the named frost-per-OFE fixture (FDHP01 closure re-instances per OFE
+  without perturbing the single-OFE frost anchor).
+- Gate: the three identities close to the pinned noise floor on real 2-OFE
+  and 5-OFE runtime records (NONZERO-but-at-noise residuals are the proof of
+  genuineness; exact 0.0 is the tautology smell). Single-OFE anchor unchanged.
+
 ## Increment M-F — per-OFE WAT publication
 
 - On real per-OFE state (M-E), publish per-OFE rows: no `UpStrmQ=0` for
@@ -206,7 +231,7 @@ lines, do not infer from symbol tables, recorded Dh lesson):
 
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-C2|M-D|M-E|M-F|M-G|M-H> of
+Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-C2|M-D|M-E|M-E4-REDO|M-F|M-G|M-H> of
 `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
 `mofe-routing-port-scope.md` (once it exists); the FDHP01 staged plan
