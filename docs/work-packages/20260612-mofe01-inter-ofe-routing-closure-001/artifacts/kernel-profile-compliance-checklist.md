@@ -1,8 +1,24 @@
 # kernel profile compliance checklist
 
-Status: checked through M-C2
+Status: checked through M-D
 
 Evidence mode: Ran + Static
+
+## M-D checklist
+
+- Production edits: none.
+- Typed errors: unchanged.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: unchanged.
+- Runtime state/publication paths: unchanged in code; M-D only declares the
+  architecture needed before M-E production edits.
+
+Validation:
+- Full Rust closure loop was not rerun for M-D because no production Rust,
+  science-contract, dependency, or test files were edited.
+- Package docs lint is recorded in `gate-results.md`.
 
 ## M-C2 checklist
 

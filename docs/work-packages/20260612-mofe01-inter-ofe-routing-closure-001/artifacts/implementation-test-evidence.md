@@ -1,8 +1,17 @@
 # implementation test evidence
 
-Status: M-C2 executed-hold; no implementation tests added
+Status: M-D complete; no implementation tests added
 
 Evidence mode: Ran + Static
+
+## M-D ran
+
+- `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --format plain`
+  - PASS; 30 files validated, 0 errors, 0 warnings.
+
+No M-D production implementation or tests were added. The increment was
+design-only and completed by producing the per-OFE state architecture artifact.
+M-E0 must add the contract-derived red tests before production implementation.
 
 ## M-C2 ran
 

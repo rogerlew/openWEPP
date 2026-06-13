@@ -1,8 +1,22 @@
 # contract test implementation evidence
 
-Status: M-C2 held; M-B contract tests implemented
+Status: M-D design complete; M-B contract tests implemented
 
 Evidence mode: Ran + Static
+
+## M-D
+
+No contract tests were added in M-D. The design artifact defines the red-test
+surface for M-E0:
+
+- policy-transition tests must fail on the current aggregate WB13/WAT
+  architecture,
+- transfer identity tests must require sent/received hourly arrays by adjacent
+  OFE pair,
+- per-element identity tests must require OFE-local dynamic state,
+- publication tests must reject single aggregate `OFE=1` rows for multi-OFE
+  hillslopes under the new policy,
+- single-OFE anchor tests must keep N=1 behavior identical or at-noise.
 
 ## M-C2
 

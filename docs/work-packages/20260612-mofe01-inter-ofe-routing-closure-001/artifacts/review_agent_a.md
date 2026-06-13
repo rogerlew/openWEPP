@@ -6,6 +6,34 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-D Review Record
+
+Agent: `019ebf06-7ac7-7463-8b89-e5eae16563c6`
+
+Static/Ran read-only review of M-D package, staged plan, artifacts, and cited
+source lines. The reviewer ran package `markdown-doc lint` successfully, did
+not edit files, and did not invoke `comparator_suite_runner` or any comparator
+subagent.
+
+Findings:
+
+1. **High:** M-D was marked complete before M-D dual review/verification
+   evidence was present in the review/verification artifacts and gate table.
+2. **Medium:** Some current-tree citations were too broad for the claims they
+   supported: MOFE carry activation/seeding and WB13 `UpStrmQ=0`/`QOFE=Q`/
+   `OFE=1` construction.
+3. **Low:** Stale increment taxonomy remained in text that still referred to
+   the former publication-increment label after the staged plan had renumbered
+   the tail to M-E/M-F.
+
+### M-D Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | M-D completion lacked recorded M-D dual review/verification evidence | accepted | Added M-D records to both review artifacts and both verification artifacts, and added M-D dual review/verification rows to `gate-results.md`. |
+| 2 | Current-tree citations too broad | accepted | Updated WB13 construction citations to the exact `UpStrmQ=0`, `QOFE=Q`, and `OFE=1` lines, and updated MOFE carry-array citations to the actual activation/seeding lines. |
+| 3 | Stale publication-increment taxonomy | accepted | Replaced stale former-increment references with current M-E/M-F language in disposition, handoff, M-C2 evidence, and old verification notes. |
+
 ## M-C2 Review Record
 
 Agent: `019ebece-42e7-7fe0-9d6f-66e5bd7fea35`

@@ -1,6 +1,6 @@
 # Required Reading Map — MOFE01
 
-Status: updated through M-C2 executed-hold
+Status: updated through M-D complete
 
 Agents executing or authoring the package maintain this as a living control
 artifact (tiers, rationale, read timing); a stale map is a governance defect.
@@ -41,3 +41,4 @@ artifact (tiers, rationale, read timing); a stale map is a governance defect.
 | 2026-06-12 | Codex | Executed M-B; reread package governance and touched SC-RUNOFFPART/SC-WATBAL authority, hydrology orchestrator seams, runner seed seam, and WB11/WB14/runner tests. |
 | 2026-06-13 | Codex | Executed M-C; reread staged plan, routing scope, M-B evidence, WB13/MOFE publication authority, runner WAT publication path, summary accumulator row guards, and scheduler publication provenance. |
 | 2026-06-13 | Codex | Executed M-C2; reread M-C evidence, work-package non-deferral governance, scheduler/writeback request seams, MOFE hourly carry producer/consumer seams, WB13/WAT publication path, and M-B carry tests. |
+| 2026-06-13 | Codex | Executed M-D; reread M-C2 evidence, staged M-D scope, package/work-package/science/crate/test governance, current scheduler/writeback/publication seams, SC-RUNOFFPART/SC-WATBAL/SC-SYSTEM MOFE addenda, and pinned legacy `irs`/`rochek`/WATBAL routing lineage. |

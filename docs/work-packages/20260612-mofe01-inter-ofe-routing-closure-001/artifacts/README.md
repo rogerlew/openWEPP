@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: updated through M-C2 executed-hold
+Status: updated through M-D complete
 
 Evidence and disposition artifacts for
 `20260612-mofe01-inter-ofe-routing-closure-001`.
@@ -17,6 +17,9 @@ Evidence and disposition artifacts for
 - `m-c2-per-ofe-daily-state-scope-evidence.md`: M-C2 current-boundary
   runtime-state seam audit, local comparison evidence, and executed-hold
   rationale.
+- `mofe-per-ofe-state-architecture.md`: M-D design-only per-OFE daily state
+  architecture, sequential execution model, contract surface, change map, and
+  M-E sub-increment plan.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`, `contract-test-implementation-evidence.md`,
   `pre-implementation-contract-gate.md`, `implementation-test-evidence.md`:
@@ -24,6 +27,6 @@ Evidence and disposition artifacts for
 - `kernel-profile-compliance-checklist.md`, `owned-file-manifest.md`,
   `gate-results.md`, `line-count-governance-checklist.md`: governance.
 - `review_agent_a.md`, `review_agent_b.md`: dual review with finding
-  disposition through M-C2; `verification_agent_a.md`,
+  disposition through M-D; `verification_agent_a.md`,
   `verification_agent_b.md`.
 - `disposition.md`, `worker-handoff.md`: closure record.

@@ -1,6 +1,6 @@
 # pre implementation contract gate
 
-Status: satisfied for M-B; M-C2 held before implementation
+Status: satisfied for M-B; M-D design complete before M-E0
 
 Evidence mode: Static
 
@@ -39,3 +39,15 @@ M-C2 gate:
   output state. Contracting per-OFE daily state before an implementable state
   surface exists would bless surrogate output synthesis, so M-C2 records a
   BLOCKED gate instead.
+
+M-D gate:
+- Reopened for design. M-D reread the package, staged plan, work-package
+  governance, science-contract governance, crate/test governance, M-C2 scope
+  evidence, scheduler/writeback seams, WB13/WAT publication seams, current
+  contract addenda, and pinned legacy `irs`/`rochek`/WATBAL routing lineage.
+- Satisfied for design-only scope. M-D produced
+  `mofe-per-ofe-state-architecture.md` and made no production code, science
+  contract, or test edits.
+- M-E0 must reopen this gate again before implementation by amending
+  `SC-RUNOFFPART-001`, `SC-WATBAL-001`, and `SC-SYSTEM-001` and installing
+  contract-derived red tests for the M-D per-OFE state semantics.

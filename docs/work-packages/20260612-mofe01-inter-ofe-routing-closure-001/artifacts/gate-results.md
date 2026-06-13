@@ -1,8 +1,25 @@
 # gate results
 
-Status: M-C2 executed-hold; execution green; per-OFE runtime-state gates blocked
+Status: M-D complete; design artifact complete; package active for M-E0
 
 Evidence mode: Ran + Static
+
+## M-D ran
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| M-D production-code boundary | PASS | No production Rust, science-contract, dependency, Cargo, test, external-authority, legacy, or `/wc1` substrate files were edited. |
+| Per-OFE state architecture artifact | PASS | `mofe-per-ofe-state-architecture.md` defines the target `PerOfeDailyWaterBalanceCollection`, per-OFE record contents, lifecycle, and aggregate derivation rule. |
+| Current-tree file:line citations | PASS | The artifact cites current scheduler, kernel-contract, runner, publication, topology, summary accumulator, and MOFE carry seams. |
+| Sequential execution model decision | PASS | M-D selects per-OFE lane iteration over the existing phase graph and records why `TopologyGraph` N-node encoding is not the M-E path. |
+| Legacy `irs`/`rochek`/WATBAL mapping | PASS | The artifact maps per-plane loop, continuation classification, WATBAL mutation isolation, and surface-saturation handoff obligations to the target state model. |
+| Contract surface definition | PASS | The artifact names required M-E0 amendments to `SC-RUNOFFPART-001`, `SC-WATBAL-001`, and `SC-SYSTEM-001`, with measurable per-element, transfer, single-OFE, hillslope-total, and publication identities. |
+| M-E red-test and sub-increment plan | PASS | The artifact breaks M-E into M-E0 through M-E6 with measurable gates and no required gate deferred across a red boundary. |
+| `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --format plain` | PASS | 30 files validated, 0 errors, 0 warnings. |
+| Dual review | PASS | Review A findings on missing M-D review/verification evidence, citation precision, and stale increment taxonomy were accepted and fixed; Review B findings on M-D review provenance, carry-array citation precision, and historical gate taxonomy were accepted and fixed. |
+| Dual verification | PASS | Verification A and Verification B found no blocking issues; Verification B's non-blocking WB13 citation precision note was accepted and fixed. |
+| Full Rust closure loop | NOT RUN | M-D made no production Rust, science-contract, dependency, Cargo, or test edits. |
+| Comparator/heavy comparison | NOT RUN | M-D is design-only and did not require batch execution or comparator comparison. |
 
 ## M-C2 ran
 
@@ -76,13 +93,13 @@ Detailed evidence: `m-b-hydrology-route-closure-evidence.md`.
 | Isolated current H1-H36 batch | FAIL | Expected M-A characterization failure for MOFE: 7/7 single-OFE surfaces passed; 29/29 multi-OFE surfaces failed before output publication. |
 | Local legacy H1-H36 WAT parse | PASS | Parsed 271,808 rows and produced per-OFE-count closure/routing calibration. |
 
-## Not run / anti-evasion
+## Historical not run / anti-evasion
 
-| Gate/check | Reason |
-| --- | --- |
-| `cargo fmt --check` | M-A made documentation/evidence edits only; no production Rust edits. |
-| `cargo clippy --workspace --all-targets -- -D warnings` | M-A made documentation/evidence edits only; no production Rust edits. |
-| `cargo test --workspace` | M-A made documentation/evidence edits only; no production Rust edits. |
-| `cargo deny check` | M-A made documentation/evidence edits only; no dependency edits. |
-| `bash tools/release/check_authority_suite_antievasion.sh` | No external-authority suite posture, cohort fixture binding, or required-case binding was edited by M-A, M-B, M-C, or M-C2. |
-| `cargo test --test auth11_required_suite_obligation_guards_contract` | Same anti-evasion non-trigger as above; the full workspace test did include this target and it passed. |
+| Gate/check | Result | Reason |
+| --- | --- | --- |
+| `cargo fmt --check` | NOT RUN | M-A made documentation/evidence edits only; no production Rust edits. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | NOT RUN | M-A made documentation/evidence edits only; no production Rust edits. |
+| `cargo test --workspace` | NOT RUN | M-A made documentation/evidence edits only; no production Rust edits. |
+| `cargo deny check` | NOT RUN | M-A made documentation/evidence edits only; no dependency edits. |
+| `bash tools/release/check_authority_suite_antievasion.sh` | NOT RUN | No external-authority suite posture, cohort fixture binding, or required-case binding was edited by M-A, M-B, M-C, M-C2, or M-D. |
+| `cargo test --test auth11_required_suite_obligation_guards_contract` | NOT RUN | Same anti-evasion non-trigger as above; the M-B full workspace test did include this target and it passed. |

@@ -6,6 +6,32 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-D Review Record
+
+Agent: `019ebf06-7b8a-7ba2-a479-1908fde3bcc7`
+
+Static/Ran read-only review of M-D artifacts. The reviewer ran `rg`, `nl`, and
+`git status`; did not edit files; and did not invoke `comparator_suite_runner`
+or any comparator subagent.
+
+Findings:
+
+1. **Medium:** `owned-file-manifest.md` listed review/verification artifacts
+   in the M-D write set before those artifacts contained M-D records.
+2. **Medium:** `mofe-per-ofe-state-architecture.md` cited the function
+   attribute/start line for MOFE hourly carry arrays, but the actual activation
+   and seeding evidence is later in the function/helper.
+3. **Low:** Historical `gate-results.md` anti-evasion rows used a two-column
+   `Gate/check | Reason` table instead of the exact gate taxonomy.
+
+### M-D Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | M-D review/verification provenance overstated before records existed | accepted | Added M-D review/verification records to the review and verification artifacts before finalizing the M-D owned-file manifest. |
+| 2 | MOFE carry-array citation too broad | accepted | Updated `mofe-per-ofe-state-architecture.md` to cite the current activation/seeding lines at `scheduler_seed_and_runtime.rs:30`, `scheduler_seed_and_runtime.rs:45`, `02_output_and_climate_helpers.rs:1122`, and `02_output_and_climate_helpers.rs:1137`. |
+| 3 | Historical anti-evasion table was not taxonomy-clean | accepted | Updated the historical table in `gate-results.md` to include a `Result` column and classify skipped gates as `NOT RUN`. |
+
 ## M-C2 Review Record
 
 Agent: `019ebece-5afa-7fd3-8eef-68de9ea6359b`

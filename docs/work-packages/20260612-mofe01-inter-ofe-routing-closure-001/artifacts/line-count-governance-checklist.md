@@ -1,8 +1,16 @@
 # line count governance checklist
 
-Status: checked through M-C2
+Status: checked through M-D
 
 Evidence mode: Ran
+
+## M-D
+
+M-D edited work-package artifacts only. No Rust source line-count governance
+was triggered.
+
+`mofe-per-ofe-state-architecture.md` is 277 lines after M-D and carries the
+required architecture, citation, and M-E breakdown content.
 
 ## M-C2
 

@@ -1,8 +1,21 @@
 # contract implementation evidence
 
-Status: M-C2 held; M-B contract implementation complete
+Status: M-D design complete; M-B contract implementation complete
 
 Evidence mode: Ran + Static
+
+## M-D
+
+No contract edits were made in M-D. The increment intentionally stopped at a
+design artifact and named the M-E0 contract amendments required before
+production implementation:
+
+- `SC-RUNOFFPART-001`: per-OFE lane execution, runon continuation, transfer
+  arrays, and no aggregate substitution.
+- `SC-WATBAL-001`: per-OFE dynamic WB state rows, row cardinality, `QOFE`,
+  `UpStrmQ`, `SubRIn`, and storage aggregation semantics.
+- `SC-SYSTEM-001`: per-OFE dynamic-state publication policy, manifest
+  evidence, and downstream fail-closed intake behavior.
 
 ## M-C2
 

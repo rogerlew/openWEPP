@@ -1,10 +1,24 @@
 # disposition
 
-Status: M-C2 executed-hold; package remains open for per-OFE runtime-state design
+Status: M-D complete; package remains open for M-E contract/test scaffolding
 
 Evidence mode: Ran + Static
 
 ## Disposition
+
+Increment M-D is complete as a design-only architecture increment. It produced
+`mofe-per-ofe-state-architecture.md`, which defines the target
+`PerOfeDailyWaterBalanceCollection`, selects per-OFE lane iteration over the
+existing scheduler phase graph, maps legacy `irs`/`rochek` continuation
+obligations, names the contract amendments needed in M-E0, and breaks M-E into
+measurable sub-increments.
+
+No production code, science contract, or test was edited for M-D. The next
+lawful increment is M-E0 contract/test scaffolding for real per-OFE dynamic
+state. Do not publish per-OFE WAT rows by splitting the current aggregate WB13
+row.
+
+## M-C2 disposition
 
 Increment M-C2 was executed end-to-end through the scoping, comparison, and
 evidence boundary and is held. The existing MOFE hourly carry arrays are real
@@ -14,8 +28,8 @@ emits one `OFE=1` row/day with `UpStrmQ=0` and `QOFE=Q`.
 
 No production code, science contract, or test was edited for M-C2. Implementing
 per-OFE daily rows from the available aggregate WB13 state would be surrogate
-physics. The next lawful increment must design and contract real per-OFE
-dynamic state before M-C3 can publish it.
+physics. The next lawful implementation path must design and contract real
+per-OFE dynamic state before M-F can publish it.
 
 Local comparisons were run without the comparator subagent under explicit
 operator direction because GPT-5.3-Codex-Spark weekly quota was exhausted.
@@ -70,7 +84,7 @@ Legacy calibration is complete for the available H1-H36 WAT files. The expected 
 
 ## Next disposition
 
-Plan a follow-on design/implementation increment for real per-OFE dynamic state
-publication, or a contractually equivalent per-OFE surface that exposes actual
-handoff terms without inference. Do not patch WAT output by splitting aggregate
-rows or tuning to legacy numeric deltas.
+Execute M-E0: amend the relevant science contracts and install failing
+contract-derived tests for the per-OFE daily state semantics declared by M-D.
+M-E production code should start only after that authority and red-test surface
+exists.

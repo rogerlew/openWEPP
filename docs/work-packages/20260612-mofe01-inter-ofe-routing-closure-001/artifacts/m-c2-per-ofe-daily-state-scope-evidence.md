@@ -77,5 +77,5 @@ contracts were not edited.
 
 M-C2 is held at the contract/architecture gate. The next lawful increment must
 design and contract the real per-OFE daily state surface before any WAT
-publication change. M-C3 remains blocked until M-C2 has a real state surface to
-publish.
+publication change. The M-E/M-F path remains blocked until a real state surface
+can support publication.

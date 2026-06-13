@@ -1,10 +1,26 @@
 # worker handoff
 
-Status: M-C2 handoff ready; per-OFE runtime-state implementation held
+Status: M-D handoff ready; M-E0 contract/test scaffold next
 
 Evidence mode: Ran + Static
 
 ## Summary
+
+M-D completed the design-only architecture increment:
+
+- `mofe-per-ofe-state-architecture.md` defines the
+  `PerOfeDailyWaterBalanceCollection` target shape, per-OFE record contents,
+  lifecycle, and aggregate derivation rule.
+- M-D selects per-OFE lane iteration over the existing scheduler phase graph,
+  not `TopologyGraph` N-node encoding, because current topology nodes are
+  hillslope/channel/impoundment system nodes.
+- The design maps legacy `irs`/`rochek` continuation, WATBAL per-plane rows,
+  and hourly carry copy-forward obligations to explicit per-OFE transfer state.
+- M-E0 must amend `SC-RUNOFFPART-001`, `SC-WATBAL-001`, and `SC-SYSTEM-001`
+  and install failing contract tests before production code.
+- No production code, science contracts, or tests were edited in M-D.
+
+## M-C2 summary
 
 M-C2 executed the scoping and comparison boundary and found a hard
 runtime-state blocker:
@@ -24,8 +40,8 @@ runtime-state blocker:
 - Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 stayed byte-identical to M-B.
 - M-C2 dual review/verification completed. Findings on write-set separation,
   exact gate taxonomy, and docs-lint counts were accepted and fixed.
-- No production code was edited; M-C3 remains blocked until real per-OFE daily
-  state exists.
+- No production code was edited; the publication implementation path remains
+  blocked until real per-OFE daily state exists.
 
 ## M-C summary
 
@@ -94,8 +110,7 @@ These are not committed artifacts.
 
 ## Next worker focus
 
-Start a follow-on increment that designs and contracts real per-OFE dynamic
-daily state before WAT row emission changes. The current single-row aggregate
-path and hour-indexed carry arrays are not enough to prove `UpStrmQ`/`SubRIn`
-handoffs or non-aliased `QOFE`; do not manufacture those fields from aggregate
-daily WAT rows.
+Execute M-E0 contract/test scaffolding for the M-D architecture. The current
+single-row aggregate path and hour-indexed carry arrays are not enough to prove
+`UpStrmQ`/`SubRIn` handoffs or non-aliased `QOFE`; do not manufacture those
+fields from aggregate daily WAT rows.

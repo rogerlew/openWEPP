@@ -6,6 +6,29 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-D Verification Record
+
+Agent: `019ebf06-7d02-7cb1-8c3e-dcdbcabdd7dc`
+
+Static/Ran read-only verification of M-D. The verifier ran `git status`, `git
+diff --name-status/--stat`, and targeted `rg`/`nl`/`sed` reads. The verifier
+did not edit files, run Rust gates, invoke `comparator_suite_runner`, or use
+any comparator subagent.
+
+Verified:
+- No blocking issues.
+- The architecture artifact covers target per-OFE state shape, sequential lane
+  execution, contract surfaces, measurable M-E invariants, change map, red-test
+  breakdown, and design-only M-D gate classification.
+- `gate-results.md` records full Rust closure loop and comparator/heavy
+  comparison as `NOT RUN` for M-D.
+- Worktree diff was confined to the work-package path, with no production
+  Rust, Cargo, test, science-contract, legacy, or substrate changes.
+
+Non-blocking note:
+- One WB13 construction citation was broad. Accepted and fixed by citing the
+  exact `UpStrmQ=0`, `QOFE=Q`, and `OFE=1` lines.
+
 ## M-C2 Verification Record
 
 Agent: `019ebece-9514-7ac2-bf80-8f80c478e581`
@@ -23,7 +46,7 @@ Verified:
   current diff/status has no paths under `crates/`, `tests/`,
   `docs/specifications/science-contracts/`, `Cargo.toml`, or `Cargo.lock`.
 - Local-comparison-without-subagent posture is disclosed consistently.
-- M-C3 is explicitly blocked until real per-OFE daily state exists.
+- The publication path is explicitly blocked until real per-OFE daily state exists.
 
 Residual risks:
 - `package.md` still said `Status: scaffolded` at verification time. Accepted

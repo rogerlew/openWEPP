@@ -6,6 +6,28 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-D Verification Record
+
+Agent: `019ebf06-7c56-7601-a2ff-ccf210a48a13`
+
+Static/Ran read-only verification of M-D. The verifier ran `git status
+--short`, package `markdown-doc lint`, and targeted `rg`/`nl` checks. The
+verifier did not edit files and did not invoke `comparator_suite_runner` or
+any comparator subagent.
+
+Verified:
+- M-D dirty paths were confined to
+  `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/`.
+- No `crates/`, `tests/`, `Cargo*`, science-contract, legacy, or `/wc1`
+  paths were dirty.
+- Package docs lint passed: 30 files validated, 0 errors, 0 warnings.
+- The M-D artifact contains the required target state shape, sequential
+  execution model, contract surface, change map, red tests/M-E breakdown, and
+  gate classification sections.
+
+Findings:
+- No findings.
+
 ## M-C2 Verification Record
 
 Agent: `019ebece-7f0b-7002-b820-0c001c900972`
