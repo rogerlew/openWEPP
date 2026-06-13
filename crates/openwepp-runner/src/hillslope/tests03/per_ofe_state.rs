@@ -252,6 +252,265 @@ fn mofe01_me1_static_slices_reject_invalid_topology_and_geometry() {
         .contains("slope OFE vector length"));
 }
 
+#[test]
+fn mofe01_me4_redo_internal_wb13_records_close_true_transfer_and_storage_identities() {
+    let mut first_output = TransferOutput::zero_for_terminal_ofe(1);
+    first_output.recipient_ofe_id = Some(2);
+    first_output.surface_carry[0] = 0.002;
+    first_output.lateral_carry[0] = 0.003;
+    let second_input = first_output
+        .as_downstream_input()
+        .expect("first OFE output should become second OFE input");
+
+    let collection = DailyInternalPerOfeWb13Collection::from_records(
+        2,
+        vec![
+            me4_internal_record(
+                1,
+                40.0,
+                me4_wb13_row(1, me4_row_spec().with_total_soil(41.0).with_rm(1.0 + 5.0e-13)),
+                TransferInput::zero_for_first_ofe(),
+                first_output,
+            ),
+            me4_internal_record(
+                2,
+                43.0,
+                me4_wb13_row(
+                    2,
+                    me4_row_spec()
+                        .with_upstrmq(2.0)
+                        .with_subrin(3.0)
+                        .with_total_soil(44.0)
+                        .with_rm(1.0)
+                        .with_q(5.0),
+                ),
+                second_input,
+                TransferOutput::zero_for_terminal_ofe(2),
+            ),
+        ],
+    )
+    .expect("matching per-OFE WB13 records should close real identities");
+
+    let mut summary = PerOfeInternalWb13RunSummary::default();
+    summary
+        .observe_day(&collection)
+        .expect("closed collection should summarize");
+
+    assert_eq!(summary.day_count, 1);
+    assert_eq!(summary.record_count, 2);
+    assert_eq!(summary.expected_record_count, 2);
+    assert!(summary.transfer_identity_max_abs_mm.abs() < 1.0e-12);
+    assert!(summary.per_element_identity_max_abs_mm > 0.0);
+    assert!(summary.per_element_identity_max_abs_mm < 1.0e-11);
+    assert!(summary.aggregate_transfer_cancellation_max_abs_mm.abs() < 1.0e-12);
+}
+
+#[test]
+fn mofe01_me4_redo_internal_wb13_records_reject_storage_delta_mismatch() {
+    let error = DailyInternalPerOfeWb13Collection::from_records(
+        1,
+        vec![me4_internal_record(
+            1,
+            40.0,
+            me4_wb13_row(
+                1,
+                me4_row_spec()
+                    .with_total_soil(42.0)
+                    .with_rm(3.0)
+                    .with_q(0.5),
+            ),
+            TransferInput::zero_for_first_ofe(),
+            TransferOutput::zero_for_terminal_ofe(1),
+        )],
+    )
+    .expect_err("storage delta must be measured against pre-day state, not row aliases");
+
+    assert!(
+        error.to_string().contains("per-element storage identity residual"),
+        "unexpected error: {error}"
+    );
+}
+
+#[test]
+fn mofe01_me4_redo_internal_wb13_records_reject_cross_ofe_transfer_mismatch() {
+    let mut first_output = TransferOutput::zero_for_terminal_ofe(1);
+    first_output.recipient_ofe_id = Some(2);
+    first_output.surface_carry[0] = 0.002;
+    let mut second_input = first_output
+        .as_downstream_input()
+        .expect("first OFE output should become second OFE input");
+    second_input.upstrmq = 0.0025;
+
+    let error = DailyInternalPerOfeWb13Collection::from_records(
+        2,
+        vec![
+            me4_internal_record(
+                1,
+                40.0,
+                me4_wb13_row(1, me4_row_spec().with_total_soil(41.0).with_rm(1.0)),
+                TransferInput::zero_for_first_ofe(),
+                first_output,
+            ),
+            me4_internal_record(
+                2,
+                43.0,
+                me4_wb13_row(
+                    2,
+                    me4_row_spec()
+                        .with_upstrmq(2.5)
+                        .with_total_soil(44.0)
+                        .with_rm(3.5)
+                        .with_q(5.0),
+                ),
+                second_input,
+                TransferOutput::zero_for_terminal_ofe(2),
+            ),
+        ],
+    )
+    .expect_err("OFE 1 sent transfer must match OFE 2 received transfer");
+
+    assert!(
+        error.to_string().contains("transfer identity residual"),
+        "unexpected error: {error}"
+    );
+}
+
+#[test]
+fn mofe01_me4_redo_internal_wb13_records_include_frost_storage_delta_per_ofe() {
+    let collection = DailyInternalPerOfeWb13Collection::from_records(
+        1,
+        vec![me4_internal_record(
+            1,
+            11.0,
+            me4_wb13_row(
+                1,
+                me4_row_spec()
+                    .with_total_soil(10.0)
+                    .with_frozwt(2.0)
+                    .with_rm(1.0 + 5.0e-13),
+            ),
+            TransferInput::zero_for_first_ofe(),
+            TransferOutput::zero_for_terminal_ofe(1),
+        )],
+    )
+    .expect("frost-active storage delta must include Total-Soil + frozwt");
+
+    let mut summary = PerOfeInternalWb13RunSummary::default();
+    summary
+        .observe_day(&collection)
+        .expect("frost-active collection should summarize");
+
+    assert!(summary.per_element_identity_max_abs_mm > 0.0);
+    assert!(summary.per_element_identity_max_abs_mm < 1.0e-11);
+}
+
+fn me4_internal_record(
+    ofe_id: usize,
+    previous_storage_total_mm: f64,
+    row: SimulationOwnedWb13Row,
+    upstream_transfer_input: TransferInput,
+    current_transfer_output: TransferOutput,
+) -> InternalPerOfeWb13Record {
+    InternalPerOfeWb13Record {
+        ofe_id,
+        previous_storage_total_mm,
+        row,
+        upstream_transfer_input,
+        current_transfer_output,
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Me4Wb13RowSpec {
+    upstrmq: f64,
+    subrin: f64,
+    total_soil: f64,
+    frozwt: f64,
+    rm: f64,
+    q: f64,
+}
+
+impl Me4Wb13RowSpec {
+    fn with_upstrmq(mut self, value: f64) -> Self {
+        self.upstrmq = value;
+        self
+    }
+
+    fn with_subrin(mut self, value: f64) -> Self {
+        self.subrin = value;
+        self
+    }
+
+    fn with_total_soil(mut self, value: f64) -> Self {
+        self.total_soil = value;
+        self
+    }
+
+    fn with_frozwt(mut self, value: f64) -> Self {
+        self.frozwt = value;
+        self
+    }
+
+    fn with_rm(mut self, value: f64) -> Self {
+        self.rm = value;
+        self
+    }
+
+    fn with_q(mut self, value: f64) -> Self {
+        self.q = value;
+        self
+    }
+}
+
+fn me4_row_spec() -> Me4Wb13RowSpec {
+    Me4Wb13RowSpec {
+        upstrmq: 0.0,
+        subrin: 0.0,
+        total_soil: 0.0,
+        frozwt: 0.0,
+        rm: 0.0,
+        q: 0.0,
+    }
+}
+
+fn me4_wb13_row(ofe: u16, spec: Me4Wb13RowSpec) -> SimulationOwnedWb13Row {
+    SimulationOwnedWb13Row {
+        wb13_row: Wb13DailyWaterBalanceRow {
+            ofe,
+            julian_day: 1,
+            year: 2000,
+            p: 0.0,
+            rm: spec.rm,
+            q: spec.q,
+            ep: 0.0,
+            es: 0.0,
+            er: 0.0,
+            dp: 0.0,
+            upstrmq: spec.upstrmq,
+            subrin: spec.subrin,
+            latqcc: 0.0,
+            total_soil: spec.total_soil,
+            frozwt: spec.frozwt,
+            snow_water: 0.0,
+            qofe: spec.q,
+            tile: 0.0,
+            irr: 0.0,
+            area: 1.0,
+            soil_water_total: spec.total_soil,
+            profile_depth: 1_000.0,
+            profile_porosity_cap: 500.0,
+            profile_fc_store: 300.0,
+            profile_wp_store: 100.0,
+        },
+        interception_mm: 0.0,
+        frdp_mm: 0.0,
+        month: 1,
+        day_of_month: 1,
+        water_year: 2000,
+        sim_day_index: 1,
+    }
+}
+
 fn slope_ofe(index: usize, width_m: f64, length_m: f64) -> SlopeOfe {
     SlopeOfe {
         index,

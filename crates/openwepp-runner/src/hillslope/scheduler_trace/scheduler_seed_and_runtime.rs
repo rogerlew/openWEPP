@@ -1638,6 +1638,89 @@ pub(super) fn execute_scheduler_kernel_lifecycle(
     })
 }
 
+pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
+    lane_state: &mut OfeLanePersistentStateSequence,
+    climate_surface: &HillslopeWritebackSurface,
+    stale_climate_symbols: &[BoundarySymbol],
+    lane_areas_m2: &[f64],
+    context: SchedulerLifecycleContext<'_>,
+) -> Result<DailyInternalPerOfeWb13Collection, HillslopeCliError> {
+    let mut lane_inputs = Vec::with_capacity(lane_state.lane_states().len());
+    let mut pl_activation_sentinels = Vec::with_capacity(lane_state.lane_states().len());
+    let mut previous_storage_totals_mm = Vec::with_capacity(lane_state.lane_states().len());
+
+    for lane in lane_state.lane_states() {
+        let mut lane_surface = lane.writeback_surface.clone();
+        for symbol in stale_climate_symbols {
+            lane_surface.state_surface.remove(symbol);
+            lane_surface.flux_surface.remove(symbol);
+        }
+
+        lane_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
+            lane_surface,
+            climate_surface.clone(),
+        );
+        seed_wb11_runtime_surface_inputs(&mut lane_surface, context.execution_lane)?;
+        seed_scheduler_calendar_symbols(&mut lane_surface, &context);
+        previous_storage_totals_mm.push(internal_wb13_storage_total_mm_from_surface(
+            &lane_surface,
+        )?);
+        pl_activation_sentinels.push(pl_runtime_activation_sentinel_value(&lane_surface));
+        prepare_pl_runtime_activation_for_scheduler(&mut lane_surface)?;
+        lane_inputs.push(OfeLaneExecutionInput::with_upstream_area_ratio(
+            lane.ofe_id,
+            lane.upstream_area_ratio,
+            lane_surface,
+        ));
+    }
+
+    let topology_graph = TopologyGraph::new(1, 0, 0, Vec::new());
+    let topology_report = validate_pre_execution_topology(&topology_graph).map_err(|error| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "per_ofe_dynamic_state",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} failed building persistent OFE topology precondition report: {error}"
+            ),
+        }
+    })?;
+
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+    let sequence_report = scheduler
+        .execute_ofe_sequence_with_kernel(&topology_report, &mut kernel, lane_inputs)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "per_ofe_dynamic_state",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} persistent OFE scheduler/kernel lifecycle failed: {error}"
+            ),
+        })?;
+    let internal_wb13_collection =
+        DailyInternalPerOfeWb13Collection::from_sequence_report(
+            &sequence_report,
+            lane_areas_m2,
+            &previous_storage_totals_mm,
+            context,
+        )?;
+    lane_state
+        .replace_from_report(&sequence_report)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "per_ofe_dynamic_state",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} persistent OFE state replacement failed: {error}"
+            ),
+        })?;
+
+    for (lane, sentinel) in lane_state
+        .lane_states_mut()
+        .iter_mut()
+        .zip(pl_activation_sentinels)
+    {
+        restore_pl_runtime_activation_sentinel_for_next_day(&mut lane.writeback_surface, sentinel);
+    }
+
+    Ok(internal_wb13_collection)
+}
+
 pub(super) fn pl_runtime_activation_sentinel_value(
     runtime_surface: &HillslopeWritebackSurface,
 ) -> Option<BoundaryValue> {

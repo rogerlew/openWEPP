@@ -1,8 +1,23 @@
 # line count governance checklist
 
-Status: checked through M-E4
+Status: checked through M-E4-REDO
 
 Evidence mode: Ran
+
+## M-E4-REDO
+
+Ran `wc -l` over touched Rust files.
+
+| File group | Lines | Disposition |
+| --- | ---: | --- |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs` | 346 | OK. |
+| `crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs` | 550 | OK. |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs` | 1973 | OK; below 2000-line warning threshold. |
+| `tests/integration/mofe01_per_ofe_state_contract.rs` | 345 | OK. |
+| `crates/openwepp-hillslope-orchestrator/src/scheduler.rs` | 1994 | OK; existing near-threshold watch item, not touched by M-E4-REDO. |
+
+No touched Rust source file crossed the 2000-line warning threshold or
+3000-line non-exempt threshold.
 
 ## M-E4
 

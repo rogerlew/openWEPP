@@ -1,33 +1,32 @@
 # contract implementation evidence
 
-Status: M-E4 implemented against M-E0 contract authority
+Status: M-E4-REDO implemented against amended SC-WATBAL-001 authority
 
 Evidence mode: Ran + Static
 
-## M-E4
+## M-E4-REDO
 
-M-E4 consumes the M-E0/M-D contract authority without amending canonical
-contracts. The increment makes internal per-OFE WB13 records authoritative for
-the persisted OFE lane state:
+M-E4-REDO amends `SC-WATBAL-001` to version 156 and implements the
+non-tautological internal WB13 identity acceptance rules:
 
-- each multi-OFE lane report is converted to an OFE-keyed internal WB13 row,
-- `UpStrmQ` and `SubRIn` are checked against the recorded upstream
-  `TransferInput`,
-- `SoilWaterTotal` is checked against `Total-Soil` per element,
-- internal sent/received transfers cancel in aggregate,
+- `TOL-WATBAL-007 <= 1e-11 mm` is the internal per-OFE WB13 residual tolerance,
+- per-element residuals use pre-day OFE dynamic storage snapshots and post-day
+  WB13 storage, including frozen water,
+- row/input matching remains structural evidence only,
+- adjacent transfer residuals compare upstream sent records against downstream
+  received records,
 - manifests expose internal record counts, expected counts, identity statuses,
   and residual maxima.
 
-M-E4 deliberately preserves public aggregate WB13/WAT publication. M-E5 owns
+M-E4-REDO deliberately preserves public aggregate WB13/WAT publication. M-F owns
 the public publication policy flip.
 
 Validation:
 
-- `cargo test -p openwepp-runner mofe01_me4 -- --nocapture`: PASS.
+- `cargo test -p openwepp-runner mofe01_me4_redo -- --nocapture`: PASS.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`: PASS.
 - Required H smoke H1/H6/H9/H11: PASS runtime execution and identity manifest
   audit.
-- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28: PASS byte-identical to M-E2
-  outputs.
 
 ## M-E3
 

@@ -1,33 +1,40 @@
 # worker handoff
 
-Status: M-E4 complete; M-E5 publication flip next
+Status: M-E4-REDO complete; M-F publication flip next
 
 Evidence mode: Ran + Static
 
 ## Summary
 
-M-E4 completed the internal per-OFE WB13 record increment:
+M-E4-REDO completed the non-tautological internal per-OFE WB13 identity
+increment:
 
-- Added internal per-OFE WB13 record production from the persisted lane state.
-- Closed the transfer input identity, per-element storage identity, and
-  aggregate internal-transfer cancellation identity before persistent state
-  replacement.
-- Multi-OFE manifests for H1/H6/H9/H11 now report
-  `per_ofe_state_policy=internal-per-ofe-wb13-records`,
-  `per_ofe_record_count == row_count * contributor_ofe_count`, identity pass
-  statuses, and all three residual maxima at `0.0` mm.
+- Preserved M-E4 internal per-OFE WB13 record production from persisted lane
+  state.
+- Rebuilt per-element identity validation around independently captured
+  pre-day OFE storage and post-day WB13 storage, including frozen water.
+- Rebuilt transfer identity validation around adjacent upstream sent records
+  and downstream received records.
+- Pinned `SC-WATBAL-001` version 156 with `TOL-WATBAL-007 <= 1e-11 mm` and the
+  M-E4-REDO addendum rejecting alias/self-built evidence.
+- Multi-OFE manifests for H1/H6/H9/H11 now report record counts equal to
+  `row_count * contributor_ofe_count`; per-element max residuals are
+  nonzero-but-at-noise (`1.048e-13` to `1.403e-13` mm), and transfer/cancellation
+  residuals close at `0.0` mm.
 - Public WB13/WAT publication remains aggregate-only:
   `publication_ofe_policy=single-row-canonicalized-hillslope-aggregate`.
-- Required H smoke passed under `/tmp/openwepp_mofe01_me4_runtime_smoke`:
+- Required H smoke passed under `/tmp/openwepp_mofe01_me4_redo`:
   H1/H6/H9/H11 exited zero.
-- Local owcmp ran without comparator subagent per operator instruction:
-  execution PASS for H1/H6/H9/H11; semantic FAIL remains expected at the
-  aggregate-publication boundary with focus-column diffs zero.
+- Local semantic comparisons ran without comparator subagent per operator
+  instruction; semantic FAIL remains expected at the aggregate-publication
+  boundary with focus-column max diff `0.0`.
 - Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 are byte-identical to M-E2
-  outputs for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`.
+  outputs for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`
+  (28/28 PASS at
+  `/tmp/openwepp_mofe01_me4_redo_single_anchors/single-ofe-anchor-cmp.tsv`).
 
-Next increment: M-E5 should build public WB13/WAT rows from the internal
-per-OFE records and update provenance/summary guards. M-E5 must also retire
+Next increment: M-F should build public WB13/WAT rows from the internal
+per-OFE records and update provenance/summary guards. M-F must also retire
 the transitional aggregate-publication lifecycle so the doubled multi-OFE path
 does not become permanent.
 

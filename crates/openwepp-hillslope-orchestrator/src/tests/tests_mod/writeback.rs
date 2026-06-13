@@ -600,6 +600,218 @@ fn mofe01_me2_sequential_executor_rejects_nonsequential_lane_ids() {
     ));
 }
 
+#[test]
+fn mofe01_me3_persistent_sequence_carries_lane_state_across_days_without_bleed() {
+    #[derive(Default)]
+    struct PersistentProbeKernel {
+        normalization_call_count: usize,
+        current_lane: usize,
+        observed_markers: Vec<(usize, usize, f64)>,
+    }
+
+    impl HillslopeKernel for PersistentProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-MOFE-ME3-PERSIST",
+            )
+            .expect("status should construct");
+
+            if request.phase_name == "normalization" {
+                self.normalization_call_count += 1;
+                self.current_lane = ((self.normalization_call_count - 1) % 2) + 1;
+                let current_day = ((self.normalization_call_count - 1) / 2) + 1;
+                self.observed_markers.push((
+                    current_day,
+                    self.current_lane,
+                    request_state_scalar(request, "me3_storage_marker"),
+                ));
+            }
+
+            if request.phase_name != "closure_diagnostics" {
+                return KernelRunResponse::new(status, KernelWritebackPayload::empty());
+            }
+
+            let marker = request_state_scalar(request, "me3_storage_marker");
+            let lane_increment = match self.current_lane {
+                1 => 1.0,
+                2 => 2.0,
+                _ => 0.0,
+            };
+            let mut state_updates = vec![WritebackField::unbounded(
+                "me3_storage_marker",
+                marker + lane_increment,
+            )];
+            state_updates.extend(transfer_current_state_updates(&[], &[]));
+
+            KernelRunResponse::new(
+                status,
+                KernelWritebackPayload::with_updates(state_updates, Vec::new()),
+            )
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = PersistentProbeKernel::default();
+    let mut lane_state = OfeLanePersistentStateSequence::new(vec![
+        OfeLanePersistentState::new(1, marker_surface(10.0)),
+        OfeLanePersistentState::new(2, marker_surface(100.0)),
+    ])
+    .expect("persistent state should construct");
+
+    let first_day = scheduler
+        .execute_persistent_ofe_sequence_day_with_kernel(
+            &topology_report,
+            &mut kernel,
+            &mut lane_state,
+        )
+        .expect("first persistent day should execute");
+    let second_day = scheduler
+        .execute_persistent_ofe_sequence_day_with_kernel(
+            &topology_report,
+            &mut kernel,
+            &mut lane_state,
+        )
+        .expect("second persistent day should execute");
+
+    assert_eq!(first_day.lane_count(), 2);
+    assert_eq!(second_day.lane_count(), 2);
+    assert_eq!(
+        kernel.observed_markers,
+        vec![(1, 1, 10.0), (1, 2, 100.0), (2, 1, 11.0), (2, 2, 102.0)]
+    );
+    assert!((persistent_lane_marker(&lane_state, 1) - 12.0).abs() < 1.0e-12);
+    assert!((persistent_lane_marker(&lane_state, 2) - 104.0).abs() < 1.0e-12);
+}
+
+#[test]
+fn mofe01_me3_persistent_sequence_keeps_prior_state_when_day_fails() {
+    #[derive(Default)]
+    struct SecondDayFailureKernel {
+        normalization_call_count: usize,
+        current_lane: usize,
+    }
+
+    impl HillslopeKernel for SecondDayFailureKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-MOFE-ME3-FAIL-CLOSED",
+            )
+            .expect("status should construct");
+
+            if request.phase_name == "normalization" {
+                self.normalization_call_count += 1;
+                self.current_lane = ((self.normalization_call_count - 1) % 2) + 1;
+            }
+
+            if request.phase_name != "closure_diagnostics" {
+                return KernelRunResponse::new(status, KernelWritebackPayload::empty());
+            }
+
+            let marker = request_state_scalar(request, "me3_storage_marker");
+            let mut state_updates = vec![WritebackField::unbounded(
+                "me3_storage_marker",
+                marker + 1.0,
+            )];
+            if self.normalization_call_count <= 2 {
+                state_updates.extend(transfer_current_state_updates(&[], &[]));
+            }
+
+            KernelRunResponse::new(
+                status,
+                KernelWritebackPayload::with_updates(state_updates, Vec::new()),
+            )
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = SecondDayFailureKernel::default();
+    let mut lane_state = OfeLanePersistentStateSequence::new(vec![
+        OfeLanePersistentState::new(1, marker_surface(1.0)),
+        OfeLanePersistentState::new(2, marker_surface(2.0)),
+    ])
+    .expect("persistent state should construct");
+
+    scheduler
+        .execute_persistent_ofe_sequence_day_with_kernel(
+            &topology_report,
+            &mut kernel,
+            &mut lane_state,
+        )
+        .expect("first persistent day should execute");
+    let day_one_lane_one_marker = persistent_lane_marker(&lane_state, 1);
+    let day_one_lane_two_marker = persistent_lane_marker(&lane_state, 2);
+
+    let error = scheduler
+        .execute_persistent_ofe_sequence_day_with_kernel(
+            &topology_report,
+            &mut kernel,
+            &mut lane_state,
+        )
+        .expect_err("missing transfer arrays on second day should fail closed");
+
+    assert!(matches!(
+        error,
+        OfeLaneSequenceError::InvalidTransferValue {
+            ofe_id: 1,
+            hour: Some(1),
+            value,
+            ..
+        } if value.is_nan()
+    ));
+    assert!((day_one_lane_one_marker - 2.0).abs() < 1.0e-12);
+    assert!((day_one_lane_two_marker - 3.0).abs() < 1.0e-12);
+    assert!((persistent_lane_marker(&lane_state, 1) - day_one_lane_one_marker).abs() < 1.0e-12);
+    assert!((persistent_lane_marker(&lane_state, 2) - day_one_lane_two_marker).abs() < 1.0e-12);
+}
+
+#[test]
+fn mofe01_me3_persistent_sequence_rejects_nonsequential_initial_state() {
+    let error = OfeLanePersistentStateSequence::new(vec![OfeLanePersistentState::new(
+        2,
+        HillslopeWritebackSurface::default(),
+    )])
+    .expect_err("persistent sequence must start at OFE 1");
+
+    assert!(matches!(
+        error,
+        OfeLaneSequenceError::NonSequentialLaneOfeId {
+            expected_ofe_id: 1,
+            observed_ofe_id: 2
+        }
+    ));
+}
+
+fn marker_surface(marker: f64) -> HillslopeWritebackSurface {
+    let mut surface = HillslopeWritebackSurface::default();
+    surface.state_surface.insert(
+        BoundarySymbol::from("me3_storage_marker"),
+        BoundaryValue::scalar(marker),
+    );
+    surface
+}
+
+fn persistent_lane_marker(lane_state: &OfeLanePersistentStateSequence, ofe_id: usize) -> f64 {
+    lane_state
+        .lane_surface(ofe_id)
+        .and_then(|surface| {
+            surface
+                .state_surface
+                .get(&BoundarySymbol::from("me3_storage_marker"))
+        })
+        .copied()
+        .map_or(0.0, BoundaryValue::as_f64)
+}
+
 fn stale_current_transfer_surface() -> HillslopeWritebackSurface {
     let mut surface = HillslopeWritebackSurface::default();
     for hour in 1..=24 {

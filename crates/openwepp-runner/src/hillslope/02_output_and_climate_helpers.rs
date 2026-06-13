@@ -746,9 +746,38 @@ fn build_simulation_owned_wb13_row(
     calendar_day: &ClimateDayProjection,
     _runtime_swe_before_m: f64,
 ) -> Result<SimulationOwnedWb13Row, HillslopeCliError> {
+    build_simulation_owned_wb13_row_for_ofe(
+        runtime_surface,
+        publication_area_m2,
+        simulation_year,
+        sim_day_index,
+        calendar_day,
+        1,
+        0.0,
+    )
+}
+
+#[allow(clippy::too_many_lines)]
+fn build_simulation_owned_wb13_row_for_ofe(
+    runtime_surface: &HillslopeWritebackSurface,
+    publication_area_m2: f64,
+    simulation_year: i32,
+    sim_day_index: usize,
+    calendar_day: &ClimateDayProjection,
+    ofe_id: u16,
+    upstream_runon_m: f64,
+) -> Result<SimulationOwnedWb13Row, HillslopeCliError> {
     if simulation_year <= 0 {
         return Err(wb13_simout_failure(format!(
             "simulation-year key must be >= 1, observed {simulation_year}"
+        )));
+    }
+    if ofe_id == 0 {
+        return Err(wb13_simout_failure("WB13 OFE id must be >= 1"));
+    }
+    if !upstream_runon_m.is_finite() || upstream_runon_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "UpStrmQ source must be finite and >= 0.0, observed {upstream_runon_m}"
         )));
     }
 
@@ -985,7 +1014,7 @@ fn build_simulation_owned_wb13_row(
         ("Es", es),
         ("Er", er),
         ("Dp", dp),
-        ("UpStrmQ", 0.0),
+        ("UpStrmQ", upstream_runon_m * 1_000.0),
         ("SubRIn", sub_r_in),
         ("latqcc", latqcc),
         ("Total-Soil", total_soil),
@@ -1010,9 +1039,13 @@ fn build_simulation_owned_wb13_row(
         wb13_simout_failure(format!("failed building WB13 scalar surface: {error}"))
     })?;
 
-    let wb13_row =
-        Wb13DailyWaterBalanceRow::from_surface(1, julian_day, simulation_year, &row_surface)
-            .map_err(|error| wb13_simout_failure(format!("failed building WB13 row: {error}")))?;
+    let wb13_row = Wb13DailyWaterBalanceRow::from_surface(
+        ofe_id,
+        julian_day,
+        simulation_year,
+        &row_surface,
+    )
+    .map_err(|error| wb13_simout_failure(format!("failed building WB13 row: {error}")))?;
 
     let month_i8 = i8::try_from(month).map_err(|_| {
         wb13_simout_failure(format!(

@@ -1,22 +1,23 @@
 # implementation test evidence
 
-Status: M-E4 complete for internal WB13 record increment; package active for M-E5
+Status: M-E4-REDO complete for non-tautological internal identity validation; package active for M-F
 
 Evidence mode: Ran + Static
 
-## M-E4 ran
+## M-E4-REDO ran
 
-M-E4 implemented internal per-OFE WB13 records from persisted lane state. It
-did not flip public WAT publication.
+M-E4-REDO rebuilt internal per-OFE WB13 identity validation so acceptance
+evidence compares independently sourced storage and transfer operands. It did
+not flip public WAT publication.
 
 - `cargo fmt --check`
   - PASS.
-- `cargo test -p openwepp-runner mofe01_me4 -- --nocapture`
-  - PASS; 3 focused M-E4 tests passed.
+- `cargo test -p openwepp-runner mofe01_me4_redo -- --nocapture`
+  - PASS; 4 focused M-E4-REDO tests passed.
 - `cargo test -p openwepp-runner mofe01 -- --nocapture`
-  - PASS; 11 runner per-OFE tests passed.
+  - PASS; 12 runner per-OFE tests passed.
 - `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
-  - PASS; all four contract-derived tests passed.
+  - PASS; all five contract-derived tests passed.
 - `cargo clippy --workspace --all-targets -- -D warnings`
   - PASS.
 - `cargo test --workspace`
@@ -25,22 +26,25 @@ did not flip public WAT publication.
   - PASS; `advisories ok, bans ok, licenses ok, sources ok`.
 - `bash tools/release/check_authority_suite_antievasion.sh`
   - PASS.
-- `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --format plain`
-  - PASS; 35 files validated, 0 errors, 0 warnings.
+- `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture`
+  - PASS; 2 authority obligation guard tests passed.
+- `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --path docs/specifications/science-contracts/contracts/SC-WATBAL-001.md --format plain`
+  - PASS; 36 files validated, 0 errors, 0 warnings.
 - Required local H smoke without comparator subagent
   - PASS runtime execution: H1/H6/H9/H11 exited zero under
-    `/tmp/openwepp_mofe01_me4_runtime_smoke`.
+    `/tmp/openwepp_mofe01_me4_redo`.
   - PASS manifest audit:
-    `/tmp/openwepp_mofe01_me4_runtime_smoke/m-e4-internal-wb13-audit.json`
+    `/tmp/openwepp_mofe01_me4_redo/m-e4-redo-internal-wb13-audit.json`
     reports internal record counts equal to `row_count * contributor_ofe_count`
-    and all identity residual maxima at `0.0` mm.
-  - PASS local owcmp command execution for H1/H6/H9/H11.
+    and nonzero-at-noise per-element residual maxima under `1.5e-13` mm.
+  - PASS local comparison command execution for H1/H6/H9/H11.
   - FAIL semantic comparison as expected for unchanged aggregate WAT
     publication: each smoke surface has `semantic_pass_count=0/1`; focus
     columns have zero failures and max diff `0.0`.
 - Single-OFE anchors
-  - PASS: H8/H15/H19/H20/H22/H23/H28 are byte-identical to M-E2 outputs for
-    `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 pass).
+  - PASS: `/tmp/openwepp_mofe01_me4_redo_single_anchors/single-ofe-anchor-cmp.tsv`
+    reports H8/H15/H19/H20/H22/H23/H28 byte-identical to M-E2 outputs for
+    `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS).
 
 Detailed evidence: `m-e4-internal-wb13-record-evidence.md`.
 

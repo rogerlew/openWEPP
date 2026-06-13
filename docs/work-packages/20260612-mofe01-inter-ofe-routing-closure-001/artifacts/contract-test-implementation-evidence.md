@@ -1,26 +1,31 @@
 # contract test implementation evidence
 
-Status: M-E4 internal WB13 record tests green
+Status: M-E4-REDO internal WB13 identity tests green
 
 Evidence mode: Ran + Static
 
-## M-E4
+## M-E4-REDO
 
-M-E4 adds focused internal WB13 record tests in
+M-E4-REDO replaces the tautological M-E4 identity tests with focused internal
+WB13 conservation tests in
 `crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs`:
 
-- `mofe01_me4_internal_wb13_records_close_transfer_and_storage_identities`,
-- `mofe01_me4_internal_wb13_records_reject_transfer_mismatch`,
-- `mofe01_me4_internal_wb13_records_reject_aggregate_cancellation_mismatch`.
+- `mofe01_me4_redo_internal_wb13_records_close_true_transfer_and_storage_identities`,
+- `mofe01_me4_redo_internal_wb13_records_reject_storage_delta_mismatch`,
+- `mofe01_me4_redo_internal_wb13_records_reject_cross_ofe_transfer_mismatch`,
+- `mofe01_me4_redo_internal_wb13_records_include_frost_storage_delta_per_ofe`.
+
+The integration contract test also adds
+`mofe01_me4_redo_current_architecture_requires_non_tautological_internal_wb13_checks`.
 
 Ran:
 
-- `cargo test -p openwepp-runner mofe01_me4 -- --nocapture`
-  - PASS; 3 passed.
-- `cargo test -p openwepp-runner mofe01 -- --nocapture`
-  - PASS; 11 passed.
-- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+- `cargo test -p openwepp-runner mofe01_me4_redo -- --nocapture`
   - PASS; 4 passed.
+- `cargo test -p openwepp-runner mofe01 -- --nocapture`
+  - PASS; 12 passed.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - PASS; 5 passed.
 
 ## M-E3
 

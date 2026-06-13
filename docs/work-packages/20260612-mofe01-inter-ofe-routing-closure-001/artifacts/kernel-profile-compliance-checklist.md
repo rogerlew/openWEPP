@@ -1,15 +1,16 @@
 # kernel profile compliance checklist
 
-Status: checked through M-E4
+Status: checked through M-E4-REDO
 
 Evidence mode: Ran + Static
 
-## M-E4 checklist
+## M-E4-REDO checklist
 
-- Production edits: yes; internal per-OFE WB13 record production, identity
-  checks, runner summary accumulation, and manifest identity provenance.
-- Science-contract edits: none.
-- Test edits: yes; focused M-E4 runner tests.
+- Production edits: yes; non-tautological internal per-OFE WB13 identity
+  validation and pre-day storage snapshot wiring.
+- Science-contract edits: yes; `SC-WATBAL-001` version 156 pins
+  `TOL-WATBAL-007` and M-E4-REDO acceptance rules.
+- Test edits: yes; focused M-E4-REDO runner tests and contract-source guard.
 - Typed errors in production: internal WB13 identity failures map to typed
   `HillslopeCliError::RuntimeSurfaceFailure` with the `per_ofe_internal_wb13`
   surface.
@@ -18,19 +19,21 @@ Evidence mode: Ran + Static
 - Bounded canonicalization: none introduced.
 - Kernel math: unchanged.
 - Runtime publication paths: public aggregate WB13/WAT publication preserved;
-  M-E4 records are internal evidence and M-E5 owns the public flip.
+  M-E4-REDO records are internal evidence and M-F owns the public flip.
 
 Validation:
 
 - `cargo fmt --check`: PASS.
-- `cargo test -p openwepp-runner mofe01_me4 -- --nocapture`: PASS.
+- `cargo test -p openwepp-runner mofe01_me4_redo -- --nocapture`: PASS.
 - `cargo test -p openwepp-runner mofe01 -- --nocapture`: PASS.
 - `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`: PASS.
 - `cargo clippy --workspace --all-targets -- -D warnings`: PASS.
 - `cargo test --workspace`: PASS.
 - `cargo deny check`: PASS.
 - `bash tools/release/check_authority_suite_antievasion.sh`: PASS.
-- Work-package docs lint: PASS; 35 files validated, 0 errors, 0 warnings.
+- `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture`: PASS.
+- Work-package and SC-WATBAL docs lint: PASS; 36 files validated, 0 errors, 0
+  warnings.
 - Required H1/H6/H9/H11 runtime smoke: PASS.
 - Internal WB13 identity manifest audit: PASS.
 - Single-OFE anchor comparison: PASS.

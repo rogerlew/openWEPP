@@ -64,18 +64,27 @@ fn rust_code_without_comments_or_string_literals(source: &str) -> String {
                 index += 1;
             }
         } else if bytes[index] == b'\'' {
-            index += 1;
-            while index < bytes.len() {
-                if bytes[index] == b'\\' {
-                    index = (index + 2).min(bytes.len());
-                } else if bytes[index] == b'\'' {
-                    index += 1;
-                    break;
-                } else {
-                    index += 1;
+            let lifetime_like = bytes
+                .get(index + 1)
+                .is_some_and(|byte| byte.is_ascii_alphabetic() || *byte == b'_')
+                && bytes.get(index + 2) != Some(&b'\'');
+            if lifetime_like {
+                code.push(' ');
+                index += 1;
+            } else {
+                index += 1;
+                while index < bytes.len() {
+                    if bytes[index] == b'\\' {
+                        index = (index + 2).min(bytes.len());
+                    } else if bytes[index] == b'\'' {
+                        index += 1;
+                        break;
+                    } else {
+                        index += 1;
+                    }
                 }
+                code.push(' ');
             }
-            code.push(' ');
         } else if bytes[index] == b'"' {
             index += 1;
             while index < bytes.len() {
@@ -131,6 +140,8 @@ fn runtime_source_tokens(repo_root: &str) -> Vec<String> {
         "crates/openwepp-hillslope-orchestrator/src/scheduler.rs",
         "crates/openwepp-kernel-contract/src/lib_mod/core_types.rs",
         "crates/openwepp-kernel-contract/src/lib_mod/writeback.rs",
+        "crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs",
+        "crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs",
         "crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_publication.rs",
         "crates/openwepp-hillslope-output/src/manifest.rs",
         "crates/openwepp-hillslope-output/src/hillslope_wat.rs",
@@ -193,7 +204,15 @@ fn mofe01_me0_contract_authority_is_present() {
             && watbal.contains("PerOfeDailyWaterBalanceRecord")
             && watbal.contains("publication policy is explicitly flipped")
             && watbal.contains("Single-OFE runs are one-record specialization")
-            && watbal.contains("MOFE01 M-E0 amendment"),
+            && watbal.contains("MOFE01 M-E0 amendment")
+            && watbal.contains("MOFE01 M-E4-REDO Internal WB13 Identity Acceptance Addendum")
+            && watbal.contains("TOL-WATBAL-007")
+            && watbal.contains("<= 1e-11 mm")
+            && watbal.contains("pre-day OFE dynamic storage snapshot")
+            && watbal.contains("SoilWaterTotal == Total-Soil")
+            && watbal.contains("current_transfer_output")
+            && watbal.contains("upstream_transfer_input")
+            && watbal.contains("all-exact-zero residual suite is a hold"),
         "SC-WATBAL-001 must carry M-E0 per-OFE dynamic water-balance authority"
     );
 
@@ -297,5 +316,30 @@ fn mofe01_me0_current_architecture_requires_publication_policy_manifest_gate() {
     assert!(
         has_publication_gate,
         "M-E0 red gate: current publication path lacks manifest-gated per-OFE policy, record cardinality, identity statuses, and per-OFE storage lineage"
+    );
+}
+
+#[test]
+fn mofe01_me4_redo_current_architecture_requires_non_tautological_internal_wb13_checks() {
+    let repo_root = env!("CARGO_MANIFEST_DIR");
+    let tokens = runtime_source_tokens(repo_root);
+
+    let has_non_tautological_internal_wb13_checks = [
+        "ME4_INTERNAL_WB13_IDENTITY_TOLERANCE_MM",
+        "previous_storage_total_mm",
+        "internal_wb13_storage_total_mm_from_surface",
+        "per_element_water_balance_residual_mm",
+        "adjacent_transfer_residual_mm",
+        "scaled_transfer_sum_mm",
+        "current_transfer_output",
+        "upstream_transfer_input",
+        "frozwt",
+    ]
+    .iter()
+    .all(|required_token| has_token(&tokens, required_token));
+
+    assert!(
+        has_non_tautological_internal_wb13_checks,
+        "M-E4-REDO red gate: internal WB13 identity checks must use pre-day storage and adjacent sent/received transfer operands, not row aliases or self-built transfer inputs"
     );
 }

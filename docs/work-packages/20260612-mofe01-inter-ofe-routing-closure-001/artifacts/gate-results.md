@@ -1,14 +1,44 @@
 # gate results
 
-Status: M-E4 executed-hold (Claude review: identity checks tautological — see m-e4 evidence) for internal WB13 record scope; package active for M-E5
+Status: M-E4-REDO executed; non-tautological internal WB13 identity validation closed; package active for M-F publication
 
 Evidence mode: Ran + Static
 
-## M-E4 scoped acceptance gates
+## M-E4-REDO scoped acceptance gates
 
 | Gate/check | Result | Notes |
 | --- | --- | --- |
-| M-E4 scope boundary | PASS | Internal per-OFE WB13 records are produced from persisted lane state; public WAT publication remains aggregate-only for M-E5. |
+| M-E4-REDO scope boundary | PASS | Rebuilt internal WB13 identity validation only; public WAT publication remains aggregate-only for M-F. |
+| Non-tautological per-element identity | PASS | H1/H6/H9/H11 real internal records close with nonzero-at-noise max residuals `1.048e-13` to `1.403e-13` mm under `TOL-WATBAL-007 <= 1e-11 mm`. |
+| True adjacent transfer identity | PASS | Runtime audit closes adjacent sent-vs-received transfer residuals; focused negative test mutates downstream received input independently and fails closed. |
+| Frost per-OFE fixture | PASS | Focused M-E4-REDO fixture includes frozen-water storage delta in per-OFE closure. |
+| SC-WATBAL-001 tolerance pin | PASS | Version 156 adds `TOL-WATBAL-007 <= 1e-11 mm` and the M-E4-REDO internal WB13 identity acceptance addendum. |
+| `cargo fmt --check` | PASS | Post-edit run. |
+| `cargo test -p openwepp-runner mofe01_me4_redo -- --nocapture` | PASS | 4 focused M-E4-REDO tests passed. |
+| `cargo test -p openwepp-runner mofe01 -- --nocapture` | PASS | 12 runner per-OFE tests passed. |
+| `cargo test --test mofe01_per_ofe_state_contract -- --nocapture` | PASS | 5 contract-derived tests passed. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Full workspace clippy passed. |
+| `cargo test --workspace` | PASS | Full Rust closure loop passed. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| `bash tools/release/check_authority_suite_antievasion.sh` | PASS | Authority suite anti-evasion checks passed. |
+| `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture` | PASS | 2 authority obligation guard tests passed. |
+| `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --path docs/specifications/science-contracts/contracts/SC-WATBAL-001.md --format plain` | PASS | 36 files validated, 0 errors, 0 warnings. |
+| Required H smoke | PASS | H1/H6/H9/H11 exited zero under `/tmp/openwepp_mofe01_me4_redo`; elapsed H1 `279.79s`, H6 `174.67s`, H9 `227.05s`, H11 `127.55s`. |
+| Local semantic comparisons, no comparator subagent | FAIL | Expected publication-boundary fail: execution completed for H1/H6/H9/H11, but public WAT still emits aggregate rows, so each smoke surface has `semantic_pass_count=0/1`; focus-column max diff remains `0.0`. |
+| Single-OFE anchor comparison | PASS | `/tmp/openwepp_mofe01_me4_redo_single_anchors/single-ofe-anchor-cmp.tsv`: H8/H15/H19/H20/H22/H23/H28 byte-identical to M-E2 for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS). |
+| Line count governance | PASS | Touched Rust files remain below thresholds; `scheduler.rs` is 1994 lines and `scheduler_seed_and_runtime.rs` is 1973 lines. |
+
+Detailed evidence: `m-e4-internal-wb13-record-evidence.md`.
+
+## M-E4 scoped acceptance gates
+
+This historical table is retained as the superseded M-E4 evidence that the
+Claude blocking review rejected. The controlling closure evidence is the
+M-E4-REDO table above.
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| M-E4 scope boundary | PASS | Internal per-OFE WB13 records are produced from persisted lane state; public WAT publication remains aggregate-only for M-F. |
 | Internal per-OFE WB13 records | PASS | Added authoritative internal records and run summary with transfer, per-element, and aggregate internal-transfer cancellation checks. |
 | Identity manifest audit | PASS | H1/H6/H9/H11 report record counts equal to `row_count * contributor_ofe_count` and all three residual maxima at `0.0` mm. |
 | `cargo fmt --check` | PASS | Post-edit run. |
@@ -30,8 +60,8 @@ Evidence mode: Ran + Static
 
 | Gate/check | Result | Notes |
 | --- | --- | --- |
-| Public WAT row-cardinality gate | BLOCKED | Remains M-E5 publication-policy scope. |
-| Full H1-H36 replay | NOT RUN | The staged M-E4 gate names targeted identity fixtures; full-cohort replay under the doubled debug path remains M-E6/performance-hardening scope unless M-E5 requires it. |
+| Public WAT row-cardinality gate | BLOCKED | Remains M-F publication-policy scope. |
+| Full H1-H36 replay | NOT RUN | The staged M-E4 gate names targeted identity fixtures; full-cohort replay under the doubled debug path remains M-E6/performance-hardening scope unless M-F requires it. |
 
 Detailed evidence: `m-e4-internal-wb13-record-evidence.md`.
 
@@ -66,7 +96,7 @@ Detailed evidence: `m-e4-internal-wb13-record-evidence.md`.
 | Full H1-H36 replay | NOT RUN | The staged M-E3 gate names H1/H6/H9/H11 smoke execution; full-cohort replay under the new N-lane shadow path is debug-mode expensive and remains M-E6/performance-hardening scope. |
 | Per-element identity gate | BLOCKED | Requires internal per-OFE WB13 record production in M-E4. |
 | Transfer identity gate | BLOCKED | Requires internal per-OFE daily records in M-E4 to expose authoritative sent/received terms. |
-| WAT row-cardinality gate | BLOCKED | Remains M-E5 publication-policy scope. |
+| WAT row-cardinality gate | BLOCKED | Remains M-F publication-policy scope. |
 
 Detailed evidence: `m-e3-dynamic-state-persistence-evidence.md`.
 

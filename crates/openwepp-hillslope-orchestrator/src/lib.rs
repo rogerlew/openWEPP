@@ -52,10 +52,10 @@ pub use scheduler::{
     HillslopeKernelExecutionReport, HillslopeKernelPhaseReport, HillslopePhaseGraph,
     HillslopePhaseOutcome, HillslopePhaseScheduler, HillslopeSchedulerError,
     HillslopeSchedulerReport, HillslopeWritebackSurface, MOFE_TRANSFER_HOUR_COUNT,
-    OfeLaneExecutionInput, OfeLaneExecutionReport, OfeLaneSequenceError,
-    OfeLaneSequenceExecutionReport, PerOfeDailyWaterBalanceCollection,
-    PerOfeDailyWaterBalanceError, PerOfeDailyWaterBalanceRecord, PhaseDependency,
-    SchedulerOutcomeClass, TransferInput, TransferOutput,
+    OfeLaneExecutionInput, OfeLaneExecutionReport, OfeLanePersistentState,
+    OfeLanePersistentStateSequence, OfeLaneSequenceError, OfeLaneSequenceExecutionReport,
+    PerOfeDailyWaterBalanceCollection, PerOfeDailyWaterBalanceError, PerOfeDailyWaterBalanceRecord,
+    PhaseDependency, SchedulerOutcomeClass, TransferInput, TransferOutput,
 };
 
 pub(crate) use hydrology::{

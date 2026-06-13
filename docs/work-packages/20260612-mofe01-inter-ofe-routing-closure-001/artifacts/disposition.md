@@ -1,32 +1,43 @@
 # disposition
 
-Status: M-E4 executed-hold (Claude review: identity checks tautological — see m-e4 evidence); package remains open for M-E5
+Status: M-E4-REDO executed; package remains open for M-F publication
 
 Evidence mode: Ran + Static
 
 ## Disposition
 
-Increment M-E4 is complete for its internal WB13 record scope. Multi-OFE
-hillslope runs now produce internal per-OFE WB13 daily records from the
-persisted OFE lane state. The M-E4 record path checks transfer input identity,
-per-element storage identity, and aggregate internal-transfer cancellation
-before persistent lane state replacement.
+Increment M-E4-REDO closes the blocking M-E4 review finding. The per-OFE WB13
+record production from M-E4 stands, and the identity validation now measures
+real conservation instead of row aliases or self-built transfer inputs.
+Per-element residuals compare real inflows/outflows against independently
+captured pre-day and post-day OFE storage, including frozen water. Transfer
+residuals compare adjacent upstream sent records against downstream received
+records.
 
 Required H smoke passed for H1/H6/H9/H11 under
-`/tmp/openwepp_mofe01_me4_runtime_smoke`. The manifest audit reports internal
-record counts equal to `row_count * contributor_ofe_count` for the 5-, 3-, 4-,
-and 2-OFE smoke cases and all three residual maxima at `0.0` mm. Local owcmp
-was run directly, without the comparator subagent, and command execution passed
-for each smoke surface. Semantic comparison still fails at the expected public
+`/tmp/openwepp_mofe01_me4_redo`. The audit reports internal record counts equal
+to `row_count * contributor_ofe_count` for the 5-, 3-, 4-, and 2-OFE smoke
+cases. Per-element residual maxima are nonzero-but-at-noise
+(`1.048e-13` to `1.403e-13` mm), under `TOL-WATBAL-007 <= 1e-11 mm`.
+Adjacent transfer and aggregate internal-transfer cancellation residuals close
+at `0.0` mm. Local semantic comparison was run directly, without the
+comparator subagent, and still fails at the expected public
 aggregate-publication boundary (`semantic_pass_count=0/1` per smoke surface;
-focus columns zero diff).
+focus-column max diff `0.0`).
 
 Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 remain byte-identical to M-E2
-for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 pass).
+for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`:
+`/tmp/openwepp_mofe01_me4_redo_single_anchors/single-ofe-anchor-cmp.tsv`
+reports 28/28 PASS.
 
-M-E4 preserves public aggregate WB13/WAT publication:
+`SC-WATBAL-001` version 156 now pins `TOL-WATBAL-007` and rejects exact-zero
+alias/self-built checks as acceptance evidence. Focused tests prove storage
+mismatch rejection, independent transfer mismatch rejection, and frost-active
+per-OFE storage closure.
+
+M-E4-REDO preserves public aggregate WB13/WAT publication:
 `publication_ofe_policy=single-row-canonicalized-hillslope-aggregate`. The
-next lawful increment is M-E5: build public WB13/WAT rows from the internal
+next lawful increment is M-F: build public WB13/WAT rows from the internal
 per-OFE records and retire the transitional aggregate publication lifecycle.
 
 ## M-E3 disposition

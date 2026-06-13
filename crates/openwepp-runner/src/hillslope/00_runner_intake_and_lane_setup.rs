@@ -10,7 +10,9 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
     build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
 };
 use openwepp_hillslope_orchestrator::{
-    HillslopePhaseScheduler, HillslopeWritebackSurface, SchedulerOutcomeClass, Wb11HydrologyKernel,
+    HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
+    OfeLanePersistentState, OfeLanePersistentStateSequence, OfeLaneSequenceExecutionReport,
+    SchedulerOutcomeClass, TransferInput, TransferOutput, Wb11HydrologyKernel,
 };
 use openwepp_hillslope_output::contracts::{HillslopeOutputConfig, validate_output_contract};
 use openwepp_hillslope_output::hillslope_wat::{
@@ -177,6 +179,11 @@ struct HillslopeWb13PublicationProvenance {
     aggregate_identity_status: String,
     area_policy: String,
     storage_lineage_policy: String,
+    per_ofe_internal_day_count: usize,
+    per_ofe_expected_record_count: usize,
+    transfer_identity_max_abs_mm: f64,
+    per_element_identity_max_abs_mm: f64,
+    aggregate_transfer_cancellation_max_abs_mm: f64,
     publication_area_m2: f64,
     row_count: usize,
     sim_day_index_monotonic: bool,
@@ -1059,6 +1066,10 @@ pub fn execute_hillslope_run(
         &soil,
         management.topology_count,
     )?;
+    let per_ofe_lane_areas_m2 = static_per_ofe_slices
+        .iter()
+        .map(|slice| slice.area_m2)
+        .collect::<Vec<_>>();
 
     let soil_surface = build_hillslope_runtime_surface_from_soil(&soil).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
@@ -1137,6 +1148,24 @@ pub fn execute_hillslope_run(
         }
     })?;
 
+    let mut persistent_lane_state = if contributor_ofe_count > 1 {
+        let lane_states = static_per_ofe_slices
+            .iter()
+            .map(|slice| OfeLanePersistentState::new(slice.ofe_id, static_runtime_surface.clone()))
+            .collect::<Vec<_>>();
+        Some(
+            OfeLanePersistentStateSequence::new(lane_states).map_err(|error| {
+                HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "per_ofe_dynamic_state",
+                    detail: format!(
+                        "{SIMPIPE_GUARD_ID} failed initializing persistent OFE lane state: {error}"
+                    ),
+                }
+            })?,
+        )
+    } else {
+        None
+    };
     let mut runtime_surface = static_runtime_surface;
     let mut runtime_swe_publication_state_m =
         require_runtime_surface_scalar(&runtime_surface, "snow.runtime_swe")?;
@@ -1149,6 +1178,7 @@ pub fn execute_hillslope_run(
     let mut kernel_phase_message_ids = std::collections::BTreeSet::new();
     let hphys0245_trace_config = hphys0245_trace_config_from_env()?;
     let mut hphys0245_trace_rows = Vec::new();
+    let mut per_ofe_internal_wb13_summary = PerOfeInternalWb13RunSummary::default();
 
     for (day_index, day_projection) in climate_span.days.iter().enumerate() {
         let climate_surface = build_hillslope_runtime_surface_from_climate_request_with_context(
@@ -1160,16 +1190,52 @@ pub fn execute_hillslope_run(
             surface: "climate",
             detail: error.to_string(),
         })?;
-        for symbol in &previous_climate_symbols {
+        let stale_climate_symbols = previous_climate_symbols.clone();
+        for symbol in &stale_climate_symbols {
             runtime_surface.state_surface.remove(symbol);
             runtime_surface.flux_surface.remove(symbol);
         }
-        previous_climate_symbols.clear();
-        previous_climate_symbols.extend(climate_surface.state_surface.keys().cloned());
-        runtime_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(runtime_surface, climate_surface);
 
         let simulation_year =
             simulation_year_from_calendar_year(day_projection.year, climate_span.first_day.year)?;
+        if let Some(lane_state) = persistent_lane_state.as_mut() {
+            let daily_internal_wb13 = execute_persistent_scheduler_kernel_lifecycle(
+                lane_state,
+                &climate_surface,
+                &stale_climate_symbols,
+                &per_ofe_lane_areas_m2,
+                SchedulerLifecycleContext {
+                    run_name: &runfile.run_name,
+                    execution_lane: lane_context.lane,
+                    publication_area_m2,
+                    simulation_year,
+                    sim_day_index: day_index + 1,
+                    calendar_day: day_projection,
+                    runtime_swe_before_m: runtime_swe_publication_state_m,
+                    hphys0245_trace_config: hphys0245_trace_config.as_ref(),
+                },
+            )
+            .map_err(|error| match error {
+                HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                    HillslopeCliError::RuntimeSurfaceFailure {
+                        surface,
+                        detail: format!(
+                            "{detail} [sim_day_index={}, calendar_year={}, julian_day={}]",
+                            day_index + 1,
+                            day_projection.year,
+                            day_projection.julian_day
+                        ),
+                    }
+                }
+                other => other,
+            })?;
+            per_ofe_internal_wb13_summary.observe_day(&daily_internal_wb13)?;
+        }
+
+        previous_climate_symbols.clear();
+        previous_climate_symbols.extend(climate_surface.state_surface.keys().cloned());
+        runtime_surface =
+            crate::hillslope::intake_lane_setup::merge_runtime_surfaces(runtime_surface, climate_surface);
         let execution_result = execute_scheduler_kernel_lifecycle(
             runtime_surface,
             SchedulerLifecycleContext {
@@ -1257,6 +1323,10 @@ pub fn execute_hillslope_run(
         contributor_ofe_count,
         static_per_ofe_slices.len(),
         publication_area_m2,
+        persistent_lane_state.is_some(),
+        persistent_lane_state
+            .as_ref()
+            .map(|_| &per_ofe_internal_wb13_summary),
     )?;
     let mofe_hourly_carry =
         build_mofe_hourly_carry_provenance(&runtime_surface, contributor_ofe_count)?;

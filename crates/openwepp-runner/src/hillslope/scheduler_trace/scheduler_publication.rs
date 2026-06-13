@@ -153,12 +153,18 @@ pub(super) const MOFE04_PUBLICATION_AREA_POLICY: &str = "sum-ofe-geometry-area";
 pub(super) const HPHYS0255_STORAGE_LINEAGE_POLICY: &str = "single-runtime-wb11-state";
 pub(super) const ME1_PER_OFE_STATE_POLICY: &str = "shadow-static-slices-only";
 pub(super) const ME1_IDENTITY_STATUS: &str = "not-run-shadow-state-only";
+pub(super) const ME3_PER_OFE_STATE_POLICY: &str = "persistent-dynamic-state-shadow";
+pub(super) const ME3_IDENTITY_STATUS: &str = "not-run-dynamic-state-only";
+pub(super) const ME4_PER_OFE_STATE_POLICY: &str = "internal-per-ofe-wb13-records";
+pub(super) const ME4_IDENTITY_STATUS: &str = "pass-internal-wb13-records";
 
 pub(super) fn build_wb13_publication_provenance(
     rows: &[SimulationOwnedWb13Row],
     contributor_ofe_count: usize,
     static_per_ofe_slice_count: usize,
     publication_area_m2: f64,
+    per_ofe_dynamic_state_executed: bool,
+    per_ofe_internal_wb13_summary: Option<&PerOfeInternalWb13RunSummary>,
 ) -> Result<HillslopeWb13PublicationProvenance, HillslopeCliError> {
     let Some(first_row) = rows.first() else {
         return Err(wb13_simout_failure(
@@ -198,7 +204,32 @@ pub(super) fn build_wb13_publication_provenance(
     let sim_day_index_monotonic = rows
         .windows(2)
         .all(|window| window[1].sim_day_index > window[0].sim_day_index);
-    let per_ofe_record_count = 0usize;
+    let per_ofe_record_count = per_ofe_internal_wb13_summary
+        .map_or(0usize, |summary| summary.record_count);
+    let per_ofe_state_policy = if per_ofe_internal_wb13_summary.is_some() {
+        ME4_PER_OFE_STATE_POLICY
+    } else if per_ofe_dynamic_state_executed {
+        ME3_PER_OFE_STATE_POLICY
+    } else {
+        ME1_PER_OFE_STATE_POLICY
+    };
+    let identity_status = if per_ofe_internal_wb13_summary.is_some() {
+        ME4_IDENTITY_STATUS
+    } else if per_ofe_dynamic_state_executed {
+        ME3_IDENTITY_STATUS
+    } else {
+        ME1_IDENTITY_STATUS
+    };
+    let per_ofe_internal_day_count =
+        per_ofe_internal_wb13_summary.map_or(0usize, |summary| summary.day_count);
+    let per_ofe_expected_record_count =
+        per_ofe_internal_wb13_summary.map_or(0usize, |summary| summary.expected_record_count);
+    let transfer_identity_max_abs_mm = per_ofe_internal_wb13_summary
+        .map_or(0.0, |summary| summary.transfer_identity_max_abs_mm);
+    let per_element_identity_max_abs_mm = per_ofe_internal_wb13_summary
+        .map_or(0.0, |summary| summary.per_element_identity_max_abs_mm);
+    let aggregate_transfer_cancellation_max_abs_mm = per_ofe_internal_wb13_summary
+        .map_or(0.0, |summary| summary.aggregate_transfer_cancellation_max_abs_mm);
 
     Ok(HillslopeWb13PublicationProvenance {
         source: WB13_PUBLICATION_SOURCE_SIMULATION_OWNED.to_string(),
@@ -211,15 +242,20 @@ pub(super) fn build_wb13_publication_provenance(
         publication_ofe_policy: MOFE04_PUBLICATION_OFE_POLICY.to_string(),
         contributor_ofe_count,
         static_per_ofe_slice_count,
-        per_ofe_state_policy: ME1_PER_OFE_STATE_POLICY.to_string(),
-        per_ofe_dynamic_water_balance_state: false,
-        per_ofe_dynamic_wb_state: false,
+        per_ofe_state_policy: per_ofe_state_policy.to_string(),
+        per_ofe_dynamic_water_balance_state: per_ofe_dynamic_state_executed,
+        per_ofe_dynamic_wb_state: per_ofe_dynamic_state_executed,
         per_ofe_record_count,
-        transfer_identity_status: ME1_IDENTITY_STATUS.to_string(),
-        per_element_identity_status: ME1_IDENTITY_STATUS.to_string(),
-        aggregate_identity_status: ME1_IDENTITY_STATUS.to_string(),
+        transfer_identity_status: identity_status.to_string(),
+        per_element_identity_status: identity_status.to_string(),
+        aggregate_identity_status: identity_status.to_string(),
         area_policy: MOFE04_PUBLICATION_AREA_POLICY.to_string(),
         storage_lineage_policy: HPHYS0255_STORAGE_LINEAGE_POLICY.to_string(),
+        per_ofe_internal_day_count,
+        per_ofe_expected_record_count,
+        transfer_identity_max_abs_mm,
+        per_element_identity_max_abs_mm,
+        aggregate_transfer_cancellation_max_abs_mm,
         publication_area_m2,
         row_count: rows.len(),
         sim_day_index_monotonic,

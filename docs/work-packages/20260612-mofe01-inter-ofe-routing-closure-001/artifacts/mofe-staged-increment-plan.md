@@ -182,12 +182,16 @@ lines, do not infer from symbol tables, recorded Dh lesson):
 
 ## Increment M-E4-REDO — non-tautological identity validation (Claude blocking review 2026-06-13)
 
+Status: executed 2026-06-13; non-tautological internal WB13 identity
+validation now closes under `TOL-WATBAL-007`. Public per-OFE WAT publication
+remains M-F scope.
+
 M-E4 produced correct per-OFE WB13 *record production* (cardinality, ordering,
 full row fields) but its identity *validation* is tautological (residuals
 exactly 0.0): per-element checks `soil_water_total==total_soil` (same-row
 alias), transfer checks the row's `UpStrmQ` vs the input it was built from,
 aggregate cancellation compares input vs output where input was built from
-output. None tests `INV-WATBAL-096`. Before M-E5:
+output. None tests `INV-WATBAL-096`. Before M-F:
 
 - Rebuild the per-element identity to measure the real balance **per OFE**:
   inflows (RM/Irr/UpStrmQ/SubRIn) − outflows (Interception/Q/Ep/Es/Er/Dp/

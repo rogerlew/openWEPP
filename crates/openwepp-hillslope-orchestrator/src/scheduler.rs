@@ -733,6 +733,115 @@ impl OfeLaneExecutionInput {
     }
 }
 
+/// One OFE lane's dynamic state carried across scheduler days.
+#[derive(Debug, Clone)]
+pub struct OfeLanePersistentState {
+    pub ofe_id: usize,
+    pub upstream_area_ratio: f64,
+    pub writeback_surface: HillslopeWritebackSurface,
+}
+
+impl OfeLanePersistentState {
+    #[must_use]
+    pub fn new(ofe_id: usize, writeback_surface: HillslopeWritebackSurface) -> Self {
+        Self {
+            ofe_id,
+            upstream_area_ratio: 1.0,
+            writeback_surface,
+        }
+    }
+
+    #[must_use]
+    pub fn with_upstream_area_ratio(
+        ofe_id: usize,
+        upstream_area_ratio: f64,
+        writeback_surface: HillslopeWritebackSurface,
+    ) -> Self {
+        Self {
+            ofe_id,
+            upstream_area_ratio,
+            writeback_surface,
+        }
+    }
+
+    #[must_use]
+    fn to_execution_input(&self) -> OfeLaneExecutionInput {
+        OfeLaneExecutionInput {
+            ofe_id: self.ofe_id,
+            upstream_area_ratio: self.upstream_area_ratio,
+            writeback_surface: self.writeback_surface.clone(),
+        }
+    }
+
+    fn update_from_report(&mut self, report: &OfeLaneExecutionReport) {
+        self.writeback_surface = report.kernel_report.writeback_surface.clone();
+    }
+}
+
+/// OFE-keyed dynamic state sequence for repeated daily MOFE execution.
+#[derive(Debug, Clone)]
+pub struct OfeLanePersistentStateSequence {
+    lane_states: Vec<OfeLanePersistentState>,
+}
+
+impl OfeLanePersistentStateSequence {
+    pub fn new(lane_states: Vec<OfeLanePersistentState>) -> Result<Self, OfeLaneSequenceError> {
+        validate_persistent_lane_states(&lane_states)?;
+
+        Ok(Self { lane_states })
+    }
+
+    #[must_use]
+    pub fn lane_states(&self) -> &[OfeLanePersistentState] {
+        &self.lane_states
+    }
+
+    pub fn lane_states_mut(&mut self) -> &mut [OfeLanePersistentState] {
+        &mut self.lane_states
+    }
+
+    #[must_use]
+    pub fn lane_surface(&self, ofe_id: usize) -> Option<&HillslopeWritebackSurface> {
+        self.lane_states
+            .iter()
+            .find(|lane_state| lane_state.ofe_id == ofe_id)
+            .map(|lane_state| &lane_state.writeback_surface)
+    }
+
+    #[must_use]
+    fn to_execution_inputs(&self) -> Vec<OfeLaneExecutionInput> {
+        self.lane_states
+            .iter()
+            .map(OfeLanePersistentState::to_execution_input)
+            .collect()
+    }
+
+    pub fn replace_from_report(
+        &mut self,
+        report: &OfeLaneSequenceExecutionReport,
+    ) -> Result<(), OfeLaneSequenceError> {
+        if self.lane_states.len() != report.lane_reports.len() {
+            return Err(OfeLaneSequenceError::PersistentStateLaneCountMismatch {
+                expected_lane_count: self.lane_states.len(),
+                observed_lane_count: report.lane_reports.len(),
+            });
+        }
+
+        for (state, lane_report) in self.lane_states.iter_mut().zip(report.lane_reports.iter()) {
+            if state.ofe_id != lane_report.ofe_id {
+                return Err(OfeLaneSequenceError::PersistentStateLaneMismatch {
+                    expected_ofe_id: state.ofe_id,
+                    observed_ofe_id: lane_report.ofe_id,
+                });
+            }
+
+            state.update_from_report(lane_report);
+        }
+
+        Ok(())
+    }
+}
+
 /// One OFE lane's scheduler result and explicit adjacent-transfer evidence.
 #[derive(Debug, Clone)]
 pub struct OfeLaneExecutionReport {
@@ -777,6 +886,14 @@ pub enum OfeLaneSequenceError {
         symbol: &'static str,
         expected: f64,
         observed: f64,
+    },
+    PersistentStateLaneCountMismatch {
+        expected_lane_count: usize,
+        observed_lane_count: usize,
+    },
+    PersistentStateLaneMismatch {
+        expected_ofe_id: usize,
+        observed_ofe_id: usize,
     },
     LaneScheduler {
         ofe_id: usize,
@@ -823,6 +940,20 @@ impl fmt::Display for OfeLaneSequenceError {
                 f,
                 "OFE {ofe_id} transfer daily {symbol} mismatch: expected {expected}, observed {observed}"
             ),
+            Self::PersistentStateLaneCountMismatch {
+                expected_lane_count,
+                observed_lane_count,
+            } => write!(
+                f,
+                "persistent OFE lane state had {expected_lane_count} lanes but execution produced {observed_lane_count}"
+            ),
+            Self::PersistentStateLaneMismatch {
+                expected_ofe_id,
+                observed_ofe_id,
+            } => write!(
+                f,
+                "persistent OFE lane state expected OFE {expected_ofe_id} but execution produced OFE {observed_ofe_id}"
+            ),
             Self::LaneScheduler { ofe_id, source } => {
                 write!(f, "OFE {ofe_id} lane scheduler failed: {source}")
             }
@@ -849,6 +980,32 @@ impl From<PerOfeDailyWaterBalanceError> for OfeLaneSequenceError {
     fn from(value: PerOfeDailyWaterBalanceError) -> Self {
         Self::Transfer(value)
     }
+}
+
+fn validate_persistent_lane_states(
+    lane_states: &[OfeLanePersistentState],
+) -> Result<(), OfeLaneSequenceError> {
+    if lane_states.is_empty() {
+        return Err(OfeLaneSequenceError::InvalidLaneCount { lane_count: 0 });
+    }
+
+    for (index, lane_state) in lane_states.iter().enumerate() {
+        let expected_ofe_id = index + 1;
+        if lane_state.ofe_id != expected_ofe_id {
+            return Err(OfeLaneSequenceError::NonSequentialLaneOfeId {
+                expected_ofe_id,
+                observed_ofe_id: lane_state.ofe_id,
+            });
+        }
+
+        validate_positive_transfer_scalar(
+            lane_state.ofe_id,
+            "persistent upstream_area_ratio",
+            lane_state.upstream_area_ratio,
+        )?;
+    }
+
+    Ok(())
 }
 
 /// Per-phase kernel/writeback execution evidence.
@@ -1497,6 +1654,24 @@ impl HillslopePhaseScheduler {
         }
 
         Ok(OfeLaneSequenceExecutionReport { lane_reports })
+    }
+
+    pub fn execute_persistent_ofe_sequence_day_with_kernel<K>(
+        &self,
+        topology_report: &TopologyValidationReport,
+        kernel: &mut K,
+        lane_state: &mut OfeLanePersistentStateSequence,
+    ) -> Result<OfeLaneSequenceExecutionReport, OfeLaneSequenceError>
+    where
+        K: HillslopeKernel,
+    {
+        validate_persistent_lane_states(lane_state.lane_states())?;
+        let lane_inputs = lane_state.to_execution_inputs();
+        let report = self.execute_ofe_sequence_with_kernel(topology_report, kernel, lane_inputs)?;
+
+        lane_state.replace_from_report(&report)?;
+
+        Ok(report)
     }
 }
 
