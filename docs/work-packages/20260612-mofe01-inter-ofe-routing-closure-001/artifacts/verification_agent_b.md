@@ -6,6 +6,35 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-C2 Verification Record
+
+Agent: `019ebece-9514-7ac2-bf80-8f80c478e581`
+
+Static/Ran read-only verification of M-C2 governance disposition. The verifier
+did not edit files and did not invoke `comparator_suite_runner`.
+
+Findings:
+- No blocking issues found.
+
+Verified:
+- M-C2 disposition is consistently `executed-hold`, with the blocker named as
+  missing real per-OFE daily WB state.
+- Artifacts state no M-C2 production code, contract, or test edits occurred;
+  current diff/status has no paths under `crates/`, `tests/`,
+  `docs/specifications/science-contracts/`, `Cargo.toml`, or `Cargo.lock`.
+- Local-comparison-without-subagent posture is disclosed consistently.
+- M-C3 is explicitly blocked until real per-OFE daily state exists.
+
+Residual risks:
+- `package.md` still said `Status: scaffolded` at verification time. Accepted
+  and fixed by updating package status to `active; M-C2 executed-hold`.
+- Existing review/verification artifacts were M-C records only at verification
+  time. Accepted and fixed by adding M-C2 review/verification records.
+- M-C2 comparison evidence points to `/tmp` local artifacts; future
+  verification may need those temp files or a rerun.
+
+## M-C Verification Record
+
 Agent: `019ebeb2-b696-79c3-b847-733e116c6f48`
 
 Read-only verification of current M-C artifact content. Ran `git status`,
@@ -28,8 +57,8 @@ Verified:
   H8/H15/H19/H20/H22/H23/H28 against M-B outputs.
 - No production edits: `git status --short` showed only package artifact
   changes.
-- Docs lint: artifacts record `markdown-doc lint ...` pass with 27 files
-  validated; package has 27 markdown files. The verifier did not rerun lint.
+- Docs lint: at the M-C boundary, artifacts recorded `markdown-doc lint ...`
+  pass with 27 files validated; the verifier did not rerun lint.
 - Comparator subagent: artifacts explicitly disclose local execution due
   operator override/quota exhaustion.
 - M-B: current wording no longer overclaims full identity acceptance; it states

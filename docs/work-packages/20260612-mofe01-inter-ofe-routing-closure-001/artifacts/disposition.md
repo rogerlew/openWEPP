@@ -1,10 +1,26 @@
 # disposition
 
-Status: M-C executed-hold; package remains open for per-OFE publication design
+Status: M-C2 executed-hold; package remains open for per-OFE runtime-state design
 
 Evidence mode: Ran + Static
 
 ## Disposition
+
+Increment M-C2 was executed end-to-end through the scoping, comparison, and
+evidence boundary and is held. The existing MOFE hourly carry arrays are real
+transfer state, but they are not per-OFE daily WB output state. Current
+writeback remains aggregate scalar maps, and current WB13/WAT publication still
+emits one `OFE=1` row/day with `UpStrmQ=0` and `QOFE=Q`.
+
+No production code, science contract, or test was edited for M-C2. Implementing
+per-OFE daily rows from the available aggregate WB13 state would be surrogate
+physics. The next lawful increment must design and contract real per-OFE
+dynamic state before M-C3 can publish it.
+
+Local comparisons were run without the comparator subagent under explicit
+operator direction because GPT-5.3-Codex-Spark weekly quota was exhausted.
+
+## M-C disposition
 
 Increment M-C was executed end-to-end through the current boundary and is held.
 The H1-H36 runner execution gate remains green, and the single-OFE anchor stayed

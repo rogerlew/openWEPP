@@ -125,6 +125,11 @@ real to publish without it.
 
 ## Increment M-C3 — per-OFE WAT publication
 
+M-C2 execution result (2026-06-13): held before production edits. The existing
+hourly carry arrays are transfer/copy-forward state, not per-OFE daily WB
+output state; the scheduler/writeback boundary remains aggregate scalar maps.
+M-C3 stays blocked until an authoritative per-OFE daily state surface exists.
+
 - On real per-OFE state (M-C2), publish per-OFE rows: no `UpStrmQ=0` for
   downstream OFEs, no `QOFE=Q` aliasing, one row per OFE per day or an
   explicitly contracted equivalent; handoff-to-printed-precision checks

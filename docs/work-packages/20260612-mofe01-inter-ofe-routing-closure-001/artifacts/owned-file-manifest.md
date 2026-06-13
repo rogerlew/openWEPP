@@ -1,8 +1,43 @@
 # owned file manifest
 
-Status: updated through M-C
+Status: updated through M-C2
 
 Evidence mode: Static
+
+## M-C2 edited files
+
+Work-package files/artifacts:
+
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/package.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/m-c2-per-ofe-daily-state-scope-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/gate-results.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/disposition.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/implementation-test-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/pre-implementation-contract-gate.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-test-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/worker-handoff.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/README.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_b.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_b.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/kernel-profile-compliance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/line-count-governance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/required-reading-map.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/owned-file-manifest.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
+
+## Concurrent non-M-C2 dirty files
+
+The following files are dirty from the prior user-directed governance-rule
+amendment for future work packages. They are not part of the M-C2 work-package
+write set, but were included in the broader docs-lint validation because they
+remain in the same working tree:
+
+- `docs/codex_exec_plans.md`
+- `docs/standards/kernel-work-package-preparation.md`
+- `docs/work-packages/AGENTS.md`
 
 ## M-C edited files
 

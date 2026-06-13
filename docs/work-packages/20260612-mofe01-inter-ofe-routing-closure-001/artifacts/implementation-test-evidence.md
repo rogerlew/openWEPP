@@ -1,15 +1,45 @@
 # implementation test evidence
 
-Status: M-C executed-hold; no implementation tests added
+Status: M-C2 executed-hold; no implementation tests added
 
 Evidence mode: Ran + Static
+
+## M-C2 ran
+
+- `cargo build -p openwepp-runner --bin openwepp-cli-hill`
+  - PASS.
+- Fresh H1-H36 CLI batch with `target/debug/openwepp-cli-hill --policy compat --legacy-sidecar-discovery`
+  - PASS; 36/36 exit code `0` under `/tmp/openwepp_mofe01_mc2`.
+- Direct parquet publication audit with `.venv/bin/python`
+  - FAIL M-C2 red tests: all 29 multi-OFE surfaces still publish one `OFE=1`
+    row/day, `UpStrmQ=0`, and `QOFE=Q`.
+- Single-OFE anchor comparison to M-B
+  - PASS; H8/H15/H19/H20/H22/H23/H28 byte-identical for `.hbp`,
+    `.loss.json`, `.plot.parquet`, and `.wat.parquet`.
+- Local owcmp H1-H36 semantic batch without comparator subagent
+  - PASS command execution.
+  - FAIL semantic comparison due structural per-OFE WAT row-key mismatch.
+  - Ran locally under explicit operator direction because
+    GPT-5.3-Codex-Spark weekly quota was exhausted.
+- `cargo test --test wb11_hydrology_kernel_contract mofe01_mb -- --nocapture`
+  - PASS.
+- `cargo test -p openwepp-runner mofe01_mb_wb11_seed_purges_stale_daily_carryover_for_mofe_hourly_arrays -- --nocapture`
+  - PASS.
+- `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --format plain`
+  - PASS; 28 files validated, 0 errors, 0 warnings.
+- `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --path docs/work-packages/AGENTS.md --path docs/standards/kernel-work-package-preparation.md --path docs/codex_exec_plans.md --format plain`
+  - PASS; 31 files validated, 0 errors, 0 warnings.
+
+No M-C2 production implementation or tests were added. The increment is held at
+the real per-OFE daily state architecture boundary.
 
 ## M-C ran
 
 - Fresh H1-H36 CLI batch with `target/debug/openwepp-cli-hill --policy compat --legacy-sidecar-discovery`
   - PASS; 36/36 exit code `0`.
 - Local owcmp H1-H36 semantic batch without comparator subagent
-  - PASS execution; semantic FAIL due structural per-OFE WAT publication mismatch.
+  - PASS command execution.
+  - FAIL semantic comparison due structural per-OFE WAT publication mismatch.
   - Ran locally under explicit operator direction because
     GPT-5.3-Codex-Spark weekly quota was exhausted.
 - Direct parquet publication audit
@@ -35,7 +65,8 @@ the real per-OFE state boundary.
 - Full H1-H36 CLI batch with `target/debug/openwepp-cli-hill --policy compat --legacy-sidecar-discovery`
   - PASS; 36/36 exit code `0`.
 - Local owcmp H1-H36 semantic batch without comparator subagent
-  - PASS execution; semantic FAIL due structural row-key/per-OFE WAT publication mismatch assigned to M-C.
+  - PASS command execution.
+  - FAIL semantic comparison due structural row-key/per-OFE WAT publication mismatch assigned to M-C.
   - Ran locally under explicit operator direction because
     GPT-5.3-Codex-Spark weekly quota was exhausted.
 

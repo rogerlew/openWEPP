@@ -14,8 +14,9 @@ Operator override:
 
 | Command/check | Result | Notes |
 | --- | --- | --- |
-| Fresh H1-H36 CLI batch in `/tmp/openwepp_mofe01_mc` | PASS execution | 36/36 exit code `0`; outputs in `/tmp/openwepp_mofe01_mc/output`; manifests in `/tmp/openwepp_mofe01_mc/manifests`. |
-| `tools/owcmp/owcmp batch h1-h39-semantic --baseline-dir /wc1/runs/ar/arboreal-dendrite/wepp/output --baseline-pattern 'H{h}.wat.dat' --candidate-dir /tmp/openwepp_mofe01_mc/output --candidate-pattern 'H{h}.wat.parquet' --candidate-year-offset 2012 --output-root /tmp/openwepp_mofe01_mc/owcmp --start 1 --end 36` | PASS execution, FAIL semantic | `summary.json`: `execution_verdict=PASS`, `semantic_verdict=FAIL`, `semantic_pass_count=0/36`, `structural_row_key_failures=350720`, first divergent H1 key `[1,1,2000]`. |
+| Fresh H1-H36 CLI batch in `/tmp/openwepp_mofe01_mc` | PASS | 36/36 exit code `0`; outputs in `/tmp/openwepp_mofe01_mc/output`; manifests in `/tmp/openwepp_mofe01_mc/manifests`. |
+| `tools/owcmp/owcmp batch h1-h39-semantic ... --output-root /tmp/openwepp_mofe01_mc/owcmp --start 1 --end 36` command execution | PASS | `summary.json`: `execution_verdict=PASS`. |
+| `tools/owcmp/owcmp batch h1-h39-semantic ... --output-root /tmp/openwepp_mofe01_mc/owcmp --start 1 --end 36` semantic comparison | FAIL | `summary.json`: `semantic_verdict=FAIL`, `semantic_pass_count=0/36`, `structural_row_key_failures=350720`, first divergent H1 key `[1,1,2000]`. |
 | Direct parquet publication audit over `/tmp/openwepp_mofe01_mc/output` | FAIL M-C structural gate | All 29 multi-OFE surfaces still have 2192 candidate WAT rows, unique `OFE=[1]`, `publication_ofe_policy=single-row-canonicalized-hillslope-aggregate`, `max(abs(UpStrmQ))=0`, and `max(abs(QOFE-Q))=0`. |
 | Single-OFE anchor compare against `/tmp/openwepp_mofe01_mb/output` | PASS | H8/H15/H19/H20/H22/H23/H28 were byte-identical for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`. |
 

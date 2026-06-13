@@ -1,8 +1,26 @@
 # kernel profile compliance checklist
 
-Status: checked through M-C
+Status: checked through M-C2
 
 Evidence mode: Ran + Static
+
+## M-C2 checklist
+
+- Production edits: none.
+- Typed errors: unchanged.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: unchanged.
+- Runtime state/publication paths: unchanged because current architecture has
+  no real per-OFE daily WB state surface to retain or publish.
+
+Validation:
+- Full Rust closure loop was not rerun for M-C2 because no production Rust,
+  science-contract, dependency, or test files were edited.
+- Focused existing M-B carry tests passed.
+- M-C2 output comparison and publication audit were run separately and are
+  recorded in `m-c2-per-ofe-daily-state-scope-evidence.md`.
 
 ## M-C checklist
 

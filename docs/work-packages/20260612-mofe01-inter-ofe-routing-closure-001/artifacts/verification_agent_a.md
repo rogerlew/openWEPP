@@ -6,6 +6,33 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-C2 Verification Record
+
+Agent: `019ebece-7f0b-7002-b820-0c001c900972`
+
+Static/Ran read-only verification of current M-C2 artifacts and saved
+`/tmp/openwepp_mofe01_mc2` outputs. The verifier did not edit files and did not
+invoke `comparator_suite_runner`.
+
+Verified:
+- Local `/tmp/openwepp_mofe01_mc2` outputs match the recorded core results:
+  36/36 zero exit codes, 36 WAT outputs, 36 manifests, publication audit
+  failure on all 29 multi-OFE surfaces, owcmp `execution_verdict=PASS`,
+  `semantic_verdict=FAIL`, `semantic_pass_count=0/36`,
+  `structural_row_key_failures=350720`, first divergent H1 key `[1,1,2000]`,
+  and single-OFE anchors matching `/tmp/openwepp_mofe01_mb/output`.
+
+Findings:
+
+1. **Low:** docs-lint file-count evidence was stale after adding the M-C2
+   artifact; current package lint validates 28 files, not 27.
+
+Disposition:
+- Accepted and fixed. Added M-C2 package docs-lint PASS evidence with 28 files
+  and broader working-tree docs-lint PASS evidence with 31 files.
+
+## M-C Verification Record
+
 Agent: `019ebeab-821b-75c1-830f-4ef60373ada1`
 
 Read-only artifact review plus local checks (`git status`, `/tmp` evidence, and

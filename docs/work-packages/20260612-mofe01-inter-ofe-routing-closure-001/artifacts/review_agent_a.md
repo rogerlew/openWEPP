@@ -6,6 +6,36 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-C2 Review Record
+
+Agent: `019ebece-42e7-7fe0-9d6f-66e5bd7fea35`
+
+Static/Ran read-only review of M-C2 artifacts and saved
+`/tmp/openwepp_mofe01_mc2` evidence. The reviewer did not edit files and did
+not run or invoke `comparator_suite_runner`.
+
+Findings:
+- No blocking correctness/governance findings.
+
+Verified:
+- M-C2 artifacts consistently preserve the executed-hold boundary.
+- Comparator-subagent prohibition/operator override is disclosed in M-C2
+  evidence, gate results, disposition, and handoff.
+- Per-element and transfer identities remain unmeasurable without real
+  per-OFE daily WB state.
+- Full Rust closure loop not run is truthfully recorded because M-C2 made no
+  production Rust, contract, dependency, or test edits.
+- Saved `/tmp/openwepp_mofe01_mc2` evidence matches the recorded H1-H36,
+  owcmp, publication-audit, and single-OFE anchor results.
+
+Residual risk:
+- M-C2 remains held by design until real per-OFE daily WB state exists.
+- Package markdown lint needed an M-C2 record after artifact additions; this
+  was accepted and fixed in `gate-results.md` and
+  `implementation-test-evidence.md`.
+
+## M-C Review Record
+
 Agent: `019ebeab-649d-71c2-9418-5ac8c70956c8`
 
 Static/Ran read-only review of M-C package artifacts and local

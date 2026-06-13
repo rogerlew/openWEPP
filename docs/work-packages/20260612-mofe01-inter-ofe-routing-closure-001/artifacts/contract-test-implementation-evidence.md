@@ -1,8 +1,29 @@
 # contract test implementation evidence
 
-Status: M-C held; M-B contract tests implemented
+Status: M-C2 held; M-B contract tests implemented
 
 Evidence mode: Ran + Static
+
+## M-C2
+
+No contract tests were added in M-C2. The increment stopped at the
+pre-implementation contract gate because current architecture has no real
+per-OFE daily WB state surface to assert.
+
+Permanent M-C2 tests should be added with the next implementation increment
+after an authoritative per-OFE state design exists. The temporary red evidence
+for this increment is the direct publication audit and local owcmp output:
+
+- all 29 multi-OFE surfaces remain single-`OFE=1` on WAT output,
+- downstream `UpStrmQ` remains zero on WAT output,
+- `QOFE` remains aliased to `Q`,
+- per-element and transfer identities remain unmeasurable on daily output
+  surfaces.
+
+Existing M-B tests were rerun and passed:
+
+- `cargo test --test wb11_hydrology_kernel_contract mofe01_mb -- --nocapture`
+- `cargo test -p openwepp-runner mofe01_mb_wb11_seed_purges_stale_daily_carryover_for_mofe_hourly_arrays -- --nocapture`
 
 ## M-C
 

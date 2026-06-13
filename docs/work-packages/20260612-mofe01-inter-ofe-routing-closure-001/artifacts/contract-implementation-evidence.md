@@ -1,8 +1,21 @@
 # contract implementation evidence
 
-Status: M-C held; M-B contract implementation complete
+Status: M-C2 held; M-B contract implementation complete
 
 Evidence mode: Ran + Static
+
+## M-C2
+
+No contract edits were made in M-C2. The increment reached the same authority
+boundary one layer earlier than publication: current contracts do not define an
+OFE-keyed daily WB output state surface, and current code has no such surface
+to implement against.
+
+The M-C2 scoping evidence proves that the existing MOFE hourly arrays are
+hour-indexed transfer/copy-forward state. They are insufficient authority for
+per-OFE daily water-balance rows or per-element/transfer identity measurement.
+Changing `SC-WATBAL-001` without adding real state would only make the missing
+state look contracted.
 
 ## M-C
 

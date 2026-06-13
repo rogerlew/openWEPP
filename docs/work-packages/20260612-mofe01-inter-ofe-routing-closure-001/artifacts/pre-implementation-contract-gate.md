@@ -1,6 +1,6 @@
 # pre implementation contract gate
 
-Status: satisfied for M-B; M-C held before implementation
+Status: satisfied for M-B; M-C2 held before implementation
 
 Evidence mode: Static
 
@@ -28,3 +28,14 @@ M-C gate:
   single-row MOFE04 publication (`OFE=1`, `QOFE=Q`) while M-C requires real
   per-OFE semantics or a contracted equivalent. No production edit was made
   because the available runtime state is aggregate-only for WAT publication.
+
+M-C2 gate:
+- Reopened. M-C2 reread the package, staged plan, M-C evidence, work-package
+  governance including the gate-evidence non-deferral rule, science-contract
+  governance, crate/test governance, scheduler/writeback seams, MOFE hourly
+  carry seams, WB13/WAT publication path, and existing M-B tests.
+- Held before contract/code edits. The scoping read showed that current MOFE
+  hourly carry arrays are hour-indexed transfer state, not per-OFE daily WB
+  output state. Contracting per-OFE daily state before an implementable state
+  surface exists would bless surrogate output synthesis, so M-C2 records a
+  BLOCKED gate instead.

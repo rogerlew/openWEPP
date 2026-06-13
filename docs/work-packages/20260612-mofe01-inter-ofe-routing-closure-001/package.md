@@ -1,6 +1,6 @@
 # MOFE01 — Inter-OFE Routing Closure (rung 3)
 
-Status: scaffolded
+Status: active; M-C2 executed-hold
 
 Package type: staged implementation/closure package (FDHP01 execution shape:
 scope-then-staged-increments, per-increment conservation hard stops)
