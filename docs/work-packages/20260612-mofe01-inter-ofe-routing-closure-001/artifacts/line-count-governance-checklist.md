@@ -1,8 +1,25 @@
 # line count governance checklist
 
-Status: checked through M-F executed-hold
+Status: checked through M-F-REDO executed-hold
 
 Evidence mode: Ran
+
+## M-F-REDO
+
+Ran `wc -l` over touched Rust files after the M-F-REDO implementation and
+fixture updates.
+
+| File group | Lines | Disposition |
+| --- | ---: | --- |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs` | 2122 | WARN; crossed 2000-line warning threshold, below 3000. |
+| `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs` | 1740 | OK. |
+| `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs` | 1583 | OK. |
+| `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs` | 1617 | OK. |
+| Other touched Rust files/tests | below 1500 | OK. |
+
+No touched Rust source file crossed the 3000-line non-exempt threshold.
+M-F-REDO2 should extract from `scheduler_seed_and_runtime.rs` before adding
+more scheduler trace logic.
 
 ## M-F
 

@@ -1,9 +1,32 @@
 # contract test implementation evidence
 
-Status: M-F publication tests green for row shape; acceptance held on surface
-carry producer
+Status: M-F-REDO tests green for active handoff and anti-clone; acceptance
+held on QOFE geometry scaling
 
 Evidence mode: Ran + Static
+
+## M-F-REDO
+
+M-F-REDO expands publication coverage without weakening M-E4-REDO identity
+tests:
+
+- `cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows`
+  - Asserts multi-OFE WAT output emits `days * nofe` rows, grouped OFE keys,
+    active nonzero surface handoff, and anti-clone publication vectors.
+- `mofe04_publication_contract_authority_closure_contract`
+  - Asserts contract authority for `INV-WATBAL-098` and `INV-SYSTEM-031`,
+    including active handoff and anti-clone language.
+- Existing fixture-family tests were updated for the now-active same-pass runon
+  storage path.
+
+Ran:
+
+- `cargo test --workspace`
+  - PASS.
+- Required local H1/H6/H9/H11 smoke audit
+  - PASS active surface/lateral handoff and anti-clone gates.
+  - FAIL `QOFE != Q` geometry gate; this blocker is runtime acceptance, not
+    missing test registration.
 
 ## M-F
 
@@ -12,7 +35,9 @@ identity tests:
 
 - `cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows`
   - Asserts multi-OFE WAT output emits `days * nofe` rows, grouped OFE keys,
-    M-F manifest policy/storage markers, and `QOFE != Q`.
+    M-F manifest policy/storage markers, and the public per-OFE publication
+    seam. M-F-REDO later tightened this to active handoff and anti-clone
+    coverage.
 - `watershed_cli_mf_accepts_valid_per_ofe_publication_metadata`
   - Asserts watershed contributor manifest validation accepts the M-F per-OFE
     metadata shape when counts and keys are coherent.

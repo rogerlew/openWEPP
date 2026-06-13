@@ -230,7 +230,8 @@ M-F execution produced real public per-OFE row shape:
   `publication_ofe_policy=per-ofe-dynamic-water-balance-state`,
   `storage_lineage_policy=per-ofe-dynamic-wb-state`, and grouped first/last
   OFE keys.
-- `QOFE` is no longer the aggregate `Q` alias in per-OFE publication.
+- M-F's apparent `QOFE` non-alias finding is superseded by M-F-REDO; the
+  current blocker is geometry-scaled public `QOFE`.
 
 M-F does **not** close because the surface export producer is still hollow:
 direct WAT audits show `max_upstrmq=0.0` and zero downstream nonzero `UpStrmQ`
@@ -241,6 +242,11 @@ publication. Detailed evidence:
 `m-f-per-ofe-wat-publication-evidence.md`.
 
 ## Increment M-F-REDO — per-OFE record distinctness + surface export closure
+
+Status: executed-hold 2026-06-13; lane differentiation, active surface/lateral
+handoff, and anti-clone publication are fixed, but candidate `QOFE` still
+aliases candidate `Q` on real multi-OFE smoke. Geometry-scaled `QOFE`
+publication remains blocked before M-G/M-H.
 
 **Root cause deepened by Claude review (2026-06-13):** the M-F blocker is not
 only the surface export producer. On the H1 M-F cohort, **every hydrology
@@ -277,6 +283,68 @@ M-F-REDO owns the M-F blocker before M-G/M-H may proceed:
   Spark quota remains exhausted, and rerun the single-OFE anchor.
 - Gate: no zero-on-zero surface handoff acceptance; exact `0.0` residual is
   valid only when paired with evidence of nonzero active surface transfer rows.
+
+M-F-REDO execution fixed the clone and active-handoff defects:
+
+- Multi-OFE lanes now build OFE-local soil/slope/management runtime surfaces.
+- H1/H6/H9/H11 final smoke under `/tmp/openwepp_mofe01_mfredo_final` exits
+  zero and reports nonzero downstream `UpStrmQ`/`SubRIn` rows with adjacent
+  transfer residuals at `0.0` on active operands.
+- The anti-clone audit reports zero active all-OFE-identical days and per-day
+  distinctness up to the OFE count for `Q` and `SoilWaterTotal`.
+- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 remain byte-identical to M-E2
+  for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`.
+
+M-F-REDO does **not** close because the required `QOFE != Q` gate regressed at
+the real publication surface: candidate `max_abs_qofe_minus_q=0.0` for
+H1/H6/H9/H11. The pinned legacy-clean ladder proves `QOFE` is not a local `Q`
+alias (`max abs(QOFE-Q)` is `362.13991`, `177.51694`, `185.89531`, and
+`84.64425` mm respectively), and baseline `watbal.for` writes `Q` with
+`efflen/totlen` scaling while `QOFE` uses `efflen/slplen` scaling.
+
+## Increment M-F-REDO-CLONE — make per-OFE runoff genuinely distinct (prerequisite)
+
+M-F-REDO's anti-clone fix reached ET but **not runoff**: 968/1057 (92%) of
+runoff days still have all-5-OFE-identical local runoff (`Q − UpStrmQ`), and
+the peak-runoff day is a full clone across every column (see
+`m-f-per-ofe-wat-publication-evidence.md` Claude review). The `Q = 129.16 ×
+ofe_id` ladder is the clone accumulating, not real routing.
+
+- Root-cause why ET differentiated but runoff did not (the diagnostic clue):
+  which per-OFE lane inputs reach the ET kernel but not the runoff/infiltration
+  kernel — static soil/slope slice application, or the run-on/runoff
+  generation path reading aggregate state. Read the seam, cite lines.
+- The **anti-clone gate must bite on the runoff columns** (`Q`, local
+  `Q − UpStrmQ`, `Es`, `Dp`, `SoilWaterTotal`), not only `Ep`. Multi-OFE
+  published runoff must be distinct across OFEs on a routed hillslope.
+- Gate: per-OFE local runoff distinct across OFEs on the H1/H6/H9/H11 cohort;
+  genuine per-element + transfer identities still close at `TOL-WATBAL-007`;
+  single-OFE anchor bit-identical.
+
+## Increment M-F-REDO2 — per-OFE `QOFE` as local runoff depth (after runoff is distinct)
+
+Prerequisite: M-F-REDO-CLONE (a cloned runoff renders ÷slplen as a tidy ladder
+of equal local depths, proving nothing). Then render the genuinely-distinct
+routed `runoff(iplane)` as the two legacy depths:
+
+- **`QOFE` = the runoff depth *through this OFE*** — `runoff(iplane) ·
+  efflen/slplen` (`watbal.for:1099`), normalized to the OFE's **own** slope
+  length. This is the sane per-OFE semantic (operator framing 2026-06-13);
+  pin it in `SC-WATBAL-001` as "local runoff depth at the OFE," not as an
+  opaque "geometry-scaled" term.
+- **`Q`** (the "runoff" column) = `runoff(iplane) · efflen/totlen`
+  (`watbal.for:1094`), normalized to **cumulative** length (the source comment:
+  *"efflen may span OFEs"*) — a hillslope-cumulative depth, which is why it
+  grows downslope.
+- One routed runoff, two normalizations: local (÷slplen → `QOFE`) vs cumulative
+  (÷totlen → `Q`). Contract test: multi-OFE rows cannot accept `QOFE == Q`
+  where `slplen ≠ totlen`; `QOFE` must equal the OFE-length-normalized depth.
+- Preserve active surface/lateral handoff, the runoff anti-clone gate, the
+  M-E4-REDO non-tautological identities, and the single-OFE anchor.
+- Gate: `QOFE` is the OFE-local depth and `Q` the cumulative depth, both from
+  genuinely-distinct routed runoff; the row-key-aligned semantic comparison vs
+  legacy (clean at 1–5) passes the value families or remaining diffs are
+  classified by independent conservation/lineage evidence.
 
 ## Increment M-G — erosion `qin`/sediment coupling decision (scope §"M-D erosion qin and sediment coupling")
 

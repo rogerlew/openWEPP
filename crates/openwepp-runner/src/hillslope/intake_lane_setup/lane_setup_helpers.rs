@@ -70,6 +70,232 @@ pub(crate) fn build_static_per_ofe_lane_slices(
     Ok(slices)
 }
 
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn build_static_per_ofe_lane_runtime_surface(
+    slice: &StaticOfeLaneSlice,
+    slope: &SlopeProfile,
+    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
+    management: &ManagementParseOutput,
+    snow_surface: &HillslopeWritebackSurface,
+    frost_surface: &HillslopeWritebackSurface,
+    pmetpara: &PmetparaFile,
+    pmetpara_mode: PmetparaParseMode,
+) -> Result<HillslopeWritebackSurface, HillslopeCliError> {
+    let lane_slope = build_lane_slope_profile(slice, slope)?;
+    let lane_soil = build_lane_soil_profile(slice, soil)?;
+    let lane_management = build_lane_management_output(slice, management)?;
+
+    let soil_surface = build_hillslope_runtime_surface_from_soil(&lane_soil).map_err(|error| {
+        per_ofe_state_failure(format!(
+            "failed projecting OFE {} soil runtime surface: {error}",
+            slice.ofe_id
+        ))
+    })?;
+    let slope_surface = build_hillslope_runtime_surface_from_slope_with_options(
+        &lane_slope,
+        SlopeRuntimeSurfaceOptions::compatibility(),
+    )
+    .map_err(|error| {
+        per_ofe_state_failure(format!(
+            "failed projecting OFE {} slope runtime surface: {error}",
+            slice.ofe_id
+        ))
+    })?;
+    let management_surface = build_hillslope_runtime_surface_from_management(&lane_management)
+        .map_err(|error| {
+            per_ofe_state_failure(format!(
+                "failed projecting OFE {} management runtime surface: {error}",
+                slice.ofe_id
+            ))
+        })?;
+    let management_residue_depth_m = management_surface
+        .state_surface
+        .get(&BoundarySymbol::from("frost.runtime_residue_depth_m"))
+        .copied();
+
+    let mut lane_pmetpara = pmetpara.clone();
+    let pmetpara_surface =
+        super::runtime_surface_helpers::build_hillslope_runtime_surface_from_pmetpara(
+            &lane_management,
+            &mut lane_pmetpara,
+            pmetpara_mode,
+        )?;
+
+    let mut runtime_surface = super::runtime_surface_helpers::merge_runtime_surfaces(
+        super::runtime_surface_helpers::merge_runtime_surfaces(
+            super::runtime_surface_helpers::merge_runtime_surfaces(
+                management_surface,
+                soil_surface,
+            ),
+            slope_surface,
+        ),
+        super::runtime_surface_helpers::merge_runtime_surfaces(
+            super::runtime_surface_helpers::merge_runtime_surfaces(
+                snow_surface.clone(),
+                frost_surface.clone(),
+            ),
+            pmetpara_surface,
+        ),
+    );
+    if let Some(residue_depth_m) = management_residue_depth_m {
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("frost.runtime_residue_depth_m"),
+            residue_depth_m,
+        );
+    }
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("mofe.static_lane.ofe_id"),
+        BoundaryValue::scalar(usize_to_scalar("mofe.static_lane.ofe_id", slice.ofe_id)?),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("mofe.static_lane.contributor_ofe_count"),
+        BoundaryValue::scalar(usize_to_scalar(
+            "mofe.static_lane.contributor_ofe_count",
+            slope.ofe_count,
+        )?),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("mofe.static_lane.area_m2"),
+        BoundaryValue::scalar(slice.area_m2),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("mofe.static_lane.source_slope_ofe"),
+        BoundaryValue::scalar(usize_to_scalar(
+            "mofe.static_lane.source_slope_ofe",
+            slice.slope_ofe_index + 1,
+        )?),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("mofe.static_lane.source_soil_ofe"),
+        BoundaryValue::scalar(usize_to_scalar(
+            "mofe.static_lane.source_soil_ofe",
+            slice.soil_ofe_index + 1,
+        )?),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("mofe.static_lane.source_management_ofe"),
+        BoundaryValue::scalar(usize_to_scalar(
+            "mofe.static_lane.source_management_ofe",
+            slice.management_ofe_index + 1,
+        )?),
+    );
+
+    Ok(runtime_surface)
+}
+
+fn build_lane_slope_profile(
+    slice: &StaticOfeLaneSlice,
+    slope: &SlopeProfile,
+) -> Result<SlopeProfile, HillslopeCliError> {
+    let mut ofe = slope
+        .ofes
+        .get(slice.slope_ofe_index)
+        .cloned()
+        .ok_or_else(|| {
+            per_ofe_state_failure(format!(
+                "missing slope OFE {} while projecting lane {}",
+                slice.slope_ofe_index + 1,
+                slice.ofe_id
+            ))
+        })?;
+    ofe.index = 0;
+    Ok(SlopeProfile {
+        datver: slope.datver,
+        datver_source: slope.datver_source,
+        ofe_count: 1,
+        ofes: vec![ofe],
+    })
+}
+
+fn build_lane_soil_profile(
+    slice: &StaticOfeLaneSlice,
+    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
+) -> Result<openwepp_input_contract::parsers::soil::SoilProfile, HillslopeCliError> {
+    let ofe = soil
+        .ofes
+        .get(slice.soil_ofe_index)
+        .cloned()
+        .ok_or_else(|| {
+            per_ofe_state_failure(format!(
+                "missing soil OFE {} while projecting lane {}",
+                slice.soil_ofe_index + 1,
+                slice.ofe_id
+            ))
+        })?;
+    Ok(openwepp_input_contract::parsers::soil::SoilProfile {
+        datver: soil.datver,
+        datver_raw: soil.datver_raw,
+        datver_alias_applied: soil.datver_alias_applied,
+        comment: soil.comment.clone(),
+        ntemp: 1,
+        ksflag: soil.ksflag,
+        ofes: vec![ofe],
+        restrictive_layer: soil.restrictive_layer.clone(),
+    })
+}
+
+fn build_lane_management_output(
+    slice: &StaticOfeLaneSlice,
+    management: &ManagementParseOutput,
+) -> Result<ManagementParseOutput, HillslopeCliError> {
+    let initial_ref = management
+        .schedule
+        .ofe_initial_refs
+        .get(slice.management_ofe_index)
+        .copied()
+        .ok_or_else(|| {
+            per_ofe_state_failure(format!(
+                "missing management initial ref for OFE {} while projecting lane {}",
+                slice.management_ofe_index + 1,
+                slice.ofe_id
+            ))
+        })?;
+    let mut slots = Vec::new();
+    for slot in management
+        .schedule
+        .slots
+        .iter()
+        .filter(|slot| slot.ofe_index == slice.management_ofe_index)
+    {
+        let mut lane_slot = slot.clone();
+        lane_slot.ofe_index = 0;
+        slots.push(lane_slot);
+    }
+    let expected_slots = management
+        .schedule
+        .rotation_repeats
+        .checked_mul(management.schedule.rotation_years)
+        .ok_or_else(|| {
+            per_ofe_state_failure(format!(
+                "management rotation slot count overflow while projecting lane {}",
+                slice.ofe_id
+            ))
+        })?;
+    if slots.len() != expected_slots {
+        return Err(per_ofe_state_failure(format!(
+            "OFE {} management projection produced {} slots, expected {expected_slots}",
+            slice.ofe_id,
+            slots.len()
+        )));
+    }
+
+    let mut registries = management.registries.clone();
+    registries.management_meta.nofes = 1;
+    Ok(ManagementParseOutput {
+        datver: management.datver.clone(),
+        topology_count: 1,
+        declared_total_years: management.declared_total_years,
+        section_counts: management.section_counts.clone(),
+        registries,
+        schedule: openwepp_input_contract::parsers::management::ManagementSchedule {
+            ofe_initial_refs: vec![initial_ref],
+            rotation_repeats: management.schedule.rotation_repeats,
+            rotation_years: management.schedule.rotation_years,
+            slots,
+        },
+    })
+}
+
 fn per_ofe_state_failure(detail: impl Into<String>) -> HillslopeCliError {
     HillslopeCliError::RuntimeSurfaceFailure {
         surface: "per_ofe_static_lane_slices",

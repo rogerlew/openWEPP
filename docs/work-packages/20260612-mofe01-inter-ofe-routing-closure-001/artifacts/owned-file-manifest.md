@@ -1,8 +1,59 @@
 # owned file manifest
 
-Status: updated through M-F executed-hold
+Status: updated through M-F-REDO executed-hold
 
 Evidence mode: Static
+
+## M-F-REDO edited files
+
+Rust implementation:
+
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_runoff_reconciliation.rs`
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_storage_reconciliation.rs`
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`
+- `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`
+- `crates/openwepp-runner/src/hillslope/intake_lane_setup/lane_setup_helpers.rs`
+- `crates/openwepp-runner/src/hillslope/intake_lane_setup/mod.rs`
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs`
+
+Tests:
+
+- `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb19_wb12_wb16.rs`
+- `tests/integration/cli03_runner_contract_derived_tests.rs`
+- `tests/integration/clim05_snow_runtime_kernel_contract.rs`
+- `tests/integration/erod13_wave1_core_kernel_contract.rs`
+- `tests/integration/erod14_wave2_multiofe_enrichment_kernel_contract.rs`
+- `tests/integration/irrig10_irrigation_runtime_kernel_contract.rs`
+- `tests/integration/mofe04_publication_contract_authority_closure_contract.rs`
+- `tests/integration/wb12_reconciliation_kernel_contract.rs`
+- `tests/integration/wb14_infiltration_hyetograph_kernel_contract.rs`
+- `tests/integration/wb15_canopy_interception_kernel_contract.rs`
+- `tests/integration/wb16_peak_runoff_kernel_contract.rs`
+
+Science contracts:
+
+- `docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md`
+- `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
+
+Work-package files/artifacts:
+
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/package.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/README.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-test-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/disposition.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/gate-results.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/implementation-test-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/line-count-governance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/m-f-per-ofe-wat-publication-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/owned-file-manifest.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/worker-handoff.md`
+
+No dependency, legacy, external-authority suite, or `/wc1` substrate file was
+edited in M-F-REDO.
 
 ## M-F edited files
 

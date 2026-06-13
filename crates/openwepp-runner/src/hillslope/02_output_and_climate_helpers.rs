@@ -1161,6 +1161,20 @@ fn runtime_surface_flux_symbol_value(
 fn runtime_surface_ofe_count(
     runtime_surface: &HillslopeWritebackSurface,
 ) -> Result<usize, HillslopeCliError> {
+    if let Some(contributor_ofe_count) =
+        runtime_surface_symbol_value(runtime_surface, "mofe.static_lane.contributor_ofe_count")
+    {
+        let count = scalar_to_usize(
+            "mofe.static_lane.contributor_ofe_count",
+            contributor_ofe_count,
+        )?;
+        if count == 0 {
+            return Err(mofe_hourly_carry_failure(
+                "mofe.static_lane.contributor_ofe_count must be >= 1 for MOFE hourly carry seeding",
+            ));
+        }
+        return Ok(count);
+    }
     if let Some(nelem) = runtime_surface_symbol_value(runtime_surface, "nelem") {
         let count = scalar_to_usize("nelem", nelem)?;
         if count == 0 {

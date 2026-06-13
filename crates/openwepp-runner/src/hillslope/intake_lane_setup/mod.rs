@@ -5,8 +5,9 @@ mod wb11_seed_helpers;
 
 pub(crate) use lane_setup_helpers::{
     build_adapter_boundary_provenance, build_execution_lane_context,
-    build_mode_selection_provenance, build_static_per_ofe_lane_slices,
-    build_timestep_policy_provenance, validate_hillslope_ofe_topology_parity,
+    build_mode_selection_provenance, build_static_per_ofe_lane_runtime_surface,
+    build_static_per_ofe_lane_slices, build_timestep_policy_provenance,
+    validate_hillslope_ofe_topology_parity,
 };
 
 pub(crate) use runtime_surface_helpers::{

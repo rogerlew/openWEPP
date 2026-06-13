@@ -1110,6 +1110,7 @@ pub fn execute_hillslope_run(
         .state_surface
         .get(&BoundarySymbol::from("frost.runtime_residue_depth_m"))
         .copied();
+    let pmetpara_template = pmetpara.clone();
     let pmetpara_surface = crate::hillslope::intake_lane_setup::build_hillslope_runtime_surface_from_pmetpara(
         &management,
         &mut pmetpara,
@@ -1134,7 +1135,10 @@ pub fn execute_hillslope_run(
             slope_surface,
         ),
         crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
-            crate::hillslope::intake_lane_setup::merge_runtime_surfaces(snow_surface, frost_surface),
+            crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
+                snow_surface.clone(),
+                frost_surface.clone(),
+            ),
             pmetpara_surface,
         ),
     );
@@ -1165,8 +1169,20 @@ pub fn execute_hillslope_run(
     let mut persistent_lane_state = if contributor_ofe_count > 1 {
         let lane_states = static_per_ofe_slices
             .iter()
-            .map(|slice| OfeLanePersistentState::new(slice.ofe_id, static_runtime_surface.clone()))
-            .collect::<Vec<_>>();
+            .map(|slice| {
+                crate::hillslope::intake_lane_setup::build_static_per_ofe_lane_runtime_surface(
+                    slice,
+                    &slope,
+                    &soil,
+                    &management,
+                    &snow_surface,
+                    &frost_surface,
+                    &pmetpara_template,
+                    request.sidecar_policy.as_pmetpara_parse_mode(),
+                )
+                .map(|surface| OfeLanePersistentState::new(slice.ofe_id, surface))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
         Some(
             OfeLanePersistentStateSequence::new(lane_states).map_err(|error| {
                 HillslopeCliError::RuntimeSurfaceFailure {

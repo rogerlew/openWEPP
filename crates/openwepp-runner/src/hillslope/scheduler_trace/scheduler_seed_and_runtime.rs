@@ -1085,13 +1085,20 @@ pub(super) fn seed_mofe03_wave2_runtime_surface_inputs(
 pub(super) fn resolve_mofe03_ofe_count(
     runtime_surface: &HillslopeWritebackSurface,
 ) -> Result<usize, HillslopeCliError> {
-    let ofe_count = scalar_to_usize(
-        "nelem",
-        require_mofe03_runtime_surface_scalar(runtime_surface, "nelem")?,
-    )?;
+    let (symbol, value) = match runtime_surface_symbol_value(
+        runtime_surface,
+        "mofe.static_lane.contributor_ofe_count",
+    ) {
+        Some(value) => ("mofe.static_lane.contributor_ofe_count", value),
+        None => (
+            "nelem",
+            require_mofe03_runtime_surface_scalar(runtime_surface, "nelem")?,
+        ),
+    };
+    let ofe_count = scalar_to_usize(symbol, value)?;
     if ofe_count == 0 {
         return Err(mofe03_wave2_seed_failure(
-            "nelem must be >= 1 for MOFE03 activation policy",
+            "MOFE03 OFE count must be >= 1 for activation policy",
         ));
     }
     Ok(ofe_count)

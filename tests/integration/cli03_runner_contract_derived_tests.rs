@@ -803,10 +803,63 @@ fn assert_mf_multiofe_publication_wat_rows(wat_output: &Path) {
         .map(|row| row_i32_value(row, "sim_day_index"))
         .collect::<Vec<_>>();
     assert_eq!(sim_day_indices, vec![1, 1, 1, 2, 2, 2]);
-    assert!(
-        (row_f64_value(&wat_rows[0], "QOFE") - row_f64_value(&wat_rows[0], "Q")).abs() > 1.0,
-        "multi-OFE WAT publication must not alias QOFE to local Q"
+    assert_mf_multiofe_publication_surface_handoff(&wat_rows[0..3]);
+    assert_mf_multiofe_publication_not_cloned(&wat_rows[0..3]);
+}
+
+fn assert_mf_multiofe_publication_surface_handoff(day_rows: &[Row]) {
+    assert_eq!(
+        day_rows.len(),
+        3,
+        "M-F active routed-day fixture must expose one row per OFE"
     );
+    for ofe_offset in 1..day_rows.len() {
+        let upstream_qofe = row_f64_value(&day_rows[ofe_offset - 1], "QOFE");
+        let downstream_upstrmq = row_f64_value(&day_rows[ofe_offset], "UpStrmQ");
+        assert!(
+            upstream_qofe > 1.0e-9,
+            "M-F-REDO requires nonzero upstream QOFE on active handoff rows"
+        );
+        assert!(
+            downstream_upstrmq > 1.0e-9,
+            "M-F-REDO requires nonzero downstream UpStrmQ on active handoff rows"
+        );
+        assert!(
+            (downstream_upstrmq - upstream_qofe).abs() <= 1.0e-6,
+            "downstream UpStrmQ ({downstream_upstrmq}) must equal previous OFE QOFE ({upstream_qofe})"
+        );
+    }
+}
+
+fn assert_mf_multiofe_publication_not_cloned(day_rows: &[Row]) {
+    const HYDROLOGY_COLUMNS: [&str; 8] = [
+        "Q",
+        "QOFE",
+        "UpStrmQ",
+        "Es",
+        "Ep",
+        "Dp",
+        "Total-Soil",
+        "SoilWaterTotal",
+    ];
+    let first_vector = hydrology_vector(&day_rows[0], &HYDROLOGY_COLUMNS);
+    let all_identical = day_rows[1..].iter().all(|row| {
+        hydrology_vector(row, &HYDROLOGY_COLUMNS)
+            .iter()
+            .zip(&first_vector)
+            .all(|(observed, expected)| (observed - expected).abs() <= 1.0e-9)
+    });
+    assert!(
+        !all_identical,
+        "M-F-REDO anti-clone gate: all OFE hydrology vectors are identical for active routed day"
+    );
+}
+
+fn hydrology_vector(row: &Row, columns: &[&str]) -> Vec<f64> {
+    columns
+        .iter()
+        .map(|column| row_f64_value(row, column))
+        .collect()
 }
 
 #[test]

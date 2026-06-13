@@ -276,7 +276,7 @@ pub(crate) fn run_runoff_reconciliation(
             || Self::resolve_runoff_carryover_input(request, phase_class),
             |carryover| Ok(Self::normalize_non_negative_within_tolerance(carryover.total())),
         )?;
-        let mofe_hourly_saturation_carry = if mofe_hourly_carry_arrays_enabled {
+        let mut mofe_hourly_saturation_carry = if mofe_hourly_carry_arrays_enabled {
             Some(Self::resolve_mofe_hourly_current_saturation_carry(
                 request,
                 phase_class,
@@ -328,6 +328,18 @@ pub(crate) fn run_runoff_reconciliation(
         )?;
         let q_runoff = partition_runoff + surface_saturation_runoff;
         Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
+        if let Some(carry) = mofe_hourly_saturation_carry.as_mut() {
+            carry.values[0] = Self::normalize_non_negative_within_tolerance(
+                carry.values[0] + partition_runoff,
+            );
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &Self::hourly_symbol(MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT, 1),
+                carry.values[0],
+                Some(0.0),
+                None,
+            )?;
+        }
 
         let closure_delta = if forward_solver_lane {
             let solver_closure = liquid_after_interception

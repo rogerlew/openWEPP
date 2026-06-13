@@ -1,9 +1,33 @@
 # gate results
 
-Status: M-F executed-hold; public per-OFE row shape landed, surface `UpStrmQ`
-producer still blocked; package active for M-F-REDO
+Status: M-F-REDO executed-hold (Claude: anti-clone reached ET only; runoff still 92% cloned — see M-F evidence); active handoff and anti-clone gates fixed,
+`QOFE` geometry scaling still blocked; package active for the next corrective
+increment
 
 Evidence mode: Ran + Static
+
+## M-F-REDO scoped acceptance gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Static per-OFE lane differentiation | PASS | Multi-OFE lanes now build OFE-local soil/slope/management runtime surfaces instead of cloning the aggregate static runtime surface. |
+| Active surface handoff | PASS | Fresh H1/H6/H9/H11 audit under `/tmp/openwepp_mofe01_mfredo_final` reports downstream nonzero `UpStrmQ` rows: H1 `4195`, H6 `2073`, H9 `3144`, H11 `990`. |
+| Surface handoff residual with nonzero operands | PASS | `current UpStrmQ == previous QOFE` max residual is `0.0` on active edges for H1/H6/H9/H11. |
+| Active lateral handoff | PASS | Downstream nonzero `SubRIn` rows: H1 `341`, H6 `132`, H9 `180`, H11 `79`; `current SubRIn == previous latqcc` max residual is `0.0`. |
+| Anti-clone gate | PASS | `active_surface_all_clone_day_count=0` for H1/H6/H9/H11; max distinct `Q` and `SoilWaterTotal` per day match OFE count on each smoke surface. |
+| Public per-OFE row cardinality | PASS | H1/H6/H9/H11 row counts remain `day_count * contributor_ofe_count`: `10960`, `6576`, `8768`, `4384`. |
+| No `QOFE=Q` alias | FAIL | Candidate `max_abs_qofe_minus_q=0.0` for H1/H6/H9/H11; legacy-clean ladder has max `abs(QOFE-Q)` of `362.13991`, `177.51694`, `185.89531`, and `84.64425` mm. |
+| Local semantic comparisons, no comparator subagent | FAIL | Commands exited zero and row keys align, but semantic pass is false for H1/H6/H9/H11; value families still fail for `Q`, `QOFE`, `UpStrmQ`, `SubRIn`, storage, ET, and percolation. |
+| Single-OFE anchor comparison | PASS | `/tmp/openwepp_mofe01_mfredo_single_final/single-ofe-anchor-cmp.tsv`: H8/H15/H19/H20/H22/H23/H28 byte-identical to M-E2 for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS). |
+| `cargo fmt --check` | PASS | Final post-edit run. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Final post-edit run. |
+| `cargo test --workspace` | PASS | Full Rust closure loop passed after WB12-family fixture reconciliation. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| `git diff --check` | PASS | Final whitespace check passed. |
+| `markdown-doc lint` | PASS | Work-package plus touched SC-WATBAL/SC-SYSTEM contracts: 38 files validated, 0 errors, 0 warnings. |
+| Line count governance | WARN | `scheduler_seed_and_runtime.rs` is 2122 lines; above the 2000-line warning threshold and below 3000. |
+
+Detailed evidence: `m-f-per-ofe-wat-publication-evidence.md`.
 
 ## M-F scoped acceptance gates
 
@@ -11,7 +35,7 @@ Evidence mode: Ran + Static
 | --- | --- | --- |
 | Public per-OFE row cardinality | PASS | H1/H6/H9/H11 row counts equal `day_count * contributor_ofe_count`; H1 has 10960 rows for 2192 days * 5 OFEs. |
 | Manifest per-OFE publication metadata | PASS | Manifests report `publication_ofe_policy=per-ofe-dynamic-water-balance-state`, `storage_lineage_policy=per-ofe-dynamic-wb-state`, grouped first/last OFE keys, and matching row counts. |
-| No `QOFE=Q` alias | PASS | Direct WAT audit reports max `abs(QOFE-Q)` greater than 129 mm on each smoke run. |
+| No `QOFE=Q` alias | SUPERSEDED / FAIL | M-F's apparent non-alias conclusion is superseded by M-F-REDO; candidate H1/H6/H9/H11 now show `max_abs_qofe_minus_q=0.0` once active handoff is fixed. |
 | Surface handoff identity | STRUCTURAL PASS / ACCEPTANCE FAIL | `current UpStrmQ == previous QOFE` residual is `0.0`, but only because candidate surface carry is zero. |
 | No downstream `UpStrmQ=0` | FAIL | H1/H6/H9/H11 all have `max_upstrmq=0.0` and zero downstream nonzero `UpStrmQ` rows. |
 | Lateral handoff identity | PASS | `current SubRIn == previous latqcc` residual is `0.0` with nonzero downstream `SubRIn` rows observed. |

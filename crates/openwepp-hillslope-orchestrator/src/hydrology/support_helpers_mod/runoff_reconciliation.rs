@@ -507,6 +507,7 @@ impl Wb11HydrologyKernel {
         precip_input: f64,
         snow_coupling_s: f64,
         irrigation_input: f64,
+        runon_input: f64,
         interception: f64,
         q_runoff: f64,
         et: f64,
@@ -515,6 +516,7 @@ impl Wb11HydrologyKernel {
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let storage_reconciled =
             storage_initial + precip_input + snow_coupling_s + irrigation_input
+                + runon_input
                 - interception
                 - q_runoff
                 - et

@@ -1,40 +1,51 @@
 # worker handoff
 
-Status: M-F executed-hold; M-F-REDO surface carry producer next
+Status: M-F-REDO executed-hold; M-F-REDO2 geometry-scaled QOFE next
 
 Evidence mode: Ran + Static
 
 ## Summary
 
-M-F landed public per-OFE WAT/WB13 row shape but did not close publication
-acceptance:
+M-F-REDO fixed the M-F clone and zero surface-handoff defects, but it did not
+close publication acceptance:
 
-- Multi-OFE runs now publish one public WAT row per OFE per day from internal
+- Multi-OFE runs publish one public WAT row per OFE per day from internal
   per-OFE WB13 records.
-- Manifests report `publication_ofe_policy=per-ofe-dynamic-water-balance-state`,
-  `storage_lineage_policy=per-ofe-dynamic-wb-state`, matching per-OFE row
-  counts, grouped first/last OFE keys, and monotonic row ordering.
-- `QOFE` no longer aliases aggregate/local `Q`; direct smoke audit reports max
-  `abs(QOFE-Q)` greater than 129 mm for H1/H6/H9/H11.
-- Required H smoke ran under `/tmp/openwepp_mofe01_mf`; H1/H6/H9/H11 all exited
-  zero.
-- Blocking finding: all four smoke runs still have `max_upstrmq=0.0` and zero
-  downstream nonzero `UpStrmQ` rows. The surface handoff residual of `0.0` is
-  zero-on-zero equality, not conservation evidence.
-- Lateral handoff is active: downstream nonzero `SubRIn` rows are observed and
-  `current SubRIn == previous latqcc` residuals close.
+- Static per-OFE lane runtime surfaces are no longer aggregate clones; they are
+  rebuilt from OFE-local slope, soil, management, snow, frost, and PMET
+  surfaces with lane provenance.
+- WB14/WB19/WB12 carry wiring now makes surface and lateral handoffs active on
+  real H1/H6/H9/H11 smoke runs.
+- Required H smoke ran under `/tmp/openwepp_mofe01_mfredo_final`; H1/H6/H9/H11
+  all exited zero.
+- Direct WAT audit passes row cardinality, active surface handoff, active
+  lateral handoff, and anti-clone gates. Active surface/lateral residuals close
+  at `0.0` mm with nonzero operands.
+- Blocking finding: all four smoke runs still have
+  `max_abs_qofe_minus_q=0.0`. Candidate public `QOFE` still aliases candidate
+  public `Q`.
+- Pinned legacy-clean direct audit proves this is wrong: H1/H6/H9/H11 legacy
+  max `abs(QOFE-Q)` is `362.13991`, `177.51694`, `185.89531`, and `84.64425`
+  mm. Static source authority in `watbal.for` uses `efflen/totlen` for public
+  `Q` and `efflen/slplen` for public `QOFE`.
 - Local semantic comparisons ran without comparator subagent using
   `tools/owcmp/semantic_wat.py --candidate-year-offset 1999`; row keys align,
-  but value comparisons fail on `UpStrmQ`, `SubRIn`, and `QOFE`.
-- Final Rust gates passed: `cargo fmt --check`, `cargo clippy --workspace
-  --all-targets -- -D warnings`, `cargo test --workspace`, `cargo deny check`,
-  and `git diff --check`.
-- Line-count governance warning: touched `openwepp-cli-watershed.rs` and
-  `scheduler_seed_and_runtime.rs` are above 2000 lines but below 3000.
+  but value comparisons fail on public WAT families including `Q`, `QOFE`,
+  `UpStrmQ`, and `SubRIn`.
+- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 are byte-identical to M-E2
+  outputs for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`.
+- Final gates passed: `cargo fmt --check`, `git diff --check`, `cargo clippy
+  --workspace --all-targets -- -D warnings`, `cargo test --workspace`,
+  `cargo deny check`, and `cargo build -p openwepp-runner --bin
+  openwepp-cli-hill`.
+- Line-count governance warning: touched
+  `scheduler_seed_and_runtime.rs` is 2122 lines, above the 2000-line warning
+  threshold and below 3000.
 
-Next increment: M-F-REDO must implement the authoritative current surface
-export producer feeding per-OFE `QOFE`/`UpStrmQ`. Do not repair by synthesizing
-`UpStrmQ` or `QOFE` in the WAT writer from local `Q`.
+Next increment: M-F-REDO2 must port baseline-authoritative public `Q`/`QOFE`
+geometry scaling from the pinned WATBAL source. Do not satisfy the blocker by
+synthesizing a cosmetic `QOFE != Q` value; the implementation needs real
+`efflen/totlen` versus `efflen/slplen` publication semantics.
 
 ## M-E4-REDO summary
 

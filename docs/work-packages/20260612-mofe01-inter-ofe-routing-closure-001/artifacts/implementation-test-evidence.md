@@ -1,9 +1,66 @@
 # implementation test evidence
 
-Status: M-F executed-hold; public row shape tested, surface carry acceptance
-blocked
+Status: M-F-REDO executed-hold; active handoff and anti-clone tested, QOFE
+geometry scaling blocked
 
 Evidence mode: Ran + Static
+
+## M-F-REDO ran
+
+M-F-REDO fixed the M-F clone and zero surface-handoff defects, then held on the
+remaining public `QOFE` geometry-scaling acceptance gate.
+
+- `cargo fmt --check`
+  - PASS.
+- `git diff --check`
+  - PASS.
+- `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --path docs/specifications/science-contracts/contracts/SC-WATBAL-001.md --path docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md --format plain`
+  - PASS; 38 files validated, 0 errors, 0 warnings.
+- `cargo clippy --workspace --all-targets -- -D warnings`
+  - PASS.
+- `cargo test --workspace`
+  - PASS.
+- `cargo deny check`
+  - PASS; `advisories ok, bans ok, licenses ok, sources ok`.
+- `cargo build -p openwepp-runner --bin openwepp-cli-hill`
+  - PASS.
+- Focused/publication coverage inside the full workspace run
+  - PASS:
+    `cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows`.
+  - PASS:
+    `mofe04_publication_contract_authority_closure_contract`.
+- Required local H smoke without comparator subagent
+  - PASS runtime execution: H1/H6/H9/H11 exited zero under
+    `/tmp/openwepp_mofe01_mfredo_final`.
+  - PASS row cardinality/provenance: each smoke output has
+    `day_count * contributor_ofe_count` public WAT rows.
+  - PASS active surface handoff: downstream `UpStrmQ` rows are nonzero and
+    active-surface residuals close at `0.0` mm.
+  - PASS active lateral handoff: downstream `SubRIn` rows are nonzero and
+    lateral residuals close at `0.0` mm.
+  - PASS anti-clone audit: no active surface day is an all-clone day, and
+    daily `Q`/`SoilWaterTotal` distinct counts reach the OFE count.
+  - FAIL acceptance: candidate H1/H6/H9/H11 still report
+    `max_abs_qofe_minus_q=0.0`.
+- Pinned legacy-clean direct audit
+  - FAIL blocker confirmed: legacy H1/H6/H9/H11 have max
+    `abs(QOFE-Q)` values of `362.13991`, `177.51694`, `185.89531`, and
+    `84.64425` mm.
+  - Static source authority:
+    `/workdir/wepp-forest_260430_baseline/src/watbal.for` writes public `Q`
+    with `efflen/totlen` and public `QOFE` with `efflen/slplen`.
+- Local semantic comparisons without comparator subagent
+  - PASS command execution for H1/H6/H9/H11 with
+    `tools/owcmp/semantic_wat.py --candidate-year-offset 1999`.
+  - FAIL semantic acceptance: row keys align, but value comparisons still fail
+    for public WAT families including `Q`, `QOFE`, `UpStrmQ`, and `SubRIn`.
+- Single-OFE anchors
+  - PASS:
+    `/tmp/openwepp_mofe01_mfredo_single_final/single-ofe-anchor-cmp.tsv`
+    reports H8/H15/H19/H20/H22/H23/H28 byte-identical to M-E2 outputs for
+    `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS).
+
+Detailed evidence: `m-f-per-ofe-wat-publication-evidence.md`.
 
 ## M-F ran
 

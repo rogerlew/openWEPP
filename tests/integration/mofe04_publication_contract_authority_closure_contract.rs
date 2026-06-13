@@ -26,6 +26,14 @@ fn mofe04_addenda_are_present_in_required_contracts() {
             && watbal_contract.contains("ui_LfCrf"),
         "SC-WATBAL-001 must encode HPHYS0241 MOFE hourly carry-array publication authority"
     );
+    assert!(
+        watbal_contract.contains("INV-WATBAL-098")
+            && watbal_contract.contains("MOFE01 M-F-REDO Per-OFE Publication Anti-Clone Addendum")
+            && watbal_contract.contains("all-OFE-identical")
+            && watbal_contract.contains("zero-on-zero transfer acceptance")
+            && watbal_contract.contains("downstream `UpStrmQ` matches the upstream `QOFE`"),
+        "SC-WATBAL-001 must encode M-F-REDO anti-clone and active surface-handoff authority"
+    );
 
     let system_contract = fs::read_to_string(format!(
         "{repo_root}/docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md"
@@ -47,5 +55,13 @@ fn mofe04_addenda_are_present_in_required_contracts() {
             && system_contract.contains("baseline-wathour-24-slot-copy-forward")
             && system_contract.contains("required_arrays"),
         "SC-SYSTEM-001 must encode HPHYS0241 MOFE hourly carry manifest authority"
+    );
+    assert!(
+        system_contract.contains("INV-SYSTEM-031")
+            && system_contract.contains("MOFE01 M-F-REDO Per-OFE Publication Anti-Clone Addendum")
+            && system_contract.contains("row cardinality")
+            && system_contract.contains("nonzero adjacent surface handoff")
+            && system_contract.contains("all-OFE-identical"),
+        "SC-SYSTEM-001 must encode M-F-REDO anti-clone manifest/consumer authority"
     );
 }

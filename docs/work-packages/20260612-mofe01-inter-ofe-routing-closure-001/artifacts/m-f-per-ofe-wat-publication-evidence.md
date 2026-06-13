@@ -1,17 +1,142 @@
 # M-F Per-OFE WAT Publication Evidence
 
-Status: M-F executed-hold; public per-OFE row publication exists but surface
-handoff acceptance failed
+Status: M-F-REDO executed-hold; active per-OFE handoff and anti-clone
+publication fixed, but `QOFE` geometry scaling remains blocked
 
 Evidence mode: Ran + Static
 
 ## Summary
 
+M-F-REDO corrected the two defects that made the original M-F output hollow:
+multi-OFE lanes now run on OFE-local soil/slope/management surfaces instead of
+aggregate clones, and public WAT rows now carry active nonzero surface and
+lateral handoff values. H1/H6/H9/H11 final smoke under
+`/tmp/openwepp_mofe01_mfredo_final` exits zero, row keys remain aligned, active
+surface/lateral transfer residuals close at `0.0`, and the anti-clone audit
+reports no active all-OFE-identical days.
+
+M-F-REDO is still not complete. The candidate still publishes `QOFE == Q` on
+all four real multi-OFE smoke surfaces (`max_abs_qofe_minus_q=0.0`). The pinned
+legacy-clean ladder proves that is not the authoritative per-OFE WAT shape:
+legacy max `abs(QOFE-Q)` is `362.13991` mm on H1, `177.51694` mm on H6,
+`185.89531` mm on H9, and `84.64425` mm on H11. Static baseline source shows
+why: legacy public `Q` uses cumulative-length `efflen/totlen` scaling, while
+public `QOFE` uses OFE-length `efflen/slplen` scaling.
+
+The next corrective increment must port the geometry-scaled per-OFE `QOFE`
+publication rule while preserving the M-F-REDO active handoff, anti-clone, and
+single-OFE anchor gates.
+
+## M-F-REDO Implementation
+
+Static changes in M-F-REDO:
+
+- Multi-OFE persistent lanes now build static runtime surfaces from their own
+  soil, slope, management, and PMET slices instead of cloning the aggregate
+  runtime surface.
+- Lane runtime surfaces publish `mofe.static_lane.contributor_ofe_count`, so
+  downstream MOFE carry and Wave-2 activation still see the contributor count
+  even though the lane-local kernel surface has `nelem=1`.
+- Current surface carry now includes the WB14 partition runoff contribution so
+  `MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT` feeds active per-OFE `QOFE` and
+  downstream `UpStrmQ`.
+- WB19 lateral writeback adds to existing current carry instead of replacing
+  it.
+- WB12 storage reconciliation now includes same-pass runon input; tests with
+  explicit runon fixtures were reconciled to that contracted equation.
+- `SC-WATBAL-001` version 157 and `SC-SYSTEM-001` version 80 add anti-clone and
+  active handoff publication invariants.
+
+## M-F-REDO Runtime Smoke
+
+Fresh final smoke ran directly, without the comparator subagent, under:
+
+- `/tmp/openwepp_mofe01_mfredo_final`
+
+Runtime execution:
+
+| H | OFEs | Rows | Days | Exit | Elapsed seconds |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 5 | 10960 | 2192 | 0 | 203 |
+| 6 | 3 | 6576 | 2192 | 0 | 121 |
+| 9 | 4 | 8768 | 2192 | 0 | 156 |
+| 11 | 2 | 4384 | 2192 | 0 | 88 |
+
+Direct WAT publication audit:
+
+| H | `max_upstrmq` | downstream nonzero `UpStrmQ` rows | surface active days | surface residual | `max_subrin` | downstream nonzero `SubRIn` rows | lateral residual | max `abs(QOFE-Q)` | active clone days |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 516.6511489326965 | 4195 | 1056 | 0.0 | 4.044897921229842 | 341 | 0.0 | 0.0 | 0 |
+| 6 | 259.52557446634825 | 2073 | 1052 | 0.0 | 5.385048904125066 | 132 | 0.0 | 0.0 | 0 |
+| 9 | 388.38836169952253 | 3144 | 1058 | 0.0 | 6.002857116832274 | 180 | 0.0 | 0.0 | 0 |
+| 11 | 132.26278723317412 | 990 | 990 | 0.0 | 4.02642906688712 | 79 | 0.0 | 0.0 | 0 |
+
+The original M-F zero-on-zero surface-handoff blocker is retired: active
+surface edges have nonzero operands. The remaining exact-zero value is
+different and now blocking: `QOFE` is exactly equal to `Q` on all smoke rows.
+
+Pinned legacy direct audit:
+
+| H | Legacy rows | Legacy max `abs(QOFE-Q)` |
+| ---: | ---: | ---: |
+| 1 | 10960 | 362.13991 |
+| 6 | 6576 | 177.51694 |
+| 9 | 8768 | 185.89531 |
+| 11 | 4384 | 84.64425 |
+
+Static provenance:
+`/workdir/wepp-forest_260430_baseline/src/watbal.for` writes public `Q` as
+`runoff(iplane)*1000.*efflen(iplane)/totlen(iplane)` and public `QOFE` as
+`runoff(iplane)*1000.*efflen(iplane)/slplen(iplane)` in the non-`contrs` path.
+
+## M-F-REDO Local Comparison
+
+Local semantic comparisons ran with
+`.venv/bin/python tools/owcmp/semantic_wat.py --candidate-year-offset 1999`.
+No comparator subagent was used.
+
+| H | Common rows | Candidate-only | Baseline-only | Semantic pass | `Q` fail count | `QOFE` fail count | `UpStrmQ` fail count | `SubRIn` fail count |
+| ---: | ---: | ---: | ---: | --- | ---: | ---: | ---: | ---: |
+| 1 | 10960 | 0 | 0 | false | 5619 | 5627 | 4284 | 7868 |
+| 6 | 6576 | 0 | 0 | false | 3135 | 3136 | 2064 | 3556 |
+| 9 | 8768 | 0 | 0 | false | 4228 | 4231 | 3121 | 5359 |
+| 11 | 4384 | 0 | 0 | false | 2004 | 2004 | 984 | 1811 |
+
+Row-key alignment is complete for the smoke set. Semantic failure remains
+value-family failure, not structure.
+
+## M-F-REDO Single-OFE Anchor
+
+Single-OFE anchors were rerun under:
+
+- `/tmp/openwepp_mofe01_mfredo_single_final`
+
+H8/H15/H19/H20/H22/H23/H28 exited zero and are byte-identical to M-E2 outputs
+for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS in
+`single-ofe-anchor-cmp.tsv`).
+
+## M-F-REDO Gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Public per-OFE row cardinality | PASS | H1/H6/H9/H11 row counts equal `day_count * contributor_ofe_count`. |
+| Active surface handoff | PASS | Downstream `UpStrmQ` is nonzero on active routed days and adjacent residuals close at `0.0`. |
+| Active lateral handoff | PASS | Downstream `SubRIn` is nonzero on active lateral days and adjacent residuals close at `0.0`. |
+| Anti-clone gate | PASS | Active all-OFE-identical day count is zero for H1/H6/H9/H11. |
+| No `QOFE=Q` alias | FAIL | Candidate `max_abs_qofe_minus_q=0.0`; pinned legacy-clean ladder requires non-alias geometry scaling. |
+| Semantic comparison | FAIL | Commands exited zero and row keys align, but value families fail. |
+| Single-OFE anchor | PASS | 28/28 byte comparisons pass against M-E2 outputs. |
+| Rust closure loop | PASS | `cargo fmt --check`, clippy with warnings denied, `cargo test --workspace`, `cargo deny check`, and `git diff --check` pass. |
+| Line-count governance | WARN | `scheduler_seed_and_runtime.rs` is 2122 lines; below 3000 but above the 2000-line warning threshold. |
+
+## M-F Historical Summary
+
 M-F wired the multi-OFE runner to publish WB13/WAT rows from the internal
 per-OFE WB13 records produced by M-E4-REDO. The candidate now emits one public
-row per OFE per day, manifest provenance reports
-`publication_ofe_policy=per-ofe-dynamic-water-balance-state`, and per-OFE
-`QOFE` is no longer mechanically aliased to local `Q`.
+row per OFE per day, and manifest provenance reports
+`publication_ofe_policy=per-ofe-dynamic-water-balance-state`. M-F's apparent
+`QOFE` non-alias conclusion is superseded by M-F-REDO, which proves public
+`QOFE` still aliases public `Q` after active handoff is fixed.
 
 M-F is not complete. The real-run WAT audit shows the surface transfer producer
 still publishes zero downstream `UpStrmQ` on representative multi-OFE runs.
@@ -100,7 +225,7 @@ families, especially surface run-on/run-off transfer.
 | --- | --- | --- |
 | Public per-OFE row cardinality | PASS | H1/H6/H9/H11 row counts equal `day_count * contributor_ofe_count`; CLI03 M-F integration test passes. |
 | Manifest per-OFE publication metadata | PASS | New policy, storage lineage, state policy, row counts, and first/last OFE keys are present. |
-| No `QOFE=Q` alias | PASS | Direct audit reports max `abs(QOFE-Q)` above 129 mm on all smoke runs. |
+| No `QOFE=Q` alias | SUPERSEDED / FAIL | M-F's apparent non-alias finding is superseded by M-F-REDO; candidate H1/H6/H9/H11 now show `max_abs_qofe_minus_q=0.0` once active handoff is fixed. |
 | Surface handoff `current UpStrmQ == previous QOFE` | STRUCTURAL PASS / ACCEPTANCE FAIL | Residual is 0.0 only because current surface carry is zero throughout the candidate smoke set. |
 | No downstream `UpStrmQ=0` | FAIL | `max_upstrmq=0.0` and downstream nonzero `UpStrmQ` rows are `0` for H1/H6/H9/H11. |
 | Lateral handoff `current SubRIn == previous latqcc` | PASS | Residual is 0.0 and downstream nonzero `SubRIn` rows are observed. |
@@ -213,3 +338,46 @@ M-F-REDO must root-cause the aggregate-duplication, not just the surface
 This is the load-bearing routing-physics question the whole rung exists to
 answer; it cannot close until per-OFE rows carry genuinely distinct, correctly
 routed hydrology.
+
+## Claude review (2026-06-13) — M-F-REDO: anti-clone fix is INCOMPLETE (runoff still cloned)
+
+Evidence mode: Ran (duckdb on `/tmp/openwepp_mofe01_mfredo_final/output/H1.wat.parquet`).
+
+M-F-REDO made real progress — `UpStrmQ` now routes downstream (4195 nonzero
+rows, was 0), accumulation works (OFE outlet = self + upstream), and `Ep`
+differs slightly per OFE — but the anti-clone fix **did not reach runoff**:
+
+- On the peak-runoff day (year 4, julian 293) **all 5 OFEs are still identical
+  clones**: local runoff (`Q − UpStrmQ`) = 129.1628 for every OFE, and `Es`,
+  `Ep`, `SoilWaterTotal` identical too.
+- Across runoff days, **968 of 1057 (92%) have all-5-OFE-identical local
+  runoff**; only 89 show any distinction.
+- The clean `Q = 129.16 × ofe_id` ladder is therefore the **clone artifact
+  accumulating**, not genuine per-OFE routing. ET (`Ep`) differentiated;
+  runoff generation did not. That ET-distinct-but-runoff-cloned split is the
+  diagnostic clue for where the lanes are/aren't differentiating.
+
+**The anti-clone gate must bite on the runoff columns, not only ET.** M-F-REDO
+remains executed-hold for the runoff clone, ahead of (and gating) the QOFE
+geometry work.
+
+## Legacy Q vs QOFE semantics — pinned from `watbal.for` (operator clarification 2026-06-13)
+
+The non-contoured `else` write path (`watbal.for:1094`, `:1099`) renders the
+**same** routed `runoff(iplane)` as **two different depths**:
+
+- **Q** (the "runoff" WAT column) = `runoff(iplane) · efflen/totlen`
+  (`:1094`) — normalized to **cumulative** length (totlen, to the OFE bottom).
+  Source comment: *"use cumulative length (totlen) because efflen may span
+  OFEs."* A hillslope-cumulative depth; this is why it grows downslope and
+  reads as confusing.
+- **QOFE** = `runoff(iplane) · efflen/slplen` (`:1099`) — normalized to **this
+  OFE's own** slope length. **The sane reading: QOFE is the runoff depth
+  *through this OFE*, in the OFE's own geometry** (operator framing, confirmed
+  against source).
+
+So it is one routed runoff volume, two normalizations: local (÷slplen → QOFE)
+vs cumulative (÷totlen → Q). openWEPP currently publishes `Q == QOFE == raw
+accumulating ladder` (neither normalization applied) on top of the cloned
+runoff. The geometry fix is necessary but downstream of the clone fix —
+applying ÷slplen to a cloned runoff just renders equal local depths.

@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 79
+contract_version: 80
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -145,6 +145,7 @@ Out of scope:
 | INV-SYSTEM-028 | HPHYS0241 MOFE hourly carry manifest invariant: multi-OFE hourly hillslope publications must include `mofe_hourly_carry` manifest provenance proving active 24-slot carry-array execution for `ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, and `ui_LfCrf`; watershed contributor intake must reject missing, inactive, malformed, or non-24-slot carry metadata before routing dispatch. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-033, SC-RUNOFFPART-001#INV-RUNOFFPART-013 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-029 | HPHYS0255 MOFE WB13 storage-lineage provenance invariant: MOFE WB13/H.wat manifests must declare the storage lineage policy used by canonicalized single-row publication; under the current architecture this is `single-runtime-wb11-state`, and consumers must not reinterpret aggregate `Area` as proof of area-weighted dynamic storage aggregation. | hard-fail | REF-SYSTEM-LEGACY-WATBAL, REF-SYSTEM-CH1-COMPONENTS, SC-WATBAL-001#INV-WATBAL-042 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-030 | MOFE01 M-E0 per-OFE dynamic-state publication-policy manifest invariant: transition from MOFE04 aggregate to per-OFE WB13/H.wat publication must be manifest-gated by `publication_ofe_policy = "per-ofe-dynamic-water-balance-state"`, `contributor_ofe_count`, `per_ofe_record_count`, `per_ofe_state_policy`, `transfer_identity_status`, `per_element_identity_status`, `aggregate_identity_status`, and `storage_lineage_policy = "per-ofe-dynamic-wb-state"`. Consumers fail closed when multi-OFE publication lacks OFE-keyed records, policy fields are missing or malformed, row cardinality disagrees with contributor count, or aggregate-only rows are relabeled as per-OFE records. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-LEGACY-WATBAL, SC-WATBAL-001#INV-WATBAL-097, SC-RUNOFFPART-001#INV-RUNOFFPART-029, INV-SYSTEM-028, INV-SYSTEM-029 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-031 | MOFE01 M-F-REDO per-OFE publication anti-clone manifest/consumer invariant: multi-OFE WB13/H.wat publication manifests and consumer gates must not treat row cardinality, monotonic OFE keys, or conservation residual closure alone as proof of per-OFE genuineness. Publication must provide or reference anti-clone evidence for active routed days: lane-local source lineage, nonzero adjacent surface handoff (`UpStrmQ == previous QOFE` after scaling), and non-identical hydrology vectors across OFEs unless a documented same-physics rationale is independently verified. Missing anti-clone evidence, all-OFE-identical active-day hydrology, zero-on-zero transfer acceptance, or public-row synthesis of transfer fields hard-fails publication promotion and downstream consumption. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-LEGACY-WATBAL, SC-WATBAL-001#INV-WATBAL-098, INV-SYSTEM-030 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -180,6 +181,7 @@ Out of scope:
 | `INV-SYSTEM-028` | runtime + governance | Hillslope manifest publisher plus watershed contributor manifest validator | Typed hard error / explicit `HOLD` (`CLIWAT-E-037`) when multi-OFE hourly contributor metadata lacks active 24-slot carry-array provenance, required array family names, or finite non-negative aggregate evidence | HPHYS MOFE hourly carry-array intake gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-029` | runtime + governance | Hillslope manifest publisher plus downstream publication consumers | Typed hard error / explicit `HOLD` when MOFE storage lineage policy is absent, malformed, or inconsistent with WB11/WB13 simulation-owned storage provenance | HPHYS0255 MOFE storage-lineage provenance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-030` | runtime + governance | Hillslope WB13/H.wat manifest publisher plus downstream publication consumers and watershed contributor metadata validators | Typed hard error / explicit `HOLD` when per-OFE publication policy is asserted without OFE-keyed records, identity statuses, matching row cardinality, or `per-ofe-dynamic-wb-state` storage lineage, or when aggregate-only rows are relabeled as per-OFE records | MOFE01 M-E0 per-OFE publication-policy transition gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-031` | runtime + governance | Hillslope WB13/H.wat manifest publisher plus downstream publication consumers and watershed contributor metadata validators | Typed hard error / explicit `HOLD` when per-OFE publication evidence lacks anti-clone hydrology-vector checks, nonzero active adjacent surface handoff, lane-local source lineage, or rejects only row-shape failures while accepting aggregate-cloned records | MOFE01 M-F-REDO per-OFE publication anti-clone gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -420,6 +422,7 @@ core and is not sidecar-eligible.
 | `MOFE04-MULTI-OFE-WB13-WAT-PUBLICATION-BOUNDARY-CARRY-ADDENDUM` | `SC-SYSTEM-001.md#mofe04-multi-ofe-wb13wat-publication-boundary-carry-addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT05 narrower HOLD: MOFE row identity, contributor cardinality, and area-policy obligations are not fully exposed by current `INV-SYSTEM-029`. Owner: `SCSTRUCT05-MOFE04-BEI-PROMOTION`. Next gate: promote/map publication policy authority before relocation. |
 | `HPHYS0255-MOFE-STORAGE-LINEAGE-PUBLICATION-ADDENDUM` | `SC-SYSTEM-001.md#hphys0255-mofe-storage-lineage-publication-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-029` | `none` | SCSTRUCT05 map-in-core: MOFE storage-lineage policy and area/storage separation are exposed by `INV-SYSTEM-029`; detailed policy text remains core-resident. |
 | `MOFE01-M-E0-PER-OFE-DYNAMIC-STATE-PUBLICATION-POLICY-ADDENDUM` | `SC-SYSTEM-001.md#mofe01-m-e0-per-ofe-dynamic-state-publication-policy-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-030` | `none` | MOFE01 M-E0: per-OFE dynamic-state publication policy, row cardinality, identity-status manifest gates, and aggregate-row relabel rejection are directly exposed by `INV-SYSTEM-030`. |
+| `MOFE01-M-F-REDO-PER-OFE-PUBLICATION-ANTI-CLONE-ADDENDUM` | `SC-SYSTEM-001.md#mofe01-m-f-redo-per-ofe-publication-anti-clone-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-031` | `none` | MOFE01 M-F-REDO: per-OFE publication manifest/consumer gates require anti-clone hydrology-vector evidence, nonzero active surface handoff, and lane-local lineage beyond row cardinality or conservation closure. |
 | `MOFE05-WATERSHED-CONTRIBUTOR-METADATA-INTAKE-VALIDATION-ADDENDUM` | `SC-SYSTEM-001.md#mofe05-watershed-contributor-metadata-intake-validation-addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT05 narrower HOLD: contributor metadata intake shape, consistency, and test vectors extend beyond exact `INV-SYSTEM-028/029` exposure. Owner: `SCSTRUCT05-MOFE05-BEI-PROMOTION`. Next gate: promote/map intake validation authority before relocation. |
 | `HPHYS0241-MOFE-HOURLY-CARRY-METADATA-ADDENDUM` | `SC-SYSTEM-001.md#hphys0241-mofe-hourly-carry-metadata-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-028` | `none` | SCSTRUCT05 map-in-core: active 24-slot MOFE hourly carry metadata and watershed intake rejection posture are exposed by `INV-SYSTEM-028`. |
 | `EROD13-WAVE-1-ACTIVE-BOUNDARY-CARRY-ADDENDUM` | `SC-SYSTEM-001.md#erod13-wave-1-active-boundary-carry-addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT05 narrower HOLD: Wave-1 hydrology-to-erosion boundary-carry authority requires exact RUNOFFPART/WATBAL/SED/SYSTEM exposure. Owner: `SCSTRUCT05-EROD13-BEI-PROMOTION`. Next gate: promote/map before relocation. |
@@ -815,6 +818,20 @@ Minimum WS12 integration vectors:
 5. M-E0 tests must fail on the current aggregate publication architecture until
    manifest-gated per-OFE state and matching row cardinality exist.
 
+## MOFE01 M-F-REDO Per-OFE Publication Anti-Clone Addendum
+
+1. Per-OFE publication manifests and consumers must treat row cardinality and
+   monotonic `(day, OFE)` keys as structural checks only. They do not prove that
+   records are lane-local or non-cloned.
+2. Promotion requires anti-clone evidence for active routed days: lane-local
+   source lineage, nonzero adjacent surface handoff where downstream `UpStrmQ`
+   equals previous `QOFE` after area scaling, and hydrology vectors that are not
+   all-OFE-identical unless a documented same-physics rationale is verified.
+3. Conservation residual closure is necessary but not sufficient. Manifests and
+   downstream consumers must hold when identities close on aggregate-duplicated
+   rows, when handoff proof is zero-on-zero only, or when transfer fields are
+   synthesized from public WAT rows.
+
 ## MOFE05 Watershed Contributor Metadata Intake Validation Addendum
 
 1. Watershed contributor intake authority must support per-contributor MOFE
@@ -942,6 +959,7 @@ Minimum WS12 integration vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-13` | `80` | `Codex` | MOFE01 M-F-REDO amendment: added `INV-SYSTEM-031` and the per-OFE publication anti-clone manifest/consumer gate requiring active-handoff and hydrology-vector genuineness evidence beyond row cardinality or conservation closure. |
 | `2026-06-13` | `79` | `Codex` | MOFE01 M-E0 amendment: added `INV-SYSTEM-030` and the per-OFE dynamic-state publication-policy manifest gate for transition from MOFE04 aggregate publication to per-OFE WB13/H.wat rows. |
 | `2026-06-02` | `78` | `Codex` | HPHYS0255 amendment: added `INV-SYSTEM-029` requiring explicit MOFE WB13/H.wat `storage_lineage_policy` provenance and preserving separation between aggregate area and simulation-owned storage lineage. |
 | `2026-06-01` | `77` | `Codex` | HPHYS0241 amendment: added `INV-SYSTEM-028` and `mofe_hourly_carry` manifest/watershed-intake authority requiring active 24-slot carry-array provenance for multi-OFE hourly contributors and fail-closed validation before watershed routing dispatch. |

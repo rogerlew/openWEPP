@@ -1,16 +1,59 @@
 # disposition
 
-Status: M-F executed-hold; package remains open for M-F-REDO surface carry
-closure
+Status: M-F-REDO executed-hold (Claude: anti-clone reached ET only; runoff still 92% cloned — see M-F evidence); package remains open for geometry-scaled
+per-OFE `QOFE` publication closure
 
 Evidence mode: Ran + Static
 
 ## Disposition
 
+Increment M-F-REDO is executed-hold, not complete. It fixed the M-F clone and
+zero-surface-handoff findings far enough to make the remaining publication
+defect measurable: H1/H6/H9/H11 now publish distinct per-OFE hydrology vectors,
+nonzero downstream `UpStrmQ`, and nonzero lateral `SubRIn`; adjacent
+surface/lateral transfer residuals close at `0.0` with active nonzero
+operands. The fresh final smoke root is `/tmp/openwepp_mofe01_mfredo_final`.
+
+The M-F-REDO acceptance gate still fails because candidate `QOFE` remains
+identical to candidate `Q` on all four multi-OFE smoke surfaces
+(`max_abs_qofe_minus_q=0.0`). The pinned legacy-clean ladder proves this is not
+the expected per-OFE publication shape: legacy max `abs(QOFE-Q)` is `362.13991`
+mm on H1, `177.51694` mm on H6, `185.89531` mm on H9, and `84.64425` mm on
+H11. Pinned baseline source confirms the writer uses different geometry
+scalings in the non-`contrs` path: `Q` uses
+`runoff(iplane)*1000.*efflen(iplane)/totlen(iplane)` while `QOFE` uses
+`runoff(iplane)*1000.*efflen(iplane)/slplen(iplane)` in
+`/workdir/wepp-forest_260430_baseline/src/watbal.for`.
+
+Local semantic comparisons were run directly with
+`tools/owcmp/semantic_wat.py --candidate-year-offset 1999`, without the
+comparator subagent. Commands exited zero and row-key coverage is complete for
+H1/H6/H9/H11, but semantic comparison still fails on value families (`Q`,
+`QOFE`, `UpStrmQ`, `SubRIn`, storage, and ET/percolation). Single-OFE anchors
+H8/H15/H19/H20/H22/H23/H28 remain byte-identical to M-E2 for `.hbp`,
+`.loss.json`, `.plot.parquet`, and `.wat.parquet` under
+`/tmp/openwepp_mofe01_mfredo_single_final`.
+
+Final Rust gates passed after M-F-REDO: `cargo fmt --check`,
+`cargo clippy --workspace --all-targets -- -D warnings`, `cargo test
+--workspace`, `cargo deny check`, and `git diff --check`. These gates prove
+the executed-hold state is buildable and tested; they do not override the
+failed `QOFE` scaling acceptance gate.
+
+The next lawful increment is the geometry-scaled `QOFE` publication closure:
+port the baseline-authoritative `efflen/totlen/slplen` per-OFE scaling into
+the per-OFE publication path, preserve active nonzero handoff and anti-clone
+gates, rerun H1/H6/H9/H11 local comparisons, and rerun the single-OFE anchor
+before M-G/M-H.
+
+## M-F disposition
+
 Increment M-F is executed-hold, not complete. It landed the public per-OFE WAT
 row shape and provenance required to expose the next defect: representative
-multi-OFE runs now emit one row per OFE per day, row keys align with baseline
-for H1/H6/H9/H11, and `QOFE` is no longer the aggregate `Q` alias.
+multi-OFE runs now emit one row per OFE per day and row keys align with
+baseline for H1/H6/H9/H11. M-F's apparent `QOFE` non-alias conclusion is
+superseded by the M-F-REDO audit, which proves public `QOFE` still aliases
+public `Q` once active handoff is fixed.
 
 The M-F acceptance gate still fails because the surface carry producer remains
 zero on real multi-OFE runs. Direct WAT audit under `/tmp/openwepp_mofe01_mf`

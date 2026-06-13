@@ -231,6 +231,10 @@ use super::super::*;
             BoundaryValue::scalar(0.0),
         );
         state_surface.insert(
+            BoundarySymbol::from("wb12_runon_input"),
+            BoundaryValue::scalar(0.0),
+        );
+        state_surface.insert(
             BoundarySymbol::from("wb12_storage_observed"),
             BoundaryValue::scalar(0.03),
         );

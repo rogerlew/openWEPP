@@ -1,9 +1,38 @@
 # contract implementation evidence
 
-Status: M-F implemented public per-OFE row shape; acceptance held on
-contract-backed surface carry producer
+Status: M-F-REDO executed-hold; active per-OFE handoff implemented, QOFE
+geometry scaling blocked
 
 Evidence mode: Ran + Static
+
+## M-F-REDO
+
+M-F-REDO amends the M-F/M-E4-REDO authority with explicit anti-clone and active
+handoff requirements:
+
+- `SC-WATBAL-001` version 157 adds `INV-WATBAL-098`.
+- `SC-SYSTEM-001` version 80 adds `INV-SYSTEM-031`.
+- Multi-OFE lane runtime surfaces are rebuilt from OFE-local static inputs
+  instead of cloned aggregate surfaces.
+- WB14 current surface carry, WB19 lateral carry, and WB12 same-pass runon
+  storage reconciliation now make real inter-OFE handoff active.
+- Runtime manifests and public WAT rows preserve M-F row cardinality and
+  storage-lineage metadata.
+
+The contract implementation remains incomplete because public `QOFE` still
+aliases public `Q` on real H1/H6/H9/H11 smoke runs. The pinned baseline writes
+public `Q` with `efflen/totlen` and public `QOFE` with `efflen/slplen`; current
+per-lane execution has not yet carried that geometry authority into
+publication.
+
+Validation:
+
+- `cargo clippy --workspace --all-targets -- -D warnings`: PASS.
+- `cargo test --workspace`: PASS.
+- `cargo deny check`: PASS.
+- H1/H6/H9/H11 smoke row cardinality, active handoff, and anti-clone audit:
+  PASS.
+- H1/H6/H9/H11 `QOFE != Q` geometry audit: FAIL.
 
 ## M-F
 
@@ -15,8 +44,9 @@ instead of splitting aggregate WB13 rows:
 - aggregate single-OFE publication remains unchanged;
 - publication provenance validates `day_count * contributor_ofe_count` row
   cardinality, grouped OFE keys, and per-OFE storage lineage;
-- per-OFE `QOFE` uses the current transfer output source instead of the
-  aggregate `Q` alias;
+- per-OFE `QOFE` routes through the current transfer output source, but
+  M-F-REDO later proved the value still aliases public `Q` under one-OFE lane
+  `efflen`/`slplen` seeding;
 - watershed contributor validation checks the new per-OFE metadata shape.
 
 The contract implementation remains incomplete because the authoritative

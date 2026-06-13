@@ -1,8 +1,45 @@
 # kernel profile compliance checklist
 
-Status: checked through M-F executed-hold
+Status: checked through M-F-REDO executed-hold
 
 Evidence mode: Ran + Static
+
+## M-F-REDO checklist
+
+- Production edits: yes; per-OFE static lane runtime surfaces, active surface
+  carry writeback, active lateral carry accumulation, same-pass runon storage
+  reconciliation, and runtime OFE-count resolution.
+- Science-contract edits: yes; `SC-WATBAL-001` version 157 and
+  `SC-SYSTEM-001` version 80 add active-handoff and anti-clone publication
+  invariants.
+- Test edits: yes; focused M-F publication test now asserts active handoff and
+  anti-clone behavior, contract-source guards cover the new invariants, and
+  WB12-family fixtures reflect same-pass runon storage.
+- Typed errors in production: new runtime failures continue to map through
+  typed `HillslopeCliError::RuntimeSurfaceFailure` and scheduler sequence
+  error paths.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: changed only within the authorized MOFE01 WB12/WB14/WB19 carry
+  publication path; no provisional process-physics math was added.
+- Runtime publication paths: active handoff and anti-clone gates pass; package
+  remains held because public `QOFE` still aliases public `Q` instead of using
+  baseline `efflen/slplen` geometry scaling.
+
+Validation:
+
+- `cargo fmt --check`: PASS.
+- `git diff --check`: PASS.
+- Work-package and touched SC-WATBAL/SC-SYSTEM docs lint: PASS; 38 files
+  validated, 0 errors, 0 warnings.
+- `cargo clippy --workspace --all-targets -- -D warnings`: PASS.
+- `cargo test --workspace`: PASS.
+- `cargo deny check`: PASS.
+- `cargo build -p openwepp-runner --bin openwepp-cli-hill`: PASS.
+- Required H1/H6/H9/H11 runtime smoke: PASS execution, row cardinality, active
+  handoff, and anti-clone gates.
+- `QOFE != Q` geometry acceptance: FAIL; M-F-REDO2 required.
 
 ## M-F checklist
 

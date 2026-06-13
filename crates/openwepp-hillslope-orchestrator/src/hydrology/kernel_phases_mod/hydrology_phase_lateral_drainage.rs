@@ -720,9 +720,29 @@ pub(crate) fn run_lateral_transfer(
                 ));
             }
             for (index, value) in surface_saturation_substeps.iter().enumerate() {
+                let symbol = Self::hourly_symbol(
+                    MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+                    index + 1,
+                );
+                let previous_value = Self::optional_state_scalar_for_symbol(
+                    request,
+                    phase_class,
+                    &symbol,
+                )?
+                .unwrap_or(0.0);
+                Self::require_state_range_for_symbol(
+                    phase_class,
+                    &symbol,
+                    previous_value,
+                    Some(0.0),
+                    None,
+                )?;
+                let exported_value = Self::normalize_non_negative_within_tolerance(
+                    previous_value + *value,
+                );
                 state_updates.push(WritebackField::bounded(
-                    Self::hourly_symbol(MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT, index + 1),
-                    *value,
+                    symbol,
+                    exported_value,
                     Some(0.0),
                     None,
                 ));

@@ -68,6 +68,7 @@ pub(crate) fn run_storage_reconciliation(
             Some(0.0),
             None,
         )?;
+        let runon_input = Self::resolve_storage_runon_input(request, phase_class)?;
 
         let et = Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_ET)?;
         Self::require_flux_range(phase_class, WB11_SYMBOL_ET, et, Some(0.0), None)?;
@@ -98,6 +99,7 @@ pub(crate) fn run_storage_reconciliation(
             precip_input,
             snow_coupling_s,
             irrigation_input,
+            runon_input,
             interception_i,
             q_runoff,
             et,
@@ -107,7 +109,7 @@ pub(crate) fn run_storage_reconciliation(
 
         let closure_delta = if forward_solver_lane {
             let solver_closure =
-                storage_initial + precip_input + snow_coupling_s + irrigation_input
+                storage_initial + precip_input + snow_coupling_s + irrigation_input + runon_input
                     - interception_i
                     - q_runoff
                     - et
@@ -155,6 +157,27 @@ pub(crate) fn run_storage_reconciliation(
             )],
         );
         Ok(KernelRunResponse::new(status, writeback))
+    }
+
+    fn resolve_storage_runon_input(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let carryover_symbol = BoundarySymbol::from(WB12_SYMBOL_RUNOFF_CARRYOVER);
+        if let Some(carryover) =
+            Self::optional_flux_scalar_for_symbol(request, phase_class, &carryover_symbol)?
+        {
+            Self::require_flux_range_for_symbol(
+                phase_class,
+                &carryover_symbol,
+                carryover,
+                Some(0.0),
+                None,
+            )?;
+            return Ok(Self::normalize_non_negative_within_tolerance(carryover));
+        }
+
+        Self::resolve_runoff_carryover_input(request, phase_class)
     }
 
 }

@@ -482,7 +482,7 @@ fn seeded_wb14_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_observed"),
-        BoundaryValue::scalar(12.769_814_232_504_201),
+        BoundaryValue::scalar(13.169_814_232_504_201),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_closure_tolerance"),
@@ -689,6 +689,22 @@ fn hphys0242_contract_wb14_runoff_includes_current_saturation_carry_addback() {
 
 #[test]
 fn mofe01_mb_contract_routes_positive_top_layer_excess_into_current_saturation_carry() {
+    let mut baseline_surface = seeded_wb14_surface();
+    enable_mofe_current_saturation_carry(&mut baseline_surface, 0.0);
+    let baseline_response = run_wb14_runoff_phase_response(baseline_surface);
+    assert_eq!(
+        baseline_response.status.message_id(),
+        "HKERNEL-WB14-RUNOFF-OK-001"
+    );
+    let baseline_current_carry = baseline_response
+        .writeback
+        .state_updates
+        .iter()
+        .find(|field| field.symbol == BoundarySymbol::from("ui_SCrunf_0001"))
+        .expect("baseline ui_SCrunf_0001 should carry current surface export")
+        .value
+        .as_f64();
+
     let mut surface = seeded_wb14_surface();
     enable_mofe_current_saturation_carry(&mut surface, 0.0);
     surface.state_surface.insert(
@@ -712,8 +728,8 @@ fn mofe01_mb_contract_routes_positive_top_layer_excess_into_current_saturation_c
         .value
         .as_f64();
     assert!(
-        (current_saturation_carry - 0.25).abs() <= WB14_TEST_TOLERANCE,
-        "positive top-layer excess must be routed into ui_SCrunf_0001"
+        (current_saturation_carry - (baseline_current_carry + 0.25)).abs() <= WB14_TEST_TOLERANCE,
+        "positive top-layer excess must add to ui_SCrunf_0001 current surface export"
     );
 
     let clipped_theta = response
@@ -1131,7 +1147,7 @@ fn hphys0240_contract_wb14_runoff_carryover_flux_overrides_stale_runon_state() {
         .expect("wb12_storage_reconciled should be present")
         .as_f64();
     assert!(
-        (storage - 12.769_814_232_504_201).abs() <= WB14_TEST_TOLERANCE,
+        (storage - 13.169_814_232_504_201).abs() <= WB14_TEST_TOLERANCE,
         "storage closure must consume Q derived from carryover flux, observed {storage}"
     );
 }
