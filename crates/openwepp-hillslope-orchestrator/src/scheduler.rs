@@ -244,6 +244,437 @@ pub struct HillslopeWritebackSurface {
     pub flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
 }
 
+/// Hourly slots carried between adjacent OFE lanes.
+pub const MOFE_TRANSFER_HOUR_COUNT: usize = 24;
+
+/// Same-day upstream water-transfer input for one OFE lane.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TransferInput {
+    pub source_ofe_id: Option<usize>,
+    pub recipient_ofe_id: usize,
+    pub surface_carry: [f64; MOFE_TRANSFER_HOUR_COUNT],
+    pub lateral_carry: [f64; MOFE_TRANSFER_HOUR_COUNT],
+    pub upstrmq: f64,
+    pub subrin: f64,
+}
+
+impl TransferInput {
+    #[must_use]
+    pub const fn zero_for_first_ofe() -> Self {
+        Self {
+            source_ofe_id: None,
+            recipient_ofe_id: 1,
+            surface_carry: [0.0; MOFE_TRANSFER_HOUR_COUNT],
+            lateral_carry: [0.0; MOFE_TRANSFER_HOUR_COUNT],
+            upstrmq: 0.0,
+            subrin: 0.0,
+        }
+    }
+}
+
+/// Same-day downstream water-transfer output from one OFE lane.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TransferOutput {
+    pub source_ofe_id: usize,
+    pub recipient_ofe_id: Option<usize>,
+    pub surface_carry: [f64; MOFE_TRANSFER_HOUR_COUNT],
+    pub lateral_carry: [f64; MOFE_TRANSFER_HOUR_COUNT],
+    pub qofe: f64,
+    pub lateral_export: f64,
+}
+
+impl TransferOutput {
+    #[must_use]
+    pub const fn zero_for_terminal_ofe(source_ofe_id: usize) -> Self {
+        Self {
+            source_ofe_id,
+            recipient_ofe_id: None,
+            surface_carry: [0.0; MOFE_TRANSFER_HOUR_COUNT],
+            lateral_carry: [0.0; MOFE_TRANSFER_HOUR_COUNT],
+            qofe: 0.0,
+            lateral_export: 0.0,
+        }
+    }
+
+    /// Convert a nonterminal transfer output into the next OFE's input.
+    ///
+    /// # Errors
+    ///
+    /// Returns `PerOfeDailyWaterBalanceError` when the output is terminal or
+    /// names a non-adjacent recipient.
+    pub fn as_downstream_input(&self) -> Result<TransferInput, PerOfeDailyWaterBalanceError> {
+        let Some(expected_recipient_ofe_id) = self.source_ofe_id.checked_add(1) else {
+            return Err(PerOfeDailyWaterBalanceError::InvalidTransferSourceOfeId {
+                source_ofe_id: self.source_ofe_id,
+            });
+        };
+        let Some(recipient_ofe_id) = self.recipient_ofe_id else {
+            return Err(
+                PerOfeDailyWaterBalanceError::TransferOutputRecipientMismatch {
+                    source_ofe_id: self.source_ofe_id,
+                    expected_recipient_ofe_id: Some(expected_recipient_ofe_id),
+                    observed_recipient_ofe_id: None,
+                },
+            );
+        };
+        if recipient_ofe_id != expected_recipient_ofe_id {
+            return Err(
+                PerOfeDailyWaterBalanceError::TransferOutputRecipientMismatch {
+                    source_ofe_id: self.source_ofe_id,
+                    expected_recipient_ofe_id: Some(expected_recipient_ofe_id),
+                    observed_recipient_ofe_id: Some(recipient_ofe_id),
+                },
+            );
+        }
+
+        Ok(TransferInput {
+            source_ofe_id: Some(self.source_ofe_id),
+            recipient_ofe_id,
+            surface_carry: self.surface_carry,
+            lateral_carry: self.lateral_carry,
+            upstrmq: self.surface_carry.iter().sum(),
+            subrin: self.lateral_carry.iter().sum(),
+        })
+    }
+}
+
+/// One OFE-keyed daily water-balance shadow record.
+#[derive(Debug, Clone)]
+pub struct PerOfeDailyWaterBalanceRecord {
+    pub ofe_id: usize,
+    pub year: i32,
+    pub julian_day: u16,
+    pub post_day_state: HillslopeWritebackSurface,
+    pub day_flux_surface: HillslopeWritebackSurface,
+    pub upstream_transfer_input: TransferInput,
+    pub current_transfer_output: TransferOutput,
+}
+
+impl PerOfeDailyWaterBalanceRecord {
+    /// Construct an explicit OFE-keyed daily record.
+    ///
+    /// M-E1 does not populate these records in the runner path yet; this
+    /// constructor exists so later increments can build records from real
+    /// OFE-keyed state without using the legacy aggregate adapter below.
+    pub fn new(
+        ofe_id: usize,
+        year: i32,
+        julian_day: u16,
+        post_day_state: HillslopeWritebackSurface,
+        day_flux_surface: HillslopeWritebackSurface,
+        upstream_transfer_input: TransferInput,
+        current_transfer_output: TransferOutput,
+    ) -> Result<Self, PerOfeDailyWaterBalanceError> {
+        if ofe_id == 0 {
+            return Err(PerOfeDailyWaterBalanceError::InvalidRecordOfeId { ofe_id });
+        }
+
+        Ok(Self {
+            ofe_id,
+            year,
+            julian_day,
+            post_day_state,
+            day_flux_surface,
+            upstream_transfer_input,
+            current_transfer_output,
+        })
+    }
+
+    /// Build the N=1 legacy aggregate adapter record.
+    ///
+    /// This deliberately has no OFE id parameter: aggregate WB13/WAT state is
+    /// valid only as the single-OFE specialization, never as reconstructed
+    /// downstream OFE state.
+    pub fn from_legacy_single_ofe_aggregate_surface(
+        year: i32,
+        julian_day: u16,
+        aggregate_surface: HillslopeWritebackSurface,
+    ) -> Result<Self, PerOfeDailyWaterBalanceError> {
+        Self::new(
+            1,
+            year,
+            julian_day,
+            aggregate_surface,
+            HillslopeWritebackSurface::default(),
+            TransferInput::zero_for_first_ofe(),
+            TransferOutput::zero_for_terminal_ofe(1),
+        )
+    }
+}
+
+/// OFE-keyed daily water-balance shadow collection for staged MOFE migration.
+#[derive(Debug, Clone)]
+pub struct PerOfeDailyWaterBalanceCollection {
+    simulation_day_index: usize,
+    contributor_ofe_count: usize,
+    records: Vec<PerOfeDailyWaterBalanceRecord>,
+}
+
+impl PerOfeDailyWaterBalanceCollection {
+    /// Construct an empty daily per-OFE collection.
+    ///
+    /// # Errors
+    ///
+    /// Returns `PerOfeDailyWaterBalanceError` when the day index or
+    /// contributor OFE count is outside the contract domain.
+    pub fn new(
+        simulation_day_index: usize,
+        contributor_ofe_count: usize,
+    ) -> Result<Self, PerOfeDailyWaterBalanceError> {
+        if simulation_day_index == 0 {
+            return Err(PerOfeDailyWaterBalanceError::InvalidSimulationDayIndex {
+                simulation_day_index,
+            });
+        }
+        if contributor_ofe_count == 0 {
+            return Err(PerOfeDailyWaterBalanceError::InvalidContributorOfeCount {
+                contributor_ofe_count,
+            });
+        }
+
+        Ok(Self {
+            simulation_day_index,
+            contributor_ofe_count,
+            records: Vec::with_capacity(contributor_ofe_count),
+        })
+    }
+
+    pub fn push_record(
+        &mut self,
+        record: PerOfeDailyWaterBalanceRecord,
+    ) -> Result<(), PerOfeDailyWaterBalanceError> {
+        let expected_ofe_id = self.records.len() + 1;
+        if self.records.len() >= self.contributor_ofe_count {
+            return Err(PerOfeDailyWaterBalanceError::TooManyRecords {
+                contributor_ofe_count: self.contributor_ofe_count,
+            });
+        }
+        if record.ofe_id != expected_ofe_id {
+            return Err(PerOfeDailyWaterBalanceError::NonSequentialOfeRecord {
+                expected_ofe_id,
+                observed_ofe_id: record.ofe_id,
+            });
+        }
+        if record.upstream_transfer_input.recipient_ofe_id != record.ofe_id {
+            return Err(PerOfeDailyWaterBalanceError::TransferRecipientMismatch {
+                ofe_id: record.ofe_id,
+                recipient_ofe_id: record.upstream_transfer_input.recipient_ofe_id,
+            });
+        }
+        let expected_upstream_source = record.ofe_id.checked_sub(1).filter(|source| *source > 0);
+        if record.upstream_transfer_input.source_ofe_id != expected_upstream_source {
+            return Err(PerOfeDailyWaterBalanceError::TransferInputSourceMismatch {
+                ofe_id: record.ofe_id,
+                expected_source_ofe_id: expected_upstream_source,
+                observed_source_ofe_id: record.upstream_transfer_input.source_ofe_id,
+            });
+        }
+        if record.current_transfer_output.source_ofe_id != record.ofe_id {
+            return Err(PerOfeDailyWaterBalanceError::TransferOutputSourceMismatch {
+                ofe_id: record.ofe_id,
+                source_ofe_id: record.current_transfer_output.source_ofe_id,
+            });
+        }
+        let expected_downstream_recipient = if record.ofe_id == self.contributor_ofe_count {
+            None
+        } else {
+            Some(record.ofe_id + 1)
+        };
+        if record.current_transfer_output.recipient_ofe_id != expected_downstream_recipient {
+            return Err(
+                PerOfeDailyWaterBalanceError::TransferOutputRecipientMismatch {
+                    source_ofe_id: record.ofe_id,
+                    expected_recipient_ofe_id: expected_downstream_recipient,
+                    observed_recipient_ofe_id: record.current_transfer_output.recipient_ofe_id,
+                },
+            );
+        }
+
+        self.records.push(record);
+        Ok(())
+    }
+
+    #[must_use]
+    pub const fn simulation_day_index(&self) -> usize {
+        self.simulation_day_index
+    }
+
+    #[must_use]
+    pub const fn contributor_ofe_count(&self) -> usize {
+        self.contributor_ofe_count
+    }
+
+    #[must_use]
+    pub fn records(&self) -> &[PerOfeDailyWaterBalanceRecord] {
+        &self.records
+    }
+
+    #[must_use]
+    pub fn record_count(&self) -> usize {
+        self.records.len()
+    }
+
+    /// Return the legacy scalar surface for the N=1 compatibility adapter.
+    ///
+    /// # Errors
+    ///
+    /// Returns `PerOfeDailyWaterBalanceError` for incomplete collections or
+    /// for multi-OFE collections, whose aggregate derivation remains later
+    /// M-E scope.
+    pub fn aggregate_for_legacy_outer_consumers(
+        &self,
+    ) -> Result<HillslopeWritebackSurface, PerOfeDailyWaterBalanceError> {
+        if self.contributor_ofe_count != 1 {
+            return Err(
+                PerOfeDailyWaterBalanceError::MultiOfeAggregateNotImplemented {
+                    contributor_ofe_count: self.contributor_ofe_count,
+                },
+            );
+        }
+        let Some(record) = self.records.first() else {
+            return Err(PerOfeDailyWaterBalanceError::IncompleteCollection {
+                contributor_ofe_count: self.contributor_ofe_count,
+                record_count: self.records.len(),
+            });
+        };
+
+        Ok(record.post_day_state.clone())
+    }
+}
+
+/// Construction and adapter errors for M-E per-OFE shadow state.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PerOfeDailyWaterBalanceError {
+    InvalidSimulationDayIndex {
+        simulation_day_index: usize,
+    },
+    InvalidContributorOfeCount {
+        contributor_ofe_count: usize,
+    },
+    InvalidRecordOfeId {
+        ofe_id: usize,
+    },
+    InvalidTransferSourceOfeId {
+        source_ofe_id: usize,
+    },
+    TooManyRecords {
+        contributor_ofe_count: usize,
+    },
+    NonSequentialOfeRecord {
+        expected_ofe_id: usize,
+        observed_ofe_id: usize,
+    },
+    TransferRecipientMismatch {
+        ofe_id: usize,
+        recipient_ofe_id: usize,
+    },
+    TransferInputSourceMismatch {
+        ofe_id: usize,
+        expected_source_ofe_id: Option<usize>,
+        observed_source_ofe_id: Option<usize>,
+    },
+    TransferOutputSourceMismatch {
+        ofe_id: usize,
+        source_ofe_id: usize,
+    },
+    TransferOutputRecipientMismatch {
+        source_ofe_id: usize,
+        expected_recipient_ofe_id: Option<usize>,
+        observed_recipient_ofe_id: Option<usize>,
+    },
+    IncompleteCollection {
+        contributor_ofe_count: usize,
+        record_count: usize,
+    },
+    MultiOfeAggregateNotImplemented {
+        contributor_ofe_count: usize,
+    },
+}
+
+impl fmt::Display for PerOfeDailyWaterBalanceError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidSimulationDayIndex {
+                simulation_day_index,
+            } => write!(
+                f,
+                "simulation_day_index must be >= 1, observed {simulation_day_index}"
+            ),
+            Self::InvalidContributorOfeCount {
+                contributor_ofe_count,
+            } => write!(
+                f,
+                "contributor_ofe_count must be >= 1, observed {contributor_ofe_count}"
+            ),
+            Self::InvalidRecordOfeId { ofe_id } => {
+                write!(f, "per-OFE record id must be >= 1, observed {ofe_id}")
+            }
+            Self::InvalidTransferSourceOfeId { source_ofe_id } => write!(
+                f,
+                "transfer output source OFE id cannot be incremented, observed {source_ofe_id}"
+            ),
+            Self::TooManyRecords {
+                contributor_ofe_count,
+            } => write!(
+                f,
+                "cannot append more than {contributor_ofe_count} per-OFE records"
+            ),
+            Self::NonSequentialOfeRecord {
+                expected_ofe_id,
+                observed_ofe_id,
+            } => write!(
+                f,
+                "per-OFE records must be appended in OFE order; expected {expected_ofe_id}, observed {observed_ofe_id}"
+            ),
+            Self::TransferRecipientMismatch {
+                ofe_id,
+                recipient_ofe_id,
+            } => write!(
+                f,
+                "upstream transfer recipient {recipient_ofe_id} does not match record OFE {ofe_id}"
+            ),
+            Self::TransferInputSourceMismatch {
+                ofe_id,
+                expected_source_ofe_id,
+                observed_source_ofe_id,
+            } => write!(
+                f,
+                "upstream transfer source {observed_source_ofe_id:?} does not match expected source {expected_source_ofe_id:?} for record OFE {ofe_id}"
+            ),
+            Self::TransferOutputSourceMismatch {
+                ofe_id,
+                source_ofe_id,
+            } => write!(
+                f,
+                "transfer output source {source_ofe_id} does not match record OFE {ofe_id}"
+            ),
+            Self::TransferOutputRecipientMismatch {
+                source_ofe_id,
+                expected_recipient_ofe_id,
+                observed_recipient_ofe_id,
+            } => write!(
+                f,
+                "transfer output from OFE {source_ofe_id} targets {observed_recipient_ofe_id:?}; expected {expected_recipient_ofe_id:?}"
+            ),
+            Self::IncompleteCollection {
+                contributor_ofe_count,
+                record_count,
+            } => write!(
+                f,
+                "per-OFE collection has {record_count} records for {contributor_ofe_count} contributing OFEs"
+            ),
+            Self::MultiOfeAggregateNotImplemented {
+                contributor_ofe_count,
+            } => write!(
+                f,
+                "aggregate derivation from {contributor_ofe_count} per-OFE records is later M-E scope"
+            ),
+        }
+    }
+}
+
+impl Error for PerOfeDailyWaterBalanceError {}
+
 /// Per-phase kernel/writeback execution evidence.
 #[derive(Debug, Clone)]
 pub struct HillslopeKernelPhaseReport {

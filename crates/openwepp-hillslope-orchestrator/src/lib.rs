@@ -51,7 +51,9 @@ pub use phase::HillslopePhase;
 pub use scheduler::{
     HillslopeKernelExecutionReport, HillslopeKernelPhaseReport, HillslopePhaseGraph,
     HillslopePhaseOutcome, HillslopePhaseScheduler, HillslopeSchedulerError,
-    HillslopeSchedulerReport, HillslopeWritebackSurface, PhaseDependency, SchedulerOutcomeClass,
+    HillslopeSchedulerReport, HillslopeWritebackSurface, MOFE_TRANSFER_HOUR_COUNT,
+    PerOfeDailyWaterBalanceCollection, PerOfeDailyWaterBalanceError, PerOfeDailyWaterBalanceRecord,
+    PhaseDependency, SchedulerOutcomeClass, TransferInput, TransferOutput,
 };
 
 pub(crate) use hydrology::{

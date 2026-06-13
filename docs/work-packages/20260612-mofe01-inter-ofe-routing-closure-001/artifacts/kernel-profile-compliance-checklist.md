@@ -1,8 +1,32 @@
 # kernel profile compliance checklist
 
-Status: checked through M-E0
+Status: checked through M-E1
 
 Evidence mode: Ran + Static
+
+## M-E1 checklist
+
+- Production edits: yes; scheduler data-model types, runner static slices, and
+  publication manifest provenance.
+- Science-contract edits: none.
+- Test edits: yes; focused M-E1 runner tests and stale WATBAL version-pin
+  repairs in two HPHYS authority tests.
+- Typed errors in production: added `PerOfeDailyWaterBalanceError` variants for
+  invalid record and transfer source/recipient mismatches.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: unchanged.
+- Runtime publication paths: aggregate WB13/WAT publication preserved; no
+  dynamic per-OFE WAT publication flip.
+
+Validation:
+
+- `cargo fmt --check`: PASS.
+- `cargo clippy --workspace --all-targets -- -D warnings`: PASS.
+- `cargo test --workspace`: PASS.
+- `cargo deny check`: PASS.
+- `bash tools/release/check_authority_suite_antievasion.sh`: PASS.
 
 ## M-E0 checklist
 

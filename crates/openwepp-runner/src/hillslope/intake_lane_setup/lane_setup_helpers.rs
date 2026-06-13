@@ -1,5 +1,82 @@
 #[allow(clippy::wildcard_imports)]
 use super::super::*;
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct StaticOfeLaneSlice {
+    pub(crate) ofe_id: usize,
+    pub(crate) slope_ofe_index: usize,
+    pub(crate) soil_ofe_index: usize,
+    pub(crate) management_ofe_index: usize,
+    pub(crate) width_m: f64,
+    pub(crate) length_m: f64,
+    pub(crate) area_m2: f64,
+}
+
+pub(crate) fn build_static_per_ofe_lane_slices(
+    slope: &SlopeProfile,
+    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
+    management_topology_count: usize,
+) -> Result<Vec<StaticOfeLaneSlice>, HillslopeCliError> {
+    validate_hillslope_ofe_topology_parity(slope.ofe_count, management_topology_count, soil.ntemp)?;
+
+    if slope.ofes.len() != slope.ofe_count {
+        return Err(per_ofe_state_failure(format!(
+            "slope OFE vector length {} does not match declared ofe_count {}",
+            slope.ofes.len(),
+            slope.ofe_count
+        )));
+    }
+    if soil.ofes.len() != slope.ofe_count {
+        return Err(per_ofe_state_failure(format!(
+            "soil OFE vector length {} does not match slope ofe_count {}",
+            soil.ofes.len(),
+            slope.ofe_count
+        )));
+    }
+
+    let mut seen_ofe_ids = std::collections::BTreeSet::new();
+    let mut slices = Vec::with_capacity(slope.ofe_count);
+    for (position, (slope_ofe, _soil_ofe)) in slope.ofes.iter().zip(&soil.ofes).enumerate() {
+        let ofe_id = position + 1;
+        if !seen_ofe_ids.insert(ofe_id) {
+            return Err(per_ofe_state_failure(format!(
+                "duplicate static OFE lane id {ofe_id}"
+            )));
+        }
+        if !slope_ofe.fwidth.is_finite() || slope_ofe.fwidth <= 0.0 {
+            return Err(per_ofe_state_failure(format!(
+                "OFE {ofe_id} fwidth must be finite and > 0.0, observed {}",
+                slope_ofe.fwidth
+            )));
+        }
+        if !slope_ofe.slplen.is_finite() || slope_ofe.slplen <= 0.0 {
+            return Err(per_ofe_state_failure(format!(
+                "OFE {ofe_id} slplen must be finite and > 0.0, observed {}",
+                slope_ofe.slplen
+            )));
+        }
+
+        slices.push(StaticOfeLaneSlice {
+            ofe_id,
+            slope_ofe_index: slope_ofe.index,
+            soil_ofe_index: position,
+            management_ofe_index: position,
+            width_m: slope_ofe.fwidth,
+            length_m: slope_ofe.slplen,
+            area_m2: slope_ofe.fwidth * slope_ofe.slplen,
+        });
+    }
+
+    Ok(slices)
+}
+
+fn per_ofe_state_failure(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "per_ofe_static_lane_slices",
+        detail: format!("{SIMPIPE_GUARD_ID} {}", detail.into()),
+    }
+}
+
 pub(crate) fn validate_hillslope_ofe_topology_parity(
     slope_ofe_count: usize,
     management_topology_count: usize,

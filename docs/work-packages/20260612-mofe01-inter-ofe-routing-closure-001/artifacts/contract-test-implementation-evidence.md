@@ -1,8 +1,36 @@
 # contract test implementation evidence
 
-Status: M-E0 contract red tests installed
+Status: M-E1 structural tests green
 
 Evidence mode: Ran + Static
+
+## M-E1
+
+M-E1 made `mofe01_per_ofe_state_contract` green by implementing the structural
+surfaces it required:
+
+- `PerOfeDailyWaterBalanceCollection` and
+  `PerOfeDailyWaterBalanceRecord`;
+- `TransferInput` and `TransferOutput`;
+- publication manifest tokens for aggregate-vs-per-OFE policy, record
+  cardinality, storage-lineage policy, and identity status.
+
+Additional focused runner tests in
+`crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs` cover:
+
+- N=1 aggregate adapter round-trip;
+- multi-OFE aggregate adapter rejection;
+- transfer output recipient validation;
+- source/recipient mismatch rejection;
+- valid 2-OFE transfer-chain append;
+- static slice cardinality and geometry validation.
+
+Ran:
+
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - PASS; all 4 contract tests passed.
+- `cargo test -p openwepp-runner mofe01_me1 -- --nocapture`
+  - PASS; all 7 focused M-E1 tests passed.
 
 ## M-E0
 

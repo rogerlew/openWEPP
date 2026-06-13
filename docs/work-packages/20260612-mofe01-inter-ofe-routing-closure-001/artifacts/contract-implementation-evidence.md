@@ -1,8 +1,28 @@
 # contract implementation evidence
 
-Status: M-E0 contract amendments installed; production implementation held
+Status: M-E1 implemented against M-E0 contract authority
 
 Evidence mode: Ran + Static
+
+## M-E1
+
+No science-contract text was changed in M-E1. The implementation lands against
+the M-E0 authority already installed in:
+
+- `SC-RUNOFFPART-001#INV-RUNOFFPART-029`,
+- `SC-WATBAL-001#INV-WATBAL-097`,
+- `SC-SYSTEM-001#INV-SYSTEM-030`.
+
+M-E1 implements the data-model/shadow-state subset only. It preserves the
+M-E0 contract prohibition on deriving multi-OFE records from aggregate WB13/WAT
+state by constraining the legacy aggregate adapter to the N=1 case and by
+keeping runner manifests at `per_ofe_record_count = 0` until real dynamic
+records exist.
+
+Validation:
+
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`: PASS.
+- `cargo test --workspace`: PASS.
 
 ## M-E0
 

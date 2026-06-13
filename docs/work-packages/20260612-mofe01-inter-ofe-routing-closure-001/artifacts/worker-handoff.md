@@ -1,10 +1,30 @@
 # worker handoff
 
-Status: M-E0 executed-hold; M-E1 implementation next
+Status: M-E1 complete; M-E2 implementation next
 
 Evidence mode: Ran + Static
 
 ## Summary
+
+M-E1 completed the data-model shadow-state increment:
+
+- Added typed `TransferInput`/`TransferOutput` and
+  `PerOfeDailyWaterBalanceRecord`/`PerOfeDailyWaterBalanceCollection`.
+- Added static per-OFE lane slices for slope/soil/management topology.
+- Constrained the legacy aggregate adapter to N=1 only; multi-OFE aggregate
+  derivation remains blocked.
+- Preserved aggregate WB13/WAT publication. Final manifests report
+  `static_per_ofe_slice_count == contributor_ofe_count`,
+  `per_ofe_record_count = 0`, and dynamic per-OFE state flags false.
+- Final gates passed: fmt, clippy, focused M-E1 tests, per-OFE contract test,
+  full workspace tests, cargo-deny, authority anti-evasion script, final
+  H1-H36 batch, no-publication-flip audit, and single-OFE anchor comparison.
+- Local owcmp ran without comparator subagent per operator instruction:
+  execution PASS; semantic FAIL remains expected at the publication boundary
+  (`semantic_pass_count=0/36`, row-key failures `350720`).
+- Review A/B findings were accepted and fixed before final gates.
+
+## M-E0 summary
 
 M-E0 installed the contract/test scaffold and stopped at the required red gate:
 
@@ -22,8 +42,8 @@ M-E0 installed the contract/test scaffold and stopped at the required red gate:
   comparison was run.
 - `cargo clippy --workspace --all-targets -- -D warnings` and
   `cargo deny check` pass.
-- The worktree is intentionally red for `cargo test --workspace`; do not treat
-  M-E0 as a green/mergeable closure state.
+- The M-E0 red workspace state has been retired by M-E1; full
+  `cargo test --workspace` now passes.
 
 ## M-D summary
 
@@ -123,6 +143,12 @@ Local-only temp lane:
 - `/tmp/openwepp_mofe01_mc2/owcmp/summary.json`
 - `/tmp/openwepp_mofe01_mc2/owcmp/reports/semantic/H*.semantic.json`
 - `/tmp/openwepp_mofe01_mc2/m-c2-publication-audit.json`
+- `/tmp/openwepp_mofe01_me1_final/exit-codes.tsv`
+- `/tmp/openwepp_mofe01_me1_final/output/H*.{hbp,loss.json,plot.parquet,wat.parquet}`
+- `/tmp/openwepp_mofe01_me1_final/manifests/H*.manifest.json`
+- `/tmp/openwepp_mofe01_me1_final/owcmp/summary.json`
+- `/tmp/openwepp_mofe01_me1_final/owcmp/summary.md`
+- `/tmp/openwepp_mofe01_me1_final/single-ofe-anchor-cmp.tsv`
 - `/tmp/openwepp_mofe01_ma/current/exit-codes.tsv`
 - `/tmp/openwepp_mofe01_ma/current/logs/H*.stderr.txt`
 - `/tmp/openwepp_mofe01_ma/current/manifests/H*.json` for passing 1-OFE surfaces.
@@ -132,7 +158,7 @@ These are not committed artifacts.
 
 ## Next worker focus
 
-Execute M-E1 data-model scaffolding. Make the M-E0 red architecture test pass
-by adding a real per-OFE daily state collection or explicitly contracted
-equivalent. Do not satisfy it by adding a string-only placeholder or by
-manufacturing per-OFE records from aggregate WB13/WAT rows.
+Execute M-E2 per the M-D breakdown. Start from the M-E1 typed data model and
+wire real dynamic per-OFE daily records/sequential OFE handoff without flipping
+WAT publication prematurely or manufacturing records from aggregate WB13/WAT
+state.

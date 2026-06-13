@@ -151,10 +151,13 @@ pub(super) fn build_simimpl10_coupling_vector_provenance(
 pub(super) const MOFE04_PUBLICATION_OFE_POLICY: &str = "single-row-canonicalized-hillslope-aggregate";
 pub(super) const MOFE04_PUBLICATION_AREA_POLICY: &str = "sum-ofe-geometry-area";
 pub(super) const HPHYS0255_STORAGE_LINEAGE_POLICY: &str = "single-runtime-wb11-state";
+pub(super) const ME1_PER_OFE_STATE_POLICY: &str = "shadow-static-slices-only";
+pub(super) const ME1_IDENTITY_STATUS: &str = "not-run-shadow-state-only";
 
 pub(super) fn build_wb13_publication_provenance(
     rows: &[SimulationOwnedWb13Row],
     contributor_ofe_count: usize,
+    static_per_ofe_slice_count: usize,
     publication_area_m2: f64,
 ) -> Result<HillslopeWb13PublicationProvenance, HillslopeCliError> {
     let Some(first_row) = rows.first() else {
@@ -177,6 +180,11 @@ pub(super) fn build_wb13_publication_provenance(
             "contributor_ofe_count must be >= 1 for WB13 publication provenance",
         ));
     }
+    if static_per_ofe_slice_count != contributor_ofe_count {
+        return Err(wb13_simout_failure(format!(
+            "static_per_ofe_slice_count {static_per_ofe_slice_count} must equal contributor_ofe_count {contributor_ofe_count} during M-E1 shadow-state publication"
+        )));
+    }
     if !publication_area_m2.is_finite() || publication_area_m2 <= 0.0 {
         return Err(wb13_simout_failure(format!(
             "publication_area_m2 must be finite and > 0.0, observed {publication_area_m2}"
@@ -190,6 +198,7 @@ pub(super) fn build_wb13_publication_provenance(
     let sim_day_index_monotonic = rows
         .windows(2)
         .all(|window| window[1].sim_day_index > window[0].sim_day_index);
+    let per_ofe_record_count = 0usize;
 
     Ok(HillslopeWb13PublicationProvenance {
         source: WB13_PUBLICATION_SOURCE_SIMULATION_OWNED.to_string(),
@@ -201,6 +210,14 @@ pub(super) fn build_wb13_publication_provenance(
         ],
         publication_ofe_policy: MOFE04_PUBLICATION_OFE_POLICY.to_string(),
         contributor_ofe_count,
+        static_per_ofe_slice_count,
+        per_ofe_state_policy: ME1_PER_OFE_STATE_POLICY.to_string(),
+        per_ofe_dynamic_water_balance_state: false,
+        per_ofe_dynamic_wb_state: false,
+        per_ofe_record_count,
+        transfer_identity_status: ME1_IDENTITY_STATUS.to_string(),
+        per_element_identity_status: ME1_IDENTITY_STATUS.to_string(),
+        aggregate_identity_status: ME1_IDENTITY_STATUS.to_string(),
         area_policy: MOFE04_PUBLICATION_AREA_POLICY.to_string(),
         storage_lineage_policy: HPHYS0255_STORAGE_LINEAGE_POLICY.to_string(),
         publication_area_m2,

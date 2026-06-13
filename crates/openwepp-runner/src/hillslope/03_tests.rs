@@ -17,6 +17,9 @@ mod tests {
     mod simimpl {
         include!("tests03/simimpl.rs");
     }
+    mod per_ofe_state {
+        include!("tests03/per_ofe_state.rs");
+    }
     mod publication {
         include!("tests03/publication.rs");
     }

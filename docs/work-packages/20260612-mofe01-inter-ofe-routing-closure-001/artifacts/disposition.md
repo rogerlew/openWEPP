@@ -1,10 +1,34 @@
 # disposition
 
-Status: M-E0 executed-hold; package remains open for M-E1 implementation
+Status: M-E1 complete; package remains open for M-E2+
 
 Evidence mode: Ran + Static
 
 ## Disposition
+
+Increment M-E1 is complete for its data-model shadow-state scope. It added the
+typed per-OFE daily water-balance record/collection model, transfer
+input/output payloads, static per-OFE lane slices, manifest shadow-state
+provenance, and focused tests. It also fixed review findings by separating
+static slice count from dynamic record count, making the legacy aggregate
+adapter N=1-only, strengthening transfer source/recipient validation, and
+removing stale exact `SC-WATBAL-001` version pins in two unrelated authority
+tests.
+
+M-E1 did not populate dynamic per-OFE runner records and did not flip WAT
+publication. Final H1-H36 execution passed, single-OFE anchors remained
+byte-identical, and the no-publication-flip audit passed. Local owcmp command
+execution passed, while semantic comparison still fails at the expected
+publication boundary (`semantic_pass_count=0/36`,
+`structural_row_key_failures=350720`).
+
+The next lawful increment is M-E2: begin wiring real dynamic per-OFE daily
+state population/sequential OFE handoff per the M-D breakdown, behind fresh
+contract-derived behavioral gates. M-E1 must not be treated as routing identity
+closure; per-element and transfer identities remain blocked until real dynamic
+records exist.
+
+## M-E0 disposition
 
 Increment M-E0 executed the contract/test scaffold end-to-end and is held at
 the intended red architecture gate. The three contracts now define the M-D
@@ -111,7 +135,6 @@ Legacy calibration is complete for the available H1-H36 WAT files. The expected 
 
 ## Next disposition
 
-Execute M-E1: add the per-OFE daily state model/collection required by M-E0 and
-make the structural red gates pass without weakening them. Keep M-E1 within the
-data-model/scaffold boundary; single-OFE anchors and identity gates must be
-reopened for any production runtime change.
+Execute M-E2 per the M-D sub-increment breakdown. Preserve the M-E1
+no-publication-flip boundary until real dynamic per-OFE records are populated
+and identity tests can measure OFE-local state and adjacent transfer handoff.

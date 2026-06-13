@@ -6,6 +6,44 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-E1 Verification Record
+
+Agent: `019ebf71-a16c-7d32-8b14-f057ddee818f`
+
+Static/Ran read-only verification of final M-E1 artifacts, code disposition,
+saved `/tmp` evidence, and gate taxonomy. The verifier used read-only
+`rg`/`nl`/`git diff`/`jq`/`awk` checks and did not invoke comparator subagents.
+
+Verified:
+
+- M-E1 gate taxonomy is otherwise clean: expected owcmp semantic comparison is
+  `FAIL`, per-element and transfer identity gates are `BLOCKED`,
+  no-publication and single-OFE anchors are `PASS`.
+- Code disposition matches the scoped claim: publication remains aggregate-only
+  with `per_ofe_record_count = 0` and identity statuses
+  `not-run-shadow-state-only`.
+- Saved evidence cross-checks passed: all 36 manifests matched the
+  no-publication-flip predicate and `single-ofe-anchor-cmp.tsv` has 28/28
+  `PASS` rows.
+- M-E1 is not overclaiming per-element/transfer identity closure in the main
+  disposition or gate artifacts.
+
+Findings:
+
+1. **High:** M-E1 dual verification was overclaimed before M-E1 records existed
+   in `verification_agent_a.md` and `verification_agent_b.md`.
+
+Disposition:
+
+- Accepted and fixed. Added this M-E1 verification record and the matching
+  M-E1 record in `verification_agent_a.md`; reran package docs lint after the
+  artifact update.
+
+Residual risk:
+
+- The saved `/tmp` evidence remains local-only; future verification will need
+  those files or a rerun.
+
 ## M-E0 Verification Record
 
 Agent: `019ebf2a-5f28-7832-a780-d9a11ace1001`

@@ -6,6 +6,44 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-E1 Verification Record
+
+Agent: `019ebf71-817a-72c0-815b-ccebe735f76d`
+
+Static/Ran final verification of M-E1 runtime/code state and package evidence.
+The verifier ran focused local checks and did not invoke the comparator
+subagent.
+
+Verified:
+
+- Runtime/code M-E1 checks pass for the scoped data-model shadow-state claim.
+- `cargo test -p openwepp-runner mofe01_me1 -- --nocapture`: PASS.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`: PASS.
+- `cargo fmt --check`: PASS.
+- Saved `/tmp/openwepp_mofe01_me1_final` evidence shows 36/36 H1-H36 exits
+  clean, aggregate-only manifests with `per_ofe_record_count=0`, owcmp
+  execution PASS / semantic FAIL at the expected publication boundary, and
+  single-OFE anchors PASS.
+- M-E1 correctly leaves dynamic per-OFE records unpopulated and
+  transfer/per-element identities blocked for M-E2+.
+
+Findings:
+
+1. **Medium:** `gate-results.md` claimed final verification records were added,
+   but `verification_agent_a.md` and `verification_agent_b.md` did not yet
+   contain M-E1 verification records.
+
+Disposition:
+
+- Accepted and fixed. Added this M-E1 verification record and the matching
+  M-E1 record in `verification_agent_b.md`; reran package docs lint after the
+  artifact update.
+
+Residual risk:
+
+- Saved `/tmp` evidence is local-only; future verification will need those
+  files or a rerun.
+
 ## M-E0 Verification Record
 
 Agent: `019ebf2a-5e69-7952-a268-947caf803dad`
@@ -41,7 +79,9 @@ Ran:
 
 Verified:
 
-- `package.md` remains `Status: active; M-E0 executed-hold`.
+- At M-E0 verification time, `package.md` recorded
+  `Status: active; M-E0 executed-hold`; later increment records supersede that
+  historical status.
 - `Cargo.toml` normally registers
   `tests/integration/mofe01_per_ofe_state_contract.rs`.
 - M-E0 authority is present in `SC-RUNOFFPART-001#INV-RUNOFFPART-029`,

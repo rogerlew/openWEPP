@@ -1,8 +1,39 @@
 # gate results
 
-Status: M-E0 executed-hold; package active for M-E1 production implementation
+Status: M-E1 complete; package active for M-E2+
 
 Evidence mode: Ran + Static
+
+## M-E1 ran
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| M-E1 scope boundary | PASS | Implemented data-model shadow state and static lane slices only; no dynamic per-OFE runner state and no WAT publication flip. |
+| Per-OFE collection and record model | PASS | Added `PerOfeDailyWaterBalanceRecord` and `PerOfeDailyWaterBalanceCollection`; N=1 aggregate adapter is constrained to single-OFE only. |
+| Transfer payload model | PASS | Added `TransferInput`/`TransferOutput`; downstream conversion and collection insertion fail closed on source/recipient mismatch. |
+| Static per-OFE lane slices | PASS | Added exact-cardinality slope/soil/management slices and negative topology/geometry tests. |
+| Publication-policy manifest gate | PASS | Manifest now reports aggregate publication policy, `static_per_ofe_slice_count`, `per_ofe_record_count=0`, dynamic per-OFE flags false, and identity statuses as shadow-state-only. |
+| `cargo fmt --check` | PASS | Final post-edit run. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Final post-review run. |
+| `cargo test -p openwepp-runner mofe01_me1 -- --nocapture` | PASS | 7 focused M-E1 tests passed. |
+| `cargo test --test mofe01_per_ofe_state_contract -- --nocapture` | PASS | M-E0 structural red gates are green without weakening the target. |
+| HPHYS0319/0320 WATBAL version-pin repair tests | PASS | Both authority tests pass after removing stale exact `SC-WATBAL-001` version pins while retaining invariant/addendum checks. |
+| `cargo test --workspace` | PASS | Full Rust closure loop restored after M-E1. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| `bash tools/release/check_authority_suite_antievasion.sh` | PASS | Source-level authority-suite anti-evasion guard passed. |
+| `cargo build -p openwepp-runner --bin openwepp-cli-hill` | PASS | Built final hillslope CLI before replay. |
+| Fresh H1-H36 final CLI batch | PASS | 36/36 exit code `0`; 36 manifests; 144 output files under `/tmp/openwepp_mofe01_me1_final`. |
+| Local owcmp H1-H36 command execution, no comparator subagent | PASS | User explicitly directed comparisons without the comparator subagent because GPT-5.3-Codex-Spark quota was exhausted; `execution_verdict=PASS`. |
+| Local owcmp H1-H36 semantic comparison | FAIL | Expected M-E1 publication-boundary fail: `semantic_pass_count=0/36`, `structural_row_key_failures=350720`, first divergent H1 key `[1, 1, 2000]`; focus columns all zero diff. |
+| No-publication-flip audit | PASS | 36/36 manifests preserve aggregate publication policy, dynamic per-OFE flags false, `per_ofe_record_count=0`, and static slice count equal to contributor count. |
+| Single-OFE anchor comparison | PASS | H8/H15/H19/H20/H22/H23/H28 byte-identical to M-C2 for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`. |
+| Per-element identity gate | BLOCKED | Still not measurable until the runner populates real dynamic per-OFE daily records in later M-E sub-increments. |
+| Transfer identity gate | BLOCKED | Same dynamic-state blocker; M-E1 validates the typed payload shape but does not execute sequential OFE handoff. |
+| Aggregate identity unchanged | PASS | Single-OFE anchors remain byte-identical; owcmp focus-column diffs remain zero. |
+| Dual review | PASS | Review A and Review B findings were accepted and fixed; see `review_agent_a.md`, `review_agent_b.md`, and `m-e1-data-model-shadow-state-evidence.md`. |
+| Dual verification | PASS | Final verification records added after review fixes and final gates. |
+
+Detailed evidence: `m-e1-data-model-shadow-state-evidence.md`.
 
 ## M-E0 ran
 

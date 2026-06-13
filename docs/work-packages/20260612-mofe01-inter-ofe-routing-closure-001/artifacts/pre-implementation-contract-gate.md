@@ -1,8 +1,19 @@
 # pre implementation contract gate
 
-Status: satisfied for M-E0 contract/test scaffold; production implementation held
+Status: satisfied through M-E1 data-model implementation
 
 Evidence mode: Static
+
+M-E1 gate:
+- Reopened. M-E1 reread the package, staged plan, M-D architecture artifact,
+  M-E0 contract/test scaffold evidence, work-package governance,
+  science-contract governance, crate/test governance, and the scheduler/runner
+  seams touched by the data-model shadow-state increment.
+- Satisfied for the data-model scope. M-E1 implemented the structural model
+  required by `SC-RUNOFFPART-001#INV-RUNOFFPART-029`,
+  `SC-WATBAL-001#INV-WATBAL-097`, and `SC-SYSTEM-001#INV-SYSTEM-030`.
+- Held before dynamic-state runtime execution. M-E1 deliberately does not
+  populate dynamic per-OFE daily records or flip WAT publication.
 
 M-E0 gate:
 - Reopened. M-E0 reread the package, staged plan, M-D architecture artifact,

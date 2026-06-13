@@ -1,8 +1,50 @@
 # owned file manifest
 
-Status: updated through M-E0
+Status: updated through M-E1
 
 Evidence mode: Static
+
+## M-E1 edited files
+
+Rust implementation:
+
+- `crates/openwepp-hillslope-orchestrator/src/lib.rs`
+- `crates/openwepp-hillslope-orchestrator/src/scheduler.rs`
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`
+- `crates/openwepp-runner/src/hillslope/intake_lane_setup/lane_setup_helpers.rs`
+- `crates/openwepp-runner/src/hillslope/intake_lane_setup/mod.rs`
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_publication.rs`
+
+Tests:
+
+- `crates/openwepp-runner/src/hillslope/03_tests.rs`
+- `crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs`
+- `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
+- `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
+
+Work-package files/artifacts:
+
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/package.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/m-e1-data-model-shadow-state-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/README.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/gate-results.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/disposition.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/worker-handoff.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/implementation-test-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/pre-implementation-contract-gate.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-test-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/kernel-profile-compliance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/line-count-governance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/owned-file-manifest.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/required-reading-map.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_b.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_b.md`
+
+No science contract, dependency, legacy, or `/wc1` substrate file was edited in
+M-E1.
 
 ## M-E0 edited files
 

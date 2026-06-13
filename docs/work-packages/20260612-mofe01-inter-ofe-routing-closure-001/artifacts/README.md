@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: updated through M-E0 executed-hold
+Status: updated through M-E1 complete
 
 Evidence and disposition artifacts for
 `20260612-mofe01-inter-ofe-routing-closure-001`.
@@ -23,6 +23,9 @@ Evidence and disposition artifacts for
 - `m-e0-contract-test-scaffold-evidence.md`: M-E0 contract/test scaffold
   evidence, including the passing authority test and intentional red
   per-OFE-state architecture gate.
+- `m-e1-data-model-shadow-state-evidence.md`: M-E1 data-model/shadow-state
+  implementation evidence, final local comparison results, and review
+  disposition.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`, `contract-test-implementation-evidence.md`,
   `pre-implementation-contract-gate.md`, `implementation-test-evidence.md`:
@@ -30,6 +33,6 @@ Evidence and disposition artifacts for
 - `kernel-profile-compliance-checklist.md`, `owned-file-manifest.md`,
   `gate-results.md`, `line-count-governance-checklist.md`: governance.
 - `review_agent_a.md`, `review_agent_b.md`: dual review with finding
-  disposition through M-E0; `verification_agent_a.md`,
+  disposition through M-E1; `verification_agent_a.md`,
   `verification_agent_b.md`.
 - `disposition.md`, `worker-handoff.md`: closure record.

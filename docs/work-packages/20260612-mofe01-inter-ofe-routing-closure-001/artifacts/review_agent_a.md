@@ -6,6 +6,28 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-E1 Review Record
+
+Agent: `019ebf52-df8f-7a63-8b81-2645bbebaa3e`
+
+Static/Ran read-only review of the M-E1 diff, package artifacts, contracts, and
+publication seams. The reviewer ran focused tests only and did not invoke the
+comparator subagent.
+
+Findings:
+
+1. **Medium:** `per_ofe_record_count` was populated from static slice count,
+   not real per-OFE daily records.
+2. **Medium:** `TransferOutput::as_downstream_input` accepted a caller-supplied
+   recipient, allowing mismatched output/input identity.
+
+### M-E1 Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | Static slice count reported as dynamic record count | accepted | Added `static_per_ofe_slice_count`, kept `per_ofe_record_count = 0` while dynamic per-OFE state flags are false, and refreshed the manifest audit. |
+| 2 | Transfer output could be converted to a mismatched downstream input | accepted | Changed `as_downstream_input()` to use the recorded adjacent recipient and return typed errors for terminal/mismatched outputs; collection append now validates transfer source/recipient state. |
+
 ## M-E0 Review Record
 
 Agent: `019ebf20-1757-74e1-88e3-b086cf1e8307`

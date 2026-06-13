@@ -6,6 +6,38 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-E1 Review Record
+
+Agent: `019ebf53-586e-78a1-af99-319bd9dbb231`
+
+Static/Ran QA review of M-E1. The reviewer ran fmt, focused M-E1 tests,
+per-OFE contract tests, clippy, deny, and an attempted workspace run that
+failed at a stale HPHYS0319 exact WATBAL version assertion. No comparator
+subagent or batch comparison was run by the reviewer.
+
+Findings:
+
+1. **High:** `cargo test --workspace` failed because HPHYS0319 pinned
+   `SC-WATBAL-001` to version 154 while M-E0 legitimately advanced it to 155.
+2. **Medium:** M-E1 gate evidence was stale and still described M-E0
+   executed-hold.
+3. **Medium:** `from_legacy_aggregate_surface` could create arbitrary OFE
+   records from aggregate state.
+4. **Low:** Manifest naming was misleading because static slice count was
+   passed as `per_ofe_record_count`.
+5. **Low:** M-E1 tests lacked negative coverage for topology, geometry,
+   transfer mismatch, and multi-OFE aggregate rejection.
+
+### M-E1 Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | Workspace failed on stale HPHYS0319 WATBAL version pin | accepted | Removed exact future-sensitive version pins from HPHYS0319 and HPHYS0320 authority tests while preserving invariant/addendum assertions; full workspace now passes. |
+| 2 | M-E1 evidence stale | accepted | Added `m-e1-data-model-shadow-state-evidence.md`, updated gate results, disposition, handoff, implementation evidence, and status fields. |
+| 3 | Legacy aggregate adapter could synthesize arbitrary OFE records | accepted | Replaced it with `from_legacy_single_ofe_aggregate_surface`, which has no OFE-id argument and is N=1-only. |
+| 4 | Manifest naming misleading | accepted | Added `static_per_ofe_slice_count` and kept `per_ofe_record_count = 0` until real dynamic records exist. |
+| 5 | M-E1 tests thin | accepted | Added negative focused tests for multi-OFE aggregate rejection, transfer mismatch, topology mismatch, zero geometry, and cardinality mismatch. |
+
 ## M-E0 Review Record
 
 Agent: `019ebf20-17fc-7973-9abf-9f724cbf4f95`

@@ -1,8 +1,52 @@
 # implementation test evidence
 
-Status: M-E0 executed-hold; contract tests added
+Status: M-E1 complete; package active for M-E2+
 
 Evidence mode: Ran + Static
+
+## M-E1 ran
+
+M-E1 implemented the per-OFE data-model shadow-state layer and made the M-E0
+structural red target green without flipping WAT publication.
+
+- `cargo fmt --check`
+  - PASS.
+- `cargo clippy --workspace --all-targets -- -D warnings`
+  - PASS.
+- `cargo test -p openwepp-runner mofe01_me1 -- --nocapture`
+  - PASS; 7 focused M-E1 unit tests passed.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - PASS; all four contract-derived tests passed.
+- `cargo test -p openwepp --test hphys0319_fixed_baseline_stmtim_observe_contract hphys0319_contract_authority_is_registered -- --nocapture`
+  - PASS after removing stale exact WATBAL version pin.
+- `cargo test -p openwepp --test hphys0320_stmtim_start_time_source_line_contract hphys0320_contract_authority_is_registered -- --nocapture`
+  - PASS after the same version-pin repair.
+- `cargo test --workspace`
+  - PASS.
+- `cargo deny check`
+  - PASS; `advisories ok, bans ok, licenses ok, sources ok`.
+- `bash tools/release/check_authority_suite_antievasion.sh`
+  - PASS.
+- `cargo build -p openwepp-runner --bin openwepp-cli-hill`
+  - PASS.
+- Fresh H1-H36 final CLI batch under `/tmp/openwepp_mofe01_me1_final`
+  - PASS; 36/36 exit code `0`, 36 manifests, 144 output files.
+- Local owcmp H1-H36 semantic batch without comparator subagent
+  - PASS command execution.
+  - FAIL semantic comparison as expected for M-E1:
+    `semantic_pass_count=0/36`, `structural_row_key_failures=350720`,
+    first divergent H1 key `[1, 1, 2000]`.
+  - Focus columns `RM`, `Snow-Water`, `Total-Soil`, `SoilWaterTotal`, `Ep`,
+    `Es`, `Dp`, `Q`, and `latqcc` all had zero failures and max diff `0.0`.
+- No-publication-flip manifest audit
+  - PASS; all 36 manifests preserve aggregate publication, dynamic per-OFE
+    flags false, `per_ofe_record_count=0`, and static slice count equal to
+    contributor count.
+- Single-OFE anchor comparison
+  - PASS; H8/H15/H19/H20/H22/H23/H28 byte-identical to M-C2 outputs for
+    `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`.
+
+Detailed evidence: `m-e1-data-model-shadow-state-evidence.md`.
 
 ## M-E0 ran
 

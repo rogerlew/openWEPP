@@ -159,6 +159,7 @@ struct HillslopeWb13RowKeyProvenance {
 }
 
 #[derive(Debug, Serialize)]
+#[allow(clippy::struct_excessive_bools)]
 struct HillslopeWb13PublicationProvenance {
     source: String,
     projection_fallback_used: bool,
@@ -166,6 +167,14 @@ struct HillslopeWb13PublicationProvenance {
     replay_candidate_surfaces: Vec<String>,
     publication_ofe_policy: String,
     contributor_ofe_count: usize,
+    static_per_ofe_slice_count: usize,
+    per_ofe_state_policy: String,
+    per_ofe_dynamic_water_balance_state: bool,
+    per_ofe_dynamic_wb_state: bool,
+    per_ofe_record_count: usize,
+    transfer_identity_status: String,
+    per_element_identity_status: String,
+    aggregate_identity_status: String,
     area_policy: String,
     storage_lineage_policy: String,
     publication_area_m2: f64,
@@ -1045,6 +1054,11 @@ pub fn execute_hillslope_run(
 
     let publication_area_m2 = derive_mofe04_publication_area_from_slope(&slope)?;
     let contributor_ofe_count = slope.ofe_count;
+    let static_per_ofe_slices = crate::hillslope::intake_lane_setup::build_static_per_ofe_lane_slices(
+        &slope,
+        &soil,
+        management.topology_count,
+    )?;
 
     let soil_surface = build_hillslope_runtime_surface_from_soil(&soil).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
@@ -1238,8 +1252,12 @@ pub fn execute_hillslope_run(
         wb16_ealpha_compatibility_seed_used,
         wb16_ealpha_seed_policy,
     };
-    let wb13_publication =
-        build_wb13_publication_provenance(&wb13_rows, contributor_ofe_count, publication_area_m2)?;
+    let wb13_publication = build_wb13_publication_provenance(
+        &wb13_rows,
+        contributor_ofe_count,
+        static_per_ofe_slices.len(),
+        publication_area_m2,
+    )?;
     let mofe_hourly_carry =
         build_mofe_hourly_carry_provenance(&runtime_surface, contributor_ofe_count)?;
     let pass_bytes = build_hbp_output(
