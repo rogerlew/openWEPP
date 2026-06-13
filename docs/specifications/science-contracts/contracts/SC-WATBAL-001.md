@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 152
+contract_version: 154
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-06-11
+last_reviewed: 2026-06-12
 supersedes: []
 superseded_by: []
 ---
@@ -107,7 +107,8 @@ Out of scope:
 | `st(i)` | `m` | Baseline per-layer liquid storage state used by ET extraction, lateral/drain updates, and aggregate root-zone recomputation. | WB11 hydrology kernel | ET/root uptake + `watcon` lineage |
 | `soilw(i)` | `m` | Baseline per-layer unfrozen-water intermediate: `st(i) + thetdr(i)*(dg(i)-frozen(i))`. | WB11 aggregate recomputation path | `watcon`/WB13 publication |
 | `watcon` | `m` | Baseline aggregate root-zone unfrozen water (`Σ soilw(i)`) used for closure/publication lineage. | WB11 aggregate recomputation path | WB13 `Total-Soil` lineage |
-| `UpStrmQ` | `mm` | WB13/hillslope WAT upstream runoff publication term. | watershed/hillslope carry publication | hillslope WAT output |
+| `UpStrmQ` | `m` runtime; WB13/WAT publication `mm` | Upstream surface-runoff carry component derived from `Σui_SUrunf(ii)` with area-ratio scaling. | MOFE hourly carry resolver | downstream OFE hourly `xfin`, WB12 closure, hillslope WAT output |
+| `SubRIn` | `m` runtime; WB13/WAT publication `mm` | Upstream lateral-flow carry component derived from `Σui_LfUrf(ii)` with area-ratio scaling. | MOFE hourly carry resolver | downstream OFE hourly `xfin`, WB12 closure, hillslope WAT output |
 | `Total-Soil` | `mm` | WB13/hydout aggregate unfrozen soil-water publication term from `watcon` lineage; excludes separately published frozen water. | WB11/WB13 publication | hillslope WAT output |
 | `frozwt` | `mm` | WB13/hillslope WAT frozen-water publication term sourced from the frost/water exchanged frozen store (`frost.runtime_frwatc_frozen_water_after_m`), additive to `Total-Soil` for frost-active storage audits. | frost/water-balance publication | hillslope WAT output |
 | `QOFE` | `mm` | WB13/hillslope WAT OFE runoff publication term. | runoff publication | hillslope WAT output |
@@ -145,7 +146,7 @@ Out of scope:
 |---|---|
 | WB17 ET + WB18 perc flux outputs | `ET`, `Ws`, `Ep`, `Es`, `Er`, `wb18_perc_pei_####`, `D`, `Pe` |
 | WB19 lateral/drainage outputs | `q`, `Qdd`, `Qd` |
-| MOFE hourly carry-array outputs | `ui_SCrunf_0001..0024`, `ui_LfCrf_0001..0024`, copy-forward `ui_SUrunf_0001..0024`, `ui_LfUrf_0001..0024` when MOFE hourly carry is enabled |
+| MOFE hourly carry-array outputs | `ui_SCrunf_0001..0024`, `ui_LfCrf_0001..0024`, copy-forward `ui_SUrunf_0001..0024`, `ui_LfUrf_0001..0024`, plus separated `UpStrmQ` and `SubRIn` component totals when MOFE hourly carry is enabled |
 | WB19 state updates | `wb11_soil_water`, `wb18_perc_theta_####`, `wb11_drainable_storage`, `wb19_fcdep`, `wb19_unsdep`, `wb19_watyld` |
 | Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range WB17/WB18/WB19 hydrology domains |
 
@@ -218,7 +219,7 @@ lateral/drainage).
 | INV-WATBAL-030 | HPHYS0238 WB19 hourly iterative execution invariant: hourly lane execution must run WB19 lateral/drainage with explicit iterative substeps (`wb19_lateral_drain_lane_substeps=24`) and accumulated daily `q`/`Qdd`; divisor-only single-pass substitutions are non-authoritative for hourly closure claims. | hard-fail | REF-WATBAL-CH6-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-031 | HPHYS0239 WB19->WB12->WB13 handoff ordering invariant: promoted hydrology-tail execution must preserve deterministic same-pass ordering through `PercolationDeepSeepage`, `Evapotranspiration`, WB19 subsurface handoff, `RunoffReconciliation`, and `StorageReconciliation`; WB13 `Q`/`Ep`/`Es`/`Er` publication must consume flux-authoritative symbols under state/flux conflicts. HPHYS0242 `INV-WATBAL-034` is the controlling authority for hourly-lane WB19 drainage/lateral ordering. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS, INV-WATBAL-034 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-032 | HPHYS0240 hourly runoff-carryover invariant: WB12/WB14 runoff reconciliation must resolve incoming runoff carryover from same-pass `wb12_runoff_carryover` flux when present, publish the resolved carryover as a flux, and use `wb12_runon_input` only as a finite non-negative compatibility surface when the same-pass flux is absent. Malformed carryover fluxes are typed hard failures and cannot be silently replaced by stale state. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-WATBAL-033 | HPHYS0241 MOFE hourly carry-array invariant: multi-OFE hourly lanes must expose all 24 entries of `ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, and `ui_LfCrf`, consume upstream `ui_SUrunf + ui_LfUrf` arrays as the hourly runon carry source, publish current `ui_SCrunf`/`ui_LfCrf` arrays, and copy current arrays to upstream arrays for the next OFE/day boundary. Missing, non-finite, negative, wrong-cardinality, or aggregate-only carry payloads hard-fail; daily `wb12_runoff_carryover` may only summarize the explicit arrays. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-033 | HPHYS0241 MOFE hourly carry-array invariant: multi-OFE hourly lanes must expose all 24 entries of `ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, and `ui_LfCrf`, consume upstream `ui_SUrunf + ui_LfUrf` arrays as the hourly runon carry source, publish current `ui_SCrunf`/`ui_LfCrf` arrays, and copy current arrays to upstream arrays for the next OFE/day boundary. Missing, non-finite, negative, wrong-cardinality, or aggregate-only carry payloads hard-fail; daily `wb12_runoff_carryover` may only summarize the explicit arrays after array provenance is preserved, and stale aggregate carry must be purged before array-enabled execution. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-034 | HPHYS0242 hourly cadence/ordering invariant: hourly-lane water-balance closure must preserve baseline `watbal_hourly` ordering for the WB14/WB12 tail: percolation precedes final-hour ET, drainage precedes lateral flow in the hourly tail, surface saturation excess (`ui_SCrunf(ii)`) is clipped from top-layer storage before runoff publication, `Q` includes `Σui_SCrunf(ii)` plus partition runoff, and storage reconciliation consumes same-pass `Q`, `ET`, `D`, and `Qd` rather than stale compatibility state. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS, SC-RUNOFFPART-001#INV-RUNOFFPART-014, SC-EVAP-001#INV-EVAP-014, SC-PERC-001#INV-PERC-012, SC-SUBHYD-001#INV-SUBHYD-023 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-035 | HPHYS0247 H39 hourly water-balance lateral/snow gate invariant: closure claims for H39 single-OFE hourly water balance must use runtime winter activation triggers from `SC-SNOWFREEZE-001#INV-SNOWFREEZE-009` and WB19 lateral capacity lineage from `SC-SUBHYD-001#INV-SUBHYD-024`; sidecar-presence-only winter bypasses and lateral withdrawals from non-`meblfc` layers are invalid evidence. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH6-COUPLING, SC-SNOWFREEZE-001#INV-SNOWFREEZE-009, SC-SUBHYD-001#INV-SUBHYD-024 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-036 | HPHYS0248 H39 hourly `Dp`/`Pe` restrictive-bottom invariant: promoted H39 hourly water-balance evidence must derive WB18 bottom-layer `D`/`Pe` from `SC-PERC-001#INV-PERC-014` baseline hourly restrictive conductivity lineage (`fx=1`, `kslast`, `ui_bdrkth`, thickness-weighted `sscz`, `sep/ui_LFtstp`, accumulated `deepSeep`). H39 closure claims that use unrestricted bottom `Ksi`, daily-only harmonic conductivity, unsaturated `fx` damping, or omit the restrictive-layer thickness branch must remain in `HOLD`. | hard-fail | REF-WATBAL-LEGACY-HOURLY-BOTK, REF-WATBAL-CH5-BAL, SC-PERC-001#INV-PERC-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -280,6 +281,7 @@ lateral/drainage).
 | INV-WATBAL-093 | HPHYS0319 fixed-baseline `stmtim` observe water-balance gate: before assigning the combined `57` carried rows to WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, snow producer, branch predicate, or melt terms, water-balance continuation must consume a paired H1/H7/H39 2013 day 11 hour 11 ledger that recovers fixed-baseline `stmtim` observe values from the pinned baseline and compares them with regenerated OpenWEPP `snow.hourly.stmtim.*_0011` diagnostics. The ledger must identify absent/extra active interval, rain-vs-snow branch, and same-unit magnitude deltas for `hrrain` and `hrsnow`, preserve the combined `57` carried rows, and mark production/downstream authorization as false unless source-line-owned OpenWEPP defect authority plus independent correctness authority are both present. Temporary observe instrumentation is evidence only; water-balance compensation from comparator disagreement, rounded output, or source-code resemblance remains invalid. | governance-hold | INV-WATBAL-092, SC-SNOWFREEZE-001#INV-SNOWFREEZE-045, SC-CLIMATE-001#INV-CLIMATE-017, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-95`, `/workdir/wepp-forest_260430_baseline/src/winter.for:292-300` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-094 | HPHYS0320 `stmtim` start-time water-balance gate: water-balance continuation may close the combined `57` carried rows for the timing seam only after source-line classification proves pinned-baseline `winter.for:206-235` normalizes finite `wnttim < 1.0` to `1.0` before `stmtim.for:43-64` active-interval evaluation and OpenWEPP SIMIMPL28 implements the same rule. Paired H1/H7/H39 reruns must prove `wntdur = 11`, `wnttim = 1`, active interval `1`, snow branch `1`, and `hrsnow ~= 0.00074545 m` at 2013 day 11 hour 11. WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, and WB12 runoff compensation remains invalid; residual divergence must be routed to a named source lane. | governance-hold | INV-WATBAL-093, SC-SNOWFREEZE-001#INV-SNOWFREEZE-046, SC-CLIMATE-001#INV-CLIMATE-018, `/workdir/wepp-forest_260430_baseline/src/winter.for:206-235`, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-64` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-095 | FDHP01 frost-active aggregate-storage invariant: WB13 `SoilWaterTotal` remains the hydout-equivalent `Total-Soil`/`watcon` alias and must exclude frozen water, while frost-active storage closure audits must evaluate the additive storage term `Total-Soil + frozwt`. WAT `frozwt` must be sourced from the explicit exchanged-store diagnostic `frost.runtime_frwatc_frozen_water_after_m`, and that diagnostic must equal the per-layer frozen-water store sum `Σ(wb18_perc_frzw_#### + thetdr_#### * wb18_perc_frozen_depth_####)` corresponding to legacy `soilf(i) = frzw(i) + thetdr(i) * frozen(i)`. Sourcing `frozwt` from frost depth, `frdp * scalar`, `frost.runtime_ws_frz` when it is depth-derived, or any non-layer aggregate is non-authoritative publication leakage. D2 residual closure or defect ownership claims must consume in-process frost/water exchange diagnostics proving `soil_water_after = soil_water_before + thaw_credit - freeze_debit`, `freeze_debit = max(frozen_after - frozen_before, 0)`, and `thaw_credit = max(frozen_before - frozen_after, 0)` before changing unrelated hydrology storage logic. | hard-fail | REF-WATBAL-LEGACY-FROZEN-STORAGE, REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-WB13, INV-WATBAL-029, SC-SNOWFREEZE-001#INV-SNOWFREEZE-006 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-096 | MOFE01 M-B inter-OFE water-balance conservation invariant: multi-OFE hourly lanes must preserve three conservation identities before WB13/WAT promotion. Per-element identity: `local_liquid + UpStrmQ + SubRIn = infiltration + Q_partition + Δdepression_storage + ε` before current-OFE `surdra` addback. Transfer identity: each upstream OFE's `ui_SCrunf(ii)` and `ui_LfCrf(ii)` must become the downstream OFE's scaled `ui_SUrunf(ii)` and `ui_LfUrf(ii)`, with `UpStrmQ = Σui_SUrunf(ii)` and `SubRIn = Σui_LfUrf(ii)` after scaling. Hillslope-total identity: inter-OFE transfers cancel internally, leaving only external precipitation/melt/irrigation inputs, outlet runoff, lateral/drain/percolation/ET losses, and storage change at the declared hillslope boundary. Missing component surfaces, aggregate-only transfer substitution, non-zero single-OFE upstream carry, or identity residuals beyond tolerance hard-fail. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-CH5-BAL, SC-RUNOFFPART-001#INV-RUNOFFPART-028, INV-WATBAL-033, INV-WATBAL-034 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Binding Exposure Index
 
@@ -354,6 +356,7 @@ This index is intentionally conservative. It does not relocate addendum narrativ
 | `HPHYS0240-HOURLY-RUNOFF-CARRYOVER-ADDENDUM` | `lines 2086-2097` `HPHYS0240 Hourly Runoff Carryover Addendum` | `active` | `maps-to-existing-INV` | `INV-WATBAL-032` | `none` | SCSTRUCT03 batch 5: mapped to hourly runoff-carryover invariant; retained in core. |
 | `HPHYS0241-MOFE-HOURLY-CARRY-ARRAY-ROUTING-CONTINUITY-ADDENDUM` | `lines 2098-2121` `HPHYS0241 MOFE Hourly Carry-Array Routing Continuity Addendum` | `active` | `maps-to-existing-INV` | `INV-WATBAL-033` | `none` | SCSTRUCT03 batch 5: mapped to MOFE hourly carry-array invariant; retained in core. |
 | `HPHYS0242-WB14-WB12-HOURLY-CADENCE-AND-ORDERING-ADDENDUM` | `lines 2122-2142` `HPHYS0242 WB14/WB12 Hourly Cadence and Ordering Addendum` | `active` | `maps-to-existing-INV` | `INV-WATBAL-034` | `none` | SCSTRUCT03 batch 5: mapped to hourly cadence/ordering invariant; retained in core. |
+| `MOFE01-M-B-INTER-OFE-CONSERVATION-ADDENDUM` | `SC-WATBAL-001.md#mofe01-m-b-inter-ofe-conservation-addendum` | `active` | `maps-to-existing-INV` | `INV-WATBAL-096` | `none` | MOFE01 M-B: separated `UpStrmQ`/`SubRIn`, per-element identity, transfer identity, and hillslope-total cancellation are directly exposed by `INV-WATBAL-096`. |
 | `HPHYS0246-WB18-AGGREGATE-SOIL-WATER-WRITEBACK-ADDENDUM` | `lines 2143-2156` `HPHYS0246 WB18 Aggregate Soil-Water Writeback Addendum` | `active` | `maps-to-existing-INV` | `INV-WATBAL-029` | `none` | same-section invariant references provide a preliminary binding exposure map; relocation still requires conservation crosswalk |
 | `HPHYS0249-WB17-AGGREGATE-STORAGE-COUPLING-ADDENDUM` | `lines 2157-2175` `HPHYS0249 WB17 Aggregate Storage Coupling Addendum` | `active` | `maps-to-existing-INV` | `INV-WATBAL-029` | `none` | same-section invariant references provide a preliminary binding exposure map; relocation still requires conservation crosswalk |
 | `HPHYS0250-WB13-FINAL-EP-COUPLING-ADDENDUM` | `lines 2176-2189` `HPHYS0250 WB13 Final-Ep Coupling Addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT02 routed: binding status or precise canonical mapping requires science review; narrative remains in core and is not sidecar-eligible. |
@@ -477,6 +480,7 @@ all `HOLD` dispositions must name a scoped owner and follow-on gate.
 | `INV-WATBAL-093` | governance | HPHYS0319 water-balance consumer gate consuming fixed-baseline `stmtim` observe recovery paired with regenerated OpenWEPP `stmtim` traces | Explicit `HOLD` when fixed-baseline observe recovery is absent, not same-key paired, lacks source-line ownership, or is used to authorize WB13/WB17/WB18/WB19/WB12 compensation without independent correctness authority | HPHYS0319 fixed-baseline `stmtim` observe water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-094` | governance | HPHYS0320 water-balance consumer gate consuming source-line classification, SIMIMPL28 start-time implementation, and paired H1/H7/H39 reruns | Explicit `HOLD` when timing closure evidence is absent, residual divergence is unowned, or WB13/WB17/WB18/WB19/WB12 compensation is asserted instead of source-line timing closure | HPHYS0320 `stmtim` start-time water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-095` | runtime + governance | FDHP01 frost-active aggregate-storage classifier separating unfrozen `Total-Soil`/`SoilWaterTotal` from additive `frozwt`, requiring WAT `frozwt` publication from the explicit `frost.runtime_frwatc_frozen_water_after_m` exchanged-store diagnostic, requiring that diagnostic to equal `Σ(wb18_perc_frzw_#### + thetdr_#### * wb18_perc_frozen_depth_####)`, and requiring in-process freeze/thaw exchange diagnostics before D2 residual ownership | Typed hard error / explicit `HOLD` when `SoilWaterTotal` is redefined to include frozen water, additive storage audits ignore `frozwt`, WAT `frozwt` is sourced from frost depth or a non-layer aggregate instead of the exchanged-store diagnostic, the diagnostic diverges from the legacy `soilf` layer sum, or freeze/thaw residual claims lack before/after exchange diagnostics | FDHP01 D2 frost/water exchange storage identity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-096` | runtime + governance | MOFE hourly inter-OFE transfer validator spanning separated `UpStrmQ`/`SubRIn` components, `ui_SCrunf`/`ui_LfCrf` copy-forward, per-element closure, and hillslope-total cancellation | Typed hard error / explicit `HOLD` when upstream carry components are missing/collapsed, single-OFE upstream carry is non-zero, downstream arrays do not match upstream current arrays after scaling, or per-element/transfer/hillslope-total residuals exceed tolerance | MOFE01 M-B inter-OFE route-conservation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -2029,8 +2033,10 @@ signals.
    each array family. Missing entries, non-finite entries, negative entries,
    or cardinality other than 24 are typed hard failures.
 7. Daily aggregate carry surfaces such as `wb12_runoff_carryover` may summarize
-   the explicit `ui_SUrunf + ui_LfUrf` array payload for WB12/WB13 closure, but
-   may not replace or synthesize the array payload in MOFE hourly lanes.
+   the explicit `ui_SUrunf + ui_LfUrf` array payload for WB12/WB13 closure only
+   after array provenance is preserved. Stale aggregate carry from a prior
+   scheduler lifecycle must be purged before array-enabled execution, and no
+   aggregate may replace or synthesize the array payload in MOFE hourly lanes.
 
 ## HPHYS0242 WB14/WB12 Hourly Cadence and Ordering Addendum
 
@@ -2052,6 +2058,32 @@ signals.
 5. Contract-derived tests must prove scheduler order, `ui_SCrunf` clipping and
    addback, ET/infiltration lineage freshness, and stale-state anti-shadow
    behavior before production edits are promotable.
+
+### MOFE01 M-B Inter-OFE Conservation Addendum
+
+MOFE01 M-B promotes the hydrology-route seam from array availability to
+component-preserving conservation.
+
+1. Upstream carry into an OFE is component-preserving. `UpStrmQ` is the
+   area-scaled daily sum of `ui_SUrunf(1:24)`, and `SubRIn` is the area-scaled
+   daily sum of `ui_LfUrf(1:24)`. WB12/WB14 `runon_input` is their sum.
+2. Per-element closure must expose runon explicitly before publication:
+   `local_liquid + UpStrmQ + SubRIn = infiltration + Q_partition +
+   Δdepression_storage + ε`. The current-OFE surface-saturation addback
+   `surdra = Σui_SCrunf(ii)` remains a same-pass `Q` term under
+   `INV-WATBAL-034` and cannot mask a transfer residual.
+3. Transfer closure is hourly and directional. For each adjacent OFE pair,
+   upstream `ui_SCrunf(ii)` feeds downstream `ui_SUrunf(ii)`, and upstream
+   `ui_LfCrf(ii)` feeds downstream `ui_LfUrf(ii)`, after the declared
+   area-ratio scaling. Aggregate `wb12_runoff_carryover` may summarize the
+   transfer but cannot replace the explicit arrays.
+4. Hillslope-total closure must cancel internal inter-OFE transfers. A
+   hillslope-total residual may include only external climate/irrigation inputs,
+   ET, percolation, lateral/drain exports, outlet runoff, and storage change at
+   the declared boundary.
+5. Contract-derived vectors must cover a two-OFE surface carry, a two-OFE
+   lateral handoff proving non-zero `SubRIn`, and a mixed H11/H6/H9/H1 cohort
+   smoke run that executes beyond the previously failing day-2 WB14 boundary.
 
 ### HPHYS0246 WB18 Aggregate Soil-Water Writeback Addendum
 
@@ -2270,6 +2302,8 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-12` | `154` | `Codex` | MOFE01 M-B correction: clarified `INV-WATBAL-033` aggregate carry posture so stale daily `wb12_runoff_carryover` is purged before MOFE array-enabled execution and aggregate carry remains only a summary of explicit hourly arrays. |
+| `2026-06-12` | `153` | `Codex` | MOFE01 M-B amendment: added `INV-WATBAL-096` and the inter-OFE conservation addendum requiring separated `UpStrmQ`/`SubRIn`, per-element closure, transfer identity, and hillslope-total cancellation before WB13/WAT promotion. |
 | `2026-06-11` | `152` | `Codex` | FDHP01 layered-store amendment: required `frost.runtime_frwatc_frozen_water_after_m` / WAT `frozwt` lineage to equal legacy `Σ soilf(i)` (`Σ(wb18_perc_frzw_#### + thetdr_#### * wb18_perc_frozen_depth_####)`), rejecting scalar-depth stores even when routed through the exchange diagnostic. |
 | `2026-06-11` | `151` | `Codex` | FDHP01 D2 publication amendment: bound WB13/WAT `frozwt` to the exchanged frozen-store diagnostic `frost.runtime_frwatc_frozen_water_after_m` and rejected depth-derived `frdp * scalar`/`frost.runtime_ws_frz` publication leakage. |
 | `2026-06-11` | `150` | `Codex` | FDHP01 D2 amendment: ratified pinned-baseline frozen-storage provenance, kept `SoilWaterTotal = Total-Soil` as the unfrozen `watcon` alias, required `Total-Soil + frozwt` for frost-active storage audits, and added in-process `frwatc` freeze/thaw diagnostic obligations before D2 residual ownership. |

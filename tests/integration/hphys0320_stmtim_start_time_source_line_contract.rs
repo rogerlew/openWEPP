@@ -42,7 +42,7 @@ fn hphys0320_contract_authority_is_registered() {
     assert_contains(&snowfreeze, "SC-WATBAL-001#INV-WATBAL-094");
 
     let watbal = read("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
-    assert_contains(&watbal, "contract_version: 152");
+    assert_contains(&watbal, "contract_version: 154");
     assert_contains(&watbal, "INV-WATBAL-094");
     assert_contains(&watbal, "HPHYS0320 `stmtim` start-time water-balance gate");
     assert_contains(&watbal, "OBL-WATBAL-P-030");

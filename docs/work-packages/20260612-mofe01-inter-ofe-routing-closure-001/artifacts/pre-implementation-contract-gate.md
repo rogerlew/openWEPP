@@ -1,6 +1,6 @@
 # pre implementation contract gate
 
-Status: satisfied for M-A only
+Status: satisfied for M-B
 
 Evidence mode: Static
 
@@ -15,5 +15,6 @@ Read before M-A execution:
 - Package `package.md`.
 - `artifacts/mofe-staged-increment-plan.md`.
 
-M-B trigger:
-- Any kernel-affecting implementation must perform a fresh contract gate against the touched `SC-*` authority before edits.
+M-B gate:
+- Satisfied. Before production edits, M-B reopened the science-contract gate and amended `SC-RUNOFFPART-001` and `SC-WATBAL-001` for the route-closure semantics implemented by the increment.
+- `docs/specifications/science-contracts/AGENTS.md`, `crates/AGENTS.md`, and `tests/AGENTS.md` governed the contract/code/test edits.

@@ -469,7 +469,7 @@ impl Wb11HydrologyKernel {
     pub(crate) fn resolve_mofe_hourly_upstream_carryover(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
-    ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+    ) -> Result<Option<MofeHourlyUpstreamCarryover>, Wb11HydrologyKernelGuardError> {
         if !Self::resolve_mofe_hourly_carry_arrays_enabled(request, phase_class)? {
             return Ok(None);
         }
@@ -484,11 +484,9 @@ impl Wb11HydrologyKernel {
             phase_class,
             MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT,
         )?;
-        let upstream_total: f64 = upstream_saturation
-            .iter()
-            .chain(upstream_lateral.iter())
-            .copied()
-            .sum();
+        let upstream_saturation_total: f64 = upstream_saturation.iter().copied().sum();
+        let upstream_lateral_total: f64 = upstream_lateral.iter().copied().sum();
+        let upstream_total = upstream_saturation_total + upstream_lateral_total;
         let upstream_total = Self::normalize_non_negative_within_tolerance(upstream_total);
 
         let area_ratio_symbol = BoundarySymbol::from(MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL);
@@ -520,7 +518,23 @@ impl Wb11HydrologyKernel {
             value
         };
 
-        let carryover = upstream_total * area_ratio;
+        let surface_runoff = upstream_saturation_total * area_ratio;
+        let lateral_runon = upstream_lateral_total * area_ratio;
+        for (symbol, value) in [
+            (BoundarySymbol::from("UpStrmQ"), surface_runoff),
+            (BoundarySymbol::from("SubRIn"), lateral_runon),
+        ] {
+            if !value.is_finite() || value < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol,
+                    value,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+        }
+        let carryover = surface_runoff + lateral_runon;
         if !carryover.is_finite() || carryover < -WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -530,7 +544,11 @@ impl Wb11HydrologyKernel {
                 maximum: None,
             });
         }
-        let carryover = Self::normalize_non_negative_within_tolerance(carryover);
+        let carryover = MofeHourlyUpstreamCarryover {
+            surface_runoff: Self::normalize_non_negative_within_tolerance(surface_runoff),
+            lateral_runon: Self::normalize_non_negative_within_tolerance(lateral_runon),
+        };
+        let carryover_total = Self::normalize_non_negative_within_tolerance(carryover.total());
 
         let carryover_symbol = BoundarySymbol::from(WB12_SYMBOL_RUNOFF_CARRYOVER);
         if let Some(aggregate_carryover) =
@@ -543,13 +561,13 @@ impl Wb11HydrologyKernel {
                 Some(0.0),
                 None,
             )?;
-            if (aggregate_carryover - carryover).abs() > WB11_ZERO_THRESHOLD {
+            if (aggregate_carryover - carryover_total).abs() > WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
                     phase_class,
                     symbol: carryover_symbol,
                     value: aggregate_carryover,
-                    minimum: Some(carryover),
-                    maximum: Some(carryover),
+                    minimum: Some(carryover_total),
+                    maximum: Some(carryover_total),
                 });
             }
         }
@@ -561,8 +579,8 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
         frost_coupling: Option<&FrostCouplingOutcome>,
-    ) -> Result<[f64; MOFE_HOURLY_CARRY_ARRAY_COUNT], Wb11HydrologyKernelGuardError> {
-        let carry = Self::require_mofe_hourly_state_array(
+    ) -> Result<MofeHourlyCurrentSaturationCarry, Wb11HydrologyKernelGuardError> {
+        let mut carry = Self::require_mofe_hourly_state_array(
             request,
             phase_class,
             MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
@@ -584,11 +602,18 @@ impl Wb11HydrologyKernel {
         )?;
 
         let frozen_water_symbol = Self::wb18_perc_state_symbol("frzw", 1);
-        let frozen_water = if frost_coupling.is_some_and(|outcome| {
-            outcome.ws_frz > WB11_ZERO_THRESHOLD
-        }) {
-            let value =
-                Self::require_state_scalar_for_symbol(request, phase_class, &frozen_water_symbol)?;
+        let frozen_water = if let Some(outcome) =
+            frost_coupling.filter(|outcome| outcome.ws_frz > WB11_ZERO_THRESHOLD)
+        {
+            let value = outcome
+                .layer_topology_state
+                .iter()
+                .find(|layer| layer.layer_index == 1)
+                .map(|layer| layer.frzw_m)
+                .ok_or_else(|| Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class,
+                    symbol: frozen_water_symbol.clone(),
+                })?;
             Self::require_state_range_for_symbol(
                 phase_class,
                 &frozen_water_symbol,
@@ -611,17 +636,26 @@ impl Wb11HydrologyKernel {
 
         let effective_upper_limit = (upper_limit - frozen_water).max(0.0);
         let saturation_excess = theta - effective_upper_limit;
-        if saturation_excess > WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: Self::hourly_symbol(MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT, 1),
-                value: saturation_excess,
-                minimum: Some(0.0),
-                maximum: Some(0.0),
-            });
-        }
+        let clipped_top_layer_theta = if saturation_excess > WB11_ZERO_THRESHOLD {
+            carry[0] = Self::normalize_non_negative_within_tolerance(carry[0] + saturation_excess);
+            if !carry[0].is_finite() || carry[0] < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: Self::hourly_symbol(MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT, 1),
+                    value: carry[0],
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+            Some(effective_upper_limit)
+        } else {
+            None
+        };
 
-        Ok(carry)
+        Ok(MofeHourlyCurrentSaturationCarry {
+            values: carry,
+            clipped_top_layer_theta,
+        })
     }
 
     pub(crate) fn resolve_runoff_carryover_input(
@@ -630,7 +664,9 @@ impl Wb11HydrologyKernel {
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         if let Some(carryover) = Self::resolve_mofe_hourly_upstream_carryover(request, phase_class)?
         {
-            return Ok(carryover);
+            return Ok(Self::normalize_non_negative_within_tolerance(
+                carryover.total(),
+            ));
         }
 
         let carryover_symbol = BoundarySymbol::from(WB12_SYMBOL_RUNOFF_CARRYOVER);

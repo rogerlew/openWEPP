@@ -208,6 +208,24 @@ pub(crate) struct FrostCouplingOutcome {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub(crate) struct MofeHourlyUpstreamCarryover {
+    pub(crate) surface_runoff: f64,
+    pub(crate) lateral_runon: f64,
+}
+
+impl MofeHourlyUpstreamCarryover {
+    pub(crate) fn total(self) -> f64 {
+        self.surface_runoff + self.lateral_runon
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct MofeHourlyCurrentSaturationCarry {
+    pub(crate) values: [f64; MOFE_HOURLY_CARRY_ARRAY_COUNT],
+    pub(crate) clipped_top_layer_theta: Option<f64>,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub(crate) struct FrostHourlyState {
     hour: usize,
     frzflg: f64,

@@ -155,6 +155,50 @@ use super::super::*;
             "hourly lane must seed wb19_lateral_drain_lane_substeps=24"
         );
     }
+
+    #[test]
+    fn mofe01_mb_wb11_seed_purges_stale_daily_carryover_for_mofe_hourly_arrays() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 2.0),
+            ("erod14_wave2_enabled", 0.0),
+            ("slplen", 50.0),
+            ("tmax", 12.0),
+            ("tmin", 2.0),
+            ("rad", 43.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 0.0),
+            ("prcp", 0.003),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 86_400.0),
+            ("intsty_0001", 0.0),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.50, true);
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("wb12_runoff_carryover"),
+            BoundaryValue::scalar(0.25),
+        );
+
+        seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Daily)
+            .expect("MOFE WB11 seed should succeed");
+
+        let mofe_enabled =
+            require_runtime_surface_scalar(&runtime_surface, "mofe_hourly_carry_arrays_enabled")
+                .expect("MOFE seed should publish carry-array enablement");
+        assert!(
+            (mofe_enabled - 1.0).abs() < 1.0e-12,
+            "multi-OFE seed must enable MOFE hourly arrays"
+        );
+        assert!(
+            !runtime_surface
+                .flux_surface
+                .contains_key(&BoundarySymbol::from("wb12_runoff_carryover")),
+            "MOFE hourly array lanes must not present stale daily aggregate carryover to WB14"
+        );
+    }
+
     #[test]
     fn hphys0208_wb11_seed_uses_sat_por_cpm_layer_lineage() {
         let mut runtime_surface = wb11_seed_test_surface(&[

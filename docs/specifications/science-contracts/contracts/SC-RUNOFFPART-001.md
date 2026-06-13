@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 40
+contract_version: 42
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Erosion/hydraulics consumers requiring runoff duration, volume, and peak discharge
   - Comparator/replay surfaces using Tier-A single-OFE runoff acceptance signals
 evidence_level: static
-last_reviewed: 2026-06-07
+last_reviewed: 2026-06-12
 supersedes: []
 superseded_by: []
 ---
@@ -94,6 +94,7 @@ Out of scope:
 | `ui_SUrunf(ii)`, `ui_LfUrf(ii)` | `m` per hourly substep | Hourly upstream saturation-runoff and lateral-flow carry entering current-OFE runoff/runon closure for `ii=1..24`. | upstream OFE hourly carry state | current-OFE WB12/WB14 runoff partition closure |
 | `ui_SCrunf(ii)`, `ui_LfCrf(ii)` | `m` per hourly substep | Hourly current-OFE saturation-runoff and lateral-flow carry published for downstream copy-forward. | current-OFE runoff/lateral runtime | downstream OFE runon/carry closure |
 | `surdra` | `m` | Daily sum of current-OFE hourly surface-saturation excess, `Σui_SCrunf(ii)`, added to published runoff. | current-OFE WB19/WB12 runtime | WB12/WB14 runoff and water-balance closure |
+| `UpStrmQ`, `SubRIn` | `m` at runtime; WB13/WAT publication `mm` | Separated upstream saturation-runoff and upstream lateral-flow carry totals, derived from `Σui_SUrunf(ii)` and `Σui_LfUrf(ii)` with area-ratio scaling. | MOFE hourly carry-array resolver | downstream OFE runon closure and WAT carry publication |
 | `Ka`, `(Ψθd)a`, `Sa` | `m s^-1`, `m`, `m` | Weighted-average infiltration/depression parameters for applicable OFE range (Eq. [4.5.1]-[4.5.3]). | multi-OFE aggregator | case classification and branch calculations |
 | `Fp`, `Fh` | `m^3 m^-1` | Potential infiltration capacity per unit width and incoming unit-width water volume (Eq. [4.5.4]-[4.5.7]). | multi-OFE runon/runoff logic | case-three/case-four branch decision |
 | `α`, `αe`, `m` | coeff, coeff, exponent | Depth-discharge coefficients/exponent for routing and equivalent-plane transformation (Eq. [4.4.2], [4.5.15]). | routing/aggregation components | peak/runoff hydrograph approximation |
@@ -134,7 +135,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | INV-RUNOFFPART-010 | Governance limitation invariant: model outputs must remain labeled as Hortonian-flow-scope surfaces; scenarios needing explicit variable-source-area or return-flow physics are out of contract scope and block promotion if unlabeled. | governance-fail | REF-RUNOFFPART-CH4-LIMITS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-011 | WB20 forward-solver lane invariant: when `wb20_forward_solver_lane_enabled = 1`, WB12 runoff closure-delta acceptance must be solver-residual-derived and must not consume `wb12_runoff_observed` as an acceptance-driving target. | hard-fail | REF-RUNOFFPART-CH4-RAINEX, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-012 | HPHYS0240 runoff-carryover authority invariant: WB12/WB14 runoff partitioning must use same-pass `wb12_runoff_carryover` flux when present, use `wb12_runon_input` only as finite non-negative compatibility input when the flux is absent, and publish the resolved carryover flux into the runoff closure/output boundary. Malformed present carryover fluxes hard-fail and cannot be silently replaced by stale state. | hard-fail | REF-RUNOFFPART-CH4-RAINEX, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-RUNOFFPART-013 | HPHYS0241 MOFE hourly carry-array runoff invariant: when MOFE hourly carry arrays are enabled, WB12/WB14 runoff partitioning must resolve runon from the explicit 24-slot upstream array sum `Σ(ui_SUrunf(ii) + ui_LfUrf(ii))` with required area-scaling provenance when non-zero upstream carry is present. Present aggregate `wb12_runoff_carryover` must match the array-derived value or hard-fail; missing/malformed arrays cannot fall back to daily aggregate state. | hard-fail | REF-RUNOFFPART-LEGACY-HOURLY-CARRY, REF-RUNOFFPART-CH4-MULTIOFE, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RUNOFFPART-013 | HPHYS0241 MOFE hourly carry-array runoff invariant: when MOFE hourly carry arrays are enabled, WB12/WB14 runoff partitioning must resolve runon from the explicit 24-slot upstream array sum `Σ(ui_SUrunf(ii) + ui_LfUrf(ii))` with required area-scaling provenance when non-zero upstream carry is present. Daily aggregate `wb12_runoff_carryover` may only summarize the resolved array-derived value after array provenance is preserved; stale pre-seeded aggregate carry must be purged before array-enabled execution, and any same-lifecycle aggregate publication retained after resolution must match the array-derived value or hard-fail. Missing/malformed arrays cannot fall back to daily aggregate state. | hard-fail | REF-RUNOFFPART-LEGACY-HOURLY-CARRY, REF-RUNOFFPART-CH4-MULTIOFE, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-014 | HPHYS0242 surface-saturation runoff addback invariant: when MOFE hourly carry arrays are enabled, WB12/WB14 runoff publication must add `surdra = Σui_SCrunf(ii)` to partition-derived runoff `Q`, use that same addback in closure residuals, and reject missing, malformed, non-finite, negative, or aggregate-only current saturation payloads. Positive top-layer saturation excess cannot remain hidden in storage or be replaced by `wb12_runoff_carryover`. | hard-fail | REF-RUNOFFPART-LEGACY-HOURLY-CARRY, REF-RUNOFFPART-CH4-RAINEX, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-034 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-015 | HPHYS0283 snowmelt event-forcing invariant: WB12 runoff partition must include routed snowmelt in the event liquid supply available to Green-Ampt infiltration before residual runoff is computed, and the resulting infiltration must remain available to WB18 same-pass layer ingress. A closure that adds melt to `Q`/runoff residuals while omitting it from infiltration forcing or downstream layer storage violates baseline `wmelt -> smrate/fin/xfin` semantics. | hard-fail | REF-RUNOFFPART-LEGACY-WMELT-INFIL, REF-RUNOFFPART-CH4-INFIL, REF-RUNOFFPART-CH4-RAINEX, SC-SNOWFREEZE-001#INV-SNOWFREEZE-018, SC-PERC-001#INV-PERC-016 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-016 | HPHYS0285 local-liquid infiltration handoff invariant: WB12/WB14 runoff partition must treat positive same-pass infiltration from direct rain, routed snowmelt, or irrigation as both a runoff residual term and a WB18 layer-storage ingress obligation. Active-snow state may affect snowmelt supply, but it cannot gate whether non-snow positive local infiltration remains available to WB18 `fin/xfin` ingress. MOFE carry/runon infiltration remains a follow-up closure item under the existing carry-array invariants. | hard-fail | REF-RUNOFFPART-LEGACY-FIN-INFIL, REF-RUNOFFPART-CH4-INFIL, REF-RUNOFFPART-CH4-RAINEX, SC-PERC-001#INV-PERC-017, SC-WATBAL-001#INV-WATBAL-060 | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -149,6 +150,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | INV-RUNOFFPART-025 | HPHYS0297 runoff-consumer defect-ledger invariant: runoff/infiltration may be excluded from a snow/`RM` verdict only when the ledger preserves closed `Q`, closed WB12/WB14-to-WB13 producer-consumer identity, and the `SC-SNOWFREEZE-001#INV-SNOWFREEZE-028` reconstruction verdict. Closed runoff identity cannot convert an unresolved snow producer residual into acceptance, and absent reconstruction keeps the window in `HOLD` rather than authorizing WB12/WB14/WB13 compensation. | governance-hold | INV-RUNOFFPART-024, SC-SNOWFREEZE-001#INV-SNOWFREEZE-028, SC-WATBAL-001#INV-WATBAL-072 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-026 | HPHYS0298 runoff-consumer paired-partition invariant: closed `Q`, closed WB12/WB14 liquid forcing, or closed WB13 `RM` identity may exclude runoff as first-divergent cut-point only when the HPHYS0298 partition ledger proves that identity on the same target window and ties it to `SC-SNOWFREEZE-001#INV-SNOWFREEZE-029`. The ledger must keep the ordered cut-point context and cannot convert downstream closure into snow/`RM` acceptance, WB12/WB14/WB13 compensation, or removal from semantic accounting when the first divergence is upstream or unresolved. | governance-hold | INV-RUNOFFPART-025, SC-SNOWFREEZE-001#INV-SNOWFREEZE-029, SC-WATBAL-001#INV-WATBAL-073 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-027 | FQ3-DC top-two-layer storage-limit invariant: WB12/WB14 infiltration-excess partition must apply the Eq. [4.3.2] upper-storage condition before publishing same-pass infiltration. When the declared top-two-layer storage surface is at or above its upper limit, current event liquid cannot be absorbed into same-pass infiltration merely because interval rainfall rate is below `Ke`; the storage-limited residual must remain in rainfall excess/runoff accounting subject to depression-storage and routing terms. If WB18/percolation has already published same-pass `wb12_infiltration`, WB14 runoff partition must consume that producer value rather than recomputing infiltration from a later storage state. | hard-fail | REF-RUNOFFPART-CH4-RAINEX, REF-RUNOFFPART-CH4-INFIL, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RUNOFFPART-028 | MOFE01 inter-OFE runoff/lateral transfer invariant: when MOFE hourly carry arrays are enabled, WB12/WB14 must preserve separated upstream carry components: `UpStrmQ = Σui_SUrunf(ii) * Aupstream/Acurrent`, `SubRIn = Σui_LfUrf(ii) * Aupstream/Acurrent`, and `runon_input = UpStrmQ + SubRIn`. Current-OFE outputs `ui_SCrunf(ii)` and `ui_LfCrf(ii)` must copy forward to the downstream `ui_SUrunf(ii)` and `ui_LfUrf(ii)` payload without aggregate substitution, and event closure must satisfy `local_liquid + runon_input = infiltration + Q_partition + Δdepression_storage + ε` before `surdra` addback. Transfer and per-element residuals outside tolerance are hard failures; single-OFE lanes require zero upstream components. | hard-fail | REF-RUNOFFPART-LEGACY-HOURLY-CARRY, REF-RUNOFFPART-CH4-MULTIOFE, INV-RUNOFFPART-001, INV-RUNOFFPART-013, INV-RUNOFFPART-014, SC-WATBAL-001#INV-WATBAL-096 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -181,6 +183,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | `INV-RUNOFFPART-025` | governance | HPHYS0297 runoff exclusion ledger tying closed `Q` and producer-consumer identity to snow/`RM` reconstruction verdicts | Explicit `HOLD` if runoff/storage compensation is asserted without the HPHYS0297 reconstruction verdict | HPHYS0297 snow/`RM` defect-ledger gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-026` | governance | HPHYS0298 runoff-consumer partition ledger tying closed `Q` and WB12/WB14/WB13 identity to the ordered first-divergent cut-point verdict | Explicit `HOLD` if closed downstream identity is used as acceptance or compensation without paired first-divergence evidence | HPHYS0298 paired snow/`RM` lineage partition gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-027` | runtime | WB12/WB14 same-pass infiltration cap using top-two-layer `wb18_perc_theta` vs `wb18_perc_ul` storage availability | Typed hard error on malformed storage symbols; rainfall-excess residual instead of over-infiltration when storage availability is exhausted | FQ3-DC runoff underproduction closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RUNOFFPART-028` | runtime + governance | MOFE hourly upstream carry resolver, `UpStrmQ`/`SubRIn` component publisher, current-to-upstream copy-forward validator, and per-element closure residual assembler | Typed hard error / explicit `HOLD` when upstream saturation and lateral components are collapsed, arrays are not copied forward, `runon_input` diverges from `UpStrmQ + SubRIn`, or per-element transfer/closure residuals exceed tolerance | MOFE01 M-B inter-OFE route-closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -208,6 +211,8 @@ runoff partition internals.
 | `ui_SCrunf(ii)` | `ui_SCrunf_{hour:04}` state symbol | MOFE hourly current saturation-runoff carry output for downstream copy-forward | `m` preserved; `hour=1..24` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `surdra = Σui_SCrunf(ii)` | `Σ ui_SCrunf_{hour:04}` plus `Q` addback | current-OFE hourly saturation excess that must be included in daily WB12/WB14 runoff publication | `m` preserved; 24-hour sum contributes to daily `Q` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ui_LfCrf(ii)` | `ui_LfCrf_{hour:04}` state symbol | MOFE hourly current lateral-flow carry output for downstream copy-forward | `m` preserved; `hour=1..24` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `UpStrmQ` | `UpStrmQ` state/output symbol | scaled upstream saturation-runoff carry component from `ui_SUrunf` | `m` runtime, `mm` WAT publication | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `SubRIn` | `SubRIn` state/output symbol | scaled upstream lateral-flow carry component from `ui_LfUrf` | `m` runtime, `mm` WAT publication | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ka`, `(Ψθd)a`, `Sa`, `Fp`, `Fh` | identity names | multi-OFE averaging and runon/runoff branch surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `α`, `αe`, `m` | identity names | routing/equivalent-plane coefficient surfaces | coefficient/exponent semantics preserved | `[DIRECT][Static]` |
 | `Q` (legacy canonical alias continuity) | identity name | canonical WEPP symbol continuity row retained for contract lineage | `m` preserved | `[DIRECT][Static]` |
@@ -831,8 +836,11 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
    `ii = 1..24`, with baseline upstream/current area-ratio scaling required
    when non-zero upstream carry is consumed.
 2. `wb12_runoff_carryover` remains an aggregate publication of the explicit
-   hourly array payload. If present during array-enabled execution, it must
-   match the array-derived carry within declared numeric tolerance or hard-fail.
+   hourly array payload after array provenance is preserved. Stale daily
+   aggregate carry from a prior scheduler lifecycle must be purged before
+   array-enabled execution; any same-lifecycle aggregate retained after
+   resolution must match the array-derived carry within declared numeric
+   tolerance or hard-fail.
 3. `wb12_runon_input` is compatibility-only and is non-authoritative whenever
    MOFE hourly carry arrays are enabled.
 4. Missing array entries, non-finite entries, negative entries, or omitted
@@ -852,6 +860,30 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 4. Contract-derived vectors must include a positive `ui_SCrunf` addback case,
    malformed-current-array rejection, and a stale-state conflict where same-pass
    `Q` remains authoritative for storage closure.
+
+## MOFE01 M-B Inter-OFE Runoff/Lateral Transfer Addendum
+
+1. MOFE01 M-B refines `INV-RUNOFFPART-013` by requiring component-preserving
+   upstream carry. The resolver must retain `Σui_SUrunf(ii)` as the surface
+   upstream component and `Σui_LfUrf(ii)` as the lateral upstream component,
+   applying the same `Aupstream/Acurrent` scaling to both components.
+2. `runon_input` for WB12/WB14 closure is the sum of the separated components:
+   `runon_input = UpStrmQ + SubRIn`. `UpStrmQ` and `SubRIn` are runtime
+   depth surfaces in meters and WAT publication terms in millimeters.
+3. Current-OFE carry publication is a transfer identity: for each hour,
+   downstream `ui_SUrunf(ii)` must equal upstream OFE `ui_SCrunf(ii)` and
+   downstream `ui_LfUrf(ii)` must equal upstream OFE `ui_LfCrf(ii)` after the
+   declared area-ratio transformation. Daily aggregate carry may summarize this
+   payload, but cannot replace or collapse it.
+4. Per-element closure must include runon explicitly:
+   `local_liquid + runon_input = infiltration + Q_partition +
+   Δdepression_storage + ε`. The `surdra` addback remains governed by
+   `INV-RUNOFFPART-014` and must be carried into the water-balance `Q`
+   publication without hiding transfer residuals.
+5. Contract-derived vectors must include a two-OFE surface carry case, a
+   two-OFE lateral handoff case proving `SubRIn`, and a mixed 1/2/3/4/5-OFE
+   cohort smoke gate that executes past the day-2 WB14 seam before parity
+   promotion.
 
 ## Binding Exposure Index
 
@@ -881,6 +913,7 @@ row requiring new binding promotion.
 | `HPHYS0240-HOURLY-RUNOFF-CARRYOVER-ADDENDUM` | `SC-RUNOFFPART-001.md#hphys0240-hourly-runoff-carryover-addendum` | `active` | `maps-to-existing-INV` | `INV-RUNOFFPART-012` | `none` | SCSTRUCT09 map-in-core: same-pass carryover precedence, republished carryover, anti-shadow behavior, and malformed flux rejection are directly exposed by `INV-RUNOFFPART-012`. |
 | `HPHYS0241-MOFE-HOURLY-CARRY-ARRAY-RUNOFF-ADDENDUM` | `SC-RUNOFFPART-001.md#hphys0241-mofe-hourly-carry-array-runoff-addendum` | `active` | `maps-to-existing-INV` | `INV-RUNOFFPART-013` | `none` | SCSTRUCT09 map-in-core: hourly upstream carry-array authority, aggregate anti-shadow, area-scaling provenance, and malformed-array rejection are directly exposed by `INV-RUNOFFPART-013`. |
 | `HPHYS0242-SURFACE-SATURATION-RUNOFF-ADDBACK-ADDENDUM` | `SC-RUNOFFPART-001.md#hphys0242-surface-saturation-runoff-addback-addendum` | `active` | `maps-to-existing-INV` | `INV-RUNOFFPART-014` | `none` | SCSTRUCT09 map-in-core: `surdra` addback, same-pass `Q` closure, hidden-storage prohibition, and current-array rejection are directly exposed by `INV-RUNOFFPART-014`. |
+| `MOFE01-M-B-INTER-OFE-RUNOFF-LATERAL-TRANSFER-ADDENDUM` | `SC-RUNOFFPART-001.md#mofe01-m-b-inter-ofe-runofflateral-transfer-addendum` | `active` | `maps-to-existing-INV` | `INV-RUNOFFPART-028` | `none` | SCSTRUCT09 map-in-core: separated upstream surface/lateral carry components, `UpStrmQ`/`SubRIn` publication, transfer identity, and per-element closure are directly exposed by `INV-RUNOFFPART-028`. |
 
 ## Gap Register
 
@@ -896,6 +929,8 @@ row requiring new binding promotion.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-12` | `42` | `Codex` | MOFE01 M-B correction: clarified `INV-RUNOFFPART-013` aggregate carry posture so stale pre-seeded daily `wb12_runoff_carryover` is purged before MOFE array-enabled execution while same-lifecycle aggregate publications still must match the explicit arrays. |
+| `2026-06-12` | `41` | `Codex` | MOFE01 M-B amendment: added `INV-RUNOFFPART-028` requiring separated upstream saturation/lateral carry components (`UpStrmQ`, `SubRIn`), component-preserving copy-forward, and per-element runoff closure with explicit runon. |
 | `2026-06-07` | `40` | `Codex` | FQ3-DC ET Corn amendment: aligned WB15 interception biomass-domain guard with plant authority; finite non-negative `vdmt` is valid even above the prior 0.8 kg m^-2 consumer cap, while the interception equation uses the pinned-baseline `8000 kg ha^-1` mass-input cap. |
 | `2026-06-05` | `38` | `Codex` | HPHYS0298 amendment: added runoff-consumer paired-partition authority requiring closed downstream identities to remain tied to ordered first-divergent cut-point evidence and forbidding compensation when snow/`RM` ownership remains upstream or unresolved. |
 | `2026-06-05` | `37` | `Codex` | HPHYS0297 amendment: added runoff-consumer defect-ledger authority requiring closed `Q` and producer-consumer identity to remain tied to snow/`RM` reconstruction verdicts without authorizing WB12/WB14/WB13 compensation. |

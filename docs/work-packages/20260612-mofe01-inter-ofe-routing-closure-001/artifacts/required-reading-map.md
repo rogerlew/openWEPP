@@ -38,3 +38,4 @@ artifact (tiers, rationale, read timing); a stale map is a governance defect.
 |-----|-------|--------|
 | 2026-06-12 | Claude Code | Initialized at scaffold. |
 | 2026-06-12 | Codex | Executed M-A; read package, staged increment plan, work-package/science/crate/test agent guides, current runner seams, and pinned legacy routing files. |
+| 2026-06-12 | Codex | Executed M-B; reread package governance and touched SC-RUNOFFPART/SC-WATBAL authority, hydrology orchestrator seams, runner seed seam, and WB11/WB14/runner tests. |

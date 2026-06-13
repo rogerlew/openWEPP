@@ -792,6 +792,54 @@ fn hphys0241_contract_mofe_hourly_arrays_drive_runoff_carryover_and_copy_forward
 }
 
 #[test]
+fn mofe01_mb_contract_publishes_separated_upstream_surface_and_lateral_components() {
+    const TOL: f64 = 1.0e-12;
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let mut surface = seeded_wb11_surface();
+    enable_mofe_hourly_carry_arrays(&mut surface, &[(3, 0.10)], &[(4, 0.05)]);
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_depression_storage_delta"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("MOFE01 M-B separated carry vector should return typed report");
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler halted at {:?}",
+        report.scheduler_report.halted_phase
+    );
+
+    let upstrmq = require_state_scalar(&report, "UpStrmQ");
+    let subrin = require_state_scalar(&report, "SubRIn");
+    let carryover = require_flux_scalar(&report, "wb12_runoff_carryover");
+
+    assert!(
+        (upstrmq - 0.10).abs() <= TOL,
+        "UpStrmQ must preserve the scaled upstream surface-runoff component"
+    );
+    assert!(
+        (subrin - 0.05).abs() <= TOL,
+        "SubRIn must preserve the scaled upstream lateral-flow component"
+    );
+    assert!(
+        (carryover - upstrmq - subrin).abs() <= TOL,
+        "runon_input/carryover must equal UpStrmQ + SubRIn"
+    );
+}
+
+#[test]
 fn hphys0241_contract_mofe_hourly_arrays_reject_negative_upstream_payload() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =

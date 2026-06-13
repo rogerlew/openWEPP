@@ -466,10 +466,14 @@ pub(super) fn seed_wb11_runtime_surface_inputs(
         BoundarySymbol::from("wb12_runon_input"),
         BoundaryValue::scalar(0.0),
     );
-    runtime_surface.flux_surface.insert(
-        BoundarySymbol::from("wb12_runoff_carryover"),
-        BoundaryValue::scalar(0.0),
-    );
+    let carryover_symbol = BoundarySymbol::from("wb12_runoff_carryover");
+    if mofe_hourly_carry_active {
+        runtime_surface.flux_surface.remove(&carryover_symbol);
+    } else {
+        runtime_surface
+            .flux_surface
+            .insert(carryover_symbol, BoundaryValue::scalar(0.0));
+    }
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("wb12_infiltration"),
         BoundaryValue::scalar(0.0),

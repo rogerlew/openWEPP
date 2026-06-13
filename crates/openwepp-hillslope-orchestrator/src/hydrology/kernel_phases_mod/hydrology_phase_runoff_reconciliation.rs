@@ -265,9 +265,17 @@ pub(crate) fn run_runoff_reconciliation(
             liquid_after_interception + runoff_snow_term,
         )?;
 
-        let runon_input = Self::resolve_runoff_carryover_input(request, phase_class)?;
         let mofe_hourly_carry_arrays_enabled =
             Self::resolve_mofe_hourly_carry_arrays_enabled(request, phase_class)?;
+        let mofe_hourly_upstream_carryover = if mofe_hourly_carry_arrays_enabled {
+            Self::resolve_mofe_hourly_upstream_carryover(request, phase_class)?
+        } else {
+            None
+        };
+        let runon_input = mofe_hourly_upstream_carryover.map_or_else(
+            || Self::resolve_runoff_carryover_input(request, phase_class),
+            |carryover| Ok(Self::normalize_non_negative_within_tolerance(carryover.total())),
+        )?;
         let mofe_hourly_saturation_carry = if mofe_hourly_carry_arrays_enabled {
             Some(Self::resolve_mofe_hourly_current_saturation_carry(
                 request,
@@ -279,7 +287,7 @@ pub(crate) fn run_runoff_reconciliation(
         };
         let surface_saturation_runoff = mofe_hourly_saturation_carry
             .as_ref()
-            .map_or(0.0, |carry| carry.iter().copied().sum::<f64>());
+            .map_or(0.0, |carry| carry.values.iter().copied().sum::<f64>());
         Self::require_flux_range(
             phase_class,
             WB12_SYMBOL_RUNOFF_Q,
@@ -1128,8 +1136,16 @@ pub(crate) fn run_runoff_reconciliation(
         if let (Some(saturation_carry), Some(lateral_carry)) =
             (mofe_hourly_saturation_carry, mofe_hourly_lateral_carry)
         {
+            if let Some(clipped_theta) = saturation_carry.clipped_top_layer_theta {
+                state_updates.push(WritebackField::bounded(
+                    Self::wb18_perc_state_symbol("theta", 1),
+                    clipped_theta,
+                    Some(0.0),
+                    None,
+                ));
+            }
             for hour in 1..=MOFE_HOURLY_CARRY_ARRAY_COUNT {
-                let saturation_value = saturation_carry[hour - 1];
+                let saturation_value = saturation_carry.values[hour - 1];
                 let lateral_value = lateral_carry[hour - 1];
                 state_updates.push(WritebackField::bounded(
                     Self::hourly_symbol(MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT, hour),
@@ -1150,6 +1166,20 @@ pub(crate) fn run_runoff_reconciliation(
                     None,
                 ));
             }
+        }
+        if let Some(carryover) = mofe_hourly_upstream_carryover {
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from("UpStrmQ"),
+                carryover.surface_runoff,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from("SubRIn"),
+                carryover.lateral_runon,
+                Some(0.0),
+                None,
+            ));
         }
 
         let mut flux_updates = vec![

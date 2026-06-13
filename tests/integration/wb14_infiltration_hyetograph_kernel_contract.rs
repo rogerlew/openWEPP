@@ -3,7 +3,7 @@ use openwepp_hillslope_orchestrator::{
 };
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeKernel,
-    HillslopeKernelPhaseClass, HillslopeKernelRequest,
+    HillslopeKernelPhaseClass, HillslopeKernelRequest, KernelRunResponse,
 };
 use openwepp_sim_contract::status::BoundaryClass;
 use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
@@ -111,7 +111,7 @@ fn run_wb14_reconciliation_outputs(surface: HillslopeWritebackSurface) -> (f64, 
     (infiltration, q_runoff)
 }
 
-fn run_wb14_runoff_phase_outputs(surface: HillslopeWritebackSurface) -> (f64, f64) {
+fn run_wb14_runoff_phase_response(surface: HillslopeWritebackSurface) -> KernelRunResponse {
     let mut kernel = Wb11HydrologyKernel;
     let state_surface = Box::leak(Box::new(surface.state_surface));
     let flux_surface = Box::leak(Box::new(surface.flux_surface));
@@ -125,7 +125,11 @@ fn run_wb14_runoff_phase_outputs(surface: HillslopeWritebackSurface) -> (f64, f6
         flux_surface,
     );
 
-    let response = kernel.run_hillslope_phase(&request);
+    kernel.run_hillslope_phase(&request)
+}
+
+fn run_wb14_runoff_phase_outputs(surface: HillslopeWritebackSurface) -> (f64, f64) {
+    let response = run_wb14_runoff_phase_response(surface);
     assert_eq!(response.status.message_id(), "HKERNEL-WB14-RUNOFF-OK-001");
     let infiltration = response
         .writeback
@@ -680,6 +684,49 @@ fn hphys0242_contract_wb14_runoff_includes_current_saturation_carry_addback() {
     assert!(
         (addback_q - (baseline_q + 0.25)).abs() <= WB14_TEST_TOLERANCE,
         "HPHYS0242 requires Q to include current-OFE ui_SCrunf addback (baseline_q={baseline_q}, addback_q={addback_q})"
+    );
+}
+
+#[test]
+fn mofe01_mb_contract_routes_positive_top_layer_excess_into_current_saturation_carry() {
+    let mut surface = seeded_wb14_surface();
+    enable_mofe_current_saturation_carry(&mut surface, 0.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(8.25),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(8.0),
+    );
+
+    let response = run_wb14_runoff_phase_response(surface);
+    assert_eq!(response.status.message_id(), "HKERNEL-WB14-RUNOFF-OK-001");
+
+    let current_saturation_carry = response
+        .writeback
+        .state_updates
+        .iter()
+        .find(|field| field.symbol == BoundarySymbol::from("ui_SCrunf_0001"))
+        .expect("ui_SCrunf_0001 should carry clipped top-layer excess")
+        .value
+        .as_f64();
+    assert!(
+        (current_saturation_carry - 0.25).abs() <= WB14_TEST_TOLERANCE,
+        "positive top-layer excess must be routed into ui_SCrunf_0001"
+    );
+
+    let clipped_theta = response
+        .writeback
+        .state_updates
+        .iter()
+        .find(|field| field.symbol == BoundarySymbol::from("wb18_perc_theta_0001"))
+        .expect("wb18_perc_theta_0001 should be clipped to the active upper limit")
+        .value
+        .as_f64();
+    assert!(
+        (clipped_theta - 8.0).abs() <= WB14_TEST_TOLERANCE,
+        "top-layer storage must not retain hidden saturation excess"
     );
 }
 
