@@ -1,8 +1,35 @@
 # contract implementation evidence
 
-Status: M-E2 implemented against M-E0 contract authority
+Status: M-E3 implemented against M-E0 contract authority
 
 Evidence mode: Ran + Static
+
+## M-E3
+
+M-E3 consumes the M-E0/M-D contract authority without amending canonical
+contracts. The increment persists dynamic OFE-local writeback state across
+days behind the sequential executor:
+
+- multi-OFE runner paths allocate one persistent writeback surface per OFE,
+- daily climate and scheduler seed surfaces are applied to each lane before
+  execution,
+- ordered lane execution uses the M-E2 transfer input/output seam,
+- persistent lane state is replaced only after a full same-day sequence
+  succeeds,
+- aggregate WB13/WAT publication remains the current public policy with
+  `per_ofe_record_count = 0`.
+
+M-E3 makes dynamic state real but deliberately does not make per-element or
+transfer identities measurable yet. M-E4 must produce internal per-OFE WB13
+records from this state; M-E5 owns public WAT publication.
+
+Validation:
+
+- `cargo test -p openwepp-hillslope-orchestrator mofe01_me3 -- --nocapture`:
+  PASS.
+- Required H smoke H1/H6/H9/H11: PASS runtime execution.
+- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28: PASS byte-identical to M-E2
+  outputs.
 
 ## M-E2
 

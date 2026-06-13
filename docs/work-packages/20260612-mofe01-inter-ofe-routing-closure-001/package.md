@@ -1,6 +1,6 @@
 # MOFE01 — Inter-OFE Routing Closure (rung 3)
 
-Status: active; M-E2 complete; M-E3 pending
+Status: active; M-E3 complete; M-E4 pending
 
 Package type: staged implementation/closure package (FDHP01 execution shape:
 scope-then-staged-increments, per-increment conservation hard stops)

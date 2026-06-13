@@ -1,8 +1,48 @@
 # implementation test evidence
 
-Status: M-E2 complete for scoped executor increment; package active for M-E3+
+Status: M-E3 complete for dynamic-state persistence increment; package active for M-E4+
 
 Evidence mode: Ran + Static
+
+## M-E3 ran
+
+M-E3 implemented persistent per-OFE dynamic state behind the sequential OFE
+lane executor. It did not produce internal per-OFE WB13 records and did not
+flip public WAT publication.
+
+- `cargo fmt --check`
+  - PASS.
+- `cargo test -p openwepp-hillslope-orchestrator mofe01_me3 -- --nocapture`
+  - PASS; 3 focused M-E3 tests passed.
+- `cargo test -p openwepp-runner mofe01 -- --nocapture`
+  - PASS; 8 runner per-OFE tests passed.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - PASS; all four contract-derived tests passed.
+- `cargo clippy --workspace --all-targets -- -D warnings`
+  - PASS.
+- `cargo test --workspace`
+  - PASS.
+- `cargo deny check`
+  - PASS; `advisories ok, bans ok, licenses ok, sources ok`.
+- `bash tools/release/check_authority_suite_antievasion.sh`
+  - PASS.
+- `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --format plain`
+  - PASS; 34 files validated, 0 errors, 0 warnings.
+- Required local H smoke without comparator subagent
+  - PASS runtime execution: H1/H6/H9/H11 exited zero under
+    `/tmp/openwepp_mofe01_me3_runtime_h1`.
+  - PASS manifest audit:
+    `/tmp/openwepp_mofe01_me3_runtime_h1/m-e3-publication-audit.json`
+    reports `smoke_pass=true` and `anchor_pass=true`.
+  - PASS local owcmp command execution for H1/H6/H9/H11.
+  - FAIL semantic comparison as expected for unchanged aggregate WAT
+    publication: each smoke surface has `semantic_pass_count=0/1`; focus
+    columns have zero failures and max diff `0.0`.
+- Single-OFE anchors
+  - PASS: H8/H15/H19/H20/H22/H23/H28 are byte-identical to M-E2 outputs for
+    `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 pass).
+
+Detailed evidence: `m-e3-dynamic-state-persistence-evidence.md`.
 
 ## M-E2 ran
 

@@ -1,8 +1,24 @@
 # contract test implementation evidence
 
-Status: M-E2 structural executor tests green
+Status: M-E3 dynamic persistence tests green
 
 Evidence mode: Ran + Static
+
+## M-E3
+
+M-E3 adds focused persistence tests in
+`crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/writeback.rs`:
+
+- `mofe01_me3_persistent_sequence_carries_lane_state_across_days_without_bleed`,
+- `mofe01_me3_persistent_sequence_keeps_prior_state_when_day_fails`,
+- `mofe01_me3_persistent_sequence_rejects_nonsequential_initial_state`.
+
+Ran:
+
+- `cargo test -p openwepp-hillslope-orchestrator mofe01_me3 -- --nocapture`
+  - PASS; 3 passed.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - PASS; 4 passed.
 
 ## M-E2
 

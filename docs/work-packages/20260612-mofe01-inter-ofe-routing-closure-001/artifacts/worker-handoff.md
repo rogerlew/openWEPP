@@ -1,10 +1,43 @@
 # worker handoff
 
-Status: M-E2 complete; M-E3 implementation next
+Status: M-E3 complete; M-E4 implementation next
 
 Evidence mode: Ran + Static
 
 ## Summary
+
+M-E3 completed the dynamic state persistence increment:
+
+- Added `OfeLanePersistentState` and `OfeLanePersistentStateSequence`.
+- Wired multi-OFE runner execution to carry OFE-local dynamic state across
+  days behind the sequential OFE lane executor.
+- The daily shadow lifecycle overlays current climate, seeds WB11/calendar/PL
+  runtime surfaces, executes ordered OFE lanes, and replaces persistent state
+  only after sequence success.
+- Public WB13/WAT publication remains aggregate-only:
+  `publication_ofe_policy=single-row-canonicalized-hillslope-aggregate` and
+  `per_ofe_record_count=0`.
+- Multi-OFE smoke manifests report
+  `per_ofe_state_policy=persistent-dynamic-state-shadow` and dynamic flags
+  true; single-OFE anchor manifests keep `shadow-static-slices-only` and
+  dynamic flags false.
+- Required H smoke passed: H1/H6/H9/H11 exited zero under
+  `/tmp/openwepp_mofe01_me3_runtime_h1`.
+- Local owcmp ran without comparator subagent per operator instruction:
+  execution PASS for H1/H6/H9/H11; semantic FAIL remains expected at the
+  aggregate-publication boundary with focus-column diffs zero.
+- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 are byte-identical to M-E2
+  outputs for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`.
+- Full H1-H36 was not rerun after M-E3 wiring because the new N-lane shadow
+  path is debug-mode expensive. M-E3's staged runtime gate was the named
+  H1/H6/H9/H11 smoke set; full-cohort replay remains M-E6/performance scope.
+
+Next increment: M-E4 should produce authoritative internal per-OFE WB13
+records from the persisted lane state. Do not flip public WAT publication in
+M-E4 unless its own scope is explicitly amended; M-E5 owns the publication
+policy flip.
+
+## M-E2 summary
 
 M-E2 completed the sequential OFE lane executor increment:
 

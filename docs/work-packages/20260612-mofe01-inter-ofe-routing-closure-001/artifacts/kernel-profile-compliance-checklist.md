@@ -1,8 +1,41 @@
 # kernel profile compliance checklist
 
-Status: checked through M-E2
+Status: checked through M-E3
 
 Evidence mode: Ran + Static
+
+## M-E3 checklist
+
+- Production edits: yes; persistent OFE lane state model, multi-OFE runner
+  daily lifecycle wiring, and manifest dynamic-state policy tokens.
+- Science-contract edits: none.
+- Test edits: yes; focused M-E3 orchestrator writeback tests.
+- Typed errors in production: extended `OfeLaneSequenceError` for persistent
+  lane count/order replacement mismatches; runner maps persistent lifecycle
+  failures to typed CLI runtime-surface failures.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: unchanged.
+- Runtime publication paths: aggregate WB13/WAT publication preserved; dynamic
+  per-OFE state is shadow persistence only.
+
+Validation:
+
+- `cargo fmt --check`: PASS.
+- `cargo test -p openwepp-hillslope-orchestrator mofe01_me3 -- --nocapture`:
+  PASS.
+- `cargo test -p openwepp-runner mofe01 -- --nocapture`: PASS.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`: PASS.
+- `cargo clippy --workspace --all-targets -- -D warnings`: PASS.
+- `cargo test --workspace`: PASS.
+- `cargo deny check`: PASS.
+- `bash tools/release/check_authority_suite_antievasion.sh`: PASS.
+- Work-package docs lint: PASS.
+- Required H1/H6/H9/H11 runtime smoke: PASS.
+- Single-OFE anchor comparison: PASS.
+- Local owcmp H1/H6/H9/H11 command execution: PASS; expected semantic FAIL
+  remains at the unchanged aggregate-publication boundary.
 
 ## M-E2 checklist
 

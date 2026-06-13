@@ -1,10 +1,41 @@
 # disposition
 
-Status: M-E2 complete; package remains open for M-E3+
+Status: M-E3 complete; package remains open for M-E4+
 
 Evidence mode: Ran + Static
 
 ## Disposition
+
+Increment M-E3 is complete for its dynamic state persistence scope. Multi-OFE
+hillslope runs now carry an `OfeLanePersistentStateSequence` across days behind
+the sequential OFE executor. Each daily multi-OFE shadow lifecycle overlays the
+current climate surface, seeds WB11/calendar/PL runtime symbols, executes the
+ordered OFE lane sequence, and replaces persistent lane state only after the
+full sequence succeeds.
+
+M-E3 preserves public aggregate WB13/WAT publication. Smoke manifests for
+H1/H6/H9/H11 report `per_ofe_state_policy=persistent-dynamic-state-shadow`,
+dynamic per-OFE state flags true, `per_ofe_record_count=0`, and
+`publication_ofe_policy=single-row-canonicalized-hillslope-aggregate`.
+Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 remain byte-identical to M-E2
+for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 pass).
+
+Required M-E3 H smoke passed for H1/H6/H9/H11 under
+`/tmp/openwepp_mofe01_me3_runtime_h1`. Local owcmp was run directly, without
+the comparator subagent, and command execution passed for each smoke surface.
+Semantic comparison still fails at the expected aggregate-publication boundary
+(`semantic_pass_count=0/1` per smoke surface; focus columns zero diff).
+
+Full H1-H36 replay was not rerun after M-E3 runner wiring. The staged M-E3
+gate names H1/H6/H9/H11 smoke execution; full-cohort replay under the new
+N-lane shadow path is debug-mode expensive and remains M-E6/performance
+hardening scope.
+
+The next lawful increment is M-E4: produce authoritative internal per-OFE WB13
+records from the persisted lane state so per-element and transfer identities
+become measurable. M-E3 must not be treated as publication or identity closure.
+
+## M-E2 disposition
 
 Increment M-E2 is complete for its sequential OFE lane executor scope. It added
 ordered same-day OFE lane execution around the existing scheduler phase graph,

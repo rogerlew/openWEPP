@@ -1,8 +1,43 @@
 # gate results
 
-Status: M-E2 complete for scoped executor increment; package active for M-E3+
+Status: M-E3 complete for dynamic-state persistence scope; package active for M-E4+
 
 Evidence mode: Ran + Static
+
+## M-E3 scoped acceptance gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| M-E3 scope boundary | PASS | Multi-OFE runner path now executes persistent OFE-local dynamic state across days; no per-OFE WB13 records or WAT publication flip. |
+| Persistent OFE state model | PASS | Added `OfeLanePersistentState` and `OfeLanePersistentStateSequence` with fail-closed cardinality/order replacement checks. |
+| Runner daily lifecycle wiring | PASS | Multi-OFE hillslopes initialize persistent lane state, overlay daily climate, seed runtime surfaces, run the sequential OFE executor, and replace persistent state only after sequence success. |
+| Publication boundary preservation | PASS | Multi-OFE smoke manifests report `persistent-dynamic-state-shadow`, dynamic flags true, `per_ofe_record_count=0`, and `publication_ofe_policy=single-row-canonicalized-hillslope-aggregate`. |
+| `cargo fmt --check` | PASS | Post-edit run. |
+| `cargo test -p openwepp-hillslope-orchestrator mofe01_me3 -- --nocapture` | PASS | 3 focused M-E3 tests passed. |
+| `cargo test -p openwepp-runner mofe01 -- --nocapture` | PASS | 8 runner per-OFE tests passed. |
+| `cargo test --test mofe01_per_ofe_state_contract -- --nocapture` | PASS | 4 contract-derived tests passed. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Final post-doc run. |
+| `cargo test --workspace` | PASS | Final post-doc full Rust closure loop. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| `bash tools/release/check_authority_suite_antievasion.sh` | PASS | Authority suite anti-evasion checks passed. |
+| `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --format plain` | PASS | 34 files validated, 0 errors, 0 warnings. |
+| Required H smoke | PASS | H1/H6/H9/H11 exited zero under `/tmp/openwepp_mofe01_me3_runtime_h1`; elapsed H1 `4:38.90`, H6 `169s`, H9 `218s`, H11 `121s`. |
+| Local owcmp smoke command execution, no comparator subagent | PASS | User explicitly directed comparisons without the comparator subagent because GPT-5.3-Codex-Spark quota was exhausted; H1/H6/H9/H11 returned `execution_verdict=PASS`. |
+| Local owcmp smoke semantic comparison | FAIL | Expected publication-boundary fail: each smoke surface remained `semantic_pass_count=0/1`; focus columns all zero diff. |
+| Single-OFE anchor comparison | PASS | H8/H15/H19/H20/H22/H23/H28 byte-identical to M-E2 for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 pass). |
+| Manifest audit | PASS | `/tmp/openwepp_mofe01_me3_runtime_h1/m-e3-publication-audit.json`: smoke and anchor predicates pass. |
+| Line count governance | PASS | Touched Rust files remain below the 2000-line warning threshold. |
+
+## M-E3 residual future-boundary checks
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Full H1-H36 replay | NOT RUN | The staged M-E3 gate names H1/H6/H9/H11 smoke execution; full-cohort replay under the new N-lane shadow path is debug-mode expensive and remains M-E6/performance-hardening scope. |
+| Per-element identity gate | BLOCKED | Requires internal per-OFE WB13 record production in M-E4. |
+| Transfer identity gate | BLOCKED | Requires internal per-OFE daily records in M-E4 to expose authoritative sent/received terms. |
+| WAT row-cardinality gate | BLOCKED | Remains M-E5 publication-policy scope. |
+
+Detailed evidence: `m-e3-dynamic-state-persistence-evidence.md`.
 
 ## M-E2 scoped acceptance gates
 

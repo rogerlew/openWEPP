@@ -1,8 +1,22 @@
 # pre implementation contract gate
 
-Status: satisfied through M-E2 sequential executor implementation
+Status: satisfied through M-E3 dynamic-state persistence implementation
 
 Evidence mode: Static
+
+M-E3 gate:
+- Reopened. M-E3 reread the package, staged plan, M-D architecture artifact,
+  M-E2 executor evidence, work-package governance, science-contract
+  governance, crate/test governance, and the runner daily lifecycle plus
+  scheduler persistent-state seams touched by the increment.
+- Satisfied for dynamic-state persistence scope. M-E3 persists OFE-local
+  dynamic state across days behind the sequential executor under the authority
+  of `SC-RUNOFFPART-001#INV-RUNOFFPART-029`,
+  `SC-WATBAL-001#INV-WATBAL-097`, and
+  `SC-SYSTEM-001#INV-SYSTEM-030`.
+- Held before internal per-OFE WB13 record production and public WAT
+  publication. M-E3 deliberately preserves `per_ofe_record_count=0` and the
+  aggregate publication policy.
 
 M-E2 gate:
 - Reopened. M-E2 reread the package, staged plan, M-D architecture artifact,
