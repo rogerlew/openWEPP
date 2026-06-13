@@ -1,10 +1,37 @@
 # disposition
 
-Status: M-D complete; package remains open for M-E contract/test scaffolding
+Status: M-E0 executed-hold; package remains open for M-E1 implementation
 
 Evidence mode: Ran + Static
 
 ## Disposition
+
+Increment M-E0 executed the contract/test scaffold end-to-end and is held at
+the intended red architecture gate. The three contracts now define the M-D
+per-OFE dynamic-state authority:
+
+- `SC-RUNOFFPART-001#INV-RUNOFFPART-029`,
+- `SC-WATBAL-001#INV-WATBAL-097`,
+- `SC-SYSTEM-001#INV-SYSTEM-030`.
+
+`mofe01_me0_contract_authority_is_present` passes. The full
+`mofe01_per_ofe_state_contract` target fails because current production code
+lacks structural per-OFE daily state records, transfer input/output payloads,
+and publication-policy manifest gates. These failures are the required M-E0 red
+tests, not unexpected regressions.
+
+No production Rust implementation path was edited. No runtime comparison was
+run because M-E0 changed no runtime behavior and the acceptance boundary is the
+contract-derived red test. No comparator subagent was used.
+
+The next lawful increment is M-E1: introduce the per-OFE daily state data model
+or explicitly contracted equivalent without synthesizing records from aggregate
+WB13/WAT rows.
+
+M-E0 is intentionally not a green/mergeable closure state because the new test
+target is normally registered in `Cargo.toml` and fails by design until M-E1.
+
+## M-D disposition
 
 Increment M-D is complete as a design-only architecture increment. It produced
 `mofe-per-ofe-state-architecture.md`, which defines the target
@@ -13,10 +40,10 @@ existing scheduler phase graph, maps legacy `irs`/`rochek` continuation
 obligations, names the contract amendments needed in M-E0, and breaks M-E into
 measurable sub-increments.
 
-No production code, science contract, or test was edited for M-D. The next
-lawful increment is M-E0 contract/test scaffolding for real per-OFE dynamic
-state. Do not publish per-OFE WAT rows by splitting the current aggregate WB13
-row.
+No production code, science contract, or test was edited for M-D. At the M-D
+boundary, the next lawful increment was M-E0 contract/test scaffolding for real
+per-OFE dynamic state; M-E0 has since installed that scaffold and preserved the
+ban on publishing per-OFE WAT rows by splitting the current aggregate WB13 row.
 
 ## M-C2 disposition
 
@@ -84,7 +111,7 @@ Legacy calibration is complete for the available H1-H36 WAT files. The expected 
 
 ## Next disposition
 
-Execute M-E0: amend the relevant science contracts and install failing
-contract-derived tests for the per-OFE daily state semantics declared by M-D.
-M-E production code should start only after that authority and red-test surface
-exists.
+Execute M-E1: add the per-OFE daily state model/collection required by M-E0 and
+make the structural red gates pass without weakening them. Keep M-E1 within the
+data-model/scaffold boundary; single-OFE anchors and identity gates must be
+reopened for any production runtime change.

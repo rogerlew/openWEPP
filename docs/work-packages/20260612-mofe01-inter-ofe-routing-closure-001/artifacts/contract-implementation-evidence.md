@@ -1,8 +1,42 @@
 # contract implementation evidence
 
-Status: M-D design complete; M-B contract implementation complete
+Status: M-E0 contract amendments installed; production implementation held
 
 Evidence mode: Ran + Static
+
+## M-E0
+
+M-E0 reopened the contract gate declared by M-D and amended the three canonical
+contracts before any production implementation:
+
+- `SC-RUNOFFPART-001`: version 43, `last_reviewed: 2026-06-13`.
+  - Added `INV-RUNOFFPART-029`.
+  - Added `MOFE01 M-E0 Per-OFE Runoff Lane-State Addendum`.
+  - Bound ordered OFE lane execution, typed `TransferInput`/`TransferOutput`,
+    no aggregate handoff synthesis, no `TopologyGraph` OFE-node encoding, and
+    single-OFE bit-identical anchors before publication reshaping.
+- `SC-WATBAL-001`: version 155, `last_reviewed: 2026-06-13`.
+  - Added `INV-WATBAL-097`.
+  - Added `MOFE01 M-E0 Per-OFE Dynamic Water-Balance State Addendum`.
+  - Bound OFE-keyed daily records, dynamic state-family lineage, transfer
+    bindings, aggregate derivation limits, and publication-policy transition
+    constraints.
+- `SC-SYSTEM-001`: version 79, `last_reviewed: 2026-06-13`.
+  - Added `INV-SYSTEM-030`.
+  - Added `MOFE01 M-E0 Per-OFE Dynamic-State Publication Policy Addendum`.
+  - Bound the future policy value
+    `per-ofe-dynamic-water-balance-state`, row cardinality, identity-status
+    manifest gates, and `storage_lineage_policy = "per-ofe-dynamic-wb-state"`.
+  - Corrected the stale header version 77 while preserving the existing version
+    78 revision row.
+- `docs/specifications/science-contracts/index.md`:
+  - Updated `Last updated: 2026-06-13`.
+  - Updated the registry review dates for the three touched contracts.
+
+Validation:
+
+- `cargo test --test mofe01_per_ofe_state_contract mofe01_me0_contract_authority_is_present -- --nocapture`: PASS.
+- `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --path docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md --path docs/specifications/science-contracts/contracts/SC-WATBAL-001.md --path docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md --path docs/specifications/science-contracts/index.md --format plain`: PASS; final post-evidence run validated 35 files with 0 errors and 0 warnings.
 
 ## M-D
 

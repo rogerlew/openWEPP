@@ -1,8 +1,43 @@
 # owned file manifest
 
-Status: updated through M-D
+Status: updated through M-E0
 
 Evidence mode: Static
+
+## M-E0 edited files
+
+Science contracts and registry:
+
+- `docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md`
+- `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
+- `docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md`
+- `docs/specifications/science-contracts/index.md`
+
+Tests and test registration:
+
+- `Cargo.toml`
+- `tests/integration/mofe01_per_ofe_state_contract.rs`
+- `tests/integration/mofe01_inter_ofe_route_contract.rs`
+
+Work-package files/artifacts:
+
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/package.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/m-e0-contract-test-scaffold-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/README.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/gate-results.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/disposition.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/implementation-test-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/pre-implementation-contract-gate.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-test-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/worker-handoff.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/owned-file-manifest.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/required-reading-map.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/kernel-profile-compliance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/line-count-governance-checklist.md`
+
+No production Rust runtime path, external-authority suite, legacy, or `/wc1`
+substrate file was edited for M-E0.
 
 ## M-D edited files
 

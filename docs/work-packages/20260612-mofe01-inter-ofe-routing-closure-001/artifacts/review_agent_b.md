@@ -6,6 +6,39 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-E0 Review Record
+
+Agent: `019ebf20-17fc-7973-9abf-9f724cbf4f95`
+
+Static/Ran read-only QA review of M-E0 artifacts and red-test behavior. The
+reviewer ran `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`,
+observed the recorded red gate, did not edit files, and did not invoke
+`comparator_suite_runner` or any comparator subagent.
+
+Findings:
+
+1. **High:** M-E0 dual review/verification was preclaimed but not present in
+   the review/verification artifacts or the M-E0 gate table.
+2. **High:** The initial red test was too weak for the contracted M-E0 scaffold
+   because it could be satisfied by a string-only placeholder and did not cover
+   publication policy/cardinality or transfer identity surfaces.
+3. **Medium:** M-E0 gate taxonomy hid unrun `cargo clippy` and `cargo deny`
+   coverage by collapsing the full Rust closure loop to `BLOCKED`.
+4. **Medium:** Normal Cargo registration makes the workspace red until M-E1,
+   so M-E0 must not be treated as a mergeable green increment.
+5. **Low:** The initial M-E0 authority smoke test reintroduced exact
+   version/date brittleness.
+
+### M-E0 Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | M-E0 dual review/verification preclaimed before records existed | accepted | Added M-E0 review/verification records and dual review/verification rows to `gate-results.md`. |
+| 2 | Red test too weak for contracted scaffold | accepted | Strengthened the M-E0 target into three structural red gates for state records, transfer payloads, and publication-policy manifest tokens after stripping comments/string literals. |
+| 3 | Clippy/deny coverage hidden | accepted | Ran and recorded `cargo clippy --workspace --all-targets -- -D warnings` and `cargo deny check` as separate M-E0 PASS rows. |
+| 4 | Normal test registration leaves workspace red | accepted | Added explicit `Mergeable closure | BLOCKED` gate and handoff/disposition wording that M-E0 is an executed-hold, not a green/mergeable closure state. |
+| 5 | Version/date brittleness | accepted | Removed exact contract-version and registry-date assertions from the M-E0 authority test; authority now checks invariant/addendum/changelog content and exact registry-row structure. |
+
 ## M-D Review Record
 
 Agent: `019ebf06-7b8a-7ba2-a479-1908fde3bcc7`

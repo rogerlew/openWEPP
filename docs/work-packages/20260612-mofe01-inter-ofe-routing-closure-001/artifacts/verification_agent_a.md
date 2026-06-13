@@ -6,6 +6,66 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-E0 Verification Record
+
+Agent: `019ebf2a-5e69-7952-a268-947caf803dad`
+
+Static/Ran verification of the post-review M-E0 scaffold. The verifier read the
+package/governance context, package status, contract registry, review records,
+gate/disposition artifacts, `Cargo.toml`, and the new M-E0 integration test.
+The verifier did not edit files and did not invoke `comparator_suite_runner` or
+any comparator subagent.
+
+Ran:
+
+- `cargo fmt --check`
+  - PASS.
+- `cargo test --test mofe01_per_ofe_state_contract
+  mofe01_me0_contract_authority_is_present -- --nocapture`
+  - PASS; 1 passed, 0 failed, 3 filtered.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - FAIL as expected; 1 authority test passed and 3 structural red gates failed
+    for the per-OFE state collection, transfer payloads, and publication-policy
+    manifest gate.
+- `cargo clippy --workspace --all-targets -- -D warnings`
+  - PASS.
+- `cargo deny check`
+  - PASS; advisories, bans, licenses, and sources ok.
+- `markdown-doc lint --path
+  docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --path
+  docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md --path
+  docs/specifications/science-contracts/contracts/SC-WATBAL-001.md --path
+  docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md --path
+  docs/specifications/science-contracts/index.md --format plain`
+  - PASS; 35 files validated, 0 errors, 0 warnings.
+
+Verified:
+
+- `package.md` remains `Status: active; M-E0 executed-hold`.
+- `Cargo.toml` normally registers
+  `tests/integration/mofe01_per_ofe_state_contract.rs`.
+- M-E0 authority is present in `SC-RUNOFFPART-001#INV-RUNOFFPART-029`,
+  `SC-WATBAL-001#INV-WATBAL-097`, and `SC-SYSTEM-001#INV-SYSTEM-030`.
+- The science-contract registry rows for `SC-RUNOFFPART-001`,
+  `SC-WATBAL-001`, and `SC-SYSTEM-001` point to canonical contract paths and
+  retain lifecycle/evidence fields.
+- Review artifacts contain M-E0 records and accepted dispositions in both
+  `review_agent_a.md` and `review_agent_b.md`.
+- Gate/disposition artifacts preserve executed-hold/not-complete posture:
+  full Rust closure and mergeable closure are `BLOCKED`, and M-E1 is the next
+  implementation increment.
+- No comparator suite runner or comparator subagent was used.
+
+Findings:
+
+- No findings.
+
+Residual state:
+
+- The normally registered M-E0 target intentionally makes
+  `cargo test --workspace` fail until M-E1 implements the per-OFE
+  state/transfer/publication surfaces without weakening the assertions.
+
 ## M-D Verification Record
 
 Agent: `019ebf06-7c56-7601-a2ff-ccf210a48a13`

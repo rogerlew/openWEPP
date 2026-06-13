@@ -1,10 +1,31 @@
 # worker handoff
 
-Status: M-D handoff ready; M-E0 contract/test scaffold next
+Status: M-E0 executed-hold; M-E1 implementation next
 
 Evidence mode: Ran + Static
 
 ## Summary
+
+M-E0 installed the contract/test scaffold and stopped at the required red gate:
+
+- `SC-RUNOFFPART-001` version 43 adds `INV-RUNOFFPART-029`.
+- `SC-WATBAL-001` version 155 adds `INV-WATBAL-097`.
+- `SC-SYSTEM-001` version 79 adds `INV-SYSTEM-030`.
+- `tests/integration/mofe01_per_ofe_state_contract.rs` is registered in
+  `Cargo.toml`.
+- `mofe01_me0_contract_authority_is_present` passes.
+- Full `cargo test --test mofe01_per_ofe_state_contract -- --nocapture` fails
+  as intended because current production code has no structural per-OFE daily
+  state collection, transfer input/output payloads, or per-OFE publication
+  policy manifest gate.
+- No production Rust runtime implementation was edited and no runtime
+  comparison was run.
+- `cargo clippy --workspace --all-targets -- -D warnings` and
+  `cargo deny check` pass.
+- The worktree is intentionally red for `cargo test --workspace`; do not treat
+  M-E0 as a green/mergeable closure state.
+
+## M-D summary
 
 M-D completed the design-only architecture increment:
 
@@ -16,8 +37,9 @@ M-D completed the design-only architecture increment:
   hillslope/channel/impoundment system nodes.
 - The design maps legacy `irs`/`rochek` continuation, WATBAL per-plane rows,
   and hourly carry copy-forward obligations to explicit per-OFE transfer state.
-- M-E0 must amend `SC-RUNOFFPART-001`, `SC-WATBAL-001`, and `SC-SYSTEM-001`
-  and install failing contract tests before production code.
+- M-D required M-E0 to amend `SC-RUNOFFPART-001`, `SC-WATBAL-001`, and
+  `SC-SYSTEM-001` and install failing contract tests before production code;
+  M-E0 has since done that and left the red test in place.
 - No production code, science contracts, or tests were edited in M-D.
 
 ## M-C2 summary
@@ -110,7 +132,7 @@ These are not committed artifacts.
 
 ## Next worker focus
 
-Execute M-E0 contract/test scaffolding for the M-D architecture. The current
-single-row aggregate path and hour-indexed carry arrays are not enough to prove
-`UpStrmQ`/`SubRIn` handoffs or non-aliased `QOFE`; do not manufacture those
-fields from aggregate daily WAT rows.
+Execute M-E1 data-model scaffolding. Make the M-E0 red architecture test pass
+by adding a real per-OFE daily state collection or explicitly contracted
+equivalent. Do not satisfy it by adding a string-only placeholder or by
+manufacturing per-OFE records from aggregate WB13/WAT rows.

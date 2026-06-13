@@ -1,8 +1,39 @@
 # gate results
 
-Status: M-D complete; design artifact complete; package active for M-E0
+Status: M-E0 executed-hold; package active for M-E1 production implementation
 
 Evidence mode: Ran + Static
+
+## M-E0 ran
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| M-E0 production-code boundary | PASS | No production Rust implementation path was edited. M-E0 changed science contracts, test registration, contract tests, and work-package evidence only. |
+| `SC-RUNOFFPART-001` amendment | PASS | Version 43 adds `INV-RUNOFFPART-029` and the per-OFE runoff lane-state addendum binding typed `TransferInput`/`TransferOutput`, no aggregate handoff synthesis, and single-OFE anchors. |
+| `SC-WATBAL-001` amendment | PASS | Version 155 adds `INV-WATBAL-097` and the per-OFE dynamic water-balance state addendum binding `PerOfeDailyWaterBalanceRecord` semantics and publication-transition limits. |
+| `SC-SYSTEM-001` amendment | PASS | Version 79 adds `INV-SYSTEM-030` and the per-OFE dynamic-state publication-policy manifest gate. The stale header version 77 was corrected while adding version 79. |
+| Science-contract registry update | PASS | `docs/specifications/science-contracts/index.md` updated to `Last updated: 2026-06-13` and review dates for `SC-RUNOFFPART-001`, `SC-WATBAL-001`, and `SC-SYSTEM-001`. |
+| Contract-test target registration | PASS | Added `mofe01_per_ofe_state_contract` in `Cargo.toml`. |
+| `cargo test --test mofe01_per_ofe_state_contract mofe01_me0_contract_authority_is_present -- --nocapture` | PASS | Positive M-E0 authority-presence test passed. |
+| `cargo test --test mofe01_inter_ofe_route_contract -- --nocapture` | PASS | Adjacent M-B authority smoke test passed after removing the stale fixed-date registry assertion. |
+| `cargo test --test mofe01_per_ofe_state_contract -- --nocapture` | FAIL | Expected M-E0 red target: 1 authority test passed; 3 structural red gates failed for missing per-OFE state collection, missing transfer input/output payloads, and missing publication-policy manifest gate. |
+| Per-OFE dynamic state implementation | BLOCKED | M-E0 forbids production implementation. M-E1 must introduce the state type/collection or an explicitly contracted equivalent. |
+| Per-element identity gate | BLOCKED | Not measurable until OFE-keyed dynamic records exist. |
+| Transfer identity gate | BLOCKED | Not measurable until adjacent OFE transfer input/output records exist. |
+| Aggregate identity unchanged | PASS | No production code changed; M-E0 only installs contract/test authority. |
+| Single-OFE anchor | NOT RUN | No production runtime changed and the intentional red target blocks full runtime closure; M-E1 must rerun single-OFE anchors after state scaffolding. |
+| `cargo fmt --check` | PASS | Final post-edit run. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Final post-edit run. Clippy compiles all targets but does not execute the intentional red test. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| Docs lint | PASS | Final post-evidence run: `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --path docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md --path docs/specifications/science-contracts/contracts/SC-WATBAL-001.md --path docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md --path docs/specifications/science-contracts/index.md --format plain`: 35 files validated, 0 errors, 0 warnings. |
+| Full Rust closure loop | BLOCKED | The package now contains an intentional red M-E0 target. Running `cargo test --workspace` would be expected to fail until M-E1 implements the per-OFE state surface. |
+| Mergeable closure | BLOCKED | M-E0 is an executed-hold scaffold with a normally registered failing target; it must not be treated as a green/mergeable closure increment until M-E1 turns the red gates green without weakening them. |
+| Comparator/heavy comparison | NOT RUN | M-E0 is contract/test scaffolding and made no runtime-output change. No comparator subagent was used. |
+| Anti-evasion guards | NOT RUN | M-E0 did not edit external-authority suite posture, cohort fixture bindings, or required-case bindings. |
+| Dual review | PASS | Review A and Review B findings on preclaimed review/verification coverage, red-test strength, registry row assertions, clippy/deny taxonomy, and red-hold mergeability were accepted and fixed or explicitly dispositioned. |
+| Dual verification | PASS | Verification A/B completed read-only checks; post-review local gates confirm the strengthened red target, clippy, deny, fmt, focused authority tests, and docs lint results recorded here. |
+
+Detailed evidence: `m-e0-contract-test-scaffold-evidence.md`.
 
 ## M-D ran
 

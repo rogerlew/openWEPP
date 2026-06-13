@@ -1,8 +1,36 @@
 # kernel profile compliance checklist
 
-Status: checked through M-D
+Status: checked through M-E0
 
 Evidence mode: Ran + Static
+
+## M-E0 checklist
+
+- Production edits: none.
+- Science-contract edits: yes; `SC-RUNOFFPART-001`, `SC-WATBAL-001`, and
+  `SC-SYSTEM-001` amended for per-OFE dynamic-state authority.
+- Test edits: yes; `mofe01_per_ofe_state_contract` added and M-B authority
+  smoke test date brittleness fixed.
+- Typed errors in production: unchanged.
+- `unwrap`/`expect` in production: none introduced. The new panic helper is
+  test-only.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: unchanged.
+- Runtime state/publication paths: unchanged; M-E0 only installs the contract
+  and red-test boundary for M-E1.
+
+Validation:
+
+- `cargo fmt --check`: PASS.
+- `cargo clippy --workspace --all-targets -- -D warnings`: PASS.
+- `cargo deny check`: PASS.
+- M-E0 authority test: PASS.
+- M-B authority smoke test: PASS.
+- Full M-E0 target: FAIL by design on missing per-OFE state collection,
+  transfer payloads, and publication-policy manifest gate.
+- Full Rust closure loop: BLOCKED until M-E1 satisfies the intentional red
+  test.
 
 ## M-D checklist
 

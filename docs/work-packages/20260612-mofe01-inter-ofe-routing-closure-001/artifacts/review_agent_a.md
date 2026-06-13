@@ -6,6 +6,33 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-E0 Review Record
+
+Agent: `019ebf20-1757-74e1-88e3-b086cf1e8307`
+
+Static/Ran read-only review of M-E0 contracts, tests, registry, package
+artifacts, and gate evidence. The reviewer ran `git status`, `git diff`, `rg`,
+`sed`, and `nl`; did not edit files; did not run cargo gates or markdown lint;
+and did not invoke `comparator_suite_runner` or any comparator subagent.
+
+Findings:
+
+1. **Medium:** M-E0 review/verification evidence was overclaimed before M-E0
+   review/verification records existed in the artifacts and gate table.
+2. **Medium:** The initial red architecture test was truthful but too weak as
+   a future green gate because it only searched for
+   `PerOfeDailyWaterBalanceCollection` in four source files.
+3. **Low:** Registry assertions were broadened to loose substring checks rather
+   than exact registry-row structure.
+
+### M-E0 Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | M-E0 review/verification coverage preclaimed before records existed | accepted | Added M-E0 review/verification records and explicit M-E0 dual review/verification rows to `gate-results.md`. |
+| 2 | Red architecture test too weak for future green transition | accepted | Replaced the source-string sentinel with structural checks that strip comments/string literals and require state collection/record items, transfer payload items, and publication-policy manifest tokens. |
+| 3 | Registry tests too loose | accepted | Updated M-E0 registry assertions to verify exact registry rows, paths, lifecycle fields, and evidence level without pinning future-sensitive review dates. |
+
 ## M-D Review Record
 
 Agent: `019ebf06-7ac7-7463-8b89-e5eae16563c6`

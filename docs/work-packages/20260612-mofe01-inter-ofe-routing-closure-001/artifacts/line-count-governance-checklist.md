@@ -1,8 +1,25 @@
 # line count governance checklist
 
-Status: checked through M-D
+Status: checked through M-E0
 
 Evidence mode: Ran
+
+## M-E0
+
+Ran `wc -l` over touched Rust/test/Cargo files and touched contracts/index.
+
+| File group | Lines | Disposition |
+| --- | ---: | --- |
+| `tests/integration/mofe01_per_ofe_state_contract.rs` | 301 | OK |
+| `tests/integration/mofe01_inter_ofe_route_contract.rs` | 41 | OK |
+| `Cargo.toml` | 616 | OK |
+| `SC-RUNOFFPART-001.md` | 997 | Existing large contract authority; updated narrowly. |
+| `SC-WATBAL-001.md` | 2484 | Existing large contract authority; updated narrowly. |
+| `SC-SYSTEM-001.md` | 1024 | Existing large contract authority; updated narrowly. |
+| `docs/specifications/science-contracts/index.md` | 67 | OK |
+
+No touched Rust source file crossed a line-count threshold. No production Rust
+source file was edited.
 
 ## M-D
 

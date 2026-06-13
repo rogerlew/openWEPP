@@ -1,8 +1,39 @@
 # implementation test evidence
 
-Status: M-D complete; no implementation tests added
+Status: M-E0 executed-hold; contract tests added
 
 Evidence mode: Ran + Static
+
+## M-E0 ran
+
+M-E0 added no production implementation. It installed contract-derived tests and
+then stopped at the intentional red architecture gate.
+
+- `cargo fmt --check`
+  - PASS.
+- `cargo test --test mofe01_per_ofe_state_contract mofe01_me0_contract_authority_is_present -- --nocapture`
+  - PASS; M-E0 authority-presence test passed.
+- `cargo test --test mofe01_inter_ofe_route_contract -- --nocapture`
+  - PASS; adjacent M-B authority smoke test passed after removing the stale
+    fixed-date registry assertion.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - FAIL as intended. The target ran 4 tests: one authority test passed and
+    three structural red gates failed:
+    `mofe01_me0_current_architecture_requires_structural_per_ofe_state_collection`,
+    `mofe01_me0_current_architecture_requires_structural_transfer_payloads`,
+    and
+    `mofe01_me0_current_architecture_requires_publication_policy_manifest_gate`.
+- `cargo clippy --workspace --all-targets -- -D warnings`
+  - PASS.
+- `cargo deny check`
+  - PASS; `advisories ok, bans ok, licenses ok, sources ok`.
+- `markdown-doc lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001 --path docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md --path docs/specifications/science-contracts/contracts/SC-WATBAL-001.md --path docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md --path docs/specifications/science-contracts/index.md --format plain`
+  - PASS; final post-evidence run validated 35 files with 0 errors and
+    0 warnings.
+
+No comparator or heavy runtime-output comparison was run for M-E0. The
+increment did not change runtime behavior, and the red test blocks promotion
+until M-E1 adds real per-OFE dynamic state.
 
 ## M-D ran
 
@@ -11,7 +42,8 @@ Evidence mode: Ran + Static
 
 No M-D production implementation or tests were added. The increment was
 design-only and completed by producing the per-OFE state architecture artifact.
-M-E0 must add the contract-derived red tests before production implementation.
+M-E0 later satisfied this boundary by adding the contract-derived red tests
+before production implementation.
 
 ## M-C2 ran
 

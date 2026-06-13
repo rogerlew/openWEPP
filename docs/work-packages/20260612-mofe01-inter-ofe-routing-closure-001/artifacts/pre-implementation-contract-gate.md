@@ -1,8 +1,22 @@
 # pre implementation contract gate
 
-Status: satisfied for M-B; M-D design complete before M-E0
+Status: satisfied for M-E0 contract/test scaffold; production implementation held
 
 Evidence mode: Static
+
+M-E0 gate:
+- Reopened. M-E0 reread the package, staged plan, M-D architecture artifact,
+  work-package governance, science-contract governance, crate/test governance,
+  current `SC-RUNOFFPART-001`/`SC-WATBAL-001`/`SC-SYSTEM-001` MOFE authority,
+  scheduler/writeback/publication seams, and the existing M-B contract smoke
+  test before edits.
+- Satisfied for contract/test scaffold. M-E0 amended the three contracts,
+  updated the registry, registered `mofe01_per_ofe_state_contract`, and proved
+  the positive authority test passes.
+- Held before production implementation. The full M-E0 target now fails on the
+  required red architecture gate because current production code lacks
+  `PerOfeDailyWaterBalanceCollection` or equivalent typed OFE-keyed dynamic
+  state.
 
 M-A was characterization/scoping only and did not edit production kernel paths or science contracts.
 
@@ -48,6 +62,7 @@ M-D gate:
 - Satisfied for design-only scope. M-D produced
   `mofe-per-ofe-state-architecture.md` and made no production code, science
   contract, or test edits.
-- M-E0 must reopen this gate again before implementation by amending
-  `SC-RUNOFFPART-001`, `SC-WATBAL-001`, and `SC-SYSTEM-001` and installing
-  contract-derived red tests for the M-D per-OFE state semantics.
+- At the M-D boundary, M-E0 was required to reopen this gate before
+  implementation by amending `SC-RUNOFFPART-001`, `SC-WATBAL-001`, and
+  `SC-SYSTEM-001` and installing contract-derived red tests for the M-D
+  per-OFE state semantics. M-E0 satisfied that scaffold gate above.

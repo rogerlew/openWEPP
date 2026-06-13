@@ -1,8 +1,49 @@
 # contract test implementation evidence
 
-Status: M-D design complete; M-B contract tests implemented
+Status: M-E0 contract red tests installed
 
 Evidence mode: Ran + Static
+
+## M-E0
+
+M-E0 added and registered
+`tests/integration/mofe01_per_ofe_state_contract.rs`.
+
+Test coverage:
+
+- `mofe01_me0_contract_authority_is_present`
+  - Asserts M-E0 authority in `SC-RUNOFFPART-001`, `SC-WATBAL-001`,
+    `SC-SYSTEM-001`, and exact science-contract registry rows without pinning
+    future-sensitive global review dates.
+  - PASS under focused execution.
+- `mofe01_me0_current_architecture_requires_structural_per_ofe_state_collection`
+  - Strips comments, string literals, and char literals from current runtime
+    sources, then requires structural `PerOfeDailyWaterBalanceCollection` and
+    `PerOfeDailyWaterBalanceRecord` definitions, an impl block, and core OFE
+    transfer fields.
+  - FAILS intentionally on the current aggregate architecture.
+- `mofe01_me0_current_architecture_requires_structural_transfer_payloads`
+  - Requires structural `TransferInput`/`TransferOutput` payload definitions
+    with OFE identity and separated surface/lateral carry tokens.
+  - FAILS intentionally on the current aggregate architecture.
+- `mofe01_me0_current_architecture_requires_publication_policy_manifest_gate`
+  - Requires source-level publication policy, record-cardinality,
+    identity-status, and per-OFE storage-lineage manifest tokens.
+  - FAILS intentionally on the current aggregate architecture.
+
+M-E0 also updated
+`tests/integration/mofe01_inter_ofe_route_contract.rs` to stop pinning the
+registry to the old M-B review date. The test now asserts registry exposure of
+the M-B authority rows, allowing later legitimate contract review dates.
+
+Ran:
+
+- `cargo test --test mofe01_per_ofe_state_contract mofe01_me0_contract_authority_is_present -- --nocapture`
+  - PASS.
+- `cargo test --test mofe01_inter_ofe_route_contract -- --nocapture`
+  - PASS.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - FAIL by design: 1 authority test passed and 3 structural red gates failed.
 
 ## M-D
 

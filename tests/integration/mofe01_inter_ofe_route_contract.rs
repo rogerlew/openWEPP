@@ -35,7 +35,7 @@ fn mofe01_mb_inter_ofe_route_contract_authority_is_present() {
     ))
     .expect("science contract index should be readable");
     assert!(
-        index.contains("SC-RUNOFFPART-001") && index.contains("2026-06-12"),
-        "science contract index must expose the M-B review date"
+        index.contains("SC-RUNOFFPART-001") && index.contains("SC-WATBAL-001"),
+        "science contract index must expose the M-B contract authority rows"
     );
 }

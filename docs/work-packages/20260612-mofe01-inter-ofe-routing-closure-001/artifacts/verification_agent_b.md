@@ -6,6 +6,44 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-E0 Verification Record
+
+Agent: `019ebf2a-5f28-7832-a780-d9a11ace1001`
+
+Static/Ran read-only verification of the final M-E0 package state. The verifier
+read M-E0 package artifacts, `gate-results.md`,
+`m-e0-contract-test-scaffold-evidence.md`, `disposition.md`, review records,
+`Cargo.toml`, and `tests/integration/mofe01_per_ofe_state_contract.rs`. The
+verifier did not edit files, run `comparator_suite_runner`, run any comparator
+or owcmp command, or run `cargo test --workspace`.
+
+Verified:
+
+- No production runtime Rust edits exist under `crates/`; the dirty
+  runtime-adjacent paths are `Cargo.toml` and integration tests only.
+- No comparator run was required or used for M-E0. M-E0 evidence records
+  `Comparator/heavy comparison | NOT RUN`.
+- `gate-results.md` uses only the allowed result statuses: `PASS`, `FAIL`,
+  `BLOCKED`, and `NOT RUN`.
+- Clippy and deny are separately recorded as M-E0 gates:
+  `cargo clippy --workspace --all-targets -- -D warnings | PASS` and
+  `cargo deny check | PASS`.
+- The red target is structural, not string-only: the M-E0 tests strip comments
+  and string literals before tokenizing runtime source and requiring structural
+  state collection, transfer payload, and publication-policy tokens.
+- M-E0 is not represented as green or mergeable. `gate-results.md` records
+  `Full Rust closure loop | BLOCKED` and `Mergeable closure | BLOCKED`.
+
+Findings:
+
+- No findings.
+
+Residual note:
+
+- The structural red target is appropriate for M-E0 scaffold verification, but
+  it remains a source-token gate rather than runtime conservation proof.
+  Runtime identity closure remains correctly held for M-E1 and later.
+
 ## M-D Verification Record
 
 Agent: `019ebf06-7d02-7cb1-8c3e-dcdbcabdd7dc`
