@@ -1,6 +1,6 @@
 # Review Agent A
 
-Status: T-A local review complete
+Status: T-B local review complete
 
 Evidence mode: Static + Ran
 
@@ -83,3 +83,36 @@ Review observations:
 | # | Finding | Disposition | Rationale |
 |---|---|---|---|
 | - | None | accepted | T-A gates are design/scope gates and are met. |
+
+## T-B Review
+
+Evidence mode: Static + Ran
+
+Findings:
+
+No blocking T-B findings.
+
+Review observations:
+
+1. The dedicated CLI exists and owns totalwatsed3 production, so the
+   watershed CLI path is no longer the active aggregation surface.
+2. `Runoff` is derived from PASS `runvol`, while WAT `Q` remains diagnostic;
+   the focused fixture proves those can differ.
+3. The MOFE `latqcc` collapse test exercises outlet-only behavior and avoids
+   cross-OFE double counting.
+4. The real arboreal-dendrite audit residual is nonzero
+   (`57.409871 mm`), so T-B does not fall into the exact-zero tautology trap.
+
+Residual risk:
+
+- `writers.rs` remains above the 2000-line warning threshold. T-B kept the
+  main aggregation logic in a dedicated runner module, but any future writer
+  work should consider a split before more growth.
+- The remaining closure residual is real T-C work, not a T-B producer-blocking
+  defect.
+
+## T-B Finding Disposition
+
+| # | Finding | Disposition | Rationale |
+|---|---|---|---|
+| - | None | accepted | T-B producer, lineage, focused tests, real run, and audit-read gates are met. |

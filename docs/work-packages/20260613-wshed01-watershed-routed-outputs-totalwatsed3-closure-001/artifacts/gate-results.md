@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: T-A executed
+Status: T-B executed
 
 Evidence mode: Ran + Static
 
@@ -43,6 +43,15 @@ Evidence mode: Ran + Static
 | T-A CLI scope artifact | PASS | `totalwatsed3-cli-scope.md` defines inputs, aggregation semantics, openWEPP-native schema, independent closure identity, red tests, and T-B/T-C breakdown. |
 | T-A production Rust gates | NOT RUN | T-A is a no-production-code design increment. |
 | T-A scoped markdown lint | PASS | `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `28` files scanned, `0` errors, `0` warnings. |
+| T-B red tests | PASS | `cargo test -p openwepp-runner --test totalwatsed3_cli_contract` failed before implementation because `CARGO_BIN_EXE_openwepp-cli-totalwatsed3` was not defined. |
+| T-B focused CLI tests | PASS | `cargo test -p openwepp-runner --test totalwatsed3_cli_contract`: `2` passed. |
+| T-B unit lineage registry test | PASS | `cargo test --test sim_contract_boundary_unit_registry`: `15` passed; `watershed_totalwatsed3.Runoff` is publication-only PASS-volume lineage. |
+| T-B real producer run | PASS | `cargo run -p openwepp-runner --bin openwepp-cli-totalwatsed3 -- --input-dir /wc1/runs/ar/arboreal-dendrite/wepp/output/interchange --output /tmp/openwepp_wshed01_tb/totalwatsed3.parquet`: `CLITW3-I-001 wrote 2192 rows`. |
+| T-B parquet schema/readability | PASS | Pyarrow read confirmed `2192` rows, `79` columns, and no nulls in required water-balance columns checked. |
+| T-B audit read | PASS | wepppy `totalwatsed3_daily_closure_audit.py` exited `0`, read the file without schema repair, and reported zero profile violations. Closure residual remains a T-C gate. |
+| T-B watershed ownership relocation | PASS | `openwepp-cli-watershed` no longer owns WAT/PASS totalwatsed3 aggregation; the dedicated CLI owns native totalwatsed3 production. |
+| T-B full fmt/clippy/test/deny | PASS | `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test --workspace`; `cargo deny check`. |
+| T-B final diff/doc lint | PASS | `git diff --check`: no findings; `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `28` files scanned, `0` errors, `0` warnings. |
 
 Subagent note: comparator/heavy-batch subagent was not used because W-A required
 only a single current-behavior CLI run and static source characterization.
@@ -58,3 +67,6 @@ CLI/audit evidence was run directly and recorded in
 For T-A, no comparator-suite subagent was used because the increment is
 design-only. Static source reads and a pyarrow schema sample were run directly
 in this session.
+For T-B, no comparator-suite subagent was used. Focused tests, full Rust
+gates, the real arboreal-dendrite producer run, and the wepppy audit read were
+run directly in this session as command-level evidence.

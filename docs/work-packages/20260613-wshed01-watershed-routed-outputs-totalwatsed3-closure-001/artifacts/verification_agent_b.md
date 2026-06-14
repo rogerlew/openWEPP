@@ -1,6 +1,6 @@
 # Verification Agent B
 
-Status: T-A local verification complete
+Status: T-B local verification complete
 
 Evidence mode: Static
 
@@ -40,9 +40,9 @@ Verified:
 Residual governance note:
 
 - `openwepp-cli-watershed.rs` and `writers.rs` are above the 2000-line warning
-  threshold but below the 3000-line refactor threshold. T-B should avoid
-  further growth there or split touched logic before it crosses the hard
-  threshold.
+  threshold but below the 3000-line refactor threshold. The next touch should
+  avoid further growth there or split touched logic before either crosses the
+  hard threshold.
 
 ## T-A Governance Verification
 
@@ -64,3 +64,24 @@ Residual governance note:
 - T-B must perform contract-first implementation. If the PASS lineage requires
   new HBP/PASS payload fields or a PASS parquet output obligation, T-B must
   amend canonical authority before production edits close.
+
+## T-B Governance Verification
+
+Evidence mode: Static + Ran
+
+Verified:
+
+- T-B is not marked as package closure. Its scoped gates were implementation,
+  lineage, real producer emission, and audit readability.
+- The remaining `57.409871 mm` residual is explicitly carried forward to T-C.
+- The comparator-suite subagent was not used; command-level evidence is
+  recorded instead.
+- The package status, staged plan, disposition, and handoff point to T-C as the
+  next live increment.
+- Line-count WARNs are recorded for `openwepp-cli-watershed.rs` and
+  `writers.rs`; neither is above the 3000-line hard threshold.
+
+Residual governance note:
+
+- T-C must not close by deferring or redefining the residual without
+  contract-level evidence. The independent operand rule remains binding.

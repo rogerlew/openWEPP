@@ -40,4 +40,9 @@ path = "src/bin/openwepp-cli-hill.rs"
 name = "openwepp-cli-watershed"
 path = "src/bin/openwepp-cli-watershed.rs"
 
+[[bin]]
+name = "openwepp-cli-totalwatsed3"
+path = "src/bin/openwepp-cli-totalwatsed3.rs"
+
 [dev-dependencies]
+arrow-schema = "54.3.1"

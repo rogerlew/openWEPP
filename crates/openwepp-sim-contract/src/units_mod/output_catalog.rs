@@ -8,6 +8,7 @@ pub fn canonical_output_unit_entries() -> Vec<OutputUnitEntry> {
         "publication output converts registered water-balance depth to volume using output area";
     const AGG_DEPTH: &str =
         "publication output derives an aggregate depth from registered water-balance components";
+    const PASS_VOLUME_DEPTH: &str = "publication output derives runoff depth from independent PASS runoff volume over aggregate area";
     const SEDIMENT: &str = "publication-only sediment, pollutant, ash, or loss summary column outside runtime hydrology boundary registry";
     const SOIL_OUTPUT: &str =
         "publication-only soil diagnostic column outside runtime hydrology boundary registry";
@@ -673,11 +674,13 @@ pub fn canonical_output_unit_entries() -> Vec<OutputUnitEntry> {
             "mm",
             "hillslope_wat.latqcc",
         ),
-        OutputUnitEntry::boundary_registry(
+        OutputUnitEntry::publication_only(
             "watershed_totalwatsed3",
             "Runoff",
             "mm",
-            "hillslope_wat.Q",
+            PASS_VOLUME_DEPTH,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
         ),
         OutputUnitEntry::boundary_registry(
             "watershed_totalwatsed3",

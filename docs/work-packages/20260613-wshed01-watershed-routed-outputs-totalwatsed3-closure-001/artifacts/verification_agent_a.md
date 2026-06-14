@@ -1,6 +1,6 @@
 # Verification Agent A
 
-Status: T-A local verification complete
+Status: T-B local verification complete
 
 Evidence mode: Ran + Static
 
@@ -66,3 +66,23 @@ Residual blocker:
 
 - T-B must implement the dedicated CLI and PASS `runvol` lineage before T-C can
   claim totalwatsed3 closure.
+
+## T-B Verification Record
+
+Evidence mode: Ran + Static
+
+Verified:
+
+- `openwepp-cli-totalwatsed3` exists as a dedicated binary.
+- Focused CLI tests passed (`2` tests).
+- Unit-registry lineage tests passed (`15` tests).
+- The real arboreal-dendrite producer emitted `2192` rows.
+- The wepppy audit script read the T-B output without schema repair.
+- Profile audit violations are zero.
+- Full Rust gates passed: fmt, clippy, workspace tests, and deny.
+
+Residual blocker:
+
+- The conservation audit still reports
+  `closure_reconstructed_with_storage_total_mm=57.409871`. T-B is verified as
+  executed for producer/audit-read gates; T-C owns closure.

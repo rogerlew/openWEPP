@@ -116,9 +116,15 @@ pub struct WatershedInterchangeRowSeed {
     pub channel_baseflow_m3: f64,
     pub channel_loss_m3: f64,
     pub area_m2: f64,
+    pub subsurface_runoff_volume_m3: f64,
+    pub total_detachment_kg: f64,
+    pub total_deposition_kg: f64,
+    pub sediment_class_deposition_kg: [f64; 5],
+    pub sediment_volume_concentration_m3_m3: f64,
     pub precipitation_mm: f64,
     pub rain_melt_mm: f64,
     pub runoff_mm: f64,
+    pub q_diagnostic_mm: Option<f64>,
     pub deep_percolation_mm: f64,
     pub lateral_flow_mm: f64,
     pub qofe_mm: f64,
@@ -140,6 +146,9 @@ pub struct WatershedInterchangeRowSeed {
     pub tile_mm: f64,
     pub irrigation_mm: f64,
     pub baseflow_mm: f64,
+    pub tsmf_fraction: f64,
+    pub qrain_mm: f64,
+    pub qsnow_mm: f64,
 }
 
 impl Default for WatershedInterchangeRowSeed {
@@ -164,9 +173,15 @@ impl Default for WatershedInterchangeRowSeed {
             channel_baseflow_m3: 0.0,
             channel_loss_m3: 0.0,
             area_m2: 1.0,
+            subsurface_runoff_volume_m3: 0.0,
+            total_detachment_kg: 0.0,
+            total_deposition_kg: 0.0,
+            sediment_class_deposition_kg: [0.0; 5],
+            sediment_volume_concentration_m3_m3: 0.0,
             precipitation_mm: 0.0,
             rain_melt_mm: 0.0,
             runoff_mm: 0.0,
+            q_diagnostic_mm: None,
             deep_percolation_mm: 0.0,
             lateral_flow_mm: 0.0,
             qofe_mm: 0.0,
@@ -188,6 +203,9 @@ impl Default for WatershedInterchangeRowSeed {
             tile_mm: 0.0,
             irrigation_mm: 0.0,
             baseflow_mm: 0.0,
+            tsmf_fraction: 0.0,
+            qrain_mm: 0.0,
+            qsnow_mm: 0.0,
         }
     }
 }
@@ -254,6 +272,13 @@ pub fn write_interchange_parquet_outputs_from_rows(
         row_seeds,
     )?;
     Ok(())
+}
+
+pub fn write_totalwatsed3_parquet(
+    output: &Path,
+    row_seeds: &[WatershedInterchangeRowSeed],
+) -> Result<(), WatershedWriterError> {
+    write_single_output(output, watershed_totalwatsed3_schema()?, row_seeds)
 }
 
 pub fn watershed_interchange_schemas() -> Result<Vec<(&'static str, Schema)>, WatershedWriterError>
@@ -1674,11 +1699,21 @@ fn float64_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> f6
     let total_pollutant = row_seed.soluble_pollutant_kg + row_seed.particulate_pollutant_kg;
     let sediment_yield_tonnes = row_seed.sediment_yield_kg / 1_000.0;
     let volume_from_depth = |depth_mm: f64| depth_mm * row_seed.area_m2 / 1_000.0;
+    let q_diagnostic_mm = row_seed.q_diagnostic_mm.unwrap_or(row_seed.runoff_mm);
 
     match field_name {
         "runoff_volume" | "runvol" | "Runoff Volume" | "Discharge Volume" => {
             row_seed.runoff_volume_m3
         }
+        "sbrunv" => row_seed.subsurface_runoff_volume_m3,
+        "tdet" => row_seed.total_detachment_kg,
+        "tdep" => row_seed.total_deposition_kg,
+        "seddep_1" => row_seed.sediment_class_deposition_kg[0],
+        "seddep_2" => row_seed.sediment_class_deposition_kg[1],
+        "seddep_3" => row_seed.sediment_class_deposition_kg[2],
+        "seddep_4" => row_seed.sediment_class_deposition_kg[3],
+        "seddep_5" => row_seed.sediment_class_deposition_kg[4],
+        "sed_vol_conc" => row_seed.sediment_volume_concentration_m3_m3,
         "peak_runoff" | "Peak_Discharge (m^3/s)" => row_seed.peak_discharge_m3_s,
         "sediment_yield" | "sed_del" => row_seed.sediment_yield_kg,
         "Sediment Yield" => sediment_yield_tonnes,
@@ -1687,7 +1722,7 @@ fn float64_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> f6
         "total_pollutant" | "Total Pollutant" => total_pollutant,
         "P" => volume_from_depth(row_seed.precipitation_mm),
         "RM" => volume_from_depth(row_seed.rain_melt_mm),
-        "Q" => volume_from_depth(row_seed.runoff_mm),
+        "Q" => volume_from_depth(q_diagnostic_mm),
         "Dp" => volume_from_depth(row_seed.deep_percolation_mm),
         "latqcc" => volume_from_depth(row_seed.lateral_flow_mm),
         "QOFE" => volume_from_depth(row_seed.qofe_mm),
@@ -1696,7 +1731,8 @@ fn float64_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> f6
         "Er" => volume_from_depth(row_seed.evaporation_residue_mm),
         "P (mm)" | "Precipitation" => row_seed.precipitation_mm,
         "RM (mm)" | "Rain+Melt" => row_seed.rain_melt_mm,
-        "Q (mm)" | "Runoff" => row_seed.runoff_mm,
+        "Q (mm)" => q_diagnostic_mm,
+        "Runoff" => row_seed.runoff_mm,
         "Dp (mm)" | "Percolation" => row_seed.deep_percolation_mm,
         "latqcc (mm)" | "Lateral Flow" => row_seed.lateral_flow_mm,
         "QOFE (mm)" => row_seed.qofe_mm,
@@ -1721,6 +1757,9 @@ fn float64_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> f6
         "InterceptionStorage" => row_seed.interception_storage_mm,
         "frozwt" | "frozwt (mm)" => row_seed.frozen_water_mm,
         "Snow-Water" | "Snow Water (mm)" => row_seed.snow_water_mm,
+        "TSMF" => row_seed.tsmf_fraction,
+        "QRain" => row_seed.qrain_mm,
+        "QSnow" => row_seed.qsnow_mm,
         "Tile" | "Tile (mm)" => row_seed.tile_mm,
         "Irr" | "Irr (mm)" => row_seed.irrigation_mm,
         "Baseflow" | "Base (mm)" => row_seed.baseflow_mm,

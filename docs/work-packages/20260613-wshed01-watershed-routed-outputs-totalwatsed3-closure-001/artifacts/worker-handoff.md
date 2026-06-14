@@ -1,6 +1,6 @@
 # Worker Handoff
 
-Status: T-A executed; T-B ready
+Status: T-B executed; T-C ready
 
 Evidence mode: Static + Ran
 
@@ -12,10 +12,15 @@ seam and published WAT-backed watershed outputs. W-D ran the totalwatsed3 audit
 and fixed confirmed publication defects, but the W-D closure gate failed with
 `closure_reconstructed_with_storage_total_mm=2950.498418`.
 
-T-A applies the operator-directed architecture pivot: totalwatsed3 is
+T-A applied the operator-directed architecture pivot: totalwatsed3 is
 hillslope-only and must move to a dedicated openWEPP-native
 `openwepp-cli-totalwatsed3`. It is not channel-routed watershed output and has
 no channel loss/storage terms.
+
+T-B implemented that dedicated CLI and produced an arboreal-dendrite
+`totalwatsed3.parquet` that the wepppy audit can read without schema repair.
+The live T-C blocker is now the remaining independent closure residual:
+`57.409871 mm` (`0.345805%` of precipitation).
 
 ## T-A Scope Result
 
@@ -37,38 +42,31 @@ T-A sampled the arboreal-dendrite interchange schemas under
 reference shape uses combined `H.pass.parquet`, `H.wat.parquet`,
 `H.soil.parquet`, and `H.element.parquet` with `wepp_id`/`ofe_id` selectors.
 
-## Live Implementation Gap
+## Remaining Implementation Gap
 
-Current openWEPP hillslope output still requires a `.hbp` pass file and
-optional WAT/soil/element parquet files. The HBP writer currently writes the
-six event volume slots as zero, and the HBP parser consumes those slots without
-exposing PASS `runvol`. The superseded watershed helper
-`build_watershed_daily_rows_from_wat` uses pass filenames only to find sibling
-WAT files, then derives runoff from WAT `Q`.
+T-B created the openWEPP-native PASS/WAT aggregation surface needed before
+closure can be claimed. T-C must now explain and close the remaining
+`57.409871 mm` audit residual without substituting self-consistency checks for
+the independent conservation identity.
 
-T-B must therefore create a real openWEPP-native PASS lineage surface before
-totalwatsed3 closure can be claimed.
+## T-B Result
+
+- Added `openwepp-cli-totalwatsed3`.
+- Added native totalwatsed3 aggregation from PASS + WAT + optional
+  soil/element parquets.
+- Bound `Runoff` to PASS `runvol`; WAT `Q` remains diagnostic.
+- Preserved MOFE outlet-only `latqcc`.
+- Removed totalwatsed3 aggregation ownership from `openwepp-cli-watershed`.
+- Added focused red/green tests and a unit-registry lineage regression.
+- Ran the real arboreal-dendrite producer: `2192` rows emitted.
+- Ran the wepppy audit read: zero profile violations; closure residual remains
+  `57.409871 mm`, owned by T-C.
 
 ## Next Dispatch
 
 ```text
-Execute increment T-B of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
+Execute increment T-C of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
 ```
-
-## T-B Requirements
-
-- Add the dedicated `openwepp-cli-totalwatsed3` entrypoint.
-- Add or expose an openWEPP-native PASS parquet/adapter surface containing
-  canonical `runvol` and companion PASS metrics.
-- Implement hillslope-only area-weighted aggregation from PASS + WAT +
-  optional soil/element inputs.
-- Preserve the W-D schema repairs: exact hydrology fields in `m^3`, depth
-  aliases in `mm`, profile/interception fields, and outlet-only MOFE `latqcc`.
-- Remove or relocate the superseded `build_watershed_daily_rows_from_wat`
-  ownership from `openwepp-cli-watershed`.
-- Keep wepppyo3 `wepp_interchange` out of the openWEPP implementation.
-- Add red/green tests for PASS-vs-WAT runoff independence, MOFE outlet lateral
-  collapse, required schema/typed errors, and real arboreal-dendrite emission.
 
 ## T-C Requirements
 
@@ -82,10 +80,9 @@ Execute increment T-B of docs/work-packages/20260613-wshed01-watershed-routed-ou
 
 ## Watchpoints
 
-- `openwepp-cli-watershed.rs` is already above the 2000-line warning
-  threshold. T-B should avoid adding totalwatsed3 logic there.
-- `crates/openwepp-watershed-output/src/writers.rs` is above the 2000-line
-  warning threshold. T-B should prefer a dedicated module/crate path instead
-  of adding more writer logic there.
+- `openwepp-cli-watershed.rs` and
+  `crates/openwepp-watershed-output/src/writers.rs` are above the 2000-line
+  warning threshold but below the 3000-line split threshold. T-C should avoid
+  growing either unless a focused split is included.
 - No production wepppy edits are in scope. wepppy is semantic/audit evidence
   only unless a future package explicitly scopes cross-repo changes.

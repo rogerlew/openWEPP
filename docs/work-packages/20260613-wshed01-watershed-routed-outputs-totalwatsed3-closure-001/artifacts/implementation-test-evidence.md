@@ -1,6 +1,6 @@
 # Implementation Test Evidence
 
-Status: T-A executed
+Status: T-B executed
 
 Evidence mode: Ran + Static
 
@@ -298,3 +298,86 @@ T-A disposition:
 - T-A is complete for design/scope.
 - T-B owns the dedicated CLI implementation, openWEPP-native PASS lineage
   surface, and red/green tests.
+
+## T-B implementation and audit-read evidence
+
+Status: T-B executed
+
+Evidence mode: Ran + Static
+
+Implementation:
+
+- Added `crates/openwepp-runner/src/bin/openwepp-cli-totalwatsed3.rs`.
+- Added `crates/openwepp-runner/src/totalwatsed3.rs`.
+- Exported the new API through `crates/openwepp-runner/src/lib.rs`.
+- Added the `openwepp-cli-totalwatsed3` binary target in
+  `crates/openwepp-runner/Cargo.toml`.
+- Extended `crates/openwepp-watershed-output/src/writers.rs` so
+  totalwatsed3 row seeds can carry PASS-derived runoff, WAT diagnostics,
+  optional profile fields, and volume/depth fields without writer defaults.
+- Removed totalwatsed3 aggregation ownership from
+  `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`.
+- Updated `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs` so
+  `watershed_totalwatsed3.Runoff` is publication-only PASS-volume lineage.
+
+Red evidence:
+
+- `cargo test -p openwepp-runner --test totalwatsed3_cli_contract` failed
+  before implementation because `CARGO_BIN_EXE_openwepp-cli-totalwatsed3` was
+  not defined.
+
+Focused green evidence:
+
+- `cargo test -p openwepp-runner --test totalwatsed3_cli_contract`: `2`
+  passed.
+- `cargo test --test sim_contract_boundary_unit_registry`: `15` passed.
+
+Full gate evidence:
+
+- `cargo fmt --check`: pass.
+- `cargo clippy --workspace --all-targets -- -D warnings`: pass.
+- `cargo test --workspace`: pass.
+- `cargo deny check`: pass.
+- `git diff --check`: pass before final artifact reconciliation.
+
+Arboreal-dendrite T-B producer:
+
+```bash
+rm -rf /tmp/openwepp_wshed01_tb && mkdir -p /tmp/openwepp_wshed01_tb
+cargo run -p openwepp-runner --bin openwepp-cli-totalwatsed3 -- \
+  --input-dir /wc1/runs/ar/arboreal-dendrite/wepp/output/interchange \
+  --output /tmp/openwepp_wshed01_tb/totalwatsed3.parquet
+```
+
+Observed:
+
+- `CLITW3-I-001 wrote 2192 rows to
+  /tmp/openwepp_wshed01_tb/totalwatsed3.parquet`.
+- Pyarrow read: `2192` rows, `79` columns.
+- Required sampled fields had no nulls: `Area`, `runvol`, `Runoff`, `Q`, `P`,
+  `Precipitation`, `latqcc`, `Lateral Flow`, `Interception`,
+  `SoilWaterTotal`, `QRain`, and `QSnow`.
+- First row day selectors: `year=2000`, `julian=1`, `sim_day_index=1`.
+
+wepppy T-B audit-read:
+
+```bash
+/home/workdir/wepppy/.venv/bin/python \
+  /home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py \
+  /tmp/openwepp_wshed01_tb/totalwatsed3.parquet \
+  --output-dir /tmp/openwepp_wshed01_tb/audit \
+  --top-n 10
+```
+
+Observed:
+
+- `rows=2192`;
+- `closure_reconstructed_with_storage_total_mm=57.409871`;
+- `closure_reconstructed_with_storage_pct_of_precip=0.345805`;
+- `interception_reported_total_mm=0.000000`;
+- `profile_violations_days=fc_gt_porosity:0,wp_gt_fc:0,soilwater_gt_porosity:0,soilwater_lt_wp:0`.
+
+Disposition:
+
+T-B passed the dedicated producer and audit-read gates. T-C owns explaining and
+closing the remaining `57.409871 mm` independent water-balance residual.

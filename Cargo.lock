@@ -773,6 +773,7 @@ name = "openwepp-runner"
 version = "0.1.0"
 dependencies = [
  "arrow-array",
+ "arrow-schema",
  "openwepp-hillslope-orchestrator",
  "openwepp-hillslope-output",
  "openwepp-input-contract",

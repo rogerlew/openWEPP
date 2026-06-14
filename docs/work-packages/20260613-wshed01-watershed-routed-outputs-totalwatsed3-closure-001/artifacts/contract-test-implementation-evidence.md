@@ -1,6 +1,6 @@
 # Contract Test Implementation Evidence
 
-Status: T-A executed
+Status: T-B executed
 
 Evidence mode: Ran + Static
 
@@ -126,3 +126,37 @@ Required T-B tests defined by T-A:
   `totalwatsed3.parquet` without schema repair.
 
 T-A added no Rust tests because it is a no-production-code design increment.
+
+T-B tests added:
+
+- `crates/openwepp-runner/tests/totalwatsed3_cli_contract.rs`:
+  - proves the CLI fails closed with typed error `CLITW3-E-004` when required
+    PASS input is missing;
+  - builds a fixture where PASS `runvol` differs from WAT `Q * Area / 1000`
+    and verifies output `runvol`/`Runoff` come from PASS while `Q` remains the
+    WAT diagnostic depth;
+  - verifies MOFE `latqcc` keeps only the outlet OFE contribution.
+- `tests/integration/sim_contract_boundary_unit_registry.rs`:
+  `wshed01_totalwatsed3_runoff_unit_lineage_is_pass_volume_publication`
+  proves `watershed_totalwatsed3.Runoff` is a publication-only PASS-volume
+  depth rather than `hillslope_wat.Q` lineage.
+
+T-B red evidence:
+
+- `cargo test -p openwepp-runner --test totalwatsed3_cli_contract` failed
+  before production implementation because Cargo had no
+  `openwepp-cli-totalwatsed3` binary target to populate
+  `CARGO_BIN_EXE_openwepp-cli-totalwatsed3`.
+
+T-B green evidence:
+
+- `cargo test -p openwepp-runner --test totalwatsed3_cli_contract`: `2`
+  passed.
+- `cargo test --test sim_contract_boundary_unit_registry`: `15` passed.
+
+T-B held-for-T-C evidence:
+
+- The real arboreal-dendrite audit now reads the native output and reports
+  zero profile violations, but the closure residual is still `57.409871 mm`.
+  T-B therefore closes the implementation/test gate, not the package closure
+  gate.

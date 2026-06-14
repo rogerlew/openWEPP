@@ -1,6 +1,6 @@
 # WSHED01 — Watershed Routed Outputs / totalwatsed3 Closure
 
-Status: active - T-A executed, T-B queued
+Status: active - T-B executed, T-C queued
 
 Package type: staged implementation/closure package (FDHP01/MOFE01 execution
 shape: characterize-then-staged-increments, conservation as acceptance)
@@ -76,13 +76,16 @@ normal, valid state — so the lead hypothesis is a **parser defect** (reject
 against the parser code + legacy behavior in W-A. This is the *first* blocker,
 not necessarily the only one between here and totalwatsed3 closure.
 
-Current status after T-A: the no-impoundment parser blocker and the subsequent
+Current status after T-B: the no-impoundment parser blocker and the subsequent
 WS10 channel guard blocker are both cleared. W-D corrected keepable
 totalwatsed3 publication defects, but the independent closure audit still
 reports a `2950.498418 mm` whole-run residual. The operator-directed
 architecture pivot supersedes the W-D-REDO watershed-CLI route: T-A scoped
 `openwepp-cli-totalwatsed3` as a dedicated hillslope-only openWEPP-native CLI.
-Package closure remains blocked on T-B implementation and T-C audit closure.
+T-B implemented that dedicated CLI and reduced the real arboreal-dendrite
+audit residual to `57.409871 mm` (`0.345805%` of precipitation). Package
+closure remains active for T-C because the totalwatsed3 conservation identity
+has not yet closed at the established floor.
 
 ## Cross-repo note
 
@@ -145,7 +148,12 @@ closure).
   `artifacts/totalwatsed3-cli-scope.md` pins the hillslope-only input
   contract, PASS `runvol` independent operand, MOFE per-OFE collapse,
   openWEPP-native schema, red tests, and T-B/T-C breakdown.
-- T-B dedicated totalwatsed3 CLI implementation.
+- T-B dedicated totalwatsed3 CLI implementation: executed 2026-06-14.
+  `openwepp-cli-totalwatsed3` now reads hillslope interchange PASS/WAT
+  parquets plus optional soil/element parquets, publishes a 2192-row
+  `totalwatsed3.parquet` for arboreal-dendrite, uses PASS `runvol` for
+  `Runoff`, leaves WAT `Q` diagnostic, and preserves MOFE outlet-only
+  `latqcc`.
 - T-C totalwatsed3 closure at the established floor.
 
 ## Excluded scope / protected boundaries

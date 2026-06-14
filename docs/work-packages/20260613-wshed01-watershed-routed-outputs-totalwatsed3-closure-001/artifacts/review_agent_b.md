@@ -1,6 +1,6 @@
 # Review Agent B
 
-Status: T-A local review complete
+Status: T-B local review complete
 
 Evidence mode: Static
 
@@ -88,3 +88,33 @@ Residual risk:
 | # | Finding | Disposition | Rationale |
 |---|---|---|---|
 | - | None | accepted | T-A design gates are met; T-B owns contract-first implementation. |
+
+## T-B QA Review
+
+Evidence mode: Static + Ran
+
+Findings:
+
+No blocking T-B findings.
+
+QA observations:
+
+1. The T-B red test was real: the binary target was absent before production
+   implementation.
+2. The focused CLI contract covers typed missing-input failure and the
+   load-bearing PASS-vs-WAT runoff independence.
+3. The unit registry now prevents a future regression where
+   `watershed_totalwatsed3.Runoff` is recast as `hillslope_wat.Q` lineage.
+4. Full Rust gates passed after implementation.
+
+Residual risk:
+
+- The audit residual is still `57.409871 mm`. That is correctly carried into
+  T-C rather than waived.
+- `openwepp-cli-watershed.rs` and `writers.rs` remain line-count WARN files.
+
+## T-B Finding Disposition
+
+| # | Finding | Disposition | Rationale |
+|---|---|---|---|
+| - | None | accepted | T-B implementation and verification gates are met; package closure remains T-C. |

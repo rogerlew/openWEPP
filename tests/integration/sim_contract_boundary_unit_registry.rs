@@ -3,7 +3,7 @@ use std::collections::BTreeSet;
 use openwepp_hillslope_output::hillslope_wat::{InterchangeVersion, hillslope_wat_schema};
 use openwepp_sim_contract::units::{
     BoundaryUnitEntry, BoundaryUnitRegistry, BoundaryUnitRegistryError, DimensionClass,
-    DomainClass, OutputUnitEntry, OutputUnitRegistry, OutputUnitRegistryError,
+    DomainClass, OutputUnitAuthority, OutputUnitEntry, OutputUnitRegistry, OutputUnitRegistryError,
     TypedBoundaryRequirement, hphys0274_required_boundary_aliases,
 };
 use openwepp_watershed_output::writers::watershed_interchange_schemas;
@@ -503,6 +503,34 @@ fn hphys0278_dynamic_row_level_output_units_are_registry_governed() {
             .entry_for_output_column(schema_id, "value")
             .expect("dynamic value column should resolve in output unit registry");
         assert_eq!(entry.unit_label(), "row_field:units");
+    }
+}
+
+#[test]
+fn wshed01_totalwatsed3_runoff_unit_lineage_is_pass_volume_publication() {
+    let registry = OutputUnitRegistry::canonical_registry()
+        .expect("canonical output unit registry should construct");
+    let entry = registry
+        .entry_for_output_column("watershed_totalwatsed3", "Runoff")
+        .expect("totalwatsed3 Runoff output unit should resolve");
+
+    assert_eq!(entry.unit_label(), "mm");
+    match entry.authority() {
+        OutputUnitAuthority::PublicationOnly {
+            rationale,
+            contract_id,
+            invariant_id,
+        } => {
+            assert!(
+                rationale.contains("PASS runoff volume"),
+                "Runoff lineage rationale should name PASS volume, observed {rationale}"
+            );
+            assert_eq!(contract_id, "SC-WATBAL-001");
+            assert_eq!(invariant_id, "SC-WATBAL-001#INV-WATBAL-054");
+        }
+        OutputUnitAuthority::BoundaryRegistry { boundary_alias } => {
+            panic!("totalwatsed3 Runoff must not be boundary-backed by {boundary_alias}");
+        }
     }
 }
 

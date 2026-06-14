@@ -1,6 +1,6 @@
 # Line Count Governance Checklist
 
-Status: T-A executed
+Status: T-B executed
 
 Evidence mode: Ran
 
@@ -53,7 +53,7 @@ Observed line counts after W-D:
 |---|---:|---|
 | `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs` | 2072 | WARN; W-D only added new row-seed defaults. Avoid further growth unless binding truly belongs in the CLI. |
 | `crates/openwepp-runner/src/watershed_wat.rs` | 911 | Below WARN. |
-| `crates/openwepp-watershed-output/src/writers.rs` | 2043 | WARN; T-B should avoid growth or split before adding more writer logic. |
+| `crates/openwepp-watershed-output/src/writers.rs` | 2043 | WARN; subsequent increments should avoid growth or split before adding more writer logic. |
 | `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs` | 1327 | Below WARN. |
 
 Command:
@@ -71,5 +71,32 @@ T-A line-count disposition:
 - Existing WARN files remain T-B watchpoints:
   `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs` and
   `crates/openwepp-watershed-output/src/writers.rs`.
-- T-B should put dedicated totalwatsed3 logic in a new module/binary path
+- Subsequent implementation should put dedicated totalwatsed3 logic in a new module/binary path
   instead of growing the watershed CLI or watershed writer further.
+
+Observed line counts after T-B:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-runner/src/totalwatsed3.rs` | 1241 | New dedicated module below WARN. |
+| `crates/openwepp-runner/src/bin/openwepp-cli-totalwatsed3.rs` | 159 | New dedicated binary below WARN. |
+| `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs` | 2062 | WARN; T-B removed totalwatsed3 aggregation ownership but file remains above 2000. |
+| `crates/openwepp-watershed-output/src/writers.rs` | 2002 | WARN; T-B touched writer seed/output mapping. Split before further growth where practical. |
+| `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs` | 1330 | Below WARN. |
+
+Command:
+
+```bash
+wc -l crates/openwepp-runner/src/totalwatsed3.rs \
+  crates/openwepp-runner/src/bin/openwepp-cli-totalwatsed3.rs \
+  crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs \
+  crates/openwepp-watershed-output/src/writers.rs \
+  crates/openwepp-sim-contract/src/units_mod/output_catalog.rs
+```
+
+T-B line-count disposition:
+
+- No touched production file is near the 3000-line hard split threshold.
+- Two WARN files remain: `openwepp-cli-watershed.rs` and `writers.rs`.
+- T-C should avoid growing either file unless it includes a focused split or a
+  narrow, justified mapping change.

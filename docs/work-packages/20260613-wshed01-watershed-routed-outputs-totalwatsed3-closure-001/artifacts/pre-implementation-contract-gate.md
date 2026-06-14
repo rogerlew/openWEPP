@@ -1,6 +1,6 @@
 # Pre-Implementation Contract Gate
 
-Status: T-A executed
+Status: T-B executed
 
 Evidence mode: Static
 
@@ -66,3 +66,25 @@ Before T-B production edits:
 - Do not implement closure by substituting WAT `Q` for PASS `runvol`.
 - Do not import or depend on wepppyo3 `wepp_interchange`; it is semantic
   reference only.
+
+T-B gate result:
+
+- Added red tests before production implementation for the missing dedicated
+  binary and PASS/WAT independence.
+- Bound `Runoff` to PASS `runvol` in code and in the unit-registry lineage
+  test.
+- Preserved WAT `Q` as diagnostic, not as the `Runoff` operand.
+- Kept the implementation openWEPP-native; no wepppyo3 `wepp_interchange`
+  dependency was introduced.
+- Did not claim package closure while the real audit residual remains
+  `57.409871 mm`.
+
+Before T-C production edits:
+
+- Re-run the dedicated CLI and audit on arboreal-dendrite before changing
+  closure logic.
+- Treat the `57.409871 mm` residual as a current-scope conservation defect to
+  localize, unless source evidence proves the audit identity needs a
+  contract-level refinement.
+- Preserve independent operands: PASS `Runoff`, WAT flux/storage terms, and no
+  exact-zero/self-built closure acceptance.

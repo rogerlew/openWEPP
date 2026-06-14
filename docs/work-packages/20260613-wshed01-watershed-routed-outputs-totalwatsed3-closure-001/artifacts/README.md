@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: T-A executed - package active, T-B queued
+Status: T-B executed - package active, T-C queued
 
 Evidence and disposition artifacts for
 `20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001`.
@@ -30,3 +30,10 @@ architecture pivot: totalwatsed3 is a dedicated hillslope-only
 `openwepp-cli-totalwatsed3`. The new `totalwatsed3-cli-scope.md` pins PASS
 `runvol` as the independent `Runoff` operand, WAT storage/flux aggregation,
 MOFE outlet-only `latqcc`, the openWEPP-native schema, and the T-B/T-C gates.
+
+T-B implemented the dedicated CLI, native PASS/WAT aggregation, required
+typed-error and lineage tests, and unit-registry lineage for
+`watershed_totalwatsed3.Runoff`. The arboreal-dendrite run emits `2192`
+readable rows and the wepppy audit consumes them without schema repair. The
+package remains active for T-C because the current independent closure
+residual is `57.409871 mm`.

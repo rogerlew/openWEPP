@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: T-A executed
+Status: T-B executed
 
 Evidence mode: Static
 
@@ -102,6 +102,36 @@ T-A cross-repo files read only:
 - `/home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py`
 
 T-A external substrate sampled read only:
+
+- `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.pass.parquet`
+- `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.wat.parquet`
+- `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.soil.parquet`
+- `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.element.parquet`
+
+T-B write set:
+
+- `Cargo.lock`
+- `crates/openwepp-runner/Cargo.toml`
+- `crates/openwepp-runner/src/bin/openwepp-cli-totalwatsed3.rs`
+- `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`
+- `crates/openwepp-runner/src/lib.rs`
+- `crates/openwepp-runner/src/totalwatsed3.rs`
+- `crates/openwepp-runner/tests/totalwatsed3_cli_contract.rs`
+- `crates/openwepp-watershed-output/src/writers.rs`
+- `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs`
+- `tests/integration/sim_contract_boundary_unit_registry.rs`
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/package.md`
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/*.md`
+
+T-B temporary evidence root:
+
+- `/tmp/openwepp_wshed01_tb/`
+
+T-B cross-repo files read only:
+
+- `/home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py`
+
+T-B external substrate read only:
 
 - `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.pass.parquet`
 - `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.wat.parquet`

@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: T-A executed
+Status: T-B executed
 
 Evidence mode: Static
 
@@ -84,3 +84,24 @@ Contract implications carried into the T-arc:
   contract/metadata authority before implementation.
 - `totalwatsed3-cli-scope.md` is a design artifact only; it does not replace
   canonical `SC-*` authority for T-B production behavior.
+
+T-B contract/metadata implementation:
+
+- T-B did not change process physics or require a new PASS writer contract.
+  It consumes the already published openWEPP-native hillslope interchange
+  `H.pass.parquet` and `H.wat.parquet` files.
+- `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs` now records
+  `watershed_totalwatsed3.Runoff` as a publication-only depth derived from
+  independent PASS runoff volume over aggregate area, with authority
+  `SC-WATBAL-001#INV-WATBAL-054`.
+- `crates/openwepp-watershed-output/src/writers.rs` now carries separate
+  diagnostic WAT `Q` and PASS-derived `Runoff` operands so the published
+  schema no longer aliases runoff depth to WAT `Q`.
+- The dedicated CLI keeps the wepppy producer as semantic/audit reference
+  only; it does not depend on the wepppyo3 `wepp_interchange` crate.
+
+Contract implications carried into T-C:
+
+- The producer surface is now present and independently test-pinned.
+- T-C must close the remaining residual as a water-balance identity issue,
+  not by weakening the unit lineage or substituting WAT `Q` for PASS `runvol`.

@@ -1,12 +1,13 @@
 # Disposition
 
-Status: T-A executed; package active; T-B queued
+Status: T-B executed; package active; T-C queued
 
 Evidence mode: Ran + Static
 
-W-A, W-B, W-C, the keepable W-D publication repairs, and T-A design scope are
-complete for their scoped seams. The package remains active because
-totalwatsed3 closure still requires the dedicated T-B/T-C CLI path.
+W-A, W-B, W-C, the keepable W-D publication repairs, T-A design scope, and
+T-B dedicated CLI implementation are complete for their scoped seams. The
+package remains active because totalwatsed3 closure still requires T-C audit
+closure at the established floor.
 
 Disposition:
 
@@ -35,9 +36,19 @@ Disposition:
   `openwepp-cli-totalwatsed3` as a hillslope-only openWEPP-native CLI, with
   PASS `runvol` as `Runoff`, WAT storage/flux operands, outlet-only MOFE
   `latqcc`, no channel terms, and no wepppyo3 dependency.
+- T-B dedicated CLI implementation: executed. `openwepp-cli-totalwatsed3`
+  reads hillslope interchange PASS/WAT inputs, optional soil/element inputs,
+  publishes the native `totalwatsed3.parquet`, uses PASS `runvol` as the
+  `Runoff` operand, leaves WAT `Q` diagnostic, and removes totalwatsed3
+  aggregation ownership from the watershed CLI path.
+- T-B real-run behavior: arboreal-dendrite emits `2192` rows and the wepppy
+  audit reads the file without schema repair; profile violations are zero.
+- T-B held-for-next gate: the current independent audit residual is
+  `closure_reconstructed_with_storage_total_mm=57.409871`
+  (`0.345805%` of precipitation), so closure is not claimed until T-C.
 
 Next required increment:
 
 ```text
-Execute increment T-B of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
+Execute increment T-C of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
 ```

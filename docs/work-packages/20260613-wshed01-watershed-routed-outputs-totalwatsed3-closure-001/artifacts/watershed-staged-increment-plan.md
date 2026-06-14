@@ -1,6 +1,6 @@
 # Watershed Staged Increment Plan — Dispatch Artifact
 
-Status: active - T-A executed; T-B queued
+Status: active - T-B executed; T-C queued
 Author: Claude Code, 2026-06-13
 Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 `mofe-staged-increment-plan.md` (proven; agent memory
@@ -207,6 +207,28 @@ MOFE per-OFE collapse, openWEPP-native schema. Gate: produces totalwatsed3
 parquet on the MOFE01 arboreal-dendrite hillslope outputs; per-OFE collapse
 correct (no cross-OFE double-count); single-OFE/MOFE hillslope outputs
 unchanged (read-only consumer).
+
+T-B execution result (2026-06-14):
+
+- Added the dedicated `openwepp-cli-totalwatsed3` binary and native
+  aggregation module. The CLI consumes `H.pass.parquet` and `H.wat.parquet`
+  plus optional `H.soil.parquet`/`H.element.parquet`, and writes
+  `totalwatsed3.parquet` without routing through `openwepp-cli-watershed`.
+- Added red/green coverage for the missing binary, typed missing-input
+  failures, PASS `runvol` vs WAT `Q` independence, and MOFE outlet-only
+  `latqcc` collapse.
+- Updated the output writer and unit registry so exact hydrology fields remain
+  volume fields where declared, `Runoff` is a publication-only PASS-volume
+  depth, and WAT `Q` remains diagnostic.
+- Removed totalwatsed3 aggregation ownership from the watershed CLI path; the
+  dedicated CLI now owns WAT/PASS aggregation for this output.
+- Ran the producer on arboreal-dendrite interchange inputs. It wrote `2192`
+  rows to `/tmp/openwepp_wshed01_tb/totalwatsed3.parquet`; the wepppy audit
+  reads the output without schema repair and reports zero profile violations.
+- T-B is executed, but package closure is still queued for T-C: the current
+  independent audit residual is
+  `closure_reconstructed_with_storage_total_mm=57.409871`
+  (`0.345805%` of precipitation).
 
 ### Increment T-C — totalwatsed3 closure (the WBVAL06/6a deferral resolved)
 

@@ -26,7 +26,7 @@ use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
     SidecarRequirement, adapt_sidecar_bindings,
 };
-use openwepp_runner::{SidecarPolicy, build_watershed_daily_rows_from_wat};
+use openwepp_runner::SidecarPolicy;
 use openwepp_topology::{
     ContributorTriplet, TopologyContributors, TopologyGraph, TopologyNode, TopologyNodeKey,
     TopologyNodeKind, validate_pre_execution_topology,
@@ -495,18 +495,7 @@ fn run() -> Result<(), String> {
     }
 
     let row_seed = build_watershed_output_row_seed(&report);
-    let row_seeds = build_watershed_daily_rows_from_wat(
-        runfile
-            .hillslope_blocks_by_id
-            .values()
-            .map(|block| block.pass_file_path.as_path()),
-        row_seed,
-    )
-    .map_err(|error| {
-        format!("CLIWAT-E-041 failed building watershed WAT daily output rows: {error}")
-    })?
-    .unwrap_or_else(|| vec![row_seed]);
-    write_watershed_interchange_outputs(&runfile.outputs, &row_seeds)?;
+    write_watershed_interchange_outputs(&runfile.outputs, &[row_seed])?;
 
     Ok(())
 }
@@ -2053,6 +2042,7 @@ fn build_watershed_output_row_seed(
         tile_mm: 0.0,
         irrigation_mm: 0.0,
         baseflow_mm: 0.0,
+        ..WatershedInterchangeRowSeed::default()
     }
 }
 
