@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: W-A executed
+Status: W-B executed
 
 Evidence mode: Static
 
@@ -23,6 +23,20 @@ Production source files read only:
 Temporary evidence root:
 
 - `/tmp/openwepp_wshed01_wa/`
+
+W-B write set:
+
+- `docs/contracts/openwepp-watershed-runfile-contract.md`
+- `crates/openwepp-input-contract/src/parsers/watershed_impoundment.rs`
+- `tests/integration/infile_watershed_impoundment_parser_contract.rs`
+- `tests/fixtures/infile/watershed_impoundment/strict_zero_impoundments.imp`
+- `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs`
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/package.md`
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/*.md`
+
+W-B temporary evidence root:
+
+- `/tmp/openwepp_wshed01_wb/`
 
 Cross-repo files read only:
 

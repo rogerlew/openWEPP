@@ -1,40 +1,42 @@
 # Worker Handoff
 
-Status: W-A executed; W-B ready
+Status: W-B executed-hold; W-C ready
 
 Evidence mode: Ran + Static
 
 ## Current State
 
-W-A characterized the watershed CLI and scoped the remaining work. The package
-is not complete; implementation starts with W-B.
+W-A characterized the watershed CLI and scoped the remaining work. W-B cleared
+the no-impoundment parser seam. The package is not complete; implementation
+continues with W-C.
 
-The current blocker is localized:
+The W-B blocker is resolved:
 
 - `pw0.imp` declares no impoundments with `jpond=0`.
 - Legacy treats no-impoundment watersheds as valid.
-- openWEPP rejects `jpond=0` before structural-count reconciliation.
+- openWEPP now accepts `jpond=0` only when structural count is zero.
+- The real arboreal-dendrite run now reaches
+  `CLIWAT-E-020` / `WKERNEL-WS10-CHANNEL-E-003`.
 
 ## Next Dispatch
 
 ```text
-Execute increment W-B of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
+Execute increment W-C of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
 ```
 
-## W-B Requirements
+## W-C Requirements
 
-- Read `docs/specifications/science-contracts/AGENTS.md` before production
-  edits.
-- Add red tests for zero impoundments aligned with zero structural count.
-- Implement typed empty impoundment set semantics for `jpond=0`.
-- Preserve typed failures for malformed/negative/mismatched counts.
-- Rerun focused parser/CLI tests.
-- Rerun the arboreal-dendrite watershed CLI enough to prove it proceeds past
-  `CLIWAT-E-010`; record the next hard stop or the first routed output.
+- Start from the observed W-B hard stop:
+  `CLIWAT-E-020` / `WKERNEL-WS10-CHANNEL-E-003`.
+- Route the hillslope shards over the channel network to watershed-level routed
+  parquet outputs.
+- Preserve the W-B no-pond parser contract.
+- Reject placeholder/default-zero watershed publication as closure evidence.
+- Gate on watershed water-balance conservation with independent operands.
 
 ## Watchpoints
 
-- `openwepp-cli-watershed.rs` is already 2031 lines. If W-B or W-C must edit it
+- `openwepp-cli-watershed.rs` is already 2031 lines. If W-C must edit it
   substantially, keep the change narrow or plan a split.
 - W-C must not accept one-row/default-zero parquet output as closure.
 - W-D acceptance is totalwatsed3 closure with independent operands, not legacy

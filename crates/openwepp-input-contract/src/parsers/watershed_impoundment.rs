@@ -578,14 +578,6 @@ pub fn parse_watershed_impoundment_from_str(
             )
         };
 
-    if declared_count == 0 {
-        return Err(WatershedImpoundmentParseError::DomainError {
-            line: jpond_line,
-            field: "jpond",
-            value: declared_count.to_string(),
-            allowed: ">= 1",
-        });
-    }
     if declared_count > options.max_impoundments {
         return Err(WatershedImpoundmentParseError::DomainError {
             line: jpond_line,
@@ -626,6 +618,15 @@ pub fn parse_watershed_impoundment_from_str(
                 ));
             }
         }
+    }
+
+    if declared_count == 0 && options.expected_structural_count != Some(0) {
+        return Err(WatershedImpoundmentParseError::DomainError {
+            line: jpond_line,
+            field: "jpond",
+            value: declared_count.to_string(),
+            allowed: ">= 1 unless watershed structure declares npond=0",
+        });
     }
 
     let mut items = Vec::with_capacity(declared_count);

@@ -176,6 +176,93 @@ fn strict_mode_rejects_structural_count_mismatch() {
 }
 
 #[test]
+fn strict_mode_accepts_zero_impoundments_when_structure_declares_none() {
+    let options = WatershedImpoundmentParseOptions {
+        mode: ParseMode::Strict,
+        expected_structural_count: Some(0),
+        max_impoundments: 25,
+    };
+
+    let parsed = parse_watershed_impoundment_from_path(
+        fixture_path("strict_zero_impoundments.imp"),
+        options,
+    )
+    .expect("strict parser should accept typed empty impoundment set for npond=0");
+
+    assert_eq!(parsed.datver, Some(99.1));
+    assert!(parsed.datver_explicit);
+    assert_eq!(parsed.declared_count, 0);
+    assert_eq!(parsed.expected_structural_count, Some(0));
+    assert_eq!(parsed.parsed_count, 0);
+    assert_eq!(parsed.surplus_ignored_count, 0);
+    assert!(parsed.items.is_empty());
+    assert!(parsed.warnings.is_empty());
+}
+
+#[test]
+fn compatibility_mode_accepts_zero_impoundments_when_structure_declares_none() {
+    let options = WatershedImpoundmentParseOptions {
+        mode: ParseMode::Compatibility,
+        expected_structural_count: Some(0),
+        max_impoundments: 25,
+    };
+
+    let parsed = parse_watershed_impoundment_from_path(
+        fixture_path("strict_zero_impoundments.imp"),
+        options,
+    )
+    .expect("compatibility parser should accept typed empty impoundment set for npond=0");
+
+    assert_eq!(parsed.declared_count, 0);
+    assert_eq!(parsed.expected_structural_count, Some(0));
+    assert_eq!(parsed.parsed_count, 0);
+    assert!(parsed.items.is_empty());
+    assert!(parsed.warnings.is_empty());
+}
+
+#[test]
+fn zero_impoundments_without_structure_context_remains_domain_error() {
+    let err = parse_watershed_impoundment_from_path(
+        fixture_path("strict_zero_impoundments.imp"),
+        WatershedImpoundmentParseOptions::strict(),
+    )
+    .expect_err("bare strict parse should not relax jpond=0 without npond context");
+
+    assert!(matches!(
+        err,
+        WatershedImpoundmentParseError::DomainError { field: "jpond", .. }
+    ));
+    assert_eq!(err.contract_error_id(), "IMP-E-004");
+}
+
+#[test]
+fn zero_impoundments_rejects_positive_structural_count_as_mismatch() {
+    for mode in [ParseMode::Strict, ParseMode::Compatibility] {
+        let options = WatershedImpoundmentParseOptions {
+            mode,
+            expected_structural_count: Some(1),
+            max_impoundments: 25,
+        };
+
+        let err = parse_watershed_impoundment_from_path(
+            fixture_path("strict_zero_impoundments.imp"),
+            options,
+        )
+        .expect_err("jpond=0 must fail when the structure declares impoundments");
+
+        assert!(matches!(
+            err,
+            WatershedImpoundmentParseError::CountMismatch {
+                declared_jpond: 0,
+                expected_npond: 1,
+                ..
+            }
+        ));
+        assert_eq!(err.contract_error_id(), "IMP-E-007");
+    }
+}
+
+#[test]
 fn compatibility_mode_truncates_surplus_impoundments_with_warning() {
     let options = WatershedImpoundmentParseOptions {
         mode: ParseMode::Compatibility,

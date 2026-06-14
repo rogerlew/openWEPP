@@ -1,18 +1,28 @@
 # Contract Implementation Evidence
 
-Status: W-A executed
+Status: W-B executed
 
 Evidence mode: Static
 
-W-A did not modify canonical contracts or production code.
+W-B modified the watershed runfile contract and impoundment parser contract
+behavior.
 
-Contract implications captured for W-B/W-C:
+W-B contract implementation:
 
-- The current impoundment parser has an implicit `jpond >= 1` contract at
-  `watershed_impoundment.rs:581-588`; legacy authority shows this is too narrow
-  for no-impoundment watersheds.
-- W-B must amend parser behavior and tests so `jpond=0` is a typed empty set
-  only when structure expects zero impoundments.
+- `docs/contracts/openwepp-watershed-runfile-contract.md` now pins no-pond
+  semantics:
+  - `inputs.pw0_imp` remains required in schema v1,
+  - supported `.imp` files with `jpond=0` are valid typed empty sets only when
+    structure declares zero impoundments,
+  - positive structural counts fail as a typed count mismatch,
+  - bare parser use without structural count context does not relax `jpond=0`.
+- `crates/openwepp-input-contract/src/parsers/watershed_impoundment.rs` now
+  reconciles `declared_count` against `expected_structural_count` before the
+  bare `jpond >= 1` domain guard. This preserves fail-closed behavior for
+  non-numeric/negative/malformed counts and for mismatches.
+
+Contract implications carried into W-C:
+
 - W-C must preserve the watershed runfile output contract:
   `openwepp-watershed-runfile-contract.md:141-163` requires all 14 parquet
   outputs, including `totalwatsed3`.

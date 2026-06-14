@@ -1,20 +1,42 @@
 # Contract Test Implementation Evidence
 
-Status: W-A executed
+Status: W-B executed
 
-Evidence mode: Static
+Evidence mode: Ran + Static
 
-No tests were authored in W-A because the increment forbids production edits.
+W-A authored no tests because the increment forbade production edits. W-B
+implemented the required parser/CLI red tests.
 
-Required W-B tests:
+W-B tests added:
 
-- Add zero-impoundment parser fixtures for explicit datver + `jpond=0`.
-- Assert strict/compatibility success when `expected_structural_count=Some(0)`.
-- Assert typed mismatch when `expected_structural_count=Some(1)` and
-  `jpond=0`.
-- Preserve existing malformed-count and active-impoundment tests.
-- Add a watershed CLI behavior test that confirms arboreal-dendrite-style
-  no-impoundment input proceeds past the current `CLIWAT-E-010` seam.
+- `tests/fixtures/infile/watershed_impoundment/strict_zero_impoundments.imp`
+  with supported datver `99.1` and `jpond=0`.
+- Parser assertions:
+  - strict and compatibility success when
+    `expected_structural_count=Some(0)`,
+  - typed `IMP-E-007` mismatch when
+    `expected_structural_count=Some(1)` and `jpond=0`,
+  - bare strict parse still fails as `IMP-E-004`.
+- Existing malformed-count, active-payload, and runtime-seed tests preserved.
+- Watershed CLI regression:
+  `watershed_cli_accepts_explicit_zero_impoundment_file_when_structure_has_none`
+  proves the CLI accepts an explicit `jpond=0` input when structure has no
+  impoundments and does not emit `CLIWAT-E-010`.
+
+Red evidence:
+
+- `cargo test --test infile_watershed_impoundment_parser_contract zero_impoundments`
+  failed before production edits: three new assertions hit the old
+  `DomainError { field: "jpond", allowed: ">= 1" }`.
+
+Green evidence:
+
+- `cargo test --test infile_watershed_impoundment_parser_contract`: `18`
+  passed.
+- `cargo test -p openwepp-runner --test watershed_cli_behavior_contract watershed_cli_accepts_explicit_zero_impoundment_file_when_structure_has_none`:
+  `1` passed.
+- `cargo test -p openwepp-watershed-orchestrator watershed_impoundment_runtime_seed`:
+  `3` passed.
 
 Required W-C tests:
 

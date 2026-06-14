@@ -119,6 +119,17 @@ Legacy template lineage for required `pw0.*` inputs and hillslope pass block:
 
 - `/home/workdir/wepppy/wepp_runner/templates/watershed.templatec`
 
+Impoundment no-pond semantics:
+
+- `inputs.pw0_imp` remains required in schema `openwepp-watershed-runfile-v1`.
+- When `pw0_str` declares zero impoundment elements, an explicit `.imp` file
+  with supported datver and `jpond = 0` is a valid typed empty impoundment set.
+- When `pw0_str` declares one or more impoundment elements, `jpond = 0` is a
+  typed count-mismatch error.
+- A bare `.imp` parse without structural count context does not use this
+  no-pond relaxation; malformed, negative, non-numeric, and unsupported
+  `jpond`/`datver` values remain typed parse errors.
+
 ## Legacy Discovery Compatibility Mode
 
 When launched with `--legacy-sidecar-discovery`, runtime checks for these

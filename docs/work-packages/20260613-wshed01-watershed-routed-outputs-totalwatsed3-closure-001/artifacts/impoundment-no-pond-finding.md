@@ -104,3 +104,16 @@ zero-impoundment watershed. W-B should decide explicitly whether a missing
 `.imp` when `impoundment_count == 0` is accepted (legacy: yes, never read) or
 still required — and pin it in the contract, so the no-pond handling is
 complete, not just the present-file variant.
+
+## W-B Disposition (2026-06-14)
+
+W-B chose the narrow schema-v1 correction:
+
+- `inputs.pw0_imp` remains required by
+  `openwepp-watershed-runfile-contract.md`.
+- A supported explicit `.imp` file with `jpond=0` is valid only when the
+  watershed structure declares zero impoundments.
+- Missing `.imp` acceptance for zero-impoundment watersheds is a possible
+  future runfile-contract change, not part of W-B. This avoids silently
+  changing required input-file binding semantics while clearing the
+  arboreal-dendrite blocker.

@@ -1,6 +1,6 @@
 # Watershed Staged Increment Plan — Dispatch Artifact
 
-Status: active - W-A executed; W-B queued
+Status: active - W-B executed-hold; W-C queued
 Author: Claude Code, 2026-06-13
 Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 `mofe-staged-increment-plan.md` (proven; agent memory
@@ -67,13 +67,27 @@ W-A execution result (2026-06-13):
 - Mapped the routing, output writer, and totalwatsed3 audit seams.
 - W-B is the next implementation increment.
 
+W-B execution result (2026-06-14):
+
+- Amended the watershed runfile contract to pin explicit no-impoundment
+  semantics: `inputs.pw0_imp` remains required in schema v1, but supported
+  `.imp` files with `jpond=0` are valid typed empty impoundment sets when
+  `pw0_str` declares zero impoundments.
+- Added red/green parser and watershed CLI tests for explicit `jpond=0`.
+- Implemented count reconciliation before the bare `jpond >= 1` guard, so
+  `expected_structural_count=Some(0)` admits an empty item set, positive
+  structural counts fail as `IMP-E-007`, and bare parses still fail as
+  `IMP-E-004`.
+- Re-ran the arboreal-dendrite watershed CLI. It now proceeds past
+  `CLIWAT-E-010` and reaches the next hard stop:
+  `CLIWAT-E-020` / `WKERNEL-WS10-CHANNEL-E-003`, with zero output files.
+- W-C is the next implementation increment.
+
 ## Subsequent increments (refined by W-A; provisional)
 
-- **W-B — impoundment no-pond handling**: if a parser defect, accept `jpond=0`
-  as a typed empty impoundment set (contract-first; no silent default; typed
-  guard preserved for genuinely malformed `.imp`). Gate: arboreal-dendrite
-  watershed CLI proceeds past the impoundment parse; existing impoundment
-  fixtures non-regressed.
+- **W-B — impoundment no-pond handling**: executed-hold. Gate met:
+  arboreal-dendrite watershed CLI proceeds past the impoundment parse, and
+  existing impoundment fixtures are non-regressed.
 - **W-C — watershed routing + output**: route the hillslope shards over the
   channel network to a watershed-level routed parquet (interchange schema).
   Gate: watershed water balance conserves against the closed hillslope inputs

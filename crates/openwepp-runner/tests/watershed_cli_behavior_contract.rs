@@ -118,6 +118,42 @@ fn watershed_cli_emits_watershed_output_parquet_files() {
 }
 
 #[test]
+fn watershed_cli_accepts_explicit_zero_impoundment_file_when_structure_has_none() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("ws_cli_zero_impoundments");
+    write_hbp_fixture(
+        run_dir.join("H1.hbp"),
+        1,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile(&run_dir, &[1]);
+    prepare_output_guard_fixture(&run_dir);
+    fs::write(run_dir.join("pw0.imp"), "99.1\n0\n")
+        .expect("zero-impoundment fixture should be writable");
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "watershed CLI should accept explicit jpond=0 when structure declares no impoundments; stderr={stderr}"
+    );
+    assert!(
+        !stderr.contains("CLIWAT-E-010"),
+        "no-impoundment input should proceed past the impoundment parse seam; stderr={stderr}"
+    );
+    assert_all_watershed_outputs_exist(&output_dir);
+}
+
+#[test]
 fn wshed03_watershed_cli_end_to_end_vector_requires_non_stub_parquet_emission() {
     let _execution_guard = watershed_execution_lock()
         .lock()
