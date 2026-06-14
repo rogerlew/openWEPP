@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: W-D executed-hold
+Status: T-A executed
 
 Evidence mode: Ran + Static
 
@@ -37,6 +37,12 @@ Evidence mode: Ran + Static
 | W-D comparator/heavy-runner subagent | NOT RUN | The comparator-suite runner was not used; W-D ran command-level configured/legacy audits directly in this session. |
 | W-D final fmt/clippy/test/deny | PASS | `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test --workspace`; `cargo deny check`. |
 | W-D final diff/doc lint | PASS | `git diff --check`: no findings; `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `27` files scanned, `0` errors, `0` warnings. |
+| T-A no production edits | PASS | Only package documentation/artifact files edited. |
+| T-A authoritative semantics read | PASS | Read `/home/workdir/wepppy/wepppy/wepp/interchange/totalwatsed3.py` and `/home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py`; recorded cited semantics in `totalwatsed3-cli-scope.md`. |
+| T-A schema sampling | PASS | Sampled `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.pass.parquet`, `H.wat.parquet`, `H.soil.parquet`, and `H.element.parquet` with pyarrow; row counts and key columns recorded. |
+| T-A CLI scope artifact | PASS | `totalwatsed3-cli-scope.md` defines inputs, aggregation semantics, openWEPP-native schema, independent closure identity, red tests, and T-B/T-C breakdown. |
+| T-A production Rust gates | NOT RUN | T-A is a no-production-code design increment. |
+| T-A scoped markdown lint | PASS | `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `28` files scanned, `0` errors, `0` warnings. |
 
 Subagent note: comparator/heavy-batch subagent was not used because W-A required
 only a single current-behavior CLI run and static source characterization.
@@ -49,3 +55,6 @@ was unavailable. No totalwatsed3 audit is claimed for W-C.
 For W-D, no comparator-suite subagent was used. Configured and legacy-discovery
 CLI/audit evidence was run directly and recorded in
 `totalwatsed3-wd-audit-finding.md`.
+For T-A, no comparator-suite subagent was used because the increment is
+design-only. Static source reads and a pyarrow schema sample were run directly
+in this session.

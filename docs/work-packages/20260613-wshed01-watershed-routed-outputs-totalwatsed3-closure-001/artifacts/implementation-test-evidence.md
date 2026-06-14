@@ -1,6 +1,6 @@
 # Implementation Test Evidence
 
-Status: W-D executed-hold
+Status: T-A executed
 
 Evidence mode: Ran + Static
 
@@ -261,3 +261,40 @@ W-D fixed real producer defects but failed the current-scope conservation gate.
 The remaining blocker is independent daily PASS `runvol` lineage. The current
 producer still fills `runvol` from WAT `Q`, so `runoff_consistency_mm` is a
 self-consistency check and cannot prove totalwatsed3 conservation.
+
+## T-A design evidence
+
+Status: T-A executed
+
+Evidence mode: Static + Ran
+
+T-A produced `totalwatsed3-cli-scope.md` and made no production code edits.
+
+Static evidence read:
+
+- `/home/workdir/wepppy/wepppy/wepp/interchange/totalwatsed3.py`: schema,
+  PASS aggregation, WAT aggregation, optional soil/element aggregation, depth
+  derivation, baseflow diagnostics, and streamflow derivation.
+- `/home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py`: required
+  audit columns, depth reconstruction, storage bases, and closure identity.
+- `crates/openwepp-hillslope-output/src/contracts.rs`: current pass output is
+  required as `.hbp`; optional WAT/soil/element outputs are parquet.
+- `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`:
+  current HBP event payload writes six event volume slots as zero.
+- `crates/openwepp-input-contract/src/parsers/hbp/payload_validator.rs`:
+  current parser consumes those slots without exposing PASS `runvol`.
+- `crates/openwepp-runner/src/watershed_wat.rs`: superseded W-D path uses pass
+  filenames only to find WAT siblings.
+
+Ran evidence:
+
+- Sampled `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/` parquet
+  schemas with pyarrow. Observed `H.pass.parquet` (`78912` rows),
+  `H.wat.parquet` (`271808` rows), `H.soil.parquet` (`271808` rows), and
+  `H.element.parquet` (`74380` rows).
+
+T-A disposition:
+
+- T-A is complete for design/scope.
+- T-B owns the dedicated CLI implementation, openWEPP-native PASS lineage
+  surface, and red/green tests.

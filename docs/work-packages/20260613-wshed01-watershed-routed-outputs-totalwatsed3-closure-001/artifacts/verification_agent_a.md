@@ -1,6 +1,6 @@
 # Verification Agent A
 
-Status: W-D local verification complete; increment held
+Status: T-A local verification complete
 
 Evidence mode: Ran + Static
 
@@ -43,3 +43,26 @@ Residual blocker:
   `closure_reconstructed_with_storage_total_mm=2950.498418` for both W-D
   outputs. The remaining missing input is independent daily PASS `runvol`
   lineage, so W-D is verified as `executed-hold`, not complete.
+
+## T-A Verification Record
+
+Evidence mode: Static + Ran
+
+Verified:
+
+- `totalwatsed3-cli-scope.md` exists and covers all T-A required sections:
+  inputs, aggregation semantics, output schema, independent closure identity,
+  red tests, and T-B/T-C breakdown.
+- The artifact cites the correct wepppy producer path:
+  `/home/workdir/wepppy/wepppy/wepp/interchange/totalwatsed3.py`.
+- The artifact records the wepppy audit closure semantics from
+  `/home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py`.
+- The pyarrow schema sample was run against the arboreal-dendrite
+  `H.pass.parquet`, `H.wat.parquet`, `H.soil.parquet`, and
+  `H.element.parquet` files.
+- No production source files were edited.
+
+Residual blocker:
+
+- T-B must implement the dedicated CLI and PASS `runvol` lineage before T-C can
+  claim totalwatsed3 closure.

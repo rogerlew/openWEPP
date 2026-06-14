@@ -1,6 +1,6 @@
 # Contract Test Implementation Evidence
 
-Status: W-D executed-hold
+Status: T-A executed
 
 Evidence mode: Ran + Static
 
@@ -105,5 +105,24 @@ W-D green evidence:
 W-D held gate:
 
 - The real configured and legacy-discovery totalwatsed3 audits still fail
-  conservation closure with `2950.498418 mm` whole-run residual. W-D-REDO must
-  add independent daily PASS `runvol` lineage and associated tests.
+  conservation closure with `2950.498418 mm` whole-run residual. The T-arc
+  supersedes W-D-REDO-in-watershed-CLI; T-B must add independent daily PASS
+  `runvol` lineage and associated tests in the dedicated CLI.
+
+Required T-B tests defined by T-A:
+
+- Binary/contract test: `openwepp-cli-totalwatsed3` exists and rejects missing
+  required PASS/WAT inputs with typed errors.
+- Schema test: emitted `totalwatsed3.parquet` includes audit-required columns,
+  exact hydrology volumes in `m^3`, and depth aliases in `mm`.
+- Operand-lineage test: fixture PASS `runvol` differs from WAT
+  `Q * Area / 1000`; output `runvol` and `Runoff` must come from PASS while
+  WAT `Q` remains diagnostic.
+- MOFE collapse test: internal non-outlet `latqcc` is excluded, outlet OFE
+  `latqcc` is retained, and `QOFE` is summed by area-weighted volume.
+- Optional-field test: missing `Interception` publishes `0.0`; present
+  `Interception` and profile fields are area-weighted from WAT.
+- Real-run test: arboreal-dendrite inputs produce a readable
+  `totalwatsed3.parquet` without schema repair.
+
+T-A added no Rust tests because it is a no-production-code design increment.

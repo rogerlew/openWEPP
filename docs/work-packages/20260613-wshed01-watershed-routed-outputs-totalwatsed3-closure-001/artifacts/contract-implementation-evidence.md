@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: W-D executed-hold
+Status: T-A executed
 
 Evidence mode: Static
 
@@ -72,11 +72,15 @@ W-D contract/metadata implementation:
   lateral aggregation rule for WAT-backed watershed publication and carries
   optional WAT profile/interception fields into row seeds.
 
-Contract implications carried into W-D-REDO:
+Contract implications carried into the T-arc:
 
 - W-D did not amend process-physics contracts because it corrected
   publication lineage and output unit metadata only.
 - The remaining closure blocker requires canonical daily PASS `runvol`
-  authority. If W-D-REDO exposes new HBP/PASS payload fields or changes PASS
-  publication semantics, update the relevant contract/metadata authority
-  before implementation.
+  authority. T-A scopes this as dedicated `openwepp-cli-totalwatsed3`
+  implementation work, not watershed-CLI work.
+- If T-B exposes new HBP/PASS payload fields, adds a PASS parquet output
+  contract, or changes PASS publication semantics, update the relevant
+  contract/metadata authority before implementation.
+- `totalwatsed3-cli-scope.md` is a design artifact only; it does not replace
+  canonical `SC-*` authority for T-B production behavior.

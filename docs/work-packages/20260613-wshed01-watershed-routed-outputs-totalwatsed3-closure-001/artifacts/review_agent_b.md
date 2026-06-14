@@ -1,6 +1,6 @@
 # Review Agent B
 
-Status: W-D local review complete; increment held
+Status: T-A local review complete
 
 Evidence mode: Static
 
@@ -54,7 +54,37 @@ Residual risk:
 
 | # | Finding | Disposition | Rationale |
 |---|---|---|---|
-| 1 | Closure proof still WAT-self-consistent | accepted / blocking | W-D-REDO is queued for independent PASS runoff lineage. |
+| 1 | Closure proof still WAT-self-consistent | accepted / blocking | T-B is queued for independent PASS runoff lineage in the dedicated CLI. |
 | 2 | Optional mixed nulls risk silent coercion | fixed | Added typed rejection path and focused unit coverage. |
 | 3 | Final gates pending at review time | fixed | Full gate suite ran and passed after artifact updates. |
 | 4 | Mixed-null parquet fixture absent | deferred | Real CLI/audit parquet path is covered; dedicated edge fixture remains follow-on hardening. |
+
+## T-A QA Review
+
+Evidence mode: Static + Ran
+
+Findings:
+
+No blocking T-A findings.
+
+QA observations:
+
+1. T-A did not edit production source and therefore does not need the Rust
+   closure loop for completion.
+2. The scope artifact defines measurable T-B red tests instead of leaving a
+   diagnostic-only handoff.
+3. The artifact uses current source evidence for the PASS-lineage gap and a
+   pyarrow schema sample for the arboreal-dendrite interchange shape.
+4. The live next increment is T-B; W-D-REDO remains historical/superseded
+   watershed-CLI framing.
+
+Residual risk:
+
+- T-B may require a new or amended output contract for PASS parquet emission.
+  T-A flags this but does not amend `SC-*` authority because it is design-only.
+
+## T-A Finding Disposition
+
+| # | Finding | Disposition | Rationale |
+|---|---|---|---|
+| - | None | accepted | T-A design gates are met; T-B owns contract-first implementation. |

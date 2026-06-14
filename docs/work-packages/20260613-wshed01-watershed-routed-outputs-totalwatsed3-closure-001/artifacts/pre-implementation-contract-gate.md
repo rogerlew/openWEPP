@@ -1,6 +1,6 @@
 # Pre-Implementation Contract Gate
 
-Status: W-D executed-hold
+Status: T-A executed
 
 Evidence mode: Static
 
@@ -45,5 +45,24 @@ W-D gate result:
   `watershed_totalwatsed3.Interception`.
 - W-D corrected publication defects without changing process-physics contract
   authority.
-- W-D did not meet the conservation gate; W-D-REDO owns daily PASS `runvol`
-  authority before any closure claim.
+- W-D did not meet the conservation gate; daily PASS `runvol` authority is
+  still required before any closure claim.
+
+T-A gate result:
+
+- `totalwatsed3-cli-scope.md` pins the operator-directed scope for a dedicated
+  openWEPP-native, hillslope-only `openwepp-cli-totalwatsed3`.
+- No production code or canonical science contract was edited in T-A.
+- T-B must be contract-first if it exposes new PASS parquet/HBP payload
+  semantics or changes output contract obligations.
+
+Before T-B production edits:
+
+- Read `docs/specifications/science-contracts/AGENTS.md` because T-B will
+  touch kernel-adjacent hydrology publication and closure operands.
+- Add red tests for PASS `runvol` vs WAT `Q` independence, MOFE outlet-only
+  `latqcc`, required schema units, typed missing-input errors, and real
+  arboreal-dendrite emission.
+- Do not implement closure by substituting WAT `Q` for PASS `runvol`.
+- Do not import or depend on wepppyo3 `wepp_interchange`; it is semantic
+  reference only.

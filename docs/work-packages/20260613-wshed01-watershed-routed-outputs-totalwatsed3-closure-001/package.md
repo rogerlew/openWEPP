@@ -1,16 +1,18 @@
 # WSHED01 — Watershed Routed Outputs / totalwatsed3 Closure
 
-Status: active - W-D executed-hold, W-D-REDO queued
+Status: active - T-A executed, T-B queued
 
 Package type: staged implementation/closure package (FDHP01/MOFE01 execution
 shape: characterize-then-staged-increments, conservation as acceptance)
 
 ## Objective
 
-Produce **watershed-level routed outputs** from the closed MOFE01 hillslope
-per-OFE pass shards, and close the **end-to-end totalwatsed3 water-balance
-audit** on that routed output — the acceptance surface deferred since
-WBVAL06/6a. ROADMAP queue item 1.
+Produce the closed **totalwatsed3 water-balance audit** from the closed MOFE01
+hillslope per-OFE pass/WAT shards. W-A through W-D also cleared and classified
+watershed-CLI routed-output seams, but the operator-directed architecture
+pivot makes totalwatsed3 a hillslope-only dedicated CLI, not a channel-routed
+watershed output. This closes the acceptance surface deferred since WBVAL06/6a.
+ROADMAP queue item 1.
 
 Architecture (revised 2026-06-14 — see decision below): totalwatsed3 is an
 **openWEPP-native CLI** (`openwepp-cli-totalwatsed3`) that consumes the
@@ -24,7 +26,8 @@ crate (which stays wepp-legacy-only).
 ## Architecture decision (operator-directed 2026-06-14): totalwatsed3 is its own openWEPP-native CLI
 
 totalwatsed3 is a **hillslope-only** water-balance aggregation (confirmed
-against the authoritative producer `wepppy/wepp/interchange/totalwatsed3.py`:
+against the authoritative producer
+`/home/workdir/wepppy/wepppy/wepp/interchange/totalwatsed3.py`:
 area-weighted over hillslopes from `H.pass`/`H.wat`/`H.soil`/`H.element`;
 MOFE-aware per-OFE collapse — `Runoff` from PASS `runvol`, latqcc
 outlet-OFE-only, QOFE summed; **no channel routing, no channel loss/storage**).
@@ -73,29 +76,31 @@ normal, valid state — so the lead hypothesis is a **parser defect** (reject
 against the parser code + legacy behavior in W-A. This is the *first* blocker,
 not necessarily the only one between here and totalwatsed3 closure.
 
-Current status after W-D: the no-impoundment parser blocker and the subsequent
+Current status after T-A: the no-impoundment parser blocker and the subsequent
 WS10 channel guard blocker are both cleared. W-D corrected keepable
 totalwatsed3 publication defects, but the independent closure audit still
-reports a `2950.498418 mm` whole-run residual. Package closure remains blocked
-on W-D-REDO daily PASS `runvol` lineage and totalwatsed3 audit closure.
+reports a `2950.498418 mm` whole-run residual. The operator-directed
+architecture pivot supersedes the W-D-REDO watershed-CLI route: T-A scoped
+`openwepp-cli-totalwatsed3` as a dedicated hillslope-only openWEPP-native CLI.
+Package closure remains blocked on T-B implementation and T-C audit closure.
 
 ## Cross-repo note
 
-This rung spans **openWEPP** (watershed CLI produces routed output) and
-**wepppy** (totalwatsed3 audits it). The openWEPP side is the implementation;
-the totalwatsed3 audit is the acceptance surface and may run in the wepppy
-`.venv`. Keep the openWEPP package authoritative for the watershed-output
-implementation; record the totalwatsed3 audit as cross-repo validation
-evidence. Do not author wepppy changes from this package without explicit
-scope — if totalwatsed3 needs a wepppy change to consume openWEPP watershed
-output, name it as a cross-repo follow-on.
+This rung spans **openWEPP** (dedicated native totalwatsed3 producer) and
+**wepppy** (semantic reference and audit harness). The openWEPP side is the
+implementation; the totalwatsed3 audit is the acceptance surface and may run
+in the wepppy `.venv`. Keep the openWEPP package authoritative for the native
+producer; record the wepppy audit as cross-repo validation evidence. Do not
+author wepppy changes from this package without explicit scope. If the audit
+needs a consumer adjustment for a valid openWEPP-native schema, name it as a
+cross-repo follow-on.
 
 ## Comparator posture
 
 Per ADR-0017 and the MOFE01 calibration: legacy is a flag, not a target.
 Acceptance is **conservation closure** — the totalwatsed3 identity closing at
-the established noise/expected floor on routed output, and the watershed-level
-water balance conserving against the (already closed) hillslope inputs.
+the established noise/expected floor on hillslope-only aggregated output with
+independent PASS `runvol` runoff and WAT storage/flux operands.
 totalwatsed3 magnitude vs legacy is the flag; the ±10–25% per-OFE magnitude
 divergence (`MOFE-MAGPARITY01`) carries forward as expected divergence.
 
@@ -136,8 +141,12 @@ closure).
   interception now publish into `totalwatsed3`; profile violations are zero.
   The conservation gate is still held on missing independent daily PASS
   `runvol` lineage.
-- W-D-REDO daily PASS `runvol` lineage and totalwatsed3 closure at the
-  established floor.
+- T-A dedicated totalwatsed3 CLI design and scope: executed 2026-06-14.
+  `artifacts/totalwatsed3-cli-scope.md` pins the hillslope-only input
+  contract, PASS `runvol` independent operand, MOFE per-OFE collapse,
+  openWEPP-native schema, red tests, and T-B/T-C breakdown.
+- T-B dedicated totalwatsed3 CLI implementation.
+- T-C totalwatsed3 closure at the established floor.
 
 ## Excluded scope / protected boundaries
 
@@ -151,10 +160,11 @@ closure).
 
 ## Acceptance / exit criteria
 
-- `openwepp-cli-watershed` runs end-to-end on arboreal-dendrite (no-impoundment
-  state handled with a typed contract), producing watershed routed output.
-- The totalwatsed3 identity closes on that output at the established floor;
-  watershed water balance conserves against the closed hillslope inputs.
+- `openwepp-cli-totalwatsed3` runs end-to-end on arboreal-dendrite hillslope
+  interchange inputs.
+- The totalwatsed3 identity closes on that output at the established floor
+  using independent operands: PASS `runvol` for `Runoff`, WAT flux/storage
+  terms for the remaining water-balance fields, and no channel terms.
 - Contract-derived red/green tests; conservation identities on independent
   operands; truthful evidence labels.
 - On closure: ROADMAP item 1 removed, README execution-log updated, handoff
@@ -194,7 +204,7 @@ structure files, stop and record the scope change.
 - `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`,
   `crates/openwepp-watershed-orchestrator/`, `crates/openwepp-watershed-output/`,
   `crates/openwepp-input-contract/src/parsers/watershed_impoundment.rs`.
-- wepppy totalwatsed3: `wepppy/wepp/interchange/totalwatsed3.py`,
+- wepppy totalwatsed3: `wepppy/wepppy/wepp/interchange/totalwatsed3.py`,
   `tools/totalwatsed3_daily_closure_audit.py` (WBVAL06/6a lineage).
 - Substrate `/wc1/runs/ar/arboreal-dendrite/wepp/` (HBP shards + chan.inp + pw0).
 

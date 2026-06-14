@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: W-D executed-hold
+Status: T-A executed
 
 Evidence mode: Static
 
@@ -82,3 +82,28 @@ W-D cross-repo files read only:
 
 - `/home/workdir/wepppy/wepppy/wepp/interchange/totalwatsed3.py`
 - `/home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py`
+
+T-A write set:
+
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/package.md`
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/*.md`
+
+T-A production source read only:
+
+- `crates/openwepp-hillslope-output/src/contracts.rs`
+- `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`
+- `crates/openwepp-input-contract/src/parsers/hbp/payload_validator.rs`
+- `crates/openwepp-runner/src/watershed_wat.rs`
+- `crates/openwepp-watershed-output/src/writers.rs`
+
+T-A cross-repo files read only:
+
+- `/home/workdir/wepppy/wepppy/wepp/interchange/totalwatsed3.py`
+- `/home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py`
+
+T-A external substrate sampled read only:
+
+- `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.pass.parquet`
+- `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.wat.parquet`
+- `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.soil.parquet`
+- `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.element.parquet`

@@ -1,6 +1,6 @@
 # Verification Agent B
 
-Status: W-D local verification complete; increment held
+Status: T-A local verification complete
 
 Evidence mode: Static
 
@@ -28,9 +28,8 @@ Verified:
 
 - W-D does not claim completion while a current-scope conservation gate is
   failing.
-- `gate-results.md`, `disposition.md`, `worker-handoff.md`, and
-  `watershed-staged-increment-plan.md` carry W-D as `executed-hold` with
-  W-D-REDO queued.
+- At W-D closeout, the artifacts carried W-D as `executed-hold` with
+  W-D-REDO queued. T-A supersedes that route with T-B/T-C.
 - The W-D audit finding distinguishes keepable publication repairs from the
   remaining independent PASS `runvol` blocker.
 - Review findings were dispositioned: writer coverage, outlet lateral coverage,
@@ -41,5 +40,27 @@ Verified:
 Residual governance note:
 
 - `openwepp-cli-watershed.rs` and `writers.rs` are above the 2000-line warning
-  threshold but below the 3000-line refactor threshold. W-D-REDO should avoid
-  further growth or split touched logic before it crosses the hard threshold.
+  threshold but below the 3000-line refactor threshold. T-B should avoid
+  further growth there or split touched logic before it crosses the hard
+  threshold.
+
+## T-A Governance Verification
+
+Evidence mode: Static
+
+Verified:
+
+- T-A is not marked complete by deferring a current-scope gate. Its required
+  gate is the design/scope artifact, and that artifact is present.
+- Package status, staged plan, disposition, and handoff point to T-B as the
+  next live increment.
+- The W-D closure failure remains recorded and is not reclassified as passed.
+- The superseded W-D-REDO watershed-CLI route is not the active dispatch path.
+- No comparator subagent was used; T-A is design-only and required no heavy
+  comparator batch.
+
+Residual governance note:
+
+- T-B must perform contract-first implementation. If the PASS lineage requires
+  new HBP/PASS payload fields or a PASS parquet output obligation, T-B must
+  amend canonical authority before production edits close.

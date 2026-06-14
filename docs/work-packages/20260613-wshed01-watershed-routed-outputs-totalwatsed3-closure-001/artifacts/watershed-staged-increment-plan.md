@@ -1,6 +1,6 @@
 # Watershed Staged Increment Plan — Dispatch Artifact
 
-Status: active - W-D executed-hold; W-D-REDO queued
+Status: active - T-A executed; T-B queued
 Author: Claude Code, 2026-06-13
 Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 `mofe-staged-increment-plan.md` (proven; agent memory
@@ -8,9 +8,11 @@ Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 
 ## Universal rules (every increment)
 
-- **Conservation is acceptance**: the totalwatsed3 identity + watershed-level
-  water balance must close at the established floor on routed output. Identity
-  checks use **independent operands** — no 0==0 / self-built / alias closure
+- **Conservation is acceptance**: the totalwatsed3 identity must close at the
+  established floor on the active architecture's output surface. For the T-arc
+  that surface is hillslope-only dedicated CLI output, not channel-routed
+  watershed output. Identity checks use **independent operands** — no 0==0 /
+  self-built / alias closure
   (the M-E4-REDO/M-I lesson, hard-won this series). A residual that is exactly
   0.0 is the tautology smell; genuine closure is nonzero-at-noise.
 - **Hillslope inputs are settled**: MOFE01 HBP shards are read-only inputs;
@@ -44,7 +46,8 @@ Ground everything in measured reality before any code (the M-A lesson):
 3. **Routing + output seams**: map the channel-routing path
    (`openwepp-watershed-orchestrator`), the watershed-output schema
    (`openwepp-watershed-output`, the interchange contract), and what
-   **totalwatsed3** (`wepppy/wepp/interchange/totalwatsed3.py`) expects as
+   **totalwatsed3**
+   (`/home/workdir/wepppy/wepppy/wepp/interchange/totalwatsed3.py`) expects as
    input — the exact columns/schema the audit consumes. Read the lines.
 4. **Scope artifact** (`watershed-routing-scope.md`): legacy watershed-routing
    authority map (channel routing, pass-file consumption, watershed WB
@@ -115,7 +118,8 @@ W-D execution result (2026-06-14):
   independent daily PASS `runvol` lineage; the current producer still fills
   `runvol` from WAT `Q`, which makes runoff consistency a self-consistency
   check rather than conservation proof.
-- W-D-REDO is the next implementation increment.
+- At W-D closeout, W-D-REDO was the next implementation increment. The
+  operator-directed T-arc now supersedes that watershed-CLI route.
 
 ## Subsequent increments (refined by W-A; provisional)
 
@@ -133,7 +137,8 @@ W-D execution result (2026-06-14):
 - **W-D — totalwatsed3 end-to-end audit + closure**: executed-hold. Gate not
   met: totalwatsed3 profile/interception/unit defects were corrected, but the
   independent closure audit still reports `2950.498418 mm` whole-run residual.
-- **W-D-REDO — PASS runvol lineage + closure**: expose or reconstruct
+- **W-D-REDO — PASS runvol lineage + closure**: superseded by the T-arc. It
+  would have exposed or reconstructed
   canonical daily PASS runoff volume from HBP/PASS publication authority,
   bind it into `totalwatsed3.runvol`/`Runoff`, and rerun the configured and
   legacy-discovery audits. Acceptance remains nonzero-at-noise independent
@@ -157,7 +162,8 @@ The watershed-routed-output (`chanwb`/`chnwb`) is a decoupled follow-on
 ### Increment T-A — totalwatsed3 CLI design + scope (no production code)
 
 Design `openwepp-cli-totalwatsed3` before code (the M-A/W-A lesson). Read the
-authoritative-semantics reference `wepppy/wepp/interchange/totalwatsed3.py` +
+authoritative-semantics reference
+`/home/workdir/wepppy/wepppy/wepp/interchange/totalwatsed3.py` +
 `tools/totalwatsed3_daily_closure_audit.py` (the CLOSURE SEMANTICS to match —
 NOT a code dependency) and produce `totalwatsed3-cli-scope.md`:
 - Inputs: per-hillslope `H.pass`/`H.wat`/`H.soil`/`H.element` parquets +
@@ -172,6 +178,26 @@ NOT a code dependency) and produce `totalwatsed3-cli-scope.md`:
   independent of WAT storage/flux) and the noise-floor tolerance.
 - Red-test definitions + T-B/T-C breakdown + sizing.
 - Remove/relocate `build_watershed_daily_rows_from_wat` from the watershed CLI.
+
+T-A execution result (2026-06-14):
+
+- Produced `totalwatsed3-cli-scope.md` as the controlling T-arc scope
+  artifact.
+- Confirmed the authoritative semantics from
+  `/home/workdir/wepppy/wepppy/wepp/interchange/totalwatsed3.py` and
+  `/home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py`: the
+  producer is hillslope-only, `Runoff` comes from PASS `runvol`, WAT supplies
+  storage/flux operands, MOFE `latqcc` is outlet-OFE-only, and channel terms
+  are not part of totalwatsed3.
+- Sampled the arboreal-dendrite interchange schemas under
+  `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/`: combined
+  `H.pass.parquet`, `H.wat.parquet`, `H.soil.parquet`, and
+  `H.element.parquet` use `wepp_id`/`ofe_id` selectors.
+- Confirmed the openWEPP implementation gap: current hillslope output requires
+  `.hbp` pass files, the HBP writer emits zero event volume slots, and the HBP
+  parser does not expose PASS `runvol`. T-B must create the native PASS
+  parquet/adapter surface before totalwatsed3 closure can be claimed.
+- No production code was edited. T-B is the next implementation increment.
 
 ### Increment T-B — totalwatsed3 CLI implementation
 
@@ -193,10 +219,10 @@ removed; README execution log; handoff naming the decoupled `chanwb` follow-on.
 
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <W-A|W-B|W-C|W-D|W-D-REDO> of
+Each Codex dispatch: *"Execute increment <W-A|W-B|W-C|W-D|T-A|T-B|T-C> of
 `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
-`watershed-routing-scope.md` (once it exists); the MOFE01 + FDHP01 staged
-plans (the failure modes these rules encode — tautology, clone, hollow
-closure). An increment that cannot meet its gates backs out with evidence,
-localized to its seam.
+`watershed-routing-scope.md`; `totalwatsed3-cli-scope.md` after T-A; the
+MOFE01 + FDHP01 staged plans (the failure modes these rules encode —
+tautology, clone, hollow closure). An increment that cannot meet its gates
+backs out with evidence, localized to its seam.

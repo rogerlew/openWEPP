@@ -1,12 +1,12 @@
 # Disposition
 
-Status: W-D executed-hold; package active; W-D-REDO queued
+Status: T-A executed; package active; T-B queued
 
 Evidence mode: Ran + Static
 
-W-A, W-B, W-C, and the keepable W-D publication repairs are complete for their
-scoped seams. The package remains active because W-D totalwatsed3 closure did
-not meet the acceptance surface.
+W-A, W-B, W-C, the keepable W-D publication repairs, and T-A design scope are
+complete for their scoped seams. The package remains active because
+totalwatsed3 closure still requires the dedicated T-B/T-C CLI path.
 
 Disposition:
 
@@ -31,9 +31,13 @@ Disposition:
 - W-D closure gate: FAIL/HOLD. Configured and legacy-discovery audits both
   report `closure_reconstructed_with_storage_total_mm=2950.498418`, so
   package closure is blocked on independent daily PASS `runvol` lineage.
+- T-A architecture pivot: executed. `totalwatsed3-cli-scope.md` establishes
+  `openwepp-cli-totalwatsed3` as a hillslope-only openWEPP-native CLI, with
+  PASS `runvol` as `Runoff`, WAT storage/flux operands, outlet-only MOFE
+  `latqcc`, no channel terms, and no wepppyo3 dependency.
 
 Next required increment:
 
 ```text
-Execute increment W-D-REDO of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
+Execute increment T-B of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
 ```

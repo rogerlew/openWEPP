@@ -1,6 +1,6 @@
 # Review Agent A
 
-Status: W-D local review complete; increment held
+Status: T-A local review complete
 
 Evidence mode: Static + Ran
 
@@ -53,7 +53,33 @@ Residual risk:
 
 | # | Finding | Disposition | Rationale |
 |---|---|---|---|
-| 1 | Missing independent PASS `runvol` lineage | accepted / blocking | W-D status is `executed-hold`; W-D-REDO owns HBP/PASS daily runoff lineage. |
+| 1 | Missing independent PASS `runvol` lineage | accepted / blocking | W-D status is `executed-hold`; T-B now owns HBP/PASS daily runoff lineage through the dedicated CLI. |
 | 2 | Writer test incomplete | fixed | Expanded writer assertions cover all exact volume fields and depth aliases. |
 | 3 | Outlet-only lateral fixture too narrow | fixed | Aggregator test now proves outlet-only `latqcc` over multiple contributors. |
 | 4 | Nullable selector handling | deferred | Not reached by current producer output; keep as follow-on hardening risk. |
+
+## T-A Review
+
+Evidence mode: Static
+
+Findings:
+
+No blocking T-A findings.
+
+Review observations:
+
+1. `totalwatsed3-cli-scope.md` correctly treats wepppy as semantic reference,
+   not a code dependency.
+2. The scope removes the channel-loss/storage tangent from totalwatsed3 and
+   keeps `WATERSHED-CHANWB-ROUTED-OUTPUT` as a decoupled follow-on.
+3. The scope explicitly rejects the W-D tautology: PASS `runvol` is the
+   `Runoff` operand, while WAT `Q` remains diagnostic.
+4. The current openWEPP gap is localized before implementation: HBP event
+   volume slots are zero/not exposed, so T-B must add a real PASS lineage
+   surface before claiming closure.
+
+## T-A Finding Disposition
+
+| # | Finding | Disposition | Rationale |
+|---|---|---|---|
+| - | None | accepted | T-A gates are design/scope gates and are met. |

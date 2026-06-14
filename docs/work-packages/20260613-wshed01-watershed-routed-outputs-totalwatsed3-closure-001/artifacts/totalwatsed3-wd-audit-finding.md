@@ -4,6 +4,10 @@ Status: W-D executed-hold
 
 Evidence mode: Ran + Static
 
+Supersession note: T-A later moved the fix path from W-D-REDO-in-watershed-CLI
+to the dedicated T-arc `openwepp-cli-totalwatsed3`. The PASS `runvol` finding
+below remains live; the active implementation increment is T-B.
+
 ## Summary
 
 W-D found and corrected three openWEPP publication defects in the W-C
@@ -108,7 +112,8 @@ Static source check:
 - `crates/openwepp-runner/src/watershed_wat.rs` therefore has no independent
   daily PASS `runvol` input to hand to totalwatsed3.
 
-W-D-REDO must expose or reconstruct canonical daily PASS runoff volume from
-HBP/PASS publication authority, then rerun the same audit. Do not force closure
-by changing WAT term selection unless the PASS lineage and SC authority support
-that mapping.
+The active T-B increment must expose or reconstruct canonical daily PASS
+runoff volume from HBP/PASS publication authority in the dedicated
+`openwepp-cli-totalwatsed3` path, then T-C must rerun the same audit. Do not
+force closure by changing WAT term selection unless the PASS lineage and SC
+authority support that mapping.
