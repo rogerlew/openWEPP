@@ -76,7 +76,7 @@ accepting that no-impoundment state explicitly, then producing
 `totalwatsed3.parquet` and running the water-balance audit on routed openWEPP
 output.
 
-Work package to prepare: `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01`.
+Work package: `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/` (scaffolded 2026-06-13; characterize-first, W-A next). The `jpond=0` no-impoundment parse rejection (`IMP-E-004`/`CLIWAT-E-010`) is the first blocker it characterizes.
 
 ### 2. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 

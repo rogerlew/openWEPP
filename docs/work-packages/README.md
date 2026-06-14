@@ -229,6 +229,8 @@ publication-safe Daymet CLI audit:
    acceptance target. M-G deliberately left sediment-coupled erosion `qin/qout`
    plus particle-fraction handoff as a named follow-on. Package:
    `20260612-mofe01-inter-ofe-routing-closure-001/`. **Closure (2026-06-14):** MOFE01 water-routing closure is done-done on the 36-run 1–5-OFE ladder. Named follow-ons: `MOFE-FARPOINT01` (>10-OFE exceed-the-ceiling demonstration), `MOFE-MAGPARITY01` (±10–25% per-OFE runoff magnitude adjudication), `REFACTOR022` (line-count split), plus watershed/totalwatsed3 (queue item 1) and `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` (sediment coupling).
+
+   **Next rung — WSHED01 (watershed routed outputs / totalwatsed3)** *(scaffolded 2026-06-13, W-A next)*: produce watershed-level routed output from the closed MOFE01 hillslope HBP shards and close the end-to-end totalwatsed3 audit (the WBVAL06/6a deferral). Characterize-first; the first blocker is the arboreal-dendrite `jpond=0` no-impoundment parse rejection. Cross-repo: openWEPP watershed CLI produces output, wepppy totalwatsed3 audits it. Package: `20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/`.
 9. **watershed routed outputs / totalwatsed3 audit** *(next)* — consume the
    closed MOFE hillslope pass outputs through the watershed output stack and
    produce the end-to-end `totalwatsed3` audit surface deferred since
