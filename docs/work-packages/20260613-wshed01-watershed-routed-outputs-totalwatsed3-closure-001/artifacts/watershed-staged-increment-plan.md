@@ -1,8 +1,8 @@
 # Watershed Staged Increment Plan — Dispatch Artifact
 
-Status: active - T-B2-REDO executed but STILL DEFECTIVE (runvol now ~4× too
-SMALL — crossed Q×outlet-area pairing; Claude review 2026-06-14) → T-B2-REDO2
-before T-C
+Status: active - T-B2-REDO2 ACCEPTED (runvol defect closed, Claude-verified
+2026-06-14); T-C closure proven on the REDO2 output → T-C is now recording/
+governance (retire WBVAL06, ROADMAP item 1, README log, chanwb handoff)
 Author: Claude Code, 2026-06-13
 Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 `mofe-staged-increment-plan.md` (proven; agent memory
@@ -397,11 +397,57 @@ normalized) with `wb13_row.area` (the **outlet OFE** area) — a crossed pairing
   sum (which under-counts ~6×).
 - Anchors unchanged; full Rust loop.
 
+T-B2-REDO2 execution result (2026-06-14):
+
+- Replaced the crossed REDO formula with the slplen-normalized outlet pairing:
+  `outlet.row.wb13_row.qofe * outlet.row.wb13_row.area / 1000`. This makes
+  native PASS `runvol` equal `QOFE_outlet · A_outlet`, not the under-scaled
+  `Q_outlet · A_outlet`.
+- Deleted/inverted the REDO fixture. The focused regression now asserts the
+  two-OFE fixture's correct `runvol` is `1.0 m3` and rejects the REDO
+  `Q · A_outlet = 0.5 m3` pairing.
+- Fresh arboreal-dendrite rerun under
+  `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z` emitted `36`
+  HBP, `36` WAT, `36` PASS parquet files, and `36` manifests.
+- HBP/WAT anchor comparison against `/tmp/openwepp_mofe01_mi_final/output`
+  reported `anchor_mismatches=0`.
+- Corrected PASS audit over `78912` rows reported
+  `max_abs_pass_minus_qofe_area_m3=0.0`,
+  `sum_runvol=27691217.37511973 m3`; the rejected REDO `Q · A_outlet`
+  under-scaled sum is `6851275.733726182 m3`.
+- Native totalwatsed3 production wrote `2192` rows to
+  `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z/totalwatsed3.parquet`;
+  totalwatsed3/PASS `runvol` sum diff was `-4.0978193283081055e-08 m3`.
+- wepppy audit read succeeded and reported
+  `closure_reconstructed_with_storage_total_mm=30.544142` and enriched
+  storage `30.543864`. The day-1 residual is `+30.9533178099056 mm`; excluding
+  day 1 the basic-storage residual is `-0.409175395336963 mm` over `2191`
+  days with `0` days above `1 mm`.
+- Full Rust loop passed: fmt, clippy, workspace tests, and deny. T-C is now
+  queued on the REDO2-corrected output; the REDO
+  `/tmp/openwepp_wshed01_tb2_redo_qarea` output is superseded.
+
+> ✅ **ACCEPTED (Claude independent verification 2026-06-14, Ran on the REDO2
+> root).** `Σ runvol = 27.691 Mm³` (coeff `0.5537`); runoff < precip every year
+> (0.48–0.68) — the **two-sided** bound holds. **Genuinely independent:**
+> `Σ runvol (27.691) ≠ Σ Q-column (18.895)` — the QOFE×outlet-area surface, not
+> a WAT-`Q` restatement. **Closure is real, not 0==0:** ex-day-1 daily residuals
+> span `[−0.248, +0.005] mm` (nonzero-at-noise); cumulative ex-day-1 `−0.41 mm`
+> over 2191 days; the `+30.95 mm` day-1 term is the audit's storage-prepend init
+> (present for any correct producer, legacy included), not an openWEPP defect.
+> My WAT-`QOFE_outlet·A_outlet` reconstruction predicted `30.544142 / −0.409175`
+> before the run — the producer reproduces it to all digits. The runvol defect
+> (over-scale → under-scale → correct, across T-B2/REDO/REDO2) is **closed**.
+> The slight negative skew (`−0.41 mm/2191 d`) is the known small over-drainage
+> residual at the cohort noise floor — not actionable at this rung.
+
 ### Increment T-C — totalwatsed3 closure on openWEPP-NATIVE outputs (the WBVAL06/6a deferral resolved)
 
-**BLOCKED on T-B2-REDO2.** The current `/tmp/openwepp_wshed01_tb2_redo_qarea`
-output is under-scaled (`Σ runvol = 0.137·Σ precip`; closure `+6948 mm`). T-C
-runs only on REDO2-corrected output.
+**READY after T-B2-REDO2.** The previous
+`/tmp/openwepp_wshed01_tb2_redo_qarea` output is superseded because it was
+under-scaled (`Σ runvol = 0.137·Σ precip`; closure `+6948 mm`). T-C runs on
+REDO2-corrected output:
+`/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z/totalwatsed3.parquet`.
 
 The closure audit on the openWEPP-native totalwatsed3 output — produced from openWEPP's OWN H.pass(runvol) + H.wat, NOT the legacy interchange dir. Gate: the
 identity `P − (Runoff + Lateral + ET + Perc + Interception) − ΔStorage` closes

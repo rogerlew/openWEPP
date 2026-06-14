@@ -1,3 +1,10 @@
+> **RESOLVED 2026-06-14 (T-B2-REDO2, Claude-verified).** Fix landed: `:737`
+> `qofe · outlet.area` → `Σ runvol = 27.691 Mm³` (coeff 0.554), independent of
+> the WAT-`Q` column (18.895 Mm³), closure ex-day-1 `−0.41 mm/2191 d` with
+> nonzero-at-noise daily residuals `[−0.248, +0.005] mm`. The arc
+> over-scale → under-scale → correct is closed; this artifact is the forensic
+> record. See the plan's T-B2-REDO2 ACCEPTED note.
+
 # Review finding — T-B2 `runvol` over-scaled by wrong reference area (runoff > precip)
 
 **Reviewer:** Claude Code · **Date:** 2026-06-14 · **Evidence class:** Ran (duckdb
