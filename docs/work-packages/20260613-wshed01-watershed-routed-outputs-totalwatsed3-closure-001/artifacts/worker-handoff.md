@@ -122,3 +122,48 @@ partly a units/area-weighting artifact — see below).
   independent-operand** watershed balance (outlet runoff from PASS, channel
   terms real, hillslope contributions from WAT — genuinely different sources),
   not 0==0 self-consistency.
+
+## Claude review CORRECTION (2026-06-14, operator-directed) — totalwatsed3 is HILLSLOPE-ONLY; retract the channel-terms scope
+
+Evidence mode: Ran (read the authoritative producer
+`wepppy/wepp/interchange/totalwatsed3.py` + `tools/totalwatsed3_daily_closure_audit.py`;
+wepppyo3 `wepp_interchange/src/hill_wat.rs`).
+
+**My prior W-D review (channel loss/storage terms) was wrong** — operator
+correction: totalwatsed3 is a **hillslope-only, area-weighted aggregation**,
+not a channel-routed watershed balance. The authoritative producer confirms:
+
+- `_aggregate_pass` (`totalwatsed3.py:583`): the closure **`Runoff`** is
+  `SUM(runvol)` from the **hillslope PASS file** (`H.pass.parquet`) — schema
+  `:127` "Daily runoff depth from PASS runoff volume". Codex's PASS-runoff
+  instinct was correct; it is the hillslope pass runoff, NOT channel-routed.
+- `_aggregate_wat` (`:613`): area-weighted, **MOFE-aware per-OFE collapse** —
+  **latqcc outlet-OFE-only** (`OFE == _max_ofe_id`, explicitly "to avoid
+  counting internal" routing, `:641-644`), QOFE summed × Area (`:660`).
+- **No channel terms anywhere.** There is no channel loss/storage in
+  totalwatsed3. **Retract** the prior "populate `channel_loss_m3` /
+  `channel_storage_m3`" requirement — those belong to the separate
+  `chanwb`/`chnwb` channel outputs, not totalwatsed3.
+
+**Corrected W-D-REDO scope** — align openWEPP's totalwatsed3 to the
+authoritative wepppy/wepppyo3 hillslope-only semantics:
+
+1. `Runoff` from the **hillslope PASS `runvol`** (area-weighted sum), not WAT
+   `Q`. This is the independent operand that closes the audit.
+2. Per-OFE collapse exactly per `_aggregate_wat`: **latqcc outlet-OFE-only**,
+   QOFE summed, area-weighted (MOFE01 made WAT per-OFE; naive cross-OFE sums
+   double-count — likely a large part of the 2950 mm).
+3. **No channel terms** in totalwatsed3.
+4. **Architectural question for the operator/W-D-REDO:** the authoritative
+   totalwatsed3 producer is wepppy/wepppyo3 (it consumes `H.pass.parquet` +
+   `H.wat.parquet`). Should openWEPP *produce* totalwatsed3 at all (W-C's
+   `build_watershed_daily_rows_from_wat`), or just emit correct hillslope
+   `H.pass`/`H.wat` and let the wepppy/wepppyo3 producer + audit own
+   totalwatsed3? The cleaner design is the latter (single authoritative
+   producer; openWEPP's job is correct hillslope interchange inputs). If
+   openWEPP does produce a native totalwatsed3, it must match the wepppy
+   semantics exactly (hillslope-only, PASS runoff, per-OFE collapse) — a
+   parallel re-implementation that can diverge. Decide before W-D-REDO codes.
+
+The 2950 mm is therefore a hillslope-aggregation issue (WAT-Q-instead-of-PASS-
+runvol + per-OFE collapse + possible m³/mm units), **not** channel routing.
