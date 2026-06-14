@@ -39,3 +39,71 @@ fn mofe01_mb_inter_ofe_route_contract_authority_is_present() {
         "science contract index must expose the M-B contract authority rows"
     );
 }
+
+#[test]
+fn mofe01_mg_erosion_qin_boundary_contract_authority_is_present() {
+    let repo_root = env!("CARGO_MANIFEST_DIR");
+
+    let runoffpart = fs::read_to_string(format!(
+        "{repo_root}/docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md"
+    ))
+    .expect("SC-RUNOFFPART-001 should be readable");
+    assert!(
+        runoffpart.contains("INV-RUNOFFPART-030")
+            && runoffpart.contains("MOFE01 M-G Erosion `qin` Producer-Boundary Addendum")
+            && runoffpart.contains("water-transfer-only-mofe01-mg-sediment-coupling-follow-on")
+            && runoffpart.contains(
+                "cannot by themselves prove accepted sediment-coupled EROD14 downstream `qin`"
+            ),
+        "SC-RUNOFFPART-001 must carry M-G producer-boundary authority"
+    );
+
+    let watbal = fs::read_to_string(format!(
+        "{repo_root}/docs/specifications/science-contracts/contracts/SC-WATBAL-001.md"
+    ))
+    .expect("SC-WATBAL-001 should be readable");
+    assert!(
+        watbal.contains("INV-WATBAL-099")
+            && watbal.contains("MOFE01 M-G Erosion `qin` Water-Balance Boundary Addendum")
+            && watbal.contains("erod14_qin_sediment_coupled = false")
+            && watbal.contains("prior-OFE erosion `qout`"),
+        "SC-WATBAL-001 must carry M-G water-balance boundary authority"
+    );
+
+    let sed = fs::read_to_string(format!(
+        "{repo_root}/docs/specifications/science-contracts/contracts/SC-SED-001.md"
+    ))
+    .expect("SC-SED-001 should be readable");
+    assert!(
+        sed.contains("INV-SED-012")
+            && sed.contains("MOFE01 M-G Downstream `qin` Handoff Boundary")
+            && sed.contains("/workdir/wepp-forest_260430_baseline/src/xinflo.for:130-151")
+            && sed.contains("/workdir/wepp-forest_260430_baseline/src/route.for:139-154")
+            && sed.contains("Water-transfer-only `erod14_qin` seeding"),
+        "SC-SED-001 must carry M-G downstream qin/sediment-handoff authority"
+    );
+
+    let system = fs::read_to_string(format!(
+        "{repo_root}/docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md"
+    ))
+    .expect("SC-SYSTEM-001 should be readable");
+    assert!(
+        system.contains("INV-SYSTEM-032")
+            && system.contains("MOFE01 M-G EROD14 `qin` Manifest Boundary Addendum")
+            && system.contains("erod14_qin_source_policy")
+            && system.contains("erod14_qin_sediment_coupled"),
+        "SC-SYSTEM-001 must carry M-G manifest-boundary authority"
+    );
+
+    let runner = fs::read_to_string(format!(
+        "{repo_root}/crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs"
+    ))
+    .expect("runner manifest source should be readable");
+    assert!(
+        runner.contains("EROD14_QIN_POLICY_WATER_TRANSFER_ONLY")
+            && runner.contains("MOFE01-MG-W-001")
+            && runner.contains("erod14_qin_source_policy")
+            && runner.contains("erod14_qin_sediment_coupled"),
+        "runner manifest provenance must expose M-G qin policy fields"
+    );
+}

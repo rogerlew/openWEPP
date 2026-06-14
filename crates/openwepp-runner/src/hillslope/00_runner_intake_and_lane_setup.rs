@@ -70,6 +70,11 @@ use crate::shared::{
     sha256_file_hex, utc_now_rfc3339,
 };
 
+const EROD14_QIN_POLICY_WAVE2_DISABLED: &str = "wave2-disabled";
+const EROD14_QIN_POLICY_WATER_TRANSFER_ONLY: &str =
+    "water-transfer-only-mofe01-mg-sediment-coupling-follow-on";
+const EROD14_QIN_WARNING_ID: &str = "MOFE01-MG-W-001";
+
 #[derive(Debug, Serialize)]
 struct HillslopeRunManifest {
     schema: String,
@@ -150,6 +155,8 @@ struct HillslopeExecutionProvenance {
     kernel_phase_message_ids: Vec<String>,
     erod14_wave2_enabled: bool,
     erod14_wave2_kernel_status_seen: bool,
+    erod14_qin_source_policy: String,
+    erod14_qin_sediment_coupled: bool,
     wb16_ealpha_compatibility_seed_used: bool,
     wb16_ealpha_seed_policy: String,
 }
@@ -1367,6 +1374,18 @@ pub fn execute_hillslope_run(
     } else {
         WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED.to_string()
     };
+    let erod14_wave2_enabled = parse_mofe03_binary_flag(
+        "erod14_wave2_enabled",
+        runtime_surface_symbol_value(&runtime_surface, "erod14_wave2_enabled").unwrap_or(0.0),
+    )?;
+    let erod14_qin_source_policy = if erod14_wave2_enabled {
+        sidecar_warnings.push(format!(
+            "{EROD14_QIN_WARNING_ID} EROD14 Wave-2 qin is seeded from water-transfer provenance only; true sediment-coupled qin/qout and particle-fraction handoff remains MOFE01 M-G follow-on scope."
+        ));
+        EROD14_QIN_POLICY_WATER_TRANSFER_ONLY
+    } else {
+        EROD14_QIN_POLICY_WAVE2_DISABLED
+    };
 
     let execution_provenance = HillslopeExecutionProvenance {
         scheduler_kernel_executed: true,
@@ -1379,11 +1398,10 @@ pub fn execute_hillslope_run(
         climate_day_count: climate_span.days.len(),
         executed_day_count,
         kernel_phase_message_ids: kernel_phase_message_ids.into_iter().collect(),
-        erod14_wave2_enabled: parse_mofe03_binary_flag(
-            "erod14_wave2_enabled",
-            runtime_surface_symbol_value(&runtime_surface, "erod14_wave2_enabled").unwrap_or(0.0),
-        )?,
+        erod14_wave2_enabled,
         erod14_wave2_kernel_status_seen,
+        erod14_qin_source_policy: erod14_qin_source_policy.to_string(),
+        erod14_qin_sediment_coupled: false,
         wb16_ealpha_compatibility_seed_used,
         wb16_ealpha_seed_policy,
     };

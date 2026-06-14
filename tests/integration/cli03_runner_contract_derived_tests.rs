@@ -582,6 +582,16 @@ loss = "output/H1.loss.json"
         manifest.contains("\"erod14_wave2_kernel_status_seen\": true"),
         "multi-OFE run should observe Wave-2 kernel status, observed manifest: {manifest}"
     );
+    assert!(
+        manifest.contains(
+            "\"erod14_qin_source_policy\": \"water-transfer-only-mofe01-mg-sediment-coupling-follow-on\""
+        ),
+        "multi-OFE manifest should expose M-G qin source policy, observed manifest: {manifest}"
+    );
+    assert!(
+        manifest.contains("\"erod14_qin_sediment_coupled\": false"),
+        "multi-OFE manifest should not claim sediment-coupled qin closure, observed manifest: {manifest}"
+    );
 }
 
 #[test]
@@ -622,6 +632,11 @@ loss = "output/H1.loss.json"
     assert!(
         manifest.contains("\"erod14_wave2_kernel_status_seen\": false"),
         "single-OFE policy should keep Wave-2 kernel status absent, observed manifest: {manifest}"
+    );
+    assert!(
+        manifest.contains("\"erod14_qin_source_policy\": \"wave2-disabled\"")
+            && manifest.contains("\"erod14_qin_sediment_coupled\": false"),
+        "single-OFE manifest should expose disabled M-G qin policy without coupling claim, observed manifest: {manifest}"
     );
 }
 

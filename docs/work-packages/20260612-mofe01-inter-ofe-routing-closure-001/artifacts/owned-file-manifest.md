@@ -1,8 +1,47 @@
 # owned file manifest
 
-Status: updated through M-F-REDO2 executed
+Status: updated through M-G executed
 
 Evidence mode: Static
+
+## M-G edited files
+
+Rust implementation:
+
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`
+
+Tests:
+
+- `tests/integration/cli03_runner_contract_derived_tests.rs`
+- `tests/integration/mofe01_inter_ofe_route_contract.rs`
+
+Science contracts:
+
+- `docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md`
+- `docs/specifications/science-contracts/contracts/SC-SED-001.md`
+- `docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md`
+- `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
+- `docs/specifications/science-contracts/index.md`
+
+Work-package files/artifacts:
+
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/package.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/README.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-test-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/disposition.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/gate-results.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/implementation-test-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/kernel-profile-compliance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/line-count-governance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/m-g-erosion-qin-coupling-decision-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/owned-file-manifest.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/required-reading-map.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/worker-handoff.md`
+
+No dependency, legacy, external-authority suite, or `/wc1` substrate file was
+edited in M-G.
 
 ## M-F-REDO2 edited files
 

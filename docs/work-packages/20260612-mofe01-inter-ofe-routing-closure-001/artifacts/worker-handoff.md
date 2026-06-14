@@ -1,10 +1,33 @@
 # worker handoff
 
-Status: M-F-REDO2 executed; M-G erosion `qin`/sediment coupling decision next
+Status: M-G executed; M-H ladder acceptance + closure next
 
 Evidence mode: Ran + Static
 
-## Summary
+## Current Summary
+
+M-G executed the erosion `qin`/sediment coupling decision. The decision is a
+contract pin, not an erosion-routing implementation:
+
+- MOFE01 water routing now exposes the transfer operands needed by EROD14, but
+  accepted downstream `erod14_qin` also requires prior-OFE erosion `qout` and
+  incoming particle/class-fraction handoff lineage.
+- Added canonical boundary invariants: `INV-RUNOFFPART-030`,
+  `INV-WATBAL-099`, `INV-SED-012`, and `INV-SYSTEM-032`.
+- Runtime manifests now expose `erod14_qin_source_policy` and
+  `erod14_qin_sediment_coupled`; current active Wave-2 multi-OFE runs report
+  `water-transfer-only-mofe01-mg-sediment-coupling-follow-on` and `false`.
+- Focused gates passed:
+  `cargo test --test mofe01_inter_ofe_route_contract -- --nocapture` and
+  `cargo test --test cli03_runner_contract_derived_tests cli03_mofe03 -- --nocapture`.
+- No semantic comparator comparison was required for M-G; no comparator subagent
+  was used.
+
+Next increment: M-H ladder acceptance + closure. M-H may close water-routing and
+publication acceptance, but must carry the erosion `qin/qout` + particle-fraction
+handoff as a named follow-on and must not claim erosion coupling complete.
+
+## M-F-REDO2 Summary
 
 M-F-REDO2 closed the public `QOFE` local-depth publication blocker left by
 M-F-REDO/M-F-REDO-CLONE:
@@ -36,9 +59,6 @@ M-F-REDO/M-F-REDO-CLONE:
 - Line-count governance warning: touched
   `scheduler_seed_and_runtime.rs` is 2124 lines, above the 2000-line warning
   threshold and below 3000.
-
-Next increment: M-G must decide whether erosion `qin`/sediment coupling belongs
-inside this water-seam closure or should be contract-pinned as a follow-on.
 
 ## M-E4-REDO summary
 

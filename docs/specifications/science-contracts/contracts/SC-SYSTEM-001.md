@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 82
+contract_version: 83
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -146,6 +146,7 @@ Out of scope:
 | INV-SYSTEM-029 | HPHYS0255 MOFE WB13 storage-lineage provenance invariant: MOFE WB13/H.wat manifests must declare the storage lineage policy used by canonicalized single-row publication; under the current architecture this is `single-runtime-wb11-state`, and consumers must not reinterpret aggregate `Area` as proof of area-weighted dynamic storage aggregation. | hard-fail | REF-SYSTEM-LEGACY-WATBAL, REF-SYSTEM-CH1-COMPONENTS, SC-WATBAL-001#INV-WATBAL-042 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-030 | MOFE01 M-E0 per-OFE dynamic-state publication-policy manifest invariant: transition from MOFE04 aggregate to per-OFE WB13/H.wat publication must be manifest-gated by `publication_ofe_policy = "per-ofe-dynamic-water-balance-state"`, `contributor_ofe_count`, `per_ofe_record_count`, `per_ofe_state_policy`, `transfer_identity_status`, `per_element_identity_status`, `aggregate_identity_status`, and `storage_lineage_policy = "per-ofe-dynamic-wb-state"`. Consumers fail closed when multi-OFE publication lacks OFE-keyed records, policy fields are missing or malformed, row cardinality disagrees with contributor count, or aggregate-only rows are relabeled as per-OFE records. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-LEGACY-WATBAL, SC-WATBAL-001#INV-WATBAL-097, SC-RUNOFFPART-001#INV-RUNOFFPART-029, INV-SYSTEM-028, INV-SYSTEM-029 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-031 | MOFE01 M-F-REDO per-OFE publication anti-clone and M-F-REDO2 runoff-normalization manifest/consumer invariant: multi-OFE WB13/H.wat publication manifests and consumer gates must not treat row cardinality, monotonic OFE keys, or conservation residual closure alone as proof of per-OFE genuineness. Publication must provide or reference anti-clone evidence for active routed days: lane-local source lineage, nonzero adjacent surface handoff from independently stored transfer operands, non-identical hydrology vectors, raw non-cloned local runoff across OFEs, and public runoff-normalization evidence proving `QOFE = runoff * efflen / slplen` while `Q = runoff * efflen / totlen`. Missing anti-clone evidence, all-OFE-identical active-day hydrology or raw local runoff, WB14 multistep-lane acceptance of seeded/stale `wb12_infiltration`, zero-on-zero transfer acceptance, public-row synthesis of transfer fields, or downstream public `QOFE == Q` where `slplen != totlen` hard-fails publication promotion and downstream consumption. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-LEGACY-WATBAL, SC-WATBAL-001#INV-WATBAL-098, INV-SYSTEM-030 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-032 | MOFE01 M-G EROD14 `qin` manifest-boundary invariant: hillslope run manifests and downstream consumers must distinguish water-transfer-only EROD14 `qin` compatibility seeding from accepted sediment-coupled `qin` closure. When Wave-2 runs without prior-OFE erosion `qout` plus particle/class-fraction handoff evidence, manifests must publish `erod14_qin_source_policy = "water-transfer-only-mofe01-mg-sediment-coupling-follow-on"` and `erod14_qin_sediment_coupled = false`; downstream consumers must not infer sediment coupling from `UpStrmQ`, `SubRIn`, public WB13/WAT rows, aggregate runoff, or Wave-2 kernel execution alone. | governance-hold | REF-SYSTEM-CH1-COMPONENTS, SC-RUNOFFPART-001#INV-RUNOFFPART-030, SC-WATBAL-001#INV-WATBAL-099, SC-SED-001#INV-SED-012, INV-SYSTEM-028, INV-SYSTEM-031 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -182,6 +183,7 @@ Out of scope:
 | `INV-SYSTEM-029` | runtime + governance | Hillslope manifest publisher plus downstream publication consumers | Typed hard error / explicit `HOLD` when MOFE storage lineage policy is absent, malformed, or inconsistent with WB11/WB13 simulation-owned storage provenance | HPHYS0255 MOFE storage-lineage provenance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-030` | runtime + governance | Hillslope WB13/H.wat manifest publisher plus downstream publication consumers and watershed contributor metadata validators | Typed hard error / explicit `HOLD` when per-OFE publication policy is asserted without OFE-keyed records, identity statuses, matching row cardinality, or `per-ofe-dynamic-wb-state` storage lineage, or when aggregate-only rows are relabeled as per-OFE records | MOFE01 M-E0 per-OFE publication-policy transition gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-031` | runtime + governance | Hillslope WB13/H.wat manifest publisher plus downstream publication consumers and watershed contributor metadata validators | Typed hard error / explicit `HOLD` when per-OFE publication evidence lacks anti-clone hydrology-vector checks, raw local-runoff operand distinctness, nonzero active adjacent surface handoff, lane-local source lineage, WB14 multistep infiltration lineage, or public `QOFE = runoff * efflen / slplen` / `Q = runoff * efflen / totlen` evidence; consumers must not accept aggregate-cloned records, seeded/stale WB14 multistep infiltration, or downstream `QOFE == Q` aliases where `slplen != totlen` | MOFE01 M-F-REDO anti-clone and M-F-REDO2 runoff-publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-032` | runtime + governance | Hillslope manifest publisher plus downstream EROD14/WAT/consumer gate | Explicit `HOLD` when manifests omit the M-G `erod14_qin_source_policy`, assert `erod14_qin_sediment_coupled = true` without SED-owned prior-OFE `qout` and class-fraction handoff evidence, or downstream consumers treat water-transfer-only `qin`/Wave-2 execution as sediment-coupled closure | MOFE01 M-G erosion `qin` manifest-boundary gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -423,6 +425,7 @@ core and is not sidecar-eligible.
 | `HPHYS0255-MOFE-STORAGE-LINEAGE-PUBLICATION-ADDENDUM` | `SC-SYSTEM-001.md#hphys0255-mofe-storage-lineage-publication-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-029` | `none` | SCSTRUCT05 map-in-core: MOFE storage-lineage policy and area/storage separation are exposed by `INV-SYSTEM-029`; detailed policy text remains core-resident. |
 | `MOFE01-M-E0-PER-OFE-DYNAMIC-STATE-PUBLICATION-POLICY-ADDENDUM` | `SC-SYSTEM-001.md#mofe01-m-e0-per-ofe-dynamic-state-publication-policy-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-030` | `none` | MOFE01 M-E0: per-OFE dynamic-state publication policy, row cardinality, identity-status manifest gates, and aggregate-row relabel rejection are directly exposed by `INV-SYSTEM-030`. |
 | `MOFE01-M-F-REDO-PER-OFE-PUBLICATION-ANTI-CLONE-ADDENDUM` | `SC-SYSTEM-001.md#mofe01-m-f-redo-per-ofe-publication-anti-clone-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-031` | `none` | MOFE01 M-F-REDO/M-F-REDO-CLONE/M-F-REDO2: per-OFE publication manifest/consumer gates require anti-clone hydrology-vector and raw local-runoff evidence, nonzero active surface handoff, WB14 multistep infiltration lineage, public `Q`/`QOFE` length-normalization evidence, and lane-local lineage beyond row cardinality or conservation closure. |
+| `MOFE01-M-G-EROD14-QIN-MANIFEST-BOUNDARY-ADDENDUM` | `SC-SYSTEM-001.md#mofe01-m-g-erod14-qin-manifest-boundary-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-032` | `none` | MOFE01 M-G: manifests and downstream consumers must distinguish water-transfer-only EROD14 `qin` compatibility seeding from accepted sediment-coupled `qin`, exposing `erod14_qin_source_policy` and `erod14_qin_sediment_coupled` until the SED-owned prior-OFE `qout`/particle-fraction follow-on closes. |
 | `MOFE05-WATERSHED-CONTRIBUTOR-METADATA-INTAKE-VALIDATION-ADDENDUM` | `SC-SYSTEM-001.md#mofe05-watershed-contributor-metadata-intake-validation-addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT05 narrower HOLD: contributor metadata intake shape, consistency, and test vectors extend beyond exact `INV-SYSTEM-028/029` exposure. Owner: `SCSTRUCT05-MOFE05-BEI-PROMOTION`. Next gate: promote/map intake validation authority before relocation. |
 | `HPHYS0241-MOFE-HOURLY-CARRY-METADATA-ADDENDUM` | `SC-SYSTEM-001.md#hphys0241-mofe-hourly-carry-metadata-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-028` | `none` | SCSTRUCT05 map-in-core: active 24-slot MOFE hourly carry metadata and watershed intake rejection posture are exposed by `INV-SYSTEM-028`. |
 | `EROD13-WAVE-1-ACTIVE-BOUNDARY-CARRY-ADDENDUM` | `SC-SYSTEM-001.md#erod13-wave-1-active-boundary-carry-addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT05 narrower HOLD: Wave-1 hydrology-to-erosion boundary-carry authority requires exact RUNOFFPART/WATBAL/SED/SYSTEM exposure. Owner: `SCSTRUCT05-EROD13-BEI-PROMOTION`. Next gate: promote/map before relocation. |
@@ -841,6 +844,21 @@ Minimum WS12 integration vectors:
    `QOFE == Q` aliases where `slplen != totlen`, while conservation identities
    remain anchored to raw transfer/runoff operands.
 
+## MOFE01 M-G EROD14 `qin` Manifest Boundary Addendum
+
+1. Wave-2 execution status is not evidence that downstream `erod14_qin` is
+   sediment-coupled.
+2. Hillslope manifests must publish `erod14_qin_source_policy` and
+   `erod14_qin_sediment_coupled` whenever execution provenance reports
+   `erod14_wave2_enabled`.
+3. The current MOFE01 water package policy is
+   `water-transfer-only-mofe01-mg-sediment-coupling-follow-on`, with
+   `erod14_qin_sediment_coupled = false`.
+4. Downstream consumers must hold any sediment-coupling acceptance claim that
+   derives from `UpStrmQ`, `SubRIn`, public WB13/WAT rows, aggregate runoff,
+   or Wave-2 kernel status without SED-owned prior-OFE erosion `qout` and
+   incoming particle/class-fraction evidence.
+
 ## MOFE05 Watershed Contributor Metadata Intake Validation Addendum
 
 1. Watershed contributor intake authority must support per-contributor MOFE
@@ -968,6 +986,7 @@ Minimum WS12 integration vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-14` | `83` | `Codex` | MOFE01 M-G amendment: added `INV-SYSTEM-032` and manifest-boundary authority requiring `erod14_qin_source_policy` / `erod14_qin_sediment_coupled` provenance so water-transfer-only Wave-2 continuity is not mistaken for sediment-coupled `qin` closure. |
 | `2026-06-14` | `82` | `Codex` | MOFE01 M-F-REDO2 amendment: required per-OFE publication evidence for public `QOFE = runoff * efflen / slplen` and public `Q = runoff * efflen / totlen`, rejecting downstream `QOFE == Q` aliases while keeping conservation identities on raw transfer operands. |
 | `2026-06-13` | `81` | `Codex` | MOFE01 M-F-REDO-CLONE amendment: tightened `INV-SYSTEM-031` to require raw local-runoff anti-clone evidence and reject seeded/stale WB14 multistep infiltration acceptance at publication/consumer gates. |
 | `2026-06-13` | `80` | `Codex` | MOFE01 M-F-REDO amendment: added `INV-SYSTEM-031` and the per-OFE publication anti-clone manifest/consumer gate requiring active-handoff and hydrology-vector genuineness evidence beyond row cardinality or conservation closure. |

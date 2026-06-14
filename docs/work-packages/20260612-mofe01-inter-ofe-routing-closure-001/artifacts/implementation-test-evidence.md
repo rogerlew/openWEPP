@@ -1,9 +1,40 @@
 # implementation test evidence
 
-Status: M-F-REDO2 executed; public `QOFE` local-depth and public `Q`
-cumulative-depth publication gates close.
+Status: M-G executed; erosion `qin`/sediment coupling boundary and manifest
+provenance tests pass.
 
 Evidence mode: Ran + Static
+
+## M-G ran
+
+M-G made no process-physics math change. It added manifest/report provenance for
+the current water-transfer-only EROD14 `qin` source and contract-derived tests
+that prevent treating that source as sediment-coupled closure.
+
+- `cargo fmt --check`
+  - PASS.
+- Focused M-G contract coverage
+  - PASS:
+    `cargo test --test mofe01_inter_ofe_route_contract -- --nocapture`.
+- Focused M-G manifest coverage
+  - PASS:
+    `cargo test --test cli03_runner_contract_derived_tests cli03_mofe03 -- --nocapture`.
+- Semantic comparisons
+  - NOT APPLICABLE: M-G is a contract/manifest decision increment, not a WAT
+    value-acceptance increment. No comparator subagent was used.
+- Final full gates
+  - PASS:
+    `cargo clippy --workspace --all-targets -- -D warnings`.
+  - PASS:
+    `cargo test --workspace`.
+  - PASS:
+    `cargo deny check`.
+  - PASS:
+    `bash tools/release/check_authority_suite_antievasion.sh`.
+  - PASS:
+    `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture`.
+
+Detailed evidence: `m-g-erosion-qin-coupling-decision-evidence.md`.
 
 ## M-F-REDO2 ran
 

@@ -1,9 +1,26 @@
 # gate results
 
-Status: M-F-REDO2 executed; public `QOFE` local-depth and public `Q`
-cumulative-depth publication gates close. Package remains active for M-G.
+Status: M-G executed; erosion `qin`/sediment coupling is contract-pinned as
+follow-on. Package remains active for M-H ladder acceptance + closure.
 
 Evidence mode: Ran + Static
+
+## M-G scoped acceptance gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Boundary decision | PASS | Evidence lands on contract-pin/follow-on path: water-transfer closure is not sufficient sediment-coupled `erod14_qin` acceptance. |
+| Contract authority | PASS | Added `INV-RUNOFFPART-030`, `INV-WATBAL-099`, `INV-SED-012`, and `INV-SYSTEM-032`. |
+| Operator visibility | PASS | Run manifests expose `erod14_qin_source_policy` and `erod14_qin_sediment_coupled`; current multi-OFE Wave-2 policy is `water-transfer-only-mofe01-mg-sediment-coupling-follow-on` + `false`. |
+| M-G contract-derived test | PASS | `cargo test --test mofe01_inter_ofe_route_contract -- --nocapture`. |
+| M-G CLI manifest policy tests | PASS | `cargo test --test cli03_runner_contract_derived_tests cli03_mofe03 -- --nocapture`. |
+| Semantic comparisons | NOT APPLICABLE | M-G is a contract/manifest boundary decision, not a WAT value-acceptance increment. No comparator subagent was used. |
+| Full Rust closure loop | PASS | `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, and `cargo deny check` passed. |
+| Authority guards | PASS | `bash tools/release/check_authority_suite_antievasion.sh` and `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture` passed. |
+| Markdown/doc lint | PASS | Final `markdown-doc lint --path ... --format json` scanned 42 files with 0 errors and 0 warnings. |
+| `git diff --check` | PASS | Final whitespace check passed after M-G evidence updates. |
+
+Detailed evidence: `m-g-erosion-qin-coupling-decision-evidence.md`.
 
 ## M-F-REDO2 scoped acceptance gates
 

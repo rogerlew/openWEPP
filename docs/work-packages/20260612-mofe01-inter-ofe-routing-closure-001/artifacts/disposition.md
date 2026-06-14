@@ -1,10 +1,41 @@
 # disposition
 
-Status: M-F-REDO2 executed; per-OFE public `QOFE` local-depth and public `Q`
-cumulative-depth publication closure is complete. Package remains open for
-M-G erosion `qin`/sediment coupling disposition.
+Status: M-G executed; erosion `qin`/sediment coupling is contract-pinned as a
+follow-on, and MOFE01 water-routing/publication closure remains active for M-H.
 
 Evidence mode: Ran + Static
+
+## M-G disposition
+
+Increment M-G is executed and complete for its scoped decision. It does not
+claim full erosion `qin`/sediment coupling closure.
+
+The evidence lands on the contract-pin path: MOFE01 water routing exposes
+`TransferInput`, `TransferOutput`, `UpStrmQ`, `SubRIn`, hourly carry arrays,
+public `Q`, and public `QOFE`, but accepted downstream `erod14_qin` for OFE
+`i > 1` also requires prior-OFE erosion `qout` and particle/class-fraction
+handoff lineage from the sediment lane. That coupling is governed by legacy
+`xinflo.for:130-151` and `route.for:139-154`, not by public WAT rows or
+aggregate water runoff.
+
+Canonical contracts now pin the boundary with `INV-RUNOFFPART-030`,
+`INV-WATBAL-099`, `INV-SED-012`, and `INV-SYSTEM-032`. Runtime manifests expose
+operator-facing provenance through `erod14_qin_source_policy` and
+`erod14_qin_sediment_coupled`. Current multi-OFE Wave-2 runs are labeled
+`water-transfer-only-mofe01-mg-sediment-coupling-follow-on` and `false`.
+
+Focused gates passed:
+`cargo test --test mofe01_inter_ofe_route_contract -- --nocapture` and
+`cargo test --test cli03_runner_contract_derived_tests cli03_mofe03 -- --nocapture`.
+Full final gates are recorded in `gate-results.md`.
+
+No semantic comparator comparison was required for M-G because it is a
+contract/manifest boundary decision, not a value-acceptance increment. No
+comparator subagent was used.
+
+The next lawful increment is M-H ladder acceptance + closure. M-H may close
+MOFE01 water-routing and publication acceptance, but must carry the sediment
+`qin/qout` follow-on and must not claim erosion coupling complete.
 
 ## M-F-REDO2 disposition
 

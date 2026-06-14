@@ -414,9 +414,31 @@ M-F-REDO2 execution result:
 
 ## Increment M-G — erosion `qin`/sediment coupling decision (scope §"M-D erosion qin and sediment coupling")
 
+Status: executed 2026-06-14; contract-pinned as sediment-coupling follow-on,
+with operator-visible manifest provenance for current water-transfer-only
+EROD14 `qin` seeding.
+
 - Per the scope: implement only if the water seam owns it inseparably;
   otherwise contract-pin the boundary and emit the follow-on. Operator
   visibility on whichever way the evidence lands.
+
+M-G execution result:
+
+- Decision: the water seam does **not** own full erosion `qin`/sediment
+  coupling inseparably. MOFE01 water-routing closure exposes the transfer
+  operands that the erosion lane needs, but accepted downstream `erod14_qin`
+  also requires prior-OFE erosion `qout` and particle/class-fraction handoff
+  lineage from legacy `xinflo`/`route`.
+- Contracts: added `INV-RUNOFFPART-030`, `INV-WATBAL-099`, `INV-SED-012`, and
+  `INV-SYSTEM-032` to separate water-transfer-only EROD14 `qin` compatibility
+  seeding from sediment-coupled acceptance.
+- Operator visibility: hillslope run manifests now publish
+  `erod14_qin_source_policy` and `erod14_qin_sediment_coupled`; current
+  multi-OFE Wave-2 runs report
+  `water-transfer-only-mofe01-mg-sediment-coupling-follow-on` and `false`.
+- Follow-on emitted: implement true downstream erosion `qin/qout` and
+  particle-fraction handoff vectors in the sediment/erosion lane before any
+  M-H or later closure narrative claims erosion coupling complete.
 
 ## Increment M-H — ladder acceptance + closure
 

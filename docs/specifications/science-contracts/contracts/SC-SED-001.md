@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 38
+contract_version: 41
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -14,7 +14,7 @@ consumer_scope:
   - Comparator and replay consumers using erosion closure and sign-consistency surfaces
   - Adjacent soil/runoff/hydraulics domains providing required coupling inputs
 evidence_level: Static
-last_reviewed: 2026-05-28
+last_reviewed: 2026-06-14
 supersedes: []
 superseded_by: []
 ---
@@ -69,6 +69,7 @@ Out of scope:
 | REF-SED-LEGACY-EROD | `/workdir/wepp-forest_260430_baseline/src/erod.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy detachment-capacity and branch-condition authority used for Wave-1 detachment/deposition runtime branch ordering. | `[DIRECT][Static]` |
 | REF-SED-LEGACY-RUNGE | `/workdir/wepp-forest_260430_baseline/src/runge.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy continuity evolution form (`dG/dx` update term as `dcap*((tcap-load)/tcap) + theta`) used for Wave-1 branch/continuity guard alignment. | `[DIRECT][Static]` |
 | REF-SED-LEGACY-CONTIN-ROUTE | `/workdir/wepp-forest_260430_baseline/src/contin.for` + `/workdir/wepp-forest_260430_baseline/src/route.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy call-chain authority for hillslope sediment routing (`call route` from CONTIN) and per-segment upper-boundary detach/deposit routing control flow. | `[DIRECT][Static]` |
+| REF-SED-LEGACY-MOFE-QIN | `/workdir/wepp-forest_260430_baseline/src/xinflo.for:130-151` + `/workdir/wepp-forest_260430_baseline/src/route.for:139-154` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy multi-OFE erosion handoff authority: downstream `qin` follows prior-OFE erosion `qout`, and sediment particle fractions are copied from the prior OFE when flow enters. | `[DIRECT][Static]` |
 | REF-SED-LEGACY-XCRIT | `/workdir/wepp-forest_260430_baseline/src/xcrit.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy `mshear` case classification authority (`1..5`) used by hillslope segment routing branch dispatch. | `[DIRECT][Static]` |
 | REF-SED-LEGACY-DEPC | `/workdir/wepp-forest_260430_baseline/src/depc.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy deposition-equation partial-solution authority used at route segment upper boundaries and post-detachment deposition follow-up. | `[DIRECT][Static]` |
 | REF-SED-LEGACY-DEPEND | `/workdir/wepp-forest_260430_baseline/src/depend.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy authority for solving where deposition ends inside a segment (`xdend`) under increasing/decreasing flow cases. | `[DIRECT][Static]` |
@@ -115,6 +116,7 @@ Out of scope:
 | INV-SED-009 | Enrichment mass-conservation invariant: class-wise outgoing sediment from deposition transitions cannot exceed incoming-plus-local-contribution mass after correction steps. | hard-fail | REF-SED-CH11-ENRICH, REF-SED-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SED-010 | Coupling payload invariant: hillslope erosion event outputs (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_diameter_m_i`, `particle_flow_fraction_i`) are emitted with units/sign conventions required by watershed/channel consumers. | hard-fail | REF-SED-CH13-COUPLING, REF-SED-HBP-FORMAT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SED-011 | Governance-scope invariant: Chapter-11 simplifications (steady-state transposition, fitted transport-capacity adjustments, enrichment procedure caveats) must remain explicit; unlabeled scope over-claims block promotion. | governance-fail | REF-SED-CH11-INTRO, REF-SED-CH11-TC, REF-SED-CH11-ENRICH | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SED-012 | MOFE01 M-G downstream erosion `qin`/sediment-handoff invariant: for downstream OFEs on active Wave-2 paths, accepted `erod14_qin` must be sourced from the prior OFE erosion `qout` and paired with the sediment/class-fraction handoff defined by legacy `xinflo`/`route` lineage. Public water-balance rows, aggregate runoff, `UpStrmQ`, `SubRIn`, or hourly water carry arrays are necessary water operands but are not sufficient sediment-coupling proof. OFE-1 and single-OFE zero-`qin` cases require explicit zero-upstream provenance. Water-transfer-only `erod14_qin` seeding must be labeled compatibility/follow-on scope and must not publish `erod14_qin_sediment_coupled = true`. | governance-hold | REF-SED-CH11-DOWNVAR, REF-SED-LEGACY-MOFE-QIN, INV-SED-008, INV-SED-009, INV-SED-010, SC-RUNOFFPART-001#INV-RUNOFFPART-030, SC-WATBAL-001#INV-WATBAL-099, SC-SYSTEM-001#INV-SYSTEM-032 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -131,6 +133,7 @@ Out of scope:
 | `INV-SED-009` | runtime | Particle-class enrichment updater | Typed hard error on class-wise mass-conservation breach | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SED-010` | runtime | Hillslope-to-routing boundary payload validator | Typed hard error on missing/malformed sediment payload fields | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SED-011` | governance | Review/disposition/verification checklist | Promotion `HOLD` on unlabeled scope-limit or over-claim conditions | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SED-012` | runtime + governance | EROD14 downstream `qin`/prior-OFE sediment handoff validator plus manifest acceptance gate | Explicit `HOLD` when downstream `erod14_qin` is accepted from water-transfer operands alone, prior-OFE erosion `qout` or particle-fraction handoff lineage is absent, or manifests claim sediment-coupled `qin` closure while the source policy remains water-transfer-only | MOFE01 M-G erosion `qin`/sediment coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -400,6 +403,27 @@ Minimum vectors required by EROD13 contract-derived tests:
 5. Compute enrichment ratio export:
    - `ER = (sum_i(sed_frac_i * ssa_class_i) / ssa_soil) + 0.005`.
 
+### MOFE01 M-G Downstream `qin` Handoff Boundary
+
+1. Downstream `erod14_qin` is a coupled erosion/sediment boundary, not a public
+   WAT alias. Legacy `xinflo` carries prior-OFE erosion `qout` into current-OFE
+   `qin`, and legacy `route` carries prior-OFE particle fractions when flow
+   enters.
+2. For OFE `i > 1`, accepted Wave-2 sediment coupling must prove prior-OFE
+   erosion `qout` and incoming class-fraction lineage in addition to any
+   water-transfer closure operands.
+3. Water-balance transfer closure (`UpStrmQ`, `SubRIn`, `TransferInput`,
+   `TransferOutput`, hourly carry arrays, aggregate `Q`, `QOFE`, or
+   `wb12_runoff_carryover`) is required water evidence but cannot by itself
+   close `INV-SED-012`.
+4. Runtime water-transfer-only seeding may remain as compatibility continuity
+   only when manifests expose `erod14_qin_source_policy =
+   "water-transfer-only-mofe01-mg-sediment-coupling-follow-on"` and
+   `erod14_qin_sediment_coupled = false`.
+5. The follow-on sediment coupling package must add vectors where downstream
+   `qin` is checked against a prior-OFE erosion `qout` source that is not built
+   from the same public WAT row used for validation.
+
 ### EROD14 Typed Guard Codes
 
 | Condition | Code |
@@ -552,6 +576,7 @@ canonical `SC-*` contracts before production migration packages.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-14` | `41` | `Codex` | MOFE01 M-G amendment: added `INV-SED-012`, legacy `xinflo`/`route` provenance, and downstream `qin`/particle-fraction handoff boundary authority separating water-transfer-only seeding from accepted sediment-coupled closure. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-13 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-11 authority anchors, erosion invariants, guard map, symbol alias map, obligations, tolerances, and gap register for SCI-13 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode casing, corrected `Di` non-negative continuity language, added `ER` alias coverage, added per-row evidence tags in degenerate states, and narrowed companion-gap wording. |

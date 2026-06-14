@@ -1,9 +1,35 @@
 # contract test implementation evidence
 
-Status: M-F-REDO2 tests green for active handoff, anti-clone, and public
-`QOFE`/`Q` geometry normalization
+Status: M-G tests green for erosion `qin`/sediment coupling boundary authority
+and manifest provenance
 
 Evidence mode: Ran + Static
+
+## M-G
+
+M-G adds contract-derived coverage for the decision boundary:
+
+- `mofe01_mg_erosion_qin_boundary_contract_authority_is_present`
+  - Asserts `SC-RUNOFFPART-001`, `SC-WATBAL-001`, `SC-SED-001`, and
+    `SC-SYSTEM-001` carry the M-G invariant/addendum authority.
+  - Asserts the runner manifest source contains `erod14_qin_source_policy`,
+    `erod14_qin_sediment_coupled`, and the M-G water-transfer-only policy.
+- `cli03_mofe03_multiofe_runfile_executes_wave2_without_manual_symbol_injection`
+  - Now also asserts active multi-OFE Wave-2 manifests report
+    `erod14_qin_source_policy =
+    "water-transfer-only-mofe01-mg-sediment-coupling-follow-on"` and
+    `erod14_qin_sediment_coupled = false`.
+- `cli03_mofe03_single_ofe_policy_disables_wave2_by_default`
+  - Asserts disabled single-OFE Wave-2 manifests report
+    `erod14_qin_source_policy = "wave2-disabled"` and no sediment coupling
+    claim.
+
+Ran:
+
+- `cargo test --test mofe01_inter_ofe_route_contract -- --nocapture`
+  - PASS.
+- `cargo test --test cli03_runner_contract_derived_tests cli03_mofe03 -- --nocapture`
+  - PASS.
 
 ## M-F-REDO2
 

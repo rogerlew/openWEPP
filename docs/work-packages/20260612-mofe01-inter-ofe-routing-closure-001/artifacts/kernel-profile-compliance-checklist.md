@@ -1,8 +1,36 @@
 # kernel profile compliance checklist
 
-Status: checked through M-F-REDO2 executed
+Status: checked through M-G executed
 
 Evidence mode: Ran + Static
+
+## M-G checklist
+
+- Production edits: yes; manifest/report provenance now exposes
+  `erod14_qin_source_policy` and `erod14_qin_sediment_coupled`.
+- Science-contract edits: yes; `SC-RUNOFFPART-001` version 44,
+  `SC-WATBAL-001` version 160, `SC-SED-001` version 41, and `SC-SYSTEM-001`
+  version 83 pin the water-transfer-only versus sediment-coupled `qin`
+  boundary.
+- Test edits: yes; M-G contract authority and CLI03 manifest policy assertions
+  were added.
+- Typed errors in production: no new error family; this is provenance
+  publication and contract gating.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: no process-physics math changed; true erosion `qin/qout` and
+  particle-fraction handoff remains follow-on.
+- Runtime publication paths: operator-visible provenance is present in
+  manifests; current active Wave-2 runs report water-transfer-only policy and
+  `erod14_qin_sediment_coupled = false`.
+
+Validation:
+
+- `cargo fmt --check`: PASS.
+- Focused M-G contract tests: PASS.
+- Focused M-G CLI manifest tests: PASS.
+- Full final gates: see `gate-results.md`.
 
 ## M-F-REDO2 checklist
 

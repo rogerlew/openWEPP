@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: updated through M-F-REDO2 executed
+Status: updated through M-G executed
 
 Evidence and disposition artifacts for
 `20260612-mofe01-inter-ofe-routing-closure-001`.
@@ -39,6 +39,10 @@ Evidence and disposition artifacts for
   M-F-REDO2 public per-OFE WAT publication evidence, including
   row-cardinality/provenance success, active surface/lateral handoff,
   anti-clone success, and closed public `QOFE` local-depth normalization.
+- `m-g-erosion-qin-coupling-decision-evidence.md`: M-G decision evidence
+  contract-pinning erosion `qin`/sediment coupling as a follow-on and recording
+  operator-visible manifest provenance for current water-transfer-only EROD14
+  `qin` seeding.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`, `contract-test-implementation-evidence.md`,
   `pre-implementation-contract-gate.md`, `implementation-test-evidence.md`:

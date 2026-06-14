@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 43
+contract_version: 44
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Erosion/hydraulics consumers requiring runoff duration, volume, and peak discharge
   - Comparator/replay surfaces using Tier-A single-OFE runoff acceptance signals
 evidence_level: static
-last_reviewed: 2026-06-13
+last_reviewed: 2026-06-14
 supersedes: []
 superseded_by: []
 ---
@@ -152,6 +152,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | INV-RUNOFFPART-027 | FQ3-DC top-two-layer storage-limit invariant: WB12/WB14 infiltration-excess partition must apply the Eq. [4.3.2] upper-storage condition before publishing same-pass infiltration. When the declared top-two-layer storage surface is at or above its upper limit, current event liquid cannot be absorbed into same-pass infiltration merely because interval rainfall rate is below `Ke`; the storage-limited residual must remain in rainfall excess/runoff accounting subject to depression-storage and routing terms. If WB18/percolation has already published same-pass `wb12_infiltration`, WB14 runoff partition must consume that producer value rather than recomputing infiltration from a later storage state. | hard-fail | REF-RUNOFFPART-CH4-RAINEX, REF-RUNOFFPART-CH4-INFIL, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-028 | MOFE01 inter-OFE runoff/lateral transfer invariant: when MOFE hourly carry arrays are enabled, WB12/WB14 must preserve separated upstream carry components: `UpStrmQ = Σui_SUrunf(ii) * Aupstream/Acurrent`, `SubRIn = Σui_LfUrf(ii) * Aupstream/Acurrent`, and `runon_input = UpStrmQ + SubRIn`. Current-OFE outputs `ui_SCrunf(ii)` and `ui_LfCrf(ii)` must copy forward to the downstream `ui_SUrunf(ii)` and `ui_LfUrf(ii)` payload without aggregate substitution, and event closure must satisfy `local_liquid + runon_input = infiltration + Q_partition + Δdepression_storage + ε` before `surdra` addback. Transfer and per-element residuals outside tolerance are hard failures; single-OFE lanes require zero upstream components. | hard-fail | REF-RUNOFFPART-LEGACY-HOURLY-CARRY, REF-RUNOFFPART-CH4-MULTIOFE, INV-RUNOFFPART-001, INV-RUNOFFPART-013, INV-RUNOFFPART-014, SC-WATBAL-001#INV-WATBAL-096 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-029 | MOFE01 M-E0 per-OFE lane-state invariant: multi-OFE runoff partitioning must execute as an upstream-to-downstream OFE lane sequence whose current-lane runoff partition consumes an explicit `TransferInput` from the prior OFE and emits an explicit `TransferOutput` for the next OFE. Lane state must carry OFE identity, source/recipient identity, 24-slot upstream/current carry arrays, area-scaling provenance, runoff-continuation/case-classifier outcome, partition runoff, `QOFE`, and closure residuals. Encoding OFEs as watershed `TopologyGraph` hillslope/channel nodes, relabeling aggregate WB13 rows, or deriving downstream runon from aggregate `Q`/`wb12_runoff_carryover` without per-OFE transfer payload is invalid. Single-OFE lanes are zero-upstream one-lane specialization and must preserve prior single-OFE runoff behavior bit-identically before publication reshaping. | hard-fail | REF-RUNOFFPART-CH4-MULTIOFE, REF-RUNOFFPART-LEGACY-HOURLY-CARRY, INV-RUNOFFPART-007, INV-RUNOFFPART-013, INV-RUNOFFPART-014, INV-RUNOFFPART-028, SC-WATBAL-001#INV-WATBAL-097 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RUNOFFPART-030 | MOFE01 M-G erosion-`qin` producer-boundary invariant: MOFE water-transfer surfaces (`TransferInput`, `TransferOutput`, `UpStrmQ`, `SubRIn`, hourly carry arrays, aggregate `Q`, `QOFE`, and `wb12_runoff_carryover`) can prove water-routing closure but cannot by themselves prove accepted sediment-coupled EROD14 downstream `qin`. For downstream OFEs, accepted erosion `qin` requires lineage to the prior OFE erosion `qout` and the sediment/class-fraction handoff governed by `SC-SED-001`; public WAT rows or aggregate water surfaces may not synthesize or replace that handoff. Runtime seeding that uses water-transfer provenance only must be manifest-labeled as compatibility/follow-on scope and cannot close sediment coupling acceptance. | governance-hold | REF-RUNOFFPART-CH4-MULTIOFE, REF-RUNOFFPART-LEGACY-HOURLY-CARRY, INV-RUNOFFPART-028, INV-RUNOFFPART-029, SC-WATBAL-001#INV-WATBAL-099, SC-SED-001#INV-SED-012 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -186,6 +187,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | `INV-RUNOFFPART-027` | runtime | WB12/WB14 same-pass infiltration cap using top-two-layer `wb18_perc_theta` vs `wb18_perc_ul` storage availability | Typed hard error on malformed storage symbols; rainfall-excess residual instead of over-infiltration when storage availability is exhausted | FQ3-DC runoff underproduction closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-028` | runtime + governance | MOFE hourly upstream carry resolver, `UpStrmQ`/`SubRIn` component publisher, current-to-upstream copy-forward validator, and per-element closure residual assembler | Typed hard error / explicit `HOLD` when upstream saturation and lateral components are collapsed, arrays are not copied forward, `runon_input` diverges from `UpStrmQ + SubRIn`, or per-element transfer/closure residuals exceed tolerance | MOFE01 M-B inter-OFE route-closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-029` | runtime + governance | Per-OFE runoff lane executor, `TransferInput`/`TransferOutput` validator, OFE ordered-lane closure residual assembler, and single-OFE anchor comparator | Typed hard error / explicit `HOLD` when downstream runon is derived from aggregate `Q` or `wb12_runoff_carryover`, OFE identity/provenance is missing, current and upstream carry arrays are collapsed, watershed topology nodes are used as OFE state, or single-OFE behavior drifts before publication reshaping | MOFE01 M-E0 per-OFE runoff lane-state gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RUNOFFPART-030` | runtime + governance | EROD14 `qin` producer-boundary provenance checker plus manifest/acceptance gate | Explicit `HOLD` when water-routing transfer closure is treated as sediment-coupled `qin` acceptance, downstream `erod14_qin` is synthesized from public `UpStrmQ`/aggregate runoff without prior-OFE erosion `qout` and class-fraction lineage, or compatibility seeding lacks operator-visible follow-on provenance | MOFE01 M-G erosion `qin`/sediment coupling boundary gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -906,6 +908,25 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
    per-OFE daily state collection or equivalent typed lane payload is
    implemented.
 
+## MOFE01 M-G Erosion `qin` Producer-Boundary Addendum
+
+1. MOFE01 water-routing closure exports the transfer state that a later
+   erosion-coupling increment needs, but that export is not itself sediment
+   coupling acceptance.
+2. `UpStrmQ`, `SubRIn`, hourly carry arrays, aggregate `Q`, `QOFE`, and
+   `wb12_runoff_carryover` are water-transfer operands. They may not synthesize
+   accepted downstream `erod14_qin` unless the sediment lane also proves prior
+   OFE erosion `qout` and class-fraction handoff lineage under `SC-SED-001`.
+3. Single-OFE and OFE-1 zero-upstream cases may emit zero `erod14_qin` only with
+   explicit zero-upstream provenance.
+4. Existing water-transfer-only runtime seeding is compatibility provenance for
+   Wave-2 continuity; manifests must label it as
+   `water-transfer-only-mofe01-mg-sediment-coupling-follow-on` and must not
+   claim sediment-coupled `qin` closure.
+5. M-H ladder acceptance may consume MOFE01 water-routing closure evidence, but
+   must not mark erosion `qin`/sediment coupling complete until the follow-on
+   provides non-water-only sediment handoff evidence.
+
 ## Binding Exposure Index
 
 Status: `scstruct09-map-in-core`
@@ -936,6 +957,7 @@ row requiring new binding promotion.
 | `HPHYS0242-SURFACE-SATURATION-RUNOFF-ADDBACK-ADDENDUM` | `SC-RUNOFFPART-001.md#hphys0242-surface-saturation-runoff-addback-addendum` | `active` | `maps-to-existing-INV` | `INV-RUNOFFPART-014` | `none` | SCSTRUCT09 map-in-core: `surdra` addback, same-pass `Q` closure, hidden-storage prohibition, and current-array rejection are directly exposed by `INV-RUNOFFPART-014`. |
 | `MOFE01-M-B-INTER-OFE-RUNOFF-LATERAL-TRANSFER-ADDENDUM` | `SC-RUNOFFPART-001.md#mofe01-m-b-inter-ofe-runofflateral-transfer-addendum` | `active` | `maps-to-existing-INV` | `INV-RUNOFFPART-028` | `none` | SCSTRUCT09 map-in-core: separated upstream surface/lateral carry components, `UpStrmQ`/`SubRIn` publication, transfer identity, and per-element closure are directly exposed by `INV-RUNOFFPART-028`. |
 | `MOFE01-M-E0-PER-OFE-RUNOFF-LANE-STATE-ADDENDUM` | `SC-RUNOFFPART-001.md#mofe01-m-e0-per-ofe-runoff-lane-state-addendum` | `active` | `maps-to-existing-INV` | `INV-RUNOFFPART-029` | `none` | MOFE01 M-E0: per-OFE ordered lane execution, typed transfer input/output payloads, no aggregate handoff synthesis, and single-OFE bit-identical anchor obligations are directly exposed by `INV-RUNOFFPART-029`. |
+| `MOFE01-M-G-EROSION-QIN-PRODUCER-BOUNDARY-ADDENDUM` | `SC-RUNOFFPART-001.md#mofe01-m-g-erosion-qin-producer-boundary-addendum` | `active` | `maps-to-existing-INV` | `INV-RUNOFFPART-030` | `none` | MOFE01 M-G: water-transfer closure exposes EROD14 inputs but does not close sediment-coupled `qin`; runtime water-transfer-only seeding is compatibility provenance and must remain manifest-labeled until the sediment handoff follow-on closes. |
 
 ## Gap Register
 
@@ -951,6 +973,7 @@ row requiring new binding promotion.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-14` | `44` | `Codex` | MOFE01 M-G amendment: added `INV-RUNOFFPART-030` and producer-boundary authority separating water-transfer evidence from accepted sediment-coupled EROD14 downstream `qin`, requiring compatibility provenance until the sediment handoff follow-on closes. |
 | `2026-06-13` | `43` | `Codex` | MOFE01 M-E0 amendment: added `INV-RUNOFFPART-029` and per-OFE runoff lane-state addendum requiring typed OFE lane transfer payloads, rejecting aggregate handoff synthesis, and binding single-OFE anchors before publication reshaping. |
 | `2026-06-12` | `42` | `Codex` | MOFE01 M-B correction: clarified `INV-RUNOFFPART-013` aggregate carry posture so stale pre-seeded daily `wb12_runoff_carryover` is purged before MOFE array-enabled execution while same-lifecycle aggregate publications still must match the explicit arrays. |
 | `2026-06-12` | `41` | `Codex` | MOFE01 M-B amendment: added `INV-RUNOFFPART-028` requiring separated upstream saturation/lateral carry components (`UpStrmQ`, `SubRIn`), component-preserving copy-forward, and per-element runoff closure with explicit runon. |

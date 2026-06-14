@@ -1,8 +1,22 @@
 # line count governance checklist
 
-Status: checked through M-F-REDO2
+Status: checked through M-G
 
 Evidence mode: Ran
+
+## M-G
+
+Ran `wc -l` over touched Rust implementation/test files after the M-G
+provenance and test edits.
+
+| File group | Lines | Disposition |
+| --- | ---: | --- |
+| `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs` | 1610 | OK. |
+| `tests/integration/cli03_runner_contract_derived_tests.rs` | 1360 | OK. |
+| `tests/integration/mofe01_inter_ofe_route_contract.rs` | 109 | OK. |
+
+No touched Rust source file crossed the 2000-line warning threshold or the
+3000-line non-exempt threshold.
 
 ## M-F-REDO2
 

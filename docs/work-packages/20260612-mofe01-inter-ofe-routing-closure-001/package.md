@@ -1,9 +1,8 @@
 # MOFE01 — Inter-OFE Routing Closure (rung 3)
 
-Status: active; M-F-REDO2 executed (public `QOFE` local-depth and public `Q`
-cumulative-depth publication gates close; active handoff, anti-clone,
-non-tautological identity, and single-OFE anchor gates remain closed); M-G
-erosion `qin`/sediment coupling decision next
+Status: active; M-G executed (erosion `qin`/sediment coupling is contract-pinned
+as follow-on; water-routing closure and M-F-REDO2 publication gates remain
+closed); M-H ladder acceptance + closure next
 
 Package type: staged implementation/closure package (FDHP01 execution shape:
 scope-then-staged-increments, per-increment conservation hard stops)

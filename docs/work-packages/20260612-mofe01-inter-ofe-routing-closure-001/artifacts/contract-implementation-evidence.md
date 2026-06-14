@@ -1,9 +1,36 @@
 # contract implementation evidence
 
-Status: M-F-REDO2 executed; active per-OFE handoff, anti-clone evidence, and
-public `QOFE`/`Q` geometry normalization implemented
+Status: M-G executed; erosion `qin`/sediment coupling boundary is contract
+pinned as follow-on, with manifest provenance for current water-transfer-only
+seeding
 
 Evidence mode: Ran + Static
+
+## M-G
+
+M-G amends the water/sediment/system authority boundary without broadening
+production erosion-routing math:
+
+- `SC-RUNOFFPART-001` version 44 adds `INV-RUNOFFPART-030`, separating
+  water-transfer evidence from accepted sediment-coupled EROD14 downstream
+  `qin`.
+- `SC-WATBAL-001` version 160 adds `INV-WATBAL-099`, limiting water-balance
+  `erod14_qin` provenance to compatibility/follow-on status until sediment
+  handoff closes.
+- `SC-SED-001` version 41 adds `INV-SED-012` plus pinned legacy
+  `xinflo.for:130-151` / `route.for:139-154` authority for prior-OFE `qout`
+  and particle/class-fraction handoff.
+- `SC-SYSTEM-001` version 83 adds `INV-SYSTEM-032`, requiring manifest and
+  downstream-consumer distinction between water-transfer-only `qin` and
+  sediment-coupled closure.
+- Hillslope run manifests now publish `erod14_qin_source_policy` and
+  `erod14_qin_sediment_coupled`.
+
+Validation:
+
+- Focused M-G contract test: PASS.
+- Focused CLI03 Wave-2 manifest policy tests: PASS.
+- Full final gate run recorded in `gate-results.md`.
 
 ## M-F-REDO2
 
