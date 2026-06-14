@@ -71,6 +71,16 @@ requirement, not optional package style guidance.
 - Explicitly require reviews and verifications to check gate legitimacy, not
   just artifact presence: an unmet required gate cannot be deferred into later
   work while the current package/phase/increment is marked complete.
+- For conservation-sensitive output/publication work, explicitly require:
+  - an operand-lineage table before production edits, covering units,
+    normalization basis, area/volume basis, source authority, and
+    authoritative-vs-diagnostic status;
+  - anti-tautology fixtures where each plausible wrong operand pairing yields a
+    different numeric result from the expected output;
+  - explicit rejection of known wrong formulas and adjacent aliases;
+  - independent reconstruction from produced outputs plus a real closure or
+    magnitude audit on the target fixture/cohort;
+  - metadata/schema alignment with the accepted operand lineage.
 - If dual review/verification, comparator execution, or other package-required
   work depends on delegated agents, explicitly authorize subagent
   spawning/delegation. Name the role(s), scope, expected compact outputs, and
@@ -102,6 +112,7 @@ requirement, not optional package style guidance.
   - Core (always required before edits):
     - `/workdir/openWEPP/AGENTS.md`
     - `/workdir/openWEPP/docs/codex_exec_plans.md`
+    - `/workdir/openWEPP/docs/work-packages/AGENTS.md`
     - `docs/work-packages/README.md`
     - package-local `package.md`
   - Conditional (required when applicable):
@@ -151,6 +162,12 @@ requirement, not optional package style guidance.
   gate depends on later work, the agent must stop at `HOLD` / `executed-hold`
   with the blocker named; it may not relabel the missing evidence as future
   scope after execution begins.
+- For conservation-sensitive output/publication work, kickoff prompts must
+  include a `Conservation/output acceptance:` line requiring operand lineage,
+  anti-tautology tests, explicit rejected formulas, independent reconstruction,
+  real closure/magnitude audit, and metadata/schema alignment. One-sided bounds
+  or exact self-consistency checks may be recorded only as supporting sanity
+  evidence, not acceptance.
 - Kickoff prompt must include an explicit end-to-end execution statement (use
   `Autonomy:` line) for the declared scope.
 - Kickoff prompt must include a `Subagent authorization:` line. Use `none` when
@@ -167,6 +184,7 @@ requirement, not optional package style guidance.
 - At minimum, `Core` must include:
   - `/workdir/openWEPP/AGENTS.md`
   - `/workdir/openWEPP/docs/codex_exec_plans.md`
+  - `/workdir/openWEPP/docs/work-packages/AGENTS.md`
   - `/workdir/openWEPP/docs/work-packages/README.md`
   - the package-local `package.md`
 - `Conditional` must include, when applicable:

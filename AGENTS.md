@@ -61,6 +61,8 @@ Before declaring Rust kernel implementation complete, run and record:
 4. `cargo deny check`
 5. Touched contract invariants and closure checks.
 6. Legacy comparator delta review using confidence tiers.
+7. For conservation-sensitive outputs, independent operand reconstruction and
+   real closure evidence per `docs/standards/kernel-work-package-preparation.md`.
 
 ## Error Handling and Numerics
 - No broad `Result<_, Box<dyn Error>>` swallowing in production paths; use typed error enums per crate.

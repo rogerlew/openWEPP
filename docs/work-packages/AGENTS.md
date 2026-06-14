@@ -49,6 +49,26 @@
   that was not a current required gate. If it was a current required gate, that
   phrase must be paired with a hold disposition and blocker rationale.
 
+## Conservation / Publication Acceptance Rule
+- For packages that create, correct, or aggregate conservation-sensitive output
+  surfaces (water, sediment, energy, mass, routed runoff, or closure ledgers),
+  author an operand-lineage table before production edits. Record field name,
+  units, normalization/denominator, area or volume basis, source authority, and
+  whether each operand is authoritative or diagnostic.
+- Regression fixtures must separate every plausible alias that could mask a
+  wrong formula. The expected value must differ from rejected candidates such as
+  adjacent diagnostic columns, publication areas, internal state areas, per-OFE
+  sums, and legacy/interchange aliases when those candidates are in scope.
+- Exact self-consistency checks and one-sided bounds are sanity evidence only.
+  They cannot close a conservation/output acceptance gate by themselves.
+- Acceptance must include independent reconstruction from produced outputs and
+  a real closure or magnitude audit on the target fixture/cohort. Include
+  two-sided magnitude/ratio checks when a physical range is known, and anchor
+  checks for protected output surfaces.
+- Reviews and verification must explicitly check anti-tautology: the gate must
+  not restate the producer formula with the same operands, and metadata/schema
+  descriptions must match the accepted operand lineage.
+
 ## Subagent Delegation Authorization
 - Work packages that require delegated review, verification, comparator execution, or parallel agent work must explicitly authorize subagent spawning/delegation in `package.md` and the active kickoff prompt.
 - Use direct wording: `Subagent authorization: this package explicitly authorizes spawning/delegating to <role> subagents for <scope>; expected outputs are <artifacts>; write access is <read-only|bounded write-set>.`
@@ -64,6 +84,9 @@
   explicitly declared as a hold boundary before work starts. Do not author
   staged plans where an increment's required gate depends on a later increment's
   evidence while still allowing the earlier increment to close as complete.
+- For conservation-sensitive output work, encode the Conservation /
+  Publication Acceptance Rule as a current-scope gate unless the package is
+  explicitly characterization-only.
 - Encode explicit subagent authorization when package-required work depends on delegated reviewers, verifiers, comparator runners, or other role agents.
 - Require dual reviews with finding disposition: `accepted`, `rejected`, `deferred`, or `follow-up`.
 - Require `.rs` line-count governance: 2000+ lines is `WARN`; 3000+ non-exempt files require refactor before closure.
@@ -86,6 +109,8 @@
 - Gate evidence non-deferral: each required current-scope gate has current
   direct evidence, or the package/phase is held with a named blocker.
 - Required Rust closure loop when implementation or mechanical refactor scope requires it.
+- Conservation/publication acceptance rule when output magnitude or closure
+  evidence is in scope.
 - Doc-path integrity checks when moving documentation or required-reading lists.
 - Source-level anti-evasion guards when touching external-authority suite posture, cohort fixtures, or required-case bindings.
 - Dual review, review-disposition, dual verification, line-count governance, worker handoff, and disposition artifacts.
@@ -95,6 +120,8 @@
 - Do not mark gates as run when they were reasoned about or partially executed.
 - Do not mark an increment complete when one of its required acceptance gates is
   waiting on a later increment's evidence.
+- Do not close conservation-sensitive output work on exact self-consistency,
+  one-sided bounds, or tests where wrong formulas alias the expected value.
 - Do not use package artifacts to override canonical contract authority.
 - Do not split a package solely to defer a known in-envelope correction.
 

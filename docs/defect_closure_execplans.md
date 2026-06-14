@@ -140,6 +140,9 @@ The envelope declares:
   code").
 - **Acceptance criteria** — falsifiable, behavior-level: what a human can run and
   observe to confirm the defect is closed.
+- **Conservation/output acceptance, when applicable** — the independent
+  operands, rejected aliases/formulas, magnitude range, real closure audit, and
+  metadata/schema alignment that will prove the fix is not self-restating.
 - **Branch-out boundaries** — what is deliberately *out* of scope and exactly
   where an out-of-scope finding routes. These include **negative boundaries**:
   scope the package must *not* touch even if it finds the cause there (see §8).
@@ -202,6 +205,12 @@ call:
    before the fix and passes after.
 7. **Validation** — the package's acceptance target is measurable before and
    after the change.
+
+For conservation residuals and output-publication defects, gates 6 and 7 require
+anti-tautology evidence: fixtures must make plausible wrong formulas produce
+different values, and validation must reconstruct the target from independent
+produced operands. One-sided bounds and exact self-consistency checks can support
+the case, but they cannot satisfy the validation gate alone.
 
 This is ADR-0017's burden of proof made to cut *both* ways. Gates 4 and 5 forbid
 a premature `OPENWEPP-DEFECTIVE` correction (you may not "fix" toward the
@@ -278,6 +287,19 @@ branch *by mechanism*" — not "observe the next surface." **Symptom-existence
 gate:** if the *reality* of the symptom is not yet established, the first
 milestone must establish it before any attribution.
 
+**Independent-operand acceptance.** When the symptom is a conservation residual
+or output magnitude defect, the attribution milestone must identify the operand
+lineage before accepting a correction. The package must reject any gate that
+uses the same operands as the producer formula unless those operands are
+independently produced and explicitly authoritative. Record the tempting wrong
+pairings in the package evidence so future regressions cannot reintroduce them.
+
+> Worked guard — the WSHED01 `runvol` crossed-pairing. The wrong arc
+> over-scaled as `QOFE * A_hillslope`, then under-scaled as `Q * A_outlet`,
+> before closing on `QOFE * A_outlet`; both the one-sided
+> `runoff <= precip` bound and a self-restating fixture accepted a wrong
+> version.
+
 > Worked guard — the WBVAL01 closure leak. Before attributing the +24–79 mm/yr
 > residual to any mechanism, the package must first complete the water-balance
 > identity it is measuring against (audit and include `Tile`, any populated
@@ -310,13 +332,16 @@ shields an in-scope, authority-backed fix from the conversion rule (§4).
   producer intermediate as authority.
 - **ADR-0017.** The fixed comparator is an investigation flag, not a target.
   §5 carries ADR-0017's like-for-like burden into the fix decision.
-- **Dual review and disposition.** Unchanged and required. Three review
+- **Dual review and disposition.** Unchanged and required. Four review
   obligations are added: a reviewer must check (a) **`HOLD` legitimacy** — that no
   in-scope, authority-backed defect was diagnosed and then deferred (§6);
   (b) **envelope adequacy** — that the envelope was not drawn to exclude the
   evidence's most likely correction surface without a cited boundary (§3); and
   (c) **protected-boundary integrity** — that no negative boundary merely shields
-  an in-scope fix from the conversion rule (§8).
+  an in-scope fix from the conversion rule (§8); and (d)
+  **conservation/output anti-tautology**, when applicable — that validation uses
+  independent produced operands, rejects tempting aliases/formulas, and keeps
+  metadata/schema lineage aligned with the accepted surface (§5).
 - **Line-count governance disposition.** Required. Review artifacts must
    explicitly evaluate `.rs` file thresholds (2000=`WARN`, 3000=`required
    refactor`) and disposition any exception. Any approved 3000+ generated/fixture
@@ -335,8 +360,9 @@ standard ExecPlan sections:
    surfaces, allowed edit classes, acceptance, and branch-out / negative
    boundaries.
 3. **The conversion rule** (§4), restated for this package.
-4. **The seven-gate bar** (§5), with the package's specific acceptance plugged
-   into gates 4 and 7.
+4. **The seven-gate bar** (§5), with the package's specific authority and
+   acceptance plugged into gates 4, 6, and 7, including anti-tautology evidence
+   for conservation/output defects when applicable.
 5. **Milestones** — the bounded internal loop (reproduce → localize to mechanism
    → classify ownership → amend contract/tests → pre-impl gate → fix → validate →
    review/disposition), plus an attribution milestone if the defect is
@@ -358,7 +384,8 @@ Reference wiring is in `AGENTS.md` and `docs/codex_exec_plans.md`: validation-
 derived invariant violations, fail-closed events on valid input, and
 conservation residuals use a DC-ExecPlan unless explicitly classified
 characterization-only; handoffs are defect-shaped; and reviews check `HOLD`
-legitimacy, envelope adequacy, and protected-boundary integrity. The conversion
+legitimacy, envelope adequacy, protected-boundary integrity, and applicable
+conservation/output anti-tautology. The conversion
 rule (§4) is a governance change, not only an authoring style — once the
 like-for-like burden is met inside the declared envelope, deferral is no longer
 permitted — and is ratified by

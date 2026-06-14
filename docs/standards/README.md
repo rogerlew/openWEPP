@@ -1,10 +1,13 @@
-# Coding Standards
+# Coding, Package, and Prompt Standards
 
-Normative coding and quality standards for openWEPP Rust implementation work.
+Normative coding, package, prompt, and quality standards for openWEPP
+implementation work.
 
 | Standard | Scope | Status |
 |---|---|---|
 | [rust-scientific-coding-standard.md](rust-scientific-coding-standard.md) | Rust code structure, comments, naming compatibility with legacy WEPP symbols, QA gates | Active |
+| [kernel-work-package-preparation.md](kernel-work-package-preparation.md) | Kernel/science work-package authoring, contract-first sequencing, conservation/output acceptance gates | Active |
+| [prompt-wording-guidance.md](prompt-wording-guidance.md) | Kernel/science kickoff prompt wording, required-reading tiers, subagent and acceptance-gate wording | Active |
 | [mechanical-refactor-authoring-guide.md](mechanical-refactor-authoring-guide.md) | Mechanical refactor package authoring, tool usage, split patterns, compile/test validation flow | Active |
 
 ## Change control

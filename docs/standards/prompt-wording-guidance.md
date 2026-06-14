@@ -62,6 +62,11 @@ scope.
 - Dual review and dual verification requirements where applicable.
 - Autonomous execution expectation for the full assigned scope (no user
   intervention unless hard-blocked).
+- For conservation-sensitive output/publication work: operand-lineage table,
+  anti-tautology fixtures, explicit rejected formulas, independent
+  reconstruction from produced outputs, real closure/magnitude audit, and
+  metadata/schema alignment. State that one-sided bounds and exact
+  self-consistency checks are supporting evidence only.
 
 4a. Explicitly authorize AND require subagent spawning for delegated/heavy work
 - If a prompt expects delegated review, verification, comparator execution, or
@@ -110,6 +115,10 @@ scope.
 - `Constraints: contract-first sequencing; canonical SC authority;`
   `baseline provenance (<if applicable>); typed guards; no silent defaults;`
   `no canonicalize-and-proceed for domain violations.`
+- `Conservation/output acceptance (<if applicable>): record operand lineage;`
+  `separate plausible aliases in fixtures; reject known wrong formulas; run`
+  `independent reconstruction plus real closure/magnitude audit; align`
+  `metadata/schema; do not close on one-sided bounds or self-consistency.`
 - `Subagent requirement: <none | REQUIRED: spawn comparator_suite_runner for all`
   `heavy batch/closure/comparator runs (cargo test --workspace, suites, gates,`
   `population batches); do NOT run them on the parent model unless the subagent is`
