@@ -88,6 +88,10 @@ W-B execution result (2026-06-14):
 - **W-B — impoundment no-pond handling**: executed-hold. Gate met:
   arboreal-dendrite watershed CLI proceeds past the impoundment parse, and
   existing impoundment fixtures are non-regressed.
+**W-B execution result (2026-06-14, `ea95d372`) — accepted (Claude):** `jpond=0` accepted only for `expected_structural_count==Some(0)`; the structure-vs-file mismatch is preserved as a distinct typed error `IMP-E-007` (CountMismatch), `IMP-E-004` retained without structure context — guard preserved, not loosened. The absent-`.imp` case got an explicit decision (pw0_imp still required in schema v1, pinned in the runfile contract) — stricter than legacy (which never reads it) but deliberate and pinned. Red-first. The arboreal-dendrite CLI now clears `CLIWAT-E-010`.
+
+**W-C now starts at the next hard stop:** `CLIWAT-E-020` / `WKERNEL-WS10-CHANNEL-E-003` (a channel-node *DomainViolation* in the WS10 watershed kernel; `kernel/types.rs:154`), 0 output files. W-C's first task is to characterize this exactly as W-A/jpond did: is it (a) valid channel input rejected (guard too strict — confirm legacy runs the same channel state), (b) a genuine domain violation (real bad routed channel state), or (c) missing routing data the channel kernel needs from the hillslope shards? Read the lines + compare to legacy `chnrt`/channel routing; do not assume defect.
+
 - **W-C — watershed routing + output**: route the hillslope shards over the
   channel network to a watershed-level routed parquet (interchange schema).
   Gate: watershed water balance conserves against the closed hillslope inputs
