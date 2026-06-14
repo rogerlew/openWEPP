@@ -1,6 +1,6 @@
 # WSHED01 — Watershed Routed Outputs / totalwatsed3 Closure
 
-Status: scaffolded
+Status: active - W-A executed, W-B queued
 
 Package type: staged implementation/closure package (FDHP01/MOFE01 execution
 shape: characterize-then-staged-increments, conservation as acceptance)
@@ -79,7 +79,10 @@ closure).
 - W-A characterization: watershed CLI current behavior on arboreal-dendrite;
   the `jpond=0` impoundment finding (parser defect vs invalid input);
   channel-routing + watershed-output state; totalwatsed3 input expectations;
-  scope artifact.
+  scope artifact. Executed 2026-06-13 in
+  `artifacts/characterization-watershed-cli-current.md`,
+  `artifacts/impoundment-no-pond-finding.md`, and
+  `artifacts/watershed-routing-scope.md`.
 - Impoundment no-pond handling (if a parser defect): accept `jpond=0` as an
   empty, valid impoundment set with a typed contract, not a silent default.
 - Watershed routing over the hillslope HBP shards + channel network to a

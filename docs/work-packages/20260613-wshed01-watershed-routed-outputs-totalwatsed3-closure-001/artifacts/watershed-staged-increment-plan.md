@@ -1,6 +1,6 @@
 # Watershed Staged Increment Plan — Dispatch Artifact
 
-Status: active — W-A queued (characterization)
+Status: active - W-A executed; W-B queued
 Author: Claude Code, 2026-06-13
 Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 `mofe-staged-increment-plan.md` (proven; agent memory
@@ -56,6 +56,16 @@ Ground everything in measured reality before any code (the M-A lesson):
 - Gates: no production edits; evidence + scope artifact with current-tree
   file:line citations; the `jpond=0` finding classified (defect vs invalid)
   with evidence; the totalwatsed3 input contract documented.
+
+W-A execution result (2026-06-13):
+
+- Ran current watershed CLI on arboreal-dendrite with closed M-I HBP shards.
+  It failed before `chan.inp`, HBP parsing, dispatch, or output writing:
+  `CLIWAT-E-010` wrapping `IMP-E-004` on `pw0.imp` line 2, `jpond=0`;
+  output file count was `0`.
+- Classified `jpond=0` as a parser defect on valid no-impoundment input.
+- Mapped the routing, output writer, and totalwatsed3 audit seams.
+- W-B is the next implementation increment.
 
 ## Subsequent increments (refined by W-A; provisional)
 
