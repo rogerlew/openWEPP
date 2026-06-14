@@ -20,7 +20,7 @@ impl Ws10ChannelImpoundmentKernel {
             node_class,
             nchnum_symbol,
             nchnum,
-            Some(WS10_ZERO_THRESHOLD),
+            Some(0.0),
             None,
         )?;
 

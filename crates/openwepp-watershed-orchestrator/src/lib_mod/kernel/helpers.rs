@@ -1048,6 +1048,7 @@ impl Ws10ChannelImpoundmentKernel {
 
         let mut fractions = Vec::with_capacity(class_count);
         let mut particle_diameters_m = Vec::with_capacity(class_count);
+        let mut concentration_sum = 0.0_f64;
         let mut fraction_sum = 0.0_f64;
 
         for class_index in 1..=class_count {
@@ -1090,10 +1091,14 @@ impl Ws10ChannelImpoundmentKernel {
             Self::require_state_range(node_class, fraction_symbol, fraction, Some(0.0), Some(1.0))?;
             fractions.push(fraction);
             particle_diameters_m.push(particle_diameter);
+            concentration_sum += concentration;
             fraction_sum += fraction;
         }
 
-        if fraction_sum <= WS10_ZERO_THRESHOLD {
+        let mass_kg = (total_detachment - total_deposition).max(0.0);
+        if fraction_sum <= WS10_ZERO_THRESHOLD
+            && (mass_kg > WS10_ZERO_THRESHOLD || concentration_sum > WS10_ZERO_THRESHOLD)
+        {
             return Err(Self::domain_violation(
                 node_class,
                 class_count_symbol,
@@ -1102,7 +1107,7 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         Ok(Ws18HillslopeSedimentPayload {
-            mass_kg: (total_detachment - total_deposition).max(0.0),
+            mass_kg,
             fractions,
             particle_diameters_m,
         })

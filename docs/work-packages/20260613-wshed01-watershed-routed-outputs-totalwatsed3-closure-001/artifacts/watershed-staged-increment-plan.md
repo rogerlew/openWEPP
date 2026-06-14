@@ -1,6 +1,6 @@
 # Watershed Staged Increment Plan — Dispatch Artifact
 
-Status: active - W-B executed-hold; W-C queued
+Status: active - W-C executed-hold; W-D queued
 Author: Claude Code, 2026-06-13
 Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 `mofe-staged-increment-plan.md` (proven; agent memory
@@ -83,6 +83,21 @@ W-B execution result (2026-06-14):
   `CLIWAT-E-020` / `WKERNEL-WS10-CHANNEL-E-003`, with zero output files.
 - W-C is the next implementation increment.
 
+W-C execution result (2026-06-14):
+
+- Classified `CLIWAT-E-020` / `WKERNEL-WS10-CHANNEL-E-003` as valid routing
+  input rejected by over-strict guards: a complete zero-sediment hillslope HBP
+  payload with zero particle fractions, plus a hidden `nchnum=0`
+  output-disabled channel state.
+- Amended `SC-ROUTE-001` to pin zero-sediment contributor semantics and
+  `nchnum=0` output-disabled semantics.
+- Implemented the WS10 guard corrections and WAT-backed multi-row watershed
+  publication.
+- Re-ran arboreal-dendrite configured and legacy-discovery CLI paths; both
+  exited `0`, emitted all `14` watershed parquet outputs, and produced
+  `2192` `totalwatsed3.parquet` rows with non-placeholder WAT fields.
+- W-D is the next implementation increment for totalwatsed3 closure.
+
 ## Subsequent increments (refined by W-A; provisional)
 
 - **W-B — impoundment no-pond handling**: executed-hold. Gate met:
@@ -92,11 +107,10 @@ W-B execution result (2026-06-14):
 
 **W-C now starts at the next hard stop:** `CLIWAT-E-020` / `WKERNEL-WS10-CHANNEL-E-003` (a channel-node *DomainViolation* in the WS10 watershed kernel; `kernel/types.rs:154`), 0 output files. W-C's first task is to characterize this exactly as W-A/jpond did: is it (a) valid channel input rejected (guard too strict — confirm legacy runs the same channel state), (b) a genuine domain violation (real bad routed channel state), or (c) missing routing data the channel kernel needs from the hillslope shards? Read the lines + compare to legacy `chnrt`/channel routing; do not assume defect.
 
-- **W-C — watershed routing + output**: route the hillslope shards over the
-  channel network to a watershed-level routed parquet (interchange schema).
-  Gate: watershed water balance conserves against the closed hillslope inputs
-  (independent-operand identity at noise); output schema matches the
-  interchange contract.
+- **W-C — watershed routing + output**: executed-hold. Gate met for routed
+  publication: the CLI routes the hillslope shards over the channel network,
+  emits all `14` interchange parquet outputs, publishes multi-row WAT-backed
+  `totalwatsed3.parquet`, and rejects placeholder/default-zero publication.
 - **W-D — totalwatsed3 end-to-end audit + closure**: run totalwatsed3 on the
   routed output (wepppy `.venv`; cross-repo validation). Gate: the
   totalwatsed3 identity closes at the established floor — the WBVAL06/6a

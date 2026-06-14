@@ -26,7 +26,7 @@ use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
     SidecarRequirement, adapt_sidecar_bindings,
 };
-use openwepp_runner::SidecarPolicy;
+use openwepp_runner::{SidecarPolicy, build_watershed_daily_rows_from_wat};
 use openwepp_topology::{
     ContributorTriplet, TopologyContributors, TopologyGraph, TopologyNode, TopologyNodeKey,
     TopologyNodeKind, validate_pre_execution_topology,
@@ -44,6 +44,7 @@ use openwepp_watershed_orchestrator::{
 use openwepp_watershed_output::contracts::{WatershedOutputConfig, validate_output_contract};
 use openwepp_watershed_output::writers::{
     WatershedInterchangeRowSeed, write_interchange_parquet_outputs,
+    write_interchange_parquet_outputs_from_rows,
 };
 use serde::Deserialize;
 use serde_json::Value;
@@ -494,7 +495,18 @@ fn run() -> Result<(), String> {
     }
 
     let row_seed = build_watershed_output_row_seed(&report);
-    write_watershed_interchange_outputs(&runfile.outputs, row_seed)?;
+    let row_seeds = build_watershed_daily_rows_from_wat(
+        runfile
+            .hillslope_blocks_by_id
+            .values()
+            .map(|block| block.pass_file_path.as_path()),
+        row_seed,
+    )
+    .map_err(|error| {
+        format!("CLIWAT-E-041 failed building watershed WAT daily output rows: {error}")
+    })?
+    .unwrap_or_else(|| vec![row_seed]);
+    write_watershed_interchange_outputs(&runfile.outputs, &row_seeds)?;
 
     Ok(())
 }
@@ -1899,10 +1911,14 @@ fn build_default_chaninp_surface(
 
 fn write_watershed_interchange_outputs(
     outputs: &WatershedOutputsResolved,
-    row_seed: WatershedInterchangeRowSeed,
+    row_seeds: &[WatershedInterchangeRowSeed],
 ) -> Result<(), String> {
-    write_interchange_parquet_outputs(outputs, row_seed)
-        .map_err(|error| format!("CLIWAT-E-034 watershed output writer failure: {error}"))
+    if row_seeds.len() == 1 {
+        write_interchange_parquet_outputs(outputs, row_seeds[0])
+    } else {
+        write_interchange_parquet_outputs_from_rows(outputs, row_seeds)
+    }
+    .map_err(|error| format!("CLIWAT-E-034 watershed output writer failure: {error}"))
 }
 
 #[allow(clippy::too_many_lines)]
@@ -2012,6 +2028,25 @@ fn build_watershed_output_row_seed(
             WatershedProductionFluxSymbol::Cbase,
         ),
         channel_loss_m3: 0.0,
+        area_m2: 1.0,
+        precipitation_mm: 0.0,
+        rain_melt_mm: 0.0,
+        runoff_mm: runoff_volume_m3 * 1_000.0,
+        deep_percolation_mm: 0.0,
+        lateral_flow_mm: 0.0,
+        qofe_mm: 0.0,
+        transpiration_mm: 0.0,
+        evaporation_soil_mm: 0.0,
+        evaporation_residue_mm: 0.0,
+        upstream_q_mm: 0.0,
+        subsurface_runon_mm: 0.0,
+        total_soil_water_mm: 0.0,
+        soil_water_total_mm: 0.0,
+        frozen_water_mm: 0.0,
+        snow_water_mm: 0.0,
+        tile_mm: 0.0,
+        irrigation_mm: 0.0,
+        baseflow_mm: 0.0,
     }
 }
 

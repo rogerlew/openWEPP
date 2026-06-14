@@ -10,6 +10,7 @@ mod policy;
 mod release;
 mod role;
 mod shared;
+mod watershed_wat;
 
 pub use api::{HillslopeRunReport, HillslopeRunRequest, ReleaseLintReport, RunnerLaunchRequest};
 pub use constants::*;
@@ -21,3 +22,4 @@ pub use release::{
     lint_release_directory, validate_release_sidecar, write_release_sidecar_for_binary,
 };
 pub use role::BinaryRole;
+pub use watershed_wat::{WatershedWatPublicationError, build_watershed_daily_rows_from_wat};

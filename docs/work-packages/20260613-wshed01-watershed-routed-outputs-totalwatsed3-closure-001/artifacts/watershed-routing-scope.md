@@ -156,6 +156,16 @@ W-C red tests:
 - Reported depth columns agree with volume-derived depths at the established
   tolerance.
 
+W-C disposition:
+
+- `SC-ROUTE-001` now treats complete zero-sediment HBP payloads as valid when
+  mass and concentration support are zero, while preserving positive-support
+  particle-fraction requirements.
+- `SC-ROUTE-001` now treats `nchnum=0` as channel detail output disabled, not
+  as a routing domain violation.
+- The real arboreal-dendrite CLI emits all `14` watershed parquet outputs.
+- `totalwatsed3.parquet` has `2192` rows and WAT-backed non-placeholder fields.
+
 W-D red tests:
 
 - Run `/home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py` on the

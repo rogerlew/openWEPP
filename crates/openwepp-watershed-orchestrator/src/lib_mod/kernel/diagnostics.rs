@@ -68,6 +68,10 @@ impl Ws10ChannelImpoundmentKernel {
         for &hillslope_id in request.contributor_hillslopes {
             let payload = Self::read_hillslope_sediment_payload(request, node_class, hillslope_id)?;
             incoming_sediment_mass_kg += payload.mass_kg;
+            if payload.mass_kg <= WS10_ZERO_THRESHOLD {
+                continue;
+            }
+
             let fraction_sum = payload.fractions.iter().sum::<f64>();
             if !fraction_sum.is_finite() || fraction_sum <= WS10_ZERO_THRESHOLD {
                 return Err(Self::domain_violation(

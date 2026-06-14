@@ -1,6 +1,6 @@
 # Pre-Implementation Contract Gate
 
-Status: W-A executed
+Status: W-C executed
 
 Evidence mode: Static
 
@@ -21,3 +21,11 @@ Before W-C production edits:
 - Reject publication that writes default zeros or one-row synthetic data for a
   real routed run.
 - Define independent operands for the watershed water-balance identity.
+
+W-C gate result:
+
+- `SC-ROUTE-001` version `45` pins zero-sediment HBP payload semantics and
+  `nchnum=0` output-disabled channel semantics.
+- W-C replaced one-row/default-zero writer publication for real runs with
+  WAT-backed multi-row publication.
+- W-D still owns the independent totalwatsed3 closure identity.

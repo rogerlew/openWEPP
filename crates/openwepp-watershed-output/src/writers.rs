@@ -115,6 +115,25 @@ pub struct WatershedInterchangeRowSeed {
     pub channel_storage_m3: f64,
     pub channel_baseflow_m3: f64,
     pub channel_loss_m3: f64,
+    pub area_m2: f64,
+    pub precipitation_mm: f64,
+    pub rain_melt_mm: f64,
+    pub runoff_mm: f64,
+    pub deep_percolation_mm: f64,
+    pub lateral_flow_mm: f64,
+    pub qofe_mm: f64,
+    pub transpiration_mm: f64,
+    pub evaporation_soil_mm: f64,
+    pub evaporation_residue_mm: f64,
+    pub upstream_q_mm: f64,
+    pub subsurface_runon_mm: f64,
+    pub total_soil_water_mm: f64,
+    pub soil_water_total_mm: f64,
+    pub frozen_water_mm: f64,
+    pub snow_water_mm: f64,
+    pub tile_mm: f64,
+    pub irrigation_mm: f64,
+    pub baseflow_mm: f64,
 }
 
 impl Default for WatershedInterchangeRowSeed {
@@ -138,6 +157,25 @@ impl Default for WatershedInterchangeRowSeed {
             channel_storage_m3: 0.0,
             channel_baseflow_m3: 0.0,
             channel_loss_m3: 0.0,
+            area_m2: 1.0,
+            precipitation_mm: 0.0,
+            rain_melt_mm: 0.0,
+            runoff_mm: 0.0,
+            deep_percolation_mm: 0.0,
+            lateral_flow_mm: 0.0,
+            qofe_mm: 0.0,
+            transpiration_mm: 0.0,
+            evaporation_soil_mm: 0.0,
+            evaporation_residue_mm: 0.0,
+            upstream_q_mm: 0.0,
+            subsurface_runon_mm: 0.0,
+            total_soil_water_mm: 0.0,
+            soil_water_total_mm: 0.0,
+            frozen_water_mm: 0.0,
+            snow_water_mm: 0.0,
+            tile_mm: 0.0,
+            irrigation_mm: 0.0,
+            baseflow_mm: 0.0,
         }
     }
 }
@@ -146,55 +184,62 @@ pub fn write_interchange_parquet_outputs(
     outputs: &WatershedOutputConfig,
     row_seed: WatershedInterchangeRowSeed,
 ) -> Result<(), WatershedWriterError> {
-    write_single_output(&outputs.ebe_pw0, watershed_ebe_schema()?, row_seed)?;
-    write_single_output(&outputs.chan_out, watershed_chan_peak_schema()?, row_seed)?;
-    write_single_output(&outputs.chanwb, watershed_chanwb_schema()?, row_seed)?;
-    write_single_output(&outputs.chnwb, watershed_chnwb_schema()?, row_seed)?;
-    write_single_output(&outputs.soil_pw0, watershed_soil_schema()?, row_seed)?;
+    write_interchange_parquet_outputs_from_rows(outputs, &[row_seed])
+}
+
+pub fn write_interchange_parquet_outputs_from_rows(
+    outputs: &WatershedOutputConfig,
+    row_seeds: &[WatershedInterchangeRowSeed],
+) -> Result<(), WatershedWriterError> {
+    write_single_output(&outputs.ebe_pw0, watershed_ebe_schema()?, row_seeds)?;
+    write_single_output(&outputs.chan_out, watershed_chan_peak_schema()?, row_seeds)?;
+    write_single_output(&outputs.chanwb, watershed_chanwb_schema()?, row_seeds)?;
+    write_single_output(&outputs.chnwb, watershed_chnwb_schema()?, row_seeds)?;
+    write_single_output(&outputs.soil_pw0, watershed_soil_schema()?, row_seeds)?;
     write_single_output(
         &outputs.totalwatsed3,
         watershed_totalwatsed3_schema()?,
-        row_seed,
+        row_seeds,
     )?;
     write_single_output(
         &outputs.loss_hill,
         watershed_loss_average_hill_schema()?,
-        row_seed,
+        row_seeds,
     )?;
     write_single_output(
         &outputs.loss_chn,
         watershed_loss_average_chn_schema()?,
-        row_seed,
+        row_seeds,
     )?;
     write_single_output(
         &outputs.loss_out,
         watershed_loss_average_out_schema()?,
-        row_seed,
+        row_seeds,
     )?;
     write_single_output(
         &outputs.loss_class_data,
         watershed_loss_average_class_schema()?,
-        row_seed,
+        row_seeds,
     )?;
     write_single_output(
         &outputs.loss_all_years_hill,
         watershed_loss_all_years_hill_schema()?,
-        row_seed,
+        row_seeds,
     )?;
     write_single_output(
         &outputs.loss_all_years_chn,
         watershed_loss_all_years_chn_schema()?,
-        row_seed,
+        row_seeds,
     )?;
     write_single_output(
         &outputs.loss_all_years_out,
         watershed_loss_all_years_out_schema()?,
-        row_seed,
+        row_seeds,
     )?;
     write_single_output(
         &outputs.loss_all_years_class_data,
         watershed_loss_all_years_class_schema()?,
-        row_seed,
+        row_seeds,
     )?;
     Ok(())
 }
@@ -1469,8 +1514,16 @@ fn loss_table_metadata(table: &str) -> HashMap<String, String> {
 fn write_single_output(
     path: &Path,
     schema: Schema,
-    row_seed: WatershedInterchangeRowSeed,
+    row_seeds: &[WatershedInterchangeRowSeed],
 ) -> Result<(), WatershedWriterError> {
+    if row_seeds.is_empty() {
+        return Err(WatershedWriterError::Parquet {
+            code: "OWSOUT-E-004",
+            path: path.to_path_buf(),
+            detail: "watershed output requires at least one routed row".to_string(),
+        });
+    }
+
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).map_err(|source| WatershedWriterError::Io {
             code: "OWSOUT-E-003",
@@ -1479,7 +1532,7 @@ fn write_single_output(
         })?;
     }
 
-    let batch = build_single_row_batch(&schema, row_seed)?;
+    let batch = build_row_batch(&schema, row_seeds)?;
     let file = File::create(path).map_err(|source| WatershedWriterError::Io {
         code: "OWSOUT-E-003",
         path: path.to_path_buf(),
@@ -1513,26 +1566,48 @@ fn write_single_output(
     Ok(())
 }
 
-fn build_single_row_batch(
+fn build_row_batch(
     schema: &Schema,
-    row_seed: WatershedInterchangeRowSeed,
+    row_seeds: &[WatershedInterchangeRowSeed],
 ) -> Result<RecordBatch, WatershedWriterError> {
     let mut columns: Vec<ArrayRef> = Vec::with_capacity(schema.fields().len());
 
     for field in schema.fields() {
         let column: ArrayRef = match field.data_type() {
-            DataType::Int8 => Arc::new(Int8Array::from(vec![int8_value(field.name(), row_seed)])),
-            DataType::Int16 => {
-                Arc::new(Int16Array::from(vec![int16_value(field.name(), row_seed)]))
-            }
-            DataType::Int32 => {
-                Arc::new(Int32Array::from(vec![int32_value(field.name(), row_seed)]))
-            }
-            DataType::Float64 => Arc::new(Float64Array::from(vec![float64_value(
-                field.name(),
-                row_seed,
-            )])),
-            DataType::Utf8 => Arc::new(StringArray::from(vec![utf8_value(field.name())])),
+            DataType::Int8 => Arc::new(Int8Array::from(
+                row_seeds
+                    .iter()
+                    .copied()
+                    .map(|row_seed| int8_value(field.name(), row_seed))
+                    .collect::<Vec<_>>(),
+            )),
+            DataType::Int16 => Arc::new(Int16Array::from(
+                row_seeds
+                    .iter()
+                    .copied()
+                    .map(|row_seed| int16_value(field.name(), row_seed))
+                    .collect::<Vec<_>>(),
+            )),
+            DataType::Int32 => Arc::new(Int32Array::from(
+                row_seeds
+                    .iter()
+                    .copied()
+                    .map(|row_seed| int32_value(field.name(), row_seed))
+                    .collect::<Vec<_>>(),
+            )),
+            DataType::Float64 => Arc::new(Float64Array::from(
+                row_seeds
+                    .iter()
+                    .copied()
+                    .map(|row_seed| float64_value(field.name(), row_seed))
+                    .collect::<Vec<_>>(),
+            )),
+            DataType::Utf8 => Arc::new(StringArray::from(
+                row_seeds
+                    .iter()
+                    .map(|_| utf8_value(field.name()))
+                    .collect::<Vec<_>>(),
+            )),
             unsupported => {
                 return Err(WatershedWriterError::UnsupportedFieldType {
                     field_name: field.name().clone(),
@@ -1595,6 +1670,30 @@ fn float64_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> f64
         "soluble_pollutant" | "Solub. React. Pollutant" => row_seed.soluble_pollutant_kg,
         "particulate_pollutant" | "Particulate Pollutant" => row_seed.particulate_pollutant_kg,
         "total_pollutant" | "Total Pollutant" => total_pollutant,
+        "P" | "P (mm)" | "Precipitation" => row_seed.precipitation_mm,
+        "RM" | "RM (mm)" | "Rain+Melt" => row_seed.rain_melt_mm,
+        "Q" | "Q (mm)" | "Runoff" => row_seed.runoff_mm,
+        "Dp" | "Dp (mm)" | "Percolation" => row_seed.deep_percolation_mm,
+        "latqcc" | "latqcc (mm)" | "Lateral Flow" => row_seed.lateral_flow_mm,
+        "QOFE" | "QOFE (mm)" => row_seed.qofe_mm,
+        "Ep" | "Ep (mm)" | "Transpiration" => row_seed.transpiration_mm,
+        "Es" | "Es (mm)" => row_seed.evaporation_soil_mm,
+        "Er" | "Er (mm)" => row_seed.evaporation_residue_mm,
+        "Evaporation" => row_seed.evaporation_soil_mm + row_seed.evaporation_residue_mm,
+        "ET" => {
+            row_seed.transpiration_mm
+                + row_seed.evaporation_soil_mm
+                + row_seed.evaporation_residue_mm
+        }
+        "UpStrmQ" | "UpStrmQ (mm)" => row_seed.upstream_q_mm,
+        "SubRIn" | "SubRIn (mm)" => row_seed.subsurface_runon_mm,
+        "Total-Soil Water" | "Total Soil Water (mm)" | "TSW" => row_seed.total_soil_water_mm,
+        "SoilWaterTotal" => row_seed.soil_water_total_mm,
+        "frozwt" | "frozwt (mm)" => row_seed.frozen_water_mm,
+        "Snow-Water" | "Snow Water (mm)" => row_seed.snow_water_mm,
+        "Tile" | "Tile (mm)" => row_seed.tile_mm,
+        "Irr" | "Irr (mm)" => row_seed.irrigation_mm,
+        "Baseflow" | "Base (mm)" => row_seed.baseflow_mm,
         "Inflow (m^3)" | "value" => row_seed.runoff_volume_m3,
         "Outflow (m^3)" => row_seed.channel_outflow_m3,
         "Storage (m^3)" => row_seed.channel_storage_m3,
@@ -1604,11 +1703,9 @@ fn float64_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> f64
             row_seed.runoff_volume_m3 - row_seed.channel_outflow_m3 - row_seed.channel_loss_m3
         }
         "Specific Gravity" => 2.65,
-        "Fraction In Flow Exiting"
-        | "Area"
-        | "Area (m^2)"
-        | "Hillslope Area"
-        | "Contributing Area" => 1.0,
+        "Fraction In Flow Exiting" => 1.0,
+        "Area" | "Area (m^2)" => row_seed.area_m2,
+        "Hillslope Area" | "Contributing Area" => row_seed.area_m2 / 10_000.0,
         "Diameter" => 0.25,
         _ => 0.0,
     }
@@ -1704,6 +1801,101 @@ mod tests {
                 output.display()
             );
         }
+
+        if base.exists() {
+            fs::remove_dir_all(base).expect("temp directory cleanup should succeed");
+        }
+    }
+
+    #[test]
+    fn writer_preserves_multiple_watershed_daily_rows_and_wat_fields() {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock should be monotonic")
+            .as_nanos();
+        let base =
+            std::env::temp_dir().join(format!("openwepp_watershed_output_multi_{timestamp}"));
+        let config = sample_config(&base);
+        let mut row_1 = WatershedInterchangeRowSeed {
+            sim_day_index: 1,
+            julian: 1,
+            day_of_month: 1,
+            area_m2: 2_000.0,
+            precipitation_mm: 10.0,
+            rain_melt_mm: 8.0,
+            runoff_mm: 2.0,
+            runoff_volume_m3: 4.0,
+            soil_water_total_mm: 120.0,
+            ..WatershedInterchangeRowSeed::default()
+        };
+        row_1.channel_outflow_m3 = row_1.runoff_volume_m3;
+        let mut row_2 = WatershedInterchangeRowSeed {
+            sim_day_index: 2,
+            julian: 2,
+            day_of_month: 2,
+            area_m2: 2_000.0,
+            precipitation_mm: 12.0,
+            rain_melt_mm: 0.0,
+            runoff_mm: 3.0,
+            runoff_volume_m3: 6.0,
+            soil_water_total_mm: 118.0,
+            ..WatershedInterchangeRowSeed::default()
+        };
+        row_2.channel_outflow_m3 = row_2.runoff_volume_m3;
+
+        write_interchange_parquet_outputs_from_rows(&config, &[row_1, row_2])
+            .expect("multi-row writer should emit watershed parquet outputs");
+
+        let file = File::open(&config.totalwatsed3).expect("totalwatsed3 should be readable");
+        let builder = ParquetRecordBatchReaderBuilder::try_new(file)
+            .expect("totalwatsed3 should include readable parquet footer");
+        let mut reader = builder
+            .build()
+            .expect("totalwatsed3 parquet reader should build");
+        let batch = reader
+            .next()
+            .expect("totalwatsed3 should include a batch")
+            .expect("totalwatsed3 batch should decode");
+        assert_eq!(batch.num_rows(), 2);
+
+        let schema = batch.schema();
+        let sim_day = batch
+            .column(
+                schema
+                    .index_of("sim_day_index")
+                    .expect("sim_day_index column"),
+            )
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .expect("sim_day_index should be int32");
+        let precipitation = batch
+            .column(schema.index_of("P").expect("P column"))
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .expect("P should be float64");
+        let runoff_volume = batch
+            .column(schema.index_of("runvol").expect("runvol column"))
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .expect("runvol should be float64");
+        let soil_water_total = batch
+            .column(
+                schema
+                    .index_of("SoilWaterTotal")
+                    .expect("SoilWaterTotal column"),
+            )
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .expect("SoilWaterTotal should be float64");
+
+        assert_eq!(sim_day.value(0), 1);
+        assert_eq!(sim_day.value(1), 2);
+        assert!((precipitation.value(0) - 10.0).abs() <= 1.0e-12);
+        assert!((precipitation.value(1) - 12.0).abs() <= 1.0e-12);
+        assert!((runoff_volume.value(0) - 4.0).abs() <= 1.0e-12);
+        assert!((runoff_volume.value(1) - 6.0).abs() <= 1.0e-12);
+        assert!((soil_water_total.value(0) - 120.0).abs() <= 1.0e-12);
+        assert!((soil_water_total.value(1) - 118.0).abs() <= 1.0e-12);
 
         if base.exists() {
             fs::remove_dir_all(base).expect("temp directory cleanup should succeed");

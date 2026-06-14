@@ -94,6 +94,43 @@ fn seed_erod15_hillslope_payload(
     }
 }
 
+fn seed_zero_sediment_hillslope_payload(
+    surface: &mut WatershedWritebackSurface,
+    hillslope_id: u32,
+) {
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("hs{hillslope_id}_total_detachment_kg")),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("hs{hillslope_id}_total_deposition_kg")),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("hs{hillslope_id}_particle_class_count")),
+        BoundaryValue::scalar(EROD15_CLASS_COUNT_SCALAR),
+    );
+
+    for class in 1..=3 {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!(
+                "hs{hillslope_id}_sediment_concentration_kg_m3_{class:04}"
+            )),
+            BoundaryValue::scalar(0.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_particle_diameter_m_{class:04}")),
+            BoundaryValue::scalar(0.000_01 * class_index_scalar(class)),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!(
+                "hs{hillslope_id}_particle_flow_fraction_{class:04}"
+            )),
+            BoundaryValue::scalar(0.0),
+        );
+    }
+}
+
 fn seed_ws17_channel_segment_scaffold(surface: &mut WatershedWritebackSurface, node_id: u32) {
     surface.state_surface.insert(
         BoundarySymbol::from(format!("ws10_channel_{node_id}_nslpts")),
@@ -954,6 +991,50 @@ fn wshedimpl19_contract_channel_exports_class_payload_family() {
         fraction_sum += fraction;
     }
     assert!((fraction_sum - 1.0).abs() <= 1.0e-12);
+}
+
+#[test]
+fn wshed01_wc_zero_sediment_hillslope_payload_allows_zero_fraction_support() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    for hillslope_id in [1_u32, 2, 3] {
+        seed_zero_sediment_hillslope_payload(&mut surface, hillslope_id);
+    }
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "complete zero-sediment HBP payloads with zero fractions must route; step_reports={:?}",
+        report.step_reports
+    );
+
+    assert!(state_value(&report, "ws10_channel_1_qsed").abs() <= 1.0e-12);
+    assert!(state_value(&report, "ws10_channel_2_qsed").abs() <= 1.0e-12);
+    assert!(state_value(&report, "ws10_channel_1_particle_class_count").abs() <= 1.0e-12);
+    assert!(state_value(&report, "ws10_channel_2_particle_class_count").abs() <= 1.0e-12);
+}
+
+#[test]
+fn wshed01_wc_nchnum_zero_disables_channel_detail_output_without_blocking_routing() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("nchnum"), BoundaryValue::scalar(0.0));
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "nchnum=0 is an output-selection state, not a routing domain violation; step_reports={:?}",
+        report.step_reports
+    );
+
+    assert!(state_value(&report, "ws10_channel_1_qpo") > 0.0);
+    assert!(state_value(&report, "ws10_channel_2_qpo") > 0.0);
 }
 
 #[test]

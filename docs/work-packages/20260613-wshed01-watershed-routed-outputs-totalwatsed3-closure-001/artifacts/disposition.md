@@ -1,12 +1,11 @@
 # Disposition
 
-Status: W-B executed-hold; package active; W-C queued
+Status: W-C executed-hold; package active; W-D queued
 
 Evidence mode: Ran + Static
 
-W-A is complete. W-B is complete for its scoped parser/CLI seam and is held
-only because package-level watershed routing/totalwatsed3 closure remains for
-W-C/W-D.
+W-A, W-B, and W-C are complete for their scoped seams. The package remains
+active because W-D totalwatsed3 closure is the acceptance surface.
 
 Disposition:
 
@@ -19,11 +18,15 @@ Disposition:
 - W-B arboreal-dendrite behavior: proceeds past `CLIWAT-E-010`; next observed
   hard stop is `CLIWAT-E-020` / `WKERNEL-WS10-CHANNEL-E-003`; output file
   count remains `0`.
-- Routing/output scope: mapped; channel-routing hard stop is next.
+- W-C hard-stop classification: valid zero-sediment HBP payload and `nchnum=0`
+  output-disabled channel state were rejected by over-strict WS10 guards.
+- Routing/output result: arboreal-dendrite configured and legacy-discovery
+  runs exit `0`, emit all `14` watershed parquet outputs, and produce `2192`
+  `totalwatsed3.parquet` rows with non-placeholder WAT fields.
 - totalwatsed3 contract: documented from openWEPP and wepppy sources.
 
 Next required increment:
 
 ```text
-Execute increment W-C of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
+Execute increment W-D of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
 ```

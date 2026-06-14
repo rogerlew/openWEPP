@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: W-B executed
+Status: W-C executed
 
 Evidence mode: Static
 
@@ -30,3 +30,32 @@ Contract implications carried into W-C:
   mirrors the wepppy schema names, but current publication defaults most
   unmapped fields to `0.0`; W-C must replace placeholder publication with
   real routed operands.
+
+W-C contract implementation:
+
+- `docs/specifications/science-contracts/contracts/SC-ROUTE-001.md` now pins
+  zero-sediment contributor semantics: complete HBP sediment payloads with zero
+  mass and zero concentration are valid without positive particle-flow
+  fractions; positive mass or concentration support still requires positive
+  particle-fraction support.
+- `SC-ROUTE-001` also pins `nchnum=0` as an output-disabled channel detail
+  state, not a routing domain violation.
+- `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs`
+  preserves fail-closed required-field checks while distinguishing zero-mass
+  payloads from positive sediment payloads.
+- `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs`
+  skips fraction normalization only for zero-mass hillslope sediment payloads.
+- `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/validation.rs`
+  accepts `nchnum >= 0`.
+- `crates/openwepp-runner/src/watershed_wat.rs` builds daily watershed row
+  seeds from sibling WAT parquet files and fails closed when only a partial WAT
+  sibling set exists.
+- `crates/openwepp-watershed-output/src/writers.rs` publishes multiple
+  watershed rows and maps water-balance fields from row seeds instead of
+  writer defaults.
+
+Contract implications carried into W-D:
+
+- W-C proves routed output publication and anti-placeholder WAT-backed fields.
+- W-D must still run the totalwatsed3 audit and close the water-balance
+  identity with independent operands.

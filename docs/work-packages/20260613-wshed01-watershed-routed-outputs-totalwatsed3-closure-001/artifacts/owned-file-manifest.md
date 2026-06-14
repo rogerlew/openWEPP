@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: W-B executed
+Status: W-C executed
 
 Evidence mode: Static
 
@@ -37,6 +37,27 @@ W-B write set:
 W-B temporary evidence root:
 
 - `/tmp/openwepp_wshed01_wb/`
+
+W-C write set:
+
+- `Cargo.lock`
+- `crates/openwepp-runner/Cargo.toml`
+- `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`
+- `crates/openwepp-runner/src/lib.rs`
+- `crates/openwepp-runner/src/watershed_wat.rs`
+- `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs`
+- `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs`
+- `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/validation.rs`
+- `crates/openwepp-watershed-output/src/writers.rs`
+- `docs/specifications/science-contracts/contracts/SC-ROUTE-001.md`
+- `tests/integration/ws11_channel_routing_physics_equivalence_contract.rs`
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/package.md`
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/*.md`
+
+W-C temporary evidence roots:
+
+- `/tmp/openwepp_wshed01_wc_final_configured/`
+- `/tmp/openwepp_wshed01_wc_final_legacy/`
 
 Cross-repo files read only:
 

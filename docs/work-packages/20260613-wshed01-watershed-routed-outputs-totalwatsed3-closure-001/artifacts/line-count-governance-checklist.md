@@ -1,6 +1,6 @@
 # Line Count Governance Checklist
 
-Status: W-B executed
+Status: W-C executed
 
 Evidence mode: Ran
 
@@ -24,4 +24,25 @@ wc -l crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs \
   crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs \
   crates/openwepp-input-contract/src/parsers/watershed_impoundment.rs \
   docs/contracts/openwepp-watershed-runfile-contract.md
+```
+
+Observed line counts after W-C:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs` | 2066 | WARN; W-C limited growth and moved WAT aggregation to `watershed_wat.rs`. |
+| `crates/openwepp-runner/src/watershed_wat.rs` | 574 | New module below WARN. |
+| `crates/openwepp-watershed-output/src/writers.rs` | 1904 | Below WARN, close to threshold. |
+| `tests/integration/ws11_channel_routing_physics_equivalence_contract.rs` | 2029 | WARN test file; no production refactor required. |
+| `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs` | 1404 | Below WARN. |
+| `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs` | 1102 | Below WARN. |
+| `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/validation.rs` | 931 | Below WARN. |
+
+Command:
+
+```bash
+wc -l crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs \
+  crates/openwepp-runner/src/watershed_wat.rs \
+  crates/openwepp-watershed-output/src/writers.rs \
+  tests/integration/ws11_channel_routing_physics_equivalence_contract.rs
 ```

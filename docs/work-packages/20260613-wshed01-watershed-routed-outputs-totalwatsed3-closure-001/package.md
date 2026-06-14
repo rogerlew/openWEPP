@@ -1,6 +1,6 @@
 # WSHED01 — Watershed Routed Outputs / totalwatsed3 Closure
 
-Status: active - W-B executed-hold, W-C queued
+Status: active - W-C executed-hold, W-D queued
 
 Package type: staged implementation/closure package (FDHP01/MOFE01 execution
 shape: characterize-then-staged-increments, conservation as acceptance)
@@ -39,6 +39,11 @@ normal, valid state — so the lead hypothesis is a **parser defect** (reject
 `jpond=0` instead of accepting an empty impoundment set), to be confirmed
 against the parser code + legacy behavior in W-A. This is the *first* blocker,
 not necessarily the only one between here and totalwatsed3 closure.
+
+Current status after W-C: the no-impoundment parser blocker and the subsequent
+WS10 channel guard blocker are both cleared. The watershed CLI now emits routed
+watershed parquet outputs on arboreal-dendrite; package closure remains blocked
+on W-D totalwatsed3 audit closure.
 
 ## Cross-repo note
 
@@ -88,8 +93,10 @@ closure).
   zero impoundments. The arboreal-dendrite CLI now proceeds past
   `CLIWAT-E-010` and reaches the next channel routing hard stop,
   `CLIWAT-E-020` / `WKERNEL-WS10-CHANNEL-E-003`.
-- Watershed routing over the hillslope HBP shards + channel network to a
-  watershed-level routed output (parquet via the interchange schema).
+- W-C watershed routing/output publication: executed 2026-06-14. Zero-sediment
+  HBP contributors and `nchnum=0` output-disabled channel state are accepted
+  under `SC-ROUTE-001` version `45`. The CLI emits all `14` watershed parquet
+  outputs and WAT-backed multi-row `totalwatsed3.parquet` on arboreal-dendrite.
 - totalwatsed3 end-to-end audit on the routed output; closure at the
   established floor.
 

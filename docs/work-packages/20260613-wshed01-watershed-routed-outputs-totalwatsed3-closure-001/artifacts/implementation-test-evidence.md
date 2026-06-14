@@ -1,6 +1,6 @@
 # Implementation Test Evidence
 
-Status: W-B executed-hold
+Status: W-C executed-hold
 
 Evidence mode: Ran + Static
 
@@ -76,3 +76,64 @@ Observed:
 - Next hard stop:
   `CLIWAT-E-020 watershed dispatch reported failure (message_id=WKERNEL-WS10-CHANNEL-E-003)`.
 - Output file count: `0`.
+
+W-C implementation:
+
+- Classified the W-B hard stop as over-strict WS10 channel validation on valid
+  zero-sediment hillslope payloads, followed by a hidden `nchnum=0`
+  output-disabled state guard.
+- Amended `SC-ROUTE-001` to version `45`.
+- Corrected WS10 sediment-payload and `nchnum` validation.
+- Added WAT-backed watershed daily row aggregation and multi-row interchange
+  output writing.
+
+W-C focused green evidence:
+
+- `cargo test --test ws11_channel_routing_physics_equivalence_contract wshed01_wc_ -- --nocapture`:
+  `2` passed.
+- `cargo test -p openwepp-watershed-output writers::tests::writer_ -- --nocapture`:
+  `2` passed.
+- `cargo test -p openwepp-runner --test watershed_cli_behavior_contract watershed_cli_emits_watershed_output_parquet_files -- --nocapture`:
+  `1` passed.
+- `cargo test -p openwepp-runner -p openwepp-watershed-output`: passed.
+
+W-C full gate evidence:
+
+- `cargo fmt --check`: pass.
+- `cargo clippy --workspace --all-targets -- -D warnings`: pass.
+- `cargo test --workspace`: pass.
+- `cargo deny check`: pass.
+
+Arboreal-dendrite W-C gate:
+
+Configured run:
+
+```bash
+cargo run -q -p openwepp-runner --bin openwepp-cli-watershed -- \
+  --run-dir /tmp/openwepp_wshed01_wa/watershed/run \
+  --run-file case.run \
+  --output-dir /tmp/openwepp_wshed01_wc_final_configured/output \
+  --policy compat
+```
+
+Legacy-discovery run:
+
+```bash
+cargo run -q -p openwepp-runner --bin openwepp-cli-watershed -- \
+  --run-dir /tmp/openwepp_wshed01_wa/watershed/run \
+  --run-file case.run \
+  --output-dir /tmp/openwepp_wshed01_wc_final_legacy/output \
+  --policy compat \
+  --legacy-sidecar-discovery
+```
+
+Observed:
+
+- configured exit `0`; legacy-discovery exit `0`;
+- configured output files `14`; legacy-discovery output files `14`;
+- configured `totalwatsed3.parquet` rows `2192`;
+- legacy-discovery `totalwatsed3.parquet` rows `2192`;
+- `max(abs(runvol - Q * Area / 1000.0)) == 0.0 m^3` for both runs;
+- first-row WAT fields are non-placeholder:
+  `P=32.717215206680784`, `RM=13.203340055286729`,
+  `SoilWaterTotal=335.10212226223916`.

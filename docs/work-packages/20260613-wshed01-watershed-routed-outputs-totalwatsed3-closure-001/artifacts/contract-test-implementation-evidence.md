@@ -1,6 +1,6 @@
 # Contract Test Implementation Evidence
 
-Status: W-B executed
+Status: W-C executed
 
 Evidence mode: Ran + Static
 
@@ -45,3 +45,31 @@ Required W-C tests:
   real routed run.
 - Assert reported depth columns match volume-derived depths.
 - Add an anti-placeholder gate for required water-balance operands.
+
+W-C tests added:
+
+- `wshed01_wc_zero_sediment_hillslope_payload_allows_zero_fraction_support`
+  proves complete zero-sediment HBP payloads do not fail
+  `WKERNEL-WS10-CHANNEL-E-003`.
+- `wshed01_wc_nchnum_zero_disables_channel_detail_output_without_blocking_routing`
+  proves `nchnum=0` is an output-selection state, not a routing domain
+  violation.
+- `writer_preserves_multiple_watershed_daily_rows_and_wat_fields` proves the
+  interchange writer preserves multiple daily rows and maps WAT fields.
+
+W-C red evidence:
+
+- The WS10 zero-sediment test failed before production edits with
+  `WKERNEL-WS10-CHANNEL-E-003`.
+- The `nchnum=0` test failed before production edits at channel validation.
+
+W-C green evidence:
+
+- `cargo test --test ws11_channel_routing_physics_equivalence_contract wshed01_wc_ -- --nocapture`:
+  `2` passed.
+- `cargo test -p openwepp-watershed-output writers::tests::writer_ -- --nocapture`:
+  `2` passed.
+- `cargo test -p openwepp-runner --test watershed_cli_behavior_contract watershed_cli_emits_watershed_output_parquet_files -- --nocapture`:
+  `1` passed.
+- Real arboreal-dendrite CLI runs emit all `14` parquet outputs and a
+  `2192`-row `totalwatsed3.parquet`.

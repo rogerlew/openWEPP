@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: W-B executed-hold
+Status: W-C executed-hold
 
 Evidence mode: Ran + Static
 
@@ -22,9 +22,20 @@ Evidence mode: Ran + Static
 | W-B fmt/clippy | PASS | `cargo fmt --check`; `cargo clippy -p openwepp-input-contract -p openwepp-runner --tests -- -D warnings`. |
 | W-B scoped markdown lint | PASS | `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `25` files scanned, `0` errors, `0` warnings. |
 | W-B heavy batch/comparator runs | NOT RUN | W-B is a focused parser/CLI seam; no comparator or totalwatsed3 batch is meaningful before W-C clears channel routing. |
+| W-C hard-stop classification | PASS | `CLIWAT-E-020` / `WKERNEL-WS10-CHANNEL-E-003` classified as valid zero-sediment HBP payload rejected by over-strict guard; hidden `nchnum=0` output-disabled state also classified. |
+| W-C contract amendment | PASS | `SC-ROUTE-001` version `45` pins zero-sediment contributor semantics and `nchnum=0` output-disabled channel semantics. |
+| W-C focused tests | PASS | WS10 W-C tests `2` passed; watershed writer tests `2` passed; watershed CLI output regression `1` passed. |
+| W-C real CLI routed output | PASS | Configured and legacy-discovery arboreal-dendrite runs exited `0`, each emitting all `14` watershed parquet files. |
+| W-C anti-placeholder output | PASS | `totalwatsed3.parquet` has `2192` rows; WAT fields include nonzero `P`, `RM`, `SoilWaterTotal`; `runvol` agrees with `Q * Area / 1000.0`. |
+| W-C fmt/clippy/test/deny | PASS | `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test --workspace`; `cargo deny check`. |
+| W-C scoped markdown lint | PASS | `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `26` files scanned, `0` errors, `0` warnings. |
+| W-C totalwatsed3 closure audit | NOT RUN | W-D owns the wepppy totalwatsed3 audit and independent water-balance residual closure. |
 
 Subagent note: comparator/heavy-batch subagent was not used because W-A required
 only a single current-behavior CLI run and static source characterization.
 For W-B, no comparator subagent was used because the increment required
 focused parser/CLI gates only; the package comparator/closure surface remains
 blocked behind W-C routing.
+For W-C, no comparator subagent was used; command-level comparisons and gates
+were run directly in this session because the comparator/heavy-runner subagent
+was unavailable. No totalwatsed3 audit is claimed for W-C.

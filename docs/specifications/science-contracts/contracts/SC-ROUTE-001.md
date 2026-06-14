@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 44
+contract_version: 45
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -14,7 +14,7 @@ consumer_scope:
   - Impoundment and watershed-node consumers requiring channel flux/state payloads
   - Comparator/replay surfaces using watershed confidence-tier signals
 evidence_level: static
-last_reviewed: 2026-05-28
+last_reviewed: 2026-06-14
 supersedes: []
 superseded_by: []
 ---
@@ -286,7 +286,7 @@ bit-for-bit parity). Contract-specific tolerances:
 
 | Surface | Symbols |
 |---|---|
-| Channel global routing controls | `dtchr`, `nchnum`, `cbase`, `ipeak` |
+| Channel global routing controls | `dtchr`, `cbase`, `ipeak`; `nchnum` is a `chan.inp` channel-output selection count and may be zero |
 | Channel per-node controls | `ws10_channel_{id}_chnn`, `ws10_channel_{id}_ctlslp`, `ws10_channel_{id}_chnk`, `ws10_channel_{id}_icntrl`, `ws10_channel_{id}_flgout`, `ws10_channel_{id}_rccoef`, `ws10_channel_{id}_rcexp`, `ws10_channel_{id}_rcoset` (`icntrl==4` lanes only) |
 | Channel per-node segment/hydraulic scaffold controls | `ws10_channel_{id}_nslpts`, `ws10_channel_{id}_x_{point:04}`, `ws10_channel_{id}_slope_{point:04}`, `ws10_channel_{id}_depa_{point:04}`, `ws10_channel_{id}_depb_{point:04}`, `ws10_channel_{id}_wida_{point:04}`, `ws10_channel_{id}_widb_{point:04}` |
 | Contributor peak payloads | `hs{ID}_peakro`, `hs{ID}_watdur` |
@@ -316,6 +316,9 @@ bit-for-bit parity). Contract-specific tolerances:
    - `qpo = peakot`,
    - `roff = runvol`,
    - `durrof = roff / qpo` when `qpo > 1e-12`, else `durrof = 0`.
+6. Preserve `chan.inp` output-gate semantics: `nchnum = 0` disables selected
+   channel-detail output records but is not a channel-routing domain violation
+   and must not be used as a positive routing contributor.
 
 ### WS11 Coupling Rules
 
@@ -424,6 +427,13 @@ Minimum WS11 routing conformance vectors:
    for routing boundary failures.
 5. Routing consumers must not synthesize fallback sediment payload values when
    contributor payload fields are absent or invalid.
+6. Zero-sediment contributor payloads are valid when the complete class-indexed
+   payload is present, `max(total_detachment_kg - total_deposition_kg, 0)` is
+   zero, and all class concentrations and particle-flow fractions are zero.
+   Routing consumers must route those contributors as zero sediment load rather
+   than requiring a positive class-fraction support. Positive net-sediment
+   payloads still require positive particle-flow-fraction support and remain
+   hard-fail states when the support is absent.
 
 ## EROD16 Hillslope ROUTE Scope-Partition Addendum
 
@@ -540,6 +550,7 @@ Minimum WS11 routing conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-14` | `45` | `Codex` | WSHED01 W-C amendment: clarified EROD15 routing-intake semantics for complete zero-sediment contributor payloads and pinned `chan.inp` `nchnum=0` as valid output-disabled routing input rather than a positive channel-routing operand. |
 | `2026-06-01` | `44` | `Codex` | HPHYS0241 amendment: added `INV-ROUTE-014` and routing-admission authority requiring active 24-slot MOFE hourly carry-array manifest provenance for multi-OFE hourly hillslope contributors before watershed HBP routing dispatch. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-15 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-13 authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-15 review cycle. |
