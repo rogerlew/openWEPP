@@ -22,10 +22,10 @@ const SEDIMENT_DENSITY_KG_M3: [f64; 5] = [2_600.0, 2_650.0, 1_800.0, 1_600.0, 2_
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Totalwatsed3Config {
-    pub pass_path: PathBuf,
-    pub wat_path: PathBuf,
-    pub soil_path: Option<PathBuf>,
-    pub element_path: Option<PathBuf>,
+    pub pass_paths: Vec<PathBuf>,
+    pub wat_paths: Vec<PathBuf>,
+    pub soil_paths: Vec<PathBuf>,
+    pub element_paths: Vec<PathBuf>,
     pub output_path: PathBuf,
 }
 
@@ -370,28 +370,28 @@ struct OptionalAggregates {
 pub fn write_totalwatsed3(
     config: &Totalwatsed3Config,
 ) -> Result<Totalwatsed3WriteSummary, Totalwatsed3Error> {
-    require_file("PASS", &config.pass_path)?;
-    require_file("WAT", &config.wat_path)?;
-    if let Some(path) = &config.soil_path {
-        require_file("soil", path)?;
-    }
-    if let Some(path) = &config.element_path {
-        require_file("element", path)?;
-    }
+    require_required_files("PASS", &config.pass_paths)?;
+    require_required_files("WAT", &config.wat_paths)?;
+    require_existing_files("soil", &config.soil_paths)?;
+    require_existing_files("element", &config.element_paths)?;
 
-    let pass_by_day = read_pass_daily(&config.pass_path)?;
-    let (wat_by_day, area_lookup) = read_wat_daily(&config.wat_path)?;
+    let pass_by_day = read_pass_daily(&config.pass_paths)?;
+    let (wat_by_day, area_lookup) = read_wat_daily(&config.wat_paths)?;
     if wat_by_day.is_empty() {
         return Err(Totalwatsed3Error::EmptyWatInput {
-            path: config.wat_path.clone(),
+            path: config
+                .wat_paths
+                .first()
+                .cloned()
+                .unwrap_or_else(|| PathBuf::from("<no WAT input>")),
         });
     }
 
     let mut optional_aggregates = OptionalAggregates::default();
-    if let Some(path) = &config.soil_path {
+    for path in &config.soil_paths {
         read_soil_tsmf(path, &area_lookup, &mut optional_aggregates)?;
     }
-    if let Some(path) = &config.element_path {
+    for path in &config.element_paths {
         read_element_partitions(path, &area_lookup, &mut optional_aggregates)?;
     }
 
@@ -403,6 +403,26 @@ pub fn write_totalwatsed3(
         output_path: config.output_path.clone(),
         rows_written: rows.len(),
     })
+}
+
+fn require_required_files(role: &'static str, paths: &[PathBuf]) -> Result<(), Totalwatsed3Error> {
+    if paths.is_empty() {
+        return Err(Totalwatsed3Error::MissingInput {
+            role,
+            path: PathBuf::from("<none>"),
+        });
+    }
+    for path in paths {
+        require_file(role, path)?;
+    }
+    Ok(())
+}
+
+fn require_existing_files(role: &'static str, paths: &[PathBuf]) -> Result<(), Totalwatsed3Error> {
+    for path in paths {
+        require_file(role, path)?;
+    }
+    Ok(())
 }
 
 fn require_file(role: &'static str, path: &Path) -> Result<(), Totalwatsed3Error> {
@@ -506,8 +526,20 @@ fn build_rows(
     Ok(rows)
 }
 
-fn read_pass_daily(path: &Path) -> Result<BTreeMap<DayKey, PassAccumulator>, Totalwatsed3Error> {
+fn read_pass_daily(
+    paths: &[PathBuf],
+) -> Result<BTreeMap<DayKey, PassAccumulator>, Totalwatsed3Error> {
     let mut daily = BTreeMap::<DayKey, PassAccumulator>::new();
+    for path in paths {
+        read_pass_path(path, &mut daily)?;
+    }
+    Ok(daily)
+}
+
+fn read_pass_path(
+    path: &Path,
+    daily: &mut BTreeMap<DayKey, PassAccumulator>,
+) -> Result<(), Totalwatsed3Error> {
     for_batch(path, |batch, row_offset| {
         let wepp_ids = int32_column(path, batch, "wepp_id")?;
         let years = int16_column(path, batch, "year")?;
@@ -558,11 +590,11 @@ fn read_pass_daily(path: &Path) -> Result<BTreeMap<DayKey, PassAccumulator>, Tot
         }
         Ok(())
     })?;
-    Ok(daily)
+    Ok(())
 }
 
 fn read_wat_daily(
-    path: &Path,
+    paths: &[PathBuf],
 ) -> Result<
     (
         BTreeMap<DayKey, DailyWatAccumulator>,
@@ -572,9 +604,19 @@ fn read_wat_daily(
 > {
     let mut rows = Vec::new();
     let mut area_lookup = BTreeMap::<DateOfeKey, AreaLookupEntry>::new();
-    for_batch(path, |batch, row_offset| {
-        read_wat_batch(path, batch, row_offset, &mut rows, &mut area_lookup)
-    })?;
+    for path in paths {
+        let wepp_id_override = wepp_id_override_for_per_hillslope_file(path, ".wat.parquet");
+        for_batch(path, |batch, row_offset| {
+            read_wat_batch(
+                path,
+                batch,
+                row_offset,
+                wepp_id_override,
+                &mut rows,
+                &mut area_lookup,
+            )
+        })?;
+    }
 
     let mut outlet_ofe_by_day = BTreeMap::<(DayKey, i32), i16>::new();
     for row in &rows {
@@ -607,6 +649,7 @@ fn read_wat_batch(
     path: &Path,
     batch: &RecordBatch,
     row_offset: usize,
+    wepp_id_override: Option<i32>,
     rows: &mut Vec<WatInputRow>,
     area_lookup: &mut BTreeMap<DateOfeKey, AreaLookupEntry>,
 ) -> Result<(), Totalwatsed3Error> {
@@ -645,7 +688,8 @@ fn read_wat_batch(
 
     for row in 0..batch.num_rows() {
         let row_index = row_offset + row;
-        let wepp_id = int32_value(path, "wepp_id", wepp_ids, row, row_index)?;
+        let wepp_id =
+            wepp_id_override.unwrap_or(int32_value(path, "wepp_id", wepp_ids, row, row_index)?);
         let ofe_id = optional_int16_value(path, "ofe_id|OFE", ofe_ids, row, row_index)?;
         let area_m2 = nonnegative_f64_value(path, "Area", areas, row, row_index)?;
         if area_m2 <= 0.0 {
@@ -769,6 +813,16 @@ fn read_wat_batch(
         });
     }
     Ok(())
+}
+
+fn wepp_id_override_for_per_hillslope_file(path: &Path, suffix: &str) -> Option<i32> {
+    let file_name = path.file_name()?.to_str()?;
+    let stem = file_name.strip_suffix(suffix)?;
+    let id_text = stem.strip_prefix('H').or_else(|| stem.strip_prefix('h'))?;
+    if id_text.is_empty() || !id_text.bytes().all(|byte| byte.is_ascii_digit()) {
+        return None;
+    }
+    id_text.parse::<i32>().ok().filter(|wepp_id| *wepp_id > 0)
 }
 
 fn read_soil_tsmf(

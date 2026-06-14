@@ -1,6 +1,6 @@
 # Contract Test Implementation Evidence
 
-Status: T-B executed
+Status: T-B2 executed
 
 Evidence mode: Ran + Static
 
@@ -160,3 +160,46 @@ T-B held-for-T-C evidence:
   zero profile violations, but the closure residual is still `57.409871 mm`.
   T-B therefore closes the implementation/test gate, not the package closure
   gate.
+
+Required T-B2 tests:
+
+- PASS publication test: MOFE `runvol` must equal terminal outlet routed
+  runoff volume over hillslope publication area, not a per-OFE area-weighted
+  sum and not WAT `Q`.
+- Native reader test: totalwatsed3 must consume openWEPP per-hillslope
+  `H*.pass.parquet`/`H*.wat.parquet` inputs when combined files are absent.
+- Unit-registry test: `hillslope_pass` schema units must be present in the
+  canonical output unit registry.
+
+T-B2 tests added:
+
+- `mofe01_tb2_pass_runvol_uses_terminal_outlet_transfer_volume_not_per_ofe_sum`
+  builds a two-OFE fixture where outlet delivery over publication area differs
+  from a per-OFE volume sum.
+- `totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces`
+  verifies native per-hillslope PASS/WAT discovery and WAT per-file `wepp_id`
+  override.
+- `hphys0278_output_unit_registry_covers_output_schema_unit_metadata` now
+  covers `hillslope_pass_schema`.
+
+T-B2 red evidence:
+
+- The PASS publication test initially failed to compile because the
+  `hillslope_pass` module and `append_runoff_delivery_rows_to` method did not
+  exist.
+- The native reader test initially failed with `CLITW3-E-004` because the CLI
+  required combined `H.pass.parquet`.
+
+T-B2 green evidence:
+
+- `cargo test -p openwepp-runner mofe01_tb2_pass_runvol_uses_terminal_outlet_transfer_volume_not_per_ofe_sum -- --nocapture`:
+  `1` passed.
+- `cargo test -p openwepp-runner --test totalwatsed3_cli_contract totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces -- --nocapture`:
+  `1` passed.
+- `cargo test --test sim_contract_boundary_unit_registry hphys0278_output_unit_registry_covers_output_schema_unit_metadata -- --nocapture`:
+  `1` passed.
+
+T-B2 held-for-T-C evidence:
+
+- T-B2 closes the native runoff-delivery publication gap. It does not claim
+  totalwatsed3 conservation closure; that remains T-C.

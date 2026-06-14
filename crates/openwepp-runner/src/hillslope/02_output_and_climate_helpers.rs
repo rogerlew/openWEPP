@@ -657,6 +657,79 @@ fn build_hillslope_wat_row(
     })
 }
 
+fn build_hillslope_pass_row(
+    wepp_id: i32,
+    wb13_row: &SimulationOwnedWb13Row,
+) -> Result<HillslopePassRow, HillslopeCliError> {
+    if wepp_id <= 0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass_parquet",
+            detail: format!("{SIMOUT_GUARD_ID} wepp_id must be > 0, observed {wepp_id}"),
+        });
+    }
+    if wb13_row.sim_day_index <= 0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass_parquet",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} sim_day_index must be >= 1, observed {}",
+                wb13_row.sim_day_index
+            ),
+        });
+    }
+    let area_m2 = wb13_row.wb13_row.area;
+    if !area_m2.is_finite() || area_m2 <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass_parquet",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} row area must be finite and > 0.0, observed {area_m2}"
+            ),
+        });
+    }
+
+    Ok(HillslopePassRow {
+        wepp_id,
+        year: i16::try_from(wb13_row.wb13_row.year).map_err(|_| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.pass_parquet",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} year out of i16 range: {}",
+                    wb13_row.wb13_row.year
+                ),
+            }
+        })?,
+        sim_day_index: wb13_row.sim_day_index,
+        julian: i16::try_from(wb13_row.wb13_row.julian_day).map_err(|_| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.pass_parquet",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} julian out of i16 range: {}",
+                    wb13_row.wb13_row.julian_day
+                ),
+            }
+        })?,
+        month: wb13_row.month,
+        day_of_month: wb13_row.day_of_month,
+        water_year: wb13_row.water_year,
+        runvol_m3: wb13_row.wb13_row.q * area_m2 / 1_000.0,
+        sbrunv_m3: wb13_row.wb13_row.latqcc * area_m2 / 1_000.0,
+        peakro_m3_s: 0.0,
+        total_detachment_kg: 0.0,
+        total_deposition_kg: 0.0,
+        sediment_concentration_kg_m3: [0.0; 5],
+    })
+}
+
+fn build_hillslope_pass_row_from_outlet_delivery(
+    wepp_id: i32,
+    outlet: &InternalPerOfeWb13Record,
+    publication_area_m2: f64,
+) -> Result<HillslopePassRow, HillslopeCliError> {
+    let mut row = build_hillslope_pass_row(wepp_id, &outlet.row)?;
+    row.runvol_m3 = outlet.physical_surface_outflow_mm * publication_area_m2 / 1_000.0;
+    row.sbrunv_m3 = outlet.row.wb13_row.latqcc * outlet.area_m2 / 1_000.0;
+    Ok(row)
+}
+
 fn derive_mofe04_publication_area_from_slope(
     slope: &SlopeProfile,
 ) -> Result<f64, HillslopeCliError> {

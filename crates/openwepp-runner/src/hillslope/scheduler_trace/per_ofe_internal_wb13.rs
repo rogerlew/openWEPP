@@ -80,6 +80,34 @@ impl DailyInternalPerOfeWb13Collection {
         rows.extend(self.records.iter().map(|record| record.row.clone()));
     }
 
+    pub(super) fn append_runoff_delivery_rows_to(
+        &self,
+        wepp_id: i32,
+        publication_area_m2: f64,
+        rows: &mut Vec<HillslopePassRow>,
+    ) -> Result<(), HillslopeCliError> {
+        if wepp_id <= 0 {
+            return Err(internal_wb13_failure(format!(
+                "outputs.pass_parquet wepp_id must be > 0, observed {wepp_id}"
+            )));
+        }
+        if !publication_area_m2.is_finite() || publication_area_m2 <= 0.0 {
+            return Err(internal_wb13_failure(format!(
+                "outputs.pass_parquet publication area must be finite and > 0.0, observed {publication_area_m2}"
+            )));
+        }
+
+        let outlet = self.records.last().ok_or_else(|| {
+            internal_wb13_failure("outputs.pass_parquet has no outlet per-OFE record".to_string())
+        })?;
+        rows.push(build_hillslope_pass_row_from_outlet_delivery(
+            wepp_id,
+            outlet,
+            publication_area_m2,
+        )?);
+        Ok(())
+    }
+
     pub(super) fn outlet_row(&self) -> Option<&SimulationOwnedWb13Row> {
         self.records.last().map(|record| &record.row)
     }

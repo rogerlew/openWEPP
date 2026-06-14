@@ -1,6 +1,6 @@
 # Verification Agent B
 
-Status: T-B local verification complete
+Status: T-B2 local verification complete
 
 Evidence mode: Static
 
@@ -85,3 +85,26 @@ Residual governance note:
 
 - T-C must not close by deferring or redefining the residual without
   contract-level evidence. The independent operand rule remains binding.
+
+## T-B2 Governance Verification
+
+Evidence mode: Static + Ran
+
+Verified:
+
+- T-B2 is marked executed for native runoff-delivery publication only, not
+  package closure.
+- The previous T-B governance finding about legacy-input dependence is closed:
+  T-B2 real evidence uses `/tmp/openwepp_wshed01_tb2/output/H*.pass.parquet`
+  and `/tmp/openwepp_wshed01_tb2/output/H*.wat.parquet` emitted by openWEPP.
+- Command-level evidence replaces the comparator-suite subagent for this
+  dispatch.
+- The package status, staged plan, disposition, and handoff point to T-C as the
+  next live increment.
+- Line-count watchpoints are recorded; no T-B2 touched source file crossed the
+  2000-line warning threshold.
+
+Residual governance note:
+
+- T-C must run the conservation audit on native outputs before any closure
+  claim.

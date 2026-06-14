@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::{Path, PathBuf};
 
 use openwepp_runner::{Totalwatsed3Config, write_totalwatsed3};
@@ -86,28 +87,36 @@ fn run() -> Result<(), String> {
         ));
     }
 
-    let pass_path = resolve_input_path(&input_dir, pass_path, "H.pass.parquet");
-    if !pass_path.is_file() {
+    let pass_paths =
+        resolve_required_input_paths(&input_dir, pass_path, "H.pass.parquet", ".pass.parquet");
+    if pass_paths.is_empty() {
         return Err(format!(
             "CLITW3-E-004 required PASS parquet does not exist: {}",
-            pass_path.display()
+            input_dir.join("H.pass.parquet").display()
         ));
     }
-    let wat_path = resolve_input_path(&input_dir, wat_path, "H.wat.parquet");
-    if !wat_path.is_file() {
+    let wat_paths =
+        resolve_required_input_paths(&input_dir, wat_path, "H.wat.parquet", ".wat.parquet");
+    if wat_paths.is_empty() {
         return Err(format!(
             "CLITW3-E-005 required WAT parquet does not exist: {}",
-            wat_path.display()
+            input_dir.join("H.wat.parquet").display()
         ));
     }
-    let soil_path = resolve_optional_input_path(&input_dir, soil_path, "H.soil.parquet")?;
-    let element_path = resolve_optional_input_path(&input_dir, element_path, "H.element.parquet")?;
+    let soil_paths =
+        resolve_optional_input_paths(&input_dir, soil_path, "H.soil.parquet", ".soil.parquet")?;
+    let element_paths = resolve_optional_input_paths(
+        &input_dir,
+        element_path,
+        "H.element.parquet",
+        ".element.parquet",
+    )?;
 
     let summary = write_totalwatsed3(&Totalwatsed3Config {
-        pass_path,
-        wat_path,
-        soil_path,
-        element_path,
+        pass_paths,
+        wat_paths,
+        soil_paths,
+        element_paths,
         output_path,
     })
     .map_err(|error| format!("CLITW3-E-010 totalwatsed3 production failed: {error}"))?;
@@ -118,6 +127,24 @@ fn run() -> Result<(), String> {
         summary.output_path.display()
     );
     Ok(())
+}
+
+fn resolve_required_input_paths(
+    input_dir: &Path,
+    candidate: Option<PathBuf>,
+    default_name: &str,
+    per_hillslope_suffix: &str,
+) -> Vec<PathBuf> {
+    if let Some(candidate) = candidate {
+        let path = resolve_input_path(input_dir, Some(candidate), default_name);
+        return path.is_file().then_some(path).into_iter().collect();
+    }
+
+    let combined = input_dir.join(default_name);
+    if combined.is_file() {
+        return vec![combined];
+    }
+    collect_per_hillslope_inputs(input_dir, per_hillslope_suffix)
 }
 
 fn resolve_input_path(input_dir: &Path, candidate: Option<PathBuf>, default_name: &str) -> PathBuf {
@@ -133,15 +160,16 @@ fn resolve_input_path(input_dir: &Path, candidate: Option<PathBuf>, default_name
     )
 }
 
-fn resolve_optional_input_path(
+fn resolve_optional_input_paths(
     input_dir: &Path,
     candidate: Option<PathBuf>,
     default_name: &str,
-) -> Result<Option<PathBuf>, String> {
+    per_hillslope_suffix: &str,
+) -> Result<Vec<PathBuf>, String> {
     let explicitly_configured = candidate.is_some();
     let path = resolve_input_path(input_dir, candidate, default_name);
     if path.is_file() {
-        return Ok(Some(path));
+        return Ok(vec![path]);
     }
     if explicitly_configured {
         return Err(format!(
@@ -149,7 +177,41 @@ fn resolve_optional_input_path(
             path.display()
         ));
     }
-    Ok(None)
+    Ok(collect_per_hillslope_inputs(
+        input_dir,
+        per_hillslope_suffix,
+    ))
+}
+
+fn collect_per_hillslope_inputs(input_dir: &Path, suffix: &str) -> Vec<PathBuf> {
+    let mut paths = fs::read_dir(input_dir)
+        .ok()
+        .into_iter()
+        .flat_map(|entries| entries.filter_map(Result::ok))
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.file_name()
+                .and_then(|value| value.to_str())
+                .is_some_and(|name| {
+                    let Some(id_text) = name
+                        .strip_suffix(suffix)
+                        .and_then(|stem| stem.strip_prefix('H').or_else(|| stem.strip_prefix('h')))
+                    else {
+                        return false;
+                    };
+                    !id_text.is_empty() && id_text.bytes().all(|byte| byte.is_ascii_digit())
+                })
+        })
+        .collect::<Vec<_>>();
+    paths.sort_by_key(|path| file_name_sort_key(path));
+    paths
+}
+
+fn file_name_sort_key(path: &Path) -> String {
+    path.file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or_default()
+        .to_string()
 }
 
 fn print_help() {

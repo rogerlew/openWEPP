@@ -1,6 +1,6 @@
 # Verification Agent A
 
-Status: T-B local verification complete
+Status: T-B2 local verification complete
 
 Evidence mode: Ran + Static
 
@@ -86,3 +86,24 @@ Residual blocker:
 - The conservation audit still reports
   `closure_reconstructed_with_storage_total_mm=57.409871`. T-B is verified as
   executed for producer/audit-read gates; T-C owns closure.
+
+## T-B2 Verification Record
+
+Evidence mode: Ran + Static
+
+Verified:
+
+- `outputs.pass_parquet` is present as an optional hillslope output path.
+- `hillslope_pass` parquet writer/schema exists and is unit-registry covered.
+- Focused T-B2 tests passed.
+- Real arboreal-dendrite rerun emitted `36` native PASS parquet files.
+- HBP/WAT anchor comparison reported `anchor_mismatches=0`.
+- PASS `runvol` matches outlet WAT `QOFE * area / 1000` at
+  `1.4551915228366852e-11 m^3` max absolute difference over `78912` rows.
+- Native totalwatsed3 production emitted `2192` rows.
+- Full Rust gates passed: fmt, clippy, workspace tests, and deny.
+
+Residual blocker:
+
+- T-C still must run and close the totalwatsed3 conservation audit on the
+  native output.

@@ -1,6 +1,6 @@
 # Review Agent A
 
-Status: T-B local review complete
+Status: T-B2 local review complete
 
 Evidence mode: Static + Ran
 
@@ -116,3 +116,33 @@ Residual risk:
 | # | Finding | Disposition | Rationale |
 |---|---|---|---|
 | - | None | accepted | T-B producer, lineage, focused tests, real run, and audit-read gates are met. |
+
+## T-B2 Review
+
+Evidence mode: Static + Ran
+
+Findings:
+
+No blocking T-B2 findings.
+
+Review observations:
+
+1. Native PASS parquet publication is openWEPP-owned and opt-in through
+   `outputs.pass_parquet`; the required HBP `pass` output remains unchanged.
+2. The MOFE `runvol` source is the terminal outlet transfer output, not WAT
+   `Q` and not a per-OFE sum.
+3. The real-run anchor comparison proves T-B2 did not perturb existing HBP/WAT
+   publication.
+4. T-B2 does not claim totalwatsed3 conservation closure; T-C remains the
+   closure increment.
+
+Residual risk:
+
+- `02_output_and_climate_helpers.rs` is below but near the 2000-line warning
+  threshold. T-C should avoid unrelated growth there.
+
+## T-B2 Finding Disposition
+
+| # | Finding | Disposition | Rationale |
+|---|---|---|---|
+| - | None | accepted | T-B2 native PASS emission, anchor stability, focused tests, real run, and full gates are met. |

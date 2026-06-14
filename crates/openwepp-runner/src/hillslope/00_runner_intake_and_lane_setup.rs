@@ -15,6 +15,9 @@ use openwepp_hillslope_orchestrator::{
     SchedulerOutcomeClass, TransferInput, TransferOutput, Wb11HydrologyKernel,
 };
 use openwepp_hillslope_output::contracts::{HillslopeOutputConfig, validate_output_contract};
+use openwepp_hillslope_output::hillslope_pass::{
+    HillslopePassRow, write_hillslope_pass_parquet,
+};
 use openwepp_hillslope_output::hillslope_wat::{
     HillslopeWatRow, InterchangeVersion, write_hillslope_wat_parquet,
 };
@@ -707,6 +710,7 @@ struct HillslopeRunfileInputs {
 struct HillslopeRunfileOutputs {
     pass: String,
     loss: String,
+    pass_parquet: Option<String>,
     wat: Option<String>,
     soil: Option<String>,
     plot: Option<String>,
@@ -852,6 +856,7 @@ pub fn execute_hillslope_run(
     let soil_versions = vec![soil.datver.numeric(); soil.ofes.len().max(1)];
     let [output_pass, output_loss] = required_output_paths(&runfile.output_config);
     let optional_outputs = optional_output_paths(&runfile.output_config);
+    let output_hillslope_id = parse_hillslope_id_from_output_pass_path(&output_pass)?;
 
     let (snow, frost, wepp_ui_mode_selection, mut pmetpara) = if request.legacy_sidecar_discovery {
         let mut excluded_files = vec![
@@ -1229,6 +1234,7 @@ pub fn execute_hillslope_run(
         require_runtime_surface_scalar(&runtime_surface, "snow.runtime_swe")?;
     let mut wb13_rows =
         Vec::with_capacity(climate_span.days.len() * contributor_ofe_count.max(1));
+    let mut pass_rows = Vec::with_capacity(climate_span.days.len());
     let mut coupling_vectors = None;
     let mut erod14_wave2_kernel_status_seen = false;
     let mut scheduler_outcome_class = SchedulerOutcomeClass::Completed;
@@ -1308,6 +1314,20 @@ pub fn execute_hillslope_run(
             persistent_result
                 .internal_wb13_collection
                 .append_publication_rows_to(&mut wb13_rows);
+            persistent_result
+                .internal_wb13_collection
+                .append_runoff_delivery_rows_to(
+                    i32::try_from(output_hillslope_id).map_err(|_| {
+                        HillslopeCliError::RuntimeSurfaceFailure {
+                            surface: "outputs.pass_parquet",
+                            detail: format!(
+                                "{SIMOUT_GUARD_ID} hillslope id {output_hillslope_id} exceeds i32 range"
+                            ),
+                        }
+                    })?,
+                    publication_area_m2,
+                    &mut pass_rows,
+                )?;
             runtime_surface = persistent_result.runtime_surface;
             scheduler_outcome_class = persistent_result.scheduler_outcome_class;
             scheduler_status_message_id = persistent_result.scheduler_status_message_id;
@@ -1361,6 +1381,17 @@ pub fn execute_hillslope_run(
             }
             erod14_wave2_kernel_status_seen |= execution_result.erod14_wave2_kernel_status_seen;
             hphys0245_trace_rows.extend(execution_result.hphys0245_trace_rows);
+            pass_rows.push(build_hillslope_pass_row(
+                i32::try_from(output_hillslope_id).map_err(|_| {
+                    HillslopeCliError::RuntimeSurfaceFailure {
+                        surface: "outputs.pass_parquet",
+                        detail: format!(
+                            "{SIMOUT_GUARD_ID} hillslope id {output_hillslope_id} exceeds i32 range"
+                        ),
+                    }
+                })?,
+                &execution_result.wb13_row,
+            )?);
             wb13_rows.push(execution_result.wb13_row);
         }
     }
@@ -1471,6 +1502,18 @@ pub fn execute_hillslope_run(
         )?;
     }
 
+    if let Some(pass_parquet_output) = runfile.output_config.pass_parquet.as_ref() {
+        write_hillslope_pass_parquet(
+            pass_parquet_output,
+            &pass_rows,
+            InterchangeVersion::default(),
+        )
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass_parquet",
+            detail: error.to_string(),
+        })?;
+    }
+
     if let Some(trace_config) = hphys0245_trace_config.as_ref() {
         write_hphys0245_trace_jsonl(trace_config, &hphys0245_trace_rows)?;
     }
@@ -1478,6 +1521,7 @@ pub fn execute_hillslope_run(
     for optional_output in optional_outputs
         .iter()
         .filter(|path| Some(path.as_path()) != runfile.output_config.wat.as_deref())
+        .filter(|path| Some(path.as_path()) != runfile.output_config.pass_parquet.as_deref())
     {
         let payload = build_optional_output_payload(
             &runfile.run_name,

@@ -1,6 +1,6 @@
 # Watershed Staged Increment Plan — Dispatch Artifact
 
-Status: active - T-B executed; T-C queued
+Status: active - T-B2 executed; T-C queued
 Author: Claude Code, 2026-06-13
 Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 `mofe-staged-increment-plan.md` (proven; agent memory
@@ -262,6 +262,31 @@ routed runoff**, then run totalwatsed3 on openWEPP-native outputs.
   not Σ-per-OFE; missing/zero-runoff days produce zero runvol.
 - Gate: openWEPP emits its own runoff-delivery parquet from the
   arboreal-dendrite MOFE01 run; anchors unchanged; full Rust loop.
+
+T-B2 execution result (2026-06-14):
+
+- Added optional hillslope `outputs.pass_parquet` publication. The new
+  openWEPP-native PASS parquet carries date keys, `wepp_id`, `runvol`,
+  `sbrunv`, peak-runoff and zeroed deferred-sediment companion columns.
+- Built MOFE `runvol` from the terminal outlet record:
+  `physical_surface_outflow_mm * publication_area_m2 / 1000`, so it is outlet
+  delivery over the hillslope publication area, not a per-OFE sum and not WAT
+  `Q`.
+- Extended `openwepp-cli-totalwatsed3` to consume sorted per-hillslope
+  `H*.pass.parquet` and `H*.wat.parquet` files when combined `H.pass.parquet`
+  / `H.wat.parquet` files are absent. Per-file WAT ingestion overrides local
+  row `wepp_id` from the `H<number>.wat.parquet` file name.
+- Real arboreal-dendrite MOFE01 rerun emitted `36` HBP, `36` WAT, and `36`
+  native PASS parquet files under `/tmp/openwepp_wshed01_tb2/output`.
+- HBP/WAT anchor hash comparison against `/tmp/openwepp_mofe01_mi_final/output`
+  reported `anchor_mismatches=0`.
+- Direct PASS identity audit over all `78912` hillslope-day rows reported
+  `max_abs_runvol_diff_m3=1.4551915228366852e-11` for PASS `runvol` vs outlet
+  WAT `QOFE * hillslope area / 1000`.
+- `openwepp-cli-totalwatsed3` consumed the native per-hillslope files and
+  wrote `2192` rows to `/tmp/openwepp_wshed01_tb2/totalwatsed3.parquet`.
+- Full Rust loop passed: fmt, clippy, workspace tests, and deny. T-C remains
+  the next closure increment.
 
 ### Increment T-C — totalwatsed3 closure on openWEPP-NATIVE outputs (the WBVAL06/6a deferral resolved)
 

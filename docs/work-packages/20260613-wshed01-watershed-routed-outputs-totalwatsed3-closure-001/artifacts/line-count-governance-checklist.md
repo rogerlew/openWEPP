@@ -1,6 +1,6 @@
 # Line Count Governance Checklist
 
-Status: T-B executed
+Status: T-B2 executed
 
 Evidence mode: Ran
 
@@ -100,3 +100,35 @@ T-B line-count disposition:
 - Two WARN files remain: `openwepp-cli-watershed.rs` and `writers.rs`.
 - T-C should avoid growing either file unless it includes a focused split or a
   narrow, justified mapping change.
+
+Observed line counts after T-B2:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-hillslope-output/src/hillslope_pass.rs` | 347 | New module below WARN. |
+| `crates/openwepp-hillslope-output/src/contracts.rs` | 211 | Below WARN. |
+| `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs` | 1667 | Below WARN. |
+| `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs` | 1866 | Below WARN, close to warning threshold. |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs` | 683 | Below WARN. |
+| `crates/openwepp-runner/src/bin/openwepp-cli-totalwatsed3.rs` | 221 | Below WARN. |
+| `crates/openwepp-runner/src/totalwatsed3.rs` | 1295 | Below WARN. |
+| `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs` | 1410 | Below WARN. |
+
+Command:
+
+```bash
+wc -l crates/openwepp-hillslope-output/src/hillslope_pass.rs \
+  crates/openwepp-hillslope-output/src/contracts.rs \
+  crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs \
+  crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs \
+  crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs \
+  crates/openwepp-runner/src/bin/openwepp-cli-totalwatsed3.rs \
+  crates/openwepp-runner/src/totalwatsed3.rs \
+  crates/openwepp-sim-contract/src/units_mod/output_catalog.rs
+```
+
+T-B2 line-count disposition:
+
+- No touched production file is above the 2000-line warning threshold.
+- `02_output_and_climate_helpers.rs` is close to WARN and should avoid
+  unrelated growth in T-C.

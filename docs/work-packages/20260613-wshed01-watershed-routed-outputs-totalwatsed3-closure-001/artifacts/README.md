@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: T-B executed - package active, T-C queued
+Status: T-B2 executed - package active, T-C queued
 
 Evidence and disposition artifacts for
 `20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001`.
@@ -37,3 +37,11 @@ typed-error and lineage tests, and unit-registry lineage for
 readable rows and the wepppy audit consumes them without schema repair. The
 package remains active for T-C because the current independent closure
 residual is `57.409871 mm`.
+
+T-B2 added openWEPP-owned runoff-delivery PASS parquet emission from the
+hillslope runner. The real arboreal-dendrite MOFE01 rerun emitted `36`
+`H*.pass.parquet` files alongside byte-identical HBP/WAT anchors; direct
+parquet audit showed PASS `runvol` matches outlet WAT `QOFE * area` at
+`1.4551915228366852e-11 m^3` max absolute difference. The dedicated
+totalwatsed3 CLI consumed the native per-hillslope files and wrote `2192`
+rows. T-C still owns conservation audit closure.

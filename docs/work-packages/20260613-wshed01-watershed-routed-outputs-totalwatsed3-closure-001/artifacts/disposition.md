@@ -1,6 +1,6 @@
 # Disposition
 
-Status: T-B executed; package active; T-C queued
+Status: T-B2 executed; package active; T-C queued
 
 Evidence mode: Ran + Static
 
@@ -30,8 +30,9 @@ Disposition:
   remain mm, MOFE `latqcc` is outlet-only, optional profile/interception WAT
   fields are published, and profile audit violations are zero.
 - W-D closure gate: FAIL/HOLD. Configured and legacy-discovery audits both
-  report `closure_reconstructed_with_storage_total_mm=2950.498418`, so
-  package closure is blocked on independent daily PASS `runvol` lineage.
+  reported `closure_reconstructed_with_storage_total_mm=2950.498418`; at W-D
+  closeout, package closure was blocked on independent daily PASS `runvol`
+  lineage.
 - T-A architecture pivot: executed. `totalwatsed3-cli-scope.md` establishes
   `openwepp-cli-totalwatsed3` as a hillslope-only openWEPP-native CLI, with
   PASS `runvol` as `Runoff`, WAT storage/flux operands, outlet-only MOFE
@@ -46,6 +47,14 @@ Disposition:
 - T-B held-for-next gate: the current independent audit residual is
   `closure_reconstructed_with_storage_total_mm=57.409871`
   (`0.345805%` of precipitation), so closure is not claimed until T-C.
+- T-B2 native runoff-delivery publication: executed. `openwepp-cli-hill`
+  emits optional `H*.pass.parquet` files from outlet MOFE routed runoff, the
+  real arboreal-dendrite rerun produced `36` native PASS files with
+  `anchor_mismatches=0` for existing HBP/WAT outputs, and
+  `openwepp-cli-totalwatsed3` wrote `2192` rows from native per-hillslope
+  PASS/WAT files.
+- T-B2 held-for-next gate: no package closure is claimed. T-C still owns the
+  totalwatsed3 conservation audit on the native output.
 
 Next required increment:
 

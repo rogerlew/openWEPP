@@ -1,6 +1,6 @@
 # Pre-Implementation Contract Gate
 
-Status: T-B executed
+Status: T-B2 executed
 
 Evidence mode: Static
 
@@ -88,3 +88,21 @@ Before T-C production edits:
   contract-level refinement.
 - Preserve independent operands: PASS `Runoff`, WAT flux/storage terms, and no
   exact-zero/self-built closure acceptance.
+
+Before T-B2 production edits:
+
+- Use the MOFE outlet routed-runoff source already exercised by the M-I
+  hillslope-total identity: `current_transfer_output.qofe` / published
+  `physical_surface_outflow_mm`.
+- Do not derive PASS `runvol` from WAT `Q`.
+- Treat PASS parquet as an output-surface addition only; HBP/WAT anchors must
+  remain unchanged.
+
+T-B2 gate result:
+
+- Added output unit metadata for `hillslope_pass` and a schema registry test.
+- Added red/green tests for outlet-runoff PASS `runvol` and native
+  per-hillslope totalwatsed3 inputs.
+- Real HBP/WAT anchor comparison reported `anchor_mismatches=0`.
+- Native totalwatsed3 was produced from openWEPP-owned PASS/WAT files.
+- Package closure is still deferred to T-C.

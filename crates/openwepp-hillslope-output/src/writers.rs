@@ -23,6 +23,7 @@ mod tests {
         HillslopeOutputConfig {
             pass: PathBuf::from("output/H1.hbp"),
             loss: PathBuf::from("output/H1.loss.json"),
+            pass_parquet: Some(PathBuf::from("output/H1.pass.parquet")),
             wat: Some(PathBuf::from("output/H1.wat.parquet")),
             soil: None,
             plot: Some(PathBuf::from("output/H1.plot.parquet")),
@@ -53,6 +54,7 @@ mod tests {
         assert_eq!(
             optional,
             vec![
+                PathBuf::from("output/H1.pass.parquet"),
                 PathBuf::from("output/H1.wat.parquet"),
                 PathBuf::from("output/H1.plot.parquet"),
                 PathBuf::from("output/H1.element.parquet"),

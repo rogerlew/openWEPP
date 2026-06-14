@@ -1,5 +1,6 @@
 use super::*;
 use crate::hillslope::intake_lane_setup::build_static_per_ofe_lane_slices;
+use openwepp_hillslope_output::hillslope_pass::HillslopePassRow;
 use openwepp_hillslope_orchestrator::{
     PerOfeDailyWaterBalanceCollection, PerOfeDailyWaterBalanceError,
     PerOfeDailyWaterBalanceRecord, TransferInput, TransferOutput,
@@ -465,6 +466,77 @@ fn mofe01_me4_redo_internal_wb13_records_include_frost_storage_delta_per_ofe() {
 
     assert!(summary.per_element_identity_max_abs_mm > 0.0);
     assert!(summary.per_element_identity_max_abs_mm < 1.0e-11);
+}
+
+#[test]
+fn mofe01_tb2_pass_runvol_uses_terminal_outlet_transfer_volume_not_per_ofe_sum() {
+    let mut upstream_surface_carry = [0.0_f64; 24];
+    upstream_surface_carry[0] = 0.002;
+    let upstream_output = TransferOutput {
+        source_ofe_id: 1,
+        recipient_ofe_id: Some(2),
+        surface_carry: upstream_surface_carry,
+        lateral_carry: [0.0; 24],
+        qofe: 0.002,
+        lateral_export: 0.0,
+    };
+    let downstream_input = TransferInput {
+        source_ofe_id: Some(1),
+        recipient_ofe_id: 2,
+        area_ratio: 1.0,
+        surface_carry: upstream_surface_carry,
+        lateral_carry: [0.0; 24],
+        upstrmq: 0.002,
+        subrin: 0.0,
+    };
+    let outlet_output = TransferOutput {
+        source_ofe_id: 2,
+        recipient_ofe_id: None,
+        surface_carry: [0.0; 24],
+        lateral_carry: [0.0; 24],
+        qofe: 0.005,
+        lateral_export: 0.0,
+    };
+
+    let collection = DailyInternalPerOfeWb13Collection::from_records(
+        2,
+        vec![
+            me4_internal_record_with_area(
+                1,
+                100.0,
+                0.0,
+                me4_wb13_row(1, me4_row_spec().with_rm(2.0).with_q(2.0)),
+                TransferInput::zero_for_first_ofe(),
+                upstream_output,
+            ),
+            me4_internal_record_with_area(
+                2,
+                100.0,
+                0.0,
+                me4_wb13_row(2, me4_row_spec().with_upstrmq(2.0).with_rm(3.0).with_q(5.0)),
+                downstream_input,
+                outlet_output,
+            ),
+        ],
+    )
+    .expect("fixture must close per-OFE and hillslope-total identities");
+
+    let mut pass_rows = Vec::<HillslopePassRow>::new();
+    collection
+        .append_runoff_delivery_rows_to(17, 200.0, &mut pass_rows)
+        .expect("runoff-delivery row should build from outlet record");
+
+    assert_eq!(pass_rows.len(), 1);
+    let row = &pass_rows[0];
+    assert_eq!(row.wepp_id, 17);
+    assert!((row.runvol_m3 - 1.0).abs() <= 1.0e-12);
+
+    let per_ofe_sum_volume_m3: f64 = 2.0 * 100.0 / 1_000.0 + 5.0 * 100.0 / 1_000.0;
+    assert!((per_ofe_sum_volume_m3 - 0.7).abs() <= 1.0e-12);
+    assert!(
+        (row.runvol_m3 - per_ofe_sum_volume_m3).abs() > 1.0e-9,
+        "T-B2 runvol must be outlet delivery over hillslope area, not the per-OFE volume sum"
+    );
 }
 
 fn me4_internal_record(

@@ -1,6 +1,6 @@
 # Worker Handoff
 
-Status: T-B executed; T-C ready
+Status: T-B2 executed; T-C ready
 
 Evidence mode: Static + Ran
 
@@ -21,6 +21,11 @@ T-B implemented that dedicated CLI and produced an arboreal-dendrite
 `totalwatsed3.parquet` that the wepppy audit can read without schema repair.
 The live T-C blocker is now the remaining independent closure residual:
 `57.409871 mm` (`0.345805%` of precipitation).
+
+T-B2 then replaced the remaining legacy-input dependency for runoff delivery:
+the hillslope runner now emits openWEPP-native `H*.pass.parquet` from outlet
+MOFE routed runoff, and totalwatsed3 can consume those per-hillslope PASS/WAT
+files directly.
 
 ## T-A Scope Result
 
@@ -61,6 +66,26 @@ the independent conservation identity.
 - Ran the real arboreal-dendrite producer: `2192` rows emitted.
 - Ran the wepppy audit read: zero profile violations; closure residual remains
   `57.409871 mm`, owned by T-C.
+
+## T-B2 Result
+
+- Added optional `outputs.pass_parquet` to hillslope runfiles.
+- Published `HillslopePassRow` parquet from openWEPP-controlled runoff
+  delivery data.
+- MOFE `runvol` uses terminal outlet
+  `current_transfer_output.qofe * publication_area_m2`, not per-OFE summed
+  WAT publications.
+- Totalwatsed3 now discovers and consumes native per-hillslope
+  `H*.pass.parquet`/`H*.wat.parquet` files.
+- Real arboreal-dendrite evidence root:
+  `/tmp/openwepp_wshed01_tb2/`.
+- Real rerun outputs: `36` HBP, `36` WAT, `36` PASS parquet.
+- HBP/WAT anchor comparison vs `/tmp/openwepp_mofe01_mi_final/output`:
+  `anchor_mismatches=0`.
+- Native totalwatsed3 output:
+  `/tmp/openwepp_wshed01_tb2/totalwatsed3.parquet`, `2192` rows.
+- PASS identity audit: `78912` rows,
+  `max_abs_runvol_diff_m3=1.4551915228366852e-11`.
 
 ## Next Dispatch
 

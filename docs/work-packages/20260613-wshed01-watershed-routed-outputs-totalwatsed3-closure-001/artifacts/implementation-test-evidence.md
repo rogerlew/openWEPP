@@ -1,6 +1,6 @@
 # Implementation Test Evidence
 
-Status: T-B executed
+Status: T-B2 executed
 
 Evidence mode: Ran + Static
 
@@ -416,10 +416,141 @@ self-consistency check"). A genuine openWEPP `runvol` requires exposing a
 per-OFE routed-outlet state / HBP trajectory, not a `Q` restatement. That is an
 engine/output-surface addition.
 
-**Disposition:** T-B's aggregator CLI is accepted as a correct, legacy-validated
-component. But T-C is **blocked**: it cannot demonstrate ADR-0019 closure until
-openWEPP produces its own independent `runvol`. Recommend a **T-B2 — openWEPP
-runvol/PASS output** increment (decide the runoff-delivery source: MOFE
-outlet-OFE routed runoff is the natural candidate, independent of the WAT `Q`
-depth), then T-C closes on openWEPP-native interchange. Operator input wanted on
-the runoff-delivery source before T-B2 codes.
+**Disposition at T-B closeout:** T-B's aggregator CLI was accepted as a
+correct, legacy-validated component. T-C was blocked at that checkpoint because
+it could not demonstrate ADR-0019 closure until openWEPP produced its own
+independent `runvol`. The follow-on **T-B2 — openWEPP runvol/PASS output**
+increment was then added to close that input-lineage gap before T-C audits
+openWEPP-native interchange.
+
+## T-B2 implementation and evidence
+
+Status: T-B2 executed
+
+Evidence mode: Ran + Static
+
+Implementation:
+
+- Added `crates/openwepp-hillslope-output/src/hillslope_pass.rs` with the
+  openWEPP-owned runoff-delivery parquet schema and writer.
+- Added optional `outputs.pass_parquet` to the hillslope runfile/output
+  contract.
+- Added hillslope runner publication of PASS rows:
+  - single-OFE rows use the existing aggregate WB13 row;
+  - MOFE rows use the terminal outlet `InternalPerOfeWb13Record` and publish
+    `runvol = physical_surface_outflow_mm * publication_area_m2 / 1000`.
+- Extended `openwepp-cli-totalwatsed3` to discover sorted per-hillslope
+  `H*.pass.parquet`/`H*.wat.parquet` files when combined `H.pass.parquet` and
+  `H.wat.parquet` are absent.
+- Added per-file WAT `wepp_id` override from `H<number>.wat.parquet`, because
+  native per-hillslope WAT files publish local row ids.
+
+Red evidence:
+
+- `cargo test -p openwepp-runner mofe01_tb2_pass_runvol_uses_terminal_outlet_transfer_volume_not_per_ofe_sum -- --nocapture`
+  initially failed to compile because `openwepp_hillslope_output::hillslope_pass`
+  and `append_runoff_delivery_rows_to` did not exist.
+- `cargo test -p openwepp-runner --test totalwatsed3_cli_contract totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces -- --nocapture`
+  initially failed with `CLITW3-E-004 required PASS parquet does not exist:
+  .../H.pass.parquet`.
+
+Focused green evidence:
+
+- `cargo test -p openwepp-runner mofe01_tb2_pass_runvol_uses_terminal_outlet_transfer_volume_not_per_ofe_sum -- --nocapture`:
+  `1` passed.
+- `cargo test -p openwepp-runner --test totalwatsed3_cli_contract totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces -- --nocapture`:
+  `1` passed.
+- `cargo test --test sim_contract_boundary_unit_registry hphys0278_output_unit_registry_covers_output_schema_unit_metadata -- --nocapture`:
+  `1` passed.
+
+Real arboreal-dendrite T-B2 run:
+
+```bash
+cargo build --release -p openwepp-runner --bins
+rm -rf /tmp/openwepp_wshed01_tb2
+cp -a /tmp/openwepp_mofe01_mh_final/runs /tmp/openwepp_wshed01_tb2/runs
+# p1-p36 runfiles amended in /tmp only with:
+# pass_parquet = "../output/H<n>.pass.parquet"
+target/release/openwepp-cli-hill --run-dir /tmp/openwepp_wshed01_tb2/runs \
+  --run-file p<n>.run --output-dir /tmp/openwepp_wshed01_tb2/output \
+  --policy compat --legacy-sidecar-discovery \
+  --manifest-path /tmp/openwepp_wshed01_tb2/manifests/H<n>.openwepp_hillslope_run_manifest.json
+```
+
+Observed:
+
+- p1-p36 completed.
+- Output counts: `hbp=36`, `wat=36`, `pass_parquet=36`.
+- Per-run stderr logs contain sidecar warnings only (`LSB-W-002` ignored
+  sibling run files and `MOFE01-MG-W-001` deferred sediment coupling).
+
+Anchor comparison:
+
+```bash
+old=/tmp/openwepp_mofe01_mi_final/output
+new=/tmp/openwepp_wshed01_tb2/output
+# SHA-256 compare H1..H36 .hbp and .wat.parquet
+```
+
+Observed:
+
+- `anchor_mismatches=0`.
+
+PASS identity audit:
+
+```sql
+WITH wat AS (
+  SELECT regexp_extract(filename, 'H([0-9]+)\.wat\.parquet', 1)::INTEGER AS hill,
+         sim_day_index,
+         sum("Area") AS total_area_m2,
+         max_by("QOFE", "OFE") AS outlet_qofe_mm
+  FROM read_parquet('/tmp/openwepp_wshed01_tb2/output/H*.wat.parquet', filename=true)
+  GROUP BY hill, sim_day_index
+),
+pass AS (
+  SELECT regexp_extract(filename, 'H([0-9]+)\.pass\.parquet', 1)::INTEGER AS hill,
+         sim_day_index,
+         runvol
+  FROM read_parquet('/tmp/openwepp_wshed01_tb2/output/H*.pass.parquet', filename=true)
+)
+SELECT count(*) AS rows,
+       max(abs(pass.runvol - wat.outlet_qofe_mm * wat.total_area_m2 / 1000.0)) AS max_abs_runvol_diff_m3,
+       avg(abs(pass.runvol - wat.outlet_qofe_mm * wat.total_area_m2 / 1000.0)) AS avg_abs_runvol_diff_m3
+FROM pass JOIN wat USING (hill, sim_day_index);
+```
+
+Observed:
+
+- `rows=78912`;
+- `max_abs_runvol_diff_m3=1.4551915228366852e-11`;
+- `avg_abs_runvol_diff_m3=2.476430939298028e-14`.
+
+Native totalwatsed3 producer:
+
+```bash
+target/release/openwepp-cli-totalwatsed3 \
+  --input-dir /tmp/openwepp_wshed01_tb2/output \
+  --output /tmp/openwepp_wshed01_tb2/totalwatsed3.parquet
+```
+
+Observed:
+
+- `CLITW3-I-001 wrote 2192 rows to
+  /tmp/openwepp_wshed01_tb2/totalwatsed3.parquet`.
+- PASS aggregate: `rows=78912`, `hillslopes=36`,
+  `sum_runvol=126757678.32012103`.
+- totalwatsed3 aggregate: `rows=2192`,
+  `sum_runvol=126757678.32012121`.
+- Difference: `1.7881393432617188e-07 m^3` from floating accumulation order.
+
+Full gate evidence:
+
+- `cargo fmt --check`: pass.
+- `cargo clippy --workspace --all-targets -- -D warnings`: pass.
+- `cargo test --workspace`: pass.
+- `cargo deny check`: pass.
+
+Disposition:
+
+T-B2 passed the native runoff-delivery publication gate. T-C owns the
+conservation audit on `/tmp/openwepp_wshed01_tb2/totalwatsed3.parquet`.

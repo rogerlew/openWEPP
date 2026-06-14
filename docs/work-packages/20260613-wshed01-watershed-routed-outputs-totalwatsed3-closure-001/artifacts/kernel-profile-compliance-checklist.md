@@ -1,6 +1,6 @@
 # Kernel Profile Compliance Checklist
 
-Status: T-B executed
+Status: T-B2 executed
 
 Evidence mode: Static
 
@@ -21,6 +21,12 @@ Checklist for subsequent implementation:
 - T-B did not silently substitute WAT `Q` for PASS `runvol`.
 - T-B did not edit hillslope kernel process physics; changes are at the
   publication/output boundary and dedicated CLI consumer.
+- T-B2 did not edit hillslope kernel process physics; it added an optional
+  output-surface publication from existing MOFE outlet transfer state.
+- T-B2 preserves existing HBP/WAT output anchors byte-for-byte in the real
+  arboreal-dendrite rerun.
+- T-B2 native PASS `runvol` is not WAT `Q`; it is outlet routed runoff over
+  publication area.
 - T-C must localize and close the remaining `57.409871 mm` audit residual
   without weakening independent-operand acceptance.
 - No `.unwrap()`/`.expect()` may be introduced in production paths.

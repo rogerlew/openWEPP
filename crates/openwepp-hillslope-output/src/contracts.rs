@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 pub struct HillslopeOutputConfig {
     pub pass: PathBuf,
     pub loss: PathBuf,
+    pub pass_parquet: Option<PathBuf>,
     pub wat: Option<PathBuf>,
     pub soil: Option<PathBuf>,
     pub plot: Option<PathBuf>,
@@ -75,6 +76,7 @@ pub fn configured_optional_outputs(config: &HillslopeOutputConfig) -> Vec<(&'sta
     let mut configured = Vec::new();
 
     for (name, path) in [
+        ("pass_parquet", config.pass_parquet.clone()),
         ("wat", config.wat.clone()),
         ("soil", config.soil.clone()),
         ("plot", config.plot.clone()),
@@ -131,6 +133,7 @@ mod tests {
         HillslopeOutputConfig {
             pass: PathBuf::from("output/H1.hbp"),
             loss: PathBuf::from("output/H1.loss.json"),
+            pass_parquet: Some(PathBuf::from("output/H1.pass.parquet")),
             wat: Some(PathBuf::from("output/H1.wat.parquet")),
             soil: Some(PathBuf::from("output/H1.soil.parquet")),
             plot: Some(PathBuf::from("output/H1.plot.parquet")),
@@ -203,6 +206,6 @@ mod tests {
 
         let configured = configured_optional_outputs(&config);
         let names: Vec<&str> = configured.iter().map(|(name, _)| *name).collect();
-        assert_eq!(names, vec!["wat", "plot", "element"]);
+        assert_eq!(names, vec!["pass_parquet", "wat", "plot", "element"]);
     }
 }

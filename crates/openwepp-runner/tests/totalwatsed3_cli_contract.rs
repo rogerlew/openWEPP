@@ -82,6 +82,43 @@ fn write_pass_fixture(path: &Path) {
     );
 }
 
+fn write_openwepp_per_hill_pass_fixture(path: &Path) {
+    let mut fields = required_date_fields();
+    fields.extend([
+        Field::new("runvol", DataType::Float64, true),
+        Field::new("sbrunv", DataType::Float64, true),
+        Field::new("tdet", DataType::Float64, true),
+        Field::new("tdep", DataType::Float64, true),
+        Field::new("sedcon_1", DataType::Float64, true),
+        Field::new("sedcon_2", DataType::Float64, true),
+        Field::new("sedcon_3", DataType::Float64, true),
+        Field::new("sedcon_4", DataType::Float64, true),
+        Field::new("sedcon_5", DataType::Float64, true),
+    ]);
+    write_fixture_parquet(
+        path,
+        Schema::new(fields),
+        vec![
+            Arc::new(Int32Array::from(vec![1])),
+            Arc::new(Int16Array::from(vec![2004])),
+            Arc::new(Int32Array::from(vec![1])),
+            Arc::new(Int16Array::from(vec![1])),
+            Arc::new(Int8Array::from(vec![1])),
+            Arc::new(Int8Array::from(vec![1])),
+            Arc::new(Int16Array::from(vec![2004])),
+            Arc::new(Float64Array::from(vec![12.0])),
+            Arc::new(Float64Array::from(vec![0.0])),
+            Arc::new(Float64Array::from(vec![0.0])),
+            Arc::new(Float64Array::from(vec![0.0])),
+            Arc::new(Float64Array::from(vec![0.0])),
+            Arc::new(Float64Array::from(vec![0.0])),
+            Arc::new(Float64Array::from(vec![0.0])),
+            Arc::new(Float64Array::from(vec![0.0])),
+            Arc::new(Float64Array::from(vec![0.0])),
+        ],
+    );
+}
+
 fn write_wat_fixture(path: &Path) {
     let mut fields = required_date_fields();
     fields.insert(1, Field::new("ofe_id", DataType::Int16, true));
@@ -147,6 +184,75 @@ fn write_wat_fixture(path: &Path) {
             Arc::new(Float64Array::from(vec![180.0, 190.0, 200.0])),
             Arc::new(Float64Array::from(vec![60.0, 70.0, 80.0])),
             Arc::new(Float64Array::from(vec![0.2, 0.4, 0.6])),
+        ],
+    );
+}
+
+fn write_openwepp_per_hill_wat_fixture(path: &Path) {
+    let mut fields = required_date_fields();
+    fields.insert(1, Field::new("ofe_id", DataType::Int16, true));
+    fields.extend([
+        Field::new("OFE", DataType::Int16, true),
+        Field::new("P", DataType::Float64, true),
+        Field::new("RM", DataType::Float64, true),
+        Field::new("Q", DataType::Float64, true),
+        Field::new("Ep", DataType::Float64, true),
+        Field::new("Es", DataType::Float64, true),
+        Field::new("Er", DataType::Float64, true),
+        Field::new("Dp", DataType::Float64, true),
+        Field::new("UpStrmQ", DataType::Float64, true),
+        Field::new("SubRIn", DataType::Float64, true),
+        Field::new("latqcc", DataType::Float64, true),
+        Field::new("Total-Soil Water", DataType::Float64, true),
+        Field::new("frozwt", DataType::Float64, true),
+        Field::new("Snow-Water", DataType::Float64, true),
+        Field::new("QOFE", DataType::Float64, true),
+        Field::new("Tile", DataType::Float64, true),
+        Field::new("Irr", DataType::Float64, true),
+        Field::new("Area", DataType::Float64, true),
+        Field::new("SoilWaterTotal", DataType::Float64, true),
+        Field::new("ProfileDepth", DataType::Float64, true),
+        Field::new("ProfilePorosityCap", DataType::Float64, true),
+        Field::new("ProfileFCStore", DataType::Float64, true),
+        Field::new("ProfileWPStore", DataType::Float64, true),
+        Field::new("InterceptionStorage", DataType::Float64, true),
+    ]);
+    write_fixture_parquet(
+        path,
+        Schema::new(fields),
+        vec![
+            Arc::new(Int32Array::from(vec![1, 1])),
+            Arc::new(Int16Array::from(vec![1, 2])),
+            Arc::new(Int16Array::from(vec![2004, 2004])),
+            Arc::new(Int32Array::from(vec![1, 1])),
+            Arc::new(Int16Array::from(vec![1, 1])),
+            Arc::new(Int8Array::from(vec![1, 1])),
+            Arc::new(Int8Array::from(vec![1, 1])),
+            Arc::new(Int16Array::from(vec![2004, 2004])),
+            Arc::new(Int16Array::from(vec![1, 2])),
+            Arc::new(Float64Array::from(vec![10.0, 20.0])),
+            Arc::new(Float64Array::from(vec![8.0, 18.0])),
+            Arc::new(Float64Array::from(vec![99.0, 77.0])),
+            Arc::new(Float64Array::from(vec![1.0, 2.0])),
+            Arc::new(Float64Array::from(vec![0.5, 1.0])),
+            Arc::new(Float64Array::from(vec![0.25, 0.5])),
+            Arc::new(Float64Array::from(vec![0.1, 0.2])),
+            Arc::new(Float64Array::from(vec![0.0, 0.0])),
+            Arc::new(Float64Array::from(vec![0.0, 0.0])),
+            Arc::new(Float64Array::from(vec![100.0, 4.5])),
+            Arc::new(Float64Array::from(vec![100.0, 110.0])),
+            Arc::new(Float64Array::from(vec![0.0, 0.0])),
+            Arc::new(Float64Array::from(vec![0.0, 0.0])),
+            Arc::new(Float64Array::from(vec![3.0, 4.0])),
+            Arc::new(Float64Array::from(vec![0.0, 0.0])),
+            Arc::new(Float64Array::from(vec![0.0, 0.0])),
+            Arc::new(Float64Array::from(vec![1_500.0, 1_000.0])),
+            Arc::new(Float64Array::from(vec![100.0, 110.0])),
+            Arc::new(Float64Array::from(vec![1_000.0, 1_000.0])),
+            Arc::new(Float64Array::from(vec![250.0, 260.0])),
+            Arc::new(Float64Array::from(vec![180.0, 190.0])),
+            Arc::new(Float64Array::from(vec![60.0, 70.0])),
+            Arc::new(Float64Array::from(vec![0.2, 0.4])),
         ],
     );
 }
@@ -240,6 +346,44 @@ fn totalwatsed3_cli_uses_pass_runvol_and_outlet_lateral_flow() {
     assert!((f64_column(&batch, "Interception") - 0.0).abs() <= 1.0e-12);
     assert!((f64_column(&batch, "seddep_1") - 17.0).abs() <= 1.0e-12);
     assert!((f64_column(&batch, "sed_del") - 32.0).abs() <= 1.0e-12);
+
+    if base.exists() {
+        fs::remove_dir_all(base).expect("temp dir cleanup should succeed");
+    }
+}
+
+#[test]
+fn totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces() {
+    let base = unique_temp_dir("totalwatsed3_openwepp_native_per_hill");
+    let input_dir = base.join("interchange");
+    fs::create_dir_all(&input_dir).expect("input dir should be created");
+    write_openwepp_per_hill_pass_fixture(&input_dir.join("H1.pass.parquet"));
+    write_openwepp_per_hill_wat_fixture(&input_dir.join("H1.wat.parquet"));
+    write_openwepp_per_hill_pass_fixture(&input_dir.join("H2.pass.parquet"));
+    write_openwepp_per_hill_wat_fixture(&input_dir.join("H2.wat.parquet"));
+    let output_path = base.join("totalwatsed3.parquet");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_openwepp-cli-totalwatsed3"))
+        .arg("--input-dir")
+        .arg(&input_dir)
+        .arg("--output")
+        .arg(&output_path)
+        .output()
+        .expect("totalwatsed3 CLI process should run");
+
+    assert!(
+        output.status.success(),
+        "totalwatsed3 CLI should consume per-hillslope native files; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let batch = read_first_output_batch(&output_path);
+    assert_eq!(batch.num_rows(), 1);
+
+    assert!((f64_column(&batch, "Area") - 5_000.0).abs() <= 1.0e-12);
+    assert!((f64_column(&batch, "runvol") - 24.0).abs() <= 1.0e-12);
+    assert!((f64_column(&batch, "Runoff") - 4.8).abs() <= 1.0e-12);
+    assert!((f64_column(&batch, "latqcc") - 9.0).abs() <= 1.0e-12);
+    assert!((f64_column(&batch, "Lateral Flow") - 1.8).abs() <= 1.0e-12);
 
     if base.exists() {
         fs::remove_dir_all(base).expect("temp dir cleanup should succeed");

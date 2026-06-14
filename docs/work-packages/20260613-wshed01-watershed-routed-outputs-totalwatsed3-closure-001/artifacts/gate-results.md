@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: T-B executed
+Status: T-B2 executed
 
 Evidence mode: Ran + Static
 
@@ -52,6 +52,14 @@ Evidence mode: Ran + Static
 | T-B watershed ownership relocation | PASS | `openwepp-cli-watershed` no longer owns WAT/PASS totalwatsed3 aggregation; the dedicated CLI owns native totalwatsed3 production. |
 | T-B full fmt/clippy/test/deny | PASS | `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test --workspace`; `cargo deny check`. |
 | T-B final diff/doc lint | PASS | `git diff --check`: no findings; `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `28` files scanned, `0` errors, `0` warnings. |
+| T-B2 red tests | PASS | Focused PASS runoff-delivery test initially failed because `hillslope_pass` and `append_runoff_delivery_rows_to` did not exist; per-hillslope totalwatsed3 fixture initially failed because the CLI required combined `H.pass.parquet`. |
+| T-B2 focused tests | PASS | `cargo test -p openwepp-runner mofe01_tb2_pass_runvol_uses_terminal_outlet_transfer_volume_not_per_ofe_sum -- --nocapture`; `cargo test -p openwepp-runner --test totalwatsed3_cli_contract totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces -- --nocapture`; `cargo test --test sim_contract_boundary_unit_registry hphys0278_output_unit_registry_covers_output_schema_unit_metadata -- --nocapture`. |
+| T-B2 real native PASS emission | PASS | Release `openwepp-cli-hill` reran arboreal-dendrite p1-p36 with `outputs.pass_parquet`; output counts: `hbp=36`, `wat=36`, `pass_parquet=36`. |
+| T-B2 HBP/WAT anchor stability | PASS | SHA-256 comparison of all `H1..H36.hbp` and `H1..H36.wat.parquet` against `/tmp/openwepp_mofe01_mi_final/output`: `anchor_mismatches=0`. |
+| T-B2 PASS outlet identity | PASS | DuckDB audit over native PASS/WAT files: `78912` rows, `max_abs_runvol_diff_m3=1.4551915228366852e-11`, `avg_abs_runvol_diff_m3=2.476430939298028e-14`. |
+| T-B2 native totalwatsed3 production | PASS | `target/release/openwepp-cli-totalwatsed3 --input-dir /tmp/openwepp_wshed01_tb2/output --output /tmp/openwepp_wshed01_tb2/totalwatsed3.parquet`: `CLITW3-I-001 wrote 2192 rows`. PASS sum and totalwatsed3 sum differ by `1.7881393432617188e-07 m^3` from floating accumulation order. |
+| T-B2 full fmt/clippy/test/deny | PASS | `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test --workspace`; `cargo deny check`. |
+| T-B2 final diff/doc lint | PASS | `git diff --check`: no findings; `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `28` files scanned, `0` errors, `0` warnings; `cargo fmt --check`: no findings. |
 
 Subagent note: comparator/heavy-batch subagent was not used because W-A required
 only a single current-behavior CLI run and static source characterization.
@@ -70,3 +78,6 @@ in this session.
 For T-B, no comparator-suite subagent was used. Focused tests, full Rust
 gates, the real arboreal-dendrite producer run, and the wepppy audit read were
 run directly in this session as command-level evidence.
+For T-B2, no comparator-suite subagent was used. Focused tests, full Rust
+gates, the real arboreal-dendrite native-output rerun, anchor hash comparison,
+and parquet audits were run directly in this session as command-level evidence.

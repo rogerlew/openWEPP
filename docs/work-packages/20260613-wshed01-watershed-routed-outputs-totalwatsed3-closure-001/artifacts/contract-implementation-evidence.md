@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: T-B executed
+Status: T-B2 executed
 
 Evidence mode: Static
 
@@ -100,8 +100,26 @@ T-B contract/metadata implementation:
 - The dedicated CLI keeps the wepppy producer as semantic/audit reference
   only; it does not depend on the wepppyo3 `wepp_interchange` crate.
 
+T-B2 contract/metadata implementation:
+
+- `crates/openwepp-hillslope-output/src/contracts.rs` adds optional
+  `pass_parquet` to the hillslope output contract. The binary HBP `pass`
+  output remains required and unchanged.
+- `crates/openwepp-hillslope-output/src/hillslope_pass.rs` defines an
+  openWEPP-owned runoff-delivery parquet schema with row-level unit metadata.
+- `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs` registers
+  `hillslope_pass.runvol`, `sbrunv`, `peakro`, `tdet`, `tdep`, and
+  `sedcon_1` through `sedcon_5`.
+- `tests/integration/sim_contract_boundary_unit_registry.rs` now includes
+  `hillslope_pass_schema` in the output unit metadata coverage gate.
+- No process-physics contract was amended. T-B2 publishes existing outlet
+  MOFE transfer state as an output surface; it does not change hydrology
+  execution.
+
 Contract implications carried into T-C:
 
 - The producer surface is now present and independently test-pinned.
+- The native openWEPP PASS surface is now present and independently
+  test-pinned.
 - T-C must close the remaining residual as a water-balance identity issue,
   not by weakening the unit lineage or substituting WAT `Q` for PASS `runvol`.

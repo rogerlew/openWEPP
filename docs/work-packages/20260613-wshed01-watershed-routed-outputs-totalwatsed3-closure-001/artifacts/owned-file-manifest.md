@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: T-B executed
+Status: T-B2 executed
 
 Evidence mode: Static
 
@@ -137,3 +137,31 @@ T-B external substrate read only:
 - `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.wat.parquet`
 - `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.soil.parquet`
 - `/wc1/runs/ar/arboreal-dendrite/wepp/output/interchange/H.element.parquet`
+
+T-B2 write set:
+
+- `crates/openwepp-hillslope-output/src/lib.rs`
+- `crates/openwepp-hillslope-output/src/contracts.rs`
+- `crates/openwepp-hillslope-output/src/writers.rs`
+- `crates/openwepp-hillslope-output/src/hillslope_pass.rs`
+- `crates/openwepp-runner/src/bin/openwepp-cli-totalwatsed3.rs`
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`
+- `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`
+- `crates/openwepp-runner/src/hillslope/intake_lane_setup/runfile_helpers.rs`
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs`
+- `crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs`
+- `crates/openwepp-runner/src/totalwatsed3.rs`
+- `crates/openwepp-runner/tests/totalwatsed3_cli_contract.rs`
+- `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs`
+- `tests/integration/sim_contract_boundary_unit_registry.rs`
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/package.md`
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/*.md`
+
+T-B2 temporary evidence root:
+
+- `/tmp/openwepp_wshed01_tb2/`
+
+T-B2 read-only comparison substrate:
+
+- `/tmp/openwepp_mofe01_mh_final/runs/`
+- `/tmp/openwepp_mofe01_mi_final/output/`

@@ -1,6 +1,6 @@
 # Review Agent B
 
-Status: T-B local review complete
+Status: T-B2 local review complete
 
 Evidence mode: Static
 
@@ -118,3 +118,34 @@ Residual risk:
 | # | Finding | Disposition | Rationale |
 |---|---|---|---|
 | - | None | accepted | T-B implementation and verification gates are met; package closure remains T-C. |
+
+## T-B2 QA Review
+
+Evidence mode: Static + Ran
+
+Findings:
+
+No blocking T-B2 findings.
+
+QA observations:
+
+1. T-B2 closed the governance gap identified in the T-B review: the real-run
+   input is now openWEPP-native PASS/WAT output, not Jun-7 legacy interchange.
+2. The red tests exercised missing native PASS writer/row builder and missing
+   per-hillslope input discovery.
+3. `hillslope_pass` unit metadata is covered by the canonical output registry
+   test, preventing ungoverned schema drift.
+4. Exact-zero closure is not claimed. The PASS identity audit closes at
+   numerical noise on a direct publication identity; T-C still owns the full
+   water-balance closure.
+
+Residual risk:
+
+- T-B2 does not run the wepppy conservation audit; that is explicitly T-C
+  scope.
+
+## T-B2 Finding Disposition
+
+| # | Finding | Disposition | Rationale |
+|---|---|---|---|
+| - | None | accepted | T-B2 implementation and verification gates are met; package closure remains T-C. |

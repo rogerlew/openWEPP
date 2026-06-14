@@ -82,6 +82,11 @@ pub(crate) fn parse_runfile_execution_config(
     let output_config = HillslopeOutputConfig {
         pass: resolve_required_runfile_path(run_file_path, &runfile.outputs.pass, "outputs.pass")?,
         loss: resolve_required_runfile_path(run_file_path, &runfile.outputs.loss, "outputs.loss")?,
+        pass_parquet: resolve_optional_runfile_path(
+            run_file_path,
+            runfile.outputs.pass_parquet.as_deref(),
+            "outputs.pass_parquet",
+        )?,
         wat: resolve_optional_runfile_path(
             run_file_path,
             runfile.outputs.wat.as_deref(),
