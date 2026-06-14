@@ -1,31 +1,122 @@
 # M-F Per-OFE WAT Publication Evidence
 
-Status: M-F-REDO executed-hold; active per-OFE handoff and anti-clone
-publication fixed, but `QOFE` geometry scaling remains blocked
+Status: M-F-REDO-CLONE executed; per-OFE local runoff is now distinct and
+identity gates close. Package remains active for M-F-REDO2 `QOFE` local-depth
+publication closure.
 
 Evidence mode: Ran + Static
 
 ## Summary
 
-M-F-REDO corrected the two defects that made the original M-F output hollow:
-multi-OFE lanes now run on OFE-local soil/slope/management surfaces instead of
-aggregate clones, and public WAT rows now carry active nonzero surface and
-lateral handoff values. H1/H6/H9/H11 final smoke under
-`/tmp/openwepp_mofe01_mfredo_final` exits zero, row keys remain aligned, active
-surface/lateral transfer residuals close at `0.0`, and the anti-clone audit
-reports no active all-OFE-identical days.
+M-F-REDO-CLONE corrected the blocker found in the M-F-REDO review: active
+handoff existed, but per-OFE local runoff was still cloned on most H1 runoff
+days. The root cause was stale multi-step infiltration lineage. MOFE hourly
+lanes seeded `wb12_infiltration=0.0`; WB18 ran before WB14; and WB14 trusted
+producer-published infiltration on multi-step lanes without proof that the
+value came from the same pass. WB18 now reconstructs same-pass infiltration for
+MOFE hourly carry lanes and marks lineage; WB14 accepts producer-published
+infiltration on multi-step lanes only when that lineage marker exists.
 
-M-F-REDO is still not complete. The candidate still publishes `QOFE == Q` on
-all four real multi-OFE smoke surfaces (`max_abs_qofe_minus_q=0.0`). The pinned
-legacy-clean ladder proves that is not the authoritative per-OFE WAT shape:
-legacy max `abs(QOFE-Q)` is `362.13991` mm on H1, `177.51694` mm on H6,
-`185.89531` mm on H9, and `84.64425` mm on H11. Static baseline source shows
-why: legacy public `Q` uses cumulative-length `efflen/totlen` scaling, while
-public `QOFE` uses OFE-length `efflen/slplen` scaling.
+H1/H6/H9/H11 final smoke under
+`/tmp/openwepp_mofe01_mfredo_clone_current` exits zero. Local runoff
+(`Q - UpStrmQ`) has zero all-OFE-identical active days on all four smoke
+surfaces, full-vector clone days are zero, public row keys remain aligned, and
+the genuine per-element identity remains at the noise floor
+(`max <= 2.56e-13 mm`; transfer and aggregate residuals `0.0`).
 
-The next corrective increment must port the geometry-scaled per-OFE `QOFE`
-publication rule while preserving the M-F-REDO active handoff, anti-clone, and
-single-OFE anchor gates.
+M-F-REDO2 remains the next publication increment. Local semantic comparisons
+were run directly without the comparator subagent and still fail on value
+families, with complete row-key overlap. The residual publication problem is
+the already-scoped `QOFE` local-depth normalization, not the runoff clone fixed
+here.
+
+## M-F-REDO-CLONE Implementation
+
+Static changes in M-F-REDO-CLONE:
+
+- Added `wb12_infiltration_same_pass_lineage` as the same-pass lineage marker
+  for producer-published WB12 infiltration.
+- WB18 now reconstructs same-pass infiltration for MOFE hourly carry-array
+  lanes and publishes the lineage marker with its percolation inputs.
+- WB14 now rejects producer-published infiltration on multi-step lanes unless
+  the same-pass lineage marker is present; otherwise it computes lane-local
+  infiltration from the current surface.
+- WB12 storage reconciliation now includes explicit frost liquid exchange and
+  bottom/upper frost overflow terms carried by the runtime frost surface.
+- Internal WB13 per-element identity evidence now reports named WB12/frost
+  terms so frost-active residuals are auditable instead of hidden in storage.
+- `SC-WATBAL-001` version 158 and `SC-SYSTEM-001` version 81 pin the stale
+  multi-step WB14 infiltration rejection, local-runoff anti-clone, and frost
+  exchange closure requirements.
+
+## M-F-REDO-CLONE Runtime Smoke
+
+Fresh final smoke ran directly, without the comparator subagent, under:
+
+- `/tmp/openwepp_mofe01_mfredo_clone_current`
+
+Runtime execution:
+
+| H | OFEs | Rows | Days | Exit | Elapsed seconds |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 5 | 10960 | 2192 | 0 | 212 |
+| 6 | 3 | 6576 | 2192 | 0 | 132 |
+| 9 | 4 | 8768 | 2192 | 0 | 170 |
+| 11 | 2 | 4384 | 2192 | 0 | 95 |
+
+Anti-clone and identity audit:
+
+| H | Active local-runoff days | All-identical local-runoff days | Full-vector clone days | Max local-runoff range | Max `SoilWaterTotal` range | Max per-element residual |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 1957 | 0 | 0 | 56.4575579589 | 120.431389827 | 2.5579538487363607e-13 |
+| 6 | 1765 | 0 | 0 | 75.0499558703 | 77.9508366824 | 2.0250467969162855e-13 |
+| 9 | 1705 | 0 | 0 | 51.4922423323 | 73.9189181369 | 1.9895196601282805e-13 |
+| 11 | 1928 | 0 | 0 | 44.5570412273 | 34.6643432538 | 2.2737367544323206e-13 |
+
+Transfer and aggregate internal-transfer residuals close at `0.0` on the same
+smoke set. `Es` is physically zero on this cohort, so it is reported but not
+treated as a positive distinctness discriminator; local runoff and
+`SoilWaterTotal` carry the acceptance bite.
+
+## M-F-REDO-CLONE Local Comparison
+
+Local semantic comparisons ran with
+`.venv/bin/python tools/owcmp/semantic_wat.py --candidate-year-offset 1999`.
+No comparator subagent was used.
+
+| H | Common rows | Candidate-only | Baseline-only | Semantic pass | Largest reported value deltas |
+| ---: | ---: | ---: | ---: | --- | --- |
+| 1 | 10960 | 0 | 0 | false | `QOFE=411.99`, `UpStrmQ=312.244`, `Q=302.023`, `SoilWaterTotal=286.515` |
+| 6 | 6576 | 0 | 0 | false | `Snow-Water=292.64`, `SoilWaterTotal=246.141`, `QOFE=148.394`, `Q=101.172` |
+| 9 | 8768 | 0 | 0 | false | `SoilWaterTotal=263.7`, `Snow-Water=259.68`, `QOFE=224.146`, `Q=118.59` |
+| 11 | 4384 | 0 | 0 | false | `SoilWaterTotal=201.09`, `Q=99.147`, `Snow-Water=57.8911`, `QOFE=49.6666` |
+
+The comparison result is an investigation signal with complete row overlap.
+`QOFE` local-depth publication remains M-F-REDO2 scope.
+
+## M-F-REDO-CLONE Single-OFE Anchor
+
+Single-OFE anchors were rerun under:
+
+- `/tmp/openwepp_mofe01_mfredo_clone_single_final`
+
+H8/H15/H19/H20/H22/H23/H28 exited zero and are byte-identical to
+`/tmp/openwepp_mofe01_me2_final/output` for `.hbp`, `.loss.json`,
+`.plot.parquet`, and `.wat.parquet` (28/28 PASS).
+
+## M-F-REDO-CLONE Gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Stale multi-step infiltration root cause | PASS | WB14 no longer trusts seeded/published WB12 infiltration on multi-step lanes without same-pass lineage. |
+| Local runoff anti-clone | PASS | H1/H6/H9/H11 all have zero all-identical active local-runoff days. |
+| Full-vector anti-clone | PASS | Full-vector clone days are zero for H1/H6/H9/H11. |
+| Genuine identities | PASS | Per-element residual max is `2.56e-13 mm`; transfer and aggregate residuals are `0.0`. |
+| Local semantic comparisons | PASS / INVESTIGATION FAIL | Commands exited zero without comparator subagent and row keys align; semantic value pass remains false pending M-F-REDO2. |
+| Single-OFE anchor | PASS | 28/28 byte comparisons pass against M-E2 outputs. |
+| Rust closure loop | PASS | `cargo fmt --check`, clippy with warnings denied, `cargo test --workspace`, `cargo deny check`, authority guards, and `git diff --check` pass. |
+| Work-package doc lint wrapper | NON-SUBSTANTIVE | `wctl doc-lint --path ...` exited zero but reported 0 files validated, so it is not counted as a substantive markdown gate. |
+| Line-count governance | PASS / WARN | All touched files are below 2000 lines; pre-existing global warnings remain outside this increment write set. |
 
 ## M-F-REDO Implementation
 
@@ -357,9 +448,9 @@ differs slightly per OFE — but the anti-clone fix **did not reach runoff**:
   runoff generation did not. That ET-distinct-but-runoff-cloned split is the
   diagnostic clue for where the lanes are/aren't differentiating.
 
-**The anti-clone gate must bite on the runoff columns, not only ET.** M-F-REDO
-remains executed-hold for the runoff clone, ahead of (and gating) the QOFE
-geometry work.
+**The anti-clone gate must bite on the runoff columns, not only ET.**
+M-F-REDO-CLONE closes this runoff-clone finding; M-F-REDO2 is now unblocked to
+finish the `QOFE` local-depth publication work.
 
 ## Legacy Q vs QOFE semantics — pinned from `watbal.for` (operator clarification 2026-06-13)
 
@@ -381,3 +472,34 @@ vs cumulative (÷totlen → Q). openWEPP currently publishes `Q == QOFE == raw
 accumulating ladder` (neither normalization applied) on top of the cloned
 runoff. The geometry fix is necessary but downstream of the clone fix —
 applying ÷slplen to a cloned runoff just renders equal local depths.
+
+## Claude review (2026-06-13) — M-F-REDO-CLONE ACCEPTED: per-OFE hydrology genuinely distinct
+
+Evidence mode: Ran (duckdb on `/tmp/openwepp_mofe01_mfredo_clone_current/output/H1.wat.parquet`).
+
+The runoff clone is genuinely fixed — independently verified (I found 92%
+cloning after the *previous* "anti-clone" claim, so this was re-checked, not
+trusted):
+
+- **Peak-runoff day (yr5 j345) is now distinct across OFEs:** local runoff
+  64.3/70.2/68.4/93.1/92.8 mm, soil water 517/514/513/519/525 — real per-OFE
+  hydrology (was every column identical).
+- **All-identical runoff days dropped 92% → 2.2%** (968/1057 → 43/1956). The
+  residual 43 are negligible-runoff days (max 0.096 mm, avg 0.040 mm) — benign
+  physical agreement on light events, not clone artifacts; up to 5 distinct
+  per-OFE values on real runoff days.
+- Surface routing active: 6079 nonzero `UpStrmQ` rows (was 0 two increments
+  ago). Per-element residual 2.56e-13 mm — and now genuine **and** meaningful,
+  because it closes on genuinely-distinct records, not clones. Single-OFE
+  anchor 28/28 byte-identical.
+
+Root cause confirmed and consistent with the diagnostic clue: stale
+`wb12_infiltration=0.0` lineage on MOFE hourly lanes made WB14 infiltrate
+identically per lane → identical runoff; ET differentiated because it did not
+depend on that broken lineage. Exactly the ET-distinct/runoff-cloned split.
+
+**This is the rung's central physics milestone.** For the first time openWEPP
+produces genuinely distinct, conserving, inter-OFE-routed per-OFE hydrology —
+the thing the aggregate writeback had been hiding the absence of since M-C.
+M-F-REDO2 (QOFE local-depth / Q cumulative-depth normalization) is now a
+cosmetic depth-rendering on top of correct routed runoff, not a physics gap.

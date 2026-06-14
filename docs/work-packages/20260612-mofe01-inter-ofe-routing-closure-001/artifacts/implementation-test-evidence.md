@@ -1,9 +1,64 @@
 # implementation test evidence
 
-Status: M-F-REDO executed-hold; active handoff and anti-clone tested, QOFE
-geometry scaling blocked
+Status: M-F-REDO-CLONE executed; runoff anti-clone and identity gates close.
+M-F-REDO2 remains for `QOFE` local-depth publication.
 
 Evidence mode: Ran + Static
+
+## M-F-REDO-CLONE ran
+
+M-F-REDO-CLONE fixed the stale multi-step infiltration lineage defect that left
+local runoff cloned after M-F-REDO.
+
+- `cargo fmt --check`
+  - PASS.
+- `cargo clippy --workspace --all-targets -- -D warnings`
+  - PASS.
+- `cargo test --workspace`
+  - PASS.
+- `cargo deny check`
+  - PASS; `advisories ok, bans ok, licenses ok, sources ok`.
+- `bash tools/release/check_authority_suite_antievasion.sh`
+  - PASS.
+- `cargo test --test auth11_required_suite_obligation_guards_contract`
+  - PASS.
+- Focused M-F-REDO-CLONE coverage
+  - PASS:
+    `cargo test --test wb14_infiltration_hyetograph_kernel_contract mofe01_mfredo_clone`.
+  - PASS:
+    `cargo test --test wb12_reconciliation_kernel_contract`.
+  - PASS:
+    `cargo test -p openwepp-runner --lib mofe01_me4_redo_internal_wb13_records`.
+  - PASS:
+    `cargo test --test cli03_runner_contract_derived_tests cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows`.
+  - PASS:
+    `cargo test --test mofe04_publication_contract_authority_closure_contract`.
+  - PASS:
+    `cargo test --test mofe01_per_ofe_state_contract mofe01_me4_redo_current_architecture_requires_non_tautological_internal_wb13_checks`.
+- Required local H smoke without comparator subagent
+  - PASS runtime execution: H1/H6/H9/H11 exited zero under
+    `/tmp/openwepp_mofe01_mfredo_clone_current`.
+  - PASS local runoff anti-clone: all-identical active local-runoff days are
+    zero for H1/H6/H9/H11.
+  - PASS full-vector anti-clone: clone days are zero for H1/H6/H9/H11.
+  - PASS identities: per-element residual maxima are at or below
+    `2.56e-13` mm; transfer and aggregate residuals close at `0.0`.
+- Local semantic comparisons without comparator subagent
+  - PASS command execution for H1/H6/H9/H11 with
+    `tools/owcmp/semantic_wat.py --candidate-year-offset 1999`.
+  - INVESTIGATION FAIL semantic acceptance: row keys align, but value
+    comparisons remain false pending M-F-REDO2 `QOFE` publication closure.
+- Single-OFE anchors
+  - PASS:
+    `/tmp/openwepp_mofe01_mfredo_clone_single_final` reports
+    H8/H15/H19/H20/H22/H23/H28 byte-identical to M-E2 outputs for `.hbp`,
+    `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS).
+- `wctl doc-lint --path docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001`
+  - NON-SUBSTANTIVE; command exited zero but reported 0 files validated.
+- `git diff --check`
+  - PASS.
+
+Detailed evidence: `m-f-per-ofe-wat-publication-evidence.md`.
 
 ## M-F-REDO ran
 

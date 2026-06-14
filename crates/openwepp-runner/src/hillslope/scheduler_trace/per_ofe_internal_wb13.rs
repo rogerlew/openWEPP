@@ -4,6 +4,9 @@ const ME4_INTERNAL_WB13_IDENTITY_TOLERANCE_MM: f64 = 1.0e-11;
 pub(super) struct InternalPerOfeWb13Record {
     pub(super) ofe_id: usize,
     pub(super) previous_storage_total_mm: f64,
+    pub(super) frost_upper_overflow_mm: f64,
+    pub(super) frost_internal_adjustment_mm: f64,
+    pub(super) storage_reconciliation_detail: String,
     pub(super) row: SimulationOwnedWb13Row,
     pub(super) upstream_transfer_input: TransferInput,
     pub(super) current_transfer_output: TransferOutput,
@@ -15,6 +18,7 @@ pub(super) struct DailyInternalPerOfeWb13Collection {
     records: Vec<InternalPerOfeWb13Record>,
     transfer_identity_max_abs_mm: f64,
     per_element_identity_max_abs_mm: f64,
+    per_element_identity_max_abs_detail: Option<String>,
     aggregate_transfer_cancellation_max_abs_mm: f64,
 }
 
@@ -107,10 +111,28 @@ impl DailyInternalPerOfeWb13Collection {
                     qofe_override_m: Some(lane_report.current_transfer_output.qofe),
                 },
             )?;
-
+            let frost_upper_overflow_m = runtime_surface_symbol_value(
+                &lane_report.kernel_report.writeback_surface,
+                "frost.runtime_watpdg_m",
+            )
+            .unwrap_or(0.0);
+            if !frost_upper_overflow_m.is_finite() || frost_upper_overflow_m < 0.0 {
+                return Err(internal_wb13_failure(format!(
+                    "frost.runtime_watpdg_m must be finite and >= 0.0 for OFE {}, observed {}",
+                    lane_report.ofe_id, frost_upper_overflow_m
+                )));
+            }
+            let frost_internal_adjustment_m = internal_wb13_frost_internal_adjustment_m(
+                &lane_report.kernel_report.writeback_surface,
+            )?;
             records.push(InternalPerOfeWb13Record {
                 ofe_id: lane_report.ofe_id,
                 previous_storage_total_mm: *previous_storage_total_mm,
+                frost_upper_overflow_mm: frost_upper_overflow_m * 1_000.0,
+                frost_internal_adjustment_mm: frost_internal_adjustment_m * 1_000.0,
+                storage_reconciliation_detail: format_wb12_storage_terms(
+                    &lane_report.kernel_report.writeback_surface,
+                ),
                 row,
                 upstream_transfer_input: lane_report.upstream_transfer_input.clone(),
                 current_transfer_output: lane_report.current_transfer_output.clone(),
@@ -138,6 +160,7 @@ impl DailyInternalPerOfeWb13Collection {
 
         let mut transfer_identity_max_abs_mm = 0.0_f64;
         let mut per_element_identity_max_abs_mm = 0.0_f64;
+        let mut per_element_identity_max_abs_detail = None;
         let mut internal_surface_input_mm = 0.0_f64;
         let mut internal_surface_output_mm = 0.0_f64;
         let mut internal_lateral_input_mm = 0.0_f64;
@@ -177,9 +200,15 @@ impl DailyInternalPerOfeWb13Collection {
                 )));
             }
 
-            let per_element_residual_mm = per_element_water_balance_residual_mm(record);
-            per_element_identity_max_abs_mm =
-                per_element_identity_max_abs_mm.max(per_element_residual_mm.abs());
+            let per_element_terms = per_element_water_balance_terms(record);
+            if per_element_terms.residual_mm.abs() > per_element_identity_max_abs_mm {
+                per_element_identity_max_abs_mm = per_element_terms.residual_mm.abs();
+                per_element_identity_max_abs_detail = Some(format!(
+                    "{}; wb12_terms={}",
+                    per_element_terms.describe(record.ofe_id),
+                    record.storage_reconciliation_detail
+                ));
+            }
 
             if index > 0 {
                 internal_surface_input_mm += record.upstream_transfer_input.upstrmq * 1_000.0;
@@ -212,6 +241,7 @@ impl DailyInternalPerOfeWb13Collection {
             records,
             transfer_identity_max_abs_mm,
             per_element_identity_max_abs_mm,
+            per_element_identity_max_abs_detail,
             aggregate_transfer_cancellation_max_abs_mm,
         };
         collection.require_identity_closure()?;
@@ -227,8 +257,12 @@ impl DailyInternalPerOfeWb13Collection {
             )));
         }
         if self.per_element_identity_max_abs_mm > ME4_INTERNAL_WB13_IDENTITY_TOLERANCE_MM {
+            let detail = self
+                .per_element_identity_max_abs_detail
+                .as_deref()
+                .unwrap_or("no per-element residual detail recorded");
             return Err(internal_wb13_failure(format!(
-                "per-element storage identity residual {} mm exceeds tolerance {ME4_INTERNAL_WB13_IDENTITY_TOLERANCE_MM}",
+                "per-element storage identity residual {} mm exceeds tolerance {ME4_INTERNAL_WB13_IDENTITY_TOLERANCE_MM}; {detail}",
                 self.per_element_identity_max_abs_mm
             )));
         }
@@ -267,7 +301,99 @@ pub(super) fn internal_wb13_storage_total_mm_from_surface(
     Ok((soil_water_m + frozen_water_m) * 1_000.0)
 }
 
-fn per_element_water_balance_residual_mm(record: &InternalPerOfeWb13Record) -> f64 {
+fn internal_wb13_frost_internal_adjustment_m(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<f64, HillslopeCliError> {
+    let net_liquid_delta =
+        runtime_surface_symbol_value(runtime_surface, "frost.runtime_frwatc_net_liquid_delta_m")
+            .unwrap_or(0.0);
+    let frozen_before =
+        runtime_surface_symbol_value(runtime_surface, "frost.runtime_frwatc_frozen_water_before_m")
+            .unwrap_or(0.0);
+    let frozen_after =
+        runtime_surface_symbol_value(runtime_surface, "frost.runtime_frwatc_frozen_water_after_m")
+            .unwrap_or(0.0);
+    let watpdg = runtime_surface_symbol_value(runtime_surface, "frost.runtime_watpdg_m")
+        .unwrap_or(0.0);
+    let watbtm = runtime_surface_symbol_value(runtime_surface, "frost.runtime_watbtm_m")
+        .unwrap_or(0.0);
+
+    for (symbol, value) in [
+        (
+            "frost.runtime_frwatc_net_liquid_delta_m",
+            net_liquid_delta,
+        ),
+        ("frost.runtime_frwatc_frozen_water_before_m", frozen_before),
+        ("frost.runtime_frwatc_frozen_water_after_m", frozen_after),
+        ("frost.runtime_watpdg_m", watpdg),
+        ("frost.runtime_watbtm_m", watbtm),
+    ] {
+        if !value.is_finite() {
+            return Err(internal_wb13_failure(format!(
+                "{symbol} must be finite for internal WB13 frost adjustment, observed {value}"
+            )));
+        }
+    }
+    if frozen_before < 0.0 || frozen_after < 0.0 || watpdg < 0.0 || watbtm < 0.0 {
+        return Err(internal_wb13_failure(format!(
+            "frost storage and overflow diagnostics must be non-negative; frozen_before={frozen_before}, frozen_after={frozen_after}, watpdg={watpdg}, watbtm={watbtm}"
+        )));
+    }
+
+    Ok(net_liquid_delta + frozen_after - frozen_before + watpdg + watbtm)
+}
+
+#[derive(Debug, Clone, Copy)]
+#[allow(clippy::struct_field_names)]
+struct PerElementWaterBalanceTerms {
+    residual_mm: f64,
+    local_liquid_input_mm: f64,
+    inflow_mm: f64,
+    interception_mm: f64,
+    q_mm: f64,
+    ep_mm: f64,
+    es_mm: f64,
+    er_mm: f64,
+    dp_mm: f64,
+    latqcc_mm: f64,
+    tile_mm: f64,
+    frost_upper_overflow_mm: f64,
+    frost_internal_adjustment_mm: f64,
+    outflow_mm: f64,
+    previous_storage_total_mm: f64,
+    current_storage_total_mm: f64,
+    storage_delta_mm: f64,
+}
+
+impl PerElementWaterBalanceTerms {
+    fn describe(self, ofe_id: usize) -> String {
+        format!(
+            "ofe={ofe_id}, residual_mm={}, inflow_mm={} (RM/local={} UpStrmQ+SubRIn={} frost_adjustment={}), outflow_mm={} (I={} Q={} Ep={} Es={} Er={} Dp={} latqcc={} Tile={} watpdg={}), storage_delta_mm={} (previous={} current={})",
+            self.residual_mm,
+            self.inflow_mm,
+            self.local_liquid_input_mm,
+            self.inflow_mm - self.local_liquid_input_mm - self.frost_internal_adjustment_mm,
+            self.frost_internal_adjustment_mm,
+            self.outflow_mm,
+            self.interception_mm,
+            self.q_mm,
+            self.ep_mm,
+            self.es_mm,
+            self.er_mm,
+            self.dp_mm,
+            self.latqcc_mm,
+            self.tile_mm,
+            self.frost_upper_overflow_mm,
+            self.storage_delta_mm,
+            self.previous_storage_total_mm,
+            self.current_storage_total_mm,
+        )
+    }
+}
+
+fn per_element_water_balance_terms(
+    record: &InternalPerOfeWb13Record,
+) -> PerElementWaterBalanceTerms {
     let row = &record.row.wb13_row;
     let current_storage_total_mm = row.total_soil + row.frozwt;
     let storage_delta_mm = current_storage_total_mm - record.previous_storage_total_mm;
@@ -275,17 +401,40 @@ fn per_element_water_balance_residual_mm(record: &InternalPerOfeWb13Record) -> f
     // already includes irrigation, while `Irr` is retained as a diagnostic row
     // column and must not be added a second time here.
     let local_liquid_input_mm = row.rm;
-    let inflow_mm = local_liquid_input_mm + row.upstrmq + row.subrin;
-    let outflow_mm = record.row.interception_mm
+    let inflow_mm = local_liquid_input_mm
+        + row.upstrmq
+        + row.subrin
+        + record.frost_internal_adjustment_mm;
+    let interception_mm = record.row.interception_mm;
+    let outflow_mm = interception_mm
         + row.q
         + row.ep
         + row.es
         + row.er
         + row.dp
         + row.latqcc
-        + row.tile;
+        + row.tile
+        + record.frost_upper_overflow_mm;
 
-    inflow_mm - outflow_mm - storage_delta_mm
+    PerElementWaterBalanceTerms {
+        residual_mm: inflow_mm - outflow_mm - storage_delta_mm,
+        local_liquid_input_mm,
+        inflow_mm,
+        interception_mm,
+        q_mm: row.q,
+        ep_mm: row.ep,
+        es_mm: row.es,
+        er_mm: row.er,
+        dp_mm: row.dp,
+        latqcc_mm: row.latqcc,
+        tile_mm: row.tile,
+        frost_upper_overflow_mm: record.frost_upper_overflow_mm,
+        frost_internal_adjustment_mm: record.frost_internal_adjustment_mm,
+        outflow_mm,
+        previous_storage_total_mm: record.previous_storage_total_mm,
+        current_storage_total_mm,
+        storage_delta_mm,
+    }
 }
 
 fn adjacent_transfer_residual_mm(

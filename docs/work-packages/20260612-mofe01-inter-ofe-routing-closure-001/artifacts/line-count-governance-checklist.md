@@ -1,8 +1,37 @@
 # line count governance checklist
 
-Status: checked through M-F-REDO executed-hold
+Status: checked through M-F-REDO-CLONE
 
 Evidence mode: Ran
+
+## M-F-REDO-CLONE
+
+Ran `wc -l` over touched Rust files after the M-F-REDO-CLONE implementation
+and fixture updates.
+
+| File group | Lines | Disposition |
+| --- | ---: | --- |
+| `crates/openwepp-hillslope-orchestrator/src/constants.rs` | 462 | OK. |
+| `hydrology_phase_infiltration_evap.rs` | 1332 | OK. |
+| `hydrology_phase_plant_percolation.rs` | 1313 | OK. |
+| `hydrology_phase_storage_reconciliation.rs` | 216 | OK. |
+| `runoff_reconciliation.rs` | 579 | OK. |
+| `hphys_trace.rs` | 1082 | OK. |
+| `per_ofe_internal_wb13.rs` | 506 | OK. |
+| `per_ofe_state.rs` test helper | 553 | OK. |
+| `publication_wb19_wb12_wb16.rs` | 483 | OK. |
+| `mofe01_per_ofe_state_contract.rs` | 378 | OK. |
+| `mofe04_publication_contract_authority_closure_contract.rs` | 74 | OK. |
+| `wb12_reconciliation_kernel_contract.rs` | 524 | OK. |
+| `wb14_infiltration_hyetograph_kernel_contract.rs` | 1252 | OK. |
+
+No touched Rust source file crossed the 2000-line warning threshold or the
+3000-line non-exempt threshold.
+
+Global scan still reports pre-existing warnings outside this increment write
+set: `coupling.rs` is 3052 lines, `clim06_frost_frozen_soil_kernel_contract.rs`
+is 2743 lines, `scheduler_seed_and_runtime.rs` is 2122 lines, and
+`openwepp-cli-watershed.rs` is 2012 lines.
 
 ## M-F-REDO
 

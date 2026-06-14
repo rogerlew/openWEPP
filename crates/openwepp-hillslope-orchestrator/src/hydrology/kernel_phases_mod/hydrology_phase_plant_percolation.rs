@@ -880,6 +880,11 @@ pub(crate) fn resolve_infiltration_tillage_depth(
         } else {
             None
         };
+        let same_pass_infiltration_lineage = if same_pass_infiltration.is_some() {
+            Self::wb18_should_reconstruct_same_pass_infiltration_lineage(request, phase_class)?
+        } else {
+            false
+        };
         let lane_substeps_symbol = BoundarySymbol::from("wb18_perc_lane_substeps");
         let lane_substeps_raw =
             Self::optional_state_scalar_for_symbol(request, phase_class, &lane_substeps_symbol)?
@@ -1260,6 +1265,14 @@ pub(crate) fn resolve_infiltration_tillage_depth(
                 Some(0.0),
                 None,
             ));
+            if same_pass_infiltration_lineage {
+                state_updates.push(WritebackField::bounded(
+                    WB12_SYMBOL_INFILTRATION_SAME_PASS_LINEAGE,
+                    1.0,
+                    Some(0.0),
+                    Some(1.0),
+                ));
+            }
         }
         for (index, value) in theta.iter().enumerate() {
             state_updates.push(WritebackField::bounded(

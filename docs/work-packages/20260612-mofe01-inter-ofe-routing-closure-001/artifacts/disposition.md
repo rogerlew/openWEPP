@@ -1,18 +1,57 @@
 # disposition
 
-Status: M-F-REDO executed-hold (Claude: anti-clone reached ET only; runoff still 92% cloned — see M-F evidence); package remains open for geometry-scaled
-per-OFE `QOFE` publication closure
+Status: M-F-REDO-CLONE executed; per-OFE local runoff distinctness and genuine
+identity gates close. Package remains open for M-F-REDO2 `QOFE` local-depth
+publication closure.
 
 Evidence mode: Ran + Static
 
-## Disposition
+## M-F-REDO-CLONE disposition
 
-Increment M-F-REDO is executed-hold, not complete. It fixed the M-F clone and
-zero-surface-handoff findings far enough to make the remaining publication
-defect measurable: H1/H6/H9/H11 now publish distinct per-OFE hydrology vectors,
-nonzero downstream `UpStrmQ`, and nonzero lateral `SubRIn`; adjacent
-surface/lateral transfer residuals close at `0.0` with active nonzero
-operands. The fresh final smoke root is `/tmp/openwepp_mofe01_mfredo_final`.
+Increment M-F-REDO-CLONE is executed and complete for its prerequisite scope.
+It fixed the runoff clone left by M-F-REDO: H1/H6/H9/H11 now have zero
+all-identical active local-runoff days and zero full-vector clone days under
+`/tmp/openwepp_mofe01_mfredo_clone_current`.
+
+The root cause was stale multi-step WB12 infiltration lineage. MOFE hourly
+lanes seeded `wb12_infiltration=0.0`; WB18 ran before WB14; and WB14 accepted
+producer-published infiltration on multi-step lanes without proof that the
+value came from the same pass. WB18 now reconstructs same-pass infiltration for
+MOFE hourly carry lanes and marks lineage; WB14 accepts producer-published
+infiltration on multi-step lanes only when that marker is present.
+
+Genuine conservation remains closed. The smoke audit reports per-element
+residual maxima at or below `2.5579538487363607e-13` mm, with transfer and
+aggregate internal-transfer residuals at `0.0`. Single-OFE anchors
+H8/H15/H19/H20/H22/H23/H28 are byte-identical to M-E2 for `.hbp`,
+`.loss.json`, `.plot.parquet`, and `.wat.parquet` under
+`/tmp/openwepp_mofe01_mfredo_clone_single_final` (28/28 PASS).
+
+Local semantic comparisons were run directly with
+`tools/owcmp/semantic_wat.py --candidate-year-offset 1999`, without the
+comparator subagent. Commands exited zero and row-key coverage is complete for
+H1/H6/H9/H11. Semantic value-family failure remains expected at this boundary:
+M-F-REDO2 still owns the `QOFE` local-depth publication rule.
+
+Final Rust gates passed after M-F-REDO-CLONE: `cargo fmt --check`,
+`cargo clippy --workspace --all-targets -- -D warnings`,
+`cargo test --workspace`, `cargo deny check`,
+`bash tools/release/check_authority_suite_antievasion.sh`, and
+`cargo test --test auth11_required_suite_obligation_guards_contract`. The
+`wctl doc-lint` wrapper returned success but validated 0 files, so it is
+recorded as non-substantive rather than substantive markdown evidence.
+
+The next lawful increment is M-F-REDO2: port the baseline-authoritative local
+`QOFE` depth normalization while preserving the active handoff, runoff
+anti-clone, identity, and single-OFE anchor gates.
+
+## M-F-REDO disposition
+
+Increment M-F-REDO is executed-hold, not complete. It fixed the M-F
+zero-surface-handoff finding and differentiated part of the per-OFE hydrology,
+but Claude review found its anti-clone claim reached ET only: local runoff was
+still cloned on most active H1 runoff days. That blocker is superseded and
+closed by M-F-REDO-CLONE above.
 
 The M-F-REDO acceptance gate still fails because candidate `QOFE` remains
 identical to candidate `Q` on all four multi-OFE smoke surfaces

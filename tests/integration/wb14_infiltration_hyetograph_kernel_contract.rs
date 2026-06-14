@@ -672,6 +672,67 @@ fn wb14_contract_conformance_uses_percolation_published_infiltration() {
 }
 
 #[test]
+fn mofe01_mfredo_clone_wb14_recomputes_multistep_seeded_infiltration() {
+    let mut surface = seeded_wb14_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("management.initial.params.tillay2_m"),
+        BoundaryValue::scalar(0.1),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    surface
+        .flux_surface
+        .insert(BoundarySymbol::from("D"), BoundaryValue::scalar(0.0));
+
+    let (infiltration, q_runoff) = run_wb14_runoff_phase_outputs(surface);
+
+    assert!((infiltration - EXPECTED_WB14_INFILTRATION).abs() <= WB14_TEST_TOLERANCE);
+    assert!(
+        (q_runoff - EXPECTED_WB14_Q).abs() <= WB14_TEST_TOLERANCE,
+        "MOFE multistep lanes must compute lane-local infiltration instead of accepting a seeded zero; q={q_runoff}"
+    );
+}
+
+#[test]
+fn mofe01_mfredo_clone_multistep_local_runoff_responds_to_lane_conductivity() {
+    let mut high_conductivity_surface = seeded_wb14_surface();
+    high_conductivity_surface.state_surface.insert(
+        BoundarySymbol::from("management.initial.params.tillay2_m"),
+        BoundaryValue::scalar(0.1),
+    );
+    high_conductivity_surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    high_conductivity_surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    high_conductivity_surface
+        .flux_surface
+        .insert(BoundarySymbol::from("D"), BoundaryValue::scalar(0.0));
+
+    let mut low_conductivity_surface = high_conductivity_surface.clone();
+    low_conductivity_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(0.05));
+
+    let (high_infiltration, high_q) = run_wb14_runoff_phase_outputs(high_conductivity_surface);
+    let (low_infiltration, low_q) = run_wb14_runoff_phase_outputs(low_conductivity_surface);
+
+    assert!(
+        (high_q - low_q).abs() > WB14_TEST_TOLERANCE,
+        "multistep local runoff must respond to lane-local conductivity; high_q={high_q}, low_q={low_q}"
+    );
+    assert!(
+        (high_infiltration - low_infiltration).abs() > WB14_TEST_TOLERANCE,
+        "multistep infiltration must respond to lane-local conductivity; high={high_infiltration}, low={low_infiltration}"
+    );
+}
+
+#[test]
 fn hphys0242_contract_wb14_runoff_includes_current_saturation_carry_addback() {
     let mut baseline_surface = seeded_wb14_surface();
     enable_mofe_current_saturation_carry(&mut baseline_surface, 0.0);

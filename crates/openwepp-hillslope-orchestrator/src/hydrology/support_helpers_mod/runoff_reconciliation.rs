@@ -387,6 +387,49 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
     ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+        let lane_substeps_symbol = BoundarySymbol::from("wb18_perc_lane_substeps");
+        if let Some(lane_substeps_raw) =
+            Self::optional_state_scalar_for_symbol(request, phase_class, &lane_substeps_symbol)?
+        {
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &lane_substeps_symbol,
+                lane_substeps_raw,
+                Some(1.0),
+                None,
+            )?;
+            let lane_substeps = lane_substeps_raw.round();
+            if (lane_substeps_raw - lane_substeps).abs() > WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: lane_substeps_symbol,
+                    value: lane_substeps_raw,
+                    minimum: Some(1.0),
+                    maximum: None,
+                });
+            }
+            if (lane_substeps - 1.0).abs() > WB11_ZERO_THRESHOLD {
+                let same_pass_lineage_symbol =
+                    BoundarySymbol::from(WB12_SYMBOL_INFILTRATION_SAME_PASS_LINEAGE);
+                let same_pass_lineage = Self::optional_state_scalar_for_symbol(
+                    request,
+                    phase_class,
+                    &same_pass_lineage_symbol,
+                )?
+                .unwrap_or(0.0);
+                Self::require_state_range_for_symbol(
+                    phase_class,
+                    &same_pass_lineage_symbol,
+                    same_pass_lineage,
+                    Some(0.0),
+                    Some(1.0),
+                )?;
+                if same_pass_lineage < 0.5 {
+                    return Ok(None);
+                }
+            }
+        }
+
         if !request
             .state_surface
             .contains_key(&BoundarySymbol::from("management.initial.params.tillay2_m"))
@@ -513,10 +556,12 @@ impl Wb11HydrologyKernel {
         et: f64,
         percolation_loss: f64,
         subsurface_loss: f64,
+        frost_liquid_exchange: f64,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let storage_reconciled =
             storage_initial + precip_input + snow_coupling_s + irrigation_input
                 + runon_input
+                + frost_liquid_exchange
                 - interception
                 - q_runoff
                 - et

@@ -238,6 +238,10 @@ use super::super::*;
             BoundarySymbol::from("wb12_storage_observed"),
             BoundaryValue::scalar(0.03),
         );
+        state_surface.insert(
+            BoundarySymbol::from("mofe_hourly_carry_arrays_enabled"),
+            BoundaryValue::scalar(1.0),
+        );
 
         let mut flux_surface = BTreeMap::new();
         flux_surface.insert(BoundarySymbol::from("Q"), BoundaryValue::scalar(0.0));
@@ -246,6 +250,10 @@ use super::super::*;
         flux_surface.insert(BoundarySymbol::from("ET"), BoundaryValue::scalar(0.05));
         flux_surface.insert(BoundarySymbol::from("D"), BoundaryValue::scalar(0.0));
         flux_surface.insert(BoundarySymbol::from("Qd"), BoundaryValue::scalar(0.42));
+        flux_surface.insert(
+            BoundarySymbol::from("wb12_runoff_carryover"),
+            BoundaryValue::scalar(0.0),
+        );
 
         let request = HillslopeKernelRequest::with_phase_context(
             "storage_reconciliation",
@@ -267,6 +275,9 @@ use super::super::*;
         let storage_reconciled =
             state_field_scalar(&response.writeback.state_updates, "wb12_storage_reconciled")
                 .expect("storage reconciliation should publish wb12_storage_reconciled");
+        let final_soil_water =
+            state_field_scalar(&response.writeback.state_updates, "wb11_soil_water")
+                .expect("storage reconciliation should publish final wb11_soil_water");
         let closure_delta = flux_field_scalar(
             &response.writeback.flux_updates,
             "wb12_storage_closure_delta",
@@ -276,6 +287,10 @@ use super::super::*;
         assert!(
             (storage_reconciled - 0.03).abs() < 1.0e-12,
             "storage reconciliation must preserve WB12 conservation under realized WB19 Qd"
+        );
+        assert!(
+            (final_soil_water - storage_reconciled).abs() < 1.0e-12,
+            "final WB11 soil water must follow WB12 reconciled storage for WB13 publication"
         );
         assert!(
             closure_delta.abs() < 1.0e-12,

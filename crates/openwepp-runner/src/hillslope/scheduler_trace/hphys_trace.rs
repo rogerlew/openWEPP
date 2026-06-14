@@ -853,56 +853,82 @@ pub(super) fn format_wb12_storage_terms(runtime_surface: &HillslopeWritebackSurf
     let precip_input = runtime_surface_symbol_value(runtime_surface, "wb12_precip_input");
     let snow_coupling_s = runtime_surface_symbol_value(runtime_surface, "S");
     let irrigation_input = runtime_surface_symbol_value(runtime_surface, "Irr");
+    let runon_input = runtime_surface_symbol_value_prefer_flux(runtime_surface, "wb12_runoff_carryover")
+        .or_else(|| runtime_surface_symbol_value(runtime_surface, "wb12_runon_input"));
     let interception_i = runtime_surface_symbol_value(runtime_surface, "I");
     let q_runoff = runtime_surface_symbol_value(runtime_surface, "Q");
     let et = runtime_surface_symbol_value(runtime_surface, "ET");
     let percolation_loss = runtime_surface_symbol_value(runtime_surface, "D");
+    let frost_bottom_overflow =
+        runtime_surface_symbol_value(runtime_surface, "frost.runtime_watbtm_m");
     let subsurface_loss = runtime_surface_symbol_value(runtime_surface, "Qd");
+    let frost_liquid_exchange =
+        runtime_surface_symbol_value(runtime_surface, "frost.runtime_frwatc_net_liquid_delta_m");
     let reconciled_est = match (
         storage_initial,
         precip_input,
         snow_coupling_s,
         irrigation_input,
+        runon_input,
         interception_i,
         q_runoff,
         et,
         percolation_loss,
+        frost_bottom_overflow,
         subsurface_loss,
+        frost_liquid_exchange,
     ) {
         (
             Some(storage_initial),
             Some(precip_input),
             Some(snow_coupling_s),
             Some(irrigation_input),
+            Some(runon_input),
             Some(interception_i),
             Some(q_runoff),
             Some(et),
             Some(percolation_loss),
+            Some(frost_bottom_overflow),
             Some(subsurface_loss),
+            Some(frost_liquid_exchange),
         ) => format!(
             "{:.10}",
-            storage_initial + precip_input + snow_coupling_s + irrigation_input
+            storage_initial + precip_input + snow_coupling_s + irrigation_input + runon_input
+                + frost_liquid_exchange
                 - interception_i
                 - q_runoff
                 - et
                 - percolation_loss
+                - frost_bottom_overflow
                 - subsurface_loss
         ),
         _ => "NA".to_string(),
     };
 
     format!(
-        "{{storage_initial={},precip_input={},S={},Irr={},I={},Q={},ET={},D={},Qd={},reconciled_est={}}}",
+        "{{storage_initial={},precip_input={},S={},Irr={},runon_input={},frwatc_net_liquid_delta={},frwatc_soil_before={},frwatc_soil_after={},frwatc_frozen_before={},frwatc_frozen_after={},frwatc_freeze_debit={},frwatc_thaw_credit={},shadow_frwatc_residual={},I={},Q={},ET={},D={},watpdg={},watbtm={},Qd={},reconciled_est={},storage_reconciled={}}}",
         get(runtime_surface, "wb12_storage_initial"),
         get(runtime_surface, "wb12_precip_input"),
         get(runtime_surface, "S"),
         get(runtime_surface, "Irr"),
+        runon_input.map_or_else(|| "NA".to_string(), |value| format!("{value:.10}")),
+        get(runtime_surface, "frost.runtime_frwatc_net_liquid_delta_m"),
+        get(runtime_surface, "frost.runtime_frwatc_soil_water_before_m"),
+        get(runtime_surface, "frost.runtime_frwatc_soil_water_after_m"),
+        get(runtime_surface, "frost.runtime_frwatc_frozen_water_before_m"),
+        get(runtime_surface, "frost.runtime_frwatc_frozen_water_after_m"),
+        get(runtime_surface, "frost.runtime_frwatc_freeze_debit_m"),
+        get(runtime_surface, "frost.runtime_frwatc_thaw_credit_m"),
+        get(runtime_surface, "frost.runtime_shadow_frwatc_residual_m"),
         get(runtime_surface, "I"),
         get(runtime_surface, "Q"),
         get(runtime_surface, "ET"),
         get(runtime_surface, "D"),
+        get(runtime_surface, "frost.runtime_watpdg_m"),
+        get(runtime_surface, "frost.runtime_watbtm_m"),
         get(runtime_surface, "Qd"),
-        reconciled_est
+        reconciled_est,
+        get(runtime_surface, "wb12_storage_reconciled")
     )
 }
 

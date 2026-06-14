@@ -82,6 +82,20 @@ pub(crate) fn run_storage_reconciliation(
             Some(0.0),
             None,
         )?;
+        let frost_bottom_overflow_symbol = BoundarySymbol::from("frost.runtime_watbtm_m");
+        let frost_bottom_overflow = Self::optional_state_scalar_for_symbol(
+            request,
+            phase_class,
+            &frost_bottom_overflow_symbol,
+        )?
+        .unwrap_or(0.0);
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &frost_bottom_overflow_symbol,
+            frost_bottom_overflow,
+            Some(0.0),
+            None,
+        )?;
 
         let subsurface_loss =
             Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_SUBHYD_QD)?;
@@ -92,6 +106,12 @@ pub(crate) fn run_storage_reconciliation(
             Some(0.0),
             None,
         )?;
+        let frost_liquid_exchange = Self::optional_state_scalar_for_symbol(
+            request,
+            phase_class,
+            &BoundarySymbol::from("frost.runtime_frwatc_net_liquid_delta_m"),
+        )?
+        .unwrap_or(0.0);
 
         let storage_reconciled = Self::compute_storage_reconciled_with_interception(
             phase_class,
@@ -103,17 +123,20 @@ pub(crate) fn run_storage_reconciliation(
             interception_i,
             q_runoff,
             et,
-            percolation_loss,
+            percolation_loss + frost_bottom_overflow,
             subsurface_loss,
+            frost_liquid_exchange,
         )?;
 
         let closure_delta = if forward_solver_lane {
             let solver_closure =
                 storage_initial + precip_input + snow_coupling_s + irrigation_input + runon_input
+                    + frost_liquid_exchange
                     - interception_i
                     - q_runoff
                     - et
                     - percolation_loss
+                    - frost_bottom_overflow
                     - subsurface_loss;
             solver_closure - storage_reconciled
         } else {
@@ -144,13 +167,23 @@ pub(crate) fn run_storage_reconciliation(
         ) else {
             unreachable!("status message ids are non-empty WB12 constants")
         };
-        let writeback = KernelWritebackPayload::with_updates(
-            vec![WritebackField::bounded(
-                WB12_SYMBOL_STORAGE_RECONCILED,
+        let mut state_updates = vec![WritebackField::bounded(
+            WB12_SYMBOL_STORAGE_RECONCILED,
+            storage_reconciled,
+            Some(0.0),
+            None,
+        )];
+        if Self::resolve_mofe_hourly_carry_arrays_enabled(request, phase_class)? {
+            state_updates.push(WritebackField::bounded(
+                WB11_SYMBOL_SOIL_WATER,
                 storage_reconciled,
                 Some(0.0),
                 None,
-            )],
+            ));
+        }
+
+        let writeback = KernelWritebackPayload::with_updates(
+            state_updates,
             vec![WritebackField::unbounded(
                 WB12_SYMBOL_STORAGE_CLOSURE_DELTA,
                 closure_delta,

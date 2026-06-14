@@ -516,7 +516,8 @@ pub(crate) fn compute_same_pass_wb14_infiltration_lineage(
             Self::wb18_should_reconstruct_same_pass_infiltration_lineage(request, phase_class)?;
         let reconstruct_zero_infiltration = should_reconstruct
             && (Self::wb18_same_pass_reconstruction_daily_lane(request, phase_class)?
-                || Self::wb18_storage_target_includes_same_pass_ingress(request, phase_class)?);
+                || Self::wb18_storage_target_includes_same_pass_ingress(request, phase_class)?
+                || Self::resolve_mofe_hourly_carry_arrays_enabled(request, phase_class)?);
         let infiltration_symbol = BoundarySymbol::from(WB12_SYMBOL_INFILTRATION);
         if let Some(infiltration) =
             Self::optional_state_scalar_for_symbol(request, phase_class, &infiltration_symbol)?

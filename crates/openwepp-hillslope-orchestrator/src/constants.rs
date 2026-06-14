@@ -185,6 +185,8 @@ pub(crate) const WB12_SYMBOL_RUNON_INPUT: HillslopeProductionStateSymbol =
 pub(crate) const WB12_SYMBOL_RUNOFF_CARRYOVER: &str = "wb12_runoff_carryover";
 pub(crate) const WB12_SYMBOL_INFILTRATION: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb12Infiltration;
+pub(crate) const WB12_SYMBOL_INFILTRATION_SAME_PASS_LINEAGE: &str =
+    "wb12_infiltration_same_pass_lineage";
 pub(crate) const WB12_SYMBOL_DEPRESSION_STORAGE_DELTA: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb12DepressionStorageDelta;
 pub(crate) const WB12_SYMBOL_RUNOFF_OBSERVED: HillslopeProductionStateSymbol =

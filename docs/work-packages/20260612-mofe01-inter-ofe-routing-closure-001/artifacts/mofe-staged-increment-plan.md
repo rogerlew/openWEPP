@@ -304,6 +304,11 @@ alias (`max abs(QOFE-Q)` is `362.13991`, `177.51694`, `185.89531`, and
 
 ## Increment M-F-REDO-CLONE — make per-OFE runoff genuinely distinct (prerequisite)
 
+Status: executed 2026-06-14; stale multi-step WB12 infiltration lineage was
+root-caused and fixed, H1/H6/H9/H11 local runoff anti-clone gates pass, and
+the genuine per-element/transfer identities remain at `TOL-WATBAL-007`.
+M-F-REDO2 remains the separate `QOFE` local-depth publication increment.
+
 M-F-REDO's anti-clone fix reached ET but **not runoff**: 968/1057 (92%) of
 runoff days still have all-5-OFE-identical local runoff (`Q − UpStrmQ`), and
 the peak-runoff day is a full clone across every column (see
@@ -320,6 +325,28 @@ ofe_id` ladder is the clone accumulating, not real routing.
 - Gate: per-OFE local runoff distinct across OFEs on the H1/H6/H9/H11 cohort;
   genuine per-element + transfer identities still close at `TOL-WATBAL-007`;
   single-OFE anchor bit-identical.
+
+M-F-REDO-CLONE execution result:
+
+- Root cause: MOFE hourly lanes seeded `wb12_infiltration=0.0`, WB18 ran before
+  WB14, and WB14 trusted producer-published infiltration on multi-step lanes
+  without a same-pass lineage proof. That let runoff reconcile against stale
+  zero infiltration and clone across lanes even though ET inputs had
+  differentiated.
+- Fix: WB18 reconstructs same-pass infiltration for MOFE hourly carry lanes
+  and marks lineage; WB14 accepts producer-published infiltration on multi-step
+  lanes only when that same-pass lineage marker is present, otherwise it
+  recomputes lane-local infiltration.
+- H1/H6/H9/H11 under `/tmp/openwepp_mofe01_mfredo_clone_current` have zero
+  all-identical local-runoff days and zero full-vector clone days on active
+  runoff days. Per-element residual maxima stay at noise
+  (`<=2.56e-13 mm`); transfer and aggregate residuals close at `0.0`.
+- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 under
+  `/tmp/openwepp_mofe01_mfredo_clone_single_final` remain byte-identical for
+  `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS).
+- Local semantic comparisons were run directly with `tools/owcmp/semantic_wat.py`
+  and no comparator subagent. Row-key coverage is complete for H1/H6/H9/H11;
+  value-family semantic failures remain M-F-REDO2 publication scope.
 
 ## Increment M-F-REDO2 — per-OFE `QOFE` as local runoff depth (after runoff is distinct)
 
@@ -362,7 +389,7 @@ routed `runoff(iplane)` as the two legacy depths:
 
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-C2|M-D|M-E|M-E4-REDO|M-F|M-F-REDO|M-G|M-H> of
+Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-C2|M-D|M-E|M-E4-REDO|M-F|M-F-REDO|M-F-REDO-CLONE|M-F-REDO2|M-G|M-H> of
 `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
 `mofe-routing-port-scope.md` (once it exists); the FDHP01 staged plan

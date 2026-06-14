@@ -323,6 +323,47 @@ fn wb12_contract_conformance_reconciles_runoff_and_storage_surfaces() {
 }
 
 #[test]
+fn wb12_contract_conformance_applies_frost_liquid_exchange_to_final_storage() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+    let mut surface = seeded_wb12_surface();
+    let expected_storage = 14.034_883_139_239_016;
+    surface.state_surface.insert(
+        BoundarySymbol::from("frost.runtime_frwatc_net_liquid_delta_m"),
+        BoundaryValue::scalar(-0.4),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("frost.runtime_watbtm_m"),
+        BoundaryValue::scalar(0.125),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_storage_observed"),
+        BoundaryValue::scalar(expected_storage),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("wb12 execution should return typed report");
+
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler halted at {:?}",
+        report.scheduler_report.halted_phase
+    );
+    assert_eq!(
+        report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from("wb12_storage_reconciled"))
+            .copied(),
+        Some(BoundaryValue::scalar(expected_storage))
+    );
+}
+
+#[test]
 fn wb12_contract_conformance_rejects_non_finite_runoff_input() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =

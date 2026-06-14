@@ -1,12 +1,42 @@
 # gate results
 
-Status: M-F-REDO executed-hold (Claude: anti-clone reached ET only; runoff still 92% cloned — see M-F evidence); active handoff and anti-clone gates fixed,
-`QOFE` geometry scaling still blocked; package active for the next corrective
-increment
+Status: M-F-REDO-CLONE executed; runoff anti-clone and identity gates close.
+Package remains active for M-F-REDO2 `QOFE` local-depth publication closure.
 
 Evidence mode: Ran + Static
 
-## M-F-REDO scoped acceptance gates
+## M-F-REDO-CLONE scoped acceptance gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Root-cause stale multi-step infiltration | PASS | WB14 no longer trusts seeded/published WB12 infiltration on multi-step lanes without the WB18 same-pass lineage marker. |
+| WB14 lane-local infiltration tests | PASS | `mofe01_mfredo_clone_wb14_recomputes_multistep_seeded_infiltration` and `mofe01_mfredo_clone_multistep_local_runoff_responds_to_lane_conductivity` pass. |
+| Required H smoke | PASS | H1/H6/H9/H11 exited zero under `/tmp/openwepp_mofe01_mfredo_clone_current`; elapsed seconds H1 `212`, H6 `132`, H9 `170`, H11 `95`. |
+| Public per-OFE row cardinality | PASS | H1/H6/H9/H11 row counts remain `day_count * contributor_ofe_count`: `10960`, `6576`, `8768`, `4384`. |
+| Per-OFE local runoff distinctness | PASS | All-identical active local-runoff days are zero for H1/H6/H9/H11. |
+| Full-vector anti-clone | PASS | Full-vector clone days are zero for H1/H6/H9/H11. |
+| Genuine per-element identity | PASS | Max residuals: H1 `2.5579538487363607e-13`, H6 `2.0250467969162855e-13`, H9 `1.9895196601282805e-13`, H11 `2.2737367544323206e-13` mm. |
+| Transfer and aggregate identities | PASS | Runtime audit reports transfer and aggregate internal-transfer residual maxima at `0.0`. |
+| Local semantic comparisons, no comparator subagent | PASS / INVESTIGATION FAIL | Commands exited zero and row keys align for H1/H6/H9/H11 under `/tmp/openwepp_mofe01_mfredo_clone_current/owcmp-smoke/reports`; semantic value pass remains false pending M-F-REDO2. |
+| Single-OFE anchor comparison | PASS | `/tmp/openwepp_mofe01_mfredo_clone_single_final`: H8/H15/H19/H20/H22/H23/H28 byte-identical to M-E2 for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS). |
+| `cargo fmt --check` | PASS | Final post-edit run. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Final post-edit run. |
+| `cargo test --workspace` | PASS | Full Rust closure loop passed after the stale-token contract test repair. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| `bash tools/release/check_authority_suite_antievasion.sh` | PASS | Authority suite anti-evasion checks passed. |
+| `cargo test --test auth11_required_suite_obligation_guards_contract` | PASS | Authority obligation guard tests passed. |
+| `git diff --check` | PASS | Final whitespace check passed after evidence updates. |
+| `wctl doc-lint --path ...` | NON-SUBSTANTIVE | Wrapper exited zero but reported 0 files validated, so this is recorded but not counted as a substantive markdown gate. |
+| Line count governance | PASS / WARN | Touched files remain below 2000 lines; pre-existing global warnings include `coupling.rs` at 3052 lines outside this increment write set. |
+
+Detailed evidence: `m-f-per-ofe-wat-publication-evidence.md`.
+
+## M-F-REDO scoped acceptance gates (superseded by M-F-REDO-CLONE)
+
+Claude review superseded the M-F-REDO anti-clone acceptance reading: M-F-REDO
+made active handoff measurable, but local runoff was still cloned on most H1
+active runoff days. The controlling runoff distinctness evidence is the
+M-F-REDO-CLONE table above.
 
 | Gate/check | Result | Notes |
 | --- | --- | --- |
