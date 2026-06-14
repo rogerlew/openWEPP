@@ -68,3 +68,39 @@ structural impoundment count is zero. This is not a silent default:
 - Preserve active-impoundment fixtures and payload validation.
 - Ensure both strict and compatibility modes are explicit about zero-count
   behavior under `expected_structural_count`.
+
+## Claude review (2026-06-14) — classification independently confirmed; W-B contract endorsed
+
+Evidence mode: Ran (legacy + openWEPP source read).
+
+**The parser-defect classification is correct and independently verified:**
+
+- Legacy **ran arboreal-dendrite successfully** (its watershed outputs are on
+  disk), with this exact `pw0.imp` (`jpond=0`). openWEPP fail-closing on input
+  legacy accepts is, by definition, a defect (the WBVAL02 inverse: there the
+  "guard too strict" hypothesis was *invalid input*; here legacy proves the
+  input is *valid*).
+- Mechanism confirmed: legacy `wshini.for:319` gates the entire impoundment
+  read behind `if (npond.gt.0)` — for `npond=0` it **never reads `pw0.imp`**,
+  so `jpond=0` is never validated. openWEPP
+  (`openwepp-cli-watershed.rs:~246`) parses the `.imp` **unconditionally**
+  despite already holding `structure.summary.impoundment_count` (its analog of
+  `npond`), and the parser rejects `jpond=0` via
+  `DomainError{field:"jpond", allowed:">= 1"}`.
+
+**W-B contract endorsed** as contract-first-faithful: gating the `jpond=0`
+acceptance on `expected_structural_count == 0` (and preserving negative/
+non-numeric/max-count/structure-mismatch guards) ties the leniency to the
+legacy `npond>0` semantic rather than loosening the bare `jpond >= 1` check —
+the right instinct (cf. the WBVAL05/SC-PERC lesson: fix the consumption gate,
+not the typed guard).
+
+**One W-B robustness note (not a blocker):** legacy reads the `.imp` file
+*not at all* when `npond=0`, so the file's presence/content is irrelevant in
+the no-impoundment case. Codex's W-B (read it, accept `jpond=0`) handles the
+present-with-`jpond=0` case (sufficient for arboreal-dendrite), but the fully
+legacy-faithful no-impoundment semantic also covers an **absent `.imp`** on a
+zero-impoundment watershed. W-B should decide explicitly whether a missing
+`.imp` when `impoundment_count == 0` is accepted (legacy: yes, never read) or
+still required — and pin it in the contract, so the no-pond handling is
+complete, not just the present-file variant.
