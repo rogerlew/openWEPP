@@ -39,6 +39,7 @@ On-demand.
 |------|------|--------------|-------------------------|-------------|--------------------|-------------------|-------|
 | /workdir/openWEPP/AGENTS.md | Core | Root governance for all package work | Always | Pre-edit | Agent | <timestamp> | |
 | /workdir/openWEPP/docs/codex_exec_plans.md | Core | Execution-plan contract for package autonomy | Always | Pre-edit | Agent | <timestamp> | |
+| /workdir/openWEPP/docs/work-packages/AGENTS.md | Core | Work-package execution, gate, review, and conservation/publication acceptance rules | Always | Pre-edit | Agent | <timestamp> | |
 | /workdir/openWEPP/docs/work-packages/README.md | Core | Work-package process and closure conventions | Always | Pre-edit | Agent | <timestamp> | |
 | /workdir/openWEPP/docs/work-packages/<id>/package.md | Core | Package-local authority, write set, and gates | Always | Pre-edit | Agent | <timestamp> | |
 | /workdir/openWEPP/docs/defect_closure_execplans.md | Conditional | Defect-closure envelope and HOLD legitimacy rules | Defect-closure package | Pre-edit when triggered | Agent | <timestamp> | |

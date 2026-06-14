@@ -42,6 +42,7 @@ Required reading (read before edits):
 - Core:
    - /workdir/openWEPP/AGENTS.md
    - /workdir/openWEPP/docs/codex_exec_plans.md
+   - /workdir/openWEPP/docs/work-packages/AGENTS.md
    - /workdir/openWEPP/docs/work-packages/README.md
    - /workdir/openWEPP/docs/standards/mechanical-refactor-authoring-guide.md
    - /workdir/openWEPP/docs/work-packages/<id>/package.md
@@ -65,6 +66,17 @@ Required-reading budget:
 - map template (canonical): docs/prompt_templates/required-reading-map-template.md
 - if REQUIRES-JUSTIFICATION: explain why each heavy pre-read cannot be deferred
    to On-demand.
+
+Subagent requirement:
+- REQUIRED for heavy closure gates when available: spawn
+  `comparator_suite_runner` for full closure-loop gate execution
+  (`cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo test --workspace`, `cargo deny check`, and comparable suite/population
+  gates). This prompt explicitly authorizes subagent spawning/delegation to
+  `comparator_suite_runner` for closure-gate execution; expected output is
+  compact command results plus log/artifact paths; write access is read-only.
+- If the subagent is genuinely unavailable, record command-level unavailability
+  evidence and run the required gates locally.
 
 Write-set (strict):
 - <file path 1>
@@ -99,13 +111,15 @@ Execution steps (perform in order):
      - `cargo check -p <touched-crate>`
      - `cargo test -p <touched-crate> <focused-filter>`
 4. Closure gates
-    - Run and record in this order:
+    - Run and record in this order, delegating heavy gates to the required
+      subagent when available and running locally only after recording
+      subagent-unavailability evidence:
      - `cargo fmt --check`
      - `cargo clippy --workspace --all-targets -- -D warnings`
      - `cargo test --workspace`
      - `cargo deny check`
-    - These commands are required execution gates and must be run as shell
-       commands in this execution.
+    - These commands are required execution gates and must be run directly or
+       through the required subagent in this execution.
     - Record each gate command with observed outcome (`pass`/`fail`) and
        explicit exit code.
     - Do not exit early after a subset of these gates unless a hard blocker is
