@@ -366,6 +366,89 @@ Every PR touching kernel math should confirm:
 3. Variable naming is consistent with upstream equations or mapped explicitly.
 4. Tests isolate the changed behavior and include negative/edge cases.
 5. Parity evidence is attached when numerical output can change.
+6. Every cited contract Test-Vector Obligation maps to a named, implemented
+   test (§7.6).
+
+### 7.5 Test case-family taxonomy (Normative)
+
+Contract-derived and kernel tests are designed against a fixed family set, not
+re-derived per contract. Every test set covers the applicable families; a
+contract whose "Test-Vector Obligations" omit an applicable family is
+non-compliant. Obligation sections reference these letters instead of restating
+the taxonomy.
+
+- **A. Nominal in-domain** — representative valid input; assert the primary
+  equation/output is finite and within sign/bounds.
+- **B. Boundary / near-threshold** — at and just across each guard threshold
+  (e.g. `tau_f == taucn`, `theta == FC`).
+- **C. Branch** — each distinct algorithmic branch/case is reached (e.g.
+  detachment vs deposition; multi-OFE case 1–4).
+- **D. Domain-reject** — each out-of-domain input fails closed with the exact
+  typed status/error code named in the contract.
+- **E. Missing-symbol** — each required symbol absent ⇒ typed hard failure
+  (named code); no default.
+- **F. Non-finite** — `NaN`/`±Inf` in each required input ⇒ typed hard failure.
+- **G. Conservation / continuity residual** — the closure identity holds within
+  the contract tolerance for valid input, and a forced residual violation fails
+  with the named status.
+- **H. Fail-closed posture** — assert *no* silent clamp/default/pass-through on
+  any A–G failure path.
+
+### 7.6 Obligation-to-test binding (Normative)
+
+This binding and the module coverage closure thresholds are binding policy under
+[ADR-0021](../decisions/0021-module-coverage-closure-thresholds.md).
+
+- Every entry in a contract's "Test-Vector Obligations" / "Contract-Derived Test
+  Vectors" maps to a named, implemented test (one obligation ⇒ one or more
+  `#[test]` functions).
+- The mapping is recorded in an obligation→test map (a work-package evidence
+  artifact; see
+  [module-test-enhancement-authoring-guide.md](module-test-enhancement-authoring-guide.md)).
+- This binding must be machine-checked. The external-authority pattern
+  (`docs/specifications/external-authority/required-suite-obligations.json` +
+  `auth11_required_suite_obligation_guards_contract`) is the model; an
+  equivalent guard binding ordinary `SC-*` obligations to tests is required.
+  Until that guard ships, the binding is a hard review-checklist item (§7.4#6)
+  and a work-package exit gate.
+- A contract obligation with no bound test is a governance failure, not a
+  backlog item — the same posture as an ownerless `HOLD`.
+
+### 7.7 Test-authoring mechanics
+
+- **Naming.** Descriptive snake_case stating the asserted law/guard, not the
+  mechanics. Negative cases end `_fails_with_<status>` or `_rejects_<condition>`.
+- **Fixtures.** Prefer table-driven/parametrized vectors over copy-pasted bodies
+  — one row per case family (§7.5). Constitutive fixtures live under
+  `tests/fixtures/constitutive/<suite_id>/` with the integrity metadata required
+  by the external-authority suite schema.
+- **Property-based testing.** For range-invariants — conservation, monotonicity
+  (e.g. monotone inter-storm recession), boundedness (`0 <= x <= 1`), sign —
+  assert the law over generated inputs in addition to example vectors. Example
+  vectors pin named guard arms; property tests defend the law across the domain.
+- **Float comparison.** Never `==` on floats. Compare against the contract's
+  named tolerance (abs/rel/mixed with units); record the tolerance's contract
+  source in the assertion message.
+- **Determinism.** Tests are deterministic and local-only: no wall-clock, no
+  network, no filesystem outside the test tempdir, fixed seeds for any
+  generator (reinforces `tests/AGENTS.md`).
+
+### 7.8 Non-kernel layer case families
+
+The §7.5 taxonomy extends to layers without kernel math:
+
+- **Parsers (`openwepp-input-contract`).** Per field/record: valid nominal;
+  malformed token; truncated/short record; out-of-range value; cardinality
+  underflow and overflow vs declared count; encoding/whitespace edge;
+  duplicate/missing required key. All invalid inputs fail closed with a typed
+  parse error; no silent default.
+- **Scheduler / runner (orchestration).** Canonical phase ordering preserved;
+  required ingress symbol missing ⇒ typed hard fail before the consuming phase;
+  activation-flag on *and* off paths (e.g. `*_wave2_enabled = 0|1`); multi-OFE
+  (`nelem > 1`) vs single-OFE; producer writeback observable by the consuming
+  phase.
+- **Output / aggregation.** Schema conformance; closure identity (the WB/mass
+  identities) holds on the emitted surface; empty/degenerate input handled.
 
 ## 8) Recommended tooling profile
 
