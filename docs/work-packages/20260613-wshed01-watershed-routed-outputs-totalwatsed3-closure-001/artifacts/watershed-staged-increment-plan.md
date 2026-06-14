@@ -1,6 +1,7 @@
 # Watershed Staged Increment Plan — Dispatch Artifact
 
-Status: active - T-B2 executed; T-C queued
+Status: active - T-B2 executed but DEFECTIVE (runvol area; Claude review
+2026-06-14, review-tb2-runvol-area-defect.md) → needs T-B2-REDO before T-C
 Author: Claude Code, 2026-06-13
 Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 `mofe-staged-increment-plan.md` (proven; agent memory
@@ -247,11 +248,18 @@ routed runoff**, then run totalwatsed3 on openWEPP-native outputs.
   This is the routed-transfer-delivery path, **genuinely independent of the
   WAT `Q` balance publication** — not a WAT-Q restatement (which would be the
   self-consistency the T-arc exists to avoid).
-- **runvol = outlet routed surface runoff × hillslope area** (m³), per day.
-  It is the **outlet net delivery**, NOT the area-weighted per-OFE sum (the W-D
-  double-count error that gave 2950 mm). `sbrunv` from the outlet lateral
-  delivery; sediment companions zero per the deferred-sediment posture
-  (MOFE-EROSION follow-on).
+- **runvol = outlet exported runoff volume** (m³), per day. ⚠ CORRECTED
+  (2026-06-14, [review-tb2-runvol-area-defect.md](review-tb2-runvol-area-defect.md)):
+  `qofe`/`physical_surface_outflow_mm` is **slplen-normalized** (referenced to
+  the outlet OFE), so the exported volume is `qofe · A_outlet_OFE`, **NOT**
+  `qofe · A_hillslope`. The original wording here said *"× hillslope area"* —
+  that is the dimensional mistake T-B2 implemented (runoff came out 2–3× precip).
+  Use the in-tree dual: `qofe · outlet.area_m2` (matches the M-I outlet
+  weighting and the adjacent `sbrunv` line) **or** published `q · hillslope area`
+  (matches the non-MOFE path). It is the **outlet net delivery**, NOT the
+  area-weighted per-OFE sum (the W-D double-count that gave 2950 mm). `sbrunv`
+  from the outlet lateral delivery; sediment companions zero per the
+  deferred-sediment posture (MOFE-EROSION follow-on).
 - **Emit openWEPP's own runoff-delivery parquet** (ADR-0019: openWEPP-controlled
   schema) carrying the columns totalwatsed3 needs (`runvol`/`sbrunv`/date keys);
   the T-B CLI reads openWEPP's surface, not the legacy `output/interchange/`.
@@ -288,18 +296,58 @@ T-B2 execution result (2026-06-14):
 - Full Rust loop passed: fmt, clippy, workspace tests, and deny. T-C remains
   the next closure increment.
 
+> ⚠ **DEFECT (Claude review 2026-06-14,
+> [review-tb2-runvol-area-defect.md](review-tb2-runvol-area-defect.md)):** the
+> `runvol = physical_surface_outflow_mm * publication_area_m2` formula uses the
+> **whole-hillslope** area against a **slplen-normalized** outlet depth, so
+> `runvol` came out **2.0–3.1× precip every year** (physically impossible;
+> closure −32,855 mm cumulative). The `1.46e-11` "PASS identity" above is a
+> **self-consistency** check — it compares `runvol` to the same wrong formula,
+> so it could not catch this. **Hold T-C** until the reference area is
+> corrected (`qofe · outlet.area_m2` or published `q · hillslope area`) and an
+> **independent** bound (`Σ runvol ≤ Σ precip`) replaces the self-consistency
+> check.
+
+### Increment T-B2-REDO — correct the runvol reference area
+
+Disposition of [review-tb2-runvol-area-defect.md](review-tb2-runvol-area-defect.md).
+
+- Correct `build_hillslope_pass_row_from_outlet_delivery`
+  (`02_output_and_climate_helpers.rs:728`): the exported runoff volume is
+  `qofe · A_outlet_OFE` (≡ published `q · A_hillslope`), **not**
+  `qofe · A_hillslope`. Pick the in-tree dual that reads cleanest next to the
+  adjacent `sbrunv` line (`:729`, already `outlet.area_m2`) and the non-MOFE
+  path (`:713`, `q · area_m2`) — disposition is the implementer's.
+- Replace the self-consistency PASS check with an **independent** bound: red
+  test `Σ runvol ≤ Σ precip` (annual, per hillslope) + a multi-OFE fixture
+  asserting `runvol = qofe·A_outlet ≠ qofe·A_hillslope`. The old
+  `runvol == qofe·A_hillslope` audit must be deleted, not kept (it encodes the
+  bug).
+- Single-OFE anchors stay byte-identical (their outlet OFE *is* the hillslope,
+  area unchanged); MOFE PASS `runvol` changes by design — re-baseline the MOFE
+  PASS expectation, not the HBP/WAT anchors.
+- Gate: arboreal-dendrite rerun shows annual `Σ runvol ≤ Σ precip` for every
+  hillslope; full Rust loop; anchors unchanged.
+
 ### Increment T-C — totalwatsed3 closure on openWEPP-NATIVE outputs (the WBVAL06/6a deferral resolved)
+
+**BLOCKED on T-B2-REDO** (the runvol area defect above). T-C may not run on the
+current T-B2 output — `Σ runvol ≈ 2.5× Σ precip`.
 
 The closure audit on the openWEPP-native totalwatsed3 output — produced from openWEPP's OWN H.pass(runvol, T-B2) + H.wat, NOT the legacy interchange dir. Gate: the
 identity `P − (Runoff + Lateral + ET + Perc + Interception) − ΔStorage` closes
 at the established floor with **independent operands** (PASS runoff, not WAT Q;
-nonzero-at-noise, not 0==0) on the arboreal-dendrite cohort. On pass: the
-WBVAL06/6a end-to-end totalwatsed3 deferral is resolved; ROADMAP item 1
-removed; README execution log; handoff naming the decoupled `chanwb` follow-on.
+nonzero-at-noise, not 0==0) on the arboreal-dendrite cohort. Hard pre-gate
+(must hold before the closure is even meaningful): annual `Σ runvol ≤ Σ precip`
+per hillslope. On pass: the WBVAL06/6a end-to-end totalwatsed3 deferral is
+resolved; ROADMAP item 1 removed; README execution log; handoff naming the
+decoupled `chanwb` follow-on. **Do not declare closure on the area fix alone** —
+the `Q`-substitution proxy left a +2,950 mm residual that must be attributed
+independently (see review-tb2-runvol-area-defect.md §residual caveat).
 
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <W-A|...|T-A|T-B|T-B2|T-C> of
+Each Codex dispatch: *"Execute increment <W-A|...|T-A|T-B|T-B2|T-B2-REDO|T-C> of
 `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
 `watershed-routing-scope.md`; `totalwatsed3-cli-scope.md` after T-A; the
