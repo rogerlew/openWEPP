@@ -1,9 +1,35 @@
 # gate results
 
-Status: M-G executed; erosion `qin`/sediment coupling is contract-pinned as
-follow-on. Package remains active for M-H ladder acceptance + closure.
+Status: M-H executed; MOFE01 hillslope water-routing closure accepted.
+Watershed-output `totalwatsed3`, >10-OFE far-point closure, and
+sediment-coupled erosion `qin/qout` remain named follow-ons.
 
 Evidence mode: Ran + Static
+
+## M-H scoped acceptance gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Full 36-run ladder execution | PASS | H1-H36 exited zero under `/tmp/openwepp_mofe01_mh_final`; 144 output files and 36 manifests produced. |
+| Per-OFE row cardinality | PASS | Candidate WAT rows equal expected rows: `271808/271808`. |
+| Per-element identity | PASS | Full-ladder max residual `5.968558980384842e-13 mm`. |
+| Transfer identity | PASS | Full-ladder max residual `0.0 mm`. |
+| Aggregate cancellation identity | PASS | Full-ladder max residual `0.0 mm`. |
+| Handoff residual | PASS | Full-ladder max residual `5.684341886080802e-14 mm`. |
+| Anti-alias / anti-clone gates | PASS | Downstream `QOFE == Q` alias rows are zero; hydrology clone active days are zero. |
+| Per OFE-count acceptance | PASS | 1-OFE 7/7, 2-OFE 5/5, 3-OFE 5/5, 4-OFE 3/3, 5-OFE 16/16 all execute and close at roundoff. |
+| Single-OFE anchor | PASS | H8/H15/H19/H20/H22/H23/H28 compare byte-identical to M-F-REDO2 single anchor for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS). |
+| Local full-ladder owcmp execution, no comparator subagent | PASS | `tools/owcmp/owcmp batch ... --start 1 --end 36` execution verdict PASS; row-key failures `0`. |
+| Local full-ladder owcmp semantic values | FAIL | Semantic value pass `0/36`; recorded as ADR-0017 investigation signal because row keys align and independent conservation/lineage gates close. |
+| totalwatsed3 end-to-end audit | BLOCKED / RESTATED | `openwepp-cli-watershed` failed before output writing on `pw0.imp` no-impoundment state (`CLIWAT-E-010` / `IMP-E-004`, `jpond=0`). Deferral explicitly re-stated as `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01`. |
+| ROADMAP queue update | PASS | Closed MOFE routing item removed; watershed routed outputs / totalwatsed3 audit is the next queue item. |
+| README narrative update | PASS | Work-package execution log records MOFE01 closure, watershed-output follow-on, >10-OFE far-point follow-on, and erosion-coupling follow-on. |
+| Final Rust closure loop | PASS | `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, and `cargo deny check` passed after M-H documentation updates. |
+| Authority guards | PASS | `bash tools/release/check_authority_suite_antievasion.sh` and `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture` passed. |
+| Markdown/doc lint | PASS | `markdown-doc lint --path ... --format json` scanned 45 files with 0 errors and 0 warnings. |
+| `git diff --check` | PASS | Whitespace check passed after M-H evidence updates. |
+
+Detailed evidence: `m-h-ladder-acceptance-closure-evidence.md`.
 
 ## M-G scoped acceptance gates
 

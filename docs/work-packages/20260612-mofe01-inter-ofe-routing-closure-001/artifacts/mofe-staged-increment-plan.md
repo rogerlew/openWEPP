@@ -1,6 +1,7 @@
 # MOFE Staged Increment Plan — Dispatch Artifact
 
-Status: active (governs all MOFE01 implementation dispatches)
+Status: complete (all MOFE01 implementation dispatches executed through M-H;
+retained as the historical dispatch artifact)
 Author: Claude Code, 2026-06-12
 Template: FDHP01 `d3-staged-increment-plan.md` (proven over 13 increments;
 agent memory `staged-increment-port-template`). Companion scope authority:
@@ -447,6 +448,34 @@ M-G execution result:
   explicitly re-stated); package closure obligations (ROADMAP item 1,
   README narrative, handoff naming the next mechanism + the named >10-OFE
   far-point follow-on and any erosion-coupling follow-on).
+
+M-H execution result:
+
+- Full ladder accepted: H1-H36 all exited zero under
+  `/tmp/openwepp_mofe01_mh_final`; output inventory is 144 files and 36
+  manifests.
+- The three conservation surfaces close at the MOFE01/FDHP01 noise floor on
+  the full 1-5 ladder: max transfer residual `0.0 mm`, max per-element
+  residual `5.968558980384842e-13 mm`, max aggregate cancellation residual
+  `0.0 mm`, and max handoff residual `5.684341886080802e-14 mm`.
+- Anti-clone/publication gates close: downstream `QOFE == Q` alias rows are
+  zero and hydrology clone active days are zero.
+- Single-OFE anchor is preserved: H8/H15/H19/H20/H22/H23/H28 compare
+  byte-identical to the M-F-REDO2 single anchor for `.hbp`, `.loss.json`,
+  `.plot.parquet`, and `.wat.parquet` (28/28 PASS).
+- Local `owcmp` ran directly without the comparator subagent. Execution passed
+  and row keys align for all 36 hillslopes; semantic value pass remains false
+  and is recorded as an ADR-0017 investigation signal, not an M-H acceptance
+  failure.
+- Watershed-output `totalwatsed3` was attempted with the fresh H1-H36 pass
+  files, but `openwepp-cli-watershed` failed closed before output writing on
+  the arboreal-dendrite `pw0.imp` no-impoundment state
+  (`CLIWAT-E-010` / `IMP-E-004`, `jpond=0`). The WBVAL06/6a end-to-end
+  `totalwatsed3` deferral is explicitly re-stated as the next
+  watershed-output mechanism.
+- Closure carry-forwards: `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01`,
+  `MOFE-GT10-FARPOINT-CLOSURE`, and
+  `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`.
 
 ## Dispatch instructions
 

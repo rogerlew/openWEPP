@@ -1,9 +1,31 @@
 # contract test implementation evidence
 
-Status: M-G tests green for erosion `qin`/sediment coupling boundary authority
-and manifest provenance
+Status: M-H executed; no new M-H contract tests required beyond the existing
+MOFE01 contract-derived test suite and full-ladder acceptance audit.
 
 Evidence mode: Ran + Static
+
+## M-H
+
+M-H made no test-source edits. It accepts package closure by running the
+current contract-backed runtime across the full ladder:
+
+- Existing M-E4-REDO internal WB13 identity tests remain the authority for
+  non-tautological per-OFE storage/transfer identity validation.
+- Existing M-F-REDO2 tests remain the authority for public per-OFE WAT row
+  cardinality, active handoff, anti-clone behavior, and public `QOFE`/`Q`
+  normalization.
+- Existing M-G tests remain the authority for the erosion `qin`/sediment
+  boundary and manifest provenance.
+
+Ran:
+
+- Full H1-H36 acceptance audit under `/tmp/openwepp_mofe01_mh_final`: PASS.
+- Local full-ladder `owcmp` execution without comparator subagent: PASS
+  execution and row-key alignment; semantic values remain investigation fail.
+- Watershed-output `totalwatsed3` attempt: BLOCKED / RESTATED at
+  `CLIWAT-E-010` / `IMP-E-004`, `jpond=0`.
+- Final post-documentation gates: PASS; see `gate-results.md`.
 
 ## M-G
 

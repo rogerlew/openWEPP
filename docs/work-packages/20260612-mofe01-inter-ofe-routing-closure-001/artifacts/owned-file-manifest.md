@@ -1,8 +1,39 @@
 # owned file manifest
 
-Status: updated through M-G executed
+Status: updated through M-H closure
 
 Evidence mode: Static
+
+## M-H edited files
+
+Roadmap / execution log:
+
+- `docs/ROADMAP.md`
+- `docs/work-packages/README.md`
+
+Work-package files/artifacts:
+
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/package.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/README.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-test-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/disposition.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/gate-results.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/implementation-test-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/kernel-profile-compliance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/line-count-governance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/m-h-ladder-acceptance-closure-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/owned-file-manifest.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/required-reading-map.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_b.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_b.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/worker-handoff.md`
+
+No Rust source, tests, science contracts, dependencies, legacy files,
+external-authority suite files, or `/wc1` substrate files were edited in M-H.
 
 ## M-G edited files
 

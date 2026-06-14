@@ -1,8 +1,32 @@
 # kernel profile compliance checklist
 
-Status: checked through M-G executed
+Status: checked through M-H closure
 
 Evidence mode: Ran + Static
+
+## M-H checklist
+
+- Production edits: none in M-H.
+- Science-contract edits: none in M-H.
+- Test edits: none in M-H.
+- Typed errors in production: none introduced.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: unchanged in M-H.
+- Runtime publication paths: full H1-H36 per-OFE WAT publication acceptance
+  passes on row cardinality, anti-alias, anti-clone, and conservation closure.
+- Watershed output path: not accepted; `openwepp-cli-watershed` fails closed on
+  the substrate no-impoundment `pw0.imp` state before writing
+  `totalwatsed3.parquet`.
+
+Validation:
+
+- Full M-H H1-H36 ladder acceptance: PASS.
+- Single-OFE anchor comparison: PASS.
+- Local full-ladder comparison execution without comparator subagent: PASS
+  execution and row-key alignment; semantic values remain investigation fail.
+- Final post-documentation gates: PASS; see `gate-results.md`.
 
 ## M-G checklist
 

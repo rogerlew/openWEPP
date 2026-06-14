@@ -6,6 +6,35 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-H Verification Record
+
+Agent: local Codex QA verification (no subagent used)
+
+Static/Ran verification of package closure posture, review disposition, and
+handoff scope.
+
+Verified:
+
+- M-H is not overclaiming comparator parity: `gate-results.md` records local
+  semantic values as FAIL while accepting only row-key alignment plus
+  independent conservation closure.
+- M-H is not overclaiming `totalwatsed3`: `disposition.md`,
+  `m-h-ladder-acceptance-closure-evidence.md`, and `worker-handoff.md` record
+  the watershed CLI blocker and name `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01`.
+- M-H is not overclaiming erosion coupling: `worker-handoff.md` names
+  `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`, and M-G's contract-pinned
+  water-transfer-only manifest policy remains the accepted state.
+- Dual review records contain M-H dispositions and no blocking M-H finding.
+- The >10-OFE defect domain is named as `MOFE-GT10-FARPOINT-CLOSURE`.
+
+Findings:
+
+- No blocking M-H verification findings.
+
+Residual risk:
+
+- Final post-documentation gates passed and are recorded in `gate-results.md`.
+
 ## M-E2 Verification Record
 
 Agent: `019ebfbe-9d0e-7a90-bd0d-f8c4304fd135`

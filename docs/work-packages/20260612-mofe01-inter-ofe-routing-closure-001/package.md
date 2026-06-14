@@ -1,8 +1,9 @@
 # MOFE01 — Inter-OFE Routing Closure (rung 3)
 
-Status: active; M-G executed (erosion `qin`/sediment coupling is contract-pinned
-as follow-on; water-routing closure and M-F-REDO2 publication gates remain
-closed); M-H ladder acceptance + closure next
+Status: complete for MOFE01 hillslope water-routing closure; M-H executed and
+accepted the full 36-run 1-5-OFE ladder. Watershed-output `totalwatsed3`,
+>10-OFE far-point closure, and sediment-coupled erosion `qin/qout` remain
+named follow-ons.
 
 Package type: staged implementation/closure package (FDHP01 execution shape:
 scope-then-staged-increments, per-increment conservation hard stops)

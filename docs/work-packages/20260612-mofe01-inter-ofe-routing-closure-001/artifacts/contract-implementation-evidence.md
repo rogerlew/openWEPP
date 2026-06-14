@@ -1,10 +1,31 @@
 # contract implementation evidence
 
-Status: M-G executed; erosion `qin`/sediment coupling boundary is contract
-pinned as follow-on, with manifest provenance for current water-transfer-only
-seeding
+Status: M-H executed; MOFE01 hillslope water-routing closure consumes the
+M-F-REDO2/M-G contract authority. No new M-H contract amendment was required.
 
 Evidence mode: Ran + Static
+
+## M-H
+
+M-H added no new canonical contract amendments. It accepts the full-ladder
+hillslope water-routing closure against the already-pinned MOFE01 authority:
+
+- M-E4-REDO `SC-WATBAL-001` non-tautological internal per-OFE identity
+  authority.
+- M-F-REDO2 `SC-WATBAL-001` / `SC-SYSTEM-001` public `QOFE` local-depth and
+  public `Q` cumulative-depth normalization authority.
+- M-G `SC-RUNOFFPART-001` / `SC-WATBAL-001` / `SC-SED-001` /
+  `SC-SYSTEM-001` boundary that keeps water-transfer-only EROD14 `qin`
+  provenance visible and leaves sediment-coupled `qin/qout` as follow-on.
+
+Validation:
+
+- Full H1-H36 M-H ladder acceptance: PASS.
+- Conservation identities on the full ladder: PASS at roundoff.
+- Watershed-output `totalwatsed3`: BLOCKED / RESTATED because
+  `openwepp-cli-watershed` fails closed on the substrate `pw0.imp`
+  no-impoundment state before output writing.
+- Final post-documentation gates: PASS; see `gate-results.md`.
 
 ## M-G
 

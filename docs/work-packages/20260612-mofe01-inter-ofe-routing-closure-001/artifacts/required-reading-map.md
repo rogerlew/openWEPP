@@ -1,6 +1,6 @@
 # Required Reading Map — MOFE01
 
-Status: updated through M-G executed
+Status: updated through M-H closure
 
 Agents executing or authoring the package maintain this as a living control
 artifact (tiers, rationale, read timing); a stale map is a governance defect.
@@ -52,3 +52,4 @@ artifact (tiers, rationale, read timing); a stale map is a governance defect.
 | 2026-06-13 | Codex | Executed M-F-REDO; reread the staged M-F-REDO scope, M-F blocking review, lane static runtime projection, WB12/WB14/WB19 carry paths, public WAT publication path, `SC-WATBAL-001`, `SC-SYSTEM-001`, pinned legacy WATBAL `Q`/`QOFE` source lines, local comparison tooling, and package governance before recording executed-hold. |
 | 2026-06-14 | Codex | Executed M-F-REDO2; reread the staged M-F-REDO2 scope, M-F-REDO-CLONE evidence, public WB13/WAT publication path, internal WB13 identity path, `SC-WATBAL-001`, `SC-SYSTEM-001`, pinned legacy WATBAL `Q`/`QOFE` source lines, local comparison tooling, and package governance before recording executed. |
 | 2026-06-14 | Codex | Executed M-G; reread the staged M-G scope, M-D erosion qin scope, M-E architecture boundary, `scheduler_seed_and_runtime.rs` Wave-2 seeding, EROD14 consumer code, `SC-RUNOFFPART-001`, `SC-WATBAL-001`, `SC-SED-001`, `SC-SYSTEM-001`, pinned legacy `xinflo`/`route` citations from the scope artifact, and package governance before recording contract-pinned follow-on. |
+| 2026-06-14 | Codex | Executed M-H; reread the staged M-H scope, package exit criteria, ROADMAP forward-queue rules, work-package governance, M-G carry-forward review, full-ladder M-H audit output, local owcmp summary, watershed CLI `totalwatsed3` paths, and package closure artifacts before recording acceptance and follow-ons. |

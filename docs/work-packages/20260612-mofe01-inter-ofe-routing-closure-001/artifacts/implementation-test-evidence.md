@@ -1,9 +1,69 @@
 # implementation test evidence
 
-Status: M-G executed; erosion `qin`/sediment coupling boundary and manifest
-provenance tests pass.
+Status: M-H executed; full-ladder MOFE01 hillslope water-routing acceptance
+passes, with watershed-output `totalwatsed3` explicitly re-stated as follow-on.
 
 Evidence mode: Ran + Static
+
+## M-H ran
+
+M-H made no production Rust or contract edits. It executed acceptance and
+closure evidence against the current M-G/M-F-REDO2 runtime.
+
+- Build
+  - PASS:
+    `cargo build -p openwepp-runner --bin openwepp-cli-hill --bin open_wepp_runner`.
+- Environment
+  - PASS:
+    `tools/owcmp/owcmp env --manifest tools/owcmp/suites/wa-cascades-mofe-ksflag0.json`.
+- Full H1-H36 ladder
+  - PASS runtime execution: 36/36 exit code `0` under
+    `/tmp/openwepp_mofe01_mh_final`.
+  - PASS output inventory: 36 `.hbp`, 36 `.loss.json`, 36 `.plot.parquet`,
+    36 `.wat.parquet`, and 36 run manifests.
+  - PASS row cardinality: `271808/271808`.
+  - PASS identities: max transfer residual `0.0 mm`, max per-element residual
+    `5.968558980384842e-13 mm`, max aggregate cancellation residual `0.0 mm`,
+    and max handoff residual `5.684341886080802e-14 mm`.
+  - PASS anti-alias/anti-clone: zero downstream `QOFE == Q` alias rows and
+    zero hydrology clone active days.
+- Single-OFE anchors
+  - PASS:
+    H8/H15/H19/H20/H22/H23/H28 compare byte-identical to the M-F-REDO2 single
+    anchor for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`
+    (28/28 PASS).
+- Local full-ladder comparison without comparator subagent
+  - PASS command execution:
+    `tools/owcmp/owcmp batch h1-h39-semantic ... --start 1 --end 36`.
+  - PASS structural row-key alignment: row-key failures `0`.
+  - FAIL semantic value pass: `0/36`; recorded as ADR-0017 investigation
+    signal, not acceptance blocker.
+- Watershed-output totalwatsed3 attempt
+  - BLOCKED / RESTATED:
+    `openwepp-cli-watershed` failed closed before output writing on
+    `/wc1/runs/ar/arboreal-dendrite/wepp/runs/pw0.imp`
+    (`CLIWAT-E-010` / `IMP-E-004`, `jpond=0`). The end-to-end totalwatsed3
+    deferral is re-stated as `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01`.
+- Final post-documentation gates
+  - PASS:
+    `cargo fmt --check`.
+  - PASS:
+    `cargo clippy --workspace --all-targets -- -D warnings`.
+  - PASS:
+    `cargo test --workspace`.
+  - PASS:
+    `cargo deny check`.
+  - PASS:
+    `bash tools/release/check_authority_suite_antievasion.sh`.
+  - PASS:
+    `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture`.
+  - PASS:
+    `markdown-doc lint --path ... --format json` scanned 45 files with 0
+    errors and 0 warnings.
+  - PASS:
+    `git diff --check`.
+
+Detailed evidence: `m-h-ladder-acceptance-closure-evidence.md`.
 
 ## M-G ran
 

@@ -1,9 +1,56 @@
 # disposition
 
-Status: M-G executed; erosion `qin`/sediment coupling is contract-pinned as a
-follow-on, and MOFE01 water-routing/publication closure remains active for M-H.
+Status: M-H executed; MOFE01 hillslope water-routing closure accepted.
+Watershed-output `totalwatsed3`, >10-OFE far-point closure, and
+sediment-coupled erosion `qin/qout` remain named follow-ons.
 
 Evidence mode: Ran + Static
+
+## M-H disposition
+
+Increment M-H is executed and accepted for its scoped closure: hillslope-internal
+MOFE water routing and public per-OFE WAT publication on the full
+arboreal-dendrite 1-5-OFE ladder.
+
+The full H1-H36 ladder ran under `/tmp/openwepp_mofe01_mh_final`. All 36
+hillslopes exited zero, produced 36 manifests and 144 output files, and emitted
+`271808` WAT rows against `271808` expected rows. Conservation closes at the
+declared noise floor: transfer residual max `0.0 mm`, per-element residual max
+`5.968558980384842e-13 mm`, aggregate cancellation residual max `0.0 mm`, and
+handoff residual max `5.684341886080802e-14 mm`. Anti-alias and anti-clone gates
+also close: downstream `QOFE == Q` alias rows are zero and hydrology clone active
+days are zero.
+
+Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 remain byte-identical to the
+M-F-REDO2 anchor for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`
+(28/28 PASS).
+
+Local `owcmp` was run directly, without the comparator subagent. Execution
+passed and structural row-key failures are zero for the 36-run ladder. Semantic
+value-family comparison remains false (`0/36` semantic pass), which is recorded
+as an ADR-0017 investigation signal rather than an acceptance failure because
+the independent conservation identities, row cardinality, handoff lineage, and
+anti-clone gates close.
+
+M-H attempted the watershed-output `totalwatsed3` path with the fresh H1-H36
+`.hbp` files. `openwepp-cli-watershed` failed closed before output writing on
+the substrate's no-impoundment `pw0.imp` state:
+`CLIWAT-E-010` / `IMP-E-004`, `jpond=0`. No `totalwatsed3.parquet` was
+produced. The WBVAL06/6a end-to-end totalwatsed3 deferral is therefore
+explicitly re-stated as `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01`.
+
+MOFE01's closure narrative is water-routing closure, not "all MOFE-adjacent
+outputs and erosion complete." Remaining named follow-ons are:
+
+- `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01`
+- `MOFE-GT10-FARPOINT-CLOSURE`
+- `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`
+
+Final post-documentation gates passed: `cargo fmt --check`,
+`cargo clippy --workspace --all-targets -- -D warnings`,
+`cargo test --workspace`, `cargo deny check`, authority anti-evasion guards,
+the required authority obligation test, scoped markdown lint, and
+`git diff --check`.
 
 ## M-G disposition
 

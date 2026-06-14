@@ -6,6 +6,36 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-H Review Record
+
+Agent: local Codex QA review (no subagent used)
+
+Static/Ran QA review of the M-H evidence artifact and closure docs. The
+reviewer did not invoke `comparator_suite_runner` or any comparator subagent.
+
+Findings:
+
+1. **No blocking closure finding.** M-H has direct acceptance evidence for the
+   scoped hillslope water-routing rung: full-ladder execution, row cardinality,
+   identities, anti-clone gates, and single-OFE anchor all pass.
+2. **Follow-up:** The closure narrative must stay bounded to water routing.
+   Sediment-coupled `erod14_qin` still requires prior-OFE erosion `qout` and
+   particle/class-fraction lineage.
+3. **Follow-up:** The >10-OFE legacy-defect domain remains untested on this
+   1-5-OFE substrate.
+
+### M-H Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | No blocking hillslope water-routing finding | accepted | `m-h-ladder-acceptance-closure-evidence.md`, `gate-results.md`, and `disposition.md` record the acceptance evidence. |
+| 2 | Sediment-coupled erosion boundary must remain explicit | follow-up | M-G contract-pinned the boundary and M-H handoff names `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`; closure docs avoid claiming erosion coupling complete. |
+| 3 | >10-OFE far-point remains untested | follow-up | Package substrate is the 1-5-OFE ladder. Handoff names `MOFE-GT10-FARPOINT-CLOSURE` for the high-OFE defect domain. |
+
+Gate non-deferral check: PASS. The two non-hillslope-routing surfaces
+(`totalwatsed3` watershed output and erosion/sediment coupling) are not used to
+support M-H completion and are named as follow-ons.
+
 ## M-E2 Review Record
 
 Agent: `019ebf9f-af1e-7e21-aff4-27b56f855bac`

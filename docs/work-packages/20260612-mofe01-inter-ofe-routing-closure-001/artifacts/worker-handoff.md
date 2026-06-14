@@ -1,10 +1,53 @@
 # worker handoff
 
-Status: M-G executed; M-H ladder acceptance + closure next
+Status: M-H executed; MOFE01 hillslope water-routing closure accepted
 
 Evidence mode: Ran + Static
 
 ## Current Summary
+
+M-H closes MOFE01 for hillslope-internal water-routing and public per-OFE WAT
+publication. The closure is bounded: watershed-output `totalwatsed3`,
+>10-OFE far-point validation, and sediment-coupled erosion routing remain
+named follow-ons.
+
+Closed in M-H:
+
+- Full H1-H36 arboreal-dendrite ladder executed under
+  `/tmp/openwepp_mofe01_mh_final`: 36/36 zero exits, 36 manifests, and 144
+  output files.
+- Public WAT row cardinality is exact: `271808/271808`.
+- Conservation identities close at the noise floor: transfer residual max
+  `0.0 mm`, per-element residual max `5.968558980384842e-13 mm`, aggregate
+  cancellation residual max `0.0 mm`, and handoff residual max
+  `5.684341886080802e-14 mm`.
+- Anti-alias/anti-clone gates close: downstream `QOFE == Q` alias rows are
+  zero and hydrology clone active days are zero.
+- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 remain byte-identical to the
+  M-F-REDO2 anchor for `.hbp`, `.loss.json`, `.plot.parquet`, and
+  `.wat.parquet` (28/28 PASS).
+- Local `owcmp` ran directly without the comparator subagent: execution PASS,
+  row-key failures `0`, semantic value verdict FAIL. Treat those value-family
+  deltas as ADR-0017 investigation signals; do not tune to legacy while
+  openWEPP identities close.
+
+Next mechanism:
+
+1. `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01` — make the watershed-output lane
+   explicitly accept or model the arboreal-dendrite no-impoundment `pw0.imp`
+   state (`jpond=0`), consume the M-H H1-H36 `.hbp` files, produce
+   `totalwatsed3.parquet`, and run the totalwatsed3 water-balance audit. M-H
+   attempted this path and `openwepp-cli-watershed` failed before output
+   writing with `CLIWAT-E-010` / `IMP-E-004`.
+2. `MOFE-GT10-FARPOINT-CLOSURE` — run a high-OFE substrate that reaches the
+   known legacy-defect domain above 10 OFEs and prove openWEPP's three
+   identities still close.
+3. `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` — implement true sediment-coupled
+   downstream `erod14_qin` from prior-OFE erosion `qout` and incoming
+   particle/class fraction lineage before flipping
+   `erod14_qin_sediment_coupled`.
+
+## M-G Summary
 
 M-G executed the erosion `qin`/sediment coupling decision. The decision is a
 contract pin, not an erosion-routing implementation:
@@ -23,9 +66,8 @@ contract pin, not an erosion-routing implementation:
 - No semantic comparator comparison was required for M-G; no comparator subagent
   was used.
 
-Next increment: M-H ladder acceptance + closure. M-H may close water-routing and
-publication acceptance, but must carry the erosion `qin/qout` + particle-fraction
-handoff as a named follow-on and must not claim erosion coupling complete.
+M-H carried this boundary into closure. Do not claim erosion coupling complete
+until `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` closes.
 
 ## M-F-REDO2 Summary
 

@@ -1,8 +1,16 @@
 # line count governance checklist
 
-Status: checked through M-G
+Status: checked through M-H
 
 Evidence mode: Ran
+
+## M-H
+
+M-H made no Rust source or test edits. The closure work added documentation and
+runtime evidence only, so no new `.rs` line-count threshold was crossed in
+M-H. The prior M-G/M-F-REDO2 warnings remain the active watch items:
+`scheduler_seed_and_runtime.rs` and `openwepp-cli-watershed.rs` are above the
+2000-line warning threshold and below the 3000-line non-exempt threshold.
 
 ## M-G
 

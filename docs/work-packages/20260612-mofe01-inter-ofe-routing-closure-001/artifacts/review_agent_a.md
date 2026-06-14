@@ -6,6 +6,36 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-H Review Record
+
+Agent: local Codex review (no subagent used)
+
+Static/Ran review of M-H closure evidence, gate taxonomy, ROADMAP update, and
+handoff boundaries. The reviewer did not invoke the comparator subagent.
+
+Findings:
+
+1. **Follow-up:** Watershed-output `totalwatsed3` is not closed by M-H. The
+   attempted `openwepp-cli-watershed` run failed before output writing on the
+   arboreal-dendrite no-impoundment `pw0.imp` state (`CLIWAT-E-010` /
+   `IMP-E-004`, `jpond=0`).
+2. **Low:** Full-ladder `owcmp` semantic value comparison remains false
+   (`0/36` semantic pass), but row keys align and independent conservation
+   gates close.
+
+### M-H Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | `totalwatsed3` watershed-output audit not closed | follow-up | M-H package scope allows resolving or explicitly re-stating the WBVAL06/6a deferral. The failed watershed CLI command is recorded, ROADMAP now names `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01`, and handoff makes it the next mechanism. |
+| 2 | Semantic value comparison remains false | follow-up | ADR-0017 and MOFE01 acceptance authority make comparator values flags only. M-H row keys align, row cardinality is exact, anti-clone gates close, and the three conservation identities close at roundoff. |
+
+Gate non-deferral check: PASS. M-H's current-scope gates have direct evidence:
+36/36 execution, per-count closure, full-ladder identity residuals, single-OFE
+anchor, ROADMAP removal/update, README narrative, and handoff follow-ons.
+The `totalwatsed3` audit is not claimed closed; it is explicitly re-stated as
+an out-of-scope watershed-output follow-on.
+
 ## M-E2 Review Record
 
 Agent: `019ebf9f-8afb-7dc2-9442-82de35f532bf`

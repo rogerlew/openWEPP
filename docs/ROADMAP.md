@@ -1,7 +1,7 @@
 # openWEPP Engine Roadmap
 
 Status: living — **canonical**, **forward-only planning queue**
-Last updated: 2026-06-12
+Last updated: 2026-06-14
 Audience: all contributors
 Owner: maintainers (Claude Code maintains this document)
 
@@ -35,9 +35,10 @@ adds **one mechanism** on an already-closed foundation. Boundaries are **closure
 not calendar phases**.
 
 **Current position:** single-OFE water-balance closure, frost
-activation/conservation, and single-OFE frost-depth heat-flow parity are closed.
-The next active mechanism is **MOFE routing**, followed by Stage-2
-physics-magnitude review.
+activation/conservation, single-OFE frost-depth heat-flow parity, and
+MOFE hillslope inter-OFE water-routing closure are closed. The next active
+mechanism is **watershed routed outputs / totalwatsed3 audit**, followed by
+Stage-2 physics-magnitude review.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -46,42 +47,27 @@ physics-magnitude review.
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
-| 1 | **MOFE inter-OFE routing** | Run-on/run-off routing across OFEs on a vertically-closed, frost-settled per-element balance | **Routing closure** (conservation across elements) on the `arboreal-dendrite` graded 1–5-OFE ladder; watershed outputs follow | ⏭️ **Next** |
+| 1 | **Watershed routed outputs / totalwatsed3 audit** | Consume the closed MOFE hillslope pass outputs through the watershed output stack | End-to-end `totalwatsed3` water-balance audit on routed openWEPP output; handle the arboreal-dendrite no-impoundment `pw0.imp` state explicitly | ⏭️ **Next** |
 | 2 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
 ---
 
-### 1. MOFE inter-OFE routing ⏭️ (next)
+### 1. Watershed Routed Outputs / totalwatsed3 Audit ⏭️ (next)
 
-Layer run-on/run-off routing onto a per-element balance that is already vertically
-closed and frost-settled (depth model at parity, not just the gate). Target is
-**routing closure** (conservation across elements), not magnitude: snow magnitude
-remains deferred (item 2) and is judged after this closes. The active work-package
-handoff must name MOFE as its next item for this to bind.
+MOFE01 closed hillslope-internal inter-OFE water routing on the
+`arboreal-dendrite` 36-run 1-5-OFE ladder. The next mechanism is the watershed
+output seam that consumes those closed hillslope pass outputs and produces the
+end-to-end `totalwatsed3` audit surface deferred since WBVAL06/6a.
 
-Development substrate (operator decision 2026-06-12):
-`/wc1/runs/ar/arboreal-dendrite/wepp` — a graded OFE ladder (36 hillslope
-runs: 7×1, 5×2, 5×3, 3×4, 16×5 OFE; `pw0.slp` at 15 OFEs is the
-watershed-representative profile, not a hillslope run), with 36 legacy
-outputs on disk. The ladder allows routing closure to be validated per OFE
-count.
+The immediate blocker is not the MOFE conservation identity. M-H attempted
+`openwepp-cli-watershed` with the fresh H1-H36 pass files and failed closed
+before output writing on the substrate's no-impoundment `pw0.imp` state:
+`CLIWAT-E-010` / `IMP-E-004`, `jpond=0`. This queue item owns modeling or
+accepting that no-impoundment state explicitly, then producing
+`totalwatsed3.parquet` and running the water-balance audit on routed openWEPP
+output.
 
-**Comparator posture for this rung (stronger than the default ADR-0017
-flag):** legacy WEPP has *known water-balance defects that grow with OFE
-count, typically appearing above ~10 OFEs* — so the 1-5 development ladder
-is expected legacy-clean (verified, not assumed, in M-A); the >10-OFE
-defect domain is unreachable on this cohort and its demonstration is a
-named follow-on (operator knowledge; corroborated by the
-legacy-replay MOFE closure-audit triage at wepppy
-`docs/work-packages/20260502_mofe_flagged_hillslope_triage` — a defect-family
-taxonomy of legacy's own flagged hillslopes). Legacy is therefore a weak flag
-at low OFE counts and progressively untrustworthy as OFE count rises — in
-exactly the dimension this rung builds. Acceptance authority is openWEPP's
-own inter-OFE conservation closure; part of the rung's characterization is
-*measuring* legacy's per-OFE-count closure defect from the on-disk outputs so
-comparator trust is calibrated with evidence rather than assumed.
-
-Work package: `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/`.
+Work package to prepare: `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01`.
 
 ### 2. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 

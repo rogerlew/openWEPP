@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: updated through M-G executed
+Status: updated through M-H closure
 
 Evidence and disposition artifacts for
 `20260612-mofe01-inter-ofe-routing-closure-001`.
@@ -43,6 +43,9 @@ Evidence and disposition artifacts for
   contract-pinning erosion `qin`/sediment coupling as a follow-on and recording
   operator-visible manifest provenance for current water-transfer-only EROD14
   `qin` seeding.
+- `m-h-ladder-acceptance-closure-evidence.md`: M-H full-ladder acceptance
+  evidence, local comparison result, single-OFE anchor, `totalwatsed3`
+  watershed-output boundary, and named follow-ons.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`, `contract-test-implementation-evidence.md`,
   `pre-implementation-contract-gate.md`, `implementation-test-evidence.md`:
@@ -50,6 +53,5 @@ Evidence and disposition artifacts for
 - `kernel-profile-compliance-checklist.md`, `owned-file-manifest.md`,
   `gate-results.md`, `line-count-governance-checklist.md`: governance.
 - `review_agent_a.md`, `review_agent_b.md`, `verification_agent_a.md`,
-  `verification_agent_b.md`: historical review/verification records through
-  M-E2.
+  `verification_agent_b.md`: review/verification records through M-H closure.
 - `disposition.md`, `worker-handoff.md`: closure record.

@@ -6,6 +6,43 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-H Verification Record
+
+Agent: local Codex verification (no subagent used)
+
+Static/Ran verification of M-H saved evidence and closure artifacts. The
+verifier did not invoke the comparator subagent.
+
+Verified:
+
+- `/tmp/openwepp_mofe01_mh_final/exit-codes.tsv` records 36/36 zero exits.
+- `/tmp/openwepp_mofe01_mh_final/audits/m-h-ladder-audit.json` records
+  `271808` rows, `271808` expected rows, max transfer residual `0.0 mm`, max
+  per-element residual `5.968558980384842e-13 mm`, max aggregate cancellation
+  residual `0.0 mm`, max handoff residual `5.684341886080802e-14 mm`, zero
+  downstream `QOFE == Q` alias rows, and zero hydrology clone active days.
+- `/tmp/openwepp_mofe01_mh_final/audits/m-h-per-ofe-count.tsv` records all
+  1-, 2-, 3-, 4-, and 5-OFE groups passing execution and closing at roundoff.
+- `/tmp/openwepp_mofe01_mh_final/audits/m-h-single-ofe-anchor-cmp.tsv`
+  records 28/28 single-OFE anchor comparisons passing.
+- Local `owcmp` summary records execution PASS, structural row-key failures
+  `0`, and semantic value FAIL.
+- The watershed-output attempt failed before output writing with
+  `CLIWAT-E-010` / `IMP-E-004`, `jpond=0`; no `totalwatsed3` closure is
+  claimed.
+- ROADMAP removes the closed MOFE routing item from the forward queue and
+  names watershed routed outputs / totalwatsed3 audit as next.
+
+Findings:
+
+- No blocking M-H verification findings.
+
+Residual risk:
+
+- Saved `/tmp` evidence is local-only; future verification will need those
+  files or a rerun.
+- Final post-documentation gates passed and are recorded in `gate-results.md`.
+
 ## M-E2 Verification Record
 
 Agent: `019ebfbe-9c1c-73e2-a773-943a7cfac82b`
