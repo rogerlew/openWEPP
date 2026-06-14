@@ -1,0 +1,89 @@
+# REFACTOR024 Symbol Inventory
+
+Evidence class: Static
+
+Pre-refactor target line count:
+
+- `tests/integration/clim06_frost_frozen_soil_kernel_contract.rs`: 2743 lines.
+
+Pre-refactor constants and helpers:
+
+- `VALID_TOPOLOGY`
+- `CLIM06_TEST_TOLERANCE`
+- `EXPECTED_DTHAW`
+- `EXPECTED_NFT`
+- `DEFAULT_MONTHLY_TMAX_C`
+- `DEFAULT_MONTHLY_TMIN_C`
+- `seeded_clim06_surface`
+- `execute_clim06_surface`
+- `execute_clim06_runoff_phase`
+- `require_state_scalar`
+- `require_response_state_update`
+- `insert_state_scalar`
+- `set_winter_hourly_forcing`
+- `set_neutral_tmpadj_hourly_forcing`
+- `override_monthly_temperatures`
+- `remove_state_prefixes`
+- `fine_frost_symbol`
+- `seed_increment_a_shadow_fine_state`
+- `frozen_layer_frzw_sum`
+- `response_fine_layer_sum`
+- `response_fine_flag_count`
+- `layer_frozen_depth_sum`
+- `configure_fdhp01_deep_profile`
+- `configure_fdhp01_frost_only_no_flux`
+- `seed_prior_layered_frost`
+- `seed_db_thin_front_frost`
+- `seed_c2_full_top_layer_frost`
+- `seed_de_full_meter_lower_front_profile`
+- `apply_response_state_updates`
+- `assert_close`
+
+Pre-refactor test functions:
+
+- `clim06_contract_conformance_couples_frost_controls_into_wb14_infiltration_capacity`
+- `clim06_contract_conformance_rejects_missing_active_frost_symbol`
+- `clim06_contract_conformance_rejects_non_finite_active_frost_symbol`
+- `clim06_contract_conformance_rejects_out_of_domain_active_frost_symbol`
+- `simimpl33_contract_conformance_rejects_missing_frost_runtime_residue_depth_symbol`
+- `simimpl33_contract_conformance_emits_runtime_topology_and_hourly_frost_seam_symbols`
+- `fdhp01_dh_frozen_path_conductivity_uses_pinned_legacy_constants`
+- `fdhp01_dj_snow_active_cold_hour_uses_tmpadj_surface_temperature_not_raw_air`
+- `fdhp01_dj_positive_snow_covered_tmpadj_surface_temperature_caps_at_zero`
+- `fdhp01_dj_active_frost_requires_hourly_radiation_for_tmpadj_surface_temperature`
+- `fdhp01_fine_sublayer_frwatc_round_trip_conserves_mass`
+- `fdhp01_fine_sublayer_shadow_seam_identity_tracks_wb_delta`
+- `fdhp01_fine_sublayer_state_drives_active_depth_outputs`
+- `fdhp01_frostn_dispatch_arms_match_inv_snowfreeze_012`
+- `fdhp01_fine_sublayer_freeze_front_steps_by_energy_and_resistance`
+- `fdhp01_db_freeze_front_recomputes_resistance_within_hour`
+- `fdhp01_dg_shallow_front_minimum_limits_surface_flux_without_residue`
+- `fdhp01_dg_residue_depth_adds_surface_resistance`
+- `fdhp01_fine_sublayer_frznw_refreezes_nwfrzz_once`
+- `fdhp01_watdst_mode_flags_update_depths_and_sltime`
+- `fdhp01_c1b_rejects_persisted_fine_ice_above_capacity_without_clamping`
+- `fdhp01_c1b_freeze_path_respects_fine_layer_pore_capacity`
+- `fdhp01_c1b_capacity_uses_active_ul_above_residual`
+- `fdhp01_c1b_overflow_routes_to_watbtm_and_closes_shadow_identity`
+- `fdhp01_c2_mltbtm_bottom_thaw_recedes_front_and_routes_overflow`
+- `fdhp01_c2_mlttp_top_thaw_sets_sandwich_geometry_and_fgthwd`
+- `fdhp01_c2_multicycle_freeze_thaw_does_not_amplify_storage_without_input`
+- `fdhp01_dc1_lower_front_heat_uses_seasonal_tmpbl_zero_gate`
+- `fdhp01_de_lower_front_heat_uses_legacy_dry_fallback_only_when_no_positive_terms`
+- `fdhp01_de_lower_front_heat_uses_legacy_harmonic_unfrozen_conductivity`
+- `fdhp01_de_lower_front_heat_suppresses_marginal_autumn_freeze_onset`
+- `fdhp01_dc1_top_thaw_recomputes_resistance_within_hour`
+- `fdhp01_dc1_persisted_fine_theta_roundoff_canonicalizes_at_lower_bound`
+- `simimpl32_contract_dispatch_trigger_vector_requires_active_frost_hourly_emission`
+- `fdhp01_contract_heat_flow_publishes_separate_surface_and_unfrozen_fluxes`
+- `simimpl32_contract_handoff_direction_vector_requires_frozen_water_exchange_effect`
+- `fdhp01_d2_contract_frwatc_freeze_exchange_diagnostics_reconcile_liquid_and_frozen_storage`
+- `fdhp01_layered_store_contract_rejects_scalar_frdp_theta_frozen_water_authority`
+- `fdhp01_layered_store_contract_freeze_updates_layer_depth_and_frzw_sum`
+- `simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost_progression`
+- `fdhp01_contract_heat_flow_depth_can_exceed_retired_proxy_cap`
+- `fdhp01_contract_warm_heat_flow_thaws_prior_deep_frost`
+- `fdhp01_contract_frozen_water_exchange_hard_fails_on_liquid_overdraw`
+- `simimpl32_contract_conductivity_lineage_vector_requires_land_use_dependent_kfactor_selection`
+- `simimpl32_contract_cross_contract_seam_vector_requires_frost_hourly_payload_completeness`
+- `fq4_contract_default_frost_controls_activate_without_frost_sidecar_presence`

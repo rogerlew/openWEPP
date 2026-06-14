@@ -10,6 +10,13 @@
 
 State as of `2026-06-14`:
 
+- REFACTOR024 is complete for a behavior-preserving line-count split of
+  `tests/integration/clim06_frost_frozen_soil_kernel_contract.rs`. The root
+  integration test is now an 11-line module harness with support and concern
+  modules under `tests/integration/clim06_frost_frozen_soil_kernel_contract/`;
+  all split files are below 1000 lines. The original 46 test functions remain
+  present and the required closure gates passed. Package:
+  `20260614-refactor024-clim06-frost-test-line-count-split-001/`.
 - REFACTOR023 is complete for the 3000+ line
   `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling.rs`
   mechanical split. Scope is behavior-preserving module extraction only:
