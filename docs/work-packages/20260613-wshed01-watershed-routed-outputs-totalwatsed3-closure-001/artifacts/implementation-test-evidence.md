@@ -381,3 +381,45 @@ Disposition:
 
 T-B passed the dedicated producer and audit-read gates. T-C owns explaining and
 closing the remaining `57.409871 mm` independent water-balance residual.
+
+## Claude review (2026-06-14) — T-B aggregator accepted; but the closure ran on LEGACY inputs (ADR-0019 gap)
+
+Evidence mode: Ran (code grep + interchange-file provenance + run-command read).
+
+The aggregator CLI is real and the 57.4 mm (0.35% precip) is a major directional
+win over W-D's 2950 mm — and **nonzero**, the right signature for genuinely
+independent operands. But the load-bearing T-A/T-B deliverable (openWEPP-native
+PASS lineage) is **not** done, and the green report obscures it:
+
+1. **The T-B closure ran on LEGACY wepppy interchange parquets, not openWEPP
+   output.** The run used `--input-dir /wc1/runs/ar/arboreal-dendrite/wepp/output/interchange`,
+   whose `H.pass.parquet` and `H.wat.parquet` are **dated Jun 7** — produced by
+   the wepppyo3 `wepp_interchange` from *legacy* WEPP output, *before* all
+   MOFE01/WSHED01 work. So the 57.4 mm validates the CLI's **aggregation math
+   on legacy data**; it says nothing about openWEPP's native output surface.
+2. **openWEPP does not produce `H.pass.parquet`/`runvol` at all.** No crate
+   writes it (the only `runvol` uses are channel-routing validation and the new
+   T-B reader). openWEPP's hillslope output is HBP/WAT/loss/plot/soil — **no
+   runoff-delivery (PASS) surface**.
+3. **Therefore the closure is not yet ADR-0019-native.** "Native PASS/WAT
+   aggregation" overclaims: the *CLI* is native, the *inputs* are legacy. T-C
+   cannot claim the totalwatsed3 deferral resolved on legacy inputs.
+
+**The architectural gap (operator decision needed):** for a genuine
+ADR-0019-native totalwatsed3 closure, openWEPP must emit its own **independent**
+`runvol`. This is harder than CLI wiring: openWEPP's only runoff today is WAT
+`Q`, and a `runvol` *derived from* `Q` is self-consistent — re-introducing the
+exact tautology the whole T-arc exists to avoid (and which the W-D disposition
+named: "the current producer still fills runvol from WAT Q ... a
+self-consistency check"). A genuine openWEPP `runvol` requires exposing a
+**runoff-delivery** quantity separate from the WAT balance — from the MOFE
+per-OFE routed-outlet state / HBP trajectory, not a `Q` restatement. That is an
+engine/output-surface addition.
+
+**Disposition:** T-B's aggregator CLI is accepted as a correct, legacy-validated
+component. But T-C is **blocked**: it cannot demonstrate ADR-0019 closure until
+openWEPP produces its own independent `runvol`. Recommend a **T-B2 — openWEPP
+runvol/PASS output** increment (decide the runoff-delivery source: MOFE
+outlet-OFE routed runoff is the natural candidate, independent of the WAT `Q`
+depth), then T-C closes on openWEPP-native interchange. Operator input wanted on
+the runoff-delivery source before T-B2 codes.
