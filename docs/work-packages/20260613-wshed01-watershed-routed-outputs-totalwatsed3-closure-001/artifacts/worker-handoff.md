@@ -75,3 +75,50 @@ Execute increment W-D-REDO of docs/work-packages/20260613-wshed01-watershed-rout
   before adding more writer logic.
 - W-D-REDO acceptance is totalwatsed3 closure with independent operands, not
   legacy magnitude matching.
+
+## Claude review (2026-06-14) — W-D hold endorsed; W-D-REDO scope is broader than the runoff operand
+
+Evidence mode: Ran (read `watershed_wat.rs` + `writers.rs`).
+
+W-D's hold is correct (no hollow closure claimed) and the runvol finding is
+confirmed: `build_watershed_daily_rows_from_wat` (`watershed_wat.rs:216`)
+builds watershed rows **entirely from hillslope WAT** — the pass file is used
+only to locate the sibling `.wat.parquet` (`:232`); runoff is the area-weighted
+sum of WAT `runoff_mm` (`:151`). So runvol is WAT-self-consistent, not the
+independent channel-routed PASS lineage. Right call.
+
+**But the structural gap is deeper than the runoff operand — two co-equal
+issues, recorded so W-D-REDO is not scoped too narrowly:**
+
+1. **The watershed output is a hillslope-WAT sum, not a channel-routed
+   balance.** There is no `from_pass` / channel-routed-runoff path; the PASS
+   data is not used for the water balance at all.
+2. **Channel water-balance terms are hardcoded zero.** `channel_loss_m3 = 0.0`
+   and `channel_storage_m3 = 0.0` (`writers.rs:163,165`), never populated. So
+   channel transmission loss and channel storage are absent from the balance.
+
+The genuine watershed identity is:
+`Σ hillslope (P − ET − Perc − ΔS_hillslope) = water delivered to channels`,
+then `water delivered − outlet runoff(PASS) − channel loss − ΔS_channel = 0`.
+Swapping runvol to the independent PASS outlet runoff (Codex's W-D-REDO) is
+**necessary but likely not sufficient**: PASS outlet runoff < Σ hillslope
+runoff by the channel loss/storage, so substituting it while channel terms
+stay zero will **move the residual, not close it**. The 2950 mm is plausibly
+that channel-routing gap (or, for a small watershed like arboreal-dendrite,
+partly a units/area-weighting artifact — see below).
+
+**W-D-REDO scope (refined):**
+- Source runvol/Runoff from the independent PASS outlet-runoff lineage
+  (Codex's point). ✓
+- **Populate the channel water-balance terms** (`channel_loss_m3`,
+  `channel_storage_m3`) from real channel routing, so the watershed balance is
+  *complete* — don't leave them zero while changing runoff.
+- **Measure the 2950 mm attribution** before fixing: runoff-operand vs
+  channel-terms vs units. The m³/mm split this increment touched is a classic
+  unit-bug surface (agent memory `comparator-surface-artifacts`: dimensional
+  mismatches, no harness dimensional guard) — rule out an area-weighting /
+  m³-vs-mm contribution to the 2950 before attributing it to physics.
+- Acceptance: the totalwatsed3 identity closes at noise on a **complete,
+  independent-operand** watershed balance (outlet runoff from PASS, channel
+  terms real, hillslope contributions from WAT — genuinely different sources),
+  not 0==0 self-consistency.
