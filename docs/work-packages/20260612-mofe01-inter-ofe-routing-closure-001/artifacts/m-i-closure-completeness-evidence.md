@@ -177,3 +177,38 @@ M-I leaves the same bounded follow-ons named by M-H:
 - Comparator value-family parity adjudication remains an ADR-0017
   investigation signal, not a MOFE01 acceptance blocker.
 - Line-count splits remain due before further growth in warning-size files.
+
+## Claude review (2026-06-13) — M-I ACCEPTED; MOFE01 done-done
+
+Evidence mode: Ran (read both production seams).
+
+Both completeness items are genuinely closed:
+
+**M-I-a — hillslope-total identity is genuine** (`per_ofe_internal_wb13.rs:516`
+`hillslope_total_identity_residual_mm`): external-only balance —
+`external_in` = RM (precip/melt) per OFE with internal `UpStrmQ`/`SubRIn`
+**excluded**; runoff/lateral counted as `external_out` **only at the outlet
+OFE** (`if index == outlet_index`); independent storage snapshots
+(previous vs current `total_soil + frozwt`); area-weighted. This is the
+correct formulation — and exactly why a from-WAT attempt fails (counting all
+OFE runoff as external gives the ~3000 mm artifact). Residual 3.31e-13 mm is
+**nonzero-at-noise** and **distinct** from the per-element 5.97e-13,
+confirming it measures a genuinely different quantity. Contract-pinned
+(`INV-WATBAL-100`, `TOL-WATBAL-008 ≤ 1e-9`). The M-E4-REDO/M-H flagged
+acceptance anchor is now independently proven, not merely implied.
+
+**M-I-b — double-execution retired**
+(`00_runner_intake_and_lane_setup.rs:1263`/`:1321`): the lifecycles are now
+mutually exclusive — `if persistent_lane_state` (multi-OFE) runs ONLY the
+per-OFE path; `} else {` (single-OFE) runs ONLY the aggregate path. The
+M-H→M-I 36/36 unchanged WAT checksums prove it was behavior-preserving (the
+aggregate path was dead computation for multi-OFE since M-F); single-OFE
+anchor 28/28 byte-identical. 2× cost and dual-source-of-truth eliminated.
+
+**MOFE01 is done-done:** all three conservation identities now hold with
+genuine, independent evidence — per-element 5.97e-13, transfer (structural,
+backstopped), and hillslope-total 3.31e-13 (independent external-only) — on
+genuinely-distinct, geometry-correct, routed per-OFE hydrology, single source
+of truth. Carried follow-ons: watershed/totalwatsed3 (queue 1),
+`MOFE-FARPOINT01`, `MOFE-MAGPARITY01`, `REFACTOR022`,
+`MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`.
