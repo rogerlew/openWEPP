@@ -224,7 +224,7 @@ publication-safe Daymet CLI audit:
    semantic value-family comparison remains an ADR-0017 investigation signal,
    not an acceptance target. M-G deliberately left sediment-coupled erosion
    `qin/qout` plus particle-fraction handoff as a named follow-on. Package:
-   `20260612-mofe01-inter-ofe-routing-closure-001/`.
+   `20260612-mofe01-inter-ofe-routing-closure-001/`. **Closure (2026-06-13):** water-routing closure accepted on the 36-run 1–5-OFE ladder (per-element identity 5.97e-13 mm on genuinely-distinct routed per-OFE hydrology; QOFE/Q geometry per `watbal.for`; single-OFE anchor byte-identical). One in-package completeness increment remains (**M-I**: in-runner hillslope-total identity + transitional double-execution retirement). Named follow-ons: `MOFE-FARPOINT01` (>10-OFE exceed-the-ceiling demonstration), `MOFE-MAGPARITY01` (±10–25% per-OFE runoff magnitude adjudication), `REFACTOR022` (line-count split), plus watershed/totalwatsed3 (queue item 1) and `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` (sediment coupling).
 9. **watershed routed outputs / totalwatsed3 audit** *(next)* — consume the
    closed MOFE hillslope pass outputs through the watershed output stack and
    produce the end-to-end `totalwatsed3` audit surface deferred since

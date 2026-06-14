@@ -48,7 +48,12 @@ Stage-2 physics-magnitude review.
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Watershed routed outputs / totalwatsed3 audit** | Consume the closed MOFE hillslope pass outputs through the watershed output stack | End-to-end `totalwatsed3` water-balance audit on routed openWEPP output; handle the arboreal-dendrite no-impoundment `pw0.imp` state explicitly | ⏭️ **Next** |
-| 2 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
+| 2 | **MOFE >10-OFE far-point demonstration** | Run MOFE routing on a >10-OFE substrate where legacy's WB defect appears | openWEPP three-identity closure holds at >10 OFEs (exceed the legacy ceiling) | ▶️ follow-on (`MOFE-FARPOINT01`) |
+| 3 | **Per-OFE runoff magnitude adjudication** | Decide if the ±10–25% per-OFE runoff vs legacy is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ▶️ follow-on (`MOFE-MAGPARITY01`) |
+| 4 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
+| 5 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
+
+(Note: MOFE01 has one remaining in-package increment, **M-I** — hillslope-total identity + double-execution retirement — before it is done-done; tracked in the MOFE01 staged plan, not as a separate queue item.)
 
 ---
 

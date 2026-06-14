@@ -1,7 +1,8 @@
 # MOFE Staged Increment Plan — Dispatch Artifact
 
-Status: complete (all MOFE01 implementation dispatches executed through M-H;
-retained as the historical dispatch artifact)
+Status: active — M-A…M-H executed; **M-I queued** (closure-completeness:
+hillslope-total identity + double-execution retirement, operator-directed
+2026-06-13)
 Author: Claude Code, 2026-06-12
 Template: FDHP01 `d3-staged-increment-plan.md` (proven over 13 increments;
 agent memory `staged-increment-port-template`). Companion scope authority:
@@ -477,9 +478,55 @@ M-H execution result:
   `MOFE-GT10-FARPOINT-CLOSURE`, and
   `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`.
 
+## Increment M-I — closure-completeness: hillslope-total identity + double-execution retirement (operator-directed 2026-06-13)
+
+Claude closure review found M-H accepted the routing-closure substance but
+left two completeness gaps the operator directed closing **inside MOFE01**
+(items 3–5 — >10-OFE far-point, magnitude-parity, line-count — go to separate
+follow-on work-packages, not here).
+
+### M-I-a — hillslope-total identity, computed in-runner
+
+The genuine independent routing-conservation proof (flagged at M-E4-REDO as the
+final-acceptance anchor). M-H rests on the genuine per-element + the
+*structural* transfer/aggregate checks (0.0 by construction); the
+hillslope-total is only algebraically implied. Prove it independently:
+
+- Compute **in-runner** from the per-OFE records (internal volume operands),
+  analog to M-E4-REDO's per-element — NOT from published WAT (a from-WAT
+  attempt is unreliable: Claude's gave a 3061 mm area/normalization artifact).
+- Identity: per hillslope, `Σ_i (external_in_i − external_out_i)·A_i − Σ_i
+  ΔS_i·A_i = residual`, with internal `UpStrmQ`/`SubRIn` transfers **excluded**
+  (external_out excludes the runoff routed to the next OFE; the only external
+  surface term is the outlet runoff exiting OFE N). Area-weighted volumes.
+- Contract-pin the identity + tolerance in `SC-WATBAL-001` (FDHP01-grade;
+  state the area-summed noise floor — summing N OFEs × area may sit slightly
+  above the per-element 1e-13, pin the realistic bound, e.g. ≤ 1e-9 mm).
+- Red test before code; gate: hillslope-total closes **nonzero-at-noise**
+  (exact 0.0 would signal a structural/tautological artifact, the recurring
+  smell) on the 1–5 ladder; per-element + single-OFE anchor unchanged.
+
+### M-I-b — retire the transitional double-execution
+
+The M-E5 retirement pin was missed: multi-OFE days still run BOTH
+`execute_persistent_scheduler_kernel_lifecycle` (per-OFE, publishes) AND
+`execute_scheduler_kernel_lifecycle` (aggregate, computes-and-discards) —
+`00_runner_intake_and_lane_setup.rs:1251` + `:1313`. 2× cost + dual source of
+truth.
+
+- First read the seam: confirm nothing for multi-OFE consumes the aggregate
+  surface beyond being discarded (publication reads per-OFE records since M-F).
+- Retire the aggregate lifecycle for multi-OFE; single-OFE (N=1) keeps its path.
+- This is behavior-preserving (removing dead computation): gate is
+  **bit-identical multi-OFE WAT pre/post** retirement and single-OFE anchor
+  byte-identical; record the runtime reduction.
+
+On M-I close, MOFE01 is done-done: routing closure independently proven and the
+transitional dual-path removed.
+
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-C2|M-D|M-E|M-E4-REDO|M-F|M-F-REDO|M-F-REDO-CLONE|M-F-REDO2|M-G|M-H> of
+Each Codex dispatch: *"Execute increment <M-A|...|M-G|M-H|M-I> of
 `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
 `mofe-routing-port-scope.md` (once it exists); the FDHP01 staged plan
