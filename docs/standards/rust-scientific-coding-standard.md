@@ -396,7 +396,8 @@ the taxonomy.
 
 ### 7.6 Obligation-to-test binding (Normative)
 
-This binding and the module coverage closure thresholds are binding policy under
+This binding, the module coverage closure thresholds, and the per-function
+CRAP ≤ 30 complexity-risk bound are binding policy under
 [ADR-0021](../decisions/0021-module-coverage-closure-thresholds.md).
 
 - Every entry in a contract's "Test-Vector Obligations" / "Contract-Derived Test

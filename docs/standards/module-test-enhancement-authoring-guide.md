@@ -51,10 +51,21 @@ hold:
      **≥ 90% region AND ≥ 90% line.**
    - **Glue tier** — parser, orchestration/runner, IO-adapter, output modules:
      **≥ 85% region AND ≥ 85% line.**
-3. **Per-function floor.** No eligible function below **75% region** without a
-   written `// COVERAGE-EXCLUDE` justification. (Prevents a green aggregate from
-   hiding a wholly untested function.)
-4. **Eligible surface** = module lines minus the documented exclusions in §3.
+3. **Per-function coverage floor.** No eligible function below **75% region**
+   without a written `// COVERAGE-EXCLUDE` justification. (Prevents a green
+   aggregate from hiding a wholly untested function.)
+4. **Per-function complexity-risk bound (CRAP ≤ 30).** Every eligible function in
+   the module scores **CRAP ≤ 30** under `cargo-crap` (LCOV from the same
+   llvm-cov run; `--threshold 30 --fail-above`, the ratified default). CRAP is
+   `CC² · (1 − cov)³ + CC`, so at full coverage it collapses to cyclomatic
+   complexity: a function above the bound is reduced by **decomposition, not by
+   adding tests**. Decomposition is behavior-preserving and lands **test-first**
+   — the §2.2–2.3 coverage is the safety net for the split — so a module whose
+   offenders need decomposition either bundles a behavior-preserving refactor
+   after its tests, or splits closure across a test-enhancement package (coverage
+   + obligations) and a follow-on mechanical-refactor package (CRAP), per the
+   single-authority sizing in §1.
+5. **Eligible surface** = module lines minus the documented exclusions in §3.
 
 **Region coverage is the primary metric, not line.** A module can show 90% line
 while a guard's reject arm never executes; region counts each branch/guard arm,
@@ -94,6 +105,10 @@ package evidence and reviewed — exclusions are granted, not self-asserted.
 5. Arms annotated `// COVERAGE-EXCLUDE: unreachable by construction — <reason>`.
    Must be rare and reviewer-signed. A type-impossible `else`/`unreachable!`
    qualifies; "we did not get to it" does not.
+6. CRAP suppressions (`cargo-crap --allow <glob>`) for a function whose
+   complexity is irreducible domain branching already at minimum decomposition —
+   rare, reviewer-signed, with the justification recorded next to the score. Not
+   a substitute for decomposing a function that merely grew.
 
 ## 4) Procedure
 
@@ -111,16 +126,29 @@ package evidence and reviewed — exclusions are granted, not self-asserted.
      any such failure in evidence (it must not be one this package introduced).
    - Filter the JSON to the module's files; record per-file region/line/function
      and the eligible-surface denominator after §3 exclusions.
+   - Emit LCOV for CRAP from the same run:
+     `cargo llvm-cov --workspace --ignore-run-fail --lcov --output-path <artifacts>/lcov.info`,
+     then `cargo crap --workspace --lcov <artifacts>/lcov.info --threshold 30 --format markdown`
+     → `<artifacts>/crap_before.md`. Record every eligible function in the module
+     with CRAP > 30. Refresh the repo CRAP baseline so functions outside this
+     module are held no-regression, not re-litigated here.
 3. **Gap classification.** For each uncovered region, assign exactly one bucket:
    missing case family (→ author per §7.5/§7.8), unbound obligation (→ §7.6),
    or legitimate exclusion (→ §3 with justification).
 4. **Author tests.** Codex authors. One row/test per case family; property tests
    for range-invariants (§7.7). Assert typed status/error codes and the
-   conservation identity — not parity numbers.
+   conservation identity — not parity numbers. If an eligible function exceeds
+   CRAP 30, land its characterization tests **first** here, then decompose it
+   behavior-preserving (same package or a follow-on mechanical-refactor package,
+   §2.4); never attempt to satisfy CRAP by coverage alone (impossible above
+   CC 30).
 5. **Build the obligation→test map.** Table: family/obligation → test fn(s) →
    status. 100% of applicable families bound.
 6. **Re-measure.** Emit `coverage_after.json`; confirm §2 thresholds on the
-   eligible surface and no per-function floor breach.
+   eligible surface and no per-function floor breach. Re-run
+   `cargo crap --workspace --lcov <artifacts>/lcov.info --threshold 30 --fail-above`
+   → `crap_after.md`; confirm every eligible function ≤ 30 and no repo-wide
+   regression against the baseline.
 7. **Gate loop.** `cargo fmt --check`;
    `cargo clippy --workspace --all-targets -- -D warnings`;
    `cargo test --workspace`; `cargo deny check`; plus the obligation guard
@@ -133,6 +161,9 @@ package evidence and reviewed — exclusions are granted, not self-asserted.
 ## 5) Required evidence artifacts
 
 - `coverage_before.json` / `coverage_after.json` — raw llvm-cov export.
+- `lcov.info` — LCOV used for CRAP.
+- `crap_before.md` / `crap_after.md` — `cargo-crap` report (markdown) with the
+  module's eligible functions and their CRAP scores before/after.
 - `coverage-closure.md` — per-file before/after table, eligible-surface
   denominator, exclusion list with justifications, tier + thresholds, pass/fail.
 - `obligation-to-test-map.md` — family/obligation → test fn → status; 100%
@@ -162,3 +193,8 @@ package evidence and reviewed — exclusions are granted, not self-asserted.
   its reject test. Exclusions are for type-impossible arms, not unwritten cases.
 - **Denominator gaming.** Counting an excluded binary `main` as covered, or
   shrinking the eligible surface to hit the number rather than testing the code.
+- **CRAP-by-coverage.** Trying to push a high-CC function under CRAP 30 with
+  tests alone — mathematically impossible (CRAP ≥ CC at full coverage) and a
+  coverage-theater magnet. Reduce complexity by decomposition.
+- **Suppression abuse.** `--allow`-ing a function that merely grew, instead of
+  decomposing it. Suppressions are for irreducible domain branching only.

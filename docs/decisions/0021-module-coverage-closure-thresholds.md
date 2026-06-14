@@ -1,9 +1,10 @@
-# ADR-0021: Module coverage closure thresholds are binding policy
+# ADR-0021: Module coverage and complexity-risk closure thresholds are binding policy
 
 **Status:** Accepted
 **Date:** 2026-06-14 UTC
 **Deciders:** Roger Lew, Codex
 **Author of draft:** Claude Code (drafted and ratified at decider Roger Lew's direction, 2026-06-14)
+**Amendment:** Per-function CRAP ≤ 30 complexity-risk bound (Decision 6) added 2026-06-14, same day, at decider Roger Lew's direction.
 **Builds on:** [ADR-0011](0011-architecture-first-top-down-science-contracts.md)
 **Authoring authority:** [docs/standards/module-test-enhancement-authoring-guide.md](../standards/module-test-enhancement-authoring-guide.md), [docs/standards/rust-scientific-coding-standard.md](../standards/rust-scientific-coding-standard.md) §7.5–7.8
 
@@ -30,6 +31,17 @@ executed. Region coverage counts each branch — which is exactly where the §7.
 domain-reject / missing-symbol / non-finite / fail-closed obligations (families
 D–H) live. The metric must be branch-sensitive or it will certify the precise
 failure that prompted this ADR.
+
+Coverage is also necessary but not sufficient. A `cargo-crap` (CRAP, Change Risk
+Anti-Patterns) scan surfaced a cluster of functions at cyclomatic complexity
+112–165 (`parse_layout`, `compute_active_frost_coupling`, `run_erod14_wave2`,
+`run_lateral_transfer`, `run_runoff_reconciliation`, and others). A
+fully-covered function of complexity 130 is still high change-risk: coverage
+alone does not bound it. CRAP combines the two — `CC² · (1 − cov)³ + CC` — and
+at full coverage collapses to cyclomatic complexity, so it rewards the only
+durable fix for those functions: decomposition into smaller, individually
+testable units. It fingers exactly the high-risk kernels and is the natural
+complement to the coverage floor.
 
 ## Decision
 
@@ -68,8 +80,22 @@ failure that prompted this ADR.
    pass/fail on contract suites and authority lanes per the correctness-authority
    model.
 
-6. **Tuning authority.** A tier percentage may be changed only by a superseding
-   ADR. The obligation binding (Decision 2) is not tunable.
+6. **Per-function complexity-risk bound (CRAP ≤ 30).** Adopt the CRAP metric
+   (`CC² · (1 − cov)³ + CC`) at the conventional threshold **30** as a
+   per-function closure condition: every eligible function in a module under a
+   test-enhancement package scores CRAP ≤ 30 (`cargo-crap`, LCOV from the same
+   llvm-cov run). Because CRAP = CC at full coverage, a function above 30 is
+   reduced by **behavior-preserving decomposition, landed test-first** (the
+   coverage gate is the safety net) — never by adding tests alone. That
+   decomposition is implementation work (Codex; the mechanical-refactor guide),
+   sequenced after characterization coverage. Repo-wide adoption uses a
+   `cargo-crap` **baseline**: functions outside a module under active enhancement
+   are held no-regression and burned down by future packages, so the gate is
+   adoptable against the current high-complexity backlog without blocking
+   unrelated work.
+7. **Tuning authority.** A coverage tier percentage or the CRAP threshold may be
+   changed only by a superseding ADR. The obligation binding (Decision 2) is not
+   tunable.
 
 ## Consequences
 
@@ -79,6 +105,11 @@ failure that prompted this ADR.
 - The `erod*` pattern — specified-but-unimplemented obligations — becomes
   non-conforming the moment such a module is taken up by a test-enhancement
   package. The contract bar and the coverage bar now converge.
+- Closing a module with a CC > 30 function (e.g. `run_erod14_wave2`, CC 131) now
+  entails decomposing it, test-first. This deliberately enlarges some
+  test-enhancement packages into a cover-then-decompose arc — or splits them
+  into a coverage package and a follow-on mechanical-refactor package — rather
+  than letting a fully-covered monster function pass as closed.
 - This does **not** retroactively fail existing modules or block unrelated PRs.
   It governs test-enhancement packages and test-affecting changes going forward;
   it is not a new CI line-coverage threshold on every commit.
@@ -102,3 +133,10 @@ failure that prompted this ADR.
 - ADR-0011 (SC-* contract is the correctness authority).
 - Coverage assessment, 2026-06-13: workspace 71.9% line / 75.2% region;
   `hydrology_phase_erod13/14/19` ~1% line with fully-specified obligations.
+- `cargo-crap` 0.2.2 complexity scan, 2026-06-14: cyclomatic complexity 112–165
+  on `parse_layout`, `compute_active_frost_coupling`, `run_erod14_wave2`,
+  `build_hillslope_pl_runtime_surfaces_from_management`,
+  `ws20_route_case12_segment_family`, `run_lateral_transfer`,
+  `execute_hillslope_run`, `run_runoff_reconciliation` — above any CRAP
+  threshold at full coverage; reducible only by decomposition.
+- `.cargo-crap.toml` pins the ratified threshold (30).
