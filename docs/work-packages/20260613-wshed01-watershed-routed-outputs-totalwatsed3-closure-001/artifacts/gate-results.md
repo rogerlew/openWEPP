@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: W-C executed-hold
+Status: W-D executed-hold
 
 Evidence mode: Ran + Static
 
@@ -30,6 +30,13 @@ Evidence mode: Ran + Static
 | W-C fmt/clippy/test/deny | PASS | `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test --workspace`; `cargo deny check`. |
 | W-C scoped markdown lint | PASS | `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `26` files scanned, `0` errors, `0` warnings. |
 | W-C totalwatsed3 closure audit | NOT RUN | W-D owns the wepppy totalwatsed3 audit and independent water-balance residual closure. |
+| W-D focused producer tests | PASS | `cargo test -p openwepp-runner watershed_wat::tests -- --nocapture`: `2` passed; `cargo test -p openwepp-watershed-output writer_preserves_multiple_watershed_daily_rows_and_wat_fields -- --nocapture`: `1` passed. |
+| W-D real CLI routed output | PASS | Fresh configured and legacy-discovery arboreal-dendrite runs exited `0` and emitted routed outputs. |
+| W-D totalwatsed3 publication defects | PASS | Exact hydrology fields publish as `m^3`; depth aliases remain mm; `latqcc` is outlet-only; profile/interception fields publish; profile audit violations are zero. |
+| W-D totalwatsed3 closure audit | FAIL | Configured and legacy-discovery audits both report `closure_reconstructed_with_storage_total_mm=2950.498418` and `closure_reconstructed_with_storage_pct_of_precip=17.772166`. |
+| W-D comparator/heavy-runner subagent | NOT RUN | The comparator-suite runner was not used; W-D ran command-level configured/legacy audits directly in this session. |
+| W-D final fmt/clippy/test/deny | PASS | `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test --workspace`; `cargo deny check`. |
+| W-D final diff/doc lint | PASS | `git diff --check`: no findings; `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `27` files scanned, `0` errors, `0` warnings. |
 
 Subagent note: comparator/heavy-batch subagent was not used because W-A required
 only a single current-behavior CLI run and static source characterization.
@@ -39,3 +46,6 @@ blocked behind W-C routing.
 For W-C, no comparator subagent was used; command-level comparisons and gates
 were run directly in this session because the comparator/heavy-runner subagent
 was unavailable. No totalwatsed3 audit is claimed for W-C.
+For W-D, no comparator-suite subagent was used. Configured and legacy-discovery
+CLI/audit evidence was run directly and recorded in
+`totalwatsed3-wd-audit-finding.md`.

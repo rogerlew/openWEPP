@@ -130,6 +130,12 @@ struct DailyWatAccumulator {
     subsurface_runon_mm_m2: f64,
     total_soil_water_mm_m2: f64,
     soil_water_total_mm_m2: f64,
+    profile_depth_mm_m2: f64,
+    profile_porosity_cap_mm_m2: f64,
+    profile_fc_store_mm_m2: f64,
+    profile_wp_store_mm_m2: f64,
+    interception_mm_m2: f64,
+    interception_storage_mm_m2: f64,
     frozen_water_mm_m2: f64,
     snow_water_mm_m2: f64,
     tile_mm_m2: f64,
@@ -138,13 +144,15 @@ struct DailyWatAccumulator {
 }
 
 impl DailyWatAccumulator {
-    fn add_weighted(&mut self, area_m2: f64, values: WatRowValues) {
+    fn add_weighted(&mut self, area_m2: f64, values: WatRowValues, include_lateral_flow: bool) {
         self.area_m2 += area_m2;
         self.precipitation_mm_m2 += values.precipitation_mm * area_m2;
         self.rain_melt_mm_m2 += values.rain_melt_mm * area_m2;
         self.runoff_mm_m2 += values.runoff_mm * area_m2;
         self.deep_percolation_mm_m2 += values.deep_percolation_mm * area_m2;
-        self.lateral_flow_mm_m2 += values.lateral_flow_mm * area_m2;
+        if include_lateral_flow {
+            self.lateral_flow_mm_m2 += values.lateral_flow_mm * area_m2;
+        }
         self.qofe_mm_m2 += values.qofe_mm * area_m2;
         self.transpiration_mm_m2 += values.transpiration_mm * area_m2;
         self.evaporation_soil_mm_m2 += values.evaporation_soil_mm * area_m2;
@@ -153,6 +161,12 @@ impl DailyWatAccumulator {
         self.subsurface_runon_mm_m2 += values.subsurface_runon_mm * area_m2;
         self.total_soil_water_mm_m2 += values.total_soil_water_mm * area_m2;
         self.soil_water_total_mm_m2 += values.soil_water_total_mm * area_m2;
+        self.profile_depth_mm_m2 += values.profile_depth_mm * area_m2;
+        self.profile_porosity_cap_mm_m2 += values.profile_porosity_cap_mm * area_m2;
+        self.profile_fc_store_mm_m2 += values.profile_fc_store_mm * area_m2;
+        self.profile_wp_store_mm_m2 += values.profile_wp_store_mm * area_m2;
+        self.interception_mm_m2 += values.interception_mm * area_m2;
+        self.interception_storage_mm_m2 += values.interception_storage_mm * area_m2;
         self.frozen_water_mm_m2 += values.frozen_water_mm * area_m2;
         self.snow_water_mm_m2 += values.snow_water_mm * area_m2;
         self.tile_mm_m2 += values.tile_mm * area_m2;
@@ -177,11 +191,26 @@ struct WatRowValues {
     subsurface_runon_mm: f64,
     total_soil_water_mm: f64,
     soil_water_total_mm: f64,
+    profile_depth_mm: f64,
+    profile_porosity_cap_mm: f64,
+    profile_fc_store_mm: f64,
+    profile_wp_store_mm: f64,
+    interception_mm: f64,
+    interception_storage_mm: f64,
     frozen_water_mm: f64,
     snow_water_mm: f64,
     tile_mm: f64,
     irrigation_mm: f64,
     baseflow_mm: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct WatFileRow {
+    key: DayKey,
+    wepp_id: Option<i32>,
+    ofe_id: Option<i16>,
+    area_m2: f64,
+    values: WatRowValues,
 }
 
 pub fn build_watershed_daily_rows_from_wat<I, P>(
@@ -264,6 +293,12 @@ where
             subsurface_runon_mm: aggregate.subsurface_runon_mm_m2 / area,
             total_soil_water_mm: aggregate.total_soil_water_mm_m2 / area,
             soil_water_total_mm: aggregate.soil_water_total_mm_m2 / area,
+            profile_depth_mm: aggregate.profile_depth_mm_m2 / area,
+            profile_porosity_cap_mm: aggregate.profile_porosity_cap_mm_m2 / area,
+            profile_fc_store_mm: aggregate.profile_fc_store_mm_m2 / area,
+            profile_wp_store_mm: aggregate.profile_wp_store_mm_m2 / area,
+            interception_mm: aggregate.interception_mm_m2 / area,
+            interception_storage_mm: aggregate.interception_storage_mm_m2 / area,
             frozen_water_mm: aggregate.frozen_water_mm_m2 / area,
             snow_water_mm: aggregate.snow_water_mm_m2 / area,
             tile_mm: aggregate.tile_mm_m2 / area,
@@ -298,15 +333,47 @@ fn read_wat_file_into(
         })?;
 
     let mut row_offset = 0_usize;
+    let mut file_rows = Vec::new();
     for batch_result in reader {
         let batch = batch_result.map_err(|error| WatershedWatPublicationError::Read {
             path: path.to_path_buf(),
             detail: error.to_string(),
         })?;
-        read_batch_into(path, &batch, row_offset, daily)?;
+        read_batch_into(path, &batch, row_offset, &mut file_rows)?;
         row_offset += batch.num_rows();
     }
+
+    aggregate_file_rows_into(daily, file_rows);
+
     Ok(())
+}
+
+fn aggregate_file_rows_into(
+    daily: &mut BTreeMap<DayKey, DailyWatAccumulator>,
+    file_rows: Vec<WatFileRow>,
+) {
+    let mut outlet_ofe_by_day = BTreeMap::<(DayKey, Option<i32>), i16>::new();
+    for row in &file_rows {
+        if let Some(ofe_id) = row.ofe_id {
+            outlet_ofe_by_day
+                .entry((row.key, row.wepp_id))
+                .and_modify(|current| *current = (*current).max(ofe_id))
+                .or_insert(ofe_id);
+        }
+    }
+
+    for row in file_rows {
+        let include_lateral_flow = row.ofe_id.is_none_or(|ofe_id| {
+            outlet_ofe_by_day
+                .get(&(row.key, row.wepp_id))
+                .is_none_or(|outlet_ofe_id| ofe_id == *outlet_ofe_id)
+        });
+        daily.entry(row.key).or_default().add_weighted(
+            row.area_m2,
+            row.values,
+            include_lateral_flow,
+        );
+    }
 }
 
 #[allow(clippy::too_many_lines)]
@@ -314,8 +381,10 @@ fn read_batch_into(
     path: &Path,
     batch: &RecordBatch,
     row_offset: usize,
-    daily: &mut BTreeMap<DayKey, DailyWatAccumulator>,
+    rows: &mut Vec<WatFileRow>,
 ) -> Result<(), WatershedWatPublicationError> {
+    let wepp_ids = optional_int32_column(path, batch, "wepp_id")?;
+    let ofe_ids = optional_int16_column_any(path, batch, &["ofe_id", "OFE"])?;
     let years = int16_column(path, batch, "year")?;
     let sim_day_indexes = int32_column(path, batch, "sim_day_index")?;
     let julians = int16_column(path, batch, "julian")?;
@@ -336,6 +405,12 @@ fn read_batch_into(
     let subsurface_runon = f64_column(path, batch, "SubRIn")?;
     let total_soil_water = f64_column_any(path, batch, &["Total-Soil Water", "Total-Soil"])?;
     let soil_water_total = f64_column(path, batch, "SoilWaterTotal")?;
+    let profile_depth = optional_f64_column(path, batch, "ProfileDepth")?;
+    let profile_porosity_cap = optional_f64_column(path, batch, "ProfilePorosityCap")?;
+    let profile_fc_store = optional_f64_column(path, batch, "ProfileFCStore")?;
+    let profile_wp_store = optional_f64_column(path, batch, "ProfileWPStore")?;
+    let interception = optional_f64_column(path, batch, "Interception")?;
+    let interception_storage = optional_f64_column(path, batch, "InterceptionStorage")?;
     let frozen_water = f64_column(path, batch, "frozwt")?;
     let snow_water = f64_column(path, batch, "Snow-Water")?;
     let tile = optional_f64_column(path, batch, "Tile")?;
@@ -388,13 +463,61 @@ fn read_batch_into(
                 row,
                 row_index,
             )?,
+            profile_depth_mm: optional_f64_value(
+                path,
+                "ProfileDepth",
+                profile_depth,
+                row,
+                row_index,
+            )?,
+            profile_porosity_cap_mm: optional_f64_value(
+                path,
+                "ProfilePorosityCap",
+                profile_porosity_cap,
+                row,
+                row_index,
+            )?,
+            profile_fc_store_mm: optional_f64_value(
+                path,
+                "ProfileFCStore",
+                profile_fc_store,
+                row,
+                row_index,
+            )?,
+            profile_wp_store_mm: optional_f64_value(
+                path,
+                "ProfileWPStore",
+                profile_wp_store,
+                row,
+                row_index,
+            )?,
+            interception_mm: optional_f64_value(
+                path,
+                "Interception",
+                interception,
+                row,
+                row_index,
+            )?,
+            interception_storage_mm: optional_f64_value(
+                path,
+                "InterceptionStorage",
+                interception_storage,
+                row,
+                row_index,
+            )?,
             frozen_water_mm: f64_value(path, "frozwt", frozen_water, row, row_index)?,
             snow_water_mm: f64_value(path, "Snow-Water", snow_water, row, row_index)?,
             tile_mm: optional_f64_value(path, "Tile", tile, row, row_index)?,
             irrigation_mm: optional_f64_value(path, "Irr", irrigation, row, row_index)?,
             baseflow_mm: optional_f64_value(path, "Base", baseflow, row, row_index)?,
         };
-        daily.entry(key).or_default().add_weighted(area_m2, values);
+        rows.push(WatFileRow {
+            key,
+            wepp_id: optional_int32_value(path, "wepp_id", wepp_ids, row, row_index)?,
+            ofe_id: optional_int16_value(path, "ofe_id|OFE", ofe_ids, row, row_index)?,
+            area_m2,
+            values,
+        });
     }
 
     Ok(())
@@ -432,6 +555,21 @@ fn f64_column<'a>(
     column(path, batch, name)
 }
 
+fn optional_int16_column_any<'a>(
+    path: &Path,
+    batch: &'a RecordBatch,
+    names: &[&str],
+) -> Result<Option<&'a Int16Array>, WatershedWatPublicationError> {
+    for name in names {
+        match optional_int16_column(path, batch, name) {
+            Ok(Some(column)) => return Ok(Some(column)),
+            Ok(None) => {}
+            Err(error) => return Err(error),
+        }
+    }
+    Ok(None)
+}
+
 fn f64_column_any<'a>(
     path: &Path,
     batch: &'a RecordBatch,
@@ -448,6 +586,46 @@ fn f64_column_any<'a>(
         path: path.to_path_buf(),
         column: names.join("|"),
     })
+}
+
+fn optional_int16_column<'a>(
+    path: &Path,
+    batch: &'a RecordBatch,
+    name: &str,
+) -> Result<Option<&'a Int16Array>, WatershedWatPublicationError> {
+    let schema = batch.schema();
+    let Ok(index) = schema.index_of(name) else {
+        return Ok(None);
+    };
+    batch
+        .column(index)
+        .as_any()
+        .downcast_ref::<Int16Array>()
+        .map(Some)
+        .ok_or_else(|| WatershedWatPublicationError::UnsupportedColumnType {
+            path: path.to_path_buf(),
+            column: name.to_string(),
+        })
+}
+
+fn optional_int32_column<'a>(
+    path: &Path,
+    batch: &'a RecordBatch,
+    name: &str,
+) -> Result<Option<&'a Int32Array>, WatershedWatPublicationError> {
+    let schema = batch.schema();
+    let Ok(index) = schema.index_of(name) else {
+        return Ok(None);
+    };
+    batch
+        .column(index)
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .map(Some)
+        .ok_or_else(|| WatershedWatPublicationError::UnsupportedColumnType {
+            path: path.to_path_buf(),
+            column: name.to_string(),
+        })
 }
 
 fn optional_f64_column<'a>(
@@ -531,6 +709,30 @@ fn int32_value(
     Ok(array.value(row))
 }
 
+fn optional_int16_value(
+    path: &Path,
+    column_name: &str,
+    array: Option<&Int16Array>,
+    row: usize,
+    row_index: usize,
+) -> Result<Option<i16>, WatershedWatPublicationError> {
+    array.map_or(Ok(None), |array| {
+        int16_value(path, column_name, array, row, row_index).map(Some)
+    })
+}
+
+fn optional_int32_value(
+    path: &Path,
+    column_name: &str,
+    array: Option<&Int32Array>,
+    row: usize,
+    row_index: usize,
+) -> Result<Option<i32>, WatershedWatPublicationError> {
+    array.map_or(Ok(None), |array| {
+        int32_value(path, column_name, array, row, row_index).map(Some)
+    })
+}
+
 fn f64_value(
     path: &Path,
     column_name: &str,
@@ -560,9 +762,16 @@ fn optional_f64_value(
     row: usize,
     row_index: usize,
 ) -> Result<f64, WatershedWatPublicationError> {
-    array.map_or(Ok(0.0), |array| {
-        f64_value(path, column_name, array, row, row_index)
-    })
+    let Some(array) = array else {
+        return Ok(0.0);
+    };
+    if array.is_null(row) {
+        if array.null_count() == array.len() {
+            return Ok(0.0);
+        }
+        return Err(null_value(path, column_name, row_index));
+    }
+    f64_value(path, column_name, array, row, row_index)
 }
 
 fn null_value(path: &Path, column_name: &str, row_index: usize) -> WatershedWatPublicationError {
@@ -570,5 +779,130 @@ fn null_value(path: &Path, column_name: &str, row_index: usize) -> WatershedWatP
         path: path.to_path_buf(),
         column: column_name.to_string(),
         row_index,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn day_key() -> DayKey {
+        DayKey {
+            year: 2004,
+            sim_day_index: 1,
+            julian: 1,
+            month: 1,
+            day_of_month: 1,
+            water_year: 2004,
+        }
+    }
+
+    fn values(
+        runoff_mm: f64,
+        lateral_flow_mm: f64,
+        profile_porosity_cap_mm: f64,
+        interception_mm: f64,
+    ) -> WatRowValues {
+        WatRowValues {
+            precipitation_mm: 10.0,
+            rain_melt_mm: 10.0,
+            runoff_mm,
+            deep_percolation_mm: 0.5,
+            lateral_flow_mm,
+            qofe_mm: runoff_mm + 1.0,
+            transpiration_mm: 2.0,
+            evaporation_soil_mm: 0.25,
+            evaporation_residue_mm: 0.0,
+            upstream_q_mm: 0.0,
+            subsurface_runon_mm: 0.0,
+            total_soil_water_mm: 100.0,
+            soil_water_total_mm: 100.0,
+            profile_depth_mm: 1_000.0,
+            profile_porosity_cap_mm,
+            profile_fc_store_mm: 150.0,
+            profile_wp_store_mm: 50.0,
+            interception_mm,
+            interception_storage_mm: 0.25,
+            frozen_water_mm: 0.0,
+            snow_water_mm: 0.0,
+            tile_mm: 0.0,
+            irrigation_mm: 0.0,
+            baseflow_mm: 0.0,
+        }
+    }
+
+    #[test]
+    fn aggregate_file_rows_uses_outlet_lateral_and_preserves_optional_wat_fields() {
+        let key = day_key();
+        let rows = vec![
+            WatFileRow {
+                key,
+                wepp_id: Some(7),
+                ofe_id: Some(1),
+                area_m2: 500.0,
+                values: values(5.0, 9.0, 210.0, 1.0),
+            },
+            WatFileRow {
+                key,
+                wepp_id: Some(7),
+                ofe_id: Some(2),
+                area_m2: 1_000.0,
+                values: values(7.0, 4.0, 230.0, 3.0),
+            },
+            WatFileRow {
+                key,
+                wepp_id: Some(8),
+                ofe_id: Some(1),
+                area_m2: 1_000.0,
+                values: values(11.0, 12.0, 250.0, 2.0),
+            },
+            WatFileRow {
+                key,
+                wepp_id: Some(8),
+                ofe_id: Some(3),
+                area_m2: 500.0,
+                values: values(13.0, 6.0, 270.0, 4.0),
+            },
+        ];
+        let mut daily = BTreeMap::<DayKey, DailyWatAccumulator>::new();
+
+        aggregate_file_rows_into(&mut daily, rows);
+
+        let aggregate = daily.get(&key).expect("day should aggregate");
+        assert!((aggregate.area_m2 - 3_000.0).abs() <= 1.0e-12);
+        assert!((aggregate.runoff_mm_m2 / aggregate.area_m2 - 9.0).abs() <= 1.0e-12);
+        assert!(
+            (aggregate.lateral_flow_mm_m2 / aggregate.area_m2 - 2.333_333_333_333_333_5).abs()
+                <= 1.0e-12
+        );
+        assert!(
+            (aggregate.profile_porosity_cap_mm_m2 / aggregate.area_m2 - 240.0).abs() <= 1.0e-12
+        );
+        assert!((aggregate.interception_mm_m2 / aggregate.area_m2 - 2.5).abs() <= 1.0e-12);
+    }
+
+    #[test]
+    fn optional_f64_value_treats_all_null_column_as_absent_but_rejects_mixed_nulls() {
+        let path = Path::new("<optional-test>");
+        let all_nulls = Float64Array::from(vec![None, None]);
+        let all_null_value =
+            optional_f64_value(path, "InterceptionStorage", Some(&all_nulls), 0, 7)
+                .expect("all-null optional column is absent-equivalent");
+        assert!(all_null_value.abs() <= 1.0e-12);
+
+        let mixed = Float64Array::from(vec![Some(1.25), None]);
+        let mixed_value = optional_f64_value(path, "Interception", Some(&mixed), 0, 8)
+            .expect("non-null optional value should read");
+        assert!((mixed_value - 1.25).abs() <= 1.0e-12);
+        let error = optional_f64_value(path, "Interception", Some(&mixed), 1, 9)
+            .expect_err("mixed-null optional value should fail closed");
+        assert!(matches!(
+            error,
+            WatershedWatPublicationError::NullValue {
+                column,
+                row_index: 9,
+                ..
+            } if column == "Interception"
+        ));
     }
 }

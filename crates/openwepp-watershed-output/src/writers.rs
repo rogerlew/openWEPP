@@ -129,6 +129,12 @@ pub struct WatershedInterchangeRowSeed {
     pub subsurface_runon_mm: f64,
     pub total_soil_water_mm: f64,
     pub soil_water_total_mm: f64,
+    pub profile_depth_mm: f64,
+    pub profile_porosity_cap_mm: f64,
+    pub profile_fc_store_mm: f64,
+    pub profile_wp_store_mm: f64,
+    pub interception_mm: f64,
+    pub interception_storage_mm: f64,
     pub frozen_water_mm: f64,
     pub snow_water_mm: f64,
     pub tile_mm: f64,
@@ -171,6 +177,12 @@ impl Default for WatershedInterchangeRowSeed {
             subsurface_runon_mm: 0.0,
             total_soil_water_mm: 0.0,
             soil_water_total_mm: 0.0,
+            profile_depth_mm: 0.0,
+            profile_porosity_cap_mm: 0.0,
+            profile_fc_store_mm: 0.0,
+            profile_wp_store_mm: 0.0,
+            interception_mm: 0.0,
+            interception_storage_mm: 0.0,
             frozen_water_mm: 0.0,
             snow_water_mm: 0.0,
             tile_mm: 0.0,
@@ -1141,6 +1153,12 @@ fn watershed_totalwatsed3_schema() -> Result<Schema, WatershedWriterError> {
                 Some("Total evapotranspiration depth"),
             ),
             field_with_meta(
+                "Interception",
+                DataType::Float64,
+                Some("mm"),
+                Some("Daily canopy/residue interception flux depth"),
+            ),
+            field_with_meta(
                 "Baseflow",
                 DataType::Float64,
                 Some("mm"),
@@ -1577,28 +1595,24 @@ fn build_row_batch(
             DataType::Int8 => Arc::new(Int8Array::from(
                 row_seeds
                     .iter()
-                    .copied()
                     .map(|row_seed| int8_value(field.name(), row_seed))
                     .collect::<Vec<_>>(),
             )),
             DataType::Int16 => Arc::new(Int16Array::from(
                 row_seeds
                     .iter()
-                    .copied()
                     .map(|row_seed| int16_value(field.name(), row_seed))
                     .collect::<Vec<_>>(),
             )),
             DataType::Int32 => Arc::new(Int32Array::from(
                 row_seeds
                     .iter()
-                    .copied()
                     .map(|row_seed| int32_value(field.name(), row_seed))
                     .collect::<Vec<_>>(),
             )),
             DataType::Float64 => Arc::new(Float64Array::from(
                 row_seeds
                     .iter()
-                    .copied()
                     .map(|row_seed| float64_value(field.name(), row_seed))
                     .collect::<Vec<_>>(),
             )),
@@ -1627,7 +1641,7 @@ fn build_row_batch(
     })
 }
 
-fn int8_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> i8 {
+fn int8_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> i8 {
     match field_name {
         "month" => row_seed.month,
         "day_of_month" => row_seed.day_of_month,
@@ -1636,7 +1650,7 @@ fn int8_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> i8 {
     }
 }
 
-fn int16_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> i16 {
+fn int16_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> i16 {
     match field_name {
         "year" => row_seed.year,
         "simulation_year" | "Y" => row_seed.simulation_year,
@@ -1647,7 +1661,7 @@ fn int16_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> i16 {
     }
 }
 
-fn int32_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> i32 {
+fn int32_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> i32 {
     match field_name {
         "sim_day_index" => row_seed.sim_day_index,
         "element_id" | "Elmt_ID" | "wepp_id" => row_seed.element_id,
@@ -1656,9 +1670,10 @@ fn int32_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> i32 {
     }
 }
 
-fn float64_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> f64 {
+fn float64_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> f64 {
     let total_pollutant = row_seed.soluble_pollutant_kg + row_seed.particulate_pollutant_kg;
     let sediment_yield_tonnes = row_seed.sediment_yield_kg / 1_000.0;
+    let volume_from_depth = |depth_mm: f64| depth_mm * row_seed.area_m2 / 1_000.0;
 
     match field_name {
         "runoff_volume" | "runvol" | "Runoff Volume" | "Discharge Volume" => {
@@ -1670,15 +1685,24 @@ fn float64_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> f64
         "soluble_pollutant" | "Solub. React. Pollutant" => row_seed.soluble_pollutant_kg,
         "particulate_pollutant" | "Particulate Pollutant" => row_seed.particulate_pollutant_kg,
         "total_pollutant" | "Total Pollutant" => total_pollutant,
-        "P" | "P (mm)" | "Precipitation" => row_seed.precipitation_mm,
-        "RM" | "RM (mm)" | "Rain+Melt" => row_seed.rain_melt_mm,
-        "Q" | "Q (mm)" | "Runoff" => row_seed.runoff_mm,
-        "Dp" | "Dp (mm)" | "Percolation" => row_seed.deep_percolation_mm,
-        "latqcc" | "latqcc (mm)" | "Lateral Flow" => row_seed.lateral_flow_mm,
-        "QOFE" | "QOFE (mm)" => row_seed.qofe_mm,
-        "Ep" | "Ep (mm)" | "Transpiration" => row_seed.transpiration_mm,
-        "Es" | "Es (mm)" => row_seed.evaporation_soil_mm,
-        "Er" | "Er (mm)" => row_seed.evaporation_residue_mm,
+        "P" => volume_from_depth(row_seed.precipitation_mm),
+        "RM" => volume_from_depth(row_seed.rain_melt_mm),
+        "Q" => volume_from_depth(row_seed.runoff_mm),
+        "Dp" => volume_from_depth(row_seed.deep_percolation_mm),
+        "latqcc" => volume_from_depth(row_seed.lateral_flow_mm),
+        "QOFE" => volume_from_depth(row_seed.qofe_mm),
+        "Ep" => volume_from_depth(row_seed.transpiration_mm),
+        "Es" => volume_from_depth(row_seed.evaporation_soil_mm),
+        "Er" => volume_from_depth(row_seed.evaporation_residue_mm),
+        "P (mm)" | "Precipitation" => row_seed.precipitation_mm,
+        "RM (mm)" | "Rain+Melt" => row_seed.rain_melt_mm,
+        "Q (mm)" | "Runoff" => row_seed.runoff_mm,
+        "Dp (mm)" | "Percolation" => row_seed.deep_percolation_mm,
+        "latqcc (mm)" | "Lateral Flow" => row_seed.lateral_flow_mm,
+        "QOFE (mm)" => row_seed.qofe_mm,
+        "Ep (mm)" | "Transpiration" => row_seed.transpiration_mm,
+        "Es (mm)" => row_seed.evaporation_soil_mm,
+        "Er (mm)" => row_seed.evaporation_residue_mm,
         "Evaporation" => row_seed.evaporation_soil_mm + row_seed.evaporation_residue_mm,
         "ET" => {
             row_seed.transpiration_mm
@@ -1689,6 +1713,12 @@ fn float64_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> f64
         "SubRIn" | "SubRIn (mm)" => row_seed.subsurface_runon_mm,
         "Total-Soil Water" | "Total Soil Water (mm)" | "TSW" => row_seed.total_soil_water_mm,
         "SoilWaterTotal" => row_seed.soil_water_total_mm,
+        "ProfileDepth" => row_seed.profile_depth_mm,
+        "ProfilePorosityCap" => row_seed.profile_porosity_cap_mm,
+        "ProfileFCStore" => row_seed.profile_fc_store_mm,
+        "ProfileWPStore" => row_seed.profile_wp_store_mm,
+        "Interception" => row_seed.interception_mm,
+        "InterceptionStorage" => row_seed.interception_storage_mm,
         "frozwt" | "frozwt (mm)" => row_seed.frozen_water_mm,
         "Snow-Water" | "Snow Water (mm)" => row_seed.snow_water_mm,
         "Tile" | "Tile (mm)" => row_seed.tile_mm,
@@ -1744,6 +1774,42 @@ mod tests {
             loss_all_years_chn: base.join("loss_pw0.all_years.chn.parquet"),
             loss_all_years_out: base.join("loss_pw0.all_years.out.parquet"),
             loss_all_years_class_data: base.join("loss_pw0.all_years.class_data.parquet"),
+        }
+    }
+
+    fn int32_column<'a>(batch: &'a RecordBatch, name: &str) -> &'a Int32Array {
+        let schema = batch.schema();
+        batch
+            .column(schema.index_of(name).expect("int32 column should exist"))
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .expect("column should be int32")
+    }
+
+    fn float64_column<'a>(batch: &'a RecordBatch, name: &str) -> &'a Float64Array {
+        let schema = batch.schema();
+        batch
+            .column(schema.index_of(name).expect("float64 column should exist"))
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .expect("column should be float64")
+    }
+
+    fn assert_int32_values(batch: &RecordBatch, name: &str, expected: &[i32]) {
+        let column = int32_column(batch, name);
+        for (row, expected_value) in expected.iter().copied().enumerate() {
+            assert_eq!(column.value(row), expected_value, "{name}[{row}]");
+        }
+    }
+
+    fn assert_float64_values(batch: &RecordBatch, name: &str, expected: &[f64]) {
+        let column = float64_column(batch, name);
+        for (row, expected_value) in expected.iter().copied().enumerate() {
+            assert!(
+                (column.value(row) - expected_value).abs() <= 1.0e-12,
+                "{name}[{row}] expected {expected_value}, observed {}",
+                column.value(row)
+            );
         }
     }
 
@@ -1824,8 +1890,16 @@ mod tests {
             precipitation_mm: 10.0,
             rain_melt_mm: 8.0,
             runoff_mm: 2.0,
+            deep_percolation_mm: 0.5,
+            lateral_flow_mm: 0.25,
+            qofe_mm: 1.75,
+            transpiration_mm: 1.5,
+            evaporation_soil_mm: 0.4,
+            evaporation_residue_mm: 0.1,
             runoff_volume_m3: 4.0,
             soil_water_total_mm: 120.0,
+            profile_porosity_cap_mm: 240.0,
+            interception_mm: 1.5,
             ..WatershedInterchangeRowSeed::default()
         };
         row_1.channel_outflow_m3 = row_1.runoff_volume_m3;
@@ -1837,8 +1911,16 @@ mod tests {
             precipitation_mm: 12.0,
             rain_melt_mm: 0.0,
             runoff_mm: 3.0,
+            deep_percolation_mm: 0.75,
+            lateral_flow_mm: 0.5,
+            qofe_mm: 2.25,
+            transpiration_mm: 1.0,
+            evaporation_soil_mm: 0.3,
+            evaporation_residue_mm: 0.2,
             runoff_volume_m3: 6.0,
             soil_water_total_mm: 118.0,
+            profile_porosity_cap_mm: 238.0,
+            interception_mm: 1.25,
             ..WatershedInterchangeRowSeed::default()
         };
         row_2.channel_outflow_m3 = row_2.runoff_volume_m3;
@@ -1858,44 +1940,21 @@ mod tests {
             .expect("totalwatsed3 batch should decode");
         assert_eq!(batch.num_rows(), 2);
 
-        let schema = batch.schema();
-        let sim_day = batch
-            .column(
-                schema
-                    .index_of("sim_day_index")
-                    .expect("sim_day_index column"),
-            )
-            .as_any()
-            .downcast_ref::<Int32Array>()
-            .expect("sim_day_index should be int32");
-        let precipitation = batch
-            .column(schema.index_of("P").expect("P column"))
-            .as_any()
-            .downcast_ref::<Float64Array>()
-            .expect("P should be float64");
-        let runoff_volume = batch
-            .column(schema.index_of("runvol").expect("runvol column"))
-            .as_any()
-            .downcast_ref::<Float64Array>()
-            .expect("runvol should be float64");
-        let soil_water_total = batch
-            .column(
-                schema
-                    .index_of("SoilWaterTotal")
-                    .expect("SoilWaterTotal column"),
-            )
-            .as_any()
-            .downcast_ref::<Float64Array>()
-            .expect("SoilWaterTotal should be float64");
-
-        assert_eq!(sim_day.value(0), 1);
-        assert_eq!(sim_day.value(1), 2);
-        assert!((precipitation.value(0) - 10.0).abs() <= 1.0e-12);
-        assert!((precipitation.value(1) - 12.0).abs() <= 1.0e-12);
-        assert!((runoff_volume.value(0) - 4.0).abs() <= 1.0e-12);
-        assert!((runoff_volume.value(1) - 6.0).abs() <= 1.0e-12);
-        assert!((soil_water_total.value(0) - 120.0).abs() <= 1.0e-12);
-        assert!((soil_water_total.value(1) - 118.0).abs() <= 1.0e-12);
+        assert_int32_values(&batch, "sim_day_index", &[1, 2]);
+        assert_float64_values(&batch, "P", &[20.0, 24.0]);
+        assert_float64_values(&batch, "Precipitation", &[10.0, 12.0]);
+        assert_float64_values(&batch, "runvol", &[4.0, 6.0]);
+        assert_float64_values(&batch, "Runoff", &[2.0, 3.0]);
+        assert_float64_values(&batch, "RM", &[16.0, 0.0]);
+        assert_float64_values(&batch, "Dp", &[1.0, 1.5]);
+        assert_float64_values(&batch, "latqcc", &[0.5, 1.0]);
+        assert_float64_values(&batch, "QOFE", &[3.5, 4.5]);
+        assert_float64_values(&batch, "Ep", &[3.0, 2.0]);
+        assert_float64_values(&batch, "Es", &[0.8, 0.6]);
+        assert_float64_values(&batch, "Er", &[0.2, 0.4]);
+        assert_float64_values(&batch, "SoilWaterTotal", &[120.0, 118.0]);
+        assert_float64_values(&batch, "ProfilePorosityCap", &[240.0, 238.0]);
+        assert_float64_values(&batch, "Interception", &[1.5, 1.25]);
 
         if base.exists() {
             fs::remove_dir_all(base).expect("temp directory cleanup should succeed");

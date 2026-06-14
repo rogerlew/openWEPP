@@ -1,6 +1,6 @@
 # Watershed Staged Increment Plan — Dispatch Artifact
 
-Status: active - W-C executed-hold; W-D queued
+Status: active - W-D executed-hold; W-D-REDO queued
 Author: Claude Code, 2026-06-13
 Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 `mofe-staged-increment-plan.md` (proven; agent memory
@@ -98,6 +98,25 @@ W-C execution result (2026-06-14):
   `2192` `totalwatsed3.parquet` rows with non-placeholder WAT fields.
 - W-D is the next implementation increment for totalwatsed3 closure.
 
+W-D execution result (2026-06-14):
+
+- Ran the wepppy totalwatsed3 audit against fresh configured and
+  legacy-discovery arboreal-dendrite watershed outputs.
+- Corrected keepable openWEPP publication defects: exact totalwatsed3
+  hydrology columns now emit `m^3` volumes while depth aliases remain mm;
+  MOFE `latqcc` aggregates only outlet OFEs; optional WAT profile and
+  interception fields now publish into `totalwatsed3`.
+- The producer no longer trips profile-cap false violations
+  (`profile_violations_days=...:0`) and publishes total interception
+  `551.502748 mm`.
+- W-D remains held because the independent closure gate still fails:
+  `closure_reconstructed_with_storage_total_mm=2950.498418`,
+  `17.772166%` of precipitation. The remaining localized blocker is missing
+  independent daily PASS `runvol` lineage; the current producer still fills
+  `runvol` from WAT `Q`, which makes runoff consistency a self-consistency
+  check rather than conservation proof.
+- W-D-REDO is the next implementation increment.
+
 ## Subsequent increments (refined by W-A; provisional)
 
 - **W-B — impoundment no-pond handling**: executed-hold. Gate met:
@@ -111,19 +130,22 @@ W-C execution result (2026-06-14):
   publication: the CLI routes the hillslope shards over the channel network,
   emits all `14` interchange parquet outputs, publishes multi-row WAT-backed
   `totalwatsed3.parquet`, and rejects placeholder/default-zero publication.
-- **W-D — totalwatsed3 end-to-end audit + closure**: run totalwatsed3 on the
-  routed output (wepppy `.venv`; cross-repo validation). Gate: the
-  totalwatsed3 identity closes at the established floor — the WBVAL06/6a
-  deferral resolved. Closing obligations: ROADMAP item 1 removed, README
-  execution log, handoff naming the next mechanism + cross-repo/sediment
-  follow-ons.
+- **W-D — totalwatsed3 end-to-end audit + closure**: executed-hold. Gate not
+  met: totalwatsed3 profile/interception/unit defects were corrected, but the
+  independent closure audit still reports `2950.498418 mm` whole-run residual.
+- **W-D-REDO — PASS runvol lineage + closure**: expose or reconstruct
+  canonical daily PASS runoff volume from HBP/PASS publication authority,
+  bind it into `totalwatsed3.runvol`/`Runoff`, and rerun the configured and
+  legacy-discovery audits. Acceptance remains nonzero-at-noise independent
+  closure; exact WAT `runvol == Q * Area / 1000` self-consistency is not
+  sufficient.
 
 (W-A sizing may split W-C/W-D further; each increment behind a conservation
 hard stop.)
 
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <W-A|W-B|W-C|W-D> of
+Each Codex dispatch: *"Execute increment <W-A|W-B|W-C|W-D|W-D-REDO> of
 `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
 `watershed-routing-scope.md` (once it exists); the MOFE01 + FDHP01 staged

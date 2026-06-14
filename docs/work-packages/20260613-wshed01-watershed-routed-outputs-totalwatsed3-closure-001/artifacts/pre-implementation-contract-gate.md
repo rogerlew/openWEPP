@@ -1,6 +1,6 @@
 # Pre-Implementation Contract Gate
 
-Status: W-C executed
+Status: W-D executed-hold
 
 Evidence mode: Static
 
@@ -29,3 +29,21 @@ W-C gate result:
 - W-C replaced one-row/default-zero writer publication for real runs with
   WAT-backed multi-row publication.
 - W-D still owns the independent totalwatsed3 closure identity.
+
+Before W-D production edits:
+
+- Read the totalwatsed3 wepppy producer and audit scripts as the consumer
+  acceptance surface.
+- Treat schema unit metadata as binding: exact fields declared as `m^3` must
+  publish volumes, not depth aliases.
+- Keep the M-I/M-E4 rule: closure must use independent operands, not
+  `runvol == Q * Area / 1000` self-consistency.
+
+W-D gate result:
+
+- Output unit metadata was amended for
+  `watershed_totalwatsed3.Interception`.
+- W-D corrected publication defects without changing process-physics contract
+  authority.
+- W-D did not meet the conservation gate; W-D-REDO owns daily PASS `runvol`
+  authority before any closure claim.

@@ -1,6 +1,6 @@
 # Kernel Profile Compliance Checklist
 
-Status: W-A executed
+Status: W-D executed-hold
 
 Evidence mode: Static
 
@@ -12,6 +12,9 @@ Checklist for subsequent implementation:
   and fail closed on genuine malformed input.
 - W-C touches watershed routing/output publication; use independent
   conservation operands and do not accept writer defaults as closure evidence.
+- W-D corrected publication defects but did not claim closure because the
+  independent audit still reports `2950.498418 mm` residual.
+- W-D-REDO must bind independent daily PASS `runvol` lineage before closure.
 - No `.unwrap()`/`.expect()` may be introduced in production paths.
 - No silent canonicalization of invalid impoundment counts; zero is explicit
   empty-set semantics, not a fallback.

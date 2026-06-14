@@ -1,11 +1,12 @@
 # Disposition
 
-Status: W-C executed-hold; package active; W-D queued
+Status: W-D executed-hold; package active; W-D-REDO queued
 
 Evidence mode: Ran + Static
 
-W-A, W-B, and W-C are complete for their scoped seams. The package remains
-active because W-D totalwatsed3 closure is the acceptance surface.
+W-A, W-B, W-C, and the keepable W-D publication repairs are complete for their
+scoped seams. The package remains active because W-D totalwatsed3 closure did
+not meet the acceptance surface.
 
 Disposition:
 
@@ -24,9 +25,15 @@ Disposition:
   runs exit `0`, emit all `14` watershed parquet outputs, and produce `2192`
   `totalwatsed3.parquet` rows with non-placeholder WAT fields.
 - totalwatsed3 contract: documented from openWEPP and wepppy sources.
+- W-D publication repairs: exact volume fields now emit `m^3`, depth aliases
+  remain mm, MOFE `latqcc` is outlet-only, optional profile/interception WAT
+  fields are published, and profile audit violations are zero.
+- W-D closure gate: FAIL/HOLD. Configured and legacy-discovery audits both
+  report `closure_reconstructed_with_storage_total_mm=2950.498418`, so
+  package closure is blocked on independent daily PASS `runvol` lineage.
 
 Next required increment:
 
 ```text
-Execute increment W-D of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
+Execute increment W-D-REDO of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
 ```

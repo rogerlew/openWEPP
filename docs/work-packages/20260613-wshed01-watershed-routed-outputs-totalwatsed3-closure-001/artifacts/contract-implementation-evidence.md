@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: W-C executed
+Status: W-D executed-hold
 
 Evidence mode: Static
 
@@ -59,3 +59,24 @@ Contract implications carried into W-D:
 - W-C proves routed output publication and anti-placeholder WAT-backed fields.
 - W-D must still run the totalwatsed3 audit and close the water-balance
   identity with independent operands.
+
+W-D contract/metadata implementation:
+
+- `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs` now registers
+  `watershed_totalwatsed3.Interception` as a `mm` boundary-registry-backed
+  publication column.
+- `crates/openwepp-watershed-output/src/writers.rs` now aligns exact
+  totalwatsed3 volume columns with their `m^3` metadata while preserving
+  explicit depth aliases as mm.
+- `crates/openwepp-runner/src/watershed_wat.rs` follows the MOFE outlet
+  lateral aggregation rule for WAT-backed watershed publication and carries
+  optional WAT profile/interception fields into row seeds.
+
+Contract implications carried into W-D-REDO:
+
+- W-D did not amend process-physics contracts because it corrected
+  publication lineage and output unit metadata only.
+- The remaining closure blocker requires canonical daily PASS `runvol`
+  authority. If W-D-REDO exposes new HBP/PASS payload fields or changes PASS
+  publication semantics, update the relevant contract/metadata authority
+  before implementation.

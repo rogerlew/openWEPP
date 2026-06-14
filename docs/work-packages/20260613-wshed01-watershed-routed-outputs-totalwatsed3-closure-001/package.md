@@ -1,6 +1,6 @@
 # WSHED01 — Watershed Routed Outputs / totalwatsed3 Closure
 
-Status: active - W-C executed-hold, W-D queued
+Status: active - W-D executed-hold, W-D-REDO queued
 
 Package type: staged implementation/closure package (FDHP01/MOFE01 execution
 shape: characterize-then-staged-increments, conservation as acceptance)
@@ -40,10 +40,11 @@ normal, valid state — so the lead hypothesis is a **parser defect** (reject
 against the parser code + legacy behavior in W-A. This is the *first* blocker,
 not necessarily the only one between here and totalwatsed3 closure.
 
-Current status after W-C: the no-impoundment parser blocker and the subsequent
-WS10 channel guard blocker are both cleared. The watershed CLI now emits routed
-watershed parquet outputs on arboreal-dendrite; package closure remains blocked
-on W-D totalwatsed3 audit closure.
+Current status after W-D: the no-impoundment parser blocker and the subsequent
+WS10 channel guard blocker are both cleared. W-D corrected keepable
+totalwatsed3 publication defects, but the independent closure audit still
+reports a `2950.498418 mm` whole-run residual. Package closure remains blocked
+on W-D-REDO daily PASS `runvol` lineage and totalwatsed3 audit closure.
 
 ## Cross-repo note
 
@@ -97,7 +98,12 @@ closure).
   HBP contributors and `nchnum=0` output-disabled channel state are accepted
   under `SC-ROUTE-001` version `45`. The CLI emits all `14` watershed parquet
   outputs and WAT-backed multi-row `totalwatsed3.parquet` on arboreal-dendrite.
-- totalwatsed3 end-to-end audit on the routed output; closure at the
+- W-D totalwatsed3 audit and publication repairs: executed 2026-06-14.
+  Volume/depth metadata, outlet-only MOFE `latqcc`, profile fields, and
+  interception now publish into `totalwatsed3`; profile violations are zero.
+  The conservation gate is still held on missing independent daily PASS
+  `runvol` lineage.
+- W-D-REDO daily PASS `runvol` lineage and totalwatsed3 closure at the
   established floor.
 
 ## Excluded scope / protected boundaries

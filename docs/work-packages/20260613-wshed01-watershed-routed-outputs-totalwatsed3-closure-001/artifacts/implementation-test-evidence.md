@@ -1,6 +1,6 @@
 # Implementation Test Evidence
 
-Status: W-C executed-hold
+Status: W-D executed-hold
 
 Evidence mode: Ran + Static
 
@@ -174,3 +174,90 @@ channel routing). The watershed output content (distinct nonzero daily rows
 vs degenerate) was not checkable here (run cleaned up) and is verified at
 W-D's fresh run, where the closure is the prize and the most-scrutinized
 point.
+
+## W-D implementation and audit evidence
+
+Status: W-D executed-hold
+
+Evidence mode: Ran + Static
+
+W-D publication fixes:
+
+- `crates/openwepp-watershed-output/src/writers.rs`: exact totalwatsed3
+  hydrology fields now publish as `m^3`; depth aliases remain mm; profile and
+  interception row-seed fields are mapped.
+- `crates/openwepp-runner/src/watershed_wat.rs`: WAT aggregation carries
+  optional profile/interception fields and counts MOFE `latqcc` only from the
+  outlet OFE per WAT file/day/`wepp_id`.
+- `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs`: unit
+  metadata registry now includes `watershed_totalwatsed3.Interception`.
+
+Focused green evidence:
+
+- `cargo fmt --check`: pass.
+- `cargo clippy --workspace --all-targets -- -D warnings`: pass.
+- `cargo test -p openwepp-runner watershed_wat::tests -- --nocapture`:
+  `2` passed.
+- `cargo test -p openwepp-watershed-output writer_preserves_multiple_watershed_daily_rows_and_wat_fields -- --nocapture`:
+  `1` passed.
+- `cargo test --workspace`: pass.
+- `cargo deny check`: pass.
+- `git diff --check`: pass.
+- `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`:
+  `27` files scanned, `0` errors, `0` warnings.
+
+Configured W-D run:
+
+```bash
+cargo run -q -p openwepp-runner --bin openwepp-cli-watershed -- \
+  --run-dir /tmp/openwepp_wshed01_wa/watershed/run \
+  --run-file case.run \
+  --output-dir /tmp/openwepp_wshed01_wd_configured/output \
+  --policy compat
+```
+
+Legacy-discovery W-D run:
+
+```bash
+cargo run -q -p openwepp-runner --bin openwepp-cli-watershed -- \
+  --run-dir /tmp/openwepp_wshed01_wa/watershed/run \
+  --run-file case.run \
+  --output-dir /tmp/openwepp_wshed01_wd_legacy/output \
+  --policy compat \
+  --legacy-sidecar-discovery
+```
+
+Observed:
+
+- configured exit `0`; legacy-discovery exit `0`;
+- legacy-discovery emitted expected sidecar-discovery warnings;
+- both outputs contain `2192` `totalwatsed3.parquet` rows.
+
+wepppy W-D audit:
+
+```bash
+/home/workdir/wepppy/.venv/bin/python \
+  /home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py \
+  /tmp/openwepp_wshed01_wd_configured/output/interchange/totalwatsed3.parquet \
+  --output-dir /tmp/openwepp_wshed01_wd_configured/audit \
+  --top-n 20
+```
+
+The same command was run for
+`/tmp/openwepp_wshed01_wd_legacy/output/interchange/totalwatsed3.parquet`.
+
+Audit result for both outputs:
+
+- `rows=2192`;
+- `interception_reported_total_mm=551.502748`;
+- `profile_violations_days=fc_gt_porosity:0,wp_gt_fc:0,soilwater_gt_porosity:0,soilwater_lt_wp:0`;
+- `closure_reconstructed_with_storage_total_mm=2950.498418`;
+- `closure_reconstructed_with_storage_pct_of_precip=17.772166`;
+- `closure_reconstructed_with_enriched_storage_total_mm=2950.498140`.
+
+Disposition:
+
+W-D fixed real producer defects but failed the current-scope conservation gate.
+The remaining blocker is independent daily PASS `runvol` lineage. The current
+producer still fills `runvol` from WAT `Q`, so `runoff_consistency_mm` is a
+self-consistency check and cannot prove totalwatsed3 conservation.

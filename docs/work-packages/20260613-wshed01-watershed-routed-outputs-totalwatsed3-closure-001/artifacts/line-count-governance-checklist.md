@@ -1,6 +1,6 @@
 # Line Count Governance Checklist
 
-Status: W-C executed
+Status: W-D executed-hold
 
 Evidence mode: Ran
 
@@ -45,4 +45,22 @@ wc -l crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs \
   crates/openwepp-runner/src/watershed_wat.rs \
   crates/openwepp-watershed-output/src/writers.rs \
   tests/integration/ws11_channel_routing_physics_equivalence_contract.rs
+```
+
+Observed line counts after W-D:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs` | 2072 | WARN; W-D only added new row-seed defaults. Avoid further growth unless binding truly belongs in the CLI. |
+| `crates/openwepp-runner/src/watershed_wat.rs` | 911 | Below WARN. |
+| `crates/openwepp-watershed-output/src/writers.rs` | 2043 | WARN; W-D-REDO should avoid growth or split before adding more writer logic. |
+| `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs` | 1327 | Below WARN. |
+
+Command:
+
+```bash
+wc -l crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs \
+  crates/openwepp-runner/src/watershed_wat.rs \
+  crates/openwepp-watershed-output/src/writers.rs \
+  crates/openwepp-sim-contract/src/units_mod/output_catalog.rs
 ```

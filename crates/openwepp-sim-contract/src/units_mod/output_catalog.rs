@@ -701,6 +701,12 @@ pub fn canonical_output_unit_entries() -> Vec<OutputUnitEntry> {
             "SC-EVAP-001",
             "SC-EVAP-001#INV-EVAP-016",
         ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Interception",
+            "mm",
+            "hillslope_wat.Interception",
+        ),
         OutputUnitEntry::publication_only(
             "watershed_totalwatsed3",
             "Baseflow",

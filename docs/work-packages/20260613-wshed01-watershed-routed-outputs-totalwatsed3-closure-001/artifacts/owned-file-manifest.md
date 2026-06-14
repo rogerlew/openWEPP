@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: W-C executed
+Status: W-D executed-hold
 
 Evidence mode: Static
 
@@ -60,6 +60,25 @@ W-C temporary evidence roots:
 - `/tmp/openwepp_wshed01_wc_final_legacy/`
 
 Cross-repo files read only:
+
+- `/home/workdir/wepppy/wepppy/wepp/interchange/totalwatsed3.py`
+- `/home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py`
+
+W-D write set:
+
+- `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`
+- `crates/openwepp-runner/src/watershed_wat.rs`
+- `crates/openwepp-watershed-output/src/writers.rs`
+- `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs`
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/package.md`
+- `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/*.md`
+
+W-D temporary evidence roots:
+
+- `/tmp/openwepp_wshed01_wd_configured/`
+- `/tmp/openwepp_wshed01_wd_legacy/`
+
+W-D cross-repo files read only:
 
 - `/home/workdir/wepppy/wepppy/wepp/interchange/totalwatsed3.py`
 - `/home/workdir/wepppy/tools/totalwatsed3_daily_closure_audit.py`

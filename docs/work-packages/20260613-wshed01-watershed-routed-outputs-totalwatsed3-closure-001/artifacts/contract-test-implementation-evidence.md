@@ -1,6 +1,6 @@
 # Contract Test Implementation Evidence
 
-Status: W-C executed
+Status: W-D executed-hold
 
 Evidence mode: Ran + Static
 
@@ -73,3 +73,37 @@ W-C green evidence:
   `1` passed.
 - Real arboreal-dendrite CLI runs emit all `14` parquet outputs and a
   `2192`-row `totalwatsed3.parquet`.
+
+Required W-D tests:
+
+- Assert exact totalwatsed3 volume fields are emitted as `m^3` while depth
+  aliases remain mm.
+- Assert MOFE `latqcc` aggregation uses only outlet-facing OFEs when OFE
+  identifiers are present.
+- Assert profile/interception fields pass through from WAT aggregation into
+  `totalwatsed3`.
+
+W-D tests added:
+
+- `writer_preserves_multiple_watershed_daily_rows_and_wat_fields` now asserts
+  volume-vs-depth mapping and profile/interception publication.
+- `aggregate_file_rows_uses_outlet_lateral_and_preserves_optional_wat_fields`
+  verifies outlet-only lateral aggregation and optional profile/interception
+  pass-through in the WAT daily aggregator.
+- `optional_f64_value_treats_all_null_column_as_absent_but_rejects_mixed_nulls`
+  treats all-null optional WAT columns as absent-equivalent and rejects mixed
+  null/value optional columns as typed null ingestion failures.
+
+W-D green evidence:
+
+- `cargo test -p openwepp-runner watershed_wat::tests -- --nocapture`:
+  `2` passed.
+- `cargo test -p openwepp-watershed-output writer_preserves_multiple_watershed_daily_rows_and_wat_fields -- --nocapture`:
+  `1` passed.
+- `cargo test --workspace`: pass.
+
+W-D held gate:
+
+- The real configured and legacy-discovery totalwatsed3 audits still fail
+  conservation closure with `2950.498418 mm` whole-run residual. W-D-REDO must
+  add independent daily PASS `runvol` lineage and associated tests.

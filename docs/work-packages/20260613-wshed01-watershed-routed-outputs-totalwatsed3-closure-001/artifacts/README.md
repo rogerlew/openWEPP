@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: W-C executed-hold - package active, W-D queued
+Status: W-D executed-hold - package active, W-D-REDO queued
 
 Evidence and disposition artifacts for
 `20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001`.
@@ -16,5 +16,10 @@ hard stop.
 
 W-C classified and fixed the channel-routing hard stop, then replaced
 placeholder watershed publication with WAT-backed multi-row output. The real
-arboreal-dendrite CLI now emits all `14` watershed parquet outputs. W-D remains
-for totalwatsed3 audit closure.
+arboreal-dendrite CLI now emits all `14` watershed parquet outputs.
+
+W-D ran the totalwatsed3 audit, fixed volume/depth publication, outlet-only
+MOFE `latqcc`, profile fields, and interception publication, but remains held
+on totalwatsed3 closure: `closure_reconstructed_with_storage_total_mm` is
+`2950.498418`. W-D-REDO owns independent daily PASS `runvol` lineage and
+closure.
