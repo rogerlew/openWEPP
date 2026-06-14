@@ -993,6 +993,7 @@ fn write_hillslope_manifest_per_ofe_fixture(
     "per_ofe_record_count": {row_count},
     "per_ofe_expected_record_count": {row_count},
     "per_ofe_internal_day_count": {day_count},
+    "hillslope_total_identity_max_abs_mm": 1.0e-13,
     "sim_day_index_monotonic": true,
     "first_row_key": {{
       "ofe": 1

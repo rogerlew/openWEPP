@@ -1,28 +1,33 @@
 # worker handoff
 
-Status: M-H executed; MOFE01 hillslope water-routing closure accepted
+Status: M-I executed; MOFE01 hillslope water-routing closure done-done
 
 Evidence mode: Ran + Static
 
 ## Current Summary
 
-M-H closes MOFE01 for hillslope-internal water-routing and public per-OFE WAT
-publication. The closure is bounded: watershed-output `totalwatsed3`,
->10-OFE far-point validation, and sediment-coupled erosion routing remain
+M-I closes the operator-directed completeness pass after M-H. MOFE01 is
+done-done for hillslope-internal water routing and public per-OFE WAT
+publication on the 1-5-OFE arboreal-dendrite ladder. The closure is bounded:
+watershed-output `totalwatsed3`, >10-OFE far-point validation,
+sediment-coupled erosion routing, and comparator value-family parity remain
 named follow-ons.
 
-Closed in M-H:
+Closed in M-I:
 
 - Full H1-H36 arboreal-dendrite ladder executed under
-  `/tmp/openwepp_mofe01_mh_final`: 36/36 zero exits, 36 manifests, and 144
-  output files.
-- Public WAT row cardinality is exact: `271808/271808`.
-- Conservation identities close at the noise floor: transfer residual max
-  `0.0 mm`, per-element residual max `5.968558980384842e-13 mm`, aggregate
-  cancellation residual max `0.0 mm`, and handoff residual max
-  `5.684341886080802e-14 mm`.
-- Anti-alias/anti-clone gates close: downstream `QOFE == Q` alias rows are
-  zero and hydrology clone active days are zero.
+  `/tmp/openwepp_mofe01_mi_final`: 36/36 zero exits, 36 manifests, and 144
+  copied output files.
+- Independent in-runner hillslope-total identity closes from internal per-OFE
+  records and OFE areas: max residual `3.306423012547295e-13 mm` against
+  `TOL-WATBAL-008 <= 1e-9 mm`; every multi-OFE residual is nonzero-at-noise.
+- Existing conservation identities remain closed: transfer residual max
+  `0.0 mm`, per-element residual max `5.968558980384842e-13 mm`, and
+  aggregate cancellation residual max `0.0 mm`.
+- Static double-execution review found the current multi-OFE persistent
+  lifecycle and single-OFE aggregate lifecycle are already mutually exclusive;
+  M-I adds a source-level regression guard.
+- M-H to M-I WAT manifest checksums are 36/36 unchanged.
 - Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 remain byte-identical to the
   M-F-REDO2 anchor for `.hbp`, `.loss.json`, `.plot.parquet`, and
   `.wat.parquet` (28/28 PASS).
@@ -30,6 +35,8 @@ Closed in M-H:
   row-key failures `0`, semantic value verdict FAIL. Treat those value-family
   deltas as ADR-0017 investigation signals; do not tune to legacy while
   openWEPP identities close.
+- Final gates passed: fmt, clippy, workspace tests, cargo-deny,
+  anti-evasion, and required-suite obligation guards.
 
 Next mechanism:
 

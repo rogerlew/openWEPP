@@ -107,3 +107,27 @@ fn mofe01_mg_erosion_qin_boundary_contract_authority_is_present() {
         "runner manifest provenance must expose M-G qin policy fields"
     );
 }
+
+#[test]
+fn mofe01_mi_hillslope_total_closure_contract_authority_is_present() {
+    let repo_root = env!("CARGO_MANIFEST_DIR");
+
+    let watbal = fs::read_to_string(format!(
+        "{repo_root}/docs/specifications/science-contracts/contracts/SC-WATBAL-001.md"
+    ))
+    .expect("SC-WATBAL-001 should be readable");
+    assert!(
+        watbal.contains("INV-WATBAL-100")
+            && watbal.contains("MOFE01 M-I Hillslope-Total Closure Addendum")
+            && watbal.contains("TOL-WATBAL-008")
+            && watbal.contains("<= 1e-9 mm")
+            && watbal.contains("hillslope_total_identity_max_abs_mm")
+            && watbal.contains("Published WAT rows may audit the result")
+            && watbal.contains("non-outlet routed surface runoff")
+            && watbal.contains("surface/lateral hillslope exports")
+            && watbal.contains("upstream-area/current-area")
+            && watbal.contains("scheduler lifecycle may remain the single-OFE specialization")
+            && watbal.contains("compute and discard an aggregate"),
+        "SC-WATBAL-001 must carry M-I hillslope-total and scheduler-lifecycle closure authority"
+    );
+}

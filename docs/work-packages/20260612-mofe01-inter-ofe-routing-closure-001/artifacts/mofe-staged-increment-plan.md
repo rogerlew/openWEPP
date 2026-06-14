@@ -1,8 +1,9 @@
 # MOFE Staged Increment Plan — Dispatch Artifact
 
-Status: active — M-A…M-H executed; **M-I queued** (closure-completeness:
-hillslope-total identity + double-execution retirement, operator-directed
-2026-06-13)
+Status: executed — M-A…M-I complete; MOFE01 hillslope water-routing closure is
+done-done for the 1-5-OFE ladder. Watershed-output `totalwatsed3`, >10-OFE
+far-point closure, sediment-coupled erosion `qin/qout`, and comparator
+value-family parity remain named follow-ons.
 Author: Claude Code, 2026-06-12
 Template: FDHP01 `d3-staged-increment-plan.md` (proven over 13 increments;
 agent memory `staged-increment-port-template`). Companion scope authority:
@@ -523,6 +524,30 @@ truth.
 
 On M-I close, MOFE01 is done-done: routing closure independently proven and the
 transitional dual-path removed.
+
+M-I execution result:
+
+- `SC-WATBAL-001` version 161 pins `INV-WATBAL-100` and `TOL-WATBAL-008 <=
+  1e-9 mm` for the independent hillslope-total identity.
+- The runner now computes `hillslope_total_identity_max_abs_mm` from internal
+  per-OFE WB13 records and OFE areas, excluding internal transfer terms and
+  counting only outlet surface/lateral exports as external hillslope outputs.
+- The full H1-H36 ladder under `/tmp/openwepp_mofe01_mi_final` exits zero.
+  Max hillslope-total residual is `3.306423012547295e-13 mm`, all
+  multi-OFE residuals are nonzero-at-noise, max per-element residual remains
+  `5.968558980384842e-13 mm`, and transfer/aggregate cancellation residuals
+  remain `0.0 mm`.
+- Static M-I-b review found the transitional aggregate double-execution had
+  already been retired in current code: multi-OFE persistent lifecycle and
+  single-OFE aggregate lifecycle are mutually exclusive branches. M-I adds a
+  regression guard for that topology.
+- M-H to M-I manifest checksum comparison reports 36/36 WAT checksums
+  unchanged. Single-OFE anchors remain 28/28 byte-identical.
+- Local `owcmp` ran without the comparator subagent. Execution passed and row
+  keys align; semantic value pass remains 0/36 and stays an ADR-0017
+  investigation signal.
+- Final gates passed: fmt, clippy, workspace tests, cargo-deny, authority
+  anti-evasion, and required-suite obligation guards.
 
 ## Dispatch instructions
 

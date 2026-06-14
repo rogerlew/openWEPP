@@ -6,6 +6,40 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-I Review Record
+
+Agent: local Codex review (no subagent used)
+
+Static/Ran review of M-I contract authority, internal WB13 identity code,
+runner lifecycle source guard, full-ladder audit output, and gate evidence.
+The reviewer did not invoke the comparator subagent.
+
+Findings:
+
+1. **No blocking M-I finding.** Independent hillslope-total closure is computed
+   from internal per-OFE records and OFE areas, not from published WAT rows, and
+   full-ladder residuals close below `TOL-WATBAL-008`.
+2. **Low:** The M-I runfile-relative output paths overwrote the prior
+   `/tmp/openwepp_mofe01_mh_final/output` directory. The evidence mitigates
+   this by copying current M-I outputs into the M-I root and comparing M-H/M-I
+   by manifest checksums rather than overwritten files.
+3. **Follow-up:** `openwepp-cli-watershed.rs` remains above the 2000-line
+   warning threshold and should be split before further watershed manifest
+   validation growth.
+
+### M-I Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | No blocking independent closure finding | accepted | `m-i-closure-completeness-evidence.md` and `gate-results.md` record full-ladder max hillslope-total residual `3.306423012547295e-13 mm`, nonzero-at-noise multi-OFE residuals, and final gates. |
+| 2 | M-H output directory overwritten by runfile-relative M-I outputs | accepted | Evidence explicitly records the path issue, copies M-I outputs into `/tmp/openwepp_mofe01_mi_final/output`, and uses manifest checksum comparison for M-H/M-I WAT equality. |
+| 3 | `openwepp-cli-watershed.rs` warning-size file | follow-up | Line-count governance records 2031 lines, below 3000 but above the 2000 warning threshold. |
+
+Gate non-deferral check: PASS. M-I's current-scope gates have direct evidence:
+contract pin, red target, focused tests, full-ladder residual audit,
+single-OFE anchor, checksum comparison, local owcmp execution, and full final
+Rust/authority gates.
+
 ## M-H Review Record
 
 Agent: local Codex review (no subagent used)

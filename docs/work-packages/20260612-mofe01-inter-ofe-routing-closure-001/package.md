@@ -1,9 +1,10 @@
 # MOFE01 — Inter-OFE Routing Closure (rung 3)
 
-Status: complete for MOFE01 hillslope water-routing closure; M-H executed and
-accepted the full 36-run 1-5-OFE ladder. Watershed-output `totalwatsed3`,
->10-OFE far-point closure, and sediment-coupled erosion `qin/qout` remain
-named follow-ons.
+Status: complete for MOFE01 hillslope water-routing closure; M-I executed the
+closure-completeness pass after M-H and independently proved the
+hillslope-total identity on the full 36-run 1-5-OFE ladder. Watershed-output
+`totalwatsed3`, >10-OFE far-point closure, sediment-coupled erosion
+`qin/qout`, and comparator value-family parity remain named follow-ons.
 
 Package type: staged implementation/closure package (FDHP01 execution shape:
 scope-then-staged-increments, per-increment conservation hard stops)
@@ -173,6 +174,16 @@ watershed-CLI subprocess seam, stop and record the scope change first.
   names the next mechanism (watershed outputs / Stage-2 per the queue), and
   the totalwatsed3 end-to-end deferral (WBVAL06/6a note) is resolved or
   explicitly re-stated.
+
+M-I close-out (2026-06-14): the independent hillslope-total identity now
+closes in-runner from internal per-OFE records and OFE areas on H1-H36 with
+max residual `3.306423012547295e-13 mm` against `TOL-WATBAL-008 <= 1e-9 mm`.
+All multi-OFE hillslopes produce nonzero-at-noise residuals, avoiding the
+M-E4 tautology failure mode. The static double-execution review found the
+multi-OFE persistent lifecycle and single-OFE aggregate lifecycle are already
+mutually exclusive in current code, and M-I adds a source-level regression
+guard. MOFE01 hillslope water-routing closure is therefore done-done for the
+1-5-OFE substrate, bounded by the follow-ons above.
 
 ## Dependencies
 

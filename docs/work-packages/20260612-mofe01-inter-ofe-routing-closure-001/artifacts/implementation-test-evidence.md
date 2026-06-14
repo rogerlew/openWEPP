@@ -1,9 +1,70 @@
 # implementation test evidence
 
-Status: M-H executed; full-ladder MOFE01 hillslope water-routing acceptance
-passes, with watershed-output `totalwatsed3` explicitly re-stated as follow-on.
+Status: M-I executed; MOFE01 hillslope water-routing closure is done-done for
+the 1-5-OFE ladder, with watershed-output `totalwatsed3` explicitly re-stated
+as follow-on.
 
 Evidence mode: Ran + Static
+
+## M-I ran
+
+M-I added the independent hillslope-total identity and the source guard for
+mutually exclusive multi-OFE/single-OFE scheduler lifecycles.
+
+- Red gate
+  - PASS as red:
+    `cargo test -p openwepp-runner mofe01_mi -- --nocapture` failed before
+    production code because the new record/summary fields did not exist.
+- Focused tests
+  - PASS:
+    `cargo test -p openwepp-runner mofe01_mi -- --nocapture`.
+  - PASS:
+    `cargo test -p openwepp-runner per_ofe_state -- --nocapture`.
+  - PASS:
+    `cargo test --test mofe01_inter_ofe_route_contract -- --nocapture`.
+  - PASS:
+    `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`.
+  - PASS:
+    `cargo test --test cli03_runner_contract_derived_tests cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows -- --nocapture`.
+  - PASS:
+    `cargo test -p openwepp-runner --test watershed_cli_behavior_contract -- --nocapture`.
+- Full H1-H36 ladder
+  - PASS runtime execution: 36/36 exit code `0` under
+    `/tmp/openwepp_mofe01_mi_final`.
+  - PASS inventory: 36 manifests and 144 copied outputs.
+  - PASS independent hillslope-total identity: max residual
+    `3.306423012547295e-13 mm` against `1.0e-9 mm`; all multi-OFE residuals
+    are nonzero-at-noise.
+  - PASS existing identities: max per-element residual
+    `5.968558980384842e-13 mm`; transfer and aggregate cancellation residuals
+    `0.0 mm`.
+- Local comparisons without comparator subagent
+  - PASS M-H to M-I manifest checksum comparison: 36/36 WAT checksums
+    unchanged.
+  - PASS single-OFE anchors: 28/28 byte-identical to the M-F-REDO2 anchor.
+  - PASS `owcmp` execution and row-key alignment on H1-H36.
+  - FAIL semantic value pass: `0/36`; recorded as ADR-0017 investigation
+    signal, not an M-I acceptance blocker.
+- Final gates
+  - PASS:
+    `cargo fmt --check`.
+  - PASS:
+    `cargo clippy --workspace --all-targets -- -D warnings`.
+  - PASS:
+    `cargo test --workspace`.
+  - PASS:
+    `cargo deny check`.
+  - PASS:
+    `bash tools/release/check_authority_suite_antievasion.sh`.
+  - PASS:
+    `cargo test --test auth11_required_suite_obligation_guards_contract`.
+  - PASS:
+    `markdown-doc lint --path ... --format json` scanned 42 files with 0
+    errors and 0 warnings.
+  - PASS:
+    `git diff --check`.
+
+Detailed evidence: `m-i-closure-completeness-evidence.md`.
 
 ## M-H ran
 

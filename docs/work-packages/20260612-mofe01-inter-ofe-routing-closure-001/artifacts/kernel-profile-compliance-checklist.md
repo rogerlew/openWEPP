@@ -1,8 +1,39 @@
 # kernel profile compliance checklist
 
-Status: checked through M-H closure
+Status: checked through M-I closure-completeness
 
 Evidence mode: Ran + Static
+
+## M-I checklist
+
+- Production edits: yes; independent hillslope-total identity computation,
+  area-ratio wiring, manifest publication, and watershed manifest validation.
+- Science-contract edits: yes; `SC-WATBAL-001` version 161 adds
+  `INV-WATBAL-100` and `TOL-WATBAL-008`.
+- Test edits: yes; focused M-I negative test, contract authority/source
+  guards, CLI publication audit, and watershed manifest validation fixture.
+- Typed errors in production: identity and area-domain failures map through
+  existing typed `HillslopeCliError::RuntimeSurfaceFailure` / CLI manifest
+  validation paths.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: no provisional process-physics math added. The identity is an
+  audit over already-published internal per-OFE water-balance operands.
+- Runtime publication paths: manifests now publish
+  `hillslope_total_identity_max_abs_mm`; full H1-H36 residuals close below
+  `TOL-WATBAL-008`.
+- Scheduler lifecycle: multi-OFE persistent execution and single-OFE aggregate
+  execution are source-guarded as mutually exclusive.
+
+Validation:
+
+- Focused M-I tests: PASS.
+- Full H1-H36 ladder: PASS.
+- Local full-ladder comparison execution without comparator subagent: PASS
+  execution and row-key alignment; semantic values remain investigation fail.
+- Single-OFE anchor comparison: PASS.
+- Final gates: PASS; see `gate-results.md`.
 
 ## M-H checklist
 

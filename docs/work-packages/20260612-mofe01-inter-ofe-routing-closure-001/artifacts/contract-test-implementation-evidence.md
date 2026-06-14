@@ -1,9 +1,49 @@
 # contract test implementation evidence
 
-Status: M-H executed; no new M-H contract tests required beyond the existing
-MOFE01 contract-derived test suite and full-ladder acceptance audit.
+Status: M-I executed; M-I adds independent hillslope-total identity and
+double-execution retirement contract tests on top of the existing MOFE01
+contract-derived suite.
 
 Evidence mode: Ran + Static
+
+## M-I
+
+M-I expands the contract-derived coverage:
+
+- `mofe01_mi_hillslope_total_closure_contract_authority_is_present`
+  - Asserts `SC-WATBAL-001` carries `INV-WATBAL-100`, `TOL-WATBAL-008`,
+    `hillslope_total_identity_max_abs_mm`, external-output exclusions,
+    area-ratio scaling, and scheduler lifecycle exclusivity language.
+- `mofe01_mi_current_architecture_requires_independent_hillslope_total_identity`
+  - Source guard requiring area-bearing internal WB13 records, the
+    hillslope-total residual helper, storage/flux terms, frost terms, and
+    manifest publication.
+- `mofe01_mi_multiofe_runner_lifecycle_is_mutually_exclusive_with_single_ofe_aggregate_path`
+  - Source guard preventing a multi-OFE persistent lifecycle plus aggregate
+    compute-and-discard lifecycle from coexisting in the same branch.
+- `mofe01_mi_hillslope_total_identity_rejects_area_weight_mismatch`
+  - Focused negative runtime test that fails when transfer depths ignore
+    upstream/current OFE area scaling.
+- `watershed_cli_mf_accepts_valid_per_ofe_publication_metadata`
+  - Updated to require valid `hillslope_total_identity_max_abs_mm` metadata.
+
+Ran:
+
+- Red pre-implementation target:
+  `cargo test -p openwepp-runner mofe01_mi -- --nocapture`
+  - FAIL as intended before the new fields existed.
+- `cargo test -p openwepp-runner mofe01_mi -- --nocapture`
+  - PASS.
+- `cargo test -p openwepp-runner per_ofe_state -- --nocapture`
+  - PASS.
+- `cargo test --test mofe01_inter_ofe_route_contract -- --nocapture`
+  - PASS.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - PASS.
+- `cargo test -p openwepp-runner --test watershed_cli_behavior_contract -- --nocapture`
+  - PASS.
+- `cargo test --workspace`
+  - PASS.
 
 ## M-H
 

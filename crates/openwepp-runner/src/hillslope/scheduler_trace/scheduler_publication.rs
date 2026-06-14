@@ -380,6 +380,8 @@ pub(super) fn build_wb13_publication_provenance(
         .map_or(0.0, |summary| summary.per_element_identity_max_abs_mm);
     let aggregate_transfer_cancellation_max_abs_mm = per_ofe_internal_wb13_summary
         .map_or(0.0, |summary| summary.aggregate_transfer_cancellation_max_abs_mm);
+    let hillslope_total_identity_max_abs_mm = per_ofe_internal_wb13_summary
+        .map_or(0.0, |summary| summary.hillslope_total_identity_max_abs_mm);
 
     Ok(HillslopeWb13PublicationProvenance {
         source: WB13_PUBLICATION_SOURCE_SIMULATION_OWNED.to_string(),
@@ -416,6 +418,7 @@ pub(super) fn build_wb13_publication_provenance(
         transfer_identity_max_abs_mm,
         per_element_identity_max_abs_mm,
         aggregate_transfer_cancellation_max_abs_mm,
+        hillslope_total_identity_max_abs_mm,
         publication_area_m2,
         row_count: rows.len(),
         sim_day_index_monotonic,

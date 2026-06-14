@@ -773,6 +773,16 @@ fn assert_mf_multiofe_publication_manifest(manifest_json: &Value, manifest: &str
         Some(3),
         "manifest last public per-OFE row must be outlet OFE 3: {manifest}"
     );
+    let hillslope_total_identity = manifest_json
+        .pointer("/wb13_publication/hillslope_total_identity_max_abs_mm")
+        .and_then(Value::as_f64)
+        .unwrap_or_else(|| {
+            panic!("manifest missing finite M-I hillslope-total residual marker: {manifest}")
+        });
+    assert!(
+        (0.0..1.0e-9).contains(&hillslope_total_identity),
+        "M-I hillslope-total residual must be nonzero-at-noise and below tolerance, observed {hillslope_total_identity}: {manifest}"
+    );
     assert_mf_multiofe_publication_carry_manifest(manifest);
 }
 
@@ -829,9 +839,12 @@ fn assert_mf_multiofe_publication_surface_handoff(day_rows: &[Row]) {
         3,
         "M-F active routed-day fixture must expose one row per OFE"
     );
+    let upstream_to_downstream_area_ratios = [1.5, 2.0];
     for ofe_offset in 1..day_rows.len() {
         let upstream_qofe = row_f64_value(&day_rows[ofe_offset - 1], "QOFE");
         let downstream_upstrmq = row_f64_value(&day_rows[ofe_offset], "UpStrmQ");
+        let expected_downstream_upstrmq =
+            upstream_qofe * upstream_to_downstream_area_ratios[ofe_offset - 1];
         assert!(
             upstream_qofe > 1.0e-9,
             "M-F-REDO requires nonzero upstream QOFE on active handoff rows"
@@ -841,8 +854,9 @@ fn assert_mf_multiofe_publication_surface_handoff(day_rows: &[Row]) {
             "M-F-REDO requires nonzero downstream UpStrmQ on active handoff rows"
         );
         assert!(
-            (downstream_upstrmq - upstream_qofe).abs() <= 1.0e-6,
-            "downstream UpStrmQ ({downstream_upstrmq}) must equal previous OFE QOFE ({upstream_qofe})"
+            (downstream_upstrmq - expected_downstream_upstrmq).abs() <= 1.0e-6,
+            "downstream UpStrmQ ({downstream_upstrmq}) must equal previous OFE QOFE ({upstream_qofe}) scaled by area ratio {}",
+            upstream_to_downstream_area_ratios[ofe_offset - 1]
         );
     }
 }

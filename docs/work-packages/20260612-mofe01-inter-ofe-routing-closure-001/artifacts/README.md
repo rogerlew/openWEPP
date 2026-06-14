@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: updated through M-H closure
+Status: updated through M-I closure-completeness
 
 Evidence and disposition artifacts for
 `20260612-mofe01-inter-ofe-routing-closure-001`.
@@ -46,6 +46,9 @@ Evidence and disposition artifacts for
 - `m-h-ladder-acceptance-closure-evidence.md`: M-H full-ladder acceptance
   evidence, local comparison result, single-OFE anchor, `totalwatsed3`
   watershed-output boundary, and named follow-ons.
+- `m-i-closure-completeness-evidence.md`: M-I independent hillslope-total
+  identity evidence, double-execution retirement guard, full-ladder residual
+  audit, local comparison result, and final gate set.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`, `contract-test-implementation-evidence.md`,
   `pre-implementation-contract-gate.md`, `implementation-test-evidence.md`:
@@ -53,5 +56,5 @@ Evidence and disposition artifacts for
 - `kernel-profile-compliance-checklist.md`, `owned-file-manifest.md`,
   `gate-results.md`, `line-count-governance-checklist.md`: governance.
 - `review_agent_a.md`, `review_agent_b.md`, `verification_agent_a.md`,
-  `verification_agent_b.md`: review/verification records through M-H closure.
+  `verification_agent_b.md`: review/verification records through M-I closure.
 - `disposition.md`, `worker-handoff.md`: closure record.

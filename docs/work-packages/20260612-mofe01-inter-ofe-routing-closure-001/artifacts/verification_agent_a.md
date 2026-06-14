@@ -6,6 +6,44 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-I Verification Record
+
+Agent: local Codex verification (no subagent used)
+
+Static/Ran verification of M-I saved evidence, contract/test deltas, and final
+gate outcomes. The verifier did not invoke the comparator subagent.
+
+Verified:
+
+- `/tmp/openwepp_mofe01_mi_final` records 36 manifests and 144 copied output
+  files.
+- `/tmp/openwepp_mofe01_mi_final/audits/m-i-manifest-residual-summary.json`
+  records max hillslope-total residual `3.306423012547295e-13 mm`, tolerance
+  `1e-9 mm`, `all_hillslope_total_within_tolerance=true`, and
+  `all_multi_ofe_nonzero_at_noise=true`.
+- The same audit records max per-element residual
+  `5.968558980384842e-13 mm`, transfer residual `0.0 mm`, and aggregate
+  cancellation residual `0.0 mm`.
+- `/tmp/openwepp_mofe01_mi_final/audits/m-i-vs-mh-wat-checksum.tsv` has 36/36
+  WAT manifest checksum matches.
+- `/tmp/openwepp_mofe01_mi_final/audits/m-i-single-ofe-anchor-cmp.tsv` has no
+  failed rows; 28/28 single-OFE anchor file comparisons pass.
+- `/tmp/openwepp_mofe01_mi_final/owcmp/summary.json` records execution PASS,
+  structural row-key failures `0`, and semantic value FAIL `0/36`.
+- Final gates passed and are recorded in `gate-results.md`.
+
+Findings:
+
+- No blocking M-I verification findings.
+
+Residual risk:
+
+- Saved `/tmp` evidence is local-only; future verification will need those
+  files or a rerun.
+- The M-I batch overwrote the previous M-H output directory through
+  runfile-relative output paths; manifest checksum comparisons preserve the
+  M-H/M-I equality evidence.
+
 ## M-H Verification Record
 
 Agent: local Codex verification (no subagent used)

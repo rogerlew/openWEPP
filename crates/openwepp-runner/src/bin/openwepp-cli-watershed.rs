@@ -58,6 +58,7 @@ const MOFE04_PUBLICATION_AREA_POLICY: &str = "sum-ofe-geometry-area";
 const MF_STORAGE_LINEAGE_POLICY: &str = "per-ofe-dynamic-wb-state";
 const MF_PER_OFE_STATE_POLICY: &str = "published-per-ofe-wb13-records";
 const MF_IDENTITY_STATUS: &str = "pass-published-per-ofe-wb13-records";
+const MI_HILLSLOPE_TOTAL_IDENTITY_TOLERANCE_MM: f64 = 1.0e-9;
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
 const MOFE_HOURLY_CARRY_ARRAY_COUNT: u64 = 24;
 const MOFE_HOURLY_REQUIRED_ARRAYS: [&str; 4] = ["ui_SUrunf", "ui_SCrunf", "ui_LfUrf", "ui_LfCrf"];
@@ -1430,6 +1431,24 @@ fn validate_manifest_per_ofe_wb13_publication_policies(
                 MF_IDENTITY_STATUS
             ));
         }
+    }
+
+    let hillslope_total_residual = manifest
+        .pointer("/wb13_publication/hillslope_total_identity_max_abs_mm")
+        .and_then(Value::as_f64)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing numeric /wb13_publication/hillslope_total_identity_max_abs_mm",
+                manifest_file_path.display()
+            )
+        })?;
+    if !hillslope_total_residual.is_finite()
+        || hillslope_total_residual > MI_HILLSLOPE_TOTAL_IDENTITY_TOLERANCE_MM
+    {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has hillslope_total_identity_max_abs_mm={hillslope_total_residual} above tolerance {MI_HILLSLOPE_TOTAL_IDENTITY_TOLERANCE_MM}",
+            manifest_file_path.display()
+        ));
     }
 
     Ok(())

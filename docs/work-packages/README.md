@@ -219,12 +219,16 @@ publication-safe Daymet CLI audit:
    `5.968558980384842e-13 mm`, aggregate cancellation residual max was
    `0.0 mm`, downstream `QOFE == Q` alias rows were zero, hydrology clone
    active days were zero, and the 7 single-OFE anchors were 28/28
-   byte-identical to the M-F-REDO2 anchor. Local `owcmp` was run directly
-   without the comparator subagent: row keys align for all 36 hillslopes, while
-   semantic value-family comparison remains an ADR-0017 investigation signal,
-   not an acceptance target. M-G deliberately left sediment-coupled erosion
-   `qin/qout` plus particle-fraction handoff as a named follow-on. Package:
-   `20260612-mofe01-inter-ofe-routing-closure-001/`. **Closure (2026-06-13):** water-routing closure accepted on the 36-run 1–5-OFE ladder (per-element identity 5.97e-13 mm on genuinely-distinct routed per-OFE hydrology; QOFE/Q geometry per `watbal.for`; single-OFE anchor byte-identical). One in-package completeness increment remains (**M-I**: in-runner hillslope-total identity + transitional double-execution retirement). Named follow-ons: `MOFE-FARPOINT01` (>10-OFE exceed-the-ceiling demonstration), `MOFE-MAGPARITY01` (±10–25% per-OFE runoff magnitude adjudication), `REFACTOR022` (line-count split), plus watershed/totalwatsed3 (queue item 1) and `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` (sediment coupling).
+   byte-identical to the M-F-REDO2 anchor. M-I added the independent in-runner
+   hillslope-total identity and closed it at `3.306423012547295e-13 mm`
+   against `1e-9 mm`, with all multi-OFE cases nonzero-at-noise; it also
+   source-guards the mutually exclusive multi-OFE persistent and single-OFE
+   aggregate scheduler lifecycles. Local `owcmp` was run directly without the
+   comparator subagent: row keys align for all 36 hillslopes, while semantic
+   value-family comparison remains an ADR-0017 investigation signal, not an
+   acceptance target. M-G deliberately left sediment-coupled erosion `qin/qout`
+   plus particle-fraction handoff as a named follow-on. Package:
+   `20260612-mofe01-inter-ofe-routing-closure-001/`. **Closure (2026-06-14):** MOFE01 water-routing closure is done-done on the 36-run 1–5-OFE ladder. Named follow-ons: `MOFE-FARPOINT01` (>10-OFE exceed-the-ceiling demonstration), `MOFE-MAGPARITY01` (±10–25% per-OFE runoff magnitude adjudication), `REFACTOR022` (line-count split), plus watershed/totalwatsed3 (queue item 1) and `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` (sediment coupling).
 9. **watershed routed outputs / totalwatsed3 audit** *(next)* — consume the
    closed MOFE hillslope pass outputs through the watershed output stack and
    produce the end-to-end `totalwatsed3` audit surface deferred since

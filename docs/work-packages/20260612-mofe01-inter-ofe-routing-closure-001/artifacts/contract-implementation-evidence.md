@@ -1,9 +1,42 @@
 # contract implementation evidence
 
-Status: M-H executed; MOFE01 hillslope water-routing closure consumes the
-M-F-REDO2/M-G contract authority. No new M-H contract amendment was required.
+Status: M-I executed; MOFE01 hillslope water-routing closure consumes the
+M-F-REDO2/M-G authority and adds independent hillslope-total closure authority
+in `SC-WATBAL-001`.
 
 Evidence mode: Ran + Static
+
+## M-I
+
+M-I amends `SC-WATBAL-001` to version 161:
+
+- `INV-WATBAL-100` pins the independent hillslope-total identity from internal
+  per-OFE records and OFE areas.
+- `TOL-WATBAL-008 <= 1e-9 mm` pins the area-weighted hillslope-total residual
+  tolerance.
+- The M-I addendum excludes internal `UpStrmQ`, `SubRIn`, non-outlet routed
+  surface runoff, and non-outlet lateral handoff from external hillslope
+  outputs; only outlet surface/lateral exports leave the hillslope.
+- Downstream transfer input depths are required to use upstream-area/current-area
+  scaling from the same OFE areas used by the residual.
+- Scheduler lifecycle authority requires multi-OFE persistent execution and
+  single-OFE aggregate execution to remain mutually exclusive.
+
+Implementation:
+
+- internal per-OFE WB13 records carry `area_m2`;
+- run manifests publish `hillslope_total_identity_max_abs_mm`;
+- watershed contributor manifest validation requires that value when per-OFE
+  publication metadata is present;
+- M-I source guards cover both the independent identity and the mutually
+  exclusive lifecycle topology.
+
+Validation:
+
+- Focused M-I tests: PASS.
+- Full H1-H36 ladder: PASS with max hillslope-total residual
+  `3.306423012547295e-13 mm`.
+- Final full gates: see `gate-results.md`.
 
 ## M-H
 

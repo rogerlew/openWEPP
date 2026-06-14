@@ -1,8 +1,58 @@
 # owned file manifest
 
-Status: updated through M-H closure
+Status: updated through M-I closure-completeness
 
 Evidence mode: Static
+
+## M-I edited files
+
+Roadmap / execution log:
+
+- `docs/ROADMAP.md`
+- `docs/work-packages/README.md`
+
+Rust implementation:
+
+- `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs`
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_publication.rs`
+
+Tests:
+
+- `crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs`
+- `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs`
+- `tests/integration/cli03_runner_contract_derived_tests.rs`
+- `tests/integration/mofe01_inter_ofe_route_contract.rs`
+- `tests/integration/mofe01_per_ofe_state_contract.rs`
+
+Science contracts:
+
+- `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
+
+Work-package files/artifacts:
+
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/package.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/README.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/contract-test-implementation-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/disposition.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/gate-results.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/implementation-test-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/kernel-profile-compliance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/line-count-governance-checklist.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/m-i-closure-completeness-evidence.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/owned-file-manifest.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/required-reading-map.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/review_agent_b.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_a.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/verification_agent_b.md`
+- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/worker-handoff.md`
+
+No dependency, legacy, external-authority suite, or `/wc1` substrate file was
+edited in M-I.
 
 ## M-H edited files
 

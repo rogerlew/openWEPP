@@ -6,6 +6,38 @@ Evidence mode: Static + Ran
 
 ## Verification Record
 
+## M-I Verification Record
+
+Agent: local Codex QA verification (no subagent used)
+
+Static/Ran verification of final M-I package posture and overclaim boundaries.
+The verifier did not invoke `comparator_suite_runner` or any comparator
+subagent.
+
+Verified:
+
+- `SC-WATBAL-001` carries `INV-WATBAL-100`, `TOL-WATBAL-008`, the M-I
+  hillslope-total addendum, and scheduler lifecycle exclusivity language.
+- M-I package artifacts state closure for hillslope water routing only and do
+  not claim watershed-output `totalwatsed3`, >10-OFE, sediment-coupled
+  erosion, or comparator value-family parity closure.
+- `gate-results.md` records semantic value comparison as FAIL while accepting
+  only independent conservation closure, row-key alignment, and anchor
+  preservation.
+- Review records contain M-I findings/dispositions and no blocking M-I
+  finding.
+- `line-count-governance-checklist.md` records the pre-existing
+  `openwepp-cli-watershed.rs` 2000-line warning.
+
+Findings:
+
+- No blocking M-I verification findings.
+
+Residual risk:
+
+- Future work should not add more watershed manifest validation logic to
+  `openwepp-cli-watershed.rs` without splitting it.
+
 ## M-H Verification Record
 
 Agent: local Codex QA verification (no subagent used)

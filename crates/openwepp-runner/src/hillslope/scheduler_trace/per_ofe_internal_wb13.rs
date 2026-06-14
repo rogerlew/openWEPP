@@ -1,8 +1,10 @@
 const ME4_INTERNAL_WB13_IDENTITY_TOLERANCE_MM: f64 = 1.0e-11;
+const MI_HILLSLOPE_TOTAL_IDENTITY_TOLERANCE_MM: f64 = 1.0e-9;
 
 #[derive(Debug, Clone)]
 pub(super) struct InternalPerOfeWb13Record {
     pub(super) ofe_id: usize,
+    pub(super) area_m2: f64,
     pub(super) previous_storage_total_mm: f64,
     pub(super) physical_surface_outflow_mm: f64,
     pub(super) frost_upper_overflow_mm: f64,
@@ -21,6 +23,8 @@ pub(super) struct DailyInternalPerOfeWb13Collection {
     per_element_identity_max_abs_mm: f64,
     per_element_identity_max_abs_detail: Option<String>,
     aggregate_transfer_cancellation_max_abs_mm: f64,
+    hillslope_total_identity_max_abs_mm: f64,
+    hillslope_total_identity_max_abs_detail: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -31,6 +35,17 @@ pub(super) struct PerOfeInternalWb13RunSummary {
     pub(super) transfer_identity_max_abs_mm: f64,
     pub(super) per_element_identity_max_abs_mm: f64,
     pub(super) aggregate_transfer_cancellation_max_abs_mm: f64,
+    pub(super) hillslope_total_identity_max_abs_mm: f64,
+}
+
+struct InternalIdentityScan {
+    transfer_identity_max_abs_mm: f64,
+    per_element_identity_max_abs_mm: f64,
+    per_element_identity_max_abs_detail: Option<String>,
+    internal_surface_input_mm: f64,
+    internal_surface_output_mm: f64,
+    internal_lateral_input_mm: f64,
+    internal_lateral_output_mm: f64,
 }
 
 impl PerOfeInternalWb13RunSummary {
@@ -52,6 +67,9 @@ impl PerOfeInternalWb13RunSummary {
         self.aggregate_transfer_cancellation_max_abs_mm = self
             .aggregate_transfer_cancellation_max_abs_mm
             .max(collection.aggregate_transfer_cancellation_max_abs_mm);
+        self.hillslope_total_identity_max_abs_mm = self
+            .hillslope_total_identity_max_abs_mm
+            .max(collection.hillslope_total_identity_max_abs_mm);
 
         Ok(())
     }
@@ -138,6 +156,7 @@ impl DailyInternalPerOfeWb13Collection {
             )?;
             records.push(InternalPerOfeWb13Record {
                 ofe_id: lane_report.ofe_id,
+                area_m2: *lane_area_m2,
                 previous_storage_total_mm: *previous_storage_total_mm,
                 physical_surface_outflow_mm: lane_report.current_transfer_output.qofe * 1_000.0,
                 frost_upper_overflow_mm: frost_upper_overflow_m * 1_000.0,
@@ -170,91 +189,28 @@ impl DailyInternalPerOfeWb13Collection {
             )));
         }
 
-        let mut transfer_identity_max_abs_mm = 0.0_f64;
-        let mut per_element_identity_max_abs_mm = 0.0_f64;
-        let mut per_element_identity_max_abs_detail = None;
-        let mut internal_surface_input_mm = 0.0_f64;
-        let mut internal_surface_output_mm = 0.0_f64;
-        let mut internal_lateral_input_mm = 0.0_f64;
-        let mut internal_lateral_output_mm = 0.0_f64;
-
-        for (index, record) in records.iter().enumerate() {
-            let expected_ofe_id = index + 1;
-            if record.ofe_id != expected_ofe_id {
-                return Err(internal_wb13_failure(format!(
-                    "internal per-OFE WB13 records must be ordered; expected OFE {expected_ofe_id}, observed {}",
-                    record.ofe_id
-                )));
-            }
-            if usize::from(record.row.wb13_row.ofe) != record.ofe_id {
-                return Err(internal_wb13_failure(format!(
-                    "internal WB13 row OFE {} does not match record OFE {}",
-                    record.row.wb13_row.ofe, record.ofe_id
-                )));
-            }
-            if !record.previous_storage_total_mm.is_finite() {
-                return Err(internal_wb13_failure(format!(
-                    "previous storage snapshot for OFE {} is non-finite ({})",
-                    record.ofe_id, record.previous_storage_total_mm
-                )));
-            }
-
-            let published_input_residual_mm = (record.row.wb13_row.upstrmq
-                - record.upstream_transfer_input.upstrmq * 1_000.0)
-                .abs()
-                .max(
-                    (record.row.wb13_row.subrin - record.upstream_transfer_input.subrin * 1_000.0)
-                        .abs(),
-                );
-            if published_input_residual_mm > ME4_INTERNAL_WB13_IDENTITY_TOLERANCE_MM {
-                return Err(internal_wb13_failure(format!(
-                    "published upstream-input residual {published_input_residual_mm} mm exceeds tolerance {ME4_INTERNAL_WB13_IDENTITY_TOLERANCE_MM}"
-                )));
-            }
-
-            let per_element_terms = per_element_water_balance_terms(record);
-            if per_element_terms.residual_mm.abs() > per_element_identity_max_abs_mm {
-                per_element_identity_max_abs_mm = per_element_terms.residual_mm.abs();
-                per_element_identity_max_abs_detail = Some(format!(
-                    "{}; wb12_terms={}",
-                    per_element_terms.describe(record.ofe_id),
-                    record.storage_reconciliation_detail
-                ));
-            }
-
-            if index > 0 {
-                internal_surface_input_mm += record.upstream_transfer_input.upstrmq * 1_000.0;
-                internal_lateral_input_mm += record.upstream_transfer_input.subrin * 1_000.0;
-            }
-            if let Some(next_record) = records.get(index + 1) {
-                let transfer_residual_mm =
-                    adjacent_transfer_residual_mm(record, next_record)?;
-                transfer_identity_max_abs_mm =
-                    transfer_identity_max_abs_mm.max(transfer_residual_mm);
-
-                let sent_surface_mm =
-                    scaled_transfer_sum_mm(&record.current_transfer_output.surface_carry,
-                        next_record.upstream_transfer_input.area_ratio);
-                let sent_lateral_mm =
-                    scaled_transfer_sum_mm(&record.current_transfer_output.lateral_carry,
-                        next_record.upstream_transfer_input.area_ratio);
-                internal_surface_output_mm += sent_surface_mm;
-                internal_lateral_output_mm += sent_lateral_mm;
-            }
-        }
+        let identity_scan = scan_internal_identity_terms(&records)?;
 
         let aggregate_transfer_cancellation_max_abs_mm =
-            (internal_surface_input_mm - internal_surface_output_mm)
+            (identity_scan.internal_surface_input_mm - identity_scan.internal_surface_output_mm)
                 .abs()
-                .max((internal_lateral_input_mm - internal_lateral_output_mm).abs());
+                .max(
+                    (identity_scan.internal_lateral_input_mm
+                        - identity_scan.internal_lateral_output_mm)
+                        .abs(),
+                );
+        let hillslope_total_identity = hillslope_total_identity_residual_mm(&records)?;
+        let hillslope_total_identity_max_abs_mm = hillslope_total_identity.residual_mm.abs();
 
         let collection = Self {
             contributor_ofe_count,
             records,
-            transfer_identity_max_abs_mm,
-            per_element_identity_max_abs_mm,
-            per_element_identity_max_abs_detail,
+            transfer_identity_max_abs_mm: identity_scan.transfer_identity_max_abs_mm,
+            per_element_identity_max_abs_mm: identity_scan.per_element_identity_max_abs_mm,
+            per_element_identity_max_abs_detail: identity_scan.per_element_identity_max_abs_detail,
             aggregate_transfer_cancellation_max_abs_mm,
+            hillslope_total_identity_max_abs_mm,
+            hillslope_total_identity_max_abs_detail: Some(hillslope_total_identity.detail),
         };
         collection.require_identity_closure()?;
 
@@ -286,9 +242,106 @@ impl DailyInternalPerOfeWb13Collection {
                 self.aggregate_transfer_cancellation_max_abs_mm
             )));
         }
+        if self.hillslope_total_identity_max_abs_mm > MI_HILLSLOPE_TOTAL_IDENTITY_TOLERANCE_MM {
+            let detail = self
+                .hillslope_total_identity_max_abs_detail
+                .as_deref()
+                .unwrap_or("no hillslope-total residual detail recorded");
+            return Err(internal_wb13_failure(format!(
+                "hillslope-total identity residual {} mm exceeds tolerance {MI_HILLSLOPE_TOTAL_IDENTITY_TOLERANCE_MM}; {detail}",
+                self.hillslope_total_identity_max_abs_mm
+            )));
+        }
 
         Ok(())
     }
+}
+
+fn scan_internal_identity_terms(
+    records: &[InternalPerOfeWb13Record],
+) -> Result<InternalIdentityScan, HillslopeCliError> {
+    let mut scan = InternalIdentityScan {
+        transfer_identity_max_abs_mm: 0.0,
+        per_element_identity_max_abs_mm: 0.0,
+        per_element_identity_max_abs_detail: None,
+        internal_surface_input_mm: 0.0,
+        internal_surface_output_mm: 0.0,
+        internal_lateral_input_mm: 0.0,
+        internal_lateral_output_mm: 0.0,
+    };
+
+    for (index, record) in records.iter().enumerate() {
+        let expected_ofe_id = index + 1;
+        if record.ofe_id != expected_ofe_id {
+            return Err(internal_wb13_failure(format!(
+                "internal per-OFE WB13 records must be ordered; expected OFE {expected_ofe_id}, observed {}",
+                record.ofe_id
+            )));
+        }
+        if usize::from(record.row.wb13_row.ofe) != record.ofe_id {
+            return Err(internal_wb13_failure(format!(
+                "internal WB13 row OFE {} does not match record OFE {}",
+                record.row.wb13_row.ofe, record.ofe_id
+            )));
+        }
+        if !record.area_m2.is_finite() || record.area_m2 <= 0.0 {
+            return Err(internal_wb13_failure(format!(
+                "OFE {} area_m2 must be finite and > 0.0 for hillslope-total identity, observed {}",
+                record.ofe_id, record.area_m2
+            )));
+        }
+        if !record.previous_storage_total_mm.is_finite() {
+            return Err(internal_wb13_failure(format!(
+                "previous storage snapshot for OFE {} is non-finite ({})",
+                record.ofe_id, record.previous_storage_total_mm
+            )));
+        }
+
+        let published_input_residual_mm = (record.row.wb13_row.upstrmq
+            - record.upstream_transfer_input.upstrmq * 1_000.0)
+            .abs()
+            .max(
+                (record.row.wb13_row.subrin - record.upstream_transfer_input.subrin * 1_000.0)
+                    .abs(),
+            );
+        if published_input_residual_mm > ME4_INTERNAL_WB13_IDENTITY_TOLERANCE_MM {
+            return Err(internal_wb13_failure(format!(
+                "published upstream-input residual {published_input_residual_mm} mm exceeds tolerance {ME4_INTERNAL_WB13_IDENTITY_TOLERANCE_MM}"
+            )));
+        }
+
+        let per_element_terms = per_element_water_balance_terms(record);
+        if per_element_terms.residual_mm.abs() > scan.per_element_identity_max_abs_mm {
+            scan.per_element_identity_max_abs_mm = per_element_terms.residual_mm.abs();
+            scan.per_element_identity_max_abs_detail = Some(format!(
+                "{}; wb12_terms={}",
+                per_element_terms.describe(record.ofe_id),
+                record.storage_reconciliation_detail
+            ));
+        }
+
+        if index > 0 {
+            scan.internal_surface_input_mm += record.upstream_transfer_input.upstrmq * 1_000.0;
+            scan.internal_lateral_input_mm += record.upstream_transfer_input.subrin * 1_000.0;
+        }
+        if let Some(next_record) = records.get(index + 1) {
+            let transfer_residual_mm = adjacent_transfer_residual_mm(record, next_record)?;
+            scan.transfer_identity_max_abs_mm = scan
+                .transfer_identity_max_abs_mm
+                .max(transfer_residual_mm);
+
+            scan.internal_surface_output_mm += scaled_transfer_sum_mm(
+                &record.current_transfer_output.surface_carry,
+                next_record.upstream_transfer_input.area_ratio,
+            );
+            scan.internal_lateral_output_mm += scaled_transfer_sum_mm(
+                &record.current_transfer_output.lateral_carry,
+                next_record.upstream_transfer_input.area_ratio,
+            );
+        }
+    }
+
+    Ok(scan)
 }
 
 pub(super) fn internal_wb13_storage_total_mm_from_surface(
@@ -453,6 +506,84 @@ fn per_element_water_balance_terms(
         current_storage_total_mm,
         storage_delta_mm,
     }
+}
+
+struct HillslopeTotalIdentityResidual {
+    residual_mm: f64,
+    detail: String,
+}
+
+fn hillslope_total_identity_residual_mm(
+    records: &[InternalPerOfeWb13Record],
+) -> Result<HillslopeTotalIdentityResidual, HillslopeCliError> {
+    if records.is_empty() {
+        return Err(internal_wb13_failure(
+            "hillslope-total identity requires at least one internal WB13 record",
+        ));
+    }
+
+    let outlet_index = records.len() - 1;
+    let mut weighted_residual_mm_m2 = 0.0_f64;
+    let mut total_area_m2 = 0.0_f64;
+    let mut detail_parts = Vec::with_capacity(records.len());
+
+    for (index, record) in records.iter().enumerate() {
+        if !record.area_m2.is_finite() || record.area_m2 <= 0.0 {
+            return Err(internal_wb13_failure(format!(
+                "OFE {} area_m2 must be finite and > 0.0 for hillslope-total identity, observed {}",
+                record.ofe_id, record.area_m2
+            )));
+        }
+
+        let terms = per_element_water_balance_terms(record);
+        let external_in_mm =
+            terms.local_liquid_input_mm + terms.frost_internal_adjustment_mm;
+        let mut external_out_mm = terms.interception_mm
+            + terms.ep_mm
+            + terms.es_mm
+            + terms.er_mm
+            + terms.dp_mm
+            + terms.tile_mm
+            + terms.frost_upper_overflow_mm;
+        if index == outlet_index {
+            external_out_mm += terms.physical_q_mm + terms.latqcc_mm;
+        }
+
+        let local_residual_mm = external_in_mm - external_out_mm - terms.storage_delta_mm;
+        let weighted_residual = local_residual_mm * record.area_m2;
+        weighted_residual_mm_m2 += weighted_residual;
+        total_area_m2 += record.area_m2;
+        detail_parts.push(format!(
+            "ofe={} area_m2={} local_residual_mm={} weighted_mm_m2={} external_in_mm={} external_out_mm={} storage_delta_mm={} physical_q_mm={} latqcc_mm={} upstream_in_mm={} transfer_surface_out_mm={} transfer_lateral_out_mm={}",
+            record.ofe_id,
+            record.area_m2,
+            local_residual_mm,
+            weighted_residual,
+            external_in_mm,
+            external_out_mm,
+            terms.storage_delta_mm,
+            terms.physical_q_mm,
+            terms.latqcc_mm,
+            record.upstream_transfer_input.upstrmq * 1_000.0,
+            scaled_transfer_sum_mm(&record.current_transfer_output.surface_carry, 1.0),
+            scaled_transfer_sum_mm(&record.current_transfer_output.lateral_carry, 1.0),
+        ));
+    }
+
+    if !total_area_m2.is_finite() || total_area_m2 <= 0.0 {
+        return Err(internal_wb13_failure(format!(
+            "total hillslope area must be finite and > 0.0 for hillslope-total identity, observed {total_area_m2}"
+        )));
+    }
+
+    let residual_mm = weighted_residual_mm_m2 / total_area_m2;
+    Ok(HillslopeTotalIdentityResidual {
+        residual_mm,
+        detail: format!(
+            "weighted_residual_mm_m2={weighted_residual_mm_m2}, total_area_m2={total_area_m2}, {}",
+            detail_parts.join("; ")
+        ),
+    })
 }
 
 fn adjacent_transfer_residual_mm(

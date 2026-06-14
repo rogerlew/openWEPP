@@ -6,6 +6,38 @@ Evidence mode: Static + Ran
 
 ## Findings
 
+## M-I Review Record
+
+Agent: local Codex QA review (no subagent used)
+
+Static/Ran QA review of M-I evidence, contract/test deltas, and closure
+posture. The reviewer did not invoke `comparator_suite_runner` or any
+comparator subagent.
+
+Findings:
+
+1. **No blocking M-I closure finding.** The independent hillslope-total
+   identity has a nonzero-at-noise full-ladder residual profile and does not
+   repeat the M-E4 tautology pattern.
+2. **No double-execution blocker.** Static review and source guard show the
+   current runner has mutually exclusive multi-OFE persistent and single-OFE
+   aggregate branches; there was no dead aggregate lifecycle left to remove in
+   M-I.
+3. **Follow-up:** Comparator semantic value pass remains false at 0/36 and must
+   stay classified under ADR-0017 rather than folded into MOFE01 acceptance.
+
+### M-I Finding Disposition
+
+| # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
+|---|---------|-----------------------------------------------------|-----------|
+| 1 | Independent hillslope-total closure is genuine | accepted | Full-ladder audit records max hillslope-total residual `3.306423012547295e-13 mm` and nonzero residuals for every multi-OFE case. |
+| 2 | No current double-execution blocker | accepted | `mofe01_mi_multiofe_runner_lifecycle_is_mutually_exclusive_with_single_ofe_aggregate_path` guards the branch topology. |
+| 3 | Comparator semantic value pass false | follow-up | `owcmp` execution and row-key alignment pass; semantic value deltas remain investigation signals outside M-I acceptance. |
+
+Gate non-deferral check: PASS. M-I closes only the operator-directed
+completeness gaps and keeps watershed-output, high-OFE, erosion-coupled, and
+value-parity surfaces as named follow-ons.
+
 ## M-H Review Record
 
 Agent: local Codex QA review (no subagent used)

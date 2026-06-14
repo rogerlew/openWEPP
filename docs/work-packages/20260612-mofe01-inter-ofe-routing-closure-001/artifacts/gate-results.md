@@ -1,10 +1,39 @@
 # gate results
 
-Status: M-H executed; MOFE01 hillslope water-routing closure accepted.
-Watershed-output `totalwatsed3`, >10-OFE far-point closure, and
-sediment-coupled erosion `qin/qout` remain named follow-ons.
+Status: M-I executed; MOFE01 hillslope water-routing closure is done-done for
+the 1-5-OFE ladder. Watershed-output `totalwatsed3`, >10-OFE far-point
+closure, sediment-coupled erosion `qin/qout`, and comparator value-family
+parity remain named follow-ons.
 
 Evidence mode: Ran + Static
+
+## M-I scoped acceptance gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Contract authority | PASS | `SC-WATBAL-001` version 161 adds `INV-WATBAL-100` and `TOL-WATBAL-008 <= 1e-9 mm` for independent hillslope-total closure. |
+| Red target | PASS | `cargo test -p openwepp-runner mofe01_mi -- --nocapture` failed before production edits because the new record/summary fields did not exist. |
+| Focused M-I regression | PASS | `cargo test -p openwepp-runner mofe01_mi -- --nocapture` passes after implementation. |
+| Per-OFE state focused suite | PASS | `cargo test -p openwepp-runner per_ofe_state -- --nocapture`. |
+| Contract-derived source guards | PASS | `cargo test --test mofe01_inter_ofe_route_contract -- --nocapture` and `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`. |
+| Publication/watershed manifest coverage | PASS | `cargo test --test cli03_runner_contract_derived_tests cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows -- --nocapture` and `cargo test -p openwepp-runner --test watershed_cli_behavior_contract -- --nocapture`. |
+| Full H1-H36 ladder execution | PASS | 36/36 zero exits under `/tmp/openwepp_mofe01_mi_final`; runtime `1583` seconds, 36 manifests, 144 copied outputs. |
+| Independent hillslope-total identity | PASS | Max residual `3.306423012547295e-13 mm`, all within `1e-9 mm`; every multi-OFE case is nonzero-at-noise. |
+| Existing internal identities | PASS | Max per-element residual `5.968558980384842e-13 mm`; transfer and aggregate cancellation residual maxima remain `0.0 mm`. |
+| Double-execution retirement | PASS | Static review found current code already uses mutually exclusive multi-OFE persistent and single-OFE aggregate lifecycle branches; M-I adds a source-level regression guard. |
+| M-H to M-I WAT checksum comparison | PASS | Manifest checksum comparison reports 36/36 WAT checksums unchanged. |
+| Single-OFE anchor | PASS | H8/H15/H19/H20/H22/H23/H28 compare byte-identical to the M-F-REDO2 single anchor for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS). |
+| Local full-ladder owcmp execution, no comparator subagent | PASS | `tools/owcmp/owcmp batch ... --start 1 --end 36` execution verdict PASS; row-key failures `0`. |
+| Local full-ladder owcmp semantic values | FAIL | Semantic value pass `0/36`; recorded as ADR-0017 investigation signal because independent conservation/lineage gates close. |
+| `cargo fmt --check` | PASS | Final post-refactor run. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | One too-many-lines finding was fixed by extracting the internal identity scan helper; final run passed. |
+| `cargo test --workspace` | PASS | Full workspace suite passed. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| Authority guards | PASS | `bash tools/release/check_authority_suite_antievasion.sh` and `cargo test --test auth11_required_suite_obligation_guards_contract` passed. |
+| Markdown/doc lint | PASS | `markdown-doc lint --path ... --format json` scanned 42 files with 0 errors and 0 warnings. |
+| `git diff --check` | PASS | Whitespace check passed after M-I evidence updates. |
+
+Detailed evidence: `m-i-closure-completeness-evidence.md`.
 
 ## M-H scoped acceptance gates
 

@@ -53,16 +53,20 @@ Stage-2 physics-magnitude review.
 | 4 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 5 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
-(Note: MOFE01 has one remaining in-package increment, **M-I** — hillslope-total identity + double-execution retirement — before it is done-done; tracked in the MOFE01 staged plan, not as a separate queue item.)
+(MOFE01 is done-done for hillslope water-routing closure after M-I; the
+remaining MOFE-adjacent items below are separate follow-on mechanisms.)
 
 ---
 
 ### 1. Watershed Routed Outputs / totalwatsed3 Audit ⏭️ (next)
 
 MOFE01 closed hillslope-internal inter-OFE water routing on the
-`arboreal-dendrite` 36-run 1-5-OFE ladder. The next mechanism is the watershed
-output seam that consumes those closed hillslope pass outputs and produces the
-end-to-end `totalwatsed3` audit surface deferred since WBVAL06/6a.
+`arboreal-dendrite` 36-run 1-5-OFE ladder. M-I added the independent in-runner
+hillslope-total identity, closing at `3.306423012547295e-13 mm` against the
+`1e-9 mm` tolerance, with every multi-OFE case nonzero-at-noise. The next
+mechanism is the watershed output seam that consumes those closed hillslope
+pass outputs and produces the end-to-end `totalwatsed3` audit surface deferred
+since WBVAL06/6a.
 
 The immediate blocker is not the MOFE conservation identity. M-H attempted
 `openwepp-cli-watershed` with the fresh H1-H36 pass files and failed closed

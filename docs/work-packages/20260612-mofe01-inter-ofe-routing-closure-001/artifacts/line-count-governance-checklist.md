@@ -1,8 +1,29 @@
 # line count governance checklist
 
-Status: checked through M-H
+Status: checked through M-I
 
 Evidence mode: Ran
+
+## M-I
+
+Ran `wc -l` over touched Rust implementation/test files after the final M-I
+formatting and clippy refactor.
+
+| File group | Lines | Disposition |
+| --- | ---: | --- |
+| `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs` | 2031 | WARN; pre-existing 2000-line warning, below 3000. |
+| `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs` | 1623 | OK. |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs` | 655 | OK. |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_publication.rs` | 530 | OK. |
+| `crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs` | 636 | OK. |
+| `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs` | 1395 | OK. |
+| `tests/integration/cli03_runner_contract_derived_tests.rs` | 1374 | OK. |
+| `tests/integration/mofe01_inter_ofe_route_contract.rs` | 133 | OK. |
+| `tests/integration/mofe01_per_ofe_state_contract.rs` | 441 | OK. |
+
+No touched Rust source file crossed the 3000-line non-exempt threshold.
+Further edits to `openwepp-cli-watershed.rs` should split the manifest
+validation/helpers rather than adding more logic in place.
 
 ## M-H
 

@@ -193,6 +193,7 @@ struct HillslopeWb13PublicationProvenance {
     transfer_identity_max_abs_mm: f64,
     per_element_identity_max_abs_mm: f64,
     aggregate_transfer_cancellation_max_abs_mm: f64,
+    hillslope_total_identity_max_abs_mm: f64,
     publication_area_m2: f64,
     row_count: usize,
     sim_day_index_monotonic: bool,
@@ -1184,7 +1185,13 @@ pub fn execute_hillslope_run(
     let mut persistent_lane_state = if contributor_ofe_count > 1 {
         let lane_states = static_per_ofe_slices
             .iter()
-            .map(|slice| {
+            .enumerate()
+            .map(|(index, slice)| {
+                let upstream_area_ratio = if index == 0 {
+                    1.0
+                } else {
+                    static_per_ofe_slices[index - 1].area_m2 / slice.area_m2
+                };
                 crate::hillslope::intake_lane_setup::build_static_per_ofe_lane_runtime_surface(
                     slice,
                     &slope,
@@ -1195,7 +1202,13 @@ pub fn execute_hillslope_run(
                     &pmetpara_template,
                     request.sidecar_policy.as_pmetpara_parse_mode(),
                 )
-                .map(|surface| OfeLanePersistentState::new(slice.ofe_id, surface))
+                .map(|surface| {
+                    OfeLanePersistentState::with_upstream_area_ratio(
+                        slice.ofe_id,
+                        upstream_area_ratio,
+                        surface,
+                    )
+                })
             })
             .collect::<Result<Vec<_>, _>>()?;
         Some(

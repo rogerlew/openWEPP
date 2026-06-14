@@ -1,10 +1,58 @@
 # disposition
 
-Status: M-H executed; MOFE01 hillslope water-routing closure accepted.
-Watershed-output `totalwatsed3`, >10-OFE far-point closure, and
-sediment-coupled erosion `qin/qout` remain named follow-ons.
+Status: M-I executed; MOFE01 hillslope water-routing closure is done-done for
+the 1-5-OFE ladder. Watershed-output `totalwatsed3`, >10-OFE far-point
+closure, sediment-coupled erosion `qin/qout`, and comparator value-family
+parity remain named follow-ons.
 
 Evidence mode: Ran + Static
+
+## M-I disposition
+
+Increment M-I is executed and complete for its scoped closure-completeness
+work. It converts M-H's accepted hillslope water-routing closure into a
+done-done closure for the 1-5-OFE ladder by adding an independent
+hillslope-total identity computed in-runner from internal per-OFE records and
+OFE areas.
+
+The full H1-H36 ladder ran under `/tmp/openwepp_mofe01_mi_final`. All 36
+hillslopes exited zero. The output inventory is 144 files after copying the
+current runfile-relative outputs into the M-I evidence root; the M-I run
+initially wrote through relative paths into `/tmp/openwepp_mofe01_mh_final/output`,
+so M-H/M-I comparisons use manifest checksums. The M-I manifest audit records
+max hillslope-total residual `3.306423012547295e-13 mm` against
+`TOL-WATBAL-008 <= 1e-9 mm`; every multi-OFE hillslope has a nonzero-at-noise
+residual. Existing internal closure surfaces remain unchanged: max
+per-element residual `5.968558980384842e-13 mm`, transfer residual `0.0 mm`,
+and aggregate cancellation residual `0.0 mm`.
+
+The M-I-b static review found current code already uses mutually exclusive
+multi-OFE persistent and single-OFE aggregate scheduler lifecycles. No
+production retirement edit was required; M-I adds a source-level regression
+guard so the aggregate compute-and-discard path cannot be reintroduced for
+multi-OFE publication.
+
+Local comparison ran directly without the comparator subagent. M-H to M-I WAT
+manifest checksum comparison is 36/36 unchanged. Single-OFE anchors
+H8/H15/H19/H20/H22/H23/H28 remain 28/28 byte-identical to the M-F-REDO2
+anchor. Full-ladder `owcmp` execution passed with row-key failures `0`; the
+semantic value pass remains `0/36` and is retained as an ADR-0017
+investigation signal.
+
+Final gates passed after M-I: `cargo fmt --check`,
+`cargo clippy --workspace --all-targets -- -D warnings`,
+`cargo test --workspace`, `cargo deny check`, authority anti-evasion guards,
+and the required authority obligation test.
+
+MOFE01's final closure narrative is bounded: hillslope-internal water routing
+and public per-OFE WAT publication are closed on the 1-5-OFE substrate. The
+remaining named follow-ons are:
+
+- `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01`
+- `MOFE-GT10-FARPOINT-CLOSURE`
+- `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`
+- comparator value-family parity adjudication under ADR-0017
+- line-count splits before further growth in warning-size files
 
 ## M-H disposition
 

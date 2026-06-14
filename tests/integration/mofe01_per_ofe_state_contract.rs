@@ -216,6 +216,15 @@ fn mofe01_me0_contract_authority_is_present() {
             && watbal.contains("all-exact-zero residual suite is a hold"),
         "SC-WATBAL-001 must carry M-E0 per-OFE dynamic water-balance authority"
     );
+    assert!(
+        watbal.contains("INV-WATBAL-100")
+            && watbal.contains("MOFE01 M-I Hillslope-Total Closure Addendum")
+            && watbal.contains("TOL-WATBAL-008")
+            && watbal.contains("hillslope_total_identity_max_abs_mm")
+            && watbal.contains("Published WAT rows may audit the result")
+            && watbal.contains("persistent per-OFE scheduler lifecycle"),
+        "SC-WATBAL-001 must carry M-I hillslope-total closure authority"
+    );
 
     let system = read_repo_file(
         repo_root,
@@ -345,6 +354,60 @@ fn mofe01_me4_redo_current_architecture_requires_non_tautological_internal_wb13_
     assert!(
         has_non_tautological_internal_wb13_checks,
         "M-E4-REDO red gate: internal WB13 identity checks must use pre-day storage and adjacent sent/received transfer operands, not row aliases or self-built transfer inputs"
+    );
+}
+
+#[test]
+fn mofe01_mi_current_architecture_requires_independent_hillslope_total_identity() {
+    let repo_root = env!("CARGO_MANIFEST_DIR");
+    let tokens = runtime_source_tokens(repo_root);
+
+    let has_hillslope_total_identity = [
+        "MI_HILLSLOPE_TOTAL_IDENTITY_TOLERANCE_MM",
+        "area_m2",
+        "hillslope_total_identity_residual_mm",
+        "hillslope_total_identity_max_abs_mm",
+        "with_upstream_area_ratio",
+        "upstream_area_ratio",
+        "local_liquid_input_mm",
+        "storage_delta_mm",
+        "interception_mm",
+        "physical_q_mm",
+        "latqcc_mm",
+        "frost_internal_adjustment_mm",
+        "frost_upper_overflow_mm",
+    ]
+    .iter()
+    .all(|required_token| has_token(&tokens, required_token));
+
+    assert!(
+        has_hillslope_total_identity,
+        "M-I red gate: internal WB13 checks must publish an area-weighted hillslope-total identity from internal operands, not public WAT aliases"
+    );
+}
+
+#[test]
+fn mofe01_mi_multiofe_runner_lifecycle_is_mutually_exclusive_with_single_ofe_aggregate_path() {
+    let repo_root = env!("CARGO_MANIFEST_DIR");
+    let runner_source = rust_code_without_comments_or_string_literals(&read_repo_file(
+        repo_root,
+        "crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs",
+    ));
+    let persistent_call = runner_source
+        .find("execute_persistent_scheduler_kernel_lifecycle")
+        .expect("runner must call the persistent per-OFE scheduler lifecycle");
+    let aggregate_call = runner_source
+        .find("execute_scheduler_kernel_lifecycle")
+        .expect("runner must keep the single-OFE aggregate scheduler lifecycle");
+    let branch_open = runner_source[..persistent_call]
+        .rfind("if let Some")
+        .expect("persistent scheduler call must be under the multi-OFE branch");
+
+    assert!(
+        persistent_call < aggregate_call
+            && runner_source[persistent_call..aggregate_call].contains("} else {")
+            && runner_source[branch_open..persistent_call].contains("persistent_lane_state"),
+        "M-I gate: multi-OFE persistent scheduler and single-OFE aggregate scheduler must remain mutually exclusive, not sequential double execution"
     );
 }
 

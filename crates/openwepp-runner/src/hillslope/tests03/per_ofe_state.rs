@@ -268,7 +268,13 @@ fn mofe01_me4_redo_internal_wb13_records_close_true_transfer_and_storage_identit
             me4_internal_record(
                 1,
                 40.0,
-                me4_wb13_row(1, me4_row_spec().with_total_soil(41.0).with_rm(1.0 + 5.0e-13)),
+                me4_wb13_row(
+                    1,
+                    me4_row_spec()
+                        .with_total_soil(41.0)
+                        .with_rm(6.0 + 5.0e-13)
+                        .with_q(5.0),
+                ),
                 TransferInput::zero_for_first_ofe(),
                 first_output,
             ),
@@ -303,6 +309,63 @@ fn mofe01_me4_redo_internal_wb13_records_close_true_transfer_and_storage_identit
     assert!(summary.per_element_identity_max_abs_mm > 0.0);
     assert!(summary.per_element_identity_max_abs_mm < 1.0e-11);
     assert!(summary.aggregate_transfer_cancellation_max_abs_mm.abs() < 1.0e-12);
+    assert!(summary.hillslope_total_identity_max_abs_mm > 0.0);
+    assert!(summary.hillslope_total_identity_max_abs_mm < 1.0e-9);
+}
+
+#[test]
+fn mofe01_mi_hillslope_total_identity_rejects_area_weight_mismatch() {
+    let mut first_output = TransferOutput::zero_for_terminal_ofe(1);
+    first_output.recipient_ofe_id = Some(2);
+    first_output.surface_carry[0] = 0.002;
+    first_output.lateral_carry[0] = 0.003;
+    let second_input = first_output
+        .as_downstream_input()
+        .expect("first OFE output should become second OFE input");
+
+    let error = DailyInternalPerOfeWb13Collection::from_records(
+        2,
+        vec![
+            me4_internal_record_with_area(
+                1,
+                2.0,
+                40.0,
+                me4_wb13_row(
+                    1,
+                    me4_row_spec()
+                        .with_total_soil(41.0)
+                        .with_rm(6.0)
+                        .with_q(5.0),
+                ),
+                TransferInput::zero_for_first_ofe(),
+                first_output,
+            ),
+            me4_internal_record_with_area(
+                2,
+                1.0,
+                43.0,
+                me4_wb13_row(
+                    2,
+                    me4_row_spec()
+                        .with_upstrmq(2.0)
+                        .with_subrin(3.0)
+                        .with_total_soil(44.0)
+                        .with_rm(1.0)
+                        .with_q(5.0),
+                ),
+                second_input,
+                TransferOutput::zero_for_terminal_ofe(2),
+            ),
+        ],
+    )
+    .expect_err("hillslope-total identity must consume OFE areas independently");
+
+    assert!(
+        error
+            .to_string()
+            .contains("hillslope-total identity residual"),
+        "unexpected error: {error}"
+    );
 }
 
 #[test]
@@ -411,8 +474,27 @@ fn me4_internal_record(
     upstream_transfer_input: TransferInput,
     current_transfer_output: TransferOutput,
 ) -> InternalPerOfeWb13Record {
+    me4_internal_record_with_area(
+        ofe_id,
+        1.0,
+        previous_storage_total_mm,
+        row,
+        upstream_transfer_input,
+        current_transfer_output,
+    )
+}
+
+fn me4_internal_record_with_area(
+    ofe_id: usize,
+    area_m2: f64,
+    previous_storage_total_mm: f64,
+    row: SimulationOwnedWb13Row,
+    upstream_transfer_input: TransferInput,
+    current_transfer_output: TransferOutput,
+) -> InternalPerOfeWb13Record {
     InternalPerOfeWb13Record {
         ofe_id,
+        area_m2,
         previous_storage_total_mm,
         physical_surface_outflow_mm: row.wb13_row.q,
         frost_upper_overflow_mm: 0.0,
