@@ -469,7 +469,7 @@ fn mofe01_me4_redo_internal_wb13_records_include_frost_storage_delta_per_ofe() {
 }
 
 #[test]
-fn mofe01_tb2_pass_runvol_uses_terminal_outlet_transfer_volume_not_per_ofe_sum() {
+fn mofe01_tb2_redo_pass_runvol_uses_published_q_area_not_qofe_area() {
     let mut upstream_surface_carry = [0.0_f64; 24];
     upstream_surface_carry[0] = 0.002;
     let upstream_output = TransferOutput {
@@ -505,7 +505,7 @@ fn mofe01_tb2_pass_runvol_uses_terminal_outlet_transfer_volume_not_per_ofe_sum()
                 1,
                 100.0,
                 0.0,
-                me4_wb13_row(1, me4_row_spec().with_rm(2.0).with_q(2.0)),
+                me4_wb13_row(1, me4_row_spec().with_p(4.0).with_rm(2.0).with_q(2.0)),
                 TransferInput::zero_for_first_ofe(),
                 upstream_output,
             ),
@@ -513,7 +513,16 @@ fn mofe01_tb2_pass_runvol_uses_terminal_outlet_transfer_volume_not_per_ofe_sum()
                 2,
                 100.0,
                 0.0,
-                me4_wb13_row(2, me4_row_spec().with_upstrmq(2.0).with_rm(3.0).with_q(5.0)),
+                me4_wb13_row(
+                    2,
+                    me4_row_spec()
+                        .with_area(200.0)
+                        .with_p(4.0)
+                        .with_upstrmq(2.0)
+                        .with_rm(0.5)
+                        .with_q(2.5)
+                        .with_qofe(5.0),
+                ),
                 downstream_input,
                 outlet_output,
             ),
@@ -529,13 +538,33 @@ fn mofe01_tb2_pass_runvol_uses_terminal_outlet_transfer_volume_not_per_ofe_sum()
     assert_eq!(pass_rows.len(), 1);
     let row = &pass_rows[0];
     assert_eq!(row.wepp_id, 17);
-    assert!((row.runvol_m3 - 1.0).abs() <= 1.0e-12);
+    assert!((row.runvol_m3 - 0.5).abs() <= 1.0e-12);
+
+    let wrong_qofe_publication_area_volume_m3 = 5.0_f64 * 200.0 / 1_000.0;
+    assert!((wrong_qofe_publication_area_volume_m3 - 1.0_f64).abs() <= 1.0e-12);
+    assert!(
+        (row.runvol_m3 - wrong_qofe_publication_area_volume_m3).abs() > 1.0e-9,
+        "T-B2-REDO runvol must use Q * publication area, not QOFE * publication area"
+    );
+
+    let wrong_q_area_mismatch_volume_m3 = 2.5_f64 * 100.0 / 1_000.0;
+    assert!((wrong_q_area_mismatch_volume_m3 - 0.25_f64).abs() <= 1.0e-12);
+    assert!(
+        (row.runvol_m3 - wrong_q_area_mismatch_volume_m3).abs() > 1.0e-9,
+        "T-B2-REDO runvol must use the published Q dual when record area is not an outlet footprint"
+    );
+
+    let annual_precip_volume_m3 = 4.0_f64 * 100.0 / 1_000.0 + 4.0 * 100.0 / 1_000.0;
+    assert!(
+        row.runvol_m3 <= annual_precip_volume_m3,
+        "runvol must satisfy the independent annual precipitation bound"
+    );
 
     let per_ofe_sum_volume_m3: f64 = 2.0 * 100.0 / 1_000.0 + 5.0 * 100.0 / 1_000.0;
     assert!((per_ofe_sum_volume_m3 - 0.7).abs() <= 1.0e-12);
     assert!(
         (row.runvol_m3 - per_ofe_sum_volume_m3).abs() > 1.0e-9,
-        "T-B2 runvol must be outlet delivery over hillslope area, not the per-OFE volume sum"
+        "T-B2-REDO runvol must be outlet delivery, not the per-OFE volume sum"
     );
 }
 
@@ -580,15 +609,28 @@ fn me4_internal_record_with_area(
 
 #[derive(Debug, Clone, Copy)]
 struct Me4Wb13RowSpec {
+    area: f64,
+    p: f64,
     upstrmq: f64,
     subrin: f64,
     total_soil: f64,
     frozwt: f64,
     rm: f64,
     q: f64,
+    qofe: f64,
 }
 
 impl Me4Wb13RowSpec {
+    fn with_area(mut self, value: f64) -> Self {
+        self.area = value;
+        self
+    }
+
+    fn with_p(mut self, value: f64) -> Self {
+        self.p = value;
+        self
+    }
+
     fn with_upstrmq(mut self, value: f64) -> Self {
         self.upstrmq = value;
         self
@@ -616,18 +658,27 @@ impl Me4Wb13RowSpec {
 
     fn with_q(mut self, value: f64) -> Self {
         self.q = value;
+        self.qofe = value;
+        self
+    }
+
+    fn with_qofe(mut self, value: f64) -> Self {
+        self.qofe = value;
         self
     }
 }
 
 fn me4_row_spec() -> Me4Wb13RowSpec {
     Me4Wb13RowSpec {
+        area: 1.0,
+        p: 0.0,
         upstrmq: 0.0,
         subrin: 0.0,
         total_soil: 0.0,
         frozwt: 0.0,
         rm: 0.0,
         q: 0.0,
+        qofe: 0.0,
     }
 }
 
@@ -637,7 +688,7 @@ fn me4_wb13_row(ofe: u16, spec: Me4Wb13RowSpec) -> SimulationOwnedWb13Row {
             ofe,
             julian_day: 1,
             year: 2000,
-            p: 0.0,
+            p: spec.p,
             rm: spec.rm,
             q: spec.q,
             ep: 0.0,
@@ -650,10 +701,10 @@ fn me4_wb13_row(ofe: u16, spec: Me4Wb13RowSpec) -> SimulationOwnedWb13Row {
             total_soil: spec.total_soil,
             frozwt: spec.frozwt,
             snow_water: 0.0,
-            qofe: spec.q,
+            qofe: spec.qofe,
             tile: 0.0,
             irr: 0.0,
-            area: 1.0,
+            area: spec.area,
             soil_water_total: spec.total_soil,
             profile_depth: 1_000.0,
             profile_porosity_cap: 500.0,

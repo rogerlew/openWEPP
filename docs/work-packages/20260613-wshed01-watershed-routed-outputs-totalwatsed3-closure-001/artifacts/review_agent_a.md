@@ -1,6 +1,6 @@
 # Review Agent A
 
-Status: T-B2 local review complete
+Status: T-B2-REDO local review complete
 
 Evidence mode: Static + Ran
 
@@ -145,4 +145,38 @@ Residual risk:
 
 | # | Finding | Disposition | Rationale |
 |---|---|---|---|
-| - | None | accepted | T-B2 native PASS emission, anchor stability, focused tests, real run, and full gates are met. |
+| - | None | superseded | This local review was later invalidated by the T-B2 runvol area defect. T-B2-REDO is the current accepted review record. |
+
+## T-B2-REDO Review
+
+Evidence mode: Static + Ran
+
+Findings:
+
+No blocking T-B2-REDO findings.
+
+Review observations:
+
+1. T-B2's earlier `QOFE * publication area` formula is explicitly rejected;
+   the corrected producer uses the published `Q * Area / 1000` volume dual.
+2. The focused fixture separates `Q`, `QOFE`, and areas, so it would fail both
+   the old T-B2 formula and the first attempted redo formula.
+3. The real arboreal-dendrite HBP/WAT anchor comparison remains unchanged
+   (`anchor_mismatches=0`), so the REDO did not perturb existing WAT/HBP
+   output surfaces.
+4. The water-year precipitation bound is independent of the deleted
+   self-consistency check and passes for all `252` hillslope-water-years.
+
+Residual risk:
+
+- The corrected native totalwatsed3 audit still reports
+  `closure_reconstructed_with_storage_total_mm=6948.564523`. That is a T-C
+  conservation blocker, not a T-B2-REDO publication blocker.
+- `02_output_and_climate_helpers.rs` remains below but close to the 2000-line
+  warning threshold.
+
+## T-B2-REDO Finding Disposition
+
+| # | Finding | Disposition | Rationale |
+|---|---|---|---|
+| - | None | accepted | T-B2-REDO corrected the runvol area defect, preserved HBP/WAT anchors, passed focused and full Rust gates, and records the remaining residual for T-C. |

@@ -1,6 +1,6 @@
 # WSHED01 — Watershed Routed Outputs / totalwatsed3 Closure
 
-Status: active - T-B2 executed, T-C queued
+Status: active - T-B2-REDO executed, T-C queued
 
 Package type: staged implementation/closure package (FDHP01/MOFE01 execution
 shape: characterize-then-staged-increments, conservation as acceptance)
@@ -76,8 +76,8 @@ normal, valid state — so the lead hypothesis is a **parser defect** (reject
 against the parser code + legacy behavior in W-A. This is the *first* blocker,
 not necessarily the only one between here and totalwatsed3 closure.
 
-Current status after T-B2: the no-impoundment parser blocker and the subsequent
-WS10 channel guard blocker are both cleared. W-D corrected keepable
+Current status after T-B2-REDO: the no-impoundment parser blocker and the
+subsequent WS10 channel guard blocker are both cleared. W-D corrected keepable
 totalwatsed3 publication defects, but the independent closure audit still
 reports a `2950.498418 mm` whole-run residual. The operator-directed
 architecture pivot supersedes the W-D-REDO watershed-CLI route: T-A scoped
@@ -85,10 +85,13 @@ architecture pivot supersedes the W-D-REDO watershed-CLI route: T-A scoped
 T-B implemented that dedicated CLI and reduced the real arboreal-dendrite
 audit residual to `57.409871 mm` (`0.345805%` of precipitation). T-B2 added
 openWEPP-owned per-hillslope runoff-delivery PASS parquet from outlet routed
-MOFE runoff, proved HBP/WAT anchors remain byte-identical, and produced native
-totalwatsed3 from `H*.pass.parquet`/`H*.wat.parquet`. Package closure remains
-active for T-C because the totalwatsed3 conservation identity has not yet
-closed at the established floor.
+MOFE runoff, but review found the first `runvol` formula over-scaled MOFE
+runoff by using `QOFE` with a publication-area denominator. T-B2-REDO corrected
+native PASS `runvol` to the published `Q * Area` dual, proved HBP/WAT anchors
+remain byte-identical, and produced native totalwatsed3 from corrected
+`H*.pass.parquet`/`H*.wat.parquet`. Package closure remains active for T-C
+because the totalwatsed3 conservation identity still has not closed at the
+established floor.
 
 ## Cross-repo note
 
@@ -157,13 +160,19 @@ closure).
   `totalwatsed3.parquet` for arboreal-dendrite, uses PASS `runvol` for
   `Runoff`, leaves WAT `Q` diagnostic, and preserves MOFE outlet-only
   `latqcc`.
-- T-B2 openWEPP-native runoff-delivery output: executed 2026-06-14.
+- T-B2 openWEPP-native runoff-delivery output: executed 2026-06-14; reviewed
+  defective on 2026-06-14 for `runvol` area/normalization.
   `openwepp-cli-hill` can now emit optional `outputs.pass_parquet` runoff
   delivery files. MOFE rows publish `runvol` from outlet
   `current_transfer_output.qofe` over hillslope publication area, while HBP
   and WAT anchors remain byte-identical. `openwepp-cli-totalwatsed3` consumes
   sorted per-hillslope `H*.pass.parquet`/`H*.wat.parquet` files when combined
   files are absent.
+- T-B2-REDO runoff-delivery area correction: executed 2026-06-14. MOFE PASS
+  `runvol` now uses the published `Q * Area` volume dual instead of
+  `QOFE * Area`; corrected arboreal-dendrite PASS output satisfies the
+  water-year annual `sum(runvol) <= sum(P * Area / 1000)` bound for every
+  hillslope-water-year. T-C remains the closure increment.
 - T-C totalwatsed3 closure at the established floor.
 
 ## Excluded scope / protected boundaries

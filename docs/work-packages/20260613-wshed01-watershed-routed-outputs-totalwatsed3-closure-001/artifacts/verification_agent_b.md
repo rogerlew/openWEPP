@@ -1,6 +1,6 @@
 # Verification Agent B
 
-Status: T-B2 local verification complete
+Status: T-B2-REDO local verification complete
 
 Evidence mode: Static
 
@@ -108,3 +108,32 @@ Residual governance note:
 
 - T-C must run the conservation audit on native outputs before any closure
   claim.
+
+Supersession:
+
+- This T-B2 governance record is superseded by
+  [review-tb2-runvol-area-defect.md](review-tb2-runvol-area-defect.md) and
+  T-B2-REDO. The earlier PASS identity audit accepted a defective MOFE
+  reference-area formula.
+
+## T-B2-REDO Governance Verification
+
+Evidence mode: Static + Ran
+
+Verified:
+
+- T-B2-REDO is marked executed for the runvol reference-area correction only,
+  not package closure.
+- T-B2 output is marked superseded; T-C is routed to corrected output under
+  `/tmp/openwepp_wshed01_tb2_redo_qarea`.
+- The old self-consistency audit is not retained as acceptance evidence.
+- Command-level comparisons and gates were run directly; no comparator-suite
+  subagent was used.
+- Line-count governance is updated for the touched files; no touched
+  production file crossed the 2000-line warning threshold.
+
+Residual governance note:
+
+- T-C must close or contractually reclassify the `6948.564523 mm` residual
+  with independent operands. It must not revert to the defective T-B2 output or
+  exact-zero/self-built acceptance.

@@ -1,6 +1,6 @@
 # Implementation Test Evidence
 
-Status: T-B2 executed
+Status: T-B2-REDO executed
 
 Evidence mode: Ran + Static
 
@@ -552,5 +552,95 @@ Full gate evidence:
 
 Disposition:
 
-T-B2 passed the native runoff-delivery publication gate. T-C owns the
-conservation audit on `/tmp/openwepp_wshed01_tb2/totalwatsed3.parquet`.
+T-B2 produced the native runoff-delivery publication surface, but the T-B2
+`runvol` acceptance was later reviewed defective for MOFE area scaling. T-B2's
+`/tmp/openwepp_wshed01_tb2/totalwatsed3.parquet` is superseded by T-B2-REDO and
+must not be used for T-C closure.
+
+## T-B2-REDO implementation and evidence
+
+Status: T-B2-REDO executed
+
+Evidence mode: Ran + Static
+
+Defect disposition:
+
+- `review-tb2-runvol-area-defect.md` correctly rejected the T-B2
+  `QOFE * publication area` formula and the matching self-consistency audit.
+- The first attempted correction, `QOFE * record.area_m2`, was also rejected
+  by direct DuckDB evidence: on generated MOFE WAT rows, `record.area_m2` still
+  tracks the publication-area denominator, so PASS continued to match the
+  buggy `QOFE * Area` surface.
+- Final correction uses the other in-tree dual named by the review:
+  `outlet.row.wb13_row.q * outlet.row.wb13_row.area / 1000`.
+
+Implementation:
+
+- Updated
+  `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs` so
+  MOFE PASS `runvol` uses published `Q * Area`, not
+  `physical_surface_outflow_mm * publication_area_m2`.
+- Narrowed
+  `crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs`
+  so the PASS row builder no longer receives the publication area.
+- Reworked the focused fixture in
+  `crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs` to separate
+  `Q` from `QOFE` and assert correct `runvol = 0.5 m3`, while rejecting
+  `QOFE * publication area = 1.0 m3` and the mismatched `Q * outlet-record
+  area = 0.25 m3`.
+
+Red / focused evidence:
+
+- Red: `cargo test -p openwepp-runner mofe01_tb2_redo_pass_runvol_uses_outlet_ofe_area_not_hillslope_area -- --nocapture`
+  failed against the old formula at `assertion failed: (row.runvol_m3 - 0.5).abs() <= 1.0e-12`.
+- Green: `cargo test -p openwepp-runner mofe01_tb2_redo_pass_runvol_uses_published_q_area_not_qofe_area -- --nocapture`:
+  `1` passed.
+- Green: `cargo test -p openwepp-runner --test totalwatsed3_cli_contract totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces -- --nocapture`:
+  `1` passed.
+
+Corrected real-run evidence:
+
+- `cargo build --release -p openwepp-runner --bins`: pass.
+- Fresh corrected run root: `/tmp/openwepp_wshed01_tb2_redo_qarea`.
+- Release `openwepp-cli-hill` reran p1-p36 with `outputs.pass_parquet`;
+  output counts were `hbp=36`, `wat=36`, `pass_parquet=36`, and
+  `manifests=36`.
+- Stderr logs contained the expected `MOFE01-MG-W-001` warning; no new hard
+  errors.
+- HBP/WAT anchor comparison against `/tmp/openwepp_mofe01_mi_final/output`:
+  `anchor_mismatches=0`.
+- Corrected PASS dual audit:
+  `rows=78912`, `max_abs_pass_minus_q_area_m3=0.0`,
+  `max_abs_pass_minus_qofe_pub_area_m3=21766.4323911278`,
+  `pass_sum_m3=6851275.733726182`.
+- Runvol comparison:
+  T-B2 defective `sum_runvol=126757678.32012111 m3`;
+  intermediate `QOFE * record.area` `sum_runvol=27691217.37511973 m3`;
+  T-B2-REDO corrected `Q * Area` `sum_runvol=6851275.733726179 m3`.
+- Water-year annual precipitation bound:
+  `annual_hillslope_water_years=252`, `violation_count=0`,
+  `max_runvol_precip_ratio=0.9857497687436844`,
+  `max_excess_m3=-67.62322402014661`.
+- `openwepp-cli-totalwatsed3` wrote `2192` corrected rows to
+  `/tmp/openwepp_wshed01_tb2_redo_qarea/totalwatsed3.parquet`.
+- Corrected totalwatsed3/PASS `runvol` sum diff:
+  `9.313225746154785e-10 m3`.
+- wepppy audit read succeeded and recorded the next T-C residual:
+  `closure_reconstructed_with_storage_total_mm=6948.564523`.
+
+Full gate evidence:
+
+- `cargo fmt --check`: pass.
+- `git diff --check`: pass.
+- `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`:
+  `29` files scanned, `0` errors, `0` warnings.
+- `cargo clippy --workspace --all-targets -- -D warnings`: pass.
+- `cargo test --workspace`: pass.
+- `cargo deny check`: pass.
+
+Disposition:
+
+T-B2-REDO closes the native PASS `runvol` area defect and replaces the hollow
+T-B2 self-consistency audit with an independent `Q * Area` dual check plus a
+water-year annual precipitation bound. No totalwatsed3 conservation closure is
+claimed; T-C owns the `6948.564523 mm` corrected-output residual.

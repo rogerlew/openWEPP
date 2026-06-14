@@ -1,6 +1,6 @@
 # Pre-Implementation Contract Gate
 
-Status: T-B2 executed
+Status: T-B2-REDO executed
 
 Evidence mode: Static
 
@@ -79,16 +79,6 @@ T-B gate result:
 - Did not claim package closure while the real audit residual remains
   `57.409871 mm`.
 
-Before T-C production edits:
-
-- Re-run the dedicated CLI and audit on arboreal-dendrite before changing
-  closure logic.
-- Treat the `57.409871 mm` residual as a current-scope conservation defect to
-  localize, unless source evidence proves the audit identity needs a
-  contract-level refinement.
-- Preserve independent operands: PASS `Runoff`, WAT flux/storage terms, and no
-  exact-zero/self-built closure acceptance.
-
 Before T-B2 production edits:
 
 - Use the MOFE outlet routed-runoff source already exercised by the M-I
@@ -106,3 +96,37 @@ T-B2 gate result:
 - Real HBP/WAT anchor comparison reported `anchor_mismatches=0`.
 - Native totalwatsed3 was produced from openWEPP-owned PASS/WAT files.
 - Package closure is still deferred to T-C.
+
+Before T-B2-REDO production edits:
+
+- Treat [review-tb2-runvol-area-defect.md](review-tb2-runvol-area-defect.md)
+  as blocking: T-B2's `QOFE * publication area` formula and its matching audit
+  are defective.
+- Delete the old self-consistency acceptance surface; do not keep
+  `runvol == QOFE * publication area / 1000` as validation.
+- Add a fixture that separates `Q`, `QOFE`, and row areas so the corrected
+  volume dual cannot pass by aliasing.
+- Add an independent annual precipitation bound before handing corrected
+  output to T-C.
+
+T-B2-REDO gate result:
+
+- T-B2-REDO corrected MOFE PASS `runvol` to the published `Q * Area / 1000`
+  volume dual and rejected the old T-B2 and first attempted redo formulas.
+- Real arboreal-dendrite HBP/WAT anchors remained unchanged
+  (`anchor_mismatches=0`).
+- The corrected water-year annual precipitation bound passed for `252`
+  hillslope-water-years with `violation_count=0`.
+- Native totalwatsed3 was produced from corrected openWEPP PASS/WAT files.
+- Package closure is still deferred to T-C.
+
+Before T-C production edits:
+
+- Re-run the dedicated CLI and audit on corrected arboreal-dendrite native
+  output before changing closure logic.
+- Treat the `6948.564523 mm` residual from
+  `/tmp/openwepp_wshed01_tb2_redo_qarea/totalwatsed3.parquet` as a
+  current-scope conservation defect to localize, unless source evidence proves
+  the audit identity needs a contract-level refinement.
+- Preserve independent operands: PASS `Runoff`, WAT flux/storage terms, and no
+  exact-zero/self-built closure acceptance.

@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: T-B2 executed
+Status: T-B2-REDO executed
 
 Evidence mode: Static
 
@@ -116,10 +116,27 @@ T-B2 contract/metadata implementation:
   MOFE transfer state as an output surface; it does not change hydrology
   execution.
 
+T-B2-REDO contract/metadata implementation:
+
+- No new canonical `SC-*` contract was added. T-B2-REDO corrected output
+  publication lineage for the existing native PASS surface; it did not change
+  hillslope hydrology process physics.
+- `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`
+  now publishes MOFE PASS `runvol` from the independently available published
+  volume dual, `Q * Area / 1000`, instead of the defective
+  `QOFE * publication area / 1000` surface accepted during T-B2.
+- The row builder still validates outlet transfer area because `sbrunv`
+  remains sourced from outlet-facing lateral flow over the outlet transfer
+  area.
+- The focused regression fixture now separates `Q` and `QOFE` so the test
+  rejects both the old `QOFE * publication area` formula and a mismatched
+  `Q * outlet-record area` formula.
+
 Contract implications carried into T-C:
 
 - The producer surface is now present and independently test-pinned.
 - The native openWEPP PASS surface is now present and independently
-  test-pinned.
+  test-pinned with the corrected `Q * Area` `runvol` volume dual.
 - T-C must close the remaining residual as a water-balance identity issue,
-  not by weakening the unit lineage or substituting WAT `Q` for PASS `runvol`.
+  not by weakening the unit lineage, reusing the defective T-B2 output, or
+  substituting WAT `Q` for PASS `runvol`.

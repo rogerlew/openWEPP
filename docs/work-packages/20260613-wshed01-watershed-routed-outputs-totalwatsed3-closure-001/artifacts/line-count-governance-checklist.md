@@ -1,6 +1,6 @@
 # Line Count Governance Checklist
 
-Status: T-B2 executed
+Status: T-B2-REDO executed
 
 Evidence mode: Ran
 
@@ -131,4 +131,26 @@ T-B2 line-count disposition:
 
 - No touched production file is above the 2000-line warning threshold.
 - `02_output_and_climate_helpers.rs` is close to WARN and should avoid
+  unrelated growth in T-C.
+
+Observed line counts after T-B2-REDO:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs` | 1875 | Below WARN, close to warning threshold. |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs` | 679 | Below WARN. |
+| `crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs` | 759 | Test file below WARN. |
+
+Command:
+
+```bash
+wc -l crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs \
+  crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs \
+  crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs
+```
+
+T-B2-REDO line-count disposition:
+
+- No touched production file is above the 2000-line warning threshold.
+- `02_output_and_climate_helpers.rs` remains close to WARN and should avoid
   unrelated growth in T-C.

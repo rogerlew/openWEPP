@@ -1,7 +1,6 @@
 # Watershed Staged Increment Plan — Dispatch Artifact
 
-Status: active - T-B2 executed but DEFECTIVE (runvol area; Claude review
-2026-06-14, review-tb2-runvol-area-defect.md) → needs T-B2-REDO before T-C
+Status: active - T-B2-REDO executed; T-C queued
 Author: Claude Code, 2026-06-13
 Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 `mofe-staged-increment-plan.md` (proven; agent memory
@@ -329,10 +328,40 @@ Disposition of [review-tb2-runvol-area-defect.md](review-tb2-runvol-area-defect.
 - Gate: arboreal-dendrite rerun shows annual `Σ runvol ≤ Σ precip` for every
   hillslope; full Rust loop; anchors unchanged.
 
+T-B2-REDO execution result (2026-06-14):
+
+- Replaced MOFE PASS `runvol` publication with the published volume dual:
+  `outlet.row.wb13_row.q * outlet.row.wb13_row.area / 1000`. This deletes the
+  defective `QOFE * publication area` identity surface instead of keeping it as
+  validation.
+- Added a focused regression fixture where `Q=2.5 mm`, `QOFE=5.0 mm`, and
+  `Area=200 m2`; correct `runvol` is `0.5 m3`, while the two wrong formulas
+  produce `1.0 m3` and `0.25 m3`.
+- Fresh arboreal-dendrite rerun under
+  `/tmp/openwepp_wshed01_tb2_redo_qarea` emitted `36` HBP, `36` WAT, `36` PASS
+  parquet files, and `36` manifests.
+- HBP/WAT anchor comparison against `/tmp/openwepp_mofe01_mi_final/output`
+  reported `anchor_mismatches=0`.
+- Corrected PASS audit over `78912` rows reported
+  `max_abs_pass_minus_q_area_m3=0.0`; the old buggy formula now differs by up
+  to `21766.4323911278 m3`, and total PASS `runvol` dropped from
+  `126757678.32012111 m3` to `6851275.733726179 m3`.
+- Water-year annual bound passed for every hillslope-water-year:
+  `252` annual hillslope-water-years, `violation_count=0`,
+  `max_runvol_precip_ratio=0.9857497687436844`.
+- Native totalwatsed3 production from corrected PASS/WAT wrote `2192` rows to
+  `/tmp/openwepp_wshed01_tb2_redo_qarea/totalwatsed3.parquet`; totalwatsed3
+  `runvol` differs from summed PASS by `9.313225746154785e-10 m3`.
+- wepppy audit read succeeded but reports
+  `closure_reconstructed_with_storage_total_mm=6948.564523`. No T-C closure is
+  claimed from T-B2-REDO.
+- Full Rust loop passed: fmt, clippy, workspace tests, and deny.
+
 ### Increment T-C — totalwatsed3 closure on openWEPP-NATIVE outputs (the WBVAL06/6a deferral resolved)
 
-**BLOCKED on T-B2-REDO** (the runvol area defect above). T-C may not run on the
-current T-B2 output — `Σ runvol ≈ 2.5× Σ precip`.
+T-B2-REDO cleared the runvol area defect. T-C may run only on corrected native
+PASS/WAT output such as `/tmp/openwepp_wshed01_tb2_redo_qarea`; it must not use
+the defective T-B2 output where `Σ runvol ≈ 2.5× Σ precip`.
 
 The closure audit on the openWEPP-native totalwatsed3 output — produced from openWEPP's OWN H.pass(runvol, T-B2) + H.wat, NOT the legacy interchange dir. Gate: the
 identity `P − (Runoff + Lateral + ET + Perc + Interception) − ΔStorage` closes

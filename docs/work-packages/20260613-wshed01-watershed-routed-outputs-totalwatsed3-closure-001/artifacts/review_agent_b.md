@@ -1,6 +1,6 @@
 # Review Agent B
 
-Status: T-B2 local review complete
+Status: T-B2-REDO local review complete
 
 Evidence mode: Static
 
@@ -148,4 +148,35 @@ Residual risk:
 
 | # | Finding | Disposition | Rationale |
 |---|---|---|---|
-| - | None | accepted | T-B2 implementation and verification gates are met; package closure remains T-C. |
+| - | None | superseded | This local review is superseded by the later T-B2 runvol area defect review and T-B2-REDO acceptance record. |
+
+## T-B2-REDO QA Review
+
+Evidence mode: Static + Ran
+
+Findings:
+
+No blocking T-B2-REDO findings.
+
+QA observations:
+
+1. The T-B2 area defect is not waived. The artifacts mark T-B2 output as
+   superseded and route T-C to `/tmp/openwepp_wshed01_tb2_redo_qarea`.
+2. The first attempted redo, `QOFE * record.area`, was rejected by direct
+   evidence before acceptance, which closes the governance gap where a
+   same-surface audit could pass.
+3. The accepted PASS audit checks `runvol` against `Q * Area / 1000`; the
+   deleted T-B2 `QOFE * publication area` surface now differs by up to
+   `21766.4323911278 m3`.
+4. Full gates are recorded, and no comparator-suite subagent was used.
+
+Residual risk:
+
+- The remaining `6948.564523 mm` closure residual is still live T-C work.
+- T-C must not use the defective `/tmp/openwepp_wshed01_tb2` output.
+
+## T-B2-REDO Finding Disposition
+
+| # | Finding | Disposition | Rationale |
+|---|---|---|---|
+| - | None | accepted | T-B2-REDO has direct focused, real-run, anchor, annual-bound, totalwatsed3, and full-gate evidence. |

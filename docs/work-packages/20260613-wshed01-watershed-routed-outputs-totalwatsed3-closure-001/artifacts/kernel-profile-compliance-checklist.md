@@ -1,6 +1,6 @@
 # Kernel Profile Compliance Checklist
 
-Status: T-B2 executed
+Status: T-B2-REDO executed
 
 Evidence mode: Static
 
@@ -25,10 +25,17 @@ Checklist for subsequent implementation:
   output-surface publication from existing MOFE outlet transfer state.
 - T-B2 preserves existing HBP/WAT output anchors byte-for-byte in the real
   arboreal-dendrite rerun.
-- T-B2 native PASS `runvol` is not WAT `Q`; it is outlet routed runoff over
-  publication area.
-- T-C must localize and close the remaining `57.409871 mm` audit residual
-  without weakening independent-operand acceptance.
+- T-B2 was reviewed defective after execution because its MOFE PASS `runvol`
+  used `QOFE * publication area`, which over-scaled runoff and made the
+  acceptance audit self-consistent with the bug.
+- T-B2-REDO did not edit hillslope kernel process physics; it corrected the
+  output-surface volume dual to published `Q * Area / 1000`.
+- T-B2-REDO preserves existing HBP/WAT output anchors byte-for-byte in the
+  real arboreal-dendrite rerun (`anchor_mismatches=0`).
+- T-B2-REDO proves the corrected annual water-year precipitation bound before
+  handing the corrected native output to T-C.
+- T-C must localize and close the remaining `6948.564523 mm` corrected-output
+  audit residual without weakening independent-operand acceptance.
 - No `.unwrap()`/`.expect()` may be introduced in production paths.
 - No silent canonicalization of invalid impoundment counts; zero is explicit
   empty-set semantics, not a fallback.

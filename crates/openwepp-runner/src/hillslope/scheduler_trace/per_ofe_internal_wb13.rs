@@ -100,11 +100,7 @@ impl DailyInternalPerOfeWb13Collection {
         let outlet = self.records.last().ok_or_else(|| {
             internal_wb13_failure("outputs.pass_parquet has no outlet per-OFE record".to_string())
         })?;
-        rows.push(build_hillslope_pass_row_from_outlet_delivery(
-            wepp_id,
-            outlet,
-            publication_area_m2,
-        )?);
+        rows.push(build_hillslope_pass_row_from_outlet_delivery(wepp_id, outlet)?);
         Ok(())
     }
 

@@ -722,10 +722,19 @@ fn build_hillslope_pass_row(
 fn build_hillslope_pass_row_from_outlet_delivery(
     wepp_id: i32,
     outlet: &InternalPerOfeWb13Record,
-    publication_area_m2: f64,
 ) -> Result<HillslopePassRow, HillslopeCliError> {
+    if !outlet.area_m2.is_finite() || outlet.area_m2 <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass_parquet",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} outlet OFE area must be finite and > 0.0, observed {}",
+                outlet.area_m2
+            ),
+        });
+    }
+
     let mut row = build_hillslope_pass_row(wepp_id, &outlet.row)?;
-    row.runvol_m3 = outlet.physical_surface_outflow_mm * publication_area_m2 / 1_000.0;
+    row.runvol_m3 = outlet.row.wb13_row.q * outlet.row.wb13_row.area / 1_000.0;
     row.sbrunv_m3 = outlet.row.wb13_row.latqcc * outlet.area_m2 / 1_000.0;
     Ok(row)
 }

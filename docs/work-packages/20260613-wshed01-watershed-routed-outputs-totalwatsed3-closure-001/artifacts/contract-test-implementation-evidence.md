@@ -1,6 +1,6 @@
 # Contract Test Implementation Evidence
 
-Status: T-B2 executed
+Status: T-B2-REDO executed
 
 Evidence mode: Ran + Static
 
@@ -203,3 +203,47 @@ T-B2 held-for-T-C evidence:
 
 - T-B2 closes the native runoff-delivery publication gap. It does not claim
   totalwatsed3 conservation closure; that remains T-C.
+
+Required T-B2-REDO tests:
+
+- Replace the old `QOFE * publication area` fixture with a fixture that
+  separates published `Q` from `QOFE`.
+- Assert corrected PASS `runvol = Q * Area`.
+- Assert the old `QOFE * publication area` and mismatched
+  `Q * outlet-record area` formulas are rejected.
+- Replace the hollow PASS identity with a real-run independent annual
+  precipitation bound.
+
+T-B2-REDO tests updated:
+
+- `mofe01_tb2_redo_pass_runvol_uses_published_q_area_not_qofe_area` now uses a
+  two-OFE fixture with `Q=2.5 mm`, `QOFE=5.0 mm`, and `Area=200 m2`; correct
+  PASS `runvol` is `0.5 m3`.
+
+T-B2-REDO red evidence:
+
+- `cargo test -p openwepp-runner mofe01_tb2_redo_pass_runvol_uses_outlet_ofe_area_not_hillslope_area -- --nocapture`
+  failed before the producer correction at the expected `0.5 m3` assertion.
+
+T-B2-REDO green evidence:
+
+- `cargo test -p openwepp-runner mofe01_tb2_redo_pass_runvol_uses_published_q_area_not_qofe_area -- --nocapture`:
+  `1` passed.
+- `cargo test -p openwepp-runner --test totalwatsed3_cli_contract totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces -- --nocapture`:
+  `1` passed.
+- `cargo test --workspace`: pass.
+
+T-B2-REDO real-run bound evidence:
+
+- Corrected arboreal-dendrite PASS output under
+  `/tmp/openwepp_wshed01_tb2_redo_qarea` matches `Q * Area` over `78912` rows
+  with `max_abs_pass_minus_q_area_m3=0.0`.
+- Water-year annual precipitation bound passes for all `252`
+  hillslope-water-years: `violation_count=0`,
+  `max_runvol_precip_ratio=0.9857497687436844`.
+
+T-B2-REDO held-for-T-C evidence:
+
+- The corrected totalwatsed3 output is readable, but the wepppy audit reports
+  `closure_reconstructed_with_storage_total_mm=6948.564523`. T-C owns closure
+  attribution and any further correction.

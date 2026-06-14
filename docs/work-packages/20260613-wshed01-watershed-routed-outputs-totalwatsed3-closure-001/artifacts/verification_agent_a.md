@@ -1,6 +1,6 @@
 # Verification Agent A
 
-Status: T-B2 local verification complete
+Status: T-B2-REDO local verification complete
 
 Evidence mode: Ran + Static
 
@@ -107,3 +107,39 @@ Residual blocker:
 
 - T-C still must run and close the totalwatsed3 conservation audit on the
   native output.
+
+Supersession:
+
+- This T-B2 verification record is superseded by
+  [review-tb2-runvol-area-defect.md](review-tb2-runvol-area-defect.md) and
+  T-B2-REDO. The `QOFE * area` identity was a defective self-consistency
+  surface for MOFE runoff-volume acceptance.
+
+## T-B2-REDO Verification Record
+
+Evidence mode: Ran + Static
+
+Verified:
+
+- The focused regression test
+  `mofe01_tb2_redo_pass_runvol_uses_published_q_area_not_qofe_area` passes and
+  rejects the old `QOFE * publication area` result.
+- `openwepp-cli-hill` reran arboreal-dendrite p1-p36 under
+  `/tmp/openwepp_wshed01_tb2_redo_qarea` and emitted `36` HBP, `36` WAT,
+  `36` PASS parquet files, and `36` manifests.
+- HBP/WAT anchor comparison against `/tmp/openwepp_mofe01_mi_final/output`
+  reports `anchor_mismatches=0`.
+- The corrected PASS dual audit reports
+  `max_abs_pass_minus_q_area_m3=0.0` over `78912` rows, while the old
+  `QOFE * Area` surface differs by up to `21766.4323911278 m3`.
+- The water-year annual precipitation bound reports `violation_count=0` over
+  `252` hillslope-water-years.
+- Native totalwatsed3 production emitted `2192` rows from corrected PASS/WAT
+  files, and summed `runvol` differs from PASS by
+  `9.313225746154785e-10 m3`.
+- Full Rust gates passed: fmt, clippy, workspace tests, and deny.
+
+Residual blocker:
+
+- The corrected-output wepppy audit still reports
+  `closure_reconstructed_with_storage_total_mm=6948.564523`. T-C owns closure.

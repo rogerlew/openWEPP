@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: T-B2 executed
+Status: T-B2-REDO executed
 
 Evidence mode: Ran + Static
 
@@ -60,6 +60,16 @@ Evidence mode: Ran + Static
 | T-B2 native totalwatsed3 production | PASS | `target/release/openwepp-cli-totalwatsed3 --input-dir /tmp/openwepp_wshed01_tb2/output --output /tmp/openwepp_wshed01_tb2/totalwatsed3.parquet`: `CLITW3-I-001 wrote 2192 rows`. PASS sum and totalwatsed3 sum differ by `1.7881393432617188e-07 m^3` from floating accumulation order. |
 | T-B2 full fmt/clippy/test/deny | PASS | `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test --workspace`; `cargo deny check`. |
 | T-B2 final diff/doc lint | PASS | `git diff --check`: no findings; `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `28` files scanned, `0` errors, `0` warnings; `cargo fmt --check`: no findings. |
+| T-B2-REDO red test | PASS | `cargo test -p openwepp-runner mofe01_tb2_redo_pass_runvol_uses_outlet_ofe_area_not_hillslope_area -- --nocapture` failed against the old T-B2 `QOFE * publication area` formula: expected `0.5 m3`, observed `1.0 m3`. |
+| T-B2-REDO focused tests | PASS | `cargo test -p openwepp-runner mofe01_tb2_redo_pass_runvol_uses_published_q_area_not_qofe_area -- --nocapture`; `cargo test -p openwepp-runner --test totalwatsed3_cli_contract totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces -- --nocapture`. |
+| T-B2-REDO corrected native PASS emission | PASS | Release `openwepp-cli-hill` reran arboreal-dendrite p1-p36 under `/tmp/openwepp_wshed01_tb2_redo_qarea`; output counts: `hbp=36`, `wat=36`, `pass_parquet=36`, `manifests=36`. |
+| T-B2-REDO HBP/WAT anchor stability | PASS | SHA-256 comparison of all `H1..H36.hbp` and `H1..H36.wat.parquet` against `/tmp/openwepp_mofe01_mi_final/output`: `anchor_mismatches=0`. |
+| T-B2-REDO independent PASS dual audit | PASS | DuckDB audit over `78912` rows: `max_abs_pass_minus_q_area_m3=0.0`; old `QOFE * Area` bug differs by up to `21766.4323911278 m3`; corrected total PASS `sum_runvol=6851275.733726179 m3`. |
+| T-B2-REDO annual precipitation bound | PASS | Water-year per-hillslope DuckDB audit: `252` annual hillslope-water-years, `violation_count=0`, `max_runvol_precip_ratio=0.9857497687436844`, `max_excess_m3=-67.62322402014661`. |
+| T-B2-REDO native totalwatsed3 production | PASS | `target/release/openwepp-cli-totalwatsed3 --input-dir /tmp/openwepp_wshed01_tb2_redo_qarea/output --output /tmp/openwepp_wshed01_tb2_redo_qarea/totalwatsed3.parquet`: `CLITW3-I-001 wrote 2192 rows`; totalwatsed3/PASS `runvol` diff `9.313225746154785e-10 m3`. |
+| T-B2-REDO audit-read residual recording | PASS | wepppy `totalwatsed3_daily_closure_audit.py` read the corrected output and reports `closure_reconstructed_with_storage_total_mm=6948.564523`; this is recorded as T-C hold evidence, not T-B2-REDO closure. |
+| T-B2-REDO full fmt/clippy/test/deny | PASS | `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test --workspace`; `cargo deny check`. |
+| T-B2-REDO final diff/doc lint | PASS | `git diff --check`: no findings; `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `29` files scanned, `0` errors, `0` warnings. |
 
 Subagent note: comparator/heavy-batch subagent was not used because W-A required
 only a single current-behavior CLI run and static source characterization.
@@ -81,3 +91,7 @@ run directly in this session as command-level evidence.
 For T-B2, no comparator-suite subagent was used. Focused tests, full Rust
 gates, the real arboreal-dendrite native-output rerun, anchor hash comparison,
 and parquet audits were run directly in this session as command-level evidence.
+For T-B2-REDO, no comparator-suite subagent was used. Focused tests, full Rust
+gates, the corrected arboreal-dendrite native-output rerun, anchor hash
+comparison, DuckDB PASS/bound audits, and wepppy audit read were run directly
+in this session as command-level evidence.

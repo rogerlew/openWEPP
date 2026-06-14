@@ -1,6 +1,6 @@
 # Disposition
 
-Status: T-B2 executed; package active; T-C queued
+Status: T-B2-REDO executed; package active; T-C queued
 
 Evidence mode: Ran + Static
 
@@ -47,14 +47,21 @@ Disposition:
 - T-B held-for-next gate: the current independent audit residual is
   `closure_reconstructed_with_storage_total_mm=57.409871`
   (`0.345805%` of precipitation), so closure is not claimed until T-C.
-- T-B2 native runoff-delivery publication: executed. `openwepp-cli-hill`
-  emits optional `H*.pass.parquet` files from outlet MOFE routed runoff, the
-  real arboreal-dendrite rerun produced `36` native PASS files with
-  `anchor_mismatches=0` for existing HBP/WAT outputs, and
-  `openwepp-cli-totalwatsed3` wrote `2192` rows from native per-hillslope
-  PASS/WAT files.
-- T-B2 held-for-next gate: no package closure is claimed. T-C still owns the
-  totalwatsed3 conservation audit on the native output.
+- T-B2 native runoff-delivery publication: executed, then reviewed defective.
+  The first MOFE PASS `runvol` formula used `QOFE * publication area`, which
+  over-scaled runoff and made the old PASS identity self-consistent but wrong.
+- T-B2-REDO runoff-delivery correction: executed. MOFE PASS `runvol` now uses
+  the published `Q * Area` volume dual. Corrected arboreal-dendrite output
+  under `/tmp/openwepp_wshed01_tb2_redo_qarea` produced `36` native PASS files,
+  `anchor_mismatches=0` for existing HBP/WAT outputs, and a corrected
+  totalwatsed3 file with `2192` rows.
+- T-B2-REDO conservation pre-gate: water-year annual `sum(runvol) <= sum(P *
+  Area / 1000)` passes for all `252` hillslope-water-years
+  (`violation_count=0`, `max_runvol_precip_ratio=0.9857497687436844`).
+- T-B2-REDO held-for-next gate: no package closure is claimed. The wepppy
+  audit reads the corrected native totalwatsed3 output but reports
+  `closure_reconstructed_with_storage_total_mm=6948.564523`; T-C owns that
+  residual.
 
 Next required increment:
 
