@@ -137,3 +137,40 @@ Observed:
 - first-row WAT fields are non-placeholder:
   `P=32.717215206680784`, `RM=13.203340055286729`,
   `SoilWaterTotal=335.10212226223916`.
+
+## Claude review (2026-06-14) — W-C accepted; classification nuance + W-D scrutiny note
+
+Evidence mode: Ran (contract/evidence read; output cleaned up, deep content
+check deferred to W-D's fresh run).
+
+**Milestone accepted:** openWEPP produces watershed-level routed output for the
+first time — 14 outputs, `totalwatsed3.parquet` 2192 rows, configured +
+legacy-discovery both exit 0. W-C correctly does NOT claim totalwatsed3
+closure (W-D owns the independent audit).
+
+**Classification confirmed, with an important nuance.** `WS10-CHANNEL-E-003`
+was over-strict validation on valid **zero-sediment** hillslope payloads (+ a
+hidden `nchnum=0`). The fix (SC-ROUTE-001 v45: accept *complete* HBP sediment
+payloads with zero values; `nchnum >= 0`) is faithful — it accepts the
+legitimate zero state while preserving typed validation (non-finite/missing/
+negative still caught). But unlike `jpond` (where legacy ran the exact same
+input), this is **NOT a legacy-parity classification**: legacy computes
+sediment, so legacy's channels never see zero sediment. The zero-sediment
+channel input is an **openWEPP-specific valid intermediate** arising from
+MOFE01's deferred-sediment / water-only posture (the
+`MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` follow-on). So the correct framing:
+the channel router must route **water** even when sediment is zero, because
+zero-sediment is a legitimate consequence of the design, not bad data. The
+fix is right; the basis is design-consistency, not legacy-acceptance.
+
+**Carried to W-D (the load-bearing verification):** accepting zero-sediment
+removed the guard, but whether the channel actually routes water *correctly*
+is unproven until the water balance is audited. W-D's totalwatsed3 closure
+must (1) use **independent operands** (the recurring no-0==0 / no-tautology
+lesson of this series — exact 0.0 is the smell), and (2) conserve the
+watershed balance against the **closed hillslope inputs** (the routed
+watershed total = the hillslope contributions, no water created/lost in
+channel routing). The watershed output content (distinct nonzero daily rows
+vs degenerate) was not checkable here (run cleaned up) and is verified at
+W-D's fresh run, where the closure is the prize and the most-scrutinized
+point.
