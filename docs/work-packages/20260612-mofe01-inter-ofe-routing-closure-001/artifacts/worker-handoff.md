@@ -1,51 +1,44 @@
 # worker handoff
 
-Status: M-F-REDO executed-hold; M-F-REDO2 geometry-scaled QOFE next
+Status: M-F-REDO2 executed; M-G erosion `qin`/sediment coupling decision next
 
 Evidence mode: Ran + Static
 
 ## Summary
 
-M-F-REDO fixed the M-F clone and zero surface-handoff defects, but it did not
-close publication acceptance:
+M-F-REDO2 closed the public `QOFE` local-depth publication blocker left by
+M-F-REDO/M-F-REDO-CLONE:
 
 - Multi-OFE runs publish one public WAT row per OFE per day from internal
   per-OFE WB13 records.
-- Static per-OFE lane runtime surfaces are no longer aggregate clones; they are
-  rebuilt from OFE-local slope, soil, management, snow, frost, and PMET
-  surfaces with lane provenance.
-- WB14/WB19/WB12 carry wiring now makes surface and lateral handoffs active on
-  real H1/H6/H9/H11 smoke runs.
-- Required H smoke ran under `/tmp/openwepp_mofe01_mfredo_final`; H1/H6/H9/H11
-  all exited zero.
-- Direct WAT audit passes row cardinality, active surface handoff, active
-  lateral handoff, and anti-clone gates. Active surface/lateral residuals close
-  at `0.0` mm with nonzero operands.
-- Blocking finding: all four smoke runs still have
-  `max_abs_qofe_minus_q=0.0`. Candidate public `QOFE` still aliases candidate
-  public `Q`.
-- Pinned legacy-clean direct audit proves this is wrong: H1/H6/H9/H11 legacy
-  max `abs(QOFE-Q)` is `362.13991`, `177.51694`, `185.89531`, and `84.64425`
-  mm. Static source authority in `watbal.for` uses `efflen/totlen` for public
-  `Q` and `efflen/slplen` for public `QOFE`.
+- Static per-OFE lane runtime surfaces are no longer aggregate clones; runoff
+  and hydrology-vector anti-clone gates remain closed.
+- Public `QOFE` is now OFE-local routed runoff depth and public `Q` is
+  cumulative-length routed runoff depth, matching pinned WATBAL source
+  authority (`efflen/slplen` versus `efflen/totlen`).
+- Required H smoke ran under `/tmp/openwepp_mofe01_mfredo2_current`;
+  H1/H6/H9/H11 all exited zero.
+- Direct WAT audit passes row cardinality, active surface handoff, anti-clone,
+  and no downstream `QOFE == Q` alias gates. Candidate `QOFE/Q` ratios match
+  the legacy-clean geometry ladder.
 - Local semantic comparisons ran without comparator subagent using
   `tools/owcmp/semantic_wat.py --candidate-year-offset 1999`; row keys align,
-  but value comparisons fail on public WAT families including `Q`, `QOFE`,
-  `UpStrmQ`, and `SubRIn`.
-- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 are byte-identical to M-E2
-  outputs for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet`.
+  but value comparisons still fail on broader routed hydrology/storage/ET
+  families. These are classified outside M-F-REDO2 because the public
+  normalization invariant matches legacy and independent conservation/lineage
+  gates close.
+- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 are byte-identical to
+  M-F-REDO-CLONE outputs for `.hbp`, `.loss.json`, `.plot.parquet`, and
+  `.wat.parquet` under `/tmp/openwepp_mofe01_mfredo2_single_anchor`.
 - Final gates passed: `cargo fmt --check`, `git diff --check`, `cargo clippy
   --workspace --all-targets -- -D warnings`, `cargo test --workspace`,
-  `cargo deny check`, and `cargo build -p openwepp-runner --bin
-  openwepp-cli-hill`.
+  `cargo deny check`, authority anti-evasion guards, and touched-doc lint.
 - Line-count governance warning: touched
-  `scheduler_seed_and_runtime.rs` is 2122 lines, above the 2000-line warning
+  `scheduler_seed_and_runtime.rs` is 2124 lines, above the 2000-line warning
   threshold and below 3000.
 
-Next increment: M-F-REDO2 must port baseline-authoritative public `Q`/`QOFE`
-geometry scaling from the pinned WATBAL source. Do not satisfy the blocker by
-synthesizing a cosmetic `QOFE != Q` value; the implementation needs real
-`efflen/totlen` versus `efflen/slplen` publication semantics.
+Next increment: M-G must decide whether erosion `qin`/sediment coupling belongs
+inside this water-seam closure or should be contract-pinned as a follow-on.
 
 ## M-E4-REDO summary
 

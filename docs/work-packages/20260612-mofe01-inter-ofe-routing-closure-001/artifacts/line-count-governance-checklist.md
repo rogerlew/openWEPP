@@ -1,8 +1,29 @@
 # line count governance checklist
 
-Status: checked through M-F-REDO-CLONE
+Status: checked through M-F-REDO2
 
 Evidence mode: Ran
+
+## M-F-REDO2
+
+Ran `wc -l` over touched Rust files after the M-F-REDO2 implementation and
+fixture updates.
+
+| File group | Lines | Disposition |
+| --- | ---: | --- |
+| `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs` | 1592 | OK. |
+| `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs` | 1793 | OK. |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs` | 524 | OK. |
+| `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs` | 2124 | WARN; pre-existing 2000-line warning, below 3000. |
+| `crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs` | 554 | OK. |
+| `tests/integration/cli03_runner_contract_derived_tests.rs` | 1345 | OK. |
+| `tests/integration/mofe04_publication_contract_authority_closure_contract.rs` | 79 | OK. |
+
+No touched Rust source file crossed the 3000-line non-exempt threshold.
+M-F-REDO2 added only a small signature pass-through to
+`scheduler_seed_and_runtime.rs`, but that file remains over the 2000-line
+warning threshold and should be split before further scheduler lifecycle logic
+is added.
 
 ## M-F-REDO-CLONE
 

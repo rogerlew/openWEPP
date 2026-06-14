@@ -30,14 +30,16 @@ fn mofe04_addenda_are_present_in_required_contracts() {
         watbal_contract.contains("INV-WATBAL-098")
             && watbal_contract.contains("MOFE01 M-F-REDO Per-OFE Publication Anti-Clone Addendum")
             && watbal_contract.contains("all-OFE-identical")
-            && watbal_contract.contains("Q - UpStrmQ")
+            && watbal_contract.contains("raw local runoff")
+            && watbal_contract.contains("runoff * efflen / slplen")
+            && watbal_contract.contains("runoff * efflen / totlen")
+            && watbal_contract.contains("QOFE == Q")
             && watbal_contract.contains("seeded/stale `wb12_infiltration`")
             && watbal_contract.contains("frost.runtime_frwatc_net_liquid_delta_m")
             && watbal_contract.contains("frost.runtime_watbtm_m")
             && watbal_contract.contains("frost.runtime_watpdg_m")
-            && watbal_contract.contains("zero-on-zero transfer acceptance")
-            && watbal_contract.contains("downstream `UpStrmQ` matches the upstream `QOFE`"),
-        "SC-WATBAL-001 must encode M-F-REDO/M-F-REDO-CLONE anti-clone, local-runoff, frost-exchange, and active surface-handoff authority"
+            && watbal_contract.contains("zero-on-zero transfer acceptance"),
+        "SC-WATBAL-001 must encode M-F-REDO/M-F-REDO-CLONE/M-F-REDO2 anti-clone, runoff-normalization, frost-exchange, and active surface-handoff authority"
     );
 
     let system_contract = fs::read_to_string(format!(
@@ -66,9 +68,12 @@ fn mofe04_addenda_are_present_in_required_contracts() {
             && system_contract.contains("MOFE01 M-F-REDO Per-OFE Publication Anti-Clone Addendum")
             && system_contract.contains("row cardinality")
             && system_contract.contains("nonzero adjacent surface handoff")
-            && system_contract.contains("Q - UpStrmQ")
+            && system_contract.contains("raw local runoff")
+            && system_contract.contains("runoff * efflen / slplen")
+            && system_contract.contains("runoff * efflen / totlen")
+            && system_contract.contains("QOFE == Q")
             && system_contract.contains("seeded/stale `wb12_infiltration`")
             && system_contract.contains("all-OFE-identical"),
-        "SC-SYSTEM-001 must encode M-F-REDO/M-F-REDO-CLONE anti-clone manifest/consumer authority"
+        "SC-SYSTEM-001 must encode M-F-REDO/M-F-REDO-CLONE/M-F-REDO2 anti-clone and runoff-normalization manifest/consumer authority"
     );
 }

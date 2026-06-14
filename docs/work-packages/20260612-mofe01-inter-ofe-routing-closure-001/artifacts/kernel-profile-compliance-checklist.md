@@ -1,8 +1,46 @@
 # kernel profile compliance checklist
 
-Status: checked through M-F-REDO executed-hold
+Status: checked through M-F-REDO2 executed
 
 Evidence mode: Ran + Static
+
+## M-F-REDO2 checklist
+
+- Production edits: yes; per-OFE WB13 publication now receives raw routed
+  runoff plus explicit OFE-local/cumulative publication geometry and publishes
+  public `QOFE`/`Q` with distinct baseline-authoritative normalizations.
+- Science-contract edits: yes; `SC-WATBAL-001` version 159 and
+  `SC-SYSTEM-001` version 82 add public runoff-normalization authority and
+  downstream alias rejection.
+- Test edits: yes; focused M-F publication test now asserts `QOFE/Q` geometry
+  ratios and contract-source guards cover the new authority.
+- Typed errors in production: new geometry validation failures map through
+  typed `HillslopeCliError::RuntimeSurfaceFailure` paths.
+- `unwrap`/`expect` in production: none introduced.
+- Unsafe: none introduced.
+- Bounded canonicalization: none introduced.
+- Kernel math: no process-physics math changed; this increment changes
+  publication normalization only.
+- Runtime publication paths: active handoff, anti-clone, internal identity, and
+  public `QOFE/Q` geometry gates pass. Semantic value-family comparisons still
+  fail on broader routed hydrology/storage/ET values and remain investigation
+  signals, not M-F-REDO2 publication-normalization blockers.
+
+Validation:
+
+- `cargo fmt --check`: PASS.
+- `cargo clippy --workspace --all-targets -- -D warnings`: PASS.
+- `cargo test --workspace`: PASS.
+- `cargo deny check`: PASS.
+- `bash tools/release/check_authority_suite_antievasion.sh`: PASS.
+- `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture`: PASS.
+- Work-package and touched SC-WATBAL/SC-SYSTEM docs lint: PASS; 38 files
+  scanned, 0 errors, 0 warnings.
+- `git diff --check`: PASS.
+- Required H1/H6/H9/H11 runtime smoke: PASS execution, row cardinality, active
+  handoff, anti-clone, and `QOFE/Q` geometry gates.
+- Single-OFE anchor comparison: PASS, 28/28 byte-identical to M-F-REDO-CLONE
+  single outputs.
 
 ## M-F-REDO checklist
 

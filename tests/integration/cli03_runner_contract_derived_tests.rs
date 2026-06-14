@@ -804,6 +804,7 @@ fn assert_mf_multiofe_publication_wat_rows(wat_output: &Path) {
         .collect::<Vec<_>>();
     assert_eq!(sim_day_indices, vec![1, 1, 1, 2, 2, 2]);
     assert_mf_multiofe_publication_surface_handoff(&wat_rows[0..3]);
+    assert_mfredo2_qofe_local_depth_geometry(&wat_rows[0..3]);
     assert_mf_multiofe_publication_not_cloned(&wat_rows[0..3]);
 }
 
@@ -829,6 +830,31 @@ fn assert_mf_multiofe_publication_surface_handoff(day_rows: &[Row]) {
             "downstream UpStrmQ ({downstream_upstrmq}) must equal previous OFE QOFE ({upstream_qofe})"
         );
     }
+}
+
+fn assert_mfredo2_qofe_local_depth_geometry(day_rows: &[Row]) {
+    let expected_qofe_to_q_ratios = [1.0, 2.5, 6.0];
+    for (row, expected_ratio) in day_rows.iter().zip(expected_qofe_to_q_ratios) {
+        let ofe = row_i32_value(row, "OFE");
+        let q = row_f64_value(row, "Q");
+        let qofe = row_f64_value(row, "QOFE");
+        if qofe <= 1.0e-9 {
+            continue;
+        }
+        assert!(
+            q > 1.0e-9,
+            "M-F-REDO2 expects positive cumulative Q when OFE {ofe} has positive QOFE"
+        );
+        let ratio = qofe / q;
+        assert!(
+            (ratio - expected_ratio).abs() <= 1.0e-6,
+            "M-F-REDO2 QOFE/Q ratio for OFE {ofe} must reflect local vs cumulative length normalization; expected {expected_ratio}, observed {ratio}"
+        );
+    }
+    assert!(
+        (row_f64_value(&day_rows[1], "QOFE") - row_f64_value(&day_rows[1], "Q")).abs() > 1.0e-9,
+        "M-F-REDO2 requires downstream public QOFE to stop aliasing cumulative public Q"
+    );
 }
 
 fn assert_mf_multiofe_publication_not_cloned(day_rows: &[Row]) {

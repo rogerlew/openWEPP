@@ -1,9 +1,44 @@
 # contract test implementation evidence
 
-Status: M-F-REDO tests green for active handoff and anti-clone; acceptance
-held on QOFE geometry scaling
+Status: M-F-REDO2 tests green for active handoff, anti-clone, and public
+`QOFE`/`Q` geometry normalization
 
 Evidence mode: Ran + Static
+
+## M-F-REDO2
+
+M-F-REDO2 expands publication coverage without weakening M-E4-REDO identity
+tests:
+
+- `cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows`
+  - Asserts multi-OFE WAT output emits `days * nofe` rows, grouped OFE keys,
+    active nonzero surface handoff, anti-clone publication vectors, downstream
+    `QOFE != Q` on routed rows, and the local/cumulative QOFE-to-Q ratio.
+- `mofe04_publication_contract_authority_closure_contract`
+  - Asserts `SC-WATBAL-001`/`SC-SYSTEM-001` carry M-F-REDO2 authority for
+    `runoff * efflen / slplen`, `runoff * efflen / totlen`, and downstream
+    `QOFE == Q` rejection.
+- Existing M-E4-REDO internal WB13 tests continue to require
+  non-tautological transfer/storage identity evidence.
+
+Ran:
+
+- `cargo test --test cli03_runner_contract_derived_tests cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows -- --nocapture`
+  - PASS.
+- `cargo test -p openwepp-runner --lib mofe01_me4_redo_internal_wb13_records -- --nocapture`
+  - PASS.
+- `cargo test --test mofe04_publication_contract_authority_closure_contract -- --nocapture`
+  - PASS.
+- `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`
+  - PASS.
+- `cargo test --workspace`
+  - PASS.
+- Required local H1/H6/H9/H11 smoke audit
+  - PASS active handoff, anti-clone, internal identity, and `QOFE/Q`
+    geometry gates.
+
+Runtime semantic comparison still fails on broader value families, but
+M-F-REDO2's test and audit gates close the publication-normalization blocker.
 
 ## M-F-REDO
 

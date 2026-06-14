@@ -1806,6 +1806,7 @@ pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
     climate_surface: &HillslopeWritebackSurface,
     stale_climate_symbols: &[BoundarySymbol],
     lane_areas_m2: &[f64],
+    runoff_publication_geometries: &[Wb13RunoffPublicationGeometry],
     context: SchedulerLifecycleContext<'_>,
 ) -> Result<PersistentDailyExecutionResult, HillslopeCliError> {
     let lane_preparation = prepare_persistent_lane_inputs(
@@ -1819,6 +1820,7 @@ pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
     let internal_wb13_collection = DailyInternalPerOfeWb13Collection::from_sequence_report(
         &sequence_report,
         lane_areas_m2,
+        runoff_publication_geometries,
         &lane_preparation.previous_storage_totals_mm,
         context,
     )?;

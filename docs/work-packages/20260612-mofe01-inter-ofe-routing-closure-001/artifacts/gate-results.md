@@ -1,9 +1,39 @@
 # gate results
 
-Status: M-F-REDO-CLONE executed; runoff anti-clone and identity gates close.
-Package remains active for M-F-REDO2 `QOFE` local-depth publication closure.
+Status: M-F-REDO2 executed; public `QOFE` local-depth and public `Q`
+cumulative-depth publication gates close. Package remains active for M-G.
 
 Evidence mode: Ran + Static
+
+## M-F-REDO2 scoped acceptance gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Public `QOFE` local-depth normalization | PASS | Candidate `QOFE/Q` ratios match the legacy-clean geometry ladder on H1/H6/H9/H11: H1 `2/3/4/5`, H6 `2/3`, H9 `2/3/4`, H11 `2`. |
+| No downstream `QOFE == Q` alias | PASS | Downstream active alias rows are zero on H1/H6/H9/H11; max `abs(QOFE-Q)` is H1 `310.9379099869`, H6 `107.7814221517`, H9 `99.8813275553`, H11 `83.8884201819` mm. |
+| Required H smoke | PASS | H1/H6/H9/H11 exited zero under `/tmp/openwepp_mofe01_mfredo2_current`; elapsed seconds H1 `212`, H6 `135`, H9 `172`, H11 `105`. |
+| Public per-OFE row cardinality | PASS | H1/H6/H9/H11 row counts remain `day_count * contributor_ofe_count`: `10960`, `6576`, `8768`, `4384`. |
+| Active surface handoff | PASS | Handoff residual max is at roundoff (`<=2.842170943040401e-14 mm`) with nonzero active operands. |
+| Anti-clone gate | PASS | Active `QOFE`, public `Q`, and hydrology-vector all-clone day counts are zero for H1/H6/H9/H11. |
+| Genuine per-element identity | PASS | Max residuals: H1 `2.5579538487363607e-13`, H6 `2.0250467969162855e-13`, H9 `1.9895196601282805e-13`, H11 `2.2737367544323206e-13` mm. |
+| Transfer identity | PASS | Runtime audit reports transfer residual maxima at `0.0`. |
+| Local semantic comparisons, no comparator subagent | PASS / INVESTIGATION FAIL | Commands exited zero and row keys align for H1/H6/H9/H11 under `/tmp/openwepp_mofe01_mfredo2_current/owcmp-smoke/reports`; remaining value-family failures are classified outside M-F-REDO2 because the publication ratio invariant and independent conservation/lineage gates close. |
+| Single-OFE anchor comparison | PASS | `/tmp/openwepp_mofe01_mfredo2_single_anchor`: H8/H15/H19/H20/H22/H23/H28 byte-identical to M-F-REDO-CLONE single outputs for `.hbp`, `.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS). |
+| Focused M-F-REDO2 publication test | PASS | `cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows` rejects downstream `QOFE == Q` alias and validates the local/cumulative QOFE-to-Q ratio. |
+| M-E4-REDO internal WB13 identity tests | PASS | `cargo test -p openwepp-runner --lib mofe01_me4_redo_internal_wb13_records -- --nocapture`. |
+| Contract authority tests | PASS | `cargo test --test mofe04_publication_contract_authority_closure_contract -- --nocapture` and `cargo test --test mofe01_per_ofe_state_contract -- --nocapture`. |
+| `cargo fmt --check` | PASS | Final Rust run; only docs/evidence changed afterward. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Final Rust run; only docs/evidence changed afterward. |
+| `cargo test --workspace` | PASS | Full Rust closure loop passed. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| `bash tools/release/check_authority_suite_antievasion.sh` | PASS | Authority suite anti-evasion checks passed. |
+| `cargo test --test auth11_required_suite_obligation_guards_contract` | PASS | Authority obligation guard tests passed. |
+| `markdown-doc lint --path ... --format json` | PASS | Touched SC-WATBAL/SC-SYSTEM contracts and package root: 38 files scanned, 0 errors, 0 warnings. |
+| `wctl doc-lint` | NON-SUBSTANTIVE | Wrapper exited zero but scanned 0 staged files; substantive lint evidence is the `markdown-doc lint --path ...` run above. |
+| `git diff --check` | PASS | Final whitespace check passed after evidence updates. |
+| Line count governance | PASS / WARN | Touched files remain below 2000 except pre-existing `scheduler_seed_and_runtime.rs` warning at 2124 lines; below 3000. |
+
+Detailed evidence: `m-f-per-ofe-wat-publication-evidence.md`.
 
 ## M-F-REDO-CLONE scoped acceptance gates
 

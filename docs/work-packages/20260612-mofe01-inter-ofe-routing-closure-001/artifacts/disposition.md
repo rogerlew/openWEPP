@@ -1,10 +1,60 @@
 # disposition
 
-Status: M-F-REDO-CLONE executed; per-OFE local runoff distinctness and genuine
-identity gates close. Package remains open for M-F-REDO2 `QOFE` local-depth
-publication closure.
+Status: M-F-REDO2 executed; per-OFE public `QOFE` local-depth and public `Q`
+cumulative-depth publication closure is complete. Package remains open for
+M-G erosion `qin`/sediment coupling disposition.
 
 Evidence mode: Ran + Static
+
+## M-F-REDO2 disposition
+
+Increment M-F-REDO2 is executed and complete for its scoped publication
+normalization. Per-OFE WB13 publication now publishes the same routed runoff
+with the two baseline-authoritative normalizations: public `QOFE` as
+OFE-local depth (`routed_runoff * efflen / ofe_length`) and public `Q` as
+cumulative-length depth (`routed_runoff * efflen / cumulative_length`).
+Internal conservation identities remain anchored to raw transfer/runoff
+operands rather than public `Q`.
+
+H1/H6/H9/H11 exited zero under `/tmp/openwepp_mofe01_mfredo2_current`.
+Downstream active `QOFE == Q` alias rows are zero on all four smoke surfaces.
+Candidate `QOFE/Q` ratios match the clean legacy geometry ladder: H1 ratios
+are `2/3/4/5`, H6 `2/3`, H9 `2/3/4`, and H11 `2`, matching the corresponding
+legacy ratios within printed WAT roundoff.
+
+The prerequisite gates remain closed. Active handoff residual maxima are at
+roundoff (`<=2.842170943040401e-14 mm`), active `QOFE`, public `Q`, and
+hydrology-vector clone-day counts are zero, transfer residual max is `0.0`,
+and per-element residual maxima remain at or below
+`2.5579538487363607e-13` mm.
+
+Local semantic comparisons were run directly with
+`tools/owcmp/semantic_wat.py --candidate-year-offset 1999`, without the
+comparator subagent. Commands exited zero and row-key coverage is complete for
+H1/H6/H9/H11. Semantic value-family pass remains false, but the remaining
+value deltas are classified outside the M-F-REDO2 publication-normalization
+gate: the public `QOFE/Q` ratio invariant matches legacy, independent
+handoff/anti-clone evidence is nonzero, and internal conservation identities
+close.
+
+Single-OFE anchors H8/H15/H19/H20/H22/H23/H28 are byte-identical to the
+M-F-REDO-CLONE single outputs for `.hbp`, `.loss.json`, `.plot.parquet`, and
+`.wat.parquet` under `/tmp/openwepp_mofe01_mfredo2_single_anchor` (28/28
+PASS). An earlier attempted anchor under
+`/tmp/openwepp_mofe01_mfredo2_single_final` used the wrong H-sidecar runfiles
+and is non-acceptance evidence.
+
+Final gates passed after M-F-REDO2: `cargo fmt --check`,
+`cargo clippy --workspace --all-targets -- -D warnings`,
+`cargo test --workspace`, `cargo deny check`,
+`bash tools/release/check_authority_suite_antievasion.sh`,
+`cargo test --test auth11_required_suite_obligation_guards_contract`, and
+`markdown-doc lint --path ... --format json` on the touched contracts and
+package root. `git diff --check` also passed after evidence
+updates.
+
+The next lawful increment is M-G: decide whether erosion `qin`/sediment
+coupling is in this water seam or should be contract-pinned as a follow-on.
 
 ## M-F-REDO-CLONE disposition
 

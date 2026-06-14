@@ -47,7 +47,33 @@ struct Wb13OfePublicationContext<'a> {
     calendar_day: &'a ClimateDayProjection,
     ofe_id: u16,
     upstream_runon_m: f64,
-    qofe_override_m: Option<f64>,
+    routed_runoff_m: Option<f64>,
+    runoff_geometry: Option<Wb13RunoffPublicationGeometry>,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct Wb13RunoffPublicationGeometry {
+    ofe_length_m: f64,
+    cumulative_length_m: f64,
+}
+
+impl Wb13RunoffPublicationGeometry {
+    fn new(ofe_length_m: f64, cumulative_length_m: f64) -> Result<Self, HillslopeCliError> {
+        if !ofe_length_m.is_finite() || ofe_length_m <= 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "OFE runoff-publication length must be finite and > 0.0, observed {ofe_length_m}"
+            )));
+        }
+        if !cumulative_length_m.is_finite() || cumulative_length_m < ofe_length_m {
+            return Err(wb13_simout_failure(format!(
+                "cumulative runoff-publication length must be finite and >= OFE length, observed cumulative={cumulative_length_m}, ofe={ofe_length_m}"
+            )));
+        }
+        Ok(Self {
+            ofe_length_m,
+            cumulative_length_m,
+        })
+    }
 }
 
 fn build_hbp_output(
@@ -765,7 +791,8 @@ fn build_simulation_owned_wb13_row(
             calendar_day,
             ofe_id: 1,
             upstream_runon_m: 0.0,
-            qofe_override_m: None,
+            routed_runoff_m: None,
+            runoff_geometry: None,
         },
     )
 }
@@ -792,13 +819,18 @@ fn build_simulation_owned_wb13_row_for_ofe(
         )));
     }
     if context
-        .qofe_override_m
+        .routed_runoff_m
         .is_some_and(|value| !value.is_finite() || value < 0.0)
     {
         return Err(wb13_simout_failure(format!(
             "QOFE source must be finite and >= 0.0, observed {:?}",
-            context.qofe_override_m
+            context.routed_runoff_m
         )));
+    }
+    if context.routed_runoff_m.is_some() != context.runoff_geometry.is_some() {
+        return Err(wb13_simout_failure(
+            "per-OFE routed runoff publication requires both routed runoff and geometry",
+        ));
     }
 
     let calendar_year = context.calendar_day.year;
@@ -1008,7 +1040,29 @@ fn build_simulation_owned_wb13_row_for_ofe(
             "SubRIn must be >= 0.0, observed {sub_r_in_m}"
         )));
     }
-    let q = q_m * 1_000.0;
+    let physical_q = q_m * 1_000.0;
+    let (q, qofe) = if let (Some(routed_runoff_m), Some(geometry)) =
+        (context.routed_runoff_m, context.runoff_geometry)
+    {
+        let efflen_m = require_runtime_surface_scalar(runtime_surface, "efflen")?;
+        if !efflen_m.is_finite() || efflen_m <= 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "efflen must be finite and > 0.0 for per-OFE runoff publication, observed {efflen_m}"
+            )));
+        }
+        if efflen_m > geometry.cumulative_length_m + 1.0e-9 {
+            return Err(wb13_simout_failure(format!(
+                "efflen must not exceed cumulative runoff-publication length for OFE {}, observed efflen={} cumulative={}",
+                context.ofe_id, efflen_m, geometry.cumulative_length_m
+            )));
+        }
+        (
+            routed_runoff_m * 1_000.0 * efflen_m / geometry.cumulative_length_m,
+            routed_runoff_m * 1_000.0 * efflen_m / geometry.ofe_length_m,
+        )
+    } else {
+        (physical_q, physical_q)
+    };
     let ep = transpiration_ep_m * 1_000.0;
     let es = soil_evap_es_m * 1_000.0;
     let er = residue_evap_er_m * 1_000.0;
@@ -1017,7 +1071,6 @@ fn build_simulation_owned_wb13_row_for_ofe(
     let tile = tile_m * 1_000.0;
     let qd = qd_source_m * 1_000.0;
     let sub_r_in = sub_r_in_m * 1_000.0;
-    let qofe = context.qofe_override_m.map_or(q, |value| value * 1_000.0);
     if (qd - (latqcc + tile)).abs() > 1.0e-6 {
         return Err(wb13_simout_failure(format!(
             "Qd coupling closure violated: Qd ({qd}) must equal latqcc + Tile ({})",
@@ -1052,7 +1105,7 @@ fn build_simulation_owned_wb13_row_for_ofe(
         ),
         (
             WB13_PER_OFE_PUBLICATION_POLICY_SYMBOL,
-            if context.qofe_override_m.is_some() {
+            if context.routed_runoff_m.is_some() {
                 1.0
             } else {
                 0.0

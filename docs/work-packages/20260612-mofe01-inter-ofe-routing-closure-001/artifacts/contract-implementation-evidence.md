@@ -1,9 +1,36 @@
 # contract implementation evidence
 
-Status: M-F-REDO executed-hold; active per-OFE handoff implemented, QOFE
-geometry scaling blocked
+Status: M-F-REDO2 executed; active per-OFE handoff, anti-clone evidence, and
+public `QOFE`/`Q` geometry normalization implemented
 
 Evidence mode: Ran + Static
+
+## M-F-REDO2
+
+M-F-REDO2 amends the M-F/M-F-REDO/M-F-REDO-CLONE authority with explicit public
+runoff-normalization requirements:
+
+- `SC-WATBAL-001` version 159 pins public `QOFE = runoff * efflen / slplen`,
+  public `Q = runoff * efflen / totlen`, and the downstream `QOFE == Q`
+  alias rejection.
+- `SC-SYSTEM-001` version 82 pins the corresponding manifest/consumer gate.
+- Per-OFE WB13 publication receives raw routed runoff and explicit
+  OFE-local/cumulative publication geometry.
+- Internal WB13 conservation identities use raw transfer/runoff operands
+  rather than the public `Q` normalization.
+
+Validation:
+
+- `cargo clippy --workspace --all-targets -- -D warnings`: PASS.
+- `cargo test --workspace`: PASS.
+- `cargo deny check`: PASS.
+- H1/H6/H9/H11 smoke row cardinality, active handoff, anti-clone, and
+  `QOFE/Q` geometry audits: PASS.
+- H1/H6/H9/H11 local semantic comparisons: command PASS with complete row-key
+  coverage; value-family semantic pass remains false and is classified outside
+  the M-F-REDO2 publication-normalization gate.
+- Single-OFE anchors H8/H15/H19/H20/H22/H23/H28: PASS, 28/28 byte-identical to
+  M-F-REDO-CLONE single outputs.
 
 ## M-F-REDO
 

@@ -414,6 +414,7 @@ fn me4_internal_record(
     InternalPerOfeWb13Record {
         ofe_id,
         previous_storage_total_mm,
+        physical_surface_outflow_mm: row.wb13_row.q,
         frost_upper_overflow_mm: 0.0,
         frost_internal_adjustment_mm: 0.0,
         storage_reconciliation_detail: "test-fixture".to_string(),

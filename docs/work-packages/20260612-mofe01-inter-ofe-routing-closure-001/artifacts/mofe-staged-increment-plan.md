@@ -350,6 +350,12 @@ M-F-REDO-CLONE execution result:
 
 ## Increment M-F-REDO2 — per-OFE `QOFE` as local runoff depth (after runoff is distinct)
 
+Status: executed 2026-06-14; public `QOFE` now publishes the OFE-local routed
+runoff depth and public `Q` publishes the cumulative-length depth. The
+downstream `QOFE == Q` alias gate is closed on H1/H6/H9/H11, active handoff
+and anti-clone gates remain closed, internal identities remain at
+`TOL-WATBAL-007`, and single-OFE anchors remain byte-identical.
+
 Prerequisite: M-F-REDO-CLONE (a cloned runoff renders ÷slplen as a tidy ladder
 of equal local depths, proving nothing). Then render the genuinely-distinct
 routed `runoff(iplane)` as the two legacy depths:
@@ -372,6 +378,39 @@ routed `runoff(iplane)` as the two legacy depths:
   genuinely-distinct routed runoff; the row-key-aligned semantic comparison vs
   legacy (clean at 1–5) passes the value families or remaining diffs are
   classified by independent conservation/lineage evidence.
+
+M-F-REDO2 execution result:
+
+- Fix: per-OFE WB13 publication now receives the raw routed runoff transfer
+  operand plus explicit OFE-local/cumulative runoff-publication geometry. It
+  publishes `QOFE = routed_runoff * efflen / ofe_length` and
+  `Q = routed_runoff * efflen / cumulative_length`; internal conservation
+  identities continue to use the raw transfer/runoff operand, not public `Q`.
+- Contract: `SC-WATBAL-001` version 159 and `SC-SYSTEM-001` version 82 pin
+  the public `QOFE`/`Q` normalizations, reject downstream `QOFE == Q` aliases
+  where `slplen != totlen`, and separate public runoff normalization from raw
+  conservation operands.
+- Runtime: H1/H6/H9/H11 under `/tmp/openwepp_mofe01_mfredo2_current` exit
+  zero. Downstream active `QOFE == Q` alias rows are zero on all four; candidate
+  `QOFE/Q` ratios match the legacy clean geometry ladder (`2`, `3`, `4`, `5`
+  as applicable). Max `abs(QOFE-Q)` is H1 `310.9379099869`, H6
+  `107.7814221517`, H9 `99.8813275553`, H11 `83.8884201819` mm.
+- Conservation/anti-clone: transfer residual max remains `0.0`; per-element
+  residual maxima are H1 `2.5579538487363607e-13`, H6
+  `2.0250467969162855e-13`, H9 `1.9895196601282805e-13`, H11
+  `2.2737367544323206e-13` mm. Active `QOFE`, public `Q`, and hydrology-vector
+  all-clone active-day counts are zero for H1/H6/H9/H11.
+- Comparisons: local `tools/owcmp/semantic_wat.py --candidate-year-offset
+  1999` commands were run directly without the comparator subagent. Row-key
+  coverage is complete for H1/H6/H9/H11. Semantic value pass remains false,
+  but the remaining value-family deltas are classified as broader routed
+  hydrology/storage/ET parity gaps because the M-F-REDO2 publication-ratio
+  invariant matches legacy and independent conservation/lineage gates close.
+- Single-OFE anchors: corrected p-run anchors under
+  `/tmp/openwepp_mofe01_mfredo2_single_anchor` are byte-identical to
+  `/tmp/openwepp_mofe01_mfredo_clone_single_final/output` for
+  H8/H15/H19/H20/H22/H23/H28 `.hbp`, `.loss.json`, `.plot.parquet`, and
+  `.wat.parquet` (28/28 PASS).
 
 ## Increment M-G — erosion `qin`/sediment coupling decision (scope §"M-D erosion qin and sediment coupling")
 

@@ -1,8 +1,9 @@
 # MOFE01 — Inter-OFE Routing Closure (rung 3)
 
-Status: active; M-F-REDO executed-hold (Claude: anti-clone reached ET only; runoff still 92% cloned — see M-F evidence) (active surface/lateral handoff and
-anti-clone publication fixed; `QOFE` still aliases `Q` on real multi-OFE
-smoke); geometry-scaled `QOFE` follow-on required before M-G/M-H
+Status: active; M-F-REDO2 executed (public `QOFE` local-depth and public `Q`
+cumulative-depth publication gates close; active handoff, anti-clone,
+non-tautological identity, and single-OFE anchor gates remain closed); M-G
+erosion `qin`/sediment coupling decision next
 
 Package type: staged implementation/closure package (FDHP01 execution shape:
 scope-then-staged-increments, per-increment conservation hard stops)

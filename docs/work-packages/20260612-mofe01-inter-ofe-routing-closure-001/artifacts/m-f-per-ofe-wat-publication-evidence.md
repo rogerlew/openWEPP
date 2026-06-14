@@ -1,12 +1,144 @@
 # M-F Per-OFE WAT Publication Evidence
 
-Status: M-F-REDO-CLONE executed; per-OFE local runoff is now distinct and
-identity gates close. Package remains active for M-F-REDO2 `QOFE` local-depth
-publication closure.
+Status: M-F-REDO2 executed; public `QOFE` is now OFE-local routed runoff depth,
+public `Q` is cumulative-length routed runoff depth, and the downstream
+`QOFE == Q` alias gate is closed.
 
 Evidence mode: Ran + Static
 
 ## Summary
+
+M-F-REDO2 completes the public runoff-normalization closure left after
+M-F-REDO-CLONE. Per-OFE WB13 publication now receives the raw routed runoff
+transfer operand plus OFE-local and cumulative runoff-publication geometry. It
+publishes public `QOFE = routed_runoff * efflen / ofe_length` and public
+`Q = routed_runoff * efflen / cumulative_length`, while the internal
+water-balance identities continue to consume raw transfer/runoff operands.
+
+H1/H6/H9/H11 final smoke under `/tmp/openwepp_mofe01_mfredo2_current` exits
+zero. Downstream active `QOFE == Q` alias rows are zero on all four smoke
+surfaces, candidate `QOFE/Q` ratios match the clean legacy geometry ladder, and
+single-OFE anchors under `/tmp/openwepp_mofe01_mfredo2_single_anchor` are
+byte-identical to the M-F-REDO-CLONE anchors for `.hbp`, `.loss.json`,
+`.plot.parquet`, and `.wat.parquet` (28/28 PASS).
+
+Local semantic comparisons were run directly without the comparator subagent.
+Row-key coverage is complete for H1/H6/H9/H11. Semantic value pass remains
+false, but the residual value-family deltas are classified as broader routed
+hydrology/storage/ET parity gaps: the M-F-REDO2 publication-ratio invariant
+matches legacy, active handoff and anti-clone evidence remain nonzero, and
+independent internal conservation identities close at the noise floor.
+
+## M-F-REDO2 Implementation
+
+Static changes in M-F-REDO2:
+
+- Added `Wb13RunoffPublicationGeometry` for OFE-local and cumulative runoff
+  publication lengths, with fail-closed finite/positive geometry checks.
+- Per-OFE WB13 publication now passes the raw routed runoff transfer operand
+  separately from the public row's `Q` field.
+- Public `QOFE` is computed as the OFE-local depth and public `Q` as the
+  cumulative-length depth; single-OFE/aggregate publication remains unchanged.
+- Internal per-OFE WB13 identity terms now store `physical_surface_outflow_mm`
+  and use that raw operand for conservation, so public `Q` normalization cannot
+  become a tautological identity input.
+- Contract tests now reject downstream `QOFE == Q` aliases and require the
+  local/cumulative QOFE-to-Q ratio in the multi-OFE publication fixture.
+- `SC-WATBAL-001` version 159 and `SC-SYSTEM-001` version 82 pin the
+  M-F-REDO2 normalization and consumer-gate requirements.
+
+## M-F-REDO2 Runtime Smoke
+
+Fresh final smoke ran directly, without the comparator subagent, under:
+
+- `/tmp/openwepp_mofe01_mfredo2_current`
+
+Runtime execution:
+
+| H | OFEs | Rows | Days | Exit | Elapsed seconds |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 5 | 10960 | 2192 | 0 | 212 |
+| 6 | 3 | 6576 | 2192 | 0 | 135 |
+| 9 | 4 | 8768 | 2192 | 0 | 172 |
+| 11 | 2 | 4384 | 2192 | 0 | 105 |
+
+Q/QOFE publication audit:
+
+| H | Downstream active `QOFE` rows | `QOFE == Q` alias rows | Max `abs(QOFE-Q)` mm | Candidate `QOFE/Q` ratios |
+| ---: | ---: | ---: | ---: | --- |
+| 1 | 7699 | 0 | 310.9379099869 | OFE2 `2.0`, OFE3 `3.0`, OFE4 `4.0`, OFE5 `5.0` |
+| 6 | 3499 | 0 | 107.7814221517 | OFE2 `2.0`, OFE3 `3.0` |
+| 9 | 5115 | 0 | 99.8813275553 | OFE2 `2.0`, OFE3 `3.0`, OFE4 `4.0` |
+| 11 | 1928 | 0 | 83.8884201819 | OFE2 `2.0` |
+
+The corresponding legacy-clean ratios are the same ladder within printed WAT
+roundoff. The detailed audit is retained at
+`/tmp/openwepp_mofe01_mfredo2_current/mfredo2-q-qofe-ratio-audit.json`.
+
+Anti-clone and identity audit:
+
+| H | Active days | `QOFE` all-clone active days | `Q` all-clone active days | Hydrology-vector clone active days | Max handoff residual mm | Max per-element residual mm |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 1957 | 0 | 0 | 0 | 2.842170943040401e-14 | 2.5579538487363607e-13 |
+| 6 | 1765 | 0 | 0 | 0 | 1.7763568394002505e-15 | 2.0250467969162855e-13 |
+| 9 | 1705 | 0 | 0 | 0 | 3.552713678800501e-15 | 1.9895196601282805e-13 |
+| 11 | 1928 | 0 | 0 | 0 | 7.105427357601002e-15 | 2.2737367544323206e-13 |
+
+Transfer residual maxima remain `0.0` on all four smoke surfaces. The detailed
+publication audit is retained at
+`/tmp/openwepp_mofe01_mfredo2_current/mfredo2-publication-audit.json`.
+
+## M-F-REDO2 Local Comparison
+
+Local semantic comparisons ran with
+`.venv/bin/python tools/owcmp/semantic_wat.py --candidate-year-offset 1999`.
+No comparator subagent was used.
+
+| H | Common rows | Candidate-only | Baseline-only | Semantic pass | Selected remaining value-family deltas |
+| ---: | ---: | ---: | ---: | --- | --- |
+| 1 | 10960 | 0 | 0 | false | `QOFE=411.990419`, `UpStrmQ=312.243528`, `Q=82.398094`, `SoilWaterTotal=286.515283` |
+| 6 | 6576 | 0 | 0 | false | `QOFE=148.393933`, `UpStrmQ=65.289852`, `Q=49.464641`, `SoilWaterTotal=246.140964` |
+| 9 | 8768 | 0 | 0 | false | `QOFE=224.146143`, `UpStrmQ=115.633251`, `Q=56.036526`, `SoilWaterTotal=263.700413` |
+| 11 | 4384 | 0 | 0 | false | `QOFE=49.666604`, `UpStrmQ=32.745888`, `Q=32.745888`, `SoilWaterTotal=201.090445` |
+
+The comparison result remains an investigation signal with complete row
+overlap. M-F-REDO2's publication-ratio invariant matches legacy; the remaining
+value deltas are broader routed hydrology/storage/ET parity gaps, not a
+`QOFE` local-depth publication blocker.
+
+## M-F-REDO2 Single-OFE Anchor
+
+Single-OFE anchors were rerun with the corrected `p*.run` files under:
+
+- `/tmp/openwepp_mofe01_mfredo2_single_anchor`
+
+H8/H15/H19/H20/H22/H23/H28 exited zero and are byte-identical to
+`/tmp/openwepp_mofe01_mfredo_clone_single_final/output` for `.hbp`,
+`.loss.json`, `.plot.parquet`, and `.wat.parquet` (28/28 PASS).
+
+An earlier attempted anchor run under
+`/tmp/openwepp_mofe01_mfredo2_single_final` is explicitly non-acceptance
+evidence: it used H-sidecar runfiles instead of the prior `p*.run` files and
+changed H8 from hourly/snow-override to daily/no-snow. The corrected anchor
+above is the authoritative M-F-REDO2 single-OFE gate.
+
+## M-F-REDO2 Gates
+
+| Gate/check | Result | Notes |
+| --- | --- | --- |
+| Public `QOFE` local-depth normalization | PASS | Candidate `QOFE/Q` ratios match legacy-clean local/cumulative geometry ratios on H1/H6/H9/H11. |
+| No downstream `QOFE == Q` alias | PASS | Downstream active alias rows are zero on H1/H6/H9/H11. |
+| Active handoff | PASS | Handoff residual max is at roundoff (`<=2.842170943040401e-14 mm`) with nonzero active operands. |
+| Anti-clone gate | PASS | Active `QOFE`, public `Q`, and hydrology-vector all-clone day counts are zero on H1/H6/H9/H11. |
+| Genuine identities | PASS | Per-element residual max is `2.56e-13 mm`; transfer residual max remains `0.0`. |
+| Local semantic comparisons | PASS / INVESTIGATION FAIL | Commands exited zero without comparator subagent and row keys align; semantic value pass remains false but is classified outside M-F-REDO2 publication normalization. |
+| Single-OFE anchor | PASS | Corrected p-run anchors are 28/28 byte-identical to M-F-REDO-CLONE single outputs. |
+| Rust closure loop | PASS | `cargo fmt --check`, clippy with warnings denied, `cargo test --workspace`, `cargo deny check`, authority guards, and targeted contract tests pass. |
+| Markdown lint | PASS | `markdown-doc lint --path ... --format json` scanned 38 files with 0 errors and 0 warnings. |
+| `git diff --check` | PASS | Final whitespace check passed after evidence updates. |
+| Line-count governance | PASS / WARN | Touched files remain below 2000 except pre-existing `scheduler_seed_and_runtime.rs` warning at 2124 lines; below the 3000-line non-exempt threshold. |
+
+## M-F-REDO-CLONE Summary
 
 M-F-REDO-CLONE corrected the blocker found in the M-F-REDO review: active
 handoff existed, but per-OFE local runoff was still cloned on most H1 runoff
@@ -24,11 +156,7 @@ surfaces, full-vector clone days are zero, public row keys remain aligned, and
 the genuine per-element identity remains at the noise floor
 (`max <= 2.56e-13 mm`; transfer and aggregate residuals `0.0`).
 
-M-F-REDO2 remains the next publication increment. Local semantic comparisons
-were run directly without the comparator subagent and still fail on value
-families, with complete row-key overlap. The residual publication problem is
-the already-scoped `QOFE` local-depth normalization, not the runoff clone fixed
-here.
+M-F-REDO2 supersedes the prior `QOFE` local-depth blocker above.
 
 ## M-F-REDO-CLONE Implementation
 
@@ -503,3 +631,32 @@ produces genuinely distinct, conserving, inter-OFE-routed per-OFE hydrology —
 the thing the aggregate writeback had been hiding the absence of since M-C.
 M-F-REDO2 (QOFE local-depth / Q cumulative-depth normalization) is now a
 cosmetic depth-rendering on top of correct routed runoff, not a physics gap.
+
+## Claude review (2026-06-13) — M-F-REDO2 ACCEPTED; deferred parity is expected magnitude divergence (checked, benign)
+
+Evidence mode: Ran (duckdb on the M-F-REDO2 cohort + legacy `H*.wat.dat`).
+
+**Geometry scope correct and accepted.** openWEPP's per-OFE `QOFE/Q` ratio
+ladder is `1/2/3/4/5` (H1) — matching legacy's exactly (legacy QOFE/Q:
+55/55, 143/72, 234/78, 343/86, 453/91 = 1,2,3,4,5). So `QOFE = runoff·efflen/slplen`
+(local depth) and `Q = runoff·efflen/totlen` (cumulative depth) render the
+right geometry; `QOFE != Q` on multi-OFE rows; conservation identities still
+close (2.56e-13); single-OFE anchor 28/28 byte-identical.
+
+**The deferred "broader parity" was checked and is benign** (given this rung's
+history of deferrals hiding defects, it was verified, not trusted): the
+per-OFE runoff *magnitude* differs from clean legacy, but on **OFE1 (no
+upstream — pure local generation, routing absent)** the mean-`QOFE` ratios are
+**scattered both directions** — H1 +12%, H6 −13%, H9 −25%, H11 +19%. No
+systematic bias. This is expected Stage-2 **magnitude** divergence between a
+contract-first engine and the legacy flag (ADR-0017), on a foundation that
+*conserves* (routing closure, the rung's acceptance, holds). It is **not** a
+routing-closure blocker and not a hidden defect — unlike the runoff clone,
+which was a real defect a deferral nearly buried.
+
+Recorded posture for M-H: routing **closure** is demonstrated (conservation at
+noise, distinct per-OFE hydrology, active surface/lateral routing, correct
+geometry rendering). Per-OFE **magnitude** vs legacy diverges ±10–25% scattered,
+to be adjudicated at M-H acceptance as expected comparator-flag divergence
+unless a systematic signal emerges. M-F-REDO2 accepted; M-G (erosion-coupling
+decision) and M-H (ladder acceptance) are the remaining increments.

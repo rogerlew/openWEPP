@@ -1084,6 +1084,14 @@ pub fn execute_hillslope_run(
         .iter()
         .map(|slice| slice.area_m2)
         .collect::<Vec<_>>();
+    let mut cumulative_runoff_length_m = 0.0;
+    let per_ofe_runoff_publication_geometries = static_per_ofe_slices
+        .iter()
+        .map(|slice| {
+            cumulative_runoff_length_m += slice.length_m;
+            Wb13RunoffPublicationGeometry::new(slice.length_m, cumulative_runoff_length_m)
+        })
+        .collect::<Result<Vec<_>, _>>()?;
 
     let soil_surface = build_hillslope_runtime_surface_from_soil(&soil).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
@@ -1238,6 +1246,7 @@ pub fn execute_hillslope_run(
                 &climate_surface,
                 &stale_climate_symbols,
                 &per_ofe_lane_areas_m2,
+                &per_ofe_runoff_publication_geometries,
                 SchedulerLifecycleContext {
                     run_name: &runfile.run_name,
                     execution_lane: lane_context.lane,

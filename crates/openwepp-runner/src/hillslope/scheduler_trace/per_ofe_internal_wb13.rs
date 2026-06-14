@@ -4,6 +4,7 @@ const ME4_INTERNAL_WB13_IDENTITY_TOLERANCE_MM: f64 = 1.0e-11;
 pub(super) struct InternalPerOfeWb13Record {
     pub(super) ofe_id: usize,
     pub(super) previous_storage_total_mm: f64,
+    pub(super) physical_surface_outflow_mm: f64,
     pub(super) frost_upper_overflow_mm: f64,
     pub(super) frost_internal_adjustment_mm: f64,
     pub(super) storage_reconciliation_detail: String,
@@ -68,6 +69,7 @@ impl DailyInternalPerOfeWb13Collection {
     fn from_sequence_report(
         sequence_report: &OfeLaneSequenceExecutionReport,
         lane_areas_m2: &[f64],
+        runoff_publication_geometries: &[Wb13RunoffPublicationGeometry],
         previous_storage_totals_mm: &[f64],
         context: SchedulerLifecycleContext<'_>,
     ) -> Result<Self, HillslopeCliError> {
@@ -85,12 +87,20 @@ impl DailyInternalPerOfeWb13Collection {
                 previous_storage_totals_mm.len()
             )));
         }
+        if sequence_report.lane_reports.len() != runoff_publication_geometries.len() {
+            return Err(internal_wb13_failure(format!(
+                "persistent OFE sequence produced {} lane reports for {} runoff-publication geometry records",
+                sequence_report.lane_reports.len(),
+                runoff_publication_geometries.len()
+            )));
+        }
 
         let mut records = Vec::with_capacity(sequence_report.lane_reports.len());
-        for ((lane_report, lane_area_m2), previous_storage_total_mm) in sequence_report
+        for (((lane_report, lane_area_m2), runoff_geometry), previous_storage_total_mm) in sequence_report
             .lane_reports
             .iter()
             .zip(lane_areas_m2.iter())
+            .zip(runoff_publication_geometries.iter())
             .zip(previous_storage_totals_mm.iter())
         {
             let ofe_id = u16::try_from(lane_report.ofe_id).map_err(|_| {
@@ -108,7 +118,8 @@ impl DailyInternalPerOfeWb13Collection {
                     calendar_day: context.calendar_day,
                     ofe_id,
                     upstream_runon_m: lane_report.upstream_transfer_input.upstrmq,
-                    qofe_override_m: Some(lane_report.current_transfer_output.qofe),
+                    routed_runoff_m: Some(lane_report.current_transfer_output.qofe),
+                    runoff_geometry: Some(*runoff_geometry),
                 },
             )?;
             let frost_upper_overflow_m = runtime_surface_symbol_value(
@@ -128,6 +139,7 @@ impl DailyInternalPerOfeWb13Collection {
             records.push(InternalPerOfeWb13Record {
                 ofe_id: lane_report.ofe_id,
                 previous_storage_total_mm: *previous_storage_total_mm,
+                physical_surface_outflow_mm: lane_report.current_transfer_output.qofe * 1_000.0,
                 frost_upper_overflow_mm: frost_upper_overflow_m * 1_000.0,
                 frost_internal_adjustment_mm: frost_internal_adjustment_m * 1_000.0,
                 storage_reconciliation_detail: format_wb12_storage_terms(
@@ -350,7 +362,9 @@ struct PerElementWaterBalanceTerms {
     local_liquid_input_mm: f64,
     inflow_mm: f64,
     interception_mm: f64,
-    q_mm: f64,
+    physical_q_mm: f64,
+    published_q_mm: f64,
+    published_qofe_mm: f64,
     ep_mm: f64,
     es_mm: f64,
     er_mm: f64,
@@ -368,7 +382,7 @@ struct PerElementWaterBalanceTerms {
 impl PerElementWaterBalanceTerms {
     fn describe(self, ofe_id: usize) -> String {
         format!(
-            "ofe={ofe_id}, residual_mm={}, inflow_mm={} (RM/local={} UpStrmQ+SubRIn={} frost_adjustment={}), outflow_mm={} (I={} Q={} Ep={} Es={} Er={} Dp={} latqcc={} Tile={} watpdg={}), storage_delta_mm={} (previous={} current={})",
+            "ofe={ofe_id}, residual_mm={}, inflow_mm={} (RM/local={} UpStrmQ+SubRIn={} frost_adjustment={}), outflow_mm={} (I={} physical_Q={} published_Q={} published_QOFE={} Ep={} Es={} Er={} Dp={} latqcc={} Tile={} watpdg={}), storage_delta_mm={} (previous={} current={})",
             self.residual_mm,
             self.inflow_mm,
             self.local_liquid_input_mm,
@@ -376,7 +390,9 @@ impl PerElementWaterBalanceTerms {
             self.frost_internal_adjustment_mm,
             self.outflow_mm,
             self.interception_mm,
-            self.q_mm,
+            self.physical_q_mm,
+            self.published_q_mm,
+            self.published_qofe_mm,
             self.ep_mm,
             self.es_mm,
             self.er_mm,
@@ -407,7 +423,7 @@ fn per_element_water_balance_terms(
         + record.frost_internal_adjustment_mm;
     let interception_mm = record.row.interception_mm;
     let outflow_mm = interception_mm
-        + row.q
+        + record.physical_surface_outflow_mm
         + row.ep
         + row.es
         + row.er
@@ -421,7 +437,9 @@ fn per_element_water_balance_terms(
         local_liquid_input_mm,
         inflow_mm,
         interception_mm,
-        q_mm: row.q,
+        physical_q_mm: record.physical_surface_outflow_mm,
+        published_q_mm: row.q,
+        published_qofe_mm: row.qofe,
         ep_mm: row.ep,
         es_mm: row.es,
         er_mm: row.er,
