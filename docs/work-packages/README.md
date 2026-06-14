@@ -10,6 +10,14 @@
 
 State as of `2026-06-14`:
 
+- REFACTOR023 is complete for the 3000+ line
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling.rs`
+  mechanical split. Scope is behavior-preserving module extraction only:
+  `coupling.rs` remains the snow/interval wiring surface while frost helpers
+  moved under `support_helpers_mod/coupling/`. Final line counts:
+  `coupling.rs=230`, `coupling/frost.rs=1838`,
+  `coupling/frost_entry.rs=1000`. Required closure gates passed. Package:
+  `20260614-refactor023-hillslope-coupling-line-count-split-001/`.
 - HPHYS0320 **closed the SIMIMPL28 storm-start timing seam** (`wnttim < 1.0 -> 1.0`,
   `INV-CLIMATE-018`). This was the first real forcing correction of the entire
   HPHYS0298->0320 snow-comparator arc — and it was a **climate-forcing timing
