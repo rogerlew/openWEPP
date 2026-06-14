@@ -12,13 +12,46 @@ per-OFE pass shards, and close the **end-to-end totalwatsed3 water-balance
 audit** on that routed output — the acceptance surface deferred since
 WBVAL06/6a. ROADMAP queue item 1.
 
-The architecture (per ADR/contracts): `openwepp-cli-watershed`
-(`crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`) orchestrates the
-hillslope HBP shards, routes over the channel network, and writes watershed
-parquet via the wepppy/wepppyo3 interchange schema. totalwatsed3 (wepppy
-Python; its Interception plumbing landed in WBVAL06/6a) is the **acceptance
-audit** that consumes the watershed output and closes
-`P − (Runoff + Lateral + ET + Percolation + Interception) − ΔStorage`.
+Architecture (revised 2026-06-14 — see decision below): totalwatsed3 is an
+**openWEPP-native CLI** (`openwepp-cli-totalwatsed3`) that consumes the
+hillslope interchange outputs (`H.pass`/`H.wat`/`H.soil`/`H.element`),
+area-weighted, hillslope-only, and closes
+`P − (Runoff + Lateral + ET + Percolation + Interception) − ΔStorage` with
+independent operands (Runoff from PASS `runvol`). It does NOT depend on the
+watershed channel routing, and does NOT share the wepppyo3 `wepp_interchange`
+crate (which stays wepp-legacy-only).
+
+## Architecture decision (operator-directed 2026-06-14): totalwatsed3 is its own openWEPP-native CLI
+
+totalwatsed3 is a **hillslope-only** water-balance aggregation (confirmed
+against the authoritative producer `wepppy/wepp/interchange/totalwatsed3.py`:
+area-weighted over hillslopes from `H.pass`/`H.wat`/`H.soil`/`H.element`;
+MOFE-aware per-OFE collapse — `Runoff` from PASS `runvol`, latqcc
+outlet-OFE-only, QOFE summed; **no channel routing, no channel loss/storage**).
+
+**Decision:** build totalwatsed3 as its **own openWEPP-native CLI**
+(`openwepp-cli-totalwatsed3`), NOT bolted into `openwepp-cli-watershed` (W-C)
+and **NOT** by sharing the wepppyo3 `wepp_interchange` crate. Rationale
+(operator): wepppyo3 `wepp_interchange` stays **wepp-legacy-only**; openWEPP
+owns its full output surface end-to-end, with no obligation to carry the
+legacy interchange converters or their constraints. This is a directional
+output-surface boundary (candidate ADR).
+
+Consequences:
+- The totalwatsed3 closure (the WBVAL06/6a deferral — the real prize) is
+  **decoupled from watershed channel routing**: it reads the MOFE01 hillslope
+  interchange outputs directly and does not need impoundments or channel
+  routing to close. (This is why the W-B impoundment + W-C channel blockers
+  were never on the totalwatsed3 path — they were watershed-CLI concerns.)
+- The W-A/W-B/W-C **watershed-CLI channel fixes remain valid landed work**
+  (no-impoundment parse, zero-sediment channel acceptance) for the separate
+  watershed-routed-output (`chanwb`/`chnwb`) deliverable, now a **decoupled
+  follow-on** (`WATERSHED-CHANWB-ROUTED-OUTPUT`), lower priority than the
+  totalwatsed3 closure.
+- W-C's `build_watershed_daily_rows_from_wat` inside the watershed CLI and
+  W-D's via-watershed-CLI totalwatsed3 are **superseded** by the dedicated
+  CLI (T-arc below). The keepable unit/field fixes from W-D (m³ exact fields,
+  depth aliases mm, latqcc outlet-only) carry into the new CLI.
 
 ## Substrate
 

@@ -143,6 +143,54 @@ W-D execution result (2026-06-14):
 (W-A sizing may split W-C/W-D further; each increment behind a conservation
 hard stop.)
 
+## ARCHITECTURE PIVOT (operator-directed 2026-06-14) — totalwatsed3 = own openWEPP-native CLI
+
+totalwatsed3 is hillslope-only (see package.md architecture decision). It moves
+OUT of `openwepp-cli-watershed` into a dedicated **`openwepp-cli-totalwatsed3`**,
+openWEPP-native (NOT sharing wepppyo3 `wepp_interchange`, which stays
+wepp-legacy-only). The W-A/B/C watershed-CLI channel fixes stay (valid landed
+work for the decoupled `chanwb` follow-on); W-C's in-watershed-CLI totalwatsed3
+build and W-D's via-watershed-CLI closure are **superseded** by the T-arc.
+The watershed-routed-output (`chanwb`/`chnwb`) is a decoupled follow-on
+(`WATERSHED-CHANWB-ROUTED-OUTPUT`), not on the totalwatsed3 path.
+
+### Increment T-A — totalwatsed3 CLI design + scope (no production code)
+
+Design `openwepp-cli-totalwatsed3` before code (the M-A/W-A lesson). Read the
+authoritative-semantics reference `wepppy/wepp/interchange/totalwatsed3.py` +
+`tools/totalwatsed3_daily_closure_audit.py` (the CLOSURE SEMANTICS to match —
+NOT a code dependency) and produce `totalwatsed3-cli-scope.md`:
+- Inputs: per-hillslope `H.pass`/`H.wat`/`H.soil`/`H.element` parquets +
+  area lookup; how openWEPP's MOFE01 hillslope outputs map to them.
+- Aggregation semantics (hillslope-only, area-weighted): **Runoff from PASS
+  `runvol`** (the independent operand); MOFE per-OFE collapse — **latqcc
+  outlet-OFE-only**, QOFE summed, storage area-weighted; ET/Dp/Interception
+  terms.
+- openWEPP-native output schema (openWEPP-controlled, not legacy-bound; carry
+  the W-D keepable unit/field fixes: m³ exact fields, depth aliases mm).
+- The closure identity with **independent operands** (no 0==0 — PASS runoff is
+  independent of WAT storage/flux) and the noise-floor tolerance.
+- Red-test definitions + T-B/T-C breakdown + sizing.
+- Remove/relocate `build_watershed_daily_rows_from_wat` from the watershed CLI.
+
+### Increment T-B — totalwatsed3 CLI implementation
+
+Build the `openwepp-cli-totalwatsed3` producer to the T-A scope: contract-first,
+red tests first, hillslope-only area-weighted aggregation, PASS-runvol Runoff,
+MOFE per-OFE collapse, openWEPP-native schema. Gate: produces totalwatsed3
+parquet on the MOFE01 arboreal-dendrite hillslope outputs; per-OFE collapse
+correct (no cross-OFE double-count); single-OFE/MOFE hillslope outputs
+unchanged (read-only consumer).
+
+### Increment T-C — totalwatsed3 closure (the WBVAL06/6a deferral resolved)
+
+The closure audit on the openWEPP-native totalwatsed3 output. Gate: the
+identity `P − (Runoff + Lateral + ET + Perc + Interception) − ΔStorage` closes
+at the established floor with **independent operands** (PASS runoff, not WAT Q;
+nonzero-at-noise, not 0==0) on the arboreal-dendrite cohort. On pass: the
+WBVAL06/6a end-to-end totalwatsed3 deferral is resolved; ROADMAP item 1
+removed; README execution log; handoff naming the decoupled `chanwb` follow-on.
+
 ## Dispatch instructions
 
 Each Codex dispatch: *"Execute increment <W-A|W-B|W-C|W-D|W-D-REDO> of

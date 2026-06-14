@@ -47,7 +47,7 @@ Stage-2 physics-magnitude review.
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
-| 1 | **Watershed routed outputs / totalwatsed3 audit** | Consume the closed MOFE hillslope pass outputs through the watershed output stack | End-to-end `totalwatsed3` water-balance audit on routed openWEPP output; handle the arboreal-dendrite no-impoundment `pw0.imp` state explicitly | ⏭️ **Next** |
+| 1 | **openWEPP-native totalwatsed3 CLI + closure** | A dedicated `openwepp-cli-totalwatsed3` aggregates the MOFE01 hillslope interchange outputs (hillslope-only, area-weighted, PASS runoff) — NOT via the watershed channel CLI, NOT sharing wepppyo3 | End-to-end `totalwatsed3` water-balance closure on openWEPP-native output, independent operands (the WBVAL06/6a deferral) | ⏭️ **Next** |
 | 2 | **MOFE >10-OFE far-point demonstration** | Run MOFE routing on a >10-OFE substrate where legacy's WB defect appears | openWEPP three-identity closure holds at >10 OFEs (exceed the legacy ceiling) | ▶️ follow-on (`MOFE-FARPOINT01`) |
 | 3 | **Per-OFE runoff magnitude adjudication** | Decide if the ±10–25% per-OFE runoff vs legacy is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ▶️ follow-on (`MOFE-MAGPARITY01`) |
 | 4 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
@@ -58,7 +58,7 @@ remaining MOFE-adjacent items below are separate follow-on mechanisms.)
 
 ---
 
-### 1. Watershed Routed Outputs / totalwatsed3 Audit ⏭️ (next)
+### 1. openWEPP-native totalwatsed3 CLI + closure ⏭️ (next)
 
 MOFE01 closed hillslope-internal inter-OFE water routing on the
 `arboreal-dendrite` 36-run 1-5-OFE ladder. M-I added the independent in-runner
