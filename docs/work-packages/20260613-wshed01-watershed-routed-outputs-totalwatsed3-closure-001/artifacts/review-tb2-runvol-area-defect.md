@@ -121,3 +121,94 @@ closure on the area fix.
    multi-OFE fixture `runvol = qofe·A_outlet ≠ qofe·A_hillslope`.
 3. Re-run the native totalwatsed3 closure (T-C) and attribute the remaining
    residual; do not close T-C on the area fix alone.
+
+---
+
+# Follow-up review — T-B2-REDO over-corrected (crossed pairing, now UNDER-scaled)
+
+**Reviewer:** Claude Code · **Date:** 2026-06-14 · **Evidence class:** Ran
+(duckdb on `/tmp/openwepp_wshed01_tb2_redo_qarea/`, reconstructing the M-I
+export from per-hillslope WAT outlet rows; reproduced Codex's exact
+`6948.564523` residual) + Static (read the REDO diff + the geometry at
+`02_output_and_climate_helpers.rs:1126-1162`).
+
+**Status:** T-B2-REDO (`377b6e80`) is **still defective** — it swapped one
+mis-pairing for its mirror image. Runoff is now **~4× too small**. The
+`Σ runvol ≤ Σ precip` bound passes (it is one-sided) and the new tests pass
+(they encode the wrong formula), so the Rust loop went green on a worse result.
+Add **T-B2-REDO2**.
+
+## What REDO did, and why it is also wrong
+
+REDO changed `:728` to (`:737`):
+
+```rust
+row.runvol_m3 = outlet.row.wb13_row.q * outlet.row.wb13_row.area / 1_000.0;
+```
+
+The two surfaces here are a **crossed pairing**:
+- `wb13_row.q` = `routed_runoff · 1000 · efflen/cumulative_length` — the
+  **totlen-normalized** depth (`:1142`).
+- `wb13_row.area` = the per-OFE `lane_area` passed as `publication_area_m2`
+  (`per_ofe_internal_wb13.rs:160` passes `*lane_area_m2`; `:1162` `area =
+  publication_area_m2`) — the **outlet OFE area**, *not* the hillslope area.
+
+`Q` (totlen) must pair with the **hillslope** area; `QOFE` (slplen) must pair
+with the **outlet OFE** area. REDO paired `Q` (totlen) with the **outlet** area,
+under-scaling by `totlen/slplen`. By removing the `publication_area_m2`
+parameter from the function, REDO left only the outlet area in scope, then
+reached for `q` instead of `qofe`.
+
+## Empirical proof (WAT outlet rows, independent of the producer)
+
+Reconstructing the outlet export from the per-hillslope `H*.wat.parquet` outlet
+rows (`ofe_id = max`), independent of the PASS producer:
+
+| quantity | value |
+|---|---|
+| `Σ QOFE_outlet · A_outlet` (correct) | **27.691 Mm³** |
+| `Σ Q_outlet · A_outlet` (REDO) | 6.851 Mm³ |
+| ratio (= OFE-count blend, totlen/slplen) | **4.04** |
+| precip | 50.011 Mm³ |
+| correct runoff coefficient | **0.554** |
+
+For H1 (5 OFEs) the outlet row has `QOFE/Q = 3.165/0.633 = 5.0 = totlen/slplen`
+exactly. Substituting the correct `QOFE_outlet · A_outlet` into the totalwatsed3
+closure:
+
+- **REDO runvol:** cumulative residual `+6948.56 mm` (reproduces Codex's number
+  exactly — confirms the reconstruction).
+- **Correct runvol:** cumulative `+30.54 mm`, **entirely day 1** (`+30.95 mm`,
+  the storage-baseline `prepend` init); **excluding day 1: −0.41 mm over 2191
+  days, only 1 day > 1 mm.**
+
+So the correct runvol **closes T-C** — and the `+2,950 mm` "residual caveat"
+above was an **artifact of the wrong (WAT-`Q`) runvol**, not a second defect.
+
+## The fix (empirically verified) — `q` → `qofe`
+
+`02_output_and_climate_helpers.rs:737`: use the **slplen-normalized** depth with
+the outlet area —
+
+```rust
+row.runvol_m3 = outlet.row.wb13_row.qofe * outlet.row.wb13_row.area / 1_000.0;
+```
+
+`WAT.QOFE · WAT.Area` (= `wb13_row.qofe · wb13_row.area`) is what closes at
+−0.41 mm above. Equivalent to the M-I export (`physical_surface_outflow_mm ·
+outlet.area_m2`, which closed the per-hillslope identity at 3.31e-13) — Codex
+should pick whichever reads cleanest; both are slplen-depth × outlet-area.
+Disposition (which of the two QOFE surfaces) is the implementer's.
+
+## The lesson — my recommended bound was one-sided
+
+`Σ runvol ≤ Σ precip` catches **over**-scaling (T-B2) but is **blind to
+under**-scaling (REDO: 0.137 < 1 passes). Tests that assert the producer's own
+formula also pass either way. The only thing that caught the mirror error was
+reconstructing the export from **independent operands** (WAT `QOFE × A_outlet`)
+and running the **actual closure**. The acceptance gate must be **two-sided and
+closure-anchored**: `runvol` must equal `QOFE_outlet · A_outlet` (≡
+`Q_outlet · A_hillslope`) *and* the totalwatsed3 closure must drop to its floor
+(ex-day-1 sub-mm) — not a one-sided inequality, and not a test that re-states
+the implementation. This is the conservation-is-acceptance thesis catching an
+error that every proxy gate missed.

@@ -1,6 +1,8 @@
 # Watershed Staged Increment Plan — Dispatch Artifact
 
-Status: active - T-B2-REDO executed; T-C queued
+Status: active - T-B2-REDO executed but STILL DEFECTIVE (runvol now ~4× too
+SMALL — crossed Q×outlet-area pairing; Claude review 2026-06-14) → T-B2-REDO2
+before T-C
 Author: Claude Code, 2026-06-13
 Template: FDHP01 `d3-staged-increment-plan.md` / MOFE01
 `mofe-staged-increment-plan.md` (proven; agent memory
@@ -357,26 +359,65 @@ T-B2-REDO execution result (2026-06-14):
   claimed from T-B2-REDO.
 - Full Rust loop passed: fmt, clippy, workspace tests, and deny.
 
+> ⚠ **STILL DEFECTIVE (Claude review 2026-06-14, review-tb2-runvol-area-defect.md
+> §Follow-up):** the closure got *worse* (6948 vs W-D's 2950) because
+> `q · outlet.area` is the **crossed pairing** — totlen-normalized `Q` against
+> the **outlet OFE** area — under-scaling runoff by `totlen/slplen` (~4× cohort;
+> exactly `5×` on the 5-OFE H1, where `QOFE/Q=5.0`). The Rust loop went green
+> because (a) `Σ runvol ≤ Σ precip` is one-sided (under-scaled 0.137 passes) and
+> (b) the new fixture **encodes the wrong formula** (asserts `Q·A_outlet`
+> correct). Reconstructing the export from WAT `QOFE_outlet · A_outlet`
+> (independent operands) closes the totalwatsed3 at **+30.5 mm = day-1 init,
+> ex-day-1 −0.41 mm/2191 days**. Fix = `q → qofe` (`:737`). See **T-B2-REDO2**.
+
+### Increment T-B2-REDO2 — fix the crossed pairing (Q→QOFE at the outlet area)
+
+Disposition of the follow-up review (review-tb2-runvol-area-defect.md, REDO
+section). T-B2-REDO did NOT clear the defect — it swapped over-scaling for
+**under-scaling** (`runvol` ~4× too small). `:737` pairs `wb13_row.q` (totlen-
+normalized) with `wb13_row.area` (the **outlet OFE** area) — a crossed pairing.
+`Q`(totlen) belongs with the **hillslope** area; `QOFE`(slplen) with the
+**outlet** area.
+
+- Fix (empirically verified to close): `:737` use the slplen-normalized depth
+  with the outlet area — `outlet.row.wb13_row.qofe * outlet.row.wb13_row.area`
+  (≡ the M-I export `physical_surface_outflow_mm · outlet.area_m2`, which closed
+  the per-hillslope identity at 3.31e-13). Disposition of which QOFE surface is
+  the implementer's.
+- **Delete/invert the REDO fixture** (`Q=2.5,QOFE=5.0,Area=200 → "correct"
+  0.5 m³`): it encodes the bug. With `Area` = outlet OFE area, the correct
+  `runvol` is `QOFE·Area = 1.0 m³`; `Q·Area = 0.5 m³` is the under-scaled wrong
+  value. The fixture must assert `QOFE·A_outlet`.
+- **Acceptance is the CLOSURE, not a precip ratio.** `Σ runvol ≤ Σ precip` is
+  one-sided — REDO's under-scaled runvol passed it (0.137 < 1). The gate is the
+  totalwatsed3 identity dropping to floor (verified: `+30.5 mm`, entirely day-1
+  storage-init; **ex-day-1 −0.41 mm over 2191 days**) on the arboreal-dendrite
+  cohort with the corrected runvol. A per-hillslope `≤ precip` check, if kept,
+  must use the **totalwatsed3-aggregated** precip basis, not a per-OFE WAT-`P`
+  sum (which under-counts ~6×).
+- Anchors unchanged; full Rust loop.
+
 ### Increment T-C — totalwatsed3 closure on openWEPP-NATIVE outputs (the WBVAL06/6a deferral resolved)
 
-T-B2-REDO cleared the runvol area defect. T-C may run only on corrected native
-PASS/WAT output such as `/tmp/openwepp_wshed01_tb2_redo_qarea`; it must not use
-the defective T-B2 output where `Σ runvol ≈ 2.5× Σ precip`.
+**BLOCKED on T-B2-REDO2.** The current `/tmp/openwepp_wshed01_tb2_redo_qarea`
+output is under-scaled (`Σ runvol = 0.137·Σ precip`; closure `+6948 mm`). T-C
+runs only on REDO2-corrected output.
 
-The closure audit on the openWEPP-native totalwatsed3 output — produced from openWEPP's OWN H.pass(runvol, T-B2) + H.wat, NOT the legacy interchange dir. Gate: the
+The closure audit on the openWEPP-native totalwatsed3 output — produced from openWEPP's OWN H.pass(runvol) + H.wat, NOT the legacy interchange dir. Gate: the
 identity `P − (Runoff + Lateral + ET + Perc + Interception) − ΔStorage` closes
 at the established floor with **independent operands** (PASS runoff, not WAT Q;
-nonzero-at-noise, not 0==0) on the arboreal-dendrite cohort. Hard pre-gate
-(must hold before the closure is even meaningful): annual `Σ runvol ≤ Σ precip`
-per hillslope. On pass: the WBVAL06/6a end-to-end totalwatsed3 deferral is
-resolved; ROADMAP item 1 removed; README execution log; handoff naming the
-decoupled `chanwb` follow-on. **Do not declare closure on the area fix alone** —
-the `Q`-substitution proxy left a +2,950 mm residual that must be attributed
-independently (see review-tb2-runvol-area-defect.md §residual caveat).
+nonzero-at-noise, not 0==0) on the arboreal-dendrite cohort. Expected on the
+REDO2 fix: cumulative `~+30 mm` carried entirely by day-1 storage-init,
+**ex-day-1 sub-mm over 2191 days** (Claude reconstruction from WAT
+`QOFE_outlet · A_outlet`). On pass: the WBVAL06/6a end-to-end totalwatsed3
+deferral is resolved; ROADMAP item 1 removed; README execution log; handoff
+naming the decoupled `chanwb` follow-on. The earlier `+2,950 mm` "residual
+caveat" was an **artifact of the wrong (WAT-`Q`) runvol**, now retired — the
+corrected runvol closes; do not chase a phantom second term.
 
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <W-A|...|T-A|T-B|T-B2|T-B2-REDO|T-C> of
+Each Codex dispatch: *"Execute increment <W-A|...|T-A|T-B|T-B2|T-B2-REDO|T-B2-REDO2|T-C> of
 `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
 `watershed-routing-scope.md`; `totalwatsed3-cli-scope.md` after T-A; the
