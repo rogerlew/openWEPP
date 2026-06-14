@@ -230,9 +230,42 @@ T-B execution result (2026-06-14):
   `closure_reconstructed_with_storage_total_mm=57.409871`
   (`0.345805%` of precipitation).
 
-### Increment T-C — totalwatsed3 closure (the WBVAL06/6a deferral resolved)
+### Increment T-B2 — openWEPP-native runoff-delivery (runvol) output
 
-The closure audit on the openWEPP-native totalwatsed3 output. Gate: the
+T-B's closure ran on LEGACY interchange parquets (Jun-7 wepppy-produced);
+openWEPP emits no `runvol`/PASS surface (Claude T-B review). For genuine
+ADR-0019 closure, openWEPP must produce its OWN independent runoff-delivery
+`runvol`. Operator-directed (2026-06-14): source it from the **MOFE outlet-OFE
+routed runoff**, then run totalwatsed3 on openWEPP-native outputs.
+
+- **Source (precise, read-the-lines):** the outlet-OFE
+  `current_transfer_output` surface runoff —
+  `per_ofe_internal_wb13.rs:161 physical_surface_outflow_mm`
+  (`= current_transfer_output.qofe * 1000`), i.e. the **same outlet runoff the
+  M-I hillslope-total identity already uses** (`:548` `if index ==
+  outlet_index: external_out += physical_q_mm`, which closed at `3.31e-13`).
+  This is the routed-transfer-delivery path, **genuinely independent of the
+  WAT `Q` balance publication** — not a WAT-Q restatement (which would be the
+  self-consistency the T-arc exists to avoid).
+- **runvol = outlet routed surface runoff × hillslope area** (m³), per day.
+  It is the **outlet net delivery**, NOT the area-weighted per-OFE sum (the W-D
+  double-count error that gave 2950 mm). `sbrunv` from the outlet lateral
+  delivery; sediment companions zero per the deferred-sediment posture
+  (MOFE-EROSION follow-on).
+- **Emit openWEPP's own runoff-delivery parquet** (ADR-0019: openWEPP-controlled
+  schema) carrying the columns totalwatsed3 needs (`runvol`/`sbrunv`/date keys);
+  the T-B CLI reads openWEPP's surface, not the legacy `output/interchange/`.
+- Output-surface addition only: **no hillslope/MOFE physics change**; single-OFE
+  + MOFE WAT/HBP anchors stay byte-identical.
+- Red tests: runvol equals the outlet `physical_surface_outflow` volume (NOT
+  the per-OFE sum, NOT WAT `Q`); a multi-OFE fixture proves runvol = outlet,
+  not Σ-per-OFE; missing/zero-runoff days produce zero runvol.
+- Gate: openWEPP emits its own runoff-delivery parquet from the
+  arboreal-dendrite MOFE01 run; anchors unchanged; full Rust loop.
+
+### Increment T-C — totalwatsed3 closure on openWEPP-NATIVE outputs (the WBVAL06/6a deferral resolved)
+
+The closure audit on the openWEPP-native totalwatsed3 output — produced from openWEPP's OWN H.pass(runvol, T-B2) + H.wat, NOT the legacy interchange dir. Gate: the
 identity `P − (Runoff + Lateral + ET + Perc + Interception) − ΔStorage` closes
 at the established floor with **independent operands** (PASS runoff, not WAT Q;
 nonzero-at-noise, not 0==0) on the arboreal-dendrite cohort. On pass: the
@@ -241,7 +274,7 @@ removed; README execution log; handoff naming the decoupled `chanwb` follow-on.
 
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <W-A|W-B|W-C|W-D|T-A|T-B|T-C> of
+Each Codex dispatch: *"Execute increment <W-A|...|T-A|T-B|T-B2|T-C> of
 `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
 `watershed-routing-scope.md`; `totalwatsed3-cli-scope.md` after T-A; the
