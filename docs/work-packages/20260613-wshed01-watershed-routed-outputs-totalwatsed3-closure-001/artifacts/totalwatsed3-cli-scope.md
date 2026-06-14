@@ -267,3 +267,38 @@ T-C closure:
 - Accept only nonzero-at-noise independent closure.
 - On pass, update the package disposition, remove the ROADMAP deferral, and
   name `WATERSHED-CHANWB-ROUTED-OUTPUT` as the decoupled follow-on.
+
+## Claude review (2026-06-14) — T-A ACCEPTED; the series' lessons are designed-in
+
+Evidence mode: Ran (scope read against ADR-0019/0020 + the FDHP01→MOFE01→WSHED01 lessons).
+
+Endorsed, no blocking findings. The scope is ADR-compliant and — notably — has
+internalized the hard-won lessons of this series at the **design** phase, not
+just as review backstops:
+
+- **ADR-0019/0020:** openWEPP-native producer, no wepppyo3 `wepp_interchange`
+  dependency (wepppy as semantics reference only), dedicated CLI separate from
+  the watershed channel CLI, and `build_watershed_daily_rows_from_wat` slated
+  for removal. ✓
+- **Independent operands (the M-E4/M-H/W-D lesson):** `Runoff` from PASS
+  `runvol`, explicitly NOT WAT `Q`/`QOFE`. The operand-lineage test is
+  correctly specified — a fixture where `runvol` *differs* from `Q·Area/1000`
+  proves the producer takes PASS, while retaining `Q` as a diagnostic. This
+  targets *source* independence, not a false "runvol ≠ Q numerically" (they are
+  legitimately the same runoff geometrically; the closure tests that runoff
+  reconciles with P/ET/storage, not runvol-vs-Q). ✓
+- **No-tautology / no-clone (the M-E4 tautology + M-F clone lessons):** "exact
+  all-zero residuals are a tautology hold, not acceptance" and "must not clone
+  aggregate rows across OFEs" are written into the gates. ✓
+- **MOFE per-OFE collapse:** latqcc outlet-OFE-only, QOFE summed,
+  area-weighted — matches the wepppy semantics. ✓
+
+**The load-bearing T-B risk (already scoped, flagged for emphasis):** the
+HBP→PASS adapter that "exposes canonical `runvol`." openWEPP is HBP-only today;
+if its HBP doesn't carry a clean runoff-delivery `runvol`, T-B's real work is
+exposing it as a genuinely runoff-emission-sourced quantity (not a balance
+residual). The scope's nonzero-at-noise gate is the correct proof that the
+resulting closure is genuine rather than defined-to-close. Confirm the runvol
+lineage is the runoff-delivery path during T-B, before T-C reports closure.
+
+T-A accepted; T-B (the native producer + HBP→PASS runvol) is the next dispatch.
