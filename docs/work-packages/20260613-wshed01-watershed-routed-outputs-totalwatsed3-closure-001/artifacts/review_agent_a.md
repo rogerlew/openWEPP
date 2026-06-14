@@ -1,6 +1,6 @@
 # Review Agent A
 
-Status: T-B2-REDO local review complete
+Status: T-B2-REDO2 post-review complete
 
 Evidence mode: Static + Ran
 
@@ -145,7 +145,7 @@ Residual risk:
 
 | # | Finding | Disposition | Rationale |
 |---|---|---|---|
-| - | None | superseded | This local review was later invalidated by the T-B2 runvol area defect. T-B2-REDO is the current accepted review record. |
+| - | None | superseded | This local review was later invalidated by the T-B2 runvol area defect and the T-B2-REDO crossed-pairing defect. T-B2-REDO2 is the current accepted review record. |
 
 ## T-B2-REDO Review
 
@@ -180,3 +180,32 @@ Residual risk:
 | # | Finding | Disposition | Rationale |
 |---|---|---|---|
 | - | None | accepted | T-B2-REDO corrected the runvol area defect, preserved HBP/WAT anchors, passed focused and full Rust gates, and records the remaining residual for T-C. |
+
+## T-B2-REDO2 Sidecar Review
+
+Evidence mode: Static + Ran
+
+Findings:
+
+1. `hillslope_pass.runvol` unit metadata still described the old hillslope
+   publication-area pairing.
+2. The focused REDO2 regression rejected `Q * outlet Area`, but it did not
+   distinguish outlet WAT row area from the publication-area argument.
+
+Disposition:
+
+- Fixed
+  `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs` so
+  `hillslope_pass.runvol` names outlet `QOFE` and outlet WAT row area.
+- Tightened
+  `crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs` so the
+  focused fixture uses distinct outlet WAT row area (`200 m2`) and
+  publication-area argument (`300 m2`), and rejects
+  `QOFE * publication Area`.
+
+## T-B2-REDO2 Finding Disposition
+
+| # | Finding | Disposition | Rationale |
+|---|---|---|---|
+| 1 | `runvol` metadata drift | fixed | Metadata now matches the REDO2 producer formula. |
+| 2 | Fixture did not guard publication-area aliasing | fixed | The regression now rejects both `Q * outlet Area` and `QOFE * publication Area`. |

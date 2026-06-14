@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: T-B2-REDO executed
+Status: T-B2-REDO2 executed
 
 Evidence mode: Static
 
@@ -131,12 +131,30 @@ T-B2-REDO contract/metadata implementation:
 - The focused regression fixture now separates `Q` and `QOFE` so the test
   rejects both the old `QOFE * publication area` formula and a mismatched
   `Q * outlet-record area` formula.
+- T-B2-REDO is superseded by T-B2-REDO2 because its accepted
+  `Q * outlet Area` formula crossed publication operands and under-scaled the
+  native PASS `runvol` surface.
+
+T-B2-REDO2 contract/metadata implementation:
+
+- No new canonical `SC-*` contract was added. T-B2-REDO2 corrected output
+  publication lineage for the existing native PASS surface; it did not change
+  hillslope hydrology process physics.
+- `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`
+  now publishes MOFE PASS `runvol` from the outlet WAT row's
+  `QOFE * Area / 1000` surface.
+- `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs` now describes
+  `hillslope_pass.runvol` as outlet `QOFE` surface runoff delivery depth
+  converted with the outlet WAT row area.
+- The focused regression fixture now separates `Q`, `QOFE`, outlet WAT row
+  area, internal OFE area, and the publication-area argument, rejecting both
+  REDO's `Q * outlet Area` and T-B2's `QOFE * publication area` pairings.
 
 Contract implications carried into T-C:
 
 - The producer surface is now present and independently test-pinned.
 - The native openWEPP PASS surface is now present and independently
-  test-pinned with the corrected `Q * Area` `runvol` volume dual.
+  test-pinned with the corrected `QOFE * outlet Area` `runvol` volume dual.
 - T-C must close the remaining residual as a water-balance identity issue,
   not by weakening the unit lineage, reusing the defective T-B2 output, or
   substituting WAT `Q` for PASS `runvol`.

@@ -1,6 +1,6 @@
 # Verification Agent B
 
-Status: T-B2-REDO local verification complete
+Status: T-B2-REDO2 local verification complete
 
 Evidence mode: Static
 
@@ -137,3 +137,31 @@ Residual governance note:
 - T-C must close or contractually reclassify the `6948.564523 mm` residual
   with independent operands. It must not revert to the defective T-B2 output or
   exact-zero/self-built acceptance.
+
+Supersession:
+
+- This T-B2-REDO governance record is superseded by T-B2-REDO2. REDO used
+  `Q * outlet Area`, which under-scaled native PASS `runvol`.
+
+## T-B2-REDO2 Governance Verification
+
+Evidence mode: Static + Ran
+
+Verified:
+
+- T-B2-REDO2 is marked executed for the crossed-pairing correction only; final
+  package disposition remains queued to T-C.
+- T-B2 and T-B2-REDO outputs are marked superseded; T-C is routed to
+  `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z`.
+- The canonical gate table records REDO2 focused tests, real rerun, HBP/WAT
+  anchor check, PASS-vs-WAT `QOFE * Area`, totalwatsed3 closure audit, and
+  full gates.
+- Post-review fixes updated unit metadata and strengthened the focused
+  fixture to reject publication-area aliasing.
+- Line-count governance is updated for the touched files; no touched
+  production file crossed the 2000-line warning threshold.
+
+Residual governance note:
+
+- T-C must preserve the independent-operand rule and use the REDO2
+  day-1/ex-day-1 closure split as its starting evidence.

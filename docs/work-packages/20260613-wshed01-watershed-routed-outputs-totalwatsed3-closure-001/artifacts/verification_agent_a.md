@@ -1,6 +1,6 @@
 # Verification Agent A
 
-Status: T-B2-REDO local verification complete
+Status: T-B2-REDO2 local verification complete
 
 Evidence mode: Ran + Static
 
@@ -143,3 +143,30 @@ Residual blocker:
 
 - The corrected-output wepppy audit still reports
   `closure_reconstructed_with_storage_total_mm=6948.564523`. T-C owns closure.
+
+Supersession:
+
+- This T-B2-REDO verification record is superseded by T-B2-REDO2. REDO used
+  `Q * outlet Area`, which under-scaled native PASS `runvol`.
+
+## T-B2-REDO2 Verification Record
+
+Evidence mode: Ran + Static
+
+Verified:
+
+- The focused REDO2 regression passes and rejects `Q * outlet Area`,
+  `QOFE * internal OFE area`, `QOFE * publication Area`, and per-OFE summed
+  volume aliases.
+- `hillslope_pass.runvol` unit metadata now names outlet `QOFE` and outlet WAT
+  row area.
+- `openwepp-cli-hill` reran arboreal-dendrite p1-p36 under
+  `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z` and emitted
+  `36` HBP, `36` WAT, `36` PASS parquet files, and `36` manifests.
+- HBP/WAT anchor comparison reports `anchor_mismatches=0`.
+- The PASS audit reports `max_abs_pass_minus_qofe_area_m3=0.0` over
+  `78912` rows.
+- Native totalwatsed3 production emitted `2192` rows and the wepppy audit
+  reports `closure_reconstructed_with_storage_total_mm=30.544142` with
+  ex-day-1 basic-storage residual `-0.409175395336963 mm`.
+- Full Rust gates passed: fmt, clippy, workspace tests, and deny.

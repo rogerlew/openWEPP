@@ -1,6 +1,6 @@
 # Implementation Test Evidence
 
-Status: T-B2-REDO executed
+Status: T-B2-REDO2 executed
 
 Evidence mode: Ran + Static
 
@@ -338,6 +338,9 @@ Full gate evidence:
 - `cargo clippy --workspace --all-targets -- -D warnings`: pass.
 - `cargo test --workspace`: pass.
 - `cargo deny check`: pass.
+- `git diff --check`: pass.
+- `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`:
+  `29` files scanned, `0` errors, `0` warnings.
 - `git diff --check`: pass before final artifact reconciliation.
 
 Arboreal-dendrite T-B producer:
@@ -640,7 +643,102 @@ Full gate evidence:
 
 Disposition:
 
-T-B2-REDO closes the native PASS `runvol` area defect and replaces the hollow
-T-B2 self-consistency audit with an independent `Q * Area` dual check plus a
-water-year annual precipitation bound. No totalwatsed3 conservation closure is
-claimed; T-C owns the `6948.564523 mm` corrected-output residual.
+T-B2-REDO was later superseded by T-B2-REDO2. It closed the original
+publication-area defect, but its accepted `Q * outlet Area` formula crossed
+publication operands and under-scaled native PASS `runvol`. T-C must not use
+`/tmp/openwepp_wshed01_tb2_redo_qarea` as the corrected output authority.
+
+## T-B2-REDO2 implementation and evidence
+
+Status: T-B2-REDO2 executed
+
+Evidence mode: Ran + Static
+
+Defect disposition:
+
+- `review-tb2-runvol-area-defect.md` follow-up correctly rejected the
+  T-B2-REDO `Q * outlet Area` formula as a crossed pairing that under-scaled
+  runoff.
+- Correct native PASS `runvol` uses the slplen-normalized outlet publication:
+  `QOFE * outlet Area / 1000`.
+
+Implementation:
+
+- Updated
+  `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs` so
+  MOFE PASS `runvol` uses `outlet.row.wb13_row.qofe *
+  outlet.row.wb13_row.area / 1000`.
+- Inverted the focused fixture in
+  `crates/openwepp-runner/src/hillslope/tests03/per_ofe_state.rs`:
+  `Q=2.5 mm`, `QOFE=5.0 mm`, `Area=200 m2`; correct PASS `runvol` is
+  `1.0 m3`, while REDO's `Q * outlet Area` is `0.5 m3`.
+- Tightened the fixture by passing a distinct `300 m2` publication-area
+  argument so the test also rejects `QOFE * publication Area`.
+- Updated
+  `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs` so
+  `hillslope_pass.runvol` metadata names outlet `QOFE` and outlet WAT row
+  area.
+- Removed the one-sided precipitation-bound assertion from that unit fixture;
+  the T-B2-REDO2 acceptance gate is the closure audit plus independent
+  `QOFE * outlet Area` operand check.
+
+Red / focused evidence:
+
+- Red: `cargo test -p openwepp-runner mofe01_tb2_redo2_pass_runvol_uses_qofe_outlet_area_not_q_outlet_area -- --nocapture`
+  failed before the producer correction at
+  `assertion failed: (row.runvol_m3 - 1.0).abs() <= 1.0e-12`.
+- Green: `cargo test -p openwepp-runner mofe01_tb2_redo2_pass_runvol_uses_qofe_outlet_area_not_q_outlet_area -- --nocapture`:
+  `1` passed.
+- Green: `cargo test -p openwepp-runner --test totalwatsed3_cli_contract totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces -- --nocapture`:
+  `1` passed.
+
+Corrected real-run evidence:
+
+- `cargo build --release -p openwepp-runner --bins`: pass.
+- Fresh corrected run root:
+  `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z`.
+- Release `openwepp-cli-hill` reran p1-p36 with `outputs.pass_parquet`;
+  output counts were `hbp=36`, `wat=36`, `pass_parquet=36`, and
+  `manifests=36`.
+- Stderr logs contained no hard-error markers.
+- HBP/WAT anchor comparison against `/tmp/openwepp_mofe01_mi_final/output`:
+  `anchor_mismatches=0`.
+- Corrected PASS QOFE-area audit:
+  `rows=78912`, `max_abs_pass_minus_qofe_area_m3=0.0`,
+  `pass_sum_m3=27691217.37511973`.
+- REDO under-scaled comparison:
+  `sum(Q * outlet Area / 1000)=6851275.733726182 m3`,
+  `max_abs_pass_minus_q_area_under_scaled_m3=21766.4323911278`.
+- `openwepp-cli-totalwatsed3` wrote `2192` corrected rows to
+  `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z/totalwatsed3.parquet`.
+- Corrected totalwatsed3/PASS `runvol` sum diff:
+  `-4.0978193283081055e-08 m3`.
+- wepppy audit read succeeded:
+  `closure_reconstructed_with_storage_total_mm=30.544142`,
+  `closure_reconstructed_with_enriched_storage_total_mm=30.543864`,
+  `interception_reported_total_mm=551.502748`,
+  `profile_violations_days=fc_gt_porosity:0,wp_gt_fc:0,soilwater_gt_porosity:0,soilwater_lt_wp:0`.
+- Closure split:
+  day-1 basic-storage residual `+30.9533178099056 mm`;
+  ex-day-1 basic-storage residual `-0.409175395336963 mm` over `2191` days;
+  ex-day-1 max absolute basic-storage residual `0.248031731325653 mm`;
+  ex-day-1 basic-storage days above `1 mm`: `0`.
+
+Full gate evidence:
+
+- `cargo fmt --check`: pass.
+- `cargo clippy --workspace --all-targets -- -D warnings`: pass.
+- `cargo test --workspace`: pass.
+- `cargo deny check`: pass.
+
+Subagent evidence:
+
+- `comparator_suite_runner` delegation was attempted but unavailable due to a
+  GPT-5.3-Codex-Spark usage limit, so the heavy closure batch was run locally
+  and recorded as command-level evidence.
+
+Disposition:
+
+T-B2-REDO2 closes the crossed-pairing `runvol` defect and supersedes
+`/tmp/openwepp_wshed01_tb2_redo_qarea`. T-C is queued on the REDO2-corrected
+native output and owns final package disposition.

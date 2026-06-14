@@ -25,6 +25,14 @@ State as of `2026-06-14`:
   **Stage 2 = snow physics-magnitude** — the `snowd.for` equation adjudication,
   which **stays deferred behind the protected boundary.** Snow *conservation* is no
   longer suspended; snow *magnitude* still is.
+- **WSHED01 closed the openWEPP-native totalwatsed3 CLI + closure** (2026-06-14,
+  item 9) — the WBVAL06/6a end-to-end totalwatsed3 deferral is **resolved** on
+  openWEPP-native output (`openwepp-cli-totalwatsed3`, ADR-0019/0020), closing
+  ex-day-1 at `−0.41 mm/2191 d` with independent operands. The next active rung
+  is the **MOFE >10-OFE far-point demonstration** (`MOFE-FARPOINT01`). Channel
+  water-balance routed output (`chanwb`) is a **separate** follow-on
+  (`WATERSHED-CHANWB-ROUTED-OUTPUT`), decoupled from the hillslope-only
+  totalwatsed3 per ADR-0020.
 
 Active work sequence (each rung adds one mechanism on an already-closed
 foundation; boundaries are closure gates, not calendar phases).
@@ -230,19 +238,46 @@ publication-safe Daymet CLI audit:
    plus particle-fraction handoff as a named follow-on. Package:
    `20260612-mofe01-inter-ofe-routing-closure-001/`. **Closure (2026-06-14):** MOFE01 water-routing closure is done-done on the 36-run 1–5-OFE ladder. Named follow-ons: `MOFE-FARPOINT01` (>10-OFE exceed-the-ceiling demonstration), `MOFE-MAGPARITY01` (±10–25% per-OFE runoff magnitude adjudication), `REFACTOR022` (line-count split), plus watershed/totalwatsed3 (queue item 1) and `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` (sediment coupling).
 
-   **Next rung — WSHED01 (watershed routed outputs / totalwatsed3)** *(active 2026-06-13, W-A executed; W-B next)*: produce watershed-level routed output from the closed MOFE01 hillslope HBP shards and close the end-to-end totalwatsed3 audit (the WBVAL06/6a deferral). W-A confirmed the first blocker is the arboreal-dendrite `jpond=0` no-impoundment parser defect (`CLIWAT-E-010` / `IMP-E-004`) before `chan.inp`, HBP parsing, dispatch, or output writing. Cross-repo: openWEPP watershed CLI produces output, wepppy totalwatsed3 audits it. Package: `20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/`.
-9. **watershed routed outputs / totalwatsed3 audit** *(next)* — consume the
-   closed MOFE hillslope pass outputs through the watershed output stack and
-   produce the end-to-end `totalwatsed3` audit surface deferred since
-   WBVAL06/6a. M-H attempted `openwepp-cli-watershed` with the fresh H1-H36
-   `.hbp` files and failed closed before output writing on the
-   arboreal-dendrite no-impoundment `pw0.imp` state (`CLIWAT-E-010` /
-   `IMP-E-004`, `jpond=0`). The next package should close
-   `WATERSHED-OUTPUT-TOTALWATSED3-MOFE01` by explicitly modeling or accepting
-   that state, producing `totalwatsed3.parquet`, and running the totalwatsed3
-   water-balance audit on routed openWEPP output. Related follow-ons:
-   `MOFE-GT10-FARPOINT-CLOSURE` for a >10-OFE substrate and
-   `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` for sediment-coupled routing.
+   **Next rung — WSHED01 (openWEPP-native totalwatsed3 CLI + closure)** *(complete 2026-06-14)*: closed the end-to-end totalwatsed3 water-balance audit on openWEPP-native output (the WBVAL06/6a deferral). See item 9 below for the W-arc→T-arc pivot (ADR-0019/0020), the three-iteration runvol fix, and the closure evidence. Package: `20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/`.
+9. **openWEPP-native totalwatsed3 CLI + closure** *(WSHED01 complete
+   2026-06-14 — the WBVAL06/6a deferral resolved)* — consume the closed MOFE
+   hillslope outputs and close the end-to-end `totalwatsed3` water-balance audit
+   on **openWEPP-native** output. The package began as a watershed-CLI route
+   (W-A→W-D): W-A/W-B/W-C cleared the `jpond=0` no-impoundment parser defect
+   (`IMP-E-004`/`CLIWAT-E-010`, the `IMP-E-007` count-mismatch split) and the
+   over-strict WS10 zero-sediment/`nchnum=0` channel guards, reaching watershed
+   output; W-D's audit then exposed that `totalwatsed3` is **hillslope-only**
+   (no channel terms) and that the producer was filling `runvol` from WAT `Q`
+   (a self-consistency check, not conservation). **Pivot (operator-directed):**
+   two ADRs — [ADR-0019](../decisions/0019-openwepp-owns-its-output-surface-wepppyo3-legacy-only.md)
+   (openWEPP owns its output surface; `wepppyo3 wepp_interchange` frozen
+   legacy-only) and [ADR-0020](../decisions/0020-totalwatsed3-dedicated-output-aggregation-cli.md)
+   (totalwatsed3 is a dedicated `openwepp-cli-totalwatsed3`, an
+   output-aggregation tier separate from the simulation binaries) — redirected
+   the close to a native T-arc (T-A scope → T-B CLI → T-B2 native PASS `runvol`
+   → T-C closure). The native `runvol` is sourced from the MOFE outlet-OFE
+   routed runoff (the same surface the M-I hillslope-total identity closes on),
+   genuinely independent of WAT `Q`. **Runvol took three iterations** —
+   `QOFE·A_hillslope` over-scaled 2.5× (runoff > precip; caught by the closure),
+   `Q·A_outlet` under-scaled ~4× (a crossed pairing that passed the one-sided
+   `≤precip` bound and a self-restating test; caught by reconstructing the
+   export from independent operands), and finally **`QOFE_outlet·A_outlet`**
+   (≡ `Q·A_hillslope`). **Closure (`openwepp-cli-totalwatsed3` on the native
+   arboreal-dendrite PASS/WAT):** `Σ runvol = 27.691 Mm³` (coeff 0.554), runoff
+   < precip every year, independent of the WAT-`Q` column (18.895 Mm³); the
+   `P − (Runoff + Lateral + ET + Perc + Interception) − ΔStorage` identity
+   closes ex-day-1 at `−0.41 mm` over 2191 days with nonzero-at-noise daily
+   residuals `[−0.248, +0.005] mm` (day-1 `+30.95 mm` is the storage-prepend
+   init, present for any correct producer). Anchors byte-identical
+   (`anchor_mismatches=0`); MOFE physics untouched (output-surface-only). The
+   forensic record of the runvol arc is `artifacts/review-tb2-runvol-area-defect.md`;
+   the durable geometry fact is agent memory `reference-qofe-q-area-duality`.
+   Package: `20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/`.
+   **Named follow-ons:** `WATERSHED-CHANWB-ROUTED-OUTPUT` (the decoupled
+   channel-routing / `chanwb`/`chnwb` watershed output, distinct from the
+   hillslope-only totalwatsed3 per ADR-0020 — the W-B/W-C watershed-CLI work
+   landed there but channel water-balance routed output remains its own rung)
+   and `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` (sediment-coupled routing).
 10. **snow physics-magnitude (Stage 2, deferred)** — the `snowd.for`
    melt/settling/density/partition equation adjudication against external authority
    (CRM Ch. 3.7, WEPP User Doc), behind the protected boundary. Distinct from snow

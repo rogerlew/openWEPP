@@ -1,6 +1,6 @@
 # Review Agent B
 
-Status: T-B2-REDO local review complete
+Status: T-B2-REDO2 post-review complete
 
 Evidence mode: Static
 
@@ -180,3 +180,31 @@ Residual risk:
 | # | Finding | Disposition | Rationale |
 |---|---|---|---|
 | - | None | accepted | T-B2-REDO has direct focused, real-run, anchor, annual-bound, totalwatsed3, and full-gate evidence. |
+
+## T-B2-REDO2 QA Review
+
+Evidence mode: Static + Ran
+
+Findings:
+
+1. REDO2 evidence was not yet recorded in the canonical gate table at review
+   time.
+2. Earlier implementation/test evidence sections still described the
+   defective REDO `Q * Area` correction as accepted authority.
+
+Disposition:
+
+- Fixed `gate-results.md` with REDO2 red/focused tests, real rerun, HBP/WAT
+  anchor check, PASS-vs-WAT `QOFE * Area`, totalwatsed3 closure audit, full
+  gates, and the post-review metadata/fixture fix.
+- Amended implementation and contract-test evidence so T-B2-REDO is explicitly
+  superseded by T-B2-REDO2.
+- Also tightened the focused fixture to distinguish outlet WAT row area from
+  the publication-area argument.
+
+## T-B2-REDO2 Finding Disposition
+
+| # | Finding | Disposition | Rationale |
+|---|---|---|---|
+| 1 | Canonical gate table stale | fixed | REDO2 gate rows and post-review fix note are recorded. |
+| 2 | Stale REDO evidence authority | fixed | Evidence artifacts now mark REDO as superseded and route T-C to REDO2 output. |

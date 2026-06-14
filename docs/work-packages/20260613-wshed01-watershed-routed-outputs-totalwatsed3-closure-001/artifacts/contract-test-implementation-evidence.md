@@ -1,6 +1,6 @@
 # Contract Test Implementation Evidence
 
-Status: T-B2-REDO executed
+Status: T-B2-REDO2 executed
 
 Evidence mode: Ran + Static
 
@@ -247,3 +247,52 @@ T-B2-REDO held-for-T-C evidence:
 - The corrected totalwatsed3 output is readable, but the wepppy audit reports
   `closure_reconstructed_with_storage_total_mm=6948.564523`. T-C owns closure
   attribution and any further correction.
+- T-B2-REDO is superseded by T-B2-REDO2 because the accepted
+  `Q * outlet Area` formula crossed publication operands and under-scaled
+  native PASS `runvol`.
+
+Required T-B2-REDO2 tests:
+
+- Invert the REDO fixture so it asserts `QOFE * outlet Area`, not
+  `Q * outlet Area`.
+- Prove the real native PASS surface matches independent WAT outlet
+  `QOFE * Area / 1000`.
+- Run the actual totalwatsed3 closure audit; acceptance is the day-1/ex-day-1
+  closure split, not a one-sided precipitation ratio.
+
+T-B2-REDO2 tests updated:
+
+- `mofe01_tb2_redo2_pass_runvol_uses_qofe_outlet_area_not_q_outlet_area` uses
+  the same two-OFE fixture with `Q=2.5 mm`, `QOFE=5.0 mm`, and
+  outlet WAT row `Area=200 m2`; correct PASS `runvol` is now `1.0 m3`.
+- The fixture passes a distinct `300 m2` publication-area argument so
+  `QOFE * publication Area` is also rejected.
+
+T-B2-REDO2 red evidence:
+
+- `cargo test -p openwepp-runner mofe01_tb2_redo2_pass_runvol_uses_qofe_outlet_area_not_q_outlet_area -- --nocapture`
+  failed before the producer correction at the expected `1.0 m3` assertion.
+
+T-B2-REDO2 green evidence:
+
+- `cargo test -p openwepp-runner mofe01_tb2_redo2_pass_runvol_uses_qofe_outlet_area_not_q_outlet_area -- --nocapture`:
+  `1` passed.
+- `cargo test -p openwepp-runner --test totalwatsed3_cli_contract totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces -- --nocapture`:
+  `1` passed.
+- `cargo test --test sim_contract_boundary_unit_registry hphys0278_output_unit_registry_covers_output_schema_unit_metadata -- --nocapture`:
+  `1` passed.
+- `cargo test --workspace`: pass.
+
+T-B2-REDO2 real-run closure evidence:
+
+- Corrected arboreal-dendrite PASS output under
+  `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z` matches WAT
+  outlet `QOFE * Area / 1000` over `78912` rows with
+  `max_abs_pass_minus_qofe_area_m3=0.0`.
+- `openwepp-cli-totalwatsed3` wrote `2192` rows from those corrected
+  per-hillslope PASS/WAT files; totalwatsed3/PASS `runvol` sum diff is
+  `-4.0978193283081055e-08 m3`.
+- wepppy closure audit reports
+  `closure_reconstructed_with_storage_total_mm=30.544142`; day 1 is
+  `+30.9533178099056 mm`, and excluding day 1 the basic-storage residual is
+  `-0.409175395336963 mm` over `2191` days with `0` days above `1 mm`.

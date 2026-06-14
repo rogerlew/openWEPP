@@ -441,25 +441,36 @@ T-B2-REDO2 execution result (2026-06-14):
 > The slight negative skew (`−0.41 mm/2191 d`) is the known small over-drainage
 > residual at the cohort noise floor — not actionable at this rung.
 
-### Increment T-C — totalwatsed3 closure on openWEPP-NATIVE outputs (the WBVAL06/6a deferral resolved)
+### Increment T-C — totalwatsed3 closure on openWEPP-NATIVE outputs (the WBVAL06/6a deferral resolved) ✅ COMPLETE 2026-06-14
 
-**READY after T-B2-REDO2.** The previous
-`/tmp/openwepp_wshed01_tb2_redo_qarea` output is superseded because it was
-under-scaled (`Σ runvol = 0.137·Σ precip`; closure `+6948 mm`). T-C runs on
-REDO2-corrected output:
-`/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z/totalwatsed3.parquet`.
+**CLOSED (documentation/governance increment, Claude 2026-06-14).** The
+substantive closure gate was met by T-B2-REDO2's run; T-C records the
+resolution. The closure audit ran on openWEPP's OWN H.pass(`runvol`) + H.wat
+(NOT the legacy interchange dir): the identity
+`P − (Runoff + Lateral + ET + Perc + Interception) − ΔStorage` closes with
+**independent operands** (PASS `runvol` = `QOFE_outlet · A_outlet`, not WAT `Q`;
+`Σ runvol` 27.691 ≠ `Σ Q-col` 18.895 Mm³) at **ex-day-1 −0.41 mm over 2191
+days**, daily residuals `[−0.248, +0.005] mm` (nonzero-at-noise, not 0==0);
+the `+30.95 mm` day-1 term is the storage-prepend init (benign, producer-
+agnostic). Claude's WAT-`QOFE_outlet·A_outlet` reconstruction predicted the
+`30.544142 / −0.409175` numbers before the run.
 
-The closure audit on the openWEPP-native totalwatsed3 output — produced from openWEPP's OWN H.pass(runvol) + H.wat, NOT the legacy interchange dir. Gate: the
-identity `P − (Runoff + Lateral + ET + Perc + Interception) − ΔStorage` closes
-at the established floor with **independent operands** (PASS runoff, not WAT Q;
-nonzero-at-noise, not 0==0) on the arboreal-dendrite cohort. Expected on the
-REDO2 fix: cumulative `~+30 mm` carried entirely by day-1 storage-init,
-**ex-day-1 sub-mm over 2191 days** (Claude reconstruction from WAT
-`QOFE_outlet · A_outlet`). On pass: the WBVAL06/6a end-to-end totalwatsed3
-deferral is resolved; ROADMAP item 1 removed; README execution log; handoff
-naming the decoupled `chanwb` follow-on. The earlier `+2,950 mm` "residual
-caveat" was an **artifact of the wrong (WAT-`Q`) runvol**, now retired — the
-corrected runvol closes; do not chase a phantom second term.
+Closure actions taken (T-C deliverables):
+- **WBVAL06/6a end-to-end totalwatsed3 deferral: RESOLVED** on openWEPP-native
+  output (no legacy interchange in the path).
+- **ROADMAP item 1 removed** (`docs/ROADMAP.md` queue renumbered; current
+  position + next-rung = `MOFE-FARPOINT01` updated).
+- **Execution log** updated (`docs/work-packages/README.md` item 9 marked
+  complete with the W-arc→T-arc pivot, ADR-0019/0020, the three-iteration
+  runvol arc, and the closure evidence).
+- **Handoff** (`worker-handoff.md`) names the decoupled
+  `WATERSHED-CHANWB-ROUTED-OUTPUT` follow-on (channel `chanwb`/`chnwb` routed
+  output, distinct from hillslope-only totalwatsed3 per ADR-0020) and
+  `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`.
+
+The earlier `+2,950 mm` "residual caveat" was an artifact of the wrong (WAT-`Q`)
+runvol and is retired — the corrected runvol closes; there is no phantom second
+term.
 
 ## Dispatch instructions
 

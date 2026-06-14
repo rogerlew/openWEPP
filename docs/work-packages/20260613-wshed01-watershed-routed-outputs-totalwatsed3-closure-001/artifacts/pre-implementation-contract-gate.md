@@ -1,6 +1,6 @@
 # Pre-Implementation Contract Gate
 
-Status: T-B2-REDO executed
+Status: T-B2-REDO2 executed
 
 Evidence mode: Static
 
@@ -111,22 +111,35 @@ Before T-B2-REDO production edits:
 
 T-B2-REDO gate result:
 
-- T-B2-REDO corrected MOFE PASS `runvol` to the published `Q * Area / 1000`
-  volume dual and rejected the old T-B2 and first attempted redo formulas.
+- T-B2-REDO corrected MOFE PASS `runvol` to `Q * Area / 1000`, but this was
+  later rejected as a crossed publication pairing and is superseded by
+  T-B2-REDO2.
 - Real arboreal-dendrite HBP/WAT anchors remained unchanged
   (`anchor_mismatches=0`).
 - The corrected water-year annual precipitation bound passed for `252`
   hillslope-water-years with `violation_count=0`.
 - Native totalwatsed3 was produced from corrected openWEPP PASS/WAT files.
-- Package closure is still deferred to T-C.
+- Package closure was deferred to T-C, then the REDO pairing defect was found
+  before T-C execution.
+
+T-B2-REDO2 gate result:
+
+- T-B2-REDO2 corrected MOFE PASS `runvol` to `QOFE * outlet Area / 1000`.
+- The focused regression separates `Q`, `QOFE`, outlet WAT row area, internal
+  OFE area, and the publication-area argument.
+- Real arboreal-dendrite HBP/WAT anchors remained unchanged
+  (`anchor_mismatches=0`).
+- Independent PASS/WAT audit over `78912` rows reports
+  `max_abs_pass_minus_qofe_area_m3=0.0`.
+- wepppy closure audit reports `closure_reconstructed_with_storage_total_mm=30.544142`;
+  day 1 is `+30.9533178099056 mm`, and excluding day 1 the basic-storage
+  residual is `-0.409175395336963 mm`.
 
 Before T-C production edits:
 
-- Re-run the dedicated CLI and audit on corrected arboreal-dendrite native
-  output before changing closure logic.
-- Treat the `6948.564523 mm` residual from
-  `/tmp/openwepp_wshed01_tb2_redo_qarea/totalwatsed3.parquet` as a
-  current-scope conservation defect to localize, unless source evidence proves
-  the audit identity needs a contract-level refinement.
+- Use the T-B2-REDO2 corrected arboreal-dendrite native output at
+  `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z/`.
+- Preserve the day-1/ex-day-1 closure split as the starting conservation
+  shape for T-C final disposition.
 - Preserve independent operands: PASS `Runoff`, WAT flux/storage terms, and no
   exact-zero/self-built closure acceptance.

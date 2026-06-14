@@ -1,6 +1,7 @@
 # Worker Handoff
 
-Status: T-B2-REDO executed; T-C ready on corrected native outputs
+Status: WSHED01 COMPLETE 2026-06-14 — T-C closed (totalwatsed3 native closure
+resolved the WBVAL06/6a deferral). Next package: MOFE-FARPOINT01.
 
 Evidence mode: Static + Ran
 
@@ -24,9 +25,10 @@ The live T-C blocker is now the remaining independent closure residual:
 
 T-B2 then replaced the remaining legacy-input dependency for runoff delivery,
 but its first MOFE `runvol` formula used `QOFE * publication area` and was
-reviewed defective. T-B2-REDO corrected native PASS `runvol` to the published
-`Q * Area` dual. totalwatsed3 can consume the corrected per-hillslope PASS/WAT
-files directly.
+reviewed defective. T-B2-REDO corrected to `Q * outlet Area`, which review
+found under-scaled runoff. T-B2-REDO2 corrected native PASS `runvol` to
+`QOFE * outlet Area`. totalwatsed3 can consume the corrected per-hillslope
+PASS/WAT files directly.
 
 ## T-A Scope Result
 
@@ -48,12 +50,14 @@ T-A sampled the arboreal-dendrite interchange schemas under
 reference shape uses combined `H.pass.parquet`, `H.wat.parquet`,
 `H.soil.parquet`, and `H.element.parquet` with `wepp_id`/`ofe_id` selectors.
 
-## Remaining Implementation Gap
+## Remaining Implementation Gap — CLOSED
 
-T-B2-REDO created the corrected openWEPP-native PASS/WAT aggregation surface
-needed before closure can be claimed. T-C must now explain and close the
-remaining `6948.564523 mm` audit residual on corrected native output without
-substituting self-consistency checks for the independent conservation identity.
+T-B2-REDO2 created the corrected openWEPP-native PASS/WAT aggregation surface;
+T-C (documentation/governance) performed final closure disposition on the REDO2
+output. The audit residual is the expected storage-init shape: `30.544142 mm`
+whole run, day 1 `+30.9533178099056 mm`, ex-day-1 basic-storage residual
+`-0.409175395336963 mm` over `2191` days. No implementation gap remains in
+WSHED01 scope; see **T-C Result** and **Next Package(s)** below.
 
 ## T-B Result
 
@@ -111,22 +115,61 @@ substituting self-consistency checks for the independent conservation identity.
   `closure_reconstructed_with_storage_total_mm=6948.564523`; T-C owns this
   residual.
 
-## Next Dispatch
+## T-B2-REDO2 Result
 
-```text
-Execute increment T-C of docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/artifacts/watershed-staged-increment-plan.md end-to-end.
-```
+- Corrected MOFE PASS `runvol` to
+  `outlet.row.wb13_row.qofe * outlet.row.wb13_row.area / 1000`, deleting the
+  crossed `Q * outlet Area` pairing.
+- Focused regression:
+  `mofe01_tb2_redo2_pass_runvol_uses_qofe_outlet_area_not_q_outlet_area`.
+- Corrected arboreal-dendrite evidence root:
+  `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z/`.
+- Real rerun outputs: `36` HBP, `36` WAT, `36` PASS parquet, `36` manifests.
+- HBP/WAT anchor comparison vs `/tmp/openwepp_mofe01_mi_final/output`:
+  `anchor_mismatches=0`.
+- PASS QOFE-area audit: `78912` rows,
+  `max_abs_pass_minus_qofe_area_m3=0.0`,
+  `sum_runvol=27691217.37511973 m3`.
+- Native totalwatsed3 output:
+  `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z/totalwatsed3.parquet`,
+  `2192` rows.
+- wepppy audit read:
+  `closure_reconstructed_with_storage_total_mm=30.544142`;
+  day 1 `+30.9533178099056 mm`; ex-day-1 basic-storage residual
+  `-0.409175395336963 mm`, `0` days above `1 mm`.
 
-## T-C Requirements
+## T-C Result (documentation/governance closure, Claude 2026-06-14)
 
-- Run `openwepp-cli-totalwatsed3` on corrected arboreal-dendrite native
-  PASS/WAT output, not `/tmp/openwepp_wshed01_tb2`.
-- Run the wepppy `totalwatsed3_daily_closure_audit.py` on the emitted parquet.
-- Accept only independent nonzero-at-noise closure. Exact-zero closure on the
-  real cohort is a tautology hold.
-- On pass, update the package disposition, remove the ROADMAP deferral, and
-  name `WATERSHED-CHANWB-ROUTED-OUTPUT` as the decoupled channel-output
-  follow-on.
+T-C's substantive closure gate was met by the T-B2-REDO2 run; T-C recorded the
+resolution (no further production code). Independent Claude verification (Ran)
+on the REDO2 root confirmed genuine closure:
+
+- `Σ runvol = 27.691 Mm³` (coeff 0.554); runoff < precip every year (two-sided
+  bound holds), and **independent** of the WAT-`Q` column (`Σ Q = 18.895 Mm³`).
+- Identity `P − (Runoff + Lateral + ET + Perc + Interception) − ΔStorage` closes
+  ex-day-1 at `−0.41 mm` over 2191 days; daily residuals `[−0.248, +0.005] mm`
+  (nonzero-at-noise, not 0==0). Day-1 `+30.95 mm` is the storage-prepend init
+  (producer-agnostic, benign).
+- Anchors byte-identical (`anchor_mismatches=0`); MOFE physics untouched.
+
+Closure deliverables done: WBVAL06/6a deferral resolved; `docs/ROADMAP.md`
+item 1 removed (queue renumbered; next = `MOFE-FARPOINT01`);
+`docs/work-packages/README.md` item 9 marked complete with the W-arc→T-arc
+pivot, ADR-0019/0020, and the runvol arc; this handoff names the follow-ons.
+
+## Next Package(s)
+
+- **`MOFE-FARPOINT01`** (ROADMAP queue item 1, next): take MOFE routing to a
+  >10-OFE substrate where legacy's WB defect appears and show the three-identity
+  closure holds past the legacy ceiling.
+- **`WATERSHED-CHANWB-ROUTED-OUTPUT`** (decoupled follow-on): the channel
+  water-balance routed watershed output (`chanwb`/`chnwb`), distinct from the
+  hillslope-only totalwatsed3 per ADR-0020. The W-B/W-C watershed-CLI seams
+  (no-impoundment parse, WS10 zero-sediment/`nchnum=0` guards, WAT-backed
+  publication) landed under WSHED01 but channel routed water-balance output is
+  its own rung.
+- **`MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`**: sediment-coupled routing
+  (deferred from MOFE01 M-G).
 
 ## Watchpoints
 

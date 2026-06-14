@@ -1,13 +1,17 @@
 # Disposition
 
-Status: T-B2-REDO executed; package active; T-C queued
+Status: COMPLETE 2026-06-14 — T-C closed
 
 Evidence mode: Ran + Static
 
-W-A, W-B, W-C, the keepable W-D publication repairs, T-A design scope, and
-T-B dedicated CLI implementation are complete for their scoped seams. The
-package remains active because totalwatsed3 closure still requires T-C audit
-closure at the established floor.
+W-A, W-B, W-C, the keepable W-D publication repairs, T-A design scope,
+T-B dedicated CLI, T-B2/REDO/REDO2 native runvol (over→under→correct), and the
+T-C documentation closure are complete. **totalwatsed3 closes on openWEPP-native
+output** at the established floor with independent operands (ex-day-1
+−0.41 mm/2191 d; `Σ runvol` 27.691 ≠ `Σ Q-col` 18.895 Mm³; nonzero-at-noise),
+resolving the WBVAL06/6a deferral. The package is closed; follow-ons
+(MOFE-FARPOINT01, WATERSHED-CHANWB-ROUTED-OUTPUT,
+MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF) are named in `worker-handoff.md`.
 
 Disposition:
 
@@ -58,10 +62,24 @@ Disposition:
 - T-B2-REDO conservation pre-gate: water-year annual `sum(runvol) <= sum(P *
   Area / 1000)` passes for all `252` hillslope-water-years
   (`violation_count=0`, `max_runvol_precip_ratio=0.9857497687436844`).
-- T-B2-REDO held-for-next gate: no package closure is claimed. The wepppy
-  audit reads the corrected native totalwatsed3 output but reports
-  `closure_reconstructed_with_storage_total_mm=6948.564523`; T-C owns that
-  residual.
+- T-B2-REDO held-for-next gate: superseded by T-B2-REDO2. The wepppy audit on
+  `/tmp/openwepp_wshed01_tb2_redo_qarea` reported
+  `closure_reconstructed_with_storage_total_mm=6948.564523` because REDO
+  under-scaled runoff with `Q * outlet Area`.
+- T-B2-REDO2 crossed-pairing correction: executed. MOFE PASS `runvol` now
+  uses `QOFE * outlet Area / 1000`. Fresh arboreal-dendrite output under
+  `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z` produced `36`
+  native PASS files, `anchor_mismatches=0` for existing HBP/WAT outputs, and a
+  corrected totalwatsed3 file with `2192` rows.
+- T-B2-REDO2 conservation pre-gate: PASS `runvol` matches WAT outlet
+  `QOFE * Area / 1000` over `78912` rows with
+  `max_abs_pass_minus_qofe_area_m3=0.0`; summed PASS `runvol` is
+  `27691217.37511973 m3`.
+- T-B2-REDO2 audit result: no package closure is claimed in this increment,
+  but the blocker is cleared. The wepppy audit reports
+  `closure_reconstructed_with_storage_total_mm=30.544142`; day 1 is
+  `+30.9533178099056 mm`, and excluding day 1 the basic-storage residual is
+  `-0.409175395336963 mm` over `2191` days with `0` days above `1 mm`.
 
 Next required increment:
 

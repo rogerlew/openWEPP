@@ -35,10 +35,12 @@ adds **one mechanism** on an already-closed foundation. Boundaries are **closure
 not calendar phases**.
 
 **Current position:** single-OFE water-balance closure, frost
-activation/conservation, single-OFE frost-depth heat-flow parity, and
-MOFE hillslope inter-OFE water-routing closure are closed. The next active
-mechanism is **watershed routed outputs / totalwatsed3 audit**, followed by
-Stage-2 physics-magnitude review.
+activation/conservation, single-OFE frost-depth heat-flow parity,
+MOFE hillslope inter-OFE water-routing closure, and the **openWEPP-native
+totalwatsed3 CLI + closure** (WSHED01, the WBVAL06/6a deferral, closed
+2026-06-14) are closed. The next active mechanism is the **MOFE >10-OFE
+far-point demonstration**, followed by per-OFE runoff magnitude adjudication
+and Stage-2 physics-magnitude review.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -47,38 +49,28 @@ Stage-2 physics-magnitude review.
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
-| 1 | **openWEPP-native totalwatsed3 CLI + closure** | A dedicated `openwepp-cli-totalwatsed3` aggregates the MOFE01 hillslope interchange outputs (hillslope-only, area-weighted, PASS runoff) — NOT via the watershed channel CLI, NOT sharing wepppyo3 | End-to-end `totalwatsed3` water-balance closure on openWEPP-native output, independent operands (the WBVAL06/6a deferral) | ⏭️ **Next** |
-| 2 | **MOFE >10-OFE far-point demonstration** | Run MOFE routing on a >10-OFE substrate where legacy's WB defect appears | openWEPP three-identity closure holds at >10 OFEs (exceed the legacy ceiling) | ▶️ follow-on (`MOFE-FARPOINT01`) |
-| 3 | **Per-OFE runoff magnitude adjudication** | Decide if the ±10–25% per-OFE runoff vs legacy is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ▶️ follow-on (`MOFE-MAGPARITY01`) |
-| 4 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
-| 5 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
+| 1 | **MOFE >10-OFE far-point demonstration** | Run MOFE routing on a >10-OFE substrate where legacy's WB defect appears | openWEPP three-identity closure holds at >10 OFEs (exceed the legacy ceiling) | ⏭️ **Next** (`MOFE-FARPOINT01`) |
+| 2 | **Per-OFE runoff magnitude adjudication** | Decide if the ±10–25% per-OFE runoff vs legacy is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ▶️ follow-on (`MOFE-MAGPARITY01`) |
+| 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
+| 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
 (MOFE01 is done-done for hillslope water-routing closure after M-I; the
 remaining MOFE-adjacent items below are separate follow-on mechanisms.)
 
 ---
 
-### 1. openWEPP-native totalwatsed3 CLI + closure ⏭️ (next)
+### 1. MOFE >10-OFE far-point demonstration ⏭️ (next)
 
-MOFE01 closed hillslope-internal inter-OFE water routing on the
-`arboreal-dendrite` 36-run 1-5-OFE ladder. M-I added the independent in-runner
-hillslope-total identity, closing at `3.306423012547295e-13 mm` against the
-`1e-9 mm` tolerance, with every multi-OFE case nonzero-at-noise. The next
-mechanism is the watershed output seam that consumes those closed hillslope
-pass outputs and produces the end-to-end `totalwatsed3` audit surface deferred
-since WBVAL06/6a.
+MOFE01 closed hillslope inter-OFE water routing on the `arboreal-dendrite`
+36-run 1–5-OFE ladder, and WSHED01 closed the openWEPP-native totalwatsed3
+aggregation/audit on top of it (the WBVAL06/6a deferral — resolved 2026-06-14;
+detail in the [execution log](work-packages/README.md)). Both ran where legacy
+WEPP is defect-free (≤10 OFEs). The next mechanism takes MOFE routing to a
+**>10-OFE substrate**, where legacy's water-balance defect appears, and shows
+openWEPP's three-identity closure (transfer / per-element / hillslope-total)
+holds past the legacy ceiling. Follow-on package: `MOFE-FARPOINT01`.
 
-The immediate blocker is not the MOFE conservation identity. M-H attempted
-`openwepp-cli-watershed` with the fresh H1-H36 pass files and failed closed
-before output writing on the substrate's no-impoundment `pw0.imp` state:
-`CLIWAT-E-010` / `IMP-E-004`, `jpond=0`. This queue item owns modeling or
-accepting that no-impoundment state explicitly, then producing
-`totalwatsed3.parquet` and running the water-balance audit on routed openWEPP
-output.
-
-Work package: `docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/` (active 2026-06-13; W-A executed, W-B next). W-A confirmed `jpond=0` is a valid no-impoundment state and the current `IMP-E-004`/`CLIWAT-E-010` rejection is a parser defect that blocks `chan.inp`, HBP parsing, dispatch, and output writing.
-
-### 2. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
+### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 
 Fidelity questions deferred by the closure-not-magnitude principle until the structure is
 closed and routed so the comparator can attribute error cleanly. They do **not** block

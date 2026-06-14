@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: T-B2-REDO executed
+Status: T-B2-REDO2 executed
 
 Evidence mode: Ran + Static
 
@@ -70,6 +70,15 @@ Evidence mode: Ran + Static
 | T-B2-REDO audit-read residual recording | PASS | wepppy `totalwatsed3_daily_closure_audit.py` read the corrected output and reports `closure_reconstructed_with_storage_total_mm=6948.564523`; this is recorded as T-C hold evidence, not T-B2-REDO closure. |
 | T-B2-REDO full fmt/clippy/test/deny | PASS | `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test --workspace`; `cargo deny check`. |
 | T-B2-REDO final diff/doc lint | PASS | `git diff --check`: no findings; `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `29` files scanned, `0` errors, `0` warnings. |
+| T-B2-REDO2 red test | PASS | `cargo test -p openwepp-runner mofe01_tb2_redo2_pass_runvol_uses_qofe_outlet_area_not_q_outlet_area -- --nocapture` failed before the producer correction at the expected `1.0 m3` assertion. |
+| T-B2-REDO2 focused tests | PASS | `cargo test -p openwepp-runner mofe01_tb2_redo2_pass_runvol_uses_qofe_outlet_area_not_q_outlet_area -- --nocapture`; `cargo test -p openwepp-runner --test totalwatsed3_cli_contract totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces -- --nocapture`; `cargo test --test sim_contract_boundary_unit_registry hphys0278_output_unit_registry_covers_output_schema_unit_metadata -- --nocapture`. |
+| T-B2-REDO2 corrected native PASS emission | PASS | Release `openwepp-cli-hill` reran arboreal-dendrite p1-p36 under `/tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z`; output counts: `hbp=36`, `wat=36`, `pass_parquet=36`, `manifests=36`; stderr had no hard-error markers. |
+| T-B2-REDO2 HBP/WAT anchor stability | PASS | Byte comparison of all `H1..H36.hbp` and `H1..H36.wat.parquet` against `/tmp/openwepp_mofe01_mi_final/output`: `anchor_mismatches=0`. |
+| T-B2-REDO2 independent PASS QOFE-area audit | PASS | DuckDB audit over `78912` rows: `max_abs_pass_minus_qofe_area_m3=0.0`, `sum_runvol=27691217.37511973 m3`; rejected REDO `Q * outlet Area` sum was `6851275.733726182 m3`. |
+| T-B2-REDO2 native totalwatsed3 production | PASS | `target/release/openwepp-cli-totalwatsed3 --input-dir /tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z/output --output /tmp/openwepp_wshed01_tb2_redo2_qofearea_20260614T213618Z/totalwatsed3.parquet`: `CLITW3-I-001 wrote 2192 rows`; totalwatsed3/PASS `runvol` diff `-4.0978193283081055e-08 m3`. |
+| T-B2-REDO2 closure audit | PASS | wepppy `totalwatsed3_daily_closure_audit.py` reported `closure_reconstructed_with_storage_total_mm=30.544142`; day 1 `+30.9533178099056 mm`; ex-day-1 basic-storage residual `-0.409175395336963 mm` over `2191` days, `0` days above `1 mm`. |
+| T-B2-REDO2 full fmt/clippy/test/deny | PASS | `cargo fmt --check`; `cargo clippy --workspace --all-targets -- -D warnings`; `cargo test --workspace`; `cargo deny check`. |
+| T-B2-REDO2 final diff/doc lint | PASS | `git diff --check`: no findings; `markdown-doc lint --path docs/work-packages/20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001 --format json`: `29` files scanned, `0` errors, `0` warnings. |
 
 Subagent note: comparator/heavy-batch subagent was not used because W-A required
 only a single current-behavior CLI run and static source characterization.
@@ -95,3 +104,12 @@ For T-B2-REDO, no comparator-suite subagent was used. Focused tests, full Rust
 gates, the corrected arboreal-dendrite native-output rerun, anchor hash
 comparison, DuckDB PASS/bound audits, and wepppy audit read were run directly
 in this session as command-level evidence.
+For T-B2-REDO2, comparator-suite delegation was attempted, but the
+`comparator_suite_runner` was unavailable due to a GPT-5.3-Codex-Spark usage
+limit. Focused tests, full Rust gates, the fresh arboreal-dendrite
+native-output rerun, anchor comparison, DuckDB PASS audit, totalwatsed3
+production, and wepppy closure audit were run directly in this session as
+command-level evidence.
+T-B2-REDO2 post-review fixes updated the `hillslope_pass.runvol` metadata and
+tightened the focused fixture to distinguish outlet WAT row area from the
+publication-area argument.

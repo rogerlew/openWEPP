@@ -1,6 +1,6 @@
 # Kernel Profile Compliance Checklist
 
-Status: T-B2-REDO executed
+Status: T-B2-REDO2 executed
 
 Evidence mode: Static
 
@@ -32,10 +32,16 @@ Checklist for subsequent implementation:
   output-surface volume dual to published `Q * Area / 1000`.
 - T-B2-REDO preserves existing HBP/WAT output anchors byte-for-byte in the
   real arboreal-dendrite rerun (`anchor_mismatches=0`).
-- T-B2-REDO proves the corrected annual water-year precipitation bound before
-  handing the corrected native output to T-C.
-- T-C must localize and close the remaining `6948.564523 mm` corrected-output
-  audit residual without weakening independent-operand acceptance.
+- T-B2-REDO is superseded by T-B2-REDO2 because its `Q * outlet Area` formula
+  crossed incompatible publication operands and under-scaled runoff.
+- T-B2-REDO2 did not edit hillslope kernel process physics; it corrected the
+  output-surface volume dual to `QOFE * outlet Area / 1000`.
+- T-B2-REDO2 preserves existing HBP/WAT output anchors byte-for-byte in the
+  real arboreal-dendrite rerun (`anchor_mismatches=0`).
+- T-B2-REDO2 independent acceptance uses WAT outlet `QOFE * Area / 1000` plus
+  the totalwatsed3 closure audit, not an exact self-built zero residual.
+- T-C must continue from the T-B2-REDO2 corrected output and preserve
+  independent-operand acceptance.
 - No `.unwrap()`/`.expect()` may be introduced in production paths.
 - No silent canonicalization of invalid impoundment counts; zero is explicit
   empty-set semantics, not a fallback.
