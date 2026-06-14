@@ -734,7 +734,7 @@ fn build_hillslope_pass_row_from_outlet_delivery(
     }
 
     let mut row = build_hillslope_pass_row(wepp_id, &outlet.row)?;
-    row.runvol_m3 = outlet.row.wb13_row.q * outlet.row.wb13_row.area / 1_000.0;
+    row.runvol_m3 = outlet.row.wb13_row.qofe * outlet.row.wb13_row.area / 1_000.0;
     row.sbrunv_m3 = outlet.row.wb13_row.latqcc * outlet.area_m2 / 1_000.0;
     Ok(row)
 }

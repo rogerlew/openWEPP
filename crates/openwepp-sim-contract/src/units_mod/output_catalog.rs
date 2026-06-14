@@ -94,7 +94,7 @@ pub fn canonical_output_unit_entries() -> Vec<OutputUnitEntry> {
             "hillslope_pass",
             "runvol",
             "m^3",
-            "publication output converts outlet routed surface runoff depth to volume using hillslope publication area",
+            "publication output converts outlet QOFE surface runoff delivery depth to volume using the outlet WAT row area",
             "SC-WATBAL-001",
             "SC-WATBAL-001#INV-WATBAL-054",
         ),

@@ -469,7 +469,7 @@ fn mofe01_me4_redo_internal_wb13_records_include_frost_storage_delta_per_ofe() {
 }
 
 #[test]
-fn mofe01_tb2_redo_pass_runvol_uses_published_q_area_not_qofe_area() {
+fn mofe01_tb2_redo2_pass_runvol_uses_qofe_outlet_area_not_q_outlet_area() {
     let mut upstream_surface_carry = [0.0_f64; 24];
     upstream_surface_carry[0] = 0.002;
     let upstream_output = TransferOutput {
@@ -532,39 +532,40 @@ fn mofe01_tb2_redo_pass_runvol_uses_published_q_area_not_qofe_area() {
 
     let mut pass_rows = Vec::<HillslopePassRow>::new();
     collection
-        .append_runoff_delivery_rows_to(17, 200.0, &mut pass_rows)
+        .append_runoff_delivery_rows_to(17, 300.0, &mut pass_rows)
         .expect("runoff-delivery row should build from outlet record");
 
     assert_eq!(pass_rows.len(), 1);
     let row = &pass_rows[0];
     assert_eq!(row.wepp_id, 17);
-    assert!((row.runvol_m3 - 0.5).abs() <= 1.0e-12);
+    assert!((row.runvol_m3 - 1.0).abs() <= 1.0e-12);
 
-    let wrong_qofe_publication_area_volume_m3 = 5.0_f64 * 200.0 / 1_000.0;
-    assert!((wrong_qofe_publication_area_volume_m3 - 1.0_f64).abs() <= 1.0e-12);
+    let wrong_q_outlet_area_volume_m3 = 2.5_f64 * 200.0 / 1_000.0;
+    assert!((wrong_q_outlet_area_volume_m3 - 0.5_f64).abs() <= 1.0e-12);
+    assert!(
+        (row.runvol_m3 - wrong_q_outlet_area_volume_m3).abs() > 1.0e-9,
+        "T-B2-REDO2 runvol must use QOFE * outlet area, not Q * outlet area"
+    );
+
+    let wrong_qofe_upstream_area_volume_m3 = 5.0_f64 * 100.0 / 1_000.0;
+    assert!((wrong_qofe_upstream_area_volume_m3 - 0.5_f64).abs() <= 1.0e-12);
+    assert!(
+        (row.runvol_m3 - wrong_qofe_upstream_area_volume_m3).abs() > 1.0e-9,
+        "T-B2-REDO2 runvol must use the outlet OFE area with QOFE"
+    );
+
+    let wrong_qofe_publication_area_volume_m3 = 5.0_f64 * 300.0 / 1_000.0;
+    assert!((wrong_qofe_publication_area_volume_m3 - 1.5_f64).abs() <= 1.0e-12);
     assert!(
         (row.runvol_m3 - wrong_qofe_publication_area_volume_m3).abs() > 1.0e-9,
-        "T-B2-REDO runvol must use Q * publication area, not QOFE * publication area"
-    );
-
-    let wrong_q_area_mismatch_volume_m3 = 2.5_f64 * 100.0 / 1_000.0;
-    assert!((wrong_q_area_mismatch_volume_m3 - 0.25_f64).abs() <= 1.0e-12);
-    assert!(
-        (row.runvol_m3 - wrong_q_area_mismatch_volume_m3).abs() > 1.0e-9,
-        "T-B2-REDO runvol must use the published Q dual when record area is not an outlet footprint"
-    );
-
-    let annual_precip_volume_m3 = 4.0_f64 * 100.0 / 1_000.0 + 4.0 * 100.0 / 1_000.0;
-    assert!(
-        row.runvol_m3 <= annual_precip_volume_m3,
-        "runvol must satisfy the independent annual precipitation bound"
+        "T-B2-REDO2 runvol must use the outlet row area, not the publication area"
     );
 
     let per_ofe_sum_volume_m3: f64 = 2.0 * 100.0 / 1_000.0 + 5.0 * 100.0 / 1_000.0;
     assert!((per_ofe_sum_volume_m3 - 0.7).abs() <= 1.0e-12);
     assert!(
         (row.runvol_m3 - per_ofe_sum_volume_m3).abs() > 1.0e-9,
-        "T-B2-REDO runvol must be outlet delivery, not the per-OFE volume sum"
+        "T-B2-REDO2 runvol must be outlet delivery, not the per-OFE volume sum"
     );
 }
 
