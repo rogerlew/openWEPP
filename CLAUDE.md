@@ -62,11 +62,13 @@ Subprocess-per-hillslope. The watershed CLI orchestrates hillslope CLI subproces
 | `openwepp-cli-watershed` | watershed structure + hillslope HBP set | watershed parquet | Watershed routing over completed HBP shards |
 | `openwepp-replay` | HBP shard + replay spec | parquet diff / re-execution result | Debug, comparator analysis, ablation re-execution |
 
+Plus an **output-aggregation tier** (ADR-0020), distinct from the simulation binaries: `openwepp-cli-totalwatsed3` consumes completed per-hillslope interchange parquet (read-only) and emits the openWEPP-native totalwatsed3 WB aggregation.
+
 ### Kernel boundary
 Pure functions over typed state. Orchestrators own time-stepping and topology; kernels own physics. Producer / consumer trajectory ownership is enforced by the Rust borrow checker.
 
 ### Output
-Parquet via the wepppy / wepppyo3 interchange schemas. openWEPP does not define new schemas; it adapts to the existing consumer-side contract.
+Parquet via **openWEPP-native schemas** (ADR-0019: openWEPP owns its output surface; wepppyo3 `wepp_interchange` is frozen as wepp-legacy-only). openWEPP authors its own schemas and produces its own aggregated outputs — e.g. the dedicated `openwepp-cli-totalwatsed3` output-aggregation binary (ADR-0020) — matching consumer **closure semantics** (the WB identities) rather than inheriting the legacy column shape. Legacy ASCII compatibility remains wepppy's concern.
 
 ## Debugging Playbook
 

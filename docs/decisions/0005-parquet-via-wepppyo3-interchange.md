@@ -1,6 +1,6 @@
 # ADR-0005: Parquet schemas inherit from wepppy / wepppyo3 interchange
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0019
 **Date:** 2026-05-11
 **Deciders:** Roger Lew, Claude Code
 

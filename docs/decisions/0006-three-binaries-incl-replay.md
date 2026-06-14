@@ -1,6 +1,6 @@
 # ADR-0006: Three production binaries including replay
 
-**Status:** Accepted
+**Status:** Accepted (amended by ADR-0020)
 **Date:** 2026-05-11
 **Deciders:** Roger Lew, Claude Code
 
