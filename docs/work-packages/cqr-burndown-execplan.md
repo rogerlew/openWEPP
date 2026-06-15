@@ -180,8 +180,14 @@ the tracker below and by reading the corresponding package directories under
   Pushed commit: `2a3cbd37cae178757a6ca3815a079631896b5452` on branch
   `main`.
   Final target: `validate_payload`, CRAP `9.0`.
-- [ ] CQR19, rank 13, original CRAP `420`, CC `20`, Cov `0%`:
+- [x] (2026-06-15) Closed CQR19, rank 13, original CRAP `420`, CC
+  `20`, Cov `0%`:
   `crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/types.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr19-watershed-runtime-types-complexity-001/`.
+  Pushed commit: `bb6eade8193f19cd61fcc09a285001d41f245745` on branch
+  `main`.
+  Final target: `WatershedClimateRuntimeInputError::fmt`, CRAP `6.0`.
 - [ ] CQR20, rank 14, original CRAP `384`, CC `29`, Cov `25%`:
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/05_projection_helpers.rs`.
 - [ ] CQR21, rank 15, original CRAP `380`, CC `19`, Cov `0%`:
