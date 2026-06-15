@@ -1,0 +1,14 @@
+# clippy configuration — openWEPP
+#
+# Thresholds for the complexity lints used by the code-quality refactor program
+# (docs/standards/code-quality-refactor-authoring-guide.md §8; ADR-0021).
+#
+# These thresholds apply wherever the lints are enabled. `too_many_lines` is on
+# workspace-wide via `pedantic`; `cognitive_complexity` is a nursery lint held at
+# `allow` in [workspace.lints.clippy] and opted in per module by code-quality
+# packages (enabling it workspace-wide would fail the `-D warnings` gate against
+# the current high-complexity backlog). cargo-crap is the active repo-wide
+# cyclomatic-complexity ratchet.
+
+cognitive-complexity-threshold = 25
+too-many-lines-threshold = 100
