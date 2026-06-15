@@ -10,6 +10,16 @@
 
 State as of `2026-06-15`:
 
+- CQR08 is complete for behavior-preserving function-length/lint-debt
+  decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/00_core_types.rs`.
+  The scoped quality target removed the `HillslopeRuntimeInputError`
+  `fmt::Display` `#[allow(clippy::too_many_lines)]` suppression and reduced the
+  target error-code/display CRAP rows from `964.0467577461321` and `4290.0` to
+  helper rows all below `15`, without changing stable error codes, display text,
+  typed variant semantics, runtime projection guards, or public API behavior.
+  Required closure gates passed. Package:
+  `20260615-cqr08-runtime-core-types-display-001/`.
 - CQR07 is complete-with-warnings for behavior-preserving
   function-length/lint-debt decomposition of
   `crates/openwepp-runner/src/watershed_wat.rs`. The scoped quality target

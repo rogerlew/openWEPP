@@ -318,6 +318,75 @@ impl HillslopeRuntimeInputError {
     #[must_use]
     pub const fn code(&self) -> &'static str {
         match self {
+            Self::MissingSoilOfe
+            | Self::MissingSoilLayer
+            | Self::MissingThetaResidual
+            | Self::MissingThetaFieldCapacity
+            | Self::NonFiniteProfileDepth { .. }
+            | Self::NonPositiveProfileDepth { .. }
+            | Self::NonFiniteTopLayerDepth { .. }
+            | Self::NonPositiveTopLayerDepth { .. }
+            | Self::NonFiniteThetaResidual { .. }
+            | Self::NonFiniteThetaFieldCapacity { .. }
+            | Self::SoilOfeCountMismatch { .. }
+            | Self::SoilOfeCountOutOfRange { .. } => self.soil_core_code(),
+            Self::SoilLayerCountMismatch { .. }
+            | Self::SoilLayerCountOutOfRange { .. }
+            | Self::NonFiniteLayerDepth { .. }
+            | Self::NonPositiveLayerDepth { .. }
+            | Self::NonMonotoneLayerDepth { .. }
+            | Self::MissingSaturatedConductivity { .. }
+            | Self::NonFiniteSaturatedConductivity { .. }
+            | Self::NonPositiveSaturatedConductivity { .. } => self.soil_layer_code(),
+            Self::MissingCorrectedLayerNormalizationInput { .. }
+            | Self::CorrectedLayerNormalizationUnavailable { .. }
+            | Self::CorrectedLayerMappingIncomplete { .. }
+            | Self::NonFiniteProfileFcTailContribution { .. }
+            | Self::NegativeProfileFcTailContribution { .. } => self.soil_corrected_code(),
+            Self::MissingSlopeOfe
+            | Self::SlopeOfeCountMismatch { .. }
+            | Self::SlopeOfeCountOutOfRange { .. }
+            | Self::SlopePointCountMismatch { .. }
+            | Self::SlopePointCountOutOfRange { .. }
+            | Self::InsufficientSlopePoints { .. }
+            | Self::NonFiniteSlopeLength { .. }
+            | Self::NonPositiveSlopeLength { .. } => self.slope_shape_code(),
+            Self::NonFiniteXinput { .. }
+            | Self::NonFiniteSlpinp { .. }
+            | Self::NonMonotoneXinput { .. }
+            | Self::NonFiniteDerivedAverageSlope { .. }
+            | Self::NonPositiveDerivedAverageSlope { .. }
+            | Self::NonFiniteDerivedSlopeLength { .. }
+            | Self::NonPositiveDerivedSlopeLength { .. } => self.slope_numeric_code(),
+            Self::ManagementTopologyCountMismatch { .. }
+            | Self::ManagementScheduleSlotCountMismatch { .. }
+            | Self::ManagementScheduleSlotArityMismatch { .. }
+            | Self::ManagementInitialReferenceOutOfRange { .. }
+            | Self::ManagementYearlyReferenceOutOfRange { .. }
+            | Self::ManagementScheduleOfeIndexOutOfRange { .. } => self.management_code(),
+            Self::UnsupportedPlLanduse { .. }
+            | Self::UnsupportedPlManagementOption { .. }
+            | Self::NonFinitePlProjectionField { .. }
+            | Self::PlProjectionCountOutOfRange { .. }
+            | Self::PlProjectionDayOutOfDomain { .. }
+            | Self::PlAnnualExtensionMismatch { .. }
+            | Self::PlProjectionCardinalityInvalid { .. }
+            | Self::PlGrazingWindowOutOfDomain { .. }
+            | Self::PlProjectionFieldOutOfDomain { .. }
+            | Self::PlProjectionUnsupportedPayloadCombination { .. } => self.pl_projection_code(),
+            Self::NonFiniteSnowControl { .. }
+            | Self::SnowControlOutOfDomain { .. }
+            | Self::NonFiniteFrostControl { .. }
+            | Self::FrostControlOutOfDomain { .. }
+            | Self::MissingIrrigationScheduleField { .. }
+            | Self::NonFiniteIrrigationScheduleField { .. }
+            | Self::IrrigationScheduleFieldOutOfDomain { .. }
+            | Self::IrrigationScheduleCountOutOfRange { .. } => self.snow_frost_irrigation_code(),
+        }
+    }
+
+    const fn soil_core_code(&self) -> &'static str {
+        match self {
             Self::MissingSoilOfe => "HS-RUNTIME-E-001",
             Self::MissingSoilLayer => "HS-RUNTIME-E-002",
             Self::MissingThetaResidual => "HS-RUNTIME-E-003",
@@ -328,23 +397,14 @@ impl HillslopeRuntimeInputError {
             Self::NonPositiveTopLayerDepth { .. } => "HS-RUNTIME-E-008",
             Self::NonFiniteThetaResidual { .. } => "HS-RUNTIME-E-009",
             Self::NonFiniteThetaFieldCapacity { .. } => "HS-RUNTIME-E-010",
-            Self::MissingSlopeOfe => "HS-RUNTIME-E-011",
-            Self::SlopeOfeCountMismatch { .. } => "HS-RUNTIME-E-012",
-            Self::SlopeOfeCountOutOfRange { .. } => "HS-RUNTIME-E-013",
-            Self::SlopePointCountMismatch { .. } => "HS-RUNTIME-E-014",
-            Self::SlopePointCountOutOfRange { .. } => "HS-RUNTIME-E-015",
-            Self::InsufficientSlopePoints { .. } => "HS-RUNTIME-E-016",
-            Self::NonFiniteSlopeLength { .. } => "HS-RUNTIME-E-017",
-            Self::NonPositiveSlopeLength { .. } => "HS-RUNTIME-E-018",
-            Self::NonFiniteXinput { .. } => "HS-RUNTIME-E-019",
-            Self::NonFiniteSlpinp { .. } => "HS-RUNTIME-E-020",
-            Self::NonMonotoneXinput { .. } => "HS-RUNTIME-E-021",
-            Self::NonFiniteDerivedAverageSlope { .. } => "HS-RUNTIME-E-022",
-            Self::NonPositiveDerivedAverageSlope { .. } => "HS-RUNTIME-E-023",
-            Self::NonFiniteDerivedSlopeLength { .. } => "HS-RUNTIME-E-024",
-            Self::NonPositiveDerivedSlopeLength { .. } => "HS-RUNTIME-E-025",
             Self::SoilOfeCountMismatch { .. } => "HS-RUNTIME-E-026",
             Self::SoilOfeCountOutOfRange { .. } => "HS-RUNTIME-E-027",
+            _ => panic!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    const fn soil_layer_code(&self) -> &'static str {
+        match self {
             Self::SoilLayerCountMismatch { .. } => "HS-RUNTIME-E-028",
             Self::SoilLayerCountOutOfRange { .. } => "HS-RUNTIME-E-029",
             Self::NonFiniteLayerDepth { .. } => "HS-RUNTIME-E-030",
@@ -353,27 +413,78 @@ impl HillslopeRuntimeInputError {
             Self::MissingSaturatedConductivity { .. } => "HS-RUNTIME-E-033",
             Self::NonFiniteSaturatedConductivity { .. } => "HS-RUNTIME-E-034",
             Self::NonPositiveSaturatedConductivity { .. } => "HS-RUNTIME-E-035",
+            _ => panic!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    const fn soil_corrected_code(&self) -> &'static str {
+        match self {
             Self::MissingCorrectedLayerNormalizationInput { .. } => "HS-RUNTIME-E-060",
             Self::CorrectedLayerNormalizationUnavailable { .. } => "HS-RUNTIME-E-061",
             Self::CorrectedLayerMappingIncomplete { .. } => "HS-RUNTIME-E-062",
             Self::NonFiniteProfileFcTailContribution { .. } => "HS-RUNTIME-E-063",
             Self::NegativeProfileFcTailContribution { .. } => "HS-RUNTIME-E-064",
+            _ => panic!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    const fn slope_shape_code(&self) -> &'static str {
+        match self {
+            Self::MissingSlopeOfe => "HS-RUNTIME-E-011",
+            Self::SlopeOfeCountMismatch { .. } => "HS-RUNTIME-E-012",
+            Self::SlopeOfeCountOutOfRange { .. } => "HS-RUNTIME-E-013",
+            Self::SlopePointCountMismatch { .. } => "HS-RUNTIME-E-014",
+            Self::SlopePointCountOutOfRange { .. } => "HS-RUNTIME-E-015",
+            Self::InsufficientSlopePoints { .. } => "HS-RUNTIME-E-016",
+            Self::NonFiniteSlopeLength { .. } => "HS-RUNTIME-E-017",
+            Self::NonPositiveSlopeLength { .. } => "HS-RUNTIME-E-018",
+            _ => panic!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    const fn slope_numeric_code(&self) -> &'static str {
+        match self {
+            Self::NonFiniteXinput { .. } => "HS-RUNTIME-E-019",
+            Self::NonFiniteSlpinp { .. } => "HS-RUNTIME-E-020",
+            Self::NonMonotoneXinput { .. } => "HS-RUNTIME-E-021",
+            Self::NonFiniteDerivedAverageSlope { .. } => "HS-RUNTIME-E-022",
+            Self::NonPositiveDerivedAverageSlope { .. } => "HS-RUNTIME-E-023",
+            Self::NonFiniteDerivedSlopeLength { .. } => "HS-RUNTIME-E-024",
+            Self::NonPositiveDerivedSlopeLength { .. } => "HS-RUNTIME-E-025",
+            _ => panic!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    const fn management_code(&self) -> &'static str {
+        match self {
             Self::ManagementTopologyCountMismatch { .. } => "HS-RUNTIME-E-036",
             Self::ManagementScheduleSlotCountMismatch { .. } => "HS-RUNTIME-E-037",
             Self::ManagementScheduleSlotArityMismatch { .. } => "HS-RUNTIME-E-038",
             Self::ManagementInitialReferenceOutOfRange { .. } => "HS-RUNTIME-E-039",
             Self::ManagementYearlyReferenceOutOfRange { .. } => "HS-RUNTIME-E-040",
+            Self::ManagementScheduleOfeIndexOutOfRange { .. } => "HS-RUNTIME-E-045",
+            _ => panic!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    const fn pl_projection_code(&self) -> &'static str {
+        match self {
             Self::UnsupportedPlLanduse { .. } => "HS-RUNTIME-E-041",
             Self::UnsupportedPlManagementOption { .. } => "HS-RUNTIME-E-042",
             Self::NonFinitePlProjectionField { .. } => "HS-RUNTIME-E-043",
             Self::PlProjectionCountOutOfRange { .. } => "HS-RUNTIME-E-044",
-            Self::ManagementScheduleOfeIndexOutOfRange { .. } => "HS-RUNTIME-E-045",
             Self::PlProjectionDayOutOfDomain { .. } => "HS-RUNTIME-E-046",
             Self::PlAnnualExtensionMismatch { .. } => "HS-RUNTIME-E-047",
             Self::PlProjectionCardinalityInvalid { .. } => "HS-RUNTIME-E-048",
             Self::PlGrazingWindowOutOfDomain { .. } => "HS-RUNTIME-E-049",
             Self::PlProjectionFieldOutOfDomain { .. } => "HS-RUNTIME-E-050",
             Self::PlProjectionUnsupportedPayloadCombination { .. } => "HS-RUNTIME-E-051",
+            _ => panic!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    const fn snow_frost_irrigation_code(&self) -> &'static str {
+        match self {
             Self::NonFiniteSnowControl { .. } => "HS-RUNTIME-E-052",
             Self::SnowControlOutOfDomain { .. } => "HS-RUNTIME-E-053",
             Self::NonFiniteFrostControl { .. } => "HS-RUNTIME-E-054",
@@ -382,13 +493,13 @@ impl HillslopeRuntimeInputError {
             Self::NonFiniteIrrigationScheduleField { .. } => "HS-RUNTIME-E-057",
             Self::IrrigationScheduleFieldOutOfDomain { .. } => "HS-RUNTIME-E-058",
             Self::IrrigationScheduleCountOutOfRange { .. } => "HS-RUNTIME-E-059",
+            _ => panic!("routed HillslopeRuntimeInputError family mismatch"),
         }
     }
 }
 
-impl fmt::Display for HillslopeRuntimeInputError {
-    #[allow(clippy::too_many_lines)]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl HillslopeRuntimeInputError {
+    fn fmt_soil_core(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::MissingSoilOfe => {
                 write!(f, "{}: soil profile contains no OFE blocks", self.code())
@@ -452,6 +563,12 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 self.code(),
                 value
             ),
+            _ => unreachable!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    fn fmt_soil_layer(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::SoilLayerCountMismatch {
                 ofe_index,
                 declared_nsl,
@@ -545,6 +662,12 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 layer_index,
                 value_mm_h
             ),
+            _ => unreachable!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    fn fmt_soil_corrected(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::MissingCorrectedLayerNormalizationInput {
                 ofe_index,
                 layer_index,
@@ -593,6 +716,12 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 ofe_index,
                 value_mm
             ),
+            _ => unreachable!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    fn fmt_slope_shape(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::MissingSlopeOfe => {
                 write!(f, "{}: slope profile contains no OFE blocks", self.code())
             }
@@ -655,6 +784,12 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 ofe_index,
                 value_m
             ),
+            _ => unreachable!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    fn fmt_slope_numeric(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::NonFiniteXinput {
                 ofe_index,
                 point_index,
@@ -723,6 +858,12 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 ofe_index,
                 value_m
             ),
+            _ => unreachable!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    fn fmt_management(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::ManagementTopologyCountMismatch {
                 expected_ofes,
                 schedule_initial_refs,
@@ -793,6 +934,30 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 yearly_ref,
                 max_yearly_ref
             ),
+            _ => unreachable!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    fn fmt_pl_projection(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::UnsupportedPlLanduse { .. }
+            | Self::UnsupportedPlManagementOption { .. }
+            | Self::NonFinitePlProjectionField { .. }
+            | Self::PlProjectionCountOutOfRange { .. }
+            | Self::PlProjectionDayOutOfDomain { .. }
+            | Self::PlAnnualExtensionMismatch { .. } => self.fmt_pl_projection_shape(f),
+            Self::PlProjectionCardinalityInvalid { .. }
+            | Self::PlGrazingWindowOutOfDomain { .. }
+            | Self::PlProjectionFieldOutOfDomain { .. }
+            | Self::PlProjectionUnsupportedPayloadCombination { .. } => {
+                self.fmt_pl_projection_payload(f)
+            }
+            _ => unreachable!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    fn fmt_pl_projection_shape(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::UnsupportedPlLanduse { section, value } => write!(
                 f,
                 "{}: unsupported PL landuse {} in {}",
@@ -865,6 +1030,12 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 expected,
                 observed
             ),
+            _ => unreachable!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    fn fmt_pl_projection_payload(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::PlProjectionCardinalityInvalid {
                 field,
                 slot_index,
@@ -927,6 +1098,12 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 crop_slot_index,
                 reason
             ),
+            _ => unreachable!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+
+    fn fmt_snow_frost_irrigation(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::NonFiniteSnowControl { field, value } => write!(
                 f,
                 "{}: non-finite snow control {}={}",
@@ -997,6 +1174,80 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 field,
                 value
             ),
+            _ => unreachable!("routed HillslopeRuntimeInputError family mismatch"),
+        }
+    }
+}
+
+impl fmt::Display for HillslopeRuntimeInputError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingSoilOfe
+            | Self::MissingSoilLayer
+            | Self::MissingThetaResidual
+            | Self::MissingThetaFieldCapacity
+            | Self::NonFiniteProfileDepth { .. }
+            | Self::NonPositiveProfileDepth { .. }
+            | Self::NonFiniteTopLayerDepth { .. }
+            | Self::NonPositiveTopLayerDepth { .. }
+            | Self::NonFiniteThetaResidual { .. }
+            | Self::NonFiniteThetaFieldCapacity { .. }
+            | Self::SoilOfeCountMismatch { .. }
+            | Self::SoilOfeCountOutOfRange { .. } => self.fmt_soil_core(f),
+            Self::SoilLayerCountMismatch { .. }
+            | Self::SoilLayerCountOutOfRange { .. }
+            | Self::NonFiniteLayerDepth { .. }
+            | Self::NonPositiveLayerDepth { .. }
+            | Self::NonMonotoneLayerDepth { .. }
+            | Self::MissingSaturatedConductivity { .. }
+            | Self::NonFiniteSaturatedConductivity { .. }
+            | Self::NonPositiveSaturatedConductivity { .. } => self.fmt_soil_layer(f),
+            Self::MissingCorrectedLayerNormalizationInput { .. }
+            | Self::CorrectedLayerNormalizationUnavailable { .. }
+            | Self::CorrectedLayerMappingIncomplete { .. }
+            | Self::NonFiniteProfileFcTailContribution { .. }
+            | Self::NegativeProfileFcTailContribution { .. } => self.fmt_soil_corrected(f),
+            Self::MissingSlopeOfe
+            | Self::SlopeOfeCountMismatch { .. }
+            | Self::SlopeOfeCountOutOfRange { .. }
+            | Self::SlopePointCountMismatch { .. }
+            | Self::SlopePointCountOutOfRange { .. }
+            | Self::InsufficientSlopePoints { .. }
+            | Self::NonFiniteSlopeLength { .. }
+            | Self::NonPositiveSlopeLength { .. } => self.fmt_slope_shape(f),
+            Self::NonFiniteXinput { .. }
+            | Self::NonFiniteSlpinp { .. }
+            | Self::NonMonotoneXinput { .. }
+            | Self::NonFiniteDerivedAverageSlope { .. }
+            | Self::NonPositiveDerivedAverageSlope { .. }
+            | Self::NonFiniteDerivedSlopeLength { .. }
+            | Self::NonPositiveDerivedSlopeLength { .. } => self.fmt_slope_numeric(f),
+            Self::ManagementTopologyCountMismatch { .. }
+            | Self::ManagementScheduleSlotCountMismatch { .. }
+            | Self::ManagementScheduleSlotArityMismatch { .. }
+            | Self::ManagementInitialReferenceOutOfRange { .. }
+            | Self::ManagementYearlyReferenceOutOfRange { .. }
+            | Self::ManagementScheduleOfeIndexOutOfRange { .. } => self.fmt_management(f),
+            Self::UnsupportedPlLanduse { .. }
+            | Self::UnsupportedPlManagementOption { .. }
+            | Self::NonFinitePlProjectionField { .. }
+            | Self::PlProjectionCountOutOfRange { .. }
+            | Self::PlProjectionDayOutOfDomain { .. }
+            | Self::PlAnnualExtensionMismatch { .. }
+            | Self::PlProjectionCardinalityInvalid { .. }
+            | Self::PlGrazingWindowOutOfDomain { .. }
+            | Self::PlProjectionFieldOutOfDomain { .. }
+            | Self::PlProjectionUnsupportedPayloadCombination { .. } => self.fmt_pl_projection(f),
+            Self::NonFiniteSnowControl { .. }
+            | Self::SnowControlOutOfDomain { .. }
+            | Self::NonFiniteFrostControl { .. }
+            | Self::FrostControlOutOfDomain { .. }
+            | Self::MissingIrrigationScheduleField { .. }
+            | Self::NonFiniteIrrigationScheduleField { .. }
+            | Self::IrrigationScheduleFieldOutOfDomain { .. }
+            | Self::IrrigationScheduleCountOutOfRange { .. } => {
+                self.fmt_snow_frost_irrigation(f)
+            }
         }
     }
 }

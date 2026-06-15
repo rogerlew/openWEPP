@@ -2,6 +2,7 @@
 mod tests {
     include!("08_tests/common.rs");
 
+    include!("08_tests/core_types.rs");
     include!("08_tests/soil.rs");
     include!("08_tests/slope.rs");
     include!("08_tests/management.rs");
