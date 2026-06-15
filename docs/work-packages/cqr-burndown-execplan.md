@@ -188,8 +188,14 @@ the tracker below and by reading the corresponding package directories under
   Pushed commit: `bb6eade8193f19cd61fcc09a285001d41f245745` on branch
   `main`.
   Final target: `WatershedClimateRuntimeInputError::fmt`, CRAP `6.0`.
-- [ ] CQR20, rank 14, original CRAP `384`, CC `29`, Cov `25%`:
+- [x] (2026-06-15) Closed CQR20, rank 14, original CRAP `384`, CC
+  `29`, Cov `25%`:
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/05_projection_helpers.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr20-projection-helpers-complexity-001/`.
+  Pushed commit: `6719e602bf651cc5ec0a45263954fbb809443b11` on branch
+  `main`.
+  Final target: `project_annual_extension_controls`, CRAP `9.0`.
 - [ ] CQR21, rank 15, original CRAP `380`, CC `19`, Cov `0%`:
   `crates/openwepp-climate-runtime-adapter/src/lib.rs`.
 - [ ] CQR22, rank 16, original CRAP `369`, CC `29`, Cov `26%`:
