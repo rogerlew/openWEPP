@@ -10,6 +10,26 @@
 
 State as of `2026-06-15`:
 
+- CQR06 is queued for behavior-preserving CRAP/cyclomatic-complexity
+  decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`.
+  The scoped quality target is decomposing WB19 lateral-transfer, drainage, and
+  top-layer conductivity adjustment helpers so every eligible target-module
+  function has CRAP `<= 30`, without changing WB19 formulas, typed guard IDs,
+  symbol names, arithmetic grouping, thresholds, unit conversions, writeback
+  order, or public crate APIs. Package:
+  `20260615-cqr06-lateral-drainage-complexity-001/`.
+- CQR05 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity
+  decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod14.rs`.
+  The scoped quality target decomposed `run_erod14_wave2` so every eligible
+  target-module function has CRAP `<= 23.0`, without changing EROD14 Wave-2
+  formulas, typed guard IDs, symbol names, arithmetic grouping, thresholds,
+  writeback order, or public crate APIs. Required closure gates passed. WARN
+  hold remains for target coverage below the science-tier threshold after
+  private helper extraction. Package:
+  `20260615-cqr05-erod14-wave2-complexity-001/`.
 - CQR04 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity
   decomposition of
