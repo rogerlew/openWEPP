@@ -10,6 +10,11 @@
 
 State as of `2026-06-15`:
 
+- CQR18 completed behavior-preserving CRAP/cyclomatic-complexity
+  decomposition of
+  `crates/openwepp-input-contract/src/parsers/hbp/payload_validator.rs`.
+  Package: `20260615-cqr18-hbp-payload-validator-complexity-001/`. Final
+  target CRAP: `9.0`.
 - CQR17 completed behavior-preserving CRAP/cyclomatic-complexity
   decomposition of
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod19.rs`.

@@ -585,6 +585,43 @@ fn refresh_schema1_file_crc(bytes: &mut [u8]) {
     put_u32_at(bytes, file_crc_pos, file_crc);
 }
 
+fn refresh_schema1_directory_crc(bytes: &mut [u8]) {
+    let directory_start = directory_start(bytes);
+    let directory_end = directory_end(bytes, SUPPORTED_MAJOR_V1);
+    let footer_start = schema1_footer_start(bytes);
+    put_u32_at(
+        bytes,
+        footer_start,
+        crc32c(&bytes[directory_start..directory_end]),
+    );
+}
+
+fn refresh_schema1_crcs(bytes: &mut [u8]) {
+    refresh_schema1_directory_crc(bytes);
+    refresh_schema1_file_crc(bytes);
+}
+
+fn schema1_payload_range(bytes: &[u8]) -> (usize, usize) {
+    let directory_pos = directory_start(bytes);
+    let payload_offset = read_u64_at(bytes, directory_pos + 4 + 11) as usize;
+    let payload_length = read_u32_at(bytes, directory_pos + 4 + 19) as usize;
+    (payload_offset, payload_offset + payload_length)
+}
+
+fn refresh_schema1_payload_crc(bytes: &mut [u8]) {
+    let directory_pos = directory_start(bytes);
+    let (payload_start, payload_end) = schema1_payload_range(bytes);
+    let payload_crc = crc32c(&bytes[payload_start..payload_end]);
+    put_u32_at(bytes, directory_pos + 4 + 23, payload_crc);
+}
+
+fn mutate_schema1_payload(bytes: &mut [u8], mutate: impl FnOnce(&mut [u8])) {
+    let (payload_start, payload_end) = schema1_payload_range(bytes);
+    mutate(&mut bytes[payload_start..payload_end]);
+    refresh_schema1_payload_crc(bytes);
+    refresh_schema1_crcs(bytes);
+}
+
 fn refresh_schema2_directory_crc(bytes: &mut [u8]) {
     let directory_start = directory_start(bytes);
     let directory_end = directory_end(bytes, SUPPORTED_MAJOR_V2);
@@ -642,6 +679,85 @@ fn assert_truncated_layout_error(bytes: &[u8], truncate_at: usize, detail: &str)
     let mut truncated = bytes.to_vec();
     truncated.truncate(truncate_at);
     assert_layout_format_error(&truncated, HbpFormatErrorCode::HbpE013, detail);
+}
+
+#[test]
+fn payload_validator_crc_and_schema2_raw_payload_crc_guards_are_typed() {
+    let mut bytes = build_schema1_fixture(1);
+    let (payload_start, _) = schema1_payload_range(&bytes);
+    bytes[payload_start] ^= 0x01;
+    refresh_schema1_file_crc(&mut bytes);
+    assert_layout_format_error(&bytes, HbpFormatErrorCode::HbpE012, "payload crc mismatch");
+
+    let mut bytes = build_schema2_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    let raw_payload_crc_pos = directory_pos + 4 + 25;
+    put_u32_at(&mut bytes, raw_payload_crc_pos, 123);
+    refresh_schema2_directory_crc(&mut bytes);
+    refresh_schema2_file_crc(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE012,
+        "raw payload crc mismatch",
+    );
+}
+
+#[test]
+fn payload_validator_header_guards_are_typed() {
+    let mut bytes = build_schema1_fixture(1);
+    mutate_schema1_payload(&mut bytes, |payload| {
+        put_u16_at(payload, 8, 2);
+    });
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE010,
+        "payload and directory key mismatch",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    mutate_schema1_payload(&mut bytes, |payload| {
+        put_u16_at(payload, 11, 1);
+    });
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE013,
+        "unsupported payload minor",
+    );
+}
+
+#[test]
+fn payload_validator_state_snapshot_guards_are_typed() {
+    let first_state_offset = 15 + 16;
+
+    let mut bytes = build_schema1_fixture(1);
+    mutate_schema1_payload(&mut bytes, |payload| {
+        let second_state_offset =
+            first_state_offset + 6 + read_u32_at(payload, first_state_offset + 2) as usize;
+        put_u16_at(payload, second_state_offset, 1);
+    });
+    assert_layout_format_error(&bytes, HbpFormatErrorCode::HbpE013, "duplicate state id");
+
+    let mut bytes = build_schema1_fixture(1);
+    mutate_schema1_payload(&mut bytes, |payload| {
+        let length_offset = first_state_offset + 2;
+        let entry_length = read_u32_at(payload, length_offset);
+        put_u32_at(payload, length_offset, entry_length + 1);
+    });
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE013,
+        "state entry length mismatch",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    mutate_schema1_payload(&mut bytes, |payload| {
+        put_u16_at(payload, first_state_offset, 902);
+    });
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE013,
+        "required state id missing: 1",
+    );
 }
 
 #[test]
