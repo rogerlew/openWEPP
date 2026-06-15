@@ -112,8 +112,14 @@ the tracker below and by reading the corresponding package directories under
   Pushed commit: `e72588fb5b57ebd81c871fc9aa8ebf7a893e4afe` on branch `main`.
   Final target: `build_annual_decomposition_control`, CRAP
   `9.179748500041095`.
-- [ ] CQR10, rank 4, original CRAP `1482`, CC `38`, Cov `0%`:
+- [x] (2026-06-15) Closed CQR10, rank 4, original CRAP `1482`, CC
+  `38`, Cov `0%`:
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr10-irrigation-fixeddate-runtime-001/`.
+  Pushed commit: `0a2e469d69ee7883511710c7b6be739df0502581` on branch `main`.
+  Final target: `seed_hillslope_runtime_surface_from_irrigation_fixeddate`,
+  CRAP `4.0`.
 - [ ] CQR11, rank 5, original CRAP `1406`, CC `37`, Cov `0%`:
   `crates/openwepp-input-contract/src/parsers/management.rs`.
 - [ ] CQR12, rank 6, original CRAP `1122`, CC `33`, Cov `0%`:
@@ -190,6 +196,15 @@ the tracker below and by reading the corresponding package directories under
   `compute_equation_decomposition_seed_surface` remain above `30` in
   `docs/work-packages/20260615-cqr09-decomposition-equations-complexity-001/artifacts/crap_after.json`.
 
+- Observation: CQR10 live metrics matched the rank-4 fixed-date irrigation
+  target, and the duplicate-file CQR12 depletion row remains live and out of
+  scope.
+  Evidence: CQR10 after metrics reduced
+  `seed_hillslope_runtime_surface_from_irrigation_fixeddate` to CRAP `4.0`;
+  `seed_hillslope_runtime_surface_from_irrigation_depletion` remains CRAP
+  `1122.0` in
+  `docs/work-packages/20260615-cqr10-irrigation-fixeddate-runtime-001/artifacts/crap_after.json`.
+
 ### Decision Log
 
 - Decision: preserve the top-30 ranking as the canonical tracker and assign
@@ -224,9 +239,10 @@ the tracker below and by reading the corresponding package directories under
 
 ### Outcomes & Retrospective
 
-CQR09 is complete-with-warnings and pushed to `origin/main`. CQR07 and CQR08
-remain complete and serve as the precedent for package shape, metric evidence,
-focused characterization, closure gates, review, verification, and disposition.
+CQR09 and CQR10 are complete-with-warnings and pushed to `origin/main`. CQR07
+and CQR08 remain complete and serve as the precedent for package shape, metric
+evidence, focused characterization, closure gates, review, verification, and
+disposition.
 
 ### Context and Orientation
 
