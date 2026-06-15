@@ -10,6 +10,18 @@
 
 State as of `2026-06-15`:
 
+- CQR04 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity
+  decomposition of
+  `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing.rs`.
+  The scoped quality target decomposed high-risk watershed channel routing
+  helpers, especially `ws20_route_case12_segment_family`, so every eligible
+  target-module function has CRAP `<= 30`, without changing WS10/WS11/WS20-WS24
+  routing behavior, typed guard IDs, symbol names, arithmetic grouping,
+  thresholds, or public crate APIs. Required closure gates passed. WARN holds
+  remain for target-file line count over 2000 and target coverage below the
+  science-tier threshold after private helper extraction. Package:
+  `20260615-cqr04-watershed-routing-complexity-001/`.
 - CQR03 is complete for behavior-preserving CRAP/cyclomatic-complexity
   decomposition of
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/01_management.rs`.

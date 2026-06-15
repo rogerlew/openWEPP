@@ -1,0 +1,26 @@
+{
+  "source": "lcov_after.info parsed with awk",
+  "target_file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing.rs",
+  "summary": {
+    "functions": {
+      "covered": 64,
+      "count": 77,
+      "percent": 83.116883116883
+    },
+    "lines": {
+      "covered": 1788,
+      "count": 2264,
+      "percent": 78.975265017668
+    },
+    "branches": {
+      "covered": 0,
+      "count": 0,
+      "percent": 0.0
+    }
+  },
+  "notes": [
+    "The saved LCOV after artifact is authoritative for this compact target summary.",
+    "The cargo llvm-cov report subcommand emitted an empty file list when invoked after the coverage run in this workspace, so this summary records the target LCOV line/function totals directly.",
+    "Region coverage is not represented in LCOV and remains covered by the scoped hold recorded in cqr04-coverage-closure.md."
+  ]
+}
