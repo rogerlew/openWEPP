@@ -80,6 +80,26 @@ fn put_u32_at(buf: &mut [u8], offset: usize, value: u32) {
     buf[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
 }
 
+fn put_u16_at(buf: &mut [u8], offset: usize, value: u16) {
+    buf[offset..offset + 2].copy_from_slice(&value.to_le_bytes());
+}
+
+fn put_u64_at(buf: &mut [u8], offset: usize, value: u64) {
+    buf[offset..offset + 8].copy_from_slice(&value.to_le_bytes());
+}
+
+fn put_f64_at(buf: &mut [u8], offset: usize, value: f64) {
+    buf[offset..offset + 8].copy_from_slice(&value.to_le_bytes());
+}
+
+fn read_u32_at(buf: &[u8], offset: usize) -> u32 {
+    u32::from_le_bytes(buf[offset..offset + 4].try_into().expect("u32 window"))
+}
+
+fn read_u64_at(buf: &[u8], offset: usize) -> u64 {
+    u64::from_le_bytes(buf[offset..offset + 8].try_into().expect("u64 window"))
+}
+
 fn crc32c(data: &[u8]) -> u32 {
     let mut crc: u32 = 0xFFFF_FFFF;
     for value in data {
@@ -325,6 +345,50 @@ fn build_schema1_fixture(hillslope_id: u32) -> Vec<u8> {
     file
 }
 
+fn build_schema1_duplicate_key_fixture(hillslope_id: u32) -> Vec<u8> {
+    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, 1, 2004, 1, hillslope_id);
+    let year_start = year_count_offset(&file) + 4;
+    put_u16_at(&mut file, year_start + 8, 2);
+    put_u16_at(&mut file, year_start + 12, 2);
+
+    let payload = build_no_event_payload(1, 2004, 1, 1, 1);
+    let payload_crc = crc32c(&payload);
+
+    let directory_start = file.len();
+    let directory_len = 4 + 2 * 27;
+    let first_payload_offset = directory_start + directory_len;
+    let second_payload_offset = first_payload_offset + payload.len();
+
+    let mut directory = Vec::new();
+    put_u32(&mut directory, 2);
+    for payload_offset in [first_payload_offset, second_payload_offset] {
+        put_u32(&mut directory, 1);
+        put_i32(&mut directory, 2004);
+        put_u16(&mut directory, 1);
+        put_u8(&mut directory, 0);
+        put_u64(&mut directory, payload_offset as u64);
+        put_u32(&mut directory, payload.len() as u32);
+        put_u32(&mut directory, payload_crc);
+    }
+
+    file.extend_from_slice(&directory);
+    file.extend_from_slice(&payload);
+    file.extend_from_slice(&payload);
+
+    let directory_crc = crc32c(&directory);
+    put_u32(&mut file, directory_crc);
+
+    let file_crc_pos = file.len();
+    put_u32(&mut file, 0);
+    put_u32(&mut file, 2);
+    file.extend_from_slice(FOOTER_MAGIC);
+
+    let file_crc = crc32c(&file);
+    put_u32_at(&mut file, file_crc_pos, file_crc);
+
+    file
+}
+
 fn build_schema2_fixture(hillslope_id: u32) -> Vec<u8> {
     let nyear = 1u32;
     let begin_year = 2004i32;
@@ -424,6 +488,664 @@ fn write_fixture(path: &Path, bytes: &[u8]) {
     let parent = path.parent().expect("fixture path should have parent");
     fs::create_dir_all(parent).expect("fixture parent should be creatable");
     fs::write(path, bytes).expect("fixture bytes should write");
+}
+
+fn header_bytes(bytes: &[u8]) -> usize {
+    read_u32_at(bytes, 13) as usize
+}
+
+fn skip_encoded_string(bytes: &[u8], offset: usize) -> usize {
+    let length = read_u32_at(bytes, offset) as usize;
+    offset + 4 + length
+}
+
+fn simulation_mode_offset(bytes: &[u8]) -> usize {
+    let mut offset = header_bytes(bytes) + 4 + 4 + 4 + 2 + 2 + 2;
+    offset = skip_encoded_string(bytes, offset);
+    offset + 2
+}
+
+fn particle_count_offset(bytes: &[u8]) -> usize {
+    let mut offset = simulation_mode_offset(bytes) + 1;
+    offset = skip_encoded_string(bytes, offset);
+    offset + 8
+}
+
+fn particle_diameter_offset(bytes: &[u8]) -> usize {
+    particle_count_offset(bytes) + 4
+}
+
+fn year_count_offset(bytes: &[u8]) -> usize {
+    let particle_count_offset = particle_count_offset(bytes);
+    let particle_count = read_u32_at(bytes, particle_count_offset) as usize;
+    particle_count_offset + 4 + 8 * particle_count + 8 * 4
+}
+
+fn registry_count_offset(bytes: &[u8]) -> usize {
+    let year_count_offset = year_count_offset(bytes);
+    let year_count = read_u32_at(bytes, year_count_offset) as usize;
+    year_count_offset + 4 + 15 * year_count
+}
+
+fn registry_state_id_offsets(bytes: &[u8]) -> Vec<usize> {
+    let mut offset = registry_count_offset(bytes);
+    let registry_count = read_u32_at(bytes, offset) as usize;
+    offset += 4;
+
+    let mut offsets = Vec::with_capacity(registry_count);
+    for _ in 0..registry_count {
+        offsets.push(offset);
+        offset += 2 + 1 + 1 + 2 + 1 + 1;
+        offset = skip_encoded_string(bytes, offset);
+    }
+    offsets
+}
+
+fn directory_start(bytes: &[u8]) -> usize {
+    let offsets = registry_state_id_offsets(bytes);
+    let last = *offsets.last().expect("registry must contain states");
+    let mut offset = last + 2 + 1 + 1 + 2 + 1 + 1;
+    offset = skip_encoded_string(bytes, offset);
+    offset
+}
+
+fn directory_end(bytes: &[u8], schema_major: u16) -> usize {
+    let start = directory_start(bytes);
+    let record_count = read_u32_at(bytes, start) as usize;
+    let row_size = if schema_major == SUPPORTED_MAJOR_V2 {
+        DIR_V2_ROW_SIZE
+    } else {
+        27
+    };
+    start + 4 + record_count * row_size
+}
+
+fn schema1_footer_start(bytes: &[u8]) -> usize {
+    bytes.len() - 20
+}
+
+fn schema2_table_start(bytes: &[u8]) -> usize {
+    directory_end(bytes, SUPPORTED_MAJOR_V2)
+}
+
+fn schema2_table_end(bytes: &[u8]) -> usize {
+    let table_start = schema2_table_start(bytes);
+    let block_count = read_u32_at(bytes, table_start) as usize;
+    table_start + 4 + block_count * TABLE_V2_ENTRY_SIZE
+}
+
+fn schema2_footer_start(bytes: &[u8]) -> usize {
+    bytes.len() - 28
+}
+
+fn refresh_schema1_file_crc(bytes: &mut [u8]) {
+    let file_crc_pos = schema1_footer_start(bytes) + 4;
+    put_u32_at(bytes, file_crc_pos, 0);
+    let file_crc = crc32c(bytes);
+    put_u32_at(bytes, file_crc_pos, file_crc);
+}
+
+fn refresh_schema2_directory_crc(bytes: &mut [u8]) {
+    let directory_start = directory_start(bytes);
+    let directory_end = directory_end(bytes, SUPPORTED_MAJOR_V2);
+    let footer_start = schema2_footer_start(bytes);
+    put_u32_at(
+        bytes,
+        footer_start,
+        crc32c(&bytes[directory_start..directory_end]),
+    );
+}
+
+fn refresh_schema2_table_crc(bytes: &mut [u8]) {
+    let table_start = schema2_table_start(bytes);
+    let table_end = schema2_table_end(bytes);
+    let footer_start = schema2_footer_start(bytes);
+    put_u32_at(
+        bytes,
+        footer_start + 4,
+        crc32c(&bytes[table_start..table_end]),
+    );
+}
+
+fn refresh_schema2_file_crc(bytes: &mut [u8]) {
+    let file_crc_pos = schema2_footer_start(bytes) + 8;
+    put_u32_at(bytes, file_crc_pos, 0);
+    let file_crc = crc32c(bytes);
+    put_u32_at(bytes, file_crc_pos, file_crc);
+}
+
+fn refresh_schema2_crcs(bytes: &mut [u8]) {
+    refresh_schema2_directory_crc(bytes);
+    refresh_schema2_table_crc(bytes);
+    refresh_schema2_file_crc(bytes);
+}
+
+fn assert_layout_format_error(bytes: &[u8], code: HbpFormatErrorCode, detail: &str) {
+    let error = parse_hbp_from_bytes(bytes, Path::new("H1.hbp"), HbpParseOptions::strict())
+        .expect_err("mutated layout fixture should fail");
+    match error {
+        HbpParseError::FormatViolation {
+            code: actual_code,
+            detail: actual_detail,
+        } => {
+            assert_eq!(actual_code, code);
+            assert!(
+                actual_detail.contains(detail),
+                "expected detail containing '{detail}', got '{actual_detail}'"
+            );
+        }
+        other => panic!("expected format violation, got {other:?}"),
+    }
+}
+
+fn assert_truncated_layout_error(bytes: &[u8], truncate_at: usize, detail: &str) {
+    let mut truncated = bytes.to_vec();
+    truncated.truncate(truncate_at);
+    assert_layout_format_error(&truncated, HbpFormatErrorCode::HbpE013, detail);
+}
+
+#[test]
+fn layout_header_control_fields_fail_closed_with_specific_codes() {
+    let mut bytes = build_schema1_fixture(1);
+    put_u16_at(&mut bytes, 8, 9);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE003,
+        "unsupported schema major",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    put_u16_at(&mut bytes, 10, 1);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE004,
+        "unsupported schema minor",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    put_u16_at(&mut bytes, 10, 1);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE004,
+        "unsupported schema minor",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    bytes[12] = 2;
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE005,
+        "unsupported endianness",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let invalid_header_bytes = (bytes.len() + 1) as u32;
+    put_u32_at(&mut bytes, 13, invalid_header_bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE006,
+        "header length exceeds file length",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    bytes[49] = 2;
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE006,
+        "unsupported artifact role",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    bytes[17] ^= 0x01;
+    assert_layout_format_error(&bytes, HbpFormatErrorCode::HbpE007, "header crc mismatch");
+
+    let mut bytes = build_schema1_fixture(1);
+    let invalid_header_bytes = (header_bytes(&bytes) + 1) as u32;
+    put_u32_at(&mut bytes, 13, invalid_header_bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE006,
+        "header length mismatch",
+    );
+}
+
+#[test]
+fn layout_cursor_truncation_guards_report_typed_contexts() {
+    let schema1 = build_schema1_fixture(1);
+    let schema1_row = directory_start(&schema1) + 4;
+    assert_truncated_layout_error(&schema1, schema1_row + 11, "day directory");
+    assert_truncated_layout_error(&schema1, schema1_row + 19, "day directory");
+    assert_truncated_layout_error(&schema1, schema1_row + 23, "day directory");
+
+    let schema2 = build_schema2_fixture(1);
+    let schema2_row = directory_start(&schema2) + 4;
+    assert_truncated_layout_error(&schema2, schema2_row + 11, "day directory");
+    assert_truncated_layout_error(&schema2, schema2_row + 15, "day directory");
+    assert_truncated_layout_error(&schema2, schema2_row + 17, "day directory");
+    assert_truncated_layout_error(&schema2, schema2_row + 21, "day directory");
+    assert_truncated_layout_error(&schema2, schema2_row + 25, "day directory");
+
+    let table_pos = schema2_table_start(&schema2);
+    assert_truncated_layout_error(&schema2, table_pos, "payload block table");
+    assert_truncated_layout_error(&schema2, table_pos + 4, "payload block table");
+    assert_truncated_layout_error(&schema2, table_pos + 8, "payload block table");
+    assert_truncated_layout_error(&schema2, table_pos + 12, "payload block table");
+    assert_truncated_layout_error(&schema2, table_pos + 14, "payload block table");
+    assert_truncated_layout_error(&schema2, table_pos + 16, "payload block table");
+    assert_truncated_layout_error(&schema2, table_pos + 24, "payload block table");
+    assert_truncated_layout_error(&schema2, table_pos + 28, "payload block table");
+    assert_truncated_layout_error(&schema2, table_pos + 32, "payload block table");
+    assert_truncated_layout_error(&schema2, table_pos + 33, "payload block table");
+    assert_truncated_layout_error(&schema2, table_pos + 37, "payload block table");
+}
+
+#[test]
+fn layout_dimension_metadata_and_year_table_guards_are_typed() {
+    let mut bytes = build_schema2_fixture(1);
+    let simulation_mode_offset = simulation_mode_offset(&bytes);
+    bytes[simulation_mode_offset] = 0;
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE008,
+        "schema 2.0 requires simulation_mode = 1",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let particle_diameter_offset = particle_diameter_offset(&bytes);
+    put_f64_at(&mut bytes, particle_diameter_offset, 0.0);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE006,
+        "particle_diameter_m must be finite and > 0",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let particle_count_offset = particle_count_offset(&bytes);
+    put_u32_at(&mut bytes, particle_count_offset, 0);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE006,
+        "event sediment count mismatch",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let year_count_pos = year_count_offset(&bytes);
+    put_u32_at(&mut bytes, year_count_pos, 2);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE008,
+        "year table count mismatch",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let year_count_pos = year_count_offset(&bytes);
+    put_u32_at(&mut bytes, year_count_pos + 4, 2);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE008,
+        "year table sim_year_index must be one-based and ordered",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let year_count_pos = year_count_offset(&bytes);
+    put_u16_at(&mut bytes, year_count_pos + 12, 0);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE008,
+        "year table days_in_year must be positive",
+    );
+}
+
+#[test]
+fn layout_registry_guards_reject_duplicate_mismatch_and_missing_required_ids() {
+    let mut bytes = build_schema1_fixture(1);
+    let state_offsets = registry_state_id_offsets(&bytes);
+    put_u16_at(&mut bytes, state_offsets[1], REQUIRED_STATE_IDS[0]);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE009,
+        "duplicate registry state id",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let state_offsets = registry_state_id_offsets(&bytes);
+    bytes[state_offsets[0] + 2] = 0;
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE009,
+        "state registry block does not match canonical schema",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let state_offsets = registry_state_id_offsets(&bytes);
+    let last_state_offset = *state_offsets.last().expect("state offsets");
+    put_u16_at(&mut bytes, last_state_offset, 902);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE009,
+        "required state id missing in registry",
+    );
+}
+
+#[test]
+fn schema1_directory_and_footer_layout_guards_are_typed() {
+    let mut bytes = build_schema1_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    put_u32_at(&mut bytes, directory_pos, 0);
+    assert_layout_format_error(&bytes, HbpFormatErrorCode::HbpE010, "empty day directory");
+
+    let mut bytes = build_schema1_fixture(1);
+    let year_start = year_count_offset(&bytes) + 4;
+    put_u16_at(&mut bytes, year_start + 8, 2);
+    put_u16_at(&mut bytes, year_start + 12, 2);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE010,
+        "directory record count must equal sum of year-table days",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    put_u16_at(&mut bytes, directory_pos + 4 + 8, 2);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE010,
+        "directory key is outside the year table",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    put_u32_at(&mut bytes, directory_pos + 4 + 19, 0);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE010,
+        "payload length must be positive",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    put_u64_at(&mut bytes, directory_pos + 4 + 11, 1);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE010,
+        "payload offsets are not deterministic",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let footer_count_offset = schema1_footer_start(&bytes) + 8;
+    put_u32_at(&mut bytes, footer_count_offset, 2);
+    refresh_schema1_file_crc(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE012,
+        "footer record count must equal sum of year-table days",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    bytes[directory_pos + 4 + 10] = 1;
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE012,
+        "directory crc mismatch",
+    );
+
+    let mut bytes = build_schema1_fixture(1);
+    let file_crc_offset = schema1_footer_start(&bytes) + 4;
+    bytes[file_crc_offset] ^= 0x01;
+    assert_layout_format_error(&bytes, HbpFormatErrorCode::HbpE012, "file crc mismatch");
+
+    let mut bytes = build_schema1_fixture(1);
+    let footer_magic_offset = schema1_footer_start(&bytes) + 12;
+    bytes[footer_magic_offset] ^= 0x01;
+    refresh_schema1_file_crc(&mut bytes);
+    assert_layout_format_error(&bytes, HbpFormatErrorCode::HbpE012, "bad footer magic");
+
+    let mut bytes = build_schema1_fixture(1);
+    bytes.truncate(bytes.len() - 1);
+    assert_layout_format_error(&bytes, HbpFormatErrorCode::HbpE013, "truncated payload");
+
+    let bytes = build_schema1_duplicate_key_fixture(1);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE010,
+        "directory keys must be deterministic and strictly ordered",
+    );
+}
+
+#[test]
+fn schema2_block_table_and_footer_layout_guards_are_typed() {
+    let mut bytes = build_schema2_fixture(1);
+    let table_pos = schema2_table_start(&bytes);
+    put_u32_at(&mut bytes, table_pos, 2);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.x block count must equal year table count",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let table_pos = schema2_table_start(&bytes);
+    put_u32_at(&mut bytes, table_pos + 4, 1);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.x payload_block_id must be contiguous and ordered",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let table_pos = schema2_table_start(&bytes);
+    put_u32_at(&mut bytes, table_pos + 8, 2);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.x payload block sim_year_index mismatch",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let table_pos = schema2_table_start(&bytes);
+    put_u16_at(&mut bytes, table_pos + 12, 365);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.0 payload block day counts must be 366",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let table_pos = schema2_table_start(&bytes);
+    bytes[table_pos + 32] = 0;
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.x payload codec is unsupported",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let table_pos = schema2_table_start(&bytes);
+    put_u32_at(&mut bytes, table_pos + 24, 0);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.x payload block lengths must be positive",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let footer_magic_offset = schema2_footer_start(&bytes) + 20;
+    bytes[footer_magic_offset] ^= 0x01;
+    assert_layout_format_error(&bytes, HbpFormatErrorCode::HbpE012, "bad footer magic");
+
+    let mut bytes = build_schema2_fixture(1);
+    bytes.truncate(schema2_table_end(&bytes) + 20);
+    assert_layout_format_error(&bytes, HbpFormatErrorCode::HbpE013, "truncated payload");
+}
+
+#[test]
+fn schema2_checksum_raw_block_and_day_slice_guards_are_typed() {
+    schema2_checksum_and_footer_guards_are_typed();
+    schema2_payload_block_bounds_are_typed();
+    schema2_day_slice_bounds_are_typed();
+}
+
+fn schema2_checksum_and_footer_guards_are_typed() {
+    let mut bytes = build_schema2_fixture(1);
+    let footer_record_count = schema2_footer_start(&bytes) + 12;
+    put_u32_at(&mut bytes, footer_record_count, 365);
+    refresh_schema2_file_crc(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE012,
+        "footer record count must equal sum of year-table days",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let stored_block_offset = read_u64_at(&bytes, schema2_table_start(&bytes) + 16) as usize;
+    bytes[stored_block_offset] ^= 0x01;
+    refresh_schema2_file_crc(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE012,
+        "schema 2.x stored block crc mismatch",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let table_pos = schema2_table_start(&bytes);
+    put_u32_at(&mut bytes, table_pos + 37, 123);
+    refresh_schema2_table_crc(&mut bytes);
+    refresh_schema2_file_crc(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE012,
+        "schema 2.x raw block crc mismatch",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let footer_block_count = schema2_footer_start(&bytes) + 16;
+    put_u32_at(&mut bytes, footer_block_count, 2);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE012,
+        "schema 2.x footer block count mismatch",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    bytes[directory_pos + 4 + 10] = 1;
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE012,
+        "directory crc mismatch",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let table_pos = schema2_table_start(&bytes);
+    bytes[table_pos + 33] ^= 0x01;
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE012,
+        "payload block table crc mismatch",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let file_crc_offset = schema2_footer_start(&bytes) + 8;
+    bytes[file_crc_offset] ^= 0x01;
+    assert_layout_format_error(&bytes, HbpFormatErrorCode::HbpE012, "file crc mismatch");
+}
+
+fn schema2_payload_block_bounds_are_typed() {
+    let mut bytes = build_schema2_fixture(1);
+    let table_pos = schema2_table_start(&bytes);
+    put_u64_at(&mut bytes, table_pos + 16, u64::MAX);
+    refresh_schema2_table_crc(&mut bytes);
+    refresh_schema2_file_crc(&mut bytes);
+    assert_layout_format_error(&bytes, HbpFormatErrorCode::HbpE013, "truncated payload");
+
+    let mut bytes = build_schema2_fixture(1);
+    let table_pos = schema2_table_start(&bytes);
+    let invalid_block_offset = (bytes.len() - 10) as u64;
+    put_u64_at(&mut bytes, table_pos + 16, invalid_block_offset);
+    refresh_schema2_table_crc(&mut bytes);
+    refresh_schema2_file_crc(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE013,
+        "schema 2.x stored payload block exceeds file bounds",
+    );
+}
+
+fn schema2_day_slice_bounds_are_typed() {
+    let mut bytes = build_schema2_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    put_u32_at(&mut bytes, directory_pos + 4 + 11, 1);
+    refresh_schema2_crcs(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.x directory block id is out of range",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    put_u16_at(&mut bytes, directory_pos + 4 + 15, 1);
+    refresh_schema2_crcs(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.0 day_in_block_index must equal julian_day - 1",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    put_u32_at(&mut bytes, directory_pos + 4 + DIR_V2_ROW_SIZE + 17, 0);
+    refresh_schema2_crcs(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.x day slices overlap in raw block",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    put_u16_at(&mut bytes, directory_pos + 4 + 15, 366);
+    refresh_schema2_crcs(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.x day_in_block_index is out of range",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    put_u32_at(&mut bytes, directory_pos + 4 + 17, u32::MAX);
+    refresh_schema2_crcs(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.x day slice exceeds raw block bounds",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    let second_row_offset = directory_pos + 4 + DIR_V2_ROW_SIZE;
+    let original_offset = read_u32_at(&bytes, second_row_offset + 17);
+    put_u32_at(&mut bytes, second_row_offset + 17, original_offset + 1);
+    refresh_schema2_crcs(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.x day slices must cover raw block without gaps",
+    );
+
+    let mut bytes = build_schema2_fixture(1);
+    let directory_pos = directory_start(&bytes);
+    let last_row_offset = directory_pos + 4 + 365 * DIR_V2_ROW_SIZE;
+    let last_length = read_u32_at(&bytes, last_row_offset + 21);
+    put_u32_at(&mut bytes, last_row_offset + 21, last_length - 1);
+    refresh_schema2_crcs(&mut bytes);
+    assert_layout_format_error(
+        &bytes,
+        HbpFormatErrorCode::HbpE011,
+        "schema 2.x day slices must cover raw block without gaps",
+    );
 }
 
 #[test]

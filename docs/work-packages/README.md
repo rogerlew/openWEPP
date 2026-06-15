@@ -10,6 +10,13 @@
 
 State as of `2026-06-15`:
 
+- CQR02 is complete for behavior-preserving CRAP/cyclomatic-complexity
+  decomposition of
+  `crates/openwepp-input-contract/src/parsers/hbp/layout_parser.rs`.
+  `parse_layout` is now a staged dispatcher over private parser helpers, public
+  HBP parser APIs are unchanged, and every eligible target-module function has
+  CRAP `<= 20.0` after the refactor. Required closure gates passed. Package:
+  `20260615-cqr02-hbp-layout-parser-complexity-001/`.
 - CQR01 is complete for behavior-preserving code-quality decomposition of
   `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling/frost_entry.rs`.
   `compute_active_frost_coupling` no longer carries the
