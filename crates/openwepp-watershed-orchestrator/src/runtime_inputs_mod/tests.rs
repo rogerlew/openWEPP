@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 
 use openwepp_input_contract::parsers::{
-    chaninp::{ChaninpParseOptions, ParseMode, parse_chaninp_from_str},
+    chaninp::{ChaninpParseOptions, ChaninpParseOutcome, ParseMode, parse_chaninp_from_str},
     climate::{CompatibilityOptions, ParserMode as ClimateParserMode, parse_climate_from_str},
     slope::{SlopeParserOptions, parse_slope_str},
     watershed_channel::{WatershedChannelParseOptions, parse_watershed_channel_from_str},
@@ -136,6 +136,303 @@ fn chaninp_runtime_surface_rejects_compat_defaulted_parse_outcome() {
         error,
         WatershedRuntimeInputError::ParseOutcomeNotRuntimeReady { .. }
     ));
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn watershed_runtime_input_error_characterizes_codes_and_display_strings() {
+    let cases = [
+        (
+            WatershedRuntimeInputError::ParseOutcomeNotRuntimeReady {
+                observed: ChaninpParseOutcome::DefaultedCompat,
+            },
+            "WS-RUNTIME-E-001",
+            String::from(
+                "WS-RUNTIME-E-001: chan.inp parse outcome DefaultedCompat is not runtime-consumable",
+            ),
+        ),
+        (
+            WatershedRuntimeInputError::MissingOptions,
+            "WS-RUNTIME-E-002",
+            String::from(
+                "WS-RUNTIME-E-002: chan.inp parse output is missing required options payload",
+            ),
+        ),
+        (
+            WatershedRuntimeInputError::NonFiniteDtchrInput { value_s: f64::NAN },
+            "WS-RUNTIME-E-003",
+            String::from("WS-RUNTIME-E-003: non-finite dtchr_input_s value NaN"),
+        ),
+        (
+            WatershedRuntimeInputError::NonPositiveDtchrInput { value_s: 0.0 },
+            "WS-RUNTIME-E-004",
+            String::from("WS-RUNTIME-E-004: non-positive dtchr_input_s value 0"),
+        ),
+        (
+            WatershedRuntimeInputError::NonFiniteCbase {
+                value: f64::INFINITY,
+            },
+            "WS-RUNTIME-E-005",
+            String::from("WS-RUNTIME-E-005: non-finite cbase value inf"),
+        ),
+        (
+            WatershedRuntimeInputError::NegativeCbase { value: -0.25 },
+            "WS-RUNTIME-E-006",
+            String::from("WS-RUNTIME-E-006: negative cbase value -0.25"),
+        ),
+        (
+            WatershedRuntimeInputError::NonPositiveNtchr { value: 0 },
+            "WS-RUNTIME-E-007",
+            String::from("WS-RUNTIME-E-007: non-positive ntchr value 0"),
+        ),
+        (
+            WatershedRuntimeInputError::ChannelCountOutOfRange { value: usize::MAX },
+            "WS-RUNTIME-E-008",
+            format!(
+                "WS-RUNTIME-E-008: nchan value {} exceeds lossless conversion range",
+                usize::MAX
+            ),
+        ),
+        (
+            WatershedRuntimeInputError::ChannelSymbolNonFinite {
+                symbol: "ws10_channel_1_chnn".to_string(),
+                value: f64::NAN,
+            },
+            "WS-RUNTIME-E-009",
+            String::from(
+                "WS-RUNTIME-E-009: channel runtime symbol ws10_channel_1_chnn is non-finite (NaN)",
+            ),
+        ),
+        (
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                symbol: "ws10_channel_1_chnn".to_string(),
+                value: 0.0,
+                rule: "chnn > 0",
+            },
+            "WS-RUNTIME-E-010",
+            String::from(
+                "WS-RUNTIME-E-010: channel runtime symbol ws10_channel_1_chnn=0 violates chnn > 0",
+            ),
+        ),
+        (
+            WatershedRuntimeInputError::ImpoundmentSymbolNonFinite {
+                symbol: "ws10_impoundment_1_h".to_string(),
+                value: f64::NEG_INFINITY,
+            },
+            "WS-RUNTIME-E-011",
+            String::from(
+                "WS-RUNTIME-E-011: impoundment runtime symbol ws10_impoundment_1_h is non-finite (-inf)",
+            ),
+        ),
+        (
+            WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                symbol: "ws10_impoundment_1_h".to_string(),
+                value: -1.0,
+                rule: "h >= 0",
+            },
+            "WS-RUNTIME-E-012",
+            String::from(
+                "WS-RUNTIME-E-012: impoundment runtime symbol ws10_impoundment_1_h=-1 violates h >= 0",
+            ),
+        ),
+    ];
+
+    for (error, expected_code, expected_display) in cases {
+        assert_eq!(error.code(), expected_code);
+        assert_eq!(error.to_string(), expected_display);
+    }
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn watershed_climate_runtime_input_error_characterizes_codes_and_display_strings() {
+    let cases = [
+        (
+            WatershedClimateRuntimeInputError::UnsupportedDatver { datver: 3.5 },
+            "CLIM-RUNTIME-E-001",
+            String::from(
+                "CLIM-RUNTIME-E-001: unsupported climate datver 3.5 (supports datver=0.0 override or datver>=4.0)",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::UnsupportedItemp { itemp: 2 },
+            "CLIM-RUNTIME-E-002",
+            String::from(
+                "CLIM-RUNTIME-E-002: unsupported climate itemp 2; only continuous-daily itemp=1 is supported",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::EmptyDailyRecords { hillslope_id: 7 },
+            "CLIM-RUNTIME-E-003",
+            String::from("CLIM-RUNTIME-E-003: hillslope 7 has no climate daily records"),
+        ),
+        (
+            WatershedClimateRuntimeInputError::DayIndexOutOfRange {
+                hillslope_id: 7,
+                day_index: 3,
+                available: 2,
+            },
+            "CLIM-RUNTIME-E-004",
+            String::from(
+                "CLIM-RUNTIME-E-004: hillslope 7 requested day index 3 exceeds available records 2",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::NonFiniteField {
+                field: "tmax",
+                value: f64::NAN,
+            },
+            "CLIM-RUNTIME-E-005",
+            String::from("CLIM-RUNTIME-E-005: non-finite climate field tmax=NaN"),
+        ),
+        (
+            WatershedClimateRuntimeInputError::NegativeField {
+                field: "drain",
+                value: -0.5,
+            },
+            "CLIM-RUNTIME-E-006",
+            String::from("CLIM-RUNTIME-E-006: negative climate field drain=-0.5"),
+        ),
+        (
+            WatershedClimateRuntimeInputError::PositivePrecipWithNonPositiveDuration {
+                hillslope_id: 7,
+                prcp: 0.02,
+                stmdur: 0.0,
+            },
+            "CLIM-RUNTIME-E-007",
+            String::from(
+                "CLIM-RUNTIME-E-007: hillslope 7 has positive precipitation 0.02 with non-positive storm duration 0",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::EmptyBreakpointSeries { hillslope_id: 7 },
+            "CLIM-RUNTIME-E-008",
+            String::from(
+                "CLIM-RUNTIME-E-008: hillslope 7 breakpoint forcing record contains zero points",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::NonMonotoneBreakpointTime {
+                hillslope_id: 7,
+                previous_s: 60.0,
+                current_s: 60.0,
+            },
+            "CLIM-RUNTIME-E-009",
+            String::from(
+                "CLIM-RUNTIME-E-009: hillslope 7 breakpoint timem must be strictly increasing (60 -> 60)",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded {
+                hillslope_id: 7,
+                value: 1_501,
+                max: 1_500,
+            },
+            "CLIM-RUNTIME-E-011",
+            String::from(
+                "CLIM-RUNTIME-E-011: hillslope 7 breakpoint count 1501 exceeds runtime policy max 1500",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::BreakpointCountOutOfRange {
+                hillslope_id: 7,
+                value: usize::MAX,
+            },
+            "CLIM-RUNTIME-E-011",
+            format!(
+                "CLIM-RUNTIME-E-011: hillslope 7 breakpoint count {} exceeds supported conversion range",
+                usize::MAX
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::EmptyClimateAssignments,
+            "CLIM-RUNTIME-E-012",
+            String::from(
+                "CLIM-RUNTIME-E-012: no hillslope climate assignments supplied for watershed runtime seam",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::DisaggregationTimeNotStrictlyIncreasing {
+                hillslope_id: 7,
+                previous_s: 120.0,
+                current_s: 120.0,
+            },
+            "CLIM-RUNTIME-E-013",
+            String::from(
+                "CLIM-RUNTIME-E-013: hillslope 7 disaggregation timem must be strictly increasing (120 -> 120)",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::DisaggregationRootSolveDomain {
+                hillslope_id: 7,
+                a: 1.5,
+            },
+            "CLIM-RUNTIME-E-014",
+            String::from(
+                "CLIM-RUNTIME-E-014: hillslope 7 has disaggregation root-solve input outside 0<a<=1 (a=1.5)",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::DisaggregationRootSolveNonConvergent {
+                hillslope_id: 7,
+                a: 0.75,
+            },
+            "CLIM-RUNTIME-E-015",
+            String::from(
+                "CLIM-RUNTIME-E-015: hillslope 7 disaggregation root-solve did not converge for a=0.75",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::DisaggregationClosureResidual {
+                hillslope_id: 7,
+                expected_prcp_m: 0.02,
+                reconstructed_prcp_m: 0.019,
+            },
+            "CLIM-RUNTIME-E-016",
+            String::from(
+                "CLIM-RUNTIME-E-016: hillslope 7 disaggregation closure residual exceeded tolerance (expected 0.02, reconstructed 0.019)",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::MissingRuntimeContextSymbol {
+                hillslope_id: 7,
+                symbol: "hs7_ip".to_string(),
+            },
+            "CLIM-RUNTIME-E-017",
+            String::from(
+                "CLIM-RUNTIME-E-017: hillslope 7 missing required runtime context symbol hs7_ip",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+                hillslope_id: 7,
+                symbol: "hs7_ip".to_string(),
+                value: -1.0,
+                allowed: "ip >= 0",
+            },
+            "CLIM-RUNTIME-E-018",
+            String::from(
+                "CLIM-RUNTIME-E-018: hillslope 7 runtime context symbol hs7_ip=-1 is out of domain (allowed ip >= 0)",
+            ),
+        ),
+        (
+            WatershedClimateRuntimeInputError::InvalidCalendarDate {
+                hillslope_id: 7,
+                day: 31,
+                mon: 2,
+                year: 2000,
+            },
+            "CLIM-RUNTIME-E-019",
+            String::from(
+                "CLIM-RUNTIME-E-019: hillslope 7 invalid calendar date day=31 mon=2 year=2000",
+            ),
+        ),
+    ];
+
+    for (error, expected_code, expected_display) in cases {
+        assert_eq!(error.code(), expected_code);
+        assert_eq!(error.to_string(), expected_display);
+    }
 }
 
 #[test]

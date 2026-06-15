@@ -72,10 +72,8 @@ impl WatershedRuntimeInputError {
             Self::ImpoundmentSymbolOutOfDomain { .. } => "WS-RUNTIME-E-012",
         }
     }
-}
 
-impl fmt::Display for WatershedRuntimeInputError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt_basic(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::ParseOutcomeNotRuntimeReady { observed } => write!(
                 f,
@@ -115,6 +113,12 @@ impl fmt::Display for WatershedRuntimeInputError {
                 self.code(),
                 value
             ),
+            _ => unreachable!("runtime input basic formatter received non-basic error"),
+        }
+    }
+
+    fn fmt_channel(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::ChannelSymbolNonFinite { symbol, value } => write!(
                 f,
                 "{}: channel runtime symbol {} is non-finite ({})",
@@ -134,6 +138,12 @@ impl fmt::Display for WatershedRuntimeInputError {
                 value,
                 rule
             ),
+            _ => unreachable!("runtime input channel formatter received non-channel error"),
+        }
+    }
+
+    fn fmt_impoundment(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::ImpoundmentSymbolNonFinite { symbol, value } => write!(
                 f,
                 "{}: impoundment runtime symbol {} is non-finite ({})",
@@ -153,6 +163,28 @@ impl fmt::Display for WatershedRuntimeInputError {
                 value,
                 rule
             ),
+            _ => unreachable!("runtime input impoundment formatter received non-impoundment error"),
+        }
+    }
+}
+
+impl fmt::Display for WatershedRuntimeInputError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::ParseOutcomeNotRuntimeReady { .. }
+            | Self::MissingOptions
+            | Self::NonFiniteDtchrInput { .. }
+            | Self::NonPositiveDtchrInput { .. }
+            | Self::NonFiniteCbase { .. }
+            | Self::NegativeCbase { .. }
+            | Self::NonPositiveNtchr { .. }
+            | Self::ChannelCountOutOfRange { .. } => self.fmt_basic(f),
+            Self::ChannelSymbolNonFinite { .. } | Self::ChannelSymbolOutOfDomain { .. } => {
+                self.fmt_channel(f)
+            }
+            Self::ImpoundmentSymbolNonFinite { .. } | Self::ImpoundmentSymbolOutOfDomain { .. } => {
+                self.fmt_impoundment(f)
+            }
         }
     }
 }
@@ -323,11 +355,8 @@ impl WatershedClimateRuntimeInputError {
             Self::InvalidCalendarDate { .. } => "CLIM-RUNTIME-E-019",
         }
     }
-}
 
-impl fmt::Display for WatershedClimateRuntimeInputError {
-    #[allow(clippy::too_many_lines)]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt_daily_record(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::UnsupportedDatver { datver } => write!(
                 f,
@@ -385,6 +414,12 @@ impl fmt::Display for WatershedClimateRuntimeInputError {
                 prcp,
                 stmdur
             ),
+            _ => unreachable!("climate daily-record formatter received non-daily error"),
+        }
+    }
+
+    fn fmt_breakpoint(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::EmptyBreakpointSeries { hillslope_id } => write!(
                 f,
                 "{}: hillslope {} breakpoint forcing record contains zero points",
@@ -425,11 +460,12 @@ impl fmt::Display for WatershedClimateRuntimeInputError {
                 hillslope_id,
                 value
             ),
-            Self::EmptyClimateAssignments => write!(
-                f,
-                "{}: no hillslope climate assignments supplied for watershed runtime seam",
-                self.code()
-            ),
+            _ => unreachable!("climate breakpoint formatter received non-breakpoint error"),
+        }
+    }
+
+    fn fmt_disaggregation(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::DisaggregationTimeNotStrictlyIncreasing {
                 hillslope_id,
                 previous_s,
@@ -468,6 +504,12 @@ impl fmt::Display for WatershedClimateRuntimeInputError {
                 expected_prcp_m,
                 reconstructed_prcp_m
             ),
+            _ => unreachable!("climate disaggregation formatter received non-disaggregation error"),
+        }
+    }
+
+    fn fmt_runtime_context(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::MissingRuntimeContextSymbol {
                 hillslope_id,
                 symbol,
@@ -506,6 +548,37 @@ impl fmt::Display for WatershedClimateRuntimeInputError {
                 mon,
                 year
             ),
+            _ => unreachable!("climate runtime-context formatter received non-context error"),
+        }
+    }
+}
+
+impl fmt::Display for WatershedClimateRuntimeInputError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::EmptyClimateAssignments => write!(
+                f,
+                "{}: no hillslope climate assignments supplied for watershed runtime seam",
+                self.code()
+            ),
+            Self::UnsupportedDatver { .. }
+            | Self::UnsupportedItemp { .. }
+            | Self::EmptyDailyRecords { .. }
+            | Self::DayIndexOutOfRange { .. }
+            | Self::NonFiniteField { .. }
+            | Self::NegativeField { .. }
+            | Self::PositivePrecipWithNonPositiveDuration { .. } => self.fmt_daily_record(f),
+            Self::EmptyBreakpointSeries { .. }
+            | Self::NonMonotoneBreakpointTime { .. }
+            | Self::BreakpointCardinalityPolicyExceeded { .. }
+            | Self::BreakpointCountOutOfRange { .. } => self.fmt_breakpoint(f),
+            Self::DisaggregationTimeNotStrictlyIncreasing { .. }
+            | Self::DisaggregationRootSolveDomain { .. }
+            | Self::DisaggregationRootSolveNonConvergent { .. }
+            | Self::DisaggregationClosureResidual { .. } => self.fmt_disaggregation(f),
+            Self::MissingRuntimeContextSymbol { .. }
+            | Self::RuntimeContextSymbolOutOfRange { .. }
+            | Self::InvalidCalendarDate { .. } => self.fmt_runtime_context(f),
         }
     }
 }
