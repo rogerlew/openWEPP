@@ -380,6 +380,266 @@
         );
     }
 
+    fn cqr20_project_test_annual_extension(
+        resmgt: usize,
+        extension: Option<&YearlyAnnualExtension>,
+    ) -> Result<super::AnnualExtensionProjection, HillslopeRuntimeInputError> {
+        super::project_annual_extension_controls(2, 3, resmgt, extension)
+    }
+
+    #[test]
+    fn cqr20_project_annual_extension_controls_characterizes_valid_branches() {
+        let herbicide = cqr20_project_test_annual_extension(
+            1,
+            Some(&YearlyAnnualExtension::Herbicide { jdherb: 44 }),
+        )
+        .expect("herbicide annual extension should project");
+        assert_eq!(herbicide.jdherb, 44);
+        assert_eq!(
+            herbicide,
+            super::AnnualExtensionProjection {
+                jdherb: 44,
+                ..super::AnnualExtensionProjection::zeroed()
+            }
+        );
+
+        let burn = cqr20_project_test_annual_extension(
+            2,
+            Some(&YearlyAnnualExtension::Burn {
+                jdburn: 45,
+                fbmag: 0.25,
+                fbrnog: 0.75,
+            }),
+        )
+        .expect("burn annual extension should project");
+        assert_eq!(burn.jdburn, 45);
+        assert!((burn.fbrnag - 0.25).abs() < 1e-12);
+        assert!((burn.fbrnog - 0.75).abs() < 1e-12);
+
+        let silage = cqr20_project_test_annual_extension(
+            3,
+            Some(&YearlyAnnualExtension::Silage { jdslge: 46 }),
+        )
+        .expect("silage annual extension should project");
+        assert_eq!(silage.jdslge, 46);
+
+        let cut = cqr20_project_test_annual_extension(
+            4,
+            Some(&YearlyAnnualExtension::Cut {
+                jdcut: 47,
+                frcut: 0.5,
+            }),
+        )
+        .expect("cut annual extension should project");
+        assert_eq!(cut.jdcut, 47);
+        assert!((cut.frcut - 0.5).abs() < 1e-12);
+
+        let remove = cqr20_project_test_annual_extension(
+            5,
+            Some(&YearlyAnnualExtension::Remove {
+                jdmove: 48,
+                frmove: 0.9,
+            }),
+        )
+        .expect("remove annual extension should project");
+        assert_eq!(remove.jdmove, 48);
+        assert!((remove.frmove - 0.9).abs() < 1e-12);
+
+        let no_extension = cqr20_project_test_annual_extension(6, None)
+            .expect("resmgt=6 should project zero annual extension controls");
+        assert_eq!(no_extension, super::AnnualExtensionProjection::zeroed());
+    }
+
+    #[test]
+    fn cqr20_project_annual_extension_controls_characterizes_error_branches() {
+        for (resmgt, extension, expected, observed) in [
+            (1, None, "herbicide", "none"),
+            (
+                2,
+                Some(YearlyAnnualExtension::Herbicide { jdherb: 44 }),
+                "burn",
+                "herbicide",
+            ),
+            (
+                3,
+                Some(YearlyAnnualExtension::Cut {
+                    jdcut: 47,
+                    frcut: 0.5,
+                }),
+                "silage",
+                "cut",
+            ),
+            (
+                4,
+                Some(YearlyAnnualExtension::Silage { jdslge: 46 }),
+                "cut",
+                "silage",
+            ),
+            (
+                5,
+                Some(YearlyAnnualExtension::Burn {
+                    jdburn: 45,
+                    fbmag: 0.25,
+                    fbrnog: 0.75,
+                }),
+                "remove",
+                "burn",
+            ),
+            (
+                6,
+                Some(YearlyAnnualExtension::Remove {
+                    jdmove: 48,
+                    frmove: 0.9,
+                }),
+                "none",
+                "remove",
+            ),
+        ] {
+            let error = cqr20_project_test_annual_extension(resmgt, extension.as_ref())
+                .expect_err("annual extension mismatch should fail");
+            assert_eq!(error.code(), "HS-RUNTIME-E-047");
+            assert!(matches!(
+                error,
+                HillslopeRuntimeInputError::PlAnnualExtensionMismatch {
+                    slot_index: 2,
+                    crop_slot_index: 3,
+                    resmgt: observed_resmgt,
+                    expected: observed_expected,
+                    observed: observed_variant,
+                } if observed_resmgt == resmgt
+                    && observed_expected == expected
+                    && observed_variant == observed
+            ));
+        }
+
+        let unsupported_annual_cut = cqr20_project_test_annual_extension(7, None)
+            .expect_err("resmgt=7 should fail because annual cut has no runtime payload");
+        assert_eq!(unsupported_annual_cut.code(), "HS-RUNTIME-E-051");
+        assert!(matches!(
+            unsupported_annual_cut,
+            HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                field: "resmgt",
+                slot_index: 2,
+                crop_slot_index: 3,
+                reason:
+                    "resmgt=7 annual-cut payload is not represented by runtime projection",
+            }
+        ));
+
+        let unsupported_resmgt = cqr20_project_test_annual_extension(8, None)
+            .expect_err("unsupported annual resmgt should fail");
+        assert_eq!(unsupported_resmgt.code(), "HS-RUNTIME-E-042");
+        assert!(matches!(
+            unsupported_resmgt,
+            HillslopeRuntimeInputError::UnsupportedPlManagementOption {
+                field: "resmgt",
+                value: 8,
+                allowed: "1..7",
+            }
+        ));
+    }
+
+    #[test]
+    fn cqr20_project_annual_extension_controls_characterizes_domain_errors() {
+        let day_error = cqr20_project_test_annual_extension(
+            1,
+            Some(&YearlyAnnualExtension::Herbicide { jdherb: 0 }),
+        )
+        .expect_err("zero herbicide day should fail");
+        assert_eq!(day_error.code(), "HS-RUNTIME-E-046");
+        assert!(matches!(
+            day_error,
+            HillslopeRuntimeInputError::PlProjectionDayOutOfDomain {
+                field: "jdherb",
+                slot_index: 2,
+                crop_slot_index: 3,
+                value: 0,
+                allowed: "1..366",
+            }
+        ));
+
+        let non_finite_fraction = cqr20_project_test_annual_extension(
+            2,
+            Some(&YearlyAnnualExtension::Burn {
+                jdburn: 45,
+                fbmag: f64::NAN,
+                fbrnog: 0.75,
+            }),
+        )
+        .expect_err("non-finite burn fraction should fail");
+        assert_eq!(non_finite_fraction.code(), "HS-RUNTIME-E-043");
+        assert!(matches!(
+            non_finite_fraction,
+            HillslopeRuntimeInputError::NonFinitePlProjectionField {
+                field: "fbrnag",
+                slot_index: 2,
+                crop_slot_index: 3,
+                value,
+            } if value.is_nan()
+        ));
+
+        let burn_fraction_domain = cqr20_project_test_annual_extension(
+            2,
+            Some(&YearlyAnnualExtension::Burn {
+                jdburn: 45,
+                fbmag: 0.25,
+                fbrnog: 1.1,
+            }),
+        )
+        .expect_err("out-of-domain no-growth burn fraction should fail");
+        assert_eq!(burn_fraction_domain.code(), "HS-RUNTIME-E-050");
+        assert!(matches!(
+            burn_fraction_domain,
+            HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "fbrnog",
+                slot_index: 2,
+                crop_slot_index: 3,
+                value,
+                allowed: "0.0..=1.0",
+            } if (value - 1.1).abs() < 1e-12
+        ));
+
+        let cut_fraction_domain = cqr20_project_test_annual_extension(
+            4,
+            Some(&YearlyAnnualExtension::Cut {
+                jdcut: 47,
+                frcut: -0.1,
+            }),
+        )
+        .expect_err("negative cut fraction should fail");
+        assert_eq!(cut_fraction_domain.code(), "HS-RUNTIME-E-050");
+        assert!(matches!(
+            cut_fraction_domain,
+            HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "frcut",
+                slot_index: 2,
+                crop_slot_index: 3,
+                value,
+                allowed: "0.0..=1.0",
+            } if (value + 0.1).abs() < 1e-12
+        ));
+
+        let remove_fraction_domain = cqr20_project_test_annual_extension(
+            5,
+            Some(&YearlyAnnualExtension::Remove {
+                jdmove: 48,
+                frmove: 1.1,
+            }),
+        )
+        .expect_err("out-of-domain remove fraction should fail");
+        assert_eq!(remove_fraction_domain.code(), "HS-RUNTIME-E-050");
+        assert!(matches!(
+            remove_fraction_domain,
+            HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "frmove",
+                slot_index: 2,
+                crop_slot_index: 3,
+                value,
+                allowed: "0.0..=1.0",
+            } if (value - 1.1).abs() < 1e-12
+        ));
+    }
+
     #[test]
     fn management_runtime_projection_rejects_yearly_landuse_and_plant_reference_domain() {
         let mut yearly_landuse = parse_management_from_str(

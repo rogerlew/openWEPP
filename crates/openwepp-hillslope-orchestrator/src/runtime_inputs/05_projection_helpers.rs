@@ -581,132 +581,167 @@ fn annual_extension_mismatch(
     }
 }
 
-#[allow(clippy::too_many_lines)]
 fn project_annual_extension_controls(
     slot_index: usize,
     crop_slot_index: usize,
     resmgt: usize,
     extension: Option<&YearlyAnnualExtension>,
 ) -> Result<AnnualExtensionProjection, HillslopeRuntimeInputError> {
-    let mut projection = AnnualExtensionProjection::zeroed();
     match resmgt {
-        1 => match extension {
-            Some(YearlyAnnualExtension::Herbicide { jdherb }) => {
-                projection.jdherb =
-                    validate_projection_day("jdherb", slot_index, crop_slot_index, *jdherb, false)?;
-            }
-            _ => {
-                return Err(annual_extension_mismatch(
-                    slot_index,
-                    crop_slot_index,
-                    resmgt,
-                    "herbicide",
-                    extension,
-                ));
-            }
-        },
-        2 => match extension {
-            Some(YearlyAnnualExtension::Burn {
-                jdburn,
-                fbmag,
-                fbrnog,
-            }) => {
-                projection.jdburn =
-                    validate_projection_day("jdburn", slot_index, crop_slot_index, *jdburn, false)?;
-                projection.fbrnag =
-                    validate_projection_fraction("fbrnag", slot_index, crop_slot_index, *fbmag)?;
-                projection.fbrnog =
-                    validate_projection_fraction("fbrnog", slot_index, crop_slot_index, *fbrnog)?;
-            }
-            _ => {
-                return Err(annual_extension_mismatch(
-                    slot_index,
-                    crop_slot_index,
-                    resmgt,
-                    "burn",
-                    extension,
-                ));
-            }
-        },
-        3 => match extension {
-            Some(YearlyAnnualExtension::Silage { jdslge }) => {
-                projection.jdslge =
-                    validate_projection_day("jdslge", slot_index, crop_slot_index, *jdslge, false)?;
-            }
-            _ => {
-                return Err(annual_extension_mismatch(
-                    slot_index,
-                    crop_slot_index,
-                    resmgt,
-                    "silage",
-                    extension,
-                ));
-            }
-        },
-        4 => match extension {
-            Some(YearlyAnnualExtension::Cut { jdcut, frcut }) => {
-                projection.jdcut =
-                    validate_projection_day("jdcut", slot_index, crop_slot_index, *jdcut, false)?;
-                projection.frcut =
-                    validate_projection_fraction("frcut", slot_index, crop_slot_index, *frcut)?;
-            }
-            _ => {
-                return Err(annual_extension_mismatch(
-                    slot_index,
-                    crop_slot_index,
-                    resmgt,
-                    "cut",
-                    extension,
-                ));
-            }
-        },
-        5 => match extension {
-            Some(YearlyAnnualExtension::Remove { jdmove, frmove }) => {
-                projection.jdmove =
-                    validate_projection_day("jdmove", slot_index, crop_slot_index, *jdmove, false)?;
-                projection.frmove =
-                    validate_projection_fraction("frmove", slot_index, crop_slot_index, *frmove)?;
-            }
-            _ => {
-                return Err(annual_extension_mismatch(
-                    slot_index,
-                    crop_slot_index,
-                    resmgt,
-                    "remove",
-                    extension,
-                ));
-            }
-        },
-        6 => {
-            if extension.is_some() {
-                return Err(annual_extension_mismatch(
-                    slot_index,
-                    crop_slot_index,
-                    resmgt,
-                    "none",
-                    extension,
-                ));
-            }
-        }
-        7 => {
-            return Err(
-                HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
-                    field: "resmgt",
-                    slot_index,
-                    crop_slot_index,
-                    reason: "resmgt=7 annual-cut payload is not represented by runtime projection",
-                },
-            );
-        }
-        _ => {
-            return Err(HillslopeRuntimeInputError::UnsupportedPlManagementOption {
-                field: "resmgt",
-                value: resmgt,
-                allowed: "1..7",
-            });
-        }
+        1 => project_herbicide_annual_extension_controls(slot_index, crop_slot_index, extension),
+        2 => project_burn_annual_extension_controls(slot_index, crop_slot_index, extension),
+        3 => project_silage_annual_extension_controls(slot_index, crop_slot_index, extension),
+        4 => project_cut_annual_extension_controls(slot_index, crop_slot_index, extension),
+        5 => project_remove_annual_extension_controls(slot_index, crop_slot_index, extension),
+        6 => project_no_annual_extension_controls(slot_index, crop_slot_index, resmgt, extension),
+        7 => Err(HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+            field: "resmgt",
+            slot_index,
+            crop_slot_index,
+            reason: "resmgt=7 annual-cut payload is not represented by runtime projection",
+        }),
+        _ => Err(HillslopeRuntimeInputError::UnsupportedPlManagementOption {
+            field: "resmgt",
+            value: resmgt,
+            allowed: "1..7",
+        }),
     }
+}
+
+fn project_herbicide_annual_extension_controls(
+    slot_index: usize,
+    crop_slot_index: usize,
+    extension: Option<&YearlyAnnualExtension>,
+) -> Result<AnnualExtensionProjection, HillslopeRuntimeInputError> {
+    let Some(YearlyAnnualExtension::Herbicide { jdherb }) = extension else {
+        return Err(annual_extension_mismatch(
+            slot_index,
+            crop_slot_index,
+            1,
+            "herbicide",
+            extension,
+        ));
+    };
+
+    let mut projection = AnnualExtensionProjection::zeroed();
+    projection.jdherb =
+        validate_projection_day("jdherb", slot_index, crop_slot_index, *jdherb, false)?;
     Ok(projection)
+}
+
+fn project_burn_annual_extension_controls(
+    slot_index: usize,
+    crop_slot_index: usize,
+    extension: Option<&YearlyAnnualExtension>,
+) -> Result<AnnualExtensionProjection, HillslopeRuntimeInputError> {
+    let Some(YearlyAnnualExtension::Burn {
+        jdburn,
+        fbmag,
+        fbrnog,
+    }) = extension
+    else {
+        return Err(annual_extension_mismatch(
+            slot_index,
+            crop_slot_index,
+            2,
+            "burn",
+            extension,
+        ));
+    };
+
+    let mut projection = AnnualExtensionProjection::zeroed();
+    projection.jdburn =
+        validate_projection_day("jdburn", slot_index, crop_slot_index, *jdburn, false)?;
+    projection.fbrnag =
+        validate_projection_fraction("fbrnag", slot_index, crop_slot_index, *fbmag)?;
+    projection.fbrnog =
+        validate_projection_fraction("fbrnog", slot_index, crop_slot_index, *fbrnog)?;
+    Ok(projection)
+}
+
+fn project_silage_annual_extension_controls(
+    slot_index: usize,
+    crop_slot_index: usize,
+    extension: Option<&YearlyAnnualExtension>,
+) -> Result<AnnualExtensionProjection, HillslopeRuntimeInputError> {
+    let Some(YearlyAnnualExtension::Silage { jdslge }) = extension else {
+        return Err(annual_extension_mismatch(
+            slot_index,
+            crop_slot_index,
+            3,
+            "silage",
+            extension,
+        ));
+    };
+
+    let mut projection = AnnualExtensionProjection::zeroed();
+    projection.jdslge =
+        validate_projection_day("jdslge", slot_index, crop_slot_index, *jdslge, false)?;
+    Ok(projection)
+}
+
+fn project_cut_annual_extension_controls(
+    slot_index: usize,
+    crop_slot_index: usize,
+    extension: Option<&YearlyAnnualExtension>,
+) -> Result<AnnualExtensionProjection, HillslopeRuntimeInputError> {
+    let Some(YearlyAnnualExtension::Cut { jdcut, frcut }) = extension else {
+        return Err(annual_extension_mismatch(
+            slot_index,
+            crop_slot_index,
+            4,
+            "cut",
+            extension,
+        ));
+    };
+
+    let mut projection = AnnualExtensionProjection::zeroed();
+    projection.jdcut =
+        validate_projection_day("jdcut", slot_index, crop_slot_index, *jdcut, false)?;
+    projection.frcut = validate_projection_fraction("frcut", slot_index, crop_slot_index, *frcut)?;
+    Ok(projection)
+}
+
+fn project_remove_annual_extension_controls(
+    slot_index: usize,
+    crop_slot_index: usize,
+    extension: Option<&YearlyAnnualExtension>,
+) -> Result<AnnualExtensionProjection, HillslopeRuntimeInputError> {
+    let Some(YearlyAnnualExtension::Remove { jdmove, frmove }) = extension else {
+        return Err(annual_extension_mismatch(
+            slot_index,
+            crop_slot_index,
+            5,
+            "remove",
+            extension,
+        ));
+    };
+
+    let mut projection = AnnualExtensionProjection::zeroed();
+    projection.jdmove =
+        validate_projection_day("jdmove", slot_index, crop_slot_index, *jdmove, false)?;
+    projection.frmove =
+        validate_projection_fraction("frmove", slot_index, crop_slot_index, *frmove)?;
+    Ok(projection)
+}
+
+fn project_no_annual_extension_controls(
+    slot_index: usize,
+    crop_slot_index: usize,
+    resmgt: usize,
+    extension: Option<&YearlyAnnualExtension>,
+) -> Result<AnnualExtensionProjection, HillslopeRuntimeInputError> {
+    if extension.is_some() {
+        return Err(annual_extension_mismatch(
+            slot_index,
+            crop_slot_index,
+            resmgt,
+            "none",
+            extension,
+        ));
+    }
+
+    Ok(AnnualExtensionProjection::zeroed())
 }
 
 fn project_annual_extension_symbols(

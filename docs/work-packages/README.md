@@ -10,6 +10,11 @@
 
 State as of `2026-06-15`:
 
+- CQR20 completed behavior-preserving CRAP/cyclomatic-complexity
+  decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/05_projection_helpers.rs`.
+  Package: `20260615-cqr20-projection-helpers-complexity-001/`. Final target
+  CRAP: `9.0`.
 - CQR19 completed behavior-preserving CRAP/cyclomatic-complexity
   decomposition of
   `crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/types.rs`.
