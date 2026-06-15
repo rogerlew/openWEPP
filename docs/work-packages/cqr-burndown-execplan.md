@@ -172,8 +172,14 @@ the tracker below and by reading the corresponding package directories under
   Pushed commit: `a412b2939b24f246464b7c8a1379556acee2e158` on branch `main`.
   Final target: `Wb11HydrologyKernel::erod19_xcrit_classification`, CRAP
   `2.0`.
-- [ ] CQR18, rank 12, original CRAP `456`, CC `80`, Cov `61%`:
+- [x] (2026-06-15) Closed CQR18, rank 12, original CRAP `456`, CC
+  `80`, Cov `61%`:
   `crates/openwepp-input-contract/src/parsers/hbp/payload_validator.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr18-hbp-payload-validator-complexity-001/`.
+  Pushed commit: `2a3cbd37cae178757a6ca3815a079631896b5452` on branch
+  `main`.
+  Final target: `validate_payload`, CRAP `9.0`.
 - [ ] CQR19, rank 13, original CRAP `420`, CC `20`, Cov `0%`:
   `crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/types.rs`.
 - [ ] CQR20, rank 14, original CRAP `384`, CC `29`, Cov `25%`:
