@@ -8,8 +8,15 @@
 
 ## Current roadmap execution log
 
-State as of `2026-06-14`:
+State as of `2026-06-15`:
 
+- CQR01 is complete for behavior-preserving code-quality decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling/frost_entry.rs`.
+  `compute_active_frost_coupling` no longer carries the
+  `#[allow(clippy::too_many_lines)]` suppression, remains public-surface
+  compatible, and its target CRAP row improved from `238.28646229402713` to
+  `8.003859752282304`. Required closure gates passed. Package:
+  `20260615-cqr01-frost-entry-complexity-001/`.
 - REFACTOR024 is complete for a behavior-preserving line-count split of
   `tests/integration/clim06_frost_frozen_soil_kernel_contract.rs`. The root
   integration test is now an 11-line module harness with support and concern
