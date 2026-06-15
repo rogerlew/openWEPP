@@ -10,6 +10,10 @@
 
 State as of `2026-06-15`:
 
+- CQR22 completed behavior-preserving CRAP/cyclomatic-complexity
+  decomposition of `crates/openwepp-input-contract/src/parsers/soil.rs`.
+  Package: `20260615-cqr22-soil-parser-complexity-001/`. Final target CRAP:
+  `5.0`.
 - CQR21 completed behavior-preserving CRAP/cyclomatic-complexity
   decomposition of `crates/openwepp-climate-runtime-adapter/src/lib.rs`.
   Package: `20260615-cqr21-climate-runtime-adapter-complexity-001/`. Final

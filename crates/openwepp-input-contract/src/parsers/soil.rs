@@ -11,6 +11,7 @@ use std::error::Error;
 use std::fmt;
 
 const DATVER_EPSILON: f64 = 1e-6;
+const POLICY_LKEFF_SENTINEL: f64 = -9999.0;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParserMode {
@@ -652,107 +653,9 @@ fn parse_policy_row(
     line_no: usize,
 ) -> Result<DisturbedPolicy, SoilParserError> {
     match datver {
-        SoilDatver::V9002 => {
-            let t = parse_policy_tokens(
-                policy_line,
-                5,
-                line_no,
-                "ksatadj,luse,stext,ksatfac,ksatrec",
-                datver,
-            )?;
-            let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
-            let ksatfac = parse_f64(&t[3], line_no, "ksatfac")?;
-            let ksatrec = parse_f64(&t[4], line_no, "ksatrec")?;
-            validate_non_negative(ksatfac, line_no, "ksatfac")?;
-            validate_non_negative(ksatrec, line_no, "ksatrec")?;
-
-            Ok(DisturbedPolicy::V9002 {
-                ksatadj,
-                luse: t[1].clone(),
-                stext: t[2].clone(),
-                ksatfac_mm_h: ksatfac,
-                ksatrec_per_day: ksatrec,
-            })
-        }
-        SoilDatver::V9003 => {
-            let t = parse_policy_tokens(
-                policy_line,
-                5,
-                line_no,
-                "ksatadj,luse,burn_code,stext,lkeff",
-                datver,
-            )?;
-            let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
-            let burn_code = parse_i32(&t[2], line_no, "burn_code")?;
-            if burn_code < 0 {
-                return Err(SoilParserError::new(
-                    SoilErrorCode::SolE005,
-                    line_no,
-                    "burn_code",
-                    "burn_code must be non-negative",
-                ));
-            }
-
-            let lkeff = parse_f64(&t[4], line_no, "lkeff")?;
-            if lkeff != -9999.0 {
-                validate_non_negative(lkeff, line_no, "lkeff")?;
-            }
-
-            Ok(DisturbedPolicy::V9003 {
-                ksatadj,
-                luse: t[1].clone(),
-                burn_code,
-                stext: t[3].clone(),
-                lkeff_mm_h: lkeff,
-            })
-        }
-        SoilDatver::V9005 => {
-            let t = parse_policy_tokens(
-                policy_line,
-                7,
-                line_no,
-                "ksatadj,luse,burn_code,stext,texid_enum,uksat,lkeff",
-                datver,
-            )?;
-            let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
-            let burn_code = parse_i32(&t[2], line_no, "burn_code")?;
-            if burn_code < 0 {
-                return Err(SoilParserError::new(
-                    SoilErrorCode::SolE005,
-                    line_no,
-                    "burn_code",
-                    "burn_code must be non-negative",
-                ));
-            }
-
-            let texid_enum = parse_i32(&t[4], line_no, "texid_enum")?;
-            if texid_enum <= 0 {
-                return Err(SoilParserError::new(
-                    SoilErrorCode::SolE005,
-                    line_no,
-                    "texid_enum",
-                    "texid_enum must be > 0",
-                ));
-            }
-
-            let uksat = parse_f64(&t[5], line_no, "uksat")?;
-            validate_non_negative(uksat, line_no, "uksat")?;
-
-            let lkeff = parse_f64(&t[6], line_no, "lkeff")?;
-            if lkeff != -9999.0 {
-                validate_non_negative(lkeff, line_no, "lkeff")?;
-            }
-
-            Ok(DisturbedPolicy::V9005 {
-                ksatadj,
-                luse: t[1].clone(),
-                burn_code,
-                stext: t[3].clone(),
-                texid_enum,
-                uksat_mm_h: uksat,
-                lkeff_mm_h: lkeff,
-            })
-        }
+        SoilDatver::V9002 => parse_v9002_policy_row(policy_line, line_no),
+        SoilDatver::V9003 => parse_v9003_policy_row(policy_line, line_no),
+        SoilDatver::V9005 => parse_v9005_policy_row(policy_line, line_no),
         _ => Err(SoilParserError::new(
             SoilErrorCode::SolE006,
             line_no,
@@ -760,6 +663,119 @@ fn parse_policy_row(
             "policy row is not applicable for this datver",
         )),
     }
+}
+
+fn parse_v9002_policy_row(
+    policy_line: &str,
+    line_no: usize,
+) -> Result<DisturbedPolicy, SoilParserError> {
+    let t = parse_policy_tokens(
+        policy_line,
+        5,
+        line_no,
+        "ksatadj,luse,stext,ksatfac,ksatrec",
+        SoilDatver::V9002,
+    )?;
+    let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
+    let ksatfac = parse_f64(&t[3], line_no, "ksatfac")?;
+    let ksatrec = parse_f64(&t[4], line_no, "ksatrec")?;
+    validate_non_negative(ksatfac, line_no, "ksatfac")?;
+    validate_non_negative(ksatrec, line_no, "ksatrec")?;
+
+    Ok(DisturbedPolicy::V9002 {
+        ksatadj,
+        luse: t[1].clone(),
+        stext: t[2].clone(),
+        ksatfac_mm_h: ksatfac,
+        ksatrec_per_day: ksatrec,
+    })
+}
+
+fn parse_v9003_policy_row(
+    policy_line: &str,
+    line_no: usize,
+) -> Result<DisturbedPolicy, SoilParserError> {
+    let t = parse_policy_tokens(
+        policy_line,
+        5,
+        line_no,
+        "ksatadj,luse,burn_code,stext,lkeff",
+        SoilDatver::V9003,
+    )?;
+    let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
+    let burn_code = parse_burn_code(&t[2], line_no)?;
+    let lkeff = parse_lkeff_policy_value(&t[4], line_no)?;
+
+    Ok(DisturbedPolicy::V9003 {
+        ksatadj,
+        luse: t[1].clone(),
+        burn_code,
+        stext: t[3].clone(),
+        lkeff_mm_h: lkeff,
+    })
+}
+
+fn parse_v9005_policy_row(
+    policy_line: &str,
+    line_no: usize,
+) -> Result<DisturbedPolicy, SoilParserError> {
+    let t = parse_policy_tokens(
+        policy_line,
+        7,
+        line_no,
+        "ksatadj,luse,burn_code,stext,texid_enum,uksat,lkeff",
+        SoilDatver::V9005,
+    )?;
+    let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
+    let burn_code = parse_burn_code(&t[2], line_no)?;
+    let texid_enum = parse_texid_enum(&t[4], line_no)?;
+    let uksat = parse_f64(&t[5], line_no, "uksat")?;
+    validate_non_negative(uksat, line_no, "uksat")?;
+    let lkeff = parse_lkeff_policy_value(&t[6], line_no)?;
+
+    Ok(DisturbedPolicy::V9005 {
+        ksatadj,
+        luse: t[1].clone(),
+        burn_code,
+        stext: t[3].clone(),
+        texid_enum,
+        uksat_mm_h: uksat,
+        lkeff_mm_h: lkeff,
+    })
+}
+
+fn parse_burn_code(token: &str, line_no: usize) -> Result<i32, SoilParserError> {
+    let burn_code = parse_i32(token, line_no, "burn_code")?;
+    if burn_code < 0 {
+        return Err(SoilParserError::new(
+            SoilErrorCode::SolE005,
+            line_no,
+            "burn_code",
+            "burn_code must be non-negative",
+        ));
+    }
+    Ok(burn_code)
+}
+
+fn parse_texid_enum(token: &str, line_no: usize) -> Result<i32, SoilParserError> {
+    let texid_enum = parse_i32(token, line_no, "texid_enum")?;
+    if texid_enum <= 0 {
+        return Err(SoilParserError::new(
+            SoilErrorCode::SolE005,
+            line_no,
+            "texid_enum",
+            "texid_enum must be > 0",
+        ));
+    }
+    Ok(texid_enum)
+}
+
+fn parse_lkeff_policy_value(token: &str, line_no: usize) -> Result<f64, SoilParserError> {
+    let lkeff = parse_f64(token, line_no, "lkeff")?;
+    if lkeff != POLICY_LKEFF_SENTINEL {
+        validate_non_negative(lkeff, line_no, "lkeff")?;
+    }
+    Ok(lkeff)
 }
 
 fn parse_layer_row(
@@ -1355,5 +1371,115 @@ impl LineCursor {
         let line_no = self.index + 1;
         let line = self.lines[self.index].as_str();
         Some((line_no, line))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn strict_policy(datver: SoilDatver, policy_line: &str) -> DisturbedPolicy {
+        parse_policy_row(datver, ParserMode::Strict, policy_line, 17)
+            .expect("policy row should parse")
+    }
+
+    fn policy_error(datver: SoilDatver, policy_line: &str) -> SoilParserError {
+        parse_policy_row(datver, ParserMode::Strict, policy_line, 17)
+            .expect_err("policy row should fail")
+    }
+
+    #[test]
+    fn cqr22_parse_policy_row_characterizes_success_variants() {
+        assert_eq!(
+            strict_policy(SoilDatver::V9002, "1 'forest use' 'silt loam' 2.5 0.75"),
+            DisturbedPolicy::V9002 {
+                ksatadj: true,
+                luse: "forest use".to_string(),
+                stext: "silt loam".to_string(),
+                ksatfac_mm_h: 2.5,
+                ksatrec_per_day: 0.75,
+            }
+        );
+
+        assert_eq!(
+            strict_policy(SoilDatver::V9003, "0 range 3 loam -9999"),
+            DisturbedPolicy::V9003 {
+                ksatadj: false,
+                luse: "range".to_string(),
+                burn_code: 3,
+                stext: "loam".to_string(),
+                lkeff_mm_h: -9999.0,
+            }
+        );
+
+        assert_eq!(
+            strict_policy(SoilDatver::V9003, "1 range 3 loam 0.25"),
+            DisturbedPolicy::V9003 {
+                ksatadj: true,
+                luse: "range".to_string(),
+                burn_code: 3,
+                stext: "loam".to_string(),
+                lkeff_mm_h: 0.25,
+            }
+        );
+
+        assert_eq!(
+            strict_policy(SoilDatver::V9005, "1 crop 2 sandy 7 12.5 -9999"),
+            DisturbedPolicy::V9005 {
+                ksatadj: true,
+                luse: "crop".to_string(),
+                burn_code: 2,
+                stext: "sandy".to_string(),
+                texid_enum: 7,
+                uksat_mm_h: 12.5,
+                lkeff_mm_h: -9999.0,
+            }
+        );
+    }
+
+    #[test]
+    fn cqr22_parse_policy_row_characterizes_error_branches() {
+        let err = policy_error(SoilDatver::V9002, "2 forest silt 2.5 0.75");
+        assert_eq!(err.code, SoilErrorCode::SolE005);
+        assert_eq!(err.field, "ksatadj");
+        assert_eq!(err.message, "binary flag must be 0 or 1");
+
+        let err = policy_error(SoilDatver::V9002, "1 forest silt 2.5");
+        assert_eq!(err.code, SoilErrorCode::SolE006);
+        assert_eq!(err.field, "ksatadj,luse,stext,ksatfac,ksatrec");
+        assert_eq!(
+            err.message,
+            "variant arity mismatch: expected 5 token(s), found 4"
+        );
+
+        let err = policy_error(SoilDatver::V9003, "1 range -1 loam 0.25");
+        assert_eq!(err.code, SoilErrorCode::SolE005);
+        assert_eq!(err.field, "burn_code");
+        assert_eq!(err.message, "burn_code must be non-negative");
+
+        let err = policy_error(SoilDatver::V9003, "1 range 3 loam -0.25");
+        assert_eq!(err.code, SoilErrorCode::SolE005);
+        assert_eq!(err.field, "lkeff");
+        assert_eq!(err.message, "value must be >= 0");
+
+        let err = policy_error(SoilDatver::V9005, "1 crop -1 sandy 7 12.5 -9999");
+        assert_eq!(err.code, SoilErrorCode::SolE005);
+        assert_eq!(err.field, "burn_code");
+        assert_eq!(err.message, "burn_code must be non-negative");
+
+        let err = policy_error(SoilDatver::V9005, "1 crop 2 sandy 0 12.5 -9999");
+        assert_eq!(err.code, SoilErrorCode::SolE005);
+        assert_eq!(err.field, "texid_enum");
+        assert_eq!(err.message, "texid_enum must be > 0");
+
+        let err = policy_error(SoilDatver::V9005, "1 crop 2 sandy 7 -12.5 -9999");
+        assert_eq!(err.code, SoilErrorCode::SolE005);
+        assert_eq!(err.field, "uksat");
+        assert_eq!(err.message, "value must be >= 0");
+
+        let err = policy_error(SoilDatver::V97_5, "1 crop 2 sandy 7 -12.5 -9999");
+        assert_eq!(err.code, SoilErrorCode::SolE006);
+        assert_eq!(err.field, "policy-row");
+        assert_eq!(err.message, "policy row is not applicable for this datver");
     }
 }
