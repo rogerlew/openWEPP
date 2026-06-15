@@ -196,8 +196,14 @@ the tracker below and by reading the corresponding package directories under
   Pushed commit: `6719e602bf651cc5ec0a45263954fbb809443b11` on branch
   `main`.
   Final target: `project_annual_extension_controls`, CRAP `9.0`.
-- [ ] CQR21, rank 15, original CRAP `380`, CC `19`, Cov `0%`:
+- [x] (2026-06-15) Closed CQR21, rank 15, original CRAP `380`, CC
+  `19`, Cov `0%`:
   `crates/openwepp-climate-runtime-adapter/src/lib.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr21-climate-runtime-adapter-complexity-001/`.
+  Pushed commit: `14cbaaed09d1eeb296efce9ceb6439139bac5676` on branch
+  `main`.
+  Final target: `SharedClimateRuntimeInputError::fmt`, CRAP `2.0`.
 - [ ] CQR22, rank 16, original CRAP `369`, CC `29`, Cov `26%`:
   `crates/openwepp-input-contract/src/parsers/soil.rs`.
 - [ ] CQR23, rank 17, original CRAP `352`, CC `79`, Cov `65%`:
