@@ -164,8 +164,14 @@ the tracker below and by reading the corresponding package directories under
   `docs/work-packages/20260615-cqr16-unit-registries-complexity-001/`.
   Pushed commit: `642a4c6bbdc9bb5b6388230eddad73066e7b3d85` on branch `main`.
   Final target: `BoundaryUnitRegistryError::fmt`, CRAP `6.0`.
-- [ ] CQR17, rank 11, original CRAP `466`, CC `37`, Cov `32%`:
+- [x] (2026-06-15) Closed CQR17, rank 11, original CRAP `466`, CC `37`,
+  Cov `32%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod19.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr17-hydrology-erod19-complexity-001/`.
+  Pushed commit: `a412b2939b24f246464b7c8a1379556acee2e158` on branch `main`.
+  Final target: `Wb11HydrologyKernel::erod19_xcrit_classification`, CRAP
+  `2.0`.
 - [ ] CQR18, rank 12, original CRAP `456`, CC `80`, Cov `61%`:
   `crates/openwepp-input-contract/src/parsers/hbp/payload_validator.rs`.
 - [ ] CQR19, rank 13, original CRAP `420`, CC `20`, Cov `0%`:
