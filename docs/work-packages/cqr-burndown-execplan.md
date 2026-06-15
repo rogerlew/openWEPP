@@ -157,8 +157,13 @@ the tracker below and by reading the corresponding package directories under
   `docs/work-packages/20260615-cqr15-scheduler-seed-runtime-complexity-001/`.
   Pushed commit: `b5dccb5d1d0a8f52a1030de95edc39894b0b893b` on branch `main`.
   Final target: `seed_wb11_runtime_surface_inputs`, CRAP `15.0`.
-- [ ] CQR16, rank 10, original CRAP `506`, CC `22`, Cov `0%`:
+- [x] (2026-06-15) Closed CQR16, rank 10, original CRAP `506`, CC
+  `22`, Cov `0%`:
   `crates/openwepp-sim-contract/src/units_mod/registries.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr16-unit-registries-complexity-001/`.
+  Pushed commit: `642a4c6bbdc9bb5b6388230eddad73066e7b3d85` on branch `main`.
+  Final target: `BoundaryUnitRegistryError::fmt`, CRAP `6.0`.
 - [ ] CQR17, rank 11, original CRAP `466`, CC `37`, Cov `32%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod19.rs`.
 - [ ] CQR18, rank 12, original CRAP `456`, CC `80`, Cov `61%`:
