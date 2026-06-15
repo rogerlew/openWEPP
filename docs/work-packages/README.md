@@ -10,6 +10,16 @@
 
 State as of `2026-06-15`:
 
+- CQR07 is complete-with-warnings for behavior-preserving
+  function-length/lint-debt decomposition of
+  `crates/openwepp-runner/src/watershed_wat.rs`. The scoped quality target
+  removed the `read_batch_into` `#[allow(clippy::too_many_lines)]` suppression,
+  reducing `read_batch_into` CRAP from `4830.0` to `4.0`, without changing WAT
+  reader, aggregation, optional-column, fail-closed, or public publication
+  behavior. Required closure gates passed. WARN holds remain for target coverage
+  below the science-tier threshold and pre-existing out-of-scope CRAP rows above
+  `30`. Package:
+  `20260615-cqr07-watershed-wat-complexity-001/`.
 - CQR06 is complete-with-warnings for behavior-preserving CRAP/cyclomatic-complexity
   decomposition of
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`.
