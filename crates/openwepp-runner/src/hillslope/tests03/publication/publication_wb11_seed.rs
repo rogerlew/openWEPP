@@ -49,6 +49,90 @@ use super::super::*;
             "rainfall seed should preserve full current-day breakpoint precipitation depth"
         );
     }
+
+    #[test]
+    fn cqr15_wb11_seed_zero_hyetograph_synthesizes_two_point_event() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 1.0),
+            ("slplen", 50.0),
+            ("tmax", 12.0),
+            ("tmin", 2.0),
+            ("rad", 43.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 0.0),
+            ("prcp", 0.004),
+            ("stmdur", 7_200.0),
+            ("ninten", 0.0),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.50, true);
+
+        seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Daily)
+            .expect("zero-cardinality hyetograph should synthesize a two-point event");
+
+        let ninten = require_runtime_surface_scalar(&runtime_surface, "ninten")
+            .expect("ninten should be synthesized");
+        let nbrkpt = require_runtime_surface_scalar(&runtime_surface, "nbrkpt")
+            .expect("nbrkpt should be aligned with ninten");
+        let timem_0001 = require_runtime_surface_scalar(&runtime_surface, "timem_0001")
+            .expect("first synthesized time should be published");
+        let timem_0002 = require_runtime_surface_scalar(&runtime_surface, "timem_0002")
+            .expect("second synthesized time should be published");
+        let intsty_0001 = require_runtime_surface_scalar(&runtime_surface, "intsty_0001")
+            .expect("first synthesized intensity should be published");
+        let intsty_0002 = require_runtime_surface_scalar(&runtime_surface, "intsty_0002")
+            .expect("second synthesized intensity should be published");
+        let rainfall_input =
+            require_runtime_surface_scalar(&runtime_surface, "wb12_rainfall_input")
+                .expect("rainfall input should be seeded");
+
+        assert!((ninten - 2.0).abs() < 1.0e-12);
+        assert!((nbrkpt - 2.0).abs() < 1.0e-12);
+        assert!(timem_0001.abs() < 1.0e-12);
+        assert!((timem_0002 - 7_200.0).abs() < 1.0e-12);
+        assert!((intsty_0001 - (0.004 / 7_200.0)).abs() < 1.0e-18);
+        assert!(intsty_0002.abs() < 1.0e-12);
+        assert!(
+            (rainfall_input - 0.004).abs() < 1.0e-12,
+            "synthesized hyetograph rainfall should match the daily precipitation depth"
+        );
+    }
+
+    #[test]
+    fn cqr15_wb11_seed_uses_hyetograph_total_when_it_exceeds_prcp() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 1.0),
+            ("slplen", 50.0),
+            ("tmax", 12.0),
+            ("tmin", 2.0),
+            ("rad", 43.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 0.0),
+            ("prcp", 0.001),
+            ("ninten", 3.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 10.0),
+            ("timem_0003", 20.0),
+            ("intsty_0001", 0.000_1),
+            ("intsty_0002", 0.000_2),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.50, true);
+
+        seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Daily)
+            .expect("valid hyetograph should seed WB12 rainfall input");
+
+        let rainfall_input =
+            require_runtime_surface_scalar(&runtime_surface, "wb12_rainfall_input")
+                .expect("rainfall input should be seeded");
+        assert!(
+            (rainfall_input - 0.003).abs() < 1.0e-12,
+            "WB12 rainfall input must preserve the larger hyetograph-integrated depth"
+        );
+    }
+
     #[test]
     fn hphys0250_wb11_seed_initializes_neutral_water_stress_for_decomposition() {
         let mut runtime_surface = wb11_seed_test_surface(&[
@@ -442,6 +526,79 @@ use super::super::*;
             other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
         }
     }
+
+    #[test]
+    fn cqr15_wb11_seed_rejects_non_binary_drain_enablement() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 1.0),
+            ("slplen", 50.0),
+            ("tmax", 12.0),
+            ("tmin", 2.0),
+            ("rad", 43.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 0.0),
+            ("prcp", 0.003),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 86_400.0),
+            ("intsty_0001", 0.0),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.50, true);
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb19_drain_enabled"),
+            BoundaryValue::scalar(0.5),
+        );
+
+        let error = seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Daily)
+            .expect_err("non-binary drain flag must fail WB11 seed");
+        assert_eq!(error.code(), "CLIHILL-E-011");
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { detail, .. } => {
+                assert!(
+                    detail.contains("wb19_drain_enabled must be 0 or 1, observed 0.5"),
+                    "expected non-binary drain flag guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
+    fn cqr15_wb11_seed_rejects_nonpositive_slplen_when_efflen_missing() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 1.0),
+            ("slplen", 0.0),
+            ("tmax", 12.0),
+            ("tmin", 2.0),
+            ("rad", 43.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 0.0),
+            ("prcp", 0.003),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 86_400.0),
+            ("intsty_0001", 0.0),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.50, true);
+
+        let error = seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Daily)
+            .expect_err("missing efflen must require positive slplen");
+        assert_eq!(error.code(), "CLIHILL-E-011");
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { detail, .. } => {
+                assert!(
+                    detail.contains("slplen must be > 0.0 when seeding efflen, observed 0"),
+                    "expected slplen guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
     #[test]
     fn hphys0263_wb11_seed_uses_evappm_branch_when_pmetpara_selects_pmet() {
         let mut runtime_surface = wb11_seed_test_surface(&[

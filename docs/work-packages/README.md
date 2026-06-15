@@ -10,8 +10,28 @@
 
 State as of `2026-06-15`:
 
-- CQR14 is in progress for behavior-preserving CRAP/cyclomatic-complexity
-  decomposition of `crates/openwepp-runner/src/release.rs`. Package:
+- CQR15 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs`.
+  The scoped target reduced `seed_wb11_runtime_surface_inputs` CRAP from
+  `580.6018405181356` to `15.0`, with every newly extracted helper at CRAP
+  `23.01930315500686` or lower, without changing public API, runtime symbols,
+  lane policy, typed guard behavior, formulas, parser compatibility, or
+  science-contract behavior. Required Rust closure gates passed. WARNs remain
+  for target-file coverage below the full ADR-0021 module threshold, target
+  file line count above `2000`, and unrelated out-of-scope target-file rows
+  above CRAP `30`. Package:
+  `20260615-cqr15-scheduler-seed-runtime-complexity-001/`.
+- CQR14 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-runner/src/release.rs`. The scoped target reduced
+  `lint_release_directory` CRAP from `650.0` to `4.0`, with every newly
+  extracted release-lint helper below `9`, without changing public API,
+  release sidecar schema, binary role classification, stable error variants,
+  candidate filtering, HBP pair parity, hash, timestamp, or JSON field
+  behavior. Required Rust closure gates passed. WARN remains for the
+  pre-existing out-of-scope `validate_release_sidecar_unlocked` row at CRAP
+  `31.459079074798446`. Package:
   `20260615-cqr14-runner-release-complexity-001/`.
 - CQR13 is complete for live-metric closure of the rank-7
   CRAP/cyclomatic-complexity row in
