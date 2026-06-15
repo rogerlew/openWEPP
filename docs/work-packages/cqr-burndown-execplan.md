@@ -135,8 +135,14 @@ the tracker below and by reading the corresponding package directories under
   Pushed commit: `96e39f68a0847e98c50399ad99ded88f5b4f2528` on branch `main`.
   Final target:
   `seed_hillslope_runtime_surface_from_irrigation_depletion`, CRAP `2.0`.
-- [ ] CQR13, rank 7, original CRAP `964`, CC `65`, Cov `40%`:
+- [x] (2026-06-15) Closed CQR13, rank 7, original CRAP `964`, CC
+  `65`, Cov `40%`:
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/00_core_types.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr13-runtime-core-types-complexity-001/`.
+  Pushed commit: `5e7a6c44f16c3f0962f509c64e0f5b661568e467` on branch `main`.
+  Final target: `HillslopeRuntimeInputError::soil_core_code`, CRAP
+  `14.0478515625`.
 - [ ] CQR14, rank 8, original CRAP `650`, CC `25`, Cov `0%`:
   `crates/openwepp-runner/src/release.rs`.
 - [ ] CQR15, rank 9, original CRAP `581`, CC `94`, Cov `62%`:
@@ -234,6 +240,14 @@ the tracker below and by reading the corresponding package directories under
   `deplev=0.50`. The pre-existing frost `too_many_lines` suppression remains
   outside CQR12 scope in
   `docs/work-packages/20260615-cqr12-irrigation-depletion-runtime-001/artifacts/cqr12_disposition.md`.
+
+- Observation: CQR13 live metrics proved the rank-7 runtime core type row was
+  already closed by prior decomposition, so no production refactor was needed.
+  Evidence: CQR13 before and after metrics both show the highest
+  `00_core_types.rs` row as `HillslopeRuntimeInputError::soil_core_code` at
+  CRAP `14.0478515625`, with `HillslopeRuntimeInputError::code` and
+  `HillslopeRuntimeInputError::fmt` both at CRAP `9.0`, in
+  `docs/work-packages/20260615-cqr13-runtime-core-types-complexity-001/artifacts/crap_after.json`.
 
 ### Decision Log
 
