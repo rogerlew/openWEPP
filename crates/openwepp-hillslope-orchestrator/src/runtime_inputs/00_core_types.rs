@@ -12,7 +12,9 @@ use openwepp_input_contract::parsers::{
     climate::{ClimateFile, ClimateMetadata, ClimateMonthlyStats},
     frost::FrostParseOutput,
     irrigation_depletion::{IrrigationDepletionFile, IrrigationPeriodData},
-    irrigation_fixeddate::{FixedDateEvent, FixedDateIrrigationFile},
+    irrigation_fixeddate::{
+        FixedDateEvent, FixedDateIrrigationFile, FurrowEvent, Line3Record, SprinklerEvent,
+    },
     management::{
         InitialScenarioData, ManagementParseOutput, PlantScenarioData, YearlyAnnualExtension,
         YearlyCroplandBranch, YearlyScenarioData,

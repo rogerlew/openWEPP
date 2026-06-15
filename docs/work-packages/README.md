@@ -10,6 +10,19 @@
 
 State as of `2026-06-15`:
 
+- CQR10 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`.
+  The scoped quality target reduced
+  `seed_hillslope_runtime_surface_from_irrigation_fixeddate` CRAP from
+  `1482.0` to `4.0`, with every newly extracted fixed-date helper below
+  `15`, without changing public API, typed guard classes, stable error fields
+  and allowed strings, fixed-date irrigation symbols, units, parser
+  compatibility, event order, furrow formulas, or kernel-facing projection
+  behavior. Required closure gates passed. WARN holds remain for target-file
+  coverage below the science-tier threshold and the pre-existing out-of-scope
+  depletion CRAP row above `30`. Package:
+  `20260615-cqr10-irrigation-fixeddate-runtime-001/`.
 - CQR09 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-hillslope-orchestrator/src/hydrology/07_decomposition_equations.rs`.

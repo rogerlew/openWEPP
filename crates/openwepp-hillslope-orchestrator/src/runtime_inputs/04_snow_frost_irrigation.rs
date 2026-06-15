@@ -338,11 +338,44 @@ pub fn build_hillslope_runtime_surface_from_irrigation_fixeddate(
 ///
 /// Returns `HillslopeRuntimeInputError` when required fixed-date scheduling
 /// surfaces are malformed, non-finite, or out-of-domain.
-#[allow(clippy::too_many_lines)]
 pub fn seed_hillslope_runtime_surface_from_irrigation_fixeddate(
     runtime_surface: &mut HillslopeWritebackSurface,
     fixeddate: &FixedDateIrrigationFile,
 ) -> Result<(), HillslopeRuntimeInputError> {
+    let datver = validate_fixeddate_irrigation_header(fixeddate)?;
+    let state_surface = &mut runtime_surface.state_surface;
+    seed_fixeddate_irrigation_header_symbols(state_surface, fixeddate, datver)?;
+    seed_fixeddate_irrigation_events(state_surface, fixeddate)?;
+
+    Ok(())
+}
+
+#[derive(Debug, Clone)]
+struct FixedDateProjectionState {
+    expected_ofe: usize,
+    active_dates: Vec<Line3Record>,
+}
+
+impl FixedDateProjectionState {
+    fn new(fixeddate: &FixedDateIrrigationFile) -> Self {
+        Self {
+            expected_ofe: 1,
+            active_dates: fixeddate.initial_records.clone(),
+        }
+    }
+
+    fn advance(&mut self, event: &FixedDateEvent, ofe_count: usize) {
+        self.active_dates[self.expected_ofe - 1] = fixeddate_event_next_record(event).clone();
+        self.expected_ofe += 1;
+        if self.expected_ofe > ofe_count {
+            self.expected_ofe = 1;
+        }
+    }
+}
+
+fn validate_fixeddate_irrigation_header(
+    fixeddate: &FixedDateIrrigationFile,
+) -> Result<f64, HillslopeRuntimeInputError> {
     let datver = validate_irrigation_finite("irrigation.fixeddate.datver", fixeddate.datver)?;
     if datver <= 0.0 {
         return Err(
@@ -353,7 +386,6 @@ pub fn seed_hillslope_runtime_surface_from_irrigation_fixeddate(
             },
         );
     }
-
     if fixeddate.itemp == 0 {
         return Err(
             HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
@@ -376,8 +408,14 @@ pub fn seed_hillslope_runtime_surface_from_irrigation_fixeddate(
             },
         );
     }
+    Ok(datver)
+}
 
-    let state_surface = &mut runtime_surface.state_surface;
+fn seed_fixeddate_irrigation_header_symbols(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    fixeddate: &FixedDateIrrigationFile,
+    datver: f64,
+) -> Result<(), HillslopeRuntimeInputError> {
     state_surface.insert(
         BoundarySymbol::from("irrigation.fixeddate.enabled"),
         BoundaryValue::scalar(1.0),
@@ -414,195 +452,233 @@ pub fn seed_hillslope_runtime_surface_from_irrigation_fixeddate(
             fixeddate.events.len(),
         )?),
     );
+    Ok(())
+}
 
-    let mut expected_ofe = 1usize;
-    let mut active_dates = fixeddate.initial_records.clone();
+fn seed_fixeddate_irrigation_events(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    fixeddate: &FixedDateIrrigationFile,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let mut projection = FixedDateProjectionState::new(fixeddate);
     for (event_position, event) in fixeddate.events.iter().enumerate() {
         let event_index = event_position + 1;
-        let expected_ofe_f64 =
-            irrigation_count_to_f64("irrigation.fixeddate.event_####.ofe_id", expected_ofe)?;
-        let schedule = active_dates.get(expected_ofe - 1).ok_or(
-            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                field: "irrigation.fixeddate.event_####.ofe_id",
-                value: expected_ofe_f64,
-                allowed: "1..=irrigation.fixeddate.ofe_count",
-            },
-        )?;
-
-        state_surface.insert(
-            irrigation_fixeddate_event_symbol(event_index, "ofe_id"),
-            BoundaryValue::scalar(irrigation_count_to_f64(
-                "irrigation.fixeddate.event_####.ofe_id",
-                schedule.ofeflg,
-            )?),
-        );
-        state_surface.insert(
-            irrigation_fixeddate_event_symbol(event_index, "day"),
-            BoundaryValue::scalar(irrigation_count_to_f64(
-                "irrigation.fixeddate.event_####.day",
-                schedule.irday,
-            )?),
-        );
-        state_surface.insert(
-            irrigation_fixeddate_event_symbol(event_index, "year"),
-            BoundaryValue::scalar(irrigation_count_to_f64(
-                "irrigation.fixeddate.event_####.year",
-                schedule.iryr,
-            )?),
-        );
-        state_surface.insert(
-            irrigation_fixeddate_event_symbol(event_index, "schedule_termination_flag"),
-            BoundaryValue::scalar(if schedule.schedule_termination_flag {
-                1.0
-            } else {
-                0.0
-            }),
-        );
-
-        match event {
-            FixedDateEvent::Sprinkler(sprinkler) => {
-                let rate = validate_irrigation_finite(
-                    "irrigation.fixeddate.event_####.sprinkler_rate_m_per_s",
-                    sprinkler.irint,
-                )?;
-                if rate <= 0.0 {
-                    return Err(
-                        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                            field: "irrigation.fixeddate.event_####.sprinkler_rate_m_per_s",
-                            value: rate,
-                            allowed: "> 0.0",
-                        },
-                    );
-                }
-                let depth = validate_irrigation_finite(
-                    "irrigation.fixeddate.event_####.sprinkler_depth_m",
-                    sprinkler.irdept,
-                )?;
-                if depth < 0.0 {
-                    return Err(
-                        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                            field: "irrigation.fixeddate.event_####.sprinkler_depth_m",
-                            value: depth,
-                            allowed: ">= 0.0",
-                        },
-                    );
-                }
-                let nozzle = validate_irrigation_finite(
-                    "irrigation.fixeddate.event_####.sprinkler_nozzle_factor",
-                    sprinkler.nozzle,
-                )?;
-                if nozzle <= 0.0 {
-                    return Err(
-                        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                            field: "irrigation.fixeddate.event_####.sprinkler_nozzle_factor",
-                            value: nozzle,
-                            allowed: "> 0.0",
-                        },
-                    );
-                }
-
-                state_surface.insert(
-                    irrigation_fixeddate_event_symbol(event_index, "sprinkler_rate_m_per_s"),
-                    BoundaryValue::scalar(rate),
-                );
-                state_surface.insert(
-                    irrigation_fixeddate_event_symbol(event_index, "sprinkler_depth_m"),
-                    BoundaryValue::scalar(depth),
-                );
-                state_surface.insert(
-                    irrigation_fixeddate_event_symbol(event_index, "sprinkler_nozzle_factor"),
-                    BoundaryValue::scalar(nozzle),
-                );
-            }
-            FixedDateEvent::Furrow(furrow) => {
-                let surges = irrigation_count_to_f64(
-                    "irrigation.fixeddate.event_####.furrow_surges",
-                    furrow.surges,
-                )?;
-                let mut total_duration = 0.0_f64;
-                let mut total_volume = 0.0_f64;
-                for surge in &furrow.rows {
-                    let supply_rate = validate_irrigation_finite(
-                        "irrigation.fixeddate.event_####.furrow_supply_rate_m3_per_s",
-                        surge.qspply,
-                    )?;
-                    if supply_rate <= 0.0 {
-                        return Err(
-                            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                                field: "irrigation.fixeddate.event_####.furrow_supply_rate_m3_per_s",
-                                value: supply_rate,
-                                allowed: "> 0.0",
-                            },
-                        );
-                    }
-                    let start_s = validate_irrigation_finite(
-                        "irrigation.fixeddate.event_####.furrow_start_s",
-                        surge.tstart,
-                    )?;
-                    let end_s = validate_irrigation_finite(
-                        "irrigation.fixeddate.event_####.furrow_end_s",
-                        surge.tend,
-                    )?;
-                    if end_s < start_s {
-                        return Err(
-                            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                                field: "irrigation.fixeddate.event_####.furrow_end_s",
-                                value: end_s,
-                                allowed: ">= irrigation.fixeddate.event_####.furrow_start_s",
-                            },
-                        );
-                    }
-                    if let Some(tdepl) = surge.tdepl {
-                        let depletion_tail = validate_irrigation_finite(
-                            "irrigation.fixeddate.event_####.furrow_tdepl_s",
-                            tdepl,
-                        )?;
-                        if depletion_tail < 0.0 {
-                            return Err(
-                                HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                                    field: "irrigation.fixeddate.event_####.furrow_tdepl_s",
-                                    value: depletion_tail,
-                                    allowed: ">= 0.0",
-                                },
-                            );
-                        }
-                        total_duration += depletion_tail;
-                    }
-                    let active_duration = end_s - start_s;
-                    total_duration += active_duration;
-                    total_volume += supply_rate * active_duration;
-                }
-
-                state_surface.insert(
-                    irrigation_fixeddate_event_symbol(event_index, "furrow_surges"),
-                    BoundaryValue::scalar(surges),
-                );
-                state_surface.insert(
-                    irrigation_fixeddate_event_symbol(event_index, "furrow_total_duration_s"),
-                    BoundaryValue::scalar(total_duration),
-                );
-                state_surface.insert(
-                    irrigation_fixeddate_event_symbol(event_index, "furrow_total_supply_volume_m3"),
-                    BoundaryValue::scalar(total_volume),
-                );
-            }
-        }
-
-        match event {
-            FixedDateEvent::Sprinkler(event) => {
-                active_dates[expected_ofe - 1] = event.next_record.clone();
-            }
-            FixedDateEvent::Furrow(event) => {
-                active_dates[expected_ofe - 1] = event.next_record.clone();
-            }
-        }
-        expected_ofe += 1;
-        if expected_ofe > fixeddate.itemp {
-            expected_ofe = 1;
-        }
+        seed_fixeddate_irrigation_event(state_surface, event_index, event, &projection)?;
+        projection.advance(event, fixeddate.itemp);
     }
 
     Ok(())
+}
+
+fn seed_fixeddate_irrigation_event(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    event_index: usize,
+    event: &FixedDateEvent,
+    projection: &FixedDateProjectionState,
+) -> Result<(), HillslopeRuntimeInputError> {
+    seed_fixeddate_irrigation_event_schedule(state_surface, event_index, projection)?;
+    match event {
+        FixedDateEvent::Sprinkler(sprinkler) => {
+            seed_fixeddate_irrigation_sprinkler_event(state_surface, event_index, sprinkler)
+        }
+        FixedDateEvent::Furrow(furrow) => {
+            seed_fixeddate_irrigation_furrow_event(state_surface, event_index, furrow)
+        }
+    }
+}
+
+fn seed_fixeddate_irrigation_event_schedule(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    event_index: usize,
+    projection: &FixedDateProjectionState,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let expected_ofe_f64 = irrigation_count_to_f64(
+        "irrigation.fixeddate.event_####.ofe_id",
+        projection.expected_ofe,
+    )?;
+    let schedule = projection.active_dates.get(projection.expected_ofe - 1).ok_or(
+        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+            field: "irrigation.fixeddate.event_####.ofe_id",
+            value: expected_ofe_f64,
+            allowed: "1..=irrigation.fixeddate.ofe_count",
+        },
+    )?;
+
+    state_surface.insert(
+        irrigation_fixeddate_event_symbol(event_index, "ofe_id"),
+        BoundaryValue::scalar(irrigation_count_to_f64(
+            "irrigation.fixeddate.event_####.ofe_id",
+            schedule.ofeflg,
+        )?),
+    );
+    state_surface.insert(
+        irrigation_fixeddate_event_symbol(event_index, "day"),
+        BoundaryValue::scalar(irrigation_count_to_f64(
+            "irrigation.fixeddate.event_####.day",
+            schedule.irday,
+        )?),
+    );
+    state_surface.insert(
+        irrigation_fixeddate_event_symbol(event_index, "year"),
+        BoundaryValue::scalar(irrigation_count_to_f64(
+            "irrigation.fixeddate.event_####.year",
+            schedule.iryr,
+        )?),
+    );
+    state_surface.insert(
+        irrigation_fixeddate_event_symbol(event_index, "schedule_termination_flag"),
+        BoundaryValue::scalar(if schedule.schedule_termination_flag {
+            1.0
+        } else {
+            0.0
+        }),
+    );
+
+    Ok(())
+}
+
+fn seed_fixeddate_irrigation_sprinkler_event(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    event_index: usize,
+    sprinkler: &SprinklerEvent,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let rate = validate_irrigation_finite(
+        "irrigation.fixeddate.event_####.sprinkler_rate_m_per_s",
+        sprinkler.irint,
+    )?;
+    if rate <= 0.0 {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.fixeddate.event_####.sprinkler_rate_m_per_s",
+                value: rate,
+                allowed: "> 0.0",
+            },
+        );
+    }
+    let depth = validate_irrigation_finite(
+        "irrigation.fixeddate.event_####.sprinkler_depth_m",
+        sprinkler.irdept,
+    )?;
+    if depth < 0.0 {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.fixeddate.event_####.sprinkler_depth_m",
+                value: depth,
+                allowed: ">= 0.0",
+            },
+        );
+    }
+    let nozzle = validate_irrigation_finite(
+        "irrigation.fixeddate.event_####.sprinkler_nozzle_factor",
+        sprinkler.nozzle,
+    )?;
+    if nozzle <= 0.0 {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.fixeddate.event_####.sprinkler_nozzle_factor",
+                value: nozzle,
+                allowed: "> 0.0",
+            },
+        );
+    }
+
+    state_surface.insert(
+        irrigation_fixeddate_event_symbol(event_index, "sprinkler_rate_m_per_s"),
+        BoundaryValue::scalar(rate),
+    );
+    state_surface.insert(
+        irrigation_fixeddate_event_symbol(event_index, "sprinkler_depth_m"),
+        BoundaryValue::scalar(depth),
+    );
+    state_surface.insert(
+        irrigation_fixeddate_event_symbol(event_index, "sprinkler_nozzle_factor"),
+        BoundaryValue::scalar(nozzle),
+    );
+    Ok(())
+}
+
+fn seed_fixeddate_irrigation_furrow_event(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    event_index: usize,
+    furrow: &FurrowEvent,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let surges = irrigation_count_to_f64(
+        "irrigation.fixeddate.event_####.furrow_surges",
+        furrow.surges,
+    )?;
+    let mut total_duration = 0.0_f64;
+    let mut total_volume = 0.0_f64;
+    for surge in &furrow.rows {
+        let supply_rate = validate_irrigation_finite(
+            "irrigation.fixeddate.event_####.furrow_supply_rate_m3_per_s",
+            surge.qspply,
+        )?;
+        if supply_rate <= 0.0 {
+            return Err(
+                HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                    field: "irrigation.fixeddate.event_####.furrow_supply_rate_m3_per_s",
+                    value: supply_rate,
+                    allowed: "> 0.0",
+                },
+            );
+        }
+        let start_s = validate_irrigation_finite(
+            "irrigation.fixeddate.event_####.furrow_start_s",
+            surge.tstart,
+        )?;
+        let end_s = validate_irrigation_finite(
+            "irrigation.fixeddate.event_####.furrow_end_s",
+            surge.tend,
+        )?;
+        if end_s < start_s {
+            return Err(
+                HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                    field: "irrigation.fixeddate.event_####.furrow_end_s",
+                    value: end_s,
+                    allowed: ">= irrigation.fixeddate.event_####.furrow_start_s",
+                },
+            );
+        }
+        if let Some(tdepl) = surge.tdepl {
+            let depletion_tail = validate_irrigation_finite(
+                "irrigation.fixeddate.event_####.furrow_tdepl_s",
+                tdepl,
+            )?;
+            if depletion_tail < 0.0 {
+                return Err(
+                    HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                        field: "irrigation.fixeddate.event_####.furrow_tdepl_s",
+                        value: depletion_tail,
+                        allowed: ">= 0.0",
+                    },
+                );
+            }
+            total_duration += depletion_tail;
+        }
+        let active_duration = end_s - start_s;
+        total_duration += active_duration;
+        total_volume += supply_rate * active_duration;
+    }
+
+    state_surface.insert(
+        irrigation_fixeddate_event_symbol(event_index, "furrow_surges"),
+        BoundaryValue::scalar(surges),
+    );
+    state_surface.insert(
+        irrigation_fixeddate_event_symbol(event_index, "furrow_total_duration_s"),
+        BoundaryValue::scalar(total_duration),
+    );
+    state_surface.insert(
+        irrigation_fixeddate_event_symbol(event_index, "furrow_total_supply_volume_m3"),
+        BoundaryValue::scalar(total_volume),
+    );
+    Ok(())
+}
+
+fn fixeddate_event_next_record(event: &FixedDateEvent) -> &Line3Record {
+    match event {
+        FixedDateEvent::Sprinkler(event) => &event.next_record,
+        FixedDateEvent::Furrow(event) => &event.next_record,
+    }
 }
 
 /// Seed parsed snow-control runtime symbols into an existing hillslope runtime
