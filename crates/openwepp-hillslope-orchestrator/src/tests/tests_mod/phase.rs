@@ -461,6 +461,137 @@ fn annual_growth_phase_emits_typed_growth_context() {
     assert_eq!(kernel.perennial, 1);
 }
 
+fn set_annual_decomposition_symbol(
+    surface: &mut HillslopeWritebackSurface,
+    root: &str,
+    value: f64,
+) {
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("pl_decomp_slot_0001_crop_0001_{root}")),
+        BoundaryValue::scalar(value),
+    );
+}
+
+fn seed_annual_decomposition_management(
+    surface: &mut HillslopeWritebackSurface,
+    resmgt: u8,
+    active_day: f64,
+) {
+    for (root, value) in [
+        ("resmgt", f64::from(resmgt)),
+        ("jdherb", 0.0),
+        ("jdburn", 0.0),
+        ("jdslge", 0.0),
+        ("jdcut", 0.0),
+        ("jdmove", 0.0),
+        ("fbrnag", 0.0),
+        ("fbrnog", 0.0),
+        ("frcut", 0.0),
+        ("frmove", 0.0),
+    ] {
+        set_annual_decomposition_symbol(surface, root, value);
+    }
+
+    match resmgt {
+        1 => set_annual_decomposition_symbol(surface, "jdherb", active_day),
+        2 => {
+            set_annual_decomposition_symbol(surface, "jdburn", active_day);
+            set_annual_decomposition_symbol(surface, "fbrnog", 0.25);
+        }
+        3 => set_annual_decomposition_symbol(surface, "jdslge", active_day),
+        4 => {
+            set_annual_decomposition_symbol(surface, "jdcut", active_day);
+            set_annual_decomposition_symbol(surface, "frcut", 0.30);
+        }
+        5 => {
+            set_annual_decomposition_symbol(surface, "jdmove", active_day);
+            set_annual_decomposition_symbol(surface, "frmove", 0.20);
+        }
+        6 => {}
+        _ => unreachable!("test seeds only valid annual decomposition management classes"),
+    }
+}
+
+fn annual_decomposition_control_for_surface(
+    surface: &HillslopeWritebackSurface,
+) -> HillslopeAnnualDecompositionControl {
+    let dispatch = decomposition_phase_dispatch_for_state(
+        HillslopePhase::DecompositionTransition,
+        &surface.state_surface,
+    )
+    .expect("annual decomposition dispatch should build");
+
+    let crate::DecompositionPhaseDispatch::Execute(context) = dispatch else {
+        panic!("annual decomposition dispatch should execute");
+    };
+    let payload = context
+        .transition_payload
+        .expect("annual decomposition dispatch should carry transition payload");
+    let HillslopeDecompositionTransitionControl::Annual(control) = payload.control else {
+        panic!("annual test surface should select annual decomposition control");
+    };
+    control
+}
+
+#[test]
+fn annual_decomposition_control_characterizes_resmgt_action_branches() {
+    for (resmgt, expected_action) in [
+        (1, HillslopeAnnualDecompositionAction::Herbicide),
+        (2, HillslopeAnnualDecompositionAction::Burn),
+        (3, HillslopeAnnualDecompositionAction::Silage),
+        (4, HillslopeAnnualDecompositionAction::Cut),
+        (5, HillslopeAnnualDecompositionAction::Remove),
+        (6, HillslopeAnnualDecompositionAction::None),
+    ] {
+        let mut surface = seeded_growth_runtime_surface_for_day_year(1.0, 200.0, 1.0);
+        seed_annual_decomposition_management(&mut surface, resmgt, 200.0);
+
+        let control = annual_decomposition_control_for_surface(&surface);
+
+        assert_eq!(control.resmgt, resmgt);
+        assert_eq!(control.active_action, expected_action);
+    }
+}
+
+#[test]
+fn annual_decomposition_control_characterizes_inactive_annual_action_day() {
+    let mut surface = seeded_growth_runtime_surface_for_day_year(1.0, 201.0, 1.0);
+    seed_annual_decomposition_management(&mut surface, 4, 200.0);
+
+    let control = annual_decomposition_control_for_surface(&surface);
+
+    assert_eq!(control.resmgt, 4);
+    assert_eq!(control.jdcut, 200);
+    assert_eq!(
+        control.active_action,
+        HillslopeAnnualDecompositionAction::None
+    );
+}
+
+#[test]
+fn annual_decomposition_control_rejects_missing_required_action_day() {
+    let mut surface = seeded_growth_runtime_surface_for_day_year(1.0, 200.0, 1.0);
+    seed_annual_decomposition_management(&mut surface, 2, 200.0);
+    set_annual_decomposition_symbol(&mut surface, "jdburn", 0.0);
+
+    let error = decomposition_phase_dispatch_for_state(
+        HillslopePhase::DecompositionTransition,
+        &surface.state_surface,
+    )
+    .expect_err("resmgt=2 without jdburn must fail closed");
+
+    assert!(matches!(
+        error,
+        HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+            symbol,
+            value,
+            reason: "resmgt=2 requires jdburn in 1..366",
+            ..
+        } if symbol.as_str() == "pl_decomp_slot_0001_crop_0001_jdburn"
+            && value == 0.0
+    ));
+}
+
 #[test]
 fn perennial_growth_phase_emits_typed_growth_context() {
     #[derive(Default)]

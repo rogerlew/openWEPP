@@ -704,11 +704,40 @@ fn require_indexed_fraction_state_value_for_decomposition(
     Ok(value)
 }
 
-#[allow(
-    clippy::too_many_lines,
-    clippy::cast_precision_loss,
-    clippy::similar_names
-)]
+#[derive(Debug, Clone)]
+struct AnnualDecompositionControlSymbols {
+    resmgt: String,
+    jdherb: String,
+    jdburn: String,
+    jdslge: String,
+    jdcut: String,
+    jdmove: String,
+    fbrnag: String,
+    fbrnog: String,
+    frcut: String,
+    frmove: String,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct AnnualDecompositionControlValues {
+    resmgt: usize,
+    jdherb: usize,
+    jdburn: usize,
+    jdslge: usize,
+    jdcut: usize,
+    jdmove: usize,
+    fbrnag: f64,
+    fbrnog: f64,
+    frcut: f64,
+    frmove: f64,
+}
+
+#[derive(Debug, Clone)]
+struct AnnualDecompositionControlInputs {
+    symbols: AnnualDecompositionControlSymbols,
+    values: AnnualDecompositionControlValues,
+}
+
 fn build_annual_decomposition_control(
     phase: HillslopePhase,
     state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
@@ -716,6 +745,56 @@ fn build_annual_decomposition_control(
     crop_slot_index: usize,
     runtime_day: usize,
 ) -> Result<HillslopeAnnualDecompositionControl, HillslopeDecompositionBoundaryError> {
+    let inputs =
+        require_annual_decomposition_control_inputs(phase, state_surface, slot_index, crop_slot_index)?;
+    let active_action = resolve_annual_decomposition_action(phase, &inputs, runtime_day)?;
+
+    Ok(HillslopeAnnualDecompositionControl {
+        resmgt: usize_to_u8_for_decomposition(
+            phase,
+            BoundarySymbol::from(inputs.symbols.resmgt.as_str()),
+            inputs.values.resmgt,
+        )?,
+        jdherb: usize_to_u16_for_decomposition(
+            phase,
+            BoundarySymbol::from(inputs.symbols.jdherb.as_str()),
+            inputs.values.jdherb,
+        )?,
+        jdburn: usize_to_u16_for_decomposition(
+            phase,
+            BoundarySymbol::from(inputs.symbols.jdburn.as_str()),
+            inputs.values.jdburn,
+        )?,
+        jdslge: usize_to_u16_for_decomposition(
+            phase,
+            BoundarySymbol::from(inputs.symbols.jdslge.as_str()),
+            inputs.values.jdslge,
+        )?,
+        jdcut: usize_to_u16_for_decomposition(
+            phase,
+            BoundarySymbol::from(inputs.symbols.jdcut.as_str()),
+            inputs.values.jdcut,
+        )?,
+        jdmove: usize_to_u16_for_decomposition(
+            phase,
+            BoundarySymbol::from(inputs.symbols.jdmove.as_str()),
+            inputs.values.jdmove,
+        )?,
+        fbrnag: inputs.values.fbrnag,
+        fbrnog: inputs.values.fbrnog,
+        frcut: inputs.values.frcut,
+        frmove: inputs.values.frmove,
+        active_action,
+    })
+}
+
+#[allow(clippy::similar_names)]
+fn require_annual_decomposition_control_inputs(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+) -> Result<AnnualDecompositionControlInputs, HillslopeDecompositionBoundaryError> {
     let resmgt_symbol = pl_decomp_slot_crop_symbol("resmgt", slot_index, crop_slot_index);
     let resmgt = require_integral_state_value_for_decomposition(
         phase,
@@ -786,381 +865,453 @@ fn build_annual_decomposition_control(
         frmove_symbol.as_str(),
     )?;
 
-    let active_action = match resmgt {
-        1 => {
-            if jdherb == 0 {
-                return Err(
-                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
-                        phase,
-                        symbol: BoundarySymbol::from(jdherb_symbol.as_str()),
-                        value: 0.0,
-                        reason: "resmgt=1 requires jdherb in 1..366",
-                    },
-                );
-            }
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdburn_symbol.as_str(),
-                jdburn as f64,
-                "resmgt=1 requires jdburn=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdslge_symbol.as_str(),
-                jdslge as f64,
-                "resmgt=1 requires jdslge=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdcut_symbol.as_str(),
-                jdcut as f64,
-                "resmgt=1 requires jdcut=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdmove_symbol.as_str(),
-                jdmove as f64,
-                "resmgt=1 requires jdmove=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                fbrnag_symbol.as_str(),
-                fbrnag,
-                "resmgt=1 requires fbrnag=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                fbrnog_symbol.as_str(),
-                fbrnog,
-                "resmgt=1 requires fbrnog=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                frcut_symbol.as_str(),
-                frcut,
-                "resmgt=1 requires frcut=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                frmove_symbol.as_str(),
-                frmove,
-                "resmgt=1 requires frmove=0",
-            )?;
-            if runtime_day == jdherb {
-                HillslopeAnnualDecompositionAction::Herbicide
-            } else {
-                HillslopeAnnualDecompositionAction::None
-            }
-        }
-        2 => {
-            if jdburn == 0 {
-                return Err(
-                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
-                        phase,
-                        symbol: BoundarySymbol::from(jdburn_symbol.as_str()),
-                        value: 0.0,
-                        reason: "resmgt=2 requires jdburn in 1..366",
-                    },
-                );
-            }
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdherb_symbol.as_str(),
-                jdherb as f64,
-                "resmgt=2 requires jdherb=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdslge_symbol.as_str(),
-                jdslge as f64,
-                "resmgt=2 requires jdslge=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdcut_symbol.as_str(),
-                jdcut as f64,
-                "resmgt=2 requires jdcut=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdmove_symbol.as_str(),
-                jdmove as f64,
-                "resmgt=2 requires jdmove=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                frcut_symbol.as_str(),
-                frcut,
-                "resmgt=2 requires frcut=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                frmove_symbol.as_str(),
-                frmove,
-                "resmgt=2 requires frmove=0",
-            )?;
-            if runtime_day == jdburn {
-                HillslopeAnnualDecompositionAction::Burn
-            } else {
-                HillslopeAnnualDecompositionAction::None
-            }
-        }
-        3 => {
-            if jdslge == 0 {
-                return Err(
-                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
-                        phase,
-                        symbol: BoundarySymbol::from(jdslge_symbol.as_str()),
-                        value: 0.0,
-                        reason: "resmgt=3 requires jdslge in 1..366",
-                    },
-                );
-            }
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdherb_symbol.as_str(),
-                jdherb as f64,
-                "resmgt=3 requires jdherb=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdburn_symbol.as_str(),
-                jdburn as f64,
-                "resmgt=3 requires jdburn=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdcut_symbol.as_str(),
-                jdcut as f64,
-                "resmgt=3 requires jdcut=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdmove_symbol.as_str(),
-                jdmove as f64,
-                "resmgt=3 requires jdmove=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                fbrnag_symbol.as_str(),
-                fbrnag,
-                "resmgt=3 requires fbrnag=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                fbrnog_symbol.as_str(),
-                fbrnog,
-                "resmgt=3 requires fbrnog=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                frcut_symbol.as_str(),
-                frcut,
-                "resmgt=3 requires frcut=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                frmove_symbol.as_str(),
-                frmove,
-                "resmgt=3 requires frmove=0",
-            )?;
-            if runtime_day == jdslge {
-                HillslopeAnnualDecompositionAction::Silage
-            } else {
-                HillslopeAnnualDecompositionAction::None
-            }
-        }
-        4 => {
-            if jdcut == 0 {
-                return Err(
-                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
-                        phase,
-                        symbol: BoundarySymbol::from(jdcut_symbol.as_str()),
-                        value: 0.0,
-                        reason: "resmgt=4 requires jdcut in 1..366",
-                    },
-                );
-            }
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdherb_symbol.as_str(),
-                jdherb as f64,
-                "resmgt=4 requires jdherb=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdburn_symbol.as_str(),
-                jdburn as f64,
-                "resmgt=4 requires jdburn=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdslge_symbol.as_str(),
-                jdslge as f64,
-                "resmgt=4 requires jdslge=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdmove_symbol.as_str(),
-                jdmove as f64,
-                "resmgt=4 requires jdmove=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                fbrnag_symbol.as_str(),
-                fbrnag,
-                "resmgt=4 requires fbrnag=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                fbrnog_symbol.as_str(),
-                fbrnog,
-                "resmgt=4 requires fbrnog=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                frmove_symbol.as_str(),
-                frmove,
-                "resmgt=4 requires frmove=0",
-            )?;
-            if runtime_day == jdcut {
-                HillslopeAnnualDecompositionAction::Cut
-            } else {
-                HillslopeAnnualDecompositionAction::None
-            }
-        }
-        5 => {
-            if jdmove == 0 {
-                return Err(
-                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
-                        phase,
-                        symbol: BoundarySymbol::from(jdmove_symbol.as_str()),
-                        value: 0.0,
-                        reason: "resmgt=5 requires jdmove in 1..366",
-                    },
-                );
-            }
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdherb_symbol.as_str(),
-                jdherb as f64,
-                "resmgt=5 requires jdherb=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdburn_symbol.as_str(),
-                jdburn as f64,
-                "resmgt=5 requires jdburn=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdslge_symbol.as_str(),
-                jdslge as f64,
-                "resmgt=5 requires jdslge=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdcut_symbol.as_str(),
-                jdcut as f64,
-                "resmgt=5 requires jdcut=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                fbrnag_symbol.as_str(),
-                fbrnag,
-                "resmgt=5 requires fbrnag=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                fbrnog_symbol.as_str(),
-                fbrnog,
-                "resmgt=5 requires fbrnog=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                frcut_symbol.as_str(),
-                frcut,
-                "resmgt=5 requires frcut=0",
-            )?;
-            if runtime_day == jdmove {
-                HillslopeAnnualDecompositionAction::Remove
-            } else {
-                HillslopeAnnualDecompositionAction::None
-            }
-        }
-        6 => {
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdherb_symbol.as_str(),
-                jdherb as f64,
-                "resmgt=6 requires jdherb=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdburn_symbol.as_str(),
-                jdburn as f64,
-                "resmgt=6 requires jdburn=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdslge_symbol.as_str(),
-                jdslge as f64,
-                "resmgt=6 requires jdslge=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdcut_symbol.as_str(),
-                jdcut as f64,
-                "resmgt=6 requires jdcut=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                jdmove_symbol.as_str(),
-                jdmove as f64,
-                "resmgt=6 requires jdmove=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                fbrnag_symbol.as_str(),
-                fbrnag,
-                "resmgt=6 requires fbrnag=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                fbrnog_symbol.as_str(),
-                fbrnog,
-                "resmgt=6 requires fbrnog=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                frcut_symbol.as_str(),
-                frcut,
-                "resmgt=6 requires frcut=0",
-            )?;
-            require_zero_state_value_for_decomposition(
-                phase,
-                frmove_symbol.as_str(),
-                frmove,
-                "resmgt=6 requires frmove=0",
-            )?;
-            HillslopeAnnualDecompositionAction::None
-        }
-        _ => unreachable!("resmgt domain is validated above"),
-    };
-
-    Ok(HillslopeAnnualDecompositionControl {
-        resmgt: usize_to_u8_for_decomposition(phase, BoundarySymbol::from(resmgt_symbol), resmgt)?,
-        jdherb: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(jdherb_symbol), jdherb)?,
-        jdburn: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(jdburn_symbol), jdburn)?,
-        jdslge: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(jdslge_symbol), jdslge)?,
-        jdcut: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(jdcut_symbol), jdcut)?,
-        jdmove: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(jdmove_symbol), jdmove)?,
-        fbrnag,
-        fbrnog,
-        frcut,
-        frmove,
-        active_action,
+    Ok(AnnualDecompositionControlInputs {
+        symbols: AnnualDecompositionControlSymbols {
+            resmgt: resmgt_symbol,
+            jdherb: jdherb_symbol,
+            jdburn: jdburn_symbol,
+            jdslge: jdslge_symbol,
+            jdcut: jdcut_symbol,
+            jdmove: jdmove_symbol,
+            fbrnag: fbrnag_symbol,
+            fbrnog: fbrnog_symbol,
+            frcut: frcut_symbol,
+            frmove: frmove_symbol,
+        },
+        values: AnnualDecompositionControlValues {
+            resmgt,
+            jdherb,
+            jdburn,
+            jdslge,
+            jdcut,
+            jdmove,
+            fbrnag,
+            fbrnog,
+            frcut,
+            frmove,
+        },
     })
+}
+
+fn resolve_annual_decomposition_action(
+    phase: HillslopePhase,
+    inputs: &AnnualDecompositionControlInputs,
+    runtime_day: usize,
+) -> Result<HillslopeAnnualDecompositionAction, HillslopeDecompositionBoundaryError> {
+    match inputs.values.resmgt {
+        1 => annual_herbicide_decomposition_action(phase, inputs, runtime_day),
+        2 => annual_burn_decomposition_action(phase, inputs, runtime_day),
+        3 => annual_silage_decomposition_action(phase, inputs, runtime_day),
+        4 => annual_cut_decomposition_action(phase, inputs, runtime_day),
+        5 => annual_remove_decomposition_action(phase, inputs, runtime_day),
+        6 => annual_noop_decomposition_action(phase, inputs),
+        _ => unreachable!("resmgt domain is validated above"),
+    }
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn annual_herbicide_decomposition_action(
+    phase: HillslopePhase,
+    inputs: &AnnualDecompositionControlInputs,
+    runtime_day: usize,
+) -> Result<HillslopeAnnualDecompositionAction, HillslopeDecompositionBoundaryError> {
+    let symbols = &inputs.symbols;
+    let values = inputs.values;
+    if values.jdherb == 0 {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbols.jdherb.as_str()),
+                value: 0.0,
+                reason: "resmgt=1 requires jdherb in 1..366",
+            },
+        );
+    }
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdburn.as_str(),
+        values.jdburn as f64,
+        "resmgt=1 requires jdburn=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdslge.as_str(),
+        values.jdslge as f64,
+        "resmgt=1 requires jdslge=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdcut.as_str(),
+        values.jdcut as f64,
+        "resmgt=1 requires jdcut=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdmove.as_str(),
+        values.jdmove as f64,
+        "resmgt=1 requires jdmove=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.fbrnag.as_str(),
+        values.fbrnag,
+        "resmgt=1 requires fbrnag=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.fbrnog.as_str(),
+        values.fbrnog,
+        "resmgt=1 requires fbrnog=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.frcut.as_str(),
+        values.frcut,
+        "resmgt=1 requires frcut=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.frmove.as_str(),
+        values.frmove,
+        "resmgt=1 requires frmove=0",
+    )?;
+    if runtime_day == values.jdherb {
+        Ok(HillslopeAnnualDecompositionAction::Herbicide)
+    } else {
+        Ok(HillslopeAnnualDecompositionAction::None)
+    }
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn annual_burn_decomposition_action(
+    phase: HillslopePhase,
+    inputs: &AnnualDecompositionControlInputs,
+    runtime_day: usize,
+) -> Result<HillslopeAnnualDecompositionAction, HillslopeDecompositionBoundaryError> {
+    let symbols = &inputs.symbols;
+    let values = inputs.values;
+    if values.jdburn == 0 {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbols.jdburn.as_str()),
+                value: 0.0,
+                reason: "resmgt=2 requires jdburn in 1..366",
+            },
+        );
+    }
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdherb.as_str(),
+        values.jdherb as f64,
+        "resmgt=2 requires jdherb=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdslge.as_str(),
+        values.jdslge as f64,
+        "resmgt=2 requires jdslge=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdcut.as_str(),
+        values.jdcut as f64,
+        "resmgt=2 requires jdcut=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdmove.as_str(),
+        values.jdmove as f64,
+        "resmgt=2 requires jdmove=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.frcut.as_str(),
+        values.frcut,
+        "resmgt=2 requires frcut=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.frmove.as_str(),
+        values.frmove,
+        "resmgt=2 requires frmove=0",
+    )?;
+    if runtime_day == values.jdburn {
+        Ok(HillslopeAnnualDecompositionAction::Burn)
+    } else {
+        Ok(HillslopeAnnualDecompositionAction::None)
+    }
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn annual_silage_decomposition_action(
+    phase: HillslopePhase,
+    inputs: &AnnualDecompositionControlInputs,
+    runtime_day: usize,
+) -> Result<HillslopeAnnualDecompositionAction, HillslopeDecompositionBoundaryError> {
+    let symbols = &inputs.symbols;
+    let values = inputs.values;
+    if values.jdslge == 0 {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbols.jdslge.as_str()),
+                value: 0.0,
+                reason: "resmgt=3 requires jdslge in 1..366",
+            },
+        );
+    }
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdherb.as_str(),
+        values.jdherb as f64,
+        "resmgt=3 requires jdherb=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdburn.as_str(),
+        values.jdburn as f64,
+        "resmgt=3 requires jdburn=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdcut.as_str(),
+        values.jdcut as f64,
+        "resmgt=3 requires jdcut=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdmove.as_str(),
+        values.jdmove as f64,
+        "resmgt=3 requires jdmove=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.fbrnag.as_str(),
+        values.fbrnag,
+        "resmgt=3 requires fbrnag=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.fbrnog.as_str(),
+        values.fbrnog,
+        "resmgt=3 requires fbrnog=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.frcut.as_str(),
+        values.frcut,
+        "resmgt=3 requires frcut=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.frmove.as_str(),
+        values.frmove,
+        "resmgt=3 requires frmove=0",
+    )?;
+    if runtime_day == values.jdslge {
+        Ok(HillslopeAnnualDecompositionAction::Silage)
+    } else {
+        Ok(HillslopeAnnualDecompositionAction::None)
+    }
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn annual_cut_decomposition_action(
+    phase: HillslopePhase,
+    inputs: &AnnualDecompositionControlInputs,
+    runtime_day: usize,
+) -> Result<HillslopeAnnualDecompositionAction, HillslopeDecompositionBoundaryError> {
+    let symbols = &inputs.symbols;
+    let values = inputs.values;
+    if values.jdcut == 0 {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbols.jdcut.as_str()),
+                value: 0.0,
+                reason: "resmgt=4 requires jdcut in 1..366",
+            },
+        );
+    }
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdherb.as_str(),
+        values.jdherb as f64,
+        "resmgt=4 requires jdherb=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdburn.as_str(),
+        values.jdburn as f64,
+        "resmgt=4 requires jdburn=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdslge.as_str(),
+        values.jdslge as f64,
+        "resmgt=4 requires jdslge=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdmove.as_str(),
+        values.jdmove as f64,
+        "resmgt=4 requires jdmove=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.fbrnag.as_str(),
+        values.fbrnag,
+        "resmgt=4 requires fbrnag=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.fbrnog.as_str(),
+        values.fbrnog,
+        "resmgt=4 requires fbrnog=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.frmove.as_str(),
+        values.frmove,
+        "resmgt=4 requires frmove=0",
+    )?;
+    if runtime_day == values.jdcut {
+        Ok(HillslopeAnnualDecompositionAction::Cut)
+    } else {
+        Ok(HillslopeAnnualDecompositionAction::None)
+    }
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn annual_remove_decomposition_action(
+    phase: HillslopePhase,
+    inputs: &AnnualDecompositionControlInputs,
+    runtime_day: usize,
+) -> Result<HillslopeAnnualDecompositionAction, HillslopeDecompositionBoundaryError> {
+    let symbols = &inputs.symbols;
+    let values = inputs.values;
+    if values.jdmove == 0 {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbols.jdmove.as_str()),
+                value: 0.0,
+                reason: "resmgt=5 requires jdmove in 1..366",
+            },
+        );
+    }
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdherb.as_str(),
+        values.jdherb as f64,
+        "resmgt=5 requires jdherb=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdburn.as_str(),
+        values.jdburn as f64,
+        "resmgt=5 requires jdburn=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdslge.as_str(),
+        values.jdslge as f64,
+        "resmgt=5 requires jdslge=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdcut.as_str(),
+        values.jdcut as f64,
+        "resmgt=5 requires jdcut=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.fbrnag.as_str(),
+        values.fbrnag,
+        "resmgt=5 requires fbrnag=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.fbrnog.as_str(),
+        values.fbrnog,
+        "resmgt=5 requires fbrnog=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.frcut.as_str(),
+        values.frcut,
+        "resmgt=5 requires frcut=0",
+    )?;
+    if runtime_day == values.jdmove {
+        Ok(HillslopeAnnualDecompositionAction::Remove)
+    } else {
+        Ok(HillslopeAnnualDecompositionAction::None)
+    }
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn annual_noop_decomposition_action(
+    phase: HillslopePhase,
+    inputs: &AnnualDecompositionControlInputs,
+) -> Result<HillslopeAnnualDecompositionAction, HillslopeDecompositionBoundaryError> {
+    let symbols = &inputs.symbols;
+    let values = inputs.values;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdherb.as_str(),
+        values.jdherb as f64,
+        "resmgt=6 requires jdherb=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdburn.as_str(),
+        values.jdburn as f64,
+        "resmgt=6 requires jdburn=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdslge.as_str(),
+        values.jdslge as f64,
+        "resmgt=6 requires jdslge=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdcut.as_str(),
+        values.jdcut as f64,
+        "resmgt=6 requires jdcut=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.jdmove.as_str(),
+        values.jdmove as f64,
+        "resmgt=6 requires jdmove=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.fbrnag.as_str(),
+        values.fbrnag,
+        "resmgt=6 requires fbrnag=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.fbrnog.as_str(),
+        values.fbrnog,
+        "resmgt=6 requires fbrnog=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.frcut.as_str(),
+        values.frcut,
+        "resmgt=6 requires frcut=0",
+    )?;
+    require_zero_state_value_for_decomposition(
+        phase,
+        symbols.frmove.as_str(),
+        values.frmove,
+        "resmgt=6 requires frmove=0",
+    )?;
+    Ok(HillslopeAnnualDecompositionAction::None)
 }
 
 #[allow(clippy::too_many_lines, clippy::cast_precision_loss)]

@@ -10,6 +10,17 @@
 
 State as of `2026-06-15`:
 
+- CQR09 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/07_decomposition_equations.rs`.
+  The scoped quality target reduced `build_annual_decomposition_control` CRAP
+  from `1497.0871919084125` to `9.179748500041095`, with every newly extracted
+  annual helper below `14`, without changing public API, typed guard classes,
+  stable error reasons, decomposition symbols, units, parser compatibility,
+  scheduler payload fields, or output formulas. Required closure gates passed.
+  WARN holds remain for target-file coverage below the science-tier threshold
+  and pre-existing out-of-scope CRAP rows above `30`. Package:
+  `20260615-cqr09-decomposition-equations-complexity-001/`.
 - CQR08 is complete for behavior-preserving function-length/lint-debt
   decomposition of
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/00_core_types.rs`.
