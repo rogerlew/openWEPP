@@ -204,8 +204,14 @@ the tracker below and by reading the corresponding package directories under
   Pushed commit: `14cbaaed09d1eeb296efce9ceb6439139bac5676` on branch
   `main`.
   Final target: `SharedClimateRuntimeInputError::fmt`, CRAP `2.0`.
-- [ ] CQR22, rank 16, original CRAP `369`, CC `29`, Cov `26%`:
+- [x] (2026-06-15) Closed CQR22, rank 16, original CRAP `369`, CC
+  `29`, Cov `26%`:
   `crates/openwepp-input-contract/src/parsers/soil.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr22-soil-parser-complexity-001/`.
+  Pushed commit: `3b8df84ff407d3dcd6d57d1f383f434dfc57d324` on branch
+  `main`.
+  Final target: `parse_policy_row`, CRAP `5.0`.
 - [ ] CQR23, rank 17, original CRAP `352`, CC `79`, Cov `65%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod19.rs`.
 - [ ] CQR24, rank 18, original CRAP `317`, CC `58`, Cov `57%`:
