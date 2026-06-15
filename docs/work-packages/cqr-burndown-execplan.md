@@ -120,8 +120,13 @@ the tracker below and by reading the corresponding package directories under
   Pushed commit: `0a2e469d69ee7883511710c7b6be739df0502581` on branch `main`.
   Final target: `seed_hillslope_runtime_surface_from_irrigation_fixeddate`,
   CRAP `4.0`.
-- [ ] CQR11, rank 5, original CRAP `1406`, CC `37`, Cov `0%`:
+- [x] (2026-06-15) Closed CQR11, rank 5, original CRAP `1406`, CC
+  `37`, Cov `0%`:
   `crates/openwepp-input-contract/src/parsers/management.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr11-management-parser-complexity-001/`.
+  Pushed commit: `cb3947d9a9373b344a70dd72323a911e256abe95` on branch `main`.
+  Final target: `parse_yearly_perennial`, CRAP `4.0`.
 - [ ] CQR12, rank 6, original CRAP `1122`, CC `33`, Cov `0%`:
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`.
 - [ ] CQR13, rank 7, original CRAP `964`, CC `65`, Cov `40%`:
@@ -204,6 +209,15 @@ the tracker below and by reading the corresponding package directories under
   `seed_hillslope_runtime_surface_from_irrigation_depletion` remains CRAP
   `1122.0` in
   `docs/work-packages/20260615-cqr10-irrigation-fixeddate-runtime-001/artifacts/crap_after.json`.
+
+- Observation: CQR11 live metrics matched the rank-5 management perennial
+  parser target, and focused characterization exposed the exact stable error
+  IDs for perennial invalid option and arity paths.
+  Evidence: CQR11 after metrics reduced `parse_yearly_perennial` to CRAP
+  `4.0`; the characterization suite records `MAN-E-004` for invalid
+  `mgtopt` and `MAN-E-002` for perennial row arity errors. Out-of-scope
+  management parser rows remain above `30` in
+  `docs/work-packages/20260615-cqr11-management-parser-complexity-001/artifacts/crap_after.json`.
 
 ### Decision Log
 
