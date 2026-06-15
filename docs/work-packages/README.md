@@ -10,6 +10,17 @@
 
 State as of `2026-06-15`:
 
+- CQR11 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-input-contract/src/parsers/management.rs`. The scoped
+  quality target reduced `parse_yearly_perennial` CRAP from `1406.0` to `4.0`,
+  with every newly extracted perennial parser helper below `10`, without
+  changing public parser API, typed error variants, stable error IDs, field
+  names, count/cardinality guards, branch compatibility, parser output shape, or
+  runtime/kernel-facing management semantics. Required Rust closure gates
+  passed. WARN holds remain for target-file coverage below the science-tier
+  threshold and pre-existing out-of-scope CRAP rows above `30`. Package:
+  `20260615-cqr11-management-parser-complexity-001/`.
 - CQR10 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`.

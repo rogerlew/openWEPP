@@ -1,7 +1,9 @@
+use std::fs;
 use std::path::{Path, PathBuf};
 
 use openwepp_input_contract::parsers::management::{
-    ManagementParseError, ParseMode, YearlyScenarioData, parse_management_from_path,
+    ManagementParseError, ParseMode, YearlyCroplandBranch, YearlyScenarioData,
+    parse_management_from_path, parse_management_from_str,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -14,6 +16,38 @@ fn fixture_path(name: &str) -> PathBuf {
         .join("infile")
         .join("management")
         .join(name)
+}
+
+fn fixture_text(name: &str) -> String {
+    fs::read_to_string(fixture_path(name)).expect("fixture should be readable")
+}
+
+fn fixture_with_yearly_branch(name: &str, branch: &str) -> String {
+    const ANNUAL_BRANCH: &str = "1 # management <annual>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   0.7620  # row width
+   6   # residue man - <none>";
+
+    let fixture = fixture_text(name);
+    assert!(
+        fixture.contains(ANNUAL_BRANCH),
+        "fixture should contain canonical annual yearly branch"
+    );
+    fixture.replace(ANNUAL_BRANCH, branch)
+}
+
+fn parse_strict_fixture_text(
+    text: &str,
+) -> openwepp_input_contract::parsers::management::ManagementParseOutput {
+    parse_management_from_str(text, ParseMode::Strict).expect("strict parser should accept fixture")
+}
+
+fn assert_f64_eq(actual: f64, expected: f64) {
+    assert!(
+        (actual - expected).abs() <= f64::EPSILON,
+        "expected {expected}, got {actual}"
+    );
 }
 
 #[test]
@@ -74,6 +108,289 @@ fn strict_mode_accepts_supported_datver_branches() {
     ] {
         parse_management_from_path(fixture_path(fixture), ParseMode::Strict)
             .unwrap_or_else(|err| panic!("fixture {fixture} should parse: {err}"));
+    }
+}
+
+#[test]
+fn strict_mode_parses_perennial_cutday_yearly_branch() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_98_4.man",
+        "2 # management <perennial>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   300  # stop date
+   0.7620  # row width
+   1   # mgtopt - cut days
+   2   # ncut
+   120
+   240 0.50",
+    );
+
+    let parsed = parse_strict_fixture_text(&fixture);
+    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data;
+    match &cropland.branch {
+        YearlyCroplandBranch::Perennial(perennial) => {
+            assert_eq!(perennial.jdharv, 288);
+            assert_eq!(perennial.jdplt, 130);
+            assert_eq!(perennial.jdstop, 300);
+            assert_f64_eq(perennial.rw, 0.7620);
+            assert_eq!(perennial.mgtopt, 1);
+            assert_eq!(perennial.cut_days, vec![120, 240]);
+            assert!(perennial.grazing_cycles.is_empty());
+        }
+        YearlyCroplandBranch::AnnualOrFallow(other) => {
+            panic!("unexpected annual/fallow branch: {other:?}");
+        }
+    }
+}
+
+#[test]
+fn strict_mode_parses_perennial_grazing_yearly_branch() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_98_4.man",
+        "2 # management <perennial>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   300  # stop date
+   0.7620  # row width
+   2   # mgtopt - grazing
+   2   # ncycle
+   1.0 2.0 3.0 4.0
+   121
+   150
+   5.0 6.0 7.0 8.0
+   200
+   220",
+    );
+
+    let parsed = parse_strict_fixture_text(&fixture);
+    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data;
+    match &cropland.branch {
+        YearlyCroplandBranch::Perennial(perennial) => {
+            assert_eq!(perennial.mgtopt, 2);
+            assert!(perennial.cut_days.is_empty());
+            assert_eq!(perennial.grazing_cycles.len(), 2);
+            assert_f64_eq(perennial.grazing_cycles[0].animal, 1.0);
+            assert_f64_eq(perennial.grazing_cycles[0].area, 2.0);
+            assert_f64_eq(perennial.grazing_cycles[0].bodywt, 3.0);
+            assert_f64_eq(perennial.grazing_cycles[0].digest, 4.0);
+            assert_eq!(perennial.grazing_cycles[0].gday, 121);
+            assert_eq!(perennial.grazing_cycles[0].gend, 150);
+            assert_f64_eq(perennial.grazing_cycles[1].animal, 5.0);
+            assert_f64_eq(perennial.grazing_cycles[1].area, 6.0);
+            assert_f64_eq(perennial.grazing_cycles[1].bodywt, 7.0);
+            assert_f64_eq(perennial.grazing_cycles[1].digest, 8.0);
+            assert_eq!(perennial.grazing_cycles[1].gday, 200);
+            assert_eq!(perennial.grazing_cycles[1].gend, 220);
+        }
+        YearlyCroplandBranch::AnnualOrFallow(other) => {
+            panic!("unexpected annual/fallow branch: {other:?}");
+        }
+    }
+}
+
+#[test]
+fn strict_mode_parses_perennial_no_action_yearly_branch() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_98_4.man",
+        "2 # management <perennial>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   300  # stop date
+   0.7620  # row width
+   3   # mgtopt - none",
+    );
+
+    let parsed = parse_strict_fixture_text(&fixture);
+    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data;
+    match &cropland.branch {
+        YearlyCroplandBranch::Perennial(perennial) => {
+            assert_eq!(perennial.mgtopt, 3);
+            assert!(perennial.cut_days.is_empty());
+            assert!(perennial.grazing_cycles.is_empty());
+        }
+        YearlyCroplandBranch::AnnualOrFallow(other) => {
+            panic!("unexpected annual/fallow branch: {other:?}");
+        }
+    }
+}
+
+#[test]
+fn strict_mode_rejects_legacy_perennial_mgtopt_out_of_domain() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_98_4.man",
+        "2 # management <perennial>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   300  # stop date
+   0.7620  # row width
+   4   # mgtopt - datver-invalid",
+    );
+
+    let err = parse_management_from_str(&fixture, ParseMode::Strict)
+        .expect_err("legacy datver must reject mgtopt outside 1..3");
+
+    match err {
+        ManagementParseError::InvalidOptionDomain {
+            field,
+            value,
+            allowed,
+        } => {
+            assert_eq!(field, "mgtopt");
+            assert_eq!(value, 4);
+            assert_eq!(allowed, "1..3");
+            assert_eq!(err.contract_error_id(), "MAN-E-004");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn strict_mode_rejects_unimplemented_2016_perennial_mgtopt() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_2016_3.man",
+        "2 # management <perennial>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   300  # stop date
+   0.7620  # row width
+   4   # mgtopt - parser-unsupported",
+    );
+
+    let err = parse_management_from_str(&fixture, ParseMode::Strict)
+        .expect_err("2016+ datver should reject currently unsupported mgtopt");
+
+    match err {
+        ManagementParseError::InvalidOptionDomain {
+            field,
+            value,
+            allowed,
+        } => {
+            assert_eq!(field, "mgtopt");
+            assert_eq!(value, 4);
+            assert_eq!(
+                allowed,
+                "openWEPP parser currently supports perennial mgtopt 1..3"
+            );
+            assert_eq!(err.contract_error_id(), "MAN-E-004");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn strict_mode_rejects_perennial_zero_cut_count() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_98_4.man",
+        "2 # management <perennial>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   300  # stop date
+   0.7620  # row width
+   1   # mgtopt - cut days
+   0   # ncut",
+    );
+
+    let err = parse_management_from_str(&fixture, ParseMode::Strict)
+        .expect_err("perennial cut branch must reject zero cut count");
+
+    match err {
+        ManagementParseError::InvalidCount { field, value } => {
+            assert_eq!(field, "ncut");
+            assert_eq!(value, 0);
+            assert_eq!(err.contract_error_id(), "MAN-E-005");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn strict_mode_rejects_perennial_cutday_arity() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_98_4.man",
+        "2 # management <perennial>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   300  # stop date
+   0.7620  # row width
+   1   # mgtopt - cut days
+   1   # ncut
+   120 0.50 0.25",
+    );
+
+    let err = parse_management_from_str(&fixture, ParseMode::Strict)
+        .expect_err("cutday rows must reject more than two tokens");
+
+    match err {
+        ManagementParseError::RecordArityError {
+            field,
+            observed,
+            expected,
+        } => {
+            assert_eq!(field, "cutday");
+            assert_eq!(observed, 3);
+            assert_eq!(expected, "1 or 2");
+            assert_eq!(err.contract_error_id(), "MAN-E-002");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn strict_mode_rejects_perennial_zero_grazing_cycle_count() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_98_4.man",
+        "2 # management <perennial>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   300  # stop date
+   0.7620  # row width
+   2   # mgtopt - grazing
+   0   # ncycle",
+    );
+
+    let err = parse_management_from_str(&fixture, ParseMode::Strict)
+        .expect_err("perennial grazing branch must reject zero cycle count");
+
+    match err {
+        ManagementParseError::InvalidCount { field, value } => {
+            assert_eq!(field, "ncycle");
+            assert_eq!(value, 0);
+            assert_eq!(err.contract_error_id(), "MAN-E-005");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn strict_mode_rejects_perennial_grazing_cycle_arity() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_98_4.man",
+        "2 # management <perennial>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   300  # stop date
+   0.7620  # row width
+   2   # mgtopt - grazing
+   1   # ncycle
+   1.0 2.0 3.0",
+    );
+
+    let err = parse_management_from_str(&fixture, ParseMode::Strict)
+        .expect_err("graze cycle row must have four tokens");
+
+    match err {
+        ManagementParseError::RecordArityError {
+            field,
+            observed,
+            expected,
+        } => {
+            assert_eq!(field, "graze_cycle");
+            assert_eq!(observed, 3);
+            assert_eq!(expected, "4");
+            assert_eq!(err.contract_error_id(), "MAN-E-002");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
     }
 }
 

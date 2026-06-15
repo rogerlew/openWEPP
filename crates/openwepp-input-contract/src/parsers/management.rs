@@ -1192,109 +1192,177 @@ fn parse_yearly_perennial(
     cursor: &mut Cursor<'_>,
     datver_family: DatverFamily,
 ) -> Result<YearlyPerennialData, ManagementParseError> {
+    let header = parse_yearly_perennial_header(cursor)?;
+    validate_yearly_perennial_mgtopt(datver_family, header.mgtopt)?;
+    let payload = parse_yearly_perennial_payload(cursor, header.mgtopt)?;
+
+    Ok(YearlyPerennialData {
+        jdharv: header.jdharv,
+        jdplt: header.jdplt,
+        jdstop: header.jdstop,
+        rw: header.rw,
+        mgtopt: header.mgtopt,
+        cut_days: payload.cut_days,
+        grazing_cycles: payload.grazing_cycles,
+    })
+}
+
+#[derive(Debug, Clone, Copy)]
+struct YearlyPerennialHeader {
+    jdharv: usize,
+    jdplt: usize,
+    jdstop: usize,
+    rw: f64,
+    mgtopt: usize,
+}
+
+#[derive(Debug, Clone)]
+struct YearlyPerennialPayload {
+    cut_days: Vec<usize>,
+    grazing_cycles: Vec<YearlyPerennialGrazingCycle>,
+}
+
+fn parse_yearly_perennial_header(
+    cursor: &mut Cursor<'_>,
+) -> Result<YearlyPerennialHeader, ManagementParseError> {
     let jdharv = parse_julian_day(cursor, "jdharv", true)?;
     let jdplt = parse_julian_day(cursor, "jdplt", true)?;
     let jdstop = parse_julian_day(cursor, "jdstop", true)?;
     let rw = cursor.parse_f64_required("rw")?;
     let mgtopt = cursor.parse_non_negative_required("mgtopt")?;
 
+    Ok(YearlyPerennialHeader {
+        jdharv,
+        jdplt,
+        jdstop,
+        rw,
+        mgtopt,
+    })
+}
+
+fn validate_yearly_perennial_mgtopt(
+    datver_family: DatverFamily,
+    mgtopt: usize,
+) -> Result<(), ManagementParseError> {
     let allowed = match datver_family {
         DatverFamily::V2016Plus => "1..7",
         _ => "1..3",
     };
-    if (datver_family != DatverFamily::V2016Plus && !(1..=3).contains(&mgtopt))
-        || (datver_family == DatverFamily::V2016Plus && !(1..=7).contains(&mgtopt))
-    {
+    let is_in_domain = match datver_family {
+        DatverFamily::V2016Plus => (1..=7).contains(&mgtopt),
+        _ => (1..=3).contains(&mgtopt),
+    };
+    if !is_in_domain {
         return Err(ManagementParseError::InvalidOptionDomain {
             field: "mgtopt",
             value: i64::try_from(mgtopt).unwrap_or(i64::MAX),
             allowed,
         });
     }
+    Ok(())
+}
 
-    let mut cut_days = Vec::new();
-    let mut grazing_cycles = Vec::new();
-
+fn parse_yearly_perennial_payload(
+    cursor: &mut Cursor<'_>,
+    mgtopt: usize,
+) -> Result<YearlyPerennialPayload, ManagementParseError> {
     match mgtopt {
-        1 => {
-            let ncut = cursor.parse_non_negative_required("ncut")?;
-            if ncut == 0 {
-                return Err(ManagementParseError::InvalidCount {
-                    field: "ncut",
-                    value: 0,
-                });
-            }
-            for _ in 0..ncut {
-                let tokens = cursor.parse_tokens_required("cutday")?;
-                if tokens.is_empty() || tokens.len() > 2 {
-                    return Err(ManagementParseError::RecordArityError {
-                        field: "cutday",
-                        observed: tokens.len(),
-                        expected: "1 or 2",
-                    });
-                }
-                let cutday = parse_i64_token("cutday", &tokens[0])?;
-                validate_julian_day("cutday", cutday, false)?;
-                cut_days.push(usize::try_from(cutday).map_err(|_| {
-                    ManagementParseError::TokenParseError {
-                        field: "cutday",
-                        value: tokens[0].clone(),
-                    }
-                })?);
-            }
-        }
-        2 => {
-            let ncycle = cursor.parse_non_negative_required("ncycle")?;
-            if ncycle == 0 {
-                return Err(ManagementParseError::InvalidCount {
-                    field: "ncycle",
-                    value: 0,
-                });
-            }
-            for _ in 0..ncycle {
-                let cycle_tokens = cursor.parse_tokens_required("graze_cycle")?;
-                if cycle_tokens.len() != 4 {
-                    return Err(ManagementParseError::RecordArityError {
-                        field: "graze_cycle",
-                        observed: cycle_tokens.len(),
-                        expected: "4",
-                    });
-                }
-                let animal = parse_f64_token("animal", &cycle_tokens[0])?;
-                let area = parse_f64_token("area", &cycle_tokens[1])?;
-                let bodywt = parse_f64_token("bodywt", &cycle_tokens[2])?;
-                let digest = parse_f64_token("digest", &cycle_tokens[3])?;
-                let gday = parse_julian_day(cursor, "gday", false)?;
-                let gend = parse_julian_day(cursor, "gend", false)?;
-                grazing_cycles.push(YearlyPerennialGrazingCycle {
-                    animal,
-                    area,
-                    bodywt,
-                    digest,
-                    gday,
-                    gend,
-                });
-            }
-        }
-        3 => {}
-        4..=7 => {
-            return Err(ManagementParseError::InvalidOptionDomain {
-                field: "mgtopt",
-                value: i64::try_from(mgtopt).unwrap_or(i64::MAX),
-                allowed: "openWEPP parser currently supports perennial mgtopt 1..3",
-            });
-        }
+        1 => Ok(YearlyPerennialPayload {
+            cut_days: parse_yearly_perennial_cut_days(cursor)?,
+            grazing_cycles: Vec::new(),
+        }),
+        2 => Ok(YearlyPerennialPayload {
+            cut_days: Vec::new(),
+            grazing_cycles: parse_yearly_perennial_grazing_cycles(cursor)?,
+        }),
+        3 => Ok(YearlyPerennialPayload {
+            cut_days: Vec::new(),
+            grazing_cycles: Vec::new(),
+        }),
+        4..=7 => Err(ManagementParseError::InvalidOptionDomain {
+            field: "mgtopt",
+            value: i64::try_from(mgtopt).unwrap_or(i64::MAX),
+            allowed: "openWEPP parser currently supports perennial mgtopt 1..3",
+        }),
         _ => unreachable!(),
     }
+}
 
-    Ok(YearlyPerennialData {
-        jdharv,
-        jdplt,
-        jdstop,
-        rw,
-        mgtopt,
-        cut_days,
-        grazing_cycles,
+fn parse_yearly_perennial_cut_days(
+    cursor: &mut Cursor<'_>,
+) -> Result<Vec<usize>, ManagementParseError> {
+    let ncut = cursor.parse_non_negative_required("ncut")?;
+    if ncut == 0 {
+        return Err(ManagementParseError::InvalidCount {
+            field: "ncut",
+            value: 0,
+        });
+    }
+    let mut cut_days = Vec::with_capacity(ncut);
+    for _ in 0..ncut {
+        cut_days.push(parse_yearly_perennial_cut_day(cursor)?);
+    }
+    Ok(cut_days)
+}
+
+fn parse_yearly_perennial_cut_day(cursor: &mut Cursor<'_>) -> Result<usize, ManagementParseError> {
+    let tokens = cursor.parse_tokens_required("cutday")?;
+    if tokens.is_empty() || tokens.len() > 2 {
+        return Err(ManagementParseError::RecordArityError {
+            field: "cutday",
+            observed: tokens.len(),
+            expected: "1 or 2",
+        });
+    }
+    let cutday = parse_i64_token("cutday", &tokens[0])?;
+    validate_julian_day("cutday", cutday, false)?;
+    usize::try_from(cutday).map_err(|_| ManagementParseError::TokenParseError {
+        field: "cutday",
+        value: tokens[0].clone(),
+    })
+}
+
+fn parse_yearly_perennial_grazing_cycles(
+    cursor: &mut Cursor<'_>,
+) -> Result<Vec<YearlyPerennialGrazingCycle>, ManagementParseError> {
+    let ncycle = cursor.parse_non_negative_required("ncycle")?;
+    if ncycle == 0 {
+        return Err(ManagementParseError::InvalidCount {
+            field: "ncycle",
+            value: 0,
+        });
+    }
+    let mut grazing_cycles = Vec::with_capacity(ncycle);
+    for _ in 0..ncycle {
+        grazing_cycles.push(parse_yearly_perennial_grazing_cycle(cursor)?);
+    }
+    Ok(grazing_cycles)
+}
+
+fn parse_yearly_perennial_grazing_cycle(
+    cursor: &mut Cursor<'_>,
+) -> Result<YearlyPerennialGrazingCycle, ManagementParseError> {
+    let cycle_tokens = cursor.parse_tokens_required("graze_cycle")?;
+    if cycle_tokens.len() != 4 {
+        return Err(ManagementParseError::RecordArityError {
+            field: "graze_cycle",
+            observed: cycle_tokens.len(),
+            expected: "4",
+        });
+    }
+    let animal = parse_f64_token("animal", &cycle_tokens[0])?;
+    let area = parse_f64_token("area", &cycle_tokens[1])?;
+    let bodywt = parse_f64_token("bodywt", &cycle_tokens[2])?;
+    let digest = parse_f64_token("digest", &cycle_tokens[3])?;
+    let gday = parse_julian_day(cursor, "gday", false)?;
+    let gend = parse_julian_day(cursor, "gend", false)?;
+    Ok(YearlyPerennialGrazingCycle {
+        animal,
+        area,
+        bodywt,
+        digest,
+        gday,
+        gend,
     })
 }
 
