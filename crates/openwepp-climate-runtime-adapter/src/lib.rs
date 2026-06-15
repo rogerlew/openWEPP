@@ -191,83 +191,66 @@ impl SharedClimateRuntimeInputError {
 }
 
 impl fmt::Display for SharedClimateRuntimeInputError {
-    #[allow(clippy::too_many_lines)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}: ", self.code())?;
+        self.fmt_message(f)
+    }
+}
+
+impl SharedClimateRuntimeInputError {
+    fn fmt_message(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::UnsupportedDatver { datver } => write!(
                 f,
-                "{}: unsupported climate datver {} (supports datver=0.0 override or datver>=4.0)",
-                self.code(),
+                "unsupported climate datver {} (supports datver=0.0 override or datver>=4.0)",
                 datver
             ),
             Self::UnsupportedItemp { itemp } => write!(
                 f,
-                "{}: unsupported climate itemp {}; only continuous-daily itemp=1 is supported",
-                self.code(),
+                "unsupported climate itemp {}; only continuous-daily itemp=1 is supported",
                 itemp
             ),
-            Self::EmptyDailyRecords => write!(
-                f,
-                "{}: climate parser output contains no daily forcing records",
-                self.code()
-            ),
+            Self::EmptyDailyRecords => {
+                f.write_str("climate parser output contains no daily forcing records")
+            }
             Self::DayIndexOutOfRange {
                 day_index,
                 available,
             } => write!(
                 f,
-                "{}: requested day index {} exceeds available climate records {}",
-                self.code(),
-                day_index,
-                available
+                "requested day index {} exceeds available climate records {}",
+                day_index, available
             ),
-            Self::NonFiniteField { field, value } => write!(
-                f,
-                "{}: non-finite climate field {}={}",
-                self.code(),
-                field,
-                value
-            ),
-            Self::NegativeField { field, value } => write!(
-                f,
-                "{}: negative climate field {}={}",
-                self.code(),
-                field,
-                value
-            ),
+            Self::NonFiniteField { field, value } => {
+                write!(f, "non-finite climate field {}={}", field, value)
+            }
+            Self::NegativeField { field, value } => {
+                write!(f, "negative climate field {}={}", field, value)
+            }
             Self::PositivePrecipWithNonPositiveDuration { prcp, stmdur } => write!(
                 f,
-                "{}: positive precipitation {} requires positive storm duration, got {}",
-                self.code(),
-                prcp,
-                stmdur
+                "positive precipitation {} requires positive storm duration, got {}",
+                prcp, stmdur
             ),
-            Self::EmptyBreakpointSeries => write!(
-                f,
-                "{}: breakpoint forcing record contains zero breakpoint points",
-                self.code()
-            ),
+            Self::EmptyBreakpointSeries => {
+                f.write_str("breakpoint forcing record contains zero breakpoint points")
+            }
             Self::NonMonotoneBreakpointTime {
                 previous_s,
                 current_s,
             } => write!(
                 f,
-                "{}: breakpoint timem must be strictly increasing ({} -> {})",
-                self.code(),
-                previous_s,
-                current_s
+                "breakpoint timem must be strictly increasing ({} -> {})",
+                previous_s, current_s
             ),
             Self::BreakpointCardinalityPolicyExceeded { value, max } => write!(
                 f,
-                "{}: breakpoint count {} exceeds runtime policy max {}",
-                self.code(),
-                value,
-                max
+                "breakpoint count {} exceeds runtime policy max {}",
+                value, max
             ),
             Self::BreakpointCountOutOfRange { value } => write!(
                 f,
-                "{}: breakpoint count {} exceeds supported conversion range",
-                self.code(),
+                "breakpoint count {} exceeds supported conversion range",
                 value
             ),
             Self::DisaggregationTimeNotStrictlyIncreasing {
@@ -275,37 +258,26 @@ impl fmt::Display for SharedClimateRuntimeInputError {
                 current_s,
             } => write!(
                 f,
-                "{}: disaggregation time grid must be strictly increasing ({} -> {})",
-                self.code(),
-                previous_s,
-                current_s
+                "disaggregation time grid must be strictly increasing ({} -> {})",
+                previous_s, current_s
             ),
-            Self::DisaggregationRootSolveDomain { a } => write!(
-                f,
-                "{}: disaggregation root-solve domain invalid (a={})",
-                self.code(),
-                a
-            ),
-            Self::DisaggregationRootSolveNonConvergent { a } => write!(
-                f,
-                "{}: disaggregation root solve failed to converge (a={})",
-                self.code(),
-                a
-            ),
+            Self::DisaggregationRootSolveDomain { a } => {
+                write!(f, "disaggregation root-solve domain invalid (a={})", a)
+            }
+            Self::DisaggregationRootSolveNonConvergent { a } => {
+                write!(f, "disaggregation root solve failed to converge (a={})", a)
+            }
             Self::DisaggregationClosureResidual {
                 expected_prcp_m,
                 reconstructed_prcp_m,
             } => write!(
                 f,
-                "{}: disaggregation closure residual exceeded tolerance (expected={}, reconstructed={})",
-                self.code(),
-                expected_prcp_m,
-                reconstructed_prcp_m
+                "disaggregation closure residual exceeded tolerance (expected={}, reconstructed={})",
+                expected_prcp_m, reconstructed_prcp_m
             ),
             Self::MissingRuntimeContextSymbol { symbol } => write!(
                 f,
-                "{}: missing required runtime context symbol {} for active winter forcing synthesis",
-                self.code(),
+                "missing required runtime context symbol {} for active winter forcing synthesis",
                 symbol
             ),
             Self::RuntimeContextSymbolOutOfRange {
@@ -314,19 +286,13 @@ impl fmt::Display for SharedClimateRuntimeInputError {
                 allowed,
             } => write!(
                 f,
-                "{}: runtime context symbol {}={} is out of domain (allowed {})",
-                self.code(),
-                symbol,
-                value,
-                allowed
+                "runtime context symbol {}={} is out of domain (allowed {})",
+                symbol, value, allowed
             ),
             Self::InvalidCalendarDate { day, mon, year } => write!(
                 f,
-                "{}: invalid calendar date day={} mon={} year={}",
-                self.code(),
-                day,
-                mon,
-                year
+                "invalid calendar date day={} mon={} year={}",
+                day, mon, year
             ),
         }
     }
@@ -853,6 +819,141 @@ mod tests {
                 .expect("writing synthetic breakpoint fixture should succeed");
         }
         climate
+    }
+
+    #[test]
+    fn cqr21_shared_climate_runtime_input_error_characterizes_codes_and_display_strings() {
+        let cases = vec![
+            (
+                SharedClimateRuntimeInputError::UnsupportedDatver { datver: 3.99 },
+                "CLIM-RUNTIME-E-001",
+                "CLIM-RUNTIME-E-001: unsupported climate datver 3.99 (supports datver=0.0 override or datver>=4.0)",
+            ),
+            (
+                SharedClimateRuntimeInputError::UnsupportedItemp { itemp: 2 },
+                "CLIM-RUNTIME-E-002",
+                "CLIM-RUNTIME-E-002: unsupported climate itemp 2; only continuous-daily itemp=1 is supported",
+            ),
+            (
+                SharedClimateRuntimeInputError::EmptyDailyRecords,
+                "CLIM-RUNTIME-E-003",
+                "CLIM-RUNTIME-E-003: climate parser output contains no daily forcing records",
+            ),
+            (
+                SharedClimateRuntimeInputError::DayIndexOutOfRange {
+                    day_index: 2,
+                    available: 1,
+                },
+                "CLIM-RUNTIME-E-004",
+                "CLIM-RUNTIME-E-004: requested day index 2 exceeds available climate records 1",
+            ),
+            (
+                SharedClimateRuntimeInputError::NonFiniteField {
+                    field: "tmax",
+                    value: f64::NAN,
+                },
+                "CLIM-RUNTIME-E-005",
+                "CLIM-RUNTIME-E-005: non-finite climate field tmax=NaN",
+            ),
+            (
+                SharedClimateRuntimeInputError::NegativeField {
+                    field: "prcp",
+                    value: -1.0,
+                },
+                "CLIM-RUNTIME-E-006",
+                "CLIM-RUNTIME-E-006: negative climate field prcp=-1",
+            ),
+            (
+                SharedClimateRuntimeInputError::PositivePrecipWithNonPositiveDuration {
+                    prcp: 0.1,
+                    stmdur: 0.0,
+                },
+                "CLIM-RUNTIME-E-007",
+                "CLIM-RUNTIME-E-007: positive precipitation 0.1 requires positive storm duration, got 0",
+            ),
+            (
+                SharedClimateRuntimeInputError::EmptyBreakpointSeries,
+                "CLIM-RUNTIME-E-008",
+                "CLIM-RUNTIME-E-008: breakpoint forcing record contains zero breakpoint points",
+            ),
+            (
+                SharedClimateRuntimeInputError::NonMonotoneBreakpointTime {
+                    previous_s: 1.0,
+                    current_s: 1.0,
+                },
+                "CLIM-RUNTIME-E-009",
+                "CLIM-RUNTIME-E-009: breakpoint timem must be strictly increasing (1 -> 1)",
+            ),
+            (
+                SharedClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded {
+                    value: 1_501,
+                    max: 1_500,
+                },
+                "CLIM-RUNTIME-E-011",
+                "CLIM-RUNTIME-E-011: breakpoint count 1501 exceeds runtime policy max 1500",
+            ),
+            (
+                SharedClimateRuntimeInputError::BreakpointCountOutOfRange { value: 1_501 },
+                "CLIM-RUNTIME-E-011",
+                "CLIM-RUNTIME-E-011: breakpoint count 1501 exceeds supported conversion range",
+            ),
+            (
+                SharedClimateRuntimeInputError::DisaggregationTimeNotStrictlyIncreasing {
+                    previous_s: 2.0,
+                    current_s: 1.0,
+                },
+                "CLIM-RUNTIME-E-012",
+                "CLIM-RUNTIME-E-012: disaggregation time grid must be strictly increasing (2 -> 1)",
+            ),
+            (
+                SharedClimateRuntimeInputError::DisaggregationRootSolveDomain { a: 0.0 },
+                "CLIM-RUNTIME-E-013",
+                "CLIM-RUNTIME-E-013: disaggregation root-solve domain invalid (a=0)",
+            ),
+            (
+                SharedClimateRuntimeInputError::DisaggregationRootSolveNonConvergent { a: 0.3 },
+                "CLIM-RUNTIME-E-014",
+                "CLIM-RUNTIME-E-014: disaggregation root solve failed to converge (a=0.3)",
+            ),
+            (
+                SharedClimateRuntimeInputError::DisaggregationClosureResidual {
+                    expected_prcp_m: 0.1,
+                    reconstructed_prcp_m: 0.2,
+                },
+                "CLIM-RUNTIME-E-015",
+                "CLIM-RUNTIME-E-015: disaggregation closure residual exceeded tolerance (expected=0.1, reconstructed=0.2)",
+            ),
+            (
+                SharedClimateRuntimeInputError::MissingRuntimeContextSymbol {
+                    symbol: "snow.runtime_swe".to_string(),
+                },
+                "CLIM-RUNTIME-E-016",
+                "CLIM-RUNTIME-E-016: missing required runtime context symbol snow.runtime_swe for active winter forcing synthesis",
+            ),
+            (
+                SharedClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+                    symbol: "snow.options.rst".to_string(),
+                    value: 2.0,
+                    allowed: "0.0..=1.0",
+                },
+                "CLIM-RUNTIME-E-017",
+                "CLIM-RUNTIME-E-017: runtime context symbol snow.options.rst=2 is out of domain (allowed 0.0..=1.0)",
+            ),
+            (
+                SharedClimateRuntimeInputError::InvalidCalendarDate {
+                    day: 31,
+                    mon: 2,
+                    year: 2000,
+                },
+                "CLIM-RUNTIME-E-018",
+                "CLIM-RUNTIME-E-018: invalid calendar date day=31 mon=2 year=2000",
+            ),
+        ];
+
+        for (error, expected_code, expected_display) in cases {
+            assert_eq!(error.code(), expected_code);
+            assert_eq!(error.to_string(), expected_display);
+        }
     }
 
     #[test]

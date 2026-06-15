@@ -10,6 +10,10 @@
 
 State as of `2026-06-15`:
 
+- CQR21 completed behavior-preserving CRAP/cyclomatic-complexity
+  decomposition of `crates/openwepp-climate-runtime-adapter/src/lib.rs`.
+  Package: `20260615-cqr21-climate-runtime-adapter-complexity-001/`. Final
+  target CRAP: `2.0`.
 - CQR20 completed behavior-preserving CRAP/cyclomatic-complexity
   decomposition of
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/05_projection_helpers.rs`.
