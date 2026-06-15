@@ -143,8 +143,13 @@ the tracker below and by reading the corresponding package directories under
   Pushed commit: `5e7a6c44f16c3f0962f509c64e0f5b661568e467` on branch `main`.
   Final target: `HillslopeRuntimeInputError::soil_core_code`, CRAP
   `14.0478515625`.
-- [ ] CQR14, rank 8, original CRAP `650`, CC `25`, Cov `0%`:
+- [x] (2026-06-15) Closed CQR14, rank 8, original CRAP `650`, CC
+  `25`, Cov `0%`:
   `crates/openwepp-runner/src/release.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr14-runner-release-complexity-001/`.
+  Pushed commit: `3b8b4f8b9c77b3a5b79d25ccdc0a834dc4229487` on branch `main`.
+  Final target: `lint_release_directory`, CRAP `4.0`.
 - [ ] CQR15, rank 9, original CRAP `581`, CC `94`, Cov `62%`:
   `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs`.
 - [ ] CQR16, rank 10, original CRAP `506`, CC `22`, Cov `0%`:
