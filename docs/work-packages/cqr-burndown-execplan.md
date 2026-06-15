@@ -127,8 +127,14 @@ the tracker below and by reading the corresponding package directories under
   `docs/work-packages/20260615-cqr11-management-parser-complexity-001/`.
   Pushed commit: `cb3947d9a9373b344a70dd72323a911e256abe95` on branch `main`.
   Final target: `parse_yearly_perennial`, CRAP `4.0`.
-- [ ] CQR12, rank 6, original CRAP `1122`, CC `33`, Cov `0%`:
+- [x] (2026-06-15) Closed CQR12, rank 6, original CRAP `1122`, CC
+  `33`, Cov `0%`:
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr12-irrigation-depletion-runtime-001/`.
+  Pushed commit: `96e39f68a0847e98c50399ad99ded88f5b4f2528` on branch `main`.
+  Final target:
+  `seed_hillslope_runtime_surface_from_irrigation_depletion`, CRAP `2.0`.
 - [ ] CQR13, rank 7, original CRAP `964`, CC `65`, Cov `40%`:
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/00_core_types.rs`.
 - [ ] CQR14, rank 8, original CRAP `650`, CC `25`, Cov `0%`:
@@ -218,6 +224,16 @@ the tracker below and by reading the corresponding package directories under
   `mgtopt` and `MAN-E-002` for perennial row arity errors. Out-of-scope
   management parser rows remain above `30` in
   `docs/work-packages/20260615-cqr11-management-parser-complexity-001/artifacts/crap_after.json`.
+
+- Observation: CQR12 live metrics matched the rank-6 depletion irrigation
+  runtime target; focused characterization corrected a fixture-order assumption
+  around the sprinkler period fields before production refactor.
+  Evidence: CQR12 after metrics reduced
+  `seed_hillslope_runtime_surface_from_irrigation_depletion` to CRAP `2.0`;
+  the package records the first sprinkler fixture period as `aprati=1.0` and
+  `deplev=0.50`. The pre-existing frost `too_many_lines` suppression remains
+  outside CQR12 scope in
+  `docs/work-packages/20260615-cqr12-irrigation-depletion-runtime-001/artifacts/cqr12_disposition.md`.
 
 ### Decision Log
 
