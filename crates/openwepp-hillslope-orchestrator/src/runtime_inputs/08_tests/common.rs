@@ -5,7 +5,8 @@
         climate::{CompatibilityOptions, ParserMode as ClimateParserMode, parse_climate_from_str},
         management::{
             DrainScenario, InitialScenarioData, ParseMode as ManagementParseMode,
-            PlantScenarioData, ScenarioMeta, YearlyCroplandBranch, YearlyPerennialData,
+            PlantScenarioData, ScenarioMeta, YearlyAnnualExtension, YearlyAnnualFallowData,
+            YearlyCroplandBranch, YearlyPerennialData, YearlyPerennialGrazingCycle,
             YearlyScenarioData,
             parse_management_from_str,
         },

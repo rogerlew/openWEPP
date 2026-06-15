@@ -10,6 +10,15 @@
 
 State as of `2026-06-15`:
 
+- CQR03 is complete for behavior-preserving CRAP/cyclomatic-complexity
+  decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/01_management.rs`.
+  The management runtime projection dispatcher and primary live-canopy
+  assimilation helper are decomposed into private stage helpers, the obsolete
+  target-file `too_many_lines` suppressions are removed, and every eligible
+  target-module function has CRAP `<= 17.16724537037037` after the refactor.
+  Required closure gates passed. Package:
+  `20260615-cqr03-management-runtime-inputs-complexity-001/`.
 - CQR02 is complete for behavior-preserving CRAP/cyclomatic-complexity
   decomposition of
   `crates/openwepp-input-contract/src/parsers/hbp/layout_parser.rs`.

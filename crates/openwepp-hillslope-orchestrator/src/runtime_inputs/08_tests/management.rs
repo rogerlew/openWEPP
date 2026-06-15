@@ -244,6 +244,184 @@
     }
 
     #[test]
+    fn management_runtime_projection_projects_initial_understory_seed_symbols() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        let initial = &mut management.registries.initials[0];
+        let InitialScenarioData::Cropland(initial_data) = &mut initial.data;
+        initial_data.understory_line = Some([0.35, 0.45]);
+
+        let pl_surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect("finite understory cover should project");
+
+        assert_eq!(
+            pl_surfaces
+                .pl_decomp_surface
+                .get(&BoundarySymbol::from("pl_decomp_ofe1_usinrcol_seed")),
+            Some(&BoundaryValue::scalar(0.35))
+        );
+        assert_eq!(
+            pl_surfaces
+                .pl_decomp_surface
+                .get(&BoundarySymbol::from("pl_decomp_ofe1_usrilcol_seed")),
+            Some(&BoundaryValue::scalar(0.45))
+        );
+    }
+
+    #[test]
+    fn management_runtime_projection_rejects_non_finite_initial_seed_fields() {
+        for field in [
+            "sumrtm_seed",
+            "sumsrm_seed",
+            "usinrcol_seed",
+            "usrilcol_seed",
+        ] {
+            let mut management = parse_management_from_str(
+                MANAGEMENT_CANONICAL_NONZERO_98_4,
+                ManagementParseMode::Strict,
+            )
+            .expect("management fixture should parse");
+            let initial = &mut management.registries.initials[0];
+            let InitialScenarioData::Cropland(initial_data) = &mut initial.data;
+            match field {
+                "sumrtm_seed" => initial_data.terminal_line[0] = f64::NAN,
+                "sumsrm_seed" => initial_data.terminal_line[1] = f64::NAN,
+                "usinrcol_seed" => initial_data.understory_line = Some([f64::NAN, 0.2]),
+                "usrilcol_seed" => initial_data.understory_line = Some([0.2, f64::NAN]),
+                _ => unreachable!("test field set is exhaustive"),
+            }
+
+            let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+                .expect_err("non-finite initial seed field must fail runtime seam");
+            assert_eq!(error.code(), "HS-RUNTIME-E-043");
+            assert!(matches!(
+                error,
+                HillslopeRuntimeInputError::NonFinitePlProjectionField {
+                    field: observed,
+                    slot_index: 0,
+                    crop_slot_index: 0,
+                    value,
+                } if observed == field && value.is_nan()
+            ));
+        }
+    }
+
+    #[test]
+    fn management_runtime_projection_rejects_out_of_range_initial_residue_plant_reference() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        let initial = &mut management.registries.initials[0];
+        let InitialScenarioData::Cropland(initial_data) = &mut initial.data;
+        initial_data.iresd = 0;
+
+        let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect_err("iresd seed reference must stay in plant registry range");
+        assert_eq!(error.code(), "HS-RUNTIME-E-050");
+        assert!(matches!(
+            error,
+            HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "iresd_seed",
+                slot_index: 0,
+                crop_slot_index: 0,
+                value,
+                allowed: "1..=plant_scenario_count",
+            } if value == 0.0
+        ));
+    }
+
+    #[test]
+    fn management_runtime_projection_projects_primary_annual_extension_aliases() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        let yearly = &mut management.registries.yearlies[0];
+        let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+        cropland.branch = YearlyCroplandBranch::AnnualOrFallow(YearlyAnnualFallowData {
+            jdharv: 288,
+            jdplt: 130,
+            rw: 0.762,
+            resmgt: 2,
+            extension: Some(YearlyAnnualExtension::Burn {
+                jdburn: 140,
+                fbmag: 0.25,
+                fbrnog: 0.75,
+            }),
+        });
+
+        let merged_surface = build_hillslope_runtime_surface_from_management(&management)
+            .expect("burn extension should project slot and primary aliases");
+        let state = &merged_surface.state_surface;
+
+        assert_eq!(
+            state.get(&BoundarySymbol::from(
+                "pl_decomp_slot_0001_crop_0001_jdburn"
+            )),
+            Some(&BoundaryValue::scalar(140.0))
+        );
+        assert_eq!(
+            state.get(&BoundarySymbol::from("jdburn")),
+            Some(&BoundaryValue::scalar(140.0))
+        );
+        assert_eq!(
+            state.get(&BoundarySymbol::from("fbrnag")),
+            Some(&BoundaryValue::scalar(0.25))
+        );
+        assert_eq!(
+            state.get(&BoundarySymbol::from("fbrnog")),
+            Some(&BoundaryValue::scalar(0.75))
+        );
+    }
+
+    #[test]
+    fn management_runtime_projection_rejects_yearly_landuse_and_plant_reference_domain() {
+        let mut yearly_landuse = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        yearly_landuse.registries.yearlies[0].meta.landuse = 2;
+        let error = build_hillslope_pl_runtime_surfaces_from_management(&yearly_landuse)
+            .expect_err("unsupported yearly landuse must fail runtime seam");
+        assert_eq!(error.code(), "HS-RUNTIME-E-041");
+        assert!(matches!(
+            error,
+            HillslopeRuntimeInputError::UnsupportedPlLanduse {
+                section: "yearly",
+                value: 2,
+            }
+        ));
+
+        let mut itype_zero = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        let YearlyScenarioData::Cropland(cropland) = &mut itype_zero.registries.yearlies[0].data;
+        cropland.itype = 0;
+        let error = build_hillslope_pl_runtime_surfaces_from_management(&itype_zero)
+            .expect_err("itype must reference a registered plant");
+        assert_eq!(error.code(), "HS-RUNTIME-E-050");
+        assert!(matches!(
+            error,
+            HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "itype",
+                slot_index: 1,
+                crop_slot_index: 1,
+                value,
+                allowed: "1..=plant_scenario_count",
+            } if value == 0.0
+        ));
+    }
+
+    #[test]
     fn hphys0251_management_projection_preserves_crop_pltol() {
         let mut management = parse_management_from_str(
             MANAGEMENT_CANONICAL_NONZERO_98_4,
@@ -370,6 +548,48 @@
     }
 
     #[test]
+    fn management_runtime_projection_rejects_non_positive_primary_drain_geometry() {
+        for (field, ddrain, sdrain, drdiam) in [
+            ("wb19_drain_depth", 0.0, 15.0, 0.08),
+            ("wb19_drain_spacing", 0.65, 0.0, 0.08),
+            ("wb19_drain_diameter", 0.65, 15.0, 0.0),
+        ] {
+            let mut management = parse_management_from_str(
+                MANAGEMENT_CANONICAL_NONZERO_98_4,
+                ManagementParseMode::Strict,
+            )
+            .expect("management fixture should parse");
+            management.registries.drains.push(DrainScenario {
+                meta: ScenarioMeta {
+                    name: format!("invalid-{field}"),
+                    description: [String::new(), String::new(), String::new()],
+                    landuse: 1,
+                },
+                ddrain,
+                drainc: 0.0,
+                drdiam,
+                sdrain,
+            });
+            let yearly = &mut management.registries.yearlies[0];
+            let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+            cropland.drset = 1;
+
+            let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+                .expect_err("non-positive enabled drain geometry must fail runtime seam");
+            assert_eq!(error.code(), "HS-RUNTIME-E-050");
+            assert!(matches!(
+                error,
+                HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                    field: observed,
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    ..
+                } if observed == field
+            ));
+        }
+    }
+
+    #[test]
     fn management_runtime_projection_projects_wb19_controls_for_primary_perennial_slot() {
         let mut management = parse_management_from_str(
             MANAGEMENT_CANONICAL_NONZERO_98_4,
@@ -402,6 +622,217 @@
                 .get(&BoundarySymbol::from("wb19_drain_enabled")),
             Some(&BoundaryValue::scalar(0.0))
         );
+    }
+
+    #[test]
+    fn management_runtime_projection_projects_perennial_cutday_payload() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        let yearly = &mut management.registries.yearlies[0];
+        let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+        cropland.imngmt = 2;
+        cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+            jdharv: 288,
+            jdplt: 130,
+            jdstop: 0,
+            rw: 0.762,
+            mgtopt: 1,
+            cut_days: vec![120, 240],
+            grazing_cycles: Vec::new(),
+        });
+
+        let pl_surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect("valid perennial cut-day payload should project");
+        let decomp = &pl_surfaces.pl_decomp_surface;
+
+        assert_eq!(
+            decomp.get(&BoundarySymbol::from(
+                "pl_decomp_slot_0001_crop_0001_ncut"
+            )),
+            Some(&BoundaryValue::scalar(2.0))
+        );
+        assert_eq!(
+            decomp.get(&BoundarySymbol::from(
+                "pl_decomp_slot_0001_crop_0001_cutday_0002"
+            )),
+            Some(&BoundaryValue::scalar(240.0))
+        );
+    }
+
+    #[test]
+    fn management_runtime_projection_projects_perennial_grazing_payload() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        let yearly = &mut management.registries.yearlies[0];
+        let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+        cropland.imngmt = 2;
+        cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+            jdharv: 288,
+            jdplt: 130,
+            jdstop: 0,
+            rw: 0.762,
+            mgtopt: 2,
+            cut_days: Vec::new(),
+            grazing_cycles: vec![YearlyPerennialGrazingCycle {
+                animal: 12.0,
+                area: 2.5,
+                bodywt: 425.0,
+                digest: 0.62,
+                gday: 120,
+                gend: 150,
+            }],
+        });
+
+        let pl_surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect("valid perennial grazing payload should project");
+        let decomp = &pl_surfaces.pl_decomp_surface;
+
+        assert_eq!(
+            decomp.get(&BoundarySymbol::from(
+                "pl_decomp_slot_0001_crop_0001_ncycle"
+            )),
+            Some(&BoundaryValue::scalar(1.0))
+        );
+        assert_eq!(
+            decomp.get(&BoundarySymbol::from(
+                "pl_decomp_slot_0001_crop_0001_gday_0001"
+            )),
+            Some(&BoundaryValue::scalar(120.0))
+        );
+        assert_eq!(
+            decomp.get(&BoundarySymbol::from(
+                "pl_decomp_slot_0001_crop_0001_digest_0001"
+            )),
+            Some(&BoundaryValue::scalar(0.62))
+        );
+    }
+
+    #[test]
+    fn management_runtime_projection_rejects_invalid_perennial_payload_cardinality() {
+        for (mgtopt, cut_days, grazing_cycles, expected_field) in [
+            (1, Vec::new(), Vec::new(), "ncut"),
+            (
+                2,
+                Vec::new(),
+                Vec::new(),
+                "ncycle",
+            ),
+        ] {
+            let mut management = parse_management_from_str(
+                MANAGEMENT_CANONICAL_NONZERO_98_4,
+                ManagementParseMode::Strict,
+            )
+            .expect("management fixture should parse");
+            let yearly = &mut management.registries.yearlies[0];
+            let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+            cropland.imngmt = 2;
+            cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+                jdharv: 288,
+                jdplt: 130,
+                jdstop: 0,
+                rw: 0.762,
+                mgtopt,
+                cut_days,
+                grazing_cycles,
+            });
+
+            let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+                .expect_err("missing perennial payload cardinality must fail");
+            assert_eq!(error.code(), "HS-RUNTIME-E-048");
+            assert!(matches!(
+                error,
+                HillslopeRuntimeInputError::PlProjectionCardinalityInvalid {
+                    field,
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    value: 0,
+                    ..
+                } if field == expected_field
+            ));
+        }
+    }
+
+    #[test]
+    fn management_runtime_projection_rejects_incompatible_perennial_payloads() {
+        for (mgtopt, cut_days, grazing_cycles, expected_field) in [
+            (
+                1,
+                vec![120],
+                vec![YearlyPerennialGrazingCycle {
+                    animal: 12.0,
+                    area: 2.5,
+                    bodywt: 425.0,
+                    digest: 0.62,
+                    gday: 120,
+                    gend: 150,
+                }],
+                "grazing_cycles",
+            ),
+            (
+                2,
+                vec![120],
+                vec![YearlyPerennialGrazingCycle {
+                    animal: 12.0,
+                    area: 2.5,
+                    bodywt: 425.0,
+                    digest: 0.62,
+                    gday: 120,
+                    gend: 150,
+                }],
+                "cut_days",
+            ),
+            (3, vec![120], Vec::new(), "cut_days"),
+            (
+                3,
+                Vec::new(),
+                vec![YearlyPerennialGrazingCycle {
+                    animal: 12.0,
+                    area: 2.5,
+                    bodywt: 425.0,
+                    digest: 0.62,
+                    gday: 120,
+                    gend: 150,
+                }],
+                "grazing_cycles",
+            ),
+        ] {
+            let mut management = parse_management_from_str(
+                MANAGEMENT_CANONICAL_NONZERO_98_4,
+                ManagementParseMode::Strict,
+            )
+            .expect("management fixture should parse");
+            let yearly = &mut management.registries.yearlies[0];
+            let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+            cropland.imngmt = 2;
+            cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+                jdharv: 288,
+                jdplt: 130,
+                jdstop: 0,
+                rw: 0.762,
+                mgtopt,
+                cut_days,
+                grazing_cycles,
+            });
+
+            let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+                .expect_err("incompatible perennial payload must fail");
+            assert_eq!(error.code(), "HS-RUNTIME-E-051");
+            assert!(matches!(
+                error,
+                HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                    field,
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    ..
+                } if field == expected_field
+            ));
+        }
     }
 
     #[test]
@@ -469,6 +900,136 @@
         assert!(lai > 0.0, "initial cancov must seed live LAI");
         assert!((rtd - 1.6).abs() < 1e-12);
         assert!((rtmass - 2.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn management_runtime_projection_assimilates_initial_annual_live_canopy() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+
+        let initial = &mut management.registries.initials[0];
+        let InitialScenarioData::Cropland(initial_data) = &mut initial.data;
+        initial_data.base_line[1] = 0.6;
+        initial_data.imngmt = 1;
+
+        let yearly = &mut management.registries.yearlies[0];
+        let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+        cropland.imngmt = 1;
+        cropland.branch = YearlyCroplandBranch::AnnualOrFallow(YearlyAnnualFallowData {
+            jdharv: 120,
+            jdplt: 150,
+            rw: 0.762,
+            resmgt: 6,
+            extension: None,
+        });
+
+        let merged_surface = build_hillslope_runtime_surface_from_management(&management)
+            .expect("annual positive initial canopy should project");
+        let state = &merged_surface.state_surface;
+        let vdmt = state
+            .get(&BoundarySymbol::from("vdmt"))
+            .expect("vdmt should be published")
+            .as_f64();
+        let lai = state
+            .get(&BoundarySymbol::from("lai"))
+            .expect("lai should be published")
+            .as_f64();
+        let rtd = state
+            .get(&BoundarySymbol::from("rtd"))
+            .expect("rtd should be published")
+            .as_f64();
+        let rtmass = state
+            .get(&BoundarySymbol::from("rtmass"))
+            .expect("rtmass should be published")
+            .as_f64();
+
+        assert!(vdmt > 0.0);
+        assert!(lai > 0.0);
+        assert!(rtd > 0.0);
+        assert!(rtmass > 0.0);
+    }
+
+    #[test]
+    fn management_runtime_projection_resets_initial_canopy_for_fallow_management() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+
+        let initial = &mut management.registries.initials[0];
+        let InitialScenarioData::Cropland(initial_data) = &mut initial.data;
+        initial_data.base_line[1] = 0.9;
+        initial_data.imngmt = 3;
+
+        let yearly = &mut management.registries.yearlies[0];
+        let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+        cropland.imngmt = 3;
+
+        let merged_surface = build_hillslope_runtime_surface_from_management(&management)
+            .expect("fallow management should project with reset initial canopy");
+
+        assert_eq!(
+            merged_surface
+                .state_surface
+                .get(&BoundarySymbol::from("cancov")),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+        assert_eq!(
+            merged_surface.state_surface.get(&BoundarySymbol::from("lai")),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+    }
+
+    #[test]
+    fn management_runtime_projection_rejects_initial_canopy_assimilation_domains() {
+        for field in ["bb", "xmxlai"] {
+            let mut management = parse_management_from_str(
+                MANAGEMENT_CANONICAL_NONZERO_98_4,
+                ManagementParseMode::Strict,
+            )
+            .expect("management fixture should parse");
+
+            let initial = &mut management.registries.initials[0];
+            let InitialScenarioData::Cropland(initial_data) = &mut initial.data;
+            initial_data.base_line[1] = 0.6;
+            initial_data.imngmt = 1;
+
+            let plant = &mut management.registries.plants[0];
+            let PlantScenarioData::Cropland(plant_data) = &mut plant.data;
+            match field {
+                "bb" => plant_data.canopy_line[0] = 0.0,
+                "xmxlai" => plant_data.terminal_line[1] = 0.0,
+                _ => unreachable!("test field set is exhaustive"),
+            }
+
+            let yearly = &mut management.registries.yearlies[0];
+            let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+            cropland.imngmt = 1;
+            cropland.branch = YearlyCroplandBranch::AnnualOrFallow(YearlyAnnualFallowData {
+                jdharv: 120,
+                jdplt: 150,
+                rw: 0.762,
+                resmgt: 6,
+                extension: None,
+            });
+
+            let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+                .expect_err("invalid initial canopy assimilation domain must fail");
+            assert_eq!(error.code(), "HS-RUNTIME-E-050");
+            assert!(matches!(
+                error,
+                HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                    field: observed,
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    ..
+                } if observed == field
+            ));
+        }
     }
 
     #[test]

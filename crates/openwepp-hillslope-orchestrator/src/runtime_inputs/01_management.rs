@@ -28,6 +28,55 @@ impl HillslopePlRuntimeSurfaces {
     }
 }
 
+type ManagementInitialScenario = openwepp_input_contract::parsers::management::InitialScenario;
+type ManagementInitialCroplandData =
+    openwepp_input_contract::parsers::management::InitialCroplandData;
+type ManagementScheduleSlotData =
+    openwepp_input_contract::parsers::management::ManagementScheduleSlot;
+type ManagementYearlyAnnualFallowData =
+    openwepp_input_contract::parsers::management::YearlyAnnualFallowData;
+type ManagementYearlyCroplandData =
+    openwepp_input_contract::parsers::management::YearlyCroplandData;
+type ManagementYearlyPerennialData =
+    openwepp_input_contract::parsers::management::YearlyPerennialData;
+type ManagementPlantCroplandData = openwepp_input_contract::parsers::management::PlantCroplandData;
+
+#[derive(Debug, Default)]
+struct PlRuntimeSurfaceBuilder {
+    schedule: BTreeMap<BoundarySymbol, BoundaryValue>,
+    growth: BTreeMap<BoundarySymbol, BoundaryValue>,
+    decomp: BTreeMap<BoundarySymbol, BoundaryValue>,
+}
+
+impl PlRuntimeSurfaceBuilder {
+    fn into_runtime_surfaces(self) -> HillslopePlRuntimeSurfaces {
+        HillslopePlRuntimeSurfaces {
+            pl_schedule_surface: self.schedule,
+            pl_growth_surface: self.growth,
+            pl_decomp_surface: self.decomp,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct InitialSeedProjection {
+    cancov: f64,
+    inrcov: f64,
+    rilcov: f64,
+    rrinit: f64,
+    rspace: f64,
+    tillay1: f64,
+    tillay2: f64,
+    width: f64,
+    residue_depth_m: f64,
+    canopy_cover_coeff: f64,
+    canopy_height_curve: f64,
+    flivmx: f64,
+    hmax: f64,
+    sumrtm: f64,
+    sumsrm: f64,
+}
+
 /// Build strict typed PL runtime projection surfaces from parsed management
 /// input (`PL-MAN-SEAM-001`).
 ///
@@ -35,10 +84,24 @@ impl HillslopePlRuntimeSurfaces {
 ///
 /// Returns `HillslopeRuntimeInputError` for unsupported branches, dangling
 /// references, non-finite required controls, or schedule closure violations.
-#[allow(clippy::too_many_lines)]
 pub fn build_hillslope_pl_runtime_surfaces_from_management(
     management: &ManagementParseOutput,
 ) -> Result<HillslopePlRuntimeSurfaces, HillslopeRuntimeInputError> {
+    validate_management_schedule_shape(management)?;
+
+    let mut surfaces = PlRuntimeSurfaceBuilder::default();
+    seed_schedule_metadata(&mut surfaces.schedule, management)?;
+    seed_growth_defaults(&mut surfaces.growth);
+    project_initial_seed_surfaces(&mut surfaces, management)?;
+    project_schedule_slot_surfaces(&mut surfaces, management)?;
+    apply_primary_initial_live_canopy_assimilation(&mut surfaces.growth)?;
+
+    Ok(surfaces.into_runtime_surfaces())
+}
+
+fn validate_management_schedule_shape(
+    management: &ManagementParseOutput,
+) -> Result<(), HillslopeRuntimeInputError> {
     if management.topology_count != management.schedule.ofe_initial_refs.len() {
         return Err(
             HillslopeRuntimeInputError::ManagementTopologyCountMismatch {
@@ -67,48 +130,54 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
         );
     }
 
-    let mut pl_schedule_surface = BTreeMap::new();
-    let mut pl_growth_surface = BTreeMap::new();
-    let mut pl_decomp_surface = BTreeMap::new();
+    Ok(())
+}
 
-    pl_schedule_surface.insert(
+fn seed_schedule_metadata(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    management: &ManagementParseOutput,
+) -> Result<(), HillslopeRuntimeInputError> {
+    surface.insert(
         BoundarySymbol::from("pl_schedule_nofe"),
         BoundaryValue::scalar(usize_to_f64("pl_schedule_nofe", management.topology_count)?),
     );
-    pl_schedule_surface.insert(
+    surface.insert(
         BoundarySymbol::from("pl_schedule_rotation_repeats"),
         BoundaryValue::scalar(usize_to_f64(
             "pl_schedule_rotation_repeats",
             management.schedule.rotation_repeats,
         )?),
     );
-    pl_schedule_surface.insert(
+    surface.insert(
         BoundarySymbol::from("pl_schedule_rotation_years"),
         BoundaryValue::scalar(usize_to_f64(
             "pl_schedule_rotation_years",
             management.schedule.rotation_years,
         )?),
     );
-    pl_schedule_surface.insert(
+    surface.insert(
         BoundarySymbol::from("pl_schedule_slot_count"),
         BoundaryValue::scalar(usize_to_f64(
             "pl_schedule_slot_count",
             management.schedule.slots.len(),
         )?),
     );
-    // Explicit scheduler preconditions from PL02 contract/baseline ordering.
-    pl_schedule_surface.insert(
+    surface.insert(
         BoundarySymbol::from("pl_order_decomp_before_soil"),
         BoundaryValue::scalar(1.0),
     );
-    pl_schedule_surface.insert(
+    surface.insert(
         BoundarySymbol::from("pl_order_growth_after_decomp"),
         BoundaryValue::scalar(1.0),
     );
-    pl_schedule_surface.insert(
+    surface.insert(
         BoundarySymbol::from("pl_order_watbal_after_growth"),
         BoundaryValue::scalar(1.0),
     );
+    Ok(())
+}
+
+fn seed_growth_defaults(surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>) {
     for (symbol, value) in [
         ("sumgdd", 0.0),
         ("vdmt", 0.0),
@@ -119,21 +188,17 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
         ("pltol", 0.25),
         ("hia", 0.0),
     ] {
-        pl_growth_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+        surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
     }
+}
 
+fn project_initial_seed_surfaces(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    management: &ManagementParseOutput,
+) -> Result<(), HillslopeRuntimeInputError> {
     for (ofe_position, initial_ref) in management.schedule.ofe_initial_refs.iter().enumerate() {
         let ofe_index = ofe_position + 1;
-        if *initial_ref == 0 || *initial_ref > management.registries.initials.len() {
-            return Err(
-                HillslopeRuntimeInputError::ManagementInitialReferenceOutOfRange {
-                    ofe_index,
-                    initial_ref: *initial_ref,
-                    max_initial_ref: management.registries.initials.len(),
-                },
-            );
-        }
-        let initial = &management.registries.initials[*initial_ref - 1];
+        let initial = initial_scenario_for_ofe(management, ofe_index, *initial_ref)?;
         if initial.meta.landuse != 1 {
             return Err(HillslopeRuntimeInputError::UnsupportedPlLanduse {
                 section: "initial",
@@ -141,768 +206,956 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
             });
         }
         let InitialScenarioData::Cropland(initial_data) = &initial.data;
+        let seed = build_initial_seed_projection(management, initial.meta.landuse, initial_data)?;
 
-        let cancov_seed =
-            validate_projection_fraction("cancov_seed", 0, 0, initial_data.base_line[1])?;
-        let inrcov_seed =
-            validate_projection_fraction("inrcov_seed", 0, 0, initial_data.base_line[5])?;
-        let rilcov_seed =
-            validate_projection_fraction("rilcov_seed", 0, 0, initial_data.residue_line[2])?;
-        let rrinit_seed =
-            validate_projection_non_negative("rrinit_seed", 0, 0, initial_data.residue_line[3])?;
-        let rspace_seed =
-            validate_projection_non_negative("rspace_seed", 0, 0, initial_data.residue_line[4])?;
-        let tillay1_seed = validate_projection_non_negative(
-            "tillay1_seed",
-            0,
-            0,
-            initial_data.thaw_line[2],
-        )?;
-        let tillay2_seed = validate_projection_non_negative(
-            "tillay2_seed",
-            0,
-            0,
-            initial_data.thaw_line[3],
-        )?;
-        let width_seed =
-            validate_projection_non_negative("width_seed", 0, 0, initial_data.thaw_line[4])?;
-
-        if initial_data.iresd == 0 || initial_data.iresd > management.registries.plants.len() {
-            return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
-                field: "iresd_seed",
-                slot_index: 0,
-                crop_slot_index: 0,
-                value: usize_to_f64("iresd_seed", initial_data.iresd)?,
-                allowed: "1..=plant_scenario_count",
-            });
-        }
-        let residue_plant = &management.registries.plants[initial_data.iresd - 1];
-        let PlantScenarioData::Cropland(residue_plant_cropland) = &residue_plant.data;
-        let residue_depth_m = legacy_initial_residue_depth_m(
+        insert_initial_seed_symbols(
+            surfaces,
+            ofe_index,
+            *initial_ref,
             initial.meta.landuse,
-            residue_plant_cropland.canopy_line[4],
-            residue_plant_cropland.canopy_line[9],
-            inrcov_seed,
-            rilcov_seed,
-            rspace_seed,
-            width_seed,
+            initial_data,
+            &seed,
         )?;
-        let canopy_cover_coeff_seed = validate_projection_non_negative(
-            "bb_seed",
-            0,
-            0,
-            residue_plant_cropland.canopy_line[0],
-        )?;
-        let canopy_height_curve_seed = validate_projection_non_negative(
-            "bbb_seed",
-            0,
-            0,
-            residue_plant_cropland.canopy_line[1],
-        )?;
-        let flivmx_seed = validate_projection_non_negative(
-            "flivmx_seed",
-            0,
-            0,
-            residue_plant_cropland.growth_line[4],
-        )?;
-        let hmax_seed = validate_projection_non_negative(
-            "hmax_seed",
-            0,
-            0,
-            residue_plant_cropland.growth_line[7],
-        )?;
-
-        pl_schedule_surface.insert(
-            pl_schedule_ofe_symbol("initial_ref", ofe_index),
-            BoundaryValue::scalar(usize_to_f64("initial_ref", *initial_ref)?),
-        );
-        pl_schedule_surface.insert(
-            pl_schedule_ofe_symbol("lanuse", ofe_index),
-            BoundaryValue::scalar(usize_to_f64("lanuse", initial.meta.landuse)?),
-        );
-
-        pl_growth_surface.insert(
-            pl_growth_ofe_symbol("imngmt_seed", ofe_index),
-            BoundaryValue::scalar(usize_to_f64("imngmt_seed", initial_data.imngmt)?),
-        );
-        pl_growth_surface.insert(
-            pl_growth_ofe_symbol("rtyp_seed", ofe_index),
-            BoundaryValue::scalar(usize_to_f64("rtyp_seed", initial_data.rtyp)?),
-        );
-        pl_growth_surface.insert(
-            pl_growth_ofe_symbol("cancov_seed", ofe_index),
-            BoundaryValue::scalar(cancov_seed),
-        );
-        pl_growth_surface.insert(
-            pl_growth_ofe_symbol("bb_seed", ofe_index),
-            BoundaryValue::scalar(canopy_cover_coeff_seed),
-        );
-        pl_growth_surface.insert(
-            pl_growth_ofe_symbol("bbb_seed", ofe_index),
-            BoundaryValue::scalar(canopy_height_curve_seed),
-        );
-        pl_growth_surface.insert(
-            pl_growth_ofe_symbol("flivmx_seed", ofe_index),
-            BoundaryValue::scalar(flivmx_seed),
-        );
-        pl_growth_surface.insert(
-            pl_growth_ofe_symbol("hmax_seed", ofe_index),
-            BoundaryValue::scalar(hmax_seed),
-        );
-        pl_growth_surface.insert(
-            slope_ofe_symbol("inrcov", ofe_index),
-            BoundaryValue::scalar(inrcov_seed),
-        );
-        pl_growth_surface.insert(
-            slope_ofe_symbol("rilcov", ofe_index),
-            BoundaryValue::scalar(rilcov_seed),
-        );
-        pl_growth_surface.insert(
-            slope_ofe_symbol("rrinit", ofe_index),
-            BoundaryValue::scalar(rrinit_seed),
-        );
-        pl_growth_surface.insert(
-            slope_ofe_symbol("rspace", ofe_index),
-            BoundaryValue::scalar(rspace_seed),
-        );
-        pl_growth_surface.insert(
-            pl_growth_ofe_symbol("tillay1_m", ofe_index),
-            BoundaryValue::scalar(tillay1_seed),
-        );
-        pl_growth_surface.insert(
-            pl_growth_ofe_symbol("tillay2_m", ofe_index),
-            BoundaryValue::scalar(tillay2_seed),
-        );
-        pl_growth_surface.insert(
-            slope_ofe_symbol("width", ofe_index),
-            BoundaryValue::scalar(width_seed),
-        );
-        pl_growth_surface.insert(
-            slope_ofe_symbol("rtyp", ofe_index),
-            BoundaryValue::scalar(usize_to_f64("rtyp_seed", initial_data.rtyp)?),
-        );
-
-        let sumrtm = initial_data.terminal_line[0];
-        if !sumrtm.is_finite() {
-            return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
-                field: "sumrtm_seed",
-                slot_index: 0,
-                crop_slot_index: 0,
-                value: sumrtm,
-            });
-        }
-        let sumsrm = initial_data.terminal_line[1];
-        if !sumsrm.is_finite() {
-            return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
-                field: "sumsrm_seed",
-                slot_index: 0,
-                crop_slot_index: 0,
-                value: sumsrm,
-            });
-        }
-        pl_decomp_surface.insert(
-            pl_decomp_ofe_symbol("iresd_seed", ofe_index),
-            BoundaryValue::scalar(usize_to_f64("iresd_seed", initial_data.iresd)?),
-        );
-        pl_decomp_surface.insert(
-            pl_decomp_ofe_symbol("sumrtm_seed", ofe_index),
-            BoundaryValue::scalar(sumrtm),
-        );
-        pl_decomp_surface.insert(
-            pl_decomp_ofe_symbol("sumsrm_seed", ofe_index),
-            BoundaryValue::scalar(sumsrm),
-        );
-        pl_decomp_surface.insert(
-            pl_decomp_ofe_symbol("residue_depth_m_seed", ofe_index),
-            BoundaryValue::scalar(residue_depth_m),
-        );
 
         if let Some(understory) = initial_data.understory_line {
-            let usinrcol = understory[0];
-            let usrilcol = understory[1];
-            if !usinrcol.is_finite() {
-                return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
-                    field: "usinrcol_seed",
-                    slot_index: 0,
-                    crop_slot_index: 0,
-                    value: usinrcol,
-                });
-            }
-            if !usrilcol.is_finite() {
-                return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
-                    field: "usrilcol_seed",
-                    slot_index: 0,
-                    crop_slot_index: 0,
-                    value: usrilcol,
-                });
-            }
-            pl_decomp_surface.insert(
-                pl_decomp_ofe_symbol("usinrcol_seed", ofe_index),
-                BoundaryValue::scalar(usinrcol),
-            );
-            pl_decomp_surface.insert(
-                pl_decomp_ofe_symbol("usrilcol_seed", ofe_index),
-                BoundaryValue::scalar(usrilcol),
-            );
+            project_initial_understory_symbols(
+                &mut surfaces.decomp,
+                ofe_index,
+                understory,
+            )?;
         }
 
         if ofe_index == 1 {
-            pl_schedule_surface.insert(
-                BoundarySymbol::from("lanuse"),
-                BoundaryValue::scalar(usize_to_f64("lanuse", initial.meta.landuse)?),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("imngmt_seed"),
-                BoundaryValue::scalar(usize_to_f64("imngmt_seed", initial_data.imngmt)?),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("cancov"),
-                BoundaryValue::scalar(cancov_seed),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("inrcov"),
-                BoundaryValue::scalar(inrcov_seed),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("rilcov"),
-                BoundaryValue::scalar(rilcov_seed),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("rrinit"),
-                BoundaryValue::scalar(rrinit_seed),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("rspace"),
-                BoundaryValue::scalar(rspace_seed),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("management.initial.params.tillay1_m"),
-                BoundaryValue::scalar(tillay1_seed),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("management.initial.params.tillay2_m"),
-                BoundaryValue::scalar(tillay2_seed),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("width"),
-                BoundaryValue::scalar(width_seed),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("rtyp"),
-                BoundaryValue::scalar(usize_to_f64("rtyp_seed", initial_data.rtyp)?),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("bb_seed"),
-                BoundaryValue::scalar(canopy_cover_coeff_seed),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("bbb_seed"),
-                BoundaryValue::scalar(canopy_height_curve_seed),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("flivmx_seed"),
-                BoundaryValue::scalar(flivmx_seed),
-            );
-            pl_growth_surface.insert(
-                BoundarySymbol::from("hmax_seed"),
-                BoundaryValue::scalar(hmax_seed),
-            );
-            pl_decomp_surface.insert(
-                BoundarySymbol::from("iresd_seed"),
-                BoundaryValue::scalar(usize_to_f64("iresd_seed", initial_data.iresd)?),
-            );
-            pl_decomp_surface.insert(
-                BoundarySymbol::from("sumrtm_seed"),
-                BoundaryValue::scalar(sumrtm),
-            );
-            pl_decomp_surface.insert(
-                BoundarySymbol::from("sumsrm_seed"),
-                BoundaryValue::scalar(sumsrm),
-            );
-            pl_decomp_surface.insert(
-                BoundarySymbol::from("frost.runtime_residue_depth_m"),
-                BoundaryValue::scalar(residue_depth_m),
-            );
-            pl_decomp_surface.insert(
-                BoundarySymbol::from("resdep"),
-                BoundaryValue::scalar(residue_depth_m),
-            );
+            insert_primary_initial_seed_aliases(
+                surfaces,
+                initial.meta.landuse,
+                initial_data,
+                &seed,
+            )?;
         }
     }
 
-    for (slot_position, slot) in management.schedule.slots.iter().enumerate() {
-        let slot_index = slot_position + 1;
-        if slot.crop_slots != slot.yearly_refs.len() {
-            return Err(
-                HillslopeRuntimeInputError::ManagementScheduleSlotArityMismatch {
-                    slot_index,
-                    crop_slots: slot.crop_slots,
-                    yearly_refs: slot.yearly_refs.len(),
-                },
-            );
-        }
+    Ok(())
+}
 
-        let ofe_index = slot.ofe_index + 1;
-        if ofe_index == 0 || ofe_index > management.topology_count {
-            return Err(
-                HillslopeRuntimeInputError::ManagementScheduleOfeIndexOutOfRange {
-                    slot_index,
-                    ofe_index,
-                    max_ofe_index: management.topology_count,
-                },
-            );
-        }
-
-        pl_schedule_surface.insert(
-            pl_schedule_slot_symbol("rotation_index", slot_index),
-            BoundaryValue::scalar(usize_to_f64("rotation_index", slot.rotation_index + 1)?),
+fn initial_scenario_for_ofe(
+    management: &ManagementParseOutput,
+    ofe_index: usize,
+    initial_ref: usize,
+) -> Result<&ManagementInitialScenario, HillslopeRuntimeInputError> {
+    if initial_ref == 0 || initial_ref > management.registries.initials.len() {
+        return Err(
+            HillslopeRuntimeInputError::ManagementInitialReferenceOutOfRange {
+                ofe_index,
+                initial_ref,
+                max_initial_ref: management.registries.initials.len(),
+            },
         );
-        pl_schedule_surface.insert(
-            pl_schedule_slot_symbol("year_in_rotation", slot_index),
-            BoundaryValue::scalar(usize_to_f64("year_in_rotation", slot.year_in_rotation + 1)?),
-        );
-        pl_schedule_surface.insert(
-            pl_schedule_slot_symbol("ofe_index", slot_index),
-            BoundaryValue::scalar(usize_to_f64("ofe_index", ofe_index)?),
-        );
-        pl_schedule_surface.insert(
-            pl_schedule_slot_symbol("crop_slots", slot_index),
-            BoundaryValue::scalar(usize_to_f64("crop_slots", slot.crop_slots)?),
-        );
-
-        for (crop_slot_position, yearly_ref) in slot.yearly_refs.iter().enumerate() {
-            let crop_slot_index = crop_slot_position + 1;
-            if *yearly_ref == 0 || *yearly_ref > management.registries.yearlies.len() {
-                return Err(
-                    HillslopeRuntimeInputError::ManagementYearlyReferenceOutOfRange {
-                        slot_index,
-                        crop_slot_index,
-                        yearly_ref: *yearly_ref,
-                        max_yearly_ref: management.registries.yearlies.len(),
-                    },
-                );
-            }
-            let yearly = &management.registries.yearlies[*yearly_ref - 1];
-            if yearly.meta.landuse != 1 {
-                return Err(HillslopeRuntimeInputError::UnsupportedPlLanduse {
-                    section: "yearly",
-                    value: yearly.meta.landuse,
-                });
-            }
-            let YearlyScenarioData::Cropland(cropland) = &yearly.data;
-
-            pl_schedule_surface.insert(
-                pl_schedule_slot_crop_symbol("yearly_ref", slot_index, crop_slot_index),
-                BoundaryValue::scalar(usize_to_f64("yearly_ref", *yearly_ref)?),
-            );
-            pl_schedule_surface.insert(
-                pl_schedule_slot_crop_symbol("lanuse", slot_index, crop_slot_index),
-                BoundaryValue::scalar(usize_to_f64("lanuse", yearly.meta.landuse)?),
-            );
-            pl_schedule_surface.insert(
-                pl_schedule_slot_crop_symbol("itype", slot_index, crop_slot_index),
-                BoundaryValue::scalar(usize_to_f64("itype", cropland.itype)?),
-            );
-            pl_schedule_surface.insert(
-                pl_schedule_slot_crop_symbol("tilseq", slot_index, crop_slot_index),
-                BoundaryValue::scalar(usize_to_f64("tilseq", cropland.tilseq)?),
-            );
-            pl_schedule_surface.insert(
-                pl_schedule_slot_crop_symbol("conset", slot_index, crop_slot_index),
-                BoundaryValue::scalar(usize_to_f64("conset", cropland.conset)?),
-            );
-            pl_schedule_surface.insert(
-                pl_schedule_slot_crop_symbol("drset", slot_index, crop_slot_index),
-                BoundaryValue::scalar(usize_to_f64("drset", cropland.drset)?),
-            );
-            pl_schedule_surface.insert(
-                pl_schedule_slot_crop_symbol("imngmt", slot_index, crop_slot_index),
-                BoundaryValue::scalar(usize_to_f64("imngmt", cropland.imngmt)?),
-            );
-
-            pl_growth_surface.insert(
-                pl_growth_slot_crop_symbol("itype", slot_index, crop_slot_index),
-                BoundaryValue::scalar(usize_to_f64("itype", cropland.itype)?),
-            );
-            pl_growth_surface.insert(
-                pl_growth_slot_crop_symbol("imngmt", slot_index, crop_slot_index),
-                BoundaryValue::scalar(usize_to_f64("imngmt", cropland.imngmt)?),
-            );
-
-            if cropland.itype == 0 || cropland.itype > management.registries.plants.len() {
-                return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
-                    field: "itype",
-                    slot_index,
-                    crop_slot_index,
-                    value: usize_to_f64("itype", cropland.itype)?,
-                    allowed: "1..=plant_scenario_count",
-                });
-            }
-            let plant = &management.registries.plants[cropland.itype - 1];
-            let PlantScenarioData::Cropland(plant_cropland) = &plant.data;
-            project_growth_equation_symbols(
-                &mut pl_growth_surface,
-                slot_index,
-                crop_slot_index,
-                plant_cropland,
-            )?;
-            project_decomposition_equation_symbols(
-                &mut pl_decomp_surface,
-                slot_index,
-                crop_slot_index,
-                plant_cropland,
-            )?;
-            if slot_index == 1 && crop_slot_index == 1 {
-                project_primary_growth_equation_aliases(&mut pl_growth_surface, plant_cropland)?;
-                project_primary_decomposition_equation_aliases(
-                    &mut pl_decomp_surface,
-                    plant_cropland,
-                )?;
-                pl_schedule_surface.insert(
-                    BoundarySymbol::from("drset"),
-                    BoundaryValue::scalar(usize_to_f64("drset", cropland.drset)?),
-                );
-                if cropland.drset == 0 {
-                    pl_schedule_surface.insert(
-                        BoundarySymbol::from("wb19_drain_enabled"),
-                        BoundaryValue::scalar(0.0),
-                    );
-                } else {
-                    let max_drain_ref = management.registries.drains.len();
-                    if cropland.drset > max_drain_ref {
-                        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
-                            field: "drset",
-                            slot_index,
-                            crop_slot_index,
-                            value: usize_to_f64("drset", cropland.drset)?,
-                            allowed: "1..=drain_scenario_count",
-                        });
-                    }
-                    let drain = &management.registries.drains[cropland.drset - 1];
-                    let drain_depth = validate_projection_non_negative(
-                        "wb19_drain_depth",
-                        slot_index,
-                        crop_slot_index,
-                        drain.ddrain,
-                    )?;
-                    let drain_spacing = validate_projection_non_negative(
-                        "wb19_drain_spacing",
-                        slot_index,
-                        crop_slot_index,
-                        drain.sdrain,
-                    )?;
-                    let drain_diameter = validate_projection_non_negative(
-                        "wb19_drain_diameter",
-                        slot_index,
-                        crop_slot_index,
-                        drain.drdiam,
-                    )?;
-                    if drain_depth <= 0.0 {
-                        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
-                            field: "wb19_drain_depth",
-                            slot_index,
-                            crop_slot_index,
-                            value: drain_depth,
-                            allowed: "> 0.0 when wb19_drain_enabled=1",
-                        });
-                    }
-                    if drain_spacing <= 0.0 {
-                        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
-                            field: "wb19_drain_spacing",
-                            slot_index,
-                            crop_slot_index,
-                            value: drain_spacing,
-                            allowed: "> 0.0 when wb19_drain_enabled=1",
-                        });
-                    }
-                    if drain_diameter <= 0.0 {
-                        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
-                            field: "wb19_drain_diameter",
-                            slot_index,
-                            crop_slot_index,
-                            value: drain_diameter,
-                            allowed: "> 0.0 when wb19_drain_enabled=1",
-                        });
-                    }
-                    pl_schedule_surface.insert(
-                        BoundarySymbol::from("wb19_drain_enabled"),
-                        BoundaryValue::scalar(1.0),
-                    );
-                    pl_schedule_surface.insert(
-                        BoundarySymbol::from("wb19_drain_depth"),
-                        BoundaryValue::scalar(drain_depth),
-                    );
-                    pl_schedule_surface.insert(
-                        BoundarySymbol::from("wb19_drain_spacing"),
-                        BoundaryValue::scalar(drain_spacing),
-                    );
-                    pl_schedule_surface.insert(
-                        BoundarySymbol::from("wb19_drain_diameter"),
-                        BoundaryValue::scalar(drain_diameter),
-                    );
-                }
-            }
-
-            match &cropland.branch {
-                YearlyCroplandBranch::AnnualOrFallow(annual) => {
-                    if !annual.rw.is_finite() {
-                        return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
-                            field: "rw",
-                            slot_index,
-                            crop_slot_index,
-                            value: annual.rw,
-                        });
-                    }
-                    let jdharv = validate_projection_day(
-                        "jdharv",
-                        slot_index,
-                        crop_slot_index,
-                        annual.jdharv,
-                        false,
-                    )?;
-                    let jdplt = validate_projection_day(
-                        "jdplt",
-                        slot_index,
-                        crop_slot_index,
-                        annual.jdplt,
-                        false,
-                    )?;
-                    pl_growth_surface.insert(
-                        pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("jdharv", jdharv)?),
-                    );
-                    pl_growth_surface.insert(
-                        pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("jdplt", jdplt)?),
-                    );
-                    pl_growth_surface.insert(
-                        pl_growth_slot_crop_symbol("rw", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(annual.rw),
-                    );
-                    pl_decomp_surface.insert(
-                        pl_decomp_slot_crop_symbol("resmgt", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("resmgt", annual.resmgt)?),
-                    );
-                    let annual_extension_projection = project_annual_extension_controls(
-                        slot_index,
-                        crop_slot_index,
-                        annual.resmgt,
-                        annual.extension.as_ref(),
-                    )?;
-                    project_annual_extension_symbols(
-                        &mut pl_decomp_surface,
-                        slot_index,
-                        crop_slot_index,
-                        &annual_extension_projection,
-                    )?;
-
-                    if slot_index == 1 && crop_slot_index == 1 {
-                        pl_growth_surface.insert(
-                            BoundarySymbol::from("itype"),
-                            BoundaryValue::scalar(usize_to_f64("itype", cropland.itype)?),
-                        );
-                        pl_growth_surface.insert(
-                            BoundarySymbol::from("imngmt"),
-                            BoundaryValue::scalar(usize_to_f64("imngmt", cropland.imngmt)?),
-                        );
-                        pl_growth_surface.insert(
-                            BoundarySymbol::from("jdharv"),
-                            BoundaryValue::scalar(usize_to_f64("jdharv", jdharv)?),
-                        );
-                        pl_growth_surface.insert(
-                            BoundarySymbol::from("jdplt"),
-                            BoundaryValue::scalar(usize_to_f64("jdplt", jdplt)?),
-                        );
-                        pl_growth_surface
-                            .insert(BoundarySymbol::from("rw"), BoundaryValue::scalar(annual.rw));
-                        pl_decomp_surface.insert(
-                            BoundarySymbol::from("resmgt"),
-                            BoundaryValue::scalar(usize_to_f64("resmgt", annual.resmgt)?),
-                        );
-                        project_primary_annual_extension_aliases(
-                            &mut pl_decomp_surface,
-                            &annual_extension_projection,
-                        )?;
-                    }
-                }
-                YearlyCroplandBranch::Perennial(perennial) => {
-                    if perennial.mgtopt > 3 {
-                        return Err(HillslopeRuntimeInputError::UnsupportedPlManagementOption {
-                            field: "mgtopt",
-                            value: perennial.mgtopt,
-                            allowed: "1..3",
-                        });
-                    }
-                    if !perennial.rw.is_finite() {
-                        return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
-                            field: "rw",
-                            slot_index,
-                            crop_slot_index,
-                            value: perennial.rw,
-                        });
-                    }
-                    let jdharv = validate_projection_day(
-                        "jdharv",
-                        slot_index,
-                        crop_slot_index,
-                        perennial.jdharv,
-                        true,
-                    )?;
-                    let jdplt = validate_projection_day(
-                        "jdplt",
-                        slot_index,
-                        crop_slot_index,
-                        perennial.jdplt,
-                        true,
-                    )?;
-                    let jdstop = validate_projection_day(
-                        "jdstop",
-                        slot_index,
-                        crop_slot_index,
-                        perennial.jdstop,
-                        true,
-                    )?;
-                    pl_growth_surface.insert(
-                        pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("jdharv", jdharv)?),
-                    );
-                    pl_growth_surface.insert(
-                        pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("jdplt", jdplt)?),
-                    );
-                    pl_growth_surface.insert(
-                        pl_growth_slot_crop_symbol("jdstop", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("jdstop", jdstop)?),
-                    );
-                    pl_growth_surface.insert(
-                        pl_growth_slot_crop_symbol("rw", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(perennial.rw),
-                    );
-                    pl_growth_surface.insert(
-                        pl_growth_slot_crop_symbol("mgtopt", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("mgtopt", perennial.mgtopt)?),
-                    );
-
-                    pl_decomp_surface.insert(
-                        pl_decomp_slot_crop_symbol("mgtopt", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("mgtopt", perennial.mgtopt)?),
-                    );
-                    let (ncut, ncycle) = match perennial.mgtopt {
-                        1 => {
-                            if perennial.cut_days.is_empty() {
-                                return Err(
-                                    HillslopeRuntimeInputError::PlProjectionCardinalityInvalid {
-                                        field: "ncut",
-                                        slot_index,
-                                        crop_slot_index,
-                                        value: 0,
-                                        expected: ">=1 for mgtopt=1",
-                                    },
-                                );
-                            }
-                            if !perennial.grazing_cycles.is_empty() {
-                                return Err(
-                                    HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
-                                        field: "grazing_cycles",
-                                        slot_index,
-                                        crop_slot_index,
-                                        reason: "mgtopt=1 requires empty grazing_cycles",
-                                    },
-                                );
-                            }
-
-                            project_perennial_cutday_symbols(
-                                &mut pl_decomp_surface,
-                                slot_index,
-                                crop_slot_index,
-                                perennial,
-                            )?;
-                            (perennial.cut_days.len(), 0)
-                        }
-                        2 => {
-                            if perennial.grazing_cycles.is_empty() {
-                                return Err(
-                                    HillslopeRuntimeInputError::PlProjectionCardinalityInvalid {
-                                        field: "ncycle",
-                                        slot_index,
-                                        crop_slot_index,
-                                        value: 0,
-                                        expected: ">=1 for mgtopt=2",
-                                    },
-                                );
-                            }
-                            if !perennial.cut_days.is_empty() {
-                                return Err(
-                                    HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
-                                        field: "cut_days",
-                                        slot_index,
-                                        crop_slot_index,
-                                        reason: "mgtopt=2 requires empty cut_days",
-                                    },
-                                );
-                            }
-
-                            project_perennial_grazing_cycle_symbols(
-                                &mut pl_decomp_surface,
-                                slot_index,
-                                crop_slot_index,
-                                perennial,
-                            )?;
-                            (0, perennial.grazing_cycles.len())
-                        }
-                        3 => {
-                            if !perennial.cut_days.is_empty() {
-                                return Err(
-                                    HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
-                                        field: "cut_days",
-                                        slot_index,
-                                        crop_slot_index,
-                                        reason: "mgtopt=3 requires empty cut_days",
-                                    },
-                                );
-                            }
-                            if !perennial.grazing_cycles.is_empty() {
-                                return Err(
-                                    HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
-                                        field: "grazing_cycles",
-                                        slot_index,
-                                        crop_slot_index,
-                                        reason: "mgtopt=3 requires empty grazing_cycles",
-                                    },
-                                );
-                            }
-                            (0, 0)
-                        }
-                        _ => {
-                            return Err(
-                                HillslopeRuntimeInputError::UnsupportedPlManagementOption {
-                                    field: "mgtopt",
-                                    value: perennial.mgtopt,
-                                    allowed: "1..3",
-                                },
-                            );
-                        }
-                    };
-                    pl_decomp_surface.insert(
-                        pl_decomp_slot_crop_symbol("ncut", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("ncut", ncut)?),
-                    );
-                    pl_decomp_surface.insert(
-                        pl_decomp_slot_crop_symbol("ncycle", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("ncycle", ncycle)?),
-                    );
-                }
-            }
-        }
     }
 
-    apply_primary_initial_live_canopy_assimilation(&mut pl_growth_surface)?;
+    Ok(&management.registries.initials[initial_ref - 1])
+}
 
-    Ok(HillslopePlRuntimeSurfaces {
-        pl_schedule_surface,
-        pl_growth_surface,
-        pl_decomp_surface,
+fn build_initial_seed_projection(
+    management: &ManagementParseOutput,
+    landuse: usize,
+    initial_data: &ManagementInitialCroplandData,
+) -> Result<InitialSeedProjection, HillslopeRuntimeInputError> {
+    let cancov = validate_projection_fraction("cancov_seed", 0, 0, initial_data.base_line[1])?;
+    let inrcov = validate_projection_fraction("inrcov_seed", 0, 0, initial_data.base_line[5])?;
+    let rilcov = validate_projection_fraction("rilcov_seed", 0, 0, initial_data.residue_line[2])?;
+    let rrinit =
+        validate_projection_non_negative("rrinit_seed", 0, 0, initial_data.residue_line[3])?;
+    let rspace =
+        validate_projection_non_negative("rspace_seed", 0, 0, initial_data.residue_line[4])?;
+    let tillay1 =
+        validate_projection_non_negative("tillay1_seed", 0, 0, initial_data.thaw_line[2])?;
+    let tillay2 =
+        validate_projection_non_negative("tillay2_seed", 0, 0, initial_data.thaw_line[3])?;
+    let width = validate_projection_non_negative("width_seed", 0, 0, initial_data.thaw_line[4])?;
+
+    let residue_plant = residue_plant_for_initial(management, initial_data)?;
+    let PlantScenarioData::Cropland(residue_plant_cropland) = &residue_plant.data;
+    let residue_depth_m = legacy_initial_residue_depth_m(
+        landuse,
+        residue_plant_cropland.canopy_line[4],
+        residue_plant_cropland.canopy_line[9],
+        inrcov,
+        rilcov,
+        rspace,
+        width,
+    )?;
+    let canopy_cover_coeff = validate_projection_non_negative(
+        "bb_seed",
+        0,
+        0,
+        residue_plant_cropland.canopy_line[0],
+    )?;
+    let canopy_height_curve = validate_projection_non_negative(
+        "bbb_seed",
+        0,
+        0,
+        residue_plant_cropland.canopy_line[1],
+    )?;
+    let flivmx = validate_projection_non_negative(
+        "flivmx_seed",
+        0,
+        0,
+        residue_plant_cropland.growth_line[4],
+    )?;
+    let hmax = validate_projection_non_negative(
+        "hmax_seed",
+        0,
+        0,
+        residue_plant_cropland.growth_line[7],
+    )?;
+    let sumrtm = validate_initial_terminal_seed("sumrtm_seed", initial_data.terminal_line[0])?;
+    let sumsrm = validate_initial_terminal_seed("sumsrm_seed", initial_data.terminal_line[1])?;
+
+    Ok(InitialSeedProjection {
+        cancov,
+        inrcov,
+        rilcov,
+        rrinit,
+        rspace,
+        tillay1,
+        tillay2,
+        width,
+        residue_depth_m,
+        canopy_cover_coeff,
+        canopy_height_curve,
+        flivmx,
+        hmax,
+        sumrtm,
+        sumsrm,
     })
+}
+
+fn residue_plant_for_initial<'a>(
+    management: &'a ManagementParseOutput,
+    initial_data: &ManagementInitialCroplandData,
+) -> Result<
+    &'a openwepp_input_contract::parsers::management::PlantScenario,
+    HillslopeRuntimeInputError,
+>
+{
+    if initial_data.iresd == 0 || initial_data.iresd > management.registries.plants.len() {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "iresd_seed",
+            slot_index: 0,
+            crop_slot_index: 0,
+            value: usize_to_f64("iresd_seed", initial_data.iresd)?,
+            allowed: "1..=plant_scenario_count",
+        });
+    }
+
+    Ok(&management.registries.plants[initial_data.iresd - 1])
+}
+
+fn validate_initial_terminal_seed(
+    field: &'static str,
+    value: f64,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    if !value.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
+            field,
+            slot_index: 0,
+            crop_slot_index: 0,
+            value,
+        });
+    }
+    Ok(value)
+}
+
+fn insert_initial_seed_symbols(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    ofe_index: usize,
+    initial_ref: usize,
+    landuse: usize,
+    initial_data: &ManagementInitialCroplandData,
+    seed: &InitialSeedProjection,
+) -> Result<(), HillslopeRuntimeInputError> {
+    surfaces.schedule.insert(
+        pl_schedule_ofe_symbol("initial_ref", ofe_index),
+        BoundaryValue::scalar(usize_to_f64("initial_ref", initial_ref)?),
+    );
+    surfaces.schedule.insert(
+        pl_schedule_ofe_symbol("lanuse", ofe_index),
+        BoundaryValue::scalar(usize_to_f64("lanuse", landuse)?),
+    );
+
+    insert_initial_growth_seed_symbols(
+        &mut surfaces.growth,
+        ofe_index,
+        initial_data,
+        seed,
+    )?;
+    insert_initial_decomp_seed_symbols(
+        &mut surfaces.decomp,
+        ofe_index,
+        initial_data,
+        seed,
+    )
+}
+
+fn insert_initial_growth_seed_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    ofe_index: usize,
+    initial_data: &ManagementInitialCroplandData,
+    seed: &InitialSeedProjection,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (symbol, value) in [
+        (
+            pl_growth_ofe_symbol("imngmt_seed", ofe_index),
+            usize_to_f64("imngmt_seed", initial_data.imngmt)?,
+        ),
+        (
+            pl_growth_ofe_symbol("rtyp_seed", ofe_index),
+            usize_to_f64("rtyp_seed", initial_data.rtyp)?,
+        ),
+        (pl_growth_ofe_symbol("cancov_seed", ofe_index), seed.cancov),
+        (
+            pl_growth_ofe_symbol("bb_seed", ofe_index),
+            seed.canopy_cover_coeff,
+        ),
+        (
+            pl_growth_ofe_symbol("bbb_seed", ofe_index),
+            seed.canopy_height_curve,
+        ),
+        (pl_growth_ofe_symbol("flivmx_seed", ofe_index), seed.flivmx),
+        (pl_growth_ofe_symbol("hmax_seed", ofe_index), seed.hmax),
+        (slope_ofe_symbol("inrcov", ofe_index), seed.inrcov),
+        (slope_ofe_symbol("rilcov", ofe_index), seed.rilcov),
+        (slope_ofe_symbol("rrinit", ofe_index), seed.rrinit),
+        (slope_ofe_symbol("rspace", ofe_index), seed.rspace),
+        (pl_growth_ofe_symbol("tillay1_m", ofe_index), seed.tillay1),
+        (pl_growth_ofe_symbol("tillay2_m", ofe_index), seed.tillay2),
+        (slope_ofe_symbol("width", ofe_index), seed.width),
+        (
+            slope_ofe_symbol("rtyp", ofe_index),
+            usize_to_f64("rtyp_seed", initial_data.rtyp)?,
+        ),
+    ] {
+        surface.insert(symbol, BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
+fn insert_initial_decomp_seed_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    ofe_index: usize,
+    initial_data: &ManagementInitialCroplandData,
+    seed: &InitialSeedProjection,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (symbol, value) in [
+        (
+            pl_decomp_ofe_symbol("iresd_seed", ofe_index),
+            usize_to_f64("iresd_seed", initial_data.iresd)?,
+        ),
+        (pl_decomp_ofe_symbol("sumrtm_seed", ofe_index), seed.sumrtm),
+        (pl_decomp_ofe_symbol("sumsrm_seed", ofe_index), seed.sumsrm),
+        (
+            pl_decomp_ofe_symbol("residue_depth_m_seed", ofe_index),
+            seed.residue_depth_m,
+        ),
+    ] {
+        surface.insert(symbol, BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
+fn project_initial_understory_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    ofe_index: usize,
+    understory: [f64; 2],
+) -> Result<(), HillslopeRuntimeInputError> {
+    let usinrcol = validate_initial_terminal_seed("usinrcol_seed", understory[0])?;
+    let usrilcol = validate_initial_terminal_seed("usrilcol_seed", understory[1])?;
+    surface.insert(
+        pl_decomp_ofe_symbol("usinrcol_seed", ofe_index),
+        BoundaryValue::scalar(usinrcol),
+    );
+    surface.insert(
+        pl_decomp_ofe_symbol("usrilcol_seed", ofe_index),
+        BoundaryValue::scalar(usrilcol),
+    );
+    Ok(())
+}
+
+fn insert_primary_initial_seed_aliases(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    landuse: usize,
+    initial_data: &ManagementInitialCroplandData,
+    seed: &InitialSeedProjection,
+) -> Result<(), HillslopeRuntimeInputError> {
+    surfaces.schedule.insert(
+        BoundarySymbol::from("lanuse"),
+        BoundaryValue::scalar(usize_to_f64("lanuse", landuse)?),
+    );
+    insert_primary_initial_growth_aliases(&mut surfaces.growth, initial_data, seed)?;
+    insert_primary_initial_decomp_aliases(&mut surfaces.decomp, initial_data, seed)
+}
+
+fn insert_primary_initial_growth_aliases(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    initial_data: &ManagementInitialCroplandData,
+    seed: &InitialSeedProjection,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (symbol, value) in [
+        (
+            "imngmt_seed",
+            usize_to_f64("imngmt_seed", initial_data.imngmt)?,
+        ),
+        ("cancov", seed.cancov),
+        ("inrcov", seed.inrcov),
+        ("rilcov", seed.rilcov),
+        ("rrinit", seed.rrinit),
+        ("rspace", seed.rspace),
+        ("management.initial.params.tillay1_m", seed.tillay1),
+        ("management.initial.params.tillay2_m", seed.tillay2),
+        ("width", seed.width),
+        ("rtyp", usize_to_f64("rtyp_seed", initial_data.rtyp)?),
+        ("bb_seed", seed.canopy_cover_coeff),
+        ("bbb_seed", seed.canopy_height_curve),
+        ("flivmx_seed", seed.flivmx),
+        ("hmax_seed", seed.hmax),
+    ] {
+        surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
+fn insert_primary_initial_decomp_aliases(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    initial_data: &ManagementInitialCroplandData,
+    seed: &InitialSeedProjection,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (symbol, value) in [
+        ("iresd_seed", usize_to_f64("iresd_seed", initial_data.iresd)?),
+        ("sumrtm_seed", seed.sumrtm),
+        ("sumsrm_seed", seed.sumsrm),
+        ("frost.runtime_residue_depth_m", seed.residue_depth_m),
+        ("resdep", seed.residue_depth_m),
+    ] {
+        surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
+fn project_schedule_slot_surfaces(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    management: &ManagementParseOutput,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (slot_position, slot) in management.schedule.slots.iter().enumerate() {
+        project_one_schedule_slot_surfaces(surfaces, management, slot_position + 1, slot)?;
+    }
+
+    Ok(())
+}
+
+fn project_one_schedule_slot_surfaces(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    management: &ManagementParseOutput,
+    slot_index: usize,
+    slot: &ManagementScheduleSlotData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    validate_schedule_slot_shape(management, slot_index, slot)?;
+    let ofe_index = slot.ofe_index + 1;
+    insert_schedule_slot_symbols(&mut surfaces.schedule, slot_index, slot, ofe_index)?;
+
+    for (crop_slot_position, yearly_ref) in slot.yearly_refs.iter().enumerate() {
+        project_yearly_crop_slot_surfaces(
+            surfaces,
+            management,
+            slot_index,
+            crop_slot_position + 1,
+            *yearly_ref,
+        )?;
+    }
+
+    Ok(())
+}
+
+fn validate_schedule_slot_shape(
+    management: &ManagementParseOutput,
+    slot_index: usize,
+    slot: &ManagementScheduleSlotData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    if slot.crop_slots != slot.yearly_refs.len() {
+        return Err(HillslopeRuntimeInputError::ManagementScheduleSlotArityMismatch {
+            slot_index,
+            crop_slots: slot.crop_slots,
+            yearly_refs: slot.yearly_refs.len(),
+        });
+    }
+
+    let ofe_index = slot.ofe_index + 1;
+    if ofe_index == 0 || ofe_index > management.topology_count {
+        return Err(
+            HillslopeRuntimeInputError::ManagementScheduleOfeIndexOutOfRange {
+                slot_index,
+                ofe_index,
+                max_ofe_index: management.topology_count,
+            },
+        );
+    }
+
+    Ok(())
+}
+
+fn insert_schedule_slot_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    slot: &ManagementScheduleSlotData,
+    ofe_index: usize,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (symbol, value) in [
+        (
+            pl_schedule_slot_symbol("rotation_index", slot_index),
+            usize_to_f64("rotation_index", slot.rotation_index + 1)?,
+        ),
+        (
+            pl_schedule_slot_symbol("year_in_rotation", slot_index),
+            usize_to_f64("year_in_rotation", slot.year_in_rotation + 1)?,
+        ),
+        (
+            pl_schedule_slot_symbol("ofe_index", slot_index),
+            usize_to_f64("ofe_index", ofe_index)?,
+        ),
+        (
+            pl_schedule_slot_symbol("crop_slots", slot_index),
+            usize_to_f64("crop_slots", slot.crop_slots)?,
+        ),
+    ] {
+        surface.insert(symbol, BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
+fn project_yearly_crop_slot_surfaces(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    management: &ManagementParseOutput,
+    slot_index: usize,
+    crop_slot_index: usize,
+    yearly_ref: usize,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let yearly = yearly_scenario_for_slot(management, slot_index, crop_slot_index, yearly_ref)?;
+    if yearly.meta.landuse != 1 {
+        return Err(HillslopeRuntimeInputError::UnsupportedPlLanduse {
+            section: "yearly",
+            value: yearly.meta.landuse,
+        });
+    }
+    let YearlyScenarioData::Cropland(cropland) = &yearly.data;
+
+    insert_yearly_schedule_symbols(
+        &mut surfaces.schedule,
+        slot_index,
+        crop_slot_index,
+        yearly_ref,
+        yearly.meta.landuse,
+        cropland,
+    )?;
+    insert_yearly_growth_identity_symbols(
+        &mut surfaces.growth,
+        slot_index,
+        crop_slot_index,
+        cropland,
+    )?;
+
+    let plant_cropland = plant_cropland_for_yearly(management, slot_index, crop_slot_index, cropland)?;
+    project_growth_equation_symbols(
+        &mut surfaces.growth,
+        slot_index,
+        crop_slot_index,
+        plant_cropland,
+    )?;
+    project_decomposition_equation_symbols(
+        &mut surfaces.decomp,
+        slot_index,
+        crop_slot_index,
+        plant_cropland,
+    )?;
+    if slot_index == 1 && crop_slot_index == 1 {
+        project_primary_crop_aliases_and_drain_controls(
+            surfaces,
+            management,
+            slot_index,
+            crop_slot_index,
+            cropland,
+            plant_cropland,
+        )?;
+    }
+
+    match &cropland.branch {
+        YearlyCroplandBranch::AnnualOrFallow(annual) => {
+            project_annual_or_fallow_crop_slot(
+                surfaces,
+                slot_index,
+                crop_slot_index,
+                cropland,
+                annual,
+            )?;
+        }
+        YearlyCroplandBranch::Perennial(perennial) => {
+            project_perennial_crop_slot(surfaces, slot_index, crop_slot_index, perennial)?;
+        }
+    }
+
+    Ok(())
+}
+
+fn yearly_scenario_for_slot(
+    management: &ManagementParseOutput,
+    slot_index: usize,
+    crop_slot_index: usize,
+    yearly_ref: usize,
+) -> Result<&openwepp_input_contract::parsers::management::YearlyScenario, HillslopeRuntimeInputError>
+{
+    if yearly_ref == 0 || yearly_ref > management.registries.yearlies.len() {
+        return Err(
+            HillslopeRuntimeInputError::ManagementYearlyReferenceOutOfRange {
+                slot_index,
+                crop_slot_index,
+                yearly_ref,
+                max_yearly_ref: management.registries.yearlies.len(),
+            },
+        );
+    }
+
+    Ok(&management.registries.yearlies[yearly_ref - 1])
+}
+
+fn insert_yearly_schedule_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    yearly_ref: usize,
+    landuse: usize,
+    cropland: &ManagementYearlyCroplandData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (symbol, value) in [
+        (
+            pl_schedule_slot_crop_symbol("yearly_ref", slot_index, crop_slot_index),
+            usize_to_f64("yearly_ref", yearly_ref)?,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("lanuse", slot_index, crop_slot_index),
+            usize_to_f64("lanuse", landuse)?,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("itype", slot_index, crop_slot_index),
+            usize_to_f64("itype", cropland.itype)?,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("tilseq", slot_index, crop_slot_index),
+            usize_to_f64("tilseq", cropland.tilseq)?,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("conset", slot_index, crop_slot_index),
+            usize_to_f64("conset", cropland.conset)?,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("drset", slot_index, crop_slot_index),
+            usize_to_f64("drset", cropland.drset)?,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("imngmt", slot_index, crop_slot_index),
+            usize_to_f64("imngmt", cropland.imngmt)?,
+        ),
+    ] {
+        surface.insert(symbol, BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
+fn insert_yearly_growth_identity_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    cropland: &ManagementYearlyCroplandData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (symbol, value) in [
+        (
+            pl_growth_slot_crop_symbol("itype", slot_index, crop_slot_index),
+            usize_to_f64("itype", cropland.itype)?,
+        ),
+        (
+            pl_growth_slot_crop_symbol("imngmt", slot_index, crop_slot_index),
+            usize_to_f64("imngmt", cropland.imngmt)?,
+        ),
+    ] {
+        surface.insert(symbol, BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
+fn plant_cropland_for_yearly<'a>(
+    management: &'a ManagementParseOutput,
+    slot_index: usize,
+    crop_slot_index: usize,
+    cropland: &ManagementYearlyCroplandData,
+) -> Result<&'a ManagementPlantCroplandData, HillslopeRuntimeInputError> {
+    if cropland.itype == 0 || cropland.itype > management.registries.plants.len() {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "itype",
+            slot_index,
+            crop_slot_index,
+            value: usize_to_f64("itype", cropland.itype)?,
+            allowed: "1..=plant_scenario_count",
+        });
+    }
+
+    let plant = &management.registries.plants[cropland.itype - 1];
+    let PlantScenarioData::Cropland(plant_cropland) = &plant.data;
+    Ok(plant_cropland)
+}
+
+fn project_primary_crop_aliases_and_drain_controls(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    management: &ManagementParseOutput,
+    slot_index: usize,
+    crop_slot_index: usize,
+    cropland: &ManagementYearlyCroplandData,
+    plant_cropland: &ManagementPlantCroplandData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    project_primary_growth_equation_aliases(&mut surfaces.growth, plant_cropland)?;
+    project_primary_decomposition_equation_aliases(&mut surfaces.decomp, plant_cropland)?;
+    project_primary_drain_controls(
+        &mut surfaces.schedule,
+        management,
+        slot_index,
+        crop_slot_index,
+        cropland.drset,
+    )
+}
+
+fn project_primary_drain_controls(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    management: &ManagementParseOutput,
+    slot_index: usize,
+    crop_slot_index: usize,
+    drset: usize,
+) -> Result<(), HillslopeRuntimeInputError> {
+    surface.insert(
+        BoundarySymbol::from("drset"),
+        BoundaryValue::scalar(usize_to_f64("drset", drset)?),
+    );
+    if drset == 0 {
+        surface.insert(
+            BoundarySymbol::from("wb19_drain_enabled"),
+            BoundaryValue::scalar(0.0),
+        );
+        return Ok(());
+    }
+
+    let max_drain_ref = management.registries.drains.len();
+    if drset > max_drain_ref {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "drset",
+            slot_index,
+            crop_slot_index,
+            value: usize_to_f64("drset", drset)?,
+            allowed: "1..=drain_scenario_count",
+        });
+    }
+    let drain = &management.registries.drains[drset - 1];
+    let drain_depth =
+        validate_enabled_drain_geometry("wb19_drain_depth", slot_index, crop_slot_index, drain.ddrain)?;
+    let drain_spacing = validate_enabled_drain_geometry(
+        "wb19_drain_spacing",
+        slot_index,
+        crop_slot_index,
+        drain.sdrain,
+    )?;
+    let drain_diameter = validate_enabled_drain_geometry(
+        "wb19_drain_diameter",
+        slot_index,
+        crop_slot_index,
+        drain.drdiam,
+    )?;
+    for (symbol, value) in [
+        ("wb19_drain_enabled", 1.0),
+        ("wb19_drain_depth", drain_depth),
+        ("wb19_drain_spacing", drain_spacing),
+        ("wb19_drain_diameter", drain_diameter),
+    ] {
+        surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
+fn validate_enabled_drain_geometry(
+    field: &'static str,
+    slot_index: usize,
+    crop_slot_index: usize,
+    value: f64,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    let value = validate_projection_non_negative(field, slot_index, crop_slot_index, value)?;
+    if value <= 0.0 {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field,
+            slot_index,
+            crop_slot_index,
+            value,
+            allowed: "> 0.0 when wb19_drain_enabled=1",
+        });
+    }
+    Ok(value)
+}
+
+fn project_annual_or_fallow_crop_slot(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    slot_index: usize,
+    crop_slot_index: usize,
+    cropland: &ManagementYearlyCroplandData,
+    annual: &ManagementYearlyAnnualFallowData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let rw = validate_projection_finite("rw", slot_index, crop_slot_index, annual.rw)?;
+    let jdharv = validate_projection_day("jdharv", slot_index, crop_slot_index, annual.jdharv, false)?;
+    let jdplt = validate_projection_day("jdplt", slot_index, crop_slot_index, annual.jdplt, false)?;
+    for (symbol, value) in [
+        (
+            pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index),
+            usize_to_f64("jdharv", jdharv)?,
+        ),
+        (
+            pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index),
+            usize_to_f64("jdplt", jdplt)?,
+        ),
+        (pl_growth_slot_crop_symbol("rw", slot_index, crop_slot_index), rw),
+    ] {
+        surfaces
+            .growth
+            .insert(symbol, BoundaryValue::scalar(value));
+    }
+
+    surfaces.decomp.insert(
+        pl_decomp_slot_crop_symbol("resmgt", slot_index, crop_slot_index),
+        BoundaryValue::scalar(usize_to_f64("resmgt", annual.resmgt)?),
+    );
+    let annual_extension_projection = project_annual_extension_controls(
+        slot_index,
+        crop_slot_index,
+        annual.resmgt,
+        annual.extension.as_ref(),
+    )?;
+    project_annual_extension_symbols(
+        &mut surfaces.decomp,
+        slot_index,
+        crop_slot_index,
+        &annual_extension_projection,
+    )?;
+
+    if slot_index == 1 && crop_slot_index == 1 {
+        project_primary_annual_crop_aliases(
+            surfaces,
+            cropland,
+            annual,
+            jdharv,
+            jdplt,
+            &annual_extension_projection,
+        )?;
+    }
+    Ok(())
+}
+
+fn project_primary_annual_crop_aliases(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    cropland: &ManagementYearlyCroplandData,
+    annual: &ManagementYearlyAnnualFallowData,
+    jdharv: usize,
+    jdplt: usize,
+    annual_extension_projection: &AnnualExtensionProjection,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (symbol, value) in [
+        ("itype", usize_to_f64("itype", cropland.itype)?),
+        ("imngmt", usize_to_f64("imngmt", cropland.imngmt)?),
+        ("jdharv", usize_to_f64("jdharv", jdharv)?),
+        ("jdplt", usize_to_f64("jdplt", jdplt)?),
+        ("rw", annual.rw),
+    ] {
+        surfaces
+            .growth
+            .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
+    surfaces.decomp.insert(
+        BoundarySymbol::from("resmgt"),
+        BoundaryValue::scalar(usize_to_f64("resmgt", annual.resmgt)?),
+    );
+    project_primary_annual_extension_aliases(
+        &mut surfaces.decomp,
+        annual_extension_projection,
+    )
+}
+
+fn project_perennial_crop_slot(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    slot_index: usize,
+    crop_slot_index: usize,
+    perennial: &ManagementYearlyPerennialData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    if perennial.mgtopt > 3 {
+        return Err(HillslopeRuntimeInputError::UnsupportedPlManagementOption {
+            field: "mgtopt",
+            value: perennial.mgtopt,
+            allowed: "1..3",
+        });
+    }
+    let rw = validate_projection_finite("rw", slot_index, crop_slot_index, perennial.rw)?;
+    let jdharv = validate_projection_day("jdharv", slot_index, crop_slot_index, perennial.jdharv, true)?;
+    let jdplt = validate_projection_day("jdplt", slot_index, crop_slot_index, perennial.jdplt, true)?;
+    let jdstop =
+        validate_projection_day("jdstop", slot_index, crop_slot_index, perennial.jdstop, true)?;
+    for (symbol, value) in [
+        (
+            pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index),
+            usize_to_f64("jdharv", jdharv)?,
+        ),
+        (
+            pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index),
+            usize_to_f64("jdplt", jdplt)?,
+        ),
+        (
+            pl_growth_slot_crop_symbol("jdstop", slot_index, crop_slot_index),
+            usize_to_f64("jdstop", jdstop)?,
+        ),
+        (pl_growth_slot_crop_symbol("rw", slot_index, crop_slot_index), rw),
+        (
+            pl_growth_slot_crop_symbol("mgtopt", slot_index, crop_slot_index),
+            usize_to_f64("mgtopt", perennial.mgtopt)?,
+        ),
+    ] {
+        surfaces
+            .growth
+            .insert(symbol, BoundaryValue::scalar(value));
+    }
+
+    surfaces.decomp.insert(
+        pl_decomp_slot_crop_symbol("mgtopt", slot_index, crop_slot_index),
+        BoundaryValue::scalar(usize_to_f64("mgtopt", perennial.mgtopt)?),
+    );
+    let (ncut, ncycle) = project_perennial_management_payload(
+        &mut surfaces.decomp,
+        slot_index,
+        crop_slot_index,
+        perennial,
+    )?;
+    surfaces.decomp.insert(
+        pl_decomp_slot_crop_symbol("ncut", slot_index, crop_slot_index),
+        BoundaryValue::scalar(usize_to_f64("ncut", ncut)?),
+    );
+    surfaces.decomp.insert(
+        pl_decomp_slot_crop_symbol("ncycle", slot_index, crop_slot_index),
+        BoundaryValue::scalar(usize_to_f64("ncycle", ncycle)?),
+    );
+    Ok(())
+}
+
+fn project_perennial_management_payload(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    perennial: &ManagementYearlyPerennialData,
+) -> Result<(usize, usize), HillslopeRuntimeInputError> {
+    match perennial.mgtopt {
+        1 => project_perennial_cutday_payload(surface, slot_index, crop_slot_index, perennial),
+        2 => project_perennial_grazing_payload(surface, slot_index, crop_slot_index, perennial),
+        3 => validate_perennial_idle_payload(slot_index, crop_slot_index, perennial),
+        _ => Err(HillslopeRuntimeInputError::UnsupportedPlManagementOption {
+            field: "mgtopt",
+            value: perennial.mgtopt,
+            allowed: "1..3",
+        }),
+    }
+}
+
+fn project_perennial_cutday_payload(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    perennial: &ManagementYearlyPerennialData,
+) -> Result<(usize, usize), HillslopeRuntimeInputError> {
+    if perennial.cut_days.is_empty() {
+        return Err(HillslopeRuntimeInputError::PlProjectionCardinalityInvalid {
+            field: "ncut",
+            slot_index,
+            crop_slot_index,
+            value: 0,
+            expected: ">=1 for mgtopt=1",
+        });
+    }
+    if !perennial.grazing_cycles.is_empty() {
+        return Err(
+            HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                field: "grazing_cycles",
+                slot_index,
+                crop_slot_index,
+                reason: "mgtopt=1 requires empty grazing_cycles",
+            },
+        );
+    }
+
+    project_perennial_cutday_symbols(surface, slot_index, crop_slot_index, perennial)?;
+    Ok((perennial.cut_days.len(), 0))
+}
+
+fn project_perennial_grazing_payload(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    perennial: &ManagementYearlyPerennialData,
+) -> Result<(usize, usize), HillslopeRuntimeInputError> {
+    if perennial.grazing_cycles.is_empty() {
+        return Err(HillslopeRuntimeInputError::PlProjectionCardinalityInvalid {
+            field: "ncycle",
+            slot_index,
+            crop_slot_index,
+            value: 0,
+            expected: ">=1 for mgtopt=2",
+        });
+    }
+    if !perennial.cut_days.is_empty() {
+        return Err(
+            HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                field: "cut_days",
+                slot_index,
+                crop_slot_index,
+                reason: "mgtopt=2 requires empty cut_days",
+            },
+        );
+    }
+
+    project_perennial_grazing_cycle_symbols(surface, slot_index, crop_slot_index, perennial)?;
+    Ok((0, perennial.grazing_cycles.len()))
+}
+
+fn validate_perennial_idle_payload(
+    slot_index: usize,
+    crop_slot_index: usize,
+    perennial: &ManagementYearlyPerennialData,
+) -> Result<(usize, usize), HillslopeRuntimeInputError> {
+    if !perennial.cut_days.is_empty() {
+        return Err(
+            HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                field: "cut_days",
+                slot_index,
+                crop_slot_index,
+                reason: "mgtopt=3 requires empty cut_days",
+            },
+        );
+    }
+    if !perennial.grazing_cycles.is_empty() {
+        return Err(
+            HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                field: "grazing_cycles",
+                slot_index,
+                crop_slot_index,
+                reason: "mgtopt=3 requires empty grazing_cycles",
+            },
+        );
+    }
+    Ok((0, 0))
 }
 
 fn legacy_initial_residue_depth_m(
@@ -957,186 +1210,274 @@ fn legacy_residue_depth_conversion_factor(landuse: usize, stem_diameter_m: f64) 
     }
 }
 
-#[allow(clippy::too_many_lines)]
+#[derive(Debug, Clone, PartialEq)]
+struct PrimaryInitialLiveCanopyInputs {
+    imngmt: usize,
+    jdharv: usize,
+    jdplt: usize,
+    cancov: f64,
+    bb: f64,
+    bbb: f64,
+    hmax: f64,
+    xmxlai: f64,
+    gddmax: f64,
+    rsr: f64,
+    rdmax: f64,
+    rtmmax: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct PrimaryInitialCanopyGeometry {
+    vdmt: f64,
+    canhgt: f64,
+    lai: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct PrimaryInitialLiveCanopyState {
+    cancov: f64,
+    sumgdd: f64,
+    vdmt: f64,
+    canhgt: f64,
+    lai: f64,
+    rtmass: f64,
+    rtd: f64,
+}
+
 fn apply_primary_initial_live_canopy_assimilation(
     surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
 ) -> Result<(), HillslopeRuntimeInputError> {
+    let inputs = read_primary_initial_live_canopy_inputs(surface)?;
+    let state = compute_primary_initial_live_canopy_state(&inputs)?;
+    write_primary_initial_live_canopy_state(surface, state);
+    Ok(())
+}
+
+fn read_primary_initial_live_canopy_inputs(
+    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+) -> Result<PrimaryInitialLiveCanopyInputs, HillslopeRuntimeInputError> {
+    Ok(PrimaryInitialLiveCanopyInputs {
+        imngmt: read_primary_growth_usize(surface, "imngmt")?,
+        jdharv: read_primary_growth_usize(surface, "jdharv")?,
+        jdplt: read_primary_growth_usize(surface, "jdplt")?,
+        cancov: read_primary_state_scalar(surface, "cancov")?,
+        bb: read_primary_growth_f64(surface, "bb")?,
+        bbb: read_primary_growth_f64(surface, "bbb")?,
+        hmax: read_primary_growth_f64(surface, "hmax")?,
+        xmxlai: read_primary_growth_f64(surface, "xmxlai")?,
+        gddmax: read_primary_growth_f64(surface, "gddmax")?,
+        rsr: read_primary_growth_f64(surface, "rsr")?,
+        rdmax: read_primary_growth_f64(surface, "rdmax")?,
+        rtmmax: read_primary_growth_f64(surface, "rtmmax")?,
+    })
+}
+
+fn read_primary_growth_usize(
+    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    field: &'static str,
+) -> Result<usize, HillslopeRuntimeInputError> {
     let slot_index = 1;
     let crop_slot_index = 1;
-    let imngmt = projection_usize_from_surface(
+    projection_usize_from_surface(
         surface,
-        &pl_growth_slot_crop_symbol("imngmt", slot_index, crop_slot_index),
-        "imngmt",
+        &pl_growth_slot_crop_symbol(field, slot_index, crop_slot_index),
+        field,
         slot_index,
         crop_slot_index,
-    )?;
-    let jdharv = projection_usize_from_surface(
-        surface,
-        &pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index),
-        "jdharv",
-        slot_index,
-        crop_slot_index,
-    )?;
-    let jdplt = projection_usize_from_surface(
-        surface,
-        &pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index),
-        "jdplt",
-        slot_index,
-        crop_slot_index,
-    )?;
+    )
+}
 
-    let mut cancov = projection_f64_from_surface(
+fn read_primary_growth_f64(
+    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    field: &'static str,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    let slot_index = 1;
+    let crop_slot_index = 1;
+    projection_f64_from_surface(
         surface,
-        &BoundarySymbol::from("cancov"),
-        "cancov",
+        &pl_growth_slot_crop_symbol(field, slot_index, crop_slot_index),
+        field,
         slot_index,
         crop_slot_index,
-    )?;
+    )
+}
 
-    if imngmt == 3 || (imngmt == 1 && jdplt < jdharv) || (imngmt == 2 && jdplt > 0) {
+fn read_primary_state_scalar(
+    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    field: &'static str,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    let slot_index = 1;
+    let crop_slot_index = 1;
+    projection_f64_from_surface(
+        surface,
+        &BoundarySymbol::from(field),
+        field,
+        slot_index,
+        crop_slot_index,
+    )
+}
+
+fn compute_primary_initial_live_canopy_state(
+    inputs: &PrimaryInitialLiveCanopyInputs,
+) -> Result<PrimaryInitialLiveCanopyState, HillslopeRuntimeInputError> {
+    let cancov = normalized_primary_initial_cancov(inputs);
+    let geometry = compute_primary_initial_canopy_geometry(inputs, cancov)?;
+    let (rtd, rtmass) = compute_primary_initial_root_state(inputs, cancov, geometry);
+    let sumgdd = compute_primary_initial_sumgdd(inputs, geometry.lai);
+    let state = PrimaryInitialLiveCanopyState {
+        cancov,
+        sumgdd,
+        vdmt: geometry.vdmt,
+        canhgt: geometry.canhgt,
+        lai: geometry.lai,
+        rtmass,
+        rtd,
+    };
+    validate_primary_initial_live_canopy_state(state)?;
+    Ok(state)
+}
+
+fn normalized_primary_initial_cancov(inputs: &PrimaryInitialLiveCanopyInputs) -> f64 {
+    let mut cancov = inputs.cancov;
+    if inputs.imngmt == 3
+        || (inputs.imngmt == 1 && inputs.jdplt < inputs.jdharv)
+        || (inputs.imngmt == 2 && inputs.jdplt > 0)
+    {
         cancov = 0.0;
     }
     if cancov >= PL_GROWTH_CANCOV_MAX {
         cancov = PL_GROWTH_CANCOV_MAX;
     }
-    surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(cancov));
+    cancov
+}
 
-    let bb = projection_f64_from_surface(
-        surface,
-        &pl_growth_slot_crop_symbol("bb", slot_index, crop_slot_index),
-        "bb",
-        slot_index,
-        crop_slot_index,
-    )?;
-    let bbb = projection_f64_from_surface(
-        surface,
-        &pl_growth_slot_crop_symbol("bbb", slot_index, crop_slot_index),
-        "bbb",
-        slot_index,
-        crop_slot_index,
-    )?;
-    let hmax = projection_f64_from_surface(
-        surface,
-        &pl_growth_slot_crop_symbol("hmax", slot_index, crop_slot_index),
-        "hmax",
-        slot_index,
-        crop_slot_index,
-    )?;
-    let xmxlai = projection_f64_from_surface(
-        surface,
-        &pl_growth_slot_crop_symbol("xmxlai", slot_index, crop_slot_index),
-        "xmxlai",
-        slot_index,
-        crop_slot_index,
-    )?;
-    let gddmax = projection_f64_from_surface(
-        surface,
-        &pl_growth_slot_crop_symbol("gddmax", slot_index, crop_slot_index),
-        "gddmax",
-        slot_index,
-        crop_slot_index,
-    )?;
-    let rsr = projection_f64_from_surface(
-        surface,
-        &pl_growth_slot_crop_symbol("rsr", slot_index, crop_slot_index),
-        "rsr",
-        slot_index,
-        crop_slot_index,
-    )?;
-    let rdmax = projection_f64_from_surface(
-        surface,
-        &pl_growth_slot_crop_symbol("rdmax", slot_index, crop_slot_index),
-        "rdmax",
-        slot_index,
-        crop_slot_index,
-    )?;
-    let rtmmax = projection_f64_from_surface(
-        surface,
-        &pl_growth_slot_crop_symbol("rtmmax", slot_index, crop_slot_index),
-        "rtmmax",
-        slot_index,
-        crop_slot_index,
-    )?;
-
-    let mut vdmt = 0.0;
-    let mut lai = 0.0;
-    let mut canhgt = 0.0;
-    if cancov > 0.0 {
-        if bb <= 0.0 {
-            return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
-                field: "bb",
-                slot_index,
-                crop_slot_index,
-                value: bb,
-                allowed: ">0.0 when initial cancov > 0.0",
-            });
-        }
-        if xmxlai <= 0.0 {
-            return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
-                field: "xmxlai",
-                slot_index,
-                crop_slot_index,
-                value: xmxlai,
-                allowed: ">0.0 when initial cancov > 0.0",
-            });
-        }
-        vdmt = ((1.0 - cancov).ln() / -bb).max(0.0);
-        canhgt = (1.0 - (-bbb * vdmt).exp()) * hmax;
-        lai = if imngmt == 1 {
-            xmxlai * vdmt
-                / (vdmt + PL_GROWTH_ANNUAL_LAI_A * (-PL_GROWTH_ANNUAL_LAI_B * vdmt).exp())
-        } else {
-            xmxlai * vdmt
-                / (vdmt
-                    + PL_GROWTH_PERENNIAL_LAI_A
-                        * (-PL_GROWTH_PERENNIAL_LAI_B * vdmt).exp())
-        };
-        if !lai.is_finite() || lai < 0.0 {
-            return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
-                field: "lai",
-                slot_index,
-                crop_slot_index,
-                value: lai,
-                allowed: "finite and >=0.0 after initial cancov assimilation",
-            });
-        }
+fn compute_primary_initial_canopy_geometry(
+    inputs: &PrimaryInitialLiveCanopyInputs,
+    cancov: f64,
+) -> Result<PrimaryInitialCanopyGeometry, HillslopeRuntimeInputError> {
+    if cancov <= 0.0 {
+        return Ok(PrimaryInitialCanopyGeometry {
+            vdmt: 0.0,
+            canhgt: 0.0,
+            lai: 0.0,
+        });
     }
 
-    let (rtd, rtmass) = if imngmt == 2 && jdplt == 0 {
-        (rdmax, rtmmax)
-    } else if imngmt == 1 && cancov > 0.0 {
-        (rsr * canhgt, rsr * vdmt)
+    validate_positive_initial_canopy_driver("bb", inputs.bb)?;
+    validate_positive_initial_canopy_driver("xmxlai", inputs.xmxlai)?;
+    let vdmt = ((1.0 - cancov).ln() / -inputs.bb).max(0.0);
+    let canhgt = (1.0 - (-inputs.bbb * vdmt).exp()) * inputs.hmax;
+    let lai = compute_primary_initial_lai(inputs, vdmt);
+    validate_primary_initial_lai(lai)?;
+    Ok(PrimaryInitialCanopyGeometry { vdmt, canhgt, lai })
+}
+
+fn validate_positive_initial_canopy_driver(
+    field: &'static str,
+    value: f64,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let slot_index = 1;
+    let crop_slot_index = 1;
+    if value <= 0.0 {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field,
+            slot_index,
+            crop_slot_index,
+            value,
+            allowed: ">0.0 when initial cancov > 0.0",
+        });
+    }
+    Ok(())
+}
+
+fn compute_primary_initial_lai(inputs: &PrimaryInitialLiveCanopyInputs, vdmt: f64) -> f64 {
+    if inputs.imngmt == 1 {
+        inputs.xmxlai * vdmt
+            / (vdmt + PL_GROWTH_ANNUAL_LAI_A * (-PL_GROWTH_ANNUAL_LAI_B * vdmt).exp())
+    } else {
+        inputs.xmxlai * vdmt
+            / (vdmt
+                + PL_GROWTH_PERENNIAL_LAI_A * (-PL_GROWTH_PERENNIAL_LAI_B * vdmt).exp())
+    }
+}
+
+fn validate_primary_initial_lai(lai: f64) -> Result<(), HillslopeRuntimeInputError> {
+    if !lai.is_finite() || lai < 0.0 {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "lai",
+            slot_index: 1,
+            crop_slot_index: 1,
+            value: lai,
+            allowed: "finite and >=0.0 after initial cancov assimilation",
+        });
+    }
+    Ok(())
+}
+
+fn compute_primary_initial_root_state(
+    inputs: &PrimaryInitialLiveCanopyInputs,
+    cancov: f64,
+    geometry: PrimaryInitialCanopyGeometry,
+) -> (f64, f64) {
+    if inputs.imngmt == 2 && inputs.jdplt == 0 {
+        (inputs.rdmax, inputs.rtmmax)
+    } else if inputs.imngmt == 1 && cancov > 0.0 {
+        (inputs.rsr * geometry.canhgt, inputs.rsr * geometry.vdmt)
     } else {
         (0.0, 0.0)
-    };
+    }
+}
 
-    let sumgdd = if lai > 0.0 && xmxlai > 0.0 && gddmax > 0.0 {
-        gddmax * lai / xmxlai
+fn compute_primary_initial_sumgdd(inputs: &PrimaryInitialLiveCanopyInputs, lai: f64) -> f64 {
+    if lai > 0.0 && inputs.xmxlai > 0.0 && inputs.gddmax > 0.0 {
+        inputs.gddmax * lai / inputs.xmxlai
     } else {
         0.0
-    };
+    }
+}
 
+fn validate_primary_initial_live_canopy_state(
+    state: PrimaryInitialLiveCanopyState,
+) -> Result<(), HillslopeRuntimeInputError> {
     for (symbol, value) in [
-        ("sumgdd", sumgdd),
-        ("vdmt", vdmt),
-        ("canhgt", canhgt),
-        ("lai", lai),
-        ("rtmass", rtmass),
-        ("rtd", rtd),
+        ("sumgdd", state.sumgdd),
+        ("vdmt", state.vdmt),
+        ("canhgt", state.canhgt),
+        ("lai", state.lai),
+        ("rtmass", state.rtmass),
+        ("rtd", state.rtd),
     ] {
         if !value.is_finite() || value < 0.0 {
             return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
                 field: symbol,
-                slot_index,
-                crop_slot_index,
+                slot_index: 1,
+                crop_slot_index: 1,
                 value,
                 allowed: "finite and >=0.0 after initial live-canopy assimilation",
             });
         }
+    }
+    Ok(())
+}
+
+fn write_primary_initial_live_canopy_state(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    state: PrimaryInitialLiveCanopyState,
+) {
+    surface.insert(
+        BoundarySymbol::from("cancov"),
+        BoundaryValue::scalar(state.cancov),
+    );
+    for (symbol, value) in [
+        ("sumgdd", state.sumgdd),
+        ("vdmt", state.vdmt),
+        ("canhgt", state.canhgt),
+        ("lai", state.lai),
+        ("rtmass", state.rtmass),
+        ("rtd", state.rtd),
+    ] {
         surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
     }
-
-    Ok(())
 }
 
 fn projection_f64_from_surface(
