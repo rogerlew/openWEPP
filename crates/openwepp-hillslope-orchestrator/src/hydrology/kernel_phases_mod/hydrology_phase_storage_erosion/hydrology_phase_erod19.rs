@@ -1,6 +1,33 @@
 #[allow(clippy::wildcard_imports)]
 use crate::hydrology::*;
 
+struct Erod19XcritInputs {
+    coefficient_a: f64,
+    coefficient_b: f64,
+    critical_shear: f64,
+    segment_start: f64,
+    segment_end: f64,
+    threshold_offset: f64,
+    upstream_shear: f64,
+    downstream_shear: f64,
+}
+
+struct Erod19XcritResult {
+    shear_class: f64,
+    critical_start: f64,
+    critical_end: f64,
+}
+
+impl Erod19XcritResult {
+    fn clamped_tuple(self, segment_start: f64, segment_end: f64) -> (f64, f64, f64) {
+        (
+            self.shear_class,
+            self.critical_start.clamp(segment_start, segment_end),
+            self.critical_end.clamp(segment_start, segment_end),
+        )
+    }
+}
+
 impl Wb11HydrologyKernel {
 pub(crate) fn erod19_shear(a: f64, b: f64, c: f64, x: f64) -> f64 {
         let mut value = (a * x * x) + (b * x) + c;
@@ -34,7 +61,6 @@ pub(crate) fn erod19_root(a: f64, b: f64, c: f64) -> Option<(f64, f64)> {
         Some((x1, x2))
     }
 
-    #[allow(clippy::similar_names, clippy::too_many_lines)]
 pub(crate) fn erod19_xcrit_classification(
         a: f64,
         b: f64,
@@ -43,86 +69,232 @@ pub(crate) fn erod19_xcrit_classification(
         xb: f64,
         xe: f64,
     ) -> (f64, f64, f64) {
-        let mut xc1 = xb;
-        let mut xc2 = xe;
-        let mut mshear = 1.0;
-
         let mut tauchk = tauc.powf(1.5) - c;
         if tauchk < 0.0 {
             tauchk = 0.0;
         }
 
-        let taub = Self::erod19_shear(a, b, c, xb);
-        let taue = Self::erod19_shear(a, b, c, xe);
+        let inputs = Erod19XcritInputs {
+            coefficient_a: a,
+            coefficient_b: b,
+            critical_shear: tauc,
+            segment_start: xb,
+            segment_end: xe,
+            threshold_offset: tauchk,
+            upstream_shear: Self::erod19_shear(a, b, c, xb),
+            downstream_shear: Self::erod19_shear(a, b, c, xe),
+        };
+        let result = Self::erod19_xcrit_unclamped(&inputs);
 
-        if a.abs() <= WB11_ZERO_THRESHOLD {
-            if b.abs() > WB11_ZERO_THRESHOLD {
-                xc1 = tauchk / b;
-            } else {
-                xc1 = EROD19_UNIFORM_XC_SENTINEL;
-            }
-            if taue > taub {
-                mshear = 3.0;
-                if xc1 <= xb {
-                    mshear = 2.0;
-                }
-                if xc1 >= xe {
-                    mshear = 1.0;
-                }
-            } else {
-                mshear = 4.0;
-                if xc1 >= xe {
-                    mshear = 2.0;
-                }
-                if xc1 <= xb {
-                    mshear = 1.0;
-                }
-            }
-        } else if a > 0.0 && taue > taub {
-            if taub >= tauc {
-                mshear = 2.0;
-            } else if taue <= tauc {
-                mshear = 1.0;
-            } else {
-                mshear = 3.0;
-                if let Some((x1, x2)) = Self::erod19_root(a, b, tauchk) {
-                    if x1 >= xb && x1 <= xe {
-                        xc1 = x1;
-                    } else if x2 >= xb && x2 <= xe {
-                        xc1 = x2;
-                    }
-                }
-            }
-        } else if taue >= tauc && taub >= tauc {
-            mshear = 2.0;
+        result.clamped_tuple(xb, xe)
+    }
+
+    fn erod19_xcrit_unclamped(inputs: &Erod19XcritInputs) -> Erod19XcritResult {
+        if inputs.coefficient_a.abs() <= WB11_ZERO_THRESHOLD {
+            return Self::erod19_linear_xcrit_classification(inputs);
+        }
+        if inputs.coefficient_a > 0.0 && inputs.downstream_shear > inputs.upstream_shear {
+            return Self::erod19_rising_xcrit_classification(inputs);
+        }
+        if inputs.downstream_shear >= inputs.critical_shear
+            && inputs.upstream_shear >= inputs.critical_shear
+        {
+            return Erod19XcritResult {
+                shear_class: 2.0,
+                critical_start: inputs.segment_start,
+                critical_end: inputs.segment_end,
+            };
+        }
+
+        Self::erod19_curved_xcrit_classification(inputs)
+    }
+
+    fn erod19_linear_xcrit_classification(
+        inputs: &Erod19XcritInputs,
+    ) -> Erod19XcritResult {
+        let critical_start = if inputs.coefficient_b.abs() > WB11_ZERO_THRESHOLD {
+            inputs.threshold_offset / inputs.coefficient_b
         } else {
-            let part = (b * b) + (4.0 * a * tauchk);
-            if part <= 0.0 {
-                mshear = 1.0;
-            } else if let Some((x1, x2)) = Self::erod19_root(a, b, tauchk) {
-                if taub <= tauc && taue >= tauc {
-                    mshear = 3.0;
-                    xc1 = if x1 <= xb || x1 >= xe { x2 } else { x1 };
-                } else if taub >= tauc && taue <= tauc {
-                    mshear = 4.0;
-                    xc1 = if x1 <= xb || x1 >= xe { x2 } else { x1 };
-                } else if taub <= tauc && taue <= tauc {
-                    mshear = 5.0;
-                    xc1 = x1;
-                    xc2 = x2;
-                    if x1 < xb
-                        || x1 > xe
-                        || x2 < xb
-                        || x2 > xe
-                        || (x1 - x2).abs() <= WB11_ZERO_THRESHOLD
-                    {
-                        mshear = 1.0;
-                    }
-                }
+            EROD19_UNIFORM_XC_SENTINEL
+        };
+        let shear_class = if inputs.downstream_shear > inputs.upstream_shear {
+            Self::erod19_increasing_linear_shear_class(
+                critical_start,
+                inputs.segment_start,
+                inputs.segment_end,
+            )
+        } else {
+            Self::erod19_decreasing_linear_shear_class(
+                critical_start,
+                inputs.segment_start,
+                inputs.segment_end,
+            )
+        };
+
+        Erod19XcritResult {
+            shear_class,
+            critical_start,
+            critical_end: inputs.segment_end,
+        }
+    }
+
+    fn erod19_increasing_linear_shear_class(
+        critical_start: f64,
+        segment_start: f64,
+        segment_end: f64,
+    ) -> f64 {
+        let mut shear_class = 3.0;
+        if critical_start <= segment_start {
+            shear_class = 2.0;
+        }
+        if critical_start >= segment_end {
+            shear_class = 1.0;
+        }
+        shear_class
+    }
+
+    fn erod19_decreasing_linear_shear_class(
+        critical_start: f64,
+        segment_start: f64,
+        segment_end: f64,
+    ) -> f64 {
+        let mut shear_class = 4.0;
+        if critical_start >= segment_end {
+            shear_class = 2.0;
+        }
+        if critical_start <= segment_start {
+            shear_class = 1.0;
+        }
+        shear_class
+    }
+
+    fn erod19_rising_xcrit_classification(
+        inputs: &Erod19XcritInputs,
+    ) -> Erod19XcritResult {
+        if inputs.upstream_shear >= inputs.critical_shear {
+            return Erod19XcritResult {
+                shear_class: 2.0,
+                critical_start: inputs.segment_start,
+                critical_end: inputs.segment_end,
+            };
+        }
+        if inputs.downstream_shear <= inputs.critical_shear {
+            return Erod19XcritResult {
+                shear_class: 1.0,
+                critical_start: inputs.segment_start,
+                critical_end: inputs.segment_end,
+            };
+        }
+
+        let mut critical_start = inputs.segment_start;
+        if let Some((lower_root, upper_root)) = Self::erod19_root(
+            inputs.coefficient_a,
+            inputs.coefficient_b,
+            inputs.threshold_offset,
+        ) {
+            if lower_root >= inputs.segment_start && lower_root <= inputs.segment_end {
+                critical_start = lower_root;
+            } else if upper_root >= inputs.segment_start && upper_root <= inputs.segment_end {
+                critical_start = upper_root;
             }
         }
 
-        (mshear, xc1.clamp(xb, xe), xc2.clamp(xb, xe))
+        Erod19XcritResult {
+            shear_class: 3.0,
+            critical_start,
+            critical_end: inputs.segment_end,
+        }
+    }
+
+    fn erod19_curved_xcrit_classification(
+        inputs: &Erod19XcritInputs,
+    ) -> Erod19XcritResult {
+        let part = (inputs.coefficient_b * inputs.coefficient_b)
+            + (4.0 * inputs.coefficient_a * inputs.threshold_offset);
+        if part <= 0.0 {
+            return Erod19XcritResult {
+                shear_class: 1.0,
+                critical_start: inputs.segment_start,
+                critical_end: inputs.segment_end,
+            };
+        }
+        if let Some((lower_root, upper_root)) = Self::erod19_root(
+            inputs.coefficient_a,
+            inputs.coefficient_b,
+            inputs.threshold_offset,
+        ) {
+            return Self::erod19_curved_root_xcrit_classification(
+                inputs, lower_root, upper_root,
+            );
+        }
+
+        Erod19XcritResult {
+            shear_class: 1.0,
+            critical_start: inputs.segment_start,
+            critical_end: inputs.segment_end,
+        }
+    }
+
+    fn erod19_curved_root_xcrit_classification(
+        inputs: &Erod19XcritInputs,
+        lower_root: f64,
+        upper_root: f64,
+    ) -> Erod19XcritResult {
+        if inputs.upstream_shear <= inputs.critical_shear
+            && inputs.downstream_shear >= inputs.critical_shear
+        {
+            return Erod19XcritResult {
+                shear_class: 3.0,
+                critical_start: Self::erod19_segment_root(lower_root, upper_root, inputs),
+                critical_end: inputs.segment_end,
+            };
+        }
+        if inputs.upstream_shear >= inputs.critical_shear
+            && inputs.downstream_shear <= inputs.critical_shear
+        {
+            return Erod19XcritResult {
+                shear_class: 4.0,
+                critical_start: Self::erod19_segment_root(lower_root, upper_root, inputs),
+                critical_end: inputs.segment_end,
+            };
+        }
+        if inputs.upstream_shear <= inputs.critical_shear
+            && inputs.downstream_shear <= inputs.critical_shear
+        {
+            let shear_class = if lower_root < inputs.segment_start
+                || lower_root > inputs.segment_end
+                || upper_root < inputs.segment_start
+                || upper_root > inputs.segment_end
+                || (lower_root - upper_root).abs() <= WB11_ZERO_THRESHOLD
+            {
+                1.0
+            } else {
+                5.0
+            };
+            return Erod19XcritResult {
+                shear_class,
+                critical_start: lower_root,
+                critical_end: upper_root,
+            };
+        }
+
+        Erod19XcritResult {
+            shear_class: 1.0,
+            critical_start: inputs.segment_start,
+            critical_end: inputs.segment_end,
+        }
+    }
+
+    fn erod19_segment_root(
+        lower_root: f64,
+        upper_root: f64,
+        inputs: &Erod19XcritInputs,
+    ) -> f64 {
+        if lower_root <= inputs.segment_start || lower_root >= inputs.segment_end {
+            upper_root
+        } else {
+            lower_root
+        }
     }
 
     #[allow(clippy::too_many_arguments)]

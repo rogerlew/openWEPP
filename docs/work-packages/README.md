@@ -10,6 +10,11 @@
 
 State as of `2026-06-15`:
 
+- CQR17 completed behavior-preserving CRAP/cyclomatic-complexity
+  decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod19.rs`.
+  Package: `20260615-cqr17-hydrology-erod19-complexity-001/`. Final target
+  CRAP: `2.0`.
 - CQR16 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-sim-contract/src/units_mod/registries.rs`.

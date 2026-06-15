@@ -1,6 +1,87 @@
 use super::fixtures::*;
 use super::*;
 
+fn assert_erod19_xcrit_case(inputs: (f64, f64, f64, f64, f64, f64), expected: (f64, f64, f64)) {
+    let (a, b, c, tauc, xb, xe) = inputs;
+    let (observed_mshear, observed_xc1, observed_xc2) =
+        Wb11HydrologyKernel::erod19_xcrit_classification(a, b, c, tauc, xb, xe);
+    let (expected_mshear, expected_xc1, expected_xc2) = expected;
+
+    assert!(
+        (observed_mshear - expected_mshear).abs() <= 1.0e-12,
+        "mshear mismatch for inputs {inputs:?}: observed {observed_mshear}, expected {expected_mshear}"
+    );
+    assert!(
+        (observed_xc1 - expected_xc1).abs() <= 1.0e-12,
+        "xc1 mismatch for inputs {inputs:?}: observed {observed_xc1}, expected {expected_xc1}"
+    );
+    assert!(
+        (observed_xc2 - expected_xc2).abs() <= 1.0e-12,
+        "xc2 mismatch for inputs {inputs:?}: observed {observed_xc2}, expected {expected_xc2}"
+    );
+}
+
+#[test]
+fn cqr17_erod19_xcrit_classification_preserves_branch_vectors() {
+    let cases = [
+        (
+            "linear increasing critical point inside segment",
+            (0.0, 4.0, 1.0, 2.0, 0.0, 1.0),
+            (3.0, 0.457_106_781_186_547_6, 1.0),
+        ),
+        (
+            "linear decreasing critical point inside segment",
+            (0.0, -4.0, 5.0, 2.0, -1.0, 1.0),
+            (4.0, -0.0, 1.0),
+        ),
+        (
+            "convex rising all above critical shear",
+            (1.0, 0.0, 4.0, 2.0, 0.0, 1.0),
+            (2.0, 0.0, 1.0),
+        ),
+        (
+            "convex rising all below critical shear",
+            (1.0, 0.0, 0.0, 3.0, 0.0, 1.0),
+            (1.0, 0.0, 1.0),
+        ),
+        (
+            "convex rising crosses critical shear",
+            (1.0, 0.0, 0.0, 0.5, 0.0, 1.0),
+            (3.0, 0.594_603_557_501_360_5, 1.0),
+        ),
+        (
+            "curved segment remains above critical shear",
+            (-1.0, 0.0, 9.0, 2.0, 0.0, 1.0),
+            (2.0, 0.0, 1.0),
+        ),
+        (
+            "curved segment has no real critical crossing",
+            (-1.0, 0.0, 0.0, 1.0, 0.0, 1.0),
+            (1.0, 0.0, 1.0),
+        ),
+        (
+            "curved segment crosses from below to above critical shear",
+            (-1.0, 3.0, 0.0, 1.0, 0.0, 1.0),
+            (3.0, 0.381_966_011_250_105_1, 1.0),
+        ),
+        (
+            "curved segment crosses from above to below critical shear",
+            (-0.1, -1.0, 3.0, 2.0, 0.0, 2.0),
+            (4.0, 0.0, 2.0),
+        ),
+        (
+            "curved segment has two critical crossings",
+            (-4.0, 4.0, 0.0, 0.5, 0.0, 1.0),
+            (5.0, 0.097_990_482_262_320_6, 0.902_009_517_737_679_5),
+        ),
+    ];
+
+    for (label, inputs, expected) in cases {
+        assert_erod19_xcrit_case(inputs, expected);
+        eprintln!("covered EROD19 xcrit vector: {label}");
+    }
+}
+
 #[test]
 fn hphys0246_wb18_percolation_preserves_residual_storage_in_aggregate_soil_water() {
     let state_surface = hphys0246_wb18_aggregate_state_surface();
