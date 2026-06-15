@@ -47,8 +47,41 @@ struct BinaryReleaseMetadataDocument {
     validation: BinaryReleaseValidation,
 }
 
-#[allow(clippy::too_many_lines)]
 pub fn lint_release_directory(release_dir: &Path) -> Result<ReleaseLintReport, ReleaseLintError> {
+    let candidate_binaries = collect_release_candidate_binaries(release_dir)?;
+    let hbp_pair = lint_release_binaries(&candidate_binaries)?;
+    validate_release_hbp_pair(&hbp_pair)?;
+
+    Ok(ReleaseLintReport {
+        checked_binaries: candidate_binaries,
+    })
+}
+
+#[derive(Debug, Default)]
+struct ReleaseHbpPair {
+    watershed: Option<bool>,
+    hillslope: Option<bool>,
+}
+
+impl ReleaseHbpPair {
+    fn record(&mut self, role: BinaryRole, hbp_supported: bool) {
+        match role {
+            BinaryRole::Watershed => self.watershed = Some(hbp_supported),
+            BinaryRole::Hillslope => self.hillslope = Some(hbp_supported),
+            BinaryRole::Replay => {}
+        }
+    }
+}
+
+#[derive(Debug)]
+struct ReleaseBinaryLintOutcome {
+    role: BinaryRole,
+    hbp_supported: bool,
+}
+
+fn collect_release_candidate_binaries(
+    release_dir: &Path,
+) -> Result<Vec<PathBuf>, ReleaseLintError> {
     let entries = fs::read_dir(release_dir).map_err(|source| ReleaseLintError::DirectoryRead {
         path: release_dir.to_path_buf(),
         source,
@@ -83,85 +116,114 @@ pub fn lint_release_directory(release_dir: &Path) -> Result<ReleaseLintReport, R
         });
     }
 
-    let mut watershed_hbp_supported: Option<bool> = None;
-    let mut hillslope_hbp_supported: Option<bool> = None;
+    Ok(candidate_binaries)
+}
 
-    for binary_path in &candidate_binaries {
-        let binary_name = file_name_string(binary_path);
-        let expected_role = classify_release_binary_role(binary_name.as_str())?;
-        if !release_binary_name_is_valid(binary_name.as_str(), expected_role) {
-            return Err(ReleaseLintError::InvalidBinaryName { binary_name });
-        }
-
-        let sidecar_path = sidecar_path_for_binary(binary_path);
-        if !sidecar_path.is_file() {
-            return Err(ReleaseLintError::MissingSidecar { sidecar_path });
-        }
-
-        let metadata = validate_release_sidecar(&sidecar_path).map_err(|source| {
-            ReleaseLintError::SidecarInvalid {
-                sidecar_path: sidecar_path.clone(),
-                source,
-            }
-        })?;
-
-        let observed_role = required_str(&metadata, "binary_role").map_err(|source| {
-            ReleaseLintError::SidecarInvalid {
-                sidecar_path: sidecar_path.clone(),
-                source,
-            }
-        })?;
-        if BinaryRole::parse(observed_role).is_none() {
-            return Err(ReleaseLintError::SidecarRoleMismatch {
-                sidecar_path,
-                expected: expected_role,
-                observed: observed_role.to_string(),
-            });
-        }
-
-        if BinaryRole::parse(observed_role) != Some(expected_role) {
-            return Err(ReleaseLintError::SidecarRoleMismatch {
-                sidecar_path,
-                expected: expected_role,
-                observed: observed_role.to_string(),
-            });
-        }
-
-        let observed_binary_name = required_str(&metadata, "binary_name").map_err(|source| {
-            ReleaseLintError::SidecarInvalid {
-                sidecar_path: sidecar_path.clone(),
-                source,
-            }
-        })?;
-        if observed_binary_name != binary_name {
-            return Err(ReleaseLintError::SidecarBinaryNameMismatch {
-                sidecar_path,
-                expected: binary_name,
-                observed: observed_binary_name.to_string(),
-            });
-        }
-
-        let features = required_object(&metadata, "features").map_err(|source| {
-            ReleaseLintError::SidecarInvalid {
-                sidecar_path: sidecar_path.clone(),
-                source,
-            }
-        })?;
-        let hbp_supported = required_bool(features, "hbp_supported").map_err(|source| {
-            ReleaseLintError::SidecarInvalid {
-                sidecar_path,
-                source,
-            }
-        })?;
-
-        match expected_role {
-            BinaryRole::Watershed => watershed_hbp_supported = Some(hbp_supported),
-            BinaryRole::Hillslope => hillslope_hbp_supported = Some(hbp_supported),
-            BinaryRole::Replay => {}
-        }
+fn lint_release_binaries(
+    candidate_binaries: &[PathBuf],
+) -> Result<ReleaseHbpPair, ReleaseLintError> {
+    let mut hbp_pair = ReleaseHbpPair::default();
+    for binary_path in candidate_binaries {
+        let outcome = lint_release_binary(binary_path)?;
+        hbp_pair.record(outcome.role, outcome.hbp_supported);
     }
 
-    if let (Some(watershed), Some(hillslope)) = (watershed_hbp_supported, hillslope_hbp_supported)
+    Ok(hbp_pair)
+}
+
+fn lint_release_binary(binary_path: &Path) -> Result<ReleaseBinaryLintOutcome, ReleaseLintError> {
+    let binary_name = file_name_string(binary_path);
+    let expected_role = classify_release_binary_role(binary_name.as_str())?;
+    if !release_binary_name_is_valid(binary_name.as_str(), expected_role) {
+        return Err(ReleaseLintError::InvalidBinaryName { binary_name });
+    }
+
+    let sidecar_path = sidecar_path_for_binary(binary_path);
+    if !sidecar_path.is_file() {
+        return Err(ReleaseLintError::MissingSidecar { sidecar_path });
+    }
+
+    let metadata = validate_lint_sidecar(&sidecar_path)?;
+    validate_lint_sidecar_role(&metadata, &sidecar_path, expected_role)?;
+    validate_lint_sidecar_binary_name(&metadata, &sidecar_path, binary_name.as_str())?;
+    let hbp_supported = lint_sidecar_hbp_supported(&metadata, &sidecar_path)?;
+
+    Ok(ReleaseBinaryLintOutcome {
+        role: expected_role,
+        hbp_supported,
+    })
+}
+
+fn validate_lint_sidecar(sidecar_path: &Path) -> Result<Value, ReleaseLintError> {
+    validate_release_sidecar(sidecar_path).map_err(|source| ReleaseLintError::SidecarInvalid {
+        sidecar_path: sidecar_path.to_path_buf(),
+        source,
+    })
+}
+
+fn validate_lint_sidecar_role(
+    metadata: &Value,
+    sidecar_path: &Path,
+    expected_role: BinaryRole,
+) -> Result<(), ReleaseLintError> {
+    let observed_role = required_lint_sidecar_str(metadata, "binary_role", sidecar_path)?;
+    if BinaryRole::parse(observed_role) != Some(expected_role) {
+        return Err(ReleaseLintError::SidecarRoleMismatch {
+            sidecar_path: sidecar_path.to_path_buf(),
+            expected: expected_role,
+            observed: observed_role.to_string(),
+        });
+    }
+
+    Ok(())
+}
+
+fn validate_lint_sidecar_binary_name(
+    metadata: &Value,
+    sidecar_path: &Path,
+    expected_binary_name: &str,
+) -> Result<(), ReleaseLintError> {
+    let observed_binary_name = required_lint_sidecar_str(metadata, "binary_name", sidecar_path)?;
+    if observed_binary_name != expected_binary_name {
+        return Err(ReleaseLintError::SidecarBinaryNameMismatch {
+            sidecar_path: sidecar_path.to_path_buf(),
+            expected: expected_binary_name.to_string(),
+            observed: observed_binary_name.to_string(),
+        });
+    }
+
+    Ok(())
+}
+
+fn lint_sidecar_hbp_supported(
+    metadata: &Value,
+    sidecar_path: &Path,
+) -> Result<bool, ReleaseLintError> {
+    let features = required_object(metadata, "features").map_err(|source| {
+        ReleaseLintError::SidecarInvalid {
+            sidecar_path: sidecar_path.to_path_buf(),
+            source,
+        }
+    })?;
+    required_bool(features, "hbp_supported").map_err(|source| ReleaseLintError::SidecarInvalid {
+        sidecar_path: sidecar_path.to_path_buf(),
+        source,
+    })
+}
+
+fn required_lint_sidecar_str<'a>(
+    metadata: &'a Value,
+    field: &'static str,
+    sidecar_path: &Path,
+) -> Result<&'a str, ReleaseLintError> {
+    required_str(metadata, field).map_err(|source| ReleaseLintError::SidecarInvalid {
+        sidecar_path: sidecar_path.to_path_buf(),
+        source,
+    })
+}
+
+fn validate_release_hbp_pair(hbp_pair: &ReleaseHbpPair) -> Result<(), ReleaseLintError> {
+    if let (Some(watershed), Some(hillslope)) = (hbp_pair.watershed, hbp_pair.hillslope)
         && watershed != hillslope
     {
         return Err(ReleaseLintError::HbpPairMismatch {
@@ -170,9 +232,7 @@ pub fn lint_release_directory(release_dir: &Path) -> Result<ReleaseLintReport, R
         });
     }
 
-    Ok(ReleaseLintReport {
-        checked_binaries: candidate_binaries,
-    })
+    Ok(())
 }
 
 pub fn write_release_sidecar_for_binary(
@@ -462,6 +522,28 @@ mod tests {
         dir
     }
 
+    fn write_fixture_binary(dir: &Path, name: &str) -> PathBuf {
+        let binary_path = dir.join(name);
+        fs::write(&binary_path, format!("fixture-binary-{name}"))
+            .expect("binary fixture should be writable");
+        binary_path
+    }
+
+    fn write_valid_fixture_sidecar(binary_path: &Path, role: BinaryRole) -> PathBuf {
+        write_release_sidecar_for_binary(binary_path, role)
+            .expect("fixture sidecar should be writable")
+    }
+
+    fn rewrite_sidecar_value(sidecar_path: &Path, update: impl FnOnce(&mut Value)) {
+        let payload = fs::read_to_string(sidecar_path).expect("sidecar fixture should be readable");
+        let mut json: Value =
+            serde_json::from_str(&payload).expect("sidecar fixture should parse as json");
+        update(&mut json);
+        let rewritten = serde_json::to_string_pretty(&json)
+            .expect("rewritten sidecar fixture should serialize");
+        fs::write(sidecar_path, rewritten).expect("sidecar fixture should be rewritable");
+    }
+
     #[test]
     fn release_name_validator_accepts_expected_patterns() {
         assert!(release_binary_name_is_valid(
@@ -526,6 +608,137 @@ mod tests {
             first_mtime, second_mtime,
             "fresh sidecar should be reused without rewrite"
         );
+
+        fs::remove_dir_all(dir).expect("temp directory cleanup should succeed");
+    }
+
+    #[test]
+    fn lint_release_directory_accepts_valid_candidates_and_ignores_non_candidates() {
+        let dir = unique_temp_dir("release_lint_success");
+        let watershed_path = write_fixture_binary(&dir, "openwepp_260528");
+        let hillslope_path = write_fixture_binary(&dir, "openwepp_260528_hill");
+        let _ignored_json = write_fixture_binary(&dir, "openwepp_260528_replay.json");
+        let nested_dir = dir.join("openwepp_260528_replay");
+        fs::create_dir_all(&nested_dir).expect("nested fixture directory should be creatable");
+
+        write_valid_fixture_sidecar(&watershed_path, BinaryRole::Watershed);
+        write_valid_fixture_sidecar(&hillslope_path, BinaryRole::Hillslope);
+
+        let report =
+            lint_release_directory(&dir).expect("valid release candidates should lint cleanly");
+        let mut checked_names = report
+            .checked_binaries
+            .iter()
+            .map(|path| file_name_string(path))
+            .collect::<Vec<_>>();
+        checked_names.sort();
+
+        assert_eq!(checked_names, ["openwepp_260528", "openwepp_260528_hill"]);
+
+        fs::remove_dir_all(dir).expect("temp directory cleanup should succeed");
+    }
+
+    #[test]
+    fn lint_release_directory_reports_no_release_candidates_after_filtering() {
+        let dir = unique_temp_dir("release_lint_no_candidates");
+        fs::write(dir.join("notes.txt"), b"not a candidate")
+            .expect("non-candidate fixture should be writable");
+        fs::write(dir.join("openwepp_260528.json"), b"{}")
+            .expect("json sidecar fixture should be writable");
+
+        let error = lint_release_directory(&dir).expect_err("no candidates should fail lint");
+        match error {
+            ReleaseLintError::NoReleaseCandidates { release_dir } => assert_eq!(release_dir, dir),
+            other => panic!("expected no release candidates error, observed {other:?}"),
+        }
+
+        fs::remove_dir_all(dir).expect("temp directory cleanup should succeed");
+    }
+
+    #[test]
+    fn lint_release_directory_reports_missing_sidecar_for_candidate() {
+        let dir = unique_temp_dir("release_lint_missing_sidecar");
+        let binary_path = write_fixture_binary(&dir, "openwepp_260528_hill");
+        let expected_sidecar = sidecar_path_for_binary(&binary_path);
+
+        let error = lint_release_directory(&dir).expect_err("missing sidecar should fail lint");
+        match error {
+            ReleaseLintError::MissingSidecar { sidecar_path } => {
+                assert_eq!(sidecar_path, expected_sidecar);
+            }
+            other => panic!("expected missing sidecar error, observed {other:?}"),
+        }
+
+        fs::remove_dir_all(dir).expect("temp directory cleanup should succeed");
+    }
+
+    #[test]
+    fn lint_release_directory_reports_invalid_binary_name_before_sidecar_read() {
+        let dir = unique_temp_dir("release_lint_invalid_name");
+        let binary_path = write_fixture_binary(&dir, "openwepp_26052_hill");
+        let sidecar_path = sidecar_path_for_binary(&binary_path);
+        fs::write(&sidecar_path, b"{not json").expect("malformed sidecar fixture is writable");
+
+        let error = lint_release_directory(&dir).expect_err("invalid binary name should fail lint");
+        match error {
+            ReleaseLintError::InvalidBinaryName { binary_name } => {
+                assert_eq!(binary_name, "openwepp_26052_hill");
+            }
+            other => panic!("expected invalid binary name error, observed {other:?}"),
+        }
+
+        fs::remove_dir_all(dir).expect("temp directory cleanup should succeed");
+    }
+
+    #[test]
+    fn lint_release_directory_reports_sidecar_binary_name_mismatch() {
+        let dir = unique_temp_dir("release_lint_binary_name_mismatch");
+        let binary_path = write_fixture_binary(&dir, "openwepp_260528_hill");
+        let sidecar_path = write_valid_fixture_sidecar(&binary_path, BinaryRole::Hillslope);
+        rewrite_sidecar_value(&sidecar_path, |json| {
+            json["binary_name"] = Value::String("openwepp_260528_other_hill".to_string());
+        });
+
+        let error =
+            lint_release_directory(&dir).expect_err("binary_name mismatch should fail lint");
+        match error {
+            ReleaseLintError::SidecarBinaryNameMismatch {
+                sidecar_path: observed_sidecar,
+                expected,
+                observed,
+            } => {
+                assert_eq!(observed_sidecar, sidecar_path);
+                assert_eq!(expected, "openwepp_260528_hill");
+                assert_eq!(observed, "openwepp_260528_other_hill");
+            }
+            other => panic!("expected sidecar binary name mismatch, observed {other:?}"),
+        }
+
+        fs::remove_dir_all(dir).expect("temp directory cleanup should succeed");
+    }
+
+    #[test]
+    fn lint_release_directory_reports_hbp_pair_mismatch_after_candidate_scan() {
+        let dir = unique_temp_dir("release_lint_hbp_pair_mismatch");
+        let watershed_path = write_fixture_binary(&dir, "openwepp_260528");
+        let hillslope_path = write_fixture_binary(&dir, "openwepp_260528_hill");
+        write_valid_fixture_sidecar(&watershed_path, BinaryRole::Watershed);
+        let hillslope_sidecar = write_valid_fixture_sidecar(&hillslope_path, BinaryRole::Hillslope);
+        rewrite_sidecar_value(&hillslope_sidecar, |json| {
+            json["features"]["hbp_supported"] = Value::Bool(false);
+        });
+
+        let error = lint_release_directory(&dir).expect_err("hbp mismatch should fail lint");
+        match error {
+            ReleaseLintError::HbpPairMismatch {
+                watershed,
+                hillslope,
+            } => {
+                assert!(watershed);
+                assert!(!hillslope);
+            }
+            other => panic!("expected hbp pair mismatch, observed {other:?}"),
+        }
 
         fs::remove_dir_all(dir).expect("temp directory cleanup should succeed");
     }

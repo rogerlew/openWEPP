@@ -10,6 +10,9 @@
 
 State as of `2026-06-15`:
 
+- CQR14 is in progress for behavior-preserving CRAP/cyclomatic-complexity
+  decomposition of `crates/openwepp-runner/src/release.rs`. Package:
+  `20260615-cqr14-runner-release-complexity-001/`.
 - CQR13 is complete for live-metric closure of the rank-7
   CRAP/cyclomatic-complexity row in
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/00_core_types.rs`.
