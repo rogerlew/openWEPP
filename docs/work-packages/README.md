@@ -10,6 +10,18 @@
 
 State as of `2026-06-15`:
 
+- CQR16 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-sim-contract/src/units_mod/registries.rs`.
+  The scoped target reduced `BoundaryUnitRegistryError::fmt` CRAP from
+  `506.0` to `6.0`, with every newly extracted helper at CRAP
+  `11.00102848303003` or lower, without changing public API, registry rows,
+  aliases, units, publication units, scalar exceptions, parser compatibility,
+  or science-contract behavior. Required Rust closure gates passed. WARNs
+  remain for target-file coverage below the full ADR-0021 module threshold and
+  the pre-existing out-of-scope `validate_entry` row at CRAP
+  `62.4742520806637`. Package:
+  `20260615-cqr16-unit-registries-complexity-001/`.
 - CQR15 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs`.

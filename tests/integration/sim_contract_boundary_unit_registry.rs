@@ -618,6 +618,288 @@ fn hphys0278_output_registry_rejects_stale_boundary_units_and_unexplained_public
 }
 
 #[test]
+fn cqr16_boundary_registry_required_field_display_messages_are_stable() {
+    assert_boundary_error_messages([
+        (
+            BoundaryUnitRegistryError::RegistryEmpty,
+            "boundary unit registry must contain entries",
+        ),
+        (
+            BoundaryUnitRegistryError::EmptyCanonicalSymbol { row: 7 },
+            "canonical symbol is empty at row 7",
+        ),
+        (
+            BoundaryUnitRegistryError::EmptyBoundaryAlias {
+                row: 7,
+                canonical_symbol: "sym".to_string(),
+            },
+            "boundary alias is empty at row 7 for canonical symbol sym",
+        ),
+        (
+            BoundaryUnitRegistryError::EmptyUnitLabel {
+                row: 7,
+                canonical_symbol: "sym".to_string(),
+            },
+            "unit label is empty at row 7 for canonical symbol sym",
+        ),
+        (
+            BoundaryUnitRegistryError::EmptyProducerScope {
+                row: 7,
+                canonical_symbol: "sym".to_string(),
+            },
+            "producer scope is empty at row 7 for canonical symbol sym",
+        ),
+        (
+            BoundaryUnitRegistryError::EmptyConsumerScope {
+                row: 7,
+                canonical_symbol: "sym".to_string(),
+            },
+            "consumer scope is empty at row 7 for canonical symbol sym",
+        ),
+    ]);
+}
+
+#[test]
+fn cqr16_boundary_registry_authority_field_display_messages_are_stable() {
+    assert_boundary_error_messages([
+        (
+            BoundaryUnitRegistryError::EmptyContractId {
+                row: 7,
+                canonical_symbol: "sym".to_string(),
+            },
+            "contract id is empty at row 7 for canonical symbol sym",
+        ),
+        (
+            BoundaryUnitRegistryError::EmptyInvariantId {
+                row: 7,
+                canonical_symbol: "sym".to_string(),
+            },
+            "invariant id is empty at row 7 for canonical symbol sym",
+        ),
+        (
+            BoundaryUnitRegistryError::EmptyPublicationAlias {
+                row: 7,
+                canonical_symbol: "sym".to_string(),
+            },
+            "publication alias is empty at row 7 for canonical symbol sym",
+        ),
+        (
+            BoundaryUnitRegistryError::EmptyScalarException {
+                row: 7,
+                canonical_symbol: "sym".to_string(),
+            },
+            "scalar exception is empty at row 7 for canonical symbol sym",
+        ),
+    ]);
+}
+
+#[test]
+fn cqr16_boundary_registry_conflict_display_messages_are_stable() {
+    assert_boundary_error_messages([
+        (
+            BoundaryUnitRegistryError::DuplicateCanonicalSymbol {
+                canonical_symbol: "sym".to_string(),
+            },
+            "duplicate canonical symbol sym",
+        ),
+        (
+            BoundaryUnitRegistryError::DuplicateAliasMapping {
+                canonical_symbol: "sym".to_string(),
+                boundary_alias: "alias".to_string(),
+            },
+            "duplicate boundary alias alias for canonical symbol sym",
+        ),
+        (
+            BoundaryUnitRegistryError::DuplicatePublicationAlias {
+                canonical_symbol: "sym".to_string(),
+                publication_alias: "pub_alias".to_string(),
+            },
+            "duplicate publication alias pub_alias for canonical symbol sym",
+        ),
+        (
+            BoundaryUnitRegistryError::AmbiguousBoundaryAlias {
+                boundary_alias: "alias".to_string(),
+                canonical_a: "sym_a".to_string(),
+                canonical_b: "sym_b".to_string(),
+            },
+            "boundary alias alias is ambiguous between canonical symbols sym_a and sym_b",
+        ),
+        (
+            BoundaryUnitRegistryError::AmbiguousPublicationAlias {
+                publication_alias: "pub_alias".to_string(),
+                canonical_a: "sym_a".to_string(),
+                canonical_b: "sym_b".to_string(),
+            },
+            "publication alias pub_alias is ambiguous between canonical symbols sym_a and sym_b",
+        ),
+    ]);
+}
+
+#[test]
+fn cqr16_boundary_registry_shape_and_lookup_display_messages_are_stable() {
+    assert_boundary_error_messages([
+        (
+            BoundaryUnitRegistryError::InvalidBoundaryAliasTemplate {
+                row: 7,
+                canonical_symbol: "sym".to_string(),
+                boundary_alias: "alias_{day}".to_string(),
+                reason: "unsupported token {day}".to_string(),
+            },
+            "invalid boundary alias template at row 7 for canonical symbol sym and alias alias_{day}: unsupported token {day}",
+        ),
+        (
+            BoundaryUnitRegistryError::DimensionalSymbolMissingUnit {
+                row: 7,
+                canonical_symbol: "sym".to_string(),
+            },
+            "dimensional canonical symbol sym at row 7 has no unit",
+        ),
+        (
+            BoundaryUnitRegistryError::DimensionlessSymbolHasDimensionalUnit {
+                row: 7,
+                canonical_symbol: "sym".to_string(),
+                unit_label: "m".to_string(),
+            },
+            "dimensionless canonical symbol sym at row 7 has dimensional unit m",
+        ),
+        (
+            BoundaryUnitRegistryError::CanonicalSymbolNotFound {
+                canonical_symbol: "sym".to_string(),
+            },
+            "canonical symbol sym not found",
+        ),
+        (
+            BoundaryUnitRegistryError::BoundaryAliasNotFound {
+                boundary_alias: "alias".to_string(),
+            },
+            "boundary alias alias not found",
+        ),
+        (
+            BoundaryUnitRegistryError::RequiredBoundaryAliasMissing {
+                boundary_alias: "alias".to_string(),
+            },
+            "required boundary alias alias is missing from unit registry",
+        ),
+    ]);
+}
+
+fn assert_boundary_error_messages<const N: usize>(
+    cases: [(BoundaryUnitRegistryError, &'static str); N],
+) {
+    for (error, expected) in cases {
+        assert_eq!(error.to_string(), expected, "{error:?}");
+    }
+}
+
+#[test]
+fn cqr16_output_registry_display_messages_are_stable() {
+    assert_output_error_messages([
+        (
+            OutputUnitRegistryError::RegistryEmpty,
+            "output unit registry must contain entries",
+        ),
+        (
+            OutputUnitRegistryError::EmptySchemaId { row: 3 },
+            "output unit registry row 3 has empty schema_id",
+        ),
+        (
+            OutputUnitRegistryError::EmptyColumnName {
+                row: 3,
+                schema_id: "schema".into(),
+            },
+            "output unit registry row 3 for schema schema has empty column_name",
+        ),
+        (
+            OutputUnitRegistryError::EmptyUnitLabel {
+                row: 3,
+                schema_id: "schema".into(),
+                column_name: "column".into(),
+            },
+            "output unit registry row 3 for schema.column has empty unit_label",
+        ),
+        (
+            OutputUnitRegistryError::DuplicateOutputColumn {
+                schema_id: "schema".into(),
+                column_name: "column".into(),
+            },
+            "duplicate output unit registry row for schema.column",
+        ),
+        (
+            OutputUnitRegistryError::EmptyPublicationOnlyRationale {
+                row: 3,
+                schema_id: "schema".into(),
+                column_name: "column".into(),
+            },
+            "publication-only output unit row 3 for schema.column lacks rationale",
+        ),
+    ]);
+}
+
+#[test]
+fn cqr16_output_registry_authority_display_messages_are_stable() {
+    assert_output_error_messages([
+        (
+            OutputUnitRegistryError::EmptyPublicationOnlyContract {
+                row: 3,
+                schema_id: "schema".into(),
+                column_name: "column".into(),
+            },
+            "publication-only output unit row 3 for schema.column lacks contract/invariant authority",
+        ),
+        (
+            OutputUnitRegistryError::BoundaryAliasNotFound {
+                row: 3,
+                schema_id: "schema".into(),
+                column_name: "column".into(),
+                boundary_alias: "alias".into(),
+            },
+            "output unit row 3 for schema.column references missing boundary alias alias",
+        ),
+        (
+            OutputUnitRegistryError::BoundaryUnitMismatch {
+                row: 3,
+                schema_id: "schema".into(),
+                column_name: "column".into(),
+                boundary_alias: "alias".into(),
+                output_unit: "m".into(),
+                boundary_unit: "mm".into(),
+            },
+            "output unit row 3 for schema.column declares m, but boundary alias alias declares mm",
+        ),
+        (
+            OutputUnitRegistryError::OutputSchemaUnitMismatch {
+                schema_id: "schema".into(),
+                column_name: "column".into(),
+                schema_unit: "m".into(),
+                registry_unit: "mm".into(),
+            },
+            "output schema schema.column declares m, but output unit registry declares mm",
+        ),
+        (
+            OutputUnitRegistryError::OutputColumnNotFound {
+                schema_id: "schema".into(),
+                column_name: "column".into(),
+            },
+            "output unit registry has no row for schema.column",
+        ),
+        (
+            OutputUnitRegistryError::BoundaryRegistry {
+                detail: "inner detail".into(),
+            },
+            "boundary unit registry lookup failed: inner detail",
+        ),
+    ]);
+}
+
+fn assert_output_error_messages<const N: usize>(
+    cases: [(OutputUnitRegistryError, &'static str); N],
+) {
+    for (error, expected) in cases {
+        assert_eq!(error.to_string(), expected, "{error:?}");
+    }
+}
+
+#[test]
 fn registry_rejects_missing_dimensional_units_and_missing_scalar_exception_reasons() {
     let missing_unit = BoundaryUnitRegistry::new([test_entry(
         "bad_depth",

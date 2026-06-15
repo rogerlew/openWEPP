@@ -268,139 +268,198 @@ pub enum BoundaryUnitRegistryError {
 }
 
 impl fmt::Display for BoundaryUnitRegistryError {
-    #[allow(clippy::too_many_lines)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::RegistryEmpty => f.write_str("boundary unit registry must contain entries"),
-            Self::EmptyCanonicalSymbol { row } => {
-                write!(f, "canonical symbol is empty at row {row}")
+            Self::EmptyCanonicalSymbol { .. }
+            | Self::EmptyBoundaryAlias { .. }
+            | Self::EmptyUnitLabel { .. }
+            | Self::EmptyProducerScope { .. }
+            | Self::EmptyConsumerScope { .. }
+            | Self::EmptyContractId { .. }
+            | Self::EmptyInvariantId { .. }
+            | Self::EmptyPublicationAlias { .. }
+            | Self::EmptyScalarException { .. } => format_boundary_required_field_error(self, f),
+            Self::DuplicateCanonicalSymbol { .. }
+            | Self::DuplicateAliasMapping { .. }
+            | Self::DuplicatePublicationAlias { .. }
+            | Self::AmbiguousBoundaryAlias { .. }
+            | Self::AmbiguousPublicationAlias { .. } => {
+                format_boundary_alias_conflict_error(self, f)
             }
-            Self::EmptyBoundaryAlias {
-                row,
-                canonical_symbol,
-            } => write!(
-                f,
-                "boundary alias is empty at row {row} for canonical symbol {canonical_symbol}"
-            ),
-            Self::EmptyUnitLabel {
-                row,
-                canonical_symbol,
-            } => write!(
-                f,
-                "unit label is empty at row {row} for canonical symbol {canonical_symbol}"
-            ),
-            Self::EmptyProducerScope {
-                row,
-                canonical_symbol,
-            } => write!(
-                f,
-                "producer scope is empty at row {row} for canonical symbol {canonical_symbol}"
-            ),
-            Self::EmptyConsumerScope {
-                row,
-                canonical_symbol,
-            } => write!(
-                f,
-                "consumer scope is empty at row {row} for canonical symbol {canonical_symbol}"
-            ),
-            Self::EmptyContractId {
-                row,
-                canonical_symbol,
-            } => write!(
-                f,
-                "contract id is empty at row {row} for canonical symbol {canonical_symbol}"
-            ),
-            Self::EmptyInvariantId {
-                row,
-                canonical_symbol,
-            } => write!(
-                f,
-                "invariant id is empty at row {row} for canonical symbol {canonical_symbol}"
-            ),
-            Self::EmptyPublicationAlias {
-                row,
-                canonical_symbol,
-            } => write!(
-                f,
-                "publication alias is empty at row {row} for canonical symbol {canonical_symbol}"
-            ),
-            Self::EmptyScalarException {
-                row,
-                canonical_symbol,
-            } => write!(
-                f,
-                "scalar exception is empty at row {row} for canonical symbol {canonical_symbol}"
-            ),
-            Self::DuplicateCanonicalSymbol { canonical_symbol } => {
-                write!(f, "duplicate canonical symbol {canonical_symbol}")
+            Self::InvalidBoundaryAliasTemplate { .. }
+            | Self::DimensionalSymbolMissingUnit { .. }
+            | Self::DimensionlessSymbolHasDimensionalUnit { .. } => {
+                format_boundary_unit_shape_error(self, f)
             }
-            Self::DuplicateAliasMapping {
-                canonical_symbol,
-                boundary_alias,
-            } => write!(
-                f,
-                "duplicate boundary alias {boundary_alias} for canonical symbol {canonical_symbol}"
-            ),
-            Self::DuplicatePublicationAlias {
-                canonical_symbol,
-                publication_alias,
-            } => write!(
-                f,
-                "duplicate publication alias {publication_alias} for canonical symbol {canonical_symbol}"
-            ),
-            Self::AmbiguousBoundaryAlias {
-                boundary_alias,
-                canonical_a,
-                canonical_b,
-            } => write!(
-                f,
-                "boundary alias {boundary_alias} is ambiguous between canonical symbols {canonical_a} and {canonical_b}"
-            ),
-            Self::AmbiguousPublicationAlias {
-                publication_alias,
-                canonical_a,
-                canonical_b,
-            } => write!(
-                f,
-                "publication alias {publication_alias} is ambiguous between canonical symbols {canonical_a} and {canonical_b}"
-            ),
-            Self::InvalidBoundaryAliasTemplate {
-                row,
-                canonical_symbol,
-                boundary_alias,
-                reason,
-            } => write!(
-                f,
-                "invalid boundary alias template at row {row} for canonical symbol {canonical_symbol} and alias {boundary_alias}: {reason}"
-            ),
-            Self::DimensionalSymbolMissingUnit {
-                row,
-                canonical_symbol,
-            } => write!(
-                f,
-                "dimensional canonical symbol {canonical_symbol} at row {row} has no unit"
-            ),
-            Self::DimensionlessSymbolHasDimensionalUnit {
-                row,
-                canonical_symbol,
-                unit_label,
-            } => write!(
-                f,
-                "dimensionless canonical symbol {canonical_symbol} at row {row} has dimensional unit {unit_label}"
-            ),
-            Self::CanonicalSymbolNotFound { canonical_symbol } => {
-                write!(f, "canonical symbol {canonical_symbol} not found")
-            }
-            Self::BoundaryAliasNotFound { boundary_alias } => {
-                write!(f, "boundary alias {boundary_alias} not found")
-            }
-            Self::RequiredBoundaryAliasMissing { boundary_alias } => {
-                write!(
-                    f,
-                    "required boundary alias {boundary_alias} is missing from unit registry"
-                )
-            }
+            Self::CanonicalSymbolNotFound { .. }
+            | Self::BoundaryAliasNotFound { .. }
+            | Self::RequiredBoundaryAliasMissing { .. } => format_boundary_lookup_error(self, f),
         }
+    }
+}
+
+fn format_boundary_required_field_error(
+    error: &BoundaryUnitRegistryError,
+    f: &mut fmt::Formatter<'_>,
+) -> fmt::Result {
+    match error {
+        BoundaryUnitRegistryError::EmptyCanonicalSymbol { row } => {
+            write!(f, "canonical symbol is empty at row {row}")
+        }
+        BoundaryUnitRegistryError::EmptyBoundaryAlias {
+            row,
+            canonical_symbol,
+        } => write!(
+            f,
+            "boundary alias is empty at row {row} for canonical symbol {canonical_symbol}"
+        ),
+        BoundaryUnitRegistryError::EmptyUnitLabel {
+            row,
+            canonical_symbol,
+        } => write!(
+            f,
+            "unit label is empty at row {row} for canonical symbol {canonical_symbol}"
+        ),
+        BoundaryUnitRegistryError::EmptyProducerScope {
+            row,
+            canonical_symbol,
+        } => write!(
+            f,
+            "producer scope is empty at row {row} for canonical symbol {canonical_symbol}"
+        ),
+        BoundaryUnitRegistryError::EmptyConsumerScope {
+            row,
+            canonical_symbol,
+        } => write!(
+            f,
+            "consumer scope is empty at row {row} for canonical symbol {canonical_symbol}"
+        ),
+        BoundaryUnitRegistryError::EmptyContractId {
+            row,
+            canonical_symbol,
+        } => write!(
+            f,
+            "contract id is empty at row {row} for canonical symbol {canonical_symbol}"
+        ),
+        BoundaryUnitRegistryError::EmptyInvariantId {
+            row,
+            canonical_symbol,
+        } => write!(
+            f,
+            "invariant id is empty at row {row} for canonical symbol {canonical_symbol}"
+        ),
+        BoundaryUnitRegistryError::EmptyPublicationAlias {
+            row,
+            canonical_symbol,
+        } => write!(
+            f,
+            "publication alias is empty at row {row} for canonical symbol {canonical_symbol}"
+        ),
+        BoundaryUnitRegistryError::EmptyScalarException {
+            row,
+            canonical_symbol,
+        } => write!(
+            f,
+            "scalar exception is empty at row {row} for canonical symbol {canonical_symbol}"
+        ),
+        _ => unreachable!("required-field formatter called for non-required-field error"),
+    }
+}
+
+fn format_boundary_alias_conflict_error(
+    error: &BoundaryUnitRegistryError,
+    f: &mut fmt::Formatter<'_>,
+) -> fmt::Result {
+    match error {
+        BoundaryUnitRegistryError::DuplicateCanonicalSymbol { canonical_symbol } => {
+            write!(f, "duplicate canonical symbol {canonical_symbol}")
+        }
+        BoundaryUnitRegistryError::DuplicateAliasMapping {
+            canonical_symbol,
+            boundary_alias,
+        } => write!(
+            f,
+            "duplicate boundary alias {boundary_alias} for canonical symbol {canonical_symbol}"
+        ),
+        BoundaryUnitRegistryError::DuplicatePublicationAlias {
+            canonical_symbol,
+            publication_alias,
+        } => write!(
+            f,
+            "duplicate publication alias {publication_alias} for canonical symbol {canonical_symbol}"
+        ),
+        BoundaryUnitRegistryError::AmbiguousBoundaryAlias {
+            boundary_alias,
+            canonical_a,
+            canonical_b,
+        } => write!(
+            f,
+            "boundary alias {boundary_alias} is ambiguous between canonical symbols {canonical_a} and {canonical_b}"
+        ),
+        BoundaryUnitRegistryError::AmbiguousPublicationAlias {
+            publication_alias,
+            canonical_a,
+            canonical_b,
+        } => write!(
+            f,
+            "publication alias {publication_alias} is ambiguous between canonical symbols {canonical_a} and {canonical_b}"
+        ),
+        _ => unreachable!("alias-conflict formatter called for non-alias-conflict error"),
+    }
+}
+
+fn format_boundary_unit_shape_error(
+    error: &BoundaryUnitRegistryError,
+    f: &mut fmt::Formatter<'_>,
+) -> fmt::Result {
+    match error {
+        BoundaryUnitRegistryError::InvalidBoundaryAliasTemplate {
+            row,
+            canonical_symbol,
+            boundary_alias,
+            reason,
+        } => write!(
+            f,
+            "invalid boundary alias template at row {row} for canonical symbol {canonical_symbol} and alias {boundary_alias}: {reason}"
+        ),
+        BoundaryUnitRegistryError::DimensionalSymbolMissingUnit {
+            row,
+            canonical_symbol,
+        } => write!(
+            f,
+            "dimensional canonical symbol {canonical_symbol} at row {row} has no unit"
+        ),
+        BoundaryUnitRegistryError::DimensionlessSymbolHasDimensionalUnit {
+            row,
+            canonical_symbol,
+            unit_label,
+        } => write!(
+            f,
+            "dimensionless canonical symbol {canonical_symbol} at row {row} has dimensional unit {unit_label}"
+        ),
+        _ => unreachable!("unit-shape formatter called for non-unit-shape error"),
+    }
+}
+
+fn format_boundary_lookup_error(
+    error: &BoundaryUnitRegistryError,
+    f: &mut fmt::Formatter<'_>,
+) -> fmt::Result {
+    match error {
+        BoundaryUnitRegistryError::CanonicalSymbolNotFound { canonical_symbol } => {
+            write!(f, "canonical symbol {canonical_symbol} not found")
+        }
+        BoundaryUnitRegistryError::BoundaryAliasNotFound { boundary_alias } => {
+            write!(f, "boundary alias {boundary_alias} not found")
+        }
+        BoundaryUnitRegistryError::RequiredBoundaryAliasMissing { boundary_alias } => {
+            write!(
+                f,
+                "required boundary alias {boundary_alias} is missing from unit registry"
+            )
+        }
+        _ => unreachable!("lookup formatter called for non-lookup error"),
     }
 }
 
