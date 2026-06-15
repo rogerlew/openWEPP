@@ -11,7 +11,10 @@ use openwepp_climate_runtime_adapter::{
 use openwepp_input_contract::parsers::{
     climate::{ClimateFile, ClimateMetadata, ClimateMonthlyStats},
     frost::FrostParseOutput,
-    irrigation_depletion::{IrrigationDepletionFile, IrrigationPeriodData},
+    irrigation_depletion::{
+        FurrowPeriodData, IrrigationDepletionFile, IrrigationPeriodData, IrrigationPeriodRecord,
+        IrrigationSystemType, SprinklerPeriodData,
+    },
     irrigation_fixeddate::{
         FixedDateEvent, FixedDateIrrigationFile, FurrowEvent, Line3Record, SprinklerEvent,
     },

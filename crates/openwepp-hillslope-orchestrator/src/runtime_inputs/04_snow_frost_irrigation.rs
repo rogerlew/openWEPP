@@ -48,19 +48,28 @@ pub fn build_hillslope_runtime_surface_from_irrigation_depletion(
 ///
 /// Returns `HillslopeRuntimeInputError` when required depletion scheduling
 /// surfaces are malformed, non-finite, or out-of-domain.
-#[allow(clippy::too_many_lines)]
 pub fn seed_hillslope_runtime_surface_from_irrigation_depletion(
     runtime_surface: &mut HillslopeWritebackSurface,
     depletion: &IrrigationDepletionFile,
 ) -> Result<(), HillslopeRuntimeInputError> {
-    let system_type = match depletion.system_type {
-        openwepp_input_contract::parsers::irrigation_depletion::IrrigationSystemType::Sprinkler => {
-            1.0
-        }
-        openwepp_input_contract::parsers::irrigation_depletion::IrrigationSystemType::Furrow => 2.0,
-    };
-
     let state_surface = &mut runtime_surface.state_surface;
+    let system_type = irrigation_depletion_system_type_value(depletion.system_type);
+    seed_irrigation_depletion_header_symbols(state_surface, depletion, system_type)?;
+    seed_irrigation_depletion_periods(state_surface, &depletion.periods)
+}
+
+fn irrigation_depletion_system_type_value(system_type: IrrigationSystemType) -> f64 {
+    match system_type {
+        IrrigationSystemType::Sprinkler => 1.0,
+        IrrigationSystemType::Furrow => 2.0,
+    }
+}
+
+fn seed_irrigation_depletion_header_symbols(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    depletion: &IrrigationDepletionFile,
+    system_type: f64,
+) -> Result<(), HillslopeRuntimeInputError> {
     state_surface.insert(
         BoundarySymbol::from("irrigation.depletion.enabled"),
         BoundaryValue::scalar(1.0),
@@ -122,197 +131,252 @@ pub fn seed_hillslope_runtime_surface_from_irrigation_depletion(
         )?),
     );
 
-    for (period_position, period) in depletion.periods.iter().enumerate() {
-        let period_index = period_position + 1;
-        if period.element_id == 0 {
-            return Err(
-                HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                    field: "irrigation.depletion.period_####.element_id",
-                    value: 0.0,
-                    allowed: ">= 1",
-                },
-            );
+    Ok(())
+}
+
+fn seed_irrigation_depletion_periods(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    periods: &[IrrigationPeriodRecord],
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (period_position, period) in periods.iter().enumerate() {
+        seed_irrigation_depletion_period(state_surface, period_position + 1, period)?;
+    }
+    Ok(())
+}
+
+fn seed_irrigation_depletion_period(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    period_index: usize,
+    period: &IrrigationPeriodRecord,
+) -> Result<(), HillslopeRuntimeInputError> {
+    seed_irrigation_depletion_period_header_symbols(state_surface, period_index, period)?;
+    match &period.data {
+        IrrigationPeriodData::Sprinkler(record) => {
+            seed_irrigation_depletion_sprinkler_period(state_surface, period_index, record)
         }
-        state_surface.insert(
-            irrigation_depletion_period_symbol(period_index, "element_id"),
-            BoundaryValue::scalar(irrigation_count_to_f64(
-                "irrigation.depletion.period_####.element_id",
-                period.element_id,
-            )?),
-        );
-
-        let depletion_trigger = validate_irrigation_finite(
-            "irrigation.depletion.period_####.depletion_trigger_ratio",
-            period.depletion_trigger_ratio,
-        )?;
-        if !(0.0..=1.0).contains(&depletion_trigger) {
-            return Err(
-                HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                    field: "irrigation.depletion.period_####.depletion_trigger_ratio",
-                    value: depletion_trigger,
-                    allowed: "[0.0,1.0]",
-                },
-            );
-        }
-        state_surface.insert(
-            irrigation_depletion_period_symbol(period_index, "depletion_trigger_ratio"),
-            BoundaryValue::scalar(depletion_trigger),
-        );
-
-        for (field, value) in [
-            ("start_doy", period.start_doy),
-            ("start_year", period.start_year),
-            ("end_doy", period.end_doy),
-            ("end_year", period.end_year),
-        ] {
-            if value < 0 {
-                return Err(
-                    HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                        field: "irrigation.depletion.period_####.date",
-                        value: f64::from(value),
-                        allowed: ">= 0",
-                    },
-                );
-            }
-            state_surface.insert(
-                irrigation_depletion_period_symbol(period_index, field),
-                BoundaryValue::scalar(f64::from(value)),
-            );
-        }
-
-        match &period.data {
-            IrrigationPeriodData::Sprinkler(record) => {
-                let rate = validate_irrigation_finite(
-                    "irrigation.depletion.period_####.sprinkler_rate_m_per_s",
-                    record.rate_m_per_s,
-                )?;
-                if rate <= 0.0 {
-                    return Err(
-                        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                            field: "irrigation.depletion.period_####.sprinkler_rate_m_per_s",
-                            value: rate,
-                            allowed: "> 0.0",
-                        },
-                    );
-                }
-                let depth_ratio = validate_irrigation_finite(
-                    "irrigation.depletion.period_####.sprinkler_depth_ratio",
-                    record.depth_ratio,
-                )?;
-                if depth_ratio < 0.0 {
-                    return Err(
-                        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                            field: "irrigation.depletion.period_####.sprinkler_depth_ratio",
-                            value: depth_ratio,
-                            allowed: ">= 0.0",
-                        },
-                    );
-                }
-                let nozzle = validate_irrigation_finite(
-                    "irrigation.depletion.period_####.sprinkler_nozzle_factor",
-                    record.nozzle_factor,
-                )?;
-                if nozzle <= 0.0 {
-                    return Err(
-                        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                            field: "irrigation.depletion.period_####.sprinkler_nozzle_factor",
-                            value: nozzle,
-                            allowed: "> 0.0",
-                        },
-                    );
-                }
-
-                state_surface.insert(
-                    irrigation_depletion_period_symbol(period_index, "sprinkler_rate_m_per_s"),
-                    BoundaryValue::scalar(rate),
-                );
-                state_surface.insert(
-                    irrigation_depletion_period_symbol(period_index, "sprinkler_depth_ratio"),
-                    BoundaryValue::scalar(depth_ratio),
-                );
-                state_surface.insert(
-                    irrigation_depletion_period_symbol(period_index, "sprinkler_nozzle_factor"),
-                    BoundaryValue::scalar(nozzle),
-                );
-            }
-            IrrigationPeriodData::Furrow(record) => {
-                if record.end_element_id == 0 {
-                    return Err(
-                        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                            field: "irrigation.depletion.period_####.furrow_end_element_id",
-                            value: 0.0,
-                            allowed: ">= 1",
-                        },
-                    );
-                }
-                state_surface.insert(
-                    irrigation_depletion_period_symbol(period_index, "furrow_end_element_id"),
-                    BoundaryValue::scalar(irrigation_count_to_f64(
-                        "irrigation.depletion.period_####.furrow_end_element_id",
-                        record.end_element_id,
-                    )?),
-                );
-
-                let supply_rate = validate_irrigation_finite(
-                    "irrigation.depletion.period_####.furrow_supply_rate_m3_per_s",
-                    record.supply_rate_m3_per_s,
-                )?;
-                if supply_rate <= 0.0 {
-                    return Err(
-                        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                            field: "irrigation.depletion.period_####.furrow_supply_rate_m3_per_s",
-                            value: supply_rate,
-                            allowed: "> 0.0",
-                        },
-                    );
-                }
-                let supply_duration = validate_irrigation_finite(
-                    "irrigation.depletion.period_####.furrow_supply_duration_s",
-                    record.supply_duration_s,
-                )?;
-                if supply_duration <= 0.0 {
-                    return Err(
-                        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                            field: "irrigation.depletion.period_####.furrow_supply_duration_s",
-                            value: supply_duration,
-                            allowed: "> 0.0",
-                        },
-                    );
-                }
-                let fill_ratio = validate_irrigation_finite(
-                    "irrigation.depletion.period_####.furrow_fill_ratio",
-                    record.fill_ratio,
-                )?;
-                if fill_ratio < 0.0 {
-                    return Err(
-                        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
-                            field: "irrigation.depletion.period_####.furrow_fill_ratio",
-                            value: fill_ratio,
-                            allowed: ">= 0.0",
-                        },
-                    );
-                }
-
-                state_surface.insert(
-                    irrigation_depletion_period_symbol(period_index, "furrow_supply_rate_m3_per_s"),
-                    BoundaryValue::scalar(supply_rate),
-                );
-                state_surface.insert(
-                    irrigation_depletion_period_symbol(period_index, "furrow_supply_duration_s"),
-                    BoundaryValue::scalar(supply_duration),
-                );
-                state_surface.insert(
-                    irrigation_depletion_period_symbol(period_index, "furrow_surge_code"),
-                    BoundaryValue::scalar(f64::from(record.surge_code)),
-                );
-                state_surface.insert(
-                    irrigation_depletion_period_symbol(period_index, "furrow_fill_ratio"),
-                    BoundaryValue::scalar(fill_ratio),
-                );
-            }
+        IrrigationPeriodData::Furrow(record) => {
+            seed_irrigation_depletion_furrow_period(state_surface, period_index, record)
         }
     }
+}
 
+fn seed_irrigation_depletion_period_header_symbols(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    period_index: usize,
+    period: &IrrigationPeriodRecord,
+) -> Result<(), HillslopeRuntimeInputError> {
+    if period.element_id == 0 {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.depletion.period_####.element_id",
+                value: 0.0,
+                allowed: ">= 1",
+            },
+        );
+    }
+    state_surface.insert(
+        irrigation_depletion_period_symbol(period_index, "element_id"),
+        BoundaryValue::scalar(irrigation_count_to_f64(
+            "irrigation.depletion.period_####.element_id",
+            period.element_id,
+        )?),
+    );
+
+    seed_irrigation_depletion_trigger_symbol(state_surface, period_index, period)?;
+    seed_irrigation_depletion_date_symbols(state_surface, period_index, period)
+}
+
+fn seed_irrigation_depletion_trigger_symbol(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    period_index: usize,
+    period: &IrrigationPeriodRecord,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let depletion_trigger = validate_irrigation_finite(
+        "irrigation.depletion.period_####.depletion_trigger_ratio",
+        period.depletion_trigger_ratio,
+    )?;
+    if !(0.0..=1.0).contains(&depletion_trigger) {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.depletion.period_####.depletion_trigger_ratio",
+                value: depletion_trigger,
+                allowed: "[0.0,1.0]",
+            },
+        );
+    }
+    state_surface.insert(
+        irrigation_depletion_period_symbol(period_index, "depletion_trigger_ratio"),
+        BoundaryValue::scalar(depletion_trigger),
+    );
+    Ok(())
+}
+
+fn seed_irrigation_depletion_date_symbols(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    period_index: usize,
+    period: &IrrigationPeriodRecord,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (field, value) in [
+        ("start_doy", period.start_doy),
+        ("start_year", period.start_year),
+        ("end_doy", period.end_doy),
+        ("end_year", period.end_year),
+    ] {
+        if value < 0 {
+            return Err(
+                HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                    field: "irrigation.depletion.period_####.date",
+                    value: f64::from(value),
+                    allowed: ">= 0",
+                },
+            );
+        }
+        state_surface.insert(
+            irrigation_depletion_period_symbol(period_index, field),
+            BoundaryValue::scalar(f64::from(value)),
+        );
+    }
+    Ok(())
+}
+
+fn seed_irrigation_depletion_sprinkler_period(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    period_index: usize,
+    record: &SprinklerPeriodData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let rate = validate_irrigation_finite(
+        "irrigation.depletion.period_####.sprinkler_rate_m_per_s",
+        record.rate_m_per_s,
+    )?;
+    if rate <= 0.0 {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.depletion.period_####.sprinkler_rate_m_per_s",
+                value: rate,
+                allowed: "> 0.0",
+            },
+        );
+    }
+    let depth_ratio = validate_irrigation_finite(
+        "irrigation.depletion.period_####.sprinkler_depth_ratio",
+        record.depth_ratio,
+    )?;
+    if depth_ratio < 0.0 {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.depletion.period_####.sprinkler_depth_ratio",
+                value: depth_ratio,
+                allowed: ">= 0.0",
+            },
+        );
+    }
+    let nozzle = validate_irrigation_finite(
+        "irrigation.depletion.period_####.sprinkler_nozzle_factor",
+        record.nozzle_factor,
+    )?;
+    if nozzle <= 0.0 {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.depletion.period_####.sprinkler_nozzle_factor",
+                value: nozzle,
+                allowed: "> 0.0",
+            },
+        );
+    }
+
+    state_surface.insert(
+        irrigation_depletion_period_symbol(period_index, "sprinkler_rate_m_per_s"),
+        BoundaryValue::scalar(rate),
+    );
+    state_surface.insert(
+        irrigation_depletion_period_symbol(period_index, "sprinkler_depth_ratio"),
+        BoundaryValue::scalar(depth_ratio),
+    );
+    state_surface.insert(
+        irrigation_depletion_period_symbol(period_index, "sprinkler_nozzle_factor"),
+        BoundaryValue::scalar(nozzle),
+    );
+    Ok(())
+}
+
+fn seed_irrigation_depletion_furrow_period(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    period_index: usize,
+    record: &FurrowPeriodData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    if record.end_element_id == 0 {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.depletion.period_####.furrow_end_element_id",
+                value: 0.0,
+                allowed: ">= 1",
+            },
+        );
+    }
+    state_surface.insert(
+        irrigation_depletion_period_symbol(period_index, "furrow_end_element_id"),
+        BoundaryValue::scalar(irrigation_count_to_f64(
+            "irrigation.depletion.period_####.furrow_end_element_id",
+            record.end_element_id,
+        )?),
+    );
+
+    let supply_rate = validate_irrigation_finite(
+        "irrigation.depletion.period_####.furrow_supply_rate_m3_per_s",
+        record.supply_rate_m3_per_s,
+    )?;
+    if supply_rate <= 0.0 {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.depletion.period_####.furrow_supply_rate_m3_per_s",
+                value: supply_rate,
+                allowed: "> 0.0",
+            },
+        );
+    }
+    let supply_duration = validate_irrigation_finite(
+        "irrigation.depletion.period_####.furrow_supply_duration_s",
+        record.supply_duration_s,
+    )?;
+    if supply_duration <= 0.0 {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.depletion.period_####.furrow_supply_duration_s",
+                value: supply_duration,
+                allowed: "> 0.0",
+            },
+        );
+    }
+    let fill_ratio = validate_irrigation_finite(
+        "irrigation.depletion.period_####.furrow_fill_ratio",
+        record.fill_ratio,
+    )?;
+    if fill_ratio < 0.0 {
+        return Err(
+            HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                field: "irrigation.depletion.period_####.furrow_fill_ratio",
+                value: fill_ratio,
+                allowed: ">= 0.0",
+            },
+        );
+    }
+
+    state_surface.insert(
+        irrigation_depletion_period_symbol(period_index, "furrow_supply_rate_m3_per_s"),
+        BoundaryValue::scalar(supply_rate),
+    );
+    state_surface.insert(
+        irrigation_depletion_period_symbol(period_index, "furrow_supply_duration_s"),
+        BoundaryValue::scalar(supply_duration),
+    );
+    state_surface.insert(
+        irrigation_depletion_period_symbol(period_index, "furrow_surge_code"),
+        BoundaryValue::scalar(f64::from(record.surge_code)),
+    );
+    state_surface.insert(
+        irrigation_depletion_period_symbol(period_index, "furrow_fill_ratio"),
+        BoundaryValue::scalar(fill_ratio),
+    );
     Ok(())
 }
 

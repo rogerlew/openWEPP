@@ -10,6 +10,19 @@
 
 State as of `2026-06-15`:
 
+- CQR12 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`.
+  The scoped quality target reduced
+  `seed_hillslope_runtime_surface_from_irrigation_depletion` CRAP from
+  `1122.0` to `2.0`, with every newly extracted depletion helper below
+  `10`, without changing public API, typed guard classes, stable error fields
+  and allowed strings, depletion irrigation symbols, units, parser
+  compatibility, period iteration, sprinkler/furrow field meanings, or
+  kernel-facing projection behavior. Required Rust closure gates passed. WARN
+  holds remain for target-file coverage below the science-tier threshold and
+  the pre-existing out-of-scope frost `too_many_lines` suppression. Package:
+  `20260615-cqr12-irrigation-depletion-runtime-001/`.
 - CQR11 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-input-contract/src/parsers/management.rs`. The scoped

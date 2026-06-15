@@ -1,5 +1,15 @@
+use std::path::PathBuf;
+
 use openwepp_hillslope_orchestrator::{
     HillslopePhase, HillslopePhaseScheduler, HillslopeWritebackSurface, Wb11HydrologyKernel,
+    runtime_inputs::{
+        HillslopeRuntimeInputError, build_hillslope_runtime_surface_from_irrigation_depletion,
+        seed_hillslope_runtime_surface_from_irrigation_depletion,
+    },
+};
+use openwepp_input_contract::parsers::irrigation_depletion::{
+    IrrigationDepletionFile, IrrigationDepletionParserOptions, IrrigationDepletionTopologyContext,
+    IrrigationPeriodData, parse_irrigation_depletion_from_path,
 };
 use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
 use openwepp_sim_contract::status::BoundaryClass;
@@ -13,6 +23,72 @@ NODE CHANNEL 1 H 1 2 0 C 0 0 0 I 0 0 0
 NODE CHANNEL 2 H 3 0 0 C 1 0 0 I 0 0 0
 NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 ";
+
+fn irrigation_depletion_fixture_path(name: &str) -> PathBuf {
+    PathBuf::from("tests/fixtures/infile/irrigation_depletion").join(name)
+}
+
+fn strict_sprinkler_depletion_fixture() -> IrrigationDepletionFile {
+    parse_irrigation_depletion_from_path(
+        irrigation_depletion_fixture_path("strict_valid_sprinkler_95_7.txt"),
+        IrrigationDepletionParserOptions::strict(),
+        &IrrigationDepletionTopologyContext::default(),
+    )
+    .expect("strict sprinkler depletion fixture should parse")
+}
+
+fn compat_furrow_depletion_fixture() -> IrrigationDepletionFile {
+    parse_irrigation_depletion_from_path(
+        irrigation_depletion_fixture_path("compat_legacy_furrow_datver_normalization.txt"),
+        IrrigationDepletionParserOptions::compatibility(),
+        &IrrigationDepletionTopologyContext::default(),
+    )
+    .expect("compatibility furrow depletion fixture should parse")
+}
+
+fn state_scalar(surface: &HillslopeWritebackSurface, symbol: &str) -> f64 {
+    surface
+        .state_surface
+        .get(&BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("{symbol} should be projected"))
+        .as_f64()
+}
+
+fn assert_close(actual: f64, expected: f64) {
+    assert!(
+        (actual - expected).abs() < 1.0e-12,
+        "expected {expected}, got {actual}"
+    );
+}
+
+fn assert_irrigation_domain_error(
+    err: HillslopeRuntimeInputError,
+    expected_field: &'static str,
+    expected_allowed: &'static str,
+) {
+    match err {
+        HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+            field, allowed, ..
+        } => {
+            assert_eq!(field, expected_field);
+            assert_eq!(allowed, expected_allowed);
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+fn assert_non_finite_irrigation_error(
+    err: HillslopeRuntimeInputError,
+    expected_field: &'static str,
+) {
+    match err {
+        HillslopeRuntimeInputError::NonFiniteIrrigationScheduleField { field, value } => {
+            assert_eq!(field, expected_field);
+            assert!(value.is_nan());
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
 
 #[allow(clippy::too_many_lines)]
 fn seeded_irrig10_base_surface() -> HillslopeWritebackSurface {
@@ -384,6 +460,378 @@ fn irrig10_fixeddate_contract_vector_couples_irrigation_depth_into_runoff_and_st
         .expect("irrigated storage should exist")
         .as_f64();
     assert!(irrigated_storage > baseline_storage);
+}
+
+#[test]
+fn cqr12_depletion_projection_seeds_sprinkler_fixture_symbols() {
+    let depletion = strict_sprinkler_depletion_fixture();
+    let surface = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect("sprinkler depletion projection should succeed");
+
+    assert_close(state_scalar(&surface, "irrigation.depletion.enabled"), 1.0);
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.element_count"),
+        2.0,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.system_type"),
+        1.0,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.schedule_type"),
+        1.0,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.min_depth_m"),
+        0.010,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.max_depth_m"),
+        0.030,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.period_count"),
+        4.0,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.period_0001.element_id"),
+        1.0,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0001.depletion_trigger_ratio",
+        ),
+        0.50,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.period_0001.start_doy"),
+        120.0,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.period_0001.end_year"),
+        2001.0,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0001.sprinkler_rate_m_per_s",
+        ),
+        0.000_002_5,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0001.sprinkler_depth_ratio",
+        ),
+        1.0,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0001.sprinkler_nozzle_factor",
+        ),
+        1.0,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.period_0004.element_id"),
+        2.0,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0004.sprinkler_rate_m_per_s",
+        ),
+        0.000_002_1,
+    );
+}
+
+#[test]
+fn cqr12_depletion_projection_seeds_furrow_fixture_symbols() {
+    let depletion = compat_furrow_depletion_fixture();
+    let surface = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect("furrow depletion projection should succeed");
+
+    assert_close(state_scalar(&surface, "irrigation.depletion.enabled"), 1.0);
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.element_count"),
+        2.0,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.system_type"),
+        2.0,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.schedule_type"),
+        1.0,
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.min_depth_m"),
+        0.010,
+    );
+    assert!(
+        !surface
+            .state_surface
+            .contains_key(&BoundarySymbol::from("irrigation.depletion.max_depth_m"))
+    );
+    assert_close(
+        state_scalar(&surface, "irrigation.depletion.period_count"),
+        2.0,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0001.furrow_end_element_id",
+        ),
+        2.0,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0001.furrow_supply_rate_m3_per_s",
+        ),
+        0.000_35,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0001.furrow_supply_duration_s",
+        ),
+        7200.0,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0001.furrow_surge_code",
+        ),
+        4.0,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0001.furrow_fill_ratio",
+        ),
+        0.90,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0001.depletion_trigger_ratio",
+        ),
+        0.55,
+    );
+    assert_close(
+        state_scalar(
+            &surface,
+            "irrigation.depletion.period_0002.furrow_surge_code",
+        ),
+        6.0,
+    );
+}
+
+#[test]
+fn cqr12_depletion_projection_preserves_existing_runtime_surface() {
+    let depletion = strict_sprinkler_depletion_fixture();
+    let mut surface = HillslopeWritebackSurface::default();
+    surface.state_surface.insert(
+        BoundarySymbol::from("existing.symbol"),
+        BoundaryValue::scalar(42.0),
+    );
+
+    seed_hillslope_runtime_surface_from_irrigation_depletion(&mut surface, &depletion)
+        .expect("depletion projection into existing surface should succeed");
+
+    assert_close(state_scalar(&surface, "existing.symbol"), 42.0);
+    assert_close(state_scalar(&surface, "irrigation.depletion.enabled"), 1.0);
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_non_finite_min_depth() {
+    let mut depletion = strict_sprinkler_depletion_fixture();
+    depletion.min_depth_m = f64::NAN;
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("non-finite min depth should fail");
+
+    assert_non_finite_irrigation_error(err, "irrigation.depletion.min_depth_m");
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_max_depth_below_min_depth() {
+    let mut depletion = strict_sprinkler_depletion_fixture();
+    depletion.max_depth_m = Some(0.005);
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("max depth below min depth should fail");
+
+    assert_irrigation_domain_error(
+        err,
+        "irrigation.depletion.max_depth_m",
+        ">= irrigation.depletion.min_depth_m",
+    );
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_zero_period_element_id() {
+    let mut depletion = strict_sprinkler_depletion_fixture();
+    depletion.periods[0].element_id = 0;
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("zero period element id should fail");
+
+    assert_irrigation_domain_error(err, "irrigation.depletion.period_####.element_id", ">= 1");
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_trigger_ratio_outside_unit_interval() {
+    let mut depletion = strict_sprinkler_depletion_fixture();
+    depletion.periods[0].depletion_trigger_ratio = 1.25;
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("trigger ratio above one should fail");
+
+    assert_irrigation_domain_error(
+        err,
+        "irrigation.depletion.period_####.depletion_trigger_ratio",
+        "[0.0,1.0]",
+    );
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_negative_period_date() {
+    let mut depletion = strict_sprinkler_depletion_fixture();
+    depletion.periods[0].start_doy = -1;
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("negative period date should fail");
+
+    assert_irrigation_domain_error(err, "irrigation.depletion.period_####.date", ">= 0");
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_sprinkler_rate_domain() {
+    let mut depletion = strict_sprinkler_depletion_fixture();
+    match &mut depletion.periods[0].data {
+        IrrigationPeriodData::Sprinkler(record) => record.rate_m_per_s = 0.0,
+        IrrigationPeriodData::Furrow(_) => panic!("expected sprinkler record"),
+    }
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("zero sprinkler rate should fail");
+
+    assert_irrigation_domain_error(
+        err,
+        "irrigation.depletion.period_####.sprinkler_rate_m_per_s",
+        "> 0.0",
+    );
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_sprinkler_depth_ratio_domain() {
+    let mut depletion = strict_sprinkler_depletion_fixture();
+    match &mut depletion.periods[0].data {
+        IrrigationPeriodData::Sprinkler(record) => record.depth_ratio = -0.1,
+        IrrigationPeriodData::Furrow(_) => panic!("expected sprinkler record"),
+    }
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("negative sprinkler depth ratio should fail");
+
+    assert_irrigation_domain_error(
+        err,
+        "irrigation.depletion.period_####.sprinkler_depth_ratio",
+        ">= 0.0",
+    );
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_sprinkler_nozzle_domain() {
+    let mut depletion = strict_sprinkler_depletion_fixture();
+    match &mut depletion.periods[0].data {
+        IrrigationPeriodData::Sprinkler(record) => record.nozzle_factor = 0.0,
+        IrrigationPeriodData::Furrow(_) => panic!("expected sprinkler record"),
+    }
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("zero sprinkler nozzle factor should fail");
+
+    assert_irrigation_domain_error(
+        err,
+        "irrigation.depletion.period_####.sprinkler_nozzle_factor",
+        "> 0.0",
+    );
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_furrow_end_element_domain() {
+    let mut depletion = compat_furrow_depletion_fixture();
+    match &mut depletion.periods[0].data {
+        IrrigationPeriodData::Furrow(record) => record.end_element_id = 0,
+        IrrigationPeriodData::Sprinkler(_) => panic!("expected furrow record"),
+    }
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("zero furrow end element should fail");
+
+    assert_irrigation_domain_error(
+        err,
+        "irrigation.depletion.period_####.furrow_end_element_id",
+        ">= 1",
+    );
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_furrow_supply_rate_domain() {
+    let mut depletion = compat_furrow_depletion_fixture();
+    match &mut depletion.periods[0].data {
+        IrrigationPeriodData::Furrow(record) => record.supply_rate_m3_per_s = 0.0,
+        IrrigationPeriodData::Sprinkler(_) => panic!("expected furrow record"),
+    }
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("zero furrow supply rate should fail");
+
+    assert_irrigation_domain_error(
+        err,
+        "irrigation.depletion.period_####.furrow_supply_rate_m3_per_s",
+        "> 0.0",
+    );
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_furrow_supply_duration_domain() {
+    let mut depletion = compat_furrow_depletion_fixture();
+    match &mut depletion.periods[0].data {
+        IrrigationPeriodData::Furrow(record) => record.supply_duration_s = 0.0,
+        IrrigationPeriodData::Sprinkler(_) => panic!("expected furrow record"),
+    }
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("zero furrow supply duration should fail");
+
+    assert_irrigation_domain_error(
+        err,
+        "irrigation.depletion.period_####.furrow_supply_duration_s",
+        "> 0.0",
+    );
+}
+
+#[test]
+fn cqr12_depletion_projection_rejects_furrow_fill_ratio_domain() {
+    let mut depletion = compat_furrow_depletion_fixture();
+    match &mut depletion.periods[0].data {
+        IrrigationPeriodData::Furrow(record) => record.fill_ratio = -0.1,
+        IrrigationPeriodData::Sprinkler(_) => panic!("expected furrow record"),
+    }
+
+    let err = build_hillslope_runtime_surface_from_irrigation_depletion(&depletion)
+        .expect_err("negative furrow fill ratio should fail");
+
+    assert_irrigation_domain_error(
+        err,
+        "irrigation.depletion.period_####.furrow_fill_ratio",
+        ">= 0.0",
+    );
 }
 
 #[test]
