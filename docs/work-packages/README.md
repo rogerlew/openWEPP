@@ -10,14 +10,17 @@
 
 State as of `2026-06-15`:
 
-- CQR06 is queued for behavior-preserving CRAP/cyclomatic-complexity
+- CQR06 is complete-with-warnings for behavior-preserving CRAP/cyclomatic-complexity
   decomposition of
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`.
-  The scoped quality target is decomposing WB19 lateral-transfer, drainage, and
+  The scoped quality target decomposed WB19 lateral-transfer, drainage, and
   top-layer conductivity adjustment helpers so every eligible target-module
-  function has CRAP `<= 30`, without changing WB19 formulas, typed guard IDs,
-  symbol names, arithmetic grouping, thresholds, unit conversions, writeback
-  order, or public crate APIs. Package:
+  function has CRAP `<= 26.541362973760947`, without changing WB19 formulas,
+  typed guard IDs, symbol names, arithmetic grouping, thresholds, unit
+  conversions, writeback order, or public crate APIs. Required closure gates
+  passed. WARN holds remain for target-file line count over 2000 and target
+  coverage below the science-tier threshold after private helper extraction.
+  Package:
   `20260615-cqr06-lateral-drainage-complexity-001/`.
 - CQR05 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity
