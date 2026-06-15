@@ -10,6 +10,16 @@
 
 State as of `2026-06-15`:
 
+- CQR13 is complete for live-metric closure of the rank-7
+  CRAP/cyclomatic-complexity row in
+  `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/00_core_types.rs`.
+  Fresh before metrics proved the snapshot row had already been closed by
+  prior runtime core type decomposition: the highest current target-file CRAP
+  row is `HillslopeRuntimeInputError::soil_core_code` at
+  `14.0478515625`, with every row below `30` and target-file line coverage
+  `497/515`. No production refactor was needed. Required Rust closure gates
+  passed. Package:
+  `20260615-cqr13-runtime-core-types-complexity-001/`.
 - CQR12 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`.
