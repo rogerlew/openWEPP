@@ -10,6 +10,15 @@
 
 State as of `2026-06-15`:
 
+- CQR33 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity closure of
+  `crates/openwepp-input-contract/src/parsers/watershed_structure.rs`. The
+  scoped target reduced `WatershedStructureParseError::fmt` CRAP from `240.0`
+  to `1.0`; the extracted private helper
+  `WatershedStructureParseError::write_display` is CRAP `15.0`. WARNs remain
+  for `cargo crap` LCOV source-map warnings and the same-file out-of-scope
+  parser row above CRAP `30`. Package:
+  `20260615-cqr33-watershed-structure-parser-complexity-001/`.
 - CQR32 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity closure of
   `crates/openwepp-input-contract/src/parsers/climate.rs`. The scoped target

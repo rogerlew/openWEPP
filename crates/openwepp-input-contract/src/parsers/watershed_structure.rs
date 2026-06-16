@@ -222,6 +222,12 @@ impl WatershedStructureParseError {
 
 impl fmt::Display for WatershedStructureParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.write_display(f)
+    }
+}
+
+impl WatershedStructureParseError {
+    fn write_display(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InputOpenError { path, source } => write!(
                 f,

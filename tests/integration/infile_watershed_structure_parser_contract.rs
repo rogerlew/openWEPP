@@ -1,3 +1,4 @@
+use std::error::Error as _;
 use std::path::PathBuf;
 
 use openwepp_input_contract::parsers::watershed_structure::{
@@ -9,6 +10,10 @@ fn fixture_path(name: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/infile/watershed_structure")
         .join(name)
+}
+
+fn assert_watershed_structure_error_display(error: &WatershedStructureParseError, expected: &str) {
+    assert_eq!(error.to_string(), expected);
 }
 
 #[test]
@@ -48,6 +53,132 @@ fn compatibility_mode_accepts_legacy_no_datver_and_warns() {
         parsed.warnings[0].code,
         WatershedStructureWarningCode::StrW001
     );
+}
+
+#[test]
+fn watershed_structure_parse_error_display_strings_are_stable_for_input_shape() {
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::InputOpenError {
+            path: PathBuf::from("missing.str"),
+            source: std::io::Error::new(std::io::ErrorKind::NotFound, "boom"),
+        },
+        "STR-E-000 failed to open watershed structure file 'missing.str': boom",
+    );
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::TokenParseError {
+            line: 8,
+            field: "datver",
+            token: "bad".to_string(),
+        },
+        "STR-E-001 line 8: failed to parse field 'datver' from token 'bad'",
+    );
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::RecordArityError {
+            line: 9,
+            expected: 13,
+            found: 12,
+        },
+        "STR-E-002 line 9: expected 13 token(s), found 12",
+    );
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::LegacyNoDatverDisallowed {
+            line: 1,
+            token: "3".to_string(),
+        },
+        "STR-E-003 line 1: strict mode requires explicit datver, got leading token '3'",
+    );
+}
+
+#[test]
+fn watershed_structure_parse_error_display_strings_are_stable_for_domains() {
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::UnsupportedDatver {
+            line: 1,
+            datver: 90.0,
+            min_supported: 94.301,
+        },
+        "STR-E-003 line 1: unsupported datver 90; minimum supported 94.301",
+    );
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::ElementTypeDomainError { line: 2, value: 4 },
+        "STR-E-004 line 2: invalid element type code 4; expected 2 or 3",
+    );
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::DisconnectedElementError {
+            line: 3,
+            record_index: 2,
+        },
+        "STR-E-005 line 3: structure row 2 has no non-zero contributors",
+    );
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::ContributorDomainError {
+            line: 4,
+            field: "nhleft",
+            value: -1,
+            expected: "0 or 1..nhill",
+        },
+        concat!(
+            "STR-E-006 line 4: contributor field 'nhleft' has invalid value -1; ",
+            "expected 0 or 1..nhill"
+        ),
+    );
+}
+
+#[test]
+fn watershed_structure_parse_error_display_strings_are_stable_for_counts() {
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::ChannelCountMismatch {
+            expected: 2,
+            observed: 1,
+        },
+        "STR-E-007 channel count mismatch: expected 2, observed 1",
+    );
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::ImpoundmentCountMismatch {
+            expected: 2,
+            observed: 1,
+        },
+        "STR-E-008 impoundment count mismatch: expected 2, observed 1",
+    );
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::HillslopeCoverageMismatch {
+            expected_nhill: 3,
+            observed_nhmax: 2,
+        },
+        "STR-E-009 hillslope coverage mismatch: expected nhill 3, observed nhmax 2",
+    );
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::NhillContextError { nhill: 0 },
+        "STR-E-009 invalid nhill context 0; expected > 0",
+    );
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::RecordCountMismatch {
+            expected: 3,
+            observed: 2,
+        },
+        "STR-E-011 structure row-count mismatch: expected 3, observed 2",
+    );
+    assert_watershed_structure_error_display(
+        &WatershedStructureParseError::InvariantViolation {
+            context: "expected_rows topology context is required for row closure",
+        },
+        concat!(
+            "STR-E-010 invariant violation: ",
+            "expected_rows topology context is required for row closure"
+        ),
+    );
+}
+
+#[test]
+fn watershed_structure_parse_error_source_is_only_input_open_source() {
+    let io_error = WatershedStructureParseError::InputOpenError {
+        path: PathBuf::from("missing.str"),
+        source: std::io::Error::new(std::io::ErrorKind::NotFound, "boom"),
+    };
+    assert!(io_error.source().is_some());
+
+    let non_io_error = WatershedStructureParseError::NhillContextError { nhill: 0 };
+    assert!(non_io_error.source().is_none());
 }
 
 #[test]
