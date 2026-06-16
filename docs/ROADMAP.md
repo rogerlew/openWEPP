@@ -47,7 +47,7 @@ adjudication**; on the perf track, PERFHO01 attributed the ~80–110× high-OFE 
 bit-identical), and **PERFHO02** characterized the residual as hydrology
 symbol-access/guard work plus secondary writeback-application overhead. Operator
 set a **≤10× (≤5×)** target; **PERFARCH01** completed the indexed runtime-surface
-design and proposed ADR-0022. The next perf mechanism is Stage 1
+design and ADR-0022 (ratified 2026-06-16). The next perf mechanism is Stage 1
 `PERFIDX01`, the frozen run-scoped symbol registry.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
@@ -58,7 +58,7 @@ design and proposed ADR-0022. The next perf mechanism is Stage 1
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface Stage 1** | Ratify/use the PERFARCH01 design: frozen run-scoped `SymbolRegistry`, sorted-order `SymbolId`, and BTreeMap export/equality adapters; no storage authority flip yet | Registry skeleton + sorted-id/string-order tests + bit-identical outputs if runtime code changes | ▶️ follow-on (`PERFIDX01`) |
+| 2 | **Indexed runtime-surface Stage 1** | Use the ratified PERFARCH01 design (ADR-0022): frozen run-scoped `SymbolRegistry`, sorted-order `SymbolId`, and BTreeMap export/equality adapters; no storage authority flip yet | Registry skeleton + sorted-id/string-order tests + bit-identical outputs if runtime code changes | ▶️ follow-on (`PERFIDX01`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 

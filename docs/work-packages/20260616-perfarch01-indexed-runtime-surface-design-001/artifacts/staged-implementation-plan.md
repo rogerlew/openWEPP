@@ -8,6 +8,8 @@ determinism, and normal Rust gates unless explicitly scoped as docs-only.
 
 ## Stage 0: ADR Ratification
 
+Status: **COMPLETE** — ADR-0022 ratified 2026-06-16 (Roger Lew, operator authority; applied by Claude Code on instruction after independent review). PERFIDX01 (Stage 1) is unblocked.
+
 Package: `PERFADR01-indexed-runtime-surface-ratification`
 
 - Review and ratify proposed ADR-0022.

@@ -25,7 +25,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0019](0019-openwepp-owns-its-output-surface-wepppyo3-legacy-only.md) | openWEPP owns its output surface; wepppyo3 interchange stays wepp-legacy-only | Accepted (supersedes 0005) |
 | [0020](0020-totalwatsed3-dedicated-output-aggregation-cli.md) | totalwatsed3 is a dedicated output-aggregation CLI | Accepted (amends 0006) |
 | [0021](0021-module-coverage-closure-thresholds.md) | Module coverage and complexity-risk closure thresholds are binding (90% science / 85% glue region+line; per-function CRAP ≤ 30; obligation binding non-waivable) | Accepted |
-| [0022](0022-indexed-runtime-surface-representation.md) | Indexed runtime-surface representation | Proposed |
+| [0022](0022-indexed-runtime-surface-representation.md) | Indexed runtime-surface representation | Accepted |
 
 ## ADR template
 

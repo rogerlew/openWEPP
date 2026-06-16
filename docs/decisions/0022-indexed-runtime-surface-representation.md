@@ -1,8 +1,9 @@
 # ADR-0022: Indexed runtime-surface representation
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-06-16 UTC
-**Deciders:** Roger Lew (pending ratification), Codex (draft)
+**Deciders:** Roger Lew (ratified), Codex (draft), Claude Code (independent review — approve)
+**Ratified:** 2026-06-16 by Roger Lew (operator authority); applied by Claude Code on operator instruction following independent review.
 **Builds on:** [ADR-0003](0003-parity-semantic-not-bit.md), [ADR-0011](0011-architecture-first-top-down-science-contracts.md)
 **Work package:** `docs/work-packages/20260616-perfarch01-indexed-runtime-surface-design-001/`
 
