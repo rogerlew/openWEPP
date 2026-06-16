@@ -355,11 +355,18 @@ State as of `2026-06-16`:
 - **WSHED01 closed the openWEPP-native totalwatsed3 CLI + closure** (2026-06-14,
   item 9) — the WBVAL06/6a end-to-end totalwatsed3 deferral is **resolved** on
   openWEPP-native output (`openwepp-cli-totalwatsed3`, ADR-0019/0020), closing
-  ex-day-1 at `−0.41 mm/2191 d` with independent operands. The next active rung
-  is the **MOFE >10-OFE far-point demonstration** (`MOFE-FARPOINT01`). Channel
+  ex-day-1 at `−0.41 mm/2191 d` with independent operands. Channel
   water-balance routed output (`chanwb`) is a **separate** follow-on
   (`WATERSHED-CHANWB-ROUTED-OUTPUT`), decoupled from the hillslope-only
   totalwatsed3 per ADR-0020.
+- **FARPOINT01 closed the MOFE >10-OFE far-point demonstration** (2026-06-16,
+  item 11) — openWEPP's three identities close at 19 OFEs on H2637, past the
+  legacy ≤10-OFE ceiling. F-B closed (contract-first) a frost `watbtm`
+  double-count the substrate surfaced; F-C contrasted closure (legacy with_ui
+  runoff = 127.7 % of precip — q-cap violation — vs openWEPP 71 %, bounded); the
+  `watpdg` branch-out resolved as a validated non-defect. The next active rung is
+  **per-OFE runoff magnitude adjudication** (`MOFE-MAGPARITY01`); the ~80–110×
+  high-OFE wall-clock gap is scaffolded as `PERFHO01`.
 
 Active work sequence (each rung adds one mechanism on an already-closed
 foundation; boundaries are closure gates, not calendar phases).
@@ -610,6 +617,31 @@ publication-safe Daymet CLI audit:
    (CRM Ch. 3.7, WEPP User Doc), behind the protected boundary. Distinct from snow
    *conservation* (Stage 1, item 6, done now); judged last against a fully closed,
    routed balance.
+
+11. **MOFE >10-OFE far-point demonstration** *(FARPOINT01 complete 2026-06-16)* —
+   `20260613-mofe-farpoint01-high-ofe-routing-closure-demonstration-001/`.
+   Demonstrated openWEPP's three-identity conservation closure on the **H2637
+   19-OFE** substrate (in-repo wepp-forest provenance; legacy comparator
+   `wepp_260606`), past the legacy ≤10-OFE ceiling.
+   - **F-A** staged the fixture + clean legacy baseline (both `wepp_ui` variants);
+     the openWEPP run **surfaced** a per-element WB13 fail-closed at OFE5 on a
+     frost day (residual ≡ `watbtm`).
+   - **F-B** *(Defect-Closure ExecPlan)* closed it **contract-first**: the frost
+     bottom-overflow `watbtm` was double-counted (inflow frost adjustment **and**
+     `Dp` outflow). SC-WATBAL-001 v161→v162 + `per_ofe_internal_wb13.rs:432` fix +
+     regression; all four AGENTS gates green; H2637 both variants then run to
+     completion (235,961 wat rows × 19 OFEs × 34 yr, exit 0). Commits
+     `41469058`, `a724e2ae`.
+   - **F-C** contrasted closure: legacy `wepp_ui` outlet runoff = **127.7 % of
+     precip** (runoff > precip — the WB-05A q-cap, quantified) vs openWEPP **71 %**
+     (bounded, `wepp_ui`-invariant, conservation-closed). Comparator a flag
+     (ADR-0017); the 71 % vs 55.5 % magnitude gap → `MOFE-MAGPARITY01`.
+   - **`watpdg`** branch-out **resolved**: instrumented detection found `watpdg>0`
+     on 4 OFE-days with the gates still closing → it cancels on both sides →
+     validated non-defect (no change). Commit `877ff25f`.
+   Follow-ons: `MOFE-MAGPARITY01` (magnitude), `PERFHO01` (the ~80–110× high-OFE
+   wall-clock gap, scaffolded), `WATERSHED-CHANWB-ROUTED-OUTPUT`,
+   `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`.
 
 Acceptance target at each rung is **closure** (does it conserve), not **magnitude**
 (is the forcing physically right) and not comparator-match. See memory

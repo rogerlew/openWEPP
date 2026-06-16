@@ -1,7 +1,7 @@
 # openWEPP Engine Roadmap
 
 Status: living — **canonical**, **forward-only planning queue**
-Last updated: 2026-06-14
+Last updated: 2026-06-16
 Audience: all contributors
 Owner: maintainers (Claude Code maintains this document)
 
@@ -36,11 +36,14 @@ not calendar phases**.
 
 **Current position:** single-OFE water-balance closure, frost
 activation/conservation, single-OFE frost-depth heat-flow parity,
-MOFE hillslope inter-OFE water-routing closure, and the **openWEPP-native
+MOFE hillslope inter-OFE water-routing closure, the **openWEPP-native
 totalwatsed3 CLI + closure** (WSHED01, the WBVAL06/6a deferral, closed
-2026-06-14) are closed. The next active mechanism is the **MOFE >10-OFE
-far-point demonstration**, followed by per-OFE runoff magnitude adjudication
-and Stage-2 physics-magnitude review.
+2026-06-14), and the **MOFE >10-OFE far-point demonstration** (FARPOINT01,
+closed 2026-06-16 — openWEPP's three identities close at 19 OFEs past the legacy
+ceiling; the frost `watbtm` double-count it surfaced was closed contract-first)
+are closed. The next active mechanism is **per-OFE runoff magnitude
+adjudication**; a **high-OFE performance characterization** (PERFHO01) is
+scaffolded and Codex-ready.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -49,26 +52,34 @@ and Stage-2 physics-magnitude review.
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
-| 1 | **MOFE >10-OFE far-point demonstration** | Run MOFE routing on a >10-OFE substrate where legacy's WB defect appears | openWEPP three-identity closure holds at >10 OFEs (exceed the legacy ceiling) | ⏭️ **Next** (`MOFE-FARPOINT01`) |
-| 2 | **Per-OFE runoff magnitude adjudication** | Decide if the ±10–25% per-OFE runoff vs legacy is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ▶️ follow-on (`MOFE-MAGPARITY01`) |
+| 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
+| 2 | **High-OFE hillslope performance characterization** | Profile + attribute openWEPP's ~80–110× single-hillslope wall-clock gap vs legacy at 19 OFEs | Profiler-backed cost attribution + OFE-scaling exponent + acceptable/optimize verdict | ▶️ **scaffolded, Codex-ready** (`PERFHO01`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
-(MOFE01 is done-done for hillslope water-routing closure after M-I; the
-remaining MOFE-adjacent items below are separate follow-on mechanisms.)
+(MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
+remaining items are separate follow-on mechanisms.)
 
 ---
 
-### 1. MOFE >10-OFE far-point demonstration ⏭️ (next)
+### 1. Per-OFE runoff magnitude adjudication ⏭️ (next)
 
-MOFE01 closed hillslope inter-OFE water routing on the `arboreal-dendrite`
-36-run 1–5-OFE ladder, and WSHED01 closed the openWEPP-native totalwatsed3
-aggregation/audit on top of it (the WBVAL06/6a deferral — resolved 2026-06-14;
-detail in the [execution log](work-packages/README.md)). Both ran where legacy
-WEPP is defect-free (≤10 OFEs). The next mechanism takes MOFE routing to a
-**>10-OFE substrate**, where legacy's water-balance defect appears, and shows
-openWEPP's three-identity closure (transfer / per-element / hillslope-total)
-holds past the legacy ceiling. Follow-on package: `MOFE-FARPOINT01`.
+FARPOINT01 closed the >10-OFE routing **conservation** but surfaced a
+**magnitude** divergence: on H2637 openWEPP routes 71 % of precip to the outlet
+vs legacy's 55.5 % (both bounded; legacy with_ui is the q-cap-broken 127.7 %).
+Adjudicate whether the per-OFE runoff magnitude is expected Stage-2 divergence or
+a defect-shaped follow-on, judged against the already-closed routed balance
+(comparator a flag, ADR-0017). Package: `MOFE-MAGPARITY01`.
+
+### 2. High-OFE hillslope performance characterization ▶️ (scaffolded, Codex-ready)
+
+openWEPP runs the H2637 19-OFE × 34-yr hillslope in ~1000 s vs legacy's ~10 s
+(~80–110×); legacy proves ~10 s is achievable, so the gap is an implementation
+cost. PERFHO01 (characterization — no production/contract edit) profiles and
+attributes the cost, measures the OFE-count scaling, and emits an
+acceptable-vs-named-optimization verdict (any future fix must hold bit-identity +
+determinism, `docs/numerics/`). Scaffolded at
+`work-packages/20260616-perf-high-ofe-hillslope-characterization-001/`.
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 
