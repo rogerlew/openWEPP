@@ -229,8 +229,14 @@ the tracker below and by reading the corresponding package directories under
   Date: `2026-06-15`.
   Final target: `produce_wb16_ealpha_from_runtime_surface`, CRAP
   `6.010666666666666`.
-- [ ] CQR25, rank 19, original CRAP `305`, CC `113`, Cov `75%`:
+- [x] CQR25, rank 19, original CRAP `305`, CC `113`, Cov `75%`:
   `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr25-runner-intake-lane-setup-complexity-001/`.
+  Pushed commit: `417a40fb087630f0be905723c8ae97127abbd324` on branch
+  `main`.
+  Date: `2026-06-15`.
+  Final target: `execute_hillslope_run`, CRAP `12.4198250729`.
 - [ ] CQR26, rank 20, original CRAP `300`, CC `122`, Cov `77%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`.
 - [ ] CQR27, rank 21, original CRAP `291`, CC `35`, Cov `41%`:
