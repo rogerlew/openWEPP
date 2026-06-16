@@ -429,7 +429,13 @@ fn internal_wb13_frost_internal_adjustment_m(
         )));
     }
 
-    Ok(net_liquid_delta + frozen_after - frozen_before + watpdg + watbtm)
+    // `watbtm` (lower overflow) is intentionally excluded from this inflow-side
+    // adjustment: it is owned by the WB13 `Dp` deep-percolation outflow lineage
+    // (SC-WATBAL-001 M-E4-REDO item 2; SC-SNOWFREEZE-001 "enters WB13 `Dp`").
+    // Adding it here double-counts it against `Dp` and reopens the per-element
+    // residual by exactly `watbtm` on frost-overflow days (FARPOINT01 F-B, H2637
+    // OFE5 1996-02-06). It remains read and bounds-checked above as a valid term.
+    Ok(net_liquid_delta + frozen_after - frozen_before + watpdg)
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -675,5 +681,76 @@ fn internal_wb13_failure(detail: impl Into<String>) -> HillslopeCliError {
     HillslopeCliError::RuntimeSurfaceFailure {
         surface: "per_ofe_internal_wb13",
         detail: format!("{SIMPIPE_GUARD_ID} {}", detail.into()),
+    }
+}
+
+#[cfg(test)]
+mod farpoint01_frost_overflow_double_count_tests {
+    use super::*;
+
+    fn seed_frost_overflow_surface(
+        net_liquid_delta_m: f64,
+        frozen_before_m: f64,
+        frozen_after_m: f64,
+        watpdg_m: f64,
+        watbtm_m: f64,
+    ) -> HillslopeWritebackSurface {
+        let mut surface = HillslopeWritebackSurface::default();
+        for (symbol, value) in [
+            ("frost.runtime_frwatc_net_liquid_delta_m", net_liquid_delta_m),
+            ("frost.runtime_frwatc_frozen_water_before_m", frozen_before_m),
+            ("frost.runtime_frwatc_frozen_water_after_m", frozen_after_m),
+            ("frost.runtime_watpdg_m", watpdg_m),
+            ("frost.runtime_watbtm_m", watbtm_m),
+        ] {
+            surface
+                .state_surface
+                .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+        }
+        surface
+    }
+
+    /// FARPOINT01 F-B regression: the named internal frost adjustment must
+    /// **exclude** the lower-overflow `watbtm` term. `watbtm` is owned by the
+    /// WB13 `Dp` deep-percolation outflow lineage (`SC-SNOWFREEZE-001`); counting
+    /// it on the per-element inflow side double-counts it against `Dp` and
+    /// reopens the per-element/hillslope-total residual by exactly `watbtm` on
+    /// frost-overflow days (reproduced on the H2637 19-OFE substrate, OFE5,
+    /// 1996-02-06). Fails before the line-432 fix (returns the double-counted
+    /// value); passes after.
+    #[test]
+    fn farpoint01_internal_frost_adjustment_excludes_watbtm_lower_overflow() {
+        // Frost-overflow day terms (H2637 OFE5, 1996-02-06), in metres.
+        let net_liquid_delta_m = 0.008_987_645_4;
+        let frozen_before_m = 0.005_292_571_9;
+        let frozen_after_m = 0.004_980_476_6;
+        let watpdg_m = 0.0;
+        let watbtm_m = 0.008_231_171_5; // > 0: the frost lower-overflow signature
+
+        let surface = seed_frost_overflow_surface(
+            net_liquid_delta_m,
+            frozen_before_m,
+            frozen_after_m,
+            watpdg_m,
+            watbtm_m,
+        );
+
+        let adjustment_m = internal_wb13_frost_internal_adjustment_m(&surface)
+            .expect("frost adjustment must compute for a valid overflow surface");
+
+        let expected_m = net_liquid_delta_m + frozen_after_m - frozen_before_m + watpdg_m;
+        assert!(
+            (adjustment_m - expected_m).abs() <= 1.0e-15,
+            "adjustment must be net_liquid_delta + frozen_after - frozen_before + watpdg \
+             (watbtm excluded); expected {expected_m}, observed {adjustment_m}"
+        );
+
+        // Anti-tautology: the pre-fix formula (including watbtm) is a strictly
+        // different value; the corrected adjustment must not equal it.
+        let double_counted_m = expected_m + watbtm_m;
+        assert!(
+            (adjustment_m - double_counted_m).abs() > 1.0e-9,
+            "adjustment must not include watbtm; watbtm is owned by the Dp outflow lineage"
+        );
     }
 }

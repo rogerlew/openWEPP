@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 161
+contract_version: 162
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-06-14
+last_reviewed: 2026-06-16
 supersedes: []
 superseded_by: []
 ---
@@ -2132,13 +2132,22 @@ component-preserving conservation.
    alias/lineage check and must not satisfy `INV-WATBAL-096`.
 2. The storage delta used by frost-active per-OFE checks is
    `Δ(Total-Soil + frozwt)` from WB11/frost runtime state. WB12 final liquid
-   storage must include `frost.runtime_frwatc_net_liquid_delta_m` and
-   `frost.runtime_watbtm_m` before a MOFE per-OFE WB13 row consumes it. The
-   per-element identity must account for `frost.runtime_watpdg_m` and the named
-   internal frost adjustment
-   `frwatc_net_liquid_delta + frozen_after - frozen_before + watpdg + watbtm`
-   explicitly; these terms are not residual tolerance. A named frost fixture is
-   required before M-E4 can clear.
+   storage must reflect `frost.runtime_frwatc_net_liquid_delta_m` (the retained
+   fine-layer liquid change) before a MOFE per-OFE WB13 row consumes it; the
+   fine-layer overflow terms `frost.runtime_watbtm_m` and
+   `frost.runtime_watpdg_m` are egress, not retained storage. The per-element
+   identity must account for `frost.runtime_watpdg_m` (upper overflow) and the
+   named internal frost adjustment
+   `frwatc_net_liquid_delta + frozen_after - frozen_before + watpdg`
+   explicitly; these terms are not residual tolerance. `watbtm` (lower overflow)
+   is excluded from this inflow adjustment because it is owned by the WB13 `Dp`
+   deep-percolation outflow lineage per `SC-SNOWFREEZE-001` (lower overflow
+   "enters WB13 `Dp`"); counting it both here and in `Dp` double-counts it and
+   reopens the per-element residual by exactly `watbtm` on frost-overflow days
+   (reproduced on the H2637 19-OFE substrate, OFE5, 1996-02-06; FARPOINT01
+   increment F-B). A named frost fixture is required before M-E4 can clear;
+   `watpdg`'s symmetric inflow-vs-outflow treatment is an open upper-overflow
+   question pending a `watpdg>0` fixture.
 3. For runner-owned WB13 rows, `RM` is the local liquid-input publication term
    and already includes irrigation per `REF-WATBAL-LEGACY-WB13-RM-SNOW`; `Irr`
    remains a publication/audit field and must not be double-counted in the
@@ -2444,6 +2453,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-16` | `162` | `Claude Code` | FARPOINT01 F-B (DC-ExecPlan) amendment: removed `watbtm` (frost lower overflow) from the M-E4-REDO named internal frost adjustment formula. `watbtm` is owned solely by the WB13 `Dp` deep-percolation outflow lineage (`SC-SNOWFREEZE-001`); counting it on the per-element inflow side double-counted it against `Dp` and reopened the per-element/hillslope-total residual by exactly `watbtm` on frost-overflow days (reproduced on the H2637 19-OFE substrate, OFE5 1996-02-06). `watpdg` retained pending a `watpdg>0` fixture. |
 | `2026-06-14` | `161` | `Codex` | MOFE01 M-I amendment: added `INV-WATBAL-100`, `TOL-WATBAL-008`, hillslope-total identity provenance requirements, and the multi-OFE scheduler-lifecycle exclusivity gate. |
 | `2026-06-14` | `160` | `Codex` | MOFE01 M-G amendment: added `INV-WATBAL-099` and water-balance boundary authority separating water-transfer-only `erod14_qin` provenance from accepted downstream sediment-coupled `qin` closure. |
 | `2026-06-14` | `159` | `Codex` | MOFE01 M-F-REDO2 amendment: pinned public `QOFE = runoff * efflen / slplen` and public `Q = runoff * efflen / totlen`, rejected downstream `QOFE == Q` aliases, and separated public runoff normalization from raw operands used by internal conservation identities. |
