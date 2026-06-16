@@ -689,6 +689,21 @@ publication-safe Daymet CLI audit:
    `PERFOPT02-symbol-access-and-writeback-application`. No production/contract
    edit.
 
+15. **Indexed runtime-surface architecture design** *(PERFARCH01 complete
+   2026-06-16, Codex-executed)* —
+   `20260616-perfarch01-indexed-runtime-surface-design-001/`. Designed the
+   architectural replacement for the string-keyed runtime surface: a frozen
+   run-scoped `SymbolRegistry`, sorted-order `SymbolId`, and dense indexed
+   state/flux storage while preserving the logical `BoundarySymbol` seam. A
+   standalone prototype over 6,396 symbols measured 109.85× faster dense clone,
+   219.16× faster pre-resolved lookup, and 115.77× faster update batches versus
+   the modeled `BTreeMap<String, f64>` pattern; sorted id order matched string
+   sort. Feasibility verdict: <=10× is plausible if implementation migrates
+   roughly 89-90 % of elapsed time out of string-keyed surface mechanics; <=5×
+   needs roughly 95-96 % and is not a storage-only promise. Proposed ADR:
+   `docs/decisions/0022-indexed-runtime-surface-representation.md`. Follow-on:
+   `PERFIDX01-run-scoped-symbol-registry-001`. No production/contract edit.
+
 Acceptance target at each rung is **closure** (does it conserve), not **magnitude**
 (is the forcing physically right) and not comparator-match. See memory
 `project-work-sequencing-wb-frost-mofe-snow` for the rationale and the two

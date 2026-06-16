@@ -45,9 +45,10 @@ are closed. The next active mechanism is **per-OFE runoff magnitude
 adjudication**; on the perf track, PERFHO01 attributed the ~80–110× high-OFE gap,
 **PERFOPT01** landed its first optimization (complete 2026-06-16: ~1.15×,
 bit-identical), and **PERFHO02** characterized the residual as hydrology
-symbol-access/guard work plus secondary writeback-application overhead (the string-keyed runtime surface — ~95 % of
-time). Operator set a **≤10× (≤5×)** target; the chosen path is the architectural
-**indexed runtime-surface** change (`PERFARCH01`, scaffolded), not incremental passes.
+symbol-access/guard work plus secondary writeback-application overhead. Operator
+set a **≤10× (≤5×)** target; **PERFARCH01** completed the indexed runtime-surface
+design and proposed ADR-0022. The next perf mechanism is Stage 1
+`PERFIDX01`, the frozen run-scoped symbol registry.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -57,7 +58,7 @@ time). Operator set a **≤10× (≤5×)** target; the chosen path is the archit
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface (architectural perf change)** | Replace the string-keyed `BTreeMap<BoundarySymbol, BoundaryValue>` runtime surface (the ~85× root cause: per-access String alloc + per-OFE-day clone) with an indexed/array-backed store; **target ≤10× (≤5×) vs legacy**. Incremental PERFOPT passes are Amdahl-capped well above 10× | Design + feasibility verdict + staged bit-identity-gated plan + proposed ADR (then staged impl) | ▶️ **scaffolded, Codex-ready** (`PERFARCH01`) |
+| 2 | **Indexed runtime-surface Stage 1** | Ratify/use the PERFARCH01 design: frozen run-scoped `SymbolRegistry`, sorted-order `SymbolId`, and BTreeMap export/equality adapters; no storage authority flip yet | Registry skeleton + sorted-id/string-order tests + bit-identical outputs if runtime code changes | ▶️ follow-on (`PERFIDX01`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -75,7 +76,7 @@ Adjudicate whether the per-OFE runoff magnitude is expected Stage-2 divergence o
 a defect-shaped follow-on, judged against the already-closed routed balance
 (comparator a flag, ADR-0017). Package: `MOFE-MAGPARITY01`.
 
-### 2. Indexed runtime-surface — architectural perf change ▶️ (scaffolded, Codex-ready)
+### 2. Indexed runtime-surface — Stage 1 ▶️ (`PERFIDX01`)
 
 PERFHO01 *(complete 2026-06-16)* characterized the ~80–110× H2637 wall-clock gap:
 CPU-bound (`977.99/978.55` user s), **not** I/O or parquet, scaling
@@ -108,14 +109,16 @@ Output writers again had no sampled dominance.
 **Decision (operator, 2026-06-16):** target **≤10× (≤5×)** vs legacy. Incremental
 PERFOPT passes are Amdahl-capped well above 10× (PERFOPT01 = 1.15×; the cost is
 distributed across every per-OFE-day `String`-keyed access, not a few excisable
-functions). The chosen path is the **architectural** change — replace the
-`BTreeMap<BoundarySymbol, BoundaryValue>` runtime surface with an indexed/array-backed
-store (symbol interning → sorted-order `SymbolId` → `Vec<Option<…>>`; clone = memcpy,
-lookup = O(1), no per-access `String`). **`PERFARCH01`** (design + feasibility +
-staged bit-identity-gated plan + proposed ADR) is scaffolded, Codex-ready:
-`work-packages/20260616-perfarch01-indexed-runtime-surface-design-001/`. A low-risk
-incremental `PERFOPT02` (the PERFHO02 residual) remains optional but is not the path
-to the target.
+functions). **PERFARCH01** completed the design and feasibility work:
+`work-packages/20260616-perfarch01-indexed-runtime-surface-design-001/`.
+It chose a frozen run-scoped `SymbolRegistry`, sorted-order `SymbolId`, and
+dense indexed state/flux storage, with proposed
+[ADR-0022](decisions/0022-indexed-runtime-surface-representation.md). Prototype
+storage operations were 109.85× faster for clone, 219.16× faster for pre-resolved
+lookup, and 115.77× faster for update batches. <=10× is plausible if staged
+implementation migrates about 89-90% of current elapsed time out of string-keyed
+surface mechanics; <=5× remains aspirational. Next mechanism:
+`PERFIDX01-run-scoped-symbol-registry-001`.
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 

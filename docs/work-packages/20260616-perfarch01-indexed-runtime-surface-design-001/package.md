@@ -1,7 +1,7 @@
 # PERFARCH01 — Indexed Runtime-Surface Representation (Design + Feasibility)
 
-Status: queued (operator-directed 2026-06-16: target ≤10× vs legacy, ≤5× if
-possible; the architectural path, chosen over incremental PERFOPT passes)
+Status: complete 2026-06-16 (operator-directed target ≤10× vs legacy, ≤5× if
+possible; architectural path chosen over incremental PERFOPT passes)
 
 Package type: **Architecture design + feasibility** (no production or contract
 change in *this* package — it produces a design, a proposed ADR, a staged
@@ -98,7 +98,7 @@ the storage + hot-path resolution change.
    optimization package with the `anchor_mismatches = 0` gate (suggested: registry
    build → indexed backing under the unchanged API → hot dynamic-symbol resolve-once
    → sorted-iteration-op migration).
-7. **Proposed ADR** — draft `docs/decisions/00NN-indexed-runtime-surface-representation.md`
+7. **Proposed ADR** — draft `docs/decisions/0022-indexed-runtime-surface-representation.md`
    (the decision, rationale, the `BoundarySymbol`-API-preserved + bit-identity
    constraints, and the staging), for ratification before Stage-1 implementation.
 
@@ -115,7 +115,7 @@ the storage + hot-path resolution change.
 - `artifacts/indexed-runtime-surface-design.md`
 - `artifacts/feasibility-and-projected-speedup.md` (prototype measurements)
 - `artifacts/staged-implementation-plan.md`
-- proposed `docs/decisions/00NN-indexed-runtime-surface-representation.md` (draft)
+- proposed `docs/decisions/0022-indexed-runtime-surface-representation.md` (draft)
 - `artifacts/perfarch01_disposition.md` + handoff (naming Stage-1).
 
 ## Dependencies

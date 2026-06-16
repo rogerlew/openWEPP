@@ -45,7 +45,7 @@ bit-identity hazards.
    ≤10×? ≤5×? If not, the honest floor + reason.
 6. **Staged plan + proposed ADR** — incremental stages, each a behavior-preserving
    optimization package gated on `anchor_mismatches = 0`; draft
-   `docs/decisions/00NN-indexed-runtime-surface-representation.md` for ratification
+   `docs/decisions/0022-indexed-runtime-surface-representation.md` for ratification
    before Stage-1.
 
 ## Hard constraints
