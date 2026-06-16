@@ -10,10 +10,11 @@
 
 State as of `2026-06-15`:
 
-- CQR27 is in progress for behavior-preserving
+- CQR27 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-input-contract/src/parsers/management.rs`. Package:
-  `20260615-cqr27-management-parser-complexity-001/`.
+  `20260615-cqr27-management-parser-complexity-001/`. Final target:
+  `parse_yearly_annual_fallow`, CRAP `4.0`.
 - CQR26 is complete-with-warnings for live-metric closure of
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`.
   Package:
