@@ -320,8 +320,13 @@ the tracker below and by reading the corresponding package directories under
   Date: `2026-06-16`.
   Final target: `Wb11HydrologyKernel::wb19_lateral_transfer_inputs`, CRAP
   `26.541362973760947`.
-- [ ] CQR36, rank 30, original CRAP `220`, CC `73`, Cov `70%`:
+- [x] CQR36, rank 30, original CRAP `220`, CC `73`, Cov `70%`:
   `crates/openwepp-input-contract/src/parsers/watershed_impoundment.rs`.
+  Package:
+  `docs/work-packages/20260616-cqr36-watershed-impoundment-parser-complexity-001/`.
+  Pushed package commit:
+  `903ff2f5d3f1e449f152f5b480ed8799d6f18f2e` on branch `main`, date
+  `2026-06-16`. Final target: `parse_impoundment`, final CRAP `15.0`.
 
 ### Surprises & Discoveries
 
