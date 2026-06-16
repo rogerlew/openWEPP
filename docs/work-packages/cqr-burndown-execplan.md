@@ -279,8 +279,14 @@ the tracker below and by reading the corresponding package directories under
   `main`.
   Date: `2026-06-15`.
   Final target: `Wb11HydrologyKernel::run_erod13_wave1_core`, CRAP `8.0`.
-- [ ] CQR31, rank 25, original CRAP `252`, CC `76`, Cov `69%`:
+- [x] CQR31, rank 25, original CRAP `252`, CC `76`, Cov `69%`:
   `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr31-runner-output-climate-complexity-001/`.
+  Pushed commit: `1798b1ac3e522a4034399f518b4dd6c45965a2a4` on branch
+  `main`.
+  Date: `2026-06-15`.
+  Final target: `build_simulation_owned_wb13_row_for_ofe`, CRAP `16.0`.
 - [ ] CQR32, rank 26, original CRAP `240`, CC `15`, Cov `0%`:
   `crates/openwepp-input-contract/src/parsers/climate.rs`.
 - [ ] CQR33, rank 27, original CRAP `240`, CC `15`, Cov `0%`:
