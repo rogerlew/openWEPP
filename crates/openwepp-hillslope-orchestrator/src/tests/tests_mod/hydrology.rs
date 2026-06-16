@@ -82,6 +82,171 @@ fn cqr17_erod19_xcrit_classification_preserves_branch_vectors() {
     }
 }
 
+fn cqr23_route_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
+    let mut state_surface = BTreeMap::new();
+    for (symbol, value) in [
+        ("erod14_wave2_enabled", 1.0),
+        ("nslpts", 2.0),
+        ("xu_0002", 0.2),
+        ("xl_0002", 0.5),
+        ("ainf_0002", 0.4),
+        ("binf_0002", 0.3),
+        ("cinf_0002", 0.2),
+        ("ainftc_0002", 0.4),
+        ("binftc_0002", 0.3),
+        ("cinftc_0002", 0.2),
+        ("qostar", 0.2),
+        ("xdetst", 0.1),
+        ("lddend", 0.3),
+        ("erod14_ktrato", 1.1),
+        ("theta", 0.2),
+        ("phi", 0.5),
+        ("taucn", 0.2),
+        ("G", 0.2),
+    ] {
+        state_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
+    state_surface
+}
+
+fn cqr23_run_route_segment(
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    erod13_state_updates: &[WritebackField],
+) -> Vec<WritebackField> {
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "peak_runoff",
+        HillslopeKernelPhaseClass::HydrologyPeakRunoff,
+        HillslopeConsumerAdapter::Runoff,
+        None,
+        state_surface,
+        &flux_surface,
+    );
+
+    Wb11HydrologyKernel::run_erod19_route_segment_migration(&request, erod13_state_updates)
+        .expect("EROD19 route segment migration should succeed")
+}
+
+fn assert_cqr23_route_field(
+    updates: &[WritebackField],
+    index: usize,
+    symbol: &str,
+    value: f64,
+    minimum: Option<f64>,
+    maximum: Option<f64>,
+) {
+    let field = updates
+        .get(index)
+        .unwrap_or_else(|| panic!("missing CQR23 route field at index {index}"));
+    assert_eq!(field.symbol, BoundarySymbol::from(symbol));
+    assert!(
+        (field.value.as_f64() - value).abs() <= 1.0e-12,
+        "{symbol} value mismatch: observed {}, expected {value}",
+        field.value.as_f64()
+    );
+    assert_eq!(field.minimum, minimum, "{symbol} minimum mismatch");
+    assert_eq!(field.maximum, maximum, "{symbol} maximum mismatch");
+}
+
+#[test]
+fn cqr23_erod19_route_segment_characterizes_wave_gate() {
+    let state_surface = BTreeMap::new();
+    let updates = cqr23_run_route_segment(&state_surface, &[]);
+
+    assert!(
+        updates.is_empty(),
+        "disabled EROD14 wave2 route must publish no EROD19 updates"
+    );
+}
+
+#[test]
+fn cqr23_erod19_route_segment_characterizes_publication_family() {
+    let state_surface = cqr23_route_state_surface();
+    let updates = cqr23_run_route_segment(&state_surface, &[]);
+
+    assert_eq!(updates.len(), 21);
+    assert_cqr23_route_field(&updates, 0, "nslpts", 2.0, Some(2.0), None);
+    assert_cqr23_route_field(&updates, 1, "xu_0002", 0.2, Some(0.0), None);
+    assert_cqr23_route_field(&updates, 2, "xl_0002", 0.5, Some(0.2), None);
+    assert_cqr23_route_field(&updates, 3, "ainf_0002", 0.4, None, None);
+    assert_cqr23_route_field(&updates, 4, "binf_0002", 0.3, None, None);
+    assert_cqr23_route_field(&updates, 5, "cinf_0002", 0.2, None, None);
+    assert_cqr23_route_field(&updates, 6, "ainftc_0002", 0.4, None, None);
+    assert_cqr23_route_field(&updates, 7, "binftc_0002", 0.3, None, None);
+    assert_cqr23_route_field(&updates, 8, "cinftc_0002", 0.2, None, None);
+    assert_cqr23_route_field(&updates, 9, "qostar", 0.2, None, None);
+    assert_cqr23_route_field(&updates, 10, "xdbeg", 0.0, Some(0.0), None);
+    assert_cqr23_route_field(&updates, 11, "xdend", 0.5, Some(0.2), Some(0.5));
+    assert_cqr23_route_field(&updates, 12, "xdetst", 0.1, Some(0.0), Some(0.5));
+    assert_cqr23_route_field(&updates, 13, "ldlast", 0.2, Some(0.0), None);
+    assert_cqr23_route_field(&updates, 14, "lddend", 0.2, Some(0.0), None);
+    assert_cqr23_route_field(&updates, 15, "du", 0.0, None, None);
+    assert_cqr23_route_field(&updates, 16, "dl", 0.0, None, None);
+    assert_cqr23_route_field(&updates, 17, "ndep", 0.0, Some(0.0), Some(1.0));
+    assert_cqr23_route_field(&updates, 18, "mshear", 2.0, Some(1.0), Some(5.0));
+    assert_cqr23_route_field(&updates, 19, "xc1", 0.2, Some(0.2), Some(0.5));
+    assert_cqr23_route_field(&updates, 20, "xc2", 0.5, Some(0.2), Some(0.5));
+}
+
+#[test]
+fn cqr23_erod19_route_segment_characterizes_erod13_update_precedence() {
+    let mut state_surface = cqr23_route_state_surface();
+    state_surface.insert(BoundarySymbol::from("theta"), BoundaryValue::scalar(0.8));
+    state_surface.insert(BoundarySymbol::from("phi"), BoundaryValue::scalar(0.9));
+    state_surface.insert(BoundarySymbol::from("taucn"), BoundaryValue::scalar(0.9));
+
+    let erod13_state_updates = [
+        WritebackField::bounded("theta", 0.2, Some(0.0), None),
+        WritebackField::bounded("phi", 0.5, Some(0.0), None),
+        WritebackField::bounded("taucn", 0.2, Some(0.0), None),
+    ];
+    let stale_state_updates = cqr23_run_route_segment(&state_surface, &[]);
+    let override_updates = cqr23_run_route_segment(&state_surface, &erod13_state_updates);
+
+    let stale_mshear =
+        state_update_scalar(&stale_state_updates, "mshear").expect("mshear should publish");
+    let override_mshear =
+        state_update_scalar(&override_updates, "mshear").expect("mshear should publish");
+    assert!((stale_mshear - 1.0).abs() <= 1.0e-12);
+    assert!((override_mshear - 2.0).abs() <= 1.0e-12);
+}
+
+#[test]
+fn cqr23_erod19_route_segment_characterizes_legacy_input_fallbacks() {
+    let mut state_surface = cqr23_route_state_surface();
+    state_surface.remove(&BoundarySymbol::from("theta"));
+    state_surface.remove(&BoundarySymbol::from("phi"));
+    state_surface.remove(&BoundarySymbol::from("taucn"));
+    state_surface.remove(&BoundarySymbol::from("G"));
+
+    for (symbol, value) in [
+        ("cntlen", 2.0),
+        ("detinr", 0.15),
+        ("tcend", 1.5),
+        ("effdrr", 0.8),
+        ("effdrn", 1.0),
+        ("beta", 0.2),
+        ("veleff", 0.5),
+        ("pkro", 0.25),
+        ("tcadjf", 0.5),
+        ("shcrit", 1.0),
+        ("shrsol", 1.0),
+    ] {
+        state_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
+
+    let updates = cqr23_run_route_segment(&state_surface, &[]);
+
+    let du = state_update_scalar(&updates, "du").expect("du should publish");
+    let mshear = state_update_scalar(&updates, "mshear").expect("mshear should publish");
+    let xc1 = state_update_scalar(&updates, "xc1").expect("xc1 should publish");
+    let xc2 = state_update_scalar(&updates, "xc2").expect("xc2 should publish");
+    assert!((du - -0.16).abs() <= 1.0e-12);
+    assert!((mshear - 3.0).abs() <= 1.0e-12);
+    assert!((xc1 - 0.349_229_574_432_848_2).abs() <= 1.0e-12);
+    assert!((xc2 - 0.5).abs() <= 1.0e-12);
+}
+
 #[test]
 fn hphys0246_wb18_percolation_preserves_residual_storage_in_aggregate_soil_water() {
     let state_surface = hphys0246_wb18_aggregate_state_surface();

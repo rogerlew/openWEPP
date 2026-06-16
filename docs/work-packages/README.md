@@ -10,6 +10,17 @@
 
 State as of `2026-06-15`:
 
+- CQR23 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod19.rs`.
+  The scoped target reduced `run_erod19_route_segment_migration` CRAP from
+  `351.9234211799049` to `9.00460855712335`, with every newly extracted helper
+  below `15`, without changing public API, runtime symbols, writeback order,
+  typed guard behavior, parser compatibility, or science-contract behavior.
+  WARNs remain for target-file coverage below the ADR-0021 line threshold and
+  the pre-existing out-of-scope `erod19_depend` row at CRAP
+  `87.98408081839372`. Package:
+  `20260615-cqr23-erod19-route-segment-complexity-001/`.
 - CQR22 completed behavior-preserving CRAP/cyclomatic-complexity
   decomposition of `crates/openwepp-input-contract/src/parsers/soil.rs`.
   Package: `20260615-cqr22-soil-parser-complexity-001/`. Final target CRAP:
