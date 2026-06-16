@@ -54,7 +54,7 @@ superlinear) and recommends the `PERFOPT01` optimization follow-on.
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Runtime-surface map-churn optimization** | Cut per-OFE-day symbol-keyed `BTreeMap` clone/insert/remove churn + success-path writeback-validation detail (PERFHO01 GDB-sampled these as ~73 % of cost) | Bit-identical outputs + measured speedup; the gap's first necessary optimization (~1.5–2.5× expected, 3.75× Amdahl cap) | ▶️ follow-on (`PERFOPT01`, from PERFHO01) |
+| 2 | **Runtime-surface map-churn optimization** | Cut per-OFE-day symbol-keyed `BTreeMap` clone/insert/remove churn + success-path writeback-validation detail (PERFHO01 GDB-sampled these as ~73 % of cost) | Bit-identical outputs + measured speedup; the gap's first necessary optimization (~1.5–2.5× expected, 3.75× Amdahl cap) | ▶️ **scaffolded, Codex-ready** (`PERFOPT01`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -85,7 +85,10 @@ Verdict: **not acceptable as-is**. Follow-on `PERFOPT01` cuts the runtime-surfac
 churn + makes writeback detail lazy (bit-identical, determinism-preserving per
 `docs/numerics/`); expected ~1.5–2.5× (3.75× Amdahl cap on the named component) —
 the first necessary optimization, not full gap closure. Characterization:
-`work-packages/20260616-perf-high-ofe-hillslope-characterization-001/`.
+`work-packages/20260616-perf-high-ofe-hillslope-characterization-001/`; the
+optimization is **scaffolded** (Codex-ready) at
+`work-packages/20260616-perfopt01-runtime-surface-map-churn-001/`, with a
+non-waivable bit-identity gate (`anchor_mismatches = 0`) + determinism preservation.
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 
