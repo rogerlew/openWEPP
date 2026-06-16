@@ -10,6 +10,14 @@
 
 State as of `2026-06-15`:
 
+- CQR28 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_plant_percolation.rs`.
+  The scoped target reduced `run_percolation` CRAP from
+  `281.82979375564685` to `17.19373252009578`, with every newly extracted
+  helper CRAP `<= 22.896222121074196`. WARNs remain for `cargo crap` LCOV
+  source-map warnings and pre-existing same-file out-of-scope rows above CRAP
+  `30`. Package: `20260615-cqr28-plant-percolation-complexity-001/`.
 - CQR27 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-input-contract/src/parsers/management.rs`. Package:

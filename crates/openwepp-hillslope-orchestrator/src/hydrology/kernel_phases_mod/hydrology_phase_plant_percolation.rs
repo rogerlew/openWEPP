@@ -1,6 +1,42 @@
 #[allow(clippy::wildcard_imports)]
 use crate::hydrology::*;
 
+struct Wb18PercolationLayers {
+    theta: Vec<f64>,
+    field_capacity: Vec<f64>,
+    upper_limit: Vec<f64>,
+    conductivity: Vec<f64>,
+    depth: Vec<f64>,
+}
+
+struct Wb18SamePassInfiltration {
+    depth: Option<f64>,
+    lineage: bool,
+}
+
+struct Wb18PercolationLaneConfig {
+    lane_substeps: f64,
+    daily_lane: bool,
+    restrictive_layer_enabled: bool,
+    restrictive_layer_conductivity: f64,
+    restrictive_layer_thickness: f64,
+    restrictive_layer_conductivity_symbol: BoundarySymbol,
+    restrictive_layer_thickness_symbol: BoundarySymbol,
+}
+
+struct Wb18PercolationRoutingResult {
+    per_layer_flux: Vec<f64>,
+    percolation_loss: f64,
+}
+
+struct Wb18PercolationSoilWaterLedger {
+    soil_water: f64,
+    reconcile_legacy_soil_water_from_layers: bool,
+    computed_soil_water_before: f64,
+    same_pass_infiltration_depth: f64,
+    percolation_loss: f64,
+}
+
 impl Wb11HydrologyKernel {
 pub(crate) fn effective_swu_plant_tolerance(raw_plant_tolerance: f64) -> f64 {
         if raw_plant_tolerance <= 0.0 {
@@ -735,6 +771,84 @@ pub(crate) fn resolve_infiltration_tillage_depth(
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
         let phase_class = HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage;
+        let (soil_water, reconcile_legacy_soil_water_from_layers) =
+            Self::validate_wb18_legacy_percolation_inputs(request, phase_class)?;
+        let (nsl_symbol, layer_count) = Self::require_wb11_layer_count(request, phase_class)?;
+        if layer_count == 0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: nsl_symbol,
+                value: 0.0,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+        let mut layers = Self::read_wb18_percolation_layers(request, phase_class, layer_count)?;
+        let computed_soil_water_before =
+            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &layers.theta)?
+                .max(0.0);
+        if reconcile_legacy_soil_water_from_layers {
+            let reconciled_soil_water = computed_soil_water_before;
+            Self::require_state_range(
+                phase_class,
+                WB11_SYMBOL_SOIL_WATER,
+                reconciled_soil_water.max(0.0),
+                Some(0.0),
+                None,
+            )?;
+        }
+
+        let same_pass_infiltration =
+            Self::resolve_wb18_percolation_same_pass_infiltration(request, phase_class)?;
+        let lane_config = Self::resolve_wb18_percolation_lane_config(request, phase_class)?;
+        let mut routing = Self::run_wb18_percolation_routing(
+            request,
+            phase_class,
+            &mut layers,
+            &same_pass_infiltration,
+            &lane_config,
+        )?;
+        Self::canonicalize_wb18_deep_percolation_roundoff(&mut layers, &mut routing);
+
+        let soil_water_after = Self::resolve_wb18_percolation_soil_water_after(
+            request,
+            phase_class,
+            &mut layers,
+            &Wb18PercolationSoilWaterLedger {
+                soil_water,
+                reconcile_legacy_soil_water_from_layers,
+                computed_soil_water_before,
+                same_pass_infiltration_depth: same_pass_infiltration.depth.unwrap_or(0.0),
+                percolation_loss: routing.percolation_loss,
+            },
+        )?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_PERC_LOSS_D,
+            routing.percolation_loss,
+            Some(0.0),
+            None,
+        )?;
+
+        Ok(Self::build_wb18_percolation_response(
+            soil_water_after,
+            &layers,
+            &routing,
+            &same_pass_infiltration,
+        ))
+    }
+
+    fn validate_wb18_legacy_percolation_inputs(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<(f64, bool), Wb11HydrologyKernelGuardError> {
         let soil_water = Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
         let reconcile_legacy_soil_water_from_layers = soil_water < -WB11_ZERO_THRESHOLD;
         if !reconcile_legacy_soil_water_from_layers {
@@ -768,22 +882,19 @@ pub(crate) fn resolve_infiltration_tillage_depth(
             Some(1.0),
         )?;
 
-        let (nsl_symbol, layer_count) = Self::require_wb11_layer_count(request, phase_class)?;
-        if layer_count == 0 {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: nsl_symbol,
-                value: 0.0,
-                minimum: Some(1.0),
-                maximum: None,
-            });
-        }
+        Ok((soil_water, reconcile_legacy_soil_water_from_layers))
+    }
 
+    fn read_wb18_percolation_layers(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_count: usize,
+    ) -> Result<Wb18PercolationLayers, Wb11HydrologyKernelGuardError> {
         let mut theta = Vec::with_capacity(layer_count);
         let mut field_capacity = Vec::with_capacity(layer_count);
         let mut upper_limit = Vec::with_capacity(layer_count);
         let mut conductivity = Vec::with_capacity(layer_count);
-        let mut layer_depth = Vec::with_capacity(layer_count);
+        let mut depth = Vec::with_capacity(layer_count);
 
         for layer_index in 1..=layer_count {
             let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
@@ -856,23 +967,23 @@ pub(crate) fn resolve_infiltration_tillage_depth(
             field_capacity.push(layer_fc);
             upper_limit.push(layer_ul);
             conductivity.push(layer_ssc);
-            layer_depth.push(dg);
-        }
-        let computed_soil_water_before =
-            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &theta)?
-                .max(0.0);
-        if reconcile_legacy_soil_water_from_layers {
-            let reconciled_soil_water = computed_soil_water_before;
-            Self::require_state_range(
-                phase_class,
-                WB11_SYMBOL_SOIL_WATER,
-                reconciled_soil_water.max(0.0),
-                Some(0.0),
-                None,
-            )?;
+            depth.push(dg);
         }
 
-        let same_pass_infiltration = if request
+        Ok(Wb18PercolationLayers {
+            theta,
+            field_capacity,
+            upper_limit,
+            conductivity,
+            depth,
+        })
+    }
+
+    fn resolve_wb18_percolation_same_pass_infiltration(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<Wb18SamePassInfiltration, Wb11HydrologyKernelGuardError> {
+        let depth = if request
             .state_surface
             .contains_key(&BoundarySymbol::from("management.initial.params.tillay2_m"))
         {
@@ -880,11 +991,19 @@ pub(crate) fn resolve_infiltration_tillage_depth(
         } else {
             None
         };
-        let same_pass_infiltration_lineage = if same_pass_infiltration.is_some() {
+        let lineage = if depth.is_some() {
             Self::wb18_should_reconstruct_same_pass_infiltration_lineage(request, phase_class)?
         } else {
             false
         };
+
+        Ok(Wb18SamePassInfiltration { depth, lineage })
+    }
+
+    fn resolve_wb18_percolation_lane_config(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<Wb18PercolationLaneConfig, Wb11HydrologyKernelGuardError> {
         let lane_substeps_symbol = BoundarySymbol::from("wb18_perc_lane_substeps");
         let lane_substeps_raw =
             Self::optional_state_scalar_for_symbol(request, phase_class, &lane_substeps_symbol)?
@@ -972,224 +1091,339 @@ pub(crate) fn resolve_infiltration_tillage_depth(
             0.0
         };
 
+        Ok(Wb18PercolationLaneConfig {
+            lane_substeps,
+            daily_lane,
+            restrictive_layer_enabled,
+            restrictive_layer_conductivity,
+            restrictive_layer_thickness,
+            restrictive_layer_conductivity_symbol,
+            restrictive_layer_thickness_symbol,
+        })
+    }
+
+    fn run_wb18_percolation_routing(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layers: &mut Wb18PercolationLayers,
+        same_pass_infiltration: &Wb18SamePassInfiltration,
+        lane_config: &Wb18PercolationLaneConfig,
+    ) -> Result<Wb18PercolationRoutingResult, Wb11HydrologyKernelGuardError> {
+        let layer_count = layers.theta.len();
         let mut per_layer_flux = vec![0.0_f64; layer_count];
         let mut percolation_loss = 0.0_f64;
 
         // Bottom-up routing mirrors legacy WEPP percolation ordering in PURK.
         let mut lane_substep_index = 0.0_f64;
-        while lane_substep_index < lane_substeps {
-            if let Some(infiltration) = same_pass_infiltration {
+        while lane_substep_index < lane_config.lane_substeps {
+            if let Some(infiltration) = same_pass_infiltration.depth {
                 Self::apply_same_pass_infiltration_to_layer_storage(
                     request,
                     phase_class,
-                    &mut theta,
-                    &layer_depth,
-                    infiltration / lane_substeps,
+                    &mut layers.theta,
+                    &layers.depth,
+                    infiltration / lane_config.lane_substeps,
                 )?;
             }
 
-            let mut substep_percolation_loss = 0.0_f64;
-            for layer_index in (0..layer_count).rev() {
-                let layer_theta = theta[layer_index];
-                let layer_fc = field_capacity[layer_index];
-                let layer_ul = upper_limit[layer_index];
-                let layer_ssc = conductivity[layer_index];
-
-                let excess = layer_theta - layer_fc;
-                if excess <= WB11_ZERO_THRESHOLD {
-                    continue;
-                }
-
-                let stz = layer_theta / layer_ul;
-                if !stz.is_finite() || stz < 0.0 {
-                    let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 1);
-                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                        phase_class,
-                        symbol: theta_symbol,
-                        value: stz,
-                        minimum: Some(0.0),
-                        maximum: None,
-                    });
-                }
-
-                let mut fx = if stz < WB18_PERC_SATURATION_THRESHOLD {
-                    let fc_ul_ratio = layer_fc / layer_ul;
-                    if !fc_ul_ratio.is_finite() || fc_ul_ratio >= 1.0 {
-                        let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index + 1);
-                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                            phase_class,
-                            symbol: fc_symbol,
-                            value: fc_ul_ratio,
-                            minimum: Some(0.0),
-                            maximum: Some(1.0),
-                        });
-                    }
-                    // Legacy-authoritative fallback: watbal.for sets hk=0 when FC/UL <= 0.
-                    let bi = if fc_ul_ratio <= 0.0 {
-                        0.0
-                    } else {
-                        let derived = -WB18_PERC_BI_COEFFICIENT / fc_ul_ratio.log10();
-                        if !derived.is_finite() || derived < 0.0 {
-                            let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index + 1);
-                            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                                phase_class,
-                                symbol: fc_symbol,
-                                value: derived,
-                                minimum: Some(0.0),
-                                maximum: None,
-                            });
-                        }
-                        derived
-                    };
-                    stz.powf(bi).max(WB18_PERC_MIN_FX)
-                } else {
-                    1.0
-                };
-                if !daily_lane && layer_index == layer_count - 1 {
-                    fx = 1.0;
-                }
-                if !fx.is_finite() || fx <= 0.0 {
-                    let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index + 1);
-                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                        phase_class,
-                        symbol: ssc_symbol,
-                        value: fx,
-                        minimum: Some(WB11_ZERO_THRESHOLD),
-                        maximum: None,
-                    });
-                }
-
-                let layer_ssc_effective =
-                    if restrictive_layer_enabled && layer_index == layer_count - 1 {
-                        if daily_lane {
-                            let denominator = layer_ssc + restrictive_layer_conductivity;
-                            if denominator <= WB11_ZERO_THRESHOLD {
-                                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                                    phase_class,
-                                    symbol: restrictive_layer_conductivity_symbol.clone(),
-                                    value: denominator,
-                                    minimum: Some(WB11_ZERO_THRESHOLD),
-                                    maximum: None,
-                                });
-                            }
-                            let harmonic_mean =
-                                (2.0 * layer_ssc * restrictive_layer_conductivity) / denominator;
-                            if !harmonic_mean.is_finite() || harmonic_mean <= WB11_ZERO_THRESHOLD {
-                                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                                    phase_class,
-                                    symbol: restrictive_layer_conductivity_symbol.clone(),
-                                    value: harmonic_mean,
-                                    minimum: Some(WB11_ZERO_THRESHOLD),
-                                    maximum: None,
-                                });
-                            }
-                            harmonic_mean
-                        } else {
-                            let denominator = (layer_depth[layer_index] / layer_ssc)
-                                + (restrictive_layer_thickness / restrictive_layer_conductivity);
-                            if denominator <= WB11_ZERO_THRESHOLD {
-                                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                                    phase_class,
-                                    symbol: restrictive_layer_thickness_symbol.clone(),
-                                    value: denominator,
-                                    minimum: Some(WB11_ZERO_THRESHOLD),
-                                    maximum: None,
-                                });
-                            }
-                            let thickness_weighted = (layer_depth[layer_index]
-                                + restrictive_layer_thickness)
-                                / denominator;
-                            if !thickness_weighted.is_finite()
-                                || thickness_weighted <= WB11_ZERO_THRESHOLD
-                            {
-                                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                                    phase_class,
-                                    symbol: restrictive_layer_thickness_symbol.clone(),
-                                    value: thickness_weighted,
-                                    minimum: Some(WB11_ZERO_THRESHOLD),
-                                    maximum: None,
-                                });
-                            }
-                            thickness_weighted
-                        }
-                    } else {
-                        layer_ssc
-                    };
-
-                let ks_adjusted = layer_ssc_effective * fx;
-                let pei_pre = (WB18_PERC_TIMESTEP_S * ks_adjusted).min(excess);
-                let pei_unscaled = if layer_index < layer_count - 1 {
-                    let lower_ratio = theta[layer_index + 1] / upper_limit[layer_index + 1];
-                    if !lower_ratio.is_finite() || lower_ratio < 0.0 {
-                        let lower_theta_symbol =
-                            Self::wb18_perc_state_symbol("theta", layer_index + 2);
-                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                            phase_class,
-                            symbol: lower_theta_symbol,
-                            value: lower_ratio,
-                            minimum: Some(0.0),
-                            maximum: None,
-                        });
-                    }
-                    let lower_ratio_clamped = lower_ratio.min(WB18_PERC_SATURATION_THRESHOLD);
-                    let lower_factor = (1.0 - lower_ratio_clamped).sqrt();
-                    pei_pre * lower_factor
-                } else {
-                    pei_pre
-                };
-                let pei = pei_unscaled / lane_substeps;
-
-                let pei_symbol = Self::wb18_perc_flux_symbol(layer_index + 1);
-                Self::require_flux_range_for_symbol(
-                    phase_class,
-                    &pei_symbol,
-                    pei,
-                    Some(0.0),
-                    Some(excess),
-                )?;
-
-                theta[layer_index] -= pei;
-                let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 1);
-                Self::require_state_range_for_symbol(
-                    phase_class,
-                    &theta_symbol,
-                    theta[layer_index],
-                    Some(0.0),
-                    None,
-                )?;
-
-                if layer_index < layer_count - 1 {
-                    theta[layer_index + 1] += pei;
-                } else {
-                    substep_percolation_loss = pei;
-                }
-
-                per_layer_flux[layer_index] += pei;
-            }
+            let substep_percolation_loss = Self::run_wb18_percolation_substep(
+                phase_class,
+                layers,
+                lane_config,
+                &mut per_layer_flux,
+            )?;
             percolation_loss += substep_percolation_loss;
             lane_substep_index += 1.0;
         }
 
-        if (0.0..=WB18_DEEP_PERCOLATION_ROUNDOFF_TOLERANCE_M).contains(&percolation_loss) {
-            if percolation_loss > 0.0 {
-                let bottom_index = layer_count - 1;
-                theta[bottom_index] += percolation_loss;
-                per_layer_flux[bottom_index] =
-                    (per_layer_flux[bottom_index] - percolation_loss).max(0.0);
-            }
-            percolation_loss = 0.0;
+        Ok(Wb18PercolationRoutingResult {
+            per_layer_flux,
+            percolation_loss,
+        })
+    }
+
+    fn run_wb18_percolation_substep(
+        phase_class: HillslopeKernelPhaseClass,
+        layers: &mut Wb18PercolationLayers,
+        lane_config: &Wb18PercolationLaneConfig,
+        per_layer_flux: &mut [f64],
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let mut substep_percolation_loss = 0.0_f64;
+        for layer_index in (0..layers.theta.len()).rev() {
+            substep_percolation_loss += Self::route_wb18_percolation_layer(
+                phase_class,
+                layers,
+                lane_config,
+                per_layer_flux,
+                layer_index,
+            )?;
+        }
+        Ok(substep_percolation_loss)
+    }
+
+    fn route_wb18_percolation_layer(
+        phase_class: HillslopeKernelPhaseClass,
+        layers: &mut Wb18PercolationLayers,
+        lane_config: &Wb18PercolationLaneConfig,
+        per_layer_flux: &mut [f64],
+        layer_index: usize,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let layer_theta = layers.theta[layer_index];
+        let layer_fc = layers.field_capacity[layer_index];
+        let layer_ul = layers.upper_limit[layer_index];
+        let layer_ssc = layers.conductivity[layer_index];
+        let layer_count = layers.theta.len();
+
+        let excess = layer_theta - layer_fc;
+        if excess <= WB11_ZERO_THRESHOLD {
+            return Ok(0.0);
         }
 
+        let stz = layer_theta / layer_ul;
+        if !stz.is_finite() || stz < 0.0 {
+            let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 1);
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: theta_symbol,
+                value: stz,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let is_bottom_layer = layer_index == layer_count - 1;
+        let fx = Self::wb18_percolation_layer_fx(
+            phase_class,
+            layer_index,
+            stz,
+            layer_fc,
+            layer_ul,
+            lane_config.daily_lane,
+            is_bottom_layer,
+        )?;
+        let layer_ssc_effective = Self::wb18_effective_layer_conductivity(
+            phase_class,
+            layers,
+            lane_config,
+            layer_index,
+            layer_ssc,
+            is_bottom_layer,
+        )?;
+        let ks_adjusted = layer_ssc_effective * fx;
+        let pei_pre = (WB18_PERC_TIMESTEP_S * ks_adjusted).min(excess);
+        let pei_unscaled =
+            Self::wb18_layer_pei_unscaled(phase_class, layers, layer_index, pei_pre)?;
+        let pei = pei_unscaled / lane_config.lane_substeps;
+
+        let pei_symbol = Self::wb18_perc_flux_symbol(layer_index + 1);
+        Self::require_flux_range_for_symbol(
+            phase_class,
+            &pei_symbol,
+            pei,
+            Some(0.0),
+            Some(excess),
+        )?;
+
+        layers.theta[layer_index] -= pei;
+        let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 1);
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &theta_symbol,
+            layers.theta[layer_index],
+            Some(0.0),
+            None,
+        )?;
+
+        if layer_index < layer_count - 1 {
+            layers.theta[layer_index + 1] += pei;
+            per_layer_flux[layer_index] += pei;
+            Ok(0.0)
+        } else {
+            per_layer_flux[layer_index] += pei;
+            Ok(pei)
+        }
+    }
+
+    fn wb18_percolation_layer_fx(
+        phase_class: HillslopeKernelPhaseClass,
+        layer_index: usize,
+        stz: f64,
+        layer_fc: f64,
+        layer_ul: f64,
+        daily_lane: bool,
+        is_bottom_layer: bool,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let mut fx = if stz < WB18_PERC_SATURATION_THRESHOLD {
+            let fc_ul_ratio = layer_fc / layer_ul;
+            if !fc_ul_ratio.is_finite() || fc_ul_ratio >= 1.0 {
+                let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index + 1);
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: fc_symbol,
+                    value: fc_ul_ratio,
+                    minimum: Some(0.0),
+                    maximum: Some(1.0),
+                });
+            }
+            // Legacy-authoritative fallback: watbal.for sets hk=0 when FC/UL <= 0.
+            let bi = if fc_ul_ratio <= 0.0 {
+                0.0
+            } else {
+                let derived = -WB18_PERC_BI_COEFFICIENT / fc_ul_ratio.log10();
+                if !derived.is_finite() || derived < 0.0 {
+                    let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index + 1);
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: fc_symbol,
+                        value: derived,
+                        minimum: Some(0.0),
+                        maximum: None,
+                    });
+                }
+                derived
+            };
+            stz.powf(bi).max(WB18_PERC_MIN_FX)
+        } else {
+            1.0
+        };
+        if !daily_lane && is_bottom_layer {
+            fx = 1.0;
+        }
+        if !fx.is_finite() || fx <= 0.0 {
+            let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index + 1);
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: ssc_symbol,
+                value: fx,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+        Ok(fx)
+    }
+
+    fn wb18_effective_layer_conductivity(
+        phase_class: HillslopeKernelPhaseClass,
+        layers: &Wb18PercolationLayers,
+        lane_config: &Wb18PercolationLaneConfig,
+        layer_index: usize,
+        layer_ssc: f64,
+        is_bottom_layer: bool,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        if !(lane_config.restrictive_layer_enabled && is_bottom_layer) {
+            return Ok(layer_ssc);
+        }
+
+        if lane_config.daily_lane {
+            let denominator = layer_ssc + lane_config.restrictive_layer_conductivity;
+            if denominator <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: lane_config.restrictive_layer_conductivity_symbol.clone(),
+                    value: denominator,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            let harmonic_mean =
+                (2.0 * layer_ssc * lane_config.restrictive_layer_conductivity) / denominator;
+            if !harmonic_mean.is_finite() || harmonic_mean <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: lane_config.restrictive_layer_conductivity_symbol.clone(),
+                    value: harmonic_mean,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            Ok(harmonic_mean)
+        } else {
+            let denominator = (layers.depth[layer_index] / layer_ssc)
+                + (lane_config.restrictive_layer_thickness
+                    / lane_config.restrictive_layer_conductivity);
+            if denominator <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: lane_config.restrictive_layer_thickness_symbol.clone(),
+                    value: denominator,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            let thickness_weighted =
+                (layers.depth[layer_index] + lane_config.restrictive_layer_thickness)
+                    / denominator;
+            if !thickness_weighted.is_finite() || thickness_weighted <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: lane_config.restrictive_layer_thickness_symbol.clone(),
+                    value: thickness_weighted,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            Ok(thickness_weighted)
+        }
+    }
+
+    fn wb18_layer_pei_unscaled(
+        phase_class: HillslopeKernelPhaseClass,
+        layers: &Wb18PercolationLayers,
+        layer_index: usize,
+        pei_pre: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        if layer_index >= layers.theta.len() - 1 {
+            return Ok(pei_pre);
+        }
+        let lower_ratio = layers.theta[layer_index + 1] / layers.upper_limit[layer_index + 1];
+        if !lower_ratio.is_finite() || lower_ratio < 0.0 {
+            let lower_theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 2);
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: lower_theta_symbol,
+                value: lower_ratio,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        let lower_ratio_clamped = lower_ratio.min(WB18_PERC_SATURATION_THRESHOLD);
+        let lower_factor = (1.0 - lower_ratio_clamped).sqrt();
+        Ok(pei_pre * lower_factor)
+    }
+
+    fn canonicalize_wb18_deep_percolation_roundoff(
+        layers: &mut Wb18PercolationLayers,
+        routing: &mut Wb18PercolationRoutingResult,
+    ) {
+        if (0.0..=WB18_DEEP_PERCOLATION_ROUNDOFF_TOLERANCE_M)
+            .contains(&routing.percolation_loss)
+        {
+            if routing.percolation_loss > 0.0 {
+                let bottom_index = layers.theta.len() - 1;
+                layers.theta[bottom_index] += routing.percolation_loss;
+                routing.per_layer_flux[bottom_index] =
+                    (routing.per_layer_flux[bottom_index] - routing.percolation_loss).max(0.0);
+            }
+            routing.percolation_loss = 0.0;
+        }
+    }
+
+    fn resolve_wb18_percolation_soil_water_after(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layers: &mut Wb18PercolationLayers,
+        ledger: &Wb18PercolationSoilWaterLedger,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let mut computed_soil_water_after =
-            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &theta)?
+            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &layers.theta)?
                 .max(0.0);
-        let same_pass_infiltration_depth = same_pass_infiltration.unwrap_or(0.0);
-        let preserve_scalar_ledger = !reconcile_legacy_soil_water_from_layers
-            && (soil_water.max(0.0) - computed_soil_water_before).abs()
+        let preserve_scalar_ledger = !ledger.reconcile_legacy_soil_water_from_layers
+            && (ledger.soil_water.max(0.0) - ledger.computed_soil_water_before).abs()
                 <= WB18_STORAGE_ROUNDOFF_TOLERANCE_M;
         let soil_water_after = if preserve_scalar_ledger {
-            let ledger_soil_water_after =
-                soil_water.max(0.0) + same_pass_infiltration_depth - percolation_loss;
+            let ledger_soil_water_after = ledger.soil_water.max(0.0)
+                + ledger.same_pass_infiltration_depth
+                - ledger.percolation_loss;
             if ledger_soil_water_after < -WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                     phase_class,
@@ -1208,14 +1442,14 @@ pub(crate) fn resolve_infiltration_tillage_depth(
             if storage_roundoff_delta_m.abs() <= WB18_STORAGE_ROUNDOFF_TOLERANCE_M {
                 Self::apply_wb18_storage_roundoff_delta_to_layer_storage(
                     phase_class,
-                    &mut theta,
+                    &mut layers.theta,
                     storage_roundoff_delta_m,
                 )?;
                 computed_soil_water_after =
                     Self::wb18_aggregate_soil_water_after_percolation(
                         request,
                         phase_class,
-                        &theta,
+                        &layers.theta,
                     )?
                     .max(0.0);
             }
@@ -1231,41 +1465,35 @@ pub(crate) fn resolve_infiltration_tillage_depth(
                 });
             }
         }
-        Self::require_state_range(
-            phase_class,
-            WB11_SYMBOL_SOIL_WATER,
-            soil_water_after,
-            Some(0.0),
-            None,
-        )?;
-        Self::require_flux_range(
-            phase_class,
-            WB11_SYMBOL_PERC_LOSS_D,
-            percolation_loss,
-            Some(0.0),
-            None,
-        )?;
+        Ok(soil_water_after)
+    }
 
+    fn build_wb18_percolation_response(
+        soil_water_after: f64,
+        layers: &Wb18PercolationLayers,
+        routing: &Wb18PercolationRoutingResult,
+        same_pass_infiltration: &Wb18SamePassInfiltration,
+    ) -> KernelRunResponse {
         let Ok(status) =
             SimulationStatus::ok(SimulationPhase::HillslopeKernel, "HKERNEL-WB11-PERC-OK-001")
         else {
             unreachable!("status message ids are non-empty WB11 constants")
         };
-        let mut state_updates = Vec::with_capacity(layer_count + 1);
+        let mut state_updates = Vec::with_capacity(layers.theta.len() + 1);
         state_updates.push(WritebackField::bounded(
             WB11_SYMBOL_SOIL_WATER,
             soil_water_after,
             Some(0.0),
             None,
         ));
-        if let Some(infiltration) = same_pass_infiltration {
+        if let Some(infiltration) = same_pass_infiltration.depth {
             state_updates.push(WritebackField::bounded(
                 WB12_SYMBOL_INFILTRATION,
                 infiltration,
                 Some(0.0),
                 None,
             ));
-            if same_pass_infiltration_lineage {
+            if same_pass_infiltration.lineage {
                 state_updates.push(WritebackField::bounded(
                     WB12_SYMBOL_INFILTRATION_SAME_PASS_LINEAGE,
                     1.0,
@@ -1274,7 +1502,7 @@ pub(crate) fn resolve_infiltration_tillage_depth(
                 ));
             }
         }
-        for (index, value) in theta.iter().enumerate() {
+        for (index, value) in layers.theta.iter().enumerate() {
             state_updates.push(WritebackField::bounded(
                 Self::wb18_perc_state_symbol("theta", index + 1),
                 *value,
@@ -1283,8 +1511,8 @@ pub(crate) fn resolve_infiltration_tillage_depth(
             ));
         }
 
-        let mut flux_updates = Vec::with_capacity(layer_count + 2);
-        for (index, value) in per_layer_flux.iter().enumerate() {
+        let mut flux_updates = Vec::with_capacity(layers.theta.len() + 2);
+        for (index, value) in routing.per_layer_flux.iter().enumerate() {
             flux_updates.push(WritebackField::bounded(
                 Self::wb18_perc_flux_symbol(index + 1),
                 *value,
@@ -1294,19 +1522,19 @@ pub(crate) fn resolve_infiltration_tillage_depth(
         }
         flux_updates.push(WritebackField::bounded(
             WB11_SYMBOL_PERC_LOSS_D,
-            percolation_loss,
+            routing.percolation_loss,
             Some(0.0),
             None,
         ));
         flux_updates.push(WritebackField::bounded(
             WB11_SYMBOL_PERC_RECHARGE_PE,
-            percolation_loss,
+            routing.percolation_loss,
             Some(0.0),
             None,
         ));
 
         let writeback = KernelWritebackPayload::with_updates(state_updates, flux_updates);
-        Ok(KernelRunResponse::new(status, writeback))
+        KernelRunResponse::new(status, writeback)
     }
 
 
