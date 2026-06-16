@@ -58,7 +58,7 @@ design and ADR-0022 (ratified 2026-06-16). The next perf mechanism is Stage 1
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface Stage 1** | Use the ratified PERFARCH01 design (ADR-0022): frozen run-scoped `SymbolRegistry`, sorted-order `SymbolId`, and BTreeMap export/equality adapters; no storage authority flip yet | Registry skeleton + sorted-id/string-order tests + bit-identical outputs if runtime code changes | ▶️ follow-on (`PERFIDX01`) |
+| 2 | **Indexed runtime-surface Stage 1** | Use the ratified PERFARCH01 design (ADR-0022): frozen run-scoped `SymbolRegistry`, sorted-order `SymbolId`, and BTreeMap export/equality adapters; no storage authority flip yet | Registry skeleton + sorted-id/string-order tests + completeness (0 post-freeze unknowns) + bit-identical outputs if runtime code changes | ▶️ **scaffolded, Codex-ready** (`PERFIDX01`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -76,7 +76,7 @@ Adjudicate whether the per-OFE runoff magnitude is expected Stage-2 divergence o
 a defect-shaped follow-on, judged against the already-closed routed balance
 (comparator a flag, ADR-0017). Package: `MOFE-MAGPARITY01`.
 
-### 2. Indexed runtime-surface — Stage 1 ▶️ (`PERFIDX01`)
+### 2. Indexed runtime-surface — Stage 1 ▶️ (scaffolded, Codex-ready, `PERFIDX01`)
 
 PERFHO01 *(complete 2026-06-16)* characterized the ~80–110× H2637 wall-clock gap:
 CPU-bound (`977.99/978.55` user s), **not** I/O or parquet, scaling
