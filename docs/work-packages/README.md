@@ -10,6 +10,17 @@
 
 State as of `2026-06-15`:
 
+- CQR24 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs`.
+  The scoped target reduced `produce_wb16_ealpha_from_runtime_surface` CRAP
+  from `317.2103869084884` to `6.010666666666666`, with every newly extracted
+  WB16 helper at CRAP `<= 15.401920438957477`, without changing public API,
+  runtime symbols, publication formulas, typed guard behavior, parser
+  compatibility, or science-contract behavior. WARNs remain for target-file
+  coverage below the ADR-0021 line threshold and pre-existing same-file
+  out-of-scope rows above CRAP `30`. Package:
+  `20260615-cqr24-scheduler-seed-runtime-complexity-001/`.
 - CQR23 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod19.rs`.

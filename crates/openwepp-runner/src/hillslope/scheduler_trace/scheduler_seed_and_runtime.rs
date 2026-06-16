@@ -903,10 +903,81 @@ pub(super) const WB16_RSPACE_DEFAULT_M: f64 = 1.0;
 pub(super) const WB16_TEMPORARY_WIDTH_DEFAULT_M: f64 = 0.15;
 pub(super) const WB16_COVER_CAP: f64 = 0.999;
 
-#[allow(clippy::too_many_lines, clippy::similar_names)]
+#[derive(Clone, Copy)]
+struct Wb16EalphaPowers {
+    m: f64,
+    power2: f64,
+    power3: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Wb16OfeGeometry {
+    avgslp: f64,
+    slplen: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Wb16OfeSurfaceControls {
+    inrcov: f64,
+    rilcov: f64,
+    rrinit: f64,
+    rspace: f64,
+    width: f64,
+    rtyp: f64,
+    cancov: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Wb16OfeCanopyControls {
+    bb: f64,
+    bbb: f64,
+    flivmx: f64,
+    hmax: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Wb16OfeNormalizedControls {
+    inrcov: f64,
+    rilcov: f64,
+    rrinit: f64,
+    rspace: f64,
+    width: f64,
+    rrc: f64,
+    canhgt: f64,
+    flivmx: f64,
+    hmax: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Wb16OfeAlphaResult {
+    alpha: f64,
+    slplen: f64,
+}
+
 pub(super) fn produce_wb16_ealpha_from_runtime_surface(
     runtime_surface: &mut HillslopeWritebackSurface,
 ) -> Result<Option<f64>, HillslopeCliError> {
+    let Some(ofe_count) = wb16_ealpha_ofe_count(runtime_surface)? else {
+        return Ok(None);
+    };
+    let powers = wb16_ealpha_powers(runtime_surface)?;
+    let mut ofe_results = Vec::with_capacity(ofe_count);
+
+    for ofe_index in 1..=ofe_count {
+        let Some(ofe_result) = wb16_produce_ofe_alpha(runtime_surface, ofe_index)? else {
+            return Ok(None);
+        };
+        ofe_results.push(ofe_result);
+    }
+
+    let ealpha = wb16_equivalent_plane_alpha(&ofe_results, powers)?;
+    wb16_publish_ealpha(runtime_surface, ealpha);
+    Ok(Some(ealpha))
+}
+
+fn wb16_ealpha_ofe_count(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Option<usize>, HillslopeCliError> {
     let Some(nelem_raw) = runtime_surface_symbol_value(runtime_surface, "nelem") else {
         return Ok(None);
     };
@@ -917,7 +988,12 @@ pub(super) fn produce_wb16_ealpha_from_runtime_surface(
             detail: format!("{SIMPIPE_GUARD_ID} nelem must be >= 1 for WB16 ealpha production"),
         });
     }
+    Ok(Some(ofe_count))
+}
 
+fn wb16_ealpha_powers(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Wb16EalphaPowers, HillslopeCliError> {
     let m = require_runtime_surface_scalar(runtime_surface, "m")?;
     if !m.is_finite() || m <= 0.0 {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
@@ -929,313 +1005,448 @@ pub(super) fn produce_wb16_ealpha_from_runtime_surface(
     }
     let power2 = 1.0 / m;
     let power3 = power2 + 1.0;
+    Ok(Wb16EalphaPowers { m, power2, power3 })
+}
 
-    let mut alpha_values = Vec::with_capacity(ofe_count);
-    let mut slplen_values = Vec::with_capacity(ofe_count);
+fn wb16_produce_ofe_alpha(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    ofe_index: usize,
+) -> Result<Option<Wb16OfeAlphaResult>, HillslopeCliError> {
+    let Some(geometry) = wb16_ofe_geometry(runtime_surface, ofe_index)? else {
+        return Ok(None);
+    };
+    let Some(surface_controls) = wb16_ofe_surface_controls(runtime_surface, ofe_index) else {
+        return Ok(None);
+    };
+    let Some(canopy_controls) = wb16_ofe_canopy_controls(runtime_surface, ofe_index) else {
+        return Ok(None);
+    };
 
-    for ofe_index in 1..=ofe_count {
-        let Some(avgslp_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "avgslp")
-        else {
-            return Ok(None);
-        };
-        let Some(slplen_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "slplen")
-        else {
-            return Ok(None);
-        };
-        if !avgslp_raw.is_finite() || avgslp_raw <= 0.0 {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "wb16_ealpha_producer",
-                detail: format!(
-                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_avgslp must be finite and > 0, observed {avgslp_raw}"
-                ),
-            });
-        }
-        if !slplen_raw.is_finite() || slplen_raw <= 0.0 {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "wb16_ealpha_producer",
-                detail: format!(
-                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_slplen must be finite and > 0, observed {slplen_raw}"
-                ),
-            });
-        }
+    wb16_validate_finite_ofe_values(ofe_index, surface_controls, canopy_controls)?;
+    wb16_validate_surface_nonnegative(ofe_index, surface_controls)?;
+    wb16_validate_canopy_nonnegative(ofe_index, surface_controls, canopy_controls)?;
+    let controls =
+        wb16_normalize_ofe_controls(runtime_surface, ofe_index, surface_controls, canopy_controls)?;
+    let frlive = wb16_compute_frlive(ofe_index, controls)?;
+    let frcteq = wb16_compute_frcteq(ofe_index, controls, frlive)?;
+    wb16_publish_ofe_frcteq(runtime_surface, ofe_index, frcteq);
+    let alpha = wb16_compute_ofe_alpha(ofe_index, geometry.avgslp, frcteq)?;
+    wb16_publish_ofe_alpha(runtime_surface, ofe_index, alpha);
+    Ok(Some(Wb16OfeAlphaResult {
+        alpha,
+        slplen: geometry.slplen,
+    }))
+}
 
-        let Some(inrcov_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "inrcov")
-        else {
-            return Ok(None);
-        };
-        let Some(rilcov_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rilcov")
-        else {
-            return Ok(None);
-        };
-        let Some(rrinit_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rrinit")
-        else {
-            return Ok(None);
-        };
-        let Some(rspace_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rspace")
-        else {
-            return Ok(None);
-        };
-        let Some(width_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "width")
-        else {
-            return Ok(None);
-        };
-        let Some(rtyp_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rtyp")
-        else {
-            return Ok(None);
-        };
+fn wb16_ofe_geometry(
+    runtime_surface: &HillslopeWritebackSurface,
+    ofe_index: usize,
+) -> Result<Option<Wb16OfeGeometry>, HillslopeCliError> {
+    let Some(avgslp) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "avgslp") else {
+        return Ok(None);
+    };
+    let Some(slplen) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "slplen") else {
+        return Ok(None);
+    };
+    if !avgslp.is_finite() || avgslp <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} ofe{ofe_index}_avgslp must be finite and > 0, observed {avgslp}"
+            ),
+        });
+    }
+    if !slplen.is_finite() || slplen <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} ofe{ofe_index}_slplen must be finite and > 0, observed {slplen}"
+            ),
+        });
+    }
+    Ok(Some(Wb16OfeGeometry { avgslp, slplen }))
+}
 
-        let Some(cancov_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "cancov")
-            .or_else(|| wb16_optional_state_scalar(runtime_surface, "cancov"))
-        else {
-            return Ok(None);
-        };
-        let Some(bb_raw) = wb16_optional_state_scalar(
+fn wb16_ofe_surface_controls(
+    runtime_surface: &HillslopeWritebackSurface,
+    ofe_index: usize,
+) -> Option<Wb16OfeSurfaceControls> {
+    Some(Wb16OfeSurfaceControls {
+        inrcov: wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "inrcov")?,
+        rilcov: wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rilcov")?,
+        rrinit: wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rrinit")?,
+        rspace: wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rspace")?,
+        width: wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "width")?,
+        rtyp: wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rtyp")?,
+        cancov: wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "cancov")
+            .or_else(|| wb16_optional_state_scalar(runtime_surface, "cancov"))?,
+    })
+}
+
+fn wb16_ofe_canopy_controls(
+    runtime_surface: &HillslopeWritebackSurface,
+    ofe_index: usize,
+) -> Option<Wb16OfeCanopyControls> {
+    Some(Wb16OfeCanopyControls {
+        bb: wb16_optional_state_scalar(
             runtime_surface,
             &format!("pl_growth_ofe{ofe_index}_bb_seed"),
         )
         .or_else(|| wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "bb"))
-        .or_else(|| wb16_optional_state_scalar(runtime_surface, "bb")) else {
-            return Ok(None);
-        };
-        let Some(bbb_raw) = wb16_optional_state_scalar(
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "bb"))?,
+        bbb: wb16_optional_state_scalar(
             runtime_surface,
             &format!("pl_growth_ofe{ofe_index}_bbb_seed"),
         )
         .or_else(|| wb16_optional_state_scalar(runtime_surface, "bbb_seed"))
         .or_else(|| wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "bbb"))
-        .or_else(|| wb16_optional_state_scalar(runtime_surface, "bbb")) else {
-            return Ok(None);
-        };
-        let Some(flivmx_raw) = wb16_optional_state_scalar(
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "bbb"))?,
+        flivmx: wb16_optional_state_scalar(
             runtime_surface,
             &format!("pl_growth_ofe{ofe_index}_flivmx_seed"),
         )
         .or_else(|| wb16_optional_state_scalar(runtime_surface, "flivmx_seed"))
         .or_else(|| wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "flivmx"))
-        .or_else(|| wb16_optional_state_scalar(runtime_surface, "flivmx")) else {
-            return Ok(None);
-        };
-        let Some(hmax_raw) = wb16_optional_state_scalar(
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "flivmx"))?,
+        hmax: wb16_optional_state_scalar(
             runtime_surface,
             &format!("pl_growth_ofe{ofe_index}_hmax_seed"),
         )
         .or_else(|| wb16_optional_state_scalar(runtime_surface, "hmax_seed"))
         .or_else(|| wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "hmax"))
-        .or_else(|| wb16_optional_state_scalar(runtime_surface, "hmax")) else {
-            return Ok(None);
-        };
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "hmax"))?,
+    })
+}
 
-        for (symbol, value) in [
-            ("inrcov", inrcov_raw),
-            ("rilcov", rilcov_raw),
-            ("rrinit", rrinit_raw),
-            ("rspace", rspace_raw),
-            ("width", width_raw),
-            ("rtyp", rtyp_raw),
-            ("cancov", cancov_raw),
-            ("bb", bb_raw),
-            ("bbb", bbb_raw),
-            ("flivmx", flivmx_raw),
-            ("hmax", hmax_raw),
-        ] {
-            if !value.is_finite() {
-                return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                    surface: "wb16_ealpha_producer",
-                    detail: format!(
-                        "{SIMPIPE_GUARD_ID} ofe{ofe_index}_{symbol} must be finite for WB16 ealpha production, observed {value}"
-                    ),
-                });
-            }
-        }
-
-        if inrcov_raw < 0.0 || rilcov_raw < 0.0 {
+fn wb16_validate_finite_ofe_values(
+    ofe_index: usize,
+    surface_controls: Wb16OfeSurfaceControls,
+    canopy_controls: Wb16OfeCanopyControls,
+) -> Result<(), HillslopeCliError> {
+    for (symbol, value) in [
+        ("inrcov", surface_controls.inrcov),
+        ("rilcov", surface_controls.rilcov),
+        ("rrinit", surface_controls.rrinit),
+        ("rspace", surface_controls.rspace),
+        ("width", surface_controls.width),
+        ("rtyp", surface_controls.rtyp),
+        ("cancov", surface_controls.cancov),
+        ("bb", canopy_controls.bb),
+        ("bbb", canopy_controls.bbb),
+        ("flivmx", canopy_controls.flivmx),
+        ("hmax", canopy_controls.hmax),
+    ] {
+        if !value.is_finite() {
             return Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "wb16_ealpha_producer",
                 detail: format!(
-                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_inrcov/rilcov must be >= 0.0, observed inrcov={inrcov_raw}, rilcov={rilcov_raw}"
+                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_{symbol} must be finite for WB16 ealpha production, observed {value}"
                 ),
             });
         }
-        if rrinit_raw < 0.0 || rspace_raw < 0.0 || width_raw < 0.0 {
+    }
+    Ok(())
+}
+
+fn wb16_validate_surface_nonnegative(
+    ofe_index: usize,
+    controls: Wb16OfeSurfaceControls,
+) -> Result<(), HillslopeCliError> {
+    if controls.inrcov < 0.0 || controls.rilcov < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} ofe{ofe_index}_inrcov/rilcov must be >= 0.0, observed inrcov={inrcov}, rilcov={rilcov}",
+                inrcov = controls.inrcov,
+                rilcov = controls.rilcov
+            ),
+        });
+    }
+    if controls.rrinit < 0.0 || controls.rspace < 0.0 || controls.width < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} ofe{ofe_index}_rrinit/rspace/width must be >= 0.0, observed rrinit={rrinit}, rspace={rspace}, width={width}",
+                rrinit = controls.rrinit,
+                rspace = controls.rspace,
+                width = controls.width
+            ),
+        });
+    }
+    Ok(())
+}
+
+fn wb16_validate_canopy_nonnegative(
+    ofe_index: usize,
+    surface_controls: Wb16OfeSurfaceControls,
+    canopy_controls: Wb16OfeCanopyControls,
+) -> Result<(), HillslopeCliError> {
+    if surface_controls.cancov < 0.0
+        || canopy_controls.bb < 0.0
+        || canopy_controls.bbb < 0.0
+        || canopy_controls.flivmx < 0.0
+        || canopy_controls.hmax < 0.0
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} ofe{ofe_index} canopy/friction controls must be >= 0.0 (cancov={cancov}, bb={bb}, bbb={bbb}, flivmx={flivmx}, hmax={hmax})",
+                cancov = surface_controls.cancov,
+                bb = canopy_controls.bb,
+                bbb = canopy_controls.bbb,
+                flivmx = canopy_controls.flivmx,
+                hmax = canopy_controls.hmax
+            ),
+        });
+    }
+    Ok(())
+}
+
+fn wb16_normalize_ofe_controls(
+    runtime_surface: &HillslopeWritebackSurface,
+    ofe_index: usize,
+    surface_controls: Wb16OfeSurfaceControls,
+    canopy_controls: Wb16OfeCanopyControls,
+) -> Result<Wb16OfeNormalizedControls, HillslopeCliError> {
+    let inrcov = surface_controls.inrcov.min(WB16_COVER_CAP);
+    let rilcov = surface_controls.rilcov.min(WB16_COVER_CAP);
+    let cancov = surface_controls.cancov.min(WB16_COVER_CAP);
+    let rrinit = surface_controls.rrinit.max(WB16_RRINIT_MIN_M);
+    let rspace = if surface_controls.rspace <= 0.0 {
+        WB16_RSPACE_DEFAULT_M
+    } else {
+        surface_controls.rspace
+    };
+    let rtyp = if surface_controls.rtyp >= 1.5 { 2 } else { 1 };
+    let width = wb16_normalized_width(surface_controls.width, rspace, rtyp);
+    let rrc = wb16_resolve_rrc(runtime_surface, ofe_index, rrinit)?;
+    let canhgt = wb16_resolve_canhgt(
+        runtime_surface,
+        ofe_index,
+        cancov,
+        canopy_controls,
+    )?;
+
+    Ok(Wb16OfeNormalizedControls {
+        inrcov,
+        rilcov,
+        rrinit,
+        rspace,
+        width,
+        rrc,
+        canhgt,
+        flivmx: canopy_controls.flivmx,
+        hmax: canopy_controls.hmax,
+    })
+}
+
+fn wb16_normalized_width(width: f64, rspace: f64, rtyp: u8) -> f64 {
+    let mut width = width;
+    if rtyp == 1 && width <= 0.0 {
+        width = WB16_TEMPORARY_WIDTH_DEFAULT_M;
+    } else if rtyp == 2 && width <= 0.0 {
+        width = rspace;
+    }
+    if width > rspace {
+        width = rspace;
+    }
+    width
+}
+
+fn wb16_resolve_rrc(
+    runtime_surface: &HillslopeWritebackSurface,
+    ofe_index: usize,
+    rrinit: f64,
+) -> Result<f64, HillslopeCliError> {
+    let rrc = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rrc")
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "rrc"))
+        .unwrap_or(rrinit);
+    if !rrc.is_finite() || rrc < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} ofe{ofe_index}_rrc must be finite and >= 0.0, observed {rrc}"
+            ),
+        });
+    }
+    Ok(rrc)
+}
+
+fn wb16_resolve_canhgt(
+    runtime_surface: &HillslopeWritebackSurface,
+    ofe_index: usize,
+    cancov: f64,
+    controls: Wb16OfeCanopyControls,
+) -> Result<f64, HillslopeCliError> {
+    if let Some(canhgt) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "canhgt")
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "canhgt"))
+    {
+        if !canhgt.is_finite() || canhgt < 0.0 {
             return Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "wb16_ealpha_producer",
                 detail: format!(
-                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_rrinit/rspace/width must be >= 0.0, observed rrinit={rrinit_raw}, rspace={rspace_raw}, width={width_raw}"
+                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_canhgt must be finite and >= 0.0, observed {canhgt}"
                 ),
             });
         }
-        if cancov_raw < 0.0 || bb_raw < 0.0 || bbb_raw < 0.0 || flivmx_raw < 0.0 || hmax_raw < 0.0 {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "wb16_ealpha_producer",
-                detail: format!(
-                    "{SIMPIPE_GUARD_ID} ofe{ofe_index} canopy/friction controls must be >= 0.0 (cancov={cancov_raw}, bb={bb_raw}, bbb={bbb_raw}, flivmx={flivmx_raw}, hmax={hmax_raw})"
-                ),
-            });
-        }
-
-        let inrcov = inrcov_raw.min(WB16_COVER_CAP);
-        let rilcov = rilcov_raw.min(WB16_COVER_CAP);
-        let cancov = cancov_raw.min(WB16_COVER_CAP);
-        let rrinit = rrinit_raw.max(WB16_RRINIT_MIN_M);
-        let rspace = if rspace_raw <= 0.0 {
-            WB16_RSPACE_DEFAULT_M
-        } else {
-            rspace_raw
-        };
-        let mut width = width_raw;
-        let rtyp = if rtyp_raw >= 1.5 { 2 } else { 1 };
-        if rtyp == 1 && width <= 0.0 {
-            width = WB16_TEMPORARY_WIDTH_DEFAULT_M;
-        } else if rtyp == 2 && width <= 0.0 {
-            width = rspace;
-        }
-        if width > rspace {
-            width = rspace;
-        }
-
-        let rrc = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rrc")
-            .or_else(|| wb16_optional_state_scalar(runtime_surface, "rrc"))
-            .unwrap_or(rrinit);
-        if !rrc.is_finite() || rrc < 0.0 {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "wb16_ealpha_producer",
-                detail: format!(
-                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_rrc must be finite and >= 0.0, observed {rrc}"
-                ),
-            });
-        }
-
-        let mut rrrinr = rrc / rrinit;
-        if rrrinr > 1.0 {
-            rrrinr = 1.0;
-        }
-        let inrfo = (3.024 - 5.042 * (-161.0 * rrinit).exp()).exp();
-        let mut inrrou = 0.5 * inrfo.powf(1.128) * (-3.088 * (1.0 - rrrinr)).exp();
-        if inrrou < WB16_INRFSO_CROPLAND {
-            inrrou = WB16_INRFSO_CROPLAND;
-        }
-        let inrfro = inrrou - WB16_INRFSO_CROPLAND;
-        let inrfco = if inrcov > 0.0 {
-            14.5 * inrcov.powf(1.5544)
-        } else {
-            0.0
-        };
-
-        let canhgt = if let Some(canhgt_raw) =
-            wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "canhgt")
-                .or_else(|| wb16_optional_state_scalar(runtime_surface, "canhgt"))
-        {
-            if !canhgt_raw.is_finite() || canhgt_raw < 0.0 {
-                return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                    surface: "wb16_ealpha_producer",
-                    detail: format!(
-                        "{SIMPIPE_GUARD_ID} ofe{ofe_index}_canhgt must be finite and >= 0.0, observed {canhgt_raw}"
-                    ),
-                });
-            }
-            canhgt_raw
-        } else if hmax_raw <= 0.0 || bb_raw <= 0.0 {
-            0.0
-        } else {
-            let mut vdmt = (1.0 - cancov).ln() / (-bb_raw);
-            if vdmt < 0.0 {
-                vdmt = 0.0;
-            }
-            (1.0 - (-bbb_raw * vdmt).exp()) * hmax_raw
-        };
-        let frlive = if hmax_raw > 0.0 {
-            (canhgt / hmax_raw) * flivmx_raw
-        } else {
-            0.0
-        };
-        if !frlive.is_finite() {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "wb16_ealpha_producer",
-                detail: format!("{SIMPIPE_GUARD_ID} ofe{ofe_index}_frlive is non-finite"),
-            });
-        }
-
-        let inrfto = inrfro + inrfco + WB16_INRFSO_CROPLAND + frlive;
-        let frccov = if rilcov > 0.0 {
-            4.5 * rilcov.powf(1.5544)
-        } else {
-            0.0
-        };
-        let frctrl = frccov + frlive + WB16_FRCSOL_CROPLAND;
-        let rillar = width / rspace;
-        let frcteq = if rillar < 1.0 {
-            inrfto + rillar * (frctrl - inrfto)
-        } else {
-            inrfto
-        };
-        if !frcteq.is_finite() || frcteq <= 0.0 {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "wb16_ealpha_producer",
-                detail: format!(
-                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_frcteq must be finite and > 0.0, observed {frcteq}"
-                ),
-            });
-        }
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(format!("ofe{ofe_index}_frcteq")),
-            BoundaryValue::scalar(frcteq),
-        );
-
-        let alpha = ((avgslp_raw * 8.0 * WB16_ACCGAV_M_S2) / frcteq).sqrt();
-        if !alpha.is_finite() || alpha <= 0.0 {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "wb16_ealpha_producer",
-                detail: format!(
-                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_alpha must be finite and > 0.0, observed {alpha}"
-                ),
-            });
-        }
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(format!("ofe{ofe_index}_alpha")),
-            BoundaryValue::scalar(alpha),
-        );
-        if ofe_index == 1 {
-            runtime_surface
-                .state_surface
-                .insert(BoundarySymbol::from("alpha"), BoundaryValue::scalar(alpha));
-        }
-
-        alpha_values.push(alpha);
-        slplen_values.push(slplen_raw);
+        return Ok(canhgt);
+    }
+    if controls.hmax <= 0.0 || controls.bb <= 0.0 {
+        return Ok(0.0);
     }
 
-    let ealpha = if ofe_count == 1 {
-        alpha_values[0]
-    } else {
-        let suml: f64 = slplen_values.iter().sum();
-        if !suml.is_finite() || suml <= 0.0 {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "wb16_ealpha_producer",
-                detail: format!(
-                    "{SIMPIPE_GUARD_ID} WB16 eplane sum length must be finite and > 0.0, observed {suml}"
-                ),
-            });
-        }
-        let mut cml = 0.0;
-        let mut sdst = 0.0;
-        let mut tmpvr2 = 0.0;
-        for (slplen, alpha) in slplen_values.iter().zip(alpha_values.iter()) {
-            cml += slplen;
-            let tmpvr1 = cml.powf(power3);
-            sdst += (tmpvr1 - tmpvr2) / alpha.powf(power2);
-            tmpvr2 = tmpvr1;
-        }
-        if !sdst.is_finite() || sdst <= 0.0 {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "wb16_ealpha_producer",
-                detail: format!(
-                    "{SIMPIPE_GUARD_ID} WB16 eplane storage integral must be finite and > 0.0, observed {sdst}"
-                ),
-            });
-        }
-        (suml / sdst).powf(m) * suml
-    };
+    let mut vdmt = (1.0 - cancov).ln() / (-controls.bb);
+    if vdmt < 0.0 {
+        vdmt = 0.0;
+    }
+    Ok((1.0 - (-controls.bbb * vdmt).exp()) * controls.hmax)
+}
 
+fn wb16_compute_frlive(
+    ofe_index: usize,
+    controls: Wb16OfeNormalizedControls,
+) -> Result<f64, HillslopeCliError> {
+    let frlive = if controls.hmax > 0.0 {
+        (controls.canhgt / controls.hmax) * controls.flivmx
+    } else {
+        0.0
+    };
+    if !frlive.is_finite() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!("{SIMPIPE_GUARD_ID} ofe{ofe_index}_frlive is non-finite"),
+        });
+    }
+    Ok(frlive)
+}
+
+fn wb16_compute_frcteq(
+    ofe_index: usize,
+    controls: Wb16OfeNormalizedControls,
+    frlive: f64,
+) -> Result<f64, HillslopeCliError> {
+    let mut rrrinr = controls.rrc / controls.rrinit;
+    if rrrinr > 1.0 {
+        rrrinr = 1.0;
+    }
+    let roughness_factor = (3.024 - 5.042 * (-161.0 * controls.rrinit).exp()).exp();
+    let mut roughness_total =
+        0.5 * roughness_factor.powf(1.128) * (-3.088 * (1.0 - rrrinr)).exp();
+    if roughness_total < WB16_INRFSO_CROPLAND {
+        roughness_total = WB16_INRFSO_CROPLAND;
+    }
+    let roughness_delta = roughness_total - WB16_INRFSO_CROPLAND;
+    let interrill_cover = if controls.inrcov > 0.0 {
+        14.5 * controls.inrcov.powf(1.5544)
+    } else {
+        0.0
+    };
+    let interrill_total = roughness_delta + interrill_cover + WB16_INRFSO_CROPLAND + frlive;
+    let rill_cover = if controls.rilcov > 0.0 {
+        4.5 * controls.rilcov.powf(1.5544)
+    } else {
+        0.0
+    };
+    let rill_control = rill_cover + frlive + WB16_FRCSOL_CROPLAND;
+    let rill_area_ratio = controls.width / controls.rspace;
+    let frcteq = if rill_area_ratio < 1.0 {
+        interrill_total + rill_area_ratio * (rill_control - interrill_total)
+    } else {
+        interrill_total
+    };
+    if !frcteq.is_finite() || frcteq <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} ofe{ofe_index}_frcteq must be finite and > 0.0, observed {frcteq}"
+            ),
+        });
+    }
+    Ok(frcteq)
+}
+
+fn wb16_publish_ofe_frcteq(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    ofe_index: usize,
+    frcteq: f64,
+) {
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from(format!("ofe{ofe_index}_frcteq")),
+        BoundaryValue::scalar(frcteq),
+    );
+}
+
+fn wb16_compute_ofe_alpha(
+    ofe_index: usize,
+    avgslp: f64,
+    frcteq: f64,
+) -> Result<f64, HillslopeCliError> {
+    let alpha = ((avgslp * 8.0 * WB16_ACCGAV_M_S2) / frcteq).sqrt();
+    if !alpha.is_finite() || alpha <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} ofe{ofe_index}_alpha must be finite and > 0.0, observed {alpha}"
+            ),
+        });
+    }
+    Ok(alpha)
+}
+
+fn wb16_publish_ofe_alpha(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    ofe_index: usize,
+    alpha: f64,
+) {
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from(format!("ofe{ofe_index}_alpha")),
+        BoundaryValue::scalar(alpha),
+    );
+    if ofe_index == 1 {
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("alpha"), BoundaryValue::scalar(alpha));
+    }
+}
+
+fn wb16_equivalent_plane_alpha(
+    ofe_results: &[Wb16OfeAlphaResult],
+    powers: Wb16EalphaPowers,
+) -> Result<f64, HillslopeCliError> {
+    if ofe_results.len() == 1 {
+        return wb16_validate_ealpha(ofe_results[0].alpha);
+    }
+
+    let suml: f64 = ofe_results.iter().map(|result| result.slplen).sum();
+    if !suml.is_finite() || suml <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} WB16 eplane sum length must be finite and > 0.0, observed {suml}"
+            ),
+        });
+    }
+    let mut cml = 0.0;
+    let mut sdst = 0.0;
+    let mut tmpvr2 = 0.0;
+    for result in ofe_results {
+        cml += result.slplen;
+        let tmpvr1 = cml.powf(powers.power3);
+        sdst += (tmpvr1 - tmpvr2) / result.alpha.powf(powers.power2);
+        tmpvr2 = tmpvr1;
+    }
+    if !sdst.is_finite() || sdst <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} WB16 eplane storage integral must be finite and > 0.0, observed {sdst}"
+            ),
+        });
+    }
+    wb16_validate_ealpha((suml / sdst).powf(powers.m) * suml)
+}
+
+fn wb16_validate_ealpha(ealpha: f64) -> Result<f64, HillslopeCliError> {
     if !ealpha.is_finite() || ealpha <= 0.0 {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "wb16_ealpha_producer",
@@ -1244,12 +1455,14 @@ pub(super) fn produce_wb16_ealpha_from_runtime_surface(
             ),
         });
     }
+    Ok(ealpha)
+}
 
+fn wb16_publish_ealpha(runtime_surface: &mut HillslopeWritebackSurface, ealpha: f64) {
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("ealpha"),
         BoundaryValue::scalar(ealpha),
     );
-    Ok(Some(ealpha))
 }
 
 pub(super) fn wb16_optional_state_scalar(
