@@ -1,0 +1,18 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "perfho01-arboreal-p1-ofe5-without-ui"
+unit_system = "metric"
+
+[inputs]
+soil = "/tmp/perfho01/run-dirs/ofe5/p1.sol"
+management = "/tmp/perfho01/run-dirs/ofe5/p1.man"
+slope = "/tmp/perfho01/run-dirs/ofe5/p1.slp"
+climate = "/tmp/perfho01/run-dirs/ofe5/p1.cli"
+wepp_ui = false
+pmetpara = "/tmp/perfho01/run-dirs/ofe5/pmetpara.txt"
+
+[outputs]
+pass = "/tmp/perfho01/outputs/ofe5/H1.hbp"
+loss = "/tmp/perfho01/outputs/ofe5/H1.loss.json"
+pass_parquet = "/tmp/perfho01/outputs/ofe5/H1.pass.parquet"
+wat = "/tmp/perfho01/outputs/ofe5/H1.wat.parquet"
+plot = "/tmp/perfho01/outputs/ofe5/H1.plot.parquet"

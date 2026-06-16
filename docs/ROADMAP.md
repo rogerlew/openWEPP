@@ -42,8 +42,9 @@ totalwatsed3 CLI + closure** (WSHED01, the WBVAL06/6a deferral, closed
 closed 2026-06-16 — openWEPP's three identities close at 19 OFEs past the legacy
 ceiling; the frost `watbtm` double-count it surfaced was closed contract-first)
 are closed. The next active mechanism is **per-OFE runoff magnitude
-adjudication**; a **high-OFE performance characterization** (PERFHO01) is
-scaffolded and Codex-ready.
+adjudication**; PERFHO01 (complete 2026-06-16) attributed the ~80–110× high-OFE
+wall-clock gap to per-OFE-day runtime-surface map churn (CPU-bound, modestly
+superlinear) and recommends the `PERFOPT01` optimization follow-on.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -53,7 +54,7 @@ scaffolded and Codex-ready.
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **High-OFE hillslope performance characterization** | Profile + attribute openWEPP's ~80–110× single-hillslope wall-clock gap vs legacy at 19 OFEs | Profiler-backed cost attribution + OFE-scaling exponent + acceptable/optimize verdict | ▶️ **scaffolded, Codex-ready** (`PERFHO01`) |
+| 2 | **Runtime-surface map-churn optimization** | Cut per-OFE-day symbol-keyed `BTreeMap` clone/insert/remove churn + success-path writeback-validation detail (PERFHO01 GDB-sampled these as ~73 % of cost) | Bit-identical outputs + measured speedup; the gap's first necessary optimization (~1.5–2.5× expected, 3.75× Amdahl cap) | ▶️ follow-on (`PERFOPT01`, from PERFHO01) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -71,14 +72,19 @@ Adjudicate whether the per-OFE runoff magnitude is expected Stage-2 divergence o
 a defect-shaped follow-on, judged against the already-closed routed balance
 (comparator a flag, ADR-0017). Package: `MOFE-MAGPARITY01`.
 
-### 2. High-OFE hillslope performance characterization ▶️ (scaffolded, Codex-ready)
+### 2. Runtime-surface map-churn optimization ▶️ (follow-on, from PERFHO01)
 
-openWEPP runs the H2637 19-OFE × 34-yr hillslope in ~1000 s vs legacy's ~10 s
-(~80–110×); legacy proves ~10 s is achievable, so the gap is an implementation
-cost. PERFHO01 (characterization — no production/contract edit) profiles and
-attributes the cost, measures the OFE-count scaling, and emits an
-acceptable-vs-named-optimization verdict (any future fix must hold bit-identity +
-determinism, `docs/numerics/`). Scaffolded at
+PERFHO01 *(complete 2026-06-16)* characterized the ~80–110× H2637 wall-clock gap:
+CPU-bound (`977.99/978.55` user s), **not** I/O or parquet, scaling
+roughly linear-to-modestly-superlinear in OFE count (`b≈1.12`) — a large
+**constant per-OFE-day cost**, not an explosive exponent. GDB-sampled dominant
+cost: per-OFE-day symbol-keyed `BTreeMap<BoundarySymbol, BoundaryValue>`
+runtime-surface clone/insert/remove/lookup + success-path writeback validation
+(`11/15` samples); the WB13-string lead was tested and found **not** dominant.
+Verdict: **not acceptable as-is**. Follow-on `PERFOPT01` cuts the runtime-surface
+churn + makes writeback detail lazy (bit-identical, determinism-preserving per
+`docs/numerics/`); expected ~1.5–2.5× (3.75× Amdahl cap on the named component) —
+the first necessary optimization, not full gap closure. Characterization:
 `work-packages/20260616-perf-high-ofe-hillslope-characterization-001/`.
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)

@@ -640,8 +640,23 @@ publication-safe Daymet CLI audit:
      on 4 OFE-days with the gates still closing → it cancels on both sides →
      validated non-defect (no change). Commit `877ff25f`.
    Follow-ons: `MOFE-MAGPARITY01` (magnitude), `PERFHO01` (the ~80–110× high-OFE
-   wall-clock gap, scaffolded), `WATERSHED-CHANWB-ROUTED-OUTPUT`,
+   wall-clock gap — characterized, item 12), `WATERSHED-CHANWB-ROUTED-OUTPUT`,
    `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`.
+
+12. **High-OFE hillslope performance characterization** *(PERFHO01 complete
+   2026-06-16, Codex-executed)* —
+   `20260616-perf-high-ofe-hillslope-characterization-001/`. Attributed openWEPP's
+   ~80–110× single-hillslope wall-clock gap vs legacy on H2637 (`978.55 s` vs
+   ~10 s). CPU-bound (`977.99/978.55` user s) — **not** I/O/parquet; OFE-count
+   scaling roughly linear-to-modestly-superlinear (`b≈1.12`), i.e. a large
+   constant per-OFE-day cost. GDB-sampled dominant cost (perf blocked by
+   `perf_event_paranoid`): per-OFE-day symbol-keyed `BTreeMap` runtime-surface
+   churn + success-path writeback validation (`11/15` samples); the scaffold's
+   WB13-string lead was tested and found **not** dominant. Verdict: not acceptable
+   as-is → follow-on `PERFOPT01` (bit-identical, determinism-preserving;
+   ~1.5–2.5× expected, 3.75× Amdahl cap — first step, not full closure). No
+   production/contract edit. Claude review: sound and honest (15-sample limit +
+   residual-gap caveats disclosed).
 
 Acceptance target at each rung is **closure** (does it conserve), not **magnitude**
 (is the forcing physically right) and not comparator-match. See memory
