@@ -212,8 +212,15 @@ the tracker below and by reading the corresponding package directories under
   Pushed commit: `3b8df84ff407d3dcd6d57d1f383f434dfc57d324` on branch
   `main`.
   Final target: `parse_policy_row`, CRAP `5.0`.
-- [ ] CQR23, rank 17, original CRAP `352`, CC `79`, Cov `65%`:
+- [x] (2026-06-15) Closed CQR23, rank 17, original CRAP `352`, CC
+  `79`, Cov `65%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod19.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr23-erod19-route-segment-complexity-001/`.
+  Pushed commit: `20ed694083ee1674993d9b86641e8b38e9f625d0` on branch
+  `main`.
+  Final target: `Wb11HydrologyKernel::run_erod19_route_segment_migration`,
+  CRAP `9.00460855712335`.
 - [ ] CQR24, rank 18, original CRAP `317`, CC `58`, Cov `57%`:
   `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs`.
 - [ ] CQR25, rank 19, original CRAP `305`, CC `113`, Cov `75%`:
