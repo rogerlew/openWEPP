@@ -1114,11 +1114,47 @@ fn parse_yearly_annual_fallow(
     cursor: &mut Cursor<'_>,
     datver_family: DatverFamily,
 ) -> Result<YearlyAnnualFallowData, ManagementParseError> {
+    let header = parse_yearly_annual_fallow_header(cursor)?;
+    validate_yearly_annual_resmgt(datver_family, header.resmgt)?;
+    let extension = parse_yearly_annual_extension(cursor, header.resmgt)?;
+
+    Ok(YearlyAnnualFallowData {
+        jdharv: header.jdharv,
+        jdplt: header.jdplt,
+        rw: header.rw,
+        resmgt: header.resmgt,
+        extension,
+    })
+}
+
+#[derive(Debug, Clone, Copy)]
+struct YearlyAnnualFallowHeader {
+    jdharv: usize,
+    jdplt: usize,
+    rw: f64,
+    resmgt: usize,
+}
+
+fn parse_yearly_annual_fallow_header(
+    cursor: &mut Cursor<'_>,
+) -> Result<YearlyAnnualFallowHeader, ManagementParseError> {
     let jdharv = parse_julian_day(cursor, "jdharv", false)?;
     let jdplt = parse_julian_day(cursor, "jdplt", false)?;
     let rw = cursor.parse_f64_required("rw")?;
     let resmgt = cursor.parse_non_negative_required("resmgt")?;
 
+    Ok(YearlyAnnualFallowHeader {
+        jdharv,
+        jdplt,
+        rw,
+        resmgt,
+    })
+}
+
+fn validate_yearly_annual_resmgt(
+    datver_family: DatverFamily,
+    resmgt: usize,
+) -> Result<(), ManagementParseError> {
     let valid_resmgt = match datver_family {
         DatverFamily::V2016Plus => (1, 7),
         _ => (1, 6),
@@ -1130,7 +1166,13 @@ fn parse_yearly_annual_fallow(
             allowed: "1..6 (95.7/98.4) or 1..7 (2016.3+)",
         });
     }
+    Ok(())
+}
 
+fn parse_yearly_annual_extension(
+    cursor: &mut Cursor<'_>,
+    resmgt: usize,
+) -> Result<Option<YearlyAnnualExtension>, ManagementParseError> {
     let extension = match resmgt {
         1 => Some(YearlyAnnualExtension::Herbicide {
             jdherb: parse_julian_day(cursor, "jdherb", false)?,
@@ -1153,39 +1195,42 @@ fn parse_yearly_annual_fallow(
         }),
         6 => None,
         7 => {
-            let _cut_flag = cursor.parse_non_negative_required("annual_cut.flag")?;
-            let ncut = cursor.parse_non_negative_required("annual_cut.ncut")?;
-            if ncut == 0 {
-                return Err(ManagementParseError::InvalidCount {
-                    field: "annual_cut.ncut",
-                    value: 0,
-                });
-            }
-            for _ in 0..ncut {
-                let tokens = cursor.parse_tokens_required("annual_cut.entry")?;
-                if tokens.len() < 2 {
-                    return Err(ManagementParseError::RecordArityError {
-                        field: "annual_cut.entry",
-                        observed: tokens.len(),
-                        expected: "2+",
-                    });
-                }
-                let day = parse_i64_token("annual_cut.day", &tokens[0])?;
-                validate_julian_day("annual_cut.day", day, false)?;
-                let _fraction = parse_f64_token("annual_cut.fraction", &tokens[1])?;
-            }
+            parse_yearly_annual_cut_records(cursor)?;
             None
         }
         _ => unreachable!(),
     };
+    Ok(extension)
+}
 
-    Ok(YearlyAnnualFallowData {
-        jdharv,
-        jdplt,
-        rw,
-        resmgt,
-        extension,
-    })
+fn parse_yearly_annual_cut_records(cursor: &mut Cursor<'_>) -> Result<(), ManagementParseError> {
+    let _cut_flag = cursor.parse_non_negative_required("annual_cut.flag")?;
+    let ncut = cursor.parse_non_negative_required("annual_cut.ncut")?;
+    if ncut == 0 {
+        return Err(ManagementParseError::InvalidCount {
+            field: "annual_cut.ncut",
+            value: 0,
+        });
+    }
+    for _ in 0..ncut {
+        parse_yearly_annual_cut_entry(cursor)?;
+    }
+    Ok(())
+}
+
+fn parse_yearly_annual_cut_entry(cursor: &mut Cursor<'_>) -> Result<(), ManagementParseError> {
+    let tokens = cursor.parse_tokens_required("annual_cut.entry")?;
+    if tokens.len() < 2 {
+        return Err(ManagementParseError::RecordArityError {
+            field: "annual_cut.entry",
+            observed: tokens.len(),
+            expected: "2+",
+        });
+    }
+    let day = parse_i64_token("annual_cut.day", &tokens[0])?;
+    validate_julian_day("annual_cut.day", day, false)?;
+    let _fraction = parse_f64_token("annual_cut.fraction", &tokens[1])?;
+    Ok(())
 }
 
 fn parse_yearly_perennial(

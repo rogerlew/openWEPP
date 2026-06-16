@@ -2,8 +2,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use openwepp_input_contract::parsers::management::{
-    ManagementParseError, ParseMode, YearlyCroplandBranch, YearlyScenarioData,
-    parse_management_from_path, parse_management_from_str,
+    ManagementParseError, ParseMode, YearlyAnnualExtension, YearlyAnnualFallowData,
+    YearlyCroplandBranch, YearlyScenarioData, parse_management_from_path,
+    parse_management_from_str,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -35,6 +36,21 @@ fn fixture_with_yearly_branch(name: &str, branch: &str) -> String {
         "fixture should contain canonical annual yearly branch"
     );
     fixture.replace(ANNUAL_BRANCH, branch)
+}
+
+fn parse_annual_branch_from_fixture(name: &str, branch: &str) -> YearlyAnnualFallowData {
+    let parsed = parse_strict_fixture_text(&fixture_with_yearly_branch(name, branch));
+    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data;
+    match &cropland.branch {
+        YearlyCroplandBranch::AnnualOrFallow(annual) => annual.clone(),
+        YearlyCroplandBranch::Perennial(other) => {
+            panic!("unexpected perennial branch: {other:?}");
+        }
+    }
+}
+
+fn parse_annual_branch(branch: &str) -> YearlyAnnualFallowData {
+    parse_annual_branch_from_fixture("canonical_cropland_nonzero_98_4.man", branch)
 }
 
 fn parse_strict_fixture_text(
@@ -212,6 +228,207 @@ fn strict_mode_parses_perennial_no_action_yearly_branch() {
         YearlyCroplandBranch::AnnualOrFallow(other) => {
             panic!("unexpected annual/fallow branch: {other:?}");
         }
+    }
+}
+
+#[test]
+fn strict_mode_parses_annual_residue_management_extensions() {
+    let herbicide = parse_annual_branch(
+        "1 # management <annual>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   0.7620  # row width
+   1   # residue man - <herbicide>
+   200 # herbicide date",
+    );
+    assert_eq!(herbicide.jdharv, 288);
+    assert_eq!(herbicide.jdplt, 130);
+    assert_f64_eq(herbicide.rw, 0.7620);
+    assert_eq!(herbicide.resmgt, 1);
+    assert_eq!(
+        herbicide.extension,
+        Some(YearlyAnnualExtension::Herbicide { jdherb: 200 })
+    );
+
+    let burn = parse_annual_branch(
+        "1 # management <annual>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   0.7620  # row width
+   2   # residue man - <burn>
+   250 # burn date
+   0.30 # fbmag
+   0.45 # fbrnog",
+    );
+    assert_eq!(
+        burn.extension,
+        Some(YearlyAnnualExtension::Burn {
+            jdburn: 250,
+            fbmag: 0.30,
+            fbrnog: 0.45,
+        })
+    );
+
+    let silage = parse_annual_branch(
+        "1 # management <annual>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   0.7620  # row width
+   3   # residue man - <silage>
+   245 # silage date",
+    );
+    assert_eq!(
+        silage.extension,
+        Some(YearlyAnnualExtension::Silage { jdslge: 245 })
+    );
+
+    let cut = parse_annual_branch(
+        "1 # management <annual>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   0.7620  # row width
+   4   # residue man - <cut>
+   180 # cut date
+   0.55 # frcut",
+    );
+    assert_eq!(
+        cut.extension,
+        Some(YearlyAnnualExtension::Cut {
+            jdcut: 180,
+            frcut: 0.55,
+        })
+    );
+
+    let remove = parse_annual_branch(
+        "1 # management <annual>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   0.7620  # row width
+   5   # residue man - <remove>
+   190 # remove date
+   0.65 # frmove",
+    );
+    assert_eq!(
+        remove.extension,
+        Some(YearlyAnnualExtension::Remove {
+            jdmove: 190,
+            frmove: 0.65,
+        })
+    );
+
+    let none = parse_annual_branch(
+        "1 # management <annual>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   0.7620  # row width
+   6   # residue man - <none>",
+    );
+    assert_eq!(none.resmgt, 6);
+    assert_eq!(none.extension, None);
+}
+
+#[test]
+fn strict_mode_parses_2016_annual_cut_records() {
+    let annual = parse_annual_branch_from_fixture(
+        "canonical_cropland_nonzero_2016_3.man",
+        "1 # management <annual>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   0.7620  # row width
+   7   # residue man - <annual cut records>
+   1   # annual cut flag
+   2   # annual cut count
+   120 0.50
+   240 0.25",
+    );
+    assert_eq!(annual.resmgt, 7);
+    assert_eq!(annual.extension, None);
+}
+
+#[test]
+fn strict_mode_rejects_legacy_annual_residue_management_seven() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_98_4.man",
+        "1 # management <annual>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   0.7620  # row width
+   7   # residue man - legacy-invalid",
+    );
+
+    let err = parse_management_from_str(&fixture, ParseMode::Strict)
+        .expect_err("legacy datver must reject annual resmgt 7");
+
+    match err {
+        ManagementParseError::InvalidOptionDomain {
+            field,
+            value,
+            allowed,
+        } => {
+            assert_eq!(field, "resmgt");
+            assert_eq!(value, 7);
+            assert_eq!(allowed, "1..6 (95.7/98.4) or 1..7 (2016.3+)");
+            assert_eq!(err.contract_error_id(), "MAN-E-004");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn strict_mode_rejects_annual_cut_zero_count() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_2016_3.man",
+        "1 # management <annual>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   0.7620  # row width
+   7   # residue man - <annual cut records>
+   1   # annual cut flag
+   0   # annual cut count",
+    );
+
+    let err = parse_management_from_str(&fixture, ParseMode::Strict)
+        .expect_err("annual cut branch must reject zero cut count");
+
+    match err {
+        ManagementParseError::InvalidCount { field, value } => {
+            assert_eq!(field, "annual_cut.ncut");
+            assert_eq!(value, 0);
+            assert_eq!(err.contract_error_id(), "MAN-E-005");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn strict_mode_rejects_annual_cut_short_entry() {
+    let fixture = fixture_with_yearly_branch(
+        "canonical_cropland_nonzero_2016_3.man",
+        "1 # management <annual>
+   288  # harvest date --- 10 / 15
+   130  # planting date --- 5 /10
+   0.7620  # row width
+   7   # residue man - <annual cut records>
+   1   # annual cut flag
+   1   # annual cut count
+   120",
+    );
+
+    let err = parse_management_from_str(&fixture, ParseMode::Strict)
+        .expect_err("annual cut branch must reject short cut entries");
+
+    match err {
+        ManagementParseError::RecordArityError {
+            field,
+            observed,
+            expected,
+        } => {
+            assert_eq!(field, "annual_cut.entry");
+            assert_eq!(observed, 1);
+            assert_eq!(expected, "2+");
+            assert_eq!(err.contract_error_id(), "MAN-E-002");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
     }
 }
 
