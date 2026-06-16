@@ -45,8 +45,9 @@ are closed. The next active mechanism is **per-OFE runoff magnitude
 adjudication**; on the perf track, PERFHO01 attributed the ~80–110× high-OFE gap,
 **PERFOPT01** landed its first optimization (complete 2026-06-16: ~1.15×,
 bit-identical), and **PERFHO02** characterized the residual as hydrology
-symbol-access/guard work plus secondary writeback-application overhead. The next
-perf follow-on is `PERFOPT02`.
+symbol-access/guard work plus secondary writeback-application overhead (the string-keyed runtime surface — ~95 % of
+time). Operator set a **≤10× (≤5×)** target; the chosen path is the architectural
+**indexed runtime-surface** change (`PERFARCH01`, scaffolded), not incremental passes.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -56,7 +57,7 @@ perf follow-on is `PERFOPT02`.
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **High-OFE perf round 2 optimization** | Optimize the post-PERFHO02 residual: hydrology typed-symbol lookup/dynamic symbol construction/guard scans plus secondary writeback-application sort/allocation/insertion | Bit-identical speedup on H2637 + OFE ladder | ▶️ follow-on (`PERFOPT02`) |
+| 2 | **Indexed runtime-surface (architectural perf change)** | Replace the string-keyed `BTreeMap<BoundarySymbol, BoundaryValue>` runtime surface (the ~85× root cause: per-access String alloc + per-OFE-day clone) with an indexed/array-backed store; **target ≤10× (≤5×) vs legacy**. Incremental PERFOPT passes are Amdahl-capped well above 10× | Design + feasibility verdict + staged bit-identity-gated plan + proposed ADR (then staged impl) | ▶️ **scaffolded, Codex-ready** (`PERFARCH01`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -74,7 +75,7 @@ Adjudicate whether the per-OFE runoff magnitude is expected Stage-2 divergence o
 a defect-shaped follow-on, judged against the already-closed routed balance
 (comparator a flag, ADR-0017). Package: `MOFE-MAGPARITY01`.
 
-### 2. High-OFE perf round 2 optimization ▶️ (follow-on)
+### 2. Indexed runtime-surface — architectural perf change ▶️ (scaffolded, Codex-ready)
 
 PERFHO01 *(complete 2026-06-16)* characterized the ~80–110× H2637 wall-clock gap:
 CPU-bound (`977.99/978.55` user s), **not** I/O or parquet, scaling
@@ -102,7 +103,19 @@ decomposition, and PL guard work (`13/20` GDB samples), with secondary
 `kernel.perf_event_paranoid=0` became visible, `perf record` confirmed the same
 direction (`execute_persistent_scheduler_kernel_lifecycle` `96.24 %` children,
 `apply_kernel_writeback` `12.46 %`, `compute_active_frost_coupling` `12.35 %`).
-Output writers again had no sampled dominance. Next package: **`PERFOPT02`**.
+Output writers again had no sampled dominance.
+
+**Decision (operator, 2026-06-16):** target **≤10× (≤5×)** vs legacy. Incremental
+PERFOPT passes are Amdahl-capped well above 10× (PERFOPT01 = 1.15×; the cost is
+distributed across every per-OFE-day `String`-keyed access, not a few excisable
+functions). The chosen path is the **architectural** change — replace the
+`BTreeMap<BoundarySymbol, BoundaryValue>` runtime surface with an indexed/array-backed
+store (symbol interning → sorted-order `SymbolId` → `Vec<Option<…>>`; clone = memcpy,
+lookup = O(1), no per-access `String`). **`PERFARCH01`** (design + feasibility +
+staged bit-identity-gated plan + proposed ADR) is scaffolded, Codex-ready:
+`work-packages/20260616-perfarch01-indexed-runtime-surface-design-001/`. A low-risk
+incremental `PERFOPT02` (the PERFHO02 residual) remains optional but is not the path
+to the target.
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 
