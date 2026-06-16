@@ -10,6 +10,11 @@
 
 State as of `2026-06-15`:
 
+- CQR25 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`.
+  Final target CRAP: `12.4198250729`. Package:
+  `20260615-cqr25-runner-intake-lane-setup-complexity-001/`.
 - CQR24 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs`.
