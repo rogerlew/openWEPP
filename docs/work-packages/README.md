@@ -10,6 +10,13 @@
 
 State as of `2026-06-15`:
 
+- CQR30 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod13.rs`.
+  The scoped target reduced `Wb11HydrologyKernel::run_erod13_wave1_core`
+  CRAP from `265.2636791582994` to `8.0`, with every newly extracted helper
+  CRAP `<= 29.0`. WARNs remain for `cargo crap` LCOV source-map warnings.
+  Package: `20260615-cqr30-erod13-wave1-complexity-001/`.
 - CQR29 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-hillslope-orchestrator/src/hydrology/02_guard_errors.rs`.
