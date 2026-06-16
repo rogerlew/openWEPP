@@ -263,8 +263,14 @@ the tracker below and by reading the corresponding package directories under
   Date: `2026-06-15`.
   Final target: `Wb11HydrologyKernel::run_percolation`, CRAP
   `17.19373252009578`.
-- [ ] CQR29, rank 23, original CRAP `272`, CC `16`, Cov `0%`:
+- [x] CQR29, rank 23, original CRAP `272`, CC `16`, Cov `0%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/02_guard_errors.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr29-guard-errors-complexity-001/`.
+  Pushed commit: `7372b42ce2491c23e46955e7c00072a987d3ebb5` on branch
+  `main`.
+  Date: `2026-06-15`.
+  Final target: `Wb11HydrologyKernelGuardError::fmt`, CRAP `1.0`.
 - [ ] CQR30, rank 24, original CRAP `265`, CC `81`, Cov `70%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod13.rs`.
 - [ ] CQR31, rank 25, original CRAP `252`, CC `76`, Cov `69%`:
