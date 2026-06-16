@@ -271,8 +271,14 @@ the tracker below and by reading the corresponding package directories under
   `main`.
   Date: `2026-06-15`.
   Final target: `Wb11HydrologyKernelGuardError::fmt`, CRAP `1.0`.
-- [ ] CQR30, rank 24, original CRAP `265`, CC `81`, Cov `70%`:
+- [x] CQR30, rank 24, original CRAP `265`, CC `81`, Cov `70%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod13.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr30-erod13-wave1-complexity-001/`.
+  Pushed commit: `18cad341f3aae4fd0a61a462485c0b2fafa2f2c6` on branch
+  `main`.
+  Date: `2026-06-15`.
+  Final target: `Wb11HydrologyKernel::run_erod13_wave1_core`, CRAP `8.0`.
 - [ ] CQR31, rank 25, original CRAP `252`, CC `76`, Cov `69%`:
   `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`.
 - [ ] CQR32, rank 26, original CRAP `240`, CC `15`, Cov `0%`:
