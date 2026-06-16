@@ -10,6 +10,10 @@
 
 State as of `2026-06-15`:
 
+- CQR26 is complete-with-warnings for live-metric closure of
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`.
+  Package:
+  `20260615-cqr26-lateral-drainage-complexity-001/`.
 - CQR25 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`.
