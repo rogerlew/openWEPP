@@ -303,8 +303,14 @@ the tracker below and by reading the corresponding package directories under
   `main`.
   Date: `2026-06-15`.
   Final target: `WatershedStructureParseError::fmt`, CRAP `1.0`.
-- [ ] CQR34, rank 28, original CRAP `240`, CC `15`, Cov `0%`:
+- [x] CQR34, rank 28, original CRAP `240`, CC `15`, Cov `0%`:
   `crates/openwepp-summary-accumulator/src/lib.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr34-summary-accumulator-complexity-001/`.
+  Pushed commit: `76e24d2835dfdd60087e5aa32366ec6f700c6aac` on branch
+  `main`.
+  Date: `2026-06-15`.
+  Final target: `SummaryAccumulatorError::fmt`, CRAP `1.0`.
 - [ ] CQR35, rank 29, original CRAP `239`, CC `64`, Cov `65%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`.
 - [ ] CQR36, rank 30, original CRAP `220`, CC `73`, Cov `70%`:
