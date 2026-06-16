@@ -1,6 +1,11 @@
 # MOFE-FARPOINT01 — >10-OFE Routing-Closure Demonstration
 
-Status: queued (follow-on from MOFE01 M-H closure; operator-directed 2026-06-13)
+Status: **active** — F-A (fixture + baseline + Finding 1) and **F-B**
+(frost-overflow double-count defect-closure) complete (operator-directed
+2026-06-16: scaffolded + run end-to-end by Claude Code). openWEPP now closes the
+three conservation identities on the H2637 19-OFE substrate. Optional F-C
+(legacy-vs-openWEPP closure contrast) + the `watpdg` branch-out remain. See
+`artifacts/`.
 
 Package type: validation/demonstration work package
 
@@ -53,4 +58,22 @@ substrate.
 - MOFE01 (`20260612-mofe01-inter-ofe-routing-closure-001/`) — the routing
   implementation + M-I hillslope-total identity.
 - `docs/ROADMAP.md`, `AGENTS.md`, `docs/codex_exec_plans.md`, ADR-0011/0017.
-- High-OFE substrate (to be identified).
+- High-OFE substrate: **H2637 (19 OFEs)**, wepp-forest WB-05A in-repo inputs;
+  legacy comparator `wepp_260606_hill`.
+
+## Increments & Findings
+
+- **F-A — Fixture + legacy baseline + Finding 1** (complete; `fixture-and-baseline-evidence.md`).
+  Selected H2637 (19 OFEs, in-repo provenance); produced a clean `wepp_260606`
+  baseline (both `wepp_ui` variants, 0 non-finite); confirmed the documented
+  far-point signatures (QOFE/Q = OFE ordinal; OFE19 q-cap with/without-ui
+  contrast). Running openWEPP on the substrate **surfaced a defect**: the
+  per-element WB13 conservation gate fail-closes at OFE5 on a frost day
+  (residual ≡ `frost.runtime_watbtm_m`), deterministic across both variants.
+- **F-B — Frost bottom-overflow (`watbtm`) double-count defect-closure**
+  (DC-ExecPlan; `dc-execplan-frost-overflow-double-count.md`). Closes Finding 1
+  contract-first: `watbtm` was counted on the per-element inflow adjustment
+  **and** the `Dp` outflow; SC-WATBAL-001 amended (v162) to exclude it, code
+  corrected, contract-derived regression added. Disposition: `disposition.md`.
+- Branch-out: `watpdg` (upper overflow) symmetric inflow/outflow treatment is an
+  open question pending a `watpdg>0` fixture (see DC-ExecPlan §2 negative boundary).
