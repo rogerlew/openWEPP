@@ -10,6 +10,15 @@
 
 State as of `2026-06-15`:
 
+- CQR34 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity closure of
+  `crates/openwepp-summary-accumulator/src/lib.rs`. The scoped target reduced
+  `SummaryAccumulatorError::fmt` CRAP from `240.0` to `1.0`; the extracted
+  private helper `SummaryAccumulatorError::write_display` is CRAP `15.0`.
+  WARNs remain for `cargo crap` LCOV source-map warnings and the same-file
+  out-of-scope `Wb13DailyWaterBalanceRow::from_surface` row above CRAP `30`.
+  Package:
+  `20260615-cqr34-summary-accumulator-complexity-001/`.
 - CQR33 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity closure of
   `crates/openwepp-input-contract/src/parsers/watershed_structure.rs`. The

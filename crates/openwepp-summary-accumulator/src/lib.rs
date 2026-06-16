@@ -736,6 +736,12 @@ pub enum SummaryAccumulatorError {
 
 impl fmt::Display for SummaryAccumulatorError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.write_display(f)
+    }
+}
+
+impl SummaryAccumulatorError {
+    fn write_display(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidDate { year, month, day } => {
                 write!(
@@ -1202,6 +1208,151 @@ mod tests {
             .expect_err("finalize without samples should fail");
 
         assert_eq!(error, SummaryAccumulatorError::FinalizeWithoutSamples);
+    }
+
+    #[test]
+    fn summary_accumulator_error_display_strings_are_stable_for_validation_paths() {
+        let previous_day = CalendarDay::new(2026, 1, 2).expect("valid day");
+        let incoming_day = CalendarDay::new(2026, 1, 1).expect("valid day");
+
+        let cases = [
+            (
+                SummaryAccumulatorError::InvalidDate {
+                    year: 2026,
+                    month: 2,
+                    day: 30,
+                },
+                "invalid calendar date: year=2026, month=2, day=30",
+            ),
+            (
+                SummaryAccumulatorError::EmptyScalarSurface,
+                "summary scalar surface must not be empty",
+            ),
+            (
+                SummaryAccumulatorError::EmptySymbol,
+                "summary scalar symbol must not be empty",
+            ),
+            (
+                SummaryAccumulatorError::DuplicateSymbol {
+                    symbol: "runoff".to_string(),
+                },
+                "duplicate summary scalar symbol: runoff",
+            ),
+            (
+                SummaryAccumulatorError::NonFiniteInput {
+                    symbol: "runoff".to_string(),
+                    value: f64::NAN,
+                },
+                "non-finite scalar value for symbol runoff: NaN",
+            ),
+            (
+                SummaryAccumulatorError::NonMonotonicDate {
+                    previous: previous_day,
+                    incoming: incoming_day,
+                },
+                "non-monotonic day sequence: previous=CalendarDay { year: 2026, month: 1, day: 2 }, incoming=CalendarDay { year: 2026, month: 1, day: 1 }",
+            ),
+            (
+                SummaryAccumulatorError::WindowStateMissing {
+                    window: SummaryWindow::Monthly,
+                },
+                "window state missing for monthly",
+            ),
+            (
+                SummaryAccumulatorError::WindowTotalsMissing {
+                    window: SummaryWindow::EndOfSimulation,
+                },
+                "window totals missing for end_of_simulation",
+            ),
+            (
+                SummaryAccumulatorError::FinalizeWithoutSamples,
+                "cannot finalize summary accumulator with zero samples",
+            ),
+        ];
+
+        for (error, expected) in cases {
+            assert_eq!(error.to_string(), expected);
+        }
+    }
+
+    #[test]
+    fn summary_accumulator_error_display_strings_are_stable_for_output_paths() {
+        let previous_row = Wb13RowKey {
+            year: 2026,
+            julian_day: 2,
+            ofe: 1,
+        };
+        let incoming_row = Wb13RowKey {
+            year: 2026,
+            julian_day: 1,
+            ofe: 1,
+        };
+
+        let cases = [
+            (
+                SummaryAccumulatorError::MissingRequiredOutputSymbol {
+                    symbol: "P".to_string(),
+                },
+                "missing required WB13 output symbol: P",
+            ),
+            (
+                SummaryAccumulatorError::OutputSymbolOutOfRange {
+                    symbol: "QOFE".to_string(),
+                    value: 2.0,
+                    minimum: Some(1.0),
+                    maximum: Some(1.0),
+                },
+                "WB13 output symbol QOFE out of range: value=2, minimum=Some(1.0), maximum=Some(1.0)",
+            ),
+            (
+                SummaryAccumulatorError::NonMonotonicOutputRow {
+                    previous: previous_row,
+                    incoming: incoming_row,
+                },
+                "non-monotonic WB13 output row order: previous=Wb13RowKey { year: 2026, julian_day: 2, ofe: 1 }, incoming=Wb13RowKey { year: 2026, julian_day: 1, ofe: 1 }",
+            ),
+            (
+                SummaryAccumulatorError::Status(StatusError::MessageIdEmpty),
+                "status construction failed: message_id must not be empty",
+            ),
+            (
+                SummaryAccumulatorError::ComparatorMetadata(
+                    ComparatorTierRoutingError::MissingRequiredMetadata {
+                        field: "contributor_ofe_count",
+                        message_id: "TEST-COMPMETA-MISSING",
+                    },
+                ),
+                "comparator metadata routing failed: missing required comparator metadata field: contributor_ofe_count",
+            ),
+        ];
+
+        for (error, expected) in cases {
+            assert_eq!(error.to_string(), expected);
+        }
+    }
+
+    #[test]
+    fn summary_accumulator_error_source_is_only_wrapped_errors() {
+        let status_error = SummaryAccumulatorError::Status(StatusError::MessageIdEmpty);
+        let status_source =
+            std::error::Error::source(&status_error).expect("status source is preserved");
+        assert_eq!(status_source.to_string(), "message_id must not be empty");
+
+        let comparator_error = SummaryAccumulatorError::ComparatorMetadata(
+            ComparatorTierRoutingError::MissingRequiredMetadata {
+                field: "contributor_ofe_count",
+                message_id: "TEST-COMPMETA-MISSING",
+            },
+        );
+        let comparator_source = std::error::Error::source(&comparator_error)
+            .expect("comparator metadata source is preserved");
+        assert_eq!(
+            comparator_source.to_string(),
+            "missing required comparator metadata field: contributor_ofe_count"
+        );
+
+        let unwrapped_error = SummaryAccumulatorError::EmptyScalarSurface;
+        assert!(std::error::Error::source(&unwrapped_error).is_none());
     }
 
     #[test]
