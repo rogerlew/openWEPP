@@ -671,7 +671,23 @@ publication-safe Daymet CLI audit:
    bounds match `check_min`/`check_max`/`check_range`; inverted-bounds delegated,
    not suppressed) and re-confirmed bit-identity against a **separate** pre-opt
    baseline — resolving the no-independent-dual-review caveat Codex flagged.
-   Residual → `PERFHO02`. No contract/physics/output change.
+   Residual → `PERFHO02` (now characterized). No contract/physics/output change.
+
+14. **Post-PERFOPT high-OFE performance characterization** *(PERFHO02 complete
+   2026-06-16, Codex-executed)* —
+   `20260616-perfho02-post-perfopt-characterization-001/`. Characterized the
+   post-PERFOPT01 H2637 residual with a 20-sample GDB window, then supplemented
+   it with `perf record` after `kernel.perf_event_paranoid=0` became visible in
+   the session. Dominant sampled cost:
+   hydrology typed-symbol lookup, dynamic symbol formatting, frost/decomposition
+   and PL guard work (`13/20`, 65 %). Secondary residual:
+   `apply_kernel_writeback` sorting/allocation/insertion (`4/20`, 20 %).
+   Scheduler/daily-loop insertion/allocation plus consumer-boundary validation
+   accounted for the rest; `perf record` confirmed `execute_persistent_scheduler_kernel_lifecycle`
+   at `96.24 %` children and `apply_kernel_writeback` at `12.46 %`; output
+   writers were again absent. Follow-on:
+   `PERFOPT02-symbol-access-and-writeback-application`. No production/contract
+   edit.
 
 Acceptance target at each rung is **closure** (does it conserve), not **magnitude**
 (is the forcing physically right) and not comparator-match. See memory

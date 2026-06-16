@@ -42,10 +42,11 @@ totalwatsed3 CLI + closure** (WSHED01, the WBVAL06/6a deferral, closed
 closed 2026-06-16 — openWEPP's three identities close at 19 OFEs past the legacy
 ceiling; the frost `watbtm` double-count it surfaced was closed contract-first)
 are closed. The next active mechanism is **per-OFE runoff magnitude
-adjudication**; on the perf track, PERFHO01 attributed the ~80–110× high-OFE gap
-and **PERFOPT01** landed its first optimization (complete 2026-06-16: ~1.15×,
-bit-identical, independently reviewed), with `PERFHO02` queued to characterize the
-residual.
+adjudication**; on the perf track, PERFHO01 attributed the ~80–110× high-OFE gap,
+**PERFOPT01** landed its first optimization (complete 2026-06-16: ~1.15×,
+bit-identical), and **PERFHO02** characterized the residual as hydrology
+symbol-access/guard work plus secondary writeback-application overhead. The next
+perf follow-on is `PERFOPT02`.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -55,7 +56,7 @@ residual.
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **High-OFE perf round 2 (characterization)** | Characterize the post-PERFOPT01 dominant cost (hydrology/transfer guards + residual lane-surface clone/drop) now that the runtime-surface-churn + lazy-writeback wins landed | Profiler-backed attribution + next-optimization recommendation | ▶️ follow-on (`PERFHO02`) |
+| 2 | **High-OFE perf round 2 optimization** | Optimize the post-PERFHO02 residual: hydrology typed-symbol lookup/dynamic symbol construction/guard scans plus secondary writeback-application sort/allocation/insertion | Bit-identical speedup on H2637 + OFE ladder | ▶️ follow-on (`PERFOPT02`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -73,7 +74,7 @@ Adjudicate whether the per-OFE runoff magnitude is expected Stage-2 divergence o
 a defect-shaped follow-on, judged against the already-closed routed balance
 (comparator a flag, ADR-0017). Package: `MOFE-MAGPARITY01`.
 
-### 2. High-OFE perf round 2 (characterization) ▶️ (follow-on)
+### 2. High-OFE perf round 2 optimization ▶️ (follow-on)
 
 PERFHO01 *(complete 2026-06-16)* characterized the ~80–110× H2637 wall-clock gap:
 CPU-bound (`977.99/978.55` user s), **not** I/O or parquet, scaling
@@ -93,6 +94,15 @@ band's upper reaches (the `BTreeMap` data-structure replacement) were deliberate
 not attempted under the strict bit-identity gate. Packages:
 `work-packages/20260616-perf-high-ofe-hillslope-characterization-001/`,
 `work-packages/20260616-perfopt01-runtime-surface-map-churn-001/`.
+
+**PERFHO02** *(complete 2026-06-16)* sampled the optimized H2637 path and found
+the residual in hydrology typed-symbol lookup/dynamic symbol construction/frost,
+decomposition, and PL guard work (`13/20` GDB samples), with secondary
+`apply_kernel_writeback` sort/allocation/insertion (`4/20`). After
+`kernel.perf_event_paranoid=0` became visible, `perf record` confirmed the same
+direction (`execute_persistent_scheduler_kernel_lifecycle` `96.24 %` children,
+`apply_kernel_writeback` `12.46 %`, `compute_active_frost_coupling` `12.35 %`).
+Output writers again had no sampled dominance. Next package: **`PERFOPT02`**.
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 
