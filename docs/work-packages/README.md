@@ -8,8 +8,18 @@
 
 ## Current roadmap execution log
 
-State as of `2026-06-15`:
+State as of `2026-06-16`:
 
+- CQR35 is complete-with-warnings for live-metric
+  CRAP/cyclomatic-complexity closure of
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`.
+  Fresh before and after metrics prove the highest target-file row is
+  `Wb11HydrologyKernel::wb19_lateral_transfer_inputs` at CRAP
+  `26.541362973760947`, with zero target-file rows above `30`. WARNs remain
+  for `cargo crap` LCOV source-map warnings and the target file line count
+  above the older caution threshold.
+  Package:
+  `20260616-cqr35-lateral-drainage-complexity-001/`.
 - CQR34 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity closure of
   `crates/openwepp-summary-accumulator/src/lib.rs`. The scoped target reduced
