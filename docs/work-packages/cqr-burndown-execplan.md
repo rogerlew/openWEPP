@@ -311,8 +311,15 @@ the tracker below and by reading the corresponding package directories under
   `main`.
   Date: `2026-06-15`.
   Final target: `SummaryAccumulatorError::fmt`, CRAP `1.0`.
-- [ ] CQR35, rank 29, original CRAP `239`, CC `64`, Cov `65%`:
+- [x] CQR35, rank 29, original CRAP `239`, CC `64`, Cov `65%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`.
+  Package:
+  `docs/work-packages/20260616-cqr35-lateral-drainage-complexity-001/`.
+  Pushed commit: `48cf24fe17f6c6c55a50293a4cb6cb14005db369` on branch
+  `main`.
+  Date: `2026-06-16`.
+  Final target: `Wb11HydrologyKernel::wb19_lateral_transfer_inputs`, CRAP
+  `26.541362973760947`.
 - [ ] CQR36, rank 30, original CRAP `220`, CC `73`, Cov `70%`:
   `crates/openwepp-input-contract/src/parsers/watershed_impoundment.rs`.
 
