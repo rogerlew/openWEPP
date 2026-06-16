@@ -246,8 +246,14 @@ the tracker below and by reading the corresponding package directories under
   Date: `2026-06-15`.
   Final target: `Wb11HydrologyKernel::wb19_lateral_transfer_inputs`, CRAP
   `26.541362973760947`.
-- [ ] CQR27, rank 21, original CRAP `291`, CC `35`, Cov `41%`:
+- [x] CQR27, rank 21, original CRAP `291`, CC `35`, Cov `41%`:
   `crates/openwepp-input-contract/src/parsers/management.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr27-management-parser-complexity-001/`.
+  Pushed commit: `504d8940ddd15d6f716074172de4e07dd8184a8f` on branch
+  `main`.
+  Date: `2026-06-15`.
+  Final target: `parse_yearly_annual_fallow`, CRAP `4.0`.
 - [ ] CQR28, rank 22, original CRAP `282`, CC `91`, Cov `72%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_plant_percolation.rs`.
 - [ ] CQR29, rank 23, original CRAP `272`, CC `16`, Cov `0%`:
