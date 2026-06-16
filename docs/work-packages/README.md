@@ -10,6 +10,15 @@
 
 State as of `2026-06-15`:
 
+- CQR32 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity closure of
+  `crates/openwepp-input-contract/src/parsers/climate.rs`. The scoped target
+  reduced `ClimateParseError::fmt` CRAP from `240.0` to `1.0`; the extracted
+  private helper `ClimateParseError::write_display` is CRAP `15.0`. WARNs
+  remain for `cargo crap` LCOV source-map warnings, same-file out-of-scope
+  parser rows above CRAP `30`, and target-file line coverage below the ADR-0021
+  glue-tier threshold. Package:
+  `20260615-cqr32-climate-parser-complexity-001/`.
 - CQR31 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`.

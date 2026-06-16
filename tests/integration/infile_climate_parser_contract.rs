@@ -1,3 +1,4 @@
+use std::error::Error as _;
 use std::fmt::Write as _;
 use std::path::PathBuf;
 
@@ -242,6 +243,141 @@ fn compat_mode_can_enable_legacy_zero_drain_non_positive_dtime() {
         }
         ClimateDailyRecord::NoBreakpoint(_) => panic!("expected breakpoint daily record"),
     }
+}
+
+fn assert_climate_error_display(error: &ClimateParseError, expected: &str) {
+    assert_eq!(error.to_string(), expected);
+}
+
+#[test]
+fn climate_parse_error_display_strings_are_stable_for_io_and_record_shape() {
+    assert_climate_error_display(
+        &ClimateParseError::Io {
+            path: PathBuf::from("missing.cli"),
+            source: std::io::Error::new(std::io::ErrorKind::NotFound, "boom"),
+        },
+        "failed to read climate file 'missing.cli': boom",
+    );
+    assert_climate_error_display(
+        &ClimateParseError::UnexpectedEof {
+            context: "daily record",
+        },
+        "unexpected end of file while parsing daily record",
+    );
+    assert_climate_error_display(
+        &ClimateParseError::RecordArity {
+            line: 7,
+            context: "metadata line",
+            expected: 6,
+            found: 5,
+        },
+        "line 7: metadata line expects 6 token(s), found 5",
+    );
+    assert_climate_error_display(
+        &ClimateParseError::TokenParse {
+            line: 8,
+            field: "datver",
+            token: "bad".to_string(),
+        },
+        "line 8: failed to parse field 'datver' from token 'bad'",
+    );
+}
+
+#[test]
+fn climate_parse_error_display_strings_are_stable_for_domain_errors() {
+    assert_climate_error_display(
+        &ClimateParseError::UnsupportedDatver {
+            line: 1,
+            value: 5.4,
+        },
+        "line 1: unsupported datver '5.4'",
+    );
+    assert_climate_error_display(
+        &ClimateParseError::EnumDomain {
+            line: 2,
+            field: "iwind",
+            value: 3,
+        },
+        "line 2: value '3' is out of domain for 'iwind'",
+    );
+    assert_climate_error_display(
+        &ClimateParseError::SingleStormUnsupported { line: 2 },
+        "line 2: single-storm mode (itemp=2) is unsupported",
+    );
+    assert_climate_error_display(
+        &ClimateParseError::FieldRange {
+            line: 12,
+            field: "prcp",
+            value: -0.1,
+        },
+        "line 12: value '-0.1' violates range for 'prcp'",
+    );
+    assert_climate_error_display(
+        &ClimateParseError::DateDomain {
+            line: 13,
+            day: 31,
+            month: 2,
+            year: 2001,
+        },
+        "line 13: invalid date tuple (31, 2, 2001)",
+    );
+}
+
+#[test]
+fn climate_parse_error_display_strings_are_stable_for_breakpoints_and_counts() {
+    assert_climate_error_display(
+        &ClimateParseError::BreakpointCardinality {
+            line: 14,
+            nbrkpt: 1501,
+            max: 1500,
+        },
+        "line 14: breakpoint count '1501' exceeds policy max '1500'",
+    );
+    assert_climate_error_display(
+        &ClimateParseError::BreakpointMonotonicity {
+            line: 15,
+            previous: 2.5,
+            current: 2.4,
+        },
+        "line 15: cumulative breakpoint precipitation must be monotone: previous=2.5, current=2.4",
+    );
+    assert_climate_error_display(
+        &ClimateParseError::BreakpointTimeMonotonicity {
+            line: 16,
+            previous: 1.0,
+            current: 1.0,
+        },
+        "line 16: breakpoint timem must be strictly increasing: previous=1, current=1",
+    );
+    assert_climate_error_display(
+        &ClimateParseError::RecordCount {
+            context: "daily records",
+            expected: 2,
+            found: 1,
+        },
+        "daily records: expected 2, found 1",
+    );
+    assert_climate_error_display(
+        &ClimateParseError::InvariantViolation {
+            line: 17,
+            context: "daily sequence",
+        },
+        "line 17: invariant violation for daily sequence",
+    );
+}
+
+#[test]
+fn climate_parse_error_source_is_only_io_source() {
+    let io_error = ClimateParseError::Io {
+        path: PathBuf::from("missing.cli"),
+        source: std::io::Error::new(std::io::ErrorKind::NotFound, "boom"),
+    };
+    assert!(io_error.source().is_some());
+
+    let non_io_error = ClimateParseError::UnexpectedEof {
+        context: "daily record",
+    };
+    assert!(non_io_error.source().is_none());
 }
 
 #[test]

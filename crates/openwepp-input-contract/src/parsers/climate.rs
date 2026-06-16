@@ -221,6 +221,12 @@ pub enum ClimateParseError {
 
 impl Display for ClimateParseError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.write_display(f)
+    }
+}
+
+impl ClimateParseError {
+    fn write_display(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Io { path, source } => {
                 write!(
