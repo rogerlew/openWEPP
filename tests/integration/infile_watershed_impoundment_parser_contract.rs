@@ -104,6 +104,228 @@ fn strict_mode_parses_active_structure_payload_exports() {
 }
 
 #[test]
+fn strict_mode_parses_ids2_drop_spillway_and_open_channel_emergency_branch() {
+    let content = r"95.700
+1
+ids2 impoundment desc line 1
+ids2 impoundment desc line 2
+ids2 impoundment desc line 3
+2
+drop spillway ids2 structure
+1.10 1.20 0.50 3.20 0.60
+0.45 0.30 2.00 0.01 0.10
+0.50 0.20 0.30
+0 0
+0 0
+0
+1
+emergency open channel
+1.00 2.00 0.04 0.50 1.10
+0.01 3.00 0.02 4.00 0.03
+0
+0
+1.20 1.00 0.80 0.50 0.01
+1 5
+2
+0.80 120.0 24.0
+0.85 0.95
+130.0 150.0
+26.0 30.0
+";
+
+    let parsed =
+        parse_watershed_impoundment_from_str(content, WatershedImpoundmentParseOptions::strict())
+            .expect("strict parser should parse ids=2 and ies=1 branch payloads");
+    let item = &parsed.items[0];
+
+    match &item.drop_spillway {
+        DropSpillwayPayload::Ids2 { comment, payload } => {
+            assert_eq!(comment, "drop spillway ids2 structure");
+            assert!((payload.lenrs - 1.10).abs() < 1.0e-12);
+            assert!((payload.widrs - 1.20).abs() < 1.0e-12);
+            assert!((payload.hblot - 0.10).abs() < 1.0e-12);
+        }
+        other => panic!("unexpected drop spillway payload variant: {other:?}"),
+    }
+
+    match &item.emergency_spillway {
+        EmergencySpillwayPayload::OpenChannel { comment, payload } => {
+            assert_eq!(comment, "emergency open channel");
+            assert!((payload.bwes - 1.00).abs() < 1.0e-12);
+            assert!((payload.ses3 - 0.03).abs() < 1.0e-12);
+        }
+        other => panic!("unexpected emergency spillway variant: {other:?}"),
+    }
+}
+
+#[test]
+fn strict_mode_parses_ids3_drop_spillway_without_optional_branches() {
+    let content = r"95.700
+1
+ids3 impoundment desc line 1
+ids3 impoundment desc line 2
+ids3 impoundment desc line 3
+3
+drop spillway ids3 structure
+1.10 1.20 0.50 3.20 0.60
+0.45 0.30 2.00 0.01 0.10 0.11
+0.50 0.20 0.30
+0 0
+0 0
+0
+0
+0
+0
+1.20 1.00 0.80 0.50 0.01
+1 5
+2
+0.80 120.0 24.0
+0.85 0.95
+130.0 150.0
+26.0 30.0
+";
+
+    let parsed =
+        parse_watershed_impoundment_from_str(content, WatershedImpoundmentParseOptions::strict())
+            .expect("strict parser should parse ids=3 branch payload");
+    let item = &parsed.items[0];
+
+    match &item.drop_spillway {
+        DropSpillwayPayload::Ids3 { comment, payload } => {
+            assert_eq!(comment, "drop spillway ids3 structure");
+            assert!((payload.lenrs - 1.10).abs() < 1.0e-12);
+            assert!((payload.hitbl - 0.45).abs() < 1.0e-12);
+            assert!((payload.wdbl - 0.30).abs() < 1.0e-12);
+            assert!((payload.hblot - 0.11).abs() < 1.0e-12);
+        }
+        other => panic!("unexpected drop spillway payload variant: {other:?}"),
+    }
+
+    assert!(matches!(
+        item.emergency_spillway,
+        EmergencySpillwayPayload::None
+    ));
+    assert_eq!(item.branch_comments, ["drop spillway ids3 structure"]);
+}
+
+#[test]
+fn watershed_impoundment_parse_error_display_strings_are_stable() {
+    let cases = vec![
+        (
+            WatershedImpoundmentParseError::InputOpenError {
+                path: PathBuf::from("missing.imp"),
+                source: std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "missing impoundment input",
+                ),
+            },
+            "IMP-E-000: could not open/read 'missing.imp': missing impoundment input",
+        ),
+        (
+            WatershedImpoundmentParseError::TokenParseError {
+                line: 7,
+                field: "ids",
+                token: "x".to_string(),
+            },
+            "IMP-E-001: line 7 token parse error for ids from 'x'",
+        ),
+        (
+            WatershedImpoundmentParseError::UnexpectedEof {
+                context: "drop_spillway.strdes",
+            },
+            "IMP-E-002: unexpected end of file while parsing drop_spillway.strdes",
+        ),
+        (
+            WatershedImpoundmentParseError::UnsupportedDatver {
+                line: 1,
+                observed: Some(94.0),
+                reason: "below supported watershed impoundment datver",
+            },
+            "IMP-E-003: line 1 unsupported datver 94 (below supported watershed impoundment datver)",
+        ),
+        (
+            WatershedImpoundmentParseError::UnsupportedDatver {
+                line: 1,
+                observed: None,
+                reason: "strict mode requires explicit datver",
+            },
+            "IMP-E-003: line 1 unsupported legacy no-datver preamble (strict mode requires explicit datver)",
+        ),
+        (
+            WatershedImpoundmentParseError::DomainError {
+                line: 12,
+                field: "ies",
+                value: "4".to_string(),
+                allowed: "0|1|2",
+            },
+            "IMP-E-004: line 12 invalid domain value '4' for ies; expected 0|1|2",
+        ),
+        (
+            WatershedImpoundmentParseError::BranchArityError {
+                line: 13,
+                context: "misc",
+                expected: 5,
+                found: 4,
+            },
+            "IMP-E-005: line 13 arity mismatch in misc; expected 5, found 4",
+        ),
+        (
+            WatershedImpoundmentParseError::PhysicalDomainError {
+                line: 14,
+                field: "deltat",
+                value: 0.0,
+                expected: "> 0",
+            },
+            "IMP-E-006: line 14 physical-domain violation for deltat: 0 (> 0)",
+        ),
+        (
+            WatershedImpoundmentParseError::CountMismatch {
+                line: 2,
+                declared_jpond: 3,
+                expected_npond: 2,
+                reason: "strict structural count mismatch",
+            },
+            "IMP-E-007: line 2 count mismatch jpond=3 vs npond=2 (strict structural count mismatch)",
+        ),
+        (
+            WatershedImpoundmentParseError::InvariantViolation {
+                line: 20,
+                context: "stage array must be monotone non-decreasing",
+            },
+            "IMP-E-008: line 20 invariant violation (stage array must be monotone non-decreasing)",
+        ),
+        (
+            WatershedImpoundmentParseError::OrderingMismatch {
+                line: 21,
+                context: "impoundment ordering",
+            },
+            "IMP-E-009: line 21 ordering mismatch (impoundment ordering)",
+        ),
+    ];
+
+    for (err, expected) in cases {
+        assert_eq!(err.to_string(), expected);
+    }
+}
+
+#[test]
+fn watershed_impoundment_parse_error_source_is_only_input_open_source() {
+    let input_open = WatershedImpoundmentParseError::InputOpenError {
+        path: PathBuf::from("missing.imp"),
+        source: std::io::Error::new(std::io::ErrorKind::NotFound, "missing"),
+    };
+    assert!(std::error::Error::source(&input_open).is_some());
+
+    let domain = WatershedImpoundmentParseError::DomainError {
+        line: 1,
+        field: "ids",
+        value: "5".to_string(),
+        allowed: "0|1|2|3",
+    };
+    assert!(std::error::Error::source(&domain).is_none());
+}
+
+#[test]
 fn strict_mode_rejects_legacy_no_datver_preamble() {
     let err = parse_watershed_impoundment_from_path(
         fixture_path("compat_legacy_no_datver.imp"),

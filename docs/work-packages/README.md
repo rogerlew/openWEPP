@@ -10,6 +10,14 @@
 
 State as of `2026-06-16`:
 
+- CQR36 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity closure of
+  `crates/openwepp-input-contract/src/parsers/watershed_impoundment.rs`.
+  Final target `parse_impoundment` CRAP is `15.0`, with zero unique
+  target-file rows above `30`. WARNs remain for `cargo crap` LCOV source-map
+  warnings.
+  Package:
+  `20260616-cqr36-watershed-impoundment-parser-complexity-001/`.
 - CQR35 is complete-with-warnings for live-metric
   CRAP/cyclomatic-complexity closure of
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`.
