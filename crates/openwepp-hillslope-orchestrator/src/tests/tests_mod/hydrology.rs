@@ -21,6 +21,171 @@ fn assert_erod19_xcrit_case(inputs: (f64, f64, f64, f64, f64, f64), expected: (f
     );
 }
 
+fn assert_cqr29_guard_error_surface(
+    error: &Wb11HydrologyKernelGuardError,
+    expected_code: &str,
+    expected_class: BoundaryClass,
+    expected_display: &str,
+) {
+    assert_eq!(error.code(), expected_code);
+    assert_eq!(error.boundary_class(), expected_class);
+    assert_eq!(error.to_string(), expected_display);
+}
+
+#[test]
+fn cqr29_phase_guard_error_surface_preserves_codes_classes_and_display() {
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+            phase_class: HillslopeKernelPhaseClass::HydrologyEvapotranspiration,
+            symbol: BoundarySymbol::from("theta"),
+        },
+        "HKERNEL-WB11-ET-E-001",
+        BoundaryClass::MissingRequiredInput,
+        "HKERNEL-WB11-ET-E-001: phase class hydrology_evapotranspiration missing required state symbol theta",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::MissingRequiredFluxSymbol {
+            phase_class: HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+            symbol: BoundarySymbol::from("perc"),
+        },
+        "HKERNEL-WB11-PERC-E-001",
+        BoundaryClass::MissingRequiredInput,
+        "HKERNEL-WB11-PERC-E-001: phase class hydrology_percolation_deep_seepage missing required flux symbol perc",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+            phase_class: HillslopeKernelPhaseClass::HydrologyLateralTransfer,
+            symbol: BoundarySymbol::from("solwpv"),
+            value: f64::NAN,
+        },
+        "HKERNEL-WB11-LAT-E-002",
+        BoundaryClass::NonFinite,
+        "HKERNEL-WB11-LAT-E-002: phase class hydrology_lateral_transfer state symbol solwpv is non-finite (NaN)",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::NonFiniteFluxSymbol {
+            phase_class: HillslopeKernelPhaseClass::HydrologyDrainage,
+            symbol: BoundarySymbol::from("drainq"),
+            value: f64::INFINITY,
+        },
+        "HKERNEL-WB11-DRAIN-E-002",
+        BoundaryClass::NonFinite,
+        "HKERNEL-WB11-DRAIN-E-002: phase class hydrology_drainage flux symbol drainq is non-finite (inf)",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+            phase_class: HillslopeKernelPhaseClass::HydrologyPlantRootUptake,
+            symbol: BoundarySymbol::from("swu"),
+            value: -0.25,
+            minimum: Some(0.0),
+            maximum: Some(1.0),
+        },
+        "HKERNEL-WB17-SWU-E-003",
+        BoundaryClass::DomainViolation,
+        "HKERNEL-WB17-SWU-E-003: phase class hydrology_plant_root_uptake state symbol swu=-0.25 outside [Some(0.0), Some(1.0)]",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
+            phase_class: HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            symbol: BoundarySymbol::from("runoff"),
+            value: 1.25,
+            minimum: Some(0.0),
+            maximum: Some(1.0),
+        },
+        "HKERNEL-WB14-RUNOFF-E-003",
+        BoundaryClass::DomainViolation,
+        "HKERNEL-WB14-RUNOFF-E-003: phase class hydrology_runoff_reconciliation flux symbol runoff=1.25 outside [Some(0.0), Some(1.0)]",
+    );
+}
+
+#[test]
+fn cqr29_erod_guard_error_surface_preserves_codes_classes_and_display() {
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::Erod13MissingRequiredSymbol {
+            symbol: BoundarySymbol::from("width"),
+        },
+        "HKERNEL-EROD13-CORE-E-001",
+        BoundaryClass::MissingRequiredInput,
+        "HKERNEL-EROD13-CORE-E-001: missing required EROD13 Wave-1 symbol width",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::Erod13NonFiniteSymbol {
+            symbol: BoundarySymbol::from("shear"),
+            value: f64::NAN,
+        },
+        "HKERNEL-EROD13-CORE-E-002",
+        BoundaryClass::NonFinite,
+        "HKERNEL-EROD13-CORE-E-002: non-finite EROD13 Wave-1 symbol shear (NaN)",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+            symbol: BoundarySymbol::from("flow"),
+            value: -1.0,
+            minimum: Some(0.0),
+            maximum: None,
+        },
+        "HKERNEL-EROD13-CORE-E-003",
+        BoundaryClass::DomainViolation,
+        "HKERNEL-EROD13-CORE-E-003: EROD13 Wave-1 symbol flow=-1 outside [Some(0.0), None]",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::Erod14MissingRequiredSymbol {
+            symbol: BoundarySymbol::from("wave2"),
+        },
+        "HKERNEL-EROD14-WAVE2-E-001",
+        BoundaryClass::MissingRequiredInput,
+        "HKERNEL-EROD14-WAVE2-E-001: missing required EROD14 Wave-2 symbol wave2",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::Erod14NonFiniteSymbol {
+            symbol: BoundarySymbol::from("ktrato"),
+            value: f64::NAN,
+        },
+        "HKERNEL-EROD14-WAVE2-E-002",
+        BoundaryClass::NonFinite,
+        "HKERNEL-EROD14-WAVE2-E-002: non-finite EROD14 Wave-2 symbol ktrato (NaN)",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::Erod14DomainViolation {
+            symbol: BoundarySymbol::from("xdetst"),
+            value: -0.5,
+            minimum: Some(0.0),
+            maximum: None,
+        },
+        "HKERNEL-EROD14-WAVE2-E-003",
+        BoundaryClass::DomainViolation,
+        "HKERNEL-EROD14-WAVE2-E-003: EROD14 Wave-2 symbol xdetst=-0.5 outside [Some(0.0), None]",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::Erod18MissingRequiredSymbol {
+            symbol: BoundarySymbol::from("route"),
+        },
+        "HKERNEL-EROD18-ROUTE-E-001",
+        BoundaryClass::MissingRequiredInput,
+        "HKERNEL-EROD18-ROUTE-E-001: missing required EROD18 route topology symbol route",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::Erod18NonFiniteSymbol {
+            symbol: BoundarySymbol::from("slope"),
+            value: f64::NAN,
+        },
+        "HKERNEL-EROD18-ROUTE-E-002",
+        BoundaryClass::NonFinite,
+        "HKERNEL-EROD18-ROUTE-E-002: non-finite EROD18 route topology symbol slope (NaN)",
+    );
+    assert_cqr29_guard_error_surface(
+        &Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+            symbol: BoundarySymbol::from("length"),
+            value: -2.0,
+            minimum: Some(0.0),
+            maximum: None,
+        },
+        "HKERNEL-EROD18-ROUTE-E-003",
+        BoundaryClass::DomainViolation,
+        "HKERNEL-EROD18-ROUTE-E-003: EROD18 route topology symbol length=-2 outside [Some(0.0), None]",
+    );
+}
+
 #[test]
 fn cqr17_erod19_xcrit_classification_preserves_branch_vectors() {
     let cases = [

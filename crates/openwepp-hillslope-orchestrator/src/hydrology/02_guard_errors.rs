@@ -160,71 +160,60 @@ impl Wb11HydrologyKernelGuardError {
 
         format!("HKERNEL-{kernel_family}-{phase_prefix}-E-{suffix}")
     }
-}
 
-impl fmt::Display for Wb11HydrologyKernelGuardError {
-    #[allow(clippy::too_many_lines)]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn display_parts(&self) -> HydrologyGuardErrorDisplayParts<'_> {
+        match self {
+            Self::MissingRequiredStateSymbol { .. }
+            | Self::MissingRequiredFluxSymbol { .. }
+            | Self::NonFiniteStateSymbol { .. }
+            | Self::NonFiniteFluxSymbol { .. }
+            | Self::StateSymbolOutOfRange { .. }
+            | Self::FluxSymbolOutOfRange { .. } => self.phase_display_parts(),
+            Self::Erod13MissingRequiredSymbol { .. }
+            | Self::Erod13NonFiniteSymbol { .. }
+            | Self::Erod13DomainViolation { .. } => self.erod13_display_parts(),
+            Self::Erod14MissingRequiredSymbol { .. }
+            | Self::Erod14NonFiniteSymbol { .. }
+            | Self::Erod14DomainViolation { .. } => self.erod14_display_parts(),
+            Self::Erod18MissingRequiredSymbol { .. }
+            | Self::Erod18NonFiniteSymbol { .. }
+            | Self::Erod18DomainViolation { .. } => self.erod18_display_parts(),
+        }
+    }
+
+    fn phase_display_parts(&self) -> HydrologyGuardErrorDisplayParts<'_> {
         match self {
             Self::MissingRequiredStateSymbol {
                 phase_class,
                 symbol,
-            } => write!(
-                f,
-                "{}: phase class {} missing required state symbol {}",
-                self.code(),
-                phase_class.as_str(),
-                symbol
-            ),
+            } => HydrologyGuardErrorDisplayParts::PhaseMissing(phase_class, symbol, "state"),
             Self::MissingRequiredFluxSymbol {
                 phase_class,
                 symbol,
-            } => write!(
-                f,
-                "{}: phase class {} missing required flux symbol {}",
-                self.code(),
-                phase_class.as_str(),
-                symbol
-            ),
+            } => HydrologyGuardErrorDisplayParts::PhaseMissing(phase_class, symbol, "flux"),
             Self::NonFiniteStateSymbol {
                 phase_class,
                 symbol,
                 value,
-            } => write!(
-                f,
-                "{}: phase class {} state symbol {} is non-finite ({})",
-                self.code(),
-                phase_class.as_str(),
-                symbol,
-                value
-            ),
+            } => HydrologyGuardErrorDisplayParts::PhaseNonFinite(phase_class, symbol, *value, "state"),
             Self::NonFiniteFluxSymbol {
                 phase_class,
                 symbol,
                 value,
-            } => write!(
-                f,
-                "{}: phase class {} flux symbol {} is non-finite ({})",
-                self.code(),
-                phase_class.as_str(),
-                symbol,
-                value
-            ),
+            } => HydrologyGuardErrorDisplayParts::PhaseNonFinite(phase_class, symbol, *value, "flux"),
             Self::StateSymbolOutOfRange {
                 phase_class,
                 symbol,
                 value,
                 minimum,
                 maximum,
-            } => write!(
-                f,
-                "{}: phase class {} state symbol {}={} outside [{:?}, {:?}]",
-                self.code(),
-                phase_class.as_str(),
+            } => HydrologyGuardErrorDisplayParts::PhaseOutOfRange(
+                phase_class,
                 symbol,
-                value,
-                minimum,
-                maximum
+                *value,
+                *minimum,
+                *maximum,
+                "state",
             ),
             Self::FluxSymbolOutOfRange {
                 phase_class,
@@ -232,98 +221,162 @@ impl fmt::Display for Wb11HydrologyKernelGuardError {
                 value,
                 minimum,
                 maximum,
-            } => write!(
-                f,
-                "{}: phase class {} flux symbol {}={} outside [{:?}, {:?}]",
-                self.code(),
-                phase_class.as_str(),
+            } => HydrologyGuardErrorDisplayParts::PhaseOutOfRange(
+                phase_class,
                 symbol,
-                value,
-                minimum,
-                maximum
+                *value,
+                *minimum,
+                *maximum,
+                "flux",
             ),
-            Self::Erod13MissingRequiredSymbol { symbol } => write!(
-                f,
-                "{}: missing required EROD13 Wave-1 symbol {}",
-                self.code(),
-                symbol
-            ),
-            Self::Erod13NonFiniteSymbol { symbol, value } => write!(
-                f,
-                "{}: non-finite EROD13 Wave-1 symbol {} ({})",
-                self.code(),
-                symbol,
-                value
-            ),
+            _ => unreachable!("phase display mapper received erosion guard error"),
+        }
+    }
+
+    fn erod13_display_parts(&self) -> HydrologyGuardErrorDisplayParts<'_> {
+        match self {
+            Self::Erod13MissingRequiredSymbol { symbol } => {
+                HydrologyGuardErrorDisplayParts::ErodMissing(symbol, "EROD13 Wave-1")
+            }
+            Self::Erod13NonFiniteSymbol { symbol, value } => {
+                HydrologyGuardErrorDisplayParts::ErodNonFinite(symbol, *value, "EROD13 Wave-1")
+            }
             Self::Erod13DomainViolation {
                 symbol,
                 value,
                 minimum,
                 maximum,
-            } => write!(
-                f,
-                "{}: EROD13 Wave-1 symbol {}={} outside [{:?}, {:?}]",
-                self.code(),
+            } => HydrologyGuardErrorDisplayParts::ErodOutOfRange(
                 symbol,
-                value,
-                minimum,
-                maximum
+                *value,
+                *minimum,
+                *maximum,
+                "EROD13 Wave-1",
             ),
-            Self::Erod14MissingRequiredSymbol { symbol } => write!(
-                f,
-                "{}: missing required EROD14 Wave-2 symbol {}",
-                self.code(),
-                symbol
-            ),
-            Self::Erod14NonFiniteSymbol { symbol, value } => write!(
-                f,
-                "{}: non-finite EROD14 Wave-2 symbol {} ({})",
-                self.code(),
-                symbol,
-                value
-            ),
+            _ => unreachable!("EROD13 display mapper received non-EROD13 guard error"),
+        }
+    }
+
+    fn erod14_display_parts(&self) -> HydrologyGuardErrorDisplayParts<'_> {
+        match self {
+            Self::Erod14MissingRequiredSymbol { symbol } => {
+                HydrologyGuardErrorDisplayParts::ErodMissing(symbol, "EROD14 Wave-2")
+            }
+            Self::Erod14NonFiniteSymbol { symbol, value } => {
+                HydrologyGuardErrorDisplayParts::ErodNonFinite(symbol, *value, "EROD14 Wave-2")
+            }
             Self::Erod14DomainViolation {
                 symbol,
                 value,
                 minimum,
                 maximum,
-            } => write!(
-                f,
-                "{}: EROD14 Wave-2 symbol {}={} outside [{:?}, {:?}]",
-                self.code(),
+            } => HydrologyGuardErrorDisplayParts::ErodOutOfRange(
                 symbol,
-                value,
-                minimum,
-                maximum
+                *value,
+                *minimum,
+                *maximum,
+                "EROD14 Wave-2",
             ),
-            Self::Erod18MissingRequiredSymbol { symbol } => write!(
-                f,
-                "{}: missing required EROD18 route topology symbol {}",
-                self.code(),
-                symbol
-            ),
-            Self::Erod18NonFiniteSymbol { symbol, value } => write!(
-                f,
-                "{}: non-finite EROD18 route topology symbol {} ({})",
-                self.code(),
-                symbol,
-                value
-            ),
+            _ => unreachable!("EROD14 display mapper received non-EROD14 guard error"),
+        }
+    }
+
+    fn erod18_display_parts(&self) -> HydrologyGuardErrorDisplayParts<'_> {
+        match self {
+            Self::Erod18MissingRequiredSymbol { symbol } => {
+                HydrologyGuardErrorDisplayParts::ErodMissing(symbol, "EROD18 route topology")
+            }
+            Self::Erod18NonFiniteSymbol { symbol, value } => {
+                HydrologyGuardErrorDisplayParts::ErodNonFinite(
+                    symbol,
+                    *value,
+                    "EROD18 route topology",
+                )
+            }
             Self::Erod18DomainViolation {
                 symbol,
                 value,
                 minimum,
                 maximum,
-            } => write!(
+            } => HydrologyGuardErrorDisplayParts::ErodOutOfRange(
+                symbol,
+                *value,
+                *minimum,
+                *maximum,
+                "EROD18 route topology",
+            ),
+            _ => unreachable!("EROD18 display mapper received non-EROD18 guard error"),
+        }
+    }
+}
+
+enum HydrologyGuardErrorDisplayParts<'a> {
+    PhaseMissing(&'a HillslopeKernelPhaseClass, &'a BoundarySymbol, &'static str),
+    PhaseNonFinite(&'a HillslopeKernelPhaseClass, &'a BoundarySymbol, f64, &'static str),
+    PhaseOutOfRange(
+        &'a HillslopeKernelPhaseClass,
+        &'a BoundarySymbol,
+        f64,
+        Option<f64>,
+        Option<f64>,
+        &'static str,
+    ),
+    ErodMissing(&'a BoundarySymbol, &'static str),
+    ErodNonFinite(&'a BoundarySymbol, f64, &'static str),
+    ErodOutOfRange(&'a BoundarySymbol, f64, Option<f64>, Option<f64>, &'static str),
+}
+
+impl HydrologyGuardErrorDisplayParts<'_> {
+    fn fmt_with_code(&self, code: &str, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::PhaseMissing(
+                phase_class,
+                symbol,
+                symbol_kind,
+            ) => write!(
                 f,
-                "{}: EROD18 route topology symbol {}={} outside [{:?}, {:?}]",
-                self.code(),
+                "{code}: phase class {} missing required {symbol_kind} symbol {symbol}",
+                phase_class.as_str()
+            ),
+            Self::PhaseNonFinite(
+                phase_class,
+                symbol,
+                value,
+                symbol_kind,
+            ) => write!(
+                f,
+                "{code}: phase class {} {symbol_kind} symbol {symbol} is non-finite ({value})",
+                phase_class.as_str()
+            ),
+            Self::PhaseOutOfRange(
+                phase_class,
                 symbol,
                 value,
                 minimum,
-                maximum
+                maximum,
+                symbol_kind,
+            ) => write!(
+                f,
+                "{code}: phase class {} {symbol_kind} symbol {symbol}={value} outside [{minimum:?}, {maximum:?}]",
+                phase_class.as_str()
+            ),
+            Self::ErodMissing(symbol, label) => {
+                write!(f, "{code}: missing required {label} symbol {symbol}")
+            }
+            Self::ErodNonFinite(symbol, value, label) => {
+                write!(f, "{code}: non-finite {label} symbol {symbol} ({value})")
+            }
+            Self::ErodOutOfRange(symbol, value, minimum, maximum, label) => write!(
+                f,
+                "{code}: {label} symbol {symbol}={value} outside [{minimum:?}, {maximum:?}]"
             ),
         }
+    }
+}
+
+impl fmt::Display for Wb11HydrologyKernelGuardError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.display_parts().fmt_with_code(&self.code(), f)
     }
 }
 

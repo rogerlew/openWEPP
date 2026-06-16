@@ -10,6 +10,14 @@
 
 State as of `2026-06-15`:
 
+- CQR29 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-hillslope-orchestrator/src/hydrology/02_guard_errors.rs`.
+  The scoped target reduced `Wb11HydrologyKernelGuardError::fmt` CRAP from
+  `272.0` to `1.0`, with every newly extracted helper CRAP
+  `<= 8.000751314800901`. WARNs remain for `cargo crap` LCOV source-map
+  warnings.
+  Package: `20260615-cqr29-guard-errors-complexity-001/`.
 - CQR28 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_plant_percolation.rs`.
