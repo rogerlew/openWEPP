@@ -287,8 +287,14 @@ the tracker below and by reading the corresponding package directories under
   `main`.
   Date: `2026-06-15`.
   Final target: `build_simulation_owned_wb13_row_for_ofe`, CRAP `16.0`.
-- [ ] CQR32, rank 26, original CRAP `240`, CC `15`, Cov `0%`:
+- [x] CQR32, rank 26, original CRAP `240`, CC `15`, Cov `0%`:
   `crates/openwepp-input-contract/src/parsers/climate.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr32-climate-parser-complexity-001/`.
+  Pushed commit: `6c4f7f6d42e7bd8dbb4bb67b7ae90284c4174d96` on branch
+  `main`.
+  Date: `2026-06-15`.
+  Final target: `ClimateParseError::fmt`, CRAP `1.0`.
 - [ ] CQR33, rank 27, original CRAP `240`, CC `15`, Cov `0%`:
   `crates/openwepp-input-contract/src/parsers/watershed_structure.rs`.
 - [ ] CQR34, rank 28, original CRAP `240`, CC `15`, Cov `0%`:
