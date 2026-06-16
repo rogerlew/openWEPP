@@ -128,9 +128,15 @@ breadcrumb" is legitimate.
   both treat it as outflow; only line 432 treats it as inflow. (iv) Contracts —
   SC-SNOWFREEZE-001 (`watbtm→Dp`) vs SC-WATBAL-001 item 2 (`…+watbtm` inflow) are
   inconsistent; SC-SNOWFREEZE is the physically-correct, contract-tested authority.
-- **2026-06-16 — `watpdg` excluded from this fix.** Unreproduced (`watpdg=0` on
-  the failing day); see negative boundary (§2). Handled empirically by the H2637
-  re-run.
+- **2026-06-16 — `watpdg` excluded from this fix.** Unreproduced on the failing
+  day; see negative boundary (§2). Handled empirically by the H2637 re-run.
+- **2026-06-16 (F-C follow-on) — `watpdg` branch-out RESOLVED: validated
+  non-defect.** Instrumented full-34-yr H2637 run found `watpdg>0` on 4 OFE-days
+  (max `3e-4 mm`) with the per-element/hillslope-total gates closing at <1e-11 mm
+  on those rows — so `watpdg` cancels on both sides (it is not a net soil-storage
+  egress like `watbtm`, whose `Dp`/`storage_delta` coupling broke the
+  cancellation). No code/contract change. See `worker-handoff.md` item 1 and
+  `fc-legacy-closure-contrast.md`.
 
 ## 8. Progress
 

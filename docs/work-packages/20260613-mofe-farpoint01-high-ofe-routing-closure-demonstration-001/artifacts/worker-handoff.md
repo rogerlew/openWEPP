@@ -20,24 +20,32 @@ gates — the FARPOINT01 differentiating result (closure past the legacy ceiling
 These are **named candidate defects / scopes**, not diagnostic breadcrumbs. None
 is required for F-B closure.
 
-1. **`watpdg` upper-overflow symmetry (conditional defect).** `watpdg` sits
-   symmetrically to `watbtm` in the (now-amended) internal frost adjustment and
-   is also present in the identity's outflow (`frost_upper_overflow_mm`). It did
-   **not** reproduce on H2637 (both variants, full 34 yr — `watpdg=0` on the
-   relevant days), so it was correctly left unmodified. *Reproduction required
-   before any change*: a `watpdg>0` (top-thaw) fixture exhibiting the same
-   residual ≡ `watpdg` signature. Note the open physical question — `watpdg`
-   routes *upward to the surface* and may be recycled within the OFE, which could
-   make its inflow-side treatment legitimate (unlike `watbtm`, a terminal
-   downward deep-perc outflow). Same authority/write-set as F-B if it reproduces.
+1. **`watpdg` upper-overflow symmetry — RESOLVED: validated non-defect.**
+   `watpdg` sits symmetrically to `watbtm` in the internal frost adjustment and
+   is also present in the identity's outflow (`frost_upper_overflow_mm`), so the
+   F-B fix deliberately left it unchanged pending a `watpdg>0` reproduction.
+   **Executed** via temporary instrumentation (an `eprintln` when `watpdg>0`,
+   reverted before commit) on the full-34-yr H2637 run: `watpdg>0` occurred on
+   **4 OFE-days** (max `3.0e-7 m` = `3e-4 mm`), and the per-element + hillslope-
+   total gates **closed at <1e-11 mm on those rows**. Had `watpdg` been a
+   net-egress double-count (like `watbtm`), those rows would have failed by
+   ≈`+watpdg` (3e-4 mm ≫ 1e-11 mm). They did not. So `watpdg` **cancels
+   exactly** on both sides (magnitude-independent) and the both-sides treatment
+   conserves. Mechanism: unlike `watbtm` (deep-perc egress, debited from
+   `Total-Soil`, so `storage_delta` carries `−watbtm` and breaks the
+   cancellation), `watpdg` routes upward to the surface and is **not** a net
+   soil-storage egress — `storage_delta` carries no `−watpdg` term, so the
+   inflow/outflow `watpdg` pair cancels. No code/contract change warranted.
 
-2. **F-C — legacy-vs-openWEPP >10-OFE closure contrast (demonstration depth).**
-   The core differentiating result (openWEPP closes at 19 OFEs) is done. To fully
-   satisfy the package's "measure legacy's own closure on the same substrate"
-   criterion, run a like-for-like legacy `wepp_260606` water-balance closure
-   audit on H2637 and contrast it with openWEPP's. Far-point signatures already
-   recorded (QOFE/Q = OFE ordinal; OFE19 q-cap with/without-ui ΣQ 53k→123k).
-   Comparator is a flag (ADR-0017), not a target.
+2. **F-C — legacy-vs-openWEPP >10-OFE closure contrast — COMPLETE**
+   (`fc-legacy-closure-contrast.md`). Dispositive, assumption-light result
+   (QOFE/Q duality verified exactly): legacy `wepp_260606` with `wepp_ui`
+   produces outlet runoff = **127.7 % of precip** (runoff > precip, a physical
+   conservation violation — the WB-05A q-cap, quantified); openWEPP is
+   `wepp_ui`-invariant and runoff-bounded (71.0 %) and closes its three
+   identities at <1e-11 on the same substrate. Legacy without_ui is bounded
+   (55.5 %). Comparator is a flag (ADR-0017); the openWEPP-vs-legacy magnitude
+   gap (71 % vs 55.5 %) is a Stage-2 `MOFE-MAGPARITY01` question, not closure.
 
 3. **openWEPP high-OFE performance (characterization).** openWEPP ran H2637 in
    ~1020 s vs the legacy Fortran's ~10 s — ~100× on a 19-OFE × 34-yr hillslope.

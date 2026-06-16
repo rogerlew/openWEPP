@@ -75,5 +75,10 @@ substrate.
   contract-first: `watbtm` was counted on the per-element inflow adjustment
   **and** the `Dp` outflow; SC-WATBAL-001 amended (v162) to exclude it, code
   corrected, contract-derived regression added. Disposition: `disposition.md`.
-- Branch-out: `watpdg` (upper overflow) symmetric inflow/outflow treatment is an
-  open question pending a `watpdg>0` fixture (see DC-ExecPlan §2 negative boundary).
+- **F-C — Legacy-vs-openWEPP closure contrast** (complete;
+  `fc-legacy-closure-contrast.md`). On H2637, legacy `wepp_260606` with `wepp_ui`
+  produces runoff = 127.7 % of precip (conservation violated, the WB-05A q-cap);
+  openWEPP is `wepp_ui`-invariant, runoff-bounded (71.0 %), and conservation-closed.
+- Branch-out: `watpdg` (upper overflow) symmetric inflow/outflow treatment —
+  resolved under the watpdg conditional (algebra + instrumented H2637 detection);
+  see `worker-handoff.md` / DC-ExecPlan §2.
