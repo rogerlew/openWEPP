@@ -237,8 +237,15 @@ the tracker below and by reading the corresponding package directories under
   `main`.
   Date: `2026-06-15`.
   Final target: `execute_hillslope_run`, CRAP `12.4198250729`.
-- [ ] CQR26, rank 20, original CRAP `300`, CC `122`, Cov `77%`:
+- [x] CQR26, rank 20, original CRAP `300`, CC `122`, Cov `77%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr26-lateral-drainage-complexity-001/`.
+  Pushed commit: `9ab0117bfa8783ad97b1ad6f6b20ba7c2ed4fa3d` on branch
+  `main`.
+  Date: `2026-06-15`.
+  Final target: `Wb11HydrologyKernel::wb19_lateral_transfer_inputs`, CRAP
+  `26.541362973760947`.
 - [ ] CQR27, rank 21, original CRAP `291`, CC `35`, Cov `41%`:
   `crates/openwepp-input-contract/src/parsers/management.rs`.
 - [ ] CQR28, rank 22, original CRAP `282`, CC `91`, Cov `72%`:
