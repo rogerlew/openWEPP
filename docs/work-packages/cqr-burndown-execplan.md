@@ -295,8 +295,14 @@ the tracker below and by reading the corresponding package directories under
   `main`.
   Date: `2026-06-15`.
   Final target: `ClimateParseError::fmt`, CRAP `1.0`.
-- [ ] CQR33, rank 27, original CRAP `240`, CC `15`, Cov `0%`:
+- [x] CQR33, rank 27, original CRAP `240`, CC `15`, Cov `0%`:
   `crates/openwepp-input-contract/src/parsers/watershed_structure.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr33-watershed-structure-parser-complexity-001/`.
+  Pushed commit: `8928b1cfdfcbe128f3b377e96b2e9ef4842dc610` on branch
+  `main`.
+  Date: `2026-06-15`.
+  Final target: `WatershedStructureParseError::fmt`, CRAP `1.0`.
 - [ ] CQR34, rank 28, original CRAP `240`, CC `15`, Cov `0%`:
   `crates/openwepp-summary-accumulator/src/lib.rs`.
 - [ ] CQR35, rank 29, original CRAP `239`, CC `64`, Cov `65%`:
