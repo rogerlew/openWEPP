@@ -10,6 +10,15 @@
 
 State as of `2026-06-15`:
 
+- CQR31 is complete-with-warnings for behavior-preserving
+  CRAP/cyclomatic-complexity decomposition of
+  `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`.
+  The scoped target reduced `build_simulation_owned_wb13_row_for_ofe` CRAP from
+  `251.62932776803854` to `16.0`, with every newly extracted helper CRAP
+  `<= 12.584884659264825`. WARNs remain for `cargo crap` LCOV source-map
+  warnings and the pre-existing same-file out-of-scope
+  `derive_profile_fc_store_from_authoritative_layers` row above CRAP `30`.
+  Package: `20260615-cqr31-runner-output-climate-complexity-001/`.
 - CQR30 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity decomposition of
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion/hydrology_phase_erod13.rs`.

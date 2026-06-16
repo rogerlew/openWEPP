@@ -57,6 +57,80 @@ struct Wb13RunoffPublicationGeometry {
     cumulative_length_m: f64,
 }
 
+#[derive(Clone, Copy)]
+struct Wb13CalendarProjection {
+    calendar_year: i32,
+    month: i32,
+    day_of_month: i32,
+    julian_day: u16,
+}
+
+#[derive(Clone, Copy)]
+struct Wb13CalendarPublicationKeys {
+    month: i8,
+    day_of_month: i8,
+    water_year: i16,
+    sim_day_index: i32,
+}
+
+#[derive(Clone, Copy)]
+struct Wb13ProfileStorageInputs {
+    depth_mm: f64,
+    porosity_cap: f64,
+    fc_store_mm: f64,
+    wp_store_mm: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Wb13FrozenStorageInputs {
+    total_soil: f64,
+    frozwt: f64,
+    frdp_mm: f64,
+    snow_water: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Wb13LiquidInputTerms {
+    rm: f64,
+    irrigation_mm: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Wb13EvaporationTerms {
+    ep: f64,
+    es: f64,
+    er: f64,
+    evappm_pmet_branch: bool,
+}
+
+#[derive(Clone, Copy)]
+struct Wb13SubsurfaceFlowTerms {
+    dp: f64,
+    latqcc: f64,
+    tile: f64,
+    sub_r_in: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Wb13RunoffPublicationTerms {
+    q: f64,
+    qofe: f64,
+}
+
+#[derive(Clone, Copy)]
+struct Wb13RowSurfaceInputs {
+    precipitation_mm: f64,
+    liquid: Wb13LiquidInputTerms,
+    runoff: Wb13RunoffPublicationTerms,
+    evaporation: Wb13EvaporationTerms,
+    subsurface: Wb13SubsurfaceFlowTerms,
+    upstream_runon_m: f64,
+    per_ofe_publication: bool,
+    storage: Wb13FrozenStorageInputs,
+    profile: Wb13ProfileStorageInputs,
+    area_m2: f64,
+}
+
 impl Wb13RunoffPublicationGeometry {
     fn new(ofe_length_m: f64, cumulative_length_m: f64) -> Result<Self, HillslopeCliError> {
         if !ofe_length_m.is_finite() || ofe_length_m <= 0.0 {
@@ -855,7 +929,6 @@ fn derive_profile_fc_store_from_authoritative_layers(
     Ok(profile_fc_store_mm)
 }
 
-#[allow(clippy::too_many_lines)]
 fn build_simulation_owned_wb13_row(
     runtime_surface: &HillslopeWritebackSurface,
     publication_area_m2: f64,
@@ -879,12 +952,58 @@ fn build_simulation_owned_wb13_row(
     )
 }
 
-#[allow(clippy::too_many_lines)]
 fn build_simulation_owned_wb13_row_for_ofe(
     runtime_surface: &HillslopeWritebackSurface,
     publication_area_m2: f64,
     context: Wb13OfePublicationContext<'_>,
 ) -> Result<SimulationOwnedWb13Row, HillslopeCliError> {
+    validate_wb13_publication_context(context)?;
+    let calendar_projection = wb13_calendar_projection(context)?;
+    let precipitation_mm = wb13_precipitation_mm(runtime_surface)?;
+    let profile = wb13_profile_storage_inputs(runtime_surface)?;
+    let storage = wb13_frozen_storage_inputs(runtime_surface, profile.depth_mm)?;
+    let liquid = wb13_liquid_input_terms(runtime_surface)?;
+    let interception_mm = wb13_interception_mm(runtime_surface)?;
+    let physical_runoff_mm = wb13_physical_runoff_mm(runtime_surface)?;
+    let evaporation = wb13_evaporation_terms(runtime_surface)?;
+    let dp = wb13_deep_percolation_mm(runtime_surface)?;
+    let subsurface = wb13_subsurface_flow_terms(runtime_surface, dp)?;
+    let runoff = wb13_runoff_publication_terms(runtime_surface, context, physical_runoff_mm)?;
+    let row_surface = build_wb13_row_surface(Wb13RowSurfaceInputs {
+        precipitation_mm,
+        liquid,
+        runoff,
+        evaporation,
+        subsurface,
+        upstream_runon_m: context.upstream_runon_m,
+        per_ofe_publication: context.routed_runoff_m.is_some(),
+        storage,
+        profile,
+        area_m2: publication_area_m2,
+    })?;
+    let wb13_row = Wb13DailyWaterBalanceRow::from_surface(
+        context.ofe_id,
+        calendar_projection.julian_day,
+        context.simulation_year,
+        &row_surface,
+    )
+    .map_err(|error| wb13_simout_failure(format!("failed building WB13 row: {error}")))?;
+    let calendar_keys = wb13_calendar_publication_keys(context, calendar_projection)?;
+
+    Ok(SimulationOwnedWb13Row {
+        wb13_row,
+        interception_mm,
+        frdp_mm: storage.frdp_mm,
+        month: calendar_keys.month,
+        day_of_month: calendar_keys.day_of_month,
+        water_year: calendar_keys.water_year,
+        sim_day_index: calendar_keys.sim_day_index,
+    })
+}
+
+fn validate_wb13_publication_context(
+    context: Wb13OfePublicationContext<'_>,
+) -> Result<(), HillslopeCliError> {
     if context.simulation_year <= 0 {
         return Err(wb13_simout_failure(format!(
             "simulation-year key must be >= 1, observed {}",
@@ -915,6 +1034,12 @@ fn build_simulation_owned_wb13_row_for_ofe(
         ));
     }
 
+    Ok(())
+}
+
+fn wb13_calendar_projection(
+    context: Wb13OfePublicationContext<'_>,
+) -> Result<Wb13CalendarProjection, HillslopeCliError> {
     let calendar_year = context.calendar_day.year;
     let month = context.calendar_day.month;
     let day_of_month = context.calendar_day.day_of_month;
@@ -926,6 +1051,58 @@ fn build_simulation_owned_wb13_row_for_ofe(
         )));
     }
 
+    Ok(Wb13CalendarProjection {
+        calendar_year,
+        month,
+        day_of_month,
+        julian_day,
+    })
+}
+
+fn wb13_calendar_publication_keys(
+    context: Wb13OfePublicationContext<'_>,
+    projection: Wb13CalendarProjection,
+) -> Result<Wb13CalendarPublicationKeys, HillslopeCliError> {
+    let month_i8 = i8::try_from(projection.month).map_err(|_| {
+        wb13_simout_failure(format!(
+            "month out of i8 range for WB13 publication: {}",
+            projection.month
+        ))
+    })?;
+    let day_of_month_i8 = i8::try_from(projection.day_of_month).map_err(|_| {
+        wb13_simout_failure(format!(
+            "day-of-month out of i8 range for WB13 publication: {}",
+            projection.day_of_month
+        ))
+    })?;
+    let water_year = if projection.month >= 10 {
+        projection.calendar_year + 1
+    } else {
+        projection.calendar_year
+    };
+    let water_year_i16 = i16::try_from(water_year).map_err(|_| {
+        wb13_simout_failure(format!(
+            "water-year out of i16 range for WB13 publication: {water_year}"
+        ))
+    })?;
+    let sim_day_index_i32 = i32::try_from(context.sim_day_index).map_err(|_| {
+        wb13_simout_failure(format!(
+            "sim_day_index out of i32 range for WB13 publication: {}",
+            context.sim_day_index
+        ))
+    })?;
+
+    Ok(Wb13CalendarPublicationKeys {
+        month: month_i8,
+        day_of_month: day_of_month_i8,
+        water_year: water_year_i16,
+        sim_day_index: sim_day_index_i32,
+    })
+}
+
+fn wb13_precipitation_mm(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<f64, HillslopeCliError> {
     let precipitation_m = require_runtime_surface_scalar(runtime_surface, "prcp")?;
     if precipitation_m < 0.0 {
         return Err(wb13_simout_failure(format!(
@@ -934,9 +1111,15 @@ fn build_simulation_owned_wb13_row_for_ofe(
     }
     let precipitation_mm = precipitation_m * 1_000.0;
 
-    let _tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
-    let _tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
+    require_runtime_surface_scalar(runtime_surface, "tmax")?;
+    require_runtime_surface_scalar(runtime_surface, "tmin")?;
 
+    Ok(precipitation_mm)
+}
+
+fn wb13_profile_storage_inputs(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Wb13ProfileStorageInputs, HillslopeCliError> {
     let profile_depth_mm =
         require_runtime_surface_scalar(runtime_surface, "wb13_profile_depth_mm")?;
     if profile_depth_mm <= 0.0 {
@@ -970,6 +1153,18 @@ fn build_simulation_owned_wb13_row_for_ofe(
         )));
     }
 
+    Ok(Wb13ProfileStorageInputs {
+        depth_mm: profile_depth_mm,
+        porosity_cap: profile_porosity_cap,
+        fc_store_mm: profile_fc_store_mm,
+        wp_store_mm: profile_wp_store_mm,
+    })
+}
+
+fn wb13_frozen_storage_inputs(
+    runtime_surface: &HillslopeWritebackSurface,
+    profile_depth_mm: f64,
+) -> Result<Wb13FrozenStorageInputs, HillslopeCliError> {
     // SIMIMPL24 publication authority: Total-Soil must be WB11 runtime
     // aggregate lineage only (`wb11_soil_water` -> `watcon` -> `Total-Soil`).
     let wb11_soil_water_m = require_runtime_surface_scalar(runtime_surface, "wb11_soil_water")?;
@@ -1013,6 +1208,17 @@ fn build_simulation_owned_wb13_row_for_ofe(
     }
     let snow_water = runtime_swe_m * 1_000.0;
 
+    Ok(Wb13FrozenStorageInputs {
+        total_soil,
+        frozwt,
+        frdp_mm,
+        snow_water,
+    })
+}
+
+fn wb13_liquid_input_terms(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Wb13LiquidInputTerms, HillslopeCliError> {
     let irrigation_m = require_runtime_surface_scalar(runtime_surface, "Irr")?;
     if irrigation_m < 0.0 {
         return Err(wb13_simout_failure(format!(
@@ -1041,6 +1247,12 @@ fn build_simulation_owned_wb13_row_for_ofe(
     let rm = rm_m * 1_000.0;
     let irrigation_mm = irrigation_m * 1_000.0;
 
+    Ok(Wb13LiquidInputTerms { rm, irrigation_mm })
+}
+
+fn wb13_interception_mm(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<f64, HillslopeCliError> {
     let interception_i_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "I")?;
     if interception_i_m < 0.0 {
         return Err(wb13_simout_failure(format!(
@@ -1049,12 +1261,25 @@ fn build_simulation_owned_wb13_row_for_ofe(
     }
     let interception_mm = interception_i_m * 1_000.0;
 
+    Ok(interception_mm)
+}
+
+fn wb13_physical_runoff_mm(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<f64, HillslopeCliError> {
     let q_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Q")?;
     if q_m < 0.0 {
         return Err(wb13_simout_failure(format!(
             "Q must be >= 0.0, observed {q_m}"
         )));
     }
+
+    Ok(q_m * 1_000.0)
+}
+
+fn wb13_evaporation_terms(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Wb13EvaporationTerms, HillslopeCliError> {
     let transpiration_ep_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Ep")?;
     if transpiration_ep_m < 0.0 {
         return Err(wb13_simout_failure(format!(
@@ -1081,6 +1306,18 @@ fn build_simulation_owned_wb13_row_for_ofe(
             "Er must be >= 0.0, observed {residue_evap_er_m}"
         )));
     }
+
+    Ok(Wb13EvaporationTerms {
+        ep: transpiration_ep_m * 1_000.0,
+        es: soil_evap_es_m * 1_000.0,
+        er: residue_evap_er_m * 1_000.0,
+        evappm_pmet_branch,
+    })
+}
+
+fn wb13_deep_percolation_mm(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<f64, HillslopeCliError> {
     let base_dp_m = canonicalize_wb13_deep_percolation_source_m(
         "D",
         require_runtime_surface_scalar_prefer_flux(runtime_surface, "D")?,
@@ -1098,6 +1335,14 @@ fn build_simulation_owned_wb13_row_for_ofe(
     }
     let dp_m =
         canonicalize_wb13_deep_percolation_publication_m(base_dp_m + frost_watbtm_m)?;
+
+    Ok(dp_m * 1_000.0)
+}
+
+fn wb13_subsurface_flow_terms(
+    runtime_surface: &HillslopeWritebackSurface,
+    dp: f64,
+) -> Result<Wb13SubsurfaceFlowTerms, HillslopeCliError> {
     let latqcc_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "q")?;
     if latqcc_m < 0.0 {
         return Err(wb13_simout_failure(format!(
@@ -1122,7 +1367,31 @@ fn build_simulation_owned_wb13_row_for_ofe(
             "SubRIn must be >= 0.0, observed {sub_r_in_m}"
         )));
     }
-    let physical_q = q_m * 1_000.0;
+
+    let latqcc = latqcc_m * 1_000.0;
+    let tile = tile_m * 1_000.0;
+    let qd = qd_source_m * 1_000.0;
+    let sub_r_in = sub_r_in_m * 1_000.0;
+    if (qd - (latqcc + tile)).abs() > 1.0e-6 {
+        return Err(wb13_simout_failure(format!(
+            "Qd coupling closure violated: Qd ({qd}) must equal latqcc + Tile ({})",
+            latqcc + tile
+        )));
+    }
+
+    Ok(Wb13SubsurfaceFlowTerms {
+        dp,
+        latqcc,
+        tile,
+        sub_r_in,
+    })
+}
+
+fn wb13_runoff_publication_terms(
+    runtime_surface: &HillslopeWritebackSurface,
+    context: Wb13OfePublicationContext<'_>,
+    physical_q: f64,
+) -> Result<Wb13RunoffPublicationTerms, HillslopeCliError> {
     let (q, qofe) = if let (Some(routed_runoff_m), Some(geometry)) =
         (context.routed_runoff_m, context.runoff_geometry)
     {
@@ -1145,108 +1414,59 @@ fn build_simulation_owned_wb13_row_for_ofe(
     } else {
         (physical_q, physical_q)
     };
-    let ep = transpiration_ep_m * 1_000.0;
-    let es = soil_evap_es_m * 1_000.0;
-    let er = residue_evap_er_m * 1_000.0;
-    let dp = dp_m * 1_000.0;
-    let latqcc = latqcc_m * 1_000.0;
-    let tile = tile_m * 1_000.0;
-    let qd = qd_source_m * 1_000.0;
-    let sub_r_in = sub_r_in_m * 1_000.0;
-    if (qd - (latqcc + tile)).abs() > 1.0e-6 {
-        return Err(wb13_simout_failure(format!(
-            "Qd coupling closure violated: Qd ({qd}) must equal latqcc + Tile ({})",
-            latqcc + tile
-        )));
-    }
-    let area = publication_area_m2;
-    let soil_water_total = total_soil;
 
+    Ok(Wb13RunoffPublicationTerms { q, qofe })
+}
+
+fn build_wb13_row_surface(
+    inputs: Wb13RowSurfaceInputs,
+) -> Result<SummaryScalarSurface, HillslopeCliError> {
     let row_surface = SummaryScalarSurface::from_pairs([
-        ("P", precipitation_mm),
-        ("RM", rm),
-        ("Q", q),
-        ("Ep", ep),
-        ("Es", es),
-        ("Er", er),
-        ("Dp", dp),
-        ("UpStrmQ", context.upstream_runon_m * 1_000.0),
-        ("SubRIn", sub_r_in),
-        ("latqcc", latqcc),
-        ("Total-Soil", total_soil),
-        ("frozwt", frozwt),
-        ("frdp", frdp_mm),
-        ("Snow-Water", snow_water),
-        ("QOFE", qofe),
-        ("Tile", tile),
-        ("Irr", irrigation_mm),
-        ("Area", area),
+        ("P", inputs.precipitation_mm),
+        ("RM", inputs.liquid.rm),
+        ("Q", inputs.runoff.q),
+        ("Ep", inputs.evaporation.ep),
+        ("Es", inputs.evaporation.es),
+        ("Er", inputs.evaporation.er),
+        ("Dp", inputs.subsurface.dp),
+        ("UpStrmQ", inputs.upstream_runon_m * 1_000.0),
+        ("SubRIn", inputs.subsurface.sub_r_in),
+        ("latqcc", inputs.subsurface.latqcc),
+        ("Total-Soil", inputs.storage.total_soil),
+        ("frozwt", inputs.storage.frozwt),
+        ("frdp", inputs.storage.frdp_mm),
+        ("Snow-Water", inputs.storage.snow_water),
+        ("QOFE", inputs.runoff.qofe),
+        ("Tile", inputs.subsurface.tile),
+        ("Irr", inputs.liquid.irrigation_mm),
+        ("Area", inputs.area_m2),
         (
             "wb11_et_seed_branch_evappm",
-            if evappm_pmet_branch { 1.0 } else { 0.0 },
-        ),
-        (
-            WB13_PER_OFE_PUBLICATION_POLICY_SYMBOL,
-            if context.routed_runoff_m.is_some() {
+            if inputs.evaporation.evappm_pmet_branch {
                 1.0
             } else {
                 0.0
             },
         ),
-        ("SoilWaterTotal", soil_water_total),
-        ("ProfileDepth", profile_depth_mm),
-        ("ProfilePorosityCap", profile_porosity_cap),
-        ("ProfileFCStore", profile_fc_store_mm),
-        ("ProfileWPStore", profile_wp_store_mm),
+        (
+            WB13_PER_OFE_PUBLICATION_POLICY_SYMBOL,
+            if inputs.per_ofe_publication {
+                1.0
+            } else {
+                0.0
+            },
+        ),
+        ("SoilWaterTotal", inputs.storage.total_soil),
+        ("ProfileDepth", inputs.profile.depth_mm),
+        ("ProfilePorosityCap", inputs.profile.porosity_cap),
+        ("ProfileFCStore", inputs.profile.fc_store_mm),
+        ("ProfileWPStore", inputs.profile.wp_store_mm),
     ])
     .map_err(|error| {
         wb13_simout_failure(format!("failed building WB13 scalar surface: {error}"))
     })?;
 
-    let wb13_row = Wb13DailyWaterBalanceRow::from_surface(
-        context.ofe_id,
-        julian_day,
-        context.simulation_year,
-        &row_surface,
-    )
-    .map_err(|error| wb13_simout_failure(format!("failed building WB13 row: {error}")))?;
-
-    let month_i8 = i8::try_from(month).map_err(|_| {
-        wb13_simout_failure(format!(
-            "month out of i8 range for WB13 publication: {month}"
-        ))
-    })?;
-    let day_of_month_i8 = i8::try_from(day_of_month).map_err(|_| {
-        wb13_simout_failure(format!(
-            "day-of-month out of i8 range for WB13 publication: {day_of_month}"
-        ))
-    })?;
-    let water_year = if month >= 10 {
-        calendar_year + 1
-    } else {
-        calendar_year
-    };
-    let water_year_i16 = i16::try_from(water_year).map_err(|_| {
-        wb13_simout_failure(format!(
-            "water-year out of i16 range for WB13 publication: {water_year}"
-        ))
-    })?;
-    let sim_day_index_i32 = i32::try_from(context.sim_day_index).map_err(|_| {
-        wb13_simout_failure(format!(
-            "sim_day_index out of i32 range for WB13 publication: {}",
-            context.sim_day_index
-        ))
-    })?;
-
-    Ok(SimulationOwnedWb13Row {
-        wb13_row,
-        interception_mm,
-        frdp_mm,
-        month: month_i8,
-        day_of_month: day_of_month_i8,
-        water_year: water_year_i16,
-        sim_day_index: sim_day_index_i32,
-    })
+    Ok(row_surface)
 }
 
 fn runtime_surface_symbol_value(
