@@ -221,8 +221,14 @@ the tracker below and by reading the corresponding package directories under
   `main`.
   Final target: `Wb11HydrologyKernel::run_erod19_route_segment_migration`,
   CRAP `9.00460855712335`.
-- [ ] CQR24, rank 18, original CRAP `317`, CC `58`, Cov `57%`:
+- [x] CQR24, rank 18, original CRAP `317`, CC `58`, Cov `57%`:
   `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr24-scheduler-seed-runtime-complexity-001/`.
+  Pushed commit: `7fec9747` on branch `main`.
+  Date: `2026-06-15`.
+  Final target: `produce_wb16_ealpha_from_runtime_surface`, CRAP
+  `6.010666666666666`.
 - [ ] CQR25, rank 19, original CRAP `305`, CC `113`, Cov `75%`:
   `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`.
 - [ ] CQR26, rank 20, original CRAP `300`, CC `122`, Cov `77%`:
