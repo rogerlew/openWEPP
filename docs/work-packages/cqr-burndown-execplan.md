@@ -254,8 +254,15 @@ the tracker below and by reading the corresponding package directories under
   `main`.
   Date: `2026-06-15`.
   Final target: `parse_yearly_annual_fallow`, CRAP `4.0`.
-- [ ] CQR28, rank 22, original CRAP `282`, CC `91`, Cov `72%`:
+- [x] CQR28, rank 22, original CRAP `282`, CC `91`, Cov `72%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_plant_percolation.rs`.
+  Package:
+  `docs/work-packages/20260615-cqr28-plant-percolation-complexity-001/`.
+  Pushed commit: `a4cbeb6e4381b2ff3631b359db5f12d43e9a7ad3` on branch
+  `main`.
+  Date: `2026-06-15`.
+  Final target: `Wb11HydrologyKernel::run_percolation`, CRAP
+  `17.19373252009578`.
 - [ ] CQR29, rank 23, original CRAP `272`, CC `16`, Cov `0%`:
   `crates/openwepp-hillslope-orchestrator/src/hydrology/02_guard_errors.rs`.
 - [ ] CQR30, rank 24, original CRAP `265`, CC `81`, Cov `70%`:
