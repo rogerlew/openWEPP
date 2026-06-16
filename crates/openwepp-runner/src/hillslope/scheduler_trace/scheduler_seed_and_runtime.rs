@@ -2128,9 +2128,9 @@ fn prepare_persistent_lane_inputs(
             lane_surface.flux_surface.remove(symbol);
         }
 
-        lane_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
-            lane_surface,
-            climate_surface.clone(),
+        crate::hillslope::intake_lane_setup::extend_runtime_surface_from(
+            &mut lane_surface,
+            climate_surface,
         );
         seed_wb11_runtime_surface_inputs(&mut lane_surface, context.execution_lane)?;
         seed_scheduler_calendar_symbols(&mut lane_surface, context);
@@ -2261,6 +2261,75 @@ fn persistent_erod14_wave2_kernel_status_seen(
     })
 }
 
+struct PersistentSequenceSummary {
+    scheduler_outcome_class: SchedulerOutcomeClass,
+    scheduler_status_message_id: String,
+    kernel_phase_message_ids: Vec<String>,
+    erod14_wave2_kernel_status_seen: bool,
+}
+
+fn persistent_sequence_summary(
+    sequence_report: &OfeLaneSequenceExecutionReport,
+) -> Result<PersistentSequenceSummary, HillslopeCliError> {
+    let last_lane_report =
+        sequence_report
+            .lane_reports
+            .last()
+            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "per_ofe_dynamic_state",
+                detail: format!("{SIMPIPE_GUARD_ID} persistent OFE sequence produced no lanes"),
+            })?;
+
+    Ok(PersistentSequenceSummary {
+        scheduler_outcome_class: last_lane_report.kernel_report.scheduler_report.outcome_class,
+        scheduler_status_message_id: last_lane_report
+            .kernel_report
+            .scheduler_report
+            .scheduler_status
+            .message_id()
+            .to_string(),
+        kernel_phase_message_ids: persistent_kernel_phase_message_ids(sequence_report),
+        erod14_wave2_kernel_status_seen: persistent_erod14_wave2_kernel_status_seen(
+            sequence_report,
+        ),
+    })
+}
+
+fn replace_persistent_lane_state_from_report_moving(
+    lane_state: &mut OfeLanePersistentStateSequence,
+    sequence_report: OfeLaneSequenceExecutionReport,
+) -> Result<(), HillslopeCliError> {
+    let lane_reports = sequence_report.lane_reports;
+
+    if lane_state.lane_states().len() != lane_reports.len() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "per_ofe_dynamic_state",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} persistent OFE state replacement failed: expected {} lanes, observed {} lanes",
+                lane_state.lane_states().len(),
+                lane_reports.len()
+            ),
+        });
+    }
+
+    for (state, lane_report) in lane_state.lane_states_mut().iter_mut().zip(lane_reports) {
+        if state.ofe_id != lane_report.ofe_id {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "per_ofe_dynamic_state",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} persistent OFE state replacement failed: expected OFE {}, observed OFE {}",
+                    state.ofe_id,
+                    lane_report.ofe_id
+                ),
+            });
+        }
+
+        state.writeback_surface = lane_report.kernel_report.writeback_surface;
+    }
+
+    Ok(())
+}
+
 pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
     lane_state: &mut OfeLanePersistentStateSequence,
     climate_surface: &HillslopeWritebackSurface,
@@ -2284,25 +2353,11 @@ pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
         &lane_preparation.previous_storage_totals_mm,
         context,
     )?;
-    lane_state
-        .replace_from_report(&sequence_report)
-        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "per_ofe_dynamic_state",
-            detail: format!(
-                "{SIMPIPE_GUARD_ID} persistent OFE state replacement failed: {error}"
-            ),
-        })?;
+    let sequence_summary = persistent_sequence_summary(&sequence_report)?;
+    replace_persistent_lane_state_from_report_moving(lane_state, sequence_report)?;
 
     restore_persistent_lane_pl_sentinels(lane_state, lane_preparation.pl_activation_sentinels);
 
-    let last_lane_report =
-        sequence_report
-            .lane_reports
-            .last()
-            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "per_ofe_dynamic_state",
-                detail: format!("{SIMPIPE_GUARD_ID} persistent OFE sequence produced no lanes"),
-            })?;
     let outlet_runtime_surface = persistent_outlet_runtime_surface(lane_state)?;
     let outlet_row = internal_wb13_collection
         .outlet_row()
@@ -2314,20 +2369,13 @@ pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
         build_simimpl10_coupling_vector_provenance(&outlet_runtime_surface, outlet_row)?;
 
     Ok(PersistentDailyExecutionResult {
-        scheduler_outcome_class: last_lane_report.kernel_report.scheduler_report.outcome_class,
-        scheduler_status_message_id: last_lane_report
-            .kernel_report
-            .scheduler_report
-            .scheduler_status
-            .message_id()
-            .to_string(),
+        scheduler_outcome_class: sequence_summary.scheduler_outcome_class,
+        scheduler_status_message_id: sequence_summary.scheduler_status_message_id,
         coupling_vectors,
         runtime_surface: outlet_runtime_surface,
         internal_wb13_collection,
-        kernel_phase_message_ids: persistent_kernel_phase_message_ids(&sequence_report),
-        erod14_wave2_kernel_status_seen: persistent_erod14_wave2_kernel_status_seen(
-            &sequence_report,
-        ),
+        kernel_phase_message_ids: sequence_summary.kernel_phase_message_ids,
+        erod14_wave2_kernel_status_seen: sequence_summary.erod14_wave2_kernel_status_seen,
         hphys0245_trace_rows: Vec::new(),
     })
 }

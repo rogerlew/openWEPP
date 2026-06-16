@@ -11,7 +11,8 @@ pub(crate) use lane_setup_helpers::{
 };
 
 pub(crate) use runtime_surface_helpers::{
-    absent_pmetpara_file, build_hillslope_runtime_surface_from_pmetpara, merge_runtime_surfaces,
+    absent_pmetpara_file, build_hillslope_runtime_surface_from_pmetpara,
+    extend_runtime_surface_from, merge_runtime_surfaces,
 };
 
 pub(crate) use runfile_helpers::{

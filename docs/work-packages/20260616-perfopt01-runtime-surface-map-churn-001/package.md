@@ -1,7 +1,10 @@
 # PERFOPT01 — Runtime-Surface Map-Churn & Writeback-Validation Optimization
 
-Status: queued (PERFHO01 follow-on; operator-directed 2026-06-16, scaffolded by
-Claude Code for Codex execution)
+Status: complete 2026-06-16 (implementation + command gates passed; Codex-executed,
+independently reviewed by Claude Code — the dual-review caveat is resolved:
+behavior-preservation proven for all inputs + bit-identity confirmed
+`anchor_mismatches = 0` against an independent pre-opt baseline. See
+`artifacts/review-claude-independent.md`.)
 
 Package type: **Behavior-preserving optimization** (mechanical-refactor shape —
 production Rust change for performance only; **no** physics, contract, output, or

@@ -9,6 +9,24 @@ pub(crate) fn merge_runtime_surfaces(
     base
 }
 
+pub(crate) fn extend_runtime_surface_from(
+    base: &mut HillslopeWritebackSurface,
+    overlay: &HillslopeWritebackSurface,
+) {
+    base.state_surface.extend(
+        overlay
+            .state_surface
+            .iter()
+            .map(|(symbol, value)| (symbol.clone(), *value)),
+    );
+    base.flux_surface.extend(
+        overlay
+            .flux_surface
+            .iter()
+            .map(|(symbol, value)| (symbol.clone(), *value)),
+    );
+}
+
 pub(crate) fn absent_pmetpara_file() -> PmetparaFile {
     PmetparaFile {
         sidecar_present: false,

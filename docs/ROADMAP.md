@@ -42,9 +42,10 @@ totalwatsed3 CLI + closure** (WSHED01, the WBVAL06/6a deferral, closed
 closed 2026-06-16 — openWEPP's three identities close at 19 OFEs past the legacy
 ceiling; the frost `watbtm` double-count it surfaced was closed contract-first)
 are closed. The next active mechanism is **per-OFE runoff magnitude
-adjudication**; PERFHO01 (complete 2026-06-16) attributed the ~80–110× high-OFE
-wall-clock gap to per-OFE-day runtime-surface map churn (CPU-bound, modestly
-superlinear) and recommends the `PERFOPT01` optimization follow-on.
+adjudication**; on the perf track, PERFHO01 attributed the ~80–110× high-OFE gap
+and **PERFOPT01** landed its first optimization (complete 2026-06-16: ~1.15×,
+bit-identical, independently reviewed), with `PERFHO02` queued to characterize the
+residual.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -54,7 +55,7 @@ superlinear) and recommends the `PERFOPT01` optimization follow-on.
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Runtime-surface map-churn optimization** | Cut per-OFE-day symbol-keyed `BTreeMap` clone/insert/remove churn + success-path writeback-validation detail (PERFHO01 GDB-sampled these as ~73 % of cost) | Bit-identical outputs + measured speedup; the gap's first necessary optimization (~1.5–2.5× expected, 3.75× Amdahl cap) | ▶️ **scaffolded, Codex-ready** (`PERFOPT01`) |
+| 2 | **High-OFE perf round 2 (characterization)** | Characterize the post-PERFOPT01 dominant cost (hydrology/transfer guards + residual lane-surface clone/drop) now that the runtime-surface-churn + lazy-writeback wins landed | Profiler-backed attribution + next-optimization recommendation | ▶️ follow-on (`PERFHO02`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -72,7 +73,7 @@ Adjudicate whether the per-OFE runoff magnitude is expected Stage-2 divergence o
 a defect-shaped follow-on, judged against the already-closed routed balance
 (comparator a flag, ADR-0017). Package: `MOFE-MAGPARITY01`.
 
-### 2. Runtime-surface map-churn optimization ▶️ (follow-on, from PERFHO01)
+### 2. High-OFE perf round 2 (characterization) ▶️ (follow-on)
 
 PERFHO01 *(complete 2026-06-16)* characterized the ~80–110× H2637 wall-clock gap:
 CPU-bound (`977.99/978.55` user s), **not** I/O or parquet, scaling
@@ -81,14 +82,17 @@ roughly linear-to-modestly-superlinear in OFE count (`b≈1.12`) — a large
 cost: per-OFE-day symbol-keyed `BTreeMap<BoundarySymbol, BoundaryValue>`
 runtime-surface clone/insert/remove/lookup + success-path writeback validation
 (`11/15` samples); the WB13-string lead was tested and found **not** dominant.
-Verdict: **not acceptable as-is**. Follow-on `PERFOPT01` cuts the runtime-surface
-churn + makes writeback detail lazy (bit-identical, determinism-preserving per
-`docs/numerics/`); expected ~1.5–2.5× (3.75× Amdahl cap on the named component) —
-the first necessary optimization, not full gap closure. Characterization:
-`work-packages/20260616-perf-high-ofe-hillslope-characterization-001/`; the
-optimization is **scaffolded** (Codex-ready) at
-`work-packages/20260616-perfopt01-runtime-surface-map-churn-001/`, with a
-non-waivable bit-identity gate (`anchor_mismatches = 0`) + determinism preservation.
+Verdict: **not acceptable as-is**. **PERFOPT01** *(complete 2026-06-16)* landed
+the first optimization — removed the per-OFE-day report-to-persistent-state +
+climate-overlay surface clones and made writeback validation detail lazy — for
+**~1.15×** on H2637 (`978.55→849.86 s`), **bit-identical** (`anchor_mismatches = 0`,
+independently re-confirmed against a separate pre-opt baseline) and
+determinism-preserving. The residual now sits in hydrology/transfer guards +
+remaining lane-surface clone/drop → **`PERFHO02`** (next characterization). The
+band's upper reaches (the `BTreeMap` data-structure replacement) were deliberately
+not attempted under the strict bit-identity gate. Packages:
+`work-packages/20260616-perf-high-ofe-hillslope-characterization-001/`,
+`work-packages/20260616-perfopt01-runtime-surface-map-churn-001/`.
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 

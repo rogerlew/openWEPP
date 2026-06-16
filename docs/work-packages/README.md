@@ -658,6 +658,21 @@ publication-safe Daymet CLI audit:
    production/contract edit. Claude review: sound and honest (15-sample limit +
    residual-gap caveats disclosed).
 
+13. **Runtime-surface map-churn optimization** *(PERFOPT01 complete 2026-06-16,
+   Codex-executed + Claude-reviewed)* —
+   `20260616-perfopt01-runtime-surface-map-churn-001/`. Behavior-preserving
+   optimization of the PERFHO01-named hot path: removed the per-OFE-day
+   report-to-persistent-state + climate-overlay runtime-surface clones (move/extend
+   not clone) and made kernel-writeback validation detail lazy. **~1.15×** on H2637
+   (`978.55→849.86 s`; 10–18 % on the 1–5-OFE ladder), **bit-identical**
+   (`anchor_mismatches = 0` across 7 fixtures — HBP byte + parquet table equality),
+   determinism-preserving, all four gates green. Independent Claude review proved
+   the lazy fast-path **exactly equivalent** to the original validation (inclusive
+   bounds match `check_min`/`check_max`/`check_range`; inverted-bounds delegated,
+   not suppressed) and re-confirmed bit-identity against a **separate** pre-opt
+   baseline — resolving the no-independent-dual-review caveat Codex flagged.
+   Residual → `PERFHO02`. No contract/physics/output change.
+
 Acceptance target at each rung is **closure** (does it conserve), not **magnitude**
 (is the forcing physically right) and not comparator-match. See memory
 `project-work-sequencing-wb-frost-mofe-snow` for the rationale and the two

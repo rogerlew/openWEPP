@@ -161,6 +161,10 @@ fn collect_field_violations(
     field: &WritebackField,
     output: &mut Vec<ClosureViolation>,
 ) {
+    if field_satisfies_writeback_domain(field) {
+        return;
+    }
+
     let subject = format!("{scope}:{}[{}]", field.symbol, field.value.unit_label());
     let value = field.value.as_f64();
 
@@ -207,6 +211,23 @@ fn collect_field_violations(
             output,
         ),
         (None, None) => {}
+    }
+}
+
+fn field_satisfies_writeback_domain(field: &WritebackField) -> bool {
+    let value = field.value.as_f64();
+
+    if !value.is_finite() {
+        return false;
+    }
+
+    match (field.minimum, field.maximum) {
+        (Some(minimum), Some(maximum)) => {
+            minimum <= maximum && (minimum..=maximum).contains(&value)
+        }
+        (Some(minimum), None) => value >= minimum,
+        (None, Some(maximum)) => value <= maximum,
+        (None, None) => true,
     }
 }
 
