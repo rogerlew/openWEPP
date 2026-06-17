@@ -225,11 +225,149 @@ impl SymbolRegistry {
     }
 }
 
+/// Working-set-sized sparse indexed boundary surface.
+///
+/// Entries are stored in sorted [`SymbolId`] order. The surface therefore keeps
+/// the current sorted-symbol export order without requiring a dense global-id
+/// vector.
+#[derive(Debug, Clone, PartialEq)]
+pub struct IndexedSurface {
+    entries: Vec<(SymbolId, BoundaryValue)>,
+}
+
+/// Logical symbol-keyed boundary surface map.
+pub type BoundarySurfaceMap = BTreeMap<BoundarySymbol, BoundaryValue>;
+
+/// Logical state and flux surface pair.
+pub type BoundarySurfacePair = (BoundarySurfaceMap, BoundarySurfaceMap);
+
+impl IndexedSurface {
+    /// Build an indexed surface from a logical `BTreeMap` surface.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SymbolRegistryError::UnknownSymbol`] when any surface key is not
+    /// present in the frozen registry.
+    pub fn from_btreemap(
+        registry: &SymbolRegistry,
+        surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    ) -> Result<Self, SymbolRegistryError> {
+        let mut entries = Vec::with_capacity(surface.len());
+        for (symbol, value) in surface {
+            entries.push((registry.id_of(symbol)?, *value));
+        }
+        entries.sort_by_key(|(id, _)| *id);
+        Ok(Self { entries })
+    }
+
+    /// Return the number of present entries.
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.entries.len()
+    }
+
+    /// Return whether this indexed surface has no present entries.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+
+    /// Return entries in sorted id order.
+    #[must_use]
+    pub fn entries(&self) -> &[(SymbolId, BoundaryValue)] {
+        &self.entries
+    }
+
+    /// Lookup a present value by id.
+    #[must_use]
+    pub fn get(&self, id: SymbolId) -> Option<BoundaryValue> {
+        self.entries
+            .binary_search_by_key(&id, |(entry_id, _)| *entry_id)
+            .ok()
+            .map(|index| self.entries[index].1)
+    }
+
+    /// Export this indexed surface to the logical `BTreeMap` representation.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SymbolRegistryError::UnknownSymbolId`] if an entry id is not
+    /// present in the registry used for export.
+    pub fn export_btreemap(
+        &self,
+        registry: &SymbolRegistry,
+    ) -> Result<BTreeMap<BoundarySymbol, BoundaryValue>, SymbolRegistryError> {
+        let mut exported = BTreeMap::new();
+        for (id, value) in &self.entries {
+            let Some(symbol) = registry.symbol(*id) else {
+                return Err(SymbolRegistryError::UnknownSymbolId { id: *id });
+            };
+            exported.insert(symbol.clone(), *value);
+        }
+        Ok(exported)
+    }
+}
+
+/// Non-authoritative indexed state/flux shadow surface.
+#[derive(Debug, Clone, PartialEq)]
+pub struct IndexedWritebackSurface {
+    state_surface: IndexedSurface,
+    flux_surface: IndexedSurface,
+}
+
+impl IndexedWritebackSurface {
+    /// Build an indexed shadow from the current logical state and flux maps.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SymbolRegistryError::UnknownSymbol`] when any state or flux key
+    /// is not present in the frozen registry.
+    pub fn from_btreemap_surfaces(
+        registry: &SymbolRegistry,
+        state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    ) -> Result<Self, SymbolRegistryError> {
+        Ok(Self {
+            state_surface: IndexedSurface::from_btreemap(registry, state_surface)?,
+            flux_surface: IndexedSurface::from_btreemap(registry, flux_surface)?,
+        })
+    }
+
+    /// Return the indexed state surface.
+    #[must_use]
+    pub const fn state_surface(&self) -> &IndexedSurface {
+        &self.state_surface
+    }
+
+    /// Return the indexed flux surface.
+    #[must_use]
+    pub const fn flux_surface(&self) -> &IndexedSurface {
+        &self.flux_surface
+    }
+
+    /// Export the indexed state and flux surfaces back to logical `BTreeMap`s.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SymbolRegistryError::UnknownSymbolId`] if an entry id is not
+    /// present in the registry used for export.
+    pub fn export_btreemap_surfaces(
+        &self,
+        registry: &SymbolRegistry,
+    ) -> Result<BoundarySurfacePair, SymbolRegistryError> {
+        Ok((
+            self.state_surface.export_btreemap(registry)?,
+            self.flux_surface.export_btreemap(registry)?,
+        ))
+    }
+}
+
 /// Registry construction and lookup errors.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SymbolRegistryError {
     TooManySymbols { count: usize, supported_max: u32 },
     UnknownSymbol { symbol: BoundarySymbol },
+    UnknownSymbolId { id: SymbolId },
 }
 
 impl fmt::Display for SymbolRegistryError {
@@ -244,6 +382,9 @@ impl fmt::Display for SymbolRegistryError {
             ),
             Self::UnknownSymbol { symbol } => {
                 write!(f, "symbol {symbol} is not present in the frozen registry")
+            }
+            Self::UnknownSymbolId { id } => {
+                write!(f, "symbol id {id} is not present in the frozen registry")
             }
         }
     }

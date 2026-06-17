@@ -64,13 +64,7 @@ pub(super) fn begin_if_requested(
         });
     }
 
-    let symbols = collect_run_symbols(state, climate);
-    let registry = SymbolRegistry::from_symbols(symbols).map_err(|error| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "symbol_registry_audit",
-            detail: error.to_string(),
-        }
-    })?;
+    let registry = build_registry_for_run(state, climate, "symbol_registry_audit")?;
     begin_symbol_registry_audit(registry).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
             surface: "symbol_registry_audit",
@@ -78,6 +72,19 @@ pub(super) fn begin_if_requested(
         }
     })?;
     Ok(Some(SymbolRegistryAuditRun { report_path: path }))
+}
+
+pub(super) fn build_registry_for_run(
+    state: &HillslopeClimateExecutionState,
+    climate: &ClimateFile,
+    surface_name: &'static str,
+) -> Result<SymbolRegistry, HillslopeCliError> {
+    SymbolRegistry::from_symbols(collect_run_symbols(state, climate)).map_err(|error| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: surface_name,
+            detail: error.to_string(),
+        }
+    })
 }
 
 fn write_report(
@@ -247,8 +254,17 @@ fn collect_pl_symbols(symbols: &mut BTreeSet<String>, state: &HillslopeClimateEx
                     "pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}"
                 ));
             }
-            for sequence_index in 1..=366 {
-                for root in PL_DECOMP_INDEXED_CROP_ROOTS {
+            let ncut =
+                infer_pl_slot_crop_usize(state, slot_index, crop_slot_index, "ncut").unwrap_or(0);
+            for sequence_index in 1..=ncut {
+                symbols.insert(format!(
+                    "pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_cutday_{sequence_index:04}"
+                ));
+            }
+            let ncycle =
+                infer_pl_slot_crop_usize(state, slot_index, crop_slot_index, "ncycle").unwrap_or(0);
+            for sequence_index in 1..=ncycle {
+                for root in PL_DECOMP_GRAZING_INDEXED_CROP_ROOTS {
                     symbols.insert(format!(
                         "pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}_{sequence_index:04}"
                     ));
@@ -348,6 +364,16 @@ fn infer_max_pl_crop_slots(
         }
     }
     max_crop_slots
+}
+
+fn infer_pl_slot_crop_usize(
+    state: &HillslopeClimateExecutionState,
+    slot_index: usize,
+    crop_slot_index: usize,
+    field: &str,
+) -> Option<usize> {
+    let symbol = format!("pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{field}");
+    infer_runtime_usize(state, &symbol)
 }
 
 fn infer_runtime_usize(state: &HillslopeClimateExecutionState, symbol: &str) -> Option<usize> {
@@ -903,9 +929,8 @@ const PL_DECOMP_CROP_ROOTS: &[&str] = &[
     "fbrnag", "fbrnog", "frcut", "frmove", "iresd", "jdburn", "jdcut", "jdherb", "jdmove",
     "jdslge", "mgtopt", "ncut", "ncycle", "oratea", "orater", "resmgt", "sumrtm", "sumsrm",
 ];
-const PL_DECOMP_INDEXED_CROP_ROOTS: &[&str] = &[
-    "animal", "area", "bodywt", "cutday", "digest", "gday", "gend",
-];
+const PL_DECOMP_GRAZING_INDEXED_CROP_ROOTS: &[&str] =
+    &["animal", "area", "bodywt", "digest", "gday", "gend"];
 
 const OFE_SYMBOL_ROOTS: &[&str] = &[
     "alpha", "avgslp", "cancov", "canhgt", "frcteq", "frlive", "inrcov", "lai", "rilcov", "rrinit",

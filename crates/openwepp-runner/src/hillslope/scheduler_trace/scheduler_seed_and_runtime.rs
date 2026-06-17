@@ -2122,6 +2122,7 @@ fn prepare_persistent_lane_inputs(
     let mut previous_storage_totals_mm = Vec::with_capacity(lane_state.lane_states().len());
 
     for lane in lane_state.lane_states() {
+        super::indexed_shadow_surface::observe_clone_source_surface(&lane.writeback_surface)?;
         let mut lane_surface = lane.writeback_surface.clone();
         for symbol in stale_climate_symbols {
             lane_surface.state_surface.remove(symbol);
@@ -2359,6 +2360,7 @@ pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
     restore_persistent_lane_pl_sentinels(lane_state, lane_preparation.pl_activation_sentinels);
 
     let outlet_runtime_surface = persistent_outlet_runtime_surface(lane_state)?;
+    super::indexed_shadow_surface::validate_shadow_surface(&outlet_runtime_surface)?;
     let outlet_row = internal_wb13_collection
         .outlet_row()
         .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {

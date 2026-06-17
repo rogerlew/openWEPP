@@ -197,6 +197,91 @@ mod tests {
     }
 
     #[test]
+    fn indexed_surface_round_trips_in_sorted_symbol_order() {
+        let mut surface = BTreeMap::new();
+        surface.insert(BoundarySymbol::from("q"), BoundaryValue::from(4.0));
+        surface.insert(BoundarySymbol::from("alpha"), BoundaryValue::from(2.0));
+        surface.insert(BoundarySymbol::from("storage"), BoundaryValue::from(6.0));
+        let registry =
+            SymbolRegistry::from_symbols(["storage", "q", "alpha"]).expect("registry should build");
+
+        let indexed =
+            IndexedSurface::from_btreemap(&registry, &surface).expect("surface should index");
+        let exported = indexed
+            .export_btreemap(&registry)
+            .expect("surface should export");
+
+        assert_eq!(exported, surface);
+        let exported_symbols = indexed
+            .entries()
+            .iter()
+            .map(|(id, value)| {
+                (
+                    registry
+                        .symbol(*id)
+                        .expect("id should resolve")
+                        .as_str()
+                        .to_owned(),
+                    value.as_f64(),
+                )
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            exported_symbols,
+            vec![
+                ("alpha".to_owned(), 2.0),
+                ("q".to_owned(), 4.0),
+                ("storage".to_owned(), 6.0),
+            ]
+        );
+
+        let q_id = registry
+            .id_of(&BoundarySymbol::from("q"))
+            .expect("q should be registered");
+        assert_eq!(indexed.get(q_id), Some(BoundaryValue::from(4.0)));
+    }
+
+    #[test]
+    fn indexed_surface_rejects_unknown_btreemap_symbol() {
+        let mut surface = BTreeMap::new();
+        surface.insert(BoundarySymbol::from("known"), BoundaryValue::from(1.0));
+        surface.insert(BoundarySymbol::from("unknown"), BoundaryValue::from(2.0));
+        let registry = SymbolRegistry::from_symbols(["known"]).expect("registry should build");
+
+        let error = IndexedSurface::from_btreemap(&registry, &surface)
+            .expect_err("unknown symbol should fail");
+
+        assert!(matches!(
+            error,
+            SymbolRegistryError::UnknownSymbol { symbol } if symbol.as_str() == "unknown"
+        ));
+    }
+
+    #[test]
+    fn indexed_writeback_surface_round_trips_state_and_flux() {
+        let mut state_surface = BTreeMap::new();
+        state_surface.insert(BoundarySymbol::from("s"), BoundaryValue::from(1.0));
+        state_surface.insert(BoundarySymbol::from("q"), BoundaryValue::from(2.0));
+        let mut flux_surface = BTreeMap::new();
+        flux_surface.insert(BoundarySymbol::from("ET"), BoundaryValue::from(3.0));
+        let registry =
+            SymbolRegistry::from_symbols(["s", "q", "ET"]).expect("registry should build");
+
+        let indexed = IndexedWritebackSurface::from_btreemap_surfaces(
+            &registry,
+            &state_surface,
+            &flux_surface,
+        )
+        .expect("writeback surface should index");
+        let (exported_state, exported_flux) = indexed
+            .export_btreemap_surfaces(&registry)
+            .expect("writeback surface should export");
+
+        assert_eq!(exported_state, state_surface);
+        assert_eq!(exported_flux, flux_surface);
+    }
+
+    #[test]
     fn symbol_registry_audit_records_post_freeze_unknowns() {
         let registry = SymbolRegistry::from_symbols(["known"]).expect("registry should build");
         begin_symbol_registry_audit(registry).expect("audit should begin");

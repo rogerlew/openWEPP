@@ -1,3 +1,4 @@
+mod indexed_shadow_surface;
 mod intake_lane_setup;
 mod symbol_registry_audit;
 

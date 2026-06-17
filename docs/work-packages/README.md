@@ -714,6 +714,17 @@ publication-safe Daymet CLI audit:
    Runtime storage authority remains the existing BTreeMap surface. Follow-on:
    `PERFIDX02-indexed-shadow-runtime-surface-001`.
 
+17. **Indexed shadow runtime surface** *(PERFIDX02 complete 2026-06-16,
+   Codex-executed)* —
+   `20260616-perfidx02-indexed-shadow-runtime-surface-001/`. Implemented
+   ADR-0022 Stage 2: a sparse sorted `Vec<(SymbolId, BoundaryValue)>` shadow
+   surface and an env-gated shadow report hook, while keeping BTreeMap storage
+   authoritative. The tightened H2637 registry is 44,746 symbols, with 0
+   unknown symbols on H2637 both UI variants plus OFE1-OFE5. H2637 sparse clone
+   speedup measured 69.882x without UI and 54.096x with UI; shadow equality,
+   bit identity, determinism, and full cargo gates passed. Follow-on:
+   `PERFIDX03-indexed-surface-authority-001`.
+
 Acceptance target at each rung is **closure** (does it conserve), not **magnitude**
 (is the forcing physically right) and not comparator-match. See memory
 `project-work-sequencing-wb-frost-mofe-snow` for the rationale and the two

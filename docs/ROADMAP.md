@@ -61,7 +61,7 @@ before Stage 2 (`PERFIDX02`).
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface — storage representation** | Resolve dense-vs-compact/sparse/partitioned after PERFIDX01 found the bounded registry is ~1.7M (not ~6K): a dense global-`SymbolId` `Vec` would regress the dominant clone cost. ADR-0022 refinement, then Stage 2 shadow | Storage model proven at H2637 scale (clone stays a win) + ADR-0022 amendment | ▶️ **scaffolded, Codex-ready** — clone-economics go/no-go, then the indexed shadow (`PERFIDX02`) |
+| 2 | **Indexed runtime-surface — authority flip (Stage 3)** | PERFIDX02 cleared the clone-economics gate (sparse clone **54–70× at real H2637 scale**; registry tightened 1.7M→44.7K; shadow equality clean; bit-identical). Stage 3 makes the indexed store authoritative + dense clones, keeping `BoundarySymbol` compatibility | Bit-identical authority flip; clone-win realized end-to-end; reachable-registry validated across diverse managements | ▶️ follow-on (`PERFIDX03`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -130,9 +130,15 @@ used), RSS nearly doubling. Lookups stay O(1) at any size, but a dense
 `Vec<Option>` indexed by the global 1.7M-`SymbolId` would make the per-OFE clone
 (the *dominant* cost) **larger and slower** than the BTreeMap it replaces. **ADR-0022 Amendment 1** (2026-06-16) refined this: the store is sized to the
 working set (sparse `Vec<(SymbolId, value)>` primary; dense global-`SymbolId` `Vec`
-rejected), with the global registry/sorted-id unchanged. Stage 2 (`PERFIDX02`)
-implements it and **must measure the clone stays a win at H2637 scale** before
-flipping authority. The registry + invariants are sound.
+rejected), with the global registry/sorted-id unchanged. **PERFIDX02** *(complete 2026-06-16)* **cleared the gate**: on real H2637 surfaces
+(4,087 present entries) the sparse `Vec<(SymbolId, value)>` clone is **54–70× faster**
+than `BTreeMap::clone` (Codex caught + fixed an LLVM clone-elision bench artifact),
+the registry tightened **1.7M→44,746** (reachable `ncut`/`ncycle` bound, 0 unknowns),
+the shadow equals the BTreeMap (mismatch 0), and outputs are bit-identical (shadow
+dormant in production). The dominant lever (clone) is proven; the *total* ≤10× still
+awaits the Stage-6 re-measure. Next: **Stage 3 authority flip** (`PERFIDX03`), gated
+on validating the tightened reachable-registry across diverse managements
+(grazing/multi-cut) before the registry becomes production-load-bearing.
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 

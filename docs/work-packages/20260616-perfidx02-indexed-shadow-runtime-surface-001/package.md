@@ -1,7 +1,7 @@
 # PERFIDX02 — Indexed Shadow Runtime-Surface + Clone-Economics Gate (Stage 2)
 
-Status: queued (ADR-0022 + Amendment 1; Stage 2 of the `PERFARCH01` staged plan;
-PERFIDX01 complete)
+Status: complete 2026-06-16 (ADR-0022 + Amendment 1; Stage 2 of the
+`PERFARCH01` staged plan; PERFIDX01 complete; storage authority not flipped)
 
 Package type: **Behavior-preserving infrastructure addition + a binding
 clone-economics go/no-go** (adds a non-authoritative indexed shadow; the BTreeMap

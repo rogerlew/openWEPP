@@ -1777,6 +1777,7 @@ impl ClimateExecutionAccumulator {
             })?;
             self.publish_persistent_day_result(persistent_result, apply.context)?;
         } else {
+            indexed_shadow_surface::observe_clone_source_surface(&self.runtime_surface)?;
             self.runtime_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
                 std::mem::take(&mut self.runtime_surface),
                 std::mem::take(&mut apply.climate_surface),
@@ -1836,6 +1837,7 @@ impl ClimateExecutionAccumulator {
             &execution_result.wb13_row,
         )?);
         self.wb13_rows.push(execution_result.wb13_row.clone());
+        indexed_shadow_surface::validate_shadow_surface(&execution_result.runtime_surface)?;
         self.observe_single_lane_day_result(execution_result);
         Ok(())
     }
@@ -2314,6 +2316,8 @@ pub fn execute_hillslope_run(
     let adapter_boundary = runtime_setup.adapter_boundary;
     let symbol_registry_audit =
         symbol_registry_audit::begin_if_requested(&runtime_setup.execution_state, &inputs.climate)?;
+    let indexed_shadow =
+        indexed_shadow_surface::begin_if_requested(&runtime_setup.execution_state, &inputs.climate)?;
     let execution_result = execute_hillslope_climate_days(
         &inputs.runfile.run_name,
         targets.output_hillslope_id,
@@ -2322,6 +2326,9 @@ pub fn execute_hillslope_run(
     );
     if let Some(symbol_registry_audit) = symbol_registry_audit {
         symbol_registry_audit.finish()?;
+    }
+    if let Some(indexed_shadow) = indexed_shadow {
+        indexed_shadow.finish()?;
     }
     let execution = execution_result?;
     let execution_provenance =
