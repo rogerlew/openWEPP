@@ -8,7 +8,7 @@ mod tests {
     };
     use openwepp_kernel_contract::{
         HillslopeConsumerAdapter, HillslopeKernel, HillslopeKernelPhaseClass,
-        HillslopeKernelRequest, WritebackField,
+        HillslopeKernelRequest, SymbolRegistry, WritebackField,
     };
     use std::fs;
     use std::path::Path;

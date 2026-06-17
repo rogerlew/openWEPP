@@ -28,9 +28,10 @@ use openwepp_kernel_contract::{
     HillslopeKernelRequest, HillslopePerennialDecompositionAction,
     HillslopePerennialDecompositionControl, HillslopePerennialGrowthAction,
     HillslopePerennialGrowthControl, HillslopeProductionFluxSymbol, HillslopeProductionStateSymbol,
-    KernelRunResponse, KernelWritebackApplyResult, KernelWritebackPayload,
-    MAX_CLIMATE_FORCING_SERIES_POINTS, WritebackDecisionOutcome, WritebackError, WritebackField,
-    apply_kernel_writeback, evaluate_kernel_writeback,
+    IndexedWritebackSurface, KernelRunResponse, KernelWritebackApplyResult, KernelWritebackPayload,
+    MAX_CLIMATE_FORCING_SERIES_POINTS, SymbolRegistry, SymbolRegistryError,
+    WritebackDecisionOutcome, WritebackError, WritebackField, apply_kernel_writeback,
+    evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::closure::ClosureViolation;
 use openwepp_sim_contract::status::{

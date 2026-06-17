@@ -739,6 +739,7 @@ pub struct OfeLanePersistentState {
     pub ofe_id: usize,
     pub upstream_area_ratio: f64,
     pub writeback_surface: HillslopeWritebackSurface,
+    indexed_writeback_surface: Option<IndexedWritebackSurface>,
 }
 
 impl OfeLanePersistentState {
@@ -748,6 +749,7 @@ impl OfeLanePersistentState {
             ofe_id,
             upstream_area_ratio: 1.0,
             writeback_surface,
+            indexed_writeback_surface: None,
         }
     }
 
@@ -761,6 +763,40 @@ impl OfeLanePersistentState {
             ofe_id,
             upstream_area_ratio,
             writeback_surface,
+            indexed_writeback_surface: None,
+        }
+    }
+
+    pub fn activate_indexed_writeback_authority(
+        &mut self,
+        registry: &SymbolRegistry,
+    ) -> Result<(), SymbolRegistryError> {
+        self.indexed_writeback_surface = Some(self.indexed_surface_from_current_surface(registry)?);
+        Ok(())
+    }
+
+    pub fn refresh_indexed_writeback_authority_if_active(
+        &mut self,
+        registry: &SymbolRegistry,
+    ) -> Result<(), SymbolRegistryError> {
+        if self.indexed_writeback_surface.is_some() {
+            self.indexed_writeback_surface =
+                Some(self.indexed_surface_from_current_surface(registry)?);
+        }
+        Ok(())
+    }
+
+    #[must_use]
+    pub fn indexed_writeback_surface(&self) -> Option<&IndexedWritebackSurface> {
+        self.indexed_writeback_surface.as_ref()
+    }
+
+    #[must_use]
+    pub fn take_execution_input(&mut self) -> OfeLaneExecutionInput {
+        OfeLaneExecutionInput {
+            ofe_id: self.ofe_id,
+            upstream_area_ratio: self.upstream_area_ratio,
+            writeback_surface: std::mem::take(&mut self.writeback_surface),
         }
     }
 
@@ -775,6 +811,18 @@ impl OfeLanePersistentState {
 
     fn update_from_report(&mut self, report: &OfeLaneExecutionReport) {
         self.writeback_surface = report.kernel_report.writeback_surface.clone();
+        self.indexed_writeback_surface = None;
+    }
+
+    fn indexed_surface_from_current_surface(
+        &self,
+        registry: &SymbolRegistry,
+    ) -> Result<IndexedWritebackSurface, SymbolRegistryError> {
+        IndexedWritebackSurface::from_btreemap_surfaces(
+            registry,
+            &self.writeback_surface.state_surface,
+            &self.writeback_surface.flux_surface,
+        )
     }
 }
 
@@ -806,6 +854,26 @@ impl OfeLanePersistentStateSequence {
             .iter()
             .find(|lane_state| lane_state.ofe_id == ofe_id)
             .map(|lane_state| &lane_state.writeback_surface)
+    }
+
+    pub fn activate_indexed_writeback_authority(
+        &mut self,
+        registry: &SymbolRegistry,
+    ) -> Result<(), SymbolRegistryError> {
+        for lane_state in &mut self.lane_states {
+            lane_state.activate_indexed_writeback_authority(registry)?;
+        }
+        Ok(())
+    }
+
+    pub fn refresh_indexed_writeback_authority(
+        &mut self,
+        registry: &SymbolRegistry,
+    ) -> Result<(), SymbolRegistryError> {
+        for lane_state in &mut self.lane_states {
+            lane_state.refresh_indexed_writeback_authority_if_active(registry)?;
+        }
+        Ok(())
     }
 
     #[must_use]

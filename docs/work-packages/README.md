@@ -8,8 +8,11 @@
 
 ## Current roadmap execution log
 
-State as of `2026-06-16`:
+State as of `2026-06-17`:
 
+- PERFIDX03B is complete as the blocker-closure follow-on to held PERFIDX03.
+  Scope: indexed kernel seam/export-cache work needed before Stage 4. Package:
+  `20260617-perfidx03b-indexed-kernel-seam-or-export-cache-001/`.
 - CQR36 is complete-with-warnings for behavior-preserving
   CRAP/cyclomatic-complexity closure of
   `crates/openwepp-input-contract/src/parsers/watershed_impoundment.rs`.

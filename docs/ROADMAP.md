@@ -61,7 +61,7 @@ before Stage 2 (`PERFIDX02`).
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface — authority flip (Stage 3)** | PERFIDX02 cleared the clone-economics gate (sparse clone **54–70× at real H2637 scale**; registry tightened 1.7M→44.7K; shadow equality clean; bit-identical). Stage 3 makes the indexed store authoritative; sparse-`Vec` clones (Amendment 1), keeping `BoundarySymbol` compatibility | Bit-identical authority flip; clone-win realized end-to-end; reachable-registry validated across diverse managements | ⏸️ **executed-hold** (`PERFIDX03`) — flip regressed OFE5 **+41.9%** (full-`BTreeMap` export per lane/day at the kernel seam dwarfs the sparse-clone win); code discarded, record kept. Next: **`PERFIDX03B`** removes the hot-path export (seam reads the indexed rep) before re-flip. Inadvertent irrigation wiring extracted → `backlog/20260617-irrigation-management-gated-activation.md` |
+| 2 | **Indexed runtime-surface — clone-elimination + read-seam migration (Stages 3→4)** | The per-lane/day clone is the dominant cost. **`PERFIDX03B`** (complete 2026-06-17) eliminated it via `std::mem::take` move semantics (move the logical surface into execution instead of cloning; refill from report; refresh the indexed mirror as Stage-4 groundwork), keeping `BoundarySymbol` compatibility. Next: **`PERFIDX04`** migrates the *read* seam to resolve-once `SymbolId` so the maintained mirror is actually consumed | Bit-identical; clone-elimination realized; read seam resolves `SymbolId` once per hot family | ✅ **`PERFIDX03B` complete** — OFE5 **38.34→25.45 s** (−5.1% vs 26.82 baseline; closes the held PERFIDX03 +41.9% regression); full anchor PASS (H2637 both UI + 1–5 ladder); outputs bit-identical (`pass.parquet` byte diff disproved as pre-existing parquet-container non-determinism — decoded rows identical incl. order). Next: **`PERFIDX04`** (resolve-once read seam) → … → **`PERFIDX06`** re-measure vs the ≤10× target. *Irrigation stays deferred → `backlog/20260617-…`.* |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -143,12 +143,21 @@ then **exports it back to a full `BTreeMap` per lane/day** for the kernel, and t
 export dwarfs the clone win. Codex held (disabled the flip; no-flip 26.80 s); the
 uncommitted code was **discarded** and the record kept. This proves the flip and the
 read-side migration are *coupled*: the flip can't win while the seam reads via a full
-export. Next: **`PERFIDX03B`** removes the hot-path `BTreeMap` export (kernel seam
-consumes the indexed rep / cached export) and re-runs the flip clean. *(Review also
-caught PERFIDX03 inadvertently wiring on the dormant irrigation pipeline via the
-registry-coverage gate; extracted to `backlog/20260617-irrigation-management-gated-activation.md`
-— irrigation runs only when the management declares it, and is out of scope for the
-perf migration.)*
+export. **PERFIDX03B** *(complete 2026-06-17)* closed the blocker differently than a
+re-flip: instead of making the indexed store authoritative for reads, it eliminated
+the per-lane/day **clone** with `std::mem::take` **move semantics** — the logical
+surface is moved into execution, refilled from the report, and the indexed mirror is
+refreshed afterward as Stage-4 groundwork. OFE5 **38.34→25.45 s** (−5.1% vs the 26.82
+baseline); the full anchor ran and passed (H2637 both UI + 1–5 ladder); outputs are
+bit-identical. (The `pass.parquet` byte difference was disproved as a regression:
+the same baseline binary emits 3 distinct `pass.parquet` hashes across identical runs
+— pre-existing parquet-*container* non-determinism — and the decoded rows are
+identical including order.) The win is honestly modest because the **read** seam still
+resolves `BoundarySymbol` and the mirror is maintained but not yet consumed. Next:
+**`PERFIDX04`** migrates the read seam to resolve-once `SymbolId` (consuming the mirror,
+without reintroducing a full-map export), then Stages 5–6 and the ≤10× re-measure.
+*(Irrigation stays deferred — `backlog/20260617-irrigation-management-gated-activation.md`;
+it runs only when the management declares it and is out of scope for the perf migration.)*
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 

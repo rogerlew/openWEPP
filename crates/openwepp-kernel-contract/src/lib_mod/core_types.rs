@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
@@ -253,10 +254,29 @@ impl IndexedSurface {
         surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
     ) -> Result<Self, SymbolRegistryError> {
         let mut entries = Vec::with_capacity(surface.len());
+        let mut registry_entries = registry.iter();
         for (symbol, value) in surface {
-            entries.push((registry.id_of(symbol)?, *value));
+            loop {
+                let Some((id, registry_symbol)) = registry_entries.next() else {
+                    return Err(SymbolRegistryError::UnknownSymbol {
+                        symbol: symbol.clone(),
+                    });
+                };
+
+                match registry_symbol.cmp(symbol) {
+                    Ordering::Less => {}
+                    Ordering::Equal => {
+                        entries.push((id, *value));
+                        break;
+                    }
+                    Ordering::Greater => {
+                        return Err(SymbolRegistryError::UnknownSymbol {
+                            symbol: symbol.clone(),
+                        });
+                    }
+                }
+            }
         }
-        entries.sort_by_key(|(id, _)| *id);
         Ok(Self { entries })
     }
 

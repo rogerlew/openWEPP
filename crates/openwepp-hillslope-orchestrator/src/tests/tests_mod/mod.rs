@@ -15,7 +15,7 @@ use openwepp_kernel_contract::{
     HillslopeGrowthTransitionPayload, HillslopeKernel, HillslopeKernelPhaseClass,
     HillslopeKernelRequest, HillslopePerennialDecompositionAction,
     HillslopePerennialDecompositionControl, HillslopePerennialGrowthAction,
-    HillslopePerennialGrowthControl, KernelRunResponse, KernelWritebackPayload,
+    HillslopePerennialGrowthControl, KernelRunResponse, KernelWritebackPayload, SymbolRegistry,
     WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome, WritebackField,
 };
 use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, StatusClassification};

@@ -791,6 +791,45 @@ fn mofe01_me3_persistent_sequence_rejects_nonsequential_initial_state() {
     ));
 }
 
+#[test]
+fn perfidx03b_persistent_state_refreshes_indexed_writeback_surface() {
+    let marker_symbol = BoundarySymbol::from("me3_storage_marker");
+    let registry =
+        SymbolRegistry::from_symbols(vec![marker_symbol.clone()]).expect("registry builds");
+    let mut lane_state = OfeLanePersistentStateSequence::new(vec![OfeLanePersistentState::new(
+        1,
+        marker_surface(1.0),
+    )])
+    .expect("persistent sequence should construct");
+
+    lane_state
+        .activate_indexed_writeback_authority(&registry)
+        .expect("indexed writeback activation should succeed");
+    lane_state.lane_states_mut()[0]
+        .writeback_surface
+        .state_surface
+        .insert(marker_symbol.clone(), BoundaryValue::scalar(7.0));
+    lane_state
+        .refresh_indexed_writeback_authority(&registry)
+        .expect("indexed writeback refresh should succeed");
+
+    let indexed = lane_state.lane_states()[0]
+        .indexed_writeback_surface()
+        .expect("indexed writeback surface should stay active");
+    let (state_surface, flux_surface) = indexed
+        .export_btreemap_surfaces(&registry)
+        .expect("indexed writeback should export through the same registry");
+
+    assert!(flux_surface.is_empty());
+    assert_eq!(
+        state_surface
+            .get(&marker_symbol)
+            .copied()
+            .map(BoundaryValue::as_f64),
+        Some(7.0)
+    );
+}
+
 fn marker_surface(marker: f64) -> HillslopeWritebackSurface {
     let mut surface = HillslopeWritebackSurface::default();
     surface.state_surface.insert(

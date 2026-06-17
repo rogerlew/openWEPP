@@ -79,6 +79,8 @@ use super::super::*;
             julian_day: 153,
             precipitation_mm: 0.0,
         };
+        let symbol_registry =
+            SymbolRegistry::from_symbols(Vec::<BoundarySymbol>::new()).expect("registry builds");
 
         seed_scheduler_calendar_symbols(
             &mut runtime_surface,
@@ -91,6 +93,7 @@ use super::super::*;
                 calendar_day: &calendar_day,
                 runtime_swe_before_m: 0.0,
                 hphys0245_trace_config: None,
+                symbol_registry: &symbol_registry,
             },
         );
 

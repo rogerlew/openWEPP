@@ -49,7 +49,7 @@ use openwepp_input_contract::parsers::wepp_ui::{
 };
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, HillslopeKernel, HillslopeKernelRequest, KernelRunResponse,
-    KernelWritebackPayload,
+    KernelWritebackPayload, SymbolRegistry,
 };
 use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
@@ -317,6 +317,7 @@ struct SchedulerLifecycleContext<'a> {
     calendar_day: &'a ClimateDayProjection,
     runtime_swe_before_m: f64,
     hphys0245_trace_config: Option<&'a Hphys0245TraceConfig>,
+    symbol_registry: &'a SymbolRegistry,
 }
 
 #[derive(Debug, Clone)]
@@ -830,6 +831,7 @@ struct HillslopeClimateExecutionState {
     lane_context: ExecutionLaneContext,
     climate_span: ClimateRunSpanSummary,
     persistent_lane_state: Option<OfeLanePersistentStateSequence>,
+    symbol_registry: Option<SymbolRegistry>,
 }
 
 struct HillslopeClimateExecution {
@@ -873,6 +875,7 @@ struct ClimateExecutionContext<'a> {
     publication_area_m2: f64,
     first_calendar_year: i32,
     hphys0245_trace_config: Option<&'a Hphys0245TraceConfig>,
+    symbol_registry: &'a SymbolRegistry,
 }
 
 struct HillslopeDayApply<'a> {
@@ -1452,21 +1455,34 @@ fn build_static_hillslope_runtime_setup(
     let adapter_boundary =
         crate::hillslope::intake_lane_setup::build_adapter_boundary_provenance(&lane_context)?;
     let climate_span = build_climate_run_span_summary(&inputs.climate)?;
+    let mut execution_state = HillslopeClimateExecutionState {
+        publication_area_m2,
+        contributor_ofe_count,
+        static_per_ofe_slice_count: static_per_ofe_slices.len(),
+        per_ofe_lane_areas_m2,
+        per_ofe_runoff_publication_geometries,
+        runtime_surface: runtime_parts.runtime_surface,
+        lane_context,
+        climate_span,
+        persistent_lane_state,
+        symbol_registry: None,
+    };
+    let symbol_registry =
+        symbol_registry_audit::build_registry_for_run(&execution_state, &inputs.climate, "indexed_runtime_surface")?;
+    if let Some(persistent_lane_state) = execution_state.persistent_lane_state.as_mut() {
+        persistent_lane_state
+            .activate_indexed_writeback_authority(&symbol_registry)
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "indexed_runtime_surface",
+                detail: error.to_string(),
+            })?;
+    }
+    execution_state.symbol_registry = Some(symbol_registry);
 
     Ok(StaticHillslopeRuntimeSetup {
         timestep_policy,
         adapter_boundary,
-        execution_state: HillslopeClimateExecutionState {
-            publication_area_m2,
-            contributor_ofe_count,
-            static_per_ofe_slice_count: static_per_ofe_slices.len(),
-            per_ofe_lane_areas_m2,
-            per_ofe_runoff_publication_geometries,
-            runtime_surface: runtime_parts.runtime_surface,
-            lane_context,
-            climate_span,
-            persistent_lane_state,
-        },
+        execution_state,
     })
 }
 
@@ -1650,7 +1666,12 @@ fn execute_hillslope_climate_days(
         lane_context,
         climate_span,
         mut persistent_lane_state,
+        symbol_registry,
     } = state;
+    let symbol_registry = symbol_registry.ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "indexed_runtime_surface",
+        detail: format!("{SIMPIPE_GUARD_ID} frozen symbol registry was not initialized"),
+    })?;
     let persistent_lane_active = persistent_lane_state.is_some();
     let hphys0245_trace_config = hphys0245_trace_config_from_env()?;
     let context = ClimateExecutionContext {
@@ -1660,6 +1681,7 @@ fn execute_hillslope_climate_days(
         publication_area_m2,
         first_calendar_year: climate_span.first_day.year,
         hphys0245_trace_config: hphys0245_trace_config.as_ref(),
+        symbol_registry: &symbol_registry,
     };
     let mut accumulator =
         ClimateExecutionAccumulator::new(runtime_surface, climate_span.days.len(), contributor_ofe_count)?;
@@ -1762,6 +1784,7 @@ impl ClimateExecutionAccumulator {
             calendar_day: apply.day_projection,
             runtime_swe_before_m: apply.runtime_swe_before_m,
             hphys0245_trace_config: apply.context.hphys0245_trace_config,
+            symbol_registry: apply.context.symbol_registry,
         };
         if let Some(persistent_lane_state) = apply.persistent_lane_state.as_mut() {
             let persistent_result = execute_persistent_scheduler_kernel_lifecycle(

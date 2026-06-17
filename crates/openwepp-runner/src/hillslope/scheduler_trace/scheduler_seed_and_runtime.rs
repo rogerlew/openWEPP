@@ -2112,7 +2112,7 @@ struct PersistentLaneInputPreparation {
 }
 
 fn prepare_persistent_lane_inputs(
-    lane_state: &OfeLanePersistentStateSequence,
+    lane_state: &mut OfeLanePersistentStateSequence,
     climate_surface: &HillslopeWritebackSurface,
     stale_climate_symbols: &[BoundarySymbol],
     context: &SchedulerLifecycleContext<'_>,
@@ -2121,9 +2121,11 @@ fn prepare_persistent_lane_inputs(
     let mut pl_activation_sentinels = Vec::with_capacity(lane_state.lane_states().len());
     let mut previous_storage_totals_mm = Vec::with_capacity(lane_state.lane_states().len());
 
-    for lane in lane_state.lane_states() {
+    for lane in lane_state.lane_states_mut() {
         super::indexed_shadow_surface::observe_clone_source_surface(&lane.writeback_surface)?;
-        let mut lane_surface = lane.writeback_surface.clone();
+        let lane_ofe_id = lane.ofe_id;
+        let upstream_area_ratio = lane.upstream_area_ratio;
+        let mut lane_surface = lane.take_execution_input().writeback_surface;
         for symbol in stale_climate_symbols {
             lane_surface.state_surface.remove(symbol);
             lane_surface.flux_surface.remove(symbol);
@@ -2141,8 +2143,8 @@ fn prepare_persistent_lane_inputs(
         pl_activation_sentinels.push(pl_runtime_activation_sentinel_value(&lane_surface));
         prepare_pl_runtime_activation_for_scheduler(&mut lane_surface)?;
         lane_inputs.push(OfeLaneExecutionInput::with_upstream_area_ratio(
-            lane.ofe_id,
-            lane.upstream_area_ratio,
+            lane_ofe_id,
+            upstream_area_ratio,
             lane_surface,
         ));
     }
@@ -2331,6 +2333,18 @@ fn replace_persistent_lane_state_from_report_moving(
     Ok(())
 }
 
+fn refresh_persistent_lane_indexed_authority(
+    lane_state: &mut OfeLanePersistentStateSequence,
+    registry: &SymbolRegistry,
+) -> Result<(), HillslopeCliError> {
+    lane_state
+        .refresh_indexed_writeback_authority(registry)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "indexed_runtime_surface",
+            detail: error.to_string(),
+        })
+}
+
 pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
     lane_state: &mut OfeLanePersistentStateSequence,
     climate_surface: &HillslopeWritebackSurface,
@@ -2356,8 +2370,8 @@ pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
     )?;
     let sequence_summary = persistent_sequence_summary(&sequence_report)?;
     replace_persistent_lane_state_from_report_moving(lane_state, sequence_report)?;
-
     restore_persistent_lane_pl_sentinels(lane_state, lane_preparation.pl_activation_sentinels);
+    refresh_persistent_lane_indexed_authority(lane_state, context.symbol_registry)?;
 
     let outlet_runtime_surface = persistent_outlet_runtime_surface(lane_state)?;
     super::indexed_shadow_surface::validate_shadow_surface(&outlet_runtime_surface)?;

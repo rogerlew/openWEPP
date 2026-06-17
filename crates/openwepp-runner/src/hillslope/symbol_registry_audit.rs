@@ -19,6 +19,7 @@ const SYMBOL_REGISTRY_AUDIT_PATH_ENV: &str = "OPENWEPP_SYMBOL_REGISTRY_AUDIT_PAT
 const SYMBOL_REGISTRY_AUDIT_SCHEMA: &str = "openwepp.symbol_registry_audit.v1";
 const DEFAULT_LAYER_COUNT: usize = 1;
 const DEFAULT_FINE_LAYER_COUNT: usize = 16;
+const MAX_FROST_FINE_CONTROL_COUNT: usize = 10;
 const DEFAULT_PARTICLE_CLASS_COUNT: usize = 5;
 const MOFE_HOURLY_CARRY_ARRAY_COUNT: usize = 24;
 
@@ -210,7 +211,7 @@ fn collect_layer_symbols(symbols: &mut BTreeSet<String>, state: &HillslopeClimat
 
 fn collect_frost_symbols(symbols: &mut BTreeSet<String>, state: &HillslopeClimateExecutionState) {
     let layer_count = infer_layer_count(state).max(DEFAULT_LAYER_COUNT);
-    let fine_count = infer_max_suffix(state, FROST_FINE_SYMBOL_ROOTS).max(DEFAULT_FINE_LAYER_COUNT);
+    let fine_count = infer_frost_fine_count(state, layer_count).max(DEFAULT_FINE_LAYER_COUNT);
     for layer_index in 1..=layer_count {
         for root in FROST_LAYER_SYMBOL_ROOTS {
             symbols.insert(format!("{root}_{layer_index:04}"));
@@ -352,6 +353,18 @@ fn infer_layer_count(state: &HillslopeClimateExecutionState) -> usize {
         })
 }
 
+fn infer_frost_fine_count(state: &HillslopeClimateExecutionState, layer_count: usize) -> usize {
+    let mut fine_count =
+        infer_runtime_usize(state, "frost.runtime_total_fine_layer_count").unwrap_or(0);
+    for layer_index in 1..=layer_count {
+        let symbol = format!("frost.runtime_nfine_{layer_index:04}");
+        fine_count = fine_count.max(infer_runtime_usize(state, &symbol).unwrap_or(0));
+    }
+    fine_count
+        .max(infer_max_frost_fine_suffix(state, FROST_FINE_SYMBOL_ROOTS))
+        .max(MAX_FROST_FINE_CONTROL_COUNT * layer_count.max(1))
+}
+
 fn infer_max_pl_crop_slots(
     state: &HillslopeClimateExecutionState,
     slot_count: usize,
@@ -427,6 +440,32 @@ fn infer_max_surface_suffix(surface: &HillslopeWritebackSurface, roots: &[&str])
         .unwrap_or(0)
 }
 
+fn infer_max_frost_fine_suffix(state: &HillslopeClimateExecutionState, roots: &[&str]) -> usize {
+    let mut max_suffix = infer_max_surface_frost_fine_suffix(&state.runtime_surface, roots);
+    if let Some(persistent_lane_state) = state.persistent_lane_state.as_ref() {
+        for lane in persistent_lane_state.lane_states() {
+            max_suffix = max_suffix.max(infer_max_surface_frost_fine_suffix(
+                &lane.writeback_surface,
+                roots,
+            ));
+        }
+    }
+    max_suffix
+}
+
+fn infer_max_surface_frost_fine_suffix(
+    surface: &HillslopeWritebackSurface,
+    roots: &[&str],
+) -> usize {
+    surface
+        .state_surface
+        .keys()
+        .chain(surface.flux_surface.keys())
+        .filter_map(|symbol| infer_frost_fine_suffix(symbol.as_str(), roots))
+        .max()
+        .unwrap_or(0)
+}
+
 fn infer_rooted_suffix(symbol: &str, roots: &[&str]) -> Option<usize> {
     for root in roots {
         let prefix = format!("{root}_");
@@ -436,6 +475,24 @@ fn infer_rooted_suffix(symbol: &str, roots: &[&str]) -> Option<usize> {
         let four_digit = suffix.get(..4)?;
         if four_digit.chars().all(|ch| ch.is_ascii_digit()) {
             return four_digit.parse::<usize>().ok();
+        }
+    }
+    None
+}
+
+fn infer_frost_fine_suffix(symbol: &str, roots: &[&str]) -> Option<usize> {
+    for root in roots {
+        let prefix = format!("{root}_");
+        let Some(suffix) = symbol.strip_prefix(&prefix) else {
+            continue;
+        };
+        let layer = suffix.get(..4)?;
+        let fine = suffix.get(5..9)?;
+        if suffix.as_bytes().get(4).copied() == Some(b'_')
+            && layer.chars().all(|ch| ch.is_ascii_digit())
+            && fine.chars().all(|ch| ch.is_ascii_digit())
+        {
+            return fine.parse::<usize>().ok();
         }
     }
     None
