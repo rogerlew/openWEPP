@@ -61,7 +61,7 @@ before Stage 2 (`PERFIDX02`).
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface — storage representation** | Resolve dense-vs-compact/sparse/partitioned after PERFIDX01 found the bounded registry is ~1.7M (not ~6K): a dense global-`SymbolId` `Vec` would regress the dominant clone cost. ADR-0022 refinement, then Stage 2 shadow | Storage model proven at H2637 scale (clone stays a win) + ADR-0022 amendment | ▶️ **scaffold-ready** — ADR-0022 Amendment 1 sets the working-set store (`PERFIDX02`) |
+| 2 | **Indexed runtime-surface — storage representation** | Resolve dense-vs-compact/sparse/partitioned after PERFIDX01 found the bounded registry is ~1.7M (not ~6K): a dense global-`SymbolId` `Vec` would regress the dominant clone cost. ADR-0022 refinement, then Stage 2 shadow | Storage model proven at H2637 scale (clone stays a win) + ADR-0022 amendment | ▶️ **scaffolded, Codex-ready** — clone-economics go/no-go, then the indexed shadow (`PERFIDX02`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
