@@ -1,8 +1,8 @@
 # Artifacts
 
-Status: scaffolded (awaiting Codex execution).
+Status: complete 2026-06-17 (Codex-executed, Claude-reviewed).
 
-Planned deliverables:
+Deliverables (+ `review-claude-independent.md`):
 
 - `perfidx04-hot-family-inventory.md`
 - `perfidx04-id-table-design.md`

@@ -208,19 +208,35 @@ impl Wb11HydrologyKernel {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     pub(super) fn require_shadow_fine_state_domains(
+        request: Option<&HillslopeKernelRequest<'_>>,
         phase_class: HillslopeKernelPhaseClass,
         fine: &FrostFineLayerState,
         layer: &FrostLayerWaterState,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
         let thetdr = layer.thetdr;
-        Self::require_dynamic_state_range(
+        let fgfrst_symbol = request
+            .and_then(|request| {
+                request.hot_state_grid_symbol(
+                    FROST_RUNTIME_FINE_FGFRST_ROOT,
+                    fine.layer_index,
+                    fine.fine_index,
+                )
+            })
+            .map_or_else(
+                || {
+                    Self::frost_fine_layer_symbol(
+                        FROST_RUNTIME_FINE_FGFRST_ROOT,
+                        fine.layer_index,
+                        fine.fine_index,
+                    )
+                },
+                |symbol| symbol.symbol.clone(),
+            );
+        Self::require_dynamic_state_range_for_symbol(
             phase_class,
-            Self::frost_fine_layer_symbol(
-                FROST_RUNTIME_FINE_FGFRST_ROOT,
-                fine.layer_index,
-                fine.fine_index,
-            ),
+            &fgfrst_symbol,
             fine.fgfrst,
             Some(0.0),
             Some(3.0),
@@ -229,56 +245,108 @@ impl Wb11HydrologyKernel {
         if (fine.fgfrst - rounded).abs() > WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
-                symbol: Self::frost_fine_layer_symbol(
-                    FROST_RUNTIME_FINE_FGFRST_ROOT,
-                    fine.layer_index,
-                    fine.fine_index,
-                ),
+                symbol: fgfrst_symbol,
                 value: fine.fgfrst,
                 minimum: Some(0.0),
                 maximum: Some(3.0),
             });
         }
-        Self::require_dynamic_state_range(
+        let slfsd_symbol = request
+            .and_then(|request| {
+                request.hot_state_grid_symbol(
+                    FROST_RUNTIME_FINE_SLFSD_M_ROOT,
+                    fine.layer_index,
+                    fine.fine_index,
+                )
+            })
+            .map_or_else(
+                || {
+                    Self::frost_fine_layer_symbol(
+                        FROST_RUNTIME_FINE_SLFSD_M_ROOT,
+                        fine.layer_index,
+                        fine.fine_index,
+                    )
+                },
+                |symbol| symbol.symbol.clone(),
+            );
+        Self::require_dynamic_state_range_for_symbol(
             phase_class,
-            Self::frost_fine_layer_symbol(
-                FROST_RUNTIME_FINE_SLFSD_M_ROOT,
-                fine.layer_index,
-                fine.fine_index,
-            ),
+            &slfsd_symbol,
             fine.slfsd_m,
             Some(0.0),
             Some(fine.fine_layer_thickness_m),
         )?;
-        Self::require_dynamic_state_range(
+        let slsic_symbol = request
+            .and_then(|request| {
+                request.hot_state_grid_symbol(
+                    FROST_RUNTIME_FINE_SLSIC_M_ROOT,
+                    fine.layer_index,
+                    fine.fine_index,
+                )
+            })
+            .map_or_else(
+                || {
+                    Self::frost_fine_layer_symbol(
+                        FROST_RUNTIME_FINE_SLSIC_M_ROOT,
+                        fine.layer_index,
+                        fine.fine_index,
+                    )
+                },
+                |symbol| symbol.symbol.clone(),
+            );
+        Self::require_dynamic_state_range_for_symbol(
             phase_class,
-            Self::frost_fine_layer_symbol(
-                FROST_RUNTIME_FINE_SLSIC_M_ROOT,
-                fine.layer_index,
-                fine.fine_index,
-            ),
+            &slsic_symbol,
             fine.slsic_m,
             Some(0.0),
             Some(Self::fine_layer_ice_capacity_m(layer, fine)),
         )?;
-        Self::require_dynamic_state_range(
+        let slsw_symbol = request
+            .and_then(|request| {
+                request.hot_state_grid_symbol(
+                    FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
+                    fine.layer_index,
+                    fine.fine_index,
+                )
+            })
+            .map_or_else(
+                || {
+                    Self::frost_fine_layer_symbol(
+                        FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
+                        fine.layer_index,
+                        fine.fine_index,
+                    )
+                },
+                |symbol| symbol.symbol.clone(),
+            );
+        Self::require_dynamic_state_range_for_symbol(
             phase_class,
-            Self::frost_fine_layer_symbol(
-                FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
-                fine.layer_index,
-                fine.fine_index,
-            ),
+            &slsw_symbol,
             fine.slsw_theta,
             Some(thetdr),
             Some(Self::fine_layer_liquid_theta_capacity(layer)),
         )?;
-        Self::require_dynamic_state_range(
+        let sltime_symbol = request
+            .and_then(|request| {
+                request.hot_state_grid_symbol(
+                    FROST_RUNTIME_FINE_SLTIME_S_ROOT,
+                    fine.layer_index,
+                    fine.fine_index,
+                )
+            })
+            .map_or_else(
+                || {
+                    Self::frost_fine_layer_symbol(
+                        FROST_RUNTIME_FINE_SLTIME_S_ROOT,
+                        fine.layer_index,
+                        fine.fine_index,
+                    )
+                },
+                |symbol| symbol.symbol.clone(),
+            );
+        Self::require_dynamic_state_range_for_symbol(
             phase_class,
-            Self::frost_fine_layer_symbol(
-                FROST_RUNTIME_FINE_SLTIME_S_ROOT,
-                fine.layer_index,
-                fine.fine_index,
-            ),
+            &sltime_symbol,
             fine.sltime_s,
             Some(0.0),
             Some(FROST_RUNTIME_SECONDS_PER_HOUR),
@@ -295,69 +363,89 @@ impl Wb11HydrologyKernel {
         for fine_index in 1..=layer.fine_layer_count {
             let default =
                 Self::default_fine_layer_from_coarse(layer, fine_index, &mut remaining_frozen_depth_m);
-            let fgfrst_symbol = Self::frost_fine_layer_symbol(
-                FROST_RUNTIME_FINE_FGFRST_ROOT,
-                layer.layer_index,
-                fine_index,
-            );
-            let slfsd_symbol = Self::frost_fine_layer_symbol(
-                FROST_RUNTIME_FINE_SLFSD_M_ROOT,
-                layer.layer_index,
-                fine_index,
-            );
-            let slsic_symbol = Self::frost_fine_layer_symbol(
-                FROST_RUNTIME_FINE_SLSIC_M_ROOT,
-                layer.layer_index,
-                fine_index,
-            );
-            let slsw_symbol = Self::frost_fine_layer_symbol(
-                FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
-                layer.layer_index,
-                fine_index,
-            );
-            let sltime_symbol = Self::frost_fine_layer_symbol(
-                FROST_RUNTIME_FINE_SLTIME_S_ROOT,
-                layer.layer_index,
-                fine_index,
-            );
 
             let mut fine = FrostFineLayerState {
                 layer_index: layer.layer_index,
                 fine_index,
                 fine_layer_thickness_m: layer.fine_layer_thickness_m,
-                fgfrst: Self::optional_state_scalar_for_symbol(
+                fgfrst: Self::optional_state_scalar_for_grid_or_symbol(
                     request,
                     phase_class,
-                    &fgfrst_symbol,
+                    FROST_RUNTIME_FINE_FGFRST_ROOT,
+                    layer.layer_index,
+                    fine_index,
+                    || {
+                        Self::frost_fine_layer_symbol(
+                            FROST_RUNTIME_FINE_FGFRST_ROOT,
+                            layer.layer_index,
+                            fine_index,
+                        )
+                    },
                 )?
-                .unwrap_or(default.fgfrst),
-                slfsd_m: Self::optional_state_scalar_for_symbol(
+                .map_or(default.fgfrst, |(_, value)| value),
+                slfsd_m: Self::optional_state_scalar_for_grid_or_symbol(
                     request,
                     phase_class,
-                    &slfsd_symbol,
+                    FROST_RUNTIME_FINE_SLFSD_M_ROOT,
+                    layer.layer_index,
+                    fine_index,
+                    || {
+                        Self::frost_fine_layer_symbol(
+                            FROST_RUNTIME_FINE_SLFSD_M_ROOT,
+                            layer.layer_index,
+                            fine_index,
+                        )
+                    },
                 )?
-                .unwrap_or(default.slfsd_m),
-                slsic_m: Self::optional_state_scalar_for_symbol(
+                .map_or(default.slfsd_m, |(_, value)| value),
+                slsic_m: Self::optional_state_scalar_for_grid_or_symbol(
                     request,
                     phase_class,
-                    &slsic_symbol,
+                    FROST_RUNTIME_FINE_SLSIC_M_ROOT,
+                    layer.layer_index,
+                    fine_index,
+                    || {
+                        Self::frost_fine_layer_symbol(
+                            FROST_RUNTIME_FINE_SLSIC_M_ROOT,
+                            layer.layer_index,
+                            fine_index,
+                        )
+                    },
                 )?
-                .unwrap_or(default.slsic_m),
-                slsw_theta: Self::optional_state_scalar_for_symbol(
+                .map_or(default.slsic_m, |(_, value)| value),
+                slsw_theta: Self::optional_state_scalar_for_grid_or_symbol(
                     request,
                     phase_class,
-                    &slsw_symbol,
+                    FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
+                    layer.layer_index,
+                    fine_index,
+                    || {
+                        Self::frost_fine_layer_symbol(
+                            FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
+                            layer.layer_index,
+                            fine_index,
+                        )
+                    },
                 )?
-                .unwrap_or(default.slsw_theta),
-                sltime_s: Self::optional_state_scalar_for_symbol(
+                .map_or(default.slsw_theta, |(_, value)| value),
+                sltime_s: Self::optional_state_scalar_for_grid_or_symbol(
                     request,
                     phase_class,
-                    &sltime_symbol,
+                    FROST_RUNTIME_FINE_SLTIME_S_ROOT,
+                    layer.layer_index,
+                    fine_index,
+                    || {
+                        Self::frost_fine_layer_symbol(
+                            FROST_RUNTIME_FINE_SLTIME_S_ROOT,
+                            layer.layer_index,
+                            fine_index,
+                        )
+                    },
                 )?
-                .unwrap_or(0.0),
+                .map_or(0.0, |(_, value)| value),
             };
             Self::canonicalize_fine_layer_liquid_theta(&mut fine, layer);
-            Self::require_shadow_fine_state_domains(phase_class, &fine, layer)?;
+            Self::require_shadow_fine_state_domains(Some(request), phase_class, &fine, layer)?;
             fine_layers.push(fine);
         }
         Ok(fine_layers)
@@ -470,12 +558,20 @@ impl Wb11HydrologyKernel {
         for layer in layers {
             let mut fine_layers =
                 Self::read_or_default_shadow_fine_state(request, phase_class, layer)?;
-            let yst_symbol = Self::frost_layer_symbol(FROST_RUNTIME_LAYER_YST_M_ROOT, layer.layer_index);
-            let nwfrzz_symbol =
-                Self::frost_layer_symbol(FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT, layer.layer_index);
-            let nwfrzz_m =
-                Self::optional_state_scalar_for_symbol(request, phase_class, &nwfrzz_symbol)?
-                    .unwrap_or(0.0);
+            let (nwfrzz_symbol, nwfrzz_m) =
+                Self::optional_state_scalar_for_series_or_symbol(
+                    request,
+                    phase_class,
+                    FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT,
+                    layer.layer_index,
+                    || Self::frost_layer_symbol(FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT, layer.layer_index),
+                )?
+                .unwrap_or_else(|| {
+                    (
+                        Self::frost_layer_symbol(FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT, layer.layer_index),
+                        0.0,
+                    )
+                });
             Self::require_dynamic_state_range(
                 phase_class,
                 nwfrzz_symbol,
@@ -484,8 +580,19 @@ impl Wb11HydrologyKernel {
                 None,
             )?;
             let st_m = layer.theta_m + nwfrzz_m;
-            let yst_m = Self::optional_state_scalar_for_symbol(request, phase_class, &yst_symbol)?
-                .unwrap_or(st_m);
+            let (yst_symbol, yst_m) = Self::optional_state_scalar_for_series_or_symbol(
+                request,
+                phase_class,
+                FROST_RUNTIME_LAYER_YST_M_ROOT,
+                layer.layer_index,
+                || Self::frost_layer_symbol(FROST_RUNTIME_LAYER_YST_M_ROOT, layer.layer_index),
+            )?
+            .unwrap_or_else(|| {
+                (
+                    Self::frost_layer_symbol(FROST_RUNTIME_LAYER_YST_M_ROOT, layer.layer_index),
+                    st_m,
+                )
+            });
             Self::require_dynamic_state_range(
                 phase_class,
                 yst_symbol,
@@ -1615,9 +1722,13 @@ impl Wb11HydrologyKernel {
         const TMPADJ_SURFACE_EMISSIVITY: f64 = 1.0;
         const TMPADJ_SNOW_ALBEDO: f64 = 0.5;
 
-        let air_symbol = Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour);
-        let hourly_air_temp_c =
-            Self::require_state_scalar_for_symbol(request, phase_class, &air_symbol)?;
+        let (air_symbol, hourly_air_temp_c) = Self::require_state_scalar_for_series_or_symbol(
+            request,
+            phase_class,
+            WINTER_HOURLY_AIR_TEMP_ROOT,
+            hour,
+            || Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour),
+        )?;
         Self::require_state_range_for_symbol(
             phase_class,
             &air_symbol,
@@ -1626,9 +1737,13 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let rad_symbol = Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour);
-        let hourly_rad_mj_m2 =
-            Self::require_state_scalar_for_symbol(request, phase_class, &rad_symbol)?;
+        let (rad_symbol, hourly_rad_mj_m2) = Self::require_state_scalar_for_series_or_symbol(
+            request,
+            phase_class,
+            WINTER_HOURLY_RAD_ROOT,
+            hour,
+            || Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour),
+        )?;
         Self::require_state_range_for_symbol(
             phase_class,
             &rad_symbol,
@@ -1637,9 +1752,13 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let cloud_symbol = Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour);
-        let cloud_fraction =
-            Self::require_state_scalar_for_symbol(request, phase_class, &cloud_symbol)?;
+        let (cloud_symbol, cloud_fraction) = Self::require_state_scalar_for_series_or_symbol(
+            request,
+            phase_class,
+            WINTER_HOURLY_CLOUD_ROOT,
+            hour,
+            || Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour),
+        )?;
         Self::require_state_range_for_symbol(
             phase_class,
             &cloud_symbol,

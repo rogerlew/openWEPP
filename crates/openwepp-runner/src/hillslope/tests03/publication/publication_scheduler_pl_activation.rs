@@ -81,6 +81,7 @@ use super::super::*;
         };
         let symbol_registry =
             SymbolRegistry::from_symbols(Vec::<BoundarySymbol>::new()).expect("registry builds");
+        let hot_symbol_tables = build_hillslope_hot_symbol_tables(&symbol_registry);
 
         seed_scheduler_calendar_symbols(
             &mut runtime_surface,
@@ -94,6 +95,7 @@ use super::super::*;
                 runtime_swe_before_m: 0.0,
                 hphys0245_trace_config: None,
                 symbol_registry: &symbol_registry,
+                hot_symbol_tables: &hot_symbol_tables,
             },
         );
 

@@ -14,6 +14,7 @@ use openwepp_hillslope_orchestrator::{
     HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
     OfeLanePersistentState, OfeLanePersistentStateSequence, OfeLaneSequenceExecutionReport,
     SchedulerOutcomeClass, TransferInput, TransferOutput, Wb11HydrologyKernel,
+    build_hillslope_hot_symbol_tables,
 };
 use openwepp_hillslope_output::contracts::{HillslopeOutputConfig, validate_output_contract};
 use openwepp_hillslope_output::hillslope_pass::{
@@ -49,7 +50,7 @@ use openwepp_input_contract::parsers::wepp_ui::{
 };
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, HillslopeKernel, HillslopeKernelRequest, KernelRunResponse,
-    KernelWritebackPayload, SymbolRegistry,
+    HotSymbolTables, IndexedWritebackSurface, KernelWritebackPayload, SymbolRegistry,
 };
 use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
@@ -318,6 +319,7 @@ struct SchedulerLifecycleContext<'a> {
     runtime_swe_before_m: f64,
     hphys0245_trace_config: Option<&'a Hphys0245TraceConfig>,
     symbol_registry: &'a SymbolRegistry,
+    hot_symbol_tables: &'a HotSymbolTables,
 }
 
 #[derive(Debug, Clone)]
@@ -832,6 +834,7 @@ struct HillslopeClimateExecutionState {
     climate_span: ClimateRunSpanSummary,
     persistent_lane_state: Option<OfeLanePersistentStateSequence>,
     symbol_registry: Option<SymbolRegistry>,
+    hot_symbol_tables: Option<HotSymbolTables>,
 }
 
 struct HillslopeClimateExecution {
@@ -876,6 +879,7 @@ struct ClimateExecutionContext<'a> {
     first_calendar_year: i32,
     hphys0245_trace_config: Option<&'a Hphys0245TraceConfig>,
     symbol_registry: &'a SymbolRegistry,
+    hot_symbol_tables: &'a HotSymbolTables,
 }
 
 struct HillslopeDayApply<'a> {
@@ -1466,9 +1470,11 @@ fn build_static_hillslope_runtime_setup(
         climate_span,
         persistent_lane_state,
         symbol_registry: None,
+        hot_symbol_tables: None,
     };
     let symbol_registry =
         symbol_registry_audit::build_registry_for_run(&execution_state, &inputs.climate, "indexed_runtime_surface")?;
+    let hot_symbol_tables = build_hillslope_hot_symbol_tables(&symbol_registry);
     if let Some(persistent_lane_state) = execution_state.persistent_lane_state.as_mut() {
         persistent_lane_state
             .activate_indexed_writeback_authority(&symbol_registry)
@@ -1478,6 +1484,7 @@ fn build_static_hillslope_runtime_setup(
             })?;
     }
     execution_state.symbol_registry = Some(symbol_registry);
+    execution_state.hot_symbol_tables = Some(hot_symbol_tables);
 
     Ok(StaticHillslopeRuntimeSetup {
         timestep_policy,
@@ -1667,10 +1674,15 @@ fn execute_hillslope_climate_days(
         climate_span,
         mut persistent_lane_state,
         symbol_registry,
+        hot_symbol_tables,
     } = state;
     let symbol_registry = symbol_registry.ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
         surface: "indexed_runtime_surface",
         detail: format!("{SIMPIPE_GUARD_ID} frozen symbol registry was not initialized"),
+    })?;
+    let hot_symbol_tables = hot_symbol_tables.ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "indexed_runtime_surface",
+        detail: format!("{SIMPIPE_GUARD_ID} hot symbol tables were not initialized"),
     })?;
     let persistent_lane_active = persistent_lane_state.is_some();
     let hphys0245_trace_config = hphys0245_trace_config_from_env()?;
@@ -1682,6 +1694,7 @@ fn execute_hillslope_climate_days(
         first_calendar_year: climate_span.first_day.year,
         hphys0245_trace_config: hphys0245_trace_config.as_ref(),
         symbol_registry: &symbol_registry,
+        hot_symbol_tables: &hot_symbol_tables,
     };
     let mut accumulator =
         ClimateExecutionAccumulator::new(runtime_surface, climate_span.days.len(), contributor_ofe_count)?;
@@ -1785,6 +1798,7 @@ impl ClimateExecutionAccumulator {
             runtime_swe_before_m: apply.runtime_swe_before_m,
             hphys0245_trace_config: apply.context.hphys0245_trace_config,
             symbol_registry: apply.context.symbol_registry,
+            hot_symbol_tables: apply.context.hot_symbol_tables,
         };
         if let Some(persistent_lane_state) = apply.persistent_lane_state.as_mut() {
             let persistent_result = execute_persistent_scheduler_kernel_lifecycle(

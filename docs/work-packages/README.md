@@ -10,6 +10,10 @@
 
 State as of `2026-06-17`:
 
+- PERFIDX04 is complete (Stage 4: resolve-once hot-symbol-id tables + indexed
+  read-mirror). H2637 −24.3%/−25.2%, bit-identical, irrigation excluded. Package:
+  `20260617-perfidx04-hot-symbol-id-tables-001/`. Next: PERFIDX05 (writeback/guards
+  by SymbolId) → PERFIDX06 (re-measure vs ≤10×).
 - PERFIDX03B is complete as the blocker-closure follow-on to held PERFIDX03.
   Scope: indexed kernel seam/export-cache work needed before Stage 4. Package:
   `20260617-perfidx03b-indexed-kernel-seam-or-export-cache-001/`.

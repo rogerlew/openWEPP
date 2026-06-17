@@ -1113,6 +1113,7 @@ impl Wb11HydrologyKernel {
     }
 
     fn validate_aggregated_active_frost_layers(
+        request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
         shadow_fine_state: &mut FrostFineShadowState,
         layer_water_state: &mut [FrostLayerWaterState],
@@ -1129,7 +1130,7 @@ impl Wb11HydrologyKernel {
             else {
                 continue;
             };
-            Self::require_shadow_fine_state_domains(phase_class, fine, water_layer)?;
+            Self::require_shadow_fine_state_domains(Some(request), phase_class, fine, water_layer)?;
         }
         Ok(())
     }
@@ -1420,6 +1421,7 @@ impl Wb11HydrologyKernel {
     }
 
     fn finalize_active_frost_coupling(
+        request: &HillslopeKernelRequest<'_>,
         context: ActiveFrostCompletionContext,
         mut shadow_fine_state: FrostFineShadowState,
         hourly_state: &[FrostHourlyState; SIMIMPL29_HOURS_PER_DAY],
@@ -1427,6 +1429,7 @@ impl Wb11HydrologyKernel {
         total_fine_layer_count: usize,
     ) -> Result<FrostCouplingOutcome, Wb11HydrologyKernelGuardError> {
         Self::validate_aggregated_active_frost_layers(
+            request,
             context.phase_class,
             &mut shadow_fine_state,
             &mut layer_water_state,
@@ -1496,6 +1499,7 @@ impl Wb11HydrologyKernel {
         };
 
         Self::finalize_active_frost_coupling(
+            request,
             completion_context,
             shadow_fine_state,
             &hourly_state,

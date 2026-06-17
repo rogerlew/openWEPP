@@ -2125,7 +2125,8 @@ fn prepare_persistent_lane_inputs(
         super::indexed_shadow_surface::observe_clone_source_surface(&lane.writeback_surface)?;
         let lane_ofe_id = lane.ofe_id;
         let upstream_area_ratio = lane.upstream_area_ratio;
-        let mut lane_surface = lane.take_execution_input().writeback_surface;
+        let mut lane_execution_input = lane.take_execution_input();
+        let mut lane_surface = lane_execution_input.writeback_surface;
         for symbol in stale_climate_symbols {
             lane_surface.state_surface.remove(symbol);
             lane_surface.flux_surface.remove(symbol);
@@ -2142,11 +2143,27 @@ fn prepare_persistent_lane_inputs(
         )?);
         pl_activation_sentinels.push(pl_runtime_activation_sentinel_value(&lane_surface));
         prepare_pl_runtime_activation_for_scheduler(&mut lane_surface)?;
-        lane_inputs.push(OfeLaneExecutionInput::with_upstream_area_ratio(
+        if lane_execution_input.indexed_writeback_surface.is_some() {
+            lane_execution_input.indexed_writeback_surface = Some(
+                IndexedWritebackSurface::from_btreemap_surfaces(
+                    context.symbol_registry,
+                    &lane_surface.state_surface,
+                    &lane_surface.flux_surface,
+                )
+                .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "indexed_runtime_surface",
+                    detail: error.to_string(),
+                })?,
+            );
+        }
+        let mut prepared_input = OfeLaneExecutionInput::with_upstream_area_ratio(
             lane_ofe_id,
             upstream_area_ratio,
             lane_surface,
-        ));
+        );
+        prepared_input.indexed_writeback_surface =
+            lane_execution_input.indexed_writeback_surface;
+        lane_inputs.push(prepared_input);
     }
 
     Ok(PersistentLaneInputPreparation {
@@ -2158,6 +2175,7 @@ fn prepare_persistent_lane_inputs(
 
 fn execute_persistent_ofe_sequence(
     lane_inputs: Vec<OfeLaneExecutionInput>,
+    context: &SchedulerLifecycleContext<'_>,
 ) -> Result<OfeLaneSequenceExecutionReport, HillslopeCliError> {
     let topology_graph = TopologyGraph::new(1, 0, 0, Vec::new());
     let topology_report = validate_pre_execution_topology(&topology_graph).map_err(|error| {
@@ -2172,7 +2190,13 @@ fn execute_persistent_ofe_sequence(
     let scheduler = HillslopePhaseScheduler::canonical();
     let mut kernel = Wb11HydrologyKernel;
     scheduler
-        .execute_ofe_sequence_with_kernel(&topology_report, &mut kernel, lane_inputs)
+        .execute_ofe_sequence_with_kernel_indexed(
+            &topology_report,
+            &mut kernel,
+            lane_inputs,
+            context.symbol_registry,
+            context.hot_symbol_tables,
+        )
         .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
             surface: "per_ofe_dynamic_state",
             detail: format!(
@@ -2359,7 +2383,7 @@ pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
         stale_climate_symbols,
         &context,
     )?;
-    let sequence_report = execute_persistent_ofe_sequence(lane_preparation.lane_inputs)?;
+    let sequence_report = execute_persistent_ofe_sequence(lane_preparation.lane_inputs, &context)?;
     require_persistent_lane_sequence_success(&sequence_report)?;
     let internal_wb13_collection = DailyInternalPerOfeWb13Collection::from_sequence_report(
         &sequence_report,

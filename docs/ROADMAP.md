@@ -61,7 +61,7 @@ before Stage 2 (`PERFIDX02`).
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface — clone-elimination + read-seam migration (Stages 3→4)** | The per-lane/day clone is the dominant cost. **`PERFIDX03B`** (complete 2026-06-17) eliminated it via `std::mem::take` move semantics (move the logical surface into execution instead of cloning; refill from report; refresh the indexed mirror as Stage-4 groundwork), keeping `BoundarySymbol` compatibility. Next: **`PERFIDX04`** migrates the *read* seam to resolve-once `SymbolId` so the maintained mirror is actually consumed | Bit-identical; clone-elimination realized; read seam resolves `SymbolId` once per hot family | ▶️ **`PERFIDX04` scaffolded, Codex-ready** — resolve-once hot families (climate/frost/WB18-19/PL/MOFE-hourly; **irrigation carved out**, deferred). Builds on ✅ **`PERFIDX03B` complete** (OFE5 **38.34→25.45 s**, −5.1% vs 26.82 baseline; closes the held PERFIDX03 +41.9% regression; full anchor PASS; outputs bit-identical — `pass.parquet` byte diff disproved as pre-existing parquet-container non-determinism, decoded rows identical incl. order). Then → … → **`PERFIDX06`** re-measure vs the ≤10× target. *Irrigation stays deferred → `backlog/20260617-…`.* |
+| 2 | **Indexed runtime-surface — clone + read-seam migration (Stages 3→4 done; 5→6 next)** | Two dominant levers: the per-lane/day clone and the per-access `format!`+map-lookup. **`PERFIDX03B`** (✅) removed the **clone** via `std::mem::take` move semantics. **`PERFIDX04`** (✅) removed the **lookup**: resolve-once `SymbolId` hot tables + an indexed read-mirror carried beside the logical surface (dual-applied on writeback, no full-export), for climate/frost/WB18-19/PL/MOFE-hourly (**irrigation carved out**). Next: **`PERFIDX05`** (writeback + guards by `SymbolId`) → **`PERFIDX06`** (re-measure vs ≤10×) | Bit-identical; both levers realized; `format!` gone from named hot paths | ✅ **`PERFIDX04` complete** — H2637 **−24.3% / −25.2%** (888.92→673.29 / 894.98→669.75 s), OFE5 −14.3%; OFE1 −4.4% (setup unamortized on a trivial run). Full anchor PASS (OFE1–5 + H2637 both UI), outputs bit-identical (Claude reproduced OFE2 incl. the transfer-sync path); profiler shows hot `format!`→id-table (0.01% self). Then **`PERFIDX05`** → **`PERFIDX06`** ≤10× verdict. *Irrigation stays deferred → `backlog/20260617-…`.* |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -153,9 +153,21 @@ bit-identical. (The `pass.parquet` byte difference was disproved as a regression
 the same baseline binary emits 3 distinct `pass.parquet` hashes across identical runs
 — pre-existing parquet-*container* non-determinism — and the decoded rows are
 identical including order.) The win is honestly modest because the **read** seam still
-resolves `BoundarySymbol` and the mirror is maintained but not yet consumed. Next:
-**`PERFIDX04`** migrates the read seam to resolve-once `SymbolId` (consuming the mirror,
-without reintroducing a full-map export), then Stages 5–6 and the ≤10× re-measure.
+resolves `BoundarySymbol` and the mirror is maintained but not yet consumed.
+**PERFIDX04** *(complete 2026-06-17)* closed that second lever: resolve-once
+`HotSymbolTables` (built once from the frozen registry) plus an indexed read-mirror
+**carried beside** the logical surface and **dual-applied** on each accepted writeback
+and same-day OFE transfer (in-place mutation — *no* full-map export, so the PERFIDX03
+trap stays closed), migrating the hot read families (climate, frost, WB18/19, PL,
+MOFE hourly; **irrigation excluded** — deferred/inert). The mirror is a
+**non-authoritative read shadow**; the logical `BTreeMap` remains the commit authority,
+so bit-identity is the proof the by-`SymbolId` reads equal the by-`BoundarySymbol` reads.
+Result: **H2637 −24.3% / −25.2%** (888.92→673.29 / 894.98→669.75 s), OFE5 −14.3%
+(OFE1 −4.4%, setup unamortized on a trivial single-OFE run); full anchor bit-identical
+(Claude independently reproduced OFE2, which exercises the transfer-sync path); the
+profiler shows hot `format!` collapsed to 0.01% self with id-table helpers in its place.
+Next: **`PERFIDX05`** (writeback + guards by `SymbolId`), then **`PERFIDX06`** re-measures
+the actual legacy ratio and decides the ≤10× (≤5×) verdict.
 *(Irrigation stays deferred — `backlog/20260617-irrigation-management-gated-activation.md`;
 it runs only when the management declares it and is out of scope for the perf migration.)*
 

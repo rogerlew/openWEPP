@@ -1,6 +1,6 @@
 # PERFIDX04 - Resolve-Once Hot Families (Stage 4)
 
-Status: scaffolded 2026-06-17 (Stage 4 of the PERFARCH01 staged plan; follow-on to
+Status: complete 2026-06-17 (Stage 4 of the PERFARCH01 staged plan; follow-on to
 PERFIDX03B, which closed the clone/export blocker)
 
 Package type: **Behavior-preserving performance optimization — mechanical-refactor

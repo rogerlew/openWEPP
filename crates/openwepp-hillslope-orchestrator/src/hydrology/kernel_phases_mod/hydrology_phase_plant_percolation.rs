@@ -460,7 +460,8 @@ pub(crate) fn wb18_aggregate_soil_water_after_percolation(
             })?;
             let mut fine_frozen_depth_m = 0.0_f64;
             for fine_index in 1..=fine_count {
-                let slfsd_symbol = Self::frost_fine_layer_symbol(
+                let slfsd_symbol = Self::frost_fine_layer_symbol_for_request(
+                    request,
                     FROST_RUNTIME_FINE_SLFSD_M_ROOT,
                     layer_index,
                     fine_index,

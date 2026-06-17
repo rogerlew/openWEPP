@@ -4,8 +4,13 @@ use crate::constants::{
     MOFE_HOURLY_CARRY_ARRAY_COUNT, MOFE_HOURLY_CARRY_ARRAYS_ENABLED_SYMBOL,
     MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT, MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
     MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL, MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT,
-    MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT, PHASE_COUNT, WB11_ZERO_THRESHOLD,
-    WB12_SYMBOL_RUNOFF_CARRYOVER, WB12_SYMBOL_RUNON_INPUT,
+    MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT, PHASE_COUNT, PL_RUNTIME_DAY_SYMBOL,
+    PL_RUNTIME_YEAR_SYMBOL, PL_SCHEDULE_ROTATION_REPEATS_SYMBOL, PL_SCHEDULE_ROTATION_YEARS_SYMBOL,
+    PL_SCHEDULE_SLOT_COUNT_SYMBOL, WB11_ZERO_THRESHOLD, WB12_SYMBOL_RUNOFF_CARRYOVER,
+    WB12_SYMBOL_RUNON_INPUT, WB19_SYMBOL_DRAIN_DEPTH, WB19_SYMBOL_DRAIN_DIAMETER,
+    WB19_SYMBOL_DRAIN_ENABLED, WB19_SYMBOL_DRAIN_SPACING, WB19_SYMBOL_LATERAL_DRAIN_LANE_SUBSTEPS,
+    WB19_SYMBOL_LATERAL_SSH_ROOT, WB19_SYMBOL_LATERAL_WITHDRAWAL_ROOT,
+    WB20_SYMBOL_FORWARD_SOLVER_LANE_ENABLED,
 };
 
 /// Explicit scheduler dependency edge.
@@ -707,6 +712,7 @@ pub struct OfeLaneExecutionInput {
     pub ofe_id: usize,
     pub upstream_area_ratio: f64,
     pub writeback_surface: HillslopeWritebackSurface,
+    pub indexed_writeback_surface: Option<IndexedWritebackSurface>,
 }
 
 impl OfeLaneExecutionInput {
@@ -716,6 +722,7 @@ impl OfeLaneExecutionInput {
             ofe_id,
             upstream_area_ratio: 1.0,
             writeback_surface,
+            indexed_writeback_surface: None,
         }
     }
 
@@ -729,7 +736,17 @@ impl OfeLaneExecutionInput {
             ofe_id,
             upstream_area_ratio,
             writeback_surface,
+            indexed_writeback_surface: None,
         }
+    }
+
+    #[must_use]
+    pub fn with_indexed_writeback_surface(
+        mut self,
+        indexed_writeback_surface: IndexedWritebackSurface,
+    ) -> Self {
+        self.indexed_writeback_surface = Some(indexed_writeback_surface);
+        self
     }
 }
 
@@ -797,6 +814,7 @@ impl OfeLanePersistentState {
             ofe_id: self.ofe_id,
             upstream_area_ratio: self.upstream_area_ratio,
             writeback_surface: std::mem::take(&mut self.writeback_surface),
+            indexed_writeback_surface: self.indexed_writeback_surface.take(),
         }
     }
 
@@ -806,6 +824,7 @@ impl OfeLanePersistentState {
             ofe_id: self.ofe_id,
             upstream_area_ratio: self.upstream_area_ratio,
             writeback_surface: self.writeback_surface.clone(),
+            indexed_writeback_surface: self.indexed_writeback_surface.clone(),
         }
     }
 
@@ -967,6 +986,10 @@ pub enum OfeLaneSequenceError {
         ofe_id: usize,
         source: HillslopeSchedulerError,
     },
+    IndexedSymbolRegistry {
+        ofe_id: usize,
+        source: SymbolRegistryError,
+    },
     LaneExecutionFailed {
         ofe_id: usize,
         status: SimulationStatus,
@@ -1025,6 +1048,9 @@ impl fmt::Display for OfeLaneSequenceError {
             Self::LaneScheduler { ofe_id, source } => {
                 write!(f, "OFE {ofe_id} lane scheduler failed: {source}")
             }
+            Self::IndexedSymbolRegistry { ofe_id, source } => {
+                write!(f, "OFE {ofe_id} indexed symbol update failed: {source}")
+            }
             Self::LaneExecutionFailed { ofe_id, status } => write!(
                 f,
                 "OFE {ofe_id} lane execution did not complete successfully: {}",
@@ -1039,6 +1065,7 @@ impl Error for OfeLaneSequenceError {
         match self {
             Self::Transfer(source) => Some(source),
             Self::LaneScheduler { source, .. } => Some(source),
+            Self::IndexedSymbolRegistry { source, .. } => Some(source),
             _ => None,
         }
     }
@@ -1100,6 +1127,7 @@ pub struct HillslopeKernelExecutionReport {
 pub enum HillslopeSchedulerError {
     Status(StatusError),
     Writeback(WritebackError),
+    SymbolRegistry(SymbolRegistryError),
 }
 
 impl fmt::Display for HillslopeSchedulerError {
@@ -1107,6 +1135,9 @@ impl fmt::Display for HillslopeSchedulerError {
         match self {
             Self::Status(source) => write!(f, "status construction failed: {source}"),
             Self::Writeback(source) => write!(f, "writeback application failed: {source}"),
+            Self::SymbolRegistry(source) => {
+                write!(f, "indexed execution symbol registry failed: {source}")
+            }
         }
     }
 }
@@ -1116,6 +1147,7 @@ impl Error for HillslopeSchedulerError {
         match self {
             Self::Status(source) => Some(source),
             Self::Writeback(source) => Some(source),
+            Self::SymbolRegistry(source) => Some(source),
         }
     }
 }
@@ -1132,10 +1164,22 @@ impl From<WritebackError> for HillslopeSchedulerError {
     }
 }
 
+impl From<SymbolRegistryError> for HillslopeSchedulerError {
+    fn from(value: SymbolRegistryError) -> Self {
+        Self::SymbolRegistry(value)
+    }
+}
+
 /// Deterministic hillslope scheduler.
 #[derive(Debug, Clone)]
 pub struct HillslopePhaseScheduler {
     graph: HillslopePhaseGraph,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct IndexedExecutionContext<'a> {
+    symbol_registry: &'a SymbolRegistry,
+    hot_symbol_tables: &'a HotSymbolTables,
 }
 
 impl HillslopePhaseScheduler {
@@ -1334,7 +1378,32 @@ impl HillslopePhaseScheduler {
         &self,
         topology_report: &TopologyValidationReport,
         kernel: &mut K,
+        writeback_surface: HillslopeWritebackSurface,
+    ) -> Result<HillslopeKernelExecutionReport, HillslopeSchedulerError>
+    where
+        K: HillslopeKernel,
+    {
+        self.execute_with_kernel_indexed(
+            topology_report,
+            kernel,
+            writeback_surface,
+            None,
+            None,
+            None,
+        )
+    }
+
+    /// Execute deterministic hillslope scheduling with an optional indexed
+    /// read mirror synchronized after each accepted logical writeback.
+    #[allow(clippy::too_many_lines)]
+    pub fn execute_with_kernel_indexed<K>(
+        &self,
+        topology_report: &TopologyValidationReport,
+        kernel: &mut K,
         mut writeback_surface: HillslopeWritebackSurface,
+        mut indexed_writeback_surface: Option<IndexedWritebackSurface>,
+        symbol_registry: Option<&SymbolRegistry>,
+        hot_symbol_tables: Option<&HotSymbolTables>,
     ) -> Result<HillslopeKernelExecutionReport, HillslopeSchedulerError>
     where
         K: HillslopeKernel,
@@ -1368,9 +1437,11 @@ impl HillslopePhaseScheduler {
             let mut growth_context = None;
 
             if is_decomposition_phase(phase) {
-                let decomposition_dispatch = match decomposition_phase_dispatch_for_state(
+                let decomposition_dispatch = match decomposition_phase_dispatch_for_state_indexed(
                     phase,
                     &writeback_surface.state_surface,
+                    indexed_writeback_surface.as_ref(),
+                    hot_symbol_tables,
                 ) {
                     Ok(value) => value,
                     Err(source) => {
@@ -1413,9 +1484,11 @@ impl HillslopePhaseScheduler {
                     decomposition_context = Some(context);
                 }
             } else if is_growth_phase(phase) {
-                let growth_dispatch = match growth_phase_dispatch_for_state(
+                let growth_dispatch = match growth_phase_dispatch_for_state_indexed(
                     phase,
                     &writeback_surface.state_surface,
+                    indexed_writeback_surface.as_ref(),
+                    hot_symbol_tables,
                 ) {
                     Ok(value) => value,
                     Err(source) => {
@@ -1530,7 +1603,7 @@ impl HillslopePhaseScheduler {
             }
 
             let response = {
-                let request = HillslopeKernelRequest::with_transition_context(
+                let request = HillslopeKernelRequest::with_transition_context_and_indexed(
                     phase.as_str(),
                     phase_class,
                     consumer_adapter,
@@ -1538,6 +1611,8 @@ impl HillslopePhaseScheduler {
                     growth_context,
                     &writeback_surface.state_surface,
                     &writeback_surface.flux_surface,
+                    indexed_writeback_surface.as_ref(),
+                    hot_symbol_tables,
                 );
                 kernel.run_hillslope_phase(&request)
             };
@@ -1619,6 +1694,38 @@ impl HillslopePhaseScheduler {
                     return deferred_error_status.clone();
                 }
             };
+            if let Some(indexed_writeback_surface) = indexed_writeback_surface.as_mut() {
+                let Some(symbol_registry) = symbol_registry else {
+                    deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
+                        SymbolRegistryError::UnknownSymbol {
+                            symbol: BoundarySymbol::from("indexed_execution.registry"),
+                        },
+                    ));
+                    phase_reports.push(HillslopeKernelPhaseReport {
+                        phase,
+                        kernel_status,
+                        decision_outcome: WritebackDecisionOutcome::Reject,
+                        decision_status: deferred_error_status.clone(),
+                        decision_violations: Vec::new(),
+                        apply_result: None,
+                    });
+                    return deferred_error_status.clone();
+                };
+                if let Err(source) = indexed_writeback_surface
+                    .apply_writeback_payload(symbol_registry, &response.writeback)
+                {
+                    deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(source));
+                    phase_reports.push(HillslopeKernelPhaseReport {
+                        phase,
+                        kernel_status,
+                        decision_outcome: WritebackDecisionOutcome::Reject,
+                        decision_status: deferred_error_status.clone(),
+                        decision_violations: Vec::new(),
+                        apply_result: None,
+                    });
+                    return deferred_error_status.clone();
+                }
+            }
 
             phase_reports.push(HillslopeKernelPhaseReport {
                 phase,
@@ -1662,6 +1769,41 @@ impl HillslopePhaseScheduler {
     where
         K: HillslopeKernel,
     {
+        self.execute_ofe_sequence_with_kernel_internal(topology_report, kernel, lane_inputs, None)
+    }
+
+    pub fn execute_ofe_sequence_with_kernel_indexed<K>(
+        &self,
+        topology_report: &TopologyValidationReport,
+        kernel: &mut K,
+        lane_inputs: Vec<OfeLaneExecutionInput>,
+        symbol_registry: &SymbolRegistry,
+        hot_symbol_tables: &HotSymbolTables,
+    ) -> Result<OfeLaneSequenceExecutionReport, OfeLaneSequenceError>
+    where
+        K: HillslopeKernel,
+    {
+        self.execute_ofe_sequence_with_kernel_internal(
+            topology_report,
+            kernel,
+            lane_inputs,
+            Some(IndexedExecutionContext {
+                symbol_registry,
+                hot_symbol_tables,
+            }),
+        )
+    }
+
+    fn execute_ofe_sequence_with_kernel_internal<K>(
+        &self,
+        topology_report: &TopologyValidationReport,
+        kernel: &mut K,
+        lane_inputs: Vec<OfeLaneExecutionInput>,
+        indexed_context: Option<IndexedExecutionContext<'_>>,
+    ) -> Result<OfeLaneSequenceExecutionReport, OfeLaneSequenceError>
+    where
+        K: HillslopeKernel,
+    {
         if lane_inputs.is_empty() {
             return Err(OfeLaneSequenceError::InvalidLaneCount { lane_count: 0 });
         }
@@ -1685,14 +1827,27 @@ impl HillslopePhaseScheduler {
                 lane_input.ofe_id,
                 &next_transfer_input,
                 &mut lane_input.writeback_surface,
+                lane_input.indexed_writeback_surface.as_mut(),
+                indexed_context.map(|context| context.symbol_registry),
             )?;
             let upstream_transfer_input = next_transfer_input.clone();
-            let kernel_report = self
-                .execute_with_kernel(topology_report, kernel, lane_input.writeback_surface)
-                .map_err(|source| OfeLaneSequenceError::LaneScheduler {
-                    ofe_id: lane_input.ofe_id,
-                    source,
-                })?;
+            let kernel_report = match indexed_context {
+                Some(indexed_context) => self.execute_with_kernel_indexed(
+                    topology_report,
+                    kernel,
+                    lane_input.writeback_surface,
+                    lane_input.indexed_writeback_surface,
+                    Some(indexed_context.symbol_registry),
+                    Some(indexed_context.hot_symbol_tables),
+                ),
+                None => {
+                    self.execute_with_kernel(topology_report, kernel, lane_input.writeback_surface)
+                }
+            }
+            .map_err(|source| OfeLaneSequenceError::LaneScheduler {
+                ofe_id: lane_input.ofe_id,
+                source,
+            })?;
 
             if !kernel_report.scheduler_report.is_success() {
                 return Err(OfeLaneSequenceError::LaneExecutionFailed {
@@ -1747,50 +1902,140 @@ fn apply_transfer_input_to_lane_surface(
     ofe_id: usize,
     input: &TransferInput,
     writeback_surface: &mut HillslopeWritebackSurface,
+    indexed_writeback_surface: Option<&mut IndexedWritebackSurface>,
+    symbol_registry: Option<&SymbolRegistry>,
 ) -> Result<(), OfeLaneSequenceError> {
     validate_transfer_input_for_lane(ofe_id, input)?;
-    clear_current_transfer_arrays(writeback_surface);
+    let mut indexed_writeback_surface = indexed_writeback_surface;
+    clear_current_transfer_arrays(
+        ofe_id,
+        writeback_surface,
+        indexed_writeback_surface.as_deref_mut(),
+        symbol_registry,
+    )?;
 
-    writeback_surface.state_surface.insert(
+    insert_transfer_state_symbol(
+        ofe_id,
+        writeback_surface,
+        indexed_writeback_surface.as_deref_mut(),
+        symbol_registry,
         BoundarySymbol::from(MOFE_HOURLY_CARRY_ARRAYS_ENABLED_SYMBOL),
         BoundaryValue::scalar(1.0),
-    );
-    writeback_surface.state_surface.insert(
+    )?;
+    insert_transfer_state_symbol(
+        ofe_id,
+        writeback_surface,
+        indexed_writeback_surface.as_deref_mut(),
+        symbol_registry,
         BoundarySymbol::from(MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL),
         BoundaryValue::scalar(input.area_ratio),
-    );
-    writeback_surface.state_surface.insert(
+    )?;
+    insert_transfer_state_symbol(
+        ofe_id,
+        writeback_surface,
+        indexed_writeback_surface.as_deref_mut(),
+        symbol_registry,
         BoundarySymbol::from(MOFE_TRANSFER_INPUT_UPSTRMQ_SYMBOL),
         BoundaryValue::scalar(input.upstrmq),
-    );
-    writeback_surface.state_surface.insert(
+    )?;
+    insert_transfer_state_symbol(
+        ofe_id,
+        writeback_surface,
+        indexed_writeback_surface.as_deref_mut(),
+        symbol_registry,
         BoundarySymbol::from(MOFE_TRANSFER_INPUT_SUBRIN_SYMBOL),
         BoundaryValue::scalar(input.subrin),
-    );
+    )?;
     let daily_transfer_total =
         validate_combined_transfer_total(ofe_id, input.upstrmq, input.subrin)?;
-    writeback_surface.state_surface.insert(
+    insert_transfer_state_symbol(
+        ofe_id,
+        writeback_surface,
+        indexed_writeback_surface.as_deref_mut(),
+        symbol_registry,
         BoundarySymbol::from(WB12_SYMBOL_RUNON_INPUT),
         BoundaryValue::scalar(daily_transfer_total),
-    );
-    writeback_surface.flux_surface.insert(
+    )?;
+    insert_transfer_flux_symbol(
+        ofe_id,
+        writeback_surface,
+        indexed_writeback_surface.as_deref_mut(),
+        symbol_registry,
         BoundarySymbol::from(WB12_SYMBOL_RUNOFF_CARRYOVER),
         BoundaryValue::scalar(daily_transfer_total),
-    );
+    )?;
 
     for (index, value) in input.surface_carry.iter().copied().enumerate() {
-        writeback_surface.state_surface.insert(
+        insert_transfer_state_symbol(
+            ofe_id,
+            writeback_surface,
+            indexed_writeback_surface.as_deref_mut(),
+            symbol_registry,
             mofe_hourly_symbol(MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT, index + 1),
             BoundaryValue::scalar(value),
-        );
+        )?;
     }
     for (index, value) in input.lateral_carry.iter().copied().enumerate() {
-        writeback_surface.state_surface.insert(
+        insert_transfer_state_symbol(
+            ofe_id,
+            writeback_surface,
+            indexed_writeback_surface.as_deref_mut(),
+            symbol_registry,
             mofe_hourly_symbol(MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT, index + 1),
             BoundaryValue::scalar(value),
-        );
+        )?;
     }
 
+    Ok(())
+}
+
+fn insert_transfer_state_symbol(
+    ofe_id: usize,
+    writeback_surface: &mut HillslopeWritebackSurface,
+    indexed_writeback_surface: Option<&mut IndexedWritebackSurface>,
+    symbol_registry: Option<&SymbolRegistry>,
+    symbol: BoundarySymbol,
+    value: BoundaryValue,
+) -> Result<(), OfeLaneSequenceError> {
+    if let Some(indexed_writeback_surface) = indexed_writeback_surface {
+        let Some(symbol_registry) = symbol_registry else {
+            return Err(OfeLaneSequenceError::IndexedSymbolRegistry {
+                ofe_id,
+                source: SymbolRegistryError::UnknownSymbol {
+                    symbol: BoundarySymbol::from("indexed_execution.registry"),
+                },
+            });
+        };
+        indexed_writeback_surface
+            .set_state_symbol(symbol_registry, &symbol, Some(value))
+            .map_err(|source| OfeLaneSequenceError::IndexedSymbolRegistry { ofe_id, source })?;
+    }
+    writeback_surface.state_surface.insert(symbol, value);
+    Ok(())
+}
+
+fn insert_transfer_flux_symbol(
+    ofe_id: usize,
+    writeback_surface: &mut HillslopeWritebackSurface,
+    indexed_writeback_surface: Option<&mut IndexedWritebackSurface>,
+    symbol_registry: Option<&SymbolRegistry>,
+    symbol: BoundarySymbol,
+    value: BoundaryValue,
+) -> Result<(), OfeLaneSequenceError> {
+    if let Some(indexed_writeback_surface) = indexed_writeback_surface {
+        let Some(symbol_registry) = symbol_registry else {
+            return Err(OfeLaneSequenceError::IndexedSymbolRegistry {
+                ofe_id,
+                source: SymbolRegistryError::UnknownSymbol {
+                    symbol: BoundarySymbol::from("indexed_execution.registry"),
+                },
+            });
+        };
+        indexed_writeback_surface
+            .set_flux_symbol(symbol_registry, &symbol, Some(value))
+            .map_err(|source| OfeLaneSequenceError::IndexedSymbolRegistry { ofe_id, source })?;
+    }
+    writeback_surface.flux_surface.insert(symbol, value);
     Ok(())
 }
 
@@ -2021,17 +2266,53 @@ fn scaled_transfer_total(
     Ok(scaled)
 }
 
-fn clear_current_transfer_arrays(writeback_surface: &mut HillslopeWritebackSurface) {
+fn clear_current_transfer_arrays(
+    ofe_id: usize,
+    writeback_surface: &mut HillslopeWritebackSurface,
+    mut indexed_writeback_surface: Option<&mut IndexedWritebackSurface>,
+    symbol_registry: Option<&SymbolRegistry>,
+) -> Result<(), OfeLaneSequenceError> {
     for hour in 1..=MOFE_TRANSFER_HOUR_COUNT {
-        writeback_surface.state_surface.remove(&mofe_hourly_symbol(
-            MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
-            hour,
-        ));
-        writeback_surface.state_surface.remove(&mofe_hourly_symbol(
-            MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
-            hour,
-        ));
+        remove_transfer_state_symbol(
+            ofe_id,
+            writeback_surface,
+            indexed_writeback_surface.as_deref_mut(),
+            symbol_registry,
+            &mofe_hourly_symbol(MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT, hour),
+        )?;
+        remove_transfer_state_symbol(
+            ofe_id,
+            writeback_surface,
+            indexed_writeback_surface.as_deref_mut(),
+            symbol_registry,
+            &mofe_hourly_symbol(MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT, hour),
+        )?;
     }
+    Ok(())
+}
+
+fn remove_transfer_state_symbol(
+    ofe_id: usize,
+    writeback_surface: &mut HillslopeWritebackSurface,
+    indexed_writeback_surface: Option<&mut IndexedWritebackSurface>,
+    symbol_registry: Option<&SymbolRegistry>,
+    symbol: &BoundarySymbol,
+) -> Result<(), OfeLaneSequenceError> {
+    if let Some(indexed_writeback_surface) = indexed_writeback_surface {
+        let Some(symbol_registry) = symbol_registry else {
+            return Err(OfeLaneSequenceError::IndexedSymbolRegistry {
+                ofe_id,
+                source: SymbolRegistryError::UnknownSymbol {
+                    symbol: BoundarySymbol::from("indexed_execution.registry"),
+                },
+            });
+        };
+        indexed_writeback_surface
+            .set_state_symbol(symbol_registry, symbol, None)
+            .map_err(|source| OfeLaneSequenceError::IndexedSymbolRegistry { ofe_id, source })?;
+    }
+    writeback_surface.state_surface.remove(symbol);
+    Ok(())
 }
 
 fn validate_transfer_daily_sum(
@@ -2059,4 +2340,113 @@ impl Default for HillslopePhaseScheduler {
     fn default() -> Self {
         Self::canonical()
     }
+}
+
+/// Build resolve-once hot symbol id tables for Stage-4 indexed reads.
+#[must_use]
+#[allow(clippy::too_many_lines)]
+pub fn build_hillslope_hot_symbol_tables(registry: &SymbolRegistry) -> HotSymbolTables {
+    HotSymbolTables::from_registry(
+        registry,
+        &[
+            MOFE_HOURLY_CARRY_ARRAYS_ENABLED_SYMBOL,
+            MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL,
+            MOFE_TRANSFER_INPUT_UPSTRMQ_SYMBOL,
+            MOFE_TRANSFER_INPUT_SUBRIN_SYMBOL,
+            "wb12_runon_input",
+            WB20_SYMBOL_FORWARD_SOLVER_LANE_ENABLED,
+            WB19_SYMBOL_LATERAL_DRAIN_LANE_SUBSTEPS,
+            WB19_SYMBOL_DRAIN_ENABLED,
+            WB19_SYMBOL_DRAIN_DEPTH,
+            WB19_SYMBOL_DRAIN_SPACING,
+            WB19_SYMBOL_DRAIN_DIAMETER,
+            PL_SCHEDULE_SLOT_COUNT_SYMBOL,
+            PL_SCHEDULE_ROTATION_REPEATS_SYMBOL,
+            PL_SCHEDULE_ROTATION_YEARS_SYMBOL,
+            PL_RUNTIME_DAY_SYMBOL,
+            PL_RUNTIME_YEAR_SYMBOL,
+            "wb11_nsl",
+            "nsl",
+            "solwpv",
+            "frost.runtime_thermal_conductivity_landuse_class_proxy",
+        ],
+        &[WB12_SYMBOL_RUNOFF_CARRYOVER],
+        &[
+            "timem",
+            "intsty",
+            "obmaxt",
+            "obmint",
+            "snow.hourly.depth_before_m",
+            "snow.hourly.depth_available_m",
+            "snow.hourly.density_before_kg_m3",
+            "snow.hourly.depth_after_m",
+            "snow.hourly.density_after_kg_m3",
+            "snow.hourly.melt_m",
+            "snow.hourly.melt_raw_m",
+            "snow.hourly.melt_amelt_in",
+            "snow.hourly.melt_bmelt_in",
+            "snow.hourly.melt_cmelt_in",
+            "snow.hourly.melt_dmelt_in",
+            "snow.hourly.melt_hrtef_f",
+            "snow.hourly.melt_hrdtf_f",
+            "snow.hourly.melt_vwmph",
+            "snow.hourly.melt_rainin",
+            "snow.hourly.melt_wind_adjustment",
+            "snow.hourly.melt_branch_active",
+            "snow.hourly.rain_m",
+            "snow.hourly.rain_retained_m",
+            "snow.hourly.rain_released_m",
+            "snow.hourly.snowfall_m",
+            "winter.hourly.rad_mj_m2",
+            "winter.hourly.air_temp_c",
+            "winter.hourly.cloud_fraction",
+            "winter.hourly.dewpoint_c",
+            "winter.hourly.wind_m_s",
+            "frost.hourly.qsrf_w_m2",
+            "frost.hourly.quf_w_m2",
+            "frost.hourly.ksrf_w_m_k",
+            "frost.hourly.surface_temp_c",
+            "frost.hourly.snow_depth_m",
+            "frost.hourly.residue_depth_m",
+            "frost.hourly.tilled_frozen_depth_m",
+            "frost.hourly.untilled_frozen_depth_m",
+            "frost.hourly.frzflg",
+            MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT,
+            MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT,
+            MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+            MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+            "wb18_perc_theta",
+            "wb18_perc_fc",
+            "wb18_perc_ul",
+            "wb18_perc_ssc",
+            "wb18_perc_frzw",
+            "wb18_perc_frozen_depth",
+            "wb19_dg",
+            "dg",
+            "wb19_coca",
+            "coca",
+            "wb19_por",
+            "por",
+            "wb19_thetfc",
+            "thetfc",
+            "wb19_thetdr",
+            "thetdr",
+            "wb19_bulk_density_kg_m3",
+            WB19_SYMBOL_LATERAL_SSH_ROOT,
+            WB19_SYMBOL_LATERAL_WITHDRAWAL_ROOT,
+            "frost.runtime_nfine",
+            "frost.runtime_fine_thickness_m",
+            "frost.runtime_yst_m",
+            "frost.runtime_nwfrzz_m",
+        ],
+        &["wb18_perc_pei"],
+        &[
+            "frost.runtime_fgfrst",
+            "frost.runtime_slfsd_m",
+            "frost.runtime_slsic_m",
+            "frost.runtime_slsw_theta",
+            "frost.runtime_sltime_s",
+        ],
+        &[],
+    )
 }

@@ -1,25 +1,49 @@
 #[allow(clippy::too_many_lines)]
+#[cfg(test)]
+#[allow(dead_code)]
 pub(crate) fn decomposition_phase_dispatch_for_state(
     phase: HillslopePhase,
     state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
 ) -> Result<DecompositionPhaseDispatch, HillslopeDecompositionBoundaryError> {
+    decomposition_phase_dispatch_for_context(phase, PlDispatchContext::logical(state_surface))
+}
+
+pub(crate) fn decomposition_phase_dispatch_for_state_indexed(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    indexed_writeback_surface: Option<&IndexedWritebackSurface>,
+    hot_symbol_tables: Option<&HotSymbolTables>,
+) -> Result<DecompositionPhaseDispatch, HillslopeDecompositionBoundaryError> {
+    decomposition_phase_dispatch_for_context(
+        phase,
+        PlDispatchContext::indexed(state_surface, indexed_writeback_surface, hot_symbol_tables),
+    )
+}
+
+#[allow(clippy::too_many_lines)]
+fn decomposition_phase_dispatch_for_context(
+    phase: HillslopePhase,
+    context: PlDispatchContext<'_>,
+) -> Result<DecompositionPhaseDispatch, HillslopeDecompositionBoundaryError> {
+    let state_surface = context.state_surface;
     if !state_surface.contains_key(&BoundarySymbol::from(PL_DECOMP_RUNTIME_SENTINEL)) {
         return Ok(DecompositionPhaseDispatch::Skip);
     }
 
     let active_slot_selection =
-        resolve_active_pl_slot_selection(state_surface).map_err(|source| {
+        resolve_active_pl_slot_selection_with_context(context).map_err(|source| {
             HillslopeDecompositionBoundaryError::ActiveSlotResolution { phase, source }
         })?;
 
-    let runtime_day =
-        require_integral_pl_dispatch_symbol_in_range(state_surface, PL_RUNTIME_DAY_SYMBOL, 1, 366)
-            .map_err(
-                |source| HillslopeDecompositionBoundaryError::ActiveSlotResolution {
-                    phase,
-                    source,
-                },
-            )?;
+    let runtime_day = require_integral_pl_dispatch_symbol_ref_in_range(
+        context,
+        context.state_scalar_symbol(PL_RUNTIME_DAY_SYMBOL),
+        1,
+        366,
+    )
+    .map_err(
+        |source| HillslopeDecompositionBoundaryError::ActiveSlotResolution { phase, source },
+    )?;
 
     let imngmt_symbol = pl_growth_slot_crop_symbol(
         "imngmt",
@@ -130,15 +154,38 @@ pub(crate) fn decomposition_phase_dispatch_for_state(
 }
 
 #[allow(clippy::too_many_lines)]
+#[cfg(test)]
+#[allow(dead_code)]
 pub(crate) fn growth_phase_dispatch_for_state(
     phase: HillslopePhase,
     state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
 ) -> Result<GrowthPhaseDispatch, HillslopeGrowthBoundaryError> {
+    growth_phase_dispatch_for_context(phase, PlDispatchContext::logical(state_surface))
+}
+
+pub(crate) fn growth_phase_dispatch_for_state_indexed(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    indexed_writeback_surface: Option<&IndexedWritebackSurface>,
+    hot_symbol_tables: Option<&HotSymbolTables>,
+) -> Result<GrowthPhaseDispatch, HillslopeGrowthBoundaryError> {
+    growth_phase_dispatch_for_context(
+        phase,
+        PlDispatchContext::indexed(state_surface, indexed_writeback_surface, hot_symbol_tables),
+    )
+}
+
+#[allow(clippy::too_many_lines)]
+fn growth_phase_dispatch_for_context(
+    phase: HillslopePhase,
+    context: PlDispatchContext<'_>,
+) -> Result<GrowthPhaseDispatch, HillslopeGrowthBoundaryError> {
+    let state_surface = context.state_surface;
     if !state_surface.contains_key(&BoundarySymbol::from(PL_GROWTH_RUNTIME_SENTINEL)) {
         return Ok(GrowthPhaseDispatch::Skip);
     }
 
-    let active_slot_selection = resolve_active_pl_slot_selection(state_surface)
+    let active_slot_selection = resolve_active_pl_slot_selection_with_context(context)
         .map_err(|source| HillslopeGrowthBoundaryError::ActiveSlotResolution { phase, source })?;
     let imngmt_symbol = pl_growth_slot_crop_symbol(
         "imngmt",
@@ -413,4 +460,3 @@ pub(crate) fn growth_phase_dispatch_for_state(
         _ => Ok(GrowthPhaseDispatch::Skip),
     }
 }
-

@@ -307,6 +307,27 @@ impl IndexedSurface {
             .map(|index| self.entries[index].1)
     }
 
+    /// Insert, update, or remove a present value by id while preserving id order.
+    pub fn set(&mut self, id: SymbolId, value: Option<BoundaryValue>) {
+        match self
+            .entries
+            .binary_search_by_key(&id, |(entry_id, _)| *entry_id)
+        {
+            Ok(index) => {
+                if let Some(value) = value {
+                    self.entries[index].1 = value;
+                } else {
+                    self.entries.remove(index);
+                }
+            }
+            Err(index) => {
+                if let Some(value) = value {
+                    self.entries.insert(index, (id, value));
+                }
+            }
+        }
+    }
+
     /// Export this indexed surface to the logical `BTreeMap` representation.
     ///
     /// # Errors
@@ -365,6 +386,85 @@ impl IndexedWritebackSurface {
         &self.flux_surface
     }
 
+    /// Lookup an indexed state value by id.
+    #[must_use]
+    pub fn state_value(&self, id: SymbolId) -> Option<BoundaryValue> {
+        self.state_surface.get(id)
+    }
+
+    /// Lookup an indexed flux value by id.
+    #[must_use]
+    pub fn flux_value(&self, id: SymbolId) -> Option<BoundaryValue> {
+        self.flux_surface.get(id)
+    }
+
+    /// Insert, update, or remove an indexed state value.
+    pub fn set_state_value(&mut self, id: SymbolId, value: Option<BoundaryValue>) {
+        self.state_surface.set(id, value);
+    }
+
+    /// Insert, update, or remove an indexed flux value.
+    pub fn set_flux_value(&mut self, id: SymbolId, value: Option<BoundaryValue>) {
+        self.flux_surface.set(id, value);
+    }
+
+    /// Insert, update, or remove a state value by logical symbol.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SymbolRegistryError::UnknownSymbol`] when the logical symbol is
+    /// not present in the frozen registry.
+    pub fn set_state_symbol(
+        &mut self,
+        registry: &SymbolRegistry,
+        symbol: &BoundarySymbol,
+        value: Option<BoundaryValue>,
+    ) -> Result<(), SymbolRegistryError> {
+        let id = registry.id_of(symbol)?;
+        self.set_state_value(id, value);
+        Ok(())
+    }
+
+    /// Insert, update, or remove a flux value by logical symbol.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SymbolRegistryError::UnknownSymbol`] when the logical symbol is
+    /// not present in the frozen registry.
+    pub fn set_flux_symbol(
+        &mut self,
+        registry: &SymbolRegistry,
+        symbol: &BoundarySymbol,
+        value: Option<BoundaryValue>,
+    ) -> Result<(), SymbolRegistryError> {
+        let id = registry.id_of(symbol)?;
+        self.set_flux_value(id, value);
+        Ok(())
+    }
+
+    /// Apply an accepted logical writeback payload to the indexed mirror.
+    ///
+    /// This keeps Stage-4 read mirrors synchronized while preserving the
+    /// existing logical writeback payload shape.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SymbolRegistryError::UnknownSymbol`] when a writeback field
+    /// names a symbol outside the frozen registry.
+    pub fn apply_writeback_payload(
+        &mut self,
+        registry: &SymbolRegistry,
+        payload: &KernelWritebackPayload,
+    ) -> Result<(), SymbolRegistryError> {
+        for field in &payload.state_updates {
+            self.set_state_symbol(registry, &field.symbol, Some(field.value))?;
+        }
+        for field in &payload.flux_updates {
+            self.set_flux_symbol(registry, &field.symbol, Some(field.value))?;
+        }
+        Ok(())
+    }
+
     /// Export the indexed state and flux surfaces back to logical `BTreeMap`s.
     ///
     /// # Errors
@@ -380,6 +480,499 @@ impl IndexedWritebackSurface {
             self.flux_surface.export_btreemap(registry)?,
         ))
     }
+}
+
+/// Logical symbol paired with its frozen registry id.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IndexedBoundarySymbol {
+    pub symbol: BoundarySymbol,
+    pub id: SymbolId,
+}
+
+impl IndexedBoundarySymbol {
+    #[must_use]
+    pub const fn new(symbol: BoundarySymbol, id: SymbolId) -> Self {
+        Self { symbol, id }
+    }
+}
+
+/// One-indexed sparse symbol series for canonical `root_0001` families.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IndexedSymbolSeries {
+    symbols_by_one_based_index: Vec<Option<IndexedBoundarySymbol>>,
+}
+
+impl IndexedSymbolSeries {
+    #[must_use]
+    fn from_pairs(pairs: Vec<(usize, IndexedBoundarySymbol)>) -> Self {
+        let max_index = pairs.iter().map(|(index, _)| *index).max().unwrap_or(0);
+        let mut symbols_by_one_based_index = vec![None; max_index];
+        for (index, symbol) in pairs {
+            if index > 0 {
+                symbols_by_one_based_index[index - 1] = Some(symbol);
+            }
+        }
+        Self {
+            symbols_by_one_based_index,
+        }
+    }
+
+    #[must_use]
+    pub fn get(&self, one_based_index: usize) -> Option<&IndexedBoundarySymbol> {
+        if one_based_index == 0 {
+            return None;
+        }
+        self.symbols_by_one_based_index
+            .get(one_based_index - 1)
+            .and_then(Option::as_ref)
+    }
+
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.symbols_by_one_based_index.len()
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.symbols_by_one_based_index.is_empty()
+    }
+}
+
+/// Sparse two-index symbol grid for canonical `root_0001_0001` families.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IndexedSymbolGrid {
+    symbols_by_index: BTreeMap<(usize, usize), IndexedBoundarySymbol>,
+}
+
+impl IndexedSymbolGrid {
+    #[must_use]
+    fn from_pairs(pairs: Vec<((usize, usize), IndexedBoundarySymbol)>) -> Self {
+        Self {
+            symbols_by_index: pairs.into_iter().collect(),
+        }
+    }
+
+    #[must_use]
+    pub fn get(&self, first_index: usize, second_index: usize) -> Option<&IndexedBoundarySymbol> {
+        self.symbols_by_index.get(&(first_index, second_index))
+    }
+
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.symbols_by_index.len()
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.symbols_by_index.is_empty()
+    }
+}
+
+/// Resolve-once hot symbol id tables for indexed execution reads.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct HotSymbolTables {
+    state_scalars: BTreeMap<String, IndexedBoundarySymbol>,
+    flux_scalars: BTreeMap<String, IndexedBoundarySymbol>,
+    state_series: BTreeMap<String, IndexedSymbolSeries>,
+    flux_series: BTreeMap<String, IndexedSymbolSeries>,
+    state_grids: BTreeMap<String, IndexedSymbolGrid>,
+    flux_grids: BTreeMap<String, IndexedSymbolGrid>,
+    pl_state_symbols: IndexedPlSymbolTables,
+}
+
+impl HotSymbolTables {
+    /// Build hot symbol tables by scanning the frozen registry once.
+    #[must_use]
+    pub fn from_registry(
+        registry: &SymbolRegistry,
+        state_scalar_symbols: &[&str],
+        flux_scalar_symbols: &[&str],
+        state_series_roots: &[&str],
+        flux_series_roots: &[&str],
+        state_grid_roots: &[&str],
+        flux_grid_roots: &[&str],
+    ) -> Self {
+        Self {
+            state_scalars: collect_scalar_symbols(registry, state_scalar_symbols),
+            flux_scalars: collect_scalar_symbols(registry, flux_scalar_symbols),
+            state_series: collect_series_roots(registry, state_series_roots),
+            flux_series: collect_series_roots(registry, flux_series_roots),
+            state_grids: collect_grid_roots(registry, state_grid_roots),
+            flux_grids: collect_grid_roots(registry, flux_grid_roots),
+            pl_state_symbols: IndexedPlSymbolTables::from_registry(registry),
+        }
+    }
+
+    #[must_use]
+    pub fn state_scalar(&self, symbol: &str) -> Option<&IndexedBoundarySymbol> {
+        self.state_scalars.get(symbol)
+    }
+
+    #[must_use]
+    pub fn flux_scalar(&self, symbol: &str) -> Option<&IndexedBoundarySymbol> {
+        self.flux_scalars.get(symbol)
+    }
+
+    #[must_use]
+    pub fn state_series_symbol(
+        &self,
+        root: &str,
+        one_based_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.state_series
+            .get(root)
+            .and_then(|series| series.get(one_based_index))
+    }
+
+    #[must_use]
+    pub fn flux_series_symbol(
+        &self,
+        root: &str,
+        one_based_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.flux_series
+            .get(root)
+            .and_then(|series| series.get(one_based_index))
+    }
+
+    #[must_use]
+    pub fn state_grid_symbol(
+        &self,
+        root: &str,
+        first_index: usize,
+        second_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.state_grids
+            .get(root)
+            .and_then(|grid| grid.get(first_index, second_index))
+    }
+
+    #[must_use]
+    pub fn flux_grid_symbol(
+        &self,
+        root: &str,
+        first_index: usize,
+        second_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.flux_grids
+            .get(root)
+            .and_then(|grid| grid.get(first_index, second_index))
+    }
+
+    #[must_use]
+    pub fn state_series_count(&self) -> usize {
+        self.state_series.len()
+    }
+
+    #[must_use]
+    pub fn state_grid_count(&self) -> usize {
+        self.state_grids.len()
+    }
+
+    #[must_use]
+    pub fn state_scalar_count(&self) -> usize {
+        self.state_scalars.len()
+    }
+
+    #[must_use]
+    pub fn pl_schedule_slot_state_symbol(
+        &self,
+        root: &str,
+        slot_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.pl_state_symbols.schedule_slot(root, slot_index)
+    }
+
+    #[must_use]
+    pub fn pl_schedule_slot_crop_state_symbol(
+        &self,
+        root: &str,
+        slot_index: usize,
+        crop_slot_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.pl_state_symbols
+            .schedule_slot_crop(root, slot_index, crop_slot_index)
+    }
+
+    #[must_use]
+    pub fn pl_growth_slot_crop_state_symbol(
+        &self,
+        root: &str,
+        slot_index: usize,
+        crop_slot_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.pl_state_symbols
+            .growth_slot_crop(root, slot_index, crop_slot_index)
+    }
+
+    #[must_use]
+    pub fn pl_decomp_slot_crop_state_symbol(
+        &self,
+        root: &str,
+        slot_index: usize,
+        crop_slot_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.pl_state_symbols
+            .decomp_slot_crop(root, slot_index, crop_slot_index)
+    }
+
+    #[must_use]
+    pub fn pl_decomp_slot_crop_indexed_state_symbol(
+        &self,
+        root: &str,
+        slot_index: usize,
+        crop_slot_index: usize,
+        index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.pl_state_symbols
+            .decomp_slot_crop_indexed(root, slot_index, crop_slot_index, index)
+    }
+}
+
+/// Resolve-once PL slot symbol ids for hot management dispatch.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct IndexedPlSymbolTables {
+    schedule_slots: BTreeMap<usize, BTreeMap<String, IndexedBoundarySymbol>>,
+    schedule_slot_crops: BTreeMap<(usize, usize), BTreeMap<String, IndexedBoundarySymbol>>,
+    growth_slot_crops: BTreeMap<(usize, usize), BTreeMap<String, IndexedBoundarySymbol>>,
+    decomp_slot_crops: BTreeMap<(usize, usize), BTreeMap<String, IndexedBoundarySymbol>>,
+    decomp_slot_crop_indexes:
+        BTreeMap<(usize, usize, usize), BTreeMap<String, IndexedBoundarySymbol>>,
+}
+
+impl IndexedPlSymbolTables {
+    #[must_use]
+    pub fn from_registry(registry: &SymbolRegistry) -> Self {
+        let mut tables = Self::default();
+        for (id, symbol) in registry.iter() {
+            if let Some((slot_index, root)) = parse_pl_schedule_slot_symbol(symbol.as_str()) {
+                tables.schedule_slots.entry(slot_index).or_default().insert(
+                    root.to_owned(),
+                    IndexedBoundarySymbol::new(symbol.clone(), id),
+                );
+            } else if let Some((slot_index, crop_slot_index, root)) =
+                parse_pl_schedule_slot_crop_symbol(symbol.as_str())
+            {
+                tables
+                    .schedule_slot_crops
+                    .entry((slot_index, crop_slot_index))
+                    .or_default()
+                    .insert(
+                        root.to_owned(),
+                        IndexedBoundarySymbol::new(symbol.clone(), id),
+                    );
+            } else if let Some((slot_index, crop_slot_index, root)) =
+                parse_pl_growth_slot_crop_symbol(symbol.as_str())
+            {
+                tables
+                    .growth_slot_crops
+                    .entry((slot_index, crop_slot_index))
+                    .or_default()
+                    .insert(
+                        root.to_owned(),
+                        IndexedBoundarySymbol::new(symbol.clone(), id),
+                    );
+            } else if let Some((slot_index, crop_slot_index, root, index)) =
+                parse_pl_decomp_slot_crop_indexed_symbol(symbol.as_str())
+            {
+                tables
+                    .decomp_slot_crop_indexes
+                    .entry((slot_index, crop_slot_index, index))
+                    .or_default()
+                    .insert(
+                        root.to_owned(),
+                        IndexedBoundarySymbol::new(symbol.clone(), id),
+                    );
+            } else if let Some((slot_index, crop_slot_index, root)) =
+                parse_pl_decomp_slot_crop_symbol(symbol.as_str())
+            {
+                tables
+                    .decomp_slot_crops
+                    .entry((slot_index, crop_slot_index))
+                    .or_default()
+                    .insert(
+                        root.to_owned(),
+                        IndexedBoundarySymbol::new(symbol.clone(), id),
+                    );
+            }
+        }
+        tables
+    }
+
+    #[must_use]
+    pub fn schedule_slot(&self, root: &str, slot_index: usize) -> Option<&IndexedBoundarySymbol> {
+        self.schedule_slots
+            .get(&slot_index)
+            .and_then(|symbols| symbols.get(root))
+    }
+
+    #[must_use]
+    pub fn schedule_slot_crop(
+        &self,
+        root: &str,
+        slot_index: usize,
+        crop_slot_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.schedule_slot_crops
+            .get(&(slot_index, crop_slot_index))
+            .and_then(|symbols| symbols.get(root))
+    }
+
+    #[must_use]
+    pub fn growth_slot_crop(
+        &self,
+        root: &str,
+        slot_index: usize,
+        crop_slot_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.growth_slot_crops
+            .get(&(slot_index, crop_slot_index))
+            .and_then(|symbols| symbols.get(root))
+    }
+
+    #[must_use]
+    pub fn decomp_slot_crop(
+        &self,
+        root: &str,
+        slot_index: usize,
+        crop_slot_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.decomp_slot_crops
+            .get(&(slot_index, crop_slot_index))
+            .and_then(|symbols| symbols.get(root))
+    }
+
+    #[must_use]
+    pub fn decomp_slot_crop_indexed(
+        &self,
+        root: &str,
+        slot_index: usize,
+        crop_slot_index: usize,
+        index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.decomp_slot_crop_indexes
+            .get(&(slot_index, crop_slot_index, index))
+            .and_then(|symbols| symbols.get(root))
+    }
+}
+
+fn collect_scalar_symbols(
+    registry: &SymbolRegistry,
+    symbols: &[&str],
+) -> BTreeMap<String, IndexedBoundarySymbol> {
+    let mut collected = BTreeMap::new();
+    for symbol in symbols {
+        let boundary_symbol = BoundarySymbol::from(*symbol);
+        if let Ok(id) = registry.id_of(&boundary_symbol) {
+            collected.insert(
+                (*symbol).to_owned(),
+                IndexedBoundarySymbol::new(boundary_symbol, id),
+            );
+        }
+    }
+    collected
+}
+
+fn collect_series_roots(
+    registry: &SymbolRegistry,
+    roots: &[&str],
+) -> BTreeMap<String, IndexedSymbolSeries> {
+    let mut collected = BTreeMap::new();
+    for root in roots {
+        let mut pairs = Vec::new();
+        for (id, symbol) in registry.iter() {
+            if let Some(index) = parse_series_symbol_index(symbol.as_str(), root) {
+                pairs.push((index, IndexedBoundarySymbol::new(symbol.clone(), id)));
+            }
+        }
+        if !pairs.is_empty() {
+            collected.insert((*root).to_owned(), IndexedSymbolSeries::from_pairs(pairs));
+        }
+    }
+    collected
+}
+
+fn collect_grid_roots(
+    registry: &SymbolRegistry,
+    roots: &[&str],
+) -> BTreeMap<String, IndexedSymbolGrid> {
+    let mut collected = BTreeMap::new();
+    for root in roots {
+        let mut pairs = Vec::new();
+        for (id, symbol) in registry.iter() {
+            if let Some(indexes) = parse_grid_symbol_indexes(symbol.as_str(), root) {
+                pairs.push((indexes, IndexedBoundarySymbol::new(symbol.clone(), id)));
+            }
+        }
+        if !pairs.is_empty() {
+            collected.insert((*root).to_owned(), IndexedSymbolGrid::from_pairs(pairs));
+        }
+    }
+    collected
+}
+
+fn parse_series_symbol_index(symbol: &str, root: &str) -> Option<usize> {
+    let suffix = symbol.strip_prefix(root)?.strip_prefix('_')?;
+    parse_padded_index(suffix)
+}
+
+fn parse_grid_symbol_indexes(symbol: &str, root: &str) -> Option<(usize, usize)> {
+    let suffix = symbol.strip_prefix(root)?.strip_prefix('_')?;
+    let (first, second) = suffix.split_once('_')?;
+    Some((parse_padded_index(first)?, parse_padded_index(second)?))
+}
+
+fn parse_pl_schedule_slot_symbol(symbol: &str) -> Option<(usize, &str)> {
+    let suffix = symbol.strip_prefix("pl_schedule_slot_")?;
+    let (slot, root) = parse_pl_slot_prefix(suffix)?;
+    (!root.starts_with("crop_")).then_some((slot, root))
+}
+
+fn parse_pl_schedule_slot_crop_symbol(symbol: &str) -> Option<(usize, usize, &str)> {
+    parse_pl_slot_crop_symbol(symbol, "pl_schedule_slot_")
+}
+
+fn parse_pl_growth_slot_crop_symbol(symbol: &str) -> Option<(usize, usize, &str)> {
+    parse_pl_slot_crop_symbol(symbol, "pl_growth_slot_")
+}
+
+fn parse_pl_decomp_slot_crop_symbol(symbol: &str) -> Option<(usize, usize, &str)> {
+    let (slot, crop, root) = parse_pl_slot_crop_symbol(symbol, "pl_decomp_slot_")?;
+    split_trailing_padded_index(root)
+        .is_none()
+        .then_some((slot, crop, root))
+}
+
+fn parse_pl_decomp_slot_crop_indexed_symbol(symbol: &str) -> Option<(usize, usize, &str, usize)> {
+    let (slot, crop, root_with_index) = parse_pl_slot_crop_symbol(symbol, "pl_decomp_slot_")?;
+    let (root, index) = split_trailing_padded_index(root_with_index)?;
+    Some((slot, crop, root, index))
+}
+
+fn parse_pl_slot_crop_symbol<'a>(symbol: &'a str, prefix: &str) -> Option<(usize, usize, &'a str)> {
+    let suffix = symbol.strip_prefix(prefix)?;
+    let (slot, rest) = parse_pl_slot_prefix(suffix)?;
+    let crop_suffix = rest.strip_prefix("crop_")?;
+    let (crop_text, root) = crop_suffix.split_once('_')?;
+    Some((slot, parse_padded_index(crop_text)?, root))
+}
+
+fn parse_pl_slot_prefix(suffix: &str) -> Option<(usize, &str)> {
+    let (slot_text, rest) = suffix.split_once('_')?;
+    Some((parse_padded_index(slot_text)?, rest))
+}
+
+fn split_trailing_padded_index(value: &str) -> Option<(&str, usize)> {
+    let (root, index_text) = value.rsplit_once('_')?;
+    Some((root, parse_padded_index(index_text)?))
+}
+
+fn parse_padded_index(value: &str) -> Option<usize> {
+    if value.len() != 4 || !value.bytes().all(|byte| byte.is_ascii_digit()) {
+        return None;
+    }
+    let parsed = value.parse::<usize>().ok()?;
+    (parsed > 0).then_some(parsed)
 }
 
 /// Registry construction and lookup errors.
@@ -1859,6 +2452,9 @@ pub struct HillslopeKernelRequest<'a> {
     pub growth_context: Option<HillslopeGrowthKernelContext>,
     pub state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     pub flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+    pub indexed_state_surface: Option<&'a IndexedSurface>,
+    pub indexed_flux_surface: Option<&'a IndexedSurface>,
+    pub hot_symbol_tables: Option<&'a HotSymbolTables>,
 }
 
 impl<'a> HillslopeKernelRequest<'a> {
@@ -1890,6 +2486,32 @@ impl<'a> HillslopeKernelRequest<'a> {
         state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
         flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     ) -> Self {
+        Self::with_transition_context_and_indexed(
+            phase_name,
+            phase_class,
+            consumer_adapter,
+            decomposition_context,
+            growth_context,
+            state_surface,
+            flux_surface,
+            None,
+            None,
+        )
+    }
+
+    #[must_use]
+    #[allow(clippy::too_many_arguments)]
+    pub fn with_transition_context_and_indexed(
+        phase_name: &'a str,
+        phase_class: HillslopeKernelPhaseClass,
+        consumer_adapter: HillslopeConsumerAdapter,
+        decomposition_context: Option<HillslopeDecompositionKernelContext>,
+        growth_context: Option<HillslopeGrowthKernelContext>,
+        state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+        indexed_writeback_surface: Option<&'a IndexedWritebackSurface>,
+        hot_symbol_tables: Option<&'a HotSymbolTables>,
+    ) -> Self {
         Self {
             phase_name,
             phase_class,
@@ -1898,6 +2520,11 @@ impl<'a> HillslopeKernelRequest<'a> {
             growth_context,
             state_surface,
             flux_surface,
+            indexed_state_surface: indexed_writeback_surface
+                .map(IndexedWritebackSurface::state_surface),
+            indexed_flux_surface: indexed_writeback_surface
+                .map(IndexedWritebackSurface::flux_surface),
+            hot_symbol_tables,
         }
     }
 
@@ -1919,6 +2546,82 @@ impl<'a> HillslopeKernelRequest<'a> {
             state_surface,
             flux_surface,
         )
+    }
+
+    #[must_use]
+    pub fn indexed_state_value(&self, symbol: &IndexedBoundarySymbol) -> Option<BoundaryValue> {
+        self.indexed_state_surface
+            .and_then(|surface| surface.get(symbol.id))
+    }
+
+    #[must_use]
+    pub fn indexed_flux_value(&self, symbol: &IndexedBoundarySymbol) -> Option<BoundaryValue> {
+        self.indexed_flux_surface
+            .and_then(|surface| surface.get(symbol.id))
+    }
+
+    #[must_use]
+    pub fn has_indexed_state_surface(&self) -> bool {
+        self.indexed_state_surface.is_some()
+    }
+
+    #[must_use]
+    pub fn has_indexed_flux_surface(&self) -> bool {
+        self.indexed_flux_surface.is_some()
+    }
+
+    #[must_use]
+    pub fn hot_state_scalar(&self, symbol: &str) -> Option<&IndexedBoundarySymbol> {
+        self.hot_symbol_tables
+            .and_then(|tables| tables.state_scalar(symbol))
+    }
+
+    #[must_use]
+    pub fn hot_flux_scalar(&self, symbol: &str) -> Option<&IndexedBoundarySymbol> {
+        self.hot_symbol_tables
+            .and_then(|tables| tables.flux_scalar(symbol))
+    }
+
+    #[must_use]
+    pub fn hot_state_series_symbol(
+        &self,
+        root: &str,
+        one_based_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.hot_symbol_tables
+            .and_then(|tables| tables.state_series_symbol(root, one_based_index))
+    }
+
+    #[must_use]
+    pub fn hot_flux_series_symbol(
+        &self,
+        root: &str,
+        one_based_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.hot_symbol_tables
+            .and_then(|tables| tables.flux_series_symbol(root, one_based_index))
+    }
+
+    #[must_use]
+    pub fn hot_state_grid_symbol(
+        &self,
+        root: &str,
+        first_index: usize,
+        second_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.hot_symbol_tables
+            .and_then(|tables| tables.state_grid_symbol(root, first_index, second_index))
+    }
+
+    #[must_use]
+    pub fn hot_flux_grid_symbol(
+        &self,
+        root: &str,
+        first_index: usize,
+        second_index: usize,
+    ) -> Option<&IndexedBoundarySymbol> {
+        self.hot_symbol_tables
+            .and_then(|tables| tables.flux_grid_symbol(root, first_index, second_index))
     }
 }
 

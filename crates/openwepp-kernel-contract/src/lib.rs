@@ -500,4 +500,147 @@ mod tests {
 
         assert_eq!(context.transition_payload, Some(payload));
     }
+
+    #[test]
+    fn hot_symbol_tables_scan_series_and_grid_symbols_once() {
+        let registry = SymbolRegistry::from_symbols([
+            "timem_0001",
+            "timem_0002",
+            "intsty_0001",
+            "frost.runtime_fgfrst_0002_0003",
+            "mofe_hourly_carry_arrays_enabled",
+        ])
+        .expect("registry should build");
+
+        let tables = HotSymbolTables::from_registry(
+            &registry,
+            &["mofe_hourly_carry_arrays_enabled"],
+            &[],
+            &["timem", "intsty"],
+            &[],
+            &["frost.runtime_fgfrst"],
+            &[],
+        );
+
+        assert_eq!(
+            tables
+                .state_scalar("mofe_hourly_carry_arrays_enabled")
+                .expect("scalar id should resolve")
+                .symbol
+                .as_str(),
+            "mofe_hourly_carry_arrays_enabled"
+        );
+        assert_eq!(
+            tables
+                .state_series_symbol("timem", 2)
+                .expect("series id should resolve")
+                .symbol
+                .as_str(),
+            "timem_0002"
+        );
+        assert_eq!(
+            tables
+                .state_grid_symbol("frost.runtime_fgfrst", 2, 3)
+                .expect("grid id should resolve")
+                .symbol
+                .as_str(),
+            "frost.runtime_fgfrst_0002_0003"
+        );
+        assert!(tables.state_series_symbol("timem", 3).is_none());
+    }
+
+    #[test]
+    fn hot_symbol_tables_scan_pl_dispatch_symbols_once() {
+        let registry = SymbolRegistry::from_symbols([
+            "pl_schedule_slot_0002_ofe_index",
+            "pl_schedule_slot_0002_crop_0003_imngmt",
+            "pl_growth_slot_0002_crop_0003_jdplt",
+            "pl_decomp_slot_0002_crop_0003_resmgt",
+            "pl_decomp_slot_0002_crop_0003_gday_0001",
+        ])
+        .expect("registry should build");
+
+        let tables = HotSymbolTables::from_registry(&registry, &[], &[], &[], &[], &[], &[]);
+
+        assert_eq!(
+            tables
+                .pl_schedule_slot_state_symbol("ofe_index", 2)
+                .expect("schedule slot symbol should resolve")
+                .symbol
+                .as_str(),
+            "pl_schedule_slot_0002_ofe_index"
+        );
+        assert_eq!(
+            tables
+                .pl_schedule_slot_crop_state_symbol("imngmt", 2, 3)
+                .expect("schedule crop symbol should resolve")
+                .symbol
+                .as_str(),
+            "pl_schedule_slot_0002_crop_0003_imngmt"
+        );
+        assert_eq!(
+            tables
+                .pl_growth_slot_crop_state_symbol("jdplt", 2, 3)
+                .expect("growth crop symbol should resolve")
+                .symbol
+                .as_str(),
+            "pl_growth_slot_0002_crop_0003_jdplt"
+        );
+        assert_eq!(
+            tables
+                .pl_decomp_slot_crop_state_symbol("resmgt", 2, 3)
+                .expect("decomp crop symbol should resolve")
+                .symbol
+                .as_str(),
+            "pl_decomp_slot_0002_crop_0003_resmgt"
+        );
+        assert!(
+            tables
+                .pl_decomp_slot_crop_state_symbol("gday", 2, 3)
+                .is_none()
+        );
+        assert_eq!(
+            tables
+                .pl_decomp_slot_crop_indexed_state_symbol("gday", 2, 3, 1)
+                .expect("indexed decomp crop symbol should resolve")
+                .symbol
+                .as_str(),
+            "pl_decomp_slot_0002_crop_0003_gday_0001"
+        );
+    }
+
+    #[test]
+    fn indexed_surface_set_updates_in_id_order() {
+        let registry =
+            SymbolRegistry::from_symbols(["a", "b", "c"]).expect("registry should build");
+        let mut surface = IndexedSurface::from_btreemap(
+            &registry,
+            &BTreeMap::from([
+                (BoundarySymbol::from("a"), BoundaryValue::scalar(1.0)),
+                (BoundarySymbol::from("c"), BoundaryValue::scalar(3.0)),
+            ]),
+        )
+        .expect("indexed surface should build");
+
+        let b_id = registry
+            .id_of(&BoundarySymbol::from("b"))
+            .expect("b id should resolve");
+        let a_id = registry
+            .id_of(&BoundarySymbol::from("a"))
+            .expect("a id should resolve");
+
+        surface.set(b_id, Some(BoundaryValue::scalar(2.0)));
+        surface.set(a_id, None);
+
+        let exported = surface
+            .export_btreemap(&registry)
+            .expect("export should succeed");
+        assert_eq!(exported.len(), 2);
+        let b_value = exported
+            .get(&BoundarySymbol::from("b"))
+            .expect("b should be present")
+            .as_f64();
+        assert!((b_value - 2.0).abs() <= f64::EPSILON);
+        assert!(!exported.contains_key(&BoundarySymbol::from("a")));
+    }
 }

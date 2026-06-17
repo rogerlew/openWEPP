@@ -164,8 +164,13 @@ impl Wb11HydrologyKernel {
         let inputs = Self::wb19_lateral_transfer_inputs(request, phase_class)?;
         let lane_config = Self::wb19_lateral_lane_config(request, phase_class)?;
         let layer_state = Self::wb19_lateral_layer_state(request, phase_class, &lane_config)?;
-        let result =
-            Self::wb19_run_lateral_substeps(phase_class, &inputs, &lane_config, layer_state)?;
+        let result = Self::wb19_run_lateral_substeps(
+            request,
+            phase_class,
+            &inputs,
+            &lane_config,
+            layer_state,
+        )?;
         Self::wb19_lateral_response(request, phase_class, &inputs, &lane_config, &result)
     }
 
@@ -462,6 +467,7 @@ impl Wb11HydrologyKernel {
     }
 
     fn wb19_run_lateral_substeps(
+        request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
         inputs: &Wb19LateralInputs,
         lane_config: &Wb19LaneConfig,
@@ -471,6 +477,7 @@ impl Wb11HydrologyKernel {
             Self::wb19_lateral_run_accumulator(lane_config, state.theta.len(), inputs.soldep);
         for substep_index in 0..lane_config.lane_substeps {
             Self::wb19_run_lateral_substep(
+                request,
                 phase_class,
                 inputs,
                 lane_config,
@@ -520,6 +527,7 @@ impl Wb11HydrologyKernel {
     }
 
     fn wb19_run_lateral_substep(
+        request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
         inputs: &Wb19LateralInputs,
         lane_config: &Wb19LaneConfig,
@@ -571,6 +579,7 @@ impl Wb11HydrologyKernel {
             Some(q_lateral_target),
         )?;
         Self::wb19_record_lateral_surface_saturation(
+            request,
             phase_class,
             substep_index,
             state,
@@ -1053,6 +1062,7 @@ impl Wb11HydrologyKernel {
     }
 
     fn wb19_record_lateral_surface_saturation(
+        request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
         substep_index: usize,
         state: &mut Wb19LateralLayerState,
@@ -1068,7 +1078,11 @@ impl Wb11HydrologyKernel {
             };
             Self::require_state_range_for_symbol(
                 phase_class,
-                &Self::hourly_symbol(MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT, substep_index + 1),
+                &Self::hourly_symbol_for_request(
+                    request,
+                    MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+                    substep_index + 1,
+                ),
                 current_saturation_runoff,
                 Some(0.0),
                 None,
@@ -1327,14 +1341,22 @@ impl Wb11HydrologyKernel {
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
         for (index, value) in result.q_lateral_substeps.iter().enumerate() {
             state_updates.push(WritebackField::bounded(
-                Self::hourly_symbol(MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT, index + 1),
+                Self::hourly_symbol_for_request(
+                    request,
+                    MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+                    index + 1,
+                ),
                 Self::normalize_non_negative_within_tolerance(*value),
                 Some(0.0),
                 None,
             ));
         }
         for (index, value) in result.surface_saturation_substeps.iter().enumerate() {
-            let symbol = Self::hourly_symbol(MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT, index + 1);
+            let symbol = Self::hourly_symbol_for_request(
+                request,
+                MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+                index + 1,
+            );
             let previous_value =
                 Self::optional_state_scalar_for_symbol(request, phase_class, &symbol)?
                     .unwrap_or(0.0);
