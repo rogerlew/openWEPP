@@ -61,7 +61,7 @@ before Stage 2 (`PERFIDX02`).
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface — authority flip (Stage 3)** | PERFIDX02 cleared the clone-economics gate (sparse clone **54–70× at real H2637 scale**; registry tightened 1.7M→44.7K; shadow equality clean; bit-identical). Stage 3 makes the indexed store authoritative + dense clones, keeping `BoundarySymbol` compatibility | Bit-identical authority flip; clone-win realized end-to-end; reachable-registry validated across diverse managements | ▶️ **scaffolded, Codex-ready** — pre-flip diverse-management gate + load-bearing bit-identity (`PERFIDX03`) |
+| 2 | **Indexed runtime-surface — authority flip (Stage 3)** | PERFIDX02 cleared the clone-economics gate (sparse clone **54–70× at real H2637 scale**; registry tightened 1.7M→44.7K; shadow equality clean; bit-identical). Stage 3 makes the indexed store authoritative; sparse-`Vec` clones (Amendment 1), keeping `BoundarySymbol` compatibility | Bit-identical authority flip; clone-win realized end-to-end; reachable-registry validated across diverse managements | ⏸️ **executed-hold** (`PERFIDX03`) — flip regressed OFE5 **+41.9%** (full-`BTreeMap` export per lane/day at the kernel seam dwarfs the sparse-clone win); code discarded, record kept. Next: **`PERFIDX03B`** removes the hot-path export (seam reads the indexed rep) before re-flip. Inadvertent irrigation wiring extracted → `backlog/20260617-irrigation-management-gated-activation.md` |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -136,9 +136,19 @@ than `BTreeMap::clone` (Codex caught + fixed an LLVM clone-elision bench artifac
 the registry tightened **1.7M→44,746** (reachable `ncut`/`ncycle` bound, 0 unknowns),
 the shadow equals the BTreeMap (mismatch 0), and outputs are bit-identical (shadow
 dormant in production). The dominant lever (clone) is proven; the *total* ≤10× still
-awaits the Stage-6 re-measure. Next: **Stage 3 authority flip** (`PERFIDX03`), gated
-on validating the tightened reachable-registry across diverse managements
-(grazing/multi-cut) before the registry becomes production-load-bearing.
+awaits the Stage-6 re-measure. **PERFIDX03** *(executed-hold 2026-06-17)* attempted
+the flip: the diverse-management registry gate passed (0 unknowns), but the flip
+**regressed OFE5 +41.9%** (27.01→38.34 s) — the compat seam clones the sparse store
+then **exports it back to a full `BTreeMap` per lane/day** for the kernel, and that
+export dwarfs the clone win. Codex held (disabled the flip; no-flip 26.80 s); the
+uncommitted code was **discarded** and the record kept. This proves the flip and the
+read-side migration are *coupled*: the flip can't win while the seam reads via a full
+export. Next: **`PERFIDX03B`** removes the hot-path `BTreeMap` export (kernel seam
+consumes the indexed rep / cached export) and re-runs the flip clean. *(Review also
+caught PERFIDX03 inadvertently wiring on the dormant irrigation pipeline via the
+registry-coverage gate; extracted to `backlog/20260617-irrigation-management-gated-activation.md`
+— irrigation runs only when the management declares it, and is out of scope for the
+perf migration.)*
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 

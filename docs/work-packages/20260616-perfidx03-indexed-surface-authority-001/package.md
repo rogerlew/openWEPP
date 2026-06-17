@@ -1,7 +1,14 @@
 # PERFIDX03 — Indexed-Surface Authority Flip (Stage 3)
 
-Status: queued (ADR-0022 + Amendment 1; Stage 3 of the `PERFARCH01` staged plan;
-PERFIDX02 complete — clone-economics gate cleared)
+Status: executed-hold 2026-06-17 (ADR-0022 + Amendment 1; Stage 3 of the
+`PERFARCH01` staged plan; PERFIDX02 complete - clone-economics gate cleared;
+authority flip attempted and held on realized performance regression).
+**Post-review closure:** all PERFIDX03 working-tree code was discarded; the committed
+record is docs-only and `crates/` returns to the PERFIDX02 state — see
+`artifacts/perfidx03_disposition.md` (Post-review closure). Re-flip happens clean in
+`PERFIDX03B`; the inadvertently-wired irrigation is extracted to
+`backlog/20260617-irrigation-management-gated-activation.md` (management-gated, out of
+scope for perf).
 
 Package type: **Behavior-preserving authority flip — high-risk** (the first stage
 where outputs depend on the indexed store; bit-identity is **load-bearing**, no
@@ -41,7 +48,9 @@ is a real-scale win; PERFIDX03 turns that shadow into the authority.
    (a crash)**, validate the tightened reachable enumeration (the `ncut`/`ncycle`
    bounds + `.unwrap_or(0)` fallback from PERFIDX02) produces **0 post-freeze
    unknowns across a *diverse* config cohort** — grazing, multiple cuts/cycles,
-   irrigation, varied soil-layer/crop-rotation — not just H2637 + the ladder. If a
+   varied soil-layer/crop-rotation (**irrigation is out of scope** — deferred to
+   `backlog/20260617-irrigation-management-gated-activation.md`; do **not** wire or
+   activate irrigation) — not just H2637 + the ladder. If a
    gap is found, **fix the enumeration before flipping** (or branch a registry-
    completeness fix). Do not flip on an unproven reachable set.
 2. **Flip authority.** Swap the surface backing to the sparse store behind the

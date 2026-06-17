@@ -21,7 +21,9 @@ divergence is real.
    production-active and a miss is fail-closed (a crash). Prove the tightened
    reachable enumeration (`ncut`/`ncycle` + `.unwrap_or(0)`) yields **0 post-freeze
    unknowns across a *diverse* config cohort** — grazing, multiple cuts/cycles,
-   irrigation, varied soil-layer/crop-rotation — not just H2637 + the ladder. Fix the
+   varied soil-layer/crop-rotation (**irrigation is out of scope** — deferred to
+   `backlog/20260617-irrigation-management-gated-activation.md`; do **not** wire or
+   activate irrigation) — not just H2637 + the ladder. Fix the
    enumeration first if a gap appears.
 2. **Stop + diagnose on any bit-identity divergence.** Do not weaken the anchor gate.
 
