@@ -704,6 +704,16 @@ publication-safe Daymet CLI audit:
    `docs/decisions/0022-indexed-runtime-surface-representation.md`. Follow-on:
    `PERFIDX01-run-scoped-symbol-registry-001`. No production/contract edit.
 
+16. **Run-scoped symbol registry** *(PERFIDX01 complete 2026-06-16,
+   Codex-executed)* —
+   `20260616-perfidx01-run-scoped-symbol-registry-001/`. Implemented ADR-0022
+   Stage 1: `SymbolId`, frozen sorted `SymbolRegistry`, BTreeMap export adapter,
+   and an env-gated no-lazy-interning audit path. Completeness passed on H2637
+   both UI variants plus OFE1-5 (`unknown_symbol_count = 0`); bit identity and
+   determinism passed (`ANCHOR_MISMATCHES=0`, `DETERMINISM_MISMATCHES=0`).
+   Runtime storage authority remains the existing BTreeMap surface. Follow-on:
+   `PERFIDX02-indexed-shadow-runtime-surface-001`.
+
 Acceptance target at each rung is **closure** (does it conserve), not **magnitude**
 (is the forcing physically right) and not comparator-match. See memory
 `project-work-sequencing-wb-frost-mofe-snow` for the rationale and the two

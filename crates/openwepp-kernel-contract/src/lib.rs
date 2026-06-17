@@ -146,6 +146,79 @@ mod tests {
     }
 
     #[test]
+    fn symbol_registry_assigns_ids_in_sorted_symbol_order() {
+        let registry = SymbolRegistry::from_symbols(["zeta", "alpha", "beta", "alpha"])
+            .expect("registry should build from duplicate symbols");
+
+        let assigned = registry
+            .iter()
+            .map(|(id, symbol)| (id.as_u32(), symbol.as_str().to_owned()))
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            assigned,
+            vec![
+                (0, "alpha".to_owned()),
+                (1, "beta".to_owned()),
+                (2, "zeta".to_owned()),
+            ]
+        );
+        assert_eq!(
+            registry
+                .id_of(&BoundarySymbol::from("beta"))
+                .expect("beta should be registered")
+                .as_u32(),
+            1
+        );
+    }
+
+    #[test]
+    fn symbol_registry_export_surface_matches_btreemap_order_after_sort() {
+        let mut surface = BTreeMap::new();
+        surface.insert(BoundarySymbol::from("q"), BoundaryValue::from(4.0));
+        surface.insert(BoundarySymbol::from("alpha"), BoundaryValue::from(2.0));
+        surface.insert(BoundarySymbol::from("storage"), BoundaryValue::from(6.0));
+        let registry =
+            SymbolRegistry::from_symbols(["storage", "q", "alpha"]).expect("registry should build");
+
+        let exported = registry
+            .export_surface_in_id_order(&surface)
+            .expect("registered surface should export");
+        let exported_symbols = exported
+            .iter()
+            .map(|(_, symbol, value)| (symbol.as_str().to_owned(), value.as_f64()))
+            .collect::<Vec<_>>();
+        let btree_symbols = surface
+            .iter()
+            .map(|(symbol, value)| (symbol.as_str().to_owned(), value.as_f64()))
+            .collect::<Vec<_>>();
+
+        assert_eq!(exported_symbols, btree_symbols);
+    }
+
+    #[test]
+    fn symbol_registry_audit_records_post_freeze_unknowns() {
+        let registry = SymbolRegistry::from_symbols(["known"]).expect("registry should build");
+        begin_symbol_registry_audit(registry).expect("audit should begin");
+
+        let _known = BoundarySymbol::from("known");
+        let _unknown = BoundarySymbol::from("late_unknown");
+
+        let report = finish_symbol_registry_audit().expect("audit report should exist");
+        assert_eq!(report.registry_symbol_count(), 1);
+        assert_eq!(report.constructed_symbol_count(), 2);
+        assert_eq!(
+            report
+                .unknown_symbols()
+                .iter()
+                .map(BoundarySymbol::as_str)
+                .collect::<Vec<_>>(),
+            vec!["late_unknown"]
+        );
+        assert!(!report.is_complete());
+    }
+
+    #[test]
     fn phase_class_growth_predicate_matches_contract() {
         assert!(!HillslopeKernelPhaseClass::Hydrology.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::HydrologyEvapotranspiration.is_growth_transition());

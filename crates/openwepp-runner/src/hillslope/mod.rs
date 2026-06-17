@@ -1,4 +1,5 @@
 mod intake_lane_setup;
+mod symbol_registry_audit;
 
 include!("00_runner_intake_and_lane_setup.rs");
 include!("01_scheduler_and_trace.rs");

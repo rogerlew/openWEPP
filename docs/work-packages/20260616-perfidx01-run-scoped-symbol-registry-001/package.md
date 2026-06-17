@@ -1,7 +1,7 @@
 # PERFIDX01 — Run-Scoped Symbol Registry (Indexed Runtime-Surface Stage 1)
 
-Status: queued (ADR-0022 ratified 2026-06-16; Stage 1 of the
-`PERFARCH01` staged plan; operator-directed)
+Status: complete 2026-06-16 (ADR-0022 ratified; Stage 1 of the
+`PERFARCH01` staged plan; operator-directed; storage authority not flipped)
 
 Package type: **Behavior-preserving infrastructure addition** (Stage 1 — adds the
 registry + invariant proofs **without flipping storage authority**; the BTreeMap

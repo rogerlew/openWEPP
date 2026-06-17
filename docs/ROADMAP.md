@@ -47,8 +47,11 @@ adjudication**; on the perf track, PERFHO01 attributed the ~80–110× high-OFE 
 bit-identical), and **PERFHO02** characterized the residual as hydrology
 symbol-access/guard work plus secondary writeback-application overhead. Operator
 set a **≤10× (≤5×)** target; **PERFARCH01** completed the indexed runtime-surface
-design and ADR-0022 (ratified 2026-06-16). The next perf mechanism is Stage 1
-`PERFIDX01`, the frozen run-scoped symbol registry.
+design and ADR-0022 (ratified 2026-06-16). **PERFIDX01** (Stage 1) is complete — frozen registry + invariants proven
+bit-identical. Its completeness audit found the *bounded* symbol universe is
+~1.7M for H2637 (vs the ~6K assumed; ~3.6K actually used), so the dense-store
+representation needs an **ADR-0022 refinement** (compact/sparse/partitioned)
+before Stage 2 (`PERFIDX02`).
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -58,7 +61,7 @@ design and ADR-0022 (ratified 2026-06-16). The next perf mechanism is Stage 1
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface Stage 1** | Use the ratified PERFARCH01 design (ADR-0022): frozen run-scoped `SymbolRegistry`, sorted-order `SymbolId`, and BTreeMap export/equality adapters; no storage authority flip yet | Registry skeleton + sorted-id/string-order tests + completeness (0 post-freeze unknowns) + bit-identical outputs if runtime code changes | ▶️ **scaffolded, Codex-ready** (`PERFIDX01`) |
+| 2 | **Indexed runtime-surface — storage representation** | Resolve dense-vs-compact/sparse/partitioned after PERFIDX01 found the bounded registry is ~1.7M (not ~6K): a dense global-`SymbolId` `Vec` would regress the dominant clone cost. ADR-0022 refinement, then Stage 2 shadow | Storage model proven at H2637 scale (clone stays a win) + ADR-0022 amendment | ▶️ **gated on ADR-0022 storage refinement** (`PERFIDX02`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -76,7 +79,7 @@ Adjudicate whether the per-OFE runoff magnitude is expected Stage-2 divergence o
 a defect-shaped follow-on, judged against the already-closed routed balance
 (comparator a flag, ADR-0017). Package: `MOFE-MAGPARITY01`.
 
-### 2. Indexed runtime-surface — Stage 1 ▶️ (scaffolded, Codex-ready, `PERFIDX01`)
+### 2. Indexed runtime-surface — storage representation ▶️ (gated on ADR-0022 refinement)
 
 PERFHO01 *(complete 2026-06-16)* characterized the ~80–110× H2637 wall-clock gap:
 CPU-bound (`977.99/978.55` user s), **not** I/O or parquet, scaling
@@ -117,8 +120,18 @@ dense indexed state/flux storage, with proposed
 storage operations were 109.85× faster for clone, 219.16× faster for pre-resolved
 lookup, and 115.77× faster for update batches. <=10× is plausible if staged
 implementation migrates about 89-90% of current elapsed time out of string-keyed
-surface mechanics; <=5× remains aspirational. Next mechanism:
-`PERFIDX01-run-scoped-symbol-registry-001`.
+surface mechanics; <=5× remains aspirational.
+
+**PERFIDX01** *(complete 2026-06-16)* landed the frozen registry + invariants
+(sorted-id, equality, completeness with 0 post-freeze unknowns, bit-identical) —
+but its completeness audit surfaced that the *bounded* symbol universe is
+**~1.7M for H2637** (vs the ~6K the dense-store premise assumed; ~3.6K actually
+used), RSS nearly doubling. Lookups stay O(1) at any size, but a dense
+`Vec<Option>` indexed by the global 1.7M-`SymbolId` would make the per-OFE clone
+(the *dominant* cost) **larger and slower** than the BTreeMap it replaces. Next:
+an **ADR-0022 refinement** of the storage representation (compact per-surface ids
+/ partition forcing from cloned state / sparse), proven at H2637 scale, then
+Stage 2 (`PERFIDX02`, indexed shadow). The registry + invariants are sound.
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 

@@ -1,4 +1,5 @@
-use std::collections::BTreeMap;
+use std::cell::RefCell;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
 use openwepp_sim_contract::status::SimulationStatus;
@@ -27,7 +28,9 @@ pub struct BoundarySymbol(String);
 impl BoundarySymbol {
     #[must_use]
     pub fn new(symbol: impl Into<String>) -> Self {
-        Self(symbol.into())
+        let symbol = Self(symbol.into());
+        record_constructed_boundary_symbol(&symbol);
+        symbol
     }
 
     #[must_use]
@@ -52,6 +55,312 @@ impl From<String> for BoundarySymbol {
     fn from(value: String) -> Self {
         Self::new(value)
     }
+}
+
+/// Dense identifier assigned by a frozen [`SymbolRegistry`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct SymbolId(u32);
+
+impl SymbolId {
+    /// Return the raw registry id.
+    #[must_use]
+    pub const fn as_u32(self) -> u32 {
+        self.0
+    }
+
+    /// Return the id as a vector index.
+    #[must_use]
+    pub const fn as_usize(self) -> usize {
+        self.0 as usize
+    }
+}
+
+impl fmt::Display for SymbolId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[allow(clippy::cast_possible_truncation)]
+fn symbol_registry_supported_max_usize() -> usize {
+    u32::MAX as usize
+}
+
+#[allow(clippy::cast_possible_truncation)]
+fn symbol_id_from_registry_index(index: usize) -> SymbolId {
+    debug_assert!(index <= symbol_registry_supported_max_usize());
+    SymbolId(index as u32)
+}
+
+/// Frozen run-scoped mapping from logical boundary symbols to dense ids.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SymbolRegistry {
+    symbols_by_id: Vec<BoundarySymbol>,
+    ids_by_symbol: BTreeMap<BoundarySymbol, SymbolId>,
+}
+
+impl SymbolRegistry {
+    /// Build a frozen registry. Ids are assigned in sorted symbol order.
+    pub fn from_symbols<I, S>(symbols: I) -> Result<Self, SymbolRegistryError>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<BoundarySymbol>,
+    {
+        let mut symbols_by_id = symbols.into_iter().map(Into::into).collect::<Vec<_>>();
+        symbols_by_id.sort();
+        symbols_by_id.dedup();
+
+        if symbols_by_id.len() > symbol_registry_supported_max_usize() {
+            return Err(SymbolRegistryError::TooManySymbols {
+                count: symbols_by_id.len(),
+                supported_max: u32::MAX,
+            });
+        }
+
+        let mut ids_by_symbol = BTreeMap::new();
+        for (index, symbol) in symbols_by_id.iter().enumerate() {
+            ids_by_symbol.insert(symbol.clone(), symbol_id_from_registry_index(index));
+        }
+
+        Ok(Self {
+            symbols_by_id,
+            ids_by_symbol,
+        })
+    }
+
+    /// Build a registry from the union of state and flux surface keys.
+    pub fn from_surfaces(
+        state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    ) -> Result<Self, SymbolRegistryError> {
+        Self::from_symbols(
+            state_surface
+                .keys()
+                .chain(flux_surface.keys())
+                .cloned()
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    /// Return the number of symbols in this registry.
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.symbols_by_id.len()
+    }
+
+    /// Return whether this registry is empty.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.symbols_by_id.is_empty()
+    }
+
+    /// Resolve a logical symbol to its dense id.
+    pub fn id_of(&self, symbol: &BoundarySymbol) -> Result<SymbolId, SymbolRegistryError> {
+        self.ids_by_symbol
+            .get(symbol)
+            .copied()
+            .ok_or_else(|| SymbolRegistryError::UnknownSymbol {
+                symbol: symbol.clone(),
+            })
+    }
+
+    /// Return the symbol for a dense id.
+    #[must_use]
+    pub fn symbol(&self, id: SymbolId) -> Option<&BoundarySymbol> {
+        self.symbols_by_id.get(id.as_usize())
+    }
+
+    /// Return true when this registry contains the logical symbol.
+    #[must_use]
+    pub fn contains_symbol(&self, symbol: &BoundarySymbol) -> bool {
+        self.ids_by_symbol.contains_key(symbol)
+    }
+
+    /// Return symbols in id order.
+    #[must_use]
+    pub fn symbols(&self) -> &[BoundarySymbol] {
+        &self.symbols_by_id
+    }
+
+    /// Iterate through `(SymbolId, BoundarySymbol)` pairs in id order.
+    pub fn iter(&self) -> impl Iterator<Item = (SymbolId, &BoundarySymbol)> {
+        self.symbols_by_id
+            .iter()
+            .enumerate()
+            .map(|(index, symbol)| {
+                let id = symbol_id_from_registry_index(index);
+                (id, symbol)
+            })
+    }
+
+    /// Return surface entries in registry id order.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SymbolRegistryError::UnknownSymbol`] when the surface contains
+    /// a key that was not pre-registered.
+    pub fn export_surface_in_id_order(
+        &self,
+        surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    ) -> Result<Vec<(SymbolId, BoundarySymbol, BoundaryValue)>, SymbolRegistryError> {
+        let mut exported = Vec::with_capacity(surface.len());
+        for (symbol, value) in surface {
+            exported.push((self.id_of(symbol)?, symbol.clone(), *value));
+        }
+        exported.sort_by_key(|(id, _, _)| *id);
+        Ok(exported)
+    }
+
+    /// Return surface keys missing from this registry.
+    #[must_use]
+    pub fn surface_unknown_symbols(
+        &self,
+        surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    ) -> Vec<BoundarySymbol> {
+        surface
+            .keys()
+            .filter(|symbol| !self.contains_symbol(symbol))
+            .cloned()
+            .collect()
+    }
+}
+
+/// Registry construction and lookup errors.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SymbolRegistryError {
+    TooManySymbols { count: usize, supported_max: u32 },
+    UnknownSymbol { symbol: BoundarySymbol },
+}
+
+impl fmt::Display for SymbolRegistryError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::TooManySymbols {
+                count,
+                supported_max,
+            } => write!(
+                f,
+                "symbol registry has {count} symbols, exceeding supported maximum {supported_max}"
+            ),
+            Self::UnknownSymbol { symbol } => {
+                write!(f, "symbol {symbol} is not present in the frozen registry")
+            }
+        }
+    }
+}
+
+impl std::error::Error for SymbolRegistryError {}
+
+/// Runtime audit report for a frozen symbol registry.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SymbolRegistryAuditReport {
+    registry_symbol_count: usize,
+    constructed_symbol_count: usize,
+    unknown_symbols: Vec<BoundarySymbol>,
+}
+
+impl SymbolRegistryAuditReport {
+    #[must_use]
+    pub const fn registry_symbol_count(&self) -> usize {
+        self.registry_symbol_count
+    }
+
+    #[must_use]
+    pub const fn constructed_symbol_count(&self) -> usize {
+        self.constructed_symbol_count
+    }
+
+    #[must_use]
+    pub fn unknown_symbols(&self) -> &[BoundarySymbol] {
+        &self.unknown_symbols
+    }
+
+    #[must_use]
+    pub fn unknown_symbol_count(&self) -> usize {
+        self.unknown_symbols.len()
+    }
+
+    #[must_use]
+    pub fn is_complete(&self) -> bool {
+        self.unknown_symbols.is_empty()
+    }
+}
+
+/// Audit lifecycle errors.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SymbolRegistryAuditError {
+    AlreadyActive,
+}
+
+impl fmt::Display for SymbolRegistryAuditError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::AlreadyActive => write!(f, "symbol registry audit is already active"),
+        }
+    }
+}
+
+impl std::error::Error for SymbolRegistryAuditError {}
+
+#[derive(Debug, Clone)]
+struct SymbolRegistryAuditState {
+    registry: SymbolRegistry,
+    constructed_symbols: BTreeSet<BoundarySymbol>,
+    unknown_symbols: BTreeSet<BoundarySymbol>,
+}
+
+thread_local! {
+    static SYMBOL_REGISTRY_AUDIT: RefCell<Option<SymbolRegistryAuditState>> =
+        const { RefCell::new(None) };
+}
+
+/// Begin a thread-local frozen-registry audit.
+///
+/// # Errors
+///
+/// Returns [`SymbolRegistryAuditError::AlreadyActive`] when an audit is already
+/// active on this thread.
+pub fn begin_symbol_registry_audit(
+    registry: SymbolRegistry,
+) -> Result<(), SymbolRegistryAuditError> {
+    SYMBOL_REGISTRY_AUDIT.with(|cell| {
+        let mut state = cell.borrow_mut();
+        if state.is_some() {
+            return Err(SymbolRegistryAuditError::AlreadyActive);
+        }
+        *state = Some(SymbolRegistryAuditState {
+            registry,
+            constructed_symbols: BTreeSet::new(),
+            unknown_symbols: BTreeSet::new(),
+        });
+        Ok(())
+    })
+}
+
+/// Finish a thread-local frozen-registry audit and return its report.
+#[must_use]
+pub fn finish_symbol_registry_audit() -> Option<SymbolRegistryAuditReport> {
+    SYMBOL_REGISTRY_AUDIT.with(|cell| {
+        let state = cell.borrow_mut().take()?;
+        Some(SymbolRegistryAuditReport {
+            registry_symbol_count: state.registry.len(),
+            constructed_symbol_count: state.constructed_symbols.len(),
+            unknown_symbols: state.unknown_symbols.into_iter().collect(),
+        })
+    })
+}
+
+fn record_constructed_boundary_symbol(symbol: &BoundarySymbol) {
+    SYMBOL_REGISTRY_AUDIT.with(|cell| {
+        let mut state = cell.borrow_mut();
+        let Some(state) = state.as_mut() else {
+            return;
+        };
+        state.constructed_symbols.insert(symbol.clone());
+        if !state.registry.contains_symbol(symbol) {
+            state.unknown_symbols.insert(symbol.clone());
+        }
+    });
 }
 
 /// Maximum supported climate forcing series points for runtime symbol

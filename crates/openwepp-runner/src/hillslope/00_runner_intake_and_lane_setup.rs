@@ -2312,12 +2312,18 @@ pub fn execute_hillslope_run(
     let runtime_setup = build_static_hillslope_runtime_setup(request, &inputs, &mut sidecars)?;
     let timestep_policy = runtime_setup.timestep_policy;
     let adapter_boundary = runtime_setup.adapter_boundary;
-    let execution = execute_hillslope_climate_days(
+    let symbol_registry_audit =
+        symbol_registry_audit::begin_if_requested(&runtime_setup.execution_state, &inputs.climate)?;
+    let execution_result = execute_hillslope_climate_days(
         &inputs.runfile.run_name,
         targets.output_hillslope_id,
         runtime_setup.execution_state,
         &inputs.climate,
-    )?;
+    );
+    if let Some(symbol_registry_audit) = symbol_registry_audit {
+        symbol_registry_audit.finish()?;
+    }
+    let execution = execution_result?;
     let execution_provenance =
         build_hillslope_execution_provenance(&execution, &mut sidecars.sidecar_warnings)?;
     let (wb13_publication, mofe_hourly_carry) = build_hillslope_publication_provenance(&execution)?;
