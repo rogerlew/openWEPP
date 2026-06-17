@@ -61,7 +61,7 @@ before Stage 2 (`PERFIDX02`).
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface — storage representation** | Resolve dense-vs-compact/sparse/partitioned after PERFIDX01 found the bounded registry is ~1.7M (not ~6K): a dense global-`SymbolId` `Vec` would regress the dominant clone cost. ADR-0022 refinement, then Stage 2 shadow | Storage model proven at H2637 scale (clone stays a win) + ADR-0022 amendment | ▶️ **gated on ADR-0022 storage refinement** (`PERFIDX02`) |
+| 2 | **Indexed runtime-surface — storage representation** | Resolve dense-vs-compact/sparse/partitioned after PERFIDX01 found the bounded registry is ~1.7M (not ~6K): a dense global-`SymbolId` `Vec` would regress the dominant clone cost. ADR-0022 refinement, then Stage 2 shadow | Storage model proven at H2637 scale (clone stays a win) + ADR-0022 amendment | ▶️ **scaffold-ready** — ADR-0022 Amendment 1 sets the working-set store (`PERFIDX02`) |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -128,10 +128,11 @@ but its completeness audit surfaced that the *bounded* symbol universe is
 **~1.7M for H2637** (vs the ~6K the dense-store premise assumed; ~3.6K actually
 used), RSS nearly doubling. Lookups stay O(1) at any size, but a dense
 `Vec<Option>` indexed by the global 1.7M-`SymbolId` would make the per-OFE clone
-(the *dominant* cost) **larger and slower** than the BTreeMap it replaces. Next:
-an **ADR-0022 refinement** of the storage representation (compact per-surface ids
-/ partition forcing from cloned state / sparse), proven at H2637 scale, then
-Stage 2 (`PERFIDX02`, indexed shadow). The registry + invariants are sound.
+(the *dominant* cost) **larger and slower** than the BTreeMap it replaces. **ADR-0022 Amendment 1** (2026-06-16) refined this: the store is sized to the
+working set (sparse `Vec<(SymbolId, value)>` primary; dense global-`SymbolId` `Vec`
+rejected), with the global registry/sorted-id unchanged. Stage 2 (`PERFIDX02`)
+implements it and **must measure the clone stays a win at H2637 scale** before
+flipping authority. The registry + invariants are sound.
 
 ### 4. Stage-2 Physics-Magnitude ⏸️ (deferred, judged last)
 
