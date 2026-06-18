@@ -10,6 +10,16 @@
 
 State as of `2026-06-18`:
 
+- PERFARRAY01 is executed-NO-GO as scoped (WB11 integrated
+  array-authoritative pilot, Stage A + B). Stage A landed a default-unwired
+  array contract shell in `openwepp-kernel-contract` and focused crate gates
+  passed. Stage B did not run: static inspection showed the current
+  `HillslopeKernelRequest` and scheduler still require logical `BTreeMap`
+  state/flux maps for kernel reads, consumer-boundary validation, logical
+  writeback apply, and indexed mirror synchronization. Any pilot from that seam
+  would violate the package's no per-day export or no dual-write proofs. No
+  H2637 floor measurement; ADR-0023 remains unratified. Package:
+  `20260618-perfarray01-wb11-integrated-array-authoritative-pilot-001/`.
 - PERFARCH02 is complete (architecture scoping + floor prototype). Verdict:
   CONDITIONAL GO to an integrated WB11 array-authoritative pilot. The
   artifact-local prototype preserved exact exported-map identity for the

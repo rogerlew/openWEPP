@@ -1,8 +1,20 @@
 # Artifacts
 
-Status: scaffolded (awaiting Codex execution).
+Status: executed-no-go 2026-06-18.
 
-Planned deliverables:
+Summary:
+
+- Stage A contract shell landed in `openwepp-kernel-contract` as inert,
+  default-unwired production code.
+- Stage A focused gates passed.
+- Stage B did not run. Static inspection showed the existing WB11 request and
+  scheduler seams still require logical `BTreeMap` state for kernel reads,
+  consumer-boundary validation, logical writeback apply, and indexed mirror
+  synchronization. A pilot built on that seam would fail the package's two
+  required structural proofs.
+- No H2637 floor measurement was produced; ADR-0023 remains unratified.
+
+Deliverables:
 
 - `perfarray01-contract-shell.md`
 - `perfarray01-wb11-pilot.md`

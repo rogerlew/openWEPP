@@ -1,7 +1,8 @@
 # PERFARRAY01 - WB11 Integrated Array-Authoritative Pilot (Stage A + B)
 
-Status: scaffolded 2026-06-18 (first production code in the array-authoritative arc;
-implements Stages A+B of the PERFARCH02 staged plan; governed by proposed ADR-0023)
+Status: executed-no-go 2026-06-18 (Stage A contract shell landed; Stage B
+integrated WB11 pilot blocked by the existing logical-map request/scheduler
+authority seam; ADR-0023 not ready for ratification)
 
 Package type: **Production hot-path pilot — flag-gated, bit-identity load-bearing, floor
 measurement + GO/NO-GO.** This is a step up in risk from the PERFIDX/PERFARCH scoping work:
