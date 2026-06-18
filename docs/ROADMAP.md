@@ -59,7 +59,7 @@ evidence.
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
-| 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
+| 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ▶️ **`MOFE-MAGPARITY01` scaffolded, Codex-ready** — per-term verdict over generation / inter-OFE run-on re-infiltration (`INV-RUNOFFPART-028`, prime suspect) / export; judged against the closed balance + `SC-RUNOFFPART-001`, legacy a flag (ADR-0017); defect → defect-closure ExecPlan handoff. Adjudication only, no fix. |
 | 2 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 3 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
