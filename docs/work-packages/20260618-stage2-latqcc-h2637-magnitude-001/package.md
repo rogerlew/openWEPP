@@ -1,6 +1,6 @@
 # STAGE2-LATQCC-H2637-MAGNITUDE - WB19 Lateral/Subsurface Generation Magnitude
 
-Status: scaffolded 2026-06-18 (Stage-2 physics-magnitude; the follow-on MAGPARITY01 routed here)
+Status: complete 2026-06-18 (verdict: `CONTRACT-GAP`; no openWEPP defect found)
 
 Package type: **Stage-2 physics-magnitude adjudication — produces a VERDICT, not a fix.** Unlike
 MAGPARITY01 (which could rule out defects with *conservation* identities), this is a **magnitude**

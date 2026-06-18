@@ -10,6 +10,15 @@
 
 State as of `2026-06-18`:
 
+- STAGE2-LATQCC-H2637-MAGNITUDE is complete with verdict `CONTRACT-GAP`.
+  H2637 `latqcc` was traced through WB19 per-substep operands for selected
+  high-magnitude days across all 19 OFEs; emitted WAT `latqcc` equals WB19 `q`,
+  and recomputed Eq [6.2.4]/Dun-style potential matches to floating-point
+  precision. No openWEPP equation, withdrawal, conductivity-override,
+  active-depth, or `drfc` formula defect was found. The remaining FARPOINT01
+  Stage-2 flag is an absolute lateral-flow magnitude authority gap, not a
+  defect-closure handoff. Package:
+  `20260618-stage2-latqcc-h2637-magnitude-001/`.
 - REFACTOR022 is complete for behavior-preserving monolith line-count cleanup.
   The four target-tier WARN-band files closest to the 3000-line required-refactor
   threshold were split by domain responsibility:
@@ -422,8 +431,10 @@ State as of `2026-06-18`:
   double-count the substrate surfaced; F-C contrasted closure (legacy with_ui
   runoff = 127.7 % of precip — q-cap violation — vs openWEPP 71 %, bounded); the
   `watpdg` branch-out resolved as a validated non-defect. **MAGPARITY01 closed
-  2026-06-18** with no transfer/area/export defect; the bounded runoff delta now
-  routes to Stage-2 lateral/subsurface magnitude. The ~80–110× high-OFE
+  2026-06-18** with no transfer/area/export defect. **STAGE2-LATQCC closed
+  2026-06-18** with no WB19 equation or operand-bound defect; the remaining
+  bounded runoff delta is an absolute lateral-flow magnitude authority gap. The
+  ~80–110× high-OFE
   wall-clock gap is scaffolded as `PERFHO01`.
 
 Active work sequence (each rung adds one mechanism on an already-closed

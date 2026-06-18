@@ -43,7 +43,10 @@ closed 2026-06-16 — openWEPP's three identities close at 19 OFEs past the lega
 ceiling; the frost `watbtm` double-count it surfaced was closed contract-first)
 are closed. **MAGPARITY01** completed the per-OFE runoff magnitude adjudication:
 the H2637 71% `runvol` is not an `INV-RUNOFFPART-028`, area-scaling, or export
-defect; the remaining flag routes to Stage-2 lateral/subsurface magnitude. On
+defect. **STAGE2-LATQCC-H2637-MAGNITUDE** then traced WB19 per-substep operands
+and found no equation, withdrawal, conductivity-override, active-depth, or
+`drfc` formula defect; the remaining flag is an absolute lateral-flow magnitude
+authority gap. On
 the perf track, PERFOPT01, PERFIDX03B, and PERFIDX04 captured
 the read-side clone/lookup levers; PERFIDX05 was held because write/guard id work
 is dual-write-bound under the read-mirror design; PERFIDX06 measured the
@@ -63,7 +66,7 @@ evidence.
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ✅ **`MOFE-MAGPARITY01` complete 2026-06-18** — no `INV-RUNOFFPART-028`, area-scaling, closure, or export defect; 71% `runvol` decomposes to routed lateral/subsurface magnitude. Follow-on is Stage-2 `latqcc`/WB19 magnitude, not a fix. |
 | 2 | **Monolith line-count split** | Behavior-preserving split by domain responsibility of the WARN-band files (measured 2026-06-18: **10 files >2000, 0 over the 3000 required threshold** — advisory hygiene, not the stale "3 files") | Target tier (4 files >2500) under 2000 WARN; bit-identical outputs | ✅ **`REFACTOR022` complete 2026-06-18** — the four target-tier files were split under 2000 lines, true pre-refactor HEAD identity passed with `anchor_mismatches = 0`, and the 2000-2500 tier remains deferred advisory WARN work. |
-| 3 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ▶️ **`STAGE2-LATQCC-H2637-MAGNITUDE` scaffolded, Codex-ready** — adjudicate the WB19 lateral-flow generation magnitude vs Eq [6.2.4]/Dun-2009 + `SC-SUBHYD-001` (forest `ksatadj` equivalent-K, drainable thickness, `drfc` threshold are the drivers); verify the equation, then judge the operands. `CORRECT` resolves the FARPOINT01 71% flag; `OPENWEPP-DEFECTIVE` → defect-closure ExecPlan; legacy a flag (ADR-0017). Adjudication only, no fix. |
+| 3 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ✅ **`STAGE2-LATQCC-H2637-MAGNITUDE` complete 2026-06-18** — WB19 `latqcc` equation and operand-bound checks passed on selected H2637 high-magnitude rows; no openWEPP defect or defect-closure handoff. Verdict: `CONTRACT-GAP`; next useful work is an absolute lateral-flow magnitude authority suite for `SC-SUBHYD-001`, not legacy parity. |
 
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 remaining items are separate follow-on mechanisms.)
@@ -81,8 +84,9 @@ a defect-shaped follow-on, judged against the already-closed routed balance
 
 MAGPARITY01 verdict: no transfer, closure, area-scaling, or export defect.
 The 71% `runvol` decomposes to a small local surface residual plus routed
-upstream lateral/subsurface flow; the remaining bounded delta is a Stage-2
-`latqcc`/WB19 magnitude flag.
+upstream lateral/subsurface flow. STAGE2-LATQCC-H2637-MAGNITUDE verdict: the
+WB19 `latqcc` equation and operand-bound checks pass, with no openWEPP defect;
+the remaining bounded delta is an absolute lateral-flow magnitude authority gap.
 
 ### 2. Indexed runtime-surface — hot-path redesign ▶️
 
