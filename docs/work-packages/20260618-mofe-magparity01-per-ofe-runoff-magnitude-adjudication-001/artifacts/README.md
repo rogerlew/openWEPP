@@ -1,8 +1,8 @@
 # Artifacts
 
-Status: scaffolded (awaiting execution).
+Status: executed-complete 2026-06-18.
 
-Planned deliverables:
+Deliverables:
 
 - `magparity01-runoff-decomposition.md`
 - `magparity01-inv028-closure-check.md`

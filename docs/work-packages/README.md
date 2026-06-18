@@ -412,9 +412,10 @@ State as of `2026-06-18`:
   legacy ≤10-OFE ceiling. F-B closed (contract-first) a frost `watbtm`
   double-count the substrate surfaced; F-C contrasted closure (legacy with_ui
   runoff = 127.7 % of precip — q-cap violation — vs openWEPP 71 %, bounded); the
-  `watpdg` branch-out resolved as a validated non-defect. The next active rung is
-  **per-OFE runoff magnitude adjudication** (`MOFE-MAGPARITY01`); the ~80–110×
-  high-OFE wall-clock gap is scaffolded as `PERFHO01`.
+  `watpdg` branch-out resolved as a validated non-defect. **MAGPARITY01 closed
+  2026-06-18** with no transfer/area/export defect; the bounded runoff delta now
+  routes to Stage-2 lateral/subsurface magnitude. The ~80–110× high-OFE
+  wall-clock gap is scaffolded as `PERFHO01`.
 
 Active work sequence (each rung adds one mechanism on an already-closed
 foundation; boundaries are closure gates, not calendar phases).
@@ -618,7 +619,7 @@ publication-safe Daymet CLI audit:
    value-family comparison remains an ADR-0017 investigation signal, not an
    acceptance target. M-G deliberately left sediment-coupled erosion `qin/qout`
    plus particle-fraction handoff as a named follow-on. Package:
-   `20260612-mofe01-inter-ofe-routing-closure-001/`. **Closure (2026-06-14):** MOFE01 water-routing closure is done-done on the 36-run 1–5-OFE ladder. Named follow-ons: `MOFE-FARPOINT01` (>10-OFE exceed-the-ceiling demonstration), `MOFE-MAGPARITY01` (±10–25% per-OFE runoff magnitude adjudication), `REFACTOR022` (line-count split), plus watershed/totalwatsed3 (queue item 1) and `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` (sediment coupling).
+   `20260612-mofe01-inter-ofe-routing-closure-001/`. **Closure (2026-06-14):** MOFE01 water-routing closure is done-done on the 36-run 1–5-OFE ladder. Named follow-ons: `MOFE-FARPOINT01` (>10-OFE exceed-the-ceiling demonstration), `MOFE-MAGPARITY01` (completed 2026-06-18; no transfer/area/export defect, Stage-2 lateral/subsurface magnitude flag), `REFACTOR022` (line-count split), plus watershed/totalwatsed3 (queue item 1) and `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF` (sediment coupling).
 
    **Next rung — WSHED01 (openWEPP-native totalwatsed3 CLI + closure)** *(complete 2026-06-14)*: closed the end-to-end totalwatsed3 water-balance audit on openWEPP-native output (the WBVAL06/6a deferral). See item 9 below for the W-arc→T-arc pivot (ADR-0019/0020), the three-iteration runvol fix, and the closure evidence. Package: `20260613-wshed01-watershed-routed-outputs-totalwatsed3-closure-001/`.
 9. **openWEPP-native totalwatsed3 CLI + closure** *(WSHED01 complete
@@ -687,8 +688,9 @@ publication-safe Daymet CLI audit:
    - **`watpdg`** branch-out **resolved**: instrumented detection found `watpdg>0`
      on 4 OFE-days with the gates still closing → it cancels on both sides →
      validated non-defect (no change). Commit `877ff25f`.
-   Follow-ons: `MOFE-MAGPARITY01` (magnitude), `PERFHO01` (the ~80–110× high-OFE
-   wall-clock gap — characterized, item 12), `WATERSHED-CHANWB-ROUTED-OUTPUT`,
+   Follow-ons: Stage-2 lateral/subsurface magnitude (`MAGPARITY01` completed the
+   no-transfer-defect adjudication), `PERFHO01` (the ~80–110× high-OFE wall-clock
+   gap — characterized, item 12), `WATERSHED-CHANWB-ROUTED-OUTPUT`,
    `MOFE-EROSION-QIN-QOUT-PARTICLE-HANDOFF`.
 
 12. **High-OFE hillslope performance characterization** *(PERFHO01 complete

@@ -1,13 +1,27 @@
 # MOFE-MAGPARITY01 - Per-OFE Runoff Magnitude Adjudication
 
-Status: scaffolded 2026-06-18 (Stage-2 magnitude triage; adjudicates the runoff-magnitude
-divergence FARPOINT01 surfaced and deferred here)
+Status: executed-complete 2026-06-18 (Stage-2 magnitude triage; adjudicated the
+runoff-magnitude divergence FARPOINT01 surfaced and deferred here)
 
 Package type: **Science adjudication — produces a per-term VERDICT, not a fix.** The output is
 a disposition: for each component of the runoff-to-outlet magnitude, *expected Stage-2
 divergence* (defer to the broader Stage-2 physics-magnitude judgment) or *defect-shaped
 follow-on* (hand off a Defect-Closure ExecPlan, ADR-0018). No code or contract change lands
 here unless the adjudication finds a contract gap to flag.
+
+## Execution Result
+
+MAGPARITY01 found **no `INV-RUNOFFPART-028`, area-scaling, export-duality, or
+publication defect** in the closed H2637 run. The 71.0% outlet `runvol` is not
+explained by under-absorbed run-on or Q/QOFE area inflation. It decomposes into
+`97,987 m³` local surface residual plus `13,987,683 m³` routed lateral flow from
+OFE1-OFE18; OFE19 lateral flow exits separately as `884,950 m³` `sbrunv`.
+
+Verdict: the remaining openWEPP-vs-legacy bounded delta is a **Stage-2
+lateral/subsurface process-magnitude flag**, not an openWEPP defect from this
+package. Legacy `with_ui` remains non-authoritative (`runvol = 127.7%` of
+precip; combined `runvol+sbrunv = 152.6%`). No code, contract, or Rust gate was
+in scope or changed.
 
 ## The finding (FARPOINT01, assumption-light)
 
