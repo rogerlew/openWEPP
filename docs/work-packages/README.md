@@ -10,6 +10,15 @@
 
 State as of `2026-06-18`:
 
+- REFACTOR022 is complete for behavior-preserving monolith line-count cleanup.
+  The four target-tier WARN-band files closest to the 3000-line required-refactor
+  threshold were split by domain responsibility:
+  `routing.rs`, `scheduler_seed_and_runtime.rs`, `core_types.rs`, and
+  `hydrology_phase_lateral_drainage.rs`. Every resulting parent/section file is
+  below 2000 lines, the true pre-refactor HEAD anchor closed with
+  `anchor_mismatches = 0`, and required Rust gates passed. The six 2000-2500
+  line files remain deferred advisory WARN work. Package:
+  `20260618-refactor022-monolith-line-count-split-001/`.
 - PERFARRAY02 is executed-NO-GO (WB11 request/accessor authority split +
   integrated floor). The flag-gated array request/accessor seam and real WB11
   runoff pilot landed, and default-vs-pilot identity passed on OFE5 and H2637

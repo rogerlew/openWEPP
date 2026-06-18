@@ -1,8 +1,8 @@
 # Artifacts
 
-Status: scaffolded (awaiting Codex execution).
+Status: complete 2026-06-18.
 
-Planned deliverables:
+Delivered artifacts:
 
 - `refactor022-split-plan.md`
 - `refactor022-bit-identity-evidence.md`

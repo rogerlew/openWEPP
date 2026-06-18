@@ -1,6 +1,9 @@
 # REFACTOR022 - Monolith Line-Count Split (behavior-preserving)
 
-Status: scaffolded 2026-06-18 (QA hygiene; the deferred "MOFE line-count split" follow-on)
+Status: complete 2026-06-18. The four target-tier WARN-band monoliths were split by
+domain responsibility, every resulting source file is under 2000 lines, full Rust
+gates passed, and the true pre-refactor HEAD anchor comparison closed with
+`anchor_mismatches = 0`. The 2000-2500 line WARN tier remains deferred.
 
 Package type: **Behavior-preserving mechanical refactor.** Pure structural split by domain
 responsibility — **bit-identical outputs** are the gate (no logic change), exactly the
