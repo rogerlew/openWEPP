@@ -1,7 +1,7 @@
 # STAGE2-BASE-CONDUCTIVITY-H2637-MAGNITUDE - Base Lateral/Percolation Conductivity Adjudication
 
-Status: scaffolded 2026-06-18 (Stage-2 physics-magnitude; the *actual* driver of the H2637 71%,
-after REFINTENT001 proved `ksatadj` is off for H2637)
+Status: complete 2026-06-18 (verdict `OPENWEPP-DEFECTIVE`; H2637 base conductivity is byte-live,
+and vertical `wb18_perc_ssc` normalization is source-intent defective)
 
 Package type: **Stage-2 physics-magnitude adjudication — produces a VERDICT, not a fix.** Same
 shape as STAGE2-LATQCC: judge a magnitude against physics + contract authority, legacy a flag

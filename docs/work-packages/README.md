@@ -10,14 +10,34 @@
 
 State as of `2026-06-18`:
 
+- BASECOND01 is complete-with-correction. `SC-INFILE-SOIL-001` v0.1.11 now
+  explicitly separates vertical `ssc` from hourly lateral `ui_ssh`: the top
+  normalized 200 mm interval uses the baseline top source-layer `ksat` rule,
+  lower split-source vertical `ssc` is inverse-conductivity/harmonic, and
+  `wb19_lateral_ssh` remains arithmetic from `ksat*anisotropy`. Regression tests
+  prove the surfaces are non-aliased. The H2637 no-UI rerun was aggregate-inert
+  (`runvol_pct_precip` remained `71.0036550031206`), so BASECOND01 closes the
+  vertical `ssc` defect but does not close the remaining FARPOINT01 magnitude
+  flag. Package:
+  `20260618-basecond01-ssc-harmonic-normalization-defect-closure-001/`.
+- STAGE2-BASE-CONDUCTIVITY-H2637-MAGNITUDE is complete with verdict
+  `OPENWEPP-DEFECTIVE`. The package proved base `ksat` is byte-live on H2637
+  (`ksat_x0.9` changed WAT/PASS checksums, aggregate `latqcc`, PASS `runvol`,
+  and peak WAT `latqcc`). Source intent splits the surfaces: vertical
+  `wb18_perc_ssc` is inverse-conductivity normalized, while modern hourly
+  `wb19_lateral_ssh` is arithmetic `ssc2*ui_anisrt`. At the time of that
+  package, openWEPP made vertical `ssc` arithmetic too, inflating H2637
+  split-layer `ssc` from `117.955408163210` to `270.8259 mm/h`. FARPOINT01
+  remained open and routed to BASECOND01 for vertical `ssc` 200 mm
+  normalization while preserving hourly `ui_ssh`. Package:
+  `20260618-stage2-base-conductivity-h2637-magnitude-001/`.
 - REFINTENT001-KSATADJ-SATFRAC is complete. WB14 `ksatadj` now forms
   `sat_frac` from the ratified source-intent operands
   `avsat/(avpor*avcpm)` with the two `avsat` caps and top-two tillage weighting;
   the old `sum(theta)/sum(ul)` surrogate is removed. Focused WB14 tests, full
   workspace gates, H2637 both UI variants, and the OFE1-OFE5 ladder passed.
-  H2637 `runvol` remained `71.003655003121%` of precipitation, so FARPOINT01 is
-  closed by `INV-SUBHYD-032` conformance and conservation closure, not by legacy
-  comparator parity. Package:
+  H2637 `runvol` remained `71.003655003121%` of precipitation because
+  `ksatadj = 0` on H2637, so REFINTENT001 did not close FARPOINT01. Package:
   `20260618-refintent001-ksatadj-satfrac-defect-closure-001/`.
 - STAGE2-LATQCC-H2637-MAGNITUDE is complete with verdict `CONTRACT-GAP`.
   H2637 `latqcc` was traced through WB19 per-substep operands for selected
