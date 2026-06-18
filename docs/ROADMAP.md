@@ -47,7 +47,10 @@ the read-side clone/lookup levers; PERFIDX05 was held because write/guard id wor
 is dual-write-bound under the read-mirror design; PERFIDX06 measured the
 PERFIDX04 endpoint at **73.12×** legacy no-UI on H2637. The next perf mechanism
 is not more narrow id-table work; it is a scoped hot-path state-representation
-redesign decision.
+redesign decision. PERFARRAY02 executed that scoped request/accessor pilot and closed
+NO-GO: identity passed, but H2637 array-native cost was `817.810 us/OFE-day`,
+above the `386 us/OFE-day` <=10x budget; ADR-0023 should not be ratified from that
+evidence.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -57,9 +60,8 @@ redesign decision.
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Array request/accessor authority split for WB11 runoff** | PERFARRAY01 executed Stage A but closed NO-GO for the scoped integrated pilot: the current `HillslopeKernelRequest` still requires logical `BTreeMap` state/flux maps, the scheduler validates/applies logical maps, and indexed execution remains a read mirror. A valid pilot first needs an array-capable request/view and WB11 scalar accessor path that can run runoff reconciliation from `ArrayHotState` without per-phase logical export or logical + array dual-write. | Port the request/accessor authority seam for the WB11 runoff anchor, keep default path unchanged, prove no per-day export/no dual-write in the new pilot seam, then rerun H2637/OFE-ladder identity and timing. | ▶️ **`PERFARRAY02` scaffolded, Codex-ready** — array-capable request + WB11-runoff scalar accessor (flag-gated) on the landed Stage A shell, then the WB11 runoff pilot + **the integrated floor** (the real 5×/≤10× answer + ADR-0023 ratification basis). The two structural proofs must be **perf-demonstrated**; NO-GO valid (incl. "seam needs Stage-C-scale work" or "73× is the floor"). *5x/≤10x open; ADR-0023 unratified until this floor lands; irrigation deferred.* |
-| 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
-| 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
+| 2 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
+| 3 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 remaining items are separate follow-on mechanisms.)

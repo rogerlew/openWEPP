@@ -2,7 +2,10 @@
 
 Status: executed-no-go 2026-06-18 (Stage A contract shell landed; Stage B
 integrated WB11 pilot blocked by the existing logical-map request/scheduler
-authority seam; ADR-0023 not ready for ratification)
+authority seam; ADR-0023 not ready for ratification). **Superseded:** the landed
+Stage A `ArrayHotState` shell was **reverted** when the perf arc closed NO-GO at
+PERFARRAY02 (array-native runoff floor 21× legacy) — production carries zero
+array-authoritative code. See the PERFARRAY02 disposition.
 
 Package type: **Production hot-path pilot — flag-gated, bit-identity load-bearing, floor
 measurement + GO/NO-GO.** This is a step up in risk from the PERFIDX/PERFARCH scoping work:

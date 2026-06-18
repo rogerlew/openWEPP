@@ -1,8 +1,10 @@
-# Artifacts
+# PERFARRAY02 Artifacts
 
-Status: scaffolded (awaiting Codex execution).
+Status: executed-NO-GO 2026-06-18 (perf arc closed; pilot code discarded + Stage A shell
+reverted; production carries zero array-authoritative code; record is docs-only — see
+`perfarray02_disposition.md` Post-review closure + `review-claude-independent.md`).
 
-Planned deliverables:
+Evidence set:
 
 - `perfarray02-request-accessor-seam.md`
 - `perfarray02-wb11-runoff-pilot.md`

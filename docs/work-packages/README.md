@@ -10,6 +10,16 @@
 
 State as of `2026-06-18`:
 
+- PERFARRAY02 is executed-NO-GO (WB11 request/accessor authority split +
+  integrated floor). The flag-gated array request/accessor seam and real WB11
+  runoff pilot landed, and default-vs-pilot identity passed on OFE5 and H2637
+  (HBP/loss/plot/wat checksums equal; pass parquet rows equal). The H2637
+  array-native pilot measured `817.810 us/OFE-day`, above the `386 us/OFE-day`
+  <=10x budget and `193 us/OFE-day` 5x stretch. Boundary seed/materialize was
+  `1685.023 us/OFE-day` and reported separately. Verdict: do not ratify
+  ADR-0023 from this pilot; do not proceed to broad Stage C-F migration without
+  a new kernel output/writeback-shape decision. Package:
+  `20260618-perfarray02-wb11-request-accessor-authority-split-001/`.
 - PERFARRAY01 is executed-NO-GO as scoped (WB11 integrated
   array-authoritative pilot, Stage A + B). Stage A landed a default-unwired
   array contract shell in `openwepp-kernel-contract` and focused crate gates

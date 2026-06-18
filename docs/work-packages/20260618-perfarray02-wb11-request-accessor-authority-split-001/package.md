@@ -1,7 +1,15 @@
 # PERFARRAY02 - WB11 Request/Accessor Authority Split + Integrated Floor
 
-Status: scaffolded 2026-06-18 (unblocks the PERFARRAY01 NO-GO; builds the prerequisite seam
-PERFARRAY01 identified, then measures the floor PERFARRAY01 could not reach)
+Status: executed-NO-GO 2026-06-18. The request/accessor seam and flag-gated WB11 runoff
+pilot landed, bit identity passed, and the floor was measured. H2637 array-native
+runoff pilot cost was `817.810 us/OFE-day`, above the `386 us/OFE-day` <=10x budget;
+boundary seed/materialize cost was `1685.023 us/OFE-day`. ADR-0023 should not be
+ratified from this pilot. **Post-review closure (operator A):** the perf arc is closed —
+all PERFARRAY02 pilot code discarded **and** the PERFARRAY01 Stage A `ArrayHotState`
+shell reverted; production carries **zero array-authoritative code**; record is docs-only.
+The perf program concludes at the 73.12× endpoint (PERFIDX04/06). See
+`artifacts/perfarray02_disposition.md` (Post-review closure) and
+`artifacts/review-claude-independent.md`.
 
 Package type: **Production hot-path pilot — flag-gated, bit-identity load-bearing, the package
 that finally measures the integrated floor.** Builds the array-capable kernel request +
