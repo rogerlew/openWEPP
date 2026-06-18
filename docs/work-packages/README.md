@@ -10,6 +10,15 @@
 
 State as of `2026-06-18`:
 
+- PERFARCH02 is complete (architecture scoping + floor prototype). Verdict:
+  CONDITIONAL GO to an integrated WB11 array-authoritative pilot. The
+  artifact-local prototype preserved exact exported-map identity for the
+  prototyped writeback/guard flow, preserved fail-closed rejection/message-id
+  class with lazy failure subjects, and measured the array-authoritative
+  writeback/guard path at roughly 49.9x faster than the current logical
+  writeback/guard path. Interpretation: <=10x remains credible only through an
+  integrated WB11 pilot; 5x remains unproven. Package:
+  `20260618-perfarch02-array-authoritative-hot-path-state-redesign-001/`.
 - PERFIDX06 is complete (Stage 6: high-OFE target assessment). Same-machine H2637
   measurements pinned the PERFIDX04 endpoint at `666.82s` no-UI and `667.44s`
   with UI; pinned legacy medians were `9.12s` no-UI and `11.54s` with UI. The

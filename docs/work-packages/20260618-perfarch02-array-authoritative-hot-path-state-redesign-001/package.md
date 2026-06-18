@@ -1,7 +1,8 @@
 # PERFARCH02 - Array-Authoritative Hot-Path State Redesign (Scoping + Floor Prototype)
 
-Status: scaffolded 2026-06-18 (architecture design / feasibility scoping; successor to
-PERFARCH01; follows the PERFIDX01–06 indexed-surface arc that hit its ceiling at 73.12×)
+Status: executed 2026-06-18 (CONDITIONAL GO to an integrated WB11
+array-authoritative pilot; successor to PERFARCH01; follows the PERFIDX01-06
+indexed-surface arc that hit its ceiling at 73.12x)
 
 Package type: **Architecture design / feasibility scoping — measures and decides; lands no
 production migration.** Like PERFARCH01, the output is a prototype-backed decision + (if GO)

@@ -1,0 +1,12 @@
+[package]
+name = "perfarch02-floor-prototype"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+openwepp-kernel-contract = { path = "../../../../../crates/openwepp-kernel-contract" }
+openwepp-sim-contract = { path = "../../../../../crates/openwepp-sim-contract" }
+
