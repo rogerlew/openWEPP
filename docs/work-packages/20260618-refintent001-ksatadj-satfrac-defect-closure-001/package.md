@@ -1,7 +1,13 @@
 # REFINTENT001-KSATADJ-SATFRAC - WB14 `ksatadj` Saturation-Fraction Defect Closure
 
-Status: scaffolded 2026-06-18 (defect-closure ExecPlan, ADR-0018; closes the `OPENWEPP-DEFECTIVE`
-verdict from the REFINTENT ksatadj adjudication)
+Status: **complete-with-correction 2026-06-18** — the `ksatadj` `sat_frac` source-intent fix
+landed and is **correct** (closes the `OPENWEPP-DEFECTIVE` verdict; gate-clean; valuable for
+`ksatadj = 1` soils). **BUT the FARPOINT01 flag-closure claim is withdrawn:** independent review
+found the fix is **byte-inert on H2637** (`ksatadj = 0` there — branch never fires; WAT SHA
+identical pre/post), so it does **not** close the FARPOINT01 71% flag, which **re-opens**. The
+H2637 71% is driven by the **base soil conductivity**, not `ksatadj`. See
+`artifacts/refintent001_disposition.md` (Post-review correction) and
+`artifacts/review-claude-independent.md`. Follow-on: a base-conductivity adjudication.
 
 Package type: **Defect-Closure ExecPlan (ADR-0018) — first openWEPP *physics* change of this arc.**
 Codex authors the fix; Claude scaffolds/reviews. The diagnosis is **done** (REFINTENT); this

@@ -337,59 +337,6 @@ impl Wb11HydrologyKernel {
         )
     }
 
-    pub(crate) fn optional_state_scalar_for_preferred_or_legacy_symbol(
-        request: &HillslopeKernelRequest<'_>,
-        phase_class: HillslopeKernelPhaseClass,
-        preferred_symbol: &BoundarySymbol,
-        legacy_symbol: &BoundarySymbol,
-    ) -> Result<Option<(BoundarySymbol, f64)>, Wb11HydrologyKernelGuardError> {
-        if request.state_surface.contains_key(preferred_symbol) {
-            return Self::optional_state_scalar_for_symbol(request, phase_class, preferred_symbol)
-                .map(|value| value.map(|scalar| (preferred_symbol.clone(), scalar)));
-        }
-        Self::optional_state_scalar_for_symbol(request, phase_class, legacy_symbol)
-            .map(|value| value.map(|scalar| (legacy_symbol.clone(), scalar)))
-    }
-
-    pub(crate) fn optional_state_scalar_for_preferred_or_legacy_series(
-        request: &HillslopeKernelRequest<'_>,
-        phase_class: HillslopeKernelPhaseClass,
-        preferred_root: &str,
-        legacy_root: &str,
-        one_based_index: usize,
-        preferred_fallback: impl FnOnce() -> BoundarySymbol,
-        legacy_fallback: impl FnOnce() -> BoundarySymbol,
-    ) -> Result<Option<(BoundarySymbol, f64)>, Wb11HydrologyKernelGuardError> {
-        if let Some(preferred_symbol) =
-            request.hot_state_series_symbol(preferred_root, one_based_index)
-        {
-            if let Some(value) = Self::optional_state_scalar_for_indexed_symbol(
-                request,
-                phase_class,
-                preferred_symbol,
-            )? {
-                return Ok(Some((preferred_symbol.symbol.clone(), value)));
-            }
-            if let Some(legacy_symbol) = request.hot_state_series_symbol(legacy_root, one_based_index)
-            {
-                return Self::optional_state_scalar_for_indexed_symbol(
-                    request,
-                    phase_class,
-                    legacy_symbol,
-                )
-                .map(|value| value.map(|scalar| (legacy_symbol.symbol.clone(), scalar)));
-            }
-        }
-        let preferred_symbol = preferred_fallback();
-        let legacy_symbol = legacy_fallback();
-        Self::optional_state_scalar_for_preferred_or_legacy_symbol(
-            request,
-            phase_class,
-            &preferred_symbol,
-            &legacy_symbol,
-        )
-    }
-
     pub(crate) fn hourly_symbol(root: &str, hour: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("{root}_{hour:04}"))
     }
@@ -1387,6 +1334,10 @@ impl Wb11HydrologyKernel {
         BoundarySymbol::from(format!("por_{layer_index:04}"))
     }
 
+    pub(crate) fn wb19_cpm_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("cpm_{layer_index:04}"))
+    }
+
     pub(crate) fn wb19_thetfc_symbol(layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("wb19_thetfc_{layer_index:04}"))
     }
@@ -1455,6 +1406,16 @@ impl Wb11HydrologyKernel {
         )
     }
 
+    pub(crate) fn require_wb19_cpm_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_index: usize,
+    ) -> Result<(BoundarySymbol, f64), Wb11HydrologyKernelGuardError> {
+        Self::require_state_scalar_for_series_or_symbol(request, phase_class, "cpm", layer_index, || {
+            Self::wb19_cpm_symbol(layer_index)
+        })
+    }
+
     pub(crate) fn require_wb19_thetfc_scalar(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
@@ -1498,22 +1459,6 @@ impl Wb11HydrologyKernel {
             "wb19_bulk_density_kg_m3",
             layer_index,
             || Self::wb19_bulk_density_kg_m3_symbol(layer_index),
-        )
-    }
-
-    pub(crate) fn optional_wb19_thetdr_scalar(
-        request: &HillslopeKernelRequest<'_>,
-        phase_class: HillslopeKernelPhaseClass,
-        layer_index: usize,
-    ) -> Result<Option<(BoundarySymbol, f64)>, Wb11HydrologyKernelGuardError> {
-        Self::optional_state_scalar_for_preferred_or_legacy_series(
-            request,
-            phase_class,
-            "wb19_thetdr",
-            "thetdr",
-            layer_index,
-            || Self::wb19_thetdr_symbol(layer_index),
-            || Self::wb19_legacy_thetdr_symbol(layer_index),
         )
     }
 

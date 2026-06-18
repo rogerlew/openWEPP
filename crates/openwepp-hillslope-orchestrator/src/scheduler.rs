@@ -2427,6 +2427,7 @@ pub fn build_hillslope_hot_symbol_tables(registry: &SymbolRegistry) -> HotSymbol
             "coca",
             "wb19_por",
             "por",
+            "cpm",
             "wb19_thetfc",
             "thetfc",
             "wb19_thetdr",

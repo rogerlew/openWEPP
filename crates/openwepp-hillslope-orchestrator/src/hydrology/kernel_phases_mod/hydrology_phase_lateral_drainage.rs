@@ -135,13 +135,12 @@ struct Wb19DrainageLayerSlices<'a> {
 
 #[derive(Default)]
 struct Wb14KsatadjMetricSums {
-    theta_sum: f64,
-    ul_sum: f64,
-    fc_sum: f64,
-    thetfc_sum: f64,
-    thetdr_sum: f64,
-    dg_sum: f64,
-    use_legacy_ksatadj_theta_derivation: bool,
+    theta_storage: f64,
+    por_depth: f64,
+    cpm_depth: f64,
+    thetfc_depth: f64,
+    thetdr_depth: f64,
+    tillage_depth: f64,
 }
 
 struct Wb14KsatadjLayerMetrics {
@@ -149,11 +148,18 @@ struct Wb14KsatadjLayerMetrics {
     fc_symbol: BoundarySymbol,
     ul_symbol: BoundarySymbol,
     dg_symbol: BoundarySymbol,
+    por_symbol: BoundarySymbol,
+    cpm_symbol: BoundarySymbol,
+    thetfc_symbol: BoundarySymbol,
+    thetdr_symbol: BoundarySymbol,
     theta: f64,
     fc: f64,
     ul: f64,
     dg: f64,
-    thetdr_optional: Option<(BoundarySymbol, f64)>,
+    por: f64,
+    cpm: f64,
+    thetfc: f64,
+    thetdr: f64,
 }
 
 include!("hydrology_phase_lateral_drainage/00_lateral_transfer.rs");

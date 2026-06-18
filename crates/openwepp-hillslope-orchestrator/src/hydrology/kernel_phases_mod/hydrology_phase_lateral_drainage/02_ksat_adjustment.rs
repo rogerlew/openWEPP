@@ -44,21 +44,33 @@ impl Wb11HydrologyKernel {
         let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
         let ul_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
         let (dg_symbol, dg) = Self::require_wb19_dg_scalar(request, phase_class, layer_index)?;
+        let (por_symbol, por) = Self::require_wb19_por_scalar(request, phase_class, layer_index)?;
+        let (cpm_symbol, cpm) = Self::require_wb19_cpm_scalar(request, phase_class, layer_index)?;
+        let (thetfc_symbol, thetfc) =
+            Self::require_wb19_thetfc_scalar(request, phase_class, layer_index)?;
+        let (thetdr_symbol, thetdr) =
+            Self::require_wb19_thetdr_scalar(request, phase_class, layer_index)?;
         let theta = Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
         let fc = Self::require_state_scalar_for_symbol(request, phase_class, &fc_symbol)?;
         let ul = Self::require_state_scalar_for_symbol(request, phase_class, &ul_symbol)?;
-        let thetdr_optional = Self::optional_wb19_thetdr_scalar(request, phase_class, layer_index)?;
 
         Ok(Wb14KsatadjLayerMetrics {
             theta_symbol,
             fc_symbol,
             ul_symbol,
             dg_symbol,
+            por_symbol,
+            cpm_symbol,
+            thetfc_symbol,
+            thetdr_symbol,
             theta,
             fc,
             ul,
             dg,
-            thetdr_optional,
+            por,
+            cpm,
+            thetfc,
+            thetdr,
         })
     }
 
@@ -68,15 +80,25 @@ impl Wb11HydrologyKernel {
         layer: &Wb14KsatadjLayerMetrics,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
         Self::wb14_validate_ksatadj_layer(phase_class, layer)?;
-        let legacy_wp_store = layer.ul - layer.fc;
-        sums.theta_sum += layer.theta.max(0.0);
-        sums.ul_sum += layer.ul;
-        sums.fc_sum += layer.fc.max(0.0);
-        sums.dg_sum += layer.dg;
-        Self::wb14_accumulate_ksatadj_theta_terms(phase_class, sums, layer, legacy_wp_store)
+        sums.theta_storage += layer.theta;
+        sums.por_depth += layer.por * layer.dg;
+        sums.cpm_depth += layer.cpm * layer.dg;
+        sums.thetfc_depth += layer.thetfc * layer.dg;
+        sums.thetdr_depth += layer.thetdr * layer.dg;
+        sums.tillage_depth += layer.dg;
+        Ok(())
     }
 
     fn wb14_validate_ksatadj_layer(
+        phase_class: HillslopeKernelPhaseClass,
+        layer: &Wb14KsatadjLayerMetrics,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        Self::wb14_validate_ksatadj_storage_layer_terms(phase_class, layer)?;
+        Self::wb14_validate_ksatadj_source_intent_layer_terms(phase_class, layer)?;
+        Self::wb14_validate_ksatadj_layer_ordering(phase_class, layer)
+    }
+
+    fn wb14_validate_ksatadj_storage_layer_terms(
         phase_class: HillslopeKernelPhaseClass,
         layer: &Wb14KsatadjLayerMetrics,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
@@ -94,6 +116,89 @@ impl Wb11HydrologyKernel {
             layer.dg,
             WB11_ZERO_THRESHOLD,
         )?;
+        Ok(())
+    }
+
+    fn wb14_validate_ksatadj_source_intent_layer_terms(
+        phase_class: HillslopeKernelPhaseClass,
+        layer: &Wb14KsatadjLayerMetrics,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        Self::require_wb14_ksatadj_minimum(
+            phase_class,
+            layer.por_symbol.clone(),
+            layer.por,
+            WB11_ZERO_THRESHOLD,
+        )?;
+        Self::require_wb14_ksatadj_minimum(
+            phase_class,
+            layer.cpm_symbol.clone(),
+            layer.cpm,
+            WB11_ZERO_THRESHOLD,
+        )?;
+        Self::require_wb14_ksatadj_minimum(
+            phase_class,
+            layer.thetfc_symbol.clone(),
+            layer.thetfc,
+            WB11_ZERO_THRESHOLD,
+        )?;
+        Self::require_wb14_ksatadj_minimum(
+            phase_class,
+            layer.thetdr_symbol.clone(),
+            layer.thetdr,
+            WB11_ZERO_THRESHOLD,
+        )?;
+        if layer.por > 1.0 + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: layer.por_symbol.clone(),
+                value: layer.por,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: Some(1.0),
+            });
+        }
+        if layer.cpm > 1.0 + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: layer.cpm_symbol.clone(),
+                value: layer.cpm,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: Some(1.0),
+            });
+        }
+        if layer.thetfc > 1.0 + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: layer.thetfc_symbol.clone(),
+                value: layer.thetfc,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: Some(1.0),
+            });
+        }
+        if layer.thetdr > 1.0 + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: layer.thetdr_symbol.clone(),
+                value: layer.thetdr,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: Some(1.0),
+            });
+        }
+        Ok(())
+    }
+
+    fn wb14_validate_ksatadj_layer_ordering(
+        phase_class: HillslopeKernelPhaseClass,
+        layer: &Wb14KsatadjLayerMetrics,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if layer.thetfc <= layer.thetdr + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: layer.thetfc_symbol.clone(),
+                value: layer.thetfc,
+                minimum: Some(layer.thetdr + WB11_ZERO_THRESHOLD),
+                maximum: Some(1.0),
+            });
+        }
         if layer.fc > layer.ul + WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -138,73 +243,6 @@ impl Wb11HydrologyKernel {
         Ok(())
     }
 
-    fn wb14_accumulate_ksatadj_theta_terms(
-        phase_class: HillslopeKernelPhaseClass,
-        sums: &mut Wb14KsatadjMetricSums,
-        layer: &Wb14KsatadjLayerMetrics,
-        legacy_wp_store: f64,
-    ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        match &layer.thetdr_optional {
-            Some((thetdr_symbol, thetdr_raw)) if !sums.use_legacy_ksatadj_theta_derivation => {
-                Self::wb14_accumulate_explicit_theta_terms(
-                    phase_class,
-                    sums,
-                    layer,
-                    thetdr_symbol.clone(),
-                    *thetdr_raw,
-                    legacy_wp_store,
-                )
-            }
-            None => {
-                sums.use_legacy_ksatadj_theta_derivation = true;
-                Ok(())
-            }
-            Some(_) => Ok(()),
-        }
-    }
-
-    fn wb14_accumulate_explicit_theta_terms(
-        phase_class: HillslopeKernelPhaseClass,
-        sums: &mut Wb14KsatadjMetricSums,
-        layer: &Wb14KsatadjLayerMetrics,
-        thetdr_symbol: BoundarySymbol,
-        thetdr_raw: f64,
-        legacy_wp_store: f64,
-    ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        if !(-WB11_ZERO_THRESHOLD..=1.0 + WB11_ZERO_THRESHOLD).contains(&thetdr_raw) {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: thetdr_symbol,
-                value: thetdr_raw,
-                minimum: Some(0.0),
-                maximum: Some(1.0),
-            });
-        }
-        let thetdr = thetdr_raw.max(0.0);
-        let expected_wp_store = thetdr * layer.dg;
-        let uses_legacy_fcwp_layout = (legacy_wp_store - expected_wp_store).abs() <= 1.0e-9;
-        let layer_thetfc = if uses_legacy_fcwp_layout {
-            layer.fc / layer.dg
-        } else {
-            (layer.fc / layer.dg) + thetdr
-        };
-        if !layer_thetfc.is_finite()
-            || layer_thetfc < thetdr - WB11_ZERO_THRESHOLD
-            || layer_thetfc > 1.0 + WB11_ZERO_THRESHOLD
-        {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: layer.fc_symbol.clone(),
-                value: layer_thetfc,
-                minimum: Some(thetdr),
-                maximum: Some(1.0),
-            });
-        }
-        sums.thetdr_sum += thetdr * layer.dg;
-        sums.thetfc_sum += layer_thetfc.max(0.0) * layer.dg;
-        Ok(())
-    }
-
     fn wb14_finalize_ksatadj_metrics(
         phase_class: HillslopeKernelPhaseClass,
         sums: &Wb14KsatadjMetricSums,
@@ -221,20 +259,29 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         sums: &Wb14KsatadjMetricSums,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        if sums.ul_sum <= WB11_ZERO_THRESHOLD {
+        if sums.tillage_depth <= WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
-                symbol: BoundarySymbol::from("wb18_perc_ul_agg_0001_0002"),
-                value: sums.ul_sum,
+                symbol: BoundarySymbol::from("dg_agg_0001_0002"),
+                value: sums.tillage_depth,
                 minimum: Some(WB11_ZERO_THRESHOLD),
                 maximum: None,
             });
         }
-        if sums.dg_sum <= WB11_ZERO_THRESHOLD {
+        if sums.por_depth <= WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
-                symbol: BoundarySymbol::from("dg_agg_0001_0002"),
-                value: sums.dg_sum,
+                symbol: BoundarySymbol::from("avpor"),
+                value: sums.por_depth / sums.tillage_depth,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+        if sums.cpm_depth <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("avcpm"),
+                value: sums.cpm_depth / sums.tillage_depth,
                 minimum: Some(WB11_ZERO_THRESHOLD),
                 maximum: None,
             });
@@ -246,7 +293,29 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         sums: &Wb14KsatadjMetricSums,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let sat_frac = sums.theta_sum / sums.ul_sum;
+        let avpor = sums.por_depth / sums.tillage_depth;
+        let avcpm = sums.cpm_depth / sums.tillage_depth;
+        let avsm15 = sums.thetdr_depth / sums.tillage_depth;
+        let denominator = avpor * avcpm;
+        if !denominator.is_finite() || denominator <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("avpor_avcpm"),
+                value: denominator,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: Some(1.0),
+            });
+        }
+
+        let mut avsat = (sums.theta_storage / sums.tillage_depth) + avsm15;
+        if avsat > avpor {
+            avsat = avpor * 0.98;
+        }
+        if avsat >= denominator {
+            avsat = denominator * 0.99;
+        }
+
+        let sat_frac = avsat / denominator;
         if !sat_frac.is_finite() || sat_frac < -WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -260,11 +329,10 @@ impl Wb11HydrologyKernel {
     }
 
     fn wb14_ksatadj_theta_averages(sums: &Wb14KsatadjMetricSums) -> (f64, f64) {
-        if sums.use_legacy_ksatadj_theta_derivation {
-            (sums.fc_sum / sums.dg_sum, (sums.ul_sum - sums.fc_sum) / sums.dg_sum)
-        } else {
-            (sums.thetfc_sum / sums.dg_sum, sums.thetdr_sum / sums.dg_sum)
-        }
+        (
+            sums.thetfc_depth / sums.tillage_depth,
+            sums.thetdr_depth / sums.tillage_depth,
+        )
     }
 
     fn wb14_validate_ksatadj_theta_averages(
@@ -511,4 +579,99 @@ impl Wb11HydrologyKernel {
     }
 
 
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::BTreeMap;
+
+    fn insert_state(
+        state: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+        symbol: &str,
+        value: f64,
+    ) {
+        state.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
+
+    fn source_intent_ksatadj_state() -> BTreeMap<BoundarySymbol, BoundaryValue> {
+        let mut state = BTreeMap::new();
+        insert_state(&mut state, "wb18_perc_theta_0001", 0.02);
+        insert_state(&mut state, "wb18_perc_theta_0002", 0.04);
+        insert_state(&mut state, "wb18_perc_fc_0001", 0.03);
+        insert_state(&mut state, "wb18_perc_fc_0002", 0.033);
+        insert_state(&mut state, "wb18_perc_ul_0001", 0.20);
+        insert_state(&mut state, "wb18_perc_ul_0002", 0.20);
+        insert_state(&mut state, "wb19_dg_0001", 0.10);
+        insert_state(&mut state, "wb19_dg_0002", 0.10);
+        insert_state(&mut state, "wb19_por_0001", 0.55);
+        insert_state(&mut state, "wb19_por_0002", 0.55);
+        insert_state(&mut state, "cpm_0001", 1.0);
+        insert_state(&mut state, "cpm_0002", 1.0);
+        insert_state(&mut state, "wb19_thetfc_0001", 0.40);
+        insert_state(&mut state, "wb19_thetfc_0002", 0.45);
+        insert_state(&mut state, "wb19_thetdr_0001", 0.10);
+        insert_state(&mut state, "wb19_thetdr_0002", 0.12);
+        state
+    }
+
+    fn ksatadj_request(
+        state: BTreeMap<BoundarySymbol, BoundaryValue>,
+    ) -> HillslopeKernelRequest<'static> {
+        let state_surface = Box::leak(Box::new(state));
+        let flux_surface = Box::leak(Box::new(BTreeMap::new()));
+        HillslopeKernelRequest::with_transition_context(
+            "runoff_reconciliation",
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            HillslopeConsumerAdapter::Watbal,
+            None,
+            None,
+            state_surface,
+            flux_surface,
+        )
+    }
+
+    #[test]
+    fn wb14_ksatadj_sat_frac_uses_source_intent_avsat_not_ul_surrogate() {
+        let request = ksatadj_request(source_intent_ksatadj_state());
+        let (sat_frac, avthetafc, avthetadr) =
+            Wb11HydrologyKernel::wb14_load_top_two_layer_ksatadj_metrics(
+                &request,
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            )
+            .expect("source-intent operands should form WB14 ksatadj metrics");
+
+        let expected_source_intent_sat_frac = 0.41 / 0.55;
+        let legacy_ul_surrogate_sat_frac = 0.06 / 0.40;
+        assert!(
+            (sat_frac - expected_source_intent_sat_frac).abs() <= 1.0e-12,
+            "sat_frac must use avsat/(avpor*avcpm); observed {sat_frac}"
+        );
+        assert!(
+            (sat_frac - legacy_ul_surrogate_sat_frac).abs() > 1.0e-3,
+            "non-aliased fixture must reject theta_sum/ul_sum surrogate"
+        );
+        assert!((avthetafc - 0.425).abs() <= 1.0e-12);
+        assert!((avthetadr - 0.11).abs() <= 1.0e-12);
+    }
+
+    #[test]
+    fn wb14_ksatadj_missing_source_intent_operand_is_typed_failure() {
+        let mut state = source_intent_ksatadj_state();
+        state.remove(&BoundarySymbol::from("cpm_0002"));
+        let request = ksatadj_request(state);
+        let error = Wb11HydrologyKernel::wb14_load_top_two_layer_ksatadj_metrics(
+            &request,
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+        )
+        .expect_err("active ksatadj metrics must require cpm_0002");
+
+        assert_eq!(
+            error,
+            Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                phase_class: HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                symbol: BoundarySymbol::from("cpm_0002"),
+            }
+        );
+    }
 }

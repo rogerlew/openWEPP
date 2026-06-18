@@ -231,39 +231,40 @@ fn capture_pre_runoff_state_surface(
 fn wb14_expected_sat_frac(surface: &HillslopeWritebackSurface) -> f64 {
     let theta_1 = state_scalar(surface, "wb18_perc_theta_0001");
     let theta_2 = state_scalar(surface, "wb18_perc_theta_0002");
-    let ul_1 = state_scalar(surface, "wb18_perc_ul_0001");
-    let ul_2 = state_scalar(surface, "wb18_perc_ul_0002");
-    ((theta_1 + theta_2) / (ul_1 + ul_2)).clamp(0.0, 1.0)
+    let dg_1 = state_scalar(surface, "dg_0001");
+    let dg_2 = state_scalar(surface, "dg_0002");
+    let por_1 = state_scalar(surface, "por_0001");
+    let por_2 = state_scalar(surface, "por_0002");
+    let cpm_1 = state_scalar(surface, "cpm_0001");
+    let cpm_2 = state_scalar(surface, "cpm_0002");
+    let thetdr_1 = state_scalar(surface, "thetdr_0001");
+    let thetdr_2 = state_scalar(surface, "thetdr_0002");
+
+    let tillage_depth = dg_1 + dg_2;
+    let avpor = ((por_1 * dg_1) + (por_2 * dg_2)) / tillage_depth;
+    let avcpm = ((cpm_1 * dg_1) + (cpm_2 * dg_2)) / tillage_depth;
+    let avsm15 = ((thetdr_1 * dg_1) + (thetdr_2 * dg_2)) / tillage_depth;
+    let mut avsat = ((theta_1 + theta_2) / tillage_depth) + avsm15;
+    if avsat > avpor {
+        avsat = avpor * 0.98;
+    }
+    let denominator = avpor * avcpm;
+    if avsat >= denominator {
+        avsat = denominator * 0.99;
+    }
+    (avsat / denominator).min(1.0)
 }
 
 fn wb14_expected_theta_metrics(surface: &HillslopeWritebackSurface) -> (f64, f64) {
     let dg_1 = state_scalar(surface, "dg_0001");
     let dg_2 = state_scalar(surface, "dg_0002");
-    let fc_1 = state_scalar(surface, "wb18_perc_fc_0001");
-    let fc_2 = state_scalar(surface, "wb18_perc_fc_0002");
-    let ul_1 = state_scalar(surface, "wb18_perc_ul_0001");
-    let ul_2 = state_scalar(surface, "wb18_perc_ul_0002");
+    let thetfc_1 = state_scalar(surface, "thetfc_0001");
+    let thetfc_2 = state_scalar(surface, "thetfc_0002");
     let thetdr_1 = state_scalar(surface, "thetdr_0001");
     let thetdr_2 = state_scalar(surface, "thetdr_0002");
 
-    let legacy_wp_1 = ul_1 - fc_1;
-    let legacy_wp_2 = ul_2 - fc_2;
-    let expected_wp_1 = thetdr_1 * dg_1;
-    let expected_wp_2 = thetdr_2 * dg_2;
-
-    let layer_thetfc_1 = if (legacy_wp_1 - expected_wp_1).abs() <= 1.0e-9 {
-        fc_1 / dg_1
-    } else {
-        (fc_1 / dg_1) + thetdr_1
-    };
-    let layer_thetfc_2 = if (legacy_wp_2 - expected_wp_2).abs() <= 1.0e-9 {
-        fc_2 / dg_2
-    } else {
-        (fc_2 / dg_2) + thetdr_2
-    };
-
     let tillage_depth = dg_1 + dg_2;
-    let avthetafc = ((layer_thetfc_1 * dg_1) + (layer_thetfc_2 * dg_2)) / tillage_depth;
+    let avthetafc = ((thetfc_1 * dg_1) + (thetfc_2 * dg_2)) / tillage_depth;
     let avthetadr = ((thetdr_1 * dg_1) + (thetdr_2 * dg_2)) / tillage_depth;
     (avthetafc, avthetadr)
 }

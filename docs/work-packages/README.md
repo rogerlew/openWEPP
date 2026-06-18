@@ -10,6 +10,15 @@
 
 State as of `2026-06-18`:
 
+- REFINTENT001-KSATADJ-SATFRAC is complete. WB14 `ksatadj` now forms
+  `sat_frac` from the ratified source-intent operands
+  `avsat/(avpor*avcpm)` with the two `avsat` caps and top-two tillage weighting;
+  the old `sum(theta)/sum(ul)` surrogate is removed. Focused WB14 tests, full
+  workspace gates, H2637 both UI variants, and the OFE1-OFE5 ladder passed.
+  H2637 `runvol` remained `71.003655003121%` of precipitation, so FARPOINT01 is
+  closed by `INV-SUBHYD-032` conformance and conservation closure, not by legacy
+  comparator parity. Package:
+  `20260618-refintent001-ksatadj-satfrac-defect-closure-001/`.
 - STAGE2-LATQCC-H2637-MAGNITUDE is complete with verdict `CONTRACT-GAP`.
   H2637 `latqcc` was traced through WB19 per-substep operands for selected
   high-magnitude days across all 19 OFEs; emitted WAT `latqcc` equals WB19 `q`,
