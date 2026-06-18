@@ -1,7 +1,7 @@
 # Correctness Authority Model
 
 Status: Active
-Last updated: 2026-06-05
+Last updated: 2026-06-18
 Scope: openWEPP kernel/process correctness adjudication and gate authority
 
 ## Purpose
@@ -15,6 +15,9 @@ suites, and legacy comparators are used.
 1. **Contract authority plane (normative text):**
    - Canonical process authority is the `SC-*` contract set under
      `docs/specifications/science-contracts/contracts/`.
+   - For empirical or conceptual models lacking stronger external authority,
+     canonical contracts may include ADR-0024 source-intent anchors extracted
+     from the pinned reference implementation.
 2. **Executable authority plane (normative gates):**
    - Runtime acceptance is adjudicated by gate outcomes tied to `SC-*`
      invariants and external-authority suites.
@@ -25,7 +28,7 @@ Work-package artifacts remain evidence only and do not replace either plane.
 
 | Rank | Authority class | Role | Acceptance effect |
 |---|---|---|---|
-| A0 | `SC-*` canonical contract authority | Defines invariant truth and required guard posture. | Required. Missing/ambiguous authority is `HOLD`. |
+| A0 | `SC-*` canonical contract authority, including ratified source-intent anchors | Defines invariant truth and required guard posture. | Required. Missing/ambiguous authority is `HOLD`. |
 | A1 | Hard invariant gates (closure/bounds/domain) | Validates conservation, bounds, and typed fail-closed behavior. | Required. Failure is blocking. |
 | A2 | External-authority legacy/sanity suites (Level-3) | Validates legacy-anchored branch/conformance laws as structured investigation evidence. | Non-blocking investigation signal; not acceptance authority. |
 | A3 | External-authority constitutive suites (Level-4) | Validates constitutive physics laws not adjudicable by conservation alone. | Required for touched process families. Failure is blocking. |
@@ -75,6 +78,27 @@ owner or owning follow-on package, the next evidence gate, and the reason
 closure is not yet possible. Ownerless or unscoped `HOLD` findings are
 governance failures. Findings that invalidate prior verdicts must retract or
 supersede those verdicts in the package that published them.
+
+## ADR-0024 Source-Intent Anchors (Normative)
+
+Reference-implementation source intent is allowed as an `A0` provenance basis
+when all conditions hold:
+
+1. the governed model is empirical or conceptual and lacks stronger external
+   physical, measured-data, or independent-solver authority for the claimed
+   behavior;
+2. the source anchor cites the pinned reference implementation by file, routine,
+   and commit provenance;
+3. the canonical `SC-*` contract extracts the intended algorithm, branch
+   conditions, units, and guard posture into an invariant or obligation; and
+4. known legacy output artifacts, non-conservation, disabled branches, or
+   implementation bugs are flagged as non-authoritative.
+
+This is not a legacy-comparator promotion. Legacy binary behavior remains `A6`
+and cannot be used as a sole acceptance oracle. The source-intent anchor becomes
+binding only through the canonical contract text. If source intent is ambiguous
+or contradicted by known bugs that cannot be separated from the algorithm, the
+correct disposition is `HOLD`, not a manufactured acceptance target.
 
 ## Release/CI Lane Enforcement (Normative)
 

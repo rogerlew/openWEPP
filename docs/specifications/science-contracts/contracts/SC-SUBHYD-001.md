@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 32
+contract_version: 33
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Watershed/channel routing consumers using subsurface and drainage contributions
   - Comparator/replay surfaces using daily closure confidence signals
 evidence_level: static
-last_reviewed: 2026-06-03
+last_reviewed: 2026-06-18
 supersedes: []
 superseded_by: []
 ---
@@ -66,6 +66,7 @@ Out of scope:
 | REF-SUBHYD-LEGACY-DAILY-LATERAL | `/workdir/wepp-forest_260430_baseline/src/watbal.for:286-304,573-704` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline daily WB19 lateral flow computes `hk`, `fzdrfc`, `fzul`, daily `solwpv` branch selection, conductivity weighting, and daily `latqcc` publication. | `[DIRECT][Static]` |
 | REF-SUBHYD-LEGACY-HOURLY-TAIL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:592-887` and `/workdir/wepp-forest_260430_baseline/src/drain.for:181-305` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly tail executes drainage, lateral flow, top-layer saturation clipping into `ui_SCrunf(ii)`, and copy-forward before daily runoff/storage publication. | `[DIRECT][Static]` |
 | REF-SUBHYD-LEGACY-HOURLY-SSH | `/workdir/wepp-forest_260430_baseline/src/input.for:753-761,836-844,927-928`, `/workdir/wepp-forest_260430_baseline/src/tilage.for:571-656`, and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:705-715` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly WB19 lateral conductivity consumes `ui_ssh(i)`, a layer-normalized horizontal conductivity assembled from input `ssc2*ui_anisrt`, not the vertical percolation conductivity `ssc(i)`. | `[DIRECT][Static]` |
+| REF-SUBHYD-KSATADJ-INTENT | `/workdir/wepp-forest_260430_baseline/src/input.for:467-473,592-623,748-928` and `/workdir/wepp-forest_260430_baseline/src/infpar.for:237-260,286-296,606-648` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`; `infpar` + soil-input normalization path) | ADR-0024 source-intent authority for forest disturbed-soil `ksatadj` equivalent-conductivity formation: policy input, top-two tillage-layer saturation/FC/WP averages, 9001/9002+/9003 effective-conductivity formulas, and `mm h^-1` to `m s^-1` conversion. | `[DIRECT][Static]` |
 | REF-SUBHYD-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative flux magnitudes, bounded porosity domains, and explicit branch handling for threshold transitions. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -82,6 +83,11 @@ Out of scope:
 | `L` | `m` | Hillslope segment length for control-volume scaling. | hillslope geometry input | continuity/storage/flux equations |
 | `q` | `m d^-1` | Lateral subsurface discharge per unit width from hillslope. | subsurface lateral-flow routine | downslope OFE transfer and routing coupling |
 | `Ke` | `m s^-1` | Effective horizontal hydraulic conductivity at moisture state `θ`. | soil hydraulic state routine | lateral-flow flux equation |
+| `ksatadj` | flag | Disturbed-soil policy switch enabling reference-intent effective-conductivity adjustment. | soil/runtime policy projection | WB14/WB19 conductivity consumers |
+| `sat_frac` | fraction | `ksatadj` saturation fraction from top-two tillage-layer total water over averaged porosity and rock correction. | `infpar`-lineage conductivity adjustment | `ksatadj` effective-conductivity formulas |
+| `ksatfac`, `ksatrec`, `lkeff` | `dimensionless`, `d`, `mm h^-1` | 9001 exponential lower-bound/recovery controls and 9003 lower effective-conductivity floor. | disturbed-soil policy input | `ksatadj` effective-conductivity formulas |
+| `avthetafc`, `avthetadr` | `m^3 m^-3` | Top-two tillage-layer depth-weighted field-capacity and dry-point theta terms used for the 9002+ Saxton-Rawls exponent. | `infpar`-lineage conductivity adjustment | `ksatadj` 9002+ exponent |
+| `Keff_ksatadj` | `m s^-1` | Conductivity after reference-intent `ksatadj` adjustment. | soil hydraulic state routine | infiltration, runoff reconciliation, and downstream lateral magnitude |
 | `ui_ssh(i)` | `m s^-1` | Baseline hourly per-layer horizontal saturated conductivity assembled from `ssc2*ui_anisrt`. | soil/runtime projection | hourly WB19 lateral conductivity averaging |
 | `α` | `rad` | Average slope angle / effective flow-path angle. | topography/drainage geometry input | lateral-flow/drain-conductivity equations |
 | `DS` | `cm` | Maximum depressional-storage depth. | surface drainage subroutine | runoff-onset and storage-fill logic |
@@ -121,7 +127,8 @@ replace the governing Chapter-6 process equations.
 | Surface | Symbols |
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
-| Layer hydrology state family | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, hourly `wb19_lateral_ssh_####` when modern soil input provides `ui_anisrt`, optional frozen-water `wb18_perc_frzw_####` |
+| Layer hydrology state family | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `cpm_####`, `coca_####`, `thetfc_####`, `thetdr_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, hourly `wb19_lateral_ssh_####` when modern soil input provides `ui_anisrt`, optional frozen-water `wb18_perc_frzw_####` |
+| Disturbed-soil effective-conductivity policy | `ksatadj`, `ksatfac`, `ksatrec`, `lkeff` when required by `solwpv` branch |
 | Lateral geometry + conductivity family | `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio` |
 | Drainage geometry + capacity family | `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
 | Coupling carry-forward surface | `Pe` |
@@ -151,6 +158,49 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
   withdrawal, updates `wb18_perc_theta_####`, updates
   `wb11_drainable_storage`, and emits `Qd = q + Qdd` when both same-pass
   components are available.
+
+## Reference-Intent `ksatadj` Effective-Conductivity Authority
+
+ADR-0024 authorizes source intent from the pinned reference implementation as
+the `A0` anchor for the empirical forest `ksatadj` model. The authoritative
+algorithm is the source-level intent in `input.for` and `infpar.for`; legacy
+binary output magnitudes are still comparator flags only.
+
+When `ksatadj = 1`, the effective conductivity is formed as follows:
+
+1. Load disturbed-soil policy from the soil input branch:
+   - `9001/9002`: `ksatadj`, `ksatfac`, `ksatrec`;
+   - `9003+`: `ksatadj`, `lkeff`.
+2. Use the first two tillage layers with weights
+   `weight_i = dg_i / tillay(2)` to compute:
+   - `avpor = Σ(por_i * weight_i)`,
+   - `avcpm = Σ(cpm_i * weight_i)`,
+   - `avsm15 = Σ(thetdr_i * weight_i)`,
+   - `avthetafc = Σ(thetfc_i * weight_i)`,
+   - `avthetadr = Σ(thetdr_i * weight_i)`.
+3. Compute total tillage-layer water as
+   `avsat = (st_1 + st_2) / tillay(2) + avsm15`.
+4. Apply the baseline intent caps:
+   - if `avsat > avpor`, use `avsat = avpor * 0.98`;
+   - immediately before `ksatadj`, if `avsat >= avpor * avcpm`, use
+     `avsat = avpor * avcpm * 0.99`.
+5. Compute `sat_frac = min(avsat / (avpor * avcpm), 1.0)`.
+6. For `solwpv = 9001`, with `Kupper = ks * 3.6e6` in `mm h^-1`:
+   - `Klower = Kupper / ksatfac`,
+   - `keff = ((Kupper - Klower) / (exp(1/ksatrec)-1)) *
+     (exp(sat_frac/ksatrec)-1) + Klower`.
+7. For `solwpv >= 9002`:
+   - `psi = (ln(1500)-ln(33)) / (ln(avthetafc)-ln(avthetadr))`,
+   - `lambda = 1 / psi`,
+   - `keff = (ks * 3.6e6) * sat_frac^(2*lambda + 3)`.
+8. For `solwpv = 9003` and `lkeff > 0`, apply
+   `keff = max(keff, lkeff)`.
+9. Publish the adjusted conductivity as `keff / 3.6e6` in `m s^-1`.
+
+Missing, non-finite, non-positive denominator, malformed branch, or omitted
+source-intent operand lineage is an invalid runtime/governance state. Known
+legacy output non-conservation or disabled branch behavior is not part of this
+authority.
 
 ## Algorithm Specification (WB19 Lateral/Drainage Production Execution)
 
@@ -203,8 +253,10 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 |---|---|---|---|---|
 | `BR-SUBHYD-WB19-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `thetfc_####`, `thetdr_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, hourly `wb19_lateral_ssh_####` when modern soil input provides `ui_anisrt`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic layer-aware lateral execution/writeback |
 | `BR-SUBHYD-WB19-DRAIN-EXECUTE` | phase class `hydrology_drainage` | WB19 lateral symbols + `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`; same-pass `q` is required only for compatibility lanes where drainage publishes final `Qd` | runtime | deterministic layer-aware drainage execution/writeback |
+| `BR-SUBHYD-KSATADJ-EXECUTE` | `ksatadj = 1` | `solwpv`, current `ks`, top-two `dg`, `por`, `cpm`, `thetfc`, `thetdr`, `wb18_perc_theta`, `wb18_perc_ul`, plus `ksatfac`/`ksatrec` for `9001` or `lkeff` for `9003` | runtime + governance | deterministic source-intent effective-conductivity formation |
 | `BR-SUBHYD-WB19-LATERAL-GUARD` | lateral symbol missing/non-finite/out-of-range | WB19 lateral required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-LAT-E-001..003`) |
 | `BR-SUBHYD-WB19-DRAIN-GUARD` | drainage symbol missing/non-finite/out-of-range | WB19 drainage required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-DRAIN-E-001..003`) |
+| `BR-SUBHYD-KSATADJ-GUARD` | `ksatadj` branch missing/non-finite/out-of-range | source-intent operands required by `BR-SUBHYD-KSATADJ-EXECUTE` | runtime + governance | typed hard-fail or contract `HOLD` until the source-intent operand lineage is implemented |
 
 ## Invariants
 
@@ -241,6 +293,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-029 | HPHYS0259 WB19 trace-evidence invariant: opt-in run traces used for H1/H7/H39 lateral residual classification must serialize the HPHYS0258 WB19 potential/target/`tdvv`/unrealized/per-layer-withdrawal diagnostics plus realized `q`, drainage `Qdd`, and final `Qd` from the same post-writeback surface. A trace that omits these fields, mixes pre-writeback and post-writeback surfaces, or cannot prove `q == Σwb19_lateral_withdrawal_####` and `Qd == q + Qdd` when drainage exists is insufficient evidence for assigning residual ownership. | hard-fail | INV-SUBHYD-028, REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-045 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-030 | HPHYS0266 WB19 active-zone split invariant: first-divergence residual evidence that reopens WB19 lateral ownership after `INV-SUBHYD-029` must prove whether WB19 potential, target, realized `q`, `Qdd`, and `Qd` identities close on the same post-writeback row and must classify the active lateral capacity/conductivity layers and realized withdrawal layers against WB17 stressed root-uptake layers. If `potential == target == q`, `Qd == q + Qdd`, no unrealized lateral target remains, and lateral active/withdrawal layers are bottom-zone while SWU-stressed layers are root-zone, WB19 publication/cap logic is not the residual owner absent new baseline-authoritative magnitude evidence. | governance-hold | INV-SUBHYD-029, INV-SUBHYD-028, REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, SC-WATBAL-001#INV-WATBAL-052 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-031 | HPHYS0267 WB19 threshold-lineage invariant: trace evidence used to assign first-divergence lateral/storage ownership must expose per-layer `FCi`, `coca_i`, `drfc_i = FCi + (1-coca_i)*dg_i`, frozen-water adjustment `frzw_i`, `fzdrfc_i = max(drfc_i-frzw_i,0)`, pre-lateral `theta_i`, post-lateral `theta_i`, active capacity/conductivity counts, and realized withdrawal. Evidence that only reports active counts or realized `q` without these threshold inputs is insufficient to prove WB19 lateral eligibility or withdrawal-lineage defects. | governance-hold | INV-SUBHYD-030, INV-SUBHYD-025, INV-SUBHYD-028, REF-SUBHYD-LEGACY-HOURLY-TAIL, SC-WATBAL-001#INV-WATBAL-053 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-032 | REFINTENT001 forest `ksatadj` effective-conductivity invariant: when `ksatadj = 1`, conductivity consumed by infiltration/runoff reconciliation and downstream lateral-magnitude paths must be formed from the ADR-0024 source-intent algorithm in `REF-SUBHYD-KSATADJ-INTENT`: top-two tillage-layer total water over averaged porosity and rock correction for `sat_frac`, source-intent 9001/9002+/9003 branch formulas, explicit unit conversion between `mm h^-1` and `m s^-1`, and typed rejection or governance `HOLD` for missing/non-finite/ambiguous operands. Legacy binary output magnitude, disabled branches, and non-conservation artifacts are non-authoritative. | hard-fail | REF-SUBHYD-KSATADJ-INTENT, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -277,6 +330,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-029` | runtime + governance | Opt-in HPHYS trace serializer for WB19 potential/target/`tdvv`/realized withdrawal and `q`/`Qdd`/`Qd` lineage | Typed hard error / explicit `HOLD` when residual classification evidence lacks post-writeback WB19 trace fields or cannot reconcile realized lateral and subsurface fluxes | HPHYS0259 WB19 trace localization gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-030` | governance | H1/H7/H39 first-divergence active-zone classifier for WB19 potential/target/realized identities and lateral active/withdrawal layers versus WB17 stressed layers | Explicit `HOLD` when WB19 identities close and residual ownership requires layer-distribution or magnitude evidence outside publication/cap logic | HPHYS0266 WB19 active-zone split gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-031` | governance | H1/H7/H39 threshold-lineage classifier for WB19 `drfc`/`fzdrfc`, active-layer decisions, pre/post-lateral storage, and realized withdrawal | Explicit `HOLD` when WB19 threshold-lineage evidence is incomplete or does not prove a baseline-authoritative production defect | HPHYS0267 WB19 threshold-lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-032` | runtime + governance | `ksatadj` effective-conductivity branch evaluator and source-intent operand-lineage validator | Typed hard error or contract `HOLD` when `sat_frac`, `avthetafc`, `avthetadr`, branch parameters, or unit conversion diverge from `REF-SUBHYD-KSATADJ-INTENT` | REFINTENT001 H2637 forest-conductivity closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -291,6 +345,10 @@ alias continuity for production kernels.
 | `θDR_i` | `thetdr_####` | WB19 per-layer residual theta lineage used for FC/WP consistency checks against `wb18_perc_fc_####` | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `θUL_i` | `wb18_perc_ul_####` | WB19 per-layer upper-limit surfaces used in branch coupling checks | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `K_i` | `wb18_perc_ssc_####` | WB19 per-layer saturated conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ksatadj` | `ksatadj`, `ofe##_ksatadj` | Disturbed-soil reference-intent effective-conductivity policy switch | flag preserved (`0`/`1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ksatfac`, `ksatrec`, `lkeff` | same names plus `ofe##_` aliases where projected | Disturbed-soil branch parameters for `ksatadj` 9001 and 9003 branches | `dimensionless`, `d`, `mm h^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `sat_frac` | runtime-derived `ksatadj` saturation fraction | Source-intent top-two tillage-layer total-water saturation fraction | dimensionless preserved (`0 <= sat_frac <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Keff_ksatadj` | `wb14_soil_conductivity_m_s`, `wb14_effective_conductivity_m_s` when `ksatadj = 1` | Conductivity after source-intent `ksatadj` adjustment before frost/runoff storage effects | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ui_ssh(i)` | `wb19_lateral_ssh_####` | WB19 hourly per-layer horizontal saturated conductivity after layer `ui_anisrt(i)` projection | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `por_i` | `por_####` | WB19 per-layer porosity surfaces used in water-yield coupling | dimensionless preserved (`0 < por <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -369,6 +427,7 @@ alias continuity for production kernels.
 | WB19 baseline saturated-zone capacity (`INV-SUBHYD-024`) | lateral-flow conductivity layer selection and weighting | Hard error on top-contiguous-only saturated selection, omitted `fffx` weighting, or omitted legacy `solwpv < 2006` post multiplier | HPHYS0247 hourly closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | WB19 frozen-adjusted storage availability (`INV-SUBHYD-025`) | lateral-flow capacity cap and withdrawal writeback | Hard error on omitted `fzdrfc` threshold lineage, non-finite/negative `frzw`, conductivity using `fzdrfc` instead of `drfc`, or withdrawal below `fzdrfc` | HPHYS0252 hourly storage-availability gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | WB19 daily lateral lane authority (`INV-SUBHYD-026`) | lateral-flow lane selector and daily conductivity weighting | Hard error on applying hourly `meblfc`/unfrozen-`drfc` conductivity to daily lanes or omitting baseline daily `hk`/`fzul` weighting | HPHYS0256 daily `latqcc` closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Forest `ksatadj` source-intent authority (`INV-SUBHYD-032`) | effective-conductivity branch evaluator and operand-lineage validator | Hard error or contract `HOLD` on source-intent saturation-fraction, exponent, branch-parameter, or unit-conversion divergence | REFINTENT001 H2637 forest-conductivity closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -405,6 +464,9 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    from valid WB19 drainage inputs.
 3. Non-finite/domain-invalid WB19 lateral/drainage inputs hard-fail with typed
    guard codes and do not mutate orchestrator writeback surfaces.
+4. `ksatadj` conformance vectors must cover at least one `solwpv >= 9002`
+   two-layer case where the source-intent
+   `avsat/(avpor*avcpm)` differs from a storage-over-upper-limit surrogate.
 
 ## WB12 Reconciliation Coupling Addendum
 
@@ -788,6 +850,31 @@ physics heuristically.
    continuation should shift to WB17 `Ep`, WB18 `Dp`, and aggregate storage
    reconciliation.
 
+## REFINTENT001 Forest `ksatadj` Effective-Conductivity Addendum
+
+1. The forest disturbed-soil `ksatadj` model is governed by ADR-0024
+   source-intent authority from the pinned reference implementation, not by
+   legacy binary output magnitudes.
+2. The source-intent saturation fraction is based on top-two tillage-layer
+   total water:
+   - `avsat = (st_1 + st_2) / tillay(2) + Σ(thetdr_i * dg_i/tillay(2))`,
+   - denominator `avpor * avcpm`, where both terms are independently
+     depth-weighted over the same two layers.
+3. The `solwpv = 9001` branch uses the source exponential recovery formula with
+   `ksatfac` and `ksatrec`; `solwpv >= 9002` uses the Saxton-Rawls exponent
+   `2*lambda + 3` from `avthetafc` and `avthetadr`; `solwpv = 9003` applies
+   `lkeff` as a lower effective-conductivity floor when positive.
+4. Implementations must preserve the source-intent unit conversion:
+   `ks` is converted from `m s^-1` to `mm h^-1` before the branch formula and
+   `keff` is converted back to `m s^-1` after it.
+5. Replacing the source-intent total-water/porosity/rock-correction saturation
+   fraction with a storage-over-upper-limit surrogate is invalid unless a future
+   contract amendment supplies explicit authority for that replacement.
+6. Contract-derived vectors must include at least one non-trivial two-layer case
+   where `Σst_i/Σul_i` differs from
+   `avsat/(avpor*avcpm)`, so surrogate formulas cannot alias the intended
+   algorithm.
+
 ## Binding Exposure Index
 
 Status: `scstruct06-triage-deferred`
@@ -824,6 +911,7 @@ eligible.
 | `HPHYS0257-WB19-HOURLY-HORIZONTAL-CONDUCTIVITY-ADDENDUM` | `SC-SUBHYD-001.md#hphys0257-wb19-hourly-horizontal-conductivity-addendum` | `active` | `maps-to-existing-INV` | `INV-SUBHYD-027` | `none` | SCSTRUCT07 map-in-core: modern hourly `ui_ssh` / `wb19_lateral_ssh_####` conductivity lineage and fail-closed projection posture are exposed by `INV-SUBHYD-027`. |
 | `HPHYS0258-WB19-HOURLY-CAPWITHDRAWAL-PUBLICATION-ADDENDUM` | `SC-SUBHYD-001.md#hphys0258-wb19-hourly-capwithdrawal-publication-addendum` | `active` | `maps-to-existing-INV` | `INV-SUBHYD-028` | `none` | SCSTRUCT07 map-in-core: potential/target/`tdvv`/realized-withdrawal diagnostics and realized `q`/`Qd`/`ui_LfCrf` publication authority are exposed by `INV-SUBHYD-028`. |
 | `HPHYS0259-WB19-TRACE-LOCALIZATION-ADDENDUM` | `SC-SUBHYD-001.md#hphys0259-wb19-trace-localization-addendum` | `active` | `maps-to-existing-INV` | `INV-SUBHYD-029, INV-SUBHYD-030, INV-SUBHYD-031` | `none` | SCSTRUCT07 map-in-core: trace serialization and same-surface WB19 identity checks map to `INV-SUBHYD-029`; active-zone and threshold-lineage follow-on evidence gates map to `INV-SUBHYD-030` and `INV-SUBHYD-031`. |
+| `REFINTENT001-FOREST-KSATADJ-EFFECTIVE-CONDUCTIVITY-ADDENDUM` | `SC-SUBHYD-001.md#refintent001-forest-ksatadj-effective-conductivity-addendum` | `active` | `maps-to-existing-INV` | `INV-SUBHYD-032` | `contract-review` | REFINTENT001 map-in-core: ADR-0024 source-intent `ksatadj` equivalent-conductivity authority is exposed by `INV-SUBHYD-032`. |
 
 ## Gap Register
 
@@ -840,6 +928,7 @@ eligible.
 |---|---|---|---|
 | `2026-06-03` | `31` | `Codex` | HPHYS0266 amendment: added `INV-SUBHYD-030` requiring WB19 active-zone split and realized lateral identity evidence before reopening WB19 ownership. |
 | `2026-06-03` | `32` | `Codex` | HPHYS0267 amendment: added `INV-SUBHYD-031` requiring WB19 `drfc`/`fzdrfc` threshold-lineage evidence for lateral ownership claims. |
+| `2026-06-18` | `33` | `Codex` | REFINTENT001 amendment: added ADR-0024 source-intent authority anchor `REF-SUBHYD-KSATADJ-INTENT` and `INV-SUBHYD-032` governing forest `ksatadj` effective-conductivity formation. |
 | `2026-06-03` | `30` | `Codex` | HPHYS0259 amendment: added `INV-SUBHYD-029` requiring opt-in run traces to carry WB19 potential/target/`tdvv`/realized-withdrawal and `q`/`Qdd`/`Qd` lineage for H1/H7/H39 residual localization. |
 | `2026-06-03` | `29` | `Codex` | HPHYS0258 amendment: added `INV-SUBHYD-028` and observable WB19 potential/target/`tdvv`/realized-withdrawal publication lineage for hourly lateral cap closure. |
 | `2026-06-03` | `28` | `Codex` | HPHYS0257 amendment: added `INV-SUBHYD-027` and baseline hourly `ui_ssh` horizontal-conductivity authority for modern `ui_anisrt` soil lineage in WB19 `latqcc` closure. |

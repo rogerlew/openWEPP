@@ -1,7 +1,14 @@
 # REFIMPL-INTENT-AUTHORITY + ksatadj/SC-SUBHYD-001 Application
 
-Status: scaffolded 2026-06-18 (operator-directed: close the STAGE2-LATQCC `CONTRACT-GAP` by
-establishing reference-implementation intent as contract authority for empirical forest models)
+Status: **complete 2026-06-18** — **ADR-0024 ratified** (operator, 2026-06-18);
+`SC-SUBHYD-001` v33 source-intent `ksatadj` authority (`INV-SUBHYD-032`,
+`REF-SUBHYD-KSATADJ-INTENT`) authored and **independently reviewed**
+(`artifacts/review-claude-independent.md` — both sides of the divergence verified
+against source); openWEPP re-adjudicated **`OPENWEPP-DEFECTIVE`** (forms
+`sat_frac = Σθ/Σul` vs source-intent `avsat/(avpor·avcpm)`). The fix routes to the
+defect-closure follow-on **`REFINTENT001-KSATADJ-SATFRAC`**; the FARPOINT01 71%
+flag stays open until that lands and is re-run. `qdry`/`ksflag` remain future
+applications of ADR-0024.
 
 Package type: **Authority-model decision (proposed ADR-0024) + `SC-SUBHYD-001` authority-anchor
 amendment + `ksatadj` re-adjudication.** Three coupled deliverables: a general governance
