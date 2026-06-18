@@ -79,8 +79,9 @@
         let exact_checks = [
             ("nsl", 2.0),
             ("wb11_nsl", 2.0),
-            ("ssc", 11.5 / 3.6e6),
-            ("wb19_lateral_ssh_0001", 13.4 / 3.6e6),
+            ("ssc", 15.0 / 3.6e6),
+            ("ssc_0001", 15.0 / 3.6e6),
+            ("wb19_lateral_ssh_0001", 17.25 / 3.6e6),
             ("wb19_lateral_ssh_0002", 8.8 / 3.6e6),
             ("dg_0002", 0.15),
             ("solthk_0002", 0.25),
@@ -91,6 +92,13 @@
         for (symbol, expected) in exact_checks {
             assert!((soil_runtime_scalar(&surface, symbol) - expected).abs() < 1.0e-12);
         }
+        assert!(
+            (soil_runtime_scalar(&surface, "ssc_0001")
+                - soil_runtime_scalar(&surface, "wb19_lateral_ssh_0001"))
+            .abs()
+                > 1.0e-9,
+            "split-layer vertical ssc must not alias hourly horizontal ui_ssh"
+        );
 
         for symbol in [
             "por",
@@ -125,6 +133,82 @@
                     < 1.0e-12
             );
         }
+    }
+
+    #[test]
+    fn soil_runtime_surface_projects_harmonic_vertical_ssc_below_top_interval() {
+        let mut soil = parse_soil(
+            VALID_9002,
+            SoilParserOptions {
+                mode: ParserMode::Strict,
+                allow_legacy_aliases: false,
+                expected_topology_count: None,
+                topology_scope: None,
+            },
+        )
+        .expect("9002 soil fixture should parse");
+        let ofe = soil
+            .ofes
+            .first_mut()
+            .expect("9002 fixture should include a primary OFE");
+        let top_layer = ofe
+            .layers
+            .first()
+            .expect("9002 fixture should include layer 1")
+            .clone();
+        let mut high_ksat_layer = top_layer.clone();
+        high_ksat_layer.depth_mm = 560.0;
+        high_ksat_layer.ksat_mm_h = Some(330.2755);
+        high_ksat_layer.anisotropy_ratio = Some(1.25);
+        let mut low_ksat_layer = top_layer.clone();
+        low_ksat_layer.depth_mm = 1140.0;
+        low_ksat_layer.ksat_mm_h = Some(33.0275);
+        low_ksat_layer.anisotropy_ratio = Some(0.65);
+        let mut tail_layer = low_ksat_layer.clone();
+        tail_layer.depth_mm = 1600.0;
+
+        ofe.nsl = 4;
+        ofe.layers = vec![top_layer, high_ksat_layer, low_ksat_layer, tail_layer];
+
+        let surface = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect("runtime surface should build from synthetic split conductivity fixture");
+        let harmonic_split_layer_ssc_mm_h = 200.0 / (160.0 / 330.2755 + 40.0 / 33.0275);
+        let arithmetic_split_layer_ssh_mm_h =
+            (160.0 * 330.2755 * 1.25 + 40.0 * 33.0275 * 0.65) / 200.0;
+
+        assert!((soil_runtime_scalar(&surface, "ssc_0002") - 330.2755 / 3.6e6).abs() < 1.0e-12);
+        assert!(
+            (soil_runtime_scalar(&surface, "wb19_lateral_ssh_0002")
+                - (330.2755 * 1.25) / 3.6e6)
+                .abs()
+                < 1.0e-12
+        );
+        assert!(
+            (soil_runtime_scalar(&surface, "ssc_0003")
+                - harmonic_split_layer_ssc_mm_h / 3.6e6)
+                .abs()
+                < 1.0e-12
+        );
+        assert!(
+            (soil_runtime_scalar(&surface, "wb19_lateral_ssh_0003")
+                - arithmetic_split_layer_ssh_mm_h / 3.6e6)
+                .abs()
+                < 1.0e-12
+        );
+        assert!(
+            (soil_runtime_scalar(&surface, "ssc_0003")
+                - soil_runtime_scalar(&surface, "wb19_lateral_ssh_0003"))
+            .abs()
+                > 1.0e-9,
+            "H2637-shaped split layer must separate vertical ssc from hourly ui_ssh"
+        );
+        assert!((soil_runtime_scalar(&surface, "ssc_0004") - 33.0275 / 3.6e6).abs() < 1.0e-12);
+        assert!(
+            (soil_runtime_scalar(&surface, "wb19_lateral_ssh_0004")
+                - (33.0275 * 0.65) / 3.6e6)
+                .abs()
+                < 1.0e-12
+        );
     }
 
     #[test]
@@ -658,3 +742,40 @@
         ));
     }
 
+    #[test]
+    fn soil_runtime_surface_rejects_non_finite_saturated_conductivity() {
+        let mut soil = parse_soil(VALID_9002, SoilParserOptions::default())
+            .expect("9002 soil fixture should parse");
+        soil.ofes[0].layers[1].ksat_mm_h = Some(f64::NAN);
+
+        let error = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect_err("non-finite ksat must fail runtime adaptation");
+        assert_eq!(error.code(), "HS-RUNTIME-E-034");
+        assert!(matches!(
+            error,
+            HillslopeRuntimeInputError::NonFiniteSaturatedConductivity {
+                ofe_index: 1,
+                layer_index: 2,
+                value_mm_h
+            } if value_mm_h.is_nan()
+        ));
+    }
+
+    #[test]
+    fn soil_runtime_surface_rejects_non_positive_saturated_conductivity() {
+        let mut soil = parse_soil(VALID_9002, SoilParserOptions::default())
+            .expect("9002 soil fixture should parse");
+        soil.ofes[0].layers[1].ksat_mm_h = Some(0.0);
+
+        let error = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect_err("non-positive ksat must fail runtime adaptation");
+        assert_eq!(error.code(), "HS-RUNTIME-E-035");
+        assert!(matches!(
+            error,
+            HillslopeRuntimeInputError::NonPositiveSaturatedConductivity {
+                ofe_index: 1,
+                layer_index: 2,
+                value_mm_h: 0.0
+            }
+        ));
+    }

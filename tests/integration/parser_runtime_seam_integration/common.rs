@@ -92,7 +92,7 @@ impl HillslopeKernel for HillslopeSeedProbeKernel {
             "authoritative theta symbols should be correction-lineage projected, not raw parser-theta values"
         );
         assert_state_value(request.state_surface, "nsl", 2.0);
-        assert_state_value(request.state_surface, "ssc", 11.5 / 3.6e6);
+        assert_state_value(request.state_surface, "ssc", 15.0 / 3.6e6);
         assert_state_value(request.state_surface, "dg_0002", 0.15);
         assert_state_value(request.state_surface, "solthk_0002", 0.25);
         assert_state_value(request.state_surface, "wb19_dg_0002", 0.2);
@@ -230,7 +230,7 @@ impl HillslopeKernel for HillslopeSlopeSoilProbeKernel {
             "authoritative theta symbols should be correction-lineage projected, not raw parser-theta values"
         );
         assert_state_value(request.state_surface, "nsl", 2.0);
-        assert_state_value(request.state_surface, "ssc", 11.5 / 3.6e6);
+        assert_state_value(request.state_surface, "ssc", 15.0 / 3.6e6);
         assert_state_value(request.state_surface, "ssc_0002", 8.0 / 3.6e6);
         assert_state_value(request.state_surface, "nelem", 2.0);
         assert_state_value(request.state_surface, "nwsofe", 2.0);

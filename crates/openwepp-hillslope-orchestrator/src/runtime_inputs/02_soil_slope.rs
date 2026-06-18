@@ -724,10 +724,11 @@ fn compute_normalized_conductivity_runtime_symbols(
     let normalized_layer_count = legacy_normalized_layer_count(total_depth_m).ok_or(
         HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable { ofe_index },
     )?;
-    Ok(legacy_normalize_conductivity_layers_to_200mm(
+    legacy_normalize_conductivity_layers_to_200mm(
         &source_layers,
         normalized_layer_count,
-    ))
+        ofe_index,
+    )
 }
 
 fn aggregate_profile_fc_store_mm_from_primary_wb11_layers(
@@ -1332,15 +1333,20 @@ fn legacy_normalize_layers_to_200mm(
 fn legacy_normalize_conductivity_layers_to_200mm(
     source_layers: &[LegacyConductivityLayer],
     normalized_layer_count: usize,
-) -> Vec<NormalizedConductivityRuntimeSymbols> {
+    ofe_index: usize,
+) -> Result<Vec<NormalizedConductivityRuntimeSymbols>, HillslopeRuntimeInputError> {
     let mut remaining_thicknesses = source_layers
         .iter()
         .map(|layer| layer.thickness_m)
         .collect::<Vec<f64>>();
     let mut source_index = 0usize;
+    let mut normalized_layer_bottom_m = WB13_PROFILE_LAYER_THICKNESS_M;
     let mut normalized_conductivity_values = Vec::with_capacity(normalized_layer_count);
     for _normalized_index in 0..normalized_layer_count {
-        let mut weighted_ksat_mm_h = 0.0_f64;
+        let use_top_source_ksat =
+            normalized_layer_bottom_m <= WB13_PROFILE_LAYER_THICKNESS_M + LEGACY_INPUT_DELTA_EPS_M;
+        let top_source_ksat_mm_h = source_layers[0].ksat_mm_h;
+        let mut inverse_weighted_ksat_h_per_mm = 0.0_f64;
         let mut weighted_lateral_ksat_mm_h = 0.0_f64;
         let mut remaining = WB13_PROFILE_LAYER_THICKNESS_M;
         while remaining > 0.0 && source_index < source_layers.len() {
@@ -1351,9 +1357,16 @@ fn legacy_normalize_conductivity_layers_to_200mm(
             }
             if source_thickness <= remaining {
                 let fraction = source_thickness / WB13_PROFILE_LAYER_THICKNESS_M;
-                weighted_ksat_mm_h += source_layers[source_index].ksat_mm_h * fraction;
+                let source = source_layers[source_index];
+                let source_ksat_mm_h = if use_top_source_ksat {
+                    top_source_ksat_mm_h
+                } else {
+                    source.ksat_mm_h
+                };
+                let source_anisotropy_ratio = source.lateral_ksat_mm_h / source.ksat_mm_h;
+                inverse_weighted_ksat_h_per_mm += source_thickness / source_ksat_mm_h;
                 weighted_lateral_ksat_mm_h +=
-                    source_layers[source_index].lateral_ksat_mm_h * fraction;
+                    source_ksat_mm_h * source_anisotropy_ratio * fraction;
                 remaining -= source_thickness;
                 source_index += 1;
                 if remaining.abs() <= LEGACY_INPUT_DELTA_EPS_M {
@@ -1361,9 +1374,16 @@ fn legacy_normalize_conductivity_layers_to_200mm(
                 }
             } else {
                 let fraction = remaining / WB13_PROFILE_LAYER_THICKNESS_M;
-                weighted_ksat_mm_h += source_layers[source_index].ksat_mm_h * fraction;
+                let source = source_layers[source_index];
+                let source_ksat_mm_h = if use_top_source_ksat {
+                    top_source_ksat_mm_h
+                } else {
+                    source.ksat_mm_h
+                };
+                let source_anisotropy_ratio = source.lateral_ksat_mm_h / source.ksat_mm_h;
+                inverse_weighted_ksat_h_per_mm += remaining / source_ksat_mm_h;
                 weighted_lateral_ksat_mm_h +=
-                    source_layers[source_index].lateral_ksat_mm_h * fraction;
+                    source_ksat_mm_h * source_anisotropy_ratio * fraction;
                 remaining_thicknesses[source_index] -= remaining;
                 if remaining_thicknesses[source_index].abs() <= LEGACY_INPUT_DELTA_EPS_M {
                     source_index += 1;
@@ -1371,12 +1391,19 @@ fn legacy_normalize_conductivity_layers_to_200mm(
                 remaining = 0.0;
             }
         }
+        if inverse_weighted_ksat_h_per_mm <= 0.0 {
+            return Err(HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable {
+                ofe_index,
+            });
+        }
+        let vertical_ksat_mm_h = WB13_PROFILE_LAYER_THICKNESS_M / inverse_weighted_ksat_h_per_mm;
         normalized_conductivity_values.push(NormalizedConductivityRuntimeSymbols {
-            ssc_m_s: weighted_ksat_mm_h / 3.6e6,
+            ssc_m_s: vertical_ksat_mm_h / 3.6e6,
             lateral_ssh_m_s: weighted_lateral_ksat_mm_h / 3.6e6,
         });
+        normalized_layer_bottom_m += WB13_PROFILE_LAYER_THICKNESS_M;
     }
-    normalized_conductivity_values
+    Ok(normalized_conductivity_values)
 }
 
 fn legacy_accumulate_weighted_layer(

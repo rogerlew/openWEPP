@@ -4,9 +4,9 @@ title: Soil Input Parser Contract (.sol)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.10
+contract_version: 0.1.11
 evidence_mode: Static
-last_updated_utc: 2026-06-01T23:00:00Z
+last_updated_utc: 2026-06-18T00:00:00Z
 ---
 
 # SC-INFILE-SOIL-001 Soil Input Parser Contract
@@ -21,6 +21,7 @@ Evidence mode: `Static`
 - `[DIRECT][E-SURVEY-SOL-01]` `/home/workdir/openWEPP/docs/planning/wepp-input-file-parser-survey.md` (`.sol` parser coverage and legacy/runtime provenance references).
 - `[DIRECT][E-WF-SOL-01]` `/home/workdir/wepp-forest/src/infile.for` and `/home/workdir/wepp-forest/src/input.for` (legacy soil parse branches cited by survey).
 - `[DIRECT][E-WF-SOL-02]` `/workdir/wepp-forest_260430_baseline/src/input.for:475-482` (legacy parser branch for `solwpv >= 7777` reads 8 OFE-header fields through `shcrit`, omitting `avke`).
+- `[DIRECT][E-WF-SOL-03]` `/workdir/wepp-forest_260430_baseline/src/input.for:752-761,836-844,926-928`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` (legacy source-intent runtime conductivity projection: vertical `ssc1` accumulates inverse conductivity and hourly horizontal `ui_ssh1` accumulates thickness-weighted `ssc2*ui_anisrt`).
 - `[DIRECT][E-WP-SOL-01]` `/workdir/wepppy/wepp/soils/utils/wepp_soil_util.py` (`_parse_sol` parser surface cited by survey).
 - `[DIRECT][E-OW-SOIL-SEAM-01]` `/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/runtime_inputs.rs` (soil parser-to-runtime projection seam for canonical `thetdr`/`thetfc` symbols).
 - `[DIRECT][E-AUTH-SOL-01]` `/home/workdir/openWEPP/docs/specifications/external-authority/required-suite-obligations.json` (`cas_l4_infile_soil_producer_contract_001` machine obligations for required symbol/order/arity and fixture-integrity guards).
@@ -129,7 +130,7 @@ per_ofe_restrictive_line = slflag ui_bdrkth kslast ;  (* accepted when rows are 
 | `slid,texid,nsl` | `ofe[i].header` | `soil.ofe[i].id_and_counts` | `input::soil` | init | immutable | profile loader | `G-SOL-004` |
 | `salb,sat,ki,kr,shcrit,avke` | `ofe[i].base_fields` | `soil.ofe[i].base_params` | `input::soil` | init | immutable | watbal, evap, erodibility initialization | `G-SOL-005` |
 | `solthk,sand,clay,orgmat,cec,rfg` | `ofe[i].layers[j].texture_rows` | `soil.ofe[i].layers[j].texture_state` | `input::soil` | init,daily | immutable | watbal, evap, erosion, root-zone accounting | `G-SOL-006`, `G-SOL-007` |
-| `bd,ksat,anisotropy,fc,wp (measured)` | `ofe[i].layers[j].hydraulic_rows` | `soil.ofe[i].layers[j].hydraulic_state` | `input::soil` | init,daily,event | immutable | infiltration, percolation, freeze-thaw conductivity logic | `G-SOL-006`, `G-SOL-007` |
+| `bd,ksat,anisotropy,fc,wp (measured)` | `ofe[i].layers[j].hydraulic_rows` | `soil.ofe[i].layers[j].hydraulic_state` | `input::soil` | init,daily,event | immutable | infiltration, percolation, freeze-thaw conductivity logic, hourly lateral horizontal conductivity projection | `G-SOL-006`, `G-SOL-007`, `G-SOL-015` |
 | `theta_r,theta_s,alpha,npar,ks,wp(rosetta),fc(rosetta)` | `ofe[i].layers[j].rosetta_rows` | `soil.ofe[i].layers[j].rosetta_state` | `input::soil` | init,daily,event | immutable | pedotransfer recalculation paths and conductivity adjustments | `G-SOL-006`, `G-SOL-008` |
 | `ksatadj,luse,stext,ksatfac,ksatrec,burn_code,lkeff,texid_enum,uksat` | `ofe[i].policy_hdr` | `soil.ofe[i].policy_state` | `input::soil` | init,daily,event | immutable | disturbed-land conductivity adjustment and revegetation controls | `G-SOL-008` |
 | restrictive layer row | `footer.restrictive` | `soil.restrictive_layer` | `input::soil` | init | immutable | percolation lower-bound condition | `G-SOL-009` |
@@ -150,6 +151,7 @@ per_ofe_restrictive_line = slflag ui_bdrkth kslast ;  (* accepted when rows are 
 | `D-SOL-003` | Derive restrictive-layer effective presence from `slflag` and validate dependent fields. | footer parse finalize | `C-SOL-003` |
 | `D-SOL-004` | Runtime export precedence for canonical hydrology theta symbols is datver-compatible and fail-closed: `thetdr := theta_r_rosetta` when present, else `wp_measured`; `thetfc := fc_rosetta` when present, else `fc_measured`; if neither source exists for a required layer, projection fails with typed runtime error. | parser-to-runtime seam projection | `C-SOL-004` |
 | `D-SOL-005` | Runtime export of disturbed-land conductivity-adjustment regime metadata is deterministic and fail-closed: `solwpv := datver_raw`; per-OFE policy aliases (`ofe{i}_ksatadj`, `ofe{i}_ksatfac`, `ofe{i}_ksatrec`, `ofe{i}_lkeff`) are projected when datver policy fields exist; primary OFE aliases (`ksatadj`, `ksatfac`, `ksatrec`, `lkeff`) mirror OFE1; when policy is absent, `ksatadj := 0` and regime-only fields remain omitted. | parser-to-runtime seam projection | `C-SOL-005` |
+| `D-SOL-006` | Runtime conductivity export across 200 mm normalized layers preserves the baseline split between vertical and hourly-horizontal conductivity: for normalized layers with bottom depth `<= 0.2 m`, the source `ksat` used for each overlapped source segment is the top source-layer `ksat`; below that top interval, vertical percolation `ssc` / `wb18_perc_ssc_####` is the layer thickness divided by `Σ(thickness_source / ksat_source)`, while hourly horizontal `ui_ssh` / `wb19_lateral_ssh_####` is the thickness-weighted arithmetic mean of `ksat_source * anisotropy_source`. The two surfaces may be equal for homogeneous layers but must not be aliased. | parser-to-runtime seam projection | `C-SOL-006` |
 
 Closure hooks:
 - `C-SOL-001`: layer-depth closure and count closure (`nsl` rows present).
@@ -157,6 +159,7 @@ Closure hooks:
 - `C-SOL-003`: restrictive-layer field closure and domain checks.
 - `C-SOL-004`: runtime theta export source closure (`Rosetta` preferred with measured fallback; no silent defaults when both missing).
 - `C-SOL-005`: runtime `ksatadj` regime export closure (`solwpv` + policy aliases) with no silent fabrication of regime-only fields.
+- `C-SOL-006`: runtime conductivity projection closure (top-200 mm source `ksat` rule, `ssc` harmonic/inverse-conductivity normalized below the top interval, `ui_ssh` arithmetic `ksat*anisotropy`, non-aliased split-layer tests).
 
 ## 7. Validation and Error Taxonomy
 
@@ -190,6 +193,7 @@ No silent fallback masking for invalid required inputs. `[DIRECT][E-SPEC-SOL-01]
 | `slid,texid,nsl,salb,sat,ki,kr,shcrit,avke` | `soil.ofe[*].base_params` | runtime initialization payload | aliases from Section 3; units preserved | shared across watbal/evap/erosion setup |
 | `solthk,sand,clay,orgmat,cec,rfg,bd,ksat,anisotropy,fc,wp,theta_r,theta_s,alpha,npar,ks,wp(rosetta),fc(rosetta)` | `soil.ofe[*].layers[*]` | interchange/hydrology-state export | canonical symbol continuity with explicit alias names for duplicate `wp`/`fc` fields | measured vs Rosetta variants remain distinct in boundary schema |
 | `theta_r,fc_rosetta,wp(measured),fc(measured)` | `soil.ofe[*].layers[*]` | hillslope runtime seed projection (`thetdr`,`thetfc`) | `thetdr := theta_r_rosetta` else `wp_measured`; `thetfc := fc_rosetta` else `fc_measured` | fail-closed typed runtime error when required source pair is unavailable or non-finite |
+| `ksat,anisotropy` | `soil.ofe[*].layers[*]` | hillslope runtime conductivity projection (`ssc`,`wb18_perc_ssc_####`,`wb19_lateral_ssh_####`) | for normalized layers with bottom `<= 0.2 m`, use top source-layer `ksat` for overlapped source segments; below that interval, `ssc := thickness / Σ(thickness_source/ksat_source)` over each normalized runtime layer; `wb19_lateral_ssh := Σ(thickness_source*ksat_source*anisotropy_source)/thickness` for modern hourly horizontal conductivity | `ssc` and `wb19_lateral_ssh` are distinct runtime surfaces; `wb19_lateral_ssh` defaults source anisotropy to `1.0` only where the datver omits anisotropy |
 | `ksatadj,luse,stext,ksatfac,ksatrec,burn_code,lkeff,texid_enum,uksat` | `soil.ofe[*].policy_state` | disturbed/revegetation policy boundary | exported as datver-scoped policy blocks | missing datver-inapplicable fields are omitted, not default-filled |
 | `datver_raw,ksatadj,ksatfac,ksatrec,lkeff` | `soil.version.datver` + `soil.ofe[*].policy_state` | hillslope runtime seed projection (`solwpv`,`ksatadj`,`ksatfac`,`ksatrec`,`lkeff`) | `solwpv := datver_raw`; primary aliases mirror OFE1 policy; per-OFE aliases prefixed `ofe{i}_*` | `ksatadj` defaults to `0` only when policy is absent; regime-only fields are not synthetic defaults |
 | `slflag,ui_bdrkth,kslast` | `soil.restrictive_layer` | lower-boundary/percolation payload | exported as optional restrictive-layer object | present only when `slflag=1` |
@@ -241,6 +245,7 @@ Unsupported forms must fail with typed errors from Section 7.
 | `G-SOL-012` | runtime theta export closure requires at least one valid source per required layer for each canonical symbol (`thetdr`: `theta_r_rosetta` or `wp_measured`; `thetfc`: `fc_rosetta` or `fc_measured`) with no silent defaulting | parser-to-runtime seam projection | typed runtime seam failure (`HS-RUNTIME-E-*`) |
 | `G-SOL-013` | runtime `ksatadj` regime metadata export closure requires finite `solwpv` and binary `ksatadj` aliases; active-regime fields (`ksatfac`, `ksatrec`, `lkeff`) must only be exported from datver-applicable policy records | parser-to-runtime seam projection | typed runtime seam failure (`HS-RUNTIME-E-*`) |
 | `G-SOL-014` | required producer-contract anti-drift obligations for canonical symbols and datver row envelopes must pass via suite `cas_l4_infile_soil_producer_contract_001` (required/hard-fail) including fixture lock/provenance integrity | release-gate authority lane (`required`) | release gate hard-fail |
+| `G-SOL-015` | runtime conductivity projection must reject missing, non-finite, or non-positive source `ksat`; normalized layers with bottom `<= 0.2 m` must apply the top source-layer `ksat` rule; split-source normalized layers below that interval must compute vertical `ssc` by inverse-conductivity weighting and hourly `ui_ssh` by arithmetic `ksat*anisotropy` weighting | parser-to-runtime seam projection | typed runtime seam failure (`HS-RUNTIME-E-*`) |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -260,6 +265,7 @@ openWEPP runtime names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-06-18` | `0.1.11` | BASECOND01 amendment: made 200 mm runtime conductivity projection explicit: top normalized interval applies the baseline top source-layer `ksat` rule, vertical `ssc` / `wb18_perc_ssc_####` below that interval uses inverse-conductivity normalization, while modern hourly `ui_ssh` / `wb19_lateral_ssh_####` remains arithmetic from `ksat*anisotropy`; added closure hook `C-SOL-006` and guard `G-SOL-015`. |
 | `2026-06-01` | `0.1.10` | SOILAUTH03 amendment: added required producer-contract anti-drift authority linkage (`G-SOL-014`) to `cas_l4_infile_soil_producer_contract_001` machine obligations in `required-suite-obligations.json` with release-gated hard-fail fixture-integrity posture. |
 | `2026-06-01` | `0.1.9` | SOILAUTH02 amendment: reconciled canonical producer envelopes into strict+compat parser authority by accepting `9002/9003/9005` policy-first ordering, quoted header parsing with optional missing `avke` normalization, per-OFE restrictive-row normalization for `7778/9002/9003/9005`, and single/double quote tokenization where parsing is lossless. |
 | `2026-05-28` | `0.1.8` | HILLSTAB02 amendment: ratified compatibility acceptance of quoted disturbed-policy rows (`9002/9003/9005`) where `luse`/`stext` carry embedded whitespace and quote-tokenization is lossless. |
