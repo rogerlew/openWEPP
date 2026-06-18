@@ -1,6 +1,6 @@
 # POST-BASECOND01-H2637-MAGNITUDE-DISPOSITION - Final FARPOINT01 71% Disposition
 
-Status: scaffolded 2026-06-18 (Stage-2 magnitude disposition; the capstone that closes the
+Status: complete 2026-06-18 (Stage-2 magnitude disposition; the capstone that closes the
 FARPOINT01 71% lateral-magnitude arc)
 
 Package type: **Stage-2 magnitude DISPOSITION — synthesis + flag resolution, no fix, no new
@@ -12,6 +12,16 @@ FARPOINT01 flag. Per ADR-0017 / the closure-not-magnitude ordering, legacy stays
 FARPOINT01 (2026-06-16) surfaced that H2637 routes **71.0% of precip** to the outlet vs legacy
 without_ui 55.5%. A multi-package arc adjudicated every internal candidate; this package ties them
 together and renders the final disposition.
+
+## Execution result
+
+The disposition is complete. FARPOINT01's H2637 71% magnitude flag is resolved as
+`CORRECT-BY-CONSTRUCTION` / `NO DEFECT` for the verified openWEPP lateral
+lineage. The remaining absolute physical magnitude question is a documented
+external-authority `CONTRACT-GAP`, recorded in
+`docs/backlog/20260618-forest-lateral-flow-absolute-magnitude-authority.md`.
+No production code, science contract, or new defect-closure package is
+authorized by this disposition.
 
 ## The verified evidence chain (synthesize — do not re-open)
 

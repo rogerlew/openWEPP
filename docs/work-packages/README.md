@@ -10,6 +10,15 @@
 
 State as of `2026-06-18`:
 
+- POST-BASECOND01-H2637-MAGNITUDE-DISPOSITION is complete. The package
+  synthesized FARPOINT01, MAGPARITY01, STAGE2-LATQCC, REFINTENT001,
+  STAGE2-BASE-CONDUCTIVITY, and BASECOND01 evidence, then resolved the H2637
+  `71.0036550031206%` magnitude flag as `CORRECT-BY-CONSTRUCTION` / `NO DEFECT`
+  for the internal openWEPP lateral lineage. The remaining absolute physical
+  magnitude question is an external-authority `CONTRACT-GAP`, recorded as
+  `docs/backlog/20260618-forest-lateral-flow-absolute-magnitude-authority.md`;
+  it is not a queue blocker and does not authorize a production edit. Package:
+  `20260618-post-basecond01-h2637-magnitude-disposition-001/`.
 - BASECOND01 is complete-with-correction. `SC-INFILE-SOIL-001` v0.1.11 now
   explicitly separates vertical `ssc` from hourly lateral `ui_ssh`: the top
   normalized 200 mm interval uses the baseline top source-layer `ksat` rule,
@@ -17,8 +26,9 @@ State as of `2026-06-18`:
   `wb19_lateral_ssh` remains arithmetic from `ksat*anisotropy`. Regression tests
   prove the surfaces are non-aliased. The H2637 no-UI rerun was aggregate-inert
   (`runvol_pct_precip` remained `71.0036550031206`), so BASECOND01 closes the
-  vertical `ssc` defect but does not close the remaining FARPOINT01 magnitude
-  flag. Package:
+  vertical `ssc` defect but did not by itself close the remaining FARPOINT01
+  magnitude flag; POST-BASECOND01 closed that flag by disposition after the full
+  evidence chain was synthesized. Package:
   `20260618-basecond01-ssc-harmonic-normalization-defect-closure-001/`.
 - STAGE2-BASE-CONDUCTIVITY-H2637-MAGNITUDE is complete with verdict
   `OPENWEPP-DEFECTIVE`. The package proved base `ksat` is byte-live on H2637

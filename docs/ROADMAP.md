@@ -53,10 +53,13 @@ byte-live and found a source-intent defect in vertical `wb18_perc_ssc` 200 mm
 normalization. BASECOND01 closed that defect: vertical `ssc` is now harmonic
 below the top 200 mm interval while hourly H2637 `wb19_lateral_ssh` remains
 arithmetic from `ksat*anisotropy`. The H2637 no-UI rerun was aggregate-inert
-(`runvol_pct_precip` remained `71.0036550031206`), so the remaining 71% flag
-must be re-disposed after source-intent conductivity closure, not chased by
-making `ui_ssh` harmonic. On
-the perf track, PERFOPT01, PERFIDX03B, and PERFIDX04 captured
+(`runvol_pct_precip` remained `71.0036550031206`). POST-BASECOND01 then
+resolved the remaining FARPOINT01 71% magnitude flag as
+`CORRECT-BY-CONSTRUCTION` / `NO DEFECT` for the verified openWEPP lateral
+lineage. The only residual question is absolute physical magnitude, now tracked
+as a deferred external-authority `CONTRACT-GAP` in
+[backlog/20260618-forest-lateral-flow-absolute-magnitude-authority.md](backlog/20260618-forest-lateral-flow-absolute-magnitude-authority.md).
+On the perf track, PERFOPT01, PERFIDX03B, and PERFIDX04 captured
 the read-side clone/lookup levers; PERFIDX05 was held because write/guard id work
 is dual-write-bound under the read-mirror design; PERFIDX06 measured the
 PERFIDX04 endpoint at **73.12×** legacy no-UI on H2637. The next perf mechanism
@@ -79,10 +82,10 @@ evidence.
 | 4 | **Reference-implementation-intent authority + `ksatadj`/SC-SUBHYD-001** | Establish **ADR-0024** that for empirical forest models with no external physical authority, the legacy reference-implementation **intent** (algorithm) is a valid `SC-*` A0 anchor — **distinct from** legacy binary *behavior* (A6 flag, ADR-0017) — then apply it: extract the `ksatadj` intent from `wepp-forest_260430_baseline/src/{infpar,input}.for`, anchor it in `SC-SUBHYD-001`, and re-adjudicate openWEPP vs the *intent* | ADR-0024 ratified; `SC-SUBHYD-001` `ksatadj` anchor + invariant; `CORRECT` (close the FARPOINT01 71% flag) or `OPENWEPP-DEFECTIVE` (defect-closure ExecPlan) | ✅ **complete 2026-06-18** — **ADR-0024 ratified**; `SC-SUBHYD-001` v33 `INV-SUBHYD-032` + `REF-SUBHYD-KSATADJ-INTENT` authored and Claude-reviewed (both sides of the `sat_frac` divergence verified against source). Verdict `OPENWEPP-DEFECTIVE`: openWEPP forms `sat_frac = Σθ/Σul` vs source-intent `avsat/(avpor·avcpm)`. Fix routes to item 5; FARPOINT01 stays open until it lands. |
 | 5 | **`REFINTENT001-KSATADJ-SATFRAC` defect closure** | Rebuild the WB14 `ksatadj` operand lineage so `sat_frac` is formed per `SC-SUBHYD-001#INV-SUBHYD-032` source intent: rock-corrected `avpor*avcpm` denominator, total-water + `avsm15` residual numerator, the two `avsat` caps, top-two-tillage weighted averaging, not `sum(theta)/sum(ul)` | `INV-SUBHYD-032` satisfied; non-aliased tests where surrogate differs from intended formula; determinism preserved; re-run H2637 + close the FARPOINT01 71% flag by source-intent conformance | ✅ **complete-with-correction 2026-06-18** (`REFINTENT001-KSATADJ-SATFRAC`) — source-intent `sat_frac` fix landed (correct, gate-clean, non-aliased-tested; valuable for `ksatadj=1` soils). **But Claude review found it byte-inert on H2637** (`ksatadj = 0`; WAT SHA identical pre/post), so it does **not** close FARPOINT01 — flag re-opens. The 71% is base-conductivity-driven → item 6. |
 | 6 | **H2637 base lateral/percolation conductivity adjudication** | The H2637 71% lateral magnitude is driven by the **base soil conductivity** (`Ke`/`ssc`, soil-file `ksat` + the 200 mm runtime-layer normalization), **not** `ksatadj` (which is off for H2637). Adjudicate that conductivity lineage under `SC-SUBHYD-001` / `SC-INFILE-SOIL-001`, same intent-vs-behavior discipline | Per-term verdict on the base-conductivity lineage (`CORRECT`/`OPENWEPP-DEFECTIVE`/`CONTRACT-GAP`); resolve or re-route the FARPOINT01 71% flag | ✅ **`STAGE2-BASE-CONDUCTIVITY-H2637-MAGNITUDE` complete 2026-06-18** — base `ksat` is byte-live (`ksat_x0.9` changed WAT/PASS checksums and magnitude outputs). Verdict `OPENWEPP-DEFECTIVE`: vertical `wb18_perc_ssc` split-layer normalization is arithmetic but source intent is inverse-conductivity/harmonic (`117.955408` vs `270.8259 mm/h` on H2637 layer 3). Hourly `wb19_lateral_ssh` remains arithmetic and must be preserved. |
-| 7 | **Post-BASECOND01 H2637 magnitude disposition** | Re-dispose the remaining FARPOINT01 H2637 magnitude flag after `ksatadj` source-intent and vertical `ssc` source-intent corrections have landed and proven H2637 aggregate-inert | Verdict: `CONTRACT-GAP` / external-authority gap, or a new in-envelope defect with contract authority before any production edit | ▶️ **`POST-BASECOND01-H2637-MAGNITUDE-DISPOSITION` scaffolded, Codex-ready** — the capstone: synthesize the fully-verified lateral lineage → resolve FARPOINT01 71% as **CORRECT-BY-CONSTRUCTION** (no defect) + absolute magnitude as a documented external-authority `CONTRACT-GAP` (optional backlog note, not a blocker). No fix; guardrails hold. |
 
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
-remaining items are separate follow-on mechanisms.)
+H2637 magnitude arc is no longer an active queue item. Absolute forest lateral-flow
+magnitude authority is deferred in backlog, not a blocker.)
 
 ---
 
