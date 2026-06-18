@@ -10,10 +10,15 @@
 
 State as of `2026-06-17`:
 
+- PERFIDX05 is HELD (Stage 5: writeback/guards by SymbolId). Bit-identical but
+  performance-NEGATIVE (H2637 −5.3–5.8%) — the write/guard-side dual-write cost
+  (logical + mirror) exceeds the id saving; a structural ceiling of the read-mirror
+  design, not incompleteness. Code discarded, record kept. Package:
+  `20260617-perfidx05-writeback-guards-by-id-001/`. Program pivots to PERFIDX06
+  (re-measure vs ≤10×) before any further write-side work.
 - PERFIDX04 is complete (Stage 4: resolve-once hot-symbol-id tables + indexed
   read-mirror). H2637 −24.3%/−25.2%, bit-identical, irrigation excluded. Package:
-  `20260617-perfidx04-hot-symbol-id-tables-001/`. Next: PERFIDX05 (writeback/guards
-  by SymbolId) → PERFIDX06 (re-measure vs ≤10×).
+  `20260617-perfidx04-hot-symbol-id-tables-001/`. Endpoint stands as the perf state.
 - PERFIDX03B is complete as the blocker-closure follow-on to held PERFIDX03.
   Scope: indexed kernel seam/export-cache work needed before Stage 4. Package:
   `20260617-perfidx03b-indexed-kernel-seam-or-export-cache-001/`.

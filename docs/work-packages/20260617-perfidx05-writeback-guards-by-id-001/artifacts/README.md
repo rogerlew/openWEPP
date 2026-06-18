@@ -1,8 +1,10 @@
 # Artifacts
 
-Status: scaffolded (awaiting Codex execution).
+Status: **HELD 2026-06-18** (executed + bit-identical but performance-negative; code
+discarded, record kept — see `perfidx05_disposition.md` Post-review closure +
+`review-claude-independent.md`). Program pivots to PERFIDX06 re-measure.
 
-Planned deliverables:
+Deliverables (+ `review-claude-independent.md`):
 
 - `perfidx05-writeback-guard-inventory.md`
 - `perfidx05-prefix-range-proofs.md`

@@ -61,7 +61,7 @@ before Stage 2 (`PERFIDX02`).
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface — clone + read-seam migration (Stages 3→4 done; 5→6 next)** | Two dominant levers: the per-lane/day clone and the per-access `format!`+map-lookup. **`PERFIDX03B`** (✅) removed the **clone** via `std::mem::take` move semantics. **`PERFIDX04`** (✅) removed the **lookup**: resolve-once `SymbolId` hot tables + an indexed read-mirror carried beside the logical surface (dual-applied on writeback, no full-export), for climate/frost/WB18-19/PL/MOFE-hourly (**irrigation carved out**). Next: **`PERFIDX05`** (writeback + guards by `SymbolId`) → **`PERFIDX06`** (re-measure vs ≤10×) | Bit-identical; both levers realized; `format!` gone from named hot paths | ✅ **`PERFIDX04` complete** — H2637 **−24.3% / −25.2%** (888.92→673.29 / 894.98→669.75 s), OFE5 −14.3%; OFE1 −4.4% (setup unamortized on a trivial run). Full anchor PASS (OFE1–5 + H2637 both UI), outputs bit-identical (Claude reproduced OFE2 incl. the transfer-sync path); profiler shows hot `format!`→id-table (0.01% self). Next: ▶️ **`PERFIDX05` scaffolded, Codex-ready** — writeback + guards by `SymbolId` (apply-by-id, prefix→range checks, required-id sets); **failure-path tests are the load-bearing gate** (a weakened guard passes the happy-path anchor). Then **`PERFIDX06`** ≤10× verdict. *Irrigation stays deferred → `backlog/20260617-…`.* |
+| 2 | **Indexed runtime-surface — read-side migration done; re-measure next** | Two dominant levers: the per-lane/day clone and the per-access `format!`+map-lookup. **`PERFIDX03B`** (✅) removed the **clone** via `std::mem::take` move. **`PERFIDX04`** (✅) removed the **lookup** (resolve-once `SymbolId` hot tables + indexed read-mirror), −24% on H2637. **`PERFIDX05`** (⏸️ HELD) attempted the *write/guard* side and **regressed −5.7%** — the dual-write cost (logical + mirror) exceeds the id saving; **structural ceiling** of the read-mirror design. Next: **`PERFIDX06`** re-measures vs ≤10× **before** any further write-side work | Bit-identical; read levers realized; actual legacy ratio measured | ⏸️ **`PERFIDX05` HELD** (code discarded, record kept) — bit-identical (Claude reproduced OFE2) but H2637 **−5.3–5.8%**; the prefix→range trap correctly stopped the one paying scan (decomposition overflow). **Pivot to `PERFIDX06`** (re-measure): if already ≤10×, the write-side squeeze is moot; the PERFARCH01 Stage-5 "win" premise is undercut. ✅ `PERFIDX04` stands as the endpoint (H2637 673 s). *Irrigation stays deferred → `backlog/20260617-…`.* |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -166,8 +166,22 @@ Result: **H2637 −24.3% / −25.2%** (888.92→673.29 / 894.98→669.75 s), OFE
 (OFE1 −4.4%, setup unamortized on a trivial single-OFE run); full anchor bit-identical
 (Claude independently reproduced OFE2, which exercises the transfer-sync path); the
 profiler shows hot `format!` collapsed to 0.01% self with id-table helpers in its place.
-Next: **`PERFIDX05`** (writeback + guards by `SymbolId`), then **`PERFIDX06`** re-measures
-the actual legacy ratio and decides the ≤10× (≤5×) verdict.
+**PERFIDX05** *(HELD 2026-06-18)* attempted the **write/guard** side (apply-by-`SymbolId`,
+consumer-boundary id-sets, failure-path tests) and came back **bit-identical but
+−5.3–5.8% on H2637**. Root cause is **structural**, not incompleteness: every
+writeback/transfer/guard must **dual-write** the authoritative logical `BTreeMap` *and*
+the indexed mirror, and that cost exceeds the id-lookup saving on the write side (reads
+won in PERFIDX04 precisely because a read touches only the mirror). The one scan whose
+removal could have paid — the decomposition overflow scan — is blocked by the
+prefix→range interloper-proof the package correctly declined to force. So the
+write/guard-side migration is net-negative under the read-mirror design, and **PERFIDX04
+appears to have captured most of the win available under it**. Per operator decision the
+PERFIDX05 code was **discarded** (record kept) and the program **pivots to `PERFIDX06`**:
+re-measure the actual legacy ratio on the PERFIDX04 endpoint and decide the ≤10× (≤5×)
+verdict *before* any further write-side investment. If more is needed, the next lever is a
+deliberate redesign choice (decomposition-scan-with-proof *iff* it beats dual-write, or
+indexed-authoritative without the PERFIDX03 export seam) — not "finish Stage 5 as
+specified," whose premise PERFIDX05 undercuts.
 *(Irrigation stays deferred — `backlog/20260617-irrigation-management-gated-activation.md`;
 it runs only when the management declares it and is out of scope for the perf migration.)*
 

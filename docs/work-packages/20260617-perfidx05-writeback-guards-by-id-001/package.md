@@ -1,7 +1,15 @@
 # PERFIDX05 - Writeback And Guard Migration (Stage 5)
 
-Status: scaffolded 2026-06-17 (Stage 5 of the PERFARCH01 staged plan; follow-on to
-PERFIDX04, which migrated the read seam)
+Status: **HELD 2026-06-18** — executed, bit-identical, but performance-NEGATIVE
+(H2637 −5.3–5.8%); **code discarded**, record kept (Stage 5 of the PERFARCH01 staged
+plan; follow-on to PERFIDX04, which migrated the read seam). **Post-review closure:**
+the write/guard-side by-id migration is structurally net-negative under the current
+logical-authoritative + read-mirror design (dual-write cost > id-lookup saving — see
+`artifacts/review-claude-independent.md` and `artifacts/perfidx05_disposition.md`). All
+PERFIDX05 working-tree code was discarded; `crates/` returns to the PERFIDX04 state. Per
+operator decision (A), the program **pivots to `PERFIDX06` re-measure** to get the actual
+≤10× verdict before any further write-side work. The PERFARCH01 Stage-5 "this is a win"
+premise is undercut by this evidence.
 
 Package type: **Behavior-preserving performance optimization — mechanical-refactor
 shape.** Bit-identity is load-bearing **and so are failure-path tests** (see the gate
