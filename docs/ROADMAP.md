@@ -59,15 +59,17 @@ resolved the remaining FARPOINT01 71% magnitude flag as
 lineage. The only residual question is absolute physical magnitude, now tracked
 as a deferred external-authority `CONTRACT-GAP` in
 [backlog/20260618-forest-lateral-flow-absolute-magnitude-authority.md](backlog/20260618-forest-lateral-flow-absolute-magnitude-authority.md).
-On the perf track, PERFOPT01, PERFIDX03B, and PERFIDX04 captured
-the read-side clone/lookup levers; PERFIDX05 was held because write/guard id work
-is dual-write-bound under the read-mirror design; PERFIDX06 measured the
-PERFIDX04 endpoint at **73.12×** legacy no-UI on H2637. The next perf mechanism
-is not more narrow id-table work; it is a scoped hot-path state-representation
-redesign decision. PERFARRAY02 executed that scoped request/accessor pilot and closed
-NO-GO: identity passed, but H2637 array-native cost was `817.810 us/OFE-day`,
-above the `386 us/OFE-day` <=10x budget; ADR-0023 should not be ratified from that
-evidence.
+**Perf track — SUSPENDED, NOT closed; ≤10× (ideally ≤5×) is a viability gate.** The read-side
+id-table work (PERFOPT01, PERFIDX03B, PERFIDX04) took H2637 978→666 s (−31.9%, bit-identical),
+ending at the PERFIDX06 endpoint of **73.12×** — but the logical `BTreeMap` stayed the hot-path
+authority and kernels still produce **logical** output. PERFARRAY01/02 built **only an input-only**
+array request/accessor seam; PERFARRAY02's **21×** array-native runoff is the floor of that
+**half-measure** (817.8 µs/OFE-day = kernel-run 481 + `from_logical_payload` conversion 325 + 12 —
+the kernel still builds a `BoundarySymbol` payload). The floor of a **fully** array-native kernel
+(in + out + state, cache-resident) was **never measured** — and the 481 µs single-phase run was
+never decomposed into physics vs machinery (legacy does the *whole* OFE-day in 38.65 µs; RSS 4.6 MB
+vs openWEPP 229 MB = ~50× cache-thrash). **PERFARCH03 resumes the program** with that decisive
+floor measurement; deep re-architecture is authorized.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -82,6 +84,7 @@ evidence.
 | 4 | **Reference-implementation-intent authority + `ksatadj`/SC-SUBHYD-001** | Establish **ADR-0024** that for empirical forest models with no external physical authority, the legacy reference-implementation **intent** (algorithm) is a valid `SC-*` A0 anchor — **distinct from** legacy binary *behavior* (A6 flag, ADR-0017) — then apply it: extract the `ksatadj` intent from `wepp-forest_260430_baseline/src/{infpar,input}.for`, anchor it in `SC-SUBHYD-001`, and re-adjudicate openWEPP vs the *intent* | ADR-0024 ratified; `SC-SUBHYD-001` `ksatadj` anchor + invariant; `CORRECT` (close the FARPOINT01 71% flag) or `OPENWEPP-DEFECTIVE` (defect-closure ExecPlan) | ✅ **complete 2026-06-18** — **ADR-0024 ratified**; `SC-SUBHYD-001` v33 `INV-SUBHYD-032` + `REF-SUBHYD-KSATADJ-INTENT` authored and Claude-reviewed (both sides of the `sat_frac` divergence verified against source). Verdict `OPENWEPP-DEFECTIVE`: openWEPP forms `sat_frac = Σθ/Σul` vs source-intent `avsat/(avpor·avcpm)`. Fix routes to item 5; FARPOINT01 stays open until it lands. |
 | 5 | **`REFINTENT001-KSATADJ-SATFRAC` defect closure** | Rebuild the WB14 `ksatadj` operand lineage so `sat_frac` is formed per `SC-SUBHYD-001#INV-SUBHYD-032` source intent: rock-corrected `avpor*avcpm` denominator, total-water + `avsm15` residual numerator, the two `avsat` caps, top-two-tillage weighted averaging, not `sum(theta)/sum(ul)` | `INV-SUBHYD-032` satisfied; non-aliased tests where surrogate differs from intended formula; determinism preserved; re-run H2637 + close the FARPOINT01 71% flag by source-intent conformance | ✅ **complete-with-correction 2026-06-18** (`REFINTENT001-KSATADJ-SATFRAC`) — source-intent `sat_frac` fix landed (correct, gate-clean, non-aliased-tested; valuable for `ksatadj=1` soils). **But Claude review found it byte-inert on H2637** (`ksatadj = 0`; WAT SHA identical pre/post), so it does **not** close FARPOINT01 — flag re-opens. The 71% is base-conductivity-driven → item 6. |
 | 6 | **H2637 base lateral/percolation conductivity adjudication** | The H2637 71% lateral magnitude is driven by the **base soil conductivity** (`Ke`/`ssc`, soil-file `ksat` + the 200 mm runtime-layer normalization), **not** `ksatadj` (which is off for H2637). Adjudicate that conductivity lineage under `SC-SUBHYD-001` / `SC-INFILE-SOIL-001`, same intent-vs-behavior discipline | Per-term verdict on the base-conductivity lineage (`CORRECT`/`OPENWEPP-DEFECTIVE`/`CONTRACT-GAP`); resolve or re-route the FARPOINT01 71% flag | ✅ **`STAGE2-BASE-CONDUCTIVITY-H2637-MAGNITUDE` complete 2026-06-18** — base `ksat` is byte-live (`ksat_x0.9` changed WAT/PASS checksums and magnitude outputs). Verdict `OPENWEPP-DEFECTIVE`: vertical `wb18_perc_ssc` split-layer normalization is arithmetic but source intent is inverse-conductivity/harmonic (`117.955408` vs `270.8259 mm/h` on H2637 layer 3). Hourly `wb19_lateral_ssh` remains arithmetic and must be preserved. |
+| **P** | **PERF — resume toward ≤10× / ≤5× (VIABILITY GATE)** | The read-side id-table work topped out at **73.12×** (logical surface still authoritative; kernels still produce logical output). PERFARRAY02's **21×** was an **input-only** pilot (still building a logical kernel payload). The **fully** array-native floor (kernel in+out+state, cache-resident) was never measured. Resume with a decisive floor prototype, then the full re-architecture | `PERFARCH03` measures the true array-native floor (physics vs machinery decomposed) → **GO** (commit to the full kernel-phase array-native migration, revive ADR-0023) or **NO-GO/FLOOR-BOUND** (honest floor + redirected attack). ≤10× minimum, ≤5× ideal | ⏭️ **ACTIVE — top priority** (`PERFARCH03` scaffolded, Codex-ready). Deep re-architecture authorized; do **not** conclude from the 21× half-measure. |
 
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 H2637 magnitude arc is no longer an active queue item. Absolute forest lateral-flow
