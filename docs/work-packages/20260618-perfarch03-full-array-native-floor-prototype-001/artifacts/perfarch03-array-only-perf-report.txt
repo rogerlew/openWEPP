@@ -1,0 +1,102 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 53K of event 'cycles:P'
+# Event count (approx.): 43425321377
+#
+# Overhead  Symbol                                                                                                                                                                                        IPC   [IPC Coverage]
+# ........  ............................................................................................................................................................................................  ....................
+#
+    81.02%  [.] perfarch03_floor_prototype::time_array_hot_loop                                                                                                                                           -      -            
+            |          
+            |--80.92%--perfarch03_floor_prototype::time_array_hot_loop
+            |          
+            |--0.08%--perfarch03_floor_prototype::array_runoff_physics
+            |          
+             --0.02%--0xffffffff99200f30
+                       perfarch03_floor_prototype::time_array_hot_loop
+
+    11.91%  [k] 0xffffffff99201720                                                                                                                                                                        -      -            
+            |          
+            |--11.49%--perfarch03_floor_prototype::time_array_hot_loop
+            |          
+            |--0.21%--perfarch03_floor_prototype::array_runoff_physics
+            |          
+            |--0.09%--perfarch03_floor_prototype::compute_canopy_interception_depth
+            |          
+            |--0.07%--perfarch03_floor_prototype::compute_interval_infiltration_depth
+            |          
+             --0.04%--perfarch03_floor_prototype::resolve_interception_rainfall_scale
+
+     2.76%  [.] perfarch03_floor_prototype::array_runoff_physics                                                                                                                                          -      -            
+            |          
+            |--2.63%--perfarch03_floor_prototype::array_runoff_physics
+            |          
+            |--0.08%--perfarch03_floor_prototype::resolve_interception_rainfall_scale
+            |          
+             --0.04%--perfarch03_floor_prototype::time_array_hot_loop
+
+     1.77%  [.] perfarch03_floor_prototype::compute_interval_infiltration_depth                                                                                                                           -      -            
+     1.38%  [.] perfarch03_floor_prototype::compute_canopy_interception_depth                                                                                                                             -      -            
+            |          
+             --1.38%--perfarch03_floor_prototype::compute_canopy_interception_depth
+
+     0.67%  [.] perfarch03_floor_prototype::resolve_interception_rainfall_scale                                                                                                                           -      -            
+     0.03%  [k] 0xffffffff981a4f9d                                                                                                                                                                        -      -            
+            |
+            ---0xffffffff981a87ec
+               0xffffffff97f66a12
+               0xffffffff9800c509
+               0xffffffff98024f18
+               0xffffffff98025438
+               0xffffffff9800d452
+               0xffffffff9800e456
+               0xffffffff97ead591
+               0xffffffff99051d1b
+               0xffffffff99200f4b
+               |          
+                --0.02%--perfarch03_floor_prototype::time_array_hot_loop
+
+     0.02%  [k] 0xffffffff992011d3                                                                                                                                                                        -      -            
+            |          
+             --0.02%--perfarch03_floor_prototype::time_array_hot_loop
+
+     0.02%  [k] 0xffffffff97e67d60                                                                                                                                                                        -      -            
+     0.02%  [k] 0xffffffff97ec7c44                                                                                                                                                                        -      -            
+     0.01%  [k] 0xffffffff97fa65b7                                                                                                                                                                        -      -            
+            |
+            ---0xffffffff99063b1e
+               0xffffffff98010e85
+               0xffffffff98011f80
+               0xffffffff98025207
+               0xffffffff9802539b
+               0xffffffff980253f2
+               0xffffffff9800d452
+               0xffffffff9800e456
+               0xffffffff97ead591
+               0xffffffff99051d1b
+               0xffffffff99200f4b
+               |          
+                --0.01%--perfarch03_floor_prototype::time_array_hot_loop
+
+     0.01%  [k] 0xffffffff9800c9dd                                                                                                                                                                        -      -            
+            |
+            ---0xffffffff97f74ed0
+               0xffffffff97f669d6
+               0xffffffff9800c509
+               0xffffffff98024f18
+               0xffffffff98025438
+               0xffffffff9800d452
+               0xffffffff9800e456
+               0xffffffff97ead591
+               0xffffffff99051d1b
+               0xffffffff99200f4b
+               perfarch03_floor_prototype::time_array_hot_loop
+
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

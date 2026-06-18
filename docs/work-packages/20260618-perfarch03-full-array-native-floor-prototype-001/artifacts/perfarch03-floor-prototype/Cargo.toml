@@ -1,0 +1,11 @@
+[package]
+name = "perfarch03-floor-prototype"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+
+[dependencies]
+openwepp-hillslope-orchestrator = { path = "../../../../../crates/openwepp-hillslope-orchestrator" }
+openwepp-kernel-contract = { path = "../../../../../crates/openwepp-kernel-contract" }
+openwepp-sim-contract = { path = "../../../../../crates/openwepp-sim-contract" }

@@ -1,6 +1,6 @@
 # PERFARCH03 - Full Array-Native Floor Prototype (resume the perf program)
 
-Status: scaffolded 2026-06-18 (resume the SUSPENDED perf program; ≤10× / ≤5× is a viability gate)
+Status: complete 2026-06-18 (GO branch-floor disposition; <=10x / <=5x viability gate cleared for the measured flow)
 
 Package type: **Architecture feasibility — the DECISIVE floor measurement that was never run.**
 Build a prototype (throwaway/flag-gated, not production migration), measure the **true** array-native
@@ -111,6 +111,37 @@ Out of scope:
 - `artifacts/perfarch03-logical-free-proof.md` (perf evidence: no BTreeMap/memcmp/format!/conversion in the loop)
 - `artifacts/perfarch03-cache-working-set.md` (RSS / working-set vs legacy's ~4.6 MB)
 - `artifacts/perfarch03_disposition.md` (GO + migration plan / NO-GO + redirected attack)
+
+## Execution Result
+
+PERFARCH03 is complete with verdict **GO - branch floor clears <=5x and <=10x**.
+
+The artifact-local prototype validates a representative WB11 warm-rain runoff
+branch against the current public production kernel, then measures the fully
+array-native branch hot loop separately from logical boundary materialization.
+The validated branch output write set is 543 state symbols plus 8 flux symbols;
+all numeric output values matched the production payload by exact `f64::to_bits()`.
+
+Median release-binary results:
+
+| Metric | us/OFE-day | Ratio vs legacy us/OFE-day | Projected H2637 seconds |
+|---|---:|---:|---:|
+| Current logical production kernel, same branch | 140.826054 | 3.643624x | 33.229457 |
+| Array physics only | 0.074554 | 0.001929x | 0.017592 |
+| Array dense output write only | 1.063708 | 0.027522x | 0.250994 |
+| Array combined hot loop | 0.959423 | 0.024823x | 0.226386 |
+| Boundary materialize once | 108.068963 | 2.796092x | 25.500061 |
+
+The array hot loop contains no logical `BoundarySymbol`, `BTreeMap`,
+`from_logical_payload`, or `format!` machinery at the reporting threshold in
+the thresholded `perf report`. Dense slot working set is 18,208 bytes and direct
+release-binary RSS is 3,072 KiB.
+
+This result is a branch-floor measurement, not a full production migration or a
+full H2637 endpoint proof. It authorizes the next package: revive the ADR-0023
+array-authoritative migration direction and port production WB11 runoff first,
+while preserving exact identity, measuring H2637 after each rung, and keeping
+logical materialization out of migrated hot loops.
 
 ## Dependencies
 

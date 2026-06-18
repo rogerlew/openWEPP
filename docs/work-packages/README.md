@@ -10,6 +10,17 @@
 
 State as of `2026-06-18`:
 
+- PERFARCH03 is complete with verdict `GO - branch floor clears <=5x and
+  <=10x`. The artifact-local full array-native WB11 runoff branch prototype
+  validated 543 state outputs plus 8 flux outputs against the current production
+  kernel by exact numeric `to_bits()` equality. Median array combined hot-loop
+  cost was `0.959423 us/OFE-day` (`0.024823x` legacy us/OFE-day; projected
+  `0.226386 s` over H2637 OFE-days), while one-shot boundary materialization was
+  measured separately at `108.068963 us/OFE-day`. Dense slot working set was
+  `18,208 bytes` and release-binary RSS was `3,072 KiB`. Verdict authorizes a
+  follow-on array-authoritative production migration package / ADR-0023 revival,
+  starting with WB11 runoff; it does not claim full H2637 endpoint closure yet.
+  Package: `20260618-perfarch03-full-array-native-floor-prototype-001/`.
 - POST-BASECOND01-H2637-MAGNITUDE-DISPOSITION is complete. The package
   synthesized FARPOINT01, MAGPARITY01, STAGE2-LATQCC, REFINTENT001,
   STAGE2-BASE-CONDUCTIVITY, and BASECOND01 evidence, then resolved the H2637
