@@ -8,14 +8,21 @@
 
 ## Current roadmap execution log
 
-State as of `2026-06-17`:
+State as of `2026-06-18`:
 
+- PERFIDX06 is complete (Stage 6: high-OFE target assessment). Same-machine H2637
+  measurements pinned the PERFIDX04 endpoint at `666.82s` no-UI and `667.44s`
+  with UI; pinned legacy medians were `9.12s` no-UI and `11.54s` with UI. The
+  resulting ratios are `73.12x` no-UI and `57.84x` with UI. Verdict: `<=10x`
+  is not closed, `<=5x` is not plausible under the current read-mirror design,
+  and the next perf move is redesign scoping, not more narrow write-side
+  id-table work. Package:
+  `20260618-perfidx06-high-ofe-target-assessment-001/`.
 - PERFIDX05 is HELD (Stage 5: writeback/guards by SymbolId). Bit-identical but
   performance-NEGATIVE (H2637 −5.3–5.8%) — the write/guard-side dual-write cost
   (logical + mirror) exceeds the id saving; a structural ceiling of the read-mirror
   design, not incompleteness. Code discarded, record kept. Package:
-  `20260617-perfidx05-writeback-guards-by-id-001/`. Program pivots to PERFIDX06
-  (re-measure vs ≤10×) before any further write-side work.
+  `20260617-perfidx05-writeback-guards-by-id-001/`.
 - PERFIDX04 is complete (Stage 4: resolve-once hot-symbol-id tables + indexed
   read-mirror). H2637 −24.3%/−25.2%, bit-identical, irrigation excluded. Package:
   `20260617-perfidx04-hot-symbol-id-tables-001/`. Endpoint stands as the perf state.

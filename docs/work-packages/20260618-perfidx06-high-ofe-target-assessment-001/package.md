@@ -1,6 +1,6 @@
 # PERFIDX06 - High-OFE Target Assessment (Stage 6)
 
-Status: scaffolded 2026-06-18 (Stage 6 — final assessment — of the PERFARCH01 staged
+Status: executed 2026-06-18 (Stage 6 — final assessment — of the PERFARCH01 staged
 plan; follows PERFIDX04 complete + PERFIDX05 held)
 
 Package type: **Characterization / assessment — no production or contract change.** Like

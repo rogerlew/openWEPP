@@ -1,8 +1,8 @@
 # Artifacts
 
-Status: scaffolded (awaiting Codex execution).
+Status: executed 2026-06-18.
 
-Planned deliverables:
+Deliverables:
 
 - `perfidx06-endpoint-pin.md`
 - `perfidx06-profiler-evidence.md`
@@ -10,3 +10,6 @@ Planned deliverables:
 - `perfidx06-legacy-ratio.md`
 - `perfidx06-bottleneck-analysis.md`
 - `perfidx06_disposition.md`
+- `perfidx06-gate-results.md`
+
+Raw local evidence remains under `/tmp/perfidx06`.

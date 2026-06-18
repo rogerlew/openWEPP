@@ -1,7 +1,7 @@
 # openWEPP Engine Roadmap
 
 Status: living — **canonical**, **forward-only planning queue**
-Last updated: 2026-06-16
+Last updated: 2026-06-18
 Audience: all contributors
 Owner: maintainers (Claude Code maintains this document)
 
@@ -42,16 +42,12 @@ totalwatsed3 CLI + closure** (WSHED01, the WBVAL06/6a deferral, closed
 closed 2026-06-16 — openWEPP's three identities close at 19 OFEs past the legacy
 ceiling; the frost `watbtm` double-count it surfaced was closed contract-first)
 are closed. The next active mechanism is **per-OFE runoff magnitude
-adjudication**; on the perf track, PERFHO01 attributed the ~80–110× high-OFE gap,
-**PERFOPT01** landed its first optimization (complete 2026-06-16: ~1.15×,
-bit-identical), and **PERFHO02** characterized the residual as hydrology
-symbol-access/guard work plus secondary writeback-application overhead. Operator
-set a **≤10× (≤5×)** target; **PERFARCH01** completed the indexed runtime-surface
-design and ADR-0022 (ratified 2026-06-16). **PERFIDX01** (Stage 1) is complete — frozen registry + invariants proven
-bit-identical. Its completeness audit found the *bounded* symbol universe is
-~1.7M for H2637 (vs the ~6K assumed; ~3.6K actually used), so the dense-store
-representation needs an **ADR-0022 refinement** (compact/sparse/partitioned)
-before Stage 2 (`PERFIDX02`).
+adjudication**. On the perf track, PERFOPT01, PERFIDX03B, and PERFIDX04 captured
+the read-side clone/lookup levers; PERFIDX05 was held because write/guard id work
+is dual-write-bound under the read-mirror design; PERFIDX06 measured the
+PERFIDX04 endpoint at **73.12×** legacy no-UI on H2637. The next perf mechanism
+is not more narrow id-table work; it is a scoped hot-path state-representation
+redesign decision.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -61,7 +57,7 @@ before Stage 2 (`PERFIDX02`).
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | 1 | **Per-OFE runoff magnitude adjudication** | Decide if per-OFE runoff vs legacy (FARPOINT01: openWEPP 71% vs legacy 55.5% of precip on H2637) is expected Stage-2 divergence or a defect | A per-term verdict (expected vs defect-shaped follow-on) | ⏭️ **Next** (`MOFE-MAGPARITY01`) |
-| 2 | **Indexed runtime-surface — read-side migration done; re-measure next** | Two dominant levers: the per-lane/day clone and the per-access `format!`+map-lookup. **`PERFIDX03B`** (✅) removed the **clone** via `std::mem::take` move. **`PERFIDX04`** (✅) removed the **lookup** (resolve-once `SymbolId` hot tables + indexed read-mirror), −24% on H2637. **`PERFIDX05`** (⏸️ HELD) attempted the *write/guard* side and **regressed −5.7%** — the dual-write cost (logical + mirror) exceeds the id saving; **structural ceiling** of the read-mirror design. Next: **`PERFIDX06`** re-measures vs ≤10× **before** any further write-side work | Bit-identical; read levers realized; actual legacy ratio measured | ⏸️ **`PERFIDX05` HELD** (code discarded, record kept) — bit-identical (Claude reproduced OFE2) but H2637 **−5.3–5.8%**; the prefix→range trap correctly stopped the one paying scan (decomposition overflow). ▶️ **`PERFIDX06` scaffolded, Codex-ready** (re-measure + actual legacy ratio + ≤10× verdict; prior arithmetic implies **~56–75×** still — measure like-for-like to confirm and decide reachable-incrementally vs redesign). ✅ `PERFIDX04` stands as the endpoint (H2637 673 s). *Irrigation stays deferred → `backlog/20260617-…`.* |
+| 2 | **Indexed runtime-surface — hot-path redesign decision** | PERFIDX06 measured the PERFIDX04 endpoint at **73.12×** legacy no-UI (`666.82s / 9.12s`) and **57.84×** with UI. PERFIDX05 proved write/guard id migration is net-negative under the read-mirror dual-write design. | Decide whether to open an array-authoritative/fixed-index hot-path state redesign, with export/publication proof that avoids the PERFIDX03 seam and PERFIDX05 dual-write ceiling | ▶️ **Next perf mechanism**: redesign scoping package; do not continue narrow write-side id-table work under the current read-mirror design. *Irrigation stays deferred → `backlog/20260617-…`.* |
 | 3 | **MOFE line-count split** | Behavior-preserving split of the 3 files that crossed 2000 lines | Each under 2000 WARN; bit-identical outputs | ▶️ follow-on (`REFACTOR022`) |
 | 4 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
@@ -79,7 +75,7 @@ Adjudicate whether the per-OFE runoff magnitude is expected Stage-2 divergence o
 a defect-shaped follow-on, judged against the already-closed routed balance
 (comparator a flag, ADR-0017). Package: `MOFE-MAGPARITY01`.
 
-### 2. Indexed runtime-surface — storage representation ▶️ (gated on ADR-0022 refinement)
+### 2. Indexed runtime-surface — hot-path redesign ▶️
 
 PERFHO01 *(complete 2026-06-16)* characterized the ~80–110× H2637 wall-clock gap:
 CPU-bound (`977.99/978.55` user s), **not** I/O or parquet, scaling
@@ -176,12 +172,14 @@ removal could have paid — the decomposition overflow scan — is blocked by th
 prefix→range interloper-proof the package correctly declined to force. So the
 write/guard-side migration is net-negative under the read-mirror design, and **PERFIDX04
 appears to have captured most of the win available under it**. Per operator decision the
-PERFIDX05 code was **discarded** (record kept) and the program **pivots to `PERFIDX06`**:
-re-measure the actual legacy ratio on the PERFIDX04 endpoint and decide the ≤10× (≤5×)
-verdict *before* any further write-side investment. If more is needed, the next lever is a
-deliberate redesign choice (decomposition-scan-with-proof *iff* it beats dual-write, or
-indexed-authoritative without the PERFIDX03 export seam) — not "finish Stage 5 as
-specified," whose premise PERFIDX05 undercuts.
+PERFIDX05 code was **discarded** (record kept). **PERFIDX06** *(complete 2026-06-18)*
+re-measured the PERFIDX04 endpoint and legacy on the same H2637 fixture: openWEPP no-UI
+`666.82s`, legacy no-UI median `9.12s`, primary ratio **73.12×**; with-UI ratio
+**57.84×**. Verdict: **≤10× is not closed and is not reachable by more narrow id-table
+work under the current read-mirror design**; ≤5× is not plausible without a deeper
+hot-path state redesign. The next perf mechanism is a deliberate array-authoritative or
+fixed-index hot-path state scoping package that avoids both the PERFIDX03 export seam and
+the PERFIDX05 dual-write ceiling.
 *(Irrigation stays deferred — `backlog/20260617-irrigation-management-gated-activation.md`;
 it runs only when the management declares it and is out of scope for the perf migration.)*
 
