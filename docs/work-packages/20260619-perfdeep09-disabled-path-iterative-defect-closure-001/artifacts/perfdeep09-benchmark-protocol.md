@@ -1,23 +1,44 @@
 # PERFDEEP09 Benchmark Protocol
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence class: Ran.
 
-Required protocol:
+Release build:
 
-1. Build `target/release/openwepp-cli-hill` and record binary SHA.
-2. Run with all PERFDEEP opt-ins unset:
-   `OPENWEPP_PERFDEEP02_FRAME_ISLAND`,
-   `OPENWEPP_PERFDEEP03_LANE_DENSE_STATE`,
-   `OPENWEPP_PERFDEEP02_FRAME_ROUNDTRIP_PATH`,
-   `OPENWEPP_INDEXED_SHADOW_REPORT_PATH`,
-   `OPENWEPP_SYMBOL_REGISTRY_AUDIT_PATH`, and
-   `OPENWEPP_HPHYS0245_TRACE_PATH`.
-3. Use H2637 no-UI runfile and run-dir consistent with PERFDEEP07/08 unless
-   execution records a replacement path and rationale.
-4. Record command, run dir, output dir, seconds, RSS, manifest path, and
-   protected output checksums.
-5. Use single-run screening for speculative candidates, but require a three-run
-   final gate before `READY-FOR-R2`.
+```text
+cargo build --release -p openwepp-runner --bin openwepp-cli-hill
+```
 
-Pass threshold: final default-disabled H2637 three-run median `<= 676.67 s`.
+Default-disabled environment:
+
+```text
+env -u OPENWEPP_PERFDEEP02_FRAME_ISLAND \
+    -u OPENWEPP_PERFDEEP03_LANE_DENSE_STATE \
+    -u OPENWEPP_PERFDEEP02_FRAME_ROUNDTRIP_PATH \
+    -u OPENWEPP_INDEXED_SHADOW_REPORT_PATH \
+    -u OPENWEPP_SYMBOL_REGISTRY_AUDIT_PATH \
+    -u OPENWEPP_HPHYS0245_TRACE_PATH
+```
+
+Common command shape:
+
+```text
+/usr/bin/time -f "<label>\t%e\t%M" \
+  <default-disabled-env> \
+  target/release/openwepp-cli-hill \
+  --run-dir /tmp/perfho01/run-dirs/h2637 \
+  --run-file /tmp/perfmig01-final/runfiles/h2637_same_current.run \
+  --output-dir <manifest-output-dir> \
+  --policy compat \
+  --legacy-sidecar-discovery
+```
+
+Threshold:
+
+- Single-run candidates are screening only.
+- `READY-FOR-R2` requires three final default-disabled H2637 reps with median
+  `<= 676.67 s`.
+
+PASS parquet identity uses the established PERFDEEP policy: raw parquet bytes
+may drift; schema and row equivalence are checked with Arrow/DuckDB. HBP, WAT,
+plot, and loss are byte-checked for this same runfile.

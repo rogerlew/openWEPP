@@ -10,12 +10,16 @@
 
 State as of `2026-06-19`:
 
-- PERFDEEP09 is scaffolded and queued as an iterative Defect-Closure ExecPlan
-  for `PERFDEEP09-DISABLED-PATH-R2-BLOCKER`. It must benchmark, attribute,
-  remediate, and repeat inside one package until the default-disabled H2637
-  three-run median gate `<= 676.67 s` passes or a legitimate DC boundary is
-  proven. The package forbids another diagnostic-only handoff and still blocks
-  R2+ direct-frame runtime implementation until the gate is cleared. Package:
+- PERFDEEP09 executed with verdict `READY-FOR-R2`. Same-machine no-edit control
+  reproduced the default-disabled blocker at `682.65 s`, RSS `228924 KB`.
+  The retained remediation collapses repeated per-root perennial decomposition
+  indexed-overflow scans into one slot/crop pass while preserving typed guard
+  behavior. Final H2637 default-disabled reps were `634.61 s`, `635.65 s`,
+  and `636.58 s` (median `635.65 s`, RSS `228856/228280/228168 KB`), clearing
+  the `<= 676.67 s` P0 gate. HBP, loss, WAT, and plot checksums were stable;
+  PASS parquet passed the established Arrow/DuckDB row-equivalence identity
+  lane. R2+ direct-frame runtime implementation is unblocked for the next
+  package, but remains unimplemented in PERFDEEP09. Package:
   `20260619-perfdeep09-disabled-path-iterative-defect-closure-001/`.
 - PERFDEEP08 executed with verdict `HOLD`. The package tested one scoped
   disabled-path hard-isolation candidate: caching the PERFDEEP02 roundtrip env

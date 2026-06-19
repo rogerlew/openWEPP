@@ -1,5 +1,5 @@
 # PERFDEEP09 Prompts
 
-Status: queued.
+Status: executed.
 
-Prompt material for executing the iterative DC-ExecPlan package.
+Prompt material used for executing the iterative DC-ExecPlan package.

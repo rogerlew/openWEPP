@@ -1,29 +1,27 @@
 # PERFDEEP09 Owned File Manifest
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence class: Static.
 
-## Package-Owned Files
+## Touched Files
 
-- `docs/work-packages/20260619-perfdeep09-disabled-path-iterative-defect-closure-001/**`
-- `docs/work-packages/README.md`
-- `docs/ROADMAP.md`
+| File | Rationale | In package envelope |
+|---|---|---|
+| `crates/openwepp-hillslope-orchestrator/src/hydrology/07_decomposition_equations.rs` | Retained one-pass indexed-overflow guard for perennial decomposition control. | yes, `crates/openwepp-hillslope-orchestrator/src/hydrology/**` |
+| `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/boundaries.rs` | Focused fail-closed regression for unexpected indexed perennial symbols. | yes, `crates/openwepp-hillslope-orchestrator/src/tests.rs` / crate-local tests |
+| `docs/work-packages/20260619-perfdeep09-disabled-path-iterative-defect-closure-001/**` | Package execution evidence and disposition. | yes |
+| `docs/work-packages/README.md` | Execution-log update. | yes |
+| `docs/ROADMAP.md` | Forward-queue state update after blocker closure. | yes |
 
-## Conditional Production Write Set
+## Reverted / Not Retained
 
-- `crates/openwepp-runner/src/hillslope/**`
-- `crates/openwepp-runner/src/bin/openwepp-cli-hill.rs`
-- `crates/openwepp-hillslope-orchestrator/src/day_frame.rs`
-- `crates/openwepp-hillslope-orchestrator/src/phase.rs`
-- `crates/openwepp-hillslope-orchestrator/src/scheduler.rs`
-- `crates/openwepp-hillslope-orchestrator/src/scheduler/**`
-- `crates/openwepp-hillslope-orchestrator/src/hydrology/**`
-- `crates/openwepp-hillslope-orchestrator/src/consumer_boundary.rs`
-- `crates/openwepp-hillslope-orchestrator/src/tests.rs`
-- `crates/openwepp-kernel-contract/src/lib_mod/core_types/**`
-- `tests/integration/**`
-- `tools/owcmp/**`
-- `tools/release/**`
+- `crates/openwepp-kernel-contract/src/lib_mod/core_types/00_symbol_registry_and_indexed_surfaces.rs`
+  was temporarily changed during rejected candidate 1 and reverted before the
+  retained candidate. No final diff remains.
 
-Record every touched file, ownership rationale, and line-count status before
-final disposition.
+## Protected Boundaries
+
+- No `SC-*` contract file changed.
+- No output schema, unit, metadata meaning, process-physics formula, direct
+  executor, direct-frame hydrology runtime, or default opt-in activation was
+  changed.

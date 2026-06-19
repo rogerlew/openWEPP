@@ -1,13 +1,19 @@
 # PERFDEEP09 Pre-Implementation Contract Gate
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence class: Static + Ran.
 
-Before production edits, record:
+Pre-edit checks:
 
-- required reading complete;
-- baseline/control evidence captured;
-- attribution evidence names an in-envelope mechanism;
-- no contract or physics authority change is required, or package amendment has
-  completed;
-- line-count implications are understood.
+- Required reading completed, including work-package governance, DC rules,
+  crate governance, and science-contract guardrails.
+- No-edit same-machine baseline recorded before production edits:
+  `682.65 s`, RSS `228924 KB`.
+- Attribution named an in-envelope mechanism before the retained edit:
+  repeated full-map indexed overflow scans in perennial decomposition control.
+- No contract, physics authority, output schema, or publication-meaning change
+  was required.
+- Line-count implications were bounded: retained source files remained below
+  the 2000-line WARN threshold after edits.
+
+Result: production edit authorized inside PERFDEEP09 envelope.

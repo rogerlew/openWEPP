@@ -1,5 +1,5 @@
 # Archived Prompts
 
-Status: queued.
+Status: empty.
 
 Move superseded prompts here during execution.

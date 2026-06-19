@@ -298,6 +298,65 @@ fn pl12_contract_conformance_rejects_invalid_perennial_grazing_window() {
 }
 
 #[test]
+fn pl12_contract_conformance_rejects_unexpected_indexed_perennial_symbol() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface(2.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_mgtopt"),
+        BoundaryValue::scalar(2.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncut"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncycle"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_digest_0002"),
+        BoundaryValue::scalar(0.58),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("unexpected indexed perennial symbol should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::DecompositionTransition)
+    );
+    assert_eq!(report.phase_reports.len(), 3);
+    assert_eq!(
+        report.phase_reports[2].decision_status.message_id(),
+        "HS-DECOMP-E-008"
+    );
+    assert_eq!(
+        report.phase_reports[2].decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
 fn pl13_contract_conformance_rejects_missing_growth_state_surface() {
     #[derive(Default)]
     struct NoopKernel;

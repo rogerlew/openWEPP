@@ -1,16 +1,17 @@
 # PERFDEEP09 Review Agent A
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence class: Static.
 
-Review focus:
-
-- DC envelope adequacy;
-- attribution and benchmark legitimacy;
-- output identity and zero-cost-disabled proof;
-- line-count governance;
-- Gate Evidence Non-Deferral.
+Review focus: DC envelope adequacy, attribution and benchmark legitimacy,
+output identity, zero-cost-disabled proof, line-count governance, and Gate
+Evidence Non-Deferral.
 
 | Finding | Severity | Disposition | Rationale |
 |---|---|---|---|
-| queued | TBD | TBD | not reviewed |
+| No blocking findings | none | closed | Mechanism is in envelope, prior profile attribution is cited, control and final median are recorded, identity policy matches prior PERFDEEP precedent, and line counts are below thresholds. |
+
+Notes:
+
+- The retained patch preserves error root order after changing scan shape.
+- The rejected registry candidate was properly reverted and recorded.

@@ -1,14 +1,14 @@
 # PERFDEEP09 Kernel Profile Compliance Checklist
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence class: Static + Ran.
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| No physics formula changes | NOT RUN | queued |
-| No output schema/unit/metadata meaning changes | NOT RUN | queued |
-| Typed guards preserved | NOT RUN | queued |
-| PERFDEEP opt-ins remain explicit and fail-closed | NOT RUN | queued |
-| R2+ direct runtime not implemented | NOT RUN | queued |
-| Protected output identity preserved | NOT RUN | queued |
-| Gate Evidence Non-Deferral checked | NOT RUN | queued |
+| No physics formula changes | PASS | retained patch changes only indexed-overflow guard traversal |
+| No output schema/unit/metadata meaning changes | PASS | no output writer/schema files changed |
+| Typed guards preserved | PASS | new `HS-DECOMP-E-008` regression passed |
+| PERFDEEP opt-ins remain explicit and fail-closed | PASS | final commands unset all PERFDEEP env vars; no env default changed |
+| R2+ direct runtime not implemented | PASS | no direct executor/frame schema/publication cutover files changed |
+| Protected output identity preserved | PASS | HBP/loss/WAT/plot byte checks; PASS Arrow/DuckDB row equivalence |
+| Gate Evidence Non-Deferral checked | PASS | final median, identity, full Rust gates, reviews, and verification recorded |

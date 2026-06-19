@@ -1,15 +1,16 @@
 # PERFDEEP09 R2 Blocker Disposition
 
-Status: queued.
-Evidence mode: not run.
+Status: `READY-FOR-R2`.
+Evidence class: Static + Ran.
 
-Close as exactly one:
+Disposition:
 
-- `READY-FOR-R2`: final default-disabled H2637 three-run median `<= 676.67 s`,
-  protected identity passes, zero-cost-disabled proof passes, full closure gates
-  pass, and R2+ direct runtime implementation remains unimplemented.
-- `NO-GO`: evidence proves the declared approach cannot clear the blocker inside
-  the architecture envelope.
-- `HOLD`: only at a legitimate DC boundary named in `package.md`.
+- `PERFDEEP09-DISABLED-PATH-R2-BLOCKER` is closed.
+- Final default-disabled H2637 median: `635.65 s`.
+- Required gate: `<= 676.67 s`.
+- Protected identity: PASS under established byte/row-equivalence policy.
+- Full closure gates: PASS.
 
-Do not close as `HOLD` after merely producing another diagnostic breadcrumb.
+R2+ direct-frame runtime implementation remains unimplemented in PERFDEEP09.
+The next package may proceed from the R0/R1 planning envelope and must preserve
+PERFDEEP09 as a default-disabled regression guard.

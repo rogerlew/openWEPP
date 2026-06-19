@@ -1,5 +1,5 @@
 # Active Prompts
 
-Status: queued.
+Status: executed.
 
-Use the kickoff prompt when the package is authorized for execution.
+Kickoff prompt used for the PERFDEEP09 execution.

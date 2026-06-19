@@ -577,26 +577,47 @@ fn parse_indexed_suffix_for_decomposition(suffix: &str) -> Option<usize> {
     suffix.parse::<usize>().ok()
 }
 
-fn ensure_no_overflow_indexed_symbols_for_decomposition(
+fn ensure_no_overflow_indexed_symbol_roots_for_decomposition(
     phase: HillslopePhase,
     state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
-    root: &str,
     slot_index: usize,
     crop_slot_index: usize,
-    max_expected: usize,
+    root_limits: &[(&str, usize); 7],
 ) -> Result<(), HillslopeDecompositionBoundaryError> {
-    let prefix = format!("pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}_");
+    let slot_crop_prefix = format!("pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_");
+    let mut first_overflow_by_root: [Option<(BoundarySymbol, usize)>; 7] =
+        std::array::from_fn(|_| None);
+
     for symbol in state_surface.keys() {
-        if let Some(suffix) = symbol.as_str().strip_prefix(prefix.as_str())
-            && let Some(index) = parse_indexed_suffix_for_decomposition(suffix)
-            && (index == 0 || index > max_expected)
-        {
+        let Some(symbol_suffix) = symbol.as_str().strip_prefix(slot_crop_prefix.as_str()) else {
+            continue;
+        };
+        for (root_index, (root, max_expected)) in root_limits.iter().enumerate() {
+            if first_overflow_by_root[root_index].is_some() {
+                continue;
+            }
+            let Some(index_suffix) = symbol_suffix.strip_prefix(root) else {
+                continue;
+            };
+            let Some(index_suffix) = index_suffix.strip_prefix('_') else {
+                continue;
+            };
+            if let Some(index) = parse_indexed_suffix_for_decomposition(index_suffix)
+                && (index == 0 || index > *max_expected)
+            {
+                first_overflow_by_root[root_index] = Some((symbol.clone(), index));
+            }
+        }
+    }
+
+    for (root_index, (_, max_expected)) in root_limits.iter().enumerate() {
+        if let Some((symbol, index)) = first_overflow_by_root[root_index].clone() {
             return Err(
                 HillslopeDecompositionBoundaryError::UnexpectedIndexedStateSymbol {
                     phase,
-                    symbol: symbol.clone(),
+                    symbol,
                     index,
-                    max_expected,
+                    max_expected: *max_expected,
                 },
             );
         }
@@ -1373,24 +1394,21 @@ fn build_perennial_decomposition_control(
                 );
             }
 
-            ensure_no_overflow_indexed_symbols_for_decomposition(
+            ensure_no_overflow_indexed_symbol_roots_for_decomposition(
                 phase,
                 state_surface,
-                "cutday",
                 slot_index,
                 crop_slot_index,
-                ncut,
+                &[
+                    ("cutday", ncut),
+                    ("gday", 0),
+                    ("gend", 0),
+                    ("animal", 0),
+                    ("bodywt", 0),
+                    ("area", 0),
+                    ("digest", 0),
+                ],
             )?;
-            for root in ["gday", "gend", "animal", "bodywt", "area", "digest"] {
-                ensure_no_overflow_indexed_symbols_for_decomposition(
-                    phase,
-                    state_surface,
-                    root,
-                    slot_index,
-                    crop_slot_index,
-                    0,
-                )?;
-            }
 
             let mut active_cut_index = None;
             for event_index in 1..=ncut {
@@ -1455,24 +1473,21 @@ fn build_perennial_decomposition_control(
                 );
             }
 
-            ensure_no_overflow_indexed_symbols_for_decomposition(
+            ensure_no_overflow_indexed_symbol_roots_for_decomposition(
                 phase,
                 state_surface,
-                "cutday",
                 slot_index,
                 crop_slot_index,
-                0,
+                &[
+                    ("cutday", 0),
+                    ("gday", ncycle),
+                    ("gend", ncycle),
+                    ("animal", ncycle),
+                    ("bodywt", ncycle),
+                    ("area", ncycle),
+                    ("digest", ncycle),
+                ],
             )?;
-            for root in ["gday", "gend", "animal", "bodywt", "area", "digest"] {
-                ensure_no_overflow_indexed_symbols_for_decomposition(
-                    phase,
-                    state_surface,
-                    root,
-                    slot_index,
-                    crop_slot_index,
-                    ncycle,
-                )?;
-            }
 
             for cycle_index in 1..=ncycle {
                 let gday_symbol = pl_decomp_slot_crop_indexed_symbol(
@@ -1638,18 +1653,21 @@ fn build_perennial_decomposition_control(
                 );
             }
 
-            for root in [
-                "cutday", "gday", "gend", "animal", "bodywt", "area", "digest",
-            ] {
-                ensure_no_overflow_indexed_symbols_for_decomposition(
-                    phase,
-                    state_surface,
-                    root,
-                    slot_index,
-                    crop_slot_index,
-                    0,
-                )?;
-            }
+            ensure_no_overflow_indexed_symbol_roots_for_decomposition(
+                phase,
+                state_surface,
+                slot_index,
+                crop_slot_index,
+                &[
+                    ("cutday", 0),
+                    ("gday", 0),
+                    ("gend", 0),
+                    ("animal", 0),
+                    ("bodywt", 0),
+                    ("area", 0),
+                    ("digest", 0),
+                ],
+            )?;
         }
         _ => unreachable!("mgtopt domain is validated above"),
     }

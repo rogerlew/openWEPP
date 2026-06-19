@@ -1,9 +1,25 @@
 # PERFDEEP09 Contract-Test Implementation Evidence
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence class: Ran.
 
-No contract-derived test is intended at scaffold time.
+Focused regression added:
 
-Record focused regression tests, benchmark tests, or contract-derived tests if
-the remediation touches authority surfaces.
+- `pl12_contract_conformance_rejects_unexpected_indexed_perennial_symbol`
+  in `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/boundaries.rs`.
+
+The test injects `pl_decomp_slot_0001_crop_0001_digest_0002` while
+`ncycle=1` and verifies:
+
+- halted phase is `DecompositionTransition`;
+- message id is `HS-DECOMP-E-008`;
+- boundary class is `DomainViolation`.
+
+Focused commands:
+
+```text
+cargo test -p openwepp-hillslope-orchestrator pl12_contract_conformance
+cargo test -p openwepp-hillslope-orchestrator decomposition
+```
+
+Both passed before the final H2637 gate.

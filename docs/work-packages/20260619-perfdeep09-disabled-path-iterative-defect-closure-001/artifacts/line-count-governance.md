@@ -1,14 +1,25 @@
 # PERFDEEP09 Line-Count Governance
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence class: Ran.
 
-Before closure, run and record `.rs` line counts for touched Rust files.
+Command:
 
-Rules:
+```text
+wc -l crates/openwepp-hillslope-orchestrator/src/hydrology/07_decomposition_equations.rs \
+      crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/boundaries.rs
+```
 
-- files at or above 2000 lines are `WARN`;
-- files at or above 3000 lines require refactor before closure unless a
-  generated/fixture exception is explicitly approved with owner and sunset plan;
-- `scheduler.rs` is known to exceed 3000 lines and cannot be casually touched
-  without closure evidence.
+Result:
+
+```text
+1682 crates/openwepp-hillslope-orchestrator/src/hydrology/07_decomposition_equations.rs
+ 550 crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/boundaries.rs
+2232 total
+```
+
+Disposition:
+
+- No touched Rust file reaches the 2000-line WARN threshold.
+- No touched Rust file reaches the 3000-line required-refactor threshold.
+- `scheduler.rs` was not touched.

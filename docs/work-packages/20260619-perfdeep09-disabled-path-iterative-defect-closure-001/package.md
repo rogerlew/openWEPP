@@ -1,6 +1,6 @@
 # PERFDEEP09 - Disabled-Path Iterative Defect Closure
 
-Status: queued.
+Status: executed - `READY-FOR-R2`.
 
 Package type: Defect-Closure ExecPlan / iterative performance blocker closure.
 
