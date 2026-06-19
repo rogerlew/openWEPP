@@ -319,8 +319,9 @@ struct SchedulerLifecycleContext<'a> {
     calendar_day: &'a ClimateDayProjection,
     runtime_swe_before_m: f64,
     hphys0245_trace_config: Option<&'a Hphys0245TraceConfig>,
-    symbol_registry: &'a SymbolRegistry,
-    hot_symbol_tables: &'a HotSymbolTables,
+    symbol_registry: Option<&'a SymbolRegistry>,
+    hot_symbol_tables: Option<&'a HotSymbolTables>,
+    indexed_scheduler_runtime_enabled: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -879,8 +880,9 @@ struct ClimateExecutionContext<'a> {
     publication_area_m2: f64,
     first_calendar_year: i32,
     hphys0245_trace_config: Option<&'a Hphys0245TraceConfig>,
-    symbol_registry: &'a SymbolRegistry,
-    hot_symbol_tables: &'a HotSymbolTables,
+    symbol_registry: Option<&'a SymbolRegistry>,
+    hot_symbol_tables: Option<&'a HotSymbolTables>,
+    indexed_scheduler_runtime_enabled: bool,
 }
 
 struct HillslopeDayApply<'a> {
@@ -1473,8 +1475,11 @@ fn build_static_hillslope_runtime_setup(
         symbol_registry: None,
         hot_symbol_tables: None,
     };
-    let symbol_registry =
-        symbol_registry_audit::build_registry_for_run(&execution_state, &inputs.climate, "indexed_runtime_surface")?;
+    let symbol_registry = symbol_registry_audit::build_registry_for_run(
+        &execution_state,
+        &inputs.climate,
+        "indexed_runtime_surface",
+    )?;
     let hot_symbol_tables = build_hillslope_hot_symbol_tables(&symbol_registry);
     if let Some(persistent_lane_state) = execution_state.persistent_lane_state.as_mut() {
         persistent_lane_state
@@ -1699,14 +1704,9 @@ fn execute_hillslope_climate_days(
         symbol_registry,
         hot_symbol_tables,
     } = state;
-    let symbol_registry = symbol_registry.ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
-        surface: "indexed_runtime_surface",
-        detail: format!("{SIMPIPE_GUARD_ID} frozen symbol registry was not initialized"),
-    })?;
-    let hot_symbol_tables = hot_symbol_tables.ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
-        surface: "indexed_runtime_surface",
-        detail: format!("{SIMPIPE_GUARD_ID} hot symbol tables were not initialized"),
-    })?;
+    let symbol_registry = symbol_registry.as_ref();
+    let hot_symbol_tables = hot_symbol_tables.as_ref();
+    let indexed_scheduler_runtime_enabled = symbol_registry.is_some() && hot_symbol_tables.is_some();
     let persistent_lane_active = persistent_lane_state.is_some();
     let hphys0245_trace_config = hphys0245_trace_config_from_env()?;
     let context = ClimateExecutionContext {
@@ -1716,8 +1716,9 @@ fn execute_hillslope_climate_days(
         publication_area_m2,
         first_calendar_year: climate_span.first_day.year,
         hphys0245_trace_config: hphys0245_trace_config.as_ref(),
-        symbol_registry: &symbol_registry,
-        hot_symbol_tables: &hot_symbol_tables,
+        symbol_registry,
+        hot_symbol_tables,
+        indexed_scheduler_runtime_enabled,
     };
     let mut accumulator =
         ClimateExecutionAccumulator::new(runtime_surface, climate_span.days.len(), contributor_ofe_count)?;
@@ -1822,6 +1823,7 @@ impl ClimateExecutionAccumulator {
             hphys0245_trace_config: apply.context.hphys0245_trace_config,
             symbol_registry: apply.context.symbol_registry,
             hot_symbol_tables: apply.context.hot_symbol_tables,
+            indexed_scheduler_runtime_enabled: apply.context.indexed_scheduler_runtime_enabled,
         };
         if let Some(persistent_lane_state) = apply.persistent_lane_state.as_mut() {
             let persistent_result = execute_persistent_scheduler_kernel_lifecycle(

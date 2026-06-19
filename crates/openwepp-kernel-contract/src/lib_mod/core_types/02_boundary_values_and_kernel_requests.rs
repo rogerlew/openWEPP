@@ -952,6 +952,11 @@ impl<'a> HillslopeKernelRequest<'a> {
 
     #[must_use]
     pub fn indexed_state_value(&self, symbol: &IndexedBoundarySymbol) -> Option<BoundaryValue> {
+        if !self.has_dense_state_surface() {
+            return self
+                .indexed_state_surface
+                .and_then(|surface| surface.get(symbol.id));
+        }
         if let Some(value) = self
             .dense_state_slot_view
             .and_then(|view| view.get(symbol.id))
@@ -1005,6 +1010,11 @@ impl<'a> HillslopeKernelRequest<'a> {
 
     #[must_use]
     pub fn indexed_flux_value(&self, symbol: &IndexedBoundarySymbol) -> Option<BoundaryValue> {
+        if !self.has_dense_flux_surface() {
+            return self
+                .indexed_flux_surface
+                .and_then(|surface| surface.get(symbol.id));
+        }
         if let Some(value) = self
             .dense_flux_slot_view
             .and_then(|view| view.get(symbol.id))
@@ -1025,16 +1035,22 @@ impl<'a> HillslopeKernelRequest<'a> {
 
     #[must_use]
     pub fn has_indexed_state_surface(&self) -> bool {
-        self.dense_state_slot_view.is_some()
-            || self.dense_state_slots.is_some()
-            || self.indexed_state_surface.is_some()
+        self.has_dense_state_surface() || self.indexed_state_surface.is_some()
     }
 
     #[must_use]
     pub fn has_indexed_flux_surface(&self) -> bool {
-        self.dense_flux_slot_view.is_some()
-            || self.dense_flux_slots.is_some()
-            || self.indexed_flux_surface.is_some()
+        self.has_dense_flux_surface() || self.indexed_flux_surface.is_some()
+    }
+
+    #[must_use]
+    pub fn has_dense_state_surface(&self) -> bool {
+        self.dense_state_slot_view.is_some() || self.dense_state_slots.is_some()
+    }
+
+    #[must_use]
+    pub fn has_dense_flux_surface(&self) -> bool {
+        self.dense_flux_slot_view.is_some() || self.dense_flux_slots.is_some()
     }
 
     #[must_use]

@@ -426,6 +426,46 @@ mod tests {
     }
 
     #[test]
+    fn indexed_request_without_dense_slots_keeps_dense_surface_absent() {
+        let mut state_surface = BTreeMap::new();
+        let mut flux_surface = BTreeMap::new();
+        let state_symbol = BoundarySymbol::from("perfdeep07_hot_state");
+        let flux_symbol = BoundarySymbol::from("perfdeep07_hot_flux");
+        state_surface.insert(state_symbol.clone(), BoundaryValue::scalar(4.25));
+        flux_surface.insert(flux_symbol.clone(), BoundaryValue::scalar(1.5));
+        let registry = SymbolRegistry::from_symbols([state_symbol.clone(), flux_symbol])
+            .expect("registry should build");
+        let indexed_surface = IndexedWritebackSurface::from_btreemap_surfaces(
+            &registry,
+            &state_surface,
+            &flux_surface,
+        )
+        .expect("indexed surface should build");
+        let state_id = registry
+            .id_of(&state_symbol)
+            .expect("state symbol should be registered");
+        let indexed_state_symbol = IndexedBoundarySymbol::new(state_symbol, state_id);
+        let request = HillslopeKernelRequest::with_transition_context_and_indexed(
+            "perfdeep07_default_indexed",
+            HillslopeKernelPhaseClass::Hydrology,
+            HillslopeConsumerAdapter::Runoff,
+            None,
+            None,
+            &state_surface,
+            &flux_surface,
+            Some(&indexed_surface),
+            None,
+        );
+
+        assert!(request.has_indexed_state_surface());
+        assert!(!request.has_dense_state_surface());
+        assert_eq!(
+            request.indexed_state_value(&indexed_state_symbol),
+            Some(BoundaryValue::scalar(4.25))
+        );
+    }
+
+    #[test]
     fn decomposition_context_can_carry_typed_transition_payload() {
         let payload = HillslopeDecompositionTransitionPayload {
             active_slot_index: 1,

@@ -557,12 +557,12 @@ impl IndexedSymbolGrid {
 /// Resolve-once hot symbol id tables for indexed execution reads.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HotSymbolTables {
-    state_scalars: BTreeMap<String, IndexedBoundarySymbol>,
-    flux_scalars: BTreeMap<String, IndexedBoundarySymbol>,
-    state_series: BTreeMap<String, IndexedSymbolSeries>,
-    flux_series: BTreeMap<String, IndexedSymbolSeries>,
-    state_grids: BTreeMap<String, IndexedSymbolGrid>,
-    flux_grids: BTreeMap<String, IndexedSymbolGrid>,
+    state_scalars: HashMap<String, IndexedBoundarySymbol>,
+    flux_scalars: HashMap<String, IndexedBoundarySymbol>,
+    state_series: HashMap<String, IndexedSymbolSeries>,
+    flux_series: HashMap<String, IndexedSymbolSeries>,
+    state_grids: HashMap<String, IndexedSymbolGrid>,
+    flux_grids: HashMap<String, IndexedSymbolGrid>,
     pl_state_symbols: IndexedPlSymbolTables,
 }
 
@@ -880,8 +880,8 @@ fn collect_scalar_symbols(
     registry: &SymbolRegistry,
     symbols: &[&str],
     include_all_registry_symbols: bool,
-) -> BTreeMap<String, IndexedBoundarySymbol> {
-    let mut collected = BTreeMap::new();
+) -> HashMap<String, IndexedBoundarySymbol> {
+    let mut collected = HashMap::new();
     if include_all_registry_symbols {
         for (id, symbol) in registry.iter() {
             collected.insert(
@@ -905,8 +905,8 @@ fn collect_scalar_symbols(
 fn collect_series_roots(
     registry: &SymbolRegistry,
     roots: &[&str],
-) -> BTreeMap<String, IndexedSymbolSeries> {
-    let mut collected = BTreeMap::new();
+) -> HashMap<String, IndexedSymbolSeries> {
+    let mut collected = HashMap::new();
     for root in roots {
         let mut pairs = Vec::new();
         for (id, symbol) in registry.iter() {
@@ -924,8 +924,8 @@ fn collect_series_roots(
 fn collect_grid_roots(
     registry: &SymbolRegistry,
     roots: &[&str],
-) -> BTreeMap<String, IndexedSymbolGrid> {
-    let mut collected = BTreeMap::new();
+) -> HashMap<String, IndexedSymbolGrid> {
+    let mut collected = HashMap::new();
     for root in roots {
         let mut pairs = Vec::new();
         for (id, symbol) in registry.iter() {

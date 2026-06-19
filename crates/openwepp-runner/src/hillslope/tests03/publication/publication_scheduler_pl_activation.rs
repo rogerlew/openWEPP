@@ -94,8 +94,9 @@ use super::super::*;
                 calendar_day: &calendar_day,
                 runtime_swe_before_m: 0.0,
                 hphys0245_trace_config: None,
-                symbol_registry: &symbol_registry,
-                hot_symbol_tables: &hot_symbol_tables,
+                symbol_registry: Some(&symbol_registry),
+                hot_symbol_tables: Some(&hot_symbol_tables),
+                indexed_scheduler_runtime_enabled: false,
             },
         );
 

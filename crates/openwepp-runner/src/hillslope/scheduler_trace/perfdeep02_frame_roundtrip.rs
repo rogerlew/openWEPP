@@ -40,12 +40,19 @@ fn maybe_record_perfdeep02_frame_roundtrip(
         return Ok(());
     };
 
-    let frame =
-        HillslopeDayFrame::seed_from_writeback_surface(surface, context.symbol_registry, None)
-            .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "perfdeep02_frame_roundtrip",
-                detail: source.to_string(),
-            })?;
+    let Some(symbol_registry) = context.symbol_registry else {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "perfdeep02_frame_roundtrip",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} frame roundtrip report requested without an active frame registry"
+            ),
+        });
+    };
+    let frame = HillslopeDayFrame::seed_from_writeback_surface(surface, symbol_registry, None)
+        .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "perfdeep02_frame_roundtrip",
+            detail: source.to_string(),
+        })?;
     let report = frame
         .assert_shadow_roundtrip_bits(&surface.state_surface, &surface.flux_surface)
         .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {

@@ -1,7 +1,10 @@
 # PERFDEEP07 Layout and Allocation Evidence
 
-Status: queued.
-Evidence mode: not-run.
+Status: blocked by HOLD.
+Evidence mode: Static.
+
+No new direct-frame structures were implemented because the ordered
+default-disabled P0 timing gate failed.
 
 ## Required Evidence
 

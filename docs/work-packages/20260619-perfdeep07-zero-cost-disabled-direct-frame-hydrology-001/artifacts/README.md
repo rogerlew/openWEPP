@@ -1,6 +1,9 @@
 # PERFDEEP07 Artifacts
 
-Status: queued.
+Status: HOLD.
+
+PERFDEEP07 stopped at the ordered P0 default-disabled timing gate. Artifacts
+after that point are marked blocked/not-run rather than completed.
 
 Required deliverables:
 

@@ -1,7 +1,10 @@
 # PERFDEEP07 Verification Agent A
 
-Status: queued.
-Evidence mode: not-run.
+Status: blocked by HOLD.
+Evidence mode: Static.
+
+Independent verification was not dispatched for final closure because the
+package stopped at the ordered default-disabled P0 timing gate.
 
 ## Verification Scope
 

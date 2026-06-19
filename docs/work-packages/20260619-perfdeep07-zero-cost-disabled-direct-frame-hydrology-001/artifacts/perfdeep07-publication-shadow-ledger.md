@@ -1,7 +1,10 @@
 # PERFDEEP07 Publication Shadow Ledger
 
-Status: queued.
-Evidence mode: not-run.
+Status: blocked by HOLD.
+Evidence mode: Static.
+
+No direct-frame publication shadow run was executed because the ordered
+default-disabled P0 timing gate failed.
 
 ## Required Evidence
 

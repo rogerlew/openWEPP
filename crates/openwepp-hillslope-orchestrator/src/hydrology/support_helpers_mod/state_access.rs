@@ -6,22 +6,48 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
         symbol: &BoundarySymbol,
     ) -> Option<BoundaryValue> {
-        request
+        if request.hot_symbol_tables.is_none()
+            && request.symbol_registry.is_none()
+            && !request.has_indexed_state_surface()
+        {
+            return request.state_surface.get(symbol).copied();
+        }
+        if let Some(value) = request
             .hot_state_scalar(symbol.as_str())
             .and_then(|indexed_symbol| request.indexed_state_value(indexed_symbol))
-            .or_else(|| request.dense_state_value_for_symbol(symbol))
-            .or_else(|| request.state_surface.get(symbol).copied())
+        {
+            return Some(value);
+        }
+        if request.has_dense_state_surface() {
+            if let Some(value) = request.dense_state_value_for_symbol(symbol) {
+                return Some(value);
+            }
+        }
+        request.state_surface.get(symbol).copied()
     }
 
     pub(crate) fn flux_value_for_symbol(
         request: &HillslopeKernelRequest<'_>,
         symbol: &BoundarySymbol,
     ) -> Option<BoundaryValue> {
-        request
+        if request.hot_symbol_tables.is_none()
+            && request.symbol_registry.is_none()
+            && !request.has_indexed_flux_surface()
+        {
+            return request.flux_surface.get(symbol).copied();
+        }
+        if let Some(value) = request
             .hot_flux_scalar(symbol.as_str())
             .and_then(|indexed_symbol| request.indexed_flux_value(indexed_symbol))
-            .or_else(|| request.dense_flux_value_for_symbol(symbol))
-            .or_else(|| request.flux_surface.get(symbol).copied())
+        {
+            return Some(value);
+        }
+        if request.has_dense_flux_surface() {
+            if let Some(value) = request.dense_flux_value_for_symbol(symbol) {
+                return Some(value);
+            }
+        }
+        request.flux_surface.get(symbol).copied()
     }
 
     pub(crate) fn require_state_scalar(

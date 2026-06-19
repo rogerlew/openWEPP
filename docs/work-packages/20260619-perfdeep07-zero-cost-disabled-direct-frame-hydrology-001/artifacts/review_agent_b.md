@@ -1,7 +1,10 @@
 # PERFDEEP07 Review Agent B
 
-Status: queued.
-Evidence mode: not-run.
+Status: blocked by HOLD.
+Evidence mode: Static.
+
+Independent review was not dispatched for final closure because the package
+stopped at the ordered default-disabled P0 timing gate.
 
 ## Review Scope
 

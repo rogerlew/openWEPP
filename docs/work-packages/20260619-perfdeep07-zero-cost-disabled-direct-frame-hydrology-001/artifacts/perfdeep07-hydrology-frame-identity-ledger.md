@@ -1,7 +1,10 @@
 # PERFDEEP07 Hydrology Frame Identity Ledger
 
-Status: queued.
-Evidence mode: not-run.
+Status: blocked by HOLD.
+Evidence mode: Static.
+
+No direct-frame hydrology chain was implemented because the ordered
+default-disabled P0 timing gate failed.
 
 ## Required Evidence
 

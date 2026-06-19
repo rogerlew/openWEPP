@@ -1,9 +1,17 @@
 # Pre-Implementation Contract Gate
 
-Status: queued.
-Evidence mode: not-run.
+Status: pass for retained HOLD edits.
+Evidence mode: Static.
 
 ## Gate
 
-Before production edits, confirm whether PERFDEEP07 remains within existing
-runtime/output authority. If not, stop and follow the contract-first sequence.
+PERFDEEP07 retained edits remained within existing runtime/output authority:
+
+- no process physics formulas changed;
+- no canonical `SC-*` contract changed;
+- no output schema or output meaning changed;
+- explicit diagnostics fail closed when required runtime authority is missing;
+- protected H2637 outputs remained identical for the retained candidate.
+
+Direct-frame hydrology implementation did not start because the P0
+default-disabled gate failed.

@@ -1,7 +1,10 @@
 # PERFDEEP07 Direct-Frame Implementation Plan
 
-Status: queued.
-Evidence mode: not-run.
+Status: blocked by HOLD.
+Evidence mode: Static.
+
+Direct-frame implementation planning did not start because the ordered
+default-disabled P0 timing gate failed.
 
 ## Required Contents
 

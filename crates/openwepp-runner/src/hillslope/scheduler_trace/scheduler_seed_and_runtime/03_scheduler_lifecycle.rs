@@ -262,9 +262,11 @@ fn prepare_persistent_lane_inputs(
             context,
         )?;
         if lane_execution_input.indexed_writeback_surface.is_some() {
+            let symbol_registry =
+                require_scheduler_symbol_registry(context, "indexed_runtime_surface")?;
             lane_execution_input.indexed_writeback_surface = Some(
                 IndexedWritebackSurface::from_btreemap_surfaces(
-                    context.symbol_registry,
+                    symbol_registry,
                     &lane_surface.state_surface,
                     &lane_surface.flux_surface,
                 )
@@ -275,11 +277,13 @@ fn prepare_persistent_lane_inputs(
             );
         }
         if let Some(lane_dense_state) = lane_execution_input.lane_dense_state.as_mut() {
+            let symbol_registry =
+                require_scheduler_symbol_registry(context, "perfdeep05_lane_dense_cached_slot_refresh")?;
             lane_dense_state
                 .refresh_cached_slots_from_writeback_surface(
                     &lane_surface,
                     lane_execution_input.indexed_writeback_surface.as_ref(),
-                    context.symbol_registry,
+                    symbol_registry,
                 )
                 .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
                     surface: "perfdeep05_lane_dense_cached_slot_refresh",
@@ -320,20 +324,37 @@ fn execute_persistent_ofe_sequence(
 
     let scheduler = HillslopePhaseScheduler::canonical();
     let mut kernel = Wb11HydrologyKernel;
-    scheduler
-        .execute_ofe_sequence_with_kernel_indexed(
+    if context.indexed_scheduler_runtime_enabled {
+        let (symbol_registry, hot_symbol_tables) =
+            require_indexed_scheduler_resources(context, "per_ofe_dynamic_state")?;
+        scheduler
+            .execute_ofe_sequence_with_kernel_indexed(
+                &topology_report,
+                &mut kernel,
+                lane_inputs,
+                symbol_registry,
+                hot_symbol_tables,
+            )
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "per_ofe_dynamic_state",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} persistent OFE scheduler/kernel lifecycle failed: {error}"
+                ),
+            })
+    } else {
+        scheduler
+            .execute_ofe_sequence_with_kernel(
             &topology_report,
             &mut kernel,
             lane_inputs,
-            context.symbol_registry,
-            context.hot_symbol_tables,
-        )
-        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "per_ofe_dynamic_state",
-            detail: format!(
-                "{SIMPIPE_GUARD_ID} persistent OFE scheduler/kernel lifecycle failed: {error}"
-            ),
-        })
+            )
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "per_ofe_dynamic_state",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} persistent OFE scheduler/kernel lifecycle failed: {error}"
+                ),
+            })
+    }
 }
 
 fn require_persistent_lane_sequence_success(
@@ -501,6 +522,33 @@ fn refresh_persistent_lane_indexed_authority(
         })
 }
 
+fn require_scheduler_symbol_registry<'a>(
+    context: &SchedulerLifecycleContext<'a>,
+    surface: &'static str,
+) -> Result<&'a SymbolRegistry, HillslopeCliError> {
+    context
+        .symbol_registry
+        .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+            surface,
+            detail: format!("{SIMPIPE_GUARD_ID} indexed scheduler symbol registry is not active"),
+        })
+}
+
+fn require_indexed_scheduler_resources<'a>(
+    context: &SchedulerLifecycleContext<'a>,
+    surface: &'static str,
+) -> Result<(&'a SymbolRegistry, &'a HotSymbolTables), HillslopeCliError> {
+    let symbol_registry = require_scheduler_symbol_registry(context, surface)?;
+    let hot_symbol_tables =
+        context
+            .hot_symbol_tables
+            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+                surface,
+                detail: format!("{SIMPIPE_GUARD_ID} indexed scheduler hot tables are not active"),
+            })?;
+    Ok((symbol_registry, hot_symbol_tables))
+}
+
 pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
     lane_state: &mut OfeLanePersistentStateSequence,
     climate_surface: &HillslopeWritebackSurface,
@@ -527,7 +575,11 @@ pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
     let sequence_summary = persistent_sequence_summary(&sequence_report)?;
     replace_persistent_lane_state_from_report_moving(lane_state, sequence_report)?;
     restore_persistent_lane_pl_sentinels(lane_state, lane_preparation.pl_activation_sentinels);
-    refresh_persistent_lane_indexed_authority(lane_state, context.symbol_registry)?;
+    if context.indexed_scheduler_runtime_enabled {
+        let symbol_registry =
+            require_scheduler_symbol_registry(&context, "indexed_runtime_surface")?;
+        refresh_persistent_lane_indexed_authority(lane_state, symbol_registry)?;
+    }
 
     let outlet_runtime_surface = persistent_outlet_runtime_surface(lane_state)?;
     super::indexed_shadow_surface::validate_shadow_surface(&outlet_runtime_surface)?;

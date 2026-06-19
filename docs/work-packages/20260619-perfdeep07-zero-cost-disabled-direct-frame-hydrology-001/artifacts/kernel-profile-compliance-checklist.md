@@ -1,7 +1,10 @@
 # Kernel Profile Compliance Checklist
 
-Status: queued.
-Evidence mode: not-run.
+Status: blocked by HOLD.
+Evidence mode: Static.
+
+The full kernel profile closure checklist was not completed because
+PERFDEEP07 stopped at the ordered default-disabled P0 timing gate.
 
 ## Checklist
 

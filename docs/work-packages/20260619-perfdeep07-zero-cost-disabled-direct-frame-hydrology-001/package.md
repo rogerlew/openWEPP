@@ -1,6 +1,11 @@
 # PERFDEEP07 - Zero-Cost Disabled Path and Direct-Frame Hydrology Fast Path
 
-Status: scaffolded 2026-06-19. Disposition: queued.
+Status: executed 2026-06-19. Disposition: HOLD.
+
+HOLD reason: the ordered P0 default-disabled H2637 timing gate did not pass.
+The retained disabled-path patch improved the PERFDEEP05 regression but the
+best viable single run was still `685.85 s`, above the required `<= 676.67 s`
+threshold. Direct-frame hydrology implementation was therefore not started.
 
 Package type: performance implementation / ADR-0025 direct-frame execution
 package.
@@ -152,6 +157,18 @@ Source inventory:
   new typed frame/view contract exposure
 - `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs` only
   for typed publication projection shadowing
+
+Execution amendment 2026-06-19:
+
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`
+  for disabled-path registry/hot-table lifecycle guarding.
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime/03_scheduler_lifecycle.rs`
+  for fail-closed indexed scheduler resource guards.
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/perfdeep02_frame_roundtrip.rs`
+  for explicit diagnostic fail-closed behavior when registry authority is
+  unavailable.
+- `crates/openwepp-runner/src/hillslope/tests03/publication/publication_scheduler_pl_activation.rs`
+  for test context construction after runner lifecycle guard changes.
 
 Any additional production write set requires amending this package before the
 edit.
