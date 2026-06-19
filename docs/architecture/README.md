@@ -43,11 +43,11 @@ wepppy invokes the openWEPP CLIs as subprocesses, matching its existing call sha
 ## Kernel boundary
 Kernels are pure functions over typed state. Orchestrators own time-stepping and topology; kernels own physics. The producer/consumer trajectory-ownership rules from the wepp-palimpsest trajectory-ownership contract map onto Rust lifetimes and ownership transfer.
 
-> **Hot-path runtime architecture (proposed re-architecture):** the symbol-keyed
+> **Hot-path runtime architecture (ratified re-architecture):** the symbol-keyed
 > `BTreeMap<BoundarySymbol, BoundaryValue>` hot path is being replaced by a typed dense
 > *HillslopeDayFrame* to meet the ≤10× (ideally ≤5×) viability gate. See
 > [array-native-runtime-specification.md](array-native-runtime-specification.md) — the comprehensive
-> design authority for the perf re-architecture (pending ADR-0025 ratification). It fulfils the "pure
+> design authority for the perf re-architecture ratified by ADR-0025. It fulfils the "pure
 > functions over typed state" boundary above; the string-keyed maps were a scaffolding compromise.
 
 ## State files
