@@ -10,6 +10,13 @@
 
 State as of `2026-06-19`:
 
+- PERFDEEP07 is scaffolded and queued as the cleanup-plus-implementation
+  package after PERFDEEP06. It must first make PERFDEEP02/03/05/07
+  dense/direct-frame compatibility plumbing zero-cost when all opt-ins are
+  disabled, proving H2637 default-disabled identity and a three-run median
+  `<= 676.67 s` before adding the bounded direct-frame hydrology fast path. No
+  default activation is allowed. Package:
+  `20260619-perfdeep07-zero-cost-disabled-direct-frame-hydrology-001/`.
 - PERFDEEP06 is executed with verdict `READY-FOR-PERFDEEP07`. The package
   produced the array-native fast-path frame inventory, publication operand
   ledger, direct-frame API plan, layout/allocation ledger, no-hot-loop-map
