@@ -57,8 +57,12 @@ intake, output, replay, diagnostic, and shadow-validation adapters.
 
 This is a complete rewrite in representation and execution architecture. It is
 not a clean-room rewrite of science. Physics, guards, units, conservation
-contracts, process order, and output schemas remain authoritative and must be
-validated bit-for-bit or by the existing Arrow/byte identity gates.
+contracts, process order, and output schemas remain authoritative. Existing
+byte/Arrow identity gates remain protected-output regression gates, but they
+are not sufficient science-contract evidence by themselves; direct-frame work
+must also carry contract-derived invariant, guard, unit, closure,
+conservation, provenance, and operand-reconstruction evidence where those
+obligations apply.
 
 Target: **<=10x and preferably <=5x legacy WEPP on H2637**. The model supports
 that target only if the whole per-OFE-day hot path is direct-frame. Partial
@@ -80,13 +84,15 @@ whether openWEPP is viable as the Rust simulation engine.
 | Legacy WEPP | `9.12 s` | `38.65` | `1.0x` | about `4.6 MB` |
 | openWEPP activation reference | `669.97 s` | `2826` | `73.46x` | about `228 MB` |
 | PERFDEEP05 default-disabled | `701.95 s` | `2975` | `76.97x` | about `229 MB` |
-| PERFDEEP07 retained patch | `685.85 s` | `2907` | `75.20x` | `229004 KB` |
+| PERFDEEP07 retained HOLD run | `685.85 s` | `2907` | `75.20x` | `229004 KB` |
 | <=10x budget | `91.2 s` | `386` | `10x` | - |
 | <=5x budget | `45.6 s` | `193` | `5x` | - |
 
-H2637 has `235,961` OFE-days. The measured gap is representation-wide:
-pointer-heavy maps, dynamic symbol resolution, enum dispatch, allocation,
-payload construction, and compatibility refresh/flush dominate over physics.
+H2637 has `235,961` OFE-days. The PERFDEEP07 row is the best single retained
+HOLD run, not an accepted three-run median and not a passing baseline. The
+measured gap is representation-wide: pointer-heavy maps, dynamic symbol
+resolution, enum dispatch, allocation, payload construction, and compatibility
+refresh/flush dominate over physics.
 
 ### 1.2 Physics Is Not the Runtime Floor
 
@@ -321,6 +327,25 @@ The frame hierarchy must avoid whole-registry dense mirrors. It stores the hot
 working set and the state needed for output projection. It does not store every
 possible legacy symbol as an optional slot.
 
+### 4.3.1 Direct-Frame Type Boundary
+
+The existing `crates/openwepp-hillslope-orchestrator/src/day_frame.rs`
+`HillslopeDayFrame` is a compatibility transition frame: it is registry-backed
+and stores `BoundaryValue` slots. That type is useful as shadow evidence and
+negative/transition scaffolding, but it is not the direct-mode target described
+by this specification.
+
+R0 must make an explicit type-boundary decision before runtime implementation:
+
+- rename or isolate the existing compatibility frame so it cannot be mistaken
+  for the direct-mode frame; or
+- introduce a distinct direct-frame type.
+
+The R0 gate must prove the direct-mode frame type contains no registry,
+`BoundarySymbol`, `BoundaryValue`, `Option<BoundaryValue>`, indexed-surface, or
+logical-surface fields in normal execution storage. Any remaining compatibility
+frame must be clearly marked as an adapter or shadow type.
+
 ### 4.4 HillslopeRunFrame
 
 `HillslopeRunFrame` owns or references data that does not change per day:
@@ -495,9 +520,11 @@ The architecture has three modes:
    The production target. Runs only typed frames and typed projections.
 
 2. **Compatibility mode**
-   Maintains the current logical/indexed runtime for replay, comparison, and
-   emergency fallback while direct mode is being validated. It is not the
-   performance target.
+   Maintains the current logical/indexed runtime for replay, comparison,
+   migration fallback, and emergency fallback while direct mode is being
+   validated. It is a declared non-normal execution mode, not the performance
+   target, and its existence does not authorize direct-mode hot loops to
+   construct or query compatibility surfaces.
 
 3. **Shadow mode**
    Runs direct and compatibility paths together for selected fixtures or
@@ -544,6 +571,14 @@ afterthought. Each publication operand has:
 - output row/column destination;
 - identity fixture;
 - anti-alias fixture when multiple legacy symbols map to related frame fields.
+
+The PERFDEEP06 publication operand ledger is the current normative seed for
+this projection work. R6 and any package that touches publication operands must
+either promote that ledger into canonical architecture/contract authority or
+update this specification with an equivalent binding ledger before cutover.
+The ledger must include anti-alias fixtures, metadata/provenance parity, output
+row/column mappings, and independent operand reconstruction for
+conservation-sensitive outputs.
 
 ### 5.3 Replay and Diagnostics Edge
 
@@ -614,6 +649,19 @@ Every implementation package must record:
 - proof that direct mode does not construct compatibility surfaces;
 - skipped gates with explicit blockers.
 
+The no-compatibility proof must be executable, not just prose. Minimum proof:
+
+- a direct-executor entrypoint allowlist and call-graph audit showing it does
+  not enter `execute_with_kernel*`, `HillslopeKernelRequest`,
+  `KernelWritebackPayload`, `HillslopeWritebackSurface`, symbol-registry,
+  hot-table, indexed-surface, dense-refresh, or dirty-flush paths;
+- H2637 runtime counters or audit hooks showing zero calls to the named
+  forbidden APIs during direct phase execution;
+- zero `BoundarySymbol` or owned legacy-symbol construction in direct phase
+  execution;
+- an explicit allowance list for edge-only compatibility adapters, if any are
+  invoked before or after direct execution.
+
 ### 6.3 Stop Criteria
 
 Stop and re-architect, not patch around, when:
@@ -672,13 +720,28 @@ authority must change, the sequence is:
 3. record pre-implementation contract gate evidence;
 4. then change production runtime code.
 
-### 7.4 Completion Gates
+### 7.4 Stage Classes and Completion Gates
 
-A direct-frame stage is not complete until:
+Planning/schema stages may complete with static artifacts only when their
+package scope explicitly excludes runtime execution, activation, and readiness
+claims. They still require required-reading evidence, owned-file manifests,
+contract-gate disposition, docs lint, review, and finding disposition.
+
+Shadow-only implementation stages may complete without default activation, but
+must run the executable shadow fixtures they introduce and record why any H2637
+endpoint gate is not yet applicable. If they touch runtime code, they must run
+the relevant Rust gates for that scope.
+
+Activated direct-mode stages are runtime completion claims. They are not
+complete until:
 
 - focused tests pass;
 - H2637 identity passes;
 - H2637 endpoint/RSS is recorded;
+- touched `SC-*` invariant and closure checks pass;
+- legacy comparator delta review is recorded with confidence tiering;
+- conservation-sensitive outputs have independent operand reconstruction
+  evidence;
 - `cargo fmt --check` passes;
 - `cargo clippy --workspace --all-targets -- -D warnings` passes;
 - `cargo test --workspace` passes;
@@ -686,8 +749,10 @@ A direct-frame stage is not complete until:
 - scoped docs lint passes;
 - review and verification findings are dispositioned.
 
-HOLD is required when known invariant, identity, or performance gates remain
-unresolved.
+HOLD is required when a stage claims runtime completion without executable
+H2637 evidence, when known invariant/identity/performance gates remain
+unresolved, or when science-contract closure evidence is missing for touched
+physics, guards, publication, conservation, or output operands.
 
 ---
 
@@ -715,15 +780,31 @@ architecture:
 
 Future work should follow this sequence.
 
+#### 8.2.1 PERFDEEP07 Hold-Lift Gate
+
+PERFDEEP07 is still `HOLD`. Until its default-disabled P0 timing blocker is
+closed or explicitly superseded by a new accepted architecture/work-package
+authority, R0/R1 work is limited to planning, schema, ledger, fixture,
+shadow-scaffold, and non-activated adapter work. No package may claim runtime
+readiness, default activation, or direct-frame implementation closure while the
+PERFDEEP07 blocker remains active.
+
+To advance beyond planning-only R0/R1 scope, a package must record one of:
+
+- PERFDEEP07 P0 closure with a passing default-disabled H2637 median gate; or
+- an explicit supersession decision explaining why the old P0 blocker no
+  longer controls the new direct-frame rewrite sequence, with replacement
+  timing, identity, rollback, and default-disabled gates.
+
 | Stage | Scope | Gate |
 |---|---|---|
-| **R0 - Runtime schema freeze** | Define typed field schema, ownership, aliases, guards, persistence, publication operands, and replay/diagnostic exposure. | schema review, contract gate, no hot-loop map proof |
-| **R1 - Frame constructors and projections** | Build typed run/lane/day/publication frames from existing parsed inputs and project them back to current outputs without replacing execution. | roundtrip and output identity |
-| **R2 - Direct executor skeleton** | Introduce direct executor selected once at run setup, with no per-phase compatibility branches. It may execute no-op or shadow-only phases initially. | direct mode constructs no compatibility surfaces |
+| **R0 - Runtime schema freeze** | Define typed field schema, ownership, aliases, guards, persistence, publication operands, replay/diagnostic exposure, and direct-frame type boundary. | schema review, contract gate, type-boundary proof, no hot-loop map proof |
+| **R1 - Frame constructors and projections** | Build typed run/lane/day/publication frame constructors and projections from existing parsed inputs without replacing execution. While PERFDEEP07 is HOLD, this is planning/shadow-scaffold only. | roundtrip and output identity; no runtime readiness claim |
+| **R2 - Direct executor skeleton** | Introduce a separate direct executor entrypoint selected once at run setup, with no per-phase compatibility branches. It may execute no-op or shadow-only phases initially. | direct mode constructs no compatibility surfaces; call-graph proof that it does not enter `execute_with_kernel*` or `HillslopeKernelRequest` paths |
 | **R3 - First complete phase span** | Port a complete phase span with all required upstream/downstream transfer and publication operands. | per-phase and H2637 identity, endpoint/RSS |
 | **R4 - Full hydrology direct path** | Port the complete hydrology daily OFE path without requests, payloads, writeback surfaces, symbol lookup, dense refresh, or dirty flush. | material endpoint movement plus identity |
 | **R5 - Full OFE-day direct path** | Port all 14 phases to direct-frame execution. | full H2637 identity and endpoint/RSS |
-| **R6 - Direct publication cutover** | Make HBP/WAT/PASS/loss/manifest read typed projection only. | byte/Arrow identity and metadata parity |
+| **R6 - Direct publication cutover** | Make HBP/WAT/PASS/loss/manifest read typed projection only, using the promoted PERFDEEP06 publication operand ledger or an equivalent binding ledger. | byte/Arrow identity, metadata parity, anti-alias fixtures, independent operand reconstruction |
 | **R7 - Remove hot compatibility runtime** | Delete or isolate logical/indexed/dense hot-loop plumbing from production direct mode. | <=10x gate, preferably <=5x trajectory |
 
 ### 8.3 Package Rules
