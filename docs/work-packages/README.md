@@ -10,12 +10,19 @@
 
 State as of `2026-06-19`:
 
-- PERFDEEP07 is scaffolded and queued as the cleanup-plus-implementation
-  package after PERFDEEP06. It must first make PERFDEEP02/03/05/07
-  dense/direct-frame compatibility plumbing zero-cost when all opt-ins are
-  disabled, proving H2637 default-disabled identity and a three-run median
-  `<= 676.67 s` before adding the bounded direct-frame hydrology fast path. No
-  default activation is allowed. Package:
+- R0/R1 array-native schema and frame planning is complete with verdict
+  `COMPLETE-PLANNING-ONLY`. The package recorded the direct runtime schema
+  envelope, direct-frame type-boundary decision, R1 constructor/projection
+  plan, publication-ledger promotion plan, no-compatibility proof plan, and
+  PERFDEEP07 hold-lift conditions. It made no Rust, test, output schema, or
+  contract edits and does not authorize R2+ runtime implementation. Package:
+  `20260619-r0-r1-array-native-schema-frame-planning-001/`.
+- PERFDEEP07 executed with verdict `HOLD`. The package partially reduced the
+  default-disabled tax (`701.95 s` -> `685.85 s`) but did not pass the P0
+  three-run median threshold `<= 676.67 s`, so direct-frame hydrology
+  implementation was not started. PERFDEEP02/03/05 opt-ins remain fail-closed,
+  and R2+ array-native runtime work remains blocked until the hold is closed or
+  explicitly superseded. Package:
   `20260619-perfdeep07-zero-cost-disabled-direct-frame-hydrology-001/`.
 - PERFDEEP06 is executed with verdict `READY-FOR-PERFDEEP07`. The package
   produced the array-native fast-path frame inventory, publication operand
