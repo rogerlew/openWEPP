@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: scaffolded 2026-06-18 (pending Codex execution).
+Status: complete 2026-06-18 (`CONTINUE`).
 
 Required deliverables:
 
@@ -11,6 +11,10 @@ Required deliverables:
 - `perfmig01-logical-free-proof.md` - no dual-write / no daily `BTreeMap` seam export / no hot-loop
   logical payload (perf or static evidence).
 - `perfmig01_disposition.md` - CONTINUE + next-rung outline / REDIRECT + the named obstacle.
+- `perfmig01-gate-results.md` - validation commands and final gate status.
+- `perfmig01-transition-boundary-bench.tsv` - raw transition-boundary timing result.
+- `perfmig01-transition-boundary-bench/` - standalone harness for production id-backed writeback
+  boundary measurement.
 
 Separate deliverable (committed to the decisions tree, not here):
 

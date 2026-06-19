@@ -1,6 +1,250 @@
 use super::fixtures::*;
 use super::*;
 
+fn insert_state_scalar(
+    state: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: impl Into<BoundarySymbol>,
+    value: f64,
+) {
+    state.insert(symbol.into(), BoundaryValue::scalar(value));
+}
+
+fn perfmig01_warm_rain_runoff_surface() -> (
+    BTreeMap<BoundarySymbol, BoundaryValue>,
+    BTreeMap<BoundarySymbol, BoundaryValue>,
+) {
+    let mut state = BTreeMap::new();
+    let mut flux = BTreeMap::new();
+
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb12RainfallInput,
+        0.042,
+    );
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb12RunonInput,
+        0.0065,
+    );
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb12RunoffClosureTolerance,
+        1.0e-9,
+    );
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb14SoilConductivity,
+        3.25e-7,
+    );
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb14SoilLayerDepth,
+        0.20,
+    );
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb14SoilThetaResidual,
+        0.08,
+    );
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb14SoilThetaFieldCapacity,
+        0.34,
+    );
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb14HyetographNinten,
+        2.0,
+    );
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb14HyetographNbrkpt,
+        2.0,
+    );
+    insert_state_scalar(&mut state, "timem_0001", 0.0);
+    insert_state_scalar(&mut state, "timem_0002", 86_400.0);
+    insert_state_scalar(&mut state, "intsty_0001", 0.042 / 86_400.0);
+    insert_state_scalar(&mut state, "intsty_0002", 0.0);
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb15PlantCancov,
+        0.71,
+    );
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb15PlantLai,
+        2.2,
+    );
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb15PlantVdmt,
+        1.9,
+    );
+    insert_state_scalar(
+        &mut state,
+        HillslopeProductionStateSymbol::Wb12DepressionStorageDelta,
+        0.00125,
+    );
+    insert_state_scalar(&mut state, "wb20_forward_solver_lane_enabled", 1.0);
+    flux.insert(
+        BoundarySymbol::from("wb12_runoff_carryover"),
+        BoundaryValue::scalar(0.0065),
+    );
+
+    (state, flux)
+}
+
+fn run_wb11_runoff_response(
+    state: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    flux: &BTreeMap<BoundarySymbol, BoundaryValue>,
+) -> KernelRunResponse {
+    let request = HillslopeKernelRequest::with_phase_context(
+        "runoff_reconciliation",
+        HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+        HillslopeConsumerAdapter::Runoff,
+        None,
+        state,
+        flux,
+    );
+    let mut kernel = Wb11HydrologyKernel;
+    kernel.run_hillslope_phase(&request)
+}
+
+fn registry_with_logical_writeback(
+    state: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    flux: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    writeback: &KernelWritebackPayload,
+) -> SymbolRegistry {
+    let mut registry_state = state.clone();
+    let mut registry_flux = flux.clone();
+    for field in &writeback.state_updates {
+        registry_state
+            .entry(field.symbol.clone())
+            .or_insert(field.value);
+    }
+    for field in &writeback.flux_updates {
+        registry_flux
+            .entry(field.symbol.clone())
+            .or_insert(field.value);
+    }
+    SymbolRegistry::from_surfaces(&registry_state, &registry_flux)
+        .expect("registry should cover input and output symbols")
+}
+
+fn materialize_indexed_payload(
+    registry: &SymbolRegistry,
+    payload: &IndexedKernelWritebackPayload,
+) -> (
+    BTreeMap<BoundarySymbol, BoundaryValue>,
+    BTreeMap<BoundarySymbol, BoundaryValue>,
+) {
+    let mut state = BTreeMap::new();
+    let mut flux = BTreeMap::new();
+    for field in &payload.state_updates {
+        let symbol = registry
+            .symbol(field.id)
+            .expect("state output id should resolve")
+            .clone();
+        state.insert(symbol, field.value);
+    }
+    for field in &payload.flux_updates {
+        let symbol = registry
+            .symbol(field.id)
+            .expect("flux output id should resolve")
+            .clone();
+        flux.insert(symbol, field.value);
+    }
+    (state, flux)
+}
+
+#[test]
+fn perfmig01_wb11_warm_rain_indexed_writeback_is_bit_identical() {
+    let (state, flux) = perfmig01_warm_rain_runoff_surface();
+    let logical_response = run_wb11_runoff_response(&state, &flux);
+    assert_eq!(
+        logical_response.status.message_id(),
+        "HKERNEL-WB14-RUNOFF-OK-001"
+    );
+    assert!(logical_response.indexed_writeback.is_none());
+    assert_eq!(logical_response.writeback.state_updates.len(), 543);
+    assert_eq!(logical_response.writeback.flux_updates.len(), 8);
+
+    let registry = registry_with_logical_writeback(&state, &flux, &logical_response.writeback);
+    let indexed_surface = IndexedWritebackSurface::from_btreemap_surfaces(&registry, &state, &flux)
+        .expect("indexed surface should build");
+    let hot_tables = build_hillslope_hot_symbol_tables(&registry);
+    let indexed_request = HillslopeKernelRequest::with_transition_context_and_indexed(
+        "runoff_reconciliation",
+        HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+        HillslopeConsumerAdapter::Runoff,
+        None,
+        None,
+        &state,
+        &flux,
+        Some(&indexed_surface),
+        Some(&hot_tables),
+    );
+    let mut kernel = Wb11HydrologyKernel;
+    let indexed_response = kernel.run_hillslope_phase(&indexed_request);
+    assert_eq!(
+        indexed_response.status.message_id(),
+        "HKERNEL-WB14-RUNOFF-OK-001",
+        "{:?}",
+        indexed_response.status
+    );
+    assert!(
+        indexed_response.writeback.state_updates.is_empty(),
+        "migrated branch must not build logical state payload"
+    );
+    assert!(
+        indexed_response.writeback.flux_updates.is_empty(),
+        "migrated branch must not build logical flux payload"
+    );
+    let indexed_payload = indexed_response
+        .indexed_writeback
+        .as_ref()
+        .expect("warm-rain indexed request should return an id-backed payload");
+    assert_eq!(indexed_payload.state_updates.len(), 543);
+    assert_eq!(indexed_payload.flux_updates.len(), 8);
+
+    let logical_state = logical_response
+        .writeback
+        .state_updates
+        .iter()
+        .map(|field| (field.symbol.clone(), field.value))
+        .collect::<BTreeMap<_, _>>();
+    let logical_flux = logical_response
+        .writeback
+        .flux_updates
+        .iter()
+        .map(|field| (field.symbol.clone(), field.value))
+        .collect::<BTreeMap<_, _>>();
+    let (indexed_state, indexed_flux) = materialize_indexed_payload(&registry, indexed_payload);
+
+    assert_eq!(indexed_state, logical_state);
+    assert_eq!(indexed_flux, logical_flux);
+    for (symbol, logical_value) in &logical_state {
+        let indexed_value = indexed_state
+            .get(symbol)
+            .copied()
+            .expect("indexed state value should exist");
+        assert_eq!(
+            indexed_value.as_f64().to_bits(),
+            logical_value.as_f64().to_bits()
+        );
+    }
+    for (symbol, logical_value) in &logical_flux {
+        let indexed_value = indexed_flux
+            .get(symbol)
+            .copied()
+            .expect("indexed flux value should exist");
+        assert_eq!(
+            indexed_value.as_f64().to_bits(),
+            logical_value.as_f64().to_bits()
+        );
+    }
+}
+
 fn assert_erod19_xcrit_case(inputs: (f64, f64, f64, f64, f64, f64), expected: (f64, f64, f64)) {
     let (a, b, c, tauc, xb, xe) = inputs;
     let (observed_mshear, observed_xc1, observed_xc2) =

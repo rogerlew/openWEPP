@@ -273,6 +273,42 @@ impl WritebackField {
     }
 }
 
+/// One id-backed scalar writeback field proposed by a migrated kernel.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct IndexedWritebackField {
+    pub id: SymbolId,
+    pub value: BoundaryValue,
+    pub minimum: Option<f64>,
+    pub maximum: Option<f64>,
+}
+
+impl IndexedWritebackField {
+    #[must_use]
+    pub const fn unbounded(id: SymbolId, value: BoundaryValue) -> Self {
+        Self {
+            id,
+            value,
+            minimum: None,
+            maximum: None,
+        }
+    }
+
+    #[must_use]
+    pub const fn bounded(
+        id: SymbolId,
+        value: BoundaryValue,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Self {
+        Self {
+            id,
+            value,
+            minimum,
+            maximum,
+        }
+    }
+}
+
 /// Kernel-proposed writeback payload.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct KernelWritebackPayload {
@@ -298,17 +334,62 @@ impl KernelWritebackPayload {
     }
 }
 
+/// Kernel-proposed id-backed writeback payload.
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct IndexedKernelWritebackPayload {
+    pub state_updates: Vec<IndexedWritebackField>,
+    pub flux_updates: Vec<IndexedWritebackField>,
+}
+
+impl IndexedKernelWritebackPayload {
+    #[must_use]
+    pub fn empty() -> Self {
+        Self::default()
+    }
+
+    #[must_use]
+    pub fn with_updates(
+        state_updates: Vec<IndexedWritebackField>,
+        flux_updates: Vec<IndexedWritebackField>,
+    ) -> Self {
+        Self {
+            state_updates,
+            flux_updates,
+        }
+    }
+}
+
 /// Kernel response surface for hillslope and watershed invocations.
 #[derive(Debug, Clone, PartialEq)]
 pub struct KernelRunResponse {
     pub status: SimulationStatus,
     pub writeback: KernelWritebackPayload,
+    pub indexed_writeback: Option<IndexedKernelWritebackPayload>,
 }
 
 impl KernelRunResponse {
     #[must_use]
     pub const fn new(status: SimulationStatus, writeback: KernelWritebackPayload) -> Self {
-        Self { status, writeback }
+        Self {
+            status,
+            writeback,
+            indexed_writeback: None,
+        }
+    }
+
+    #[must_use]
+    pub const fn with_indexed_writeback(
+        status: SimulationStatus,
+        indexed_writeback: IndexedKernelWritebackPayload,
+    ) -> Self {
+        Self {
+            status,
+            writeback: KernelWritebackPayload {
+                state_updates: Vec::new(),
+                flux_updates: Vec::new(),
+            },
+            indexed_writeback: Some(indexed_writeback),
+        }
     }
 }
 

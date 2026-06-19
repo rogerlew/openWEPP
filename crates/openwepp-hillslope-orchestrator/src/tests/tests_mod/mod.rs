@@ -15,8 +15,10 @@ use openwepp_kernel_contract::{
     HillslopeGrowthTransitionPayload, HillslopeKernel, HillslopeKernelPhaseClass,
     HillslopeKernelRequest, HillslopePerennialDecompositionAction,
     HillslopePerennialDecompositionControl, HillslopePerennialGrowthAction,
-    HillslopePerennialGrowthControl, KernelRunResponse, KernelWritebackPayload, SymbolRegistry,
-    WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome, WritebackField,
+    HillslopePerennialGrowthControl, HillslopeProductionStateSymbol, IndexedKernelWritebackPayload,
+    IndexedWritebackField, IndexedWritebackSurface, KernelRunResponse, KernelWritebackPayload,
+    SymbolRegistry, WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome,
+    WritebackField,
 };
 use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, StatusClassification};
 use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
@@ -26,7 +28,7 @@ use crate::schedule_export::{
     validate_hillslope_schedule_graph,
 };
 use crate::{
-    Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
+    Wb11HydrologyKernel, Wb11HydrologyKernelGuardError, build_hillslope_hot_symbol_tables,
     consumer_boundary::{
         HillslopeConsumerBoundaryError, HillslopeDecompositionBoundaryError,
         HillslopeGrowthBoundaryError, HillslopePlActiveSlotResolutionError,

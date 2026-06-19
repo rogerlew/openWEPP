@@ -87,6 +87,155 @@ fn execute_with_kernel_applies_writeback_updates() {
 }
 
 #[test]
+fn perfmig01_scheduler_applies_indexed_writeback_payload() {
+    let mut fixture = Perfmig01IndexedWritebackFixture::new();
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+
+    let report = scheduler
+        .execute_with_kernel_indexed(
+            &topology_report,
+            &mut fixture.kernel,
+            HillslopeWritebackSurface {
+                state_surface: fixture.initial_state,
+                flux_surface: fixture.initial_flux,
+            },
+            Some(fixture.indexed_surface),
+            Some(&fixture.registry),
+            Some(&fixture.hot_tables),
+        )
+        .expect("indexed kernel execution should succeed");
+
+    let phase_count =
+        u32::try_from(HillslopePhaseGraph::canonical_order().len()).expect("phase count fits u32");
+    let final_call_value = f64::from(phase_count);
+    assert!(fixture.kernel.saw_indexed_request);
+    assert!(report.scheduler_report.is_success());
+    assert_eq!(
+        report
+            .writeback_surface
+            .state_surface
+            .get(&fixture.state_symbol)
+            .copied()
+            .map(BoundaryValue::as_f64),
+        Some(final_call_value)
+    );
+    assert_eq!(
+        report
+            .writeback_surface
+            .flux_surface
+            .get(&fixture.flux_symbol)
+            .copied()
+            .map(BoundaryValue::as_f64),
+        Some(final_call_value * 0.5)
+    );
+}
+
+struct Perfmig01IndexedWritebackFixture {
+    state_symbol: BoundarySymbol,
+    flux_symbol: BoundarySymbol,
+    registry: SymbolRegistry,
+    initial_state: BTreeMap<BoundarySymbol, BoundaryValue>,
+    initial_flux: BTreeMap<BoundarySymbol, BoundaryValue>,
+    indexed_surface: IndexedWritebackSurface,
+    hot_tables: openwepp_kernel_contract::HotSymbolTables,
+    kernel: Perfmig01IndexedKernel,
+}
+
+impl Perfmig01IndexedWritebackFixture {
+    fn new() -> Self {
+        let state_symbol = BoundarySymbol::from("soil_storage");
+        let flux_symbol = BoundarySymbol::from("runoff_total");
+        let registry = SymbolRegistry::from_symbols([state_symbol.clone(), flux_symbol.clone()])
+            .expect("registry should build");
+        let mut initial_state = BTreeMap::new();
+        initial_state.insert(state_symbol.clone(), BoundaryValue::scalar(0.0));
+        let mut initial_flux = BTreeMap::new();
+        initial_flux.insert(flux_symbol.clone(), BoundaryValue::scalar(0.0));
+        let indexed_surface = IndexedWritebackSurface::from_btreemap_surfaces(
+            &registry,
+            &initial_state,
+            &initial_flux,
+        )
+        .expect("indexed surface should build");
+        let hot_tables = build_hillslope_hot_symbol_tables(&registry);
+        let kernel = Perfmig01IndexedKernel::new(
+            registry
+                .id_of(&state_symbol)
+                .expect("state id should be registered"),
+            registry
+                .id_of(&flux_symbol)
+                .expect("flux id should be registered"),
+        );
+
+        Self {
+            state_symbol,
+            flux_symbol,
+            registry,
+            initial_state,
+            initial_flux,
+            indexed_surface,
+            hot_tables,
+            kernel,
+        }
+    }
+}
+
+#[derive(Clone)]
+struct Perfmig01IndexedKernel {
+    state_id: openwepp_kernel_contract::SymbolId,
+    flux_id: openwepp_kernel_contract::SymbolId,
+    call_index: u32,
+    saw_indexed_request: bool,
+}
+
+impl Perfmig01IndexedKernel {
+    fn new(
+        state_id: openwepp_kernel_contract::SymbolId,
+        flux_id: openwepp_kernel_contract::SymbolId,
+    ) -> Self {
+        Self {
+            state_id,
+            flux_id,
+            call_index: 0,
+            saw_indexed_request: false,
+        }
+    }
+}
+
+impl HillslopeKernel for Perfmig01IndexedKernel {
+    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
+        self.call_index += 1;
+        self.saw_indexed_request |=
+            request.has_indexed_state_surface() && request.has_indexed_flux_surface();
+        let call_value = f64::from(self.call_index);
+        let status = openwepp_sim_contract::status::SimulationStatus::ok(
+            SimulationPhase::HillslopeKernel,
+            format!("HKERNEL-PERFMIG01-IDX-OK-{}", self.call_index),
+        )
+        .expect("status should construct");
+        let indexed_writeback = IndexedKernelWritebackPayload::with_updates(
+            vec![IndexedWritebackField::bounded(
+                self.state_id,
+                BoundaryValue::scalar(call_value),
+                Some(0.0),
+                Some(1000.0),
+            )],
+            vec![IndexedWritebackField::bounded(
+                self.flux_id,
+                BoundaryValue::scalar(call_value * 0.5),
+                Some(0.0),
+                None,
+            )],
+        );
+
+        KernelRunResponse::with_indexed_writeback(status, indexed_writeback)
+    }
+}
+
+#[test]
 fn execute_with_kernel_lends_stable_surface_references() {
     #[derive(Default)]
     struct PointerProbeKernel {

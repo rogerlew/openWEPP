@@ -10,6 +10,18 @@
 
 State as of `2026-06-18`:
 
+- PERFMIG01 is complete with verdict `CONTINUE`. ADR-0023 was ratified and the
+  production WB11 warm-rain runoff writeback branch now emits a dense
+  `SymbolId`-backed payload: 543 state updates plus 8 flux updates, with the
+  logical payload empty on the migrated success path. Focused tests proved exact
+  materialized map equality and exact `f64::to_bits()` equality. The H2637
+  no-UI endpoint rerun was semantically identical to PERFIDX06 outputs but
+  measured `669.97s`, `228144 KB` versus PERFIDX06 `666.82s`, `228508 KB`
+  (`+0.47%`). The transition apply boundary measured `107.531649 us/payload`
+  (`25.373275s` projected over H2637 OFE-days), so the first-rung regression is
+  a named retireable compatibility-boundary result. Next perf rung should
+  migrate a contiguous WB11-consumer cluster. Package:
+  `20260618-perfmig01-wb11-runoff-array-authoritative-production-migration-001/`.
 - PERFARCH03 is complete with verdict `GO - branch floor clears <=5x and
   <=10x`. The artifact-local full array-native WB11 runoff branch prototype
   validated 543 state outputs plus 8 flux outputs against the current production

@@ -1,8 +1,11 @@
 use openwepp_hillslope_orchestrator::{HillslopePhaseScheduler, HillslopeWritebackSurface};
 use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, HillslopeKernel, HillslopeKernelRequest, KernelRunResponse,
-    KernelWritebackPayload, WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome,
-    WritebackError, WritebackField, apply_kernel_writeback, evaluate_kernel_writeback,
+    BoundarySymbol, BoundaryValue, HillslopeKernel, HillslopeKernelRequest,
+    IndexedKernelWritebackPayload, IndexedWritebackField, IndexedWritebackSurface,
+    KernelRunResponse, KernelWritebackPayload, SymbolRegistry, SymbolRegistryError,
+    WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome, WritebackError,
+    WritebackField, apply_indexed_kernel_writeback, apply_kernel_writeback,
+    evaluate_indexed_kernel_writeback, evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, SimulationStatus};
 use openwepp_topology::{
@@ -186,10 +189,79 @@ fn apply_reject_path_propagates_typed_error() {
         WritebackError::DecisionNotAccept { outcome } => {
             assert_eq!(outcome, WritebackDecisionOutcome::Reject);
         }
+        WritebackError::SymbolRegistry(_) => panic!("unexpected indexed registry error"),
         WritebackError::Status(_) => panic!("unexpected status construction error"),
     }
     assert!(state_surface.is_empty());
     assert!(flux_surface.is_empty());
+}
+
+#[test]
+fn indexed_apply_unknown_id_fails_without_partial_mutation() {
+    let state_symbol = BoundarySymbol::from("known_state");
+    let flux_symbol = BoundarySymbol::from("known_flux");
+    let registry = SymbolRegistry::from_symbols([state_symbol.clone(), flux_symbol.clone()])
+        .expect("registry should build");
+    let other_registry = SymbolRegistry::from_symbols([
+        state_symbol.clone(),
+        flux_symbol.clone(),
+        BoundarySymbol::from("unknown_flux"),
+    ])
+    .expect("other registry should build");
+    let unknown_flux_id = other_registry
+        .id_of(&BoundarySymbol::from("unknown_flux"))
+        .expect("unknown id should exist in other registry");
+
+    let mut state_surface = std::collections::BTreeMap::new();
+    state_surface.insert(state_symbol.clone(), BoundaryValue::scalar(1.0));
+    let mut flux_surface = std::collections::BTreeMap::new();
+    flux_surface.insert(flux_symbol.clone(), BoundaryValue::scalar(2.0));
+    let mut indexed_surface =
+        IndexedWritebackSurface::from_btreemap_surfaces(&registry, &state_surface, &flux_surface)
+            .expect("indexed surface should build");
+
+    let original_state_surface = state_surface.clone();
+    let original_flux_surface = flux_surface.clone();
+    let original_indexed_surface = indexed_surface.clone();
+    let payload = IndexedKernelWritebackPayload::with_updates(
+        vec![IndexedWritebackField::bounded(
+            registry
+                .id_of(&state_symbol)
+                .expect("state id should be registered"),
+            BoundaryValue::scalar(3.0),
+            Some(0.0),
+            None,
+        )],
+        vec![IndexedWritebackField::bounded(
+            unknown_flux_id,
+            BoundaryValue::scalar(4.0),
+            Some(0.0),
+            None,
+        )],
+    );
+    let decision = evaluate_indexed_kernel_writeback(SimulationPhase::HillslopeKernel, &payload)
+        .expect("decision should construct");
+    assert_eq!(decision.outcome, WritebackDecisionOutcome::Accept);
+
+    let error = apply_indexed_kernel_writeback(
+        SimulationPhase::HillslopeKernel,
+        &decision,
+        &payload,
+        &mut indexed_surface,
+        &registry,
+        &mut state_surface,
+        &mut flux_surface,
+    )
+    .expect_err("unknown id should fail before mutation");
+
+    assert!(matches!(
+        error,
+        WritebackError::SymbolRegistry(SymbolRegistryError::UnknownSymbolId { id })
+            if id == unknown_flux_id
+    ));
+    assert_eq!(indexed_surface, original_indexed_surface);
+    assert_eq!(state_surface, original_state_surface);
+    assert_eq!(flux_surface, original_flux_surface);
 }
 
 #[test]

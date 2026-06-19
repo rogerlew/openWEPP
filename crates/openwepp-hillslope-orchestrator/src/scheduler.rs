@@ -1642,90 +1642,185 @@ impl HillslopePhaseScheduler {
                 return kernel_status;
             }
 
-            let decision = match evaluate_kernel_writeback(
-                SimulationPhase::HillslopeKernel,
-                &response.writeback,
-            ) {
-                Ok(value) => value,
-                Err(source) => {
-                    deferred_error = Some(HillslopeSchedulerError::Status(source));
-                    phase_reports.push(HillslopeKernelPhaseReport {
-                        phase,
-                        kernel_status,
-                        decision_outcome: WritebackDecisionOutcome::Reject,
-                        decision_status: deferred_error_status.clone(),
-                        decision_violations: Vec::new(),
-                        apply_result: None,
-                    });
-                    return deferred_error_status.clone();
-                }
-            };
+            let (_, apply_result) =
+                if let Some(indexed_payload) = response.indexed_writeback.as_ref() {
+                    let Some(symbol_registry) = symbol_registry else {
+                        deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
+                            SymbolRegistryError::UnknownSymbol {
+                                symbol: BoundarySymbol::from("indexed_execution.registry"),
+                            },
+                        ));
+                        phase_reports.push(HillslopeKernelPhaseReport {
+                            phase,
+                            kernel_status,
+                            decision_outcome: WritebackDecisionOutcome::Reject,
+                            decision_status: deferred_error_status.clone(),
+                            decision_violations: Vec::new(),
+                            apply_result: None,
+                        });
+                        return deferred_error_status.clone();
+                    };
+                    let Some(indexed_writeback_surface) = indexed_writeback_surface.as_mut() else {
+                        deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
+                            SymbolRegistryError::UnknownSymbol {
+                                symbol: BoundarySymbol::from("indexed_execution.surface"),
+                            },
+                        ));
+                        phase_reports.push(HillslopeKernelPhaseReport {
+                            phase,
+                            kernel_status,
+                            decision_outcome: WritebackDecisionOutcome::Reject,
+                            decision_status: deferred_error_status.clone(),
+                            decision_violations: Vec::new(),
+                            apply_result: None,
+                        });
+                        return deferred_error_status.clone();
+                    };
 
-            if decision.outcome == WritebackDecisionOutcome::Reject {
-                phase_reports.push(HillslopeKernelPhaseReport {
-                    phase,
-                    kernel_status,
-                    decision_outcome: WritebackDecisionOutcome::Reject,
-                    decision_status: decision.status.clone(),
-                    decision_violations: decision.violations.clone(),
-                    apply_result: None,
-                });
-                return decision.status;
-            }
+                    let decision = match evaluate_indexed_kernel_writeback(
+                        SimulationPhase::HillslopeKernel,
+                        indexed_payload,
+                    ) {
+                        Ok(value) => value,
+                        Err(source) => {
+                            deferred_error = Some(HillslopeSchedulerError::Status(source));
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status,
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        }
+                    };
 
-            let apply_result = match apply_kernel_writeback(
-                SimulationPhase::HillslopeKernel,
-                &decision,
-                &response.writeback,
-                &mut writeback_surface.state_surface,
-                &mut writeback_surface.flux_surface,
-            ) {
-                Ok(value) => value,
-                Err(source) => {
-                    deferred_error = Some(HillslopeSchedulerError::Writeback(source));
-                    phase_reports.push(HillslopeKernelPhaseReport {
-                        phase,
-                        kernel_status,
-                        decision_outcome: WritebackDecisionOutcome::Reject,
-                        decision_status: deferred_error_status.clone(),
-                        decision_violations: Vec::new(),
-                        apply_result: None,
-                    });
-                    return deferred_error_status.clone();
-                }
-            };
-            if let Some(indexed_writeback_surface) = indexed_writeback_surface.as_mut() {
-                let Some(symbol_registry) = symbol_registry else {
-                    deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
-                        SymbolRegistryError::UnknownSymbol {
-                            symbol: BoundarySymbol::from("indexed_execution.registry"),
-                        },
-                    ));
-                    phase_reports.push(HillslopeKernelPhaseReport {
-                        phase,
-                        kernel_status,
-                        decision_outcome: WritebackDecisionOutcome::Reject,
-                        decision_status: deferred_error_status.clone(),
-                        decision_violations: Vec::new(),
-                        apply_result: None,
-                    });
-                    return deferred_error_status.clone();
+                    if decision.outcome == WritebackDecisionOutcome::Reject {
+                        phase_reports.push(HillslopeKernelPhaseReport {
+                            phase,
+                            kernel_status,
+                            decision_outcome: WritebackDecisionOutcome::Reject,
+                            decision_status: decision.status.clone(),
+                            decision_violations: decision.violations.clone(),
+                            apply_result: None,
+                        });
+                        return decision.status;
+                    }
+
+                    let apply_result = match apply_indexed_kernel_writeback(
+                        SimulationPhase::HillslopeKernel,
+                        &decision,
+                        indexed_payload,
+                        indexed_writeback_surface,
+                        symbol_registry,
+                        &mut writeback_surface.state_surface,
+                        &mut writeback_surface.flux_surface,
+                    ) {
+                        Ok(value) => value,
+                        Err(source) => {
+                            deferred_error = Some(HillslopeSchedulerError::Writeback(source));
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status,
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        }
+                    };
+
+                    (decision, apply_result)
+                } else {
+                    let decision = match evaluate_kernel_writeback(
+                        SimulationPhase::HillslopeKernel,
+                        &response.writeback,
+                    ) {
+                        Ok(value) => value,
+                        Err(source) => {
+                            deferred_error = Some(HillslopeSchedulerError::Status(source));
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status,
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        }
+                    };
+
+                    if decision.outcome == WritebackDecisionOutcome::Reject {
+                        phase_reports.push(HillslopeKernelPhaseReport {
+                            phase,
+                            kernel_status,
+                            decision_outcome: WritebackDecisionOutcome::Reject,
+                            decision_status: decision.status.clone(),
+                            decision_violations: decision.violations.clone(),
+                            apply_result: None,
+                        });
+                        return decision.status;
+                    }
+
+                    let apply_result = match apply_kernel_writeback(
+                        SimulationPhase::HillslopeKernel,
+                        &decision,
+                        &response.writeback,
+                        &mut writeback_surface.state_surface,
+                        &mut writeback_surface.flux_surface,
+                    ) {
+                        Ok(value) => value,
+                        Err(source) => {
+                            deferred_error = Some(HillslopeSchedulerError::Writeback(source));
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status,
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        }
+                    };
+                    if let Some(indexed_writeback_surface) = indexed_writeback_surface.as_mut() {
+                        let Some(symbol_registry) = symbol_registry else {
+                            deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
+                                SymbolRegistryError::UnknownSymbol {
+                                    symbol: BoundarySymbol::from("indexed_execution.registry"),
+                                },
+                            ));
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status,
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        };
+                        if let Err(source) = indexed_writeback_surface
+                            .apply_writeback_payload(symbol_registry, &response.writeback)
+                        {
+                            deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(source));
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status,
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        }
+                    }
+
+                    (decision, apply_result)
                 };
-                if let Err(source) = indexed_writeback_surface
-                    .apply_writeback_payload(symbol_registry, &response.writeback)
-                {
-                    deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(source));
-                    phase_reports.push(HillslopeKernelPhaseReport {
-                        phase,
-                        kernel_status,
-                        decision_outcome: WritebackDecisionOutcome::Reject,
-                        decision_status: deferred_error_status.clone(),
-                        decision_violations: Vec::new(),
-                        apply_result: None,
-                    });
-                    return deferred_error_status.clone();
-                }
-            }
 
             phase_reports.push(HillslopeKernelPhaseReport {
                 phase,
@@ -2353,7 +2448,22 @@ pub fn build_hillslope_hot_symbol_tables(registry: &SymbolRegistry) -> HotSymbol
             MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL,
             MOFE_TRANSFER_INPUT_UPSTRMQ_SYMBOL,
             MOFE_TRANSFER_INPUT_SUBRIN_SYMBOL,
+            "wb12_infiltration",
+            "wb12_runoff_reconciled",
             "wb12_runon_input",
+            "wb14_soil_conductivity_m_s",
+            "wb14_effective_conductivity_m_s",
+            "wb14_matric_potential_m",
+            "irrigation.runtime_schedule_source",
+            "irrigation.runtime_depth_m",
+            "irrigation.runtime_duration_s",
+            "irrigation.runtime_rate_m_per_s",
+            "irrigation.runtime_event_index",
+            "irrigation.runtime_system_type",
+            "snow.runtime_swe",
+            "snow.runtime_depth_m",
+            "snow.runtime_density_kg_m3",
+            "snow.runtime_settle_day_count",
             WB20_SYMBOL_FORWARD_SOLVER_LANE_ENABLED,
             WB19_SYMBOL_LATERAL_DRAIN_LANE_SUBSTEPS,
             WB19_SYMBOL_DRAIN_ENABLED,
@@ -2370,7 +2480,16 @@ pub fn build_hillslope_hot_symbol_tables(registry: &SymbolRegistry) -> HotSymbol
             "solwpv",
             "frost.runtime_thermal_conductivity_landuse_class_proxy",
         ],
-        &[WB12_SYMBOL_RUNOFF_CARRYOVER],
+        &[
+            "I",
+            "Irr",
+            "Q",
+            WB12_SYMBOL_RUNOFF_CARRYOVER,
+            "wb12_runoff_closure_delta",
+            "S",
+            "snow.routed_melt_m",
+            "snow.post_winter_rain_m",
+        ],
         &[
             "timem",
             "intsty",

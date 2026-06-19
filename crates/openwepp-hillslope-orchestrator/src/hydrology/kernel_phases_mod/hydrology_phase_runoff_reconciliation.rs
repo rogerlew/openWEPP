@@ -382,6 +382,32 @@ pub(crate) fn run_runoff_reconciliation(
             unreachable!("status message ids are non-empty WB14 constants")
         };
 
+        if let Some(indexed_writeback) = Self::build_warm_rain_runoff_indexed_writeback(
+            request,
+            phase_class,
+            active_snow_coupling,
+            active_frost_coupling,
+            active_irrigation_event,
+            mofe_hourly_carry_arrays_enabled,
+            cumulative_infiltration,
+            q_runoff,
+            soil_conductivity,
+            infiltration_conductivity,
+            matric_potential,
+            interception,
+            hyetograph_rainfall,
+            runon_input,
+            closure_delta,
+            snow_coupling.signed_s,
+            runoff_snow_term,
+            hyetograph_liquid_input,
+        )? {
+            return Ok(KernelRunResponse::with_indexed_writeback(
+                status,
+                indexed_writeback,
+            ));
+        }
+
         let mut state_updates = vec![
             WritebackField::bounded(
                 WB12_SYMBOL_INFILTRATION,
@@ -1282,6 +1308,648 @@ pub(crate) fn publish_same_day_snow_publication_fluxes(
                 None,
             ),
         ])
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn build_warm_rain_runoff_indexed_writeback(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        active_snow_coupling: bool,
+        active_frost_coupling: bool,
+        active_irrigation_event: Option<ActiveIrrigationEvent>,
+        mofe_hourly_carry_arrays_enabled: bool,
+        cumulative_infiltration: f64,
+        q_runoff: f64,
+        soil_conductivity: f64,
+        infiltration_conductivity: f64,
+        matric_potential: f64,
+        interception: f64,
+        hyetograph_rainfall: f64,
+        runon_input: f64,
+        closure_delta: f64,
+        snow_coupling_signed_s: f64,
+        runoff_snow_term: f64,
+        hyetograph_liquid_input: f64,
+    ) -> Result<Option<IndexedKernelWritebackPayload>, Wb11HydrologyKernelGuardError> {
+        if !request.has_indexed_state_surface() || !request.has_indexed_flux_surface() {
+            return Ok(None);
+        }
+        if active_snow_coupling
+            || active_frost_coupling
+            || active_irrigation_event.is_some()
+            || mofe_hourly_carry_arrays_enabled
+        {
+            return Ok(None);
+        }
+
+        let mut state_updates = Vec::with_capacity(543);
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            "wb12_infiltration",
+            cumulative_infiltration,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            "wb12_runoff_reconciled",
+            q_runoff,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            "wb14_soil_conductivity_m_s",
+            soil_conductivity,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            "wb14_effective_conductivity_m_s",
+            infiltration_conductivity,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            "wb14_matric_potential_m",
+            matric_potential,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            "irrigation.runtime_schedule_source",
+            0.0,
+            Some(0.0),
+            Some(2.0),
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            "irrigation.runtime_depth_m",
+            0.0,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            "irrigation.runtime_duration_s",
+            0.0,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            "irrigation.runtime_rate_m_per_s",
+            0.0,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            "irrigation.runtime_event_index",
+            0.0,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            "irrigation.runtime_system_type",
+            0.0,
+            Some(0.0),
+            Some(2.0),
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_water_depth(
+            request,
+            phase_class,
+            "snow.runtime_swe",
+            0.0,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_water_depth(
+            request,
+            phase_class,
+            SNOW_RUNTIME_DEPTH_M_SYMBOL,
+            0.0,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_density(
+            request,
+            phase_class,
+            SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL,
+            0.0,
+            Some(0.0),
+            Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+            &mut state_updates,
+        )?;
+        Self::push_indexed_state_scalar(
+            request,
+            phase_class,
+            SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL,
+            0.0,
+            Some(0.0),
+            None,
+            &mut state_updates,
+        )?;
+
+        for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
+            Self::push_indexed_state_series_water_depth(
+                request,
+                phase_class,
+                SNOW_HOURLY_DEPTH_BEFORE_ROOT,
+                hour,
+                0.0,
+                Some(0.0),
+                None,
+                &mut state_updates,
+            )?;
+            Self::push_indexed_state_series_water_depth(
+                request,
+                phase_class,
+                SNOW_HOURLY_DEPTH_AVAILABLE_ROOT,
+                hour,
+                0.0,
+                Some(0.0),
+                None,
+                &mut state_updates,
+            )?;
+            Self::push_indexed_state_series_density(
+                request,
+                phase_class,
+                SNOW_HOURLY_DENSITY_BEFORE_ROOT,
+                hour,
+                0.0,
+                Some(0.0),
+                Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+                &mut state_updates,
+            )?;
+            Self::push_indexed_state_series_water_depth(
+                request,
+                phase_class,
+                SNOW_HOURLY_DEPTH_AFTER_ROOT,
+                hour,
+                0.0,
+                Some(0.0),
+                None,
+                &mut state_updates,
+            )?;
+            Self::push_indexed_state_series_density(
+                request,
+                phase_class,
+                SNOW_HOURLY_DENSITY_AFTER_ROOT,
+                hour,
+                0.0,
+                Some(0.0),
+                Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+                &mut state_updates,
+            )?;
+            for root in [
+                SNOW_HOURLY_RAIN_ROOT,
+                SNOW_HOURLY_SNOWFALL_ROOT,
+                SNOW_HOURLY_MELT_ROOT,
+                SNOW_HOURLY_RAIN_RETAINED_ROOT,
+            ] {
+                Self::push_indexed_state_series_water_depth(
+                    request,
+                    phase_class,
+                    root,
+                    hour,
+                    0.0,
+                    Some(0.0),
+                    None,
+                    &mut state_updates,
+                )?;
+            }
+            for root in [
+                SNOW_HOURLY_MELT_RAW_ROOT,
+                SNOW_HOURLY_MELT_AMELT_ROOT,
+                SNOW_HOURLY_MELT_BMELT_ROOT,
+                SNOW_HOURLY_MELT_CMELT_ROOT,
+                SNOW_HOURLY_MELT_DMELT_ROOT,
+                SNOW_HOURLY_MELT_HRTEF_ROOT,
+                SNOW_HOURLY_MELT_HRDTF_ROOT,
+            ] {
+                Self::push_indexed_state_series_scalar(
+                    request,
+                    phase_class,
+                    root,
+                    hour,
+                    0.0,
+                    None,
+                    None,
+                    &mut state_updates,
+                )?;
+            }
+            for root in [SNOW_HOURLY_MELT_VWMPH_ROOT, SNOW_HOURLY_MELT_RAININ_ROOT] {
+                Self::push_indexed_state_series_scalar(
+                    request,
+                    phase_class,
+                    root,
+                    hour,
+                    0.0,
+                    Some(0.0),
+                    None,
+                    &mut state_updates,
+                )?;
+            }
+            Self::push_indexed_state_series_scalar(
+                request,
+                phase_class,
+                SNOW_HOURLY_MELT_WIND_ADJUSTMENT_ROOT,
+                hour,
+                0.0,
+                None,
+                None,
+                &mut state_updates,
+            )?;
+            Self::push_indexed_state_series_fraction(
+                request,
+                phase_class,
+                SNOW_HOURLY_MELT_BRANCH_ACTIVE_ROOT,
+                hour,
+                0.0,
+                Some(0.0),
+                Some(1.0),
+                &mut state_updates,
+            )?;
+            Self::push_indexed_state_series_temperature(
+                request,
+                phase_class,
+                WINTER_HOURLY_DEWPOINT_ROOT,
+                hour,
+                0.0,
+                None,
+                None,
+                &mut state_updates,
+            )?;
+            Self::push_indexed_state_series_linear_rate(
+                request,
+                phase_class,
+                WINTER_HOURLY_WIND_ROOT,
+                hour,
+                0.0,
+                Some(0.0),
+                None,
+                &mut state_updates,
+            )?;
+        }
+
+        let mut flux_updates = Vec::with_capacity(8);
+        Self::push_indexed_flux_scalar(
+            request,
+            phase_class,
+            "I",
+            interception,
+            Some(0.0),
+            Some(hyetograph_rainfall),
+            &mut flux_updates,
+        )?;
+        Self::push_indexed_flux_scalar(
+            request,
+            phase_class,
+            "Irr",
+            0.0,
+            Some(0.0),
+            None,
+            &mut flux_updates,
+        )?;
+        Self::push_indexed_flux_scalar(
+            request,
+            phase_class,
+            "Q",
+            q_runoff,
+            Some(0.0),
+            None,
+            &mut flux_updates,
+        )?;
+        Self::push_indexed_flux_scalar(
+            request,
+            phase_class,
+            WB12_SYMBOL_RUNOFF_CARRYOVER,
+            runon_input,
+            Some(0.0),
+            None,
+            &mut flux_updates,
+        )?;
+        Self::push_indexed_flux_scalar(
+            request,
+            phase_class,
+            "wb12_runoff_closure_delta",
+            closure_delta,
+            None,
+            None,
+            &mut flux_updates,
+        )?;
+        Self::push_indexed_flux_scalar(
+            request,
+            phase_class,
+            "S",
+            snow_coupling_signed_s,
+            None,
+            None,
+            &mut flux_updates,
+        )?;
+        Self::push_indexed_flux_scalar(
+            request,
+            phase_class,
+            "snow.routed_melt_m",
+            runoff_snow_term,
+            Some(0.0),
+            None,
+            &mut flux_updates,
+        )?;
+        Self::push_indexed_flux_scalar(
+            request,
+            phase_class,
+            "snow.post_winter_rain_m",
+            hyetograph_liquid_input,
+            Some(0.0),
+            None,
+            &mut flux_updates,
+        )?;
+
+        Ok(Some(IndexedKernelWritebackPayload::with_updates(
+            state_updates,
+            flux_updates,
+        )))
+    }
+
+    fn push_indexed_state_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+        output: &mut Vec<IndexedWritebackField>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let id = Self::require_hot_state_scalar_id(request, phase_class, symbol)?;
+        output.push(IndexedWritebackField::bounded(
+            id,
+            BoundaryValue::scalar(value),
+            minimum,
+            maximum,
+        ));
+        Ok(())
+    }
+
+    fn push_indexed_flux_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+        output: &mut Vec<IndexedWritebackField>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let id = Self::require_hot_flux_scalar_id(request, phase_class, symbol)?;
+        output.push(IndexedWritebackField::bounded(
+            id,
+            BoundaryValue::scalar(value),
+            minimum,
+            maximum,
+        ));
+        Ok(())
+    }
+
+    fn push_indexed_state_water_depth(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+        output: &mut Vec<IndexedWritebackField>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let id = Self::require_hot_state_scalar_id(request, phase_class, symbol)?;
+        let value = BoundaryValue::water_depth_meters(value).map_err(|error| {
+            Self::unit_conversion_guard_error(phase_class, BoundarySymbol::from(symbol), &error)
+        })?;
+        output.push(IndexedWritebackField::bounded(id, value, minimum, maximum));
+        Ok(())
+    }
+
+    fn push_indexed_state_density(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+        output: &mut Vec<IndexedWritebackField>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let id = Self::require_hot_state_scalar_id(request, phase_class, symbol)?;
+        let value = BoundaryValue::density_kilograms_per_cubic_meter(value).map_err(|error| {
+            Self::unit_conversion_guard_error(phase_class, BoundarySymbol::from(symbol), &error)
+        })?;
+        output.push(IndexedWritebackField::bounded(id, value, minimum, maximum));
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn push_indexed_state_series_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        root: &'static str,
+        one_based_index: usize,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+        output: &mut Vec<IndexedWritebackField>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let id = Self::require_hot_state_series_id(request, phase_class, root, one_based_index)?;
+        output.push(IndexedWritebackField::bounded(
+            id,
+            BoundaryValue::scalar(value),
+            minimum,
+            maximum,
+        ));
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn push_indexed_state_series_water_depth(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        root: &'static str,
+        one_based_index: usize,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+        output: &mut Vec<IndexedWritebackField>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let id = Self::require_hot_state_series_id(request, phase_class, root, one_based_index)?;
+        let value = BoundaryValue::water_depth_meters(value).map_err(|error| {
+            Self::unit_conversion_guard_error(
+                phase_class,
+                Self::hourly_symbol(root, one_based_index),
+                &error,
+            )
+        })?;
+        output.push(IndexedWritebackField::bounded(id, value, minimum, maximum));
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn push_indexed_state_series_density(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        root: &'static str,
+        one_based_index: usize,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+        output: &mut Vec<IndexedWritebackField>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let id = Self::require_hot_state_series_id(request, phase_class, root, one_based_index)?;
+        let value = BoundaryValue::density_kilograms_per_cubic_meter(value).map_err(|error| {
+            Self::unit_conversion_guard_error(
+                phase_class,
+                Self::hourly_symbol(root, one_based_index),
+                &error,
+            )
+        })?;
+        output.push(IndexedWritebackField::bounded(id, value, minimum, maximum));
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn push_indexed_state_series_fraction(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        root: &'static str,
+        one_based_index: usize,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+        output: &mut Vec<IndexedWritebackField>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let id = Self::require_hot_state_series_id(request, phase_class, root, one_based_index)?;
+        let value = BoundaryValue::fraction_unit_interval(value).map_err(|error| {
+            Self::unit_conversion_guard_error(
+                phase_class,
+                Self::hourly_symbol(root, one_based_index),
+                &error,
+            )
+        })?;
+        output.push(IndexedWritebackField::bounded(id, value, minimum, maximum));
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn push_indexed_state_series_temperature(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        root: &'static str,
+        one_based_index: usize,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+        output: &mut Vec<IndexedWritebackField>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let id = Self::require_hot_state_series_id(request, phase_class, root, one_based_index)?;
+        let value = BoundaryValue::temperature_celsius(value).map_err(|error| {
+            Self::unit_conversion_guard_error(
+                phase_class,
+                Self::hourly_symbol(root, one_based_index),
+                &error,
+            )
+        })?;
+        output.push(IndexedWritebackField::bounded(id, value, minimum, maximum));
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn push_indexed_state_series_linear_rate(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        root: &'static str,
+        one_based_index: usize,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+        output: &mut Vec<IndexedWritebackField>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let id = Self::require_hot_state_series_id(request, phase_class, root, one_based_index)?;
+        let value = BoundaryValue::linear_rate_meters_per_second(value).map_err(|error| {
+            Self::unit_conversion_guard_error(
+                phase_class,
+                Self::hourly_symbol(root, one_based_index),
+                &error,
+            )
+        })?;
+        output.push(IndexedWritebackField::bounded(id, value, minimum, maximum));
+        Ok(())
+    }
+
+    fn require_hot_state_scalar_id(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+    ) -> Result<SymbolId, Wb11HydrologyKernelGuardError> {
+        request
+            .hot_state_scalar(symbol)
+            .map(|indexed_symbol| indexed_symbol.id)
+            .ok_or_else(|| Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(symbol),
+            })
+    }
+
+    fn require_hot_flux_scalar_id(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+    ) -> Result<SymbolId, Wb11HydrologyKernelGuardError> {
+        request
+            .hot_flux_scalar(symbol)
+            .map(|indexed_symbol| indexed_symbol.id)
+            .ok_or_else(|| Wb11HydrologyKernelGuardError::MissingRequiredFluxSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(symbol),
+            })
+    }
+
+    fn require_hot_state_series_id(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        root: &'static str,
+        one_based_index: usize,
+    ) -> Result<SymbolId, Wb11HydrologyKernelGuardError> {
+        request
+            .hot_state_series_symbol(root, one_based_index)
+            .map(|indexed_symbol| indexed_symbol.id)
+            .ok_or_else(|| Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                phase_class,
+                symbol: Self::hourly_symbol(root, one_based_index),
+            })
     }
 
 

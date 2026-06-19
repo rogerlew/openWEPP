@@ -1,7 +1,7 @@
 # PERFMIG01 - WB11 Runoff Array-Authoritative Production Migration (first rung)
 
-Status: scaffolded 2026-06-18 (Codex-ready). The first **production** rung of the array-authoritative
-re-architecture — gated GO by PERFARCH03's measured floor.
+Status: executed 2026-06-18 (`CONTINUE`). The first **production** rung of the
+array-authoritative re-architecture — gated GO by PERFARCH03's measured floor.
 
 Package type: **Production migration — the first real rung, not a prototype.** PERFARCH03 proved the
 floor; this package starts realizing it in production code, beginning with the one branch PERFARCH03
@@ -122,7 +122,25 @@ Out of scope:
 
 ## Execution Result
 
-(pending Codex execution)
+PERFMIG01 ratified ADR-0023 and migrated the production WB11 warm-rain runoff
+writeback branch to id-backed dense authority. The migrated branch emits a
+543-state + 8-flux `IndexedKernelWritebackPayload` and returns an empty logical
+payload on the success path; active snow, frost, irrigation, and MOFE hourly
+carry branches remain explicitly logical boundaries.
+
+Focused tests proved exact materialized map equality and exact `f64::to_bits()`
+identity against the legacy logical payload. The H2637 no-UI endpoint rerun
+completed with rc `0` at `669.97s`, `228144 KB` RSS, versus PERFIDX06
+`666.82s`, `228508 KB`. Outputs remained semantically identical (`.hbp` and
+`wat.parquet` byte-identical; `pass.parquet` Arrow-equal with metadata ignored;
+`loss.json` and `plot.parquet` differed only by isolated runfile `run_name`).
+
+The transition-boundary harness measured production id-backed writeback apply at
+`107.531649 us/payload`, projected to `25.373275s` across the full H2637 OFE-day
+count. The endpoint regression is therefore a named, retireable single-rung
+boundary-offset result, not a redirect. Verdict: `CONTINUE`; next rung should
+migrate a contiguous WB11-consumer cluster so the compatibility materialization
+boundary moves outward.
 
 ## Dependencies
 
