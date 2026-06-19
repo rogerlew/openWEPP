@@ -1,569 +1,896 @@
-# Array-Native Hot-Path Runtime Architecture — Specification
+# Array-Native Runtime Architecture Specification
 
-Status: **Ratified** — binding design authority for the perf re-architecture, ratified by [ADR-0025](../decisions/0025-array-native-hillslope-day-frame.md) on 2026-06-18
-Audience: all contributors; binding design authority for the perf re-architecture program
-Owner: Claude Code (architecture authoring) — implementation by Codex
-Supersedes: the *incremental application* of [ADR-0023](../decisions/0023-array-authoritative-hot-path-state.md)
-(dense authority by symbol/phase) — **not** its dense-authority principle, which this specification fulfils completely
-Last updated: 2026-06-19
+Status: **Ratified, Revision 2** - binding design authority for the
+performance re-architecture, ratified by
+[ADR-0025](../decisions/0025-array-native-hillslope-day-frame.md) on
+2026-06-18 and revised after PERFDEEP07 on 2026-06-19.
+Audience: all contributors working on runtime, scheduler, kernel, publication,
+or performance packages.
+Owner: architecture authority; implementation by Codex work packages.
+Supersedes: the incremental application of
+[ADR-0023](../decisions/0023-array-authoritative-hot-path-state.md), not its
+dense-authority principle.
+Last updated: 2026-06-19.
 
 ---
 
 ## 0. Summary
 
-openWEPP's per-OFE-day hot path threads all inter-kernel state through symbol-keyed maps
-(`BTreeMap<BoundarySymbol, BoundaryValue>`). Profiling proves this representation — not the physics — is
-~99% of the runtime: the engine is **73.12× slower than legacy** on H2637, and the physics floor is
-sub-microsecond. Two incremental migration rungs (PERFMIG01/02) failed because partial migration pays
-**dual-representation bookkeeping** that dominates the win.
+openWEPP's performance target is not reachable by making the current
+symbol/logical/writeback runtime cheaper. PERFDEEP07 proved the remaining
+default-disabled regression is not just a dense-first lookup bug: removing that
+tax and replacing hot `BTreeMap` lookups with `HashMap` improved H2637 from
+PERFDEEP05's `701.95 s` to `685.85 s`, but still failed the `<= 676.67 s`
+P0 gate. Removing the production indexed runtime outright was worse
+(`753.38 s` and `755.48 s`). The compatibility substrate is therefore
+load-bearing and costly; it cannot be patched into the architecture we need.
 
-This specification defines a **comprehensive array-native re-architecture**: replace the symbol-keyed maps
-with a single **typed, dense, cache-resident daily working set** (the *HillslopeDayFrame*) that all 14
-phases mutate in place. Symbol/logical surfaces survive **only at the I/O edge** — the HBP scalars and the
-WB13 publication-operand projection at end-of-run (parquet rows are typed structs, but are currently
-*assembled* from runtime-surface symbol reads that must be lifted to typed frame/projection access; see §5).
-Because the frame *is* the state, there are **no phase-to-phase materialization seams to retire** — the
-boundary cost that sank the incremental rungs does not exist by construction. This is the fulfilment of openWEPP's own declared kernel boundary — *"kernels
-are pure functions over typed state"* ([architecture/README.md](README.md)) — which the string-keyed maps
-silently violated.
+The required architecture is a **complete, validated rewrite of the runtime
+representation**:
 
-Target: **≤10× (ideally ≤5×) vs legacy on H2637** — the viability gate. The arithmetic below provides a
-strong model hypothesis; staged H2637 endpoint measurements remain the closure authority.
+```text
+parsed inputs
+  -> typed run schema
+  -> typed run/lane/day frames
+  -> static direct-frame executor
+  -> typed publication projection
+  -> legacy-compatible output serialization
+```
 
-**Post-PERFDEEP05 binding direction:** the shipping path is no longer another narrow
-compatibility-edge optimization. PERFDEEP05 removed the measured full-sync hotspot and
-still measured `911.11 s`; that is over 100× the legacy `9.12 s` anchor and
-`1.36x` slower than the `669.97 s` openWEPP activation reference. The remaining gap
-requires a complete array-native per-OFE-day fast path: no symbol maps, writeback
-payloads, registry lookups, or dense/logical refreshes inside phase execution.
-Logical/symbol surfaces survive only at true I/O, replay, and diagnostic edges.
+The normal runtime must not be:
+
+```text
+logical maps
+  -> symbol registry
+  -> indexed mirrors
+  -> dense mirrors
+  -> writeback payloads
+  -> logical maps
+```
+
+The target is not another dense island, indexed mirror, or lookup cache. The
+target is that the array-native frame is the only authoritative simulation
+state during day/OFE/phase execution. Symbol-keyed maps, `BoundarySymbol`,
+`BoundaryValue`, `SymbolRegistry`, `HotSymbolTables`,
+`HillslopeWritebackSurface`, and `KernelWritebackPayload` survive only as
+intake, output, replay, diagnostic, and shadow-validation adapters.
+
+This is a complete rewrite in representation and execution architecture. It is
+not a clean-room rewrite of science. Physics, guards, units, conservation
+contracts, process order, and output schemas remain authoritative and must be
+validated bit-for-bit or by the existing Arrow/byte identity gates.
+
+Target: **<=10x and preferably <=5x legacy WEPP on H2637**. The model supports
+that target only if the whole per-OFE-day hot path is direct-frame. Partial
+compatibility edge work has already failed enough times to be disallowed as the
+shipping direction.
 
 ---
 
-## 1. Motivation & Evidence
+## 1. Motivation and Evidence
 
-### 1.1 The viability gate
-≤10× (ideally ≤5×) slower than legacy WEPP on H2637 is an **imperative viability gate**, not an
-optimization target. Current state and budgets (PERFIDX06, same machine/fixture):
+### 1.1 Viability Gate
 
-| Anchor | H2637 no-UI | µs/OFE-day | ×legacy | RSS |
+The H2637 no-UI run is the performance gate used by the PERF work packages.
+The current budget is not a nice-to-have optimization target; it decides
+whether openWEPP is viable as the Rust simulation engine.
+
+| Anchor | H2637 no-UI | us/OFE-day | x legacy | RSS |
 |---|---:|---:|---:|---:|
-| Legacy WEPP | 9.12 s | 38.65 | 1.0× | ~4.6 MB |
-| openWEPP (PERFMIG01 baseline) | 669.97 s | 2826 | 73.46× | ~228 MB |
-| **≤10× budget** | 91.2 s | 386 | 10× | — |
-| **≤5× budget** | 45.6 s | 193 | 5× | — |
+| Legacy WEPP | `9.12 s` | `38.65` | `1.0x` | about `4.6 MB` |
+| openWEPP activation reference | `669.97 s` | `2826` | `73.46x` | about `228 MB` |
+| PERFDEEP05 default-disabled | `701.95 s` | `2975` | `76.97x` | about `229 MB` |
+| PERFDEEP07 retained patch | `685.85 s` | `2907` | `75.20x` | `229004 KB` |
+| <=10x budget | `91.2 s` | `386` | `10x` | - |
+| <=5x budget | `45.6 s` | `193` | `5x` | - |
 
-H2637 = 235,961 OFE-days. RSS gap is ~50× — the maps pointer-chase and cache-thrash.
+H2637 has `235,961` OFE-days. The measured gap is representation-wide:
+pointer-heavy maps, dynamic symbol resolution, enum dispatch, allocation,
+payload construction, and compatibility refresh/flush dominate over physics.
 
-### 1.2 The physics is not the floor — the representation is
-PERFARCH03 ran one real WB11 warm-rain runoff branch two ways on the same inputs:
+### 1.2 Physics Is Not the Runtime Floor
 
-| Path | µs/OFE-day | Note |
+PERFARCH03 ran one real WB11 warm-rain branch two ways on the same inputs:
+
+| Path | us/OFE-day | Meaning |
 |---|---:|---|
-| Production logical kernel (same branch) | 140.83 | symbol-keyed reads + writeback payload |
-| Fully array-native (read+compute+write dense) | **0.96** | `to_bits()`-identical on 543 state + 8 flux outputs |
-| — array physics only | 0.075 | the actual arithmetic |
-| One-shot logical materialize (the seam) | 108.07 | dense→logical at a phase edge |
+| Production logical kernel | `140.83` | symbol-keyed reads and writeback payload |
+| Fully array-native branch | `0.96` | direct dense read/compute/write, `to_bits()` identical |
+| Arithmetic only | `0.075` | actual branch math |
+| One-shot logical materialization seam | `108.07` | dense-to-logical phase edge |
 
-**The branch is 146.8× faster array-native, byte-identical.** Physics is ~1 µs; the other ~139 µs is
-symbol machinery. RSS array-native: ~3 MB (cache-resident).
+The arithmetic is not the limiting factor. The runtime representation is.
 
-### 1.3 The cost is spread as a class, not localized (PERFIDX06 call-tree)
-Children %: Wb11 hydrology **41.6%**, runoff/frost coupling **21.1% + 20.6%**, writeback **17.0%**,
-decomposition dispatch **11.7%**, residual **`format!` 9.5%**, overflow guards **8.2% / 7.7%** — all
-`BTreeMap` insert/remove, `__memcmp_sse2`, alloc/free, symbol-table access. The PERFIDX06 conclusion:
-*"remove symbol-keyed map work, allocation churn, formatting, and dual publication from the hot path **as a
-class**, not by shaving one site."* This is why no incremental seam-shaving converges, and why hydrology
-alone (~42%) only gets ~73× → ~43×: **≤10× requires the whole OFE-day hot path array-native.**
+### 1.3 Incremental Rungs Failed as a Class
 
-### 1.4 Why incrementalism failed (the two dead rungs)
-- **PERFMIG01** (writeback-only, CONTINUE-but-negative): flipped one phase's *output* to dense, but the
-  scheduler immediately materialized dense→logical for downstream (the 108 µs seam). Net **+0.47%** —
-  a round-trip added without removing a logical read.
-- **PERFMIG02** (reader/materialization retirement, REDIRECT): of 543+8 symbols only **6** were
-  internal-only and retireable (the rest feed publication/reporting); retiring those six cost **more**
-  (stale-logical removal 105.46 µs > materialize-all 104.75 µs). Final endpoint **flat/negative**
-  (672–675 s). This is the PERFIDX05 dual-write ceiling again: maintaining two representations during a
-  partial migration is dominated by bookkeeping.
+The program has already tested the major partial strategies:
 
-**Lesson, decisive:** the win requires migrating a **complete unit** so the internal seams *vanish*, not
-retiring seams one at a time. PERFDEEP02 then proved a full-registry temporary frame is a verified negative
-benchmark (`2417 s`), and PERFDEEP03 proved a lane-owned compact hydrology island is correct but still not
-an endpoint win (`1147.96 s` vs `669.97 s`). PERFDEEP04 profiled that no-go and found the dominant
-opt-in-only hotspot is daily lane-dense resynchronization from logical/indexed surfaces (`33.49%`
-inclusive). PERFDEEP05 removed that full sync and preserved H2637 identity, but the opt-in endpoint still
-failed (`911.11 s` vs `669.97 s`). The replacement costs are daily cached-slot refresh, dense logical
-writeback apply, `SymbolRegistry::id_of`, and dirty flush. The complete unit, taken to its conclusion, may
-still be the whole per-OFE-day hot path; a partial island must first prove those remaining edge costs can be
-removed before expanding.
+- **PERFMIG01**: dense writeback for one phase, then immediate
+  dense-to-logical materialization. Result: flat/negative.
+- **PERFMIG02**: retire a small set of materialized symbols. Result:
+  flat/negative because most symbols remained publication/reporting relevant.
+- **PERFDEEP02**: full-registry temporary frame. Result: `2417 s`, a large
+  regression.
+- **PERFDEEP03**: lane-owned compact hydrology dense state. Identity passed,
+  endpoint failed at `1147.96 s`.
+- **PERFDEEP05**: remove full dense resynchronization. Identity passed,
+  endpoint failed at `911.11 s`.
+- **PERFDEEP07**: remove dense-first tax in the disabled path and improve hot
+  lookup tables. Identity passed, endpoint still failed at `685.85 s`.
 
-### 1.5 PERFDEEP05 conclusion: stop seam shaving
+These are not isolated misses. They show that partial migration keeps paying
+the old runtime's boundary costs while adding new representation management.
+The program must now move toward a complete validated rewrite, not another
+compatibility-edge rung.
 
-PERFDEEP05 is the falsification point for partial dense-island seam work. It
-proved three things at once:
+### 1.4 PERFDEEP07 Binding Lesson
 
-1. The old `sync_from_writeback_surface` loop was real overhead and should not
-   be restored.
-2. Removing that loop is not enough; the hot path immediately exposes another
-   compatibility boundary.
-3. The 70x-class gap is representation-wide, not a localized hotspot.
+PERFDEEP07 is the architecture correction point.
 
-Therefore, future performance packages must be judged against this rule:
-**do not spend another package merely shaving `BTreeMap`, `SymbolRegistry`, or
-writeback-payload costs while keeping those mechanisms in the OFE-day phase
-loop.** Such work may be useful only if it is part of deleting those mechanisms
-from the hot loop.
+Confirmed:
 
-The next package is an architectural execution package, not another patch:
-`PERFDEEP06 - Array-Native Fast-Path Frame Inventory and Execution Plan`.
-It must enumerate the H2637 hot-loop working set, publication operands,
-persistent lane state, borrowed forcing, and exact direct-frame phase API before
-implementation resumes.
+- Dense-first lookup when dense surfaces are absent was real overhead.
+- Hot `BTreeMap<String, _>` lookups were avoidable overhead.
+- Fixing those issues preserved protected output identity.
+
+Also confirmed:
+
+- The current default path still builds and uses registry/hot-table/indexed
+  runtime authority.
+- Removing that indexed runtime and falling back to the older plain path is
+  slower.
+- The architecture cannot be repaired by toggling between old compatibility
+  representations.
+
+Therefore, zero-cost-disabled cannot mean "make all compatibility layers cheap
+when off." It must mean **compatibility layers are not part of the normal
+executor at all**.
 
 ---
 
-## 2. The Core Thesis
+## 2. Core Architecture Thesis
 
-1. **The frame eliminates seams by construction.** When all 14 phases mutate one in-memory typed frame,
-   there is no dense↔logical conversion *between* phases — the 108 µs/seam tax (and the stale-removal tax)
-   simply does not exist. Boundaries collapse to the run's true I/O edge.
-2. **Typed state is the declared kernel boundary, not a new direction.** [architecture/README.md](README.md)
-   already specifies *"kernels are pure functions over typed state; orchestrators own time-stepping and
-   topology; producer/consumer trajectory-ownership maps onto Rust lifetimes."* The `BTreeMap<BoundarySymbol,
-   BoundaryValue>` surface is a scaffolding compromise that became the hot-path authority. The frame makes
-   the code match its own architecture.
-3. **Logical/symbol surfaces are an I/O serialization concern, not a runtime-state concern.** The I/O map
-    (§5) shows the minimal HBP edge is ~5 scalars, but current WB13 publication assembly still reads a
-    broader runtime-surface symbol set before parquet emission. Stage 0 must map each publication operand to
-    typed frame/projection fields before logical hot-path deletion.
+1. **Array-native is the canonical runtime, not an opt-in island.**
+   The shipping executor owns typed frames and runs direct phase functions over
+   those frames. Logical/indexed/dense compatibility surfaces are adapters.
 
----
+2. **Compatibility is edge-only.**
+   Symbol names and logical maps belong at intake, output serialization,
+   replay, diagnostics, and shadow validation. They do not belong in
+   day/OFE/phase execution.
 
-## 3. The Current Hot Path (grounded baseline)
+3. **Mode is selected once.**
+   The scheduler does not branch per phase between logical, indexed, dense, and
+   direct-frame paths. Run initialization selects a direct-frame executor, a
+   compatibility executor, or a shadow executor. The hot loop receives a single
+   concrete execution plan.
 
-The re-architecture replaces a concrete, mapped structure. (Refs from the orchestrator/contract crates.)
+4. **Phases receive typed views, not generic requests.**
+   A phase should not ask "which symbol do I need?" during execution. Its API
+   exposes the state, forcing, transfer buffers, and outputs it owns.
 
-**Loop nesting:** Years → Days → **OFE lanes 1..N (sequential)** → **14 phases (topological DAG)** per
-OFE-day. Day-to-day carryover in `OfeLanePersistentState`; phase-to-phase state in
-`HillslopeWritebackSurface`. Inter-OFE routing between lanes via 24-hour carry arrays.
+5. **Publication is a projection edge.**
+   HBP, WAT, PASS, loss, manifests, and diagnostic outputs keep their schemas,
+   but their source data comes from typed publication projection structures
+   rather than runtime symbol surfaces.
 
-**The 14 phases** (`phase.rs` `HillslopePhase::ORDERED`, fixed topo order):
-`Normalization → StorageBounds → DecompositionTransition → ResiduePartitionTransition →
-AnnualGrowthTransition → PerennialGrowthTransition → PercolationDeepSeepage → Evapotranspiration →
-Drainage → LateralTransfer → PlantRootUptake → RunoffReconciliation → StorageReconciliation →
-ClosureDiagnostics` (+ erosion EROD13/14/19 via PeakRunoff/ClosureDiagnostics). ~10.8k lines in
-`hydrology/kernel_phases_mod/`; `runoff_reconciliation` (1956 lines) is the largest.
-
-**Kernel interface:** `HillslopeKernel::run_hillslope_phase(&HillslopeKernelRequest) -> KernelRunResponse`.
-Request borrows `state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>` + `flux_surface` (+ optional
-indexed mirrors + hot tables). Response returns `KernelWritebackPayload` (symbol-keyed `Vec<WritebackField>`)
-+ optional `IndexedKernelWritebackPayload`. The scheduler evaluates guards, applies the payload, and
-(PERFMIG01) optionally materializes a dense payload back to logical.
-
-**State types:**
-- `BoundarySymbol` = newtype `String`, ~200–400 symbols.
-- `BoundaryValue` = enum of ~16 **scalar** unit types (`Scalar(f64)`, `WaterDepthMeters`,
-  `TemperatureCelsius`, `FlowRateCubicMetersPerSecond`, …). **No array/series members** — arrays are
-  flattened to indexed symbols (`mofe_hs_carry_0001..0024`, climate `timem_0001..1500`, per-layer
-  `wb14_*_0001..`).
-- `HillslopeWritebackSurface { state_surface: BTreeMap<…>, flux_surface: BTreeMap<…> }`.
-- `SymbolRegistry` (frozen at run start) + `IndexedSurface` (sorted `Vec<(SymbolId, BoundaryValue)>`) +
-  `HotSymbolTables` — the ADR-0022/PERFIDX read-acceleration layer.
-- Guards: finite + `[min,max]` domain checks on every read (`require_state_scalar`) and every writeback
-  field (`evaluate_kernel_writeback`).
-
-**MOFE routing:** already typed — `TransferInput`/`TransferOutput { surface_carry: [f64;24],
-lateral_carry: [f64;24], … }`. The 24-hour arrays only become symbols when inserted into the maps.
+6. **Validation is continuous.**
+   Complete rewrite does not mean unchecked big-bang replacement. It means the
+   destination architecture is complete, while migration is shadowed,
+   identity-gated, endpoint-measured, and contract-first where authority
+   changes are required.
 
 ---
 
-## 4. Target Architecture — the HillslopeDayFrame
+## 3. Current Runtime We Are Replacing
 
-### 4.1 The frame: one typed dense working set
-Replace the two `BTreeMap`s with a single owned struct — the authoritative per-OFE mutable state for a
-simulation day. Conceptual shape (final field set is an implementation decision; this fixes the
-*structure*):
+The current scheduler executes:
+
+```text
+years
+  -> days
+  -> OFE lanes
+  -> 14 phase DAG
+  -> HillslopeKernelRequest
+  -> KernelWritebackPayload
+  -> HillslopeWritebackSurface
+```
+
+The hot runtime representation is a combination of:
+
+- `BTreeMap<BoundarySymbol, BoundaryValue>` state and flux surfaces;
+- frozen `SymbolRegistry`;
+- `IndexedWritebackSurface`;
+- `HotSymbolTables`;
+- optional dense slot views and lane dense state;
+- `KernelWritebackPayload` and indexed payload application;
+- logical refresh/flush at migration boundaries.
+
+That design has useful authority properties: deterministic export order,
+symbol-oriented diagnostics, flexible shadow comparisons, and compatibility
+with existing publication machinery. It is not acceptable as the normal hot
+runtime.
+
+The 14 phases and topology remain:
+
+```text
+Normalization
+StorageBounds
+DecompositionTransition
+ResiduePartitionTransition
+AnnualGrowthTransition
+PerennialGrowthTransition
+PercolationDeepSeepage
+Evapotranspiration
+Drainage
+LateralTransfer
+PlantRootUptake
+RunoffReconciliation
+StorageReconciliation
+ClosureDiagnostics
+```
+
+The process order is preserved. The representation and dispatch mechanism are
+replaced.
+
+---
+
+## 4. Target Architecture - Direct Frame Runtime
+
+### 4.1 Runtime Layers
+
+The greenfield runtime has five layers:
+
+1. **Schema layer**
+   A frozen typed schema declares every state field, flux field, forcing field,
+   transfer buffer, management slot, layer vector, and publication operand used
+   by simulation.
+
+2. **Frame layer**
+   Run, lane, day, phase, transfer, and publication frames own or borrow typed
+   data. These frames are the authoritative state during execution.
+
+3. **Executor layer**
+   A static executor runs direct typed phase functions over frame views. It is
+   chosen once at run initialization.
+
+4. **Projection layer**
+   Typed publication projection accumulates exactly the operands needed for
+   HBP/WAT/PASS/loss/manifest output.
+
+5. **Compatibility adapter layer**
+   Symbol/logical/indexed surfaces are constructed only for intake, legacy
+   replay, diagnostics, and shadow validation. They are not consulted by the
+   normal executor.
+
+### 4.2 Static Runtime Schema
+
+The schema is the replacement for hot-loop symbol resolution.
+
+It must define:
+
+- field identity and stable names;
+- units and dimensional wrappers;
+- finite/domain bounds;
+- producer phase and consumer phases;
+- persistence lifetime;
+- publication/replay/diagnostic exposure;
+- legacy symbol aliases where compatibility requires them;
+- array shape for hourly, layer, frost, management, and MOFE families;
+- default/absence semantics;
+- conservation and closure obligations.
+
+The schema may be generated or handwritten, but the hot executor consumes
+compiled offsets and typed fields. It does not resolve strings.
+
+Rules:
+
+- Legacy symbol names remain for provenance and diagnostics, but they are not
+  runtime keys.
+- Deterministic ordering is an export concern, not a storage concern.
+- A new hot field requires schema ownership, guard rules, tests, and
+  publication/replay disposition.
+- A deleted compatibility symbol requires proof that no output, diagnostic,
+  replay, or contract obligation still needs it.
+
+### 4.3 Frame Hierarchy
+
+The canonical frame hierarchy is:
+
+```text
+HillslopeRunFrame
+  static topology, run constants, schema, output identity, static input tables
+
+HillslopeLaneFrame
+  OFE geometry, soil/frost/layer state, persistent carryover, management state
+
+HillslopeDayFrame
+  daily forcing, mutable phase state, daily fluxes, closure accumulators
+
+PhaseView<'a>
+  narrow borrowed view for one phase
+
+TransferBuffers
+  typed upstream/downstream OFE transfer channels
+
+PublicationFrame
+  typed output operands and provenance rows
+```
+
+The frame hierarchy must avoid whole-registry dense mirrors. It stores the hot
+working set and the state needed for output projection. It does not store every
+possible legacy symbol as an optional slot.
+
+### 4.4 HillslopeRunFrame
+
+`HillslopeRunFrame` owns or references data that does not change per day:
+
+- schema metadata and compiled field offsets;
+- static OFE topology and ordered phase plan;
+- soil profile structure and maximum layer dimensions;
+- management schedule descriptors;
+- output identity and run provenance;
+- configuration flags selected before execution;
+- preallocated work buffers reused by lower layers.
+
+No per-day allocation or symbol registry build is allowed inside the run loop.
+
+### 4.5 HillslopeLaneFrame
+
+`HillslopeLaneFrame` is the lane/OFE-owned persistent state. It replaces
+`OfeLanePersistentState` as a symbol-surface container.
+
+It owns:
+
+- persistent water, frost, snow, residue, plant, and decomposition state;
+- layer/fine-layer arrays as struct-of-arrays where access is columnar;
+- management slot state;
+- current transfer state;
+- reusable phase buffers and dirty/validity bitsets.
+
+Start-of-day creates a `HillslopeDayFrame` by borrowing or moving typed
+substructures from the lane frame. End-of-day commits persistent fields by
+typed assignment, not by logical surface rebuild.
+
+### 4.6 HillslopeDayFrame
+
+`HillslopeDayFrame` is the authoritative mutable state for one OFE day.
+
+Conceptual shape:
 
 ```rust
-/// Authoritative dense per-OFE state for one simulation day.
-/// Owns every value the 14-phase pipeline reads or writes. No symbol maps.
-pub struct HillslopeDayFrame {
-    // ---- scalar state, named typed fields (unit newtypes are zero-cost) ----
-    pub wb12_infiltration: WaterDepthMeters,
-    pub wb12_runoff_reconciled: WaterDepthMeters,
-    pub wb14_effective_conductivity: LinearRateMetersPerSecond,
-    // … every scalar that is currently a BoundarySymbol becomes a field …
-
-    // ---- fixed-width arrays (was: index-suffixed symbol families) ----
-    pub mofe_surface_carry: [f64; 24],
-    pub mofe_lateral_carry: [f64; 24],
-    pub soil_layer: SoilLayerColumns,          // struct-of-arrays over N layers
-    pub frost_fine_layer: FrostFineColumns,
-
-    // ---- variable-length forcing (borrowed, read-only for the day) ----
-    pub hyetograph: &'day Hyetograph,          // climate series, not copied per phase
-
-    // ---- flux outputs the pipeline produces ----
-    pub flux: HillslopeDayFlux,
+pub struct HillslopeDayFrame<'run> {
+    pub state: HydrologyState,
+    pub flux: HydrologyFlux,
+    pub soil: SoilLayerColumns,
+    pub frost: FrostLayerColumns,
+    pub plant: PlantState,
+    pub residue: ResidueState,
+    pub decomposition: DecompositionState,
+    pub transfer: TransferBuffers,
+    pub forcing: DayForcingView<'run>,
+    pub publication: PublicationOperands,
+    pub guards: GuardScratch,
 }
 ```
 
-Design rules:
-- **Scalars are named typed fields.** Keep the unit wrapper types (`WaterDepthMeters`, …) as field types
-  where they exist; this preserves dimensional safety and satisfies *"pure functions over typed state."*
-  Raw `f64` is the fallback only where a unit type does not exist. Layout-sensitive use of these wrappers
-  must follow the §4.7 `#[repr(transparent)]` policy.
-- **Array families become fixed arrays / struct-of-arrays**, not 24/N separate symbols. SoA layout for the
-  per-layer and per-hour data keeps the hot inner loops cache-linear (the RSS lever — target a few-MB,
-  L2/L3-resident working set, like legacy's COMMON blocks).
-- **Forcing series are borrowed read-only** for the day, never copied into the frame per phase.
-- **Historical slot scaffold (PERFDEEP01-05):** the existing
-  `state_slots`/`flux_slots: Vec<Option<BoundaryValue>>` plus frozen `SymbolRegistry` ids is a verified
-  shadow/compatibility scaffold, not the shipping fast-path representation. It proved identity and allowed
-  bounded experiments, but PERFDEEP02/03/05 showed that id-backed slots plus logical-surface refresh,
-  `BoundaryValue` enum dispatch, writeback payload application, and dirty flush still form an
-  array-shaped compatibility layer. Stage 4+ must therefore use direct frame/view APIs for the migrated
-  phase chain: no `BoundarySymbol`, `SymbolRegistry::id_of`, `BoundaryValue`, `Option<BoundaryValue>`,
-  `KernelWritebackPayload`, or logical-surface fallback on the normal success path. `HillslopeLaneDenseState`
-  remains useful as a transition adapter and negative/identity benchmark; it is not an acceptable production
-  end state.
+Binding rules:
 
-### 4.2 Kernels as pure functions over the frame
-The kernel signature loses the symbol surfaces and the writeback payload:
+- Named typed fields are preferred for scalars.
+- Fixed-size families use `[T; N]` where size is fixed by science or file
+  format.
+- Variable-size families use preallocated slices, `Box<[T]>`, or owned vectors
+  allocated at run/lane setup, not rebuilt per phase.
+- Climate and management series are borrowed read-only views where possible.
+- Absence is represented by typed validity bitsets or contract-authorized
+  sentinels, not `Option<BoundaryValue>` in hot storage.
+- `BoundaryValue` is transition-only and forbidden in the normal direct-frame
+  executor.
+
+### 4.7 Phase Views
+
+Each phase receives a narrow typed view:
 
 ```rust
-// before: fn run_hillslope_phase(&HillslopeKernelRequest) -> KernelRunResponse  (symbol maps + payload)
-// after:  fn run_<phase>(frame: &mut HillslopeDayFrame, ctx: &PhaseInputs) -> Result<(), GuardError>
+pub fn run_wb11_hydrology(view: HydrologyViewMut<'_>) -> Result<(), HydrologyError>;
+pub fn run_wb13_publication(view: PublicationViewMut<'_>) -> Result<(), PublicationError>;
 ```
 
-- A phase **reads and writes the frame in place**; no `WritebackField` construction, no symbol resolution,
-  no `apply_indexed_kernel_writeback`. Producer/consumer ownership is enforced by the borrow checker
-  (`&mut` for the fields a phase owns; `&` for what it consumes), fulfilling the trajectory-ownership rule.
-- The 14-phase pipeline is a fixed in-order sequence of such calls over one `&mut frame`. The
-  topological-DAG scheduler is preserved as the *ordering authority* but dispatches direct typed calls, not
-  trait-object kernel invocations with map requests.
+The view exposes:
 
-### 4.3 Guards become typed frame checks with static and dynamic bounds
-The finite/domain guards (currently per-symbol-read and per-writeback-field) become **typed field checks at
-the point of write** with a two-tier schema: (a) compile-time field invariants for static bounds and
-finiteness, and (b) runtime-derived bounds for branch/state-dependent checks that today flow through
-per-update minimum/maximum metadata. Fail-closed semantics, `SimulationStatus` message-id classes, and the
-conservation/closure invariants (`SC-*`) are **preserved exactly**. Migration must also preserve boundary
-diagnostic attribution policy (field/symbol subject semantics) as an explicit parity gate.
+- immutable inputs the phase consumes;
+- mutable outputs the phase owns;
+- transfer buffers the phase is authorized to read/write;
+- guard and diagnostic sinks required by the contract.
 
-### 4.4 MOFE / OFE-lane routing
-Unchanged in shape — `TransferInput`/`TransferOutput` are already typed (`[f64;24]`). The lanes carry
-`HillslopeDayFrame` (or its persistent projection) instead of `HillslopeWritebackSurface`. The inter-OFE
-transfer reads/writes the frame's `mofe_*_carry` arrays directly — no symbol insertion.
+The view must not expose generic symbol lookup. The borrow structure should
+make most producer/consumer mistakes unrepresentable. Where Rust borrowing
+cannot express a dynamic dependency, the schema and executor validate the
+dependency before the run starts.
 
-### 4.5 Day-to-day persistence
-`OfeLanePersistentState` carries the **typed persistent projection** of the frame (the subset of fields
-that survive to the next day) instead of a `HillslopeWritebackSurface`. Start-of-day seeds the frame from
-the persistent projection; end-of-day flushes the surviving fields back. Both are typed struct moves, not
-map rebuilds.
+### 4.8 Static Executor
 
-### 4.6 Ownership — persistent lane-owned state, NOT a temporary mirror (PERFDEEP02 lesson, binding)
-The dense frame must be the **carried, lane-owned runtime authority**, not a snapshot the scheduler rebuilds
-around the logical maps. **PERFDEEP02 proved the anti-pattern is fatal:** it kept the logical/indexed
-surfaces as the real runtime state and built a `Vec<Option<BoundaryValue>>` frame sized to the **full
-registry (~4038 slots)** and **re-seeded/flushed it per OFE-day** (×235,961) — a temporary dense mirror
-around old maps. Result: H2637 **2417 s, a 3.6× regression** (commit `fa29c34b`, kept opt-in as a verified
-negative benchmark). This is the PERFIDX dual-representation ceiling in frame form.
+The executor is built once:
 
-Binding rules for every migration stage:
-- **The lane runtime OWNS one persistent dense frame**; scheduler phases **borrow views** (`&`/`&mut`) into
-  it. The scheduler does **not** create or reconcile a per-phase/per-day temporary frame.
-- **Create the frame once** at lane-execution start; keep it alive across the full migrated phase chain;
-  reads and kernel writebacks update it **in place**.
-- **Hold the hot working set, not the full registry.** Dense storage over the whole
-  bounded symbol universe is not practical; PERFIDX showed the reachable universe
-  can explode far beyond the symbols actually touched by H2637. The frame stores
-  lane-persistent scalars, fixed hourly arrays, soil/frost layer arrays, and
-  phase-owned scalars. Climate forcing is **borrowed** (§4.1), not slotted;
-  publication/diagnostic-only symbols are not hot-frame state.
-- **Track dirty slots** with a compact dirty bitset / id list.
-- **Materialize to logical/indexed only at true boundaries:** a non-migrated phase edge, output
-  serialization, diagnostics/contract evidence, the external API. **No full-frame seed/flush loop inside
-  scheduler phase execution.**
+```rust
+let executor = DirectFrameExecutor::new(schema, plan, buffers)?;
+executor.run_hillslope(&mut run_frame)?;
+```
 
-A partial island still pays a per-OFE-day *edge* cost (seed the read-set in, flush the dirty write-set out).
-PERFDEEP03 bounded that state to a lane-owned compact hot set and preserved identity, but the real H2637
-endpoint still measured `1147.96 s`. Ownership is therefore necessary but not sufficient; follow-on work
-must profile and remove the remaining edge/fallback costs before expanding the same island shape.
-PERFDEEP05 confirmed this: direct dense transfer authority removed the full resync hotspot, but final H2637
-still measured `911.11 s`; the remaining measured edge is cached daily refresh plus logical dense
-writeback/flush compatibility. This is not a reason to revert; it is the reason
-to stop treating the partial island as the shipping architecture.
+The executor:
 
-### 4.7 Rust implementation gotchas and binding mitigations
+- owns the fixed phase order;
+- owns branch mode selection;
+- holds reusable work buffers;
+- iterates days and lanes;
+- calls direct typed phase functions;
+- updates transfer buffers;
+- records publication projection operands;
+- emits typed status and guard diagnostics.
 
-Web guidance reviewed on 2026-06-19 reinforces the local PERFDEEP evidence: the win comes from deleting
-allocation, indirection, enum/tag dispatch, and compatibility lookups from the hot loop, not from merely
-renaming maps as arrays.
+The executor must not:
 
-Post-ratification binding implementation rules (ADR-0025 Amendment 1, 2026-06-19):
+- construct `HillslopeKernelRequest`;
+- construct `KernelWritebackPayload`;
+- build or query `SymbolRegistry`;
+- build or query `HotSymbolTables`;
+- build `HillslopeWritebackSurface`;
+- perform dense/logical refresh or dirty flush;
+- allocate strings or use `format!` in the normal success path;
+- choose runtime representation inside the per-phase loop.
 
-- **Contiguity must be real.** Fixed-width hourly/layer families should use `[T; N]`, slices, or
-  pre-sized vectors/boxed slices with one owned allocation. Rust guarantees array element contiguity and
-  offset arithmetic for `[T; N]`; `Vec<T>` is a contiguous growable array whose initialized elements live in
-  order in the allocation. Do not reintroduce per-symbol heap nodes or per-day rebuilt vectors for hot state.
-- **Do not assume optional or enum storage is free.** Rust only guarantees `Option<T>` has the same layout as
-  `T` for the documented reference, `Box`, function-pointer, `NonNull`, `NonZero*`, and transparent-wrapper
-  cases. `Option<BoundaryValue>` is not covered by that guarantee. Production frame fields should be typed
-  scalars plus explicit validity/dirty bitsets where absence is semantically required.
-- **Unit wrappers need explicit layout policy.** If a unit newtype's layout or ABI equivalence to `f64` is
-  relied on for arrays, FFI, SIMD, or reinterpretation, it must be `#[repr(transparent)]` over the scalar
-  field and must not be transmuted without an unsafe proof. Rust's default representation only guarantees
-  soundness-level layout properties, not field order or ABI.
-- **Bounds checks stay safe and visible.** Hot loops should prefer iterator/zipped-slice forms, pre-sliced
-  arrays, and explicit range assertions that let LLVM remove redundant checks. `get_unchecked` is a last
-  resort and requires the repository's `unsafe` proof discipline plus profiling evidence.
-- **No hot-loop allocation helpers.** `format!`, `String` construction, owned-key cloning, collection
-  cloning, full logical materialization, and per-phase work-vector allocation are forbidden on the normal
-  success path. When a small temporary collection is unavoidable, allocate it once at lane/run scope and
-  reuse/clear it.
-- **Measure representation, not just arithmetic.** Each stage must record H2637 endpoint/RSS plus at least
-  one allocation or type-size check for the new hot-frame state. Microbenchmarks remain useful only as
-  hypothesis generators; realistic endpoint timing remains authority.
+### 4.9 Transfer Channels
 
----
+MOFE routing is already close to the target. The rewrite keeps the transfer
+concept but makes it first-class typed frame state:
 
-## 5. The I/O Materialization Edge (the key enabling finding)
+- surface carry arrays;
+- lateral carry arrays;
+- deep drainage and seepage channels;
+- sediment and erosion channels;
+- snow/frost/hydrology coupling channels;
+- upstream/downstream area ratios and closure terms.
 
-A fully array-native run must still produce the existing outputs **byte-for-byte**. The I/O map shows the
-logical surface is mostly unnecessary once publication operands are lifted to typed frame/projection access:
+Transfer buffers have explicit producers and consumers. They are not inserted
+into symbol maps between phases.
 
-| Output | Source today | Array-native disposition |
-|---|---|---|
-| `wat.parquet` | typed `Vec<HillslopeWatRow>`, but rows are currently assembled from runtime-surface symbol/flux reads in runner helpers | lift WB13/WAT row assembly to typed frame/projection operands; no symbol lookups on the hot path |
-| `pass.parquet` | typed `Vec<HillslopePassRow>`, derived from WB13/publication operands sourced from runtime-surface reads today | same typed publication projection as WAT; preserve Arrow/semantic identity |
-| `loss.json` | static input config | no runtime read |
-| `*.hbp` shard | typed binary, **but** constructed by reading ~5 logical runtime scalars at end-of-run (`peakro`, `watdur`, `total_detachment_kg`, `total_deposition_kg`, `sediment_concentration_kg_m3_0001`) | **capture these as typed scalars during the run**; then HBP construction reads typed fields, no logical |
-| WB13 daily publication assembly | currently computes publication terms from many runtime-surface symbols/fluxes (`prcp`, `wb11_soil_water`, `frost.*`, `snow.*`, `Irr`, `Q`, `q`, `Qd`, etc.) | define a typed publication projection with operand-lineage parity fixtures before deleting the logical hot path |
-| `run_manifest.json` provenance | a few runtime-surface execution fields | capture via typed execution trace |
+### 4.10 Guard and Error Model
 
-**Consequences:**
-- Parquet rows accumulate in memory per day and flush once at end-of-run; no mid-run logical flush is
-  required once WB13/publication operand reads are lifted to typed frame/projection sources.
-- Remaining logical dependencies are HBP scalar capture, WB13/publication operand extraction, and manifest
-  provenance until those paths are migrated; retire all three before deleting logical hot-path plumbing.
-- The HBP binary format and the watershed CLI's typed parser are **unchanged** — the inter-binary contract
-  is already typed; only the *construction* path changes from symbol-read to typed-field-read.
+Fail-closed semantics are preserved.
 
-So the end state: **no `BoundarySymbol` / `BTreeMap` / writeback-payload on the per-OFE-day hot path or
-in daily publication operand assembly.** The registry/`HotSymbolTables`/`IndexedSurface` machinery
-(ADR-0022) is retained only where a symbol surface is still genuinely needed (e.g. explicit
-legacy-compat diagnostics, replay, and bounded serialization adapters), not on the simulation hot path.
+Guards move from symbol-read/writeback-field checks to typed field checks:
+
+- static finite/domain checks from schema;
+- runtime-derived bounds from phase context;
+- conservation/closure checks from canonical `SC-*` contracts;
+- diagnostic attribution preserving legacy subject semantics where required;
+- typed error enums, not broad boxed errors.
+
+Guard diagnostics may mention legacy symbols, but symbol lookup is performed
+by diagnostic projection at the edge, not in the phase arithmetic path.
+
+### 4.11 Memory and Layout Rules
+
+The direct frame runtime is a layout-sensitive design.
+
+Binding rules:
+
+- Arrays and slices must be genuinely contiguous.
+- Unit wrappers used in layout-sensitive arrays must have an explicit layout
+  policy, normally `#[repr(transparent)]` over the scalar.
+- `Option<T>` is allowed only where its layout and semantics are explicit; it
+  is not a default absence mechanism for hot arrays.
+- Avoid enum-tag dispatch in inner loops.
+- Reuse work buffers allocated at run/lane setup.
+- Prefer iterator, zipped-slice, and pre-sliced loop forms before considering
+  unsafe indexing.
+- Any `unsafe` must carry a local invariant proof and be justified by
+  profiling after safe forms were tried.
+
+### 4.12 Runtime Modes
+
+The architecture has three modes:
+
+1. **Direct mode**
+   The production target. Runs only typed frames and typed projections.
+
+2. **Compatibility mode**
+   Maintains the current logical/indexed runtime for replay, comparison, and
+   emergency fallback while direct mode is being validated. It is not the
+   performance target.
+
+3. **Shadow mode**
+   Runs direct and compatibility paths together for selected fixtures or
+   packages, then compares field, phase, and output identity. Shadow mode is a
+   validation harness, not a shipping hot path.
+
+Mode selection is outside the hot loop.
 
 ---
 
-## 6. Performance Model
+## 5. Compatibility and I/O Edges
+
+### 5.1 Intake Edge
+
+Input parsing may still use legacy names and flexible intermediate maps. The
+edge contract is:
+
+```text
+legacy/config input -> parsed input model -> typed run frame
+```
+
+After frame construction, the executor uses typed fields only.
+
+### 5.2 Publication Edge
+
+Output schemas do not change.
+
+| Output | Target source |
+|---|---|
+| HBP | `PublicationFrame` typed scalar operands |
+| WAT parquet | typed WAT row builder from `PublicationFrame` |
+| PASS parquet | typed PASS row builder from `PublicationFrame` |
+| loss JSON | static/run projection plus typed accumulators |
+| run manifest | typed provenance and execution trace |
+| diagnostic traces | typed diagnostic events projected to legacy names as needed |
+
+Publication projection is a first-class part of the runtime, not an
+afterthought. Each publication operand has:
+
+- producer phase;
+- units;
+- source frame field;
+- legacy symbol alias if any;
+- output row/column destination;
+- identity fixture;
+- anti-alias fixture when multiple legacy symbols map to related frame fields.
+
+### 5.3 Replay and Diagnostics Edge
+
+Replay, audit, and diagnostics may construct symbol surfaces because their job
+is to inspect or compare legacy-shaped data. They must be explicitly requested
+and structurally outside direct mode.
+
+Examples:
+
+- symbol registry audit;
+- indexed shadow reports;
+- frame roundtrip reports;
+- legacy comparator dumps;
+- contract diagnostic extracts.
+
+Disabled means no object construction and no per-read branch in direct mode.
+
+### 5.4 Compatibility Adapter Ownership
+
+Compatibility adapters are allowed only at declared boundaries. They must not
+be hidden behind a convenience API that direct-frame phases can call.
+
+Allowed:
+
+- `TypedFrame::from_legacy_inputs(...)` during initialization;
+- `PublicationFrame::to_hbp(...)` at output;
+- `ShadowComparator::compare_frame_to_surface(...)` in shadow mode.
+
+Forbidden in direct mode:
+
+- `state_value_for_symbol(...)`;
+- `flux_value_for_symbol(...)`;
+- `SymbolRegistry::id_of(...)`;
+- `HillslopeWritebackSurface` mutation;
+- `KernelWritebackPayload` construction;
+- dense/logical refresh or dirty flush.
+
+---
+
+## 6. Performance Model and Gates
+
+### 6.1 Model
+
+The model is simple: delete runtime representation overhead as a class.
 
 | Quantity | Value | Basis |
 |---|---:|---|
-| Current OFE-day | 2826 µs | PERFIDX06 |
-| Array-native branch (measured) | 0.96 µs | PERFARCH03 |
-| Per-phase seam cost (eliminated) | 108 µs × 0 | no seams inside the frame |
-| Projected array-native OFE-day | **~14–20 µs** | 14 phases × ~1 µs, no seams |
-| Projected ×legacy | **~0.4–0.5×** | 14–20 µs / 38.65 µs |
+| Current reference OFE-day | `2826 us` | activation reference |
+| PERFDEEP07 retained OFE-day | `2907 us` | still compatibility-backed |
+| Array-native WB11 branch | `0.96 us` | PERFARCH03 |
+| Legacy OFE-day | `38.65 us` | H2637 legacy |
+| <=10x OFE-day budget | `386 us` | viability gate |
+| <=5x OFE-day budget | `193 us` | aspirational gate |
 
-This is the *floor* (the whole OFE-day array-native, I/O-only logical). Even with conservative discounts
-for heavier phases and residual overhead, the model suggests significant headroom vs ≤10× and a plausible
-≤5× trajectory; stage-by-stage endpoint measurements remain the only closure evidence. The two compounding
-levers:
-1. **Instruction count:** symbol resolution / map ops / payload construction / `format!` deleted as a class.
-2. **Cache:** working set 228 MB → ~3 MB (PERFARCH03), L2/L3-resident — fewer misses multiply the
-   instruction-count win (why PERFARCH03 got 146×, not the ~20× instruction math alone).
+The architecture assumes meaningful endpoint improvement only when entire
+phase spans run without symbol/logical/writeback machinery. Microbenchmarks can
+guide implementation, but H2637 endpoint/RSS is the authority.
 
-**Honesty bound:** the floor is a projection until measured end-to-end. The staged plan (§8) measures the
-real H2637 endpoint after every stage; the model is the hypothesis, the endpoint is the authority.
+### 6.2 Required Measurements
 
----
+Every implementation package must record:
 
-## 7. Identity-Gating Strategy (non-negotiable)
+- H2637 endpoint seconds and RSS;
+- protected HBP/WAT/PASS/loss/manifest identity;
+- focused phase identity fixtures;
+- allocation evidence for migrated hot loops;
+- frame type-size or layout evidence;
+- proof that direct mode does not construct compatibility surfaces;
+- skipped gates with explicit blockers.
 
-A comprehensive rewrite of a scientific engine cannot be a big-bang — it must stay **byte-identical** at
-every step. The discipline:
+### 6.3 Stop Criteria
 
-1. **Shadow / parallel-run differential.** During migration, run the legacy logical path **and** the frame
-   path for the same OFE-day and assert `to_bits()` equality on every shared output (seeded by PERFARCH03's
-   543+8 fixture, extended per phase). The frame path becomes authoritative only when its stage's diff is
-   clean. (This is the FDHP01 shadow-state template from the MOFE port — proven.)
-2. **Per-phase identity fixtures.** Every migrated phase ships a focused fixture proving its frame
-   implementation matches the logical kernel bit-for-bit, including the snow/frost/irrigation/MOFE branches
-   (not just warm-rain).
-3. **H2637 output identity per stage:** `.hbp` + `wat.parquet` byte-identical, `pass.parquet` Arrow-equal —
-   the PERFMIG01/02 gate, kept.
-4. **H2637 endpoint + RSS per stage**, same machine/fixture as PERFIDX06. The endpoint is the perf
-   authority; the model (§6) is only the hypothesis.
-5. **Allocation/type-size regression gates** for migrated hot-frame state: record frame slot/field counts,
-   representative `size_of` / `-Zprint-type-sizes` output or equivalent, and evidence that no normal-path
-   allocation helpers (`format!`, owned symbol cloning, collection rebuilds) remain in the migrated phase
-   loop.
-6. **Determinism + conservation gates** (`SC-*` closure invariants) green throughout.
+Stop and re-architect, not patch around, when:
 
-**Kill-criteria (when to stop and re-think, stated up front):**
-- Any stage that **cannot** be made bit-identical → stop; the divergence is a real defect or a
-  contract-gap, adjudicate before proceeding.
-- A lane-owned hydrology island does **not** beat the current endpoint meaningfully -> the current
-  partial-island shape is falsified for production scale and the remaining gap is elsewhere. PERFDEEP03
-  reached this stop point (`1147.96 s` vs `669.97 s`), so the next action is re-profiling, not default
-  activation or blind expansion. PERFDEEP05 removed the identified full-sync hotspot and still measured
-  `911.11 s`; the next action is the PERFDEEP06 fast-path inventory/API planning gate, not another
-  compatibility-edge optimization or broad island expansion.
+- a migrated phase cannot be made identity-equivalent;
+- a compatibility edge remains in the direct-mode hot loop;
+- an opt-in direct path is slower than compatibility mode after edge removal;
+- output projection still depends on runtime symbol surfaces;
+- a package proposes another lookup/cache layer without deleting a runtime
+  compatibility boundary.
 
 ---
 
-## 8. Staged Execution Plan (comprehensive, identity-gated)
+## 7. Validation Strategy
 
-The full rewrite, sequenced so each stage is independently identity-gated and endpoint-measured. Stages are
-*committed scope of one program*, not "let's see if it's worth it" — PERFARCH03 already proved the floor.
+The rewrite must be validated continuously.
 
-| Stage | Scope | Gate | Expected endpoint |
-|---|---|---|---|
-| **0 — Frame scaffold** ✅ *(PERFDEEP01, conditional GO 2026-06-18)* | Define `HillslopeDayFrame` + slot schema + seed/flush + typed I/O capture (HBP scalars, manifest provenance, WB13/publication operands). No phase migrated yet; frame runs *beside* the maps (shadow). | Frame round-trips bit-identically; output parity green. | ~flat |
-| **1 — Hydrology island core** ⚠️ *(PERFDEEP02 NO-GO; PERFDEEP03 lane-owned compact state NO-GO, 1147.96 s)* | PERFDEEP03 migrated the hydrology cluster to a **lane-owned persistent compact frame (§4.6)** with forcing borrowed and dirty boundary flush. | Identity passed; opt-in H2637 endpoint failed the hard `< 669.97 s` gate. No default activation. | **NO-GO** - re-profile before expanding |
-| **2 — Hydrology edge closure** ⚠️ *(PERFDEEP05 sync removal NO-GO, 911.11 s)* | PERFDEEP05 removed `sync_from_writeback_surface` from the opt-in daily hot loop and applied transfer directly to dense lane state. Remaining measured costs are cached daily refresh, logical dense writeback apply, symbol lookup, and dirty flush. | H2637 identity passed; endpoint still failed the `< 669.97 s` gate. This closes the edge-shaving experiment as insufficient. | **NO-GO** - stop seam shaving |
-| **3 — Fast-path inventory and API** *(PERFDEEP06 next)* | Enumerate the H2637 hot-loop frame: persistent scalars, fixed arrays, layer SoA, borrowed forcing, phase-owned outputs, and publication operands. Define direct-frame phase APIs and prove which logical surfaces remain only at I/O/replay/diagnostic edges. Include a layout/type-size ledger and allocation-risk checklist from §4.7. | Static no-hot-loop-map design proof; publication operand ledger; package sequence for direct-frame ports; no production activation. | planning gate |
-| **4 — Direct-frame hydrology fast path** | Port the complete hydrology daily OFE chain over `&mut HillslopeDayFrame`: no `HillslopeKernelRequest`, no `KernelWritebackPayload`, no `HillslopeWritebackSurface`, no `SymbolRegistry` lookup between hydrology phases. | Shadow bit-identity for migrated phases; H2637 HBP/WAT/PASS identity; endpoint/RSS measurement. | must move endpoint materially |
-| **5 — Complete OFE-day frame path** | Port erosion, growth/decomposition, transitions, and closure diagnostics so all 14 phases mutate one frame. | full H2637 identity + endpoint + RSS; no logical/symbol surfaces in phase execution. | **the viability-gate measurement** |
-| **6 — Delete logical hot-path plumbing** | Remove `HillslopeWritebackSurface`, indexed mirrors, writeback payloads, and registry build from the per-OFE-day loop. Logical/symbol surfaces survive only in intake, I/O serialization, replay, and diagnostics. | full H2637 identity + endpoint + RSS; **≤10× / ≤5× check.** | shipping gate |
+### 7.1 Identity Classes
 
-Each stage is one work-package (`PERFDEEP0N`), identity-gated, endpoint-timed; default activation only when
-the opt-in path beats the baseline endpoint. Unlike the incremental rungs, the target frame's *internal*
-phase-to-phase seams vanish. PERFDEEP02, PERFDEEP03, and PERFDEEP05 prove that a
-partial island still pays a per-OFE-day edge cost large enough to dominate the
-physics. The next direction is therefore not another compatibility-edge rung:
-PERFDEEP06 must design the complete fast path, and subsequent packages must port
-complete direct-frame execution units.
+Required identity levels:
+
+- scalar frame fields: `f64::to_bits()` equality unless a canonical contract
+  authorizes bounded normalization;
+- fixed arrays: element-by-element bit identity;
+- typed rows: Arrow schema/table equality as already used by WAT/PASS gates;
+- HBP/WAT where byte identity is currently expected: byte identity;
+- metadata/provenance: exact equality except explicitly recorded run-name or
+  path differences;
+- diagnostics: message-id class and subject attribution parity.
+
+### 7.2 Shadow Execution
+
+Shadow mode runs direct-frame and compatibility execution together for selected
+fixtures.
+
+Shadow comparison must cover:
+
+- seed frame fields;
+- per-phase outputs;
+- transfer buffers;
+- end-of-day persistent projection;
+- publication operands;
+- final outputs.
+
+The direct path becomes authoritative for a stage only after the shadow diff is
+clean or every difference has a contract-backed disposition.
+
+### 7.3 Contract Discipline
+
+No physics, guard, unit, output-meaning, or diagnostic-attribution change is
+implicit in this architecture. If a direct-frame implementation discovers that
+authority must change, the sequence is:
+
+1. amend the canonical `SC-*` contract or relevant ADR;
+2. add contract-derived tests;
+3. record pre-implementation contract gate evidence;
+4. then change production runtime code.
+
+### 7.4 Completion Gates
+
+A direct-frame stage is not complete until:
+
+- focused tests pass;
+- H2637 identity passes;
+- H2637 endpoint/RSS is recorded;
+- `cargo fmt --check` passes;
+- `cargo clippy --workspace --all-targets -- -D warnings` passes;
+- `cargo test --workspace` passes;
+- `cargo deny check` passes;
+- scoped docs lint passes;
+- review and verification findings are dispositioned.
+
+HOLD is required when known invariant, identity, or performance gates remain
+unresolved.
 
 ---
 
-## 9. Non-Goals & Preserved Invariants
+## 8. Rewrite Program
 
-**This is a representation change. It does not change:**
-- **Physics / numerics.** Every kernel computes the same arithmetic; results are **byte-identical**
-  (`to_bits()`), not "close." No clean-room, no algorithm change.
-- **Science contracts (`SC-*`).** All invariants, closure/conservation laws, guard semantics, and
-  message-id classes preserved — they move representation, not meaning.
-- **Output schemas.** HBP binary format (ADR-0012 authority), `wat`/`pass`/`loss` parquet/JSON schemas
-  (ADR-0019/0020) unchanged. The watershed inter-binary contract is untouched.
-- **Process model.** Subprocess-per-hillslope (ADR-0004), the daily loop, the 14-phase DAG ordering, MOFE
-  routing topology — all preserved.
-- **Determinism.** The numerics determinism policy (`docs/numerics/`) holds; field-order evaluation is
-  fixed and reproducible.
-- **Irrigation** stays management-gated (no activation change).
+This is one architecture program, executed through bounded packages. Packages
+may be incremental for validation, but the destination is not incremental.
 
-**Out of scope:** watershed-CLI internals; parser/intake; legacy ASCII compat (wepppy's concern); the
-replay binary (may keep a symbol surface for diffing).
+### 8.1 Completed Negative Evidence
+
+The following packages remain useful as evidence and fixtures, not as target
+architecture:
+
+| Package | Architectural disposition |
+|---|---|
+| PERFDEEP01 | useful scaffold and roundtrip evidence |
+| PERFDEEP02 | negative benchmark for full-registry temporary frames |
+| PERFDEEP03 | negative benchmark for partial lane dense island endpoint |
+| PERFDEEP04 | profile evidence for dense-island sync costs |
+| PERFDEEP05 | negative benchmark for edge-shaved dense island |
+| PERFDEEP06 | inventory and API planning authority |
+| PERFDEEP07 | default-disabled compatibility cleanup, still HOLD |
+
+### 8.2 New Rewrite Sequence
+
+Future work should follow this sequence.
+
+| Stage | Scope | Gate |
+|---|---|---|
+| **R0 - Runtime schema freeze** | Define typed field schema, ownership, aliases, guards, persistence, publication operands, and replay/diagnostic exposure. | schema review, contract gate, no hot-loop map proof |
+| **R1 - Frame constructors and projections** | Build typed run/lane/day/publication frames from existing parsed inputs and project them back to current outputs without replacing execution. | roundtrip and output identity |
+| **R2 - Direct executor skeleton** | Introduce direct executor selected once at run setup, with no per-phase compatibility branches. It may execute no-op or shadow-only phases initially. | direct mode constructs no compatibility surfaces |
+| **R3 - First complete phase span** | Port a complete phase span with all required upstream/downstream transfer and publication operands. | per-phase and H2637 identity, endpoint/RSS |
+| **R4 - Full hydrology direct path** | Port the complete hydrology daily OFE path without requests, payloads, writeback surfaces, symbol lookup, dense refresh, or dirty flush. | material endpoint movement plus identity |
+| **R5 - Full OFE-day direct path** | Port all 14 phases to direct-frame execution. | full H2637 identity and endpoint/RSS |
+| **R6 - Direct publication cutover** | Make HBP/WAT/PASS/loss/manifest read typed projection only. | byte/Arrow identity and metadata parity |
+| **R7 - Remove hot compatibility runtime** | Delete or isolate logical/indexed/dense hot-loop plumbing from production direct mode. | <=10x gate, preferably <=5x trajectory |
+
+### 8.3 Package Rules
+
+Every package in this program must state whether it:
+
+- advances direct-frame runtime;
+- maintains compatibility validation;
+- removes a compatibility boundary;
+- only records evidence.
+
+Packages that only make maps, registries, indexed surfaces, dense mirrors, or
+payloads cheaper are out of direction unless they are required to preserve a
+validation adapter while a direct-frame replacement is being introduced.
+
+### 8.4 Activation Rule
+
+Default activation requires all of:
+
+- direct mode is identity-clean for the activated scope;
+- direct mode endpoint improves over compatibility mode;
+- direct mode constructs no hot-loop compatibility surfaces;
+- output projection is typed for the activated scope;
+- rollback path remains available until the next release boundary.
+
+No package may activate a slower direct path by default.
 
 ---
 
-## 10. Risks & Mitigations
+## 9. Non-Goals and Preserved Invariants
+
+This architecture changes representation and execution plumbing. It does not
+change:
+
+- process physics;
+- numerical formulas;
+- canonical `SC-*` invariants;
+- fail-closed guard posture;
+- unit semantics;
+- process order;
+- MOFE topology;
+- output schemas;
+- subprocess-per-hillslope orchestration;
+- deterministic output requirements;
+- legacy provenance obligations.
+
+Out of scope for this document:
+
+- watershed CLI internal redesign;
+- wepppy orchestration and GIS concerns;
+- legacy input grammar changes;
+- output schema redesign;
+- default activation of unproven direct mode.
+
+---
+
+## 10. Risks and Mitigations
 
 | Risk | Mitigation |
 |---|---|
-| **Blast radius** (10.8k kernel lines + scheduler + contract) | Staged islands (§8), each independently identity-gated; shadow-run keeps the logical path live until a stage is proven. |
-| **Identity drift** on a subtle branch (snow/frost/irrigation) | Per-branch bit-fixtures required before a phase is authoritative; shadow-diff on H2637 catches any divergence. |
-| **The model is wrong at scale** (phases heavier than runoff) | The §7 falsification check at Stage 1/2: a large island that doesn't move the endpoint stops the program for re-profiling. |
-| **Conditional-phase frame fields** (phases that don't always run) | The frame carries all fields; unrun phases leave their fields at the seeded/identity value, exactly as the maps do today (absence → default). Validated by identity. |
-| **Variable-length forcing** (climate series up to 1500 pts) | Borrowed read-only slice on the frame, not copied; indexed by integer, not symbol. |
-| **Frame field churn** during migration | The field schema is the contract; add fields additively per stage; the start/end seed-flush is the single touch-point. |
-| **Dynamic guard-bound drift** (current checks use runtime-derived min/max) | Two-tier guard schema (static invariants + runtime-derived bounds), plus accept/reject parity fixtures for message-id class and diagnostic attribution policy. |
-| **Output-publication dependency undercount** (WB13 helpers still symbol-read many operands) | Stage-0 publication operand ledger + typed projection adapter + byte/Arrow identity fixtures before logical hot-path deletion. |
-| **Option/enum layout bloat** (`Option<BoundaryValue>` or large enums hiding in arrays) | Treat slot/enum forms as transition-only; require type-size evidence and explicit validity/dirty bitsets for production frame absence semantics. |
-| **Bounds-check or unsafe regression** | Prefer iterator/slice/range-assertion forms; any unchecked access requires a local invariant proof, tests, and profiling evidence that the safe form is inadequate. |
+| Rewrite blast radius hides physics drift | shadow execution, phase fixtures, contract gates, H2637 identity |
+| Direct-frame schema misses a publication operand | publication operand ledger before cutover, anti-alias fixtures |
+| Layout becomes another dense compatibility layer | typed fields, explicit validity bitsets, no `BoundaryValue` slots in direct mode |
+| Runtime mode branches leak into hot loops | executor selected once at run setup; direct-mode no-compatibility-surface proof |
+| Guard attribution changes silently | diagnostic subject parity fixtures and contract-first amendment if semantics change |
+| Memory grows toward full registry mirrors | frame stores hot working set and publication operands only; type-size/RSS gates |
+| Unsafe indexing introduced prematurely | safe iterator/slice/range forms first; unsafe requires proof and profiling |
+| Partial direct path repeats PERFDEEP03/05 | complete phase-span gates and stop criteria before expansion |
+| Compatibility fallback becomes permanent | packages must identify which boundary they remove or why they are validation-only |
 
 ---
 
-## 11. Relationship to ADRs & Ratification
+## 11. Relationship to ADRs and Existing Authority
 
-- **ADR-0022** (indexed runtime surface / `SymbolId`): retained for I/O serialization + replay; **removed
-  from the simulation hot path** (the frame replaces the read mirror). Not contradicted — its scope
-  narrows.
-- **ADR-0023** (array-authoritative hot-path state): this specification is its **completion**. ADR-0023's
-  dense-authority principle stands; its *incremental, symbol-by-symbol application* (PERFMIG01/02) is
-  superseded by the whole-frame approach. ADR-0025 records this supersession explicitly.
-- **Authority (ratified 2026-06-18):** ADR-0025 is the accepted hot-path runtime authority and this
-  specification is its binding design authority. ADR-0023's incremental application is superseded — no
-  further writeback-only or materialization-retirement rungs.
-- **ADR-0019/0020** (output schemas), **ADR-0012** (HBP authority), **ADR-0004** (subprocess model):
-  unaffected.
-- **Kernel boundary** ([architecture/README.md](README.md)): this specification **fulfils** the declared
-  "pure functions over typed state" boundary.
+- **ADR-0025** remains the ratifying ADR for the array-native
+  `HillslopeDayFrame` direction. This revision clarifies that the target is a
+  complete direct-frame runtime, not a partial dense island.
+- **ADR-0023** remains correct in principle: state must become
+  array-authoritative. Its symbol-by-symbol incremental application is
+  superseded.
+- **ADR-0022** indexed runtime surfaces remain useful for compatibility,
+  replay, diagnostics, and shadow checks. They are not part of direct-mode hot
+  execution.
+- **ADR-0004** subprocess hillslope orchestration is unchanged.
+- **ADR-0012**, **ADR-0019**, and **ADR-0020** output/schema authority is
+  unchanged.
+- **Science contracts** remain the canonical authority for process behavior,
+  guards, conservation, and closure. Runtime representation cannot override
+  them.
 
-**Ratification record:** ADR-0025 — *"Adopt the array-native HillslopeDayFrame as the hot-path runtime
-architecture"* — cites this document as design authority, records the supersession of ADR-0023's
-incremental application, and gates execution on the §7 identity discipline. Execution proceeds as the
-`PERFDEEP0N` work-package series (§8) under ADR-0025 authority.
-
----
-
-## 12. Open Design Decisions (for implementation packages / future authority changes)
-
-These are genuine forks left to the implementing ADR + Codex, not dictated here:
-
-1. **Frame layout:** array-of-structs vs struct-of-arrays for the per-layer/per-hour data. SoA favours the
-   cache-linear inner loops (recommended); AoS may be simpler for sparse access. Decide per measured hot loop.
-2. **Unit-typed fields vs raw `f64`:** recommended typed (zero-cost, preserves the kernel-boundary
-   contract); raw `f64` only where no unit newtype exists. Unit wrappers used in layout-sensitive arrays
-   must state whether `#[repr(transparent)]` is required.
-3. **Frame ownership model:** one `&mut HillslopeDayFrame` threaded through the pipeline vs a
-   producer/consumer borrow-split per phase. The borrow-split better enforces trajectory ownership but is
-   more invasive; decide against the real phase data-dependencies.
-4. **Guard-schema representation:** const field-bound table vs per-field validating newtype constructors.
-5. **Shadow-run mechanism:** a compile-time feature flag running both paths, vs a test-harness-only
-   differential. Affects how long the logical path stays compiled into the hot binary.
-6. **Diagnostic attribution policy:** preserve symbol-oriented violation subjects at boundaries, or ratify a
-   field-oriented subject contract with explicit compatibility notes and fixtures.
-7. **Validity representation:** decide per frame family whether absence is impossible, represented by a
-   typed sentinel authorized by a contract, or represented by a compact bitset. `Option<BoundaryValue>` is
-   transition-only unless a later endpoint and type-size gate explicitly re-authorize it for a non-hot edge.
+If this document and a package-local artifact conflict, this document controls
+architecture direction. Canonical `SC-*` contracts control science behavior.
 
 ---
 
-## Appendix A — Grounded reference map
+## 12. Open Design Decisions
+
+These are implementation decisions, not permission to keep compatibility in
+the hot path.
+
+1. **Schema representation**
+   Generated field tables, handwritten structs, or a hybrid.
+
+2. **Frame layout**
+   Struct-of-arrays versus array-of-structs per family, decided by access
+   pattern and endpoint measurement.
+
+3. **Borrowed view granularity**
+   One broad `&mut HillslopeDayFrame` versus narrow phase-specific borrow
+   splits.
+
+4. **Unit wrappers**
+   Which existing wrappers require `#[repr(transparent)]` and where raw `f64`
+   remains acceptable.
+
+5. **Validity model**
+   Bitsets, typed sentinels, separate optional edge structures, or
+   contract-authorized default values.
+
+6. **Shadow mechanism**
+   Test-only differential, diagnostic runtime mode, or compile-time feature.
+
+7. **Publication projection storage**
+   Per-day row accumulation, streaming projection buffers, or hybrid
+   accumulators.
+
+8. **Compatibility fallback lifetime**
+   How long logical/indexed execution remains available after direct mode
+   passes activation gates.
+
+---
+
+## Appendix A - Reference Map
 
 | Concern | Current location |
 |---|---|
-| Daily/OFE/phase loop | `crates/openwepp-hillslope-orchestrator/src/scheduler.rs` (`execute_*_ofe_sequence*`, ~1858–1993); phase order `src/phase.rs:23-38` |
-| Phase DAG / dispatch | `scheduler.rs:145-201` (deps), `:1210-1369` (topo exec), `hydrology/01_phase_routing.rs` (phase→class) |
-| Kernel trait / request / response | `crates/openwepp-kernel-contract/src/lib_mod/core_types/02_boundary_values_and_kernel_requests.rs` (`HillslopeKernel` ~940, request ~723, response ~364, payloads ~314/339) |
-| State surfaces / symbols / registry | `…/core_types/00_symbol_registry_and_indexed_surfaces.rs`; `HillslopeWritebackSurface` `scheduler.rs:252-256` |
-| Guards | `…/writeback.rs` (`evaluate_kernel_writeback`); `hydrology/support_helpers_mod/state_access.rs`; `hydrology/02_guard_errors.rs` |
-| Kernel phases (~10.8k lines) | `hydrology/kernel_phases_mod/` (runoff_reconciliation 1956, plant_percolation 1542, infiltration_evap 1332, lateral 1253, erod19 1143, …) |
-| I/O writers | `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs` (HBP `build_hbp_output` ~153); `crates/openwepp-hillslope-output/src/{hillslope_wat,hillslope_pass}.rs` (typed parquet) |
-| MOFE transfers | `scheduler.rs:264-370` (`TransferInput`/`TransferOutput`, `[f64;24]`) |
-| Current transition frame/adapter | `crates/openwepp-hillslope-orchestrator/src/day_frame.rs` (`HillslopeDayFrame`, `HillslopeLaneDenseState`, dirty-id flush and symbol-registry bridges) |
-| Current dense read fallback | `hydrology/support_helpers_mod/state_access.rs` (`indexed -> dense slot -> logical surface` read chain, a compatibility path not the Stage-4+ target) |
+| Daily/OFE/phase loop | `crates/openwepp-hillslope-orchestrator/src/scheduler.rs` |
+| Phase order | `crates/openwepp-hillslope-orchestrator/src/phase.rs` |
+| Kernel request/response/payload | `crates/openwepp-kernel-contract/src/lib_mod/core_types/02_boundary_values_and_kernel_requests.rs` |
+| Symbol registry and indexed surfaces | `crates/openwepp-kernel-contract/src/lib_mod/core_types/00_symbol_registry_and_indexed_surfaces.rs` |
+| Hydrology symbol access | `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/state_access.rs` |
+| Current frame/transition adapter | `crates/openwepp-hillslope-orchestrator/src/day_frame.rs` |
+| Runner setup and indexed authority | `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs` |
+| Persistent scheduler lifecycle | `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime/03_scheduler_lifecycle.rs` |
+| HBP/WAT/PASS output helpers | `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs` and `crates/openwepp-hillslope-output/src/` |
+| Work-package evidence | `docs/work-packages/20260619-perfdeep0*/` |
 
-## Appendix B — External implementation references
+## Appendix B - Implementation References
 
-These references are guidance inputs only; local PERF evidence and openWEPP science contracts remain the
-authority for acceptance.
+These references are guidance inputs only. Local PERF evidence and openWEPP
+contracts remain the authority for acceptance.
 
-- Rust `BTreeMap` background: ordered maps trade cache behavior, comparisons, and indirection; the current
-  hot path uses this ordered logical property where deterministic export matters, but not where daily phase
-  state needs direct lane-local mutation:
+- Rust `BTreeMap` background:
   <https://doc.rust-lang.org/std/collections/struct.BTreeMap.html#background>.
-- Rust `Vec` guarantees: `Vec<T>` is a contiguous growable array; capacity planning avoids reallocations,
-  but `Vec` is still an owned allocation and should not be rebuilt per phase/day in the hot loop:
+- Rust `Vec` guarantees:
   <https://doc.rust-lang.org/std/vec/struct.Vec.html>.
-- Rust Reference, type layout: arrays have contiguous element layout; default `repr(Rust)` gives only
-  soundness-level layout guarantees; `#[repr(transparent)]` gives a one-field wrapper the same layout/ABI as
-  its non-zero-sized field: <https://doc.rust-lang.org/reference/type-layout.html>.
-- Rust `Option` representation: null-pointer/niche optimization is guaranteed only for the documented type
-  set, not arbitrary enums such as `BoundaryValue`:
+- Rust Reference, type layout:
+  <https://doc.rust-lang.org/reference/type-layout.html>.
+- Rust `Option` representation:
   <https://doc.rust-lang.org/std/option/index.html#representation>.
-- Rust Performance Book, heap allocations: allocations, `format!`, cloning, and collection rebuilds are
-  normal causes of hot-path cost; reusable workhorse collections and allocation checks are recommended
-  where profiling shows the site is hot:
+- Rust Performance Book, heap allocations:
   <https://nnethercote.github.io/perf-book/heap-allocations.html>.
-- Rust Performance Book, type sizes and bounds checks: measure hot type layout, guard against accidental
-  size regressions, and use iterator/slice/range-assertion forms before considering unchecked indexing:
-  <https://nnethercote.github.io/perf-book/type-sizes.html> and
+- Rust Performance Book, type sizes:
+  <https://nnethercote.github.io/perf-book/type-sizes.html>.
+- Rust Performance Book, bounds checks:
   <https://nnethercote.github.io/perf-book/bounds-checks.html>.
-- Rust Performance Book, profiling and benchmarking: optimize profiled hot paths, use realistic workloads,
-  and treat endpoint timing/RSS as the production signal:
-  <https://nnethercote.github.io/perf-book/profiling.html> and
+- Rust Performance Book, profiling:
+  <https://nnethercote.github.io/perf-book/profiling.html>.
+- Rust Performance Book, benchmarking:
   <https://nnethercote.github.io/perf-book/benchmarking.html>.
