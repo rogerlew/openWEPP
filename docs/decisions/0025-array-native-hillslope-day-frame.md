@@ -68,6 +68,9 @@ Negative / cost:
 - Guard parity fixtures cover static and runtime-derived bounds with accept/reject parity on message-id
   classes and diagnostic attribution policy.
 - H2637 endpoint + RSS measured same-machine vs PERFIDX06 per stage; the endpoint is the perf authority.
+- Migrated hot-frame state records layout/type-size and allocation evidence, including frame slot/field
+  counts and proof that normal success paths do not retain `format!`, owned symbol cloning, collection
+  rebuilds, or equivalent allocation helpers in the migrated phase loop.
 - Determinism + `SC-*` closure/conservation gates green throughout.
 - The Stage-1/2 **falsification check**: a properly-sized hydrology island that does not move the endpoint
   halts the program for re-profiling.
@@ -82,6 +85,10 @@ Ratified 2026-06-18 — ADR-0025 is the accepted hot-path runtime authority. ADR
 symbol/phase migration tactic) is superseded — **no further writeback-only or materialization-retirement
 rungs.** Execution proceeds as the staged, identity-gated `PERFDEEP0N` series under the Required-gates
 discipline above.
+
+Amendment 1, 2026-06-19 — the linked specification's Rust implementation-gotcha review adds the
+layout/type-size and allocation-evidence gate above. This amendment does not change the adopted
+architecture; it hardens the evidence required before direct-frame stages can claim hot-path closure.
 
 ## Non-decisions
 

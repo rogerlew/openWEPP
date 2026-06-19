@@ -209,9 +209,10 @@ pub struct HillslopeDayFrame {
 ```
 
 Design rules:
-- **Scalars are named typed fields.** Keep the `BoundaryValue` unit newtypes (`WaterDepthMeters`, …) as
-  field types — they are zero-cost (compile to `f64`) and preserve dimensional safety, satisfying *"pure
-  functions over typed state."* Raw `f64` is the fallback only where a unit type does not exist.
+- **Scalars are named typed fields.** Keep the unit wrapper types (`WaterDepthMeters`, …) as field types
+  where they exist; this preserves dimensional safety and satisfies *"pure functions over typed state."*
+  Raw `f64` is the fallback only where a unit type does not exist. Layout-sensitive use of these wrappers
+  must follow the §4.7 `#[repr(transparent)]` policy.
 - **Array families become fixed arrays / struct-of-arrays**, not 24/N separate symbols. SoA layout for the
   per-layer and per-hour data keeps the hot inner loops cache-linear (the RSS lever — target a few-MB,
   L2/L3-resident working set, like legacy's COMMON blocks).
@@ -300,16 +301,16 @@ Web guidance reviewed on 2026-06-19 reinforces the local PERFDEEP evidence: the 
 allocation, indirection, enum/tag dispatch, and compatibility lookups from the hot loop, not from merely
 renaming maps as arrays.
 
-Binding implementation rules:
+Post-ratification binding implementation rules (ADR-0025 Amendment 1, 2026-06-19):
 
 - **Contiguity must be real.** Fixed-width hourly/layer families should use `[T; N]`, slices, or
   pre-sized vectors/boxed slices with one owned allocation. Rust guarantees array element contiguity and
   offset arithmetic for `[T; N]`; `Vec<T>` is a contiguous growable array whose initialized elements live in
   order in the allocation. Do not reintroduce per-symbol heap nodes or per-day rebuilt vectors for hot state.
 - **Do not assume optional or enum storage is free.** Rust only guarantees `Option<T>` has the same layout as
-  `T` for documented pointer, `NonZero*`, function-pointer, `NonNull`, and transparent-wrapper cases.
-  `Option<BoundaryValue>` is not covered by that guarantee. Production frame fields should be typed scalars
-  plus explicit validity/dirty bitsets where absence is semantically required.
+  `T` for the documented reference, `Box`, function-pointer, `NonNull`, `NonZero*`, and transparent-wrapper
+  cases. `Option<BoundaryValue>` is not covered by that guarantee. Production frame fields should be typed
+  scalars plus explicit validity/dirty bitsets where absence is semantically required.
 - **Unit wrappers need explicit layout policy.** If a unit newtype's layout or ABI equivalence to `f64` is
   relied on for arrays, FFI, SIMD, or reinterpretation, it must be `#[repr(transparent)]` over the scalar
   field and must not be transmuted without an unsafe proof. Rust's default representation only guarantees
@@ -497,7 +498,7 @@ incremental application, and gates execution on the §7 identity discipline. Exe
 
 ---
 
-## 12. Open Design Decisions (for the ratifying ADR / implementation)
+## 12. Open Design Decisions (for implementation packages / future authority changes)
 
 These are genuine forks left to the implementing ADR + Codex, not dictated here:
 
