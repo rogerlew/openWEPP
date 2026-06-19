@@ -10,6 +10,13 @@
 
 State as of `2026-06-19`:
 
+- PERFDEEP09 is scaffolded and queued as an iterative Defect-Closure ExecPlan
+  for `PERFDEEP09-DISABLED-PATH-R2-BLOCKER`. It must benchmark, attribute,
+  remediate, and repeat inside one package until the default-disabled H2637
+  three-run median gate `<= 676.67 s` passes or a legitimate DC boundary is
+  proven. The package forbids another diagnostic-only handoff and still blocks
+  R2+ direct-frame runtime implementation until the gate is cleared. Package:
+  `20260619-perfdeep09-disabled-path-iterative-defect-closure-001/`.
 - PERFDEEP08 executed with verdict `HOLD`. The package tested one scoped
   disabled-path hard-isolation candidate: caching the PERFDEEP02 roundtrip env
   lookup and short-circuiting inactive indexed-shadow hooks. The candidate
