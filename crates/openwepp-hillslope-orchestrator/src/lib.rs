@@ -5,6 +5,7 @@ pub mod schedule_export;
 
 mod constants;
 mod consumer_boundary;
+mod day_frame;
 mod hydrology;
 mod phase;
 mod scheduler;
@@ -45,6 +46,10 @@ pub use consumer_boundary::{
     HillslopeGrowthBoundaryError, HillslopePlActiveSlotResolutionError,
     hillslope_consumer_adapter_for_phase, required_hillslope_consumer_state_symbols,
     validate_hillslope_consumer_boundary,
+};
+pub use day_frame::{
+    HillslopeDayFrame, HillslopeDayFrameError, HillslopeDayFrameIoEdgeScalars,
+    HillslopeDayFrameMismatch, HillslopeDayFrameShadowReport,
 };
 pub use hydrology::{
     HillslopeHydrologyRoutingError, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,

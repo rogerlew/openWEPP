@@ -105,7 +105,34 @@ unchanged.
 
 ## Execution Result
 
-(pending Codex execution)
+PERFDEEP01 Stage-0 scaffold execution is complete, with production authority
+unchanged and all required Stage-0 artifacts authored.
+
+- `HillslopeDayFrame` schema, seed/flush, and shadow roundtrip harness are
+  implemented in `crates/openwepp-hillslope-orchestrator/src/day_frame.rs`, with
+  focused fixture coverage in
+  `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/day_frame.rs`
+  (`3` tests passed).
+- Required Stage-0 ledgers are complete: frame schema, roundtrip identity,
+  publication operand lineage, guard-tier catalogue, contract transition map,
+  endpoint/RSS evidence, and bounded writeback inventory.
+- H2637 endpoint remains flat vs PERFMIG01 baseline:
+  `669.06 s / 227916 KB` vs `669.97 s / 228144 KB`
+  (delta `-0.91 s`, `-228 KB`).
+- Output parity holds:
+  `H2637.hbp`, `H2637.wat.parquet`, `H2637.loss.json`, and
+  `H2637.plot.parquet` are byte-identical; `H2637.pass.parquet` is
+  Arrow-equivalent (schema equal, row-count equal, bidirectional `EXCEPT ALL`
+  diff `0`).
+- Same-config determinism rerun passed:
+  rerun metric `h2637_determinism_run2 671.10 228844`; run1 snapshot vs rerun
+  is byte-identical for `.hbp`, `.wat.parquet`, `.loss.json`, `.plot.parquet`,
+  with `H2637.pass.parquet` Arrow-equivalent.
+- Workspace closure gates passed:
+  `cargo fmt --check`, `cargo check --workspace`,
+  `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo test --workspace`, `cargo deny check`, scoped markdown lint, and
+  `git diff --check`.
 
 ## Dependencies
 

@@ -28,7 +28,8 @@ use crate::schedule_export::{
     validate_hillslope_schedule_graph,
 };
 use crate::{
-    Wb11HydrologyKernel, Wb11HydrologyKernelGuardError, build_hillslope_hot_symbol_tables,
+    HillslopeDayFrame, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
+    build_hillslope_hot_symbol_tables,
     consumer_boundary::{
         HillslopeConsumerBoundaryError, HillslopeDecompositionBoundaryError,
         HillslopeGrowthBoundaryError, HillslopePlActiveSlotResolutionError,
@@ -51,6 +52,7 @@ use crate::{
 };
 
 mod boundaries;
+mod day_frame;
 mod fixtures;
 mod growth;
 mod hydrology;

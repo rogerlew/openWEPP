@@ -178,9 +178,16 @@ Design rules:
   per-layer and per-hour data keeps the hot inner loops cache-linear (the RSS lever — target a few-MB,
   L2/L3-resident working set, like legacy's COMMON blocks).
 - **Forcing series are borrowed read-only** for the day, never copied into the frame per phase.
-- The frame is **plain owned data** — no `Option`, no sparse vector, no id indirection on the hot path.
-  (PERFARCH03 used `Vec<Option<BoundaryValue>>` slots; the typed frame is strictly faster — no bounds
-  check, no `Option` unwrap, compiler can register-allocate.)
+- **Representation baseline (ratified by PERFDEEP01, 2026-06-18):** the dense store is
+  `state_slots`/`flux_slots: Vec<Option<BoundaryValue>>` indexed by frozen `SymbolRegistry` id — the
+  **representation PERFARCH03 actually measured** (0.96 µs/OFE-day = 146×, well inside the ≤5× budget) —
+  plus the fixed-width array families and typed I/O-edge fields above. This is the authoritative Stage-0+
+  frame. Promoting the bulk scalars further to **named unit-typed `f64` fields** (removing `Option`, the
+  enum match, and id indirection) is a **second-order micro-optimization** — the conceptual struct above is
+  the aspirational end-state, not a Stage-1 requirement — tracked as an open fork (§12 fork 1). The slot
+  baseline already clears the viability gate; typed-field promotion is pursued only if a later endpoint
+  shows the per-access enum/`Option` cost matters. (The original "no `Option`, no id indirection" rule was
+  an over-specification corrected here.)
 
 ### 4.2 Kernels as pure functions over the frame
 The kernel signature loses the symbol surfaces and the writeback payload:
