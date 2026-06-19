@@ -641,7 +641,7 @@ pub(crate) fn erod19_depend(
             Self::extract_state_update_scalar(erod13_state_updates, EROD13_SYMBOL_THETA)
         {
             value
-        } else if request.state_surface.contains_key(&theta_symbol) {
+        } else if Self::state_value_for_symbol(request, &theta_symbol).is_some() {
             Self::require_erod18_state_scalar(request, &theta_symbol)?
         } else {
             Self::erod19_route_theta_from_erosion_inputs(request)?
@@ -695,11 +695,10 @@ pub(crate) fn erod19_depend(
             Self::extract_state_update_scalar(erod13_state_updates, EROD13_SYMBOL_PHI)
         {
             value
-        } else if request.state_surface.contains_key(&phi_symbol) {
+        } else if Self::state_value_for_symbol(request, &phi_symbol).is_some() {
             Self::require_erod18_state_scalar(request, &phi_symbol)?
-        } else if request
-            .state_surface
-            .contains_key(&BoundarySymbol::from(EROD14_SYMBOL_BETA))
+        } else if Self::state_value_for_symbol(request, &BoundarySymbol::from(EROD14_SYMBOL_BETA))
+            .is_some()
         {
             Self::erod19_route_phi_from_route_beta(request)?
         } else {
@@ -752,11 +751,10 @@ pub(crate) fn erod19_depend(
             Self::extract_state_update_scalar(erod13_state_updates, EROD13_SYMBOL_TAUCN)
         {
             value
-        } else if request.state_surface.contains_key(&tauc_symbol) {
+        } else if Self::state_value_for_symbol(request, &tauc_symbol).is_some() {
             Self::require_erod18_state_scalar(request, &tauc_symbol)?
-        } else if request
-            .state_surface
-            .contains_key(&BoundarySymbol::from(EROD13_SYMBOL_SHRSOL))
+        } else if Self::state_value_for_symbol(request, &BoundarySymbol::from(EROD13_SYMBOL_SHRSOL))
+            .is_some()
         {
             Self::erod19_route_tauc_from_shear_inputs(request)?
         } else {
@@ -789,7 +787,7 @@ pub(crate) fn erod19_depend(
         lddend: f64,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let g_symbol = BoundarySymbol::from(EROD13_SYMBOL_G);
-        if let Some(value) = request.state_surface.get(&g_symbol) {
+        if let Some(value) = Self::state_value_for_symbol(request, &g_symbol) {
             let scalar = value.as_f64();
             if !scalar.is_finite() {
                 return Err(Wb11HydrologyKernelGuardError::Erod18NonFiniteSymbol {

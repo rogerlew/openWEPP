@@ -103,7 +103,7 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
     ) -> Result<bool, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(WB14_SYMBOL_SNOW_FILE_PRESENT);
-        if let Some(value) = request.state_surface.get(&key) {
+        if let Some(value) = Self::state_value_for_symbol(request, &key) {
             let scalar = value.as_f64();
             if !scalar.is_finite() {
                 return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
@@ -142,15 +142,16 @@ impl Wb11HydrologyKernel {
             (Some(tmax), Some(tmin)) => f64::midpoint(tmax, tmin) < 0.0,
             _ => false,
         };
-        let snow_controls_projected = request
-            .state_surface
-            .contains_key(&BoundarySymbol::from(WB14_SYMBOL_SNOW_RST))
-            && request
-                .state_surface
-                .contains_key(&BoundarySymbol::from(WB14_SYMBOL_SNOW_NEWSNW))
-            && request
-                .state_surface
-                .contains_key(&BoundarySymbol::from(WB14_SYMBOL_SNOW_SSD));
+        let snow_controls_projected =
+            Self::state_value_for_symbol(request, &BoundarySymbol::from(WB14_SYMBOL_SNOW_RST))
+                .is_some()
+                && Self::state_value_for_symbol(
+                    request,
+                    &BoundarySymbol::from(WB14_SYMBOL_SNOW_NEWSNW),
+                )
+                .is_some()
+                && Self::state_value_for_symbol(request, &BoundarySymbol::from(WB14_SYMBOL_SNOW_SSD))
+                    .is_some();
 
         let active_snow_coupling =
             runtime_swe > WB11_ZERO_THRESHOLD || (cold_day_active && snow_controls_projected);
@@ -180,7 +181,7 @@ impl Wb11HydrologyKernel {
         ]
         .into_iter()
         .chain(snow_option_symbols.iter())
-        .any(|symbol| request.state_surface.contains_key(symbol));
+        .any(|symbol| Self::state_value_for_symbol(request, symbol).is_some());
         if !snow_projection_present {
             return Ok(0.0);
         }

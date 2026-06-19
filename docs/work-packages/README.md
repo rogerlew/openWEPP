@@ -8,8 +8,17 @@
 
 ## Current roadmap execution log
 
-State as of `2026-06-18`:
+State as of `2026-06-19`:
 
+- PERFDEEP02 is complete with verdict `NO-GO - performance blocked`. The
+  package implemented the Stage-1 dense-slot `HillslopeDayFrame` hydrology
+  island mechanics, dense-first request reads, dirty-id frame writeback flush,
+  and focused full-family frame roundtrip tests. Full Rust gates passed.
+  Production opt-in H2637 endpoint attempts failed by more than 2x versus the
+  PERFDEEP01 `669.97 s` reference, so the island is fail-closed behind
+  `OPENWEPP_PERFDEEP02_FRAME_ISLAND=1`. Follow-on work must remove per-day/OFE
+  frame lifecycle cost before default activation. Package:
+  `20260619-perfdeep02-hydrology-island-core-001/`.
 - PERFMIG02 is executed-redirect. The rung preserved identity while migrating hot
   scalar helpers to dense-first reads and retiring logical materialization for
   six internal WB11/WB12/WB14 symbols, but the final-code H2637 no-UI endpoint

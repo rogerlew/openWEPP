@@ -3,7 +3,8 @@ use std::error::Error;
 use std::fmt;
 
 use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, SymbolRegistry, SymbolRegistryError,
+    BoundarySymbol, BoundaryValue, IndexedKernelWritebackPayload, IndexedWritebackSurface,
+    KernelWritebackPayload, SymbolId, SymbolRegistry, SymbolRegistryError,
 };
 
 use crate::constants::{
@@ -67,6 +68,12 @@ pub struct HillslopeDayFrameShadowReport {
     pub state_mismatch_count: usize,
     pub flux_mismatch_count: usize,
     pub first_mismatch: Option<HillslopeDayFrameMismatch>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct HillslopeDayFrameDirtyIds {
+    pub state_ids: Vec<SymbolId>,
+    pub flux_ids: Vec<SymbolId>,
 }
 
 impl HillslopeDayFrameShadowReport {
@@ -154,6 +161,36 @@ impl<'a> HillslopeDayFrame<'a> {
         )
     }
 
+    pub fn seed_from_indexed_writeback_surface(
+        indexed_writeback_surface: &IndexedWritebackSurface,
+        symbol_registry: &SymbolRegistry,
+        climate_forcing_series: Option<&'a [f64]>,
+    ) -> Result<Self, HillslopeDayFrameError> {
+        let mut state_slots = vec![None; symbol_registry.len()];
+        let mut flux_slots = vec![None; symbol_registry.len()];
+
+        for (id, value) in indexed_writeback_surface.state_surface().entries() {
+            let Some(slot) = state_slots.get_mut(id.as_usize()) else {
+                return Err(SymbolRegistryError::UnknownSymbolId { id: *id }.into());
+            };
+            *slot = Some(*value);
+        }
+
+        for (id, value) in indexed_writeback_surface.flux_surface().entries() {
+            let Some(slot) = flux_slots.get_mut(id.as_usize()) else {
+                return Err(SymbolRegistryError::UnknownSymbolId { id: *id }.into());
+            };
+            *slot = Some(*value);
+        }
+
+        Ok(Self::from_seeded_slots(
+            state_slots,
+            flux_slots,
+            symbol_registry,
+            climate_forcing_series,
+        ))
+    }
+
     pub fn seed_from_surfaces(
         state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
         flux_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
@@ -173,6 +210,20 @@ impl<'a> HillslopeDayFrame<'a> {
             flux_slots[id.as_usize()] = Some(*value);
         }
 
+        Ok(Self::from_seeded_slots(
+            state_slots,
+            flux_slots,
+            symbol_registry,
+            climate_forcing_series,
+        ))
+    }
+
+    fn from_seeded_slots(
+        state_slots: Vec<Option<BoundaryValue>>,
+        flux_slots: Vec<Option<BoundaryValue>>,
+        symbol_registry: &SymbolRegistry,
+        climate_forcing_series: Option<&'a [f64]>,
+    ) -> Self {
         let mut frame = Self {
             symbol_registry: symbol_registry.clone(),
             state_slots,
@@ -205,7 +256,7 @@ impl<'a> HillslopeDayFrame<'a> {
             runtime_year: frame.capture_symbol_from_any_surface(PL_RUNTIME_YEAR_SYMBOL),
         };
 
-        Ok(frame)
+        frame
     }
 
     #[must_use]
@@ -221,6 +272,97 @@ impl<'a> HillslopeDayFrame<'a> {
     #[must_use]
     pub fn flux_slots(&self) -> &[Option<BoundaryValue>] {
         &self.flux_slots
+    }
+
+    pub fn set_state_slot(
+        &mut self,
+        id: SymbolId,
+        value: Option<BoundaryValue>,
+    ) -> Result<(), SymbolRegistryError> {
+        let Some(slot) = self.state_slots.get_mut(id.as_usize()) else {
+            return Err(SymbolRegistryError::UnknownSymbolId { id });
+        };
+        *slot = value;
+        Ok(())
+    }
+
+    pub fn set_flux_slot(
+        &mut self,
+        id: SymbolId,
+        value: Option<BoundaryValue>,
+    ) -> Result<(), SymbolRegistryError> {
+        let Some(slot) = self.flux_slots.get_mut(id.as_usize()) else {
+            return Err(SymbolRegistryError::UnknownSymbolId { id });
+        };
+        *slot = value;
+        Ok(())
+    }
+
+    pub fn apply_kernel_writeback_payload(
+        &mut self,
+        payload: &KernelWritebackPayload,
+    ) -> Result<HillslopeDayFrameDirtyIds, SymbolRegistryError> {
+        let mut dirty = HillslopeDayFrameDirtyIds::default();
+        for field in &payload.state_updates {
+            let id = self.symbol_registry.id_of(&field.symbol)?;
+            self.set_state_slot(id, Some(field.value))?;
+            dirty.state_ids.push(id);
+        }
+        for field in &payload.flux_updates {
+            let id = self.symbol_registry.id_of(&field.symbol)?;
+            self.set_flux_slot(id, Some(field.value))?;
+            dirty.flux_ids.push(id);
+        }
+        Ok(dirty)
+    }
+
+    pub fn apply_indexed_kernel_writeback_payload(
+        &mut self,
+        payload: &IndexedKernelWritebackPayload,
+    ) -> Result<HillslopeDayFrameDirtyIds, SymbolRegistryError> {
+        let mut dirty = HillslopeDayFrameDirtyIds::default();
+        for field in &payload.state_updates {
+            self.set_state_slot(field.id, Some(field.value))?;
+            dirty.state_ids.push(field.id);
+        }
+        for field in &payload.flux_updates {
+            self.set_flux_slot(field.id, Some(field.value))?;
+            dirty.flux_ids.push(field.id);
+        }
+        Ok(dirty)
+    }
+
+    pub fn flush_dirty_ids_to_writeback_surface(
+        &self,
+        state_ids: &[SymbolId],
+        flux_ids: &[SymbolId],
+        writeback_surface: &mut HillslopeWritebackSurface,
+    ) -> Result<(), SymbolRegistryError> {
+        for id in state_ids {
+            let symbol = self
+                .symbol_registry
+                .symbol(*id)
+                .ok_or(SymbolRegistryError::UnknownSymbolId { id: *id })?;
+            if let Some(value) = self.state_slots[id.as_usize()] {
+                writeback_surface
+                    .state_surface
+                    .insert(symbol.clone(), value);
+            } else {
+                writeback_surface.state_surface.remove(symbol);
+            }
+        }
+        for id in flux_ids {
+            let symbol = self
+                .symbol_registry
+                .symbol(*id)
+                .ok_or(SymbolRegistryError::UnknownSymbolId { id: *id })?;
+            if let Some(value) = self.flux_slots[id.as_usize()] {
+                writeback_surface.flux_surface.insert(symbol.clone(), value);
+            } else {
+                writeback_surface.flux_surface.remove(symbol);
+            }
+        }
+        Ok(())
     }
 
     #[must_use]

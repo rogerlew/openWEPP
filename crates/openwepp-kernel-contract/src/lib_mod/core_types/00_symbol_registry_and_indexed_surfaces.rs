@@ -569,8 +569,8 @@ impl HotSymbolTables {
         flux_grid_roots: &[&str],
     ) -> Self {
         Self {
-            state_scalars: collect_scalar_symbols(registry, state_scalar_symbols),
-            flux_scalars: collect_scalar_symbols(registry, flux_scalar_symbols),
+            state_scalars: collect_scalar_symbols(registry, state_scalar_symbols, false),
+            flux_scalars: collect_scalar_symbols(registry, flux_scalar_symbols, false),
             state_series: collect_series_roots(registry, state_series_roots),
             flux_series: collect_series_roots(registry, flux_series_roots),
             state_grids: collect_grid_roots(registry, state_grid_roots),
@@ -835,8 +835,17 @@ impl IndexedPlSymbolTables {
 fn collect_scalar_symbols(
     registry: &SymbolRegistry,
     symbols: &[&str],
+    include_all_registry_symbols: bool,
 ) -> BTreeMap<String, IndexedBoundarySymbol> {
     let mut collected = BTreeMap::new();
+    if include_all_registry_symbols {
+        for (id, symbol) in registry.iter() {
+            collected.insert(
+                symbol.as_str().to_owned(),
+                IndexedBoundarySymbol::new(symbol.clone(), id),
+            );
+        }
+    }
     for symbol in symbols {
         let boundary_symbol = BoundarySymbol::from(*symbol);
         if let Ok(id) = registry.id_of(&boundary_symbol) {

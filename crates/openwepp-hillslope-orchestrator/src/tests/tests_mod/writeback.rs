@@ -133,6 +133,82 @@ fn perfmig01_scheduler_applies_indexed_writeback_payload() {
     );
 }
 
+#[test]
+fn perfdeep02_scheduler_runs_hydrology_island_through_dense_slots_without_indexed_mirror() {
+    let state_symbol = BoundarySymbol::from("wb12_infiltration");
+    let flux_symbol = BoundarySymbol::from("Q");
+    let registry = SymbolRegistry::from_symbols([state_symbol.clone(), flux_symbol.clone()])
+        .expect("registry should build");
+    let hot_tables = build_hillslope_hot_symbol_tables(&registry);
+    let state_id = registry
+        .id_of(&state_symbol)
+        .expect("state id should be registered");
+    let flux_id = registry
+        .id_of(&flux_symbol)
+        .expect("flux id should be registered");
+
+    let mut initial_state = BTreeMap::new();
+    initial_state.insert(state_symbol.clone(), BoundaryValue::scalar(0.0));
+    let mut initial_flux = BTreeMap::new();
+    initial_flux.insert(flux_symbol.clone(), BoundaryValue::scalar(0.0));
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Perfdeep02DenseIslandKernel::new(state_id, flux_id);
+
+    let report = scheduler
+        .execute_with_kernel_indexed(
+            &topology_report,
+            &mut kernel,
+            HillslopeWritebackSurface {
+                state_surface: initial_state,
+                flux_surface: initial_flux,
+            },
+            None,
+            Some(&registry),
+            Some(&hot_tables),
+        )
+        .expect("dense island indexed execution should succeed without indexed mirror");
+
+    assert!(report.scheduler_report.is_success());
+    assert_eq!(kernel.non_island_request_count, 6);
+    assert_eq!(kernel.island_request_count, 8);
+    assert_eq!(kernel.observed_initial_value, Some(0.0));
+    assert_eq!(kernel.observed_evap_value, Some(42.0));
+    assert_eq!(kernel.observed_evap_flux, Some(7.0));
+    assert_eq!(
+        report
+            .writeback_surface
+            .state_surface
+            .get(&state_symbol)
+            .copied()
+            .map(BoundaryValue::as_f64),
+        Some(42.0)
+    );
+    assert_eq!(
+        report
+            .writeback_surface
+            .flux_surface
+            .get(&flux_symbol)
+            .copied()
+            .map(BoundaryValue::as_f64),
+        Some(7.0)
+    );
+    let percolation_report = report
+        .phase_reports
+        .iter()
+        .find(|phase_report| phase_report.phase == HillslopePhase::PercolationDeepSeepage)
+        .expect("percolation report should exist");
+    let apply_result = percolation_report
+        .apply_result
+        .as_ref()
+        .expect("percolation writeback should apply");
+    assert_eq!(apply_result.applied_state_symbols, vec![state_symbol]);
+    assert_eq!(apply_result.applied_flux_symbols, vec![flux_symbol]);
+}
+
 struct Perfmig01IndexedWritebackFixture {
     state_symbol: BoundarySymbol,
     flux_symbol: BoundarySymbol,
@@ -232,6 +308,115 @@ impl HillslopeKernel for Perfmig01IndexedKernel {
         );
 
         KernelRunResponse::with_indexed_writeback(status, indexed_writeback)
+    }
+}
+
+struct Perfdeep02DenseIslandKernel {
+    state_id: openwepp_kernel_contract::SymbolId,
+    flux_id: openwepp_kernel_contract::SymbolId,
+    non_island_request_count: usize,
+    island_request_count: usize,
+    observed_initial_value: Option<f64>,
+    observed_evap_value: Option<f64>,
+    observed_evap_flux: Option<f64>,
+}
+
+impl Perfdeep02DenseIslandKernel {
+    fn new(
+        state_id: openwepp_kernel_contract::SymbolId,
+        flux_id: openwepp_kernel_contract::SymbolId,
+    ) -> Self {
+        Self {
+            state_id,
+            flux_id,
+            non_island_request_count: 0,
+            island_request_count: 0,
+            observed_initial_value: None,
+            observed_evap_value: None,
+            observed_evap_flux: None,
+        }
+    }
+}
+
+impl HillslopeKernel for Perfdeep02DenseIslandKernel {
+    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
+        let phase_name = request.phase_name;
+        let is_island_phase = matches!(
+            phase_name,
+            "percolation_deep_seepage"
+                | "evapotranspiration"
+                | "drainage"
+                | "lateral_transfer"
+                | "plant_root_uptake"
+                | "runoff_reconciliation"
+                | "storage_reconciliation"
+                | "closure_diagnostics"
+        );
+
+        if is_island_phase {
+            self.island_request_count += 1;
+            assert!(request.dense_state_slots.is_some());
+            assert!(request.dense_flux_slots.is_some());
+            assert!(request.indexed_state_surface.is_none());
+            assert!(request.indexed_flux_surface.is_none());
+            assert!(request.has_indexed_state_surface());
+            assert!(request.has_indexed_flux_surface());
+        } else {
+            self.non_island_request_count += 1;
+            assert!(request.dense_state_slots.is_none());
+            assert!(request.dense_flux_slots.is_none());
+        }
+
+        let status = openwepp_sim_contract::status::SimulationStatus::ok(
+            SimulationPhase::HillslopeKernel,
+            format!("HKERNEL-PERFDEEP02-DENSE-OK-{phase_name}"),
+        )
+        .expect("status should construct");
+
+        match phase_name {
+            "percolation_deep_seepage" => {
+                let dense_state = request
+                    .hot_state_scalar("wb12_infiltration")
+                    .expect("dense state symbol should be hot");
+                assert_eq!(dense_state.id, self.state_id);
+                self.observed_initial_value = request
+                    .indexed_state_value(dense_state)
+                    .map(BoundaryValue::as_f64);
+                let indexed_writeback = IndexedKernelWritebackPayload::with_updates(
+                    vec![IndexedWritebackField::bounded(
+                        self.state_id,
+                        BoundaryValue::scalar(42.0),
+                        Some(0.0),
+                        Some(100.0),
+                    )],
+                    vec![IndexedWritebackField::bounded(
+                        self.flux_id,
+                        BoundaryValue::scalar(7.0),
+                        Some(0.0),
+                        Some(100.0),
+                    )],
+                );
+                KernelRunResponse::with_indexed_writeback(status, indexed_writeback)
+            }
+            "evapotranspiration" => {
+                let dense_state = request
+                    .hot_state_scalar("wb12_infiltration")
+                    .expect("dense state symbol should be hot");
+                let dense_flux = request
+                    .hot_flux_scalar("Q")
+                    .expect("dense flux symbol should be hot");
+                assert_eq!(dense_state.id, self.state_id);
+                assert_eq!(dense_flux.id, self.flux_id);
+                self.observed_evap_value = request
+                    .indexed_state_value(dense_state)
+                    .map(BoundaryValue::as_f64);
+                self.observed_evap_flux = request
+                    .indexed_flux_value(dense_flux)
+                    .map(BoundaryValue::as_f64);
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+            _ => KernelRunResponse::new(status, KernelWritebackPayload::empty()),
+        }
     }
 }
 

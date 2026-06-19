@@ -728,6 +728,8 @@ pub struct HillslopeKernelRequest<'a> {
     pub growth_context: Option<HillslopeGrowthKernelContext>,
     pub state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     pub flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+    pub dense_state_slots: Option<&'a [Option<BoundaryValue>]>,
+    pub dense_flux_slots: Option<&'a [Option<BoundaryValue>]>,
     pub indexed_state_surface: Option<&'a IndexedSurface>,
     pub indexed_flux_surface: Option<&'a IndexedSurface>,
     pub hot_symbol_tables: Option<&'a HotSymbolTables>,
@@ -762,7 +764,7 @@ impl<'a> HillslopeKernelRequest<'a> {
         state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
         flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     ) -> Self {
-        Self::with_transition_context_and_indexed(
+        Self::with_transition_context_and_dense_slots(
             phase_name,
             phase_class,
             consumer_adapter,
@@ -770,6 +772,8 @@ impl<'a> HillslopeKernelRequest<'a> {
             growth_context,
             state_surface,
             flux_surface,
+            None,
+            None,
             None,
             None,
         )
@@ -788,6 +792,36 @@ impl<'a> HillslopeKernelRequest<'a> {
         indexed_writeback_surface: Option<&'a IndexedWritebackSurface>,
         hot_symbol_tables: Option<&'a HotSymbolTables>,
     ) -> Self {
+        Self::with_transition_context_and_dense_slots(
+            phase_name,
+            phase_class,
+            consumer_adapter,
+            decomposition_context,
+            growth_context,
+            state_surface,
+            flux_surface,
+            None,
+            None,
+            indexed_writeback_surface,
+            hot_symbol_tables,
+        )
+    }
+
+    #[must_use]
+    #[allow(clippy::too_many_arguments)]
+    pub fn with_transition_context_and_dense_slots(
+        phase_name: &'a str,
+        phase_class: HillslopeKernelPhaseClass,
+        consumer_adapter: HillslopeConsumerAdapter,
+        decomposition_context: Option<HillslopeDecompositionKernelContext>,
+        growth_context: Option<HillslopeGrowthKernelContext>,
+        state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+        dense_state_slots: Option<&'a [Option<BoundaryValue>]>,
+        dense_flux_slots: Option<&'a [Option<BoundaryValue>]>,
+        indexed_writeback_surface: Option<&'a IndexedWritebackSurface>,
+        hot_symbol_tables: Option<&'a HotSymbolTables>,
+    ) -> Self {
         Self {
             phase_name,
             phase_class,
@@ -796,6 +830,8 @@ impl<'a> HillslopeKernelRequest<'a> {
             growth_context,
             state_surface,
             flux_surface,
+            dense_state_slots,
+            dense_flux_slots,
             indexed_state_surface: indexed_writeback_surface
                 .map(IndexedWritebackSurface::state_surface),
             indexed_flux_surface: indexed_writeback_surface
@@ -826,24 +862,40 @@ impl<'a> HillslopeKernelRequest<'a> {
 
     #[must_use]
     pub fn indexed_state_value(&self, symbol: &IndexedBoundarySymbol) -> Option<BoundaryValue> {
+        if let Some(value) = self
+            .dense_state_slots
+            .and_then(|slots| slots.get(symbol.id.as_usize()))
+            .copied()
+            .flatten()
+        {
+            return Some(value);
+        }
         self.indexed_state_surface
             .and_then(|surface| surface.get(symbol.id))
     }
 
     #[must_use]
     pub fn indexed_flux_value(&self, symbol: &IndexedBoundarySymbol) -> Option<BoundaryValue> {
+        if let Some(value) = self
+            .dense_flux_slots
+            .and_then(|slots| slots.get(symbol.id.as_usize()))
+            .copied()
+            .flatten()
+        {
+            return Some(value);
+        }
         self.indexed_flux_surface
             .and_then(|surface| surface.get(symbol.id))
     }
 
     #[must_use]
     pub fn has_indexed_state_surface(&self) -> bool {
-        self.indexed_state_surface.is_some()
+        self.dense_state_slots.is_some() || self.indexed_state_surface.is_some()
     }
 
     #[must_use]
     pub fn has_indexed_flux_surface(&self) -> bool {
-        self.indexed_flux_surface.is_some()
+        self.dense_flux_slots.is_some() || self.indexed_flux_surface.is_some()
     }
 
     #[must_use]

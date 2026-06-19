@@ -8,6 +8,12 @@ pub(super) fn execute_scheduler_kernel_lifecycle(
     seed_scheduler_calendar_symbols(&mut runtime_surface, &context);
     let pl_activation_sentinel = pl_runtime_activation_sentinel_value(&runtime_surface);
     prepare_pl_runtime_activation_for_scheduler(&mut runtime_surface)?;
+    maybe_record_perfdeep02_frame_roundtrip(
+        "single_pre_scheduler",
+        None,
+        &runtime_surface,
+        &context,
+    )?;
     let trace_day = context
         .hphys0245_trace_config
         .is_some_and(|config| config.includes_day(context.sim_day_index));
@@ -137,6 +143,12 @@ pub(super) fn execute_scheduler_kernel_lifecycle(
         &mut writeback_surface,
         pl_activation_sentinel,
     );
+    maybe_record_perfdeep02_frame_roundtrip(
+        "single_post_scheduler",
+        None,
+        &writeback_surface,
+        &context,
+    )?;
 
     if trace_day {
         hphys0245_trace_rows.push(build_hphys0245_trace_row(
@@ -243,6 +255,12 @@ fn prepare_persistent_lane_inputs(
         )?);
         pl_activation_sentinels.push(pl_runtime_activation_sentinel_value(&lane_surface));
         prepare_pl_runtime_activation_for_scheduler(&mut lane_surface)?;
+        maybe_record_perfdeep02_frame_roundtrip(
+            "mofe_pre_scheduler",
+            Some(lane_ofe_id),
+            &lane_surface,
+            context,
+        )?;
         if lane_execution_input.indexed_writeback_surface.is_some() {
             lane_execution_input.indexed_writeback_surface = Some(
                 IndexedWritebackSurface::from_btreemap_surfaces(

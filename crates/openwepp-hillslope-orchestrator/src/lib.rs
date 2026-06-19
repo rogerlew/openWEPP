@@ -32,8 +32,9 @@ use openwepp_kernel_contract::{
     HotSymbolTables, IndexedBoundarySymbol, IndexedKernelWritebackPayload, IndexedWritebackField,
     IndexedWritebackSurface, KernelRunResponse, KernelWritebackApplyResult, KernelWritebackPayload,
     MAX_CLIMATE_FORCING_SERIES_POINTS, SymbolId, SymbolRegistry, SymbolRegistryError,
-    WritebackDecisionOutcome, WritebackError, WritebackField, apply_indexed_kernel_writeback,
-    apply_kernel_writeback, evaluate_indexed_kernel_writeback, evaluate_kernel_writeback,
+    WRITEBACK_APPLY_MESSAGE_ID, WritebackDecisionOutcome, WritebackError, WritebackField,
+    apply_indexed_kernel_writeback, apply_kernel_writeback, evaluate_indexed_kernel_writeback,
+    evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::closure::ClosureViolation;
 use openwepp_sim_contract::status::{

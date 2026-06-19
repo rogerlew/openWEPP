@@ -11,7 +11,7 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
     build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
 };
 use openwepp_hillslope_orchestrator::{
-    HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
+    HillslopeDayFrame, HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
     OfeLanePersistentState, OfeLanePersistentStateSequence, OfeLaneSequenceExecutionReport,
     SchedulerOutcomeClass, TransferInput, TransferOutput, Wb11HydrologyKernel,
     build_hillslope_hot_symbol_tables,

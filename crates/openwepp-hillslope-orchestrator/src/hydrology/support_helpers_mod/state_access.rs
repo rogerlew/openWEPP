@@ -2,13 +2,33 @@
 use super::super::*;
 
 impl Wb11HydrologyKernel {
+    pub(crate) fn state_value_for_symbol(
+        request: &HillslopeKernelRequest<'_>,
+        symbol: &BoundarySymbol,
+    ) -> Option<BoundaryValue> {
+        request
+            .hot_state_scalar(symbol.as_str())
+            .and_then(|indexed_symbol| request.indexed_state_value(indexed_symbol))
+            .or_else(|| request.state_surface.get(symbol).copied())
+    }
+
+    pub(crate) fn flux_value_for_symbol(
+        request: &HillslopeKernelRequest<'_>,
+        symbol: &BoundarySymbol,
+    ) -> Option<BoundaryValue> {
+        request
+            .hot_flux_scalar(symbol.as_str())
+            .and_then(|indexed_symbol| request.indexed_flux_value(indexed_symbol))
+            .or_else(|| request.flux_surface.get(symbol).copied())
+    }
+
     pub(crate) fn require_state_scalar(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
         symbol: HillslopeProductionStateSymbol,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(symbol);
-        let Some(value) = request.state_surface.get(&key) else {
+        let Some(value) = Self::state_value_for_symbol(request, &key) else {
             return Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
                 phase_class,
                 symbol: key,
@@ -31,7 +51,7 @@ impl Wb11HydrologyKernel {
         symbol: HillslopeProductionFluxSymbol,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(symbol);
-        let Some(value) = request.flux_surface.get(&key) else {
+        let Some(value) = Self::flux_value_for_symbol(request, &key) else {
             return Err(Wb11HydrologyKernelGuardError::MissingRequiredFluxSymbol {
                 phase_class,
                 symbol: key,
@@ -54,7 +74,7 @@ impl Wb11HydrologyKernel {
         symbol: HillslopeProductionStateSymbol,
     ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(symbol);
-        let Some(value) = request.state_surface.get(&key) else {
+        let Some(value) = Self::state_value_for_symbol(request, &key) else {
             return Ok(None);
         };
         let scalar = value.as_f64();
@@ -74,7 +94,7 @@ impl Wb11HydrologyKernel {
         symbol: HillslopeProductionFluxSymbol,
     ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(symbol);
-        let Some(value) = request.flux_surface.get(&key) else {
+        let Some(value) = Self::flux_value_for_symbol(request, &key) else {
             return Ok(None);
         };
         let scalar = value.as_f64();
@@ -93,7 +113,7 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         symbol: &BoundarySymbol,
     ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
-        let Some(value) = request.flux_surface.get(symbol) else {
+        let Some(value) = Self::flux_value_for_symbol(request, symbol) else {
             return Ok(None);
         };
         let scalar = value.as_f64();
@@ -112,7 +132,7 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         symbol: &BoundarySymbol,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let Some(value) = request.flux_surface.get(symbol) else {
+        let Some(value) = Self::flux_value_for_symbol(request, symbol) else {
             return Err(Wb11HydrologyKernelGuardError::MissingRequiredFluxSymbol {
                 phase_class,
                 symbol: symbol.clone(),
@@ -134,7 +154,7 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         symbol: &BoundarySymbol,
     ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
-        let Some(value) = request.state_surface.get(symbol) else {
+        let Some(value) = Self::state_value_for_symbol(request, symbol) else {
             return Ok(None);
         };
         let scalar = value.as_f64();
@@ -153,7 +173,7 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         symbol: &BoundarySymbol,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let Some(value) = request.state_surface.get(symbol) else {
+        let Some(value) = Self::state_value_for_symbol(request, symbol) else {
             return Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
                 phase_class,
                 symbol: symbol.clone(),
@@ -286,7 +306,7 @@ impl Wb11HydrologyKernel {
         preferred_symbol: &BoundarySymbol,
         legacy_symbol: &BoundarySymbol,
     ) -> Result<(BoundarySymbol, f64), Wb11HydrologyKernelGuardError> {
-        if request.state_surface.contains_key(preferred_symbol) {
+        if Self::state_value_for_symbol(request, preferred_symbol).is_some() {
             return Self::require_state_scalar_for_symbol(request, phase_class, preferred_symbol)
                 .map(|value| (preferred_symbol.clone(), value));
         }
@@ -1067,7 +1087,7 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
         symbol: &BoundarySymbol,
     ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
-        let Some(value) = request.state_surface.get(symbol) else {
+        let Some(value) = Self::state_value_for_symbol(request, symbol) else {
             return Ok(None);
         };
         let scalar = value.as_f64();
@@ -1084,7 +1104,7 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
         symbol: &BoundarySymbol,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let Some(value) = request.state_surface.get(symbol) else {
+        let Some(value) = Self::state_value_for_symbol(request, symbol) else {
             return Err(Wb11HydrologyKernelGuardError::Erod13MissingRequiredSymbol {
                 symbol: symbol.clone(),
             });
@@ -1153,7 +1173,7 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
         symbol: &BoundarySymbol,
     ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
-        let Some(value) = request.state_surface.get(symbol) else {
+        let Some(value) = Self::state_value_for_symbol(request, symbol) else {
             return Ok(None);
         };
         let scalar = value.as_f64();
@@ -1170,7 +1190,7 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
         symbol: &BoundarySymbol,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let Some(value) = request.state_surface.get(symbol) else {
+        let Some(value) = Self::state_value_for_symbol(request, symbol) else {
             return Err(Wb11HydrologyKernelGuardError::Erod14MissingRequiredSymbol {
                 symbol: symbol.clone(),
             });
@@ -1239,7 +1259,7 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
         symbol: &BoundarySymbol,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let Some(value) = request.state_surface.get(symbol) else {
+        let Some(value) = Self::state_value_for_symbol(request, symbol) else {
             return Err(Wb11HydrologyKernelGuardError::Erod18MissingRequiredSymbol {
                 symbol: symbol.clone(),
             });
@@ -1468,7 +1488,7 @@ impl Wb11HydrologyKernel {
     ) -> Result<(BoundarySymbol, usize), Wb11HydrologyKernelGuardError> {
         let preferred_symbol = BoundarySymbol::from("wb11_nsl");
         let legacy_symbol = BoundarySymbol::from("nsl");
-        let symbol = if request.state_surface.contains_key(&preferred_symbol) {
+        let symbol = if Self::state_value_for_symbol(request, &preferred_symbol).is_some() {
             preferred_symbol
         } else {
             legacy_symbol
@@ -1970,7 +1990,7 @@ impl Wb11HydrologyKernel {
         symbol: HillslopeProductionStateSymbol,
     ) -> Result<Option<usize>, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(symbol);
-        let Some(value) = request.state_surface.get(&key) else {
+        let Some(value) = Self::state_value_for_symbol(request, &key) else {
             return Ok(None);
         };
         let scalar = value.as_f64();

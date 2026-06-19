@@ -8,6 +8,22 @@ fn insert_state_scalar(
     state.insert(symbol.into(), BoundaryValue::scalar(value));
 }
 
+fn insert_state_value(
+    state: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: impl Into<BoundarySymbol>,
+    value: BoundaryValue,
+) {
+    state.insert(symbol.into(), value);
+}
+
+fn insert_flux_value(
+    flux: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: impl Into<BoundarySymbol>,
+    value: BoundaryValue,
+) {
+    flux.insert(symbol.into(), value);
+}
+
 fn perfdeep01_h2637_like_warm_rain_surface() -> (
     BTreeMap<BoundarySymbol, BoundaryValue>,
     BTreeMap<BoundarySymbol, BoundaryValue>,
@@ -107,6 +123,29 @@ fn perfdeep01_h2637_like_warm_rain_surface() -> (
     (state, flux)
 }
 
+fn run_warm_rain_runoff_payload(
+    state: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    flux: &BTreeMap<BoundarySymbol, BoundaryValue>,
+) -> KernelWritebackPayload {
+    let request = HillslopeKernelRequest::with_phase_context(
+        "runoff_reconciliation",
+        HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+        HillslopeConsumerAdapter::Runoff,
+        None,
+        state,
+        flux,
+    );
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+    assert_eq!(
+        response.status.message_id(),
+        "HKERNEL-WB14-RUNOFF-OK-001",
+        "{:?}",
+        response.status
+    );
+    response.writeback
+}
+
 #[test]
 fn perfdeep01_frame_seed_flush_roundtrip_is_bit_identical() {
     let (state, flux) = perfdeep01_h2637_like_warm_rain_surface();
@@ -190,4 +229,111 @@ fn perfdeep01_frame_borrows_climate_forcing_series_without_copy() {
         .expect("climate forcing should remain borrowed on the frame");
     assert_eq!(borrowed, forcing.as_slice());
     assert!(std::ptr::eq(borrowed.as_ptr(), forcing.as_ptr()));
+}
+
+#[test]
+fn perfdeep02_frame_roundtrip_covers_production_outputs_and_full_mofe_families() {
+    let (mut state, mut flux) = perfdeep01_h2637_like_warm_rain_surface();
+    insert_state_scalar(&mut state, "wb20_forward_solver_lane_enabled", 1.0);
+
+    let writeback = run_warm_rain_runoff_payload(&state, &flux);
+    assert_eq!(writeback.state_updates.len(), 543);
+    assert_eq!(writeback.flux_updates.len(), 8);
+    for field in writeback.state_updates {
+        state.insert(field.symbol, field.value);
+    }
+    for field in writeback.flux_updates {
+        flux.insert(field.symbol, field.value);
+    }
+
+    for hour in 1..=24 {
+        insert_state_scalar(
+            &mut state,
+            format!("ui_SUrunf_{hour:04}"),
+            f64::from(hour) * 1.0e-6,
+        );
+        insert_state_scalar(
+            &mut state,
+            format!("ui_SCrunf_{hour:04}"),
+            f64::from(hour) * 2.0e-6,
+        );
+        insert_state_scalar(
+            &mut state,
+            format!("ui_LfUrf_{hour:04}"),
+            f64::from(hour) * 3.0e-6,
+        );
+        insert_state_scalar(
+            &mut state,
+            format!("ui_LfCrf_{hour:04}"),
+            f64::from(hour) * 4.0e-6,
+        );
+    }
+    insert_state_value(
+        &mut state,
+        "perfdeep02.temperature_unit_probe",
+        BoundaryValue::temperature_celsius(-3.25).expect("test temperature should be valid"),
+    );
+    insert_state_value(
+        &mut state,
+        "perfdeep02.water_depth_unit_probe",
+        BoundaryValue::water_depth_meters(0.0125).expect("test water depth should be valid"),
+    );
+    insert_state_value(
+        &mut state,
+        "perfdeep02.density_unit_probe",
+        BoundaryValue::density_kilograms_per_cubic_meter(315.0)
+            .expect("test density should be valid"),
+    );
+    insert_flux_value(
+        &mut flux,
+        "perfdeep02.linear_rate_unit_probe",
+        BoundaryValue::linear_rate_meters_per_second(4.2e-7)
+            .expect("test linear rate should be valid"),
+    );
+
+    let registry = SymbolRegistry::from_surfaces(&state, &flux)
+        .expect("registry should cover production output and MOFE symbols");
+    let frame = HillslopeDayFrame::seed_from_surfaces(&state, &flux, &registry, None)
+        .expect("frame seed should succeed");
+    let report = frame
+        .assert_shadow_roundtrip_bits(&state, &flux)
+        .expect("production-output frame roundtrip should be bit-identical");
+
+    assert!(report.is_bit_identical());
+    assert_eq!(report.state_symbol_count, state.len());
+    assert_eq!(report.flux_symbol_count, flux.len());
+    assert_eq!(report.state_mismatch_count, 0);
+    assert_eq!(report.flux_mismatch_count, 0);
+    assert_eq!(
+        frame
+            .mofe_hourly_upstream_saturation_runoff
+            .iter()
+            .filter(|value| value.is_some())
+            .count(),
+        24
+    );
+    assert_eq!(
+        frame
+            .mofe_hourly_current_saturation_runoff
+            .iter()
+            .filter(|value| value.is_some())
+            .count(),
+        24
+    );
+    assert_eq!(
+        frame
+            .mofe_hourly_upstream_lateral_runoff
+            .iter()
+            .filter(|value| value.is_some())
+            .count(),
+        24
+    );
+    assert_eq!(
+        frame
+            .mofe_hourly_current_lateral_runoff
+            .iter()
+            .filter(|value| value.is_some())
+            .count(),
+        24
+    );
 }
