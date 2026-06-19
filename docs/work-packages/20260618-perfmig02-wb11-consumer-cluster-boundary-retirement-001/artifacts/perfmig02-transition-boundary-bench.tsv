@@ -1,0 +1,5 @@
+metric	repetitions	elapsed_s	us_per_payload	ns_per_field	projected_h2637_s
+evaluate_indexed_payload	50000	0.172667414	3.453348	6.267420	0.814856
+apply_indexed_payload_materialize_all	50000	5.237616801	104.752336	190.113133	24.717466
+apply_indexed_payload_perfmig02_skip_6	50000	5.273025488	105.460510	191.398384	24.884567
+evaluate_plus_apply_indexed_payload_perfmig02_skip_6	50000	5.577987310	111.559746	202.467779	26.323749

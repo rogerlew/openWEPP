@@ -1,0 +1,11 @@
+[package]
+name = "perfmig02-transition-boundary-bench"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+openwepp-kernel-contract = { path = "../../../../../crates/openwepp-kernel-contract" }
+openwepp-sim-contract = { path = "../../../../../crates/openwepp-sim-contract" }

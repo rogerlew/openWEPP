@@ -1,6 +1,6 @@
 # PERFMIG02 - WB11 Consumer-Cluster Boundary Retirement (the conversion test)
 
-Status: scaffolded 2026-06-18 (Codex-ready). The second production rung — and the **first rung that must
+Status: executed-redirect 2026-06-18. The second production rung — and the **first rung that must
 show a measured endpoint win.** Gated by PERFMIG01's CONTINUE + its central lesson.
 
 Package type: **Production migration — boundary retirement, not boundary addition.** PERFMIG01 proved the
@@ -124,7 +124,42 @@ Out of scope:
 
 ## Execution Result
 
-(pending Codex execution)
+Executed by Codex on 2026-06-18.
+
+Result: `EXECUTED-REDIRECT`. PERFMIG02 preserved identity, but the final-code H2637 endpoint was flat to
+negative versus PERFMIG01 and the apply-boundary attribution subgate failed.
+
+- Code landed dense-first hot scalar helper reads and an explicit indexed writeback logical-materialization
+  policy.
+- Internal logical materialization was retired for six symbols: `wb12_infiltration`,
+  `wb12_runoff_reconciled`, `wb14_soil_conductivity_m_s`, `wb14_effective_conductivity_m_s`,
+  `wb14_matric_potential_m`, and `wb12_runoff_carryover`.
+- Final release binary SHA: `d4f7603e79fdf415e3e4123a2baa7df19a6cb7780e8d01206bfaad6ef012d63b`.
+- H2637 no-UI final-code endpoints: `672.14 s`, `227636 KB`; repeat `675.00 s`, `228152 KB`.
+- Delta vs PERFMIG01 `669.97 s`: `+2.17 s` (`+0.32%`) and `+5.03 s` (`+0.75%`).
+- Delta vs PERFIDX06 `666.82 s`: `+5.32 s` (`+0.80%`) and `+8.18 s` (`+1.23%`).
+- HBP and WAT are byte-identical against the independent PERFMIG01 output copy; PASS is Arrow-equal with
+  metadata ignored.
+- Transition-boundary bench: materialize-all apply `104.752336 us/payload`; PERFMIG02 skip-six apply
+  `105.460510 us/payload`. The retired apply-boundary cost did not drop because fail-closed stale logical
+  removal costs more than the six avoided logical inserts.
+
+## Code Disposition (Claude, post-execution, operator-directed 2026-06-18)
+
+The PERFMIG02 **production code was reverted**; only this package's artifacts (the REDIRECT evidence)
+landed on `main`. Rationale (operator's call): the diff was identity-clean and gate-green but **regressed
+the H2637 endpoint +0.5%** (672–675 s vs PERFMIG01 669.97 s) and implemented the **now-abandoned**
+incremental writeback/materialization-retirement tactic — shipping a known regression and dead-end
+machinery to `main` is the wrong move when the pivot re-architects this surface anyway. `main` therefore
+stays at the clean PERFMIG01 baseline (`6b54db2d`, 669.97 s), and the deep-cut pivot (PERFDEEP01) starts
+from there. The reverted code is recoverable from this session's transcript / Codex's working tree if the
+pivot wants the dense-first read helper (`state_access.rs`) as a starting point. **The REDIRECT verdict and
+its evidence stand as the durable output of this package** — the experiment was run, measured honestly, and
+falsified the widen-first tactic; that is the value, not the code.
+
+Disposition: `REDIRECT`. Do not run another writeback-only or tiny materialization-retirement rung. Pivot to
+a deep single-phase array-native read+compute+write migration, or author a new package with reader-side dense
+conversion as the explicit measured acceptance target.
 
 ## Dependencies
 

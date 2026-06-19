@@ -10,6 +10,19 @@
 
 State as of `2026-06-18`:
 
+- PERFMIG02 is executed-redirect. The rung preserved identity while migrating hot
+  scalar helpers to dense-first reads and retiring logical materialization for
+  six internal WB11/WB12/WB14 symbols, but the final-code H2637 no-UI endpoint
+  was flat/negative versus PERFMIG01 (`669.97s` -> `672.14s` / `675.00s`, RSS
+  `228144 KB` -> `227636 KB` / `228152 KB`). The strict package attribution
+  subgate also failed: artifact-local `apply_indexed` materialize-all measured
+  `104.752336 us/payload`, while the conservative skip-six policy measured
+  `105.460510 us/payload` because fail-closed stale-logical removal costs more
+  than six avoided inserts. Verdict: REDIRECT; next perf work should pivot to a
+  deep single-phase array-native read+compute+write migration rather than another
+  writeback-only or tiny materialization-retirement rung.
+  Package:
+  `20260618-perfmig02-wb11-consumer-cluster-boundary-retirement-001/`.
 - PERFMIG01 is complete with verdict `CONTINUE`. ADR-0023 was ratified and the
   production WB11 warm-rain runoff writeback branch now emits a dense
   `SymbolId`-backed payload: 543 state updates plus 8 flux updates, with the
