@@ -223,6 +223,30 @@ that survive to the next day) instead of a `HillslopeWritebackSurface`. Start-of
 the persistent projection; end-of-day flushes the surviving fields back. Both are typed struct moves, not
 map rebuilds.
 
+### 4.6 Ownership — persistent lane-owned state, NOT a temporary mirror (PERFDEEP02 lesson, binding)
+The dense frame must be the **carried, lane-owned runtime authority**, not a snapshot the scheduler rebuilds
+around the logical maps. **PERFDEEP02 proved the anti-pattern is fatal:** it kept the logical/indexed
+surfaces as the real runtime state and built a `Vec<Option<BoundaryValue>>` frame sized to the **full
+registry (~4038 slots)** and **re-seeded/flushed it per OFE-day** (×235,961) — a temporary dense mirror
+around old maps. Result: H2637 **2417 s, a 3.6× regression** (commit `fa29c34b`, kept opt-in as a verified
+negative benchmark). This is the PERFIDX dual-representation ceiling in frame form.
+
+Binding rules for every migration stage:
+- **The lane runtime OWNS one persistent dense frame**; scheduler phases **borrow views** (`&`/`&mut`) into
+  it. The scheduler does **not** create or reconcile a per-phase/per-day temporary frame.
+- **Create the frame once** at lane-execution start; keep it alive across the full migrated phase chain;
+  reads and kernel writebacks update it **in place**.
+- **Hold the hot working set, not the full registry.** Climate forcing is **borrowed** (§4.1), not slotted;
+  publication/diagnostic-only symbols are not hot-frame state.
+- **Track dirty slots** with a compact dirty bitset / id list.
+- **Materialize to logical/indexed only at true boundaries:** a non-migrated phase edge, output
+  serialization, diagnostics/contract evidence, the external API. **No full-frame seed/flush loop inside
+  scheduler phase execution.**
+
+A partial island still pays a per-OFE-day *edge* cost (seed the read-set in, flush the dirty write-set out),
+but bounded to the hot working set it stays far below the internal saving — that is the difference between a
+lane-owned frame (win) and a temporary mirror (3.6× loss).
+
 ---
 
 ## 5. The I/O Materialization Edge (the key enabling finding)
@@ -312,17 +336,20 @@ The full rewrite, sequenced so each stage is independently identity-gated and en
 
 | Stage | Scope | Gate | Expected endpoint |
 |---|---|---|---|
-| **0 — Frame scaffold** | Define `HillslopeDayFrame` + typed field schema + start/end-of-day seed/flush + typed I/O capture (HBP `peakro`/`watdur`/sediment, manifest provenance, WB13/publication operands). No phase migrated yet; frame runs *beside* the maps (shadow). | Frame round-trips to/from the logical surface bit-identically; publication projection fixtures and output parity stay green. | ~flat |
-| **1 — Hydrology island core** | Migrate the contiguous hydrology cluster (RunoffReconciliation, StorageReconciliation, Evapotranspiration, Percolation, Lateral, Drainage, PlantRootUptake, PeakRunoff) to run over the frame in place. Delete the inter-phase materialization for these. Logical only at island edges (shadow-diffed). | Per-phase bit-identity (all branches) + H2637 identity. | first **measured win** — island ≈ 42% of cost; ~73× → ~43–50× |
+| **0 — Frame scaffold** ✅ *(PERFDEEP01, conditional GO 2026-06-18)* | Define `HillslopeDayFrame` + slot schema + seed/flush + typed I/O capture (HBP scalars, manifest provenance, WB13/publication operands). No phase migrated yet; frame runs *beside* the maps (shadow). | Frame round-trips bit-identically; output parity green. | ~flat |
+| **1 — Hydrology island core** ⚠️ *(PERFDEEP02 NO-GO — temporary-mirror anti-pattern, 2417 s / 3.6×; redone by PERFDEEP03 as a lane-owned persistent frame per §4.6)* | Migrate the contiguous hydrology cluster (RunoffReconciliation, StorageReconciliation, Evapotranspiration, Percolation, Lateral, Drainage, PlantRootUptake, PeakRunoff) to run over a **lane-owned persistent frame (§4.6) — NOT a per-day temporary mirror**. Hot working set only; forcing borrowed; materialize to logical only at true boundaries. | Per-phase bit-identity (all branches) + H2637 output identity + **HARD: the opt-in dense path beats the PERFDEEP01 baseline on the real H2637 endpoint** (no default activation until then). | first **measured win** — island ≈ 42% of cost; ~73× → ~43–50× |
 | **2 — Close the hydrology edges** | Remove the island's edge materialization; the frame is authoritative across the whole hydrology span; capture I/O-edge scalars typed. | H2637 identity + endpoint; **the §7 falsification check**. | ~43× → solidify |
 | **3 — Erosion island** | EROD13/14/19 + PeakRunoff over the frame (sediment columns SoA). | identity + endpoint. | removes erosion machinery share |
 | **4 — Growth/decomposition + transitions** | Decomposition/Residue/Growth phases + Normalization/StorageBounds over the frame. | identity + endpoint. | removes remaining phase share |
 | **5 — Delete the logical hot path** | Remove `HillslopeWritebackSurface` from the per-OFE-day loop, the writeback payloads, the indexed mirror, the per-day registry build. Logical/symbol surfaces survive only in I/O serialization + replay/diagnostics. | full H2637 identity + endpoint + RSS; **≤10× / ≤5× check.** | **the viability-gate measurement** |
 
-Each stage is one work-package (`PERFDEEP0N`), identity-gated, endpoint-timed, committed only when green.
-A stage that regresses without a retireable cause is reverted (the PERFMIG02 precedent), but unlike the
-incremental rungs, the frame stages have **no seam tax** — a regression would indicate a real problem, not
-an expected boundary offset.
+Each stage is one work-package (`PERFDEEP0N`), identity-gated, endpoint-timed; default activation only when
+the opt-in path beats the baseline endpoint. Unlike the incremental rungs, the frame's *internal*
+phase-to-phase seams vanish — but a **partial** stage still pays a per-OFE-day *edge* cost (seed read-set in
+/ flush dirty write-set out), which **must** be bounded to the hot working set via a **lane-owned persistent
+frame (§4.6)**. PERFDEEP02 proved a temporary full-registry mirror turns that edge into a 3.6× regression;
+the lane-owned frame keeps it far below the internal saving. A stage that regresses with the lane-owned
+frame correctly built is a real signal (the §7 falsification check), not an expected offset.
 
 ---
 
