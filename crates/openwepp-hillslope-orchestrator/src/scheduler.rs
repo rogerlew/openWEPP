@@ -12,6 +12,10 @@ use crate::constants::{
     WB19_SYMBOL_LATERAL_SSH_ROOT, WB19_SYMBOL_LATERAL_WITHDRAWAL_ROOT,
     WB20_SYMBOL_FORWARD_SOLVER_LANE_ENABLED,
 };
+use std::sync::OnceLock;
+
+mod water_balance;
+pub use water_balance::{PerOfeDailyWaterBalanceCollection, PerOfeDailyWaterBalanceError};
 
 /// Explicit scheduler dependency edge.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -433,279 +437,6 @@ impl PerOfeDailyWaterBalanceRecord {
     }
 }
 
-/// OFE-keyed daily water-balance shadow collection for staged MOFE migration.
-#[derive(Debug, Clone)]
-pub struct PerOfeDailyWaterBalanceCollection {
-    simulation_day_index: usize,
-    contributor_ofe_count: usize,
-    records: Vec<PerOfeDailyWaterBalanceRecord>,
-}
-
-impl PerOfeDailyWaterBalanceCollection {
-    /// Construct an empty daily per-OFE collection.
-    ///
-    /// # Errors
-    ///
-    /// Returns `PerOfeDailyWaterBalanceError` when the day index or
-    /// contributor OFE count is outside the contract domain.
-    pub fn new(
-        simulation_day_index: usize,
-        contributor_ofe_count: usize,
-    ) -> Result<Self, PerOfeDailyWaterBalanceError> {
-        if simulation_day_index == 0 {
-            return Err(PerOfeDailyWaterBalanceError::InvalidSimulationDayIndex {
-                simulation_day_index,
-            });
-        }
-        if contributor_ofe_count == 0 {
-            return Err(PerOfeDailyWaterBalanceError::InvalidContributorOfeCount {
-                contributor_ofe_count,
-            });
-        }
-
-        Ok(Self {
-            simulation_day_index,
-            contributor_ofe_count,
-            records: Vec::with_capacity(contributor_ofe_count),
-        })
-    }
-
-    pub fn push_record(
-        &mut self,
-        record: PerOfeDailyWaterBalanceRecord,
-    ) -> Result<(), PerOfeDailyWaterBalanceError> {
-        let expected_ofe_id = self.records.len() + 1;
-        if self.records.len() >= self.contributor_ofe_count {
-            return Err(PerOfeDailyWaterBalanceError::TooManyRecords {
-                contributor_ofe_count: self.contributor_ofe_count,
-            });
-        }
-        if record.ofe_id != expected_ofe_id {
-            return Err(PerOfeDailyWaterBalanceError::NonSequentialOfeRecord {
-                expected_ofe_id,
-                observed_ofe_id: record.ofe_id,
-            });
-        }
-        if record.upstream_transfer_input.recipient_ofe_id != record.ofe_id {
-            return Err(PerOfeDailyWaterBalanceError::TransferRecipientMismatch {
-                ofe_id: record.ofe_id,
-                recipient_ofe_id: record.upstream_transfer_input.recipient_ofe_id,
-            });
-        }
-        let expected_upstream_source = record.ofe_id.checked_sub(1).filter(|source| *source > 0);
-        if record.upstream_transfer_input.source_ofe_id != expected_upstream_source {
-            return Err(PerOfeDailyWaterBalanceError::TransferInputSourceMismatch {
-                ofe_id: record.ofe_id,
-                expected_source_ofe_id: expected_upstream_source,
-                observed_source_ofe_id: record.upstream_transfer_input.source_ofe_id,
-            });
-        }
-        if record.current_transfer_output.source_ofe_id != record.ofe_id {
-            return Err(PerOfeDailyWaterBalanceError::TransferOutputSourceMismatch {
-                ofe_id: record.ofe_id,
-                source_ofe_id: record.current_transfer_output.source_ofe_id,
-            });
-        }
-        let expected_downstream_recipient = if record.ofe_id == self.contributor_ofe_count {
-            None
-        } else {
-            Some(record.ofe_id + 1)
-        };
-        if record.current_transfer_output.recipient_ofe_id != expected_downstream_recipient {
-            return Err(
-                PerOfeDailyWaterBalanceError::TransferOutputRecipientMismatch {
-                    source_ofe_id: record.ofe_id,
-                    expected_recipient_ofe_id: expected_downstream_recipient,
-                    observed_recipient_ofe_id: record.current_transfer_output.recipient_ofe_id,
-                },
-            );
-        }
-
-        self.records.push(record);
-        Ok(())
-    }
-
-    #[must_use]
-    pub const fn simulation_day_index(&self) -> usize {
-        self.simulation_day_index
-    }
-
-    #[must_use]
-    pub const fn contributor_ofe_count(&self) -> usize {
-        self.contributor_ofe_count
-    }
-
-    #[must_use]
-    pub fn records(&self) -> &[PerOfeDailyWaterBalanceRecord] {
-        &self.records
-    }
-
-    #[must_use]
-    pub fn record_count(&self) -> usize {
-        self.records.len()
-    }
-
-    /// Return the legacy scalar surface for the N=1 compatibility adapter.
-    ///
-    /// # Errors
-    ///
-    /// Returns `PerOfeDailyWaterBalanceError` for incomplete collections or
-    /// for multi-OFE collections, whose aggregate derivation remains later
-    /// M-E scope.
-    pub fn aggregate_for_legacy_outer_consumers(
-        &self,
-    ) -> Result<HillslopeWritebackSurface, PerOfeDailyWaterBalanceError> {
-        if self.contributor_ofe_count != 1 {
-            return Err(
-                PerOfeDailyWaterBalanceError::MultiOfeAggregateNotImplemented {
-                    contributor_ofe_count: self.contributor_ofe_count,
-                },
-            );
-        }
-        let Some(record) = self.records.first() else {
-            return Err(PerOfeDailyWaterBalanceError::IncompleteCollection {
-                contributor_ofe_count: self.contributor_ofe_count,
-                record_count: self.records.len(),
-            });
-        };
-
-        Ok(record.post_day_state.clone())
-    }
-}
-
-/// Construction and adapter errors for M-E per-OFE shadow state.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PerOfeDailyWaterBalanceError {
-    InvalidSimulationDayIndex {
-        simulation_day_index: usize,
-    },
-    InvalidContributorOfeCount {
-        contributor_ofe_count: usize,
-    },
-    InvalidRecordOfeId {
-        ofe_id: usize,
-    },
-    InvalidTransferSourceOfeId {
-        source_ofe_id: usize,
-    },
-    TooManyRecords {
-        contributor_ofe_count: usize,
-    },
-    NonSequentialOfeRecord {
-        expected_ofe_id: usize,
-        observed_ofe_id: usize,
-    },
-    TransferRecipientMismatch {
-        ofe_id: usize,
-        recipient_ofe_id: usize,
-    },
-    TransferInputSourceMismatch {
-        ofe_id: usize,
-        expected_source_ofe_id: Option<usize>,
-        observed_source_ofe_id: Option<usize>,
-    },
-    TransferOutputSourceMismatch {
-        ofe_id: usize,
-        source_ofe_id: usize,
-    },
-    TransferOutputRecipientMismatch {
-        source_ofe_id: usize,
-        expected_recipient_ofe_id: Option<usize>,
-        observed_recipient_ofe_id: Option<usize>,
-    },
-    IncompleteCollection {
-        contributor_ofe_count: usize,
-        record_count: usize,
-    },
-    MultiOfeAggregateNotImplemented {
-        contributor_ofe_count: usize,
-    },
-}
-
-impl fmt::Display for PerOfeDailyWaterBalanceError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::InvalidSimulationDayIndex {
-                simulation_day_index,
-            } => write!(
-                f,
-                "simulation_day_index must be >= 1, observed {simulation_day_index}"
-            ),
-            Self::InvalidContributorOfeCount {
-                contributor_ofe_count,
-            } => write!(
-                f,
-                "contributor_ofe_count must be >= 1, observed {contributor_ofe_count}"
-            ),
-            Self::InvalidRecordOfeId { ofe_id } => {
-                write!(f, "per-OFE record id must be >= 1, observed {ofe_id}")
-            }
-            Self::InvalidTransferSourceOfeId { source_ofe_id } => write!(
-                f,
-                "transfer output source OFE id cannot be incremented, observed {source_ofe_id}"
-            ),
-            Self::TooManyRecords {
-                contributor_ofe_count,
-            } => write!(
-                f,
-                "cannot append more than {contributor_ofe_count} per-OFE records"
-            ),
-            Self::NonSequentialOfeRecord {
-                expected_ofe_id,
-                observed_ofe_id,
-            } => write!(
-                f,
-                "per-OFE records must be appended in OFE order; expected {expected_ofe_id}, observed {observed_ofe_id}"
-            ),
-            Self::TransferRecipientMismatch {
-                ofe_id,
-                recipient_ofe_id,
-            } => write!(
-                f,
-                "upstream transfer recipient {recipient_ofe_id} does not match record OFE {ofe_id}"
-            ),
-            Self::TransferInputSourceMismatch {
-                ofe_id,
-                expected_source_ofe_id,
-                observed_source_ofe_id,
-            } => write!(
-                f,
-                "upstream transfer source {observed_source_ofe_id:?} does not match expected source {expected_source_ofe_id:?} for record OFE {ofe_id}"
-            ),
-            Self::TransferOutputSourceMismatch {
-                ofe_id,
-                source_ofe_id,
-            } => write!(
-                f,
-                "transfer output source {source_ofe_id} does not match record OFE {ofe_id}"
-            ),
-            Self::TransferOutputRecipientMismatch {
-                source_ofe_id,
-                expected_recipient_ofe_id,
-                observed_recipient_ofe_id,
-            } => write!(
-                f,
-                "transfer output from OFE {source_ofe_id} targets {observed_recipient_ofe_id:?}; expected {expected_recipient_ofe_id:?}"
-            ),
-            Self::IncompleteCollection {
-                contributor_ofe_count,
-                record_count,
-            } => write!(
-                f,
-                "per-OFE collection has {record_count} records for {contributor_ofe_count} contributing OFEs"
-            ),
-            Self::MultiOfeAggregateNotImplemented {
-                contributor_ofe_count,
-            } => write!(
-                f,
-                "aggregate derivation from {contributor_ofe_count} per-OFE records is later M-E scope"
-            ),
-        }
-    }
-}
-
-impl Error for PerOfeDailyWaterBalanceError {}
-
 /// One OFE lane's starting surface for sequential same-day execution.
 #[derive(Debug, Clone)]
 pub struct OfeLaneExecutionInput {
@@ -713,6 +444,7 @@ pub struct OfeLaneExecutionInput {
     pub upstream_area_ratio: f64,
     pub writeback_surface: HillslopeWritebackSurface,
     pub indexed_writeback_surface: Option<IndexedWritebackSurface>,
+    pub lane_dense_state: Option<HillslopeLaneDenseState>,
 }
 
 impl OfeLaneExecutionInput {
@@ -723,6 +455,7 @@ impl OfeLaneExecutionInput {
             upstream_area_ratio: 1.0,
             writeback_surface,
             indexed_writeback_surface: None,
+            lane_dense_state: None,
         }
     }
 
@@ -737,6 +470,7 @@ impl OfeLaneExecutionInput {
             upstream_area_ratio,
             writeback_surface,
             indexed_writeback_surface: None,
+            lane_dense_state: None,
         }
     }
 
@@ -757,6 +491,7 @@ pub struct OfeLanePersistentState {
     pub upstream_area_ratio: f64,
     pub writeback_surface: HillslopeWritebackSurface,
     indexed_writeback_surface: Option<IndexedWritebackSurface>,
+    lane_dense_state: Option<HillslopeLaneDenseState>,
 }
 
 impl OfeLanePersistentState {
@@ -767,6 +502,7 @@ impl OfeLanePersistentState {
             upstream_area_ratio: 1.0,
             writeback_surface,
             indexed_writeback_surface: None,
+            lane_dense_state: None,
         }
     }
 
@@ -781,6 +517,7 @@ impl OfeLanePersistentState {
             upstream_area_ratio,
             writeback_surface,
             indexed_writeback_surface: None,
+            lane_dense_state: None,
         }
     }
 
@@ -789,6 +526,20 @@ impl OfeLanePersistentState {
         registry: &SymbolRegistry,
     ) -> Result<(), SymbolRegistryError> {
         self.indexed_writeback_surface = Some(self.indexed_surface_from_current_surface(registry)?);
+        Ok(())
+    }
+
+    pub fn activate_lane_dense_state(
+        &mut self,
+        registry: &SymbolRegistry,
+        hot_symbol_tables: &HotSymbolTables,
+    ) -> Result<(), SymbolRegistryError> {
+        self.lane_dense_state = Some(HillslopeLaneDenseState::seed_hot_from_writeback_surface(
+            &self.writeback_surface,
+            self.indexed_writeback_surface.as_ref(),
+            registry,
+            hot_symbol_tables,
+        )?);
         Ok(())
     }
 
@@ -809,12 +560,22 @@ impl OfeLanePersistentState {
     }
 
     #[must_use]
+    pub fn lane_dense_state(&self) -> Option<&HillslopeLaneDenseState> {
+        self.lane_dense_state.as_ref()
+    }
+
+    pub fn replace_lane_dense_state(&mut self, lane_dense_state: Option<HillslopeLaneDenseState>) {
+        self.lane_dense_state = lane_dense_state;
+    }
+
+    #[must_use]
     pub fn take_execution_input(&mut self) -> OfeLaneExecutionInput {
         OfeLaneExecutionInput {
             ofe_id: self.ofe_id,
             upstream_area_ratio: self.upstream_area_ratio,
             writeback_surface: std::mem::take(&mut self.writeback_surface),
             indexed_writeback_surface: self.indexed_writeback_surface.take(),
+            lane_dense_state: self.lane_dense_state.take(),
         }
     }
 
@@ -825,12 +586,14 @@ impl OfeLanePersistentState {
             upstream_area_ratio: self.upstream_area_ratio,
             writeback_surface: self.writeback_surface.clone(),
             indexed_writeback_surface: self.indexed_writeback_surface.clone(),
+            lane_dense_state: self.lane_dense_state.clone(),
         }
     }
 
     fn update_from_report(&mut self, report: &OfeLaneExecutionReport) {
         self.writeback_surface = report.kernel_report.writeback_surface.clone();
         self.indexed_writeback_surface = None;
+        self.lane_dense_state.clone_from(&report.lane_dense_state);
     }
 
     fn indexed_surface_from_current_surface(
@@ -881,6 +644,17 @@ impl OfeLanePersistentStateSequence {
     ) -> Result<(), SymbolRegistryError> {
         for lane_state in &mut self.lane_states {
             lane_state.activate_indexed_writeback_authority(registry)?;
+        }
+        Ok(())
+    }
+
+    pub fn activate_lane_dense_state(
+        &mut self,
+        registry: &SymbolRegistry,
+        hot_symbol_tables: &HotSymbolTables,
+    ) -> Result<(), SymbolRegistryError> {
+        for lane_state in &mut self.lane_states {
+            lane_state.activate_lane_dense_state(registry, hot_symbol_tables)?;
         }
         Ok(())
     }
@@ -936,6 +710,7 @@ pub struct OfeLaneExecutionReport {
     pub upstream_transfer_input: TransferInput,
     pub current_transfer_output: TransferOutput,
     pub kernel_report: HillslopeKernelExecutionReport,
+    pub lane_dense_state: Option<HillslopeLaneDenseState>,
 }
 
 /// Sequential OFE lane execution report for one simulation day.
@@ -1400,10 +1175,35 @@ impl HillslopePhaseScheduler {
         &self,
         topology_report: &TopologyValidationReport,
         kernel: &mut K,
+        writeback_surface: HillslopeWritebackSurface,
+        indexed_writeback_surface: Option<IndexedWritebackSurface>,
+        symbol_registry: Option<&SymbolRegistry>,
+        hot_symbol_tables: Option<&HotSymbolTables>,
+    ) -> Result<HillslopeKernelExecutionReport, HillslopeSchedulerError>
+    where
+        K: HillslopeKernel,
+    {
+        self.execute_with_kernel_indexed_internal(
+            topology_report,
+            kernel,
+            writeback_surface,
+            indexed_writeback_surface,
+            symbol_registry,
+            hot_symbol_tables,
+            None,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn execute_with_kernel_indexed_internal<K>(
+        &self,
+        topology_report: &TopologyValidationReport,
+        kernel: &mut K,
         mut writeback_surface: HillslopeWritebackSurface,
         mut indexed_writeback_surface: Option<IndexedWritebackSurface>,
         symbol_registry: Option<&SymbolRegistry>,
         hot_symbol_tables: Option<&HotSymbolTables>,
+        mut lane_dense_state: Option<&mut HillslopeLaneDenseState>,
     ) -> Result<HillslopeKernelExecutionReport, HillslopeSchedulerError>
     where
         K: HillslopeKernel,
@@ -1438,7 +1238,13 @@ impl HillslopePhaseScheduler {
             let phase_class = hillslope_phase_class_for_phase(phase);
             let mut decomposition_context = None;
             let mut growth_context = None;
-            let use_frame_island = perfdeep02_frame_island_enabled()
+            let use_lane_dense_state = perfdeep03_lane_dense_state_enabled()
+                && perfdeep02_frame_island_phase(phase)
+                && lane_dense_state.is_some()
+                && symbol_registry.is_some()
+                && hot_symbol_tables.is_some();
+            let use_frame_island = !use_lane_dense_state
+                && perfdeep02_frame_island_enabled()
                 && perfdeep02_frame_island_phase(phase)
                 && symbol_registry.is_some()
                 && hot_symbol_tables.is_some();
@@ -1686,7 +1492,27 @@ impl HillslopePhaseScheduler {
                     indexed_writeback_surface.as_ref(),
                     hot_symbol_tables,
                 );
-                if use_frame_island {
+                if use_lane_dense_state {
+                    let dense_views = lane_dense_state.as_ref().map_or((None, None), |state| {
+                        (Some(state.state_slot_view()), Some(state.flux_slot_view()))
+                    });
+                    let request =
+                        HillslopeKernelRequest::with_transition_context_and_dense_slot_views(
+                            phase.as_str(),
+                            phase_class,
+                            consumer_adapter,
+                            decomposition_context,
+                            growth_context,
+                            &writeback_surface.state_surface,
+                            &writeback_surface.flux_surface,
+                            dense_views.0,
+                            dense_views.1,
+                            symbol_registry,
+                            indexed_writeback_surface.as_ref(),
+                            hot_symbol_tables,
+                        );
+                    kernel.run_hillslope_phase(&request)
+                } else if use_frame_island {
                     let request = HillslopeKernelRequest::with_transition_context_and_dense_slots(
                         phase.as_str(),
                         phase_class,
@@ -1781,7 +1607,54 @@ impl HillslopePhaseScheduler {
                     return decision.status;
                 }
 
-                let apply_result = if use_frame_island {
+                let apply_result = if use_lane_dense_state {
+                    let Some(dense_state) = lane_dense_state.as_deref_mut() else {
+                        deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
+                            SymbolRegistryError::UnknownSymbol {
+                                symbol: BoundarySymbol::from("perfdeep03.lane_dense.apply"),
+                            },
+                        ));
+                        phase_reports.push(HillslopeKernelPhaseReport {
+                            phase,
+                            kernel_status,
+                            decision_outcome: WritebackDecisionOutcome::Reject,
+                            decision_status: deferred_error_status.clone(),
+                            decision_violations: Vec::new(),
+                            apply_result: None,
+                        });
+                        return deferred_error_status.clone();
+                    };
+                    if let Err(source) =
+                        dense_state.apply_indexed_kernel_writeback_payload(indexed_payload)
+                    {
+                        deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(source));
+                        phase_reports.push(HillslopeKernelPhaseReport {
+                            phase,
+                            kernel_status,
+                            decision_outcome: WritebackDecisionOutcome::Reject,
+                            decision_status: deferred_error_status.clone(),
+                            decision_violations: Vec::new(),
+                            apply_result: None,
+                        });
+                        return deferred_error_status.clone();
+                    }
+                    match perfdeep02_apply_indexed_frame_writeback(indexed_payload, symbol_registry)
+                    {
+                        Ok(value) => value,
+                        Err(source) => {
+                            deferred_error = Some(source);
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status,
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        }
+                    }
+                } else if use_frame_island {
                     let Some(frame) = perfdeep02_frame_island.as_mut() else {
                         deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
                             SymbolRegistryError::UnknownSymbol {
@@ -1907,7 +1780,69 @@ impl HillslopePhaseScheduler {
                     return decision.status;
                 }
 
-                let apply_result = if use_frame_island {
+                let apply_result = if use_lane_dense_state {
+                    let Some(symbol_registry) = symbol_registry else {
+                        deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
+                            SymbolRegistryError::UnknownSymbol {
+                                symbol: BoundarySymbol::from("perfdeep03.lane_dense.registry"),
+                            },
+                        ));
+                        phase_reports.push(HillslopeKernelPhaseReport {
+                            phase,
+                            kernel_status,
+                            decision_outcome: WritebackDecisionOutcome::Reject,
+                            decision_status: deferred_error_status.clone(),
+                            decision_violations: Vec::new(),
+                            apply_result: None,
+                        });
+                        return deferred_error_status.clone();
+                    };
+                    let Some(dense_state) = lane_dense_state.as_deref_mut() else {
+                        deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
+                            SymbolRegistryError::UnknownSymbol {
+                                symbol: BoundarySymbol::from("perfdeep03.lane_dense.apply"),
+                            },
+                        ));
+                        phase_reports.push(HillslopeKernelPhaseReport {
+                            phase,
+                            kernel_status,
+                            decision_outcome: WritebackDecisionOutcome::Reject,
+                            decision_status: deferred_error_status.clone(),
+                            decision_violations: Vec::new(),
+                            apply_result: None,
+                        });
+                        return deferred_error_status.clone();
+                    };
+                    if let Err(source) = dense_state
+                        .apply_kernel_writeback_payload(&response.writeback, symbol_registry)
+                    {
+                        deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(source));
+                        phase_reports.push(HillslopeKernelPhaseReport {
+                            phase,
+                            kernel_status,
+                            decision_outcome: WritebackDecisionOutcome::Reject,
+                            decision_status: deferred_error_status.clone(),
+                            decision_violations: Vec::new(),
+                            apply_result: None,
+                        });
+                        return deferred_error_status.clone();
+                    }
+                    match perfdeep02_apply_logical_frame_writeback(&response.writeback) {
+                        Ok(value) => value,
+                        Err(source) => {
+                            deferred_error = Some(source);
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status,
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        }
+                    }
+                } else if use_frame_island {
                     let Some(frame) = perfdeep02_frame_island.as_mut() else {
                         deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
                             SymbolRegistryError::UnknownSymbol {
@@ -1980,7 +1915,7 @@ impl HillslopePhaseScheduler {
                         }
                     }
                 };
-                if !use_frame_island {
+                if !use_frame_island && !use_lane_dense_state {
                     if let Some(indexed_writeback_surface) = indexed_writeback_surface.as_mut() {
                         let Some(symbol_registry) = symbol_registry else {
                             deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
@@ -2050,6 +1985,19 @@ impl HillslopePhaseScheduler {
                     &mut writeback_surface,
                 )
                 .map_err(HillslopeSchedulerError::SymbolRegistry)?;
+        }
+
+        if perfdeep03_lane_dense_state_enabled() {
+            if let (Some(symbol_registry), Some(dense_state)) = (symbol_registry, lane_dense_state)
+            {
+                dense_state
+                    .flush_dirty_to_writeback_surface(
+                        symbol_registry,
+                        &mut writeback_surface,
+                        indexed_writeback_surface.as_mut(),
+                    )
+                    .map_err(HillslopeSchedulerError::SymbolRegistry)?;
+            }
         }
 
         drop(perfdeep02_frame_island);
@@ -2141,15 +2089,33 @@ impl HillslopePhaseScheduler {
                 lane_input.indexed_writeback_surface.as_mut(),
                 indexed_context.map(|context| context.symbol_registry),
             )?;
+            if perfdeep03_lane_dense_state_enabled() {
+                if let (Some(indexed_context), Some(dense_state)) =
+                    (indexed_context, lane_input.lane_dense_state.as_mut())
+                {
+                    dense_state
+                        .sync_from_writeback_surface(
+                            &lane_input.writeback_surface,
+                            lane_input.indexed_writeback_surface.as_ref(),
+                            indexed_context.symbol_registry,
+                            indexed_context.hot_symbol_tables,
+                        )
+                        .map_err(|source| OfeLaneSequenceError::IndexedSymbolRegistry {
+                            ofe_id: lane_input.ofe_id,
+                            source,
+                        })?;
+                }
+            }
             let upstream_transfer_input = next_transfer_input.clone();
             let kernel_report = match indexed_context {
-                Some(indexed_context) => self.execute_with_kernel_indexed(
+                Some(indexed_context) => self.execute_with_kernel_indexed_internal(
                     topology_report,
                     kernel,
                     lane_input.writeback_surface,
                     lane_input.indexed_writeback_surface,
                     Some(indexed_context.symbol_registry),
                     Some(indexed_context.hot_symbol_tables),
+                    lane_input.lane_dense_state.as_mut(),
                 ),
                 None => {
                     self.execute_with_kernel(topology_report, kernel, lane_input.writeback_surface)
@@ -2184,6 +2150,7 @@ impl HillslopePhaseScheduler {
                 upstream_transfer_input,
                 current_transfer_output,
                 kernel_report,
+                lane_dense_state: lane_input.lane_dense_state,
             });
         }
 
@@ -2224,13 +2191,22 @@ fn perfdeep02_frame_island_phase(phase: HillslopePhase) -> bool {
 }
 
 fn perfdeep02_frame_island_enabled() -> bool {
-    cfg!(test)
-        || std::env::var("OPENWEPP_PERFDEEP02_FRAME_ISLAND").is_ok_and(|value| {
-            matches!(
-                value.as_str(),
-                "1" | "true" | "TRUE" | "yes" | "YES" | "on" | "ON"
-            )
-        })
+    static ENABLED: OnceLock<bool> = OnceLock::new();
+    *ENABLED.get_or_init(|| cfg!(test) || env_flag_enabled("OPENWEPP_PERFDEEP02_FRAME_ISLAND"))
+}
+
+fn perfdeep03_lane_dense_state_enabled() -> bool {
+    static ENABLED: OnceLock<bool> = OnceLock::new();
+    *ENABLED.get_or_init(|| cfg!(test) || env_flag_enabled("OPENWEPP_PERFDEEP03_LANE_DENSE_STATE"))
+}
+
+fn env_flag_enabled(name: &str) -> bool {
+    std::env::var(name).is_ok_and(|value| {
+        matches!(
+            value.as_str(),
+            "1" | "true" | "TRUE" | "yes" | "YES" | "on" | "ON"
+        )
+    })
 }
 
 fn perfdeep02_apply_logical_frame_writeback(

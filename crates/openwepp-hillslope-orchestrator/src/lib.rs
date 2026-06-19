@@ -50,7 +50,7 @@ pub use consumer_boundary::{
 };
 pub use day_frame::{
     HillslopeDayFrame, HillslopeDayFrameError, HillslopeDayFrameIoEdgeScalars,
-    HillslopeDayFrameMismatch, HillslopeDayFrameShadowReport,
+    HillslopeDayFrameMismatch, HillslopeDayFrameShadowReport, HillslopeLaneDenseState,
 };
 pub use hydrology::{
     HillslopeHydrologyRoutingError, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,

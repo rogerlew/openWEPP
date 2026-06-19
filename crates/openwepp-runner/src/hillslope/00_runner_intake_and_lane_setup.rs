@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 
 use openwepp_hillslope_orchestrator::runtime_inputs::{
     HillslopeClimateRuntimeRequest, SlopeRuntimeSurfaceOptions,
@@ -1482,6 +1483,14 @@ fn build_static_hillslope_runtime_setup(
                 surface: "indexed_runtime_surface",
                 detail: error.to_string(),
             })?;
+        if perfdeep03_lane_dense_state_enabled() {
+            persistent_lane_state
+                .activate_lane_dense_state(&symbol_registry, &hot_symbol_tables)
+                .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "perfdeep03_lane_dense_state",
+                    detail: error.to_string(),
+                })?;
+        }
     }
     execution_state.symbol_registry = Some(symbol_registry);
     execution_state.hot_symbol_tables = Some(hot_symbol_tables);
@@ -1649,6 +1658,20 @@ fn build_persistent_lane_state(
                 "{SIMPIPE_GUARD_ID} failed initializing persistent OFE lane state: {error}"
             ),
         })
+}
+
+fn perfdeep03_lane_dense_state_enabled() -> bool {
+    static ENABLED: OnceLock<bool> = OnceLock::new();
+    *ENABLED.get_or_init(|| env_flag_enabled("OPENWEPP_PERFDEEP03_LANE_DENSE_STATE"))
+}
+
+fn env_flag_enabled(name: &str) -> bool {
+    std::env::var(name).is_ok_and(|value| {
+        matches!(
+            value.as_str(),
+            "1" | "true" | "TRUE" | "yes" | "YES" | "on" | "ON"
+        )
+    })
 }
 
 fn execute_hillslope_climate_days(

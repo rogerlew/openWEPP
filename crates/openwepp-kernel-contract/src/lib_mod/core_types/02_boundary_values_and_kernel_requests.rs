@@ -728,11 +728,61 @@ pub struct HillslopeKernelRequest<'a> {
     pub growth_context: Option<HillslopeGrowthKernelContext>,
     pub state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     pub flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+    pub dense_state_slot_view: Option<DenseBoundarySlotView<'a>>,
+    pub dense_flux_slot_view: Option<DenseBoundarySlotView<'a>>,
     pub dense_state_slots: Option<&'a [Option<BoundaryValue>]>,
     pub dense_flux_slots: Option<&'a [Option<BoundaryValue>]>,
+    pub symbol_registry: Option<&'a SymbolRegistry>,
     pub indexed_state_surface: Option<&'a IndexedSurface>,
     pub indexed_flux_surface: Option<&'a IndexedSurface>,
     pub hot_symbol_tables: Option<&'a HotSymbolTables>,
+}
+
+/// Compact dense slots addressed by global [`SymbolId`] through a borrowed
+/// id-to-slot map.
+///
+/// PERFDEEP02 used registry-sized value slices. PERFDEEP03 keeps only the hot
+/// carried values compact while this metadata view preserves existing indexed
+/// kernel reads.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DenseBoundarySlotView<'a> {
+    id_to_slot: &'a [Option<usize>],
+    slots: &'a [Option<BoundaryValue>],
+}
+
+impl<'a> DenseBoundarySlotView<'a> {
+    #[must_use]
+    pub const fn new(
+        id_to_slot: &'a [Option<usize>],
+        slots: &'a [Option<BoundaryValue>],
+    ) -> Self {
+        Self { id_to_slot, slots }
+    }
+
+    #[must_use]
+    pub fn get(self, id: SymbolId) -> Option<BoundaryValue> {
+        self.id_to_slot
+            .get(id.as_usize())
+            .copied()
+            .flatten()
+            .and_then(|slot| self.slots.get(slot))
+            .copied()
+            .flatten()
+    }
+
+    #[must_use]
+    pub fn contains_id(self, id: SymbolId) -> bool {
+        self.id_to_slot
+            .get(id.as_usize())
+            .copied()
+            .flatten()
+            .is_some()
+    }
+
+    #[must_use]
+    pub fn slot_count(self) -> usize {
+        self.slots.len()
+    }
 }
 
 impl<'a> HillslopeKernelRequest<'a> {
@@ -830,8 +880,48 @@ impl<'a> HillslopeKernelRequest<'a> {
             growth_context,
             state_surface,
             flux_surface,
+            dense_state_slot_view: None,
+            dense_flux_slot_view: None,
             dense_state_slots,
             dense_flux_slots,
+            symbol_registry: None,
+            indexed_state_surface: indexed_writeback_surface
+                .map(IndexedWritebackSurface::state_surface),
+            indexed_flux_surface: indexed_writeback_surface
+                .map(IndexedWritebackSurface::flux_surface),
+            hot_symbol_tables,
+        }
+    }
+
+    #[must_use]
+    #[allow(clippy::too_many_arguments)]
+    pub fn with_transition_context_and_dense_slot_views(
+        phase_name: &'a str,
+        phase_class: HillslopeKernelPhaseClass,
+        consumer_adapter: HillslopeConsumerAdapter,
+        decomposition_context: Option<HillslopeDecompositionKernelContext>,
+        growth_context: Option<HillslopeGrowthKernelContext>,
+        state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+        dense_state_slot_view: Option<DenseBoundarySlotView<'a>>,
+        dense_flux_slot_view: Option<DenseBoundarySlotView<'a>>,
+        symbol_registry: Option<&'a SymbolRegistry>,
+        indexed_writeback_surface: Option<&'a IndexedWritebackSurface>,
+        hot_symbol_tables: Option<&'a HotSymbolTables>,
+    ) -> Self {
+        Self {
+            phase_name,
+            phase_class,
+            consumer_adapter,
+            decomposition_context,
+            growth_context,
+            state_surface,
+            flux_surface,
+            dense_state_slot_view,
+            dense_flux_slot_view,
+            dense_state_slots: None,
+            dense_flux_slots: None,
+            symbol_registry,
             indexed_state_surface: indexed_writeback_surface
                 .map(IndexedWritebackSurface::state_surface),
             indexed_flux_surface: indexed_writeback_surface
@@ -863,6 +953,12 @@ impl<'a> HillslopeKernelRequest<'a> {
     #[must_use]
     pub fn indexed_state_value(&self, symbol: &IndexedBoundarySymbol) -> Option<BoundaryValue> {
         if let Some(value) = self
+            .dense_state_slot_view
+            .and_then(|view| view.get(symbol.id))
+        {
+            return Some(value);
+        }
+        if let Some(value) = self
             .dense_state_slots
             .and_then(|slots| slots.get(symbol.id.as_usize()))
             .copied()
@@ -875,7 +971,46 @@ impl<'a> HillslopeKernelRequest<'a> {
     }
 
     #[must_use]
+    pub fn dense_state_value_for_symbol(
+        &self,
+        symbol: &BoundarySymbol,
+    ) -> Option<BoundaryValue> {
+        let id = self
+            .symbol_registry
+            .and_then(|registry| registry.id_of(symbol).ok())?;
+        self.dense_state_slot_view
+            .and_then(|view| view.get(id))
+            .or_else(|| {
+                self.dense_state_slots
+                    .and_then(|slots| slots.get(id.as_usize()))
+                    .copied()
+                    .flatten()
+            })
+    }
+
+    #[must_use]
+    pub fn dense_flux_value_for_symbol(&self, symbol: &BoundarySymbol) -> Option<BoundaryValue> {
+        let id = self
+            .symbol_registry
+            .and_then(|registry| registry.id_of(symbol).ok())?;
+        self.dense_flux_slot_view
+            .and_then(|view| view.get(id))
+            .or_else(|| {
+                self.dense_flux_slots
+                    .and_then(|slots| slots.get(id.as_usize()))
+                    .copied()
+                    .flatten()
+            })
+    }
+
+    #[must_use]
     pub fn indexed_flux_value(&self, symbol: &IndexedBoundarySymbol) -> Option<BoundaryValue> {
+        if let Some(value) = self
+            .dense_flux_slot_view
+            .and_then(|view| view.get(symbol.id))
+        {
+            return Some(value);
+        }
         if let Some(value) = self
             .dense_flux_slots
             .and_then(|slots| slots.get(symbol.id.as_usize()))
@@ -890,12 +1025,16 @@ impl<'a> HillslopeKernelRequest<'a> {
 
     #[must_use]
     pub fn has_indexed_state_surface(&self) -> bool {
-        self.dense_state_slots.is_some() || self.indexed_state_surface.is_some()
+        self.dense_state_slot_view.is_some()
+            || self.dense_state_slots.is_some()
+            || self.indexed_state_surface.is_some()
     }
 
     #[must_use]
     pub fn has_indexed_flux_surface(&self) -> bool {
-        self.dense_flux_slots.is_some() || self.indexed_flux_surface.is_some()
+        self.dense_flux_slot_view.is_some()
+            || self.dense_flux_slots.is_some()
+            || self.indexed_flux_surface.is_some()
     }
 
     #[must_use]

@@ -209,6 +209,130 @@ fn perfdeep02_scheduler_runs_hydrology_island_through_dense_slots_without_indexe
     assert_eq!(apply_result.applied_flux_symbols, vec![flux_symbol]);
 }
 
+#[test]
+#[allow(clippy::too_many_lines)]
+fn perfdeep03_ofe_sequence_uses_lane_owned_compact_dense_state() {
+    let state_symbol = BoundarySymbol::from("wb12_infiltration");
+    let flux_symbol = BoundarySymbol::from("Q");
+    let cold_symbols = (0..32)
+        .map(|index| BoundarySymbol::from(format!("perfdeep03_cold_{index:04}")))
+        .collect::<Vec<_>>();
+    let mut registry_symbols = vec![state_symbol.clone(), flux_symbol.clone()];
+    registry_symbols.extend(cold_symbols.iter().cloned());
+    registry_symbols.extend(perfdeep03_transfer_registry_symbols());
+    let registry = SymbolRegistry::from_symbols(registry_symbols).expect("registry should build");
+    let hot_tables = build_hillslope_hot_symbol_tables(&registry);
+    let state_id = registry
+        .id_of(&state_symbol)
+        .expect("state id should be registered");
+    let flux_id = registry
+        .id_of(&flux_symbol)
+        .expect("flux id should be registered");
+    let current_surface_ids = perfdeep03_mofe_ids(
+        &registry,
+        crate::constants::MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+    );
+    let current_lateral_ids = perfdeep03_mofe_ids(
+        &registry,
+        crate::constants::MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+    );
+
+    let mut initial_state = BTreeMap::new();
+    initial_state.insert(state_symbol.clone(), BoundaryValue::scalar(0.0));
+    for symbol in &cold_symbols {
+        initial_state.insert(symbol.clone(), BoundaryValue::scalar(123.0));
+    }
+    let mut initial_flux = BTreeMap::new();
+    initial_flux.insert(flux_symbol.clone(), BoundaryValue::scalar(0.0));
+    let writeback_surface = HillslopeWritebackSurface {
+        state_surface: initial_state,
+        flux_surface: initial_flux,
+    };
+    let indexed_surface = IndexedWritebackSurface::from_btreemap_surfaces(
+        &registry,
+        &writeback_surface.state_surface,
+        &writeback_surface.flux_surface,
+    )
+    .expect("indexed surface should build");
+    let lane_dense_state = HillslopeLaneDenseState::seed_hot_from_writeback_surface(
+        &writeback_surface,
+        Some(&indexed_surface),
+        &registry,
+        &hot_tables,
+    )
+    .expect("lane dense state should seed");
+    assert!(lane_dense_state.state_slot_count() < registry.len());
+
+    let mut lane_input = OfeLaneExecutionInput::with_upstream_area_ratio(1, 1.0, writeback_surface);
+    lane_input.indexed_writeback_surface = Some(indexed_surface);
+    lane_input.lane_dense_state = Some(lane_dense_state);
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Perfdeep03LaneDenseKernel::new(
+        state_id,
+        flux_id,
+        registry.len(),
+        current_surface_ids,
+        current_lateral_ids,
+    );
+
+    let report = scheduler
+        .execute_ofe_sequence_with_kernel_indexed(
+            &topology_report,
+            &mut kernel,
+            vec![lane_input],
+            &registry,
+            &hot_tables,
+        )
+        .expect("lane-owned dense sequence should succeed");
+
+    assert_eq!(report.lane_count(), 1);
+    let lane_report = &report.lane_reports[0];
+    assert!(lane_report.kernel_report.scheduler_report.is_success());
+    assert_eq!(kernel.non_island_request_count, 6);
+    assert_eq!(kernel.island_request_count, 8);
+    assert_eq!(kernel.observed_initial_value, Some(0.0));
+    assert_eq!(kernel.observed_evap_value, Some(42.0));
+    assert_eq!(kernel.observed_evap_flux, Some(7.0));
+    assert!(
+        kernel
+            .observed_state_slot_counts
+            .iter()
+            .all(|count| *count < registry.len())
+    );
+    assert!(
+        kernel
+            .observed_flux_slot_counts
+            .iter()
+            .all(|count| *count < registry.len())
+    );
+
+    assert_eq!(
+        lane_report
+            .kernel_report
+            .writeback_surface
+            .state_surface
+            .get(&state_symbol)
+            .copied()
+            .map(BoundaryValue::as_f64),
+        Some(42.0)
+    );
+    assert_eq!(
+        lane_report
+            .kernel_report
+            .writeback_surface
+            .flux_surface
+            .get(&flux_symbol)
+            .copied()
+            .map(BoundaryValue::as_f64),
+        Some(7.0)
+    );
+    assert!(lane_report.lane_dense_state.is_some());
+}
+
 struct Perfmig01IndexedWritebackFixture {
     state_symbol: BoundarySymbol,
     flux_symbol: BoundarySymbol,
@@ -418,6 +542,195 @@ impl HillslopeKernel for Perfdeep02DenseIslandKernel {
             _ => KernelRunResponse::new(status, KernelWritebackPayload::empty()),
         }
     }
+}
+
+struct Perfdeep03LaneDenseKernel {
+    state_id: openwepp_kernel_contract::SymbolId,
+    flux_id: openwepp_kernel_contract::SymbolId,
+    registry_len: usize,
+    current_surface_ids: Vec<openwepp_kernel_contract::SymbolId>,
+    current_lateral_ids: Vec<openwepp_kernel_contract::SymbolId>,
+    non_island_request_count: usize,
+    island_request_count: usize,
+    observed_state_slot_counts: Vec<usize>,
+    observed_flux_slot_counts: Vec<usize>,
+    observed_initial_value: Option<f64>,
+    observed_evap_value: Option<f64>,
+    observed_evap_flux: Option<f64>,
+}
+
+impl Perfdeep03LaneDenseKernel {
+    fn new(
+        state_id: openwepp_kernel_contract::SymbolId,
+        flux_id: openwepp_kernel_contract::SymbolId,
+        registry_len: usize,
+        current_surface_ids: Vec<openwepp_kernel_contract::SymbolId>,
+        current_lateral_ids: Vec<openwepp_kernel_contract::SymbolId>,
+    ) -> Self {
+        Self {
+            state_id,
+            flux_id,
+            registry_len,
+            current_surface_ids,
+            current_lateral_ids,
+            non_island_request_count: 0,
+            island_request_count: 0,
+            observed_state_slot_counts: Vec::new(),
+            observed_flux_slot_counts: Vec::new(),
+            observed_initial_value: None,
+            observed_evap_value: None,
+            observed_evap_flux: None,
+        }
+    }
+}
+
+impl HillslopeKernel for Perfdeep03LaneDenseKernel {
+    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
+        let phase_name = request.phase_name;
+        let is_island_phase = matches!(
+            phase_name,
+            "percolation_deep_seepage"
+                | "evapotranspiration"
+                | "drainage"
+                | "lateral_transfer"
+                | "plant_root_uptake"
+                | "runoff_reconciliation"
+                | "storage_reconciliation"
+                | "closure_diagnostics"
+        );
+
+        if is_island_phase {
+            self.island_request_count += 1;
+            let state_view = request
+                .dense_state_slot_view
+                .expect("PERFDEEP03 island should borrow compact state slots");
+            let flux_view = request
+                .dense_flux_slot_view
+                .expect("PERFDEEP03 island should borrow compact flux slots");
+            assert!(request.dense_state_slots.is_none());
+            assert!(request.dense_flux_slots.is_none());
+            assert!(request.indexed_state_surface.is_some());
+            assert!(request.indexed_flux_surface.is_some());
+            assert!(request.has_indexed_state_surface());
+            assert!(request.has_indexed_flux_surface());
+            assert!(state_view.slot_count() < self.registry_len);
+            assert!(flux_view.slot_count() < self.registry_len);
+            self.observed_state_slot_counts
+                .push(state_view.slot_count());
+            self.observed_flux_slot_counts.push(flux_view.slot_count());
+        } else {
+            self.non_island_request_count += 1;
+            assert!(request.dense_state_slot_view.is_none());
+            assert!(request.dense_flux_slot_view.is_none());
+        }
+
+        let status = openwepp_sim_contract::status::SimulationStatus::ok(
+            SimulationPhase::HillslopeKernel,
+            format!("HKERNEL-PERFDEEP03-DENSE-OK-{phase_name}"),
+        )
+        .expect("status should construct");
+
+        match phase_name {
+            "percolation_deep_seepage" => {
+                let dense_state = request
+                    .hot_state_scalar("wb12_infiltration")
+                    .expect("dense state symbol should be hot");
+                assert_eq!(dense_state.id, self.state_id);
+                self.observed_initial_value = request
+                    .indexed_state_value(dense_state)
+                    .map(BoundaryValue::as_f64);
+
+                let mut state_updates = vec![IndexedWritebackField::bounded(
+                    self.state_id,
+                    BoundaryValue::scalar(42.0),
+                    Some(0.0),
+                    Some(100.0),
+                )];
+                state_updates.extend(
+                    self.current_surface_ids
+                        .iter()
+                        .chain(self.current_lateral_ids.iter())
+                        .copied()
+                        .map(|id| {
+                            IndexedWritebackField::bounded(
+                                id,
+                                BoundaryValue::scalar(0.0),
+                                Some(0.0),
+                                None,
+                            )
+                        }),
+                );
+                let indexed_writeback = IndexedKernelWritebackPayload::with_updates(
+                    state_updates,
+                    vec![IndexedWritebackField::bounded(
+                        self.flux_id,
+                        BoundaryValue::scalar(7.0),
+                        Some(0.0),
+                        Some(100.0),
+                    )],
+                );
+                KernelRunResponse::with_indexed_writeback(status, indexed_writeback)
+            }
+            "evapotranspiration" => {
+                let dense_state = request
+                    .hot_state_scalar("wb12_infiltration")
+                    .expect("dense state symbol should be hot");
+                let dense_flux = request
+                    .hot_flux_scalar("Q")
+                    .expect("dense flux symbol should be hot");
+                assert_eq!(dense_state.id, self.state_id);
+                assert_eq!(dense_flux.id, self.flux_id);
+                self.observed_evap_value = request
+                    .indexed_state_value(dense_state)
+                    .map(BoundaryValue::as_f64);
+                self.observed_evap_flux = request
+                    .indexed_flux_value(dense_flux)
+                    .map(BoundaryValue::as_f64);
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+            _ => KernelRunResponse::new(status, KernelWritebackPayload::empty()),
+        }
+    }
+}
+
+fn perfdeep03_mofe_symbol(root: &str, hour: usize) -> BoundarySymbol {
+    BoundarySymbol::from(format!("{root}_{hour:04}"))
+}
+
+fn perfdeep03_mofe_ids(
+    registry: &SymbolRegistry,
+    root: &str,
+) -> Vec<openwepp_kernel_contract::SymbolId> {
+    (1..=crate::scheduler::MOFE_TRANSFER_HOUR_COUNT)
+        .map(|hour| {
+            registry
+                .id_of(&perfdeep03_mofe_symbol(root, hour))
+                .expect("MOFE symbol should be registered")
+        })
+        .collect()
+}
+
+fn perfdeep03_transfer_registry_symbols() -> Vec<BoundarySymbol> {
+    let mut symbols = vec![
+        BoundarySymbol::from(crate::constants::MOFE_HOURLY_CARRY_ARRAYS_ENABLED_SYMBOL),
+        BoundarySymbol::from(crate::constants::MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL),
+        BoundarySymbol::from("UpStrmQ"),
+        BoundarySymbol::from("SubRIn"),
+        BoundarySymbol::from(crate::constants::WB12_SYMBOL_RUNON_INPUT),
+        BoundarySymbol::from(crate::constants::WB12_SYMBOL_RUNOFF_CARRYOVER),
+    ];
+    for root in [
+        crate::constants::MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT,
+        crate::constants::MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT,
+        crate::constants::MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+        crate::constants::MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+    ] {
+        symbols.extend(
+            (1..=crate::scheduler::MOFE_TRANSFER_HOUR_COUNT)
+                .map(|hour| perfdeep03_mofe_symbol(root, hour)),
+        );
+    }
+    symbols
 }
 
 #[test]

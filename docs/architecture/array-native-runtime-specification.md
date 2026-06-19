@@ -5,7 +5,7 @@ Audience: all contributors; binding design authority for the perf re-architectur
 Owner: Claude Code (architecture authoring) — implementation by Codex
 Supersedes: the *incremental application* of [ADR-0023](../decisions/0023-array-authoritative-hot-path-state.md)
 (dense authority by symbol/phase) — **not** its dense-authority principle, which this specification fulfils completely
-Last updated: 2026-06-18
+Last updated: 2026-06-19
 
 ---
 
@@ -79,8 +79,12 @@ alone (~42%) only gets ~73× → ~43×: **≤10× requires the whole OFE-day hot
   partial migration is dominated by bookkeeping.
 
 **Lesson, decisive:** the win requires migrating a **complete unit** so the internal seams *vanish*, not
-retiring seams one at a time. The complete unit, taken to its conclusion, is the whole per-OFE-day hot
-path. That is this specification.
+retiring seams one at a time. PERFDEEP02 then proved a full-registry temporary frame is a verified negative
+benchmark (`2417 s`), and PERFDEEP03 proved a lane-owned compact hydrology island is correct but still not
+an endpoint win (`1147.96 s` vs `669.97 s`). PERFDEEP04 profiled that no-go and found the dominant
+opt-in-only hotspot is daily lane-dense resynchronization from logical/indexed surfaces (`33.49%`
+inclusive). The complete unit, taken to its conclusion, may still be the whole per-OFE-day hot path, but
+the next partial-island cut must first remove that measured sync edge.
 
 ---
 
@@ -243,9 +247,10 @@ Binding rules for every migration stage:
   serialization, diagnostics/contract evidence, the external API. **No full-frame seed/flush loop inside
   scheduler phase execution.**
 
-A partial island still pays a per-OFE-day *edge* cost (seed the read-set in, flush the dirty write-set out),
-but bounded to the hot working set it stays far below the internal saving — that is the difference between a
-lane-owned frame (win) and a temporary mirror (3.6× loss).
+A partial island still pays a per-OFE-day *edge* cost (seed the read-set in, flush the dirty write-set out).
+PERFDEEP03 bounded that state to a lane-owned compact hot set and preserved identity, but the real H2637
+endpoint still measured `1147.96 s`. Ownership is therefore necessary but not sufficient; follow-on work
+must profile and remove the remaining edge/fallback costs before expanding the same island shape.
 
 ---
 
@@ -322,10 +327,10 @@ every step. The discipline:
 **Kill-criteria (when to stop and re-think, stated up front):**
 - Any stage that **cannot** be made bit-identical → stop; the divergence is a real defect or a
   contract-gap, adjudicate before proceeding.
-- The **first full hydrology island** (the §8 Stage 2 endpoint) does **not** beat the current endpoint
-  meaningfully → the map-seam hypothesis is wrong for production scale and the remaining gap is elsewhere
-  (re-profile before continuing). This is the honest falsification point; it is only valid on a *large*
-  island (a mini-island is boundary-noise, per PERFMIG01/02).
+- A lane-owned hydrology island does **not** beat the current endpoint meaningfully -> the current
+  partial-island shape is falsified for production scale and the remaining gap is elsewhere. PERFDEEP03
+  reached this stop point (`1147.96 s` vs `669.97 s`), so the next action is re-profiling, not default
+  activation or blind expansion.
 
 ---
 
@@ -337,19 +342,19 @@ The full rewrite, sequenced so each stage is independently identity-gated and en
 | Stage | Scope | Gate | Expected endpoint |
 |---|---|---|---|
 | **0 — Frame scaffold** ✅ *(PERFDEEP01, conditional GO 2026-06-18)* | Define `HillslopeDayFrame` + slot schema + seed/flush + typed I/O capture (HBP scalars, manifest provenance, WB13/publication operands). No phase migrated yet; frame runs *beside* the maps (shadow). | Frame round-trips bit-identically; output parity green. | ~flat |
-| **1 — Hydrology island core** ⚠️ *(PERFDEEP02 NO-GO — temporary-mirror anti-pattern, 2417 s / 3.6×; redone by PERFDEEP03 as a lane-owned persistent frame per §4.6)* | Migrate the contiguous hydrology cluster (RunoffReconciliation, StorageReconciliation, Evapotranspiration, Percolation, Lateral, Drainage, PlantRootUptake, PeakRunoff) to run over a **lane-owned persistent frame (§4.6) — NOT a per-day temporary mirror**. Hot working set only; forcing borrowed; materialize to logical only at true boundaries. | Per-phase bit-identity (all branches) + H2637 output identity + **HARD: the opt-in dense path beats the PERFDEEP01 baseline on the real H2637 endpoint** (no default activation until then). | first **measured win** — island ≈ 42% of cost; ~73× → ~43–50× |
-| **2 — Close the hydrology edges** | Remove the island's edge materialization; the frame is authoritative across the whole hydrology span; capture I/O-edge scalars typed. | H2637 identity + endpoint; **the §7 falsification check**. | ~43× → solidify |
+| **1 — Hydrology island core** ⚠️ *(PERFDEEP02 NO-GO; PERFDEEP03 lane-owned compact state NO-GO, 1147.96 s)* | PERFDEEP03 migrated the hydrology cluster to a **lane-owned persistent compact frame (§4.6)** with forcing borrowed and dirty boundary flush. | Identity passed; opt-in H2637 endpoint failed the hard `< 669.97 s` gate. No default activation. | **NO-GO** - re-profile before expanding |
+| **2 — Close the hydrology edges** | PERFDEEP04 identified the immediate edge: `sync_from_writeback_surface` rebuilds dense state from logical/indexed surfaces in the daily hot loop. Start with PERFDEEP05: apply transfer directly to dense lane state, cache hot slot metadata, avoid symbol-id lookup in dense apply, and remove the full sync from opt-in H2637. | H2637 identity + endpoint + RSS; static proof that the PERFDEEP03 sync hotspot is not in the opt-in daily hot loop; profile evidence that the hotspot is gone. | PERFDEEP05 next |
 | **3 — Erosion island** | EROD13/14/19 + PeakRunoff over the frame (sediment columns SoA). | identity + endpoint. | removes erosion machinery share |
 | **4 — Growth/decomposition + transitions** | Decomposition/Residue/Growth phases + Normalization/StorageBounds over the frame. | identity + endpoint. | removes remaining phase share |
 | **5 — Delete the logical hot path** | Remove `HillslopeWritebackSurface` from the per-OFE-day loop, the writeback payloads, the indexed mirror, the per-day registry build. Logical/symbol surfaces survive only in I/O serialization + replay/diagnostics. | full H2637 identity + endpoint + RSS; **≤10× / ≤5× check.** | **the viability-gate measurement** |
 
 Each stage is one work-package (`PERFDEEP0N`), identity-gated, endpoint-timed; default activation only when
 the opt-in path beats the baseline endpoint. Unlike the incremental rungs, the frame's *internal*
-phase-to-phase seams vanish — but a **partial** stage still pays a per-OFE-day *edge* cost (seed read-set in
-/ flush dirty write-set out), which **must** be bounded to the hot working set via a **lane-owned persistent
-frame (§4.6)**. PERFDEEP02 proved a temporary full-registry mirror turns that edge into a 3.6× regression;
-the lane-owned frame keeps it far below the internal saving. A stage that regresses with the lane-owned
-frame correctly built is a real signal (the §7 falsification check), not an expected offset.
+phase-to-phase seams vanish — but a **partial** stage still pays a per-OFE-day *edge* cost. PERFDEEP02
+proved a temporary full-registry mirror turns that edge into a 3.6× regression; PERFDEEP03 proved a
+lane-owned compact frame still does not clear the endpoint. PERFDEEP04 localized the current
+partial-island failure to dense resync from logical/indexed surfaces, so Stage 2 begins by removing that
+edge rather than expanding blindly.
 
 ---
 

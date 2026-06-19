@@ -281,6 +281,7 @@ fn prepare_persistent_lane_inputs(
         );
         prepared_input.indexed_writeback_surface =
             lane_execution_input.indexed_writeback_surface;
+        prepared_input.lane_dense_state = lane_execution_input.lane_dense_state;
         lane_inputs.push(prepared_input);
     }
 
@@ -470,6 +471,7 @@ fn replace_persistent_lane_state_from_report_moving(
         }
 
         state.writeback_surface = lane_report.kernel_report.writeback_surface;
+        state.replace_lane_dense_state(lane_report.lane_dense_state);
     }
 
     Ok(())

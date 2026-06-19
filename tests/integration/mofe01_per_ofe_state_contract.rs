@@ -138,6 +138,7 @@ fn has_impl_block(tokens: &[String], item_name: &str) -> bool {
 fn runtime_source_tokens(repo_root: &str) -> Vec<String> {
     let paths = [
         "crates/openwepp-hillslope-orchestrator/src/scheduler.rs",
+        "crates/openwepp-hillslope-orchestrator/src/scheduler/water_balance.rs",
         "crates/openwepp-kernel-contract/src/lib_mod/core_types.rs",
         "crates/openwepp-kernel-contract/src/lib_mod/writeback.rs",
         "crates/openwepp-runner/src/hillslope/scheduler_trace/per_ofe_internal_wb13.rs",

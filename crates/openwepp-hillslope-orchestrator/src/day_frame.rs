@@ -1,10 +1,11 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fmt;
 
 use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, IndexedKernelWritebackPayload, IndexedWritebackSurface,
-    KernelWritebackPayload, SymbolId, SymbolRegistry, SymbolRegistryError,
+    BoundarySymbol, BoundaryValue, DenseBoundarySlotView, HotSymbolTables,
+    IndexedKernelWritebackPayload, IndexedWritebackSurface, KernelWritebackPayload, SymbolId,
+    SymbolRegistry, SymbolRegistryError,
 };
 
 use crate::constants::{
@@ -76,6 +77,18 @@ pub struct HillslopeDayFrameDirtyIds {
     pub flux_ids: Vec<SymbolId>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct HillslopeLaneDenseState {
+    state_id_to_slot: Vec<Option<usize>>,
+    flux_id_to_slot: Vec<Option<usize>>,
+    state_slot_ids: Vec<SymbolId>,
+    flux_slot_ids: Vec<SymbolId>,
+    state_slots: Vec<Option<BoundaryValue>>,
+    flux_slots: Vec<Option<BoundaryValue>>,
+    dirty_state_ids: BTreeSet<SymbolId>,
+    dirty_flux_ids: BTreeSet<SymbolId>,
+}
+
 impl HillslopeDayFrameShadowReport {
     #[must_use]
     pub fn is_bit_identical(&self) -> bool {
@@ -144,6 +157,270 @@ impl Error for HillslopeDayFrameError {
 impl From<SymbolRegistryError> for HillslopeDayFrameError {
     fn from(value: SymbolRegistryError) -> Self {
         Self::SymbolRegistry(value)
+    }
+}
+
+impl HillslopeLaneDenseState {
+    pub fn seed_hot_from_writeback_surface(
+        writeback_surface: &HillslopeWritebackSurface,
+        indexed_writeback_surface: Option<&IndexedWritebackSurface>,
+        symbol_registry: &SymbolRegistry,
+        hot_symbol_tables: &HotSymbolTables,
+    ) -> Result<Self, SymbolRegistryError> {
+        let mut state = Self {
+            state_id_to_slot: vec![None; symbol_registry.len()],
+            flux_id_to_slot: vec![None; symbol_registry.len()],
+            state_slot_ids: Vec::new(),
+            flux_slot_ids: Vec::new(),
+            state_slots: Vec::new(),
+            flux_slots: Vec::new(),
+            dirty_state_ids: BTreeSet::new(),
+            dirty_flux_ids: BTreeSet::new(),
+        };
+
+        for symbol in hot_symbol_tables.hot_state_symbols() {
+            let value = indexed_writeback_surface
+                .and_then(|surface| surface.state_value(symbol.id))
+                .or_else(|| writeback_surface.state_surface.get(&symbol.symbol).copied());
+            state.ensure_state_slot(symbol.id, value)?;
+        }
+        for symbol in hot_symbol_tables.hot_flux_symbols() {
+            let value = indexed_writeback_surface
+                .and_then(|surface| surface.flux_value(symbol.id))
+                .or_else(|| writeback_surface.flux_surface.get(&symbol.symbol).copied());
+            state.ensure_flux_slot(symbol.id, value)?;
+        }
+
+        Ok(state)
+    }
+
+    pub fn sync_from_writeback_surface(
+        &mut self,
+        writeback_surface: &HillslopeWritebackSurface,
+        indexed_writeback_surface: Option<&IndexedWritebackSurface>,
+        symbol_registry: &SymbolRegistry,
+        hot_symbol_tables: &HotSymbolTables,
+    ) -> Result<(), SymbolRegistryError> {
+        for symbol in hot_symbol_tables.hot_state_symbols() {
+            let value = indexed_writeback_surface
+                .and_then(|surface| surface.state_value(symbol.id))
+                .or_else(|| writeback_surface.state_surface.get(&symbol.symbol).copied());
+            self.ensure_state_slot(symbol.id, value)?;
+        }
+        for symbol in hot_symbol_tables.hot_flux_symbols() {
+            let value = indexed_writeback_surface
+                .and_then(|surface| surface.flux_value(symbol.id))
+                .or_else(|| writeback_surface.flux_surface.get(&symbol.symbol).copied());
+            self.ensure_flux_slot(symbol.id, value)?;
+        }
+
+        let state_ids = self.state_slot_ids.clone();
+        for id in state_ids {
+            let Some(symbol) = symbol_registry.symbol(id) else {
+                return Err(SymbolRegistryError::UnknownSymbolId { id });
+            };
+            let value = indexed_writeback_surface
+                .and_then(|surface| surface.state_value(id))
+                .or_else(|| writeback_surface.state_surface.get(symbol).copied());
+            self.set_state_slot(id, value)?;
+        }
+
+        let flux_ids = self.flux_slot_ids.clone();
+        for id in flux_ids {
+            let Some(symbol) = symbol_registry.symbol(id) else {
+                return Err(SymbolRegistryError::UnknownSymbolId { id });
+            };
+            let value = indexed_writeback_surface
+                .and_then(|surface| surface.flux_value(id))
+                .or_else(|| writeback_surface.flux_surface.get(symbol).copied());
+            self.set_flux_slot(id, value)?;
+        }
+
+        self.dirty_state_ids.clear();
+        self.dirty_flux_ids.clear();
+        Ok(())
+    }
+
+    #[must_use]
+    pub fn state_slot_view(&self) -> DenseBoundarySlotView<'_> {
+        DenseBoundarySlotView::new(&self.state_id_to_slot, &self.state_slots)
+    }
+
+    #[must_use]
+    pub fn flux_slot_view(&self) -> DenseBoundarySlotView<'_> {
+        DenseBoundarySlotView::new(&self.flux_id_to_slot, &self.flux_slots)
+    }
+
+    #[must_use]
+    pub fn state_slot_count(&self) -> usize {
+        self.state_slots.len()
+    }
+
+    #[must_use]
+    pub fn flux_slot_count(&self) -> usize {
+        self.flux_slots.len()
+    }
+
+    pub fn apply_kernel_writeback_payload(
+        &mut self,
+        payload: &KernelWritebackPayload,
+        symbol_registry: &SymbolRegistry,
+    ) -> Result<HillslopeDayFrameDirtyIds, SymbolRegistryError> {
+        let mut dirty = HillslopeDayFrameDirtyIds::default();
+        for field in &payload.state_updates {
+            let id = symbol_registry.id_of(&field.symbol)?;
+            self.set_state_slot(id, Some(field.value))?;
+            self.dirty_state_ids.insert(id);
+            dirty.state_ids.push(id);
+        }
+        for field in &payload.flux_updates {
+            let id = symbol_registry.id_of(&field.symbol)?;
+            self.set_flux_slot(id, Some(field.value))?;
+            self.dirty_flux_ids.insert(id);
+            dirty.flux_ids.push(id);
+        }
+        Ok(dirty)
+    }
+
+    pub fn apply_indexed_kernel_writeback_payload(
+        &mut self,
+        payload: &IndexedKernelWritebackPayload,
+    ) -> Result<HillslopeDayFrameDirtyIds, SymbolRegistryError> {
+        let mut dirty = HillslopeDayFrameDirtyIds::default();
+        for field in &payload.state_updates {
+            self.set_state_slot(field.id, Some(field.value))?;
+            self.dirty_state_ids.insert(field.id);
+            dirty.state_ids.push(field.id);
+        }
+        for field in &payload.flux_updates {
+            self.set_flux_slot(field.id, Some(field.value))?;
+            self.dirty_flux_ids.insert(field.id);
+            dirty.flux_ids.push(field.id);
+        }
+        Ok(dirty)
+    }
+
+    pub fn flush_dirty_to_writeback_surface(
+        &mut self,
+        symbol_registry: &SymbolRegistry,
+        writeback_surface: &mut HillslopeWritebackSurface,
+        indexed_writeback_surface: Option<&mut IndexedWritebackSurface>,
+    ) -> Result<(), SymbolRegistryError> {
+        let mut indexed_writeback_surface = indexed_writeback_surface;
+
+        for id in &self.dirty_state_ids {
+            let Some(symbol) = symbol_registry.symbol(*id) else {
+                return Err(SymbolRegistryError::UnknownSymbolId { id: *id });
+            };
+            let value = self.state_value(*id);
+            if let Some(value) = value {
+                writeback_surface
+                    .state_surface
+                    .insert(symbol.clone(), value);
+            } else {
+                writeback_surface.state_surface.remove(symbol);
+            }
+            if let Some(indexed_surface) = indexed_writeback_surface.as_deref_mut() {
+                indexed_surface.set_state_value(*id, value);
+            }
+        }
+
+        for id in &self.dirty_flux_ids {
+            let Some(symbol) = symbol_registry.symbol(*id) else {
+                return Err(SymbolRegistryError::UnknownSymbolId { id: *id });
+            };
+            let value = self.flux_value(*id);
+            if let Some(value) = value {
+                writeback_surface.flux_surface.insert(symbol.clone(), value);
+            } else {
+                writeback_surface.flux_surface.remove(symbol);
+            }
+            if let Some(indexed_surface) = indexed_writeback_surface.as_deref_mut() {
+                indexed_surface.set_flux_value(*id, value);
+            }
+        }
+
+        self.dirty_state_ids.clear();
+        self.dirty_flux_ids.clear();
+        Ok(())
+    }
+
+    fn ensure_state_slot(
+        &mut self,
+        id: SymbolId,
+        value: Option<BoundaryValue>,
+    ) -> Result<(), SymbolRegistryError> {
+        if id.as_usize() >= self.state_id_to_slot.len() {
+            return Err(SymbolRegistryError::UnknownSymbolId { id });
+        }
+        if self.state_id_to_slot[id.as_usize()].is_none() {
+            let slot = self.state_slots.len();
+            self.state_id_to_slot[id.as_usize()] = Some(slot);
+            self.state_slot_ids.push(id);
+            self.state_slots.push(None);
+        }
+        self.set_state_slot(id, value)
+    }
+
+    fn ensure_flux_slot(
+        &mut self,
+        id: SymbolId,
+        value: Option<BoundaryValue>,
+    ) -> Result<(), SymbolRegistryError> {
+        if id.as_usize() >= self.flux_id_to_slot.len() {
+            return Err(SymbolRegistryError::UnknownSymbolId { id });
+        }
+        if self.flux_id_to_slot[id.as_usize()].is_none() {
+            let slot = self.flux_slots.len();
+            self.flux_id_to_slot[id.as_usize()] = Some(slot);
+            self.flux_slot_ids.push(id);
+            self.flux_slots.push(None);
+        }
+        self.set_flux_slot(id, value)
+    }
+
+    fn set_state_slot(
+        &mut self,
+        id: SymbolId,
+        value: Option<BoundaryValue>,
+    ) -> Result<(), SymbolRegistryError> {
+        let Some(slot) = self.state_id_to_slot.get(id.as_usize()).copied().flatten() else {
+            return self.ensure_state_slot(id, value);
+        };
+        self.state_slots[slot] = value;
+        Ok(())
+    }
+
+    fn set_flux_slot(
+        &mut self,
+        id: SymbolId,
+        value: Option<BoundaryValue>,
+    ) -> Result<(), SymbolRegistryError> {
+        let Some(slot) = self.flux_id_to_slot.get(id.as_usize()).copied().flatten() else {
+            return self.ensure_flux_slot(id, value);
+        };
+        self.flux_slots[slot] = value;
+        Ok(())
+    }
+
+    fn state_value(&self, id: SymbolId) -> Option<BoundaryValue> {
+        self.state_id_to_slot
+            .get(id.as_usize())
+            .copied()
+            .flatten()
+            .and_then(|slot| self.state_slots.get(slot))
+            .copied()
+            .flatten()
+    }
+
+    fn flux_value(&self, id: SymbolId) -> Option<BoundaryValue> {
+        self.flux_id_to_slot
+            .get(id.as_usize())
+            .copied()
+            .flatten()
+            .and_then(|slot| self.flux_slots.get(slot))
+            .copied()
+            .flatten()
     }
 }
 

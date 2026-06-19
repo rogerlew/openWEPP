@@ -1,6 +1,7 @@
 # PERFDEEP03 — Persistent Lane-Owned Dense State (array-native Stage 1, redone)
 
-Status: scaffolded 2026-06-19 (Codex-ready). Re-does Stage 1 of the array-native re-architecture
+Status: executed 2026-06-19. Verdict: `NO-GO - section 7 falsification / re-profile before expanding`.
+Re-does Stage 1 of the array-native re-architecture
 ([ADR-0025](../../decisions/0025-array-native-hillslope-day-frame.md); spec §4.6, §8) after PERFDEEP02's
 NO-GO. **The dense frame becomes the carried lane runtime state — not a temporary mirror around the old
 maps.**
@@ -117,7 +118,43 @@ logical hot path (Stage 5).
 
 ## Execution Result
 
-(pending Codex execution)
+PERFDEEP03 implemented the lane-owned persistent compact dense state and passed
+the required correctness gates, but failed the load-bearing H2637 endpoint gate.
+
+Ran opt-in:
+
+```text
+env OPENWEPP_PERFDEEP03_LANE_DENSE_STATE=1 \
+  /usr/bin/time -f "h2637_perfdeep03_lane_dense_hot_first\t%e\t%M" \
+  target/release/openwepp-cli-hill \
+  --run-dir /tmp/perfho01/run-dirs/h2637 \
+  --run-file docs/work-packages/20260619-perfdeep03-persistent-lane-owned-dense-state-001/artifacts/runfiles/perfdeep03-h2637.run \
+  --output-dir /tmp/perfdeep03/current/h2637_same_manifest \
+  --policy compat \
+  --legacy-sidecar-discovery
+```
+
+Result:
+
+```text
+h2637_perfdeep03_lane_dense_hot_first 1147.96 229580
+```
+
+The required gate was `< 669.97 s`, so the package closes `NO-GO`. Identity
+passed for the scoped outputs: HBP/WAT byte identity, PASS Arrow equivalence, and
+235961 diagnostic roundtrip rows with no mismatch rows. Full Rust closure gates
+passed:
+
+```text
+cargo fmt --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+cargo deny check
+```
+
+Default production remains disabled. The next action is not default activation
+and not blind expansion; re-profile the PERFDEEP03 endpoint to identify the
+remaining edge/fallback costs before opening a follow-on package.
 
 ## Dependencies
 

@@ -1,0 +1,29 @@
+# ========
+# captured on    : Fri Jun 19 06:49:00 2026
+# header version : 1
+# data offset    : 640
+# data size      : 312691968
+# feat offset    : 312692608
+# hostname : forest
+# os release : 6.8.0-111-generic
+# perf version : 6.8.12
+# arch : x86_64
+# nrcpus online : 48
+# nrcpus avail : 48
+# cpudesc : Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz
+# cpuid : GenuineIntel,6,62,4
+# total memory : 131777596 kB
+# cmdline : /usr/lib/linux-tools-6.8.0-111/perf record -F 49 --call-graph dwarf,8192 -o /tmp/perfdeep04/profile/perfdeep04-h2637-default.data -- target/release/openwepp-cli-hill --run-dir /tmp/perfho01/run-dirs/h2637 --run-file /home/workdir/openWEPP/docs/work-packages/20260619-perfdeep04-profile-perfdeep03-lane-dense-no-go-001/artifacts/runfiles/perfdeep04-h2637-default.run --output-dir /tmp/perfdeep04/default/h2637_same_manifest --policy compat --legacy-sidecar-discovery
+# event : name = cycles:P, , id = { 1397, 1398, 1399, 1400, 1401, 1402, 1403, 1404, 1405, 1406, 1407, 1408, 1409, 1410, 1411, 1412, 1413, 1414, 1415, 1416, 1417, 1418, 1419, 1420, 1421, 1422, 1423, 1424, 1425, 1426, 1427, 1428, 1429, 1430, 1431, 1432, 1433, 1434, 1435, 1436, 1437, 1438, 1439, 1440, 1441, 1442, 1443, 1444 }, type = 0 (PERF_TYPE_HARDWARE), size = 136, config = 0 (PERF_COUNT_HW_CPU_CYCLES), { sample_period, sample_freq } = 49, sample_type = IP|TID|TIME|ADDR|CALLCHAIN|PERIOD|REGS_USER|STACK_USER|DATA_SRC, read_format = ID|LOST, disabled = 1, inherit = 1, mmap = 1, comm = 1, freq = 1, enable_on_exec = 1, task = 1, precise_ip = 3, mmap_data = 1, sample_id_all = 1, exclude_callchain_user = 1, mmap2 = 1, comm_exec = 1, ksymbol = 1, bpf_event = 1, sample_regs_user = 0xff0fff, sample_stack_user = 8192
+# CPU_TOPOLOGY info available, use -I to display
+# NUMA_TOPOLOGY info available, use -I to display
+# pmu mappings: cpu = 4, breakpoint = 5, cstate_core = 37, cstate_pkg = 38, kprobe = 8, msr = 10, power = 39, software = 1, tracepoint = 2, uncore_cbox_0 = 24, uncore_cbox_1 = 25, uncore_cbox_2 = 26, uncore_cbox_3 = 27, uncore_cbox_4 = 28, uncore_cbox_5 = 29, uncore_cbox_6 = 30, uncore_cbox_7 = 31, uncore_cbox_8 = 32, uncore_cbox_9 = 33, uncore_cbox_10 = 34, uncore_cbox_11 = 35, uncore_ha_0 = 11, uncore_imc_0 = 14, uncore_imc_1 = 15, uncore_imc_2 = 12, uncore_imc_3 = 13, uncore_imc_4 = 21, uncore_imc_5 = 22, uncore_imc_6 = 19, uncore_imc_7 = 20, uncore_pcu = 36, uncore_r2pcie = 16, uncore_r3qpi_0 = 17, uncore_r3qpi_1 = 18, uncore_ubox = 23, uprobe = 9
+# CACHE info available, use -I to display
+# time of first sample : 4039735.319479
+# time of last sample : 4040439.331491
+# sample duration : 704012.012 ms
+# MEM_TOPOLOGY info available, use -I to display
+# cpu pmu capabilities: branches=16, max_precise=3, pmu_name=ivybridge
+# missing features: TRACING_DATA BRANCH_STACK GROUP_DESC AUXTRACE STAT CLOCKID DIR_FORMAT COMPRESSED CLOCK_DATA HYBRID_TOPOLOGY
+# ========
+#

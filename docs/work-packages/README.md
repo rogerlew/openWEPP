@@ -10,6 +10,42 @@
 
 State as of `2026-06-19`:
 
+- PERFDEEP05 is scaffolded and queued, not executed. Scope:
+  lane-dense transfer authority and sync removal, directly following PERFDEEP04.
+  The package requires removing `sync_from_writeback_surface` from the
+  PERFDEEP03 opt-in daily H2637 hot loop, direct dense transfer updates, cached
+  hot slot metadata, H2637 identity, real endpoint/RSS measurement against
+  `669.97 s`, profile evidence that the PERFDEEP04 hotspot is gone, and full
+  Rust gates before any default activation. Package:
+  `20260619-perfdeep05-lane-dense-transfer-authority-sync-removal-001/`.
+- PERFDEEP04 is complete with verdict
+  `PROFILED - cut PERFDEEP05 at lane-dense sync removal`. The package scaffolded
+  and executed matched `perf record` profiles for the PERFDEEP03 opt-in H2637
+  lane-dense no-go and the default-disabled H2637 path. Opt-in measured
+  `1164.31 s`, `519160 KB`, `61248` samples under profiler; default measured
+  `704.82 s`, `320640 KB`, `37051` samples. The top PERFDEEP03-specific hotspot
+  is `HillslopeLaneDenseState::sync_from_writeback_surface` at `33.49%`
+  inclusive / `14.19%` self, absent from default. Dense reads helped
+  (`state_value_for_symbol` fell from `14.83%` inclusive default to `3.80%`
+  opt-in), but daily logical/indexed-to-dense resync, hot-symbol vector rebuilds,
+  symbol-id lookup, and boundary BTreeMap flush dominate. Follow-on:
+  `PERFDEEP05 - Lane-Dense Transfer Authority and Sync Removal`. Package:
+  `20260619-perfdeep04-profile-perfdeep03-lane-dense-no-go-001/`.
+- PERFDEEP03 is complete with verdict
+  `NO-GO - section 7 falsification / re-profile before expanding`. The package
+  implemented the PERFDEEP02 ownership correction: lane-owned persistent compact
+  dense state carried through `OfeLanePersistentState`, compact dense slot views
+  on `HillslopeKernelRequest`, direct dense writeback application, dirty-slot
+  boundary flush, and default-disabled runner activation behind
+  `OPENWEPP_PERFDEEP03_LANE_DENSE_STATE=1`. Correctness gates passed:
+  HBP/WAT byte identity, PASS Arrow equivalence, 235961 diagnostic roundtrip
+  rows with zero mismatches, full Rust gates, and `cargo deny`. The load-bearing
+  opt-in H2637 endpoint failed: `1147.96 s`, `229580 KB` versus the PERFDEEP01
+  `669.97 s` reference. Default-disabled identity passed, but default endpoint
+  flatness was not proven (`697.36 s` / `707.80 s`), so there is no default
+  activation. Follow-on work must re-profile the current no-go implementation
+  before expanding the island or deleting more logical surfaces. Package:
+  `20260619-perfdeep03-persistent-lane-owned-dense-state-001/`.
 - PERFDEEP02 is complete with verdict `NO-GO - performance blocked`. The
   package implemented the Stage-1 dense-slot `HillslopeDayFrame` hydrology
   island mechanics, dense-first request reads, dirty-id frame writeback flush,

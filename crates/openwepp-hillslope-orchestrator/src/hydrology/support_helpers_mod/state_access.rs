@@ -9,6 +9,7 @@ impl Wb11HydrologyKernel {
         request
             .hot_state_scalar(symbol.as_str())
             .and_then(|indexed_symbol| request.indexed_state_value(indexed_symbol))
+            .or_else(|| request.dense_state_value_for_symbol(symbol))
             .or_else(|| request.state_surface.get(symbol).copied())
     }
 
@@ -19,6 +20,7 @@ impl Wb11HydrologyKernel {
         request
             .hot_flux_scalar(symbol.as_str())
             .and_then(|indexed_symbol| request.indexed_flux_value(indexed_symbol))
+            .or_else(|| request.dense_flux_value_for_symbol(symbol))
             .or_else(|| request.flux_surface.get(symbol).copied())
     }
 

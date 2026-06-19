@@ -512,6 +512,12 @@ impl IndexedSymbolSeries {
     pub fn is_empty(&self) -> bool {
         self.symbols_by_one_based_index.is_empty()
     }
+
+    pub fn symbols(&self) -> impl Iterator<Item = &IndexedBoundarySymbol> {
+        self.symbols_by_one_based_index
+            .iter()
+            .filter_map(Option::as_ref)
+    }
 }
 
 /// Sparse two-index symbol grid for canonical `root_0001_0001` families.
@@ -541,6 +547,10 @@ impl IndexedSymbolGrid {
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.symbols_by_index.is_empty()
+    }
+
+    pub fn symbols(&self) -> impl Iterator<Item = &IndexedBoundarySymbol> {
+        self.symbols_by_index.values()
     }
 }
 
@@ -648,6 +658,32 @@ impl HotSymbolTables {
     #[must_use]
     pub fn state_scalar_count(&self) -> usize {
         self.state_scalars.len()
+    }
+
+    #[must_use]
+    pub fn hot_state_symbols(&self) -> Vec<IndexedBoundarySymbol> {
+        let mut symbols = Vec::new();
+        symbols.extend(self.state_scalars.values().cloned());
+        for series in self.state_series.values() {
+            symbols.extend(series.symbols().cloned());
+        }
+        for grid in self.state_grids.values() {
+            symbols.extend(grid.symbols().cloned());
+        }
+        sort_and_dedup_indexed_symbols(symbols)
+    }
+
+    #[must_use]
+    pub fn hot_flux_symbols(&self) -> Vec<IndexedBoundarySymbol> {
+        let mut symbols = Vec::new();
+        symbols.extend(self.flux_scalars.values().cloned());
+        for series in self.flux_series.values() {
+            symbols.extend(series.symbols().cloned());
+        }
+        for grid in self.flux_grids.values() {
+            symbols.extend(grid.symbols().cloned());
+        }
+        sort_and_dedup_indexed_symbols(symbols)
     }
 
     #[must_use]
@@ -830,6 +866,14 @@ impl IndexedPlSymbolTables {
             .get(&(slot_index, crop_slot_index, index))
             .and_then(|symbols| symbols.get(root))
     }
+}
+
+fn sort_and_dedup_indexed_symbols(
+    mut symbols: Vec<IndexedBoundarySymbol>,
+) -> Vec<IndexedBoundarySymbol> {
+    symbols.sort_by_key(|symbol| symbol.id);
+    symbols.dedup_by_key(|symbol| symbol.id);
+    symbols
 }
 
 fn collect_scalar_symbols(

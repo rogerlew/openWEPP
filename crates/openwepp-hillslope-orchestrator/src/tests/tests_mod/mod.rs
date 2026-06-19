@@ -28,7 +28,7 @@ use crate::schedule_export::{
     validate_hillslope_schedule_graph,
 };
 use crate::{
-    HillslopeDayFrame, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
+    HillslopeDayFrame, HillslopeLaneDenseState, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
     build_hillslope_hot_symbol_tables,
     consumer_boundary::{
         HillslopeConsumerBoundaryError, HillslopeDecompositionBoundaryError,
