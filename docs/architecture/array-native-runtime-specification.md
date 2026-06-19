@@ -30,6 +30,14 @@ silently violated.
 Target: **≤10× (ideally ≤5×) vs legacy on H2637** — the viability gate. The arithmetic below provides a
 strong model hypothesis; staged H2637 endpoint measurements remain the closure authority.
 
+**Post-PERFDEEP05 binding direction:** the shipping path is no longer another narrow
+compatibility-edge optimization. PERFDEEP05 removed the measured full-sync hotspot and
+still measured `911.11 s`; that is over 100× the legacy `9.12 s` anchor and
+`1.36x` slower than the `669.97 s` openWEPP activation reference. The remaining gap
+requires a complete array-native per-OFE-day fast path: no symbol maps, writeback
+payloads, registry lookups, or dense/logical refreshes inside phase execution.
+Logical/symbol surfaces survive only at true I/O, replay, and diagnostic edges.
+
 ---
 
 ## 1. Motivation & Evidence
@@ -83,8 +91,34 @@ retiring seams one at a time. PERFDEEP02 then proved a full-registry temporary f
 benchmark (`2417 s`), and PERFDEEP03 proved a lane-owned compact hydrology island is correct but still not
 an endpoint win (`1147.96 s` vs `669.97 s`). PERFDEEP04 profiled that no-go and found the dominant
 opt-in-only hotspot is daily lane-dense resynchronization from logical/indexed surfaces (`33.49%`
-inclusive). The complete unit, taken to its conclusion, may still be the whole per-OFE-day hot path, but
-the next partial-island cut must first remove that measured sync edge.
+inclusive). PERFDEEP05 removed that full sync and preserved H2637 identity, but the opt-in endpoint still
+failed (`911.11 s` vs `669.97 s`). The replacement costs are daily cached-slot refresh, dense logical
+writeback apply, `SymbolRegistry::id_of`, and dirty flush. The complete unit, taken to its conclusion, may
+still be the whole per-OFE-day hot path; a partial island must first prove those remaining edge costs can be
+removed before expanding.
+
+### 1.5 PERFDEEP05 conclusion: stop seam shaving
+
+PERFDEEP05 is the falsification point for partial dense-island seam work. It
+proved three things at once:
+
+1. The old `sync_from_writeback_surface` loop was real overhead and should not
+   be restored.
+2. Removing that loop is not enough; the hot path immediately exposes another
+   compatibility boundary.
+3. The 70x-class gap is representation-wide, not a localized hotspot.
+
+Therefore, future performance packages must be judged against this rule:
+**do not spend another package merely shaving `BTreeMap`, `SymbolRegistry`, or
+writeback-payload costs while keeping those mechanisms in the OFE-day phase
+loop.** Such work may be useful only if it is part of deleting those mechanisms
+from the hot loop.
+
+The next package is an architectural execution package, not another patch:
+`PERFDEEP06 - Array-Native Fast-Path Frame Inventory and Execution Plan`.
+It must enumerate the H2637 hot-loop working set, publication operands,
+persistent lane state, borrowed forcing, and exact direct-frame phase API before
+implementation resumes.
 
 ---
 
@@ -240,7 +274,11 @@ Binding rules for every migration stage:
   it. The scheduler does **not** create or reconcile a per-phase/per-day temporary frame.
 - **Create the frame once** at lane-execution start; keep it alive across the full migrated phase chain;
   reads and kernel writebacks update it **in place**.
-- **Hold the hot working set, not the full registry.** Climate forcing is **borrowed** (§4.1), not slotted;
+- **Hold the hot working set, not the full registry.** Dense storage over the whole
+  bounded symbol universe is not practical; PERFIDX showed the reachable universe
+  can explode far beyond the symbols actually touched by H2637. The frame stores
+  lane-persistent scalars, fixed hourly arrays, soil/frost layer arrays, and
+  phase-owned scalars. Climate forcing is **borrowed** (§4.1), not slotted;
   publication/diagnostic-only symbols are not hot-frame state.
 - **Track dirty slots** with a compact dirty bitset / id list.
 - **Materialize to logical/indexed only at true boundaries:** a non-migrated phase edge, output
@@ -251,6 +289,10 @@ A partial island still pays a per-OFE-day *edge* cost (seed the read-set in, flu
 PERFDEEP03 bounded that state to a lane-owned compact hot set and preserved identity, but the real H2637
 endpoint still measured `1147.96 s`. Ownership is therefore necessary but not sufficient; follow-on work
 must profile and remove the remaining edge/fallback costs before expanding the same island shape.
+PERFDEEP05 confirmed this: direct dense transfer authority removed the full resync hotspot, but final H2637
+still measured `911.11 s`; the remaining measured edge is cached daily refresh plus logical dense
+writeback/flush compatibility. This is not a reason to revert; it is the reason
+to stop treating the partial island as the shipping architecture.
 
 ---
 
@@ -330,7 +372,8 @@ every step. The discipline:
 - A lane-owned hydrology island does **not** beat the current endpoint meaningfully -> the current
   partial-island shape is falsified for production scale and the remaining gap is elsewhere. PERFDEEP03
   reached this stop point (`1147.96 s` vs `669.97 s`), so the next action is re-profiling, not default
-  activation or blind expansion.
+  activation or blind expansion. PERFDEEP05 removed the identified full-sync hotspot and still measured
+  `911.11 s`; the next action is a new edge-cost package, not broad island expansion.
 
 ---
 
@@ -343,18 +386,19 @@ The full rewrite, sequenced so each stage is independently identity-gated and en
 |---|---|---|---|
 | **0 — Frame scaffold** ✅ *(PERFDEEP01, conditional GO 2026-06-18)* | Define `HillslopeDayFrame` + slot schema + seed/flush + typed I/O capture (HBP scalars, manifest provenance, WB13/publication operands). No phase migrated yet; frame runs *beside* the maps (shadow). | Frame round-trips bit-identically; output parity green. | ~flat |
 | **1 — Hydrology island core** ⚠️ *(PERFDEEP02 NO-GO; PERFDEEP03 lane-owned compact state NO-GO, 1147.96 s)* | PERFDEEP03 migrated the hydrology cluster to a **lane-owned persistent compact frame (§4.6)** with forcing borrowed and dirty boundary flush. | Identity passed; opt-in H2637 endpoint failed the hard `< 669.97 s` gate. No default activation. | **NO-GO** - re-profile before expanding |
-| **2 — Close the hydrology edges** | PERFDEEP04 identified the immediate edge: `sync_from_writeback_surface` rebuilds dense state from logical/indexed surfaces in the daily hot loop. Start with PERFDEEP05: apply transfer directly to dense lane state, cache hot slot metadata, avoid symbol-id lookup in dense apply, and remove the full sync from opt-in H2637. | H2637 identity + endpoint + RSS; static proof that the PERFDEEP03 sync hotspot is not in the opt-in daily hot loop; profile evidence that the hotspot is gone. | PERFDEEP05 next |
-| **3 — Erosion island** | EROD13/14/19 + PeakRunoff over the frame (sediment columns SoA). | identity + endpoint. | removes erosion machinery share |
-| **4 — Growth/decomposition + transitions** | Decomposition/Residue/Growth phases + Normalization/StorageBounds over the frame. | identity + endpoint. | removes remaining phase share |
-| **5 — Delete the logical hot path** | Remove `HillslopeWritebackSurface` from the per-OFE-day loop, the writeback payloads, the indexed mirror, the per-day registry build. Logical/symbol surfaces survive only in I/O serialization + replay/diagnostics. | full H2637 identity + endpoint + RSS; **≤10× / ≤5× check.** | **the viability-gate measurement** |
+| **2 — Hydrology edge closure** ⚠️ *(PERFDEEP05 sync removal NO-GO, 911.11 s)* | PERFDEEP05 removed `sync_from_writeback_surface` from the opt-in daily hot loop and applied transfer directly to dense lane state. Remaining measured costs are cached daily refresh, logical dense writeback apply, symbol lookup, and dirty flush. | H2637 identity passed; endpoint still failed the `< 669.97 s` gate. This closes the edge-shaving experiment as insufficient. | **NO-GO** - stop seam shaving |
+| **3 — Fast-path inventory and API** *(PERFDEEP06 next)* | Enumerate the H2637 hot-loop frame: persistent scalars, fixed arrays, layer SoA, borrowed forcing, phase-owned outputs, and publication operands. Define direct-frame phase APIs and prove which logical surfaces remain only at I/O/replay/diagnostic edges. | Static no-hot-loop-map design proof; publication operand ledger; package sequence for direct-frame ports; no production activation. | planning gate |
+| **4 — Direct-frame hydrology fast path** | Port the complete hydrology daily OFE chain over `&mut HillslopeDayFrame`: no `HillslopeKernelRequest`, no `KernelWritebackPayload`, no `HillslopeWritebackSurface`, no `SymbolRegistry` lookup between hydrology phases. | Shadow bit-identity for migrated phases; H2637 HBP/WAT/PASS identity; endpoint/RSS measurement. | must move endpoint materially |
+| **5 — Complete OFE-day frame path** | Port erosion, growth/decomposition, transitions, and closure diagnostics so all 14 phases mutate one frame. | full H2637 identity + endpoint + RSS; no logical/symbol surfaces in phase execution. | **the viability-gate measurement** |
+| **6 — Delete logical hot-path plumbing** | Remove `HillslopeWritebackSurface`, indexed mirrors, writeback payloads, and registry build from the per-OFE-day loop. Logical/symbol surfaces survive only in intake, I/O serialization, replay, and diagnostics. | full H2637 identity + endpoint + RSS; **≤10× / ≤5× check.** | shipping gate |
 
 Each stage is one work-package (`PERFDEEP0N`), identity-gated, endpoint-timed; default activation only when
-the opt-in path beats the baseline endpoint. Unlike the incremental rungs, the frame's *internal*
-phase-to-phase seams vanish — but a **partial** stage still pays a per-OFE-day *edge* cost. PERFDEEP02
-proved a temporary full-registry mirror turns that edge into a 3.6× regression; PERFDEEP03 proved a
-lane-owned compact frame still does not clear the endpoint. PERFDEEP04 localized the current
-partial-island failure to dense resync from logical/indexed surfaces, so Stage 2 begins by removing that
-edge rather than expanding blindly.
+the opt-in path beats the baseline endpoint. Unlike the incremental rungs, the target frame's *internal*
+phase-to-phase seams vanish. PERFDEEP02, PERFDEEP03, and PERFDEEP05 prove that a
+partial island still pays a per-OFE-day edge cost large enough to dominate the
+physics. The next direction is therefore not another compatibility-edge rung:
+PERFDEEP06 must design the complete fast path, and subsequent packages must port
+complete direct-frame execution units.
 
 ---
 
