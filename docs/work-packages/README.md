@@ -10,6 +10,13 @@
 
 State as of `2026-06-19`:
 
+- PERFDEEP06 is scaffolded and queued as the ADR-0025 Stage-3 planning gate.
+  It must produce the array-native fast-path frame inventory, publication
+  operand ledger, direct-frame API plan, layout/allocation ledger,
+  no-hot-loop-map proof, and follow-on package sequence before the next
+  implementation package. No production activation or Rust implementation is in
+  PERFDEEP06 scope. Package:
+  `20260619-perfdeep06-array-native-fast-path-inventory-001/`.
 - PERFDEEP05 is complete with verdict
   `NO-GO - sync hotspot removed, endpoint still fails activation gate`. The
   package removed `sync_from_writeback_surface` from the PERFDEEP03 opt-in daily
@@ -25,8 +32,8 @@ State as of `2026-06-19`:
   `9.07%` self), `apply_kernel_writeback_payload` (`10.47%` children),
   `SymbolRegistry::id_of` (`7.72%` children), and
   `flush_dirty_to_writeback_surface` (`6.72%` children). No default activation.
-  Follow-on: plan a new package for lane-dense edge cost removal / indexed dense
-  writeback authority before any broader island expansion. Package:
+  Follow-on: PERFDEEP06 fast-path inventory/API planning, not another
+  compatibility-edge optimization. Package:
   `20260619-perfdeep05-lane-dense-transfer-authority-sync-removal-001/`.
 - PERFDEEP04 is complete with verdict
   `PROFILED - cut PERFDEEP05 at lane-dense sync removal`. The package scaffolded

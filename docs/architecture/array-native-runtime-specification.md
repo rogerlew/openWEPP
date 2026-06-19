@@ -409,7 +409,8 @@ every step. The discipline:
   partial-island shape is falsified for production scale and the remaining gap is elsewhere. PERFDEEP03
   reached this stop point (`1147.96 s` vs `669.97 s`), so the next action is re-profiling, not default
   activation or blind expansion. PERFDEEP05 removed the identified full-sync hotspot and still measured
-  `911.11 s`; the next action is a new edge-cost package, not broad island expansion.
+  `911.11 s`; the next action is the PERFDEEP06 fast-path inventory/API planning gate, not another
+  compatibility-edge optimization or broad island expansion.
 
 ---
 
