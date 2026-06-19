@@ -300,6 +300,55 @@ impl HillslopeLaneDenseState {
         Ok(dirty)
     }
 
+    pub fn set_state_value_dirty(
+        &mut self,
+        id: SymbolId,
+        value: Option<BoundaryValue>,
+    ) -> Result<(), SymbolRegistryError> {
+        self.set_state_slot(id, value)?;
+        self.dirty_state_ids.insert(id);
+        Ok(())
+    }
+
+    pub fn set_flux_value_dirty(
+        &mut self,
+        id: SymbolId,
+        value: Option<BoundaryValue>,
+    ) -> Result<(), SymbolRegistryError> {
+        self.set_flux_slot(id, value)?;
+        self.dirty_flux_ids.insert(id);
+        Ok(())
+    }
+
+    pub fn refresh_cached_slots_from_writeback_surface(
+        &mut self,
+        writeback_surface: &HillslopeWritebackSurface,
+        indexed_writeback_surface: Option<&IndexedWritebackSurface>,
+        symbol_registry: &SymbolRegistry,
+    ) -> Result<(), SymbolRegistryError> {
+        for (slot, id) in self.state_slot_ids.iter().copied().enumerate() {
+            let Some(symbol) = symbol_registry.symbol(id) else {
+                return Err(SymbolRegistryError::UnknownSymbolId { id });
+            };
+            self.state_slots[slot] = indexed_writeback_surface
+                .and_then(|surface| surface.state_value(id))
+                .or_else(|| writeback_surface.state_surface.get(symbol).copied());
+        }
+
+        for (slot, id) in self.flux_slot_ids.iter().copied().enumerate() {
+            let Some(symbol) = symbol_registry.symbol(id) else {
+                return Err(SymbolRegistryError::UnknownSymbolId { id });
+            };
+            self.flux_slots[slot] = indexed_writeback_surface
+                .and_then(|surface| surface.flux_value(id))
+                .or_else(|| writeback_surface.flux_surface.get(symbol).copied());
+        }
+
+        self.dirty_state_ids.clear();
+        self.dirty_flux_ids.clear();
+        Ok(())
+    }
+
     pub fn flush_dirty_to_writeback_surface(
         &mut self,
         symbol_registry: &SymbolRegistry,

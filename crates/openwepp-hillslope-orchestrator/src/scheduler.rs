@@ -957,6 +957,83 @@ struct IndexedExecutionContext<'a> {
     hot_symbol_tables: &'a HotSymbolTables,
 }
 
+#[derive(Debug, Clone)]
+struct LaneDenseTransferSymbolIds {
+    carry_arrays_enabled: SymbolId,
+    upstream_area_ratio: SymbolId,
+    upstrmq: SymbolId,
+    subrin: SymbolId,
+    runon_input: SymbolId,
+    runoff_carryover: SymbolId,
+    upstream_surface: Vec<SymbolId>,
+    upstream_lateral: Vec<SymbolId>,
+    current_surface: Vec<SymbolId>,
+    current_lateral: Vec<SymbolId>,
+}
+
+impl LaneDenseTransferSymbolIds {
+    fn from_registry(registry: &SymbolRegistry) -> Result<Self, SymbolRegistryError> {
+        Ok(Self {
+            carry_arrays_enabled: transfer_symbol_id(
+                registry,
+                &BoundarySymbol::from(MOFE_HOURLY_CARRY_ARRAYS_ENABLED_SYMBOL),
+            )?,
+            upstream_area_ratio: transfer_symbol_id(
+                registry,
+                &BoundarySymbol::from(MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL),
+            )?,
+            upstrmq: transfer_symbol_id(
+                registry,
+                &BoundarySymbol::from(MOFE_TRANSFER_INPUT_UPSTRMQ_SYMBOL),
+            )?,
+            subrin: transfer_symbol_id(
+                registry,
+                &BoundarySymbol::from(MOFE_TRANSFER_INPUT_SUBRIN_SYMBOL),
+            )?,
+            runon_input: transfer_symbol_id(
+                registry,
+                &BoundarySymbol::from(WB12_SYMBOL_RUNON_INPUT),
+            )?,
+            runoff_carryover: transfer_symbol_id(
+                registry,
+                &BoundarySymbol::from(WB12_SYMBOL_RUNOFF_CARRYOVER),
+            )?,
+            upstream_surface: transfer_hourly_symbol_ids(
+                registry,
+                MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT,
+            )?,
+            upstream_lateral: transfer_hourly_symbol_ids(
+                registry,
+                MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT,
+            )?,
+            current_surface: transfer_hourly_symbol_ids(
+                registry,
+                MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+            )?,
+            current_lateral: transfer_hourly_symbol_ids(
+                registry,
+                MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+            )?,
+        })
+    }
+}
+
+fn transfer_symbol_id(
+    registry: &SymbolRegistry,
+    symbol: &BoundarySymbol,
+) -> Result<SymbolId, SymbolRegistryError> {
+    registry.id_of(symbol)
+}
+
+fn transfer_hourly_symbol_ids(
+    registry: &SymbolRegistry,
+    root: &str,
+) -> Result<Vec<SymbolId>, SymbolRegistryError> {
+    (1..=MOFE_TRANSFER_HOUR_COUNT)
+        .map(|hour| transfer_symbol_id(registry, &mofe_hourly_symbol(root, hour)))
+        .collect()
+}
+
 impl HillslopePhaseScheduler {
     #[must_use]
     pub fn canonical() -> Self {
@@ -1953,6 +2030,60 @@ impl HillslopePhaseScheduler {
                 (decision, apply_result)
             };
 
+            if !use_lane_dense_state {
+                if let Some(dense_state) = lane_dense_state.as_deref_mut() {
+                    if let Some(indexed_payload) = response.indexed_writeback.as_ref() {
+                        if let Err(source) =
+                            dense_state.apply_indexed_kernel_writeback_payload(indexed_payload)
+                        {
+                            deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(source));
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status,
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        }
+                    } else {
+                        let Some(symbol_registry) = symbol_registry else {
+                            deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(
+                                SymbolRegistryError::UnknownSymbol {
+                                    symbol: BoundarySymbol::from(
+                                        "perfdeep05.lane_dense.non_island.registry",
+                                    ),
+                                },
+                            ));
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status,
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        };
+                        if let Err(source) = dense_state
+                            .apply_kernel_writeback_payload(&response.writeback, symbol_registry)
+                        {
+                            deferred_error = Some(HillslopeSchedulerError::SymbolRegistry(source));
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status,
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        }
+                    }
+                }
+            }
+
             phase_reports.push(HillslopeKernelPhaseReport {
                 phase,
                 kernel_status: kernel_status.clone(),
@@ -2070,6 +2201,7 @@ impl HillslopePhaseScheduler {
         let lane_count = lane_inputs.len();
         let mut lane_reports = Vec::with_capacity(lane_count);
         let mut next_transfer_input = TransferInput::zero_for_first_ofe();
+        let mut dense_transfer_symbol_ids = None;
 
         for (index, mut lane_input) in lane_inputs.into_iter().enumerate() {
             let expected_ofe_id = index + 1;
@@ -2082,30 +2214,12 @@ impl HillslopePhaseScheduler {
 
             next_transfer_input.area_ratio = lane_input.upstream_area_ratio;
             rescale_transfer_input_daily_totals(&mut next_transfer_input)?;
-            apply_transfer_input_to_lane_surface(
-                lane_input.ofe_id,
+            apply_next_transfer_input_to_lane(
                 &next_transfer_input,
-                &mut lane_input.writeback_surface,
-                lane_input.indexed_writeback_surface.as_mut(),
-                indexed_context.map(|context| context.symbol_registry),
+                &mut lane_input,
+                indexed_context,
+                &mut dense_transfer_symbol_ids,
             )?;
-            if perfdeep03_lane_dense_state_enabled() {
-                if let (Some(indexed_context), Some(dense_state)) =
-                    (indexed_context, lane_input.lane_dense_state.as_mut())
-                {
-                    dense_state
-                        .sync_from_writeback_surface(
-                            &lane_input.writeback_surface,
-                            lane_input.indexed_writeback_surface.as_ref(),
-                            indexed_context.symbol_registry,
-                            indexed_context.hot_symbol_tables,
-                        )
-                        .map_err(|source| OfeLaneSequenceError::IndexedSymbolRegistry {
-                            ofe_id: lane_input.ofe_id,
-                            source,
-                        })?;
-                }
-            }
             let upstream_transfer_input = next_transfer_input.clone();
             let kernel_report = match indexed_context {
                 Some(indexed_context) => self.execute_with_kernel_indexed_internal(
@@ -2371,6 +2485,207 @@ fn apply_transfer_input_to_lane_surface(
         )?;
     }
 
+    Ok(())
+}
+
+fn apply_next_transfer_input_to_lane(
+    input: &TransferInput,
+    lane_input: &mut OfeLaneExecutionInput,
+    indexed_context: Option<IndexedExecutionContext<'_>>,
+    dense_transfer_symbol_ids: &mut Option<LaneDenseTransferSymbolIds>,
+) -> Result<(), OfeLaneSequenceError> {
+    if !perfdeep03_lane_dense_state_enabled()
+        || indexed_context.is_none()
+        || lane_input.lane_dense_state.is_none()
+    {
+        return apply_transfer_input_to_lane_surface(
+            lane_input.ofe_id,
+            input,
+            &mut lane_input.writeback_surface,
+            lane_input.indexed_writeback_surface.as_mut(),
+            indexed_context.map(|context| context.symbol_registry),
+        );
+    }
+
+    let Some(indexed_context) = indexed_context else {
+        return Err(OfeLaneSequenceError::IndexedSymbolRegistry {
+            ofe_id: lane_input.ofe_id,
+            source: SymbolRegistryError::UnknownSymbol {
+                symbol: BoundarySymbol::from("perfdeep05.indexed_context"),
+            },
+        });
+    };
+    if dense_transfer_symbol_ids.is_none() {
+        *dense_transfer_symbol_ids = Some(
+            LaneDenseTransferSymbolIds::from_registry(indexed_context.symbol_registry).map_err(
+                |source| OfeLaneSequenceError::IndexedSymbolRegistry {
+                    ofe_id: lane_input.ofe_id,
+                    source,
+                },
+            )?,
+        );
+    }
+    let Some(transfer_symbol_ids) = dense_transfer_symbol_ids.as_ref() else {
+        return Err(OfeLaneSequenceError::IndexedSymbolRegistry {
+            ofe_id: lane_input.ofe_id,
+            source: SymbolRegistryError::UnknownSymbol {
+                symbol: BoundarySymbol::from("perfdeep05.transfer_ids"),
+            },
+        });
+    };
+    apply_transfer_input_to_lane_surface(
+        lane_input.ofe_id,
+        input,
+        &mut lane_input.writeback_surface,
+        None,
+        None,
+    )?;
+    let Some(dense_state) = lane_input.lane_dense_state.as_mut() else {
+        return Err(OfeLaneSequenceError::IndexedSymbolRegistry {
+            ofe_id: lane_input.ofe_id,
+            source: SymbolRegistryError::UnknownSymbol {
+                symbol: BoundarySymbol::from("perfdeep05.lane_dense_state"),
+            },
+        });
+    };
+    apply_transfer_input_to_lane_dense_state(
+        lane_input.ofe_id,
+        input,
+        dense_state,
+        lane_input.indexed_writeback_surface.as_mut(),
+        transfer_symbol_ids,
+    )
+}
+
+fn apply_transfer_input_to_lane_dense_state(
+    ofe_id: usize,
+    input: &TransferInput,
+    dense_state: &mut HillslopeLaneDenseState,
+    indexed_writeback_surface: Option<&mut IndexedWritebackSurface>,
+    transfer_symbol_ids: &LaneDenseTransferSymbolIds,
+) -> Result<(), OfeLaneSequenceError> {
+    let mut indexed_writeback_surface = indexed_writeback_surface;
+    for id in transfer_symbol_ids
+        .current_surface
+        .iter()
+        .chain(transfer_symbol_ids.current_lateral.iter())
+        .copied()
+    {
+        set_dense_transfer_state_value(
+            ofe_id,
+            dense_state,
+            indexed_writeback_surface.as_deref_mut(),
+            id,
+            None,
+        )?;
+    }
+
+    set_dense_transfer_state_value(
+        ofe_id,
+        dense_state,
+        indexed_writeback_surface.as_deref_mut(),
+        transfer_symbol_ids.carry_arrays_enabled,
+        Some(BoundaryValue::scalar(1.0)),
+    )?;
+    set_dense_transfer_state_value(
+        ofe_id,
+        dense_state,
+        indexed_writeback_surface.as_deref_mut(),
+        transfer_symbol_ids.upstream_area_ratio,
+        Some(BoundaryValue::scalar(input.area_ratio)),
+    )?;
+    set_dense_transfer_state_value(
+        ofe_id,
+        dense_state,
+        indexed_writeback_surface.as_deref_mut(),
+        transfer_symbol_ids.upstrmq,
+        Some(BoundaryValue::scalar(input.upstrmq)),
+    )?;
+    set_dense_transfer_state_value(
+        ofe_id,
+        dense_state,
+        indexed_writeback_surface.as_deref_mut(),
+        transfer_symbol_ids.subrin,
+        Some(BoundaryValue::scalar(input.subrin)),
+    )?;
+    let daily_transfer_total =
+        validate_combined_transfer_total(ofe_id, input.upstrmq, input.subrin)?;
+    set_dense_transfer_state_value(
+        ofe_id,
+        dense_state,
+        indexed_writeback_surface.as_deref_mut(),
+        transfer_symbol_ids.runon_input,
+        Some(BoundaryValue::scalar(daily_transfer_total)),
+    )?;
+    set_dense_transfer_flux_value(
+        ofe_id,
+        dense_state,
+        indexed_writeback_surface.as_deref_mut(),
+        transfer_symbol_ids.runoff_carryover,
+        Some(BoundaryValue::scalar(daily_transfer_total)),
+    )?;
+
+    for (id, value) in transfer_symbol_ids
+        .upstream_surface
+        .iter()
+        .copied()
+        .zip(input.surface_carry.iter().copied())
+    {
+        set_dense_transfer_state_value(
+            ofe_id,
+            dense_state,
+            indexed_writeback_surface.as_deref_mut(),
+            id,
+            Some(BoundaryValue::scalar(value)),
+        )?;
+    }
+    for (id, value) in transfer_symbol_ids
+        .upstream_lateral
+        .iter()
+        .copied()
+        .zip(input.lateral_carry.iter().copied())
+    {
+        set_dense_transfer_state_value(
+            ofe_id,
+            dense_state,
+            indexed_writeback_surface.as_deref_mut(),
+            id,
+            Some(BoundaryValue::scalar(value)),
+        )?;
+    }
+
+    Ok(())
+}
+
+fn set_dense_transfer_state_value(
+    ofe_id: usize,
+    dense_state: &mut HillslopeLaneDenseState,
+    indexed_writeback_surface: Option<&mut IndexedWritebackSurface>,
+    id: SymbolId,
+    value: Option<BoundaryValue>,
+) -> Result<(), OfeLaneSequenceError> {
+    dense_state
+        .set_state_value_dirty(id, value)
+        .map_err(|source| OfeLaneSequenceError::IndexedSymbolRegistry { ofe_id, source })?;
+    if let Some(indexed_writeback_surface) = indexed_writeback_surface {
+        indexed_writeback_surface.set_state_value(id, value);
+    }
+    Ok(())
+}
+
+fn set_dense_transfer_flux_value(
+    ofe_id: usize,
+    dense_state: &mut HillslopeLaneDenseState,
+    indexed_writeback_surface: Option<&mut IndexedWritebackSurface>,
+    id: SymbolId,
+    value: Option<BoundaryValue>,
+) -> Result<(), OfeLaneSequenceError> {
+    dense_state
+        .set_flux_value_dirty(id, value)
+        .map_err(|source| OfeLaneSequenceError::IndexedSymbolRegistry { ofe_id, source })?;
+    if let Some(indexed_writeback_surface) = indexed_writeback_surface {
+        indexed_writeback_surface.set_flux_value(id, value);
+    }
     Ok(())
 }
 

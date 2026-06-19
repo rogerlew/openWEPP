@@ -10,13 +10,23 @@
 
 State as of `2026-06-19`:
 
-- PERFDEEP05 is scaffolded and queued, not executed. Scope:
-  lane-dense transfer authority and sync removal, directly following PERFDEEP04.
-  The package requires removing `sync_from_writeback_surface` from the
-  PERFDEEP03 opt-in daily H2637 hot loop, direct dense transfer updates, cached
-  hot slot metadata, H2637 identity, real endpoint/RSS measurement against
-  `669.97 s`, profile evidence that the PERFDEEP04 hotspot is gone, and full
-  Rust gates before any default activation. Package:
+- PERFDEEP05 is complete with verdict
+  `NO-GO - sync hotspot removed, endpoint still fails activation gate`. The
+  package removed `sync_from_writeback_surface` from the PERFDEEP03 opt-in daily
+  H2637 hot loop, applies MOFE transfer input directly to lane-owned dense state
+  through cached transfer symbol ids, and added cached-slot daily refresh for
+  prepared hot/static symbols. Final-code H2637 identity passed: HBP/WAT
+  byte-identical, PASS Arrow-equivalent, and plot/loss differences limited to
+  `run_name`. Final-code default-disabled H2637 measured `701.95 s`,
+  `227712 KB`; final-code opt-in measured `911.11 s`, `229820 KB`, versus the
+  PERFDEEP01 `669.97 s` activation reference. The PERFDEEP04 full-sync hotspot
+  is gone from the profile, but remaining dense-edge costs dominate:
+  `refresh_cached_slots_from_writeback_surface` (`16.20%` children,
+  `9.07%` self), `apply_kernel_writeback_payload` (`10.47%` children),
+  `SymbolRegistry::id_of` (`7.72%` children), and
+  `flush_dirty_to_writeback_surface` (`6.72%` children). No default activation.
+  Follow-on: plan a new package for lane-dense edge cost removal / indexed dense
+  writeback authority before any broader island expansion. Package:
   `20260619-perfdeep05-lane-dense-transfer-authority-sync-removal-001/`.
 - PERFDEEP04 is complete with verdict
   `PROFILED - cut PERFDEEP05 at lane-dense sync removal`. The package scaffolded

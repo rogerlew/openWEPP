@@ -333,6 +333,233 @@ fn perfdeep03_ofe_sequence_uses_lane_owned_compact_dense_state() {
     assert!(lane_report.lane_dense_state.is_some());
 }
 
+#[test]
+#[allow(clippy::too_many_lines)]
+fn perfdeep05_ofe_sequence_applies_transfer_input_through_lane_dense_state() {
+    #[derive(Default)]
+    struct LaneDenseTransferProbeKernel {
+        runoff_call_count: usize,
+        observed_inputs: Vec<(f64, f64, f64, f64)>,
+    }
+
+    impl HillslopeKernel for LaneDenseTransferProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            if request.phase_name == "runoff_reconciliation" {
+                self.runoff_call_count += 1;
+                self.observed_inputs.push((
+                    request_indexed_state_scalar(request, "UpStrmQ"),
+                    request_indexed_state_scalar(request, "SubRIn"),
+                    request_indexed_state_series_scalar(request, "ui_SUrunf", 1),
+                    request_indexed_state_series_scalar(request, "ui_LfUrf", 4),
+                ));
+            }
+
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-PERFDEEP05-LANE-DENSE-TRANSFER",
+            )
+            .expect("status should construct");
+
+            if request.phase_name != "closure_diagnostics" {
+                return KernelRunResponse::new(status, KernelWritebackPayload::empty());
+            }
+
+            let state_updates = match self.runoff_call_count {
+                1 => transfer_current_state_updates(&[(1, 0.25), (2, 0.50)], &[(4, 0.75)]),
+                2 => transfer_current_state_updates(&[], &[]),
+                lane => panic!("unexpected lane count {lane}"),
+            };
+            KernelRunResponse::new(
+                status,
+                KernelWritebackPayload::with_updates(state_updates, Vec::new()),
+            )
+        }
+    }
+
+    let registry = SymbolRegistry::from_symbols(perfdeep03_transfer_registry_symbols())
+        .expect("registry should build");
+    let hot_tables = build_hillslope_hot_symbol_tables(&registry);
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let lane_inputs = vec![
+        perfdeep05_lane_dense_input(1, stale_current_transfer_surface(), &registry, &hot_tables),
+        perfdeep05_lane_dense_input(
+            2,
+            stale_downstream_transfer_surface(),
+            &registry,
+            &hot_tables,
+        ),
+    ];
+    let mut kernel = LaneDenseTransferProbeKernel::default();
+
+    let report = scheduler
+        .execute_ofe_sequence_with_kernel_indexed(
+            &topology_report,
+            &mut kernel,
+            lane_inputs,
+            &registry,
+            &hot_tables,
+        )
+        .expect("indexed lane-dense transfer sequence should execute");
+
+    assert_eq!(report.lane_count(), 2);
+    assert_eq!(
+        kernel.observed_inputs,
+        vec![(0.0, 0.0, 0.0, 0.0), (0.75, 0.75, 0.25, 0.75)]
+    );
+    assert!(
+        report
+            .lane_reports
+            .iter()
+            .all(|lane_report| lane_report.lane_dense_state.is_some())
+    );
+    assert!((report.lane_reports[1].upstream_transfer_input.upstrmq - 0.75).abs() < 1.0e-12);
+    assert!((report.lane_reports[1].upstream_transfer_input.subrin - 0.75).abs() < 1.0e-12);
+}
+
+#[test]
+fn perfdeep05_non_island_writeback_refreshes_later_lane_dense_reads() {
+    struct NonIslandDenseRefreshKernel {
+        observed_percolation_value: Option<f64>,
+    }
+
+    impl HillslopeKernel for NonIslandDenseRefreshKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-PERFDEEP05-NON-ISLAND-DENSE-REFRESH",
+            )
+            .expect("status should construct");
+
+            match request.phase_name {
+                "normalization" => KernelRunResponse::new(
+                    status,
+                    KernelWritebackPayload::with_updates(
+                        vec![WritebackField::bounded(
+                            "wb12_infiltration",
+                            11.0,
+                            Some(0.0),
+                            None,
+                        )],
+                        Vec::new(),
+                    ),
+                ),
+                "percolation_deep_seepage" => {
+                    self.observed_percolation_value =
+                        Some(request_indexed_state_scalar(request, "wb12_infiltration"));
+                    KernelRunResponse::new(status, KernelWritebackPayload::empty())
+                }
+                "closure_diagnostics" => KernelRunResponse::new(
+                    status,
+                    KernelWritebackPayload::with_updates(
+                        transfer_current_state_updates(&[], &[]),
+                        Vec::new(),
+                    ),
+                ),
+                _ => KernelRunResponse::new(status, KernelWritebackPayload::empty()),
+            }
+        }
+    }
+
+    let mut registry_symbols = perfdeep03_transfer_registry_symbols();
+    registry_symbols.push(BoundarySymbol::from("wb12_infiltration"));
+    let registry = SymbolRegistry::from_symbols(registry_symbols).expect("registry should build");
+    let hot_tables = build_hillslope_hot_symbol_tables(&registry);
+    let mut writeback_surface = HillslopeWritebackSurface::default();
+    writeback_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_infiltration"),
+        BoundaryValue::scalar(0.0),
+    );
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let lane_inputs = vec![perfdeep05_lane_dense_input(
+        1,
+        writeback_surface,
+        &registry,
+        &hot_tables,
+    )];
+    let mut kernel = NonIslandDenseRefreshKernel {
+        observed_percolation_value: None,
+    };
+
+    scheduler
+        .execute_ofe_sequence_with_kernel_indexed(
+            &topology_report,
+            &mut kernel,
+            lane_inputs,
+            &registry,
+            &hot_tables,
+        )
+        .expect("indexed lane-dense sequence should execute");
+
+    assert_eq!(kernel.observed_percolation_value, Some(11.0));
+}
+
+#[test]
+fn perfdeep05_cached_slot_refresh_populates_prepared_hot_static_symbols() {
+    let fc_symbol = BoundarySymbol::from("wb18_perc_fc_0001");
+    let registry =
+        SymbolRegistry::from_symbols([fc_symbol.clone()]).expect("registry should build");
+    let hot_tables = build_hillslope_hot_symbol_tables(&registry);
+    let fc_id = registry
+        .id_of(&fc_symbol)
+        .expect("fc symbol should be registered");
+    let mut dense_state = HillslopeLaneDenseState::seed_hot_from_writeback_surface(
+        &HillslopeWritebackSurface::default(),
+        None,
+        &registry,
+        &hot_tables,
+    )
+    .expect("dense state should seed missing hot slot");
+    assert_eq!(dense_state.state_slot_view().get(fc_id), None);
+
+    let mut prepared_surface = HillslopeWritebackSurface::default();
+    prepared_surface
+        .state_surface
+        .insert(fc_symbol, BoundaryValue::scalar(0.23));
+    let indexed_surface = IndexedWritebackSurface::from_btreemap_surfaces(
+        &registry,
+        &prepared_surface.state_surface,
+        &prepared_surface.flux_surface,
+    )
+    .expect("indexed surface should build");
+
+    dense_state
+        .refresh_cached_slots_from_writeback_surface(
+            &prepared_surface,
+            Some(&indexed_surface),
+            &registry,
+        )
+        .expect("cached slot refresh should succeed");
+
+    assert_eq!(
+        dense_state
+            .state_slot_view()
+            .get(fc_id)
+            .map(BoundaryValue::as_f64),
+        Some(0.23)
+    );
+}
+
+#[test]
+fn perfdeep05_scheduler_hot_loop_does_not_sync_lane_dense_from_writeback() {
+    let scheduler_source =
+        std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/scheduler.rs"))
+            .expect("scheduler source should be readable");
+
+    assert!(
+        !scheduler_source.contains(".sync_from_writeback_surface("),
+        "PERFDEEP05 must not rebuild lane-dense state from writeback in the OFE hot loop"
+    );
+    assert!(scheduler_source.contains("apply_transfer_input_to_lane_dense_state"));
+}
+
 struct Perfmig01IndexedWritebackFixture {
     state_symbol: BoundarySymbol,
     flux_symbol: BoundarySymbol,
@@ -1519,6 +1746,49 @@ fn request_state_scalar(request: &HillslopeKernelRequest<'_>, symbol: &str) -> f
         .get(&BoundarySymbol::from(symbol))
         .copied()
         .map_or(0.0, BoundaryValue::as_f64)
+}
+
+fn request_indexed_state_scalar(request: &HillslopeKernelRequest<'_>, symbol: &str) -> f64 {
+    request
+        .hot_state_scalar(symbol)
+        .and_then(|indexed_symbol| request.indexed_state_value(indexed_symbol))
+        .map_or(0.0, BoundaryValue::as_f64)
+}
+
+fn request_indexed_state_series_scalar(
+    request: &HillslopeKernelRequest<'_>,
+    root: &str,
+    one_based_index: usize,
+) -> f64 {
+    request
+        .hot_state_series_symbol(root, one_based_index)
+        .and_then(|indexed_symbol| request.indexed_state_value(indexed_symbol))
+        .map_or(0.0, BoundaryValue::as_f64)
+}
+
+fn perfdeep05_lane_dense_input(
+    ofe_id: usize,
+    writeback_surface: HillslopeWritebackSurface,
+    registry: &SymbolRegistry,
+    hot_tables: &openwepp_kernel_contract::HotSymbolTables,
+) -> OfeLaneExecutionInput {
+    let indexed_surface = IndexedWritebackSurface::from_btreemap_surfaces(
+        registry,
+        &writeback_surface.state_surface,
+        &writeback_surface.flux_surface,
+    )
+    .expect("indexed surface should build");
+    let lane_dense_state = HillslopeLaneDenseState::seed_hot_from_writeback_surface(
+        &writeback_surface,
+        Some(&indexed_surface),
+        registry,
+        hot_tables,
+    )
+    .expect("lane dense state should seed");
+    let mut lane_input = OfeLaneExecutionInput::new(ofe_id, writeback_surface);
+    lane_input.indexed_writeback_surface = Some(indexed_surface);
+    lane_input.lane_dense_state = Some(lane_dense_state);
+    lane_input
 }
 
 fn transfer_current_state_updates(

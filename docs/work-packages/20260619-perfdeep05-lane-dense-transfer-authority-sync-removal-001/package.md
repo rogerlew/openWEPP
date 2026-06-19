@@ -1,6 +1,7 @@
 # PERFDEEP05 - Lane-Dense Transfer Authority and Sync Removal
 
-Status: scaffolded 2026-06-19 (queued; not executed).
+Status: executed 2026-06-19. Disposition: `NO-GO - sync hotspot removed,
+endpoint still fails activation gate`.
 
 Package type: performance implementation / bounded PERFDEEP04 follow-on.
 
@@ -10,6 +11,11 @@ Remove the measured PERFDEEP03 lane-dense resynchronization hotspot by making
 the PERFDEEP03 opt-in path apply transfer and hot carryover updates directly to
 lane-owned dense state. Preserve output identity, keep default production
 disabled, and remeasure the real H2637 endpoint before any further expansion.
+
+Execution note: the implementation objective was met and H2637 identity passed,
+but final-code opt-in H2637 measured `911.11 s` versus the `669.97 s`
+activation reference and final default-disabled `701.95 s`. The path remains
+opt-in only.
 
 ## Rationale
 
@@ -106,6 +112,11 @@ Out of scope:
    is gone.
 9. Update package artifacts, roadmap/spec disposition, and line-count
    governance.
+
+Execution result: phases 1-9 were completed. The static sync-removal proof,
+endpoint, identity, profile, and gate evidence are recorded in `artifacts/`.
+The package closes as no-go for activation and recommends a new follow-on
+package targeting the remaining dense-edge costs.
 
 ## Acceptance Criteria
 

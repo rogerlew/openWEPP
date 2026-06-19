@@ -1,0 +1,1421 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 48K of event 'cycles:P'
+# Event count (approx.): 3231547038077
+#
+# Children      Self  Command          Shared Object      Symbol                                                                                                                                                                                                                                                                                       IPC   [IPC Coverage]
+# ........  ........  ...............  .................  ...........................................................................................................................................................................................................................................................................................  ....................
+#
+    95.11%     0.00%  openwepp-cli-hi  [unknown]          [.] 0xffffffffffffffff                                                                                                                                                                                                                                                                       -      -
+            |
+            ---0xffffffffffffffff
+               |
+               |--31.77%--openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day
+               |          |
+               |           --31.50%--openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+               |                     |
+               |                     |--15.76%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::refresh_cached_slots_from_writeback_surface
+               |                     |          |
+               |                     |           --6.22%--__memcmp_sse2
+               |                     |
+               |                     |--4.37%--openwepp_runner::hillslope::scheduler_trace::seed_wb11_runtime_surface_inputs
+               |                     |          |
+               |                     |          |--1.43%--openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_runtime_surface_inputs
+               |                     |          |          |
+               |                     |          |           --1.10%--openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_class_symbols
+               |                     |          |                     |
+               |                     |          |                      --1.03%--openwepp_runner::hillslope::seed_mofe03_wave2_class_symbol
+               |                     |          |
+               |                     |          |--0.71%--alloc::fmt::format::format_inner
+               |                     |          |          |
+               |                     |          |           --0.64%--core::fmt::write
+               |                     |          |
+               |                     |          |--0.53%--openwepp_runner::hillslope::intake_lane_setup::wb11_seed_helpers::compute_wb11_et_demand_seed
+               |                     |          |
+               |                     |           --0.51%--openwepp_runner::hillslope::runtime_surface_symbol_value
+               |                     |
+               |                     |--2.99%--alloc::collections::btree::map::BTreeMap<K,V,A>::remove
+               |                     |          |
+               |                     |          |--0.95%--__memcmp_sse2
+               |                     |          |
+               |                     |           --0.53%--alloc::collections::btree::remove::<impl alloc::collections::btree::node::Handle<alloc::collections::btree::node::NodeRef<alloc::collections::btree::node::marker::Mut,K,V,alloc::collections::btree::node::marker::Leaf>,alloc::collections::btree::node::marker::KV>>::remove_leaf_kv
+               |                     |
+               |                     |--2.43%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+               |                     |          |
+               |                     |           --0.83%--__memcmp_sse2
+               |                     |
+               |                     |--1.30%--openwepp_runner::hillslope::scheduler_trace::prepare_pl_runtime_activation_for_scheduler
+               |                     |          |
+               |                     |           --0.95%--openwepp_runner::hillslope::scheduler_trace::require_runtime_usize_in_range
+               |                     |                     |
+               |                     |                      --0.60%--openwepp_runner::hillslope::require_runtime_surface_scalar
+               |                     |                                openwepp_runner::hillslope::runtime_surface_symbol_value
+               |                     |
+               |                     |--1.16%--core::ptr::drop_in_place<alloc::vec::Vec<openwepp_hillslope_orchestrator::scheduler::HillslopeKernelPhaseReport>>
+               |                     |          |
+               |                     |           --1.14%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::writeback::KernelWritebackApplyResult>
+               |                     |                     |
+               |                     |                      --1.09%--__GI___libc_free (inlined)
+               |                     |                                |
+               |                     |                                 --0.57%--_int_free_maybe_consolidate
+               |                     |                                           |
+               |                     |                                            --0.57%--malloc_consolidate
+               |                     |
+               |                      --0.87%--openwepp_hillslope_orchestrator::scheduler::apply_transfer_input_to_lane_surface
+               |
+               |--29.84%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+               |          |
+               |           --29.84%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+               |                     |
+               |                     |--10.38%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::apply_kernel_writeback_payload
+               |                     |          |
+               |                     |          |--7.33%--openwepp_kernel_contract::lib_mod::core_types::SymbolRegistry::id_of
+               |                     |          |          |
+               |                     |          |           --2.84%--__memcmp_sse2
+               |                     |          |
+               |                     |           --2.17%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+               |                     |
+               |                     |--9.25%--openwepp_hillslope_orchestrator::hydrology::decomposition_phase_dispatch_for_state_indexed
+               |                     |          |
+               |                     |          |--7.38%--openwepp_hillslope_orchestrator::hydrology::build_perennial_decomposition_control
+               |                     |          |          |
+               |                     |          |           --7.31%--openwepp_hillslope_orchestrator::hydrology::ensure_no_overflow_indexed_symbols_for_decomposition
+               |                     |          |                     |
+               |                     |          |                      --0.83%--__memcmp_sse2
+               |                     |          |
+               |                     |           --1.56%--openwepp_hillslope_orchestrator::hydrology::resolve_active_pl_slot_selection_with_context
+               |                     |                     |
+               |                     |                      --0.99%--openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range
+               |                     |
+               |                     |--4.46%--<openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel as openwepp_kernel_contract::lib_mod::core_types::HillslopeKernel>::run_hillslope_phase
+               |                     |          |
+               |                     |          |--1.20%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_plant_percolation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_wb18_percolation_routing
+               |                     |          |          |
+               |                     |          |           --0.61%--alloc::fmt::format::format_inner
+               |                     |          |
+               |                     |           --0.52%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::state_value_for_symbol
+               |                     |
+               |                     |--1.83%--openwepp_hillslope_orchestrator::hydrology::growth_phase_dispatch_for_state_indexed
+               |                     |          |
+               |                     |           --1.28%--openwepp_hillslope_orchestrator::hydrology::resolve_active_pl_slot_selection_with_context
+               |                     |                     |
+               |                     |                      --0.87%--openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range
+               |                     |
+               |                     |--1.56%--openwepp_hillslope_orchestrator::scheduler::perfdeep02_apply_logical_frame_writeback
+               |                     |          |
+               |                     |           --1.14%--__GI___libc_malloc (inlined)
+               |                     |                     |
+               |                     |                      --0.84%--_int_malloc
+               |                     |
+               |                      --1.07%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::core_types::KernelRunResponse>
+               |                                |
+               |                                 --1.04%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::core_types::KernelWritebackPayload>
+               |                                           |
+               |                                            --1.00%--__GI___libc_free (inlined)
+               |
+               |--10.23%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_runoff_reconciliation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_runoff_reconciliation
+               |          |
+               |          |--4.96%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_coupling
+               |          |          |
+               |          |          |--1.22%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::finalize_active_frost_coupling
+               |          |          |          |
+               |          |          |           --1.06%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+               |          |          |                     |
+               |          |          |                      --0.61%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+               |          |          |
+               |          |          |--0.93%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+               |          |          |          |
+               |          |          |           --0.52%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+               |          |          |
+               |          |           --0.64%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+               |          |
+               |          |--1.67%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::hourly_symbol_for_request
+               |          |
+               |           --1.14%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::frost_fine_layer_symbol_for_request
+               |                     |
+               |                      --0.60%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+               |
+               |--7.59%--openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+               |          |
+               |          |--6.90%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+               |          |          |
+               |          |           --6.67%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::flush_dirty_to_writeback_surface
+               |          |                     |
+               |          |                      --5.54%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+               |          |                                |
+               |          |                                |--1.95%--__memcmp_sse2
+               |          |                                |
+               |          |                                 --0.62%--__GI___libc_free (inlined)
+               |          |
+               |           --0.53%--openwepp_runner::hillslope::scheduler_trace::prepare_pl_runtime_activation_for_scheduler
+               |                     |
+               |                      --0.52%--openwepp_runner::hillslope::scheduler_trace::require_runtime_usize_in_range
+               |                                openwepp_runner::hillslope::scalar_to_usize
+               |                                openwepp_runner::hillslope::scalar_to_i32
+               |                                alloc::fmt::format::format_inner
+               |                                core::fmt::write
+               |                                _ZN4core3fmt5float29float_to_decimal_common_exact17hef26c5c450a9cf96E.llvm.9036914972901821666
+               |                                core::num::flt2dec::strategy::dragon::format_exact
+               |
+               |--7.08%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+               |          |
+               |          |--3.71%--openwepp_hillslope_orchestrator::scheduler::perfdeep02_apply_logical_frame_writeback
+               |          |          |
+               |          |           --3.68%--core::slice::sort::stable::driftsort_main
+               |          |                     |
+               |          |                      --3.68%--core::slice::sort::stable::drift::sort
+               |          |                                |
+               |          |                                 --3.56%--core::slice::sort::stable::quicksort::quicksort
+               |          |                                           |
+               |          |                                            --2.92%--core::slice::sort::stable::quicksort::quicksort
+               |          |                                                      |
+               |          |                                                       --2.09%--core::slice::sort::stable::quicksort::quicksort
+               |          |                                                                 |
+               |          |                                                                  --1.26%--core::slice::sort::stable::quicksort::quicksort
+               |          |                                                                            |
+               |          |                                                                             --0.66%--core::slice::sort::stable::quicksort::quicksort
+               |          |
+               |           --3.37%--<openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel as openwepp_kernel_contract::lib_mod::core_types::HillslopeKernel>::run_hillslope_phase
+               |                     |
+               |                     |--1.46%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_lateral_drainage::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_lateral_transfer
+               |                     |
+               |                     |--1.20%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_storage_erosion::hydrology_phase_erod14::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_erod14_wave2
+               |                     |
+               |                      --0.50%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_infiltration_evap::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_same_pass_wb14_infiltration_lineage
+               |
+               |--3.97%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_coupling
+               |          |
+               |           --3.92%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_hourly_state
+               |                     |
+               |                     |--0.77%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::derived_frost_depths_from_fine_state
+               |                     |
+               |                      --0.64%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::state_value_for_symbol
+               |
+               |--3.10%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_infiltration_evap::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_same_pass_wb14_infiltration_lineage
+               |          |
+               |           --3.09%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_coupling
+               |                     |
+               |                     |--0.76%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::finalize_active_frost_coupling
+               |                     |          |
+               |                     |           --0.68%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+               |                     |
+               |                      --0.58%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+               |
+                --0.69%--openwepp_runner::hillslope::execute_hillslope_run
+                          |
+                           --0.60%--openwepp_runner::hillslope::execute_hillslope_climate_days
+
+    39.11%     0.17%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle                                                                                                                                                                                               -      -
+            |
+             --38.94%--openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+                       |
+                       |--15.76%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::refresh_cached_slots_from_writeback_surface
+                       |          |
+                       |           --6.22%--__memcmp_sse2
+                       |
+                       |--6.90%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+                       |          |
+                       |           --6.67%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::flush_dirty_to_writeback_surface
+                       |                     |
+                       |                      --5.54%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+                       |                                |
+                       |                                |--1.95%--__memcmp_sse2
+                       |                                |
+                       |                                 --0.62%--__GI___libc_free (inlined)
+                       |
+                       |--4.52%--openwepp_runner::hillslope::scheduler_trace::seed_wb11_runtime_surface_inputs
+                       |          |
+                       |          |--1.44%--openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_runtime_surface_inputs
+                       |          |          |
+                       |          |           --1.10%--openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_class_symbols
+                       |          |                     |
+                       |          |                      --1.03%--openwepp_runner::hillslope::seed_mofe03_wave2_class_symbol
+                       |          |
+                       |          |--0.71%--alloc::fmt::format::format_inner
+                       |          |          |
+                       |          |           --0.64%--core::fmt::write
+                       |          |
+                       |          |--0.56%--openwepp_runner::hillslope::intake_lane_setup::wb11_seed_helpers::compute_wb11_et_demand_seed
+                       |          |
+                       |           --0.51%--openwepp_runner::hillslope::runtime_surface_symbol_value
+                       |
+                       |--2.99%--alloc::collections::btree::map::BTreeMap<K,V,A>::remove
+                       |          |
+                       |          |--0.95%--__memcmp_sse2
+                       |          |
+                       |           --0.53%--alloc::collections::btree::remove::<impl alloc::collections::btree::node::Handle<alloc::collections::btree::node::NodeRef<alloc::collections::btree::node::marker::Mut,K,V,alloc::collections::btree::node::marker::Leaf>,alloc::collections::btree::node::marker::KV>>::remove_leaf_kv
+                       |
+                       |--2.43%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+                       |          |
+                       |           --0.83%--__memcmp_sse2
+                       |
+                       |--1.83%--openwepp_runner::hillslope::scheduler_trace::prepare_pl_runtime_activation_for_scheduler
+                       |          |
+                       |           --1.46%--openwepp_runner::hillslope::scheduler_trace::require_runtime_usize_in_range
+                       |                     |
+                       |                     |--0.85%--openwepp_runner::hillslope::scalar_to_usize
+                       |                     |          |
+                       |                     |           --0.84%--openwepp_runner::hillslope::scalar_to_i32
+                       |                     |                     |
+                       |                     |                      --0.78%--alloc::fmt::format::format_inner
+                       |                     |                                |
+                       |                     |                                 --0.76%--core::fmt::write
+                       |                     |                                           |
+                       |                     |                                            --0.72%--_ZN4core3fmt5float29float_to_decimal_common_exact17hef26c5c450a9cf96E.llvm.9036914972901821666
+                       |                     |                                                      |
+                       |                     |                                                       --0.53%--core::num::flt2dec::strategy::dragon::format_exact
+                       |                     |
+                       |                      --0.60%--openwepp_runner::hillslope::require_runtime_surface_scalar
+                       |                                openwepp_runner::hillslope::runtime_surface_symbol_value
+                       |
+                       |--1.16%--core::ptr::drop_in_place<alloc::vec::Vec<openwepp_hillslope_orchestrator::scheduler::HillslopeKernelPhaseReport>>
+                       |          |
+                       |           --1.14%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::writeback::KernelWritebackApplyResult>
+                       |                     |
+                       |                      --1.09%--__GI___libc_free (inlined)
+                       |                                |
+                       |                                 --0.57%--_int_free_maybe_consolidate
+                       |                                           |
+                       |                                            --0.57%--malloc_consolidate
+                       |
+                        --0.87%--openwepp_hillslope_orchestrator::scheduler::apply_transfer_input_to_lane_surface
+
+    36.94%     0.14%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36                                                                                                                               -      -
+            |
+             --36.80%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+                       |
+                       |--10.38%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::apply_kernel_writeback_payload
+                       |          |
+                       |          |--7.33%--openwepp_kernel_contract::lib_mod::core_types::SymbolRegistry::id_of
+                       |          |          |
+                       |          |           --2.84%--__memcmp_sse2
+                       |          |
+                       |           --2.17%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+                       |
+                       |--9.25%--openwepp_hillslope_orchestrator::hydrology::decomposition_phase_dispatch_for_state_indexed
+                       |          |
+                       |          |--7.38%--openwepp_hillslope_orchestrator::hydrology::build_perennial_decomposition_control
+                       |          |          |
+                       |          |           --7.31%--openwepp_hillslope_orchestrator::hydrology::ensure_no_overflow_indexed_symbols_for_decomposition
+                       |          |                     |
+                       |          |                      --0.83%--__memcmp_sse2
+                       |          |
+                       |           --1.56%--openwepp_hillslope_orchestrator::hydrology::resolve_active_pl_slot_selection_with_context
+                       |                     |
+                       |                      --0.99%--openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range
+                       |
+                       |--7.83%--<openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel as openwepp_kernel_contract::lib_mod::core_types::HillslopeKernel>::run_hillslope_phase
+                       |          |
+                       |          |--1.46%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_lateral_drainage::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_lateral_transfer
+                       |          |
+                       |          |--1.20%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_storage_erosion::hydrology_phase_erod14::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_erod14_wave2
+                       |          |
+                       |          |--1.20%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_plant_percolation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_wb18_percolation_routing
+                       |          |          |
+                       |          |           --0.61%--alloc::fmt::format::format_inner
+                       |          |
+                       |          |--0.52%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::state_value_for_symbol
+                       |          |
+                       |           --0.50%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_infiltration_evap::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_same_pass_wb14_infiltration_lineage
+                       |
+                       |--5.27%--openwepp_hillslope_orchestrator::scheduler::perfdeep02_apply_logical_frame_writeback
+                       |          |
+                       |          |--3.68%--core::slice::sort::stable::driftsort_main
+                       |          |          |
+                       |          |           --3.68%--core::slice::sort::stable::drift::sort
+                       |          |                     |
+                       |          |                      --3.56%--core::slice::sort::stable::quicksort::quicksort
+                       |          |                                |
+                       |          |                                 --2.92%--core::slice::sort::stable::quicksort::quicksort
+                       |          |                                           |
+                       |          |                                            --2.09%--core::slice::sort::stable::quicksort::quicksort
+                       |          |                                                      |
+                       |          |                                                       --1.26%--core::slice::sort::stable::quicksort::quicksort
+                       |          |                                                                 |
+                       |          |                                                                  --0.66%--core::slice::sort::stable::quicksort::quicksort
+                       |          |
+                       |           --1.14%--__GI___libc_malloc (inlined)
+                       |                     |
+                       |                      --0.84%--_int_malloc
+                       |
+                       |--1.83%--openwepp_hillslope_orchestrator::hydrology::growth_phase_dispatch_for_state_indexed
+                       |          |
+                       |           --1.28%--openwepp_hillslope_orchestrator::hydrology::resolve_active_pl_slot_selection_with_context
+                       |                     |
+                       |                      --0.87%--openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range
+                       |
+                        --1.07%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::core_types::KernelRunResponse>
+                                  |
+                                   --1.04%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::core_types::KernelWritebackPayload>
+                                             |
+                                              --1.00%--__GI___libc_free (inlined)
+
+    36.74%     0.03%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal                                                                                                                                                                                -      -
+            |
+             --36.71%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+                       |
+                       |--29.84%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+                       |          |
+                       |          |--10.38%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::apply_kernel_writeback_payload
+                       |          |          |
+                       |          |          |--7.33%--openwepp_kernel_contract::lib_mod::core_types::SymbolRegistry::id_of
+                       |          |          |          |
+                       |          |          |           --2.84%--__memcmp_sse2
+                       |          |          |
+                       |          |           --2.17%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+                       |          |
+                       |          |--9.25%--openwepp_hillslope_orchestrator::hydrology::decomposition_phase_dispatch_for_state_indexed
+                       |          |          |
+                       |          |          |--7.38%--openwepp_hillslope_orchestrator::hydrology::build_perennial_decomposition_control
+                       |          |          |          |
+                       |          |          |           --7.31%--openwepp_hillslope_orchestrator::hydrology::ensure_no_overflow_indexed_symbols_for_decomposition
+                       |          |          |                     |
+                       |          |          |                      --0.83%--__memcmp_sse2
+                       |          |          |
+                       |          |           --1.56%--openwepp_hillslope_orchestrator::hydrology::resolve_active_pl_slot_selection_with_context
+                       |          |                     |
+                       |          |                      --0.99%--openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range
+                       |          |
+                       |          |--4.46%--<openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel as openwepp_kernel_contract::lib_mod::core_types::HillslopeKernel>::run_hillslope_phase
+                       |          |          |
+                       |          |          |--1.20%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_plant_percolation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_wb18_percolation_routing
+                       |          |          |          |
+                       |          |          |           --0.61%--alloc::fmt::format::format_inner
+                       |          |          |
+                       |          |           --0.52%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::state_value_for_symbol
+                       |          |
+                       |          |--1.83%--openwepp_hillslope_orchestrator::hydrology::growth_phase_dispatch_for_state_indexed
+                       |          |          |
+                       |          |           --1.28%--openwepp_hillslope_orchestrator::hydrology::resolve_active_pl_slot_selection_with_context
+                       |          |                     |
+                       |          |                      --0.87%--openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range
+                       |          |
+                       |          |--1.56%--openwepp_hillslope_orchestrator::scheduler::perfdeep02_apply_logical_frame_writeback
+                       |          |          |
+                       |          |           --1.14%--__GI___libc_malloc (inlined)
+                       |          |                     |
+                       |          |                      --0.84%--_int_malloc
+                       |          |
+                       |           --1.07%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::core_types::KernelRunResponse>
+                       |                     |
+                       |                      --1.04%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::core_types::KernelWritebackPayload>
+                       |                                |
+                       |                                 --1.00%--__GI___libc_free (inlined)
+                       |
+                        --6.67%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::flush_dirty_to_writeback_surface
+                                  |
+                                   --5.54%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+                                             |
+                                             |--1.95%--__memcmp_sse2
+                                             |
+                                              --0.62%--__GI___libc_free (inlined)
+
+    31.77%     0.00%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day                                                                                                                                                                                                             -      -
+            |
+             --31.76%--openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day
+                       |
+                        --31.50%--openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+                                  |
+                                  |--15.76%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::refresh_cached_slots_from_writeback_surface
+                                  |          |
+                                  |           --6.22%--__memcmp_sse2
+                                  |
+                                  |--4.37%--openwepp_runner::hillslope::scheduler_trace::seed_wb11_runtime_surface_inputs
+                                  |          |
+                                  |          |--1.43%--openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_runtime_surface_inputs
+                                  |          |          |
+                                  |          |           --1.10%--openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_class_symbols
+                                  |          |                     |
+                                  |          |                      --1.03%--openwepp_runner::hillslope::seed_mofe03_wave2_class_symbol
+                                  |          |
+                                  |          |--0.71%--alloc::fmt::format::format_inner
+                                  |          |          |
+                                  |          |           --0.64%--core::fmt::write
+                                  |          |
+                                  |          |--0.53%--openwepp_runner::hillslope::intake_lane_setup::wb11_seed_helpers::compute_wb11_et_demand_seed
+                                  |          |
+                                  |           --0.51%--openwepp_runner::hillslope::runtime_surface_symbol_value
+                                  |
+                                  |--2.99%--alloc::collections::btree::map::BTreeMap<K,V,A>::remove
+                                  |          |
+                                  |          |--0.95%--__memcmp_sse2
+                                  |          |
+                                  |           --0.53%--alloc::collections::btree::remove::<impl alloc::collections::btree::node::Handle<alloc::collections::btree::node::NodeRef<alloc::collections::btree::node::marker::Mut,K,V,alloc::collections::btree::node::marker::Leaf>,alloc::collections::btree::node::marker::KV>>::remove_leaf_kv
+                                  |
+                                  |--2.43%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+                                  |          |
+                                  |           --0.83%--__memcmp_sse2
+                                  |
+                                  |--1.30%--openwepp_runner::hillslope::scheduler_trace::prepare_pl_runtime_activation_for_scheduler
+                                  |          |
+                                  |           --0.95%--openwepp_runner::hillslope::scheduler_trace::require_runtime_usize_in_range
+                                  |                     |
+                                  |                      --0.60%--openwepp_runner::hillslope::require_runtime_surface_scalar
+                                  |                                openwepp_runner::hillslope::runtime_surface_symbol_value
+                                  |
+                                  |--1.16%--core::ptr::drop_in_place<alloc::vec::Vec<openwepp_hillslope_orchestrator::scheduler::HillslopeKernelPhaseReport>>
+                                  |          |
+                                  |           --1.14%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::writeback::KernelWritebackApplyResult>
+                                  |                     |
+                                  |                      --1.09%--__GI___libc_free (inlined)
+                                  |                                |
+                                  |                                 --0.57%--_int_free_maybe_consolidate
+                                  |                                           |
+                                  |                                            --0.57%--malloc_consolidate
+                                  |
+                                   --0.87%--openwepp_hillslope_orchestrator::scheduler::apply_transfer_input_to_lane_surface
+
+    21.51%    19.83%  openwepp-cli-hi  libc.so.6          [.] __memcmp_sse2                                                                                                                                                                                                                                                                            -      -
+            |
+            |--19.45%--0xffffffffffffffff
+            |          |
+            |          |--8.48%--openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day
+            |          |          openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+            |          |          |
+            |          |          |--5.57%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::refresh_cached_slots_from_writeback_surface
+            |          |          |          __memcmp_sse2
+            |          |          |
+            |          |          |--0.87%--alloc::collections::btree::map::BTreeMap<K,V,A>::remove
+            |          |          |          __memcmp_sse2
+            |          |          |
+            |          |          |--0.77%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+            |          |          |          __memcmp_sse2
+            |          |          |
+            |          |           --0.77%--openwepp_runner::hillslope::scheduler_trace::seed_wb11_runtime_surface_inputs
+            |          |
+            |          |--5.16%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+            |          |          openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+            |          |          |
+            |          |          |--2.67%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::apply_kernel_writeback_payload
+            |          |          |          openwepp_kernel_contract::lib_mod::core_types::SymbolRegistry::id_of
+            |          |          |          __memcmp_sse2
+            |          |          |
+            |          |          |--1.29%--openwepp_hillslope_orchestrator::hydrology::decomposition_phase_dispatch_for_state_indexed
+            |          |          |          |
+            |          |          |           --0.78%--openwepp_hillslope_orchestrator::hydrology::build_perennial_decomposition_control
+            |          |          |                     |
+            |          |          |                      --0.76%--openwepp_hillslope_orchestrator::hydrology::ensure_no_overflow_indexed_symbols_for_decomposition
+            |          |          |                                __memcmp_sse2
+            |          |          |
+            |          |           --0.59%--<openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel as openwepp_kernel_contract::lib_mod::core_types::HillslopeKernel>::run_hillslope_phase
+            |          |
+            |          |--2.13%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+            |          |          |
+            |          |           --1.64%--openwepp_hillslope_orchestrator::scheduler::perfdeep02_apply_logical_frame_writeback
+            |          |                     |
+            |          |                      --1.63%--core::slice::sort::stable::driftsort_main
+            |          |                                core::slice::sort::stable::drift::sort
+            |          |                                |
+            |          |                                 --1.60%--core::slice::sort::stable::quicksort::quicksort
+            |          |                                           |
+            |          |                                            --1.33%--core::slice::sort::stable::quicksort::quicksort
+            |          |                                                      |
+            |          |                                                       --0.96%--core::slice::sort::stable::quicksort::quicksort
+            |          |                                                                 |
+            |          |                                                                  --0.56%--core::slice::sort::stable::quicksort::quicksort
+            |          |
+            |          |--1.79%--openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+            |          |          openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+            |          |          openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::flush_dirty_to_writeback_surface
+            |          |          alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+            |          |          __memcmp_sse2
+            |          |
+            |           --1.08%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_runoff_reconciliation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_runoff_reconciliation
+            |
+             --1.68%--__memcmp_sse2
+
+    16.20%     9.07%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::refresh_cached_slots_from_writeback_surface                                                                                                                                                                         -      -
+            |
+            |--8.63%--0xffffffffffffffff
+            |          openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day
+            |          openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+            |          openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::refresh_cached_slots_from_writeback_surface
+            |
+             --7.13%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::refresh_cached_slots_from_writeback_surface
+                       |
+                        --6.22%--__memcmp_sse2
+
+    12.06%     0.39%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_coupling                                                                                            -      -
+            |
+             --11.67%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_coupling
+                       |
+                       |--3.92%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_hourly_state
+                       |          |
+                       |          |--0.77%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::derived_frost_depths_from_fine_state
+                       |          |
+                       |           --0.64%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::state_value_for_symbol
+                       |
+                       |--1.97%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::finalize_active_frost_coupling
+                       |          |
+                       |           --1.73%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+                       |                     |
+                       |                      --1.00%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+                       |
+                       |--1.51%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+                       |          |
+                       |           --0.84%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+                       |
+                       |--1.06%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+                       |
+                        --0.60%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::state_value_for_symbol
+
+    10.47%     0.35%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::apply_kernel_writeback_payload                                                                                                                                                                                      -      -
+            |
+             --10.12%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::apply_kernel_writeback_payload
+                       |
+                       |--7.33%--openwepp_kernel_contract::lib_mod::core_types::SymbolRegistry::id_of
+                       |          |
+                       |           --2.84%--__memcmp_sse2
+                       |
+                        --2.17%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+
+    10.23%     0.21%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_runoff_reconciliation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_runoff_reconciliation                                                                                  -      -
+            |
+             --10.02%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_runoff_reconciliation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_runoff_reconciliation
+                       |
+                       |--4.96%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_coupling
+                       |          |
+                       |          |--1.22%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::finalize_active_frost_coupling
+                       |          |          |
+                       |          |           --1.06%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+                       |          |                     |
+                       |          |                      --0.61%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+                       |          |
+                       |          |--0.93%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+                       |          |          |
+                       |          |           --0.52%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+                       |          |
+                       |           --0.64%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+                       |
+                       |--1.67%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::hourly_symbol_for_request
+                       |
+                        --1.14%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::frost_fine_layer_symbol_for_request
+                                  |
+                                   --0.60%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+
+     9.25%     0.03%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::decomposition_phase_dispatch_for_state_indexed                                                                                                                                                                                               -      -
+            |
+             --9.22%--openwepp_hillslope_orchestrator::hydrology::decomposition_phase_dispatch_for_state_indexed
+                       |
+                       |--7.38%--openwepp_hillslope_orchestrator::hydrology::build_perennial_decomposition_control
+                       |          |
+                       |           --7.31%--openwepp_hillslope_orchestrator::hydrology::ensure_no_overflow_indexed_symbols_for_decomposition
+                       |                     |
+                       |                      --0.83%--__memcmp_sse2
+                       |
+                        --1.56%--openwepp_hillslope_orchestrator::hydrology::resolve_active_pl_slot_selection_with_context
+                                  |
+                                   --0.99%--openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range
+
+     8.02%     0.16%  openwepp-cli-hi  openwepp-cli-hill  [.] <openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel as openwepp_kernel_contract::lib_mod::core_types::HillslopeKernel>::run_hillslope_phase                                                                                                                                 -      -
+            |
+             --7.87%--<openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel as openwepp_kernel_contract::lib_mod::core_types::HillslopeKernel>::run_hillslope_phase
+                       |
+                       |--1.46%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_lateral_drainage::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_lateral_transfer
+                       |
+                       |--1.20%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_storage_erosion::hydrology_phase_erod14::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_erod14_wave2
+                       |
+                       |--1.20%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_plant_percolation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_wb18_percolation_routing
+                       |          |
+                       |           --0.61%--alloc::fmt::format::format_inner
+                       |
+                       |--0.68%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_infiltration_evap::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_same_pass_wb14_infiltration_lineage
+                       |
+                        --0.52%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::state_value_for_symbol
+
+     7.72%     4.59%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_kernel_contract::lib_mod::core_types::SymbolRegistry::id_of                                                                                                                                                                                                                     -      -
+            |
+            |--4.26%--0xffffffffffffffff
+            |          |
+            |           --4.19%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+            |                     openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+            |                     openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::apply_kernel_writeback_payload
+            |                     openwepp_kernel_contract::lib_mod::core_types::SymbolRegistry::id_of
+            |
+             --3.14%--openwepp_kernel_contract::lib_mod::core_types::SymbolRegistry::id_of
+                       |
+                        --2.84%--__memcmp_sse2
+
+     7.40%     6.08%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::ensure_no_overflow_indexed_symbols_for_decomposition                                                                                                                                                                                         -      -
+            |
+            |--5.99%--0xffffffffffffffff
+            |          openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+            |          openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+            |          openwepp_hillslope_orchestrator::hydrology::decomposition_phase_dispatch_for_state_indexed
+            |          openwepp_hillslope_orchestrator::hydrology::build_perennial_decomposition_control
+            |          openwepp_hillslope_orchestrator::hydrology::ensure_no_overflow_indexed_symbols_for_decomposition
+            |
+             --1.31%--openwepp_hillslope_orchestrator::hydrology::ensure_no_overflow_indexed_symbols_for_decomposition
+                       |
+                        --0.83%--__memcmp_sse2
+
+     7.38%     0.01%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::build_perennial_decomposition_control                                                                                                                                                                                                        -      -
+            |
+             --7.38%--openwepp_hillslope_orchestrator::hydrology::build_perennial_decomposition_control
+                       |
+                        --7.31%--openwepp_hillslope_orchestrator::hydrology::ensure_no_overflow_indexed_symbols_for_decomposition
+                                  |
+                                   --0.83%--__memcmp_sse2
+
+     6.72%     0.44%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::flush_dirty_to_writeback_surface                                                                                                                                                                                    -      -
+            |
+             --6.28%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::flush_dirty_to_writeback_surface
+                       |
+                        --5.54%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+                                  |
+                                  |--1.95%--__memcmp_sse2
+                                  |
+                                   --0.62%--__GI___libc_free (inlined)
+
+     6.67%     0.54%  openwepp-cli-hi  openwepp-cli-hill  [.] alloc::fmt::format::format_inner                                                                                                                                                                                                                                                         -      -
+            |
+            |--6.13%--alloc::fmt::format::format_inner
+            |          |
+            |           --5.88%--core::fmt::write
+            |                     |
+            |                     |--1.84%--core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt
+            |                     |          |
+            |                     |           --1.55%--core::fmt::Formatter::pad_integral
+            |                     |                     |
+            |                     |                      --0.50%--<alloc::string::String as core::fmt::Write>::write_char
+            |                     |
+            |                     |--1.72%--<alloc::string::String as core::fmt::Write>::write_str
+            |                     |          |
+            |                     |           --1.09%--alloc::raw_vec::RawVecInner<A>::reserve::do_reserve_and_handle
+            |                     |                     |
+            |                     |                      --0.95%--_ZN5alloc7raw_vec20RawVecInner$LT$A$GT$11finish_grow17hacfffe97c2b313c9E.llvm.3671060894988460240
+            |                     |                                |
+            |                     |                                 --0.53%--__GI___libc_realloc (inlined)
+            |                     |
+            |                      --1.30%--_ZN4core3fmt5float29float_to_decimal_common_exact17hef26c5c450a9cf96E.llvm.9036914972901821666
+            |                                |
+            |                                 --0.87%--core::num::flt2dec::strategy::dragon::format_exact
+            |
+             --0.50%--0xffffffffffffffff
+
+     6.57%     6.57%  openwepp-cli-hi  [unknown]          [k] 0xffffffff99201720                                                                                                                                                                                                                                                                       -      -
+            |
+             --6.56%--0xffffffffffffffff
+                       |
+                       |--2.56%--openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day
+                       |          |
+                       |           --2.55%--openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+                       |                     |
+                       |                      --1.41%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::refresh_cached_slots_from_writeback_surface
+                       |                                |
+                       |                                 --0.57%--__memcmp_sse2
+                       |
+                       |--1.67%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+                       |          openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+                       |          |
+                       |           --0.51%--openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::apply_kernel_writeback_payload
+                       |
+                       |--0.70%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_runoff_reconciliation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_runoff_reconciliation
+                       |
+                        --0.53%--openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+
+     6.10%     0.00%  openwepp-cli-hi  libc.so.6          [.] __GI___libc_free (inlined)                                                                                                                                                                                                                                                               -      -
+            |
+            ---__GI___libc_free (inlined)
+               |
+               |--3.00%--_int_free
+               |
+                --1.10%--_int_free_maybe_consolidate
+                          |
+                           --1.08%--malloc_consolidate
+
+     6.09%     0.00%  openwepp-cli-hi  libc.so.6          [.] __GI___libc_malloc (inlined)                                                                                                                                                                                                                                                             -      -
+            |
+            ---__GI___libc_malloc (inlined)
+               |
+               |--2.92%--_int_malloc
+               |
+                --0.69%--tcache_get (inlined)
+                          tcache_get_n (inlined)
+
+     6.04%     3.01%  openwepp-cli-hi  openwepp-cli-hill  [.] alloc::collections::btree::map::BTreeMap<K,V,A>::insert                                                                                                                                                                                                                                  -      -
+            |
+            |--3.03%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+            |          |
+            |          |--2.05%--__memcmp_sse2
+            |          |
+            |           --0.64%--__GI___libc_free (inlined)
+            |
+             --2.95%--0xffffffffffffffff
+                       |
+                        --2.69%--openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+                                  openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+                                  openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::flush_dirty_to_writeback_surface
+                                  alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+
+     5.89%     0.73%  openwepp-cli-hi  openwepp-cli-hill  [.] core::fmt::write                                                                                                                                                                                                                                                                         -      -
+            |
+            |--5.16%--core::fmt::write
+            |          |
+            |          |--1.84%--core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt
+            |          |          |
+            |          |           --1.55%--core::fmt::Formatter::pad_integral
+            |          |                     |
+            |          |                      --0.50%--<alloc::string::String as core::fmt::Write>::write_char
+            |          |
+            |          |--1.72%--<alloc::string::String as core::fmt::Write>::write_str
+            |          |          |
+            |          |           --1.09%--alloc::raw_vec::RawVecInner<A>::reserve::do_reserve_and_handle
+            |          |                     |
+            |          |                      --0.95%--_ZN5alloc7raw_vec20RawVecInner$LT$A$GT$11finish_grow17hacfffe97c2b313c9E.llvm.3671060894988460240
+            |          |                                |
+            |          |                                 --0.53%--__GI___libc_realloc (inlined)
+            |          |
+            |           --1.30%--_ZN4core3fmt5float29float_to_decimal_common_exact17hef26c5c450a9cf96E.llvm.9036914972901821666
+            |                     |
+            |                      --0.87%--core::num::flt2dec::strategy::dragon::format_exact
+            |
+             --0.73%--0xffffffffffffffff
+
+     5.30%     0.24%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::scheduler::perfdeep02_apply_logical_frame_writeback                                                                                                                                                                                                     -      -
+            |
+             --5.06%--openwepp_hillslope_orchestrator::scheduler::perfdeep02_apply_logical_frame_writeback
+                       |
+                       |--3.68%--core::slice::sort::stable::driftsort_main
+                       |          |
+                       |           --3.68%--core::slice::sort::stable::drift::sort
+                       |                     |
+                       |                      --3.56%--core::slice::sort::stable::quicksort::quicksort
+                       |                                |
+                       |                                 --2.92%--core::slice::sort::stable::quicksort::quicksort
+                       |                                           |
+                       |                                            --2.09%--core::slice::sort::stable::quicksort::quicksort
+                       |                                                      |
+                       |                                                       --1.26%--core::slice::sort::stable::quicksort::quicksort
+                       |                                                                 |
+                       |                                                                  --0.66%--core::slice::sort::stable::quicksort::quicksort
+                       |
+                        --1.14%--__GI___libc_malloc (inlined)
+                                  |
+                                   --0.84%--_int_malloc
+
+     4.67%     1.24%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::state_value_for_symbol                                                                                                            -      -
+            |
+            |--3.45%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::state_value_for_symbol
+            |          |
+            |          |--2.52%--openwepp_kernel_contract::lib_mod::core_types::HillslopeKernelRequest::dense_state_value_for_symbol
+            |          |          |
+            |          |           --0.88%--__memcmp_sse2
+            |          |
+            |           --0.82%--__memcmp_sse2
+            |
+             --1.12%--0xffffffffffffffff
+
+     4.53%     0.08%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::scheduler_trace::seed_wb11_runtime_surface_inputs                                                                                                                                                                                                            -      -
+            |
+             --4.46%--openwepp_runner::hillslope::scheduler_trace::seed_wb11_runtime_surface_inputs
+                       |
+                       |--1.44%--openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_runtime_surface_inputs
+                       |          |
+                       |           --1.10%--openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_class_symbols
+                       |                     |
+                       |                      --1.03%--openwepp_runner::hillslope::seed_mofe03_wave2_class_symbol
+                       |
+                       |--0.71%--alloc::fmt::format::format_inner
+                       |          |
+                       |           --0.64%--core::fmt::write
+                       |
+                       |--0.56%--openwepp_runner::hillslope::intake_lane_setup::wb11_seed_helpers::compute_wb11_et_demand_seed
+                       |
+                        --0.51%--openwepp_runner::hillslope::runtime_surface_symbol_value
+
+     3.94%     1.55%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_hourly_state                                                                                        -      -
+            |
+            |--2.39%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_hourly_state
+            |          |
+            |          |--0.77%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::derived_frost_depths_from_fine_state
+            |          |
+            |           --0.64%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::state_value_for_symbol
+            |
+             --1.53%--0xffffffffffffffff
+                       openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_coupling
+                       openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_hourly_state
+
+     3.78%     0.01%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_infiltration_evap::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_same_pass_wb14_infiltration_lineage                                                                    -      -
+            |
+             --3.77%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_infiltration_evap::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_same_pass_wb14_infiltration_lineage
+                       |
+                        --3.09%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_coupling
+                                  |
+                                  |--0.76%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::finalize_active_frost_coupling
+                                  |          |
+                                  |           --0.68%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+                                  |
+                                   --0.58%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+
+     3.72%     2.95%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol                                                                                                                                                                                                        -      -
+            |
+            |--2.77%--0xffffffffffffffff
+            |          |
+            |          |--1.85%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_runoff_reconciliation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_runoff_reconciliation
+            |          |          |
+            |          |           --1.38%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_coupling
+            |          |                     |
+            |          |                      --0.51%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+            |          |
+            |           --0.89%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_infiltration_evap::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_same_pass_wb14_infiltration_lineage
+            |                     openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::compute_active_frost_coupling
+            |
+             --0.79%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+
+     3.71%     2.88%  openwepp-cli-hi  libc.so.6          [.] _int_malloc                                                                                                                                                                                                                                                                              -      -
+            |
+            |--2.87%--0xffffffffffffffff
+            |          |
+            |          |--1.15%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+            |          |          openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+            |          |          |
+            |          |           --0.70%--openwepp_hillslope_orchestrator::scheduler::perfdeep02_apply_logical_frame_writeback
+            |          |                     |
+            |          |                      --0.69%--__GI___libc_malloc (inlined)
+            |          |                                _int_malloc
+            |          |
+            |           --0.88%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_runoff_reconciliation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_runoff_reconciliation
+            |
+             --0.83%--_int_malloc
+
+     3.69%     0.09%  openwepp-cli-hi  openwepp-cli-hill  [.] core::slice::sort::stable::drift::sort                                                                                                                                                                                                                                                   -      -
+            |
+             --3.60%--core::slice::sort::stable::drift::sort
+                       |
+                        --3.56%--core::slice::sort::stable::quicksort::quicksort
+                                  |
+                                   --2.93%--core::slice::sort::stable::quicksort::quicksort
+                                             |
+                                              --2.09%--core::slice::sort::stable::quicksort::quicksort
+                                                        |
+                                                         --1.26%--core::slice::sort::stable::quicksort::quicksort
+                                                                   |
+                                                                    --0.66%--core::slice::sort::stable::quicksort::quicksort
+
+     3.68%     0.00%  openwepp-cli-hi  openwepp-cli-hill  [.] core::slice::sort::stable::driftsort_main                                                                                                                                                                                                                                                -      -
+            |
+            ---core::slice::sort::stable::driftsort_main
+               |
+                --3.68%--core::slice::sort::stable::drift::sort
+                          |
+                           --3.56%--core::slice::sort::stable::quicksort::quicksort
+                                     |
+                                      --2.93%--core::slice::sort::stable::quicksort::quicksort
+                                                |
+                                                 --2.09%--core::slice::sort::stable::quicksort::quicksort
+                                                           |
+                                                            --1.26%--core::slice::sort::stable::quicksort::quicksort
+                                                                      |
+                                                                       --0.66%--core::slice::sort::stable::quicksort::quicksort
+
+     3.66%     1.30%  openwepp-cli-hi  openwepp-cli-hill  [.] core::slice::sort::stable::quicksort::quicksort                                                                                                                                                                                                                                          -      -
+            |
+            |--2.36%--core::slice::sort::stable::quicksort::quicksort
+            |          |
+            |           --2.02%--core::slice::sort::stable::quicksort::quicksort
+            |                     |
+            |                      --1.50%--core::slice::sort::stable::quicksort::quicksort
+            |                                |
+            |                                 --0.90%--core::slice::sort::stable::quicksort::quicksort
+            |
+             --1.20%--0xffffffffffffffff
+                       openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+                       openwepp_hillslope_orchestrator::scheduler::perfdeep02_apply_logical_frame_writeback
+                       core::slice::sort::stable::driftsort_main
+                       core::slice::sort::stable::drift::sort
+                       core::slice::sort::stable::quicksort::quicksort
+                       |
+                        --0.91%--core::slice::sort::stable::quicksort::quicksort
+                                  |
+                                   --0.60%--core::slice::sort::stable::quicksort::quicksort
+
+     3.33%     0.40%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains                                                                                              -      -
+            |
+             --2.93%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+                       |
+                        --1.85%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+
+     3.30%     1.57%  openwepp-cli-hi  openwepp-cli-hill  [.] alloc::collections::btree::map::BTreeMap<K,V,A>::remove                                                                                                                                                                                                                                  -      -
+            |
+            |--1.73%--alloc::collections::btree::map::BTreeMap<K,V,A>::remove
+            |          |
+            |          |--1.00%--__memcmp_sse2
+            |          |
+            |           --0.56%--alloc::collections::btree::remove::<impl alloc::collections::btree::node::Handle<alloc::collections::btree::node::NodeRef<alloc::collections::btree::node::marker::Mut,K,V,alloc::collections::btree::node::marker::Leaf>,alloc::collections::btree::node::marker::KV>>::remove_leaf_kv
+            |
+             --1.42%--0xffffffffffffffff
+                       |
+                        --1.35%--openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day
+                                  openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+                                  alloc::collections::btree::map::BTreeMap<K,V,A>::remove
+
+     3.26%     1.64%  openwepp-cli-hi  openwepp-cli-hill  [.] alloc::collections::btree::map::BTreeMap<K,V,A>::insert                                                                                                                                                                                                                                  -      -
+            |
+            |--1.64%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+            |          |
+            |           --1.06%--__memcmp_sse2
+            |
+             --1.54%--0xffffffffffffffff
+                       |
+                        --1.51%--openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day
+                                  openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+                                  |
+                                   --1.14%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+
+     3.21%     1.66%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::runtime_surface_symbol_value                                                                                                                                                                                                                                 -      -
+            |
+            |--1.58%--openwepp_runner::hillslope::runtime_surface_symbol_value
+            |          |
+            |           --0.91%--__memcmp_sse2
+            |
+             --1.50%--0xffffffffffffffff
+                       |
+                        --1.48%--openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day
+                                  openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+                                  |
+                                   --0.94%--openwepp_runner::hillslope::scheduler_trace::seed_wb11_runtime_surface_inputs
+
+     3.20%     2.97%  openwepp-cli-hi  libc.so.6          [.] _int_free                                                                                                                                                                                                                                                                                -      -
+            |
+             --2.92%--0xffffffffffffffff
+                       |
+                       |--0.98%--openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day
+                       |          |
+                       |           --0.93%--openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+                       |
+                        --0.66%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+                                  openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+
+     2.96%     2.96%  openwepp-cli-hi  libc.so.6          [.] malloc                                                                                                                                                                                                                                                                                   -      -
+            |
+             --2.82%--0xffffffffffffffff
+                       |
+                       |--0.80%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+                       |          openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+                       |
+                        --0.76%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_runoff_reconciliation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_runoff_reconciliation
+
+     2.86%     0.48%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::resolve_active_pl_slot_selection_with_context                                                                                                                                                                                                -      -
+            |
+             --2.39%--openwepp_hillslope_orchestrator::hydrology::resolve_active_pl_slot_selection_with_context
+                       |
+                        --1.85%--openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range
+                                  |
+                                   --0.58%--__memcmp_sse2
+
+     2.62%     1.61%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_kernel_contract::lib_mod::core_types::HillslopeKernelRequest::dense_state_value_for_symbol                                                                                                                                                                                      -      -
+            |
+            |--1.51%--0xffffffffffffffff
+            |          |
+            |           --0.52%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+            |                     openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+            |                     <openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel as openwepp_kernel_contract::lib_mod::core_types::HillslopeKernel>::run_hillslope_phase
+            |
+             --1.01%--openwepp_kernel_contract::lib_mod::core_types::HillslopeKernelRequest::dense_state_value_for_symbol
+                       |
+                        --0.88%--__memcmp_sse2
+
+     2.42%     1.90%  openwepp-cli-hi  openwepp-cli-hill  [.] alloc::collections::btree::map::BTreeMap<K,V,A>::insert                                                                                                                                                                                                                                  -      -
+            |
+            |--1.81%--0xffffffffffffffff
+            |          |
+            |           --1.67%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+            |                     openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+            |                     openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::apply_kernel_writeback_payload
+            |                     alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+            |
+             --0.52%--alloc::collections::btree::map::BTreeMap<K,V,A>::insert
+
+     2.23%     0.00%  openwepp-cli-hi  libc.so.6          [.] __memcpy_sse2_unaligned_erms (inlined)                                                                                                                                                                                                                                                   -      -
+            |
+            ---__memcpy_sse2_unaligned_erms (inlined)
+
+     2.14%     0.58%  openwepp-cli-hi  openwepp-cli-hill  [.] <alloc::string::String as core::fmt::Write>::write_str                                                                                                                                                                                                                                   -      -
+            |
+            |--1.56%--<alloc::string::String as core::fmt::Write>::write_str
+            |          |
+            |           --1.17%--alloc::raw_vec::RawVecInner<A>::reserve::do_reserve_and_handle
+            |                     |
+            |                      --1.02%--_ZN5alloc7raw_vec20RawVecInner$LT$A$GT$11finish_grow17hacfffe97c2b313c9E.llvm.3671060894988460240
+            |                                |
+            |                                 --0.54%--__GI___libc_realloc (inlined)
+            |
+             --0.55%--0xffffffffffffffff
+
+     2.08%     2.08%  openwepp-cli-hi  libc.so.6          [.] __memmove_sse2_unaligned_erms                                                                                                                                                                                                                                                            -      -
+            |
+             --2.05%--0xffffffffffffffff
+                       |
+                       |--0.58%--openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day
+                       |          openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+                       |
+                        --0.50%--openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+                                  openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+
+     2.06%     1.13%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range                                                                                                                                                                                             -      -
+            |
+            |--1.04%--0xffffffffffffffff
+            |          openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal
+            |          openwepp_hillslope_orchestrator::scheduler::HillslopePhaseScheduler::execute_with_kernel_indexed_internal::_$u7b$$u7b$closure$u7d$$u7d$::h41db93f825037a36
+            |          |
+            |           --0.57%--openwepp_hillslope_orchestrator::hydrology::decomposition_phase_dispatch_for_state_indexed
+            |                     |
+            |                      --0.57%--openwepp_hillslope_orchestrator::hydrology::resolve_active_pl_slot_selection_with_context
+            |                                |
+            |                                 --0.53%--openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range
+            |
+             --0.94%--openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range
+                       |
+                        --0.63%--__memcmp_sse2
+
+     1.98%     0.17%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::finalize_active_frost_coupling                                                                                           -      -
+            |
+             --1.80%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost_entry::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::finalize_active_frost_coupling
+                       |
+                        --1.73%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::require_shadow_fine_state_domains
+                                  |
+                                   --1.00%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+
+     1.85%     0.25%  openwepp-cli-hi  openwepp-cli-hill  [.] core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt                                                                                                                                                                                                                            -      -
+            |
+             --1.60%--core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt
+                       |
+                        --1.55%--core::fmt::Formatter::pad_integral
+                                  |
+                                   --0.50%--<alloc::string::String as core::fmt::Write>::write_char
+
+     1.83%     0.01%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::scheduler_trace::prepare_pl_runtime_activation_for_scheduler                                                                                                                                                                                                 -      -
+            |
+             --1.82%--openwepp_runner::hillslope::scheduler_trace::prepare_pl_runtime_activation_for_scheduler
+                       |
+                        --1.46%--openwepp_runner::hillslope::scheduler_trace::require_runtime_usize_in_range
+                                  |
+                                  |--0.85%--openwepp_runner::hillslope::scalar_to_usize
+                                  |          |
+                                  |           --0.84%--openwepp_runner::hillslope::scalar_to_i32
+                                  |                     |
+                                  |                      --0.78%--alloc::fmt::format::format_inner
+                                  |                                |
+                                  |                                 --0.76%--core::fmt::write
+                                  |                                           |
+                                  |                                            --0.72%--_ZN4core3fmt5float29float_to_decimal_common_exact17hef26c5c450a9cf96E.llvm.9036914972901821666
+                                  |                                                      |
+                                  |                                                       --0.53%--core::num::flt2dec::strategy::dragon::format_exact
+                                  |
+                                   --0.60%--openwepp_runner::hillslope::require_runtime_surface_scalar
+                                             openwepp_runner::hillslope::runtime_surface_symbol_value
+
+     1.83%     0.01%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::growth_phase_dispatch_for_state_indexed                                                                                                                                                                                                      -      -
+            |
+             --1.81%--openwepp_hillslope_orchestrator::hydrology::growth_phase_dispatch_for_state_indexed
+                       |
+                        --1.28%--openwepp_hillslope_orchestrator::hydrology::resolve_active_pl_slot_selection_with_context
+                                  |
+                                   --0.87%--openwepp_hillslope_orchestrator::hydrology::require_integral_pl_dispatch_symbol_ref_in_range
+
+     1.80%     0.82%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::hourly_symbol_for_request                                                                                                         -      -
+            |
+            |--1.07%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::hourly_symbol_for_request
+            |
+             --0.71%--0xffffffffffffffff
+                       |
+                        --0.69%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_runoff_reconciliation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_runoff_reconciliation
+                                  openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::hourly_symbol_for_request
+
+     1.77%     1.77%  openwepp-cli-hi  libc.so.6          [.] cfree@GLIBC_2.2.5                                                                                                                                                                                                                                                                        -      -
+            |
+             --1.70%--0xffffffffffffffff
+                       |
+                        --0.56%--openwepp_runner::hillslope::ClimateExecutionAccumulator::apply_hillslope_day
+                                  |
+                                   --0.53%--openwepp_runner::hillslope::scheduler_trace::execute_persistent_scheduler_kernel_lifecycle
+
+     1.57%     0.64%  openwepp-cli-hi  openwepp-cli-hill  [.] core::fmt::Formatter::pad_integral                                                                                                                                                                                                                                                       -      -
+            |
+            |--0.94%--core::fmt::Formatter::pad_integral
+            |          |
+            |           --0.50%--<alloc::string::String as core::fmt::Write>::write_char
+            |
+             --0.61%--0xffffffffffffffff
+
+     1.54%     0.02%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::scheduler_trace::require_runtime_usize_in_range                                                                                                                                                                                                              -      -
+            |
+             --1.52%--openwepp_runner::hillslope::scheduler_trace::require_runtime_usize_in_range
+                       |
+                       |--0.87%--openwepp_runner::hillslope::scalar_to_usize
+                       |          |
+                       |           --0.87%--openwepp_runner::hillslope::scalar_to_i32
+                       |                     |
+                       |                      --0.80%--alloc::fmt::format::format_inner
+                       |                                |
+                       |                                 --0.78%--core::fmt::write
+                       |                                           |
+                       |                                            --0.74%--_ZN4core3fmt5float29float_to_decimal_common_exact17hef26c5c450a9cf96E.llvm.9036914972901821666
+                       |                                                      |
+                       |                                                       --0.53%--core::num::flt2dec::strategy::dragon::format_exact
+                       |
+                        --0.65%--openwepp_runner::hillslope::require_runtime_surface_scalar
+                                  openwepp_runner::hillslope::runtime_surface_symbol_value
+
+     1.53%     0.03%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::require_runtime_surface_scalar                                                                                                                                                                                                                               -      -
+            |
+             --1.50%--openwepp_runner::hillslope::require_runtime_surface_scalar
+                       |
+                        --1.50%--openwepp_runner::hillslope::runtime_surface_symbol_value
+
+     1.46%     0.20%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_lateral_drainage::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_lateral_transfer                                                                                            -      -
+            |
+             --1.27%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_lateral_drainage::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_lateral_transfer
+
+     1.44%     0.00%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_runtime_surface_inputs                                                                                                                                                                                                    -      -
+            |
+            ---openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_runtime_surface_inputs
+               |
+                --1.10%--openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_class_symbols
+                          |
+                           --1.03%--openwepp_runner::hillslope::seed_mofe03_wave2_class_symbol
+
+     1.43%     0.00%  openwepp-cli-hi  libc.so.6          [.] __GI___libc_realloc (inlined)                                                                                                                                                                                                                                                            -      -
+            |
+            ---__GI___libc_realloc (inlined)
+               |
+                --1.23%--_int_realloc
+                          |
+                           --0.75%--_int_malloc
+
+     1.42%     1.07%  openwepp-cli-hi  libc.so.6          [.] malloc_consolidate                                                                                                                                                                                                                                                                       -      -
+            |
+             --1.07%--0xffffffffffffffff
+
+     1.30%     0.10%  openwepp-cli-hi  openwepp-cli-hill  [.] _ZN4core3fmt5float29float_to_decimal_common_exact17hef26c5c450a9cf96E.llvm.9036914972901821666                                                                                                                                                                                           -      -
+            |
+             --1.20%--_ZN4core3fmt5float29float_to_decimal_common_exact17hef26c5c450a9cf96E.llvm.9036914972901821666
+                       |
+                        --0.87%--core::num::flt2dec::strategy::dragon::format_exact
+
+     1.24%     0.13%  openwepp-cli-hi  libc.so.6          [.] _int_realloc                                                                                                                                                                                                                                                                             -      -
+            |
+             --1.11%--_int_realloc
+                       |
+                        --0.75%--_int_malloc
+
+     1.22%     0.16%  openwepp-cli-hi  openwepp-cli-hill  [.] alloc::raw_vec::RawVecInner<A>::reserve::do_reserve_and_handle                                                                                                                                                                                                                           -      -
+            |
+             --1.06%--alloc::raw_vec::RawVecInner<A>::reserve::do_reserve_and_handle
+                       |
+                        --1.04%--_ZN5alloc7raw_vec20RawVecInner$LT$A$GT$11finish_grow17hacfffe97c2b313c9E.llvm.3671060894988460240
+                                  |
+                                   --0.56%--__GI___libc_realloc (inlined)
+
+     1.21%     0.03%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_storage_erosion::hydrology_phase_erod14::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_erod14_wave2                                                                         -      -
+            |
+             --1.18%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_storage_erosion::hydrology_phase_erod14::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_erod14_wave2
+
+     1.20%     0.21%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_plant_percolation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_wb18_percolation_routing                                                                                   -      -
+            |
+             --0.99%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_plant_percolation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::run_wb18_percolation_routing
+                       |
+                        --0.61%--alloc::fmt::format::format_inner
+
+     1.19%     0.12%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::frost_fine_layer_symbol_for_request                                                                                               -      -
+            |
+             --1.07%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::frost_fine_layer_symbol_for_request
+                       |
+                        --0.60%--openwepp_kernel_contract::lib_mod::core_types::HotSymbolTables::state_grid_symbol
+
+     1.16%     0.00%  openwepp-cli-hi  openwepp-cli-hill  [.] core::ptr::drop_in_place<alloc::vec::Vec<openwepp_hillslope_orchestrator::scheduler::HillslopeKernelPhaseReport>>                                                                                                                                                                        -      -
+            |
+            ---core::ptr::drop_in_place<alloc::vec::Vec<openwepp_hillslope_orchestrator::scheduler::HillslopeKernelPhaseReport>>
+               |
+                --1.14%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::writeback::KernelWritebackApplyResult>
+                          |
+                           --1.09%--__GI___libc_free (inlined)
+                                     |
+                                      --0.57%--_int_free_maybe_consolidate
+                                                |
+                                                 --0.57%--malloc_consolidate
+
+     1.14%     0.04%  openwepp-cli-hi  openwepp-cli-hill  [.] core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::writeback::KernelWritebackApplyResult>                                                                                                                                                                                       -      -
+            |
+             --1.10%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::writeback::KernelWritebackApplyResult>
+                       |
+                        --1.09%--__GI___libc_free (inlined)
+                                  |
+                                   --0.57%--_int_free_maybe_consolidate
+                                             |
+                                              --0.57%--malloc_consolidate
+
+     1.11%     0.02%  openwepp-cli-hi  libc.so.6          [.] _int_free_maybe_consolidate                                                                                                                                                                                                                                                              -      -
+            |
+             --1.09%--_int_free_maybe_consolidate
+                       |
+                        --1.08%--malloc_consolidate
+
+     1.10%     0.00%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_class_symbols                                                                                                                                                                                                             -      -
+            |
+             --1.10%--openwepp_runner::hillslope::scheduler_trace::seed_mofe03_wave2_class_symbols
+                       |
+                        --1.03%--openwepp_runner::hillslope::seed_mofe03_wave2_class_symbol
+
+     1.09%     0.22%  openwepp-cli-hi  openwepp-cli-hill  [.] _ZN5alloc7raw_vec20RawVecInner$LT$A$GT$11finish_grow17hacfffe97c2b313c9E.llvm.3671060894988460240                                                                                                                                                                                        -      -
+            |
+             --0.87%--_ZN5alloc7raw_vec20RawVecInner$LT$A$GT$11finish_grow17hacfffe97c2b313c9E.llvm.3671060894988460240
+                       |
+                        --0.56%--__GI___libc_realloc (inlined)
+
+     1.07%     0.05%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::scalar_to_i32                                                                                                                                                                                                                                                -      -
+            |
+             --1.02%--openwepp_runner::hillslope::scalar_to_i32
+                       |
+                        --0.98%--alloc::fmt::format::format_inner
+                                  |
+                                   --0.95%--core::fmt::write
+                                             |
+                                              --0.90%--_ZN4core3fmt5float29float_to_decimal_common_exact17hef26c5c450a9cf96E.llvm.9036914972901821666
+                                                        |
+                                                         --0.65%--core::num::flt2dec::strategy::dragon::format_exact
+
+     1.07%     0.00%  openwepp-cli-hi  openwepp-cli-hill  [.] core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::core_types::KernelRunResponse>                                                                                                                                                                                               -      -
+            |
+            ---core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::core_types::KernelRunResponse>
+               |
+                --1.04%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::core_types::KernelWritebackPayload>
+                          |
+                           --1.00%--__GI___libc_free (inlined)
+
+     1.05%     0.04%  openwepp-cli-hi  openwepp-cli-hill  [.] core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::core_types::KernelWritebackPayload>                                                                                                                                                                                          -      -
+            |
+             --1.01%--core::ptr::drop_in_place<openwepp_kernel_contract::lib_mod::core_types::KernelWritebackPayload>
+                       |
+                        --1.00%--__GI___libc_free (inlined)
+
+     1.04%     0.00%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::scalar_to_usize                                                                                                                                                                                                                                              -      -
+            |
+             --1.04%--openwepp_runner::hillslope::scalar_to_usize
+                       |
+                        --1.03%--openwepp_runner::hillslope::scalar_to_i32
+                                  |
+                                   --0.96%--alloc::fmt::format::format_inner
+                                             |
+                                              --0.93%--core::fmt::write
+                                                        |
+                                                         --0.88%--_ZN4core3fmt5float29float_to_decimal_common_exact17hef26c5c450a9cf96E.llvm.9036914972901821666
+                                                                   |
+                                                                    --0.63%--core::num::flt2dec::strategy::dragon::format_exact
+
+     1.03%     0.02%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::seed_mofe03_wave2_class_symbol                                                                                                                                                                                                                               -      -
+            |
+             --1.02%--openwepp_runner::hillslope::seed_mofe03_wave2_class_symbol
+
+     0.95%     0.42%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::derived_frost_depths_from_fine_state                                                                                           -      -
+            |
+             --0.52%--openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::coupling::frost::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::derived_frost_depths_from_fine_state
+
+     0.88%     0.02%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::scheduler::apply_transfer_input_to_lane_surface                                                                                                                                                                                                         -      -
+            |
+             --0.86%--openwepp_hillslope_orchestrator::scheduler::apply_transfer_input_to_lane_surface
+
+     0.88%     0.49%  openwepp-cli-hi  openwepp-cli-hill  [.] core::num::flt2dec::strategy::dragon::format_exact                                                                                                                                                                                                                                       -      -
+     0.80%     0.00%  openwepp-cli-hi  [unknown]          [.] 0xffffffff99200f4b                                                                                                                                                                                                                                                                       -      -
+            |
+            ---0xffffffff99200f4b
+               |
+                --0.74%--0xffffffff99051d1b
+                          |
+                           --0.74%--0xffffffff97ead591
+                                     |
+                                      --0.65%--0xffffffff9800e456
+                                                |
+                                                 --0.63%--0xffffffff9800d452
+
+     0.74%     0.05%  openwepp-cli-hi  openwepp-cli-hill  [.] alloc::raw_vec::RawVecInner<A>::finish_grow                                                                                                                                                                                                                                              -      -
+            |
+             --0.69%--alloc::raw_vec::RawVecInner<A>::finish_grow
+                       |
+                        --0.64%--__GI___libc_realloc (inlined)
+                                  |
+                                   --0.61%--_int_realloc
+
+     0.74%     0.00%  openwepp-cli-hi  [unknown]          [.] 0xffffffff99051d1b                                                                                                                                                                                                                                                                       -      -
+            |
+            ---0xffffffff99051d1b
+               |
+                --0.74%--0xffffffff97ead591
+                          |
+                           --0.65%--0xffffffff9800e456
+                                     |
+                                      --0.63%--0xffffffff9800d452
+
+     0.74%     0.00%  openwepp-cli-hi  [unknown]          [.] 0xffffffff97ead591                                                                                                                                                                                                                                                                       -      -
+            |
+            ---0xffffffff97ead591
+               |
+                --0.65%--0xffffffff9800e456
+                          |
+                           --0.63%--0xffffffff9800d452
+
+     0.69%     0.00%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::execute_hillslope_run                                                                                                                                                                                                                                        -      -
+            |
+            ---openwepp_runner::hillslope::execute_hillslope_run
+               |
+                --0.60%--openwepp_runner::hillslope::execute_hillslope_climate_days
+
+     0.69%     0.00%  openwepp-cli-hi  libc.so.6          [.] tcache_get (inlined)                                                                                                                                                                                                                                                                     -      -
+            |
+            ---tcache_get (inlined)
+               tcache_get_n (inlined)
+
+     0.69%     0.00%  openwepp-cli-hi  libc.so.6          [.] tcache_get_n (inlined)                                                                                                                                                                                                                                                                   -      -
+            |
+            ---tcache_get_n (inlined)
+
+     0.65%     0.00%  openwepp-cli-hi  libc.so.6          [.] unlink_chunk (inlined)                                                                                                                                                                                                                                                                   -      -
+            |
+            ---unlink_chunk (inlined)
+
+     0.65%     0.33%  openwepp-cli-hi  openwepp-cli-hill  [.] core::slice::sort::shared::smallsort::bidirectional_merge                                                                                                                                                                                                                                -      -
+     0.65%     0.00%  openwepp-cli-hi  [unknown]          [.] 0xffffffff9800e456                                                                                                                                                                                                                                                                       -      -
+            |
+            ---0xffffffff9800e456
+               |
+                --0.63%--0xffffffff9800d452
+
+     0.63%     0.16%  openwepp-cli-hi  openwepp-cli-hill  [.] <alloc::string::String as core::clone::Clone>::clone                                                                                                                                                                                                                                     -      -
+     0.63%     0.00%  openwepp-cli-hi  [unknown]          [.] 0xffffffff9800d452                                                                                                                                                                                                                                                                       -      -
+            |
+            ---0xffffffff9800d452
+
+     0.62%     0.60%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::day_frame::HillslopeLaneDenseState::set_state_slot                                                                                                                                                                                                      -      -
+            |
+             --0.52%--0xffffffffffffffff
+
+     0.62%     0.03%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_plant_percolation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::wb18_aggregate_soil_water_after_percolation                                                                    -      -
+            |
+             --0.59%--openwepp_hillslope_orchestrator::hydrology::kernel_phases_mod::hydrology_phase_plant_percolation::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::wb18_aggregate_soil_water_after_percolation
+
+     0.61%     0.61%  openwepp-cli-hi  libc.so.6          [.] unlink_chunk.isra.0                                                                                                                                                                                                                                                                      -      -
+            |
+             --0.56%--0xffffffffffffffff
+
+     0.60%     0.23%  openwepp-cli-hi  openwepp-cli-hill  [.] alloc::collections::btree::remove::<impl alloc::collections::btree::node::Handle<alloc::collections::btree::node::NodeRef<alloc::collections::btree::node::marker::Mut,K,V,alloc::collections::btree::node::marker::Leaf>,alloc::collections::btree::node::marker::KV>>::remove_leaf_kv  -      -
+     0.60%     0.01%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::execute_hillslope_climate_days                                                                                                                                                                                                                               -      -
+            |
+             --0.59%--openwepp_runner::hillslope::execute_hillslope_climate_days
+
+     0.57%     0.03%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_runner::hillslope::intake_lane_setup::wb11_seed_helpers::compute_wb11_et_demand_seed                                                                                                                                                                                            -      -
+            |
+             --0.55%--openwepp_runner::hillslope::intake_lane_setup::wb11_seed_helpers::compute_wb11_et_demand_seed
+
+     0.57%     0.49%  openwepp-cli-hi  openwepp-cli-hill  [.] round                                                                                                                                                                                                                                                                                    -      -
+     0.54%     0.18%  openwepp-cli-hi  openwepp-cli-hill  [.] openwepp_hillslope_orchestrator::hydrology::support_helpers_mod::state_access::<impl openwepp_hillslope_orchestrator::hydrology::Wb11HydrologyKernel>::optional_state_scalar_for_indexed_symbol                                                                                          -      -
+     0.53%     0.21%  openwepp-cli-hi  openwepp-cli-hill  [.] alloc::vec::Vec<T,A>::push_mut                                                                                                                                                                                                                                                           -      -
+     0.52%     0.42%  openwepp-cli-hi  openwepp-cli-hill  [.] <alloc::string::String as core::fmt::Write>::write_char                                                                                                                                                                                                                                  -      -
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

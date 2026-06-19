@@ -1,6 +1,7 @@
 # Artifacts
 
-Status: scaffolded 2026-06-19 (queued; not executed).
+Status: executed 2026-06-19. Disposition: `NO-GO - sync hotspot removed,
+endpoint still fails activation gate`.
 
 Required deliverables:
 
@@ -16,6 +17,14 @@ Required deliverables:
   governance.
 - `perfdeep05_disposition.md` - final `CONTINUE`, `NO-GO`, or `HOLD`
   disposition.
+
+Raw text profile reports:
+
+- `raw/perfdeep05-h2637-optin-header.txt`
+- `raw/perfdeep05-h2637-optin-children-report.txt`
+- `raw/perfdeep05-h2637-optin-flat-report.txt`
+- `raw/perfdeep05-h2637-optin-children-top.txt`
+- `raw/perfdeep05-h2637-optin-flat-top.txt`
 
 Runfiles:
 

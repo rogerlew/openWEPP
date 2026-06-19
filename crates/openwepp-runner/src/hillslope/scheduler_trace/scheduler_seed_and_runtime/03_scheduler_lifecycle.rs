@@ -274,6 +274,18 @@ fn prepare_persistent_lane_inputs(
                 })?,
             );
         }
+        if let Some(lane_dense_state) = lane_execution_input.lane_dense_state.as_mut() {
+            lane_dense_state
+                .refresh_cached_slots_from_writeback_surface(
+                    &lane_surface,
+                    lane_execution_input.indexed_writeback_surface.as_ref(),
+                    context.symbol_registry,
+                )
+                .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "perfdeep05_lane_dense_cached_slot_refresh",
+                    detail: error.to_string(),
+                })?;
+        }
         let mut prepared_input = OfeLaneExecutionInput::with_upstream_area_ratio(
             lane_ofe_id,
             upstream_area_ratio,
