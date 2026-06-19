@@ -10,6 +10,13 @@
 
 State as of `2026-06-19`:
 
+- R2A is scaffolded and queued as the first implementation-capable direct
+  runtime package after PERFDEEP09. It introduces a distinct direct-frame type
+  namespace, a no-op/shadow direct executor skeleton selected once at setup,
+  and executable no-compatibility proof hooks. It must preserve PERFDEEP09's
+  default-disabled H2637 median gate `<= 676.67 s`, cannot port phase math, and
+  cannot claim publication or runtime activation readiness. Package:
+  `20260619-r2a-direct-runtime-skeleton-001/`.
 - PERFDEEP09 executed with verdict `READY-FOR-R2`. Same-machine no-edit control
   reproduced the default-disabled blocker at `682.65 s`, RSS `228924 KB`.
   The retained remediation collapses repeated per-root perennial decomposition
