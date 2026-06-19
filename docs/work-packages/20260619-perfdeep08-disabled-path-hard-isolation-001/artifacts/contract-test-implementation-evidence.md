@@ -1,10 +1,10 @@
 # Contract Test Implementation Evidence
 
-Status: queued.
-Evidence mode: not run.
+Status: not applicable.
+Evidence mode: Static.
 
-No contract-derived test is expected unless execution amends the package to
-change contract-bound behavior.
+No contract-derived test was required because no canonical contract or
+contract-bound runtime behavior changed.
 
-If contract authority changes, record the contract-derived tests and results
-before production implementation closure.
+Focused runtime tests were run for candidate safety and are recorded in
+`implementation-test-evidence.md`.

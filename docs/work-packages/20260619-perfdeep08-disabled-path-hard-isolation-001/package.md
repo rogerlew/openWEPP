@@ -1,6 +1,13 @@
 # PERFDEEP08 - Disabled-Path Hard Isolation
 
-Status: queued.
+Status: executed 2026-06-19. Disposition: HOLD.
+
+HOLD reason: the only scoped candidate tested, disabled diagnostic-hook caching
+for PERFDEEP02 roundtrip and indexed-shadow hooks, measured `691.93 s` /
+`229444 KB` on H2637 default-disabled, slower than the PERFDEEP07 retained
+`685.85 s` point and above the P0 `<= 676.67 s` threshold. The candidate was
+reverted and no production Rust change was retained. R2+ direct-frame runtime
+implementation remains blocked.
 
 Package type: performance defect closure / disabled-path hard isolation.
 

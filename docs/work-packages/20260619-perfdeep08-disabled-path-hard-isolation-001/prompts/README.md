@@ -1,5 +1,5 @@
 # PERFDEEP08 Prompts
 
-Status: queued.
+Status: complete.
 
-Prompt material for executing the package.
+Prompt material used for package execution.

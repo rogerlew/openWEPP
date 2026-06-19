@@ -70,7 +70,7 @@ Execution order:
 
 Required closeout:
 
-- populate all queued artifacts with `Static:` and `Ran:` evidence;
+- populate all package artifacts with `Static:` and `Ran:` evidence;
 - close as `READY-FOR-R2`, `HOLD`, or `NO-GO`;
 - do not claim R2+ readiness unless the disabled-path median gate and full
   closure gates pass;

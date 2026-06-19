@@ -1,15 +1,27 @@
 # PERFDEEP08 Zero-Cost Disabled Proof
 
-Status: queued.
-Evidence mode: not run.
+Status: FAIL.
+Evidence mode: Static/Ran.
 
-Required proof after candidate patches:
+## Proof Result
 
-- static call graph or source audit showing disabled execution does not
-  construct, resolve, refresh, or flush opt-in-only dense/direct-frame
-  compatibility structures;
-- runtime counters or trace evidence where feasible;
-- H2637 default-disabled identity evidence;
-- three-run endpoint evidence with median `<= 676.67 s`;
-- explanation for any remaining always-on work that is truly production
-  authority rather than PERFDEEP compatibility plumbing.
+Zero-cost-disabled is not proven.
+
+The only PERFDEEP08 candidate removed disabled diagnostic-hook overhead, but it
+measured `691.93 s`, above both the P0 `<= 676.67 s` gate and the PERFDEEP07
+retained `685.85 s` point. Because no viable single run reached the threshold,
+the package did not run the three-run median gate.
+
+## Static State
+
+- Direct-frame hydrology was not implemented.
+- No R2+ direct runtime code was added.
+- No production Rust edit was retained.
+- Production indexed scheduler runtime remains part of the current default
+  path; prior PERFDEEP07 evidence showed removing it was slower.
+
+## Remaining Blocker
+
+The remaining default-path cost is not explained by the disabled diagnostic
+hooks tested here. A future package needs a fresh profile or a narrower
+attribution experiment before editing more compatibility surfaces.

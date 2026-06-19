@@ -1,16 +1,18 @@
 # Pre-Implementation Contract Gate
 
-Status: queued.
-Evidence mode: not run.
+Status: passed.
+Evidence mode: Static.
 
-Before Rust edits, verify whether the planned work changes:
+Before temporary Rust edits, checked the candidate scope against contract
+triggers:
 
-- physics;
-- guard semantics;
-- diagnostic attribution;
-- output meaning;
-- units;
-- conservation authority.
+| Trigger | Result |
+|---|---|
+| Physics change | no |
+| Guard semantics change | no |
+| Diagnostic attribution change | no |
+| Output meaning or units change | no |
+| Conservation authority change | no |
 
-If any answer is yes, stop and amend the package under the contract-first
-procedure.
+Science-contract AGENTS was read before Rust edits. No contract amendment was
+needed.

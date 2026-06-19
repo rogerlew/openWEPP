@@ -1,16 +1,22 @@
 # Owned File Manifest
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence mode: Static/Ran.
 
-Populate during execution with every file touched.
+## Final Retained Write Set
 
-Initial intended write set:
+- `docs/work-packages/20260619-perfdeep08-disabled-path-hard-isolation-001/**`
+- `docs/work-packages/README.md`
+- `docs/ROADMAP.md`
 
-- package artifacts and prompts;
-- `docs/work-packages/README.md`;
-- `docs/ROADMAP.md`;
-- bounded runtime files listed in `package.md`.
+## Temporary Candidate Write Set
 
-Any production file outside the declared write set requires a package amendment
-before edit.
+The rejected candidate temporarily edited and then reverted:
+
+- `crates/openwepp-runner/src/hillslope/indexed_shadow_surface.rs`
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/perfdeep02_frame_roundtrip.rs`
+- `crates/openwepp-hillslope-orchestrator/src/scheduler.rs`
+
+`scheduler.rs` was reverted before timing to avoid retaining a touched 3000+
+line file without a split/closure plan. The two runner hook-cache edits were
+timed, measured slower, and then reverted. No production Rust edit remains.

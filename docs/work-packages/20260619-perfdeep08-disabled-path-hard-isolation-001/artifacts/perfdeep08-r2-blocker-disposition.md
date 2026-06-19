@@ -1,18 +1,22 @@
 # PERFDEEP08 R2 Blocker Disposition
 
-Status: queued.
-Evidence mode: not run.
+Status: HOLD.
+Evidence mode: Static/Ran.
 
-Record whether this package lifts the R2 blocker.
+## Verdict
 
-Possible outcomes:
+`HOLD`.
 
-- `READY-FOR-R2`: default-disabled median gate passes, zero-cost-disabled proof
-  passes, identity passes, and full closure gates pass.
-- `HOLD`: a specific remaining blocker prevents the disabled-path gate from
-  passing.
-- `NO-GO`: evidence shows the route is invalid or too costly within the declared
-  architecture.
+PERFDEEP08 does not lift the R2 blocker. The only scoped candidate was slower
+than PERFDEEP07 and was reverted. The default-disabled gate remains open:
 
-Do not mark `READY-FOR-R2` if any required current-scope gate is failed,
-blocked, or not run.
+- required: three-run median `<= 676.67 s`;
+- PERFDEEP07 retained: `685.85 s`;
+- PERFDEEP08 candidate: `691.93 s`.
+
+## Consequence
+
+R2+ direct-frame runtime implementation remains blocked. The next package
+should first profile or micro-benchmark the retained default path to identify a
+real remaining cost center rather than editing diagnostic hooks or removing
+production indexed scheduler authority.

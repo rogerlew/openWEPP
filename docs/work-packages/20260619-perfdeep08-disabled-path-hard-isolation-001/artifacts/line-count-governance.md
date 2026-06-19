@@ -1,15 +1,24 @@
 # Line-Count Governance
 
-Status: queued.
-Evidence mode: not run.
+Status: passed for HOLD scope.
+Evidence mode: Static/Ran.
 
-Before production edits, record current line counts for touched Rust files.
+## Touched Rust Files
 
-Rules:
+No Rust file is retained in the final diff.
 
-- 2000+ lines is WARN and needs disposition.
-- 3000+ non-exempt touched files require refactor or another governance-closing
-  action before completion.
-- Avoid touching `scheduler.rs` if hard isolation can be achieved elsewhere.
-- If `scheduler.rs` must be touched, record the split/closure plan before the
-  edit and complete it before `READY-FOR-R2`.
+Temporary candidate line counts:
+
+```text
+3179 crates/openwepp-hillslope-orchestrator/src/scheduler.rs
+ 608 crates/openwepp-runner/src/hillslope/indexed_shadow_surface.rs
+ 137 crates/openwepp-runner/src/hillslope/scheduler_trace/perfdeep02_frame_roundtrip.rs
+```
+
+`scheduler.rs` was reverted before timing because touching a 3000+ line file
+would require a split or explicit closure plan before completion. The remaining
+runner hook edits were timed, rejected, and reverted.
+
+## Gate
+
+PASS for HOLD scope. No 3000+ Rust file remains touched.

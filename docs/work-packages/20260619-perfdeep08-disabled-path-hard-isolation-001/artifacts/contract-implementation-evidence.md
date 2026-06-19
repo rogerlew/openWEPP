@@ -1,13 +1,10 @@
 # Contract Implementation Evidence
 
-Status: queued.
-Evidence mode: not run.
+Status: not applicable.
+Evidence mode: Static.
 
-No contract change is intended.
+No canonical `SC-*` contract, guard authority, diagnostic attribution, output
+meaning, unit, conservation authority, or process physics was changed.
 
-During execution, record either:
-
-- not applicable because no `SC-*`, guard-authority, diagnostic-attribution,
-  output-meaning, unit, or process-physics change occurred; or
-- the package amendment and canonical contract evidence that authorized the
-  change before production edits.
+The temporary candidate touched diagnostic-hook plumbing only and was reverted.
+No production Rust change remains.

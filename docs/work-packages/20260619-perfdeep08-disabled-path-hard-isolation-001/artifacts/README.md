@@ -1,9 +1,9 @@
 # PERFDEEP08 Artifacts
 
-Status: queued.
-Evidence mode: not run.
+Status: HOLD.
+Evidence mode: Static/Ran.
 
-Artifacts to populate during execution:
+Artifacts populated during execution:
 
 - `required-reading-map.md`
 - `owned-file-manifest.md`
@@ -27,3 +27,6 @@ Artifacts to populate during execution:
 - `verification_agent_b.md`
 - `disposition.md`
 - `worker-handoff.md`
+
+The package did not retain production Rust edits because the only scoped
+candidate was slower than PERFDEEP07.

@@ -1,5 +1,5 @@
 # Active Prompts
 
-Status: queued.
+Status: complete.
 
-Use the kickoff prompt when the package is authorized for execution.
+Kickoff prompt used for the executed package.

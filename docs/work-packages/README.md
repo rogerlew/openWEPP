@@ -10,14 +10,13 @@
 
 State as of `2026-06-19`:
 
-- PERFDEEP08 is scaffolded and queued as the disabled-path hard-isolation
-  package after PERFDEEP07. It is intentionally narrower than PERFDEEP07:
-  close the default-disabled H2637 regression, prove zero-cost-disabled
-  isolation, and do not implement R2+ direct-frame runtime work. The package
-  must pass default-disabled identity, a three-run H2637 median `<= 676.67 s`,
-  static/runtime proof that opt-in-only dense/direct-frame plumbing is not
-  constructed while disabled, and full closure gates before it can report
-  `READY-FOR-R2`. Package:
+- PERFDEEP08 executed with verdict `HOLD`. The package tested one scoped
+  disabled-path hard-isolation candidate: caching the PERFDEEP02 roundtrip env
+  lookup and short-circuiting inactive indexed-shadow hooks. The candidate
+  preserved protected output checksums but measured `691.93 s`, RSS
+  `229444 KB`, slower than PERFDEEP07's retained `685.85 s` and above the P0
+  `<= 676.67 s` gate. The candidate was reverted; no production Rust edit was
+  retained. R2+ direct-frame runtime implementation remains blocked. Package:
   `20260619-perfdeep08-disabled-path-hard-isolation-001/`.
 - R0/R1 array-native schema and frame planning is complete with verdict
   `COMPLETE-PLANNING-ONLY`. The package recorded the direct runtime schema
