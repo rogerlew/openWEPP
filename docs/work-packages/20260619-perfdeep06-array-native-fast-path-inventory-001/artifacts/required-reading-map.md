@@ -1,13 +1,22 @@
 # PERFDEEP06 Required Reading Map
 
-Status: queued.
-Evidence mode: not-run.
+Status: complete 2026-06-19.
+Evidence class: Static + Ran.
 
 ## Budget
 
 Local byte total: `209369` bytes for the scaffolded core set.
 Threshold disposition: `OK` (`OK <=400000`, `WARN >400000`,
 `REQUIRES-JUSTIFICATION >800000`).
+
+Ran:
+
+- `wc -c AGENTS.md docs/codex_exec_plans.md docs/work-packages/AGENTS.md docs/work-packages/README.md docs/ROADMAP.md docs/work-packages/20260619-perfdeep06-array-native-fast-path-inventory-001/package.md docs/architecture/array-native-runtime-specification.md docs/decisions/0025-array-native-hillslope-day-frame.md docs/work-packages/20260619-perfdeep05-lane-dense-transfer-authority-sync-removal-001/package.md docs/work-packages/20260619-perfdeep05-lane-dense-transfer-authority-sync-removal-001/artifacts/perfdeep05_disposition.md docs/work-packages/20260619-perfdeep05-lane-dense-transfer-authority-sync-removal-001/artifacts/perfdeep05-profile.md`
+
+Static: the core set was read or re-read for this execution. Conditional files
+were read where applicable: `crates/AGENTS.md` and
+`docs/specifications/science-contracts/AGENTS.md` were already required by the
+package setup and no Rust/contract edits were made.
 
 ## Core
 

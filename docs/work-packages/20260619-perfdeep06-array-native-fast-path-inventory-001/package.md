@@ -1,6 +1,6 @@
 # PERFDEEP06 - Array-Native Fast-Path Frame Inventory and Execution Plan
 
-Status: queued 2026-06-19.
+Status: executed 2026-06-19. Disposition: `READY-FOR-PERFDEEP07`.
 
 Package type: performance architecture / ADR-0025 Stage-3 planning gate.
 
@@ -23,9 +23,18 @@ It must not implement that production port or activate any opt-in by default.
 PERFDEEP05 removed the measured PERFDEEP04 full-sync hotspot and preserved H2637
 identity, but the opt-in endpoint still measured `911.11 s` against the
 `669.97 s` activation reference and the final default-disabled `701.95 s`
-comparison. The remaining profile is dominated by dense-edge compatibility
-costs: cached daily refresh, logical dense writeback apply,
-`SymbolRegistry::id_of`, and dirty flush.
+comparison. The default-disabled path is itself a persistent regression:
+PERFDEEP05 default-disabled is about `+4.7%` versus `669.97 s`, and PERFDEEP03
+default-disabled had already measured in the `697-708 s` band. The accumulated
+opt-in plumbing therefore taxes `main` even when the island is off. The named
+suspect is always-on dense-first resolution and compatibility plumbing, not
+default activation of the failed opt-ins.
+
+The remaining opt-in profile is dominated by dense-edge compatibility costs:
+cached daily refresh, logical dense writeback apply, `SymbolRegistry::id_of`,
+and dirty flush. The next package must treat zero-cost-when-disabled as a P0
+gate before expanding the island: either remove/bypass the dense-first tax on
+the default path or stop with `HOLD`/`NO-GO`.
 
 ADR-0025 and the ratified runtime specification now bind the next cut away from
 another seam-shaving package. PERFDEEP06 is the planning gate for the complete
@@ -48,6 +57,9 @@ In scope:
 - record layout/type-size and allocation risks required by ADR-0025 Amendment 1;
 - prove statically which map/symbol/writeback mechanisms must be absent from the
   migrated normal success path;
+- define a zero-cost-when-disabled gate for the current default path so
+  PERFDEEP02/03/05 plumbing does not continue to tax `main` when opt-ins are
+  off;
 - produce the follow-on package sequence, starting with the next direct-frame
   implementation package;
 - update package artifacts, roadmap/catalog status, and review/verification
@@ -156,6 +168,12 @@ new acceptance criteria.
    disposition all findings, update roadmap/catalog text, and close with a
    truthful `READY-FOR-PERFDEEP07`, `HOLD`, or `NO-GO` disposition.
 
+Execution result: phases 1-8 were completed. PERFDEEP06 closes as
+`READY-FOR-PERFDEEP07`: the next package should first eliminate or bypass the
+default-disabled dense-first tax, then implement a bounded direct-frame
+hydrology fast path over typed frame/view APIs, with no symbol/logical/writeback
+payload machinery on the migrated success path.
+
 ## Acceptance Criteria
 
 - `artifacts/perfdeep06-working-set-inventory.md` exists and classifies the
@@ -173,6 +191,16 @@ new acceptance criteria.
   logical surfaces remain only at true boundaries.
 - `artifacts/perfdeep06-follow-on-package-sequence.md` names the next package
   objective, write set, gates, and stop criteria.
+- The follow-on sequence records zero-cost-when-disabled as a P0 gate using the
+  PERFDEEP05 `701.95 s` default-disabled regression versus `669.97 s` as the
+  current evidence. Its timing gate is predeclared: at least three clean H2637
+  no-UI runs with all PERFDEEP opt-ins disabled, recording min/median/max/RSS;
+  PASS requires median `<= 676.67 s` (`669.97 s + 1%` noise allowance) and
+  static proof that dense/indexed/direct-frame compatibility plumbing is not
+  constructed on the disabled path. Candidate and control should run on the
+  same machine in the same harness/session where feasible; any candidate above
+  `676.67 s` requires hard external-environment attribution and otherwise
+  blocks closure.
 - No production Rust implementation or default activation occurs unless the
   package is amended before edits.
 - Markdown lint passes for the package and touched docs.

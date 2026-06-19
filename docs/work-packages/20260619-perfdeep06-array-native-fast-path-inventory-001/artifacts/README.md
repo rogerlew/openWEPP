@@ -1,8 +1,8 @@
 # PERFDEEP06 Artifacts
 
-Status: queued.
+Status: complete 2026-06-19.
 
-Required deliverables:
+Deliverables:
 
 - `required-reading-map.md` - tiered reading map and byte-budget evidence.
 - `owned-file-manifest.md` - write-set and read-only source inventory.
@@ -33,3 +33,6 @@ Required deliverables:
   verification artifacts.
 - `disposition.md` - final package disposition.
 - `worker-handoff.md` - next-worker handoff and follow-up links.
+
+Disposition: `READY-FOR-PERFDEEP07`. No production Rust implementation or
+runtime activation occurred in PERFDEEP06.

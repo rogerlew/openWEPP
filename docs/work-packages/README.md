@@ -10,12 +10,15 @@
 
 State as of `2026-06-19`:
 
-- PERFDEEP06 is scaffolded and queued as the ADR-0025 Stage-3 planning gate.
-  It must produce the array-native fast-path frame inventory, publication
-  operand ledger, direct-frame API plan, layout/allocation ledger,
-  no-hot-loop-map proof, and follow-on package sequence before the next
-  implementation package. No production activation or Rust implementation is in
-  PERFDEEP06 scope. Package:
+- PERFDEEP06 is executed with verdict `READY-FOR-PERFDEEP07`. The package
+  produced the array-native fast-path frame inventory, publication operand
+  ledger, direct-frame API plan, layout/allocation ledger, no-hot-loop-map
+  proof, and follow-on package sequence. It also recorded the default-disabled
+  regression as a P0 follow-on gate: PERFDEEP05 default-disabled H2637 measured
+  `701.95 s` versus the `669.97 s` reference, and PERFDEEP03 default-disabled
+  measured in the `697-708 s` band. PERFDEEP07 must make the opt-in plumbing
+  zero-cost when disabled before adding more direct-frame machinery. No
+  production activation or Rust implementation occurred in PERFDEEP06. Package:
   `20260619-perfdeep06-array-native-fast-path-inventory-001/`.
 - PERFDEEP05 is complete with verdict
   `NO-GO - sync hotspot removed, endpoint still fails activation gate`. The

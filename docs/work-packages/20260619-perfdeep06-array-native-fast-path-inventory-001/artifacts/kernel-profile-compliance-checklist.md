@@ -1,19 +1,19 @@
 # Kernel Profile Compliance Checklist
 
-Status: queued.
-Evidence mode: not-run.
+Status: complete 2026-06-19.
+Evidence class: Static.
 
 ## Checklist
 
-- [ ] Kernel-affecting authority need assessed.
-- [ ] Contract-first rule satisfied or explicitly not applicable.
-- [ ] No provisional or surrogate physics introduced.
-- [ ] Fail-closed guards and diagnostic attribution preserved in the plan.
-- [ ] Publication/output operand lineage covered before future output edits.
-- [ ] Gate Evidence Non-Deferral checked.
+- [x] Kernel-affecting authority need assessed.
+- [x] Contract-first rule satisfied or explicitly not applicable.
+- [x] No provisional or surrogate physics introduced.
+- [x] Fail-closed guards and diagnostic attribution preserved in the plan.
+- [x] Publication/output operand lineage covered before future output edits.
+- [x] Gate Evidence Non-Deferral checked.
 
 ## Notes
 
-PERFDEEP06 is intended as a docs/planning package. If it is amended to edit
-runtime projection or production kernel code, this checklist must be expanded
-before implementation.
+PERFDEEP06 remained a docs/planning package. PERFDEEP07 will be
+kernel/runtime-affecting and must expand this checklist into direct
+implementation evidence.
