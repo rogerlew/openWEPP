@@ -1,6 +1,6 @@
 # Array-Native Hot-Path Runtime Architecture — Specification
 
-Status: **Proposed** (specification; requires ADR ratification before execution)
+Status: **Ratified** — binding design authority for the perf re-architecture, ratified by [ADR-0025](../decisions/0025-array-native-hillslope-day-frame.md) on 2026-06-18
 Audience: all contributors; binding design authority for the perf re-architecture program
 Owner: Claude Code (architecture authoring) — implementation by Codex
 Supersedes: the *incremental application* of [ADR-0023](../decisions/0023-array-authoritative-hot-path-state.md)
@@ -362,9 +362,9 @@ replay binary (may keep a symbol surface for diffing).
 - **ADR-0023** (array-authoritative hot-path state): this specification is its **completion**. ADR-0023's
   dense-authority principle stands; its *incremental, symbol-by-symbol application* (PERFMIG01/02) is
   superseded by the whole-frame approach. The new ADR should record this supersession explicitly.
-- **Interim authority while ADR-0025 is Proposed:** ADR-0023 remains accepted production authority. This
-  specification is proposed program authority and does not override accepted ADR behavior until ADR-0025 is
-  ratified.
+- **Authority (ratified 2026-06-18):** ADR-0025 is the accepted hot-path runtime authority and this
+  specification is its binding design authority. ADR-0023's incremental application is superseded — no
+  further writeback-only or materialization-retirement rungs.
 - **ADR-0019/0020** (output schemas), **ADR-0012** (HBP authority), **ADR-0004** (subprocess model):
   unaffected.
 - **Kernel boundary** ([architecture/README.md](README.md)): this specification **fulfils** the declared

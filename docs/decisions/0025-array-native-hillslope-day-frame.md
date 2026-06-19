@@ -1,8 +1,8 @@
 # ADR-0025: Array-native HillslopeDayFrame hot-path runtime
 
-**Status:** Proposed
-**Date:** 2026-06-18 UTC
-**Deciders:** Roger Lew (operator ratification — pending), Claude Code (specification authoring), Codex (implementation)
+**Status:** Accepted
+**Date:** 2026-06-18 UTC (ratified 2026-06-18)
+**Deciders:** Roger Lew (operator ratification 2026-06-18), Claude Code (specification authoring), Codex (implementation)
 **Builds on / supersedes:** completes [ADR-0023](0023-array-authoritative-hot-path-state.md)
 (dense-authority principle) and **supersedes its incremental application**; narrows
 [ADR-0022](0022-indexed-runtime-surface-representation.md) (registry → I/O-only)
@@ -75,11 +75,13 @@ Negative / cost:
   contract is ratified before cutover).
 - Workspace Rust gates + `cargo deny` + markdown lint on touched scopes.
 
-## Interim authority posture
+## Authority posture
 
-Until status changes from Proposed to Accepted, ADR-0023 remains the accepted production authority for
-runtime-surface migration behavior. ADR-0025 is the proposed successor target and does not override
-accepted ADR contracts until ratified.
+Ratified 2026-06-18 — ADR-0025 is the accepted hot-path runtime authority. ADR-0023's dense-authority
+*principle* is retained and fulfilled by this ADR; its *incremental application* (the PERFMIG01/02
+symbol/phase migration tactic) is superseded — **no further writeback-only or materialization-retirement
+rungs.** Execution proceeds as the staged, identity-gated `PERFDEEP0N` series under the Required-gates
+discipline above.
 
 ## Non-decisions
 

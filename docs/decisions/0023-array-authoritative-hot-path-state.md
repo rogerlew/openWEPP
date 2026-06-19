@@ -1,6 +1,6 @@
 # ADR-0023: Array-authoritative hot-path state
 
-**Status:** Accepted
+**Status:** Accepted (incremental application superseded by [ADR-0025](0025-array-native-hillslope-day-frame.md) 2026-06-18; dense-authority principle retained)
 **Date:** 2026-06-18 UTC
 **Deciders:** Roger Lew (operator ratification), Codex (draft and implementation)
 **Builds on:** [ADR-0022](0022-indexed-runtime-surface-representation.md)
