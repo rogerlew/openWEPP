@@ -28,7 +28,10 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0022](0022-indexed-runtime-surface-representation.md) | Indexed runtime-surface representation | Accepted |
 | [0023](0023-array-authoritative-hot-path-state.md) | Array-authoritative hot-path state | Accepted |
 | [0024](0024-reference-implementation-intent-authority.md) | Reference-implementation intent can anchor empirical model authority | Accepted |
-| [0025](0025-array-native-hillslope-day-frame.md) | Array-native HillslopeDayFrame hot-path runtime (comprehensive re-architecture; completes 0023, narrows 0022) | Proposed |
+| [0025](0025-array-native-hillslope-day-frame.md) | Array-native HillslopeDayFrame hot-path runtime (comprehensive re-architecture; completes 0023, narrows 0022) | Proposed (pending ratification; ADR-0023 remains binding for production edits) |
+
+Interim precedence note: while ADR-0025 is Proposed, ADR-0023 is the accepted authority for production
+runtime-surface migration behavior.
 
 ## ADR template
 

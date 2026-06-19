@@ -19,15 +19,16 @@ sub-microsecond. Two incremental migration rungs (PERFMIG01/02) failed because p
 
 This specification defines a **comprehensive array-native re-architecture**: replace the symbol-keyed maps
 with a single **typed, dense, cache-resident daily working set** (the *HillslopeDayFrame*) that all 14
-phases mutate in place. Symbol/logical surfaces survive **only at the true I/O edge** (a handful of HBP
-scalars at end-of-run; parquet rows are already typed). Because the frame *is* the state, there are **no
-phase-to-phase materialization seams to retire** — the boundary cost that sank the incremental rungs does
-not exist by construction. This is the fulfilment of openWEPP's own declared kernel boundary — *"kernels
+phases mutate in place. Symbol/logical surfaces survive **only at the I/O edge** — the HBP scalars and the
+WB13 publication-operand projection at end-of-run (parquet rows are typed structs, but are currently
+*assembled* from runtime-surface symbol reads that must be lifted to typed frame/projection access; see §5).
+Because the frame *is* the state, there are **no phase-to-phase materialization seams to retire** — the
+boundary cost that sank the incremental rungs does not exist by construction. This is the fulfilment of openWEPP's own declared kernel boundary — *"kernels
 are pure functions over typed state"* ([architecture/README.md](README.md)) — which the string-keyed maps
 silently violated.
 
-Target: **≤10× (ideally ≤5×) vs legacy on H2637** — the viability gate. The arithmetic below shows the
-frame reaches it with margin.
+Target: **≤10× (ideally ≤5×) vs legacy on H2637** — the viability gate. The arithmetic below provides a
+strong model hypothesis; staged H2637 endpoint measurements remain the closure authority.
 
 ---
 
@@ -94,8 +95,9 @@ path. That is this specification.
    BoundaryValue>` surface is a scaffolding compromise that became the hot-path authority. The frame makes
    the code match its own architecture.
 3. **Logical/symbol surfaces are an I/O serialization concern, not a runtime-state concern.** The I/O map
-   (§5) shows the true logical edge is ~5 scalars. Everything else (`pass`/`wat` parquet) already reads
-   typed structs.
+    (§5) shows the minimal HBP edge is ~5 scalars, but current WB13 publication assembly still reads a
+    broader runtime-surface symbol set before parquet emission. Stage 0 must map each publication operand to
+    typed frame/projection fields before logical hot-path deletion.
 
 ---
 
@@ -195,13 +197,13 @@ The kernel signature loses the symbol surfaces and the writeback payload:
   topological-DAG scheduler is preserved as the *ordering authority* but dispatches direct typed calls, not
   trait-object kernel invocations with map requests.
 
-### 4.3 Guards become inline frame range-checks
-The finite/domain guards (currently per-symbol-read and per-writeback-field) become **range checks over
-the typed field at the point of write**, with the `[min,max]` bounds promoted to a **compile-time field
-schema** (const table keyed by field, not per-value metadata in a map). Fail-closed semantics, the
-`SimulationStatus` message-id classes, and the conservation/closure invariants (`SC-*`) are **preserved
-exactly** — they move from `evaluate_kernel_writeback` to typed guard helpers over the frame. No invariant
-is weakened; the validation is the same arithmetic on a cheaper representation.
+### 4.3 Guards become typed frame checks with static and dynamic bounds
+The finite/domain guards (currently per-symbol-read and per-writeback-field) become **typed field checks at
+the point of write** with a two-tier schema: (a) compile-time field invariants for static bounds and
+finiteness, and (b) runtime-derived bounds for branch/state-dependent checks that today flow through
+per-update minimum/maximum metadata. Fail-closed semantics, `SimulationStatus` message-id classes, and the
+conservation/closure invariants (`SC-*`) are **preserved exactly**. Migration must also preserve boundary
+diagnostic attribution policy (field/symbol subject semantics) as an explicit parity gate.
 
 ### 4.4 MOFE / OFE-lane routing
 Unchanged in shape — `TransferInput`/`TransferOutput` are already typed (`[f64;24]`). The lanes carry
@@ -219,28 +221,29 @@ map rebuilds.
 ## 5. The I/O Materialization Edge (the key enabling finding)
 
 A fully array-native run must still produce the existing outputs **byte-for-byte**. The I/O map shows the
-logical surface is **almost entirely unnecessary** at runtime:
+logical surface is mostly unnecessary once publication operands are lifted to typed frame/projection access:
 
 | Output | Source today | Array-native disposition |
 |---|---|---|
-| `wat.parquet` | typed `Vec<HillslopeWatRow>` | **already typed** — frame fields → row, no logical |
-| `pass.parquet` | typed `Vec<HillslopePassRow>` | **already typed** — frame fields → row, no logical |
+| `wat.parquet` | typed `Vec<HillslopeWatRow>`, but rows are currently assembled from runtime-surface symbol/flux reads in runner helpers | lift WB13/WAT row assembly to typed frame/projection operands; no symbol lookups on the hot path |
+| `pass.parquet` | typed `Vec<HillslopePassRow>`, derived from WB13/publication operands sourced from runtime-surface reads today | same typed publication projection as WAT; preserve Arrow/semantic identity |
 | `loss.json` | static input config | no runtime read |
 | `*.hbp` shard | typed binary, **but** constructed by reading ~5 logical runtime scalars at end-of-run (`peakro`, `watdur`, `total_detachment_kg`, `total_deposition_kg`, `sediment_concentration_kg_m3_0001`) | **capture these as typed scalars during the run**; then HBP construction reads typed fields, no logical |
+| WB13 daily publication assembly | currently computes publication terms from many runtime-surface symbols/fluxes (`prcp`, `wb11_soil_water`, `frost.*`, `snow.*`, `Irr`, `Q`, `q`, `Qd`, etc.) | define a typed publication projection with operand-lineage parity fixtures before deleting the logical hot path |
 | `run_manifest.json` provenance | a few runtime-surface execution fields | capture via typed execution trace |
 
 **Consequences:**
-- Parquet rows accumulate in memory per day and flush once at end-of-run — **no mid-run logical flush is
-  required**, so the frame stays dense across the entire run.
-- The only thing forcing a logical materialization today is ~5 HBP scalars + manifest provenance. Capturing
-  them as typed values during the run **removes the last logical dependency from the hot path entirely.**
+- Parquet rows accumulate in memory per day and flush once at end-of-run; no mid-run logical flush is
+  required once WB13/publication operand reads are lifted to typed frame/projection sources.
+- Remaining logical dependencies are HBP scalar capture, WB13/publication operand extraction, and manifest
+  provenance until those paths are migrated; retire all three before deleting logical hot-path plumbing.
 - The HBP binary format and the watershed CLI's typed parser are **unchanged** — the inter-binary contract
   is already typed; only the *construction* path changes from symbol-read to typed-field-read.
 
-So the end state: **no `BoundarySymbol` / `BTreeMap` / writeback-payload anywhere on the per-OFE-day hot
-path.** The registry/`HotSymbolTables`/`IndexedSurface` machinery (ADR-0022) is retained only where a
-symbol surface is still genuinely needed (e.g. legacy-compat diagnostics, replay), not on the simulation
-hot path.
+So the end state: **no `BoundarySymbol` / `BTreeMap` / writeback-payload on the per-OFE-day hot path or
+in daily publication operand assembly.** The registry/`HotSymbolTables`/`IndexedSurface` machinery
+(ADR-0022) is retained only where a symbol surface is still genuinely needed (e.g. explicit
+legacy-compat diagnostics, replay, and bounded serialization adapters), not on the simulation hot path.
 
 ---
 
@@ -254,9 +257,10 @@ hot path.
 | Projected array-native OFE-day | **~14–20 µs** | 14 phases × ~1 µs, no seams |
 | Projected ×legacy | **~0.4–0.5×** | 14–20 µs / 38.65 µs |
 
-This is the *floor* (the whole OFE-day array-native, I/O-only logical). Even discounting heavily for phases
-heavier than the runoff branch and for residual overhead, the model clears ≤10× by a wide margin and ≤5×
-comfortably. The two compounding levers:
+This is the *floor* (the whole OFE-day array-native, I/O-only logical). Even with conservative discounts
+for heavier phases and residual overhead, the model suggests significant headroom vs ≤10× and a plausible
+≤5× trajectory; stage-by-stage endpoint measurements remain the only closure evidence. The two compounding
+levers:
 1. **Instruction count:** symbol resolution / map ops / payload construction / `format!` deleted as a class.
 2. **Cache:** working set 228 MB → ~3 MB (PERFARCH03), L2/L3-resident — fewer misses multiply the
    instruction-count win (why PERFARCH03 got 146×, not the ~20× instruction math alone).
@@ -301,7 +305,7 @@ The full rewrite, sequenced so each stage is independently identity-gated and en
 
 | Stage | Scope | Gate | Expected endpoint |
 |---|---|---|---|
-| **0 — Frame scaffold** | Define `HillslopeDayFrame` + the typed field schema + the start/end-of-day seed/flush + the I/O-edge typed-scalar capture (HBP `peakro`/`watdur`/sediment, manifest provenance). No phase migrated yet; frame runs *beside* the maps (shadow). | Frame round-trips to/from the logical surface bit-identically; outputs unchanged. | ~flat |
+| **0 — Frame scaffold** | Define `HillslopeDayFrame` + typed field schema + start/end-of-day seed/flush + typed I/O capture (HBP `peakro`/`watdur`/sediment, manifest provenance, WB13/publication operands). No phase migrated yet; frame runs *beside* the maps (shadow). | Frame round-trips to/from the logical surface bit-identically; publication projection fixtures and output parity stay green. | ~flat |
 | **1 — Hydrology island core** | Migrate the contiguous hydrology cluster (RunoffReconciliation, StorageReconciliation, Evapotranspiration, Percolation, Lateral, Drainage, PlantRootUptake, PeakRunoff) to run over the frame in place. Delete the inter-phase materialization for these. Logical only at island edges (shadow-diffed). | Per-phase bit-identity (all branches) + H2637 identity. | first **measured win** — island ≈ 42% of cost; ~73× → ~43–50× |
 | **2 — Close the hydrology edges** | Remove the island's edge materialization; the frame is authoritative across the whole hydrology span; capture I/O-edge scalars typed. | H2637 identity + endpoint; **the §7 falsification check**. | ~43× → solidify |
 | **3 — Erosion island** | EROD13/14/19 + PeakRunoff over the frame (sediment columns SoA). | identity + endpoint. | removes erosion machinery share |
@@ -345,6 +349,8 @@ replay binary (may keep a symbol surface for diffing).
 | **Conditional-phase frame fields** (phases that don't always run) | The frame carries all fields; unrun phases leave their fields at the seeded/identity value, exactly as the maps do today (absence → default). Validated by identity. |
 | **Variable-length forcing** (climate series up to 1500 pts) | Borrowed read-only slice on the frame, not copied; indexed by integer, not symbol. |
 | **Frame field churn** during migration | The field schema is the contract; add fields additively per stage; the start/end seed-flush is the single touch-point. |
+| **Dynamic guard-bound drift** (current checks use runtime-derived min/max) | Two-tier guard schema (static invariants + runtime-derived bounds), plus accept/reject parity fixtures for message-id class and diagnostic attribution policy. |
+| **Output-publication dependency undercount** (WB13 helpers still symbol-read many operands) | Stage-0 publication operand ledger + typed projection adapter + byte/Arrow identity fixtures before logical hot-path deletion. |
 
 ---
 
@@ -356,6 +362,9 @@ replay binary (may keep a symbol surface for diffing).
 - **ADR-0023** (array-authoritative hot-path state): this specification is its **completion**. ADR-0023's
   dense-authority principle stands; its *incremental, symbol-by-symbol application* (PERFMIG01/02) is
   superseded by the whole-frame approach. The new ADR should record this supersession explicitly.
+- **Interim authority while ADR-0025 is Proposed:** ADR-0023 remains accepted production authority. This
+  specification is proposed program authority and does not override accepted ADR behavior until ADR-0025 is
+  ratified.
 - **ADR-0019/0020** (output schemas), **ADR-0012** (HBP authority), **ADR-0004** (subprocess model):
   unaffected.
 - **Kernel boundary** ([architecture/README.md](README.md)): this specification **fulfils** the declared
@@ -383,6 +392,8 @@ These are genuine forks left to the implementing ADR + Codex, not dictated here:
 4. **Guard-schema representation:** const field-bound table vs per-field validating newtype constructors.
 5. **Shadow-run mechanism:** a compile-time feature flag running both paths, vs a test-harness-only
    differential. Affects how long the logical path stays compiled into the hot binary.
+6. **Diagnostic attribution policy:** preserve symbol-oriented violation subjects at boundaries, or ratify a
+  field-oriented subject contract with explicit compatibility notes and fixtures.
 
 ---
 

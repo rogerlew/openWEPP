@@ -27,10 +27,13 @@ Adopt a **comprehensive array-native hot-path architecture**: replace the symbol
 `BTreeMap<BoundarySymbol, BoundaryValue>` per-OFE-day state with a single typed dense **HillslopeDayFrame**
 (named unit-typed scalar fields + struct-of-arrays for hourly/layer families) that all 14 phases mutate in
 place. Kernels become pure functions over `&mut HillslopeDayFrame` — no writeback payloads, no symbol
-resolution, no inter-phase materialization. Guards become inline range-checks over typed frame fields,
-preserving every finite/domain/closure invariant and message-id class exactly. Logical/symbol surfaces
-survive only at the **true I/O edge** (~5 HBP scalars at end-of-run, captured as typed scalars during the
-run; `wat`/`pass` parquet already read typed structs).
+resolution, no inter-phase materialization. Guards become typed field checks with a two-tier policy:
+compile-time invariants for static bounds/finiteness plus runtime-derived bounds where current behavior is
+state/branch dependent. Migration preserves finite/domain/closure invariants, message-id classes, and
+boundary-level diagnostic attribution policy. Logical/symbol surfaces survive only at explicit I/O and
+diagnostic boundaries: the minimal HBP edge is ~5 scalars captured as typed values during the run, and
+current WB13 publication operand extraction must be migrated from runtime-surface reads to typed
+frame/projection access before logical hot-path deletion.
 
 The full design — frame structure, the I/O-edge analysis, the performance model (~14–20 µs/OFE-day ≈ 0.5×
 legacy), the identity-gating strategy, the staged plan, the open forks — is the linked specification, which
@@ -45,12 +48,14 @@ Positive:
   class** (the PERFIDX06 prescription).
 - Fulfils the declared "kernels are pure functions over typed state" kernel boundary; collapses RSS
   ~228 MB → ~3 MB (cache-resident).
-- Clears the ≤10× / ≤5× viability gate per the model.
+- Projects closure of the ≤10× / ≤5× viability gate per the model; acceptance depends on staged H2637
+  endpoint measurements.
 
 Negative / cost:
 - Large blast radius (~10.8k kernel lines + scheduler + contract). Mitigated by staged, shadow-run,
   identity-gated execution.
-- Changes the kernel signature and the orchestrator's state-threading; the registry/indexed-surface
+- Changes the kernel signature and the orchestrator's state-threading; migration must carry an explicit
+  contract-compatibility map across crates while mixed-mode execution exists. The registry/indexed-surface
   machinery (ADR-0022) leaves the hot path.
 
 ## Required gates
@@ -58,11 +63,23 @@ Negative / cost:
 - Exact identity per migrated phase/branch (`to_bits()`), including snow/frost/irrigation/MOFE — shadow-run
   differential against the logical path until a stage is authoritative.
 - H2637 `.hbp` + `wat.parquet` byte-identical, `pass.parquet` Arrow-equal, per stage.
+- Publication operand-lineage ledger is complete (HBP + WB13/WAT/PASS + manifest provenance), and typed
+  publication projection fixtures are green before logical hot-path deletion.
+- Guard parity fixtures cover static and runtime-derived bounds with accept/reject parity on message-id
+  classes and diagnostic attribution policy.
 - H2637 endpoint + RSS measured same-machine vs PERFIDX06 per stage; the endpoint is the perf authority.
 - Determinism + `SC-*` closure/conservation gates green throughout.
 - The Stage-1/2 **falsification check**: a properly-sized hydrology island that does not move the endpoint
   halts the program for re-profiling.
+- Kernel-contract transition compatibility is explicit and tested for each stage (or a versioned breaking
+  contract is ratified before cutover).
 - Workspace Rust gates + `cargo deny` + markdown lint on touched scopes.
+
+## Interim authority posture
+
+Until status changes from Proposed to Accepted, ADR-0023 remains the accepted production authority for
+runtime-surface migration behavior. ADR-0025 is the proposed successor target and does not override
+accepted ADR contracts until ratified.
 
 ## Non-decisions
 
