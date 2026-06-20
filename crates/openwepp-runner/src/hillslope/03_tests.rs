@@ -9,7 +9,7 @@ mod tests {
         DIRECT_R4G_PHASE_SPAN_COUNT, DIRECT_R4I_PHASE_SPAN_COUNT,
         DIRECT_R4J_PHASE_SPAN_COUNT, DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT,
         DIRECT_R4M_PHASE_SPAN_COUNT, DIRECT_R4N_PHASE_SPAN_COUNT,
-        DIRECT_R4O_PHASE_SPAN_COUNT,
+        DIRECT_R4O_PHASE_SPAN_COUNT, DIRECT_R4PQZ_PHASE_SPAN_COUNT,
         reset_direct_runtime_audit_counters,
     };
     use openwepp_input_contract::parsers::hbp::{HbpParseOptions, parse_hbp_from_path};
@@ -577,12 +577,13 @@ mod tests {
                     + DIRECT_R4L_PHASE_SPAN_COUNT
                     + DIRECT_R4M_PHASE_SPAN_COUNT
                     + DIRECT_R4N_PHASE_SPAN_COUNT
-                    + DIRECT_R4O_PHASE_SPAN_COUNT) as u64
+                    + DIRECT_R4O_PHASE_SPAN_COUNT
+                    + DIRECT_R4PQZ_PHASE_SPAN_COUNT) as u64
         );
-        assert!(audit.direct_compute_operations >= 14);
-        assert!(audit.direct_state_mutations >= 14);
-        assert!(audit.downstream_operand_productions >= 14);
-        assert!(audit.shadow_projections >= 14);
+        assert!(audit.direct_compute_operations >= 15);
+        assert!(audit.direct_state_mutations >= 15);
+        assert!(audit.downstream_operand_productions >= 15);
+        assert!(audit.shadow_projections >= 15);
         assert_eq!(audit.compatibility_edge_invocations, 1);
     }
 

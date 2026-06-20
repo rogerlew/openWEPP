@@ -19,6 +19,21 @@ State as of `2026-06-20`:
 
 State as of `2026-06-20`:
 
+- R4P/Q/Z is complete with verdict
+  `COMPLETE-R4PQZ-HYDROLOGY-PROJECTION-R4-CLOSURE`. The package closed R4 by
+  adding a shadow-only direct hydrology projection span after the direct
+  hydrology compute chain. R4P/Q/Z requires direct upstream shadows from R4A,
+  R4B, R4G, R4J, R4M, R4O, and R4N; recomputes aggregate storage from the
+  final R4N layer vector; separates frozen-layer and explicit frozen storage;
+  and assembles typed direct projection operands for runoff, ET, percolation,
+  lateral/drainage, snow/frost, carry, profile-capacity placeholders, and
+  publication comparison fields. Public output authority remains
+  compatibility-owned: no WB13/WAT/PASS/loss/schema cutover, default
+  activation, or scheduler change occurred. Full Rust gates passed. Final
+  default-disabled H2637 reps were `645.54 s`, `644.74 s`, and `640.28 s`
+  (median `644.74 s`, threshold `<= 676.67 s`) with protected output identity
+  and PASS DuckDB row equivalence. Package:
+  `20260620-r4pqz-hydrology-projection-r4-closure-001/`.
 - R4N is complete with verdict
   `COMPLETE-R4N-DIRECT-WB17-ET-ROOT-UPTAKE-COMPUTE-PROMOTION`. The package
   promoted the R4E-H aggregate evapotranspiration handoff into request-free

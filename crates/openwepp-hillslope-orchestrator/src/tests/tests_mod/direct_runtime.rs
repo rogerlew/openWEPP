@@ -9,8 +9,8 @@ use crate::{
     DIRECT_R4F_EVAPOTRANSPIRATION_SPAN, DIRECT_R4F_PHASE_SPAN_COUNT, DIRECT_R4G_PHASE_SPAN_COUNT,
     DIRECT_R4G_SNOW_COUPLING_SPAN, DIRECT_R4I_PHASE_SPAN_COUNT, DIRECT_R4J_PHASE_SPAN_COUNT,
     DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT, DIRECT_R4M_PHASE_SPAN_COUNT,
-    DIRECT_R4N_PHASE_SPAN_COUNT, DIRECT_R4O_PHASE_SPAN_COUNT, DirectDayFrame,
-    DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
+    DIRECT_R4N_PHASE_SPAN_COUNT, DIRECT_R4O_PHASE_SPAN_COUNT, DIRECT_R4PQZ_PHASE_SPAN_COUNT,
+    DirectDayFrame, DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
     DirectDeepSeepageShadowProjection, DirectDeepSeepageState, DirectDownstreamOperands,
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationDownstreamOperands,
     DirectEvapotranspirationInputs, DirectEvapotranspirationShadowProjection,
@@ -53,7 +53,7 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
     assert_eq!(report.day_count, 10);
     assert_eq!(report.planned_phase_count, DIRECT_PHASE_COUNT);
     assert_eq!(report.phase_view_count, (2 * DIRECT_PHASE_COUNT) as u64);
-    assert_eq!(report.phase_span_run_count, 29);
+    assert_eq!(report.phase_span_run_count, 31);
     assert_eq!(
         report.direct_phase_entry_count,
         (DIRECT_R3C_PHASE_SPAN_COUNT
@@ -69,12 +69,13 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
                 + DIRECT_R4L_PHASE_SPAN_COUNT
                 + DIRECT_R4A_PHASE_SPAN_COUNT
                 + DIRECT_R4B_PHASE_SPAN_COUNT
+                + DIRECT_R4PQZ_PHASE_SPAN_COUNT
                 + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
     );
-    assert_eq!(report.direct_compute_count, 29);
-    assert_eq!(report.state_mutation_count, 29);
-    assert_eq!(report.downstream_operand_count, 29);
-    assert_eq!(report.shadow_projection_count, 29);
+    assert_eq!(report.direct_compute_count, 31);
+    assert_eq!(report.state_mutation_count, 31);
+    assert_eq!(report.downstream_operand_count, 31);
+    assert_eq!(report.shadow_projection_count, 31);
     assert_eq!(report.compatibility_edge_invocation_count, 0);
     let audit = crate::direct_runtime_audit_snapshot();
     assert_eq!(audit.run_frame_constructions, 1);
@@ -85,7 +86,7 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
         audit.phase_view_constructions,
         (2 * DIRECT_PHASE_COUNT) as u64
     );
-    assert_eq!(audit.phase_span_runs, 29);
+    assert_eq!(audit.phase_span_runs, 31);
     assert_eq!(
         audit.direct_phase_entries,
         (DIRECT_R3C_PHASE_SPAN_COUNT
@@ -101,12 +102,13 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
                 + DIRECT_R4L_PHASE_SPAN_COUNT
                 + DIRECT_R4A_PHASE_SPAN_COUNT
                 + DIRECT_R4B_PHASE_SPAN_COUNT
+                + DIRECT_R4PQZ_PHASE_SPAN_COUNT
                 + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
     );
-    assert_eq!(audit.direct_compute_operations, 29);
-    assert_eq!(audit.direct_state_mutations, 29);
-    assert_eq!(audit.downstream_operand_productions, 29);
-    assert_eq!(audit.shadow_projections, 29);
+    assert_eq!(audit.direct_compute_operations, 31);
+    assert_eq!(audit.direct_state_mutations, 31);
+    assert_eq!(audit.downstream_operand_productions, 31);
+    assert_eq!(audit.shadow_projections, 31);
     assert_eq!(audit.compatibility_edge_invocations, 0);
 }
 
@@ -164,6 +166,14 @@ fn r2a_direct_runtime_source_excludes_compatibility_storage_tokens() {
                 "/src/direct_runtime/evapotranspiration.rs"
             ))
             .expect("direct runtime evapotranspiration source should be readable"),
+        ),
+        (
+            "direct_runtime/projection.rs",
+            std::fs::read_to_string(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/src/direct_runtime/projection.rs"
+            ))
+            .expect("direct runtime projection source should be readable"),
         ),
     ];
 

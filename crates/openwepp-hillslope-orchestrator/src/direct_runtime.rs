@@ -99,10 +99,16 @@ pub const DIRECT_R4N_ROOT_UPTAKE_SPAN: [DirectPhaseKind; DIRECT_R4N_ROOT_PHASE_S
 ];
 pub const DIRECT_R4N_PHASE_SPAN_COUNT: usize =
     DIRECT_R4N_SURFACE_PHASE_SPAN_COUNT + DIRECT_R4N_ROOT_PHASE_SPAN_COUNT;
+pub const DIRECT_R4PQZ_PHASE_SPAN_COUNT: usize = 2;
+pub const DIRECT_R4PQZ_HYDROLOGY_PROJECTION_SPAN: [DirectPhaseKind; DIRECT_R4PQZ_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::StorageReconciliation,
+    DirectPhaseKind::ClosureDiagnostics,
+];
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
 mod evapotranspiration;
+mod projection;
 mod runoff;
 mod storage;
 mod subsurface;
@@ -114,6 +120,11 @@ pub use evapotranspiration::{
     DirectEvapotranspirationStageState, DirectEvapotranspirationSurfaceDownstreamOperands,
     DirectEvapotranspirationSurfaceShadowProjection, DirectEvapotranspirationSurfaceSpanReport,
     DirectEvapotranspirationSurfaceState,
+};
+pub use projection::{
+    DirectHydrologyProjectionDownstreamOperands, DirectHydrologyProjectionInputs,
+    DirectHydrologyProjectionShadowProjection, DirectHydrologyProjectionSpanReport,
+    DirectHydrologyProjectionState,
 };
 pub use runoff::{
     DirectInfiltrationDepressionDownstreamOperands, DirectInfiltrationDepressionInputs,
@@ -548,6 +559,10 @@ pub struct DirectDayFrame {
     pub storage_reconciliation: DirectStorageReconciliationState,
     pub storage_downstream_operands: DirectStorageDownstreamOperands,
     pub storage_shadow_projection: Option<DirectStorageShadowProjection>,
+    pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,
+    pub hydrology_projection: DirectHydrologyProjectionState,
+    pub hydrology_projection_downstream_operands: DirectHydrologyProjectionDownstreamOperands,
+    pub hydrology_projection_shadow_projection: Option<DirectHydrologyProjectionShadowProjection>,
     pub water_ledger: DirectWaterLedgerState,
     pub ledger_downstream_operands: DirectLedgerDownstreamOperands,
     pub ledger_shadow_projection: Option<DirectLedgerShadowProjection>,
@@ -649,6 +664,11 @@ impl DirectDayFrame {
             storage_reconciliation: DirectStorageReconciliationState::zero(),
             storage_downstream_operands: DirectStorageDownstreamOperands::zero(),
             storage_shadow_projection: None,
+            hydrology_projection_inputs: DirectHydrologyProjectionInputs::zero(),
+            hydrology_projection: DirectHydrologyProjectionState::zero(),
+            hydrology_projection_downstream_operands:
+                DirectHydrologyProjectionDownstreamOperands::zero(),
+            hydrology_projection_shadow_projection: None,
             water_ledger: DirectWaterLedgerState::zero(),
             ledger_downstream_operands: DirectLedgerDownstreamOperands::zero(),
             ledger_shadow_projection: None,
@@ -1500,6 +1520,7 @@ impl DirectFrameExecutor {
         record_direct_span_report!(counters, day_frame.run_r4l_saturation_addback_span());
         record_direct_span_report!(counters, day_frame.run_r4a_runoff_partition_span());
         record_direct_span_report!(counters, day_frame.run_r4b_storage_reconciliation_span());
+        record_direct_span_report!(counters, day_frame.run_r4pqz_hydrology_projection_span());
         record_direct_span_report!(counters, day_frame.run_r3b_water_ledger_span());
 
         Ok(())

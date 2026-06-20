@@ -438,7 +438,8 @@ rg -n "SymbolRegistry|BoundarySymbol|BoundaryValue|Option<BoundaryValue>|Hillslo
   crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs \
   crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs \
   crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs \
-  crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs
+  crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs \
+  crates/openwepp-hillslope-orchestrator/src/direct_runtime/projection.rs
 ```
 
 Run scheduler no-diff:
@@ -559,6 +560,10 @@ package write set.
 - 2026-06-20: R4N confirmed the same manifest-selected output-root behavior;
   package-local `/tmp/r4n-h2637/default/rep*/h2637_same/` roots contained run
   manifests, while protected parquet outputs remained under
+  `/tmp/perfmig01-final/current/anchor/h2637_same/`.
+- 2026-06-20: R4P/Q/Z confirmed the same manifest-selected output-root
+  behavior; package-local `/tmp/r4pqz-h2637/default/rep*/h2637_same/` roots
+  contained run manifests, while protected parquet outputs remained under
   `/tmp/perfmig01-final/current/anchor/h2637_same/`.
 
 ## Decision Log
