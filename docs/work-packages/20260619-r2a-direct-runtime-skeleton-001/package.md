@@ -1,6 +1,6 @@
 # R2A - Direct Runtime Skeleton
 
-Status: queued.
+Status: complete.
 
 Package type: implementation work package / array-native runtime R2A.
 
@@ -169,9 +169,11 @@ Files outside this set require package amendment before edits.
   `execute_with_kernel*`, `HillslopeKernelRequest`, writeback payload/surface,
   symbol lookup, indexed surface, hot table, dense refresh, or dirty-flush
   paths.
-- Runtime counter/audit evidence confirms zero forbidden direct-skeleton calls
-  and zero direct-skeleton construction on the default-disabled compatibility
-  path.
+- Static source/call-graph evidence confirms the direct skeleton has no
+  forbidden compatibility call sites. Runtime counter/audit evidence confirms
+  zero direct-skeleton construction on the default-disabled compatibility path
+  and exactly one skeleton execution under explicit opt-in. Reserved
+  always-zero forbidden-call counters are not acceptable proof.
 - Default-disabled H2637 final median remains `<= 676.67 s` with protected
   identity under the PERFDEEP09 policy.
 - No phase math, output publication cutover, direct publication operand change,

@@ -1,9 +1,9 @@
 # R2A Required Reading Map
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence mode: Static.
 
-Populate before Rust edits.
+Populated before Rust edits.
 
 Required-reading bytes, excluding the new package file:
 
@@ -29,3 +29,25 @@ Disposition: `OK` (`<=400000` bytes).
 | `docs/specifications/science-contracts/AGENTS.md` | Required before Rust edits | Kernel/science authority guardrails. |
 | `tests/AGENTS.md` | Conditional | Before root test edits. |
 | touched source files | On demand | Read before editing direct runtime, runner, or tests. |
+
+## Execution Evidence
+
+Static:
+
+- Root `AGENTS.md` was provided in the execution prompt and governs this work.
+- `docs/work-packages/AGENTS.md` was read before package edits.
+- `crates/AGENTS.md` and
+  `docs/specifications/science-contracts/AGENTS.md` were read before Rust
+  edits.
+- The array-native architecture specification, R0/R1 planning artifacts, and
+  PERFDEEP09 disposition/gate artifacts were read before Rust edits.
+- Source inventory was read for:
+  `crates/openwepp-hillslope-orchestrator/src/lib.rs`,
+  `crates/openwepp-hillslope-orchestrator/src/day_frame.rs`,
+  `crates/openwepp-hillslope-orchestrator/src/scheduler.rs`,
+  `crates/openwepp-runner/src/api.rs`,
+  `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`,
+  `crates/openwepp-runner/src/hillslope/01_scheduler_and_trace.rs`,
+  `crates/openwepp-runner/src/hillslope/03_tests.rs`,
+  `crates/openwepp-runner/src/bin/openwepp-cli-hill.rs`, and orchestrator
+  test modules.

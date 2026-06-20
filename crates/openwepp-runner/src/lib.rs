@@ -13,10 +13,13 @@ mod shared;
 mod totalwatsed3;
 mod watershed_wat;
 
-pub use api::{HillslopeRunReport, HillslopeRunRequest, ReleaseLintReport, RunnerLaunchRequest};
+pub use api::{
+    HillslopeRunReport, HillslopeRunRequest, HillslopeRuntimeSelection, ReleaseLintReport,
+    RunnerLaunchRequest,
+};
 pub use constants::*;
 pub use errors::{HillslopeCliError, ReleaseLintError, ReleaseMetadataError, RunnerError};
-pub use hillslope::execute_hillslope_run;
+pub use hillslope::{execute_hillslope_run, execute_hillslope_run_with_runtime_selection};
 pub use launch::{build_hillslope_argv, launch_hillslope};
 pub use policy::SidecarPolicy;
 pub use release::{

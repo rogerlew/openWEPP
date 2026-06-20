@@ -1,7 +1,7 @@
 # R2A Verification Agent A
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence mode: Static + Ran.
 
 Verification focus:
 
@@ -13,4 +13,11 @@ Verification focus:
 
 | Check | Result | Evidence |
 |---|---|---|
-| queued | NOT RUN | not verified |
+| Artifact completeness | PASS | Package artifacts, review artifacts, verification artifacts, disposition, roadmap, and work-package log are populated. |
+| Command reproducibility | PASS | Gate commands and benchmark command shape are recorded in implementation and regression-gate artifacts. |
+| Type-prohibition evidence | PASS | Direct runtime source scan and focused source-token test passed. |
+| Focused tests | PASS | Orchestrator R2A and runner R2A tests passed after review fixes. |
+| Review finding disposition | PASS | Race fixed; tautological counters removed; global audit report snapshot removed; artifacts updated. |
+| Full Rust gates | PASS | `cargo fmt --check`, clippy, workspace tests, and deny check passed after review fixes. |
+
+Verification A disposition: PASS.

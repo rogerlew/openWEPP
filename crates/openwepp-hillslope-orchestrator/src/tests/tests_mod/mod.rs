@@ -53,6 +53,7 @@ use crate::{
 
 mod boundaries;
 mod day_frame;
+mod direct_runtime;
 mod fixtures;
 mod growth;
 mod hydrology;

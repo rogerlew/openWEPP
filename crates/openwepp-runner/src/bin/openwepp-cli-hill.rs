@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
+use openwepp_runner::{
+    HillslopeRunRequest, HillslopeRuntimeSelection, SidecarPolicy,
+    execute_hillslope_run_with_runtime_selection,
+};
 
 fn main() {
     if let Err(error) = run() {
@@ -16,6 +19,7 @@ fn run() -> Result<(), String> {
     let mut policy = SidecarPolicy::Compat;
     let mut legacy_sidecar_discovery = false;
     let mut manifest_path: Option<PathBuf> = None;
+    let mut runtime_selection = HillslopeRuntimeSelection::Compatibility;
 
     let args: Vec<String> = std::env::args().collect();
     let mut cursor = 1usize;
@@ -61,6 +65,9 @@ fn run() -> Result<(), String> {
             "--legacy-sidecar-discovery" => {
                 legacy_sidecar_discovery = true;
             }
+            "--direct-runtime-skeleton" => {
+                runtime_selection = HillslopeRuntimeSelection::DirectSkeletonNoop;
+            }
             "--help" | "-h" => {
                 print_help();
                 return Ok(());
@@ -83,7 +90,7 @@ fn run() -> Result<(), String> {
         return Err("CLIHILL-E-001 missing --output-dir".to_string());
     };
 
-    let report = execute_hillslope_run(
+    let report = execute_hillslope_run_with_runtime_selection(
         &HillslopeRunRequest {
             run_dir,
             run_file,
@@ -93,6 +100,7 @@ fn run() -> Result<(), String> {
             manifest_path,
         },
         &args,
+        runtime_selection,
     )
     .map_err(|error| error.to_string())?;
 
@@ -105,6 +113,6 @@ fn run() -> Result<(), String> {
 
 fn print_help() {
     println!(
-        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--manifest-path <path>]"
+        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--manifest-path <path>] [--direct-runtime-skeleton]"
     );
 }

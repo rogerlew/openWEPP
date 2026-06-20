@@ -1,9 +1,9 @@
 # R2A Artifacts
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence mode: Static + Ran.
 
-Artifacts to populate during execution:
+Artifacts populated during execution:
 
 - `required-reading-map.md`
 - `owned-file-manifest.md`
@@ -26,5 +26,23 @@ Artifacts to populate during execution:
 - `disposition.md`
 - `worker-handoff.md`
 
-R2A is an implementation package. Artifact updates must distinguish static
-proof, runtime evidence, benchmark evidence, and skipped/not-run gates.
+R2A is an implementation package. Artifact updates distinguish static proof,
+runtime evidence, benchmark evidence, and skipped/not-run gates.
+
+## Closure Summary
+
+Static:
+
+- The new direct runtime namespace is
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs`.
+- The default runner entrypoint still selects
+  `HillslopeRuntimeSelection::Compatibility`.
+- `scheduler.rs` was not edited.
+
+Ran:
+
+- Focused R2A tests passed for the direct skeleton and runner opt-in/default
+  paths.
+- Full Rust closure gates passed.
+- The R2A default-disabled H2637 median was `636.01 s`, under the
+  `<= 676.67 s` threshold.

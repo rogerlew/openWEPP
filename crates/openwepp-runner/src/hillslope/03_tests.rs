@@ -2,6 +2,9 @@
 mod tests {
     use super::*;
     use crate::SidecarPolicy;
+    use openwepp_hillslope_orchestrator::{
+        DIRECT_PHASE_COUNT, direct_runtime_audit_snapshot, reset_direct_runtime_audit_counters,
+    };
     use openwepp_input_contract::parsers::hbp::{HbpParseOptions, parse_hbp_from_path};
     use openwepp_input_contract::parsers::slope::{
         DatverSource, DistanceMode, SlopeOfe, SlopePoint, SlopeProfile,
@@ -482,15 +485,23 @@ mod tests {
     }
 
     fn execute_fixture_run(prefix: &str) -> (HillslopeRunReport, PathBuf) {
+        execute_fixture_run_with_runtime_selection(prefix, HillslopeRuntimeSelection::Compatibility)
+    }
+
+    fn execute_fixture_run_with_runtime_selection(
+        prefix: &str,
+        runtime_selection: HillslopeRuntimeSelection,
+    ) -> (HillslopeRunReport, PathBuf) {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
+        reset_direct_runtime_audit_counters();
 
         let source_fixture_dir = fixture_path("hillslope_run_dir");
         let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, prefix);
         let output_dir = temp_run_dir.join("output");
 
-        let report = execute_hillslope_run(
+        let report = execute_hillslope_run_with_runtime_selection(
             &HillslopeRunRequest {
                 run_dir: temp_run_dir.clone(),
                 run_file: PathBuf::from("case.run"),
@@ -500,10 +511,42 @@ mod tests {
                 manifest_path: None,
             },
             &["openwepp-cli-hill".to_string()],
+            runtime_selection,
         )
         .expect("fixture run should complete");
 
         (report, temp_run_dir)
+    }
+
+    #[test]
+    fn r2a_default_fixture_run_constructs_no_direct_runtime_skeleton() {
+        let (report, _temp_run_dir) = execute_fixture_run("r2a_default_direct_skeleton_disabled");
+
+        assert!(report.output_pass.is_file());
+        assert!(report.output_loss.is_file());
+        let audit = direct_runtime_audit_snapshot();
+        assert_eq!(audit.run_frame_constructions, 0);
+        assert_eq!(audit.day_frame_constructions, 0);
+        assert_eq!(audit.executor_constructions, 0);
+        assert_eq!(audit.skeleton_runs, 0);
+        assert_eq!(audit.phase_view_constructions, 0);
+    }
+
+    #[test]
+    fn r2a_explicit_direct_skeleton_selection_runs_before_compatibility_outputs() {
+        let (report, _temp_run_dir) = execute_fixture_run_with_runtime_selection(
+            "r2a_direct_skeleton_opt_in",
+            HillslopeRuntimeSelection::DirectSkeletonNoop,
+        );
+
+        assert!(report.output_pass.is_file());
+        assert!(report.output_loss.is_file());
+        let audit = direct_runtime_audit_snapshot();
+        assert_eq!(audit.run_frame_constructions, 1);
+        assert_eq!(audit.executor_constructions, 1);
+        assert_eq!(audit.skeleton_runs, 1);
+        assert!(audit.day_frame_constructions >= 1);
+        assert!(audit.phase_view_constructions >= DIRECT_PHASE_COUNT as u64);
     }
 
     fn runner_execution_lock() -> &'static Mutex<()> {

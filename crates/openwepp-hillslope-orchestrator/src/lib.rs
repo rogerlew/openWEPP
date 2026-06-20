@@ -6,6 +6,7 @@ pub mod schedule_export;
 mod constants;
 mod consumer_boundary;
 mod day_frame;
+mod direct_runtime;
 mod hydrology;
 mod phase;
 mod scheduler;
@@ -51,6 +52,13 @@ pub use consumer_boundary::{
 pub use day_frame::{
     HillslopeDayFrame, HillslopeDayFrameError, HillslopeDayFrameIoEdgeScalars,
     HillslopeDayFrameMismatch, HillslopeDayFrameShadowReport, HillslopeLaneDenseState,
+};
+pub use direct_runtime::{
+    DIRECT_PHASE_COUNT, DIRECT_TRANSFER_HOUR_COUNT, DirectDayForcing, DirectDayFrame,
+    DirectExecutionReport, DirectExecutorMode, DirectFrameExecutor, DirectLaneFrame,
+    DirectPhaseKind, DirectPhasePlan, DirectPhaseView, DirectPublicationFrame, DirectRunFrame,
+    DirectRunIdentity, DirectRuntimeAuditSnapshot, DirectRuntimeError, DirectTransferBuffers,
+    DirectWaterState, direct_runtime_audit_snapshot, reset_direct_runtime_audit_counters,
 };
 pub use hydrology::{
     HillslopeHydrologyRoutingError, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,

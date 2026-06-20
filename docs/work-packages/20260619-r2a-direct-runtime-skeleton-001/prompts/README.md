@@ -1,5 +1,5 @@
 # R2A Prompts
 
-Status: queued.
+Status: complete.
 
-Prompt material for executing the R2A direct-runtime skeleton package.
+Prompt material used for executing the R2A direct-runtime skeleton package.

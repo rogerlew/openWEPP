@@ -10,13 +10,18 @@
 
 State as of `2026-06-19`:
 
-- R2A is scaffolded and queued as the first implementation-capable direct
-  runtime package after PERFDEEP09. It introduces a distinct direct-frame type
-  namespace, a no-op/shadow direct executor skeleton selected once at setup,
-  and executable no-compatibility proof hooks. It must preserve PERFDEEP09's
-  default-disabled H2637 median gate `<= 676.67 s`, cannot port phase math, and
-  cannot claim publication or runtime activation readiness. Package:
-  `20260619-r2a-direct-runtime-skeleton-001/`.
+- R2A is complete with verdict `COMPLETE-R2A-SKELETON`. The package introduced
+  a distinct direct-runtime namespace, typed direct-frame shells, a no-op/shadow
+  direct executor skeleton, explicit one-time runner setup selection, default
+  inactivity proof, and executable no-compatibility proof hooks. Review removed
+  misleading reserved forbidden-call counters; forbidden-call absence is proven
+  by direct-runtime source/call-graph evidence, while runtime counters prove
+  default-disabled direct-skeleton inactivity and explicit opt-in skeleton
+  execution. Final default-disabled H2637 reps were `634.06 s`, `636.01 s`,
+  and `640.93 s` (median `636.01 s`, threshold `<= 676.67 s`), with protected
+  output identity. No phase math, publication cutover, endpoint-improvement
+  claim, or default activation occurred. Follow-on: R3A first complete direct
+  phase span. Package: `20260619-r2a-direct-runtime-skeleton-001/`.
 - PERFDEEP09 executed with verdict `READY-FOR-R2`. Same-machine no-edit control
   reproduced the default-disabled blocker at `682.65 s`, RSS `228924 KB`.
   The retained remediation collapses repeated per-root perennial decomposition

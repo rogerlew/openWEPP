@@ -23,6 +23,25 @@ pub struct HillslopeRunRequest {
     pub manifest_path: Option<PathBuf>,
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum HillslopeRuntimeSelection {
+    #[default]
+    Compatibility,
+    DirectSkeletonNoop,
+    DirectSkeletonShadowOnly,
+}
+
+impl HillslopeRuntimeSelection {
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Compatibility => "compatibility",
+            Self::DirectSkeletonNoop => "direct-skeleton-noop",
+            Self::DirectSkeletonShadowOnly => "direct-skeleton-shadow-only",
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct HillslopeRunReport {
     pub output_pass: PathBuf,

@@ -12,7 +12,8 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
     build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
 };
 use openwepp_hillslope_orchestrator::{
-    HillslopeDayFrame, HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
+    DirectExecutorMode, DirectFrameExecutor, DirectRunFrame, DirectRunIdentity, HillslopeDayFrame,
+    HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
     OfeLanePersistentState, OfeLanePersistentStateSequence, OfeLaneSequenceExecutionReport,
     SchedulerOutcomeClass, TransferInput, TransferOutput, Wb11HydrologyKernel,
     build_hillslope_hot_symbol_tables,
@@ -63,7 +64,7 @@ use openwepp_summary_accumulator::{
 use openwepp_topology::{TopologyGraph, validate_pre_execution_topology};
 use serde::{Deserialize, Serialize};
 
-use crate::api::{HillslopeRunReport, HillslopeRunRequest};
+use crate::api::{HillslopeRunReport, HillslopeRunRequest, HillslopeRuntimeSelection};
 use crate::hillslope::intake_lane_setup::StaticOfeLaneSlice;
 use crate::constants::{
     DAILY_EXECUTION_LANE, DAILY_TIMESTEP_SECONDS, HILLSLOPE_RUN_MANIFEST_SCHEMA_ID,
@@ -2357,6 +2358,18 @@ pub fn execute_hillslope_run(
     request: &HillslopeRunRequest,
     argv: &[String],
 ) -> Result<HillslopeRunReport, HillslopeCliError> {
+    execute_hillslope_run_with_runtime_selection(
+        request,
+        argv,
+        HillslopeRuntimeSelection::Compatibility,
+    )
+}
+
+pub fn execute_hillslope_run_with_runtime_selection(
+    request: &HillslopeRunRequest,
+    argv: &[String],
+    runtime_selection: HillslopeRuntimeSelection,
+) -> Result<HillslopeRunReport, HillslopeCliError> {
     if !request.run_dir.is_dir() {
         return Err(HillslopeCliError::RunDirectoryMissing {
             path: request.run_dir.clone(),
@@ -2372,6 +2385,7 @@ pub fn execute_hillslope_run(
 
     let inputs = load_hillslope_run_inputs(request)?;
     let targets = resolve_hillslope_output_targets(&inputs.runfile)?;
+    select_direct_runtime_skeleton_once(runtime_selection, &inputs, &targets)?;
     let mut sidecars = resolve_hillslope_sidecars(request, &inputs, &targets)?;
     let runtime_setup = build_static_hillslope_runtime_setup(request, &inputs, &mut sidecars)?;
     let timestep_policy = runtime_setup.timestep_policy;
@@ -2432,4 +2446,42 @@ pub fn execute_hillslope_run(
         manifest_path,
         sidecar_warnings,
     })
+}
+
+fn select_direct_runtime_skeleton_once(
+    runtime_selection: HillslopeRuntimeSelection,
+    inputs: &ParsedHillslopeRunInputs,
+    targets: &HillslopeOutputTargets,
+) -> Result<(), HillslopeCliError> {
+    let mode = match runtime_selection {
+        HillslopeRuntimeSelection::Compatibility => return Ok(()),
+        HillslopeRuntimeSelection::DirectSkeletonNoop => DirectExecutorMode::Noop,
+        HillslopeRuntimeSelection::DirectSkeletonShadowOnly => DirectExecutorMode::ShadowOnly,
+    };
+
+    let identity = DirectRunIdentity::new(
+        u64::from(targets.output_hillslope_id),
+        targets.output_hillslope_id,
+        inputs.slope.ofe_count,
+        inputs.climate.daily_records.len(),
+    )
+    .map_err(|source| direct_runtime_skeleton_error(&source))?;
+    let mut frame =
+        DirectRunFrame::skeleton(identity).map_err(|source| direct_runtime_skeleton_error(&source))?;
+    let executor = DirectFrameExecutor::new(mode);
+    let report = executor
+        .run_skeleton(&mut frame)
+        .map_err(|source| direct_runtime_skeleton_error(&source))?;
+    debug_assert_eq!(report.mode.as_str(), mode.as_str());
+
+    Ok(())
+}
+
+fn direct_runtime_skeleton_error(
+    source: &openwepp_hillslope_orchestrator::DirectRuntimeError,
+) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "r2a_direct_runtime_skeleton",
+        detail: source.to_string(),
+    }
 }
