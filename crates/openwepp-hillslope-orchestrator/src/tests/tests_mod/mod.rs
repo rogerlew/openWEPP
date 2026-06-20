@@ -4,6 +4,7 @@
 
 use std::cell::Cell;
 use std::collections::BTreeMap;
+use std::sync::{Mutex, OnceLock};
 
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, HillslopeAnnualDecompositionAction,
@@ -54,9 +55,15 @@ use crate::{
 mod boundaries;
 mod day_frame;
 mod direct_runtime;
+mod direct_runtime_r4il;
 mod fixtures;
 mod growth;
 mod hydrology;
 mod phase;
 mod schedule_export;
 mod writeback;
+
+fn direct_runtime_test_lock() -> &'static Mutex<()> {
+    static DIRECT_RUNTIME_TEST_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    DIRECT_RUNTIME_TEST_LOCK.get_or_init(|| Mutex::new(()))
+}

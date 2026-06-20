@@ -19,6 +19,23 @@ State as of `2026-06-20`:
 
 State as of `2026-06-20`:
 
+- R4I-L is complete with verdict
+  `COMPLETE-R4IL-DIRECT-RUNOFF-PATH-INPUT-COMPLETION`. The package implemented
+  direct handoff producers for R4A `liquid_input_m`, `runon_input_m`,
+  `cumulative_infiltration_m`, `depression_storage_delta_m`, and
+  `surface_saturation_runoff_m`. Each producer has typed inputs, direct
+  handoff compute, state mutation, downstream operands, and shadow projection.
+  R4A now requires R4I liquid input, R4J runon/carry, R4K
+  infiltration/depression, and R4L saturation-addback producers before runoff
+  partition. R4I-L remains handoff-only, no-publication, no-default-activation,
+  and no-scheduler: public output paths and compatibility runtime remain
+  authoritative. The package split runoff-specific direct-runtime code into
+  `direct_runtime/runoff.rs` and added a focused R4I-L test module. Full Rust
+  gates passed. Final default-disabled H2637 reps were `646.47 s`,
+  `642.52 s`, and `640.20 s` (median `642.52 s`, threshold
+  `<= 676.67 s`) with protected output identity and PASS DuckDB row
+  equivalence. Package:
+  `20260620-r4il-direct-runoff-path-input-completion-001/`.
 - R4E-H is complete with verdict
   `COMPLETE-R4EH-DIRECT-STORAGE-BUDGET-HANDOFF-COMPLETION`. The package
   implemented direct handoff producers for R4B `subsurface_loss_m` / `Qd`,
