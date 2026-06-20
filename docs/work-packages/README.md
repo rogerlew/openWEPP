@@ -5,11 +5,27 @@
 > **execution log**: the home for **completed** work — package status, detail, and
 > commits. When a queue item closes it is removed from `ROADMAP.md` and recorded
 > here. If the two disagree on what is next, `ROADMAP.md` wins.
+> Scaffolded but unexecuted packages stay discoverable from `ROADMAP.md` and
+> their package-local `package.md`; they enter this execution log after closure.
 
 ## Current roadmap execution log
 
 State as of `2026-06-20`:
 
+- R4B is complete with verdict
+  `COMPLETE-R4B-DIRECT-STORAGE-RECONCILIATION-CONSUMER-SPAN`. The package
+  implemented the downstream direct WB12 storage-reconciliation consumer of the
+  R4A runoff result. It consumes R4A direct `q_runoff_m`, reconciles storage
+  from explicit direct operands, mutates only direct storage state, produces
+  downstream storage operands, and shadow-projects storage plus closure
+  residual. R4B remains no-publication, no-default-activation, and
+  no-scheduler: public output paths and compatibility runtime remain
+  authoritative. Full Rust gates passed. Final default-disabled H2637 reps were
+  `637.34 s`, `641.14 s`, and `646.88 s` (median `641.14 s`, threshold
+  `<= 676.67 s`) with protected output identity and PASS DuckDB row
+  equivalence. `direct_runtime.rs` is now in the 2000+ line WARN band at 2101
+  lines, below the 3000-line blocker. Package:
+  `20260620-r4b-direct-storage-reconciliation-consumer-001/`.
 - R4A is complete with verdict
   `COMPLETE-R4A-DIRECT-RUNOFF-PARTITION-SPAN`. The package implemented the
   first direct hydrology-process span: a narrow SC-RUNOFFPART-authoritative

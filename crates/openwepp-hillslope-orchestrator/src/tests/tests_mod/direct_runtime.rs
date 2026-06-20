@@ -3,13 +3,15 @@ use crate::{
     DIRECT_PHASE_COUNT, DIRECT_R3A_INPUT_ACCOUNTING_SPAN, DIRECT_R3A_PHASE_SPAN_COUNT,
     DIRECT_R3B_PHASE_SPAN_COUNT, DIRECT_R3B_WATER_LEDGER_SPAN, DIRECT_R3C_LANE_TRANSFER_SPAN,
     DIRECT_R3C_PHASE_SPAN_COUNT, DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4A_RUNOFF_PARTITION_SPAN,
-    DirectDayFrame, DirectDownstreamOperands, DirectExecutorMode, DirectFrameExecutor,
-    DirectInputAccountingState, DirectLaneTransferLedger, DirectLedgerDownstreamOperands,
-    DirectLedgerShadowProjection, DirectPhaseKind, DirectRunFrame, DirectRunIdentity,
-    DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
-    DirectRunoffDownstreamOperands, DirectRunoffPartitionInputs, DirectRunoffPartitionState,
-    DirectRunoffShadowProjection, DirectRuntimeError, DirectShadowProjection,
-    DirectWaterLedgerState, reset_direct_runtime_audit_counters,
+    DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4B_STORAGE_RECONCILIATION_SPAN, DirectDayFrame,
+    DirectDownstreamOperands, DirectExecutorMode, DirectFrameExecutor, DirectInputAccountingState,
+    DirectLaneTransferLedger, DirectLedgerDownstreamOperands, DirectLedgerShadowProjection,
+    DirectPhaseKind, DirectRunFrame, DirectRunIdentity, DirectRunTransferDownstreamOperands,
+    DirectRunTransferShadowProjection, DirectRunoffDownstreamOperands, DirectRunoffPartitionInputs,
+    DirectRunoffPartitionState, DirectRunoffShadowProjection, DirectRuntimeError,
+    DirectShadowProjection, DirectStorageDownstreamOperands, DirectStorageReconciliationInputs,
+    DirectStorageReconciliationState, DirectStorageShadowProjection, DirectWaterLedgerState,
+    reset_direct_runtime_audit_counters,
 };
 use std::sync::{Mutex, OnceLock};
 
@@ -35,18 +37,19 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
     assert_eq!(report.day_count, 10);
     assert_eq!(report.planned_phase_count, DIRECT_PHASE_COUNT);
     assert_eq!(report.phase_view_count, (2 * DIRECT_PHASE_COUNT) as u64);
-    assert_eq!(report.phase_span_run_count, 7);
+    assert_eq!(report.phase_span_run_count, 9);
     assert_eq!(
         report.direct_phase_entry_count,
         (DIRECT_R3C_PHASE_SPAN_COUNT
             + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT
                 + DIRECT_R4A_PHASE_SPAN_COUNT
+                + DIRECT_R4B_PHASE_SPAN_COUNT
                 + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
     );
-    assert_eq!(report.direct_compute_count, 7);
-    assert_eq!(report.state_mutation_count, 7);
-    assert_eq!(report.downstream_operand_count, 7);
-    assert_eq!(report.shadow_projection_count, 7);
+    assert_eq!(report.direct_compute_count, 9);
+    assert_eq!(report.state_mutation_count, 9);
+    assert_eq!(report.downstream_operand_count, 9);
+    assert_eq!(report.shadow_projection_count, 9);
     assert_eq!(report.compatibility_edge_invocation_count, 0);
     let audit = crate::direct_runtime_audit_snapshot();
     assert_eq!(audit.run_frame_constructions, 1);
@@ -57,18 +60,19 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
         audit.phase_view_constructions,
         (2 * DIRECT_PHASE_COUNT) as u64
     );
-    assert_eq!(audit.phase_span_runs, 7);
+    assert_eq!(audit.phase_span_runs, 9);
     assert_eq!(
         audit.direct_phase_entries,
         (DIRECT_R3C_PHASE_SPAN_COUNT
             + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT
                 + DIRECT_R4A_PHASE_SPAN_COUNT
+                + DIRECT_R4B_PHASE_SPAN_COUNT
                 + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
     );
-    assert_eq!(audit.direct_compute_operations, 7);
-    assert_eq!(audit.direct_state_mutations, 7);
-    assert_eq!(audit.downstream_operand_productions, 7);
-    assert_eq!(audit.shadow_projections, 7);
+    assert_eq!(audit.direct_compute_operations, 9);
+    assert_eq!(audit.direct_state_mutations, 9);
+    assert_eq!(audit.downstream_operand_productions, 9);
+    assert_eq!(audit.shadow_projections, 9);
     assert_eq!(audit.compatibility_edge_invocations, 0);
 }
 
@@ -614,6 +618,255 @@ fn r4a_runoff_partition_span_rejects_invalid_inputs() {
             field: "runoff_partition.q_runoff_m"
         }
     );
+}
+
+#[test]
+fn r4b_storage_reconciliation_consumes_r4a_q_and_shadow_projects() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    assert_eq!(
+        DIRECT_R4B_STORAGE_RECONCILIATION_SPAN,
+        [
+            DirectPhaseKind::StorageReconciliation,
+            DirectPhaseKind::ClosureDiagnostics
+        ]
+    );
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    day.runoff_partition_inputs = DirectRunoffPartitionInputs {
+        liquid_input_m: 0.5,
+        runon_input_m: 0.125,
+        cumulative_infiltration_m: 0.25,
+        depression_storage_delta_m: 0.0625,
+        surface_saturation_runoff_m: 0.03125,
+    };
+    day.storage_reconciliation_inputs = DirectStorageReconciliationInputs {
+        storage_initial_m: 1.0,
+        precip_input_m: 0.25,
+        snow_coupling_m: 0.125,
+        evapotranspiration_m: 0.0625,
+        deep_seepage_m: 0.03125,
+        subsurface_loss_m: 0.015_625,
+        closure_tolerance_m: 0.0,
+    };
+    day.publication.runoff_m = 0.125;
+    day.water_ledger.diagnostic_residual_m = 0.1875;
+
+    day.run_r4a_runoff_partition_span()
+        .expect("R4A upstream span should pass before R4B");
+    let report = day
+        .run_r4b_storage_reconciliation_span()
+        .expect("valid R4B storage reconciliation span should execute");
+
+    let expected_state = r4b_expected_storage_state();
+    let expected_operands = DirectStorageDownstreamOperands::from(expected_state);
+    let expected_shadow = r4b_expected_storage_shadow();
+
+    assert_eq!(day.storage_reconciliation, expected_state);
+    assert_eq!(day.water.soil_water_m.to_bits(), 0.921_875_f64.to_bits());
+    assert_eq!(day.storage_downstream_operands, expected_operands);
+    assert_eq!(day.storage_shadow_projection, Some(expected_shadow));
+    assert_eq!(report.phase_count, DIRECT_R4B_PHASE_SPAN_COUNT);
+    assert_eq!(report.phase_entry_count, DIRECT_R4B_PHASE_SPAN_COUNT as u64);
+    assert_eq!(report.direct_compute_count, 1);
+    assert_eq!(report.state_mutation_count, 1);
+    assert_eq!(report.downstream_operand_count, 1);
+    assert_eq!(report.shadow_projection_count, 1);
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+    assert_eq!(report.storage_shadow_projection, expected_shadow);
+
+    assert_r4b_storage_anti_aliases(expected_state, &day);
+
+    let audit = crate::direct_runtime_audit_snapshot();
+    assert_eq!(audit.day_frame_constructions, 1);
+    assert_eq!(audit.phase_span_runs, 2);
+    assert_eq!(
+        audit.direct_phase_entries,
+        (DIRECT_R4A_PHASE_SPAN_COUNT + DIRECT_R4B_PHASE_SPAN_COUNT) as u64
+    );
+    assert_eq!(audit.direct_compute_operations, 2);
+    assert_eq!(audit.direct_state_mutations, 2);
+    assert_eq!(audit.downstream_operand_productions, 2);
+    assert_eq!(audit.shadow_projections, 2);
+    assert_eq!(audit.compatibility_edge_invocations, 0);
+}
+
+fn r4b_expected_storage_state() -> DirectStorageReconciliationState {
+    DirectStorageReconciliationState {
+        storage_initial_m: 1.0,
+        precip_input_m: 0.25,
+        snow_coupling_m: 0.125,
+        q_runoff_m: 0.34375,
+        evapotranspiration_m: 0.0625,
+        deep_seepage_m: 0.03125,
+        subsurface_loss_m: 0.015_625,
+        closure_tolerance_m: 0.0,
+        storage_reconciled_m: 0.921_875,
+        closure_residual_m: 0.0,
+    }
+}
+
+fn r4b_expected_storage_shadow() -> DirectStorageShadowProjection {
+    DirectStorageShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        storage_initial_m: 1.0,
+        precip_input_m: 0.25,
+        snow_coupling_m: 0.125,
+        q_runoff_m: 0.34375,
+        evapotranspiration_m: 0.0625,
+        deep_seepage_m: 0.03125,
+        subsurface_loss_m: 0.015_625,
+        storage_reconciled_m: 0.921_875,
+        closure_residual_m: 0.0,
+    }
+}
+
+fn assert_r4b_storage_anti_aliases(
+    expected_state: DirectStorageReconciliationState,
+    day: &DirectDayFrame,
+) {
+    let omitted_s_m = expected_state.storage_initial_m + expected_state.precip_input_m
+        - expected_state.q_runoff_m
+        - expected_state.evapotranspiration_m
+        - expected_state.deep_seepage_m
+        - expected_state.subsurface_loss_m;
+    assert_ne!(
+        expected_state.storage_reconciled_m.to_bits(),
+        omitted_s_m.to_bits()
+    );
+    let wrong_q_sign_m = expected_state.storage_initial_m
+        + expected_state.precip_input_m
+        + expected_state.snow_coupling_m
+        + expected_state.q_runoff_m
+        - expected_state.evapotranspiration_m
+        - expected_state.deep_seepage_m
+        - expected_state.subsurface_loss_m;
+    assert_ne!(
+        expected_state.storage_reconciled_m.to_bits(),
+        wrong_q_sign_m.to_bits()
+    );
+    let omitted_losses_m = expected_state.storage_initial_m
+        + expected_state.precip_input_m
+        + expected_state.snow_coupling_m
+        - expected_state.q_runoff_m;
+    assert_ne!(
+        expected_state.storage_reconciled_m.to_bits(),
+        omitted_losses_m.to_bits()
+    );
+    let publication_q_alias_m = expected_state.storage_initial_m
+        + expected_state.precip_input_m
+        + expected_state.snow_coupling_m
+        - day.publication.runoff_m
+        - expected_state.evapotranspiration_m
+        - expected_state.deep_seepage_m
+        - expected_state.subsurface_loss_m;
+    assert_ne!(
+        expected_state.storage_reconciled_m.to_bits(),
+        publication_q_alias_m.to_bits()
+    );
+    let ledger_q_alias_m = expected_state.storage_initial_m
+        + expected_state.precip_input_m
+        + expected_state.snow_coupling_m
+        - day.water_ledger.diagnostic_residual_m
+        - expected_state.evapotranspiration_m
+        - expected_state.deep_seepage_m
+        - expected_state.subsurface_loss_m;
+    assert_ne!(
+        expected_state.storage_reconciled_m.to_bits(),
+        ledger_q_alias_m.to_bits()
+    );
+}
+
+#[test]
+fn r4b_storage_reconciliation_rejects_invalid_inputs() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
+
+    let mut missing_r4a_day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    assert_eq!(
+        missing_r4a_day
+            .run_r4b_storage_reconciliation_span()
+            .expect_err("R4B should require R4A direct upstream execution"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R4A runoff partition"
+        }
+    );
+
+    let mut nonfinite_s_day = r4b_valid_day(identity);
+    nonfinite_s_day
+        .storage_reconciliation_inputs
+        .snow_coupling_m = f64::NAN;
+    assert_eq!(
+        nonfinite_s_day
+            .run_r4b_storage_reconciliation_span()
+            .expect_err("nonfinite S should fail closed"),
+        DirectRuntimeError::NonFiniteDirectValue {
+            field: "storage_reconciliation.snow_coupling_m"
+        }
+    );
+
+    let mut negative_loss_day = r4b_valid_day(identity);
+    negative_loss_day
+        .storage_reconciliation_inputs
+        .subsurface_loss_m = -0.125;
+    assert_eq!(
+        negative_loss_day
+            .run_r4b_storage_reconciliation_span()
+            .expect_err("negative Qd should fail closed"),
+        DirectRuntimeError::NegativeDirectValue {
+            field: "storage_reconciliation.subsurface_loss_m"
+        }
+    );
+
+    let mut negative_storage_day = r4b_valid_day(identity);
+    negative_storage_day
+        .storage_reconciliation_inputs
+        .deep_seepage_m = 2.0;
+    assert_eq!(
+        negative_storage_day
+            .run_r4b_storage_reconciliation_span()
+            .expect_err("negative reconciled storage should fail closed"),
+        DirectRuntimeError::NegativeDirectValue {
+            field: "storage_reconciliation.storage_reconciled_m"
+        }
+    );
+}
+
+fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    day.runoff_partition_inputs = DirectRunoffPartitionInputs {
+        liquid_input_m: 0.5,
+        runon_input_m: 0.125,
+        cumulative_infiltration_m: 0.25,
+        depression_storage_delta_m: 0.0625,
+        surface_saturation_runoff_m: 0.03125,
+    };
+    day.storage_reconciliation_inputs = DirectStorageReconciliationInputs {
+        storage_initial_m: 1.0,
+        precip_input_m: 0.25,
+        snow_coupling_m: 0.125,
+        evapotranspiration_m: 0.0625,
+        deep_seepage_m: 0.03125,
+        subsurface_loss_m: 0.015_625,
+        closure_tolerance_m: 0.0,
+    };
+    day.run_r4a_runoff_partition_span()
+        .expect("R4A upstream span should pass before R4B");
+    day
 }
 
 #[test]

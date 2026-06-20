@@ -57,6 +57,7 @@ pub use direct_runtime::{
     DIRECT_PHASE_COUNT, DIRECT_R3A_INPUT_ACCOUNTING_SPAN, DIRECT_R3A_PHASE_SPAN_COUNT,
     DIRECT_R3B_PHASE_SPAN_COUNT, DIRECT_R3B_WATER_LEDGER_SPAN, DIRECT_R3C_LANE_TRANSFER_SPAN,
     DIRECT_R3C_PHASE_SPAN_COUNT, DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4A_RUNOFF_PARTITION_SPAN,
+    DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4B_STORAGE_RECONCILIATION_SPAN,
     DIRECT_TRANSFER_HOUR_COUNT, DirectDayForcing, DirectDayFrame, DirectDownstreamOperands,
     DirectExecutionReport, DirectExecutorMode, DirectFrameExecutor, DirectInputAccountingState,
     DirectLaneFrame, DirectLaneTransferLedger, DirectLedgerDownstreamOperands,
@@ -65,9 +66,12 @@ pub use direct_runtime::{
     DirectRunIdentity, DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
     DirectRunTransferSpanReport, DirectRunoffDownstreamOperands, DirectRunoffPartitionInputs,
     DirectRunoffPartitionSpanReport, DirectRunoffPartitionState, DirectRunoffShadowProjection,
-    DirectRuntimeAuditSnapshot, DirectRuntimeError, DirectShadowProjection, DirectTransferBuffers,
-    DirectWaterLedgerState, DirectWaterState, direct_runtime_audit_snapshot,
-    record_direct_runtime_compatibility_edge_invocation, reset_direct_runtime_audit_counters,
+    DirectRuntimeAuditSnapshot, DirectRuntimeError, DirectShadowProjection,
+    DirectStorageDownstreamOperands, DirectStorageReconciliationInputs,
+    DirectStorageReconciliationSpanReport, DirectStorageReconciliationState,
+    DirectStorageShadowProjection, DirectTransferBuffers, DirectWaterLedgerState, DirectWaterState,
+    direct_runtime_audit_snapshot, record_direct_runtime_compatibility_edge_invocation,
+    reset_direct_runtime_audit_counters,
 };
 pub use hydrology::{
     HillslopeHydrologyRoutingError, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
