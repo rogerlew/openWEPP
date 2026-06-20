@@ -1,0 +1,33 @@
+# R4E-H Default-Disabled Regression Gate
+
+Status: complete.
+
+Evidence class: Ran.
+
+Required gate: H2637 default-disabled median `<= 676.67 s` with direct-runtime
+and diagnostic environment variables unset.
+
+## Runs
+
+Each run used the release `openwepp-cli-hill` binary with these variables
+unset:
+
+- `OPENWEPP_PERFDEEP02_FRAME_ISLAND`
+- `OPENWEPP_PERFDEEP03_LANE_DENSE_STATE`
+- `OPENWEPP_PERFDEEP02_FRAME_ROUNDTRIP_PATH`
+- `OPENWEPP_INDEXED_SHADOW_REPORT_PATH`
+- `OPENWEPP_SYMBOL_REGISTRY_AUDIT_PATH`
+- `OPENWEPP_HPHYS0245_TRACE_PATH`
+
+```text
+r4eh_h2637_default_rep1 648.48 228120
+r4eh_h2637_default_rep2 652.43 228304
+r4eh_h2637_default_rep3 642.26 228416
+```
+
+Median: `648.48 s`.
+
+Gate: PASS. Median is below the `676.67 s` threshold.
+
+Known warning retained from earlier runs: `MOFE01-MG-W-001` sidecar warning.
+It does not change PASS row identity or the default-disabled regression result.

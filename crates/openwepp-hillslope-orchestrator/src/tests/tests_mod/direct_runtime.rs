@@ -5,17 +5,25 @@ use crate::{
     DIRECT_R3C_PHASE_SPAN_COUNT, DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4A_RUNOFF_PARTITION_SPAN,
     DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4B_STORAGE_RECONCILIATION_SPAN,
     DIRECT_R4C_PHASE_SPAN_COUNT, DIRECT_R4C_STORAGE_INPUT_SPAN, DIRECT_R4D_DEEP_SEEPAGE_SPAN,
-    DIRECT_R4D_PHASE_SPAN_COUNT, DirectDayFrame, DirectDeepSeepageDownstreamOperands,
+    DIRECT_R4D_PHASE_SPAN_COUNT, DIRECT_R4E_PHASE_SPAN_COUNT, DIRECT_R4E_SUBSURFACE_LOSS_SPAN,
+    DIRECT_R4F_EVAPOTRANSPIRATION_SPAN, DIRECT_R4F_PHASE_SPAN_COUNT, DIRECT_R4G_PHASE_SPAN_COUNT,
+    DIRECT_R4G_SNOW_COUPLING_SPAN, DirectDayFrame, DirectDeepSeepageDownstreamOperands,
     DirectDeepSeepageInputs, DirectDeepSeepageShadowProjection, DirectDeepSeepageState,
-    DirectDownstreamOperands, DirectExecutorMode, DirectFrameExecutor, DirectInputAccountingState,
-    DirectLaneTransferLedger, DirectLedgerDownstreamOperands, DirectLedgerShadowProjection,
-    DirectPhaseKind, DirectRunFrame, DirectRunIdentity, DirectRunTransferDownstreamOperands,
-    DirectRunTransferShadowProjection, DirectRunoffDownstreamOperands, DirectRunoffPartitionInputs,
-    DirectRunoffPartitionState, DirectRunoffShadowProjection, DirectRuntimeError,
-    DirectShadowProjection, DirectStorageDownstreamOperands, DirectStorageInputDownstreamOperands,
-    DirectStorageInputShadowProjection, DirectStorageInputState, DirectStorageReconciliationInputs,
-    DirectStorageReconciliationState, DirectStorageShadowProjection, DirectWaterLedgerState,
-    reset_direct_runtime_audit_counters,
+    DirectDownstreamOperands, DirectEvapotranspirationDownstreamOperands,
+    DirectEvapotranspirationInputs, DirectEvapotranspirationShadowProjection,
+    DirectEvapotranspirationState, DirectExecutorMode, DirectFrameExecutor,
+    DirectInputAccountingState, DirectLaneTransferLedger, DirectLedgerDownstreamOperands,
+    DirectLedgerShadowProjection, DirectPhaseKind, DirectRunFrame, DirectRunIdentity,
+    DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
+    DirectRunoffDownstreamOperands, DirectRunoffPartitionInputs, DirectRunoffPartitionState,
+    DirectRunoffShadowProjection, DirectRuntimeError, DirectShadowProjection,
+    DirectSnowCouplingDownstreamOperands, DirectSnowCouplingInputs,
+    DirectSnowCouplingShadowProjection, DirectSnowCouplingState, DirectStorageDownstreamOperands,
+    DirectStorageInputDownstreamOperands, DirectStorageInputShadowProjection,
+    DirectStorageInputState, DirectStorageReconciliationInputs, DirectStorageReconciliationState,
+    DirectStorageShadowProjection, DirectSubsurfaceLossDownstreamOperands,
+    DirectSubsurfaceLossInputs, DirectSubsurfaceLossShadowProjection, DirectSubsurfaceLossState,
+    DirectWaterLedgerState, reset_direct_runtime_audit_counters,
 };
 use std::sync::{Mutex, OnceLock};
 
@@ -41,21 +49,24 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
     assert_eq!(report.day_count, 10);
     assert_eq!(report.planned_phase_count, DIRECT_PHASE_COUNT);
     assert_eq!(report.phase_view_count, (2 * DIRECT_PHASE_COUNT) as u64);
-    assert_eq!(report.phase_span_run_count, 13);
+    assert_eq!(report.phase_span_run_count, 19);
     assert_eq!(
         report.direct_phase_entry_count,
         (DIRECT_R3C_PHASE_SPAN_COUNT
             + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT
                 + DIRECT_R4C_PHASE_SPAN_COUNT
                 + DIRECT_R4D_PHASE_SPAN_COUNT
+                + DIRECT_R4E_PHASE_SPAN_COUNT
+                + DIRECT_R4F_PHASE_SPAN_COUNT
+                + DIRECT_R4G_PHASE_SPAN_COUNT
                 + DIRECT_R4A_PHASE_SPAN_COUNT
                 + DIRECT_R4B_PHASE_SPAN_COUNT
                 + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
     );
-    assert_eq!(report.direct_compute_count, 13);
-    assert_eq!(report.state_mutation_count, 13);
-    assert_eq!(report.downstream_operand_count, 13);
-    assert_eq!(report.shadow_projection_count, 13);
+    assert_eq!(report.direct_compute_count, 19);
+    assert_eq!(report.state_mutation_count, 19);
+    assert_eq!(report.downstream_operand_count, 19);
+    assert_eq!(report.shadow_projection_count, 19);
     assert_eq!(report.compatibility_edge_invocation_count, 0);
     let audit = crate::direct_runtime_audit_snapshot();
     assert_eq!(audit.run_frame_constructions, 1);
@@ -66,21 +77,24 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
         audit.phase_view_constructions,
         (2 * DIRECT_PHASE_COUNT) as u64
     );
-    assert_eq!(audit.phase_span_runs, 13);
+    assert_eq!(audit.phase_span_runs, 19);
     assert_eq!(
         audit.direct_phase_entries,
         (DIRECT_R3C_PHASE_SPAN_COUNT
             + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT
                 + DIRECT_R4C_PHASE_SPAN_COUNT
                 + DIRECT_R4D_PHASE_SPAN_COUNT
+                + DIRECT_R4E_PHASE_SPAN_COUNT
+                + DIRECT_R4F_PHASE_SPAN_COUNT
+                + DIRECT_R4G_PHASE_SPAN_COUNT
                 + DIRECT_R4A_PHASE_SPAN_COUNT
                 + DIRECT_R4B_PHASE_SPAN_COUNT
                 + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
     );
-    assert_eq!(audit.direct_compute_operations, 13);
-    assert_eq!(audit.direct_state_mutations, 13);
-    assert_eq!(audit.downstream_operand_productions, 13);
-    assert_eq!(audit.shadow_projections, 13);
+    assert_eq!(audit.direct_compute_operations, 19);
+    assert_eq!(audit.direct_state_mutations, 19);
+    assert_eq!(audit.downstream_operand_productions, 19);
+    assert_eq!(audit.shadow_projections, 19);
     assert_eq!(audit.compatibility_edge_invocations, 0);
 }
 
@@ -960,6 +974,411 @@ fn r4d_deep_seepage_producer_rejects_invalid_inputs() {
 }
 
 #[test]
+fn r4e_subsurface_loss_producer_consumes_direct_handoff_and_updates_r4b_input() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    assert_eq!(
+        DIRECT_R4E_SUBSURFACE_LOSS_SPAN,
+        [
+            DirectPhaseKind::Drainage,
+            DirectPhaseKind::LateralTransfer,
+            DirectPhaseKind::StorageReconciliation
+        ]
+    );
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    day.subsurface_loss_inputs = DirectSubsurfaceLossInputs {
+        subsurface_loss_handoff_m: 0.015_625,
+    };
+    day.water.lateral_flow_m = 0.125;
+    day.water.drainage_m = 0.0625;
+    day.deep_seepage_inputs.deep_seepage_handoff_m = 0.03125;
+    day.storage_reconciliation_inputs.evapotranspiration_m = 0.046_875;
+    day.storage_reconciliation_inputs.snow_coupling_m = 0.09375;
+    day.publication.lateral_flow_m = 0.1875;
+    day.publication.drainage_m = 0.21875;
+    day.storage_reconciliation.closure_residual_m = 0.25;
+
+    let report = day
+        .run_r4e_subsurface_loss_span()
+        .expect("valid R4E subsurface-loss span should execute");
+
+    let expected_state = DirectSubsurfaceLossState {
+        subsurface_loss_m: 0.015_625,
+    };
+    let expected_operands = DirectSubsurfaceLossDownstreamOperands::from(expected_state);
+    let expected_shadow = DirectSubsurfaceLossShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        subsurface_loss_m: 0.015_625,
+    };
+
+    assert_eq!(day.subsurface_loss, expected_state);
+    assert_eq!(day.subsurface_loss_downstream_operands, expected_operands);
+    assert_eq!(day.subsurface_loss_shadow_projection, Some(expected_shadow));
+    assert_eq!(
+        day.storage_reconciliation_inputs
+            .subsurface_loss_m
+            .to_bits(),
+        0.015_625_f64.to_bits()
+    );
+    assert_eq!(report.phase_count, DIRECT_R4E_PHASE_SPAN_COUNT);
+    assert_eq!(report.phase_entry_count, DIRECT_R4E_PHASE_SPAN_COUNT as u64);
+    assert_eq!(report.direct_compute_count, 1);
+    assert_eq!(report.state_mutation_count, 1);
+    assert_eq!(report.downstream_operand_count, 1);
+    assert_eq!(report.shadow_projection_count, 1);
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+    assert_eq!(report.subsurface_loss_shadow_projection, expected_shadow);
+
+    assert_r4e_subsurface_loss_anti_aliases(expected_state, &day);
+}
+
+fn assert_r4e_subsurface_loss_anti_aliases(
+    expected_state: DirectSubsurfaceLossState,
+    day: &DirectDayFrame,
+) {
+    assert_ne!(
+        expected_state.subsurface_loss_m.to_bits(),
+        day.water.lateral_flow_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.subsurface_loss_m.to_bits(),
+        day.water.drainage_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.subsurface_loss_m.to_bits(),
+        day.deep_seepage_inputs.deep_seepage_handoff_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.subsurface_loss_m.to_bits(),
+        day.storage_reconciliation_inputs
+            .evapotranspiration_m
+            .to_bits()
+    );
+    assert_ne!(
+        expected_state.subsurface_loss_m.to_bits(),
+        day.storage_reconciliation_inputs.snow_coupling_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.subsurface_loss_m.to_bits(),
+        day.publication.lateral_flow_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.subsurface_loss_m.to_bits(),
+        day.publication.drainage_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.subsurface_loss_m.to_bits(),
+        day.storage_reconciliation.closure_residual_m.to_bits()
+    );
+}
+
+#[test]
+fn r4f_evapotranspiration_producer_consumes_direct_handoff_and_updates_r4b_input() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    assert_eq!(
+        DIRECT_R4F_EVAPOTRANSPIRATION_SPAN,
+        [
+            DirectPhaseKind::Evapotranspiration,
+            DirectPhaseKind::StorageReconciliation
+        ]
+    );
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    day.evapotranspiration_inputs = DirectEvapotranspirationInputs {
+        evapotranspiration_handoff_m: 0.0625,
+    };
+    day.publication.evapotranspiration_m = 0.125;
+    day.water.drainage_m = 0.03125;
+    day.water.runoff_m = 0.34375;
+    day.forcing.precipitation_m = 0.25;
+    day.storage_reconciliation_inputs.subsurface_loss_m = 0.015_625;
+    day.storage_reconciliation_inputs.snow_coupling_m = 0.09375;
+    day.storage_reconciliation.closure_residual_m = 0.1875;
+
+    let report = day
+        .run_r4f_evapotranspiration_span()
+        .expect("valid R4F evapotranspiration span should execute");
+
+    let expected_state = DirectEvapotranspirationState {
+        evapotranspiration_m: 0.0625,
+    };
+    let expected_operands = DirectEvapotranspirationDownstreamOperands::from(expected_state);
+    let expected_shadow = DirectEvapotranspirationShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        evapotranspiration_m: 0.0625,
+    };
+
+    assert_eq!(day.evapotranspiration, expected_state);
+    assert_eq!(
+        day.water.evapotranspiration_m.to_bits(),
+        0.0625_f64.to_bits()
+    );
+    assert_eq!(
+        day.evapotranspiration_downstream_operands,
+        expected_operands
+    );
+    assert_eq!(
+        day.evapotranspiration_shadow_projection,
+        Some(expected_shadow)
+    );
+    assert_eq!(
+        day.storage_reconciliation_inputs
+            .evapotranspiration_m
+            .to_bits(),
+        0.0625_f64.to_bits()
+    );
+    assert_eq!(report.phase_count, DIRECT_R4F_PHASE_SPAN_COUNT);
+    assert_eq!(report.phase_entry_count, DIRECT_R4F_PHASE_SPAN_COUNT as u64);
+    assert_eq!(report.direct_compute_count, 1);
+    assert_eq!(report.state_mutation_count, 1);
+    assert_eq!(report.downstream_operand_count, 1);
+    assert_eq!(report.shadow_projection_count, 1);
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+    assert_eq!(report.evapotranspiration_shadow_projection, expected_shadow);
+
+    assert_r4f_evapotranspiration_anti_aliases(expected_state, &day);
+}
+
+fn assert_r4f_evapotranspiration_anti_aliases(
+    expected_state: DirectEvapotranspirationState,
+    day: &DirectDayFrame,
+) {
+    assert_ne!(
+        expected_state.evapotranspiration_m.to_bits(),
+        day.publication.evapotranspiration_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.evapotranspiration_m.to_bits(),
+        day.water.drainage_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.evapotranspiration_m.to_bits(),
+        day.water.runoff_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.evapotranspiration_m.to_bits(),
+        day.forcing.precipitation_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.evapotranspiration_m.to_bits(),
+        day.storage_reconciliation_inputs
+            .subsurface_loss_m
+            .to_bits()
+    );
+    assert_ne!(
+        expected_state.evapotranspiration_m.to_bits(),
+        day.storage_reconciliation_inputs.snow_coupling_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.evapotranspiration_m.to_bits(),
+        day.storage_reconciliation.closure_residual_m.to_bits()
+    );
+}
+
+#[test]
+fn r4g_snow_coupling_producer_consumes_signed_handoff_and_updates_r4b_input() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    assert_eq!(
+        DIRECT_R4G_SNOW_COUPLING_SPAN,
+        [
+            DirectPhaseKind::Normalization,
+            DirectPhaseKind::StorageReconciliation
+        ]
+    );
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    day.snow_coupling_inputs = DirectSnowCouplingInputs {
+        snow_coupling_handoff_m: -0.09375,
+    };
+    day.forcing.precipitation_m = 0.25;
+    day.runoff_downstream_operands.q_runoff_m = 0.34375;
+    day.evapotranspiration_inputs.evapotranspiration_handoff_m = 0.0625;
+    day.deep_seepage_inputs.deep_seepage_handoff_m = 0.03125;
+    day.subsurface_loss_inputs.subsurface_loss_handoff_m = 0.015_625;
+    day.publication.runoff_m = 0.125;
+    day.publication.evapotranspiration_m = 0.1875;
+    day.storage_reconciliation.closure_residual_m = 0.21875;
+
+    let report = day
+        .run_r4g_snow_coupling_span()
+        .expect("valid signed R4G snow-coupling span should execute");
+
+    let expected_state = DirectSnowCouplingState {
+        snow_coupling_m: -0.09375,
+    };
+    let expected_operands = DirectSnowCouplingDownstreamOperands::from(expected_state);
+    let expected_shadow = DirectSnowCouplingShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        snow_coupling_m: -0.09375,
+    };
+
+    assert_eq!(day.snow_coupling, expected_state);
+    assert_eq!(day.snow_coupling_downstream_operands, expected_operands);
+    assert_eq!(day.snow_coupling_shadow_projection, Some(expected_shadow));
+    assert_eq!(
+        day.storage_reconciliation_inputs.snow_coupling_m.to_bits(),
+        (-0.09375_f64).to_bits()
+    );
+    assert_eq!(report.phase_count, DIRECT_R4G_PHASE_SPAN_COUNT);
+    assert_eq!(report.phase_entry_count, DIRECT_R4G_PHASE_SPAN_COUNT as u64);
+    assert_eq!(report.direct_compute_count, 1);
+    assert_eq!(report.state_mutation_count, 1);
+    assert_eq!(report.downstream_operand_count, 1);
+    assert_eq!(report.shadow_projection_count, 1);
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+    assert_eq!(report.snow_coupling_shadow_projection, expected_shadow);
+
+    assert_r4g_snow_coupling_anti_aliases(expected_state, &day);
+}
+
+fn assert_r4g_snow_coupling_anti_aliases(
+    expected_state: DirectSnowCouplingState,
+    day: &DirectDayFrame,
+) {
+    assert_ne!(
+        expected_state.snow_coupling_m.to_bits(),
+        day.forcing.precipitation_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.snow_coupling_m.to_bits(),
+        day.runoff_downstream_operands.q_runoff_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.snow_coupling_m.to_bits(),
+        day.evapotranspiration_inputs
+            .evapotranspiration_handoff_m
+            .to_bits()
+    );
+    assert_ne!(
+        expected_state.snow_coupling_m.to_bits(),
+        day.deep_seepage_inputs.deep_seepage_handoff_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.snow_coupling_m.to_bits(),
+        day.subsurface_loss_inputs
+            .subsurface_loss_handoff_m
+            .to_bits()
+    );
+    assert_ne!(
+        expected_state.snow_coupling_m.to_bits(),
+        day.publication.runoff_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.snow_coupling_m.to_bits(),
+        day.publication.evapotranspiration_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.snow_coupling_m.to_bits(),
+        day.storage_reconciliation.closure_residual_m.to_bits()
+    );
+}
+
+#[test]
+fn r4eh_storage_budget_handoff_producers_reject_invalid_inputs() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
+
+    let mut negative_qd_day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    negative_qd_day
+        .subsurface_loss_inputs
+        .subsurface_loss_handoff_m = -0.125;
+    assert_eq!(
+        negative_qd_day
+            .run_r4e_subsurface_loss_span()
+            .expect_err("negative subsurface-loss handoff should fail closed"),
+        DirectRuntimeError::NegativeDirectValue {
+            field: "subsurface_loss.subsurface_loss_handoff_m"
+        }
+    );
+
+    let mut nonfinite_qd_day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    nonfinite_qd_day
+        .subsurface_loss_inputs
+        .subsurface_loss_handoff_m = f64::NAN;
+    assert_eq!(
+        nonfinite_qd_day
+            .run_r4e_subsurface_loss_span()
+            .expect_err("nonfinite subsurface-loss handoff should fail closed"),
+        DirectRuntimeError::NonFiniteDirectValue {
+            field: "subsurface_loss.subsurface_loss_handoff_m"
+        }
+    );
+
+    let mut negative_et_day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    negative_et_day
+        .evapotranspiration_inputs
+        .evapotranspiration_handoff_m = -0.125;
+    assert_eq!(
+        negative_et_day
+            .run_r4f_evapotranspiration_span()
+            .expect_err("negative ET handoff should fail closed"),
+        DirectRuntimeError::NegativeDirectValue {
+            field: "evapotranspiration.evapotranspiration_handoff_m"
+        }
+    );
+
+    let mut nonfinite_et_day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    nonfinite_et_day
+        .evapotranspiration_inputs
+        .evapotranspiration_handoff_m = f64::INFINITY;
+    assert_eq!(
+        nonfinite_et_day
+            .run_r4f_evapotranspiration_span()
+            .expect_err("nonfinite ET handoff should fail closed"),
+        DirectRuntimeError::NonFiniteDirectValue {
+            field: "evapotranspiration.evapotranspiration_handoff_m"
+        }
+    );
+
+    let mut nonfinite_snow_day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    nonfinite_snow_day
+        .snow_coupling_inputs
+        .snow_coupling_handoff_m = f64::NAN;
+    assert_eq!(
+        nonfinite_snow_day
+            .run_r4g_snow_coupling_span()
+            .expect_err("nonfinite signed snow coupling should fail closed"),
+        DirectRuntimeError::NonFiniteDirectValue {
+            field: "snow_coupling.snow_coupling_handoff_m"
+        }
+    );
+}
+
+#[test]
 fn r4b_storage_reconciliation_consumes_r4a_q_and_shadow_projects() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
@@ -976,46 +1395,44 @@ fn r4b_storage_reconciliation_consumes_r4a_q_and_shadow_projects() {
 
     let identity =
         DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
-    let mut day =
-        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
-    day.forcing.precipitation_m = 0.25;
-    day.water.soil_water_m = 1.0;
-    day.transfer.surface_carry_m[0] = 0.5;
-    day.runoff_partition_inputs = DirectRunoffPartitionInputs {
-        liquid_input_m: 0.5,
-        runon_input_m: 0.125,
-        cumulative_infiltration_m: 0.25,
-        depression_storage_delta_m: 0.0625,
-        surface_saturation_runoff_m: 0.03125,
-    };
-    day.deep_seepage_inputs = DirectDeepSeepageInputs {
-        deep_seepage_handoff_m: 0.03125,
-    };
-    day.storage_reconciliation_inputs = DirectStorageReconciliationInputs {
-        storage_initial_m: 9.0,
-        precip_input_m: 9.0,
-        snow_coupling_m: 0.125,
-        evapotranspiration_m: 0.0625,
-        deep_seepage_m: 9.0,
-        subsurface_loss_m: 0.015_625,
-        closure_tolerance_m: 0.0,
-    };
+    let mut day = r4b_valid_day(identity);
     day.publication.runoff_m = 0.125;
     day.water_ledger.diagnostic_residual_m = 0.1875;
 
-    day.run_r3a_input_accounting_span()
-        .expect("R3A upstream span should pass before R4C");
-    day.run_r4c_storage_input_span()
-        .expect("R4C upstream span should pass before R4B");
-    day.run_r4d_deep_seepage_span()
-        .expect("R4D upstream span should pass before R4B");
-    day.run_r4a_runoff_partition_span()
-        .expect("R4A upstream span should pass before R4B");
     let report = day
         .run_r4b_storage_reconciliation_span()
         .expect("valid R4B storage reconciliation span should execute");
 
     let expected_state = r4b_expected_storage_state();
+    assert_r4b_storage_result(&day, &report, expected_state);
+    assert_r4b_storage_anti_aliases(expected_state, &day);
+
+    let audit = crate::direct_runtime_audit_snapshot();
+    assert_eq!(audit.day_frame_constructions, 1);
+    assert_eq!(audit.phase_span_runs, 8);
+    assert_eq!(
+        audit.direct_phase_entries,
+        (DIRECT_R3A_PHASE_SPAN_COUNT
+            + DIRECT_R4C_PHASE_SPAN_COUNT
+            + DIRECT_R4D_PHASE_SPAN_COUNT
+            + DIRECT_R4E_PHASE_SPAN_COUNT
+            + DIRECT_R4F_PHASE_SPAN_COUNT
+            + DIRECT_R4G_PHASE_SPAN_COUNT
+            + DIRECT_R4A_PHASE_SPAN_COUNT
+            + DIRECT_R4B_PHASE_SPAN_COUNT) as u64
+    );
+    assert_eq!(audit.direct_compute_operations, 8);
+    assert_eq!(audit.direct_state_mutations, 8);
+    assert_eq!(audit.downstream_operand_productions, 8);
+    assert_eq!(audit.shadow_projections, 8);
+    assert_eq!(audit.compatibility_edge_invocations, 0);
+}
+
+fn assert_r4b_storage_result(
+    day: &DirectDayFrame,
+    report: &crate::DirectStorageReconciliationSpanReport,
+    expected_state: DirectStorageReconciliationState,
+) {
     let expected_operands = DirectStorageDownstreamOperands::from(expected_state);
     let expected_shadow = r4b_expected_storage_shadow();
 
@@ -1044,25 +1461,24 @@ fn r4b_storage_reconciliation_consumes_r4a_q_and_shadow_projects() {
             deep_seepage_m: 0.03125
         }
     );
-
-    assert_r4b_storage_anti_aliases(expected_state, &day);
-
-    let audit = crate::direct_runtime_audit_snapshot();
-    assert_eq!(audit.day_frame_constructions, 1);
-    assert_eq!(audit.phase_span_runs, 5);
     assert_eq!(
-        audit.direct_phase_entries,
-        (DIRECT_R3A_PHASE_SPAN_COUNT
-            + DIRECT_R4C_PHASE_SPAN_COUNT
-            + DIRECT_R4D_PHASE_SPAN_COUNT
-            + DIRECT_R4A_PHASE_SPAN_COUNT
-            + DIRECT_R4B_PHASE_SPAN_COUNT) as u64
+        day.subsurface_loss,
+        DirectSubsurfaceLossState {
+            subsurface_loss_m: 0.015_625
+        }
     );
-    assert_eq!(audit.direct_compute_operations, 5);
-    assert_eq!(audit.direct_state_mutations, 5);
-    assert_eq!(audit.downstream_operand_productions, 5);
-    assert_eq!(audit.shadow_projections, 5);
-    assert_eq!(audit.compatibility_edge_invocations, 0);
+    assert_eq!(
+        day.evapotranspiration,
+        DirectEvapotranspirationState {
+            evapotranspiration_m: 0.0625
+        }
+    );
+    assert_eq!(
+        day.snow_coupling,
+        DirectSnowCouplingState {
+            snow_coupling_m: 0.125
+        }
+    );
 }
 
 fn r4b_expected_storage_state() -> DirectStorageReconciliationState {
@@ -1153,7 +1569,7 @@ fn assert_r4b_storage_anti_aliases(
 }
 
 #[test]
-fn r4b_storage_reconciliation_rejects_invalid_inputs() {
+fn r4b_storage_reconciliation_rejects_missing_upstream_producers() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -1173,14 +1589,7 @@ fn r4b_storage_reconciliation_rejects_invalid_inputs() {
         }
     );
 
-    let mut missing_deep_seepage_day =
-        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
-    missing_deep_seepage_day
-        .run_r3a_input_accounting_span()
-        .expect("R3A upstream span should pass before R4C");
-    missing_deep_seepage_day
-        .run_r4c_storage_input_span()
-        .expect("R4C upstream span should pass before R4B");
+    let mut missing_deep_seepage_day = r4b_day_after_r4c(identity);
     assert_eq!(
         missing_deep_seepage_day
             .run_r4b_storage_reconciliation_span()
@@ -1190,17 +1599,37 @@ fn r4b_storage_reconciliation_rejects_invalid_inputs() {
         }
     );
 
-    let mut missing_runoff_partition_day =
-        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
-    missing_runoff_partition_day
-        .run_r3a_input_accounting_span()
-        .expect("R3A upstream span should pass before R4C");
-    missing_runoff_partition_day
-        .run_r4c_storage_input_span()
-        .expect("R4C upstream span should pass before R4B");
-    missing_runoff_partition_day
-        .run_r4d_deep_seepage_span()
-        .expect("R4D upstream span should pass before R4B");
+    let mut missing_subsurface_loss_day = r4b_day_after_r4d(identity);
+    assert_eq!(
+        missing_subsurface_loss_day
+            .run_r4b_storage_reconciliation_span()
+            .expect_err("R4B should require R4E direct upstream execution"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R4E subsurface-loss producer"
+        }
+    );
+
+    let mut missing_et_day = r4b_day_after_r4e(identity);
+    assert_eq!(
+        missing_et_day
+            .run_r4b_storage_reconciliation_span()
+            .expect_err("R4B should require R4F direct upstream execution"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R4F evapotranspiration producer"
+        }
+    );
+
+    let mut missing_snow_day = r4b_day_after_r4f(identity);
+    assert_eq!(
+        missing_snow_day
+            .run_r4b_storage_reconciliation_span()
+            .expect_err("R4B should require R4G direct upstream execution"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R4G snow-coupling producer"
+        }
+    );
+
+    let mut missing_runoff_partition_day = r4b_day_after_r4g(identity);
     assert_eq!(
         missing_runoff_partition_day
             .run_r4b_storage_reconciliation_span()
@@ -1209,6 +1638,17 @@ fn r4b_storage_reconciliation_rejects_invalid_inputs() {
             upstream: "R4A runoff partition"
         }
     );
+}
+
+#[test]
+fn r4b_storage_reconciliation_rejects_invalid_values() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
 
     let mut nonfinite_s_day = r4b_valid_day(identity);
     nonfinite_s_day
@@ -1250,6 +1690,44 @@ fn r4b_storage_reconciliation_rejects_invalid_inputs() {
     );
 }
 
+fn r4b_day_after_r4c(identity: DirectRunIdentity) -> DirectDayFrame {
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    day.run_r3a_input_accounting_span()
+        .expect("R3A upstream span should pass before R4C");
+    day.run_r4c_storage_input_span()
+        .expect("R4C upstream span should pass before R4B");
+    day
+}
+
+fn r4b_day_after_r4d(identity: DirectRunIdentity) -> DirectDayFrame {
+    let mut day = r4b_day_after_r4c(identity);
+    day.run_r4d_deep_seepage_span()
+        .expect("R4D upstream span should pass before R4B");
+    day
+}
+
+fn r4b_day_after_r4e(identity: DirectRunIdentity) -> DirectDayFrame {
+    let mut day = r4b_day_after_r4d(identity);
+    day.run_r4e_subsurface_loss_span()
+        .expect("R4E upstream span should pass before R4B");
+    day
+}
+
+fn r4b_day_after_r4f(identity: DirectRunIdentity) -> DirectDayFrame {
+    let mut day = r4b_day_after_r4e(identity);
+    day.run_r4f_evapotranspiration_span()
+        .expect("R4F upstream span should pass before R4B");
+    day
+}
+
+fn r4b_day_after_r4g(identity: DirectRunIdentity) -> DirectDayFrame {
+    let mut day = r4b_day_after_r4f(identity);
+    day.run_r4g_snow_coupling_span()
+        .expect("R4G upstream span should pass before R4B");
+    day
+}
+
 fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
     let mut day =
         DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
@@ -1265,13 +1743,22 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
     day.deep_seepage_inputs = DirectDeepSeepageInputs {
         deep_seepage_handoff_m: 0.03125,
     };
+    day.subsurface_loss_inputs = DirectSubsurfaceLossInputs {
+        subsurface_loss_handoff_m: 0.015_625,
+    };
+    day.evapotranspiration_inputs = DirectEvapotranspirationInputs {
+        evapotranspiration_handoff_m: 0.0625,
+    };
+    day.snow_coupling_inputs = DirectSnowCouplingInputs {
+        snow_coupling_handoff_m: 0.125,
+    };
     day.storage_reconciliation_inputs = DirectStorageReconciliationInputs {
         storage_initial_m: 9.0,
         precip_input_m: 9.0,
-        snow_coupling_m: 0.125,
-        evapotranspiration_m: 0.0625,
+        snow_coupling_m: 9.0,
+        evapotranspiration_m: 9.0,
         deep_seepage_m: 9.0,
-        subsurface_loss_m: 0.015_625,
+        subsurface_loss_m: 9.0,
         closure_tolerance_m: 0.0,
     };
     day.run_r3a_input_accounting_span()
@@ -1280,6 +1767,12 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
         .expect("R4C upstream span should pass before R4B");
     day.run_r4d_deep_seepage_span()
         .expect("R4D upstream span should pass before R4B");
+    day.run_r4e_subsurface_loss_span()
+        .expect("R4E upstream span should pass before R4B");
+    day.run_r4f_evapotranspiration_span()
+        .expect("R4F upstream span should pass before R4B");
+    day.run_r4g_snow_coupling_span()
+        .expect("R4G upstream span should pass before R4B");
     day.run_r4a_runoff_partition_span()
         .expect("R4A upstream span should pass before R4B");
     day

@@ -19,6 +19,20 @@ State as of `2026-06-20`:
 
 State as of `2026-06-20`:
 
+- R4E-H is complete with verdict
+  `COMPLETE-R4EH-DIRECT-STORAGE-BUDGET-HANDOFF-COMPLETION`. The package
+  implemented direct handoff producers for R4B `subsurface_loss_m` / `Qd`,
+  aggregate `evapotranspiration_m`, and signed `snow_coupling_m`. Each
+  producer has typed inputs, direct handoff compute, state mutation, downstream
+  operands, and shadow projection. R4B now requires R4C storage input, R4D deep
+  seepage, R4E-H subsurface loss, R4E-H evapotranspiration, R4E-H signed
+  snow-coupling, and R4A runoff before storage reconciliation. R4E-H remains
+  no-publication, no-default-activation, and no-scheduler: public output paths
+  and compatibility runtime remain authoritative. Full Rust gates passed. Final
+  default-disabled H2637 reps were `648.48 s`, `652.43 s`, and `642.26 s`
+  (median `648.48 s`, threshold `<= 676.67 s`) with protected output identity
+  and PASS DuckDB row equivalence. Package:
+  `20260620-r4eh-direct-storage-budget-handoff-completion-001/`.
 - R4D is complete with verdict
   `COMPLETE-R4D-DIRECT-DEEP-SEEPAGE-PRODUCER`. The package implemented a direct
   WB18/WB12 deep-seepage handoff producer feeding R4B `deep_seepage_m`. R4D

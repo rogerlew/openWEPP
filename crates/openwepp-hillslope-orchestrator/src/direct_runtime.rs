@@ -42,6 +42,22 @@ pub const DIRECT_R4D_DEEP_SEEPAGE_SPAN: [DirectPhaseKind; DIRECT_R4D_PHASE_SPAN_
     DirectPhaseKind::PercolationDeepSeepage,
     DirectPhaseKind::StorageReconciliation,
 ];
+pub const DIRECT_R4E_PHASE_SPAN_COUNT: usize = 3;
+pub const DIRECT_R4E_SUBSURFACE_LOSS_SPAN: [DirectPhaseKind; DIRECT_R4E_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::Drainage,
+    DirectPhaseKind::LateralTransfer,
+    DirectPhaseKind::StorageReconciliation,
+];
+pub const DIRECT_R4F_PHASE_SPAN_COUNT: usize = 2;
+pub const DIRECT_R4F_EVAPOTRANSPIRATION_SPAN: [DirectPhaseKind; DIRECT_R4F_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::Evapotranspiration,
+    DirectPhaseKind::StorageReconciliation,
+];
+pub const DIRECT_R4G_PHASE_SPAN_COUNT: usize = 2;
+pub const DIRECT_R4G_SNOW_COUPLING_SPAN: [DirectPhaseKind; DIRECT_R4G_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::Normalization,
+    DirectPhaseKind::StorageReconciliation,
+];
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
@@ -50,10 +66,17 @@ mod storage;
 pub use storage::{
     DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
     DirectDeepSeepageShadowProjection, DirectDeepSeepageSpanReport, DirectDeepSeepageState,
+    DirectEvapotranspirationDownstreamOperands, DirectEvapotranspirationInputs,
+    DirectEvapotranspirationShadowProjection, DirectEvapotranspirationSpanReport,
+    DirectEvapotranspirationState, DirectSnowCouplingDownstreamOperands, DirectSnowCouplingInputs,
+    DirectSnowCouplingShadowProjection, DirectSnowCouplingSpanReport, DirectSnowCouplingState,
     DirectStorageDownstreamOperands, DirectStorageInputDownstreamOperands,
     DirectStorageInputShadowProjection, DirectStorageInputSpanReport, DirectStorageInputState,
     DirectStorageReconciliationInputs, DirectStorageReconciliationSpanReport,
     DirectStorageReconciliationState, DirectStorageShadowProjection,
+    DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
+    DirectSubsurfaceLossShadowProjection, DirectSubsurfaceLossSpanReport,
+    DirectSubsurfaceLossState,
 };
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -402,6 +425,18 @@ pub struct DirectDayFrame {
     pub deep_seepage: DirectDeepSeepageState,
     pub deep_seepage_downstream_operands: DirectDeepSeepageDownstreamOperands,
     pub deep_seepage_shadow_projection: Option<DirectDeepSeepageShadowProjection>,
+    pub subsurface_loss_inputs: DirectSubsurfaceLossInputs,
+    pub subsurface_loss: DirectSubsurfaceLossState,
+    pub subsurface_loss_downstream_operands: DirectSubsurfaceLossDownstreamOperands,
+    pub subsurface_loss_shadow_projection: Option<DirectSubsurfaceLossShadowProjection>,
+    pub evapotranspiration_inputs: DirectEvapotranspirationInputs,
+    pub evapotranspiration: DirectEvapotranspirationState,
+    pub evapotranspiration_downstream_operands: DirectEvapotranspirationDownstreamOperands,
+    pub evapotranspiration_shadow_projection: Option<DirectEvapotranspirationShadowProjection>,
+    pub snow_coupling_inputs: DirectSnowCouplingInputs,
+    pub snow_coupling: DirectSnowCouplingState,
+    pub snow_coupling_downstream_operands: DirectSnowCouplingDownstreamOperands,
+    pub snow_coupling_shadow_projection: Option<DirectSnowCouplingShadowProjection>,
     pub storage_reconciliation_inputs: DirectStorageReconciliationInputs,
     pub storage_reconciliation: DirectStorageReconciliationState,
     pub storage_downstream_operands: DirectStorageDownstreamOperands,
@@ -454,6 +489,19 @@ impl DirectDayFrame {
             deep_seepage: DirectDeepSeepageState::zero(),
             deep_seepage_downstream_operands: DirectDeepSeepageDownstreamOperands::zero(),
             deep_seepage_shadow_projection: None,
+            subsurface_loss_inputs: DirectSubsurfaceLossInputs::zero(),
+            subsurface_loss: DirectSubsurfaceLossState::zero(),
+            subsurface_loss_downstream_operands: DirectSubsurfaceLossDownstreamOperands::zero(),
+            subsurface_loss_shadow_projection: None,
+            evapotranspiration_inputs: DirectEvapotranspirationInputs::zero(),
+            evapotranspiration: DirectEvapotranspirationState::zero(),
+            evapotranspiration_downstream_operands:
+                DirectEvapotranspirationDownstreamOperands::zero(),
+            evapotranspiration_shadow_projection: None,
+            snow_coupling_inputs: DirectSnowCouplingInputs::zero(),
+            snow_coupling: DirectSnowCouplingState::zero(),
+            snow_coupling_downstream_operands: DirectSnowCouplingDownstreamOperands::zero(),
+            snow_coupling_shadow_projection: None,
             storage_reconciliation_inputs: DirectStorageReconciliationInputs::zero(),
             storage_reconciliation: DirectStorageReconciliationState::zero(),
             storage_downstream_operands: DirectStorageDownstreamOperands::zero(),
@@ -1424,6 +1472,37 @@ pub struct DirectExecutionReport {
     pub compatibility_edge_invocation_count: u64,
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+struct DirectExecutionCounters {
+    spans: u64,
+    entries: u64,
+    computes: u64,
+    mutations: u64,
+    downstream_operands: u64,
+    shadows: u64,
+    compatibility_edges: u64,
+}
+
+impl DirectExecutionCounters {
+    fn record_span(
+        &mut self,
+        phase_entry_count: u64,
+        direct_compute_count: u64,
+        state_mutation_count: u64,
+        downstream_operand_count: u64,
+        shadow_projection_count: u64,
+        compatibility_edge_invocation_count: u64,
+    ) {
+        self.spans += 1;
+        self.entries += phase_entry_count;
+        self.computes += direct_compute_count;
+        self.mutations += state_mutation_count;
+        self.downstream_operands += downstream_operand_count;
+        self.shadows += shadow_projection_count;
+        self.compatibility_edges += compatibility_edge_invocation_count;
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DirectFrameExecutor {
     mode: DirectExecutorMode,
@@ -1447,85 +1526,21 @@ impl DirectFrameExecutor {
     ) -> Result<DirectExecutionReport, DirectRuntimeError> {
         DIRECT_AUDIT.record_skeleton_run();
         let mut phase_view_count = 0_u64;
-        let mut phase_span_run_count = 0_u64;
-        let mut direct_phase_entry_count = 0_u64;
-        let mut direct_compute_count = 0_u64;
-        let mut state_mutation_count = 0_u64;
-        let mut downstream_operand_count = 0_u64;
-        let mut shadow_projection_count = 0_u64;
-        let mut compatibility_edge_invocation_count = 0_u64;
+        let mut counters = DirectExecutionCounters::default();
 
         let transfer_span_report = frame.run_r3c_lane_transfer_span()?;
-        phase_span_run_count += 1;
-        direct_phase_entry_count += transfer_span_report.phase_entry_count;
-        direct_compute_count += transfer_span_report.direct_compute_count;
-        state_mutation_count += transfer_span_report.state_mutation_count;
-        downstream_operand_count += transfer_span_report.downstream_operand_count;
-        shadow_projection_count += transfer_span_report.shadow_projection_count;
-        compatibility_edge_invocation_count +=
-            transfer_span_report.compatibility_edge_invocation_count;
+        counters.record_span(
+            transfer_span_report.phase_entry_count,
+            transfer_span_report.direct_compute_count,
+            transfer_span_report.state_mutation_count,
+            transfer_span_report.downstream_operand_count,
+            transfer_span_report.shadow_projection_count,
+            transfer_span_report.compatibility_edge_invocation_count,
+        );
 
         for lane_index in 0..frame.lanes.len() {
             let mut day_frame = DirectDayFrame::seed(frame.identity, lane_index, 0)?;
-            let input_span_report = day_frame.run_r3a_input_accounting_span()?;
-            phase_span_run_count += 1;
-            direct_phase_entry_count += input_span_report.phase_entry_count;
-            direct_compute_count += input_span_report.direct_compute_count;
-            state_mutation_count += input_span_report.state_mutation_count;
-            downstream_operand_count += input_span_report.downstream_operand_count;
-            shadow_projection_count += input_span_report.shadow_projection_count;
-            compatibility_edge_invocation_count +=
-                input_span_report.compatibility_edge_invocation_count;
-
-            let storage_input_span_report = day_frame.run_r4c_storage_input_span()?;
-            phase_span_run_count += 1;
-            direct_phase_entry_count += storage_input_span_report.phase_entry_count;
-            direct_compute_count += storage_input_span_report.direct_compute_count;
-            state_mutation_count += storage_input_span_report.state_mutation_count;
-            downstream_operand_count += storage_input_span_report.downstream_operand_count;
-            shadow_projection_count += storage_input_span_report.shadow_projection_count;
-            compatibility_edge_invocation_count +=
-                storage_input_span_report.compatibility_edge_invocation_count;
-
-            let deep_seepage_span_report = day_frame.run_r4d_deep_seepage_span()?;
-            phase_span_run_count += 1;
-            direct_phase_entry_count += deep_seepage_span_report.phase_entry_count;
-            direct_compute_count += deep_seepage_span_report.direct_compute_count;
-            state_mutation_count += deep_seepage_span_report.state_mutation_count;
-            downstream_operand_count += deep_seepage_span_report.downstream_operand_count;
-            shadow_projection_count += deep_seepage_span_report.shadow_projection_count;
-            compatibility_edge_invocation_count +=
-                deep_seepage_span_report.compatibility_edge_invocation_count;
-
-            let runoff_span_report = day_frame.run_r4a_runoff_partition_span()?;
-            phase_span_run_count += 1;
-            direct_phase_entry_count += runoff_span_report.phase_entry_count;
-            direct_compute_count += runoff_span_report.direct_compute_count;
-            state_mutation_count += runoff_span_report.state_mutation_count;
-            downstream_operand_count += runoff_span_report.downstream_operand_count;
-            shadow_projection_count += runoff_span_report.shadow_projection_count;
-            compatibility_edge_invocation_count +=
-                runoff_span_report.compatibility_edge_invocation_count;
-
-            let storage_span_report = day_frame.run_r4b_storage_reconciliation_span()?;
-            phase_span_run_count += 1;
-            direct_phase_entry_count += storage_span_report.phase_entry_count;
-            direct_compute_count += storage_span_report.direct_compute_count;
-            state_mutation_count += storage_span_report.state_mutation_count;
-            downstream_operand_count += storage_span_report.downstream_operand_count;
-            shadow_projection_count += storage_span_report.shadow_projection_count;
-            compatibility_edge_invocation_count +=
-                storage_span_report.compatibility_edge_invocation_count;
-
-            let ledger_span_report = day_frame.run_r3b_water_ledger_span()?;
-            phase_span_run_count += 1;
-            direct_phase_entry_count += ledger_span_report.phase_entry_count;
-            direct_compute_count += ledger_span_report.direct_compute_count;
-            state_mutation_count += ledger_span_report.state_mutation_count;
-            downstream_operand_count += ledger_span_report.downstream_operand_count;
-            shadow_projection_count += ledger_span_report.shadow_projection_count;
-            compatibility_edge_invocation_count +=
-                ledger_span_report.compatibility_edge_invocation_count;
+            Self::run_day_spans(&mut day_frame, &mut counters)?;
             for phase in frame.phase_plan.phases() {
                 let view = day_frame.phase_view(*phase);
                 let _phase = view.phase();
@@ -1539,14 +1554,111 @@ impl DirectFrameExecutor {
             day_count: frame.identity.day_count,
             planned_phase_count: frame.phase_plan.len(),
             phase_view_count,
-            phase_span_run_count,
-            direct_phase_entry_count,
-            direct_compute_count,
-            state_mutation_count,
-            downstream_operand_count,
-            shadow_projection_count,
-            compatibility_edge_invocation_count,
+            phase_span_run_count: counters.spans,
+            direct_phase_entry_count: counters.entries,
+            direct_compute_count: counters.computes,
+            state_mutation_count: counters.mutations,
+            downstream_operand_count: counters.downstream_operands,
+            shadow_projection_count: counters.shadows,
+            compatibility_edge_invocation_count: counters.compatibility_edges,
         })
+    }
+
+    fn run_day_spans(
+        day_frame: &mut DirectDayFrame,
+        counters: &mut DirectExecutionCounters,
+    ) -> Result<(), DirectRuntimeError> {
+        let input_span_report = day_frame.run_r3a_input_accounting_span()?;
+        counters.record_span(
+            input_span_report.phase_entry_count,
+            input_span_report.direct_compute_count,
+            input_span_report.state_mutation_count,
+            input_span_report.downstream_operand_count,
+            input_span_report.shadow_projection_count,
+            input_span_report.compatibility_edge_invocation_count,
+        );
+
+        let storage_input_span_report = day_frame.run_r4c_storage_input_span()?;
+        counters.record_span(
+            storage_input_span_report.phase_entry_count,
+            storage_input_span_report.direct_compute_count,
+            storage_input_span_report.state_mutation_count,
+            storage_input_span_report.downstream_operand_count,
+            storage_input_span_report.shadow_projection_count,
+            storage_input_span_report.compatibility_edge_invocation_count,
+        );
+
+        let deep_seepage_span_report = day_frame.run_r4d_deep_seepage_span()?;
+        counters.record_span(
+            deep_seepage_span_report.phase_entry_count,
+            deep_seepage_span_report.direct_compute_count,
+            deep_seepage_span_report.state_mutation_count,
+            deep_seepage_span_report.downstream_operand_count,
+            deep_seepage_span_report.shadow_projection_count,
+            deep_seepage_span_report.compatibility_edge_invocation_count,
+        );
+
+        let subsurface_loss_span_report = day_frame.run_r4e_subsurface_loss_span()?;
+        counters.record_span(
+            subsurface_loss_span_report.phase_entry_count,
+            subsurface_loss_span_report.direct_compute_count,
+            subsurface_loss_span_report.state_mutation_count,
+            subsurface_loss_span_report.downstream_operand_count,
+            subsurface_loss_span_report.shadow_projection_count,
+            subsurface_loss_span_report.compatibility_edge_invocation_count,
+        );
+
+        let evapotranspiration_span_report = day_frame.run_r4f_evapotranspiration_span()?;
+        counters.record_span(
+            evapotranspiration_span_report.phase_entry_count,
+            evapotranspiration_span_report.direct_compute_count,
+            evapotranspiration_span_report.state_mutation_count,
+            evapotranspiration_span_report.downstream_operand_count,
+            evapotranspiration_span_report.shadow_projection_count,
+            evapotranspiration_span_report.compatibility_edge_invocation_count,
+        );
+
+        let snow_coupling_span_report = day_frame.run_r4g_snow_coupling_span()?;
+        counters.record_span(
+            snow_coupling_span_report.phase_entry_count,
+            snow_coupling_span_report.direct_compute_count,
+            snow_coupling_span_report.state_mutation_count,
+            snow_coupling_span_report.downstream_operand_count,
+            snow_coupling_span_report.shadow_projection_count,
+            snow_coupling_span_report.compatibility_edge_invocation_count,
+        );
+
+        let runoff_span_report = day_frame.run_r4a_runoff_partition_span()?;
+        counters.record_span(
+            runoff_span_report.phase_entry_count,
+            runoff_span_report.direct_compute_count,
+            runoff_span_report.state_mutation_count,
+            runoff_span_report.downstream_operand_count,
+            runoff_span_report.shadow_projection_count,
+            runoff_span_report.compatibility_edge_invocation_count,
+        );
+
+        let storage_span_report = day_frame.run_r4b_storage_reconciliation_span()?;
+        counters.record_span(
+            storage_span_report.phase_entry_count,
+            storage_span_report.direct_compute_count,
+            storage_span_report.state_mutation_count,
+            storage_span_report.downstream_operand_count,
+            storage_span_report.shadow_projection_count,
+            storage_span_report.compatibility_edge_invocation_count,
+        );
+
+        let ledger_span_report = day_frame.run_r3b_water_ledger_span()?;
+        counters.record_span(
+            ledger_span_report.phase_entry_count,
+            ledger_span_report.direct_compute_count,
+            ledger_span_report.state_mutation_count,
+            ledger_span_report.downstream_operand_count,
+            ledger_span_report.shadow_projection_count,
+            ledger_span_report.compatibility_edge_invocation_count,
+        );
+
+        Ok(())
     }
 }
 
