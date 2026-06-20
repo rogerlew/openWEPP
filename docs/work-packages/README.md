@@ -13,7 +13,9 @@
 
 State as of `2026-06-20`:
 
-- None.
+- No R5 package directories are scaffolded yet. The autonomous grouped
+  burn-down plan is `r5-burndown-execplan.md`, which sequences R5A through R5E
+  from full-day direct executor lifecycle to full 14-phase endpoint readiness.
 
 ## Current roadmap execution log
 
