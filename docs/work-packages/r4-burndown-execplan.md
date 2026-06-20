@@ -47,7 +47,10 @@ push before the next grouped package starts.
   `docs/work-packages/20260620-r4c-direct-storage-input-producer-001/`.
 - [x] (2026-06-20) R4D complete:
   `docs/work-packages/20260620-r4d-direct-deep-seepage-producer-001/`.
-- [ ] R4E-H direct storage-budget handoff completion.
+- [x] (2026-06-20) R4E-H complete:
+  `docs/work-packages/20260620-r4eh-direct-storage-budget-handoff-completion-001/`;
+  pushed commit `a1c51ac3`, branch `main`, verdict
+  `COMPLETE-R4EH-DIRECT-STORAGE-BUDGET-HANDOFF-COMPLETION`.
 - [ ] R4I-L direct runoff-path input completion.
 - [ ] R4M/O direct subsurface compute promotion.
 - [ ] R4N direct WB17 evapotranspiration/root-uptake compute promotion.
@@ -531,7 +534,12 @@ package write set.
 
 ## Surprises & Discoveries
 
-- No surprises recorded yet.
+- 2026-06-20: R4E-H H2637 manifests recorded public output checksums under the
+  runfile-selected anchor output root
+  `/tmp/perfmig01-final/current/anchor/h2637_same/`, while the package-local
+  output directory contained the run manifest. PASS identity checks must use
+  the manifest output path, not assume the package-local output root contains
+  the parquet files.
 
 ## Decision Log
 
@@ -556,5 +564,5 @@ package write set.
 
 ## Outcomes & Retrospective
 
-R4A through R4D are complete and pushed before this plan was authored. R4E-H is
-the next package to scaffold and execute.
+R4A through R4D were complete and pushed before this plan was authored. R4E-H
+is complete and pushed. R4I-L is the next package to scaffold and execute.
