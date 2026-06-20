@@ -1,0 +1,522 @@
+use std::collections::BTreeMap;
+
+use openwepp_kernel_contract::{
+    BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeKernel,
+    HillslopeKernelPhaseClass, HillslopeKernelRequest,
+};
+
+use super::direct_runtime_test_lock;
+use super::fixtures::{flux_update_scalar, state_update_scalar};
+use crate::{
+    DIRECT_R4M_PERCOLATION_SPAN, DIRECT_R4M_PHASE_SPAN_COUNT, DIRECT_R4O_PHASE_SPAN_COUNT,
+    DIRECT_R4O_SUBSURFACE_SPAN, DirectDayFrame, DirectPercolationInputs, DirectPhaseKind,
+    DirectRunIdentity, DirectRuntimeError, DirectSubsurfaceComputeInputs,
+    DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState, Wb11HydrologyKernel,
+    reset_direct_runtime_audit_counters,
+};
+
+#[test]
+fn r4mo_percolation_matches_wb18_kernel_authority_and_feeds_r4b_deep_seepage() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    assert_eq!(
+        DIRECT_R4M_PERCOLATION_SPAN,
+        [
+            DirectPhaseKind::PercolationDeepSeepage,
+            DirectPhaseKind::StorageReconciliation
+        ]
+    );
+
+    let mut state_surface = daily_wb18_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.342_999_999_999_998_5),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.250_000_000_012),
+    );
+    let compatibility = run_wb18_compatibility(&state_surface);
+    assert_eq!(
+        compatibility.status.message_id(),
+        "HKERNEL-WB11-PERC-OK-001"
+    );
+
+    let mut day = seeded_day();
+    day.percolation_inputs = daily_percolation_inputs(0.342_999_999_999_998_5, 1, false);
+    day.percolation_inputs.layers[1].theta_m = 0.250_000_000_012;
+
+    let report = day
+        .run_r4m_percolation_span()
+        .expect("valid direct WB18 percolation should execute");
+
+    assert_eq!(report.phase_count, DIRECT_R4M_PHASE_SPAN_COUNT);
+    assert_eq!(report.phase_entry_count, DIRECT_R4M_PHASE_SPAN_COUNT as u64);
+    assert_eq!(report.direct_compute_count, 1);
+    assert_eq!(report.state_mutation_count, 1);
+    assert_eq!(report.downstream_operand_count, 1);
+    assert_eq!(report.shadow_projection_count, 1);
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+
+    let compat_soil_water =
+        state_update_scalar(&compatibility.writeback.state_updates, "wb11_soil_water")
+            .expect("compatibility WB18 should publish soil water");
+    let compat_d =
+        flux_update_scalar(&compatibility.writeback.flux_updates, "D").expect("D should publish");
+    let compat_pe =
+        flux_update_scalar(&compatibility.writeback.flux_updates, "Pe").expect("Pe should publish");
+    let compat_pei_2 =
+        flux_update_scalar(&compatibility.writeback.flux_updates, "wb18_perc_pei_0002")
+            .expect("bottom per-layer flux should publish");
+
+    assert_close(day.percolation.soil_water_after_m, compat_soil_water);
+    assert_close(day.percolation.deep_seepage_m, compat_d);
+    assert_close(day.percolation.recharge_m, compat_pe);
+    assert_close(day.percolation.per_layer_flux_m[1], compat_pei_2);
+    assert_close(day.storage_reconciliation_inputs.deep_seepage_m, compat_d);
+    assert_eq!(
+        day.percolation_shadow_projection
+            .as_ref()
+            .expect("R4M must shadow project")
+            .deep_seepage_m
+            .to_bits(),
+        day.deep_seepage.deep_seepage_m.to_bits()
+    );
+}
+
+#[test]
+fn r4mo_percolation_hourly_restrictive_branch_matches_wb18_kernel_authority() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut state_surface = daily_wb18_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state_surface.insert(BoundarySymbol::from("slflag"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("kslast"),
+        BoundaryValue::scalar(5.0e-7),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("ui_bdrkth"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.32),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.10 + 0.32 + (0.05 * 0.30) + (0.07 * 0.40)),
+    );
+    let compatibility = run_wb18_compatibility(&state_surface);
+    assert_eq!(
+        compatibility.status.message_id(),
+        "HKERNEL-WB11-PERC-OK-001"
+    );
+
+    let mut day = seeded_day();
+    day.percolation_inputs = daily_percolation_inputs(0.463, 24, true);
+    day.percolation_inputs.layers[1].theta_m = 0.32;
+
+    day.run_r4m_percolation_span()
+        .expect("hourly restrictive direct WB18 should execute");
+
+    let compat_d =
+        flux_update_scalar(&compatibility.writeback.flux_updates, "D").expect("D should publish");
+    let compat_theta_2 = state_update_scalar(
+        &compatibility.writeback.state_updates,
+        "wb18_perc_theta_0002",
+    )
+    .expect("theta should publish");
+
+    assert_close(day.percolation.deep_seepage_m, compat_d);
+    assert_close(day.percolation.layer_state_after[1].theta_m, compat_theta_2);
+    assert!(
+        day.percolation.deep_seepage_m > 0.0,
+        "hourly restrictive fixture must keep the bottom-layer branch live"
+    );
+}
+
+#[test]
+fn r4mo_subsurface_compute_feeds_qd_and_shadow_projection() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    assert_eq!(
+        DIRECT_R4O_SUBSURFACE_SPAN,
+        [
+            DirectPhaseKind::Drainage,
+            DirectPhaseKind::LateralTransfer,
+            DirectPhaseKind::StorageReconciliation
+        ]
+    );
+
+    let mut day = seeded_day();
+    day.percolation_inputs = daily_percolation_inputs(0.663, 1, false);
+    day.percolation_inputs.layers[0].theta_m = 0.24;
+    day.percolation_inputs.layers[1].theta_m = 0.38;
+    day.subsurface_compute_inputs = daily_subsurface_inputs(false, 1);
+    day.subsurface_compute_inputs.layers[0].theta_m = 0.24;
+    day.subsurface_compute_inputs.layers[1].theta_m = 0.38;
+
+    day.run_r4m_percolation_span()
+        .expect("R4M should execute before R4O");
+    let report = day
+        .run_r4o_subsurface_compute_span()
+        .expect("valid direct WB19 subsurface compute should execute");
+
+    assert_eq!(report.phase_count, DIRECT_R4O_PHASE_SPAN_COUNT);
+    assert_eq!(report.phase_entry_count, DIRECT_R4O_PHASE_SPAN_COUNT as u64);
+    assert_eq!(report.direct_compute_count, 1);
+    assert_eq!(report.state_mutation_count, 1);
+    assert_eq!(report.downstream_operand_count, 1);
+    assert_eq!(report.shadow_projection_count, 1);
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+    assert!(
+        day.subsurface_compute.lateral_flow_m > 0.0,
+        "daily lateral fixture must keep q live"
+    );
+    assert_close(
+        day.subsurface_compute.subsurface_loss_m,
+        day.subsurface_compute.lateral_flow_m + day.subsurface_compute.tile_drainage_m,
+    );
+    assert_close(
+        day.storage_reconciliation_inputs.subsurface_loss_m,
+        day.subsurface_compute.subsurface_loss_m,
+    );
+    assert_eq!(
+        day.subsurface_compute_shadow_projection
+            .as_ref()
+            .expect("R4O must shadow project")
+            .subsurface_loss_m
+            .to_bits(),
+        day.subsurface_loss.subsurface_loss_m.to_bits()
+    );
+}
+
+#[test]
+fn r4mo_subsurface_hourly_drainage_runs_before_lateral_and_populates_carry_arrays() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut day = seeded_day();
+    day.percolation_inputs = daily_percolation_inputs(0.753, 1, false);
+    day.percolation_inputs.layers[0].theta_m = 0.30;
+    day.percolation_inputs.layers[1].theta_m = 0.42;
+    day.subsurface_compute_inputs = daily_subsurface_inputs(true, 24);
+    day.subsurface_compute_inputs.layers[0].theta_m = 0.30;
+    day.subsurface_compute_inputs.layers[1].theta_m = 0.42;
+
+    day.run_r4m_percolation_span()
+        .expect("R4M should execute before R4O");
+    day.run_r4o_subsurface_compute_span()
+        .expect("hourly direct WB19 subsurface compute should execute");
+
+    assert!(
+        day.subsurface_compute.tile_drainage_m > 0.0,
+        "hourly drainage fixture must keep Qdd live"
+    );
+    assert!(
+        day.subsurface_compute.lateral_flow_m > 0.0,
+        "hourly lateral fixture must keep q live after drainage"
+    );
+    assert_close(
+        day.subsurface_compute.subsurface_loss_m,
+        day.subsurface_compute.lateral_flow_m + day.subsurface_compute.tile_drainage_m,
+    );
+    assert!(
+        day.subsurface_compute
+            .hourly_lateral_carry_m
+            .iter()
+            .any(|value| *value > 0.0),
+        "hourly q carry array must be populated"
+    );
+    assert!(
+        day.subsurface_compute
+            .lateral_layer_withdrawal_m
+            .iter()
+            .sum::<f64>()
+            <= day.subsurface_compute.lateral_target_m + 1.0e-12
+    );
+}
+
+#[test]
+fn r4mo_subsurface_requires_percolation_upstream_and_rejects_invalid_domains() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut missing_percolation = seeded_day();
+    assert_eq!(
+        missing_percolation
+            .run_r4o_subsurface_compute_span()
+            .expect_err("R4O should require R4M"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R4M percolation"
+        }
+    );
+
+    let mut invalid_percolation = seeded_day();
+    invalid_percolation.percolation_inputs = daily_percolation_inputs(0.343, 0, false);
+    assert_eq!(
+        invalid_percolation
+            .run_r4m_percolation_span()
+            .expect_err("zero lane substeps should fail closed"),
+        DirectRuntimeError::DirectDomainViolation {
+            field: "percolation.lane_substeps"
+        }
+    );
+
+    let mut invalid_subsurface = seeded_day();
+    invalid_subsurface.percolation_inputs = daily_percolation_inputs(0.343, 1, false);
+    invalid_subsurface
+        .run_r4m_percolation_span()
+        .expect("R4M should run before invalid R4O check");
+    invalid_subsurface.subsurface_compute_inputs = daily_subsurface_inputs(false, 1);
+    invalid_subsurface
+        .subsurface_compute_inputs
+        .lateral_anisotropy_ratio = 0.0;
+    assert_eq!(
+        invalid_subsurface
+            .run_r4o_subsurface_compute_span()
+            .expect_err("zero anisotropy should fail closed"),
+        DirectRuntimeError::DirectDomainViolation {
+            field: "subsurface.lateral_anisotropy_ratio"
+        }
+    );
+}
+
+#[test]
+fn r4mo_anti_aliases_deep_lateral_drainage_and_qd() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut day = seeded_day();
+    day.percolation_inputs = daily_percolation_inputs(0.753, 1, false);
+    day.percolation_inputs.layers[0].theta_m = 0.30;
+    day.percolation_inputs.layers[1].theta_m = 0.42;
+    day.subsurface_compute_inputs = daily_subsurface_inputs(true, 24);
+    day.subsurface_compute_inputs.layers[0].theta_m = 0.30;
+    day.subsurface_compute_inputs.layers[1].theta_m = 0.42;
+
+    day.run_r4m_percolation_span()
+        .expect("R4M should execute before R4O");
+    day.run_r4o_subsurface_compute_span()
+        .expect("R4O should execute");
+
+    assert_ne!(
+        day.percolation.deep_seepage_m.to_bits(),
+        day.subsurface_compute.lateral_flow_m.to_bits()
+    );
+    assert_ne!(
+        day.percolation.deep_seepage_m.to_bits(),
+        day.subsurface_compute.tile_drainage_m.to_bits()
+    );
+    assert_ne!(
+        day.subsurface_compute.subsurface_loss_m.to_bits(),
+        day.subsurface_compute.lateral_flow_m.to_bits()
+    );
+    assert_ne!(
+        day.subsurface_compute.subsurface_loss_m.to_bits(),
+        day.subsurface_compute.tile_drainage_m.to_bits()
+    );
+}
+
+fn seeded_day() -> DirectDayFrame {
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct identity should construct");
+    DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct")
+}
+
+fn daily_wb18_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
+    let mut state = BTreeMap::new();
+    state.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
+    state.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.343),
+    );
+    state.insert(
+        BoundarySymbol::from("wb11_field_capacity"),
+        BoundaryValue::scalar(0.40),
+    );
+    state.insert(
+        BoundarySymbol::from("wb11_perc_fraction"),
+        BoundaryValue::scalar(0.50),
+    );
+    state.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.10),
+    );
+    state.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(0.15),
+    );
+    state.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(0.40),
+    );
+    state.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0001"),
+        BoundaryValue::scalar(1.0e-6),
+    );
+    state.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.05),
+    );
+    state.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.30));
+    state.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.20),
+    );
+    state.insert(
+        BoundarySymbol::from("wb18_perc_fc_0002"),
+        BoundaryValue::scalar(0.25),
+    );
+    state.insert(
+        BoundarySymbol::from("wb18_perc_ul_0002"),
+        BoundaryValue::scalar(0.50),
+    );
+    state.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0002"),
+        BoundaryValue::scalar(1.0e-6),
+    );
+    state.insert(
+        BoundarySymbol::from("thetdr_0002"),
+        BoundaryValue::scalar(0.07),
+    );
+    state.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.40));
+    state
+}
+
+fn run_wb18_compatibility(
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+) -> openwepp_kernel_contract::KernelRunResponse {
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "percolation_deep_seepage",
+        HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+        HillslopeConsumerAdapter::Perc,
+        None,
+        state_surface,
+        &flux_surface,
+    );
+    let mut kernel = Wb11HydrologyKernel;
+    kernel.run_hillslope_phase(&request)
+}
+
+fn daily_percolation_inputs(
+    soil_water_initial_m: f64,
+    lane_substeps: usize,
+    restrictive_layer_enabled: bool,
+) -> DirectPercolationInputs {
+    DirectPercolationInputs {
+        soil_water_initial_m,
+        reconcile_legacy_soil_water_from_layers: false,
+        same_pass_infiltration_m: 0.0,
+        same_pass_infiltration_lineage: false,
+        tillage_depth_m: 0.0,
+        lane_substeps,
+        restrictive_layer_enabled,
+        restrictive_layer_conductivity_m_s: 5.0e-7,
+        restrictive_layer_thickness_m: 0.2,
+        layers: vec![
+            DirectSubsurfaceLayerState::from(DirectSubsurfaceLayerInputs {
+                theta_m: 0.10,
+                field_capacity_m: 0.15,
+                upper_limit_m: 0.40,
+                conductivity_m_s: 1.0e-6,
+                depth_m: 0.30,
+                residual_theta: 0.05,
+                frozen_depth_m: 0.0,
+                frozen_water_m: 0.0,
+                porosity: 0.55,
+                field_capacity_theta: 0.55,
+                coca: 1.0,
+                lateral_conductivity_m_s: 1.0e-6,
+            }),
+            DirectSubsurfaceLayerState::from(DirectSubsurfaceLayerInputs {
+                theta_m: 0.20,
+                field_capacity_m: 0.25,
+                upper_limit_m: 0.50,
+                conductivity_m_s: 1.0e-6,
+                depth_m: 0.40,
+                residual_theta: 0.07,
+                frozen_depth_m: 0.0,
+                frozen_water_m: 0.0,
+                porosity: 0.55,
+                field_capacity_theta: 0.55,
+                coca: 1.0,
+                lateral_conductivity_m_s: 1.0e-6,
+            }),
+        ],
+    }
+}
+
+fn daily_subsurface_inputs(hourly: bool, lane_substeps: usize) -> DirectSubsurfaceComputeInputs {
+    DirectSubsurfaceComputeInputs {
+        avg_slope: 0.12,
+        slope_length_m: 10.0,
+        lateral_anisotropy_ratio: 1.5,
+        soil_depth_m: 0.70,
+        solwpv_mode: if hourly { 9002 } else { 2006 },
+        mofe_hourly_carry_arrays_enabled: hourly,
+        lane_substeps,
+        drainage_capacity_m: if hourly { 0.05 } else { 0.0 },
+        drain_enabled: hourly,
+        drain_depth_m: 0.55,
+        drain_spacing_m: 2.0,
+        drain_diameter_m: 0.1,
+        layers: vec![
+            DirectSubsurfaceLayerInputs {
+                theta_m: 0.20,
+                field_capacity_m: 0.10,
+                upper_limit_m: 0.30,
+                conductivity_m_s: 1.0e-6,
+                depth_m: 0.30,
+                residual_theta: 0.05,
+                frozen_depth_m: 0.0,
+                frozen_water_m: 0.0,
+                porosity: 0.55,
+                field_capacity_theta: 0.383_333_333_333_333_36,
+                coca: 1.0,
+                lateral_conductivity_m_s: 1.2e-6,
+            },
+            DirectSubsurfaceLayerInputs {
+                theta_m: 0.25,
+                field_capacity_m: 0.10,
+                upper_limit_m: 0.35,
+                conductivity_m_s: 1.0e-6,
+                depth_m: 0.40,
+                residual_theta: 0.05,
+                frozen_depth_m: 0.0,
+                frozen_water_m: 0.0,
+                porosity: 0.55,
+                field_capacity_theta: 0.30,
+                coca: 1.0,
+                lateral_conductivity_m_s: 1.2e-6,
+            },
+        ],
+    }
+}
+
+fn assert_close(observed: f64, expected: f64) {
+    assert!(
+        (observed - expected).abs() <= 1.0e-12,
+        "observed {observed} expected {expected}"
+    );
+}

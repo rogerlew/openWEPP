@@ -410,14 +410,14 @@ impl DirectDayFrame {
                 upstream: "R4C storage input producer",
             });
         }
-        if self.deep_seepage_shadow_projection.is_none() {
+        if self.percolation_shadow_projection.is_none() {
             return Err(DirectRuntimeError::MissingDirectUpstream {
-                upstream: "R4D deep-seepage producer",
+                upstream: "R4M percolation producer",
             });
         }
-        if self.subsurface_loss_shadow_projection.is_none() {
+        if self.subsurface_compute_shadow_projection.is_none() {
             return Err(DirectRuntimeError::MissingDirectUpstream {
-                upstream: "R4E subsurface-loss producer",
+                upstream: "R4O subsurface compute producer",
             });
         }
         if self.evapotranspiration_shadow_projection.is_none() {

@@ -78,11 +78,23 @@ pub const DIRECT_R4L_SATURATION_ADDBACK_SPAN: [DirectPhaseKind; DIRECT_R4L_PHASE
     DirectPhaseKind::RunoffReconciliation,
     DirectPhaseKind::StorageReconciliation,
 ];
+pub const DIRECT_R4M_PHASE_SPAN_COUNT: usize = 2;
+pub const DIRECT_R4M_PERCOLATION_SPAN: [DirectPhaseKind; DIRECT_R4M_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::PercolationDeepSeepage,
+    DirectPhaseKind::StorageReconciliation,
+];
+pub const DIRECT_R4O_PHASE_SPAN_COUNT: usize = 3;
+pub const DIRECT_R4O_SUBSURFACE_SPAN: [DirectPhaseKind; DIRECT_R4O_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::Drainage,
+    DirectPhaseKind::LateralTransfer,
+    DirectPhaseKind::StorageReconciliation,
+];
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
 mod runoff;
 mod storage;
+mod subsurface;
 
 pub use runoff::{
     DirectInfiltrationDepressionDownstreamOperands, DirectInfiltrationDepressionInputs,
@@ -110,6 +122,13 @@ pub use storage::{
     DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
     DirectSubsurfaceLossShadowProjection, DirectSubsurfaceLossSpanReport,
     DirectSubsurfaceLossState,
+};
+pub use subsurface::{
+    DirectPercolationDownstreamOperands, DirectPercolationInputs,
+    DirectPercolationShadowProjection, DirectPercolationSpanReport, DirectPercolationState,
+    DirectSubsurfaceComputeDownstreamOperands, DirectSubsurfaceComputeInputs,
+    DirectSubsurfaceComputeShadowProjection, DirectSubsurfaceComputeSpanReport,
+    DirectSubsurfaceComputeState, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
 };
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -468,6 +487,14 @@ pub struct DirectDayFrame {
     pub runoff_partition: DirectRunoffPartitionState,
     pub runoff_downstream_operands: DirectRunoffDownstreamOperands,
     pub runoff_shadow_projection: Option<DirectRunoffShadowProjection>,
+    pub percolation_inputs: DirectPercolationInputs,
+    pub percolation: DirectPercolationState,
+    pub percolation_downstream_operands: DirectPercolationDownstreamOperands,
+    pub percolation_shadow_projection: Option<DirectPercolationShadowProjection>,
+    pub subsurface_compute_inputs: DirectSubsurfaceComputeInputs,
+    pub subsurface_compute: DirectSubsurfaceComputeState,
+    pub subsurface_compute_downstream_operands: DirectSubsurfaceComputeDownstreamOperands,
+    pub subsurface_compute_shadow_projection: Option<DirectSubsurfaceComputeShadowProjection>,
     pub storage_input: DirectStorageInputState,
     pub storage_input_downstream_operands: DirectStorageInputDownstreamOperands,
     pub storage_input_shadow_projection: Option<DirectStorageInputShadowProjection>,
@@ -550,6 +577,15 @@ impl DirectDayFrame {
             runoff_partition: DirectRunoffPartitionState::zero(),
             runoff_downstream_operands: DirectRunoffDownstreamOperands::zero(),
             runoff_shadow_projection: None,
+            percolation_inputs: DirectPercolationInputs::neutral(),
+            percolation: DirectPercolationState::zero(),
+            percolation_downstream_operands: DirectPercolationDownstreamOperands::zero(),
+            percolation_shadow_projection: None,
+            subsurface_compute_inputs: DirectSubsurfaceComputeInputs::neutral(),
+            subsurface_compute: DirectSubsurfaceComputeState::zero(),
+            subsurface_compute_downstream_operands: DirectSubsurfaceComputeDownstreamOperands::zero(
+            ),
+            subsurface_compute_shadow_projection: None,
             storage_input: DirectStorageInputState::zero(),
             storage_input_downstream_operands: DirectStorageInputDownstreamOperands::zero(),
             storage_input_shadow_projection: None,
@@ -1414,8 +1450,8 @@ impl DirectFrameExecutor {
     ) -> Result<(), DirectRuntimeError> {
         record_direct_span_report!(counters, day_frame.run_r3a_input_accounting_span());
         record_direct_span_report!(counters, day_frame.run_r4c_storage_input_span());
-        record_direct_span_report!(counters, day_frame.run_r4d_deep_seepage_span());
-        record_direct_span_report!(counters, day_frame.run_r4e_subsurface_loss_span());
+        record_direct_span_report!(counters, day_frame.run_r4m_percolation_span());
+        record_direct_span_report!(counters, day_frame.run_r4o_subsurface_compute_span());
         record_direct_span_report!(counters, day_frame.run_r4f_evapotranspiration_span());
         record_direct_span_report!(counters, day_frame.run_r4g_snow_coupling_span());
         record_direct_span_report!(counters, day_frame.run_r4i_liquid_input_span());
@@ -1624,6 +1660,9 @@ pub enum DirectRuntimeError {
     NegativeDirectValue {
         field: &'static str,
     },
+    DirectDomainViolation {
+        field: &'static str,
+    },
     DirectClosureToleranceExceeded {
         field: &'static str,
     },
@@ -1707,6 +1746,12 @@ impl fmt::Display for DirectRuntimeError {
                 write!(
                     formatter,
                     "direct runtime field {field} must be nonnegative"
+                )
+            }
+            Self::DirectDomainViolation { field } => {
+                write!(
+                    formatter,
+                    "direct runtime field {field} violates its direct-domain constraints"
                 )
             }
             Self::DirectClosureToleranceExceeded { field } => {

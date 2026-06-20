@@ -8,21 +8,23 @@ use crate::{
     DIRECT_R4E_PHASE_SPAN_COUNT, DIRECT_R4E_SUBSURFACE_LOSS_SPAN,
     DIRECT_R4F_EVAPOTRANSPIRATION_SPAN, DIRECT_R4F_PHASE_SPAN_COUNT, DIRECT_R4G_PHASE_SPAN_COUNT,
     DIRECT_R4G_SNOW_COUPLING_SPAN, DIRECT_R4I_PHASE_SPAN_COUNT, DIRECT_R4J_PHASE_SPAN_COUNT,
-    DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT, DirectDayFrame,
-    DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
-    DirectDeepSeepageShadowProjection, DirectDeepSeepageState, DirectDownstreamOperands,
-    DirectEvapotranspirationDownstreamOperands, DirectEvapotranspirationInputs,
-    DirectEvapotranspirationShadowProjection, DirectEvapotranspirationState, DirectExecutorMode,
-    DirectFrameExecutor, DirectInfiltrationDepressionInputs, DirectInputAccountingState,
-    DirectLaneTransferLedger, DirectLedgerDownstreamOperands, DirectLedgerShadowProjection,
-    DirectLiquidInputInputs, DirectPhaseKind, DirectRunFrame, DirectRunIdentity,
+    DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT, DIRECT_R4M_PHASE_SPAN_COUNT,
+    DIRECT_R4O_PHASE_SPAN_COUNT, DirectDayFrame, DirectDeepSeepageDownstreamOperands,
+    DirectDeepSeepageInputs, DirectDeepSeepageShadowProjection, DirectDeepSeepageState,
+    DirectDownstreamOperands, DirectEvapotranspirationDownstreamOperands,
+    DirectEvapotranspirationInputs, DirectEvapotranspirationShadowProjection,
+    DirectEvapotranspirationState, DirectExecutorMode, DirectFrameExecutor,
+    DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneTransferLedger,
+    DirectLedgerDownstreamOperands, DirectLedgerShadowProjection, DirectLiquidInputInputs,
+    DirectPercolationInputs, DirectPhaseKind, DirectRunFrame, DirectRunIdentity,
     DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
     DirectRunoffPartitionInputs, DirectRunonCarryInputs, DirectRuntimeError,
     DirectSaturationAddbackInputs, DirectShadowProjection, DirectSnowCouplingDownstreamOperands,
     DirectSnowCouplingInputs, DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
     DirectStorageDownstreamOperands, DirectStorageInputDownstreamOperands,
     DirectStorageInputShadowProjection, DirectStorageInputState, DirectStorageReconciliationInputs,
-    DirectStorageReconciliationState, DirectStorageShadowProjection,
+    DirectStorageReconciliationState, DirectStorageShadowProjection, DirectSubsurfaceComputeInputs,
+    DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
     DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
     DirectSubsurfaceLossShadowProjection, DirectSubsurfaceLossState, DirectWaterLedgerState,
     reset_direct_runtime_audit_counters,
@@ -56,8 +58,8 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
         (DIRECT_R3C_PHASE_SPAN_COUNT
             + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT
                 + DIRECT_R4C_PHASE_SPAN_COUNT
-                + DIRECT_R4D_PHASE_SPAN_COUNT
-                + DIRECT_R4E_PHASE_SPAN_COUNT
+                + DIRECT_R4M_PHASE_SPAN_COUNT
+                + DIRECT_R4O_PHASE_SPAN_COUNT
                 + DIRECT_R4F_PHASE_SPAN_COUNT
                 + DIRECT_R4G_PHASE_SPAN_COUNT
                 + DIRECT_R4I_PHASE_SPAN_COUNT
@@ -88,8 +90,8 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
         (DIRECT_R3C_PHASE_SPAN_COUNT
             + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT
                 + DIRECT_R4C_PHASE_SPAN_COUNT
-                + DIRECT_R4D_PHASE_SPAN_COUNT
-                + DIRECT_R4E_PHASE_SPAN_COUNT
+                + DIRECT_R4M_PHASE_SPAN_COUNT
+                + DIRECT_R4O_PHASE_SPAN_COUNT
                 + DIRECT_R4F_PHASE_SPAN_COUNT
                 + DIRECT_R4G_PHASE_SPAN_COUNT
                 + DIRECT_R4I_PHASE_SPAN_COUNT
@@ -1252,8 +1254,8 @@ fn r4b_storage_reconciliation_consumes_r4a_q_and_shadow_projects() {
         audit.direct_phase_entries,
         (DIRECT_R3A_PHASE_SPAN_COUNT
             + DIRECT_R4C_PHASE_SPAN_COUNT
-            + DIRECT_R4D_PHASE_SPAN_COUNT
-            + DIRECT_R4E_PHASE_SPAN_COUNT
+            + DIRECT_R4M_PHASE_SPAN_COUNT
+            + DIRECT_R4O_PHASE_SPAN_COUNT
             + DIRECT_R4F_PHASE_SPAN_COUNT
             + DIRECT_R4G_PHASE_SPAN_COUNT
             + DIRECT_R4I_PHASE_SPAN_COUNT
@@ -1431,27 +1433,27 @@ fn r4b_storage_reconciliation_rejects_missing_upstream_producers() {
         }
     );
 
-    let mut missing_deep_seepage_day = r4b_day_after_r4c(identity);
+    let mut missing_percolation_day = r4b_day_after_r4c(identity);
     assert_eq!(
-        missing_deep_seepage_day
+        missing_percolation_day
             .run_r4b_storage_reconciliation_span()
-            .expect_err("R4B should require R4D direct upstream execution"),
+            .expect_err("R4B should require R4M direct upstream execution"),
         DirectRuntimeError::MissingDirectUpstream {
-            upstream: "R4D deep-seepage producer"
+            upstream: "R4M percolation producer"
         }
     );
 
-    let mut missing_subsurface_loss_day = r4b_day_after_r4d(identity);
+    let mut missing_subsurface_compute_day = r4b_day_after_r4m(identity);
     assert_eq!(
-        missing_subsurface_loss_day
+        missing_subsurface_compute_day
             .run_r4b_storage_reconciliation_span()
-            .expect_err("R4B should require R4E direct upstream execution"),
+            .expect_err("R4B should require R4O direct upstream execution"),
         DirectRuntimeError::MissingDirectUpstream {
-            upstream: "R4E subsurface-loss producer"
+            upstream: "R4O subsurface compute producer"
         }
     );
 
-    let mut missing_et_day = r4b_day_after_r4e(identity);
+    let mut missing_et_day = r4b_day_after_r4o(identity);
     assert_eq!(
         missing_et_day
             .run_r4b_storage_reconciliation_span()
@@ -1542,22 +1544,24 @@ fn r4b_day_after_r4c(identity: DirectRunIdentity) -> DirectDayFrame {
     day
 }
 
-fn r4b_day_after_r4d(identity: DirectRunIdentity) -> DirectDayFrame {
+fn r4b_day_after_r4m(identity: DirectRunIdentity) -> DirectDayFrame {
     let mut day = r4b_day_after_r4c(identity);
-    day.run_r4d_deep_seepage_span()
-        .expect("R4D upstream span should pass before R4B");
+    day.percolation_inputs = r4b_percolation_inputs();
+    day.run_r4m_percolation_span()
+        .expect("R4M upstream span should pass before R4B");
     day
 }
 
-fn r4b_day_after_r4e(identity: DirectRunIdentity) -> DirectDayFrame {
-    let mut day = r4b_day_after_r4d(identity);
-    day.run_r4e_subsurface_loss_span()
-        .expect("R4E upstream span should pass before R4B");
+fn r4b_day_after_r4o(identity: DirectRunIdentity) -> DirectDayFrame {
+    let mut day = r4b_day_after_r4m(identity);
+    day.subsurface_compute_inputs = r4b_subsurface_inputs();
+    day.run_r4o_subsurface_compute_span()
+        .expect("R4O upstream span should pass before R4B");
     day
 }
 
 fn r4b_day_after_r4f(identity: DirectRunIdentity) -> DirectDayFrame {
-    let mut day = r4b_day_after_r4e(identity);
+    let mut day = r4b_day_after_r4o(identity);
     day.run_r4f_evapotranspiration_span()
         .expect("R4F upstream span should pass before R4B");
     day
@@ -1568,6 +1572,97 @@ fn r4b_day_after_r4g(identity: DirectRunIdentity) -> DirectDayFrame {
     day.run_r4g_snow_coupling_span()
         .expect("R4G upstream span should pass before R4B");
     day
+}
+
+fn r4b_percolation_inputs() -> DirectPercolationInputs {
+    DirectPercolationInputs {
+        soil_water_initial_m: 0.046_875,
+        reconcile_legacy_soil_water_from_layers: false,
+        same_pass_infiltration_m: 0.0,
+        same_pass_infiltration_lineage: false,
+        tillage_depth_m: 0.0,
+        lane_substeps: 1,
+        restrictive_layer_enabled: false,
+        restrictive_layer_conductivity_m_s: 0.0,
+        restrictive_layer_thickness_m: 0.0,
+        layers: vec![
+            DirectSubsurfaceLayerState::from(DirectSubsurfaceLayerInputs {
+                theta_m: 0.015_625,
+                field_capacity_m: 1.0,
+                upper_limit_m: 1.0,
+                conductivity_m_s: 1.0,
+                depth_m: 1.0,
+                residual_theta: 0.0,
+                frozen_depth_m: 0.0,
+                frozen_water_m: 0.0,
+                porosity: 1.0,
+                field_capacity_theta: 0.5,
+                coca: 1.0,
+                lateral_conductivity_m_s: 1.0,
+            }),
+            DirectSubsurfaceLayerState::from(DirectSubsurfaceLayerInputs {
+                theta_m: 0.03125,
+                field_capacity_m: 0.0,
+                upper_limit_m: 1.0,
+                conductivity_m_s: 1.0,
+                depth_m: 1.0,
+                residual_theta: 0.0,
+                frozen_depth_m: 0.0,
+                frozen_water_m: 0.0,
+                porosity: 1.0,
+                field_capacity_theta: 0.5,
+                coca: 1.0,
+                lateral_conductivity_m_s: 1.0,
+            }),
+        ],
+    }
+}
+
+fn r4b_subsurface_inputs() -> DirectSubsurfaceComputeInputs {
+    DirectSubsurfaceComputeInputs {
+        avg_slope: 0.0,
+        slope_length_m: 1.0,
+        lateral_anisotropy_ratio: 1.0,
+        soil_depth_m: 2.0,
+        solwpv_mode: 2006,
+        mofe_hourly_carry_arrays_enabled: false,
+        lane_substeps: 1,
+        drainage_capacity_m: 0.015_625,
+        drain_enabled: true,
+        drain_depth_m: 1.5,
+        drain_spacing_m: 2.0,
+        drain_diameter_m: 0.1,
+        layers: vec![
+            DirectSubsurfaceLayerInputs {
+                theta_m: 0.0,
+                field_capacity_m: 0.0,
+                upper_limit_m: 1.0,
+                conductivity_m_s: 1.0,
+                depth_m: 1.0,
+                residual_theta: 0.0,
+                frozen_depth_m: 0.0,
+                frozen_water_m: 0.0,
+                porosity: 1.0,
+                field_capacity_theta: 0.5,
+                coca: 1.0,
+                lateral_conductivity_m_s: 1.0,
+            },
+            DirectSubsurfaceLayerInputs {
+                theta_m: 0.0,
+                field_capacity_m: 0.0,
+                upper_limit_m: 1.0,
+                conductivity_m_s: 1.0,
+                depth_m: 1.0,
+                residual_theta: 0.0,
+                frozen_depth_m: 0.0,
+                frozen_water_m: 0.0,
+                porosity: 1.0,
+                field_capacity_theta: 0.5,
+                coca: 1.0,
+                lateral_conductivity_m_s: 1.0,
+            },
+        ],
+    }
 }
 
 fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
@@ -1597,11 +1692,13 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
         surface_saturation_runoff_handoff_m: 0.03125,
     };
     day.deep_seepage_inputs = DirectDeepSeepageInputs {
-        deep_seepage_handoff_m: 0.03125,
+        deep_seepage_handoff_m: 9.0,
     };
     day.subsurface_loss_inputs = DirectSubsurfaceLossInputs {
-        subsurface_loss_handoff_m: 0.015_625,
+        subsurface_loss_handoff_m: 9.0,
     };
+    day.percolation_inputs = r4b_percolation_inputs();
+    day.subsurface_compute_inputs = r4b_subsurface_inputs();
     day.evapotranspiration_inputs = DirectEvapotranspirationInputs {
         evapotranspiration_handoff_m: 0.0625,
     };
@@ -1621,10 +1718,10 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
         .expect("R3A upstream span should pass before R4C");
     day.run_r4c_storage_input_span()
         .expect("R4C upstream span should pass before R4B");
-    day.run_r4d_deep_seepage_span()
-        .expect("R4D upstream span should pass before R4B");
-    day.run_r4e_subsurface_loss_span()
-        .expect("R4E upstream span should pass before R4B");
+    day.run_r4m_percolation_span()
+        .expect("R4M upstream span should pass before R4B");
+    day.run_r4o_subsurface_compute_span()
+        .expect("R4O upstream span should pass before R4B");
     day.run_r4f_evapotranspiration_span()
         .expect("R4F upstream span should pass before R4B");
     day.run_r4g_snow_coupling_span()

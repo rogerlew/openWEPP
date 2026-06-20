@@ -6,9 +6,9 @@ mod tests {
         DIRECT_PHASE_COUNT, DIRECT_R3A_PHASE_SPAN_COUNT, DIRECT_R3B_PHASE_SPAN_COUNT,
         DIRECT_R3C_PHASE_SPAN_COUNT, direct_runtime_audit_snapshot,
         DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT,
-        DIRECT_R4D_PHASE_SPAN_COUNT, DIRECT_R4E_PHASE_SPAN_COUNT, DIRECT_R4F_PHASE_SPAN_COUNT,
-        DIRECT_R4G_PHASE_SPAN_COUNT, DIRECT_R4I_PHASE_SPAN_COUNT, DIRECT_R4J_PHASE_SPAN_COUNT,
-        DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT,
+        DIRECT_R4F_PHASE_SPAN_COUNT, DIRECT_R4G_PHASE_SPAN_COUNT, DIRECT_R4I_PHASE_SPAN_COUNT,
+        DIRECT_R4J_PHASE_SPAN_COUNT, DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT,
+        DIRECT_R4M_PHASE_SPAN_COUNT, DIRECT_R4O_PHASE_SPAN_COUNT,
         reset_direct_runtime_audit_counters,
     };
     use openwepp_input_contract::parsers::hbp::{HbpParseOptions, parse_hbp_from_path};
@@ -569,14 +569,14 @@ mod tests {
                     + DIRECT_R4A_PHASE_SPAN_COUNT
                     + DIRECT_R4B_PHASE_SPAN_COUNT
                     + DIRECT_R4C_PHASE_SPAN_COUNT
-                    + DIRECT_R4D_PHASE_SPAN_COUNT
-                    + DIRECT_R4E_PHASE_SPAN_COUNT
                     + DIRECT_R4F_PHASE_SPAN_COUNT
                     + DIRECT_R4G_PHASE_SPAN_COUNT
                     + DIRECT_R4I_PHASE_SPAN_COUNT
                     + DIRECT_R4J_PHASE_SPAN_COUNT
                     + DIRECT_R4K_PHASE_SPAN_COUNT
-                    + DIRECT_R4L_PHASE_SPAN_COUNT) as u64
+                    + DIRECT_R4L_PHASE_SPAN_COUNT
+                    + DIRECT_R4M_PHASE_SPAN_COUNT
+                    + DIRECT_R4O_PHASE_SPAN_COUNT) as u64
         );
         assert!(audit.direct_compute_operations >= 13);
         assert!(audit.direct_state_mutations >= 13);

@@ -19,6 +19,21 @@ State as of `2026-06-20`:
 
 State as of `2026-06-20`:
 
+- R4M/O is complete with verdict
+  `COMPLETE-R4MO-DIRECT-SUBSURFACE-COMPUTE-PROMOTION`. The package promoted
+  the R4D/R4E-H subsurface handoff surface into request-free direct WB18/WB19
+  compute from typed layer vectors. R4M computes and shadow-projects direct
+  `D`, `Pe`, and per-layer percolation fluxes, mutating direct layer storage
+  and feeding R4B `deep_seepage_m`. R4O computes and shadow-projects direct
+  lateral `q`, tile drainage `Qdd`, final `Qd`, carry arrays, capacity/target
+  diagnostics, and layer withdrawals, feeding R4B `subsurface_loss_m`. R4B now
+  requires R4M and R4O shadows before storage reconciliation. R4M/O remains
+  no-publication, no-default-activation, and no-scheduler: public output paths
+  and compatibility runtime remain authoritative. Full Rust gates passed. Final
+  default-disabled H2637 reps were `643.70 s`, `646.33 s`, and `639.62 s`
+  (median `643.70 s`, threshold `<= 676.67 s`) with protected output identity
+  and PASS DuckDB row equivalence. Package:
+  `20260620-r4mo-direct-subsurface-compute-promotion-001/`.
 - R4I-L is complete with verdict
   `COMPLETE-R4IL-DIRECT-RUNOFF-PATH-INPUT-COMPLETION`. The package implemented
   direct handoff producers for R4A `liquid_input_m`, `runon_input_m`,
