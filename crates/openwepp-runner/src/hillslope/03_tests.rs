@@ -502,6 +502,13 @@ mod tests {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
+        execute_fixture_run_with_runtime_selection_unlocked(prefix, runtime_selection)
+    }
+
+    fn execute_fixture_run_with_runtime_selection_unlocked(
+        prefix: &str,
+        runtime_selection: HillslopeRuntimeSelection,
+    ) -> (HillslopeRunReport, PathBuf) {
         reset_direct_runtime_audit_counters();
 
         let source_fixture_dir = fixture_path("hillslope_run_dir");
@@ -525,15 +532,43 @@ mod tests {
         (report, temp_run_dir)
     }
 
+    fn r5a_day_span_run_count() -> u64 {
+        15
+    }
+
+    fn r5a_day_phase_entry_count() -> u64 {
+        (DIRECT_R3A_PHASE_SPAN_COUNT
+            + DIRECT_R4A_PHASE_SPAN_COUNT
+            + DIRECT_R4B_PHASE_SPAN_COUNT
+            + DIRECT_R4C_PHASE_SPAN_COUNT
+            + DIRECT_R4G_PHASE_SPAN_COUNT
+            + DIRECT_R4I_PHASE_SPAN_COUNT
+            + DIRECT_R4J_PHASE_SPAN_COUNT
+            + DIRECT_R4K_PHASE_SPAN_COUNT
+            + DIRECT_R4L_PHASE_SPAN_COUNT
+            + DIRECT_R4M_PHASE_SPAN_COUNT
+            + DIRECT_R4N_PHASE_SPAN_COUNT
+            + DIRECT_R4O_PHASE_SPAN_COUNT
+            + DIRECT_R4PQZ_PHASE_SPAN_COUNT
+            + DIRECT_R3B_PHASE_SPAN_COUNT) as u64
+    }
+
     #[test]
     fn r2a_default_fixture_run_constructs_no_direct_runtime_skeleton() {
-        let (report, _temp_run_dir) = execute_fixture_run("r2a_default_direct_skeleton_disabled");
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (report, _temp_run_dir) = execute_fixture_run_with_runtime_selection_unlocked(
+            "r2a_default_direct_skeleton_disabled",
+            HillslopeRuntimeSelection::Compatibility,
+        );
 
         assert!(report.output_pass.is_file());
         assert!(report.output_loss.is_file());
         let audit = direct_runtime_audit_snapshot();
         assert_eq!(audit.run_frame_constructions, 0);
         assert_eq!(audit.day_frame_constructions, 0);
+        assert_eq!(audit.day_frame_commits, 0);
         assert_eq!(audit.executor_constructions, 0);
         assert_eq!(audit.skeleton_runs, 0);
         assert_eq!(audit.phase_view_constructions, 0);
@@ -548,42 +583,56 @@ mod tests {
 
     #[test]
     fn r2a_explicit_direct_skeleton_selection_runs_before_compatibility_outputs() {
-        let (report, _temp_run_dir) = execute_fixture_run_with_runtime_selection(
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (report, _temp_run_dir) = execute_fixture_run_with_runtime_selection_unlocked(
             "r2a_direct_skeleton_opt_in",
             HillslopeRuntimeSelection::DirectSkeletonNoop,
         );
 
         assert!(report.output_pass.is_file());
         assert!(report.output_loss.is_file());
+        let manifest_json = read_manifest_json(&report);
+        let expected_day_frames = manifest_json
+            .pointer("/execution_provenance/climate_day_count")
+            .and_then(serde_json::Value::as_u64)
+            .expect("fixture manifest should include climate day count for R5A");
         let audit = direct_runtime_audit_snapshot();
         assert_eq!(audit.run_frame_constructions, 1);
         assert_eq!(audit.executor_constructions, 1);
         assert_eq!(audit.skeleton_runs, 1);
-        assert!(audit.day_frame_constructions >= 1);
-        assert!(audit.phase_view_constructions >= DIRECT_PHASE_COUNT as u64);
-        assert!(audit.phase_span_runs >= 14);
-        assert!(
-            audit.direct_phase_entries
-                >= (DIRECT_R3A_PHASE_SPAN_COUNT
-                    + DIRECT_R3B_PHASE_SPAN_COUNT
-                    + DIRECT_R3C_PHASE_SPAN_COUNT
-                    + DIRECT_R4A_PHASE_SPAN_COUNT
-                    + DIRECT_R4B_PHASE_SPAN_COUNT
-                    + DIRECT_R4C_PHASE_SPAN_COUNT
-                    + DIRECT_R4G_PHASE_SPAN_COUNT
-                    + DIRECT_R4I_PHASE_SPAN_COUNT
-                    + DIRECT_R4J_PHASE_SPAN_COUNT
-                    + DIRECT_R4K_PHASE_SPAN_COUNT
-                    + DIRECT_R4L_PHASE_SPAN_COUNT
-                    + DIRECT_R4M_PHASE_SPAN_COUNT
-                    + DIRECT_R4N_PHASE_SPAN_COUNT
-                    + DIRECT_R4O_PHASE_SPAN_COUNT
-                    + DIRECT_R4PQZ_PHASE_SPAN_COUNT) as u64
+        assert_eq!(audit.day_frame_constructions, expected_day_frames);
+        assert_eq!(audit.day_frame_commits, expected_day_frames);
+        assert_eq!(
+            audit.phase_view_constructions,
+            expected_day_frames * DIRECT_PHASE_COUNT as u64
         );
-        assert!(audit.direct_compute_operations >= 15);
-        assert!(audit.direct_state_mutations >= 15);
-        assert!(audit.downstream_operand_productions >= 15);
-        assert!(audit.shadow_projections >= 15);
+        assert_eq!(
+            audit.phase_span_runs,
+            1 + expected_day_frames * r5a_day_span_run_count()
+        );
+        assert_eq!(
+            audit.direct_phase_entries,
+            DIRECT_R3C_PHASE_SPAN_COUNT as u64
+                + expected_day_frames * r5a_day_phase_entry_count()
+        );
+        assert_eq!(
+            audit.direct_compute_operations,
+            1 + expected_day_frames * r5a_day_span_run_count()
+        );
+        assert_eq!(
+            audit.direct_state_mutations,
+            1 + expected_day_frames * r5a_day_span_run_count()
+        );
+        assert_eq!(
+            audit.downstream_operand_productions,
+            1 + expected_day_frames * r5a_day_span_run_count()
+        );
+        assert_eq!(
+            audit.shadow_projections,
+            1 + expected_day_frames * r5a_day_span_run_count()
+        );
         assert_eq!(audit.compatibility_edge_invocations, 1);
     }
 

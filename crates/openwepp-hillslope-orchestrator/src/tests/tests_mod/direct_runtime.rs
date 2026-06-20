@@ -17,8 +17,8 @@ use crate::{
     DirectEvapotranspirationState, DirectExecutorMode, DirectFrameExecutor,
     DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneTransferLedger,
     DirectLedgerDownstreamOperands, DirectLedgerShadowProjection, DirectLiquidInputInputs,
-    DirectPercolationInputs, DirectPhaseKind, DirectRunFrame, DirectRunIdentity,
-    DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
+    DirectPercolationInputs, DirectPhaseKind, DirectPhaseLifecycleStatus, DirectRunFrame,
+    DirectRunIdentity, DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
     DirectRunoffPartitionInputs, DirectRunonCarryInputs, DirectRuntimeError,
     DirectSaturationAddbackInputs, DirectShadowProjection, DirectSnowCouplingDownstreamOperands,
     DirectSnowCouplingInputs, DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
@@ -31,8 +31,58 @@ use crate::{
     reset_direct_runtime_audit_counters,
 };
 
+fn r5a_day_span_run_count() -> u64 {
+    15
+}
+
+fn r5a_day_phase_entry_count() -> u64 {
+    (DIRECT_R3A_PHASE_SPAN_COUNT
+        + DIRECT_R4C_PHASE_SPAN_COUNT
+        + DIRECT_R4M_PHASE_SPAN_COUNT
+        + DIRECT_R4N_PHASE_SPAN_COUNT
+        + DIRECT_R4O_PHASE_SPAN_COUNT
+        + DIRECT_R4G_PHASE_SPAN_COUNT
+        + DIRECT_R4I_PHASE_SPAN_COUNT
+        + DIRECT_R4J_PHASE_SPAN_COUNT
+        + DIRECT_R4K_PHASE_SPAN_COUNT
+        + DIRECT_R4L_PHASE_SPAN_COUNT
+        + DIRECT_R4A_PHASE_SPAN_COUNT
+        + DIRECT_R4B_PHASE_SPAN_COUNT
+        + DIRECT_R4PQZ_PHASE_SPAN_COUNT
+        + DIRECT_R3B_PHASE_SPAN_COUNT) as u64
+}
+
+fn r5a_expected_phase_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStatus {
+    match phase {
+        DirectPhaseKind::StorageBounds
+        | DirectPhaseKind::DecompositionTransition
+        | DirectPhaseKind::ResiduePartitionTransition
+        | DirectPhaseKind::AnnualGrowthTransition
+        | DirectPhaseKind::PerennialGrowthTransition => DirectPhaseLifecycleStatus::Hold,
+        DirectPhaseKind::Normalization
+        | DirectPhaseKind::PercolationDeepSeepage
+        | DirectPhaseKind::Evapotranspiration
+        | DirectPhaseKind::Drainage
+        | DirectPhaseKind::LateralTransfer
+        | DirectPhaseKind::PlantRootUptake
+        | DirectPhaseKind::RunoffReconciliation
+        | DirectPhaseKind::StorageReconciliation
+        | DirectPhaseKind::ClosureDiagnostics => DirectPhaseLifecycleStatus::Executed,
+    }
+}
+
+fn assert_r5a_phase_status_counts(counts: &[crate::DirectPhaseStatusCount], expected_count: u64) {
+    assert_eq!(counts.len(), DIRECT_PHASE_COUNT);
+    for (index, count) in counts.iter().enumerate() {
+        let expected_phase = DirectPhaseKind::ORDERED[index];
+        assert_eq!(count.phase, expected_phase);
+        assert_eq!(count.status, r5a_expected_phase_status(expected_phase));
+        assert_eq!(count.count, expected_count);
+    }
+}
+
 #[test]
-fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
+fn r5a_direct_skeleton_runs_all_days_and_lanes_with_lifecycle_counters() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -52,64 +102,100 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
     assert_eq!(report.lane_count, 2);
     assert_eq!(report.day_count, 10);
     assert_eq!(report.planned_phase_count, DIRECT_PHASE_COUNT);
-    assert_eq!(report.phase_view_count, (2 * DIRECT_PHASE_COUNT) as u64);
-    assert_eq!(report.phase_span_run_count, 31);
+    let expected_day_frames = (identity.lane_count * identity.day_count) as u64;
+    assert_eq!(
+        report.phase_view_count,
+        expected_day_frames * DIRECT_PHASE_COUNT as u64
+    );
+    assert_r5a_phase_status_counts(&report.phase_status_counts, expected_day_frames);
+    assert_eq!(
+        report.phase_span_run_count,
+        1 + expected_day_frames * r5a_day_span_run_count()
+    );
     assert_eq!(
         report.direct_phase_entry_count,
-        (DIRECT_R3C_PHASE_SPAN_COUNT
-            + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT
-                + DIRECT_R4C_PHASE_SPAN_COUNT
-                + DIRECT_R4M_PHASE_SPAN_COUNT
-                + DIRECT_R4N_PHASE_SPAN_COUNT
-                + DIRECT_R4O_PHASE_SPAN_COUNT
-                + DIRECT_R4G_PHASE_SPAN_COUNT
-                + DIRECT_R4I_PHASE_SPAN_COUNT
-                + DIRECT_R4J_PHASE_SPAN_COUNT
-                + DIRECT_R4K_PHASE_SPAN_COUNT
-                + DIRECT_R4L_PHASE_SPAN_COUNT
-                + DIRECT_R4A_PHASE_SPAN_COUNT
-                + DIRECT_R4B_PHASE_SPAN_COUNT
-                + DIRECT_R4PQZ_PHASE_SPAN_COUNT
-                + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
+        DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5a_day_phase_entry_count()
     );
-    assert_eq!(report.direct_compute_count, 31);
-    assert_eq!(report.state_mutation_count, 31);
-    assert_eq!(report.downstream_operand_count, 31);
-    assert_eq!(report.shadow_projection_count, 31);
+    assert_eq!(
+        report.direct_compute_count,
+        1 + expected_day_frames * r5a_day_span_run_count()
+    );
+    assert_eq!(
+        report.state_mutation_count,
+        1 + expected_day_frames * r5a_day_span_run_count()
+    );
+    assert_eq!(
+        report.downstream_operand_count,
+        1 + expected_day_frames * r5a_day_span_run_count()
+    );
+    assert_eq!(
+        report.shadow_projection_count,
+        1 + expected_day_frames * r5a_day_span_run_count()
+    );
     assert_eq!(report.compatibility_edge_invocation_count, 0);
+    assert_eq!(report.day_frame_commit_count, expected_day_frames);
     let audit = crate::direct_runtime_audit_snapshot();
     assert_eq!(audit.run_frame_constructions, 1);
     assert_eq!(audit.executor_constructions, 1);
     assert_eq!(audit.skeleton_runs, 1);
-    assert_eq!(audit.day_frame_constructions, 2);
+    assert_eq!(audit.day_frame_constructions, expected_day_frames);
+    assert_eq!(audit.day_frame_commits, expected_day_frames);
     assert_eq!(
         audit.phase_view_constructions,
-        (2 * DIRECT_PHASE_COUNT) as u64
+        expected_day_frames * DIRECT_PHASE_COUNT as u64
     );
-    assert_eq!(audit.phase_span_runs, 31);
+    assert_eq!(
+        audit.phase_span_runs,
+        1 + expected_day_frames * r5a_day_span_run_count()
+    );
     assert_eq!(
         audit.direct_phase_entries,
-        (DIRECT_R3C_PHASE_SPAN_COUNT
-            + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT
-                + DIRECT_R4C_PHASE_SPAN_COUNT
-                + DIRECT_R4M_PHASE_SPAN_COUNT
-                + DIRECT_R4N_PHASE_SPAN_COUNT
-                + DIRECT_R4O_PHASE_SPAN_COUNT
-                + DIRECT_R4G_PHASE_SPAN_COUNT
-                + DIRECT_R4I_PHASE_SPAN_COUNT
-                + DIRECT_R4J_PHASE_SPAN_COUNT
-                + DIRECT_R4K_PHASE_SPAN_COUNT
-                + DIRECT_R4L_PHASE_SPAN_COUNT
-                + DIRECT_R4A_PHASE_SPAN_COUNT
-                + DIRECT_R4B_PHASE_SPAN_COUNT
-                + DIRECT_R4PQZ_PHASE_SPAN_COUNT
-                + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
+        DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5a_day_phase_entry_count()
     );
-    assert_eq!(audit.direct_compute_operations, 31);
-    assert_eq!(audit.direct_state_mutations, 31);
-    assert_eq!(audit.downstream_operand_productions, 31);
-    assert_eq!(audit.shadow_projections, 31);
+    assert_eq!(
+        audit.direct_compute_operations,
+        1 + expected_day_frames * r5a_day_span_run_count()
+    );
+    assert_eq!(
+        audit.direct_state_mutations,
+        1 + expected_day_frames * r5a_day_span_run_count()
+    );
+    assert_eq!(
+        audit.downstream_operand_productions,
+        1 + expected_day_frames * r5a_day_span_run_count()
+    );
+    assert_eq!(
+        audit.shadow_projections,
+        1 + expected_day_frames * r5a_day_span_run_count()
+    );
     assert_eq!(audit.compatibility_edge_invocations, 0);
+}
+
+#[test]
+fn r5a_direct_skeleton_commits_day_state_back_to_lane_state() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(7, 2637, 1, 3)
+        .expect("valid direct skeleton identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct skeleton frame should construct");
+    frame.lanes[0].transfer.surface_carry_m[5] = 0.25;
+    frame.lanes[0].transfer.upstream_flow_m = 0.125;
+    let executor = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly);
+
+    let report = executor
+        .run_skeleton(&mut frame)
+        .expect("direct skeleton lifecycle should commit all day frames");
+
+    assert_eq!(report.day_frame_commit_count, 3);
+    assert!((frame.lanes[0].transfer.surface_carry_m[5] - 0.25).abs() < 1.0e-12);
+    assert!((frame.lanes[0].transfer.upstream_flow_m - 0.125).abs() < 1.0e-12);
+    let audit = crate::direct_runtime_audit_snapshot();
+    assert_eq!(audit.day_frame_constructions, 3);
+    assert_eq!(audit.day_frame_commits, 3);
 }
 
 #[test]

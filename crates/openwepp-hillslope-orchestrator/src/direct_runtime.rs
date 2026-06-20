@@ -213,6 +213,39 @@ impl DirectPhaseKind {
         Self::StorageReconciliation,
         Self::ClosureDiagnostics,
     ];
+
+    #[must_use]
+    pub const fn rank(self) -> usize {
+        match self {
+            Self::Normalization => 0,
+            Self::StorageBounds => 1,
+            Self::DecompositionTransition => 2,
+            Self::ResiduePartitionTransition => 3,
+            Self::AnnualGrowthTransition => 4,
+            Self::PerennialGrowthTransition => 5,
+            Self::PercolationDeepSeepage => 6,
+            Self::Evapotranspiration => 7,
+            Self::Drainage => 8,
+            Self::LateralTransfer => 9,
+            Self::PlantRootUptake => 10,
+            Self::RunoffReconciliation => 11,
+            Self::StorageReconciliation => 12,
+            Self::ClosureDiagnostics => 13,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DirectPhaseLifecycleStatus {
+    Executed,
+    Hold,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DirectPhaseStatusCount {
+    pub phase: DirectPhaseKind,
+    pub status: DirectPhaseLifecycleStatus,
+    pub count: u64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -273,6 +306,54 @@ impl DirectRunFrame {
             lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
             lane_transfer_shadow_projection: None,
         })
+    }
+
+    fn seed_day_frame(
+        &self,
+        lane_index: usize,
+        day_index: usize,
+    ) -> Result<DirectDayFrame, DirectRuntimeError> {
+        if self.lanes.len() != self.identity.lane_count {
+            return Err(DirectRuntimeError::FrameLaneCountMismatch {
+                identity_lane_count: self.identity.lane_count,
+                actual_lane_count: self.lanes.len(),
+            });
+        }
+        let lane = self
+            .lanes
+            .get(lane_index)
+            .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
+                lane_index,
+                lane_count: self.lanes.len(),
+            })?;
+        let mut day_frame = DirectDayFrame::seed(self.identity, lane_index, day_index)?;
+        day_frame.water = lane.water.clone();
+        day_frame.transfer = lane.transfer.clone();
+        day_frame.publication = lane.publication.clone();
+        Ok(day_frame)
+    }
+
+    fn commit_day_frame(&mut self, day_frame: &DirectDayFrame) -> Result<(), DirectRuntimeError> {
+        if day_frame.identity != self.identity {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "day_frame.identity",
+            });
+        }
+        if day_frame.day_index >= self.identity.day_count {
+            return Err(DirectRuntimeError::DayIndexOutOfRange {
+                day_index: day_frame.day_index,
+                day_count: self.identity.day_count,
+            });
+        }
+        let lane = self.lanes.get_mut(day_frame.lane_index).ok_or(
+            DirectRuntimeError::LaneIndexOutOfRange {
+                lane_index: day_frame.lane_index,
+                lane_count: self.identity.lane_count,
+            },
+        )?;
+        lane.commit_day(day_frame)?;
+        DIRECT_AUDIT.record_day_frame_commit();
+        Ok(())
     }
 
     pub fn run_r3c_lane_transfer_span(
@@ -459,6 +540,7 @@ pub struct DirectLaneFrame {
     pub area_m2: f64,
     pub water: DirectWaterState,
     pub transfer: DirectTransferBuffers,
+    pub publication: DirectPublicationFrame,
 }
 
 impl DirectLaneFrame {
@@ -480,7 +562,29 @@ impl DirectLaneFrame {
             area_m2: 0.0,
             water: DirectWaterState::zero(),
             transfer: DirectTransferBuffers::zero(),
+            publication: DirectPublicationFrame::empty(),
         })
+    }
+
+    fn commit_day(&mut self, day_frame: &DirectDayFrame) -> Result<(), DirectRuntimeError> {
+        let expected_lane_index =
+            usize::try_from(self.lane_id.saturating_sub(1)).map_err(|_| {
+                DirectRuntimeError::LaneIdOverflow {
+                    lane_index: day_frame.lane_index,
+                }
+            })?;
+        if day_frame.lane_index != expected_lane_index {
+            return Err(DirectRuntimeError::InvalidLaneTopology {
+                lane_index: day_frame.lane_index,
+                lane_id: self.lane_id,
+                upstream_lane_id: self.upstream_lane_id,
+                downstream_lane_id: self.downstream_lane_id,
+            });
+        }
+        self.water = day_frame.water.clone();
+        self.transfer = day_frame.transfer.clone();
+        self.publication = day_frame.publication.clone();
+        Ok(())
     }
 }
 
@@ -1388,6 +1492,7 @@ pub struct DirectExecutionReport {
     pub day_count: usize,
     pub planned_phase_count: usize,
     pub phase_view_count: u64,
+    pub phase_status_counts: Vec<DirectPhaseStatusCount>,
     pub phase_span_run_count: u64,
     pub direct_phase_entry_count: u64,
     pub direct_compute_count: u64,
@@ -1395,6 +1500,7 @@ pub struct DirectExecutionReport {
     pub downstream_operand_count: u64,
     pub shadow_projection_count: u64,
     pub compatibility_edge_invocation_count: u64,
+    pub day_frame_commit_count: u64,
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -1406,6 +1512,9 @@ struct DirectExecutionCounters {
     downstream_operands: u64,
     shadows: u64,
     compatibility_edges: u64,
+    day_frame_commits: u64,
+    phase_executed_counts: [u64; DIRECT_PHASE_COUNT],
+    phase_hold_counts: [u64; DIRECT_PHASE_COUNT],
 }
 
 impl DirectExecutionCounters {
@@ -1425,6 +1534,44 @@ impl DirectExecutionCounters {
         self.downstream_operands += downstream_operand_count;
         self.shadows += shadow_projection_count;
         self.compatibility_edges += compatibility_edge_invocation_count;
+    }
+
+    fn record_phase_status(&mut self, phase: DirectPhaseKind, status: DirectPhaseLifecycleStatus) {
+        match status {
+            DirectPhaseLifecycleStatus::Executed => {
+                self.phase_executed_counts[phase.rank()] += 1;
+            }
+            DirectPhaseLifecycleStatus::Hold => {
+                self.phase_hold_counts[phase.rank()] += 1;
+            }
+        }
+    }
+
+    fn record_day_frame_commit(&mut self) {
+        self.day_frame_commits += 1;
+    }
+
+    fn phase_status_counts(&self) -> Vec<DirectPhaseStatusCount> {
+        let mut counts = Vec::with_capacity(DIRECT_PHASE_COUNT);
+        for phase in DirectPhaseKind::ORDERED {
+            let executed_count = self.phase_executed_counts[phase.rank()];
+            let hold_count = self.phase_hold_counts[phase.rank()];
+            if executed_count > 0 {
+                counts.push(DirectPhaseStatusCount {
+                    phase,
+                    status: DirectPhaseLifecycleStatus::Executed,
+                    count: executed_count,
+                });
+            }
+            if hold_count > 0 {
+                counts.push(DirectPhaseStatusCount {
+                    phase,
+                    status: DirectPhaseLifecycleStatus::Hold,
+                    count: hold_count,
+                });
+            }
+        }
+        counts
     }
 }
 
@@ -1466,6 +1613,7 @@ impl DirectFrameExecutor {
         DIRECT_AUDIT.record_skeleton_run();
         let mut phase_view_count = 0_u64;
         let mut counters = DirectExecutionCounters::default();
+        let phase_plan = *frame.phase_plan.phases();
 
         let transfer_span_report = frame.run_r3c_lane_transfer_span()?;
         counters.record_span(
@@ -1477,13 +1625,18 @@ impl DirectFrameExecutor {
             transfer_span_report.compatibility_edge_invocation_count,
         );
 
-        for lane_index in 0..frame.lanes.len() {
-            let mut day_frame = DirectDayFrame::seed(frame.identity, lane_index, 0)?;
-            Self::run_day_spans(&mut day_frame, &mut counters)?;
-            for phase in frame.phase_plan.phases() {
-                let view = day_frame.phase_view(*phase);
-                let _phase = view.phase();
-                phase_view_count += 1;
+        for day_index in 0..frame.identity.day_count {
+            for lane_index in 0..frame.identity.lane_count {
+                let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
+                Self::run_day_spans(&mut day_frame, &mut counters)?;
+                for phase in phase_plan {
+                    let view = day_frame.phase_view(phase);
+                    let _phase = view.phase();
+                    phase_view_count += 1;
+                    counters.record_phase_status(phase, Self::phase_lifecycle_status(phase));
+                }
+                frame.commit_day_frame(&day_frame)?;
+                counters.record_day_frame_commit();
             }
         }
 
@@ -1493,6 +1646,7 @@ impl DirectFrameExecutor {
             day_count: frame.identity.day_count,
             planned_phase_count: frame.phase_plan.len(),
             phase_view_count,
+            phase_status_counts: counters.phase_status_counts(),
             phase_span_run_count: counters.spans,
             direct_phase_entry_count: counters.entries,
             direct_compute_count: counters.computes,
@@ -1500,7 +1654,28 @@ impl DirectFrameExecutor {
             downstream_operand_count: counters.downstream_operands,
             shadow_projection_count: counters.shadows,
             compatibility_edge_invocation_count: counters.compatibility_edges,
+            day_frame_commit_count: counters.day_frame_commits,
         })
+    }
+
+    #[must_use]
+    const fn phase_lifecycle_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStatus {
+        match phase {
+            DirectPhaseKind::StorageBounds
+            | DirectPhaseKind::DecompositionTransition
+            | DirectPhaseKind::ResiduePartitionTransition
+            | DirectPhaseKind::AnnualGrowthTransition
+            | DirectPhaseKind::PerennialGrowthTransition => DirectPhaseLifecycleStatus::Hold,
+            DirectPhaseKind::Normalization
+            | DirectPhaseKind::PercolationDeepSeepage
+            | DirectPhaseKind::Evapotranspiration
+            | DirectPhaseKind::Drainage
+            | DirectPhaseKind::LateralTransfer
+            | DirectPhaseKind::PlantRootUptake
+            | DirectPhaseKind::RunoffReconciliation
+            | DirectPhaseKind::StorageReconciliation
+            | DirectPhaseKind::ClosureDiagnostics => DirectPhaseLifecycleStatus::Executed,
+        }
     }
 
     fn run_day_spans(
@@ -1531,6 +1706,7 @@ impl DirectFrameExecutor {
 pub struct DirectRuntimeAuditSnapshot {
     pub run_frame_constructions: u64,
     pub day_frame_constructions: u64,
+    pub day_frame_commits: u64,
     pub executor_constructions: u64,
     pub skeleton_runs: u64,
     pub phase_view_constructions: u64,
@@ -1559,6 +1735,7 @@ pub fn record_direct_runtime_compatibility_edge_invocation() {
 struct DirectRuntimeAuditCounters {
     run_frame_constructions: AtomicU64,
     day_frame_constructions: AtomicU64,
+    day_frame_commits: AtomicU64,
     executor_constructions: AtomicU64,
     skeleton_runs: AtomicU64,
     phase_view_constructions: AtomicU64,
@@ -1576,6 +1753,7 @@ impl DirectRuntimeAuditCounters {
         Self {
             run_frame_constructions: AtomicU64::new(0),
             day_frame_constructions: AtomicU64::new(0),
+            day_frame_commits: AtomicU64::new(0),
             executor_constructions: AtomicU64::new(0),
             skeleton_runs: AtomicU64::new(0),
             phase_view_constructions: AtomicU64::new(0),
@@ -1595,6 +1773,10 @@ impl DirectRuntimeAuditCounters {
 
     fn record_day_frame_construction(&self) {
         self.day_frame_constructions.fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn record_day_frame_commit(&self) {
+        self.day_frame_commits.fetch_add(1, Ordering::Relaxed);
     }
 
     fn record_executor_construction(&self) {
@@ -1645,6 +1827,7 @@ impl DirectRuntimeAuditCounters {
         DirectRuntimeAuditSnapshot {
             run_frame_constructions: self.run_frame_constructions.load(Ordering::Relaxed),
             day_frame_constructions: self.day_frame_constructions.load(Ordering::Relaxed),
+            day_frame_commits: self.day_frame_commits.load(Ordering::Relaxed),
             executor_constructions: self.executor_constructions.load(Ordering::Relaxed),
             skeleton_runs: self.skeleton_runs.load(Ordering::Relaxed),
             phase_view_constructions: self.phase_view_constructions.load(Ordering::Relaxed),
@@ -1665,6 +1848,7 @@ impl DirectRuntimeAuditCounters {
     fn reset(&self) {
         self.run_frame_constructions.store(0, Ordering::Relaxed);
         self.day_frame_constructions.store(0, Ordering::Relaxed);
+        self.day_frame_commits.store(0, Ordering::Relaxed);
         self.executor_constructions.store(0, Ordering::Relaxed);
         self.skeleton_runs.store(0, Ordering::Relaxed);
         self.phase_view_constructions.store(0, Ordering::Relaxed);

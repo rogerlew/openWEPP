@@ -13,14 +13,25 @@
 
 State as of `2026-06-20`:
 
-- No R5 package directories are scaffolded yet. The autonomous grouped
-  burn-down plan is `r5-burndown-execplan.md`, which sequences R5A through R5E
-  from full-day direct executor lifecycle to full 14-phase endpoint readiness.
+- None. R5B is next in `r5-burndown-execplan.md`.
 
 ## Current roadmap execution log
 
 State as of `2026-06-20`:
 
+- R5A is complete with verdict
+  `COMPLETE-R5A-FULL-DAY-DIRECT-EXECUTOR-LIFECYCLE`. The package widened the
+  direct executor from day-0 lane skeleton execution to all
+  `day_count * lane_count` direct day frames, added persistent lane-state
+  handoff into each day frame, added end-of-day lane commits, recorded
+  day-frame commit counters, and exposed canonical phase status counts. R5A
+  keeps the five non-hydrology phases reserved for R5B-D as explicit `Hold`
+  statuses and leaves public output authority compatibility-owned. Full Rust
+  gates passed. Final default-disabled H2637 reps were `643.98 s`,
+  `647.95 s`, and `643.45 s` (median `643.98 s`, threshold `<= 676.67 s`) with
+  protected output comparison passing through HBP/WAT byte identity, PASS
+  DuckDB row equivalence, and run-name-only normalized loss/plot differences.
+  Package: `20260620-r5a-full-day-direct-executor-lifecycle-001/`.
 - R4P/Q/Z is complete with verdict
   `COMPLETE-R4PQZ-HYDROLOGY-PROJECTION-R4-CLOSURE`. The package closed R4 by
   adding a shadow-only direct hydrology projection span after the direct
