@@ -3,8 +3,8 @@ mod tests {
     use super::*;
     use crate::SidecarPolicy;
     use openwepp_hillslope_orchestrator::{
-        DIRECT_PHASE_COUNT, DIRECT_R3A_PHASE_SPAN_COUNT, direct_runtime_audit_snapshot,
-        reset_direct_runtime_audit_counters,
+        DIRECT_PHASE_COUNT, DIRECT_R3A_PHASE_SPAN_COUNT, DIRECT_R3B_PHASE_SPAN_COUNT,
+        direct_runtime_audit_snapshot, reset_direct_runtime_audit_counters,
     };
     use openwepp_input_contract::parsers::hbp::{HbpParseOptions, parse_hbp_from_path};
     use openwepp_input_contract::parsers::slope::{
@@ -555,12 +555,15 @@ mod tests {
         assert_eq!(audit.skeleton_runs, 1);
         assert!(audit.day_frame_constructions >= 1);
         assert!(audit.phase_view_constructions >= DIRECT_PHASE_COUNT as u64);
-        assert!(audit.phase_span_runs >= 1);
-        assert!(audit.direct_phase_entries >= DIRECT_R3A_PHASE_SPAN_COUNT as u64);
-        assert!(audit.direct_compute_operations >= 1);
-        assert!(audit.direct_state_mutations >= 1);
-        assert!(audit.downstream_operand_productions >= 1);
-        assert!(audit.shadow_projections >= 1);
+        assert!(audit.phase_span_runs >= 2);
+        assert!(
+            audit.direct_phase_entries
+                >= (DIRECT_R3A_PHASE_SPAN_COUNT + DIRECT_R3B_PHASE_SPAN_COUNT) as u64
+        );
+        assert!(audit.direct_compute_operations >= 2);
+        assert!(audit.direct_state_mutations >= 2);
+        assert!(audit.downstream_operand_productions >= 2);
+        assert!(audit.shadow_projections >= 2);
         assert_eq!(audit.compatibility_edge_invocations, 1);
     }
 

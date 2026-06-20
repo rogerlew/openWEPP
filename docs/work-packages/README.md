@@ -10,6 +10,18 @@
 
 State as of `2026-06-20`:
 
+- R3B is complete with verdict `COMPLETE-R3B-DIRECT-WATER-LEDGER-SPAN`. The
+  package implemented a second direct-runtime span,
+  `RunoffReconciliation -> StorageReconciliation -> ClosureDiagnostics`, that
+  consumes R3A input-accounting state plus direct water and publication fields,
+  computes a signed diagnostic ledger residual, mutates direct ledger state,
+  produces downstream ledger operands, and shadow-projects the result. The
+  residual is diagnostic-only; R3B does not migrate hydrology-process equations,
+  cut over publication, claim endpoint improvement, or activate direct mode by
+  default. Full Rust gates passed. Final default-disabled H2637 reps were
+  `640.67 s`, `643.05 s`, and `639.21 s` (median `640.67 s`, threshold
+  `<= 676.67 s`) with protected output identity. Package:
+  `20260620-r3b-direct-water-ledger-span-001/`.
 - R3A is complete with verdict `COMPLETE-R3A-PHASE-SPAN`. The package
   implemented direct transfer-input accounting as the first complete direct
   phase span on top of the R2A skeleton:

@@ -9,6 +9,12 @@ pub const DIRECT_R3A_INPUT_ACCOUNTING_SPAN: [DirectPhaseKind; DIRECT_R3A_PHASE_S
     DirectPhaseKind::Normalization,
     DirectPhaseKind::LateralTransfer,
 ];
+pub const DIRECT_R3B_PHASE_SPAN_COUNT: usize = 3;
+pub const DIRECT_R3B_WATER_LEDGER_SPAN: [DirectPhaseKind; DIRECT_R3B_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::RunoffReconciliation,
+    DirectPhaseKind::StorageReconciliation,
+    DirectPhaseKind::ClosureDiagnostics,
+];
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
@@ -167,6 +173,9 @@ pub struct DirectDayFrame {
     pub input_accounting: DirectInputAccountingState,
     pub downstream_operands: DirectDownstreamOperands,
     pub shadow_projection: Option<DirectShadowProjection>,
+    pub water_ledger: DirectWaterLedgerState,
+    pub ledger_downstream_operands: DirectLedgerDownstreamOperands,
+    pub ledger_shadow_projection: Option<DirectLedgerShadowProjection>,
 }
 
 impl DirectDayFrame {
@@ -201,6 +210,9 @@ impl DirectDayFrame {
             input_accounting: DirectInputAccountingState::zero(),
             downstream_operands: DirectDownstreamOperands::zero(),
             shadow_projection: None,
+            water_ledger: DirectWaterLedgerState::zero(),
+            ledger_downstream_operands: DirectLedgerDownstreamOperands::zero(),
+            ledger_shadow_projection: None,
         })
     }
 
@@ -287,6 +299,99 @@ impl DirectDayFrame {
         })
     }
 
+    pub fn run_r3b_water_ledger_span(
+        &mut self,
+    ) -> Result<DirectLedgerSpanReport, DirectRuntimeError> {
+        DIRECT_AUDIT.record_phase_span_run();
+        let phase_count = DIRECT_R3B_PHASE_SPAN_COUNT;
+        let mut phase_entry_count = 0_u64;
+        let mut direct_compute_count = 0_u64;
+        let mut state_mutation_count = 0_u64;
+        let mut downstream_operand_count = 0_u64;
+        let mut shadow_projection_count = 0_u64;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.validate_r3b_water_ledger_domain()?;
+
+        let direct_flux_m = sum_finite_direct_m(
+            "water_ledger.direct_flux_m",
+            &[
+                self.water.infiltration_m,
+                self.water.runoff_m,
+                self.water.evapotranspiration_m,
+                self.water.drainage_m,
+                self.water.lateral_flow_m,
+            ],
+        )?;
+        let publication_flux_m = sum_finite_direct_m(
+            "water_ledger.publication_flux_m",
+            &[
+                self.publication.infiltration_m,
+                self.publication.runoff_m,
+                self.publication.evapotranspiration_m,
+                self.publication.drainage_m,
+                self.publication.lateral_flow_m,
+            ],
+        )?;
+        let available_water_m =
+            self.input_accounting.total_accounted_input_m + self.water.soil_water_m;
+        validate_finite("water_ledger.available_water_m", available_water_m)?;
+        let direct_publication_delta_m = direct_flux_m - publication_flux_m;
+        validate_finite(
+            "water_ledger.direct_publication_delta_m",
+            direct_publication_delta_m,
+        )?;
+        let diagnostic_residual_m = available_water_m - direct_flux_m;
+        validate_finite("water_ledger.diagnostic_residual_m", diagnostic_residual_m)?;
+        DIRECT_AUDIT.record_direct_compute_operation();
+        direct_compute_count += 1;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.water_ledger = DirectWaterLedgerState {
+            total_accounted_input_m: self.input_accounting.total_accounted_input_m,
+            soil_water_m: self.water.soil_water_m,
+            available_water_m,
+            direct_flux_m,
+            publication_flux_m,
+            direct_publication_delta_m,
+            diagnostic_residual_m,
+        };
+        DIRECT_AUDIT.record_direct_state_mutation();
+        state_mutation_count += 1;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.ledger_downstream_operands = DirectLedgerDownstreamOperands::from(self.water_ledger);
+        DIRECT_AUDIT.record_downstream_operand_production();
+        downstream_operand_count += 1;
+
+        let ledger_shadow_projection = DirectLedgerShadowProjection {
+            lane_index: self.lane_index,
+            day_index: self.day_index,
+            available_water_m: self.ledger_downstream_operands.available_water_m,
+            direct_flux_m: self.ledger_downstream_operands.direct_flux_m,
+            publication_flux_m: self.ledger_downstream_operands.publication_flux_m,
+            direct_publication_delta_m: self.ledger_downstream_operands.direct_publication_delta_m,
+            diagnostic_residual_m: self.ledger_downstream_operands.diagnostic_residual_m,
+        };
+        self.ledger_shadow_projection = Some(ledger_shadow_projection);
+        DIRECT_AUDIT.record_shadow_projection();
+        shadow_projection_count += 1;
+
+        Ok(DirectLedgerSpanReport {
+            phase_count,
+            phase_entry_count,
+            direct_compute_count,
+            state_mutation_count,
+            downstream_operand_count,
+            shadow_projection_count,
+            compatibility_edge_invocation_count: 0,
+            ledger_shadow_projection,
+        })
+    }
+
     fn validate_r3a_input_accounting_domain(&self) -> Result<(), DirectRuntimeError> {
         validate_nonnegative_direct_m("forcing.precipitation_m", self.forcing.precipitation_m)?;
         validate_finite(
@@ -307,6 +412,37 @@ impl DirectDayFrame {
             "transfer.subsurface_input_m",
             self.transfer.subsurface_input_m,
         )?;
+        validate_nonnegative_direct_m("publication.runoff_m", self.publication.runoff_m)?;
+        validate_nonnegative_direct_m(
+            "publication.infiltration_m",
+            self.publication.infiltration_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "publication.evapotranspiration_m",
+            self.publication.evapotranspiration_m,
+        )?;
+        validate_nonnegative_direct_m("publication.drainage_m", self.publication.drainage_m)?;
+        validate_nonnegative_direct_m(
+            "publication.lateral_flow_m",
+            self.publication.lateral_flow_m,
+        )?;
+        Ok(())
+    }
+
+    fn validate_r3b_water_ledger_domain(&self) -> Result<(), DirectRuntimeError> {
+        validate_nonnegative_direct_m(
+            "input_accounting.total_accounted_input_m",
+            self.input_accounting.total_accounted_input_m,
+        )?;
+        validate_nonnegative_direct_m("water.soil_water_m", self.water.soil_water_m)?;
+        validate_nonnegative_direct_m("water.infiltration_m", self.water.infiltration_m)?;
+        validate_nonnegative_direct_m("water.runoff_m", self.water.runoff_m)?;
+        validate_nonnegative_direct_m(
+            "water.evapotranspiration_m",
+            self.water.evapotranspiration_m,
+        )?;
+        validate_nonnegative_direct_m("water.drainage_m", self.water.drainage_m)?;
+        validate_nonnegative_direct_m("water.lateral_flow_m", self.water.lateral_flow_m)?;
         validate_nonnegative_direct_m("publication.runoff_m", self.publication.runoff_m)?;
         validate_nonnegative_direct_m(
             "publication.infiltration_m",
@@ -543,6 +679,83 @@ pub struct DirectShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectWaterLedgerState {
+    pub total_accounted_input_m: f64,
+    pub soil_water_m: f64,
+    pub available_water_m: f64,
+    pub direct_flux_m: f64,
+    pub publication_flux_m: f64,
+    pub direct_publication_delta_m: f64,
+    pub diagnostic_residual_m: f64,
+}
+
+impl DirectWaterLedgerState {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            total_accounted_input_m: 0.0,
+            soil_water_m: 0.0,
+            available_water_m: 0.0,
+            direct_flux_m: 0.0,
+            publication_flux_m: 0.0,
+            direct_publication_delta_m: 0.0,
+            diagnostic_residual_m: 0.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectLedgerDownstreamOperands {
+    pub total_accounted_input_m: f64,
+    pub soil_water_m: f64,
+    pub available_water_m: f64,
+    pub direct_flux_m: f64,
+    pub publication_flux_m: f64,
+    pub direct_publication_delta_m: f64,
+    pub diagnostic_residual_m: f64,
+}
+
+impl DirectLedgerDownstreamOperands {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            total_accounted_input_m: 0.0,
+            soil_water_m: 0.0,
+            available_water_m: 0.0,
+            direct_flux_m: 0.0,
+            publication_flux_m: 0.0,
+            direct_publication_delta_m: 0.0,
+            diagnostic_residual_m: 0.0,
+        }
+    }
+}
+
+impl From<DirectWaterLedgerState> for DirectLedgerDownstreamOperands {
+    fn from(state: DirectWaterLedgerState) -> Self {
+        Self {
+            total_accounted_input_m: state.total_accounted_input_m,
+            soil_water_m: state.soil_water_m,
+            available_water_m: state.available_water_m,
+            direct_flux_m: state.direct_flux_m,
+            publication_flux_m: state.publication_flux_m,
+            direct_publication_delta_m: state.direct_publication_delta_m,
+            diagnostic_residual_m: state.diagnostic_residual_m,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectLedgerShadowProjection {
+    pub lane_index: usize,
+    pub day_index: usize,
+    pub available_water_m: f64,
+    pub direct_flux_m: f64,
+    pub publication_flux_m: f64,
+    pub direct_publication_delta_m: f64,
+    pub diagnostic_residual_m: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectPhaseSpanReport {
     pub phase_count: usize,
     pub phase_entry_count: u64,
@@ -552,6 +765,18 @@ pub struct DirectPhaseSpanReport {
     pub shadow_projection_count: u64,
     pub compatibility_edge_invocation_count: u64,
     pub shadow_projection: DirectShadowProjection,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectLedgerSpanReport {
+    pub phase_count: usize,
+    pub phase_entry_count: u64,
+    pub direct_compute_count: u64,
+    pub state_mutation_count: u64,
+    pub downstream_operand_count: u64,
+    pub shadow_projection_count: u64,
+    pub compatibility_edge_invocation_count: u64,
+    pub ledger_shadow_projection: DirectLedgerShadowProjection,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -602,14 +827,25 @@ impl DirectFrameExecutor {
         let mut compatibility_edge_invocation_count = 0_u64;
         for lane_index in 0..frame.lanes.len() {
             let mut day_frame = DirectDayFrame::seed(frame.identity, lane_index, 0)?;
-            let span_report = day_frame.run_r3a_input_accounting_span()?;
+            let input_span_report = day_frame.run_r3a_input_accounting_span()?;
             phase_span_run_count += 1;
-            direct_phase_entry_count += span_report.phase_entry_count;
-            direct_compute_count += span_report.direct_compute_count;
-            state_mutation_count += span_report.state_mutation_count;
-            downstream_operand_count += span_report.downstream_operand_count;
-            shadow_projection_count += span_report.shadow_projection_count;
-            compatibility_edge_invocation_count += span_report.compatibility_edge_invocation_count;
+            direct_phase_entry_count += input_span_report.phase_entry_count;
+            direct_compute_count += input_span_report.direct_compute_count;
+            state_mutation_count += input_span_report.state_mutation_count;
+            downstream_operand_count += input_span_report.downstream_operand_count;
+            shadow_projection_count += input_span_report.shadow_projection_count;
+            compatibility_edge_invocation_count +=
+                input_span_report.compatibility_edge_invocation_count;
+
+            let ledger_span_report = day_frame.run_r3b_water_ledger_span()?;
+            phase_span_run_count += 1;
+            direct_phase_entry_count += ledger_span_report.phase_entry_count;
+            direct_compute_count += ledger_span_report.direct_compute_count;
+            state_mutation_count += ledger_span_report.state_mutation_count;
+            downstream_operand_count += ledger_span_report.downstream_operand_count;
+            shadow_projection_count += ledger_span_report.shadow_projection_count;
+            compatibility_edge_invocation_count +=
+                ledger_span_report.compatibility_edge_invocation_count;
             for phase in frame.phase_plan.phases() {
                 let view = day_frame.phase_view(*phase);
                 let _phase = view.phase();
@@ -895,6 +1131,15 @@ fn sum_nonnegative_direct_m(
     let mut total = 0.0;
     for value in values {
         validate_nonnegative_direct_m(field, *value)?;
+        total += value;
+        validate_finite(field, total)?;
+    }
+    Ok(total)
+}
+
+fn sum_finite_direct_m(field: &'static str, values: &[f64]) -> Result<f64, DirectRuntimeError> {
+    let mut total = 0.0;
+    for value in values {
         total += value;
         validate_finite(field, total)?;
     }
