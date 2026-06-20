@@ -55,7 +55,10 @@ push before the next grouped package starts.
   `docs/work-packages/20260620-r4il-direct-runoff-path-input-completion-001/`;
   pushed commit `fcb4b7d3`, branch `main`, verdict
   `COMPLETE-R4IL-DIRECT-RUNOFF-PATH-INPUT-COMPLETION`.
-- [ ] R4M/O direct subsurface compute promotion.
+- [x] (2026-06-20) R4M/O complete:
+  `docs/work-packages/20260620-r4mo-direct-subsurface-compute-promotion-001/`;
+  pushed commit `940179d9`, branch `main`, verdict
+  `COMPLETE-R4MO-DIRECT-SUBSURFACE-COMPUTE-PROMOTION`.
 - [ ] R4N direct WB17 evapotranspiration/root-uptake compute promotion.
 - [ ] R4P/Q/Z direct hydrology projection and R4 closure.
 
@@ -543,6 +546,10 @@ package write set.
   output directory contained the run manifest. PASS identity checks must use
   the manifest output path, not assume the package-local output root contains
   the parquet files.
+- 2026-06-20: R4M/O confirmed the same manifest-selected output-root behavior;
+  package-local `/tmp/r4mo-h2637/default/rep*/h2637_same/` roots contained run
+  manifests, while protected parquet outputs remained under
+  `/tmp/perfmig01-final/current/anchor/h2637_same/`.
 
 ## Decision Log
 
@@ -567,6 +574,6 @@ package write set.
 
 ## Outcomes & Retrospective
 
-R4A through R4D were complete and pushed before this plan was authored. R4E-H
-and R4I-L are complete and pushed. R4M/O is the next package to scaffold and
-execute.
+R4A through R4D were complete and pushed before this plan was authored. R4E-H,
+R4I-L, and R4M/O are complete and pushed. R4N is the next package to scaffold
+and execute.
