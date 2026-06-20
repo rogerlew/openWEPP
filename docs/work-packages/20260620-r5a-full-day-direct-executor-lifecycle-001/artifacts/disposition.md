@@ -1,6 +1,6 @@
 # Disposition
 
-Status: complete pending commit and push.
+Status: complete. Pushed commit: `3edfca66` on branch `main`.
 
 Findings disposition:
 

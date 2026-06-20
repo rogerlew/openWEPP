@@ -31,7 +31,8 @@ State as of `2026-06-20`:
   `647.95 s`, and `643.45 s` (median `643.98 s`, threshold `<= 676.67 s`) with
   protected output comparison passing through HBP/WAT byte identity, PASS
   DuckDB row equivalence, and run-name-only normalized loss/plot differences.
-  Package: `20260620-r5a-full-day-direct-executor-lifecycle-001/`.
+  Package: `20260620-r5a-full-day-direct-executor-lifecycle-001/`. Pushed
+  commit: `3edfca66`.
 - R4P/Q/Z is complete with verdict
   `COMPLETE-R4PQZ-HYDROLOGY-PROJECTION-R4-CLOSURE`. The package closed R4 by
   adding a shadow-only direct hydrology projection span after the direct

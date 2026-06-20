@@ -41,7 +41,10 @@ grouped package starts.
 
 ## Progress
 
-- [ ] R5A full-day direct executor lifecycle.
+- [x] R5A full-day direct executor lifecycle - complete 2026-06-20;
+  package `20260620-r5a-full-day-direct-executor-lifecycle-001/`; pushed
+  commit `3edfca66`; branch `main`; verdict
+  `COMPLETE-R5A-FULL-DAY-DIRECT-EXECUTOR-LIFECYCLE`.
 - [ ] R5B direct normalization and storage-bounds phases.
 - [ ] R5C direct decomposition and residue transitions.
 - [ ] R5D direct annual and perennial growth transitions.
