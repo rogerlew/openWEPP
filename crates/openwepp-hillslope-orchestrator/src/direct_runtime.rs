@@ -104,10 +104,17 @@ pub const DIRECT_R4PQZ_HYDROLOGY_PROJECTION_SPAN: [DirectPhaseKind; DIRECT_R4PQZ
     DirectPhaseKind::StorageReconciliation,
     DirectPhaseKind::ClosureDiagnostics,
 ];
+pub const DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT: usize = 1;
+pub const DIRECT_R5B_NORMALIZATION_SPAN: [DirectPhaseKind;
+    DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT] = [DirectPhaseKind::Normalization];
+pub const DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT: usize = 1;
+pub const DIRECT_R5B_STORAGE_BOUNDS_SPAN: [DirectPhaseKind;
+    DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT] = [DirectPhaseKind::StorageBounds];
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
 mod evapotranspiration;
+mod normalization;
 mod projection;
 mod runoff;
 mod storage;
@@ -120,6 +127,12 @@ pub use evapotranspiration::{
     DirectEvapotranspirationStageState, DirectEvapotranspirationSurfaceDownstreamOperands,
     DirectEvapotranspirationSurfaceShadowProjection, DirectEvapotranspirationSurfaceSpanReport,
     DirectEvapotranspirationSurfaceState,
+};
+pub use normalization::{
+    DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
+    DirectNormalizationShadowProjection, DirectNormalizationSpanReport, DirectNormalizationState,
+    DirectStorageBoundsDownstreamOperands, DirectStorageBoundsInputs,
+    DirectStorageBoundsShadowProjection, DirectStorageBoundsSpanReport, DirectStorageBoundsState,
 };
 pub use projection::{
     DirectHydrologyProjectionDownstreamOperands, DirectHydrologyProjectionInputs,
@@ -597,6 +610,14 @@ pub struct DirectDayFrame {
     pub water: DirectWaterState,
     pub transfer: DirectTransferBuffers,
     pub publication: DirectPublicationFrame,
+    pub normalization_inputs: DirectNormalizationInputs,
+    pub normalization: DirectNormalizationState,
+    pub normalization_downstream_operands: DirectNormalizationDownstreamOperands,
+    pub normalization_shadow_projection: Option<DirectNormalizationShadowProjection>,
+    pub storage_bounds_inputs: DirectStorageBoundsInputs,
+    pub storage_bounds: DirectStorageBoundsState,
+    pub storage_bounds_downstream_operands: DirectStorageBoundsDownstreamOperands,
+    pub storage_bounds_shadow_projection: Option<DirectStorageBoundsShadowProjection>,
     pub input_accounting: DirectInputAccountingState,
     pub downstream_operands: DirectDownstreamOperands,
     pub shadow_projection: Option<DirectShadowProjection>,
@@ -678,19 +699,7 @@ impl DirectDayFrame {
         lane_index: usize,
         day_index: usize,
     ) -> Result<Self, DirectRuntimeError> {
-        if lane_index >= identity.lane_count {
-            return Err(DirectRuntimeError::LaneIndexOutOfRange {
-                lane_index,
-                lane_count: identity.lane_count,
-            });
-        }
-        if day_index >= identity.day_count {
-            return Err(DirectRuntimeError::DayIndexOutOfRange {
-                day_index,
-                day_count: identity.day_count,
-            });
-        }
-
+        Self::validate_seed_indices(identity, lane_index, day_index)?;
         DIRECT_AUDIT.record_day_frame_construction();
 
         Ok(Self {
@@ -701,6 +710,14 @@ impl DirectDayFrame {
             water: DirectWaterState::zero(),
             transfer: DirectTransferBuffers::zero(),
             publication: DirectPublicationFrame::empty(),
+            normalization_inputs: DirectNormalizationInputs::zero(),
+            normalization: DirectNormalizationState::zero(),
+            normalization_downstream_operands: DirectNormalizationDownstreamOperands::zero(),
+            normalization_shadow_projection: None,
+            storage_bounds_inputs: DirectStorageBoundsInputs::zero(),
+            storage_bounds: DirectStorageBoundsState::zero(),
+            storage_bounds_downstream_operands: DirectStorageBoundsDownstreamOperands::zero(),
+            storage_bounds_shadow_projection: None,
             input_accounting: DirectInputAccountingState::zero(),
             downstream_operands: DirectDownstreamOperands::zero(),
             shadow_projection: None,
@@ -777,6 +794,26 @@ impl DirectDayFrame {
             ledger_downstream_operands: DirectLedgerDownstreamOperands::zero(),
             ledger_shadow_projection: None,
         })
+    }
+
+    fn validate_seed_indices(
+        identity: DirectRunIdentity,
+        lane_index: usize,
+        day_index: usize,
+    ) -> Result<(), DirectRuntimeError> {
+        if lane_index >= identity.lane_count {
+            return Err(DirectRuntimeError::LaneIndexOutOfRange {
+                lane_index,
+                lane_count: identity.lane_count,
+            });
+        }
+        if day_index >= identity.day_count {
+            return Err(DirectRuntimeError::DayIndexOutOfRange {
+                day_index,
+                day_count: identity.day_count,
+            });
+        }
+        Ok(())
     }
 
     pub fn phase_view(&mut self, phase: DirectPhaseKind) -> DirectPhaseView<'_> {
@@ -1661,12 +1698,12 @@ impl DirectFrameExecutor {
     #[must_use]
     const fn phase_lifecycle_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStatus {
         match phase {
-            DirectPhaseKind::StorageBounds
-            | DirectPhaseKind::DecompositionTransition
+            DirectPhaseKind::DecompositionTransition
             | DirectPhaseKind::ResiduePartitionTransition
             | DirectPhaseKind::AnnualGrowthTransition
             | DirectPhaseKind::PerennialGrowthTransition => DirectPhaseLifecycleStatus::Hold,
             DirectPhaseKind::Normalization
+            | DirectPhaseKind::StorageBounds
             | DirectPhaseKind::PercolationDeepSeepage
             | DirectPhaseKind::Evapotranspiration
             | DirectPhaseKind::Drainage
@@ -1682,7 +1719,8 @@ impl DirectFrameExecutor {
         day_frame: &mut DirectDayFrame,
         counters: &mut DirectExecutionCounters,
     ) -> Result<(), DirectRuntimeError> {
-        record_direct_span_report!(counters, day_frame.run_r3a_input_accounting_span());
+        record_direct_span_report!(counters, day_frame.run_r5b_normalization_phase());
+        record_direct_span_report!(counters, day_frame.run_r5b_storage_bounds_phase());
         record_direct_span_report!(counters, day_frame.run_r4c_storage_input_span());
         record_direct_span_report!(counters, day_frame.run_r4m_percolation_span());
         record_direct_span_report!(counters, day_frame.run_r4n_surface_et_span());

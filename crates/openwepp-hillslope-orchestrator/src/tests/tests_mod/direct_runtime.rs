@@ -10,33 +10,39 @@ use crate::{
     DIRECT_R4G_SNOW_COUPLING_SPAN, DIRECT_R4I_PHASE_SPAN_COUNT, DIRECT_R4J_PHASE_SPAN_COUNT,
     DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT, DIRECT_R4M_PHASE_SPAN_COUNT,
     DIRECT_R4N_PHASE_SPAN_COUNT, DIRECT_R4O_PHASE_SPAN_COUNT, DIRECT_R4PQZ_PHASE_SPAN_COUNT,
-    DirectDayFrame, DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
+    DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT, DIRECT_R5B_NORMALIZATION_SPAN,
+    DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT, DIRECT_R5B_STORAGE_BOUNDS_SPAN, DirectDayFrame,
+    DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
     DirectDeepSeepageShadowProjection, DirectDeepSeepageState, DirectDownstreamOperands,
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationDownstreamOperands,
     DirectEvapotranspirationInputs, DirectEvapotranspirationShadowProjection,
     DirectEvapotranspirationState, DirectExecutorMode, DirectFrameExecutor,
     DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneTransferLedger,
     DirectLedgerDownstreamOperands, DirectLedgerShadowProjection, DirectLiquidInputInputs,
-    DirectPercolationInputs, DirectPhaseKind, DirectPhaseLifecycleStatus, DirectRunFrame,
-    DirectRunIdentity, DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
+    DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
+    DirectNormalizationShadowProjection, DirectNormalizationState, DirectPercolationInputs,
+    DirectPhaseKind, DirectPhaseLifecycleStatus, DirectRunFrame, DirectRunIdentity,
+    DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
     DirectRunoffPartitionInputs, DirectRunonCarryInputs, DirectRuntimeError,
     DirectSaturationAddbackInputs, DirectShadowProjection, DirectSnowCouplingDownstreamOperands,
     DirectSnowCouplingInputs, DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
-    DirectStorageDownstreamOperands, DirectStorageInputDownstreamOperands,
-    DirectStorageInputShadowProjection, DirectStorageInputState, DirectStorageReconciliationInputs,
-    DirectStorageReconciliationState, DirectStorageShadowProjection, DirectSubsurfaceComputeInputs,
-    DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
-    DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
+    DirectStorageBoundsDownstreamOperands, DirectStorageBoundsInputs,
+    DirectStorageBoundsShadowProjection, DirectStorageBoundsState, DirectStorageDownstreamOperands,
+    DirectStorageInputDownstreamOperands, DirectStorageInputShadowProjection,
+    DirectStorageInputState, DirectStorageReconciliationInputs, DirectStorageReconciliationState,
+    DirectStorageShadowProjection, DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs,
+    DirectSubsurfaceLayerState, DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
     DirectSubsurfaceLossShadowProjection, DirectSubsurfaceLossState, DirectWaterLedgerState,
     reset_direct_runtime_audit_counters,
 };
 
-fn r5a_day_span_run_count() -> u64 {
-    15
+fn r5b_day_span_run_count() -> u64 {
+    16
 }
 
-fn r5a_day_phase_entry_count() -> u64 {
-    (DIRECT_R3A_PHASE_SPAN_COUNT
+fn r5b_day_phase_entry_count() -> u64 {
+    (DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT
+        + DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT
         + DIRECT_R4C_PHASE_SPAN_COUNT
         + DIRECT_R4M_PHASE_SPAN_COUNT
         + DIRECT_R4N_PHASE_SPAN_COUNT
@@ -52,14 +58,14 @@ fn r5a_day_phase_entry_count() -> u64 {
         + DIRECT_R3B_PHASE_SPAN_COUNT) as u64
 }
 
-fn r5a_expected_phase_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStatus {
+fn r5b_expected_phase_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStatus {
     match phase {
-        DirectPhaseKind::StorageBounds
-        | DirectPhaseKind::DecompositionTransition
+        DirectPhaseKind::DecompositionTransition
         | DirectPhaseKind::ResiduePartitionTransition
         | DirectPhaseKind::AnnualGrowthTransition
         | DirectPhaseKind::PerennialGrowthTransition => DirectPhaseLifecycleStatus::Hold,
         DirectPhaseKind::Normalization
+        | DirectPhaseKind::StorageBounds
         | DirectPhaseKind::PercolationDeepSeepage
         | DirectPhaseKind::Evapotranspiration
         | DirectPhaseKind::Drainage
@@ -71,12 +77,12 @@ fn r5a_expected_phase_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStat
     }
 }
 
-fn assert_r5a_phase_status_counts(counts: &[crate::DirectPhaseStatusCount], expected_count: u64) {
+fn assert_r5b_phase_status_counts(counts: &[crate::DirectPhaseStatusCount], expected_count: u64) {
     assert_eq!(counts.len(), DIRECT_PHASE_COUNT);
     for (index, count) in counts.iter().enumerate() {
         let expected_phase = DirectPhaseKind::ORDERED[index];
         assert_eq!(count.phase, expected_phase);
-        assert_eq!(count.status, r5a_expected_phase_status(expected_phase));
+        assert_eq!(count.status, r5b_expected_phase_status(expected_phase));
         assert_eq!(count.count, expected_count);
     }
 }
@@ -107,30 +113,30 @@ fn r5a_direct_skeleton_runs_all_days_and_lanes_with_lifecycle_counters() {
         report.phase_view_count,
         expected_day_frames * DIRECT_PHASE_COUNT as u64
     );
-    assert_r5a_phase_status_counts(&report.phase_status_counts, expected_day_frames);
+    assert_r5b_phase_status_counts(&report.phase_status_counts, expected_day_frames);
     assert_eq!(
         report.phase_span_run_count,
-        1 + expected_day_frames * r5a_day_span_run_count()
+        1 + expected_day_frames * r5b_day_span_run_count()
     );
     assert_eq!(
         report.direct_phase_entry_count,
-        DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5a_day_phase_entry_count()
+        DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5b_day_phase_entry_count()
     );
     assert_eq!(
         report.direct_compute_count,
-        1 + expected_day_frames * r5a_day_span_run_count()
+        1 + expected_day_frames * r5b_day_span_run_count()
     );
     assert_eq!(
         report.state_mutation_count,
-        1 + expected_day_frames * r5a_day_span_run_count()
+        1 + expected_day_frames * r5b_day_span_run_count()
     );
     assert_eq!(
         report.downstream_operand_count,
-        1 + expected_day_frames * r5a_day_span_run_count()
+        1 + expected_day_frames * r5b_day_span_run_count()
     );
     assert_eq!(
         report.shadow_projection_count,
-        1 + expected_day_frames * r5a_day_span_run_count()
+        1 + expected_day_frames * r5b_day_span_run_count()
     );
     assert_eq!(report.compatibility_edge_invocation_count, 0);
     assert_eq!(report.day_frame_commit_count, expected_day_frames);
@@ -146,27 +152,27 @@ fn r5a_direct_skeleton_runs_all_days_and_lanes_with_lifecycle_counters() {
     );
     assert_eq!(
         audit.phase_span_runs,
-        1 + expected_day_frames * r5a_day_span_run_count()
+        1 + expected_day_frames * r5b_day_span_run_count()
     );
     assert_eq!(
         audit.direct_phase_entries,
-        DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5a_day_phase_entry_count()
+        DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5b_day_phase_entry_count()
     );
     assert_eq!(
         audit.direct_compute_operations,
-        1 + expected_day_frames * r5a_day_span_run_count()
+        1 + expected_day_frames * r5b_day_span_run_count()
     );
     assert_eq!(
         audit.direct_state_mutations,
-        1 + expected_day_frames * r5a_day_span_run_count()
+        1 + expected_day_frames * r5b_day_span_run_count()
     );
     assert_eq!(
         audit.downstream_operand_productions,
-        1 + expected_day_frames * r5a_day_span_run_count()
+        1 + expected_day_frames * r5b_day_span_run_count()
     );
     assert_eq!(
         audit.shadow_projections,
-        1 + expected_day_frames * r5a_day_span_run_count()
+        1 + expected_day_frames * r5b_day_span_run_count()
     );
     assert_eq!(audit.compatibility_edge_invocations, 0);
 }
@@ -252,6 +258,14 @@ fn r2a_direct_runtime_source_excludes_compatibility_storage_tokens() {
                 "/src/direct_runtime/evapotranspiration.rs"
             ))
             .expect("direct runtime evapotranspiration source should be readable"),
+        ),
+        (
+            "direct_runtime/normalization.rs",
+            std::fs::read_to_string(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/src/direct_runtime/normalization.rs"
+            ))
+            .expect("direct runtime normalization source should be readable"),
         ),
         (
             "direct_runtime/projection.rs",
@@ -419,6 +433,352 @@ fn r3a_input_accounting_span_rejects_invalid_inputs() {
             .expect_err("overflowed transfer total should fail closed"),
         DirectRuntimeError::NonFiniteDirectValue {
             field: "input_accounting.transfer_input_m"
+        }
+    );
+}
+
+#[test]
+fn r5b_normalization_phase_computes_mutates_downstream_and_shadow_projects() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    assert_eq!(
+        DIRECT_R5B_NORMALIZATION_SPAN,
+        [DirectPhaseKind::Normalization]
+    );
+    assert_eq!(
+        &[
+            DirectPhaseKind::Normalization,
+            DirectPhaseKind::StorageBounds,
+            DirectPhaseKind::DecompositionTransition,
+        ],
+        &DirectPhaseKind::ORDERED[0..3]
+    );
+
+    let mut day = r5b_normalization_fixture_day();
+    let report = day
+        .run_r5b_normalization_phase()
+        .expect("valid R5B normalization phase should execute");
+    let (expected_inputs, expected_state, expected_operands, expected_shadow, r3_shadow) =
+        r5b_expected_normalization_outputs();
+
+    assert_eq!(day.normalization_inputs, expected_inputs);
+    assert_eq!(day.normalization, expected_state);
+    assert_eq!(
+        day.input_accounting,
+        DirectInputAccountingState::from(expected_state)
+    );
+    assert_eq!(day.normalization_downstream_operands, expected_operands);
+    assert_eq!(
+        day.downstream_operands,
+        DirectDownstreamOperands::from(day.input_accounting)
+    );
+    assert_eq!(day.normalization_shadow_projection, Some(expected_shadow));
+    assert_eq!(day.shadow_projection, Some(r3_shadow));
+    assert_eq!(
+        day.storage_reconciliation_inputs
+            .storage_initial_m
+            .to_bits(),
+        1.25_f64.to_bits()
+    );
+    assert_eq!(
+        day.storage_reconciliation_inputs.precip_input_m.to_bits(),
+        0.125_f64.to_bits()
+    );
+    assert_eq!(
+        report.phase_count,
+        DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT
+    );
+    assert_eq!(report.phase_entry_count, 1);
+    assert_eq!(report.direct_compute_count, 1);
+    assert_eq!(report.state_mutation_count, 1);
+    assert_eq!(report.downstream_operand_count, 1);
+    assert_eq!(report.shadow_projection_count, 1);
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+    assert_eq!(report.normalization_shadow_projection, expected_shadow);
+
+    assert_r5b_normalization_anti_aliases(expected_state, &day);
+
+    let audit = crate::direct_runtime_audit_snapshot();
+    assert_eq!(audit.day_frame_constructions, 1);
+    assert_eq!(audit.phase_span_runs, 1);
+    assert_eq!(audit.direct_phase_entries, 1);
+    assert_eq!(audit.direct_compute_operations, 1);
+    assert_eq!(audit.direct_state_mutations, 1);
+    assert_eq!(audit.downstream_operand_productions, 1);
+    assert_eq!(audit.shadow_projections, 1);
+    assert_eq!(audit.compatibility_edge_invocations, 0);
+}
+
+fn r5b_normalization_fixture_day() -> DirectDayFrame {
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    day.forcing.precipitation_m = 0.125;
+    day.forcing.effective_temperature_c = -2.5;
+    day.water.soil_water_m = 1.25;
+    day.transfer.surface_carry_m[0] = 0.25;
+    day.transfer.surface_carry_m[1] = 0.125;
+    day.transfer.lateral_carry_m[0] = 0.0625;
+    day.transfer.upstream_flow_m = 0.03125;
+    day.transfer.subsurface_input_m = 0.015_625;
+    day.publication.infiltration_m = 0.007_812_5;
+    day
+}
+
+fn r5b_expected_normalization_outputs() -> (
+    DirectNormalizationInputs,
+    DirectNormalizationState,
+    DirectNormalizationDownstreamOperands,
+    DirectNormalizationShadowProjection,
+    DirectShadowProjection,
+) {
+    let expected_inputs = DirectNormalizationInputs {
+        precipitation_m: 0.125,
+        effective_temperature_c: -2.5,
+        storage_initial_m: 1.25,
+        surface_transfer_m: 0.375,
+        lateral_transfer_m: 0.0625,
+        upstream_flow_m: 0.03125,
+        subsurface_input_m: 0.015_625,
+    };
+    let expected_state = DirectNormalizationState {
+        precipitation_m: 0.125,
+        effective_temperature_c: -2.5,
+        storage_initial_m: 1.25,
+        surface_transfer_m: 0.375,
+        lateral_transfer_m: 0.0625,
+        upstream_flow_m: 0.03125,
+        subsurface_input_m: 0.015_625,
+        transfer_input_m: 0.484_375,
+        total_accounted_input_m: 0.609_375,
+    };
+    let expected_shadow = DirectNormalizationShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        precipitation_m: 0.125,
+        storage_initial_m: 1.25,
+        transfer_input_m: 0.484_375,
+        total_accounted_input_m: 0.609_375,
+    };
+    let r3_shadow = DirectShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        precipitation_m: 0.125,
+        transfer_input_m: 0.484_375,
+        total_accounted_input_m: 0.609_375,
+    };
+
+    (
+        expected_inputs,
+        expected_state,
+        DirectNormalizationDownstreamOperands::from(expected_state),
+        expected_shadow,
+        r3_shadow,
+    )
+}
+
+fn assert_r5b_normalization_anti_aliases(
+    expected_state: DirectNormalizationState,
+    day: &DirectDayFrame,
+) {
+    assert_ne!(
+        expected_state.precipitation_m.to_bits(),
+        expected_state.storage_initial_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.precipitation_m.to_bits(),
+        expected_state.transfer_input_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.precipitation_m.to_bits(),
+        expected_state.total_accounted_input_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.storage_initial_m.to_bits(),
+        expected_state.total_accounted_input_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.precipitation_m.to_bits(),
+        day.publication.infiltration_m.to_bits()
+    );
+}
+
+#[test]
+fn r5b_storage_bounds_phase_consumes_normalization_and_shadow_projects() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    assert_eq!(
+        DIRECT_R5B_STORAGE_BOUNDS_SPAN,
+        [DirectPhaseKind::StorageBounds]
+    );
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    day.forcing.precipitation_m = 0.25;
+    day.water.soil_water_m = 1.0;
+    day.transfer.surface_carry_m[0] = 0.5;
+    day.transfer.lateral_carry_m[0] = 0.125;
+    day.transfer.upstream_flow_m = 0.03125;
+    day.transfer.subsurface_input_m = 0.015_625;
+    day.storage_reconciliation_inputs.closure_tolerance_m = 1.0e-12;
+    day.storage_reconciliation.closure_residual_m = 0.5;
+
+    day.run_r5b_normalization_phase()
+        .expect("R5B normalization should pass before storage bounds");
+    let report = day
+        .run_r5b_storage_bounds_phase()
+        .expect("valid R5B storage bounds phase should execute");
+
+    let expected_inputs = DirectStorageBoundsInputs {
+        storage_initial_m: 1.0,
+        total_accounted_input_m: 0.921_875,
+        closure_tolerance_m: 1.0e-12,
+    };
+    let expected_state = DirectStorageBoundsState {
+        storage_bounded_m: 1.0,
+        total_accounted_input_m: 0.921_875,
+        closure_tolerance_m: 1.0e-12,
+    };
+    let expected_operands = DirectStorageBoundsDownstreamOperands::from(expected_state);
+    let expected_shadow = DirectStorageBoundsShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        storage_bounded_m: 1.0,
+        total_accounted_input_m: 0.921_875,
+        closure_tolerance_m: 1.0e-12,
+    };
+
+    assert_eq!(day.storage_bounds_inputs, expected_inputs);
+    assert_eq!(day.storage_bounds, expected_state);
+    assert_eq!(day.storage_bounds_downstream_operands, expected_operands);
+    assert_eq!(day.storage_bounds_shadow_projection, Some(expected_shadow));
+    assert_eq!(day.water.soil_water_m.to_bits(), 1.0_f64.to_bits());
+    assert_eq!(
+        day.storage_reconciliation_inputs
+            .storage_initial_m
+            .to_bits(),
+        1.0_f64.to_bits()
+    );
+    assert_eq!(
+        report.phase_count,
+        DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT
+    );
+    assert_eq!(report.phase_entry_count, 1);
+    assert_eq!(report.direct_compute_count, 1);
+    assert_eq!(report.state_mutation_count, 1);
+    assert_eq!(report.downstream_operand_count, 1);
+    assert_eq!(report.shadow_projection_count, 1);
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+    assert_eq!(report.storage_bounds_shadow_projection, expected_shadow);
+
+    assert_r5b_storage_bounds_anti_aliases(expected_state, &day);
+
+    let audit = crate::direct_runtime_audit_snapshot();
+    assert_eq!(audit.day_frame_constructions, 1);
+    assert_eq!(audit.phase_span_runs, 2);
+    assert_eq!(audit.direct_phase_entries, 2);
+    assert_eq!(audit.direct_compute_operations, 2);
+    assert_eq!(audit.direct_state_mutations, 2);
+    assert_eq!(audit.downstream_operand_productions, 2);
+    assert_eq!(audit.shadow_projections, 2);
+    assert_eq!(audit.compatibility_edge_invocations, 0);
+}
+
+fn assert_r5b_storage_bounds_anti_aliases(
+    expected_state: DirectStorageBoundsState,
+    day: &DirectDayFrame,
+) {
+    assert_ne!(
+        expected_state.storage_bounded_m.to_bits(),
+        expected_state.total_accounted_input_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.storage_bounded_m.to_bits(),
+        day.forcing.precipitation_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.storage_bounded_m.to_bits(),
+        day.storage_reconciliation.closure_residual_m.to_bits()
+    );
+    assert_ne!(
+        expected_state.total_accounted_input_m.to_bits(),
+        day.storage_reconciliation.closure_residual_m.to_bits()
+    );
+}
+
+#[test]
+fn r5b_storage_bounds_phase_rejects_missing_normalization_and_invalid_storage() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
+
+    let mut missing_normalization_day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    assert_eq!(
+        missing_normalization_day
+            .run_r5b_storage_bounds_phase()
+            .expect_err("storage bounds should require R5B normalization"),
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R5B normalization phase"
+        }
+    );
+
+    let mut negative_storage_day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    negative_storage_day.water.soil_water_m = -0.125;
+    assert_eq!(
+        negative_storage_day
+            .run_r5b_normalization_phase()
+            .expect_err("normalization should reject negative storage"),
+        DirectRuntimeError::NegativeDirectValue {
+            field: "normalization.storage_initial_m"
+        }
+    );
+
+    let mut invalid_bounded_storage_day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    invalid_bounded_storage_day
+        .run_r5b_normalization_phase()
+        .expect("valid normalization should execute before injected invalid storage");
+    invalid_bounded_storage_day
+        .normalization_downstream_operands
+        .storage_initial_m = -0.125;
+    assert_eq!(
+        invalid_bounded_storage_day
+            .run_r5b_storage_bounds_phase()
+            .expect_err("storage bounds should reject invalid normalized storage"),
+        DirectRuntimeError::NegativeDirectValue {
+            field: "storage_bounds.storage_initial_m"
+        }
+    );
+
+    let mut invalid_tolerance_day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    invalid_tolerance_day
+        .run_r5b_normalization_phase()
+        .expect("valid normalization should execute before invalid tolerance");
+    invalid_tolerance_day
+        .storage_reconciliation_inputs
+        .closure_tolerance_m = f64::NAN;
+    assert_eq!(
+        invalid_tolerance_day
+            .run_r5b_storage_bounds_phase()
+            .expect_err("storage bounds should reject nonfinite closure tolerance"),
+        DirectRuntimeError::NonFiniteDirectValue {
+            field: "storage_bounds.closure_tolerance_m"
         }
     );
 }

@@ -13,7 +13,9 @@
 
 State as of `2026-06-20`:
 
-- None. R5B is next in `r5-burndown-execplan.md`.
+- `20260620-r5b-normalization-storage-bounds-direct-phases-001/` is
+  scaffolded and in progress from `r5-burndown-execplan.md`. It owns direct
+  `Normalization` and `StorageBounds` phase promotion.
 
 ## Current roadmap execution log
 
