@@ -8,8 +8,17 @@
 
 ## Current roadmap execution log
 
-State as of `2026-06-19`:
+State as of `2026-06-20`:
 
+- R3A is scaffolded and queued as the first complete direct phase-span package
+  after R2A. It must select one direct phase span before Rust edits and prove
+  the span includes typed inputs, direct compute, direct state mutation,
+  downstream operands, and shadow projection. Its gate is phase-span identity
+  plus no-compatibility call-graph proof and non-tautological runtime
+  counters. It must preserve the default-disabled H2637 median gate
+  `<= 676.67 s`, cannot cut over publication, and cannot claim R4/R6/default
+  activation readiness. Package:
+  `20260620-r3a-first-direct-phase-span-001/`.
 - R2A is complete with verdict `COMPLETE-R2A-SKELETON`. The package introduced
   a distinct direct-runtime namespace, typed direct-frame shells, a no-op/shadow
   direct executor skeleton, explicit one-time runner setup selection, default

@@ -1,0 +1,28 @@
+# R3A Gate Results
+
+Status: queued.
+Evidence mode: not run.
+
+| Gate | Result | Evidence |
+|---|---|---|
+| Required-reading map populated | NOT RUN | queued |
+| Owned-file manifest complete | NOT RUN | queued |
+| Pre-implementation gate complete | NOT RUN | queued |
+| Complete phase span selected | NOT RUN | queued |
+| Inputs/compute/mutation/downstream/shadow contract satisfied | NOT RUN | queued |
+| Phase-span identity passes | NOT RUN | queued |
+| No-compatibility call-graph proof passes | NOT RUN | queued |
+| Runtime counters are non-tautological and pass | NOT RUN | queued |
+| Focused tests pass | NOT RUN | queued |
+| Default-disabled H2637 median `<= 676.67 s` | NOT RUN | queued |
+| Protected identity passes | NOT RUN | queued |
+| No publication cutover or default activation | NOT RUN | queued |
+| Full Rust closure gates pass | NOT RUN | queued |
+| Markdown lint passes | NOT RUN | queued |
+| `git diff --check` passes | NOT RUN | queued |
+| Line-count governance complete | NOT RUN | queued |
+| Dual review complete | NOT RUN | queued |
+| Finding disposition complete | NOT RUN | queued |
+| Dual verification complete | NOT RUN | queued |
+
+Any `FAIL`, `BLOCKED`, or unjustified `NOT RUN` prevents completion.
