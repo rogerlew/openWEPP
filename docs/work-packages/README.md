@@ -5,13 +5,34 @@
 > **execution log**: the home for **completed** work — package status, detail, and
 > commits. When a queue item closes it is removed from `ROADMAP.md` and recorded
 > here. If the two disagree on what is next, `ROADMAP.md` wins.
-> Scaffolded but unexecuted packages stay discoverable from `ROADMAP.md` and
-> their package-local `package.md`; they enter this execution log after closure.
+> Scaffolded but unexecuted packages stay discoverable from `ROADMAP.md`, their
+> package-local `package.md`, and the scaffolded package pointer below; they
+> enter the execution log after closure.
+
+## Current scaffolded packages
+
+State as of `2026-06-20`:
+
+- None.
 
 ## Current roadmap execution log
 
 State as of `2026-06-20`:
 
+- R4D is complete with verdict
+  `COMPLETE-R4D-DIRECT-DEEP-SEEPAGE-PRODUCER`. The package implemented a direct
+  WB18/WB12 deep-seepage handoff producer feeding R4B `deep_seepage_m`. R4D
+  consumes a dedicated direct deep-seepage handoff input, validates finite
+  nonnegative `D`, mutates direct deep-seepage state and the R4B
+  `deep_seepage_m` input, produces downstream operands, and shadow-projects the
+  result. R4B now requires R4C storage input, R4D deep seepage, and R4A runoff
+  before storage reconciliation. R4D remains no-publication, no-default-
+  activation, and no-scheduler: public output paths and compatibility runtime
+  remain authoritative. Full Rust gates passed. Final default-disabled H2637
+  reps were `635.94 s`, `650.91 s`, and `645.47 s` (median `645.47 s`,
+  threshold `<= 676.67 s`) with protected output identity and PASS DuckDB row
+  equivalence. Package:
+  `20260620-r4d-direct-deep-seepage-producer-001/`.
 - R4C is complete with verdict
   `COMPLETE-R4C-DIRECT-STORAGE-INPUT-PRODUCER`. The package implemented a
   direct WB12 storage-input producer and split storage-related direct-runtime

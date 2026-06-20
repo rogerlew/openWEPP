@@ -37,12 +37,19 @@ pub const DIRECT_R4C_STORAGE_INPUT_SPAN: [DirectPhaseKind; DIRECT_R4C_PHASE_SPAN
     DirectPhaseKind::Normalization,
     DirectPhaseKind::StorageReconciliation,
 ];
+pub const DIRECT_R4D_PHASE_SPAN_COUNT: usize = 2;
+pub const DIRECT_R4D_DEEP_SEEPAGE_SPAN: [DirectPhaseKind; DIRECT_R4D_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::PercolationDeepSeepage,
+    DirectPhaseKind::StorageReconciliation,
+];
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
 mod storage;
 
 pub use storage::{
+    DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
+    DirectDeepSeepageShadowProjection, DirectDeepSeepageSpanReport, DirectDeepSeepageState,
     DirectStorageDownstreamOperands, DirectStorageInputDownstreamOperands,
     DirectStorageInputShadowProjection, DirectStorageInputSpanReport, DirectStorageInputState,
     DirectStorageReconciliationInputs, DirectStorageReconciliationSpanReport,
@@ -391,6 +398,10 @@ pub struct DirectDayFrame {
     pub storage_input: DirectStorageInputState,
     pub storage_input_downstream_operands: DirectStorageInputDownstreamOperands,
     pub storage_input_shadow_projection: Option<DirectStorageInputShadowProjection>,
+    pub deep_seepage_inputs: DirectDeepSeepageInputs,
+    pub deep_seepage: DirectDeepSeepageState,
+    pub deep_seepage_downstream_operands: DirectDeepSeepageDownstreamOperands,
+    pub deep_seepage_shadow_projection: Option<DirectDeepSeepageShadowProjection>,
     pub storage_reconciliation_inputs: DirectStorageReconciliationInputs,
     pub storage_reconciliation: DirectStorageReconciliationState,
     pub storage_downstream_operands: DirectStorageDownstreamOperands,
@@ -439,6 +450,10 @@ impl DirectDayFrame {
             storage_input: DirectStorageInputState::zero(),
             storage_input_downstream_operands: DirectStorageInputDownstreamOperands::zero(),
             storage_input_shadow_projection: None,
+            deep_seepage_inputs: DirectDeepSeepageInputs::zero(),
+            deep_seepage: DirectDeepSeepageState::zero(),
+            deep_seepage_downstream_operands: DirectDeepSeepageDownstreamOperands::zero(),
+            deep_seepage_shadow_projection: None,
             storage_reconciliation_inputs: DirectStorageReconciliationInputs::zero(),
             storage_reconciliation: DirectStorageReconciliationState::zero(),
             storage_downstream_operands: DirectStorageDownstreamOperands::zero(),
@@ -1471,6 +1486,16 @@ impl DirectFrameExecutor {
             shadow_projection_count += storage_input_span_report.shadow_projection_count;
             compatibility_edge_invocation_count +=
                 storage_input_span_report.compatibility_edge_invocation_count;
+
+            let deep_seepage_span_report = day_frame.run_r4d_deep_seepage_span()?;
+            phase_span_run_count += 1;
+            direct_phase_entry_count += deep_seepage_span_report.phase_entry_count;
+            direct_compute_count += deep_seepage_span_report.direct_compute_count;
+            state_mutation_count += deep_seepage_span_report.state_mutation_count;
+            downstream_operand_count += deep_seepage_span_report.downstream_operand_count;
+            shadow_projection_count += deep_seepage_span_report.shadow_projection_count;
+            compatibility_edge_invocation_count +=
+                deep_seepage_span_report.compatibility_edge_invocation_count;
 
             let runoff_span_report = day_frame.run_r4a_runoff_partition_span()?;
             phase_span_run_count += 1;

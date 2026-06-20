@@ -1,6 +1,7 @@
 use super::{
-    DIRECT_AUDIT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT, DirectDayFrame,
-    DirectRuntimeError, validate_finite, validate_nonnegative_direct_m,
+    DIRECT_AUDIT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT,
+    DIRECT_R4D_PHASE_SPAN_COUNT, DirectDayFrame, DirectRuntimeError, validate_finite,
+    validate_nonnegative_direct_m,
 };
 
 impl DirectDayFrame {
@@ -44,6 +45,47 @@ impl DirectDayFrame {
             shadow_projection_count: 1,
             compatibility_edge_invocation_count: 0,
             storage_input_shadow_projection,
+        })
+    }
+
+    pub fn run_r4d_deep_seepage_span(
+        &mut self,
+    ) -> Result<DirectDeepSeepageSpanReport, DirectRuntimeError> {
+        DIRECT_AUDIT.record_phase_span_run();
+        let phase_count = DIRECT_R4D_PHASE_SPAN_COUNT;
+        let mut phase_entry_count = 0_u64;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        let deep_seepage = self.compute_r4d_deep_seepage()?;
+        DIRECT_AUDIT.record_direct_compute_operation();
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.deep_seepage = deep_seepage;
+        self.storage_reconciliation_inputs.deep_seepage_m = deep_seepage.deep_seepage_m;
+        DIRECT_AUDIT.record_direct_state_mutation();
+        self.deep_seepage_downstream_operands =
+            DirectDeepSeepageDownstreamOperands::from(deep_seepage);
+        DIRECT_AUDIT.record_downstream_operand_production();
+
+        let deep_seepage_shadow_projection = DirectDeepSeepageShadowProjection {
+            lane_index: self.lane_index,
+            day_index: self.day_index,
+            deep_seepage_m: self.deep_seepage_downstream_operands.deep_seepage_m,
+        };
+        self.deep_seepage_shadow_projection = Some(deep_seepage_shadow_projection);
+        DIRECT_AUDIT.record_shadow_projection();
+
+        Ok(DirectDeepSeepageSpanReport {
+            phase_count,
+            phase_entry_count,
+            direct_compute_count: 1,
+            state_mutation_count: 1,
+            downstream_operand_count: 1,
+            shadow_projection_count: 1,
+            compatibility_edge_invocation_count: 0,
+            deep_seepage_shadow_projection,
         })
     }
 
@@ -101,6 +143,13 @@ impl DirectDayFrame {
         Ok(DirectStorageInputState {
             storage_initial_m: self.water.soil_water_m,
             precip_input_m: self.downstream_operands.precipitation_m,
+        })
+    }
+
+    fn compute_r4d_deep_seepage(&self) -> Result<DirectDeepSeepageState, DirectRuntimeError> {
+        self.validate_r4d_deep_seepage_domain()?;
+        Ok(DirectDeepSeepageState {
+            deep_seepage_m: self.deep_seepage_inputs.deep_seepage_handoff_m,
         })
     }
 
@@ -169,10 +218,23 @@ impl DirectDayFrame {
         Ok(())
     }
 
+    fn validate_r4d_deep_seepage_domain(&self) -> Result<(), DirectRuntimeError> {
+        validate_nonnegative_direct_m(
+            "deep_seepage.deep_seepage_handoff_m",
+            self.deep_seepage_inputs.deep_seepage_handoff_m,
+        )?;
+        Ok(())
+    }
+
     fn validate_r4b_storage_reconciliation_domain(&self) -> Result<(), DirectRuntimeError> {
         if self.storage_input_shadow_projection.is_none() {
             return Err(DirectRuntimeError::MissingDirectUpstream {
                 upstream: "R4C storage input producer",
+            });
+        }
+        if self.deep_seepage_shadow_projection.is_none() {
+            return Err(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "R4D deep-seepage producer",
             });
         }
         if self.runoff_shadow_projection.is_none() {
@@ -263,6 +325,63 @@ pub struct DirectStorageInputShadowProjection {
     pub day_index: usize,
     pub storage_initial_m: f64,
     pub precip_input_m: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectDeepSeepageInputs {
+    pub deep_seepage_handoff_m: f64,
+}
+
+impl DirectDeepSeepageInputs {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            deep_seepage_handoff_m: 0.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectDeepSeepageState {
+    pub deep_seepage_m: f64,
+}
+
+impl DirectDeepSeepageState {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            deep_seepage_m: 0.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectDeepSeepageDownstreamOperands {
+    pub deep_seepage_m: f64,
+}
+
+impl DirectDeepSeepageDownstreamOperands {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            deep_seepage_m: 0.0,
+        }
+    }
+}
+
+impl From<DirectDeepSeepageState> for DirectDeepSeepageDownstreamOperands {
+    fn from(state: DirectDeepSeepageState) -> Self {
+        Self {
+            deep_seepage_m: state.deep_seepage_m,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectDeepSeepageShadowProjection {
+    pub lane_index: usize,
+    pub day_index: usize,
+    pub deep_seepage_m: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -394,6 +513,18 @@ pub struct DirectStorageInputSpanReport {
     pub shadow_projection_count: u64,
     pub compatibility_edge_invocation_count: u64,
     pub storage_input_shadow_projection: DirectStorageInputShadowProjection,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectDeepSeepageSpanReport {
+    pub phase_count: usize,
+    pub phase_entry_count: u64,
+    pub direct_compute_count: u64,
+    pub state_mutation_count: u64,
+    pub downstream_operand_count: u64,
+    pub shadow_projection_count: u64,
+    pub compatibility_edge_invocation_count: u64,
+    pub deep_seepage_shadow_projection: DirectDeepSeepageShadowProjection,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
