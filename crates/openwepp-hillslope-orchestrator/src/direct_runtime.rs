@@ -4,6 +4,11 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 pub const DIRECT_TRANSFER_HOUR_COUNT: usize = 24;
 pub const DIRECT_PHASE_COUNT: usize = 14;
+pub const DIRECT_R3A_PHASE_SPAN_COUNT: usize = 2;
+pub const DIRECT_R3A_INPUT_ACCOUNTING_SPAN: [DirectPhaseKind; DIRECT_R3A_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::Normalization,
+    DirectPhaseKind::LateralTransfer,
+];
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
@@ -159,6 +164,9 @@ pub struct DirectDayFrame {
     pub water: DirectWaterState,
     pub transfer: DirectTransferBuffers,
     pub publication: DirectPublicationFrame,
+    pub input_accounting: DirectInputAccountingState,
+    pub downstream_operands: DirectDownstreamOperands,
+    pub shadow_projection: Option<DirectShadowProjection>,
 }
 
 impl DirectDayFrame {
@@ -190,6 +198,9 @@ impl DirectDayFrame {
             water: DirectWaterState::zero(),
             transfer: DirectTransferBuffers::zero(),
             publication: DirectPublicationFrame::empty(),
+            input_accounting: DirectInputAccountingState::zero(),
+            downstream_operands: DirectDownstreamOperands::zero(),
+            shadow_projection: None,
         })
     }
 
@@ -201,6 +212,116 @@ impl DirectDayFrame {
             transfer: &mut self.transfer,
             publication: &mut self.publication,
         }
+    }
+
+    pub fn run_r3a_input_accounting_span(
+        &mut self,
+    ) -> Result<DirectPhaseSpanReport, DirectRuntimeError> {
+        DIRECT_AUDIT.record_phase_span_run();
+        let phase_count = DIRECT_R3A_PHASE_SPAN_COUNT;
+        let mut phase_entry_count = 0_u64;
+        let mut direct_compute_count = 0_u64;
+        let mut state_mutation_count = 0_u64;
+        let mut downstream_operand_count = 0_u64;
+        let mut shadow_projection_count = 0_u64;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.validate_r3a_input_accounting_domain()?;
+
+        let surface_transfer_m =
+            sum_nonnegative_direct_m("transfer.surface_carry_m", &self.transfer.surface_carry_m)?;
+        let lateral_transfer_m =
+            sum_nonnegative_direct_m("transfer.lateral_carry_m", &self.transfer.lateral_carry_m)?;
+        let transfer_input_m = surface_transfer_m
+            + lateral_transfer_m
+            + self.transfer.upstream_flow_m
+            + self.transfer.subsurface_input_m;
+        validate_finite("input_accounting.transfer_input_m", transfer_input_m)?;
+        let total_accounted_input_m = self.forcing.precipitation_m + transfer_input_m;
+        validate_finite(
+            "input_accounting.total_accounted_input_m",
+            total_accounted_input_m,
+        )?;
+        DIRECT_AUDIT.record_direct_compute_operation();
+        direct_compute_count += 1;
+
+        self.input_accounting = DirectInputAccountingState {
+            precipitation_m: self.forcing.precipitation_m,
+            surface_transfer_m,
+            lateral_transfer_m,
+            upstream_flow_m: self.transfer.upstream_flow_m,
+            subsurface_input_m: self.transfer.subsurface_input_m,
+            transfer_input_m,
+            total_accounted_input_m,
+        };
+        DIRECT_AUDIT.record_direct_state_mutation();
+        state_mutation_count += 1;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.downstream_operands = DirectDownstreamOperands::from(self.input_accounting);
+        DIRECT_AUDIT.record_downstream_operand_production();
+        downstream_operand_count += 1;
+
+        let shadow_projection = DirectShadowProjection {
+            lane_index: self.lane_index,
+            day_index: self.day_index,
+            precipitation_m: self.downstream_operands.precipitation_m,
+            transfer_input_m: self.downstream_operands.transfer_input_m,
+            total_accounted_input_m: self.downstream_operands.total_accounted_input_m,
+        };
+        self.shadow_projection = Some(shadow_projection);
+        DIRECT_AUDIT.record_shadow_projection();
+        shadow_projection_count += 1;
+
+        Ok(DirectPhaseSpanReport {
+            phase_count,
+            phase_entry_count,
+            direct_compute_count,
+            state_mutation_count,
+            downstream_operand_count,
+            shadow_projection_count,
+            compatibility_edge_invocation_count: 0,
+            shadow_projection,
+        })
+    }
+
+    fn validate_r3a_input_accounting_domain(&self) -> Result<(), DirectRuntimeError> {
+        validate_nonnegative_direct_m("forcing.precipitation_m", self.forcing.precipitation_m)?;
+        validate_finite(
+            "forcing.effective_temperature_c",
+            self.forcing.effective_temperature_c,
+        )?;
+        validate_nonnegative_direct_m("water.soil_water_m", self.water.soil_water_m)?;
+        validate_nonnegative_direct_m("water.infiltration_m", self.water.infiltration_m)?;
+        validate_nonnegative_direct_m("water.runoff_m", self.water.runoff_m)?;
+        validate_nonnegative_direct_m(
+            "water.evapotranspiration_m",
+            self.water.evapotranspiration_m,
+        )?;
+        validate_nonnegative_direct_m("water.drainage_m", self.water.drainage_m)?;
+        validate_nonnegative_direct_m("water.lateral_flow_m", self.water.lateral_flow_m)?;
+        validate_nonnegative_direct_m("transfer.upstream_flow_m", self.transfer.upstream_flow_m)?;
+        validate_nonnegative_direct_m(
+            "transfer.subsurface_input_m",
+            self.transfer.subsurface_input_m,
+        )?;
+        validate_nonnegative_direct_m("publication.runoff_m", self.publication.runoff_m)?;
+        validate_nonnegative_direct_m(
+            "publication.infiltration_m",
+            self.publication.infiltration_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "publication.evapotranspiration_m",
+            self.publication.evapotranspiration_m,
+        )?;
+        validate_nonnegative_direct_m("publication.drainage_m", self.publication.drainage_m)?;
+        validate_nonnegative_direct_m(
+            "publication.lateral_flow_m",
+            self.publication.lateral_flow_m,
+        )?;
+        Ok(())
     }
 }
 
@@ -346,6 +467,93 @@ impl DirectTransferBuffers {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectInputAccountingState {
+    pub precipitation_m: f64,
+    pub surface_transfer_m: f64,
+    pub lateral_transfer_m: f64,
+    pub upstream_flow_m: f64,
+    pub subsurface_input_m: f64,
+    pub transfer_input_m: f64,
+    pub total_accounted_input_m: f64,
+}
+
+impl DirectInputAccountingState {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            precipitation_m: 0.0,
+            surface_transfer_m: 0.0,
+            lateral_transfer_m: 0.0,
+            upstream_flow_m: 0.0,
+            subsurface_input_m: 0.0,
+            transfer_input_m: 0.0,
+            total_accounted_input_m: 0.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectDownstreamOperands {
+    pub precipitation_m: f64,
+    pub surface_transfer_m: f64,
+    pub lateral_transfer_m: f64,
+    pub upstream_flow_m: f64,
+    pub subsurface_input_m: f64,
+    pub transfer_input_m: f64,
+    pub total_accounted_input_m: f64,
+}
+
+impl DirectDownstreamOperands {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            precipitation_m: 0.0,
+            surface_transfer_m: 0.0,
+            lateral_transfer_m: 0.0,
+            upstream_flow_m: 0.0,
+            subsurface_input_m: 0.0,
+            transfer_input_m: 0.0,
+            total_accounted_input_m: 0.0,
+        }
+    }
+}
+
+impl From<DirectInputAccountingState> for DirectDownstreamOperands {
+    fn from(state: DirectInputAccountingState) -> Self {
+        Self {
+            precipitation_m: state.precipitation_m,
+            surface_transfer_m: state.surface_transfer_m,
+            lateral_transfer_m: state.lateral_transfer_m,
+            upstream_flow_m: state.upstream_flow_m,
+            subsurface_input_m: state.subsurface_input_m,
+            transfer_input_m: state.transfer_input_m,
+            total_accounted_input_m: state.total_accounted_input_m,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectShadowProjection {
+    pub lane_index: usize,
+    pub day_index: usize,
+    pub precipitation_m: f64,
+    pub transfer_input_m: f64,
+    pub total_accounted_input_m: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPhaseSpanReport {
+    pub phase_count: usize,
+    pub phase_entry_count: u64,
+    pub direct_compute_count: u64,
+    pub state_mutation_count: u64,
+    pub downstream_operand_count: u64,
+    pub shadow_projection_count: u64,
+    pub compatibility_edge_invocation_count: u64,
+    pub shadow_projection: DirectShadowProjection,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DirectExecutionReport {
     pub mode: DirectExecutorMode,
@@ -353,6 +561,13 @@ pub struct DirectExecutionReport {
     pub day_count: usize,
     pub planned_phase_count: usize,
     pub phase_view_count: u64,
+    pub phase_span_run_count: u64,
+    pub direct_phase_entry_count: u64,
+    pub direct_compute_count: u64,
+    pub state_mutation_count: u64,
+    pub downstream_operand_count: u64,
+    pub shadow_projection_count: u64,
+    pub compatibility_edge_invocation_count: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -378,8 +593,23 @@ impl DirectFrameExecutor {
     ) -> Result<DirectExecutionReport, DirectRuntimeError> {
         DIRECT_AUDIT.record_skeleton_run();
         let mut phase_view_count = 0_u64;
+        let mut phase_span_run_count = 0_u64;
+        let mut direct_phase_entry_count = 0_u64;
+        let mut direct_compute_count = 0_u64;
+        let mut state_mutation_count = 0_u64;
+        let mut downstream_operand_count = 0_u64;
+        let mut shadow_projection_count = 0_u64;
+        let mut compatibility_edge_invocation_count = 0_u64;
         for lane_index in 0..frame.lanes.len() {
             let mut day_frame = DirectDayFrame::seed(frame.identity, lane_index, 0)?;
+            let span_report = day_frame.run_r3a_input_accounting_span()?;
+            phase_span_run_count += 1;
+            direct_phase_entry_count += span_report.phase_entry_count;
+            direct_compute_count += span_report.direct_compute_count;
+            state_mutation_count += span_report.state_mutation_count;
+            downstream_operand_count += span_report.downstream_operand_count;
+            shadow_projection_count += span_report.shadow_projection_count;
+            compatibility_edge_invocation_count += span_report.compatibility_edge_invocation_count;
             for phase in frame.phase_plan.phases() {
                 let view = day_frame.phase_view(*phase);
                 let _phase = view.phase();
@@ -393,6 +623,13 @@ impl DirectFrameExecutor {
             day_count: frame.identity.day_count,
             planned_phase_count: frame.phase_plan.len(),
             phase_view_count,
+            phase_span_run_count,
+            direct_phase_entry_count,
+            direct_compute_count,
+            state_mutation_count,
+            downstream_operand_count,
+            shadow_projection_count,
+            compatibility_edge_invocation_count,
         })
     }
 }
@@ -404,6 +641,13 @@ pub struct DirectRuntimeAuditSnapshot {
     pub executor_constructions: u64,
     pub skeleton_runs: u64,
     pub phase_view_constructions: u64,
+    pub phase_span_runs: u64,
+    pub direct_phase_entries: u64,
+    pub direct_compute_operations: u64,
+    pub direct_state_mutations: u64,
+    pub downstream_operand_productions: u64,
+    pub shadow_projections: u64,
+    pub compatibility_edge_invocations: u64,
 }
 
 #[must_use]
@@ -415,12 +659,23 @@ pub fn reset_direct_runtime_audit_counters() {
     DIRECT_AUDIT.reset();
 }
 
+pub fn record_direct_runtime_compatibility_edge_invocation() {
+    DIRECT_AUDIT.record_compatibility_edge_invocation();
+}
+
 struct DirectRuntimeAuditCounters {
     run_frame_constructions: AtomicU64,
     day_frame_constructions: AtomicU64,
     executor_constructions: AtomicU64,
     skeleton_runs: AtomicU64,
     phase_view_constructions: AtomicU64,
+    phase_span_runs: AtomicU64,
+    direct_phase_entries: AtomicU64,
+    direct_compute_operations: AtomicU64,
+    direct_state_mutations: AtomicU64,
+    downstream_operand_productions: AtomicU64,
+    shadow_projections: AtomicU64,
+    compatibility_edge_invocations: AtomicU64,
 }
 
 impl DirectRuntimeAuditCounters {
@@ -431,6 +686,13 @@ impl DirectRuntimeAuditCounters {
             executor_constructions: AtomicU64::new(0),
             skeleton_runs: AtomicU64::new(0),
             phase_view_constructions: AtomicU64::new(0),
+            phase_span_runs: AtomicU64::new(0),
+            direct_phase_entries: AtomicU64::new(0),
+            direct_compute_operations: AtomicU64::new(0),
+            direct_state_mutations: AtomicU64::new(0),
+            downstream_operand_productions: AtomicU64::new(0),
+            shadow_projections: AtomicU64::new(0),
+            compatibility_edge_invocations: AtomicU64::new(0),
         }
     }
 
@@ -455,6 +717,37 @@ impl DirectRuntimeAuditCounters {
             .fetch_add(1, Ordering::Relaxed);
     }
 
+    fn record_phase_span_run(&self) {
+        self.phase_span_runs.fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn record_direct_phase_entry(&self) {
+        self.direct_phase_entries.fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn record_direct_compute_operation(&self) {
+        self.direct_compute_operations
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn record_direct_state_mutation(&self) {
+        self.direct_state_mutations.fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn record_downstream_operand_production(&self) {
+        self.downstream_operand_productions
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn record_shadow_projection(&self) {
+        self.shadow_projections.fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn record_compatibility_edge_invocation(&self) {
+        self.compatibility_edge_invocations
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
     fn snapshot(&self) -> DirectRuntimeAuditSnapshot {
         DirectRuntimeAuditSnapshot {
             run_frame_constructions: self.run_frame_constructions.load(Ordering::Relaxed),
@@ -462,6 +755,17 @@ impl DirectRuntimeAuditCounters {
             executor_constructions: self.executor_constructions.load(Ordering::Relaxed),
             skeleton_runs: self.skeleton_runs.load(Ordering::Relaxed),
             phase_view_constructions: self.phase_view_constructions.load(Ordering::Relaxed),
+            phase_span_runs: self.phase_span_runs.load(Ordering::Relaxed),
+            direct_phase_entries: self.direct_phase_entries.load(Ordering::Relaxed),
+            direct_compute_operations: self.direct_compute_operations.load(Ordering::Relaxed),
+            direct_state_mutations: self.direct_state_mutations.load(Ordering::Relaxed),
+            downstream_operand_productions: self
+                .downstream_operand_productions
+                .load(Ordering::Relaxed),
+            shadow_projections: self.shadow_projections.load(Ordering::Relaxed),
+            compatibility_edge_invocations: self
+                .compatibility_edge_invocations
+                .load(Ordering::Relaxed),
         }
     }
 
@@ -471,6 +775,15 @@ impl DirectRuntimeAuditCounters {
         self.executor_constructions.store(0, Ordering::Relaxed);
         self.skeleton_runs.store(0, Ordering::Relaxed);
         self.phase_view_constructions.store(0, Ordering::Relaxed);
+        self.phase_span_runs.store(0, Ordering::Relaxed);
+        self.direct_phase_entries.store(0, Ordering::Relaxed);
+        self.direct_compute_operations.store(0, Ordering::Relaxed);
+        self.direct_state_mutations.store(0, Ordering::Relaxed);
+        self.downstream_operand_productions
+            .store(0, Ordering::Relaxed);
+        self.shadow_projections.store(0, Ordering::Relaxed);
+        self.compatibility_edge_invocations
+            .store(0, Ordering::Relaxed);
     }
 }
 
@@ -492,6 +805,12 @@ pub enum DirectRuntimeError {
     DayIndexOutOfRange {
         day_index: usize,
         day_count: usize,
+    },
+    NonFiniteDirectValue {
+        field: &'static str,
+    },
+    NegativeDirectValue {
+        field: &'static str,
     },
 }
 
@@ -534,8 +853,50 @@ impl fmt::Display for DirectRuntimeError {
                     "direct runtime day index {day_index} is outside day count {day_count}"
                 )
             }
+            Self::NonFiniteDirectValue { field } => {
+                write!(formatter, "direct runtime field {field} must be finite")
+            }
+            Self::NegativeDirectValue { field } => {
+                write!(
+                    formatter,
+                    "direct runtime field {field} must be nonnegative"
+                )
+            }
         }
     }
 }
 
 impl Error for DirectRuntimeError {}
+
+fn validate_finite(field: &'static str, value: f64) -> Result<(), DirectRuntimeError> {
+    if value.is_finite() {
+        Ok(())
+    } else {
+        Err(DirectRuntimeError::NonFiniteDirectValue { field })
+    }
+}
+
+fn validate_nonnegative_direct_m(
+    field: &'static str,
+    value: f64,
+) -> Result<(), DirectRuntimeError> {
+    validate_finite(field, value)?;
+    if value >= 0.0 {
+        Ok(())
+    } else {
+        Err(DirectRuntimeError::NegativeDirectValue { field })
+    }
+}
+
+fn sum_nonnegative_direct_m(
+    field: &'static str,
+    values: &[f64; DIRECT_TRANSFER_HOUR_COUNT],
+) -> Result<f64, DirectRuntimeError> {
+    let mut total = 0.0;
+    for value in values {
+        validate_nonnegative_direct_m(field, *value)?;
+        total += value;
+        validate_finite(field, total)?;
+    }
+    Ok(total)
+}

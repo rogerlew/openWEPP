@@ -16,7 +16,7 @@ use openwepp_hillslope_orchestrator::{
     HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
     OfeLanePersistentState, OfeLanePersistentStateSequence, OfeLaneSequenceExecutionReport,
     SchedulerOutcomeClass, TransferInput, TransferOutput, Wb11HydrologyKernel,
-    build_hillslope_hot_symbol_tables,
+    build_hillslope_hot_symbol_tables, record_direct_runtime_compatibility_edge_invocation,
 };
 use openwepp_hillslope_output::contracts::{HillslopeOutputConfig, validate_output_contract};
 use openwepp_hillslope_output::hillslope_pass::{
@@ -2473,6 +2473,7 @@ fn select_direct_runtime_skeleton_once(
         .run_skeleton(&mut frame)
         .map_err(|source| direct_runtime_skeleton_error(&source))?;
     debug_assert_eq!(report.mode.as_str(), mode.as_str());
+    record_direct_runtime_compatibility_edge_invocation();
 
     Ok(())
 }

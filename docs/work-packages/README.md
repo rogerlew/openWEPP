@@ -10,14 +10,21 @@
 
 State as of `2026-06-20`:
 
-- R3A is scaffolded and queued as the first complete direct phase-span package
-  after R2A. It must select one direct phase span before Rust edits and prove
-  the span includes typed inputs, direct compute, direct state mutation,
-  downstream operands, and shadow projection. Its gate is phase-span identity
-  plus no-compatibility call-graph proof and non-tautological runtime
-  counters. It must preserve the default-disabled H2637 median gate
-  `<= 676.67 s`, cannot cut over publication, and cannot claim R4/R6/default
-  activation readiness. Package:
+- R3A is complete with verdict `COMPLETE-R3A-PHASE-SPAN`. The package
+  implemented direct transfer-input accounting as the first complete direct
+  phase span on top of the R2A skeleton:
+  `DirectPhaseKind::Normalization -> DirectPhaseKind::LateralTransfer`.
+  The span includes typed inputs, direct compute, direct state mutation,
+  downstream operands, and shadow projection. Phase-span identity passed with
+  exact binary-fraction fixture evidence; no-compatibility proof passed by
+  forbidden-token source scan, scheduler no-diff, and runtime counters; the
+  explicit opt-in path records one production compatibility-edge handoff while
+  direct span execution records zero edge invocations. Full Rust gates passed.
+  Final default-disabled H2637 reps were `630.31 s`, `640.85 s`, and
+  `632.08 s` (median `632.08 s`, threshold `<= 676.67 s`) with protected
+  output identity.
+  R3A did not cut over publication, activate direct mode by default, or claim
+  R4/R6/endpoint readiness. Package:
   `20260620-r3a-first-direct-phase-span-001/`.
 - R2A is complete with verdict `COMPLETE-R2A-SKELETON`. The package introduced
   a distinct direct-runtime namespace, typed direct-frame shells, a no-op/shadow

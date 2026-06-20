@@ -1,31 +1,27 @@
 # R3A Artifacts
 
-Status: queued.
-Evidence mode: not run.
+Status: complete.
+Evidence mode: Static + Ran.
 
-Artifacts to populate during execution:
+R3A implemented the first complete direct-runtime phase span:
+`DirectPhaseKind::Normalization -> DirectPhaseKind::LateralTransfer`.
 
-- `required-reading-map.md`
-- `owned-file-manifest.md`
-- `r3a-phase-span-contract.md`
-- `direct-phase-api-plan.md`
-- `no-compatibility-proof-checklist.md`
-- `default-disabled-regression-gate.md`
-- `phase-span-identity-evidence.md`
-- `pre-implementation-contract-gate.md`
-- `contract-implementation-evidence.md`
-- `contract-test-implementation-evidence.md`
-- `implementation-test-evidence.md`
-- `kernel-profile-compliance-checklist.md`
-- `gate-results.md`
-- `line-count-governance.md`
-- `review_agent_a.md`
-- `review_agent_b.md`
-- `verification_agent_a.md`
-- `verification_agent_b.md`
-- `disposition.md`
-- `worker-handoff.md`
+Key evidence:
 
-R3A is an implementation package. Artifact updates must distinguish static
-proof, runtime evidence, benchmark evidence, identity evidence, and skipped or
-blocked gates.
+- phase span: direct transfer-input accounting;
+- implementation: `direct_runtime.rs` direct types, compute, state mutation,
+  downstream operands, shadow projection, and counters;
+- focused tests: orchestrator R3A/R2A filters and runner R2A opt-in/default
+  filters pass;
+- no-compatibility proof: direct runtime forbidden-token scan returned no
+  matches and `scheduler.rs` has no diff;
+- default-disabled H2637 gate: `630.31/640.85/632.08 s`, median `632.08 s`
+  against threshold `<= 676.67 s`;
+- protected identity: HBP, loss, WAT, and plot checksums stable; PASS parquet
+  schema/row equivalence passed by DuckDB;
+- closure gates: `cargo fmt --check`, `cargo clippy --workspace
+  --all-targets -- -D warnings`, `cargo test --workspace`, `cargo deny check`,
+  scoped markdown lint, and `git diff --check` passed.
+
+R3A does not claim R4 hydrology-path migration, R6 publication cutover,
+endpoint improvement, or default activation readiness.

@@ -54,11 +54,14 @@ pub use day_frame::{
     HillslopeDayFrameMismatch, HillslopeDayFrameShadowReport, HillslopeLaneDenseState,
 };
 pub use direct_runtime::{
-    DIRECT_PHASE_COUNT, DIRECT_TRANSFER_HOUR_COUNT, DirectDayForcing, DirectDayFrame,
-    DirectExecutionReport, DirectExecutorMode, DirectFrameExecutor, DirectLaneFrame,
-    DirectPhaseKind, DirectPhasePlan, DirectPhaseView, DirectPublicationFrame, DirectRunFrame,
-    DirectRunIdentity, DirectRuntimeAuditSnapshot, DirectRuntimeError, DirectTransferBuffers,
-    DirectWaterState, direct_runtime_audit_snapshot, reset_direct_runtime_audit_counters,
+    DIRECT_PHASE_COUNT, DIRECT_R3A_INPUT_ACCOUNTING_SPAN, DIRECT_R3A_PHASE_SPAN_COUNT,
+    DIRECT_TRANSFER_HOUR_COUNT, DirectDayForcing, DirectDayFrame, DirectDownstreamOperands,
+    DirectExecutionReport, DirectExecutorMode, DirectFrameExecutor, DirectInputAccountingState,
+    DirectLaneFrame, DirectPhaseKind, DirectPhasePlan, DirectPhaseSpanReport, DirectPhaseView,
+    DirectPublicationFrame, DirectRunFrame, DirectRunIdentity, DirectRuntimeAuditSnapshot,
+    DirectRuntimeError, DirectShadowProjection, DirectTransferBuffers, DirectWaterState,
+    direct_runtime_audit_snapshot, record_direct_runtime_compatibility_edge_invocation,
+    reset_direct_runtime_audit_counters,
 };
 pub use hydrology::{
     HillslopeHydrologyRoutingError, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,

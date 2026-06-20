@@ -1,6 +1,6 @@
 # R3A - First Direct Phase Span
 
-Status: queued.
+Status: complete.
 
 Package type: implementation work package / array-native runtime R3A.
 
