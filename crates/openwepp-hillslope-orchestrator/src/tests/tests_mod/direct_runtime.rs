@@ -9,9 +9,10 @@ use crate::{
     DIRECT_R4F_EVAPOTRANSPIRATION_SPAN, DIRECT_R4F_PHASE_SPAN_COUNT, DIRECT_R4G_PHASE_SPAN_COUNT,
     DIRECT_R4G_SNOW_COUPLING_SPAN, DIRECT_R4I_PHASE_SPAN_COUNT, DIRECT_R4J_PHASE_SPAN_COUNT,
     DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT, DIRECT_R4M_PHASE_SPAN_COUNT,
-    DIRECT_R4O_PHASE_SPAN_COUNT, DirectDayFrame, DirectDeepSeepageDownstreamOperands,
-    DirectDeepSeepageInputs, DirectDeepSeepageShadowProjection, DirectDeepSeepageState,
-    DirectDownstreamOperands, DirectEvapotranspirationDownstreamOperands,
+    DIRECT_R4N_PHASE_SPAN_COUNT, DIRECT_R4O_PHASE_SPAN_COUNT, DirectDayFrame,
+    DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
+    DirectDeepSeepageShadowProjection, DirectDeepSeepageState, DirectDownstreamOperands,
+    DirectEvapotranspirationComputeInputs, DirectEvapotranspirationDownstreamOperands,
     DirectEvapotranspirationInputs, DirectEvapotranspirationShadowProjection,
     DirectEvapotranspirationState, DirectExecutorMode, DirectFrameExecutor,
     DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneTransferLedger,
@@ -52,15 +53,15 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
     assert_eq!(report.day_count, 10);
     assert_eq!(report.planned_phase_count, DIRECT_PHASE_COUNT);
     assert_eq!(report.phase_view_count, (2 * DIRECT_PHASE_COUNT) as u64);
-    assert_eq!(report.phase_span_run_count, 27);
+    assert_eq!(report.phase_span_run_count, 29);
     assert_eq!(
         report.direct_phase_entry_count,
         (DIRECT_R3C_PHASE_SPAN_COUNT
             + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT
                 + DIRECT_R4C_PHASE_SPAN_COUNT
                 + DIRECT_R4M_PHASE_SPAN_COUNT
+                + DIRECT_R4N_PHASE_SPAN_COUNT
                 + DIRECT_R4O_PHASE_SPAN_COUNT
-                + DIRECT_R4F_PHASE_SPAN_COUNT
                 + DIRECT_R4G_PHASE_SPAN_COUNT
                 + DIRECT_R4I_PHASE_SPAN_COUNT
                 + DIRECT_R4J_PHASE_SPAN_COUNT
@@ -70,10 +71,10 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
                 + DIRECT_R4B_PHASE_SPAN_COUNT
                 + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
     );
-    assert_eq!(report.direct_compute_count, 27);
-    assert_eq!(report.state_mutation_count, 27);
-    assert_eq!(report.downstream_operand_count, 27);
-    assert_eq!(report.shadow_projection_count, 27);
+    assert_eq!(report.direct_compute_count, 29);
+    assert_eq!(report.state_mutation_count, 29);
+    assert_eq!(report.downstream_operand_count, 29);
+    assert_eq!(report.shadow_projection_count, 29);
     assert_eq!(report.compatibility_edge_invocation_count, 0);
     let audit = crate::direct_runtime_audit_snapshot();
     assert_eq!(audit.run_frame_constructions, 1);
@@ -84,15 +85,15 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
         audit.phase_view_constructions,
         (2 * DIRECT_PHASE_COUNT) as u64
     );
-    assert_eq!(audit.phase_span_runs, 27);
+    assert_eq!(audit.phase_span_runs, 29);
     assert_eq!(
         audit.direct_phase_entries,
         (DIRECT_R3C_PHASE_SPAN_COUNT
             + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT
                 + DIRECT_R4C_PHASE_SPAN_COUNT
                 + DIRECT_R4M_PHASE_SPAN_COUNT
+                + DIRECT_R4N_PHASE_SPAN_COUNT
                 + DIRECT_R4O_PHASE_SPAN_COUNT
-                + DIRECT_R4F_PHASE_SPAN_COUNT
                 + DIRECT_R4G_PHASE_SPAN_COUNT
                 + DIRECT_R4I_PHASE_SPAN_COUNT
                 + DIRECT_R4J_PHASE_SPAN_COUNT
@@ -102,10 +103,10 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
                 + DIRECT_R4B_PHASE_SPAN_COUNT
                 + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
     );
-    assert_eq!(audit.direct_compute_operations, 27);
-    assert_eq!(audit.direct_state_mutations, 27);
-    assert_eq!(audit.downstream_operand_productions, 27);
-    assert_eq!(audit.shadow_projections, 27);
+    assert_eq!(audit.direct_compute_operations, 29);
+    assert_eq!(audit.direct_state_mutations, 29);
+    assert_eq!(audit.downstream_operand_productions, 29);
+    assert_eq!(audit.shadow_projections, 29);
     assert_eq!(audit.compatibility_edge_invocations, 0);
 }
 
@@ -139,6 +140,30 @@ fn r2a_direct_runtime_source_excludes_compatibility_storage_tokens() {
                 "/src/direct_runtime/storage.rs"
             ))
             .expect("direct runtime storage source should be readable"),
+        ),
+        (
+            "direct_runtime/runoff.rs",
+            std::fs::read_to_string(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/src/direct_runtime/runoff.rs"
+            ))
+            .expect("direct runtime runoff source should be readable"),
+        ),
+        (
+            "direct_runtime/subsurface.rs",
+            std::fs::read_to_string(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/src/direct_runtime/subsurface.rs"
+            ))
+            .expect("direct runtime subsurface source should be readable"),
+        ),
+        (
+            "direct_runtime/evapotranspiration.rs",
+            std::fs::read_to_string(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/src/direct_runtime/evapotranspiration.rs"
+            ))
+            .expect("direct runtime evapotranspiration source should be readable"),
         ),
     ];
 
@@ -1249,14 +1274,14 @@ fn r4b_storage_reconciliation_consumes_r4a_q_and_shadow_projects() {
 
     let audit = crate::direct_runtime_audit_snapshot();
     assert_eq!(audit.day_frame_constructions, 1);
-    assert_eq!(audit.phase_span_runs, 12);
+    assert_eq!(audit.phase_span_runs, 13);
     assert_eq!(
         audit.direct_phase_entries,
         (DIRECT_R3A_PHASE_SPAN_COUNT
             + DIRECT_R4C_PHASE_SPAN_COUNT
             + DIRECT_R4M_PHASE_SPAN_COUNT
+            + DIRECT_R4N_PHASE_SPAN_COUNT
             + DIRECT_R4O_PHASE_SPAN_COUNT
-            + DIRECT_R4F_PHASE_SPAN_COUNT
             + DIRECT_R4G_PHASE_SPAN_COUNT
             + DIRECT_R4I_PHASE_SPAN_COUNT
             + DIRECT_R4J_PHASE_SPAN_COUNT
@@ -1265,10 +1290,10 @@ fn r4b_storage_reconciliation_consumes_r4a_q_and_shadow_projects() {
             + DIRECT_R4A_PHASE_SPAN_COUNT
             + DIRECT_R4B_PHASE_SPAN_COUNT) as u64
     );
-    assert_eq!(audit.direct_compute_operations, 12);
-    assert_eq!(audit.direct_state_mutations, 12);
-    assert_eq!(audit.downstream_operand_productions, 12);
-    assert_eq!(audit.shadow_projections, 12);
+    assert_eq!(audit.direct_compute_operations, 13);
+    assert_eq!(audit.direct_state_mutations, 13);
+    assert_eq!(audit.downstream_operand_productions, 13);
+    assert_eq!(audit.shadow_projections, 13);
     assert_eq!(audit.compatibility_edge_invocations, 0);
 }
 
@@ -1312,10 +1337,10 @@ fn assert_r4b_storage_result(
         }
     );
     assert_eq!(
-        day.evapotranspiration,
-        DirectEvapotranspirationState {
-            evapotranspiration_m: 0.0625
-        }
+        day.evapotranspiration_compute
+            .evapotranspiration_m
+            .to_bits(),
+        0.0625_f64.to_bits()
     );
     assert_eq!(
         day.snow_coupling,
@@ -1457,13 +1482,13 @@ fn r4b_storage_reconciliation_rejects_missing_upstream_producers() {
     assert_eq!(
         missing_et_day
             .run_r4b_storage_reconciliation_span()
-            .expect_err("R4B should require R4F direct upstream execution"),
+            .expect_err("R4B should require R4N direct upstream execution"),
         DirectRuntimeError::MissingDirectUpstream {
-            upstream: "R4F evapotranspiration producer"
+            upstream: "R4N evapotranspiration/root-uptake producer"
         }
     );
 
-    let mut missing_snow_day = r4b_day_after_r4f(identity);
+    let mut missing_snow_day = r4b_day_after_r4n(identity);
     assert_eq!(
         missing_snow_day
             .run_r4b_storage_reconciliation_span()
@@ -1560,15 +1585,21 @@ fn r4b_day_after_r4o(identity: DirectRunIdentity) -> DirectDayFrame {
     day
 }
 
-fn r4b_day_after_r4f(identity: DirectRunIdentity) -> DirectDayFrame {
-    let mut day = r4b_day_after_r4o(identity);
-    day.run_r4f_evapotranspiration_span()
-        .expect("R4F upstream span should pass before R4B");
+fn r4b_day_after_r4n(identity: DirectRunIdentity) -> DirectDayFrame {
+    let mut day = r4b_day_after_r4m(identity);
+    day.evapotranspiration_compute_inputs = r4b_evapotranspiration_compute_inputs();
+    day.run_r4n_surface_et_span()
+        .expect("R4N surface upstream span should pass before R4O");
+    day.subsurface_compute_inputs = r4b_subsurface_inputs();
+    day.run_r4o_subsurface_compute_span()
+        .expect("R4O upstream span should pass before R4N root uptake");
+    day.run_r4n_root_uptake_span()
+        .expect("R4N root uptake span should pass before R4B");
     day
 }
 
 fn r4b_day_after_r4g(identity: DirectRunIdentity) -> DirectDayFrame {
-    let mut day = r4b_day_after_r4f(identity);
+    let mut day = r4b_day_after_r4n(identity);
     day.run_r4g_snow_coupling_span()
         .expect("R4G upstream span should pass before R4B");
     day
@@ -1665,6 +1696,21 @@ fn r4b_subsurface_inputs() -> DirectSubsurfaceComputeInputs {
     }
 }
 
+fn r4b_evapotranspiration_compute_inputs() -> DirectEvapotranspirationComputeInputs {
+    DirectEvapotranspirationComputeInputs {
+        et_demand_m: 0.0625,
+        leaf_area_index: 0.0,
+        canopy_cover_fraction: 0.0,
+        residue_interception_m: 0.0625,
+        same_pass_infiltration_m: 0.0,
+        outside_water_depth_m: 0.0,
+        root_depth_m: 0.0,
+        plant_tolerance: 0.25,
+        stage_state: None,
+        pmet: None,
+    }
+}
+
 fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
     let mut day =
         DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
@@ -1702,6 +1748,7 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
     day.evapotranspiration_inputs = DirectEvapotranspirationInputs {
         evapotranspiration_handoff_m: 0.0625,
     };
+    day.evapotranspiration_compute_inputs = r4b_evapotranspiration_compute_inputs();
     day.snow_coupling_inputs = DirectSnowCouplingInputs {
         snow_coupling_handoff_m: 0.125,
     };
@@ -1720,10 +1767,12 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
         .expect("R4C upstream span should pass before R4B");
     day.run_r4m_percolation_span()
         .expect("R4M upstream span should pass before R4B");
+    day.run_r4n_surface_et_span()
+        .expect("R4N surface upstream span should pass before R4O");
     day.run_r4o_subsurface_compute_span()
-        .expect("R4O upstream span should pass before R4B");
-    day.run_r4f_evapotranspiration_span()
-        .expect("R4F upstream span should pass before R4B");
+        .expect("R4O upstream span should pass before R4N root uptake");
+    day.run_r4n_root_uptake_span()
+        .expect("R4N root uptake span should pass before R4B");
     day.run_r4g_snow_coupling_span()
         .expect("R4G upstream span should pass before R4B");
     day.run_r4i_liquid_input_span()

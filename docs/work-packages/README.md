@@ -19,6 +19,20 @@ State as of `2026-06-20`:
 
 State as of `2026-06-20`:
 
+- R4N is complete with verdict
+  `COMPLETE-R4N-DIRECT-WB17-ET-ROOT-UPTAKE-COMPUTE-PROMOTION`. The package
+  promoted the R4E-H aggregate evapotranspiration handoff into request-free
+  direct WB17 evapotranspiration and post-WB19 root-uptake compute. R4N now
+  computes and shadow-projects surface/residue ET, soil-evaporation layer
+  mutation, SWU/root-uptake vectors, water stress, and final aggregate ET.
+  R4O consumes the R4N ET-mutated layer vector when present, and R4B requires
+  final R4N ET before storage reconciliation. R4N remains no-publication,
+  no-default-activation, and no-scheduler: public output paths and
+  compatibility runtime remain authoritative. Full Rust gates passed. Final
+  default-disabled H2637 reps were `643.84 s`, `650.42 s`, and `649.22 s`
+  (median `649.22 s`, threshold `<= 676.67 s`) with protected output identity
+  and PASS DuckDB row equivalence. Package:
+  `20260620-r4n-direct-wb17-et-root-uptake-compute-001/`.
 - R4M/O is complete with verdict
   `COMPLETE-R4MO-DIRECT-SUBSURFACE-COMPUTE-PROMOTION`. The package promoted
   the R4D/R4E-H subsurface handoff surface into request-free direct WB18/WB19

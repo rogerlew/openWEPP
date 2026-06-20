@@ -432,7 +432,10 @@ Run the no-compatibility source scan against direct-runtime files:
 ```text
 rg -n "SymbolRegistry|BoundarySymbol|BoundaryValue|Option<BoundaryValue>|HillslopeWritebackSurface|KernelWritebackPayload|IndexedWritebackSurface|HotSymbolTables|HillslopeKernelRequest|execute_with_kernel|state_value_for_symbol|flux_value_for_symbol|dirty_state_ids|dirty_flux_ids" \
   crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs \
-  crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs
+  crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs \
+  crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs \
+  crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs \
+  crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs
 ```
 
 Run scheduler no-diff:
@@ -550,6 +553,10 @@ package write set.
   package-local `/tmp/r4mo-h2637/default/rep*/h2637_same/` roots contained run
   manifests, while protected parquet outputs remained under
   `/tmp/perfmig01-final/current/anchor/h2637_same/`.
+- 2026-06-20: R4N confirmed the same manifest-selected output-root behavior;
+  package-local `/tmp/r4n-h2637/default/rep*/h2637_same/` roots contained run
+  manifests, while protected parquet outputs remained under
+  `/tmp/perfmig01-final/current/anchor/h2637_same/`.
 
 ## Decision Log
 
@@ -575,5 +582,5 @@ package write set.
 ## Outcomes & Retrospective
 
 R4A through R4D were complete and pushed before this plan was authored. R4E-H,
-R4I-L, and R4M/O are complete and pushed. R4N is the next package to scaffold
-and execute.
+R4I-L, and R4M/O are complete and pushed. R4N is implemented and awaiting its
+package push/tracker update. R4P/Q/Z is the remaining R4 closure package.

@@ -57,6 +57,7 @@ mod day_frame;
 mod direct_runtime;
 mod direct_runtime_r4il;
 mod direct_runtime_r4mo;
+mod direct_runtime_r4n;
 mod fixtures;
 mod growth;
 mod hydrology;

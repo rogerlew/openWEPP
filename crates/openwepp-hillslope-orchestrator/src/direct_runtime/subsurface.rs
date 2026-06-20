@@ -216,7 +216,18 @@ impl DirectDayFrame {
             },
         )?;
         validate_subsurface_inputs(&self.subsurface_compute_inputs)?;
-        let mut layers = percolation.layer_state_after.clone();
+        let (mut layers, soil_water_before_m) =
+            if let Some(surface_et) = self.evapotranspiration_surface_shadow_projection.as_ref() {
+                (
+                    surface_et.layer_state_after_soil_evap.clone(),
+                    surface_et.soil_water_after_soil_evap_m,
+                )
+            } else {
+                (
+                    percolation.layer_state_after.clone(),
+                    percolation.soil_water_after_m,
+                )
+            };
         validate_layers("subsurface.layers", &layers)?;
         if layers.len() != self.subsurface_compute_inputs.layers.len() {
             return Err(DirectRuntimeError::DirectDomainViolation {
@@ -236,7 +247,7 @@ impl DirectDayFrame {
             lane_substeps_f64,
         )?;
         let soil_water_after_drainage =
-            apply_soil_water_withdrawal(percolation.soil_water_after_m, drainage.tile_drainage_m)?;
+            apply_soil_water_withdrawal(soil_water_before_m, drainage.tile_drainage_m)?;
         let lateral = run_lateral(
             &mut layers,
             &self.subsurface_compute_inputs,
@@ -248,7 +259,7 @@ impl DirectDayFrame {
             apply_soil_water_withdrawal(soil_water_after_drainage, lateral.flow_m)?;
 
         Ok(DirectSubsurfaceComputeState {
-            soil_water_before_m: percolation.soil_water_after_m,
+            soil_water_before_m,
             soil_water_after_m,
             lateral_flow_m: lateral.flow_m,
             tile_drainage_m: drainage.tile_drainage_m,

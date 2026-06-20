@@ -89,13 +89,32 @@ pub const DIRECT_R4O_SUBSURFACE_SPAN: [DirectPhaseKind; DIRECT_R4O_PHASE_SPAN_CO
     DirectPhaseKind::LateralTransfer,
     DirectPhaseKind::StorageReconciliation,
 ];
+pub const DIRECT_R4N_SURFACE_PHASE_SPAN_COUNT: usize = 1;
+pub const DIRECT_R4N_SURFACE_ET_SPAN: [DirectPhaseKind; DIRECT_R4N_SURFACE_PHASE_SPAN_COUNT] =
+    [DirectPhaseKind::Evapotranspiration];
+pub const DIRECT_R4N_ROOT_PHASE_SPAN_COUNT: usize = 2;
+pub const DIRECT_R4N_ROOT_UPTAKE_SPAN: [DirectPhaseKind; DIRECT_R4N_ROOT_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::PlantRootUptake,
+    DirectPhaseKind::StorageReconciliation,
+];
+pub const DIRECT_R4N_PHASE_SPAN_COUNT: usize =
+    DIRECT_R4N_SURFACE_PHASE_SPAN_COUNT + DIRECT_R4N_ROOT_PHASE_SPAN_COUNT;
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
+mod evapotranspiration;
 mod runoff;
 mod storage;
 mod subsurface;
 
+pub use evapotranspiration::{
+    DirectEvapotranspirationComputeDownstreamOperands, DirectEvapotranspirationComputeInputs,
+    DirectEvapotranspirationComputeShadowProjection, DirectEvapotranspirationComputeSpanReport,
+    DirectEvapotranspirationComputeState, DirectEvapotranspirationPmetInputs,
+    DirectEvapotranspirationStageState, DirectEvapotranspirationSurfaceDownstreamOperands,
+    DirectEvapotranspirationSurfaceShadowProjection, DirectEvapotranspirationSurfaceSpanReport,
+    DirectEvapotranspirationSurfaceState,
+};
 pub use runoff::{
     DirectInfiltrationDepressionDownstreamOperands, DirectInfiltrationDepressionInputs,
     DirectInfiltrationDepressionShadowProjection, DirectInfiltrationDepressionSpanReport,
@@ -506,6 +525,17 @@ pub struct DirectDayFrame {
     pub subsurface_loss: DirectSubsurfaceLossState,
     pub subsurface_loss_downstream_operands: DirectSubsurfaceLossDownstreamOperands,
     pub subsurface_loss_shadow_projection: Option<DirectSubsurfaceLossShadowProjection>,
+    pub evapotranspiration_compute_inputs: DirectEvapotranspirationComputeInputs,
+    pub evapotranspiration_surface: DirectEvapotranspirationSurfaceState,
+    pub evapotranspiration_surface_downstream_operands:
+        DirectEvapotranspirationSurfaceDownstreamOperands,
+    pub evapotranspiration_surface_shadow_projection:
+        Option<DirectEvapotranspirationSurfaceShadowProjection>,
+    pub evapotranspiration_compute: DirectEvapotranspirationComputeState,
+    pub evapotranspiration_compute_downstream_operands:
+        DirectEvapotranspirationComputeDownstreamOperands,
+    pub evapotranspiration_compute_shadow_projection:
+        Option<DirectEvapotranspirationComputeShadowProjection>,
     pub evapotranspiration_inputs: DirectEvapotranspirationInputs,
     pub evapotranspiration: DirectEvapotranspirationState,
     pub evapotranspiration_downstream_operands: DirectEvapotranspirationDownstreamOperands,
@@ -597,6 +627,15 @@ impl DirectDayFrame {
             subsurface_loss: DirectSubsurfaceLossState::zero(),
             subsurface_loss_downstream_operands: DirectSubsurfaceLossDownstreamOperands::zero(),
             subsurface_loss_shadow_projection: None,
+            evapotranspiration_compute_inputs: DirectEvapotranspirationComputeInputs::zero(),
+            evapotranspiration_surface: DirectEvapotranspirationSurfaceState::zero(),
+            evapotranspiration_surface_downstream_operands:
+                DirectEvapotranspirationSurfaceDownstreamOperands::zero(),
+            evapotranspiration_surface_shadow_projection: None,
+            evapotranspiration_compute: DirectEvapotranspirationComputeState::zero(),
+            evapotranspiration_compute_downstream_operands:
+                DirectEvapotranspirationComputeDownstreamOperands::zero(),
+            evapotranspiration_compute_shadow_projection: None,
             evapotranspiration_inputs: DirectEvapotranspirationInputs::zero(),
             evapotranspiration: DirectEvapotranspirationState::zero(),
             evapotranspiration_downstream_operands:
@@ -1451,8 +1490,9 @@ impl DirectFrameExecutor {
         record_direct_span_report!(counters, day_frame.run_r3a_input_accounting_span());
         record_direct_span_report!(counters, day_frame.run_r4c_storage_input_span());
         record_direct_span_report!(counters, day_frame.run_r4m_percolation_span());
+        record_direct_span_report!(counters, day_frame.run_r4n_surface_et_span());
         record_direct_span_report!(counters, day_frame.run_r4o_subsurface_compute_span());
-        record_direct_span_report!(counters, day_frame.run_r4f_evapotranspiration_span());
+        record_direct_span_report!(counters, day_frame.run_r4n_root_uptake_span());
         record_direct_span_report!(counters, day_frame.run_r4g_snow_coupling_span());
         record_direct_span_report!(counters, day_frame.run_r4i_liquid_input_span());
         record_direct_span_report!(counters, day_frame.run_r4j_runon_carry_span());

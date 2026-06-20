@@ -420,9 +420,9 @@ impl DirectDayFrame {
                 upstream: "R4O subsurface compute producer",
             });
         }
-        if self.evapotranspiration_shadow_projection.is_none() {
+        if self.evapotranspiration_compute_shadow_projection.is_none() {
             return Err(DirectRuntimeError::MissingDirectUpstream {
-                upstream: "R4F evapotranspiration producer",
+                upstream: "R4N evapotranspiration/root-uptake producer",
             });
         }
         if self.snow_coupling_shadow_projection.is_none() {
