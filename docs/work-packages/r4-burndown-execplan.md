@@ -63,7 +63,10 @@ push before the next grouped package starts.
   `docs/work-packages/20260620-r4n-direct-wb17-et-root-uptake-compute-001/`;
   pushed commit `950a9509`, branch `main`, verdict
   `COMPLETE-R4N-DIRECT-WB17-ET-ROOT-UPTAKE-COMPUTE-PROMOTION`.
-- [ ] R4P/Q/Z direct hydrology projection and R4 closure.
+- [x] (2026-06-20) R4P/Q/Z complete:
+  `docs/work-packages/20260620-r4pqz-hydrology-projection-r4-closure-001/`;
+  pushed commit `79285020`, branch `main`, verdict
+  `COMPLETE-R4PQZ-HYDROLOGY-PROJECTION-R4-CLOSURE`.
 
 When closing any unchecked row, replace it with the completion date, package
 directory, pushed commit SHA, pushed branch, and final verdict.
@@ -590,5 +593,12 @@ package write set.
 ## Outcomes & Retrospective
 
 R4A through R4D were complete and pushed before this plan was authored. R4E-H,
-R4I-L, R4M/O, and R4N are complete and pushed. R4P/Q/Z is the remaining R4
-closure package.
+R4I-L, R4M/O, R4N, and R4P/Q/Z are complete and pushed.
+
+R4 is accepted for the grouped burn-down scope: the daily OFE hydrology direct
+path is executable from typed direct-frame state through shadow-only projection
+without hot-loop compatibility requests, payloads, writeback surfaces, symbol
+lookup, dense refresh, or dirty flush in the direct runtime. Public
+WB13/WAT/PASS/loss/schema cutover remains deferred to R6. The next stage should
+be R5 full OFE-day direct path / endpoint activation readiness, then R6
+publication cutover only if R5 evidence authorizes it.
