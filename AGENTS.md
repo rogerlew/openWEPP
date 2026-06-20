@@ -74,6 +74,7 @@ Before declaring Rust kernel implementation complete, run and record:
 
 ## Documentation Map
 - Work packages: `docs/work-packages/AGENTS.md`, `docs/work-packages/README.md`, `docs/codex_exec_plans.md`, `docs/defect_closure_execplans.md`.
+- R4 array-native hydrology burn-down ExecPlan: `docs/work-packages/r4-burndown-execplan.md`.
 - Science contracts: `docs/specifications/science-contracts/AGENTS.md`, `docs/specifications/science-contract-authoring-procedure.md`, `docs/specifications/science-contracts/kernel-process-contract-profile.md`, `docs/specifications/science-contracts/index.md`.
 - Standards and prompt wording: `docs/standards/AGENTS.md`, `docs/standards/kernel-work-package-preparation.md`, `docs/standards/prompt-wording-guidance.md`, `docs/standards/mechanical-refactor-authoring-guide.md`.
 - Rust crates: `crates/AGENTS.md`.
