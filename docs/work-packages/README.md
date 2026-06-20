@@ -10,6 +10,20 @@
 
 State as of `2026-06-20`:
 
+- R3C is complete with verdict
+  `COMPLETE-R3C-DIRECT-MULTILANE-TRANSFER-SPAN`. The package implemented a
+  run-level direct-runtime span,
+  `LateralTransfer -> RunoffReconciliation -> ClosureDiagnostics`, that consumes
+  direct lane topology, upstream-area ratios, lane areas, and direct transfer
+  buffers; computes a diagnostic per-lane transfer ledger; mutates direct
+  run-level state; produces downstream operands; and shadow-projects run-level
+  transfer totals. R3C added reciprocal topology validation after review and
+  remains diagnostic-only: it does not migrate hydrology-process equations, cut
+  over publication, activate direct mode by default, or claim endpoint
+  improvement. Full Rust gates passed. Final default-disabled H2637 reps were
+  `640.85 s`, `643.41 s`, and `644.07 s` (median `643.41 s`, threshold
+  `<= 676.67 s`) with protected output identity. Package:
+  `20260620-r3c-direct-multilane-transfer-span-001/`.
 - R3B is complete with verdict `COMPLETE-R3B-DIRECT-WATER-LEDGER-SPAN`. The
   package implemented a second direct-runtime span,
   `RunoffReconciliation -> StorageReconciliation -> ClosureDiagnostics`, that

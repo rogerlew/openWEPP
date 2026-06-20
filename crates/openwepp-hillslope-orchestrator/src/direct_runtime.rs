@@ -15,6 +15,12 @@ pub const DIRECT_R3B_WATER_LEDGER_SPAN: [DirectPhaseKind; DIRECT_R3B_PHASE_SPAN_
     DirectPhaseKind::StorageReconciliation,
     DirectPhaseKind::ClosureDiagnostics,
 ];
+pub const DIRECT_R3C_PHASE_SPAN_COUNT: usize = 3;
+pub const DIRECT_R3C_LANE_TRANSFER_SPAN: [DirectPhaseKind; DIRECT_R3C_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::LateralTransfer,
+    DirectPhaseKind::RunoffReconciliation,
+    DirectPhaseKind::ClosureDiagnostics,
+];
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
@@ -109,6 +115,9 @@ pub struct DirectRunFrame {
     pub lanes: Vec<DirectLaneFrame>,
     pub phase_plan: DirectPhasePlan,
     pub publication: DirectPublicationFrame,
+    pub lane_transfer_ledger: Vec<DirectLaneTransferLedger>,
+    pub lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands,
+    pub lane_transfer_shadow_projection: Option<DirectRunTransferShadowProjection>,
 }
 
 impl DirectRunFrame {
@@ -123,7 +132,184 @@ impl DirectRunFrame {
             lanes,
             phase_plan: DirectPhasePlan::default(),
             publication: DirectPublicationFrame::empty(),
+            lane_transfer_ledger: vec![DirectLaneTransferLedger::zero(); identity.lane_count],
+            lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
+            lane_transfer_shadow_projection: None,
         })
+    }
+
+    pub fn run_r3c_lane_transfer_span(
+        &mut self,
+    ) -> Result<DirectRunTransferSpanReport, DirectRuntimeError> {
+        DIRECT_AUDIT.record_phase_span_run();
+        let phase_count = DIRECT_R3C_PHASE_SPAN_COUNT;
+        let mut phase_entry_count = 0_u64;
+        let mut direct_compute_count = 0_u64;
+        let mut state_mutation_count = 0_u64;
+        let mut downstream_operand_count = 0_u64;
+        let mut shadow_projection_count = 0_u64;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        let (ledger, transfer_shadow_projection) = self.compute_r3c_lane_transfer_ledger()?;
+        DIRECT_AUDIT.record_direct_compute_operation();
+        direct_compute_count += 1;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.lane_transfer_ledger = ledger;
+        DIRECT_AUDIT.record_direct_state_mutation();
+        state_mutation_count += 1;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.lane_transfer_downstream_operands =
+            DirectRunTransferDownstreamOperands::from(transfer_shadow_projection);
+        DIRECT_AUDIT.record_downstream_operand_production();
+        downstream_operand_count += 1;
+
+        self.lane_transfer_shadow_projection = Some(transfer_shadow_projection);
+        DIRECT_AUDIT.record_shadow_projection();
+        shadow_projection_count += 1;
+
+        Ok(DirectRunTransferSpanReport {
+            phase_count,
+            phase_entry_count,
+            direct_compute_count,
+            state_mutation_count,
+            downstream_operand_count,
+            shadow_projection_count,
+            compatibility_edge_invocation_count: 0,
+            transfer_shadow_projection,
+        })
+    }
+
+    fn compute_r3c_lane_transfer_ledger(
+        &self,
+    ) -> Result<
+        (
+            Vec<DirectLaneTransferLedger>,
+            DirectRunTransferShadowProjection,
+        ),
+        DirectRuntimeError,
+    > {
+        let outlet_lane_id = self.validate_r3c_lane_transfer_domain()?;
+        let outgoing = self
+            .lanes
+            .iter()
+            .map(|lane| {
+                Ok((
+                    sum_nonnegative_direct_m(
+                        "transfer.surface_carry_m",
+                        &lane.transfer.surface_carry_m,
+                    )?,
+                    sum_nonnegative_direct_m(
+                        "transfer.lateral_carry_m",
+                        &lane.transfer.lateral_carry_m,
+                    )?,
+                ))
+            })
+            .collect::<Result<Vec<_>, DirectRuntimeError>>()?;
+
+        let mut ledger = Vec::with_capacity(self.lanes.len());
+        for (lane_index, lane) in self.lanes.iter().enumerate() {
+            let (outgoing_surface_m, outgoing_lateral_m) = outgoing[lane_index];
+            let (received_surface_m, received_lateral_m) = if lane.upstream_lane_id == 0 {
+                (0.0, 0.0)
+            } else {
+                let upstream_index = (lane.upstream_lane_id - 1) as usize;
+                let received_surface_m = outgoing[upstream_index].0 * lane.upstream_area_ratio;
+                validate_finite("lane_transfer.received_surface_m", received_surface_m)?;
+                let received_lateral_m = outgoing[upstream_index].1 * lane.upstream_area_ratio;
+                validate_finite("lane_transfer.received_lateral_m", received_lateral_m)?;
+                (received_surface_m, received_lateral_m)
+            };
+            let net_transfer_m =
+                received_surface_m + received_lateral_m - outgoing_surface_m - outgoing_lateral_m;
+            validate_finite("lane_transfer.net_transfer_m", net_transfer_m)?;
+
+            ledger.push(DirectLaneTransferLedger {
+                lane_id: lane.lane_id,
+                upstream_lane_id: lane.upstream_lane_id,
+                downstream_lane_id: lane.downstream_lane_id,
+                upstream_area_ratio: lane.upstream_area_ratio,
+                area_m2: lane.area_m2,
+                outgoing_surface_m,
+                outgoing_lateral_m,
+                received_surface_m,
+                received_lateral_m,
+                net_transfer_m,
+            });
+        }
+
+        let transfer_shadow_projection =
+            DirectRunTransferShadowProjection::from_ledger(&ledger, outlet_lane_id)?;
+        Ok((ledger, transfer_shadow_projection))
+    }
+
+    fn validate_r3c_lane_transfer_domain(&self) -> Result<u32, DirectRuntimeError> {
+        if self.lanes.len() != self.identity.lane_count {
+            return Err(DirectRuntimeError::FrameLaneCountMismatch {
+                identity_lane_count: self.identity.lane_count,
+                actual_lane_count: self.lanes.len(),
+            });
+        }
+        let lane_count_u32 =
+            u32::try_from(self.lanes.len()).map_err(|_| DirectRuntimeError::LaneIdOverflow {
+                lane_index: self.lanes.len(),
+            })?;
+        let mut outlet_lane_id = 0_u32;
+        let mut outlet_count = 0_usize;
+
+        for (lane_index, lane) in self.lanes.iter().enumerate() {
+            let expected_lane_id = u32::try_from(lane_index + 1)
+                .map_err(|_| DirectRuntimeError::LaneIdOverflow { lane_index })?;
+            if lane.lane_id != expected_lane_id
+                || lane.upstream_lane_id > lane_count_u32
+                || lane.downstream_lane_id > lane_count_u32
+            {
+                return Err(DirectRuntimeError::InvalidLaneTopology {
+                    lane_index,
+                    lane_id: lane.lane_id,
+                    upstream_lane_id: lane.upstream_lane_id,
+                    downstream_lane_id: lane.downstream_lane_id,
+                });
+            }
+            validate_nonnegative_direct_m("lane.upstream_area_ratio", lane.upstream_area_ratio)?;
+            validate_nonnegative_direct_m("lane.area_m2", lane.area_m2)?;
+            if lane.downstream_lane_id == 0 {
+                outlet_count += 1;
+                outlet_lane_id = lane.lane_id;
+            }
+            if lane.upstream_lane_id != 0 {
+                let upstream_index = (lane.upstream_lane_id - 1) as usize;
+                if self.lanes[upstream_index].downstream_lane_id != lane.lane_id {
+                    return Err(DirectRuntimeError::InvalidLaneTopology {
+                        lane_index,
+                        lane_id: lane.lane_id,
+                        upstream_lane_id: lane.upstream_lane_id,
+                        downstream_lane_id: lane.downstream_lane_id,
+                    });
+                }
+            }
+            if lane.downstream_lane_id != 0 {
+                let downstream_index = (lane.downstream_lane_id - 1) as usize;
+                if self.lanes[downstream_index].upstream_lane_id != lane.lane_id {
+                    return Err(DirectRuntimeError::InvalidLaneTopology {
+                        lane_index,
+                        lane_id: lane.lane_id,
+                        upstream_lane_id: lane.upstream_lane_id,
+                        downstream_lane_id: lane.downstream_lane_id,
+                    });
+                }
+            }
+        }
+
+        if outlet_count == 1 {
+            Ok(outlet_lane_id)
+        } else {
+            Err(DirectRuntimeError::InvalidLaneOutletCount { outlet_count })
+        }
     }
 }
 
@@ -756,6 +942,137 @@ pub struct DirectLedgerShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectLaneTransferLedger {
+    pub lane_id: u32,
+    pub upstream_lane_id: u32,
+    pub downstream_lane_id: u32,
+    pub upstream_area_ratio: f64,
+    pub area_m2: f64,
+    pub outgoing_surface_m: f64,
+    pub outgoing_lateral_m: f64,
+    pub received_surface_m: f64,
+    pub received_lateral_m: f64,
+    pub net_transfer_m: f64,
+}
+
+impl DirectLaneTransferLedger {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            lane_id: 0,
+            upstream_lane_id: 0,
+            downstream_lane_id: 0,
+            upstream_area_ratio: 0.0,
+            area_m2: 0.0,
+            outgoing_surface_m: 0.0,
+            outgoing_lateral_m: 0.0,
+            received_surface_m: 0.0,
+            received_lateral_m: 0.0,
+            net_transfer_m: 0.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectRunTransferDownstreamOperands {
+    pub lane_count: usize,
+    pub outlet_lane_id: u32,
+    pub total_outgoing_surface_m: f64,
+    pub total_outgoing_lateral_m: f64,
+    pub total_received_surface_m: f64,
+    pub total_received_lateral_m: f64,
+    pub total_net_transfer_m: f64,
+}
+
+impl DirectRunTransferDownstreamOperands {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            lane_count: 0,
+            outlet_lane_id: 0,
+            total_outgoing_surface_m: 0.0,
+            total_outgoing_lateral_m: 0.0,
+            total_received_surface_m: 0.0,
+            total_received_lateral_m: 0.0,
+            total_net_transfer_m: 0.0,
+        }
+    }
+}
+
+impl From<DirectRunTransferShadowProjection> for DirectRunTransferDownstreamOperands {
+    fn from(projection: DirectRunTransferShadowProjection) -> Self {
+        Self {
+            lane_count: projection.lane_count,
+            outlet_lane_id: projection.outlet_lane_id,
+            total_outgoing_surface_m: projection.total_outgoing_surface_m,
+            total_outgoing_lateral_m: projection.total_outgoing_lateral_m,
+            total_received_surface_m: projection.total_received_surface_m,
+            total_received_lateral_m: projection.total_received_lateral_m,
+            total_net_transfer_m: projection.total_net_transfer_m,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectRunTransferShadowProjection {
+    pub lane_count: usize,
+    pub outlet_lane_id: u32,
+    pub total_outgoing_surface_m: f64,
+    pub total_outgoing_lateral_m: f64,
+    pub total_received_surface_m: f64,
+    pub total_received_lateral_m: f64,
+    pub total_net_transfer_m: f64,
+}
+
+impl DirectRunTransferShadowProjection {
+    fn from_ledger(
+        ledger: &[DirectLaneTransferLedger],
+        outlet_lane_id: u32,
+    ) -> Result<Self, DirectRuntimeError> {
+        let mut total_outgoing_surface_m = 0.0;
+        let mut total_outgoing_lateral_m = 0.0;
+        let mut total_received_surface_m = 0.0;
+        let mut total_received_lateral_m = 0.0;
+        let mut total_net_transfer_m = 0.0;
+
+        for lane in ledger {
+            total_outgoing_surface_m += lane.outgoing_surface_m;
+            validate_finite(
+                "lane_transfer.total_outgoing_surface_m",
+                total_outgoing_surface_m,
+            )?;
+            total_outgoing_lateral_m += lane.outgoing_lateral_m;
+            validate_finite(
+                "lane_transfer.total_outgoing_lateral_m",
+                total_outgoing_lateral_m,
+            )?;
+            total_received_surface_m += lane.received_surface_m;
+            validate_finite(
+                "lane_transfer.total_received_surface_m",
+                total_received_surface_m,
+            )?;
+            total_received_lateral_m += lane.received_lateral_m;
+            validate_finite(
+                "lane_transfer.total_received_lateral_m",
+                total_received_lateral_m,
+            )?;
+            total_net_transfer_m += lane.net_transfer_m;
+            validate_finite("lane_transfer.total_net_transfer_m", total_net_transfer_m)?;
+        }
+
+        Ok(Self {
+            lane_count: ledger.len(),
+            outlet_lane_id,
+            total_outgoing_surface_m,
+            total_outgoing_lateral_m,
+            total_received_surface_m,
+            total_received_lateral_m,
+            total_net_transfer_m,
+        })
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectPhaseSpanReport {
     pub phase_count: usize,
     pub phase_entry_count: u64,
@@ -777,6 +1094,18 @@ pub struct DirectLedgerSpanReport {
     pub shadow_projection_count: u64,
     pub compatibility_edge_invocation_count: u64,
     pub ledger_shadow_projection: DirectLedgerShadowProjection,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectRunTransferSpanReport {
+    pub phase_count: usize,
+    pub phase_entry_count: u64,
+    pub direct_compute_count: u64,
+    pub state_mutation_count: u64,
+    pub downstream_operand_count: u64,
+    pub shadow_projection_count: u64,
+    pub compatibility_edge_invocation_count: u64,
+    pub transfer_shadow_projection: DirectRunTransferShadowProjection,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -825,6 +1154,17 @@ impl DirectFrameExecutor {
         let mut downstream_operand_count = 0_u64;
         let mut shadow_projection_count = 0_u64;
         let mut compatibility_edge_invocation_count = 0_u64;
+
+        let transfer_span_report = frame.run_r3c_lane_transfer_span()?;
+        phase_span_run_count += 1;
+        direct_phase_entry_count += transfer_span_report.phase_entry_count;
+        direct_compute_count += transfer_span_report.direct_compute_count;
+        state_mutation_count += transfer_span_report.state_mutation_count;
+        downstream_operand_count += transfer_span_report.downstream_operand_count;
+        shadow_projection_count += transfer_span_report.shadow_projection_count;
+        compatibility_edge_invocation_count +=
+            transfer_span_report.compatibility_edge_invocation_count;
+
         for lane_index in 0..frame.lanes.len() {
             let mut day_frame = DirectDayFrame::seed(frame.identity, lane_index, 0)?;
             let input_span_report = day_frame.run_r3a_input_accounting_span()?;
@@ -1034,6 +1374,19 @@ pub enum DirectRuntimeError {
     LaneIdOverflow {
         lane_index: usize,
     },
+    FrameLaneCountMismatch {
+        identity_lane_count: usize,
+        actual_lane_count: usize,
+    },
+    InvalidLaneTopology {
+        lane_index: usize,
+        lane_id: u32,
+        upstream_lane_id: u32,
+        downstream_lane_id: u32,
+    },
+    InvalidLaneOutletCount {
+        outlet_count: usize,
+    },
     LaneIndexOutOfRange {
         lane_index: usize,
         lane_count: usize,
@@ -1069,6 +1422,32 @@ impl fmt::Display for DirectRuntimeError {
                 write!(
                     formatter,
                     "direct runtime lane index {lane_index} cannot be represented as a u32 lane id"
+                )
+            }
+            Self::FrameLaneCountMismatch {
+                identity_lane_count,
+                actual_lane_count,
+            } => {
+                write!(
+                    formatter,
+                    "direct runtime frame lane count {actual_lane_count} does not match identity lane count {identity_lane_count}"
+                )
+            }
+            Self::InvalidLaneTopology {
+                lane_index,
+                lane_id,
+                upstream_lane_id,
+                downstream_lane_id,
+            } => {
+                write!(
+                    formatter,
+                    "direct runtime lane topology is invalid at index {lane_index}: lane {lane_id}, upstream {upstream_lane_id}, downstream {downstream_lane_id}"
+                )
+            }
+            Self::InvalidLaneOutletCount { outlet_count } => {
+                write!(
+                    formatter,
+                    "direct runtime requires exactly one lane outlet, observed {outlet_count}"
                 )
             }
             Self::LaneIndexOutOfRange {

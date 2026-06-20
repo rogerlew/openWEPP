@@ -1,10 +1,12 @@
 use super::*;
 use crate::{
     DIRECT_PHASE_COUNT, DIRECT_R3A_INPUT_ACCOUNTING_SPAN, DIRECT_R3A_PHASE_SPAN_COUNT,
-    DIRECT_R3B_PHASE_SPAN_COUNT, DIRECT_R3B_WATER_LEDGER_SPAN, DirectDayFrame,
-    DirectDownstreamOperands, DirectExecutorMode, DirectFrameExecutor, DirectInputAccountingState,
+    DIRECT_R3B_PHASE_SPAN_COUNT, DIRECT_R3B_WATER_LEDGER_SPAN, DIRECT_R3C_LANE_TRANSFER_SPAN,
+    DIRECT_R3C_PHASE_SPAN_COUNT, DirectDayFrame, DirectDownstreamOperands, DirectExecutorMode,
+    DirectFrameExecutor, DirectInputAccountingState, DirectLaneTransferLedger,
     DirectLedgerDownstreamOperands, DirectLedgerShadowProjection, DirectPhaseKind, DirectRunFrame,
-    DirectRunIdentity, DirectRuntimeError, DirectShadowProjection, DirectWaterLedgerState,
+    DirectRunIdentity, DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
+    DirectRuntimeError, DirectShadowProjection, DirectWaterLedgerState,
     reset_direct_runtime_audit_counters,
 };
 use std::sync::{Mutex, OnceLock};
@@ -31,15 +33,16 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
     assert_eq!(report.day_count, 10);
     assert_eq!(report.planned_phase_count, DIRECT_PHASE_COUNT);
     assert_eq!(report.phase_view_count, (2 * DIRECT_PHASE_COUNT) as u64);
-    assert_eq!(report.phase_span_run_count, 4);
+    assert_eq!(report.phase_span_run_count, 5);
     assert_eq!(
         report.direct_phase_entry_count,
-        (2 * (DIRECT_R3A_PHASE_SPAN_COUNT + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
+        (DIRECT_R3C_PHASE_SPAN_COUNT
+            + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
     );
-    assert_eq!(report.direct_compute_count, 4);
-    assert_eq!(report.state_mutation_count, 4);
-    assert_eq!(report.downstream_operand_count, 4);
-    assert_eq!(report.shadow_projection_count, 4);
+    assert_eq!(report.direct_compute_count, 5);
+    assert_eq!(report.state_mutation_count, 5);
+    assert_eq!(report.downstream_operand_count, 5);
+    assert_eq!(report.shadow_projection_count, 5);
     assert_eq!(report.compatibility_edge_invocation_count, 0);
     let audit = crate::direct_runtime_audit_snapshot();
     assert_eq!(audit.run_frame_constructions, 1);
@@ -50,15 +53,16 @@ fn r2a_direct_skeleton_runs_noop_and_records_only_direct_audit_counters() {
         audit.phase_view_constructions,
         (2 * DIRECT_PHASE_COUNT) as u64
     );
-    assert_eq!(audit.phase_span_runs, 4);
+    assert_eq!(audit.phase_span_runs, 5);
     assert_eq!(
         audit.direct_phase_entries,
-        (2 * (DIRECT_R3A_PHASE_SPAN_COUNT + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
+        (DIRECT_R3C_PHASE_SPAN_COUNT
+            + 2 * (DIRECT_R3A_PHASE_SPAN_COUNT + DIRECT_R3B_PHASE_SPAN_COUNT)) as u64
     );
-    assert_eq!(audit.direct_compute_operations, 4);
-    assert_eq!(audit.direct_state_mutations, 4);
-    assert_eq!(audit.downstream_operand_productions, 4);
-    assert_eq!(audit.shadow_projections, 4);
+    assert_eq!(audit.direct_compute_operations, 5);
+    assert_eq!(audit.direct_state_mutations, 5);
+    assert_eq!(audit.downstream_operand_productions, 5);
+    assert_eq!(audit.shadow_projections, 5);
     assert_eq!(audit.compatibility_edge_invocations, 0);
 }
 
@@ -431,6 +435,220 @@ fn r3b_water_ledger_span_rejects_invalid_inputs() {
             .expect_err("overflowed available water should fail closed"),
         DirectRuntimeError::NonFiniteDirectValue {
             field: "water_ledger.available_water_m"
+        }
+    );
+}
+
+#[test]
+fn r3c_lane_transfer_span_projects_multilane_topology() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    assert_eq!(
+        DIRECT_R3C_LANE_TRANSFER_SPAN,
+        [
+            DirectPhaseKind::LateralTransfer,
+            DirectPhaseKind::RunoffReconciliation,
+            DirectPhaseKind::ClosureDiagnostics
+        ]
+    );
+
+    let mut frame = r3c_multilane_transfer_frame();
+
+    let report = frame
+        .run_r3c_lane_transfer_span()
+        .expect("valid R3C lane transfer span should execute");
+
+    let expected_ledger = r3c_expected_lane_transfer_ledger();
+    let expected_shadow = r3c_expected_transfer_shadow_projection();
+    let expected_operands = DirectRunTransferDownstreamOperands::from(expected_shadow);
+
+    assert_eq!(frame.lane_transfer_ledger, expected_ledger);
+    assert_eq!(frame.lane_transfer_downstream_operands, expected_operands);
+    assert_eq!(frame.lane_transfer_shadow_projection, Some(expected_shadow));
+    assert_eq!(report.phase_count, DIRECT_R3C_PHASE_SPAN_COUNT);
+    assert_eq!(report.phase_entry_count, DIRECT_R3C_PHASE_SPAN_COUNT as u64);
+    assert_eq!(report.direct_compute_count, 1);
+    assert_eq!(report.state_mutation_count, 1);
+    assert_eq!(report.downstream_operand_count, 1);
+    assert_eq!(report.shadow_projection_count, 1);
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+    assert_eq!(report.transfer_shadow_projection, expected_shadow);
+
+    let audit = crate::direct_runtime_audit_snapshot();
+    assert_eq!(audit.run_frame_constructions, 1);
+    assert_eq!(audit.phase_span_runs, 1);
+    assert_eq!(
+        audit.direct_phase_entries,
+        DIRECT_R3C_PHASE_SPAN_COUNT as u64
+    );
+    assert_eq!(audit.direct_compute_operations, 1);
+    assert_eq!(audit.direct_state_mutations, 1);
+    assert_eq!(audit.downstream_operand_productions, 1);
+    assert_eq!(audit.shadow_projections, 1);
+    assert_eq!(audit.compatibility_edge_invocations, 0);
+}
+
+fn r3c_multilane_transfer_frame() -> DirectRunFrame {
+    let identity =
+        DirectRunIdentity::new(7, 2637, 3, 1).expect("valid direct run identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("valid direct run frame should construct");
+    frame.lanes[0].area_m2 = 64.0;
+    frame.lanes[0].transfer.surface_carry_m[0] = 0.25;
+    frame.lanes[0].transfer.lateral_carry_m[0] = 0.125;
+    frame.lanes[1].area_m2 = 128.0;
+    frame.lanes[1].upstream_area_ratio = 0.5;
+    frame.lanes[1].transfer.surface_carry_m[0] = 0.0625;
+    frame.lanes[1].transfer.lateral_carry_m[0] = 0.03125;
+    frame.lanes[2].area_m2 = 256.0;
+    frame.lanes[2].upstream_area_ratio = 0.25;
+    frame.lanes[2].transfer.surface_carry_m[0] = 0.015_625;
+    frame.lanes[2].transfer.lateral_carry_m[0] = 0.007_812_5;
+    frame
+}
+
+fn r3c_expected_lane_transfer_ledger() -> Vec<DirectLaneTransferLedger> {
+    vec![
+        DirectLaneTransferLedger {
+            lane_id: 1,
+            upstream_lane_id: 0,
+            downstream_lane_id: 2,
+            upstream_area_ratio: 1.0,
+            area_m2: 64.0,
+            outgoing_surface_m: 0.25,
+            outgoing_lateral_m: 0.125,
+            received_surface_m: 0.0,
+            received_lateral_m: 0.0,
+            net_transfer_m: -0.375,
+        },
+        DirectLaneTransferLedger {
+            lane_id: 2,
+            upstream_lane_id: 1,
+            downstream_lane_id: 3,
+            upstream_area_ratio: 0.5,
+            area_m2: 128.0,
+            outgoing_surface_m: 0.0625,
+            outgoing_lateral_m: 0.03125,
+            received_surface_m: 0.125,
+            received_lateral_m: 0.0625,
+            net_transfer_m: 0.09375,
+        },
+        DirectLaneTransferLedger {
+            lane_id: 3,
+            upstream_lane_id: 2,
+            downstream_lane_id: 0,
+            upstream_area_ratio: 0.25,
+            area_m2: 256.0,
+            outgoing_surface_m: 0.015_625,
+            outgoing_lateral_m: 0.007_812_5,
+            received_surface_m: 0.015_625,
+            received_lateral_m: 0.007_812_5,
+            net_transfer_m: 0.0,
+        },
+    ]
+}
+
+fn r3c_expected_transfer_shadow_projection() -> DirectRunTransferShadowProjection {
+    DirectRunTransferShadowProjection {
+        lane_count: 3,
+        outlet_lane_id: 3,
+        total_outgoing_surface_m: 0.328_125,
+        total_outgoing_lateral_m: 0.164_062_5,
+        total_received_surface_m: 0.140_625,
+        total_received_lateral_m: 0.070_312_5,
+        total_net_transfer_m: -0.28125,
+    }
+}
+
+#[test]
+fn r3c_lane_transfer_span_rejects_invalid_inputs() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 2, 1).expect("valid direct run identity should construct");
+
+    let mut negative_ratio_frame =
+        DirectRunFrame::skeleton(identity).expect("valid direct run frame should construct");
+    negative_ratio_frame.lanes[1].upstream_area_ratio = -0.5;
+    assert_eq!(
+        negative_ratio_frame
+            .run_r3c_lane_transfer_span()
+            .expect_err("negative upstream area ratio should fail closed"),
+        DirectRuntimeError::NegativeDirectValue {
+            field: "lane.upstream_area_ratio"
+        }
+    );
+
+    let mut invalid_downstream_frame =
+        DirectRunFrame::skeleton(identity).expect("valid direct run frame should construct");
+    invalid_downstream_frame.lanes[0].downstream_lane_id = 9;
+    assert_eq!(
+        invalid_downstream_frame
+            .run_r3c_lane_transfer_span()
+            .expect_err("invalid downstream lane id should fail closed"),
+        DirectRuntimeError::InvalidLaneTopology {
+            lane_index: 0,
+            lane_id: 1,
+            upstream_lane_id: 0,
+            downstream_lane_id: 9
+        }
+    );
+
+    let mut nonreciprocal_topology_frame =
+        DirectRunFrame::skeleton(identity).expect("valid direct run frame should construct");
+    nonreciprocal_topology_frame.lanes[1].upstream_lane_id = 0;
+    assert_eq!(
+        nonreciprocal_topology_frame
+            .run_r3c_lane_transfer_span()
+            .expect_err("nonreciprocal topology should fail closed"),
+        DirectRuntimeError::InvalidLaneTopology {
+            lane_index: 0,
+            lane_id: 1,
+            upstream_lane_id: 0,
+            downstream_lane_id: 2
+        }
+    );
+
+    let mut multiple_outlet_frame =
+        DirectRunFrame::skeleton(identity).expect("valid direct run frame should construct");
+    multiple_outlet_frame.lanes[0].downstream_lane_id = 0;
+    multiple_outlet_frame.lanes[1].upstream_lane_id = 0;
+    assert_eq!(
+        multiple_outlet_frame
+            .run_r3c_lane_transfer_span()
+            .expect_err("multiple outlets should fail closed"),
+        DirectRuntimeError::InvalidLaneOutletCount { outlet_count: 2 }
+    );
+
+    let mut sum_overflow_frame =
+        DirectRunFrame::skeleton(identity).expect("valid direct run frame should construct");
+    sum_overflow_frame.lanes[0].transfer.surface_carry_m[0] = f64::MAX;
+    sum_overflow_frame.lanes[0].transfer.surface_carry_m[1] = f64::MAX;
+    assert_eq!(
+        sum_overflow_frame
+            .run_r3c_lane_transfer_span()
+            .expect_err("overflowed surface carry should fail closed"),
+        DirectRuntimeError::NonFiniteDirectValue {
+            field: "transfer.surface_carry_m"
+        }
+    );
+
+    let mut received_overflow_frame =
+        DirectRunFrame::skeleton(identity).expect("valid direct run frame should construct");
+    received_overflow_frame.lanes[0].transfer.surface_carry_m[0] = f64::MAX;
+    received_overflow_frame.lanes[1].upstream_area_ratio = 2.0;
+    assert_eq!(
+        received_overflow_frame
+            .run_r3c_lane_transfer_span()
+            .expect_err("overflowed received surface transfer should fail closed"),
+        DirectRuntimeError::NonFiniteDirectValue {
+            field: "lane_transfer.received_surface_m"
         }
     );
 }
