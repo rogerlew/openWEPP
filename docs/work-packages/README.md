@@ -13,14 +13,29 @@
 
 State as of `2026-06-20`:
 
-- `20260620-r5b-normalization-storage-bounds-direct-phases-001/` is
-  scaffolded and in progress from `r5-burndown-execplan.md`. It owns direct
-  `Normalization` and `StorageBounds` phase promotion.
+- None. Next queued package is R5C direct decomposition and residue transitions
+  from `r5-burndown-execplan.md`.
 
 ## Current roadmap execution log
 
 State as of `2026-06-20`:
 
+- R5B is complete with verdict
+  `COMPLETE-R5B-NORMALIZATION-STORAGE-BOUNDS-DIRECT-PHASES`. The package
+  promoted direct `Normalization` and `StorageBounds` executor calls, adding
+  typed inputs, direct compute, direct state mutation, downstream operands, and
+  shadow projection for both phases. `StorageBounds` now reports as `Executed`
+  in lifecycle status counts; decomposition, residue, annual growth, and
+  perennial growth remain explicit `Hold` phases for R5C-D. R5B validates the
+  scalar storage/domain state available in the direct frame and does not claim
+  layer-capacity physics, public output cutover, scheduler changes, or default
+  activation. Full Rust gates passed. Final default-disabled H2637 reps were
+  `643.38 s`, `640.54 s`, and `644.59 s` (median `643.38 s`, threshold
+  `<= 676.67 s`) with protected output comparison passing through HBP/WAT byte
+  identity, PASS DuckDB row equivalence, and run-name-only normalized
+  loss/plot differences. Package:
+  `20260620-r5b-normalization-storage-bounds-direct-phases-001/`. Pushed
+  commit: `27de814c`.
 - R5A is complete with verdict
   `COMPLETE-R5A-FULL-DAY-DIRECT-EXECUTOR-LIFECYCLE`. The package widened the
   direct executor from day-0 lane skeleton execution to all

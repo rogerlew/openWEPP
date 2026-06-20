@@ -1,6 +1,6 @@
 # Disposition
 
-Status: complete pending pushed package SHA.
+Status: complete. Pushed commit: `27de814c` on branch `main`.
 
 Findings disposition:
 

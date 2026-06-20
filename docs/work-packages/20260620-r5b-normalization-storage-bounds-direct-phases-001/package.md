@@ -1,6 +1,6 @@
 # R5B - Direct Normalization And Storage-Bounds Phases
 
-Status: complete pending pushed package SHA.
+Status: complete. Pushed commit: `27de814c` on branch `main`.
 
 Package type: implementation work package / array-native runtime R5 phase
 promotion.

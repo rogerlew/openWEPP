@@ -1,6 +1,6 @@
 # Worker Handoff
 
-R5B is complete pending commit/push metadata.
+R5B is complete. Pushed commit: `27de814c` on branch `main`.
 
 Next recommended package: R5C direct decomposition and residue transitions.
 
