@@ -10,6 +10,20 @@
 
 State as of `2026-06-20`:
 
+- R4A is complete with verdict
+  `COMPLETE-R4A-DIRECT-RUNOFF-PARTITION-SPAN`. The package implemented the
+  first direct hydrology-process span: a narrow SC-RUNOFFPART-authoritative
+  runoff-partition closure slice. It consumes direct liquid, runon,
+  cumulative-infiltration, depression-storage, and saturation-addback operands;
+  computes direct runoff partition state; mutates only direct runtime water
+  state; produces direct downstream runoff operands; and shadow-projects the
+  direct runoff result. R4A remains no-publication and no-default-activation:
+  it does not migrate full WB12/WB14, Green-Ampt infiltration, scheduler paths,
+  compatibility APIs, output schemas, or production publication. Full Rust gates
+  passed. Final default-disabled H2637 reps were `644.01 s`, `646.84 s`, and
+  `643.66 s` (median `644.01 s`, threshold `<= 676.67 s`) with protected output
+  identity and PASS DuckDB row equivalence. Package:
+  `20260620-r4a-direct-runoff-partition-span-001/`.
 - R3C is complete with verdict
   `COMPLETE-R3C-DIRECT-MULTILANE-TRANSFER-SPAN`. The package implemented a
   run-level direct-runtime span,
