@@ -59,7 +59,10 @@ push before the next grouped package starts.
   `docs/work-packages/20260620-r4mo-direct-subsurface-compute-promotion-001/`;
   pushed commit `940179d9`, branch `main`, verdict
   `COMPLETE-R4MO-DIRECT-SUBSURFACE-COMPUTE-PROMOTION`.
-- [ ] R4N direct WB17 evapotranspiration/root-uptake compute promotion.
+- [x] (2026-06-20) R4N complete:
+  `docs/work-packages/20260620-r4n-direct-wb17-et-root-uptake-compute-001/`;
+  pushed commit `950a9509`, branch `main`, verdict
+  `COMPLETE-R4N-DIRECT-WB17-ET-ROOT-UPTAKE-COMPUTE-PROMOTION`.
 - [ ] R4P/Q/Z direct hydrology projection and R4 closure.
 
 When closing any unchecked row, replace it with the completion date, package
@@ -582,5 +585,5 @@ package write set.
 ## Outcomes & Retrospective
 
 R4A through R4D were complete and pushed before this plan was authored. R4E-H,
-R4I-L, and R4M/O are complete and pushed. R4N is implemented and awaiting its
-package push/tracker update. R4P/Q/Z is the remaining R4 closure package.
+R4I-L, R4M/O, and R4N are complete and pushed. R4P/Q/Z is the remaining R4
+closure package.
