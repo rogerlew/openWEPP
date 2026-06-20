@@ -51,7 +51,10 @@ push before the next grouped package starts.
   `docs/work-packages/20260620-r4eh-direct-storage-budget-handoff-completion-001/`;
   pushed commit `a1c51ac3`, branch `main`, verdict
   `COMPLETE-R4EH-DIRECT-STORAGE-BUDGET-HANDOFF-COMPLETION`.
-- [ ] R4I-L direct runoff-path input completion.
+- [x] (2026-06-20) R4I-L complete:
+  `docs/work-packages/20260620-r4il-direct-runoff-path-input-completion-001/`;
+  pushed commit `fcb4b7d3`, branch `main`, verdict
+  `COMPLETE-R4IL-DIRECT-RUNOFF-PATH-INPUT-COMPLETION`.
 - [ ] R4M/O direct subsurface compute promotion.
 - [ ] R4N direct WB17 evapotranspiration/root-uptake compute promotion.
 - [ ] R4P/Q/Z direct hydrology projection and R4 closure.
@@ -565,4 +568,5 @@ package write set.
 ## Outcomes & Retrospective
 
 R4A through R4D were complete and pushed before this plan was authored. R4E-H
-is complete and pushed. R4I-L is the next package to scaffold and execute.
+and R4I-L are complete and pushed. R4M/O is the next package to scaffold and
+execute.
