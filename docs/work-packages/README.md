@@ -12,6 +12,21 @@
 
 State as of `2026-06-20`:
 
+- R4C is complete with verdict
+  `COMPLETE-R4C-DIRECT-STORAGE-INPUT-PRODUCER`. The package implemented a
+  direct WB12 storage-input producer and split storage-related direct-runtime
+  code into `direct_runtime/storage.rs`, reducing `direct_runtime.rs` below the
+  2000-line WARN band. R4C consumes R3A direct precipitation and current direct
+  storage, mutates the R4B `storage_initial_m` and `precip_input_m` inputs,
+  produces downstream storage-input operands, and shadow-projects the result.
+  R4B now requires R4C storage input and R4A runoff before storage
+  reconciliation. R4C remains no-publication, no-default-activation, and
+  no-scheduler: public output paths and compatibility runtime remain
+  authoritative. Full Rust gates passed. Final default-disabled H2637 reps were
+  `637.63 s`, `640.25 s`, and `639.19 s` (median `639.19 s`, threshold
+  `<= 676.67 s`) with protected output identity and PASS DuckDB row
+  equivalence. Package:
+  `20260620-r4c-direct-storage-input-producer-001/`.
 - R4B is complete with verdict
   `COMPLETE-R4B-DIRECT-STORAGE-RECONCILIATION-CONSUMER-SPAN`. The package
   implemented the downstream direct WB12 storage-reconciliation consumer of the

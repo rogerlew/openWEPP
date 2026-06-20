@@ -32,8 +32,22 @@ pub const DIRECT_R4B_STORAGE_RECONCILIATION_SPAN: [DirectPhaseKind; DIRECT_R4B_P
     DirectPhaseKind::StorageReconciliation,
     DirectPhaseKind::ClosureDiagnostics,
 ];
+pub const DIRECT_R4C_PHASE_SPAN_COUNT: usize = 2;
+pub const DIRECT_R4C_STORAGE_INPUT_SPAN: [DirectPhaseKind; DIRECT_R4C_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::Normalization,
+    DirectPhaseKind::StorageReconciliation,
+];
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
+
+mod storage;
+
+pub use storage::{
+    DirectStorageDownstreamOperands, DirectStorageInputDownstreamOperands,
+    DirectStorageInputShadowProjection, DirectStorageInputSpanReport, DirectStorageInputState,
+    DirectStorageReconciliationInputs, DirectStorageReconciliationSpanReport,
+    DirectStorageReconciliationState, DirectStorageShadowProjection,
+};
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum DirectExecutorMode {
@@ -374,6 +388,9 @@ pub struct DirectDayFrame {
     pub runoff_partition: DirectRunoffPartitionState,
     pub runoff_downstream_operands: DirectRunoffDownstreamOperands,
     pub runoff_shadow_projection: Option<DirectRunoffShadowProjection>,
+    pub storage_input: DirectStorageInputState,
+    pub storage_input_downstream_operands: DirectStorageInputDownstreamOperands,
+    pub storage_input_shadow_projection: Option<DirectStorageInputShadowProjection>,
     pub storage_reconciliation_inputs: DirectStorageReconciliationInputs,
     pub storage_reconciliation: DirectStorageReconciliationState,
     pub storage_downstream_operands: DirectStorageDownstreamOperands,
@@ -419,6 +436,9 @@ impl DirectDayFrame {
             runoff_partition: DirectRunoffPartitionState::zero(),
             runoff_downstream_operands: DirectRunoffDownstreamOperands::zero(),
             runoff_shadow_projection: None,
+            storage_input: DirectStorageInputState::zero(),
+            storage_input_downstream_operands: DirectStorageInputDownstreamOperands::zero(),
+            storage_input_shadow_projection: None,
             storage_reconciliation_inputs: DirectStorageReconciliationInputs::zero(),
             storage_reconciliation: DirectStorageReconciliationState::zero(),
             storage_downstream_operands: DirectStorageDownstreamOperands::zero(),
@@ -666,55 +686,6 @@ impl DirectDayFrame {
         })
     }
 
-    pub fn run_r4b_storage_reconciliation_span(
-        &mut self,
-    ) -> Result<DirectStorageReconciliationSpanReport, DirectRuntimeError> {
-        DIRECT_AUDIT.record_phase_span_run();
-        let phase_count = DIRECT_R4B_PHASE_SPAN_COUNT;
-        let mut phase_entry_count = 0_u64;
-
-        DIRECT_AUDIT.record_direct_phase_entry();
-        phase_entry_count += 1;
-        let storage_reconciliation = self.compute_r4b_storage_reconciliation()?;
-        DIRECT_AUDIT.record_direct_compute_operation();
-
-        DIRECT_AUDIT.record_direct_phase_entry();
-        phase_entry_count += 1;
-        self.storage_reconciliation = storage_reconciliation;
-        self.water.soil_water_m = storage_reconciliation.storage_reconciled_m;
-        DIRECT_AUDIT.record_direct_state_mutation();
-        self.storage_downstream_operands =
-            DirectStorageDownstreamOperands::from(storage_reconciliation);
-        DIRECT_AUDIT.record_downstream_operand_production();
-
-        let storage_shadow_projection = DirectStorageShadowProjection {
-            lane_index: self.lane_index,
-            day_index: self.day_index,
-            storage_initial_m: self.storage_downstream_operands.storage_initial_m,
-            precip_input_m: self.storage_downstream_operands.precip_input_m,
-            snow_coupling_m: self.storage_downstream_operands.snow_coupling_m,
-            q_runoff_m: self.storage_downstream_operands.q_runoff_m,
-            evapotranspiration_m: self.storage_downstream_operands.evapotranspiration_m,
-            deep_seepage_m: self.storage_downstream_operands.deep_seepage_m,
-            subsurface_loss_m: self.storage_downstream_operands.subsurface_loss_m,
-            storage_reconciled_m: self.storage_downstream_operands.storage_reconciled_m,
-            closure_residual_m: self.storage_downstream_operands.closure_residual_m,
-        };
-        self.storage_shadow_projection = Some(storage_shadow_projection);
-        DIRECT_AUDIT.record_shadow_projection();
-
-        Ok(DirectStorageReconciliationSpanReport {
-            phase_count,
-            phase_entry_count,
-            direct_compute_count: 1,
-            state_mutation_count: 1,
-            downstream_operand_count: 1,
-            shadow_projection_count: 1,
-            compatibility_edge_invocation_count: 0,
-            storage_shadow_projection,
-        })
-    }
-
     fn compute_r4a_runoff_partition(
         &self,
     ) -> Result<DirectRunoffPartitionState, DirectRuntimeError> {
@@ -745,57 +716,6 @@ impl DirectDayFrame {
             surface_saturation_runoff_m: inputs.surface_saturation_runoff_m,
             partition_runoff_m,
             q_runoff_m,
-            closure_residual_m,
-        })
-    }
-
-    fn compute_r4b_storage_reconciliation(
-        &self,
-    ) -> Result<DirectStorageReconciliationState, DirectRuntimeError> {
-        self.validate_r4b_storage_reconciliation_domain()?;
-        let inputs = self.storage_reconciliation_inputs;
-        let q_runoff_m = self.runoff_downstream_operands.q_runoff_m;
-        let storage_reconciled_m =
-            inputs.storage_initial_m + inputs.precip_input_m + inputs.snow_coupling_m
-                - q_runoff_m
-                - inputs.evapotranspiration_m
-                - inputs.deep_seepage_m
-                - inputs.subsurface_loss_m;
-        validate_finite(
-            "storage_reconciliation.storage_reconciled_m",
-            storage_reconciled_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "storage_reconciliation.storage_reconciled_m",
-            storage_reconciled_m,
-        )?;
-        let closure_residual_m =
-            inputs.storage_initial_m + inputs.precip_input_m + inputs.snow_coupling_m
-                - q_runoff_m
-                - inputs.evapotranspiration_m
-                - inputs.deep_seepage_m
-                - inputs.subsurface_loss_m
-                - storage_reconciled_m;
-        validate_finite(
-            "storage_reconciliation.closure_residual_m",
-            closure_residual_m,
-        )?;
-        if closure_residual_m.abs() > inputs.closure_tolerance_m {
-            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-                field: "storage_reconciliation.closure_residual_m",
-            });
-        }
-
-        Ok(DirectStorageReconciliationState {
-            storage_initial_m: inputs.storage_initial_m,
-            precip_input_m: inputs.precip_input_m,
-            snow_coupling_m: inputs.snow_coupling_m,
-            q_runoff_m,
-            evapotranspiration_m: inputs.evapotranspiration_m,
-            deep_seepage_m: inputs.deep_seepage_m,
-            subsurface_loss_m: inputs.subsurface_loss_m,
-            closure_tolerance_m: inputs.closure_tolerance_m,
-            storage_reconciled_m,
             closure_residual_m,
         })
     }
@@ -888,47 +808,6 @@ impl DirectDayFrame {
         validate_nonnegative_direct_m(
             "runoff_partition.surface_saturation_runoff_m",
             self.runoff_partition_inputs.surface_saturation_runoff_m,
-        )?;
-        Ok(())
-    }
-
-    fn validate_r4b_storage_reconciliation_domain(&self) -> Result<(), DirectRuntimeError> {
-        if self.runoff_shadow_projection.is_none() {
-            return Err(DirectRuntimeError::MissingDirectUpstream {
-                upstream: "R4A runoff partition",
-            });
-        }
-        validate_nonnegative_direct_m(
-            "storage_reconciliation.storage_initial_m",
-            self.storage_reconciliation_inputs.storage_initial_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "storage_reconciliation.precip_input_m",
-            self.storage_reconciliation_inputs.precip_input_m,
-        )?;
-        validate_finite(
-            "storage_reconciliation.snow_coupling_m",
-            self.storage_reconciliation_inputs.snow_coupling_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "storage_reconciliation.q_runoff_m",
-            self.runoff_downstream_operands.q_runoff_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "storage_reconciliation.evapotranspiration_m",
-            self.storage_reconciliation_inputs.evapotranspiration_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "storage_reconciliation.deep_seepage_m",
-            self.storage_reconciliation_inputs.deep_seepage_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "storage_reconciliation.subsurface_loss_m",
-            self.storage_reconciliation_inputs.subsurface_loss_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "storage_reconciliation.closure_tolerance_m",
-            self.storage_reconciliation_inputs.closure_tolerance_m,
         )?;
         Ok(())
     }
@@ -1259,125 +1138,6 @@ pub struct DirectRunoffShadowProjection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectStorageReconciliationInputs {
-    pub storage_initial_m: f64,
-    pub precip_input_m: f64,
-    pub snow_coupling_m: f64,
-    pub evapotranspiration_m: f64,
-    pub deep_seepage_m: f64,
-    pub subsurface_loss_m: f64,
-    pub closure_tolerance_m: f64,
-}
-
-impl DirectStorageReconciliationInputs {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            storage_initial_m: 0.0,
-            precip_input_m: 0.0,
-            snow_coupling_m: 0.0,
-            evapotranspiration_m: 0.0,
-            deep_seepage_m: 0.0,
-            subsurface_loss_m: 0.0,
-            closure_tolerance_m: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectStorageReconciliationState {
-    pub storage_initial_m: f64,
-    pub precip_input_m: f64,
-    pub snow_coupling_m: f64,
-    pub q_runoff_m: f64,
-    pub evapotranspiration_m: f64,
-    pub deep_seepage_m: f64,
-    pub subsurface_loss_m: f64,
-    pub closure_tolerance_m: f64,
-    pub storage_reconciled_m: f64,
-    pub closure_residual_m: f64,
-}
-
-impl DirectStorageReconciliationState {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            storage_initial_m: 0.0,
-            precip_input_m: 0.0,
-            snow_coupling_m: 0.0,
-            q_runoff_m: 0.0,
-            evapotranspiration_m: 0.0,
-            deep_seepage_m: 0.0,
-            subsurface_loss_m: 0.0,
-            closure_tolerance_m: 0.0,
-            storage_reconciled_m: 0.0,
-            closure_residual_m: 0.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectStorageDownstreamOperands {
-    pub storage_initial_m: f64,
-    pub precip_input_m: f64,
-    pub snow_coupling_m: f64,
-    pub q_runoff_m: f64,
-    pub evapotranspiration_m: f64,
-    pub deep_seepage_m: f64,
-    pub subsurface_loss_m: f64,
-    pub storage_reconciled_m: f64,
-    pub closure_residual_m: f64,
-}
-
-impl DirectStorageDownstreamOperands {
-    #[must_use]
-    pub const fn zero() -> Self {
-        Self {
-            storage_initial_m: 0.0,
-            precip_input_m: 0.0,
-            snow_coupling_m: 0.0,
-            q_runoff_m: 0.0,
-            evapotranspiration_m: 0.0,
-            deep_seepage_m: 0.0,
-            subsurface_loss_m: 0.0,
-            storage_reconciled_m: 0.0,
-            closure_residual_m: 0.0,
-        }
-    }
-}
-
-impl From<DirectStorageReconciliationState> for DirectStorageDownstreamOperands {
-    fn from(state: DirectStorageReconciliationState) -> Self {
-        Self {
-            storage_initial_m: state.storage_initial_m,
-            precip_input_m: state.precip_input_m,
-            snow_coupling_m: state.snow_coupling_m,
-            q_runoff_m: state.q_runoff_m,
-            evapotranspiration_m: state.evapotranspiration_m,
-            deep_seepage_m: state.deep_seepage_m,
-            subsurface_loss_m: state.subsurface_loss_m,
-            storage_reconciled_m: state.storage_reconciled_m,
-            closure_residual_m: state.closure_residual_m,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectStorageShadowProjection {
-    pub lane_index: usize,
-    pub day_index: usize,
-    pub storage_initial_m: f64,
-    pub precip_input_m: f64,
-    pub snow_coupling_m: f64,
-    pub q_runoff_m: f64,
-    pub evapotranspiration_m: f64,
-    pub deep_seepage_m: f64,
-    pub subsurface_loss_m: f64,
-    pub storage_reconciled_m: f64,
-    pub closure_residual_m: f64,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectWaterLedgerState {
     pub total_accounted_input_m: f64,
     pub soil_water_m: f64,
@@ -1622,18 +1382,6 @@ pub struct DirectRunoffPartitionSpanReport {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct DirectStorageReconciliationSpanReport {
-    pub phase_count: usize,
-    pub phase_entry_count: u64,
-    pub direct_compute_count: u64,
-    pub state_mutation_count: u64,
-    pub downstream_operand_count: u64,
-    pub shadow_projection_count: u64,
-    pub compatibility_edge_invocation_count: u64,
-    pub storage_shadow_projection: DirectStorageShadowProjection,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectRunTransferSpanReport {
     pub phase_count: usize,
     pub phase_entry_count: u64,
@@ -1713,6 +1461,16 @@ impl DirectFrameExecutor {
             shadow_projection_count += input_span_report.shadow_projection_count;
             compatibility_edge_invocation_count +=
                 input_span_report.compatibility_edge_invocation_count;
+
+            let storage_input_span_report = day_frame.run_r4c_storage_input_span()?;
+            phase_span_run_count += 1;
+            direct_phase_entry_count += storage_input_span_report.phase_entry_count;
+            direct_compute_count += storage_input_span_report.direct_compute_count;
+            state_mutation_count += storage_input_span_report.state_mutation_count;
+            downstream_operand_count += storage_input_span_report.downstream_operand_count;
+            shadow_projection_count += storage_input_span_report.shadow_projection_count;
+            compatibility_edge_invocation_count +=
+                storage_input_span_report.compatibility_edge_invocation_count;
 
             let runoff_span_report = day_frame.run_r4a_runoff_partition_span()?;
             phase_span_run_count += 1;
