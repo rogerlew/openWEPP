@@ -17,18 +17,19 @@ use crate::{
     DirectDayFrame, DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
     DirectDeepSeepageShadowProjection, DirectDeepSeepageState, DirectDownstreamOperands,
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationDownstreamOperands,
-    DirectEvapotranspirationInputs, DirectEvapotranspirationShadowProjection,
-    DirectEvapotranspirationState, DirectExecutorMode, DirectFrameExecutor,
-    DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneTransferLedger,
-    DirectLedgerDownstreamOperands, DirectLedgerShadowProjection, DirectLiquidInputInputs,
-    DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
-    DirectNormalizationShadowProjection, DirectNormalizationState, DirectPercolationInputs,
-    DirectPhaseKind, DirectPhaseLifecycleStatus, DirectPublicationCalendarDay,
-    DirectPublicationRunMetadata, DirectRunFrame, DirectRunIdentity,
-    DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
-    DirectRunoffPartitionInputs, DirectRunonCarryInputs, DirectRuntimeError,
-    DirectSaturationAddbackInputs, DirectShadowProjection, DirectSnowCouplingDownstreamOperands,
-    DirectSnowCouplingInputs, DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
+    DirectEvapotranspirationInputs, DirectEvapotranspirationPmetInputs,
+    DirectEvapotranspirationShadowProjection, DirectEvapotranspirationState, DirectExecutorMode,
+    DirectFrameExecutor, DirectHydrologyProjectionInputs, DirectInfiltrationDepressionInputs,
+    DirectInputAccountingState, DirectLaneTransferLedger, DirectLedgerDownstreamOperands,
+    DirectLedgerShadowProjection, DirectLiquidInputInputs, DirectNormalizationDownstreamOperands,
+    DirectNormalizationInputs, DirectNormalizationShadowProjection, DirectNormalizationState,
+    DirectPercolationInputs, DirectPhaseKind, DirectPhaseLifecycleStatus,
+    DirectPublicationCalendarDay, DirectPublicationDayInput, DirectPublicationRunMetadata,
+    DirectRunFrame, DirectRunIdentity, DirectRunTransferDownstreamOperands,
+    DirectRunTransferShadowProjection, DirectRunoffPartitionInputs, DirectRunonCarryInputs,
+    DirectRuntimeError, DirectSaturationAddbackInputs, DirectShadowProjection,
+    DirectSnowCouplingDownstreamOperands, DirectSnowCouplingInputs,
+    DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
     DirectStorageBoundsDownstreamOperands, DirectStorageBoundsInputs,
     DirectStorageBoundsShadowProjection, DirectStorageBoundsState, DirectStorageDownstreamOperands,
     DirectStorageInputDownstreamOperands, DirectStorageInputShadowProjection,
@@ -247,6 +248,164 @@ fn r6a_publication_capture_records_run_bound_rows_without_publication_alias() {
     assert_eq!(audit.publication_capture_runs, 1);
     assert_eq!(audit.skeleton_runs, 0);
     assert_eq!(audit.compatibility_edge_invocations, 0);
+}
+
+#[test]
+fn r6f_publication_capture_accepts_typed_process_inputs_and_carries_layers() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(17, 501, 1, 2)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct frame should construct for capture");
+    frame.lanes[0].area_m2 = 100.0;
+    let day_inputs = r6f_typed_publication_day_inputs();
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r6f_typed_inputs".to_string(),
+        runtime_selection: "direct-publication-frame-cutover-candidate".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        .run_publication_capture_with_day_inputs(&mut frame, metadata, &day_inputs)
+        .expect("typed direct publication capture should execute");
+    let rows = execution.publication_frame.rows();
+
+    assert_eq!(rows.len(), 2);
+    assert!((rows[0].evaporation.es_mm - 10.0).abs() < 1.0e-12);
+    assert!((rows[0].storage.total_soil_mm - 190.0).abs() < 1.0e-12);
+    assert_eq!(rows[0].profile.depth_mm, Some(400.0));
+    assert_eq!(rows[0].profile.porosity_cap_mm, Some(200.0));
+    assert_eq!(rows[0].profile.fc_store_mm, Some(100.0));
+    assert_eq!(rows[0].profile.wp_store_mm, Some(50.0));
+    assert!((rows[1].storage.total_soil_mm - 190.0).abs() < 1.0e-12);
+    assert_eq!(frame.lanes[0].subsurface_layers.len(), 1);
+    assert!((frame.lanes[0].subsurface_layers[0].theta_m - 0.190).abs() < 1.0e-12);
+}
+
+fn r6f_typed_publication_day_inputs() -> [DirectPublicationDayInput; 2] {
+    let base_layer = DirectSubsurfaceLayerState::from(r6f_typed_base_layer_inputs());
+    let base_layer_inputs = DirectSubsurfaceLayerInputs::from(base_layer.clone());
+    let process_projection = r6f_typed_process_projection();
+    [
+        r6f_typed_first_day(base_layer, base_layer_inputs, process_projection),
+        r6f_typed_second_day(process_projection),
+    ]
+}
+
+fn r6f_typed_base_layer_inputs() -> DirectSubsurfaceLayerInputs {
+    DirectSubsurfaceLayerInputs {
+        theta_m: 0.200,
+        field_capacity_m: 0.200,
+        upper_limit_m: 0.500,
+        conductivity_m_s: 1.0e-6,
+        depth_m: 0.400,
+        residual_theta: 0.0,
+        frozen_depth_m: 0.0,
+        frozen_water_m: 0.0,
+        porosity: 0.5,
+        field_capacity_theta: 0.25,
+        coca: 1.0,
+        lateral_conductivity_m_s: 1.0e-6,
+    }
+}
+
+fn r6f_typed_process_projection() -> DirectHydrologyProjectionInputs {
+    DirectHydrologyProjectionInputs {
+        aggregate_storage_tolerance_m: 1.0e-12,
+        snow_water_m: 0.0,
+        frozen_soil_water_m: 0.0,
+        profile_depth_m: Some(0.400),
+        profile_porosity_cap_m: Some(0.200),
+        profile_field_capacity_m: Some(0.100),
+        profile_wilting_point_m: Some(0.050),
+    }
+}
+
+fn r6f_typed_first_day(
+    base_layer: DirectSubsurfaceLayerState,
+    base_layer_inputs: DirectSubsurfaceLayerInputs,
+    process_projection: DirectHydrologyProjectionInputs,
+) -> DirectPublicationDayInput {
+    let mut first_day = r6f_typed_calendar_day(1);
+    first_day.initial_soil_water_m = Some(0.200);
+    first_day.percolation_inputs = Some(DirectPercolationInputs {
+        soil_water_initial_m: 0.200,
+        reconcile_legacy_soil_water_from_layers: false,
+        same_pass_infiltration_m: 0.0,
+        same_pass_infiltration_lineage: false,
+        tillage_depth_m: 0.0,
+        lane_substeps: 1,
+        restrictive_layer_enabled: false,
+        restrictive_layer_conductivity_m_s: 0.0,
+        restrictive_layer_thickness_m: 0.0,
+        layers: vec![base_layer],
+    });
+    first_day.subsurface_compute_inputs = Some(r6f_typed_subsurface_inputs(base_layer_inputs));
+    first_day.evapotranspiration_compute_inputs = Some(r6f_typed_evapotranspiration_inputs());
+    first_day.hydrology_projection_inputs = Some(process_projection);
+    first_day
+}
+
+fn r6f_typed_second_day(
+    process_projection: DirectHydrologyProjectionInputs,
+) -> DirectPublicationDayInput {
+    let mut second_day = r6f_typed_calendar_day(2);
+    second_day.hydrology_projection_inputs = Some(process_projection);
+    second_day
+}
+
+fn r6f_typed_calendar_day(day: u16) -> DirectPublicationDayInput {
+    DirectPublicationDayInput::calendar_only(DirectPublicationCalendarDay {
+        year: 2026,
+        julian_day: day,
+        month: 1,
+        day_of_month: if day == 1 { 1 } else { 2 },
+        water_year: 2026,
+    })
+}
+
+fn r6f_typed_subsurface_inputs(
+    base_layer_inputs: DirectSubsurfaceLayerInputs,
+) -> DirectSubsurfaceComputeInputs {
+    DirectSubsurfaceComputeInputs {
+        avg_slope: 0.0,
+        slope_length_m: 1.0,
+        lateral_anisotropy_ratio: 1.0,
+        soil_depth_m: 0.400,
+        solwpv_mode: 2006,
+        mofe_hourly_carry_arrays_enabled: false,
+        lane_substeps: 1,
+        drainage_capacity_m: 0.0,
+        drain_enabled: false,
+        drain_depth_m: 0.5,
+        drain_spacing_m: 1.0,
+        drain_diameter_m: 0.1,
+        layers: vec![base_layer_inputs],
+    }
+}
+
+fn r6f_typed_evapotranspiration_inputs() -> DirectEvapotranspirationComputeInputs {
+    DirectEvapotranspirationComputeInputs {
+        et_demand_m: 0.010,
+        leaf_area_index: 0.0,
+        canopy_cover_fraction: 0.0,
+        residue_interception_m: 0.0,
+        same_pass_infiltration_m: 0.0,
+        outside_water_depth_m: 0.0,
+        root_depth_m: 0.0,
+        plant_tolerance: 0.25,
+        growth_context_required: false,
+        stage_state: None,
+        pmet: Some(DirectEvapotranspirationPmetInputs {
+            soil_evaporation_m: 0.010,
+            plant_transpiration_m: 0.0,
+            soil_evaporation_storage_return_m: 0.0,
+        }),
+    }
 }
 
 #[test]

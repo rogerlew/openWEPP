@@ -1,6 +1,6 @@
 # R6F Artifacts
 
-Status: scaffolded.
+Status: executed-held.
 
 These artifacts are part of the execution contract for R6F. They are not
 optional notes. A worker must keep them current while iterating through direct

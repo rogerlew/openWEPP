@@ -2,6 +2,8 @@ use std::error::Error;
 use std::fmt;
 use std::sync::atomic::{AtomicU64, Ordering};
 
+use crate::constants::{WB16_PEAKRO_FLOOR, WB16_RUNOFF_NEAR_ZERO_THRESHOLD};
+
 pub const DIRECT_TRANSFER_HOUR_COUNT: usize = 24;
 pub const DIRECT_PHASE_COUNT: usize = 14;
 pub const DIRECT_R3A_PHASE_SPAN_COUNT: usize = 2;
@@ -370,6 +372,19 @@ impl DirectRunFrame {
         day_frame.water = lane.water.clone();
         day_frame.transfer = lane.transfer.clone();
         day_frame.publication = lane.publication.clone();
+        if !lane.subsurface_layers.is_empty() {
+            day_frame.percolation_inputs.soil_water_initial_m = lane.water.soil_water_m;
+            day_frame
+                .percolation_inputs
+                .layers
+                .clone_from(&lane.subsurface_layers);
+            day_frame.subsurface_compute_inputs.layers = lane
+                .subsurface_layers
+                .iter()
+                .cloned()
+                .map(Into::into)
+                .collect();
+        }
         Ok(day_frame)
     }
 
@@ -581,6 +596,7 @@ pub struct DirectLaneFrame {
     pub water: DirectWaterState,
     pub transfer: DirectTransferBuffers,
     pub publication: DirectPublicationFrame,
+    pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
 }
 
 impl DirectLaneFrame {
@@ -603,6 +619,7 @@ impl DirectLaneFrame {
             water: DirectWaterState::zero(),
             transfer: DirectTransferBuffers::zero(),
             publication: DirectPublicationFrame::empty(),
+            subsurface_layers: Vec::new(),
         })
     }
 
@@ -624,6 +641,23 @@ impl DirectLaneFrame {
         self.water = day_frame.water.clone();
         self.transfer = day_frame.transfer.clone();
         self.publication = day_frame.publication.clone();
+        if !day_frame
+            .evapotranspiration_compute
+            .layer_state_after_root_uptake
+            .is_empty()
+        {
+            self.subsurface_layers.clone_from(
+                &day_frame
+                    .evapotranspiration_compute
+                    .layer_state_after_root_uptake,
+            );
+        } else if !day_frame.subsurface_compute.layer_state_after.is_empty() {
+            self.subsurface_layers
+                .clone_from(&day_frame.subsurface_compute.layer_state_after);
+        } else if !day_frame.percolation.layer_state_after.is_empty() {
+            self.subsurface_layers
+                .clone_from(&day_frame.percolation.layer_state_after);
+        }
         Ok(())
     }
 }
@@ -1182,20 +1216,30 @@ pub struct DirectPublicationCalendarDay {
     pub water_year: i16,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DirectPublicationDayInput {
     pub calendar: DirectPublicationCalendarDay,
     pub precipitation_m: f64,
     pub effective_temperature_c: f64,
+    pub initial_soil_water_m: Option<f64>,
+    pub percolation_inputs: Option<DirectPercolationInputs>,
+    pub subsurface_compute_inputs: Option<DirectSubsurfaceComputeInputs>,
+    pub evapotranspiration_compute_inputs: Option<DirectEvapotranspirationComputeInputs>,
+    pub hydrology_projection_inputs: Option<DirectHydrologyProjectionInputs>,
 }
 
 impl DirectPublicationDayInput {
     #[must_use]
-    pub const fn calendar_only(calendar: DirectPublicationCalendarDay) -> Self {
+    pub fn calendar_only(calendar: DirectPublicationCalendarDay) -> Self {
         Self {
             calendar,
             precipitation_m: 0.0,
             effective_temperature_c: 0.0,
+            initial_soil_water_m: None,
+            percolation_inputs: None,
+            subsurface_compute_inputs: None,
+            evapotranspiration_compute_inputs: None,
+            hydrology_projection_inputs: None,
         }
     }
 }
@@ -1312,6 +1356,8 @@ impl DirectPublicationDayRow {
                 field: "publication.sim_day_index",
             }
         })?;
+        let (peak_runoff_m3_s, runoff_duration_s) =
+            direct_publication_peak_runoff_operands(day_frame.hydrology_projection.q_runoff_m)?;
         let runoff = DirectPublicationRunoffOperands {
             q_mm: m_to_mm(day_frame.hydrology_projection.q_runoff_m)?,
             qofe_mm: m_to_mm(day_frame.hydrology_projection.q_ofe_m)?,
@@ -1320,8 +1366,8 @@ impl DirectPublicationDayRow {
                 day_frame.hydrology_projection.q_ofe_m,
                 lane.area_m2,
             )?,
-            peak_runoff_m3_s: None,
-            runoff_duration_s: None,
+            peak_runoff_m3_s,
+            runoff_duration_s,
         };
         let subsurface_lateral_m = day_frame.hydrology_projection.lateral_flow_m;
 
@@ -1373,8 +1419,10 @@ impl DirectPublicationDayRow {
                 snow_water_mm: m_to_mm(day_frame.hydrology_projection.snow_water_m)?,
             },
             profile: DirectPublicationProfileOperands {
-                depth_mm: None,
-                porosity_cap_mm: None,
+                depth_mm: option_m_to_mm(day_frame.hydrology_projection.profile_depth_m)?,
+                porosity_cap_mm: option_m_to_mm(
+                    day_frame.hydrology_projection.profile_porosity_cap_m,
+                )?,
                 fc_store_mm: option_m_to_mm(
                     day_frame.hydrology_projection.profile_field_capacity_m,
                 )?,
@@ -1389,6 +1437,17 @@ impl DirectPublicationDayRow {
             erosion: DirectPublicationErosionOperands::absent_authority(),
         })
     }
+}
+
+fn direct_publication_peak_runoff_operands(
+    q_runoff_m: f64,
+) -> Result<(Option<f64>, Option<f64>), DirectRuntimeError> {
+    validate_finite("publication.runoff.q_runoff_m", q_runoff_m)?;
+    validate_nonnegative_direct_m("publication.runoff.q_runoff_m", q_runoff_m)?;
+    if q_runoff_m < WB16_RUNOFF_NEAR_ZERO_THRESHOLD {
+        return Ok((Some(WB16_PEAKRO_FLOOR), Some(0.0)));
+    }
+    Ok((None, None))
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -2118,10 +2177,10 @@ impl DirectFrameExecutor {
             transfer_span_report.compatibility_edge_invocation_count,
         );
 
-        for (day_index, day_input) in day_inputs.iter().copied().enumerate() {
+        for (day_index, day_input) in day_inputs.iter().cloned().enumerate() {
             for lane_index in 0..frame.identity.lane_count {
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
-                Self::apply_publication_day_input(&mut day_frame, day_input)?;
+                Self::apply_publication_day_input(&mut day_frame, &day_input)?;
                 Self::run_day_spans(&mut day_frame, &mut counters)?;
                 for phase in phase_plan {
                     let view = day_frame.phase_view(phase);
@@ -2168,7 +2227,7 @@ impl DirectFrameExecutor {
 
     fn apply_publication_day_input(
         day_frame: &mut DirectDayFrame,
-        day_input: DirectPublicationDayInput,
+        day_input: &DirectPublicationDayInput,
     ) -> Result<(), DirectRuntimeError> {
         validate_nonnegative_direct_m(
             "publication_input.precipitation_m",
@@ -2180,6 +2239,26 @@ impl DirectFrameExecutor {
         )?;
         day_frame.forcing.precipitation_m = day_input.precipitation_m;
         day_frame.forcing.effective_temperature_c = day_input.effective_temperature_c;
+        if let Some(initial_soil_water_m) = day_input.initial_soil_water_m {
+            validate_nonnegative_direct_m(
+                "publication_input.initial_soil_water_m",
+                initial_soil_water_m,
+            )?;
+            day_frame.water.soil_water_m = initial_soil_water_m;
+        }
+        if let Some(percolation_inputs) = &day_input.percolation_inputs {
+            day_frame.percolation_inputs = percolation_inputs.clone();
+        }
+        if let Some(subsurface_compute_inputs) = &day_input.subsurface_compute_inputs {
+            day_frame.subsurface_compute_inputs = subsurface_compute_inputs.clone();
+        }
+        if let Some(evapotranspiration_compute_inputs) = day_input.evapotranspiration_compute_inputs
+        {
+            day_frame.evapotranspiration_compute_inputs = evapotranspiration_compute_inputs;
+        }
+        if let Some(hydrology_projection_inputs) = day_input.hydrology_projection_inputs {
+            day_frame.hydrology_projection_inputs = hydrology_projection_inputs;
+        }
         day_frame.liquid_input_inputs.liquid_input_handoff_m = day_input.precipitation_m;
         Ok(())
     }

@@ -23,7 +23,9 @@ mod tests {
         DirectPublicationSubsurfaceOperands, DirectPublicationTransferOperands,
         DirectRunIdentity, DirectRunPublicationFrame,
     };
-    use openwepp_input_contract::parsers::hbp::{HbpParseOptions, parse_hbp_from_path};
+    use openwepp_input_contract::parsers::hbp::{
+        HbpParseOptions, parse_hbp_from_bytes_with_latest_event_payload, parse_hbp_from_path,
+    };
     use openwepp_input_contract::parsers::slope::{
         DatverSource, DistanceMode, SlopeOfe, SlopePoint, SlopeProfile,
     };
@@ -687,7 +689,7 @@ mod tests {
     }
 
     #[test]
-    fn r6e_cutover_candidate_reaches_direct_input_binding_then_fails_hbp_parity() {
+    fn r6f_cutover_candidate_reaches_hbp_identity_then_fails_wat_producer_authority() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -719,7 +721,11 @@ mod tests {
             "unexpected error: {message}"
         );
         assert!(
-            message.contains("HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH"),
+            message.contains("HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP"),
+            "unexpected error: {message}"
+        );
+        assert!(
+            message.contains("reduced_fields=wepp_id,year,Es,Total-Soil,SoilWaterTotal"),
             "unexpected error: {message}"
         );
         assert!(
@@ -750,6 +756,247 @@ mod tests {
                 "fail-closed R6 cutover candidate must not write {output_name}"
             );
         }
+    }
+
+    #[test]
+    fn r6f_wat_hold_marker_is_reserved_for_exact_producer_gap_fields() {
+        let compatibility = r6f_wat_marker_sample_row();
+        let mut direct = compatibility.clone();
+        direct.wepp_id = 19;
+        direct.year = 2026;
+        direct.es = 0.0;
+        direct.total_soil_water = 0.0;
+        direct.soil_water_total = None;
+        direct.profile_depth = None;
+        direct.profile_porosity_cap = None;
+        direct.profile_fc_store = None;
+        direct.profile_wp_store = None;
+
+        let reduced_fields = reduced_wat_mismatch_fields(
+            std::slice::from_ref(&direct),
+            std::slice::from_ref(&compatibility),
+        );
+        assert_eq!(
+            reduced_fields,
+            vec![
+                "wepp_id",
+                "year",
+                "Es",
+                "Total-Soil",
+                "SoilWaterTotal",
+                "ProfileDepth",
+                "ProfilePorosityCap",
+                "ProfileFCStore",
+                "ProfileWPStore",
+            ]
+        );
+        assert!(r6f_wat_direct_process_producer_authority_gap(
+            &reduced_fields
+        ));
+
+        let mut unrelated_direct = direct;
+        unrelated_direct.p = 9.5;
+        let unrelated_fields =
+            reduced_wat_mismatch_fields(&[unrelated_direct], &[compatibility]);
+        assert!(unrelated_fields.contains(&"P"));
+        assert!(!r6f_wat_direct_process_producer_authority_gap(
+            &unrelated_fields
+        ));
+    }
+
+    fn r6f_wat_marker_sample_row() -> HillslopeWatRow {
+        HillslopeWatRow {
+            wepp_id: 1,
+            ofe_id: 1,
+            year: 1987,
+            sim_day_index: 1,
+            julian: 1,
+            month: 1,
+            day_of_month: 1,
+            water_year: 1987,
+            ofe: 1,
+            p: 10.0,
+            rm: 0.0,
+            q: 0.0,
+            ep: 1.0,
+            es: 1.0,
+            er: 0.1,
+            dp: 0.1,
+            up_strm_q: 0.0,
+            sub_r_in: 0.0,
+            latqcc: 0.0,
+            total_soil_water: 100.0,
+            frozwt: 0.0,
+            frdp: 0.0,
+            snow_water: 0.0,
+            qofe: 0.0,
+            tile: 0.0,
+            irr: 0.0,
+            area: 1.0,
+            soil_water_total: Some(100.0),
+            profile_depth: Some(1_200.0),
+            profile_porosity_cap: Some(400.0),
+            profile_fc_store: Some(300.0),
+            profile_wp_store: Some(150.0),
+            interception: Some(0.25),
+            interception_storage: None,
+        }
+    }
+
+    #[test]
+    fn r6f_cutover_candidate_hbp_identity_exposes_wat_producer_gap() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        reset_direct_runtime_audit_counters();
+        let evidence = r6f_hbp_wat_fixture_evidence();
+
+        assert_r6f_hbp_identity(&evidence);
+        assert_r6f_wat_reduced_to_producer_gap(&evidence);
+    }
+
+    struct R6fHbpWatEvidence {
+        output_pass: PathBuf,
+        direct_hbp_bytes: Vec<u8>,
+        compatibility_hbp_bytes: Vec<u8>,
+        direct_wat_rows: Vec<HillslopeWatRow>,
+        compatibility_wat_rows: Vec<HillslopeWatRow>,
+    }
+
+    fn r6f_hbp_wat_fixture_evidence() -> R6fHbpWatEvidence {
+        let source_fixture_dir = fixture_path("hillslope_run_dir");
+        let temp_run_dir = copy_fixture_to_temp(
+            &source_fixture_dir,
+            "r6f_direct_publication_hbp_payload",
+        );
+        let request = HillslopeRunRequest {
+            run_dir: temp_run_dir.clone(),
+            run_file: PathBuf::from("case.run"),
+            output_dir: temp_run_dir.join("output"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        };
+        let inputs = load_hillslope_run_inputs(&request).expect("fixture inputs should parse");
+        let targets = resolve_hillslope_output_targets(&inputs.runfile)
+            .expect("fixture output targets should resolve");
+        let mut sidecars = resolve_hillslope_sidecars(&request, &inputs, &targets)
+            .expect("fixture sidecars should resolve");
+        let runtime_setup =
+            build_static_hillslope_runtime_setup(&request, &inputs, &mut sidecars)
+                .expect("fixture runtime setup should build");
+        let mut execution = execute_hillslope_climate_days(
+            &inputs.runfile.run_name,
+            targets.output_hillslope_id,
+            HillslopeRuntimeSelection::DirectPublicationFrameCutover,
+            runtime_setup.execution_state,
+            &inputs.climate,
+        )
+        .expect("fixture climate execution should complete");
+        execution.direct_publication = build_direct_publication_artifacts(
+            HillslopeRuntimeSelection::DirectPublicationFrameCutover,
+            &inputs,
+            &targets,
+            &sidecars,
+            &execution,
+        )
+        .expect("direct publication artifacts should build");
+        let artifacts = execution
+            .direct_publication
+            .as_ref()
+            .expect("direct publication artifacts should be retained");
+        let compatibility_hbp = build_hbp_output(
+            &targets.output_pass,
+            &execution.wb13_rows,
+            &execution.runtime_surface,
+            execution.contributor_ofe_count,
+        )
+        .expect("compatibility HBP should build");
+        let compatibility_wat_rows = build_hillslope_wat_rows(&execution.wb13_rows)
+            .expect("compatibility WAT rows should build");
+
+        R6fHbpWatEvidence {
+            output_pass: targets.output_pass,
+            direct_hbp_bytes: artifacts.hbp_bytes.clone(),
+            compatibility_hbp_bytes: compatibility_hbp,
+            direct_wat_rows: artifacts.wat_rows.clone(),
+            compatibility_wat_rows,
+        }
+    }
+
+    fn assert_r6f_hbp_identity(evidence: &R6fHbpWatEvidence) {
+        let (_, direct_payload) = parse_hbp_from_bytes_with_latest_event_payload(
+            &evidence.direct_hbp_bytes,
+            &evidence.output_pass,
+            HbpParseOptions::strict(),
+        )
+        .expect("direct HBP should parse");
+        let (_, compatibility_payload) = parse_hbp_from_bytes_with_latest_event_payload(
+            &evidence.compatibility_hbp_bytes,
+            &evidence.output_pass,
+            HbpParseOptions::strict(),
+        )
+        .expect("compatibility HBP should parse");
+
+        assert_eq!(
+            direct_payload, compatibility_payload,
+            "direct latest event payload must match compatibility latest event payload"
+        );
+        assert_eq!(
+            evidence.direct_hbp_bytes, evidence.compatibility_hbp_bytes,
+            "direct HBP bytes must match compatibility HBP bytes"
+        );
+    }
+
+    fn assert_r6f_wat_reduced_to_producer_gap(evidence: &R6fHbpWatEvidence) {
+        assert_eq!(
+            evidence.direct_wat_rows.len(),
+            evidence.compatibility_wat_rows.len()
+        );
+        let direct_first = evidence
+            .direct_wat_rows
+            .first()
+            .expect("direct WAT rows should include first day");
+        let compatibility_first = evidence
+            .compatibility_wat_rows
+            .first()
+            .expect("compatibility WAT rows should include first day");
+        assert_f64_bits_eq(direct_first.p, compatibility_first.p);
+        assert_f64_bits_eq(direct_first.rm, compatibility_first.rm);
+        assert_f64_bits_eq(direct_first.q, compatibility_first.q);
+        assert_f64_bits_eq(direct_first.qofe, compatibility_first.qofe);
+        assert_ne!(direct_first.wepp_id, compatibility_first.wepp_id);
+        assert_ne!(direct_first.year, compatibility_first.year);
+        assert_f64_bits_ne(direct_first.es, compatibility_first.es);
+        assert_f64_bits_ne(
+            direct_first.total_soil_water,
+            compatibility_first.total_soil_water,
+        );
+        assert_ne!(
+            direct_first.soil_water_total,
+            compatibility_first.soil_water_total
+        );
+        assert_ne!(direct_first.profile_depth, compatibility_first.profile_depth);
+        assert_ne!(
+            direct_first.profile_porosity_cap,
+            compatibility_first.profile_porosity_cap
+        );
+        assert_ne!(
+            direct_first.profile_fc_store,
+            compatibility_first.profile_fc_store
+        );
+        assert_ne!(
+            direct_first.profile_wp_store,
+            compatibility_first.profile_wp_store
+        );
+    }
+
+    fn assert_f64_bits_eq(left: f64, right: f64) {
+        assert_eq!(left.to_bits(), right.to_bits());
+    }
+
+    fn assert_f64_bits_ne(left: f64, right: f64) {
+        assert_ne!(left.to_bits(), right.to_bits());
     }
 
     #[test]

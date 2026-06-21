@@ -315,6 +315,25 @@ impl DirectSubsurfaceLayerInputs {
     }
 }
 
+impl From<DirectSubsurfaceLayerState> for DirectSubsurfaceLayerInputs {
+    fn from(state: DirectSubsurfaceLayerState) -> Self {
+        Self {
+            theta_m: state.theta_m,
+            field_capacity_m: state.field_capacity_m,
+            upper_limit_m: state.upper_limit_m,
+            conductivity_m_s: state.conductivity_m_s,
+            depth_m: state.depth_m,
+            residual_theta: state.residual_theta,
+            frozen_depth_m: state.frozen_depth_m,
+            frozen_water_m: state.frozen_water_m,
+            porosity: state.porosity,
+            field_capacity_theta: state.field_capacity_theta,
+            coca: state.coca,
+            lateral_conductivity_m_s: state.lateral_conductivity_m_s,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectSubsurfaceLayerState {
     pub theta_m: f64,

@@ -130,6 +130,230 @@ fn build_direct_publication_artifacts(
     Ok(Some(artifacts))
 }
 
+fn reduced_wat_mismatch_fields(
+    direct_rows: &[HillslopeWatRow],
+    compatibility_rows: &[HillslopeWatRow],
+) -> Vec<&'static str> {
+    let mut mismatches = BTreeSet::new();
+    if direct_rows.len() != compatibility_rows.len() {
+        mismatches.insert("row_count");
+    }
+    for (direct, compatibility) in direct_rows.iter().zip(compatibility_rows) {
+        collect_wat_identity_mismatch_fields(&mut mismatches, direct, compatibility);
+        collect_wat_required_scalar_mismatch_fields(&mut mismatches, direct, compatibility);
+        collect_wat_optional_scalar_mismatch_fields(&mut mismatches, direct, compatibility);
+    }
+    wat_mismatch_field_order()
+        .iter()
+        .copied()
+        .filter(|field| mismatches.contains(field))
+        .collect()
+}
+
+fn collect_wat_identity_mismatch_fields(
+    mismatches: &mut BTreeSet<&'static str>,
+    direct: &HillslopeWatRow,
+    compatibility: &HillslopeWatRow,
+) {
+    insert_mismatch_if(mismatches, "wepp_id", direct.wepp_id != compatibility.wepp_id);
+    insert_mismatch_if(mismatches, "ofe_id", direct.ofe_id != compatibility.ofe_id);
+    insert_mismatch_if(mismatches, "year", direct.year != compatibility.year);
+    insert_mismatch_if(
+        mismatches,
+        "sim_day_index",
+        direct.sim_day_index != compatibility.sim_day_index,
+    );
+    insert_mismatch_if(mismatches, "julian", direct.julian != compatibility.julian);
+    insert_mismatch_if(mismatches, "month", direct.month != compatibility.month);
+    insert_mismatch_if(
+        mismatches,
+        "day_of_month",
+        direct.day_of_month != compatibility.day_of_month,
+    );
+    insert_mismatch_if(
+        mismatches,
+        "water_year",
+        direct.water_year != compatibility.water_year,
+    );
+    insert_mismatch_if(mismatches, "ofe", direct.ofe != compatibility.ofe);
+}
+
+fn collect_wat_required_scalar_mismatch_fields(
+    mismatches: &mut BTreeSet<&'static str>,
+    direct: &HillslopeWatRow,
+    compatibility: &HillslopeWatRow,
+) {
+    insert_float_mismatch(mismatches, "P", direct.p, compatibility.p);
+    insert_float_mismatch(mismatches, "RM", direct.rm, compatibility.rm);
+    insert_float_mismatch(mismatches, "Q", direct.q, compatibility.q);
+    insert_float_mismatch(mismatches, "Ep", direct.ep, compatibility.ep);
+    insert_float_mismatch(mismatches, "Es", direct.es, compatibility.es);
+    insert_float_mismatch(mismatches, "Er", direct.er, compatibility.er);
+    insert_float_mismatch(mismatches, "Dp", direct.dp, compatibility.dp);
+    insert_float_mismatch(
+        mismatches,
+        "UpStrmQ",
+        direct.up_strm_q,
+        compatibility.up_strm_q,
+    );
+    insert_float_mismatch(mismatches, "SubRIn", direct.sub_r_in, compatibility.sub_r_in);
+    insert_float_mismatch(mismatches, "latqcc", direct.latqcc, compatibility.latqcc);
+    insert_float_mismatch(
+        mismatches,
+        "Total-Soil",
+        direct.total_soil_water,
+        compatibility.total_soil_water,
+    );
+    insert_float_mismatch(mismatches, "frozwt", direct.frozwt, compatibility.frozwt);
+    insert_float_mismatch(mismatches, "frdp", direct.frdp, compatibility.frdp);
+    insert_float_mismatch(
+        mismatches,
+        "Snow-Water",
+        direct.snow_water,
+        compatibility.snow_water,
+    );
+    insert_float_mismatch(mismatches, "QOFE", direct.qofe, compatibility.qofe);
+    insert_float_mismatch(mismatches, "Tile", direct.tile, compatibility.tile);
+    insert_float_mismatch(mismatches, "Irr", direct.irr, compatibility.irr);
+    insert_float_mismatch(mismatches, "Area", direct.area, compatibility.area);
+}
+
+fn collect_wat_optional_scalar_mismatch_fields(
+    mismatches: &mut BTreeSet<&'static str>,
+    direct: &HillslopeWatRow,
+    compatibility: &HillslopeWatRow,
+) {
+    insert_option_float_mismatch(
+        mismatches,
+        "SoilWaterTotal",
+        direct.soil_water_total,
+        compatibility.soil_water_total,
+    );
+    insert_option_float_mismatch(
+        mismatches,
+        "ProfileDepth",
+        direct.profile_depth,
+        compatibility.profile_depth,
+    );
+    insert_option_float_mismatch(
+        mismatches,
+        "ProfilePorosityCap",
+        direct.profile_porosity_cap,
+        compatibility.profile_porosity_cap,
+    );
+    insert_option_float_mismatch(
+        mismatches,
+        "ProfileFCStore",
+        direct.profile_fc_store,
+        compatibility.profile_fc_store,
+    );
+    insert_option_float_mismatch(
+        mismatches,
+        "ProfileWPStore",
+        direct.profile_wp_store,
+        compatibility.profile_wp_store,
+    );
+    insert_option_float_mismatch(
+        mismatches,
+        "Interception",
+        direct.interception,
+        compatibility.interception,
+    );
+    insert_option_float_mismatch(
+        mismatches,
+        "InterceptionStorage",
+        direct.interception_storage,
+        compatibility.interception_storage,
+    );
+}
+
+fn insert_float_mismatch(
+    mismatches: &mut BTreeSet<&'static str>,
+    field: &'static str,
+    direct: f64,
+    compatibility: f64,
+) {
+    insert_mismatch_if(mismatches, field, direct.to_bits() != compatibility.to_bits());
+}
+
+fn insert_option_float_mismatch(
+    mismatches: &mut BTreeSet<&'static str>,
+    field: &'static str,
+    direct: Option<f64>,
+    compatibility: Option<f64>,
+) {
+    insert_mismatch_if(
+        mismatches,
+        field,
+        direct.map(f64::to_bits) != compatibility.map(f64::to_bits),
+    );
+}
+
+fn insert_mismatch_if(
+    mismatches: &mut BTreeSet<&'static str>,
+    field: &'static str,
+    is_different: bool,
+) {
+    if is_different {
+        mismatches.insert(field);
+    }
+}
+
+fn r6f_wat_direct_process_producer_authority_gap(fields: &[&str]) -> bool {
+    let expected = [
+        "wepp_id",
+        "year",
+        "Es",
+        "Total-Soil",
+        "SoilWaterTotal",
+        "ProfileDepth",
+        "ProfilePorosityCap",
+        "ProfileFCStore",
+        "ProfileWPStore",
+    ];
+    fields.len() == expected.len() && expected.iter().all(|field| fields.contains(field))
+}
+
+fn wat_mismatch_field_order() -> &'static [&'static str] {
+    &[
+        "row_count",
+        "wepp_id",
+        "ofe_id",
+        "year",
+        "sim_day_index",
+        "julian",
+        "month",
+        "day_of_month",
+        "water_year",
+        "ofe",
+        "P",
+        "RM",
+        "Q",
+        "Ep",
+        "Es",
+        "Er",
+        "Dp",
+        "UpStrmQ",
+        "SubRIn",
+        "latqcc",
+        "Total-Soil",
+        "frozwt",
+        "frdp",
+        "Snow-Water",
+        "QOFE",
+        "Tile",
+        "Irr",
+        "Area",
+        "SoilWaterTotal",
+        "ProfileDepth",
+        "ProfilePorosityCap",
+        "ProfileFCStore",
+        "ProfileWPStore",
+        "Interception",
+        "InterceptionStorage",
+    ]
+}
+
 fn direct_publication_output_policy(runtime_selection: HillslopeRuntimeSelection) -> &'static str {
     match runtime_selection {
         HillslopeRuntimeSelection::DirectPublicationFrameShadow => {
@@ -279,11 +503,11 @@ fn direct_publication_day_inputs(
                 ),
             });
         }
-        day_inputs.push(DirectPublicationDayInput {
-            calendar: direct_publication_calendar_day(day)?,
-            precipitation_m: day.precipitation_mm / 1_000.0,
-            effective_temperature_c: day.effective_temperature_c,
-        });
+        let mut day_input =
+            DirectPublicationDayInput::calendar_only(direct_publication_calendar_day(day)?);
+        day_input.precipitation_m = day.precipitation_mm / 1_000.0;
+        day_input.effective_temperature_c = day.effective_temperature_c;
+        day_inputs.push(day_input);
     }
     Ok(day_inputs)
 }

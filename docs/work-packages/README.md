@@ -13,16 +13,22 @@
 
 State as of `2026-06-21`:
 
+- `20260621-r6g-direct-wat-producer-authority-001/` is scaffolded as the next
+  R6 defect-closure ExecPlan. It starts from
+  `HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP` and must bind WAT
+  `wepp_id`, simulation `year`, `Es`, storage, and profile fields from parsed
+  typed inputs and direct runtime state, not compatibility WB13 rows or runtime
+  surfaces.
 - `20260621-r6f-direct-publication-cutover-blocker-closure-001/` is
-  scaffolded as the next R6 defect-closure ExecPlan. It starts from
-  `HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH`, but explicitly treats HBP
-  byte failure, direct process parity mismatch, missing fixtures, manifest
-  wiring gaps, and newly discovered blockers as iteration targets rather than
-  terminal states. Closure requires full `DirectPublicationFrameCutover` public
-  output writes with HBP/WAT/PASS/loss/manifest parity, anti-alias fixtures,
-  independent reconstruction, no compatibility authority, default-disabled
-  isolation, and dual review/verification; any remaining hold must pass a
-  no-premature-stop audit and name a proven out-of-envelope boundary.
+  executed-held at
+  `HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP`. It closed the inherited
+  HBP byte mismatch on the current near-zero runoff fixture by publishing
+  direct `peakro`/`watdur` operands, fixed the direct climate precipitation
+  unit projection, proved current-fixture HBP byte identity, reduced WAT to
+  exact field deltas, added typed direct process input slots, profile
+  projection fields, and lane-carried layer state, and scaffolded R6G for the
+  remaining production parsed-input producer authority gap. Full R6 HBP closure
+  still requires nonzero peak-runoff/event-duration fixture coverage.
 - `20260621-r6e-direct-publication-cutover-iterative-defect-closure-001/` is
   executed-held at
   `HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH`. It reproduced the R6D
@@ -74,6 +80,18 @@ State as of `2026-06-21`:
 
 State as of `2026-06-21`:
 
+- R6F (`20260621-r6f-direct-publication-cutover-blocker-closure-001/`) is
+  executed-held with final disposition
+  `HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP`. The package closed the
+  R6E HBP byte mismatch on the current near-zero runoff fixture, proved
+  current-fixture HBP identity on the CLI fixture, corrected the direct climate
+  precipitation unit projection, and reduced the next blocker to WAT `wepp_id`,
+  simulation `year`, `Es`, storage, and profile fields. It added typed direct
+  process input slots, lane-carried subsurface layer state, and profile
+  depth/porosity projection fields, then stopped at the remaining production
+  parsed-input producer authority boundary rather than wrapping compatibility
+  WB13 rows or runtime surfaces as direct authority. R6G is scaffolded to close
+  that boundary; nonzero HBP fixture coverage remains a later R6 gate.
 - R6E (`20260621-r6e-direct-publication-cutover-iterative-defect-closure-001/`)
   is executed-held with final disposition
   `HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH`. The package reproduced the

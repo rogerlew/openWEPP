@@ -1,69 +1,49 @@
 # R6F Current Failure Reproduction
 
-Status: pending execution.
+Status: complete.
 
-R6F starts by reproducing the inherited R6E cutover failure exactly. The
-failure is an iteration starting point, not a valid final disposition.
+## Inherited Failure
 
-## Expected Inherited Marker
+R6F inherited `HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH`.
 
-`HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH`
+Focused reproduction at R6F start showed HBP payload parity failed because the
+direct near-zero runoff publication did not emit the compatibility
+`peakro`/`watdur` pair.
 
-Expected stderr includes:
+## Current Failure
 
-```text
-HBP byte identity failed: direct=1654 bytes compatibility=1654 bytes
-```
+After R6F correction, HBP byte identity passes on the current near-zero runoff
+fixture. The current fail-closed cutover
+marker is:
 
-## Reproduction Command
+`HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP`
 
-| Field | Value |
-|---|---|
-| Date/time | Pending |
-| Commit | Pending |
-| Command | Pending |
-| Fixture/run | Pending |
-| Environment variables | Pending |
-| Exit code | Pending |
+The CLI cutover candidate reaches the WAT gate and refuses to write public
+outputs.
 
-## Observed Result
+## Commands
 
-| Evidence | Observed value |
-|---|---|
-| Hold marker | Pending |
-| Direct bytes | Pending |
-| Compatibility bytes | Pending |
-| Public HBP written | Pending |
-| Public WAT written | Pending |
-| Public PASS written | Pending |
-| Public loss written | Pending |
-| Public manifest written | Pending |
-| Direct frame counter | Pending |
-| Direct executor counter | Pending |
-| Publication capture counter | Pending |
-| Direct compute counter | Pending |
-| State mutation counter | Pending |
-| Downstream operand counter | Pending |
-| Shadow projection counter | Pending |
-| Skeleton-run counter | Pending |
-| Compatibility-edge counter | Pending |
-
-## Candidate Artifacts
-
-| Artifact | Path | Notes |
+| Command | Result | Evidence |
 |---|---|---|
-| Direct HBP candidate | Pending |  |
-| Compatibility HBP candidate | Pending |  |
-| Direct WAT candidate | Pending |  |
-| Compatibility WAT candidate | Pending |  |
-| Direct PASS candidate | Pending |  |
-| Compatibility PASS candidate | Pending |  |
-| Direct loss candidate | Pending |  |
-| Compatibility loss candidate | Pending |  |
-| Direct manifest candidate | Pending |  |
-| Compatibility manifest candidate | Pending |  |
+| `cargo test -p openwepp-runner r6f_cutover_candidate_hbp_identity_exposes_wat_producer_gap -- --nocapture` | Passed | Proves current-fixture HBP byte identity and reduced WAT field deltas. |
+| `cargo test -p openwepp-runner r6f_cutover_candidate_reaches_hbp_identity_then_fails_wat_producer_authority -- --nocapture` | Passed | Proves stable R6F WAT hold marker under runner cutover. |
+| `cargo test -p openwepp-runner --test r6_direct_publication_cutover_cli_contract -- --nocapture` | Passed | Proves CLI fail-closed behavior and no public output writes. |
 
-## Immediate Next Step
+## Reduced WAT Fields
 
-After reproduction, update `r6f-blocker-ledger.md` and
-`r6f-hbp-byte-diff.md`. Do not stop at this artifact.
+Direct and compatibility WAT rows now agree on first-row `P`, `RM`, `Q`, and
+`QOFE`. They differ on:
+
+- `wepp_id`
+- output simulation `year`
+- `Es`
+- `Total-Soil`
+- `SoilWaterTotal`
+- `ProfileDepth`
+- `ProfilePorosityCap`
+- `ProfileFCStore`
+- `ProfileWPStore`
+
+The remaining fields require production typed direct process inputs for ET,
+storage, and profile projection. R6F added the direct-runtime slots and carry
+state; R6G must add the production parsed-input producer.

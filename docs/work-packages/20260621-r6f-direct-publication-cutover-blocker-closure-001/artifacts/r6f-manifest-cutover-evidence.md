@@ -1,31 +1,19 @@
 # R6F Manifest Cutover Evidence
 
-Status: scaffolded.
+Status: blocked-behind-WAT.
 
-The manifest is part of R6 cutover. It cannot remain compatibility-provenance
-authority after HBP/WAT/PASS/loss parity is fixed.
+The manifest is still part of R6 cutover, but R6F did not reach manifest
+validation because WAT producer authority blocks public output writes first.
 
 ## Manifest Source Map
 
 | Manifest key | Direct source | Previous compatibility source | Checksum/provenance basis | Status |
 |---|---|---|---|---|
-| Pending | Pending | Pending | Pending | Pending |
+| output checksums | direct publication output files | compatibility writer output files | checksum after public file write | Blocked: public direct writes are correctly suppressed. |
+| runtime selection | direct publication metadata / run manifest publication | existing manifest provenance | manifest JSON | Pending R6 continuation. |
+| direct runtime counters | direct runtime audit snapshot | none | manifest provenance | Pending R6 continuation. |
 
 ## Checksum Parity
 
-| Output | Direct checksum | Compatibility checksum | Expected parity | Result |
-|---|---|---|---|---|
-| HBP | Pending | Pending | Pending | Pending |
-| WAT | Pending | Pending | Pending | Pending |
-| PASS | Pending | Pending | Pending | Pending |
-| Loss | Pending | Pending | Pending | Pending |
-
-## Manifest Gate Results
-
-| Date | Command | Result | Notes |
-|---|---|---|---|
-| Pending | Pending | Pending |  |
-
-## Conclusion
-
-Pending execution.
+Not run. CLI cutover test confirms no output files are written while
+`HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP` is active.

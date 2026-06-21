@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
@@ -2242,8 +2242,25 @@ fn require_direct_publication_cutover_gates(
     if inputs.runfile.output_config.wat.is_some() {
         let compatibility_wat_rows = build_hillslope_wat_rows(&execution.wb13_rows)?;
         if artifacts.wat_rows != compatibility_wat_rows {
+            let reduced_fields =
+                reduced_wat_mismatch_fields(&artifacts.wat_rows, &compatibility_wat_rows);
+            let reduced_fields_text = reduced_fields.join(",");
+            if r6f_wat_direct_process_producer_authority_gap(&reduced_fields) {
+                return Err(direct_publication_cutover_blocked(format!(
+                    "HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP \
+                     WAT row identity failed after HBP byte identity passed: \
+                     direct_rows={} compatibility_rows={} reduced_fields={reduced_fields_text}; \
+                     direct process input slots and layer carry exist, but production \
+                     runner still lacks a canonical parsed-input typed producer for \
+                     ET/storage/profile day state and must not source those operands \
+                     from compatibility WB13 rows or runtime surfaces",
+                    artifacts.wat_rows.len(),
+                    compatibility_wat_rows.len()
+                )));
+            }
             return Err(direct_publication_cutover_blocked(format!(
-                "WAT row identity failed: direct_rows={} compatibility_rows={}",
+                "WAT row identity failed after HBP byte identity passed: \
+                 direct_rows={} compatibility_rows={} reduced_fields={reduced_fields_text}",
                 artifacts.wat_rows.len(),
                 compatibility_wat_rows.len()
             )));

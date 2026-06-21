@@ -1,6 +1,6 @@
 # R6F - Direct Publication Cutover Blocker Closure
 
-Status: scaffolded.
+Status: executed-held.
 
 Package type: Defect-Closure ExecPlan / iterative R6 direct-publication cutover
 closure.
@@ -312,16 +312,20 @@ Conditional:
 
 - [x] 2026-06-21 scaffolded R6F package with explicit anti-premature-stop
   language.
-- [ ] Execution: read required context and reproduce R6E HBP parity blocker.
-- [ ] Execution: reduce HBP byte mismatch to exact fields, operands, producers,
+- [x] Execution: read required context and reproduce R6E HBP parity blocker.
+- [x] Execution: reduce HBP byte mismatch to exact fields, operands, producers,
   and authority.
-- [ ] Execution: implement all in-envelope HBP corrections and prove HBP byte
-  identity.
-- [ ] Execution: iterate through WAT, PASS, loss, and manifest blockers.
-- [ ] Execution: add anti-alias fixtures and independent reconstruction.
+- [x] Execution: implement all in-envelope corrections for the inherited
+  near-zero HBP fixture and prove current-fixture HBP byte identity.
+- [x] Execution: iterate to WAT and reduce the next blocker to exact fields,
+  operands, producers, and authority.
+- [x] Execution: add direct-runtime typed input/carry coverage and HBP/WAT
+  blocker-reduction tests.
+- [ ] Execution: add anti-alias fixtures and independent reconstruction for
+  full WAT parity.
 - [ ] Execution: prove public direct output writes and no-compatibility
   authority.
-- [ ] Execution: run final gates, dual reviews, dual verification, disposition,
+- [x] Execution: run focused gates, dual reviews, dual verification, disposition,
   and handoff.
 
 ## Surprises & Discoveries
@@ -329,27 +333,72 @@ Conditional:
 - Scaffold note: R6E stopped prematurely at HBP direct process parity. R6F is
   intentionally worded to make that failure mode invalid unless a full `HOLD`
   legitimacy audit proves an out-of-envelope boundary.
+- 2026-06-21: The inherited HBP byte mismatch reduced to near-zero runoff peak
+  operands. Direct publication now emits the compatibility near-zero
+  `peakro`/`watdur` pair when direct runoff is below the WB16 near-zero
+  threshold, and HBP byte identity is green on the current CLI fixture.
+  Nonzero peak-runoff and distinct event-duration fixture coverage remains an
+  R6 continuation gate.
+- 2026-06-21: The next blocker is WAT, not HBP. Reduced fields are `wepp_id`,
+  output simulation `year`, `Es`, `Total-Soil`, `SoilWaterTotal`,
+  `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, and `ProfileWPStore`.
+- 2026-06-21: Direct runtime now has the required structural slots for typed
+  process inputs and lane-carried layer state, but production runner binding
+  still only supplies climate/calendar. Filling the remaining WAT fields from
+  compatibility WB13 rows or runtime surfaces would violate section 5.2.1 of
+  the array-native runtime specification.
 
 ## Decision Log
 
 - 2026-06-21: Chose R6F as a DC-ExecPlan rather than another narrow HBP-only
   diagnostic package because the objective is full R6 cutover and the known
   failure mode is premature handoff after one blocker.
+- 2026-06-21: Accepted `HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP`
+  after current-fixture HBP identity was proven, WAT was reduced to concrete
+  fields/operands, the direct runtime input/carry structure was implemented and
+  tested, and the remaining production producer requires
+  contract-authoritative parsed-input binding work scaffolded as R6G.
+- 2026-06-21: Review B found required clippy failure and an incomplete R6G
+  scaffold. R6F fixed the clippy issues, moved WAT reducer helpers out of the
+  intake file to keep it below the 3000-line hard threshold, completed the R6G
+  scaffold shape, and reran final gates.
 
 ## Outcomes & Retrospective
 
-Pending execution.
+Final verdict:
+`HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP`.
 
-## Deliverables
+R6F closed the inherited near-zero HBP blocker for the current fixture and
+advanced cutover to the next concrete publication family. It did not complete
+R6. The honest immediate boundary is not another generic parity mismatch; it is
+the missing production typed producer that must feed ET/storage/profile WAT
+operands from parsed inputs and direct runtime state without compatibility
+WB13/runtime-surface authority. Full R6 cutover still also needs the
+architecture-required nonzero HBP fixture, PASS/loss/manifest parity, public
+writes, and final full gates.
 
-- Updated production code and tests needed to close all in-envelope R6 blockers.
-- HBP/WAT/PASS/loss/manifest parity evidence.
-- Anti-alias fixtures and independent reconstruction evidence.
-- No-compatibility proof over direct publication cutover consumers and
-  producers.
-- Successful `DirectPublicationFrameCutover` public output writes.
-- Updated roadmap/catalog and R6 handoff artifacts.
+## Delivered In R6F
+
+- Production code and tests for the in-envelope near-zero HBP publication
+  operand fix.
+- Direct climate precipitation unit correction.
+- Direct runtime typed process input slots, lane-carried layer state, and
+  profile projection fields needed by the next WAT producer binding.
+- WAT blocker reduction to exact mismatch fields and a guarded stable hold
+  marker.
+- No-compatibility proof for the rejected WB13/runtime-surface shortcut.
+- R6G scaffold for the production parsed-input producer authority gap.
+- Updated roadmap/catalog and R6F handoff artifacts.
 - Complete review, verification, gate, line-count, and disposition artifacts.
+
+## Blocked Continuation Deliverables
+
+- Full WAT row/schema/metadata parity.
+- Nonzero HBP peak-runoff/event-duration fixture coverage.
+- PASS/loss/manifest parity evidence.
+- Anti-alias fixtures and independent reconstruction evidence for accepted
+  WAT/PASS/loss/manifest operands.
+- Successful `DirectPublicationFrameCutover` public output writes.
 
 ## Validation Gates
 

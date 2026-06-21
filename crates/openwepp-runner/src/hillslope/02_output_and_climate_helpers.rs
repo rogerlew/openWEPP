@@ -2201,7 +2201,7 @@ fn climate_day_projection(
                 month: day.mon,
                 day_of_month: day.day,
                 julian_day,
-                precipitation_mm: (day.prcp * 1_000.0).max(0.0),
+                precipitation_mm: day.prcp.max(0.0),
                 effective_temperature_c: (day.tmax + day.tmin) * 0.5,
             })
         }
@@ -2210,7 +2210,7 @@ fn climate_day_projection(
             let prcp_mm = day
                 .breakpoints
                 .last()
-                .map_or(0.0, |point| (point.pptcum * 1_000.0).max(0.0));
+                .map_or(0.0, |point| point.pptcum.max(0.0));
             Ok(ClimateDayProjection {
                 year: day.year,
                 month: day.mon,
