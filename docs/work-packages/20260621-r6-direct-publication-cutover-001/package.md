@@ -2,7 +2,7 @@
 
 Status: executed-hold.
 
-Disposition: `HOLD-R6-DIRECT-PUBLICATION-FRAME-ABSENT`.
+Disposition: `HOLD-R6-DIRECT-PUBLICATION-PARITY-AND-MANIFEST-CUTOVER`.
 
 Package type: implementation work package / array-native runtime R6.
 
@@ -26,14 +26,24 @@ operand ledger into canonical architecture authority in
 `docs/architecture/array-native-runtime-specification.md` section
 `5.2.1 R6 Canonical Publication Operand Ledger`.
 
-Production output cutover did not start. Static inspection found the current
-`DirectPublicationFrame` is a narrow skeleton/direct-runtime frame with only
-`runoff_m`, `infiltration_m`, `evapotranspiration_m`, `drainage_m`, and
-`lateral_flow_m`; it is not run-bound to the real H2637 direct execution path
-and does not contain the R6 ledger's HBP/WAT/PASS/loss/manifest operands. The
-runner output path still builds public outputs from compatibility WB13 rows and
-runtime surfaces. Wrapping those rows in a direct-named object would violate
-the promoted architecture ledger, so R6 is held before Rust/output edits.
+R6A then lifted the original direct-publication-frame blocker by adding
+`DirectRunPublicationFrame` and direct HBP/WAT/PASS/loss/manifest projection
+consumers.
+
+This resumed R6 execution added an explicit
+`DirectPublicationFrameCutover` opt-in and CLI flag
+`--direct-publication-frame-cutover`. In that mode, the production output
+boundary routes HBP, WAT, PASS, and loss candidate writes through the direct
+publication artifacts only after a fail-closed parity gate compares the direct
+projection against the accepted compatibility baseline. The candidate currently
+stops before writing outputs with
+`R6-DIRECT-PUBLICATION-PARITY HBP byte identity failed: direct=1654 bytes
+compatibility=1654 bytes`.
+
+The hold is therefore no longer "frame absent". It is now a parity and
+manifest cutover hold: the current direct frame is still skeleton/zero seeded
+for real run operands, so byte/Arrow identity cannot pass, and the production
+manifest writer remains compatibility-provenance based.
 
 ## Rationale
 
@@ -124,6 +134,8 @@ On-demand source inventory:
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/**`
 - `crates/openwepp-hillslope-orchestrator/src/scheduler.rs`
 - `crates/openwepp-runner/src/hillslope/**`
+- `crates/openwepp-runner/src/api.rs`
+- `crates/openwepp-runner/src/bin/openwepp-cli-hill.rs`
 - `crates/openwepp-runner/src/totalwatsed3.rs`
 - `crates/openwepp-hillslope-output/src/**`
 - `crates/openwepp-watershed-output/src/**`
@@ -159,6 +171,9 @@ On-demand source inventory:
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/**`
 - `crates/openwepp-hillslope-orchestrator/src/scheduler.rs`
 - `crates/openwepp-runner/src/hillslope/**`
+- `crates/openwepp-runner/src/api.rs`
+- `crates/openwepp-runner/src/bin/openwepp-cli-hill.rs`
+- `crates/openwepp-runner/tests/**`
 - `crates/openwepp-runner/src/totalwatsed3.rs`
 - `crates/openwepp-hillslope-output/src/**`
 - `crates/openwepp-watershed-output/src/**`
@@ -326,9 +341,14 @@ compatibility-runtime deletion.
 
 ## Execution Result
 
-R6 execution was attempted on 2026-06-21 and stopped at Phase 1. Static search
-found no R5E package directory, `docs/work-packages/r5-burndown-execplan.md`
-still lists R5E unchecked, and `docs/ROADMAP.md` still marks R5E as the active
-prerequisite. No reviewed waiver exists in package artifacts. Therefore no
-production publication, architecture authority, contract, Rust, or test edits
-were made.
+R6 execution was attempted on 2026-06-21 and initially stopped at Phase 1 until
+R5E completed. It later resumed, promoted the canonical publication ledger, and
+held at `HOLD-R6-DIRECT-PUBLICATION-FRAME-ABSENT`. R6A lifted that blocker.
+
+Current execution continued into Rust/output code and added a guarded cutover
+candidate, but the package remains `executed-hold` because current-scope R6
+acceptance gates do not pass. The direct frame is constructed and consumed at
+the output boundary, but it is still populated from skeleton/zero direct state
+instead of parity-grade typed direct run operands. HBP identity fails before
+writing public outputs, WAT/PASS/loss parity remains unaccepted, and manifest
+publication is still blocked by compatibility-provenance writer wiring.

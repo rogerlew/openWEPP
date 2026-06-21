@@ -6,20 +6,21 @@
 > commits. When a queue item closes it is removed from `ROADMAP.md` and recorded
 > here. If the two disagree on what is next, `ROADMAP.md` wins.
 > Scaffolded but unexecuted packages stay discoverable from `ROADMAP.md`, their
-> package-local `package.md`, and the scaffolded package pointer below; they
+> package-local `package.md`, and the active/held package pointer below; they
 > enter the execution log after closure.
 
-## Current scaffolded packages
+## Current Active/Held Packages
 
 State as of `2026-06-21`:
 
 - `20260621-r6-direct-publication-cutover-001/` resumed after R5E completed at
   pushed commit `d8f6bbea`. It promoted the PERFDEEP06 publication operand
-  ledger into canonical architecture authority and then held until R6A supplied
-  the run-bound direct publication frame and direct projection consumers. The
-  next actionable work is production writer cutover; wrapping compatibility
-  WB13 rows or runtime surfaces in direct-named structures is not a valid
-  cutover.
+  ledger into canonical architecture authority, held until R6A supplied the
+  run-bound direct publication frame and direct projection consumers, then
+  resumed with a guarded `DirectPublicationFrameCutover` candidate. The
+  candidate fails closed at HBP byte identity and still needs manifest
+  provenance cutover; wrapping compatibility WB13 rows or runtime surfaces in
+  direct-named structures is not a valid cutover.
 
 ## Current roadmap execution log
 

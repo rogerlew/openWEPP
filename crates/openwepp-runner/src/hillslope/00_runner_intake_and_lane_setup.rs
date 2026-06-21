@@ -861,10 +861,10 @@ struct HillslopeClimateExecution {
     hphys0245_trace_rows: Vec<Hphys0245TraceRow>,
     per_ofe_internal_wb13_summary: PerOfeInternalWb13RunSummary,
     executed_day_count: usize,
-    direct_publication_shadow: Option<DirectPublicationShadowArtifacts>,
+    direct_publication: Option<DirectPublicationArtifacts>,
 }
 
-struct DirectPublicationShadowArtifacts {
+struct DirectPublicationArtifacts {
     execution: DirectPublicationExecution,
     hbp_bytes: Vec<u8>,
     wat_rows: Vec<HillslopeWatRow>,
@@ -1794,7 +1794,7 @@ fn execute_hillslope_climate_days(
         hphys0245_trace_rows: accumulator.hphys0245_trace_rows,
         per_ofe_internal_wb13_summary: accumulator.per_ofe_internal_wb13_summary,
         executed_day_count,
-        direct_publication_shadow: None,
+        direct_publication: None,
     })
 }
 
@@ -2004,13 +2004,18 @@ fn hillslope_id_for_pass_output(output_hillslope_id: u32) -> Result<i32, Hillslo
     })
 }
 
-fn build_direct_publication_shadow(
+fn build_direct_publication_artifacts(
     runtime_selection: HillslopeRuntimeSelection,
     inputs: &ParsedHillslopeRunInputs,
     targets: &HillslopeOutputTargets,
+    sidecars: &HillslopeSidecarResolution,
     execution: &HillslopeClimateExecution,
-) -> Result<Option<DirectPublicationShadowArtifacts>, HillslopeCliError> {
-    if runtime_selection != HillslopeRuntimeSelection::DirectPublicationFrameShadow {
+) -> Result<Option<DirectPublicationArtifacts>, HillslopeCliError> {
+    if !matches!(
+        runtime_selection,
+        HillslopeRuntimeSelection::DirectPublicationFrameShadow
+            | HillslopeRuntimeSelection::DirectPublicationFrameCutover
+    ) {
         return Ok(None);
     }
 
@@ -2028,7 +2033,7 @@ fn build_direct_publication_shadow(
     let metadata = DirectPublicationRunMetadata {
         run_name: inputs.runfile.run_name.clone(),
         runtime_selection: runtime_selection.as_str().to_string(),
-        output_policy: "compatibility-public-output/direct-publication-shadow".to_string(),
+        output_policy: direct_publication_output_policy(runtime_selection).to_string(),
     };
     let direct_execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
         .run_publication_capture(&mut frame, metadata, &calendar_days)
@@ -2037,9 +2042,14 @@ fn build_direct_publication_shadow(
     let hbp_bytes = build_hbp_output_from_direct_publication(&targets.output_pass, publication_frame)?;
     let wat_rows = build_hillslope_wat_rows_from_direct_publication(publication_frame)?;
     let pass_projection_rows = build_hillslope_pass_rows_from_direct_publication(publication_frame)?;
-    let loss_text = build_loss_output_json_from_direct_publication(publication_frame)?;
+    let loss_text = build_loss_output_json_from_direct_publication(
+        publication_frame,
+        inputs.soil.ofes.len(),
+        sidecars.snow.sidecar_present,
+        sidecars.frost.wint_red,
+    )?;
     let manifest_text = build_manifest_text_from_direct_publication(publication_frame)?;
-    let artifacts = DirectPublicationShadowArtifacts {
+    let artifacts = DirectPublicationArtifacts {
         execution: direct_execution,
         hbp_bytes,
         wat_rows,
@@ -2047,8 +2057,22 @@ fn build_direct_publication_shadow(
         loss_text,
         manifest_text,
     };
-    validate_direct_publication_shadow_artifacts(&artifacts)?;
+    validate_direct_publication_artifacts(&artifacts)?;
     Ok(Some(artifacts))
+}
+
+fn direct_publication_output_policy(runtime_selection: HillslopeRuntimeSelection) -> &'static str {
+    match runtime_selection {
+        HillslopeRuntimeSelection::DirectPublicationFrameShadow => {
+            "compatibility-public-output/direct-publication-shadow"
+        }
+        HillslopeRuntimeSelection::DirectPublicationFrameCutover => {
+            "direct-publication-frame-cutover-candidate/fail-closed-parity"
+        }
+        HillslopeRuntimeSelection::Compatibility
+        | HillslopeRuntimeSelection::DirectSkeletonNoop
+        | HillslopeRuntimeSelection::DirectSkeletonShadowOnly => "compatibility-public-output",
+    }
 }
 
 fn seed_direct_publication_lane_geometry(
@@ -2129,8 +2153,8 @@ fn direct_publication_calendar_days(
     Ok(calendar_days)
 }
 
-fn validate_direct_publication_shadow_artifacts(
-    artifacts: &DirectPublicationShadowArtifacts,
+fn validate_direct_publication_artifacts(
+    artifacts: &DirectPublicationArtifacts,
 ) -> Result<(), HillslopeCliError> {
     let frame = &artifacts.execution.publication_frame;
     let row_count = frame.rows().len();
@@ -2144,7 +2168,7 @@ fn validate_direct_publication_shadow_artifacts(
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_publication_frame",
             detail: format!(
-                "{SIMOUT_GUARD_ID} direct publication shadow consumers failed frame row-count validation"
+                "{SIMOUT_GUARD_ID} direct publication consumers failed frame row-count validation"
             ),
         });
     }
@@ -2257,7 +2281,12 @@ fn write_hillslope_run_outputs(
     targets: &HillslopeOutputTargets,
     sidecars: &HillslopeSidecarResolution,
     execution: &HillslopeClimateExecution,
+    runtime_selection: HillslopeRuntimeSelection,
 ) -> Result<(), HillslopeCliError> {
+    if runtime_selection == HillslopeRuntimeSelection::DirectPublicationFrameCutover {
+        return write_hillslope_direct_publication_outputs(inputs, targets, sidecars, execution);
+    }
+
     let pass_bytes = build_hbp_output(
         &targets.output_pass,
         &execution.wb13_rows,
@@ -2287,6 +2316,139 @@ fn write_hillslope_run_outputs(
     })?;
     write_hillslope_optional_outputs(inputs, targets, execution)?;
     validate_required_hillslope_outputs(targets)
+}
+
+fn write_hillslope_direct_publication_outputs(
+    inputs: &ParsedHillslopeRunInputs,
+    targets: &HillslopeOutputTargets,
+    sidecars: &HillslopeSidecarResolution,
+    execution: &HillslopeClimateExecution,
+) -> Result<(), HillslopeCliError> {
+    let artifacts = execution.direct_publication.as_ref().ok_or_else(|| {
+        direct_publication_cutover_blocked(
+            "direct publication frame was not built for cutover candidate",
+        )
+    })?;
+    require_direct_publication_cutover_gates(inputs, targets, sidecars, execution, artifacts)?;
+
+    ensure_hillslope_output_parent_directories(targets)?;
+    fs::write(&targets.output_pass, &artifacts.hbp_bytes).map_err(|source| {
+        HillslopeCliError::OutputWrite {
+            path: targets.output_pass.clone(),
+            source,
+        }
+    })?;
+    fs::write(&targets.output_loss, &artifacts.loss_text).map_err(|source| {
+        HillslopeCliError::OutputWrite {
+            path: targets.output_loss.clone(),
+            source,
+        }
+    })?;
+    write_hillslope_direct_publication_optional_outputs(inputs, targets, execution, artifacts)?;
+    validate_required_hillslope_outputs(targets)
+}
+
+fn require_direct_publication_cutover_gates(
+    inputs: &ParsedHillslopeRunInputs,
+    targets: &HillslopeOutputTargets,
+    sidecars: &HillslopeSidecarResolution,
+    execution: &HillslopeClimateExecution,
+    artifacts: &DirectPublicationArtifacts,
+) -> Result<(), HillslopeCliError> {
+    let compatibility_hbp = build_hbp_output(
+        &targets.output_pass,
+        &execution.wb13_rows,
+        &execution.runtime_surface,
+        execution.contributor_ofe_count,
+    )?;
+    if artifacts.hbp_bytes != compatibility_hbp {
+        return Err(direct_publication_cutover_blocked(format!(
+            "HBP byte identity failed: direct={} bytes compatibility={} bytes",
+            artifacts.hbp_bytes.len(),
+            compatibility_hbp.len()
+        )));
+    }
+
+    let compatibility_loss = build_loss_output_json(
+        &inputs.runfile.run_name,
+        &inputs.soil,
+        &sidecars.snow,
+        &sidecars.frost,
+        &execution.climate_span,
+        execution.executed_day_count,
+    )?;
+    if artifacts.loss_text != compatibility_loss {
+        return Err(direct_publication_cutover_blocked(
+            "loss JSON identity failed between direct frame and compatibility publication",
+        ));
+    }
+
+    if inputs.runfile.output_config.wat.is_some() {
+        let compatibility_wat_rows = build_hillslope_wat_rows(&execution.wb13_rows)?;
+        if artifacts.wat_rows != compatibility_wat_rows {
+            return Err(direct_publication_cutover_blocked(format!(
+                "WAT row identity failed: direct_rows={} compatibility_rows={}",
+                artifacts.wat_rows.len(),
+                compatibility_wat_rows.len()
+            )));
+        }
+    }
+
+    if inputs.runfile.output_config.pass_parquet.is_some()
+        && artifacts.pass_projection_rows != execution.pass_rows
+    {
+        return Err(direct_publication_cutover_blocked(format!(
+            "PASS row identity failed: direct_rows={} compatibility_rows={}",
+            artifacts.pass_projection_rows.len(),
+            execution.pass_rows.len()
+        )));
+    }
+
+    Err(direct_publication_cutover_blocked(
+        "manifest direct projection is not wired to the production manifest writer",
+    ))
+}
+
+fn write_hillslope_direct_publication_optional_outputs(
+    inputs: &ParsedHillslopeRunInputs,
+    targets: &HillslopeOutputTargets,
+    execution: &HillslopeClimateExecution,
+    artifacts: &DirectPublicationArtifacts,
+) -> Result<(), HillslopeCliError> {
+    if let Some(wat_output) = inputs.runfile.output_config.wat.as_ref() {
+        write_hillslope_wat_parquet(
+            wat_output,
+            &artifacts.wat_rows,
+            InterchangeVersion::default(),
+        )
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.wat",
+            detail: error.to_string(),
+        })?;
+    }
+    if let Some(pass_parquet_output) = inputs.runfile.output_config.pass_parquet.as_ref() {
+        write_hillslope_pass_parquet(
+            pass_parquet_output,
+            &artifacts.pass_projection_rows,
+            InterchangeVersion::default(),
+        )
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass_parquet",
+            detail: error.to_string(),
+        })?;
+    }
+    write_hphys0245_trace_output(execution)?;
+    write_generic_optional_outputs(inputs, targets, execution)
+}
+
+fn direct_publication_cutover_blocked(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_publication_cutover",
+        detail: format!(
+            "{SIMOUT_GUARD_ID} R6-DIRECT-PUBLICATION-PARITY {}",
+            detail.into()
+        ),
+    }
 }
 
 fn ensure_hillslope_output_parent_directories(
@@ -2576,12 +2738,12 @@ pub fn execute_hillslope_run_with_runtime_selection(
         indexed_shadow.finish()?;
     }
     let mut execution = execution_result?;
-    execution.direct_publication_shadow =
-        build_direct_publication_shadow(runtime_selection, &inputs, &targets, &execution)?;
+    execution.direct_publication =
+        build_direct_publication_artifacts(runtime_selection, &inputs, &targets, &sidecars, &execution)?;
     let execution_provenance =
         build_hillslope_execution_provenance(&execution, &mut sidecars.sidecar_warnings)?;
     let (wb13_publication, mofe_hourly_carry) = build_hillslope_publication_provenance(&execution)?;
-    write_hillslope_run_outputs(&inputs, &targets, &sidecars, &execution)?;
+    write_hillslope_run_outputs(&inputs, &targets, &sidecars, &execution, runtime_selection)?;
 
     let HillslopeSidecarResolution {
         mode_selection,
@@ -2626,7 +2788,8 @@ fn select_direct_runtime_skeleton_once(
 ) -> Result<(), HillslopeCliError> {
     let mode = match runtime_selection {
         HillslopeRuntimeSelection::Compatibility
-        | HillslopeRuntimeSelection::DirectPublicationFrameShadow => return Ok(()),
+        | HillslopeRuntimeSelection::DirectPublicationFrameShadow
+        | HillslopeRuntimeSelection::DirectPublicationFrameCutover => return Ok(()),
         HillslopeRuntimeSelection::DirectSkeletonNoop => DirectExecutorMode::Noop,
         HillslopeRuntimeSelection::DirectSkeletonShadowOnly => DirectExecutorMode::ShadowOnly,
     };

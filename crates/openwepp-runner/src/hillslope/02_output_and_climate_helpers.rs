@@ -868,6 +868,9 @@ fn build_hillslope_pass_row_from_direct_publication(
 
 fn build_loss_output_json_from_direct_publication(
     publication: &DirectRunPublicationFrame,
+    ofe_count: usize,
+    snow_override_applied: bool,
+    frost_wint_red: i32,
 ) -> Result<String, HillslopeCliError> {
     let first_day = publication
         .first_day()
@@ -875,17 +878,23 @@ fn build_loss_output_json_from_direct_publication(
     let last_day = publication
         .last_day()
         .ok_or_else(|| direct_publication_output_failure("missing last direct publication row"))?;
-    Ok(format!(
-        "openwepp_optional_output_v1\nrun_name={}\nfile=direct-publication-frame\nfirst_year={}\nfirst_day={}\nlast_year={}\nlast_day={}\nclimate_day_count={}\nexecuted_day_count={}\nprecipitation_mm={:.3}\n",
-        publication.metadata.run_name,
-        first_day.calendar.year,
-        first_day.calendar.julian_day,
-        last_day.calendar.year,
-        last_day.calendar.julian_day,
-        publication.identity.day_count,
-        publication.identity.day_count,
-        first_day.climate.precipitation_mm
-    ))
+    let payload = serde_json::json!({
+        "schema": "openwepp-hillslope-loss-v1",
+        "run_name": publication.metadata.run_name,
+        "first_day_year": first_day.calendar.year,
+        "first_day_julian": first_day.calendar.julian_day,
+        "last_day_year": last_day.calendar.year,
+        "last_day_julian": last_day.calendar.julian_day,
+        "precipitation_mm": first_day.climate.precipitation_mm,
+        "climate_day_count": publication.identity.day_count,
+        "executed_day_count": publication.identity.day_count,
+        "ofe_count": ofe_count,
+        "snow_override_applied": snow_override_applied,
+        "frost_wint_red": frost_wint_red,
+    });
+
+    serde_json::to_string_pretty(&payload)
+        .map_err(|source| HillslopeCliError::ManifestSerialize { source })
 }
 
 fn build_manifest_text_from_direct_publication(

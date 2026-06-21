@@ -22,13 +22,19 @@ Execution constraints:
 - The PERFDEEP06 publication operand ledger is promoted into
   `docs/architecture/array-native-runtime-specification.md` section
   `5.2.1 R6 Canonical Publication Operand Ledger`.
-- First close `HOLD-R6-DIRECT-PUBLICATION-FRAME-ABSENT`: build a run-bound
-  direct publication frame from typed direct run/lane/day state.
+- R6A closed `HOLD-R6-DIRECT-PUBLICATION-FRAME-ABSENT`; do not repeat that
+  work.
+- Current R6 execution added `DirectPublicationFrameCutover`, but it fails
+  closed at `R6-DIRECT-PUBLICATION-PARITY` because HBP byte identity differs
+  and manifest publication still uses compatibility provenance.
+- Close `HOLD-R6-DIRECT-PUBLICATION-PARITY-AND-MANIFEST-CUTOVER`: populate the
+  direct publication frame from parity-grade typed direct run operands, then
+  cut manifest publication/provenance over to typed direct projection.
 - Do not wrap compatibility WB13 rows, runtime surfaces, writeback payloads, or
   stale logical state in direct-named structures; that is explicitly forbidden
   by the promoted architecture ledger.
-- After the frame exists, make HBP, WAT, PASS, loss, and manifest read typed
-  direct projection only.
+- Make HBP, WAT, PASS, loss, and manifest read typed direct projection only
+  after their current acceptance gates pass.
 - Gate the package on byte/Arrow identity, metadata parity, anti-alias fixtures,
   and independent operand reconstruction.
 - Treat Conservation / Publication Acceptance as current-scope acceptance.

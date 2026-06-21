@@ -14,24 +14,21 @@ Evidence mode: Static + Ran.
 
 ## Current Disposition
 
-R5E prerequisite passed after R5E pushed commit `d8f6bbea`.
+PASS:
 
-Publication ledger promotion destination selected:
-`docs/architecture/array-native-runtime-specification.md`.
+- R5E prerequisite passed after R5E pushed commit `d8f6bbea`.
+- R6A lifted the old frame-absent blocker.
+- Publication ledger promotion destination selected:
+  `docs/architecture/array-native-runtime-specification.md`.
+- Canonical architecture authority updated in section
+  `5.2.1 R6 Canonical Publication Operand Ledger`.
 
-Canonical authority updated:
-section `5.2.1 R6 Canonical Publication Operand Ledger` promotes the
-PERFDEEP06 seed ledger into architecture authority before production output
-edits.
-
-No `SC-*` contract amendment was made because this resumed increment does not
-change output meaning, units, metadata schema, conservation equations, or
-process physics. It only promotes architecture authority and then stops before
-output code changes.
+No `SC-*` contract amendment was made because this execution did not change
+output meaning, units, metadata schema, conservation equations, or process
+physics. The Rust change adds an opt-in guarded candidate and fail-closed gates,
+not a changed accepted publication result.
 
 ## Gate
 
-BLOCKED after authority promotion. Production output edits require a run-bound
-direct publication frame carrying the promoted ledger operands. The current
-direct publication frame is a narrow skeleton frame and the public output path
-still reads compatibility WB13/runtime-surface structures.
+PASS for guarded candidate implementation. BLOCKED for R6 completion because
+current output-family acceptance gates fail or are not yet wired.

@@ -1,6 +1,6 @@
 # No-Compatibility Proof Checklist
 
-Status: blocked.
+Status: executed-hold.
 Evidence mode: Static + Ran.
 
 ## Forbidden Direct-Publication Reads
@@ -19,31 +19,43 @@ After cutover, direct publication must not read:
 - stale logical output frames
 - compatibility diagnostic ledgers as publication authority
 
-## Required Proof
+## Current Proof
 
-- source scans over direct publication and output-family builders;
-- call-graph or focused static proof for each output family;
-- runtime counters showing direct publication output families use typed
-  projection and do not enter compatibility publication readers;
-- default-disabled counters showing no direct-publication construction when the
-  direct path is disabled.
+Ran:
+
+- `cargo test -p openwepp-runner r6_ -- --nocapture`: PASS. The focused
+  cutover-candidate test builds direct publication artifacts and records
+  `publication_capture_runs == 1`, `skeleton_runs == 0`, and
+  `compatibility_edge_invocations == 0` inside the direct publication executor.
+- `cargo test -p openwepp-runner r6a_ -- --nocapture`: PASS. Existing R6A
+  tests still prove direct projection consumers read `DirectRunPublicationFrame`
+  operands and default compatibility does not enter publication capture.
+
+Static:
+
+- Direct output projection helpers consume `DirectRunPublicationFrame`, not
+  `SimulationOwnedWb13Row`, `HillslopeWritebackSurface`, or runtime symbols.
+- The cutover candidate output branch is guarded by
+  `DirectPublicationFrameCutover`.
+- The parity gate intentionally reads compatibility publication products only
+  as validation evidence before any direct public output write. This is not a
+  production cutover proof.
+
+## Remaining Compatibility Reads
+
+BLOCKED:
+
+- Main run execution still runs the compatibility scheduler before direct
+  publication artifacts are built.
+- HBP parity rebuilds compatibility HBP from `execution.wb13_rows` and
+  `execution.runtime_surface`.
+- WAT parity rebuilds compatibility rows from `execution.wb13_rows`.
+- PASS parity compares to `execution.pass_rows`.
+- The production manifest writer still constructs provenance and checksums
+  through compatibility-oriented manifest structures.
 
 ## Gate
 
-BLOCKED. Static inspection after ledger promotion confirms the current public
-output path still uses compatibility WB13 rows and runtime surfaces:
-
-```text
-rg -n "fn build_hbp_output|runtime_surface: &HillslopeWritebackSurface|build_hillslope_wat_rows\\(&execution\\.wb13_rows|write_hillslope_pass_parquet\\(|build_loss_output_json\\(|write_hillslope_run_manifest\\(" \
-  crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs \
-  crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs
-```
-
-The scan identifies `build_hbp_output` taking
-`&HillslopeWritebackSurface`, WAT rows built from `execution.wb13_rows`, PASS
-parquet written from `execution.pass_rows` derived from WB13 rows, loss JSON
-built from static/climate compatibility inputs, and manifest publication using
-the current checksum/provenance helpers.
-
-No direct-publication no-compatibility proof can pass until a run-bound direct
-publication frame supplies the promoted ledger operands.
+BLOCKED. R6 has direct projection consumers and a fail-closed writer boundary,
+but it does not yet have a production no-compatibility proof for HBP/WAT/PASS/
+loss/manifest publication.

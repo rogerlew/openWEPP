@@ -3,24 +3,39 @@
 Status: complete.
 Evidence mode: Static + Ran.
 
-No delegated subagent was invoked; this is local Review B.
+Delegated reviewer: Leibniz (`019ee8ac-7165-75f2-9284-c8a269035e5a`).
 
 ## Findings
 
-None blocking beyond the accepted hold blocker.
+- High: stale review/verification artifacts approved the old frame-absent hold
+  after R6A had already lifted it. Disposition: fixed by replacing those
+  artifacts and recording the current parity/manifest hold.
+- Medium: gate taxonomy used hybrid statuses such as `FAIL/BLOCKED`,
+  `NOT RUN/BLOCKED`, and `PENDING`. Disposition: fixed by using only `PASS`,
+  `FAIL`, `BLOCKED`, and `NOT RUN`.
+- Medium: fail-closed coverage lacked output-absence assertions. Disposition:
+  fixed in the internal R6 test and in the CLI contract test.
+- Medium: the new CLI flag needed committed CLI-level contract coverage.
+  Disposition: fixed with
+  `crates/openwepp-runner/tests/r6_direct_publication_cutover_cli_contract.rs`.
+- Low: package catalog and roadmap wording still described R6 as merely
+  scaffolded. Disposition: fixed by marking the package active-held and by
+  describing the current parity/manifest blocker.
 
 ## Review
 
 - Package authority: PASS. `package.md` requires ledger promotion before output
-  edits; R6 did that first.
-- Prerequisite evidence: PASS. R5E package exists and records complete
-  disposition at pushed commit `d8f6bbea`.
-- Gate legitimacy: PASS. The package uses `BLOCKED` for the direct publication
-  frame absence and `NOT RUN` only for gates unreachable after that blocker.
-- Protected boundaries: PASS. No production Rust/output/schema/test edit
-  occurred after the blocker was found.
-- Handoff: PASS. The first actionable item is to build and validate a
-  run-bound direct publication frame from typed direct state, not to wrap
+  edits; R6 did that first and now records the expanded runner/API/CLI/test
+  write set.
+- Gate legitimacy: PASS for executed-hold. HBP identity is the first concrete
+  failure; manifest provenance cutover is a blocker; endpoint/RSS and
+  default-disabled timing remain completion gates rather than closure claims.
+- Protected outputs: PASS for executed-hold. The opt-in candidate fails before
+  HBP/loss/WAT/PASS/manifest writes, and default compatibility mode remains the
+  default.
+- Handoff: PASS. The next work is to populate parity-grade direct publication
+  operands and cut manifest provenance to typed direct projection, not to wrap
   compatibility WB13 rows.
 
-Final review B result: PASS for `HOLD-R6-DIRECT-PUBLICATION-FRAME-ABSENT`.
+Final review B result: PASS for
+`HOLD-R6-DIRECT-PUBLICATION-PARITY-AND-MANIFEST-CUTOVER`.

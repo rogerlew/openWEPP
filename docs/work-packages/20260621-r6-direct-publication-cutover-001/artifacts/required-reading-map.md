@@ -62,15 +62,23 @@ Ran:
   after ledger promotion.
 - Static scans listed in `disposition.md` for direct publication frame and
   current output-path dependencies.
+- R6A package evidence under
+  `docs/work-packages/20260621-r6a-run-bound-direct-publication-frame-001/`.
+- Current cutover-candidate code in `crates/openwepp-runner/src/api.rs`,
+  `crates/openwepp-runner/src/bin/openwepp-cli-hill.rs`, and
+  `crates/openwepp-runner/src/hillslope/**`.
 
 Static:
 
 - R5E prerequisite is cleared.
 - Publication ledger authority is promoted.
-- Output implementation is blocked by missing run-bound direct publication
-  frame.
+- R6A supplied a run-bound direct publication frame and direct projection
+  consumers.
+- Current output implementation is blocked by direct-operand parity failure and
+  manifest writer compatibility provenance.
 
 ## Gate
 
-PASS for resumed hold scope. Required reading identified the next blocker before
-production output edits.
+PASS for executed-hold scope. Required reading identified the current blocker:
+HBP direct byte identity fails before output writes, and manifest cutover is not
+wired.

@@ -1,28 +1,32 @@
 # Publication Cutover Plan
 
-Status: blocked.
-Evidence mode: Static.
+Status: executed-hold.
+Evidence mode: Static + Ran.
 
 ## Ordered Cutover
 
-| Order | Output family | Cutover target | Required identity gate |
-|---:|---|---|---|
-| 1 | HBP | Typed direct projection only | Byte identity. |
-| 2 | WAT | Typed direct projection only | Arrow row/schema/metadata identity; byte identity where stable. |
-| 3 | PASS | Typed direct projection only | Arrow row/schema/metadata identity; byte identity where stable. |
-| 4 | loss JSON | Typed direct projection only | Byte-normalized JSON identity or reviewed key-order-only normalization. |
-| 5 | run manifest | Typed direct projection only | Schema ID, checksum, provenance, counter, and metadata parity. |
+| Order | Output family | Cutover target | Required identity gate | Current status |
+|---:|---|---|---|---|
+| 1 | HBP | Typed direct projection only | Byte identity. | BLOCKED: candidate fails HBP byte identity before write. |
+| 2 | WAT | Typed direct projection only | Arrow row/schema/metadata identity; byte identity where stable. | BLOCKED behind HBP parity; candidate direct rows exist but are not accepted. |
+| 3 | PASS | Typed direct projection only | Arrow row/schema/metadata identity; byte identity where stable. | BLOCKED behind HBP parity; fixture run lacks PASS parquet output coverage. |
+| 4 | loss JSON | Typed direct projection only | Byte-normalized JSON identity or reviewed key-order-only normalization. | BLOCKED behind HBP parity; helper now emits schema-shaped JSON. |
+| 5 | run manifest | Typed direct projection only | Schema ID, checksum, provenance, counter, and metadata parity. | BLOCKED: production manifest writer still uses compatibility provenance surfaces. |
 
-## Cross-Family Requirements
+## Implemented Candidate
 
-- Anti-alias fixtures must exist before each family is accepted.
-- Independent reconstruction must exist before each conservation-sensitive
-  family is accepted.
-- No output family may read compatibility runtime symbols after its cutover.
-- Metadata parity is a current-scope gate, not a post-cutover cleanup.
+Ran:
+
+- Added `HillslopeRuntimeSelection::DirectPublicationFrameCutover`.
+- Added CLI flag `--direct-publication-frame-cutover`.
+- Shared direct publication artifact construction between shadow and cutover
+  candidate modes.
+- Routed the candidate output boundary through direct HBP, WAT, PASS, and loss
+  artifacts after fail-closed parity checks.
+- Kept output writes blocked until all current gates pass.
 
 ## Gate
 
-BLOCKED after ledger promotion. Publication cutover cannot start until the
-runner has a run-bound direct publication frame populated from typed direct
-state. The cutover order remains valid once that blocker is closed.
+BLOCKED. The current direct publication frame is available, but its real-run
+operands are not parity-grade. The first candidate gate fails HBP byte identity,
+and manifest publication cutover is still not wired.

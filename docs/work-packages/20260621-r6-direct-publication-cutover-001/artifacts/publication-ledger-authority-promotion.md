@@ -56,5 +56,6 @@ direct publication cutover.
 
 ## Gate
 
-PASS for ledger promotion. Production output cutover remains blocked by the
-missing run-bound direct publication frame.
+PASS for ledger promotion. The old missing-frame blocker is lifted by R6A, but
+production output cutover remains blocked by direct-operand parity failure and
+manifest writer compatibility provenance.

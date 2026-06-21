@@ -686,6 +686,58 @@ mod tests {
     }
 
     #[test]
+    fn r6_cutover_candidate_fails_closed_on_direct_publication_identity_gap() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        reset_direct_runtime_audit_counters();
+
+        let source_fixture_dir = fixture_path("hillslope_run_dir");
+        let temp_run_dir = copy_fixture_to_temp(
+            &source_fixture_dir,
+            "r6_direct_publication_cutover_candidate",
+        );
+        let output_dir = temp_run_dir.join("output");
+        let error = execute_hillslope_run_with_runtime_selection(
+            &HillslopeRunRequest {
+                run_dir: temp_run_dir,
+                run_file: PathBuf::from("case.run"),
+                output_dir: output_dir.clone(),
+                sidecar_policy: SidecarPolicy::Compat,
+                legacy_sidecar_discovery: false,
+                manifest_path: None,
+            },
+            &["openwepp-cli-hill".to_string()],
+            HillslopeRuntimeSelection::DirectPublicationFrameCutover,
+        )
+        .expect_err("R6 cutover candidate must fail closed until direct frame parity passes");
+
+        let message = error.to_string();
+        assert!(
+            message.contains("R6-DIRECT-PUBLICATION-PARITY"),
+            "unexpected error: {message}"
+        );
+        let audit = direct_runtime_audit_snapshot();
+        assert_eq!(audit.run_frame_constructions, 1);
+        assert_eq!(audit.executor_constructions, 1);
+        assert_eq!(audit.skeleton_runs, 0);
+        assert_eq!(audit.publication_capture_runs, 1);
+        assert_eq!(audit.compatibility_edge_invocations, 0);
+        for output_name in [
+            "H5.hbp",
+            "H5.loss.json",
+            "H5.wat.parquet",
+            "H5.plot.parquet",
+            "openwepp_hillslope_run_manifest.json",
+        ] {
+            assert!(
+                !output_dir.join(output_name).exists(),
+                "fail-closed R6 cutover candidate must not write {output_name}"
+            );
+        }
+    }
+
+    #[test]
     fn r6a_direct_projection_consumers_read_publication_frame_operands() {
         let identity =
             DirectRunIdentity::new(19, 2637, 1, 1).expect("valid direct identity should construct");
@@ -774,7 +826,7 @@ mod tests {
             .expect("direct WAT projection should build");
         let pass_rows = build_hillslope_pass_rows_from_direct_publication(&frame)
             .expect("direct PASS projection should build");
-        let loss = build_loss_output_json_from_direct_publication(&frame)
+        let loss = build_loss_output_json_from_direct_publication(&frame, 1, false, 0)
             .expect("direct loss projection should build");
         let manifest = build_manifest_text_from_direct_publication(&frame)
             .expect("direct manifest projection should build");
@@ -784,7 +836,9 @@ mod tests {
         assert_eq!(wat_rows[0].rm.to_bits(), 8.25_f64.to_bits());
         assert_eq!(pass_rows[0].runvol_m3.to_bits(), 4.0_f64.to_bits());
         assert_eq!(pass_rows[0].peakro_m3_s.to_bits(), 0.75_f64.to_bits());
-        assert!(loss.contains("run_name=r6a_projection"));
+        let loss_json: serde_json::Value =
+            serde_json::from_str(&loss).expect("direct loss projection should be JSON");
+        assert_eq!(loss_json["run_name"], "r6a_projection");
         assert!(manifest.contains("row_count=1"));
     }
 

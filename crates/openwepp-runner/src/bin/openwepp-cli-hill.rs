@@ -71,6 +71,9 @@ fn run() -> Result<(), String> {
             "--direct-publication-frame-shadow" => {
                 runtime_selection = HillslopeRuntimeSelection::DirectPublicationFrameShadow;
             }
+            "--direct-publication-frame-cutover" => {
+                runtime_selection = HillslopeRuntimeSelection::DirectPublicationFrameCutover;
+            }
             "--help" | "-h" => {
                 print_help();
                 return Ok(());
@@ -116,6 +119,6 @@ fn run() -> Result<(), String> {
 
 fn print_help() {
     println!(
-        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--manifest-path <path>] [--direct-runtime-skeleton] [--direct-publication-frame-shadow]"
+        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--manifest-path <path>] [--direct-runtime-skeleton] [--direct-publication-frame-shadow] [--direct-publication-frame-cutover]"
     );
 }

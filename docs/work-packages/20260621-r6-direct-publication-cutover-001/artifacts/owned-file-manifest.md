@@ -13,13 +13,23 @@ Evidence mode: Static.
 - `docs/ROADMAP.md`
 - `docs/work-packages/r5-burndown-execplan.md`
 
-## Planned Implementation Write Set
+## Rust / Runner Files Touched
 
-R6 execution may edit only the write set declared in `package.md` unless the
-package is amended before edits.
+- `crates/openwepp-runner/src/api.rs`
+- `crates/openwepp-runner/src/bin/openwepp-cli-hill.rs`
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`
+- `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`
+- `crates/openwepp-runner/src/hillslope/03_tests.rs`
+- `crates/openwepp-runner/tests/r6_direct_publication_cutover_cli_contract.rs`
+
+## Package Amendment
+
+`package.md` intended write set now includes `api.rs`,
+`openwepp-cli-hill.rs`, and `crates/openwepp-runner/tests/**` because R6
+execution needed an explicit opt-in runtime selection, CLI flag, and CLI
+fail-closed contract coverage for the guarded cutover candidate.
 
 ## Gate
 
-PASS for executed-hold scope. No production Rust, contract, schema, test, or
-output code files were edited. Architecture authority was edited only to
-promote the publication ledger before production output edits.
+PASS for the executed-hold write set. No output schema files, science
+contracts, watershed fan-in code, or compatibility adapters were deleted.

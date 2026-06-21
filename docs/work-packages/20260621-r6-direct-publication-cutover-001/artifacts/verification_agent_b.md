@@ -3,17 +3,19 @@
 Status: complete.
 Evidence mode: Static + Ran.
 
-No delegated subagent was invoked; this is local Verification B.
-
 ## Verification
 
-- Package disposition: verified `HOLD-R6-DIRECT-PUBLICATION-FRAME-ABSENT` is an
-  evidence-backed named hold.
-- Gate Evidence Non-Deferral: verified the output-family cutover gates are not
-  deferred or converted into a completion claim.
-- Protected boundaries: verified artifacts report no production Rust/output
-  implementation after ledger promotion.
-- Handoff: verified next action points to a direct publication frame from typed
-  direct state, not compatibility-row wrapping.
+- Package disposition: verified the final disposition is
+  `HOLD-R6-DIRECT-PUBLICATION-PARITY-AND-MANIFEST-CUTOVER`.
+- Gate Evidence Non-Deferral: verified byte/Arrow identity, metadata parity,
+  anti-alias, independent reconstruction, endpoint/RSS, and default-disabled
+  timing are not converted into a completion claim.
+- No-output safety: verified both internal and CLI-level contracts assert that
+  the fail-closed candidate writes no public output files or manifest.
+- No-compatibility proof: verified the package distinguishes direct projection
+  helper coverage from the still-blocked production no-compatibility proof.
+- Handoff: verified next action points to parity-grade direct operands and
+  direct manifest provenance, with compatibility row wrapping rejected.
 
-Final verification B result: PASS for resumed executed-hold disposition.
+Final verification B result: PASS for resumed executed-hold disposition
+`HOLD-R6-DIRECT-PUBLICATION-PARITY-AND-MANIFEST-CUTOVER`.

@@ -15,6 +15,14 @@ R6 must preserve the existing default-disabled timing guard:
 
 ## Current Disposition
 
-NOT RUN. No benchmark was run because resumed R6 stopped before production
-Rust/output edits. The blocker is structural: no run-bound direct publication
-frame exists to benchmark as an R6 direct-publication candidate.
+NOT RUN. The default path was not benchmarked in this turn because R6 does not
+have a valid direct-publication endpoint: the opt-in cutover candidate fails
+closed before writing outputs. The code change keeps default
+`HillslopeRuntimeSelection::Compatibility` behavior unchanged and focused
+tests continue to assert no direct publication capture in default mode through
+the existing R2A/R6A counter coverage.
+
+## Gate
+
+NOT RUN blocks R6 completion. It is acceptable only for the current
+executed-hold disposition.

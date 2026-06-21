@@ -1,9 +1,9 @@
 # Endpoint RSS Evidence
 
-Status: not run.
-Evidence mode: Static.
+Status: blocked.
+Evidence mode: Static + Ran.
 
-## Required During Execution
+## Required During Completion
 
 Record endpoint and RSS evidence for:
 
@@ -15,9 +15,19 @@ Record endpoint and RSS evidence for:
 Any regression against the accepted R5E baseline must be dispositioned before
 closure.
 
-## Current Disposition
+## Current Evidence
 
-NOT RUN. R5E provides the accepted direct endpoint baseline, but R6 has no
-direct-publication candidate to benchmark because the production runner has no
-run-bound direct publication frame. Endpoint/RSS evidence remains a required
-gate for the hold-lift package.
+Ran:
+
+- `cargo run -p openwepp-runner --bin openwepp-cli-hill -- ... --direct-publication-frame-cutover`
+
+Result: fail-closed before endpoint completion with
+`R6-DIRECT-PUBLICATION-PARITY HBP byte identity failed`.
+
+No RSS or timing metric is meaningful for R6 acceptance while the candidate
+does not produce valid public outputs.
+
+## Gate
+
+BLOCKED. R6 completion still requires endpoint/RSS evidence after HBP, WAT,
+PASS, loss, and manifest cutover gates pass.
