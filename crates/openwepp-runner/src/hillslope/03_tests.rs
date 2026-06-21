@@ -5,6 +5,7 @@ mod tests {
     use openwepp_hillslope_orchestrator::{
         DIRECT_PHASE_COUNT, DIRECT_R3B_PHASE_SPAN_COUNT, DIRECT_R3C_PHASE_SPAN_COUNT,
         DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT, DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT,
+        DIRECT_R5C_DECOMPOSITION_PHASE_SPAN_COUNT, DIRECT_R5C_RESIDUE_PARTITION_PHASE_SPAN_COUNT,
         direct_runtime_audit_snapshot,
         DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT,
         DIRECT_R4G_PHASE_SPAN_COUNT, DIRECT_R4I_PHASE_SPAN_COUNT,
@@ -533,13 +534,15 @@ mod tests {
         (report, temp_run_dir)
     }
 
-    fn r5b_day_span_run_count() -> u64 {
-        16
+    fn r5c_day_span_run_count() -> u64 {
+        18
     }
 
-    fn r5b_day_phase_entry_count() -> u64 {
+    fn r5c_day_phase_entry_count() -> u64 {
         (DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT
             + DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT
+            + DIRECT_R5C_DECOMPOSITION_PHASE_SPAN_COUNT
+            + DIRECT_R5C_RESIDUE_PARTITION_PHASE_SPAN_COUNT
             + DIRECT_R4A_PHASE_SPAN_COUNT
             + DIRECT_R4B_PHASE_SPAN_COUNT
             + DIRECT_R4C_PHASE_SPAN_COUNT
@@ -612,28 +615,28 @@ mod tests {
         );
         assert_eq!(
             audit.phase_span_runs,
-            1 + expected_day_frames * r5b_day_span_run_count()
+            1 + expected_day_frames * r5c_day_span_run_count()
         );
         assert_eq!(
             audit.direct_phase_entries,
             DIRECT_R3C_PHASE_SPAN_COUNT as u64
-                + expected_day_frames * r5b_day_phase_entry_count()
+                + expected_day_frames * r5c_day_phase_entry_count()
         );
         assert_eq!(
             audit.direct_compute_operations,
-            1 + expected_day_frames * r5b_day_span_run_count()
+            1 + expected_day_frames * r5c_day_span_run_count()
         );
         assert_eq!(
             audit.direct_state_mutations,
-            1 + expected_day_frames * r5b_day_span_run_count()
+            1 + expected_day_frames * r5c_day_span_run_count()
         );
         assert_eq!(
             audit.downstream_operand_productions,
-            1 + expected_day_frames * r5b_day_span_run_count()
+            1 + expected_day_frames * r5c_day_span_run_count()
         );
         assert_eq!(
             audit.shadow_projections,
-            1 + expected_day_frames * r5b_day_span_run_count()
+            1 + expected_day_frames * r5c_day_span_run_count()
         );
         assert_eq!(audit.compatibility_edge_invocations, 1);
     }

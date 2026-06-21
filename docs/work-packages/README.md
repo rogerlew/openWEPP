@@ -13,8 +13,9 @@
 
 State as of `2026-06-20`:
 
-- None. Next queued package is R5C direct decomposition and residue transitions
-  from `r5-burndown-execplan.md`.
+- `20260620-r5c-decomposition-residue-direct-transitions-001/` is scaffolded
+  and in progress from `r5-burndown-execplan.md`. It owns direct
+  `DecompositionTransition` and `ResiduePartitionTransition` phase promotion.
 
 ## Current roadmap execution log
 

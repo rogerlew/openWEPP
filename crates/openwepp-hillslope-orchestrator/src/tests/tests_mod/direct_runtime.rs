@@ -11,8 +11,9 @@ use crate::{
     DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT, DIRECT_R4M_PHASE_SPAN_COUNT,
     DIRECT_R4N_PHASE_SPAN_COUNT, DIRECT_R4O_PHASE_SPAN_COUNT, DIRECT_R4PQZ_PHASE_SPAN_COUNT,
     DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT, DIRECT_R5B_NORMALIZATION_SPAN,
-    DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT, DIRECT_R5B_STORAGE_BOUNDS_SPAN, DirectDayFrame,
-    DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
+    DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT, DIRECT_R5B_STORAGE_BOUNDS_SPAN,
+    DIRECT_R5C_DECOMPOSITION_PHASE_SPAN_COUNT, DIRECT_R5C_RESIDUE_PARTITION_PHASE_SPAN_COUNT,
+    DirectDayFrame, DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
     DirectDeepSeepageShadowProjection, DirectDeepSeepageState, DirectDownstreamOperands,
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationDownstreamOperands,
     DirectEvapotranspirationInputs, DirectEvapotranspirationShadowProjection,
@@ -36,13 +37,15 @@ use crate::{
     reset_direct_runtime_audit_counters,
 };
 
-fn r5b_day_span_run_count() -> u64 {
-    16
+fn r5c_day_span_run_count() -> u64 {
+    18
 }
 
-fn r5b_day_phase_entry_count() -> u64 {
+fn r5c_day_phase_entry_count() -> u64 {
     (DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT
         + DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT
+        + DIRECT_R5C_DECOMPOSITION_PHASE_SPAN_COUNT
+        + DIRECT_R5C_RESIDUE_PARTITION_PHASE_SPAN_COUNT
         + DIRECT_R4C_PHASE_SPAN_COUNT
         + DIRECT_R4M_PHASE_SPAN_COUNT
         + DIRECT_R4N_PHASE_SPAN_COUNT
@@ -58,14 +61,15 @@ fn r5b_day_phase_entry_count() -> u64 {
         + DIRECT_R3B_PHASE_SPAN_COUNT) as u64
 }
 
-fn r5b_expected_phase_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStatus {
+fn r5c_expected_phase_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStatus {
     match phase {
-        DirectPhaseKind::DecompositionTransition
-        | DirectPhaseKind::ResiduePartitionTransition
-        | DirectPhaseKind::AnnualGrowthTransition
-        | DirectPhaseKind::PerennialGrowthTransition => DirectPhaseLifecycleStatus::Hold,
+        DirectPhaseKind::AnnualGrowthTransition | DirectPhaseKind::PerennialGrowthTransition => {
+            DirectPhaseLifecycleStatus::Hold
+        }
         DirectPhaseKind::Normalization
         | DirectPhaseKind::StorageBounds
+        | DirectPhaseKind::DecompositionTransition
+        | DirectPhaseKind::ResiduePartitionTransition
         | DirectPhaseKind::PercolationDeepSeepage
         | DirectPhaseKind::Evapotranspiration
         | DirectPhaseKind::Drainage
@@ -77,12 +81,12 @@ fn r5b_expected_phase_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStat
     }
 }
 
-fn assert_r5b_phase_status_counts(counts: &[crate::DirectPhaseStatusCount], expected_count: u64) {
+fn assert_r5c_phase_status_counts(counts: &[crate::DirectPhaseStatusCount], expected_count: u64) {
     assert_eq!(counts.len(), DIRECT_PHASE_COUNT);
     for (index, count) in counts.iter().enumerate() {
         let expected_phase = DirectPhaseKind::ORDERED[index];
         assert_eq!(count.phase, expected_phase);
-        assert_eq!(count.status, r5b_expected_phase_status(expected_phase));
+        assert_eq!(count.status, r5c_expected_phase_status(expected_phase));
         assert_eq!(count.count, expected_count);
     }
 }
@@ -113,30 +117,30 @@ fn r5a_direct_skeleton_runs_all_days_and_lanes_with_lifecycle_counters() {
         report.phase_view_count,
         expected_day_frames * DIRECT_PHASE_COUNT as u64
     );
-    assert_r5b_phase_status_counts(&report.phase_status_counts, expected_day_frames);
+    assert_r5c_phase_status_counts(&report.phase_status_counts, expected_day_frames);
     assert_eq!(
         report.phase_span_run_count,
-        1 + expected_day_frames * r5b_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count()
     );
     assert_eq!(
         report.direct_phase_entry_count,
-        DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5b_day_phase_entry_count()
+        DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5c_day_phase_entry_count()
     );
     assert_eq!(
         report.direct_compute_count,
-        1 + expected_day_frames * r5b_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count()
     );
     assert_eq!(
         report.state_mutation_count,
-        1 + expected_day_frames * r5b_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count()
     );
     assert_eq!(
         report.downstream_operand_count,
-        1 + expected_day_frames * r5b_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count()
     );
     assert_eq!(
         report.shadow_projection_count,
-        1 + expected_day_frames * r5b_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count()
     );
     assert_eq!(report.compatibility_edge_invocation_count, 0);
     assert_eq!(report.day_frame_commit_count, expected_day_frames);
@@ -152,27 +156,27 @@ fn r5a_direct_skeleton_runs_all_days_and_lanes_with_lifecycle_counters() {
     );
     assert_eq!(
         audit.phase_span_runs,
-        1 + expected_day_frames * r5b_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count()
     );
     assert_eq!(
         audit.direct_phase_entries,
-        DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5b_day_phase_entry_count()
+        DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5c_day_phase_entry_count()
     );
     assert_eq!(
         audit.direct_compute_operations,
-        1 + expected_day_frames * r5b_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count()
     );
     assert_eq!(
         audit.direct_state_mutations,
-        1 + expected_day_frames * r5b_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count()
     );
     assert_eq!(
         audit.downstream_operand_productions,
-        1 + expected_day_frames * r5b_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count()
     );
     assert_eq!(
         audit.shadow_projections,
-        1 + expected_day_frames * r5b_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count()
     );
     assert_eq!(audit.compatibility_edge_invocations, 0);
 }
@@ -226,6 +230,14 @@ fn r2a_direct_runtime_source_excludes_compatibility_storage_tokens() {
                 "/src/direct_runtime.rs"
             ))
             .expect("direct runtime source should be readable"),
+        ),
+        (
+            "direct_runtime/decomposition.rs",
+            std::fs::read_to_string(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/src/direct_runtime/decomposition.rs"
+            ))
+            .expect("direct runtime decomposition source should be readable"),
         ),
         (
             "direct_runtime/storage.rs",
