@@ -119,6 +119,10 @@ fn r5a_direct_skeleton_runs_all_days_and_lanes_with_lifecycle_counters() {
         report.phase_view_count,
         expected_day_frames * DIRECT_PHASE_COUNT as u64
     );
+    assert_eq!(
+        report.canonical_phase_entry_count,
+        expected_day_frames * DIRECT_PHASE_COUNT as u64
+    );
     assert_r5c_phase_status_counts(&report.phase_status_counts, expected_day_frames);
     assert_eq!(
         report.phase_span_run_count,
@@ -179,6 +183,46 @@ fn r5a_direct_skeleton_runs_all_days_and_lanes_with_lifecycle_counters() {
     assert_eq!(
         audit.shadow_projections,
         1 + expected_day_frames * r5c_day_span_run_count()
+    );
+    assert_eq!(audit.compatibility_edge_invocations, 0);
+}
+
+#[test]
+fn r5e_direct_endpoint_records_exactly_ordered_fourteen_phase_entries() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(7, 2637, 2, 3)
+        .expect("valid direct skeleton identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct skeleton frame should construct");
+    let executor = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly);
+
+    let report = executor
+        .run_skeleton(&mut frame)
+        .expect("R5E direct endpoint skeleton should execute");
+
+    let expected_day_frames = (identity.lane_count * identity.day_count) as u64;
+    assert_eq!(report.planned_phase_count, DIRECT_PHASE_COUNT);
+    assert_eq!(
+        report.canonical_phase_entry_count,
+        expected_day_frames * DIRECT_PHASE_COUNT as u64
+    );
+    assert_eq!(report.phase_view_count, report.canonical_phase_entry_count);
+    assert_r5c_phase_status_counts(&report.phase_status_counts, expected_day_frames);
+    assert!(
+        report.direct_phase_entry_count > report.canonical_phase_entry_count,
+        "sub-operation counters must remain distinct from canonical phase entries"
+    );
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+    assert_eq!(report.day_frame_commit_count, expected_day_frames);
+
+    let audit = crate::direct_runtime_audit_snapshot();
+    assert_eq!(
+        audit.phase_view_constructions,
+        report.canonical_phase_entry_count
     );
     assert_eq!(audit.compatibility_edge_invocations, 0);
 }
@@ -280,6 +324,14 @@ fn r2a_direct_runtime_source_excludes_compatibility_storage_tokens() {
                 "/src/direct_runtime/normalization.rs"
             ))
             .expect("direct runtime normalization source should be readable"),
+        ),
+        (
+            "direct_runtime/growth.rs",
+            std::fs::read_to_string(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/src/direct_runtime/growth.rs"
+            ))
+            .expect("direct runtime growth source should be readable"),
         ),
         (
             "direct_runtime/projection.rs",
