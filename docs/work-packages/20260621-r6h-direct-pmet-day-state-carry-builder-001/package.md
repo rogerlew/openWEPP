@@ -1,6 +1,6 @@
 # R6H - Direct PMET Day-State Carry Builder
 
-Status: scaffolded.
+Status: executed-held.
 
 Package type: Defect-Closure ExecPlan / R6 direct WAT publication cutover.
 
@@ -201,8 +201,24 @@ verification agents.
 ## Progress
 
 - [x] Scaffolded from R6G hold evidence.
-- [ ] Record required reading and initial blocker ledger.
-- [ ] Design interleaved day-input builder and lane-dimensional inputs.
-- [ ] Implement PMET day-state carry builder.
-- [ ] Prove WAT parity or establish a new exact hold.
-- [ ] Complete reviews, verification, and final gate evidence.
+- [x] Record required reading and initial blocker ledger.
+- [x] Design interleaved day-input builder and lane-dimensional inputs.
+- [x] Implement PMET day-state carry builder.
+- [x] Prove WAT parity or establish a new exact hold.
+- [x] Complete reviews, verification, and final gate evidence.
+
+## Execution Disposition
+
+R6H cleared `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT` by replacing
+the precomputed multi-day direct publication input vector with an interleaved
+day/lane builder. The cutover candidate now builds PMET inputs after each
+prior direct day commits lane-carried state, preserves current-fixture HBP byte
+identity, and reduces the WAT residual to `Es` only.
+
+R6H is not complete because WAT parity still fails by an ulp-scale PMET layer
+carry residual:
+
+`HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY`
+
+The exact follow-up package is
+`docs/work-packages/20260621-r6i-direct-pmet-layer-ulp-parity-001/package.md`.

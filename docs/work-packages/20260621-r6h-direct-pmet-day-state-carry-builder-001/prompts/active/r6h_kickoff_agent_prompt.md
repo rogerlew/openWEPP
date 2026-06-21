@@ -1,6 +1,6 @@
 # R6H Kickoff Agent Prompt
 
-Status: queued.
+Status: executed-held.
 
 Execute
 `docs/work-packages/20260621-r6h-direct-pmet-day-state-carry-builder-001/package.md`.

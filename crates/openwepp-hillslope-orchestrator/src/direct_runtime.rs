@@ -2159,6 +2159,35 @@ impl DirectFrameExecutor {
                 calendar_day_count: day_inputs.len(),
             });
         }
+        let identity_day_count = frame.identity.day_count;
+        let calendar_day_count = day_inputs.len();
+        self.run_publication_capture_with_interleaved_day_inputs(
+            frame,
+            metadata,
+            |_frame, day_index, _lane_index| {
+                day_inputs.get(day_index).cloned().ok_or(
+                    DirectRuntimeError::CalendarDayCountMismatch {
+                        identity_day_count,
+                        calendar_day_count,
+                    },
+                )
+            },
+        )
+    }
+
+    pub fn run_publication_capture_with_interleaved_day_inputs<F>(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        mut build_day_input: F,
+    ) -> Result<DirectPublicationExecution, DirectRuntimeError>
+    where
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+    {
         DIRECT_AUDIT.record_publication_capture_run();
         let expected_row_count = frame
             .identity
@@ -2183,8 +2212,9 @@ impl DirectFrameExecutor {
             transfer_span_report.compatibility_edge_invocation_count,
         );
 
-        for (day_index, day_input) in day_inputs.iter().cloned().enumerate() {
+        for day_index in 0..frame.identity.day_count {
             for lane_index in 0..frame.identity.lane_count {
+                let day_input = build_day_input(frame, day_index, lane_index)?;
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
                 Self::apply_publication_day_input(&mut day_frame, &day_input)?;
                 Self::run_day_spans(&mut day_frame, &mut counters)?;
@@ -2564,6 +2594,9 @@ pub enum DirectRuntimeError {
     DirectDomainViolation {
         field: &'static str,
     },
+    PublicationDayInputBuildFailure {
+        detail: String,
+    },
     DirectClosureToleranceExceeded {
         field: &'static str,
     },
@@ -2678,6 +2711,12 @@ impl fmt::Display for DirectRuntimeError {
                 write!(
                     formatter,
                     "direct runtime field {field} violates its direct-domain constraints"
+                )
+            }
+            Self::PublicationDayInputBuildFailure { detail } => {
+                write!(
+                    formatter,
+                    "direct publication day-input builder failed: {detail}"
                 )
             }
             Self::DirectClosureToleranceExceeded { field } => {

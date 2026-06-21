@@ -20,7 +20,7 @@ mod tests {
         DirectPublicationInterceptionOperands, DirectPublicationLiquidInputOperands,
         DirectPublicationProfileOperands, DirectPublicationRunMetadata,
         DirectPublicationRunoffOperands, DirectPublicationStorageOperands,
-        DirectPublicationSubsurfaceOperands, DirectPublicationTransferOperands,
+        DirectPublicationSubsurfaceOperands, DirectPublicationTransferOperands, DirectRunFrame,
         DirectRunIdentity, DirectRunPublicationFrame,
     };
     use openwepp_input_contract::parsers::hbp::{
@@ -689,7 +689,7 @@ mod tests {
     }
 
     #[test]
-    fn r6g_cutover_candidate_reaches_hbp_and_first_wat_parity_then_fails_pmet_day_state_carry() {
+    fn r6h_cutover_candidate_clears_day_state_carry_then_fails_pmet_layer_ulp_parity() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -721,12 +721,16 @@ mod tests {
             "unexpected error: {message}"
         );
         assert!(
-            message.contains("HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT"),
+            message.contains("HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY"),
             "unexpected error: {message}"
         );
         assert!(
-            message.contains("reduced_fields=Es,Total-Soil,SoilWaterTotal"),
+            message.contains("reduced_fields=Es"),
             "unexpected error: {message}"
+        );
+        assert!(
+            !message.contains("HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT"),
+            "day-state carry blocker should be cleared: {message}"
         );
         assert!(
             !message.contains("HOLD-R6E-PRODUCTION-DIRECT-RUNTIME-INPUT-BINDING-ABSENT"),
@@ -834,6 +838,97 @@ mod tests {
         ));
     }
 
+    #[test]
+    fn r6h_wat_hold_marker_is_reserved_for_exact_pmet_layer_ulp_gap() {
+        let compatibility_first = r6f_wat_marker_sample_row();
+        let direct_first = compatibility_first.clone();
+        let mut compatibility_second = compatibility_first.clone();
+        compatibility_second.sim_day_index = 2;
+        compatibility_second.es = 0.767_760_184_372_260_8;
+        let mut direct_second = compatibility_second.clone();
+        direct_second.es = 0.767_760_184_372_260_5;
+
+        let direct_rows = [direct_first, direct_second.clone()];
+        let compatibility_rows = [compatibility_first, compatibility_second.clone()];
+        let reduced_fields = reduced_wat_mismatch_fields(&direct_rows, &compatibility_rows);
+        assert_eq!(reduced_fields, vec!["Es"]);
+        assert!(r6h_wat_pmet_layer_carry_ulp_gap(
+            &direct_rows,
+            &compatibility_rows,
+            &reduced_fields
+        ));
+
+        direct_second.es = 0.5;
+        let direct_rows = [direct_rows[0].clone(), direct_second];
+        let reduced_fields = reduced_wat_mismatch_fields(&direct_rows, &compatibility_rows);
+        assert_eq!(reduced_fields, vec!["Es"]);
+        assert!(!r6h_wat_pmet_layer_carry_ulp_gap(
+            &direct_rows,
+            &compatibility_rows,
+            &reduced_fields
+        ));
+
+        let mut direct_first = compatibility_rows[0].clone();
+        direct_first.es += 1.0e-13;
+        let direct_rows = [direct_first, compatibility_rows[1].clone()];
+        let reduced_fields = reduced_wat_mismatch_fields(&direct_rows, &compatibility_rows);
+        assert_eq!(reduced_fields, vec!["Es"]);
+        assert!(!r6h_wat_pmet_layer_carry_ulp_gap(
+            &direct_rows,
+            &compatibility_rows,
+            &reduced_fields
+        ));
+
+        let mut compatibility_third = compatibility_rows[1].clone();
+        compatibility_third.sim_day_index = 3;
+        compatibility_third.es = 0.9;
+        let mut direct_second = compatibility_rows[1].clone();
+        direct_second.es = 0.767_760_184_372_260_5;
+        let mut direct_third = compatibility_third.clone();
+        direct_third.es = 0.5;
+        let direct_rows = [
+            compatibility_rows[0].clone(),
+            direct_second,
+            direct_third,
+        ];
+        let compatibility_rows = [
+            compatibility_rows[0].clone(),
+            compatibility_rows[1].clone(),
+            compatibility_third,
+        ];
+        let reduced_fields = reduced_wat_mismatch_fields(&direct_rows, &compatibility_rows);
+        assert_eq!(reduced_fields, vec!["Es"]);
+        assert!(!r6h_wat_pmet_layer_carry_ulp_gap(
+            &direct_rows,
+            &compatibility_rows,
+            &reduced_fields
+        ));
+    }
+
+    #[test]
+    fn r6h_day_input_overlay_requires_committed_layers_after_day_zero() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let identity =
+            DirectRunIdentity::new(1, 1, 1, 2).expect("valid identity should construct");
+        let frame = DirectRunFrame::skeleton(identity).expect("skeleton frame should construct");
+        let lane = frame.lanes.first().expect("skeleton frame should include lane");
+        let mut day_zero_seed = HillslopeWritebackSurface::default();
+        overlay_direct_publication_lane_state(&mut day_zero_seed, 0, 0, lane)
+            .expect("day-zero static seed may start before direct layers commit");
+
+        let mut later_day_seed = HillslopeWritebackSurface::default();
+        let error = overlay_direct_publication_lane_state(&mut later_day_seed, 1, 0, lane)
+            .expect_err("later-day seed requires direct-carried layers");
+        assert!(
+            error
+                .to_string()
+                .contains("requires committed direct-carried layers"),
+            "unexpected error: {error}"
+        );
+    }
+
     fn r6f_wat_marker_sample_row() -> HillslopeWatRow {
         HillslopeWatRow {
             wepp_id: 1,
@@ -874,7 +969,7 @@ mod tests {
     }
 
     #[test]
-    fn r6g_cutover_candidate_hbp_identity_reduces_wat_to_pmet_day_state_carry_gap() {
+    fn r6h_cutover_candidate_hbp_identity_reduces_wat_to_pmet_layer_ulp_gap() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -882,7 +977,7 @@ mod tests {
         let evidence = r6f_hbp_wat_fixture_evidence();
 
         assert_r6f_hbp_identity(&evidence);
-        assert_r6g_wat_reduced_to_pmet_day_state_carry_gap(&evidence);
+        assert_r6h_wat_reduced_to_pmet_layer_ulp_gap(&evidence);
     }
 
     struct R6fHbpWatEvidence {
@@ -978,18 +1073,23 @@ mod tests {
         );
     }
 
-    fn assert_r6g_wat_reduced_to_pmet_day_state_carry_gap(evidence: &R6fHbpWatEvidence) {
+    fn assert_r6h_wat_reduced_to_pmet_layer_ulp_gap(evidence: &R6fHbpWatEvidence) {
         assert_eq!(
             evidence.direct_wat_rows.len(),
             evidence.compatibility_wat_rows.len()
         );
         let reduced_fields =
             reduced_wat_mismatch_fields(&evidence.direct_wat_rows, &evidence.compatibility_wat_rows);
-        assert_eq!(reduced_fields, vec!["Es", "Total-Soil", "SoilWaterTotal"]);
-        assert!(r6g_wat_direct_et_storage_producer_gap(
+        assert_eq!(reduced_fields, vec!["Es"]);
+        assert!(!r6g_wat_direct_et_storage_producer_gap(
             &reduced_fields
         ));
-        assert!(r6g_wat_pmet_day_state_carry_gap(
+        assert!(!r6g_wat_pmet_day_state_carry_gap(
+            &evidence.direct_wat_rows,
+            &evidence.compatibility_wat_rows,
+            &reduced_fields
+        ));
+        assert!(r6h_wat_pmet_layer_carry_ulp_gap(
             &evidence.direct_wat_rows,
             &evidence.compatibility_wat_rows,
             &reduced_fields
@@ -1012,13 +1112,13 @@ mod tests {
             .get(1)
             .expect("compatibility WAT rows should include second day");
         assert_f64_bits_ne(direct_second.es, compatibility_second.es);
-        assert_f64_bits_ne(
-            direct_second.total_soil_water,
-            compatibility_second.total_soil_water,
+        assert_eq!(
+            direct_second.total_soil_water.to_bits(),
+            compatibility_second.total_soil_water.to_bits()
         );
-        assert_ne!(
-            direct_second.soil_water_total,
-            compatibility_second.soil_water_total
+        assert_eq!(
+            direct_second.soil_water_total.map(f64::to_bits),
+            compatibility_second.soil_water_total.map(f64::to_bits)
         );
     }
 

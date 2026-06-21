@@ -13,15 +13,18 @@
 
 State as of `2026-06-21`:
 
-- `20260621-r6h-direct-pmet-day-state-carry-builder-001/` is scaffolded to
-  close `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT`. It must replace
-  the precomputed multi-day PMET publication input vector with an interleaved
-  direct day-input builder that executes day `n`, commits direct lane/day
-  state, and builds day `n+1` PMET operands from direct-carried state only.
-  Current scope also includes lane-dimensional direct inputs, canonical WAT id
-  authority, allowlisted symbol lineage, WAT parity, anti-alias fixtures,
-  independent reconstruction, no-compatibility proof, and fail-closed cutover
-  behavior.
+- `20260621-r6i-direct-pmet-layer-ulp-parity-001/` is scaffolded to close
+  `HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY`. It must localize and correct
+  the first bit divergence in direct PMET surface-layer carry feeding EVAPPM
+  `wfevp`/`etkr`/`es_m`, while preserving the R6H interleaved day/lane builder
+  and fail-closed cutover behavior.
+- `20260621-r6h-direct-pmet-day-state-carry-builder-001/` is executed-held at
+  `HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY`. It cleared
+  `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT` by replacing the
+  precomputed multi-day PMET publication input vector with an interleaved
+  direct day/lane builder. Current-fixture HBP byte identity remains green,
+  WAT storage totals are bit-identical, and the remaining current-fixture WAT
+  residual is exactly day-2 `Es` at ulp-scale PMET layer carry.
 - `20260621-r6g-direct-wat-producer-authority-001/` is executed-held at
   `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT`. It reduced the R6F WAT
   producer-authority gap for the inherited current fixture: `wepp_id`,
@@ -108,6 +111,15 @@ State as of `2026-06-21`:
   built before the prior direct day commits carried layer state. The next R6
   package must implement dynamic interleaved PMET day-input construction rather
   than reading compatibility WB13 rows or runtime surfaces.
+- R6H (`20260621-r6h-direct-pmet-day-state-carry-builder-001/`) is
+  executed-held with final disposition
+  `HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY`. The package replaced the
+  precomputed PMET publication input vector with an interleaved direct day/lane
+  builder, added fail-closed later-day layer requirements, preserved
+  current-fixture HBP byte identity, and reduced WAT from day-2 `Es`,
+  `Total-Soil`, and `SoilWaterTotal` to `Es` only. The exact follow-up is R6I;
+  WAT id, independent WAT reconstruction, and broader multi-OFE output
+  authority remain held until the `Es` parity blocker is cleared.
 - R6F (`20260621-r6f-direct-publication-cutover-blocker-closure-001/`) is
   executed-held with final disposition
   `HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP`. The package closed the

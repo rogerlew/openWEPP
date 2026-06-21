@@ -286,6 +286,65 @@ fn r6f_publication_capture_accepts_typed_process_inputs_and_carries_layers() {
     assert!((frame.lanes[0].subsurface_layers[0].theta_m - 0.190).abs() < 1.0e-12);
 }
 
+#[test]
+fn r6h_publication_capture_builds_lane_day_inputs_after_direct_commit() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(17, 501, 2, 2)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct frame should construct for capture");
+    frame.lanes[0].area_m2 = 100.0;
+    frame.lanes[1].area_m2 = 125.0;
+    let process_projection = r6f_typed_process_projection();
+    let first_day_theta = [0.200, 0.190];
+    let mut observed_carried_theta = Vec::new();
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r6h_interleaved_inputs".to_string(),
+        runtime_selection: "direct-publication-frame-cutover-candidate".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        .run_publication_capture_with_interleaved_day_inputs(
+            &mut frame,
+            metadata,
+            |frame, day_index, lane_index| {
+                if day_index == 0 {
+                    return Ok(r6h_typed_first_day_for_lane(
+                        first_day_theta[lane_index],
+                        process_projection,
+                    ));
+                }
+                let carried_theta = frame.lanes[lane_index]
+                    .subsurface_layers
+                    .first()
+                    .expect("prior direct day must commit lane layer state")
+                    .theta_m;
+                observed_carried_theta.push((lane_index, carried_theta));
+                Ok(r6h_typed_second_day_from_carried(
+                    carried_theta,
+                    process_projection,
+                ))
+            },
+        )
+        .expect("interleaved typed direct publication capture should execute");
+
+    let rows = execution.publication_frame.rows();
+    assert_eq!(rows.len(), 4);
+    assert_eq!(observed_carried_theta.len(), 2);
+    assert_eq!(observed_carried_theta[0].0, 0);
+    assert_eq!(observed_carried_theta[1].0, 1);
+    assert!((observed_carried_theta[0].1 - 0.190).abs() < 1.0e-12);
+    assert!((observed_carried_theta[1].1 - 0.180).abs() < 1.0e-12);
+    assert!((rows[2].evaporation.es_mm - 1.9).abs() < 1.0e-12);
+    assert!((rows[3].evaporation.es_mm - 1.8).abs() < 1.0e-12);
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+}
+
 fn r6f_typed_publication_day_inputs() -> [DirectPublicationDayInput; 2] {
     let base_layer = DirectSubsurfaceLayerState::from(r6f_typed_base_layer_inputs());
     let base_layer_inputs = DirectSubsurfaceLayerInputs::from(base_layer.clone());
@@ -294,6 +353,33 @@ fn r6f_typed_publication_day_inputs() -> [DirectPublicationDayInput; 2] {
         r6f_typed_first_day(base_layer, base_layer_inputs, process_projection),
         r6f_typed_second_day(process_projection),
     ]
+}
+
+fn r6h_typed_first_day_for_lane(
+    theta_m: f64,
+    process_projection: DirectHydrologyProjectionInputs,
+) -> DirectPublicationDayInput {
+    let mut layer_inputs = r6f_typed_base_layer_inputs();
+    layer_inputs.theta_m = theta_m;
+    let base_layer = DirectSubsurfaceLayerState::from(layer_inputs.clone());
+    let mut first_day = r6f_typed_first_day(base_layer, layer_inputs, process_projection);
+    first_day.initial_soil_water_m = Some(theta_m);
+    if let Some(percolation_inputs) = first_day.percolation_inputs.as_mut() {
+        percolation_inputs.soil_water_initial_m = theta_m;
+    }
+    first_day
+}
+
+fn r6h_typed_second_day_from_carried(
+    carried_theta_m: f64,
+    process_projection: DirectHydrologyProjectionInputs,
+) -> DirectPublicationDayInput {
+    let mut second_day = r6f_typed_calendar_day(2);
+    let soil_evaporation_m = carried_theta_m / 100.0;
+    second_day.evapotranspiration_compute_inputs =
+        Some(r6h_typed_evapotranspiration_inputs(soil_evaporation_m));
+    second_day.hydrology_projection_inputs = Some(process_projection);
+    second_day
 }
 
 fn r6f_typed_base_layer_inputs() -> DirectSubsurfaceLayerInputs {
@@ -389,8 +475,14 @@ fn r6f_typed_subsurface_inputs(
 }
 
 fn r6f_typed_evapotranspiration_inputs() -> DirectEvapotranspirationComputeInputs {
+    r6h_typed_evapotranspiration_inputs(0.010)
+}
+
+fn r6h_typed_evapotranspiration_inputs(
+    soil_evaporation_m: f64,
+) -> DirectEvapotranspirationComputeInputs {
     DirectEvapotranspirationComputeInputs {
-        et_demand_m: 0.010,
+        et_demand_m: soil_evaporation_m,
         leaf_area_index: 0.0,
         canopy_cover_fraction: 0.0,
         residue_interception_m: 0.0,
@@ -401,7 +493,7 @@ fn r6f_typed_evapotranspiration_inputs() -> DirectEvapotranspirationComputeInput
         growth_context_required: false,
         stage_state: None,
         pmet: Some(DirectEvapotranspirationPmetInputs {
-            soil_evaporation_m: 0.010,
+            soil_evaporation_m,
             plant_transpiration_m: 0.0,
             soil_evaporation_storage_return_m: 0.0,
         }),

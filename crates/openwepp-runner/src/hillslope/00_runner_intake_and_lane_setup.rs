@@ -16,8 +16,9 @@ use openwepp_hillslope_orchestrator::{
     DirectEvapotranspirationStageState, DirectExecutorMode, DirectFrameExecutor,
     DirectHydrologyProjectionInputs, DirectPercolationInputs, DirectPublicationCalendarDay,
     DirectPublicationDayInput, DirectPublicationExecution, DirectPublicationRunMetadata,
-    DirectRunFrame, DirectRunIdentity, DirectRunPublicationFrame, DirectSubsurfaceComputeInputs,
-    DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState, HillslopeDayFrame,
+    DirectRunFrame, DirectRunIdentity, DirectRunPublicationFrame, DirectRuntimeError,
+    DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
+    HillslopeDayFrame,
     HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
     OfeLanePersistentState, OfeLanePersistentStateSequence, OfeLaneSequenceExecutionReport,
     SchedulerOutcomeClass, TransferInput, TransferOutput, Wb11HydrologyKernel,
@@ -2304,6 +2305,22 @@ fn require_direct_publication_wat_cutover_gate(
              but multi-day PMET component construction is still precomputed before prior direct \
              day layer-state commits, so day-dependent Es and Total-Soil must not be sourced \
              from compatibility WB13 rows or runtime surfaces",
+            artifacts.wat_rows.len(),
+            compatibility_wat_rows.len()
+        )));
+    }
+    if r6h_wat_pmet_layer_carry_ulp_gap(
+        &artifacts.wat_rows,
+        &compatibility_wat_rows,
+        &reduced_fields,
+    ) {
+        return Err(direct_publication_cutover_blocked(format!(
+            "HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY \
+             WAT row identity failed after HBP byte identity, interleaved direct day-input \
+             carry, and storage WAT parity passed: direct_rows={} compatibility_rows={} \
+             reduced_fields={reduced_fields_text}; production direct publication no longer \
+             precomputes PMET before direct day commits, but exact PMET Es parity now depends \
+             on bit-identical carried surface-layer water for EVAPPM wfevp/etkr reconstruction",
             artifacts.wat_rows.len(),
             compatibility_wat_rows.len()
         )));
