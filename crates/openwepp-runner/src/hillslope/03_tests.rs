@@ -717,6 +717,10 @@ mod tests {
             message.contains("R6-DIRECT-PUBLICATION-PARITY"),
             "unexpected error: {message}"
         );
+        assert!(
+            message.contains("R6B-DIRECT-PUBLICATION-TYPED-OPERANDS-ABSENT"),
+            "unexpected error: {message}"
+        );
         let audit = direct_runtime_audit_snapshot();
         assert_eq!(audit.run_frame_constructions, 1);
         assert_eq!(audit.executor_constructions, 1);
@@ -734,6 +738,114 @@ mod tests {
                 !output_dir.join(output_name).exists(),
                 "fail-closed R6 cutover candidate must not write {output_name}"
             );
+        }
+    }
+
+    #[test]
+    fn r6b_absent_operand_detector_suppresses_marker_for_nonzero_direct_operands() {
+        let identity =
+            DirectRunIdentity::new(19, 2637, 1, 1).expect("valid direct identity should construct");
+        let zero_row = DirectPublicationDayRow {
+            run_id: 19,
+            hillslope_id: 2637,
+            lane_id: 1,
+            ofe_id: 1,
+            lane_index: 0,
+            day_index: 0,
+            sim_day_index: 1,
+            calendar: DirectPublicationCalendarDay {
+                year: 2026,
+                julian_day: 172,
+                month: 6,
+                day_of_month: 21,
+                water_year: 2026,
+            },
+            area_m2: 400.0,
+            climate: DirectPublicationClimateOperands {
+                precipitation_mm: 0.0,
+            },
+            liquid_input: DirectPublicationLiquidInputOperands {
+                rm_mm: 0.0,
+                irrigation_mm: 0.0,
+            },
+            runoff: DirectPublicationRunoffOperands {
+                q_mm: 0.0,
+                qofe_mm: 0.0,
+                runvol_m3: 0.0,
+                peak_runoff_m3_s: None,
+                runoff_duration_s: None,
+            },
+            evaporation: DirectPublicationEvaporationOperands {
+                ep_mm: 0.0,
+                es_mm: 0.0,
+                er_mm: 0.0,
+                total_evapotranspiration_mm: 0.0,
+            },
+            subsurface: DirectPublicationSubsurfaceOperands {
+                dp_mm: 0.0,
+                latqcc_mm: 0.0,
+                tile_mm: 0.0,
+                sbrunv_m3: 0.0,
+            },
+            transfer: DirectPublicationTransferOperands {
+                upstream_surface_mm: 0.0,
+                upstream_lateral_mm: 0.0,
+            },
+            storage: DirectPublicationStorageOperands {
+                total_soil_mm: 0.0,
+                soil_water_total_mm: 0.0,
+                frozwt_mm: 0.0,
+                frdp_mm: None,
+                snow_water_mm: 0.0,
+            },
+            profile: DirectPublicationProfileOperands {
+                depth_mm: None,
+                porosity_cap_mm: None,
+                fc_store_mm: None,
+                wp_store_mm: None,
+            },
+            interception: DirectPublicationInterceptionOperands {
+                interception_mm: 0.0,
+                interception_storage_mm: None,
+            },
+            erosion: DirectPublicationErosionOperands::absent_authority(),
+        };
+
+        assert!(direct_publication_has_only_zero_or_absent_operands(
+            &r6b_publication_frame_with_row(identity, zero_row.clone())
+        ));
+
+        let mut scalar_row = zero_row.clone();
+        scalar_row.runoff.q_mm = 1.0;
+        assert!(!direct_publication_has_only_zero_or_absent_operands(
+            &r6b_publication_frame_with_row(identity, scalar_row)
+        ));
+
+        let mut optional_row = zero_row.clone();
+        optional_row.runoff.peak_runoff_m3_s = Some(0.25);
+        assert!(!direct_publication_has_only_zero_or_absent_operands(
+            &r6b_publication_frame_with_row(identity, optional_row)
+        ));
+
+        let mut erosion_row = zero_row;
+        erosion_row.erosion.sediment_concentration_kg_m3 = Some([0.0, 0.1, 0.0, 0.0, 0.0]);
+        assert!(!direct_publication_has_only_zero_or_absent_operands(
+            &r6b_publication_frame_with_row(identity, erosion_row)
+        ));
+    }
+
+    fn r6b_publication_frame_with_row(
+        identity: DirectRunIdentity,
+        row: DirectPublicationDayRow,
+    ) -> DirectRunPublicationFrame {
+        DirectRunPublicationFrame {
+            identity,
+            metadata: DirectPublicationRunMetadata {
+                run_name: "r6b_absent_operands".to_string(),
+                runtime_selection: "direct-publication-frame-cutover".to_string(),
+                output_policy: "test".to_string(),
+            },
+            rows: vec![row],
         }
     }
 

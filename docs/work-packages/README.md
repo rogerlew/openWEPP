@@ -13,6 +13,13 @@
 
 State as of `2026-06-21`:
 
+- `20260621-r6b-direct-publication-parity-manifest-cutover-001/` is
+  executed-held at
+  `HOLD-R6B-DIRECT-PUBLICATION-TYPED-OPERAND-BRIDGE-ABSENT`. It confirmed the
+  R6 cutover candidate still builds from a skeleton direct frame with
+  zero/absent publication operands, retained a fail-closed diagnostic marker,
+  and left anti-alias, reconstruction, manifest, output-family, default-disabled,
+  and endpoint/RSS gates blocked behind the missing typed operand bridge.
 - `20260621-r6-direct-publication-cutover-001/` resumed after R5E completed at
   pushed commit `d8f6bbea`. It promoted the PERFDEEP06 publication operand
   ledger into canonical architecture authority, held until R6A supplied the

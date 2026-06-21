@@ -2362,8 +2362,15 @@ fn require_direct_publication_cutover_gates(
         execution.contributor_ofe_count,
     )?;
     if artifacts.hbp_bytes != compatibility_hbp {
+        let blocker = if direct_publication_has_only_zero_or_absent_operands(
+            &artifacts.execution.publication_frame,
+        ) {
+            "R6B-DIRECT-PUBLICATION-TYPED-OPERANDS-ABSENT "
+        } else {
+            ""
+        };
         return Err(direct_publication_cutover_blocked(format!(
-            "HBP byte identity failed: direct={} bytes compatibility={} bytes",
+            "{blocker}HBP byte identity failed: direct={} bytes compatibility={} bytes",
             artifacts.hbp_bytes.len(),
             compatibility_hbp.len()
         )));
@@ -2449,6 +2456,60 @@ fn direct_publication_cutover_blocked(detail: impl Into<String>) -> HillslopeCli
             detail.into()
         ),
     }
+}
+
+fn direct_publication_has_only_zero_or_absent_operands(
+    publication: &DirectRunPublicationFrame,
+) -> bool {
+    publication.rows().iter().all(|row| {
+        let scalar_operands = [
+            row.climate.precipitation_mm,
+            row.liquid_input.rm_mm,
+            row.liquid_input.irrigation_mm,
+            row.runoff.q_mm,
+            row.runoff.qofe_mm,
+            row.runoff.runvol_m3,
+            row.evaporation.ep_mm,
+            row.evaporation.es_mm,
+            row.evaporation.er_mm,
+            row.evaporation.total_evapotranspiration_mm,
+            row.subsurface.dp_mm,
+            row.subsurface.latqcc_mm,
+            row.subsurface.tile_mm,
+            row.subsurface.sbrunv_m3,
+            row.transfer.upstream_surface_mm,
+            row.transfer.upstream_lateral_mm,
+            row.storage.total_soil_mm,
+            row.storage.soil_water_total_mm,
+            row.storage.frozwt_mm,
+            row.storage.snow_water_mm,
+            row.interception.interception_mm,
+        ];
+        let optional_operands = [
+            row.runoff.peak_runoff_m3_s,
+            row.runoff.runoff_duration_s,
+            row.storage.frdp_mm,
+            row.profile.depth_mm,
+            row.profile.porosity_cap_mm,
+            row.profile.fc_store_mm,
+            row.profile.wp_store_mm,
+            row.interception.interception_storage_mm,
+            row.erosion.peak_runoff_m3_s,
+            row.erosion.runoff_duration_s,
+            row.erosion.total_detachment_kg,
+            row.erosion.total_deposition_kg,
+        ];
+        let sediment_material = row
+            .erosion
+            .sediment_concentration_kg_m3
+            .is_some_and(|fractions| fractions.iter().any(|value| *value != 0.0));
+
+        scalar_operands.iter().all(|value| *value == 0.0)
+            && optional_operands
+                .iter()
+                .all(|value| value.map(|value| value == 0.0).unwrap_or(true))
+            && !sediment_material
+    })
 }
 
 fn ensure_hillslope_output_parent_directories(

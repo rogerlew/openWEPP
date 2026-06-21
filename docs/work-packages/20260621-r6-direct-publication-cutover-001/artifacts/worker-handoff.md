@@ -26,6 +26,15 @@ The production manifest writer also remains compatibility-provenance based.
 
 Close `HOLD-R6-DIRECT-PUBLICATION-PARITY-AND-MANIFEST-CUTOVER`:
 
+Executed follow-on:
+`docs/work-packages/20260621-r6b-direct-publication-parity-manifest-cutover-001/package.md`.
+
+R6B stopped at
+`HOLD-R6B-DIRECT-PUBLICATION-TYPED-OPERAND-BRIDGE-ABSENT`: the production
+cutover candidate still creates a skeleton direct run frame, seeds only lane
+geometry/calendar metadata, and captures publication rows from zero/default
+direct state.
+
 1. Populate `DirectRunPublicationFrame` from parity-grade typed direct run
    operands instead of skeleton/zero direct state.
 2. Add anti-alias fixtures that distinguish HBP `peakro`, `watdur`, sediment,
@@ -40,6 +49,9 @@ Close `HOLD-R6-DIRECT-PUBLICATION-PARITY-AND-MANIFEST-CUTOVER`:
 ## Blockers
 
 - Current direct publication artifacts fail HBP byte identity.
+- Current cutover artifacts now report
+  `R6B-DIRECT-PUBLICATION-TYPED-OPERANDS-ABSENT` when all direct publication
+  operands are zero or absent.
 - WAT/PASS/loss acceptance remains blocked behind HBP parity.
 - Current fixture does not cover PASS parquet in the cutover candidate.
 - Production manifest publication remains compatibility-provenance based.

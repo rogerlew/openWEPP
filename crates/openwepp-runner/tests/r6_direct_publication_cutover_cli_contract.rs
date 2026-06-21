@@ -28,6 +28,10 @@ fn r6_direct_publication_cutover_cli_flag_fails_closed_before_outputs() {
         stderr.contains("R6-DIRECT-PUBLICATION-PARITY"),
         "unexpected stderr: {stderr}"
     );
+    assert!(
+        stderr.contains("R6B-DIRECT-PUBLICATION-TYPED-OPERANDS-ABSENT"),
+        "unexpected stderr: {stderr}"
+    );
 
     for output_name in [
         "H5.hbp",
