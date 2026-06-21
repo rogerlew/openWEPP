@@ -13,6 +13,15 @@
 
 State as of `2026-06-21`:
 
+- `20260621-r6h-direct-pmet-day-state-carry-builder-001/` is scaffolded to
+  close `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT`. It must replace
+  the precomputed multi-day PMET publication input vector with an interleaved
+  direct day-input builder that executes day `n`, commits direct lane/day
+  state, and builds day `n+1` PMET operands from direct-carried state only.
+  Current scope also includes lane-dimensional direct inputs, canonical WAT id
+  authority, allowlisted symbol lineage, WAT parity, anti-alias fixtures,
+  independent reconstruction, no-compatibility proof, and fail-closed cutover
+  behavior.
 - `20260621-r6g-direct-wat-producer-authority-001/` is executed-held at
   `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT`. It reduced the R6F WAT
   producer-authority gap for the inherited current fixture: `wepp_id`,
