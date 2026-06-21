@@ -2018,6 +2018,9 @@ fn build_direct_publication_artifacts(
     ) {
         return Ok(None);
     }
+    if runtime_selection == HillslopeRuntimeSelection::DirectPublicationFrameCutover {
+        return Err(direct_publication_typed_bridge_blocked());
+    }
 
     let identity = DirectRunIdentity::new(
         u64::from(targets.output_hillslope_id),
@@ -2182,6 +2185,15 @@ fn direct_publication_runtime_error(
         surface: "direct_publication_frame",
         detail: source.to_string(),
     }
+}
+
+fn direct_publication_typed_bridge_blocked() -> HillslopeCliError {
+    direct_publication_cutover_blocked(
+        "HOLD-R6C-DIRECT-PHASE-PUBLICATION-PRODUCER-ABSENT \
+         production direct publication producers are not retained by the runner; \
+         refusing to build cutover artifacts from a skeleton direct frame or from \
+         compatibility WB13/runtime/writeback surfaces",
+    )
 }
 
 fn build_hillslope_execution_provenance(

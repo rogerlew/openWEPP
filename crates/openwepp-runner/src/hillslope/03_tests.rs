@@ -686,7 +686,7 @@ mod tests {
     }
 
     #[test]
-    fn r6_cutover_candidate_fails_closed_on_direct_publication_identity_gap() {
+    fn r6_cutover_candidate_fails_closed_before_skeleton_publication_capture() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -718,14 +718,14 @@ mod tests {
             "unexpected error: {message}"
         );
         assert!(
-            message.contains("R6B-DIRECT-PUBLICATION-TYPED-OPERANDS-ABSENT"),
+            message.contains("HOLD-R6C-DIRECT-PHASE-PUBLICATION-PRODUCER-ABSENT"),
             "unexpected error: {message}"
         );
         let audit = direct_runtime_audit_snapshot();
-        assert_eq!(audit.run_frame_constructions, 1);
-        assert_eq!(audit.executor_constructions, 1);
+        assert_eq!(audit.run_frame_constructions, 0);
+        assert_eq!(audit.executor_constructions, 0);
         assert_eq!(audit.skeleton_runs, 0);
-        assert_eq!(audit.publication_capture_runs, 1);
+        assert_eq!(audit.publication_capture_runs, 0);
         assert_eq!(audit.compatibility_edge_invocations, 0);
         for output_name in [
             "H5.hbp",

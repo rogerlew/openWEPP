@@ -29,7 +29,7 @@ fn r6_direct_publication_cutover_cli_flag_fails_closed_before_outputs() {
         "unexpected stderr: {stderr}"
     );
     assert!(
-        stderr.contains("R6B-DIRECT-PUBLICATION-TYPED-OPERANDS-ABSENT"),
+        stderr.contains("HOLD-R6C-DIRECT-PHASE-PUBLICATION-PRODUCER-ABSENT"),
         "unexpected stderr: {stderr}"
     );
 

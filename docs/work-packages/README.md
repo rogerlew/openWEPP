@@ -13,6 +13,13 @@
 
 State as of `2026-06-21`:
 
+- `20260621-r6c-direct-publication-typed-operand-bridge-001/` is
+  executed-held at
+  `HOLD-R6C-DIRECT-PHASE-PUBLICATION-PRODUCER-ABSENT`. It corrected the R6B
+  candidate so `DirectPublicationFrameCutover` fails before skeleton
+  direct-frame construction/publication capture, proving the remaining blocker
+  is not at the output helper but at the production climate lifecycle: retained
+  direct run/lane/day publication producers do not yet exist.
 - `20260621-r6b-direct-publication-parity-manifest-cutover-001/` is
   executed-held at
   `HOLD-R6B-DIRECT-PUBLICATION-TYPED-OPERAND-BRIDGE-ABSENT`. It confirmed the
@@ -33,6 +40,18 @@ State as of `2026-06-21`:
 
 State as of `2026-06-21`:
 
+- R6C (`20260621-r6c-direct-publication-typed-operand-bridge-001/`) is
+  executed-held with final disposition
+  `HOLD-R6C-DIRECT-PHASE-PUBLICATION-PRODUCER-ABSENT`. The package did not
+  close R6 parity/manifest cutover. It changed the opt-in
+  `DirectPublicationFrameCutover` path so it refuses to construct a skeleton
+  direct publication frame when production direct publication producers are not
+  retained. Focused runner and CLI tests pass and confirm no direct frame,
+  executor, skeleton, publication capture, compatibility-edge invocation, or
+  public output write occurs on the failure path. The next package must add a
+  retained production direct publication producer surface to the climate
+  lifecycle before parity, anti-alias, reconstruction, manifest, and benchmark
+  gates can close.
 - R6A (`20260621-r6a-run-bound-direct-publication-frame-001/`) is complete with
   verdict `COMPLETE-R6A-RUN-BOUND-DIRECT-PUBLICATION-FRAME`. It added
   `DirectRunPublicationFrame`, direct run/lane/day capture, the

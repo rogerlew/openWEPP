@@ -13,6 +13,13 @@ Implement the production typed operand bridge that populates
 `DirectRunFrame`/`DirectRunPublicationFrame` before
 `DirectFrameExecutor::run_publication_capture`.
 
+Follow-on package
+`docs/work-packages/20260621-r6c-direct-publication-typed-operand-bridge-001/`
+executed-held at
+`HOLD-R6C-DIRECT-PHASE-PUBLICATION-PRODUCER-ABSENT`; it proved the bridge must
+be added to the production climate lifecycle before publication-artifact
+building, not patched at the output helper boundary.
+
 The bridge must:
 
 - start from parsed inputs and accepted direct run/lane/day operands;
