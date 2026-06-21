@@ -1182,6 +1182,24 @@ pub struct DirectPublicationCalendarDay {
     pub water_year: i16,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationDayInput {
+    pub calendar: DirectPublicationCalendarDay,
+    pub precipitation_m: f64,
+    pub effective_temperature_c: f64,
+}
+
+impl DirectPublicationDayInput {
+    #[must_use]
+    pub const fn calendar_only(calendar: DirectPublicationCalendarDay) -> Self {
+        Self {
+            calendar,
+            precipitation_m: 0.0,
+            effective_temperature_c: 0.0,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DirectPublicationRunMetadata {
     pub run_name: String,
@@ -2056,10 +2074,24 @@ impl DirectFrameExecutor {
         metadata: DirectPublicationRunMetadata,
         calendar_days: &[DirectPublicationCalendarDay],
     ) -> Result<DirectPublicationExecution, DirectRuntimeError> {
-        if calendar_days.len() != frame.identity.day_count {
+        let day_inputs = calendar_days
+            .iter()
+            .copied()
+            .map(DirectPublicationDayInput::calendar_only)
+            .collect::<Vec<_>>();
+        self.run_publication_capture_with_day_inputs(frame, metadata, &day_inputs)
+    }
+
+    pub fn run_publication_capture_with_day_inputs(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        day_inputs: &[DirectPublicationDayInput],
+    ) -> Result<DirectPublicationExecution, DirectRuntimeError> {
+        if day_inputs.len() != frame.identity.day_count {
             return Err(DirectRuntimeError::CalendarDayCountMismatch {
                 identity_day_count: frame.identity.day_count,
-                calendar_day_count: calendar_days.len(),
+                calendar_day_count: day_inputs.len(),
             });
         }
         DIRECT_AUDIT.record_publication_capture_run();
@@ -2086,9 +2118,10 @@ impl DirectFrameExecutor {
             transfer_span_report.compatibility_edge_invocation_count,
         );
 
-        for (day_index, calendar_day) in calendar_days.iter().copied().enumerate() {
+        for (day_index, day_input) in day_inputs.iter().copied().enumerate() {
             for lane_index in 0..frame.identity.lane_count {
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
+                Self::apply_publication_day_input(&mut day_frame, day_input)?;
                 Self::run_day_spans(&mut day_frame, &mut counters)?;
                 for phase in phase_plan {
                     let view = day_frame.phase_view(phase);
@@ -2104,7 +2137,7 @@ impl DirectFrameExecutor {
                             lane_index,
                             lane_count: frame.lanes.len(),
                         })?;
-                publication_frame.push_day_row(&day_frame, calendar_day, lane)?;
+                publication_frame.push_day_row(&day_frame, day_input.calendar, lane)?;
                 frame.commit_day_frame(&day_frame)?;
                 counters.record_day_frame_commit();
             }
@@ -2131,6 +2164,24 @@ impl DirectFrameExecutor {
             },
             publication_frame,
         })
+    }
+
+    fn apply_publication_day_input(
+        day_frame: &mut DirectDayFrame,
+        day_input: DirectPublicationDayInput,
+    ) -> Result<(), DirectRuntimeError> {
+        validate_nonnegative_direct_m(
+            "publication_input.precipitation_m",
+            day_input.precipitation_m,
+        )?;
+        validate_finite(
+            "publication_input.effective_temperature_c",
+            day_input.effective_temperature_c,
+        )?;
+        day_frame.forcing.precipitation_m = day_input.precipitation_m;
+        day_frame.forcing.effective_temperature_c = day_input.effective_temperature_c;
+        day_frame.liquid_input_inputs.liquid_input_handoff_m = day_input.precipitation_m;
+        Ok(())
     }
 
     #[must_use]

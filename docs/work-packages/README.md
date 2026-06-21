@@ -13,6 +13,18 @@
 
 State as of `2026-06-21`:
 
+- `20260621-r6e-direct-publication-cutover-iterative-defect-closure-001/` is
+  executed-held at
+  `HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH`. It reproduced the R6D
+  fail-closed cutover state, split the direct-publication helper block out of
+  the over-3000-line runner file, resolved production direct-runtime
+  input-binding for parsed climate by building retained cutover publication
+  through direct capture, and moved the first blocker to HBP direct process
+  parity. Complete R6 closure still requires real
+  `DirectPublicationFrameCutover`: HBP byte identity, WAT/PASS Arrow
+  row/schema/metadata parity, loss JSON identity, manifest provenance/checksum
+  parity, anti-alias fixtures, independent reconstruction, no compatibility
+  authority, successful direct output writes, and default-disabled isolation.
 - `20260621-r6d-production-direct-publication-producer-retention-001/` is
   executed-held at
   `HOLD-R6D-PARITY-GRADE-PUBLICATION-PRODUCERS-ABSENT`. It lifted the R6C
@@ -52,6 +64,17 @@ State as of `2026-06-21`:
 
 State as of `2026-06-21`:
 
+- R6E (`20260621-r6e-direct-publication-cutover-iterative-defect-closure-001/`)
+  is executed-held with final disposition
+  `HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH`. The package reproduced the
+  cutover failure, preserved fail-closed no-output behavior, moved
+  direct-publication helpers into `04_direct_publication.rs`, reduced
+  `00_runner_intake_and_lane_setup.rs` to `2787` lines, added typed
+  `DirectPublicationDayInput` binding for parsed climate, and changed retained
+  cutover publication to a full direct executor capture. It did not complete R6
+  direct publication cutover; the next package must close contract-backed HBP
+  direct process parity before WAT/PASS/loss/manifest parity work can honestly
+  resume.
 - R6D (`20260621-r6d-production-direct-publication-producer-retention-001/`) is
   executed-held with final disposition
   `HOLD-R6D-PARITY-GRADE-PUBLICATION-PRODUCERS-ABSENT`. The package added

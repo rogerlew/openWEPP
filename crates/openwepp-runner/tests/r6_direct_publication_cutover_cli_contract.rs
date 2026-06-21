@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 #[test]
-fn r6_direct_publication_cutover_cli_flag_fails_closed_before_outputs() {
+fn r6_direct_publication_cutover_cli_flag_reaches_direct_binding_then_fails_hbp_parity() {
     let source_fixture_dir = fixture_path("hillslope_run_dir");
     let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, "r6_cli_cutover_candidate");
     let output_dir = temp_run_dir.join("output");
@@ -29,8 +29,12 @@ fn r6_direct_publication_cutover_cli_flag_fails_closed_before_outputs() {
         "unexpected stderr: {stderr}"
     );
     assert!(
-        stderr.contains("HOLD-R6D-PARITY-GRADE-PUBLICATION-PRODUCERS-ABSENT"),
+        stderr.contains("HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH"),
         "unexpected stderr: {stderr}"
+    );
+    assert!(
+        !stderr.contains("HOLD-R6E-PRODUCTION-DIRECT-RUNTIME-INPUT-BINDING-ABSENT"),
+        "input binding blocker should be cleared: {stderr}"
     );
 
     for output_name in [

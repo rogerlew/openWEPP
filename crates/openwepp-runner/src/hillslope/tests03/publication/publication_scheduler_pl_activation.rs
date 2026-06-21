@@ -78,6 +78,7 @@ use super::super::*;
             day_of_month: 2,
             julian_day: 153,
             precipitation_mm: 0.0,
+            effective_temperature_c: 0.0,
         };
         let symbol_registry =
             SymbolRegistry::from_symbols(Vec::<BoundarySymbol>::new()).expect("registry builds");

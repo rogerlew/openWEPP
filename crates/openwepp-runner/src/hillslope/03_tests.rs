@@ -451,6 +451,7 @@ mod tests {
             day_of_month: 1,
             julian_day: 1,
             precipitation_mm: 4.0,
+            effective_temperature_c: 2.0,
         }
     }
 
@@ -686,7 +687,7 @@ mod tests {
     }
 
     #[test]
-    fn r6d_cutover_candidate_fails_closed_after_retained_direct_publication() {
+    fn r6e_cutover_candidate_reaches_direct_input_binding_then_fails_hbp_parity() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -718,14 +719,24 @@ mod tests {
             "unexpected error: {message}"
         );
         assert!(
-            message.contains("HOLD-R6D-PARITY-GRADE-PUBLICATION-PRODUCERS-ABSENT"),
+            message.contains("HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH"),
             "unexpected error: {message}"
         );
+        assert!(
+            !message.contains("HOLD-R6E-PRODUCTION-DIRECT-RUNTIME-INPUT-BINDING-ABSENT"),
+            "input binding blocker should be cleared: {message}"
+        );
         let audit = direct_runtime_audit_snapshot();
-        assert_eq!(audit.run_frame_constructions, 0);
-        assert_eq!(audit.executor_constructions, 0);
+        assert_eq!(audit.run_frame_constructions, 1);
+        assert_eq!(audit.executor_constructions, 1);
         assert_eq!(audit.skeleton_runs, 0);
-        assert_eq!(audit.publication_capture_runs, 0);
+        assert_eq!(audit.publication_capture_runs, 1);
+        assert!(audit.day_frame_constructions > 0);
+        assert_eq!(audit.day_frame_constructions, audit.day_frame_commits);
+        assert!(audit.direct_compute_operations > 0);
+        assert!(audit.direct_state_mutations > 0);
+        assert!(audit.downstream_operand_productions > 0);
+        assert!(audit.shadow_projections > 0);
         assert_eq!(audit.compatibility_edge_invocations, 0);
         for output_name in [
             "H5.hbp",

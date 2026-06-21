@@ -2180,6 +2180,7 @@ struct ClimateDayProjection {
     day_of_month: i32,
     julian_day: u16,
     precipitation_mm: f64,
+    effective_temperature_c: f64,
 }
 
 #[derive(Debug, Clone)]
@@ -2201,6 +2202,7 @@ fn climate_day_projection(
                 day_of_month: day.day,
                 julian_day,
                 precipitation_mm: (day.prcp * 1_000.0).max(0.0),
+                effective_temperature_c: (day.tmax + day.tmin) * 0.5,
             })
         }
         ClimateDailyRecord::Breakpoint(day) => {
@@ -2215,6 +2217,7 @@ fn climate_day_projection(
                 day_of_month: day.day,
                 julian_day,
                 precipitation_mm: prcp_mm,
+                effective_temperature_c: (day.tmax + day.tmin) * 0.5,
             })
         }
     }
