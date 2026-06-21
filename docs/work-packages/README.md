@@ -13,13 +13,31 @@
 
 State as of `2026-06-20`:
 
-- None. Next R5 work is R5D direct annual/perennial growth transition
+- None. Next R5 work is R5E full 14-phase direct endpoint readiness
   promotion from `r5-burndown-execplan.md`.
 
 ## Current roadmap execution log
 
 State as of `2026-06-20`:
 
+- R5D is complete with verdict
+  `COMPLETE-R5D-GROWTH-TRANSITION-DIRECT-PHASES`. The package promoted direct
+  `AnnualGrowthTransition` and `PerennialGrowthTransition` executor calls,
+  adding typed inputs, direct compute, direct state mutation, downstream
+  operands, and shadow projection for both phases. The direct growth state
+  covers cumulative GDD, biomass, canopy cover, LAI, root mass, root depth,
+  harvest index, climate/stress inputs, and legacy `gddmax` sentinel
+  resolution. R5D also added an R4N direct-runtime guard so ET/root uptake can
+  fail closed when required growth context is absent. Public outputs remain
+  compatibility-authoritative: no WB13 ET, WAT plant metadata, PASS, loss,
+  manifest, scheduler, runner API, default activation, or endpoint cutover
+  occurred. Full Rust gates passed. Final default-disabled H2637 reps were
+  `647.54 s`, `647.93 s`, and `644.88 s` (median `647.54 s`, threshold
+  `<= 676.67 s`) with protected output comparison passing through HBP/WAT byte
+  identity, PASS DuckDB row equivalence, and run-name-only normalized loss/plot
+  differences. Package:
+  `20260620-r5d-growth-transition-direct-phases-001/`. Pushed commit:
+  `2fbd3802`.
 - R5C is complete with verdict
   `COMPLETE-R5C-DECOMPOSITION-RESIDUE-DIRECT-TRANSITIONS`. The package
   promoted direct `DecompositionTransition` and `ResiduePartitionTransition`
@@ -28,8 +46,7 @@ State as of `2026-06-20`:
   the `SC-RESIDUE-001` PL17 tracked seed-pool update over typed active
   decomposition context, validates missing/ambiguous context and invalid
   residue/fraction/rate domains as typed hard failures, and projects typed
-  residue partition operands without public-output cutover. Annual and
-  perennial growth remain explicit `Hold` phases for R5D. Full Rust gates
+  residue partition operands without public-output cutover. Full Rust gates
   passed. Final default-disabled H2637 reps were `639.05 s`, `646.33 s`, and
   `643.96 s` (median `643.96 s`, threshold `<= 676.67 s`) with protected
   output comparison passing through HBP/WAT byte identity, PASS DuckDB row

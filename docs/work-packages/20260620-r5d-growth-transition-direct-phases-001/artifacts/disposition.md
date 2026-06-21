@@ -1,6 +1,6 @@
 # Disposition
 
-Status: complete. Package commit pending final commit/push.
+Status: complete; pushed.
 
 Final verdict: `COMPLETE-R5D-GROWTH-TRANSITION-DIRECT-PHASES`.
 
@@ -27,3 +27,5 @@ endpoint cutover occurred.
 |---|---|---|---|
 | Direct runtime central file remains above 2000 lines. | Review A | accepted | Existing WARN file; new R5D implementation/tests are split out and no touched non-exempt file is >=3000 lines. |
 | Active slot resolution is typed direct-frame input rather than scheduler symbol import. | Review B | accepted | R5D closes direct phase ownership and fail-closed context validation; public/scheduler feed cutover remains outside this package. |
+
+Pushed commit: `2fbd3802`.

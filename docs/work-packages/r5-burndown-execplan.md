@@ -55,7 +55,11 @@ grouped package starts.
   `20260620-r5c-decomposition-residue-direct-transitions-001/`; pushed
   commit `efdf6710`; branch `main`; verdict
   `COMPLETE-R5C-DECOMPOSITION-RESIDUE-DIRECT-TRANSITIONS`.
-- [ ] R5D direct annual and perennial growth transitions.
+- [x] R5D direct annual and perennial growth transitions - complete
+  2026-06-20; package
+  `20260620-r5d-growth-transition-direct-phases-001/`; pushed commit
+  `2fbd3802`; branch `main`; verdict
+  `COMPLETE-R5D-GROWTH-TRANSITION-DIRECT-PHASES`.
 - [ ] R5E full 14-phase direct endpoint readiness and R5 closure.
 
 When closing any unchecked row, replace it with the completion date, package
@@ -72,8 +76,8 @@ The 14 canonical phases are fixed by `HillslopePhase::ORDERED` and
 | `StorageBounds` | not direct-owned | R5B ports typed storage/layer/domain bound enforcement |
 | `DecompositionTransition` | compatibility request/context path | R5C ports direct decomposition transition |
 | `ResiduePartitionTransition` | compatibility request/context path | R5C ports direct residue partition transition |
-| `AnnualGrowthTransition` | compatibility request/context path | R5D ports direct annual growth transition |
-| `PerennialGrowthTransition` | compatibility request/context path | R5D ports direct perennial growth transition |
+| `AnnualGrowthTransition` | R5D direct compute | R5D complete |
+| `PerennialGrowthTransition` | R5D direct compute | R5D complete |
 | `PercolationDeepSeepage` | R4M direct compute | R5E folds into canonical 14-phase executor |
 | `Evapotranspiration` | R4N direct surface ET compute | R5E folds into canonical 14-phase executor |
 | `Drainage` | R4O direct subsurface compute | R5E folds into canonical 14-phase executor |

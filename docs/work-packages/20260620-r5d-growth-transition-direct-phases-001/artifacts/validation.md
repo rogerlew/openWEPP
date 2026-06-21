@@ -28,3 +28,5 @@
   - Result: PASS (`advisories ok, bans ok, licenses ok, sources ok`).
 - Ran: `markdown-doc lint --path docs/work-packages/20260620-r5d-growth-transition-direct-phases-001 --format json`
   - Result: PASS, 16 files scanned, 0 errors, 0 warnings.
+- Ran: `markdown-doc lint --path docs/ROADMAP.md --path docs/work-packages/README.md --path docs/work-packages/r5-burndown-execplan.md --path docs/work-packages/20260620-r5d-growth-transition-direct-phases-001 --format json`
+  - Result: PASS, 19 files scanned, 0 errors, 0 warnings.
