@@ -1,6 +1,6 @@
 # R6G - Direct WAT Producer Authority
 
-Status: scaffolded.
+Status: executed-held.
 
 Package type: Defect-Closure ExecPlan / R6 direct publication producer authority.
 
@@ -44,6 +44,19 @@ Terminal states:
 - `HOLD-R6G-<SPECIFIC-BOUNDARY>`: only allowed after field-level reduction,
   attempted or ruled-out in-scope corrections, dual review, and a new exact
   follow-on package.
+
+Actual terminal state:
+
+- `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT`: R6G reduced the R6F
+  direct WAT producer-authority gap for the inherited current fixture:
+  identity/profile fields no longer reduce, first-day ET/storage publication
+  matches, and residual-inclusive direct storage projection is covered. The
+  current-fixture HBP identity gate remains green, and the first WAT row is
+  bit-identical. Canonical multi-OFE WAT id authority and lane-dimensional day
+  inputs remain follow-up. The remaining WAT mismatch is reduced to day-2
+  `Es`, `Total-Soil`, and `SoilWaterTotal`; those fields depend on PMET
+  component inputs built before the prior direct day has committed carried
+  layer state.
 
 ## In Scope
 
@@ -114,8 +127,11 @@ authority is unavailable.
 - `artifacts/gate-results.md`
 - `artifacts/review_agent_a.md`
 - `artifacts/review_agent_b.md`
+- `artifacts/review-disposition.md`
 - `artifacts/verification_agent_a.md`
 - `artifacts/verification_agent_b.md`
+- `artifacts/line-count-governance.md`
+- `artifacts/worker-handoff.md`
 - `artifacts/disposition.md`
 
 ## Validation Gates
@@ -157,6 +173,8 @@ verification agents.
 ## Progress
 
 - [x] Scaffolded from R6F hold evidence.
-- [ ] Implement parsed-input typed producer binding.
-- [ ] Prove WAT parity without compatibility authority.
-- [ ] Update R6 blocker chain and handoff.
+- [x] Implement parsed-input typed producer binding.
+- [x] Prove current-fixture HBP identity and first WAT row parity without
+  compatibility authority.
+- [x] Reduce remaining WAT blocker to exact PMET day-state carry boundary.
+- [x] Update R6 blocker chain and handoff.

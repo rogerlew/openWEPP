@@ -385,6 +385,8 @@ impl DirectRunFrame {
                 .map(Into::into)
                 .collect();
         }
+        day_frame.evapotranspiration_compute_inputs.stage_state =
+            lane.evapotranspiration_stage_state;
         Ok(day_frame)
     }
 
@@ -597,6 +599,7 @@ pub struct DirectLaneFrame {
     pub transfer: DirectTransferBuffers,
     pub publication: DirectPublicationFrame,
     pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
+    pub evapotranspiration_stage_state: Option<DirectEvapotranspirationStageState>,
 }
 
 impl DirectLaneFrame {
@@ -620,6 +623,7 @@ impl DirectLaneFrame {
             transfer: DirectTransferBuffers::zero(),
             publication: DirectPublicationFrame::empty(),
             subsurface_layers: Vec::new(),
+            evapotranspiration_stage_state: None,
         })
     }
 
@@ -658,6 +662,8 @@ impl DirectLaneFrame {
             self.subsurface_layers
                 .clone_from(&day_frame.percolation.layer_state_after);
         }
+        self.evapotranspiration_stage_state =
+            day_frame.evapotranspiration_surface.stage_state_after;
         Ok(())
     }
 }
@@ -2247,13 +2253,31 @@ impl DirectFrameExecutor {
             day_frame.water.soil_water_m = initial_soil_water_m;
         }
         if let Some(percolation_inputs) = &day_input.percolation_inputs {
-            day_frame.percolation_inputs = percolation_inputs.clone();
+            let mut percolation_inputs = percolation_inputs.clone();
+            if percolation_inputs.layers.is_empty() {
+                percolation_inputs
+                    .layers
+                    .clone_from(&day_frame.percolation_inputs.layers);
+                percolation_inputs.soil_water_initial_m = day_frame.water.soil_water_m;
+            }
+            day_frame.percolation_inputs = percolation_inputs;
         }
         if let Some(subsurface_compute_inputs) = &day_input.subsurface_compute_inputs {
-            day_frame.subsurface_compute_inputs = subsurface_compute_inputs.clone();
+            let mut subsurface_compute_inputs = subsurface_compute_inputs.clone();
+            if subsurface_compute_inputs.layers.is_empty() {
+                subsurface_compute_inputs
+                    .layers
+                    .clone_from(&day_frame.subsurface_compute_inputs.layers);
+            }
+            day_frame.subsurface_compute_inputs = subsurface_compute_inputs;
         }
         if let Some(evapotranspiration_compute_inputs) = day_input.evapotranspiration_compute_inputs
         {
+            let mut evapotranspiration_compute_inputs = evapotranspiration_compute_inputs;
+            if evapotranspiration_compute_inputs.stage_state.is_none() {
+                evapotranspiration_compute_inputs.stage_state =
+                    day_frame.evapotranspiration_compute_inputs.stage_state;
+            }
             day_frame.evapotranspiration_compute_inputs = evapotranspiration_compute_inputs;
         }
         if let Some(hydrology_projection_inputs) = day_input.hydrology_projection_inputs {

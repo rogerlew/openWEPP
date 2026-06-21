@@ -12,9 +12,12 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
     build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
 };
 use openwepp_hillslope_orchestrator::{
-    DirectExecutorMode, DirectFrameExecutor, DirectPublicationCalendarDay,
+    DirectEvapotranspirationComputeInputs, DirectEvapotranspirationPmetInputs,
+    DirectEvapotranspirationStageState, DirectExecutorMode, DirectFrameExecutor,
+    DirectHydrologyProjectionInputs, DirectPercolationInputs, DirectPublicationCalendarDay,
     DirectPublicationDayInput, DirectPublicationExecution, DirectPublicationRunMetadata,
-    DirectRunFrame, DirectRunIdentity, DirectRunPublicationFrame, HillslopeDayFrame,
+    DirectRunFrame, DirectRunIdentity, DirectRunPublicationFrame, DirectSubsurfaceComputeInputs,
+    DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState, HillslopeDayFrame,
     HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
     OfeLanePersistentState, OfeLanePersistentStateSequence, OfeLaneSequenceExecutionReport,
     SchedulerOutcomeClass, TransferInput, TransferOutput, Wb11HydrologyKernel,
@@ -1737,11 +1740,16 @@ fn execute_hillslope_climate_days(
     let persistent_lane_active = persistent_lane_state.is_some();
     let hphys0245_trace_config = hphys0245_trace_config_from_env()?;
     let retained_direct_publication = build_retained_direct_publication_frame(
-        runtime_selection,
-        run_name,
-        output_hillslope_id,
-        &per_ofe_lane_areas_m2,
-        &climate_span,
+        &RetainedDirectPublicationRequest {
+            runtime_selection,
+            run_name,
+            output_hillslope_id,
+            execution_lane: lane_context.lane,
+            lane_areas_m2: &per_ofe_lane_areas_m2,
+            climate_request: &climate_request,
+            climate_span: &climate_span,
+            static_runtime_surface: &runtime_surface,
+        },
     )?;
     let context = ClimateExecutionContext {
         run_name,
@@ -2239,33 +2247,7 @@ fn require_direct_publication_cutover_gates(
         ));
     }
 
-    if inputs.runfile.output_config.wat.is_some() {
-        let compatibility_wat_rows = build_hillslope_wat_rows(&execution.wb13_rows)?;
-        if artifacts.wat_rows != compatibility_wat_rows {
-            let reduced_fields =
-                reduced_wat_mismatch_fields(&artifacts.wat_rows, &compatibility_wat_rows);
-            let reduced_fields_text = reduced_fields.join(",");
-            if r6f_wat_direct_process_producer_authority_gap(&reduced_fields) {
-                return Err(direct_publication_cutover_blocked(format!(
-                    "HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP \
-                     WAT row identity failed after HBP byte identity passed: \
-                     direct_rows={} compatibility_rows={} reduced_fields={reduced_fields_text}; \
-                     direct process input slots and layer carry exist, but production \
-                     runner still lacks a canonical parsed-input typed producer for \
-                     ET/storage/profile day state and must not source those operands \
-                     from compatibility WB13 rows or runtime surfaces",
-                    artifacts.wat_rows.len(),
-                    compatibility_wat_rows.len()
-                )));
-            }
-            return Err(direct_publication_cutover_blocked(format!(
-                "WAT row identity failed after HBP byte identity passed: \
-                 direct_rows={} compatibility_rows={} reduced_fields={reduced_fields_text}",
-                artifacts.wat_rows.len(),
-                compatibility_wat_rows.len()
-            )));
-        }
-    }
+    require_direct_publication_wat_cutover_gate(inputs, execution, artifacts)?;
 
     if inputs.runfile.output_config.pass_parquet.is_some()
         && artifacts.pass_projection_rows != execution.pass_rows
@@ -2280,6 +2262,58 @@ fn require_direct_publication_cutover_gates(
     Err(direct_publication_cutover_blocked(
         "manifest direct projection is not wired to the production manifest writer",
     ))
+}
+
+fn require_direct_publication_wat_cutover_gate(
+    inputs: &ParsedHillslopeRunInputs,
+    execution: &HillslopeClimateExecution,
+    artifacts: &DirectPublicationArtifacts,
+) -> Result<(), HillslopeCliError> {
+    if inputs.runfile.output_config.wat.is_none() {
+        return Ok(());
+    }
+    let compatibility_wat_rows = build_hillslope_wat_rows(&execution.wb13_rows)?;
+    if artifacts.wat_rows == compatibility_wat_rows {
+        return Ok(());
+    }
+    let reduced_fields =
+        reduced_wat_mismatch_fields(&artifacts.wat_rows, &compatibility_wat_rows);
+    let reduced_fields_text = reduced_fields.join(",");
+    if r6f_wat_direct_process_producer_authority_gap(&reduced_fields) {
+        return Err(direct_publication_cutover_blocked(format!(
+            "HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP \
+             WAT row identity failed after HBP byte identity passed: \
+             direct_rows={} compatibility_rows={} reduced_fields={reduced_fields_text}; \
+             direct process input slots and layer carry exist, but production runner still lacks \
+             a canonical parsed-input typed producer for ET/storage/profile day state and must \
+             not source those operands from compatibility WB13 rows or runtime surfaces",
+            artifacts.wat_rows.len(),
+            compatibility_wat_rows.len()
+        )));
+    }
+    if r6g_wat_pmet_day_state_carry_gap(
+        &artifacts.wat_rows,
+        &compatibility_wat_rows,
+        &reduced_fields,
+    ) {
+        return Err(direct_publication_cutover_blocked(format!(
+            "HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT \
+             WAT row identity failed after HBP byte identity and first-day WAT producer parity \
+             passed: direct_rows={} compatibility_rows={} reduced_fields={reduced_fields_text}; \
+             production direct publication now binds parsed WB11/WB17/WB18/WB19 typed inputs, \
+             but multi-day PMET component construction is still precomputed before prior direct \
+             day layer-state commits, so day-dependent Es and Total-Soil must not be sourced \
+             from compatibility WB13 rows or runtime surfaces",
+            artifacts.wat_rows.len(),
+            compatibility_wat_rows.len()
+        )));
+    }
+    Err(direct_publication_cutover_blocked(format!(
+        "WAT row identity failed after HBP byte identity passed: \
+         direct_rows={} compatibility_rows={} reduced_fields={reduced_fields_text}",
+        artifacts.wat_rows.len(),
+        compatibility_wat_rows.len()
+    )))
 }
 
 fn write_hillslope_direct_publication_optional_outputs(

@@ -39,6 +39,7 @@ struct HbpHeaderInput {
 }
 
 const WB13_DEEP_PERCOLATION_ROUNDOFF_TOLERANCE_M: f64 = 1.0e-11;
+const DIRECT_WAT_WEPP_ID: i32 = 1;
 
 #[derive(Clone, Copy)]
 struct Wb13OfePublicationContext<'a> {
@@ -779,22 +780,30 @@ fn build_hbp_output_from_direct_publication(
 fn build_hillslope_wat_rows_from_direct_publication(
     publication: &DirectRunPublicationFrame,
 ) -> Result<Vec<HillslopeWatRow>, HillslopeCliError> {
+    let simulation_start_year = publication
+        .first_day()
+        .ok_or_else(|| direct_publication_output_failure("missing first direct publication row"))?
+        .calendar
+        .year;
     publication
         .rows()
         .iter()
-        .map(build_hillslope_wat_row_from_direct_publication)
+        .map(|row| build_hillslope_wat_row_from_direct_publication(row, simulation_start_year))
         .collect()
 }
 
 fn build_hillslope_wat_row_from_direct_publication(
     row: &openwepp_hillslope_orchestrator::DirectPublicationDayRow,
+    simulation_start_year: i32,
 ) -> Result<HillslopeWatRow, HillslopeCliError> {
-    let wepp_id = direct_publication_u32_to_i32("wepp_id", row.hillslope_id)?;
     let ofe = direct_publication_u32_to_i16("ofe", row.ofe_id)?;
     Ok(HillslopeWatRow {
-        wepp_id,
+        wepp_id: DIRECT_WAT_WEPP_ID,
         ofe_id: ofe,
-        year: direct_publication_i32_to_i16("year", row.calendar.year)?,
+        year: direct_publication_i32_to_i16(
+            "year",
+            simulation_year_from_calendar_year(row.calendar.year, simulation_start_year)?,
+        )?,
         sim_day_index: row.sim_day_index,
         julian: direct_publication_u16_to_i16("julian", row.calendar.julian_day)?,
         month: row.calendar.month,

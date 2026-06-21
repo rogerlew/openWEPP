@@ -1,28 +1,40 @@
-fn build_retained_direct_publication_frame(
+struct RetainedDirectPublicationRequest<'a> {
     runtime_selection: HillslopeRuntimeSelection,
-    run_name: &str,
+    run_name: &'a str,
     output_hillslope_id: u32,
-    lane_areas_m2: &[f64],
-    climate_span: &ClimateRunSpanSummary,
+    execution_lane: ExecutionLane,
+    lane_areas_m2: &'a [f64],
+    climate_request: &'a HillslopeClimateRuntimeRequest,
+    climate_span: &'a ClimateRunSpanSummary,
+    static_runtime_surface: &'a HillslopeWritebackSurface,
+}
+
+fn build_retained_direct_publication_frame(
+    request: &RetainedDirectPublicationRequest<'_>,
 ) -> Result<Option<DirectPublicationExecution>, HillslopeCliError> {
-    if runtime_selection != HillslopeRuntimeSelection::DirectPublicationFrameCutover {
+    if request.runtime_selection != HillslopeRuntimeSelection::DirectPublicationFrameCutover {
         return Ok(None);
     }
     let identity = DirectRunIdentity::new(
-        u64::from(output_hillslope_id),
-        output_hillslope_id,
-        lane_areas_m2.len(),
-        climate_span.days.len(),
+        u64::from(request.output_hillslope_id),
+        request.output_hillslope_id,
+        request.lane_areas_m2.len(),
+        request.climate_span.days.len(),
     )
     .map_err(|source| direct_publication_runtime_error(&source))?;
     let mut frame = DirectRunFrame::skeleton(identity)
         .map_err(|source| direct_publication_runtime_error(&source))?;
-    seed_direct_publication_lane_area_geometry(&mut frame, lane_areas_m2)?;
-    let day_inputs = direct_publication_day_inputs(climate_span)?;
+    seed_direct_publication_lane_area_geometry(&mut frame, request.lane_areas_m2)?;
+    let day_inputs = direct_publication_day_inputs(
+        request.climate_request,
+        request.climate_span,
+        request.static_runtime_surface,
+        request.execution_lane,
+    )?;
     let metadata = DirectPublicationRunMetadata {
-        run_name: run_name.to_string(),
-        runtime_selection: runtime_selection.as_str().to_string(),
-        output_policy: direct_publication_output_policy(runtime_selection).to_string(),
+        run_name: request.run_name.to_string(),
+        runtime_selection: request.runtime_selection.as_str().to_string(),
+        output_policy: direct_publication_output_policy(request.runtime_selection).to_string(),
     };
     DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
         .run_publication_capture_with_day_inputs(&mut frame, metadata, &day_inputs)
@@ -314,6 +326,37 @@ fn r6f_wat_direct_process_producer_authority_gap(fields: &[&str]) -> bool {
     fields.len() == expected.len() && expected.iter().all(|field| fields.contains(field))
 }
 
+fn r6g_wat_direct_et_storage_producer_gap(fields: &[&str]) -> bool {
+    let expected = ["Es", "Total-Soil", "SoilWaterTotal"];
+    fields.len() == expected.len() && expected.iter().all(|field| fields.contains(field))
+}
+
+fn r6g_wat_pmet_day_state_carry_gap(
+    direct_rows: &[HillslopeWatRow],
+    compatibility_rows: &[HillslopeWatRow],
+    fields: &[&str],
+) -> bool {
+    if !r6g_wat_direct_et_storage_producer_gap(fields)
+        || direct_rows.len() != compatibility_rows.len()
+        || direct_rows.len() < 2
+    {
+        return false;
+    }
+    if direct_rows.first() != compatibility_rows.first() {
+        return false;
+    }
+    direct_rows
+        .iter()
+        .zip(compatibility_rows)
+        .skip(1)
+        .any(|(direct, compatibility)| {
+            direct.es.to_bits() != compatibility.es.to_bits()
+                && direct.total_soil_water.to_bits() != compatibility.total_soil_water.to_bits()
+                && direct.soil_water_total.map(f64::to_bits)
+                    != compatibility.soil_water_total.map(f64::to_bits)
+        })
+}
+
 fn wat_mismatch_field_order() -> &'static [&'static str] {
     &[
         "row_count",
@@ -481,10 +524,16 @@ fn seed_direct_publication_lane_area_geometry(
 }
 
 fn direct_publication_day_inputs(
+    climate_request: &HillslopeClimateRuntimeRequest,
     climate_span: &ClimateRunSpanSummary,
+    static_runtime_surface: &HillslopeWritebackSurface,
+    execution_lane: ExecutionLane,
 ) -> Result<Vec<DirectPublicationDayInput>, HillslopeCliError> {
+    let profile_inputs = direct_publication_profile_inputs(static_runtime_surface)?;
+    let mut direct_seed_surface = static_runtime_surface.clone();
+    let mut previous_climate_symbols = Vec::new();
     let mut day_inputs = Vec::with_capacity(climate_span.days.len());
-    for day in &climate_span.days {
+    for (day_index, day) in climate_span.days.iter().enumerate() {
         if !day.precipitation_mm.is_finite() || day.precipitation_mm < 0.0 {
             return Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_publication_frame",
@@ -503,13 +552,379 @@ fn direct_publication_day_inputs(
                 ),
             });
         }
+        let mut climate_surface =
+            build_day_climate_surface(climate_request, day_index, &direct_seed_surface, day)?;
+        remove_stale_climate_symbols(&mut direct_seed_surface, &previous_climate_symbols);
+        previous_climate_symbols.clear();
+        previous_climate_symbols.extend(climate_surface.state_surface.keys().cloned());
+        direct_seed_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
+            std::mem::take(&mut direct_seed_surface),
+            std::mem::take(&mut climate_surface),
+        );
+        seed_wb11_runtime_surface_inputs(&mut direct_seed_surface, execution_lane)?;
+
+        let precipitation_m = day.precipitation_mm / 1_000.0;
         let mut day_input =
             DirectPublicationDayInput::calendar_only(direct_publication_calendar_day(day)?);
-        day_input.precipitation_m = day.precipitation_mm / 1_000.0;
+        day_input.precipitation_m = precipitation_m;
         day_input.effective_temperature_c = day.effective_temperature_c;
+        let mut percolation_inputs =
+            direct_publication_percolation_inputs(&direct_seed_surface, precipitation_m)?;
+        let mut subsurface_inputs =
+            direct_publication_subsurface_inputs(&direct_seed_surface)?;
+        if day_index == 0 {
+            day_input.initial_soil_water_m = Some(require_runtime_surface_scalar(
+                &direct_seed_surface,
+                "wb11_soil_water",
+            )?);
+        } else {
+            percolation_inputs.layers.clear();
+            subsurface_inputs.layers.clear();
+        }
+        day_input.percolation_inputs = Some(percolation_inputs);
+        day_input.subsurface_compute_inputs = Some(subsurface_inputs);
+        day_input.evapotranspiration_compute_inputs =
+            Some(direct_publication_evapotranspiration_inputs(
+                &direct_seed_surface,
+                day_index == 0,
+            )?);
+        day_input.hydrology_projection_inputs = Some(profile_inputs);
         day_inputs.push(day_input);
     }
     Ok(day_inputs)
+}
+
+fn direct_publication_percolation_inputs(
+    runtime_surface: &HillslopeWritebackSurface,
+    _precipitation_m: f64,
+) -> Result<DirectPercolationInputs, HillslopeCliError> {
+    let layers = direct_publication_layer_states(runtime_surface)?;
+    let soil_water_initial_m = require_runtime_surface_scalar(runtime_surface, "wb11_soil_water")?;
+    let lane_substeps = scalar_to_usize(
+        "wb18_perc_lane_substeps",
+        require_runtime_surface_scalar(runtime_surface, "wb18_perc_lane_substeps")?,
+    )?;
+    Ok(DirectPercolationInputs {
+        soil_water_initial_m,
+        reconcile_legacy_soil_water_from_layers: false,
+        same_pass_infiltration_m: 0.0,
+        same_pass_infiltration_lineage: false,
+        tillage_depth_m: 0.0,
+        lane_substeps,
+        restrictive_layer_enabled: false,
+        restrictive_layer_conductivity_m_s: 0.0,
+        restrictive_layer_thickness_m: 0.0,
+        layers,
+    })
+}
+
+fn direct_publication_subsurface_inputs(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<DirectSubsurfaceComputeInputs, HillslopeCliError> {
+    let layer_states = direct_publication_layer_states(runtime_surface)?;
+    let soil_depth_m = layer_states.iter().map(|layer| layer.depth_m).sum::<f64>();
+    let lane_substeps = scalar_to_usize(
+        "wb19_lateral_drain_lane_substeps",
+        require_runtime_surface_scalar(runtime_surface, "wb19_lateral_drain_lane_substeps")?,
+    )?;
+    let drain_enabled = direct_publication_enabled_flag(runtime_surface, "wb19_drain_enabled")?;
+    let drain_depth_m = if drain_enabled {
+        require_runtime_surface_scalar(runtime_surface, "wb19_drain_depth")?
+    } else {
+        0.5
+    };
+    let drain_spacing_m = if drain_enabled {
+        require_runtime_surface_scalar(runtime_surface, "wb19_drain_spacing")?
+    } else {
+        1.0
+    };
+    let drain_diameter_m = if drain_enabled {
+        require_runtime_surface_scalar(runtime_surface, "wb19_drain_diameter")?
+    } else {
+        0.1
+    };
+    Ok(DirectSubsurfaceComputeInputs {
+        avg_slope: require_runtime_surface_scalar(runtime_surface, "avgslp")?,
+        slope_length_m: require_runtime_surface_scalar(runtime_surface, "slplen")?,
+        lateral_anisotropy_ratio: require_runtime_surface_scalar(
+            runtime_surface,
+            "wb19_lateral_anisotropy_ratio",
+        )?,
+        soil_depth_m,
+        solwpv_mode: scalar_to_i32(
+            "solwpv",
+            require_runtime_surface_scalar(runtime_surface, "solwpv")?,
+        )?,
+        mofe_hourly_carry_arrays_enabled: lane_substeps == 24,
+        lane_substeps,
+        drainage_capacity_m: 0.0,
+        drain_enabled,
+        drain_depth_m,
+        drain_spacing_m,
+        drain_diameter_m,
+        layers: layer_states.into_iter().map(Into::into).collect(),
+    })
+}
+
+fn direct_publication_layer_states(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Vec<DirectSubsurfaceLayerState>, HillslopeCliError> {
+    let nsl_symbol = if runtime_surface_symbol_value(runtime_surface, "wb11_nsl").is_some() {
+        "wb11_nsl"
+    } else {
+        "nsl"
+    };
+    let nsl = scalar_to_usize(
+        nsl_symbol,
+        require_runtime_surface_scalar(runtime_surface, nsl_symbol)?,
+    )?;
+    let mut layers = Vec::with_capacity(nsl);
+    for layer_index in 1..=nsl {
+        layers.push(direct_publication_layer_state(
+            runtime_surface,
+            layer_index,
+        )?);
+    }
+    Ok(layers)
+}
+
+fn direct_publication_layer_state(
+    runtime_surface: &HillslopeWritebackSurface,
+    layer_index: usize,
+) -> Result<DirectSubsurfaceLayerState, HillslopeCliError> {
+    let theta_m = require_runtime_surface_scalar(
+        runtime_surface,
+        format!("wb18_perc_theta_{layer_index:04}").as_str(),
+    )?;
+    let field_capacity_m = require_runtime_surface_scalar(
+        runtime_surface,
+        format!("wb18_perc_fc_{layer_index:04}").as_str(),
+    )?;
+    let upper_limit_m = require_runtime_surface_scalar(
+        runtime_surface,
+        format!("wb18_perc_ul_{layer_index:04}").as_str(),
+    )?;
+    let conductivity_m_s = require_runtime_surface_scalar(
+        runtime_surface,
+        format!("wb18_perc_ssc_{layer_index:04}").as_str(),
+    )?;
+    let depth_m = require_runtime_surface_scalar(
+        runtime_surface,
+        format!("wb19_dg_{layer_index:04}").as_str(),
+    )?;
+    let residual_theta = require_runtime_surface_scalar(
+        runtime_surface,
+        format!("wb19_thetdr_{layer_index:04}").as_str(),
+    )?;
+    let frozen_depth_m = runtime_surface_symbol_value(
+        runtime_surface,
+        format!("wb18_perc_frozen_depth_{layer_index:04}").as_str(),
+    )
+    .unwrap_or(0.0);
+    let frozen_water_m = runtime_surface_symbol_value(
+        runtime_surface,
+        format!("wb18_perc_frzw_{layer_index:04}").as_str(),
+    )
+    .unwrap_or(0.0);
+    let porosity = require_runtime_surface_scalar(
+        runtime_surface,
+        format!("wb19_por_{layer_index:04}").as_str(),
+    )?;
+    let field_capacity_theta = require_runtime_surface_scalar(
+        runtime_surface,
+        format!("wb19_thetfc_{layer_index:04}").as_str(),
+    )?;
+    let coca = require_preferred_or_legacy_runtime_surface_scalar(
+        runtime_surface,
+        format!("wb19_coca_{layer_index:04}").as_str(),
+        format!("coca_{layer_index:04}").as_str(),
+    )?;
+    Ok(DirectSubsurfaceLayerState::from(
+        DirectSubsurfaceLayerInputs {
+            theta_m,
+            field_capacity_m,
+            upper_limit_m,
+            conductivity_m_s,
+            depth_m,
+            residual_theta,
+            frozen_depth_m,
+            frozen_water_m,
+            porosity,
+            field_capacity_theta,
+            coca,
+            lateral_conductivity_m_s: conductivity_m_s,
+        },
+    ))
+}
+
+fn direct_publication_evapotranspiration_inputs(
+    runtime_surface: &HillslopeWritebackSurface,
+    include_stage_state: bool,
+) -> Result<DirectEvapotranspirationComputeInputs, HillslopeCliError> {
+    let pmet = if runtime_surface_symbol_value(runtime_surface, "wb11_et_seed_branch_evappm")
+        .is_some_and(|value| value >= 0.5)
+    {
+        Some(DirectEvapotranspirationPmetInputs {
+            soil_evaporation_m: require_runtime_surface_scalar(runtime_surface, "pmet.es_m")?,
+            plant_transpiration_m: require_runtime_surface_scalar(runtime_surface, "pmet.ep_m")?,
+            soil_evaporation_storage_return_m: runtime_surface_symbol_value(
+                runtime_surface,
+                "pmet.es_storage_return_m",
+            )
+            .unwrap_or(0.0),
+        })
+    } else {
+        None
+    };
+    let stage_state = if pmet.is_some() || !include_stage_state {
+        None
+    } else {
+        direct_publication_stage_state(runtime_surface)?
+    };
+    Ok(DirectEvapotranspirationComputeInputs {
+        et_demand_m: require_runtime_surface_scalar(runtime_surface, "wb11_et_demand")?,
+        leaf_area_index: require_runtime_surface_scalar(runtime_surface, "lai")?,
+        canopy_cover_fraction: require_runtime_surface_scalar(runtime_surface, "cancov")?,
+        residue_interception_m: require_runtime_surface_scalar(
+            runtime_surface,
+            "wb17_residue_interception",
+        )?,
+        same_pass_infiltration_m: 0.0,
+        outside_water_depth_m: 0.0,
+        root_depth_m: require_runtime_surface_scalar(runtime_surface, "rtd")?,
+        plant_tolerance: require_preferred_or_legacy_runtime_surface_scalar(
+            runtime_surface,
+            "swu_effective_pltol",
+            "pltol",
+        )?,
+        growth_context_required: false,
+        stage_state,
+        pmet,
+    })
+}
+
+fn direct_publication_stage_state(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Option<DirectEvapotranspirationStageState>, HillslopeCliError> {
+    let s1 = runtime_surface_symbol_value(runtime_surface, "s1");
+    let s2 = runtime_surface_symbol_value(runtime_surface, "s2");
+    let tu = runtime_surface_symbol_value(runtime_surface, "tu");
+    let tv = runtime_surface_symbol_value(runtime_surface, "tv");
+    match (s1, s2, tu, tv) {
+        (None, None, None, None) => Ok(None),
+        (Some(s1_m), Some(s2_m), Some(threshold_m), Some(counter)) => {
+            Ok(Some(DirectEvapotranspirationStageState {
+                s1_m,
+                s2_m,
+                threshold_m,
+                counter,
+            }))
+        }
+        _ => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} direct publication WB17 stage state requires complete s1/s2/tu/tv symbols"
+            ),
+        }),
+    }
+}
+
+fn direct_publication_enabled_flag(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &'static str,
+) -> Result<bool, HillslopeCliError> {
+    let value = require_runtime_surface_scalar(runtime_surface, symbol)?;
+    if value.abs() <= 1.0e-12 {
+        Ok(false)
+    } else if (value - 1.0).abs() <= 1.0e-12 {
+        Ok(true)
+    } else {
+        Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!("{SIMOUT_GUARD_ID} {symbol} must be 0 or 1, observed {value}"),
+        })
+    }
+}
+
+fn require_preferred_or_legacy_runtime_surface_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    preferred_symbol: &str,
+    legacy_symbol: &str,
+) -> Result<f64, HillslopeCliError> {
+    if let Some(value) = runtime_surface_symbol_value(runtime_surface, preferred_symbol) {
+        return Ok(value);
+    }
+    require_runtime_surface_scalar(runtime_surface, legacy_symbol)
+}
+
+fn direct_publication_profile_inputs(
+    static_runtime_surface: &HillslopeWritebackSurface,
+) -> Result<DirectHydrologyProjectionInputs, HillslopeCliError> {
+    let profile_depth_m = direct_publication_static_mm_to_m(
+        static_runtime_surface,
+        "wb13_profile_depth_mm",
+        true,
+    )?;
+    let profile_porosity_cap_m = direct_publication_static_mm_to_m(
+        static_runtime_surface,
+        "wb13_profile_porosity_cap_mm",
+        false,
+    )?;
+    let profile_field_capacity_m =
+        derive_profile_fc_store_from_authoritative_layers(static_runtime_surface)? / 1_000.0;
+    let profile_wilting_point_m = direct_publication_static_mm_to_m(
+        static_runtime_surface,
+        "wb13_profile_wp_store_mm",
+        false,
+    )?;
+    if profile_porosity_cap_m < profile_field_capacity_m {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} parsed profile porosity cap must be >= field capacity store"
+            ),
+        });
+    }
+    if profile_field_capacity_m < profile_wilting_point_m {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} parsed profile field capacity store must be >= wilting point store"
+            ),
+        });
+    }
+    Ok(DirectHydrologyProjectionInputs {
+        aggregate_storage_tolerance_m: 1.0e-9,
+        profile_depth_m: Some(profile_depth_m),
+        profile_porosity_cap_m: Some(profile_porosity_cap_m),
+        profile_field_capacity_m: Some(profile_field_capacity_m),
+        profile_wilting_point_m: Some(profile_wilting_point_m),
+        ..DirectHydrologyProjectionInputs::zero()
+    })
+}
+
+fn direct_publication_static_mm_to_m(
+    static_runtime_surface: &HillslopeWritebackSurface,
+    symbol: &'static str,
+    require_positive: bool,
+) -> Result<f64, HillslopeCliError> {
+    let value_mm = require_runtime_surface_scalar(static_runtime_surface, symbol)?;
+    if !value_mm.is_finite()
+        || if require_positive {
+            value_mm <= 0.0
+        } else {
+            value_mm < 0.0
+        }
+    {
+        let comparator = if require_positive { "> 0.0" } else { ">= 0.0" };
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} parsed direct publication profile symbol {symbol} must be finite and {comparator}, observed {value_mm}"
+            ),
+        });
+    }
+    Ok(value_mm / 1_000.0)
 }
 
 fn direct_publication_calendar_days(

@@ -523,7 +523,8 @@ fn aggregate_storage_from_layers(
             "hydrology_projection.layer.upper_limit_m",
             layer.upper_limit_m,
         )?;
-        liquid_storage_m += layer.theta_m;
+        let unfrozen_depth_m = (layer.depth_m - layer.frozen_depth_m).max(0.0);
+        liquid_storage_m += layer.theta_m + layer.residual_theta * unfrozen_depth_m;
         validate_finite(
             "hydrology_projection.aggregate_storage_from_layers_m",
             liquid_storage_m,

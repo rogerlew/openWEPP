@@ -71,6 +71,48 @@ fn r4pqz_projection_recomputes_storage_from_final_layers_and_projects_direct_ope
 }
 
 #[test]
+fn r4pqz_projection_includes_residual_water_in_layer_storage() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut day = projectable_day();
+    let layers = &mut day
+        .evapotranspiration_compute_shadow_projection
+        .as_mut()
+        .expect("evapotranspiration projection exists")
+        .layer_state_after_root_uptake;
+    layers[0].residual_theta = 0.01;
+    layers[1].residual_theta = 0.02;
+    let residual_storage_m = 0.01 * (layers[0].depth_m - layers[0].frozen_depth_m)
+        + 0.02 * (layers[1].depth_m - layers[1].frozen_depth_m);
+    day.storage_shadow_projection
+        .as_mut()
+        .expect("storage projection exists")
+        .storage_reconciled_m += residual_storage_m;
+
+    day.run_r4pqz_hydrology_projection_span()
+        .expect("residual-water storage projection should execute");
+
+    let projection = day
+        .hydrology_projection_shadow_projection
+        .expect("projection shadow should exist");
+    assert_eq!(
+        projection.aggregate_storage_from_layers_m.to_bits(),
+        (0.75 + residual_storage_m).to_bits()
+    );
+    assert_eq!(
+        projection.total_soil_m.to_bits(),
+        (0.859_375 + residual_storage_m).to_bits()
+    );
+    assert_eq!(
+        projection.soil_water_total_m.to_bits(),
+        (0.859_375 + residual_storage_m).to_bits()
+    );
+}
+
+#[test]
 fn r4pqz_projection_is_shadow_only_and_anti_aliases_publication_values() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()

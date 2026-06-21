@@ -13,12 +13,17 @@
 
 State as of `2026-06-21`:
 
-- `20260621-r6g-direct-wat-producer-authority-001/` is scaffolded as the next
-  R6 defect-closure ExecPlan. It starts from
-  `HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP` and must bind WAT
-  `wepp_id`, simulation `year`, `Es`, storage, and profile fields from parsed
-  typed inputs and direct runtime state, not compatibility WB13 rows or runtime
-  surfaces.
+- `20260621-r6g-direct-wat-producer-authority-001/` is executed-held at
+  `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT`. It reduced the R6F WAT
+  producer-authority gap for the inherited current fixture: `wepp_id`,
+  simulation `year`, profile fields, first-day `Es`, and first-day storage no
+  longer reduce after parsed typed direct producers and residual-inclusive
+  direct storage projection were bound. Current-fixture HBP identity remains
+  green and the first WAT row is bit-identical. Canonical multi-OFE WAT id
+  authority and lane-dimensional day inputs remain follow-up. The remaining
+  WAT mismatch is exactly day-2 `Es`, `Total-Soil`, and
+  `SoilWaterTotal`, blocked on an interleaved PMET day-input builder that uses
+  direct-carried layer state after the previous direct day commit.
 - `20260621-r6f-direct-publication-cutover-blocker-closure-001/` is
   executed-held at
   `HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP`. It closed the inherited
@@ -80,6 +85,20 @@ State as of `2026-06-21`:
 
 State as of `2026-06-21`:
 
+- R6G (`20260621-r6g-direct-wat-producer-authority-001/`) is executed-held
+  with final disposition
+  `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT`. The package bound direct
+  WAT identity/year/profile producers, added parsed static/climate direct
+  day-input translation for WB11/WB17/WB18/WB19 operands, preserved lane-carried
+  direct layer state for later days, corrected direct projection storage to
+  include residual liquid water, and proved current-fixture HBP byte identity
+  plus first WAT row parity. The identity/year/profile work is current-fixture
+  parity evidence; canonical multi-OFE WAT id authority, lane-dimensional day
+  inputs, and allowlisted symbol lineage remain follow-up. It stopped because
+  day-2 PMET `Es` and dependent storage still use precomputed component inputs
+  built before the prior direct day commits carried layer state. The next R6
+  package must implement dynamic interleaved PMET day-input construction rather
+  than reading compatibility WB13 rows or runtime surfaces.
 - R6F (`20260621-r6f-direct-publication-cutover-blocker-closure-001/`) is
   executed-held with final disposition
   `HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP`. The package closed the

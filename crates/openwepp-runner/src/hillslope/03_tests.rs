@@ -689,7 +689,7 @@ mod tests {
     }
 
     #[test]
-    fn r6f_cutover_candidate_reaches_hbp_identity_then_fails_wat_producer_authority() {
+    fn r6g_cutover_candidate_reaches_hbp_and_first_wat_parity_then_fails_pmet_day_state_carry() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -721,11 +721,11 @@ mod tests {
             "unexpected error: {message}"
         );
         assert!(
-            message.contains("HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP"),
+            message.contains("HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT"),
             "unexpected error: {message}"
         );
         assert!(
-            message.contains("reduced_fields=wepp_id,year,Es,Total-Soil,SoilWaterTotal"),
+            message.contains("reduced_fields=Es,Total-Soil,SoilWaterTotal"),
             "unexpected error: {message}"
         );
         assert!(
@@ -804,6 +804,36 @@ mod tests {
         ));
     }
 
+    #[test]
+    fn r6g_wat_hold_marker_is_reserved_for_exact_pmet_day_state_carry_fields() {
+        let compatibility = r6f_wat_marker_sample_row();
+        let mut direct = compatibility.clone();
+        direct.es = 0.9;
+        direct.total_soil_water = 99.9;
+        direct.soil_water_total = Some(99.9);
+
+        let reduced_fields = reduced_wat_mismatch_fields(
+            std::slice::from_ref(&direct),
+            std::slice::from_ref(&compatibility),
+        );
+        assert_eq!(reduced_fields, vec!["Es", "Total-Soil", "SoilWaterTotal"]);
+        assert!(r6g_wat_direct_et_storage_producer_gap(&reduced_fields));
+        assert!(!r6g_wat_pmet_day_state_carry_gap(
+            std::slice::from_ref(&direct),
+            std::slice::from_ref(&compatibility),
+            &reduced_fields
+        ));
+
+        let mut unrelated_direct = direct;
+        unrelated_direct.dp = 2.0;
+        let unrelated_fields =
+            reduced_wat_mismatch_fields(&[unrelated_direct], &[compatibility]);
+        assert!(unrelated_fields.contains(&"Dp"));
+        assert!(!r6g_wat_direct_et_storage_producer_gap(
+            &unrelated_fields
+        ));
+    }
+
     fn r6f_wat_marker_sample_row() -> HillslopeWatRow {
         HillslopeWatRow {
             wepp_id: 1,
@@ -844,7 +874,7 @@ mod tests {
     }
 
     #[test]
-    fn r6f_cutover_candidate_hbp_identity_exposes_wat_producer_gap() {
+    fn r6g_cutover_candidate_hbp_identity_reduces_wat_to_pmet_day_state_carry_gap() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -852,7 +882,7 @@ mod tests {
         let evidence = r6f_hbp_wat_fixture_evidence();
 
         assert_r6f_hbp_identity(&evidence);
-        assert_r6f_wat_reduced_to_producer_gap(&evidence);
+        assert_r6g_wat_reduced_to_pmet_day_state_carry_gap(&evidence);
     }
 
     struct R6fHbpWatEvidence {
@@ -948,11 +978,22 @@ mod tests {
         );
     }
 
-    fn assert_r6f_wat_reduced_to_producer_gap(evidence: &R6fHbpWatEvidence) {
+    fn assert_r6g_wat_reduced_to_pmet_day_state_carry_gap(evidence: &R6fHbpWatEvidence) {
         assert_eq!(
             evidence.direct_wat_rows.len(),
             evidence.compatibility_wat_rows.len()
         );
+        let reduced_fields =
+            reduced_wat_mismatch_fields(&evidence.direct_wat_rows, &evidence.compatibility_wat_rows);
+        assert_eq!(reduced_fields, vec!["Es", "Total-Soil", "SoilWaterTotal"]);
+        assert!(r6g_wat_direct_et_storage_producer_gap(
+            &reduced_fields
+        ));
+        assert!(r6g_wat_pmet_day_state_carry_gap(
+            &evidence.direct_wat_rows,
+            &evidence.compatibility_wat_rows,
+            &reduced_fields
+        ));
         let direct_first = evidence
             .direct_wat_rows
             .first()
@@ -961,38 +1002,24 @@ mod tests {
             .compatibility_wat_rows
             .first()
             .expect("compatibility WAT rows should include first day");
-        assert_f64_bits_eq(direct_first.p, compatibility_first.p);
-        assert_f64_bits_eq(direct_first.rm, compatibility_first.rm);
-        assert_f64_bits_eq(direct_first.q, compatibility_first.q);
-        assert_f64_bits_eq(direct_first.qofe, compatibility_first.qofe);
-        assert_ne!(direct_first.wepp_id, compatibility_first.wepp_id);
-        assert_ne!(direct_first.year, compatibility_first.year);
-        assert_f64_bits_ne(direct_first.es, compatibility_first.es);
+        assert_eq!(direct_first, compatibility_first);
+        let direct_second = evidence
+            .direct_wat_rows
+            .get(1)
+            .expect("direct WAT rows should include second day");
+        let compatibility_second = evidence
+            .compatibility_wat_rows
+            .get(1)
+            .expect("compatibility WAT rows should include second day");
+        assert_f64_bits_ne(direct_second.es, compatibility_second.es);
         assert_f64_bits_ne(
-            direct_first.total_soil_water,
-            compatibility_first.total_soil_water,
+            direct_second.total_soil_water,
+            compatibility_second.total_soil_water,
         );
         assert_ne!(
-            direct_first.soil_water_total,
-            compatibility_first.soil_water_total
+            direct_second.soil_water_total,
+            compatibility_second.soil_water_total
         );
-        assert_ne!(direct_first.profile_depth, compatibility_first.profile_depth);
-        assert_ne!(
-            direct_first.profile_porosity_cap,
-            compatibility_first.profile_porosity_cap
-        );
-        assert_ne!(
-            direct_first.profile_fc_store,
-            compatibility_first.profile_fc_store
-        );
-        assert_ne!(
-            direct_first.profile_wp_store,
-            compatibility_first.profile_wp_store
-        );
-    }
-
-    fn assert_f64_bits_eq(left: f64, right: f64) {
-        assert_eq!(left.to_bits(), right.to_bits());
     }
 
     fn assert_f64_bits_ne(left: f64, right: f64) {
