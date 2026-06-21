@@ -11,15 +11,37 @@
 
 ## Current scaffolded packages
 
-State as of `2026-06-20`:
+State as of `2026-06-21`:
 
-- None. Next R5 work is R5E full 14-phase direct endpoint readiness
-  promotion from `r5-burndown-execplan.md`.
+- `20260621-r6-direct-publication-cutover-001/` resumed after R5E completed at
+  pushed commit `d8f6bbea`. It promoted the PERFDEEP06 publication operand
+  ledger into canonical architecture authority and then held with disposition
+  `HOLD-R6-DIRECT-PUBLICATION-FRAME-ABSENT`. The next actionable work is to
+  build a run-bound direct publication frame from typed direct state; wrapping
+  compatibility WB13 rows or runtime surfaces in direct-named structures is not
+  a valid cutover.
 
 ## Current roadmap execution log
 
-State as of `2026-06-20`:
+State as of `2026-06-21`:
 
+- R5E is complete with verdict
+  `COMPLETE-R5E-FULL-OFE-DAY-ENDPOINT-READINESS`. The package closed R5 by
+  proving the direct executor records exactly one canonical 14-phase entry per
+  OFE-day in `DirectPhaseKind::ORDERED`, with R4/R5 direct spans folded under
+  canonical phase entries as sub-operation counters rather than duplicate phase
+  executions. R5E added explicit canonical phase-entry reporting, a focused
+  endpoint-readiness test, and expanded no-compatibility source-scan coverage
+  to include direct growth runtime code. Public outputs remain
+  compatibility-authoritative: no HBP/WAT/PASS/loss/manifest cutover, schema
+  change, default activation, or direct-only public-output endpoint occurred.
+  Full Rust gates passed. Final default-disabled H2637 reps were `641.37 s`,
+  `642.02 s`, and `635.47 s` (median `641.37 s`, threshold `<= 676.67 s`);
+  the opt-in direct-skeleton endpoint ran at `638.33 s`. Protected output
+  comparison passed through HBP/WAT/loss/plot byte identity and PASS DuckDB row
+  equivalence (`12419` rows, zero bidirectional differences). Package:
+  `20260621-r5e-full-ofe-day-endpoint-readiness-001/`. Pushed commit:
+  `d8f6bbea`.
 - R5D is complete with verdict
   `COMPLETE-R5D-GROWTH-TRANSITION-DIRECT-PHASES`. The package promoted direct
   `AnnualGrowthTransition` and `PerennialGrowthTransition` executor calls,

@@ -60,7 +60,11 @@ grouped package starts.
   `20260620-r5d-growth-transition-direct-phases-001/`; pushed commit
   `2fbd3802`; branch `main`; verdict
   `COMPLETE-R5D-GROWTH-TRANSITION-DIRECT-PHASES`.
-- [ ] R5E full 14-phase direct endpoint readiness and R5 closure.
+- [x] R5E full 14-phase direct endpoint readiness and R5 closure - complete
+  2026-06-21; package
+  `20260621-r5e-full-ofe-day-endpoint-readiness-001/`; pushed commit
+  `d8f6bbea`; branch `main`; verdict
+  `COMPLETE-R5E-FULL-OFE-DAY-ENDPOINT-READINESS`.
 
 When closing any unchecked row, replace it with the completion date, package
 directory, pushed commit SHA, pushed branch, and final verdict.
@@ -548,6 +552,12 @@ package write set.
   `HillslopeRuntimeSelection::DirectSkeletonShadowOnly`; no public direct-only
   CLI endpoint exists yet. R5 packages must extend or replace that explicit
   selection path without changing default compatibility behavior.
+- 2026-06-21: R5E closed endpoint readiness without introducing a direct-only
+  public-output mode. H2637 default-disabled median was `641.37 s`, opt-in
+  direct-skeleton endpoint was `638.33 s`, and protected output comparison
+  passed with HBP/WAT/loss/plot byte identity plus PASS DuckDB row equivalence.
+  R6 may resume publication cutover, but it must first promote the PERFDEEP06
+  publication operand ledger into canonical authority.
 
 ## Decision Log
 
@@ -570,4 +580,12 @@ package write set.
 
 ## Outcomes & Retrospective
 
-R5 has not started. R5A is the first package.
+R5 is complete as of 2026-06-21. R5A through R5E executed in the planned order,
+with each package committed and pushed on `main`. R5E proved the full direct
+executor records one canonical 14-phase entry per OFE-day, folds R4/R5 direct
+spans under canonical phase accounting, preserves default-disabled
+compatibility behavior, and leaves public output authority unchanged.
+
+Next stage: R6 direct publication cutover. R6 remains responsible for promoting
+the PERFDEEP06 publication operand ledger into canonical authority before
+cutting HBP/WAT/PASS/loss/manifest readers to typed direct projection.

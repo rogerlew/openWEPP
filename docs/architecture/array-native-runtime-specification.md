@@ -580,6 +580,61 @@ The ledger must include anti-alias fixtures, metadata/provenance parity, output
 row/column mappings, and independent operand reconstruction for
 conservation-sensitive outputs.
 
+#### 5.2.1 R6 Canonical Publication Operand Ledger
+
+This subsection promotes the PERFDEEP06 publication operand ledger into
+canonical architecture authority for R6 direct publication cutover. Package-local
+ledger artifacts may add evidence, but they do not supersede this table unless
+this specification or a canonical `SC-*` output/publication contract is amended.
+
+Every `PublicationFrame` field below is direct-mode authority only after it is
+populated from typed direct run/lane/day state. A compatibility WB13 row,
+runtime symbol, writeback payload, diagnostic ledger, stale logical surface, or
+output row reconstructed from one of those compatibility structures is not a
+valid direct source for R6 cutover.
+
+| Output family / field | Units / basis | Canonical direct source | Producer phase | Legacy alias | Destination | Wrong aliases to reject | Current-scope acceptance gate |
+|---|---|---|---|---|---|---|---|
+| HBP `peakro`; PASS `peakro` | `m^3/s`; diagnostic peak runoff | `publication.erosion.peak_runoff_m3_s` | `RunoffReconciliation` / erosion publication handoff | `peakro` | HBP event header; PASS `peakro` | daily `Q`, `QOFE`, `runvol`, runoff volume | HBP byte identity; PASS Arrow row/schema/metadata parity; fixture with nonzero peak runoff; independent reconstruction from direct runoff/event-duration operands. |
+| HBP `watdur` | seconds; event duration | `publication.runoff.runoff_duration_s` | `RunoffReconciliation` | `watdur` | HBP event header | day length, storm duration, irrigation duration, hyetograph duration | HBP byte identity; fixture where runoff duration differs from day/storm durations. |
+| HBP/PASS `tdet`, `tdep` | kg; erosion diagnostics | `publication.erosion.total_detachment_kg`, `publication.erosion.total_deposition_kg` | erosion publication handoff | `total_detachment_kg`, `total_deposition_kg` | HBP event header; PASS `tdet`, `tdep` | sediment concentration, particle fractions, class totals, zero default on erosion-active run | HBP byte identity; PASS Arrow parity; erosion-active fixture; independent mass reconstruction when sediment authority is in scope. |
+| HBP/PASS `sedcon_1..5` | `kg/m^3`; particle concentration classes | `publication.erosion.sediment_concentration_kg_m3[0..5]` | erosion publication handoff | `sediment_concentration_kg_m3_0001` and future class aliases | HBP class concentration; PASS `sedcon_1..5` | particle flow fraction, detached/deposited mass, all-zero classes when class 1 is nonzero | HBP byte identity; PASS fixture distinguishing class 1 from zero classes before changing PASS behavior; independent concentration reconstruction when sediment authority is in scope. |
+| WAT `P` | mm over row area | `publication.climate.precipitation_mm` | `Normalization` | `prcp` | WAT `P` | `RM`, rainfall-only, snowmelt, irrigation | WAT Arrow row/schema/metadata parity; precipitation/rainmelt anti-alias fixture. |
+| WAT `RM` | mm liquid input | `publication.liquid_input.rm_mm` | `Normalization` / `RunoffReconciliation` | `RM`, derived from post-winter rain + routed melt + irrigation | WAT `RM` | `P`, irrigation alone, snowmelt alone, raw rainfall | WAT Arrow parity; fixture where rain, snowmelt, and irrigation differ; independent liquid-input reconstruction. |
+| WAT `Q` | mm over effective publication length | `publication.runoff.q_mm` | `RunoffReconciliation` | `Q` | WAT `Q` | `QOFE`, `runvol`, physical `Q` in routed per-OFE mode | WAT Arrow parity; per-OFE fixture preserving current geometry formula; independent runoff-depth reconstruction. |
+| WAT `QOFE`; PASS `runvol` | WAT mm; PASS `m^3` using outlet row area | `publication.runoff.qofe_mm`; `publication.pass.runvol_m3` | `RunoffReconciliation` / outlet delivery projection | `QOFE` | WAT `QOFE`; PASS `runvol` | `Q * area`, upstream area, publication-area sum, outlet-area shortcut | WAT/PASS parity; existing per-OFE anti-alias fixture; independent volume reconstruction from accepted outlet area and direct `QOFE`. |
+| WAT `Ep`, `Es`, `Er` | mm | `publication.evaporation.ep_mm`, `publication.evaporation.es_mm`, `publication.evaporation.er_mm` | `Evapotranspiration` / `PlantRootUptake` | `Ep`, `Es`, `Er` | WAT `Ep`, `Es`, `Er` | ET total, raw negative-tolerance `Es`, seed branch flag, plant demand | WAT parity; fixture with separated Ep/Es/Er; independent ET component reconstruction. |
+| WAT `Dp` | mm | `publication.subsurface.dp_mm` | `PercolationDeepSeepage` / `StorageReconciliation` | `D` plus frost bottom overflow | WAT `Dp` | base `D` alone, `watpdg`, `latqcc`, frost storage state | WAT parity; frost-bottom-water fixture; independent deep-percolation reconstruction. |
+| WAT `UpStrmQ`, `SubRIn` | mm | `publication.transfer.upstream_surface_mm`, `publication.transfer.upstream_lateral_mm` | `LateralTransfer` | `TransferInput`, `SubRIn` | WAT `UpStrmQ`, `SubRIn` | current lane output arrays, unscaled area ratio, downstream output | MOFE fixture with non-1 area ratio; independent transfer reconstruction. |
+| WAT `latqcc`; PASS `sbrunv` | WAT mm; PASS `m^3` using outlet area | `publication.subsurface.latqcc_mm`; `publication.pass.sbrunv_m3` | `Drainage` / `LateralTransfer` | `q`, `latqcc` | WAT `latqcc`; PASS `sbrunv` | `Qd`, `Qdd`, lateral output arrays, runoff volume | WAT/PASS parity; `q` vs state/flux preference fixture; independent lateral-volume reconstruction. |
+| WAT `Tile` | mm | `publication.subsurface.tile_mm` | `Drainage` | `Qdd` | WAT `Tile` | `Qd`, `q`, lateral flow | WAT parity; fixture enforcing `Qd = latqcc + Tile`; independent drainage reconstruction. |
+| WAT `Total-Soil`, `SoilWaterTotal` | mm | `publication.storage.total_soil_mm` and alias projection | `StorageReconciliation` | `wb11_soil_water`, `SoilWaterTotal` | WAT `Total-Soil`, `SoilWaterTotal` | `watcon` stale logical, frozen water alone, profile depth | WAT parity; hydout-equivalent closure fixture; independent storage reconstruction from layer vector plus accepted frozen storage. |
+| WAT `frozwt`, `frdp`, `Snow-Water` | mm | `publication.storage.frozwt_mm`, `publication.storage.frdp_mm`, `publication.storage.snow_water_mm` | `StorageReconciliation` / snow-frost projection | `runtime_frwatc`, `runtime_frdp`, `runtime_swe` | WAT `frozwt`, `frdp`, `Snow-Water` | snow depth, frozen delta, profile depth, SWE before day | WAT parity; active snow/frost fixture with distinct values; independent snow/frost storage reconstruction. |
+| WAT profile optional fields | mm | `publication.profile.depth_mm`, `publication.profile.porosity_cap_mm`, `publication.profile.fc_store_mm`, `publication.profile.wp_store_mm` | `StorageBounds` / profile projection | `wb13_profile_depth_mm`, FC/WP layer aliases | WAT `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore` | `solthk(nsl)` alone for FC, porosity for FC, layer 1 only | WAT metadata parity; anti-tautology profile fixture; independent layer-column reconstruction. |
+| WAT `Interception` | mm | `publication.interception.interception_mm` | `Normalization` / interception projection | `I` | WAT `Interception` | interception storage, rainfall input, precipitation | WAT parity; fixture with nonzero interception flux and distinct storage. |
+| WAT `InterceptionStorage` | mm or absent | `publication.interception.interception_storage_mm` when producer-authoritative; otherwise `None` | future interception-storage producer | none currently authoritative | WAT `InterceptionStorage` | daily interception flux | Preserve `None` until producer-authoritative storage exists; fixture must distinguish storage from flux before enabling. |
+| loss JSON climate/run fields | JSON scalar metadata | `publication.loss.run_name`, `publication.loss.first_day`, `publication.loss.last_day`, `publication.loss.climate_day_count`, `publication.loss.executed_day_count`, `publication.loss.precipitation_mm` | run publication projection | runfile/climate span fields | loss JSON keys | optional-output payloads, first-day-only shortcuts except current schema field, executed vs climate day count | Byte-normalized JSON identity; schema/key parity; independent reconstruction from parsed run/climate span and execution counters. |
+| loss JSON static sidecar fields | JSON scalar metadata | `publication.loss.ofe_count`, `publication.loss.snow_override_applied`, `publication.loss.frost_wint_red` | run publication projection | soil/snow/frost sidecar fields | loss JSON keys | output row counts, runtime snow/frost state | Byte-normalized JSON identity; sidecar anti-alias fixture; independent reconstruction from parsed static inputs. |
+| run manifest input/output checksums | checksum metadata | `publication.manifest.input_checksums`, `publication.manifest.output_checksums` | run publication projection | manifest checksum helpers | manifest JSON maps | stale output paths, optional-output duplicates, checksum order | Manifest schema parity; checksum parity; independent checksum recomputation. |
+| run manifest provenance/counters | execution metadata | `publication.manifest.runtime_selection`, `publication.manifest.direct_runtime_counters`, `publication.manifest.warning_ids`, `publication.manifest.output_policy` | run publication projection | existing manifest provenance fields | manifest JSON provenance fields | compatibility row counts as direct authority, diagnostic-only counters, stale warning state | Manifest JSON parity for compatibility mode; direct-mode counter fixture; provenance anti-alias fixture. |
+
+Publication metadata and row identity are also canonical operands, even when
+they are not hydrology magnitudes:
+
+| Metadata / identity field | Canonical source | Destination | Acceptance gate |
+|---|---|---|---|
+| `wepp_id`, `ofe_id` | `publication.identity.wepp_id`, `publication.identity.ofe_id` from typed run/lane/day context | WAT/PASS/HBP identity fields | Arrow parity across multi-OFE fixtures; guards require positive IDs. |
+| `sim_day_index` | `publication.identity.sim_day_index` | WAT/PASS day identity | Arrow parity; fail-closed range guard. |
+| `julian`, `month`, `day_of_month`, `water_year` | `publication.calendar` | WAT/PASS calendar columns; HBP latest event date | Calendar anti-alias fixture across water-year boundary; Arrow/HBP parity. |
+| schema version and dataset metadata | output schema crates, not direct frame state | WAT/PASS parquet metadata; manifest schema ID | Existing schema metadata tests plus R6 metadata parity inspection. |
+| field units/descriptions | output schema crates and unit registry | WAT/PASS field metadata | Unit registry validation; direct frame must not duplicate schema authority. |
+| producer/provenance metadata | writer metadata plus `publication.manifest.*` | WAT/PASS metadata and run manifest | Metadata parity and independent manifest reconstruction. |
+
+R6 cutover is blocked unless production direct mode can provide this
+`PublicationFrame` from typed direct state. Building an object with these names
+from compatibility WB13 rows or runtime surfaces is not cutover; it is an
+adapter wrapper and must remain in compatibility or shadow mode.
+
 ### 5.3 Replay and Diagnostics Edge
 
 Replay, audit, and diagnostics may construct symbol surfaces because their job
