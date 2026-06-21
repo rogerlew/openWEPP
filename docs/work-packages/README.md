@@ -13,6 +13,16 @@
 
 State as of `2026-06-21`:
 
+- `20260621-r6f-direct-publication-cutover-blocker-closure-001/` is
+  scaffolded as the next R6 defect-closure ExecPlan. It starts from
+  `HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH`, but explicitly treats HBP
+  byte failure, direct process parity mismatch, missing fixtures, manifest
+  wiring gaps, and newly discovered blockers as iteration targets rather than
+  terminal states. Closure requires full `DirectPublicationFrameCutover` public
+  output writes with HBP/WAT/PASS/loss/manifest parity, anti-alias fixtures,
+  independent reconstruction, no compatibility authority, default-disabled
+  isolation, and dual review/verification; any remaining hold must pass a
+  no-premature-stop audit and name a proven out-of-envelope boundary.
 - `20260621-r6e-direct-publication-cutover-iterative-defect-closure-001/` is
   executed-held at
   `HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH`. It reproduced the R6D
