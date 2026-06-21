@@ -15,16 +15,21 @@ State as of `2026-06-21`:
 
 - `20260621-r6-direct-publication-cutover-001/` resumed after R5E completed at
   pushed commit `d8f6bbea`. It promoted the PERFDEEP06 publication operand
-  ledger into canonical architecture authority and then held with disposition
-  `HOLD-R6-DIRECT-PUBLICATION-FRAME-ABSENT`. The next actionable work is to
-  build a run-bound direct publication frame from typed direct state; wrapping
-  compatibility WB13 rows or runtime surfaces in direct-named structures is not
-  a valid cutover.
+  ledger into canonical architecture authority and then held until R6A supplied
+  the run-bound direct publication frame and direct projection consumers. The
+  next actionable work is production writer cutover; wrapping compatibility
+  WB13 rows or runtime surfaces in direct-named structures is not a valid
+  cutover.
 
 ## Current roadmap execution log
 
 State as of `2026-06-21`:
 
+- R6A (`20260621-r6a-run-bound-direct-publication-frame-001/`) is complete with
+  verdict `COMPLETE-R6A-RUN-BOUND-DIRECT-PUBLICATION-FRAME`. It added
+  `DirectRunPublicationFrame`, direct run/lane/day capture, the
+  `DirectPublicationFrameShadow` opt-in, and direct HBP/WAT/PASS/loss/manifest
+  projection consumers. Full production writer cutover remains R6 scope.
 - R5E is complete with verdict
   `COMPLETE-R5E-FULL-OFE-DAY-ENDPOINT-READINESS`. The package closed R5 by
   proving the direct executor records exactly one canonical 14-phase entry per

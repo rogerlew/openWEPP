@@ -1173,6 +1173,293 @@ impl DirectPublicationFrame {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DirectPublicationCalendarDay {
+    pub year: i32,
+    pub julian_day: u16,
+    pub month: i8,
+    pub day_of_month: i8,
+    pub water_year: i16,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DirectPublicationRunMetadata {
+    pub run_name: String,
+    pub runtime_selection: String,
+    pub output_policy: String,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectRunPublicationFrame {
+    pub identity: DirectRunIdentity,
+    pub metadata: DirectPublicationRunMetadata,
+    pub rows: Vec<DirectPublicationDayRow>,
+}
+
+impl DirectRunPublicationFrame {
+    fn new(
+        identity: DirectRunIdentity,
+        metadata: DirectPublicationRunMetadata,
+        expected_row_count: usize,
+    ) -> Self {
+        Self {
+            identity,
+            metadata,
+            rows: Vec::with_capacity(expected_row_count),
+        }
+    }
+
+    fn push_day_row(
+        &mut self,
+        day_frame: &DirectDayFrame,
+        calendar: DirectPublicationCalendarDay,
+        lane: &DirectLaneFrame,
+    ) -> Result<(), DirectRuntimeError> {
+        self.rows.push(DirectPublicationDayRow::from_day_frame(
+            day_frame, calendar, lane,
+        )?);
+        Ok(())
+    }
+
+    fn validate_complete(&self) -> Result<(), DirectRuntimeError> {
+        let expected_row_count = self
+            .identity
+            .lane_count
+            .checked_mul(self.identity.day_count)
+            .ok_or(DirectRuntimeError::DirectDomainViolation {
+                field: "publication.expected_row_count",
+            })?;
+        if self.rows.len() != expected_row_count {
+            return Err(DirectRuntimeError::PublicationRowCountMismatch {
+                expected_row_count,
+                actual_row_count: self.rows.len(),
+            });
+        }
+        Ok(())
+    }
+
+    #[must_use]
+    pub fn rows(&self) -> &[DirectPublicationDayRow] {
+        &self.rows
+    }
+
+    #[must_use]
+    pub fn first_day(&self) -> Option<&DirectPublicationDayRow> {
+        self.rows.first()
+    }
+
+    #[must_use]
+    pub fn last_day(&self) -> Option<&DirectPublicationDayRow> {
+        self.rows.last()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectPublicationDayRow {
+    pub run_id: u64,
+    pub hillslope_id: u32,
+    pub lane_id: u32,
+    pub ofe_id: u32,
+    pub lane_index: usize,
+    pub day_index: usize,
+    pub sim_day_index: i32,
+    pub calendar: DirectPublicationCalendarDay,
+    pub area_m2: f64,
+    pub climate: DirectPublicationClimateOperands,
+    pub liquid_input: DirectPublicationLiquidInputOperands,
+    pub runoff: DirectPublicationRunoffOperands,
+    pub evaporation: DirectPublicationEvaporationOperands,
+    pub subsurface: DirectPublicationSubsurfaceOperands,
+    pub transfer: DirectPublicationTransferOperands,
+    pub storage: DirectPublicationStorageOperands,
+    pub profile: DirectPublicationProfileOperands,
+    pub interception: DirectPublicationInterceptionOperands,
+    pub erosion: DirectPublicationErosionOperands,
+}
+
+impl DirectPublicationDayRow {
+    fn from_day_frame(
+        day_frame: &DirectDayFrame,
+        calendar: DirectPublicationCalendarDay,
+        lane: &DirectLaneFrame,
+    ) -> Result<Self, DirectRuntimeError> {
+        if !lane.area_m2.is_finite() || lane.area_m2 <= 0.0 {
+            return Err(DirectRuntimeError::InvalidPublicationArea {
+                lane_id: lane.lane_id,
+                area_m2: lane.area_m2,
+            });
+        }
+        let sim_day_index = i32::try_from(day_frame.day_index + 1).map_err(|_| {
+            DirectRuntimeError::DirectDomainViolation {
+                field: "publication.sim_day_index",
+            }
+        })?;
+        let runoff = DirectPublicationRunoffOperands {
+            q_mm: m_to_mm(day_frame.hydrology_projection.q_runoff_m)?,
+            qofe_mm: m_to_mm(day_frame.hydrology_projection.q_ofe_m)?,
+            runvol_m3: depth_to_volume_m3(
+                "publication.runoff.runvol_m3",
+                day_frame.hydrology_projection.q_ofe_m,
+                lane.area_m2,
+            )?,
+            peak_runoff_m3_s: None,
+            runoff_duration_s: None,
+        };
+        let subsurface_lateral_m = day_frame.hydrology_projection.lateral_flow_m;
+
+        Ok(Self {
+            run_id: day_frame.identity.run_id,
+            hillslope_id: day_frame.identity.hillslope_id,
+            lane_id: lane.lane_id,
+            ofe_id: lane.lane_id,
+            lane_index: day_frame.lane_index,
+            day_index: day_frame.day_index,
+            sim_day_index,
+            calendar,
+            area_m2: lane.area_m2,
+            climate: DirectPublicationClimateOperands {
+                precipitation_mm: m_to_mm(day_frame.normalization.precipitation_m)?,
+            },
+            liquid_input: DirectPublicationLiquidInputOperands {
+                rm_mm: m_to_mm(day_frame.liquid_input.liquid_input_m)?,
+                irrigation_mm: 0.0,
+            },
+            runoff,
+            evaporation: DirectPublicationEvaporationOperands {
+                ep_mm: m_to_mm(day_frame.hydrology_projection.plant_transpiration_m)?,
+                es_mm: m_to_mm(day_frame.hydrology_projection.soil_evaporation_m)?,
+                er_mm: m_to_mm(day_frame.hydrology_projection.residue_evaporation_m)?,
+                total_evapotranspiration_mm: m_to_mm(
+                    day_frame.hydrology_projection.evapotranspiration_m,
+                )?,
+            },
+            subsurface: DirectPublicationSubsurfaceOperands {
+                dp_mm: m_to_mm(day_frame.hydrology_projection.deep_percolation_m)?,
+                latqcc_mm: m_to_mm(subsurface_lateral_m)?,
+                tile_mm: m_to_mm(day_frame.hydrology_projection.tile_drainage_m)?,
+                sbrunv_m3: depth_to_volume_m3(
+                    "publication.subsurface.sbrunv_m3",
+                    subsurface_lateral_m,
+                    lane.area_m2,
+                )?,
+            },
+            transfer: DirectPublicationTransferOperands {
+                upstream_surface_mm: m_to_mm(day_frame.normalization.upstream_flow_m)?,
+                upstream_lateral_mm: m_to_mm(day_frame.normalization.subsurface_input_m)?,
+            },
+            storage: DirectPublicationStorageOperands {
+                total_soil_mm: m_to_mm(day_frame.hydrology_projection.total_soil_m)?,
+                soil_water_total_mm: m_to_mm(day_frame.hydrology_projection.soil_water_total_m)?,
+                frozwt_mm: m_to_mm(day_frame.hydrology_projection.frozen_soil_water_m)?,
+                frdp_mm: None,
+                snow_water_mm: m_to_mm(day_frame.hydrology_projection.snow_water_m)?,
+            },
+            profile: DirectPublicationProfileOperands {
+                depth_mm: None,
+                porosity_cap_mm: None,
+                fc_store_mm: option_m_to_mm(
+                    day_frame.hydrology_projection.profile_field_capacity_m,
+                )?,
+                wp_store_mm: option_m_to_mm(
+                    day_frame.hydrology_projection.profile_wilting_point_m,
+                )?,
+            },
+            interception: DirectPublicationInterceptionOperands {
+                interception_mm: 0.0,
+                interception_storage_mm: None,
+            },
+            erosion: DirectPublicationErosionOperands::absent_authority(),
+        })
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationClimateOperands {
+    pub precipitation_mm: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationLiquidInputOperands {
+    pub rm_mm: f64,
+    pub irrigation_mm: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationRunoffOperands {
+    pub q_mm: f64,
+    pub qofe_mm: f64,
+    pub runvol_m3: f64,
+    pub peak_runoff_m3_s: Option<f64>,
+    pub runoff_duration_s: Option<f64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationEvaporationOperands {
+    pub ep_mm: f64,
+    pub es_mm: f64,
+    pub er_mm: f64,
+    pub total_evapotranspiration_mm: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationSubsurfaceOperands {
+    pub dp_mm: f64,
+    pub latqcc_mm: f64,
+    pub tile_mm: f64,
+    pub sbrunv_m3: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationTransferOperands {
+    pub upstream_surface_mm: f64,
+    pub upstream_lateral_mm: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationStorageOperands {
+    pub total_soil_mm: f64,
+    pub soil_water_total_mm: f64,
+    pub frozwt_mm: f64,
+    pub frdp_mm: Option<f64>,
+    pub snow_water_mm: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationProfileOperands {
+    pub depth_mm: Option<f64>,
+    pub porosity_cap_mm: Option<f64>,
+    pub fc_store_mm: Option<f64>,
+    pub wp_store_mm: Option<f64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationInterceptionOperands {
+    pub interception_mm: f64,
+    pub interception_storage_mm: Option<f64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationErosionOperands {
+    pub peak_runoff_m3_s: Option<f64>,
+    pub runoff_duration_s: Option<f64>,
+    pub total_detachment_kg: Option<f64>,
+    pub total_deposition_kg: Option<f64>,
+    pub sediment_concentration_kg_m3: Option<[f64; 5]>,
+}
+
+impl DirectPublicationErosionOperands {
+    #[must_use]
+    pub const fn absent_authority() -> Self {
+        Self {
+            peak_runoff_m3_s: None,
+            runoff_duration_s: None,
+            total_detachment_kg: None,
+            total_deposition_kg: None,
+            sediment_concentration_kg_m3: None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectPhasePlan {
     phases: [DirectPhaseKind; DIRECT_PHASE_COUNT],
@@ -1601,6 +1888,12 @@ pub struct DirectExecutionReport {
     pub day_frame_commit_count: u64,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectPublicationExecution {
+    pub report: DirectExecutionReport,
+    pub publication_frame: DirectRunPublicationFrame,
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 struct DirectExecutionCounters {
     spans: u64,
@@ -1757,6 +2050,89 @@ impl DirectFrameExecutor {
         })
     }
 
+    pub fn run_publication_capture(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        calendar_days: &[DirectPublicationCalendarDay],
+    ) -> Result<DirectPublicationExecution, DirectRuntimeError> {
+        if calendar_days.len() != frame.identity.day_count {
+            return Err(DirectRuntimeError::CalendarDayCountMismatch {
+                identity_day_count: frame.identity.day_count,
+                calendar_day_count: calendar_days.len(),
+            });
+        }
+        DIRECT_AUDIT.record_publication_capture_run();
+        let expected_row_count = frame
+            .identity
+            .lane_count
+            .checked_mul(frame.identity.day_count)
+            .ok_or(DirectRuntimeError::DirectDomainViolation {
+                field: "publication.expected_row_count",
+            })?;
+        let mut publication_frame =
+            DirectRunPublicationFrame::new(frame.identity, metadata, expected_row_count);
+        let mut phase_view_count = 0_u64;
+        let mut counters = DirectExecutionCounters::default();
+        let phase_plan = *frame.phase_plan.phases();
+
+        let transfer_span_report = frame.run_r3c_lane_transfer_span()?;
+        counters.record_span(
+            transfer_span_report.phase_entry_count,
+            transfer_span_report.direct_compute_count,
+            transfer_span_report.state_mutation_count,
+            transfer_span_report.downstream_operand_count,
+            transfer_span_report.shadow_projection_count,
+            transfer_span_report.compatibility_edge_invocation_count,
+        );
+
+        for (day_index, calendar_day) in calendar_days.iter().copied().enumerate() {
+            for lane_index in 0..frame.identity.lane_count {
+                let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
+                Self::run_day_spans(&mut day_frame, &mut counters)?;
+                for phase in phase_plan {
+                    let view = day_frame.phase_view(phase);
+                    let _phase = view.phase();
+                    phase_view_count += 1;
+                    counters.record_phase_status(phase, Self::phase_lifecycle_status(phase));
+                }
+                let lane =
+                    frame
+                        .lanes
+                        .get(lane_index)
+                        .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
+                            lane_index,
+                            lane_count: frame.lanes.len(),
+                        })?;
+                publication_frame.push_day_row(&day_frame, calendar_day, lane)?;
+                frame.commit_day_frame(&day_frame)?;
+                counters.record_day_frame_commit();
+            }
+        }
+        publication_frame.validate_complete()?;
+
+        Ok(DirectPublicationExecution {
+            report: DirectExecutionReport {
+                mode: self.mode,
+                lane_count: frame.lanes.len(),
+                day_count: frame.identity.day_count,
+                planned_phase_count: frame.phase_plan.len(),
+                canonical_phase_entry_count: phase_view_count,
+                phase_view_count,
+                phase_status_counts: counters.phase_status_counts(),
+                phase_span_run_count: counters.spans,
+                direct_phase_entry_count: counters.entries,
+                direct_compute_count: counters.computes,
+                state_mutation_count: counters.mutations,
+                downstream_operand_count: counters.downstream_operands,
+                shadow_projection_count: counters.shadows,
+                compatibility_edge_invocation_count: counters.compatibility_edges,
+                day_frame_commit_count: counters.day_frame_commits,
+            },
+            publication_frame,
+        })
+    }
+
     #[must_use]
     const fn phase_lifecycle_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStatus {
         match phase {
@@ -1813,6 +2189,7 @@ pub struct DirectRuntimeAuditSnapshot {
     pub day_frame_commits: u64,
     pub executor_constructions: u64,
     pub skeleton_runs: u64,
+    pub publication_capture_runs: u64,
     pub phase_view_constructions: u64,
     pub phase_span_runs: u64,
     pub direct_phase_entries: u64,
@@ -1842,6 +2219,7 @@ struct DirectRuntimeAuditCounters {
     day_frame_commits: AtomicU64,
     executor_constructions: AtomicU64,
     skeleton_runs: AtomicU64,
+    publication_capture_runs: AtomicU64,
     phase_view_constructions: AtomicU64,
     phase_span_runs: AtomicU64,
     direct_phase_entries: AtomicU64,
@@ -1860,6 +2238,7 @@ impl DirectRuntimeAuditCounters {
             day_frame_commits: AtomicU64::new(0),
             executor_constructions: AtomicU64::new(0),
             skeleton_runs: AtomicU64::new(0),
+            publication_capture_runs: AtomicU64::new(0),
             phase_view_constructions: AtomicU64::new(0),
             phase_span_runs: AtomicU64::new(0),
             direct_phase_entries: AtomicU64::new(0),
@@ -1889,6 +2268,11 @@ impl DirectRuntimeAuditCounters {
 
     fn record_skeleton_run(&self) {
         self.skeleton_runs.fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn record_publication_capture_run(&self) {
+        self.publication_capture_runs
+            .fetch_add(1, Ordering::Relaxed);
     }
 
     fn record_phase_view_construction(&self) {
@@ -1934,6 +2318,7 @@ impl DirectRuntimeAuditCounters {
             day_frame_commits: self.day_frame_commits.load(Ordering::Relaxed),
             executor_constructions: self.executor_constructions.load(Ordering::Relaxed),
             skeleton_runs: self.skeleton_runs.load(Ordering::Relaxed),
+            publication_capture_runs: self.publication_capture_runs.load(Ordering::Relaxed),
             phase_view_constructions: self.phase_view_constructions.load(Ordering::Relaxed),
             phase_span_runs: self.phase_span_runs.load(Ordering::Relaxed),
             direct_phase_entries: self.direct_phase_entries.load(Ordering::Relaxed),
@@ -1955,6 +2340,7 @@ impl DirectRuntimeAuditCounters {
         self.day_frame_commits.store(0, Ordering::Relaxed);
         self.executor_constructions.store(0, Ordering::Relaxed);
         self.skeleton_runs.store(0, Ordering::Relaxed);
+        self.publication_capture_runs.store(0, Ordering::Relaxed);
         self.phase_view_constructions.store(0, Ordering::Relaxed);
         self.phase_span_runs.store(0, Ordering::Relaxed);
         self.direct_phase_entries.store(0, Ordering::Relaxed);
@@ -1968,7 +2354,7 @@ impl DirectRuntimeAuditCounters {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum DirectRuntimeError {
     InvalidLaneCount {
         lane_count: usize,
@@ -1991,6 +2377,18 @@ pub enum DirectRuntimeError {
     },
     InvalidLaneOutletCount {
         outlet_count: usize,
+    },
+    CalendarDayCountMismatch {
+        identity_day_count: usize,
+        calendar_day_count: usize,
+    },
+    PublicationRowCountMismatch {
+        expected_row_count: usize,
+        actual_row_count: usize,
+    },
+    InvalidPublicationArea {
+        lane_id: u32,
+        area_m2: f64,
     },
     LaneIndexOutOfRange {
         lane_index: usize,
@@ -2018,6 +2416,7 @@ pub enum DirectRuntimeError {
 }
 
 impl fmt::Display for DirectRuntimeError {
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidLaneCount { lane_count } => {
@@ -2062,6 +2461,30 @@ impl fmt::Display for DirectRuntimeError {
                 write!(
                     formatter,
                     "direct runtime requires exactly one lane outlet, observed {outlet_count}"
+                )
+            }
+            Self::CalendarDayCountMismatch {
+                identity_day_count,
+                calendar_day_count,
+            } => {
+                write!(
+                    formatter,
+                    "direct publication calendar day count {calendar_day_count} does not match identity day count {identity_day_count}"
+                )
+            }
+            Self::PublicationRowCountMismatch {
+                expected_row_count,
+                actual_row_count,
+            } => {
+                write!(
+                    formatter,
+                    "direct publication row count {actual_row_count} does not match expected row count {expected_row_count}"
+                )
+            }
+            Self::InvalidPublicationArea { lane_id, area_m2 } => {
+                write!(
+                    formatter,
+                    "direct publication lane {lane_id} area must be finite and > 0.0 m^2, observed {area_m2}"
                 )
             }
             Self::LaneIndexOutOfRange {
@@ -2133,6 +2556,34 @@ fn validate_nonnegative_direct_m(
     } else {
         Err(DirectRuntimeError::NegativeDirectValue { field })
     }
+}
+
+fn m_to_mm(value_m: f64) -> Result<f64, DirectRuntimeError> {
+    validate_nonnegative_direct_m("publication.depth_m", value_m)?;
+    let value_mm = value_m * 1_000.0;
+    validate_finite("publication.depth_mm", value_mm)?;
+    Ok(value_mm)
+}
+
+fn option_m_to_mm(value_m: Option<f64>) -> Result<Option<f64>, DirectRuntimeError> {
+    value_m.map(m_to_mm).transpose()
+}
+
+fn depth_to_volume_m3(
+    field: &'static str,
+    depth_m: f64,
+    area_m2: f64,
+) -> Result<f64, DirectRuntimeError> {
+    validate_nonnegative_direct_m("publication.depth_m", depth_m)?;
+    validate_finite("publication.area_m2", area_m2)?;
+    if area_m2 <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "publication.area_m2",
+        });
+    }
+    let volume_m3 = depth_m * area_m2;
+    validate_finite(field, volume_m3)?;
+    Ok(volume_m3)
 }
 
 fn sum_nonnegative_direct_m(

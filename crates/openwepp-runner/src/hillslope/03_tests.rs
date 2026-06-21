@@ -15,6 +15,13 @@ mod tests {
         DIRECT_R4M_PHASE_SPAN_COUNT, DIRECT_R4N_PHASE_SPAN_COUNT,
         DIRECT_R4O_PHASE_SPAN_COUNT, DIRECT_R4PQZ_PHASE_SPAN_COUNT,
         reset_direct_runtime_audit_counters,
+        DirectPublicationCalendarDay, DirectPublicationClimateOperands, DirectPublicationDayRow,
+        DirectPublicationErosionOperands, DirectPublicationEvaporationOperands,
+        DirectPublicationInterceptionOperands, DirectPublicationLiquidInputOperands,
+        DirectPublicationProfileOperands, DirectPublicationRunMetadata,
+        DirectPublicationRunoffOperands, DirectPublicationStorageOperands,
+        DirectPublicationSubsurfaceOperands, DirectPublicationTransferOperands,
+        DirectRunIdentity, DirectRunPublicationFrame,
     };
     use openwepp_input_contract::parsers::hbp::{HbpParseOptions, parse_hbp_from_path};
     use openwepp_input_contract::parsers::slope::{
@@ -580,6 +587,7 @@ mod tests {
         assert_eq!(audit.day_frame_commits, 0);
         assert_eq!(audit.executor_constructions, 0);
         assert_eq!(audit.skeleton_runs, 0);
+        assert_eq!(audit.publication_capture_runs, 0);
         assert_eq!(audit.phase_view_constructions, 0);
         assert_eq!(audit.phase_span_runs, 0);
         assert_eq!(audit.direct_phase_entries, 0);
@@ -611,6 +619,7 @@ mod tests {
         assert_eq!(audit.run_frame_constructions, 1);
         assert_eq!(audit.executor_constructions, 1);
         assert_eq!(audit.skeleton_runs, 1);
+        assert_eq!(audit.publication_capture_runs, 0);
         assert_eq!(audit.day_frame_constructions, expected_day_frames);
         assert_eq!(audit.day_frame_commits, expected_day_frames);
         assert_eq!(
@@ -643,6 +652,140 @@ mod tests {
             1 + expected_day_frames * r5c_day_span_run_count()
         );
         assert_eq!(audit.compatibility_edge_invocations, 1);
+    }
+
+    #[test]
+    fn r6a_direct_publication_frame_shadow_runs_without_skeleton_counter() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (report, _temp_run_dir) = execute_fixture_run_with_runtime_selection_unlocked(
+            "r6a_direct_publication_frame_shadow",
+            HillslopeRuntimeSelection::DirectPublicationFrameShadow,
+        );
+
+        assert!(report.output_pass.is_file());
+        assert!(report.output_loss.is_file());
+        let manifest_json = read_manifest_json(&report);
+        let expected_day_frames = manifest_json
+            .pointer("/execution_provenance/climate_day_count")
+            .and_then(serde_json::Value::as_u64)
+            .expect("fixture manifest should include climate day count for R6A");
+        let audit = direct_runtime_audit_snapshot();
+        assert_eq!(audit.run_frame_constructions, 1);
+        assert_eq!(audit.executor_constructions, 1);
+        assert_eq!(audit.skeleton_runs, 0);
+        assert_eq!(audit.publication_capture_runs, 1);
+        assert_eq!(audit.day_frame_constructions, expected_day_frames);
+        assert_eq!(audit.day_frame_commits, expected_day_frames);
+        assert_eq!(
+            audit.phase_view_constructions,
+            expected_day_frames * DIRECT_PHASE_COUNT as u64
+        );
+        assert_eq!(audit.compatibility_edge_invocations, 0);
+    }
+
+    #[test]
+    fn r6a_direct_projection_consumers_read_publication_frame_operands() {
+        let identity =
+            DirectRunIdentity::new(19, 2637, 1, 1).expect("valid direct identity should construct");
+        let row = DirectPublicationDayRow {
+            run_id: 19,
+            hillslope_id: 2637,
+            lane_id: 1,
+            ofe_id: 1,
+            lane_index: 0,
+            day_index: 0,
+            sim_day_index: 1,
+            calendar: DirectPublicationCalendarDay {
+                year: 2026,
+                julian_day: 172,
+                month: 6,
+                day_of_month: 21,
+                water_year: 2026,
+            },
+            area_m2: 400.0,
+            climate: DirectPublicationClimateOperands {
+                precipitation_mm: 7.5,
+            },
+            liquid_input: DirectPublicationLiquidInputOperands {
+                rm_mm: 8.25,
+                irrigation_mm: 1.25,
+            },
+            runoff: DirectPublicationRunoffOperands {
+                q_mm: 12.5,
+                qofe_mm: 10.0,
+                runvol_m3: 4.0,
+                peak_runoff_m3_s: Some(0.75),
+                runoff_duration_s: Some(1800.0),
+            },
+            evaporation: DirectPublicationEvaporationOperands {
+                ep_mm: 2.0,
+                es_mm: 3.0,
+                er_mm: 4.0,
+                total_evapotranspiration_mm: 9.0,
+            },
+            subsurface: DirectPublicationSubsurfaceOperands {
+                dp_mm: 1.5,
+                latqcc_mm: 2.5,
+                tile_mm: 0.5,
+                sbrunv_m3: 1.0,
+            },
+            transfer: DirectPublicationTransferOperands {
+                upstream_surface_mm: 0.25,
+                upstream_lateral_mm: 0.125,
+            },
+            storage: DirectPublicationStorageOperands {
+                total_soil_mm: 110.0,
+                soil_water_total_mm: 105.0,
+                frozwt_mm: 1.0,
+                frdp_mm: Some(2.0),
+                snow_water_mm: 3.0,
+            },
+            profile: DirectPublicationProfileOperands {
+                depth_mm: Some(1000.0),
+                porosity_cap_mm: Some(450.0),
+                fc_store_mm: Some(300.0),
+                wp_store_mm: Some(150.0),
+            },
+            interception: DirectPublicationInterceptionOperands {
+                interception_mm: 0.75,
+                interception_storage_mm: Some(0.5),
+            },
+            erosion: DirectPublicationErosionOperands {
+                peak_runoff_m3_s: Some(0.75),
+                runoff_duration_s: Some(1800.0),
+                total_detachment_kg: Some(2.25),
+                total_deposition_kg: Some(1.25),
+                sediment_concentration_kg_m3: Some([0.1, 0.2, 0.3, 0.4, 0.5]),
+            },
+        };
+        let frame = DirectRunPublicationFrame {
+            identity,
+            metadata: DirectPublicationRunMetadata {
+                run_name: "r6a_projection".to_string(),
+                runtime_selection: "direct-publication-frame-shadow".to_string(),
+                output_policy: "test".to_string(),
+            },
+            rows: vec![row],
+        };
+
+        let wat_rows = build_hillslope_wat_rows_from_direct_publication(&frame)
+            .expect("direct WAT projection should build");
+        let pass_rows = build_hillslope_pass_rows_from_direct_publication(&frame)
+            .expect("direct PASS projection should build");
+        let loss = build_loss_output_json_from_direct_publication(&frame)
+            .expect("direct loss projection should build");
+        let manifest = build_manifest_text_from_direct_publication(&frame)
+            .expect("direct manifest projection should build");
+
+        assert_eq!(wat_rows[0].q.to_bits(), 12.5_f64.to_bits());
+        assert_eq!(wat_rows[0].qofe.to_bits(), 10.0_f64.to_bits());
+        assert_eq!(wat_rows[0].rm.to_bits(), 8.25_f64.to_bits());
+        assert_eq!(pass_rows[0].runvol_m3.to_bits(), 4.0_f64.to_bits());
+        assert_eq!(pass_rows[0].peakro_m3_s.to_bits(), 0.75_f64.to_bits());
+        assert!(loss.contains("run_name=r6a_projection"));
+        assert!(manifest.contains("row_count=1"));
     }
 
     fn runner_execution_lock() -> &'static Mutex<()> {

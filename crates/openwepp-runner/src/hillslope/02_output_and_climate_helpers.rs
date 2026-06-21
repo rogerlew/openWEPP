@@ -731,6 +731,221 @@ fn build_hillslope_wat_row(
     })
 }
 
+fn build_hbp_output_from_direct_publication(
+    output_pass: &Path,
+    publication: &DirectRunPublicationFrame,
+) -> Result<Vec<u8>, HillslopeCliError> {
+    let latest_row = publication
+        .last_day()
+        .ok_or_else(|| direct_publication_output_failure("missing latest direct publication row"))?;
+    let nofe = u16::try_from(publication.identity.lane_count).map_err(|_| {
+        direct_publication_output_failure(format!(
+            "direct publication lane count out of u16 range: {}",
+            publication.identity.lane_count
+        ))
+    })?;
+    if nofe == 0 {
+        return Err(direct_publication_output_failure(
+            "direct publication lane count must be >= 1",
+        ));
+    }
+    let sediment_concentration_kg_m3 = latest_row
+        .erosion
+        .sediment_concentration_kg_m3
+        .unwrap_or([0.0; 5])[0];
+
+    build_schema1_hbp_event_fixture(HbpEventFixtureInput {
+        hillslope_id: parse_hillslope_id_from_output_pass_path(output_pass)?,
+        nofe,
+        julian_day: latest_row.calendar.julian_day,
+        peak_runoff_m3_s: latest_row
+            .erosion
+            .peak_runoff_m3_s
+            .or(latest_row.runoff.peak_runoff_m3_s)
+            .unwrap_or(0.0),
+        duration_seconds: latest_row
+            .erosion
+            .runoff_duration_s
+            .or(latest_row.runoff.runoff_duration_s)
+            .unwrap_or(0.0),
+        total_detachment_kg: latest_row.erosion.total_detachment_kg.unwrap_or(0.0),
+        total_deposition_kg: latest_row.erosion.total_deposition_kg.unwrap_or(0.0),
+        sediment_concentration_kg_m3,
+        particle_flow_fraction: 1.0,
+        particle_diameter_m: HBP_DEFAULT_PARTICLE_DIAMETER_M,
+    })
+}
+
+fn build_hillslope_wat_rows_from_direct_publication(
+    publication: &DirectRunPublicationFrame,
+) -> Result<Vec<HillslopeWatRow>, HillslopeCliError> {
+    publication
+        .rows()
+        .iter()
+        .map(build_hillslope_wat_row_from_direct_publication)
+        .collect()
+}
+
+fn build_hillslope_wat_row_from_direct_publication(
+    row: &openwepp_hillslope_orchestrator::DirectPublicationDayRow,
+) -> Result<HillslopeWatRow, HillslopeCliError> {
+    let wepp_id = direct_publication_u32_to_i32("wepp_id", row.hillslope_id)?;
+    let ofe = direct_publication_u32_to_i16("ofe", row.ofe_id)?;
+    Ok(HillslopeWatRow {
+        wepp_id,
+        ofe_id: ofe,
+        year: direct_publication_i32_to_i16("year", row.calendar.year)?,
+        sim_day_index: row.sim_day_index,
+        julian: direct_publication_u16_to_i16("julian", row.calendar.julian_day)?,
+        month: row.calendar.month,
+        day_of_month: row.calendar.day_of_month,
+        water_year: row.calendar.water_year,
+        ofe,
+        p: row.climate.precipitation_mm,
+        rm: row.liquid_input.rm_mm,
+        q: row.runoff.q_mm,
+        ep: row.evaporation.ep_mm,
+        es: row.evaporation.es_mm,
+        er: row.evaporation.er_mm,
+        dp: row.subsurface.dp_mm,
+        up_strm_q: row.transfer.upstream_surface_mm,
+        sub_r_in: row.transfer.upstream_lateral_mm,
+        latqcc: row.subsurface.latqcc_mm,
+        total_soil_water: row.storage.total_soil_mm,
+        frozwt: row.storage.frozwt_mm,
+        frdp: row.storage.frdp_mm.unwrap_or(0.0),
+        snow_water: row.storage.snow_water_mm,
+        qofe: row.runoff.qofe_mm,
+        tile: row.subsurface.tile_mm,
+        irr: row.liquid_input.irrigation_mm,
+        area: row.area_m2,
+        soil_water_total: Some(row.storage.soil_water_total_mm),
+        profile_depth: row.profile.depth_mm,
+        profile_porosity_cap: row.profile.porosity_cap_mm,
+        profile_fc_store: row.profile.fc_store_mm,
+        profile_wp_store: row.profile.wp_store_mm,
+        interception: Some(row.interception.interception_mm),
+        interception_storage: row.interception.interception_storage_mm,
+    })
+}
+
+fn build_hillslope_pass_rows_from_direct_publication(
+    publication: &DirectRunPublicationFrame,
+) -> Result<Vec<HillslopePassRow>, HillslopeCliError> {
+    publication
+        .rows()
+        .iter()
+        .map(build_hillslope_pass_row_from_direct_publication)
+        .collect()
+}
+
+fn build_hillslope_pass_row_from_direct_publication(
+    row: &openwepp_hillslope_orchestrator::DirectPublicationDayRow,
+) -> Result<HillslopePassRow, HillslopeCliError> {
+    Ok(HillslopePassRow {
+        wepp_id: direct_publication_u32_to_i32("wepp_id", row.hillslope_id)?,
+        year: direct_publication_i32_to_i16("year", row.calendar.year)?,
+        sim_day_index: row.sim_day_index,
+        julian: direct_publication_u16_to_i16("julian", row.calendar.julian_day)?,
+        month: row.calendar.month,
+        day_of_month: row.calendar.day_of_month,
+        water_year: row.calendar.water_year,
+        runvol_m3: row.runoff.runvol_m3,
+        sbrunv_m3: row.subsurface.sbrunv_m3,
+        peakro_m3_s: row
+            .erosion
+            .peak_runoff_m3_s
+            .or(row.runoff.peak_runoff_m3_s)
+            .unwrap_or(0.0),
+        total_detachment_kg: row.erosion.total_detachment_kg.unwrap_or(0.0),
+        total_deposition_kg: row.erosion.total_deposition_kg.unwrap_or(0.0),
+        sediment_concentration_kg_m3: row
+            .erosion
+            .sediment_concentration_kg_m3
+            .unwrap_or([0.0; 5]),
+    })
+}
+
+fn build_loss_output_json_from_direct_publication(
+    publication: &DirectRunPublicationFrame,
+) -> Result<String, HillslopeCliError> {
+    let first_day = publication
+        .first_day()
+        .ok_or_else(|| direct_publication_output_failure("missing first direct publication row"))?;
+    let last_day = publication
+        .last_day()
+        .ok_or_else(|| direct_publication_output_failure("missing last direct publication row"))?;
+    Ok(format!(
+        "openwepp_optional_output_v1\nrun_name={}\nfile=direct-publication-frame\nfirst_year={}\nfirst_day={}\nlast_year={}\nlast_day={}\nclimate_day_count={}\nexecuted_day_count={}\nprecipitation_mm={:.3}\n",
+        publication.metadata.run_name,
+        first_day.calendar.year,
+        first_day.calendar.julian_day,
+        last_day.calendar.year,
+        last_day.calendar.julian_day,
+        publication.identity.day_count,
+        publication.identity.day_count,
+        first_day.climate.precipitation_mm
+    ))
+}
+
+fn build_manifest_text_from_direct_publication(
+    publication: &DirectRunPublicationFrame,
+) -> Result<String, HillslopeCliError> {
+    if publication.rows().is_empty() {
+        return Err(direct_publication_output_failure(
+            "direct publication manifest requires at least one row",
+        ));
+    }
+    Ok(format!(
+        "direct_publication_frame_v1\nrun_name={}\nruntime_selection={}\noutput_policy={}\nrow_count={}\nlane_count={}\nday_count={}\n",
+        publication.metadata.run_name,
+        publication.metadata.runtime_selection,
+        publication.metadata.output_policy,
+        publication.rows().len(),
+        publication.identity.lane_count,
+        publication.identity.day_count
+    ))
+}
+
+fn direct_publication_i32_to_i16(field: &'static str, value: i32) -> Result<i16, HillslopeCliError> {
+    i16::try_from(value).map_err(|_| {
+        direct_publication_output_failure(format!(
+            "direct publication field {field} out of i16 range: {value}"
+        ))
+    })
+}
+
+fn direct_publication_u16_to_i16(field: &'static str, value: u16) -> Result<i16, HillslopeCliError> {
+    i16::try_from(value).map_err(|_| {
+        direct_publication_output_failure(format!(
+            "direct publication field {field} out of i16 range: {value}"
+        ))
+    })
+}
+
+fn direct_publication_u32_to_i16(field: &'static str, value: u32) -> Result<i16, HillslopeCliError> {
+    i16::try_from(value).map_err(|_| {
+        direct_publication_output_failure(format!(
+            "direct publication field {field} out of i16 range: {value}"
+        ))
+    })
+}
+
+fn direct_publication_u32_to_i32(field: &'static str, value: u32) -> Result<i32, HillslopeCliError> {
+    i32::try_from(value).map_err(|_| {
+        direct_publication_output_failure(format!(
+            "direct publication field {field} out of i32 range: {value}"
+        ))
+    })
+}
+
+fn direct_publication_output_failure(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_publication_frame",
+        detail: format!("{SIMOUT_GUARD_ID} {}", detail.into()),
+    }
+}
+
 fn build_hillslope_pass_row(
     wepp_id: i32,
     wb13_row: &SimulationOwnedWb13Row,

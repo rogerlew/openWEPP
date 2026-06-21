@@ -49,6 +49,32 @@
   that was not a current required gate. If it was a current required gate, that
   phrase must be paired with a hold disposition and blocker rationale.
 
+## Consumer-Path Closure Rule
+- A package that claims `endpoint`, `direct`, `cutover`, `publication`,
+  `ready`, `activation`, or equivalent production-readiness language must prove
+  the real downstream consumer reads the new path.
+- Producer-only, skeleton-only, counter-only, shadow-only, and
+  direct-runtime-internal evidence is iteration evidence. It cannot close a
+  consumer-facing gate unless the package is explicitly characterization-only
+  and makes no readiness or cutover claim.
+- Required consumer-path evidence includes a current package artifact naming:
+  producer source, in-memory state/frame object, runner handoff, downstream
+  consumer call site, output or API surface, and the negative proof that the old
+  compatibility path is not used for that claim.
+- `DirectSkeletonNoop`, `DirectSkeletonShadowOnly`, and similar scaffolds may
+  exercise dimensions and counters, but they cannot satisfy endpoint,
+  publication, activation, or cutover acceptance. Any package using them must
+  label the evidence as scaffolding only.
+- Before closure, run a "what still reads the old path?" check over the named
+  downstream consumers. If any current-scope consumer still reads compatibility
+  state, runtime symbols, writeback payloads, stale logical state, or a wrapper
+  around those structures, the package must close in `HOLD` or continue until
+  the consumer is moved.
+- If that check exposes a blocker outside the package envelope, immediately
+  scaffold or update a hold-lift package with the concrete blocker, write set,
+  consumer-path proof requirements, and first actionable implementation step.
+  Do not leave only a narrative handoff note.
+
 ## Conservation / Publication Acceptance Rule
 - For packages that create, correct, or aggregate conservation-sensitive output
   surfaces (water, sediment, energy, mass, routed runoff, or closure ledgers),

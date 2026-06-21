@@ -68,6 +68,9 @@ fn run() -> Result<(), String> {
             "--direct-runtime-skeleton" => {
                 runtime_selection = HillslopeRuntimeSelection::DirectSkeletonNoop;
             }
+            "--direct-publication-frame-shadow" => {
+                runtime_selection = HillslopeRuntimeSelection::DirectPublicationFrameShadow;
+            }
             "--help" | "-h" => {
                 print_help();
                 return Ok(());
@@ -113,6 +116,6 @@ fn run() -> Result<(), String> {
 
 fn print_help() {
     println!(
-        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--manifest-path <path>] [--direct-runtime-skeleton]"
+        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--manifest-path <path>] [--direct-runtime-skeleton] [--direct-publication-frame-shadow]"
     );
 }

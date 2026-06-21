@@ -23,7 +23,8 @@ use crate::{
     DirectLedgerDownstreamOperands, DirectLedgerShadowProjection, DirectLiquidInputInputs,
     DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
     DirectNormalizationShadowProjection, DirectNormalizationState, DirectPercolationInputs,
-    DirectPhaseKind, DirectPhaseLifecycleStatus, DirectRunFrame, DirectRunIdentity,
+    DirectPhaseKind, DirectPhaseLifecycleStatus, DirectPublicationCalendarDay,
+    DirectPublicationRunMetadata, DirectRunFrame, DirectRunIdentity,
     DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
     DirectRunoffPartitionInputs, DirectRunonCarryInputs, DirectRuntimeError,
     DirectSaturationAddbackInputs, DirectShadowProjection, DirectSnowCouplingDownstreamOperands,
@@ -184,6 +185,67 @@ fn r5a_direct_skeleton_runs_all_days_and_lanes_with_lifecycle_counters() {
         audit.shadow_projections,
         1 + expected_day_frames * r5c_day_span_run_count()
     );
+    assert_eq!(audit.compatibility_edge_invocations, 0);
+}
+
+#[test]
+fn r6a_publication_capture_records_run_bound_rows_without_publication_alias() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(11, 2637, 2, 2)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct frame should construct for capture");
+    for (index, lane) in frame.lanes.iter_mut().enumerate() {
+        lane.area_m2 = if index == 0 { 100.0 } else { 101.0 };
+        lane.publication.runoff_m = 0.875;
+        lane.publication.evapotranspiration_m = 0.25;
+        lane.publication.drainage_m = 0.125;
+        lane.publication.lateral_flow_m = 0.0625;
+    }
+    let calendar_days = [
+        DirectPublicationCalendarDay {
+            year: 2026,
+            julian_day: 274,
+            month: 10,
+            day_of_month: 1,
+            water_year: 2027,
+        },
+        DirectPublicationCalendarDay {
+            year: 2026,
+            julian_day: 275,
+            month: 10,
+            day_of_month: 2,
+            water_year: 2027,
+        },
+    ];
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r6a_capture".to_string(),
+        runtime_selection: "direct-publication-frame-shadow".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        .run_publication_capture(&mut frame, metadata, &calendar_days)
+        .expect("direct publication capture should execute");
+
+    assert_eq!(execution.publication_frame.rows().len(), 4);
+    let first_row = execution
+        .publication_frame
+        .first_day()
+        .expect("capture should include first row");
+    assert_eq!(first_row.calendar.julian_day, 274);
+    assert_eq!(first_row.area_m2.to_bits(), 100.0_f64.to_bits());
+    assert_ne!(first_row.runoff.q_mm.to_bits(), 875.0_f64.to_bits());
+    assert_eq!(first_row.runoff.q_mm.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+
+    let audit = crate::direct_runtime_audit_snapshot();
+    assert_eq!(audit.publication_capture_runs, 1);
+    assert_eq!(audit.skeleton_runs, 0);
     assert_eq!(audit.compatibility_edge_invocations, 0);
 }
 

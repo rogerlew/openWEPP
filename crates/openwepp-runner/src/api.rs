@@ -29,6 +29,7 @@ pub enum HillslopeRuntimeSelection {
     Compatibility,
     DirectSkeletonNoop,
     DirectSkeletonShadowOnly,
+    DirectPublicationFrameShadow,
 }
 
 impl HillslopeRuntimeSelection {
@@ -38,6 +39,7 @@ impl HillslopeRuntimeSelection {
             Self::Compatibility => "compatibility",
             Self::DirectSkeletonNoop => "direct-skeleton-noop",
             Self::DirectSkeletonShadowOnly => "direct-skeleton-shadow-only",
+            Self::DirectPublicationFrameShadow => "direct-publication-frame-shadow",
         }
     }
 }
