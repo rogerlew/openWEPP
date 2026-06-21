@@ -13,14 +13,29 @@
 
 State as of `2026-06-20`:
 
-- `20260620-r5c-decomposition-residue-direct-transitions-001/` is scaffolded
-  and in progress from `r5-burndown-execplan.md`. It owns direct
-  `DecompositionTransition` and `ResiduePartitionTransition` phase promotion.
+- None. Next R5 work is R5D direct annual/perennial growth transition
+  promotion from `r5-burndown-execplan.md`.
 
 ## Current roadmap execution log
 
 State as of `2026-06-20`:
 
+- R5C is complete with verdict
+  `COMPLETE-R5C-DECOMPOSITION-RESIDUE-DIRECT-TRANSITIONS`. The package
+  promoted direct `DecompositionTransition` and `ResiduePartitionTransition`
+  executor calls, adding typed inputs, direct compute, direct state mutation,
+  downstream operands, and shadow projection for both phases. R5C implements
+  the `SC-RESIDUE-001` PL17 tracked seed-pool update over typed active
+  decomposition context, validates missing/ambiguous context and invalid
+  residue/fraction/rate domains as typed hard failures, and projects typed
+  residue partition operands without public-output cutover. Annual and
+  perennial growth remain explicit `Hold` phases for R5D. Full Rust gates
+  passed. Final default-disabled H2637 reps were `639.05 s`, `646.33 s`, and
+  `643.96 s` (median `643.96 s`, threshold `<= 676.67 s`) with protected
+  output comparison passing through HBP/WAT byte identity, PASS DuckDB row
+  equivalence, and run-name-only normalized loss/plot differences. Package:
+  `20260620-r5c-decomposition-residue-direct-transitions-001/`. Pushed commit:
+  `efdf6710`.
 - R5B is complete with verdict
   `COMPLETE-R5B-NORMALIZATION-STORAGE-BOUNDS-DIRECT-PHASES`. The package
   promoted direct `Normalization` and `StorageBounds` executor calls, adding

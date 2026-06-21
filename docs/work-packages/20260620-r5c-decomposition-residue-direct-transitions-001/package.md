@@ -1,6 +1,6 @@
 # R5C - Direct Decomposition And Residue Transitions
 
-Status: executed; ready for commit and push.
+Status: complete; pushed.
 
 Package type: implementation work package / array-native runtime R5 phase
 promotion.
@@ -116,4 +116,4 @@ be completed locally; they must not claim delegated work occurred.
 
 `COMPLETE-R5C-DECOMPOSITION-RESIDUE-DIRECT-TRANSITIONS`.
 
-Pushed commit: pending.
+Pushed commit: `efdf6710`.

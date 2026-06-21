@@ -1,6 +1,6 @@
 # Disposition
 
-Status: executed; ready for commit and push.
+Status: complete; pushed.
 
 Final verdict: `COMPLETE-R5C-DECOMPOSITION-RESIDUE-DIRECT-TRANSITIONS`.
 
@@ -19,4 +19,4 @@ state mutation, downstream operands, and shadow projection. R5B upstream and
 R5C inter-phase prerequisites fail closed. Public outputs remain
 compatibility-authoritative.
 
-Pushed commit: pending.
+Pushed commit: `efdf6710`.

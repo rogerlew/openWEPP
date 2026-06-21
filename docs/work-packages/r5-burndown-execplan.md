@@ -50,7 +50,11 @@ grouped package starts.
   `20260620-r5b-normalization-storage-bounds-direct-phases-001/`; pushed
   commit `27de814c`; branch `main`; verdict
   `COMPLETE-R5B-NORMALIZATION-STORAGE-BOUNDS-DIRECT-PHASES`.
-- [ ] R5C direct decomposition and residue transitions.
+- [x] R5C direct decomposition and residue transitions - complete
+  2026-06-20; package
+  `20260620-r5c-decomposition-residue-direct-transitions-001/`; pushed
+  commit `efdf6710`; branch `main`; verdict
+  `COMPLETE-R5C-DECOMPOSITION-RESIDUE-DIRECT-TRANSITIONS`.
 - [ ] R5D direct annual and perennial growth transitions.
 - [ ] R5E full 14-phase direct endpoint readiness and R5 closure.
 

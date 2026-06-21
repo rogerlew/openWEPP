@@ -1,6 +1,6 @@
 # Worker Handoff
 
-Status: complete pending push metadata.
+Status: complete; pushed.
 
 ## Completed Scope
 
@@ -29,4 +29,4 @@ Ran:
 Proceed to R5D after the R5C package commit is pushed and
 `docs/work-packages/r5-burndown-execplan.md` records the pushed SHA.
 
-Pushed commit: pending.
+Pushed commit: `efdf6710`.
