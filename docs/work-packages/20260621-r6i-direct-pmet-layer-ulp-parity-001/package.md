@@ -1,6 +1,6 @@
 # R6I - Direct PMET Layer ULP Parity
 
-Status: scaffolded.
+Status: complete.
 
 Package type: Defect-Closure ExecPlan / R6 direct WAT publication cutover.
 
@@ -86,7 +86,35 @@ by contract or pinned-baseline provenance.
 ## Progress
 
 - [x] Scaffolded from R6H hold evidence.
-- [ ] Localize first PMET layer-carry bit divergence.
-- [ ] Correct direct layer carry exactness without compatibility aliases.
-- [ ] Prove WAT `Es` parity and no R6G/R6H marker.
-- [ ] Complete review, verification, and gate evidence.
+- [x] Localize first PMET layer-carry bit divergence.
+- [x] Correct direct layer carry exactness without compatibility aliases.
+- [x] Prove WAT `Es` parity and no R6G/R6H marker.
+- [x] Complete review, verification, and gate evidence.
+
+## Final Disposition
+
+`COMPLETE-R6I-DIRECT-PMET-LAYER-ULP-PARITY`.
+
+R6I localized the first bit divergence to direct lane commit carry: direct
+state carried the WB17 post-root-uptake layer vector, while compatibility
+carried the post-runoff-reconciliation active-frost fine-layer topology
+projection. The direct runtime now carries an explicit typed
+`DirectFrostLayerCarryProjection` and applies the same coarse-to-fine-to-coarse
+active liquid aggregation before storing lane subsurface layers for the next
+day. The runner builds the projection from direct seed-surface frost options
+and layer geometry; it does not source WB13 rows, compatibility runtime
+surfaces, writer rows, or output rows as direct authority.
+
+Current-fixture HBP identity and WAT identity are green. The R6G and R6H WAT
+hold markers are absent. `DirectPublicationFrameCutover` still fails closed,
+but the fail-closed blocker has moved past WAT/HBP/PMET to manifest writer
+cutover: `manifest direct projection is not wired to the production manifest
+writer`.
+
+Evidence:
+
+- `artifacts/execution-evidence.md`
+- `artifacts/review-disposition.md`
+- `artifacts/verification.md`
+- `artifacts/line-count-governance.md`
+- `artifacts/worker-handoff.md`

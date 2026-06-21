@@ -19,17 +19,17 @@ use crate::{
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationDownstreamOperands,
     DirectEvapotranspirationInputs, DirectEvapotranspirationPmetInputs,
     DirectEvapotranspirationShadowProjection, DirectEvapotranspirationState, DirectExecutorMode,
-    DirectFrameExecutor, DirectHydrologyProjectionInputs, DirectInfiltrationDepressionInputs,
-    DirectInputAccountingState, DirectLaneTransferLedger, DirectLedgerDownstreamOperands,
-    DirectLedgerShadowProjection, DirectLiquidInputInputs, DirectNormalizationDownstreamOperands,
-    DirectNormalizationInputs, DirectNormalizationShadowProjection, DirectNormalizationState,
-    DirectPercolationInputs, DirectPhaseKind, DirectPhaseLifecycleStatus,
-    DirectPublicationCalendarDay, DirectPublicationDayInput, DirectPublicationRunMetadata,
-    DirectRunFrame, DirectRunIdentity, DirectRunTransferDownstreamOperands,
-    DirectRunTransferShadowProjection, DirectRunoffPartitionInputs, DirectRunonCarryInputs,
-    DirectRuntimeError, DirectSaturationAddbackInputs, DirectShadowProjection,
-    DirectSnowCouplingDownstreamOperands, DirectSnowCouplingInputs,
-    DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
+    DirectFrameExecutor, DirectFrostLayerCarryProjection, DirectHydrologyProjectionInputs,
+    DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneTransferLedger,
+    DirectLedgerDownstreamOperands, DirectLedgerShadowProjection, DirectLiquidInputInputs,
+    DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
+    DirectNormalizationShadowProjection, DirectNormalizationState, DirectPercolationInputs,
+    DirectPhaseKind, DirectPhaseLifecycleStatus, DirectPublicationCalendarDay,
+    DirectPublicationDayInput, DirectPublicationRunMetadata, DirectRunFrame, DirectRunIdentity,
+    DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
+    DirectRunoffPartitionInputs, DirectRunonCarryInputs, DirectRuntimeError,
+    DirectSaturationAddbackInputs, DirectShadowProjection, DirectSnowCouplingDownstreamOperands,
+    DirectSnowCouplingInputs, DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
     DirectStorageBoundsDownstreamOperands, DirectStorageBoundsInputs,
     DirectStorageBoundsShadowProjection, DirectStorageBoundsState, DirectStorageDownstreamOperands,
     DirectStorageInputDownstreamOperands, DirectStorageInputShadowProjection,
@@ -343,6 +343,57 @@ fn r6h_publication_capture_builds_lane_day_inputs_after_direct_commit() {
     assert!((rows[2].evaporation.es_mm - 1.9).abs() < 1.0e-12);
     assert!((rows[3].evaporation.es_mm - 1.8).abs() < 1.0e-12);
     assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+}
+
+#[test]
+fn r6i_direct_frost_carry_projection_preserves_fine_layer_aggregate_ulp() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(17, 501, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct frame should construct for capture");
+    frame.lanes[0].area_m2 = 100.0;
+    let mut layer_inputs = r6f_typed_base_layer_inputs();
+    layer_inputs.theta_m = 0.023_876_766_951_720_32;
+    layer_inputs.depth_m = 0.200;
+    layer_inputs.residual_theta = 0.140_679_649_464_459_6;
+    layer_inputs.field_capacity_m = 0.050;
+    layer_inputs.upper_limit_m = 0.100;
+    let base_layer = DirectSubsurfaceLayerState::from(layer_inputs.clone());
+    let mut process_projection = r6f_typed_process_projection();
+    process_projection.profile_depth_m = Some(0.200);
+    process_projection.profile_porosity_cap_m = Some(0.100);
+    let mut day_input = r6f_typed_first_day(base_layer, layer_inputs, process_projection);
+    let initial_soil_water_m = 0.023_876_766_951_720_32 + 0.140_679_649_464_459_6 * 0.200;
+    day_input.initial_soil_water_m = Some(initial_soil_water_m);
+    if let Some(percolation_inputs) = day_input.percolation_inputs.as_mut() {
+        percolation_inputs.soil_water_initial_m = initial_soil_water_m;
+    }
+    day_input.evapotranspiration_compute_inputs = Some(r6h_typed_evapotranspiration_inputs(0.0));
+    day_input.frost_layer_carry_projection = Some(vec![DirectFrostLayerCarryProjection {
+        layer_index: 1,
+        fine_layer_count: 10,
+        fine_layer_thickness_m: 0.020,
+    }]);
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r6i_frost_carry_projection".to_string(),
+        runtime_selection: "direct-publication-frame-cutover-candidate".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        .run_publication_capture_with_day_inputs(&mut frame, metadata, &[day_input])
+        .expect("typed direct publication capture should execute");
+
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+    assert_eq!(
+        frame.lanes[0].subsurface_layers[0].theta_m.to_bits(),
+        0.023_876_766_951_720_325_f64.to_bits()
+    );
 }
 
 fn r6f_typed_publication_day_inputs() -> [DirectPublicationDayInput; 2] {

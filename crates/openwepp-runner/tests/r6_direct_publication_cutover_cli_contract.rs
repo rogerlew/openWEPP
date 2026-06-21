@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 #[test]
-fn r6_direct_publication_cutover_cli_flag_reaches_hbp_identity_then_fails_pmet_layer_ulp_parity() {
+fn r6_direct_publication_cutover_cli_flag_clears_pmet_layer_then_fails_manifest_cutover() {
     let source_fixture_dir = fixture_path("hillslope_run_dir");
     let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, "r6_cli_cutover_candidate");
     let output_dir = temp_run_dir.join("output");
@@ -29,12 +29,13 @@ fn r6_direct_publication_cutover_cli_flag_reaches_hbp_identity_then_fails_pmet_l
         "unexpected stderr: {stderr}"
     );
     assert!(
-        stderr.contains("HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY"),
+        stderr
+            .contains("manifest direct projection is not wired to the production manifest writer"),
         "unexpected stderr: {stderr}"
     );
     assert!(
-        stderr.contains("reduced_fields=Es"),
-        "unexpected stderr: {stderr}"
+        !stderr.contains("HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY"),
+        "PMET layer ULP blocker should be cleared: {stderr}"
     );
     assert!(
         !stderr.contains("HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT"),

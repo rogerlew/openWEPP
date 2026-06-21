@@ -689,7 +689,7 @@ mod tests {
     }
 
     #[test]
-    fn r6h_cutover_candidate_clears_day_state_carry_then_fails_pmet_layer_ulp_parity() {
+    fn r6i_cutover_candidate_clears_pmet_layer_ulp_then_fails_manifest_cutover() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -721,12 +721,12 @@ mod tests {
             "unexpected error: {message}"
         );
         assert!(
-            message.contains("HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY"),
+            message.contains("manifest direct projection is not wired to the production manifest writer"),
             "unexpected error: {message}"
         );
         assert!(
-            message.contains("reduced_fields=Es"),
-            "unexpected error: {message}"
+            !message.contains("HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY"),
+            "PMET layer ULP blocker should be cleared: {message}"
         );
         assert!(
             !message.contains("HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT"),
@@ -969,7 +969,7 @@ mod tests {
     }
 
     #[test]
-    fn r6h_cutover_candidate_hbp_identity_reduces_wat_to_pmet_layer_ulp_gap() {
+    fn r6i_cutover_candidate_hbp_and_wat_identity_clear_pmet_layer_ulp_gap() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -977,7 +977,32 @@ mod tests {
         let evidence = r6f_hbp_wat_fixture_evidence();
 
         assert_r6f_hbp_identity(&evidence);
-        assert_r6h_wat_reduced_to_pmet_layer_ulp_gap(&evidence);
+        assert_r6i_wat_identity(&evidence);
+    }
+
+    #[test]
+    fn r6i_direct_day_two_pmet_seed_matches_compatibility_runtime_seed() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        reset_direct_runtime_audit_counters();
+
+        let direct_seed_surface = r6i_direct_day_two_seed_surface();
+        let compatibility_execution = r6i_compatibility_fixture_execution();
+        for symbol in ["pmet.wfevp_mm", "pmet.etkr", "pmet.es_m"] {
+            let direct = runtime_surface_symbol_value(&direct_seed_surface, symbol)
+                .unwrap_or_else(|| panic!("direct day-2 seed must publish {symbol}"));
+            let compatibility = runtime_surface_symbol_value(
+                &compatibility_execution.runtime_surface,
+                symbol,
+            )
+            .unwrap_or_else(|| panic!("compatibility day-2 runtime must publish {symbol}"));
+            assert_eq!(
+                direct.to_bits(),
+                compatibility.to_bits(),
+                "{symbol} bit parity failed: direct={direct:?} compatibility={compatibility:?}"
+            );
+        }
     }
 
     struct R6fHbpWatEvidence {
@@ -1049,6 +1074,112 @@ mod tests {
         }
     }
 
+    fn r6i_direct_day_two_seed_surface() -> HillslopeWritebackSurface {
+        let source_fixture_dir = fixture_path("hillslope_run_dir");
+        let temp_run_dir = copy_fixture_to_temp(
+            &source_fixture_dir,
+            "r6i_direct_day_two_pmet_seed",
+        );
+        let request = HillslopeRunRequest {
+            run_dir: temp_run_dir.clone(),
+            run_file: PathBuf::from("case.run"),
+            output_dir: temp_run_dir.join("output"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        };
+        let inputs = load_hillslope_run_inputs(&request).expect("fixture inputs should parse");
+        let targets = resolve_hillslope_output_targets(&inputs.runfile)
+            .expect("fixture output targets should resolve");
+        let mut sidecars = resolve_hillslope_sidecars(&request, &inputs, &targets)
+            .expect("fixture sidecars should resolve");
+        let runtime_setup =
+            build_static_hillslope_runtime_setup(&request, &inputs, &mut sidecars)
+                .expect("fixture runtime setup should build");
+        let climate_request = build_hillslope_climate_runtime_request(&inputs.climate)
+            .expect("fixture climate request should build");
+        let identity = DirectRunIdentity::new(
+            u64::from(targets.output_hillslope_id),
+            targets.output_hillslope_id,
+            runtime_setup.execution_state.per_ofe_lane_areas_m2.len(),
+            runtime_setup.execution_state.climate_span.days.len(),
+        )
+        .expect("valid direct identity should construct");
+        let mut frame =
+            DirectRunFrame::skeleton(identity).expect("direct frame should construct");
+        seed_direct_publication_lane_area_geometry(
+            &mut frame,
+            &runtime_setup.execution_state.per_ofe_lane_areas_m2,
+        )
+        .expect("direct lane geometry should seed");
+        let day_input_builder = DirectPublicationDayInputBuilder::new(
+            &climate_request,
+            &runtime_setup.execution_state.climate_span,
+            &runtime_setup.execution_state.runtime_surface,
+            runtime_setup.execution_state.lane_context.lane,
+        )
+        .expect("direct day-input builder should construct");
+        let metadata = DirectPublicationRunMetadata {
+            run_name: inputs.runfile.run_name.clone(),
+            runtime_selection: HillslopeRuntimeSelection::DirectPublicationFrameCutover
+                .as_str()
+                .to_string(),
+            output_policy: direct_publication_output_policy(
+                HillslopeRuntimeSelection::DirectPublicationFrameCutover,
+            )
+            .to_string(),
+        };
+        let mut day_two_seed_surface = None;
+        DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+            .run_publication_capture_with_interleaved_day_inputs(
+                &mut frame,
+                metadata,
+                |frame, day_index, lane_index| {
+                    let (day_input, seed_surface) = day_input_builder
+                        .build_with_seed_surface(frame, day_index, lane_index)
+                        .map_err(|error| direct_publication_day_input_build_error(&error))?;
+                    if day_index == 1 && lane_index == 0 {
+                        day_two_seed_surface = Some(seed_surface);
+                    }
+                    Ok(day_input)
+                },
+            )
+            .expect("direct publication capture should complete");
+        day_two_seed_surface.expect("fixture should include a day-2 direct seed surface")
+    }
+
+    fn r6i_compatibility_fixture_execution() -> HillslopeClimateExecution {
+        let source_fixture_dir = fixture_path("hillslope_run_dir");
+        let temp_run_dir = copy_fixture_to_temp(
+            &source_fixture_dir,
+            "r6i_compatibility_day_two_pmet_seed",
+        );
+        let request = HillslopeRunRequest {
+            run_dir: temp_run_dir.clone(),
+            run_file: PathBuf::from("case.run"),
+            output_dir: temp_run_dir.join("output"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        };
+        let inputs = load_hillslope_run_inputs(&request).expect("fixture inputs should parse");
+        let targets = resolve_hillslope_output_targets(&inputs.runfile)
+            .expect("fixture output targets should resolve");
+        let mut sidecars = resolve_hillslope_sidecars(&request, &inputs, &targets)
+            .expect("fixture sidecars should resolve");
+        let runtime_setup =
+            build_static_hillslope_runtime_setup(&request, &inputs, &mut sidecars)
+                .expect("fixture runtime setup should build");
+        execute_hillslope_climate_days(
+            &inputs.runfile.run_name,
+            targets.output_hillslope_id,
+            HillslopeRuntimeSelection::DirectPublicationFrameCutover,
+            runtime_setup.execution_state,
+            &inputs.climate,
+        )
+        .expect("fixture climate execution should complete")
+    }
+
     fn assert_r6f_hbp_identity(evidence: &R6fHbpWatEvidence) {
         let (_, direct_payload) = parse_hbp_from_bytes_with_latest_event_payload(
             &evidence.direct_hbp_bytes,
@@ -1073,14 +1204,17 @@ mod tests {
         );
     }
 
-    fn assert_r6h_wat_reduced_to_pmet_layer_ulp_gap(evidence: &R6fHbpWatEvidence) {
+    fn assert_r6i_wat_identity(evidence: &R6fHbpWatEvidence) {
         assert_eq!(
             evidence.direct_wat_rows.len(),
             evidence.compatibility_wat_rows.len()
         );
         let reduced_fields =
             reduced_wat_mismatch_fields(&evidence.direct_wat_rows, &evidence.compatibility_wat_rows);
-        assert_eq!(reduced_fields, vec!["Es"]);
+        assert!(
+            reduced_fields.is_empty(),
+            "R6I WAT parity should leave no reduced mismatch fields, observed {reduced_fields:?}"
+        );
         assert!(!r6g_wat_direct_et_storage_producer_gap(
             &reduced_fields
         ));
@@ -1089,41 +1223,15 @@ mod tests {
             &evidence.compatibility_wat_rows,
             &reduced_fields
         ));
-        assert!(r6h_wat_pmet_layer_carry_ulp_gap(
+        assert!(!r6h_wat_pmet_layer_carry_ulp_gap(
             &evidence.direct_wat_rows,
             &evidence.compatibility_wat_rows,
             &reduced_fields
         ));
-        let direct_first = evidence
-            .direct_wat_rows
-            .first()
-            .expect("direct WAT rows should include first day");
-        let compatibility_first = evidence
-            .compatibility_wat_rows
-            .first()
-            .expect("compatibility WAT rows should include first day");
-        assert_eq!(direct_first, compatibility_first);
-        let direct_second = evidence
-            .direct_wat_rows
-            .get(1)
-            .expect("direct WAT rows should include second day");
-        let compatibility_second = evidence
-            .compatibility_wat_rows
-            .get(1)
-            .expect("compatibility WAT rows should include second day");
-        assert_f64_bits_ne(direct_second.es, compatibility_second.es);
         assert_eq!(
-            direct_second.total_soil_water.to_bits(),
-            compatibility_second.total_soil_water.to_bits()
+            evidence.direct_wat_rows, evidence.compatibility_wat_rows,
+            "direct WAT rows must be byte-equivalent at row value level after R6I"
         );
-        assert_eq!(
-            direct_second.soil_water_total.map(f64::to_bits),
-            compatibility_second.soil_water_total.map(f64::to_bits)
-        );
-    }
-
-    fn assert_f64_bits_ne(left: f64, right: f64) {
-        assert_ne!(left.to_bits(), right.to_bits());
     }
 
     #[test]

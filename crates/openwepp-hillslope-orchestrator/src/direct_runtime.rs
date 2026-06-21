@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fmt;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use crate::constants::{WB16_PEAKRO_FLOOR, WB16_RUNOFF_NEAR_ZERO_THRESHOLD};
+use crate::constants::{WB11_ZERO_THRESHOLD, WB16_PEAKRO_FLOOR, WB16_RUNOFF_NEAR_ZERO_THRESHOLD};
 
 pub const DIRECT_TRANSFER_HOUR_COUNT: usize = 24;
 pub const DIRECT_PHASE_COUNT: usize = 14;
@@ -655,12 +655,24 @@ impl DirectLaneFrame {
                     .evapotranspiration_compute
                     .layer_state_after_root_uptake,
             );
+            apply_direct_frost_carry_projection(
+                &mut self.subsurface_layers,
+                day_frame.frost_layer_carry_projection.as_deref(),
+            )?;
         } else if !day_frame.subsurface_compute.layer_state_after.is_empty() {
             self.subsurface_layers
                 .clone_from(&day_frame.subsurface_compute.layer_state_after);
+            apply_direct_frost_carry_projection(
+                &mut self.subsurface_layers,
+                day_frame.frost_layer_carry_projection.as_deref(),
+            )?;
         } else if !day_frame.percolation.layer_state_after.is_empty() {
             self.subsurface_layers
                 .clone_from(&day_frame.percolation.layer_state_after);
+            apply_direct_frost_carry_projection(
+                &mut self.subsurface_layers,
+                day_frame.frost_layer_carry_projection.as_deref(),
+            )?;
         }
         self.evapotranspiration_stage_state =
             day_frame.evapotranspiration_surface.stage_state_after;
@@ -771,6 +783,7 @@ pub struct DirectDayFrame {
     pub hydrology_projection: DirectHydrologyProjectionState,
     pub hydrology_projection_downstream_operands: DirectHydrologyProjectionDownstreamOperands,
     pub hydrology_projection_shadow_projection: Option<DirectHydrologyProjectionShadowProjection>,
+    pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
     pub water_ledger: DirectWaterLedgerState,
     pub ledger_downstream_operands: DirectLedgerDownstreamOperands,
     pub ledger_shadow_projection: Option<DirectLedgerShadowProjection>,
@@ -890,6 +903,7 @@ impl DirectDayFrame {
             hydrology_projection_downstream_operands:
                 DirectHydrologyProjectionDownstreamOperands::zero(),
             hydrology_projection_shadow_projection: None,
+            frost_layer_carry_projection: None,
             water_ledger: DirectWaterLedgerState::zero(),
             ledger_downstream_operands: DirectLedgerDownstreamOperands::zero(),
             ledger_shadow_projection: None,
@@ -1232,6 +1246,7 @@ pub struct DirectPublicationDayInput {
     pub subsurface_compute_inputs: Option<DirectSubsurfaceComputeInputs>,
     pub evapotranspiration_compute_inputs: Option<DirectEvapotranspirationComputeInputs>,
     pub hydrology_projection_inputs: Option<DirectHydrologyProjectionInputs>,
+    pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
 }
 
 impl DirectPublicationDayInput {
@@ -1246,8 +1261,90 @@ impl DirectPublicationDayInput {
             subsurface_compute_inputs: None,
             evapotranspiration_compute_inputs: None,
             hydrology_projection_inputs: None,
+            frost_layer_carry_projection: None,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectFrostLayerCarryProjection {
+    pub layer_index: usize,
+    pub fine_layer_count: usize,
+    pub fine_layer_thickness_m: f64,
+}
+
+impl DirectFrostLayerCarryProjection {
+    fn validate_for_layer(
+        self,
+        expected_layer_index: usize,
+        layer: &DirectSubsurfaceLayerState,
+    ) -> Result<(), DirectRuntimeError> {
+        if self.layer_index != expected_layer_index
+            || self.fine_layer_count == 0
+            || !self.fine_layer_thickness_m.is_finite()
+            || self.fine_layer_thickness_m <= WB11_ZERO_THRESHOLD
+            || !layer.depth_m.is_finite()
+            || layer.depth_m <= WB11_ZERO_THRESHOLD
+            || self.fine_layer_thickness_m > layer.depth_m + WB11_ZERO_THRESHOLD
+            || !layer.theta_m.is_finite()
+            || !layer.residual_theta.is_finite()
+            || !layer.frozen_depth_m.is_finite()
+            || layer.frozen_depth_m < -WB11_ZERO_THRESHOLD
+            || layer.frozen_depth_m > layer.depth_m + WB11_ZERO_THRESHOLD
+        {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "frost_layer_carry_projection",
+            });
+        }
+        Ok(())
+    }
+
+    fn projected_theta_m(self, layer: &DirectSubsurfaceLayerState) -> f64 {
+        let mut remaining_frozen_depth_m = layer.frozen_depth_m.max(0.0);
+        let unfrozen_depth_m = (layer.depth_m - layer.frozen_depth_m).max(0.0);
+        let slsw_theta = if unfrozen_depth_m > WB11_ZERO_THRESHOLD {
+            layer.residual_theta + layer.theta_m / unfrozen_depth_m
+        } else {
+            layer.residual_theta
+        };
+        let active_liquid_theta = (slsw_theta - layer.residual_theta).max(0.0);
+        let mut active_liquid_m = 0.0_f64;
+        for _ in 0..self.fine_layer_count {
+            let slfsd_m = remaining_frozen_depth_m
+                .min(self.fine_layer_thickness_m)
+                .max(0.0);
+            remaining_frozen_depth_m = (remaining_frozen_depth_m - slfsd_m).max(0.0);
+            let fine_unfrozen_depth_m = (self.fine_layer_thickness_m - slfsd_m).max(0.0);
+            active_liquid_m += active_liquid_theta * fine_unfrozen_depth_m;
+        }
+        active_liquid_m
+    }
+}
+
+fn apply_direct_frost_carry_projection(
+    layers: &mut [DirectSubsurfaceLayerState],
+    projection: Option<&[DirectFrostLayerCarryProjection]>,
+) -> Result<(), DirectRuntimeError> {
+    let Some(projection) = projection else {
+        return Ok(());
+    };
+    if projection.len() != layers.len() {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "frost_layer_carry_projection.layer_count",
+        });
+    }
+    for (layer_offset, layer) in layers.iter_mut().enumerate() {
+        let layer_index = layer_offset + 1;
+        let projection = projection
+            .iter()
+            .find(|projection| projection.layer_index == layer_index)
+            .ok_or(DirectRuntimeError::DirectDomainViolation {
+                field: "frost_layer_carry_projection.layer_index",
+            })?;
+        projection.validate_for_layer(layer_index, layer)?;
+        layer.theta_m = projection.projected_theta_m(layer);
+    }
+    Ok(())
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -2313,6 +2410,9 @@ impl DirectFrameExecutor {
         if let Some(hydrology_projection_inputs) = day_input.hydrology_projection_inputs {
             day_frame.hydrology_projection_inputs = hydrology_projection_inputs;
         }
+        day_frame
+            .frost_layer_carry_projection
+            .clone_from(&day_input.frost_layer_carry_projection);
         day_frame.liquid_input_inputs.liquid_input_handoff_m = day_input.precipitation_m;
         Ok(())
     }

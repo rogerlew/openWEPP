@@ -589,6 +589,52 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
         day_index: usize,
         lane_index: usize,
     ) -> Result<DirectPublicationDayInput, HillslopeCliError> {
+        self.build_with_seed_surface(frame, day_index, lane_index)
+            .map(|(day_input, _seed_surface)| day_input)
+    }
+
+    fn build_with_seed_surface(
+        &self,
+        frame: &DirectRunFrame,
+        day_index: usize,
+        lane_index: usize,
+    ) -> Result<(DirectPublicationDayInput, HillslopeWritebackSurface), HillslopeCliError> {
+        let (seed_surface, day) = self.seed_surface(frame, day_index, lane_index)?;
+
+        let precipitation_m = day.precipitation_mm / 1_000.0;
+        let mut day_input =
+            DirectPublicationDayInput::calendar_only(direct_publication_calendar_day(day)?);
+        day_input.precipitation_m = precipitation_m;
+        day_input.effective_temperature_c = day.effective_temperature_c;
+        let mut percolation_inputs =
+            direct_publication_percolation_inputs(&seed_surface, precipitation_m)?;
+        let mut subsurface_inputs = direct_publication_subsurface_inputs(&seed_surface)?;
+        if day_index == 0 {
+            day_input.initial_soil_water_m =
+                Some(require_runtime_surface_scalar(&seed_surface, "wb11_soil_water")?);
+        } else {
+            percolation_inputs.layers.clear();
+            subsurface_inputs.layers.clear();
+        }
+        day_input.percolation_inputs = Some(percolation_inputs);
+        day_input.subsurface_compute_inputs = Some(subsurface_inputs);
+        day_input.evapotranspiration_compute_inputs =
+            Some(direct_publication_evapotranspiration_inputs(
+                &seed_surface,
+                day_index == 0,
+            )?);
+        day_input.hydrology_projection_inputs = Some(self.profile_inputs);
+        day_input.frost_layer_carry_projection =
+            direct_publication_frost_layer_carry_projection(&seed_surface)?;
+        Ok((day_input, seed_surface))
+    }
+
+    fn seed_surface(
+        &self,
+        frame: &DirectRunFrame,
+        day_index: usize,
+        lane_index: usize,
+    ) -> Result<(HillslopeWritebackSurface, &ClimateDayProjection), HillslopeCliError> {
         let day = self.climate_span.days.get(day_index).ok_or_else(|| {
             HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_publication_frame",
@@ -621,31 +667,7 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
         );
         overlay_direct_publication_lane_state(&mut seed_surface, day_index, lane_index, lane)?;
         seed_wb11_runtime_surface_inputs(&mut seed_surface, self.execution_lane)?;
-
-        let precipitation_m = day.precipitation_mm / 1_000.0;
-        let mut day_input =
-            DirectPublicationDayInput::calendar_only(direct_publication_calendar_day(day)?);
-        day_input.precipitation_m = precipitation_m;
-        day_input.effective_temperature_c = day.effective_temperature_c;
-        let mut percolation_inputs =
-            direct_publication_percolation_inputs(&seed_surface, precipitation_m)?;
-        let mut subsurface_inputs = direct_publication_subsurface_inputs(&seed_surface)?;
-        if day_index == 0 {
-            day_input.initial_soil_water_m =
-                Some(require_runtime_surface_scalar(&seed_surface, "wb11_soil_water")?);
-        } else {
-            percolation_inputs.layers.clear();
-            subsurface_inputs.layers.clear();
-        }
-        day_input.percolation_inputs = Some(percolation_inputs);
-        day_input.subsurface_compute_inputs = Some(subsurface_inputs);
-        day_input.evapotranspiration_compute_inputs =
-            Some(direct_publication_evapotranspiration_inputs(
-                &seed_surface,
-                day_index == 0,
-            )?);
-        day_input.hydrology_projection_inputs = Some(self.profile_inputs);
-        Ok(day_input)
+        Ok((seed_surface, day))
     }
 }
 
@@ -843,15 +865,7 @@ fn direct_publication_subsurface_inputs(
 fn direct_publication_layer_states(
     runtime_surface: &HillslopeWritebackSurface,
 ) -> Result<Vec<DirectSubsurfaceLayerState>, HillslopeCliError> {
-    let nsl_symbol = if runtime_surface_symbol_value(runtime_surface, "wb11_nsl").is_some() {
-        "wb11_nsl"
-    } else {
-        "nsl"
-    };
-    let nsl = scalar_to_usize(
-        nsl_symbol,
-        require_runtime_surface_scalar(runtime_surface, nsl_symbol)?,
-    )?;
+    let nsl = direct_publication_layer_count(runtime_surface)?;
     let mut layers = Vec::with_capacity(nsl);
     for layer_index in 1..=nsl {
         layers.push(direct_publication_layer_state(
@@ -860,6 +874,130 @@ fn direct_publication_layer_states(
         )?);
     }
     Ok(layers)
+}
+
+fn direct_publication_layer_count(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<usize, HillslopeCliError> {
+    let nsl_symbol = if runtime_surface_symbol_value(runtime_surface, "wb11_nsl").is_some() {
+        "wb11_nsl"
+    } else {
+        "nsl"
+    };
+    scalar_to_usize(
+        nsl_symbol,
+        require_runtime_surface_scalar(runtime_surface, nsl_symbol)?,
+    )
+}
+
+fn direct_publication_frost_layer_carry_projection(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Option<Vec<DirectFrostLayerCarryProjection>>, HillslopeCliError> {
+    let Some(wint_red) = runtime_surface_symbol_value(runtime_surface, "frost.options.wintRed")
+    else {
+        return Ok(None);
+    };
+    if wint_red.abs() <= 1.0e-12 {
+        return Ok(None);
+    }
+    if (wint_red - 1.0).abs() > 1.0e-12 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} frost.options.wintRed must be 0 or 1, observed {wint_red}"
+            ),
+        });
+    }
+    let layer_count = direct_publication_layer_count(runtime_surface)?;
+    let fine_top_count =
+        direct_publication_frost_fine_count(runtime_surface, "frost.options.fineTop")?;
+    let fine_bot_count =
+        direct_publication_frost_fine_count(runtime_surface, "frost.options.fineBot")?;
+    let mut projection = Vec::with_capacity(layer_count);
+    for layer_index in 1..=layer_count {
+        let depth_m = require_runtime_surface_scalar(
+            runtime_surface,
+            format!("wb19_dg_{layer_index:04}").as_str(),
+        )?;
+        if !depth_m.is_finite() || depth_m <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} wb19_dg_{layer_index:04} must be finite and > 0.0, observed {depth_m}"
+                ),
+            });
+        }
+        let fine_layer_count = direct_publication_frost_fine_layer_count(
+            layer_index,
+            layer_count,
+            depth_m,
+            fine_top_count,
+            fine_bot_count,
+        )?;
+        let fine_layer_thickness_m =
+            depth_m / usize_to_scalar("frost.runtime_nfine", fine_layer_count)?;
+        projection.push(DirectFrostLayerCarryProjection {
+            layer_index,
+            fine_layer_count,
+            fine_layer_thickness_m,
+        });
+    }
+    Ok(Some(projection))
+}
+
+fn direct_publication_frost_fine_count(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Result<usize, HillslopeCliError> {
+    let value = require_runtime_surface_scalar(runtime_surface, symbol)?;
+    let parsed = scalar_to_usize(symbol, value)?;
+    if !(1..=10).contains(&parsed) {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} {symbol} must be an integer in [1,10], observed {value}"
+            ),
+        });
+    }
+    Ok(parsed)
+}
+
+fn direct_publication_frost_fine_layer_count(
+    layer_index: usize,
+    layer_count: usize,
+    depth_m: f64,
+    fine_top_count: usize,
+    fine_bot_count: usize,
+) -> Result<usize, HillslopeCliError> {
+    if layer_index != layer_count {
+        return Ok(if layer_index < 3 {
+            fine_top_count
+        } else {
+            fine_bot_count
+        });
+    }
+    let spacing_mm = if layer_index > 2 {
+        200.0 / usize_to_scalar("frost.options.fineBot", fine_bot_count)?
+    } else {
+        100.0 / usize_to_scalar("frost.options.fineTop", fine_top_count)?
+    };
+    let depth_mm = depth_m * 1_000.0;
+    let depth_mm_trunc = depth_mm.trunc();
+    let ratio_trunc = (depth_mm / spacing_mm).trunc();
+    let mut count = format!("{ratio_trunc:.0}")
+        .parse::<usize>()
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} failed converting frost fine layer ratio {ratio_trunc} to usize: {error}"
+            ),
+        })?;
+    let count_trunc_mm =
+        (usize_to_scalar("frost.runtime_nfine", count)? * spacing_mm).trunc();
+    if (count_trunc_mm - depth_mm_trunc).abs() > 1.0e-12 {
+        count += 1;
+    }
+    Ok(count.max(1))
 }
 
 fn direct_publication_layer_state(

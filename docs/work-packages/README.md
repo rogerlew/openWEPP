@@ -13,11 +13,12 @@
 
 State as of `2026-06-21`:
 
-- `20260621-r6i-direct-pmet-layer-ulp-parity-001/` is scaffolded to close
-  `HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY`. It must localize and correct
-  the first bit divergence in direct PMET surface-layer carry feeding EVAPPM
-  `wfevp`/`etkr`/`es_m`, while preserving the R6H interleaved day/lane builder
-  and fail-closed cutover behavior.
+- R6 direct publication cutover is active-held at manifest writer cutover after
+  R6I. Current-fixture HBP and WAT identity are green, and the R6G/R6H WAT
+  markers are absent. The next package should wire direct manifest projection
+  into the production manifest writer without compatibility wrapping, while
+  preserving fail-closed no-output behavior until manifest and remaining R6
+  publication gates pass.
 - `20260621-r6h-direct-pmet-day-state-carry-builder-001/` is executed-held at
   `HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY`. It cleared
   `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT` by replacing the
@@ -117,9 +118,20 @@ State as of `2026-06-21`:
   precomputed PMET publication input vector with an interleaved direct day/lane
   builder, added fail-closed later-day layer requirements, preserved
   current-fixture HBP byte identity, and reduced WAT from day-2 `Es`,
-  `Total-Soil`, and `SoilWaterTotal` to `Es` only. The exact follow-up is R6I;
-  WAT id, independent WAT reconstruction, and broader multi-OFE output
-  authority remain held until the `Es` parity blocker is cleared.
+  `Total-Soil`, and `SoilWaterTotal` to `Es` only. R6I subsequently closed
+  this `Es` parity blocker; broader multi-OFE output authority remains later
+  R6 scope.
+- R6I (`20260621-r6i-direct-pmet-layer-ulp-parity-001/`) is complete with
+  verdict `COMPLETE-R6I-DIRECT-PMET-LAYER-ULP-PARITY`. The package localized
+  the day-2 PMET `Es` residual to direct lane commit carrying the WB17
+  post-root-uptake layer vector instead of the post-runoff-reconciliation
+  active-frost fine-layer topology projection. It added typed
+  `DirectFrostLayerCarryProjection`, builds it from direct seed-surface frost
+  options and layer geometry, applies it during lane commit, and proved
+  current-fixture HBP byte identity plus WAT identity with no R6G/R6H marker.
+  `DirectPublicationFrameCutover` still fails closed before public writes, now
+  at manifest writer wiring: `manifest direct projection is not wired to the
+  production manifest writer`.
 - R6F (`20260621-r6f-direct-publication-cutover-blocker-closure-001/`) is
   executed-held with final disposition
   `HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP`. The package closed the

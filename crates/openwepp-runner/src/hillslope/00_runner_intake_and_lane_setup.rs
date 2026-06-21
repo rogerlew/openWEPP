@@ -14,7 +14,7 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
 use openwepp_hillslope_orchestrator::{
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationPmetInputs,
     DirectEvapotranspirationStageState, DirectExecutorMode, DirectFrameExecutor,
-    DirectHydrologyProjectionInputs, DirectPercolationInputs, DirectPublicationCalendarDay,
+    DirectFrostLayerCarryProjection, DirectHydrologyProjectionInputs, DirectPercolationInputs, DirectPublicationCalendarDay,
     DirectPublicationDayInput, DirectPublicationExecution, DirectPublicationRunMetadata,
     DirectRunFrame, DirectRunIdentity, DirectRunPublicationFrame, DirectRuntimeError,
     DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
