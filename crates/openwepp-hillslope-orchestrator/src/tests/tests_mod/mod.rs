@@ -60,6 +60,7 @@ mod direct_runtime_r4mo;
 mod direct_runtime_r4n;
 mod direct_runtime_r4pqz;
 mod direct_runtime_r5c;
+mod direct_runtime_r5d;
 mod fixtures;
 mod growth;
 mod hydrology;

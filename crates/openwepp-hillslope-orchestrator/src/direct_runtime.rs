@@ -116,11 +116,18 @@ pub const DIRECT_R5C_DECOMPOSITION_SPAN: [DirectPhaseKind;
 pub const DIRECT_R5C_RESIDUE_PARTITION_PHASE_SPAN_COUNT: usize = 1;
 pub const DIRECT_R5C_RESIDUE_PARTITION_SPAN: [DirectPhaseKind;
     DIRECT_R5C_RESIDUE_PARTITION_PHASE_SPAN_COUNT] = [DirectPhaseKind::ResiduePartitionTransition];
+pub const DIRECT_R5D_ANNUAL_GROWTH_PHASE_SPAN_COUNT: usize = 1;
+pub const DIRECT_R5D_ANNUAL_GROWTH_SPAN: [DirectPhaseKind;
+    DIRECT_R5D_ANNUAL_GROWTH_PHASE_SPAN_COUNT] = [DirectPhaseKind::AnnualGrowthTransition];
+pub const DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT: usize = 1;
+pub const DIRECT_R5D_PERENNIAL_GROWTH_SPAN: [DirectPhaseKind;
+    DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT] = [DirectPhaseKind::PerennialGrowthTransition];
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
 mod decomposition;
 mod evapotranspiration;
+mod growth;
 mod normalization;
 mod projection;
 mod runoff;
@@ -142,6 +149,11 @@ pub use evapotranspiration::{
     DirectEvapotranspirationStageState, DirectEvapotranspirationSurfaceDownstreamOperands,
     DirectEvapotranspirationSurfaceShadowProjection, DirectEvapotranspirationSurfaceSpanReport,
     DirectEvapotranspirationSurfaceState,
+};
+pub use growth::{
+    DirectGrowthAction, DirectGrowthActiveContext, DirectGrowthDownstreamOperands,
+    DirectGrowthInputs, DirectGrowthShadowProjection, DirectGrowthSpanReport, DirectGrowthState,
+    DirectGrowthStateSurface,
 };
 pub use normalization::{
     DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
@@ -641,6 +653,14 @@ pub struct DirectDayFrame {
     pub residue_partition: DirectResiduePartitionState,
     pub residue_partition_downstream_operands: DirectResiduePartitionDownstreamOperands,
     pub residue_partition_shadow_projection: Option<DirectResiduePartitionShadowProjection>,
+    pub annual_growth_inputs: DirectGrowthInputs,
+    pub annual_growth: DirectGrowthState,
+    pub annual_growth_downstream_operands: DirectGrowthDownstreamOperands,
+    pub annual_growth_shadow_projection: Option<DirectGrowthShadowProjection>,
+    pub perennial_growth_inputs: DirectGrowthInputs,
+    pub perennial_growth: DirectGrowthState,
+    pub perennial_growth_downstream_operands: DirectGrowthDownstreamOperands,
+    pub perennial_growth_shadow_projection: Option<DirectGrowthShadowProjection>,
     pub input_accounting: DirectInputAccountingState,
     pub downstream_operands: DirectDownstreamOperands,
     pub shadow_projection: Option<DirectShadowProjection>,
@@ -750,6 +770,14 @@ impl DirectDayFrame {
             residue_partition: DirectResiduePartitionState::zero(),
             residue_partition_downstream_operands: DirectResiduePartitionDownstreamOperands::zero(),
             residue_partition_shadow_projection: None,
+            annual_growth_inputs: DirectGrowthInputs::zero(),
+            annual_growth: DirectGrowthState::zero(),
+            annual_growth_downstream_operands: DirectGrowthDownstreamOperands::zero(),
+            annual_growth_shadow_projection: None,
+            perennial_growth_inputs: DirectGrowthInputs::zero(),
+            perennial_growth: DirectGrowthState::zero(),
+            perennial_growth_downstream_operands: DirectGrowthDownstreamOperands::zero(),
+            perennial_growth_shadow_projection: None,
             input_accounting: DirectInputAccountingState::zero(),
             downstream_operands: DirectDownstreamOperands::zero(),
             shadow_projection: None,
@@ -1730,12 +1758,12 @@ impl DirectFrameExecutor {
     #[must_use]
     const fn phase_lifecycle_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStatus {
         match phase {
-            DirectPhaseKind::AnnualGrowthTransition
-            | DirectPhaseKind::PerennialGrowthTransition => DirectPhaseLifecycleStatus::Hold,
             DirectPhaseKind::Normalization
             | DirectPhaseKind::StorageBounds
             | DirectPhaseKind::DecompositionTransition
             | DirectPhaseKind::ResiduePartitionTransition
+            | DirectPhaseKind::AnnualGrowthTransition
+            | DirectPhaseKind::PerennialGrowthTransition
             | DirectPhaseKind::PercolationDeepSeepage
             | DirectPhaseKind::Evapotranspiration
             | DirectPhaseKind::Drainage
@@ -1755,6 +1783,8 @@ impl DirectFrameExecutor {
         record_direct_span_report!(counters, day_frame.run_r5b_storage_bounds_phase());
         record_direct_span_report!(counters, day_frame.run_r5c_decomposition_phase());
         record_direct_span_report!(counters, day_frame.run_r5c_residue_partition_phase());
+        record_direct_span_report!(counters, day_frame.run_r5d_annual_growth_phase());
+        record_direct_span_report!(counters, day_frame.run_r5d_perennial_growth_phase());
         record_direct_span_report!(counters, day_frame.run_r4c_storage_input_span());
         record_direct_span_report!(counters, day_frame.run_r4m_percolation_span());
         record_direct_span_report!(counters, day_frame.run_r4n_surface_et_span());

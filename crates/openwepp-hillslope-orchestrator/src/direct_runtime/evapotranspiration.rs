@@ -183,6 +183,7 @@ impl DirectDayFrame {
             },
         )?;
         let inputs = &self.evapotranspiration_compute_inputs;
+        self.validate_required_growth_context_for_r4n(inputs)?;
         validate_surface_inputs(inputs)?;
 
         let mut layers = percolation.layer_state_after.clone();
@@ -331,6 +332,7 @@ impl DirectDayFrame {
             },
         )?;
         let inputs = &self.evapotranspiration_compute_inputs;
+        self.validate_required_growth_context_for_r4n(inputs)?;
         validate_root_inputs(inputs)?;
 
         let mut layers = subsurface.layer_state_after.clone();
@@ -422,6 +424,21 @@ impl DirectDayFrame {
             layer_state_after_root_uptake: layers,
         })
     }
+
+    fn validate_required_growth_context_for_r4n(
+        &self,
+        inputs: &DirectEvapotranspirationComputeInputs,
+    ) -> Result<(), DirectRuntimeError> {
+        if inputs.growth_context_required
+            && self.annual_growth_shadow_projection.is_none()
+            && self.perennial_growth_shadow_projection.is_none()
+        {
+            return Err(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "R5D growth transition",
+            });
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -449,6 +466,7 @@ pub struct DirectEvapotranspirationComputeInputs {
     pub outside_water_depth_m: f64,
     pub root_depth_m: f64,
     pub plant_tolerance: f64,
+    pub growth_context_required: bool,
     pub stage_state: Option<DirectEvapotranspirationStageState>,
     pub pmet: Option<DirectEvapotranspirationPmetInputs>,
 }
@@ -465,6 +483,7 @@ impl DirectEvapotranspirationComputeInputs {
             outside_water_depth_m: 0.0,
             root_depth_m: 0.0,
             plant_tolerance: 0.0,
+            growth_context_required: false,
             stage_state: None,
             pmet: None,
         }

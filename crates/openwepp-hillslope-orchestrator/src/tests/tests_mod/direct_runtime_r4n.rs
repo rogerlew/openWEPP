@@ -34,6 +34,7 @@ fn r4n_surface_et_matches_wb17_soil_evaporation_layer_mutation_fixture() {
         outside_water_depth_m: 0.0,
         root_depth_m: 0.0,
         plant_tolerance: 0.25,
+        growth_context_required: false,
         stage_state: None,
         pmet: None,
     };
@@ -106,6 +107,7 @@ fn r4n_root_uptake_matches_swu_fixture_and_finalizes_aggregate_et() {
         outside_water_depth_m: 0.0,
         root_depth_m: 0.20,
         plant_tolerance: 0.25,
+        growth_context_required: false,
         stage_state: None,
         pmet: Some(DirectEvapotranspirationPmetInputs {
             soil_evaporation_m: 0.0,
@@ -188,6 +190,7 @@ fn r4o_consumes_r4n_surface_et_mutated_layer_state_when_present() {
         outside_water_depth_m: 0.0,
         root_depth_m: 0.0,
         plant_tolerance: 0.25,
+        growth_context_required: false,
         stage_state: None,
         pmet: None,
     };
@@ -244,6 +247,7 @@ fn r4n_feeds_r4b_final_et_not_handoff_or_publication_aliases() {
         outside_water_depth_m: 0.0,
         root_depth_m: 0.20,
         plant_tolerance: 0.25,
+        growth_context_required: false,
         stage_state: None,
         pmet: Some(DirectEvapotranspirationPmetInputs {
             soil_evaporation_m: 0.04,
@@ -347,6 +351,7 @@ fn r4n_fails_closed_on_missing_upstream_and_invalid_domain() {
             outside_water_depth_m: 0.0,
             root_depth_m: 0.10,
             plant_tolerance: 0.25,
+            growth_context_required: false,
             stage_state: None,
             pmet: Some(DirectEvapotranspirationPmetInputs {
                 soil_evaporation_m: 0.0,

@@ -13,6 +13,7 @@ use crate::{
     DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT, DIRECT_R5B_NORMALIZATION_SPAN,
     DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT, DIRECT_R5B_STORAGE_BOUNDS_SPAN,
     DIRECT_R5C_DECOMPOSITION_PHASE_SPAN_COUNT, DIRECT_R5C_RESIDUE_PARTITION_PHASE_SPAN_COUNT,
+    DIRECT_R5D_ANNUAL_GROWTH_PHASE_SPAN_COUNT, DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT,
     DirectDayFrame, DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
     DirectDeepSeepageShadowProjection, DirectDeepSeepageState, DirectDownstreamOperands,
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationDownstreamOperands,
@@ -38,7 +39,7 @@ use crate::{
 };
 
 fn r5c_day_span_run_count() -> u64 {
-    18
+    20
 }
 
 fn r5c_day_phase_entry_count() -> u64 {
@@ -46,6 +47,8 @@ fn r5c_day_phase_entry_count() -> u64 {
         + DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT
         + DIRECT_R5C_DECOMPOSITION_PHASE_SPAN_COUNT
         + DIRECT_R5C_RESIDUE_PARTITION_PHASE_SPAN_COUNT
+        + DIRECT_R5D_ANNUAL_GROWTH_PHASE_SPAN_COUNT
+        + DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT
         + DIRECT_R4C_PHASE_SPAN_COUNT
         + DIRECT_R4M_PHASE_SPAN_COUNT
         + DIRECT_R4N_PHASE_SPAN_COUNT
@@ -63,13 +66,12 @@ fn r5c_day_phase_entry_count() -> u64 {
 
 fn r5c_expected_phase_status(phase: DirectPhaseKind) -> DirectPhaseLifecycleStatus {
     match phase {
-        DirectPhaseKind::AnnualGrowthTransition | DirectPhaseKind::PerennialGrowthTransition => {
-            DirectPhaseLifecycleStatus::Hold
-        }
         DirectPhaseKind::Normalization
         | DirectPhaseKind::StorageBounds
         | DirectPhaseKind::DecompositionTransition
         | DirectPhaseKind::ResiduePartitionTransition
+        | DirectPhaseKind::AnnualGrowthTransition
+        | DirectPhaseKind::PerennialGrowthTransition
         | DirectPhaseKind::PercolationDeepSeepage
         | DirectPhaseKind::Evapotranspiration
         | DirectPhaseKind::Drainage
@@ -2174,6 +2176,7 @@ fn r4b_evapotranspiration_compute_inputs() -> DirectEvapotranspirationComputeInp
         outside_water_depth_m: 0.0,
         root_depth_m: 0.0,
         plant_tolerance: 0.25,
+        growth_context_required: false,
         stage_state: None,
         pmet: None,
     }
