@@ -13,6 +13,18 @@
 
 State as of `2026-06-21`:
 
+- `20260621-r6d-production-direct-publication-producer-retention-001/` is
+  executed-held at
+  `HOLD-R6D-PARITY-GRADE-PUBLICATION-PRODUCERS-ABSENT`. It lifted the R6C
+  retained-producer absence for cutover by adding a cutover-only retained
+  `DirectRunPublicationFrame` producer surface to the production climate
+  lifecycle. The retained frame uses parsed climate/calendar and slope geometry
+  and is consumed by `DirectPublicationFrameCutover` without skeleton direct
+  frame construction or post-hoc publication capture. Public direct-output
+  writes remain fail-closed until parity-grade hydrology/storage/subsurface/
+  evaporation/PASS/loss/manifest/erosion producers, anti-alias fixtures,
+  independent reconstruction, manifest provenance, and line-count governance
+  are closed.
 - `20260621-r6c-direct-publication-typed-operand-bridge-001/` is
   executed-held at
   `HOLD-R6C-DIRECT-PHASE-PUBLICATION-PRODUCER-ABSENT`. It corrected the R6B
@@ -40,6 +52,17 @@ State as of `2026-06-21`:
 
 State as of `2026-06-21`:
 
+- R6D (`20260621-r6d-production-direct-publication-producer-retention-001/`) is
+  executed-held with final disposition
+  `HOLD-R6D-PARITY-GRADE-PUBLICATION-PRODUCERS-ABSENT`. The package added
+  cutover-only retained direct publication rows to production climate execution,
+  sourced from parsed climate/calendar, parsed slope geometry, and run/lane/day
+  identity. The cutover branch now consumes that retained frame and no longer
+  runs skeleton direct-frame publication capture. Focused runner and CLI tests
+  pass and prove fail-closed no-output behavior. The next package must add
+  parity-grade retained publication producers for hydrology/storage/subsurface/
+  evaporation/PASS/loss/manifest/erosion families and split the monolithic
+  runner helper surface before full R6 closure.
 - R6C (`20260621-r6c-direct-publication-typed-operand-bridge-001/`) is
   executed-held with final disposition
   `HOLD-R6C-DIRECT-PHASE-PUBLICATION-PRODUCER-ABSENT`. The package did not

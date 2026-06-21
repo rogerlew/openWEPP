@@ -686,7 +686,7 @@ mod tests {
     }
 
     #[test]
-    fn r6_cutover_candidate_fails_closed_before_skeleton_publication_capture() {
+    fn r6d_cutover_candidate_fails_closed_after_retained_direct_publication() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -718,7 +718,7 @@ mod tests {
             "unexpected error: {message}"
         );
         assert!(
-            message.contains("HOLD-R6C-DIRECT-PHASE-PUBLICATION-PRODUCER-ABSENT"),
+            message.contains("HOLD-R6D-PARITY-GRADE-PUBLICATION-PRODUCERS-ABSENT"),
             "unexpected error: {message}"
         );
         let audit = direct_runtime_audit_snapshot();
@@ -814,10 +814,25 @@ mod tests {
         assert!(direct_publication_has_only_zero_or_absent_operands(
             &r6b_publication_frame_with_row(identity, zero_row.clone())
         ));
+        assert!(direct_publication_lacks_parity_grade_output_producers(
+            &r6b_publication_frame_with_row(identity, zero_row.clone())
+        ));
+
+        let mut climate_only_row = zero_row.clone();
+        climate_only_row.climate.precipitation_mm = 12.5;
+        assert!(!direct_publication_has_only_zero_or_absent_operands(
+            &r6b_publication_frame_with_row(identity, climate_only_row.clone())
+        ));
+        assert!(direct_publication_lacks_parity_grade_output_producers(
+            &r6b_publication_frame_with_row(identity, climate_only_row)
+        ));
 
         let mut scalar_row = zero_row.clone();
         scalar_row.runoff.q_mm = 1.0;
         assert!(!direct_publication_has_only_zero_or_absent_operands(
+            &r6b_publication_frame_with_row(identity, scalar_row.clone())
+        ));
+        assert!(!direct_publication_lacks_parity_grade_output_producers(
             &r6b_publication_frame_with_row(identity, scalar_row)
         ));
 

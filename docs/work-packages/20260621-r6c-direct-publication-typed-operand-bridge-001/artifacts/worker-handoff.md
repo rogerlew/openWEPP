@@ -27,6 +27,20 @@ climate lifecycle does not retain direct publication producers.
 
 ## First Actionable Item
 
+Superseded by R6D
+(`20260621-r6d-production-direct-publication-producer-retention-001/`):
+cutover now retains a production `DirectRunPublicationFrame` during the climate
+lifecycle and consumes it without skeleton publication capture.
+
+Remaining actionable item:
+
+Implement parity-grade retained direct publication producers for hydrology,
+storage, subsurface, evaporation, PASS, loss, manifest, and erosion families.
+R6D holds at
+`HOLD-R6D-PARITY-GRADE-PUBLICATION-PRODUCERS-ABSENT`.
+
+Original R6C handoff:
+
 Implement retained production direct publication producers in the climate
 lifecycle, then build `DirectRunPublicationFrame` from those retained direct
 operands.
