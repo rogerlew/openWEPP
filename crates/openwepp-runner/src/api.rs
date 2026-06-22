@@ -31,6 +31,7 @@ pub enum HillslopeRuntimeSelection {
     DirectSkeletonShadowOnly,
     DirectPublicationFrameShadow,
     DirectPublicationFrameCutover,
+    DirectProductionExecutor,
 }
 
 impl HillslopeRuntimeSelection {
@@ -42,6 +43,7 @@ impl HillslopeRuntimeSelection {
             Self::DirectSkeletonShadowOnly => "direct-skeleton-shadow-only",
             Self::DirectPublicationFrameShadow => "direct-publication-frame-shadow",
             Self::DirectPublicationFrameCutover => "direct-publication-frame-cutover",
+            Self::DirectProductionExecutor => "direct-production-executor",
         }
     }
 }

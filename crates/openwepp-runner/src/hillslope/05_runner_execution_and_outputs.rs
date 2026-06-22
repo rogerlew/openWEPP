@@ -102,6 +102,215 @@ fn execute_hillslope_climate_days(
     })
 }
 
+fn execute_hillslope_direct_production_days(
+    run_name: &str,
+    output_hillslope_id: u32,
+    state: HillslopeClimateExecutionState,
+    climate: &ClimateFile,
+) -> Result<HillslopeClimateExecution, HillslopeCliError> {
+    let climate_request = build_hillslope_climate_runtime_request(climate).map_err(|error| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "climate",
+            detail: error.to_string(),
+        }
+    })?;
+    let HillslopeClimateExecutionState {
+        publication_area_m2,
+        contributor_ofe_count,
+        static_per_ofe_slice_count,
+        per_ofe_lane_areas_m2,
+        per_ofe_runoff_publication_geometries: _,
+        runtime_surface,
+        lane_context,
+        climate_span,
+        persistent_lane_state,
+        symbol_registry: _,
+        hot_symbol_tables: _,
+    } = state;
+    let mut frame = build_direct_production_run_frame(
+        output_hillslope_id,
+        &per_ofe_lane_areas_m2,
+        climate_span.days.len(),
+    )?;
+    let day_input_builder = DirectPublicationDayInputBuilder::new(
+        &climate_request,
+        &climate_span,
+        &runtime_surface,
+        lane_context.lane,
+    )?;
+    let metadata = DirectPublicationRunMetadata {
+        run_name: run_name.to_string(),
+        runtime_selection: HillslopeRuntimeSelection::DirectProductionExecutor
+            .as_str()
+            .to_string(),
+        output_policy: direct_publication_output_policy(
+            HillslopeRuntimeSelection::DirectProductionExecutor,
+        )
+        .to_string(),
+    };
+    let direct_execution = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
+        .run_publication_capture_with_interleaved_day_inputs(
+            &mut frame,
+            metadata,
+            |frame, day_index, lane_index| {
+                day_input_builder
+                    .build(frame, day_index, lane_index)
+                    .map_err(|error| direct_publication_day_input_build_error(&error))
+            },
+        )
+        .map_err(|source| direct_production_runtime_error(&source))?;
+    let coupling_vectors = build_direct_production_coupling_vector_provenance(
+        &runtime_surface,
+        &direct_execution.publication_frame,
+    )?;
+    let executed_day_count = climate_span.days.len();
+    let persistent_lane_active = persistent_lane_state.is_some();
+
+    Ok(HillslopeClimateExecution {
+        selected_lane: lane_context.lane,
+        publication_area_m2,
+        contributor_ofe_count,
+        static_per_ofe_slice_count,
+        persistent_lane_active,
+        runtime_surface,
+        climate_span,
+        wb13_rows: Vec::new(),
+        pass_rows: Vec::new(),
+        coupling_vectors,
+        erod14_wave2_kernel_status_seen: false,
+        scheduler_outcome_class: SchedulerOutcomeClass::Completed,
+        scheduler_status_message_id: "R7C-DIRECT-PRODUCTION-EXECUTOR".to_string(),
+        kernel_phase_message_ids: Vec::new(),
+        hphys0245_trace_config: None,
+        hphys0245_trace_rows: Vec::new(),
+        per_ofe_internal_wb13_summary: PerOfeInternalWb13RunSummary::default(),
+        executed_day_count,
+        retained_direct_publication: Some(direct_execution),
+        direct_publication: None,
+    })
+}
+
+fn build_direct_production_run_frame(
+    output_hillslope_id: u32,
+    lane_areas_m2: &[f64],
+    day_count: usize,
+) -> Result<DirectRunFrame, HillslopeCliError> {
+    let identity = DirectRunIdentity::new(
+        u64::from(output_hillslope_id),
+        output_hillslope_id,
+        lane_areas_m2.len(),
+        day_count,
+    )
+    .map_err(|source| direct_production_runtime_error(&source))?;
+    let lanes = lane_areas_m2
+        .iter()
+        .copied()
+        .enumerate()
+        .map(|(lane_index, area_m2)| {
+            let mut lane_inputs =
+                DirectLaneConstructorInputs::from_topology(lane_index, lane_areas_m2.len(), day_count)
+                    .map_err(|source| direct_production_runtime_error(&source))?;
+            if !area_m2.is_finite() || area_m2 <= 0.0 {
+                return Err(direct_production_executor_blocked(format!(
+                    "direct production lane {} area must be finite and > 0.0, observed {area_m2}",
+                    lane_index + 1
+                )));
+            }
+            lane_inputs.area_m2 = area_m2;
+            lane_inputs.upstream_area_ratio = if lane_index == 0 {
+                1.0
+            } else {
+                lane_areas_m2[lane_index - 1] / area_m2
+            };
+            Ok(lane_inputs)
+        })
+        .collect::<Result<Vec<_>, HillslopeCliError>>()?;
+    DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(identity, lanes))
+        .map_err(|source| direct_production_runtime_error(&source))
+}
+
+fn build_direct_production_coupling_vector_provenance(
+    runtime_surface: &HillslopeWritebackSurface,
+    publication: &DirectRunPublicationFrame,
+) -> Result<HillslopeCouplingVectorProvenance, HillslopeCliError> {
+    let row = publication.last_day().ok_or_else(|| {
+        direct_production_executor_blocked(
+            "direct production executor requires at least one direct publication row",
+        )
+    })?;
+    let snow_file_present = parse_simimpl10_binary_flag(
+        "snow.options.snow_file_present",
+        require_simimpl10_coupling_scalar(runtime_surface, "snow.options.snow_file_present")?,
+    )?;
+    let rst = require_simimpl10_coupling_scalar(runtime_surface, "snow.options.rst")?;
+    let newsnw = require_simimpl10_coupling_scalar(runtime_surface, "snow.options.newsnw")?;
+    let ssd = require_simimpl10_coupling_scalar(runtime_surface, "snow.options.ssd")?;
+    let runtime_swe = row.storage.snow_water_mm / 1_000.0;
+    let frost_file_present = parse_simimpl10_binary_flag(
+        "frost.options.frost_file_present",
+        require_simimpl10_coupling_scalar(runtime_surface, "frost.options.frost_file_present")?,
+    )?;
+    let wint_red_enabled = parse_simimpl10_binary_flag(
+        "frost.options.wintRed",
+        require_simimpl10_coupling_scalar(runtime_surface, "frost.options.wintRed")?,
+    )?;
+    let dfrost = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_dfrost")?;
+    let dthaw = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_dthaw")?;
+    let nft = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_nft")?;
+    let ws_frz = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_ws_frz")?;
+    let infcap_frz =
+        require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_infcap_frz")?;
+    let ssc = require_simimpl10_coupling_scalar(runtime_surface, "ssc")?;
+    let total_soil = row.storage.total_soil_mm;
+    let frozwt = row.storage.frozwt_mm;
+    let snow_water = row.storage.snow_water_mm;
+    let soil_water_total = row.storage.soil_water_total_mm;
+    let closure_delta = soil_water_total - total_soil;
+    let closure_within_tolerance = closure_delta.abs() <= SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM;
+    if !closure_within_tolerance {
+        return Err(simcoup_failure(format!(
+            "direct hydout-equivalent closure violated: SoilWaterTotal - Total-Soil = {closure_delta} exceeds tolerance {SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM}"
+        )));
+    }
+
+    Ok(HillslopeCouplingVectorProvenance {
+        guard_id: SIMCOUP_GUARD_ID.to_string(),
+        winter: HillslopeWinterCouplingProvenance {
+            active: runtime_swe > 0.0 || dfrost > 0.0 || ws_frz > 0.0,
+            snow_file_present,
+            rst,
+            newsnw,
+            ssd,
+            runtime_swe,
+        },
+        soil: HillslopeSoilCouplingProvenance {
+            ssc,
+            infiltration_capacity_frozen: infcap_frz,
+            infcap_within_ssc: infcap_frz <= ssc,
+        },
+        frsoil: HillslopeFrozenSoilCouplingProvenance {
+            active: wint_red_enabled,
+            frost_file_present,
+            wint_red_enabled,
+            dfrost,
+            dthaw,
+            nft,
+            ws_frz,
+            infcap_frz,
+        },
+        hydout_equivalent: HillslopeHydoutEquivalentCouplingProvenance {
+            source: DIRECT_PUBLICATION_FRAME_PUBLICATION_SOURCE.to_string(),
+            total_soil,
+            frozwt,
+            snow_water,
+            soil_water_total,
+            closure_delta,
+            closure_tolerance: SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM,
+            closure_within_tolerance,
+        },
+    })
+}
+
 impl ClimateExecutionAccumulator {
     fn new(
         runtime_surface: HillslopeWritebackSurface,
@@ -343,8 +552,12 @@ fn build_hillslope_execution_provenance(
     )?;
     let erod14_qin_source_policy = erod14_qin_source_policy(erod14_wave2_enabled, sidecar_warnings);
     Ok(HillslopeExecutionProvenance {
-        scheduler_kernel_executed: true,
-        publication_source: if runtime_selection == HillslopeRuntimeSelection::DirectPublicationFrameCutover {
+        scheduler_kernel_executed: runtime_selection != HillslopeRuntimeSelection::DirectProductionExecutor,
+        publication_source: if matches!(
+            runtime_selection,
+            HillslopeRuntimeSelection::DirectPublicationFrameCutover
+                | HillslopeRuntimeSelection::DirectProductionExecutor
+        ) {
             DIRECT_PUBLICATION_FRAME_PUBLICATION_SOURCE
         } else {
             SCHEDULER_KERNEL_PUBLICATION_SOURCE
@@ -399,7 +612,11 @@ fn build_hillslope_publication_provenance(
     ),
     HillslopeCliError,
 > {
-    if runtime_selection == HillslopeRuntimeSelection::DirectPublicationFrameCutover {
+    if matches!(
+        runtime_selection,
+        HillslopeRuntimeSelection::DirectPublicationFrameCutover
+            | HillslopeRuntimeSelection::DirectProductionExecutor
+    ) {
         let artifacts = execution.direct_publication.as_ref().ok_or_else(|| {
             direct_publication_cutover_blocked(
                 "direct publication cutover requires retained direct publication artifacts",
@@ -435,7 +652,11 @@ fn write_hillslope_run_outputs(
     execution: &HillslopeClimateExecution,
     runtime_selection: HillslopeRuntimeSelection,
 ) -> Result<(), HillslopeCliError> {
-    if runtime_selection == HillslopeRuntimeSelection::DirectPublicationFrameCutover {
+    if matches!(
+        runtime_selection,
+        HillslopeRuntimeSelection::DirectPublicationFrameCutover
+            | HillslopeRuntimeSelection::DirectProductionExecutor
+    ) {
         return write_hillslope_direct_publication_outputs(inputs, targets, execution);
     }
 
@@ -1028,7 +1249,11 @@ fn direct_runtime_counters_for_manifest(
     baseline: DirectRuntimeAuditSnapshot,
     current: DirectRuntimeAuditSnapshot,
 ) -> Option<HillslopeDirectRuntimeCounterProvenance> {
-    if runtime_selection != HillslopeRuntimeSelection::DirectPublicationFrameCutover {
+    if !matches!(
+        runtime_selection,
+        HillslopeRuntimeSelection::DirectPublicationFrameCutover
+            | HillslopeRuntimeSelection::DirectProductionExecutor
+    ) {
         return None;
     }
     Some(direct_runtime_counter_provenance(
@@ -1116,6 +1341,45 @@ pub fn execute_hillslope_run(
     )
 }
 
+fn execute_selected_hillslope_days(
+    run_name: &str,
+    output_hillslope_id: u32,
+    runtime_selection: HillslopeRuntimeSelection,
+    state: HillslopeClimateExecutionState,
+    climate: &ClimateFile,
+) -> Result<HillslopeClimateExecution, HillslopeCliError> {
+    let production_direct_selected =
+        runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor;
+    let symbol_registry_audit = if production_direct_selected {
+        None
+    } else {
+        symbol_registry_audit::begin_if_requested(&state, climate)?
+    };
+    let indexed_shadow = if production_direct_selected {
+        None
+    } else {
+        indexed_shadow_surface::begin_if_requested(&state, climate)?
+    };
+    let execution_result = if production_direct_selected {
+        execute_hillslope_direct_production_days(run_name, output_hillslope_id, state, climate)
+    } else {
+        execute_hillslope_climate_days(
+            run_name,
+            output_hillslope_id,
+            runtime_selection,
+            state,
+            climate,
+        )
+    };
+    if let Some(symbol_registry_audit) = symbol_registry_audit {
+        symbol_registry_audit.finish()?;
+    }
+    if let Some(indexed_shadow) = indexed_shadow {
+        indexed_shadow.finish()?;
+    }
+    execution_result
+}
+
 pub fn execute_hillslope_run_with_runtime_selection(
     request: &HillslopeRunRequest,
     argv: &[String],
@@ -1140,26 +1404,18 @@ pub fn execute_hillslope_run_with_runtime_selection(
     let direct_runtime_counter_baseline = direct_runtime_audit_snapshot();
     let mut sidecars = resolve_hillslope_sidecars(request, &inputs, &targets)?;
     let runtime_setup = build_static_hillslope_runtime_setup(request, &inputs, &mut sidecars)?;
-    let timestep_policy = runtime_setup.timestep_policy;
-    let adapter_boundary = runtime_setup.adapter_boundary;
-    let symbol_registry_audit =
-        symbol_registry_audit::begin_if_requested(&runtime_setup.execution_state, &inputs.climate)?;
-    let indexed_shadow =
-        indexed_shadow_surface::begin_if_requested(&runtime_setup.execution_state, &inputs.climate)?;
-    let execution_result = execute_hillslope_climate_days(
+    let StaticHillslopeRuntimeSetup {
+        timestep_policy,
+        adapter_boundary,
+        execution_state,
+    } = runtime_setup;
+    let mut execution = execute_selected_hillslope_days(
         &inputs.runfile.run_name,
         targets.output_hillslope_id,
         runtime_selection,
-        runtime_setup.execution_state,
+        execution_state,
         &inputs.climate,
-    );
-    if let Some(symbol_registry_audit) = symbol_registry_audit {
-        symbol_registry_audit.finish()?;
-    }
-    if let Some(indexed_shadow) = indexed_shadow {
-        indexed_shadow.finish()?;
-    }
-    let mut execution = execution_result?;
+    )?;
     execution.direct_publication =
         build_direct_publication_artifacts(runtime_selection, &inputs, &targets, &sidecars, &execution)?;
     let direct_runtime_counters = direct_runtime_counters_for_manifest(
@@ -1221,7 +1477,8 @@ fn select_direct_runtime_skeleton_once(
     let mode = match runtime_selection {
         HillslopeRuntimeSelection::Compatibility
         | HillslopeRuntimeSelection::DirectPublicationFrameShadow
-        | HillslopeRuntimeSelection::DirectPublicationFrameCutover => return Ok(()),
+        | HillslopeRuntimeSelection::DirectPublicationFrameCutover
+        | HillslopeRuntimeSelection::DirectProductionExecutor => return Ok(()),
         HillslopeRuntimeSelection::DirectSkeletonNoop => DirectExecutorMode::Noop,
         HillslopeRuntimeSelection::DirectSkeletonShadowOnly => DirectExecutorMode::ShadowOnly,
     };
@@ -1251,5 +1508,18 @@ fn direct_runtime_skeleton_error(
     HillslopeCliError::RuntimeSurfaceFailure {
         surface: "r2a_direct_runtime_skeleton",
         detail: source.to_string(),
+    }
+}
+
+fn direct_production_runtime_error(
+    source: &openwepp_hillslope_orchestrator::DirectRuntimeError,
+) -> HillslopeCliError {
+    direct_production_executor_blocked(source.to_string())
+}
+
+fn direct_production_executor_blocked(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "r7c_direct_production_executor",
+        detail: format!("{SIMPIPE_GUARD_ID} {}", detail.into()),
     }
 }

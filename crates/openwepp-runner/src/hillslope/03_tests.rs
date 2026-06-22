@@ -52,40 +52,6 @@ mod tests {
         include!("tests03/trace.rs");
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     fn wb11_seed_test_surface(symbols: &[(&str, f64)]) -> HillslopeWritebackSurface {
         let mut runtime_surface = HillslopeWritebackSurface::default();
         for (symbol, value) in symbols {
@@ -849,6 +815,108 @@ mod tests {
             "/direct_runtime_counters/compatibility_edge_invocations",
             0,
         );
+    }
+
+    #[test]
+    fn r7c_direct_production_executor_runs_without_compatibility_edges() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (report, _temp_run_dir) = execute_fixture_run_with_runtime_selection_unlocked(
+            "r7c_direct_production_executor",
+            HillslopeRuntimeSelection::DirectProductionExecutor,
+        );
+
+        assert!(report.output_pass.is_file());
+        assert!(report.output_loss.is_file());
+        let manifest_json = read_manifest_json(&report);
+        assert_eq!(
+            manifest_json
+                .pointer("/execution_provenance/scheduler_kernel_executed")
+                .and_then(serde_json::Value::as_bool),
+            Some(false)
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/execution_provenance/publication_source")
+                .and_then(serde_json::Value::as_str),
+            Some("direct-publication-frame")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/execution_provenance/scheduler_status_message_id")
+                .and_then(serde_json::Value::as_str),
+            Some("R7C-DIRECT-PRODUCTION-EXECUTOR")
+        );
+        let expected_day_frames = manifest_json
+            .pointer("/execution_provenance/climate_day_count")
+            .and_then(serde_json::Value::as_u64)
+            .expect("R7C fixture manifest must include direct climate day count");
+        let expected_phase_spans = 1 + expected_day_frames * r5c_day_span_run_count();
+        let expected_phase_entries =
+            DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5c_day_phase_entry_count();
+
+        assert_json_i64(&manifest_json, "/direct_runtime_counters/run_frame_constructions", 1);
+        assert_json_i64(&manifest_json, "/direct_runtime_counters/executor_constructions", 1);
+        assert_json_i64(&manifest_json, "/direct_runtime_counters/skeleton_runs", 0);
+        assert_json_i64(&manifest_json, "/direct_runtime_counters/publication_capture_runs", 1);
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/day_frame_constructions",
+            i64::try_from(expected_day_frames).expect("fixture day frame count fits i64"),
+        );
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/day_frame_commits",
+            i64::try_from(expected_day_frames).expect("fixture day frame count fits i64"),
+        );
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/phase_span_runs",
+            i64::try_from(expected_phase_spans).expect("fixture phase span count fits i64"),
+        );
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/direct_phase_entries",
+            i64::try_from(expected_phase_entries).expect("fixture phase entry count fits i64"),
+        );
+        for counter in [
+            "/direct_runtime_counters/direct_compute_operations",
+            "/direct_runtime_counters/direct_state_mutations",
+            "/direct_runtime_counters/downstream_operand_productions",
+            "/direct_runtime_counters/shadow_projections",
+        ] {
+            let value = manifest_json
+                .pointer(counter)
+                .and_then(serde_json::Value::as_i64)
+                .unwrap_or_else(|| panic!("manifest must include {counter}"));
+            assert!(value > 0, "{counter} must be nonzero for R7C direct production");
+        }
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/compatibility_edge_invocations",
+            0,
+        );
+    }
+
+    #[test]
+    fn r7c_direct_production_source_excludes_compatibility_entrypoints() {
+        let source = include_str!("05_runner_execution_and_outputs.rs");
+        let direct_body = source
+            .split("fn execute_hillslope_direct_production_days")
+            .nth(1)
+            .and_then(|tail| tail.split("\nfn ").next())
+            .expect("R7C direct production function body must be present");
+        for forbidden in [
+            "execute_hillslope_climate_days(",
+            "execute_with_kernel",
+            "HillslopeKernelRequest",
+        ] {
+            assert!(
+                !direct_body.contains(forbidden),
+                "R7C direct production body must not contain compatibility entrypoint {forbidden}"
+            );
+        }
     }
 
     #[test]

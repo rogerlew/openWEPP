@@ -89,10 +89,20 @@ fn build_direct_publication_artifacts(
         runtime_selection,
         HillslopeRuntimeSelection::DirectPublicationFrameShadow
             | HillslopeRuntimeSelection::DirectPublicationFrameCutover
+            | HillslopeRuntimeSelection::DirectProductionExecutor
     ) {
         return Ok(None);
     }
     let direct_execution = match runtime_selection {
+        HillslopeRuntimeSelection::DirectProductionExecutor => {
+            let direct_execution = execution.retained_direct_publication.clone().ok_or_else(|| {
+                direct_production_executor_blocked(
+                    "direct production executor requires retained direct execution artifacts",
+                )
+            })?;
+            validate_retained_direct_publication_frame(&direct_execution.publication_frame)?;
+            direct_execution
+        }
         HillslopeRuntimeSelection::DirectPublicationFrameCutover => {
             let direct_execution = build_direct_publication_execution_from_simulation_outputs(
                 runtime_selection,
@@ -695,6 +705,9 @@ fn wat_mismatch_field_order() -> &'static [&'static str] {
 
 fn direct_publication_output_policy(runtime_selection: HillslopeRuntimeSelection) -> &'static str {
     match runtime_selection {
+        HillslopeRuntimeSelection::DirectProductionExecutor => {
+            "direct-production-executor/direct-publication-frame"
+        }
         HillslopeRuntimeSelection::DirectPublicationFrameShadow => {
             "compatibility-public-output/direct-publication-shadow"
         }

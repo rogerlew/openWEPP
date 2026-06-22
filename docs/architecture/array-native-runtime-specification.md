@@ -883,7 +883,7 @@ activate direct mode or relax any R7 gate.
 | R5A-R5E | Full canonical OFE-day direct executor lifecycle and 14-phase coverage complete. | One canonical 14-phase entry per OFE-day, direct R4/R5 spans folded under canonical phase entries, protected output identity and endpoint/RSS evidence. | Public outputs remained compatibility-authoritative at R5E; no default activation. |
 | R6A-R6I | Direct publication frame and producer-authority blockers iteratively reduced. | Run-bound publication frame, direct projection consumers, typed day-input builder, PMET layer carry correction, and current-fixture parity closures. | Earlier held states are historical; R6J is the terminal R6 publication cutover package. |
 | R6J | Opt-in direct publication cutover complete. | `DirectPublicationFrameCutover` writes HBP/WAT/PASS/loss/plot/manifest from direct publication artifacts with H2637 byte/Arrow identity and direct manifest provenance. | It is not default activation. Current cutover production adapts simulation-owned WB13 rows into direct publication rows; production direct executor and R7 compatibility-runtime removal remain open. |
-| R7 | R7A architecture reconciliation and R7B parsed-input typed constructor boundary complete; R7C-H remain open. | R7A-H burndown below. | Production direct mode executor routing, direct publication producer authority, default activation, hot compatibility isolation/deletion, performance closure, fixture hardening, and release readiness. |
+| R7 | R7A architecture reconciliation, R7B parsed-input typed constructor boundary, and R7C opt-in production direct executor routing complete; R7D-H remain open. | R7A-H burndown below and `docs/work-packages/20260622-r7c-production-direct-executor-path-001/`. | Direct publication producer authority, default activation, hot compatibility isolation/deletion, performance closure, fixture hardening, and release readiness. |
 
 Current runtime-mode matrix:
 
@@ -892,7 +892,7 @@ Current runtime-mode matrix:
 | Compatibility mode | Default API/CLI mode. | Compatibility scheduler, `HillslopeWritebackSurface`, kernel request/writeback, and WB13 publication rows. | Compatibility output builders. | Compatibility-provenanced outputs; no direct runtime counters unless a direct path is selected. | Must remain as rollback/replay/shadow adapter until direct default is proven. |
 | Shadow mode | Explicit validation mode. | Compatibility execution remains public-output authority while direct artifacts may be produced for comparison. | Compatibility publication for public outputs. | Compatibility provenance; direct artifacts are evidence only. | Must stay structurally outside direct production hot loop. |
 | Direct publication cutover | Explicit opt-in mode after R6J. | Compatibility simulation still produces the execution record; direct publication artifacts are built from the cutover adapter. | Direct HBP/WAT/PASS/loss/manifest writers consume `DirectRunPublicationFrame` artifacts. | Direct publication provenance and run-local direct counters for cutover manifests. | Replace WB13/runtime-surface adapter authority with direct executor-owned publication producers before default activation. |
-| Production direct mode | Future R7 target. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; no hot compatibility scheduler/request/writeback/symbol authority. | Typed publication frame emitted from direct executor state. | Direct runtime counters, direct output provenance, and rollback reason when fallback is selected. | R7C-R7H. |
+| Production direct mode | Explicit opt-in after R7C through `--direct-production-executor`; not default and not release-ready. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; R7C bypasses compatibility climate-day scheduler and skips compatibility audit/shadow diagnostic setup for this mode. | Direct publication frame retained from the direct executor path, with HBP/PASS/WAT parity still unresolved. | Direct runtime counters and direct output provenance are recorded; rollback/default-selection fields remain future activation scope. | R7D-R7H. |
 
 The terminal architecture remains stricter than the R6J cutover path. A direct
 publication object built from compatibility WB13 rows may be valid R6J adapter
@@ -1001,6 +1001,24 @@ Acceptance gates:
 - Default compatibility mode remains unchanged until the default-activation
   package.
 - H2637 default and opt-in direct timing/RSS are recorded.
+
+Execution status: complete in
+`docs/work-packages/20260622-r7c-production-direct-executor-path-001/`.
+R7C added the explicit `DirectProductionExecutor` runtime selection and
+`--direct-production-executor` CLI flag, routed that mode through
+`DirectFrameExecutor`, skipped compatibility symbol-registry and indexed-shadow
+diagnostic setup for the production direct selection, and recorded run-local
+direct runtime counters. Same-binary H2637 evidence recorded default
+compatibility at `642.77 s / 228804 KB` and opt-in direct production at
+`753.76 s / 625132 KB`; direct production is therefore not performance-ready.
+The direct-production H2637 manifest proved `scheduler_kernel_executed=false`,
+`publication_source=direct-publication-frame`,
+`day_frame_constructions=235961`, `day_frame_commits=235961`,
+`direct_phase_entries=8494599`, and
+`compatibility_edge_invocations=0`. HBP, PASS, and WAT checksums differ from
+default compatibility, so R7C does not close direct publication producer
+authority, output parity, default activation, compatibility deletion, or
+release readiness.
 
 ##### R7D - Direct Publication Producer Authority
 

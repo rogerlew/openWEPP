@@ -3,6 +3,7 @@ pub enum DirectExecutorMode {
     #[default]
     Noop,
     ShadowOnly,
+    ProductionDirect,
 }
 
 impl DirectExecutorMode {
@@ -11,6 +12,7 @@ impl DirectExecutorMode {
         match self {
             Self::Noop => "noop",
             Self::ShadowOnly => "shadow-only",
+            Self::ProductionDirect => "production-direct",
         }
     }
 }

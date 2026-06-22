@@ -13,6 +13,15 @@
 
 State as of `2026-06-22`:
 
+- `20260622-r7c-production-direct-executor-path-001/` is complete with final
+  disposition `COMPLETE-R7C-PRODUCTION-DIRECT-EXECUTOR-PATH`. It added the
+  opt-in production direct executor route from parsed typed constructor state
+  into `DirectFrameExecutor`, with manifest-visible direct counters,
+  no-compatibility-edge proof, default-mode preservation, and R6J cutover
+  preservation. Same-binary H2637 evidence recorded default compatibility
+  `642.77 s / 228804 KB` and direct production `753.76 s / 625132 KB`;
+  direct production is not performance-ready, and HBP/PASS/WAT output parity
+  remains R7D scope.
 - `20260622-r7b-parsed-input-typed-frame-constructors-001/` is complete with
   final disposition `COMPLETE-R7B-PARSED-INPUT-TYPED-FRAME-CONSTRUCTORS`. It
   added the R7B parsed-input typed constructor boundary for `DirectRunFrame`,

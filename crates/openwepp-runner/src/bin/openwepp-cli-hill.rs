@@ -74,6 +74,9 @@ fn run() -> Result<(), String> {
             "--direct-publication-frame-cutover" => {
                 runtime_selection = HillslopeRuntimeSelection::DirectPublicationFrameCutover;
             }
+            "--direct-production-executor" => {
+                runtime_selection = HillslopeRuntimeSelection::DirectProductionExecutor;
+            }
             "--help" | "-h" => {
                 print_help();
                 return Ok(());
