@@ -117,6 +117,118 @@ impl DirectRunIdentity {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct DirectRunConstructorInputs {
+    pub identity: DirectRunIdentity,
+    pub lanes: Vec<DirectLaneConstructorInputs>,
+    pub phase_plan: DirectPhasePlan,
+}
+
+impl DirectRunConstructorInputs {
+    #[must_use]
+    pub fn new(identity: DirectRunIdentity, lanes: Vec<DirectLaneConstructorInputs>) -> Self {
+        Self {
+            identity,
+            lanes,
+            phase_plan: DirectPhasePlan::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectLaneConstructorInputs {
+    pub lane_id: u32,
+    pub upstream_lane_id: u32,
+    pub downstream_lane_id: u32,
+    pub upstream_area_ratio: f64,
+    pub area_m2: f64,
+    pub water: DirectWaterState,
+    pub transfer: DirectTransferBuffers,
+    pub publication: DirectPublicationFrame,
+    pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
+    pub evapotranspiration_stage_state: Option<DirectEvapotranspirationStageState>,
+    pub day_inputs: Vec<DirectDayConstructorInputs>,
+}
+
+impl DirectLaneConstructorInputs {
+    pub fn from_topology(
+        lane_index: usize,
+        lane_count: usize,
+        day_count: usize,
+    ) -> Result<Self, DirectRuntimeError> {
+        let skeleton = DirectLaneFrame::skeleton(lane_index, lane_count)?;
+        Ok(Self {
+            lane_id: skeleton.lane_id,
+            upstream_lane_id: skeleton.upstream_lane_id,
+            downstream_lane_id: skeleton.downstream_lane_id,
+            upstream_area_ratio: 1.0,
+            area_m2: 1.0,
+            water: DirectWaterState::zero(),
+            transfer: DirectTransferBuffers::zero(),
+            publication: DirectPublicationFrame::empty(),
+            subsurface_layers: Vec::new(),
+            evapotranspiration_stage_state: None,
+            day_inputs: vec![DirectDayConstructorInputs::zero(); day_count],
+        })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectDayConstructorInputs {
+    pub forcing: DirectDayForcing,
+    pub normalization_inputs: DirectNormalizationInputs,
+    pub storage_bounds_inputs: DirectStorageBoundsInputs,
+    pub decomposition_inputs: DirectDecompositionInputs,
+    pub residue_partition_inputs: DirectResiduePartitionInputs,
+    pub annual_growth_inputs: DirectGrowthInputs,
+    pub perennial_growth_inputs: DirectGrowthInputs,
+    pub liquid_input_inputs: DirectLiquidInputInputs,
+    pub runon_carry_inputs: DirectRunonCarryInputs,
+    pub infiltration_depression_inputs: DirectInfiltrationDepressionInputs,
+    pub saturation_addback_inputs: DirectSaturationAddbackInputs,
+    pub runoff_partition_inputs: DirectRunoffPartitionInputs,
+    pub percolation_inputs: DirectPercolationInputs,
+    pub subsurface_compute_inputs: DirectSubsurfaceComputeInputs,
+    pub deep_seepage_inputs: DirectDeepSeepageInputs,
+    pub subsurface_loss_inputs: DirectSubsurfaceLossInputs,
+    pub evapotranspiration_compute_inputs: DirectEvapotranspirationComputeInputs,
+    pub evapotranspiration_inputs: DirectEvapotranspirationInputs,
+    pub snow_coupling_inputs: DirectSnowCouplingInputs,
+    pub storage_reconciliation_inputs: DirectStorageReconciliationInputs,
+    pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,
+    pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
+}
+
+impl DirectDayConstructorInputs {
+    #[must_use]
+    pub fn zero() -> Self {
+        Self {
+            forcing: DirectDayForcing::zero(),
+            normalization_inputs: DirectNormalizationInputs::zero(),
+            storage_bounds_inputs: DirectStorageBoundsInputs::zero(),
+            decomposition_inputs: DirectDecompositionInputs::zero(),
+            residue_partition_inputs: DirectResiduePartitionInputs::zero(),
+            annual_growth_inputs: DirectGrowthInputs::zero(),
+            perennial_growth_inputs: DirectGrowthInputs::zero(),
+            liquid_input_inputs: DirectLiquidInputInputs::zero(),
+            runon_carry_inputs: DirectRunonCarryInputs::zero(),
+            infiltration_depression_inputs: DirectInfiltrationDepressionInputs::zero(),
+            saturation_addback_inputs: DirectSaturationAddbackInputs::zero(),
+            runoff_partition_inputs: DirectRunoffPartitionInputs::zero(),
+            percolation_inputs: DirectPercolationInputs::neutral(),
+            subsurface_compute_inputs: DirectSubsurfaceComputeInputs::neutral(),
+            deep_seepage_inputs: DirectDeepSeepageInputs::zero(),
+            subsurface_loss_inputs: DirectSubsurfaceLossInputs::zero(),
+            evapotranspiration_compute_inputs: DirectEvapotranspirationComputeInputs::zero(),
+            evapotranspiration_inputs: DirectEvapotranspirationInputs::zero(),
+            snow_coupling_inputs: DirectSnowCouplingInputs::zero(),
+            storage_reconciliation_inputs: DirectStorageReconciliationInputs::zero(),
+            hydrology_projection_inputs: DirectHydrologyProjectionInputs::zero(),
+            frost_layer_carry_projection: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct DirectRunFrame {
     pub identity: DirectRunIdentity,
     pub lanes: Vec<DirectLaneFrame>,
@@ -145,6 +257,28 @@ impl DirectRunFrame {
         })
     }
 
+    pub fn from_constructor_inputs(
+        inputs: DirectRunConstructorInputs,
+    ) -> Result<Self, DirectRuntimeError> {
+        validate_direct_run_constructor_inputs(&inputs)?;
+        DIRECT_AUDIT.record_run_frame_construction();
+        let lanes = inputs
+            .lanes
+            .into_iter()
+            .map(DirectLaneFrame::from_constructor_inputs)
+            .collect::<Vec<_>>();
+
+        Ok(Self {
+            identity: inputs.identity,
+            lanes,
+            phase_plan: inputs.phase_plan,
+            publication: DirectPublicationFrame::empty(),
+            lane_transfer_ledger: vec![DirectLaneTransferLedger::zero(); inputs.identity.lane_count],
+            lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
+            lane_transfer_shadow_projection: None,
+        })
+    }
+
     fn seed_day_frame(
         &self,
         lane_index: usize,
@@ -167,6 +301,9 @@ impl DirectRunFrame {
         day_frame.water = lane.water.clone();
         day_frame.transfer = lane.transfer.clone();
         day_frame.publication = lane.publication.clone();
+        if let Some(day_inputs) = lane.day_inputs.get(day_index) {
+            day_frame.apply_constructor_inputs(day_inputs.clone())?;
+        }
         if !lane.subsurface_layers.is_empty() {
             day_frame.percolation_inputs.soil_water_initial_m = lane.water.soil_water_m;
             day_frame
@@ -395,6 +532,7 @@ pub struct DirectLaneFrame {
     pub publication: DirectPublicationFrame,
     pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
     pub evapotranspiration_stage_state: Option<DirectEvapotranspirationStageState>,
+    pub day_inputs: Vec<DirectDayConstructorInputs>,
 }
 
 impl DirectLaneFrame {
@@ -419,7 +557,24 @@ impl DirectLaneFrame {
             publication: DirectPublicationFrame::empty(),
             subsurface_layers: Vec::new(),
             evapotranspiration_stage_state: None,
+            day_inputs: Vec::new(),
         })
+    }
+
+    fn from_constructor_inputs(inputs: DirectLaneConstructorInputs) -> Self {
+        Self {
+            lane_id: inputs.lane_id,
+            upstream_lane_id: inputs.upstream_lane_id,
+            downstream_lane_id: inputs.downstream_lane_id,
+            upstream_area_ratio: inputs.upstream_area_ratio,
+            area_m2: inputs.area_m2,
+            water: inputs.water,
+            transfer: inputs.transfer,
+            publication: inputs.publication,
+            subsurface_layers: inputs.subsurface_layers,
+            evapotranspiration_stage_state: inputs.evapotranspiration_stage_state,
+            day_inputs: inputs.day_inputs,
+        }
     }
 
     fn commit_day(&mut self, day_frame: &DirectDayFrame) -> Result<(), DirectRuntimeError> {
@@ -705,6 +860,47 @@ impl DirectDayFrame {
         })
     }
 
+    pub fn from_constructor_inputs(
+        identity: DirectRunIdentity,
+        lane_index: usize,
+        day_index: usize,
+        inputs: DirectDayConstructorInputs,
+    ) -> Result<Self, DirectRuntimeError> {
+        let mut frame = Self::seed(identity, lane_index, day_index)?;
+        frame.apply_constructor_inputs(inputs)?;
+        Ok(frame)
+    }
+
+    fn apply_constructor_inputs(
+        &mut self,
+        inputs: DirectDayConstructorInputs,
+    ) -> Result<(), DirectRuntimeError> {
+        validate_direct_day_constructor_inputs(&inputs)?;
+        self.forcing = inputs.forcing;
+        self.normalization_inputs = inputs.normalization_inputs;
+        self.storage_bounds_inputs = inputs.storage_bounds_inputs;
+        self.decomposition_inputs = inputs.decomposition_inputs;
+        self.residue_partition_inputs = inputs.residue_partition_inputs;
+        self.annual_growth_inputs = inputs.annual_growth_inputs;
+        self.perennial_growth_inputs = inputs.perennial_growth_inputs;
+        self.liquid_input_inputs = inputs.liquid_input_inputs;
+        self.runon_carry_inputs = inputs.runon_carry_inputs;
+        self.infiltration_depression_inputs = inputs.infiltration_depression_inputs;
+        self.saturation_addback_inputs = inputs.saturation_addback_inputs;
+        self.runoff_partition_inputs = inputs.runoff_partition_inputs;
+        self.percolation_inputs = inputs.percolation_inputs;
+        self.subsurface_compute_inputs = inputs.subsurface_compute_inputs;
+        self.deep_seepage_inputs = inputs.deep_seepage_inputs;
+        self.subsurface_loss_inputs = inputs.subsurface_loss_inputs;
+        self.evapotranspiration_compute_inputs = inputs.evapotranspiration_compute_inputs;
+        self.evapotranspiration_inputs = inputs.evapotranspiration_inputs;
+        self.snow_coupling_inputs = inputs.snow_coupling_inputs;
+        self.storage_reconciliation_inputs = inputs.storage_reconciliation_inputs;
+        self.hydrology_projection_inputs = inputs.hydrology_projection_inputs;
+        self.frost_layer_carry_projection = inputs.frost_layer_carry_projection;
+        Ok(())
+    }
+
     fn validate_seed_indices(
         identity: DirectRunIdentity,
         lane_index: usize,
@@ -967,6 +1163,393 @@ impl DirectDayFrame {
             self.publication.lateral_flow_m,
         )?;
         Ok(())
+    }
+}
+
+fn validate_direct_run_constructor_inputs(
+    inputs: &DirectRunConstructorInputs,
+) -> Result<(), DirectRuntimeError> {
+    if inputs.identity.lane_count == 0 {
+        return Err(DirectRuntimeError::InvalidLaneCount {
+            lane_count: inputs.identity.lane_count,
+        });
+    }
+    if inputs.identity.day_count == 0 {
+        return Err(DirectRuntimeError::InvalidDayCount {
+            day_count: inputs.identity.day_count,
+        });
+    }
+    if inputs.lanes.len() != inputs.identity.lane_count {
+        return Err(DirectRuntimeError::FrameLaneCountMismatch {
+            identity_lane_count: inputs.identity.lane_count,
+            actual_lane_count: inputs.lanes.len(),
+        });
+    }
+
+    for (lane_index, lane) in inputs.lanes.iter().enumerate() {
+        validate_direct_lane_constructor_inputs(inputs.identity, lane_index, lane)?;
+    }
+    validate_direct_constructor_topology(&inputs.lanes)
+}
+
+fn validate_direct_lane_constructor_inputs(
+    identity: DirectRunIdentity,
+    lane_index: usize,
+    inputs: &DirectLaneConstructorInputs,
+) -> Result<(), DirectRuntimeError> {
+    let expected_lane_id = u32::try_from(lane_index + 1)
+        .map_err(|_| DirectRuntimeError::LaneIdOverflow { lane_index })?;
+    if inputs.lane_id != expected_lane_id {
+        return Err(DirectRuntimeError::InvalidLaneTopology {
+            lane_index,
+            lane_id: inputs.lane_id,
+            upstream_lane_id: inputs.upstream_lane_id,
+            downstream_lane_id: inputs.downstream_lane_id,
+        });
+    }
+    validate_positive_direct("constructor.area_m2", inputs.area_m2)?;
+    validate_nonnegative_direct_m(
+        "constructor.upstream_area_ratio",
+        inputs.upstream_area_ratio,
+    )?;
+    validate_direct_water_state(&inputs.water)?;
+    validate_direct_transfer_buffers(&inputs.transfer)?;
+    validate_direct_publication_frame(&inputs.publication)?;
+    for layer in &inputs.subsurface_layers {
+        validate_direct_subsurface_layer(layer)?;
+    }
+    if let Some(stage) = inputs.evapotranspiration_stage_state {
+        validate_direct_evapotranspiration_stage(stage)?;
+    }
+    if inputs.day_inputs.len() != identity.day_count {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.day_inputs",
+        });
+    }
+    for day_inputs in &inputs.day_inputs {
+        validate_direct_day_constructor_inputs(day_inputs)?;
+    }
+    Ok(())
+}
+
+fn validate_direct_constructor_topology(
+    lanes: &[DirectLaneConstructorInputs],
+) -> Result<(), DirectRuntimeError> {
+    let lane_count_u32 =
+        u32::try_from(lanes.len()).map_err(|_| DirectRuntimeError::LaneIdOverflow {
+            lane_index: lanes.len(),
+        })?;
+    let mut outlet_count = 0_usize;
+
+    for (lane_index, lane) in lanes.iter().enumerate() {
+        if lane.upstream_lane_id > lane_count_u32 || lane.downstream_lane_id > lane_count_u32 {
+            return Err(DirectRuntimeError::InvalidLaneTopology {
+                lane_index,
+                lane_id: lane.lane_id,
+                upstream_lane_id: lane.upstream_lane_id,
+                downstream_lane_id: lane.downstream_lane_id,
+            });
+        }
+        if lane.downstream_lane_id == 0 {
+            outlet_count += 1;
+        }
+        if lane.upstream_lane_id != 0 {
+            let upstream_index = (lane.upstream_lane_id - 1) as usize;
+            if lanes[upstream_index].downstream_lane_id != lane.lane_id {
+                return Err(DirectRuntimeError::InvalidLaneTopology {
+                    lane_index,
+                    lane_id: lane.lane_id,
+                    upstream_lane_id: lane.upstream_lane_id,
+                    downstream_lane_id: lane.downstream_lane_id,
+                });
+            }
+        }
+        if lane.downstream_lane_id != 0 {
+            let downstream_index = (lane.downstream_lane_id - 1) as usize;
+            if lanes[downstream_index].upstream_lane_id != lane.lane_id {
+                return Err(DirectRuntimeError::InvalidLaneTopology {
+                    lane_index,
+                    lane_id: lane.lane_id,
+                    upstream_lane_id: lane.upstream_lane_id,
+                    downstream_lane_id: lane.downstream_lane_id,
+                });
+            }
+        }
+    }
+
+    if outlet_count == 1 {
+        Ok(())
+    } else {
+        Err(DirectRuntimeError::InvalidLaneOutletCount { outlet_count })
+    }
+}
+
+fn validate_direct_day_constructor_inputs(
+    inputs: &DirectDayConstructorInputs,
+) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m("constructor.forcing.precipitation_m", inputs.forcing.precipitation_m)?;
+    validate_finite(
+        "constructor.forcing.effective_temperature_c",
+        inputs.forcing.effective_temperature_c,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.normalization.precipitation_m",
+        inputs.normalization_inputs.precipitation_m,
+    )?;
+    validate_finite(
+        "constructor.normalization.effective_temperature_c",
+        inputs.normalization_inputs.effective_temperature_c,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.storage_bounds.closure_tolerance_m",
+        inputs.storage_bounds_inputs.closure_tolerance_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.liquid_input_handoff_m",
+        inputs.liquid_input_inputs.liquid_input_handoff_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.runon.surface_runon_handoff_m",
+        inputs.runon_carry_inputs.surface_runon_handoff_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.runon.subsurface_carry_handoff_m",
+        inputs.runon_carry_inputs.subsurface_carry_handoff_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.runoff.liquid_input_m",
+        inputs.runoff_partition_inputs.liquid_input_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.percolation.soil_water_initial_m",
+        inputs.percolation_inputs.soil_water_initial_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.deep_seepage_handoff_m",
+        inputs.deep_seepage_inputs.deep_seepage_handoff_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.subsurface_loss_handoff_m",
+        inputs.subsurface_loss_inputs.subsurface_loss_handoff_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.evapotranspiration_handoff_m",
+        inputs
+            .evapotranspiration_inputs
+            .evapotranspiration_handoff_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.snow_coupling_handoff_m",
+        inputs.snow_coupling_inputs.snow_coupling_handoff_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.storage_reconciliation.closure_tolerance_m",
+        inputs.storage_reconciliation_inputs.closure_tolerance_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.hydrology_projection.aggregate_storage_tolerance_m",
+        inputs
+            .hydrology_projection_inputs
+            .aggregate_storage_tolerance_m,
+    )?;
+    validate_optional_nonnegative_direct_m(
+        "constructor.hydrology_projection.profile_depth_m",
+        inputs.hydrology_projection_inputs.profile_depth_m,
+    )?;
+    validate_direct_evapotranspiration_compute_inputs(
+        &inputs.evapotranspiration_compute_inputs,
+    )?;
+    for layer in &inputs.percolation_inputs.layers {
+        validate_direct_subsurface_layer(layer)?;
+    }
+    for layer in &inputs.subsurface_compute_inputs.layers {
+        validate_direct_subsurface_layer_inputs(layer)?;
+    }
+    if let Some(projection) = &inputs.frost_layer_carry_projection {
+        for projection in projection {
+            validate_positive_direct(
+                "constructor.frost_layer_carry_projection.fine_layer_thickness_m",
+                projection.fine_layer_thickness_m,
+            )?;
+            if projection.fine_layer_count == 0 {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "constructor.frost_layer_carry_projection.fine_layer_count",
+                });
+            }
+        }
+    }
+    Ok(())
+}
+
+fn validate_direct_evapotranspiration_compute_inputs(
+    inputs: &DirectEvapotranspirationComputeInputs,
+) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m("constructor.et.et_demand_m", inputs.et_demand_m)?;
+    validate_nonnegative_direct_m("constructor.et.leaf_area_index", inputs.leaf_area_index)?;
+    validate_unit_interval(
+        "constructor.et.canopy_cover_fraction",
+        inputs.canopy_cover_fraction,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.et.residue_interception_m",
+        inputs.residue_interception_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.et.same_pass_infiltration_m",
+        inputs.same_pass_infiltration_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.et.outside_water_depth_m",
+        inputs.outside_water_depth_m,
+    )?;
+    validate_nonnegative_direct_m("constructor.et.root_depth_m", inputs.root_depth_m)?;
+    validate_finite("constructor.et.plant_tolerance", inputs.plant_tolerance)?;
+    if let Some(stage) = inputs.stage_state {
+        validate_direct_evapotranspiration_stage(stage)?;
+    }
+    if let Some(pmet) = inputs.pmet {
+        validate_nonnegative_direct_m(
+            "constructor.pmet.soil_evaporation_m",
+            pmet.soil_evaporation_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "constructor.pmet.plant_transpiration_m",
+            pmet.plant_transpiration_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "constructor.pmet.soil_evaporation_storage_return_m",
+            pmet.soil_evaporation_storage_return_m,
+        )?;
+    }
+    Ok(())
+}
+
+fn validate_direct_water_state(inputs: &DirectWaterState) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m("constructor.water.soil_water_m", inputs.soil_water_m)?;
+    validate_nonnegative_direct_m("constructor.water.infiltration_m", inputs.infiltration_m)?;
+    validate_nonnegative_direct_m("constructor.water.runoff_m", inputs.runoff_m)?;
+    validate_nonnegative_direct_m(
+        "constructor.water.evapotranspiration_m",
+        inputs.evapotranspiration_m,
+    )?;
+    validate_nonnegative_direct_m("constructor.water.drainage_m", inputs.drainage_m)?;
+    validate_nonnegative_direct_m("constructor.water.lateral_flow_m", inputs.lateral_flow_m)
+}
+
+fn validate_direct_transfer_buffers(
+    inputs: &DirectTransferBuffers,
+) -> Result<(), DirectRuntimeError> {
+    let _ = sum_nonnegative_direct_m(
+        "constructor.transfer.surface_carry_m",
+        &inputs.surface_carry_m,
+    )?;
+    let _ = sum_nonnegative_direct_m(
+        "constructor.transfer.lateral_carry_m",
+        &inputs.lateral_carry_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.transfer.upstream_flow_m",
+        inputs.upstream_flow_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.transfer.subsurface_input_m",
+        inputs.subsurface_input_m,
+    )
+}
+
+fn validate_direct_publication_frame(
+    inputs: &DirectPublicationFrame,
+) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m("constructor.publication.runoff_m", inputs.runoff_m)?;
+    validate_nonnegative_direct_m(
+        "constructor.publication.infiltration_m",
+        inputs.infiltration_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "constructor.publication.evapotranspiration_m",
+        inputs.evapotranspiration_m,
+    )?;
+    validate_nonnegative_direct_m("constructor.publication.drainage_m", inputs.drainage_m)?;
+    validate_nonnegative_direct_m(
+        "constructor.publication.lateral_flow_m",
+        inputs.lateral_flow_m,
+    )
+}
+
+fn validate_direct_subsurface_layer(
+    layer: &DirectSubsurfaceLayerState,
+) -> Result<(), DirectRuntimeError> {
+    validate_direct_subsurface_layer_inputs(&DirectSubsurfaceLayerInputs::from(layer.clone()))
+}
+
+fn validate_direct_subsurface_layer_inputs(
+    layer: &DirectSubsurfaceLayerInputs,
+) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m("constructor.layer.theta_m", layer.theta_m)?;
+    validate_nonnegative_direct_m("constructor.layer.field_capacity_m", layer.field_capacity_m)?;
+    validate_nonnegative_direct_m("constructor.layer.upper_limit_m", layer.upper_limit_m)?;
+    validate_nonnegative_direct_m(
+        "constructor.layer.conductivity_m_s",
+        layer.conductivity_m_s,
+    )?;
+    validate_positive_direct("constructor.layer.depth_m", layer.depth_m)?;
+    validate_finite("constructor.layer.residual_theta", layer.residual_theta)?;
+    validate_nonnegative_direct_m("constructor.layer.frozen_depth_m", layer.frozen_depth_m)?;
+    validate_nonnegative_direct_m("constructor.layer.frozen_water_m", layer.frozen_water_m)?;
+    validate_unit_interval("constructor.layer.porosity", layer.porosity)?;
+    validate_unit_interval(
+        "constructor.layer.field_capacity_theta",
+        layer.field_capacity_theta,
+    )?;
+    validate_finite("constructor.layer.coca", layer.coca)?;
+    validate_nonnegative_direct_m(
+        "constructor.layer.lateral_conductivity_m_s",
+        layer.lateral_conductivity_m_s,
+    )?;
+    if layer.field_capacity_m > layer.upper_limit_m || layer.frozen_depth_m > layer.depth_m {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.layer",
+        });
+    }
+    Ok(())
+}
+
+fn validate_direct_evapotranspiration_stage(
+    stage: DirectEvapotranspirationStageState,
+) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m("constructor.et_stage.s1_m", stage.s1_m)?;
+    validate_nonnegative_direct_m("constructor.et_stage.s2_m", stage.s2_m)?;
+    validate_nonnegative_direct_m("constructor.et_stage.threshold_m", stage.threshold_m)?;
+    validate_nonnegative_direct_m("constructor.et_stage.counter", stage.counter)
+}
+
+fn validate_optional_nonnegative_direct_m(
+    field: &'static str,
+    value: Option<f64>,
+) -> Result<(), DirectRuntimeError> {
+    if let Some(value) = value {
+        validate_nonnegative_direct_m(field, value)?;
+    }
+    Ok(())
+}
+
+fn validate_positive_direct(field: &'static str, value: f64) -> Result<(), DirectRuntimeError> {
+    validate_finite(field, value)?;
+    if value > 0.0 {
+        Ok(())
+    } else {
+        Err(DirectRuntimeError::DirectDomainViolation { field })
+    }
+}
+
+fn validate_unit_interval(field: &'static str, value: f64) -> Result<(), DirectRuntimeError> {
+    validate_finite(field, value)?;
+    if (0.0..=1.0).contains(&value) {
+        Ok(())
+    } else if value < 0.0 {
+        Err(DirectRuntimeError::NegativeDirectValue { field })
+    } else {
+        Err(DirectRuntimeError::DirectDomainViolation { field })
     }
 }
 

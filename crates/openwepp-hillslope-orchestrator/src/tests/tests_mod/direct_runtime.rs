@@ -14,22 +14,24 @@ use crate::{
     DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT, DIRECT_R5B_STORAGE_BOUNDS_SPAN,
     DIRECT_R5C_DECOMPOSITION_PHASE_SPAN_COUNT, DIRECT_R5C_RESIDUE_PARTITION_PHASE_SPAN_COUNT,
     DIRECT_R5D_ANNUAL_GROWTH_PHASE_SPAN_COUNT, DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT,
-    DirectDayFrame, DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
+    DirectDayConstructorInputs, DirectDayForcing, DirectDayFrame,
+    DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
     DirectDeepSeepageShadowProjection, DirectDeepSeepageState, DirectDownstreamOperands,
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationDownstreamOperands,
     DirectEvapotranspirationInputs, DirectEvapotranspirationPmetInputs,
     DirectEvapotranspirationShadowProjection, DirectEvapotranspirationState, DirectExecutorMode,
     DirectFrameExecutor, DirectFrostLayerCarryProjection, DirectHydrologyProjectionInputs,
-    DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneTransferLedger,
-    DirectLedgerDownstreamOperands, DirectLedgerShadowProjection, DirectLiquidInputInputs,
-    DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
+    DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneConstructorInputs,
+    DirectLaneTransferLedger, DirectLedgerDownstreamOperands, DirectLedgerShadowProjection,
+    DirectLiquidInputInputs, DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
     DirectNormalizationShadowProjection, DirectNormalizationState, DirectPercolationInputs,
     DirectPhaseKind, DirectPhaseLifecycleStatus, DirectPublicationCalendarDay,
-    DirectPublicationDayInput, DirectPublicationRunMetadata, DirectRunFrame, DirectRunIdentity,
-    DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
-    DirectRunoffPartitionInputs, DirectRunonCarryInputs, DirectRuntimeError,
-    DirectSaturationAddbackInputs, DirectShadowProjection, DirectSnowCouplingDownstreamOperands,
-    DirectSnowCouplingInputs, DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
+    DirectPublicationDayInput, DirectPublicationRunMetadata, DirectRunConstructorInputs,
+    DirectRunFrame, DirectRunIdentity, DirectRunTransferDownstreamOperands,
+    DirectRunTransferShadowProjection, DirectRunoffPartitionInputs, DirectRunonCarryInputs,
+    DirectRuntimeError, DirectSaturationAddbackInputs, DirectShadowProjection,
+    DirectSnowCouplingDownstreamOperands, DirectSnowCouplingInputs,
+    DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
     DirectStorageBoundsDownstreamOperands, DirectStorageBoundsInputs,
     DirectStorageBoundsShadowProjection, DirectStorageBoundsState, DirectStorageDownstreamOperands,
     DirectStorageInputDownstreamOperands, DirectStorageInputShadowProjection,
@@ -684,6 +686,364 @@ fn r2a_direct_runtime_source_excludes_compatibility_storage_tokens() {
             );
         }
     }
+}
+
+#[test]
+fn r7b_typed_run_constructor_roundtrips_single_ofe_sidecar_defaults() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(77, 2637, 1, 1)
+        .expect("valid direct constructor identity should construct");
+    let inputs = DirectRunConstructorInputs::new(
+        identity,
+        vec![
+            DirectLaneConstructorInputs::from_topology(0, 1, 1)
+                .expect("single OFE lane constructor input should build"),
+        ],
+    );
+
+    let frame = DirectRunFrame::from_constructor_inputs(inputs)
+        .expect("typed single OFE direct frame should construct");
+
+    assert_eq!(frame.identity, identity);
+    assert_eq!(frame.lanes.len(), 1);
+    assert_eq!(frame.lanes[0].lane_id, 1);
+    assert_r7b_close(frame.lanes[0].area_m2, 1.0);
+    assert_eq!(frame.lanes[0].day_inputs.len(), 1);
+    assert_eq!(
+        frame.lanes[0].day_inputs[0].forcing,
+        DirectDayForcing::zero()
+    );
+    assert_eq!(
+        frame.lanes[0].day_inputs[0].snow_coupling_inputs,
+        DirectSnowCouplingInputs::zero()
+    );
+    assert_eq!(
+        frame.lanes[0].day_inputs[0].frost_layer_carry_projection,
+        None
+    );
+    assert_eq!(
+        frame.lanes[0].day_inputs[0]
+            .evapotranspiration_compute_inputs
+            .pmet,
+        None
+    );
+}
+
+#[test]
+fn r7b_typed_run_constructor_roundtrips_multiofe_daily_parsed_inputs() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(78, 2637, 2, 2)
+        .expect("valid direct constructor identity should construct");
+    let mut lanes = vec![
+        DirectLaneConstructorInputs::from_topology(0, 2, 2)
+            .expect("upstream lane constructor input should build"),
+        DirectLaneConstructorInputs::from_topology(1, 2, 2)
+            .expect("outlet lane constructor input should build"),
+    ];
+
+    lanes[0].area_m2 = 125.0;
+    lanes[0].water.soil_water_m = 0.21;
+    lanes[0].transfer.surface_carry_m[3] = 0.004;
+    lanes[0].publication.runoff_m = 0.015;
+    lanes[0].subsurface_layers = vec![r7b_constructor_layer(0.18, 0.05, 0.40, 0.30, 0.02)];
+    lanes[0].day_inputs[0] = r7b_breakpoint_management_pmet_day();
+    lanes[0].day_inputs[1].forcing = DirectDayForcing {
+        precipitation_m: 0.003,
+        effective_temperature_c: -1.25,
+    };
+
+    lanes[1].area_m2 = 130.0;
+    lanes[1].upstream_area_ratio = 1.04;
+    lanes[1].subsurface_layers = vec![r7b_constructor_layer(0.16, 0.04, 0.38, 0.28, 0.0)];
+    lanes[1].day_inputs[0].snow_coupling_inputs = DirectSnowCouplingInputs {
+        snow_coupling_handoff_m: 0.006,
+    };
+    lanes[1].day_inputs[0]
+        .hydrology_projection_inputs
+        .snow_water_m = 0.011;
+    lanes[1].day_inputs[0]
+        .hydrology_projection_inputs
+        .frozen_soil_water_m = 0.002;
+    lanes[1].day_inputs[0].frost_layer_carry_projection =
+        Some(vec![DirectFrostLayerCarryProjection {
+            layer_index: 1,
+            fine_layer_count: 2,
+            fine_layer_thickness_m: 0.10,
+        }]);
+
+    let frame =
+        DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(identity, lanes))
+            .expect("typed multi OFE direct frame should construct");
+
+    assert_eq!(frame.identity, identity);
+    assert_eq!(frame.lanes.len(), 2);
+    assert_eq!(frame.lanes[0].downstream_lane_id, 2);
+    assert_eq!(frame.lanes[1].upstream_lane_id, 1);
+    assert_r7b_close(frame.lanes[0].water.soil_water_m, 0.21);
+    assert_r7b_close(frame.lanes[0].transfer.surface_carry_m[3], 0.004);
+    assert_eq!(
+        frame.lanes[0].day_inputs[0]
+            .evapotranspiration_compute_inputs
+            .pmet,
+        Some(DirectEvapotranspirationPmetInputs {
+            soil_evaporation_m: 0.001,
+            plant_transpiration_m: 0.002,
+            soil_evaporation_storage_return_m: 0.0004,
+        })
+    );
+    assert_r7b_close(
+        frame.lanes[0].day_inputs[0]
+            .residue_partition_inputs
+            .cover_fraction,
+        0.35,
+    );
+    assert_eq!(
+        frame.lanes[1].day_inputs[0].frost_layer_carry_projection,
+        Some(vec![DirectFrostLayerCarryProjection {
+            layer_index: 1,
+            fine_layer_count: 2,
+            fine_layer_thickness_m: 0.10,
+        }])
+    );
+}
+
+#[test]
+fn r7b_typed_day_constructor_supplies_r4_r5_inputs() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(79, 2637, 1, 1)
+        .expect("valid direct constructor identity should construct");
+    let day = DirectDayFrame::from_constructor_inputs(
+        identity,
+        0,
+        0,
+        r7b_breakpoint_management_pmet_day(),
+    )
+    .expect("typed day constructor should construct");
+
+    assert_r7b_close(day.forcing.precipitation_m, 0.012);
+    assert_r7b_close(day.normalization_inputs.precipitation_m, 0.012);
+    assert_r7b_close(day.liquid_input_inputs.liquid_input_handoff_m, 0.011);
+    assert_r7b_close(day.runon_carry_inputs.surface_runon_handoff_m, 0.0015);
+    assert_r7b_close(day.runoff_partition_inputs.liquid_input_m, 0.011);
+    assert_r7b_close(day.storage_reconciliation_inputs.precip_input_m, 0.012);
+    assert_r7b_close(day.residue_partition_inputs.cover_fraction, 0.35);
+    assert_eq!(
+        day.evapotranspiration_compute_inputs.pmet,
+        Some(DirectEvapotranspirationPmetInputs {
+            soil_evaporation_m: 0.001,
+            plant_transpiration_m: 0.002,
+            soil_evaporation_storage_return_m: 0.0004,
+        })
+    );
+}
+
+#[test]
+fn r7b_typed_constructors_fail_closed_on_invalid_domains() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(80, 2637, 1, 1)
+        .expect("valid direct constructor identity should construct");
+    let mut lane = DirectLaneConstructorInputs::from_topology(0, 1, 1)
+        .expect("lane constructor input should build");
+    lane.area_m2 = 0.0;
+    assert_eq!(
+        DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(
+            identity,
+            vec![lane],
+        )),
+        Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.area_m2"
+        })
+    );
+
+    let mut day = DirectDayConstructorInputs::zero();
+    day.forcing.precipitation_m = f64::NAN;
+    assert_eq!(
+        DirectDayFrame::from_constructor_inputs(identity, 0, 0, day),
+        Err(DirectRuntimeError::NonFiniteDirectValue {
+            field: "constructor.forcing.precipitation_m"
+        })
+    );
+}
+
+#[test]
+fn r7b_constructor_source_excludes_forbidden_compatibility_storage_tokens() {
+    let path = format!(
+        "{}/src/direct_runtime/00_core_frames.rs",
+        env!("CARGO_MANIFEST_DIR")
+    );
+    let source = std::fs::read_to_string(&path)
+        .unwrap_or_else(|err| panic!("direct core-frame source should be readable: {err}"));
+    let constructor_source = source
+        .split("#[derive(Debug, Clone, PartialEq)]\npub struct DirectRunConstructorInputs")
+        .nth(1)
+        .expect("constructor declaration block should exist")
+        .split("#[derive(Debug, Clone, PartialEq)]\npub struct DirectRunFrame")
+        .next()
+        .expect("constructor declaration block should terminate before DirectRunFrame");
+
+    for forbidden in [
+        "HillslopeWritebackSurface",
+        "BoundarySymbol",
+        "BoundaryValue",
+        "SymbolRegistry",
+        "IndexedWritebackSurface",
+        "HillslopeKernelRequest",
+        "KernelWritebackPayload",
+        "Wb13",
+        "WB13",
+    ] {
+        assert!(
+            !constructor_source.contains(forbidden),
+            "R7B typed constructor declarations must not contain forbidden compatibility token {forbidden}"
+        );
+    }
+}
+
+#[test]
+fn r7b_constructor_type_size_layout_is_bounded() {
+    let run_constructor = std::mem::size_of::<DirectRunConstructorInputs>();
+    let lane_constructor = std::mem::size_of::<DirectLaneConstructorInputs>();
+    let day_constructor = std::mem::size_of::<DirectDayConstructorInputs>();
+    let run_frame = std::mem::size_of::<DirectRunFrame>();
+    let lane_frame = std::mem::size_of::<crate::DirectLaneFrame>();
+    let day_frame = std::mem::size_of::<DirectDayFrame>();
+
+    println!(
+        "R7B type sizes: DirectRunConstructorInputs={run_constructor}; DirectLaneConstructorInputs={lane_constructor}; DirectDayConstructorInputs={day_constructor}; DirectRunFrame={run_frame}; DirectLaneFrame={lane_frame}; DirectDayFrame={day_frame}"
+    );
+
+    assert!(run_constructor <= 128);
+    assert!(lane_constructor <= 1_024);
+    assert!(day_constructor <= 4_096);
+    assert!(run_frame <= 512);
+    assert!(lane_frame <= 1_024);
+    assert!(day_frame <= 12_288);
+}
+
+fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
+    let mut day = DirectDayConstructorInputs::zero();
+    day.forcing = DirectDayForcing {
+        precipitation_m: 0.012,
+        effective_temperature_c: 4.5,
+    };
+    day.normalization_inputs = DirectNormalizationInputs {
+        precipitation_m: 0.012,
+        effective_temperature_c: 4.5,
+        storage_initial_m: 0.21,
+        surface_transfer_m: 0.0015,
+        lateral_transfer_m: 0.0005,
+        upstream_flow_m: 0.0,
+        subsurface_input_m: 0.0,
+    };
+    day.storage_bounds_inputs = DirectStorageBoundsInputs {
+        storage_initial_m: 0.21,
+        total_accounted_input_m: 0.014,
+        closure_tolerance_m: 1.0e-9,
+    };
+    day.liquid_input_inputs = DirectLiquidInputInputs {
+        liquid_input_handoff_m: 0.011,
+    };
+    day.runon_carry_inputs = DirectRunonCarryInputs {
+        surface_runon_handoff_m: 0.0015,
+        subsurface_carry_handoff_m: 0.0005,
+    };
+    day.runoff_partition_inputs = DirectRunoffPartitionInputs {
+        liquid_input_m: 0.011,
+        runon_input_m: 0.0015,
+        cumulative_infiltration_m: 0.006,
+        depression_storage_delta_m: 0.0005,
+        surface_saturation_runoff_m: 0.0008,
+    };
+    day.percolation_inputs.soil_water_initial_m = 0.21;
+    day.percolation_inputs.layers = vec![r7b_constructor_layer(0.18, 0.05, 0.40, 0.30, 0.0)];
+    day.deep_seepage_inputs = DirectDeepSeepageInputs {
+        deep_seepage_handoff_m: 0.001,
+    };
+    day.subsurface_loss_inputs = DirectSubsurfaceLossInputs {
+        subsurface_loss_handoff_m: 0.0007,
+    };
+    day.evapotranspiration_inputs = DirectEvapotranspirationInputs {
+        evapotranspiration_handoff_m: 0.003,
+    };
+    day.evapotranspiration_compute_inputs = DirectEvapotranspirationComputeInputs {
+        et_demand_m: 0.004,
+        leaf_area_index: 1.2,
+        canopy_cover_fraction: 0.45,
+        residue_interception_m: 0.0002,
+        same_pass_infiltration_m: 0.006,
+        outside_water_depth_m: 0.0,
+        root_depth_m: 0.35,
+        plant_tolerance: 0.2,
+        growth_context_required: false,
+        stage_state: None,
+        pmet: Some(DirectEvapotranspirationPmetInputs {
+            soil_evaporation_m: 0.001,
+            plant_transpiration_m: 0.002,
+            soil_evaporation_storage_return_m: 0.0004,
+        }),
+    };
+    day.residue_partition_inputs = crate::DirectResiduePartitionInputs {
+        standing_residue_kg_m2: 0.02,
+        flat_residue_offset_kg_m2: 0.01,
+        buried_residue_kg_m2: 0.005,
+        cover_fraction: 0.35,
+    };
+    day.snow_coupling_inputs = DirectSnowCouplingInputs {
+        snow_coupling_handoff_m: 0.002,
+    };
+    day.storage_reconciliation_inputs = DirectStorageReconciliationInputs {
+        storage_initial_m: 0.21,
+        precip_input_m: 0.012,
+        snow_coupling_m: 0.002,
+        evapotranspiration_m: 0.003,
+        deep_seepage_m: 0.001,
+        subsurface_loss_m: 0.0007,
+        closure_tolerance_m: 1.0e-9,
+    };
+    day.hydrology_projection_inputs.snow_water_m = 0.004;
+    day.hydrology_projection_inputs.frozen_soil_water_m = 0.001;
+    day.hydrology_projection_inputs.profile_depth_m = Some(0.30);
+    day
+}
+
+fn assert_r7b_close(observed: f64, expected: f64) {
+    assert!(
+        (observed - expected).abs() <= 1.0e-12,
+        "observed {observed} differs from expected {expected}"
+    );
+}
+
+fn r7b_constructor_layer(
+    theta_m: f64,
+    field_capacity_m: f64,
+    upper_limit_m: f64,
+    depth_m: f64,
+    frozen_depth_m: f64,
+) -> DirectSubsurfaceLayerState {
+    DirectSubsurfaceLayerState::from(DirectSubsurfaceLayerInputs {
+        theta_m,
+        field_capacity_m,
+        upper_limit_m,
+        depth_m,
+        frozen_depth_m,
+        ..DirectSubsurfaceLayerInputs::neutral()
+    })
 }
 
 #[test]

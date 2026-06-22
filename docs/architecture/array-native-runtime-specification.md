@@ -883,7 +883,7 @@ activate direct mode or relax any R7 gate.
 | R5A-R5E | Full canonical OFE-day direct executor lifecycle and 14-phase coverage complete. | One canonical 14-phase entry per OFE-day, direct R4/R5 spans folded under canonical phase entries, protected output identity and endpoint/RSS evidence. | Public outputs remained compatibility-authoritative at R5E; no default activation. |
 | R6A-R6I | Direct publication frame and producer-authority blockers iteratively reduced. | Run-bound publication frame, direct projection consumers, typed day-input builder, PMET layer carry correction, and current-fixture parity closures. | Earlier held states are historical; R6J is the terminal R6 publication cutover package. |
 | R6J | Opt-in direct publication cutover complete. | `DirectPublicationFrameCutover` writes HBP/WAT/PASS/loss/plot/manifest from direct publication artifacts with H2637 byte/Arrow identity and direct manifest provenance. | It is not default activation. Current cutover production adapts simulation-owned WB13 rows into direct publication rows; production direct executor and R7 compatibility-runtime removal remain open. |
-| R7 | R7A documentation-authority reconciliation complete; R7B-H remain open. | R7A-H burndown below. | Production direct mode, parsed-input typed frame constructors, direct publication producer authority, default activation, hot compatibility isolation/deletion, performance closure, fixture hardening, and release readiness. |
+| R7 | R7A architecture reconciliation and R7B parsed-input typed constructor boundary complete; R7C-H remain open. | R7A-H burndown below. | Production direct mode executor routing, direct publication producer authority, default activation, hot compatibility isolation/deletion, performance closure, fixture hardening, and release readiness. |
 
 Current runtime-mode matrix:
 
@@ -892,7 +892,7 @@ Current runtime-mode matrix:
 | Compatibility mode | Default API/CLI mode. | Compatibility scheduler, `HillslopeWritebackSurface`, kernel request/writeback, and WB13 publication rows. | Compatibility output builders. | Compatibility-provenanced outputs; no direct runtime counters unless a direct path is selected. | Must remain as rollback/replay/shadow adapter until direct default is proven. |
 | Shadow mode | Explicit validation mode. | Compatibility execution remains public-output authority while direct artifacts may be produced for comparison. | Compatibility publication for public outputs. | Compatibility provenance; direct artifacts are evidence only. | Must stay structurally outside direct production hot loop. |
 | Direct publication cutover | Explicit opt-in mode after R6J. | Compatibility simulation still produces the execution record; direct publication artifacts are built from the cutover adapter. | Direct HBP/WAT/PASS/loss/manifest writers consume `DirectRunPublicationFrame` artifacts. | Direct publication provenance and run-local direct counters for cutover manifests. | Replace WB13/runtime-surface adapter authority with direct executor-owned publication producers before default activation. |
-| Production direct mode | Future R7 target. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; no hot compatibility scheduler/request/writeback/symbol authority. | Typed publication frame emitted from direct executor state. | Direct runtime counters, direct output provenance, and rollback reason when fallback is selected. | R7B-R7H. |
+| Production direct mode | Future R7 target. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; no hot compatibility scheduler/request/writeback/symbol authority. | Typed publication frame emitted from direct executor state. | Direct runtime counters, direct output provenance, and rollback reason when fallback is selected. | R7C-R7H. |
 
 The terminal architecture remains stricter than the R6J cutover path. A direct
 publication object built from compatibility WB13 rows may be valid R6J adapter
@@ -963,6 +963,14 @@ Acceptance gates:
 - Default compatibility path remains identity-clean and zero-cost-disabled.
 - Focused tests, relevant integration tests, Rust gates, and scoped docs lint
   pass.
+
+Execution status: complete in
+`docs/work-packages/20260622-r7b-parsed-input-typed-frame-constructors-001/`.
+R7B added typed run/lane/day constructor input structs, constructor APIs,
+pre-executor validation, R7B constructor fixtures, static no-compatibility
+constructor scans, and executable type-size/layout evidence. It did not
+activate production direct mode, route the executor from parsed inputs, replace
+publication producer authority, or change output schemas.
 
 ##### R7C - Production Direct Executor Path
 

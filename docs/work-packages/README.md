@@ -13,6 +13,13 @@
 
 State as of `2026-06-22`:
 
+- `20260622-r7b-parsed-input-typed-frame-constructors-001/` is complete with
+  final disposition `COMPLETE-R7B-PARSED-INPUT-TYPED-FRAME-CONSTRUCTORS`. It
+  added the R7B parsed-input typed constructor boundary for `DirectRunFrame`,
+  `DirectLaneFrame`, and `DirectDayFrame`, with constructor fixtures, static
+  no-compatibility scans, type-size/layout evidence, package-local
+  review/verification artifacts, and full Rust closure gates. It did not
+  activate production direct mode or change output schemas.
 - `20260622-r7a-architecture-state-reconciliation-001/` is complete with final
   disposition `COMPLETE-R7A-ARCHITECTURE-STATE-RECONCILIATION`. It reconciled
   the array-native runtime architecture authority with the post-R6J state:
