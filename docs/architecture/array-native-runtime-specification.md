@@ -859,7 +859,7 @@ completion, or R7 compatibility-runtime removal must carry fresh evidence for:
 | Stage | Scope | Gate |
 |---|---|---|
 | **R0 - Runtime schema freeze** | Define typed field schema, ownership, aliases, guards, persistence, publication operands, replay/diagnostic exposure, and direct-frame type boundary. | schema review, contract gate, type-boundary proof, no hot-loop map proof |
-| **R1 - Frame constructors and projections** | Build typed run/lane/day/publication frame constructors and projections from existing parsed inputs without replacing execution. While PERFDEEP07 is HOLD, this is planning/shadow-scaffold only. | roundtrip and output identity; no runtime readiness claim |
+| **R1 - Frame constructors and projections** | Build typed run/lane/day/publication frame constructor plans and shadow projections from existing parsed inputs without replacing execution. Production-grade parsed-input constructors remain R7B scope. | roundtrip and output identity; no runtime readiness claim |
 | **R2 - Direct executor skeleton** | Introduce a separate direct executor entrypoint selected once at run setup, with no per-phase compatibility branches. It may execute no-op or shadow-only phases initially. | direct mode constructs no compatibility surfaces; call-graph proof that it does not enter `execute_with_kernel*` or `HillslopeKernelRequest` paths |
 | **R3 - First complete phase span** | Port a complete phase span with all required upstream/downstream transfer and publication operands. | per-phase and H2637 identity, endpoint/RSS |
 | **R4 - Full hydrology direct path** | Port the complete hydrology daily OFE path without requests, payloads, writeback surfaces, symbol lookup, dense refresh, or dirty flush. | material endpoint movement plus identity |
@@ -867,7 +867,38 @@ completion, or R7 compatibility-runtime removal must carry fresh evidence for:
 | **R6 - Direct publication cutover** | Make HBP/WAT/PASS/loss/manifest read typed projection only, using the promoted PERFDEEP06 publication operand ledger or an equivalent binding ledger. | byte/Arrow identity, metadata parity, anti-alias fixtures, independent operand reconstruction |
 | **R7 - Remove hot compatibility runtime** | Delete or isolate logical/indexed/dense hot-loop plumbing from production direct mode. | <=10x gate, preferably <=5x trajectory |
 
-#### 8.2.2 Post-R6 Burndown Work-Package Sequence
+#### 8.2.2 Current Post-R6J State
+
+R7A reconciles the specification with the implementation evidence through
+R6J. This section is descriptive authority for planning; it does not by itself
+activate direct mode or relax any R7 gate.
+
+| Stage / package family | Current state | Authority / evidence | Not yet complete |
+|---|---|---|---|
+| R0/R1 | Planning-only complete. | Direct schema envelope, frame-boundary decision, constructor/projection plan, publication-ledger plan, and no-compatibility proof plan were recorded. | Production typed constructors and default runtime execution were explicitly out of scope. |
+| PERFDEEP09 | PERFDEEP07 default-disabled hold lifted for R2+. | Passing default-disabled H2637 median and protected output identity. | Does not implement direct runtime. |
+| R2A | Direct runtime namespace and skeleton complete. | Distinct direct frame/executor scaffold, default inactivity proof, explicit opt-in skeleton proof. | No phase math, publication cutover, endpoint improvement claim, or default activation. |
+| R3A-R3C | First complete direct spans complete. | Typed inputs, direct compute, state mutation, downstream operands, shadow projection, no-compatibility source/counter proof. | Diagnostic and span coverage only; no full hydrology/publication/default cutover. |
+| R4A-R4P/Q/Z | Full direct hydrology span coverage complete for the staged R4 scope. | Direct runoff, storage, subsurface, ET/root uptake, transfer, projection, and closure spans with protected output identity while compatibility remained authoritative. | Normal production execution still runs compatibility scheduler/writeback path unless a direct mode is explicitly selected. |
+| R5A-R5E | Full canonical OFE-day direct executor lifecycle and 14-phase coverage complete. | One canonical 14-phase entry per OFE-day, direct R4/R5 spans folded under canonical phase entries, protected output identity and endpoint/RSS evidence. | Public outputs remained compatibility-authoritative at R5E; no default activation. |
+| R6A-R6I | Direct publication frame and producer-authority blockers iteratively reduced. | Run-bound publication frame, direct projection consumers, typed day-input builder, PMET layer carry correction, and current-fixture parity closures. | Earlier held states are historical; R6J is the terminal R6 publication cutover package. |
+| R6J | Opt-in direct publication cutover complete. | `DirectPublicationFrameCutover` writes HBP/WAT/PASS/loss/plot/manifest from direct publication artifacts with H2637 byte/Arrow identity and direct manifest provenance. | It is not default activation. Current cutover production adapts simulation-owned WB13 rows into direct publication rows; production direct executor and R7 compatibility-runtime removal remain open. |
+| R7 | R7A documentation-authority reconciliation complete; R7B-H remain open. | R7A-H burndown below. | Production direct mode, parsed-input typed frame constructors, direct publication producer authority, default activation, hot compatibility isolation/deletion, performance closure, fixture hardening, and release readiness. |
+
+Current runtime-mode matrix:
+
+| Mode | Selection status | Execution authority | Publication authority | Manifest/provenance | Remaining blocker |
+|---|---|---|---|---|---|
+| Compatibility mode | Default API/CLI mode. | Compatibility scheduler, `HillslopeWritebackSurface`, kernel request/writeback, and WB13 publication rows. | Compatibility output builders. | Compatibility-provenanced outputs; no direct runtime counters unless a direct path is selected. | Must remain as rollback/replay/shadow adapter until direct default is proven. |
+| Shadow mode | Explicit validation mode. | Compatibility execution remains public-output authority while direct artifacts may be produced for comparison. | Compatibility publication for public outputs. | Compatibility provenance; direct artifacts are evidence only. | Must stay structurally outside direct production hot loop. |
+| Direct publication cutover | Explicit opt-in mode after R6J. | Compatibility simulation still produces the execution record; direct publication artifacts are built from the cutover adapter. | Direct HBP/WAT/PASS/loss/manifest writers consume `DirectRunPublicationFrame` artifacts. | Direct publication provenance and run-local direct counters for cutover manifests. | Replace WB13/runtime-surface adapter authority with direct executor-owned publication producers before default activation. |
+| Production direct mode | Future R7 target. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; no hot compatibility scheduler/request/writeback/symbol authority. | Typed publication frame emitted from direct executor state. | Direct runtime counters, direct output provenance, and rollback reason when fallback is selected. | R7B-R7H. |
+
+The terminal architecture remains stricter than the R6J cutover path. A direct
+publication object built from compatibility WB13 rows may be valid R6J adapter
+evidence, but it is not sufficient for R7 production direct-mode authority.
+
+#### 8.2.3 Post-R6 Burndown Work-Package Sequence
 
 The following sequence is binding guidance for the remaining array-native
 runtime refactor. Each package is expected to be a real execution package with

@@ -13,6 +13,16 @@
 
 State as of `2026-06-22`:
 
+- `20260622-r7a-architecture-state-reconciliation-001/` is complete with final
+  disposition `COMPLETE-R7A-ARCHITECTURE-STATE-RECONCILIATION`. It reconciled
+  the array-native runtime architecture authority with the post-R6J state:
+  PERFDEEP09 is recorded as the PERFDEEP07 hold-lift authority, R2-R5 are
+  direct-runtime scaffold and phase-coverage evidence, R6J is explicitly
+  opt-in direct publication cutover rather than default activation or full
+  runtime completion, and the spec now includes a mode-state matrix separating
+  compatibility, shadow, direct publication cutover, and future production
+  direct mode. ADR-0025 now points to Revision 3 and the R7A-R7H burndown
+  sequence. Scoped Markdown lint and `git diff --check` passed.
 - `20260622-direct-runtime-section-split-001/` is complete with final
   disposition `COMPLETE-DIRECT-RUNTIME-SECTION-SPLIT`. It mechanically split
   `crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs` into ordered

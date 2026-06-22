@@ -90,6 +90,14 @@ Amendment 1, 2026-06-19 — the linked specification's Rust implementation-gotch
 layout/type-size and allocation-evidence gate above. This amendment does not change the adopted
 architecture; it hardens the evidence required before direct-frame stages can claim hot-path closure.
 
+Amendment 2, 2026-06-22 — the linked specification's Revision 3 reconciles the post-R6J state and adds
+the R7A-R7H burndown sequence. PERFDEEP09 is the accepted hold-lift evidence for the original PERFDEEP07
+default-disabled blocker, so R2-R6J remain valid implementation evidence. R6J is specifically classified as
+opt-in direct publication cutover, not default activation or full array-native runtime completion. Normal
+production completion remains gated by R7: parsed-input typed frame constructors, production direct executor
+routing, direct publication producer authority, default activation, hot compatibility-runtime isolation or
+deletion, performance closure, fixture hardening, and release readiness.
+
 ## Non-decisions
 
 This ADR does not change physics/numerics (results are byte-identical), `SC-*` science contracts, HBP
