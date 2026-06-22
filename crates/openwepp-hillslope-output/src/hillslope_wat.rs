@@ -43,7 +43,7 @@ impl Default for InterchangeVersion {
     }
 }
 
-fn hillslope_wat_file_metadata(
+pub(crate) fn stable_arrow_schema_file_metadata(
     schema: &Schema,
 ) -> Result<Vec<ParquetKeyValue>, HillslopeWatParquetError> {
     Ok(vec![ParquetKeyValue::new(
@@ -111,7 +111,7 @@ fn stable_ipc_field_type<'a>(
             })
         }
         other => Err(HillslopeWatParquetError::parquet(format!(
-            "stable WAT arrow schema encoding does not support {other:?}"
+            "stable arrow schema encoding does not support {other:?}"
         ))),
     }
 }
@@ -168,9 +168,8 @@ fn stable_encoded_arrow_schema(schema: &Schema) -> Result<String, HillslopeWatPa
     fbb.finish(root, None);
 
     let schema_bytes = fbb.finished_data();
-    let schema_len = u32::try_from(schema_bytes.len()).map_err(|_| {
-        HillslopeWatParquetError::parquet("stable WAT arrow schema exceeds u32 length")
-    })?;
+    let schema_len = u32::try_from(schema_bytes.len())
+        .map_err(|_| HillslopeWatParquetError::parquet("stable arrow schema exceeds u32 length"))?;
     let mut length_prefixed_schema = Vec::with_capacity(schema_bytes.len() + 8);
     length_prefixed_schema.extend_from_slice(&[255_u8, 255, 255, 255]);
     length_prefixed_schema.extend_from_slice(&schema_len.to_le_bytes());
@@ -513,7 +512,7 @@ pub fn write_hillslope_wat_parquet(
 
     let writer_properties = WriterProperties::builder()
         .set_compression(Compression::SNAPPY)
-        .set_key_value_metadata(Some(hillslope_wat_file_metadata(&schema)?))
+        .set_key_value_metadata(Some(stable_arrow_schema_file_metadata(&schema)?))
         .build();
 
     let writer_options = ArrowWriterOptions::new()

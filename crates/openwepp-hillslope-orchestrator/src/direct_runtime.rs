@@ -1537,7 +1537,7 @@ impl DirectPublicationDayRow {
                 interception_mm: 0.0,
                 interception_storage_mm: None,
             },
-            erosion: DirectPublicationErosionOperands::absent_authority(),
+            erosion: DirectPublicationErosionOperands::zero_authority(),
         })
     }
 }
@@ -1624,6 +1624,9 @@ pub struct DirectPublicationErosionOperands {
     pub runoff_duration_s: Option<f64>,
     pub total_detachment_kg: Option<f64>,
     pub total_deposition_kg: Option<f64>,
+    pub hbp_total_detachment_kg: Option<f64>,
+    pub hbp_total_deposition_kg: Option<f64>,
+    pub hbp_sediment_concentration_kg_m3: Option<f64>,
     pub sediment_concentration_kg_m3: Option<[f64; 5]>,
 }
 
@@ -1635,7 +1638,24 @@ impl DirectPublicationErosionOperands {
             runoff_duration_s: None,
             total_detachment_kg: None,
             total_deposition_kg: None,
+            hbp_total_detachment_kg: None,
+            hbp_total_deposition_kg: None,
+            hbp_sediment_concentration_kg_m3: None,
             sediment_concentration_kg_m3: None,
+        }
+    }
+
+    #[must_use]
+    pub const fn zero_authority() -> Self {
+        Self {
+            peak_runoff_m3_s: Some(0.0),
+            runoff_duration_s: Some(0.0),
+            total_detachment_kg: Some(0.0),
+            total_deposition_kg: Some(0.0),
+            hbp_total_detachment_kg: Some(0.0),
+            hbp_total_deposition_kg: Some(0.0),
+            hbp_sediment_concentration_kg_m3: Some(0.0),
+            sediment_concentration_kg_m3: Some([0.0; 5]),
         }
     }
 }

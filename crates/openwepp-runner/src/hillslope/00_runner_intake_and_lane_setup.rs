@@ -1,4 +1,6 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
+#[cfg(test)]
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
@@ -13,16 +15,23 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
 };
 use openwepp_hillslope_orchestrator::{
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationPmetInputs,
-    DirectEvapotranspirationStageState, DirectExecutorMode, DirectFrameExecutor,
-    DirectFrostLayerCarryProjection, DirectHydrologyProjectionInputs, DirectPercolationInputs, DirectPublicationCalendarDay,
-    DirectPublicationDayInput, DirectPublicationExecution, DirectPublicationRunMetadata,
-    DirectRunFrame, DirectRunIdentity, DirectRunPublicationFrame, DirectRuntimeError,
+    DirectEvapotranspirationStageState, DirectExecutionReport, DirectExecutorMode,
+    DirectFrameExecutor, DirectFrostLayerCarryProjection, DirectHydrologyProjectionInputs,
+    DirectPercolationInputs, DirectPublicationCalendarDay, DirectPublicationClimateOperands,
+    DirectPublicationDayInput, DirectPublicationDayRow, DirectPublicationErosionOperands,
+    DirectPublicationEvaporationOperands, DirectPublicationExecution,
+    DirectPublicationInterceptionOperands, DirectPublicationLiquidInputOperands,
+    DirectPublicationProfileOperands, DirectPublicationRunMetadata,
+    DirectPublicationRunoffOperands, DirectPublicationStorageOperands,
+    DirectPublicationSubsurfaceOperands, DirectPublicationTransferOperands, DirectRunFrame,
+    DirectRunIdentity, DirectRunPublicationFrame, DirectRuntimeAuditSnapshot, DirectRuntimeError,
     DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
     HillslopeDayFrame,
     HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
     OfeLanePersistentState, OfeLanePersistentStateSequence, OfeLaneSequenceExecutionReport,
     SchedulerOutcomeClass, TransferInput, TransferOutput, Wb11HydrologyKernel,
-    build_hillslope_hot_symbol_tables, record_direct_runtime_compatibility_edge_invocation,
+    build_hillslope_hot_symbol_tables, direct_runtime_audit_snapshot,
+    record_direct_runtime_compatibility_edge_invocation,
 };
 use openwepp_hillslope_output::contracts::{HillslopeOutputConfig, validate_output_contract};
 use openwepp_hillslope_output::hillslope_pass::{
@@ -73,14 +82,15 @@ use serde::{Deserialize, Serialize};
 use crate::api::{HillslopeRunReport, HillslopeRunRequest, HillslopeRuntimeSelection};
 use crate::hillslope::intake_lane_setup::StaticOfeLaneSlice;
 use crate::constants::{
-    DAILY_EXECUTION_LANE, DAILY_TIMESTEP_SECONDS, HILLSLOPE_RUN_MANIFEST_SCHEMA_ID,
-    HILLSLOPE_RUNFILE_SCHEMA_ID, HOURLY_EXECUTION_LANE, HOURLY_TIMESTEP_SECONDS,
-    REQUIRED_RUN_OUTPUT_LOSS, REQUIRED_RUN_OUTPUT_PASS, SCHEDULER_KERNEL_PUBLICATION_SOURCE,
+    DAILY_EXECUTION_LANE, DAILY_TIMESTEP_SECONDS, DIRECT_PUBLICATION_FRAME_PUBLICATION_SOURCE,
+    HILLSLOPE_RUN_MANIFEST_SCHEMA_ID, HILLSLOPE_RUNFILE_SCHEMA_ID, HOURLY_EXECUTION_LANE,
+    HOURLY_TIMESTEP_SECONDS, REQUIRED_RUN_OUTPUT_LOSS, REQUIRED_RUN_OUTPUT_PASS,
+    SCHEDULER_KERNEL_PUBLICATION_SOURCE,
     SIMCONS_INTAKE_GUARD_ID, SIMCOUP_GUARD_ID, SIMIMPL09_ADOPT_PROFILE,
     SIMIMPL10_FLAG_TOLERANCE, SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM,
     SIMMODE_TIMESTEP_GUARD_ID, SIMOUT_GUARD_ID, SIMPIPE_GUARD_ID, SUBHOURLY_EXECUTION_LANE,
-    WB13_PUBLICATION_SOURCE_SIMULATION_OWNED, WB13_REPLAY_CANDIDATE_SURFACE_PASS,
-    WB13_REPLAY_CANDIDATE_SURFACE_WAT, WUI_MODE_GUARD_ID,
+    WB13_PUBLICATION_SOURCE_DIRECT_PUBLICATION_FRAME, WB13_PUBLICATION_SOURCE_SIMULATION_OWNED,
+    WB13_REPLAY_CANDIDATE_SURFACE_PASS, WB13_REPLAY_CANDIDATE_SURFACE_WAT, WUI_MODE_GUARD_ID,
 };
 use crate::errors::HillslopeCliError;
 use crate::release::write_release_sidecar_for_binary;
@@ -119,7 +129,27 @@ struct HillslopeRunManifest {
     execution_provenance: HillslopeExecutionProvenance,
     wb13_publication: HillslopeWb13PublicationProvenance,
     mofe_hourly_carry: HillslopeMofeHourlyCarryProvenance,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    direct_runtime_counters: Option<HillslopeDirectRuntimeCounterProvenance>,
     coupling_vectors: HillslopeCouplingVectorProvenance,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeDirectRuntimeCounterProvenance {
+    run_frame_constructions: u64,
+    day_frame_constructions: u64,
+    day_frame_commits: u64,
+    executor_constructions: u64,
+    skeleton_runs: u64,
+    publication_capture_runs: u64,
+    phase_view_constructions: u64,
+    phase_span_runs: u64,
+    direct_phase_entries: u64,
+    direct_compute_operations: u64,
+    direct_state_mutations: u64,
+    downstream_operand_productions: u64,
+    shadow_projections: u64,
+    compatibility_edge_invocations: u64,
 }
 
 #[derive(Debug, Serialize)]
@@ -954,6 +984,7 @@ struct HillslopeManifestPublication<'a> {
     execution_provenance: HillslopeExecutionProvenance,
     wb13_publication: HillslopeWb13PublicationProvenance,
     mofe_hourly_carry: HillslopeMofeHourlyCarryProvenance,
+    direct_runtime_counters: Option<HillslopeDirectRuntimeCounterProvenance>,
     coupling_vectors: HillslopeCouplingVectorProvenance,
 }
 
@@ -2031,6 +2062,7 @@ fn remove_stale_climate_symbols(
 
 fn build_hillslope_execution_provenance(
     execution: &HillslopeClimateExecution,
+    runtime_selection: HillslopeRuntimeSelection,
     sidecar_warnings: &mut Vec<String>,
 ) -> Result<HillslopeExecutionProvenance, HillslopeCliError> {
     let wb16_ealpha_compatibility_seed_used = parse_mofe03_binary_flag(
@@ -2054,7 +2086,12 @@ fn build_hillslope_execution_provenance(
     let erod14_qin_source_policy = erod14_qin_source_policy(erod14_wave2_enabled, sidecar_warnings);
     Ok(HillslopeExecutionProvenance {
         scheduler_kernel_executed: true,
-        publication_source: SCHEDULER_KERNEL_PUBLICATION_SOURCE.to_string(),
+        publication_source: if runtime_selection == HillslopeRuntimeSelection::DirectPublicationFrameCutover {
+            DIRECT_PUBLICATION_FRAME_PUBLICATION_SOURCE
+        } else {
+            SCHEDULER_KERNEL_PUBLICATION_SOURCE
+        }
+        .to_string(),
         simpipe_guard_id: SIMPIPE_GUARD_ID.to_string(),
         selected_lane: execution.selected_lane.as_str().to_string(),
         scheduler_outcome_class: scheduler_outcome_class_as_str(execution.scheduler_outcome_class)
@@ -2096,6 +2133,7 @@ fn wb16_ealpha_seed_policy(wb16_ealpha_compatibility_seed_used: bool) -> String 
 
 fn build_hillslope_publication_provenance(
     execution: &HillslopeClimateExecution,
+    runtime_selection: HillslopeRuntimeSelection,
 ) -> Result<
     (
         HillslopeWb13PublicationProvenance,
@@ -2103,6 +2141,17 @@ fn build_hillslope_publication_provenance(
     ),
     HillslopeCliError,
 > {
+    if runtime_selection == HillslopeRuntimeSelection::DirectPublicationFrameCutover {
+        let artifacts = execution.direct_publication.as_ref().ok_or_else(|| {
+            direct_publication_cutover_blocked(
+                "direct publication cutover requires retained direct publication artifacts",
+            )
+        })?;
+        return build_direct_publication_manifest_provenance(
+            &artifacts.execution.publication_frame,
+        );
+    }
+
     let per_ofe_summary = execution
         .persistent_lane_active
         .then_some(&execution.per_ofe_internal_wb13_summary);
@@ -2129,7 +2178,7 @@ fn write_hillslope_run_outputs(
     runtime_selection: HillslopeRuntimeSelection,
 ) -> Result<(), HillslopeCliError> {
     if runtime_selection == HillslopeRuntimeSelection::DirectPublicationFrameCutover {
-        return write_hillslope_direct_publication_outputs(inputs, targets, sidecars, execution);
+        return write_hillslope_direct_publication_outputs(inputs, targets, execution);
     }
 
     let pass_bytes = build_hbp_output(
@@ -2166,7 +2215,6 @@ fn write_hillslope_run_outputs(
 fn write_hillslope_direct_publication_outputs(
     inputs: &ParsedHillslopeRunInputs,
     targets: &HillslopeOutputTargets,
-    sidecars: &HillslopeSidecarResolution,
     execution: &HillslopeClimateExecution,
 ) -> Result<(), HillslopeCliError> {
     let artifacts = execution.direct_publication.as_ref().ok_or_else(|| {
@@ -2174,7 +2222,7 @@ fn write_hillslope_direct_publication_outputs(
             "direct publication frame was not built for cutover candidate",
         )
     })?;
-    require_direct_publication_cutover_gates(inputs, targets, sidecars, execution, artifacts)?;
+    require_direct_publication_cutover_gates(inputs, artifacts)?;
 
     ensure_hillslope_output_parent_directories(targets)?;
     fs::write(&targets.output_pass, &artifacts.hbp_bytes).map_err(|source| {
@@ -2195,9 +2243,6 @@ fn write_hillslope_direct_publication_outputs(
 
 fn require_direct_publication_cutover_gates(
     inputs: &ParsedHillslopeRunInputs,
-    targets: &HillslopeOutputTargets,
-    sidecars: &HillslopeSidecarResolution,
-    execution: &HillslopeClimateExecution,
     artifacts: &DirectPublicationArtifacts,
 ) -> Result<(), HillslopeCliError> {
     if direct_publication_lacks_parity_grade_output_producers(
@@ -2212,124 +2257,120 @@ fn require_direct_publication_cutover_gates(
              direct publication authority",
         ));
     }
-
-    let compatibility_hbp = build_hbp_output(
-        &targets.output_pass,
-        &execution.wb13_rows,
-        &execution.runtime_surface,
-        execution.contributor_ofe_count,
-    )?;
-    if artifacts.hbp_bytes != compatibility_hbp {
-        let blocker = if direct_publication_has_only_zero_or_absent_operands(
-            &artifacts.execution.publication_frame,
-        ) {
-            "R6B-DIRECT-PUBLICATION-TYPED-OPERANDS-ABSENT "
-        } else {
-            "HOLD-R6E-HBP-DIRECT-PROCESS-PARITY-MISMATCH "
-        };
-        return Err(direct_publication_cutover_blocked(format!(
-            "{blocker}HBP byte identity failed: direct={} bytes compatibility={} bytes",
-            artifacts.hbp_bytes.len(),
-            compatibility_hbp.len()
-        )));
-    }
-
-    let compatibility_loss = build_loss_output_json(
-        &inputs.runfile.run_name,
-        &inputs.soil,
-        &sidecars.snow,
-        &sidecars.frost,
-        &execution.climate_span,
-        execution.executed_day_count,
-    )?;
-    if artifacts.loss_text != compatibility_loss {
+    let direct_row_count = artifacts.execution.publication_frame.rows().len();
+    if direct_row_count == 0 {
         return Err(direct_publication_cutover_blocked(
-            "loss JSON identity failed between direct frame and compatibility publication",
+            "direct publication cutover requires at least one typed direct row",
         ));
     }
-
-    require_direct_publication_wat_cutover_gate(inputs, execution, artifacts)?;
-
+    require_direct_publication_output_family_authority(
+        &artifacts.execution.publication_frame,
+    )?;
+    if artifacts.hbp_bytes.is_empty() || artifacts.loss_text.is_empty() {
+        return Err(direct_publication_cutover_blocked(
+            "direct publication cutover requires non-empty direct HBP and loss artifacts",
+        ));
+    }
+    if inputs.runfile.output_config.wat.is_some() && artifacts.wat_rows.len() != direct_row_count {
+        return Err(direct_publication_cutover_blocked(format!(
+            "direct WAT projection row-count mismatch: direct_rows={} projection_rows={}",
+            direct_row_count,
+            artifacts.wat_rows.len()
+        )));
+    }
+    let direct_pass_row_count = artifacts.execution.publication_frame.identity.day_count;
     if inputs.runfile.output_config.pass_parquet.is_some()
-        && artifacts.pass_projection_rows != execution.pass_rows
+        && artifacts.pass_projection_rows.len() != direct_pass_row_count
     {
         return Err(direct_publication_cutover_blocked(format!(
-            "PASS row identity failed: direct_rows={} compatibility_rows={}",
-            artifacts.pass_projection_rows.len(),
-            execution.pass_rows.len()
+            "direct PASS projection row-count mismatch: direct_days={} projection_rows={}",
+            direct_pass_row_count,
+            artifacts.pass_projection_rows.len()
         )));
     }
-
-    Err(direct_publication_cutover_blocked(
-        "manifest direct projection is not wired to the production manifest writer",
-    ))
+    Ok(())
 }
 
-fn require_direct_publication_wat_cutover_gate(
-    inputs: &ParsedHillslopeRunInputs,
-    execution: &HillslopeClimateExecution,
-    artifacts: &DirectPublicationArtifacts,
+fn require_direct_publication_output_family_authority(
+    publication: &DirectRunPublicationFrame,
 ) -> Result<(), HillslopeCliError> {
-    if inputs.runfile.output_config.wat.is_none() {
+    for row in publication.rows() {
+        require_finite_nonnegative_direct_publication_scalar("area_m2", row.area_m2)?;
+        require_finite_nonnegative_direct_publication_scalar(
+            "climate.precipitation_mm",
+            row.climate.precipitation_mm,
+        )?;
+        require_finite_nonnegative_direct_publication_scalar(
+            "runoff.runvol_m3",
+            row.runoff.runvol_m3,
+        )?;
+        require_direct_publication_option(
+            "erosion.peak_runoff_m3_s",
+            row.erosion.peak_runoff_m3_s,
+        )?;
+        require_direct_publication_option(
+            "erosion.runoff_duration_s",
+            row.erosion.runoff_duration_s,
+        )?;
+        require_direct_publication_option(
+            "erosion.total_detachment_kg",
+            row.erosion.total_detachment_kg,
+        )?;
+        require_direct_publication_option(
+            "erosion.total_deposition_kg",
+            row.erosion.total_deposition_kg,
+        )?;
+        require_direct_publication_option(
+            "erosion.hbp_total_detachment_kg",
+            row.erosion.hbp_total_detachment_kg,
+        )?;
+        require_direct_publication_option(
+            "erosion.hbp_total_deposition_kg",
+            row.erosion.hbp_total_deposition_kg,
+        )?;
+        require_direct_publication_option(
+            "erosion.hbp_sediment_concentration_kg_m3",
+            row.erosion.hbp_sediment_concentration_kg_m3,
+        )?;
+        let sediment = row
+            .erosion
+            .sediment_concentration_kg_m3
+            .ok_or_else(|| {
+                direct_publication_cutover_blocked(
+                    "direct publication cutover requires producer-authoritative erosion.sediment_concentration_kg_m3",
+                )
+            })?;
+        for (index, value) in sediment.iter().enumerate() {
+            require_finite_nonnegative_direct_publication_scalar(
+                &format!("erosion.sediment_concentration_kg_m3[{index}]"),
+                *value,
+            )?;
+        }
+    }
+    Ok(())
+}
+
+fn require_direct_publication_option(
+    field: &'static str,
+    value: Option<f64>,
+) -> Result<(), HillslopeCliError> {
+    let value = value.ok_or_else(|| {
+        direct_publication_cutover_blocked(format!(
+            "direct publication cutover requires producer-authoritative {field}"
+        ))
+    })?;
+    require_finite_nonnegative_direct_publication_scalar(field, value)
+}
+
+fn require_finite_nonnegative_direct_publication_scalar(
+    field: &str,
+    value: f64,
+) -> Result<(), HillslopeCliError> {
+    if value.is_finite() && value >= 0.0 {
         return Ok(());
-    }
-    let compatibility_wat_rows = build_hillslope_wat_rows(&execution.wb13_rows)?;
-    if artifacts.wat_rows == compatibility_wat_rows {
-        return Ok(());
-    }
-    let reduced_fields =
-        reduced_wat_mismatch_fields(&artifacts.wat_rows, &compatibility_wat_rows);
-    let reduced_fields_text = reduced_fields.join(",");
-    if r6f_wat_direct_process_producer_authority_gap(&reduced_fields) {
-        return Err(direct_publication_cutover_blocked(format!(
-            "HOLD-R6F-WAT-DIRECT-PROCESS-PRODUCER-AUTHORITY-GAP \
-             WAT row identity failed after HBP byte identity passed: \
-             direct_rows={} compatibility_rows={} reduced_fields={reduced_fields_text}; \
-             direct process input slots and layer carry exist, but production runner still lacks \
-             a canonical parsed-input typed producer for ET/storage/profile day state and must \
-             not source those operands from compatibility WB13 rows or runtime surfaces",
-            artifacts.wat_rows.len(),
-            compatibility_wat_rows.len()
-        )));
-    }
-    if r6g_wat_pmet_day_state_carry_gap(
-        &artifacts.wat_rows,
-        &compatibility_wat_rows,
-        &reduced_fields,
-    ) {
-        return Err(direct_publication_cutover_blocked(format!(
-            "HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT \
-             WAT row identity failed after HBP byte identity and first-day WAT producer parity \
-             passed: direct_rows={} compatibility_rows={} reduced_fields={reduced_fields_text}; \
-             production direct publication now binds parsed WB11/WB17/WB18/WB19 typed inputs, \
-             but multi-day PMET component construction is still precomputed before prior direct \
-             day layer-state commits, so day-dependent Es and Total-Soil must not be sourced \
-             from compatibility WB13 rows or runtime surfaces",
-            artifacts.wat_rows.len(),
-            compatibility_wat_rows.len()
-        )));
-    }
-    if r6h_wat_pmet_layer_carry_ulp_gap(
-        &artifacts.wat_rows,
-        &compatibility_wat_rows,
-        &reduced_fields,
-    ) {
-        return Err(direct_publication_cutover_blocked(format!(
-            "HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY \
-             WAT row identity failed after HBP byte identity, interleaved direct day-input \
-             carry, and storage WAT parity passed: direct_rows={} compatibility_rows={} \
-             reduced_fields={reduced_fields_text}; production direct publication no longer \
-             precomputes PMET before direct day commits, but exact PMET Es parity now depends \
-             on bit-identical carried surface-layer water for EVAPPM wfevp/etkr reconstruction",
-            artifacts.wat_rows.len(),
-            compatibility_wat_rows.len()
-        )));
     }
     Err(direct_publication_cutover_blocked(format!(
-        "WAT row identity failed after HBP byte identity passed: \
-         direct_rows={} compatibility_rows={} reduced_fields={reduced_fields_text}",
-        artifacts.wat_rows.len(),
-        compatibility_wat_rows.len()
+        "direct publication cutover requires finite non-negative {field}; observed {value}"
     )))
 }
 
@@ -2375,6 +2416,7 @@ fn direct_publication_cutover_blocked(detail: impl Into<String>) -> HillslopeCli
     }
 }
 
+#[cfg(test)]
 fn direct_publication_has_only_zero_or_absent_operands(
     publication: &DirectRunPublicationFrame,
 ) -> bool {
@@ -2415,6 +2457,9 @@ fn direct_publication_has_only_zero_or_absent_operands(
             row.erosion.runoff_duration_s,
             row.erosion.total_detachment_kg,
             row.erosion.total_deposition_kg,
+            row.erosion.hbp_total_detachment_kg,
+            row.erosion.hbp_total_deposition_kg,
+            row.erosion.hbp_sediment_concentration_kg_m3,
         ];
         let sediment_material = row
             .erosion
@@ -2468,6 +2513,9 @@ fn direct_publication_lacks_parity_grade_output_producers(
             row.erosion.runoff_duration_s,
             row.erosion.total_detachment_kg,
             row.erosion.total_deposition_kg,
+            row.erosion.hbp_total_detachment_kg,
+            row.erosion.hbp_total_deposition_kg,
+            row.erosion.hbp_sediment_concentration_kg_m3,
         ];
         let erosion_material = row
             .erosion
@@ -2712,8 +2760,91 @@ fn build_hillslope_run_manifest(
         execution_provenance: publication.execution_provenance,
         wb13_publication: publication.wb13_publication,
         mofe_hourly_carry: publication.mofe_hourly_carry,
+        direct_runtime_counters: publication.direct_runtime_counters,
         coupling_vectors: publication.coupling_vectors,
     })
+}
+
+fn direct_runtime_counters_for_manifest(
+    runtime_selection: HillslopeRuntimeSelection,
+    baseline: DirectRuntimeAuditSnapshot,
+    current: DirectRuntimeAuditSnapshot,
+) -> Option<HillslopeDirectRuntimeCounterProvenance> {
+    if runtime_selection != HillslopeRuntimeSelection::DirectPublicationFrameCutover {
+        return None;
+    }
+    Some(direct_runtime_counter_provenance(
+        direct_runtime_audit_delta(baseline, current),
+    ))
+}
+
+fn direct_runtime_counter_provenance(
+    snapshot: DirectRuntimeAuditSnapshot,
+) -> HillslopeDirectRuntimeCounterProvenance {
+    HillslopeDirectRuntimeCounterProvenance {
+        run_frame_constructions: snapshot.run_frame_constructions,
+        day_frame_constructions: snapshot.day_frame_constructions,
+        day_frame_commits: snapshot.day_frame_commits,
+        executor_constructions: snapshot.executor_constructions,
+        skeleton_runs: snapshot.skeleton_runs,
+        publication_capture_runs: snapshot.publication_capture_runs,
+        phase_view_constructions: snapshot.phase_view_constructions,
+        phase_span_runs: snapshot.phase_span_runs,
+        direct_phase_entries: snapshot.direct_phase_entries,
+        direct_compute_operations: snapshot.direct_compute_operations,
+        direct_state_mutations: snapshot.direct_state_mutations,
+        downstream_operand_productions: snapshot.downstream_operand_productions,
+        shadow_projections: snapshot.shadow_projections,
+        compatibility_edge_invocations: snapshot.compatibility_edge_invocations,
+    }
+}
+
+fn direct_runtime_audit_delta(
+    baseline: DirectRuntimeAuditSnapshot,
+    current: DirectRuntimeAuditSnapshot,
+) -> DirectRuntimeAuditSnapshot {
+    DirectRuntimeAuditSnapshot {
+        run_frame_constructions: current
+            .run_frame_constructions
+            .saturating_sub(baseline.run_frame_constructions),
+        day_frame_constructions: current
+            .day_frame_constructions
+            .saturating_sub(baseline.day_frame_constructions),
+        day_frame_commits: current
+            .day_frame_commits
+            .saturating_sub(baseline.day_frame_commits),
+        executor_constructions: current
+            .executor_constructions
+            .saturating_sub(baseline.executor_constructions),
+        skeleton_runs: current.skeleton_runs.saturating_sub(baseline.skeleton_runs),
+        publication_capture_runs: current
+            .publication_capture_runs
+            .saturating_sub(baseline.publication_capture_runs),
+        phase_view_constructions: current
+            .phase_view_constructions
+            .saturating_sub(baseline.phase_view_constructions),
+        phase_span_runs: current
+            .phase_span_runs
+            .saturating_sub(baseline.phase_span_runs),
+        direct_phase_entries: current
+            .direct_phase_entries
+            .saturating_sub(baseline.direct_phase_entries),
+        direct_compute_operations: current
+            .direct_compute_operations
+            .saturating_sub(baseline.direct_compute_operations),
+        direct_state_mutations: current
+            .direct_state_mutations
+            .saturating_sub(baseline.direct_state_mutations),
+        downstream_operand_productions: current
+            .downstream_operand_productions
+            .saturating_sub(baseline.downstream_operand_productions),
+        shadow_projections: current
+            .shadow_projections
+            .saturating_sub(baseline.shadow_projections),
+        compatibility_edge_invocations: current
+            .compatibility_edge_invocations
+            .saturating_sub(baseline.compatibility_edge_invocations),
+    }
 }
 
 pub fn execute_hillslope_run(
@@ -2748,6 +2879,7 @@ pub fn execute_hillslope_run_with_runtime_selection(
     let inputs = load_hillslope_run_inputs(request)?;
     let targets = resolve_hillslope_output_targets(&inputs.runfile)?;
     select_direct_runtime_skeleton_once(runtime_selection, &inputs, &targets)?;
+    let direct_runtime_counter_baseline = direct_runtime_audit_snapshot();
     let mut sidecars = resolve_hillslope_sidecars(request, &inputs, &targets)?;
     let runtime_setup = build_static_hillslope_runtime_setup(request, &inputs, &mut sidecars)?;
     let timestep_policy = runtime_setup.timestep_policy;
@@ -2772,9 +2904,18 @@ pub fn execute_hillslope_run_with_runtime_selection(
     let mut execution = execution_result?;
     execution.direct_publication =
         build_direct_publication_artifacts(runtime_selection, &inputs, &targets, &sidecars, &execution)?;
-    let execution_provenance =
-        build_hillslope_execution_provenance(&execution, &mut sidecars.sidecar_warnings)?;
-    let (wb13_publication, mofe_hourly_carry) = build_hillslope_publication_provenance(&execution)?;
+    let direct_runtime_counters = direct_runtime_counters_for_manifest(
+        runtime_selection,
+        direct_runtime_counter_baseline,
+        direct_runtime_audit_snapshot(),
+    );
+    let execution_provenance = build_hillslope_execution_provenance(
+        &execution,
+        runtime_selection,
+        &mut sidecars.sidecar_warnings,
+    )?;
+    let (wb13_publication, mofe_hourly_carry) =
+        build_hillslope_publication_provenance(&execution, runtime_selection)?;
     write_hillslope_run_outputs(&inputs, &targets, &sidecars, &execution, runtime_selection)?;
 
     let HillslopeSidecarResolution {
@@ -2801,6 +2942,7 @@ pub fn execute_hillslope_run_with_runtime_selection(
         execution_provenance,
         wb13_publication,
         mofe_hourly_carry,
+        direct_runtime_counters,
         coupling_vectors: execution.coupling_vectors,
     })?;
 

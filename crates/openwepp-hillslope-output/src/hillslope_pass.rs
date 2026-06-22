@@ -8,11 +8,11 @@ use std::sync::Arc;
 use arrow_array::{ArrayRef, Float64Array, Int8Array, Int16Array, Int32Array, RecordBatch};
 use arrow_schema::{DataType, Field, Schema};
 use openwepp_sim_contract::units::{OutputUnitRegistryError, validate_output_schema_unit};
-use parquet::arrow::ArrowWriter;
+use parquet::arrow::{ArrowWriter, arrow_writer::ArrowWriterOptions};
 use parquet::basic::Compression;
 use parquet::file::properties::WriterProperties;
 
-use crate::hillslope_wat::InterchangeVersion;
+use crate::hillslope_wat::{InterchangeVersion, stable_arrow_schema_file_metadata};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct HillslopePassRow {
@@ -213,8 +213,15 @@ pub fn write_hillslope_pass_parquet(
     })?;
     let writer_properties = WriterProperties::builder()
         .set_compression(Compression::SNAPPY)
+        .set_key_value_metadata(Some(
+            stable_arrow_schema_file_metadata(&schema)
+                .map_err(|error| HillslopePassParquetError::parquet(error.to_string()))?,
+        ))
         .build();
-    let mut writer = ArrowWriter::try_new(file, Arc::new(schema), Some(writer_properties))
+    let writer_options = ArrowWriterOptions::new()
+        .with_properties(writer_properties)
+        .with_skip_arrow_metadata(true);
+    let mut writer = ArrowWriter::try_new_with_options(file, Arc::new(schema), writer_options)
         .map_err(|error| HillslopePassParquetError::parquet(error.to_string()))?;
     writer
         .write(&batch)
@@ -344,4 +351,102 @@ fn hillslope_pass_rows_to_batch(
 
     RecordBatch::try_new(Arc::new(schema.clone()), columns)
         .map_err(|error| HillslopePassParquetError::parquet(error.to_string()))
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
+
+    use super::*;
+
+    fn sample_row() -> HillslopePassRow {
+        HillslopePassRow {
+            wepp_id: 5,
+            year: 2024,
+            sim_day_index: 17,
+            julian: 42,
+            month: 2,
+            day_of_month: 11,
+            water_year: 2024,
+            runvol_m3: 12.5,
+            sbrunv_m3: 0.75,
+            peakro_m3_s: 0.125,
+            total_detachment_kg: 1.25,
+            total_deposition_kg: 0.25,
+            sediment_concentration_kg_m3: [0.1, 0.2, 0.3, 0.4, 0.5],
+        }
+    }
+
+    #[test]
+    fn writer_emits_valid_parquet_file_with_schema_metadata() {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("unix epoch should be before now")
+            .as_nanos();
+        let output_path = std::env::temp_dir().join(format!(
+            "openwepp_hillslope_pass_writer_{timestamp}.parquet"
+        ));
+
+        let summary = write_hillslope_pass_parquet(
+            &output_path,
+            &[sample_row()],
+            InterchangeVersion::default(),
+        )
+        .expect("writer should emit parquet");
+        assert_eq!(summary.rows_written, 1);
+
+        let file = File::open(&output_path).expect("parquet file should be readable");
+        let builder = ParquetRecordBatchReaderBuilder::try_new(file)
+            .expect("parquet should have readable footer/schema");
+        let schema = builder.schema();
+
+        assert!(schema.metadata().contains_key("dataset_version"));
+        let runvol_field = schema
+            .fields()
+            .iter()
+            .find(|field| field.name() == "runvol")
+            .expect("runvol field should exist in parquet schema");
+        assert_eq!(
+            runvol_field.metadata().get("units").map(String::as_str),
+            Some("m^3")
+        );
+
+        let _ = fs::remove_file(output_path);
+    }
+
+    #[test]
+    fn writer_emits_byte_stable_parquet_for_identical_rows() {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("unix epoch should be before now")
+            .as_nanos();
+        let output_path_a = std::env::temp_dir().join(format!(
+            "openwepp_hillslope_pass_writer_stable_a_{timestamp}.parquet"
+        ));
+        let output_path_b = std::env::temp_dir().join(format!(
+            "openwepp_hillslope_pass_writer_stable_b_{timestamp}.parquet"
+        ));
+
+        write_hillslope_pass_parquet(
+            &output_path_a,
+            &[sample_row()],
+            InterchangeVersion::default(),
+        )
+        .expect("first writer should emit parquet");
+        write_hillslope_pass_parquet(
+            &output_path_b,
+            &[sample_row()],
+            InterchangeVersion::default(),
+        )
+        .expect("second writer should emit parquet");
+
+        let first = fs::read(&output_path_a).expect("first parquet should be readable");
+        let second = fs::read(&output_path_b).expect("second parquet should be readable");
+        assert_eq!(first, second);
+
+        let _ = fs::remove_file(output_path_a);
+        let _ = fs::remove_file(output_path_b);
+    }
 }

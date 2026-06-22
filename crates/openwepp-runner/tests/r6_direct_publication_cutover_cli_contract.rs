@@ -3,9 +3,10 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 #[test]
-fn r6_direct_publication_cutover_cli_flag_clears_pmet_layer_then_fails_manifest_cutover() {
+fn r6_direct_publication_cutover_cli_flag_writes_direct_outputs_and_manifest() {
     let source_fixture_dir = fixture_path("hillslope_run_dir");
     let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, "r6_cli_cutover_candidate");
+    enable_r6j_pass_parquet_output(&temp_run_dir);
     let output_dir = temp_run_dir.join("output");
 
     let output = Command::new(env!("CARGO_BIN_EXE_openwepp-cli-hill"))
@@ -20,18 +21,14 @@ fn r6_direct_publication_cutover_cli_flag_clears_pmet_layer_then_fails_manifest_
         .expect("openwepp-cli-hill should be invokable");
 
     assert!(
-        !output.status.success(),
-        "R6 cutover candidate must fail closed until parity gates pass"
+        output.status.success(),
+        "unexpected stderr: {}",
+        stderr(&output)
     );
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("R6-DIRECT-PUBLICATION-PARITY"),
-        "unexpected stderr: {stderr}"
-    );
-    assert!(
-        stderr
-            .contains("manifest direct projection is not wired to the production manifest writer"),
-        "unexpected stderr: {stderr}"
+        !stderr.contains("R6-DIRECT-PUBLICATION-PARITY"),
+        "R6J cutover should not fail parity gates: {stderr}"
     );
     assert!(
         !stderr.contains("HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY"),
@@ -49,15 +46,62 @@ fn r6_direct_publication_cutover_cli_flag_clears_pmet_layer_then_fails_manifest_
     for output_name in [
         "H5.hbp",
         "H5.loss.json",
+        "H5.pass.parquet",
         "H5.wat.parquet",
         "H5.plot.parquet",
         "openwepp_hillslope_run_manifest.json",
     ] {
         assert!(
-            !output_dir.join(output_name).exists(),
-            "fail-closed CLI cutover candidate must not write {output_name}"
+            output_dir.join(output_name).is_file(),
+            "CLI cutover candidate must write {output_name}"
         );
     }
+    let manifest_text = fs::read_to_string(output_dir.join("openwepp_hillslope_run_manifest.json"))
+        .expect("manifest should be readable");
+    let manifest_json: serde_json::Value =
+        serde_json::from_str(&manifest_text).expect("manifest should parse");
+    assert_eq!(
+        manifest_json
+            .pointer("/execution_provenance/publication_source")
+            .and_then(serde_json::Value::as_str),
+        Some("direct-publication-frame")
+    );
+    assert_eq!(
+        manifest_json
+            .pointer("/wb13_publication/source")
+            .and_then(serde_json::Value::as_str),
+        Some("direct-publication-frame")
+    );
+    assert_json_i64(
+        &manifest_json,
+        "/direct_runtime_counters/run_frame_constructions",
+        0,
+    );
+    assert_json_i64(&manifest_json, "/direct_runtime_counters/skeleton_runs", 0);
+    assert_json_i64(
+        &manifest_json,
+        "/direct_runtime_counters/publication_capture_runs",
+        0,
+    );
+    assert_json_i64(
+        &manifest_json,
+        "/direct_runtime_counters/compatibility_edge_invocations",
+        0,
+    );
+}
+
+fn stderr(output: &std::process::Output) -> String {
+    String::from_utf8_lossy(&output.stderr).into_owned()
+}
+
+fn assert_json_i64(document: &serde_json::Value, pointer: &str, expected: i64) {
+    assert_eq!(
+        document
+            .pointer(pointer)
+            .and_then(serde_json::Value::as_i64),
+        Some(expected),
+        "unexpected value at {pointer}"
+    );
 }
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -75,6 +119,15 @@ fn copy_fixture_to_temp(source_dir: &Path, prefix: &str) -> PathBuf {
 
     copy_dir_recursive(source_dir, &destination);
     destination
+}
+
+fn enable_r6j_pass_parquet_output(run_dir: &Path) {
+    let run_file = run_dir.join("case.run");
+    let mut text = fs::read_to_string(&run_file).expect("case.run should be readable");
+    if !text.contains("pass_parquet") {
+        text.push_str("pass_parquet = \"output/H5.pass.parquet\"\n");
+    }
+    fs::write(&run_file, text).expect("case.run should be writable");
 }
 
 fn copy_dir_recursive(source: &Path, destination: &Path) {

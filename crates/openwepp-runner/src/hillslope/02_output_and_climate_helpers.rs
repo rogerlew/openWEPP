@@ -752,29 +752,91 @@ fn build_hbp_output_from_direct_publication(
     }
     let sediment_concentration_kg_m3 = latest_row
         .erosion
-        .sediment_concentration_kg_m3
-        .unwrap_or([0.0; 5])[0];
+        .hbp_sediment_concentration_kg_m3
+        .map_or_else(
+            || {
+                direct_publication_required_sediment_concentration(
+                    latest_row.erosion.sediment_concentration_kg_m3,
+                )
+                .map(|values| values[0])
+            },
+            |value| direct_publication_required_erosion_scalar(
+                "erosion.hbp_sediment_concentration_kg_m3",
+                Some(value),
+            ),
+        )?;
 
     build_schema1_hbp_event_fixture(HbpEventFixtureInput {
         hillslope_id: parse_hillslope_id_from_output_pass_path(output_pass)?,
         nofe,
         julian_day: latest_row.calendar.julian_day,
-        peak_runoff_m3_s: latest_row
-            .erosion
-            .peak_runoff_m3_s
-            .or(latest_row.runoff.peak_runoff_m3_s)
-            .unwrap_or(0.0),
-        duration_seconds: latest_row
-            .erosion
-            .runoff_duration_s
-            .or(latest_row.runoff.runoff_duration_s)
-            .unwrap_or(0.0),
-        total_detachment_kg: latest_row.erosion.total_detachment_kg.unwrap_or(0.0),
-        total_deposition_kg: latest_row.erosion.total_deposition_kg.unwrap_or(0.0),
+        peak_runoff_m3_s: direct_publication_required_erosion_scalar(
+            "runoff.peak_runoff_m3_s or erosion.peak_runoff_m3_s",
+            latest_row
+                .runoff
+                .peak_runoff_m3_s
+                .or(latest_row.erosion.peak_runoff_m3_s),
+        )?,
+        duration_seconds: direct_publication_required_erosion_scalar(
+            "runoff.runoff_duration_s or erosion.runoff_duration_s",
+            latest_row
+                .runoff
+                .runoff_duration_s
+                .or(latest_row.erosion.runoff_duration_s),
+        )?,
+        total_detachment_kg: direct_publication_required_erosion_scalar(
+            "erosion.hbp_total_detachment_kg or erosion.total_detachment_kg",
+            latest_row
+                .erosion
+                .hbp_total_detachment_kg
+                .or(latest_row.erosion.total_detachment_kg),
+        )?,
+        total_deposition_kg: direct_publication_required_erosion_scalar(
+            "erosion.hbp_total_deposition_kg or erosion.total_deposition_kg",
+            latest_row
+                .erosion
+                .hbp_total_deposition_kg
+                .or(latest_row.erosion.total_deposition_kg),
+        )?,
         sediment_concentration_kg_m3,
         particle_flow_fraction: 1.0,
         particle_diameter_m: HBP_DEFAULT_PARTICLE_DIAMETER_M,
     })
+}
+
+fn direct_publication_required_erosion_scalar(
+    field: &'static str,
+    value: Option<f64>,
+) -> Result<f64, HillslopeCliError> {
+    let value = value.ok_or_else(|| {
+        direct_publication_output_failure(format!(
+            "direct publication row is missing producer-authoritative {field}"
+        ))
+    })?;
+    if value.is_finite() && value >= 0.0 {
+        return Ok(value);
+    }
+    Err(direct_publication_output_failure(format!(
+        "direct publication row has invalid {field}: {value}"
+    )))
+}
+
+fn direct_publication_required_sediment_concentration(
+    value: Option<[f64; 5]>,
+) -> Result<[f64; 5], HillslopeCliError> {
+    let value = value.ok_or_else(|| {
+        direct_publication_output_failure(
+            "direct publication row is missing producer-authoritative erosion.sediment_concentration_kg_m3",
+        )
+    })?;
+    for (index, scalar) in value.iter().enumerate() {
+        if !scalar.is_finite() || *scalar < 0.0 {
+            return Err(direct_publication_output_failure(format!(
+                "direct publication row has invalid erosion.sediment_concentration_kg_m3[{index}]: {scalar}"
+            )));
+        }
+    }
+    Ok(value)
 }
 
 fn build_hillslope_wat_rows_from_direct_publication(
@@ -841,19 +903,35 @@ fn build_hillslope_wat_row_from_direct_publication(
 fn build_hillslope_pass_rows_from_direct_publication(
     publication: &DirectRunPublicationFrame,
 ) -> Result<Vec<HillslopePassRow>, HillslopeCliError> {
+    let simulation_start_year = publication
+        .first_day()
+        .ok_or_else(|| direct_publication_output_failure("missing first direct publication row"))?
+        .calendar
+        .year;
+    let outlet_ofe_id = u32::try_from(publication.identity.lane_count).map_err(|_| {
+        direct_publication_output_failure(format!(
+            "direct publication lane count out of u32 range: {}",
+            publication.identity.lane_count
+        ))
+    })?;
     publication
         .rows()
         .iter()
-        .map(build_hillslope_pass_row_from_direct_publication)
+        .filter(|row| row.ofe_id == outlet_ofe_id)
+        .map(|row| build_hillslope_pass_row_from_direct_publication(row, simulation_start_year))
         .collect()
 }
 
 fn build_hillslope_pass_row_from_direct_publication(
     row: &openwepp_hillslope_orchestrator::DirectPublicationDayRow,
+    simulation_start_year: i32,
 ) -> Result<HillslopePassRow, HillslopeCliError> {
     Ok(HillslopePassRow {
         wepp_id: direct_publication_u32_to_i32("wepp_id", row.hillslope_id)?,
-        year: direct_publication_i32_to_i16("year", row.calendar.year)?,
+        year: direct_publication_i32_to_i16(
+            "year",
+            simulation_year_from_calendar_year(row.calendar.year, simulation_start_year)?,
+        )?,
         sim_day_index: row.sim_day_index,
         julian: direct_publication_u16_to_i16("julian", row.calendar.julian_day)?,
         month: row.calendar.month,
@@ -861,17 +939,21 @@ fn build_hillslope_pass_row_from_direct_publication(
         water_year: row.calendar.water_year,
         runvol_m3: row.runoff.runvol_m3,
         sbrunv_m3: row.subsurface.sbrunv_m3,
-        peakro_m3_s: row
-            .erosion
-            .peak_runoff_m3_s
-            .or(row.runoff.peak_runoff_m3_s)
-            .unwrap_or(0.0),
-        total_detachment_kg: row.erosion.total_detachment_kg.unwrap_or(0.0),
-        total_deposition_kg: row.erosion.total_deposition_kg.unwrap_or(0.0),
-        sediment_concentration_kg_m3: row
-            .erosion
-            .sediment_concentration_kg_m3
-            .unwrap_or([0.0; 5]),
+        peakro_m3_s: direct_publication_required_erosion_scalar(
+            "erosion.peak_runoff_m3_s",
+            row.erosion.peak_runoff_m3_s,
+        )?,
+        total_detachment_kg: direct_publication_required_erosion_scalar(
+            "erosion.total_detachment_kg",
+            row.erosion.total_detachment_kg,
+        )?,
+        total_deposition_kg: direct_publication_required_erosion_scalar(
+            "erosion.total_deposition_kg",
+            row.erosion.total_deposition_kg,
+        )?,
+        sediment_concentration_kg_m3: direct_publication_required_sediment_concentration(
+            row.erosion.sediment_concentration_kg_m3,
+        )?,
     })
 }
 

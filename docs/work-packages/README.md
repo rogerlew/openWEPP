@@ -13,12 +13,17 @@
 
 State as of `2026-06-21`:
 
-- R6 direct publication cutover is active-held at manifest writer cutover after
-  R6I. Current-fixture HBP and WAT identity are green, and the R6G/R6H WAT
-  markers are absent. The next package should wire direct manifest projection
-  into the production manifest writer without compatibility wrapping, while
-  preserving fail-closed no-output behavior until manifest and remaining R6
-  publication gates pass.
+- `20260621-r6j-direct-publication-cutover-blocker-closure-001/` is complete
+  with final disposition `COMPLETE-R6-DIRECT-PUBLICATION-CUTOVER`. It closed
+  the inherited manifest writer blocker, run-local direct counter provenance,
+  direct/shadow manifest selection, current-fixture HBP/WAT/PASS/loss parity,
+  direct-only production cutover writing, checksum/readback evidence, H2637
+  public-output parity, and default-disabled isolation. Fresh same-binary H2637
+  evidence: default `640.41 s / 227396 KiB`; direct cutover
+  `637.53 s / 349400 KiB`; HBP/WAT/PASS/loss/plot byte identity; WAT
+  `235961` rows and PASS `12419` rows with zero bidirectional DuckDB
+  differences; manifest source `direct-publication-frame`; all direct runtime
+  counters, including `compatibility_edge_invocations`, are `0`.
 - `20260621-r6h-direct-pmet-day-state-carry-builder-001/` is executed-held at
   `HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY`. It cleared
   `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT` by replacing the

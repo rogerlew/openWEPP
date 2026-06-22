@@ -2,6 +2,7 @@
 mod tests {
     use super::*;
     use crate::SidecarPolicy;
+    use arrow_array::{Array, RecordBatch};
     use openwepp_hillslope_orchestrator::{
         DIRECT_PHASE_COUNT, DIRECT_R3B_PHASE_SPAN_COUNT, DIRECT_R3C_PHASE_SPAN_COUNT,
         DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT, DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT,
@@ -33,6 +34,7 @@ mod tests {
         HillslopeConsumerAdapter, HillslopeKernel, HillslopeKernelPhaseClass,
         HillslopeKernelRequest, SymbolRegistry, WritebackField,
     };
+    use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
     use std::fs;
     use std::path::Path;
     use std::sync::{Mutex, OnceLock};
@@ -689,7 +691,7 @@ mod tests {
     }
 
     #[test]
-    fn r6i_cutover_candidate_clears_pmet_layer_ulp_then_fails_manifest_cutover() {
+    fn r6j_cutover_candidate_writes_direct_outputs_and_manifest() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -700,8 +702,9 @@ mod tests {
             &source_fixture_dir,
             "r6_direct_publication_cutover_candidate",
         );
+        enable_r6j_pass_parquet_output(&temp_run_dir);
         let output_dir = temp_run_dir.join("output");
-        let error = execute_hillslope_run_with_runtime_selection(
+        let report = execute_hillslope_run_with_runtime_selection(
             &HillslopeRunRequest {
                 run_dir: temp_run_dir,
                 run_file: PathBuf::from("case.run"),
@@ -713,53 +716,139 @@ mod tests {
             &["openwepp-cli-hill".to_string()],
             HillslopeRuntimeSelection::DirectPublicationFrameCutover,
         )
-        .expect_err("R6 cutover candidate must fail closed until direct frame parity passes");
-
-        let message = error.to_string();
-        assert!(
-            message.contains("R6-DIRECT-PUBLICATION-PARITY"),
-            "unexpected error: {message}"
-        );
-        assert!(
-            message.contains("manifest direct projection is not wired to the production manifest writer"),
-            "unexpected error: {message}"
-        );
-        assert!(
-            !message.contains("HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY"),
-            "PMET layer ULP blocker should be cleared: {message}"
-        );
-        assert!(
-            !message.contains("HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT"),
-            "day-state carry blocker should be cleared: {message}"
-        );
-        assert!(
-            !message.contains("HOLD-R6E-PRODUCTION-DIRECT-RUNTIME-INPUT-BINDING-ABSENT"),
-            "input binding blocker should be cleared: {message}"
-        );
+        .expect("R6J cutover candidate should write direct publication outputs");
         let audit = direct_runtime_audit_snapshot();
-        assert_eq!(audit.run_frame_constructions, 1);
-        assert_eq!(audit.executor_constructions, 1);
+        assert_eq!(audit.run_frame_constructions, 0);
+        assert_eq!(audit.executor_constructions, 0);
         assert_eq!(audit.skeleton_runs, 0);
-        assert_eq!(audit.publication_capture_runs, 1);
-        assert!(audit.day_frame_constructions > 0);
+        assert_eq!(audit.publication_capture_runs, 0);
+        assert_eq!(audit.day_frame_constructions, 0);
         assert_eq!(audit.day_frame_constructions, audit.day_frame_commits);
-        assert!(audit.direct_compute_operations > 0);
-        assert!(audit.direct_state_mutations > 0);
-        assert!(audit.downstream_operand_productions > 0);
-        assert!(audit.shadow_projections > 0);
+        assert_eq!(audit.direct_compute_operations, 0);
+        assert_eq!(audit.direct_state_mutations, 0);
+        assert_eq!(audit.downstream_operand_productions, 0);
+        assert_eq!(audit.shadow_projections, 0);
         assert_eq!(audit.compatibility_edge_invocations, 0);
+        assert_r6j_cutover_report_outputs(&report, &output_dir);
+    }
+
+    fn assert_r6j_cutover_report_outputs(report: &HillslopeRunReport, output_dir: &Path) {
         for output_name in [
             "H5.hbp",
             "H5.loss.json",
+            "H5.pass.parquet",
             "H5.wat.parquet",
             "H5.plot.parquet",
             "openwepp_hillslope_run_manifest.json",
         ] {
             assert!(
-                !output_dir.join(output_name).exists(),
-                "fail-closed R6 cutover candidate must not write {output_name}"
+                output_dir.join(output_name).is_file(),
+                "R6J cutover candidate must write {output_name}"
             );
         }
+        let manifest_json = read_manifest_json(report);
+        assert_eq!(
+            manifest_json
+                .pointer("/execution_provenance/publication_source")
+                .and_then(serde_json::Value::as_str),
+            Some("direct-publication-frame")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/wb13_publication/source")
+                .and_then(serde_json::Value::as_str),
+            Some("direct-publication-frame")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/wb13_publication/replay_candidate_surfaces")
+                .and_then(serde_json::Value::as_array)
+                .map(Vec::len),
+            Some(0)
+        );
+        assert_json_i64(&manifest_json, "/wb13_publication/row_count", 2);
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/run_frame_constructions",
+            0,
+        );
+        assert_json_i64(&manifest_json, "/direct_runtime_counters/skeleton_runs", 0);
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/publication_capture_runs",
+            0,
+        );
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/compatibility_edge_invocations",
+            0,
+        );
+        let output_checksums = manifest_json
+            .pointer("/output_checksums")
+            .and_then(serde_json::Value::as_object)
+            .expect("manifest must include output checksum object");
+        for output_path in std::iter::once(report.output_pass.as_path())
+            .chain(std::iter::once(report.output_loss.as_path()))
+            .chain(report.optional_outputs.iter().map(PathBuf::as_path))
+        {
+            assert_manifest_checksum_matches_file(output_checksums, output_path);
+        }
+    }
+
+    #[test]
+    fn r6j_manifest_direct_runtime_counters_are_run_local_after_prior_activity() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        reset_direct_runtime_audit_counters();
+        let (_shadow_report, _shadow_run_dir) =
+            execute_fixture_run_with_runtime_selection_unlocked(
+                "r6j_dirty_direct_counter_shadow",
+                HillslopeRuntimeSelection::DirectPublicationFrameShadow,
+            );
+        let dirty_audit = direct_runtime_audit_snapshot();
+        assert_eq!(dirty_audit.publication_capture_runs, 1);
+
+        let source_fixture_dir = fixture_path("hillslope_run_dir");
+        let temp_run_dir = copy_fixture_to_temp(
+            &source_fixture_dir,
+            "r6j_run_local_counter_cutover",
+        );
+        enable_r6j_pass_parquet_output(&temp_run_dir);
+        let output_dir = temp_run_dir.join("output");
+        let report = execute_hillslope_run_with_runtime_selection(
+            &HillslopeRunRequest {
+                run_dir: temp_run_dir,
+                run_file: PathBuf::from("case.run"),
+                output_dir,
+                sidecar_policy: SidecarPolicy::Compat,
+                legacy_sidecar_discovery: false,
+                manifest_path: None,
+            },
+            &["openwepp-cli-hill".to_string()],
+            HillslopeRuntimeSelection::DirectPublicationFrameCutover,
+        )
+        .expect("R6J cutover should run after prior direct runtime activity");
+
+        let cumulative_audit = direct_runtime_audit_snapshot();
+        assert_eq!(cumulative_audit.publication_capture_runs, 1);
+        let manifest_json = read_manifest_json(&report);
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/run_frame_constructions",
+            0,
+        );
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/publication_capture_runs",
+            0,
+        );
+        assert_json_i64(&manifest_json, "/direct_runtime_counters/skeleton_runs", 0);
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/compatibility_edge_invocations",
+            0,
+        );
     }
 
     #[test]
@@ -969,7 +1058,7 @@ mod tests {
     }
 
     #[test]
-    fn r6i_cutover_candidate_hbp_and_wat_identity_clear_pmet_layer_ulp_gap() {
+    fn r6j_cutover_parity_evidence_covers_hbp_wat_pass_and_loss() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -978,6 +1067,9 @@ mod tests {
 
         assert_r6f_hbp_identity(&evidence);
         assert_r6i_wat_identity(&evidence);
+        assert_r6j_pass_identity(&evidence);
+        assert_r6j_loss_identity(&evidence);
+        assert_r6j_parquet_disk_identity(&evidence);
     }
 
     #[test]
@@ -1011,6 +1103,10 @@ mod tests {
         compatibility_hbp_bytes: Vec<u8>,
         direct_wat_rows: Vec<HillslopeWatRow>,
         compatibility_wat_rows: Vec<HillslopeWatRow>,
+        direct_pass_rows: Vec<HillslopePassRow>,
+        compatibility_pass_rows: Vec<HillslopePassRow>,
+        direct_loss_text: String,
+        compatibility_loss_text: String,
     }
 
     fn r6f_hbp_wat_fixture_evidence() -> R6fHbpWatEvidence {
@@ -1064,6 +1160,15 @@ mod tests {
         .expect("compatibility HBP should build");
         let compatibility_wat_rows = build_hillslope_wat_rows(&execution.wb13_rows)
             .expect("compatibility WAT rows should build");
+        let compatibility_loss_text = build_loss_output_json(
+            &inputs.runfile.run_name,
+            &inputs.soil,
+            &sidecars.snow,
+            &sidecars.frost,
+            &execution.climate_span,
+            execution.executed_day_count,
+        )
+        .expect("compatibility loss JSON should build");
 
         R6fHbpWatEvidence {
             output_pass: targets.output_pass,
@@ -1071,6 +1176,10 @@ mod tests {
             compatibility_hbp_bytes: compatibility_hbp,
             direct_wat_rows: artifacts.wat_rows.clone(),
             compatibility_wat_rows,
+            direct_pass_rows: artifacts.pass_projection_rows.clone(),
+            compatibility_pass_rows: execution.pass_rows.clone(),
+            direct_loss_text: artifacts.loss_text.clone(),
+            compatibility_loss_text,
         }
     }
 
@@ -1234,6 +1343,32 @@ mod tests {
         );
     }
 
+    fn assert_r6j_pass_identity(evidence: &R6fHbpWatEvidence) {
+        assert_eq!(
+            evidence.direct_pass_rows.len(),
+            evidence.compatibility_pass_rows.len()
+        );
+        let reduced_fields = reduced_pass_mismatch_fields(
+            &evidence.direct_pass_rows,
+            &evidence.compatibility_pass_rows,
+        );
+        assert!(
+            reduced_fields.is_empty(),
+            "R6J PASS parity should leave no reduced mismatch fields, observed {reduced_fields:?}"
+        );
+        assert_eq!(
+            evidence.direct_pass_rows, evidence.compatibility_pass_rows,
+            "direct PASS rows must match compatibility PASS rows in test evidence"
+        );
+    }
+
+    fn assert_r6j_loss_identity(evidence: &R6fHbpWatEvidence) {
+        assert_eq!(
+            evidence.direct_loss_text, evidence.compatibility_loss_text,
+            "direct loss JSON must match compatibility loss JSON in test evidence"
+        );
+    }
+
     #[test]
     fn r6b_absent_operand_detector_suppresses_marker_for_nonzero_direct_operands() {
         let identity =
@@ -1359,6 +1494,29 @@ mod tests {
 
     #[test]
     fn r6a_direct_projection_consumers_read_publication_frame_operands() {
+        let frame = r6a_direct_projection_fixture_frame();
+
+        let wat_rows = build_hillslope_wat_rows_from_direct_publication(&frame)
+            .expect("direct WAT projection should build");
+        let pass_rows = build_hillslope_pass_rows_from_direct_publication(&frame)
+            .expect("direct PASS projection should build");
+        let loss = build_loss_output_json_from_direct_publication(&frame, 1, false, 0)
+            .expect("direct loss projection should build");
+        let manifest = build_manifest_text_from_direct_publication(&frame)
+            .expect("direct manifest projection should build");
+
+        assert_eq!(wat_rows[0].q.to_bits(), 12.5_f64.to_bits());
+        assert_eq!(wat_rows[0].qofe.to_bits(), 10.0_f64.to_bits());
+        assert_eq!(wat_rows[0].rm.to_bits(), 8.25_f64.to_bits());
+        assert_eq!(pass_rows[0].runvol_m3.to_bits(), 4.0_f64.to_bits());
+        assert_eq!(pass_rows[0].peakro_m3_s.to_bits(), 0.75_f64.to_bits());
+        let loss_json: serde_json::Value =
+            serde_json::from_str(&loss).expect("direct loss projection should be JSON");
+        assert_eq!(loss_json["run_name"], "r6a_projection");
+        assert!(manifest.contains("row_count=1"));
+    }
+
+    fn r6a_direct_projection_fixture_frame() -> DirectRunPublicationFrame {
         let identity =
             DirectRunIdentity::new(19, 2637, 1, 1).expect("valid direct identity should construct");
         let row = DirectPublicationDayRow {
@@ -1429,10 +1587,13 @@ mod tests {
                 runoff_duration_s: Some(1800.0),
                 total_detachment_kg: Some(2.25),
                 total_deposition_kg: Some(1.25),
+                hbp_total_detachment_kg: Some(2.25),
+                hbp_total_deposition_kg: Some(1.25),
+                hbp_sediment_concentration_kg_m3: Some(0.1),
                 sediment_concentration_kg_m3: Some([0.1, 0.2, 0.3, 0.4, 0.5]),
             },
         };
-        let frame = DirectRunPublicationFrame {
+        DirectRunPublicationFrame {
             identity,
             metadata: DirectPublicationRunMetadata {
                 run_name: "r6a_projection".to_string(),
@@ -1440,26 +1601,138 @@ mod tests {
                 output_policy: "test".to_string(),
             },
             rows: vec![row],
+        }
+    }
+
+    #[test]
+    fn r6j_direct_manifest_provenance_accepts_multiofe_direct_rows() {
+        let identity =
+            DirectRunIdentity::new(42, 2637, 2, 2).expect("valid direct identity should construct");
+        let frame = DirectRunPublicationFrame {
+            identity,
+            metadata: DirectPublicationRunMetadata {
+                run_name: "r6j_multiofe_manifest".to_string(),
+                runtime_selection: "direct-publication-frame-cutover".to_string(),
+                output_policy: "test".to_string(),
+            },
+            rows: vec![
+                r6j_multiofe_publication_row(1, 1),
+                r6j_multiofe_publication_row(2, 1),
+                r6j_multiofe_publication_row(1, 2),
+                r6j_multiofe_publication_row(2, 2),
+            ],
         };
 
-        let wat_rows = build_hillslope_wat_rows_from_direct_publication(&frame)
-            .expect("direct WAT projection should build");
-        let pass_rows = build_hillslope_pass_rows_from_direct_publication(&frame)
-            .expect("direct PASS projection should build");
-        let loss = build_loss_output_json_from_direct_publication(&frame, 1, false, 0)
-            .expect("direct loss projection should build");
-        let manifest = build_manifest_text_from_direct_publication(&frame)
-            .expect("direct manifest projection should build");
+        let (wb13_publication, mofe_hourly_carry) =
+            build_direct_publication_manifest_provenance(&frame)
+                .expect("direct multi-OFE manifest provenance should build");
+        assert_eq!(wb13_publication.source, "direct-publication-frame");
+        assert_eq!(wb13_publication.contributor_ofe_count, 2);
+        assert_eq!(wb13_publication.row_count, 4);
+        assert_eq!(wb13_publication.publication_area_m2.to_bits(), 1200.0_f64.to_bits());
+        assert_eq!(wb13_publication.per_ofe_record_count, 4);
+        assert_eq!(wb13_publication.per_ofe_internal_day_count, 2);
+        assert_eq!(wb13_publication.per_ofe_expected_record_count, 4);
+        assert_eq!(wb13_publication.first_row_key.ofe, 1);
+        assert_eq!(wb13_publication.first_row_key.sim_day_index, 1);
+        assert_eq!(wb13_publication.last_row_key.ofe, 2);
+        assert_eq!(wb13_publication.last_row_key.sim_day_index, 2);
+        assert!(mofe_hourly_carry.active);
+        assert_eq!(mofe_hourly_carry.substep_count, 24);
 
-        assert_eq!(wat_rows[0].q.to_bits(), 12.5_f64.to_bits());
-        assert_eq!(wat_rows[0].qofe.to_bits(), 10.0_f64.to_bits());
-        assert_eq!(wat_rows[0].rm.to_bits(), 8.25_f64.to_bits());
-        assert_eq!(pass_rows[0].runvol_m3.to_bits(), 4.0_f64.to_bits());
-        assert_eq!(pass_rows[0].peakro_m3_s.to_bits(), 0.75_f64.to_bits());
-        let loss_json: serde_json::Value =
-            serde_json::from_str(&loss).expect("direct loss projection should be JSON");
-        assert_eq!(loss_json["run_name"], "r6a_projection");
-        assert!(manifest.contains("row_count=1"));
+        let wat_rows = build_hillslope_wat_rows_from_direct_publication(&frame)
+            .expect("direct multi-OFE WAT rows should build");
+        assert_eq!(wat_rows.len(), 4);
+        assert_eq!(wat_rows[0].ofe_id, 1);
+        assert_eq!(wat_rows[1].ofe_id, 2);
+        assert_eq!(wat_rows[2].sim_day_index, 2);
+        assert_eq!(wat_rows[3].ofe_id, 2);
+        let pass_rows = build_hillslope_pass_rows_from_direct_publication(&frame)
+            .expect("direct multi-OFE PASS rows should build");
+        assert_eq!(pass_rows.len(), 2);
+        assert_eq!(pass_rows[0].year, 1);
+        assert_eq!(pass_rows[0].sim_day_index, 1);
+        assert_eq!(pass_rows[1].sim_day_index, 2);
+    }
+
+    fn r6j_multiofe_publication_row(ofe_id: u32, sim_day_index: i32) -> DirectPublicationDayRow {
+        let lane_index = usize::try_from(ofe_id - 1).expect("test OFE id should fit usize");
+        let day_index = usize::try_from(sim_day_index - 1).expect("test day should fit usize");
+        let offset = f64::from(ofe_id) + f64::from(sim_day_index) / 10.0;
+        DirectPublicationDayRow {
+            run_id: 42,
+            hillslope_id: 2637,
+            lane_id: ofe_id,
+            ofe_id,
+            lane_index,
+            day_index,
+            sim_day_index,
+            calendar: DirectPublicationCalendarDay {
+                year: 2026,
+                julian_day: u16::try_from(sim_day_index).expect("test day should fit u16"),
+                month: 1,
+                day_of_month: i8::try_from(sim_day_index).expect("test day should fit i8"),
+                water_year: 2026,
+            },
+            area_m2: 400.0 * f64::from(ofe_id),
+            climate: DirectPublicationClimateOperands {
+                precipitation_mm: 7.5 + offset,
+            },
+            liquid_input: DirectPublicationLiquidInputOperands {
+                rm_mm: 8.25 + offset,
+                irrigation_mm: 1.25,
+            },
+            runoff: DirectPublicationRunoffOperands {
+                q_mm: 12.5 + offset,
+                qofe_mm: 10.0 + offset,
+                runvol_m3: 4.0 + offset,
+                peak_runoff_m3_s: Some(0.75 + offset),
+                runoff_duration_s: Some(1800.0 + offset),
+            },
+            evaporation: DirectPublicationEvaporationOperands {
+                ep_mm: 2.0 + offset,
+                es_mm: 3.0 + offset,
+                er_mm: 4.0 + offset,
+                total_evapotranspiration_mm: 9.0 + offset,
+            },
+            subsurface: DirectPublicationSubsurfaceOperands {
+                dp_mm: 1.5 + offset,
+                latqcc_mm: 2.5 + offset,
+                tile_mm: 0.5 + offset,
+                sbrunv_m3: 1.0 + offset,
+            },
+            transfer: DirectPublicationTransferOperands {
+                upstream_surface_mm: 0.25 + offset,
+                upstream_lateral_mm: 0.125 + offset,
+            },
+            storage: DirectPublicationStorageOperands {
+                total_soil_mm: 110.0 + offset,
+                soil_water_total_mm: 105.0 + offset,
+                frozwt_mm: 1.0 + offset,
+                frdp_mm: Some(2.0 + offset),
+                snow_water_mm: 3.0 + offset,
+            },
+            profile: DirectPublicationProfileOperands {
+                depth_mm: Some(1000.0 + offset),
+                porosity_cap_mm: Some(450.0 + offset),
+                fc_store_mm: Some(300.0 + offset),
+                wp_store_mm: Some(150.0 + offset),
+            },
+            interception: DirectPublicationInterceptionOperands {
+                interception_mm: 0.75 + offset,
+                interception_storage_mm: Some(0.5 + offset),
+            },
+            erosion: DirectPublicationErosionOperands {
+                peak_runoff_m3_s: Some(0.75 + offset),
+                runoff_duration_s: Some(1800.0 + offset),
+                total_detachment_kg: Some(2.25 + offset),
+                total_deposition_kg: Some(1.25 + offset),
+                hbp_total_detachment_kg: Some(2.25 + offset),
+                hbp_total_deposition_kg: Some(1.25 + offset),
+                hbp_sediment_concentration_kg_m3: Some(0.1 + offset),
+                sediment_concentration_kg_m3: Some([0.1, 0.2, 0.3, 0.4, 0.5]),
+            },
+        }
     }
 
     fn runner_execution_lock() -> &'static Mutex<()> {
@@ -1481,6 +1754,102 @@ mod tests {
         let destination = std::env::temp_dir().join(format!("{prefix}_{timestamp}"));
         copy_dir_recursive(source_dir, &destination);
         destination
+    }
+
+    fn enable_r6j_pass_parquet_output(run_dir: &Path) {
+        let run_file = run_dir.join("case.run");
+        let mut text = fs::read_to_string(&run_file)
+            .unwrap_or_else(|error| panic!("case.run should be readable: {error}"));
+        if !text.contains("pass_parquet") {
+            text.push_str("pass_parquet = \"output/H5.pass.parquet\"\n");
+        }
+        fs::write(&run_file, text)
+            .unwrap_or_else(|error| panic!("case.run should be writable: {error}"));
+    }
+
+    fn assert_manifest_checksum_matches_file(
+        output_checksums: &serde_json::Map<String, serde_json::Value>,
+        output_path: &Path,
+    ) {
+        let key = output_path.display().to_string();
+        let observed = output_checksums
+            .get(&key)
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or_else(|| panic!("manifest must include checksum for {key}"));
+        let expected = sha256_file_hex(output_path)
+            .unwrap_or_else(|error| panic!("checksum should compute for {key}: {error}"));
+        assert_eq!(observed, expected, "manifest checksum mismatch for {key}");
+    }
+
+    fn assert_r6j_parquet_disk_identity(evidence: &R6fHbpWatEvidence) {
+        let temp_dir = copy_fixture_to_temp(
+            &fixture_path("hillslope_run_dir"),
+            "r6j_parquet_disk_identity",
+        );
+        let direct_wat = temp_dir.join("direct.wat.parquet");
+        let compatibility_wat = temp_dir.join("compatibility.wat.parquet");
+        let direct_pass = temp_dir.join("direct.pass.parquet");
+        let compatibility_pass = temp_dir.join("compatibility.pass.parquet");
+        write_hillslope_wat_parquet(
+            &direct_wat,
+            &evidence.direct_wat_rows,
+            InterchangeVersion::default(),
+        )
+        .expect("direct WAT disk evidence should write");
+        write_hillslope_wat_parquet(
+            &compatibility_wat,
+            &evidence.compatibility_wat_rows,
+            InterchangeVersion::default(),
+        )
+        .expect("compatibility WAT disk evidence should write");
+        write_hillslope_pass_parquet(
+            &direct_pass,
+            &evidence.direct_pass_rows,
+            InterchangeVersion::default(),
+        )
+        .expect("direct PASS disk evidence should write");
+        write_hillslope_pass_parquet(
+            &compatibility_pass,
+            &evidence.compatibility_pass_rows,
+            InterchangeVersion::default(),
+        )
+        .expect("compatibility PASS disk evidence should write");
+
+        assert_parquet_batches_identical("WAT", &direct_wat, &compatibility_wat);
+        assert_parquet_batches_identical("PASS", &direct_pass, &compatibility_pass);
+    }
+
+    fn assert_parquet_batches_identical(label: &str, left_path: &Path, right_path: &Path) {
+        let left = read_single_parquet_batch(left_path);
+        let right = read_single_parquet_batch(right_path);
+        assert_eq!(left.schema(), right.schema(), "{label} schema mismatch");
+        assert_eq!(left.num_rows(), right.num_rows(), "{label} row count mismatch");
+        assert_eq!(
+            left.num_columns(),
+            right.num_columns(),
+            "{label} column count mismatch"
+        );
+        for column_index in 0..left.num_columns() {
+            assert_eq!(
+                left.column(column_index).to_data(),
+                right.column(column_index).to_data(),
+                "{label} serialized column {column_index} mismatch"
+            );
+        }
+    }
+
+    fn read_single_parquet_batch(path: &Path) -> RecordBatch {
+        let file = fs::File::open(path)
+            .unwrap_or_else(|error| panic!("parquet file should be readable: {error}"));
+        let builder = ParquetRecordBatchReaderBuilder::try_new(file)
+            .unwrap_or_else(|error| panic!("parquet footer should be readable: {error}"));
+        let mut reader = builder
+            .build()
+            .unwrap_or_else(|error| panic!("parquet reader should build: {error}"));
+        reader
+            .next()
+            .unwrap_or_else(|| panic!("parquet file should contain one batch: {}", path.display()))
+            .unwrap_or_else(|error| panic!("parquet batch should read: {error}"))
     }
 
     fn copy_dir_recursive(source: &Path, destination: &Path) {
