@@ -127,15 +127,24 @@ fn execute_hillslope_direct_production_days(
         symbol_registry: _,
         hot_symbol_tables: _,
     } = state;
+    let lane_seed_surfaces = direct_production_lane_seed_surfaces(
+        &runtime_surface,
+        persistent_lane_state.as_ref(),
+        per_ofe_lane_areas_m2.len(),
+    )?;
     let mut frame = build_direct_production_run_frame(
         output_hillslope_id,
         &per_ofe_lane_areas_m2,
         climate_span.days.len(),
-    )?;
-    let day_input_builder = DirectPublicationDayInputBuilder::new(
         &climate_request,
         &climate_span,
-        &runtime_surface,
+        &lane_seed_surfaces,
+        lane_context.lane,
+    )?;
+    let day_input_builder = DirectPublicationDayInputBuilder::new_with_seed_surfaces(
+        &climate_request,
+        &climate_span,
+        lane_seed_surfaces,
         lane_context.lane,
     )?;
     let metadata = DirectPublicationRunMetadata {
@@ -194,6 +203,10 @@ fn build_direct_production_run_frame(
     output_hillslope_id: u32,
     lane_areas_m2: &[f64],
     day_count: usize,
+    climate_request: &HillslopeClimateRuntimeRequest,
+    climate_span: &ClimateRunSpanSummary,
+    lane_seed_surfaces: &[HillslopeWritebackSurface],
+    execution_lane: ExecutionLane,
 ) -> Result<DirectRunFrame, HillslopeCliError> {
     let identity = DirectRunIdentity::new(
         u64::from(output_hillslope_id),
@@ -207,9 +220,12 @@ fn build_direct_production_run_frame(
         .copied()
         .enumerate()
         .map(|(lane_index, area_m2)| {
-            let mut lane_inputs =
-                DirectLaneConstructorInputs::from_topology(lane_index, lane_areas_m2.len(), day_count)
-                    .map_err(|source| direct_production_runtime_error(&source))?;
+            let mut lane_inputs = DirectLaneConstructorInputs::from_topology(
+                lane_index,
+                lane_areas_m2.len(),
+                day_count,
+            )
+            .map_err(|source| direct_production_runtime_error(&source))?;
             if !area_m2.is_finite() || area_m2 <= 0.0 {
                 return Err(direct_production_executor_blocked(format!(
                     "direct production lane {} area must be finite and > 0.0, observed {area_m2}",
@@ -222,11 +238,77 @@ fn build_direct_production_run_frame(
             } else {
                 lane_areas_m2[lane_index - 1] / area_m2
             };
+            seed_direct_production_lane_constructor_inputs(
+                &mut lane_inputs,
+                lane_index,
+                climate_request,
+                climate_span,
+                lane_seed_surfaces,
+                execution_lane,
+            )?;
             Ok(lane_inputs)
         })
         .collect::<Result<Vec<_>, HillslopeCliError>>()?;
     DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(identity, lanes))
         .map_err(|source| direct_production_runtime_error(&source))
+}
+
+fn direct_production_lane_seed_surfaces(
+    runtime_surface: &HillslopeWritebackSurface,
+    persistent_lane_state: Option<&OfeLanePersistentStateSequence>,
+    lane_count: usize,
+) -> Result<Vec<HillslopeWritebackSurface>, HillslopeCliError> {
+    if let Some(persistent_lane_state) = persistent_lane_state {
+        let lane_states = persistent_lane_state.lane_states();
+        if lane_states.len() != lane_count {
+            return Err(direct_production_executor_blocked(format!(
+                "direct production lane seed authority count {} does not match lane count {lane_count}",
+                lane_states.len()
+            )));
+        }
+        return Ok(lane_states
+            .iter()
+            .map(|lane_state| lane_state.writeback_surface.clone())
+            .collect());
+    }
+    if lane_count != 1 {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production multi-OFE run requires lane-indexed seed authority, observed lane_count={lane_count} with no persistent lane state"
+        )));
+    }
+    Ok(vec![runtime_surface.clone()])
+}
+
+fn seed_direct_production_lane_constructor_inputs(
+    lane_inputs: &mut DirectLaneConstructorInputs,
+    lane_index: usize,
+    climate_request: &HillslopeClimateRuntimeRequest,
+    climate_span: &ClimateRunSpanSummary,
+    lane_seed_surfaces: &[HillslopeWritebackSurface],
+    execution_lane: ExecutionLane,
+) -> Result<(), HillslopeCliError> {
+    let seed_authority = if lane_seed_surfaces.len() == 1 {
+        &lane_seed_surfaces[0]
+    } else {
+        lane_seed_surfaces.get(lane_index).ok_or_else(|| {
+            direct_production_executor_blocked(format!(
+                "direct production lane {} has no lane-indexed seed authority",
+                lane_index + 1
+            ))
+        })?
+    };
+    let day_zero_seed_surface = direct_publication_day_zero_seed_surface(
+        climate_request,
+        climate_span,
+        seed_authority,
+        execution_lane,
+    )?;
+    lane_inputs.water.soil_water_m =
+        require_runtime_surface_scalar(&day_zero_seed_surface, "wb11_soil_water")?;
+    lane_inputs.subsurface_layers = direct_publication_layer_states(&day_zero_seed_surface)?;
+    lane_inputs.evapotranspiration_stage_state =
+        direct_publication_stage_state(&day_zero_seed_surface)?;
+    Ok(())
 }
 
 fn build_direct_production_coupling_vector_provenance(

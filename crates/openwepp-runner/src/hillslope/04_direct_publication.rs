@@ -835,9 +835,9 @@ fn seed_direct_publication_lane_area_geometry(
 struct DirectPublicationDayInputBuilder<'a> {
     climate_request: &'a HillslopeClimateRuntimeRequest,
     climate_span: &'a ClimateRunSpanSummary,
-    static_runtime_surface: &'a HillslopeWritebackSurface,
+    seed_surfaces: Vec<HillslopeWritebackSurface>,
     execution_lane: ExecutionLane,
-    profile_inputs: DirectHydrologyProjectionInputs,
+    profile_inputs: Vec<DirectHydrologyProjectionInputs>,
 }
 
 impl<'a> DirectPublicationDayInputBuilder<'a> {
@@ -847,12 +847,38 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
         static_runtime_surface: &'a HillslopeWritebackSurface,
         execution_lane: ExecutionLane,
     ) -> Result<Self, HillslopeCliError> {
+        Self::new_with_seed_surfaces(
+            climate_request,
+            climate_span,
+            vec![static_runtime_surface.clone()],
+            execution_lane,
+        )
+    }
+
+    fn new_with_seed_surfaces(
+        climate_request: &'a HillslopeClimateRuntimeRequest,
+        climate_span: &'a ClimateRunSpanSummary,
+        seed_surfaces: Vec<HillslopeWritebackSurface>,
+        execution_lane: ExecutionLane,
+    ) -> Result<Self, HillslopeCliError> {
+        if seed_surfaces.is_empty() {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct publication requires at least one seed surface"
+                ),
+            });
+        }
+        let profile_inputs = seed_surfaces
+            .iter()
+            .map(direct_publication_profile_inputs)
+            .collect::<Result<Vec<_>, _>>()?;
         Ok(Self {
             climate_request,
             climate_span,
-            static_runtime_surface,
+            seed_surfaces,
             execution_lane,
-            profile_inputs: direct_publication_profile_inputs(static_runtime_surface)?,
+            profile_inputs,
         })
     }
 
@@ -896,7 +922,7 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
                 &seed_surface,
                 day_index == 0,
             )?);
-        day_input.hydrology_projection_inputs = Some(self.profile_inputs);
+        day_input.hydrology_projection_inputs = Some(*self.profile_inputs(lane_index)?);
         day_input.frost_layer_carry_projection =
             direct_publication_frost_layer_carry_projection(&seed_surface)?;
         Ok((day_input, seed_surface))
@@ -931,9 +957,10 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
                 ),
             })?;
 
-        let mut seed_surface = self.static_runtime_surface.clone();
+        let seed_authority = self.seed_surface_authority(lane_index)?;
+        let mut seed_surface = seed_authority.clone();
         let mut climate_surface =
-            build_day_climate_surface(self.climate_request, day_index, &seed_surface, day)?;
+            build_day_climate_surface(self.climate_request, day_index, seed_authority, day)?;
         seed_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
             seed_surface,
             std::mem::take(&mut climate_surface),
@@ -942,6 +969,67 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
         seed_wb11_runtime_surface_inputs(&mut seed_surface, self.execution_lane)?;
         Ok((seed_surface, day))
     }
+
+    fn seed_surface_authority(
+        &self,
+        lane_index: usize,
+    ) -> Result<&HillslopeWritebackSurface, HillslopeCliError> {
+        if self.seed_surfaces.len() == 1 {
+            return Ok(&self.seed_surfaces[0]);
+        }
+        self.seed_surfaces.get(lane_index).ok_or_else(|| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct publication lane index {} exceeds lane seed authority count {}",
+                    lane_index + 1,
+                    self.seed_surfaces.len()
+                ),
+            }
+        })
+    }
+
+    fn profile_inputs(
+        &self,
+        lane_index: usize,
+    ) -> Result<&DirectHydrologyProjectionInputs, HillslopeCliError> {
+        if self.profile_inputs.len() == 1 {
+            return Ok(&self.profile_inputs[0]);
+        }
+        self.profile_inputs.get(lane_index).ok_or_else(|| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct publication lane index {} exceeds profile seed count {}",
+                    lane_index + 1,
+                    self.profile_inputs.len()
+                ),
+            }
+        })
+    }
+}
+
+fn direct_publication_day_zero_seed_surface(
+    climate_request: &HillslopeClimateRuntimeRequest,
+    climate_span: &ClimateRunSpanSummary,
+    seed_authority: &HillslopeWritebackSurface,
+    execution_lane: ExecutionLane,
+) -> Result<HillslopeWritebackSurface, HillslopeCliError> {
+    let day = climate_span.days.first().ok_or_else(|| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!("{SIMOUT_GUARD_ID} direct publication requires at least one climate day"),
+        }
+    })?;
+    direct_publication_validate_day(day)?;
+    let mut seed_surface = seed_authority.clone();
+    let mut climate_surface = build_day_climate_surface(climate_request, 0, seed_authority, day)?;
+    seed_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
+        seed_surface,
+        std::mem::take(&mut climate_surface),
+    );
+    seed_wb11_runtime_surface_inputs(&mut seed_surface, execution_lane)?;
+    Ok(seed_surface)
 }
 
 fn direct_publication_validate_day(day: &ClimateDayProjection) -> Result<(), HillslopeCliError> {

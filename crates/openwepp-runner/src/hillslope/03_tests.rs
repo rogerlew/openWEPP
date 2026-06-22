@@ -900,6 +900,66 @@ mod tests {
     }
 
     #[test]
+    fn r7d2_direct_seed_authority_is_lane_indexed_for_multiofe_profiles() {
+        let source_fixture_dir = fixture_path("hillslope_run_dir");
+        let temp_run_dir = copy_fixture_to_temp(
+            &source_fixture_dir,
+            "r7d2_lane_indexed_seed_authority",
+        );
+        let request = HillslopeRunRequest {
+            run_dir: temp_run_dir.clone(),
+            run_file: PathBuf::from("case.run"),
+            output_dir: temp_run_dir.join("output"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        };
+        let inputs = load_hillslope_run_inputs(&request).expect("fixture inputs should parse");
+        let climate_request = build_hillslope_climate_runtime_request(&inputs.climate)
+            .expect("fixture climate request should build");
+        let climate_span =
+            build_climate_run_span_summary(&inputs.climate).expect("climate span should build");
+        let builder = DirectPublicationDayInputBuilder::new_with_seed_surfaces(
+            &climate_request,
+            &climate_span,
+            vec![
+                r7d2_profile_seed_surface(500.0, 520.0, 90.0, 0.30, 0.0),
+                r7d2_profile_seed_surface(640.0, 690.0, 120.0, 0.34, 2.0),
+            ],
+            ExecutionLane::Daily,
+        )
+        .expect("lane-indexed direct day-input builder should construct");
+
+        let lane_one_profile = builder
+            .profile_inputs(0)
+            .expect("lane 1 profile seed should exist");
+        let lane_two_profile = builder
+            .profile_inputs(1)
+            .expect("lane 2 profile seed should exist");
+
+        assert_ne!(
+            lane_one_profile.profile_depth_m,
+            lane_two_profile.profile_depth_m,
+            "R7D2 must not alias lane 2 profile depth to lane 1"
+        );
+        assert_ne!(
+            lane_one_profile.profile_porosity_cap_m,
+            lane_two_profile.profile_porosity_cap_m,
+            "R7D2 must not alias lane 2 porosity storage to lane 1"
+        );
+        assert_ne!(
+            lane_one_profile.profile_field_capacity_m,
+            lane_two_profile.profile_field_capacity_m,
+            "R7D2 must not alias lane 2 field-capacity storage to lane 1"
+        );
+        assert_ne!(
+            lane_one_profile.profile_wilting_point_m,
+            lane_two_profile.profile_wilting_point_m,
+            "R7D2 must not alias lane 2 wilting-point storage to lane 1"
+        );
+    }
+
+    #[test]
     fn r7c_direct_production_source_excludes_compatibility_entrypoints() {
         let source = include_str!("05_runner_execution_and_outputs.rs");
         let direct_body = source
@@ -1323,6 +1383,24 @@ mod tests {
             )
             .expect("direct publication capture should complete");
         day_two_seed_surface.expect("fixture should include a day-2 direct seed surface")
+    }
+
+    fn r7d2_profile_seed_surface(
+        depth_mm: f64,
+        porosity_cap_mm: f64,
+        wilting_point_mm: f64,
+        field_capacity_theta: f64,
+        fc_tail_mm: f64,
+    ) -> HillslopeWritebackSurface {
+        wb11_seed_test_surface(&[
+            ("wb13_profile_depth_mm", depth_mm),
+            ("wb13_profile_porosity_cap_mm", porosity_cap_mm),
+            ("wb13_profile_wp_store_mm", wilting_point_mm),
+            ("wb13_profile_fc_tail_mm", fc_tail_mm),
+            ("wb11_nsl", 1.0),
+            ("wb19_dg_0001", depth_mm / 1_000.0),
+            ("wb19_thetfc_0001", field_capacity_theta),
+        ])
     }
 
     fn r6i_compatibility_fixture_execution() -> HillslopeClimateExecution {

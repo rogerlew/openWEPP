@@ -13,6 +13,17 @@
 
 State as of `2026-06-22`:
 
+- `20260622-r7d2-multiofe-lane-seed-authority-001/` is executed-held with final
+  disposition
+  `HOLD-R7D2-DIRECT-WB14-R4K-INFILTRATION-PRODUCER-AUTHORITY-ABSENT`. It
+  lifted `HOLD-R7D-MULTIOFE-DIRECT-LANE-SEED-AUTHORITY-ABSENT` by replacing
+  production direct topology/area-only lane seeds and single aggregate
+  runtime-surface day-input profile authority with lane-indexed constructor and
+  day-input seed/profile authority. Focused one-OFE HBP/loss/PASS/WAT parity
+  remains green, and H2637 direct production improved to
+  `182.83 s / 627436 KiB`, but HBP/PASS/WAT parity remains blocked because
+  direct R4K has no baseline-authoritative WB14 infiltration/depression
+  producer, so R4A still computes runoff as liquid input.
 - `20260622-r7d-direct-publication-producer-authority-001/` is executed-held
   with final disposition
   `HOLD-R7D-MULTIOFE-DIRECT-LANE-SEED-AUTHORITY-ABSENT`. It proved the

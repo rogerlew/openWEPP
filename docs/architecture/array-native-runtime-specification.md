@@ -1052,30 +1052,30 @@ Acceptance gates:
 - Manifest provenance reports direct-source publication rows and run-local
   direct counters.
 
-Execution status: executed-held in
-`docs/work-packages/20260622-r7d-direct-publication-producer-authority-001/`
-with final disposition
-`HOLD-R7D-MULTIOFE-DIRECT-LANE-SEED-AUTHORITY-ABSENT`. R7D proved the
-production direct consumer path emits HBP/WAT/PASS/loss/manifest artifacts from
-the retained `DirectRunPublicationFrame`, not `execution.wb13_rows`, and the
-focused one-OFE fixture is parity-clean. H2637 remains non-parity for HBP, WAT,
-and PASS while loss and plot match. The direct run reports
-`scheduler_kernel_executed=false`, `publication_source=direct-publication-frame`,
-`row_count=235961`, and `compatibility_edge_invocations=0`, so the residual is
-producer authority rather than writer selection. `DirectProductionExecutor`
-still builds topology/area-only direct lane frames and
-`DirectPublicationDayInputBuilder` seeds day inputs from a single aggregate
-`HillslopeWritebackSurface`; per-OFE parsed/static surfaces exist only in the
-compatibility scheduler's `OfeLanePersistentStateSequence` and are not converted
-into typed `DirectLaneConstructorInputs`.
+Execution status: executed-held across two packages:
 
-Required R7D hold-lift: close
-`R7D-DIRECT-PRODUCTION-PUBLICATION-PARITY` by adding lane-indexed typed direct
-constructor seed authority from parsed per-OFE soil/slope/management/PMET,
-snow, frost, subsurface-layer, ET, transfer, geometry, and publication operands;
-wire that authority into `DirectProductionExecutor`; remove production direct's
-single-surface day-input authority; and prove a multi-OFE anti-alias fixture
-plus H2637 HBP/WAT/PASS/loss/manifest parity.
+- `docs/work-packages/20260622-r7d-direct-publication-producer-authority-001/`
+  proved the production direct consumer path emits HBP/WAT/PASS/loss/manifest
+  artifacts from the retained `DirectRunPublicationFrame`, not
+  `execution.wb13_rows`, and held at
+  `HOLD-R7D-MULTIOFE-DIRECT-LANE-SEED-AUTHORITY-ABSENT`.
+- `docs/work-packages/20260622-r7d2-multiofe-lane-seed-authority-001/` lifted
+  that hold by adding lane-indexed constructor and day-input seed/profile
+  authority. The focused one-OFE fixture remains parity-clean, H2637 direct
+  production improved to `182.83 s / 627436 KiB`, and direct manifest counters
+  still report `compatibility_edge_invocations=0`.
+
+Current R7D blocker:
+`HOLD-R7D2-DIRECT-WB14-R4K-INFILTRATION-PRODUCER-AUTHORITY-ABSENT`. H2637
+HBP/PASS/WAT parity still fails because direct R4K forwards zero
+infiltration/depression handoff inputs and direct R4A therefore computes runoff
+as liquid input. This residual is controlled by `SC-RUNOFFPART-001`,
+`SC-WATBAL-001`, and `SC-PERC-001`: the next hold-lift must promote a
+baseline-authoritative direct WB14/R4K hyetograph/Green-Ampt infiltration and
+depression-storage producer, feed R4A runoff, WB18 same-pass layer ingress, ET
+same-pass infiltration, and direct publication projection, and prove H2637
+HBP/WAT/PASS/loss/manifest parity without reading compatibility
+`wb12_infiltration` or `wb12_depression_storage_delta` as direct authority.
 
 ##### R7E - Default Activation Candidate
 
