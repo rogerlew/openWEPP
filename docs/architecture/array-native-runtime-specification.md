@@ -1,6 +1,6 @@
 # Array-Native Runtime Architecture Specification
 
-Status: **Ratified, Revision 2** - binding design authority for the
+Status: **Ratified, Revision 3** - binding design authority for the
 performance re-architecture, ratified by
 [ADR-0025](../decisions/0025-array-native-hillslope-day-frame.md) on
 2026-06-18 and revised after PERFDEEP07 on 2026-06-19.
@@ -10,7 +10,7 @@ Owner: architecture authority; implementation by Codex work packages.
 Supersedes: the incremental application of
 [ADR-0023](../decisions/0023-array-authoritative-hot-path-state.md), not its
 dense-authority principle.
-Last updated: 2026-06-19.
+Last updated: 2026-06-22.
 
 ---
 
@@ -829,7 +829,9 @@ architecture:
 | PERFDEEP04 | profile evidence for dense-island sync costs |
 | PERFDEEP05 | negative benchmark for edge-shaved dense island |
 | PERFDEEP06 | inventory and API planning authority |
-| PERFDEEP07 | default-disabled compatibility cleanup, still HOLD |
+| PERFDEEP07 | default-disabled compatibility cleanup; superseded by PERFDEEP09 hold-lift evidence |
+| PERFDEEP08 | rejected disabled-path hard-isolation candidate |
+| PERFDEEP09 | default-disabled P0 hold-lift; R2+ implementation unblocked |
 
 ### 8.2 New Rewrite Sequence
 
@@ -837,19 +839,22 @@ Future work should follow this sequence.
 
 #### 8.2.1 PERFDEEP07 Hold-Lift Gate
 
-PERFDEEP07 is still `HOLD`. Until its default-disabled P0 timing blocker is
-closed or explicitly superseded by a new accepted architecture/work-package
-authority, R0/R1 work is limited to planning, schema, ledger, fixture,
-shadow-scaffold, and non-activated adapter work. No package may claim runtime
-readiness, default activation, or direct-frame implementation closure while the
-PERFDEEP07 blocker remains active.
+PERFDEEP07 was the original `HOLD` for default-disabled timing. PERFDEEP09
+superseded that hold for the R2+ sequence by recording a passing
+default-disabled H2637 median gate and preserving protected output identity.
+R2 through R6J were therefore allowed to proceed. This does not mean the
+array-native runtime is complete: R6J closed opt-in direct publication cutover,
+while the default runner API and CLI still select compatibility mode unless a
+direct flag is supplied.
 
-To advance beyond planning-only R0/R1 scope, a package must record one of:
+Any future package that claims default activation, production direct-runtime
+completion, or R7 compatibility-runtime removal must carry fresh evidence for:
 
-- PERFDEEP07 P0 closure with a passing default-disabled H2637 median gate; or
-- an explicit supersession decision explaining why the old P0 blocker no
-  longer controls the new direct-frame rewrite sequence, with replacement
-  timing, identity, rollback, and default-disabled gates.
+- default-disabled timing and protected output identity;
+- direct-mode timing and RSS;
+- rollback selection;
+- no hot-loop compatibility authority;
+- byte/Arrow/metadata parity for every public output family in scope.
 
 | Stage | Scope | Gate |
 |---|---|---|
@@ -861,6 +866,244 @@ To advance beyond planning-only R0/R1 scope, a package must record one of:
 | **R5 - Full OFE-day direct path** | Port all 14 phases to direct-frame execution. | full H2637 identity and endpoint/RSS |
 | **R6 - Direct publication cutover** | Make HBP/WAT/PASS/loss/manifest read typed projection only, using the promoted PERFDEEP06 publication operand ledger or an equivalent binding ledger. | byte/Arrow identity, metadata parity, anti-alias fixtures, independent operand reconstruction |
 | **R7 - Remove hot compatibility runtime** | Delete or isolate logical/indexed/dense hot-loop plumbing from production direct mode. | <=10x gate, preferably <=5x trajectory |
+
+#### 8.2.2 Post-R6 Burndown Work-Package Sequence
+
+The following sequence is binding guidance for the remaining array-native
+runtime refactor. Each package is expected to be a real execution package with
+package-local evidence, review disposition, verification, and commit/push
+closure when executed. Do not collapse a later package into an earlier package
+unless the earlier package's acceptance gates can still be proved without
+weakening review, rollback, fixture, and performance evidence.
+
+##### R7A - Architecture State Reconciliation
+
+Objective: reconcile this specification, ADR-0025 references, and the
+work-package log with the actual post-R6J state.
+
+Required work:
+
+- Record PERFDEEP09 as the hold-lift authority for PERFDEEP07.
+- Record R2 through R5 as direct-runtime scaffold and phase-coverage evidence.
+- Record R6J as opt-in direct publication cutover, not default direct runtime
+  completion.
+- Define the exact R7 terminal contract: production direct mode must execute
+  from typed frames and may not use `HillslopeKernelRequest`,
+  `KernelWritebackPayload`, `HillslopeWritebackSurface`, symbol registry,
+  indexed surfaces, dense refresh, dirty flush, or WB13-row publication
+  authority inside normal execution.
+- Add a current-state matrix that separates compatibility mode, shadow mode,
+  direct publication cutover, and future production direct mode.
+
+Acceptance gates:
+
+- Architecture spec and work-package catalog agree on R0-R6J status.
+- No document claims R6J is default activation or full runtime completion.
+- R7 package sequence, stop criteria, fallback policy, and validation gates are
+  explicit enough for autonomous execution.
+- Scoped Markdown lint passes.
+
+##### R7B - Parsed-Input Typed Frame Constructors
+
+Objective: build production-grade typed `DirectRunFrame`, `DirectLaneFrame`,
+and `DirectDayFrame` constructors from parsed run, soil, slope, climate,
+management, snow, frost, and PMET sidecar inputs.
+
+Required work:
+
+- Introduce or harden constructor APIs that do not accept
+  `HillslopeWritebackSurface`, `BoundarySymbol`, `BoundaryValue`,
+  `SymbolRegistry`, indexed surfaces, or WB13 rows as normal direct storage.
+- Move sidecar and parsed-input seed logic into typed constructor inputs.
+- Preserve legacy aliases only as edge metadata for diagnostics, replay, and
+  manifest provenance.
+- Add typed finite/domain/unit validation before executor entry.
+- Record layout/type-size evidence for direct frame state and major array
+  families.
+
+Acceptance gates:
+
+- Constructor roundtrip fixtures cover single-OFE, multi-OFE, snow/frost,
+  PMET, breakpoint climate, management, and sidecar absence/default cases.
+- Static scans prove direct constructor storage contains no forbidden
+  compatibility types.
+- Constructor output supplies every input currently read by the direct R4/R5
+  phase spans.
+- Default compatibility path remains identity-clean and zero-cost-disabled.
+- Focused tests, relevant integration tests, Rust gates, and scoped docs lint
+  pass.
+
+##### R7C - Production Direct Executor Path
+
+Objective: create the production direct executor path that bypasses
+compatibility climate-day execution for direct mode.
+
+Required work:
+
+- Add an explicit production direct runtime selection distinct from skeleton,
+  shadow, and publication-only cutover modes.
+- Route direct mode from parsed typed frame constructors into
+  `DirectFrameExecutor` for the full run/lane/day loop.
+- Ensure mode is selected once before execution; the hot loop must not branch
+  between compatibility and direct representations per phase.
+- Preserve compatibility mode and shadow mode as declared fallback/validation
+  modes.
+- Add run-local direct runtime counters that prove real phase execution, day
+  frame construction, day frame commit, publication production, and zero
+  compatibility-edge invocations.
+
+Acceptance gates:
+
+- Direct mode does not call `execute_hillslope_climate_days`,
+  `execute_with_kernel*`, or construct `HillslopeKernelRequest`.
+- H2637 direct mode executes all canonical R5 phases and records nonzero
+  direct phase/counter evidence.
+- Focused fixtures prove phase-span identity for the direct executor path.
+- Default compatibility mode remains unchanged until the default-activation
+  package.
+- H2637 default and opt-in direct timing/RSS are recorded.
+
+##### R7D - Direct Publication Producer Authority
+
+Objective: remove WB13-row and runtime-surface authority from direct
+publication production.
+
+Required work:
+
+- Emit `DirectRunPublicationFrame` from direct executor state and typed
+  publication operands, not from `execution.wb13_rows`.
+- Replace runtime-surface scalar reads in direct publication with typed direct
+  state, forcing, transfer, erosion, storage, ET, subsurface, calendar,
+  identity, and manifest producers.
+- Keep compatibility WB13 rows only for compatibility mode and test/shadow
+  comparison.
+- Expand independent reconstruction evidence for HBP, WAT, PASS, loss, and
+  manifest operands.
+- Add explicit anti-alias fixtures for precipitation versus liquid input,
+  `Q` versus `QOFE` versus `runvol`, lateral versus tile drainage, storage
+  aliases, calendar identity, sidecar metadata, and erosion operands.
+
+Acceptance gates:
+
+- Static scans prove production direct publication does not read
+  `execution.wb13_rows`, compatibility runtime surfaces, compatibility HBP/WAT/
+  PASS/loss builders, or stale logical state as direct authority.
+- HBP/WAT/PASS/loss/manifest parity passes for current fixtures and H2637.
+- Nonzero peak-runoff/event-duration and erosion-active fixtures are covered
+  before claiming erosion publication authority.
+- WAT/PASS Arrow schema, values, and metadata are parity-clean.
+- Manifest provenance reports direct-source publication rows and run-local
+  direct counters.
+
+##### R7E - Default Activation Candidate
+
+Objective: make production direct mode the default candidate behind an explicit
+activation gate and rollback policy.
+
+Required work:
+
+- Add a default-selection policy that can choose direct mode, compatibility
+  mode, or shadow mode before the hot loop.
+- Preserve an explicit compatibility fallback through API, CLI, run manifest,
+  and operational docs until release cutover.
+- Add manifest fields that identify runtime selection, fallback reason, direct
+  counter evidence, and output policy.
+- Run same-binary default compatibility, direct candidate, and rollback
+  comparison on H2637.
+
+Acceptance gates:
+
+- Direct default candidate is byte/Arrow/metadata identity-clean against the
+  protected compatibility baseline.
+- Direct default candidate is faster than compatibility mode and does not
+  regress RSS without recorded disposition.
+- Rollback mode writes compatibility-provenanced outputs and remains
+  identity-clean.
+- CLI/API tests prove default, explicit direct, explicit compatibility, and
+  shadow selections.
+- No package may switch default behavior if direct mode is slower or if output
+  identity is unresolved.
+
+##### R7F - Compatibility Runtime Isolation And Deletion
+
+Objective: remove or isolate the logical/indexed/dense hot-loop runtime from
+production direct mode.
+
+Required work:
+
+- Move compatibility `HillslopeDayFrame`, `HillslopeWritebackSurface`,
+  symbol-registry, indexed-surface, dense-refresh, dirty-flush, and
+  `KernelWritebackPayload` plumbing behind compatibility/shadow modules.
+- Rename compatibility transition types so they cannot be mistaken for direct
+  runtime frames.
+- Delete unused compatibility hot-loop entrypoints after direct default and
+  rollback coverage are proven.
+- Keep replay, diagnostics, and shadow comparison adapters edge-only.
+- Add compile-time or source-scan guards that fail if direct production code
+  imports forbidden compatibility types.
+
+Acceptance gates:
+
+- Production direct-mode call graph excludes compatibility scheduler and kernel
+  request/writeback paths.
+- Compatibility code remains reachable only through explicit compatibility,
+  replay, diagnostic, or shadow modes.
+- Static anti-regression scans cover runner, orchestrator, direct runtime, and
+  publication modules.
+- H2637 direct default remains identity-clean after isolation/deletion.
+- Rust gates, cargo-deny, docs lint, and line-count governance pass.
+
+##### R7G - Performance Closure And Fixture Hardening
+
+Objective: close the array-native runtime against the architecture viability
+target and broaden validation beyond the current protected fixture.
+
+Required work:
+
+- Benchmark same-binary H2637 compatibility, direct default, direct explicit,
+  and rollback runs with seconds, us/OFE-day, legacy multiplier, and RSS.
+- Profile direct mode if it misses the `<=10x` gate; record hot functions,
+  allocation sources, string formatting, map/registry calls, and layout costs.
+- Remediate measured blockers iteratively until the `<=10x` gate passes or a
+  named architecture blocker is proven.
+- Add or refresh fixtures for snow/frost active days, breakpoint climate,
+  PMET branches, irrigation when enabled, multi-OFE transfer ratios, nonzero
+  erosion, sidecar absence/presence, and management transitions.
+- Record confidence-tiered legacy comparator delta review and contract-derived
+  closure/conservation evidence for touched outputs and process families.
+
+Acceptance gates:
+
+- H2637 direct default reaches `<=10x` legacy or records a named architecture
+  hold with profile evidence and a next package.
+- Protected public outputs remain byte/Arrow/metadata identity-clean.
+- Independent operand reconstruction passes for conservation-sensitive output
+  families.
+- No compatibility authority appears in direct-mode hot-loop profiles or
+  source scans.
+- Fixture matrix is documented with pass/fail and residual risk.
+
+##### R7H - Release Cutover Readiness
+
+Objective: prepare the direct runtime for release as the normal hillslope
+execution path.
+
+Required work:
+
+- Freeze the direct-mode runtime contract and rollback window.
+- Update operator-facing CLI/API docs and manifest expectations.
+- Add release anti-evasion checks for direct-mode no-compatibility imports,
+  runtime counters, output provenance, and fallback behavior.
+- Confirm all R7A-R7G package evidence is linked from the work-package catalog.
+
+Acceptance gates:
+
+- Release checklist passes with direct mode as the declared normal path.
+- Compatibility mode is documented as fallback/replay/shadow, not normal
+  execution.
+- Required anti-evasion guards run and pass.
+- Workspace Rust gates, `cargo deny check`, protected-output comparison,
+  benchmark evidence, and scoped docs lint pass.
 
 ### 8.3 Package Rules
 
