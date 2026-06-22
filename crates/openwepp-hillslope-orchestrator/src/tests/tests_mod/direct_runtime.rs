@@ -632,80 +632,34 @@ fn r2a_direct_skeleton_fails_closed_on_invalid_identity() {
 
 #[test]
 fn r2a_direct_runtime_source_excludes_compatibility_storage_tokens() {
-    let direct_sources = [
-        (
-            "direct_runtime.rs",
-            std::fs::read_to_string(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/src/direct_runtime.rs"
-            ))
-            .expect("direct runtime source should be readable"),
-        ),
-        (
-            "direct_runtime/decomposition.rs",
-            std::fs::read_to_string(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/src/direct_runtime/decomposition.rs"
-            ))
-            .expect("direct runtime decomposition source should be readable"),
-        ),
-        (
-            "direct_runtime/storage.rs",
-            std::fs::read_to_string(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/src/direct_runtime/storage.rs"
-            ))
-            .expect("direct runtime storage source should be readable"),
-        ),
-        (
-            "direct_runtime/runoff.rs",
-            std::fs::read_to_string(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/src/direct_runtime/runoff.rs"
-            ))
-            .expect("direct runtime runoff source should be readable"),
-        ),
-        (
-            "direct_runtime/subsurface.rs",
-            std::fs::read_to_string(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/src/direct_runtime/subsurface.rs"
-            ))
-            .expect("direct runtime subsurface source should be readable"),
-        ),
-        (
-            "direct_runtime/evapotranspiration.rs",
-            std::fs::read_to_string(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/src/direct_runtime/evapotranspiration.rs"
-            ))
-            .expect("direct runtime evapotranspiration source should be readable"),
-        ),
-        (
-            "direct_runtime/normalization.rs",
-            std::fs::read_to_string(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/src/direct_runtime/normalization.rs"
-            ))
-            .expect("direct runtime normalization source should be readable"),
-        ),
-        (
-            "direct_runtime/growth.rs",
-            std::fs::read_to_string(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/src/direct_runtime/growth.rs"
-            ))
-            .expect("direct runtime growth source should be readable"),
-        ),
-        (
-            "direct_runtime/projection.rs",
-            std::fs::read_to_string(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/src/direct_runtime/projection.rs"
-            ))
-            .expect("direct runtime projection source should be readable"),
-        ),
+    let direct_source_paths = [
+        "direct_runtime.rs",
+        "direct_runtime/00_core_frames.rs",
+        "direct_runtime/01_publication.rs",
+        "direct_runtime/02_state_reports.rs",
+        "direct_runtime/03_executor.rs",
+        "direct_runtime/04_audit_error_helpers.rs",
+        "direct_runtime/decomposition.rs",
+        "direct_runtime/storage.rs",
+        "direct_runtime/runoff.rs",
+        "direct_runtime/subsurface.rs",
+        "direct_runtime/evapotranspiration.rs",
+        "direct_runtime/normalization.rs",
+        "direct_runtime/growth.rs",
+        "direct_runtime/projection.rs",
     ];
+    let direct_sources = direct_source_paths
+        .iter()
+        .map(|source_path| {
+            let path = format!("{}/src/{source_path}", env!("CARGO_MANIFEST_DIR"));
+            (
+                *source_path,
+                std::fs::read_to_string(&path).unwrap_or_else(|err| {
+                    panic!("direct runtime source {path} should be readable: {err}")
+                }),
+            )
+        })
+        .collect::<Vec<_>>();
 
     for forbidden in [
         "SymbolRegistry",

@@ -11,8 +11,28 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-06-21`:
+State as of `2026-06-22`:
 
+- `20260622-direct-runtime-section-split-001/` is complete with final
+  disposition `COMPLETE-DIRECT-RUNTIME-SECTION-SPLIT`. It mechanically split
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs` into ordered
+  included section files under `src/direct_runtime/`, reducing the root module
+  from `2922` lines to `210` lines. The new sections are `1001`, `454`, `433`,
+  `391`, and `434` lines; all production direct-runtime `.rs` files are below
+  `2000` lines. The crate-level direct-runtime export remains unchanged, the
+  direct-runtime source-scan test now reads the included files, and Rust
+  closure gates, `cargo deny check`, `git diff --check`, and scoped Markdown
+  lint passed.
+- `20260622-runner-intake-lane-setup-mechanical-split-001/` is complete with
+  final disposition
+  `COMPLETE-RUNNER-INTAKE-LANE-SETUP-MECHANICAL-SPLIT`. It mechanically split
+  the execution/output/manifest and public runner-entrypoint tail out of
+  `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`
+  into `05_runner_execution_and_outputs.rs`, leaving the original setup file at
+  `1741` lines and the new execution/output section at `1255` lines. Public
+  runner exports remain unchanged; static MOFE source-scan tests now inspect
+  both included runner files; Rust closure gates, `cargo deny check`,
+  `git diff --check`, and scoped Markdown lint passed.
 - `20260621-r6j-direct-publication-cutover-blocker-closure-001/` is complete
   with final disposition `COMPLETE-R6-DIRECT-PUBLICATION-CUTOVER`. It closed
   the inherited manifest writer blocker, run-local direct counter provenance,

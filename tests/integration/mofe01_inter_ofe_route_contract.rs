@@ -95,10 +95,17 @@ fn mofe01_mg_erosion_qin_boundary_contract_authority_is_present() {
         "SC-SYSTEM-001 must carry M-G manifest-boundary authority"
     );
 
-    let runner = fs::read_to_string(format!(
-        "{repo_root}/crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs"
-    ))
-    .expect("runner manifest source should be readable");
+    let runner = [
+        "crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs",
+        "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs",
+    ]
+    .iter()
+    .map(|path| {
+        fs::read_to_string(format!("{repo_root}/{path}"))
+            .unwrap_or_else(|err| panic!("runner manifest source {path} should be readable: {err}"))
+    })
+    .collect::<Vec<_>>()
+    .join("\n");
     assert!(
         runner.contains("EROD14_QIN_POLICY_WATER_TRANSFER_ONLY")
             && runner.contains("MOFE01-MG-W-001")

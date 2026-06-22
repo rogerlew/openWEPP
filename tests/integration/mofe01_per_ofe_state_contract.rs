@@ -6,6 +6,14 @@ fn read_repo_file(repo_root: &str, path: &str) -> String {
     })
 }
 
+fn read_repo_files(repo_root: &str, paths: &[&str]) -> String {
+    paths
+        .iter()
+        .map(|path| read_repo_file(repo_root, path))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 #[allow(clippy::too_many_lines)]
 fn rust_code_without_comments_or_string_literals(source: &str) -> String {
     let bytes = source.as_bytes();
@@ -145,6 +153,7 @@ fn runtime_source_tokens(repo_root: &str) -> Vec<String> {
         "crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs",
         "crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_publication.rs",
         "crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs",
+        "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs",
         "crates/openwepp-hillslope-output/src/manifest.rs",
         "crates/openwepp-hillslope-output/src/hillslope_wat.rs",
         "crates/openwepp-hillslope-output/src/writers.rs",
@@ -390,9 +399,12 @@ fn mofe01_mi_current_architecture_requires_independent_hillslope_total_identity(
 #[test]
 fn mofe01_mi_multiofe_runner_lifecycle_is_mutually_exclusive_with_single_ofe_aggregate_path() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
-    let runner_source = rust_code_without_comments_or_string_literals(&read_repo_file(
+    let runner_source = rust_code_without_comments_or_string_literals(&read_repo_files(
         repo_root,
-        "crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs",
+        &[
+            "crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs",
+            "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs",
+        ],
     ));
     let persistent_call = runner_source
         .find("execute_persistent_scheduler_kernel_lifecycle")

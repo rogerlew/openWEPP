@@ -1,0 +1,1001 @@
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum DirectExecutorMode {
+    #[default]
+    Noop,
+    ShadowOnly,
+}
+
+impl DirectExecutorMode {
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Noop => "noop",
+            Self::ShadowOnly => "shadow-only",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DirectPhaseKind {
+    Normalization,
+    StorageBounds,
+    DecompositionTransition,
+    ResiduePartitionTransition,
+    AnnualGrowthTransition,
+    PerennialGrowthTransition,
+    PercolationDeepSeepage,
+    Evapotranspiration,
+    Drainage,
+    LateralTransfer,
+    PlantRootUptake,
+    RunoffReconciliation,
+    StorageReconciliation,
+    ClosureDiagnostics,
+}
+
+impl DirectPhaseKind {
+    pub const ORDERED: [Self; DIRECT_PHASE_COUNT] = [
+        Self::Normalization,
+        Self::StorageBounds,
+        Self::DecompositionTransition,
+        Self::ResiduePartitionTransition,
+        Self::AnnualGrowthTransition,
+        Self::PerennialGrowthTransition,
+        Self::PercolationDeepSeepage,
+        Self::Evapotranspiration,
+        Self::Drainage,
+        Self::LateralTransfer,
+        Self::PlantRootUptake,
+        Self::RunoffReconciliation,
+        Self::StorageReconciliation,
+        Self::ClosureDiagnostics,
+    ];
+
+    #[must_use]
+    pub const fn rank(self) -> usize {
+        match self {
+            Self::Normalization => 0,
+            Self::StorageBounds => 1,
+            Self::DecompositionTransition => 2,
+            Self::ResiduePartitionTransition => 3,
+            Self::AnnualGrowthTransition => 4,
+            Self::PerennialGrowthTransition => 5,
+            Self::PercolationDeepSeepage => 6,
+            Self::Evapotranspiration => 7,
+            Self::Drainage => 8,
+            Self::LateralTransfer => 9,
+            Self::PlantRootUptake => 10,
+            Self::RunoffReconciliation => 11,
+            Self::StorageReconciliation => 12,
+            Self::ClosureDiagnostics => 13,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DirectPhaseLifecycleStatus {
+    Executed,
+    Hold,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DirectPhaseStatusCount {
+    pub phase: DirectPhaseKind,
+    pub status: DirectPhaseLifecycleStatus,
+    pub count: u64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DirectRunIdentity {
+    pub run_id: u64,
+    pub hillslope_id: u32,
+    pub lane_count: usize,
+    pub day_count: usize,
+}
+
+impl DirectRunIdentity {
+    pub fn new(
+        run_id: u64,
+        hillslope_id: u32,
+        lane_count: usize,
+        day_count: usize,
+    ) -> Result<Self, DirectRuntimeError> {
+        if lane_count == 0 {
+            return Err(DirectRuntimeError::InvalidLaneCount { lane_count });
+        }
+        if day_count == 0 {
+            return Err(DirectRuntimeError::InvalidDayCount { day_count });
+        }
+
+        Ok(Self {
+            run_id,
+            hillslope_id,
+            lane_count,
+            day_count,
+        })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectRunFrame {
+    pub identity: DirectRunIdentity,
+    pub lanes: Vec<DirectLaneFrame>,
+    pub phase_plan: DirectPhasePlan,
+    pub publication: DirectPublicationFrame,
+    pub lane_transfer_ledger: Vec<DirectLaneTransferLedger>,
+    pub lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands,
+    pub lane_transfer_shadow_projection: Option<DirectRunTransferShadowProjection>,
+}
+
+impl DirectRunFrame {
+    pub fn skeleton(identity: DirectRunIdentity) -> Result<Self, DirectRuntimeError> {
+        DIRECT_AUDIT.record_run_frame_construction();
+        let lanes = (0..identity.lane_count)
+            .map(|lane_index| DirectLaneFrame::skeleton(lane_index, identity.lane_count))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(Self {
+            identity,
+            lanes,
+            phase_plan: DirectPhasePlan::default(),
+            publication: DirectPublicationFrame::empty(),
+            lane_transfer_ledger: vec![DirectLaneTransferLedger::zero(); identity.lane_count],
+            lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
+            lane_transfer_shadow_projection: None,
+        })
+    }
+
+    fn seed_day_frame(
+        &self,
+        lane_index: usize,
+        day_index: usize,
+    ) -> Result<DirectDayFrame, DirectRuntimeError> {
+        if self.lanes.len() != self.identity.lane_count {
+            return Err(DirectRuntimeError::FrameLaneCountMismatch {
+                identity_lane_count: self.identity.lane_count,
+                actual_lane_count: self.lanes.len(),
+            });
+        }
+        let lane = self
+            .lanes
+            .get(lane_index)
+            .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
+                lane_index,
+                lane_count: self.lanes.len(),
+            })?;
+        let mut day_frame = DirectDayFrame::seed(self.identity, lane_index, day_index)?;
+        day_frame.water = lane.water.clone();
+        day_frame.transfer = lane.transfer.clone();
+        day_frame.publication = lane.publication.clone();
+        if !lane.subsurface_layers.is_empty() {
+            day_frame.percolation_inputs.soil_water_initial_m = lane.water.soil_water_m;
+            day_frame
+                .percolation_inputs
+                .layers
+                .clone_from(&lane.subsurface_layers);
+            day_frame.subsurface_compute_inputs.layers = lane
+                .subsurface_layers
+                .iter()
+                .cloned()
+                .map(Into::into)
+                .collect();
+        }
+        day_frame.evapotranspiration_compute_inputs.stage_state =
+            lane.evapotranspiration_stage_state;
+        Ok(day_frame)
+    }
+
+    fn commit_day_frame(&mut self, day_frame: &DirectDayFrame) -> Result<(), DirectRuntimeError> {
+        if day_frame.identity != self.identity {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "day_frame.identity",
+            });
+        }
+        if day_frame.day_index >= self.identity.day_count {
+            return Err(DirectRuntimeError::DayIndexOutOfRange {
+                day_index: day_frame.day_index,
+                day_count: self.identity.day_count,
+            });
+        }
+        let lane = self.lanes.get_mut(day_frame.lane_index).ok_or(
+            DirectRuntimeError::LaneIndexOutOfRange {
+                lane_index: day_frame.lane_index,
+                lane_count: self.identity.lane_count,
+            },
+        )?;
+        lane.commit_day(day_frame)?;
+        DIRECT_AUDIT.record_day_frame_commit();
+        Ok(())
+    }
+
+    pub fn run_r3c_lane_transfer_span(
+        &mut self,
+    ) -> Result<DirectRunTransferSpanReport, DirectRuntimeError> {
+        DIRECT_AUDIT.record_phase_span_run();
+        let phase_count = DIRECT_R3C_PHASE_SPAN_COUNT;
+        let mut phase_entry_count = 0_u64;
+        let mut direct_compute_count = 0_u64;
+        let mut state_mutation_count = 0_u64;
+        let mut downstream_operand_count = 0_u64;
+        let mut shadow_projection_count = 0_u64;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        let (ledger, transfer_shadow_projection) = self.compute_r3c_lane_transfer_ledger()?;
+        DIRECT_AUDIT.record_direct_compute_operation();
+        direct_compute_count += 1;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.lane_transfer_ledger = ledger;
+        DIRECT_AUDIT.record_direct_state_mutation();
+        state_mutation_count += 1;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.lane_transfer_downstream_operands =
+            DirectRunTransferDownstreamOperands::from(transfer_shadow_projection);
+        DIRECT_AUDIT.record_downstream_operand_production();
+        downstream_operand_count += 1;
+
+        self.lane_transfer_shadow_projection = Some(transfer_shadow_projection);
+        DIRECT_AUDIT.record_shadow_projection();
+        shadow_projection_count += 1;
+
+        Ok(DirectRunTransferSpanReport {
+            phase_count,
+            phase_entry_count,
+            direct_compute_count,
+            state_mutation_count,
+            downstream_operand_count,
+            shadow_projection_count,
+            compatibility_edge_invocation_count: 0,
+            transfer_shadow_projection,
+        })
+    }
+
+    fn compute_r3c_lane_transfer_ledger(
+        &self,
+    ) -> Result<
+        (
+            Vec<DirectLaneTransferLedger>,
+            DirectRunTransferShadowProjection,
+        ),
+        DirectRuntimeError,
+    > {
+        let outlet_lane_id = self.validate_r3c_lane_transfer_domain()?;
+        let outgoing = self
+            .lanes
+            .iter()
+            .map(|lane| {
+                Ok((
+                    sum_nonnegative_direct_m(
+                        "transfer.surface_carry_m",
+                        &lane.transfer.surface_carry_m,
+                    )?,
+                    sum_nonnegative_direct_m(
+                        "transfer.lateral_carry_m",
+                        &lane.transfer.lateral_carry_m,
+                    )?,
+                ))
+            })
+            .collect::<Result<Vec<_>, DirectRuntimeError>>()?;
+
+        let mut ledger = Vec::with_capacity(self.lanes.len());
+        for (lane_index, lane) in self.lanes.iter().enumerate() {
+            let (outgoing_surface_m, outgoing_lateral_m) = outgoing[lane_index];
+            let (received_surface_m, received_lateral_m) = if lane.upstream_lane_id == 0 {
+                (0.0, 0.0)
+            } else {
+                let upstream_index = (lane.upstream_lane_id - 1) as usize;
+                let received_surface_m = outgoing[upstream_index].0 * lane.upstream_area_ratio;
+                validate_finite("lane_transfer.received_surface_m", received_surface_m)?;
+                let received_lateral_m = outgoing[upstream_index].1 * lane.upstream_area_ratio;
+                validate_finite("lane_transfer.received_lateral_m", received_lateral_m)?;
+                (received_surface_m, received_lateral_m)
+            };
+            let net_transfer_m =
+                received_surface_m + received_lateral_m - outgoing_surface_m - outgoing_lateral_m;
+            validate_finite("lane_transfer.net_transfer_m", net_transfer_m)?;
+
+            ledger.push(DirectLaneTransferLedger {
+                lane_id: lane.lane_id,
+                upstream_lane_id: lane.upstream_lane_id,
+                downstream_lane_id: lane.downstream_lane_id,
+                upstream_area_ratio: lane.upstream_area_ratio,
+                area_m2: lane.area_m2,
+                outgoing_surface_m,
+                outgoing_lateral_m,
+                received_surface_m,
+                received_lateral_m,
+                net_transfer_m,
+            });
+        }
+
+        let transfer_shadow_projection =
+            DirectRunTransferShadowProjection::from_ledger(&ledger, outlet_lane_id)?;
+        Ok((ledger, transfer_shadow_projection))
+    }
+
+    fn validate_r3c_lane_transfer_domain(&self) -> Result<u32, DirectRuntimeError> {
+        if self.lanes.len() != self.identity.lane_count {
+            return Err(DirectRuntimeError::FrameLaneCountMismatch {
+                identity_lane_count: self.identity.lane_count,
+                actual_lane_count: self.lanes.len(),
+            });
+        }
+        let lane_count_u32 =
+            u32::try_from(self.lanes.len()).map_err(|_| DirectRuntimeError::LaneIdOverflow {
+                lane_index: self.lanes.len(),
+            })?;
+        let mut outlet_lane_id = 0_u32;
+        let mut outlet_count = 0_usize;
+
+        for (lane_index, lane) in self.lanes.iter().enumerate() {
+            let expected_lane_id = u32::try_from(lane_index + 1)
+                .map_err(|_| DirectRuntimeError::LaneIdOverflow { lane_index })?;
+            if lane.lane_id != expected_lane_id
+                || lane.upstream_lane_id > lane_count_u32
+                || lane.downstream_lane_id > lane_count_u32
+            {
+                return Err(DirectRuntimeError::InvalidLaneTopology {
+                    lane_index,
+                    lane_id: lane.lane_id,
+                    upstream_lane_id: lane.upstream_lane_id,
+                    downstream_lane_id: lane.downstream_lane_id,
+                });
+            }
+            validate_nonnegative_direct_m("lane.upstream_area_ratio", lane.upstream_area_ratio)?;
+            validate_nonnegative_direct_m("lane.area_m2", lane.area_m2)?;
+            if lane.downstream_lane_id == 0 {
+                outlet_count += 1;
+                outlet_lane_id = lane.lane_id;
+            }
+            if lane.upstream_lane_id != 0 {
+                let upstream_index = (lane.upstream_lane_id - 1) as usize;
+                if self.lanes[upstream_index].downstream_lane_id != lane.lane_id {
+                    return Err(DirectRuntimeError::InvalidLaneTopology {
+                        lane_index,
+                        lane_id: lane.lane_id,
+                        upstream_lane_id: lane.upstream_lane_id,
+                        downstream_lane_id: lane.downstream_lane_id,
+                    });
+                }
+            }
+            if lane.downstream_lane_id != 0 {
+                let downstream_index = (lane.downstream_lane_id - 1) as usize;
+                if self.lanes[downstream_index].upstream_lane_id != lane.lane_id {
+                    return Err(DirectRuntimeError::InvalidLaneTopology {
+                        lane_index,
+                        lane_id: lane.lane_id,
+                        upstream_lane_id: lane.upstream_lane_id,
+                        downstream_lane_id: lane.downstream_lane_id,
+                    });
+                }
+            }
+        }
+
+        if outlet_count == 1 {
+            Ok(outlet_lane_id)
+        } else {
+            Err(DirectRuntimeError::InvalidLaneOutletCount { outlet_count })
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectLaneFrame {
+    pub lane_id: u32,
+    pub upstream_lane_id: u32,
+    pub downstream_lane_id: u32,
+    pub upstream_area_ratio: f64,
+    pub area_m2: f64,
+    pub water: DirectWaterState,
+    pub transfer: DirectTransferBuffers,
+    pub publication: DirectPublicationFrame,
+    pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
+    pub evapotranspiration_stage_state: Option<DirectEvapotranspirationStageState>,
+}
+
+impl DirectLaneFrame {
+    fn skeleton(lane_index: usize, lane_count: usize) -> Result<Self, DirectRuntimeError> {
+        let lane_id = u32::try_from(lane_index + 1)
+            .map_err(|_| DirectRuntimeError::LaneIdOverflow { lane_index })?;
+        let upstream_lane_id = lane_id.saturating_sub(1);
+        let downstream_lane_id = if lane_index + 1 == lane_count {
+            0
+        } else {
+            lane_id + 1
+        };
+
+        Ok(Self {
+            lane_id,
+            upstream_lane_id,
+            downstream_lane_id,
+            upstream_area_ratio: 1.0,
+            area_m2: 0.0,
+            water: DirectWaterState::zero(),
+            transfer: DirectTransferBuffers::zero(),
+            publication: DirectPublicationFrame::empty(),
+            subsurface_layers: Vec::new(),
+            evapotranspiration_stage_state: None,
+        })
+    }
+
+    fn commit_day(&mut self, day_frame: &DirectDayFrame) -> Result<(), DirectRuntimeError> {
+        let expected_lane_index =
+            usize::try_from(self.lane_id.saturating_sub(1)).map_err(|_| {
+                DirectRuntimeError::LaneIdOverflow {
+                    lane_index: day_frame.lane_index,
+                }
+            })?;
+        if day_frame.lane_index != expected_lane_index {
+            return Err(DirectRuntimeError::InvalidLaneTopology {
+                lane_index: day_frame.lane_index,
+                lane_id: self.lane_id,
+                upstream_lane_id: self.upstream_lane_id,
+                downstream_lane_id: self.downstream_lane_id,
+            });
+        }
+        self.water = day_frame.water.clone();
+        self.transfer = day_frame.transfer.clone();
+        self.publication = day_frame.publication.clone();
+        if !day_frame
+            .evapotranspiration_compute
+            .layer_state_after_root_uptake
+            .is_empty()
+        {
+            self.subsurface_layers.clone_from(
+                &day_frame
+                    .evapotranspiration_compute
+                    .layer_state_after_root_uptake,
+            );
+            apply_direct_frost_carry_projection(
+                &mut self.subsurface_layers,
+                day_frame.frost_layer_carry_projection.as_deref(),
+            )?;
+        } else if !day_frame.subsurface_compute.layer_state_after.is_empty() {
+            self.subsurface_layers
+                .clone_from(&day_frame.subsurface_compute.layer_state_after);
+            apply_direct_frost_carry_projection(
+                &mut self.subsurface_layers,
+                day_frame.frost_layer_carry_projection.as_deref(),
+            )?;
+        } else if !day_frame.percolation.layer_state_after.is_empty() {
+            self.subsurface_layers
+                .clone_from(&day_frame.percolation.layer_state_after);
+            apply_direct_frost_carry_projection(
+                &mut self.subsurface_layers,
+                day_frame.frost_layer_carry_projection.as_deref(),
+            )?;
+        }
+        self.evapotranspiration_stage_state =
+            day_frame.evapotranspiration_surface.stage_state_after;
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectDayFrame {
+    pub identity: DirectRunIdentity,
+    pub lane_index: usize,
+    pub day_index: usize,
+    pub forcing: DirectDayForcing,
+    pub water: DirectWaterState,
+    pub transfer: DirectTransferBuffers,
+    pub publication: DirectPublicationFrame,
+    pub normalization_inputs: DirectNormalizationInputs,
+    pub normalization: DirectNormalizationState,
+    pub normalization_downstream_operands: DirectNormalizationDownstreamOperands,
+    pub normalization_shadow_projection: Option<DirectNormalizationShadowProjection>,
+    pub storage_bounds_inputs: DirectStorageBoundsInputs,
+    pub storage_bounds: DirectStorageBoundsState,
+    pub storage_bounds_downstream_operands: DirectStorageBoundsDownstreamOperands,
+    pub storage_bounds_shadow_projection: Option<DirectStorageBoundsShadowProjection>,
+    pub decomposition_inputs: DirectDecompositionInputs,
+    pub decomposition: DirectDecompositionState,
+    pub decomposition_downstream_operands: DirectDecompositionDownstreamOperands,
+    pub decomposition_shadow_projection: Option<DirectDecompositionShadowProjection>,
+    pub residue_partition_inputs: DirectResiduePartitionInputs,
+    pub residue_partition: DirectResiduePartitionState,
+    pub residue_partition_downstream_operands: DirectResiduePartitionDownstreamOperands,
+    pub residue_partition_shadow_projection: Option<DirectResiduePartitionShadowProjection>,
+    pub annual_growth_inputs: DirectGrowthInputs,
+    pub annual_growth: DirectGrowthState,
+    pub annual_growth_downstream_operands: DirectGrowthDownstreamOperands,
+    pub annual_growth_shadow_projection: Option<DirectGrowthShadowProjection>,
+    pub perennial_growth_inputs: DirectGrowthInputs,
+    pub perennial_growth: DirectGrowthState,
+    pub perennial_growth_downstream_operands: DirectGrowthDownstreamOperands,
+    pub perennial_growth_shadow_projection: Option<DirectGrowthShadowProjection>,
+    pub input_accounting: DirectInputAccountingState,
+    pub downstream_operands: DirectDownstreamOperands,
+    pub shadow_projection: Option<DirectShadowProjection>,
+    pub liquid_input_inputs: DirectLiquidInputInputs,
+    pub liquid_input: DirectLiquidInputState,
+    pub liquid_input_downstream_operands: DirectLiquidInputDownstreamOperands,
+    pub liquid_input_shadow_projection: Option<DirectLiquidInputShadowProjection>,
+    pub runon_carry_inputs: DirectRunonCarryInputs,
+    pub runon_carry: DirectRunonCarryState,
+    pub runon_carry_downstream_operands: DirectRunonCarryDownstreamOperands,
+    pub runon_carry_shadow_projection: Option<DirectRunonCarryShadowProjection>,
+    pub infiltration_depression_inputs: DirectInfiltrationDepressionInputs,
+    pub infiltration_depression: DirectInfiltrationDepressionState,
+    pub infiltration_depression_downstream_operands: DirectInfiltrationDepressionDownstreamOperands,
+    pub infiltration_depression_shadow_projection:
+        Option<DirectInfiltrationDepressionShadowProjection>,
+    pub saturation_addback_inputs: DirectSaturationAddbackInputs,
+    pub saturation_addback: DirectSaturationAddbackState,
+    pub saturation_addback_downstream_operands: DirectSaturationAddbackDownstreamOperands,
+    pub saturation_addback_shadow_projection: Option<DirectSaturationAddbackShadowProjection>,
+    pub runoff_partition_inputs: DirectRunoffPartitionInputs,
+    pub runoff_partition: DirectRunoffPartitionState,
+    pub runoff_downstream_operands: DirectRunoffDownstreamOperands,
+    pub runoff_shadow_projection: Option<DirectRunoffShadowProjection>,
+    pub percolation_inputs: DirectPercolationInputs,
+    pub percolation: DirectPercolationState,
+    pub percolation_downstream_operands: DirectPercolationDownstreamOperands,
+    pub percolation_shadow_projection: Option<DirectPercolationShadowProjection>,
+    pub subsurface_compute_inputs: DirectSubsurfaceComputeInputs,
+    pub subsurface_compute: DirectSubsurfaceComputeState,
+    pub subsurface_compute_downstream_operands: DirectSubsurfaceComputeDownstreamOperands,
+    pub subsurface_compute_shadow_projection: Option<DirectSubsurfaceComputeShadowProjection>,
+    pub storage_input: DirectStorageInputState,
+    pub storage_input_downstream_operands: DirectStorageInputDownstreamOperands,
+    pub storage_input_shadow_projection: Option<DirectStorageInputShadowProjection>,
+    pub deep_seepage_inputs: DirectDeepSeepageInputs,
+    pub deep_seepage: DirectDeepSeepageState,
+    pub deep_seepage_downstream_operands: DirectDeepSeepageDownstreamOperands,
+    pub deep_seepage_shadow_projection: Option<DirectDeepSeepageShadowProjection>,
+    pub subsurface_loss_inputs: DirectSubsurfaceLossInputs,
+    pub subsurface_loss: DirectSubsurfaceLossState,
+    pub subsurface_loss_downstream_operands: DirectSubsurfaceLossDownstreamOperands,
+    pub subsurface_loss_shadow_projection: Option<DirectSubsurfaceLossShadowProjection>,
+    pub evapotranspiration_compute_inputs: DirectEvapotranspirationComputeInputs,
+    pub evapotranspiration_surface: DirectEvapotranspirationSurfaceState,
+    pub evapotranspiration_surface_downstream_operands:
+        DirectEvapotranspirationSurfaceDownstreamOperands,
+    pub evapotranspiration_surface_shadow_projection:
+        Option<DirectEvapotranspirationSurfaceShadowProjection>,
+    pub evapotranspiration_compute: DirectEvapotranspirationComputeState,
+    pub evapotranspiration_compute_downstream_operands:
+        DirectEvapotranspirationComputeDownstreamOperands,
+    pub evapotranspiration_compute_shadow_projection:
+        Option<DirectEvapotranspirationComputeShadowProjection>,
+    pub evapotranspiration_inputs: DirectEvapotranspirationInputs,
+    pub evapotranspiration: DirectEvapotranspirationState,
+    pub evapotranspiration_downstream_operands: DirectEvapotranspirationDownstreamOperands,
+    pub evapotranspiration_shadow_projection: Option<DirectEvapotranspirationShadowProjection>,
+    pub snow_coupling_inputs: DirectSnowCouplingInputs,
+    pub snow_coupling: DirectSnowCouplingState,
+    pub snow_coupling_downstream_operands: DirectSnowCouplingDownstreamOperands,
+    pub snow_coupling_shadow_projection: Option<DirectSnowCouplingShadowProjection>,
+    pub storage_reconciliation_inputs: DirectStorageReconciliationInputs,
+    pub storage_reconciliation: DirectStorageReconciliationState,
+    pub storage_downstream_operands: DirectStorageDownstreamOperands,
+    pub storage_shadow_projection: Option<DirectStorageShadowProjection>,
+    pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,
+    pub hydrology_projection: DirectHydrologyProjectionState,
+    pub hydrology_projection_downstream_operands: DirectHydrologyProjectionDownstreamOperands,
+    pub hydrology_projection_shadow_projection: Option<DirectHydrologyProjectionShadowProjection>,
+    pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
+    pub water_ledger: DirectWaterLedgerState,
+    pub ledger_downstream_operands: DirectLedgerDownstreamOperands,
+    pub ledger_shadow_projection: Option<DirectLedgerShadowProjection>,
+}
+
+impl DirectDayFrame {
+    #[allow(clippy::too_many_lines)]
+    pub fn seed(
+        identity: DirectRunIdentity,
+        lane_index: usize,
+        day_index: usize,
+    ) -> Result<Self, DirectRuntimeError> {
+        Self::validate_seed_indices(identity, lane_index, day_index)?;
+        DIRECT_AUDIT.record_day_frame_construction();
+
+        Ok(Self {
+            identity,
+            lane_index,
+            day_index,
+            forcing: DirectDayForcing::zero(),
+            water: DirectWaterState::zero(),
+            transfer: DirectTransferBuffers::zero(),
+            publication: DirectPublicationFrame::empty(),
+            normalization_inputs: DirectNormalizationInputs::zero(),
+            normalization: DirectNormalizationState::zero(),
+            normalization_downstream_operands: DirectNormalizationDownstreamOperands::zero(),
+            normalization_shadow_projection: None,
+            storage_bounds_inputs: DirectStorageBoundsInputs::zero(),
+            storage_bounds: DirectStorageBoundsState::zero(),
+            storage_bounds_downstream_operands: DirectStorageBoundsDownstreamOperands::zero(),
+            storage_bounds_shadow_projection: None,
+            decomposition_inputs: DirectDecompositionInputs::zero(),
+            decomposition: DirectDecompositionState::zero(),
+            decomposition_downstream_operands: DirectDecompositionDownstreamOperands::zero(),
+            decomposition_shadow_projection: None,
+            residue_partition_inputs: DirectResiduePartitionInputs::zero(),
+            residue_partition: DirectResiduePartitionState::zero(),
+            residue_partition_downstream_operands: DirectResiduePartitionDownstreamOperands::zero(),
+            residue_partition_shadow_projection: None,
+            annual_growth_inputs: DirectGrowthInputs::zero(),
+            annual_growth: DirectGrowthState::zero(),
+            annual_growth_downstream_operands: DirectGrowthDownstreamOperands::zero(),
+            annual_growth_shadow_projection: None,
+            perennial_growth_inputs: DirectGrowthInputs::zero(),
+            perennial_growth: DirectGrowthState::zero(),
+            perennial_growth_downstream_operands: DirectGrowthDownstreamOperands::zero(),
+            perennial_growth_shadow_projection: None,
+            input_accounting: DirectInputAccountingState::zero(),
+            downstream_operands: DirectDownstreamOperands::zero(),
+            shadow_projection: None,
+            liquid_input_inputs: DirectLiquidInputInputs::zero(),
+            liquid_input: DirectLiquidInputState::zero(),
+            liquid_input_downstream_operands: DirectLiquidInputDownstreamOperands::zero(),
+            liquid_input_shadow_projection: None,
+            runon_carry_inputs: DirectRunonCarryInputs::zero(),
+            runon_carry: DirectRunonCarryState::zero(),
+            runon_carry_downstream_operands: DirectRunonCarryDownstreamOperands::zero(),
+            runon_carry_shadow_projection: None,
+            infiltration_depression_inputs: DirectInfiltrationDepressionInputs::zero(),
+            infiltration_depression: DirectInfiltrationDepressionState::zero(),
+            infiltration_depression_downstream_operands:
+                DirectInfiltrationDepressionDownstreamOperands::zero(),
+            infiltration_depression_shadow_projection: None,
+            saturation_addback_inputs: DirectSaturationAddbackInputs::zero(),
+            saturation_addback: DirectSaturationAddbackState::zero(),
+            saturation_addback_downstream_operands: DirectSaturationAddbackDownstreamOperands::zero(
+            ),
+            saturation_addback_shadow_projection: None,
+            runoff_partition_inputs: DirectRunoffPartitionInputs::zero(),
+            runoff_partition: DirectRunoffPartitionState::zero(),
+            runoff_downstream_operands: DirectRunoffDownstreamOperands::zero(),
+            runoff_shadow_projection: None,
+            percolation_inputs: DirectPercolationInputs::neutral(),
+            percolation: DirectPercolationState::zero(),
+            percolation_downstream_operands: DirectPercolationDownstreamOperands::zero(),
+            percolation_shadow_projection: None,
+            subsurface_compute_inputs: DirectSubsurfaceComputeInputs::neutral(),
+            subsurface_compute: DirectSubsurfaceComputeState::zero(),
+            subsurface_compute_downstream_operands: DirectSubsurfaceComputeDownstreamOperands::zero(
+            ),
+            subsurface_compute_shadow_projection: None,
+            storage_input: DirectStorageInputState::zero(),
+            storage_input_downstream_operands: DirectStorageInputDownstreamOperands::zero(),
+            storage_input_shadow_projection: None,
+            deep_seepage_inputs: DirectDeepSeepageInputs::zero(),
+            deep_seepage: DirectDeepSeepageState::zero(),
+            deep_seepage_downstream_operands: DirectDeepSeepageDownstreamOperands::zero(),
+            deep_seepage_shadow_projection: None,
+            subsurface_loss_inputs: DirectSubsurfaceLossInputs::zero(),
+            subsurface_loss: DirectSubsurfaceLossState::zero(),
+            subsurface_loss_downstream_operands: DirectSubsurfaceLossDownstreamOperands::zero(),
+            subsurface_loss_shadow_projection: None,
+            evapotranspiration_compute_inputs: DirectEvapotranspirationComputeInputs::zero(),
+            evapotranspiration_surface: DirectEvapotranspirationSurfaceState::zero(),
+            evapotranspiration_surface_downstream_operands:
+                DirectEvapotranspirationSurfaceDownstreamOperands::zero(),
+            evapotranspiration_surface_shadow_projection: None,
+            evapotranspiration_compute: DirectEvapotranspirationComputeState::zero(),
+            evapotranspiration_compute_downstream_operands:
+                DirectEvapotranspirationComputeDownstreamOperands::zero(),
+            evapotranspiration_compute_shadow_projection: None,
+            evapotranspiration_inputs: DirectEvapotranspirationInputs::zero(),
+            evapotranspiration: DirectEvapotranspirationState::zero(),
+            evapotranspiration_downstream_operands:
+                DirectEvapotranspirationDownstreamOperands::zero(),
+            evapotranspiration_shadow_projection: None,
+            snow_coupling_inputs: DirectSnowCouplingInputs::zero(),
+            snow_coupling: DirectSnowCouplingState::zero(),
+            snow_coupling_downstream_operands: DirectSnowCouplingDownstreamOperands::zero(),
+            snow_coupling_shadow_projection: None,
+            storage_reconciliation_inputs: DirectStorageReconciliationInputs::zero(),
+            storage_reconciliation: DirectStorageReconciliationState::zero(),
+            storage_downstream_operands: DirectStorageDownstreamOperands::zero(),
+            storage_shadow_projection: None,
+            hydrology_projection_inputs: DirectHydrologyProjectionInputs::zero(),
+            hydrology_projection: DirectHydrologyProjectionState::zero(),
+            hydrology_projection_downstream_operands:
+                DirectHydrologyProjectionDownstreamOperands::zero(),
+            hydrology_projection_shadow_projection: None,
+            frost_layer_carry_projection: None,
+            water_ledger: DirectWaterLedgerState::zero(),
+            ledger_downstream_operands: DirectLedgerDownstreamOperands::zero(),
+            ledger_shadow_projection: None,
+        })
+    }
+
+    fn validate_seed_indices(
+        identity: DirectRunIdentity,
+        lane_index: usize,
+        day_index: usize,
+    ) -> Result<(), DirectRuntimeError> {
+        if lane_index >= identity.lane_count {
+            return Err(DirectRuntimeError::LaneIndexOutOfRange {
+                lane_index,
+                lane_count: identity.lane_count,
+            });
+        }
+        if day_index >= identity.day_count {
+            return Err(DirectRuntimeError::DayIndexOutOfRange {
+                day_index,
+                day_count: identity.day_count,
+            });
+        }
+        Ok(())
+    }
+
+    pub fn phase_view(&mut self, phase: DirectPhaseKind) -> DirectPhaseView<'_> {
+        DIRECT_AUDIT.record_phase_view_construction();
+        DirectPhaseView {
+            phase,
+            water: &mut self.water,
+            transfer: &mut self.transfer,
+            publication: &mut self.publication,
+        }
+    }
+
+    pub fn run_r3a_input_accounting_span(
+        &mut self,
+    ) -> Result<DirectPhaseSpanReport, DirectRuntimeError> {
+        DIRECT_AUDIT.record_phase_span_run();
+        let phase_count = DIRECT_R3A_PHASE_SPAN_COUNT;
+        let mut phase_entry_count = 0_u64;
+        let mut direct_compute_count = 0_u64;
+        let mut state_mutation_count = 0_u64;
+        let mut downstream_operand_count = 0_u64;
+        let mut shadow_projection_count = 0_u64;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.validate_r3a_input_accounting_domain()?;
+
+        let surface_transfer_m =
+            sum_nonnegative_direct_m("transfer.surface_carry_m", &self.transfer.surface_carry_m)?;
+        let lateral_transfer_m =
+            sum_nonnegative_direct_m("transfer.lateral_carry_m", &self.transfer.lateral_carry_m)?;
+        let transfer_input_m = surface_transfer_m
+            + lateral_transfer_m
+            + self.transfer.upstream_flow_m
+            + self.transfer.subsurface_input_m;
+        validate_finite("input_accounting.transfer_input_m", transfer_input_m)?;
+        let total_accounted_input_m = self.forcing.precipitation_m + transfer_input_m;
+        validate_finite(
+            "input_accounting.total_accounted_input_m",
+            total_accounted_input_m,
+        )?;
+        DIRECT_AUDIT.record_direct_compute_operation();
+        direct_compute_count += 1;
+
+        self.input_accounting = DirectInputAccountingState {
+            precipitation_m: self.forcing.precipitation_m,
+            surface_transfer_m,
+            lateral_transfer_m,
+            upstream_flow_m: self.transfer.upstream_flow_m,
+            subsurface_input_m: self.transfer.subsurface_input_m,
+            transfer_input_m,
+            total_accounted_input_m,
+        };
+        DIRECT_AUDIT.record_direct_state_mutation();
+        state_mutation_count += 1;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.downstream_operands = DirectDownstreamOperands::from(self.input_accounting);
+        DIRECT_AUDIT.record_downstream_operand_production();
+        downstream_operand_count += 1;
+
+        let shadow_projection = DirectShadowProjection {
+            lane_index: self.lane_index,
+            day_index: self.day_index,
+            precipitation_m: self.downstream_operands.precipitation_m,
+            transfer_input_m: self.downstream_operands.transfer_input_m,
+            total_accounted_input_m: self.downstream_operands.total_accounted_input_m,
+        };
+        self.shadow_projection = Some(shadow_projection);
+        DIRECT_AUDIT.record_shadow_projection();
+        shadow_projection_count += 1;
+
+        Ok(DirectPhaseSpanReport {
+            phase_count,
+            phase_entry_count,
+            direct_compute_count,
+            state_mutation_count,
+            downstream_operand_count,
+            shadow_projection_count,
+            compatibility_edge_invocation_count: 0,
+            shadow_projection,
+        })
+    }
+
+    pub fn run_r3b_water_ledger_span(
+        &mut self,
+    ) -> Result<DirectLedgerSpanReport, DirectRuntimeError> {
+        DIRECT_AUDIT.record_phase_span_run();
+        let phase_count = DIRECT_R3B_PHASE_SPAN_COUNT;
+        let mut phase_entry_count = 0_u64;
+        let mut direct_compute_count = 0_u64;
+        let mut state_mutation_count = 0_u64;
+        let mut downstream_operand_count = 0_u64;
+        let mut shadow_projection_count = 0_u64;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.validate_r3b_water_ledger_domain()?;
+
+        let direct_flux_m = sum_finite_direct_m(
+            "water_ledger.direct_flux_m",
+            &[
+                self.water.infiltration_m,
+                self.water.runoff_m,
+                self.water.evapotranspiration_m,
+                self.water.drainage_m,
+                self.water.lateral_flow_m,
+            ],
+        )?;
+        let publication_flux_m = sum_finite_direct_m(
+            "water_ledger.publication_flux_m",
+            &[
+                self.publication.infiltration_m,
+                self.publication.runoff_m,
+                self.publication.evapotranspiration_m,
+                self.publication.drainage_m,
+                self.publication.lateral_flow_m,
+            ],
+        )?;
+        let available_water_m =
+            self.input_accounting.total_accounted_input_m + self.water.soil_water_m;
+        validate_finite("water_ledger.available_water_m", available_water_m)?;
+        let direct_publication_delta_m = direct_flux_m - publication_flux_m;
+        validate_finite(
+            "water_ledger.direct_publication_delta_m",
+            direct_publication_delta_m,
+        )?;
+        let diagnostic_residual_m = available_water_m - direct_flux_m;
+        validate_finite("water_ledger.diagnostic_residual_m", diagnostic_residual_m)?;
+        DIRECT_AUDIT.record_direct_compute_operation();
+        direct_compute_count += 1;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.water_ledger = DirectWaterLedgerState {
+            total_accounted_input_m: self.input_accounting.total_accounted_input_m,
+            soil_water_m: self.water.soil_water_m,
+            available_water_m,
+            direct_flux_m,
+            publication_flux_m,
+            direct_publication_delta_m,
+            diagnostic_residual_m,
+        };
+        DIRECT_AUDIT.record_direct_state_mutation();
+        state_mutation_count += 1;
+
+        DIRECT_AUDIT.record_direct_phase_entry();
+        phase_entry_count += 1;
+        self.ledger_downstream_operands = DirectLedgerDownstreamOperands::from(self.water_ledger);
+        DIRECT_AUDIT.record_downstream_operand_production();
+        downstream_operand_count += 1;
+
+        let ledger_shadow_projection = DirectLedgerShadowProjection {
+            lane_index: self.lane_index,
+            day_index: self.day_index,
+            available_water_m: self.ledger_downstream_operands.available_water_m,
+            direct_flux_m: self.ledger_downstream_operands.direct_flux_m,
+            publication_flux_m: self.ledger_downstream_operands.publication_flux_m,
+            direct_publication_delta_m: self.ledger_downstream_operands.direct_publication_delta_m,
+            diagnostic_residual_m: self.ledger_downstream_operands.diagnostic_residual_m,
+        };
+        self.ledger_shadow_projection = Some(ledger_shadow_projection);
+        DIRECT_AUDIT.record_shadow_projection();
+        shadow_projection_count += 1;
+
+        Ok(DirectLedgerSpanReport {
+            phase_count,
+            phase_entry_count,
+            direct_compute_count,
+            state_mutation_count,
+            downstream_operand_count,
+            shadow_projection_count,
+            compatibility_edge_invocation_count: 0,
+            ledger_shadow_projection,
+        })
+    }
+
+    fn validate_r3a_input_accounting_domain(&self) -> Result<(), DirectRuntimeError> {
+        validate_nonnegative_direct_m("forcing.precipitation_m", self.forcing.precipitation_m)?;
+        validate_finite(
+            "forcing.effective_temperature_c",
+            self.forcing.effective_temperature_c,
+        )?;
+        validate_nonnegative_direct_m("water.soil_water_m", self.water.soil_water_m)?;
+        validate_nonnegative_direct_m("water.infiltration_m", self.water.infiltration_m)?;
+        validate_nonnegative_direct_m("water.runoff_m", self.water.runoff_m)?;
+        validate_nonnegative_direct_m(
+            "water.evapotranspiration_m",
+            self.water.evapotranspiration_m,
+        )?;
+        validate_nonnegative_direct_m("water.drainage_m", self.water.drainage_m)?;
+        validate_nonnegative_direct_m("water.lateral_flow_m", self.water.lateral_flow_m)?;
+        validate_nonnegative_direct_m("transfer.upstream_flow_m", self.transfer.upstream_flow_m)?;
+        validate_nonnegative_direct_m(
+            "transfer.subsurface_input_m",
+            self.transfer.subsurface_input_m,
+        )?;
+        validate_nonnegative_direct_m("publication.runoff_m", self.publication.runoff_m)?;
+        validate_nonnegative_direct_m(
+            "publication.infiltration_m",
+            self.publication.infiltration_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "publication.evapotranspiration_m",
+            self.publication.evapotranspiration_m,
+        )?;
+        validate_nonnegative_direct_m("publication.drainage_m", self.publication.drainage_m)?;
+        validate_nonnegative_direct_m(
+            "publication.lateral_flow_m",
+            self.publication.lateral_flow_m,
+        )?;
+        Ok(())
+    }
+
+    fn validate_r3b_water_ledger_domain(&self) -> Result<(), DirectRuntimeError> {
+        validate_nonnegative_direct_m(
+            "input_accounting.total_accounted_input_m",
+            self.input_accounting.total_accounted_input_m,
+        )?;
+        validate_nonnegative_direct_m("water.soil_water_m", self.water.soil_water_m)?;
+        validate_nonnegative_direct_m("water.infiltration_m", self.water.infiltration_m)?;
+        validate_nonnegative_direct_m("water.runoff_m", self.water.runoff_m)?;
+        validate_nonnegative_direct_m(
+            "water.evapotranspiration_m",
+            self.water.evapotranspiration_m,
+        )?;
+        validate_nonnegative_direct_m("water.drainage_m", self.water.drainage_m)?;
+        validate_nonnegative_direct_m("water.lateral_flow_m", self.water.lateral_flow_m)?;
+        validate_nonnegative_direct_m("publication.runoff_m", self.publication.runoff_m)?;
+        validate_nonnegative_direct_m(
+            "publication.infiltration_m",
+            self.publication.infiltration_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "publication.evapotranspiration_m",
+            self.publication.evapotranspiration_m,
+        )?;
+        validate_nonnegative_direct_m("publication.drainage_m", self.publication.drainage_m)?;
+        validate_nonnegative_direct_m(
+            "publication.lateral_flow_m",
+            self.publication.lateral_flow_m,
+        )?;
+        Ok(())
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct DirectPhaseView<'day> {
+    phase: DirectPhaseKind,
+    water: &'day mut DirectWaterState,
+    transfer: &'day mut DirectTransferBuffers,
+    publication: &'day mut DirectPublicationFrame,
+}
+
+impl DirectPhaseView<'_> {
+    #[must_use]
+    pub const fn phase(&self) -> DirectPhaseKind {
+        self.phase
+    }
+
+    #[must_use]
+    pub fn water_state(&self) -> &DirectWaterState {
+        self.water
+    }
+
+    #[must_use]
+    pub fn transfer_buffers(&self) -> &DirectTransferBuffers {
+        self.transfer
+    }
+
+    #[must_use]
+    pub fn publication_frame(&self) -> &DirectPublicationFrame {
+        self.publication
+    }
+}
