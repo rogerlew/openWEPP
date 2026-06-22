@@ -13,6 +13,15 @@
 
 State as of `2026-06-22`:
 
+- `20260622-r7d-direct-publication-producer-authority-001/` is executed-held
+  with final disposition
+  `HOLD-R7D-MULTIOFE-DIRECT-LANE-SEED-AUTHORITY-ABSENT`. It proved the
+  production direct consumer path writes from `DirectRunPublicationFrame` and
+  not `execution.wb13_rows`, and the focused one-OFE fixture is parity-clean.
+  H2637 remains non-parity for HBP, WAT, and PASS because production direct
+  still constructs topology/area-only lane frames and seeds day inputs from a
+  single aggregate runtime surface instead of lane-indexed typed direct
+  constructor authority.
 - `20260622-r7c-production-direct-executor-path-001/` is complete with final
   disposition `COMPLETE-R7C-PRODUCTION-DIRECT-EXECUTOR-PATH`. It added the
   opt-in production direct executor route from parsed typed constructor state

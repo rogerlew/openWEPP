@@ -883,7 +883,7 @@ activate direct mode or relax any R7 gate.
 | R5A-R5E | Full canonical OFE-day direct executor lifecycle and 14-phase coverage complete. | One canonical 14-phase entry per OFE-day, direct R4/R5 spans folded under canonical phase entries, protected output identity and endpoint/RSS evidence. | Public outputs remained compatibility-authoritative at R5E; no default activation. |
 | R6A-R6I | Direct publication frame and producer-authority blockers iteratively reduced. | Run-bound publication frame, direct projection consumers, typed day-input builder, PMET layer carry correction, and current-fixture parity closures. | Earlier held states are historical; R6J is the terminal R6 publication cutover package. |
 | R6J | Opt-in direct publication cutover complete. | `DirectPublicationFrameCutover` writes HBP/WAT/PASS/loss/plot/manifest from direct publication artifacts with H2637 byte/Arrow identity and direct manifest provenance. | It is not default activation. Current cutover production adapts simulation-owned WB13 rows into direct publication rows; production direct executor and R7 compatibility-runtime removal remain open. |
-| R7 | R7A architecture reconciliation, R7B parsed-input typed constructor boundary, and R7C opt-in production direct executor routing complete; R7D-H remain open. | R7A-H burndown below and `docs/work-packages/20260622-r7c-production-direct-executor-path-001/`. | Direct publication producer authority, default activation, hot compatibility isolation/deletion, performance closure, fixture hardening, and release readiness. |
+| R7 | R7A architecture reconciliation, R7B parsed-input typed constructor boundary, and R7C opt-in production direct executor routing complete; R7D executed-held on multi-OFE lane-seed authority; R7E-H remain open. | R7A-H burndown below and `docs/work-packages/20260622-r7d-direct-publication-producer-authority-001/`. | R7D hold-lift for direct publication producer authority, default activation, hot compatibility isolation/deletion, performance closure, fixture hardening, and release readiness. |
 
 Current runtime-mode matrix:
 
@@ -892,7 +892,7 @@ Current runtime-mode matrix:
 | Compatibility mode | Default API/CLI mode. | Compatibility scheduler, `HillslopeWritebackSurface`, kernel request/writeback, and WB13 publication rows. | Compatibility output builders. | Compatibility-provenanced outputs; no direct runtime counters unless a direct path is selected. | Must remain as rollback/replay/shadow adapter until direct default is proven. |
 | Shadow mode | Explicit validation mode. | Compatibility execution remains public-output authority while direct artifacts may be produced for comparison. | Compatibility publication for public outputs. | Compatibility provenance; direct artifacts are evidence only. | Must stay structurally outside direct production hot loop. |
 | Direct publication cutover | Explicit opt-in mode after R6J. | Compatibility simulation still produces the execution record; direct publication artifacts are built from the cutover adapter. | Direct HBP/WAT/PASS/loss/manifest writers consume `DirectRunPublicationFrame` artifacts. | Direct publication provenance and run-local direct counters for cutover manifests. | Replace WB13/runtime-surface adapter authority with direct executor-owned publication producers before default activation. |
-| Production direct mode | Explicit opt-in after R7C through `--direct-production-executor`; not default and not release-ready. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; R7C bypasses compatibility climate-day scheduler and skips compatibility audit/shadow diagnostic setup for this mode. | Direct publication frame retained from the direct executor path, with HBP/PASS/WAT parity still unresolved. | Direct runtime counters and direct output provenance are recorded; rollback/default-selection fields remain future activation scope. | R7D-R7H. |
+| Production direct mode | Explicit opt-in after R7C through `--direct-production-executor`; not default and not release-ready. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; R7C bypasses compatibility climate-day scheduler and skips compatibility audit/shadow diagnostic setup for this mode. | Direct publication frame retained from the direct executor path; R7D proved direct consumer sourcing but held on multi-OFE lane-seed producer authority, so HBP/PASS/WAT parity remains unresolved. | Direct runtime counters and direct output provenance are recorded; rollback/default-selection fields remain future activation scope. | R7D hold-lift plus R7E-R7H. |
 
 The terminal architecture remains stricter than the R6J cutover path. A direct
 publication object built from compatibility WB13 rows may be valid R6J adapter
@@ -1051,6 +1051,31 @@ Acceptance gates:
 - WAT/PASS Arrow schema, values, and metadata are parity-clean.
 - Manifest provenance reports direct-source publication rows and run-local
   direct counters.
+
+Execution status: executed-held in
+`docs/work-packages/20260622-r7d-direct-publication-producer-authority-001/`
+with final disposition
+`HOLD-R7D-MULTIOFE-DIRECT-LANE-SEED-AUTHORITY-ABSENT`. R7D proved the
+production direct consumer path emits HBP/WAT/PASS/loss/manifest artifacts from
+the retained `DirectRunPublicationFrame`, not `execution.wb13_rows`, and the
+focused one-OFE fixture is parity-clean. H2637 remains non-parity for HBP, WAT,
+and PASS while loss and plot match. The direct run reports
+`scheduler_kernel_executed=false`, `publication_source=direct-publication-frame`,
+`row_count=235961`, and `compatibility_edge_invocations=0`, so the residual is
+producer authority rather than writer selection. `DirectProductionExecutor`
+still builds topology/area-only direct lane frames and
+`DirectPublicationDayInputBuilder` seeds day inputs from a single aggregate
+`HillslopeWritebackSurface`; per-OFE parsed/static surfaces exist only in the
+compatibility scheduler's `OfeLanePersistentStateSequence` and are not converted
+into typed `DirectLaneConstructorInputs`.
+
+Required R7D hold-lift: close
+`R7D-DIRECT-PRODUCTION-PUBLICATION-PARITY` by adding lane-indexed typed direct
+constructor seed authority from parsed per-OFE soil/slope/management/PMET,
+snow, frost, subsurface-layer, ET, transfer, geometry, and publication operands;
+wire that authority into `DirectProductionExecutor`; remove production direct's
+single-surface day-input authority; and prove a multi-OFE anti-alias fixture
+plus H2637 HBP/WAT/PASS/loss/manifest parity.
 
 ##### R7E - Default Activation Candidate
 
