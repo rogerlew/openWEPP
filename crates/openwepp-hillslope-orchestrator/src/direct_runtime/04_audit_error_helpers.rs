@@ -232,6 +232,11 @@ pub enum DirectRuntimeError {
     DirectClosureToleranceExceeded {
         field: &'static str,
     },
+    DirectDayExecutionFailure {
+        lane_index: usize,
+        day_index: usize,
+        detail: String,
+    },
 }
 
 impl fmt::Display for DirectRuntimeError {
@@ -355,6 +360,18 @@ impl fmt::Display for DirectRuntimeError {
                 write!(
                     formatter,
                     "direct runtime field {field} exceeds declared closure tolerance"
+                )
+            }
+            Self::DirectDayExecutionFailure {
+                lane_index,
+                day_index,
+                detail,
+            } => {
+                write!(
+                    formatter,
+                    "direct runtime day execution failed at lane {} day {}: {detail}",
+                    lane_index + 1,
+                    day_index + 1
                 )
             }
         }

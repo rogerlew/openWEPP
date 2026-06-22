@@ -1052,7 +1052,8 @@ Acceptance gates:
 - Manifest provenance reports direct-source publication rows and run-local
   direct counters.
 
-Execution status: executed-held across two packages:
+Execution status: executed-held across three packages, with the next hold-lift
+queued:
 
 - `docs/work-packages/20260622-r7d-direct-publication-producer-authority-001/`
   proved the production direct consumer path emits HBP/WAT/PASS/loss/manifest
@@ -1064,18 +1065,30 @@ Execution status: executed-held across two packages:
   authority. The focused one-OFE fixture remains parity-clean, H2637 direct
   production improved to `182.83 s / 627436 KiB`, and direct manifest counters
   still report `compatibility_edge_invocations=0`.
+- `docs/work-packages/20260622-r7d3-direct-wb14-r4k-infiltration-producer-001/`
+  lifted the direct WB14/R4K producer hold by adding typed hyetograph
+  infiltration/depression inputs, direct same-pass infiltration wiring into
+  R4A/WB18/ET, direct R4C liquid-aligned storage input, and R4L direct
+  saturation addback from R4O hourly carry arrays. H2637 direct production now
+  exits 0 at `192.90 s / 643724 KiB`, `H2637.loss.json` is byte-identical to
+  default, and direct counters still report `compatibility_edge_invocations=0`.
+  Full R7D parity remains executed-held at
+  `HOLD-R7D3-DIRECT-MOFE-DYNAMIC-CARRY-TRANSFER-ABSENT`.
+- `docs/work-packages/20260622-r7d4-direct-mofe-dynamic-carry-transfer-001/`
+  is queued as the next R7D hold-lift package.
 
 Current R7D blocker:
-`HOLD-R7D2-DIRECT-WB14-R4K-INFILTRATION-PRODUCER-AUTHORITY-ABSENT`. H2637
-HBP/PASS/WAT parity still fails because direct R4K forwards zero
-infiltration/depression handoff inputs and direct R4A therefore computes runoff
-as liquid input. This residual is controlled by `SC-RUNOFFPART-001`,
-`SC-WATBAL-001`, and `SC-PERC-001`: the next hold-lift must promote a
-baseline-authoritative direct WB14/R4K hyetograph/Green-Ampt infiltration and
-depression-storage producer, feed R4A runoff, WB18 same-pass layer ingress, ET
-same-pass infiltration, and direct publication projection, and prove H2637
-HBP/WAT/PASS/loss/manifest parity without reading compatibility
-`wb12_infiltration` or `wb12_depression_storage_delta` as direct authority.
+`HOLD-R7D3-DIRECT-MOFE-DYNAMIC-CARRY-TRANSFER-ABSENT`. H2637 direct production
+now runs to completion, but WAT/PASS/HBP parity fails because dynamic MOFE
+same-day current-lane carry is not copied forward into downstream lane inputs.
+The direct manifest reports `mofe_hourly_carry.current_carry_total_m=0.0` and
+`upstream_carry_total_m=0.0`, while default compatibility reports
+`0.2205447764353141` for both. The next hold-lift must make current-lane R4O
+`ui_LfCrf` and R4L/R4O `ui_SCrunf` arrays copy forward with area-ratio
+provenance into downstream `ui_LfUrf` and `ui_SUrunf` before downstream
+R3A/R4J/R4A/R4B/R4PQZ execution, then rerun H2637 HBP/WAT/PASS/loss/manifest
+parity without using compatibility scheduler results, WB13 rows, public-output
+builders, or aggregate carry aliases as direct authority.
 
 ##### R7E - Default Activation Candidate
 

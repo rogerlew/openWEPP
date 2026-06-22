@@ -2934,6 +2934,7 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
     day.infiltration_depression_inputs = DirectInfiltrationDepressionInputs {
         cumulative_infiltration_handoff_m: 0.25,
         depression_storage_delta_handoff_m: 0.0625,
+        producer_inputs: None,
     };
     day.saturation_addback_inputs = DirectSaturationAddbackInputs {
         surface_saturation_runoff_handoff_m: 0.03125,

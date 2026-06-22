@@ -271,9 +271,13 @@ impl DirectDayFrame {
 
     fn compute_r4c_storage_input(&self) -> Result<DirectStorageInputState, DirectRuntimeError> {
         self.validate_r4c_storage_input_domain()?;
+        let precip_input_m = self
+            .storage_input_inputs
+            .precip_input_handoff_m
+            .unwrap_or(self.downstream_operands.precipitation_m);
         Ok(DirectStorageInputState {
             storage_initial_m: self.water.soil_water_m,
-            precip_input_m: self.downstream_operands.precipitation_m,
+            precip_input_m,
         })
     }
 
@@ -365,10 +369,17 @@ impl DirectDayFrame {
             });
         }
         validate_nonnegative_direct_m("storage_input.storage_initial_m", self.water.soil_water_m)?;
-        validate_nonnegative_direct_m(
-            "storage_input.precip_input_m",
-            self.downstream_operands.precipitation_m,
-        )?;
+        if let Some(precip_input_handoff_m) = self.storage_input_inputs.precip_input_handoff_m {
+            validate_nonnegative_direct_m(
+                "storage_input.precip_input_handoff_m",
+                precip_input_handoff_m,
+            )?;
+        } else {
+            validate_nonnegative_direct_m(
+                "storage_input.precip_input_m",
+                self.downstream_operands.precipitation_m,
+            )?;
+        }
         Ok(())
     }
 
@@ -468,6 +479,20 @@ impl DirectDayFrame {
             self.storage_reconciliation_inputs.closure_tolerance_m,
         )?;
         Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectStorageInputInputs {
+    pub precip_input_handoff_m: Option<f64>,
+}
+
+impl DirectStorageInputInputs {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            precip_input_handoff_m: None,
+        }
     }
 }
 

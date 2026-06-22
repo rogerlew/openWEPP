@@ -13,7 +13,8 @@ use crate::{
     DirectRunonCarryShadowProjection, DirectRunonCarryState, DirectRuntimeError,
     DirectSaturationAddbackDownstreamOperands, DirectSaturationAddbackInputs,
     DirectSaturationAddbackShadowProjection, DirectSaturationAddbackState,
-    reset_direct_runtime_audit_counters,
+    DirectSubsurfaceComputeShadowProjection, DirectWb14HyetographInterval,
+    DirectWb14InfiltrationProducerInputs, reset_direct_runtime_audit_counters,
 };
 
 #[test]
@@ -283,6 +284,177 @@ fn r4il_runoff_input_producers_reject_invalid_inputs() {
 }
 
 #[test]
+fn r4k_wb14_producer_feeds_runoff_percolation_and_et_lineage() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut day = r4il_seed_day();
+    day.liquid_input_inputs.liquid_input_handoff_m = 0.03;
+    day.runon_carry_inputs.surface_runon_handoff_m = 0.0;
+    day.runon_carry_inputs.subsurface_carry_handoff_m = 0.0;
+    day.saturation_addback_inputs
+        .surface_saturation_runoff_handoff_m = 0.0;
+    day.infiltration_depression_inputs = DirectInfiltrationDepressionInputs {
+        cumulative_infiltration_handoff_m: 0.0,
+        depression_storage_delta_handoff_m: 0.0,
+        producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 3_600.0,
+                intensity_m_s: 0.03 / 3_600.0,
+            }],
+            effective_conductivity_m_s: 1.0e-5,
+            matric_potential_m: 0.05,
+            storage_capacity_m: 0.02,
+            depression_storage_capacity_m: 0.0,
+        }),
+    };
+
+    run_r4il_producers(&mut day);
+    let report = day
+        .run_r4a_runoff_partition_span()
+        .expect("WB14 direct infiltration should make R4A runnable");
+
+    assert!((day.infiltration_depression.cumulative_infiltration_m - 0.02).abs() <= 1.0e-12);
+    assert!(
+        day.runoff_partition.q_runoff_m < day.runoff_partition.liquid_input_m,
+        "direct producer infiltration must reduce runoff below liquid input"
+    );
+    assert!((day.runoff_partition.q_runoff_m - 0.01).abs() <= 1.0e-12);
+    assert!(
+        (day.percolation_inputs.same_pass_infiltration_m
+            - day.infiltration_depression.cumulative_infiltration_m)
+            .abs()
+            <= 1.0e-12
+    );
+    assert!(day.percolation_inputs.same_pass_infiltration_lineage);
+    assert!(
+        (day.evapotranspiration_compute_inputs
+            .same_pass_infiltration_m
+            - day.infiltration_depression.cumulative_infiltration_m)
+            .abs()
+            <= 1.0e-12
+    );
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+}
+
+#[test]
+fn r4l_sums_direct_hourly_saturation_carry_when_r4o_has_run() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut day = r4il_seed_day();
+    day.saturation_addback_inputs
+        .surface_saturation_runoff_handoff_m = 0.0;
+    let mut hourly_saturation_carry_m = [0.0_f64; 24];
+    hourly_saturation_carry_m[0] = 0.00625;
+    hourly_saturation_carry_m[7] = 0.000_456_939;
+    day.subsurface_compute_shadow_projection = Some(DirectSubsurfaceComputeShadowProjection {
+        lane_index: day.lane_index,
+        day_index: day.day_index,
+        soil_water_before_m: 0.0,
+        soil_water_after_m: 0.0,
+        lateral_flow_m: 0.0,
+        tile_drainage_m: 0.0,
+        subsurface_loss_m: 0.0,
+        lateral_target_m: 0.0,
+        drainage_target_m: 0.0,
+        lateral_capacity_m: 0.0,
+        hourly_lateral_carry_m: [0.0_f64; 24],
+        hourly_saturation_carry_m,
+        layer_state_after: Vec::new(),
+        lateral_layer_withdrawal_m: Vec::new(),
+    });
+
+    let report = day
+        .run_r4l_saturation_addback_span()
+        .expect("R4L should consume direct hourly saturation carry");
+
+    let expected = 0.006_706_939;
+    assert!((day.saturation_addback.surface_saturation_runoff_m - expected).abs() <= 1.0e-12);
+    assert!((day.runoff_partition_inputs.surface_saturation_runoff_m - expected).abs() <= 1.0e-12);
+    assert_eq!(
+        report
+            .saturation_addback_shadow_projection
+            .surface_saturation_runoff_m,
+        day.saturation_addback.surface_saturation_runoff_m
+    );
+}
+
+#[test]
+fn r4l_rejects_conflicting_saturation_handoff_when_hourly_carry_exists() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut day = r4il_seed_day();
+    day.saturation_addback_inputs
+        .surface_saturation_runoff_handoff_m = 0.01;
+    day.subsurface_compute_shadow_projection = Some(DirectSubsurfaceComputeShadowProjection {
+        lane_index: day.lane_index,
+        day_index: day.day_index,
+        soil_water_before_m: 0.0,
+        soil_water_after_m: 0.0,
+        lateral_flow_m: 0.0,
+        tile_drainage_m: 0.0,
+        subsurface_loss_m: 0.0,
+        lateral_target_m: 0.0,
+        drainage_target_m: 0.0,
+        lateral_capacity_m: 0.0,
+        hourly_lateral_carry_m: [0.0_f64; 24],
+        hourly_saturation_carry_m: [0.0_f64; 24],
+        layer_state_after: Vec::new(),
+        lateral_layer_withdrawal_m: Vec::new(),
+    });
+
+    assert_eq!(
+        day.run_r4l_saturation_addback_span()
+            .expect_err("conflicting handoff must not shadow hourly carry"),
+        DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "saturation_addback.surface_saturation_runoff_m"
+        }
+    );
+}
+
+#[test]
+fn r4k_wb14_producer_rejects_malformed_hyetograph() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut day = r4il_seed_day();
+    day.infiltration_depression_inputs = DirectInfiltrationDepressionInputs {
+        cumulative_infiltration_handoff_m: 0.0,
+        depression_storage_delta_handoff_m: 0.0,
+        producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 60.0,
+                end_s: 30.0,
+                intensity_m_s: 1.0e-5,
+            }],
+            effective_conductivity_m_s: 1.0e-5,
+            matric_potential_m: 0.05,
+            storage_capacity_m: 0.05,
+            depression_storage_capacity_m: 0.0,
+        }),
+    };
+
+    assert_eq!(
+        day.run_r4k_infiltration_depression_span()
+            .expect_err("non-monotone WB14 hyetograph time should fail closed"),
+        DirectRuntimeError::DirectDomainViolation {
+            field: "infiltration_depression.hyetograph_time_s"
+        }
+    );
+}
+
+#[test]
 fn r4a_runoff_partition_rejects_missing_r4il_upstreams_and_invalid_values() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
@@ -424,6 +596,7 @@ fn r4il_seed_day() -> DirectDayFrame {
     day.infiltration_depression_inputs = DirectInfiltrationDepressionInputs {
         cumulative_infiltration_handoff_m: 0.25,
         depression_storage_delta_handoff_m: 0.0625,
+        producer_inputs: None,
     };
     day.saturation_addback_inputs = DirectSaturationAddbackInputs {
         surface_saturation_runoff_handoff_m: 0.03125,

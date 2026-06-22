@@ -799,7 +799,6 @@ fn validate_layers(
             layer.lateral_conductivity_m_s,
         )?;
         if layer.field_capacity_m > layer.upper_limit_m + WB11_ZERO_THRESHOLD
-            || layer.theta_m > layer.upper_limit_m + WB11_ZERO_THRESHOLD
             || layer.frozen_depth_m > layer.depth_m + WB11_ZERO_THRESHOLD
         {
             return Err(DirectRuntimeError::DirectDomainViolation { field: "layer" });

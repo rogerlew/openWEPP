@@ -507,7 +507,7 @@ pub struct DirectHydrologyProjectionSpanReport {
     pub hydrology_projection_shadow_projection: DirectHydrologyProjectionShadowProjection,
 }
 
-fn aggregate_storage_from_layers(
+pub(super) fn aggregate_storage_from_layers(
     layers: &[DirectSubsurfaceLayerState],
 ) -> Result<(f64, f64), DirectRuntimeError> {
     let mut liquid_storage_m = 0.0;

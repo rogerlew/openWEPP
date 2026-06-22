@@ -123,7 +123,9 @@ impl DirectFrameExecutor {
         for day_index in 0..frame.identity.day_count {
             for lane_index in 0..frame.identity.lane_count {
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
-                Self::run_day_spans(&mut day_frame, &mut counters)?;
+                Self::run_day_spans(&mut day_frame, &mut counters).map_err(|source| {
+                    Self::day_execution_failure(&day_frame, lane_index, day_index, source)
+                })?;
                 for phase in phase_plan {
                     let view = day_frame.phase_view(phase);
                     let _phase = view.phase();
@@ -238,7 +240,9 @@ impl DirectFrameExecutor {
                 let day_input = build_day_input(frame, day_index, lane_index)?;
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
                 Self::apply_publication_day_input(&mut day_frame, &day_input)?;
-                Self::run_day_spans(&mut day_frame, &mut counters)?;
+                Self::run_day_spans(&mut day_frame, &mut counters).map_err(|source| {
+                    Self::day_execution_failure(&day_frame, lane_index, day_index, source)
+                })?;
                 for phase in phase_plan {
                     let view = day_frame.phase_view(phase);
                     let _phase = view.phase();
@@ -303,6 +307,14 @@ impl DirectFrameExecutor {
             )?;
             day_frame.water.soil_water_m = initial_soil_water_m;
         }
+        if let Some(storage_input_inputs) = day_input.storage_input_inputs {
+            day_frame.storage_input_inputs = storage_input_inputs;
+        }
+        if let Some(liquid_input_inputs) = day_input.liquid_input_inputs {
+            day_frame.liquid_input_inputs = liquid_input_inputs;
+        } else {
+            day_frame.liquid_input_inputs.liquid_input_handoff_m = day_input.precipitation_m;
+        }
         if let Some(percolation_inputs) = &day_input.percolation_inputs {
             let mut percolation_inputs = percolation_inputs.clone();
             if percolation_inputs.layers.is_empty() {
@@ -312,6 +324,9 @@ impl DirectFrameExecutor {
                 percolation_inputs.soil_water_initial_m = day_frame.water.soil_water_m;
             }
             day_frame.percolation_inputs = percolation_inputs;
+        }
+        if let Some(infiltration_depression_inputs) = &day_input.infiltration_depression_inputs {
+            day_frame.infiltration_depression_inputs = infiltration_depression_inputs.clone();
         }
         if let Some(subsurface_compute_inputs) = &day_input.subsurface_compute_inputs {
             let mut subsurface_compute_inputs = subsurface_compute_inputs.clone();
@@ -337,8 +352,60 @@ impl DirectFrameExecutor {
         day_frame
             .frost_layer_carry_projection
             .clone_from(&day_input.frost_layer_carry_projection);
-        day_frame.liquid_input_inputs.liquid_input_handoff_m = day_input.precipitation_m;
         Ok(())
+    }
+
+    fn day_execution_failure(
+        day_frame: &DirectDayFrame,
+        lane_index: usize,
+        day_index: usize,
+        source: DirectRuntimeError,
+    ) -> DirectRuntimeError {
+        let mut detail = source.to_string();
+        if matches!(
+            source,
+            DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "hydrology_projection.aggregate_storage_delta_m"
+            }
+        ) {
+            if let (Some(storage), Some(evapotranspiration)) = (
+                day_frame.storage_shadow_projection.as_ref(),
+                day_frame
+                    .evapotranspiration_compute_shadow_projection
+                    .as_ref(),
+            ) {
+                if let Ok((aggregate_storage_from_layers_m, _frozen_layer_storage_m)) =
+                    projection::aggregate_storage_from_layers(
+                        &evapotranspiration.layer_state_after_root_uptake,
+                    )
+                {
+                    let aggregate_storage_delta_m =
+                        aggregate_storage_from_layers_m - storage.storage_reconciled_m;
+                    detail = format!(
+                        "{detail}; aggregate_storage_from_layers_m={aggregate_storage_from_layers_m}; storage_reconciled_m={}; aggregate_storage_delta_m={aggregate_storage_delta_m}; tolerance_m={}; storage_initial_m={}; precip_input_m={}; q_runoff_m={}; evapotranspiration_m={}; deep_seepage_m={}; subsurface_loss_m={}; liquid_input_m={}; cumulative_infiltration_m={}; depression_storage_delta_m={}; surface_saturation_runoff_m={}",
+                        storage.storage_reconciled_m,
+                        day_frame.hydrology_projection_inputs.aggregate_storage_tolerance_m,
+                        storage.storage_initial_m,
+                        storage.precip_input_m,
+                        storage.q_runoff_m,
+                        storage.evapotranspiration_m,
+                        storage.deep_seepage_m,
+                        storage.subsurface_loss_m,
+                        day_frame.liquid_input.liquid_input_m,
+                        day_frame.infiltration_depression.cumulative_infiltration_m,
+                        day_frame
+                            .infiltration_depression
+                            .depression_storage_delta_m,
+                        day_frame.saturation_addback.surface_saturation_runoff_m
+                    );
+                }
+            }
+        }
+        DirectRuntimeError::DirectDayExecutionFailure {
+            lane_index,
+            day_index,
+            detail,
+        }
     }
 
     #[must_use]
@@ -372,14 +439,14 @@ impl DirectFrameExecutor {
         record_direct_span_report!(counters, day_frame.run_r5d_annual_growth_phase());
         record_direct_span_report!(counters, day_frame.run_r5d_perennial_growth_phase());
         record_direct_span_report!(counters, day_frame.run_r4c_storage_input_span());
+        record_direct_span_report!(counters, day_frame.run_r4i_liquid_input_span());
+        record_direct_span_report!(counters, day_frame.run_r4j_runon_carry_span());
+        record_direct_span_report!(counters, day_frame.run_r4k_infiltration_depression_span());
         record_direct_span_report!(counters, day_frame.run_r4m_percolation_span());
         record_direct_span_report!(counters, day_frame.run_r4n_surface_et_span());
         record_direct_span_report!(counters, day_frame.run_r4o_subsurface_compute_span());
         record_direct_span_report!(counters, day_frame.run_r4n_root_uptake_span());
         record_direct_span_report!(counters, day_frame.run_r4g_snow_coupling_span());
-        record_direct_span_report!(counters, day_frame.run_r4i_liquid_input_span());
-        record_direct_span_report!(counters, day_frame.run_r4j_runon_carry_span());
-        record_direct_span_report!(counters, day_frame.run_r4k_infiltration_depression_span());
         record_direct_span_report!(counters, day_frame.run_r4l_saturation_addback_span());
         record_direct_span_report!(counters, day_frame.run_r4a_runoff_partition_span());
         record_direct_span_report!(counters, day_frame.run_r4b_storage_reconciliation_span());

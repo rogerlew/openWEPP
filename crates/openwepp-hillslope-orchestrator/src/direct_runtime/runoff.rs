@@ -1,3 +1,5 @@
+use crate::constants::WB11_ZERO_THRESHOLD;
+
 use super::{
     DIRECT_AUDIT, DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4I_PHASE_SPAN_COUNT,
     DIRECT_R4J_PHASE_SPAN_COUNT, DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT,
@@ -107,6 +109,11 @@ impl DirectDayFrame {
             infiltration_depression.cumulative_infiltration_m;
         self.runoff_partition_inputs.depression_storage_delta_m =
             infiltration_depression.depression_storage_delta_m;
+        self.percolation_inputs.same_pass_infiltration_m =
+            infiltration_depression.cumulative_infiltration_m;
+        self.percolation_inputs.same_pass_infiltration_lineage = true;
+        self.evapotranspiration_compute_inputs
+            .same_pass_infiltration_m = infiltration_depression.cumulative_infiltration_m;
         DIRECT_AUDIT.record_direct_state_mutation();
         self.infiltration_depression_downstream_operands =
             DirectInfiltrationDepressionDownstreamOperands::from(infiltration_depression);
@@ -272,6 +279,9 @@ impl DirectDayFrame {
     fn compute_r4k_infiltration_depression(
         &self,
     ) -> Result<DirectInfiltrationDepressionState, DirectRuntimeError> {
+        if let Some(producer_inputs) = &self.infiltration_depression_inputs.producer_inputs {
+            return compute_wb14_infiltration_depression(producer_inputs);
+        }
         validate_nonnegative_direct_m(
             "infiltration_depression.cumulative_infiltration_handoff_m",
             self.infiltration_depression_inputs
@@ -300,6 +310,33 @@ impl DirectDayFrame {
             self.saturation_addback_inputs
                 .surface_saturation_runoff_handoff_m,
         )?;
+        if let Some(subsurface_compute) = self.subsurface_compute_shadow_projection.as_ref() {
+            let surface_saturation_runoff_m = subsurface_compute
+                .hourly_saturation_carry_m
+                .iter()
+                .try_fold(0.0_f64, |total, value| {
+                validate_nonnegative_direct_m(
+                    "saturation_addback.hourly_saturation_carry_m",
+                    *value,
+                )?;
+                let total = total + *value;
+                validate_finite("saturation_addback.surface_saturation_runoff_m", total)?;
+                Ok::<f64, DirectRuntimeError>(total)
+            })?;
+            let handoff_m = self
+                .saturation_addback_inputs
+                .surface_saturation_runoff_handoff_m;
+            if handoff_m > WB11_ZERO_THRESHOLD
+                && (handoff_m - surface_saturation_runoff_m).abs() > WB11_ZERO_THRESHOLD
+            {
+                return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                    field: "saturation_addback.surface_saturation_runoff_m",
+                });
+            }
+            return Ok(DirectSaturationAddbackState {
+                surface_saturation_runoff_m,
+            });
+        }
         Ok(DirectSaturationAddbackState {
             surface_saturation_runoff_m: self
                 .saturation_addback_inputs
@@ -388,6 +425,222 @@ impl DirectDayFrame {
             self.runoff_partition_inputs.surface_saturation_runoff_m,
         )?;
         Ok(())
+    }
+}
+
+fn compute_wb14_infiltration_depression(
+    inputs: &DirectWb14InfiltrationProducerInputs,
+) -> Result<DirectInfiltrationDepressionState, DirectRuntimeError> {
+    validate_wb14_infiltration_inputs(inputs)?;
+    let mut cumulative_infiltration_m = 0.0_f64;
+    let mut total_rainfall_m = 0.0_f64;
+
+    for interval in &inputs.hyetograph {
+        let duration_s = interval.end_s - interval.start_s;
+        if duration_s <= WB11_ZERO_THRESHOLD || interval.intensity_m_s <= WB11_ZERO_THRESHOLD {
+            continue;
+        }
+        let rainfall_m = interval.intensity_m_s * duration_s;
+        validate_finite("infiltration_depression.interval_rainfall_m", rainfall_m)?;
+        total_rainfall_m += rainfall_m;
+        validate_finite(
+            "infiltration_depression.hyetograph_rainfall_m",
+            total_rainfall_m,
+        )?;
+        let remaining_storage_m = (inputs.storage_capacity_m - cumulative_infiltration_m).max(0.0);
+        if remaining_storage_m <= WB11_ZERO_THRESHOLD {
+            continue;
+        }
+        let interval_infiltration_m = compute_green_ampt_interval_infiltration(
+            cumulative_infiltration_m,
+            rainfall_m.min(remaining_storage_m),
+            duration_s,
+            interval.intensity_m_s,
+            inputs.effective_conductivity_m_s,
+            inputs.matric_potential_m,
+        )?;
+        if interval_infiltration_m > rainfall_m + 1.0e-9 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "infiltration_depression.interval_infiltration_m",
+            });
+        }
+        cumulative_infiltration_m += interval_infiltration_m.min(rainfall_m);
+        cumulative_infiltration_m = cumulative_infiltration_m
+            .min(inputs.storage_capacity_m)
+            .min(total_rainfall_m);
+        validate_finite(
+            "infiltration_depression.cumulative_infiltration_m",
+            cumulative_infiltration_m,
+        )?;
+    }
+
+    let rainfall_excess_m = (total_rainfall_m - cumulative_infiltration_m).max(0.0);
+    let depression_storage_delta_m = rainfall_excess_m.min(inputs.depression_storage_capacity_m);
+    validate_finite(
+        "infiltration_depression.depression_storage_delta_m",
+        depression_storage_delta_m,
+    )?;
+    Ok(DirectInfiltrationDepressionState {
+        cumulative_infiltration_m,
+        depression_storage_delta_m,
+    })
+}
+
+fn validate_wb14_infiltration_inputs(
+    inputs: &DirectWb14InfiltrationProducerInputs,
+) -> Result<(), DirectRuntimeError> {
+    if inputs.hyetograph.is_empty() {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "infiltration_depression.hyetograph",
+        });
+    }
+    validate_positive_direct(
+        "infiltration_depression.effective_conductivity_m_s",
+        inputs.effective_conductivity_m_s,
+    )?;
+    validate_nonnegative_direct_m(
+        "infiltration_depression.matric_potential_m",
+        inputs.matric_potential_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "infiltration_depression.storage_capacity_m",
+        inputs.storage_capacity_m,
+    )?;
+    validate_nonnegative_direct_m(
+        "infiltration_depression.depression_storage_capacity_m",
+        inputs.depression_storage_capacity_m,
+    )?;
+    let mut previous_end_s = None;
+    for interval in &inputs.hyetograph {
+        validate_finite(
+            "infiltration_depression.hyetograph_start_s",
+            interval.start_s,
+        )?;
+        validate_finite("infiltration_depression.hyetograph_end_s", interval.end_s)?;
+        validate_nonnegative_direct_m(
+            "infiltration_depression.hyetograph_intensity_m_s",
+            interval.intensity_m_s,
+        )?;
+        if interval.end_s < interval.start_s {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "infiltration_depression.hyetograph_time_s",
+            });
+        }
+        if previous_end_s
+            .is_some_and(|previous_end_s| interval.start_s < previous_end_s - WB11_ZERO_THRESHOLD)
+        {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "infiltration_depression.hyetograph_time_s",
+            });
+        }
+        previous_end_s = Some(interval.end_s);
+    }
+    Ok(())
+}
+
+fn compute_green_ampt_interval_infiltration(
+    cumulative_infiltration_m: f64,
+    rainfall_m: f64,
+    duration_s: f64,
+    intensity_m_s: f64,
+    effective_conductivity_m_s: f64,
+    matric_potential_m: f64,
+) -> Result<f64, DirectRuntimeError> {
+    if rainfall_m <= WB11_ZERO_THRESHOLD {
+        return Ok(0.0);
+    }
+    if intensity_m_s <= effective_conductivity_m_s + WB11_ZERO_THRESHOLD {
+        return Ok(rainfall_m);
+    }
+    if matric_potential_m <= WB11_ZERO_THRESHOLD {
+        return Ok((effective_conductivity_m_s * duration_s).min(rainfall_m));
+    }
+
+    let ponding_threshold_m = effective_conductivity_m_s * matric_potential_m
+        / (intensity_m_s - effective_conductivity_m_s);
+    validate_finite(
+        "infiltration_depression.ponding_threshold_m",
+        ponding_threshold_m,
+    )?;
+    if cumulative_infiltration_m + rainfall_m <= ponding_threshold_m + WB11_ZERO_THRESHOLD {
+        return Ok(rainfall_m);
+    }
+
+    let unponded_infiltration_m =
+        (ponding_threshold_m - cumulative_infiltration_m).clamp(0.0, rainfall_m);
+    let ponded_time_s = duration_s - (unponded_infiltration_m / intensity_m_s);
+    validate_finite("infiltration_depression.ponded_time_s", ponded_time_s)?;
+    let ponded_start_m = cumulative_infiltration_m + unponded_infiltration_m;
+    let ponded_target_m = effective_conductivity_m_s * ponded_time_s;
+    let ponded_end_m =
+        solve_green_ampt_ponded_end(ponded_start_m, matric_potential_m, ponded_target_m)?;
+    let ponded_infiltration_m = (ponded_end_m - ponded_start_m).max(0.0);
+    validate_finite(
+        "infiltration_depression.ponded_infiltration_m",
+        ponded_infiltration_m,
+    )?;
+    Ok((unponded_infiltration_m + ponded_infiltration_m).min(rainfall_m))
+}
+
+fn solve_green_ampt_ponded_end(
+    ponded_start_m: f64,
+    matric_potential_m: f64,
+    target_m: f64,
+) -> Result<f64, DirectRuntimeError> {
+    if target_m <= WB11_ZERO_THRESHOLD {
+        return Ok(ponded_start_m);
+    }
+    let lower_m = ponded_start_m;
+    let mut upper_m = ponded_start_m + target_m + matric_potential_m + 1.0e-9;
+    while green_ampt_integral(ponded_start_m, upper_m, matric_potential_m)? < target_m {
+        upper_m = ponded_start_m + (upper_m - ponded_start_m) * 2.0 + 1.0e-9;
+        validate_finite("infiltration_depression.green_ampt_upper_m", upper_m)?;
+        if upper_m > 1.0e6 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "infiltration_depression.green_ampt_upper_m",
+            });
+        }
+    }
+
+    let mut low_m = lower_m;
+    let mut high_m = upper_m;
+    for _ in 0..80 {
+        let mid_m = 0.5 * (low_m + high_m);
+        let value_m = green_ampt_integral(ponded_start_m, mid_m, matric_potential_m)?;
+        if value_m < target_m {
+            low_m = mid_m;
+        } else {
+            high_m = mid_m;
+        }
+    }
+    Ok(0.5 * (low_m + high_m))
+}
+
+fn green_ampt_integral(
+    start_m: f64,
+    end_m: f64,
+    matric_potential_m: f64,
+) -> Result<f64, DirectRuntimeError> {
+    validate_finite("infiltration_depression.green_ampt_start_m", start_m)?;
+    validate_finite("infiltration_depression.green_ampt_end_m", end_m)?;
+    let numerator_m = end_m + matric_potential_m;
+    let denominator_m = start_m + matric_potential_m;
+    if numerator_m <= 0.0 || denominator_m <= 0.0 || end_m < start_m {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "infiltration_depression.green_ampt_domain",
+        });
+    }
+    let value_m = (end_m - start_m) - matric_potential_m * (numerator_m / denominator_m).ln();
+    validate_finite("infiltration_depression.green_ampt_integral_m", value_m)?;
+    Ok(value_m.max(0.0))
+}
+
+fn validate_positive_direct(field: &'static str, value: f64) -> Result<(), DirectRuntimeError> {
+    validate_finite(field, value)?;
+    if value > WB11_ZERO_THRESHOLD {
+        Ok(())
+    } else {
+        Err(DirectRuntimeError::DirectDomainViolation { field })
     }
 }
 
@@ -513,10 +766,11 @@ pub struct DirectRunonCarryShadowProjection {
     pub subsurface_carry_m: f64,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DirectInfiltrationDepressionInputs {
     pub cumulative_infiltration_handoff_m: f64,
     pub depression_storage_delta_handoff_m: f64,
+    pub producer_inputs: Option<DirectWb14InfiltrationProducerInputs>,
 }
 
 impl DirectInfiltrationDepressionInputs {
@@ -525,8 +779,25 @@ impl DirectInfiltrationDepressionInputs {
         Self {
             cumulative_infiltration_handoff_m: 0.0,
             depression_storage_delta_handoff_m: 0.0,
+            producer_inputs: None,
         }
     }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectWb14InfiltrationProducerInputs {
+    pub hyetograph: Vec<DirectWb14HyetographInterval>,
+    pub effective_conductivity_m_s: f64,
+    pub matric_potential_m: f64,
+    pub storage_capacity_m: f64,
+    pub depression_storage_capacity_m: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectWb14HyetographInterval {
+    pub start_s: f64,
+    pub end_s: f64,
+    pub intensity_m_s: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

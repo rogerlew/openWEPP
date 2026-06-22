@@ -13,6 +13,23 @@
 
 State as of `2026-06-22`:
 
+- `20260622-r7d3-direct-wb14-r4k-infiltration-producer-001/` is executed-held
+  with final disposition
+  `HOLD-R7D3-DIRECT-MOFE-DYNAMIC-CARRY-TRANSFER-ABSENT`. It lifted
+  `HOLD-R7D2-DIRECT-WB14-R4K-INFILTRATION-PRODUCER-AUTHORITY-ABSENT` by
+  implementing typed direct WB14/R4K infiltration/depression producer
+  authority, wiring same-pass infiltration into R4A/WB18/ET/publication, and
+  adding R4L direct hourly saturation addback from R4O carry arrays. H2637
+  direct production now exits 0 (`192.90 s / 643724 KiB`) with
+  `compatibility_edge_invocations=0`, and `H2637.loss.json` is byte-identical
+  to default. HBP/WAT/PASS/manifest parity remains blocked because direct MOFE
+  same-day dynamic lane-to-lane carry transfer is absent.
+- `20260622-r7d4-direct-mofe-dynamic-carry-transfer-001/` is queued as the
+  next R7D hold-lift package. It must make current-lane R4O/R4L
+  `ui_LfCrf`/`ui_SCrunf` arrays copy forward with area-ratio provenance into
+  downstream `ui_LfUrf`/`ui_SUrunf` before downstream R3A/R4J execution, then
+  keep iterating H2637 HBP/WAT/PASS/loss/manifest parity until R7D closes or a
+  new named out-of-envelope blocker is proven.
 - `20260622-r7d2-multiofe-lane-seed-authority-001/` is executed-held with final
   disposition
   `HOLD-R7D2-DIRECT-WB14-R4K-INFILTRATION-PRODUCER-AUTHORITY-ABSENT`. It

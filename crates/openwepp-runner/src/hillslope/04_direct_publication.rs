@@ -905,9 +905,16 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             DirectPublicationDayInput::calendar_only(direct_publication_calendar_day(day)?);
         day_input.precipitation_m = precipitation_m;
         day_input.effective_temperature_c = day.effective_temperature_c;
+        day_input.liquid_input_inputs =
+            Some(direct_publication_liquid_input_inputs(&seed_surface)?);
+        day_input.storage_input_inputs =
+            Some(direct_publication_storage_input_inputs(&seed_surface)?);
         let mut percolation_inputs =
             direct_publication_percolation_inputs(&seed_surface, precipitation_m)?;
         let mut subsurface_inputs = direct_publication_subsurface_inputs(&seed_surface)?;
+        day_input.infiltration_depression_inputs = Some(
+            direct_publication_infiltration_depression_inputs(&seed_surface)?,
+        );
         if day_index == 0 {
             day_input.initial_soil_water_m =
                 Some(require_runtime_surface_scalar(&seed_surface, "wb11_soil_water")?);
@@ -1173,6 +1180,195 @@ fn direct_publication_percolation_inputs(
         restrictive_layer_thickness_m: 0.0,
         layers,
     })
+}
+
+fn direct_publication_liquid_input_inputs(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<DirectLiquidInputInputs, HillslopeCliError> {
+    let liquid_input_handoff_m = require_runtime_surface_scalar(runtime_surface, "wb12_rainfall_input")?;
+    if liquid_input_handoff_m < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} wb12_rainfall_input must be >= 0.0 for direct R4I liquid input, observed {liquid_input_handoff_m}"
+            ),
+        });
+    }
+    Ok(DirectLiquidInputInputs {
+        liquid_input_handoff_m,
+    })
+}
+
+fn direct_publication_storage_input_inputs(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<DirectStorageInputInputs, HillslopeCliError> {
+    let precip_input_handoff_m = require_runtime_surface_scalar(runtime_surface, "wb12_rainfall_input")?;
+    if precip_input_handoff_m < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} wb12_rainfall_input must be >= 0.0 for direct R4C storage input, observed {precip_input_handoff_m}"
+            ),
+        });
+    }
+    Ok(DirectStorageInputInputs {
+        precip_input_handoff_m: Some(precip_input_handoff_m),
+    })
+}
+
+fn direct_publication_infiltration_depression_inputs(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<DirectInfiltrationDepressionInputs, HillslopeCliError> {
+    let hyetograph = direct_publication_hyetograph(runtime_surface)?;
+    let layers = direct_publication_layer_states(runtime_surface)?;
+    let effective_conductivity_m_s =
+        direct_publication_wb14_effective_conductivity(runtime_surface, &layers)?;
+    let matric_potential_m = direct_publication_wb14_matric_potential(runtime_surface, &layers)?;
+    let storage_capacity_m = direct_publication_wb14_top_storage_capacity(&layers)?;
+    let depression_storage_capacity_m = direct_publication_optional_nonnegative_scalar(
+        runtime_surface,
+        &[
+            "wb14_depression_storage_capacity_m",
+            "wb12_depression_storage_capacity_m",
+        ],
+    )?
+    .unwrap_or(0.0);
+
+    Ok(DirectInfiltrationDepressionInputs {
+        cumulative_infiltration_handoff_m: 0.0,
+        depression_storage_delta_handoff_m: 0.0,
+        producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
+            hyetograph,
+            effective_conductivity_m_s,
+            matric_potential_m,
+            storage_capacity_m,
+            depression_storage_capacity_m,
+        }),
+    })
+}
+
+fn direct_publication_hyetograph(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Vec<DirectWb14HyetographInterval>, HillslopeCliError> {
+    let point_symbol = if runtime_surface_symbol_value(runtime_surface, "ninten").is_some() {
+        "ninten"
+    } else {
+        "nbrkpt"
+    };
+    let point_count = scalar_to_usize(
+        point_symbol,
+        require_runtime_surface_scalar(runtime_surface, point_symbol)?,
+    )?;
+    if point_count < 2 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} WB14 direct hyetograph requires at least two time points, observed {point_count}"
+            ),
+        });
+    }
+    let mut intervals = Vec::with_capacity(point_count - 1);
+    for point_index in 1..point_count {
+        let start_symbol = wb13_primary_layer_symbol("timem", point_index);
+        let end_symbol = wb13_primary_layer_symbol("timem", point_index + 1);
+        let intensity_symbol = wb13_primary_layer_symbol("intsty", point_index);
+        let start_s = require_runtime_surface_scalar(runtime_surface, start_symbol.as_str())?;
+        let end_s = require_runtime_surface_scalar(runtime_surface, end_symbol.as_str())?;
+        let intensity_m_s =
+            require_runtime_surface_scalar(runtime_surface, intensity_symbol.as_str())?;
+        intervals.push(DirectWb14HyetographInterval {
+            start_s,
+            end_s,
+            intensity_m_s,
+        });
+    }
+    Ok(intervals)
+}
+
+fn direct_publication_wb14_effective_conductivity(
+    runtime_surface: &HillslopeWritebackSurface,
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<f64, HillslopeCliError> {
+    if let Some(value) = direct_publication_optional_nonnegative_scalar(
+        runtime_surface,
+        &[
+            "wb14_effective_conductivity_m_s",
+            "frost.runtime_infcap_frz",
+            "wb14_soil_conductivity_m_s",
+        ],
+    )? {
+        if value > 0.0 {
+            return Ok(value);
+        }
+    }
+    layers
+        .first()
+        .map(|layer| layer.conductivity_m_s)
+        .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} WB14 direct infiltration requires at least one layer conductivity"
+            ),
+        })
+}
+
+fn direct_publication_wb14_matric_potential(
+    runtime_surface: &HillslopeWritebackSurface,
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<f64, HillslopeCliError> {
+    if let Some(value) = direct_publication_optional_nonnegative_scalar(
+        runtime_surface,
+        &["wb14_matric_potential_m"],
+    )? {
+        return Ok(value);
+    }
+    let first_layer = layers
+        .first()
+        .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} WB14 direct infiltration requires at least one layer for matric potential"
+            ),
+        })?;
+    Ok(first_layer.depth_m * (first_layer.field_capacity_theta - first_layer.residual_theta).max(0.0))
+}
+
+fn direct_publication_wb14_top_storage_capacity(
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<f64, HillslopeCliError> {
+    if layers.is_empty() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} WB14 direct infiltration requires layer storage capacity"
+            ),
+        });
+    }
+    Ok(layers
+        .iter()
+        .take(2)
+        .map(|layer| (layer.upper_limit_m - layer.frozen_water_m - layer.theta_m).max(0.0))
+        .sum())
+}
+
+fn direct_publication_optional_nonnegative_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbols: &[&str],
+) -> Result<Option<f64>, HillslopeCliError> {
+    for symbol in symbols {
+        if let Some(value) = runtime_surface_symbol_value(runtime_surface, symbol) {
+            if !value.is_finite() || value < 0.0 {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_publication_frame",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} {symbol} must be finite and >= 0.0 for WB14 direct infiltration, observed {value}"
+                    ),
+                });
+            }
+            return Ok(Some(value));
+        }
+    }
+    Ok(None)
 }
 
 fn direct_publication_subsurface_inputs(

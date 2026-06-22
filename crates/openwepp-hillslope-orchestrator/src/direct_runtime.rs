@@ -178,7 +178,8 @@ pub use runoff::{
     DirectRunonCarryDownstreamOperands, DirectRunonCarryInputs, DirectRunonCarryShadowProjection,
     DirectRunonCarrySpanReport, DirectRunonCarryState, DirectSaturationAddbackDownstreamOperands,
     DirectSaturationAddbackInputs, DirectSaturationAddbackShadowProjection,
-    DirectSaturationAddbackSpanReport, DirectSaturationAddbackState,
+    DirectSaturationAddbackSpanReport, DirectSaturationAddbackState, DirectWb14HyetographInterval,
+    DirectWb14InfiltrationProducerInputs,
 };
 pub use storage::{
     DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
@@ -188,12 +189,12 @@ pub use storage::{
     DirectEvapotranspirationState, DirectSnowCouplingDownstreamOperands, DirectSnowCouplingInputs,
     DirectSnowCouplingShadowProjection, DirectSnowCouplingSpanReport, DirectSnowCouplingState,
     DirectStorageDownstreamOperands, DirectStorageInputDownstreamOperands,
-    DirectStorageInputShadowProjection, DirectStorageInputSpanReport, DirectStorageInputState,
-    DirectStorageReconciliationInputs, DirectStorageReconciliationSpanReport,
-    DirectStorageReconciliationState, DirectStorageShadowProjection,
-    DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
-    DirectSubsurfaceLossShadowProjection, DirectSubsurfaceLossSpanReport,
-    DirectSubsurfaceLossState,
+    DirectStorageInputInputs, DirectStorageInputShadowProjection, DirectStorageInputSpanReport,
+    DirectStorageInputState, DirectStorageReconciliationInputs,
+    DirectStorageReconciliationSpanReport, DirectStorageReconciliationState,
+    DirectStorageShadowProjection, DirectSubsurfaceLossDownstreamOperands,
+    DirectSubsurfaceLossInputs, DirectSubsurfaceLossShadowProjection,
+    DirectSubsurfaceLossSpanReport, DirectSubsurfaceLossState,
 };
 pub use subsurface::{
     DirectPercolationDownstreamOperands, DirectPercolationInputs,

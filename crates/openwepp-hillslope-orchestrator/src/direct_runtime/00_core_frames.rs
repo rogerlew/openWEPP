@@ -183,6 +183,7 @@ pub struct DirectDayConstructorInputs {
     pub residue_partition_inputs: DirectResiduePartitionInputs,
     pub annual_growth_inputs: DirectGrowthInputs,
     pub perennial_growth_inputs: DirectGrowthInputs,
+    pub storage_input_inputs: DirectStorageInputInputs,
     pub liquid_input_inputs: DirectLiquidInputInputs,
     pub runon_carry_inputs: DirectRunonCarryInputs,
     pub infiltration_depression_inputs: DirectInfiltrationDepressionInputs,
@@ -211,6 +212,7 @@ impl DirectDayConstructorInputs {
             residue_partition_inputs: DirectResiduePartitionInputs::zero(),
             annual_growth_inputs: DirectGrowthInputs::zero(),
             perennial_growth_inputs: DirectGrowthInputs::zero(),
+            storage_input_inputs: DirectStorageInputInputs::zero(),
             liquid_input_inputs: DirectLiquidInputInputs::zero(),
             runon_carry_inputs: DirectRunonCarryInputs::zero(),
             infiltration_depression_inputs: DirectInfiltrationDepressionInputs::zero(),
@@ -668,6 +670,7 @@ pub struct DirectDayFrame {
     pub input_accounting: DirectInputAccountingState,
     pub downstream_operands: DirectDownstreamOperands,
     pub shadow_projection: Option<DirectShadowProjection>,
+    pub storage_input_inputs: DirectStorageInputInputs,
     pub liquid_input_inputs: DirectLiquidInputInputs,
     pub liquid_input: DirectLiquidInputState,
     pub liquid_input_downstream_operands: DirectLiquidInputDownstreamOperands,
@@ -786,6 +789,7 @@ impl DirectDayFrame {
             input_accounting: DirectInputAccountingState::zero(),
             downstream_operands: DirectDownstreamOperands::zero(),
             shadow_projection: None,
+            storage_input_inputs: DirectStorageInputInputs::zero(),
             liquid_input_inputs: DirectLiquidInputInputs::zero(),
             liquid_input: DirectLiquidInputState::zero(),
             liquid_input_downstream_operands: DirectLiquidInputDownstreamOperands::zero(),
@@ -885,6 +889,7 @@ impl DirectDayFrame {
         self.residue_partition_inputs = inputs.residue_partition_inputs;
         self.annual_growth_inputs = inputs.annual_growth_inputs;
         self.perennial_growth_inputs = inputs.perennial_growth_inputs;
+        self.storage_input_inputs = inputs.storage_input_inputs;
         self.liquid_input_inputs = inputs.liquid_input_inputs;
         self.runon_carry_inputs = inputs.runon_carry_inputs;
         self.infiltration_depression_inputs = inputs.infiltration_depression_inputs;
@@ -1306,6 +1311,12 @@ fn validate_direct_day_constructor_inputs(
         "constructor.storage_bounds.closure_tolerance_m",
         inputs.storage_bounds_inputs.closure_tolerance_m,
     )?;
+    if let Some(precip_input_handoff_m) = inputs.storage_input_inputs.precip_input_handoff_m {
+        validate_nonnegative_direct_m(
+            "constructor.storage_input.precip_input_handoff_m",
+            precip_input_handoff_m,
+        )?;
+    }
     validate_nonnegative_direct_m(
         "constructor.liquid_input_handoff_m",
         inputs.liquid_input_inputs.liquid_input_handoff_m,
