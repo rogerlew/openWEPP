@@ -263,14 +263,19 @@ default/direct byte identity for HBP/WAT/PASS/loss/plot with
 | **P** | **PERF - comprehensive array-native re-architecture (direct runtime)** | Comprehensive array-native migration remains the perf direction, but PERFDEEP03 and PERFDEEP05 falsified the current partial hydrology-island shape as a production endpoint win. PERFDEEP05 removed the PERFDEEP04 full-sync hotspot, while the accumulated plumbing also taxed the default-disabled path (`701.95 s` vs `669.97 s`). PERFDEEP06 converted that into a direct-frame plan with a zero-cost-disabled P0 gate. PERFDEEP07 improved but did not close that gate (`685.85 s` retained vs `<= 676.67 s`); PERFDEEP08 tested disabled diagnostic-hook caching and was slower (`691.93 s`). PERFDEEP09 closed the disabled-path blocker, R2A created the separate direct-runtime skeleton without phase math or publication cutover, R3A proved the first complete direct phase span, R3B proved a richer direct water-ledger span, R3C proved run-level multi-lane transfer/topology propagation, R4A through R4P/Q/Z closed the direct hydrology path through shadow-only projection, R5A through R5E completed full OFE-day direct endpoint readiness while preserving no-publication/no-default/no-scheduler boundaries, and R6A added the missing run-bound direct publication frame plus direct HBP/WAT/PASS/loss/manifest projection consumers. R6 promoted the publication operand ledger into architecture authority and added a fail-closed cutover candidate. R6B proved the candidate still lacked a production typed operand bridge; R6C corrected that failure mode so cutover failed before skeleton capture; R6D added a cutover-only retained production `DirectRunPublicationFrame` in the climate lifecycle; R6E resolved direct-runtime input binding for parsed climate; R6F closed the current-fixture HBP byte blocker; R6G reduced WAT to `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT`; R6H cleared that blocker by adding an interleaved PMET day/lane input builder and reducing WAT to `HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY`; R6I closed the PMET layer-carry ULP blocker by carrying active-frost fine-layer projection through direct lane commit; and R6J completed direct publication cutover, including manifest/direct-counter provenance, direct-only public writes, PASS byte-stable metadata, H2637 default `640.41 s / 227396 KiB`, H2637 direct cutover `637.53 s / 349400 KiB`, HBP/WAT/PASS/loss/plot byte identity, and `compatibility_edge_invocations=0`. | Next: scope post-R6 work separately. Immediate technical debt before more publication growth: split `00_runner_intake_and_lane_setup.rs` (`2997` lines) and `direct_runtime.rs` publication-row construction (`2922` lines). Default activation, broader nonzero erosion authority, and performance tuning require separate packages and gates. | **COMPLETE: R6 direct publication cutover** - opt-in direct public outputs are direct-manifested and byte-identical to default on H2637; default remains disabled. |
 
 Current direct-runtime note: R7D8 closed the current H2637 5-day
-direct-production publication-parity gate. R7E was then executed in
-`docs/work-packages/20260623-r7e-r7h-direct-runtime-completion-001/` with
-default-candidate/rollback selection mechanics and manifest runtime-selection
-provenance. That package is held at
-`HOLD-R7F-DIRECT-DAY-INPUT-BUILDER-COMPATIBILITY-SURFACE-HOT-EDGE` because the
-production direct interleaved day-input builder still constructs compatibility
-`HillslopeWritebackSurface` seed/context surfaces in the day/OFE loop; R7F-R7H
-remain blocked until typed direct day-input/state projection removes that edge.
+direct-production publication-parity gate. R7E added default-candidate and
+rollback selection mechanics. R7F closed
+`HOLD-R7F-DIRECT-DAY-INPUT-BUILDER-COMPATIBILITY-SURFACE-HOT-EDGE` by moving
+production direct hot-loop day-input construction to typed direct
+day-input/state projection. R7G then ran the full same-binary H2637 matrix:
+default-disabled compatibility passed at `645.51 s / 229560 KiB`, rollback
+compatibility passed at `637.10 s / 229016 KiB`, and the two compatibility
+modes had identical protected output checksum maps. Direct default candidate
+and explicit direct both fail closed before endpoint timing at
+`HOLD-R7G-SURFACE-FREE-ACTIVE-SNOW-PARTITION-AUTHORITY-ABSENT`; the next
+package must add typed active snow controls/state, partition compute, state
+mutation, downstream operands, publication projection, fixtures, and
+no-compatibility scans before R7G can rerun.
 
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 H2637 magnitude arc is no longer an active queue item. Absolute forest lateral-flow

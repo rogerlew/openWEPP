@@ -10,7 +10,7 @@ Owner: architecture authority; implementation by Codex work packages.
 Supersedes: the incremental application of
 [ADR-0023](../decisions/0023-array-authoritative-hot-path-state.md), not its
 dense-authority principle.
-Last updated: 2026-06-22.
+Last updated: 2026-06-23.
 
 ---
 
@@ -883,7 +883,7 @@ activate direct mode or relax any R7 gate.
 | R5A-R5E | Full canonical OFE-day direct executor lifecycle and 14-phase coverage complete. | One canonical 14-phase entry per OFE-day, direct R4/R5 spans folded under canonical phase entries, protected output identity and endpoint/RSS evidence. | Public outputs remained compatibility-authoritative at R5E; no default activation. |
 | R6A-R6I | Direct publication frame and producer-authority blockers iteratively reduced. | Run-bound publication frame, direct projection consumers, typed day-input builder, PMET layer carry correction, and current-fixture parity closures. | Earlier held states are historical; R6J is the terminal R6 publication cutover package. |
 | R6J | Opt-in direct publication cutover complete. | `DirectPublicationFrameCutover` writes HBP/WAT/PASS/loss/plot/manifest from direct publication artifacts with H2637 byte/Arrow identity and direct manifest provenance. | It is not default activation. Current cutover production adapts simulation-owned WB13 rows into direct publication rows; production direct executor and R7 compatibility-runtime removal remain open. |
-| R7 | R7A architecture reconciliation, R7B parsed-input typed constructor boundary, R7C opt-in production direct executor routing, R7D8 direct HBP EROD15 sediment-export alias parity, and R7E default-candidate/rollback selection mechanics are complete for the current focused gate. R7F-H remain open. | R7A-H burndown below, `docs/work-packages/20260623-r7d7-direct-wb16-peak-publication-parity-001/`, `docs/work-packages/20260623-r7d8-direct-hbp-erod15-export-alias-parity-001/`, and `docs/work-packages/20260623-r7e-r7h-direct-runtime-completion-001/`. | Production direct still has a counted hot compatibility edge in the interleaved day-input builder; performance closure, fixture hardening, and release readiness remain blocked. |
+| R7 | R7A architecture reconciliation, R7B parsed-input typed constructor boundary, R7C opt-in production direct executor routing, R7D8 direct HBP EROD15 sediment-export alias parity, R7E default-candidate/rollback selection mechanics, and R7F direct day-input hot-loop isolation are complete for their current gates. R7G executed-held on full-H2637 active snow authority. | R7A-H burndown below, `docs/work-packages/20260623-r7f-direct-day-input-hot-loop-isolation-001/`, and `docs/work-packages/20260623-r7g-performance-closure-fixture-hardening-001/`. | Full-H2637 production direct cannot reach endpoint timing because typed, surface-free active snow partition authority is absent. R7H release readiness remains blocked. |
 
 Current runtime-mode matrix:
 
@@ -892,7 +892,7 @@ Current runtime-mode matrix:
 | Compatibility mode | Default API/CLI mode. | Compatibility scheduler, `HillslopeWritebackSurface`, kernel request/writeback, and WB13 publication rows. | Compatibility output builders. | Compatibility-provenanced outputs; no direct runtime counters unless a direct path is selected. | Must remain as rollback/replay/shadow adapter until direct default is proven. |
 | Shadow mode | Explicit validation mode. | Compatibility execution remains public-output authority while direct artifacts may be produced for comparison. | Compatibility publication for public outputs. | Compatibility provenance; direct artifacts are evidence only. | Must stay structurally outside direct production hot loop. |
 | Direct publication cutover | Explicit opt-in mode after R6J. | Compatibility simulation still produces the execution record; direct publication artifacts are built from the cutover adapter. | Direct HBP/WAT/PASS/loss/manifest writers consume `DirectRunPublicationFrame` artifacts. | Direct publication provenance and run-local direct counters for cutover manifests. | Replace WB13/runtime-surface adapter authority with direct executor-owned publication producers before default activation. |
-| Production direct mode | Explicit opt-in after R7C through `--direct-production-executor`; R7E also adds an explicit default-candidate activation gate through API policy and `--direct-default-candidate`. It is not default and not release-ready. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; R7C bypasses compatibility climate-day scheduler and skips compatibility audit/shadow diagnostic setup for this mode. Current R7E evidence shows the interleaved direct day-input builder still uses `HillslopeWritebackSurface` seed/context surfaces in the production direct day/OFE loop. | Direct publication frame retained from the direct executor path; R7D8 evidence had H2637 5-day direct production exit `0`, HBP/loss/PASS/PLOT/WAT byte identity, and parsed HBP latest-event parity. R7E corrected the no-compatibility counter interpretation: current production direct manifests count the day-input builder as compatibility-edge invocations until R7F removes it. | Direct runtime counters, direct output provenance, and top-level runtime-selection provenance are recorded. Compatibility rollback remains explicit through API policy and `--compatibility-runtime`. | R7F-R7H: replace the direct day-input builder compatibility surface, then rerun performance closure, fixture hardening, and release readiness. |
+| Production direct mode | Explicit opt-in after R7C through `--direct-production-executor`; R7E also adds an explicit default-candidate activation gate through API policy and `--direct-default-candidate`. It is not default and not release-ready. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; R7F replaced the production direct interleaved day-input hot-loop dependency with `DirectProductionDayInputBuilder`, and focused R7 tests prove zero compatibility-edge counters for the focused path. | Direct publication frame retained from the direct executor path; R7D8 evidence had H2637 5-day direct production exit `0`, HBP/loss/PASS/PLOT/WAT byte identity, and parsed HBP latest-event parity. R7G full-H2637 direct default and explicit direct both fail closed before output because active snow partition authority is not yet represented as typed direct state. | Direct runtime counters, direct output provenance, and top-level runtime-selection provenance are recorded when direct reaches execution. Compatibility rollback remains explicit through API policy and `--compatibility-runtime`. | `HOLD-R7G-SURFACE-FREE-ACTIVE-SNOW-PARTITION-AUTHORITY-ABSENT`: add typed active snow controls/state, partition compute, mutation, downstream operands, publication projection, fixtures, and no-compatibility scans; then rerun R7G. |
 
 The terminal architecture remains stricter than the R6J cutover path. A direct
 publication object built from compatibility WB13 rows may be valid R6J adapter
@@ -1187,12 +1187,14 @@ Acceptance gates:
 - H2637 direct default remains identity-clean after isolation/deletion.
 - Rust gates, cargo-deny, docs lint, and line-count governance pass.
 
-Execution status: held at
-`HOLD-R7F-DIRECT-DAY-INPUT-BUILDER-COMPATIBILITY-SURFACE-HOT-EDGE`. Production
-direct excludes the compatibility scheduler/kernel request path, but the
-interleaved direct day-input builder still constructs compatibility-shaped
-`HillslopeWritebackSurface` seed/context surfaces in the day/OFE loop. Current
-direct runtime counters must count that edge until it is removed.
+Execution status: complete in
+`docs/work-packages/20260623-r7f-direct-day-input-hot-loop-isolation-001/`.
+R7F replaced the production direct interleaved day-input builder hot-loop
+dependency with typed direct day-input/state projection. Focused R7/R6 tests,
+source scans, and manifests now prove production direct reports
+`compatibility_edge_invocations = 0` because the hot-loop edge is removed, not
+because accounting suppressed it. Static process-control authority still comes
+from setup-time seeded surfaces and remains future migration scope.
 
 ##### R7G - Performance Closure And Fixture Hardening
 
@@ -1223,6 +1225,25 @@ Acceptance gates:
 - No compatibility authority appears in direct-mode hot-loop profiles or
   source scans.
 - Fixture matrix is documented with pass/fail and residual risk.
+
+Execution status: executed-held in
+`docs/work-packages/20260623-r7g-performance-closure-fixture-hardening-001/`
+at `HOLD-R7G-SURFACE-FREE-ACTIVE-SNOW-PARTITION-AUTHORITY-ABSENT`.
+Current same-binary H2637 evidence after R7F:
+
+- default-disabled compatibility passed at `645.51 s / 229560 KiB`;
+- explicit rollback compatibility passed at `637.10 s / 229016 KiB`;
+- the two compatibility modes had identical protected output checksum maps;
+- direct default candidate failed closed at `0.94 s / 729204 KiB`;
+- explicit direct production failed closed at `0.92 s / 729200 KiB`.
+
+The direct timings are failure-path only and are not endpoint performance
+evidence. The fail-closed marker is:
+`R7F typed production day-input path does not yet have surface-free active snow
+partition authority for lane 1`. R7G therefore cannot evaluate `<=10x`, direct
+output parity, full direct counters, or profile evidence until typed active
+snow partition authority exists without `HillslopeWritebackSurface` state/flux
+maps.
 
 ##### R7H - Release Cutover Readiness
 

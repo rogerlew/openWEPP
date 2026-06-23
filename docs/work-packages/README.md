@@ -13,6 +13,18 @@
 
 State as of `2026-06-23`:
 
+- `20260623-r7g-performance-closure-fixture-hardening-001/` is executed-held
+  at
+  `HOLD-R7G-SURFACE-FREE-ACTIVE-SNOW-PARTITION-AUTHORITY-ABSENT`. It ran the
+  same-binary H2637 matrix after R7F: default-disabled compatibility passed at
+  `645.51 s / 229560 KiB`, rollback compatibility passed at
+  `637.10 s / 229016 KiB`, and the two compatibility modes had identical
+  protected output checksum maps. Direct default candidate and explicit direct
+  both failed closed before endpoint timing because production direct lacks
+  typed, surface-free active snow partition authority for lane 1. The follow-up
+  must add typed active snow state/partition compute, downstream operands,
+  shadow projection, publication operands, fixtures, no-compatibility scans,
+  and helper line-count remediation before R7G can rerun.
 - `20260623-r7f-direct-day-input-hot-loop-isolation-001/` is complete. It
   closed
   `HOLD-R7F-DIRECT-DAY-INPUT-BUILDER-COMPATIBILITY-SURFACE-HOT-EDGE` by
