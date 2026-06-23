@@ -411,19 +411,19 @@ fn option_m_to_mm(value_m: Option<f64>) -> Result<Option<f64>, DirectRuntimeErro
     value_m.map(m_to_mm).transpose()
 }
 
-fn depth_to_volume_m3(
+fn publication_mm_to_volume_m3(
     field: &'static str,
-    depth_m: f64,
+    depth_mm: f64,
     area_m2: f64,
 ) -> Result<f64, DirectRuntimeError> {
-    validate_nonnegative_direct_m("publication.depth_m", depth_m)?;
+    validate_nonnegative_direct_m("publication.depth_mm", depth_mm)?;
     validate_finite("publication.area_m2", area_m2)?;
     if area_m2 <= 0.0 {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: "publication.area_m2",
         });
     }
-    let volume_m3 = depth_m * area_m2;
+    let volume_m3 = depth_mm * area_m2 / 1_000.0;
     validate_finite(field, volume_m3)?;
     Ok(volume_m3)
 }
@@ -439,6 +439,23 @@ fn sum_nonnegative_direct_m(
         validate_finite(field, total)?;
     }
     Ok(total)
+}
+
+fn scaled_direct_transfer_total_m(
+    field: &'static str,
+    raw_total_m: f64,
+    upstream_area_ratio: f64,
+) -> Result<f64, DirectRuntimeError> {
+    validate_nonnegative_direct_m(field, raw_total_m)?;
+    validate_nonnegative_direct_m("transfer.upstream_area_ratio", upstream_area_ratio)?;
+    if raw_total_m > WB11_ZERO_THRESHOLD && upstream_area_ratio <= WB11_ZERO_THRESHOLD {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "transfer.upstream_area_ratio",
+        });
+    }
+    let scaled_total_m = raw_total_m * upstream_area_ratio;
+    validate_finite(field, scaled_total_m)?;
+    Ok(scaled_total_m)
 }
 
 fn sum_finite_direct_m(field: &'static str, values: &[f64]) -> Result<f64, DirectRuntimeError> {

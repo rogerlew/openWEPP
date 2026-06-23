@@ -925,18 +925,29 @@ fn route_percolation_layer(
     lane_substeps_f64: f64,
     layer_index: usize,
 ) -> Result<f64, DirectRuntimeError> {
-    let layer = &layers[layer_index];
-    let excess_m = layer.theta_m - layer.field_capacity_m;
+    let layer_theta_m = layers[layer_index].theta_m;
+    let layer_field_capacity_m = layers[layer_index].field_capacity_m;
+    let layer_upper_limit_m = layers[layer_index].upper_limit_m;
+    let layer_count = layers.len();
+    let excess_m = layer_theta_m - layer_field_capacity_m;
     if excess_m <= WB11_ZERO_THRESHOLD {
         return Ok(0.0);
     }
-    let saturation_ratio = layer.theta_m / layer.upper_limit_m;
+    let saturation_ratio = layer_theta_m / layer_upper_limit_m;
     validate_nonnegative_direct_m("percolation.saturation_ratio", saturation_ratio)?;
-    let is_bottom_layer = layer_index == layers.len() - 1;
-    let fx = percolation_layer_fx(layer, inputs.lane_substeps == 1, is_bottom_layer)?;
+    let is_bottom_layer = layer_index == layer_count - 1;
+    let fx = percolation_layer_fx(
+        layer_field_capacity_m,
+        layer_upper_limit_m,
+        saturation_ratio,
+        inputs.lane_substeps == 1,
+        is_bottom_layer,
+    )?;
     let effective_conductivity_m_s =
         effective_percolation_conductivity(layers, inputs, layer_index, is_bottom_layer)?;
-    let pei_pre_m = (WB18_PERC_TIMESTEP_S * effective_conductivity_m_s * fx).min(excess_m);
+    let ks_adjusted_m_s = effective_conductivity_m_s * fx;
+    validate_nonnegative_direct_m("percolation.ks_adjusted_m_s", ks_adjusted_m_s)?;
+    let pei_pre_m = (WB18_PERC_TIMESTEP_S * ks_adjusted_m_s).min(excess_m);
     validate_nonnegative_direct_m("percolation.pei_pre_m", pei_pre_m)?;
     let pei_unscaled_m = if is_bottom_layer {
         pei_pre_m
@@ -954,12 +965,12 @@ fn route_percolation_layer(
         "percolation.layer_theta_after_m",
         layers[layer_index].theta_m,
     )?;
-    per_layer_flux_m[layer_index] += pei_m;
-    validate_finite(
-        "percolation.per_layer_flux_m",
-        per_layer_flux_m[layer_index],
-    )?;
     if is_bottom_layer {
+        per_layer_flux_m[layer_index] += pei_m;
+        validate_finite(
+            "percolation.per_layer_flux_m",
+            per_layer_flux_m[layer_index],
+        )?;
         Ok(pei_m)
     } else {
         layers[layer_index + 1].theta_m += pei_m;
@@ -967,18 +978,24 @@ fn route_percolation_layer(
             "percolation.lower_layer_theta_after_m",
             layers[layer_index + 1].theta_m,
         )?;
+        per_layer_flux_m[layer_index] += pei_m;
+        validate_finite(
+            "percolation.per_layer_flux_m",
+            per_layer_flux_m[layer_index],
+        )?;
         Ok(0.0)
     }
 }
 
 fn percolation_layer_fx(
-    layer: &DirectSubsurfaceLayerState,
+    field_capacity_m: f64,
+    upper_limit_m: f64,
+    saturation_ratio: f64,
     daily_lane: bool,
     is_bottom_layer: bool,
 ) -> Result<f64, DirectRuntimeError> {
-    let saturation_ratio = layer.theta_m / layer.upper_limit_m;
     let mut fx = if saturation_ratio < WB18_PERC_SATURATION_THRESHOLD {
-        let fc_ul_ratio = layer.field_capacity_m / layer.upper_limit_m;
+        let fc_ul_ratio = field_capacity_m / upper_limit_m;
         validate_finite("percolation.fc_ul_ratio", fc_ul_ratio)?;
         if fc_ul_ratio >= 1.0 {
             return Err(DirectRuntimeError::DirectDomainViolation {
@@ -1384,6 +1401,12 @@ fn lateral_metrics(
     if saturated_depth_m <= WB11_ZERO_THRESHOLD {
         return Ok(metrics);
     }
+    let legacy_daily_lateral = inputs.lane_substeps == 1
+        && !inputs.mofe_hourly_carry_arrays_enabled
+        && inputs.solwpv_mode < 2006;
+    let mut daily_average_storage = 0.0_f64;
+    let mut daily_average_upper_limit = 0.0_f64;
+    let mut daily_average_hk = 0.0_f64;
     for (index, layer) in layers.iter().enumerate() {
         if active_layers.0[index] {
             metrics.capacity_m += (layer.theta_m - layer.lateral_withdrawal_threshold_m()).max(0.0);
@@ -1396,7 +1419,14 @@ fn lateral_metrics(
         metrics.avpora += layer.porosity * layer_weight;
         metrics.avfca += layer.field_capacity_theta * layer_weight;
         metrics.avcoca += layer.coca * layer_weight;
-        if inputs.lane_substeps == 1 && !inputs.mofe_hourly_carry_arrays_enabled {
+        if legacy_daily_lateral {
+            let layer_hk = lateral_layer_hk(layer)?;
+            let effective_upper_limit_m = (layer.upper_limit_m - layer.frozen_water_m).max(0.0);
+            metrics.conductivity_depth_sum += layer.conductivity_m_s * layer.depth_m;
+            daily_average_storage += layer.theta_m * layer_weight;
+            daily_average_upper_limit += effective_upper_limit_m * layer_weight;
+            daily_average_hk += layer_hk * layer_weight;
+        } else if inputs.lane_substeps == 1 && !inputs.mofe_hourly_carry_arrays_enabled {
             add_daily_lateral_conductivity(layer, inputs, &mut metrics)?;
         } else {
             let saturation_fraction = hourly_lateral_saturation_fraction(layer)?;
@@ -1404,6 +1434,18 @@ fn lateral_metrics(
             metrics.conductivity_depth_sum +=
                 layer.lateral_conductivity_m_s * saturation_fraction * layer.depth_m;
         }
+    }
+    if legacy_daily_lateral && daily_average_upper_limit > 0.001 {
+        let saturation_fraction = daily_average_storage / daily_average_upper_limit;
+        metrics.legacy_saturation_fraction = if saturation_fraction < 0.95 {
+            saturation_fraction.powf(daily_average_hk).max(0.002)
+        } else {
+            1.0
+        };
+        validate_nonnegative_direct_m(
+            "subsurface.legacy_saturation_fraction",
+            metrics.legacy_saturation_fraction,
+        )?;
     }
     validate_finite("subsurface.lane_substeps_f64", lane_substeps_f64)?;
     Ok(metrics)

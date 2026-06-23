@@ -532,7 +532,12 @@ fn mofe01_tb2_redo2_pass_runvol_uses_qofe_outlet_area_not_q_outlet_area() {
 
     let mut pass_rows = Vec::<HillslopePassRow>::new();
     collection
-        .append_runoff_delivery_rows_to(17, 300.0, &mut pass_rows)
+        .append_runoff_delivery_rows_to(
+            17,
+            300.0,
+            HillslopePassPublicationScalars::zero(),
+            &mut pass_rows,
+        )
         .expect("runoff-delivery row should build from outlet record");
 
     assert_eq!(pass_rows.len(), 1);

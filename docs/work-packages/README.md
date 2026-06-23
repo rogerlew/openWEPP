@@ -11,8 +11,54 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-06-22`:
+State as of `2026-06-23`:
 
+- `20260623-r7d8-direct-hbp-erod15-export-alias-parity-001/` is complete. It
+  lifted `HOLD-R7D7-HBP-EROD15-SEDIMENT-EXPORT-ALIASES-DIRECT-PRODUCER-GAP`
+  by carrying producer-authoritative direct EROD15 sediment export aliases
+  into HBP publication without compatibility runtime wrapping. Fresh H2637
+  5-day evidence under `/tmp/r7d8ad-h2637-5day` has default/direct exits `0`,
+  HBP/loss/PASS/PLOT/WAT byte identity, parsed HBP latest-event parity, and
+  direct `compatibility_edge_invocations = 0`.
+- `20260623-r7d7-direct-wb16-peak-publication-parity-001/` is executed-held
+  with final disposition
+  `HOLD-R7D7-HBP-EROD15-SEDIMENT-EXPORT-ALIASES-DIRECT-PRODUCER-GAP`. It
+  closed the R7D6 PASS `peakro` residual by making compatibility PASS consume
+  runtime `peakro` and direct PASS consume direct runoff peak authority before
+  the erosion copy. Fresh H2637 5-day WAT and PASS outputs are byte-identical
+  with direct `compatibility_edge_invocations = 0`; HBP now differs only on
+  EROD15 sediment export aliases (`total_detachment_kg = 0.6` and
+  `sediment_concentration_kg_m3 = 6.816136920064195` in compatibility versus
+  direct zeros). R7D8 lifted this hold for the current H2637 5-day gate.
+- `20260623-r7d6-direct-erod13-erod14-typed-producer-001/` is executed-held
+  with final disposition
+  `HOLD-R7D6-PASS-HBP-PEAKRO-COMPATIBILITY-ZERO-RESIDUAL`. It lifted
+  `HOLD-R7D5-DIRECT-EROD13-EROD14-EROD15-TYPED-PRODUCER-ABSENT` by adding
+  typed direct EROD13/EROD14/EROD15 producer authority and the direct WB16
+  peak-duration producer required by active erosion publication. H2637 direct
+  production exits `0` with `compatibility_edge_invocations = 0`; WAT is
+  byte-identical and PASS sediment fields are parity-clean. Its PASS/HBP
+  `peakro` hold was narrowed by R7D7, and the remaining HBP sediment export
+  alias hold was lifted by R7D8.
+- `20260623-r7d5-direct-erod14-sediment-publication-001/` is executed-held
+  with final disposition
+  `HOLD-R7D5-DIRECT-EROD13-EROD14-EROD15-TYPED-PRODUCER-ABSENT`. It proved
+  direct production had no direct sediment producer and replaced the silent
+  zero active-sediment publication path with a fail-closed guard when
+  `erod14_wave2_enabled` is true. Focused H2637 direct production now exits
+  `1` at `R7D5 direct EROD14/EROD15 sediment producer must execute before this
+  span`; R7D HBP/PASS sediment parity remains blocked on the queued R7D6 typed
+  producer implementation.
+- `20260622-r7d4-direct-mofe-dynamic-carry-transfer-001/` is executed-held
+  with final disposition
+  `HOLD-R7D4-HBP-EROD14-SEDIMENT-PRODUCER-ABSENT`. It lifted
+  `HOLD-R7D3-DIRECT-MOFE-DYNAMIC-CARRY-TRANSFER-ABSENT` by copying current-lane
+  R4O/R4L `ui_LfCrf`/`ui_SCrunf` arrays forward into downstream typed transfer
+  buffers and making R3A/R4J consume them with area-ratio provenance. Focused
+  H2637 evidence now has byte-identical WAT and PASS, and loss/plot differ
+  only by `run_name`. HBP remains held because default contains nonzero
+  sediment concentration/detachment/deposition payload bytes where direct still
+  publishes zero erosion authority.
 - `20260622-r7d3-direct-wb14-r4k-infiltration-producer-001/` is executed-held
   with final disposition
   `HOLD-R7D3-DIRECT-MOFE-DYNAMIC-CARRY-TRANSFER-ABSENT`. It lifted
@@ -20,16 +66,8 @@ State as of `2026-06-22`:
   implementing typed direct WB14/R4K infiltration/depression producer
   authority, wiring same-pass infiltration into R4A/WB18/ET/publication, and
   adding R4L direct hourly saturation addback from R4O carry arrays. H2637
-  direct production now exits 0 (`192.90 s / 643724 KiB`) with
-  `compatibility_edge_invocations=0`, and `H2637.loss.json` is byte-identical
-  to default. HBP/WAT/PASS/manifest parity remains blocked because direct MOFE
-  same-day dynamic lane-to-lane carry transfer is absent.
-- `20260622-r7d4-direct-mofe-dynamic-carry-transfer-001/` is queued as the
-  next R7D hold-lift package. It must make current-lane R4O/R4L
-  `ui_LfCrf`/`ui_SCrunf` arrays copy forward with area-ratio provenance into
-  downstream `ui_LfUrf`/`ui_SUrunf` before downstream R3A/R4J execution, then
-  keep iterating H2637 HBP/WAT/PASS/loss/manifest parity until R7D closes or a
-  new named out-of-envelope blocker is proven.
+  direct production exits 0 with `compatibility_edge_invocations=0`; the
+  remaining dynamic transfer blocker was subsequently lifted by R7D4.
 - `20260622-r7d2-multiofe-lane-seed-authority-001/` is executed-held with final
   disposition
   `HOLD-R7D2-DIRECT-WB14-R4K-INFILTRATION-PRODUCER-AUTHORITY-ABSENT`. It

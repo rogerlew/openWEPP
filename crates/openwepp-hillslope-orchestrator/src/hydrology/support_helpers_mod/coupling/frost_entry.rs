@@ -1146,12 +1146,16 @@ impl Wb11HydrologyKernel {
             .iter()
             .map(|layer| layer.soil_water_m)
             .sum::<f64>();
-        let frwatc_net_liquid_delta = raw_frwatc_soil_water_after - context.prior.soil_water;
-        let raw_frwatc_soil_water_after = if frwatc_freeze_exchange > WB11_ZERO_THRESHOLD
+        let material_frwatc_exchange = frwatc_freeze_exchange > WB11_ZERO_THRESHOLD
             || frwatc_thaw_release > WB11_ZERO_THRESHOLD
             || shadow_fine_state.watpdg_m > WB11_ZERO_THRESHOLD
-            || shadow_fine_state.watbtm_m > WB11_ZERO_THRESHOLD
-        {
+            || shadow_fine_state.watbtm_m > WB11_ZERO_THRESHOLD;
+        let mut frwatc_net_liquid_delta =
+            raw_frwatc_soil_water_after - context.prior.soil_water;
+        if !material_frwatc_exchange && frwatc_net_liquid_delta.abs() <= WB11_ZERO_THRESHOLD {
+            frwatc_net_liquid_delta = 0.0;
+        }
+        let raw_frwatc_soil_water_after = if material_frwatc_exchange {
             raw_frwatc_soil_water_after
         } else {
             context.prior.soil_water + frwatc_net_liquid_delta
@@ -1166,11 +1170,7 @@ impl Wb11HydrologyKernel {
             });
         }
         let frwatc_soil_water_after = raw_frwatc_soil_water_after.max(0.0);
-        let soil_water_after_frwatc = if frwatc_freeze_exchange > WB11_ZERO_THRESHOLD
-            || frwatc_thaw_release > WB11_ZERO_THRESHOLD
-            || shadow_fine_state.watpdg_m > WB11_ZERO_THRESHOLD
-            || shadow_fine_state.watbtm_m > WB11_ZERO_THRESHOLD
-        {
+        let soil_water_after_frwatc = if material_frwatc_exchange {
             Some(frwatc_soil_water_after)
         } else {
             None
@@ -1497,15 +1497,15 @@ impl Wb11HydrologyKernel {
             freeze_started,
             fgthwd_flag,
         };
-
-        Self::finalize_active_frost_coupling(
+        let outcome = Self::finalize_active_frost_coupling(
             request,
             completion_context,
             shadow_fine_state,
             &hourly_state,
             layer_water_state,
             total_fine_layer_count,
-        )
+        )?;
+        Ok(outcome)
     }
 
 }

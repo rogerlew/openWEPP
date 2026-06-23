@@ -119,7 +119,7 @@ fn execute_hillslope_direct_production_days(
         contributor_ofe_count,
         static_per_ofe_slice_count,
         per_ofe_lane_areas_m2,
-        per_ofe_runoff_publication_geometries: _,
+        per_ofe_runoff_publication_geometries,
         runtime_surface,
         lane_context,
         climate_span,
@@ -132,20 +132,25 @@ fn execute_hillslope_direct_production_days(
         persistent_lane_state.as_ref(),
         per_ofe_lane_areas_m2.len(),
     )?;
-    let mut frame = build_direct_production_run_frame(
+    let mut frame = build_direct_production_run_frame(&DirectProductionRunFrameBuildInputs {
         output_hillslope_id,
-        &per_ofe_lane_areas_m2,
-        climate_span.days.len(),
-        &climate_request,
-        &climate_span,
-        &lane_seed_surfaces,
-        lane_context.lane,
-    )?;
-    let day_input_builder = DirectPublicationDayInputBuilder::new_with_seed_surfaces(
+        lane_areas_m2: &per_ofe_lane_areas_m2,
+        runoff_publication_geometries: &per_ofe_runoff_publication_geometries,
+        day_count: climate_span.days.len(),
+        climate_request: &climate_request,
+        climate_span: &climate_span,
+        climate_context_surface: &runtime_surface,
+        lane_seed_surfaces: &lane_seed_surfaces,
+        execution_lane: lane_context.lane,
+    })?;
+    let day_input_builder =
+        DirectPublicationDayInputBuilder::new_with_seed_surfaces_and_erosion_guard(
         &climate_request,
         &climate_span,
         lane_seed_surfaces,
+        &runtime_surface,
         lane_context.lane,
+        true,
     )?;
     let metadata = DirectPublicationRunMetadata {
         run_name: run_name.to_string(),
@@ -170,6 +175,7 @@ fn execute_hillslope_direct_production_days(
         .map_err(|source| direct_production_runtime_error(&source))?;
     let coupling_vectors = build_direct_production_coupling_vector_provenance(
         &runtime_surface,
+        &frame,
         &direct_execution.publication_frame,
     )?;
     let executed_day_count = climate_span.days.len();
@@ -199,15 +205,30 @@ fn execute_hillslope_direct_production_days(
     })
 }
 
-fn build_direct_production_run_frame(
+struct DirectProductionRunFrameBuildInputs<'a> {
     output_hillslope_id: u32,
-    lane_areas_m2: &[f64],
+    lane_areas_m2: &'a [f64],
+    runoff_publication_geometries: &'a [Wb13RunoffPublicationGeometry],
     day_count: usize,
-    climate_request: &HillslopeClimateRuntimeRequest,
-    climate_span: &ClimateRunSpanSummary,
-    lane_seed_surfaces: &[HillslopeWritebackSurface],
+    climate_request: &'a HillslopeClimateRuntimeRequest,
+    climate_span: &'a ClimateRunSpanSummary,
+    climate_context_surface: &'a HillslopeWritebackSurface,
+    lane_seed_surfaces: &'a [HillslopeWritebackSurface],
     execution_lane: ExecutionLane,
+}
+
+fn build_direct_production_run_frame(
+    inputs: &DirectProductionRunFrameBuildInputs<'_>,
 ) -> Result<DirectRunFrame, HillslopeCliError> {
+    let output_hillslope_id = inputs.output_hillslope_id;
+    let lane_areas_m2 = inputs.lane_areas_m2;
+    let runoff_publication_geometries = inputs.runoff_publication_geometries;
+    let day_count = inputs.day_count;
+    let climate_request = inputs.climate_request;
+    let climate_span = inputs.climate_span;
+    let climate_context_surface = inputs.climate_context_surface;
+    let lane_seed_surfaces = inputs.lane_seed_surfaces;
+    let execution_lane = inputs.execution_lane;
     let identity = DirectRunIdentity::new(
         u64::from(output_hillslope_id),
         output_hillslope_id,
@@ -215,6 +236,13 @@ fn build_direct_production_run_frame(
         day_count,
     )
     .map_err(|source| direct_production_runtime_error(&source))?;
+    if runoff_publication_geometries.len() != lane_areas_m2.len() {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production runoff publication geometry count {} does not match lane count {}",
+            runoff_publication_geometries.len(),
+            lane_areas_m2.len()
+        )));
+    }
     let lanes = lane_areas_m2
         .iter()
         .copied()
@@ -238,11 +266,29 @@ fn build_direct_production_run_frame(
             } else {
                 lane_areas_m2[lane_index - 1] / area_m2
             };
+            let seed_authority = direct_production_lane_seed_authority(
+                lane_seed_surfaces,
+                lane_index,
+                lane_areas_m2.len(),
+            )?;
+            let runoff_publication_geometry = direct_production_runoff_publication_geometry(
+                seed_authority,
+                runoff_publication_geometries[lane_index],
+                lane_index,
+            )?;
+            lane_inputs.runoff_publication_q_scale = runoff_publication_geometry.q_scale;
+            lane_inputs.runoff_publication_qofe_scale = runoff_publication_geometry.qofe_scale;
+            lane_inputs.runoff_publication_efflen_m = runoff_publication_geometry.efflen_m;
+            lane_inputs.runoff_publication_cumulative_length_m =
+                runoff_publication_geometry.cumulative_length_m;
+            lane_inputs.runoff_publication_ofe_length_m =
+                runoff_publication_geometry.ofe_length_m;
             seed_direct_production_lane_constructor_inputs(
                 &mut lane_inputs,
                 lane_index,
                 climate_request,
                 climate_span,
+                climate_context_surface,
                 lane_seed_surfaces,
                 execution_lane,
             )?;
@@ -251,6 +297,72 @@ fn build_direct_production_run_frame(
         .collect::<Result<Vec<_>, HillslopeCliError>>()?;
     DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(identity, lanes))
         .map_err(|source| direct_production_runtime_error(&source))
+}
+
+fn direct_production_lane_seed_authority(
+    lane_seed_surfaces: &[HillslopeWritebackSurface],
+    lane_index: usize,
+    lane_count: usize,
+) -> Result<&HillslopeWritebackSurface, HillslopeCliError> {
+    if lane_seed_surfaces.len() == 1 {
+        return Ok(&lane_seed_surfaces[0]);
+    }
+    lane_seed_surfaces.get(lane_index).ok_or_else(|| {
+        direct_production_executor_blocked(format!(
+            "direct production lane {} has no lane-indexed seed authority out of {} lanes",
+            lane_index + 1,
+            lane_count
+        ))
+    })
+}
+
+#[derive(Clone, Copy, Debug)]
+struct DirectProductionRunoffPublicationGeometry {
+    q_scale: f64,
+    qofe_scale: f64,
+    efflen_m: f64,
+    cumulative_length_m: f64,
+    ofe_length_m: f64,
+}
+
+fn direct_production_runoff_publication_geometry(
+    seed_authority: &HillslopeWritebackSurface,
+    geometry: Wb13RunoffPublicationGeometry,
+    lane_index: usize,
+) -> Result<DirectProductionRunoffPublicationGeometry, HillslopeCliError> {
+    let efflen_m =
+        runtime_surface_symbol_value(seed_authority, "efflen").unwrap_or(geometry.ofe_length_m);
+    if !efflen_m.is_finite() || efflen_m <= 0.0 {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production lane {} efflen must be finite and > 0.0 for WB13 runoff publication, observed {efflen_m}",
+            lane_index + 1
+        )));
+    }
+    if efflen_m > geometry.cumulative_length_m + 1.0e-9 {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production lane {} efflen must not exceed cumulative runoff-publication length, observed efflen={} cumulative={}",
+            lane_index + 1,
+            efflen_m,
+            geometry.cumulative_length_m
+        )));
+    }
+    let q_scale = efflen_m / geometry.cumulative_length_m;
+    let qofe_scale = efflen_m / geometry.ofe_length_m;
+    if !q_scale.is_finite() || q_scale <= 0.0 || !qofe_scale.is_finite() || qofe_scale <= 0.0 {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production lane {} invalid runoff publication scales q={} qofe={}",
+            lane_index + 1,
+            q_scale,
+            qofe_scale
+        )));
+    }
+    Ok(DirectProductionRunoffPublicationGeometry {
+        q_scale,
+        qofe_scale,
+        efflen_m,
+        cumulative_length_m: geometry.cumulative_length_m,
+        ofe_length_m: geometry.ofe_length_m,
+    })
 }
 
 fn direct_production_lane_seed_surfaces(
@@ -284,6 +396,7 @@ fn seed_direct_production_lane_constructor_inputs(
     lane_index: usize,
     climate_request: &HillslopeClimateRuntimeRequest,
     climate_span: &ClimateRunSpanSummary,
+    climate_context_surface: &HillslopeWritebackSurface,
     lane_seed_surfaces: &[HillslopeWritebackSurface],
     execution_lane: ExecutionLane,
 ) -> Result<(), HillslopeCliError> {
@@ -301,6 +414,7 @@ fn seed_direct_production_lane_constructor_inputs(
         climate_request,
         climate_span,
         seed_authority,
+        climate_context_surface,
         execution_lane,
     )?;
     lane_inputs.water.soil_water_m =
@@ -313,6 +427,7 @@ fn seed_direct_production_lane_constructor_inputs(
 
 fn build_direct_production_coupling_vector_provenance(
     runtime_surface: &HillslopeWritebackSurface,
+    frame: &DirectRunFrame,
     publication: &DirectRunPublicationFrame,
 ) -> Result<HillslopeCouplingVectorProvenance, HillslopeCliError> {
     let row = publication.last_day().ok_or_else(|| {
@@ -336,12 +451,30 @@ fn build_direct_production_coupling_vector_provenance(
         "frost.options.wintRed",
         require_simimpl10_coupling_scalar(runtime_surface, "frost.options.wintRed")?,
     )?;
-    let dfrost = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_dfrost")?;
-    let dthaw = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_dthaw")?;
-    let nft = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_nft")?;
-    let ws_frz = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_ws_frz")?;
-    let infcap_frz =
-        require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_infcap_frz")?;
+    let outlet_frost_carry = frame
+        .lanes
+        .last()
+        .and_then(|lane| lane.frost_runtime_carry.as_ref());
+    let dfrost = outlet_frost_carry.map_or_else(
+        || require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_dfrost"),
+        |carry| Ok(carry.dfrost_m),
+    )?;
+    let dthaw = outlet_frost_carry.map_or_else(
+        || require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_dthaw"),
+        |carry| Ok(carry.dthaw_m),
+    )?;
+    let nft = outlet_frost_carry.map_or_else(
+        || require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_nft"),
+        |carry| Ok(carry.nft),
+    )?;
+    let ws_frz = outlet_frost_carry.map_or_else(
+        || require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_ws_frz"),
+        |carry| Ok(carry.ws_frz_m),
+    )?;
+    let infcap_frz = outlet_frost_carry.map_or_else(
+        || require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_infcap_frz"),
+        |carry| Ok(carry.infcap_frz_m_s),
+    )?;
     let ssc = require_simimpl10_coupling_scalar(runtime_surface, "ssc")?;
     let total_soil = row.storage.total_soil_mm;
     let frozwt = row.storage.frozwt_mm;
@@ -528,6 +661,9 @@ impl ClimateExecutionAccumulator {
             .append_runoff_delivery_rows_to(
                 hillslope_id_for_pass_output(context.output_hillslope_id)?,
                 context.publication_area_m2,
+                HillslopePassPublicationScalars::from_runtime_surface(
+                    &persistent_result.runtime_surface,
+                )?,
                 &mut self.pass_rows,
             )?;
         self.observe_persistent_day_result(persistent_result);
@@ -541,9 +677,12 @@ impl ClimateExecutionAccumulator {
     ) -> Result<(), HillslopeCliError> {
         self.runtime_swe_publication_state_m =
             execution_result.wb13_row.wb13_row.snow_water / 1_000.0;
+        let publication_scalars =
+            HillslopePassPublicationScalars::from_runtime_surface(&execution_result.runtime_surface)?;
         self.pass_rows.push(build_hillslope_pass_row(
             hillslope_id_for_pass_output(context.output_hillslope_id)?,
             &execution_result.wb13_row,
+            publication_scalars,
         )?);
         self.wb13_rows.push(execution_result.wb13_row.clone());
         indexed_shadow_surface::validate_shadow_surface(&execution_result.runtime_surface)?;

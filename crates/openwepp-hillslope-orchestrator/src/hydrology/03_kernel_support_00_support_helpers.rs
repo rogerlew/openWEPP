@@ -164,6 +164,84 @@ pub(crate) struct SnowCouplingOutcome {
     hourly_state: Vec<SnowHourlyState>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectSnowLiquidPartition {
+    pub active_snow_coupling: bool,
+    pub snow_coupling_signed_s_m: f64,
+    pub routed_melt_m: f64,
+    pub post_winter_rain_m: f64,
+    pub runtime_swe_after_m: f64,
+    pub runtime_depth_after_m: f64,
+    pub runtime_density_after_kg_m3: f64,
+    pub runtime_settle_day_count_after: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectFrostLayerProjection {
+    pub layer_index: usize,
+    pub theta_after_m: f64,
+    pub frozen_depth_m: f64,
+    pub frozen_water_m: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectFrostLayerShadowProjection {
+    pub layer_index: usize,
+    pub st_m: f64,
+    pub soil_water_m: f64,
+    pub frozen_depth_m: f64,
+    pub frozen_water_m: f64,
+    pub soilf_m: f64,
+    pub yst_m: f64,
+    pub nwfrzz_m: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectFrostFineLayerProjection {
+    pub layer_index: usize,
+    pub fine_index: usize,
+    pub fgfrst: f64,
+    pub slfsd_m: f64,
+    pub slsic_m: f64,
+    pub slsw_theta: f64,
+    pub sltime_s: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectFrostLiquidPartition {
+    pub active_frost_coupling: bool,
+    pub dthaw_after_m: f64,
+    pub nft_after: f64,
+    pub infcap_frz_m_s: f64,
+    pub soil_water_after_frwatc_m: Option<f64>,
+    pub frwatc_soil_water_before_m: f64,
+    pub frwatc_soil_water_after_m: f64,
+    pub frwatc_frozen_water_before_m: f64,
+    pub frwatc_frozen_water_after_m: f64,
+    pub frwatc_freeze_debit_m: f64,
+    pub frwatc_thaw_credit_m: f64,
+    pub frwatc_net_liquid_delta_m: f64,
+    pub frozen_water_after_m: f64,
+    pub frost_depth_after_m: f64,
+    pub thdp_after_m: f64,
+    pub tfrdp_after_m: f64,
+    pub tthawd_after_m: f64,
+    pub fgthwd_flag_after: f64,
+    pub total_fine_layer_count: f64,
+    pub conductivity_tilled_w_m_k: f64,
+    pub conductivity_untilled_w_m_k: f64,
+    pub conductivity_residue_w_m_k: f64,
+    pub shadow_total_water_before_m: f64,
+    pub shadow_total_water_after_m: f64,
+    pub shadow_wb_delta_m: f64,
+    pub shadow_frwatc_residual_m: f64,
+    pub watpdg_m: f64,
+    pub watbtm_m: f64,
+    pub layer_projection: Vec<DirectFrostLayerProjection>,
+    pub layer_shadow_projection: Vec<DirectFrostLayerShadowProjection>,
+    pub fine_layer_projection: Vec<DirectFrostFineLayerProjection>,
+}
+
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct SnowMeltRedistributionOutcome {
     routed_melt_total_m: f64,
@@ -415,3 +493,4 @@ const SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M: f64 = 0.001;
 
 
 mod support_helpers_mod;
+pub use support_helpers_mod::DirectFrostRunoffSurface;

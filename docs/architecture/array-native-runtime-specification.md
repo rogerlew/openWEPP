@@ -883,7 +883,7 @@ activate direct mode or relax any R7 gate.
 | R5A-R5E | Full canonical OFE-day direct executor lifecycle and 14-phase coverage complete. | One canonical 14-phase entry per OFE-day, direct R4/R5 spans folded under canonical phase entries, protected output identity and endpoint/RSS evidence. | Public outputs remained compatibility-authoritative at R5E; no default activation. |
 | R6A-R6I | Direct publication frame and producer-authority blockers iteratively reduced. | Run-bound publication frame, direct projection consumers, typed day-input builder, PMET layer carry correction, and current-fixture parity closures. | Earlier held states are historical; R6J is the terminal R6 publication cutover package. |
 | R6J | Opt-in direct publication cutover complete. | `DirectPublicationFrameCutover` writes HBP/WAT/PASS/loss/plot/manifest from direct publication artifacts with H2637 byte/Arrow identity and direct manifest provenance. | It is not default activation. Current cutover production adapts simulation-owned WB13 rows into direct publication rows; production direct executor and R7 compatibility-runtime removal remain open. |
-| R7 | R7A architecture reconciliation, R7B parsed-input typed constructor boundary, and R7C opt-in production direct executor routing complete; R7D executed-held on multi-OFE lane-seed authority; R7E-H remain open. | R7A-H burndown below and `docs/work-packages/20260622-r7d-direct-publication-producer-authority-001/`. | R7D hold-lift for direct publication producer authority, default activation, hot compatibility isolation/deletion, performance closure, fixture hardening, and release readiness. |
+| R7 | R7A architecture reconciliation, R7B parsed-input typed constructor boundary, R7C opt-in production direct executor routing, and R7D8 direct HBP EROD15 sediment-export alias parity are complete for the current H2637 5-day direct-production gate. R7E-H remain open. | R7A-H burndown below, `docs/work-packages/20260623-r7d7-direct-wb16-peak-publication-parity-001/`, and `docs/work-packages/20260623-r7d8-direct-hbp-erod15-export-alias-parity-001/`. | Default activation, hot compatibility isolation/deletion, performance closure, fixture hardening, and release readiness. |
 
 Current runtime-mode matrix:
 
@@ -892,7 +892,7 @@ Current runtime-mode matrix:
 | Compatibility mode | Default API/CLI mode. | Compatibility scheduler, `HillslopeWritebackSurface`, kernel request/writeback, and WB13 publication rows. | Compatibility output builders. | Compatibility-provenanced outputs; no direct runtime counters unless a direct path is selected. | Must remain as rollback/replay/shadow adapter until direct default is proven. |
 | Shadow mode | Explicit validation mode. | Compatibility execution remains public-output authority while direct artifacts may be produced for comparison. | Compatibility publication for public outputs. | Compatibility provenance; direct artifacts are evidence only. | Must stay structurally outside direct production hot loop. |
 | Direct publication cutover | Explicit opt-in mode after R6J. | Compatibility simulation still produces the execution record; direct publication artifacts are built from the cutover adapter. | Direct HBP/WAT/PASS/loss/manifest writers consume `DirectRunPublicationFrame` artifacts. | Direct publication provenance and run-local direct counters for cutover manifests. | Replace WB13/runtime-surface adapter authority with direct executor-owned publication producers before default activation. |
-| Production direct mode | Explicit opt-in after R7C through `--direct-production-executor`; not default and not release-ready. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; R7C bypasses compatibility climate-day scheduler and skips compatibility audit/shadow diagnostic setup for this mode. | Direct publication frame retained from the direct executor path; R7D proved direct consumer sourcing but held on multi-OFE lane-seed producer authority, so HBP/PASS/WAT parity remains unresolved. | Direct runtime counters and direct output provenance are recorded; rollback/default-selection fields remain future activation scope. | R7D hold-lift plus R7E-R7H. |
+| Production direct mode | Explicit opt-in after R7C through `--direct-production-executor`; not default and not release-ready. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; R7C bypasses compatibility climate-day scheduler and skips compatibility audit/shadow diagnostic setup for this mode. | Direct publication frame retained from the direct executor path; R7D8 evidence has H2637 5-day direct production exit `0`, HBP/loss/PASS/PLOT/WAT byte identity, parsed HBP latest-event parity, and direct counters at `compatibility_edge_invocations = 0`. | Direct runtime counters and direct output provenance are recorded; rollback/default-selection fields remain future activation scope. | R7E-R7H: default activation, hot compatibility isolation/deletion, performance closure, fixture hardening, and release readiness. |
 
 The terminal architecture remains stricter than the R6J cutover path. A direct
 publication object built from compatibility WB13 rows may be valid R6J adapter
@@ -1052,7 +1052,7 @@ Acceptance gates:
 - Manifest provenance reports direct-source publication rows and run-local
   direct counters.
 
-Execution status: executed-held across three packages, with the next hold-lift
+Execution status: executed-held across eight packages, with the next hold-lift
 queued:
 
 - `docs/work-packages/20260622-r7d-direct-publication-producer-authority-001/`
@@ -1075,20 +1075,52 @@ queued:
   Full R7D parity remains executed-held at
   `HOLD-R7D3-DIRECT-MOFE-DYNAMIC-CARRY-TRANSFER-ABSENT`.
 - `docs/work-packages/20260622-r7d4-direct-mofe-dynamic-carry-transfer-001/`
-  is queued as the next R7D hold-lift package.
+  lifted the dynamic MOFE same-day carry blocker by copying current-lane R4O/R4L
+  `ui_LfCrf`/`ui_SCrunf` arrays forward into downstream typed transfer buffers
+  and making R3A/R4J consume them with area-ratio provenance. Focused H2637
+  evidence then had byte-identical WAT and PASS, and loss/plot differed only by
+  `run_name`. R7D4 held at
+  `HOLD-R7D4-HBP-EROD14-SEDIMENT-PRODUCER-ABSENT` because direct HBP still
+  emitted zero sediment concentration, total detachment, and total deposition.
+- `docs/work-packages/20260623-r7d5-direct-erod14-sediment-publication-001/`
+  proved that the production direct executor has no direct EROD13/EROD14/EROD15
+  sediment producer. It replaced silent zero active-sediment publication with a
+  fail-closed direct guard when `erod14_wave2_enabled` is active. Focused H2637
+  direct production now exits `1` with `R7D5 direct EROD14/EROD15 sediment
+  producer must execute before this span`. R7D5 held at
+  `HOLD-R7D5-DIRECT-EROD13-EROD14-EROD15-TYPED-PRODUCER-ABSENT`.
+- `docs/work-packages/20260623-r7d6-direct-erod13-erod14-typed-producer-001/`
+  lifted the missing typed sediment producer hold by adding typed direct
+  EROD13/EROD14/EROD15 producer authority, direct WB16 peak-duration authority,
+  class-count correction, and direct EROD15 HBP/PASS publication operands.
+  H2637 direct production exits `0`, `compatibility_edge_invocations=0`, WAT is
+  byte-identical, and PASS sediment fields are parity-clean after removing the
+  fabricated MOFE03 default `erod14_lddend = 0.3`. R7D6 held at
+  `HOLD-R7D6-PASS-HBP-PEAKRO-COMPATIBILITY-ZERO-RESIDUAL`; R7D7 subsequently
+  closed the PASS peak residual and narrowed the current hold to HBP EROD15
+  sediment export aliases.
+- `docs/work-packages/20260623-r7d7-direct-wb16-peak-publication-parity-001/`
+  closed the R7D6 PASS `peakro` residual by making compatibility PASS consume
+  runtime `peakro` and direct PASS consume direct runoff peak authority before
+  the erosion copy. Fresh H2637 5-day evidence has WAT and PASS byte identity,
+  HBP peak/duration parity, and direct `compatibility_edge_invocations = 0`.
+  R7D7 originally held at
+  `HOLD-R7D7-HBP-EROD15-SEDIMENT-EXPORT-ALIASES-DIRECT-PRODUCER-GAP` because
+  compatibility HBP publishes `total_detachment_kg = 0.6` and
+  `sediment_concentration_kg_m3 = 6.816136920064195` while direct HBP publishes
+  `0.0` for both. R7D8 lifted this hold.
+- `docs/work-packages/20260623-r7d8-direct-hbp-erod15-export-alias-parity-001/`
+  closed the HBP EROD15 sediment-export alias residual for the current H2637
+  5-day direct-production gate. Fresh evidence under `/tmp/r7d8ad-h2637-5day`
+  has default/direct exits `0`, HBP/loss/PASS/PLOT/WAT byte identity, parsed
+  HBP latest-event parity for peak, duration, total detachment, total
+  deposition, sediment concentration, and particle flow fraction, and direct
+  manifest `compatibility_edge_invocations = 0`.
 
-Current R7D blocker:
-`HOLD-R7D3-DIRECT-MOFE-DYNAMIC-CARRY-TRANSFER-ABSENT`. H2637 direct production
-now runs to completion, but WAT/PASS/HBP parity fails because dynamic MOFE
-same-day current-lane carry is not copied forward into downstream lane inputs.
-The direct manifest reports `mofe_hourly_carry.current_carry_total_m=0.0` and
-`upstream_carry_total_m=0.0`, while default compatibility reports
-`0.2205447764353141` for both. The next hold-lift must make current-lane R4O
-`ui_LfCrf` and R4L/R4O `ui_SCrunf` arrays copy forward with area-ratio
-provenance into downstream `ui_LfUrf` and `ui_SUrunf` before downstream
-R3A/R4J/R4A/R4B/R4PQZ execution, then rerun H2637 HBP/WAT/PASS/loss/manifest
-parity without using compatibility scheduler results, WB13 rows, public-output
-builders, or aggregate carry aliases as direct authority.
+Current R7D blocker: none for the current H2637 5-day publication-parity gate.
+The remaining R7 work is R7E-R7H: default activation candidate, hot
+compatibility isolation/deletion, performance closure, fixture hardening, and
+release readiness.
 
 ##### R7E - Default Activation Candidate
 

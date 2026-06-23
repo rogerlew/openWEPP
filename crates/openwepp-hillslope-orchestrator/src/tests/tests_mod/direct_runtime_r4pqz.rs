@@ -104,11 +104,11 @@ fn r4pqz_projection_includes_residual_water_in_layer_storage() {
     );
     assert_eq!(
         projection.total_soil_m.to_bits(),
-        (0.859_375 + residual_storage_m).to_bits()
+        (0.75 + residual_storage_m).to_bits()
     );
     assert_eq!(
         projection.soil_water_total_m.to_bits(),
-        (0.859_375 + residual_storage_m).to_bits()
+        (0.75 + residual_storage_m).to_bits()
     );
 }
 
@@ -266,7 +266,8 @@ fn projectable_day_at(lane_index: usize, day_index: usize) -> DirectDayFrame {
     day.hydrology_projection_inputs = DirectHydrologyProjectionInputs {
         aggregate_storage_tolerance_m: 0.0,
         snow_water_m: 0.03125,
-        frozen_soil_water_m: 0.015_625,
+        frozen_soil_water_m: 0.109_375,
+        frost_depth_m: 0.0,
         profile_depth_m: None,
         profile_porosity_cap_m: None,
         profile_field_capacity_m: Some(0.6),
@@ -314,6 +315,15 @@ fn projectable_day_at(lane_index: usize, day_index: usize) -> DirectDayFrame {
         layer_state_after: vec![layer(0.484_375, 0.0625), layer(0.28125, 0.03125)],
         lateral_layer_withdrawal_m: vec![0.015_625, 0.03125],
     });
+    apply_projectable_terminal_shadows(&mut day, lane_index, day_index);
+    day
+}
+
+fn apply_projectable_terminal_shadows(
+    day: &mut DirectDayFrame,
+    lane_index: usize,
+    day_index: usize,
+) {
     day.evapotranspiration_compute_shadow_projection =
         Some(DirectEvapotranspirationComputeShadowProjection {
             lane_index,
@@ -344,6 +354,9 @@ fn projectable_day_at(lane_index: usize, day_index: usize) -> DirectDayFrame {
         storage_initial_m: 0.875,
         precip_input_m: 0.25,
         snow_coupling_m: 0.007_812_5,
+        frost_liquid_delta_m: 0.0,
+        runon_input_m: 0.0,
+        interception_m: 0.0,
         q_runoff_m: 0.125,
         evapotranspiration_m: 0.09375,
         deep_seepage_m: 0.0625,
@@ -357,7 +370,6 @@ fn projectable_day_at(lane_index: usize, day_index: usize) -> DirectDayFrame {
         runon_input_m: 0.03125,
         subsurface_carry_m: 0.003_906_25,
     });
-    day
 }
 
 fn expected_projection_state() -> DirectHydrologyProjectionState {
@@ -379,8 +391,9 @@ fn expected_projection_state() -> DirectHydrologyProjectionState {
         snow_frost_coupling_m: 0.007_812_5,
         snow_water_m: 0.03125,
         frozen_soil_water_m: 0.109_375,
-        total_soil_m: 0.859_375,
-        soil_water_total_m: 0.859_375,
+        frost_depth_m: 0.0,
+        total_soil_m: 0.75,
+        soil_water_total_m: 0.75,
         runon_input_m: 0.03125,
         subsurface_carry_m: 0.003_906_25,
         profile_depth_m: None,
@@ -417,6 +430,7 @@ fn expected_projection_shadow() -> DirectHydrologyProjectionShadowProjection {
         snow_frost_coupling_m: state.snow_frost_coupling_m,
         snow_water_m: state.snow_water_m,
         frozen_soil_water_m: state.frozen_soil_water_m,
+        frost_depth_m: state.frost_depth_m,
         total_soil_m: state.total_soil_m,
         soil_water_total_m: state.soil_water_total_m,
         runon_input_m: state.runon_input_m,

@@ -44,6 +44,7 @@ impl DirectDayFrame {
             snow_frost_coupling_m: projection.snow_frost_coupling_m,
             snow_water_m: projection.snow_water_m,
             frozen_soil_water_m: projection.frozen_soil_water_m,
+            frost_depth_m: projection.frost_depth_m,
             total_soil_m: projection.total_soil_m,
             soil_water_total_m: projection.soil_water_total_m,
             runon_input_m: projection.runon_input_m,
@@ -116,38 +117,18 @@ impl DirectDayFrame {
             },
         )?;
 
-        let (aggregate_storage_from_layers_m, frozen_layer_storage_m) =
-            aggregate_storage_from_layers(&evapotranspiration.layer_state_after_root_uptake)?;
-        let frozen_soil_water_m =
-            frozen_layer_storage_m + self.hydrology_projection_inputs.frozen_soil_water_m;
-        validate_nonnegative_direct_m(
-            "hydrology_projection.frozen_soil_water_m",
-            frozen_soil_water_m,
+        let storage_terms = self.compute_r4pqz_storage_projection_terms(
+            &evapotranspiration.layer_state_after_root_uptake,
+            storage.storage_reconciled_m,
         )?;
         let snow_water_m = self.hydrology_projection_inputs.snow_water_m;
-        let total_soil_m = aggregate_storage_from_layers_m + frozen_soil_water_m;
-        validate_finite("hydrology_projection.total_soil_m", total_soil_m)?;
-        let soil_water_total_m = total_soil_m;
-        let aggregate_storage_delta_m =
-            aggregate_storage_from_layers_m - storage.storage_reconciled_m;
-        validate_finite(
-            "hydrology_projection.aggregate_storage_delta_m",
-            aggregate_storage_delta_m,
-        )?;
-        if aggregate_storage_delta_m.abs()
-            > self
-                .hydrology_projection_inputs
-                .aggregate_storage_tolerance_m
-        {
-            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-                field: "hydrology_projection.aggregate_storage_delta_m",
-            });
-        }
+        let frost_depth_m = self.hydrology_projection_inputs.frost_depth_m;
+        validate_nonnegative_direct_m("hydrology_projection.frost_depth_m", frost_depth_m)?;
 
         Ok(DirectHydrologyProjectionState {
-            aggregate_storage_from_layers_m,
+            aggregate_storage_from_layers_m: storage_terms.aggregate_storage_from_layers,
             storage_reconciled_m: storage.storage_reconciled_m,
-            aggregate_storage_delta_m,
+            aggregate_storage_delta_m: storage_terms.aggregate_storage_delta,
             q_runoff_m: runoff.q_runoff_m,
             q_ofe_m: runoff.q_runoff_m,
             deep_percolation_m: percolation.deep_seepage_m,
@@ -161,9 +142,10 @@ impl DirectDayFrame {
             water_stress: evapotranspiration.water_stress,
             snow_frost_coupling_m: snow_coupling.snow_coupling_m,
             snow_water_m,
-            frozen_soil_water_m,
-            total_soil_m,
-            soil_water_total_m,
+            frozen_soil_water_m: storage_terms.frozen_soil_water,
+            frost_depth_m,
+            total_soil_m: storage_terms.total_soil,
+            soil_water_total_m: storage_terms.soil_water_total,
             runon_input_m: runon.runon_input_m,
             subsurface_carry_m: runon.subsurface_carry_m,
             profile_depth_m: self.hydrology_projection_inputs.profile_depth_m,
@@ -175,6 +157,53 @@ impl DirectDayFrame {
             publication_deep_percolation_m: self.publication.drainage_m,
             publication_lateral_flow_m: self.publication.lateral_flow_m,
             public_output_cutover: false,
+        })
+    }
+
+    fn compute_r4pqz_storage_projection_terms(
+        &self,
+        layer_state_after_root_uptake: &[DirectSubsurfaceLayerState],
+        storage_reconciled_m: f64,
+    ) -> Result<R4pqzStorageProjectionTerms, DirectRuntimeError> {
+        let (aggregate_storage_from_layers_m, frozen_layer_storage_m) =
+            aggregate_storage_from_layers(layer_state_after_root_uptake)?;
+        let frozen_soil_water_m = self.hydrology_projection_inputs.frozen_soil_water_m;
+        validate_nonnegative_direct_m(
+            "hydrology_projection.frozen_soil_water_m",
+            frozen_soil_water_m,
+        )?;
+        if frozen_layer_storage_m - frozen_soil_water_m
+            > self
+                .hydrology_projection_inputs
+                .aggregate_storage_tolerance_m
+        {
+            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "hydrology_projection.frozen_layer_storage_m",
+            });
+        }
+        let total_soil_m = storage_reconciled_m;
+        validate_finite("hydrology_projection.total_soil_m", total_soil_m)?;
+        let soil_water_total_m = total_soil_m;
+        let aggregate_storage_delta_m = aggregate_storage_from_layers_m - storage_reconciled_m;
+        validate_finite(
+            "hydrology_projection.aggregate_storage_delta_m",
+            aggregate_storage_delta_m,
+        )?;
+        if aggregate_storage_delta_m.abs()
+            > self
+                .hydrology_projection_inputs
+                .aggregate_storage_tolerance_m
+        {
+            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "hydrology_projection.aggregate_storage_delta_m",
+            });
+        }
+        Ok(R4pqzStorageProjectionTerms {
+            aggregate_storage_from_layers: aggregate_storage_from_layers_m,
+            aggregate_storage_delta: aggregate_storage_delta_m,
+            frozen_soil_water: frozen_soil_water_m,
+            total_soil: total_soil_m,
+            soil_water_total: soil_water_total_m,
         })
     }
 
@@ -228,6 +257,10 @@ impl DirectDayFrame {
             "hydrology_projection.frozen_soil_water_m",
             self.hydrology_projection_inputs.frozen_soil_water_m,
         )?;
+        validate_nonnegative_direct_m(
+            "hydrology_projection.frost_depth_m",
+            self.hydrology_projection_inputs.frost_depth_m,
+        )?;
         validate_optional_nonnegative_m(
             "hydrology_projection.profile_depth_m",
             self.hydrology_projection_inputs.profile_depth_m,
@@ -264,11 +297,21 @@ impl DirectDayFrame {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+struct R4pqzStorageProjectionTerms {
+    aggregate_storage_from_layers: f64,
+    aggregate_storage_delta: f64,
+    frozen_soil_water: f64,
+    total_soil: f64,
+    soil_water_total: f64,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectHydrologyProjectionInputs {
     pub aggregate_storage_tolerance_m: f64,
     pub snow_water_m: f64,
     pub frozen_soil_water_m: f64,
+    pub frost_depth_m: f64,
     pub profile_depth_m: Option<f64>,
     pub profile_porosity_cap_m: Option<f64>,
     pub profile_field_capacity_m: Option<f64>,
@@ -282,6 +325,7 @@ impl DirectHydrologyProjectionInputs {
             aggregate_storage_tolerance_m: 0.0,
             snow_water_m: 0.0,
             frozen_soil_water_m: 0.0,
+            frost_depth_m: 0.0,
             profile_depth_m: None,
             profile_porosity_cap_m: None,
             profile_field_capacity_m: None,
@@ -309,6 +353,7 @@ pub struct DirectHydrologyProjectionState {
     pub snow_frost_coupling_m: f64,
     pub snow_water_m: f64,
     pub frozen_soil_water_m: f64,
+    pub frost_depth_m: f64,
     pub total_soil_m: f64,
     pub soil_water_total_m: f64,
     pub runon_input_m: f64,
@@ -345,6 +390,7 @@ impl DirectHydrologyProjectionState {
             snow_frost_coupling_m: 0.0,
             snow_water_m: 0.0,
             frozen_soil_water_m: 0.0,
+            frost_depth_m: 0.0,
             total_soil_m: 0.0,
             soil_water_total_m: 0.0,
             runon_input_m: 0.0,
@@ -381,6 +427,7 @@ pub struct DirectHydrologyProjectionDownstreamOperands {
     pub snow_frost_coupling_m: f64,
     pub snow_water_m: f64,
     pub frozen_soil_water_m: f64,
+    pub frost_depth_m: f64,
     pub total_soil_m: f64,
     pub soil_water_total_m: f64,
     pub runon_input_m: f64,
@@ -413,6 +460,7 @@ impl DirectHydrologyProjectionDownstreamOperands {
             snow_frost_coupling_m: 0.0,
             snow_water_m: 0.0,
             frozen_soil_water_m: 0.0,
+            frost_depth_m: 0.0,
             total_soil_m: 0.0,
             soil_water_total_m: 0.0,
             runon_input_m: 0.0,
@@ -446,6 +494,7 @@ impl From<DirectHydrologyProjectionState> for DirectHydrologyProjectionDownstrea
             snow_frost_coupling_m: state.snow_frost_coupling_m,
             snow_water_m: state.snow_water_m,
             frozen_soil_water_m: state.frozen_soil_water_m,
+            frost_depth_m: state.frost_depth_m,
             total_soil_m: state.total_soil_m,
             soil_water_total_m: state.soil_water_total_m,
             runon_input_m: state.runon_input_m,
@@ -480,6 +529,7 @@ pub struct DirectHydrologyProjectionShadowProjection {
     pub snow_frost_coupling_m: f64,
     pub snow_water_m: f64,
     pub frozen_soil_water_m: f64,
+    pub frost_depth_m: f64,
     pub total_soil_m: f64,
     pub soil_water_total_m: f64,
     pub runon_input_m: f64,

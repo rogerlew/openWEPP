@@ -84,6 +84,7 @@ impl DailyInternalPerOfeWb13Collection {
         &self,
         wepp_id: i32,
         publication_area_m2: f64,
+        publication_scalars: HillslopePassPublicationScalars,
         rows: &mut Vec<HillslopePassRow>,
     ) -> Result<(), HillslopeCliError> {
         if wepp_id <= 0 {
@@ -100,7 +101,11 @@ impl DailyInternalPerOfeWb13Collection {
         let outlet = self.records.last().ok_or_else(|| {
             internal_wb13_failure("outputs.pass_parquet has no outlet per-OFE record".to_string())
         })?;
-        rows.push(build_hillslope_pass_row_from_outlet_delivery(wepp_id, outlet)?);
+        rows.push(build_hillslope_pass_row_from_outlet_delivery(
+            wepp_id,
+            outlet,
+            publication_scalars,
+        )?);
         Ok(())
     }
 

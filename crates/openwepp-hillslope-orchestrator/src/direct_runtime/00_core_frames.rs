@@ -143,12 +143,75 @@ pub struct DirectLaneConstructorInputs {
     pub downstream_lane_id: u32,
     pub upstream_area_ratio: f64,
     pub area_m2: f64,
+    pub runoff_publication_q_scale: f64,
+    pub runoff_publication_qofe_scale: f64,
+    pub runoff_publication_efflen_m: f64,
+    pub runoff_publication_cumulative_length_m: f64,
+    pub runoff_publication_ofe_length_m: f64,
     pub water: DirectWaterState,
     pub transfer: DirectTransferBuffers,
     pub publication: DirectPublicationFrame,
     pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
     pub evapotranspiration_stage_state: Option<DirectEvapotranspirationStageState>,
+    pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
     pub day_inputs: Vec<DirectDayConstructorInputs>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectFrostRuntimeCarry {
+    pub active_frost_coupling: bool,
+    pub dfrost_m: f64,
+    pub dthaw_m: f64,
+    pub nft: f64,
+    pub ws_frz_m: f64,
+    pub infcap_frz_m_s: f64,
+    pub frwatc_soil_water_before_m: f64,
+    pub frwatc_soil_water_after_m: f64,
+    pub frwatc_frozen_water_before_m: f64,
+    pub frwatc_frozen_water_after_m: f64,
+    pub frwatc_freeze_debit_m: f64,
+    pub frwatc_thaw_credit_m: f64,
+    pub frwatc_net_liquid_delta_m: f64,
+    pub frdp_m: f64,
+    pub thdp_m: f64,
+    pub tfrdp_m: f64,
+    pub tthawd_m: f64,
+    pub fgthwd_flag: f64,
+    pub total_fine_layer_count: f64,
+    pub conductivity_tilled_w_m_k: f64,
+    pub conductivity_untilled_w_m_k: f64,
+    pub conductivity_residue_w_m_k: f64,
+    pub shadow_total_water_before_m: f64,
+    pub shadow_total_water_after_m: f64,
+    pub shadow_wb_delta_m: f64,
+    pub shadow_frwatc_residual_m: f64,
+    pub watpdg_m: f64,
+    pub watbtm_m: f64,
+    pub layer_shadows: Vec<DirectFrostLayerShadowCarry>,
+    pub fine_layers: Vec<DirectFrostFineLayerCarry>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectFrostLayerShadowCarry {
+    pub layer_index: usize,
+    pub st_m: f64,
+    pub soil_water_m: f64,
+    pub frozen_depth_m: f64,
+    pub frozen_water_m: f64,
+    pub soilf_m: f64,
+    pub yst_m: f64,
+    pub nwfrzz_m: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectFrostFineLayerCarry {
+    pub layer_index: usize,
+    pub fine_index: usize,
+    pub fgfrst: f64,
+    pub slfsd_m: f64,
+    pub slsic_m: f64,
+    pub slsw_theta: f64,
+    pub sltime_s: f64,
 }
 
 impl DirectLaneConstructorInputs {
@@ -164,11 +227,17 @@ impl DirectLaneConstructorInputs {
             downstream_lane_id: skeleton.downstream_lane_id,
             upstream_area_ratio: 1.0,
             area_m2: 1.0,
+            runoff_publication_q_scale: 1.0,
+            runoff_publication_qofe_scale: 1.0,
+            runoff_publication_efflen_m: 1.0,
+            runoff_publication_cumulative_length_m: 1.0,
+            runoff_publication_ofe_length_m: 1.0,
             water: DirectWaterState::zero(),
             transfer: DirectTransferBuffers::zero(),
             publication: DirectPublicationFrame::empty(),
             subsurface_layers: Vec::new(),
             evapotranspiration_stage_state: None,
+            frost_runtime_carry: None,
             day_inputs: vec![DirectDayConstructorInputs::zero(); day_count],
         })
     }
@@ -178,6 +247,7 @@ impl DirectLaneConstructorInputs {
 pub struct DirectDayConstructorInputs {
     pub forcing: DirectDayForcing,
     pub normalization_inputs: DirectNormalizationInputs,
+    pub interception_m: f64,
     pub storage_bounds_inputs: DirectStorageBoundsInputs,
     pub decomposition_inputs: DirectDecompositionInputs,
     pub residue_partition_inputs: DirectResiduePartitionInputs,
@@ -189,6 +259,7 @@ pub struct DirectDayConstructorInputs {
     pub infiltration_depression_inputs: DirectInfiltrationDepressionInputs,
     pub saturation_addback_inputs: DirectSaturationAddbackInputs,
     pub runoff_partition_inputs: DirectRunoffPartitionInputs,
+    pub peak_runoff_inputs: DirectPeakRunoffInputs,
     pub percolation_inputs: DirectPercolationInputs,
     pub subsurface_compute_inputs: DirectSubsurfaceComputeInputs,
     pub deep_seepage_inputs: DirectDeepSeepageInputs,
@@ -198,7 +269,10 @@ pub struct DirectDayConstructorInputs {
     pub snow_coupling_inputs: DirectSnowCouplingInputs,
     pub storage_reconciliation_inputs: DirectStorageReconciliationInputs,
     pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,
+    pub erosion_inputs: DirectErosionInputs,
+    pub frost_runoff_surface: Option<crate::hydrology::DirectFrostRunoffSurface>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
+    pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
 }
 
 impl DirectDayConstructorInputs {
@@ -207,6 +281,7 @@ impl DirectDayConstructorInputs {
         Self {
             forcing: DirectDayForcing::zero(),
             normalization_inputs: DirectNormalizationInputs::zero(),
+            interception_m: 0.0,
             storage_bounds_inputs: DirectStorageBoundsInputs::zero(),
             decomposition_inputs: DirectDecompositionInputs::zero(),
             residue_partition_inputs: DirectResiduePartitionInputs::zero(),
@@ -218,6 +293,7 @@ impl DirectDayConstructorInputs {
             infiltration_depression_inputs: DirectInfiltrationDepressionInputs::zero(),
             saturation_addback_inputs: DirectSaturationAddbackInputs::zero(),
             runoff_partition_inputs: DirectRunoffPartitionInputs::zero(),
+            peak_runoff_inputs: DirectPeakRunoffInputs::zero(),
             percolation_inputs: DirectPercolationInputs::neutral(),
             subsurface_compute_inputs: DirectSubsurfaceComputeInputs::neutral(),
             deep_seepage_inputs: DirectDeepSeepageInputs::zero(),
@@ -227,7 +303,10 @@ impl DirectDayConstructorInputs {
             snow_coupling_inputs: DirectSnowCouplingInputs::zero(),
             storage_reconciliation_inputs: DirectStorageReconciliationInputs::zero(),
             hydrology_projection_inputs: DirectHydrologyProjectionInputs::zero(),
+            erosion_inputs: DirectErosionInputs::zero(),
+            frost_runoff_surface: None,
             frost_layer_carry_projection: None,
+            frost_runtime_carry: None,
         }
     }
 }
@@ -302,9 +381,25 @@ impl DirectRunFrame {
                 lane_count: self.lanes.len(),
             })?;
         let mut day_frame = DirectDayFrame::seed(self.identity, lane_index, day_index)?;
+        day_frame.upstream_area_ratio = lane.upstream_area_ratio;
         day_frame.water = lane.water.clone();
         day_frame.transfer = lane.transfer.clone();
         day_frame.publication = lane.publication.clone();
+        day_frame.prior_erosion_downstream_operands = lane.erosion_downstream_operands.clone();
+        if lane.upstream_lane_id != 0 {
+            let upstream_index = (lane.upstream_lane_id - 1) as usize;
+            let upstream_lane =
+                self.lanes
+                    .get(upstream_index)
+                    .ok_or(DirectRuntimeError::InvalidLaneTopology {
+                        lane_index,
+                        lane_id: lane.lane_id,
+                        upstream_lane_id: lane.upstream_lane_id,
+                        downstream_lane_id: lane.downstream_lane_id,
+                    })?;
+            day_frame.upstream_erosion_downstream_operands =
+                upstream_lane.erosion_downstream_operands.clone();
+        }
         if let Some(day_inputs) = lane.day_inputs.get(day_index) {
             day_frame.apply_constructor_inputs(day_inputs.clone())?;
         }
@@ -531,11 +626,18 @@ pub struct DirectLaneFrame {
     pub downstream_lane_id: u32,
     pub upstream_area_ratio: f64,
     pub area_m2: f64,
+    pub runoff_publication_q_scale: f64,
+    pub runoff_publication_qofe_scale: f64,
+    pub runoff_publication_efflen_m: f64,
+    pub runoff_publication_cumulative_length_m: f64,
+    pub runoff_publication_ofe_length_m: f64,
     pub water: DirectWaterState,
     pub transfer: DirectTransferBuffers,
     pub publication: DirectPublicationFrame,
+    pub erosion_downstream_operands: DirectErosionDownstreamOperands,
     pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
     pub evapotranspiration_stage_state: Option<DirectEvapotranspirationStageState>,
+    pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
     pub day_inputs: Vec<DirectDayConstructorInputs>,
 }
 
@@ -556,11 +658,18 @@ impl DirectLaneFrame {
             downstream_lane_id,
             upstream_area_ratio: 1.0,
             area_m2: 0.0,
+            runoff_publication_q_scale: 1.0,
+            runoff_publication_qofe_scale: 1.0,
+            runoff_publication_efflen_m: 1.0,
+            runoff_publication_cumulative_length_m: 1.0,
+            runoff_publication_ofe_length_m: 1.0,
             water: DirectWaterState::zero(),
             transfer: DirectTransferBuffers::zero(),
             publication: DirectPublicationFrame::empty(),
+            erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             subsurface_layers: Vec::new(),
             evapotranspiration_stage_state: None,
+            frost_runtime_carry: None,
             day_inputs: Vec::new(),
         })
     }
@@ -572,11 +681,19 @@ impl DirectLaneFrame {
             downstream_lane_id: inputs.downstream_lane_id,
             upstream_area_ratio: inputs.upstream_area_ratio,
             area_m2: inputs.area_m2,
+            runoff_publication_q_scale: inputs.runoff_publication_q_scale,
+            runoff_publication_qofe_scale: inputs.runoff_publication_qofe_scale,
+            runoff_publication_efflen_m: inputs.runoff_publication_efflen_m,
+            runoff_publication_cumulative_length_m: inputs
+                .runoff_publication_cumulative_length_m,
+            runoff_publication_ofe_length_m: inputs.runoff_publication_ofe_length_m,
             water: inputs.water,
             transfer: inputs.transfer,
             publication: inputs.publication,
+            erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             subsurface_layers: inputs.subsurface_layers,
             evapotranspiration_stage_state: inputs.evapotranspiration_stage_state,
+            frost_runtime_carry: inputs.frost_runtime_carry,
             day_inputs: inputs.day_inputs,
         }
     }
@@ -597,8 +714,17 @@ impl DirectLaneFrame {
             });
         }
         self.water = day_frame.water.clone();
+        validate_nonnegative_direct_m(
+            "lane_commit.storage_reconciled_m",
+            day_frame.storage_reconciliation.storage_reconciled_m,
+        )?;
+        self.water.soil_water_m = day_frame.storage_reconciliation.storage_reconciled_m;
         self.transfer = day_frame.transfer.clone();
         self.publication = day_frame.publication.clone();
+        self.erosion_downstream_operands = day_frame.erosion_downstream_operands.clone();
+        let apply_coarse_frost_projection = day_frame.frost_runtime_carry.is_none()
+            && (day_frame.hydrology_projection.frost_depth_m > WB11_ZERO_THRESHOLD
+                || day_frame.hydrology_projection.frozen_soil_water_m > WB11_ZERO_THRESHOLD);
         if !day_frame
             .evapotranspiration_compute
             .layer_state_after_root_uptake
@@ -609,27 +735,35 @@ impl DirectLaneFrame {
                     .evapotranspiration_compute
                     .layer_state_after_root_uptake,
             );
-            apply_direct_frost_carry_projection(
-                &mut self.subsurface_layers,
-                day_frame.frost_layer_carry_projection.as_deref(),
-            )?;
+            if apply_coarse_frost_projection {
+                apply_direct_frost_carry_projection(
+                    &mut self.subsurface_layers,
+                    day_frame.frost_layer_carry_projection.as_deref(),
+                )?;
+            }
         } else if !day_frame.subsurface_compute.layer_state_after.is_empty() {
             self.subsurface_layers
                 .clone_from(&day_frame.subsurface_compute.layer_state_after);
-            apply_direct_frost_carry_projection(
-                &mut self.subsurface_layers,
-                day_frame.frost_layer_carry_projection.as_deref(),
-            )?;
+            if apply_coarse_frost_projection {
+                apply_direct_frost_carry_projection(
+                    &mut self.subsurface_layers,
+                    day_frame.frost_layer_carry_projection.as_deref(),
+                )?;
+            }
         } else if !day_frame.percolation.layer_state_after.is_empty() {
             self.subsurface_layers
                 .clone_from(&day_frame.percolation.layer_state_after);
-            apply_direct_frost_carry_projection(
-                &mut self.subsurface_layers,
-                day_frame.frost_layer_carry_projection.as_deref(),
-            )?;
+            if apply_coarse_frost_projection {
+                apply_direct_frost_carry_projection(
+                    &mut self.subsurface_layers,
+                    day_frame.frost_layer_carry_projection.as_deref(),
+                )?;
+            }
         }
         self.evapotranspiration_stage_state =
             day_frame.evapotranspiration_surface.stage_state_after;
+        self.frost_runtime_carry
+            .clone_from(&day_frame.frost_runtime_carry);
         Ok(())
     }
 }
@@ -639,7 +773,9 @@ pub struct DirectDayFrame {
     pub identity: DirectRunIdentity,
     pub lane_index: usize,
     pub day_index: usize,
+    pub upstream_area_ratio: f64,
     pub forcing: DirectDayForcing,
+    pub interception_m: f64,
     pub water: DirectWaterState,
     pub transfer: DirectTransferBuffers,
     pub publication: DirectPublicationFrame,
@@ -692,6 +828,10 @@ pub struct DirectDayFrame {
     pub runoff_partition: DirectRunoffPartitionState,
     pub runoff_downstream_operands: DirectRunoffDownstreamOperands,
     pub runoff_shadow_projection: Option<DirectRunoffShadowProjection>,
+    pub peak_runoff_inputs: DirectPeakRunoffInputs,
+    pub peak_runoff: DirectPeakRunoffState,
+    pub peak_runoff_downstream_operands: DirectPeakRunoffDownstreamOperands,
+    pub peak_runoff_shadow_projection: Option<DirectPeakRunoffShadowProjection>,
     pub percolation_inputs: DirectPercolationInputs,
     pub percolation: DirectPercolationState,
     pub percolation_downstream_operands: DirectPercolationDownstreamOperands,
@@ -735,10 +875,18 @@ pub struct DirectDayFrame {
     pub storage_downstream_operands: DirectStorageDownstreamOperands,
     pub storage_shadow_projection: Option<DirectStorageShadowProjection>,
     pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,
+    pub frost_runoff_surface: Option<crate::hydrology::DirectFrostRunoffSurface>,
     pub hydrology_projection: DirectHydrologyProjectionState,
     pub hydrology_projection_downstream_operands: DirectHydrologyProjectionDownstreamOperands,
     pub hydrology_projection_shadow_projection: Option<DirectHydrologyProjectionShadowProjection>,
+    pub prior_erosion_downstream_operands: DirectErosionDownstreamOperands,
+    pub upstream_erosion_downstream_operands: DirectErosionDownstreamOperands,
+    pub erosion_inputs: DirectErosionInputs,
+    pub erosion: DirectErosionState,
+    pub erosion_downstream_operands: DirectErosionDownstreamOperands,
+    pub erosion_shadow_projection: Option<DirectErosionShadowProjection>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
+    pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
     pub water_ledger: DirectWaterLedgerState,
     pub ledger_downstream_operands: DirectLedgerDownstreamOperands,
     pub ledger_shadow_projection: Option<DirectLedgerShadowProjection>,
@@ -758,7 +906,9 @@ impl DirectDayFrame {
             identity,
             lane_index,
             day_index,
+            upstream_area_ratio: 1.0,
             forcing: DirectDayForcing::zero(),
+            interception_m: 0.0,
             water: DirectWaterState::zero(),
             transfer: DirectTransferBuffers::zero(),
             publication: DirectPublicationFrame::empty(),
@@ -812,6 +962,10 @@ impl DirectDayFrame {
             runoff_partition: DirectRunoffPartitionState::zero(),
             runoff_downstream_operands: DirectRunoffDownstreamOperands::zero(),
             runoff_shadow_projection: None,
+            peak_runoff_inputs: DirectPeakRunoffInputs::zero(),
+            peak_runoff: DirectPeakRunoffState::zero(),
+            peak_runoff_downstream_operands: DirectPeakRunoffDownstreamOperands::zero(),
+            peak_runoff_shadow_projection: None,
             percolation_inputs: DirectPercolationInputs::neutral(),
             percolation: DirectPercolationState::zero(),
             percolation_downstream_operands: DirectPercolationDownstreamOperands::zero(),
@@ -855,11 +1009,19 @@ impl DirectDayFrame {
             storage_downstream_operands: DirectStorageDownstreamOperands::zero(),
             storage_shadow_projection: None,
             hydrology_projection_inputs: DirectHydrologyProjectionInputs::zero(),
+            frost_runoff_surface: None,
             hydrology_projection: DirectHydrologyProjectionState::zero(),
             hydrology_projection_downstream_operands:
                 DirectHydrologyProjectionDownstreamOperands::zero(),
             hydrology_projection_shadow_projection: None,
+            prior_erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
+            upstream_erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
+            erosion_inputs: DirectErosionInputs::zero(),
+            erosion: DirectErosionState::inactive(),
+            erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
+            erosion_shadow_projection: None,
             frost_layer_carry_projection: None,
+            frost_runtime_carry: None,
             water_ledger: DirectWaterLedgerState::zero(),
             ledger_downstream_operands: DirectLedgerDownstreamOperands::zero(),
             ledger_shadow_projection: None,
@@ -884,6 +1046,7 @@ impl DirectDayFrame {
         validate_direct_day_constructor_inputs(&inputs)?;
         self.forcing = inputs.forcing;
         self.normalization_inputs = inputs.normalization_inputs;
+        self.interception_m = inputs.interception_m;
         self.storage_bounds_inputs = inputs.storage_bounds_inputs;
         self.decomposition_inputs = inputs.decomposition_inputs;
         self.residue_partition_inputs = inputs.residue_partition_inputs;
@@ -895,6 +1058,7 @@ impl DirectDayFrame {
         self.infiltration_depression_inputs = inputs.infiltration_depression_inputs;
         self.saturation_addback_inputs = inputs.saturation_addback_inputs;
         self.runoff_partition_inputs = inputs.runoff_partition_inputs;
+        self.peak_runoff_inputs = inputs.peak_runoff_inputs;
         self.percolation_inputs = inputs.percolation_inputs;
         self.subsurface_compute_inputs = inputs.subsurface_compute_inputs;
         self.deep_seepage_inputs = inputs.deep_seepage_inputs;
@@ -903,8 +1067,12 @@ impl DirectDayFrame {
         self.evapotranspiration_inputs = inputs.evapotranspiration_inputs;
         self.snow_coupling_inputs = inputs.snow_coupling_inputs;
         self.storage_reconciliation_inputs = inputs.storage_reconciliation_inputs;
+        self.storage_reconciliation_inputs.interception_m = inputs.interception_m;
         self.hydrology_projection_inputs = inputs.hydrology_projection_inputs;
+        self.erosion_inputs = inputs.erosion_inputs;
+        self.frost_runoff_surface = inputs.frost_runoff_surface;
         self.frost_layer_carry_projection = inputs.frost_layer_carry_projection;
+        self.frost_runtime_carry = inputs.frost_runtime_carry;
         Ok(())
     }
 
@@ -953,10 +1121,20 @@ impl DirectDayFrame {
         phase_entry_count += 1;
         self.validate_r3a_input_accounting_domain()?;
 
-        let surface_transfer_m =
+        let raw_surface_transfer_m =
             sum_nonnegative_direct_m("transfer.surface_carry_m", &self.transfer.surface_carry_m)?;
-        let lateral_transfer_m =
+        let raw_lateral_transfer_m =
             sum_nonnegative_direct_m("transfer.lateral_carry_m", &self.transfer.lateral_carry_m)?;
+        let surface_transfer_m = scaled_direct_transfer_total_m(
+            "input_accounting.surface_transfer_m",
+            raw_surface_transfer_m,
+            self.upstream_area_ratio,
+        )?;
+        let lateral_transfer_m = scaled_direct_transfer_total_m(
+            "input_accounting.lateral_transfer_m",
+            raw_lateral_transfer_m,
+            self.upstream_area_ratio,
+        )?;
         let transfer_input_m = surface_transfer_m
             + lateral_transfer_m
             + self.transfer.upstream_flow_m
@@ -1219,6 +1397,26 @@ fn validate_direct_lane_constructor_inputs(
         "constructor.upstream_area_ratio",
         inputs.upstream_area_ratio,
     )?;
+    validate_positive_direct(
+        "constructor.runoff_publication_q_scale",
+        inputs.runoff_publication_q_scale,
+    )?;
+    validate_positive_direct(
+        "constructor.runoff_publication_qofe_scale",
+        inputs.runoff_publication_qofe_scale,
+    )?;
+    validate_positive_direct(
+        "constructor.runoff_publication_efflen_m",
+        inputs.runoff_publication_efflen_m,
+    )?;
+    validate_positive_direct(
+        "constructor.runoff_publication_cumulative_length_m",
+        inputs.runoff_publication_cumulative_length_m,
+    )?;
+    validate_positive_direct(
+        "constructor.runoff_publication_ofe_length_m",
+        inputs.runoff_publication_ofe_length_m,
+    )?;
     validate_direct_water_state(&inputs.water)?;
     validate_direct_transfer_buffers(&inputs.transfer)?;
     validate_direct_publication_frame(&inputs.publication)?;
@@ -1299,6 +1497,7 @@ fn validate_direct_day_constructor_inputs(
         "constructor.forcing.effective_temperature_c",
         inputs.forcing.effective_temperature_c,
     )?;
+    validate_nonnegative_direct_m("constructor.interception_m", inputs.interception_m)?;
     validate_nonnegative_direct_m(
         "constructor.normalization.precipitation_m",
         inputs.normalization_inputs.precipitation_m,
@@ -1360,6 +1559,14 @@ fn validate_direct_day_constructor_inputs(
         inputs.storage_reconciliation_inputs.closure_tolerance_m,
     )?;
     validate_nonnegative_direct_m(
+        "constructor.storage_reconciliation.interception_m",
+        inputs.storage_reconciliation_inputs.interception_m,
+    )?;
+    validate_finite(
+        "constructor.storage_reconciliation.frost_liquid_delta_m",
+        inputs.storage_reconciliation_inputs.frost_liquid_delta_m,
+    )?;
+    validate_nonnegative_direct_m(
         "constructor.hydrology_projection.aggregate_storage_tolerance_m",
         inputs
             .hydrology_projection_inputs
@@ -1372,12 +1579,26 @@ fn validate_direct_day_constructor_inputs(
     validate_direct_evapotranspiration_compute_inputs(
         &inputs.evapotranspiration_compute_inputs,
     )?;
+    validate_direct_day_layer_constructor_inputs(inputs)?;
+    validate_direct_frost_constructor_inputs(inputs)?;
+    Ok(())
+}
+
+fn validate_direct_day_layer_constructor_inputs(
+    inputs: &DirectDayConstructorInputs,
+) -> Result<(), DirectRuntimeError> {
     for layer in &inputs.percolation_inputs.layers {
         validate_direct_subsurface_layer(layer)?;
     }
     for layer in &inputs.subsurface_compute_inputs.layers {
         validate_direct_subsurface_layer_inputs(layer)?;
     }
+    Ok(())
+}
+
+fn validate_direct_frost_constructor_inputs(
+    inputs: &DirectDayConstructorInputs,
+) -> Result<(), DirectRuntimeError> {
     if let Some(projection) = &inputs.frost_layer_carry_projection {
         for projection in projection {
             validate_positive_direct(
@@ -1389,6 +1610,193 @@ fn validate_direct_day_constructor_inputs(
                     field: "constructor.frost_layer_carry_projection.fine_layer_count",
                 });
             }
+        }
+    }
+    if let Some(carry) = &inputs.frost_runtime_carry {
+        validate_direct_frost_runtime_carry(carry)?;
+    }
+    Ok(())
+}
+
+fn validate_direct_frost_runtime_carry(
+    carry: &DirectFrostRuntimeCarry,
+) -> Result<(), DirectRuntimeError> {
+    validate_direct_frost_runtime_scalar_carry(carry)?;
+    validate_direct_frost_runtime_layer_shadows(carry)?;
+    validate_direct_frost_runtime_fine_layers(carry)
+}
+
+fn validate_direct_frost_runtime_scalar_carry(
+    carry: &DirectFrostRuntimeCarry,
+) -> Result<(), DirectRuntimeError> {
+    for (field, value) in [
+        ("constructor.frost_runtime_carry.dfrost_m", carry.dfrost_m),
+        ("constructor.frost_runtime_carry.dthaw_m", carry.dthaw_m),
+        ("constructor.frost_runtime_carry.nft", carry.nft),
+        ("constructor.frost_runtime_carry.ws_frz_m", carry.ws_frz_m),
+        (
+            "constructor.frost_runtime_carry.infcap_frz_m_s",
+            carry.infcap_frz_m_s,
+        ),
+        (
+            "constructor.frost_runtime_carry.frwatc_soil_water_before_m",
+            carry.frwatc_soil_water_before_m,
+        ),
+        (
+            "constructor.frost_runtime_carry.frwatc_soil_water_after_m",
+            carry.frwatc_soil_water_after_m,
+        ),
+        (
+            "constructor.frost_runtime_carry.frwatc_frozen_water_before_m",
+            carry.frwatc_frozen_water_before_m,
+        ),
+        (
+            "constructor.frost_runtime_carry.frwatc_frozen_water_after_m",
+            carry.frwatc_frozen_water_after_m,
+        ),
+        (
+            "constructor.frost_runtime_carry.frwatc_freeze_debit_m",
+            carry.frwatc_freeze_debit_m,
+        ),
+        (
+            "constructor.frost_runtime_carry.frwatc_thaw_credit_m",
+            carry.frwatc_thaw_credit_m,
+        ),
+        ("constructor.frost_runtime_carry.frdp_m", carry.frdp_m),
+        ("constructor.frost_runtime_carry.thdp_m", carry.thdp_m),
+        ("constructor.frost_runtime_carry.tfrdp_m", carry.tfrdp_m),
+        ("constructor.frost_runtime_carry.tthawd_m", carry.tthawd_m),
+        (
+            "constructor.frost_runtime_carry.fgthwd_flag",
+            carry.fgthwd_flag,
+        ),
+        (
+            "constructor.frost_runtime_carry.total_fine_layer_count",
+            carry.total_fine_layer_count,
+        ),
+        (
+            "constructor.frost_runtime_carry.conductivity_tilled_w_m_k",
+            carry.conductivity_tilled_w_m_k,
+        ),
+        (
+            "constructor.frost_runtime_carry.conductivity_untilled_w_m_k",
+            carry.conductivity_untilled_w_m_k,
+        ),
+        (
+            "constructor.frost_runtime_carry.conductivity_residue_w_m_k",
+            carry.conductivity_residue_w_m_k,
+        ),
+        (
+            "constructor.frost_runtime_carry.shadow_total_water_before_m",
+            carry.shadow_total_water_before_m,
+        ),
+        (
+            "constructor.frost_runtime_carry.shadow_total_water_after_m",
+            carry.shadow_total_water_after_m,
+        ),
+        ("constructor.frost_runtime_carry.watpdg_m", carry.watpdg_m),
+        ("constructor.frost_runtime_carry.watbtm_m", carry.watbtm_m),
+    ] {
+        validate_nonnegative_direct_m(field, value)?;
+    }
+    for (field, value) in [
+        (
+            "constructor.frost_runtime_carry.frwatc_net_liquid_delta_m",
+            carry.frwatc_net_liquid_delta_m,
+        ),
+        (
+            "constructor.frost_runtime_carry.shadow_wb_delta_m",
+            carry.shadow_wb_delta_m,
+        ),
+        (
+            "constructor.frost_runtime_carry.shadow_frwatc_residual_m",
+            carry.shadow_frwatc_residual_m,
+        ),
+    ] {
+        validate_finite(field, value)?;
+    }
+    Ok(())
+}
+
+fn validate_direct_frost_runtime_layer_shadows(
+    carry: &DirectFrostRuntimeCarry,
+) -> Result<(), DirectRuntimeError> {
+    for layer in &carry.layer_shadows {
+        if layer.layer_index == 0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "constructor.frost_runtime_carry.layer_shadow.layer_index",
+            });
+        }
+        for (field, value) in [
+            ("constructor.frost_runtime_carry.layer_shadow.st_m", layer.st_m),
+            (
+                "constructor.frost_runtime_carry.layer_shadow.soil_water_m",
+                layer.soil_water_m,
+            ),
+            (
+                "constructor.frost_runtime_carry.layer_shadow.frozen_depth_m",
+                layer.frozen_depth_m,
+            ),
+            (
+                "constructor.frost_runtime_carry.layer_shadow.frozen_water_m",
+                layer.frozen_water_m,
+            ),
+            (
+                "constructor.frost_runtime_carry.layer_shadow.soilf_m",
+                layer.soilf_m,
+            ),
+            (
+                "constructor.frost_runtime_carry.layer_shadow.yst_m",
+                layer.yst_m,
+            ),
+            (
+                "constructor.frost_runtime_carry.layer_shadow.nwfrzz_m",
+                layer.nwfrzz_m,
+            ),
+        ] {
+            validate_nonnegative_direct_m(field, value)?;
+        }
+    }
+    Ok(())
+}
+
+fn validate_direct_frost_runtime_fine_layers(
+    carry: &DirectFrostRuntimeCarry,
+) -> Result<(), DirectRuntimeError> {
+    for fine in &carry.fine_layers {
+        if fine.layer_index == 0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "constructor.frost_runtime_carry.fine_layer.layer_index",
+            });
+        }
+        if fine.fine_index == 0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "constructor.frost_runtime_carry.fine_layer.fine_index",
+            });
+        }
+        for (field, value) in [
+            (
+                "constructor.frost_runtime_carry.fine_layer.fgfrst",
+                fine.fgfrst,
+            ),
+            (
+                "constructor.frost_runtime_carry.fine_layer.slfsd_m",
+                fine.slfsd_m,
+            ),
+            (
+                "constructor.frost_runtime_carry.fine_layer.slsic_m",
+                fine.slsic_m,
+            ),
+            (
+                "constructor.frost_runtime_carry.fine_layer.slsw_theta",
+                fine.slsw_theta,
+            ),
+            (
+                "constructor.frost_runtime_carry.fine_layer.sltime_s",
+                fine.sltime_s,
+            ),
+        ] {
+            validate_nonnegative_direct_m(field, value)?;
         }
     }
     Ok(())

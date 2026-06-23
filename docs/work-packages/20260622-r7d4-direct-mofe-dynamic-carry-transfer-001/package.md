@@ -1,6 +1,6 @@
 # R7D4 Direct MOFE Dynamic Carry Transfer
 
-Status: queued.
+Status: executed-held.
 
 Package type: Array-native runtime defect-closure implementation package.
 
@@ -139,4 +139,22 @@ Review requirements:
 - `.rs` line-count governance: `2000+` lines is `WARN`; non-exempt `3000+`
   production files block closure.
 
-Final disposition: pending.
+Final disposition:
+`HOLD-R7D4-HBP-EROD14-SEDIMENT-PRODUCER-ABSENT`.
+
+Execution summary:
+
+- Direct same-day MOFE dynamic carry transfer is implemented and exercised by
+  focused direct-runtime fixtures.
+- H2637 focused default/direct parity (`cleaned-r7d4`) now has byte-identical
+  `H2637.wat.parquet` and `H2637.pass.parquet`.
+- `H2637.loss.json` and `H2637.plot.parquet` differ only by `run_name`.
+- Direct H2637 still exits 0 with direct runtime
+  `compatibility_edge_invocations = 0`.
+- Remaining HBP delta is sediment-family payload only: default HBP contains
+  nonzero event sediment concentration/detachment/deposition payload where
+  direct HBP publishes zero authority. This is the package-declared
+  sediment-coupled EROD14/EROD15 hold boundary once water-transfer parity is
+  otherwise closed.
+- Follow-up package:
+  `../20260623-r7d5-direct-erod14-sediment-publication-001/`.

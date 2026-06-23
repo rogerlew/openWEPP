@@ -253,7 +253,7 @@ impl HillslopeSchedulerReport {
 }
 
 /// Mutable state/flux maps owned by the hillslope orchestrator.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct HillslopeWritebackSurface {
     pub state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
     pub flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,

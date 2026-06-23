@@ -515,7 +515,7 @@ mod tests {
     }
 
     fn r5c_day_span_run_count() -> u64 {
-        20
+        22
     }
 
     fn r5c_day_phase_entry_count() -> u64 {
@@ -526,6 +526,7 @@ mod tests {
             + DIRECT_R5D_ANNUAL_GROWTH_PHASE_SPAN_COUNT
             + DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT
             + DIRECT_R4A_PHASE_SPAN_COUNT
+            + 3
             + DIRECT_R4B_PHASE_SPAN_COUNT
             + DIRECT_R4C_PHASE_SPAN_COUNT
             + DIRECT_R4G_PHASE_SPAN_COUNT
@@ -537,6 +538,7 @@ mod tests {
             + DIRECT_R4N_PHASE_SPAN_COUNT
             + DIRECT_R4O_PHASE_SPAN_COUNT
             + DIRECT_R4PQZ_PHASE_SPAN_COUNT
+            + 3
             + DIRECT_R3B_PHASE_SPAN_COUNT) as u64
     }
 
@@ -919,13 +921,19 @@ mod tests {
             .expect("fixture climate request should build");
         let climate_span =
             build_climate_run_span_summary(&inputs.climate).expect("climate span should build");
+        let seed_surfaces = vec![
+            r7d2_profile_seed_surface(500.0, 520.0, 90.0, 0.30, 0.0),
+            r7d2_profile_seed_surface(640.0, 690.0, 120.0, 0.34, 2.0),
+        ];
+        let climate_context_surface = seed_surfaces
+            .first()
+            .expect("fixture has at least one seed surface")
+            .clone();
         let builder = DirectPublicationDayInputBuilder::new_with_seed_surfaces(
             &climate_request,
             &climate_span,
-            vec![
-                r7d2_profile_seed_surface(500.0, 520.0, 90.0, 0.30, 0.0),
-                r7d2_profile_seed_surface(640.0, 690.0, 120.0, 0.34, 2.0),
-            ],
+            seed_surfaces,
+            &climate_context_surface,
             ExecutionLane::Daily,
         )
         .expect("lane-indexed direct day-input builder should construct");
@@ -1201,26 +1209,49 @@ mod tests {
     }
 
     #[test]
-    fn r6i_direct_day_two_pmet_seed_matches_compatibility_runtime_seed() {
+    fn r7d_direct_day_two_pmet_seed_keeps_direct_wb14_lineage_boundary() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         reset_direct_runtime_audit_counters();
 
-        let direct_seed_surface = r6i_direct_day_two_seed_surface();
+        let direct_evidence = r7d_direct_day_two_seed_evidence();
         let compatibility_execution = r6i_compatibility_fixture_execution();
+        let compatibility_day_one = compatibility_execution
+            .wb13_rows
+            .iter()
+            .find(|row| row.sim_day_index == 1 && row.wb13_row.ofe == 1)
+            .expect("fixture compatibility day-1 row should exist");
+
+        assert!(
+            direct_evidence.day_one_runoff_mm < compatibility_day_one.wb13_row.q,
+            "direct WB14 lineage must not be forced through compatibility day-1 stale infiltration"
+        );
+
+        let top_theta_m =
+            runtime_surface_symbol_value(&direct_evidence.day_two_seed_surface, "wb18_perc_theta_0001")
+                .expect("direct day-2 seed must carry top-layer theta");
+        let direct_wfevp_mm =
+            runtime_surface_symbol_value(&direct_evidence.day_two_seed_surface, "pmet.wfevp_mm")
+                .expect("direct day-2 seed must publish PMET wfevp");
+        assert!(
+            (direct_wfevp_mm - top_theta_m * 500.0).abs() < 1.0e-12,
+            "direct PMET wfevp must be reconstructed from the direct carried top layer"
+        );
+
         for symbol in ["pmet.wfevp_mm", "pmet.etkr", "pmet.es_m"] {
-            let direct = runtime_surface_symbol_value(&direct_seed_surface, symbol)
+            let direct =
+                runtime_surface_symbol_value(&direct_evidence.day_two_seed_surface, symbol)
                 .unwrap_or_else(|| panic!("direct day-2 seed must publish {symbol}"));
             let compatibility = runtime_surface_symbol_value(
                 &compatibility_execution.runtime_surface,
                 symbol,
             )
             .unwrap_or_else(|| panic!("compatibility day-2 runtime must publish {symbol}"));
-            assert_eq!(
+            assert_ne!(
                 direct.to_bits(),
                 compatibility.to_bits(),
-                "{symbol} bit parity failed: direct={direct:?} compatibility={compatibility:?}"
+                "{symbol} should expose the direct/compatibility WB14 lineage boundary"
             );
         }
     }
@@ -1311,11 +1342,16 @@ mod tests {
         }
     }
 
-    fn r6i_direct_day_two_seed_surface() -> HillslopeWritebackSurface {
+    struct R7dDirectDayTwoSeedEvidence {
+        day_two_seed_surface: HillslopeWritebackSurface,
+        day_one_runoff_mm: f64,
+    }
+
+    fn r7d_direct_day_two_seed_evidence() -> R7dDirectDayTwoSeedEvidence {
         let source_fixture_dir = fixture_path("hillslope_run_dir");
         let temp_run_dir = copy_fixture_to_temp(
             &source_fixture_dir,
-            "r6i_direct_day_two_pmet_seed",
+            "r7d_direct_day_two_pmet_seed",
         );
         let request = HillslopeRunRequest {
             run_dir: temp_run_dir.clone(),
@@ -1335,27 +1371,36 @@ mod tests {
                 .expect("fixture runtime setup should build");
         let climate_request = build_hillslope_climate_runtime_request(&inputs.climate)
             .expect("fixture climate request should build");
-        let identity = DirectRunIdentity::new(
-            u64::from(targets.output_hillslope_id),
-            targets.output_hillslope_id,
-            runtime_setup.execution_state.per_ofe_lane_areas_m2.len(),
-            runtime_setup.execution_state.climate_span.days.len(),
-        )
-        .expect("valid direct identity should construct");
-        let mut frame =
-            DirectRunFrame::skeleton(identity).expect("direct frame should construct");
-        seed_direct_publication_lane_area_geometry(
-            &mut frame,
-            &runtime_setup.execution_state.per_ofe_lane_areas_m2,
-        )
-        .expect("direct lane geometry should seed");
-        let day_input_builder = DirectPublicationDayInputBuilder::new(
-            &climate_request,
-            &runtime_setup.execution_state.climate_span,
+        let lane_seed_surfaces = direct_production_lane_seed_surfaces(
             &runtime_setup.execution_state.runtime_surface,
-            runtime_setup.execution_state.lane_context.lane,
+            runtime_setup.execution_state.persistent_lane_state.as_ref(),
+            runtime_setup.execution_state.per_ofe_lane_areas_m2.len(),
         )
-        .expect("direct day-input builder should construct");
+        .expect("direct lane seed surfaces should build");
+        let mut frame = build_direct_production_run_frame(&DirectProductionRunFrameBuildInputs {
+            output_hillslope_id: targets.output_hillslope_id,
+            lane_areas_m2: &runtime_setup.execution_state.per_ofe_lane_areas_m2,
+            runoff_publication_geometries: &runtime_setup
+                .execution_state
+                .per_ofe_runoff_publication_geometries,
+            day_count: runtime_setup.execution_state.climate_span.days.len(),
+            climate_request: &climate_request,
+            climate_span: &runtime_setup.execution_state.climate_span,
+            climate_context_surface: &runtime_setup.execution_state.runtime_surface,
+            lane_seed_surfaces: &lane_seed_surfaces,
+            execution_lane: runtime_setup.execution_state.lane_context.lane,
+        })
+        .expect("direct production frame should construct");
+        let day_input_builder =
+            DirectPublicationDayInputBuilder::new_with_seed_surfaces_and_erosion_guard(
+                &climate_request,
+                &runtime_setup.execution_state.climate_span,
+                lane_seed_surfaces,
+                &runtime_setup.execution_state.runtime_surface,
+                runtime_setup.execution_state.lane_context.lane,
+                true,
+            )
+            .expect("direct day-input builder should construct");
         let metadata = DirectPublicationRunMetadata {
             run_name: inputs.runfile.run_name.clone(),
             runtime_selection: HillslopeRuntimeSelection::DirectPublicationFrameCutover
@@ -1367,7 +1412,7 @@ mod tests {
             .to_string(),
         };
         let mut day_two_seed_surface = None;
-        DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
             .run_publication_capture_with_interleaved_day_inputs(
                 &mut frame,
                 metadata,
@@ -1382,7 +1427,18 @@ mod tests {
                 },
             )
             .expect("direct publication capture should complete");
-        day_two_seed_surface.expect("fixture should include a day-2 direct seed surface")
+        let day_one_runoff_mm = execution
+            .publication_frame
+            .rows()
+            .iter()
+            .find(|row| row.sim_day_index == 1 && row.ofe_id == 1)
+            .map(|row| row.runoff.q_mm)
+            .expect("direct day-1 publication row should exist");
+        R7dDirectDayTwoSeedEvidence {
+            day_two_seed_surface: day_two_seed_surface
+                .expect("fixture should include a day-2 direct seed surface"),
+            day_one_runoff_mm,
+        }
     }
 
     fn r7d2_profile_seed_surface(
@@ -1799,6 +1855,143 @@ mod tests {
         assert_eq!(pass_rows[0].year, 1);
         assert_eq!(pass_rows[0].sim_day_index, 1);
         assert_eq!(pass_rows[1].sim_day_index, 2);
+    }
+
+    #[test]
+    fn r7d4_direct_publication_layer_state_uses_hourly_lateral_ssh_not_vertical_ssc() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("wb18_perc_theta_0001", 0.150),
+            ("wb18_perc_fc_0001", 0.100),
+            ("wb18_perc_ul_0001", 0.250),
+            ("wb18_perc_ssc_0001", 1.0e-6),
+            ("wb19_lateral_ssh_0001", 4.0e-6),
+            ("wb19_dg_0001", 0.200),
+            ("wb19_thetdr_0001", 0.010),
+            ("wb19_por_0001", 0.500),
+            ("wb19_thetfc_0001", 0.250),
+            ("wb19_coca_0001", 0.750),
+            ("wb19_lateral_drain_lane_substeps", 24.0),
+            ("solwpv", 9002.0),
+        ]);
+
+        let layer = direct_publication_layer_state(&runtime_surface, 1)
+            .expect("hourly lateral conductivity should be consumed");
+        assert_eq!(layer.conductivity_m_s.to_bits(), 1.0e-6_f64.to_bits());
+        assert_eq!(
+            layer.lateral_conductivity_m_s.to_bits(),
+            4.0e-6_f64.to_bits()
+        );
+
+        runtime_surface
+            .state_surface
+            .remove(&BoundarySymbol::from("wb19_lateral_ssh_0001"));
+        let error = direct_publication_layer_state(&runtime_surface, 1)
+            .expect_err("modern hourly lanes must not fall back to vertical ssc");
+        assert!(
+            error
+                .to_string()
+                .contains("direct hourly WB19 lateral conductivity requires wb19_lateral_ssh_0001"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn r7d4_direct_publication_percolation_inputs_carry_restrictive_layer_authority() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("wb11_soil_water", 0.150),
+            ("wb18_perc_lane_substeps", 24.0),
+            ("slflag", 1.0),
+            ("kslast", 1.0e-6),
+            ("ui_bdrkth", 0.750),
+            ("wb18_perc_theta_0001", 0.150),
+            ("wb18_perc_fc_0001", 0.100),
+            ("wb18_perc_ul_0001", 0.250),
+            ("wb18_perc_ssc_0001", 8.0e-5),
+            ("wb19_lateral_ssh_0001", 4.0e-6),
+            ("wb19_dg_0001", 0.200),
+            ("wb19_thetdr_0001", 0.010),
+            ("wb19_por_0001", 0.500),
+            ("wb19_thetfc_0001", 0.250),
+            ("wb19_coca_0001", 0.750),
+            ("wb11_nsl", 1.0),
+            ("wb19_nsl", 1.0),
+        ]);
+
+        let inputs = direct_publication_percolation_inputs(&runtime_surface, 0.045)
+            .expect("restrictive layer inputs should be carried into direct WB18");
+        assert!(inputs.restrictive_layer_enabled);
+        assert_eq!(
+            inputs.restrictive_layer_conductivity_m_s.to_bits(),
+            1.0e-6_f64.to_bits()
+        );
+        assert_ne!(
+            inputs.restrictive_layer_conductivity_m_s.to_bits(),
+            inputs.layers[0].conductivity_m_s.to_bits()
+        );
+        assert_eq!(
+            inputs.restrictive_layer_thickness_m.to_bits(),
+            0.750_f64.to_bits()
+        );
+        assert_eq!(inputs.lane_substeps, 24);
+
+        runtime_surface
+            .state_surface
+            .remove(&BoundarySymbol::from("ui_bdrkth"));
+        let error = direct_publication_percolation_inputs(&runtime_surface, 0.045)
+            .expect_err("hourly restrictive-layer direct WB18 must require bedrock thickness");
+        assert!(
+            error.to_string().contains("ui_bdrkth"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn r7d4_direct_publication_interception_uses_wb15_operands_not_i_alias() {
+        let runtime_surface = wb11_seed_test_surface(&[
+            ("wb12_rainfall_input", 0.010),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 3_600.0),
+            ("intsty_0001", 0.010 / 3_600.0),
+            ("cancov", 0.5),
+            ("lai", 1.0),
+            ("vdmt", 0.2),
+            ("I", 0.009),
+        ]);
+
+        let hyetograph = direct_publication_hyetograph(&runtime_surface)
+            .expect("hyetograph should be available for direct WB15");
+        let interception = direct_publication_interception_state(&runtime_surface, 0.010, &hyetograph)
+            .expect("direct WB15 interception should compute from plant operands");
+        let expected_interception_m =
+            0.5 * ((0.000_627 * 2_000.0 - 3.733_49e-8 * 2_000.0_f64.powi(2)) / 1_000.0);
+
+        assert!((interception.interception_m - expected_interception_m).abs() < 1.0e-12);
+        assert_ne!(
+            interception.interception_m.to_bits(),
+            0.009_f64.to_bits(),
+            "direct WB15 must not consume a stale publication I alias"
+        );
+        assert!(
+            (interception.liquid_after_interception_m - (0.010 - expected_interception_m)).abs()
+                < 1.0e-12
+        );
+
+        let scaled_hyetograph =
+            direct_publication_scaled_hyetograph(&hyetograph, interception.rainfall_scale)
+                .expect("direct WB15 scale should produce a post-interception hyetograph");
+        assert!((scaled_hyetograph[0].intensity_m_s * 3_600.0
+            - interception.liquid_after_interception_m)
+            .abs()
+            < 1.0e-12);
+        let liquid_inputs = direct_publication_liquid_input_inputs(
+            interception.liquid_after_interception_m,
+        )
+        .expect("post-interception liquid input should be valid");
+        assert_eq!(
+            liquid_inputs.liquid_input_handoff_m.to_bits(),
+            interception.liquid_after_interception_m.to_bits()
+        );
     }
 
     fn r6j_multiofe_publication_row(ofe_id: u32, sim_day_index: i32) -> DirectPublicationDayRow {

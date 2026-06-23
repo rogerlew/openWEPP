@@ -5,7 +5,7 @@ pub(super) const MOFE03_WAVE2_DEFAULT_XBOT: f64 = 0.5;
 pub(super) const MOFE03_WAVE2_DEFAULT_XDETST: f64 = 0.1;
 pub(super) const MOFE03_WAVE2_DEFAULT_LDTOP: f64 = 0.8;
 pub(super) const MOFE03_WAVE2_DEFAULT_LDBOT: f64 = 0.6;
-pub(super) const MOFE03_WAVE2_DEFAULT_LDDEND: f64 = 0.3;
+pub(super) const MOFE03_WAVE2_DEFAULT_LDDEND: f64 = 0.0;
 pub(super) const MOFE03_WAVE2_DEFAULT_KTRATO: f64 = 1.1;
 pub(super) const MOFE03_WAVE2_DEFAULT_AINTC: f64 = 0.4;
 pub(super) const MOFE03_WAVE2_DEFAULT_BINTC: f64 = 0.3;
@@ -13,6 +13,7 @@ pub(super) const MOFE03_WAVE2_DEFAULT_CINTC: f64 = 0.2;
 pub(super) const MOFE03_WAVE2_DEFAULT_BETA: f64 = 0.5;
 pub(super) const MOFE03_WAVE2_DEFAULT_QOSTAR: f64 = 0.2;
 pub(super) const MOFE03_WAVE2_DEFAULT_SSA_SOIL: f64 = 5.0;
+pub(super) const MOFE03_WAVE2_PARTICLE_CLASS_COUNT: usize = 5;
 pub(super) const MOFE03_ROUTE_SEGMENT_INDEX: usize = 2;
 
 #[derive(Debug, Clone, Copy)]
@@ -42,7 +43,7 @@ pub(super) fn seed_mofe03_wave2_runtime_surface_inputs(
     )?;
     let qout = resolve_mofe03_wave2_qout(runtime_surface)?;
     let qin = resolve_mofe03_wave2_qin(runtime_surface)?;
-    let qostar = (qout - qin).max(0.0);
+    let qostar = resolve_mofe03_wave2_qostar(runtime_surface, slplen, qout, qin)?;
     let case_scalars = build_mofe03_wave2_case_scalars(qout);
 
     seed_mofe03_wave2_core_scalars(runtime_surface, ofe_count, slplen, qout, qin, qostar)?;
@@ -128,6 +129,32 @@ pub(super) fn resolve_mofe03_wave2_qin(
     )
 }
 
+pub(super) fn resolve_mofe03_wave2_qostar(
+    runtime_surface: &HillslopeWritebackSurface,
+    slplen: f64,
+    qout: f64,
+    qin: f64,
+) -> Result<f64, HillslopeCliError> {
+    let del = qout - qin;
+    let qostar = if qout <= 0.0 {
+        let efflen = runtime_surface_symbol_value(runtime_surface, "efflen").unwrap_or(slplen);
+        require_mofe03_positive_seed_scalar(efflen, "efflen")?;
+        -efflen / slplen
+    } else if del.abs() > 1.0e-10 {
+        if qin <= 0.0 { 0.0 } else { qin / del }
+    } else if del >= 0.0 {
+        qin / 1.0e-10
+    } else {
+        -qin / 1.0e-10
+    };
+    require_mofe03_seed_scalar(qostar, "erod14_qostar")?;
+    Ok(if (qostar + 1.0).abs() <= MOFE03_WAVE2_ENABLE_TOLERANCE {
+        -1.001
+    } else {
+        qostar
+    })
+}
+
 pub(super) fn build_mofe03_wave2_case_scalars(qout: f64) -> Mofe03Wave2CaseScalars {
     if qout > MOFE03_WAVE2_ENABLE_TOLERANCE {
         return Mofe03Wave2CaseScalars {
@@ -151,7 +178,7 @@ pub(super) fn build_mofe03_wave2_case_scalars(qout: f64) -> Mofe03Wave2CaseScala
 
 pub(super) fn seed_mofe03_wave2_core_scalars(
     runtime_surface: &mut HillslopeWritebackSurface,
-    ofe_count: usize,
+    _ofe_count: usize,
     slplen: f64,
     qout: f64,
     qin: f64,
@@ -159,7 +186,10 @@ pub(super) fn seed_mofe03_wave2_core_scalars(
 ) -> Result<(), HillslopeCliError> {
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_class_count"),
-        BoundaryValue::scalar(usize_to_scalar("erod14_class_count", ofe_count)?),
+        BoundaryValue::scalar(usize_to_scalar(
+            "erod14_class_count",
+            MOFE03_WAVE2_PARTICLE_CLASS_COUNT,
+        )?),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_xtop"),
@@ -287,7 +317,12 @@ pub(super) fn resolve_mofe03_wave2_beta_theta(
         Some(value) => require_mofe03_non_negative_seed_scalar(value, "beta")?,
         None => MOFE03_WAVE2_DEFAULT_BETA,
     };
-    let theta = if let Some(value) = runtime_surface_symbol_value(runtime_surface, "theta") {
+    let erod13_core_enabled = runtime_surface_symbol_value(runtime_surface, "erod13_core_enabled")
+        .map(|value| parse_mofe03_binary_flag("erod13_core_enabled", value))
+        .transpose()?
+        .unwrap_or(false);
+    let theta = if erod13_core_enabled {
+        let value = require_mofe03_runtime_surface_scalar(runtime_surface, "theta")?;
         require_mofe03_non_negative_seed_scalar(value, "theta")?
     } else {
         let thetdr = require_mofe03_non_negative_seed_scalar(
@@ -358,13 +393,14 @@ pub(super) fn seed_mofe03_wave2_ssa_soil(
 
 pub(super) fn seed_mofe03_wave2_class_symbols(
     runtime_surface: &mut HillslopeWritebackSurface,
-    ofe_count: usize,
+    _ofe_count: usize,
 ) -> Result<(), HillslopeCliError> {
-    let class_count_f64 = usize_to_scalar("erod14_class_count", ofe_count)?;
+    let class_count = MOFE03_WAVE2_PARTICLE_CLASS_COUNT;
+    let class_count_f64 = usize_to_scalar("erod14_class_count", class_count)?;
     let class_fraction = 1.0 / class_count_f64;
-    for class_index in 1..=ofe_count {
+    for class_index in 1..=class_count {
         let class_index_f64 = usize_to_scalar("erod14_class_index", class_index)?;
-        let reverse_class_index = ofe_count.saturating_sub(class_index) + 1;
+        let reverse_class_index = class_count.saturating_sub(class_index) + 1;
         let reverse_class_index_f64 =
             usize_to_scalar("erod14_reverse_class_index", reverse_class_index)?;
         let class_offset = class_index.saturating_sub(1);
@@ -409,4 +445,3 @@ pub(super) fn seed_mofe03_wave2_class_symbols(
     }
     Ok(())
 }
-

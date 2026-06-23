@@ -342,7 +342,6 @@ impl DirectDayFrame {
                 field: "root_uptake.layer_count",
             });
         }
-
         let soil_water_before_root_uptake_m = subsurface.soil_water_after_m;
         let computed_soil_water_before_m = aggregate_soil_water(&layers)?;
         let effective_plant_tolerance = effective_swu_plant_tolerance(inputs.plant_tolerance);

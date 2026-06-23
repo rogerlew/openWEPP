@@ -1,7 +1,263 @@
 #[allow(clippy::wildcard_imports)]
 use super::super::*;
 
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct DirectFrostRunoffSurface {
+    state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+    flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+}
+
+impl DirectFrostRunoffSurface {
+    #[must_use]
+    pub fn from_surface_maps(
+        state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+    ) -> Self {
+        Self {
+            state_surface,
+            flux_surface,
+        }
+    }
+
+    #[must_use]
+    pub fn optional_scalar(&self, symbol: &str) -> Option<f64> {
+        self.state_surface
+            .get(&BoundarySymbol::from(symbol))
+            .copied()
+            .map(BoundaryValue::as_f64)
+    }
+
+    pub fn insert_scalar(&mut self, symbol: &str, value: f64) {
+        self.state_surface
+            .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
+
+    pub fn retain_state_symbols(&mut self, mut retain: impl FnMut(&str) -> bool) {
+        self.state_surface
+            .retain(|symbol, _| retain(symbol.as_str()));
+    }
+
+    pub fn compute_frost_liquid_partition(
+        &self,
+        soil_conductivity_m_s: f64,
+    ) -> Result<DirectFrostLiquidPartition, Wb11HydrologyKernelGuardError> {
+        Wb11HydrologyKernel::compute_direct_frost_liquid_partition(
+            &self.state_surface,
+            &self.flux_surface,
+            soil_conductivity_m_s,
+        )
+    }
+}
+
+fn inactive_direct_frost_liquid_partition() -> DirectFrostLiquidPartition {
+    DirectFrostLiquidPartition {
+        active_frost_coupling: false,
+        dthaw_after_m: 0.0,
+        nft_after: 0.0,
+        infcap_frz_m_s: 0.0,
+        soil_water_after_frwatc_m: None,
+        frwatc_soil_water_before_m: 0.0,
+        frwatc_soil_water_after_m: 0.0,
+        frwatc_frozen_water_before_m: 0.0,
+        frwatc_frozen_water_after_m: 0.0,
+        frwatc_freeze_debit_m: 0.0,
+        frwatc_thaw_credit_m: 0.0,
+        frwatc_net_liquid_delta_m: 0.0,
+        frozen_water_after_m: 0.0,
+        frost_depth_after_m: 0.0,
+        thdp_after_m: 0.0,
+        tfrdp_after_m: 0.0,
+        tthawd_after_m: 0.0,
+        fgthwd_flag_after: 0.0,
+        total_fine_layer_count: 0.0,
+        conductivity_tilled_w_m_k: 0.0,
+        conductivity_untilled_w_m_k: 0.0,
+        conductivity_residue_w_m_k: 0.0,
+        shadow_total_water_before_m: 0.0,
+        shadow_total_water_after_m: 0.0,
+        shadow_wb_delta_m: 0.0,
+        shadow_frwatc_residual_m: 0.0,
+        watpdg_m: 0.0,
+        watbtm_m: 0.0,
+        layer_projection: Vec::new(),
+        layer_shadow_projection: Vec::new(),
+        fine_layer_projection: Vec::new(),
+    }
+}
+
+fn active_direct_frost_liquid_partition(
+    frost_coupling: &FrostCouplingOutcome,
+) -> DirectFrostLiquidPartition {
+    DirectFrostLiquidPartition {
+        active_frost_coupling: true,
+        dthaw_after_m: frost_coupling.dthaw,
+        nft_after: frost_coupling.nft,
+        infcap_frz_m_s: frost_coupling.infcap_frz,
+        soil_water_after_frwatc_m: frost_coupling.soil_water_after_frwatc,
+        frwatc_soil_water_before_m: frost_coupling.frwatc_soil_water_before,
+        frwatc_soil_water_after_m: frost_coupling.frwatc_soil_water_after,
+        frwatc_frozen_water_before_m: frost_coupling.frwatc_frozen_water_before,
+        frwatc_frozen_water_after_m: frost_coupling.frwatc_frozen_water_after,
+        frwatc_freeze_debit_m: frost_coupling.frwatc_freeze_debit,
+        frwatc_thaw_credit_m: frost_coupling.frwatc_thaw_credit,
+        frwatc_net_liquid_delta_m: frost_coupling.frwatc_net_liquid_delta,
+        frozen_water_after_m: frost_coupling.frwatc_frozen_water_after,
+        frost_depth_after_m: frost_coupling.frdp_m,
+        thdp_after_m: frost_coupling.thdp_m,
+        tfrdp_after_m: frost_coupling.tfrdp_m,
+        tthawd_after_m: frost_coupling.tthawd_m,
+        fgthwd_flag_after: frost_coupling.fgthwd_flag,
+        total_fine_layer_count: frost_coupling.total_fine_layer_count,
+        conductivity_tilled_w_m_k: frost_coupling.conductivity_tilled_w_m_k,
+        conductivity_untilled_w_m_k: frost_coupling.conductivity_untilled_w_m_k,
+        conductivity_residue_w_m_k: frost_coupling.conductivity_residue_w_m_k,
+        shadow_total_water_before_m: frost_coupling.shadow_total_water_before_m,
+        shadow_total_water_after_m: frost_coupling.shadow_total_water_after_m,
+        shadow_wb_delta_m: frost_coupling.shadow_wb_delta_m,
+        shadow_frwatc_residual_m: frost_coupling.shadow_frwatc_residual_m,
+        watpdg_m: frost_coupling.watpdg_m,
+        watbtm_m: frost_coupling.watbtm_m,
+        layer_projection: frost_coupling
+            .layer_topology_state
+            .iter()
+            .map(|layer| DirectFrostLayerProjection {
+                layer_index: layer.layer_index,
+                theta_after_m: layer.theta_after_m,
+                frozen_depth_m: layer.frozen_depth_m,
+                frozen_water_m: layer.frzw_m,
+            })
+            .collect(),
+        layer_shadow_projection: frost_coupling
+            .shadow_layer_state
+            .iter()
+            .map(|layer| DirectFrostLayerShadowProjection {
+                layer_index: layer.layer_index,
+                st_m: layer.st_m,
+                soil_water_m: layer.soil_water_m,
+                frozen_depth_m: layer.frozen_depth_m,
+                frozen_water_m: layer.frzw_m,
+                soilf_m: layer.soilf_m,
+                yst_m: layer.yst_m,
+                nwfrzz_m: layer.nwfrzz_m,
+            })
+            .collect(),
+        fine_layer_projection: frost_coupling
+            .fine_layer_state
+            .iter()
+            .map(|fine| DirectFrostFineLayerProjection {
+                layer_index: fine.layer_index,
+                fine_index: fine.fine_index,
+                fgfrst: fine.fgfrst,
+                slfsd_m: fine.slfsd_m,
+                slsic_m: fine.slsic_m,
+                slsw_theta: fine.slsw_theta,
+                sltime_s: fine.sltime_s,
+            })
+            .collect(),
+    }
+}
+
 impl Wb11HydrologyKernel {
+    pub fn compute_direct_frost_liquid_partition(
+        state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+        soil_conductivity_m_s: f64,
+    ) -> Result<DirectFrostLiquidPartition, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_CONDUCTIVITY,
+            soil_conductivity_m_s,
+            Some(0.0),
+            None,
+        )?;
+        let request = HillslopeKernelRequest::new(
+            "direct_frost_liquid_partition",
+            HillslopeConsumerAdapter::Runoff,
+            state_surface,
+            flux_surface,
+        );
+        let active_frost_coupling = Self::resolve_active_frost_coupling(&request, phase_class)?;
+        if !active_frost_coupling {
+            return Ok(inactive_direct_frost_liquid_partition());
+        }
+        let frost_coupling =
+            Self::compute_active_frost_coupling(&request, phase_class, soil_conductivity_m_s)?;
+        Ok(active_direct_frost_liquid_partition(&frost_coupling))
+    }
+
+    pub fn compute_direct_snow_liquid_partition(
+        state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+        hyetograph_rainfall_m: f64,
+    ) -> Result<DirectSnowLiquidPartition, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RAINFALL_INPUT,
+            hyetograph_rainfall_m,
+            Some(0.0),
+            None,
+        )?;
+        let request = HillslopeKernelRequest::new(
+            "direct_snow_liquid_partition",
+            HillslopeConsumerAdapter::Runoff,
+            state_surface,
+            flux_surface,
+        );
+        let runtime_swe = Self::validate_runtime_snow_state_domains(&request, phase_class)?;
+        let active_snow_coupling = if hyetograph_rainfall_m <= WB11_ZERO_THRESHOLD
+            && runtime_swe <= WB11_ZERO_THRESHOLD
+        {
+            false
+        } else {
+            Self::resolve_active_snow_coupling(&request, phase_class)?
+        };
+        let snow_coupling = if active_snow_coupling {
+            Self::compute_active_snow_coupling(&request, phase_class, hyetograph_rainfall_m)?
+        } else {
+            SnowCouplingOutcome {
+                signed_s: 0.0,
+                accumulation: 0.0,
+                rain_retained: 0.0,
+                rain_released: 0.0,
+                runtime_swe,
+                runtime_depth_m: Self::optional_state_scalar_for_symbol(
+                    &request,
+                    phase_class,
+                    &BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+                )?
+                .unwrap_or(0.0),
+                runtime_density_kg_m3: Self::optional_state_scalar_for_symbol(
+                    &request,
+                    phase_class,
+                    &BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+                )?
+                .unwrap_or(0.0),
+                runtime_settle_day_count: Self::optional_state_scalar_for_symbol(
+                    &request,
+                    phase_class,
+                    &BoundarySymbol::from(SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL),
+                )?
+                .unwrap_or(0.0),
+                hourly_state: Vec::new(),
+            }
+        };
+        let (routed_melt_m, post_winter_rain_m) =
+            Self::resolve_snow_partition_terms(phase_class, hyetograph_rainfall_m, &snow_coupling)?;
+
+        Ok(DirectSnowLiquidPartition {
+            active_snow_coupling,
+            snow_coupling_signed_s_m: snow_coupling.signed_s,
+            routed_melt_m,
+            post_winter_rain_m,
+            runtime_swe_after_m: snow_coupling.runtime_swe,
+            runtime_depth_after_m: snow_coupling.runtime_depth_m,
+            runtime_density_after_kg_m3: snow_coupling.runtime_density_kg_m3,
+            runtime_settle_day_count_after: snow_coupling.runtime_settle_day_count,
+        })
+    }
+
     pub(crate) fn redistribute_daily_signed_snowmelt(
         hourly_state: &mut [SnowHourlyState],
     ) -> SnowMeltRedistributionOutcome {

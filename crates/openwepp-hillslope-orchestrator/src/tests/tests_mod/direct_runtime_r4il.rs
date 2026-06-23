@@ -137,7 +137,7 @@ fn assert_r4il_producer_outputs(day: &DirectDayFrame) {
         day.runoff_partition_inputs,
         DirectRunoffPartitionInputs {
             liquid_input_m: 0.5,
-            runon_input_m: 0.125,
+            runon_input_m: 0.140_625,
             cumulative_infiltration_m: 0.25,
             depression_storage_delta_m: 0.0625,
             surface_saturation_runoff_m: 0.03125
@@ -164,6 +164,76 @@ fn assert_r4il_audit_counts() {
 }
 
 #[test]
+fn r4j_runon_carry_consumes_dynamic_transfer_arrays_and_feeds_total_runon() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut day = r4il_seed_day();
+    day.runon_carry_inputs = DirectRunonCarryInputs::zero();
+    day.storage_reconciliation_inputs.precip_input_m = 0.25;
+    day.transfer.surface_carry_m[0] = 0.03125;
+    day.transfer.surface_carry_m[1] = 0.0625;
+    day.transfer.lateral_carry_m[2] = 0.015_625;
+
+    let report = day
+        .run_r4j_runon_carry_span()
+        .expect("dynamic transfer arrays should feed R4J");
+
+    let expected_runon = DirectRunonCarryState {
+        runon_input_m: 0.09375,
+        subsurface_carry_m: 0.015_625,
+    };
+    let expected_shadow = DirectRunonCarryShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        runon_input_m: 0.09375,
+        subsurface_carry_m: 0.015_625,
+    };
+
+    assert_eq!(day.runon_carry, expected_runon);
+    assert_eq!(
+        day.runon_carry_downstream_operands,
+        DirectRunonCarryDownstreamOperands::from(expected_runon)
+    );
+    assert_eq!(day.runon_carry_shadow_projection, Some(expected_shadow));
+    assert_eq!(
+        day.runoff_partition_inputs.runon_input_m.to_bits(),
+        0.109_375_f64.to_bits()
+    );
+    assert_eq!(
+        day.storage_reconciliation_inputs.precip_input_m.to_bits(),
+        0.25_f64.to_bits()
+    );
+    assert_eq!(
+        day.storage_reconciliation_inputs.runon_input_m.to_bits(),
+        0.109_375_f64.to_bits()
+    );
+    assert_eq!(report.runon_carry_shadow_projection, expected_shadow);
+    assert_eq!(report.compatibility_edge_invocation_count, 0);
+}
+
+#[test]
+fn r4j_runon_carry_rejects_conflicting_dynamic_and_handoff_sources() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut day = r4il_seed_day();
+    day.transfer.surface_carry_m[0] = 0.03125;
+
+    assert_eq!(
+        day.run_r4j_runon_carry_span()
+            .expect_err("stale aggregate handoff must not mask dynamic transfer arrays"),
+        DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "runon_carry.surface_component_m"
+        }
+    );
+}
+
+#[test]
 fn r4a_runoff_partition_consumes_r4il_producers_and_shadow_projects() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
@@ -186,30 +256,30 @@ fn r4a_runoff_partition_consumes_r4il_producers_and_shadow_projects() {
 
     let expected_state = DirectRunoffPartitionState {
         liquid_input_m: 0.5,
-        runon_input_m: 0.125,
+        runon_input_m: 0.140_625,
         cumulative_infiltration_m: 0.25,
         depression_storage_delta_m: 0.0625,
         surface_saturation_runoff_m: 0.03125,
-        partition_runoff_m: 0.3125,
-        q_runoff_m: 0.34375,
+        partition_runoff_m: 0.328_125,
+        q_runoff_m: 0.359_375,
         closure_residual_m: 0.0,
     };
     let expected_shadow = DirectRunoffShadowProjection {
         lane_index: 0,
         day_index: 0,
         liquid_input_m: 0.5,
-        runon_input_m: 0.125,
+        runon_input_m: 0.140_625,
         cumulative_infiltration_m: 0.25,
         depression_storage_delta_m: 0.0625,
         surface_saturation_runoff_m: 0.03125,
-        partition_runoff_m: 0.3125,
-        q_runoff_m: 0.34375,
+        partition_runoff_m: 0.328_125,
+        q_runoff_m: 0.359_375,
         closure_residual_m: 0.0,
     };
 
     assert_eq!(day.runoff_partition, expected_state);
     assert_eq!(day.water.infiltration_m.to_bits(), 0.25_f64.to_bits());
-    assert_eq!(day.water.runoff_m.to_bits(), 0.34375_f64.to_bits());
+    assert_eq!(day.water.runoff_m.to_bits(), 0.359_375_f64.to_bits());
     assert_eq!(
         day.runoff_downstream_operands,
         DirectRunoffDownstreamOperands::from(expected_state)
@@ -380,8 +450,9 @@ fn r4l_sums_direct_hourly_saturation_carry_when_r4o_has_run() {
     assert_eq!(
         report
             .saturation_addback_shadow_projection
-            .surface_saturation_runoff_m,
-        day.saturation_addback.surface_saturation_runoff_m
+            .surface_saturation_runoff_m
+            .to_bits(),
+        day.saturation_addback.surface_saturation_runoff_m.to_bits()
     );
 }
 
@@ -455,7 +526,7 @@ fn r4k_wb14_producer_rejects_malformed_hyetograph() {
 }
 
 #[test]
-fn r4a_runoff_partition_rejects_missing_r4il_upstreams_and_invalid_values() {
+fn r4a_runoff_partition_rejects_missing_r4il_upstreams() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -518,6 +589,14 @@ fn r4a_runoff_partition_rejects_missing_r4il_upstreams_and_invalid_values() {
             upstream: "R4L saturation addback"
         }
     );
+}
+
+#[test]
+fn r4a_runoff_partition_rejects_invalid_values() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
 
     let mut negative_mutation = r4a_ready_day();
     negative_mutation
@@ -530,6 +609,37 @@ fn r4a_runoff_partition_rejects_missing_r4il_upstreams_and_invalid_values() {
         DirectRuntimeError::NegativeDirectValue {
             field: "runoff_partition.depression_storage_delta_m"
         }
+    );
+
+    let mut roundoff_overdraw = r4il_seed_day();
+    roundoff_overdraw.liquid_input_inputs.liquid_input_handoff_m = 0.013_362_787_233_174_108;
+    roundoff_overdraw.runon_carry_inputs.surface_runon_handoff_m = 0.0;
+    roundoff_overdraw
+        .runon_carry_inputs
+        .subsurface_carry_handoff_m = 0.0;
+    roundoff_overdraw
+        .infiltration_depression_inputs
+        .cumulative_infiltration_handoff_m = 0.013_362_787_233_174_11;
+    roundoff_overdraw
+        .infiltration_depression_inputs
+        .depression_storage_delta_handoff_m = 0.0;
+    roundoff_overdraw
+        .saturation_addback_inputs
+        .surface_saturation_runoff_handoff_m = 0.0;
+    run_r4il_producers(&mut roundoff_overdraw);
+    roundoff_overdraw
+        .run_r4a_runoff_partition_span()
+        .expect("sub-ulp partition overdraw should canonicalize to zero runoff");
+    assert_eq!(
+        roundoff_overdraw
+            .runoff_partition
+            .partition_runoff_m
+            .to_bits(),
+        0.0_f64.to_bits()
+    );
+    assert_eq!(
+        roundoff_overdraw.runoff_partition.q_runoff_m.to_bits(),
+        0.0_f64.to_bits()
     );
 
     let mut overdraw = r4il_seed_day();
@@ -576,8 +686,6 @@ fn r4il_seed_day() -> DirectDayFrame {
         DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
     day.forcing.precipitation_m = 0.75;
     day.publication.runoff_m = 0.21875;
-    day.transfer.surface_carry_m[0] = 0.03125;
-    day.transfer.lateral_carry_m[0] = 0.015_625;
     day.water_ledger.diagnostic_residual_m = 0.09375;
     day.runoff_partition_inputs = DirectRunoffPartitionInputs {
         liquid_input_m: 9.0,

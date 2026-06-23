@@ -41,6 +41,26 @@ struct HbpHeaderInput {
 const WB13_DEEP_PERCOLATION_ROUNDOFF_TOLERANCE_M: f64 = 1.0e-11;
 const DIRECT_WAT_WEPP_ID: i32 = 1;
 
+#[derive(Clone, Copy, Debug)]
+struct HillslopePassPublicationScalars {
+    peakro_m3_s: f64,
+}
+
+impl HillslopePassPublicationScalars {
+    #[cfg(test)]
+    fn zero() -> Self {
+        Self { peakro_m3_s: 0.0 }
+    }
+
+    fn from_runtime_surface(
+        runtime_surface: &HillslopeWritebackSurface,
+    ) -> Result<Self, HillslopeCliError> {
+        Ok(Self {
+            peakro_m3_s: optional_non_negative_runtime_scalar(runtime_surface, "peakro", 0.0)?,
+        })
+    }
+}
+
 #[derive(Clone, Copy)]
 struct Wb13OfePublicationContext<'a> {
     simulation_year: i32,
@@ -739,6 +759,7 @@ fn build_hbp_output_from_direct_publication(
     let latest_row = publication
         .last_day()
         .ok_or_else(|| direct_publication_output_failure("missing latest direct publication row"))?;
+    let sediment_row = direct_publication_last_hbp_sediment_row(publication).unwrap_or(latest_row);
     let nofe = u16::try_from(publication.identity.lane_count).map_err(|_| {
         direct_publication_output_failure(format!(
             "direct publication lane count out of u16 range: {}",
@@ -750,13 +771,13 @@ fn build_hbp_output_from_direct_publication(
             "direct publication lane count must be >= 1",
         ));
     }
-    let sediment_concentration_kg_m3 = latest_row
+    let sediment_concentration_kg_m3 = sediment_row
         .erosion
         .hbp_sediment_concentration_kg_m3
         .map_or_else(
             || {
                 direct_publication_required_sediment_concentration(
-                    latest_row.erosion.sediment_concentration_kg_m3,
+                    sediment_row.erosion.sediment_concentration_kg_m3,
                 )
                 .map(|values| values[0])
             },
@@ -786,21 +807,40 @@ fn build_hbp_output_from_direct_publication(
         )?,
         total_detachment_kg: direct_publication_required_erosion_scalar(
             "erosion.hbp_total_detachment_kg or erosion.total_detachment_kg",
-            latest_row
+            sediment_row
                 .erosion
                 .hbp_total_detachment_kg
-                .or(latest_row.erosion.total_detachment_kg),
+                .or(sediment_row.erosion.total_detachment_kg),
         )?,
         total_deposition_kg: direct_publication_required_erosion_scalar(
             "erosion.hbp_total_deposition_kg or erosion.total_deposition_kg",
-            latest_row
+            sediment_row
                 .erosion
                 .hbp_total_deposition_kg
-                .or(latest_row.erosion.total_deposition_kg),
+                .or(sediment_row.erosion.total_deposition_kg),
         )?,
         sediment_concentration_kg_m3,
         particle_flow_fraction: 1.0,
         particle_diameter_m: HBP_DEFAULT_PARTICLE_DIAMETER_M,
+    })
+}
+
+fn direct_publication_last_hbp_sediment_row(
+    publication: &DirectRunPublicationFrame,
+) -> Option<&openwepp_hillslope_orchestrator::DirectPublicationDayRow> {
+    publication.rows().iter().rev().find(|row| {
+        row.erosion
+            .hbp_total_detachment_kg
+            .or(row.erosion.total_detachment_kg)
+            .is_some_and(|value| value > 0.0)
+            || row
+                .erosion
+                .hbp_sediment_concentration_kg_m3
+                .is_some_and(|value| value > 0.0)
+            || row
+                .erosion
+                .sediment_concentration_kg_m3
+                .is_some_and(|values| values.iter().any(|value| *value > 0.0))
     })
 }
 
@@ -940,20 +980,14 @@ fn build_hillslope_pass_row_from_direct_publication(
         runvol_m3: row.runoff.runvol_m3,
         sbrunv_m3: row.subsurface.sbrunv_m3,
         peakro_m3_s: direct_publication_required_erosion_scalar(
-            "erosion.peak_runoff_m3_s",
-            row.erosion.peak_runoff_m3_s,
+            "runoff.peak_runoff_m3_s or erosion.peak_runoff_m3_s",
+            row.runoff
+                .peak_runoff_m3_s
+                .or(row.erosion.peak_runoff_m3_s),
         )?,
-        total_detachment_kg: direct_publication_required_erosion_scalar(
-            "erosion.total_detachment_kg",
-            row.erosion.total_detachment_kg,
-        )?,
-        total_deposition_kg: direct_publication_required_erosion_scalar(
-            "erosion.total_deposition_kg",
-            row.erosion.total_deposition_kg,
-        )?,
-        sediment_concentration_kg_m3: direct_publication_required_sediment_concentration(
-            row.erosion.sediment_concentration_kg_m3,
-        )?,
+        total_detachment_kg: 0.0,
+        total_deposition_kg: 0.0,
+        sediment_concentration_kg_m3: [0.0; 5],
     })
 }
 
@@ -1049,6 +1083,7 @@ fn direct_publication_output_failure(detail: impl Into<String>) -> HillslopeCliE
 fn build_hillslope_pass_row(
     wepp_id: i32,
     wb13_row: &SimulationOwnedWb13Row,
+    publication_scalars: HillslopePassPublicationScalars,
 ) -> Result<HillslopePassRow, HillslopeCliError> {
     if wepp_id <= 0 {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
@@ -1101,7 +1136,7 @@ fn build_hillslope_pass_row(
         water_year: wb13_row.water_year,
         runvol_m3: wb13_row.wb13_row.q * area_m2 / 1_000.0,
         sbrunv_m3: wb13_row.wb13_row.latqcc * area_m2 / 1_000.0,
-        peakro_m3_s: 0.0,
+        peakro_m3_s: publication_scalars.peakro_m3_s,
         total_detachment_kg: 0.0,
         total_deposition_kg: 0.0,
         sediment_concentration_kg_m3: [0.0; 5],
@@ -1111,6 +1146,7 @@ fn build_hillslope_pass_row(
 fn build_hillslope_pass_row_from_outlet_delivery(
     wepp_id: i32,
     outlet: &InternalPerOfeWb13Record,
+    publication_scalars: HillslopePassPublicationScalars,
 ) -> Result<HillslopePassRow, HillslopeCliError> {
     if !outlet.area_m2.is_finite() || outlet.area_m2 <= 0.0 {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
@@ -1122,7 +1158,7 @@ fn build_hillslope_pass_row_from_outlet_delivery(
         });
     }
 
-    let mut row = build_hillslope_pass_row(wepp_id, &outlet.row)?;
+    let mut row = build_hillslope_pass_row(wepp_id, &outlet.row, publication_scalars)?;
     row.runvol_m3 = outlet.row.wb13_row.qofe * outlet.row.wb13_row.area / 1_000.0;
     row.sbrunv_m3 = outlet.row.wb13_row.latqcc * outlet.area_m2 / 1_000.0;
     Ok(row)
@@ -2033,6 +2069,15 @@ fn require_mofe03_non_negative_seed_scalar(
     if value < 0.0 {
         return Err(mofe03_wave2_seed_failure(format!(
             "{symbol} seed value must be >= 0.0, observed {value}"
+        )));
+    }
+    Ok(value)
+}
+
+fn require_mofe03_seed_scalar(value: f64, symbol: &str) -> Result<f64, HillslopeCliError> {
+    if !value.is_finite() {
+        return Err(mofe03_wave2_seed_failure(format!(
+            "{symbol} seed value must be finite, observed {value}"
         )));
     }
     Ok(value)

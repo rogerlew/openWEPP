@@ -46,6 +46,11 @@ impl DirectExecutionCounters {
         self.day_frame_commits += 1;
     }
 
+    fn record_dynamic_transfer_publication(&mut self) {
+        self.mutations += 1;
+        self.downstream_operands += 1;
+    }
+
     fn phase_status_counts(&self) -> Vec<DirectPhaseStatusCount> {
         let mut counts = Vec::with_capacity(DIRECT_PHASE_COUNT);
         for phase in DirectPhaseKind::ORDERED {
@@ -124,13 +129,16 @@ impl DirectFrameExecutor {
             for lane_index in 0..frame.identity.lane_count {
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
                 Self::run_day_spans(&mut day_frame, &mut counters).map_err(|source| {
-                    Self::day_execution_failure(&day_frame, lane_index, day_index, source)
+                    Self::day_execution_failure(&day_frame, lane_index, day_index, &source)
                 })?;
                 for phase in phase_plan {
                     let view = day_frame.phase_view(phase);
                     let _phase = view.phase();
                     phase_view_count += 1;
                     counters.record_phase_status(phase, Self::phase_lifecycle_status(phase));
+                }
+                if Self::publish_dynamic_transfer_to_downstream(frame, &day_frame)? {
+                    counters.record_dynamic_transfer_publication();
                 }
                 frame.commit_day_frame(&day_frame)?;
                 counters.record_day_frame_commit();
@@ -241,7 +249,7 @@ impl DirectFrameExecutor {
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
                 Self::apply_publication_day_input(&mut day_frame, &day_input)?;
                 Self::run_day_spans(&mut day_frame, &mut counters).map_err(|source| {
-                    Self::day_execution_failure(&day_frame, lane_index, day_index, source)
+                    Self::day_execution_failure(&day_frame, lane_index, day_index, &source)
                 })?;
                 for phase in phase_plan {
                     let view = day_frame.phase_view(phase);
@@ -257,7 +265,10 @@ impl DirectFrameExecutor {
                             lane_index,
                             lane_count: frame.lanes.len(),
                         })?;
-                publication_frame.push_day_row(&day_frame, day_input.calendar, lane)?;
+                publication_frame.push_day_row(&day_frame, &day_input, lane)?;
+                if Self::publish_dynamic_transfer_to_downstream(frame, &day_frame)? {
+                    counters.record_dynamic_transfer_publication();
+                }
                 frame.commit_day_frame(&day_frame)?;
                 counters.record_day_frame_commit();
             }
@@ -300,6 +311,8 @@ impl DirectFrameExecutor {
         )?;
         day_frame.forcing.precipitation_m = day_input.precipitation_m;
         day_frame.forcing.effective_temperature_c = day_input.effective_temperature_c;
+        day_frame.interception_m = day_input.interception_m;
+        day_frame.storage_reconciliation_inputs.interception_m = day_input.interception_m;
         if let Some(initial_soil_water_m) = day_input.initial_soil_water_m {
             validate_nonnegative_direct_m(
                 "publication_input.initial_soil_water_m",
@@ -315,28 +328,14 @@ impl DirectFrameExecutor {
         } else {
             day_frame.liquid_input_inputs.liquid_input_handoff_m = day_input.precipitation_m;
         }
-        if let Some(percolation_inputs) = &day_input.percolation_inputs {
-            let mut percolation_inputs = percolation_inputs.clone();
-            if percolation_inputs.layers.is_empty() {
-                percolation_inputs
-                    .layers
-                    .clone_from(&day_frame.percolation_inputs.layers);
-                percolation_inputs.soil_water_initial_m = day_frame.water.soil_water_m;
-            }
-            day_frame.percolation_inputs = percolation_inputs;
-        }
+        Self::apply_publication_percolation_input(day_frame, day_input)?;
         if let Some(infiltration_depression_inputs) = &day_input.infiltration_depression_inputs {
             day_frame.infiltration_depression_inputs = infiltration_depression_inputs.clone();
         }
-        if let Some(subsurface_compute_inputs) = &day_input.subsurface_compute_inputs {
-            let mut subsurface_compute_inputs = subsurface_compute_inputs.clone();
-            if subsurface_compute_inputs.layers.is_empty() {
-                subsurface_compute_inputs
-                    .layers
-                    .clone_from(&day_frame.subsurface_compute_inputs.layers);
-            }
-            day_frame.subsurface_compute_inputs = subsurface_compute_inputs;
+        if let Some(peak_runoff_inputs) = &day_input.peak_runoff_inputs {
+            day_frame.peak_runoff_inputs = peak_runoff_inputs.clone();
         }
+        Self::apply_publication_subsurface_input(day_frame, day_input)?;
         if let Some(evapotranspiration_compute_inputs) = day_input.evapotranspiration_compute_inputs
         {
             let mut evapotranspiration_compute_inputs = evapotranspiration_compute_inputs;
@@ -346,20 +345,170 @@ impl DirectFrameExecutor {
             }
             day_frame.evapotranspiration_compute_inputs = evapotranspiration_compute_inputs;
         }
+        if let Some(snow_coupling_inputs) = day_input.snow_coupling_inputs {
+            day_frame.snow_coupling_inputs = snow_coupling_inputs;
+        }
         if let Some(hydrology_projection_inputs) = day_input.hydrology_projection_inputs {
             day_frame.hydrology_projection_inputs = hydrology_projection_inputs;
         }
+        if let Some(erosion_inputs) = &day_input.erosion_inputs {
+            day_frame.erosion_inputs = erosion_inputs.clone();
+        }
+        day_frame
+            .frost_runoff_surface
+            .clone_from(&day_input.frost_runoff_surface);
         day_frame
             .frost_layer_carry_projection
             .clone_from(&day_input.frost_layer_carry_projection);
+        if day_input.frost_runtime_carry.is_some() {
+            day_frame
+                .frost_runtime_carry
+                .clone_from(&day_input.frost_runtime_carry);
+        }
         Ok(())
+    }
+
+    fn apply_publication_percolation_input(
+        day_frame: &mut DirectDayFrame,
+        day_input: &DirectPublicationDayInput,
+    ) -> Result<(), DirectRuntimeError> {
+        let Some(percolation_inputs) = &day_input.percolation_inputs else {
+            return Ok(());
+        };
+        let mut percolation_inputs = percolation_inputs.clone();
+        if day_frame.day_index > 0 && !day_frame.percolation_inputs.layers.is_empty() {
+            if !percolation_inputs.layers.is_empty()
+                && percolation_inputs.layers.len() != day_frame.percolation_inputs.layers.len()
+            {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "publication_input.percolation_layers",
+                });
+            }
+            percolation_inputs
+                .layers
+                .clone_from(&day_frame.percolation_inputs.layers);
+            percolation_inputs.soil_water_initial_m = day_frame.water.soil_water_m;
+        } else if percolation_inputs.layers.is_empty() {
+            percolation_inputs
+                .layers
+                .clone_from(&day_frame.percolation_inputs.layers);
+            percolation_inputs.soil_water_initial_m = day_frame.water.soil_water_m;
+        }
+        day_frame.percolation_inputs = percolation_inputs;
+        Ok(())
+    }
+
+    fn apply_publication_subsurface_input(
+        day_frame: &mut DirectDayFrame,
+        day_input: &DirectPublicationDayInput,
+    ) -> Result<(), DirectRuntimeError> {
+        let Some(subsurface_compute_inputs) = &day_input.subsurface_compute_inputs else {
+            return Ok(());
+        };
+        let mut subsurface_compute_inputs = subsurface_compute_inputs.clone();
+        if day_frame.day_index > 0 && !day_frame.subsurface_compute_inputs.layers.is_empty() {
+            if !subsurface_compute_inputs.layers.is_empty()
+                && subsurface_compute_inputs.layers.len()
+                    != day_frame.subsurface_compute_inputs.layers.len()
+            {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "publication_input.subsurface_layers",
+                });
+            }
+            subsurface_compute_inputs
+                .layers
+                .clone_from(&day_frame.subsurface_compute_inputs.layers);
+        } else if subsurface_compute_inputs.layers.is_empty() {
+            subsurface_compute_inputs
+                .layers
+                .clone_from(&day_frame.subsurface_compute_inputs.layers);
+        }
+        day_frame.subsurface_compute_inputs = subsurface_compute_inputs;
+        Ok(())
+    }
+
+    fn publish_dynamic_transfer_to_downstream(
+        frame: &mut DirectRunFrame,
+        day_frame: &DirectDayFrame,
+    ) -> Result<bool, DirectRuntimeError> {
+        let (lane_id, upstream_lane_id, downstream_lane_id) = {
+            let lane =
+                frame
+                    .lanes
+                    .get(day_frame.lane_index)
+                    .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
+                        lane_index: day_frame.lane_index,
+                        lane_count: frame.lanes.len(),
+                    })?;
+            (lane.lane_id, lane.upstream_lane_id, lane.downstream_lane_id)
+        };
+        if downstream_lane_id == 0 {
+            return Ok(false);
+        }
+        let downstream_index = usize::try_from(downstream_lane_id - 1).map_err(|_| {
+            DirectRuntimeError::LaneIdOverflow {
+                lane_index: day_frame.lane_index,
+            }
+        })?;
+        let downstream_lane_count = frame.lanes.len();
+        let downstream_lane =
+            frame
+                .lanes
+                .get_mut(downstream_index)
+                .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
+                    lane_index: downstream_index,
+                    lane_count: downstream_lane_count,
+                })?;
+        if downstream_lane.upstream_lane_id != lane_id {
+            return Err(DirectRuntimeError::InvalidLaneTopology {
+                lane_index: day_frame.lane_index,
+                lane_id,
+                upstream_lane_id,
+                downstream_lane_id,
+            });
+        }
+        validate_nonnegative_direct_m(
+            "dynamic_transfer.upstream_area_ratio",
+            downstream_lane.upstream_area_ratio,
+        )?;
+        let subsurface = day_frame.subsurface_compute_shadow_projection.as_ref().ok_or(
+            DirectRuntimeError::MissingDirectUpstream {
+                upstream: "R4O subsurface compute producer",
+            },
+        )?;
+        let runoff = day_frame.runoff_shadow_projection.as_ref().ok_or(
+            DirectRuntimeError::MissingDirectUpstream {
+                upstream: "R4A runoff partition producer",
+            },
+        )?;
+        let mut surface_carry_m = [0.0; DIRECT_TRANSFER_HOUR_COUNT];
+        let mut lateral_carry_m = [0.0; DIRECT_TRANSFER_HOUR_COUNT];
+        validate_nonnegative_direct_m("dynamic_transfer.surface_runoff_m", runoff.q_runoff_m)?;
+        surface_carry_m[0] = runoff.q_runoff_m;
+        for (target, source) in lateral_carry_m
+            .iter_mut()
+            .zip(subsurface.hourly_lateral_carry_m.iter())
+        {
+            validate_nonnegative_direct_m(
+                "dynamic_transfer.lateral_carry_m",
+                *source,
+            )?;
+            *target = *source;
+        }
+        downstream_lane.transfer.surface_carry_m = surface_carry_m;
+        downstream_lane.transfer.lateral_carry_m = lateral_carry_m;
+        downstream_lane.transfer.upstream_flow_m = 0.0;
+        downstream_lane.transfer.subsurface_input_m = 0.0;
+        DIRECT_AUDIT.record_downstream_operand_production();
+        DIRECT_AUDIT.record_direct_state_mutation();
+        Ok(true)
     }
 
     fn day_execution_failure(
         day_frame: &DirectDayFrame,
         lane_index: usize,
         day_index: usize,
-        source: DirectRuntimeError,
+        source: &DirectRuntimeError,
     ) -> DirectRuntimeError {
         let mut detail = source.to_string();
         if matches!(
@@ -400,6 +549,26 @@ impl DirectFrameExecutor {
                     );
                 }
             }
+        } else if matches!(
+            source,
+            DirectRuntimeError::NegativeDirectValue {
+                field: "runoff_partition.partition_runoff_m"
+            }
+        ) {
+            detail = format!(
+                "{detail}; liquid_input_m={}; runon_input_m={}; cumulative_infiltration_m={}; depression_storage_delta_m={}; surface_saturation_runoff_m={}; interception_m={}; storage_precip_input_m={}",
+                day_frame.runoff_partition_inputs.liquid_input_m,
+                day_frame.runoff_partition_inputs.runon_input_m,
+                day_frame.runoff_partition_inputs.cumulative_infiltration_m,
+                day_frame
+                    .runoff_partition_inputs
+                    .depression_storage_delta_m,
+                day_frame
+                    .runoff_partition_inputs
+                    .surface_saturation_runoff_m,
+                day_frame.interception_m,
+                day_frame.storage_reconciliation_inputs.precip_input_m
+            );
         }
         DirectRuntimeError::DirectDayExecutionFailure {
             lane_index,
@@ -449,8 +618,10 @@ impl DirectFrameExecutor {
         record_direct_span_report!(counters, day_frame.run_r4g_snow_coupling_span());
         record_direct_span_report!(counters, day_frame.run_r4l_saturation_addback_span());
         record_direct_span_report!(counters, day_frame.run_r4a_runoff_partition_span());
+        record_direct_span_report!(counters, day_frame.run_r7d6_peak_runoff_span());
         record_direct_span_report!(counters, day_frame.run_r4b_storage_reconciliation_span());
         record_direct_span_report!(counters, day_frame.run_r4pqz_hydrology_projection_span());
+        record_direct_span_report!(counters, day_frame.run_r7d6_erosion_span());
         record_direct_span_report!(counters, day_frame.run_r3b_water_ledger_span());
 
         Ok(())

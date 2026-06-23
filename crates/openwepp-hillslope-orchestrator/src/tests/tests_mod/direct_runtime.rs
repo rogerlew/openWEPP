@@ -17,6 +17,7 @@ use crate::{
     DirectDayConstructorInputs, DirectDayForcing, DirectDayFrame,
     DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
     DirectDeepSeepageShadowProjection, DirectDeepSeepageState, DirectDownstreamOperands,
+    DirectErod13Inputs, DirectErod14ClassInputs, DirectErod14Inputs, DirectErosionInputs,
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationDownstreamOperands,
     DirectEvapotranspirationInputs, DirectEvapotranspirationPmetInputs,
     DirectEvapotranspirationShadowProjection, DirectEvapotranspirationState, DirectExecutorMode,
@@ -24,26 +25,27 @@ use crate::{
     DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneConstructorInputs,
     DirectLaneTransferLedger, DirectLedgerDownstreamOperands, DirectLedgerShadowProjection,
     DirectLiquidInputInputs, DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
-    DirectNormalizationShadowProjection, DirectNormalizationState, DirectPercolationInputs,
-    DirectPhaseKind, DirectPhaseLifecycleStatus, DirectPublicationCalendarDay,
-    DirectPublicationDayInput, DirectPublicationRunMetadata, DirectRunConstructorInputs,
-    DirectRunFrame, DirectRunIdentity, DirectRunTransferDownstreamOperands,
-    DirectRunTransferShadowProjection, DirectRunoffPartitionInputs, DirectRunonCarryInputs,
-    DirectRuntimeError, DirectSaturationAddbackInputs, DirectShadowProjection,
-    DirectSnowCouplingDownstreamOperands, DirectSnowCouplingInputs,
-    DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
+    DirectNormalizationShadowProjection, DirectNormalizationState, DirectPeakRunoffInputs,
+    DirectPercolationInputs, DirectPhaseKind, DirectPhaseLifecycleStatus,
+    DirectPublicationCalendarDay, DirectPublicationDayInput, DirectPublicationRunMetadata,
+    DirectRunConstructorInputs, DirectRunFrame, DirectRunIdentity,
+    DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
+    DirectRunoffPartitionInputs, DirectRunonCarryInputs, DirectRuntimeError,
+    DirectSaturationAddbackInputs, DirectShadowProjection, DirectSnowCouplingDownstreamOperands,
+    DirectSnowCouplingInputs, DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
     DirectStorageBoundsDownstreamOperands, DirectStorageBoundsInputs,
     DirectStorageBoundsShadowProjection, DirectStorageBoundsState, DirectStorageDownstreamOperands,
-    DirectStorageInputDownstreamOperands, DirectStorageInputShadowProjection,
-    DirectStorageInputState, DirectStorageReconciliationInputs, DirectStorageReconciliationState,
-    DirectStorageShadowProjection, DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs,
-    DirectSubsurfaceLayerState, DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
+    DirectStorageInputDownstreamOperands, DirectStorageInputInputs,
+    DirectStorageInputShadowProjection, DirectStorageInputState, DirectStorageReconciliationInputs,
+    DirectStorageReconciliationState, DirectStorageShadowProjection, DirectSubsurfaceComputeInputs,
+    DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
+    DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
     DirectSubsurfaceLossShadowProjection, DirectSubsurfaceLossState, DirectWaterLedgerState,
-    reset_direct_runtime_audit_counters,
+    DirectWb14HyetographInterval, reset_direct_runtime_audit_counters,
 };
 
 fn r5c_day_span_run_count() -> u64 {
-    20
+    22
 }
 
 fn r5c_day_phase_entry_count() -> u64 {
@@ -63,8 +65,10 @@ fn r5c_day_phase_entry_count() -> u64 {
         + DIRECT_R4K_PHASE_SPAN_COUNT
         + DIRECT_R4L_PHASE_SPAN_COUNT
         + DIRECT_R4A_PHASE_SPAN_COUNT
+        + 3
         + DIRECT_R4B_PHASE_SPAN_COUNT
         + DIRECT_R4PQZ_PHASE_SPAN_COUNT
+        + 3
         + DIRECT_R3B_PHASE_SPAN_COUNT) as u64
 }
 
@@ -128,6 +132,8 @@ fn r5a_direct_skeleton_runs_all_days_and_lanes_with_lifecycle_counters() {
         expected_day_frames * DIRECT_PHASE_COUNT as u64
     );
     assert_r5c_phase_status_counts(&report.phase_status_counts, expected_day_frames);
+    let expected_dynamic_transfers =
+        identity.day_count as u64 * identity.lane_count.saturating_sub(1) as u64;
     assert_eq!(
         report.phase_span_run_count,
         1 + expected_day_frames * r5c_day_span_run_count()
@@ -142,11 +148,11 @@ fn r5a_direct_skeleton_runs_all_days_and_lanes_with_lifecycle_counters() {
     );
     assert_eq!(
         report.state_mutation_count,
-        1 + expected_day_frames * r5c_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count() + expected_dynamic_transfers
     );
     assert_eq!(
         report.downstream_operand_count,
-        1 + expected_day_frames * r5c_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count() + expected_dynamic_transfers
     );
     assert_eq!(
         report.shadow_projection_count,
@@ -178,11 +184,11 @@ fn r5a_direct_skeleton_runs_all_days_and_lanes_with_lifecycle_counters() {
     );
     assert_eq!(
         audit.direct_state_mutations,
-        1 + expected_day_frames * r5c_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count() + expected_dynamic_transfers
     );
     assert_eq!(
         audit.downstream_operand_productions,
-        1 + expected_day_frames * r5c_day_span_run_count()
+        1 + expected_day_frames * r5c_day_span_run_count() + expected_dynamic_transfers
     );
     assert_eq!(
         audit.shadow_projections,
@@ -289,6 +295,91 @@ fn r6f_publication_capture_accepts_typed_process_inputs_and_carries_layers() {
 }
 
 #[test]
+fn r7d4_publication_q_uses_runoff_geometry_scale_independently_from_qofe() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(17, 501, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct frame should construct for capture");
+    frame.lanes[0].area_m2 = 100.0;
+    frame.lanes[0].runoff_publication_q_scale = 0.25;
+    frame.lanes[0].runoff_publication_qofe_scale = 1.0;
+    frame.lanes[0].runoff_publication_efflen_m = 1.0;
+    frame.lanes[0].runoff_publication_cumulative_length_m = 4.0;
+    frame.lanes[0].runoff_publication_ofe_length_m = 1.0;
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r7d4_runoff_publication_scale".to_string(),
+        runtime_selection: "direct-publication-frame-cutover-candidate".to_string(),
+        output_policy: "test".to_string(),
+    };
+    let day_input = r7d4_mofe_carry_publication_day(0.700, true);
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        .run_publication_capture_with_day_inputs(&mut frame, metadata, &[day_input])
+        .expect("direct publication capture should execute");
+    let row = execution
+        .publication_frame
+        .first_day()
+        .expect("capture should include first row");
+
+    assert!(row.runoff.qofe_mm > 0.0);
+    assert_ne!(row.runoff.q_mm.to_bits(), row.runoff.qofe_mm.to_bits());
+    assert!((row.runoff.q_mm - row.runoff.qofe_mm * 0.25).abs() < 1.0e-12);
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+}
+
+#[test]
+fn r7d4_publication_interception_is_external_to_published_soil_storage() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(17, 501, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct frame should construct for capture");
+    frame.lanes[0].area_m2 = 100.0;
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r7d4_interception_publication".to_string(),
+        runtime_selection: "direct-publication-frame-cutover-candidate".to_string(),
+        output_policy: "test".to_string(),
+    };
+    let layer_inputs = r6f_typed_base_layer_inputs();
+    let base_layer = DirectSubsurfaceLayerState::from(layer_inputs.clone());
+    let mut day_input =
+        r6f_typed_first_day(base_layer, layer_inputs, r6f_typed_process_projection());
+    day_input.precipitation_m = 0.002;
+    day_input.interception_m = 0.002;
+    day_input.storage_input_inputs = Some(DirectStorageInputInputs {
+        precip_input_handoff_m: Some(0.002),
+    });
+    day_input.liquid_input_inputs = Some(DirectLiquidInputInputs {
+        liquid_input_handoff_m: 0.0,
+    });
+    day_input.evapotranspiration_compute_inputs = Some(r6h_typed_evapotranspiration_inputs(0.0));
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        .run_publication_capture_with_day_inputs(&mut frame, metadata, &[day_input])
+        .expect("direct publication capture should execute");
+    let row = execution
+        .publication_frame
+        .first_day()
+        .expect("capture should include first row");
+    assert!((row.interception.interception_mm - 2.0).abs() < 1.0e-12);
+    assert!((row.storage.total_soil_mm - 200.0).abs() < 1.0e-12);
+    assert_eq!(
+        frame.lanes[0].water.soil_water_m.to_bits(),
+        0.200_f64.to_bits()
+    );
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+}
+
+#[test]
 fn r6h_publication_capture_builds_lane_day_inputs_after_direct_commit() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
@@ -348,7 +439,74 @@ fn r6h_publication_capture_builds_lane_day_inputs_after_direct_commit() {
 }
 
 #[test]
-fn r6i_direct_frost_carry_projection_preserves_fine_layer_aggregate_ulp() {
+fn r7d4_publication_capture_copies_mofe_carry_to_downstream_lane_before_r4j() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(17, 501, 2, 1)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct frame should construct for capture");
+    frame.lanes[0].area_m2 = 100.0;
+    frame.lanes[1].area_m2 = 50.0;
+    frame.lanes[1].upstream_area_ratio = 2.0;
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r7d4_dynamic_mofe_transfer".to_string(),
+        runtime_selection: "direct-publication-frame-cutover-candidate".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        .run_publication_capture_with_interleaved_day_inputs(
+            &mut frame,
+            metadata,
+            |_frame, _day_index, lane_index| {
+                Ok(if lane_index == 0 {
+                    r7d4_mofe_carry_publication_day(0.700, true)
+                } else {
+                    r7d4_mofe_carry_publication_day(0.200, false)
+                })
+            },
+        )
+        .expect("dynamic MOFE transfer should reach downstream lane before R4J");
+
+    let rows = execution.publication_frame.rows();
+    assert_eq!(rows.len(), 2);
+    let downstream_surface_m = frame.lanes[1].transfer.surface_carry_m.iter().sum::<f64>();
+    let downstream_lateral_m = frame.lanes[1].transfer.lateral_carry_m.iter().sum::<f64>();
+    assert!(
+        downstream_surface_m > 0.0,
+        "upstream ui_SCrunf must become downstream ui_SUrunf"
+    );
+    assert!(
+        downstream_lateral_m > 0.0,
+        "upstream ui_LfCrf must become downstream ui_LfUrf"
+    );
+    let upstream_q_runoff_m = rows[0].runoff.q_mm / 1_000.0;
+    assert!(
+        upstream_q_runoff_m > downstream_lateral_m,
+        "fixture must anti-alias surface runoff from lateral carry"
+    );
+    assert!((downstream_surface_m - upstream_q_runoff_m).abs() < 1.0e-12);
+    assert!(
+        (rows[1].transfer.upstream_surface_mm / 1_000.0 - downstream_surface_m).abs() < 1.0e-12
+    );
+    assert!(
+        (rows[1].transfer.upstream_lateral_mm / 1_000.0 - downstream_lateral_m).abs() < 1.0e-12
+    );
+    assert!(
+        (rows[1].runoff.q_mm / 1_000.0
+            - (downstream_surface_m + downstream_lateral_m) * frame.lanes[1].upstream_area_ratio)
+            .abs()
+            < 1.0e-9
+    );
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+}
+
+#[test]
+fn r6i_direct_frost_carry_projection_skips_inactive_frost_storage() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -394,8 +552,266 @@ fn r6i_direct_frost_carry_projection_preserves_fine_layer_aggregate_ulp() {
     assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
     assert_eq!(
         frame.lanes[0].subsurface_layers[0].theta_m.to_bits(),
-        0.023_876_766_951_720_325_f64.to_bits()
+        0.023_876_766_951_720_32_f64.to_bits()
     );
+}
+
+#[test]
+fn r7d5_erosion_active_publication_fails_closed_without_direct_sediment_producer() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(7, 2637, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct publication frame should construct");
+    frame.lanes[0].area_m2 = 100.0;
+    let mut day_input = r6f_typed_publication_day_inputs()[0].clone();
+    day_input.erosion_producer_required = true;
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r7d5_erosion_required".to_string(),
+        runtime_selection: "direct-production-executor".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let error = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
+        .run_publication_capture_with_day_inputs(&mut frame, metadata, &[day_input])
+        .expect_err("erosion-active direct publication must not emit zero sediment authority");
+
+    assert_eq!(
+        error,
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R7D5 direct EROD14/EROD15 sediment producer"
+        }
+    );
+}
+
+#[test]
+fn r7d6_typed_erosion_producer_populates_publication_operands() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(7, 2637, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct publication frame should construct");
+    frame.lanes[0].area_m2 = 100.0;
+    let mut day_input = r6f_typed_publication_day_inputs()[0].clone();
+    day_input.erosion_producer_required = true;
+    day_input.erosion_inputs = Some(r7d6_typed_erosion_inputs());
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r7d6_typed_erosion".to_string(),
+        runtime_selection: "direct-production-executor".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
+        .run_publication_capture_with_day_inputs(&mut frame, metadata, &[day_input])
+        .expect("typed direct erosion producer should satisfy active publication");
+
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+    let row = execution
+        .publication_frame
+        .first_day()
+        .expect("one direct publication row should be emitted");
+    let total_detachment = row
+        .erosion
+        .total_detachment_kg
+        .expect("R7D6 should publish total detachment");
+    let total_deposition = row
+        .erosion
+        .total_deposition_kg
+        .expect("R7D6 should publish total deposition");
+    assert!(
+        total_detachment > 0.0,
+        "typed erosion producer must not fall back to zero detachment"
+    );
+    assert_r7b_close(total_deposition, 0.10);
+    assert_eq!(row.erosion.hbp_total_detachment_kg, Some(total_detachment));
+    assert_eq!(row.erosion.hbp_total_deposition_kg, Some(total_deposition));
+    let class_concentrations = row
+        .erosion
+        .sediment_concentration_kg_m3
+        .expect("R7D6 should publish class concentrations");
+    assert!(
+        class_concentrations[0] > 0.0 && class_concentrations[1] > 0.0,
+        "R7D6 must emit producer-computed class concentrations"
+    );
+    assert_r7b_close(
+        row.erosion
+            .hbp_sediment_concentration_kg_m3
+            .expect("R7D6 should publish HBP scalar concentration"),
+        class_concentrations[0],
+    );
+}
+
+fn r7d4_mofe_carry_publication_day(theta_m: f64, carry_enabled: bool) -> DirectPublicationDayInput {
+    let mut day = r6f_typed_calendar_day(1);
+    let layer_inputs = r7d4_mofe_transfer_layer_inputs(theta_m, carry_enabled);
+    let layer_state = DirectSubsurfaceLayerState::from(layer_inputs.clone());
+    day.precipitation_m = if carry_enabled { 0.050 } else { 0.0 };
+    day.initial_soil_water_m = Some(theta_m);
+    day.liquid_input_inputs = Some(DirectLiquidInputInputs {
+        liquid_input_handoff_m: if carry_enabled { 0.050 } else { 0.0 },
+    });
+    day.percolation_inputs = Some(DirectPercolationInputs {
+        soil_water_initial_m: theta_m,
+        reconcile_legacy_soil_water_from_layers: false,
+        same_pass_infiltration_m: 0.0,
+        same_pass_infiltration_lineage: false,
+        tillage_depth_m: 0.0,
+        lane_substeps: 24,
+        restrictive_layer_enabled: false,
+        restrictive_layer_conductivity_m_s: 0.0,
+        restrictive_layer_thickness_m: 0.0,
+        layers: vec![layer_state],
+    });
+    day.subsurface_compute_inputs = Some(DirectSubsurfaceComputeInputs {
+        avg_slope: if carry_enabled { 0.10 } else { 0.0 },
+        slope_length_m: 1.0,
+        lateral_anisotropy_ratio: 1.0,
+        soil_depth_m: 0.400,
+        solwpv_mode: 2006,
+        mofe_hourly_carry_arrays_enabled: carry_enabled,
+        lane_substeps: 24,
+        drainage_capacity_m: 0.0,
+        drain_enabled: false,
+        drain_depth_m: 0.5,
+        drain_spacing_m: 1.0,
+        drain_diameter_m: 0.1,
+        layers: vec![layer_inputs],
+    });
+    day.evapotranspiration_compute_inputs = Some(r6h_typed_evapotranspiration_inputs(0.0));
+    day.hydrology_projection_inputs = Some(r6f_typed_process_projection());
+    day.peak_runoff_inputs = Some(r7d4_peak_runoff_inputs());
+    day
+}
+
+fn r5a_peak_runoff_day_inputs() -> DirectDayConstructorInputs {
+    let mut inputs = DirectDayConstructorInputs::zero();
+    inputs.peak_runoff_inputs = r7d4_peak_runoff_inputs();
+    inputs
+}
+
+fn r7d4_peak_runoff_inputs() -> DirectPeakRunoffInputs {
+    DirectPeakRunoffInputs {
+        hyetograph: vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 3_600.0,
+            intensity_m_s: 1.0e-5,
+        }],
+        irrigation_rate_m_s: 0.0,
+        efflen_m: 1.0,
+        ealpha: 1.0,
+        exponent_m: 1.0,
+    }
+}
+
+fn r7d6_typed_erosion_inputs() -> DirectErosionInputs {
+    DirectErosionInputs {
+        wave1_enabled: true,
+        wave2_enabled: true,
+        wave1: DirectErod13Inputs {
+            ie_m_s: 0.000_01,
+            te_s: 60.0,
+            fs: 0.5,
+            ft: 1.0,
+            taufe_pa: 4.0,
+            q_m2_s: 0.001,
+            g_kg_s_m: 1.0,
+            di_kg_s_m2: 0.002,
+            beta: 0.5,
+            vf_m_s: 0.2,
+            dgdx_kg_s_m2: 0.0195,
+            cntlen_m: 10.0,
+            kr_s_m: 0.01,
+            kradjf: 1.0,
+            tcadjf: 0.5,
+            shrsol_pa: 2.0,
+            tcend_kg_s_m: 10.0,
+            shcrit_pa: 1.0,
+            detinr_kg_s_m2: 0.001,
+            effdrr_m: 1.0,
+            effdrn_m: 1.0,
+            veleff_m_s: 0.2,
+            pkro_m3_s: 0.001,
+            tc_k: 2.0,
+            tc_m: 1.0,
+            q_runoff_m: 0.01,
+            peakro_m3_s: 0.001,
+            watdur_s: 10.0,
+        },
+        wave2: DirectErod14Inputs {
+            xtop_m: 0.0,
+            xbot_m: 10.0,
+            xdetst_m: 0.0,
+            ldtop_kg_s_m: 0.4,
+            ldbot_kg_s_m: 0.2,
+            lddend_kg: 0.10,
+            qout_m3_s: 1.0,
+            qin_m3_s: 0.5,
+            qostar_m: 1.0,
+            hbp_sediment_concentration_scale: 1.0,
+            slplen_m: 10.0,
+            ktrato: 1.0,
+            aintc: 0.001,
+            bintc: 0.001,
+            cintc: 0.001,
+            beta: 0.5,
+            qj_minus_1_m3_s: 1.0,
+            vj_m: 0.10,
+            qj_m3_s: 1.0,
+            fh_m: 0.0,
+            fp_m: 0.0,
+            case_value: 2.0,
+            peak_runoff_m3_s: 0.001,
+            runoff_duration_s: 10.0,
+            ssa_soil: 1.0,
+            theta: 0.001,
+            classes: vec![
+                DirectErod14ClassInputs {
+                    fall_m_s: 0.001,
+                    frcflw: 0.5,
+                    frac: 0.5,
+                    fidel: 0.5,
+                    tcf1: 0.5,
+                    ssa_class: 2.0,
+                },
+                DirectErod14ClassInputs {
+                    fall_m_s: 0.002,
+                    frcflw: 0.5,
+                    frac: 0.5,
+                    fidel: 0.5,
+                    tcf1: 0.5,
+                    ssa_class: 3.0,
+                },
+            ],
+        },
+    }
+}
+
+fn r7d4_mofe_transfer_layer_inputs(
+    theta_m: f64,
+    carry_enabled: bool,
+) -> DirectSubsurfaceLayerInputs {
+    DirectSubsurfaceLayerInputs {
+        theta_m,
+        field_capacity_m: 0.100,
+        upper_limit_m: 0.500,
+        conductivity_m_s: 1.0e-10,
+        depth_m: 0.400,
+        residual_theta: 0.0,
+        frozen_depth_m: 0.0,
+        frozen_water_m: 0.0,
+        porosity: 0.5,
+        field_capacity_theta: 0.25,
+        coca: 1.0,
+        lateral_conductivity_m_s: if carry_enabled { 1.0e-8 } else { 1.0e-10 },
+    }
 }
 
 fn r6f_typed_publication_day_inputs() -> [DirectPublicationDayInput; 2] {
@@ -457,6 +873,7 @@ fn r6f_typed_process_projection() -> DirectHydrologyProjectionInputs {
         aggregate_storage_tolerance_m: 1.0e-12,
         snow_water_m: 0.0,
         frozen_soil_water_m: 0.0,
+        frost_depth_m: 0.0,
         profile_depth_m: Some(0.400),
         profile_porosity_cap_m: Some(0.200),
         profile_field_capacity_m: Some(0.100),
@@ -606,6 +1023,7 @@ fn r5a_direct_skeleton_commits_day_state_back_to_lane_state() {
         DirectRunFrame::skeleton(identity).expect("direct skeleton frame should construct");
     frame.lanes[0].transfer.surface_carry_m[5] = 0.25;
     frame.lanes[0].transfer.upstream_flow_m = 0.125;
+    frame.lanes[0].day_inputs = vec![r5a_peak_runoff_day_inputs(); 3];
     let executor = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly);
 
     let report = executor
@@ -932,7 +1350,7 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     assert!(lane_constructor <= 1_024);
     assert!(day_constructor <= 4_096);
     assert!(run_frame <= 512);
-    assert!(lane_frame <= 1_024);
+    assert!(lane_frame <= 1_152);
     assert!(day_frame <= 12_288);
 }
 
@@ -1011,6 +1429,9 @@ fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
         storage_initial_m: 0.21,
         precip_input_m: 0.012,
         snow_coupling_m: 0.002,
+        frost_liquid_delta_m: 0.0,
+        runon_input_m: 0.0,
+        interception_m: 0.0,
         evapotranspiration_m: 0.003,
         deep_seepage_m: 0.001,
         subsurface_loss_m: 0.0007,
@@ -2461,6 +2882,8 @@ fn r4b_storage_reconciliation_consumes_r4a_q_and_shadow_projects() {
     let identity =
         DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
     let mut day = r4b_valid_day(identity);
+    day.interception_m = 0.002;
+    day.storage_reconciliation_inputs.interception_m = day.interception_m;
     day.publication.runoff_m = 0.125;
     day.water_ledger.diagnostic_residual_m = 0.1875;
 
@@ -2506,7 +2929,7 @@ fn assert_r4b_storage_result(
     let expected_shadow = r4b_expected_storage_shadow();
 
     assert_eq!(day.storage_reconciliation, expected_state);
-    assert_eq!(day.water.soil_water_m.to_bits(), 0.921_875_f64.to_bits());
+    assert_eq!(day.water.soil_water_m.to_bits(), 1.076_125_f64.to_bits());
     assert_eq!(day.storage_downstream_operands, expected_operands);
     assert_eq!(day.storage_shadow_projection, Some(expected_shadow));
     assert_eq!(report.phase_count, DIRECT_R4B_PHASE_SPAN_COUNT);
@@ -2555,12 +2978,15 @@ fn r4b_expected_storage_state() -> DirectStorageReconciliationState {
         storage_initial_m: 1.0,
         precip_input_m: 0.25,
         snow_coupling_m: 0.125,
-        q_runoff_m: 0.34375,
+        frost_liquid_delta_m: 0.0,
+        runon_input_m: 0.140_625,
+        interception_m: 0.002,
+        q_runoff_m: 0.328_125,
         evapotranspiration_m: 0.0625,
         deep_seepage_m: 0.03125,
         subsurface_loss_m: 0.015_625,
         closure_tolerance_m: 0.0,
-        storage_reconciled_m: 0.921_875,
+        storage_reconciled_m: 1.076_125,
         closure_residual_m: 0.0,
     }
 }
@@ -2572,11 +2998,14 @@ fn r4b_expected_storage_shadow() -> DirectStorageShadowProjection {
         storage_initial_m: 1.0,
         precip_input_m: 0.25,
         snow_coupling_m: 0.125,
-        q_runoff_m: 0.34375,
+        frost_liquid_delta_m: 0.0,
+        runon_input_m: 0.140_625,
+        interception_m: 0.002,
+        q_runoff_m: 0.328_125,
         evapotranspiration_m: 0.0625,
         deep_seepage_m: 0.03125,
         subsurface_loss_m: 0.015_625,
-        storage_reconciled_m: 0.921_875,
+        storage_reconciled_m: 1.076_125,
         closure_residual_m: 0.0,
     }
 }
@@ -2586,6 +3015,7 @@ fn assert_r4b_storage_anti_aliases(
     day: &DirectDayFrame,
 ) {
     let omitted_s_m = expected_state.storage_initial_m + expected_state.precip_input_m
+        - expected_state.interception_m
         - expected_state.q_runoff_m
         - expected_state.evapotranspiration_m
         - expected_state.deep_seepage_m
@@ -2597,6 +3027,8 @@ fn assert_r4b_storage_anti_aliases(
     let wrong_q_sign_m = expected_state.storage_initial_m
         + expected_state.precip_input_m
         + expected_state.snow_coupling_m
+        + expected_state.runon_input_m
+        - expected_state.interception_m
         + expected_state.q_runoff_m
         - expected_state.evapotranspiration_m
         - expected_state.deep_seepage_m
@@ -2608,14 +3040,30 @@ fn assert_r4b_storage_anti_aliases(
     let omitted_losses_m = expected_state.storage_initial_m
         + expected_state.precip_input_m
         + expected_state.snow_coupling_m
+        + expected_state.runon_input_m
+        - expected_state.interception_m
         - expected_state.q_runoff_m;
     assert_ne!(
         expected_state.storage_reconciled_m.to_bits(),
         omitted_losses_m.to_bits()
     );
+    let omitted_interception_m = expected_state.storage_initial_m
+        + expected_state.precip_input_m
+        + expected_state.snow_coupling_m
+        + expected_state.runon_input_m
+        - expected_state.q_runoff_m
+        - expected_state.evapotranspiration_m
+        - expected_state.deep_seepage_m
+        - expected_state.subsurface_loss_m;
+    assert_ne!(
+        expected_state.storage_reconciled_m.to_bits(),
+        omitted_interception_m.to_bits()
+    );
     let publication_q_alias_m = expected_state.storage_initial_m
         + expected_state.precip_input_m
         + expected_state.snow_coupling_m
+        + expected_state.runon_input_m
+        - expected_state.interception_m
         - day.publication.runoff_m
         - expected_state.evapotranspiration_m
         - expected_state.deep_seepage_m
@@ -2627,6 +3075,8 @@ fn assert_r4b_storage_anti_aliases(
     let ledger_q_alias_m = expected_state.storage_initial_m
         + expected_state.precip_input_m
         + expected_state.snow_coupling_m
+        + expected_state.runon_input_m
+        - expected_state.interception_m
         - day.water_ledger.diagnostic_residual_m
         - expected_state.evapotranspiration_m
         - expected_state.deep_seepage_m
@@ -2937,7 +3387,7 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
         producer_inputs: None,
     };
     day.saturation_addback_inputs = DirectSaturationAddbackInputs {
-        surface_saturation_runoff_handoff_m: 0.03125,
+        surface_saturation_runoff_handoff_m: 0.0,
     };
     day.deep_seepage_inputs = DirectDeepSeepageInputs {
         deep_seepage_handoff_m: 9.0,
@@ -2958,6 +3408,9 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
         storage_initial_m: 9.0,
         precip_input_m: 9.0,
         snow_coupling_m: 9.0,
+        frost_liquid_delta_m: 0.0,
+        runon_input_m: 0.0,
+        interception_m: 9.0,
         evapotranspiration_m: 9.0,
         deep_seepage_m: 9.0,
         subsurface_loss_m: 9.0,

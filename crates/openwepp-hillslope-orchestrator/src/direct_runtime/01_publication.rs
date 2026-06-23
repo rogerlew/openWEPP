@@ -34,15 +34,22 @@ pub struct DirectPublicationDayInput {
     pub calendar: DirectPublicationCalendarDay,
     pub precipitation_m: f64,
     pub effective_temperature_c: f64,
+    pub interception_m: f64,
+    pub erosion_producer_required: bool,
     pub initial_soil_water_m: Option<f64>,
     pub storage_input_inputs: Option<DirectStorageInputInputs>,
     pub liquid_input_inputs: Option<DirectLiquidInputInputs>,
     pub percolation_inputs: Option<DirectPercolationInputs>,
     pub infiltration_depression_inputs: Option<DirectInfiltrationDepressionInputs>,
+    pub peak_runoff_inputs: Option<DirectPeakRunoffInputs>,
     pub subsurface_compute_inputs: Option<DirectSubsurfaceComputeInputs>,
     pub evapotranspiration_compute_inputs: Option<DirectEvapotranspirationComputeInputs>,
+    pub snow_coupling_inputs: Option<DirectSnowCouplingInputs>,
     pub hydrology_projection_inputs: Option<DirectHydrologyProjectionInputs>,
+    pub erosion_inputs: Option<DirectErosionInputs>,
+    pub frost_runoff_surface: Option<crate::hydrology::DirectFrostRunoffSurface>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
+    pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
 }
 
 impl DirectPublicationDayInput {
@@ -52,15 +59,22 @@ impl DirectPublicationDayInput {
             calendar,
             precipitation_m: 0.0,
             effective_temperature_c: 0.0,
+            interception_m: 0.0,
+            erosion_producer_required: false,
             initial_soil_water_m: None,
             storage_input_inputs: None,
             liquid_input_inputs: None,
             percolation_inputs: None,
             infiltration_depression_inputs: None,
+            peak_runoff_inputs: None,
             subsurface_compute_inputs: None,
             evapotranspiration_compute_inputs: None,
+            snow_coupling_inputs: None,
             hydrology_projection_inputs: None,
+            erosion_inputs: None,
+            frost_runoff_surface: None,
             frost_layer_carry_projection: None,
+            frost_runtime_carry: None,
         }
     }
 }
@@ -99,6 +113,9 @@ impl DirectFrostLayerCarryProjection {
     }
 
     fn projected_theta_m(self, layer: &DirectSubsurfaceLayerState) -> f64 {
+        if layer.frozen_depth_m <= WB11_ZERO_THRESHOLD {
+            return layer.theta_m;
+        }
         let mut remaining_frozen_depth_m = layer.frozen_depth_m.max(0.0);
         let unfrozen_depth_m = (layer.depth_m - layer.frozen_depth_m).max(0.0);
         let slsw_theta = if unfrozen_depth_m > WB11_ZERO_THRESHOLD {
@@ -176,11 +193,11 @@ impl DirectRunPublicationFrame {
     fn push_day_row(
         &mut self,
         day_frame: &DirectDayFrame,
-        calendar: DirectPublicationCalendarDay,
+        day_input: &DirectPublicationDayInput,
         lane: &DirectLaneFrame,
     ) -> Result<(), DirectRuntimeError> {
         self.rows.push(DirectPublicationDayRow::from_day_frame(
-            day_frame, calendar, lane,
+            day_frame, day_input, lane,
         )?);
         Ok(())
     }
@@ -244,34 +261,21 @@ pub struct DirectPublicationDayRow {
 impl DirectPublicationDayRow {
     fn from_day_frame(
         day_frame: &DirectDayFrame,
-        calendar: DirectPublicationCalendarDay,
+        day_input: &DirectPublicationDayInput,
         lane: &DirectLaneFrame,
     ) -> Result<Self, DirectRuntimeError> {
-        if !lane.area_m2.is_finite() || lane.area_m2 <= 0.0 {
-            return Err(DirectRuntimeError::InvalidPublicationArea {
-                lane_id: lane.lane_id,
-                area_m2: lane.area_m2,
-            });
-        }
+        validate_direct_publication_lane(lane)?;
         let sim_day_index = i32::try_from(day_frame.day_index + 1).map_err(|_| {
             DirectRuntimeError::DirectDomainViolation {
                 field: "publication.sim_day_index",
             }
         })?;
-        let (peak_runoff_m3_s, runoff_duration_s) =
-            direct_publication_peak_runoff_operands(day_frame.hydrology_projection.q_runoff_m)?;
-        let runoff = DirectPublicationRunoffOperands {
-            q_mm: m_to_mm(day_frame.hydrology_projection.q_runoff_m)?,
-            qofe_mm: m_to_mm(day_frame.hydrology_projection.q_ofe_m)?,
-            runvol_m3: depth_to_volume_m3(
-                "publication.runoff.runvol_m3",
-                day_frame.hydrology_projection.q_ofe_m,
-                lane.area_m2,
-            )?,
-            peak_runoff_m3_s,
-            runoff_duration_s,
-        };
+        let runoff = direct_publication_runoff_operands(day_frame, lane)?;
         let subsurface_lateral_m = day_frame.hydrology_projection.lateral_flow_m;
+        let interception_m = day_frame.interception_m;
+        validate_nonnegative_direct_m("publication.interception_m", interception_m)?;
+        let storage = direct_publication_storage_operands(day_frame)?;
+        let erosion = direct_publication_erosion_operands(day_frame, day_input)?;
 
         Ok(Self {
             run_id: day_frame.identity.run_id,
@@ -281,13 +285,13 @@ impl DirectPublicationDayRow {
             lane_index: day_frame.lane_index,
             day_index: day_frame.day_index,
             sim_day_index,
-            calendar,
+            calendar: day_input.calendar,
             area_m2: lane.area_m2,
             climate: DirectPublicationClimateOperands {
                 precipitation_mm: m_to_mm(day_frame.normalization.precipitation_m)?,
             },
             liquid_input: DirectPublicationLiquidInputOperands {
-                rm_mm: m_to_mm(day_frame.liquid_input.liquid_input_m)?,
+                rm_mm: m_to_mm(day_frame.liquid_input.liquid_input_m + interception_m)?,
                 irrigation_mm: 0.0,
             },
             runoff,
@@ -303,23 +307,17 @@ impl DirectPublicationDayRow {
                 dp_mm: m_to_mm(day_frame.hydrology_projection.deep_percolation_m)?,
                 latqcc_mm: m_to_mm(subsurface_lateral_m)?,
                 tile_mm: m_to_mm(day_frame.hydrology_projection.tile_drainage_m)?,
-                sbrunv_m3: depth_to_volume_m3(
+                sbrunv_m3: publication_mm_to_volume_m3(
                     "publication.subsurface.sbrunv_m3",
-                    subsurface_lateral_m,
+                    m_to_mm(subsurface_lateral_m)?,
                     lane.area_m2,
                 )?,
             },
             transfer: DirectPublicationTransferOperands {
-                upstream_surface_mm: m_to_mm(day_frame.normalization.upstream_flow_m)?,
-                upstream_lateral_mm: m_to_mm(day_frame.normalization.subsurface_input_m)?,
+                upstream_surface_mm: m_to_mm(day_frame.normalization.surface_transfer_m)?,
+                upstream_lateral_mm: m_to_mm(day_frame.normalization.lateral_transfer_m)?,
             },
-            storage: DirectPublicationStorageOperands {
-                total_soil_mm: m_to_mm(day_frame.hydrology_projection.total_soil_m)?,
-                soil_water_total_mm: m_to_mm(day_frame.hydrology_projection.soil_water_total_m)?,
-                frozwt_mm: m_to_mm(day_frame.hydrology_projection.frozen_soil_water_m)?,
-                frdp_mm: None,
-                snow_water_mm: m_to_mm(day_frame.hydrology_projection.snow_water_m)?,
-            },
+            storage,
             profile: DirectPublicationProfileOperands {
                 depth_mm: option_m_to_mm(day_frame.hydrology_projection.profile_depth_m)?,
                 porosity_cap_mm: option_m_to_mm(
@@ -333,19 +331,117 @@ impl DirectPublicationDayRow {
                 )?,
             },
             interception: DirectPublicationInterceptionOperands {
-                interception_mm: 0.0,
+                interception_mm: m_to_mm(interception_m)?,
                 interception_storage_mm: None,
             },
-            erosion: DirectPublicationErosionOperands::zero_authority(),
+            erosion,
         })
     }
 }
 
+fn validate_direct_publication_lane(lane: &DirectLaneFrame) -> Result<(), DirectRuntimeError> {
+    if !lane.area_m2.is_finite() || lane.area_m2 <= 0.0 {
+        return Err(DirectRuntimeError::InvalidPublicationArea {
+            lane_id: lane.lane_id,
+            area_m2: lane.area_m2,
+        });
+    }
+    Ok(())
+}
+
+fn direct_publication_runoff_operands(
+    day_frame: &DirectDayFrame,
+    lane: &DirectLaneFrame,
+) -> Result<DirectPublicationRunoffOperands, DirectRuntimeError> {
+    let q_publication_mm = day_frame.hydrology_projection.q_runoff_m
+        * 1_000.0
+        * lane.runoff_publication_efflen_m
+        / lane.runoff_publication_cumulative_length_m;
+    let q_publication_m = q_publication_mm / 1_000.0;
+    validate_finite("publication.runoff.q_publication_m", q_publication_m)?;
+    validate_nonnegative_direct_m("publication.runoff.q_publication_m", q_publication_m)?;
+    let qofe_publication_mm = day_frame.hydrology_projection.q_ofe_m
+        * 1_000.0
+        * lane.runoff_publication_efflen_m
+        / lane.runoff_publication_ofe_length_m;
+    let qofe_publication_m = qofe_publication_mm / 1_000.0;
+    validate_finite("publication.runoff.qofe_publication_m", qofe_publication_m)?;
+    validate_nonnegative_direct_m("publication.runoff.qofe_publication_m", qofe_publication_m)?;
+    let (peak_runoff_m3_s, runoff_duration_s) =
+        direct_publication_peak_runoff_operands(day_frame, qofe_publication_m)?;
+    Ok(DirectPublicationRunoffOperands {
+        q_mm: q_publication_mm,
+        qofe_mm: qofe_publication_mm,
+        runvol_m3: publication_mm_to_volume_m3(
+            "publication.runoff.runvol_m3",
+            qofe_publication_mm,
+            lane.area_m2,
+        )?,
+        peak_runoff_m3_s,
+        runoff_duration_s,
+    })
+}
+
+fn direct_publication_storage_operands(
+    day_frame: &DirectDayFrame,
+) -> Result<DirectPublicationStorageOperands, DirectRuntimeError> {
+    let total_soil_publication_m = nonnegative_publication_storage_m(
+        "publication.storage.total_soil_publication_m",
+        day_frame.hydrology_projection.total_soil_m,
+    )?;
+    let soil_water_total_publication_m = nonnegative_publication_storage_m(
+        "publication.storage.soil_water_total_publication_m",
+        day_frame.hydrology_projection.soil_water_total_m,
+    )?;
+    Ok(DirectPublicationStorageOperands {
+        total_soil_mm: m_to_mm(total_soil_publication_m)?,
+        soil_water_total_mm: m_to_mm(soil_water_total_publication_m)?,
+        frozwt_mm: m_to_mm(day_frame.hydrology_projection.frozen_soil_water_m)?,
+        frdp_mm: Some(m_to_mm(day_frame.hydrology_projection.frost_depth_m)?),
+        snow_water_mm: m_to_mm(day_frame.hydrology_projection.snow_water_m)?,
+    })
+}
+
+fn nonnegative_publication_storage_m(
+    field: &'static str,
+    value: f64,
+) -> Result<f64, DirectRuntimeError> {
+    validate_finite(field, value)?;
+    if value < -WB11_ZERO_THRESHOLD {
+        return Err(DirectRuntimeError::DirectDomainViolation { field });
+    }
+    Ok(value.max(0.0))
+}
+
+fn direct_publication_erosion_operands(
+    day_frame: &DirectDayFrame,
+    day_input: &DirectPublicationDayInput,
+) -> Result<DirectPublicationErosionOperands, DirectRuntimeError> {
+    if let Some(erosion_projection) = day_frame.erosion_shadow_projection.as_ref() {
+        if erosion_projection.publication_authority {
+            return Ok(erosion_projection.publication);
+        }
+    }
+    if day_input.erosion_producer_required {
+        return Err(DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R7D5 direct EROD14/EROD15 sediment producer",
+        });
+    }
+    Ok(DirectPublicationErosionOperands::zero_authority())
+}
+
 fn direct_publication_peak_runoff_operands(
+    day_frame: &DirectDayFrame,
     q_runoff_m: f64,
 ) -> Result<(Option<f64>, Option<f64>), DirectRuntimeError> {
     validate_finite("publication.runoff.q_runoff_m", q_runoff_m)?;
     validate_nonnegative_direct_m("publication.runoff.q_runoff_m", q_runoff_m)?;
+    if let Some(peak_runoff) = day_frame.peak_runoff_shadow_projection.as_ref() {
+        return Ok((
+            Some(peak_runoff.peak_runoff_m3_s),
+            Some(peak_runoff.runoff_duration_s),
+        ));
+    }
     if q_runoff_m < WB16_RUNOFF_NEAR_ZERO_THRESHOLD {
         return Ok((Some(WB16_PEAKRO_FLOOR), Some(0.0)));
     }

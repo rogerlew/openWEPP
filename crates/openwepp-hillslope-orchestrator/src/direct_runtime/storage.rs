@@ -247,6 +247,9 @@ impl DirectDayFrame {
             storage_initial_m: self.storage_downstream_operands.storage_initial_m,
             precip_input_m: self.storage_downstream_operands.precip_input_m,
             snow_coupling_m: self.storage_downstream_operands.snow_coupling_m,
+            frost_liquid_delta_m: self.storage_downstream_operands.frost_liquid_delta_m,
+            runon_input_m: self.storage_downstream_operands.runon_input_m,
+            interception_m: self.storage_downstream_operands.interception_m,
             q_runoff_m: self.storage_downstream_operands.q_runoff_m,
             evapotranspiration_m: self.storage_downstream_operands.evapotranspiration_m,
             deep_seepage_m: self.storage_downstream_operands.deep_seepage_m,
@@ -317,12 +320,16 @@ impl DirectDayFrame {
         self.validate_r4b_storage_reconciliation_domain()?;
         let inputs = self.storage_reconciliation_inputs;
         let q_runoff_m = self.runoff_downstream_operands.q_runoff_m;
-        let storage_reconciled_m =
-            inputs.storage_initial_m + inputs.precip_input_m + inputs.snow_coupling_m
-                - q_runoff_m
-                - inputs.evapotranspiration_m
-                - inputs.deep_seepage_m
-                - inputs.subsurface_loss_m;
+        let storage_reconciled_m = inputs.storage_initial_m
+            + inputs.precip_input_m
+            + inputs.snow_coupling_m
+            + inputs.runon_input_m
+            + inputs.frost_liquid_delta_m
+            - inputs.interception_m
+            - q_runoff_m
+            - inputs.evapotranspiration_m
+            - inputs.deep_seepage_m
+            - inputs.subsurface_loss_m;
         validate_finite(
             "storage_reconciliation.storage_reconciled_m",
             storage_reconciled_m,
@@ -331,13 +338,17 @@ impl DirectDayFrame {
             "storage_reconciliation.storage_reconciled_m",
             storage_reconciled_m,
         )?;
-        let closure_residual_m =
-            inputs.storage_initial_m + inputs.precip_input_m + inputs.snow_coupling_m
-                - q_runoff_m
-                - inputs.evapotranspiration_m
-                - inputs.deep_seepage_m
-                - inputs.subsurface_loss_m
-                - storage_reconciled_m;
+        let closure_residual_m = inputs.storage_initial_m
+            + inputs.precip_input_m
+            + inputs.snow_coupling_m
+            + inputs.runon_input_m
+            + inputs.frost_liquid_delta_m
+            - inputs.interception_m
+            - q_runoff_m
+            - inputs.evapotranspiration_m
+            - inputs.deep_seepage_m
+            - inputs.subsurface_loss_m
+            - storage_reconciled_m;
         validate_finite(
             "storage_reconciliation.closure_residual_m",
             closure_residual_m,
@@ -347,11 +358,13 @@ impl DirectDayFrame {
                 field: "storage_reconciliation.closure_residual_m",
             });
         }
-
         Ok(DirectStorageReconciliationState {
             storage_initial_m: inputs.storage_initial_m,
             precip_input_m: inputs.precip_input_m,
             snow_coupling_m: inputs.snow_coupling_m,
+            frost_liquid_delta_m: inputs.frost_liquid_delta_m,
+            runon_input_m: inputs.runon_input_m,
+            interception_m: inputs.interception_m,
             q_runoff_m,
             evapotranspiration_m: inputs.evapotranspiration_m,
             deep_seepage_m: inputs.deep_seepage_m,
@@ -457,6 +470,18 @@ impl DirectDayFrame {
         validate_finite(
             "storage_reconciliation.snow_coupling_m",
             self.storage_reconciliation_inputs.snow_coupling_m,
+        )?;
+        validate_finite(
+            "storage_reconciliation.frost_liquid_delta_m",
+            self.storage_reconciliation_inputs.frost_liquid_delta_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "storage_reconciliation.runon_input_m",
+            self.storage_reconciliation_inputs.runon_input_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "storage_reconciliation.interception_m",
+            self.storage_reconciliation_inputs.interception_m,
         )?;
         validate_nonnegative_direct_m(
             "storage_reconciliation.q_runoff_m",
@@ -778,6 +803,9 @@ pub struct DirectStorageReconciliationInputs {
     pub storage_initial_m: f64,
     pub precip_input_m: f64,
     pub snow_coupling_m: f64,
+    pub frost_liquid_delta_m: f64,
+    pub runon_input_m: f64,
+    pub interception_m: f64,
     pub evapotranspiration_m: f64,
     pub deep_seepage_m: f64,
     pub subsurface_loss_m: f64,
@@ -791,6 +819,9 @@ impl DirectStorageReconciliationInputs {
             storage_initial_m: 0.0,
             precip_input_m: 0.0,
             snow_coupling_m: 0.0,
+            frost_liquid_delta_m: 0.0,
+            runon_input_m: 0.0,
+            interception_m: 0.0,
             evapotranspiration_m: 0.0,
             deep_seepage_m: 0.0,
             subsurface_loss_m: 0.0,
@@ -804,6 +835,9 @@ pub struct DirectStorageReconciliationState {
     pub storage_initial_m: f64,
     pub precip_input_m: f64,
     pub snow_coupling_m: f64,
+    pub frost_liquid_delta_m: f64,
+    pub runon_input_m: f64,
+    pub interception_m: f64,
     pub q_runoff_m: f64,
     pub evapotranspiration_m: f64,
     pub deep_seepage_m: f64,
@@ -820,6 +854,9 @@ impl DirectStorageReconciliationState {
             storage_initial_m: 0.0,
             precip_input_m: 0.0,
             snow_coupling_m: 0.0,
+            frost_liquid_delta_m: 0.0,
+            runon_input_m: 0.0,
+            interception_m: 0.0,
             q_runoff_m: 0.0,
             evapotranspiration_m: 0.0,
             deep_seepage_m: 0.0,
@@ -836,6 +873,9 @@ pub struct DirectStorageDownstreamOperands {
     pub storage_initial_m: f64,
     pub precip_input_m: f64,
     pub snow_coupling_m: f64,
+    pub frost_liquid_delta_m: f64,
+    pub runon_input_m: f64,
+    pub interception_m: f64,
     pub q_runoff_m: f64,
     pub evapotranspiration_m: f64,
     pub deep_seepage_m: f64,
@@ -851,6 +891,9 @@ impl DirectStorageDownstreamOperands {
             storage_initial_m: 0.0,
             precip_input_m: 0.0,
             snow_coupling_m: 0.0,
+            frost_liquid_delta_m: 0.0,
+            runon_input_m: 0.0,
+            interception_m: 0.0,
             q_runoff_m: 0.0,
             evapotranspiration_m: 0.0,
             deep_seepage_m: 0.0,
@@ -867,6 +910,9 @@ impl From<DirectStorageReconciliationState> for DirectStorageDownstreamOperands 
             storage_initial_m: state.storage_initial_m,
             precip_input_m: state.precip_input_m,
             snow_coupling_m: state.snow_coupling_m,
+            frost_liquid_delta_m: state.frost_liquid_delta_m,
+            runon_input_m: state.runon_input_m,
+            interception_m: state.interception_m,
             q_runoff_m: state.q_runoff_m,
             evapotranspiration_m: state.evapotranspiration_m,
             deep_seepage_m: state.deep_seepage_m,
@@ -884,6 +930,9 @@ pub struct DirectStorageShadowProjection {
     pub storage_initial_m: f64,
     pub precip_input_m: f64,
     pub snow_coupling_m: f64,
+    pub frost_liquid_delta_m: f64,
+    pub runon_input_m: f64,
+    pub interception_m: f64,
     pub q_runoff_m: f64,
     pub evapotranspiration_m: f64,
     pub deep_seepage_m: f64,

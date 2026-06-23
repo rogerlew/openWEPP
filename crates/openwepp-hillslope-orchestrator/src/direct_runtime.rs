@@ -106,6 +106,12 @@ pub const DIRECT_R4PQZ_HYDROLOGY_PROJECTION_SPAN: [DirectPhaseKind; DIRECT_R4PQZ
     DirectPhaseKind::StorageReconciliation,
     DirectPhaseKind::ClosureDiagnostics,
 ];
+pub const DIRECT_R7D6_PEAK_RUNOFF_PHASE_SPAN_COUNT: usize = 2;
+pub const DIRECT_R7D6_PEAK_RUNOFF_SPAN: [DirectPhaseKind;
+    DIRECT_R7D6_PEAK_RUNOFF_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::RunoffReconciliation,
+    DirectPhaseKind::ClosureDiagnostics,
+];
 pub const DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT: usize = 1;
 pub const DIRECT_R5B_NORMALIZATION_SPAN: [DirectPhaseKind;
     DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT] = [DirectPhaseKind::Normalization];
@@ -124,10 +130,16 @@ pub const DIRECT_R5D_ANNUAL_GROWTH_SPAN: [DirectPhaseKind;
 pub const DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT: usize = 1;
 pub const DIRECT_R5D_PERENNIAL_GROWTH_SPAN: [DirectPhaseKind;
     DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT] = [DirectPhaseKind::PerennialGrowthTransition];
+pub const DIRECT_R7D6_EROSION_PHASE_SPAN_COUNT: usize = 2;
+pub const DIRECT_R7D6_EROSION_SPAN: [DirectPhaseKind; DIRECT_R7D6_EROSION_PHASE_SPAN_COUNT] = [
+    DirectPhaseKind::RunoffReconciliation,
+    DirectPhaseKind::ClosureDiagnostics,
+];
 
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
 mod decomposition;
+mod erosion;
 mod evapotranspiration;
 mod growth;
 mod normalization;
@@ -143,6 +155,11 @@ pub use decomposition::{
     DirectResiduePartitionDownstreamOperands, DirectResiduePartitionInputs,
     DirectResiduePartitionShadowProjection, DirectResiduePartitionSpanReport,
     DirectResiduePartitionState,
+};
+pub use erosion::{
+    DirectErod13Inputs, DirectErod13State, DirectErod14ClassInputs, DirectErod14ClassState,
+    DirectErod14Inputs, DirectErod14State, DirectErosionDownstreamOperands, DirectErosionInputs,
+    DirectErosionShadowProjection, DirectErosionSpanReport, DirectErosionState,
 };
 pub use evapotranspiration::{
     DirectEvapotranspirationComputeDownstreamOperands, DirectEvapotranspirationComputeInputs,
@@ -169,17 +186,20 @@ pub use projection::{
     DirectHydrologyProjectionState,
 };
 pub use runoff::{
+    DirectCanopyInterceptionInputs, DirectCanopyInterceptionState,
     DirectInfiltrationDepressionDownstreamOperands, DirectInfiltrationDepressionInputs,
     DirectInfiltrationDepressionShadowProjection, DirectInfiltrationDepressionSpanReport,
     DirectInfiltrationDepressionState, DirectLiquidInputDownstreamOperands,
     DirectLiquidInputInputs, DirectLiquidInputShadowProjection, DirectLiquidInputSpanReport,
-    DirectLiquidInputState, DirectRunoffDownstreamOperands, DirectRunoffPartitionInputs,
-    DirectRunoffPartitionSpanReport, DirectRunoffPartitionState, DirectRunoffShadowProjection,
-    DirectRunonCarryDownstreamOperands, DirectRunonCarryInputs, DirectRunonCarryShadowProjection,
-    DirectRunonCarrySpanReport, DirectRunonCarryState, DirectSaturationAddbackDownstreamOperands,
+    DirectLiquidInputState, DirectPeakRunoffDownstreamOperands, DirectPeakRunoffInputs,
+    DirectPeakRunoffShadowProjection, DirectPeakRunoffSpanReport, DirectPeakRunoffState,
+    DirectRunoffDownstreamOperands, DirectRunoffPartitionInputs, DirectRunoffPartitionSpanReport,
+    DirectRunoffPartitionState, DirectRunoffShadowProjection, DirectRunonCarryDownstreamOperands,
+    DirectRunonCarryInputs, DirectRunonCarryShadowProjection, DirectRunonCarrySpanReport,
+    DirectRunonCarryState, DirectSaturationAddbackDownstreamOperands,
     DirectSaturationAddbackInputs, DirectSaturationAddbackShadowProjection,
     DirectSaturationAddbackSpanReport, DirectSaturationAddbackState, DirectWb14HyetographInterval,
-    DirectWb14InfiltrationProducerInputs,
+    DirectWb14InfiltrationProducerInputs, compute_direct_canopy_interception,
 };
 pub use storage::{
     DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
