@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use openwepp_runner::{
-    HillslopeRunRequest, HillslopeRuntimeSelection, SidecarPolicy,
-    execute_hillslope_run_with_runtime_selection,
+    HillslopeDefaultRuntimeActivation, HillslopeRunRequest, HillslopeRuntimeSelection,
+    HillslopeRuntimeSelectionPolicy, SidecarPolicy, execute_hillslope_run_with_runtime_policy,
 };
 
 fn main() {
@@ -19,7 +19,9 @@ fn run() -> Result<(), String> {
     let mut policy = SidecarPolicy::Compat;
     let mut legacy_sidecar_discovery = false;
     let mut manifest_path: Option<PathBuf> = None;
-    let mut runtime_selection = HillslopeRuntimeSelection::Compatibility;
+    let mut runtime_selection = HillslopeRuntimeSelection::DefaultCandidate;
+    let mut runtime_selection_flag: Option<&'static str> = None;
+    let mut default_activation = HillslopeDefaultRuntimeActivation::Disabled;
 
     let args: Vec<String> = std::env::args().collect();
     let mut cursor = 1usize;
@@ -65,17 +67,48 @@ fn run() -> Result<(), String> {
             "--legacy-sidecar-discovery" => {
                 legacy_sidecar_discovery = true;
             }
+            "--compatibility-runtime" => {
+                set_runtime_selection(
+                    &mut runtime_selection,
+                    &mut runtime_selection_flag,
+                    HillslopeRuntimeSelection::Compatibility,
+                    "--compatibility-runtime",
+                )?;
+            }
             "--direct-runtime-skeleton" => {
-                runtime_selection = HillslopeRuntimeSelection::DirectSkeletonNoop;
+                set_runtime_selection(
+                    &mut runtime_selection,
+                    &mut runtime_selection_flag,
+                    HillslopeRuntimeSelection::DirectSkeletonNoop,
+                    "--direct-runtime-skeleton",
+                )?;
             }
             "--direct-publication-frame-shadow" => {
-                runtime_selection = HillslopeRuntimeSelection::DirectPublicationFrameShadow;
+                set_runtime_selection(
+                    &mut runtime_selection,
+                    &mut runtime_selection_flag,
+                    HillslopeRuntimeSelection::DirectPublicationFrameShadow,
+                    "--direct-publication-frame-shadow",
+                )?;
             }
             "--direct-publication-frame-cutover" => {
-                runtime_selection = HillslopeRuntimeSelection::DirectPublicationFrameCutover;
+                set_runtime_selection(
+                    &mut runtime_selection,
+                    &mut runtime_selection_flag,
+                    HillslopeRuntimeSelection::DirectPublicationFrameCutover,
+                    "--direct-publication-frame-cutover",
+                )?;
             }
             "--direct-production-executor" => {
-                runtime_selection = HillslopeRuntimeSelection::DirectProductionExecutor;
+                set_runtime_selection(
+                    &mut runtime_selection,
+                    &mut runtime_selection_flag,
+                    HillslopeRuntimeSelection::DirectProductionExecutor,
+                    "--direct-production-executor",
+                )?;
+            }
+            "--direct-default-candidate" => {
+                default_activation = HillslopeDefaultRuntimeActivation::DirectProductionCandidate;
             }
             "--help" | "-h" => {
                 print_help();
@@ -98,8 +131,16 @@ fn run() -> Result<(), String> {
     let Some(output_dir) = output_dir else {
         return Err("CLIHILL-E-001 missing --output-dir".to_string());
     };
+    if default_activation == HillslopeDefaultRuntimeActivation::DirectProductionCandidate
+        && runtime_selection != HillslopeRuntimeSelection::DefaultCandidate
+    {
+        return Err(
+            "CLIHILL-E-001 --direct-default-candidate cannot be combined with an explicit runtime flag"
+                .to_string(),
+        );
+    }
 
-    let report = execute_hillslope_run_with_runtime_selection(
+    let report = execute_hillslope_run_with_runtime_policy(
         &HillslopeRunRequest {
             run_dir,
             run_file,
@@ -109,7 +150,7 @@ fn run() -> Result<(), String> {
             manifest_path,
         },
         &args,
-        runtime_selection,
+        HillslopeRuntimeSelectionPolicy::new(runtime_selection, default_activation),
     )
     .map_err(|error| error.to_string())?;
 
@@ -120,8 +161,24 @@ fn run() -> Result<(), String> {
     Ok(())
 }
 
+fn set_runtime_selection(
+    runtime_selection: &mut HillslopeRuntimeSelection,
+    runtime_selection_flag: &mut Option<&'static str>,
+    selection: HillslopeRuntimeSelection,
+    flag: &'static str,
+) -> Result<(), String> {
+    if let Some(previous_flag) = *runtime_selection_flag {
+        return Err(format!(
+            "CLIHILL-E-001 runtime flag {flag} conflicts with {previous_flag}"
+        ));
+    }
+    *runtime_selection = selection;
+    *runtime_selection_flag = Some(flag);
+    Ok(())
+}
+
 fn print_help() {
     println!(
-        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--manifest-path <path>] [--direct-runtime-skeleton] [--direct-publication-frame-shadow] [--direct-publication-frame-cutover]"
+        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--manifest-path <path>] [--compatibility-runtime] [--direct-default-candidate] [--direct-runtime-skeleton] [--direct-publication-frame-shadow] [--direct-publication-frame-cutover] [--direct-production-executor]"
     );
 }

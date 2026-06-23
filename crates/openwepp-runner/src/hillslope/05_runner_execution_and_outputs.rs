@@ -1454,6 +1454,7 @@ fn build_hillslope_run_manifest(
         resolved_sidecars: publication.sidecars.resolved_sidecars,
         input_checksums,
         output_checksums,
+        runtime_selection: publication.runtime_selection,
         mode_selection: publication.sidecars.mode_selection,
         timestep_policy: publication.timestep_policy,
         adapter_boundary: publication.adapter_boundary,
@@ -1555,10 +1556,10 @@ pub fn execute_hillslope_run(
     request: &HillslopeRunRequest,
     argv: &[String],
 ) -> Result<HillslopeRunReport, HillslopeCliError> {
-    execute_hillslope_run_with_runtime_selection(
+    execute_hillslope_run_with_runtime_policy(
         request,
         argv,
-        HillslopeRuntimeSelection::Compatibility,
+        HillslopeRuntimeSelectionPolicy::default(),
     )
 }
 
@@ -1606,6 +1607,21 @@ pub fn execute_hillslope_run_with_runtime_selection(
     argv: &[String],
     runtime_selection: HillslopeRuntimeSelection,
 ) -> Result<HillslopeRunReport, HillslopeCliError> {
+    execute_hillslope_run_with_runtime_policy(
+        request,
+        argv,
+        HillslopeRuntimeSelectionPolicy::new(
+            runtime_selection,
+            HillslopeDefaultRuntimeActivation::Disabled,
+        ),
+    )
+}
+
+pub fn execute_hillslope_run_with_runtime_policy(
+    request: &HillslopeRunRequest,
+    argv: &[String],
+    runtime_policy: HillslopeRuntimeSelectionPolicy,
+) -> Result<HillslopeRunReport, HillslopeCliError> {
     if !request.run_dir.is_dir() {
         return Err(HillslopeCliError::RunDirectoryMissing {
             path: request.run_dir.clone(),
@@ -1621,6 +1637,8 @@ pub fn execute_hillslope_run_with_runtime_selection(
 
     let inputs = load_hillslope_run_inputs(request)?;
     let targets = resolve_hillslope_output_targets(&inputs.runfile)?;
+    let runtime_resolution = runtime_policy.resolve();
+    let runtime_selection = runtime_resolution.selected();
     select_direct_runtime_skeleton_once(runtime_selection, &inputs, &targets)?;
     let direct_runtime_counter_baseline = direct_runtime_audit_snapshot();
     let mut sidecars = resolve_hillslope_sidecars(request, &inputs, &targets)?;
@@ -1652,6 +1670,8 @@ pub fn execute_hillslope_run_with_runtime_selection(
     let (wb13_publication, mofe_hourly_carry) =
         build_hillslope_publication_provenance(&execution, runtime_selection)?;
     write_hillslope_run_outputs(&inputs, &targets, &sidecars, &execution, runtime_selection)?;
+    let runtime_selection_provenance =
+        build_hillslope_runtime_selection_provenance(runtime_resolution, runtime_selection);
 
     let HillslopeSidecarResolution {
         mode_selection,
@@ -1677,6 +1697,7 @@ pub fn execute_hillslope_run_with_runtime_selection(
         execution_provenance,
         wb13_publication,
         mofe_hourly_carry,
+        runtime_selection: runtime_selection_provenance,
         direct_runtime_counters,
         coupling_vectors: execution.coupling_vectors,
     })?;
@@ -1690,13 +1711,32 @@ pub fn execute_hillslope_run_with_runtime_selection(
     })
 }
 
+fn build_hillslope_runtime_selection_provenance(
+    resolution: HillslopeRuntimeSelectionResolution,
+    selected_runtime: HillslopeRuntimeSelection,
+) -> HillslopeRuntimeSelectionProvenance {
+    HillslopeRuntimeSelectionProvenance {
+        requested: resolution.requested().as_str().to_string(),
+        selected: resolution.selected().as_str().to_string(),
+        selection_reason: resolution.selection_reason().to_string(),
+        default_activation_gate: resolution.default_activation().as_str().to_string(),
+        fallback_reason: resolution.fallback_reason().map(str::to_string),
+        output_policy: direct_publication_output_policy(selected_runtime).to_string(),
+        rollback_runtime: HillslopeRuntimeSelection::Compatibility
+            .as_str()
+            .to_string(),
+        compatibility_rollback_available: true,
+    }
+}
+
 fn select_direct_runtime_skeleton_once(
     runtime_selection: HillslopeRuntimeSelection,
     inputs: &ParsedHillslopeRunInputs,
     targets: &HillslopeOutputTargets,
 ) -> Result<(), HillslopeCliError> {
     let mode = match runtime_selection {
-        HillslopeRuntimeSelection::Compatibility
+        HillslopeRuntimeSelection::DefaultCandidate
+        | HillslopeRuntimeSelection::Compatibility
         | HillslopeRuntimeSelection::DirectPublicationFrameShadow
         | HillslopeRuntimeSelection::DirectPublicationFrameCutover
         | HillslopeRuntimeSelection::DirectProductionExecutor => return Ok(()),

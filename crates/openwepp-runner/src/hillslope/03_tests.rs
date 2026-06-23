@@ -491,13 +491,26 @@ mod tests {
         prefix: &str,
         runtime_selection: HillslopeRuntimeSelection,
     ) -> (HillslopeRunReport, PathBuf) {
+        execute_fixture_run_with_runtime_policy_unlocked(
+            prefix,
+            HillslopeRuntimeSelectionPolicy::new(
+                runtime_selection,
+                HillslopeDefaultRuntimeActivation::Disabled,
+            ),
+        )
+    }
+
+    fn execute_fixture_run_with_runtime_policy_unlocked(
+        prefix: &str,
+        runtime_policy: HillslopeRuntimeSelectionPolicy,
+    ) -> (HillslopeRunReport, PathBuf) {
         reset_direct_runtime_audit_counters();
 
         let source_fixture_dir = fixture_path("hillslope_run_dir");
         let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, prefix);
         let output_dir = temp_run_dir.join("output");
 
-        let report = execute_hillslope_run_with_runtime_selection(
+        let report = execute_hillslope_run_with_runtime_policy(
             &HillslopeRunRequest {
                 run_dir: temp_run_dir.clone(),
                 run_file: PathBuf::from("case.run"),
@@ -507,7 +520,7 @@ mod tests {
                 manifest_path: None,
             },
             &["openwepp-cli-hill".to_string()],
-            runtime_selection,
+            runtime_policy,
         )
         .expect("fixture run should complete");
 
@@ -540,6 +553,177 @@ mod tests {
             + DIRECT_R4PQZ_PHASE_SPAN_COUNT
             + 3
             + DIRECT_R3B_PHASE_SPAN_COUNT) as u64
+    }
+
+    #[test]
+    fn r7e_default_candidate_disabled_uses_compatibility_rollback_manifest() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (report, _temp_run_dir) = execute_fixture_run_with_runtime_policy_unlocked(
+            "r7e_default_candidate_disabled",
+            HillslopeRuntimeSelectionPolicy::default(),
+        );
+
+        assert!(report.output_pass.is_file());
+        assert!(report.output_loss.is_file());
+        let manifest_json = read_manifest_json(&report);
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/requested")
+                .and_then(serde_json::Value::as_str),
+            Some("default-candidate")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/selected")
+                .and_then(serde_json::Value::as_str),
+            Some("compatibility")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/fallback_reason")
+                .and_then(serde_json::Value::as_str),
+            Some("direct-default-candidate-gate-disabled")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/output_policy")
+                .and_then(serde_json::Value::as_str),
+            Some("compatibility-public-output")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/compatibility_rollback_available")
+                .and_then(serde_json::Value::as_bool),
+            Some(true)
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/execution_provenance/scheduler_kernel_executed")
+                .and_then(serde_json::Value::as_bool),
+            Some(true)
+        );
+        assert!(
+            manifest_json.pointer("/direct_runtime_counters").is_none(),
+            "disabled default candidate must not construct direct runtime counters"
+        );
+        let audit = direct_runtime_audit_snapshot();
+        assert_eq!(audit.run_frame_constructions, 0);
+        assert_eq!(audit.executor_constructions, 0);
+        assert_eq!(audit.compatibility_edge_invocations, 0);
+    }
+
+    #[test]
+    fn r7e_default_candidate_activation_selects_direct_runtime_manifest() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (report, _temp_run_dir) = execute_fixture_run_with_runtime_policy_unlocked(
+            "r7e_default_candidate_activation",
+            HillslopeRuntimeSelectionPolicy::new(
+                HillslopeRuntimeSelection::DefaultCandidate,
+                HillslopeDefaultRuntimeActivation::DirectProductionCandidate,
+            ),
+        );
+
+        assert!(report.output_pass.is_file());
+        assert!(report.output_loss.is_file());
+        let manifest_json = read_manifest_json(&report);
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/requested")
+                .and_then(serde_json::Value::as_str),
+            Some("default-candidate")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/selected")
+                .and_then(serde_json::Value::as_str),
+            Some("direct-production-executor")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/default_activation_gate")
+                .and_then(serde_json::Value::as_str),
+            Some("direct-production-candidate")
+        );
+        assert!(
+            manifest_json
+                .pointer("/runtime_selection/fallback_reason")
+                .is_none()
+                || manifest_json
+                    .pointer("/runtime_selection/fallback_reason")
+                    .is_some_and(serde_json::Value::is_null),
+            "activated default candidate should not report a fallback reason"
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/execution_provenance/scheduler_kernel_executed")
+                .and_then(serde_json::Value::as_bool),
+            Some(false)
+        );
+        let expected_compatibility_edges = manifest_json
+            .pointer("/wb13_publication/row_count")
+            .and_then(serde_json::Value::as_i64)
+            .expect("activated default candidate must include direct publication row count");
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/compatibility_edge_invocations",
+            expected_compatibility_edges,
+        );
+    }
+
+    #[test]
+    fn r7e_runtime_selection_policy_resolves_default_direct_and_rollback_modes() {
+        let default_disabled = HillslopeRuntimeSelectionPolicy::default().resolve();
+        assert_eq!(
+            default_disabled.requested(),
+            HillslopeRuntimeSelection::DefaultCandidate
+        );
+        assert_eq!(
+            default_disabled.selected(),
+            HillslopeRuntimeSelection::Compatibility
+        );
+        assert_eq!(
+            default_disabled.fallback_reason(),
+            Some("direct-default-candidate-gate-disabled")
+        );
+
+        let default_activated = HillslopeRuntimeSelectionPolicy::new(
+            HillslopeRuntimeSelection::DefaultCandidate,
+            HillslopeDefaultRuntimeActivation::DirectProductionCandidate,
+        )
+        .resolve();
+        assert_eq!(
+            default_activated.selected(),
+            HillslopeRuntimeSelection::DirectProductionExecutor
+        );
+        assert_eq!(default_activated.fallback_reason(), None);
+
+        let explicit_rollback = HillslopeRuntimeSelectionPolicy::new(
+            HillslopeRuntimeSelection::Compatibility,
+            HillslopeDefaultRuntimeActivation::Disabled,
+        )
+        .resolve();
+        assert_eq!(
+            explicit_rollback.selection_reason(),
+            "explicit-compatibility-rollback"
+        );
+        assert_eq!(
+            explicit_rollback.selected(),
+            HillslopeRuntimeSelection::Compatibility
+        );
+
+        let explicit_shadow = HillslopeRuntimeSelectionPolicy::new(
+            HillslopeRuntimeSelection::DirectPublicationFrameShadow,
+            HillslopeDefaultRuntimeActivation::Disabled,
+        )
+        .resolve();
+        assert_eq!(
+            explicit_shadow.selected(),
+            HillslopeRuntimeSelection::DirectPublicationFrameShadow
+        );
     }
 
     #[test]
@@ -820,7 +1004,7 @@ mod tests {
     }
 
     #[test]
-    fn r7c_direct_production_executor_runs_without_compatibility_edges() {
+    fn r7c_direct_production_executor_reports_interleaved_day_input_compatibility_edges() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -857,6 +1041,10 @@ mod tests {
         let expected_phase_spans = 1 + expected_day_frames * r5c_day_span_run_count();
         let expected_phase_entries =
             DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5c_day_phase_entry_count();
+        let expected_compatibility_edges = manifest_json
+            .pointer("/wb13_publication/row_count")
+            .and_then(serde_json::Value::as_i64)
+            .expect("R7C fixture manifest must include direct publication row count");
 
         assert_json_i64(&manifest_json, "/direct_runtime_counters/run_frame_constructions", 1);
         assert_json_i64(&manifest_json, "/direct_runtime_counters/executor_constructions", 1);
@@ -897,7 +1085,7 @@ mod tests {
         assert_json_i64(
             &manifest_json,
             "/direct_runtime_counters/compatibility_edge_invocations",
-            0,
+            expected_compatibility_edges,
         );
     }
 
@@ -985,6 +1173,19 @@ mod tests {
                 "R7C direct production body must not contain compatibility entrypoint {forbidden}"
             );
         }
+    }
+
+    #[test]
+    fn r7f_remaining_direct_day_input_builder_compatibility_edge_is_accounted() {
+        let source = include_str!("direct_publication/day_input_and_helpers.rs");
+        assert!(
+            source.contains("seed_surfaces: Vec<HillslopeWritebackSurface>"),
+            "R7F blocker evidence expects the current direct day-input builder to retain compatibility-shaped seed surfaces"
+        );
+        assert!(
+            source.contains("record_direct_runtime_compatibility_edge_invocation();"),
+            "remaining compatibility-shaped direct day-input builder must increment the direct runtime compatibility-edge counter"
+        );
     }
 
     #[test]

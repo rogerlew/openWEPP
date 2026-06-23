@@ -6,6 +6,7 @@ struct DirectPublicationDayInputBuilder<'a> {
     execution_lane: ExecutionLane,
     profile_inputs: Vec<DirectHydrologyProjectionInputs>,
     erosion_guard_active: bool,
+    record_compatibility_edge_invocations: bool,
 }
 
 struct DirectPublicationClimateContextState {
@@ -81,6 +82,7 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             execution_lane,
             profile_inputs,
             erosion_guard_active,
+            record_compatibility_edge_invocations: erosion_guard_active,
         })
     }
 
@@ -113,6 +115,9 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             })?
             .frost_runtime_carry
             .clone();
+        if self.record_compatibility_edge_invocations {
+            record_direct_runtime_compatibility_edge_invocation();
+        }
         let (mut seed_surface, day) = self.seed_surface(frame, day_index, lane_index)?;
 
         let precipitation_m = day.precipitation_mm / 1_000.0;

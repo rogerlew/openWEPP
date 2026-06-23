@@ -85,7 +85,11 @@ use openwepp_summary_accumulator::{
 use openwepp_topology::{TopologyGraph, validate_pre_execution_topology};
 use serde::{Deserialize, Serialize};
 
-use crate::api::{HillslopeRunReport, HillslopeRunRequest, HillslopeRuntimeSelection};
+use crate::api::{
+    HillslopeDefaultRuntimeActivation, HillslopeRunReport, HillslopeRunRequest,
+    HillslopeRuntimeSelection, HillslopeRuntimeSelectionPolicy,
+    HillslopeRuntimeSelectionResolution,
+};
 use crate::hillslope::intake_lane_setup::StaticOfeLaneSlice;
 use crate::constants::{
     DAILY_EXECUTION_LANE, DAILY_TIMESTEP_SECONDS, DIRECT_PUBLICATION_FRAME_PUBLICATION_SOURCE,
@@ -129,6 +133,7 @@ struct HillslopeRunManifest {
     resolved_sidecars: BTreeMap<String, String>,
     input_checksums: BTreeMap<String, String>,
     output_checksums: BTreeMap<String, String>,
+    runtime_selection: HillslopeRuntimeSelectionProvenance,
     mode_selection: HillslopeModeSelectionProvenance,
     timestep_policy: HillslopeTimestepPolicyProvenance,
     adapter_boundary: HillslopeAdapterBoundaryProvenance,
@@ -156,6 +161,18 @@ struct HillslopeDirectRuntimeCounterProvenance {
     downstream_operand_productions: u64,
     shadow_projections: u64,
     compatibility_edge_invocations: u64,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeRuntimeSelectionProvenance {
+    requested: String,
+    selected: String,
+    selection_reason: String,
+    default_activation_gate: String,
+    fallback_reason: Option<String>,
+    output_policy: String,
+    rollback_runtime: String,
+    compatibility_rollback_available: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -990,6 +1007,7 @@ struct HillslopeManifestPublication<'a> {
     execution_provenance: HillslopeExecutionProvenance,
     wb13_publication: HillslopeWb13PublicationProvenance,
     mofe_hourly_carry: HillslopeMofeHourlyCarryProvenance,
+    runtime_selection: HillslopeRuntimeSelectionProvenance,
     direct_runtime_counters: Option<HillslopeDirectRuntimeCounterProvenance>,
     coupling_vectors: HillslopeCouplingVectorProvenance,
 }

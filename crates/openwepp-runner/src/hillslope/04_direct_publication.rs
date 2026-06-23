@@ -141,7 +141,8 @@ fn build_direct_publication_artifacts(
                     .map_err(|source| direct_publication_runtime_error(&source))?
             }
         }
-        HillslopeRuntimeSelection::Compatibility
+        HillslopeRuntimeSelection::DefaultCandidate
+        | HillslopeRuntimeSelection::Compatibility
         | HillslopeRuntimeSelection::DirectSkeletonNoop
         | HillslopeRuntimeSelection::DirectSkeletonShadowOnly => return Ok(None),
     };
@@ -770,7 +771,8 @@ fn direct_publication_output_policy(runtime_selection: HillslopeRuntimeSelection
         HillslopeRuntimeSelection::DirectPublicationFrameCutover => {
             "direct-publication-frame-cutover-candidate/fail-closed-parity"
         }
-        HillslopeRuntimeSelection::Compatibility
+        HillslopeRuntimeSelection::DefaultCandidate
+        | HillslopeRuntimeSelection::Compatibility
         | HillslopeRuntimeSelection::DirectSkeletonNoop
         | HillslopeRuntimeSelection::DirectSkeletonShadowOnly => "compatibility-public-output",
     }

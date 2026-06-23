@@ -13,6 +13,14 @@
 
 State as of `2026-06-23`:
 
+- `20260623-r7e-r7h-direct-runtime-completion-001/` is executed-held at
+  `HOLD-R7F-DIRECT-DAY-INPUT-BUILDER-COMPATIBILITY-SURFACE-HOT-EDGE`. It
+  closed R7E default-candidate/rollback selection mechanics and made runtime
+  selection manifest-visible, then corrected the direct runtime audit so the
+  production direct interleaved day-input builder is counted as a compatibility
+  edge. R7F-R7H remain blocked until that builder is replaced by typed direct
+  day-input/state projection and no-compatibility counters return to zero for
+  real.
 - `20260623-r7d8-direct-hbp-erod15-export-alias-parity-001/` is complete. It
   lifted `HOLD-R7D7-HBP-EROD15-SEDIMENT-EXPORT-ALIASES-DIRECT-PRODUCER-GAP`
   by carrying producer-authoritative direct EROD15 sediment export aliases
