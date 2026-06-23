@@ -1,15 +1,14 @@
 # Coupled Frost Sub-Solver Architecture Specification
 
-Status: **Draft / Proposed** - design-input authority for the direct-frame
-frost/winter port. NOT yet ratified. Adoption requires an ADR or an amendment to
-[array-native-runtime-specification.md](array-native-runtime-specification.md)
-§12 (Open Design Decisions).
+Status: **Ratified** - accepted design authority for the direct-frame
+frost/winter port under
+[ADR-0026](../decisions/0026-stateful-winter-column-sub-solver.md).
 Audience: contributors working on the direct-frame runtime, hydrology kernels,
 snow/freeze coupling, and the R7 burndown.
 Owner: architecture authority; implementation by Codex work packages.
 Subordinate to: [array-native-runtime-specification.md](array-native-runtime-specification.md)
 controls runtime architecture; [SC-SNOWFREEZE-001](../specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md)
-controls frost/snow science behavior. This document proposes a runtime *shape*;
+controls frost/snow science behavior. This document ratifies a runtime *shape*;
 it changes no physics.
 Evidence mode: static plus R7G package evidence - source reads of the pinned
 legacy baseline (`/workdir/wepp-forest_260430_baseline`, commit
@@ -36,7 +35,7 @@ H2637 within the `<=10x` performance gate.
 
 This document records the motivation, the legacy deficiencies that make frost
 reconstruction intrinsically hard, and the suitability findings from the current
-implementation shape. It proposes a **winter-column sub-solver boundary**: a
+implementation shape. It ratifies a **winter-column sub-solver boundary**: a
 runtime component that orchestrates distinct typed snow and frost sub-states,
 owns their shared persistent lane state, advances the 24 hourly frost steps
 internally, and exposes typed outputs that the feed-forward phases consume as
@@ -250,10 +249,10 @@ grind.
 
 ---
 
-## 5. Proposed Boundary (Sketch)
+## 5. Ratified Boundary
 
-This is a design sketch, not a ratified design. It changes runtime shape only;
-physics remains governed by `SC-SNOWFREEZE-001`.
+This is a ratified runtime boundary. It changes runtime shape only; physics
+remains governed by `SC-SNOWFREEZE-001`.
 
 ### 5.1 Reframe
 
@@ -391,10 +390,10 @@ loop.
 
 2. **Pure-phase-model exception.** The winter column is a stateful sub-solver
    that owns persistent mutable lane state and runs an internal time loop - a
-   deliberate exception to the array-native spec §4.7 pure-phase model. Adoption
-   should add this as a named entry in array-native spec §12 (Open Design
-   Decisions), for example "stateful sub-solver phases", rather than pretending
-   frost fits the uniform feed-forward mold.
+   ratified exception to the array-native spec §4.7 pure-phase model under
+   `ADR-0026`. Array-native direct execution still sees a typed day-level
+   producer; the exception is internal state ownership and hourly iteration, not
+   permission to reintroduce compatibility surfaces.
 
 3. **Contract localization.** The `Qwet`/`frzftp` adjudication (§2.1), fixed
    `kftill`/`kfutil` constants, fine-layer geometry assumptions, bounded
@@ -431,10 +430,10 @@ loop.
 ## 7. Relationship to Existing Authority
 
 - **array-native-runtime-specification.md** controls runtime architecture. This
-  document is subordinate and proposes a §12 open-design-decision amendment; it
+  document is subordinate and ratifies the ADR-0026 winter-column exception; it
   does not relax any R7 gate, no-compatibility-surface proof, or identity
-  requirement. The winter-column sub-solver, if adopted, must still satisfy the
-  direct-mode no-compatibility-surface obligations in the hot loop.
+  requirement. The winter-column sub-solver must still satisfy the direct-mode
+  no-compatibility-surface obligations in the hot loop.
 - **SC-SNOWFREEZE-001** controls frost/snow science. This document changes no
   physics, guards, units, or conservation obligations. Any `Qwet`/`frzftp`
   decision is a contract amendment under that authority, not a runtime decision.
@@ -442,8 +441,9 @@ loop.
   `HOLD-R7G-FROST-STATEFUL-SUBSOLVER-REQUIRED`: active snow authority advanced,
   active frost can execute, but frost requires a stateful typed sub-solver before
   R7G parity/performance closure is honest.
-- **ADR requirement.** Promotion from Draft/Proposed to ratified authority
-  requires either an ADR or the array-native spec §12 amendment in (2) above.
+- **ADR-0026.** Ratifies this specification as the accepted runtime shape for
+  R7G snow/frost hold-lift work and the deletion path for the current direct
+  snow/frost retrofit.
 
 ---
 

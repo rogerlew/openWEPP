@@ -29,10 +29,13 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0023](0023-array-authoritative-hot-path-state.md) | Array-authoritative hot-path state | Accepted (incremental application superseded by 0025; dense-authority principle retained) |
 | [0024](0024-reference-implementation-intent-authority.md) | Reference-implementation intent can anchor empirical model authority | Accepted |
 | [0025](0025-array-native-hillslope-day-frame.md) | Array-native HillslopeDayFrame hot-path runtime (comprehensive re-architecture; completes 0023, narrows 0022) | Accepted (ratified 2026-06-18) |
+| [0026](0026-stateful-winter-column-sub-solver.md) | Stateful winter-column sub-solver for snow/frost | Accepted |
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further
 writeback-only or materialization-retirement rungs. Execution is the staged `PERFDEEP0N` series.
+ADR-0026 ratifies the coupled winter-column snow/frost sub-solver exception to ADR-0025's ordinary
+pure-phase direct-frame model.
 
 ## ADR template
 

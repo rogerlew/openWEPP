@@ -1,9 +1,11 @@
 # Array-Native Runtime Architecture Specification
 
-Status: **Ratified, Revision 3** - binding design authority for the
+Status: **Ratified, Revision 4** - binding design authority for the
 performance re-architecture, ratified by
 [ADR-0025](../decisions/0025-array-native-hillslope-day-frame.md) on
-2026-06-18 and revised after PERFDEEP07 on 2026-06-19.
+2026-06-18, revised after PERFDEEP07 on 2026-06-19, and amended by
+[ADR-0026](../decisions/0026-stateful-winter-column-sub-solver.md) on
+2026-06-23 for the snow/frost winter-column exception.
 Audience: all contributors working on runtime, scheduler, kernel, publication,
 or performance packages.
 Owner: architecture authority; implementation by Codex work packages.
@@ -432,6 +434,24 @@ The view must not expose generic symbol lookup. The borrow structure should
 make most producer/consumer mistakes unrepresentable. Where Rust borrowing
 cannot express a dynamic dependency, the schema and executor validate the
 dependency before the run starts.
+
+### 4.7.1 Stateful Sub-Solver Exception
+
+The ordinary direct-frame rule is feed-forward typed phase execution. ADR-0026
+ratifies one narrow exception: snow/frost is implemented as a stateful
+winter-column sub-solver.
+
+The exception is limited to internal solver shape. The winter column owns
+persistent lane state, including distinct typed snow and frost sub-states, and
+may run hourly loops or staged pre/post hydrology steps over one mutable
+`DirectWinterColumnState`. The outer executor still sees a typed day-level
+producer that emits typed downstream operands and publication operands.
+
+The exception does not allow hot-loop compatibility authority. Production
+winter-column execution must not construct or consult `DirectFrostRunoffSurface`,
+`HillslopeKernelRequest`, `HillslopeWritebackSurface`, `BoundarySymbol`,
+`BoundaryValue`, compatibility WB13 rows, or map-backed symbol helpers except in
+named test/comparator adapters.
 
 ### 4.8 Static Executor
 
@@ -883,7 +903,7 @@ activate direct mode or relax any R7 gate.
 | R5A-R5E | Full canonical OFE-day direct executor lifecycle and 14-phase coverage complete. | One canonical 14-phase entry per OFE-day, direct R4/R5 spans folded under canonical phase entries, protected output identity and endpoint/RSS evidence. | Public outputs remained compatibility-authoritative at R5E; no default activation. |
 | R6A-R6I | Direct publication frame and producer-authority blockers iteratively reduced. | Run-bound publication frame, direct projection consumers, typed day-input builder, PMET layer carry correction, and current-fixture parity closures. | Earlier held states are historical; R6J is the terminal R6 publication cutover package. |
 | R6J | Opt-in direct publication cutover complete. | `DirectPublicationFrameCutover` writes HBP/WAT/PASS/loss/plot/manifest from direct publication artifacts with H2637 byte/Arrow identity and direct manifest provenance. | It is not default activation. Current cutover production adapts simulation-owned WB13 rows into direct publication rows; production direct executor and R7 compatibility-runtime removal remain open. |
-| R7 | R7A architecture reconciliation, R7B parsed-input typed constructor boundary, R7C opt-in production direct executor routing, R7D8 direct HBP EROD15 sediment-export alias parity, R7E default-candidate/rollback selection mechanics, and R7F direct day-input hot-loop isolation are complete for their current gates. R7G executed-held on full-H2637 active snow authority. | R7A-H burndown below, `docs/work-packages/20260623-r7f-direct-day-input-hot-loop-isolation-001/`, and `docs/work-packages/20260623-r7g-performance-closure-fixture-hardening-001/`. | Full-H2637 production direct cannot reach endpoint timing because typed, surface-free active snow partition authority is absent. R7H release readiness remains blocked. |
+| R7 | R7A architecture reconciliation, R7B parsed-input typed constructor boundary, R7C opt-in production direct executor routing, R7D8 direct HBP EROD15 sediment-export alias parity, R7E default-candidate/rollback selection mechanics, and R7F direct day-input hot-loop isolation are complete for their current gates. R7G executed-held after active snow authority advanced and active frost reached endpoint execution, but parity/performance proved the request/symbol-surface frost retrofit non-viable. | R7A-H burndown below, `docs/work-packages/20260623-r7f-direct-day-input-hot-loop-isolation-001/`, `docs/work-packages/20260623-r7g-performance-closure-fixture-hardening-001/`, `docs/work-packages/20260623-r7g-iterative-completion-001/`, and `docs/architecture/coupled-frost-sub-solver-specification.md`. | Full-H2637 production direct is held at `HOLD-R7G-FROST-STATEFUL-SUBSOLVER-REQUIRED`; R7H release readiness remains blocked until the ADR-0026 winter-column sub-solver replaces the current direct snow/frost retrofit and reruns R7G gates. |
 
 Current runtime-mode matrix:
 
@@ -892,7 +912,7 @@ Current runtime-mode matrix:
 | Compatibility mode | Default API/CLI mode. | Compatibility scheduler, `HillslopeWritebackSurface`, kernel request/writeback, and WB13 publication rows. | Compatibility output builders. | Compatibility-provenanced outputs; no direct runtime counters unless a direct path is selected. | Must remain as rollback/replay/shadow adapter until direct default is proven. |
 | Shadow mode | Explicit validation mode. | Compatibility execution remains public-output authority while direct artifacts may be produced for comparison. | Compatibility publication for public outputs. | Compatibility provenance; direct artifacts are evidence only. | Must stay structurally outside direct production hot loop. |
 | Direct publication cutover | Explicit opt-in mode after R6J. | Compatibility simulation still produces the execution record; direct publication artifacts are built from the cutover adapter. | Direct HBP/WAT/PASS/loss/manifest writers consume `DirectRunPublicationFrame` artifacts. | Direct publication provenance and run-local direct counters for cutover manifests. | Replace WB13/runtime-surface adapter authority with direct executor-owned publication producers before default activation. |
-| Production direct mode | Explicit opt-in after R7C through `--direct-production-executor`; R7E also adds an explicit default-candidate activation gate through API policy and `--direct-default-candidate`. It is not default and not release-ready. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; R7F replaced the production direct interleaved day-input hot-loop dependency with `DirectProductionDayInputBuilder`, and focused R7 tests prove zero compatibility-edge counters for the focused path. | Direct publication frame retained from the direct executor path; R7D8 evidence had H2637 5-day direct production exit `0`, HBP/loss/PASS/PLOT/WAT byte identity, and parsed HBP latest-event parity. R7G full-H2637 direct default and explicit direct both fail closed before output because active snow partition authority is not yet represented as typed direct state. | Direct runtime counters, direct output provenance, and top-level runtime-selection provenance are recorded when direct reaches execution. Compatibility rollback remains explicit through API policy and `--compatibility-runtime`. | `HOLD-R7G-SURFACE-FREE-ACTIVE-SNOW-PARTITION-AUTHORITY-ABSENT`: add typed active snow controls/state, partition compute, mutation, downstream operands, publication projection, fixtures, and no-compatibility scans; then rerun R7G. |
+| Production direct mode | Explicit opt-in after R7C through `--direct-production-executor`; R7E also adds an explicit default-candidate activation gate through API policy and `--direct-default-candidate`. It is not default and not release-ready. | Parsed typed run/lane/day frames and `DirectFrameExecutor`; R7F replaced the production direct interleaved day-input hot-loop dependency with `DirectProductionDayInputBuilder`, and focused R7 tests prove zero compatibility-edge counters for the focused path. | Direct publication frame retained from the direct executor path; R7D8 evidence had H2637 5-day direct production exit `0`, HBP/loss/PASS/PLOT/WAT byte identity, and parsed HBP latest-event parity. R7G advanced typed snow state/partition authority and reached active frost endpoint execution, but HBP/WAT/PASS parity remained red and fine/shadow carry preservation regressed direct endpoint timing. | Direct runtime counters, direct output provenance, and top-level runtime-selection provenance are recorded when direct reaches execution. Compatibility rollback remains explicit through API policy and `--compatibility-runtime`. | `HOLD-R7G-FROST-STATEFUL-SUBSOLVER-REQUIRED`: implement the ADR-0026 winter-column sub-solver, cut R4A/R4B/R4PQZ/publication consumers to typed winter operands, remove the current direct snow/frost retrofit, and rerun R7G gates. |
 
 The terminal architecture remains stricter than the R6J cutover path. A direct
 publication object built from compatibility WB13 rows may be valid R6J adapter
@@ -1227,23 +1247,24 @@ Acceptance gates:
 - Fixture matrix is documented with pass/fail and residual risk.
 
 Execution status: executed-held in
-`docs/work-packages/20260623-r7g-performance-closure-fixture-hardening-001/`
-at `HOLD-R7G-SURFACE-FREE-ACTIVE-SNOW-PARTITION-AUTHORITY-ABSENT`.
-Current same-binary H2637 evidence after R7F:
+`docs/work-packages/20260623-r7g-performance-closure-fixture-hardening-001/`,
+then continued in
+`docs/work-packages/20260623-r7g-iterative-completion-001/`. The current marker
+is `HOLD-R7G-FROST-STATEFUL-SUBSOLVER-REQUIRED`.
 
-- default-disabled compatibility passed at `645.51 s / 229560 KiB`;
-- explicit rollback compatibility passed at `637.10 s / 229016 KiB`;
-- the two compatibility modes had identical protected output checksum maps;
-- direct default candidate failed closed at `0.94 s / 729204 KiB`;
-- explicit direct production failed closed at `0.92 s / 729200 KiB`.
+R7G closed the initial sidecar-only active snow failure by adding typed snow
+controls, hourly forcing, state carry, active partition compute, state mutation,
+downstream operands, and publication projection. It also reached full-H2637
+active frost endpoint execution with `compatibility_edge_invocations=0`.
 
-The direct timings are failure-path only and are not endpoint performance
-evidence. The fail-closed marker is:
-`R7F typed production day-input path does not yet have surface-free active snow
-partition authority for lane 1`. R7G therefore cannot evaluate `<=10x`, direct
-output parity, full direct counters, or profile evidence until typed active
-snow partition authority exists without `HillslopeWritebackSurface` state/flux
-maps.
+The remaining failure is architectural, not another scalar input gap. The
+request/symbol-surface frost retrofit cannot simultaneously preserve persistent
+fine/shadow frost state, avoid unsafe coarse-layer projection, meet protected
+HBP/WAT/PASS parity, and keep H2637 within the `<=10x` performance gate.
+ADR-0026 ratifies the follow-up route: replace the retrofit with a stateful
+winter-column sub-solver, cut direct consumers to typed winter operands, remove
+the current direct snow/frost bridges, then rerun the R7G timing, parity,
+no-compatibility, fixture, and reconstruction gates.
 
 ##### R7H - Release Cutover Readiness
 
@@ -1363,7 +1384,9 @@ architecture direction. Canonical `SC-*` contracts control science behavior.
 ## 12. Open Design Decisions
 
 These are implementation decisions, not permission to keep compatibility in
-the hot path.
+the hot path. ADR-0026 closes the winter-column stateful sub-solver question for
+snow/frost as a narrow accepted exception; it is not general permission to add
+stateful sub-solvers elsewhere without a new ADR.
 
 1. **Schema representation**
    Generated field tables, handwritten structs, or a hybrid.
