@@ -9,7 +9,7 @@ use crate::hillslope::intake_lane_setup::{
     legacy_sunmap_horizontal_radpot_ly, saturation_vapor_pressure_kpa,
 };
 use openwepp_hillslope_orchestrator::runtime_inputs::{
-    HillslopeClimateRuntimeRequest, HillslopeDirectClimateDayForcing,
+    DirectWinterHourlyContext, HillslopeClimateRuntimeRequest, HillslopeDirectClimateDayForcing,
     SlopeRuntimeSurfaceOptions,
     build_hillslope_climate_runtime_request,
     build_hillslope_runtime_surface_from_climate_request_with_context,
@@ -18,7 +18,8 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
     build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
 };
 use openwepp_hillslope_orchestrator::{
-    DirectCanopyInterceptionInputs, DirectErod13Inputs, DirectErod14ClassInputs,
+    DirectActiveSnowPartitionInputs, DirectCanopyInterceptionInputs, DirectErod13Inputs,
+    DirectErod14ClassInputs,
     DirectErod14Inputs, DirectErosionInputs, DirectEvapotranspirationComputeInputs,
     DirectEvapotranspirationPmetInputs, DirectEvapotranspirationStageState,
     DirectExecutionReport, DirectExecutorMode, DirectFrameExecutor, DirectFrostFineLayerCarry,
@@ -34,8 +35,9 @@ use openwepp_hillslope_orchestrator::{
     DirectPublicationStorageOperands, DirectPublicationSubsurfaceOperands,
     DirectPublicationTransferOperands, DirectRunConstructorInputs, DirectRunFrame,
     DirectRunIdentity, DirectRunPublicationFrame, DirectRuntimeAuditSnapshot, DirectRuntimeError,
-    DirectSnowCouplingInputs, DirectStorageInputInputs, DirectSubsurfaceComputeInputs,
-    DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState, DirectWb14HyetographInterval,
+    DirectSnowCouplingInputs, DirectSnowHourlyForcing, DirectSnowRuntimeCarry,
+    DirectStorageInputInputs, DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs,
+    DirectSubsurfaceLayerState, DirectWb14HyetographInterval,
     DirectWb14InfiltrationProducerInputs, HillslopeDayFrame,
     HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
     OfeLanePersistentState, OfeLanePersistentStateSequence, OfeLaneSequenceExecutionReport,
@@ -1388,8 +1390,18 @@ fn resolve_runfile_hillslope_sidecars(
     let mut resolved_sidecars = BTreeMap::new();
     let mut sidecar_warnings = Vec::new();
     let mut input_paths = HillslopeSidecarInputPaths::default();
-    let snow = parse_runfile_snow_sidecar(request, sidecar_overrides, &mut resolved_sidecars)?;
-    let frost = parse_runfile_frost_sidecar(request, sidecar_overrides, &mut resolved_sidecars)?;
+    let snow = parse_runfile_snow_sidecar(
+        request,
+        sidecar_overrides,
+        &mut resolved_sidecars,
+        &mut input_paths.snow,
+    )?;
+    let frost = parse_runfile_frost_sidecar(
+        request,
+        sidecar_overrides,
+        &mut resolved_sidecars,
+        &mut input_paths.frost,
+    )?;
     let wepp_ui_path = request.run_dir.join("wepp_ui.txt");
     record_existing_sidecar(
         &mut resolved_sidecars,
@@ -1424,6 +1436,7 @@ fn parse_runfile_snow_sidecar(
     request: &HillslopeRunRequest,
     sidecar_overrides: &RunfileSidecarOverrides,
     resolved_sidecars: &mut BTreeMap<String, String>,
+    input_path: &mut Option<PathBuf>,
 ) -> Result<SnowParseOutput, HillslopeCliError> {
     if let Some(snow_inline) = sidecar_overrides.snow {
         resolved_sidecars.insert("snow".to_string(), "<inline>".to_string());
@@ -1432,6 +1445,19 @@ fn parse_runfile_snow_sidecar(
                 "{}\n{}\n{}\n",
                 snow_inline.rst, snow_inline.newsnw, snow_inline.ssd
             ),
+            request.sidecar_policy.as_snow_parse_options(),
+        )
+        .map_err(|error| HillslopeCliError::ParseFailure {
+            surface: "snow",
+            detail: error.to_string(),
+        });
+    }
+    let default_snow_path = request.run_dir.join("snow.txt");
+    if default_snow_path.is_file() {
+        *input_path = Some(default_snow_path.to_owned());
+        resolved_sidecars.insert("snow".to_string(), default_snow_path.display().to_string());
+        return parse_snow_file(
+            &default_snow_path,
             request.sidecar_policy.as_snow_parse_options(),
         )
         .map_err(|error| HillslopeCliError::ParseFailure {
@@ -1456,6 +1482,7 @@ fn parse_runfile_frost_sidecar(
     request: &HillslopeRunRequest,
     sidecar_overrides: &RunfileSidecarOverrides,
     resolved_sidecars: &mut BTreeMap<String, String>,
+    input_path: &mut Option<PathBuf>,
 ) -> Result<FrostParseOutput, HillslopeCliError> {
     if let Some(frost_inline) = sidecar_overrides.frost {
         resolved_sidecars.insert("frost".to_string(), "<inline>".to_string());
@@ -1472,6 +1499,22 @@ fn parse_runfile_frost_sidecar(
                 frost_inline.kfactor2,
                 frost_inline.kfactor3
             ),
+            request.sidecar_policy.as_frost_parse_mode(),
+        )
+        .map_err(|error| HillslopeCliError::ParseFailure {
+            surface: "frost",
+            detail: error.to_string(),
+        });
+    }
+    let default_frost_path = request.run_dir.join("frost.txt");
+    if default_frost_path.is_file() {
+        *input_path = Some(default_frost_path.to_owned());
+        resolved_sidecars.insert(
+            "frost".to_string(),
+            default_frost_path.display().to_string(),
+        );
+        return parse_frost_from_path(
+            &default_frost_path,
             request.sidecar_policy.as_frost_parse_mode(),
         )
         .map_err(|error| HillslopeCliError::ParseFailure {

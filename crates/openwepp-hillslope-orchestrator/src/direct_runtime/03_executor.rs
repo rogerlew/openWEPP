@@ -358,6 +358,9 @@ impl DirectFrameExecutor {
             .frost_runoff_surface
             .clone_from(&day_input.frost_runoff_surface);
         day_frame
+            .frost_liquid_partition
+            .clone_from(&day_input.frost_liquid_partition);
+        day_frame
             .frost_layer_carry_projection
             .clone_from(&day_input.frost_layer_carry_projection);
         if day_input.frost_runtime_carry.is_some() {

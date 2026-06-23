@@ -177,6 +177,46 @@ pub struct DirectSnowLiquidPartition {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectSnowHourlyForcing {
+    pub rain_m: f64,
+    pub snowfall_m: f64,
+    pub radiation_mj_m2: f64,
+    pub air_temperature_c: f64,
+    pub cloud_fraction: f64,
+}
+
+impl DirectSnowHourlyForcing {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            rain_m: 0.0,
+            snowfall_m: 0.0,
+            radiation_mj_m2: 0.0,
+            air_temperature_c: 0.0,
+            cloud_fraction: 0.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectActiveSnowPartitionInputs {
+    pub hyetograph_rainfall_m: f64,
+    pub rst_c: f64,
+    pub newsnw_kg_m3: f64,
+    pub ssd_kg_m3: f64,
+    pub runtime_swe_m: f64,
+    pub runtime_depth_m: f64,
+    pub runtime_density_kg_m3: f64,
+    pub runtime_settle_day_count: f64,
+    pub tmax_c: f64,
+    pub tmin_c: f64,
+    pub canopy_cover_fraction: f64,
+    pub wind_m_s: f64,
+    pub dewpoint_c: f64,
+    pub hourly: [DirectSnowHourlyForcing; SIMIMPL29_HOURS_PER_DAY],
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectFrostLayerProjection {
     pub layer_index: usize,
     pub theta_after_m: f64,

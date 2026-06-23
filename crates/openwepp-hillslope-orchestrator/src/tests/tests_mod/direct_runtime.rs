@@ -21,18 +21,21 @@ use crate::{
     DirectEvapotranspirationComputeInputs, DirectEvapotranspirationDownstreamOperands,
     DirectEvapotranspirationInputs, DirectEvapotranspirationPmetInputs,
     DirectEvapotranspirationShadowProjection, DirectEvapotranspirationState, DirectExecutorMode,
-    DirectFrameExecutor, DirectFrostLayerCarryProjection, DirectHydrologyProjectionInputs,
-    DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneConstructorInputs,
-    DirectLaneTransferLedger, DirectLedgerDownstreamOperands, DirectLedgerShadowProjection,
-    DirectLiquidInputInputs, DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
+    DirectFrameExecutor, DirectFrostFineLayerProjection, DirectFrostLayerCarryProjection,
+    DirectFrostLayerProjection, DirectFrostLayerShadowProjection, DirectFrostLiquidPartition,
+    DirectFrostRunoffSurface, DirectHydrologyProjectionInputs, DirectInfiltrationDepressionInputs,
+    DirectInputAccountingState, DirectLaneConstructorInputs, DirectLaneTransferLedger,
+    DirectLedgerDownstreamOperands, DirectLedgerShadowProjection, DirectLiquidInputInputs,
+    DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
     DirectNormalizationShadowProjection, DirectNormalizationState, DirectPeakRunoffInputs,
     DirectPercolationInputs, DirectPhaseKind, DirectPhaseLifecycleStatus,
     DirectPublicationCalendarDay, DirectPublicationDayInput, DirectPublicationRunMetadata,
     DirectRunConstructorInputs, DirectRunFrame, DirectRunIdentity,
     DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
-    DirectRunoffPartitionInputs, DirectRunonCarryInputs, DirectRuntimeError,
-    DirectSaturationAddbackInputs, DirectShadowProjection, DirectSnowCouplingDownstreamOperands,
-    DirectSnowCouplingInputs, DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
+    DirectRunoffPartitionInputs, DirectRunoffShadowProjection, DirectRunonCarryInputs,
+    DirectRuntimeError, DirectSaturationAddbackInputs, DirectShadowProjection,
+    DirectSnowCouplingDownstreamOperands, DirectSnowCouplingInputs,
+    DirectSnowCouplingShadowProjection, DirectSnowCouplingState,
     DirectStorageBoundsDownstreamOperands, DirectStorageBoundsInputs,
     DirectStorageBoundsShadowProjection, DirectStorageBoundsState, DirectStorageDownstreamOperands,
     DirectStorageInputDownstreamOperands, DirectStorageInputInputs,
@@ -557,6 +560,330 @@ fn r6i_direct_frost_carry_projection_skips_inactive_frost_storage() {
 }
 
 #[test]
+fn r7g_precomputed_frost_partition_uses_applied_layer_delta_for_storage_closure() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(17, 501, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct frame should construct for capture");
+    frame.lanes[0].area_m2 = 100.0;
+    let mut day_input = r6f_typed_publication_day_inputs()[0].clone();
+    day_input.frost_liquid_partition = Some(DirectFrostLiquidPartition {
+        active_frost_coupling: true,
+        dthaw_after_m: 0.0,
+        nft_after: 1.0,
+        infcap_frz_m_s: 1.0e-6,
+        soil_water_after_frwatc_m: Some(0.170),
+        frwatc_soil_water_before_m: 0.190,
+        frwatc_soil_water_after_m: 0.170,
+        frwatc_frozen_water_before_m: 0.0,
+        frwatc_frozen_water_after_m: 0.005,
+        frwatc_freeze_debit_m: 0.020,
+        frwatc_thaw_credit_m: 0.0,
+        frwatc_net_liquid_delta_m: -0.001,
+        frozen_water_after_m: 0.005,
+        frost_depth_after_m: 0.050,
+        thdp_after_m: 0.0,
+        tfrdp_after_m: 0.050,
+        tthawd_after_m: 0.0,
+        fgthwd_flag_after: 0.0,
+        total_fine_layer_count: 10.0,
+        conductivity_tilled_w_m_k: 1.58,
+        conductivity_untilled_w_m_k: 1.75,
+        conductivity_residue_w_m_k: 0.05,
+        shadow_total_water_before_m: 0.190,
+        shadow_total_water_after_m: 0.175,
+        shadow_wb_delta_m: 0.0,
+        shadow_frwatc_residual_m: 0.0,
+        watpdg_m: 0.0,
+        watbtm_m: 0.0,
+        layer_projection: vec![DirectFrostLayerProjection {
+            layer_index: 1,
+            theta_after_m: 0.170,
+            frozen_depth_m: 0.050,
+            frozen_water_m: 0.005,
+        }],
+        layer_shadow_projection: Vec::new(),
+        fine_layer_projection: Vec::new(),
+    });
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r7g_precomputed_frost_storage_delta".to_string(),
+        runtime_selection: "direct-publication-frame-cutover-candidate".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        .run_publication_capture_with_day_inputs(&mut frame, metadata, &[day_input])
+        .expect("precomputed frost partition should close on applied layer delta");
+    let row = execution
+        .publication_frame
+        .first_day()
+        .expect("capture should include first row");
+
+    assert!((row.storage.total_soil_mm - 170.0).abs() < 1.0e-12);
+    assert!((row.storage.frozwt_mm - 5.0).abs() < 1.0e-12);
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+}
+
+#[test]
+fn r7g_active_zero_material_frost_partition_preserves_fine_runtime_carry() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(17, 501, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct frame should construct for capture");
+    frame.lanes[0].area_m2 = 100.0;
+    let mut day_input = r6f_typed_publication_day_inputs()[0].clone();
+    day_input.frost_liquid_partition = Some(DirectFrostLiquidPartition {
+        active_frost_coupling: true,
+        dthaw_after_m: 0.0,
+        nft_after: 1.0,
+        infcap_frz_m_s: 1.0e-6,
+        soil_water_after_frwatc_m: Some(0.200),
+        frwatc_soil_water_before_m: 0.200,
+        frwatc_soil_water_after_m: 0.200,
+        frwatc_frozen_water_before_m: 0.0,
+        frwatc_frozen_water_after_m: 0.0,
+        frwatc_freeze_debit_m: 0.0,
+        frwatc_thaw_credit_m: 0.0,
+        frwatc_net_liquid_delta_m: 0.0,
+        frozen_water_after_m: 0.0,
+        frost_depth_after_m: 0.0,
+        thdp_after_m: 0.0,
+        tfrdp_after_m: 0.0,
+        tthawd_after_m: 0.0,
+        fgthwd_flag_after: 0.0,
+        total_fine_layer_count: 1.0,
+        conductivity_tilled_w_m_k: 1.58,
+        conductivity_untilled_w_m_k: 1.75,
+        conductivity_residue_w_m_k: 0.05,
+        shadow_total_water_before_m: 0.200,
+        shadow_total_water_after_m: 0.200,
+        shadow_wb_delta_m: 0.0,
+        shadow_frwatc_residual_m: 0.0,
+        watpdg_m: 0.0,
+        watbtm_m: 0.0,
+        layer_projection: vec![DirectFrostLayerProjection {
+            layer_index: 1,
+            theta_after_m: 0.200,
+            frozen_depth_m: 0.0,
+            frozen_water_m: 0.0,
+        }],
+        layer_shadow_projection: vec![DirectFrostLayerShadowProjection {
+            layer_index: 1,
+            st_m: 0.200,
+            soil_water_m: 0.200,
+            frozen_depth_m: 0.0,
+            frozen_water_m: 0.0,
+            soilf_m: 0.0,
+            yst_m: 0.200,
+            nwfrzz_m: 0.0,
+        }],
+        fine_layer_projection: vec![DirectFrostFineLayerProjection {
+            layer_index: 1,
+            fine_index: 1,
+            fgfrst: 0.0,
+            slfsd_m: 0.020,
+            slsic_m: 0.0,
+            slsw_theta: 0.123,
+            sltime_s: 0.0,
+        }],
+    });
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r7g_active_zero_material_frost_carry".to_string(),
+        runtime_selection: "direct-production-executor".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        .run_publication_capture_with_day_inputs(&mut frame, metadata, &[day_input])
+        .expect("active no-material frost partition should preserve runtime carry");
+    let carry = frame.lanes[0]
+        .frost_runtime_carry
+        .as_ref()
+        .expect("active no-material frost partition must still publish runtime carry");
+
+    assert_eq!(carry.fine_layers.len(), 1);
+    assert!((carry.fine_layers[0].slsw_theta - 0.123).abs() < 1.0e-12);
+    assert_eq!(carry.ws_frz_m.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(carry.frdp_m.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+}
+
+#[test]
+fn r7g_active_no_freeze_frost_partition_carries_fine_state_without_coarse_projection() {
+    let mut frost_surface = DirectFrostRunoffSurface::default();
+    for (symbol, value) in [
+        ("frost.options.frost_file_present", 0.0),
+        ("frost.options.wintRed", 1.0),
+        ("frost.options.fineTop", 10.0),
+        ("frost.options.fineBot", 10.0),
+        ("frost.options.ksnowf", 1.0),
+        ("frost.options.kresf", 1.0),
+        ("frost.options.ksoilf", 1.0),
+        ("frost.options.kfactor1", 0.5),
+        ("frost.options.kfactor2", 0.5),
+        ("frost.options.kfactor3", 0.5),
+        ("nsl", 1.0),
+        ("wb11_nsl", 1.0),
+        ("solthk", 0.400),
+        ("dg_0001", 0.400),
+        ("wb19_dg_m_0001", 0.400),
+        ("wb18_perc_theta_0001", 0.200),
+        ("wb18_perc_ul_0001", 0.500),
+        ("thetdr", 0.050),
+        ("thetfc", 0.250),
+        ("wb19_thetdr_0001", 0.050),
+        ("wb19_bulk_density_kg_m3_0001", 1_300.0),
+        ("frost.runtime_dfrost", 0.0),
+        ("frost.runtime_dthaw", 0.0),
+        ("frost.runtime_nft", 0.0),
+        ("frost.runtime_ws_frz", 0.0),
+        ("frost.runtime_frdp_m", 0.0),
+        ("frost.runtime_thdp_m", 0.0),
+        ("frost.runtime_tfrdp_m", 0.0),
+        ("frost.runtime_tthawd_m", 0.0),
+        ("frost.runtime_fgthwd_flag", 0.0),
+        ("frost.runtime_infcap_frz", 1.0e-6),
+        ("frost.runtime_frwatc_frozen_water_after_m", 0.0),
+        ("frost.runtime_residue_depth_m", 0.0),
+        ("wb11_soil_water", 0.220),
+        ("tmax", 6.0),
+        ("tmin", 4.0),
+        ("vwind", 1.0),
+        ("day", 5.0),
+        ("year", 2026.0),
+        ("snow.runtime_depth_m", 0.0),
+        ("snow.runtime_density_kg_m3", 0.0),
+        ("salb", 0.20),
+        ("canhgt", 0.0),
+        ("rrinit", 0.0),
+    ] {
+        frost_surface.insert_scalar(symbol, value);
+    }
+    for hour in 1..=24 {
+        frost_surface.insert_scalar(format!("winter.hourly.air_temp_c_{hour:04}").as_str(), 5.0);
+        frost_surface.insert_scalar(format!("winter.hourly.rad_mj_m2_{hour:04}").as_str(), 0.0);
+        frost_surface.insert_scalar(
+            format!("winter.hourly.cloud_fraction_{hour:04}").as_str(),
+            1.0,
+        );
+    }
+    for month in 1..=12 {
+        frost_surface.insert_scalar(format!("obmaxt_{month:04}").as_str(), 8.0);
+        frost_surface.insert_scalar(format!("obmint_{month:04}").as_str(), 2.0);
+    }
+
+    let partition = frost_surface
+        .compute_frost_liquid_partition(1.0e-6)
+        .expect("active no-freeze partition should compute");
+
+    assert!(partition.active_frost_coupling);
+    assert_eq!(partition.frost_depth_after_m.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(partition.frozen_water_after_m.to_bits(), 0.0_f64.to_bits());
+    assert!(
+        partition.layer_projection.is_empty(),
+        "no-freeze carry must not publish active-water-only coarse projection"
+    );
+    assert!(!partition.layer_shadow_projection.is_empty());
+    assert!(!partition.fine_layer_projection.is_empty());
+}
+
+#[test]
+fn r7g_computed_frost_surface_derives_initial_fine_state_without_prior_carry() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(17, 501, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct frame should construct for capture");
+    frame.lanes[0].area_m2 = 100.0;
+    let mut day_input = r6f_typed_publication_day_inputs()[0].clone();
+    let mut frost_surface = DirectFrostRunoffSurface::default();
+    for (symbol, value) in [
+        ("frost.options.frost_file_present", 0.0),
+        ("frost.options.wintRed", 1.0),
+        ("frost.options.fineTop", 10.0),
+        ("frost.options.fineBot", 10.0),
+        ("frost.options.ksnowf", 1.0),
+        ("frost.options.kresf", 1.0),
+        ("frost.options.ksoilf", 1.0),
+        ("frost.options.kfactor1", 0.000_01),
+        ("frost.options.kfactor2", 0.000_01),
+        ("frost.options.kfactor3", 0.5),
+        ("nsl", 1.0),
+        ("wb11_nsl", 1.0),
+        ("wb19_bulk_density_kg_m3_0001", 1_300.0),
+        ("frost.runtime_dfrost", 0.0),
+        ("frost.runtime_dthaw", 0.0),
+        ("frost.runtime_nft", 0.0),
+        ("frost.runtime_ws_frz", 0.0),
+        ("frost.runtime_frdp_m", 0.0),
+        ("frost.runtime_thdp_m", 0.0),
+        ("frost.runtime_tfrdp_m", 0.0),
+        ("frost.runtime_tthawd_m", 0.0),
+        ("frost.runtime_fgthwd_flag", 0.0),
+        ("frost.runtime_infcap_frz", 1.0e-6),
+        ("frost.runtime_frwatc_frozen_water_after_m", 0.0),
+        ("frost.runtime_residue_depth_m", 0.0),
+        ("tmax", 0.0),
+        ("tmin", -3.3),
+        ("vwind", 1.0),
+        ("day", 5.0),
+        ("year", 2026.0),
+        ("snow.runtime_depth_m", 0.0),
+        ("snow.runtime_density_kg_m3", 0.0),
+        ("salb", 0.20),
+        ("canhgt", 0.0),
+        ("rrinit", 0.0),
+    ] {
+        frost_surface.insert_scalar(symbol, value);
+    }
+    for hour in 1..=24 {
+        frost_surface.insert_scalar(format!("winter.hourly.air_temp_c_{hour:04}").as_str(), -3.3);
+        frost_surface.insert_scalar(format!("winter.hourly.rad_mj_m2_{hour:04}").as_str(), 0.0);
+        frost_surface.insert_scalar(
+            format!("winter.hourly.cloud_fraction_{hour:04}").as_str(),
+            1.0,
+        );
+    }
+    for month in 1..=12 {
+        frost_surface.insert_scalar(format!("obmaxt_{month:04}").as_str(), 5.0);
+        frost_surface.insert_scalar(format!("obmint_{month:04}").as_str(), -5.0);
+    }
+    day_input.frost_runoff_surface = Some(frost_surface);
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r7g_initial_frost_fine_state".to_string(),
+        runtime_selection: "direct-production-executor".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        .run_publication_capture_with_day_inputs(&mut frame, metadata, &[day_input])
+        .expect("computed frost surface should derive initial fine state without prior carry");
+    let row = execution
+        .publication_frame
+        .first_day()
+        .expect("capture should include first row");
+
+    assert!(row.storage.frozwt_mm > 0.0);
+    assert!(row.storage.frdp_mm.expect("frost depth should publish") > 0.0);
+    assert!(frame.lanes[0].frost_runtime_carry.is_some());
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+}
+
+#[test]
 fn r7d5_erosion_active_publication_fails_closed_without_direct_sediment_producer() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
@@ -646,6 +973,98 @@ fn r7d6_typed_erosion_producer_populates_publication_operands() {
             .hbp_sediment_concentration_kg_m3
             .expect("R7D6 should publish HBP scalar concentration"),
         class_concentrations[0],
+    );
+}
+
+#[test]
+fn r7g_peak_runoff_tiny_average_rate_uses_floor_instead_of_domain_error() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(7, 2637, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut day = DirectDayFrame::seed(identity, 0, 0).expect("valid direct day should construct");
+    day.runoff_shadow_projection = Some(DirectRunoffShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        liquid_input_m: 1.0e-8,
+        runon_input_m: 0.0,
+        cumulative_infiltration_m: 0.0,
+        depression_storage_delta_m: 0.0,
+        surface_saturation_runoff_m: 0.0,
+        partition_runoff_m: 1.0e-8,
+        q_runoff_m: 1.0e-8,
+        closure_residual_m: 0.0,
+    });
+    day.peak_runoff_inputs = DirectPeakRunoffInputs {
+        hyetograph: vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 86_400.0,
+            intensity_m_s: 1.0e-12,
+        }],
+        irrigation_rate_m_s: 0.0,
+        efflen_m: 1.0,
+        ealpha: 1.0,
+        exponent_m: 1.0,
+    };
+
+    day.run_r7d6_peak_runoff_span()
+        .expect("tiny average runoff rate should floor peak runoff");
+
+    assert_eq!(day.peak_runoff.q_runoff_m, 1.0e-8);
+    assert_eq!(day.peak_runoff.peak_runoff_m3_s, 3.63e-8);
+    assert_eq!(day.peak_runoff.runoff_duration_s, 0.0);
+}
+
+#[test]
+fn r7g_committed_zero_upstream_erosion_qout_feeds_downstream_erod14_qin() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(8, 2637, 2, 1)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct publication frame should construct");
+    frame.lanes[0].area_m2 = 100.0;
+    frame.lanes[1].area_m2 = 100.0;
+    let base_day = r6f_typed_publication_day_inputs()[0].clone();
+    let lane0_day = base_day.clone();
+    let mut lane1_day = base_day;
+    lane1_day.erosion_producer_required = true;
+    lane1_day.erosion_inputs = Some(r7d6_typed_erosion_inputs());
+    let lane_days = [lane0_day, lane1_day];
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r7g_zero_upstream_erosion_qout".to_string(),
+        runtime_selection: "direct-production-executor".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
+        .run_publication_capture_with_interleaved_day_inputs(
+            &mut frame,
+            metadata,
+            |_frame, _day_index, lane_index| Ok(lane_days[lane_index].clone()),
+        )
+        .expect("downstream EROD14 should accept committed typed zero qout from upstream lane");
+
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+    assert!(
+        frame.lanes[0]
+            .erosion_downstream_operands
+            .qout_handoff_authority,
+        "upstream lane must commit explicit qout handoff authority even when erosion is inactive"
+    );
+    assert_eq!(execution.publication_frame.rows().len(), 2);
+    assert!(
+        execution.publication_frame.rows()[1]
+            .erosion
+            .total_detachment_kg
+            .expect("downstream active erosion should publish detachment")
+            > 0.0
     );
 }
 
@@ -1183,6 +1602,7 @@ fn r7b_typed_run_constructor_roundtrips_multiofe_daily_parsed_inputs() {
     lanes[1].subsurface_layers = vec![r7b_constructor_layer(0.16, 0.04, 0.38, 0.28, 0.0)];
     lanes[1].day_inputs[0].snow_coupling_inputs = DirectSnowCouplingInputs {
         snow_coupling_handoff_m: 0.006,
+        ..DirectSnowCouplingInputs::zero()
     };
     lanes[1].day_inputs[0]
         .hydrology_projection_inputs
@@ -1350,7 +1770,8 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     assert!(lane_constructor <= 1_024);
     assert!(day_constructor <= 4_096);
     assert!(run_frame <= 512);
-    assert!(lane_frame <= 1_152);
+    // R7G carries typed snow runtime state at lane scope; keep the added budget tight.
+    assert!(lane_frame <= 1_184);
     assert!(day_frame <= 12_288);
 }
 
@@ -1424,6 +1845,7 @@ fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
     };
     day.snow_coupling_inputs = DirectSnowCouplingInputs {
         snow_coupling_handoff_m: 0.002,
+        ..DirectSnowCouplingInputs::zero()
     };
     day.storage_reconciliation_inputs = DirectStorageReconciliationInputs {
         storage_initial_m: 0.21,
@@ -2698,6 +3120,7 @@ fn r4g_snow_coupling_producer_consumes_signed_handoff_and_updates_r4b_input() {
         DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
     day.snow_coupling_inputs = DirectSnowCouplingInputs {
         snow_coupling_handoff_m: -0.09375,
+        ..DirectSnowCouplingInputs::zero()
     };
     day.forcing.precipitation_m = 0.25;
     day.runoff_downstream_operands.q_runoff_m = 0.34375;
@@ -2714,12 +3137,20 @@ fn r4g_snow_coupling_producer_consumes_signed_handoff_and_updates_r4b_input() {
 
     let expected_state = DirectSnowCouplingState {
         snow_coupling_m: -0.09375,
+        ..DirectSnowCouplingState::zero()
     };
     let expected_operands = DirectSnowCouplingDownstreamOperands::from(expected_state);
     let expected_shadow = DirectSnowCouplingShadowProjection {
         lane_index: 0,
         day_index: 0,
         snow_coupling_m: -0.09375,
+        active_snow_coupling: false,
+        routed_melt_m: 0.0,
+        post_winter_rain_m: 0.0,
+        runtime_swe_after_m: 0.0,
+        runtime_depth_after_m: 0.0,
+        runtime_density_after_kg_m3: 0.0,
+        runtime_settle_day_count_after: 0.0,
     };
 
     assert_eq!(day.snow_coupling, expected_state);
@@ -2968,7 +3399,8 @@ fn assert_r4b_storage_result(
     assert_eq!(
         day.snow_coupling,
         DirectSnowCouplingState {
-            snow_coupling_m: 0.125
+            snow_coupling_m: 0.125,
+            ..DirectSnowCouplingState::zero()
         }
     );
 }
@@ -3403,6 +3835,7 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
     day.evapotranspiration_compute_inputs = r4b_evapotranspiration_compute_inputs();
     day.snow_coupling_inputs = DirectSnowCouplingInputs {
         snow_coupling_handoff_m: 0.125,
+        ..DirectSnowCouplingInputs::zero()
     };
     day.storage_reconciliation_inputs = DirectStorageReconciliationInputs {
         storage_initial_m: 9.0,

@@ -14,6 +14,12 @@ use super::{
     validate_finite, validate_nonnegative_direct_m,
 };
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum R4aFrostLiquidDeltaAuthority {
+    PartitionFrwatc,
+    AppliedLayerProjection,
+}
+
 impl DirectDayFrame {
     pub fn run_r4i_liquid_input_span(
         &mut self,
@@ -519,7 +525,18 @@ impl DirectDayFrame {
         validate_positive_direct("peak_runoff.effdrr_s", effdrr_s)?;
 
         let vave = q_runoff_m / effdrr_s;
-        validate_positive_direct("peak_runoff.vave", vave)?;
+        validate_finite("peak_runoff.vave", vave)?;
+        if vave <= WB11_ZERO_THRESHOLD {
+            return Ok(DirectPeakRunoffState {
+                q_runoff_m,
+                peak_runoff_m3_s: WB16_PEAKRO_FLOOR,
+                runoff_duration_s: 0.0,
+                method_branch: 1.0,
+                tstar: 0.0,
+                qpstar: 0.0,
+                vstar: 0.0,
+            });
+        }
         let remax = self
             .peak_runoff_inputs
             .hyetograph
@@ -622,6 +639,15 @@ impl DirectDayFrame {
     }
 
     fn reconcile_r4a_frost_runtime(&mut self) -> Result<bool, DirectRuntimeError> {
+        if let Some(frost_partition) = self.frost_liquid_partition.clone() {
+            let layers = self.latest_r4a_frost_layers()?;
+            self.apply_r4a_frost_partition(
+                layers,
+                &frost_partition,
+                R4aFrostLiquidDeltaAuthority::AppliedLayerProjection,
+            )?;
+            return Ok(true);
+        }
         let Some(mut frost_runoff_surface) = self.frost_runoff_surface.clone() else {
             return Ok(false);
         };
@@ -630,10 +656,15 @@ impl DirectDayFrame {
         let soil_conductivity_m_s = r4a_frost_soil_conductivity(&frost_runoff_surface, &layers)?;
         let frost_partition = frost_runoff_surface
             .compute_frost_liquid_partition(soil_conductivity_m_s)
-            .map_err(|_| DirectRuntimeError::DirectDomainViolation {
-                field: "runoff_partition.frost_liquid_partition",
+            .map_err(|source| DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "runoff_partition.frost_liquid_partition",
+                detail: source.to_string(),
             })?;
-        self.apply_r4a_frost_partition(layers, &frost_partition)?;
+        self.apply_r4a_frost_partition(
+            layers,
+            &frost_partition,
+            R4aFrostLiquidDeltaAuthority::PartitionFrwatc,
+        )?;
         Ok(true)
     }
 
@@ -665,7 +696,9 @@ impl DirectDayFrame {
         &mut self,
         mut layers: Vec<DirectSubsurfaceLayerState>,
         frost_partition: &DirectFrostLiquidPartition,
+        liquid_delta_authority: R4aFrostLiquidDeltaAuthority,
     ) -> Result<(), DirectRuntimeError> {
+        let liquid_storage_before_frost_m = r4a_aggregate_liquid_soil_water(&layers)?;
         let has_material_storage_state =
             r4a_frost_partition_has_material_storage_state(frost_partition);
         if frost_partition.active_frost_coupling {
@@ -674,16 +707,12 @@ impl DirectDayFrame {
             self.frost_runtime_carry = None;
         }
         if !has_material_storage_state {
-            if frost_partition.active_frost_coupling && !frost_partition.layer_projection.is_empty()
-            {
-                apply_r4a_frost_layer_projection(&mut layers, frost_partition)?;
-                let soil_water_m = r4a_aggregate_liquid_soil_water(&layers)?;
-                self.apply_r4a_frost_layers(&layers, soil_water_m);
-            }
-            self.hydrology_projection_inputs.frozen_soil_water_m = 0.0;
-            self.hydrology_projection_inputs.frost_depth_m = 0.0;
+            let _ = liquid_storage_before_frost_m;
+            let _ = liquid_delta_authority;
             self.storage_reconciliation_inputs.frost_liquid_delta_m =
                 frost_partition.frwatc_net_liquid_delta_m;
+            self.hydrology_projection_inputs.frozen_soil_water_m = 0.0;
+            self.hydrology_projection_inputs.frost_depth_m = 0.0;
             validate_finite(
                 "runoff_partition.frost_liquid_delta_m",
                 self.storage_reconciliation_inputs.frost_liquid_delta_m,
@@ -720,8 +749,14 @@ impl DirectDayFrame {
         }
         self.apply_r4a_frost_layers(&layers, soil_water_m);
         self.water.soil_water_m = soil_water_m;
-        self.storage_reconciliation_inputs.frost_liquid_delta_m =
-            frost_partition.frwatc_net_liquid_delta_m;
+        self.storage_reconciliation_inputs.frost_liquid_delta_m = match liquid_delta_authority {
+            R4aFrostLiquidDeltaAuthority::AppliedLayerProjection => {
+                soil_water_m - liquid_storage_before_frost_m
+            }
+            R4aFrostLiquidDeltaAuthority::PartitionFrwatc => {
+                frost_partition.frwatc_net_liquid_delta_m
+            }
+        };
         validate_finite(
             "runoff_partition.frost_liquid_delta_m",
             self.storage_reconciliation_inputs.frost_liquid_delta_m,
@@ -795,6 +830,13 @@ fn seed_r4a_frost_surface_layers(
     layers: &[DirectSubsurfaceLayerState],
 ) -> Result<(), DirectRuntimeError> {
     let soil_water_m = r4a_aggregate_liquid_soil_water(layers)?;
+    let profile_depth_m = layers.iter().try_fold(0.0_f64, |total, layer| {
+        validate_positive_direct("runoff_partition.frost_layer_depth_m", layer.depth_m)?;
+        let total = total + layer.depth_m;
+        validate_finite("runoff_partition.frost_profile_depth_m", total)?;
+        Ok::<f64, DirectRuntimeError>(total)
+    })?;
+    insert_r4a_frost_surface_scalar(surface, "solthk", profile_depth_m)?;
     insert_r4a_frost_surface_scalar(surface, "wb11_soil_water", soil_water_m)?;
     let has_fine_runtime_projection = r4a_frost_surface_has_fine_runtime_projection(surface)?;
     for (offset, layer) in layers.iter().enumerate() {
@@ -822,6 +864,45 @@ fn seed_r4a_frost_surface_layers(
             format!("wb18_perc_theta_{layer_index:04}").as_str(),
             layer.theta_m,
         )?;
+        insert_r4a_frost_surface_scalar(
+            surface,
+            format!("wb18_perc_ul_{layer_index:04}").as_str(),
+            layer.upper_limit_m,
+        )?;
+        insert_r4a_frost_surface_scalar(
+            surface,
+            format!("wb19_dg_{layer_index:04}").as_str(),
+            layer.depth_m,
+        )?;
+        insert_r4a_frost_surface_scalar(
+            surface,
+            format!("dg_{layer_index:04}").as_str(),
+            layer.depth_m,
+        )?;
+        insert_r4a_frost_surface_scalar(
+            surface,
+            format!("wb19_thetdr_{layer_index:04}").as_str(),
+            layer.residual_theta,
+        )?;
+        insert_r4a_frost_surface_scalar(
+            surface,
+            format!("thetdr_{layer_index:04}").as_str(),
+            layer.residual_theta,
+        )?;
+        insert_r4a_frost_surface_scalar(
+            surface,
+            format!("wb19_thetfc_{layer_index:04}").as_str(),
+            layer.field_capacity_theta,
+        )?;
+        insert_r4a_frost_surface_scalar(
+            surface,
+            format!("thetfc_{layer_index:04}").as_str(),
+            layer.field_capacity_theta,
+        )?;
+        if layer_index == 1 {
+            insert_r4a_frost_surface_scalar(surface, "thetdr", layer.residual_theta)?;
+            insert_r4a_frost_surface_scalar(surface, "thetfc", layer.field_capacity_theta)?;
+        }
         insert_r4a_frost_surface_scalar(
             surface,
             format!("wb18_perc_frozen_depth_{layer_index:04}").as_str(),
@@ -862,7 +943,6 @@ fn seed_r4a_frost_fine_state(
     };
     if !has_fine_runtime_projection {
         remove_r4a_frost_fine_state_symbols(surface);
-        return Ok(());
     }
     let layer_count = layers.len();
     for (layer_offset, layer) in layers.iter().enumerate() {

@@ -13,6 +13,20 @@
 
 State as of `2026-06-23`:
 
+- `20260623-r7g-iterative-completion-001/` is executing against
+  `R7G-006-FROST-SNOW-PROJECTION-PARITY-RESIDUALS`. It lifted the inherited
+  surface-free active-snow hold by making sidecar-only snow inactive, adding
+  typed active-snow partition authority, persistent snow carry, snow liquid
+  event routing, and the same-day EROD14 qout handoff fix. It also installed
+  production active-frost execution enough for full H2637 direct default to
+  reach endpoints with `compatibility_edge_invocations = 0`; active-frost
+  performance was reduced from `163.88 s` to retained timing `89.88 s`, under
+  the `91.2 s` `<=10x` legacy budget. R7G remains incomplete because protected
+  HBP/WAT/PASS parity is red: WAT `frozwt`/`frdp` still differ on `34363` rows,
+  and `Snow-Water`/`RM` residuals are material. The current continuation must
+  reduce frost/snow projection parity while preserving zero compatibility
+  counters and the green performance gate, or prove a narrower legitimate
+  out-of-envelope boundary after attempted in-envelope correction.
 - `20260623-r7g-performance-closure-fixture-hardening-001/` is executed-held
   at
   `HOLD-R7G-SURFACE-FREE-ACTIVE-SNOW-PARTITION-AUTHORITY-ABSENT`. It ran the

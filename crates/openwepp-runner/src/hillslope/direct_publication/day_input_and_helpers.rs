@@ -153,19 +153,29 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
                 snow_liquid.post_winter_rain_m,
                 &hyetograph,
             )?;
-        let post_interception_hyetograph =
-            direct_publication_scaled_hyetograph(&hyetograph, interception_state.rainfall_scale)?;
+        let post_winter_hyetograph = direct_publication_scaled_hyetograph_to_rainfall(
+            &hyetograph,
+            snow_liquid.post_winter_rain_m,
+        )?;
+        let post_interception_hyetograph = direct_publication_scaled_hyetograph(
+            &post_winter_hyetograph,
+            interception_state.rainfall_scale,
+        )?;
+        let liquid_hyetograph = direct_publication_hyetograph_with_added_daily_depth(
+            &post_interception_hyetograph,
+            snow_liquid.routed_melt_m,
+        )?;
         day_input.precipitation_m = precipitation_m;
         day_input.effective_temperature_c = day.effective_temperature_c;
         day_input.interception_m = interception_state.interception_m;
         day_input.peak_runoff_inputs = Some(direct_publication_peak_runoff_inputs(
             &seed_surface,
-            hyetograph.clone(),
+            liquid_hyetograph.clone(),
         )?);
         let erosion_wave2_active = self.erosion_guard_active
             && direct_publication_erosion_wave2_active(
                 &seed_surface,
-                &post_interception_hyetograph,
+                &liquid_hyetograph,
             )?;
         day_input.erosion_producer_required = erosion_wave2_active;
         if erosion_wave2_active {
@@ -179,6 +189,14 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             Some(direct_publication_storage_input_inputs(&seed_surface)?);
         day_input.snow_coupling_inputs = Some(DirectSnowCouplingInputs {
             snow_coupling_handoff_m: snow_liquid.snow_coupling_signed_s_m,
+            snow_state_projected: true,
+            active_snow_coupling: snow_liquid.active_snow_coupling,
+            routed_melt_m: snow_liquid.routed_melt_m,
+            post_winter_rain_m: snow_liquid.post_winter_rain_m,
+            runtime_swe_after_m: snow_liquid.runtime_swe_after_m,
+            runtime_depth_after_m: snow_liquid.runtime_depth_after_m,
+            runtime_density_after_kg_m3: snow_liquid.runtime_density_after_kg_m3,
+            runtime_settle_day_count_after: snow_liquid.runtime_settle_day_count_after,
         });
         let percolation_inputs =
             direct_publication_percolation_inputs(&seed_surface, precipitation_m)?;
@@ -186,7 +204,7 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
         day_input.infiltration_depression_inputs = Some(
             direct_publication_infiltration_depression_inputs(
                 &seed_surface,
-                post_interception_hyetograph,
+                liquid_hyetograph,
             )?,
         );
         day_input.initial_soil_water_m =
@@ -203,6 +221,9 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
                 *self.profile_inputs(lane_index)?,
                 &snow_liquid,
             ));
+        if frost_partition.active_frost_coupling {
+            day_input.frost_liquid_partition = Some(frost_partition);
+        }
         day_input.frost_runoff_surface = Some(frost_runoff_surface);
         day_input.frost_layer_carry_projection =
             direct_publication_frost_layer_carry_projection(&seed_surface)?;
@@ -434,10 +455,31 @@ struct DirectProductionErosionAuthority {
     erosion_inputs: DirectErosionInputs,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 struct DirectProductionSnowFrostAuthority {
-    snow_active: bool,
+    snow_runtime_swe_m: f64,
+    snow_runtime_depth_m: f64,
+    snow_runtime_density_kg_m3: f64,
+    snow_runtime_settle_day_count: f64,
+    snow_controls_projected: bool,
+    snow_rst_c: f64,
+    snow_newsnw_kg_m3: f64,
+    snow_ssd_kg_m3: f64,
+    avg_slope: f64,
+    azimuth: f64,
+    frost_surface_template: Option<DirectFrostRunoffSurface>,
+    frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
+    frost_file_present: bool,
+    frost_wint_red_enabled: bool,
+    frost_runtime_depth_m: f64,
+    frost_runtime_frozen_water_m: f64,
     frost_active: bool,
+}
+
+struct DirectProductionFrostDayContext {
+    surface: DirectFrostRunoffSurface,
+    partition: openwepp_hillslope_orchestrator::DirectFrostLiquidPartition,
+    layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
 }
 
 #[allow(clippy::struct_field_names)]
@@ -502,6 +544,15 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             }
         })?;
         direct_publication_validate_day(day)?;
+        let forcing =
+            self.climate_request
+                .direct_day_forcing(day_index)
+                .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_publication_frame",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} direct production typed climate forcing failed: {source}"
+                    ),
+                })?;
         let lane = frame
             .lanes
             .get(lane_index)
@@ -512,34 +563,59 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                     lane_index + 1,
                     frame.lanes.len()
                 ),
-            })?;
+        })?;
         let authority = self.lane_authority(lane_index)?;
-        Self::reject_unsupported_active_snow_frost(authority, lane_index, lane)?;
-
-        let forcing =
-            self.climate_request
-                .direct_day_forcing(day_index)
-                .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
-                    surface: "direct_publication_frame",
-                    detail: format!(
-                        "{SIMOUT_GUARD_ID} direct production typed climate forcing failed: {source}"
-                    ),
-                })?;
         let precipitation_m = forcing.prcp_m;
         let mut hyetograph = direct_production_hyetograph(&forcing)?;
         let rainfall_input_m = direct_publication_hyetograph_rainfall_m(&hyetograph)?;
+        let snow_runtime_carry = authority.snow_frost.current_snow_runtime_carry(lane);
+        Self::validate_active_snow_forcing(
+            authority,
+            lane_index,
+            &forcing,
+            rainfall_input_m,
+            snow_runtime_carry.map_or(0.0, |carry| carry.runtime_swe_m),
+        )?;
+        let snow_liquid = authority.snow_frost.snow_liquid_partition(
+            self.climate_request,
+            day_index,
+            &forcing,
+            rainfall_input_m,
+            snow_runtime_carry,
+            authority.canopy_cover_fraction,
+        )?;
+        let frost_context = authority.snow_frost.frost_day_context(
+            self.climate_request,
+            day_index,
+            day,
+            lane_index,
+            lane,
+            &forcing,
+            snow_runtime_carry,
+            &snow_liquid,
+        )?;
         let interception_state = compute_direct_canopy_interception(
             DirectCanopyInterceptionInputs {
-                hyetograph_rainfall_m: rainfall_input_m,
-                interception_rainfall_input_m: rainfall_input_m,
+                hyetograph_rainfall_m: snow_liquid.post_winter_rain_m,
+                interception_rainfall_input_m: snow_liquid.post_winter_rain_m,
                 canopy_cover_fraction: authority.canopy_cover_fraction,
                 leaf_area_index: authority.leaf_area_index,
                 vegetative_dry_matter_kg_m2: authority.vegetative_dry_matter_kg_m2,
             },
         )
         .map_err(|source| direct_publication_runtime_error(&source))?;
-        hyetograph =
-            direct_publication_scaled_hyetograph(&hyetograph, interception_state.rainfall_scale)?;
+        let post_winter_hyetograph = direct_publication_scaled_hyetograph_to_rainfall(
+            &hyetograph,
+            snow_liquid.post_winter_rain_m,
+        )?;
+        let post_interception_hyetograph = direct_publication_scaled_hyetograph(
+            &post_winter_hyetograph,
+            interception_state.rainfall_scale,
+        )?;
+        hyetograph = direct_publication_hyetograph_with_added_daily_depth(
+            &post_interception_hyetograph,
+            snow_liquid.routed_melt_m,
+        )?;
 
         let mut day_input =
             DirectPublicationDayInput::calendar_only(direct_publication_calendar_day(day)?);
@@ -552,16 +628,31 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         });
         day_input.liquid_input_inputs =
             Some(direct_publication_liquid_input_inputs(
-                interception_state.liquid_after_interception_m,
+                interception_state.liquid_after_interception_m + snow_liquid.routed_melt_m,
             )?);
         day_input.snow_coupling_inputs = Some(DirectSnowCouplingInputs {
-            snow_coupling_handoff_m: 0.0,
+            snow_coupling_handoff_m: snow_liquid.snow_coupling_signed_s_m,
+            snow_state_projected: snow_runtime_carry.is_some(),
+            active_snow_coupling: snow_liquid.active_snow_coupling,
+            routed_melt_m: snow_liquid.routed_melt_m,
+            post_winter_rain_m: snow_liquid.post_winter_rain_m,
+            runtime_swe_after_m: snow_liquid.runtime_swe_after_m,
+            runtime_depth_after_m: snow_liquid.runtime_depth_after_m,
+            runtime_density_after_kg_m3: snow_liquid.runtime_density_after_kg_m3,
+            runtime_settle_day_count_after: snow_liquid.runtime_settle_day_count_after,
         });
         day_input.peak_runoff_inputs = Some(authority.peak_runoff.inputs(hyetograph.clone()));
         day_input.infiltration_depression_inputs = Some(
             authority
                 .infiltration
-                .inputs(lane_index, &lane.subsurface_layers, hyetograph)?,
+                .inputs(
+                    lane_index,
+                    &lane.subsurface_layers,
+                    hyetograph,
+                    frost_context
+                        .as_ref()
+                        .map(|context| context.partition.infcap_frz_m_s),
+                )?,
         );
         day_input.percolation_inputs =
             Some(authority.percolation_inputs(lane_index, lane)?);
@@ -575,9 +666,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 &lane.subsurface_layers,
                 self.climate_request,
             )?);
-        day_input.hydrology_projection_inputs = Some(
-            authority.hydrology_projection_inputs(&lane.subsurface_layers),
-        );
+        let mut hydrology_projection_inputs =
+            authority.hydrology_projection_inputs(&lane.subsurface_layers);
+        hydrology_projection_inputs.snow_water_m = snow_liquid.runtime_swe_after_m;
+        day_input.hydrology_projection_inputs = Some(hydrology_projection_inputs);
         let erosion_active = authority.erosion.wave2_enabled
             && direct_publication_hyetograph_rainfall_m(
                 day_input
@@ -588,6 +680,11 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         day_input.erosion_producer_required = erosion_active;
         if erosion_active {
             day_input.erosion_inputs = Some(authority.erosion.erosion_inputs.clone());
+        }
+        if let Some(frost_context) = frost_context {
+            day_input.frost_liquid_partition = Some(frost_context.partition);
+            day_input.frost_runoff_surface = Some(frost_context.surface);
+            day_input.frost_layer_carry_projection = frost_context.layer_carry_projection;
         }
         day_input.frost_runtime_carry.clone_from(&lane.frost_runtime_carry);
         Ok(day_input)
@@ -666,23 +763,17 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         })
     }
 
-    fn reject_unsupported_active_snow_frost(
+    fn validate_active_snow_forcing(
         authority: &DirectProductionLaneDayInputAuthority,
         lane_index: usize,
-        lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
+        forcing: &HillslopeDirectClimateDayForcing,
+        hyetograph_rainfall_m: f64,
+        runtime_swe_m: f64,
     ) -> Result<(), HillslopeCliError> {
-        if authority.snow_frost.snow_active {
-            return Err(direct_production_executor_blocked(format!(
-                "R7F typed production day-input path does not yet have surface-free active snow partition authority for lane {}",
-                lane_index + 1
-            )));
-        }
-        if authority.snow_frost.frost_active || lane.frost_runtime_carry.is_some() {
-            return Err(direct_production_executor_blocked(format!(
-                "R7F typed production day-input path does not yet have surface-free active frost partition authority for lane {}",
-                lane_index + 1
-            )));
-        }
+        let _active_snow = authority
+            .snow_frost
+            .active_forcing(forcing, hyetograph_rainfall_m, runtime_swe_m)?;
+        let _ = lane_index;
         Ok(())
     }
 }
@@ -744,10 +835,12 @@ impl DirectProductionInfiltrationAuthority {
         lane_index: usize,
         layers: &[DirectSubsurfaceLayerState],
         hyetograph: Vec<DirectWb14HyetographInterval>,
+        frost_infcap_m_s: Option<f64>,
     ) -> Result<DirectInfiltrationDepressionInputs, HillslopeCliError> {
         direct_production_validate_layers(lane_index, layers)?;
-        let effective_conductivity_m_s = self
-            .effective_conductivity_m_s
+        let effective_conductivity_m_s = frost_infcap_m_s
+            .filter(|value| *value > 0.0)
+            .or(self.effective_conductivity_m_s)
             .filter(|value| *value > 0.0)
             .or_else(|| layers.first().map(|layer| layer.conductivity_m_s))
             .ok_or_else(|| {
@@ -1212,31 +1305,888 @@ impl DirectProductionErosionAuthority {
 
 impl DirectProductionSnowFrostAuthority {
     fn from_seed(seed_surface: &HillslopeWritebackSurface) -> Result<Self, HillslopeCliError> {
-        let snow_file_present = direct_publication_optional_enabled_flag(
+        let _snow_file_present = direct_publication_optional_enabled_flag(
             seed_surface,
             "snow.options.snow_file_present",
         )?
         .unwrap_or(false);
-        let snow_runtime_swe =
-            runtime_surface_symbol_value(seed_surface, "snow.runtime_swe").unwrap_or(0.0);
-        let frost_runtime_depth =
-            runtime_surface_symbol_value(seed_surface, "frost.runtime_dfrost")
-                .or_else(|| runtime_surface_symbol_value(seed_surface, "frost.runtime_frdp_m"))
-                .unwrap_or(0.0);
-        let frost_runtime_water =
-            runtime_surface_symbol_value(seed_surface, "frost.runtime_ws_frz")
-                .or_else(|| {
-                    runtime_surface_symbol_value(
+        let snow_projection_present = [
+            "snow.runtime_swe",
+            "snow.runtime_depth_m",
+            "snow.runtime_density_kg_m3",
+            "snow.runtime_settle_day_count",
+            "snow.options.snow_file_present",
+            "snow.options.rst",
+            "snow.options.newsnw",
+            "snow.options.ssd",
+        ]
+        .iter()
+        .any(|symbol| runtime_surface_symbol_value(seed_surface, symbol).is_some());
+        let snow_runtime_swe_m = if snow_projection_present {
+            let runtime_swe = direct_production_required_snow_state_scalar(
+                seed_surface,
+                "snow.runtime_swe",
+                Some(0.0),
+                None,
+            )?;
+            let _runtime_depth_m = direct_production_required_snow_state_scalar(
+                seed_surface,
+                "snow.runtime_depth_m",
+                Some(0.0),
+                None,
+            )?;
+            let _runtime_density_kg_m3 = direct_production_required_snow_state_scalar(
+                seed_surface,
+                "snow.runtime_density_kg_m3",
+                Some(0.0),
+                Some(522.0),
+            )?;
+            let _runtime_settle_day_count = direct_production_required_snow_state_scalar(
+                seed_surface,
+                "snow.runtime_settle_day_count",
+                Some(0.0),
+                None,
+            )?;
+            runtime_swe
+        } else {
+            0.0
+        };
+        let snow_runtime_depth_m = if snow_projection_present {
+            direct_production_required_snow_state_scalar(
+                seed_surface,
+                "snow.runtime_depth_m",
+                Some(0.0),
+                None,
+            )?
+        } else {
+            0.0
+        };
+        let snow_runtime_density_kg_m3 = if snow_projection_present {
+            direct_production_required_snow_state_scalar(
+                seed_surface,
+                "snow.runtime_density_kg_m3",
+                Some(0.0),
+                Some(522.0),
+            )?
+        } else {
+            0.0
+        };
+        let snow_runtime_settle_day_count = if snow_projection_present {
+            direct_production_required_snow_state_scalar(
+                seed_surface,
+                "snow.runtime_settle_day_count",
+                Some(0.0),
+                None,
+            )?
+        } else {
+            0.0
+        };
+        let snow_controls_projected = [
+            "snow.options.rst",
+            "snow.options.newsnw",
+            "snow.options.ssd",
+        ]
+        .iter()
+        .all(|symbol| runtime_surface_symbol_value(seed_surface, symbol).is_some());
+        let (snow_rst_c, snow_newsnw_kg_m3, snow_ssd_kg_m3, avg_slope, azimuth) =
+            if snow_controls_projected {
+                (
+                    require_runtime_surface_scalar(seed_surface, "snow.options.rst")?,
+                    direct_production_required_snow_state_scalar(
                         seed_surface,
-                        "frost.runtime_frwatc_frozen_water_after_m",
-                    )
-                })
-                .unwrap_or(0.0);
+                        "snow.options.newsnw",
+                        Some(0.0),
+                        None,
+                    )?,
+                    direct_production_required_snow_state_scalar(
+                        seed_surface,
+                        "snow.options.ssd",
+                        Some(0.0),
+                        None,
+                    )?,
+                    direct_publication_required_positive_scalar(seed_surface, "avgslp")?,
+                    require_runtime_surface_scalar(seed_surface, "azm")?,
+                )
+            } else {
+                (0.0, 0.0, 0.0, 0.0, 0.0)
+            };
+        if snow_controls_projected && snow_newsnw_kg_m3 > snow_ssd_kg_m3 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} snow.options.newsnw must be <= snow.options.ssd for direct production snow state, observed {snow_newsnw_kg_m3} > {snow_ssd_kg_m3}"
+                ),
+            });
+        }
+        let frost_file_present = direct_publication_optional_enabled_flag(
+            seed_surface,
+            "frost.options.frost_file_present",
+        )?
+        .unwrap_or(false);
+        let frost_wint_red_enabled =
+            direct_publication_optional_enabled_flag(seed_surface, "frost.options.wintRed")?
+                .unwrap_or(false);
+        let frost_runtime_depth_m = direct_publication_optional_nonnegative_scalar(
+            seed_surface,
+            &["frost.runtime_dfrost", "frost.runtime_frdp_m"],
+        )?
+        .unwrap_or(0.0);
+        let frost_runtime_frozen_water_m = direct_publication_optional_nonnegative_scalar(
+            seed_surface,
+            &[
+                "frost.runtime_ws_frz",
+                "frost.runtime_frwatc_frozen_water_after_m",
+            ],
+        )?
+        .unwrap_or(0.0);
+        let frost_projection_present = frost_wint_red_enabled
+            || frost_file_present
+            || frost_runtime_depth_m > 1.0e-12
+            || frost_runtime_frozen_water_m > 1.0e-12
+            || runtime_surface_symbol_value(seed_surface, "frost.options.fineTop").is_some()
+            || runtime_surface_symbol_value(seed_surface, "frost.options.fineBot").is_some();
+        let frost_surface_template = frost_projection_present.then(|| {
+            direct_production_frost_surface_template(seed_surface)
+        });
+        let frost_layer_carry_projection = if frost_wint_red_enabled {
+            direct_publication_frost_layer_carry_projection(seed_surface)?
+        } else {
+            None
+        };
         Ok(Self {
-            snow_active: snow_file_present || snow_runtime_swe > 1.0e-12,
-            frost_active: frost_runtime_depth > 1.0e-12 || frost_runtime_water > 1.0e-12,
+            snow_runtime_swe_m,
+            snow_runtime_depth_m,
+            snow_runtime_density_kg_m3,
+            snow_runtime_settle_day_count,
+            snow_controls_projected,
+            snow_rst_c,
+            snow_newsnw_kg_m3,
+            snow_ssd_kg_m3,
+            avg_slope,
+            azimuth,
+            frost_surface_template,
+            frost_layer_carry_projection,
+            frost_file_present,
+            frost_wint_red_enabled,
+            frost_runtime_depth_m,
+            frost_runtime_frozen_water_m,
+            frost_active: frost_runtime_depth_m > 1.0e-12
+                || frost_runtime_frozen_water_m > 1.0e-12,
         })
     }
+
+    fn initial_snow_runtime_carry(&self) -> Option<DirectSnowRuntimeCarry> {
+        self.snow_controls_projected.then_some(DirectSnowRuntimeCarry {
+            runtime_swe_m: self.snow_runtime_swe_m,
+            runtime_depth_m: self.snow_runtime_depth_m,
+            runtime_density_kg_m3: self.snow_runtime_density_kg_m3,
+            runtime_settle_day_count: self.snow_runtime_settle_day_count,
+        })
+    }
+
+    fn current_snow_runtime_carry(
+        &self,
+        lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
+    ) -> Option<DirectSnowRuntimeCarry> {
+        lane.snow_runtime_carry
+            .or_else(|| self.initial_snow_runtime_carry())
+    }
+
+    fn active_forcing(
+        &self,
+        forcing: &HillslopeDirectClimateDayForcing,
+        hyetograph_rainfall_m: f64,
+        runtime_swe_m: f64,
+    ) -> Result<bool, HillslopeCliError> {
+        if !hyetograph_rainfall_m.is_finite() || hyetograph_rainfall_m < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production active snow guard requires finite nonnegative rainfall, observed {hyetograph_rainfall_m}"
+                ),
+            });
+        }
+        if hyetograph_rainfall_m <= 1.0e-12 && runtime_swe_m <= 1.0e-12 {
+            return Ok(false);
+        }
+        if runtime_swe_m > 1.0e-12 {
+            return Ok(true);
+        }
+        let average_temperature_c = f64::midpoint(forcing.tmax_c, forcing.tmin_c);
+        if !average_temperature_c.is_finite() {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production active snow guard requires finite tmax/tmin, observed tmax={} tmin={}",
+                    forcing.tmax_c, forcing.tmin_c
+                ),
+            });
+        }
+        Ok(self.snow_controls_projected && average_temperature_c < 0.0)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn frost_day_context(
+        &self,
+        climate_request: &HillslopeClimateRuntimeRequest,
+        day_index: usize,
+        day: &ClimateDayProjection,
+        lane_index: usize,
+        lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
+        forcing: &HillslopeDirectClimateDayForcing,
+        snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
+        snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+    ) -> Result<Option<DirectProductionFrostDayContext>, HillslopeCliError> {
+        let frost_carry = lane.frost_runtime_carry.as_ref();
+        let frost_runtime_depth_m =
+            frost_carry.map_or(self.frost_runtime_depth_m, |carry| carry.dfrost_m);
+        let frost_runtime_frozen_water_m =
+            frost_carry.map_or(self.frost_runtime_frozen_water_m, |carry| carry.ws_frz_m);
+        let should_project = frost_carry.is_some()
+            || self.frost_active
+            || self.active_frost_forcing(
+                forcing,
+                frost_runtime_depth_m,
+                frost_runtime_frozen_water_m,
+            )?;
+        if !should_project {
+            return Ok(None);
+        }
+        let Some(mut surface) = self.frost_surface_template.clone() else {
+            return Err(direct_production_executor_blocked(format!(
+                "direct production active frost requires frost controls for lane {}",
+                lane_index + 1
+            )));
+        };
+        if let Some(carry) = frost_carry {
+            direct_production_overlay_frost_runtime_carry(&mut surface, lane_index, carry)?;
+        }
+        self.overlay_frost_day_forcing(
+            climate_request,
+            day_index,
+            day,
+            &mut surface,
+            forcing,
+            frost_carry,
+            snow_runtime_carry,
+            snow_liquid,
+        )?;
+        direct_production_seed_frost_surface_layers(
+            &mut surface,
+            lane_index,
+            &lane.subsurface_layers,
+            lane.water.soil_water_m,
+        )?;
+        let soil_conductivity_m_s =
+            direct_production_frost_soil_conductivity(&surface, &lane.subsurface_layers)?;
+        let partition = surface
+            .compute_frost_liquid_partition(soil_conductivity_m_s)
+            .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production active frost partition failed: {source}"
+                ),
+            })?;
+        Ok(Some(DirectProductionFrostDayContext {
+            surface,
+            partition,
+            layer_carry_projection: self.frost_layer_carry_projection.clone(),
+        }))
+    }
+
+    fn active_frost_forcing(
+        &self,
+        forcing: &HillslopeDirectClimateDayForcing,
+        frost_runtime_depth_m: f64,
+        frost_runtime_frozen_water_m: f64,
+    ) -> Result<bool, HillslopeCliError> {
+        for (symbol, value) in [
+            ("frost.runtime_dfrost", frost_runtime_depth_m),
+            ("frost.runtime_ws_frz", frost_runtime_frozen_water_m),
+            ("tmax", forcing.tmax_c),
+            ("tmin", forcing.tmin_c),
+        ] {
+            if !value.is_finite() {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_publication_frame",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} direct production active frost guard requires finite {symbol}, observed {value}"
+                    ),
+                });
+            }
+        }
+        if frost_runtime_depth_m > 1.0e-12 || frost_runtime_frozen_water_m > 1.0e-12 {
+            return Ok(true);
+        }
+        Ok(self.frost_wint_red_enabled && forcing.tmin_c < 0.0)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn overlay_frost_day_forcing(
+        &self,
+        climate_request: &HillslopeClimateRuntimeRequest,
+        day_index: usize,
+        day: &ClimateDayProjection,
+        surface: &mut DirectFrostRunoffSurface,
+        forcing: &HillslopeDirectClimateDayForcing,
+        frost_carry: Option<&DirectFrostRuntimeCarry>,
+        snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
+        snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+    ) -> Result<(), HillslopeCliError> {
+        let frost_runtime_depth_m =
+            frost_carry.map_or(self.frost_runtime_depth_m, |carry| carry.dfrost_m);
+        let frost_runtime_frozen_water_m =
+            frost_carry.map_or(self.frost_runtime_frozen_water_m, |carry| carry.ws_frz_m);
+        let snow_depth_m = snow_runtime_carry.map_or(0.0, |carry| carry.runtime_depth_m);
+        let snow_density_kg_m3 = snow_runtime_carry.map_or(0.0, |carry| {
+            carry.runtime_density_kg_m3
+        });
+        for (symbol, value) in [
+            ("tmax", forcing.tmax_c),
+            ("tmin", forcing.tmin_c),
+            ("vwind", forcing.vwind_m_s),
+            ("day", f64::from(day.julian_day)),
+            ("year", f64::from(day.year)),
+            (
+                "frost.options.frost_file_present",
+                if self.frost_file_present { 1.0 } else { 0.0 },
+            ),
+            (
+                "frost.options.wintRed",
+                if self.frost_wint_red_enabled { 1.0 } else { 0.0 },
+            ),
+            ("frost.runtime_dfrost", frost_runtime_depth_m),
+            ("frost.runtime_frdp_m", frost_runtime_depth_m),
+            ("frost.runtime_ws_frz", frost_runtime_frozen_water_m),
+            (
+                "frost.runtime_frwatc_frozen_water_after_m",
+                frost_runtime_frozen_water_m,
+            ),
+            ("snow.runtime_depth_m", snow_depth_m),
+            ("snow.runtime_density_kg_m3", snow_density_kg_m3),
+        ] {
+            direct_production_insert_frost_surface_scalar(surface, symbol, value)?;
+        }
+        let hourly = climate_request
+            .direct_winter_hourly_forcing(
+                day_index,
+                DirectWinterHourlyContext {
+                    snow_runtime_swe_m: snow_runtime_carry
+                        .map_or(snow_liquid.runtime_swe_after_m, |carry| carry.runtime_swe_m),
+                    frost_runtime_depth_m,
+                    frost_runtime_frozen_water_m,
+                    frost_file_present: self.frost_file_present,
+                    frost_wint_red_enabled: self.frost_wint_red_enabled,
+                    avg_slope: self.avg_slope,
+                    azimuth: self.azimuth,
+                    snow_rst_c: self.snow_rst_c,
+                },
+            )
+            .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production frost hourly forcing failed: {source}"
+                ),
+            })?
+            .ok_or_else(|| {
+                direct_production_executor_blocked(format!(
+                    "direct production active frost requires typed winter hourly forcing for day {}",
+                    day_index + 1
+                ))
+            })?;
+        for (index, hourly) in hourly.into_iter().enumerate() {
+            let hour = index + 1;
+            for (root, value) in [
+                ("winter.hourly.rad_mj_m2", hourly.radiation_mj_m2),
+                ("winter.hourly.air_temp_c", hourly.air_temperature_c),
+                ("winter.hourly.cloud_fraction", hourly.cloud_fraction),
+            ] {
+                direct_production_insert_frost_surface_scalar(
+                    surface,
+                    direct_production_hourly_symbol(root, hour).as_str(),
+                    value,
+                )?;
+            }
+        }
+        Ok(())
+    }
+
+    fn snow_liquid_partition(
+        &self,
+        climate_request: &HillslopeClimateRuntimeRequest,
+        day_index: usize,
+        forcing: &HillslopeDirectClimateDayForcing,
+        hyetograph_rainfall_m: f64,
+        carry: Option<DirectSnowRuntimeCarry>,
+        canopy_cover_fraction: f64,
+    ) -> Result<openwepp_hillslope_orchestrator::DirectSnowLiquidPartition, HillslopeCliError> {
+        let Some(carry) = carry else {
+            return Ok(openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
+                active_snow_coupling: false,
+                snow_coupling_signed_s_m: 0.0,
+                routed_melt_m: 0.0,
+                post_winter_rain_m: hyetograph_rainfall_m,
+                runtime_swe_after_m: 0.0,
+                runtime_depth_after_m: 0.0,
+                runtime_density_after_kg_m3: 0.0,
+                runtime_settle_day_count_after: 0.0,
+            });
+        };
+        if !self.active_forcing(forcing, hyetograph_rainfall_m, carry.runtime_swe_m)? {
+            return Ok(openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
+                active_snow_coupling: false,
+                snow_coupling_signed_s_m: 0.0,
+                routed_melt_m: 0.0,
+                post_winter_rain_m: hyetograph_rainfall_m,
+                runtime_swe_after_m: carry.runtime_swe_m,
+                runtime_depth_after_m: carry.runtime_depth_m,
+                runtime_density_after_kg_m3: carry.runtime_density_kg_m3,
+                runtime_settle_day_count_after: carry.runtime_settle_day_count,
+            });
+        }
+        let hourly = climate_request
+            .direct_winter_hourly_forcing(
+                day_index,
+                DirectWinterHourlyContext {
+                    snow_runtime_swe_m: carry.runtime_swe_m,
+                    frost_runtime_depth_m: 0.0,
+                    frost_runtime_frozen_water_m: 0.0,
+                    frost_file_present: false,
+                    frost_wint_red_enabled: false,
+                    avg_slope: self.avg_slope,
+                    azimuth: self.azimuth,
+                    snow_rst_c: self.snow_rst_c,
+                },
+            )
+            .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production typed winter hourly forcing failed: {source}"
+                ),
+            })?
+            .ok_or_else(|| {
+                direct_production_executor_blocked(format!(
+                    "direct production active snow partition requires typed winter hourly forcing for day {}",
+                    day_index + 1
+                ))
+            })?;
+        let mut snow_hourly =
+            [DirectSnowHourlyForcing::zero(); openwepp_hillslope_orchestrator::runtime_inputs::DIRECT_WINTER_HOURLY_FORCING_COUNT];
+        for (index, hourly) in hourly.into_iter().enumerate() {
+            snow_hourly[index] = DirectSnowHourlyForcing {
+                rain_m: hourly.rain_m,
+                snowfall_m: hourly.snowfall_m,
+                radiation_mj_m2: hourly.radiation_mj_m2,
+                air_temperature_c: hourly.air_temperature_c,
+                cloud_fraction: hourly.cloud_fraction,
+            };
+        }
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
+            DirectActiveSnowPartitionInputs {
+                hyetograph_rainfall_m,
+                rst_c: self.snow_rst_c,
+                newsnw_kg_m3: self.snow_newsnw_kg_m3,
+                ssd_kg_m3: self.snow_ssd_kg_m3,
+                runtime_swe_m: carry.runtime_swe_m,
+                runtime_depth_m: carry.runtime_depth_m,
+                runtime_density_kg_m3: carry.runtime_density_kg_m3,
+                runtime_settle_day_count: carry.runtime_settle_day_count,
+                tmax_c: forcing.tmax_c,
+                tmin_c: forcing.tmin_c,
+                canopy_cover_fraction,
+                wind_m_s: forcing.vwind_m_s,
+                dewpoint_c: forcing.tdpt_c,
+                hourly: snow_hourly,
+            },
+        )
+        .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!("{SIMOUT_GUARD_ID} direct production typed snow partition failed: {source}"),
+        })
+    }
+}
+
+fn direct_production_overlay_frost_runtime_carry(
+    surface: &mut DirectFrostRunoffSurface,
+    lane_index: usize,
+    carry: &DirectFrostRuntimeCarry,
+) -> Result<(), HillslopeCliError> {
+    direct_production_insert_frost_runtime_scalars(
+        surface,
+        DirectFrostRuntimeScalarSeed {
+            dfrost_m: carry.dfrost_m,
+            dthaw_m: carry.dthaw_m,
+            nft: carry.nft,
+            ws_frz_m: carry.ws_frz_m,
+            infcap_frz_m_s: carry.infcap_frz_m_s,
+            frwatc_soil_water_before_m: carry.frwatc_soil_water_before_m,
+            frwatc_soil_water_after_m: carry.frwatc_soil_water_after_m,
+            frwatc_frozen_water_before_m: carry.frwatc_frozen_water_before_m,
+            frwatc_frozen_water_after_m: carry.frwatc_frozen_water_after_m,
+            frwatc_freeze_debit_m: carry.frwatc_freeze_debit_m,
+            frwatc_thaw_credit_m: carry.frwatc_thaw_credit_m,
+            frwatc_net_liquid_delta_m: carry.frwatc_net_liquid_delta_m,
+            frdp_m: carry.frdp_m,
+            thdp_m: carry.thdp_m,
+            tfrdp_m: carry.tfrdp_m,
+            tthawd_m: carry.tthawd_m,
+            fgthwd_flag: carry.fgthwd_flag,
+            total_fine_layer_count: carry.total_fine_layer_count,
+            conductivity_tilled_w_m_k: carry.conductivity_tilled_w_m_k,
+            conductivity_untilled_w_m_k: carry.conductivity_untilled_w_m_k,
+            conductivity_residue_w_m_k: carry.conductivity_residue_w_m_k,
+            shadow_total_water_before_m: carry.shadow_total_water_before_m,
+            shadow_total_water_after_m: carry.shadow_total_water_after_m,
+            shadow_wb_delta_m: carry.shadow_wb_delta_m,
+            shadow_frwatc_residual_m: carry.shadow_frwatc_residual_m,
+            watpdg_m: carry.watpdg_m,
+            watbtm_m: carry.watbtm_m,
+            fine_projection: direct_publication_frost_runtime_carry_has_fine_projection(carry),
+        },
+    )?;
+    for layer in &carry.layer_shadows {
+        direct_production_insert_frost_layer_shadow(surface, *layer)?;
+    }
+    for fine in &carry.fine_layers {
+        direct_production_insert_frost_fine_layer(surface, *fine)?;
+    }
+    if !carry.layer_shadows.is_empty() || !carry.fine_layers.is_empty() {
+        let _ = lane_index;
+    }
+    Ok(())
+}
+
+fn direct_production_frost_surface_template(
+    seed_surface: &HillslopeWritebackSurface,
+) -> DirectFrostRunoffSurface {
+    let mut state_surface = seed_surface.state_surface.clone();
+    state_surface
+        .retain(|symbol, _| direct_production_retains_frost_surface_symbol(symbol.as_str()));
+    DirectFrostRunoffSurface::from_surface_maps(state_surface, std::collections::BTreeMap::new())
+}
+
+fn direct_production_retains_frost_surface_symbol(symbol: &str) -> bool {
+    matches!(
+        symbol,
+        "wb11_nsl"
+            | "nsl"
+            | "wb11_soil_water"
+            | "thetdr"
+            | "thetfc"
+            | "solthk"
+            | "day"
+            | "year"
+            | "tmax"
+            | "tmin"
+            | "vwind"
+            | "salb"
+            | "canhgt"
+            | "rrc"
+            | "rrinit"
+            | "snow.runtime_depth_m"
+            | "snow.runtime_density_kg_m3"
+    ) || symbol.starts_with("frost.")
+        || symbol.starts_with("wb18_perc_theta_")
+        || symbol.starts_with("wb18_perc_ul_")
+        || symbol.starts_with("wb18_perc_frozen_depth_")
+        || symbol.starts_with("wb18_perc_frzw_")
+        || symbol.starts_with("wb19_dg_")
+        || symbol.starts_with("dg_")
+        || symbol.starts_with("wb19_thetdr_")
+        || symbol.starts_with("thetdr_")
+        || symbol.starts_with("wb19_bulk_density_kg_m3_")
+        || symbol.starts_with("winter.hourly.rad_mj_m2_")
+        || symbol.starts_with("winter.hourly.air_temp_c_")
+        || symbol.starts_with("winter.hourly.cloud_fraction_")
+        || symbol.starts_with("obmaxt_")
+        || symbol.starts_with("obmint_")
+}
+
+fn direct_production_insert_frost_runtime_scalars(
+    surface: &mut DirectFrostRunoffSurface,
+    seed: DirectFrostRuntimeScalarSeed,
+) -> Result<(), HillslopeCliError> {
+    for (symbol, value) in [
+        (
+            "frost.direct_runtime_carry_present",
+            if seed.fine_projection { 1.0 } else { 0.0 },
+        ),
+        ("frost.runtime_dfrost", seed.dfrost_m),
+        ("frost.runtime_dthaw", seed.dthaw_m),
+        ("frost.runtime_nft", seed.nft),
+        ("frost.runtime_ws_frz", seed.ws_frz_m),
+        ("frost.runtime_infcap_frz", seed.infcap_frz_m_s),
+        (
+            "frost.runtime_frwatc_soil_water_before_m",
+            seed.frwatc_soil_water_before_m,
+        ),
+        (
+            "frost.runtime_frwatc_soil_water_after_m",
+            seed.frwatc_soil_water_after_m,
+        ),
+        (
+            "frost.runtime_frwatc_frozen_water_before_m",
+            seed.frwatc_frozen_water_before_m,
+        ),
+        (
+            "frost.runtime_frwatc_frozen_water_after_m",
+            seed.frwatc_frozen_water_after_m,
+        ),
+        (
+            "frost.runtime_frwatc_freeze_debit_m",
+            seed.frwatc_freeze_debit_m,
+        ),
+        (
+            "frost.runtime_frwatc_thaw_credit_m",
+            seed.frwatc_thaw_credit_m,
+        ),
+        (
+            "frost.runtime_frwatc_net_liquid_delta_m",
+            seed.frwatc_net_liquid_delta_m,
+        ),
+        ("frost.runtime_frdp_m", seed.frdp_m),
+        ("frost.runtime_thdp_m", seed.thdp_m),
+        ("frost.runtime_tfrdp_m", seed.tfrdp_m),
+        ("frost.runtime_tthawd_m", seed.tthawd_m),
+        ("frost.runtime_fgthwd_flag", seed.fgthwd_flag),
+        (
+            "frost.runtime_total_fine_layer_count",
+            seed.total_fine_layer_count,
+        ),
+        ("frost.runtime_kftill_w_m_k", seed.conductivity_tilled_w_m_k),
+        (
+            "frost.runtime_kfutil_w_m_k",
+            seed.conductivity_untilled_w_m_k,
+        ),
+        ("frost.runtime_kres_w_m_k", seed.conductivity_residue_w_m_k),
+        (
+            "frost.runtime_shadow_total_water_before_m",
+            seed.shadow_total_water_before_m,
+        ),
+        (
+            "frost.runtime_shadow_total_water_after_m",
+            seed.shadow_total_water_after_m,
+        ),
+        ("frost.runtime_shadow_wb_delta_m", seed.shadow_wb_delta_m),
+        (
+            "frost.runtime_shadow_frwatc_residual_m",
+            seed.shadow_frwatc_residual_m,
+        ),
+        ("frost.runtime_watpdg_m", seed.watpdg_m),
+        ("frost.runtime_watbtm_m", seed.watbtm_m),
+    ] {
+        direct_production_insert_frost_surface_scalar(surface, symbol, value)?;
+    }
+    Ok(())
+}
+
+fn direct_production_insert_frost_layer_shadow(
+    surface: &mut DirectFrostRunoffSurface,
+    layer: DirectFrostLayerShadowCarry,
+) -> Result<(), HillslopeCliError> {
+    for (symbol, value) in [
+        (
+            format!("frost.runtime_shadow_st_m_{:04}", layer.layer_index),
+            layer.st_m,
+        ),
+        (
+            format!(
+                "frost.runtime_shadow_soil_water_m_{:04}",
+                layer.layer_index
+            ),
+            layer.soil_water_m,
+        ),
+        (
+            format!(
+                "frost.runtime_shadow_frozen_depth_m_{:04}",
+                layer.layer_index
+            ),
+            layer.frozen_depth_m,
+        ),
+        (
+            format!("frost.runtime_shadow_frzw_m_{:04}", layer.layer_index),
+            layer.frozen_water_m,
+        ),
+        (
+            format!("frost.runtime_shadow_soilf_m_{:04}", layer.layer_index),
+            layer.soilf_m,
+        ),
+        (
+            format!("frost.runtime_yst_m_{:04}", layer.layer_index),
+            layer.yst_m,
+        ),
+        (
+            format!("frost.runtime_nwfrzz_m_{:04}", layer.layer_index),
+            layer.nwfrzz_m,
+        ),
+    ] {
+        direct_production_insert_frost_surface_scalar(surface, symbol.as_str(), value)?;
+    }
+    Ok(())
+}
+
+fn direct_production_insert_frost_fine_layer(
+    surface: &mut DirectFrostRunoffSurface,
+    fine: DirectFrostFineLayerCarry,
+) -> Result<(), HillslopeCliError> {
+    for (symbol, value) in [
+        (
+            format!(
+                "frost.runtime_fgfrst_{:04}_{:04}",
+                fine.layer_index, fine.fine_index
+            ),
+            fine.fgfrst,
+        ),
+        (
+            format!(
+                "frost.runtime_slfsd_m_{:04}_{:04}",
+                fine.layer_index, fine.fine_index
+            ),
+            fine.slfsd_m,
+        ),
+        (
+            format!(
+                "frost.runtime_slsic_m_{:04}_{:04}",
+                fine.layer_index, fine.fine_index
+            ),
+            fine.slsic_m,
+        ),
+        (
+            format!(
+                "frost.runtime_slsw_theta_{:04}_{:04}",
+                fine.layer_index, fine.fine_index
+            ),
+            fine.slsw_theta,
+        ),
+        (
+            format!(
+                "frost.runtime_sltime_s_{:04}_{:04}",
+                fine.layer_index, fine.fine_index
+            ),
+            fine.sltime_s,
+        ),
+    ] {
+        direct_production_insert_frost_surface_scalar(surface, symbol.as_str(), value)?;
+    }
+    Ok(())
+}
+
+fn direct_production_seed_frost_surface_layers(
+    surface: &mut DirectFrostRunoffSurface,
+    lane_index: usize,
+    layers: &[DirectSubsurfaceLayerState],
+    soil_water_m: f64,
+) -> Result<(), HillslopeCliError> {
+    if !soil_water_m.is_finite() || soil_water_m < 0.0 {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production lane {} frost soil-water carry must be finite and nonnegative, observed {soil_water_m}",
+            lane_index + 1
+        )));
+    }
+    let nsl = usize_to_scalar("direct_production.frost_nsl", layers.len())?;
+    direct_production_insert_frost_surface_scalar(surface, "wb11_nsl", nsl)?;
+    direct_production_insert_frost_surface_scalar(surface, "nsl", nsl)?;
+    direct_production_insert_frost_surface_scalar(surface, "wb11_soil_water", soil_water_m)?;
+    for (layer_offset, layer) in layers.iter().enumerate() {
+        let layer_index = layer_offset + 1;
+        for (symbol, value) in direct_production_frost_layer_seed_scalars(layer_index, layer) {
+            direct_production_insert_frost_surface_scalar(surface, symbol.as_str(), value)?;
+        }
+    }
+    Ok(())
+}
+
+fn direct_production_frost_soil_conductivity(
+    surface: &DirectFrostRunoffSurface,
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<f64, HillslopeCliError> {
+    if let Some(value) = surface.optional_scalar("wb14_soil_conductivity_m_s") {
+        if !value.is_finite() || value < 0.0 {
+            return Err(direct_production_executor_blocked(format!(
+                "direct production frost soil conductivity must be finite and nonnegative, observed {value}"
+            )));
+        }
+        if value > 0.0 {
+            return Ok(value);
+        }
+    }
+    layers
+        .first()
+        .map(|layer| layer.conductivity_m_s)
+        .ok_or_else(|| {
+            direct_production_executor_blocked(
+                "direct production active frost requires at least one layer conductivity",
+            )
+        })
+}
+
+fn direct_production_insert_frost_surface_scalar(
+    surface: &mut DirectFrostRunoffSurface,
+    symbol: &str,
+    value: f64,
+) -> Result<(), HillslopeCliError> {
+    if !value.is_finite() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} direct production frost symbol {symbol} is non-finite ({value})"
+            ),
+        });
+    }
+    surface.insert_scalar(symbol, value);
+    Ok(())
+}
+
+fn direct_production_frost_layer_seed_scalars(
+    layer_index: usize,
+    layer: &DirectSubsurfaceLayerState,
+) -> [(String, f64); 6] {
+    [
+        (format!("wb18_perc_theta_{layer_index:04}"), layer.theta_m),
+        (
+            format!("wb18_perc_ul_{layer_index:04}"),
+            layer.upper_limit_m,
+        ),
+        (format!("wb19_dg_{layer_index:04}"), layer.depth_m),
+        (
+            format!("wb19_thetdr_{layer_index:04}"),
+            layer.residual_theta,
+        ),
+        (
+            format!("wb18_perc_frozen_depth_{layer_index:04}"),
+            layer.frozen_depth_m,
+        ),
+        (
+            format!("wb18_perc_frzw_{layer_index:04}"),
+            layer.frozen_water_m,
+        ),
+    ]
+}
+
+fn direct_production_hourly_symbol(root: &str, hour: usize) -> String {
+    format!("{root}_{hour:04}")
+}
+
+fn direct_production_required_snow_state_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &'static str,
+    minimum: Option<f64>,
+    maximum: Option<f64>,
+) -> Result<f64, HillslopeCliError> {
+    let value = require_runtime_surface_scalar(runtime_surface, symbol)?;
+    if !value.is_finite() || minimum.is_some_and(|minimum| value < minimum)
+        || maximum.is_some_and(|maximum| value > maximum)
+    {
+        let lower = minimum.map_or("-inf".to_string(), |value| value.to_string());
+        let upper = maximum.map_or("inf".to_string(), |value| value.to_string());
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} {symbol} must be finite and within [{lower}, {upper}] for direct production snow state, observed {value}"
+            ),
+        });
+    }
+    Ok(value)
 }
 
 fn direct_production_hyetograph(
@@ -2288,6 +3238,85 @@ fn direct_publication_scaled_hyetograph(
                     surface: "direct_publication_frame",
                     detail: format!(
                         "{SIMOUT_GUARD_ID} direct WB15 scaled hyetograph intensity must be finite and >= 0.0, observed {intensity_m_s}"
+                    ),
+                });
+            }
+            Ok(DirectWb14HyetographInterval {
+                start_s: interval.start_s,
+                end_s: interval.end_s,
+                intensity_m_s,
+            })
+        })
+        .collect()
+}
+
+fn direct_publication_scaled_hyetograph_to_rainfall(
+    hyetograph: &[DirectWb14HyetographInterval],
+    target_rainfall_m: f64,
+) -> Result<Vec<DirectWb14HyetographInterval>, HillslopeCliError> {
+    if !target_rainfall_m.is_finite() || target_rainfall_m < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} direct WB15 target rainfall must be finite and >= 0.0, observed {target_rainfall_m}"
+            ),
+        });
+    }
+    let source_rainfall_m = direct_publication_hyetograph_rainfall_m(hyetograph)?;
+    if source_rainfall_m <= 0.0 {
+        if target_rainfall_m <= 0.0 {
+            return direct_publication_scaled_hyetograph(hyetograph, 0.0);
+        }
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} direct WB15 cannot project positive target rainfall {target_rainfall_m} m from a zero-depth hyetograph"
+            ),
+        });
+    }
+    direct_publication_scaled_hyetograph(hyetograph, target_rainfall_m / source_rainfall_m)
+}
+
+fn direct_publication_hyetograph_with_added_daily_depth(
+    hyetograph: &[DirectWb14HyetographInterval],
+    added_depth_m: f64,
+) -> Result<Vec<DirectWb14HyetographInterval>, HillslopeCliError> {
+    if !added_depth_m.is_finite() || added_depth_m < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} direct WB15 added daily liquid depth must be finite and >= 0.0, observed {added_depth_m}"
+            ),
+        });
+    }
+    if added_depth_m <= 0.0 {
+        return Ok(hyetograph.to_vec());
+    }
+    let mut total_duration_s = 0.0_f64;
+    for interval in hyetograph {
+        let duration_s = interval.end_s - interval.start_s;
+        if duration_s > 0.0 {
+            total_duration_s += duration_s;
+        }
+    }
+    if !total_duration_s.is_finite() || total_duration_s <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} direct WB15 added daily liquid depth requires positive hyetograph duration"
+            ),
+        });
+    }
+    let added_intensity_m_s = added_depth_m / total_duration_s;
+    hyetograph
+        .iter()
+        .map(|interval| {
+            let intensity_m_s = interval.intensity_m_s + added_intensity_m_s;
+            if !intensity_m_s.is_finite() || intensity_m_s < 0.0 {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_publication_frame",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} direct WB15 liquid hyetograph intensity must be finite and >= 0.0, observed {intensity_m_s}"
                     ),
                 });
             }

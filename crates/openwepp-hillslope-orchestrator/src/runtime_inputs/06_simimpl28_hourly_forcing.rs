@@ -3,6 +3,7 @@ const SIMIMPL28_RADCUR_SOLCON: f64 = 0.082;
 const SIMIMPL28_PI: f64 = std::f64::consts::PI;
 const SIMIMPL28_DOMAIN_EPS: f64 = 1e-12;
 const SIMIMPL28_WINTER_HOURS_PER_DAY: usize = 24;
+pub const DIRECT_WINTER_HOURLY_FORCING_COUNT: usize = SIMIMPL28_WINTER_HOURS_PER_DAY;
 const SIMIMPL28_HOURLY_RADIATION_BOUND_REL_TOLERANCE: f64 = 1.0e-9;
 const SIMIMPL28_HOURLY_RADIATION_BOUND_ABS_TOLERANCE_MJ_M2: f64 = 1.0e-12;
 const SIMIMPL28_DAILY_RADIATION_BOUND_ALLOWED: &str =
@@ -40,6 +41,154 @@ struct Simimpl28StmtimHourlyPartition {
     active_interval: bool,
     rain_branch: bool,
     snow_branch: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectWinterHourlyForcing {
+    pub rain_m: f64,
+    pub snowfall_m: f64,
+    pub radiation_mj_m2: f64,
+    pub air_temperature_c: f64,
+    pub cloud_fraction: f64,
+}
+
+impl DirectWinterHourlyForcing {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            rain_m: 0.0,
+            snowfall_m: 0.0,
+            radiation_mj_m2: 0.0,
+            air_temperature_c: 0.0,
+            cloud_fraction: 0.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectWinterHourlyContext {
+    pub snow_runtime_swe_m: f64,
+    pub frost_runtime_depth_m: f64,
+    pub frost_runtime_frozen_water_m: f64,
+    pub frost_file_present: bool,
+    pub frost_wint_red_enabled: bool,
+    pub avg_slope: f64,
+    pub azimuth: f64,
+    pub snow_rst_c: f64,
+}
+
+impl HillslopeClimateRuntimeRequest {
+    /// Build typed hourly winter forcing for production direct mode without
+    /// materializing runtime symbols.
+    ///
+    /// Returns `Ok(None)` when the existing SIMIMPL28 winter trigger is inactive.
+    pub fn direct_winter_hourly_forcing(
+        &self,
+        day_index: usize,
+        context: DirectWinterHourlyContext,
+    ) -> Result<Option<[DirectWinterHourlyForcing; SIMIMPL28_WINTER_HOURS_PER_DAY]>, ClimateRuntimeInputError>
+    {
+        let forcing = select_day_forcing(&self.shared, day_index)?;
+        build_simimpl28_hourly_winter_forcing_typed(forcing, &self.metadata, context)
+    }
+}
+
+fn build_simimpl28_hourly_winter_forcing_typed(
+    forcing: &HillslopeClimateDailyForcing,
+    metadata: &ClimateMetadata,
+    context: DirectWinterHourlyContext,
+) -> Result<Option<[DirectWinterHourlyForcing; SIMIMPL28_WINTER_HOURS_PER_DAY]>, ClimateRuntimeInputError>
+{
+    if context.snow_runtime_swe_m < 0.0 {
+        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: "snow.runtime_swe".to_string(),
+            value: context.snow_runtime_swe_m,
+            allowed: ">= 0",
+        });
+    }
+    if context.frost_runtime_depth_m < 0.0 {
+        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: "frost.runtime_dfrost".to_string(),
+            value: context.frost_runtime_depth_m,
+            allowed: ">= 0",
+        });
+    }
+    if context.frost_runtime_frozen_water_m < 0.0 {
+        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: "frost.runtime_ws_frz".to_string(),
+            value: context.frost_runtime_frozen_water_m,
+            allowed: ">= 0",
+        });
+    }
+    let (day, mon, year, rain_m, stmdur_s, tmax, tmin, radly, wnttim) = match forcing {
+        HillslopeClimateDailyForcing::NoBreakpoint(day) => (
+            day.day,
+            day.mon,
+            day.year,
+            day.prcp,
+            day.stmdur,
+            day.tmax,
+            day.tmin,
+            day.rad,
+            simimpl28_winter_random_start_hour(simimpl28_day_of_year(day.day, day.mon, day.year)?),
+        ),
+        HillslopeClimateDailyForcing::Breakpoint(day) => (
+            day.day, day.mon, day.year, day.prcp, day.stmdur, day.tmax, day.tmin, day.rad,
+            day.stmstr,
+        ),
+    };
+    let winter_trigger_active = context.snow_runtime_swe_m > SIMIMPL28_DOMAIN_EPS
+        || context.frost_runtime_depth_m > SIMIMPL28_DOMAIN_EPS
+        || context.frost_runtime_frozen_water_m > SIMIMPL28_DOMAIN_EPS
+        || context.frost_file_present
+        || context.frost_wint_red_enabled
+        || f64::midpoint(tmax, tmin) < 0.0;
+    if !winter_trigger_active {
+        return Ok(None);
+    }
+    if context.avg_slope <= 0.0 {
+        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: "avgslp".to_string(),
+            value: context.avg_slope,
+            allowed: "> 0",
+        });
+    }
+
+    let sdate = simimpl28_day_of_year(day, mon, year)?;
+    let geometry = simimpl28_aspect_geometry(metadata.deglat, context.avg_slope, context.azimuth)?;
+    let radmj = simimpl28_langleys_to_mj_m2("rad", radly)?;
+    let sunmap = simimpl28_sunmap(radly, sdate, geometry)?;
+    let itflag = (tmax - tmin) <= 1.0;
+    let mut hourly =
+        [DirectWinterHourlyForcing::zero(); SIMIMPL28_WINTER_HOURS_PER_DAY];
+    for hour in 1..=SIMIMPL28_WINTER_HOURS_PER_DAY {
+        let cratio = simimpl28_radcur(sdate, hour, geometry.radlat, sunmap.dsunmp)?;
+        let (hrrad_mj_m2, hrtemp_c) =
+            simimpl28_hr_tmp_hour(itflag, hour, sunmap, cratio, radmj, tmax, tmin)?;
+        let hour_u32 = u32::try_from(hour).map_err(|_| {
+            ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+                symbol: "hour".to_string(),
+                value: f64::from(u32::MAX),
+                allowed: "1..=24",
+            }
+        })?;
+        let partition = simimpl28_stmtim_hourly_partition(
+            rain_m,
+            stmdur_s,
+            f64::from(hour_u32),
+            wnttim,
+            context.snow_rst_c,
+            hrtemp_c,
+        )?;
+        hourly[hour - 1] = DirectWinterHourlyForcing {
+            rain_m: partition.hrrain_m,
+            snowfall_m: partition.hrsnow_m,
+            radiation_mj_m2: hrrad_mj_m2,
+            air_temperature_c: hrtemp_c,
+            cloud_fraction: sunmap.cloud_fraction,
+        };
+    }
+    Ok(Some(hourly))
 }
 
 #[allow(clippy::too_many_lines)]

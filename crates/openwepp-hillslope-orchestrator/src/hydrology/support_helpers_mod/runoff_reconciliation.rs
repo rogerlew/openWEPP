@@ -258,6 +258,101 @@ impl Wb11HydrologyKernel {
         })
     }
 
+    pub fn compute_direct_snow_liquid_partition_from_typed(
+        inputs: DirectActiveSnowPartitionInputs,
+    ) -> Result<DirectSnowLiquidPartition, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+            inputs.hyetograph_rainfall_m,
+            Some(0.0),
+            None,
+        )?;
+        let active_snow_coupling =
+            if inputs.hyetograph_rainfall_m <= WB11_ZERO_THRESHOLD
+                && inputs.runtime_swe_m <= WB11_ZERO_THRESHOLD
+            {
+                false
+            } else {
+                inputs.runtime_swe_m > WB11_ZERO_THRESHOLD
+                    || f64::midpoint(inputs.tmax_c, inputs.tmin_c) < 0.0
+            };
+        let snow_coupling = if active_snow_coupling {
+            Self::compute_active_snow_coupling_from_typed(phase_class, &inputs)?
+        } else {
+            Self::require_direct_typed_snow_value(
+                phase_class,
+                BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
+                inputs.runtime_swe_m,
+                Some(0.0),
+                None,
+            )?;
+            Self::require_direct_typed_snow_value(
+                phase_class,
+                BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+                inputs.runtime_depth_m,
+                Some(0.0),
+                None,
+            )?;
+            Self::require_direct_typed_snow_value(
+                phase_class,
+                BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+                inputs.runtime_density_kg_m3,
+                Some(0.0),
+                Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+            )?;
+            Self::require_direct_typed_snow_value(
+                phase_class,
+                BoundarySymbol::from(SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL),
+                inputs.runtime_settle_day_count,
+                Some(0.0),
+                None,
+            )?;
+            SnowCouplingOutcome {
+                signed_s: 0.0,
+                accumulation: 0.0,
+                rain_retained: 0.0,
+                rain_released: 0.0,
+                runtime_swe: inputs.runtime_swe_m,
+                runtime_depth_m: inputs.runtime_depth_m,
+                runtime_density_kg_m3: inputs.runtime_density_kg_m3,
+                runtime_settle_day_count: inputs.runtime_settle_day_count,
+                hourly_state: Vec::new(),
+            }
+        };
+        let (routed_melt_m, post_winter_rain_m) =
+            Self::resolve_snow_partition_terms(phase_class, inputs.hyetograph_rainfall_m, &snow_coupling)?;
+
+        Ok(DirectSnowLiquidPartition {
+            active_snow_coupling,
+            snow_coupling_signed_s_m: snow_coupling.signed_s,
+            routed_melt_m,
+            post_winter_rain_m,
+            runtime_swe_after_m: snow_coupling.runtime_swe,
+            runtime_depth_after_m: snow_coupling.runtime_depth_m,
+            runtime_density_after_kg_m3: snow_coupling.runtime_density_kg_m3,
+            runtime_settle_day_count_after: snow_coupling.runtime_settle_day_count,
+        })
+    }
+
+    pub(crate) fn require_direct_typed_snow_value(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: BoundarySymbol,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if !value.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol,
+                value,
+            });
+        }
+        Self::require_dynamic_state_range(phase_class, symbol, value, minimum, maximum)
+    }
+
     pub(crate) fn redistribute_daily_signed_snowmelt(
         hourly_state: &mut [SnowHourlyState],
     ) -> SnowMeltRedistributionOutcome {

@@ -420,6 +420,9 @@ fn seed_direct_production_lane_constructor_inputs(
     lane_inputs.subsurface_layers = direct_publication_layer_states(&day_zero_seed_surface)?;
     lane_inputs.evapotranspiration_stage_state =
         direct_publication_stage_state(&day_zero_seed_surface)?;
+    lane_inputs.snow_runtime_carry =
+        DirectProductionSnowFrostAuthority::from_seed(&day_zero_seed_surface)?
+            .initial_snow_runtime_carry();
     Ok(())
 }
 

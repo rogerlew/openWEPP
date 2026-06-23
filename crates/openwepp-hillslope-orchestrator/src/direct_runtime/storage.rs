@@ -1,8 +1,8 @@
 use super::{
     DIRECT_AUDIT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT,
     DIRECT_R4D_PHASE_SPAN_COUNT, DIRECT_R4E_PHASE_SPAN_COUNT, DIRECT_R4F_PHASE_SPAN_COUNT,
-    DIRECT_R4G_PHASE_SPAN_COUNT, DirectDayFrame, DirectRuntimeError, validate_finite,
-    validate_nonnegative_direct_m,
+    DIRECT_R4G_PHASE_SPAN_COUNT, DirectDayFrame, DirectRuntimeError, DirectSnowRuntimeCarry,
+    validate_finite, validate_nonnegative_direct_m,
 };
 
 impl DirectDayFrame {
@@ -194,6 +194,14 @@ impl DirectDayFrame {
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
         self.snow_coupling = snow_coupling;
+        if snow_coupling.snow_state_projected {
+            self.snow_runtime_carry = Some(DirectSnowRuntimeCarry {
+                runtime_swe_m: snow_coupling.runtime_swe_after_m,
+                runtime_depth_m: snow_coupling.runtime_depth_after_m,
+                runtime_density_kg_m3: snow_coupling.runtime_density_after_kg_m3,
+                runtime_settle_day_count: snow_coupling.runtime_settle_day_count_after,
+            });
+        }
         self.storage_reconciliation_inputs.snow_coupling_m = snow_coupling.snow_coupling_m;
         DIRECT_AUDIT.record_direct_state_mutation();
         self.snow_coupling_downstream_operands =
@@ -204,6 +212,17 @@ impl DirectDayFrame {
             lane_index: self.lane_index,
             day_index: self.day_index,
             snow_coupling_m: self.snow_coupling_downstream_operands.snow_coupling_m,
+            active_snow_coupling: self.snow_coupling_downstream_operands.active_snow_coupling,
+            routed_melt_m: self.snow_coupling_downstream_operands.routed_melt_m,
+            post_winter_rain_m: self.snow_coupling_downstream_operands.post_winter_rain_m,
+            runtime_swe_after_m: self.snow_coupling_downstream_operands.runtime_swe_after_m,
+            runtime_depth_after_m: self.snow_coupling_downstream_operands.runtime_depth_after_m,
+            runtime_density_after_kg_m3: self
+                .snow_coupling_downstream_operands
+                .runtime_density_after_kg_m3,
+            runtime_settle_day_count_after: self
+                .snow_coupling_downstream_operands
+                .runtime_settle_day_count_after,
         };
         self.snow_coupling_shadow_projection = Some(snow_coupling_shadow_projection);
         DIRECT_AUDIT.record_shadow_projection();
@@ -311,6 +330,16 @@ impl DirectDayFrame {
         self.validate_r4g_snow_coupling_domain()?;
         Ok(DirectSnowCouplingState {
             snow_coupling_m: self.snow_coupling_inputs.snow_coupling_handoff_m,
+            snow_state_projected: self.snow_coupling_inputs.snow_state_projected,
+            active_snow_coupling: self.snow_coupling_inputs.active_snow_coupling,
+            routed_melt_m: self.snow_coupling_inputs.routed_melt_m,
+            post_winter_rain_m: self.snow_coupling_inputs.post_winter_rain_m,
+            runtime_swe_after_m: self.snow_coupling_inputs.runtime_swe_after_m,
+            runtime_depth_after_m: self.snow_coupling_inputs.runtime_depth_after_m,
+            runtime_density_after_kg_m3: self.snow_coupling_inputs.runtime_density_after_kg_m3,
+            runtime_settle_day_count_after: self
+                .snow_coupling_inputs
+                .runtime_settle_day_count_after,
         })
     }
 
@@ -425,6 +454,35 @@ impl DirectDayFrame {
             "snow_coupling.snow_coupling_handoff_m",
             self.snow_coupling_inputs.snow_coupling_handoff_m,
         )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.routed_melt_m",
+            self.snow_coupling_inputs.routed_melt_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.post_winter_rain_m",
+            self.snow_coupling_inputs.post_winter_rain_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.runtime_swe_after_m",
+            self.snow_coupling_inputs.runtime_swe_after_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.runtime_depth_after_m",
+            self.snow_coupling_inputs.runtime_depth_after_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.runtime_density_after_kg_m3",
+            self.snow_coupling_inputs.runtime_density_after_kg_m3,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.runtime_settle_day_count_after",
+            self.snow_coupling_inputs.runtime_settle_day_count_after,
+        )?;
+        if self.snow_coupling_inputs.runtime_density_after_kg_m3 > 522.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "snow_coupling.runtime_density_after_kg_m3",
+            });
+        }
         Ok(())
     }
 
@@ -744,6 +802,14 @@ pub struct DirectEvapotranspirationShadowProjection {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectSnowCouplingInputs {
     pub snow_coupling_handoff_m: f64,
+    pub snow_state_projected: bool,
+    pub active_snow_coupling: bool,
+    pub routed_melt_m: f64,
+    pub post_winter_rain_m: f64,
+    pub runtime_swe_after_m: f64,
+    pub runtime_depth_after_m: f64,
+    pub runtime_density_after_kg_m3: f64,
+    pub runtime_settle_day_count_after: f64,
 }
 
 impl DirectSnowCouplingInputs {
@@ -751,6 +817,14 @@ impl DirectSnowCouplingInputs {
     pub const fn zero() -> Self {
         Self {
             snow_coupling_handoff_m: 0.0,
+            snow_state_projected: false,
+            active_snow_coupling: false,
+            routed_melt_m: 0.0,
+            post_winter_rain_m: 0.0,
+            runtime_swe_after_m: 0.0,
+            runtime_depth_after_m: 0.0,
+            runtime_density_after_kg_m3: 0.0,
+            runtime_settle_day_count_after: 0.0,
         }
     }
 }
@@ -758,6 +832,14 @@ impl DirectSnowCouplingInputs {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectSnowCouplingState {
     pub snow_coupling_m: f64,
+    pub snow_state_projected: bool,
+    pub active_snow_coupling: bool,
+    pub routed_melt_m: f64,
+    pub post_winter_rain_m: f64,
+    pub runtime_swe_after_m: f64,
+    pub runtime_depth_after_m: f64,
+    pub runtime_density_after_kg_m3: f64,
+    pub runtime_settle_day_count_after: f64,
 }
 
 impl DirectSnowCouplingState {
@@ -765,6 +847,14 @@ impl DirectSnowCouplingState {
     pub const fn zero() -> Self {
         Self {
             snow_coupling_m: 0.0,
+            snow_state_projected: false,
+            active_snow_coupling: false,
+            routed_melt_m: 0.0,
+            post_winter_rain_m: 0.0,
+            runtime_swe_after_m: 0.0,
+            runtime_depth_after_m: 0.0,
+            runtime_density_after_kg_m3: 0.0,
+            runtime_settle_day_count_after: 0.0,
         }
     }
 }
@@ -772,6 +862,13 @@ impl DirectSnowCouplingState {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectSnowCouplingDownstreamOperands {
     pub snow_coupling_m: f64,
+    pub active_snow_coupling: bool,
+    pub routed_melt_m: f64,
+    pub post_winter_rain_m: f64,
+    pub runtime_swe_after_m: f64,
+    pub runtime_depth_after_m: f64,
+    pub runtime_density_after_kg_m3: f64,
+    pub runtime_settle_day_count_after: f64,
 }
 
 impl DirectSnowCouplingDownstreamOperands {
@@ -779,6 +876,13 @@ impl DirectSnowCouplingDownstreamOperands {
     pub const fn zero() -> Self {
         Self {
             snow_coupling_m: 0.0,
+            active_snow_coupling: false,
+            routed_melt_m: 0.0,
+            post_winter_rain_m: 0.0,
+            runtime_swe_after_m: 0.0,
+            runtime_depth_after_m: 0.0,
+            runtime_density_after_kg_m3: 0.0,
+            runtime_settle_day_count_after: 0.0,
         }
     }
 }
@@ -787,6 +891,13 @@ impl From<DirectSnowCouplingState> for DirectSnowCouplingDownstreamOperands {
     fn from(state: DirectSnowCouplingState) -> Self {
         Self {
             snow_coupling_m: state.snow_coupling_m,
+            active_snow_coupling: state.active_snow_coupling,
+            routed_melt_m: state.routed_melt_m,
+            post_winter_rain_m: state.post_winter_rain_m,
+            runtime_swe_after_m: state.runtime_swe_after_m,
+            runtime_depth_after_m: state.runtime_depth_after_m,
+            runtime_density_after_kg_m3: state.runtime_density_after_kg_m3,
+            runtime_settle_day_count_after: state.runtime_settle_day_count_after,
         }
     }
 }
@@ -796,6 +907,13 @@ pub struct DirectSnowCouplingShadowProjection {
     pub lane_index: usize,
     pub day_index: usize,
     pub snow_coupling_m: f64,
+    pub active_snow_coupling: bool,
+    pub routed_melt_m: f64,
+    pub post_winter_rain_m: f64,
+    pub runtime_swe_after_m: f64,
+    pub runtime_depth_after_m: f64,
+    pub runtime_density_after_kg_m3: f64,
+    pub runtime_settle_day_count_after: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

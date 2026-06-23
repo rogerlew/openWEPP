@@ -94,6 +94,280 @@ struct ActiveFrostCompletionContext {
     fgthwd_flag: f64,
 }
 
+#[derive(Debug, Clone)]
+struct R7gFrostTraceConfig {
+    path: std::path::PathBuf,
+    exact_day: Option<f64>,
+    exact_year: Option<f64>,
+}
+
+static R7G_FROST_TRACE_CONFIG: std::sync::OnceLock<Option<R7gFrostTraceConfig>> =
+    std::sync::OnceLock::new();
+
+fn r7g_frost_trace_config() -> Option<&'static R7gFrostTraceConfig> {
+    R7G_FROST_TRACE_CONFIG
+        .get_or_init(|| {
+            let path = std::env::var_os("OPENWEPP_R7G_FROST_TRACE_PATH")?;
+            if path.is_empty() {
+                return None;
+            }
+            Some(R7gFrostTraceConfig {
+                path: std::path::PathBuf::from(path),
+                exact_day: r7g_frost_trace_env_f64("OPENWEPP_R7G_FROST_TRACE_DAY"),
+                exact_year: r7g_frost_trace_env_f64("OPENWEPP_R7G_FROST_TRACE_YEAR"),
+            })
+        })
+        .as_ref()
+}
+
+fn r7g_frost_trace_env_f64(name: &str) -> Option<f64> {
+    let value = std::env::var(name).ok()?;
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    trimmed.parse::<f64>().ok()
+}
+
+fn r7g_frost_trace_matches_filter(
+    config: &R7gFrostTraceConfig,
+    day: Option<f64>,
+    year: Option<f64>,
+) -> bool {
+    if let Some(exact_day) = config.exact_day
+        && day.is_none_or(|day| (day - exact_day).abs() > WB11_ZERO_THRESHOLD)
+    {
+        return false;
+    }
+    if let Some(exact_year) = config.exact_year
+        && year.is_none_or(|year| (year - exact_year).abs() > WB11_ZERO_THRESHOLD)
+    {
+        return false;
+    }
+    true
+}
+
+fn r7g_json_string(value: &str) -> String {
+    let mut escaped = String::with_capacity(value.len() + 2);
+    escaped.push('"');
+    for character in value.chars() {
+        match character {
+            '"' => escaped.push_str("\\\""),
+            '\\' => escaped.push_str("\\\\"),
+            '\n' => escaped.push_str("\\n"),
+            '\r' => escaped.push_str("\\r"),
+            '\t' => escaped.push_str("\\t"),
+            control if control.is_control() => {
+                escaped.push_str(&format!("\\u{:04x}", u32::from(control)));
+            }
+            other => escaped.push(other),
+        }
+    }
+    escaped.push('"');
+    escaped
+}
+
+fn r7g_frost_trace_number(value: f64) -> String {
+    if value.is_finite() {
+        format!("{value:.17}")
+    } else {
+        "null".to_string()
+    }
+}
+
+fn r7g_frost_trace_optional_number(value: Option<f64>) -> String {
+    value.map_or_else(|| "null".to_string(), r7g_frost_trace_number)
+}
+
+fn r7g_frost_trace_array(values: impl IntoIterator<Item = f64>) -> String {
+    let mut out = String::from("[");
+    let mut first = true;
+    for value in values {
+        if first {
+            first = false;
+        } else {
+            out.push(',');
+        }
+        out.push_str(&r7g_frost_trace_number(value));
+    }
+    out.push(']');
+    out
+}
+
+fn r7g_frost_trace_usize_array(values: impl IntoIterator<Item = usize>) -> String {
+    let mut out = String::from("[");
+    let mut first = true;
+    for value in values {
+        if first {
+            first = false;
+        } else {
+            out.push(',');
+        }
+        out.push_str(&value.to_string());
+    }
+    out.push(']');
+    out
+}
+
+#[allow(clippy::too_many_arguments)]
+fn maybe_write_r7g_frost_trace(
+    request: &HillslopeKernelRequest<'_>,
+    prior: ActiveFrostPriorContext,
+    profile: ActiveFrostProfileShadowContext,
+    thermal: ActiveFrostThermalContext,
+    prior_shadow: &FrostFineShadowState,
+    hourly_state: &[FrostHourlyState; SIMIMPL29_HOURS_PER_DAY],
+    outcome: &FrostCouplingOutcome,
+    fast_path: bool,
+) {
+    let Some(config) = r7g_frost_trace_config() else {
+        return;
+    };
+    let day = SelfLikeTrace::state_scalar(request, PL_RUNTIME_DAY_SYMBOL);
+    let year = SelfLikeTrace::state_scalar(request, "year");
+    if !r7g_frost_trace_matches_filter(config, day, year) {
+        return;
+    }
+
+    let final_depth = FrostDepthSummary {
+        frdp: outcome.frdp_m,
+        thdp: outcome.thdp_m,
+        tfrdp: outcome.tfrdp_m,
+        tthawd: outcome.tthawd_m,
+    };
+    let mut line = String::new();
+    line.push('{');
+    line.push_str("\"schema\":\"openwepp-r7g-frost-trace-v1\"");
+    line.push_str(",\"phase\":");
+    line.push_str(&r7g_json_string(request.phase_name));
+    line.push_str(",\"day\":");
+    line.push_str(&r7g_frost_trace_optional_number(day));
+    line.push_str(",\"year\":");
+    line.push_str(&r7g_frost_trace_optional_number(year));
+    line.push_str(",\"fast_path\":");
+    line.push_str(if fast_path { "true" } else { "false" });
+    line.push_str(",\"prior_frdp_m\":");
+    line.push_str(&r7g_frost_trace_number(prior.effective_prior_frdp_m));
+    line.push_str(",\"prior_ws_frz_m\":");
+    line.push_str(&r7g_frost_trace_number(prior.prior_ws_frz));
+    line.push_str(",\"prior_soil_water_m\":");
+    line.push_str(&r7g_frost_trace_number(prior.soil_water));
+    line.push_str(",\"profile_prior_depth_frdp_m\":");
+    line.push_str(&r7g_frost_trace_number(profile.prior_depth_summary.frdp));
+    line.push_str(",\"profile_prior_layer_frozen_depth_m\":");
+    line.push_str(&r7g_frost_trace_number(profile.prior_layer_frozen_depth_m));
+    line.push_str(",\"profile_prior_layer_frozen_store_m\":");
+    line.push_str(&r7g_frost_trace_number(profile.prior_layer_frozen_store_m));
+    line.push_str(",\"profile_prior_fine_frozen_store_m\":");
+    line.push_str(&r7g_frost_trace_number(profile.prior_fine_frozen_store_m));
+    line.push_str(",\"snow_depth_m\":");
+    line.push_str(&r7g_frost_trace_number(thermal.snow_depth_m));
+    line.push_str(",\"snow_density_kg_m3\":");
+    line.push_str(&r7g_frost_trace_number(thermal.snow_density_kg_m3));
+    line.push_str(",\"snow_conductivity_w_m_k\":");
+    line.push_str(&r7g_frost_trace_number(thermal.snow_conductivity_w_m_k));
+    line.push_str(",\"residue_depth_m\":");
+    line.push_str(&r7g_frost_trace_number(thermal.residue_depth_m));
+    line.push_str(",\"final_frdp_m\":");
+    line.push_str(&r7g_frost_trace_number(final_depth.frdp));
+    line.push_str(",\"final_thdp_m\":");
+    line.push_str(&r7g_frost_trace_number(final_depth.thdp));
+    line.push_str(",\"final_ws_frz_m\":");
+    line.push_str(&r7g_frost_trace_number(outcome.ws_frz));
+    line.push_str(",\"final_soil_water_after_m\":");
+    line.push_str(&r7g_frost_trace_optional_number(outcome.soil_water_after_frwatc));
+    line.push_str(",\"frwatc_soil_water_after_m\":");
+    line.push_str(&r7g_frost_trace_number(outcome.frwatc_soil_water_after));
+    line.push_str(",\"frwatc_freeze_debit_m\":");
+    line.push_str(&r7g_frost_trace_number(outcome.frwatc_freeze_debit));
+    line.push_str(",\"frwatc_net_liquid_delta_m\":");
+    line.push_str(&r7g_frost_trace_number(outcome.frwatc_net_liquid_delta));
+    line.push_str(",\"hour_frzflg\":");
+    line.push_str(&r7g_frost_trace_array(
+        hourly_state.iter().map(|hourly| hourly.frzflg),
+    ));
+    line.push_str(",\"hour_surface_temp_c\":");
+    line.push_str(&r7g_frost_trace_array(
+        hourly_state.iter().map(|hourly| hourly.surface_temp_c),
+    ));
+    line.push_str(",\"hour_qsrf_w_m2\":");
+    line.push_str(&r7g_frost_trace_array(
+        hourly_state.iter().map(|hourly| hourly.qsrf_w_m2),
+    ));
+    line.push_str(",\"hour_quf_w_m2\":");
+    line.push_str(&r7g_frost_trace_array(
+        hourly_state.iter().map(|hourly| hourly.quf_w_m2),
+    ));
+    line.push_str(",\"hour_tilled_frozen_depth_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        hourly_state
+            .iter()
+            .map(|hourly| hourly.tilled_frozen_depth_m),
+    ));
+    line.push_str(",\"hour_untilled_frozen_depth_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        hourly_state
+            .iter()
+            .map(|hourly| hourly.untilled_frozen_depth_m),
+    ));
+    line.push_str(",\"prior_fine_layer_index\":");
+    line.push_str(&r7g_frost_trace_usize_array(
+        prior_shadow.fine_layers.iter().map(|fine| fine.layer_index),
+    ));
+    line.push_str(",\"prior_fine_index\":");
+    line.push_str(&r7g_frost_trace_usize_array(
+        prior_shadow.fine_layers.iter().map(|fine| fine.fine_index),
+    ));
+    line.push_str(",\"prior_fine_slfsd_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        prior_shadow.fine_layers.iter().map(|fine| fine.slfsd_m),
+    ));
+    line.push_str(",\"prior_fine_slsic_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        prior_shadow.fine_layers.iter().map(|fine| fine.slsic_m),
+    ));
+    line.push_str(",\"prior_fine_slsw_theta\":");
+    line.push_str(&r7g_frost_trace_array(
+        prior_shadow.fine_layers.iter().map(|fine| fine.slsw_theta),
+    ));
+    line.push_str(",\"final_fine_slfsd_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        outcome.fine_layer_state.iter().map(|fine| fine.slfsd_m),
+    ));
+    line.push_str(",\"final_fine_slsic_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        outcome.fine_layer_state.iter().map(|fine| fine.slsic_m),
+    ));
+    line.push_str(",\"final_fine_slsw_theta\":");
+    line.push_str(&r7g_frost_trace_array(
+        outcome.fine_layer_state.iter().map(|fine| fine.slsw_theta),
+    ));
+    line.push('}');
+    line.push('\n');
+
+    if let Some(parent) = config.path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&config.path)
+    {
+        let _ = std::io::Write::write_all(&mut file, line.as_bytes());
+    }
+}
+
+struct SelfLikeTrace;
+
+impl SelfLikeTrace {
+    fn state_scalar(request: &HillslopeKernelRequest<'_>, symbol: &str) -> Option<f64> {
+        request
+            .state_surface
+            .get(&BoundarySymbol::from(symbol))
+            .map(|value| value.as_f64())
+    }
+}
+
 impl Wb11HydrologyKernel {
     pub(crate) fn resolve_active_frost_coupling(
         request: &HillslopeKernelRequest<'_>,
@@ -1112,6 +1386,156 @@ impl Wb11HydrologyKernel {
         Ok((hourly_state, freeze_started, fgthwd_flag))
     }
 
+    fn active_frost_prior_is_zero(
+        prior_context: ActiveFrostPriorContext,
+        profile_context: ActiveFrostProfileShadowContext,
+    ) -> bool {
+        prior_context.effective_prior_frdp_m <= WB11_ZERO_THRESHOLD
+            && prior_context.prior_ws_frz <= WB11_ZERO_THRESHOLD
+            && profile_context.prior_layer_frozen_depth_m <= WB11_ZERO_THRESHOLD
+            && profile_context.prior_layer_frozen_store_m <= WB11_ZERO_THRESHOLD
+            && profile_context.prior_fine_frozen_store_m <= WB11_ZERO_THRESHOLD
+            && profile_context.prior_depth_summary.frdp <= WB11_ZERO_THRESHOLD
+    }
+
+    fn active_frost_zero_prior_can_start_freeze(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_water_state: &[FrostLayerWaterState],
+        shadow_fine_state: &FrostFineShadowState,
+        thermal_context: ActiveFrostThermalContext,
+        ksoilf: f64,
+    ) -> Result<bool, Wb11HydrologyKernelGuardError> {
+        let depth_summary = FrostDepthSummary {
+            frdp: 0.0,
+            thdp: 0.0,
+            tfrdp: 0.0,
+            tthawd: 0.0,
+        };
+        let shallow_minimum_path_m =
+            Self::shallow_front_minimum_conduction_path_m(&shadow_fine_state.fine_layers);
+        let lower_front_heat_w_m2 = Self::lower_front_heat_w_m2(
+            thermal_context.seasonal_temperature_curve,
+            thermal_context.sdate,
+            0.0,
+            &shadow_fine_state.fine_layers,
+            layer_water_state,
+            ksoilf,
+        );
+        for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
+            let surface_temp_c = Self::legacy_tmpadj_surface_temperature_c(
+                request,
+                phase_class,
+                hour,
+                thermal_context.snow_depth_m,
+                thermal_context.snow_density_kg_m3,
+                thermal_context.ksnowf,
+                thermal_context.residue_depth_m,
+                thermal_context.conductivity_residue_w_m_k,
+                depth_summary,
+            )?;
+            let (resistance_m2_c_w, _, _) = Self::frost_surface_heat_path(
+                0.0,
+                thermal_context.snow_depth_m,
+                thermal_context.snow_conductivity_w_m_k,
+                thermal_context.residue_depth_m,
+                thermal_context.conductivity_residue_w_m_k,
+                surface_temp_c < 0.0,
+                shallow_minimum_path_m,
+            );
+            let signed_surface_flux_w_m2 = surface_temp_c / resistance_m2_c_w;
+            let signed_net_flux_w_m2 = signed_surface_flux_w_m2 + lower_front_heat_w_m2;
+            let branch = Self::select_frost_branch(
+                signed_surface_flux_w_m2,
+                lower_front_heat_w_m2,
+                signed_net_flux_w_m2,
+                depth_summary,
+            );
+            if Self::frost_branch_matches(branch, 1.0)
+                || Self::frost_branch_matches(branch, 2.0)
+            {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    fn no_freeze_active_frost_outcome(
+        phase_class: HillslopeKernelPhaseClass,
+        prior_context: ActiveFrostPriorContext,
+        thermal_context: ActiveFrostThermalContext,
+        soil_conductivity: f64,
+        total_fine_layer_count: usize,
+        layer_water_state: &[FrostLayerWaterState],
+        shadow_fine_state: &FrostFineShadowState,
+    ) -> Result<FrostCouplingOutcome, Wb11HydrologyKernelGuardError> {
+        let fine_layer_diagnostic_state = Self::build_frost_fine_layer_diagnostic_state(
+            phase_class,
+            layer_water_state.len(),
+            shadow_fine_state,
+            layer_water_state,
+        )?;
+        Ok(FrostCouplingOutcome {
+            dfrost: 0.0,
+            dthaw: 0.0,
+            nft: prior_context.prior_nft,
+            ws_frz: 0.0,
+            infcap_frz: soil_conductivity,
+            soil_water_after_frwatc: None,
+            frwatc_soil_water_before: prior_context.soil_water,
+            frwatc_soil_water_after: prior_context.soil_water,
+            frwatc_frozen_water_before: prior_context.prior_ws_frz,
+            frwatc_frozen_water_after: 0.0,
+            frwatc_freeze_debit: 0.0,
+            frwatc_thaw_credit: 0.0,
+            frwatc_net_liquid_delta: 0.0,
+            frdp_m: 0.0,
+            thdp_m: 0.0,
+            tfrdp_m: 0.0,
+            tthawd_m: 0.0,
+            profile_depth_m: prior_context.profile_depth_m,
+            fgthwd_flag: prior_context.fgthwd_flag,
+            total_fine_layer_count: Self::diagnostic_count_to_f64(total_fine_layer_count),
+            conductivity_tilled_w_m_k: FROST_RUNTIME_KFTILL_W_M_K,
+            conductivity_untilled_w_m_k: FROST_RUNTIME_KFUTIL_W_M_K,
+            conductivity_residue_w_m_k: thermal_context.conductivity_residue_w_m_k,
+            shadow_total_water_before_m: shadow_fine_state.total_water_before_m,
+            shadow_total_water_after_m: shadow_fine_state.total_water_after_m,
+            shadow_wb_delta_m: 0.0,
+            shadow_frwatc_residual_m: 0.0,
+            watpdg_m: 0.0,
+            watbtm_m: 0.0,
+            hourly_state: std::array::from_fn(|hour_index| FrostHourlyState {
+                hour: hour_index + 1,
+                frzflg: 0.0,
+                surface_temp_c: 0.0,
+                qsrf_w_m2: 0.0,
+                quf_w_m2: 0.0,
+                ksrf_w_m_k: FROST_RUNTIME_KFUTIL_W_M_K,
+                snow_depth_m: thermal_context.snow_depth_m,
+                residue_depth_m: thermal_context.residue_depth_m,
+                tilled_frozen_depth_m: 0.0,
+                untilled_frozen_depth_m: 0.0,
+            }),
+            layer_topology_state: Vec::new(),
+            shadow_layer_state: shadow_fine_state
+                .layer_state
+                .iter()
+                .map(|layer| FrostLayerShadowState {
+                    layer_index: layer.layer_index,
+                    st_m: layer.st_m,
+                    soil_water_m: layer.soil_water_m,
+                    frozen_depth_m: layer.frozen_m,
+                    frzw_m: layer.frzw_m,
+                    soilf_m: layer.soilf_m,
+                    yst_m: layer.yst_m,
+                    nwfrzz_m: layer.nwfrzz_m,
+                })
+                .collect(),
+            fine_layer_state: fine_layer_diagnostic_state,
+        })
+    }
+
     fn validate_aggregated_active_frost_layers(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
@@ -1463,6 +1887,7 @@ impl Wb11HydrologyKernel {
             Self::require_active_frost_layer_water_state(request, phase_class, controls)?;
         let (mut shadow_fine_state, profile_shadow_context) =
             Self::require_frost_profile_shadow_context(request, phase_class, &layer_water_state)?;
+        let prior_shadow_fine_state = shadow_fine_state.clone();
         let surface_inputs = Self::require_active_frost_surface_inputs(request, phase_class)?;
         let prior_context = Self::require_active_frost_storage_inputs(
             request,
@@ -1475,6 +1900,38 @@ impl Wb11HydrologyKernel {
             controls,
             surface_inputs,
         )?;
+        if Self::active_frost_prior_is_zero(prior_context, profile_shadow_context)
+            && !Self::active_frost_zero_prior_can_start_freeze(
+                request,
+                phase_class,
+                &layer_water_state,
+                &prior_shadow_fine_state,
+                thermal_context,
+                controls.ksoilf,
+            )?
+        {
+            let outcome = Self::no_freeze_active_frost_outcome(
+                phase_class,
+                prior_context,
+                thermal_context,
+                soil_conductivity,
+                total_fine_layer_count,
+                &layer_water_state,
+                &prior_shadow_fine_state,
+            )?;
+            let hourly_state = outcome.hourly_state;
+            maybe_write_r7g_frost_trace(
+                request,
+                prior_context,
+                profile_shadow_context,
+                thermal_context,
+                &prior_shadow_fine_state,
+                &hourly_state,
+                &outcome,
+                true,
+            );
+            return Ok(outcome);
+        }
         let hourly_context = ActiveFrostHourlyContext {
             request,
             phase_class,
@@ -1505,6 +1962,16 @@ impl Wb11HydrologyKernel {
             layer_water_state,
             total_fine_layer_count,
         )?;
+        maybe_write_r7g_frost_trace(
+            request,
+            prior_context,
+            profile_shadow_context,
+            thermal_context,
+            &prior_shadow_fine_state,
+            &hourly_state,
+            &outcome,
+            false,
+        );
         Ok(outcome)
     }
 

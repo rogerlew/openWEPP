@@ -2,6 +2,7 @@
 mod tests {
     use super::*;
     use crate::SidecarPolicy;
+    use crate::hillslope::HillslopeDirectClimateDayForcing;
     use arrow_array::{Array, RecordBatch};
     use openwepp_hillslope_orchestrator::{
         DIRECT_PHASE_COUNT, DIRECT_R3B_PHASE_SPAN_COUNT, DIRECT_R3C_PHASE_SPAN_COUNT,
@@ -21,8 +22,8 @@ mod tests {
         DirectPublicationInterceptionOperands, DirectPublicationLiquidInputOperands,
         DirectPublicationProfileOperands, DirectPublicationRunMetadata,
         DirectPublicationRunoffOperands, DirectPublicationStorageOperands,
-        DirectPublicationSubsurfaceOperands, DirectPublicationTransferOperands, DirectRunFrame,
-        DirectRunIdentity, DirectRunPublicationFrame,
+        DirectPublicationSubsurfaceOperands, DirectPublicationTransferOperands,
+        DirectRunFrame, DirectRunIdentity, DirectRunPublicationFrame,
     };
     use openwepp_input_contract::parsers::hbp::{
         HbpParseOptions, parse_hbp_from_bytes_with_latest_event_payload, parse_hbp_from_path,
@@ -1221,6 +1222,197 @@ mod tests {
                 !build_body.contains(forbidden),
                 "R7F hot-loop build body must not contain runtime-surface or compatibility read {forbidden}"
             );
+        }
+    }
+
+    #[test]
+    fn r7g_snow_sidecar_presence_is_not_active_snow_coupling() {
+        let authority = DirectProductionSnowFrostAuthority::from_seed(&wb11_seed_test_surface(&[
+            ("snow.options.snow_file_present", 1.0),
+            ("snow.options.rst", 0.0),
+            ("snow.options.newsnw", 0.1),
+            ("snow.options.ssd", 0.5),
+            ("snow.runtime_swe", 0.0),
+            ("snow.runtime_depth_m", 0.0),
+            ("snow.runtime_density_kg_m3", 0.0),
+            ("snow.runtime_settle_day_count", 0.0),
+            ("avgslp", 0.2),
+            ("azm", 180.0),
+        ]))
+        .expect("valid projected snow controls and zero runtime state");
+
+        assert!(
+            !authority
+                .active_forcing(&r7g_snow_forcing(5.0, 1.0), 0.01, 0.0)
+                .expect("finite forcing"),
+            "sidecar presence alone must not activate direct snow coupling"
+        );
+        assert!(
+            !authority
+                .active_forcing(&r7g_snow_forcing(1.0, -3.0), 0.0, 0.0)
+                .expect("finite forcing"),
+            "cold dry day with zero runtime SWE is a no-op snow partition"
+        );
+        assert!(
+            authority
+                .active_forcing(&r7g_snow_forcing(1.0, -3.0), 0.01, 0.0)
+                .expect("finite forcing"),
+            "thermally active wet day with projected controls still requires typed snow authority"
+        );
+    }
+
+    #[test]
+    fn r7g_runtime_swe_activates_snow_without_sidecar_presence() {
+        let authority = DirectProductionSnowFrostAuthority::from_seed(&wb11_seed_test_surface(&[
+            ("snow.options.snow_file_present", 0.0),
+            ("snow.runtime_swe", 0.001),
+            ("snow.runtime_depth_m", 0.01),
+            ("snow.runtime_density_kg_m3", 100.0),
+            ("snow.runtime_settle_day_count", 1.0),
+        ]))
+        .expect("valid runtime snowpack state");
+
+        assert!(
+            authority
+                .active_forcing(&r7g_snow_forcing(10.0, 5.0), 0.0, 0.001)
+                .expect("finite forcing"),
+            "runtime SWE must activate direct snow coupling independent of sidecar provenance"
+        );
+    }
+
+    #[test]
+    fn r7g_runfile_mode_uses_sibling_snow_and_frost_sidecars() {
+        let temp_dir = std::env::temp_dir().join(format!(
+            "openwepp-r7g-sidecars-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system time should be after epoch")
+                .as_nanos()
+        ));
+        fs::create_dir_all(&temp_dir).expect("temp sidecar directory should be created");
+        let snow_path = temp_dir.join("snow.txt");
+        let frost_path = temp_dir.join("frost.txt");
+        fs::write(&snow_path, "-2.0\n100.0\n250.0\n")
+            .expect("snow sidecar fixture should be written");
+        fs::write(&frost_path, "1 10 10\n1.0 1.0 1.0 0.00001 0.00001 0.5\n")
+            .expect("frost sidecar fixture should be written");
+
+        let request = HillslopeRunRequest {
+            run_dir: temp_dir.clone(),
+            run_file: std::path::PathBuf::from("run.toml"),
+            output_dir: temp_dir.join("output"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        };
+        let sidecar_overrides = RunfileSidecarOverrides::default();
+        let mut resolved_sidecars = BTreeMap::new();
+        let mut snow_input_path = None;
+        let mut frost_input_path = None;
+
+        let snow = parse_runfile_snow_sidecar(
+            &request,
+            &sidecar_overrides,
+            &mut resolved_sidecars,
+            &mut snow_input_path,
+        )
+        .expect("sibling snow sidecar should parse");
+        let frost = parse_runfile_frost_sidecar(
+            &request,
+            &sidecar_overrides,
+            &mut resolved_sidecars,
+            &mut frost_input_path,
+        )
+        .expect("sibling frost sidecar should parse");
+
+        assert!(snow.sidecar_present);
+        assert!(!snow.defaults_applied);
+        assert!((snow.rst - -2.0).abs() < 1.0e-12);
+        assert_eq!(snow_input_path.as_ref(), Some(&snow_path));
+        assert_eq!(
+            resolved_sidecars.get("snow").map(String::as_str),
+            Some(snow_path.to_str().expect("snow path should be UTF-8"))
+        );
+        assert!(frost.frost_file_present);
+        assert_eq!(frost.wint_red, 1);
+        assert_eq!(frost_input_path.as_ref(), Some(&frost_path));
+        assert_eq!(
+            resolved_sidecars.get("frost").map(String::as_str),
+            Some(frost_path.to_str().expect("frost path should be UTF-8"))
+        );
+
+        fs::remove_dir_all(&temp_dir).expect("temp sidecar directory should be removed");
+    }
+
+    #[test]
+    fn r7g_direct_production_hands_active_frost_context_to_r4a_without_material_gate() {
+        let source = include_str!("direct_publication/day_input_and_helpers.rs");
+        let impl_body = source
+            .split("impl<'a> DirectProductionDayInputBuilder<'a>")
+            .nth(1)
+            .expect("R7G typed production builder impl must be present");
+        let build_body = impl_body
+            .split("    fn build(")
+            .nth(1)
+            .and_then(|tail| tail.split("\n    fn build_lane_authority").next())
+            .expect("R7G typed production builder build body must be present");
+
+        assert!(
+            build_body.contains("day_input.frost_runoff_surface = Some(frost_context.surface)"),
+            "active frost contexts must be handed to R4A whenever the frost context is constructed"
+        );
+        assert!(
+            build_body.contains("day_input.frost_liquid_partition = Some(frost_context.partition)"),
+            "active frost contexts must hand the precomputed partition through to R4A so the consumer does not recompute from mutated state"
+        );
+        assert!(
+            !build_body.contains("direct_publication_frost_partition_has_material_state")
+                && !build_body.contains("direct_production_frost_partition_requires_r4a"),
+            "R7G must not gate R4A frost handoff on precomputed material state"
+        );
+    }
+
+    #[test]
+    fn r7g_direct_production_frost_uses_prior_snowpack_not_same_day_projection() {
+        let source = include_str!("direct_publication/day_input_and_helpers.rs");
+        let impl_body = source
+            .split("impl DirectProductionSnowFrostAuthority")
+            .nth(1)
+            .expect("R7G snow/frost authority impl must be present");
+        let overlay_body = impl_body
+            .split("    fn overlay_frost_day_forcing(")
+            .nth(1)
+            .and_then(|tail| tail.split("\n    fn snow_liquid_partition").next())
+            .expect("R7G frost forcing overlay body must be present");
+
+        assert!(
+            overlay_body.contains("snow_runtime_carry.map_or(0.0, |carry| carry.runtime_depth_m)"),
+            "frost forcing must see prior snow depth; legacy winter.for calls frostN before snowd"
+        );
+        assert!(
+            overlay_body
+                .contains("snow_runtime_carry.map_or(0.0, |carry| {\n            carry.runtime_density_kg_m3\n        })"),
+            "frost forcing must see prior snow density only when prior snow carry exists"
+        );
+        assert!(
+            !overlay_body.contains("snow_liquid.runtime_depth_after_m")
+                && !overlay_body.contains("snow_liquid.runtime_density_after_kg_m3"),
+            "same-day direct snow projection must not insulate the same day's frost solve"
+        );
+    }
+
+    fn r7g_snow_forcing(tmax_c: f64, tmin_c: f64) -> HillslopeDirectClimateDayForcing {
+        HillslopeDirectClimateDayForcing {
+            prcp_m: 0.0,
+            tmax_c,
+            tmin_c,
+            rad_ly: 0.0,
+            vwind_m_s: 0.0,
+            wind_deg: 0.0,
+            tdpt_c: 0.0,
+            timem_s: Vec::new(),
+            intsty_m_s: Vec::new(),
         }
     }
 

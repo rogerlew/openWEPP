@@ -238,6 +238,7 @@ impl DirectErosionState {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectErosionDownstreamOperands {
     pub publication_authority: bool,
+    pub qout_handoff_authority: bool,
     pub publication: DirectPublicationErosionOperands,
     pub qout_m3_s: f64,
     pub particle_flow_fraction: [f64; DIRECT_EROSION_CLASS_LIMIT],
@@ -248,6 +249,7 @@ impl DirectErosionDownstreamOperands {
     pub fn zero() -> Self {
         Self {
             publication_authority: false,
+            qout_handoff_authority: false,
             publication: DirectPublicationErosionOperands::zero_authority(),
             qout_m3_s: 0.0,
             particle_flow_fraction: [0.0; DIRECT_EROSION_CLASS_LIMIT],
@@ -267,6 +269,7 @@ impl DirectErosionDownstreamOperands {
         }
         Self {
             publication_authority: state.publication_authority,
+            qout_handoff_authority: true,
             publication: state.publication,
             qout_m3_s,
             particle_flow_fraction,
@@ -410,7 +413,7 @@ impl DirectDayFrame {
                 0.0
             } else if self
                 .upstream_erosion_downstream_operands
-                .publication_authority
+                .qout_handoff_authority
             {
                 self.upstream_erosion_downstream_operands.qout_m3_s
             } else {

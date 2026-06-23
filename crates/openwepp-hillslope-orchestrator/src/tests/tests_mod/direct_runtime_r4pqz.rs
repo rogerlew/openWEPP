@@ -347,6 +347,13 @@ fn apply_projectable_terminal_shadows(
         lane_index,
         day_index,
         snow_coupling_m: 0.007_812_5,
+        active_snow_coupling: false,
+        routed_melt_m: 0.0,
+        post_winter_rain_m: 0.0,
+        runtime_swe_after_m: 0.0,
+        runtime_depth_after_m: 0.0,
+        runtime_density_after_kg_m3: 0.0,
+        runtime_settle_day_count_after: 0.0,
     });
     day.storage_shadow_projection = Some(DirectStorageShadowProjection {
         lane_index,

@@ -153,8 +153,17 @@ pub struct DirectLaneConstructorInputs {
     pub publication: DirectPublicationFrame,
     pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
     pub evapotranspiration_stage_state: Option<DirectEvapotranspirationStageState>,
+    pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
     pub day_inputs: Vec<DirectDayConstructorInputs>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectSnowRuntimeCarry {
+    pub runtime_swe_m: f64,
+    pub runtime_depth_m: f64,
+    pub runtime_density_kg_m3: f64,
+    pub runtime_settle_day_count: f64,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -237,6 +246,7 @@ impl DirectLaneConstructorInputs {
             publication: DirectPublicationFrame::empty(),
             subsurface_layers: Vec::new(),
             evapotranspiration_stage_state: None,
+            snow_runtime_carry: None,
             frost_runtime_carry: None,
             day_inputs: vec![DirectDayConstructorInputs::zero(); day_count],
         })
@@ -271,7 +281,9 @@ pub struct DirectDayConstructorInputs {
     pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,
     pub erosion_inputs: DirectErosionInputs,
     pub frost_runoff_surface: Option<crate::hydrology::DirectFrostRunoffSurface>,
+    pub frost_liquid_partition: Option<crate::hydrology::DirectFrostLiquidPartition>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
+    pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
 }
 
@@ -305,7 +317,9 @@ impl DirectDayConstructorInputs {
             hydrology_projection_inputs: DirectHydrologyProjectionInputs::zero(),
             erosion_inputs: DirectErosionInputs::zero(),
             frost_runoff_surface: None,
+            frost_liquid_partition: None,
             frost_layer_carry_projection: None,
+            snow_runtime_carry: None,
             frost_runtime_carry: None,
         }
     }
@@ -418,6 +432,7 @@ impl DirectRunFrame {
         }
         day_frame.evapotranspiration_compute_inputs.stage_state =
             lane.evapotranspiration_stage_state;
+        day_frame.snow_runtime_carry = lane.snow_runtime_carry;
         Ok(day_frame)
     }
 
@@ -637,6 +652,7 @@ pub struct DirectLaneFrame {
     pub erosion_downstream_operands: DirectErosionDownstreamOperands,
     pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
     pub evapotranspiration_stage_state: Option<DirectEvapotranspirationStageState>,
+    pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
     pub day_inputs: Vec<DirectDayConstructorInputs>,
 }
@@ -669,6 +685,7 @@ impl DirectLaneFrame {
             erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             subsurface_layers: Vec::new(),
             evapotranspiration_stage_state: None,
+            snow_runtime_carry: None,
             frost_runtime_carry: None,
             day_inputs: Vec::new(),
         })
@@ -693,6 +710,7 @@ impl DirectLaneFrame {
             erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             subsurface_layers: inputs.subsurface_layers,
             evapotranspiration_stage_state: inputs.evapotranspiration_stage_state,
+            snow_runtime_carry: inputs.snow_runtime_carry,
             frost_runtime_carry: inputs.frost_runtime_carry,
             day_inputs: inputs.day_inputs,
         }
@@ -762,6 +780,7 @@ impl DirectLaneFrame {
         }
         self.evapotranspiration_stage_state =
             day_frame.evapotranspiration_surface.stage_state_after;
+        self.snow_runtime_carry = day_frame.snow_runtime_carry;
         self.frost_runtime_carry
             .clone_from(&day_frame.frost_runtime_carry);
         Ok(())
@@ -876,6 +895,7 @@ pub struct DirectDayFrame {
     pub storage_shadow_projection: Option<DirectStorageShadowProjection>,
     pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,
     pub frost_runoff_surface: Option<crate::hydrology::DirectFrostRunoffSurface>,
+    pub frost_liquid_partition: Option<crate::hydrology::DirectFrostLiquidPartition>,
     pub hydrology_projection: DirectHydrologyProjectionState,
     pub hydrology_projection_downstream_operands: DirectHydrologyProjectionDownstreamOperands,
     pub hydrology_projection_shadow_projection: Option<DirectHydrologyProjectionShadowProjection>,
@@ -886,6 +906,7 @@ pub struct DirectDayFrame {
     pub erosion_downstream_operands: DirectErosionDownstreamOperands,
     pub erosion_shadow_projection: Option<DirectErosionShadowProjection>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
+    pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
     pub water_ledger: DirectWaterLedgerState,
     pub ledger_downstream_operands: DirectLedgerDownstreamOperands,
@@ -1010,6 +1031,7 @@ impl DirectDayFrame {
             storage_shadow_projection: None,
             hydrology_projection_inputs: DirectHydrologyProjectionInputs::zero(),
             frost_runoff_surface: None,
+            frost_liquid_partition: None,
             hydrology_projection: DirectHydrologyProjectionState::zero(),
             hydrology_projection_downstream_operands:
                 DirectHydrologyProjectionDownstreamOperands::zero(),
@@ -1021,6 +1043,7 @@ impl DirectDayFrame {
             erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             erosion_shadow_projection: None,
             frost_layer_carry_projection: None,
+            snow_runtime_carry: None,
             frost_runtime_carry: None,
             water_ledger: DirectWaterLedgerState::zero(),
             ledger_downstream_operands: DirectLedgerDownstreamOperands::zero(),
@@ -1071,7 +1094,9 @@ impl DirectDayFrame {
         self.hydrology_projection_inputs = inputs.hydrology_projection_inputs;
         self.erosion_inputs = inputs.erosion_inputs;
         self.frost_runoff_surface = inputs.frost_runoff_surface;
+        self.frost_liquid_partition = inputs.frost_liquid_partition;
         self.frost_layer_carry_projection = inputs.frost_layer_carry_projection;
+        self.snow_runtime_carry = inputs.snow_runtime_carry;
         self.frost_runtime_carry = inputs.frost_runtime_carry;
         Ok(())
     }
@@ -1426,6 +1451,9 @@ fn validate_direct_lane_constructor_inputs(
     if let Some(stage) = inputs.evapotranspiration_stage_state {
         validate_direct_evapotranspiration_stage(stage)?;
     }
+    if let Some(carry) = inputs.snow_runtime_carry {
+        validate_direct_snow_runtime_carry(carry)?;
+    }
     if inputs.day_inputs.len() != identity.day_count {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: "constructor.day_inputs",
@@ -1614,6 +1642,37 @@ fn validate_direct_frost_constructor_inputs(
     }
     if let Some(carry) = &inputs.frost_runtime_carry {
         validate_direct_frost_runtime_carry(carry)?;
+    }
+    if let Some(carry) = inputs.snow_runtime_carry {
+        validate_direct_snow_runtime_carry(carry)?;
+    }
+    Ok(())
+}
+
+fn validate_direct_snow_runtime_carry(
+    carry: DirectSnowRuntimeCarry,
+) -> Result<(), DirectRuntimeError> {
+    for (field, value) in [
+        ("constructor.snow_runtime_carry.runtime_swe_m", carry.runtime_swe_m),
+        (
+            "constructor.snow_runtime_carry.runtime_depth_m",
+            carry.runtime_depth_m,
+        ),
+        (
+            "constructor.snow_runtime_carry.runtime_density_kg_m3",
+            carry.runtime_density_kg_m3,
+        ),
+        (
+            "constructor.snow_runtime_carry.runtime_settle_day_count",
+            carry.runtime_settle_day_count,
+        ),
+    ] {
+        validate_nonnegative_direct_m(field, value)?;
+    }
+    if carry.runtime_density_kg_m3 > 522.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "constructor.snow_runtime_carry.runtime_density_kg_m3",
+        });
     }
     Ok(())
 }

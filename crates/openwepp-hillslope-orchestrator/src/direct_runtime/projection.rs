@@ -121,7 +121,11 @@ impl DirectDayFrame {
             &evapotranspiration.layer_state_after_root_uptake,
             storage.storage_reconciled_m,
         )?;
-        let snow_water_m = self.hydrology_projection_inputs.snow_water_m;
+        let snow_water_m = if self.snow_coupling.snow_state_projected {
+            snow_coupling.runtime_swe_after_m
+        } else {
+            self.hydrology_projection_inputs.snow_water_m
+        };
         let frost_depth_m = self.hydrology_projection_inputs.frost_depth_m;
         validate_nonnegative_direct_m("hydrology_projection.frost_depth_m", frost_depth_m)?;
 

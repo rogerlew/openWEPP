@@ -226,6 +226,10 @@ pub enum DirectRuntimeError {
     DirectDomainViolation {
         field: &'static str,
     },
+    DirectKernelGuardFailure {
+        phase: &'static str,
+        detail: String,
+    },
     PublicationDayInputBuildFailure {
         detail: String,
     },
@@ -348,6 +352,12 @@ impl fmt::Display for DirectRuntimeError {
                 write!(
                     formatter,
                     "direct runtime field {field} violates its direct-domain constraints"
+                )
+            }
+            Self::DirectKernelGuardFailure { phase, detail } => {
+                write!(
+                    formatter,
+                    "direct runtime kernel guard failed in {phase}: {detail}"
                 )
             }
             Self::PublicationDayInputBuildFailure { detail } => {
