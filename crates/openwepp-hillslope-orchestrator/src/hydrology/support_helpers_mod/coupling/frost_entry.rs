@@ -1,6 +1,8 @@
 #[allow(clippy::wildcard_imports)]
 use super::super::super::*;
 
+use std::fmt::Write as _;
+
 #[allow(clippy::wildcard_imports)]
 use super::*;
 
@@ -158,7 +160,7 @@ fn r7g_json_string(value: &str) -> String {
             '\r' => escaped.push_str("\\r"),
             '\t' => escaped.push_str("\\t"),
             control if control.is_control() => {
-                escaped.push_str(&format!("\\u{:04x}", u32::from(control)));
+                let _ = write!(&mut escaped, "\\u{:04x}", u32::from(control));
             }
             other => escaped.push(other),
         }
@@ -209,7 +211,7 @@ fn r7g_frost_trace_usize_array(values: impl IntoIterator<Item = usize>) -> Strin
     out
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn maybe_write_r7g_frost_trace(
     request: &HillslopeKernelRequest<'_>,
     prior: ActiveFrostPriorContext,
@@ -1460,11 +1462,14 @@ impl Wb11HydrologyKernel {
         Ok(false)
     }
 
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     fn no_freeze_active_frost_outcome(
+        request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
         prior_context: ActiveFrostPriorContext,
         thermal_context: ActiveFrostThermalContext,
         soil_conductivity: f64,
+        ksoilf: f64,
         total_fine_layer_count: usize,
         layer_water_state: &[FrostLayerWaterState],
         shadow_fine_state: &FrostFineShadowState,
@@ -1475,6 +1480,68 @@ impl Wb11HydrologyKernel {
             shadow_fine_state,
             layer_water_state,
         )?;
+        let depth_summary = FrostDepthSummary {
+            frdp: 0.0,
+            thdp: 0.0,
+            tfrdp: 0.0,
+            tthawd: 0.0,
+        };
+        let shallow_minimum_path_m =
+            Self::shallow_front_minimum_conduction_path_m(&shadow_fine_state.fine_layers);
+        let lower_front_heat_w_m2 = Self::lower_front_heat_w_m2(
+            thermal_context.seasonal_temperature_curve,
+            thermal_context.sdate,
+            0.0,
+            &shadow_fine_state.fine_layers,
+            layer_water_state,
+            ksoilf,
+        );
+        let mut hourly_state = std::array::from_fn(|hour_index| FrostHourlyState {
+            hour: hour_index + 1,
+            frzflg: 0.0,
+            surface_temp_c: 0.0,
+            qsrf_w_m2: 0.0,
+            quf_w_m2: 0.0,
+            ksrf_w_m_k: FROST_RUNTIME_KFUTIL_W_M_K,
+            snow_depth_m: thermal_context.snow_depth_m,
+            residue_depth_m: thermal_context.residue_depth_m,
+            tilled_frozen_depth_m: 0.0,
+            untilled_frozen_depth_m: 0.0,
+        });
+        for hourly in &mut hourly_state {
+            let surface_temp_c = Self::legacy_tmpadj_surface_temperature_c(
+                request,
+                phase_class,
+                hourly.hour,
+                thermal_context.snow_depth_m,
+                thermal_context.snow_density_kg_m3,
+                thermal_context.ksnowf,
+                thermal_context.residue_depth_m,
+                thermal_context.conductivity_residue_w_m_k,
+                depth_summary,
+            )?;
+            let (resistance_m2_c_w, _, ksrf_w_m_k) = Self::frost_surface_heat_path(
+                0.0,
+                thermal_context.snow_depth_m,
+                thermal_context.snow_conductivity_w_m_k,
+                thermal_context.residue_depth_m,
+                thermal_context.conductivity_residue_w_m_k,
+                surface_temp_c < 0.0,
+                shallow_minimum_path_m,
+            );
+            let signed_surface_flux_w_m2 = surface_temp_c / resistance_m2_c_w;
+            let signed_net_flux_w_m2 = signed_surface_flux_w_m2 + lower_front_heat_w_m2;
+            hourly.surface_temp_c = surface_temp_c;
+            hourly.qsrf_w_m2 = (-signed_surface_flux_w_m2).max(0.0);
+            hourly.quf_w_m2 = lower_front_heat_w_m2;
+            hourly.frzflg = Self::select_frost_branch(
+                signed_surface_flux_w_m2,
+                lower_front_heat_w_m2,
+                signed_net_flux_w_m2,
+                depth_summary,
+            );
+            hourly.ksrf_w_m_k = ksrf_w_m_k.max(WB11_ZERO_THRESHOLD);
+        }
         Ok(FrostCouplingOutcome {
             dfrost: 0.0,
             dthaw: 0.0,
@@ -1505,18 +1572,7 @@ impl Wb11HydrologyKernel {
             shadow_frwatc_residual_m: 0.0,
             watpdg_m: 0.0,
             watbtm_m: 0.0,
-            hourly_state: std::array::from_fn(|hour_index| FrostHourlyState {
-                hour: hour_index + 1,
-                frzflg: 0.0,
-                surface_temp_c: 0.0,
-                qsrf_w_m2: 0.0,
-                quf_w_m2: 0.0,
-                ksrf_w_m_k: FROST_RUNTIME_KFUTIL_W_M_K,
-                snow_depth_m: thermal_context.snow_depth_m,
-                residue_depth_m: thermal_context.residue_depth_m,
-                tilled_frozen_depth_m: 0.0,
-                untilled_frozen_depth_m: 0.0,
-            }),
+            hourly_state,
             layer_topology_state: Vec::new(),
             shadow_layer_state: shadow_fine_state
                 .layer_state
@@ -1911,10 +1967,12 @@ impl Wb11HydrologyKernel {
             )?
         {
             let outcome = Self::no_freeze_active_frost_outcome(
+                request,
                 phase_class,
                 prior_context,
                 thermal_context,
                 soil_conductivity,
+                controls.ksoilf,
                 total_fine_layer_count,
                 &layer_water_state,
                 &prior_shadow_fine_state,

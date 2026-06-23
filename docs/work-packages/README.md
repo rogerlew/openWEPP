@@ -13,6 +13,16 @@
 
 State as of `2026-06-23`:
 
+- `20260623-r7g-winter-column-mechanical-containment-001/` is complete. It
+  installed the ADR-0026 winter-column containment boundary outside
+  `direct_runtime`, added inert boxed `DirectWinterColumnState` ownership hooks
+  to direct lane/day frames, reused existing runtime-input hourly winter forcing
+  authority, proved the new module has no compatibility request/symbol
+  authority, split the oversized direct-publication day-input helper into
+  sub-3000-line chunks, and fixed the active-frost no-freeze hourly diagnostic
+  gate blocker exposed by workspace validation. It does not claim solver
+  migration, publication parity, performance closure, default activation, or
+  R7G closure.
 - `20260623-r7g-iterative-completion-001/` is executing against
   `R7G-006-FROST-SNOW-PROJECTION-PARITY-RESIDUALS`. It lifted the inherited
   surface-free active-snow hold by making sidecar-only snow inactive, adding

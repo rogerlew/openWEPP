@@ -10,6 +10,7 @@ mod direct_runtime;
 mod hydrology;
 mod phase;
 mod scheduler;
+mod winter_column;
 
 #[cfg(test)]
 mod tests;
@@ -158,6 +159,9 @@ pub use hydrology::{
     Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
 };
 pub use phase::HillslopePhase;
+pub use runtime_inputs::{
+    DIRECT_WINTER_HOURLY_FORCING_COUNT, DirectWinterHourlyContext, DirectWinterHourlyForcing,
+};
 pub use scheduler::{
     HillslopeKernelExecutionReport, HillslopeKernelPhaseReport, HillslopePhaseGraph,
     HillslopePhaseOutcome, HillslopePhaseScheduler, HillslopeSchedulerError,
@@ -167,6 +171,12 @@ pub use scheduler::{
     PerOfeDailyWaterBalanceCollection, PerOfeDailyWaterBalanceError, PerOfeDailyWaterBalanceRecord,
     PhaseDependency, SchedulerOutcomeClass, TransferInput, TransferOutput,
     build_hillslope_hot_symbol_tables,
+};
+pub use winter_column::{
+    DIRECT_WINTER_HOURS_PER_DAY, DirectFrostFineLayerState, DirectFrostLaneState,
+    DirectFrostLayerShadowState, DirectSnowLaneState, DirectWinterColumnState,
+    DirectWinterDayForcing, DirectWinterDayOutcome, DirectWinterFrostOutcome,
+    DirectWinterPublicationOutcome, DirectWinterSnowOutcome, DirectWinterStorageOutcome,
 };
 
 pub(crate) use hydrology::{

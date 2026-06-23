@@ -1190,7 +1190,7 @@ mod tests {
 
     #[test]
     fn r7f_typed_day_input_hot_loop_excludes_runtime_surface_reads() {
-        let source = include_str!("direct_publication/day_input_and_helpers.rs");
+        let source = direct_publication_day_input_and_helpers_source();
         let impl_body = source
             .split("impl<'a> DirectProductionDayInputBuilder<'a>")
             .nth(1)
@@ -1347,7 +1347,7 @@ mod tests {
 
     #[test]
     fn r7g_direct_production_hands_active_frost_context_to_r4a_without_material_gate() {
-        let source = include_str!("direct_publication/day_input_and_helpers.rs");
+        let source = direct_publication_day_input_and_helpers_source();
         let impl_body = source
             .split("impl<'a> DirectProductionDayInputBuilder<'a>")
             .nth(1)
@@ -1375,7 +1375,7 @@ mod tests {
 
     #[test]
     fn r7g_direct_production_frost_uses_prior_snowpack_not_same_day_projection() {
-        let source = include_str!("direct_publication/day_input_and_helpers.rs");
+        let source = direct_publication_day_input_and_helpers_source();
         let impl_body = source
             .split("impl DirectProductionSnowFrostAuthority")
             .nth(1)
@@ -1414,6 +1414,17 @@ mod tests {
             timem_s: Vec::new(),
             intsty_m_s: Vec::new(),
         }
+    }
+
+    fn direct_publication_day_input_and_helpers_source() -> String {
+        [
+            include_str!("direct_publication/day_input_and_helpers/00_builders_and_authority.rs"),
+            include_str!("direct_publication/day_input_and_helpers/01_frost_and_layer_helpers.rs"),
+            include_str!(
+                "direct_publication/day_input_and_helpers/02_publication_and_manifest_helpers.rs",
+            ),
+        ]
+        .join("\n")
     }
 
     #[test]

@@ -772,6 +772,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
         })
     }
 
+    #[allow(clippy::too_many_lines)]
     pub(crate) fn compute_active_snow_coupling_from_typed(
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveSnowPartitionInputs,

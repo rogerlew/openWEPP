@@ -432,6 +432,7 @@ impl DirectRunFrame {
         }
         day_frame.evapotranspiration_compute_inputs.stage_state =
             lane.evapotranspiration_stage_state;
+        day_frame.winter_column.clone_from(&lane.winter_column);
         day_frame.snow_runtime_carry = lane.snow_runtime_carry;
         Ok(day_frame)
     }
@@ -652,6 +653,7 @@ pub struct DirectLaneFrame {
     pub erosion_downstream_operands: DirectErosionDownstreamOperands,
     pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
     pub evapotranspiration_stage_state: Option<DirectEvapotranspirationStageState>,
+    pub winter_column: Box<DirectWinterColumnState>,
     pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
     pub day_inputs: Vec<DirectDayConstructorInputs>,
@@ -685,6 +687,7 @@ impl DirectLaneFrame {
             erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             subsurface_layers: Vec::new(),
             evapotranspiration_stage_state: None,
+            winter_column: Box::new(DirectWinterColumnState::zero()),
             snow_runtime_carry: None,
             frost_runtime_carry: None,
             day_inputs: Vec::new(),
@@ -710,6 +713,7 @@ impl DirectLaneFrame {
             erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             subsurface_layers: inputs.subsurface_layers,
             evapotranspiration_stage_state: inputs.evapotranspiration_stage_state,
+            winter_column: Box::new(DirectWinterColumnState::zero()),
             snow_runtime_carry: inputs.snow_runtime_carry,
             frost_runtime_carry: inputs.frost_runtime_carry,
             day_inputs: inputs.day_inputs,
@@ -780,6 +784,7 @@ impl DirectLaneFrame {
         }
         self.evapotranspiration_stage_state =
             day_frame.evapotranspiration_surface.stage_state_after;
+        self.winter_column.clone_from(&day_frame.winter_column);
         self.snow_runtime_carry = day_frame.snow_runtime_carry;
         self.frost_runtime_carry
             .clone_from(&day_frame.frost_runtime_carry);
@@ -906,6 +911,7 @@ pub struct DirectDayFrame {
     pub erosion_downstream_operands: DirectErosionDownstreamOperands,
     pub erosion_shadow_projection: Option<DirectErosionShadowProjection>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
+    pub winter_column: Box<DirectWinterColumnState>,
     pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
     pub water_ledger: DirectWaterLedgerState,
@@ -1043,6 +1049,7 @@ impl DirectDayFrame {
             erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             erosion_shadow_projection: None,
             frost_layer_carry_projection: None,
+            winter_column: Box::new(DirectWinterColumnState::zero()),
             snow_runtime_carry: None,
             frost_runtime_carry: None,
             water_ledger: DirectWaterLedgerState::zero(),

@@ -1454,7 +1454,7 @@ fn parse_runfile_snow_sidecar(
     }
     let default_snow_path = request.run_dir.join("snow.txt");
     if default_snow_path.is_file() {
-        *input_path = Some(default_snow_path.to_owned());
+        *input_path = Some(default_snow_path.clone());
         resolved_sidecars.insert("snow".to_string(), default_snow_path.display().to_string());
         return parse_snow_file(
             &default_snow_path,
@@ -1508,7 +1508,7 @@ fn parse_runfile_frost_sidecar(
     }
     let default_frost_path = request.run_dir.join("frost.txt");
     if default_frost_path.is_file() {
-        *input_path = Some(default_frost_path.to_owned());
+        *input_path = Some(default_frost_path.clone());
         resolved_sidecars.insert(
             "frost".to_string(),
             default_frost_path.display().to_string(),
