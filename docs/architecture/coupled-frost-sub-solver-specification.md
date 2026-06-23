@@ -11,10 +11,12 @@ Subordinate to: [array-native-runtime-specification.md](array-native-runtime-spe
 controls runtime architecture; [SC-SNOWFREEZE-001](../specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md)
 controls frost/snow science behavior. This document proposes a runtime *shape*;
 it changes no physics.
-Evidence mode: static - source reads of the pinned legacy baseline
-(`/workdir/wepp-forest_260430_baseline`, commit
+Evidence mode: static plus R7G package evidence - source reads of the pinned
+legacy baseline (`/workdir/wepp-forest_260430_baseline`, commit
 `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`), the openWEPP direct runtime, and
-`SC-SNOWFREEZE-001`. No simulations were run for this document.
+`SC-SNOWFREEZE-001`; R7G endpoint/parity evidence from
+`docs/work-packages/20260623-r7g-iterative-completion-001/`. No new
+simulations were run for this document.
 Last updated: 2026-06-23.
 
 ---
@@ -24,23 +26,28 @@ Last updated: 2026-06-23.
 Frost is not a feed-forward water-balance phase. It is a **coupled, stateful,
 hourly sub-solver** with long-memory seasonal state, an internal moving
 freeze/thaw front, and a hard dependency on the snowpack that insulates it. The
-current runtime - in both compatibility and direct modes - shapes frost as a
-*coupling re-entered from inside two feed-forward phases*, re-resolving its full
-state from the symbol surface at each entry. The direct-frame port has built the
-two easy thirds (typed persistent state, typed publication projection) and
-stalled on the hard third (the solver itself), so direct mode carries and
-publishes frost state but never advances it.
+current runtime still shapes frost as a coupling reentered from inside
+feed-forward phases and reconstructed from request/symbol surfaces. R7G proved
+that this mold is not a viable direct-runtime closure path: direct frost can
+execute with zero compatibility-edge counters, but the one-day
+`DirectFrostRunoffSurface` path cannot simultaneously preserve fine/shadow
+state, avoid corrupt coarse projection, meet protected output parity, and keep
+H2637 within the `<=10x` performance gate.
 
 This document records the motivation, the legacy deficiencies that make frost
 reconstruction intrinsically hard, and the suitability findings from the current
-implementation shape. It proposes a **winter-column sub-solver boundary**: one
-coupled snow+frost solver that owns persistent lane state, runs once per OFE-day
-(advancing its 24 hourly steps internally), and exposes typed outputs that the
-feed-forward phases consume as ordinary inputs.
+implementation shape. It proposes a **winter-column sub-solver boundary**: a
+runtime component that orchestrates distinct typed snow and frost sub-states,
+owns their shared persistent lane state, advances the 24 hourly frost steps
+internally, and exposes typed outputs that the feed-forward phases consume as
+ordinary inputs.
 
-The recommendation is to stop porting frost as a feed-forward phase fragment and
-give it a sub-solver boundary that matches its physics, doing snow first because
-frost depends on it.
+The recommendation is to stop porting frost as feed-forward phase fragments.
+Promote snow and frost to a stateful winter-column boundary, with explicit
+legacy ordering: frost thermal forcing sees the prior snowpack; same-day snow
+partition then mutates snow state for downstream liquid forcing and publication.
+Snow remains a distinct typed sub-state with independent `SC-SNOWFREEZE-001`
+producer obligations and parity gates; frost does not own snow physics.
 
 ---
 
@@ -153,9 +160,10 @@ decisions to one place is therefore an asset, not just an optimization.
 
 ## 3. Current Implementation - Suitability Findings
 
-Static: read from the openWEPP hydrology kernels and direct runtime.
+Static: read from the openWEPP hydrology kernels and direct runtime. R7G
+evidence: `docs/work-packages/20260623-r7g-iterative-completion-001/`.
 
-### 3.1 Frost is a coupling re-entered from multiple feed-forward phase points
+### 3.1 Frost is a coupling reentered from multiple feed-forward phase points
 
 `resolve_active_frost_coupling` is invoked at three sites across two phases:
 
@@ -181,34 +189,46 @@ fine-layer shadow -> surface inputs -> prior context -> thermal context ->
 `HillslopeKernelRequest`, re-resolved on each call rather than passed as typed
 arguments and mutated in place.
 
-### 3.3 The direct port built state and publication, not the solver
+### 3.3 R7G proved the boundary problem, not just a missing function
 
 | Piece | Status | Evidence |
 |---|---|---|
-| Typed persistent cross-day state | **Exists** | `DirectFrostRuntimeCarry` (`direct_runtime/00_core_frames.rs:170-201`): `frdp/tfrdp/thdp/tthawd`, `fgthwd`, `nft`, `ws_frz`, `infcap_frz`, 8-field `frwatc` ledger, conductivities, `watpdg/watbtm`, full fine-layer shadow (`layer_shadows`, `fine_layers`). |
-| Typed publication projection | **Exists** | `DirectFrostLayerCarryProjection`, `DirectFrostRunoffSurface`, `DirectFrostLiquidPartition` (`direct_runtime/01_publication.rs:50-53, 85+`). |
-| Solver invocation | **Absent** | `frost_runtime_carry: None` default (`00_core_frames.rs:250`); `frost_liquid_delta_m: 0.0` hardcoded (`normalization.rs:426`). Direct runtime files contain no call to `compute_active_frost_coupling` or any thermal solver. |
+| Typed persistent cross-day state | **Partial** | `DirectFrostRuntimeCarry` can carry front scalars, `frwatc` ledger fields, conductivities, `watpdg/watbtm`, layer shadows, and fine layers. R7G showed that treating this as optional carry rather than canonical lane state drops zero-material fine/shadow state. |
+| Typed snow direct path | **Advanced** | R7G added typed snow controls, hourly forcing, snow partition, carry mutation, and publication projection. The remaining blocker is not sidecar-only active snow authority, but snow publication/parity remains unresolved inside the broader R7G protected-output failure set (`Snow-Water`, `RM`, and related operands). |
+| Active frost execution | **Partial / unsuitable** | R7G can drive active frost through `DirectFrostRunoffSurface` and `Wb11HydrologyKernel::compute_direct_frost_liquid_partition` with `compatibility_edge_invocations=0`, but that path remains request/symbol-surface backed and not a typed stateful solver. |
+| Typed publication projection | **Partial** | Direct publication can emit frost/snow-sensitive operands, but R7G showed that persistent fine/shadow carry must not imply coarse layer projection, and no-material partitions must not strip residual water from WAT `Total-Soil`. |
+| Parity/performance closure | **Failed** | R7G held at `HOLD-R7G-FROST-STATEFUL-SUBSOLVER-REQUIRED`: HBP/WAT/PASS parity remained red, and fine-layer carry preservation pushed latest measured H2637 direct endpoints to `188.57-195.27 s` before the final no-material consumer safeguard was measured. |
 
-Direct mode therefore *carries and publishes* frost state but never *advances*
-it. Active-frost / active-snow days are exactly where this surfaces.
+The old diagnosis "direct carries and publishes frost state but never advances
+it" is now too weak. The current direct path can advance frost, but only by
+reentering a symbol-surface solver and then projecting its one-day outcome back
+into direct state. That architecture repeatedly trades one defect for another:
+material-state gates drop fine liquid state, no-freeze echoes can become unsafe
+coarse projections, and preserving the state needed for parity regresses the hot
+loop.
 
 ### 3.4 Snow is the upstream instance of the same problem
 
-The current R7G blocker, `HOLD-R7G-SURFACE-FREE-ACTIVE-SNOW-PARTITION-AUTHORITY-ABSENT`,
-is the snow partition helper (`runoff_reconciliation.rs`) still reading
-`snow.runtime_*` symbols off `HillslopeWritebackSurface` because no typed direct
-snow partition exists. Frost's thermal forcing depends on snow depth and density,
-so snow must be typed-direct first. Same shape, one layer upstream.
+Snow was the upstream instance of the same problem. The inherited R7G blocker
+was `HOLD-R7G-SURFACE-FREE-ACTIVE-SNOW-PARTITION-AUTHORITY-ABSENT`: the snow
+partition helper read `snow.runtime_*` symbols off `HillslopeWritebackSurface`
+because no typed direct snow partition existed. R7G closed that snow-authority
+gap far enough for active snow endpoint execution, but it also clarified the
+ordering constraint that any winter-column design must preserve: frost forcing
+uses **prior** snow depth and density; same-day snow partition mutates the snow
+state afterward.
 
 ### 3.5 Suitability verdict
 
 The direct port replicated the compatibility shape - "frost = coupling woven into
-ET and runoff, re-resolved from symbols." To finish it *in that mold*, two
-different direct phases would each need typed access to the entire coupled winter
-state (snow + frost + fine-layer ice + seasonal curve + priors), re-resolved at
-two points, while R7F has deliberately cut the hot loop off from the symbol
-surface. The mold fights the physics. The required change is a boundary change,
-not more input plumbing.
+ET and runoff, re-resolved from symbols." R7G demonstrated the cost of finishing
+it in that mold. Two direct consumers need the same winter state (prior snow,
+frost fronts, fine-layer liquid/ice, layer shadows, seasonal thermal context,
+and liquid exchange ledger), but the state cannot be safely reconstructed from
+coarse layer fields or inferred from current-day frozen material. R7F also
+deliberately cut the hot loop off from compatibility symbol surfaces. The mold
+fights both the physics and the direct-runtime architecture. The required change
+is a boundary change, not more input plumbing.
 
 ---
 
@@ -218,9 +238,9 @@ not more input plumbing.
 |---|---|---|
 | Internal hourly time integration | Poor - the loop is hidden inside a "pure" phase | Good - the loop is the solver's body, invisible to the executor |
 | Long-memory seasonal state | Poor - day frame is not the owner | Good - persistent lane state, mutated in place |
-| Snow+frost coupling | Poor - two subsystems re-resolved separately | Good - one coupled column owns both |
+| Snow+frost coupling | Poor - two subsystems re-resolved separately | Good - one winter column orchestrates both typed sub-states |
 | Feedback loops | Poor - not expressible as borrow edges | Good - internal to the solver |
-| Two-point hydrology coupling | Poor - drives the double re-entry | Good - one solve, typed outputs read by both consumers |
+| Two-point hydrology coupling | Poor - drives the double reentry | Good - one solve, typed outputs read by both consumers |
 | Contract-decision localization (§2.3) | Poor - decisions smeared across phase fragments | Good - one typed boundary to bind `SC-SNOWFREEZE-001` |
 | Independent validation | Poor - state re-resolved from symbols inside phases | Good - narrow typed in/out is directly shadowable |
 
@@ -237,93 +257,174 @@ physics remains governed by `SC-SNOWFREEZE-001`.
 
 ### 5.1 Reframe
 
-Move frost (and snow with it) from "a coupling call inside ET and runoff" to
-"one coupled **winter column** sub-solver that owns its state, runs once per
-OFE-day, advances its 24 hourly steps internally, and emits typed outputs the
-feed-forward phases consume as ordinary inputs."
+Move frost from "coupling calls inside ET and runoff" to a coupled
+**winter-column** sub-solver. The sub-solver orchestrates persistent snow and
+frost lane state, advances the internal frost hourly loop, preserves snow/frost
+ordering, and emits typed outputs that the feed-forward phases consume as
+ordinary inputs. It is allowed to be internally iterative and stateful; the outer
+direct executor still sees a typed day-level producer.
 
-### 5.2 State ownership - promote the carry to authority
+### 5.2 State ownership - promote carry to lane authority
 
-Introduce a lane-owned, persistent `WinterColumnState` that fuses snow and frost
-(they are one coupled column). This is the existing `DirectFrostRuntimeCarry`
-plus a snow equivalent, changed from *shadow that is `None`/zero* to
-*authoritative mutable lane state advanced each day*. The type substantially
-exists; it must be used as state, not plumbing.
+Introduce a lane-owned `DirectWinterColumnState` with snow state plus a rich
+`DirectFrostLaneState`. `DirectFrostRuntimeCarry` is evidence for the fields
+that matter, not the final ownership model. The final state must be canonical
+even when current-day frozen material is zero. `DirectWinterColumnState` is the
+sole authoritative persistent lane state after a winter-column call; returned
+outcomes can expose diagnostics, projections, deltas, and immutable snapshots,
+but not a second persistence authority.
+
+Minimum `DirectSnowLaneState` responsibilities:
+
+- prior snowpack snapshots: SWE, depth, density, age/settle-day count, and any
+  direct-runtime albedo/coverage controls needed by `SC-SNOWFREEZE-001`;
+- same-day partition ledger: retained rain, released rain, `wmelt`, `S`, `RM`,
+  routed melt, post-winter rain, and closure residuals;
+- publication operands: `Snow-Water`, SWE/depth/density snapshots, and manifest
+  metadata needed for HBP/WAT/PASS/loss/plot reconstruction;
+- explicit prior-vs-post views so frost thermal forcing reads prior snow while
+  downstream liquid and publication consumers read post-partition snow.
+
+Minimum `DirectFrostLaneState` responsibilities:
+
+- front and thaw scalars: `dfrost`, `dthaw`, `frdp`, `thdp`, `tfrdp`, `tthawd`,
+  `fgthwd`, `nft`, `ws_frz`, `infcap_frz`;
+- fine-layer state: `fgfrst`, `slfsd`, `slsic`, `slsw`, `sltime`, including
+  zero-material heterogeneous liquid state;
+- layer shadow/exchange state: `st`, `yst`, `nwfrzz`, `soilf`, `frzw`,
+  `frozen_depth`, and total liquid/frozen accounting;
+- liquid exchange ledger: `frwatc` before/after, freeze debit, thaw credit,
+  net liquid delta, `watpdg`, `watbtm`, and closure residual;
+- thermal context inputs or cached controls needed to advance the next day
+  without reading a symbol surface.
+
+Hard invariant: persistent fine/shadow carry is not coarse layer projection.
+Coarse layer mutation is emitted only when the sub-solver explicitly closes a
+liquid/frozen storage exchange for the day.
 
 ### 5.3 One sub-solver call with a narrow typed boundary
 
 ```rust
-fn advance_winter_column(
-    state: &mut WinterColumnState,     // persistent lane state, mutated in place
-    forcing: &DayWinterForcing,        // hourly temp/rad/precip/wind/cloud (typed)
-    soil: &SoilColumnView,             // layer thickness, theta, conductivity inputs
-    residue_depth_m: f64,              // from residue/management state
-) -> WinterDayOutcome;                 // typed: infcap_frz, routed_melt, post_winter_rain,
-                                       // frost_liquid_delta, watpdg/watbtm, swe/depth + pub operands
+fn advance_winter_column_day(
+    state: &mut DirectWinterColumnState,
+    forcing: DirectWinterDayForcing,
+    soil: DirectFrostSoilColumnInputs,
+    residue: DirectResidueThermalInputs,
+) -> Result<DirectWinterDayOutcome, DirectRuntimeError>;
 ```
 
-This is `FrostCouplingOutcome` plus the snow partition, with **typed inputs
-instead of symbol reads** and **state mutated in place instead of re-resolved**.
-The 24-hour loop and freeze/thaw-front advancement stay inside the function; the
-executor sees one typed in, one typed out.
+`DirectWinterColumnState` is the only persistent authority. The function mutates
+it in place. `DirectWinterDayOutcome` must not contain an alternate end-of-day
+state channel; when validation needs state evidence, expose immutable snapshots
+or digest/projection fields that are explicitly non-authoritative.
 
-### 5.4 Placement - run once, early, as a forcing preprocessor
+`DirectWinterDayOutcome` must separate concerns that the current retrofit
+confuses:
 
-Logically the winter column transforms (daily climate + prior winter state) ->
-(today's infiltration capacity, liquid forcing, frost liquid deltas). Run it at
-the top of the OFE-day, before infiltration/ET and runoff-reconciliation, which
-then read `WinterDayOutcome` fields as ordinary typed inputs. The three coupling
-re-entries collapse to one solve and several typed consumers - no mid-phase
-re-invocation, no symbol surface in the hot loop. (See §6 for the one ordering
-question this placement depends on.)
+- non-authoritative state snapshots or diagnostics for validation;
+- frost pre-runoff operands: frozen infiltration capacity, frost depth,
+  frozen-water total, and front diagnostics;
+- snow/liquid operands: post-winter rain, routed melt, SWE/depth/density after
+  snow partition, and liquid hyetograph scaling inputs;
+- storage operands: `frwatc_net_liquid_delta_m`, optional coarse layer
+  mutations, and independent closure fields;
+- downstream operands for R4A/R4G/R4PQZ and publication operands for
+  HBP/WAT/PASS/loss/manifest reconstruction.
 
-### 5.5 Snow first
+The 24-hour loop and freeze/thaw-front advancement stay inside the function.
+The executor sees typed inputs, typed state mutation, and typed outputs; it does
+not see `BTreeMap<BoundarySymbol, BoundaryValue>` or
+`HillslopeKernelRequest` in the production hot loop.
 
-Promote `DirectSnowPartition*` to typed lane state plus a typed snow step feeding
-`WinterColumnState`; frost then reads snow from shared typed state, not a symbol.
-This is the literal R7G unblock and a precondition for frost.
+### 5.4 Placement - one winter-column producer with staged outputs
+
+Run the winter-column producer once per OFE-day, before feed-forward hydrology
+consumers. The producer may internally stage its work:
+
+1. Build typed forcing and soil-column inputs from the direct day/lane frame.
+2. Advance frost thermal state using the **prior** snow depth and density.
+3. Compute snow partition and same-day liquid forcing.
+4. Emit the frost and snow operands consumed by infiltration/ET,
+   runoff-reconciliation, storage reconciliation, downstream transfer, and
+   publication.
+
+The follow-up implementation package must complete and record this source trace
+before locking the final API shape. If runoff-reconciliation needs a post-ET
+frost liquid partition, split the API into
+`prepare_winter_column_pre_hydrology` and
+`finish_winter_column_post_hydrology`, both sharing the same
+`&mut DirectWinterColumnState`. Do not reintroduce symbol-surface reentry.
+
+### 5.5 Snow authority before frost closure
+
+Snow state must be typed before frost can close because frost thermal forcing
+depends on snow depth and density. That does not mean same-day snow mutation
+runs before the frost thermal solve. The legacy ordering captured by R7G is:
+frost sees prior snowpack, then same-day snow partition mutates snow state for
+liquid forcing and publication.
 
 ### 5.6 Validation seam
 
 Because the sub-solver has a narrow typed in/out, it is directly shadowable: feed
 identical typed forcing and initial state to the compatibility
 `compute_active_frost_coupling` (via an adapter) and the direct
-`advance_winter_column`, then diff `WinterDayOutcome` and end-of-day state with
-`f64::to_bits()`. This is materially easier to validate than re-resolving state
-from symbols inside two phases - which is itself an argument for the boundary.
+`advance_winter_column_day`, then compare `DirectWinterDayOutcome` and
+end-of-day state snapshots under `SC-SNOWFREEZE-001` semantic parity and named
+tolerances unless a field is explicitly declared bit-exact. Publication gates
+remain stricter: byte/Arrow identity and metadata parity for HBP/WAT/PASS/loss,
+plot, and manifest outputs. The adapter is a test/comparator boundary only.
+Production direct code must not invoke map-backed request surfaces in the hot
+loop.
 
 ---
 
-## 6. Open Questions and What to Verify
+## 6. Design Decisions and Verification Gates
 
-1. **Ordering dependency (verify before implementation).** Frost is currently
-   reached from both the ET/infiltration phase and runoff-reconciliation. Before
-   committing to "solve once at the top," confirm against legacy ordering whether
-   the runoff-reconciliation frost effects depend on intra-day state the
-   ET/infiltration phase produces. If independent, a single early solve is
-   correct. If dependent, the solver must sit after that dependency, or split
-   into a "pre" step (infiltration capacity) and a "post" step (liquid partition)
-   sharing the same `&mut WinterColumnState`. **This has not been traced and must
-   be resolved first.**
+1. **Ordering dependency.** R7G established one ordering invariant: frost forcing
+   sees prior snow depth and density. The follow-up implementation must still
+   trace whether freeze/thaw liquid partition depends on state mutated by
+   ET/infiltration before runoff-reconciliation. If it does, split the
+   winter-column API into pre/post steps over one `&mut DirectWinterColumnState`.
+   If it does not, one early day-level producer is sufficient. This trace is an
+   implementation entry gate, not a clean-up item: record the decision before
+   building beyond skeleton types and adapters.
 
 2. **Pure-phase-model exception.** The winter column is a stateful sub-solver
    that owns persistent mutable lane state and runs an internal time loop - a
    deliberate exception to the array-native spec §4.7 pure-phase model. Adoption
    should add this as a named entry in array-native spec §12 (Open Design
-   Decisions) - e.g. "stateful sub-solver phases" - rather than pretending frost
-   fits the uniform mold.
+   Decisions), for example "stateful sub-solver phases", rather than pretending
+   frost fits the uniform feed-forward mold.
 
-3. **Contract localization.** The `Qwet`/`frzftp` adjudication (§2.1), the fixed
-   `kftill`/`kfutil` constants, and the fine-layer geometry assumptions should
-   bind to `SC-SNOWFREEZE-001` at the single sub-solver boundary, not be spread
-   across phase fragments. The boundary makes the dead-code decision a one-place
-   contract decision.
+3. **Contract localization.** The `Qwet`/`frzftp` adjudication (§2.1), fixed
+   `kftill`/`kfutil` constants, fine-layer geometry assumptions, bounded
+   canonicalizations, and invalid-state guards must bind to
+   `SC-SNOWFREEZE-001` at the sub-solver boundary. Do not spread those decisions
+   across R4A/R4G/R4PQZ fragments.
 
-4. **Snow/frost contract coupling.** `SC-SNOWFREEZE-001` already fuses snow and
-   freeze into one contract; the `WinterColumnState` fusion mirrors that. Confirm
-   the snow partition invariants (melt bounds, density gates) and frost invariants
-   are jointly satisfiable from one coupled state without re-introducing a symbol
-   surface.
+4. **No-material carry invariant.** Zero current-day frozen material is not
+   zero frost state. Heterogeneous fine-layer liquid and layer-shadow state must
+   persist across no-freeze/no-material days and must be independently
+   reconstructable.
+
+5. **Projection invariant.** Fine/shadow carry is not coarse layer mutation.
+   Coarse layer mutation requires an explicit liquid/frozen storage exchange and
+   closure ledger. Publication may read fine/shadow state, but it must not
+   back-fill active-water-only `theta` into total soil water.
+
+6. **No-compatibility hot-loop gate.** Production direct execution must not call
+   `DirectFrostRunoffSurface`, `HillslopeKernelRequest`,
+   `HillslopeWritebackSurface`, compatibility WB13 rows, or map-backed symbol
+   helpers for frost. The measurable source gate is: no production references to
+   `DirectFrostRunoffSurface`, `BoundarySymbol`, `BoundaryValue`,
+   `HillslopeWritebackSurface`, or `HillslopeKernelRequest` in the winter-column
+   hot path, except named test/comparator adapters.
+
+7. **Closure gates.** The follow-up package must rerun the R7G gates from the
+   new architecture: H2637 direct default `<=10x` legacy, HBP/WAT/PASS/loss/plot
+   parity, manifest metadata parity, `compatibility_edge_invocations=0`, source
+   scans for no symbol-surface authority using the identifiers in gate (6),
+   anti-alias fixtures, and independent operand reconstruction.
 
 ---
 
@@ -338,8 +439,9 @@ from symbols inside two phases - which is itself an argument for the boundary.
   physics, guards, units, or conservation obligations. Any `Qwet`/`frzftp`
   decision is a contract amendment under that authority, not a runtime decision.
 - **R7 burndown.** This addresses the architecture under
-  `HOLD-R7G-SURFACE-FREE-ACTIVE-SNOW-PARTITION-AUTHORITY-ABSENT`: snow partition
-  first, then frost, both as typed sub-solver state.
+  `HOLD-R7G-FROST-STATEFUL-SUBSOLVER-REQUIRED`: active snow authority advanced,
+  active frost can execute, but frost requires a stateful typed sub-solver before
+  R7G parity/performance closure is honest.
 - **ADR requirement.** Promotion from Draft/Proposed to ratified authority
   requires either an ADR or the array-native spec §12 amendment in (2) above.
 
@@ -349,12 +451,12 @@ from symbols inside two phases - which is itself an argument for the boundary.
 
 | Concern | Location |
 |---|---|
-| Dead `Qwet` / `frzftp` override | `wepp-forest_260430_baseline/src/frzng.for:381-394, 410-437` |
-| Frost driver, fine-layer/geometry assumptions, authorship strata | `wepp-forest_260430_baseline/src/frostn.for:11-36, 62, 74, 79-82` |
-| Compatibility frost gate / solver | `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling/frost_entry.rs:372 (resolve), 1892 (compute)` |
-| Frost coupling call sites | `hydrology_phase_infiltration_evap.rs:334`; `hydrology_phase_runoff_reconciliation.rs:44`; `support_helpers_mod/runoff_reconciliation.rs:180` |
-| Direct typed frost state (carry) | `crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs:170-201` |
-| Direct frost publication projections | `crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:50-53, 85+` |
-| Direct frost unported markers | `direct_runtime/00_core_frames.rs:250` (`None`); `direct_runtime/normalization.rs:426` (`0.0`) |
+| Dead `Qwet` / `frzftp` override | `wepp-forest_260430_baseline/src/frzng.for` (`frzftp`, migration gate, Eq. [3.8.4] block) |
+| Frost driver, fine-layer/geometry assumptions, authorship strata | `wepp-forest_260430_baseline/src/frostn.for` |
+| Compatibility frost gate / solver | `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling/frost_entry.rs` (`resolve_active_frost_coupling`, `compute_active_frost_coupling`) |
+| Frost coupling call sites | `hydrology_phase_infiltration_evap.rs`; `hydrology_phase_runoff_reconciliation.rs`; `support_helpers_mod/runoff_reconciliation.rs` |
+| Current direct frost state/carry | `crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs` (`DirectFrostRuntimeCarry`) |
+| Current direct frost publication/projection surfaces | `crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs`; `direct_runtime/runoff.rs`; `direct_publication/day_input_and_helpers.rs` |
+| R7G HOLD evidence and handoff | `docs/work-packages/20260623-r7g-iterative-completion-001/` |
 | Frost/snow science authority | `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md` |
 | Runtime architecture authority | `docs/architecture/array-native-runtime-specification.md` |
