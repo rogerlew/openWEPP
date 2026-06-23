@@ -5,8 +5,12 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
+use crate::hillslope::intake_lane_setup::{
+    legacy_sunmap_horizontal_radpot_ly, saturation_vapor_pressure_kpa,
+};
 use openwepp_hillslope_orchestrator::runtime_inputs::{
-    HillslopeClimateRuntimeRequest, SlopeRuntimeSurfaceOptions,
+    HillslopeClimateRuntimeRequest, HillslopeDirectClimateDayForcing,
+    SlopeRuntimeSurfaceOptions,
     build_hillslope_climate_runtime_request,
     build_hillslope_runtime_surface_from_climate_request_with_context,
     build_hillslope_runtime_surface_from_frost, build_hillslope_runtime_surface_from_management,
@@ -32,8 +36,8 @@ use openwepp_hillslope_orchestrator::{
     DirectRunIdentity, DirectRunPublicationFrame, DirectRuntimeAuditSnapshot, DirectRuntimeError,
     DirectSnowCouplingInputs, DirectStorageInputInputs, DirectSubsurfaceComputeInputs,
     DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState, DirectWb14HyetographInterval,
-    DirectWb14InfiltrationProducerInputs, HillslopeDayFrame, HillslopePhaseScheduler,
-    HillslopeWritebackSurface, OfeLaneExecutionInput,
+    DirectWb14InfiltrationProducerInputs, HillslopeDayFrame,
+    HillslopePhaseScheduler, HillslopeWritebackSurface, OfeLaneExecutionInput,
     OfeLanePersistentState, OfeLanePersistentStateSequence, OfeLaneSequenceExecutionReport,
     SchedulerOutcomeClass, TransferInput, TransferOutput, Wb11HydrologyKernel,
     build_hillslope_hot_symbol_tables, compute_direct_canopy_interception, direct_runtime_audit_snapshot,

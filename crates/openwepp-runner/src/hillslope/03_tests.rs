@@ -663,14 +663,10 @@ mod tests {
                 .and_then(serde_json::Value::as_bool),
             Some(false)
         );
-        let expected_compatibility_edges = manifest_json
-            .pointer("/wb13_publication/row_count")
-            .and_then(serde_json::Value::as_i64)
-            .expect("activated default candidate must include direct publication row count");
         assert_json_i64(
             &manifest_json,
             "/direct_runtime_counters/compatibility_edge_invocations",
-            expected_compatibility_edges,
+            0,
         );
     }
 
@@ -1004,7 +1000,7 @@ mod tests {
     }
 
     #[test]
-    fn r7c_direct_production_executor_reports_interleaved_day_input_compatibility_edges() {
+    fn r7c_direct_production_executor_reports_no_day_input_compatibility_edges() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -1041,11 +1037,6 @@ mod tests {
         let expected_phase_spans = 1 + expected_day_frames * r5c_day_span_run_count();
         let expected_phase_entries =
             DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5c_day_phase_entry_count();
-        let expected_compatibility_edges = manifest_json
-            .pointer("/wb13_publication/row_count")
-            .and_then(serde_json::Value::as_i64)
-            .expect("R7C fixture manifest must include direct publication row count");
-
         assert_json_i64(&manifest_json, "/direct_runtime_counters/run_frame_constructions", 1);
         assert_json_i64(&manifest_json, "/direct_runtime_counters/executor_constructions", 1);
         assert_json_i64(&manifest_json, "/direct_runtime_counters/skeleton_runs", 0);
@@ -1085,7 +1076,7 @@ mod tests {
         assert_json_i64(
             &manifest_json,
             "/direct_runtime_counters/compatibility_edge_invocations",
-            expected_compatibility_edges,
+            0,
         );
     }
 
@@ -1167,6 +1158,9 @@ mod tests {
             "execute_hillslope_climate_days(",
             "execute_with_kernel",
             "HillslopeKernelRequest",
+            "DirectPublicationDayInputBuilder",
+            "new_with_seed_surfaces_and_erosion_guard",
+            "record_direct_runtime_compatibility_edge_invocation",
         ] {
             assert!(
                 !direct_body.contains(forbidden),
@@ -1176,16 +1170,58 @@ mod tests {
     }
 
     #[test]
-    fn r7f_remaining_direct_day_input_builder_compatibility_edge_is_accounted() {
+    fn r7f_production_direct_uses_typed_day_input_builder() {
+        let source = include_str!("05_runner_execution_and_outputs.rs");
+        let direct_body = source
+            .split("fn execute_hillslope_direct_production_days")
+            .nth(1)
+            .and_then(|tail| tail.split("\nfn ").next())
+            .expect("R7F direct production function body must be present");
+        assert!(
+            direct_body.contains("DirectProductionDayInputBuilder::new"),
+            "production direct must use the typed R7F day-input builder"
+        );
+        assert!(
+            !direct_body.contains("DirectPublicationDayInputBuilder"),
+            "production direct must not use the compatibility-shaped publication day-input builder"
+        );
+    }
+
+    #[test]
+    fn r7f_typed_day_input_hot_loop_excludes_runtime_surface_reads() {
         let source = include_str!("direct_publication/day_input_and_helpers.rs");
+        let impl_body = source
+            .split("impl<'a> DirectProductionDayInputBuilder<'a>")
+            .nth(1)
+            .expect("R7F typed production builder impl must be present");
+        let build_body = impl_body
+            .split("    fn build(")
+            .nth(1)
+            .and_then(|tail| tail.split("\n    fn build_lane_authority").next())
+            .expect("R7F typed production builder hot-loop build body must be present");
         assert!(
-            source.contains("seed_surfaces: Vec<HillslopeWritebackSurface>"),
-            "R7F blocker evidence expects the current direct day-input builder to retain compatibility-shaped seed surfaces"
+            build_body.contains("direct_day_forcing"),
+            "R7F hot loop must use typed climate forcing"
         );
         assert!(
-            source.contains("record_direct_runtime_compatibility_edge_invocation();"),
-            "remaining compatibility-shaped direct day-input builder must increment the direct runtime compatibility-edge counter"
+            build_body.contains("frame.lanes"),
+            "R7F hot loop must read committed direct lane state"
         );
+        for forbidden in [
+            "HillslopeWritebackSurface",
+            "BoundarySymbol",
+            "BoundaryValue",
+            "merge_runtime_surfaces",
+            "require_runtime_surface_scalar(",
+            "runtime_surface_symbol_value(",
+            "DirectPublicationDayInputBuilder",
+            "record_direct_runtime_compatibility_edge_invocation",
+        ] {
+            assert!(
+                !build_body.contains(forbidden),
+                "R7F hot-loop build body must not contain runtime-surface or compatibility read {forbidden}"
+            );
+        }
     }
 
     #[test]

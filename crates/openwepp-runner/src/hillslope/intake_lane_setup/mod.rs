@@ -20,4 +20,7 @@ pub(crate) use runfile_helpers::{
     optional_sidecar_binding_path, parse_runfile_execution_config, resolve_run_file,
 };
 
-pub(crate) use wb11_seed_helpers::{compute_wb11_et_demand_seed, publish_wb11_et_demand_seed};
+pub(crate) use wb11_seed_helpers::{
+    compute_wb11_et_demand_seed, legacy_sunmap_horizontal_radpot_ly, publish_wb11_et_demand_seed,
+    saturation_vapor_pressure_kpa,
+};

@@ -13,6 +13,15 @@
 
 State as of `2026-06-23`:
 
+- `20260623-r7f-direct-day-input-hot-loop-isolation-001/` is complete. It
+  closed
+  `HOLD-R7F-DIRECT-DAY-INPUT-BUILDER-COMPATIBILITY-SURFACE-HOT-EDGE` by
+  replacing the production direct interleaved day-input builder hot-loop
+  dependency with typed direct day-input/state projection. Production direct
+  manifests now report `compatibility_edge_invocations = 0` because the
+  hot-loop edge is removed, not because accounting missed it. Focused R7/R6
+  suites, workspace clippy/tests, `cargo deny check`, `cargo fmt --check`,
+  `git diff --check`, and scoped Markdown lint passed.
 - `20260623-r7e-r7h-direct-runtime-completion-001/` is executed-held at
   `HOLD-R7F-DIRECT-DAY-INPUT-BUILDER-COMPATIBILITY-SURFACE-HOT-EDGE`. It
   closed R7E default-candidate/rollback selection mechanics and made runtime

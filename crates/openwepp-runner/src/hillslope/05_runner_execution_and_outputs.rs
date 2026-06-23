@@ -143,14 +143,12 @@ fn execute_hillslope_direct_production_days(
         lane_seed_surfaces: &lane_seed_surfaces,
         execution_lane: lane_context.lane,
     })?;
-    let day_input_builder =
-        DirectPublicationDayInputBuilder::new_with_seed_surfaces_and_erosion_guard(
+    let day_input_builder = DirectProductionDayInputBuilder::new(
         &climate_request,
         &climate_span,
-        lane_seed_surfaces,
+        &lane_seed_surfaces,
         &runtime_surface,
         lane_context.lane,
-        true,
     )?;
     let metadata = DirectPublicationRunMetadata {
         run_name: run_name.to_string(),

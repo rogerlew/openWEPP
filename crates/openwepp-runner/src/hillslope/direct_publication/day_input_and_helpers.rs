@@ -96,6 +96,7 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             .map(|(day_input, _seed_surface)| day_input)
     }
 
+    #[allow(clippy::too_many_lines)]
     fn build_with_seed_surface(
         &self,
         frame: &DirectRunFrame,
@@ -364,6 +365,971 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             }
         })
     }
+}
+
+struct DirectProductionDayInputBuilder<'a> {
+    climate_request: &'a HillslopeClimateRuntimeRequest,
+    climate_span: &'a ClimateRunSpanSummary,
+    lane_authority: Vec<DirectProductionLaneDayInputAuthority>,
+}
+
+#[derive(Clone)]
+struct DirectProductionLaneDayInputAuthority {
+    canopy_cover_fraction: f64,
+    leaf_area_index: f64,
+    vegetative_dry_matter_kg_m2: f64,
+    peak_runoff: DirectProductionPeakRunoffAuthority,
+    percolation: DirectPercolationInputs,
+    subsurface: DirectSubsurfaceComputeInputs,
+    infiltration: DirectProductionInfiltrationAuthority,
+    evapotranspiration: DirectProductionEvapotranspirationAuthority,
+    hydrology_projection: DirectHydrologyProjectionInputs,
+    erosion: DirectProductionErosionAuthority,
+    snow_frost: DirectProductionSnowFrostAuthority,
+}
+
+#[derive(Clone)]
+struct DirectProductionPeakRunoffAuthority {
+    irrigation_rate_m_s: f64,
+    efflen_m: f64,
+    ealpha: f64,
+    exponent_m: f64,
+}
+
+#[derive(Clone)]
+struct DirectProductionInfiltrationAuthority {
+    effective_conductivity_m_s: Option<f64>,
+    matric_potential_m: Option<f64>,
+    depression_storage_capacity_m: f64,
+}
+
+#[derive(Clone)]
+struct DirectProductionEvapotranspirationAuthority {
+    leaf_area_index: f64,
+    canopy_cover_fraction: f64,
+    residue_interception_m: f64,
+    root_depth_m: f64,
+    plant_tolerance: f64,
+    priestley_taylor: DirectProductionPriestleyTaylorAuthority,
+    pmet: Option<DirectProductionPmetAuthority>,
+}
+
+#[derive(Clone)]
+struct DirectProductionPriestleyTaylorAuthority {
+    salb: f64,
+}
+
+#[derive(Clone)]
+struct DirectProductionPmetAuthority {
+    kcb: f64,
+    rawp: f64,
+    canhgt: f64,
+    radpot_ly: Option<f64>,
+    solthk_m: Vec<Option<f64>>,
+}
+
+#[derive(Clone)]
+struct DirectProductionErosionAuthority {
+    wave2_enabled: bool,
+    erosion_inputs: DirectErosionInputs,
+}
+
+#[derive(Clone, Copy)]
+struct DirectProductionSnowFrostAuthority {
+    snow_active: bool,
+    frost_active: bool,
+}
+
+#[allow(clippy::struct_field_names)]
+#[derive(Clone, Copy)]
+struct DirectProductionEvappmSeed {
+    et_demand_m: f64,
+    soil_evaporation_m: f64,
+    plant_transpiration_m: f64,
+    soil_evaporation_storage_return_m: f64,
+}
+
+impl<'a> DirectProductionDayInputBuilder<'a> {
+    fn new(
+        climate_request: &'a HillslopeClimateRuntimeRequest,
+        climate_span: &'a ClimateRunSpanSummary,
+        seed_surfaces: &[HillslopeWritebackSurface],
+        climate_context_surface: &HillslopeWritebackSurface,
+        execution_lane: ExecutionLane,
+    ) -> Result<Self, HillslopeCliError> {
+        if seed_surfaces.is_empty() {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production requires at least one lane seed authority"
+                ),
+            });
+        }
+        let lane_authority = seed_surfaces
+            .iter()
+            .map(|seed_surface| {
+                let day_zero_seed_surface = direct_publication_day_zero_seed_surface(
+                    climate_request,
+                    climate_span,
+                    seed_surface,
+                    climate_context_surface,
+                    execution_lane,
+                )?;
+                Self::build_lane_authority(&day_zero_seed_surface)
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(Self {
+            climate_request,
+            climate_span,
+            lane_authority,
+        })
+    }
+
+    fn build(
+        &self,
+        frame: &DirectRunFrame,
+        day_index: usize,
+        lane_index: usize,
+    ) -> Result<DirectPublicationDayInput, HillslopeCliError> {
+        let day = self.climate_span.days.get(day_index).ok_or_else(|| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production day index {} exceeds climate span {}",
+                    day_index + 1,
+                    self.climate_span.days.len()
+                ),
+            }
+        })?;
+        direct_publication_validate_day(day)?;
+        let lane = frame
+            .lanes
+            .get(lane_index)
+            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production lane index {} exceeds frame lane count {}",
+                    lane_index + 1,
+                    frame.lanes.len()
+                ),
+            })?;
+        let authority = self.lane_authority(lane_index)?;
+        Self::reject_unsupported_active_snow_frost(authority, lane_index, lane)?;
+
+        let forcing =
+            self.climate_request
+                .direct_day_forcing(day_index)
+                .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_publication_frame",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} direct production typed climate forcing failed: {source}"
+                    ),
+                })?;
+        let precipitation_m = forcing.prcp_m;
+        let mut hyetograph = direct_production_hyetograph(&forcing)?;
+        let rainfall_input_m = direct_publication_hyetograph_rainfall_m(&hyetograph)?;
+        let interception_state = compute_direct_canopy_interception(
+            DirectCanopyInterceptionInputs {
+                hyetograph_rainfall_m: rainfall_input_m,
+                interception_rainfall_input_m: rainfall_input_m,
+                canopy_cover_fraction: authority.canopy_cover_fraction,
+                leaf_area_index: authority.leaf_area_index,
+                vegetative_dry_matter_kg_m2: authority.vegetative_dry_matter_kg_m2,
+            },
+        )
+        .map_err(|source| direct_publication_runtime_error(&source))?;
+        hyetograph =
+            direct_publication_scaled_hyetograph(&hyetograph, interception_state.rainfall_scale)?;
+
+        let mut day_input =
+            DirectPublicationDayInput::calendar_only(direct_publication_calendar_day(day)?);
+        day_input.precipitation_m = precipitation_m;
+        day_input.effective_temperature_c = day.effective_temperature_c;
+        day_input.interception_m = interception_state.interception_m;
+        day_input.initial_soil_water_m = Some(direct_production_lane_soil_water(lane, lane_index)?);
+        day_input.storage_input_inputs = Some(DirectStorageInputInputs {
+            precip_input_handoff_m: Some(precipitation_m),
+        });
+        day_input.liquid_input_inputs =
+            Some(direct_publication_liquid_input_inputs(
+                interception_state.liquid_after_interception_m,
+            )?);
+        day_input.snow_coupling_inputs = Some(DirectSnowCouplingInputs {
+            snow_coupling_handoff_m: 0.0,
+        });
+        day_input.peak_runoff_inputs = Some(authority.peak_runoff.inputs(hyetograph.clone()));
+        day_input.infiltration_depression_inputs = Some(
+            authority
+                .infiltration
+                .inputs(lane_index, &lane.subsurface_layers, hyetograph)?,
+        );
+        day_input.percolation_inputs =
+            Some(authority.percolation_inputs(lane_index, lane)?);
+        day_input.subsurface_compute_inputs =
+            Some(authority.subsurface_inputs(lane_index, lane)?);
+        day_input.evapotranspiration_compute_inputs =
+            Some(authority.evapotranspiration.inputs(
+                day,
+                &forcing,
+                lane.evapotranspiration_stage_state,
+                &lane.subsurface_layers,
+                self.climate_request,
+            )?);
+        day_input.hydrology_projection_inputs = Some(
+            authority.hydrology_projection_inputs(&lane.subsurface_layers),
+        );
+        let erosion_active = authority.erosion.wave2_enabled
+            && direct_publication_hyetograph_rainfall_m(
+                day_input
+                    .peak_runoff_inputs
+                    .as_ref()
+                    .map_or(&[][..], |inputs| inputs.hyetograph.as_slice()),
+            )? >= DIRECT_PUBLICATION_EROSION_MIN_POST_INTERCEPTION_RAINFALL_M;
+        day_input.erosion_producer_required = erosion_active;
+        if erosion_active {
+            day_input.erosion_inputs = Some(authority.erosion.erosion_inputs.clone());
+        }
+        day_input.frost_runtime_carry.clone_from(&lane.frost_runtime_carry);
+        Ok(day_input)
+    }
+
+    fn build_lane_authority(
+        seed_surface: &HillslopeWritebackSurface,
+    ) -> Result<DirectProductionLaneDayInputAuthority, HillslopeCliError> {
+        let layers = direct_publication_layer_states(seed_surface)?;
+        let percolation = direct_publication_percolation_inputs(seed_surface, 0.0)?;
+        let subsurface = direct_publication_subsurface_inputs(seed_surface)?;
+        Ok(DirectProductionLaneDayInputAuthority {
+            canopy_cover_fraction: require_runtime_surface_scalar(seed_surface, "cancov")?,
+            leaf_area_index: require_runtime_surface_scalar(seed_surface, "lai")?,
+            vegetative_dry_matter_kg_m2: require_runtime_surface_scalar(seed_surface, "vdmt")?,
+            peak_runoff: DirectProductionPeakRunoffAuthority {
+                irrigation_rate_m_s: direct_publication_optional_nonnegative_scalar(
+                    seed_surface,
+                    &["irrigation.runtime_rate_m_per_s"],
+                )?
+                .unwrap_or(0.0),
+                efflen_m: require_runtime_surface_scalar(seed_surface, "efflen")?,
+                ealpha: require_runtime_surface_scalar(seed_surface, "ealpha")?,
+                exponent_m: require_runtime_surface_scalar(seed_surface, "m")?,
+            },
+            percolation,
+            subsurface,
+            infiltration: DirectProductionInfiltrationAuthority {
+                effective_conductivity_m_s: direct_publication_optional_nonnegative_scalar(
+                    seed_surface,
+                    &[
+                        "wb14_effective_conductivity_m_s",
+                        "frost.runtime_infcap_frz",
+                        "wb14_soil_conductivity_m_s",
+                    ],
+                )?,
+                matric_potential_m: direct_publication_optional_nonnegative_scalar(
+                    seed_surface,
+                    &["wb14_matric_potential_m"],
+                )?,
+                depression_storage_capacity_m: direct_publication_optional_nonnegative_scalar(
+                    seed_surface,
+                    &[
+                        "wb14_depression_storage_capacity_m",
+                        "wb12_depression_storage_capacity_m",
+                    ],
+                )?
+                .unwrap_or(0.0),
+            },
+            evapotranspiration: DirectProductionEvapotranspirationAuthority::from_seed(
+                seed_surface,
+                layers.len(),
+            )?,
+            hydrology_projection: direct_publication_profile_inputs(seed_surface)?,
+            erosion: DirectProductionErosionAuthority::from_seed(seed_surface)?,
+            snow_frost: DirectProductionSnowFrostAuthority::from_seed(seed_surface)?,
+        })
+    }
+
+    fn lane_authority(
+        &self,
+        lane_index: usize,
+    ) -> Result<&DirectProductionLaneDayInputAuthority, HillslopeCliError> {
+        if self.lane_authority.len() == 1 {
+            return Ok(&self.lane_authority[0]);
+        }
+        self.lane_authority.get(lane_index).ok_or_else(|| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production lane index {} exceeds lane authority count {}",
+                    lane_index + 1,
+                    self.lane_authority.len()
+                ),
+            }
+        })
+    }
+
+    fn reject_unsupported_active_snow_frost(
+        authority: &DirectProductionLaneDayInputAuthority,
+        lane_index: usize,
+        lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
+    ) -> Result<(), HillslopeCliError> {
+        if authority.snow_frost.snow_active {
+            return Err(direct_production_executor_blocked(format!(
+                "R7F typed production day-input path does not yet have surface-free active snow partition authority for lane {}",
+                lane_index + 1
+            )));
+        }
+        if authority.snow_frost.frost_active || lane.frost_runtime_carry.is_some() {
+            return Err(direct_production_executor_blocked(format!(
+                "R7F typed production day-input path does not yet have surface-free active frost partition authority for lane {}",
+                lane_index + 1
+            )));
+        }
+        Ok(())
+    }
+}
+
+impl DirectProductionLaneDayInputAuthority {
+    fn percolation_inputs(
+        &self,
+        lane_index: usize,
+        lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
+    ) -> Result<DirectPercolationInputs, HillslopeCliError> {
+        let mut inputs = self.percolation.clone();
+        inputs.soil_water_initial_m = direct_production_lane_soil_water(lane, lane_index)?;
+        inputs.layers.clone_from(&lane.subsurface_layers);
+        Ok(inputs)
+    }
+
+    fn subsurface_inputs(
+        &self,
+        lane_index: usize,
+        lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
+    ) -> Result<DirectSubsurfaceComputeInputs, HillslopeCliError> {
+        direct_production_validate_layers(lane_index, &lane.subsurface_layers)?;
+        let mut inputs = self.subsurface.clone();
+        inputs.soil_depth_m = lane
+            .subsurface_layers
+            .iter()
+            .map(|layer| layer.depth_m)
+            .sum::<f64>();
+        inputs.layers = lane.subsurface_layers.iter().cloned().map(Into::into).collect();
+        Ok(inputs)
+    }
+
+    fn hydrology_projection_inputs(
+        &self,
+        layers: &[DirectSubsurfaceLayerState],
+    ) -> DirectHydrologyProjectionInputs {
+        let mut inputs = self.hydrology_projection;
+        inputs.frozen_soil_water_m = layers.iter().map(|layer| layer.frozen_water_m).sum();
+        inputs.frost_depth_m = direct_production_frost_depth_m(layers);
+        inputs
+    }
+}
+
+impl DirectProductionPeakRunoffAuthority {
+    fn inputs(&self, hyetograph: Vec<DirectWb14HyetographInterval>) -> DirectPeakRunoffInputs {
+        DirectPeakRunoffInputs {
+            hyetograph,
+            irrigation_rate_m_s: self.irrigation_rate_m_s,
+            efflen_m: self.efflen_m,
+            ealpha: self.ealpha,
+            exponent_m: self.exponent_m,
+        }
+    }
+}
+
+impl DirectProductionInfiltrationAuthority {
+    fn inputs(
+        &self,
+        lane_index: usize,
+        layers: &[DirectSubsurfaceLayerState],
+        hyetograph: Vec<DirectWb14HyetographInterval>,
+    ) -> Result<DirectInfiltrationDepressionInputs, HillslopeCliError> {
+        direct_production_validate_layers(lane_index, layers)?;
+        let effective_conductivity_m_s = self
+            .effective_conductivity_m_s
+            .filter(|value| *value > 0.0)
+            .or_else(|| layers.first().map(|layer| layer.conductivity_m_s))
+            .ok_or_else(|| {
+                direct_production_executor_blocked(
+                    "direct production WB14 infiltration requires layer conductivity",
+                )
+            })?;
+        let matric_potential_m = self.matric_potential_m.unwrap_or_else(|| {
+            let first_layer = &layers[0];
+            first_layer.depth_m * (first_layer.field_capacity_theta - first_layer.residual_theta).max(0.0)
+        });
+        let storage_capacity_m = direct_publication_wb14_top_storage_capacity(layers)?;
+        Ok(DirectInfiltrationDepressionInputs {
+            cumulative_infiltration_handoff_m: 0.0,
+            depression_storage_delta_handoff_m: 0.0,
+            producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
+                hyetograph,
+                effective_conductivity_m_s,
+                matric_potential_m,
+                storage_capacity_m,
+                depression_storage_capacity_m: self.depression_storage_capacity_m,
+            }),
+        })
+    }
+}
+
+impl DirectProductionEvapotranspirationAuthority {
+    fn from_seed(
+        seed_surface: &HillslopeWritebackSurface,
+        layer_count: usize,
+    ) -> Result<Self, HillslopeCliError> {
+        let iflget =
+            runtime_surface_symbol_value(seed_surface, "pmetpara.mode.iflget").unwrap_or(1.0);
+        if !iflget.is_finite() {
+            return Err(direct_production_executor_blocked(format!(
+                "pmetpara.mode.iflget must be finite when present, observed {iflget}"
+            )));
+        }
+        let pmet = if (iflget - 1.0).abs() <= 1.0e-12 {
+            None
+        } else {
+            Some(DirectProductionPmetAuthority {
+                kcb: require_runtime_surface_scalar(seed_surface, "pmetpara.selected.kcb")?,
+                rawp: require_runtime_surface_scalar(seed_surface, "pmetpara.selected.rawp")?,
+                canhgt: require_runtime_surface_scalar(seed_surface, "canhgt")?,
+                radpot_ly: runtime_surface_symbol_value(seed_surface, "radpot"),
+                solthk_m: (1..=layer_count)
+                    .map(|layer_index| {
+                        runtime_surface_symbol_value(
+                            seed_surface,
+                            format!("wb19_solthk_{layer_index:04}").as_str(),
+                        )
+                    })
+                    .collect(),
+            })
+        };
+        Ok(Self {
+            leaf_area_index: require_runtime_surface_scalar(seed_surface, "lai")?,
+            canopy_cover_fraction: require_runtime_surface_scalar(seed_surface, "cancov")?,
+            residue_interception_m: require_runtime_surface_scalar(
+                seed_surface,
+                "wb17_residue_interception",
+            )?,
+            root_depth_m: require_runtime_surface_scalar(seed_surface, "rtd")?,
+            plant_tolerance: require_preferred_or_legacy_runtime_surface_scalar(
+                seed_surface,
+                "swu_effective_pltol",
+                "pltol",
+            )?,
+            priestley_taylor: DirectProductionPriestleyTaylorAuthority {
+                salb: require_runtime_surface_scalar(seed_surface, "salb")?,
+            },
+            pmet,
+        })
+    }
+
+    fn inputs(
+        &self,
+        day: &ClimateDayProjection,
+        forcing: &HillslopeDirectClimateDayForcing,
+        stage_state: Option<DirectEvapotranspirationStageState>,
+        layers: &[DirectSubsurfaceLayerState],
+        climate_request: &HillslopeClimateRuntimeRequest,
+    ) -> Result<DirectEvapotranspirationComputeInputs, HillslopeCliError> {
+        let (et_demand_m, pmet) = if let Some(pmet_authority) = &self.pmet {
+            let seed = pmet_authority.compute_seed(day, forcing, layers, self, climate_request)?;
+            (
+                seed.et_demand_m,
+                Some(DirectEvapotranspirationPmetInputs {
+                    soil_evaporation_m: seed.soil_evaporation_m,
+                    plant_transpiration_m: seed.plant_transpiration_m,
+                    soil_evaporation_storage_return_m: seed.soil_evaporation_storage_return_m,
+                }),
+            )
+        } else {
+            (
+                self.priestley_taylor
+                    .compute_demand(forcing, self.leaf_area_index, self.canopy_cover_fraction)?,
+                None,
+            )
+        };
+        Ok(DirectEvapotranspirationComputeInputs {
+            et_demand_m,
+            leaf_area_index: self.leaf_area_index,
+            canopy_cover_fraction: self.canopy_cover_fraction,
+            residue_interception_m: self.residue_interception_m,
+            same_pass_infiltration_m: 0.0,
+            outside_water_depth_m: 0.0,
+            root_depth_m: self.root_depth_m,
+            plant_tolerance: self.plant_tolerance,
+            growth_context_required: false,
+            stage_state: if pmet.is_some() { None } else { stage_state },
+            pmet,
+        })
+    }
+}
+
+impl DirectProductionPriestleyTaylorAuthority {
+    fn compute_demand(
+        &self,
+        forcing: &HillslopeDirectClimateDayForcing,
+        leaf_area_index: f64,
+        canopy_cover_fraction: f64,
+    ) -> Result<f64, HillslopeCliError> {
+        if forcing.rad_ly < 0.0 {
+            return Err(direct_production_executor_blocked(format!(
+                "rad must be >= 0.0 for direct production ET demand, observed {}",
+                forcing.rad_ly
+            )));
+        }
+        if !(0.0..=1.0).contains(&self.salb) {
+            return Err(direct_production_executor_blocked(format!(
+                "salb must be within [0,1] for direct production ET demand, observed {}",
+                self.salb
+            )));
+        }
+        let tave = 0.5 * (forcing.tmax_c + forcing.tmin_c);
+        let tk = tave + 273.0;
+        if tk <= 0.0 {
+            return Err(direct_production_executor_blocked(format!(
+                "derived tk must be > 0.0 for direct production ET demand, observed {tk}"
+            )));
+        }
+        let delta = (21.255 - 5304.0 / tk).exp() * 5304.0 / (tk * tk);
+        let gamma = delta / (delta + 0.68);
+        let eaj = (-0.5 * (canopy_cover_fraction + 0.1)).exp();
+        let alb = if leaf_area_index > 0.0 {
+            0.23 * (1.0 - eaj) + self.salb * eaj
+        } else {
+            self.salb
+        };
+        let demand_m = (0.00128 * ((forcing.rad_ly * (1.0 - alb)) / 58.3) * gamma).max(0.0);
+        if !demand_m.is_finite() {
+            return Err(direct_production_executor_blocked(format!(
+                "derived direct production ET demand is non-finite ({demand_m})"
+            )));
+        }
+        Ok(demand_m)
+    }
+}
+
+impl DirectProductionPmetAuthority {
+    #[allow(clippy::manual_midpoint, clippy::similar_names, clippy::too_many_lines)]
+    fn compute_seed(
+        &self,
+        day: &ClimateDayProjection,
+        forcing: &HillslopeDirectClimateDayForcing,
+        layers: &[DirectSubsurfaceLayerState],
+        et: &DirectProductionEvapotranspirationAuthority,
+        climate_request: &HillslopeClimateRuntimeRequest,
+    ) -> Result<DirectProductionEvappmSeed, HillslopeCliError> {
+        direct_production_validate_layers(0, layers)?;
+        if forcing.rad_ly < 0.0 || forcing.vwind_m_s < 0.0 {
+            return Err(direct_production_executor_blocked(
+                "direct production PMET requires nonnegative rad and vwind",
+            ));
+        }
+        if self.canhgt < 0.0 || et.leaf_area_index < 0.0 || et.root_depth_m < 0.0 {
+            return Err(direct_production_executor_blocked(
+                "direct production PMET canopy and root controls must be nonnegative",
+            ));
+        }
+        let tave = 0.5 * (forcing.tmax_c + forcing.tmin_c);
+        let ed = saturation_vapor_pressure_kpa(forcing.tdpt_c);
+        let emaxt = saturation_vapor_pressure_kpa(forcing.tmax_c);
+        let emint = saturation_vapor_pressure_kpa(forcing.tmin_c);
+        let ee = 0.5 * (emaxt + emint);
+        if emaxt <= 0.0 {
+            return Err(direct_production_executor_blocked(format!(
+                "derived emaxt must be > 0.0 for direct production PMET, observed {emaxt}"
+            )));
+        }
+        let radpot = self.radpot_ly.unwrap_or_else(|| {
+            legacy_sunmap_horizontal_radpot_ly(
+                climate_request.direct_latitude_degrees(),
+                f64::from(day.julian_day),
+            )
+        });
+        if radpot <= 0.0 {
+            return Err(direct_production_executor_blocked(format!(
+                "radpot must be > 0.0 for direct production PMET, observed {radpot}"
+            )));
+        }
+        let ra = forcing.rad_ly / 23.9;
+        let rso = radpot / 23.9;
+        let rbo = (0.34 - 0.14 * ed.sqrt())
+            * 4.9e-9
+            * (((forcing.tmax_c + 273.2).powi(4) + (forcing.tmin_c + 273.2).powi(4)) / 2.0)
+            * (1.35 * (ra / rso) - 0.35);
+        let rn_mj_m2 = ra * 0.77 - rbo;
+        let fwv_m_s = forcing.vwind_m_s * 4.87 / (67.8_f64.mul_add(10.0, -5.42)).ln();
+        let dlt = 4098.0 / ((tave + 237.3) * (tave + 237.3))
+            * saturation_vapor_pressure_kpa(tave);
+        let pressure_base = 1.0 - 0.0065 * climate_request.direct_elevation_m() / 293.0;
+        if pressure_base <= 0.0 {
+            return Err(direct_production_executor_blocked(format!(
+                "legacy pressure base must be > 0.0 for direct production PMET, observed {pressure_base}"
+            )));
+        }
+        let pb = 101.3 * pressure_base.powf(5.26);
+        let gma = 0.000_665 * pb;
+        let denominator = dlt + gma * (1.0 + 0.34 * fwv_m_s);
+        if denominator <= 0.0 {
+            return Err(direct_production_executor_blocked(format!(
+                "direct production PMET etorc denominator must be > 0.0, observed {denominator}"
+            )));
+        }
+        let etorc_mm =
+            (0.408 * dlt * rn_mj_m2 + gma * (900.0 / (tave + 273.0)) * (ee - ed) * fwv_m_s)
+                / denominator;
+        let rhd_pct = ed / emaxt * 100.0;
+        let height_factor = (self.canhgt / 3.0).powf(0.3);
+        let kcbadj = if et.leaf_area_index > 0.0 && et.root_depth_m > 0.0 {
+            self.kcb + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor
+        } else {
+            0.0
+        };
+        let kcbcon = kcbadj * (1.0 - (-0.45 * et.leaf_area_index).exp());
+        let etke = if kcbadj > 0.0 {
+            kcbadj * (-0.45 * et.leaf_area_index).exp()
+        } else {
+            1.2
+        };
+
+        let profile_depth_m = direct_production_profile_depth_m(layers)?;
+        let epdp_m = 0.1_f64.min(profile_depth_m);
+        let (tew_mm, rew_mm, wfevp_base_mm) =
+            self.evaporation_storage_terms(layers, epdp_m)?;
+        let wfevp_mm = wfevp_base_mm + et.residue_interception_m * 1_000.0;
+        let etkr = if (tew_mm - wfevp_mm) <= rew_mm {
+            1.0
+        } else {
+            let denominator = tew_mm - rew_mm;
+            if denominator <= 0.0 {
+                1.0
+            } else {
+                (wfevp_mm / denominator).powi(2)
+            }
+        };
+        let tpdp_m = et.root_depth_m.min(profile_depth_m);
+        let (taw_mm, wftrp_mm) =
+            self.transpiration_storage_terms(layers, tpdp_m, wfevp_mm)?;
+        let etcsc = kcbadj * etorc_mm;
+        let rawpaj = self.rawp + 0.04 * (5.0 - etcsc);
+        let raw_mm = rawpaj * taw_mm;
+        let etksden = taw_mm - raw_mm;
+        let etks = if etksden <= 0.0 || (taw_mm - wftrp_mm) <= raw_mm {
+            1.0
+        } else {
+            wftrp_mm / etksden
+        };
+        let potes_m = etorc_mm * etke * 0.001;
+        let es_raw_m = if potes_m > et.residue_interception_m {
+            let bpotes_m = potes_m - et.residue_interception_m;
+            let eaj = (-0.5 * (et.canopy_cover_fraction + 0.1)).exp();
+            let kcmax = 1.2 + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor;
+            let kecon = (etke * etkr).min(eaj * kcmax);
+            kecon * bpotes_m / etke + et.residue_interception_m
+        } else {
+            potes_m
+        };
+        let soil_evaporation_storage_return_m = if es_raw_m < 0.0 { -es_raw_m } else { 0.0 };
+        let soil_evaporation_m = es_raw_m.max(0.0);
+        let ep_raw_m = etorc_mm * etks * kcbcon * 0.001;
+        let plant_transpiration_m = ep_raw_m.max(0.0);
+        for (name, value) in [
+            ("pmet.etorc_mm", etorc_mm),
+            ("pmet.rn_mj_m2", rn_mj_m2),
+            ("pmet.fwv_m_s", fwv_m_s),
+            ("pmet.rhd_pct", rhd_pct),
+            ("pmet.kcbadj", kcbadj),
+            ("pmet.kcbcon", kcbcon),
+            ("pmet.etke", etke),
+            ("pmet.etkr", etkr),
+            ("pmet.etks", etks),
+            ("pmet.tew_mm", tew_mm),
+            ("pmet.rew_mm", rew_mm),
+            ("pmet.wfevp_mm", wfevp_mm),
+            ("pmet.taw_mm", taw_mm),
+            ("pmet.raw_mm", raw_mm),
+            ("pmet.wftrp_mm", wftrp_mm),
+            ("pmet.es_m", soil_evaporation_m),
+            (
+                "pmet.es_storage_return_m",
+                soil_evaporation_storage_return_m,
+            ),
+            ("pmet.ep_m", plant_transpiration_m),
+        ] {
+            if !value.is_finite() {
+                return Err(direct_production_executor_blocked(format!(
+                    "derived {name} must be finite, observed {value}"
+                )));
+            }
+        }
+        Ok(DirectProductionEvappmSeed {
+            et_demand_m: plant_transpiration_m,
+            soil_evaporation_m,
+            plant_transpiration_m,
+            soil_evaporation_storage_return_m,
+        })
+    }
+
+    fn evaporation_storage_terms(
+        &self,
+        layers: &[DirectSubsurfaceLayerState],
+        epdp_m: f64,
+    ) -> Result<(f64, f64, f64), HillslopeCliError> {
+        let mut tew_mm = 0.0_f64;
+        let mut rew_mm = 0.0_f64;
+        let mut wfevp_mm = 0.0_f64;
+        let mut cumulative_depth_m = 0.0_f64;
+        for (offset, layer) in layers.iter().enumerate() {
+            let layer_index = offset + 1;
+            let solthk = self.solthk(layer_index, cumulative_depth_m, layer.depth_m)?;
+            let layer_fraction = if solthk <= epdp_m {
+                1.0
+            } else if cumulative_depth_m < epdp_m {
+                (epdp_m - cumulative_depth_m) / (solthk - cumulative_depth_m)
+            } else {
+                0.0
+            };
+            if layer.residual_theta > layer.field_capacity_theta {
+                return Err(direct_production_executor_blocked(format!(
+                    "wb19_thetdr_{layer_index:04} must be <= wb19_thetfc_{layer_index:04}"
+                )));
+            }
+            if layer_fraction > 0.0 {
+                tew_mm +=
+                    (layer.field_capacity_theta - 0.5 * layer.residual_theta)
+                        * layer.depth_m
+                        * 1_000.0
+                        * layer_fraction;
+                rew_mm +=
+                    (layer.field_capacity_theta - layer.residual_theta)
+                        * layer.depth_m
+                        * 1_000.0
+                        / 3.0
+                        * layer_fraction;
+                wfevp_mm += layer.theta_m * 1_000.0 * layer_fraction;
+            }
+            cumulative_depth_m = solthk;
+            if cumulative_depth_m >= epdp_m {
+                break;
+            }
+        }
+        Ok((tew_mm, rew_mm, wfevp_mm))
+    }
+
+    fn transpiration_storage_terms(
+        &self,
+        layers: &[DirectSubsurfaceLayerState],
+        tpdp_m: f64,
+        wfevp_mm: f64,
+    ) -> Result<(f64, f64), HillslopeCliError> {
+        let mut taw_mm = 0.0_f64;
+        let mut wftrp_mm = 0.0_f64;
+        let mut cumulative_depth_m = 0.0_f64;
+        for (offset, layer) in layers.iter().enumerate() {
+            let layer_index = offset + 1;
+            let solthk = self.solthk(layer_index, cumulative_depth_m, layer.depth_m)?;
+            if tpdp_m <= 0.0 {
+                break;
+            }
+            if solthk <= tpdp_m {
+                taw_mm += (layer.field_capacity_theta - layer.residual_theta)
+                    * layer.depth_m
+                    * 1_000.0;
+                wftrp_mm += layer.theta_m * 1_000.0;
+            } else if cumulative_depth_m < tpdp_m {
+                let layer_span_m = solthk - cumulative_depth_m;
+                if layer_span_m <= 0.0 {
+                    return Err(direct_production_executor_blocked(format!(
+                        "wb19_solthk_{layer_index:04} must increase with depth for direct production PMET"
+                    )));
+                }
+                let fraction = (tpdp_m - cumulative_depth_m) / layer_span_m;
+                taw_mm += (layer.field_capacity_theta - layer.residual_theta)
+                    * layer.depth_m
+                    * 1_000.0
+                    * fraction;
+                wftrp_mm = wfevp_mm + layer.theta_m * 1_000.0 * fraction;
+                break;
+            }
+            cumulative_depth_m = solthk;
+            if cumulative_depth_m >= tpdp_m {
+                break;
+            }
+        }
+        Ok((taw_mm, wftrp_mm))
+    }
+
+    fn solthk(
+        &self,
+        layer_index: usize,
+        cumulative_depth_m: f64,
+        depth_m: f64,
+    ) -> Result<f64, HillslopeCliError> {
+        let solthk = self
+            .solthk_m
+            .get(layer_index - 1)
+            .and_then(|value| *value)
+            .unwrap_or(cumulative_depth_m + depth_m);
+        if solthk <= cumulative_depth_m {
+            return Err(direct_production_executor_blocked(format!(
+                "wb19_solthk_{layer_index:04} must increase with depth for direct production PMET"
+            )));
+        }
+        Ok(solthk)
+    }
+}
+
+impl DirectProductionErosionAuthority {
+    fn from_seed(
+        seed_surface: &HillslopeWritebackSurface,
+    ) -> Result<Self, HillslopeCliError> {
+        let wave1_enabled =
+            direct_publication_optional_enabled_flag(seed_surface, "erod13_core_enabled")?
+                .unwrap_or(false);
+        let wave2_enabled = parse_mofe03_binary_flag(
+            "erod14_wave2_enabled",
+            runtime_surface_symbol_value(seed_surface, "erod14_wave2_enabled").unwrap_or(0.0),
+        )?;
+        Ok(Self {
+            wave2_enabled,
+            erosion_inputs: DirectErosionInputs {
+                wave1_enabled,
+                wave2_enabled,
+                wave1: if wave1_enabled {
+                    direct_publication_erod13_inputs(seed_surface)?
+                } else {
+                    DirectErod13Inputs::zero()
+                },
+                wave2: if wave2_enabled {
+                    direct_publication_erod14_inputs(seed_surface)?
+                } else {
+                    DirectErod14Inputs::zero()
+                },
+            },
+        })
+    }
+}
+
+impl DirectProductionSnowFrostAuthority {
+    fn from_seed(seed_surface: &HillslopeWritebackSurface) -> Result<Self, HillslopeCliError> {
+        let snow_file_present = direct_publication_optional_enabled_flag(
+            seed_surface,
+            "snow.options.snow_file_present",
+        )?
+        .unwrap_or(false);
+        let snow_runtime_swe =
+            runtime_surface_symbol_value(seed_surface, "snow.runtime_swe").unwrap_or(0.0);
+        let frost_runtime_depth =
+            runtime_surface_symbol_value(seed_surface, "frost.runtime_dfrost")
+                .or_else(|| runtime_surface_symbol_value(seed_surface, "frost.runtime_frdp_m"))
+                .unwrap_or(0.0);
+        let frost_runtime_water =
+            runtime_surface_symbol_value(seed_surface, "frost.runtime_ws_frz")
+                .or_else(|| {
+                    runtime_surface_symbol_value(
+                        seed_surface,
+                        "frost.runtime_frwatc_frozen_water_after_m",
+                    )
+                })
+                .unwrap_or(0.0);
+        Ok(Self {
+            snow_active: snow_file_present || snow_runtime_swe > 1.0e-12,
+            frost_active: frost_runtime_depth > 1.0e-12 || frost_runtime_water > 1.0e-12,
+        })
+    }
+}
+
+fn direct_production_hyetograph(
+    forcing: &HillslopeDirectClimateDayForcing,
+) -> Result<Vec<DirectWb14HyetographInterval>, HillslopeCliError> {
+    if forcing.timem_s.is_empty() && forcing.intsty_m_s.is_empty() {
+        return Ok(vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 1.0,
+            intensity_m_s: 0.0,
+        }]);
+    }
+    if forcing.timem_s.len() != forcing.intsty_m_s.len() || forcing.timem_s.len() < 2 {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production typed hyetograph requires matching timem/intsty vectors with at least two points, observed timem={} intsty={}",
+            forcing.timem_s.len(),
+            forcing.intsty_m_s.len()
+        )));
+    }
+    let mut intervals = Vec::with_capacity(forcing.timem_s.len() - 1);
+    for point_index in 0..forcing.timem_s.len() - 1 {
+        let start_s = forcing.timem_s[point_index];
+        let end_s = forcing.timem_s[point_index + 1];
+        let intensity_m_s = forcing.intsty_m_s[point_index];
+        if !start_s.is_finite()
+            || !end_s.is_finite()
+            || !intensity_m_s.is_finite()
+            || end_s < start_s
+            || intensity_m_s < 0.0
+        {
+            return Err(direct_production_executor_blocked(format!(
+                "direct production typed hyetograph point {} is invalid: start={start_s} end={end_s} intensity={intensity_m_s}",
+                point_index + 1
+            )));
+        }
+        intervals.push(DirectWb14HyetographInterval {
+            start_s,
+            end_s,
+            intensity_m_s,
+        });
+    }
+    Ok(intervals)
+}
+
+fn direct_production_lane_soil_water(
+    lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
+    lane_index: usize,
+) -> Result<f64, HillslopeCliError> {
+    if !lane.water.soil_water_m.is_finite() || lane.water.soil_water_m < 0.0 {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production lane {} soil-water carry must be finite and nonnegative, observed {}",
+            lane_index + 1,
+            lane.water.soil_water_m
+        )));
+    }
+    Ok(lane.water.soil_water_m)
+}
+
+fn direct_production_validate_layers(
+    lane_index: usize,
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<(), HillslopeCliError> {
+    if layers.is_empty() {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production lane {} requires typed subsurface layer state",
+            lane_index + 1
+        )));
+    }
+    Ok(())
+}
+
+fn direct_production_profile_depth_m(
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<f64, HillslopeCliError> {
+    let profile_depth_m = layers.iter().map(|layer| layer.depth_m).sum::<f64>();
+    if profile_depth_m <= 0.0 {
+        return Err(direct_production_executor_blocked(
+            "direct production PMET soil profile depth must be > 0.0",
+        ));
+    }
+    Ok(profile_depth_m)
+}
+
+fn direct_production_frost_depth_m(layers: &[DirectSubsurfaceLayerState]) -> f64 {
+    let mut depth_top_m = 0.0_f64;
+    let mut frost_depth_m = 0.0_f64;
+    for layer in layers {
+        if layer.frozen_depth_m > 1.0e-12 {
+            frost_depth_m = depth_top_m + layer.frozen_depth_m;
+        }
+        depth_top_m += layer.depth_m;
+    }
+    frost_depth_m
 }
 
 fn direct_publication_erosion_wave2_active(
