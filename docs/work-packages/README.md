@@ -13,6 +13,12 @@
 
 State as of `2026-06-24`:
 
+- `20260624-snowfreeze-observed-frost-depth-harness-001/` is queued as the
+  successor to R7H opt-in closure for reopened `GAP-SNOWFREEZE-002`. It must
+  acquire/normalize historic frost-depth observation datasets, provenance-lock
+  redistributable sources, and build a local openWEPP comparison harness against
+  `tests/fixtures/snowfreeze_observed/` before any frost-model remediation.
+  Direct remains opt-in; compatibility frost bit-parity is not the target.
 - `20260624-r7h-iterative-completion-001/` is closed `OPT-IN` by operator
   decision on 2026-06-24. It retained the R7H direct performance fix and
   zero-compatibility evidence, left direct mode opt-in, and reclassified the
