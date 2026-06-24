@@ -168,8 +168,9 @@ pub use erosion::{
 pub use evapotranspiration::{
     DirectEvapotranspirationComputeDownstreamOperands, DirectEvapotranspirationComputeInputs,
     DirectEvapotranspirationComputeShadowProjection, DirectEvapotranspirationComputeSpanReport,
-    DirectEvapotranspirationComputeState, DirectEvapotranspirationPmetInputs,
-    DirectEvapotranspirationStageState, DirectEvapotranspirationSurfaceDownstreamOperands,
+    DirectEvapotranspirationComputeState, DirectEvapotranspirationPmetComputeInputs,
+    DirectEvapotranspirationPmetInputs, DirectEvapotranspirationStageState,
+    DirectEvapotranspirationSurfaceDownstreamOperands,
     DirectEvapotranspirationSurfaceShadowProjection, DirectEvapotranspirationSurfaceSpanReport,
     DirectEvapotranspirationSurfaceState,
 };

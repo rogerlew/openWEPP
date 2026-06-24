@@ -1,14 +1,18 @@
 use super::direct_runtime_test_lock;
 use crate::{
-    DirectActiveFrostPartitionInputs, DirectDayFrame, DirectExecutorMode, DirectFrameExecutor,
-    DirectFrostControlInputs, DirectFrostFineLayerCarry, DirectFrostFineLayerProjection,
-    DirectFrostHourlyForcing, DirectFrostLaneState, DirectFrostLayerInput,
-    DirectFrostLayerShadowCarry, DirectFrostPriorStateInput, DirectFrostRuntimeCarry,
-    DirectFrostThermalInputs, DirectHydrologyProjectionInputs, DirectLaneConstructorInputs,
-    DirectPercolationInputs, DirectPublicationCalendarDay, DirectPublicationDayInput,
-    DirectPublicationRunMetadata, DirectRunConstructorInputs, DirectRunFrame, DirectRunIdentity,
-    DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
-    DirectWinterFrostComputeInputs, Wb11HydrologyKernel, reset_direct_runtime_audit_counters,
+    DirectActiveFrostPartitionInputs, DirectDayFrame,
+    DirectEvapotranspirationSurfaceDownstreamOperands,
+    DirectEvapotranspirationSurfaceShadowProjection, DirectEvapotranspirationSurfaceState,
+    DirectExecutorMode, DirectFrameExecutor, DirectFrostControlInputs, DirectFrostFineLayerCarry,
+    DirectFrostFineLayerProjection, DirectFrostHourlyForcing, DirectFrostLaneState,
+    DirectFrostLayerInput, DirectFrostLayerShadowCarry, DirectFrostPriorStateInput,
+    DirectFrostRuntimeCarry, DirectFrostThermalInputs, DirectHydrologyProjectionInputs,
+    DirectLaneConstructorInputs, DirectPercolationInputs, DirectPublicationCalendarDay,
+    DirectPublicationDayInput, DirectPublicationRunMetadata, DirectRunConstructorInputs,
+    DirectRunFrame, DirectRunIdentity, DirectSnowCouplingInputs, DirectSubsurfaceComputeInputs,
+    DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState, DirectWb14HyetographInterval,
+    DirectWb14InfiltrationProducerInputs, DirectWinterFrostComputeInputs, Wb11HydrologyKernel,
+    reset_direct_runtime_audit_counters,
 };
 
 #[test]
@@ -179,6 +183,739 @@ fn r7g_inactive_no_material_frost_clears_stale_coarse_projection_without_storage
         (aggregate_test_layer_storage(cleared_layer) - storage_before_no_material_frost).abs()
             <= 1.0e-12,
         "inactive no-material frost clear must preserve aggregate layer storage"
+    );
+}
+
+#[test]
+fn r7g_r4a_prior_frozen_water_thaw_credits_liquid_storage() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(96, 2637, 1, 1).expect("valid direct identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    let prior_frost_depth_m = 0.005;
+    let prior_frozen_water_m = 0.001;
+    day.percolation.layer_state_after = vec![sample_layer_with_frost(
+        0.200,
+        prior_frost_depth_m,
+        prior_frozen_water_m,
+    )];
+    day.winter_column.frost = DirectFrostLaneState::from(sample_frost_runtime_carry(
+        prior_frost_depth_m,
+        prior_frozen_water_m,
+        0.123,
+    ));
+    let liquid_storage_before_thaw =
+        aggregate_test_layer_storage(&day.percolation.layer_state_after[0]);
+    let winter_frost_compute_inputs = sample_winter_frost_compute_inputs(true);
+    day.run_r4i_liquid_input_span()
+        .expect("zero liquid input upstream span should execute");
+    day.run_r4j_runon_carry_span()
+        .expect("zero runon/carry upstream span should execute");
+    day.run_r4k_infiltration_depression_span()
+        .expect("zero infiltration/depression upstream span should execute");
+    day.run_r4l_saturation_addback_span()
+        .expect("zero saturation addback upstream span should execute");
+
+    day.run_r4a_runoff_partition_span_with_winter_frost(Some(&winter_frost_compute_inputs))
+        .expect("warm active frost step should thaw prior frozen water into liquid storage");
+
+    assert_eq!(
+        day.winter_column.frost.ws_frz_m.to_bits(),
+        0.0_f64.to_bits()
+    );
+    assert_eq!(
+        day.hydrology_projection_inputs
+            .frozen_soil_water_m
+            .to_bits(),
+        0.0_f64.to_bits()
+    );
+    assert!(
+        (day.storage_reconciliation_inputs.frost_liquid_delta_m
+            - day.winter_column.frost.frwatc_net_liquid_delta_m)
+            .abs()
+            <= 1.0e-12,
+        "WB12 liquid storage delta must consume the frwatc net ledger: delta={} thaw={} net={} soil_after={} before={}",
+        day.storage_reconciliation_inputs.frost_liquid_delta_m,
+        day.winter_column.frost.frwatc_thaw_credit_m,
+        day.winter_column.frost.frwatc_net_liquid_delta_m,
+        day.water.soil_water_m,
+        liquid_storage_before_thaw
+    );
+    assert!(
+        (day.water.soil_water_m
+            - liquid_storage_before_thaw
+            - day.winter_column.frost.frwatc_net_liquid_delta_m)
+            .abs()
+            <= 1.0e-12,
+        "liquid storage must include the frwatc net liquid delta after frost clears"
+    );
+    assert_eq!(
+        day.winter_column.frost.frwatc_thaw_credit_m.to_bits(),
+        prior_frozen_water_m.to_bits()
+    );
+    assert_eq!(
+        day.winter_column.frost.frwatc_net_liquid_delta_m.to_bits(),
+        day.storage_reconciliation_inputs
+            .frost_liquid_delta_m
+            .to_bits()
+    );
+    let thawed_layer = &day.percolation.layer_state_after[0];
+    assert_eq!(thawed_layer.frozen_depth_m.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(thawed_layer.frozen_water_m.to_bits(), 0.0_f64.to_bits());
+    assert!(
+        (aggregate_test_layer_storage(thawed_layer) - day.water.soil_water_m).abs() <= 1.0e-12,
+        "thawed/no-final-frost layer projection must clear before it can seed the next day"
+    );
+}
+
+#[test]
+fn r7h_explicit_frost_storage_source_does_not_rewrite_r4a_layer_projection() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(123, 2637, 1, 1).expect("valid direct identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    let prior_frost_depth_m = 0.005;
+    let prior_frozen_water_m = 0.001;
+    day.percolation.layer_state_after = vec![sample_layer_with_frost(
+        0.200,
+        prior_frost_depth_m,
+        prior_frozen_water_m,
+    )];
+    day.winter_column.frost = DirectFrostLaneState::from(sample_frost_runtime_carry(
+        prior_frost_depth_m,
+        prior_frozen_water_m,
+        0.123,
+    ));
+    let explicit_storage_source_m = 0.004;
+    day.frost_storage_liquid_delta_m = Some(explicit_storage_source_m);
+    let liquid_storage_before_thaw =
+        aggregate_test_layer_storage(&day.percolation.layer_state_after[0]);
+    let winter_frost_compute_inputs = sample_winter_frost_compute_inputs(true);
+    day.water.soil_water_m = liquid_storage_before_thaw;
+    day.run_r4i_liquid_input_span()
+        .expect("zero liquid input upstream span should execute");
+    day.run_r4j_runon_carry_span()
+        .expect("zero runon/carry upstream span should execute");
+    day.run_r4k_infiltration_depression_span()
+        .expect("zero infiltration/depression upstream span should execute");
+    day.run_r4l_saturation_addback_span()
+        .expect("zero saturation addback upstream span should execute");
+
+    day.run_r4a_runoff_partition_span_with_winter_frost(Some(&winter_frost_compute_inputs))
+        .expect("typed frost partition should accept explicit storage source");
+
+    let local_projection_delta_m = day.water.soil_water_m - liquid_storage_before_thaw;
+    assert!(
+        (local_projection_delta_m - day.winter_column.frost.frwatc_net_liquid_delta_m).abs()
+            <= 1.0e-12,
+        "layer/state projection must remain tied to the local frost partition"
+    );
+    assert!(
+        (day.storage_reconciliation_inputs.frost_liquid_delta_m - local_projection_delta_m).abs()
+            <= 1.0e-12,
+        "R4A must keep the local frost partition delta for projection rebalance"
+    );
+    assert!(
+        (explicit_storage_source_m - local_projection_delta_m).abs() > 1.0e-6,
+        "test setup must distinguish storage-source authority from layer projection authority"
+    );
+    assert_eq!(
+        day.frost_storage_liquid_delta_m,
+        Some(explicit_storage_source_m),
+        "R4A must preserve the explicit WB12 frost source for the later storage phase"
+    );
+}
+
+#[test]
+fn r7h_r4a_frost_uses_local_partition_excess_without_rewriting_wb14_capacity() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(97, 2637, 1, 1).expect("valid direct identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    let base_soil_water_m = 0.200;
+    let prior_frost_depth_m = 0.005;
+    let prior_frozen_water_m = 0.001;
+    let liquid_input_m = 0.010;
+    day.percolation.layer_state_after = vec![sample_layer(base_soil_water_m)];
+    day.winter_column.frost = DirectFrostLaneState::from(sample_frost_runtime_carry(
+        prior_frost_depth_m,
+        prior_frozen_water_m,
+        0.123,
+    ));
+    day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
+    day.infiltration_depression_inputs.producer_inputs =
+        Some(DirectWb14InfiltrationProducerInputs {
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 3_600.0,
+                intensity_m_s: liquid_input_m / 3_600.0,
+            }],
+            effective_conductivity_m_s: 1.0e-9,
+            matric_potential_m: 0.100,
+            storage_capacity_m: 0.020,
+            depression_storage_capacity_m: 0.0,
+        });
+    let mut winter_frost_compute_inputs = sample_winter_frost_compute_inputs(true);
+    winter_frost_compute_inputs.soil_conductivity_m_s = Some(1.0e-8);
+
+    day.run_r4i_liquid_input_span()
+        .expect("liquid input upstream span should execute");
+    day.run_r4j_runon_carry_span()
+        .expect("zero runon/carry upstream span should execute");
+    day.run_r4k_infiltration_depression_span()
+        .expect("infiltration/depression upstream span should execute");
+    let cumulative_infiltration_m = day.runoff_partition_inputs.cumulative_infiltration_m;
+    let wb14_effective_conductivity_m_s = day
+        .infiltration_depression_inputs
+        .producer_inputs
+        .as_ref()
+        .expect("producer inputs should remain present")
+        .effective_conductivity_m_s;
+    day.run_r4l_saturation_addback_span()
+        .expect("zero saturation addback upstream span should execute");
+
+    day.run_r4a_runoff_partition_span_with_winter_frost(Some(&winter_frost_compute_inputs))
+        .expect("runoff-stage frost should retain local liquid and partition runoff");
+
+    assert_eq!(
+        day.runoff_partition.cumulative_infiltration_m.to_bits(),
+        cumulative_infiltration_m.to_bits(),
+        "R4A must consume the already-computed WB14 infiltration operand"
+    );
+    assert!(
+        (day.infiltration_depression_inputs
+            .producer_inputs
+            .as_ref()
+            .expect("producer inputs should remain present")
+            .effective_conductivity_m_s
+            - wb14_effective_conductivity_m_s)
+            .abs()
+            <= 1.0e-12,
+        "R4A must not rewrite WB14 conductivity after downstream spans have consumed it"
+    );
+
+    let local_partition_excess_m = liquid_input_m
+        - cumulative_infiltration_m
+        - day.runoff_partition.depression_storage_delta_m;
+    assert!(
+        local_partition_excess_m > 0.0,
+        "test setup should retain local pre-partition liquid excess"
+    );
+    assert!(
+        (day.winter_column.frost.frwatc_soil_water_before_m
+            - base_soil_water_m
+            - local_partition_excess_m)
+            .abs()
+            <= 1.0e-12,
+        "runoff-stage frost must consume local pre-partition liquid before final Q"
+    );
+    assert!(
+        (day.runoff_partition.q_runoff_m
+            - (liquid_input_m
+                - cumulative_infiltration_m
+                - day.runoff_partition.depression_storage_delta_m
+                - local_partition_excess_m))
+            .abs()
+            <= 1.0e-12,
+        "final Q must exclude local liquid retained by runoff-stage frost"
+    );
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn r7h_winter_local_liquid_projects_after_surface_et_before_saturation() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(99, 2637, 1, 1).expect("valid direct identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    let base_soil_water_m = 0.200;
+    let prior_frost_depth_m = 0.005;
+    let prior_frozen_water_m = 0.001;
+    let liquid_input_m = 0.010;
+    day.percolation.layer_state_after = vec![sample_layer(base_soil_water_m)];
+    day.winter_column.frost = DirectFrostLaneState::from(sample_frost_runtime_carry(
+        prior_frost_depth_m,
+        prior_frozen_water_m,
+        0.123,
+    ));
+    day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
+    day.infiltration_depression_inputs.producer_inputs =
+        Some(DirectWb14InfiltrationProducerInputs {
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 3_600.0,
+                intensity_m_s: liquid_input_m / 3_600.0,
+            }],
+            effective_conductivity_m_s: 1.0e-9,
+            matric_potential_m: 0.100,
+            storage_capacity_m: 0.020,
+            depression_storage_capacity_m: 0.0,
+        });
+
+    day.run_r4i_liquid_input_span()
+        .expect("liquid input upstream span should execute");
+    day.run_r4j_runon_carry_span()
+        .expect("zero runon/carry upstream span should execute");
+    day.run_r4k_infiltration_depression_span()
+        .expect("infiltration/depression upstream span should execute");
+    let cumulative_infiltration_m = day.runoff_partition_inputs.cumulative_infiltration_m;
+    let local_partition_excess_m = liquid_input_m
+        - cumulative_infiltration_m
+        - day.runoff_partition_inputs.depression_storage_delta_m;
+    assert!(
+        local_partition_excess_m > 0.0,
+        "test setup should retain local pre-partition liquid excess"
+    );
+
+    let surface = DirectEvapotranspirationSurfaceState {
+        soil_water_before_m: base_soil_water_m,
+        soil_water_after_soil_evap_m: base_soil_water_m,
+        evapotranspiration_seed_m: 0.0,
+        transpiration_demand_m: 0.0,
+        soil_evaporation_m: 0.0,
+        residue_evaporation_m: 0.0,
+        residue_interception_after_m: 0.0,
+        stage_state_after: None,
+        layer_soil_evaporation_withdrawal_m: vec![0.0],
+        layer_state_after_soil_evap: vec![sample_layer(base_soil_water_m)],
+    };
+    day.evapotranspiration_surface_downstream_operands =
+        DirectEvapotranspirationSurfaceDownstreamOperands::from(surface.clone());
+    day.evapotranspiration_surface_shadow_projection =
+        Some(DirectEvapotranspirationSurfaceShadowProjection {
+            lane_index: 0,
+            day_index: 0,
+            soil_water_before_m: surface.soil_water_before_m,
+            soil_water_after_soil_evap_m: surface.soil_water_after_soil_evap_m,
+            evapotranspiration_seed_m: surface.evapotranspiration_seed_m,
+            transpiration_demand_m: surface.transpiration_demand_m,
+            soil_evaporation_m: surface.soil_evaporation_m,
+            residue_evaporation_m: surface.residue_evaporation_m,
+            residue_interception_after_m: surface.residue_interception_after_m,
+            layer_soil_evaporation_withdrawal_m: surface
+                .layer_soil_evaporation_withdrawal_m
+                .clone(),
+            layer_state_after_soil_evap: surface.layer_state_after_soil_evap.clone(),
+        });
+    day.evapotranspiration_surface = surface;
+
+    day.project_r4x_winter_local_liquid_before_saturation(Some(
+        &sample_winter_frost_compute_inputs(true),
+    ))
+    .expect("winter-local liquid should project after surface ET");
+
+    assert_eq!(
+        day.percolation_inputs.same_pass_infiltration_m.to_bits(),
+        cumulative_infiltration_m.to_bits(),
+        "WB18 must consume the WB14 same-pass infiltration operand without frost-retained liquid"
+    );
+    assert_eq!(
+        day.evapotranspiration_compute_inputs
+            .same_pass_infiltration_m
+            .to_bits(),
+        cumulative_infiltration_m.to_bits(),
+        "ET must consume the WB14 same-pass infiltration operand without frost-retained liquid"
+    );
+    assert!(
+        (day.runoff_partition_inputs
+            .frost_preprojected_local_liquid_m
+            - local_partition_excess_m)
+            .abs()
+            <= 1.0e-12,
+        "frost-retained liquid must be marked preprojected before saturation"
+    );
+    assert!(
+        (day.evapotranspiration_surface.layer_state_after_soil_evap[0].theta_m
+            - base_soil_water_m
+            - local_partition_excess_m)
+            .abs()
+            <= 1.0e-12,
+        "surface ET layer state should receive retained local liquid before R4O"
+    );
+    assert!(
+        (day.evapotranspiration_surface_shadow_projection
+            .as_ref()
+            .expect("surface shadow should exist")
+            .soil_water_after_soil_evap_m
+            - base_soil_water_m
+            - local_partition_excess_m)
+            .abs()
+            <= 1.0e-12,
+        "surface shadow should receive retained local liquid before R4O"
+    );
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn r7h_active_snowmelt_local_liquid_routes_through_wb18_same_pass() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(97, 2637, 1, 1).expect("valid direct identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    let base_soil_water_m = 0.200;
+    let liquid_input_m = 0.010;
+    day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
+    day.snow_coupling_inputs = DirectSnowCouplingInputs {
+        snow_coupling_handoff_m: liquid_input_m,
+        snow_state_projected: true,
+        active_snow_coupling: true,
+        routed_melt_m: liquid_input_m,
+        post_winter_rain_m: 0.0,
+        runtime_swe_after_m: 0.0,
+        runtime_depth_after_m: 0.0,
+        runtime_density_after_kg_m3: 0.0,
+        runtime_settle_day_count_after: 0.0,
+    };
+    day.infiltration_depression_inputs.producer_inputs =
+        Some(DirectWb14InfiltrationProducerInputs {
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 3_600.0,
+                intensity_m_s: liquid_input_m / 3_600.0,
+            }],
+            effective_conductivity_m_s: 1.0e-9,
+            matric_potential_m: 0.100,
+            storage_capacity_m: 0.020,
+            depression_storage_capacity_m: 0.0,
+        });
+
+    day.run_r4i_liquid_input_span()
+        .expect("liquid input upstream span should execute");
+    day.run_r4j_runon_carry_span()
+        .expect("zero runon/carry upstream span should execute");
+    day.run_r4k_infiltration_depression_span()
+        .expect("snowmelt infiltration/depression upstream span should execute");
+    let cumulative_infiltration_m = day.runoff_partition_inputs.cumulative_infiltration_m;
+    assert_eq!(
+        cumulative_infiltration_m.to_bits(),
+        liquid_input_m.to_bits(),
+        "active snowmelt must promote reconstructed same-pass infiltration to the downstream cumulative operand"
+    );
+    assert_eq!(
+        day.percolation_inputs.same_pass_infiltration_m.to_bits(),
+        liquid_input_m.to_bits(),
+        "active snowmelt WB18 same-pass must use direct liquid input after depression storage"
+    );
+    assert_eq!(
+        day.evapotranspiration_compute_inputs
+            .same_pass_infiltration_m
+            .to_bits(),
+        liquid_input_m.to_bits(),
+        "active snowmelt ET same-pass must use the same reconstructed liquid input"
+    );
+
+    let surface = DirectEvapotranspirationSurfaceState {
+        soil_water_before_m: base_soil_water_m,
+        soil_water_after_soil_evap_m: base_soil_water_m,
+        evapotranspiration_seed_m: 0.0,
+        transpiration_demand_m: 0.0,
+        soil_evaporation_m: 0.0,
+        residue_evaporation_m: 0.0,
+        residue_interception_after_m: 0.0,
+        stage_state_after: None,
+        layer_soil_evaporation_withdrawal_m: vec![0.0],
+        layer_state_after_soil_evap: vec![sample_layer(base_soil_water_m)],
+    };
+    day.evapotranspiration_surface_downstream_operands =
+        DirectEvapotranspirationSurfaceDownstreamOperands::from(surface.clone());
+    day.evapotranspiration_surface_shadow_projection =
+        Some(DirectEvapotranspirationSurfaceShadowProjection {
+            lane_index: 0,
+            day_index: 0,
+            soil_water_before_m: surface.soil_water_before_m,
+            soil_water_after_soil_evap_m: surface.soil_water_after_soil_evap_m,
+            evapotranspiration_seed_m: surface.evapotranspiration_seed_m,
+            transpiration_demand_m: surface.transpiration_demand_m,
+            soil_evaporation_m: surface.soil_evaporation_m,
+            residue_evaporation_m: surface.residue_evaporation_m,
+            residue_interception_after_m: surface.residue_interception_after_m,
+            layer_soil_evaporation_withdrawal_m: surface
+                .layer_soil_evaporation_withdrawal_m
+                .clone(),
+            layer_state_after_soil_evap: surface.layer_state_after_soil_evap.clone(),
+        });
+    day.evapotranspiration_surface = surface;
+
+    day.project_r4x_winter_local_liquid_before_saturation(Some(
+        &sample_winter_frost_compute_inputs(true),
+    ))
+    .expect("snow-consumed local liquid should not require deferred projection");
+
+    assert_eq!(
+        day.runoff_partition_inputs
+            .frost_preprojected_local_liquid_m
+            .to_bits(),
+        0.0_f64.to_bits(),
+        "snowmelt local excess already consumed by WB18 must not be preprojected again"
+    );
+    assert_eq!(
+        day.evapotranspiration_surface.layer_state_after_soil_evap[0]
+            .theta_m
+            .to_bits(),
+        base_soil_water_m.to_bits(),
+        "surface ET layer state must not receive duplicate local snowmelt"
+    );
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn r7h_mixed_rain_snowmelt_uses_wb14_same_pass_infiltration() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(97, 2637, 1, 1).expect("valid direct identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    let base_soil_water_m = 0.200;
+    let liquid_input_m = 0.010;
+    let routed_melt_m = 0.004;
+    let post_winter_rain_m = liquid_input_m - routed_melt_m;
+    day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
+    day.storage_reconciliation_inputs.precip_input_m = post_winter_rain_m;
+    day.snow_coupling_inputs = DirectSnowCouplingInputs {
+        snow_coupling_handoff_m: routed_melt_m,
+        snow_state_projected: true,
+        active_snow_coupling: true,
+        routed_melt_m,
+        post_winter_rain_m,
+        runtime_swe_after_m: 0.0,
+        runtime_depth_after_m: 0.0,
+        runtime_density_after_kg_m3: 0.0,
+        runtime_settle_day_count_after: 0.0,
+    };
+    day.infiltration_depression_inputs.producer_inputs =
+        Some(DirectWb14InfiltrationProducerInputs {
+            hyetograph: vec![DirectWb14HyetographInterval {
+                start_s: 0.0,
+                end_s: 3_600.0,
+                intensity_m_s: liquid_input_m / 3_600.0,
+            }],
+            effective_conductivity_m_s: 1.0e-9,
+            matric_potential_m: 0.100,
+            storage_capacity_m: 0.020,
+            depression_storage_capacity_m: 0.0,
+        });
+
+    day.run_r4i_liquid_input_span()
+        .expect("liquid input upstream span should execute");
+    day.run_r4j_runon_carry_span()
+        .expect("zero runon/carry upstream span should execute");
+    day.run_r4k_infiltration_depression_span()
+        .expect("mixed rain/snowmelt infiltration span should execute");
+    let cumulative_infiltration_m = day.runoff_partition_inputs.cumulative_infiltration_m;
+    assert!(
+        cumulative_infiltration_m < liquid_input_m,
+        "test setup should leave WB14-limited mixed-event excess"
+    );
+    assert_eq!(
+        day.percolation_inputs.same_pass_infiltration_m.to_bits(),
+        cumulative_infiltration_m.to_bits(),
+        "mixed rain plus snowmelt must keep WB14 cumulative infiltration as the same-pass operand"
+    );
+    assert_eq!(
+        day.evapotranspiration_compute_inputs
+            .same_pass_infiltration_m
+            .to_bits(),
+        cumulative_infiltration_m.to_bits(),
+        "mixed rain plus snowmelt ET same-pass must not promote full liquid input"
+    );
+
+    let surface = DirectEvapotranspirationSurfaceState {
+        soil_water_before_m: base_soil_water_m,
+        soil_water_after_soil_evap_m: base_soil_water_m,
+        evapotranspiration_seed_m: 0.0,
+        transpiration_demand_m: 0.0,
+        soil_evaporation_m: 0.0,
+        residue_evaporation_m: 0.0,
+        residue_interception_after_m: 0.0,
+        stage_state_after: None,
+        layer_soil_evaporation_withdrawal_m: vec![0.0],
+        layer_state_after_soil_evap: vec![sample_layer(base_soil_water_m)],
+    };
+    day.evapotranspiration_surface_downstream_operands =
+        DirectEvapotranspirationSurfaceDownstreamOperands::from(surface.clone());
+    day.evapotranspiration_surface_shadow_projection =
+        Some(DirectEvapotranspirationSurfaceShadowProjection {
+            lane_index: 0,
+            day_index: 0,
+            soil_water_before_m: surface.soil_water_before_m,
+            soil_water_after_soil_evap_m: surface.soil_water_after_soil_evap_m,
+            evapotranspiration_seed_m: surface.evapotranspiration_seed_m,
+            transpiration_demand_m: surface.transpiration_demand_m,
+            soil_evaporation_m: surface.soil_evaporation_m,
+            residue_evaporation_m: surface.residue_evaporation_m,
+            residue_interception_after_m: surface.residue_interception_after_m,
+            layer_soil_evaporation_withdrawal_m: surface
+                .layer_soil_evaporation_withdrawal_m
+                .clone(),
+            layer_state_after_soil_evap: surface.layer_state_after_soil_evap.clone(),
+        });
+    day.evapotranspiration_surface = surface;
+
+    day.project_r4x_winter_local_liquid_before_saturation(Some(
+        &sample_winter_frost_compute_inputs(true),
+    ))
+    .expect("mixed rain/snowmelt excess must not require winter local projection");
+
+    assert_eq!(
+        day.runoff_partition_inputs
+            .frost_preprojected_local_liquid_m
+            .to_bits(),
+        0.0_f64.to_bits(),
+        "mixed rain/snowmelt excess must remain available for runoff partitioning"
+    );
+    assert_eq!(
+        day.evapotranspiration_surface.layer_state_after_soil_evap[0]
+            .theta_m
+            .to_bits(),
+        base_soil_water_m.to_bits(),
+        "mixed rain/snowmelt excess must not be projected into storage before saturation"
+    );
+}
+
+#[test]
+fn r7h_r4a_no_material_rainfall_excess_remains_runoff() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(98, 2637, 1, 1).expect("valid direct identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    let base_soil_water_m = 0.200;
+    let liquid_input_m = 0.010;
+    day.percolation.layer_state_after = vec![sample_layer(base_soil_water_m)];
+    let storage_before_m = aggregate_test_layer_storage(&day.percolation.layer_state_after[0]);
+    day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
+
+    day.run_r4i_liquid_input_span()
+        .expect("liquid input upstream span should execute");
+    day.run_r4j_runon_carry_span()
+        .expect("zero runon/carry upstream span should execute");
+    day.run_r4k_infiltration_depression_span()
+        .expect("zero infiltration/depression upstream span should execute");
+    day.run_r4l_saturation_addback_span()
+        .expect("zero saturation addback upstream span should execute");
+
+    day.run_r4a_runoff_partition_span_with_winter_frost(Some(&sample_winter_frost_compute_inputs(
+        false,
+    )))
+    .expect("ordinary no-material rainfall excess should remain runoff");
+
+    let retained_liquid_m = day.runoff_partition_inputs.frost_retained_local_liquid_m;
+    assert_eq!(
+        retained_liquid_m.to_bits(),
+        0.0_f64.to_bits(),
+        "no-material ordinary rainfall excess must not be classified as frost-retained liquid"
+    );
+    assert!(
+        (day.runoff_partition.q_runoff_m - liquid_input_m).abs() <= 1.0e-12,
+        "ordinary rainfall excess should remain R4A partition runoff"
+    );
+    assert!(
+        (aggregate_test_layer_storage(&day.percolation.layer_state_after[0]) - storage_before_m)
+            .abs()
+            <= 1.0e-12,
+        "no-material ordinary rainfall excess must not be projected into typed storage layers"
+    );
+}
+
+#[test]
+fn r7h_r4a_material_frost_retained_liquid_projects_to_storage_layers() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(98, 2637, 1, 1).expect("valid direct identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    let base_soil_water_m = 0.200;
+    let prior_frost_depth_m = 0.005;
+    let prior_frozen_water_m = 0.001;
+    let liquid_input_m = 0.010;
+    day.percolation.layer_state_after = vec![sample_layer_with_frost(
+        base_soil_water_m,
+        prior_frost_depth_m,
+        prior_frozen_water_m,
+    )];
+    day.winter_column.frost = DirectFrostLaneState::from(sample_frost_runtime_carry(
+        prior_frost_depth_m,
+        prior_frozen_water_m,
+        0.123,
+    ));
+    let storage_before_m = aggregate_test_layer_storage(&day.percolation.layer_state_after[0]);
+    day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
+
+    day.run_r4i_liquid_input_span()
+        .expect("liquid input upstream span should execute");
+    day.run_r4j_runon_carry_span()
+        .expect("zero runon/carry upstream span should execute");
+    day.run_r4k_infiltration_depression_span()
+        .expect("zero infiltration/depression upstream span should execute");
+    day.run_r4l_saturation_addback_span()
+        .expect("zero saturation addback upstream span should execute");
+
+    day.run_r4a_runoff_partition_span_with_winter_frost(Some(&sample_winter_frost_compute_inputs(
+        false,
+    )))
+    .expect("material prior frost path should retain local winter liquid");
+
+    let retained_liquid_m = day.runoff_partition_inputs.frost_retained_local_liquid_m;
+    assert!(
+        (retained_liquid_m - liquid_input_m).abs() <= 1.0e-12,
+        "test setup should retain the full local winter liquid excess"
+    );
+    assert_eq!(day.runoff_partition.q_runoff_m.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(
+        day.storage_reconciliation_inputs
+            .frost_liquid_delta_m
+            .to_bits(),
+        0.0_f64.to_bits(),
+        "retained snowmelt is already a storage input, not a freeze/thaw delta"
+    );
+    assert!(
+        (aggregate_test_layer_storage(&day.percolation.layer_state_after[0])
+            - storage_before_m
+            - retained_liquid_m)
+            .abs()
+            <= 1.0e-12,
+        "R4A must project retained winter liquid into typed layer storage even without material freeze/thaw"
+    );
+    assert!(
+        (day.water.soil_water_m - storage_before_m - retained_liquid_m).abs() <= 1.0e-12,
+        "frame soil water must match retained-liquid layer projection"
     );
 }
 

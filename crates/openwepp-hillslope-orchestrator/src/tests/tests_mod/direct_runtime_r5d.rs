@@ -319,6 +319,7 @@ fn annual_active_inputs() -> DirectGrowthInputs {
         state_before: DirectGrowthStateSurface {
             sumgdd: 100.0,
             live_biomass_kg_m2: 0.30,
+            interception_live_biomass_kg_m2: 0.294,
             canopy_cover_fraction: 0.20,
             leaf_area_index: 0.80,
             root_mass_kg_m2: 0.05,
@@ -367,6 +368,7 @@ fn perennial_grazing_inputs() -> DirectGrowthInputs {
         state_before: DirectGrowthStateSurface {
             sumgdd: 220.0,
             live_biomass_kg_m2: 0.42,
+            interception_live_biomass_kg_m2: 0.42,
             canopy_cover_fraction: 0.30,
             leaf_area_index: 1.20,
             root_mass_kg_m2: 0.35,
@@ -519,6 +521,8 @@ fn expected_growth_surface(
     DirectGrowthStateSurface {
         sumgdd: sumgdd_next,
         live_biomass_kg_m2: vdmt_next,
+        interception_live_biomass_kg_m2: inputs.state_before.interception_live_biomass_kg_m2
+            + 0.0001 * inputs.beinp * par * reg,
         canopy_cover_fraction: cancov_next,
         leaf_area_index: lai_next,
         root_mass_kg_m2: rtmass_next,

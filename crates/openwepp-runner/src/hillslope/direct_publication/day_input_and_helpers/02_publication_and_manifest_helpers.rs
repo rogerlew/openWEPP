@@ -212,52 +212,6 @@ fn direct_publication_lateral_conductivity_m_s(
     Ok(vertical_conductivity_m_s)
 }
 
-fn direct_publication_evapotranspiration_inputs(
-    runtime_surface: &HillslopeWritebackSurface,
-    include_stage_state: bool,
-) -> Result<DirectEvapotranspirationComputeInputs, HillslopeCliError> {
-    let pmet = if runtime_surface_symbol_value(runtime_surface, "wb11_et_seed_branch_evappm")
-        .is_some_and(|value| value >= 0.5)
-    {
-        Some(DirectEvapotranspirationPmetInputs {
-            soil_evaporation_m: require_runtime_surface_scalar(runtime_surface, "pmet.es_m")?,
-            plant_transpiration_m: require_runtime_surface_scalar(runtime_surface, "pmet.ep_m")?,
-            soil_evaporation_storage_return_m: runtime_surface_symbol_value(
-                runtime_surface,
-                "pmet.es_storage_return_m",
-            )
-            .unwrap_or(0.0),
-        })
-    } else {
-        None
-    };
-    let stage_state = if pmet.is_some() || !include_stage_state {
-        None
-    } else {
-        direct_publication_stage_state(runtime_surface)?
-    };
-    Ok(DirectEvapotranspirationComputeInputs {
-        et_demand_m: require_runtime_surface_scalar(runtime_surface, "wb11_et_demand")?,
-        leaf_area_index: require_runtime_surface_scalar(runtime_surface, "lai")?,
-        canopy_cover_fraction: require_runtime_surface_scalar(runtime_surface, "cancov")?,
-        residue_interception_m: require_runtime_surface_scalar(
-            runtime_surface,
-            "wb17_residue_interception",
-        )?,
-        same_pass_infiltration_m: 0.0,
-        outside_water_depth_m: 0.0,
-        root_depth_m: require_runtime_surface_scalar(runtime_surface, "rtd")?,
-        plant_tolerance: require_preferred_or_legacy_runtime_surface_scalar(
-            runtime_surface,
-            "swu_effective_pltol",
-            "pltol",
-        )?,
-        growth_context_required: false,
-        stage_state,
-        pmet,
-    })
-}
-
 fn direct_publication_stage_state(
     runtime_surface: &HillslopeWritebackSurface,
 ) -> Result<Option<DirectEvapotranspirationStageState>, HillslopeCliError> {

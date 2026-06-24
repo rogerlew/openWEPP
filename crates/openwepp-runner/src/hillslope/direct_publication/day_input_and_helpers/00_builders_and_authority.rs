@@ -8,13 +8,11 @@ struct DirectPublicationDayInputBuilder<'a> {
     erosion_guard_active: bool,
     record_compatibility_edge_invocations: bool,
 }
-
 struct DirectPublicationClimateContextState {
     rolling_surface: HillslopeWritebackSurface,
     current_day_index: Option<usize>,
     current_day_context_surface: Option<HillslopeWritebackSurface>,
 }
-
 impl<'a> DirectPublicationDayInputBuilder<'a> {
     fn new(
         climate_request: &'a HillslopeClimateRuntimeRequest,
@@ -30,7 +28,6 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             execution_lane,
         )
     }
-
     fn new_with_seed_surfaces(
         climate_request: &'a HillslopeClimateRuntimeRequest,
         climate_span: &'a ClimateRunSpanSummary,
@@ -47,7 +44,6 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             false,
         )
     }
-
     fn new_with_seed_surfaces_and_erosion_guard(
         climate_request: &'a HillslopeClimateRuntimeRequest,
         climate_span: &'a ClimateRunSpanSummary,
@@ -85,7 +81,6 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             record_compatibility_edge_invocations: erosion_guard_active,
         })
     }
-
     fn build(
         &self,
         frame: &DirectRunFrame,
@@ -127,6 +122,8 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             record_direct_runtime_compatibility_edge_invocation();
         }
         let (mut seed_surface, day) = self.seed_surface(frame, day_index, lane_index)?;
+        let simulation_year =
+            simulation_year_from_calendar_year(day.year, self.climate_span.first_day.year)?;
 
         let precipitation_m = day.precipitation_mm / 1_000.0;
         let mut day_input =
@@ -143,6 +140,10 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             )?;
         }
         let snow_frost_authority = DirectProductionSnowFrostAuthority::from_seed(&seed_surface)?;
+        let winter_hourly_geometry =
+            DirectProductionWinterHourlyGeometry::from_climate_context_surface(&seed_surface)?;
+        let growth_state_before = direct_growth_state_for_lane(&seed_surface, day_index, lane)?;
+        overlay_direct_publication_growth_state(&mut seed_surface, lane_index, growth_state_before)?;
         let snow_lane_state = snow_frost_authority.current_snow_lane_state(lane);
         let frost_context = snow_frost_authority.frost_day_context(
             self.climate_request,
@@ -152,6 +153,8 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             lane,
             &forcing,
             snow_lane_state,
+            winter_hourly_geometry,
+            precipitation_m > 1.0e-12 || snow_lane_state.runtime_swe_m > 1.0e-12,
         )?;
         if let Some(frost_context) = &frost_context {
             insert_direct_seed_scalar(
@@ -227,23 +230,42 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             Some(require_runtime_surface_scalar(&seed_surface, "wb11_soil_water")?);
         day_input.percolation_inputs = Some(percolation_inputs);
         day_input.subsurface_compute_inputs = Some(subsurface_inputs);
-        day_input.evapotranspiration_compute_inputs =
-            Some(direct_publication_evapotranspiration_inputs(
-                &seed_surface,
-                day_index == 0,
-            )?);
+        let growth_authority = DirectProductionGrowthAuthority::from_seed(&seed_surface)?;
+        let mut dynamic_evapotranspiration =
+            DirectProductionEvapotranspirationAuthority::from_seed(&seed_surface, frost_layers.len())?;
+        dynamic_evapotranspiration.apply_growth_surface(growth_state_before);
+        let pre_growth_evapotranspiration_compute_inputs = dynamic_evapotranspiration.inputs(
+            day,
+            &forcing,
+            None,
+            &frost_layers,
+            self.climate_request,
+        )?;
+        let (annual_growth_inputs, perennial_growth_inputs) = growth_authority.inputs(
+            day,
+            simulation_year,
+            lane_index + 1,
+            &forcing,
+            growth_state_before,
+            direct_growth_water_stress_for_lane(&seed_surface, day_index, lane)?,
+            &pre_growth_evapotranspiration_compute_inputs,
+        )?;
+        let evapotranspiration_compute_inputs = pre_growth_evapotranspiration_compute_inputs;
+        day_input.evapotranspiration_compute_inputs = Some(evapotranspiration_compute_inputs);
+        day_input.annual_growth_inputs = Some(annual_growth_inputs);
+        day_input.perennial_growth_inputs = Some(perennial_growth_inputs);
         day_input.hydrology_projection_inputs =
             Some(direct_publication_hydrology_projection_inputs(
                 *self.profile_inputs(lane_index)?,
                 &snow_liquid,
-            ));
+        ));
         if let Some(frost_context) = frost_context {
             day_input.winter_frost_compute_inputs = Some(frost_context.compute_inputs);
+            day_input.frost_storage_liquid_delta_m = frost_context.storage_liquid_delta_m;
             day_input.frost_layer_carry_projection = frost_context.layer_carry_projection;
         }
         Ok((day_input, seed_surface))
     }
-
     fn seed_surface(
         &self,
         frame: &DirectRunFrame,
@@ -406,18 +428,17 @@ struct DirectProductionDayInputBuilder<'a> {
     climate_request: &'a HillslopeClimateRuntimeRequest,
     climate_span: &'a ClimateRunSpanSummary,
     lane_authority: Vec<DirectProductionLaneDayInputAuthority>,
+    winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
 }
 
 #[derive(Clone)]
 struct DirectProductionLaneDayInputAuthority {
-    canopy_cover_fraction: f64,
-    leaf_area_index: f64,
-    vegetative_dry_matter_kg_m2: f64,
     peak_runoff: DirectProductionPeakRunoffAuthority,
     percolation: DirectPercolationInputs,
     subsurface: DirectSubsurfaceComputeInputs,
     infiltration: DirectProductionInfiltrationAuthority,
     evapotranspiration: DirectProductionEvapotranspirationAuthority,
+    growth: DirectProductionGrowthAuthority,
     hydrology_projection: DirectHydrologyProjectionInputs,
     erosion: DirectProductionErosionAuthority,
     snow_frost: DirectProductionSnowFrostAuthority,
@@ -464,9 +485,72 @@ struct DirectProductionPmetAuthority {
 }
 
 #[derive(Clone)]
+struct DirectProductionGrowthAuthority {
+    active: bool,
+    rotation_years: usize,
+    rotation_repeats: usize,
+    slots: Vec<DirectProductionGrowthSlotAuthority>,
+    monthly_temperature_max_c: [f64; 12],
+    monthly_temperature_min_c: [f64; 12],
+    soil_depth_m: f64,
+}
+
+#[derive(Clone)]
+struct DirectProductionGrowthSlotAuthority {
+    ofe_index: usize,
+    year_in_rotation: usize,
+    rotation_index: usize,
+    crops: Vec<DirectProductionGrowthCropAuthority>,
+}
+
+#[derive(Clone, Copy)]
+struct DirectProductionGrowthCropAuthority {
+    schedule_imngmt: u8,
+    imngmt: u8,
+    jdharv: u16,
+    jdplt: u16,
+    jdstop: u16,
+    btemp: f64,
+    otemp: f64,
+    gddmax: f64,
+    dlai: f64,
+    dropfc: f64,
+    decfct: f64,
+    spriod: f64,
+    bb: f64,
+    beinp: f64,
+    extnct: f64,
+    hi: f64,
+    xmxlai: f64,
+    rsr: f64,
+    rtmmax: f64,
+    rdmax: f64,
+}
+
+#[derive(Clone)]
 struct DirectProductionErosionAuthority {
     wave2_enabled: bool,
     erosion_inputs: DirectErosionInputs,
+}
+
+#[derive(Clone, Copy)]
+struct DirectProductionWinterHourlyGeometry {
+    avg_slope: f64,
+    azimuth: f64,
+}
+
+impl DirectProductionWinterHourlyGeometry {
+    fn from_climate_context_surface(
+        climate_context_surface: &HillslopeWritebackSurface,
+    ) -> Result<Self, HillslopeCliError> {
+        Ok(Self {
+            avg_slope: direct_publication_required_positive_scalar(
+                climate_context_surface,
+                "avgslp",
+            )?,
+            azimuth: require_runtime_surface_scalar(climate_context_surface, "azm")?,
+        })
+    }
 }
 
 #[allow(clippy::struct_excessive_bools)]
@@ -480,8 +564,6 @@ struct DirectProductionSnowFrostAuthority {
     snow_rst_c: f64,
     snow_newsnw_kg_m3: f64,
     snow_ssd_kg_m3: f64,
-    avg_slope: f64,
-    azimuth: f64,
     frost_typed_authority: Option<DirectProductionFrostTypedAuthority>,
     frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
     frost_file_present: bool,
@@ -509,7 +591,9 @@ struct DirectProductionFrostTypedAuthority {
 struct DirectProductionFrostDayContext {
     compute_inputs: DirectWinterFrostComputeInputs,
     frozen_infiltration_capacity_m_s: f64,
+    storage_liquid_delta_m: Option<f64>,
     layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
+    hydrology_layers: Vec<DirectSubsurfaceLayerState>,
 }
 
 struct DirectProductionFrostTypedComputeContext<'a> {
@@ -522,6 +606,21 @@ struct DirectProductionFrostTypedComputeContext<'a> {
     typed_authority: &'a DirectProductionFrostTypedAuthority,
     hourly: [DirectFrostHourlyForcing;
         openwepp_hillslope_orchestrator::DIRECT_WINTER_HOURLY_FORCING_COUNT],
+}
+
+fn direct_production_frost_storage_liquid_delta(
+    frost_outcome: &DirectWinterFrostPartitionOutcome,
+) -> Option<f64> {
+    const MATERIAL_FROST_THRESHOLD_M: f64 = 1.0e-12;
+    if frost_outcome.frwatc_net_liquid_delta_m <= MATERIAL_FROST_THRESHOLD_M {
+        return None;
+    }
+    if frost_outcome.frost_depth_after_m > MATERIAL_FROST_THRESHOLD_M
+        || frost_outcome.frozen_water_after_m > MATERIAL_FROST_THRESHOLD_M
+    {
+        return None;
+    }
+    Some(frost_outcome.frwatc_net_liquid_delta_m)
 }
 
 #[allow(clippy::struct_field_names)]
@@ -562,10 +661,22 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 Self::build_lane_authority(&day_zero_seed_surface)
             })
             .collect::<Result<Vec<_>, _>>()?;
+        let winter_hourly_geometry =
+            DirectProductionWinterHourlyGeometry::from_climate_context_surface(
+                seed_surfaces.last().ok_or_else(|| {
+                    HillslopeCliError::RuntimeSurfaceFailure {
+                        surface: "direct_publication_frame",
+                        detail: format!(
+                            "{SIMOUT_GUARD_ID} direct production requires outlet seed authority for winter hourly geometry"
+                        ),
+                    }
+                })?,
+            )?;
         Ok(Self {
             climate_request,
             climate_span,
             lane_authority,
+            winter_hourly_geometry,
         })
     }
 
@@ -587,6 +698,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             }
         })?;
         direct_publication_validate_day(day)?;
+        let simulation_year =
+            simulation_year_from_calendar_year(day.year, self.climate_span.first_day.year)?;
         let forcing =
             self.climate_request
                 .direct_day_forcing(day_index)
@@ -612,6 +725,30 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let mut hyetograph = direct_production_hyetograph(&forcing)?;
         let rainfall_input_m = direct_publication_hyetograph_rainfall_m(&hyetograph)?;
         let snow_lane_state = authority.snow_frost.current_snow_lane_state(lane);
+        let growth_state_before = *lane.plant_growth_state;
+        let pre_growth_evapotranspiration_compute_inputs =
+            authority.evapotranspiration.inputs_with_growth_surface(
+                day,
+                &forcing,
+                lane.evapotranspiration_stage_state.as_deref().copied(),
+                &lane.subsurface_layers,
+                self.climate_request,
+                growth_state_before,
+            )?;
+        let (annual_growth_inputs, perennial_growth_inputs) = authority.growth.inputs(
+            day,
+            simulation_year,
+            lane_index + 1,
+            &forcing,
+            growth_state_before,
+            lane.plant_water_stress,
+            &pre_growth_evapotranspiration_compute_inputs,
+        )?;
+        let growth_state_for_publication = direct_production_growth_state_for_publication(
+            &annual_growth_inputs,
+            &perennial_growth_inputs,
+            growth_state_before,
+        )?;
         Self::validate_active_snow_forcing(
             authority,
             lane_index,
@@ -625,27 +762,47 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             &forcing,
             rainfall_input_m,
             snow_lane_state,
-            authority.canopy_cover_fraction,
+            growth_state_for_publication.canopy_cover_fraction,
+            self.winter_hourly_geometry,
+        )?;
+        maybe_write_r7h_direct_production_snow_trace(
+            day_index,
+            lane_index,
+            rainfall_input_m,
+            snow_lane_state,
+            snow_liquid,
         )?;
         let frost_context = authority.snow_frost.frost_day_context(
             self.climate_request,
             day_index,
             day,
             lane_index,
-        lane,
-        &forcing,
-        snow_lane_state,
-    )?;
+            lane,
+            &forcing,
+            snow_lane_state,
+            self.winter_hourly_geometry,
+            rainfall_input_m > 1.0e-12 || snow_liquid.routed_melt_m > 1.0e-12,
+        )?;
         let interception_state = compute_direct_canopy_interception(
             DirectCanopyInterceptionInputs {
                 hyetograph_rainfall_m: snow_liquid.post_winter_rain_m,
                 interception_rainfall_input_m: snow_liquid.post_winter_rain_m,
-                canopy_cover_fraction: authority.canopy_cover_fraction,
-                leaf_area_index: authority.leaf_area_index,
-                vegetative_dry_matter_kg_m2: authority.vegetative_dry_matter_kg_m2,
+                canopy_cover_fraction: growth_state_for_publication.canopy_cover_fraction,
+                leaf_area_index: growth_state_for_publication.leaf_area_index,
+                interception_live_biomass_kg_m2: direct_growth_interception_live_biomass_from_state(
+                    growth_state_for_publication,
+                )?,
             },
         )
         .map_err(|source| direct_publication_runtime_error(&source))?;
+        maybe_write_r7h_direct_production_wb15_trace(
+            day_index,
+            lane_index,
+            growth_state_before,
+            growth_state_for_publication,
+            snow_liquid.post_winter_rain_m,
+            interception_state,
+        )?;
         let post_winter_hyetograph = direct_publication_scaled_hyetograph_to_rainfall(
             &hyetograph,
             snow_liquid.post_winter_rain_m,
@@ -658,6 +815,11 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             &post_interception_hyetograph,
             snow_liquid.routed_melt_m,
         )?;
+        let hydrology_layers = frost_context
+            .as_ref()
+            .map_or(lane.subsurface_layers.as_slice(), |context| {
+                context.hydrology_layers.as_slice()
+            });
 
         let mut day_input =
             DirectPublicationDayInput::calendar_only(direct_publication_calendar_day(day)?);
@@ -689,7 +851,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 .infiltration
                 .inputs(
                     lane_index,
-                    &lane.subsurface_layers,
+                    hydrology_layers,
                     hyetograph,
                     frost_context
                         .as_ref()
@@ -697,19 +859,15 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 )?,
         );
         day_input.percolation_inputs =
-            Some(authority.percolation_inputs(lane_index, lane)?);
+            Some(authority.percolation_inputs(lane_index, lane, hydrology_layers)?);
         day_input.subsurface_compute_inputs =
-            Some(authority.subsurface_inputs(lane_index, lane)?);
-        day_input.evapotranspiration_compute_inputs =
-            Some(authority.evapotranspiration.inputs(
-                day,
-                &forcing,
-                lane.evapotranspiration_stage_state,
-                &lane.subsurface_layers,
-                self.climate_request,
-            )?);
+            Some(authority.subsurface_inputs(lane_index, hydrology_layers)?);
+        let evapotranspiration_compute_inputs = pre_growth_evapotranspiration_compute_inputs;
+        day_input.evapotranspiration_compute_inputs = Some(evapotranspiration_compute_inputs);
+        day_input.annual_growth_inputs = Some(annual_growth_inputs);
+        day_input.perennial_growth_inputs = Some(perennial_growth_inputs);
         let mut hydrology_projection_inputs =
-            authority.hydrology_projection_inputs(&lane.subsurface_layers);
+            authority.hydrology_projection_inputs(hydrology_layers);
         hydrology_projection_inputs.snow_water_m = snow_liquid.runtime_swe_after_m;
         day_input.hydrology_projection_inputs = Some(hydrology_projection_inputs);
         let erosion_active = authority.erosion.wave2_enabled
@@ -725,6 +883,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         }
         if let Some(frost_context) = frost_context {
             day_input.winter_frost_compute_inputs = Some(frost_context.compute_inputs);
+            day_input.frost_storage_liquid_delta_m = frost_context.storage_liquid_delta_m;
             day_input.frost_layer_carry_projection = frost_context.layer_carry_projection;
         }
         day_input.frost_runtime_carry =
@@ -739,9 +898,6 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let percolation = direct_publication_percolation_inputs(seed_surface, 0.0)?;
         let subsurface = direct_publication_subsurface_inputs(seed_surface)?;
         Ok(DirectProductionLaneDayInputAuthority {
-            canopy_cover_fraction: require_runtime_surface_scalar(seed_surface, "cancov")?,
-            leaf_area_index: require_runtime_surface_scalar(seed_surface, "lai")?,
-            vegetative_dry_matter_kg_m2: require_runtime_surface_scalar(seed_surface, "vdmt")?,
             peak_runoff: DirectProductionPeakRunoffAuthority {
                 irrigation_rate_m_s: direct_publication_optional_nonnegative_scalar(
                     seed_surface,
@@ -780,6 +936,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 seed_surface,
                 layers.len(),
             )?,
+            growth: DirectProductionGrowthAuthority::from_seed(seed_surface)?,
             hydrology_projection: direct_publication_profile_inputs(seed_surface)?,
             erosion: DirectProductionErosionAuthority::from_seed(seed_surface)?,
             snow_frost: DirectProductionSnowFrostAuthority::from_seed(seed_surface)?,
@@ -820,31 +977,223 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
     }
 }
 
+fn maybe_write_r7h_direct_production_snow_trace(
+    day_index: usize,
+    lane_index: usize,
+    hyetograph_rainfall_m: f64,
+    snow_lane_state: openwepp_hillslope_orchestrator::DirectSnowLaneState,
+    snow_liquid: openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+) -> Result<(), HillslopeCliError> {
+    let Some(path) = std::env::var_os("OPENWEPP_R7H_SNOW_TRACE_PATH") else {
+        return Ok(());
+    };
+    if path.is_empty() {
+        return Ok(());
+    }
+    if let Some(filter_day_index) =
+        direct_production_trace_env_usize("OPENWEPP_R7H_SNOW_TRACE_DAY_INDEX")
+        && filter_day_index != day_index
+    {
+        return Ok(());
+    }
+    if let Some(filter_lane_index) =
+        direct_production_trace_env_usize("OPENWEPP_R7H_SNOW_TRACE_LANE_INDEX")
+        && filter_lane_index != lane_index
+    {
+        return Ok(());
+    }
+
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_trace",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} failed opening direct production snow trace {}: {error}",
+                std::path::PathBuf::from(&path).display()
+            ),
+        })?;
+    let line = format!(
+        "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v1\",\
+\"day_index\":{day_index},\
+\"lane_index\":{lane_index},\
+\"hyetograph_rainfall_m\":{},\
+\"runtime_swe_before_m\":{},\
+\"runtime_depth_before_m\":{},\
+\"runtime_density_before_kg_m3\":{},\
+\"runtime_settle_day_count_before\":{},\
+\"active_snow_coupling\":{},\
+\"snow_coupling_signed_s_m\":{},\
+\"routed_melt_m\":{},\
+\"post_winter_rain_m\":{},\
+\"runtime_swe_after_m\":{},\
+\"runtime_depth_after_m\":{},\
+\"runtime_density_after_kg_m3\":{},\
+\"runtime_settle_day_count_after\":{}}}",
+        direct_production_trace_number(hyetograph_rainfall_m),
+        direct_production_trace_number(snow_lane_state.runtime_swe_m),
+        direct_production_trace_number(snow_lane_state.runtime_depth_m),
+        direct_production_trace_number(snow_lane_state.runtime_density_kg_m3),
+        direct_production_trace_number(snow_lane_state.runtime_settle_day_count),
+        snow_liquid.active_snow_coupling,
+        direct_production_trace_number(snow_liquid.snow_coupling_signed_s_m),
+        direct_production_trace_number(snow_liquid.routed_melt_m),
+        direct_production_trace_number(snow_liquid.post_winter_rain_m),
+        direct_production_trace_number(snow_liquid.runtime_swe_after_m),
+        direct_production_trace_number(snow_liquid.runtime_depth_after_m),
+        direct_production_trace_number(snow_liquid.runtime_density_after_kg_m3),
+        direct_production_trace_number(snow_liquid.runtime_settle_day_count_after),
+    );
+    let line = format!("{line}\n");
+    std::io::Write::write_all(&mut file, line.as_bytes()).map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_production_snow_trace",
+        detail: format!(
+            "{SIMOUT_GUARD_ID} failed writing direct production snow trace {}: {error}",
+            std::path::PathBuf::from(&path).display()
+        ),
+    })
+}
+
+fn maybe_write_r7h_direct_production_wb15_trace(
+    day_index: usize,
+    lane_index: usize,
+    growth_state_before: DirectGrowthStateSurface,
+    growth_state_for_publication: DirectGrowthStateSurface,
+    post_winter_rain_m: f64,
+    interception_state: openwepp_hillslope_orchestrator::DirectCanopyInterceptionState,
+) -> Result<(), HillslopeCliError> {
+    let Some(path) = std::env::var_os("OPENWEPP_R7H_WB15_TRACE_PATH") else {
+        return Ok(());
+    };
+    if path.is_empty() {
+        return Ok(());
+    }
+    if let Some(filter_day_index) = direct_production_trace_env_usize(
+        "OPENWEPP_R7H_WB15_TRACE_DAY_INDEX",
+    ) && filter_day_index != day_index
+    {
+        return Ok(());
+    }
+    if let Some(filter_lane_index) = direct_production_trace_env_usize(
+        "OPENWEPP_R7H_WB15_TRACE_LANE_INDEX",
+    ) && filter_lane_index != lane_index
+    {
+        return Ok(());
+    }
+    let projected_interception_live_biomass_kg_m2 =
+        direct_growth_interception_live_biomass_from_state(growth_state_for_publication)?;
+
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_wb15_trace",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} failed opening direct production WB15 trace {}: {error}",
+                std::path::PathBuf::from(&path).display()
+            ),
+        })?;
+    let line = format!(
+        "{{\"schema\":\"openwepp-r7h-direct-production-wb15-trace-v1\",\
+\"day_index\":{day_index},\
+\"lane_index\":{lane_index},\
+\"growth_vdmt_before_kg_m2\":{},\
+\"growth_tlive_before_kg_m2\":{},\
+\"growth_projected_tlive_before_kg_m2\":{},\
+\"growth_hia_before\":{},\
+\"growth_cancov_before\":{},\
+\"growth_lai_before\":{},\
+\"publication_vdmt_kg_m2\":{},\
+\"publication_hia\":{},\
+\"publication_cancov\":{},\
+\"publication_lai\":{},\
+\"post_winter_rain_m\":{},\
+\"interception_m\":{},\
+\"liquid_after_interception_m\":{},\
+\"rainfall_scale\":{}}}",
+        direct_production_trace_number(growth_state_before.live_biomass_kg_m2),
+        direct_production_trace_number(growth_state_before.interception_live_biomass_kg_m2),
+        direct_production_trace_number(projected_interception_live_biomass_kg_m2),
+        direct_production_trace_number(growth_state_before.harvest_index),
+        direct_production_trace_number(growth_state_before.canopy_cover_fraction),
+        direct_production_trace_number(growth_state_before.leaf_area_index),
+        direct_production_trace_number(growth_state_for_publication.live_biomass_kg_m2),
+        direct_production_trace_number(growth_state_for_publication.harvest_index),
+        direct_production_trace_number(growth_state_for_publication.canopy_cover_fraction),
+        direct_production_trace_number(growth_state_for_publication.leaf_area_index),
+        direct_production_trace_number(post_winter_rain_m),
+        direct_production_trace_number(interception_state.interception_m),
+        direct_production_trace_number(interception_state.liquid_after_interception_m),
+        direct_production_trace_number(interception_state.rainfall_scale),
+    );
+    let line = format!("{line}\n");
+    std::io::Write::write_all(&mut file, line.as_bytes()).map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_production_wb15_trace",
+        detail: format!(
+            "{SIMOUT_GUARD_ID} failed writing direct production WB15 trace {}: {error}",
+            std::path::PathBuf::from(&path).display()
+        ),
+    })
+}
+
+fn direct_production_trace_env_usize(name: &str) -> Option<usize> {
+    std::env::var(name).ok()?.trim().parse::<usize>().ok()
+}
+
+fn direct_production_trace_number(value: f64) -> String {
+    if value.is_finite() {
+        format!("{value:.17}")
+    } else {
+        "null".to_string()
+    }
+}
+
+fn direct_production_growth_state_for_publication(
+    annual_growth_inputs: &DirectGrowthInputs,
+    perennial_growth_inputs: &DirectGrowthInputs,
+    growth_state_before: DirectGrowthStateSurface,
+) -> Result<DirectGrowthStateSurface, HillslopeCliError> {
+    if perennial_growth_inputs.active_context.is_active() {
+        return (*perennial_growth_inputs)
+            .compute_perennial()
+            .map(|growth| growth.state_after)
+            .map_err(|source| direct_publication_runtime_error(&source));
+    }
+    if annual_growth_inputs.active_context.is_active() {
+        return (*annual_growth_inputs)
+            .compute_annual_or_fallow()
+            .map(|growth| growth.state_after)
+            .map_err(|source| direct_publication_runtime_error(&source));
+    }
+    Ok(growth_state_before)
+}
+
 impl DirectProductionLaneDayInputAuthority {
     fn percolation_inputs(
         &self,
         lane_index: usize,
         lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
+        layers: &[DirectSubsurfaceLayerState],
     ) -> Result<DirectPercolationInputs, HillslopeCliError> {
+        direct_production_validate_layers(lane_index, layers)?;
         let mut inputs = self.percolation.clone();
         inputs.soil_water_initial_m = direct_production_lane_soil_water(lane, lane_index)?;
-        inputs.layers.clone_from(&lane.subsurface_layers);
+        inputs.layers.clear();
+        inputs.layers.extend_from_slice(layers);
         Ok(inputs)
     }
 
     fn subsurface_inputs(
         &self,
         lane_index: usize,
-        lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
+        layers: &[DirectSubsurfaceLayerState],
     ) -> Result<DirectSubsurfaceComputeInputs, HillslopeCliError> {
-        direct_production_validate_layers(lane_index, &lane.subsurface_layers)?;
+        direct_production_validate_layers(lane_index, layers)?;
         let mut inputs = self.subsurface.clone();
-        inputs.soil_depth_m = lane
-            .subsurface_layers
-            .iter()
-            .map(|layer| layer.depth_m)
-            .sum::<f64>();
-        inputs.layers = lane.subsurface_layers.iter().cloned().map(Into::into).collect();
+        inputs.soil_depth_m = layers.iter().map(|layer| layer.depth_m).sum::<f64>();
+        inputs.layers = layers.iter().cloned().map(Into::into).collect();
         Ok(inputs)
     }
 
@@ -872,6 +1221,7 @@ impl DirectProductionPeakRunoffAuthority {
 }
 
 impl DirectProductionInfiltrationAuthority {
+    #[allow(clippy::too_many_arguments)]
     fn inputs(
         &self,
         lane_index: usize,
@@ -958,7 +1308,7 @@ impl DirectProductionEvapotranspirationAuthority {
             pmet,
         })
     }
-
+    #[allow(clippy::too_many_arguments)]
     fn inputs(
         &self,
         day: &ClimateDayProjection,
@@ -996,7 +1346,28 @@ impl DirectProductionEvapotranspirationAuthority {
             growth_context_required: false,
             stage_state: if pmet.is_some() { None } else { stage_state },
             pmet,
+            pmet_compute: None,
         })
+    }
+
+    fn inputs_with_growth_surface(
+        &self,
+        day: &ClimateDayProjection,
+        forcing: &HillslopeDirectClimateDayForcing,
+        stage_state: Option<DirectEvapotranspirationStageState>,
+        layers: &[DirectSubsurfaceLayerState],
+        climate_request: &HillslopeClimateRuntimeRequest,
+        growth_surface: DirectGrowthStateSurface,
+    ) -> Result<DirectEvapotranspirationComputeInputs, HillslopeCliError> {
+        let mut dynamic = self.clone();
+        dynamic.apply_growth_surface(growth_surface);
+        dynamic.inputs(day, forcing, stage_state, layers, climate_request)
+    }
+
+    fn apply_growth_surface(&mut self, growth_surface: DirectGrowthStateSurface) {
+        self.leaf_area_index = growth_surface.leaf_area_index;
+        self.canopy_cover_fraction = growth_surface.canopy_cover_fraction;
+        self.root_depth_m = growth_surface.root_depth_m;
     }
 }
 
@@ -1314,6 +1685,730 @@ impl DirectProductionPmetAuthority {
     }
 }
 
+impl DirectProductionGrowthAuthority {
+    fn from_seed(seed_surface: &HillslopeWritebackSurface) -> Result<Self, HillslopeCliError> {
+        let Some(slot_count_value) =
+            runtime_surface_symbol_value(seed_surface, "pl_schedule_slot_count")
+        else {
+            return Ok(Self::inactive());
+        };
+        let slot_count = direct_growth_integral_usize(
+            "pl_schedule_slot_count",
+            slot_count_value,
+            1,
+            usize::MAX,
+        )?;
+        let rotation_years = direct_growth_required_integral_usize(
+            seed_surface,
+            "pl_schedule_rotation_years",
+            1,
+            usize::MAX,
+        )?;
+        let rotation_repeats = direct_growth_required_integral_usize(
+            seed_surface,
+            "pl_schedule_rotation_repeats",
+            1,
+            usize::MAX,
+        )?;
+        let mut slots = Vec::with_capacity(slot_count);
+        for slot_index in 1..=slot_count {
+            slots.push(DirectProductionGrowthSlotAuthority::from_seed(
+                seed_surface,
+                slot_index,
+            )?);
+        }
+        Ok(Self {
+            active: true,
+            rotation_years,
+            rotation_repeats,
+            slots,
+            monthly_temperature_max_c: direct_production_monthly_temperature(
+                seed_surface,
+                "obmaxt",
+            )?,
+            monthly_temperature_min_c: direct_production_monthly_temperature(
+                seed_surface,
+                "obmint",
+            )?,
+            soil_depth_m: direct_publication_required_positive_scalar(seed_surface, "solthk")?,
+        })
+    }
+
+    fn inactive() -> Self {
+        Self {
+            active: false,
+            rotation_years: 1,
+            rotation_repeats: 1,
+            slots: Vec::new(),
+            monthly_temperature_max_c: [0.0; 12],
+            monthly_temperature_min_c: [0.0; 12],
+            soil_depth_m: 0.0,
+        }
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn inputs(
+        &self,
+        day: &ClimateDayProjection,
+        simulation_year: i32,
+        ofe_index: usize,
+        forcing: &HillslopeDirectClimateDayForcing,
+        state_before: DirectGrowthStateSurface,
+        water_stress: f64,
+        et_inputs: &DirectEvapotranspirationComputeInputs,
+    ) -> Result<(DirectGrowthInputs, DirectGrowthInputs), HillslopeCliError> {
+        if !self.active {
+            return Ok((DirectGrowthInputs::zero(), DirectGrowthInputs::zero()));
+        }
+        let runtime_year =
+            direct_growth_i32_to_usize("simulation_year", simulation_year, 1, usize::MAX)?;
+        let ofe_index = direct_growth_validate_usize("ofe_index", ofe_index, 1, usize::MAX)?;
+        let runtime_day = direct_growth_u16_to_usize("day", day.julian_day, 1, 366)?;
+        let Some(selection) = self.active_crop(runtime_year, runtime_day, ofe_index)? else {
+            return Ok((DirectGrowthInputs::zero(), DirectGrowthInputs::zero()));
+        };
+        let runtime_day = direct_growth_usize_to_u16("day", runtime_day)?;
+        let slot_index = direct_growth_usize_to_u16("slot_index", selection.slot_index)?;
+        let crop_slot_index =
+            direct_growth_usize_to_u16("crop_slot_index", selection.crop_slot_index)?;
+
+        match selection.crop.imngmt {
+            1 | 3 => {
+                let active_action = if runtime_day == selection.crop.jdplt {
+                    DirectGrowthAction::PlantingReset
+                } else if runtime_day == selection.crop.jdharv {
+                    DirectGrowthAction::HarvestReset
+                } else {
+                    DirectGrowthAction::None
+                };
+                Ok((
+                    self.crop_inputs(
+                        selection.crop,
+                        DirectGrowthActiveContext::AnnualOrFallow {
+                            active_slot_index: slot_index,
+                            active_crop_slot_index: crop_slot_index,
+                            runtime_day_of_year: runtime_day,
+                        },
+                        active_action,
+                        forcing,
+                        state_before,
+                        water_stress,
+                        et_inputs,
+                    ),
+                    DirectGrowthInputs::zero(),
+                ))
+            }
+            2 => {
+                let active_action = if selection.crop.jdplt != 0
+                    && runtime_day == selection.crop.jdplt
+                {
+                    DirectGrowthAction::PlantingReset
+                } else if selection.crop.jdstop != 0 && runtime_day == selection.crop.jdstop {
+                    DirectGrowthAction::StopReset
+                } else {
+                    DirectGrowthAction::None
+                };
+                Ok((
+                    DirectGrowthInputs::zero(),
+                    self.crop_inputs(
+                        selection.crop,
+                        DirectGrowthActiveContext::Perennial {
+                            active_slot_index: slot_index,
+                            active_crop_slot_index: crop_slot_index,
+                            runtime_day_of_year: runtime_day,
+                        },
+                        active_action,
+                        forcing,
+                        state_before,
+                        water_stress,
+                        et_inputs,
+                    ),
+                ))
+            }
+            _ => Err(direct_growth_failure(format!(
+                "unsupported direct production growth management class {}",
+                selection.crop.imngmt
+            ))),
+        }
+    }
+
+    fn active_crop(
+        &self,
+        runtime_year: usize,
+        runtime_day: usize,
+        ofe_index: usize,
+    ) -> Result<Option<DirectGrowthActiveCropSelection<'_>>, HillslopeCliError> {
+        let max_runtime_year = self.rotation_repeats.saturating_mul(self.rotation_years);
+        if runtime_year > max_runtime_year {
+            return Err(direct_growth_failure(format!(
+                "year {runtime_year} exceeds direct growth rotation span {max_runtime_year}"
+            )));
+        }
+        let rotation_index = ((runtime_year - 1) / self.rotation_years) + 1;
+        let year_in_rotation = ((runtime_year - 1) % self.rotation_years) + 1;
+        let year_slot_candidates = self
+            .slots
+            .iter()
+            .enumerate()
+            .filter(|(_, slot)| {
+                slot.year_in_rotation == year_in_rotation && slot.rotation_index == rotation_index
+            })
+            .collect::<Vec<_>>();
+        let mut slot_candidates = year_slot_candidates
+            .iter()
+            .copied()
+            .filter(|(_, slot)| slot.ofe_index == ofe_index)
+            .collect::<Vec<_>>();
+        let (slot_offset, slot) = match slot_candidates.as_mut_slice() {
+            [(slot_offset, slot)] => (*slot_offset, *slot),
+            [] if year_slot_candidates.len() == 1 && year_slot_candidates[0].1.ofe_index == 1 => {
+                year_slot_candidates[0]
+            }
+            [] => {
+                return Err(direct_growth_failure(format!(
+                    "missing direct growth PL slot for OFE {ofe_index} year_in_rotation={year_in_rotation}"
+                )));
+            }
+            _ => {
+                return Err(direct_growth_failure(format!(
+                    "ambiguous direct growth PL slots for primary OFE year_in_rotation={year_in_rotation}"
+                )));
+            }
+        };
+        let mut crop_candidates = slot
+            .crops
+            .iter()
+            .enumerate()
+            .filter(|(_, crop)| crop.active_on_day(runtime_day))
+            .collect::<Vec<_>>();
+        let (crop_offset, crop) = match crop_candidates.as_mut_slice() {
+            [(crop_offset, crop)] => (*crop_offset, *crop),
+            [] => return Ok(None),
+            _ => {
+                return Err(direct_growth_failure(format!(
+                    "ambiguous active direct growth crops for slot {} day {runtime_day}",
+                    slot_offset + 1
+                )));
+            }
+        };
+        Ok(Some(DirectGrowthActiveCropSelection {
+            slot_index: slot_offset + 1,
+            crop_slot_index: crop_offset + 1,
+            crop,
+        }))
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn crop_inputs(
+        &self,
+        crop: &DirectProductionGrowthCropAuthority,
+        active_context: DirectGrowthActiveContext,
+        active_action: DirectGrowthAction,
+        forcing: &HillslopeDirectClimateDayForcing,
+        state_before: DirectGrowthStateSurface,
+        water_stress: f64,
+        et_inputs: &DirectEvapotranspirationComputeInputs,
+    ) -> DirectGrowthInputs {
+        DirectGrowthInputs {
+            active_context,
+            active_action,
+            state_before,
+            planting_day: crop.jdplt,
+            harvest_day: crop.jdharv,
+            stop_day: crop.jdstop,
+            water_stress,
+            temperature_max_c: forcing.tmax_c,
+            temperature_min_c: forcing.tmin_c,
+            radiation_mj_m2: forcing.rad_ly,
+            monthly_temperature_max_c: self.monthly_temperature_max_c,
+            monthly_temperature_min_c: self.monthly_temperature_min_c,
+            soil_depth_m: self.soil_depth_m,
+            btemp: crop.btemp,
+            otemp: crop.otemp,
+            gddmax: crop.gddmax,
+            dlai: crop.dlai,
+            dropfc: crop.dropfc,
+            decfct: crop.decfct,
+            spriod: crop.spriod,
+            bb: crop.bb,
+            beinp: crop.beinp,
+            extnct: crop.extnct,
+            hi: crop.hi,
+            xmxlai: crop.xmxlai,
+            rsr: crop.rsr,
+            rtmmax: crop.rtmmax,
+            rdmax: crop.rdmax,
+            et_demand_m: et_inputs.et_demand_m,
+            residue_interception_m: et_inputs.residue_interception_m,
+            plant_tolerance: et_inputs.plant_tolerance,
+        }
+    }
+}
+
+impl DirectProductionGrowthSlotAuthority {
+    fn from_seed(
+        seed_surface: &HillslopeWritebackSurface,
+        slot_index: usize,
+    ) -> Result<Self, HillslopeCliError> {
+        let crop_slots = direct_growth_required_integral_usize(
+            seed_surface,
+            &direct_growth_schedule_slot_symbol(slot_index, "crop_slots"),
+            1,
+            usize::MAX,
+        )?;
+        let mut crops = Vec::with_capacity(crop_slots);
+        for crop_slot_index in 1..=crop_slots {
+            crops.push(DirectProductionGrowthCropAuthority::from_seed(
+                seed_surface,
+                slot_index,
+                crop_slot_index,
+            )?);
+        }
+        Ok(Self {
+            ofe_index: direct_growth_required_integral_usize(
+                seed_surface,
+                &direct_growth_schedule_slot_symbol(slot_index, "ofe_index"),
+                1,
+                usize::MAX,
+            )?,
+            year_in_rotation: direct_growth_required_integral_usize(
+                seed_surface,
+                &direct_growth_schedule_slot_symbol(slot_index, "year_in_rotation"),
+                1,
+                usize::MAX,
+            )?,
+            rotation_index: direct_growth_required_integral_usize(
+                seed_surface,
+                &direct_growth_schedule_slot_symbol(slot_index, "rotation_index"),
+                1,
+                usize::MAX,
+            )?,
+            crops,
+        })
+    }
+}
+impl DirectProductionGrowthCropAuthority {
+    #[allow(clippy::too_many_lines)]
+    fn from_seed(
+        seed_surface: &HillslopeWritebackSurface,
+        slot_index: usize,
+        crop_slot_index: usize,
+    ) -> Result<Self, HillslopeCliError> {
+        let schedule_imngmt = direct_growth_required_integral_u8(
+            seed_surface,
+            &direct_growth_schedule_slot_crop_symbol(slot_index, crop_slot_index, "imngmt"),
+            1,
+            3,
+        )?;
+        let imngmt = direct_growth_required_integral_u8(
+            seed_surface,
+            &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "imngmt"),
+            1,
+            3,
+        )?;
+        let jdplt_min = usize::from(schedule_imngmt != 2);
+        let jdplt = direct_growth_required_integral_u16(
+            seed_surface,
+            &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "jdplt"),
+            jdplt_min,
+            366,
+        )?;
+        let jdharv = direct_growth_required_integral_u16(
+            seed_surface,
+            &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "jdharv"),
+            0,
+            366,
+        )?;
+        let (jdstop, _mgtopt) = if schedule_imngmt == 2 {
+            (
+                direct_growth_required_integral_u16(
+                    seed_surface,
+                    &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "jdstop"),
+                    0,
+                    366,
+                )?,
+                direct_growth_required_integral_u8(
+                    seed_surface,
+                    &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "mgtopt"),
+                    1,
+                    3,
+                )?,
+            )
+        } else {
+            (0, 1)
+        };
+        Ok(Self {
+            schedule_imngmt,
+            imngmt,
+            jdharv,
+            jdplt,
+            jdstop,
+            btemp: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "btemp"),
+            )?,
+            otemp: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "otemp"),
+            )?,
+            gddmax: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "gddmax"),
+            )?,
+            dlai: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "dlai"),
+            )?,
+            dropfc: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "dropfc"),
+            )?,
+            decfct: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "decfct"),
+            )?,
+            spriod: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "spriod"),
+            )?,
+            bb: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "bb"),
+            )?,
+            beinp: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "beinp"),
+            )?,
+            extnct: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "extnct"),
+            )?,
+            hi: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "hi"),
+            )?,
+            xmxlai: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "xmxlai"),
+            )?,
+            rsr: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "rsr"),
+            )?,
+            rtmmax: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "rtmmax"),
+            )?,
+            rdmax: direct_growth_required_scalar(
+                seed_surface,
+                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "rdmax"),
+            )?,
+        })
+    }
+
+    fn active_on_day(self, runtime_day: usize) -> bool {
+        if self.schedule_imngmt == 2 {
+            if self.jdplt == 0 {
+                self.jdstop == 0 || runtime_day <= usize::from(self.jdstop)
+            } else if self.jdstop == 0 {
+                direct_growth_day_is_within_window(
+                    runtime_day,
+                    usize::from(self.jdplt),
+                    usize::from(self.jdharv.max(1)),
+                )
+            } else {
+                direct_growth_day_is_within_window(
+                    runtime_day,
+                    usize::from(self.jdplt),
+                    usize::from(self.jdstop),
+                )
+            }
+        } else {
+            direct_growth_day_is_within_window(
+                runtime_day,
+                usize::from(self.jdplt),
+                usize::from(self.jdharv.max(1)),
+            )
+        }
+    }
+}
+
+struct DirectGrowthActiveCropSelection<'a> {
+    slot_index: usize,
+    crop_slot_index: usize,
+    crop: &'a DirectProductionGrowthCropAuthority,
+}
+
+fn direct_growth_state_surface_from_seed(
+    seed_surface: &HillslopeWritebackSurface,
+) -> Result<DirectGrowthStateSurface, HillslopeCliError> {
+    Ok(DirectGrowthStateSurface {
+        sumgdd: require_runtime_surface_scalar(seed_surface, "sumgdd")?,
+        live_biomass_kg_m2: require_runtime_surface_scalar(seed_surface, "vdmt")?,
+        interception_live_biomass_kg_m2: direct_growth_interception_live_biomass_from_seed(
+            seed_surface,
+        )?,
+        canopy_cover_fraction: require_runtime_surface_scalar(seed_surface, "cancov")?,
+        leaf_area_index: require_runtime_surface_scalar(seed_surface, "lai")?,
+        root_mass_kg_m2: require_runtime_surface_scalar(seed_surface, "rtmass")?,
+        root_depth_m: require_runtime_surface_scalar(seed_surface, "rtd")?,
+        harvest_index: require_runtime_surface_scalar(seed_surface, "hia")?,
+    })
+}
+
+fn direct_growth_interception_live_biomass_from_seed(
+    seed_surface: &HillslopeWritebackSurface,
+) -> Result<f64, HillslopeCliError> {
+    let vdmt = require_runtime_surface_scalar(seed_surface, "vdmt")?;
+    direct_growth_nonnegative_scalar("vdmt", vdmt)?;
+    let hia = require_runtime_surface_scalar(seed_surface, "hia")?;
+    direct_growth_validate_harvest_index(hia)?;
+    if let Some(tlive) = runtime_surface_symbol_value(seed_surface, "tlive") {
+        direct_growth_nonnegative_scalar("tlive", tlive)?;
+        return Ok(tlive);
+    }
+    Ok(vdmt)
+}
+
+fn direct_growth_interception_live_biomass_from_state(
+    growth_state: DirectGrowthStateSurface,
+) -> Result<f64, HillslopeCliError> {
+    direct_growth_nonnegative_scalar("growth.vdmt", growth_state.live_biomass_kg_m2)?;
+    direct_growth_validate_harvest_index(growth_state.harvest_index)?;
+    if growth_state.interception_live_biomass_kg_m2 > 0.0 || growth_state.live_biomass_kg_m2 == 0.0
+    {
+        direct_growth_nonnegative_scalar(
+            "growth.tlive",
+            growth_state.interception_live_biomass_kg_m2,
+        )?;
+        Ok(growth_state.interception_live_biomass_kg_m2)
+    } else {
+        Ok(growth_state.live_biomass_kg_m2)
+    }
+}
+
+fn direct_growth_validate_harvest_index(hia: f64) -> Result<(), HillslopeCliError> {
+    if hia.is_finite() && (0.0..=1.0).contains(&hia) {
+        Ok(())
+    } else {
+        Err(direct_production_executor_blocked(format!(
+            "{SIMOUT_GUARD_ID} hia must be finite and within [0, 1] to construct direct WB15 tlive bridge, observed {hia}"
+        )))
+    }
+}
+
+fn direct_growth_nonnegative_scalar(symbol: &str, value: f64) -> Result<(), HillslopeCliError> {
+    if value.is_finite() && value >= 0.0 {
+        Ok(())
+    } else {
+        Err(direct_production_executor_blocked(format!(
+            "{SIMOUT_GUARD_ID} {symbol} must be finite and >= 0.0 for direct growth state, observed {value}"
+        )))
+    }
+}
+
+fn direct_growth_state_for_lane(
+    seed_surface: &HillslopeWritebackSurface,
+    day_index: usize,
+    lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
+) -> Result<DirectGrowthStateSurface, HillslopeCliError> {
+    if day_index == 0 {
+        direct_growth_state_surface_from_seed(seed_surface)
+    } else {
+        Ok(*lane.plant_growth_state)
+    }
+}
+
+fn direct_growth_water_stress_for_lane(
+    seed_surface: &HillslopeWritebackSurface,
+    day_index: usize,
+    lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
+) -> Result<f64, HillslopeCliError> {
+    if day_index == 0 {
+        require_runtime_surface_scalar(seed_surface, "Ws")
+    } else {
+        Ok(lane.plant_water_stress)
+    }
+}
+
+fn direct_growth_schedule_slot_symbol(slot_index: usize, root: &str) -> String {
+    format!("pl_schedule_slot_{slot_index:04}_{root}")
+}
+
+fn direct_growth_schedule_slot_crop_symbol(
+    slot_index: usize,
+    crop_slot_index: usize,
+    root: &str,
+) -> String {
+    format!("pl_schedule_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
+}
+
+fn direct_growth_slot_crop_symbol(
+    slot_index: usize,
+    crop_slot_index: usize,
+    root: &str,
+) -> String {
+    format!("pl_growth_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
+}
+
+fn direct_growth_day_is_within_window(
+    runtime_day: usize,
+    start_day: usize,
+    end_day: usize,
+) -> bool {
+    if start_day <= end_day {
+        runtime_day >= start_day && runtime_day <= end_day
+    } else {
+        runtime_day >= start_day || runtime_day <= end_day
+    }
+}
+
+fn direct_growth_required_scalar(
+    seed_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Result<f64, HillslopeCliError> {
+    require_runtime_surface_scalar(seed_surface, symbol)
+}
+
+fn direct_growth_required_integral_usize(
+    seed_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+    min_allowed: usize,
+    max_allowed: usize,
+) -> Result<usize, HillslopeCliError> {
+    let value = require_runtime_surface_scalar(seed_surface, symbol)?;
+    direct_growth_integral_usize(symbol, value, min_allowed, max_allowed)
+}
+
+fn direct_growth_required_integral_u16(
+    seed_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+    min_allowed: usize,
+    max_allowed: usize,
+) -> Result<u16, HillslopeCliError> {
+    let value = direct_growth_required_integral_usize(
+        seed_surface,
+        symbol,
+        min_allowed,
+        max_allowed,
+    )?;
+    direct_growth_usize_to_u16(symbol, value)
+}
+
+fn direct_growth_required_integral_u8(
+    seed_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+    min_allowed: usize,
+    max_allowed: usize,
+) -> Result<u8, HillslopeCliError> {
+    let value = direct_growth_required_integral_usize(
+        seed_surface,
+        symbol,
+        min_allowed,
+        max_allowed,
+    )?;
+    u8::try_from(value).map_err(|_| {
+        direct_growth_failure(format!("{symbol} value {value} exceeds u8 range"))
+    })
+}
+
+fn direct_growth_integral_usize(
+    symbol: &str,
+    value: f64,
+    min_allowed: usize,
+    max_allowed: usize,
+) -> Result<usize, HillslopeCliError> {
+    if !value.is_finite() {
+        return Err(direct_growth_failure(format!(
+            "{symbol} must be finite for direct growth, observed {value}"
+        )));
+    }
+    let rounded = value.round();
+    if (value - rounded).abs() > 1.0e-12 || rounded < 0.0 {
+        return Err(direct_growth_failure(format!(
+            "{symbol} must be integral for direct growth, observed {value}"
+        )));
+    }
+    let parsed = direct_growth_rounded_to_usize(symbol, rounded)?;
+    if parsed < min_allowed || parsed > max_allowed {
+        return Err(direct_growth_failure(format!(
+            "{symbol} value {parsed} outside [{min_allowed}, {max_allowed}] for direct growth"
+        )));
+    }
+    Ok(parsed)
+}
+#[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss, clippy::cast_sign_loss)]
+fn direct_growth_rounded_to_usize(symbol: &str, value: f64) -> Result<usize, HillslopeCliError> {
+    if value > usize::MAX as f64 {
+        return Err(direct_growth_failure(format!(
+            "{symbol} value {value} exceeds usize range"
+        )));
+    }
+    Ok(value as usize)
+}
+
+fn direct_growth_i32_to_usize(
+    symbol: &str,
+    value: i32,
+    min_allowed: usize,
+    max_allowed: usize,
+) -> Result<usize, HillslopeCliError> {
+    if value < 0 {
+        return Err(direct_growth_failure(format!(
+            "{symbol} must be non-negative for direct growth, observed {value}"
+        )));
+    }
+    let parsed = usize::try_from(value).map_err(|_| {
+        direct_growth_failure(format!("{symbol} value {value} exceeds usize range"))
+    })?;
+    if parsed < min_allowed || parsed > max_allowed {
+        return Err(direct_growth_failure(format!(
+            "{symbol} value {parsed} outside [{min_allowed}, {max_allowed}] for direct growth"
+        )));
+    }
+    Ok(parsed)
+}
+
+fn direct_growth_u16_to_usize(
+    symbol: &str,
+    value: u16,
+    min_allowed: usize,
+    max_allowed: usize,
+) -> Result<usize, HillslopeCliError> {
+    let parsed = usize::from(value);
+    if parsed < min_allowed || parsed > max_allowed {
+        return Err(direct_growth_failure(format!(
+            "{symbol} value {parsed} outside [{min_allowed}, {max_allowed}] for direct growth"
+        )));
+    }
+    Ok(parsed)
+}
+
+fn direct_growth_validate_usize(
+    symbol: &str,
+    value: usize,
+    min_allowed: usize,
+    max_allowed: usize,
+) -> Result<usize, HillslopeCliError> {
+    if value < min_allowed || value > max_allowed {
+        return Err(direct_growth_failure(format!(
+            "{symbol} value {value} outside [{min_allowed}, {max_allowed}] for direct growth"
+        )));
+    }
+    Ok(value)
+}
+
+fn direct_growth_usize_to_u16(symbol: &str, value: usize) -> Result<u16, HillslopeCliError> {
+    u16::try_from(value).map_err(|_| {
+        direct_growth_failure(format!("{symbol} value {value} exceeds u16 range"))
+    })
+}
+
+fn direct_growth_failure(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_publication_frame",
+        detail: format!("{SIMOUT_GUARD_ID} {}", detail.into()),
+    }
+}
+
 impl DirectProductionErosionAuthority {
     fn from_seed(
         seed_surface: &HillslopeWritebackSurface,
@@ -1431,7 +2526,7 @@ impl DirectProductionSnowFrostAuthority {
         ]
         .iter()
         .all(|symbol| runtime_surface_symbol_value(seed_surface, symbol).is_some());
-        let (snow_rst_c, snow_newsnw_kg_m3, snow_ssd_kg_m3, avg_slope, azimuth) =
+        let (snow_rst_c, snow_newsnw_kg_m3, snow_ssd_kg_m3) =
             if snow_controls_projected {
                 (
                     require_runtime_surface_scalar(seed_surface, "snow.options.rst")?,
@@ -1447,11 +2542,9 @@ impl DirectProductionSnowFrostAuthority {
                         Some(0.0),
                         None,
                     )?,
-                    direct_publication_required_positive_scalar(seed_surface, "avgslp")?,
-                    require_runtime_surface_scalar(seed_surface, "azm")?,
                 )
             } else {
-                (0.0, 0.0, 0.0, 0.0, 0.0)
+                (0.0, 0.0, 0.0)
             };
         if snow_controls_projected && snow_newsnw_kg_m3 > snow_ssd_kg_m3 {
             return Err(HillslopeCliError::RuntimeSurfaceFailure {
@@ -1514,8 +2607,6 @@ impl DirectProductionSnowFrostAuthority {
             snow_rst_c,
             snow_newsnw_kg_m3,
             snow_ssd_kg_m3,
-            avg_slope,
-            azimuth,
             frost_typed_authority,
             frost_layer_carry_projection,
             frost_file_present,
@@ -1617,6 +2708,8 @@ impl DirectProductionSnowFrostAuthority {
         lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
         forcing: &HillslopeDirectClimateDayForcing,
         snow_lane_state: DirectSnowLaneState,
+        winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
+        clear_no_final_hydrology_layers: bool,
     ) -> Result<Option<DirectProductionFrostDayContext>, HillslopeCliError> {
         let frost_lane_state = self.current_frost_lane_state(lane);
         let frost_runtime_depth_m = frost_lane_state.dfrost_m;
@@ -1643,6 +2736,7 @@ impl DirectProductionSnowFrostAuthority {
             snow_lane_state,
             frost_runtime_depth_m,
             frost_runtime_frozen_water_m,
+            winter_hourly_geometry,
         )?;
         let typed_context = DirectProductionFrostTypedComputeContext {
             lane_index,
@@ -1657,10 +2751,20 @@ impl DirectProductionSnowFrostAuthority {
         let compute_inputs = Self::typed_winter_frost_compute_inputs(&typed_context);
         let frost_outcome =
             Self::compute_typed_winter_frost_outcome(&typed_context, &compute_inputs)?;
+        let target_soil_water_m = direct_production_lane_soil_water(lane, lane_index)?;
+        let hydrology_layers = direct_production_same_day_frost_hydrology_layers(
+            lane_index,
+            &lane.subsurface_layers,
+            &frost_outcome,
+            target_soil_water_m,
+            clear_no_final_hydrology_layers,
+        )?;
         Ok(Some(DirectProductionFrostDayContext {
             compute_inputs,
             frozen_infiltration_capacity_m_s: frost_outcome.infcap_frz_m_s,
+            storage_liquid_delta_m: direct_production_frost_storage_liquid_delta(&frost_outcome),
             layer_carry_projection: self.frost_layer_carry_projection.clone(),
+            hydrology_layers,
         }))
     }
 
@@ -1671,6 +2775,7 @@ impl DirectProductionSnowFrostAuthority {
         snow_lane_state: DirectSnowLaneState,
         frost_runtime_depth_m: f64,
         frost_runtime_frozen_water_m: f64,
+        winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
     ) -> Result<
         [DirectFrostHourlyForcing;
             openwepp_hillslope_orchestrator::DIRECT_WINTER_HOURLY_FORCING_COUNT],
@@ -1685,8 +2790,8 @@ impl DirectProductionSnowFrostAuthority {
                     frost_runtime_frozen_water_m,
                     frost_file_present: self.frost_file_present,
                     frost_wint_red_enabled: self.frost_wint_red_enabled,
-                    avg_slope: self.avg_slope,
-                    azimuth: self.azimuth,
+                    avg_slope: winter_hourly_geometry.avg_slope,
+                    azimuth: winter_hourly_geometry.azimuth,
                     snow_rst_c: self.snow_rst_c,
                 },
             )
@@ -1808,6 +2913,7 @@ impl DirectProductionSnowFrostAuthority {
         Ok(self.frost_wint_red_enabled && forcing.tmin_c < 0.0)
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn snow_liquid_partition(
         &self,
         climate_request: &HillslopeClimateRuntimeRequest,
@@ -1816,6 +2922,7 @@ impl DirectProductionSnowFrostAuthority {
         hyetograph_rainfall_m: f64,
         snow_lane_state: DirectSnowLaneState,
         canopy_cover_fraction: f64,
+        winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
     ) -> Result<openwepp_hillslope_orchestrator::DirectSnowLiquidPartition, HillslopeCliError> {
         if !self.active_forcing(forcing, hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)? {
             return Ok(openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
@@ -1838,8 +2945,8 @@ impl DirectProductionSnowFrostAuthority {
                     frost_runtime_frozen_water_m: 0.0,
                     frost_file_present: false,
                     frost_wint_red_enabled: false,
-                    avg_slope: self.avg_slope,
-                    azimuth: self.azimuth,
+                    avg_slope: winter_hourly_geometry.avg_slope,
+                    azimuth: winter_hourly_geometry.azimuth,
                     snow_rst_c: self.snow_rst_c,
                 },
             )

@@ -7,6 +7,7 @@ struct Wb18PercolationLayers {
     upper_limit: Vec<f64>,
     conductivity: Vec<f64>,
     depth: Vec<f64>,
+    frozen_water: Vec<f64>,
 }
 
 struct Wb18SamePassInfiltration {
@@ -896,6 +897,7 @@ pub(crate) fn resolve_infiltration_tillage_depth(
         let mut upper_limit = Vec::with_capacity(layer_count);
         let mut conductivity = Vec::with_capacity(layer_count);
         let mut depth = Vec::with_capacity(layer_count);
+        let mut frozen_water = Vec::with_capacity(layer_count);
 
         for layer_index in 1..=layer_count {
             let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
@@ -964,11 +966,28 @@ pub(crate) fn resolve_infiltration_tillage_depth(
                 None,
             )?;
 
+            let (frzw_symbol, layer_frzw) = Self::optional_state_scalar_for_series_or_symbol(
+                request,
+                phase_class,
+                "wb18_perc_frzw",
+                layer_index,
+                || Self::wb18_perc_state_symbol("frzw", layer_index),
+            )?
+            .unwrap_or_else(|| (Self::wb18_perc_state_symbol("frzw", layer_index), 0.0));
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &frzw_symbol,
+                layer_frzw,
+                Some(0.0),
+                None,
+            )?;
+
             theta.push(layer_theta);
             field_capacity.push(layer_fc);
             upper_limit.push(layer_ul);
             conductivity.push(layer_ssc);
             depth.push(dg);
+            frozen_water.push(layer_frzw);
         }
 
         Ok(Wb18PercolationLayers {
@@ -977,6 +996,7 @@ pub(crate) fn resolve_infiltration_tillage_depth(
             upper_limit,
             conductivity,
             depth,
+            frozen_water,
         })
     }
 
@@ -1173,14 +1193,16 @@ pub(crate) fn resolve_infiltration_tillage_depth(
         let layer_fc = layers.field_capacity[layer_index];
         let layer_ul = layers.upper_limit[layer_index];
         let layer_ssc = layers.conductivity[layer_index];
+        let layer_frzw = layers.frozen_water[layer_index];
         let layer_count = layers.theta.len();
 
-        let excess = layer_theta - layer_fc;
+        let effective_field_capacity = (layer_fc - layer_frzw).max(0.0);
+        let excess = layer_theta - effective_field_capacity;
         if excess <= WB11_ZERO_THRESHOLD {
             return Ok(0.0);
         }
 
-        let stz = layer_theta / layer_ul;
+        let stz = (layer_theta + layer_frzw) / layer_ul;
         if !stz.is_finite() || stz < 0.0 {
             let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 1);
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
@@ -1193,6 +1215,9 @@ pub(crate) fn resolve_infiltration_tillage_depth(
         }
 
         let is_bottom_layer = layer_index == layer_count - 1;
+        let lower_ratio = Self::wb18_lower_layer_saturation_ratio(phase_class, layers, layer_index)?;
+        let saturated_lower_boundary =
+            is_bottom_layer || lower_ratio >= WB18_PERC_SATURATION_THRESHOLD;
         let fx = Self::wb18_percolation_layer_fx(
             phase_class,
             layer_index,
@@ -1200,7 +1225,7 @@ pub(crate) fn resolve_infiltration_tillage_depth(
             layer_fc,
             layer_ul,
             lane_config.daily_lane,
-            is_bottom_layer,
+            saturated_lower_boundary,
         )?;
         let layer_ssc_effective = Self::wb18_effective_layer_conductivity(
             phase_class,
@@ -1212,8 +1237,7 @@ pub(crate) fn resolve_infiltration_tillage_depth(
         )?;
         let ks_adjusted = layer_ssc_effective * fx;
         let pei_pre = (WB18_PERC_TIMESTEP_S * ks_adjusted).min(excess);
-        let pei_unscaled =
-            Self::wb18_layer_pei_unscaled(phase_class, layers, layer_index, pei_pre)?;
+        let pei_unscaled = Self::wb18_layer_pei_unscaled(layer_index, layer_count, lower_ratio, pei_pre);
         let pei = pei_unscaled / lane_config.lane_substeps;
 
         let pei_symbol = Self::wb18_perc_flux_symbol(layer_index + 1);
@@ -1252,7 +1276,7 @@ pub(crate) fn resolve_infiltration_tillage_depth(
         layer_fc: f64,
         layer_ul: f64,
         daily_lane: bool,
-        is_bottom_layer: bool,
+        saturated_lower_boundary: bool,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let mut fx = if stz < WB18_PERC_SATURATION_THRESHOLD {
             let fc_ul_ratio = layer_fc / layer_ul;
@@ -1287,7 +1311,7 @@ pub(crate) fn resolve_infiltration_tillage_depth(
         } else {
             1.0
         };
-        if !daily_lane && is_bottom_layer {
+        if !daily_lane && saturated_lower_boundary {
             fx = 1.0;
         }
         if !fx.is_finite() || fx <= 0.0 {
@@ -1301,6 +1325,30 @@ pub(crate) fn resolve_infiltration_tillage_depth(
             });
         }
         Ok(fx)
+    }
+
+    fn wb18_lower_layer_saturation_ratio(
+        phase_class: HillslopeKernelPhaseClass,
+        layers: &Wb18PercolationLayers,
+        layer_index: usize,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        if layer_index >= layers.theta.len() - 1 {
+            return Ok(0.0);
+        }
+
+        let lower_ratio = (layers.theta[layer_index + 1] + layers.frozen_water[layer_index + 1])
+            / layers.upper_limit[layer_index + 1];
+        if !lower_ratio.is_finite() || lower_ratio < 0.0 {
+            let lower_theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 2);
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: lower_theta_symbol,
+                value: lower_ratio,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        Ok(lower_ratio)
     }
 
     fn wb18_effective_layer_conductivity(
@@ -1368,28 +1416,17 @@ pub(crate) fn resolve_infiltration_tillage_depth(
     }
 
     fn wb18_layer_pei_unscaled(
-        phase_class: HillslopeKernelPhaseClass,
-        layers: &Wb18PercolationLayers,
         layer_index: usize,
+        layer_count: usize,
+        lower_ratio: f64,
         pei_pre: f64,
-    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        if layer_index >= layers.theta.len() - 1 {
-            return Ok(pei_pre);
-        }
-        let lower_ratio = layers.theta[layer_index + 1] / layers.upper_limit[layer_index + 1];
-        if !lower_ratio.is_finite() || lower_ratio < 0.0 {
-            let lower_theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 2);
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: lower_theta_symbol,
-                value: lower_ratio,
-                minimum: Some(0.0),
-                maximum: None,
-            });
+    ) -> f64 {
+        if layer_index >= layer_count - 1 {
+            return pei_pre;
         }
         let lower_ratio_clamped = lower_ratio.min(WB18_PERC_SATURATION_THRESHOLD);
         let lower_factor = (1.0 - lower_ratio_clamped).sqrt();
-        Ok(pei_pre * lower_factor)
+        pei_pre * lower_factor
     }
 
     fn canonicalize_wb18_deep_percolation_roundoff(

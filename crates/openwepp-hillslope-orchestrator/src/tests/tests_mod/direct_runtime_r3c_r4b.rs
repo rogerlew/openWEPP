@@ -496,6 +496,7 @@ fn r4b_evapotranspiration_compute_inputs() -> DirectEvapotranspirationComputeInp
         growth_context_required: false,
         stage_state: None,
         pmet: None,
+        pmet_compute: None,
     }
 }
 
@@ -510,6 +511,8 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
         cumulative_infiltration_m: 9.0,
         depression_storage_delta_m: 9.0,
         surface_saturation_runoff_m: 9.0,
+        frost_retained_local_liquid_m: 0.0,
+        frost_preprojected_local_liquid_m: 0.0,
     };
     day.liquid_input_inputs = DirectLiquidInputInputs {
         liquid_input_handoff_m: 0.5,

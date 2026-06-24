@@ -475,6 +475,28 @@ fn overlay_direct_publication_lane_state(
     Ok(())
 }
 
+fn overlay_direct_publication_growth_state(
+    seed_surface: &mut HillslopeWritebackSurface,
+    lane_index: usize,
+    growth_state: openwepp_hillslope_orchestrator::DirectGrowthStateSurface,
+) -> Result<(), HillslopeCliError> {
+    let interception_live_biomass_kg_m2 =
+        direct_growth_interception_live_biomass_from_state(growth_state)?;
+    for (symbol, value) in [
+        ("sumgdd", growth_state.sumgdd),
+        ("vdmt", growth_state.live_biomass_kg_m2),
+        ("tlive", interception_live_biomass_kg_m2),
+        ("cancov", growth_state.canopy_cover_fraction),
+        ("lai", growth_state.leaf_area_index),
+        ("rtmass", growth_state.root_mass_kg_m2),
+        ("rtd", growth_state.root_depth_m),
+        ("hia", growth_state.harvest_index),
+    ] {
+        insert_direct_seed_scalar(seed_surface, symbol, value, lane_index)?;
+    }
+    Ok(())
+}
+
 #[derive(Debug, Clone, Copy)]
 struct DirectPublicationLayerOverlaySummary {
     aggregate_soil_water: f64,
@@ -748,6 +770,180 @@ fn direct_production_frost_layer_inputs(
             frozen_water_m: layer.frozen_water_m,
         })
         .collect())
+}
+
+fn direct_production_same_day_frost_hydrology_layers(
+    lane_index: usize,
+    layers: &[DirectSubsurfaceLayerState],
+    frost_outcome: &DirectWinterFrostPartitionOutcome,
+    target_soil_water_m: f64,
+    clear_no_final_hydrology_layers: bool,
+) -> Result<Vec<DirectSubsurfaceLayerState>, HillslopeCliError> {
+    direct_production_validate_layers(lane_index, layers)?;
+    let mut hydrology_layers = layers.to_vec();
+    if !clear_no_final_hydrology_layers
+        || direct_production_frost_outcome_has_final_frozen_projection(frost_outcome)
+    {
+        return Ok(hydrology_layers);
+    }
+    clear_direct_production_no_final_frost_layers(
+        lane_index,
+        &mut hydrology_layers,
+        target_soil_water_m,
+    )?;
+    Ok(hydrology_layers)
+}
+
+fn direct_production_frost_outcome_has_final_frozen_projection(
+    frost_outcome: &DirectWinterFrostPartitionOutcome,
+) -> bool {
+    frost_outcome.frost_depth_after_m > 1.0e-12
+        || frost_outcome.frozen_water_after_m > 1.0e-12
+}
+
+fn clear_direct_production_no_final_frost_layers(
+    lane_index: usize,
+    layers: &mut [DirectSubsurfaceLayerState],
+    target_soil_water_m: f64,
+) -> Result<(), HillslopeCliError> {
+    if !target_soil_water_m.is_finite() || target_soil_water_m < 0.0 {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production lane {} no-final-frost clear requires finite nonnegative target soil water, observed {target_soil_water_m}",
+            lane_index + 1
+        )));
+    }
+    for (layer_offset, layer) in layers.iter_mut().enumerate() {
+        let layer_number = layer_offset + 1;
+        for (field, value) in [
+            ("theta_m", layer.theta_m),
+            ("residual_theta", layer.residual_theta),
+            ("depth_m", layer.depth_m),
+            ("frozen_depth_m", layer.frozen_depth_m),
+            ("frozen_water_m", layer.frozen_water_m),
+        ] {
+            if !value.is_finite() || value < 0.0 {
+                return Err(direct_production_executor_blocked(format!(
+                    "direct production lane {} layer {} no-final-frost clear requires finite nonnegative {field}, observed {value}",
+                    lane_index + 1,
+                    layer_number
+                )));
+            }
+        }
+        if layer.frozen_depth_m > layer.depth_m + 1.0e-12 {
+            return Err(direct_production_executor_blocked(format!(
+                "direct production lane {} layer {} no-final-frost clear requires frozen depth <= layer depth, observed {} > {}",
+                lane_index + 1,
+                layer_number,
+                layer.frozen_depth_m,
+                layer.depth_m
+            )));
+        }
+        if layer.frozen_depth_m <= 1.0e-12 && layer.frozen_water_m <= 1.0e-12 {
+            layer.frozen_depth_m = 0.0;
+            layer.frozen_water_m = 0.0;
+            continue;
+        }
+        layer.frozen_depth_m = 0.0;
+        layer.frozen_water_m = 0.0;
+    }
+    rebalance_direct_production_no_final_frost_layers_to_storage(
+        lane_index,
+        layers,
+        target_soil_water_m,
+    )?;
+    Ok(())
+}
+
+fn rebalance_direct_production_no_final_frost_layers_to_storage(
+    lane_index: usize,
+    layers: &mut [DirectSubsurfaceLayerState],
+    target_soil_water_m: f64,
+) -> Result<(), HillslopeCliError> {
+    let mut aggregate_m = 0.0_f64;
+    for layer in layers.iter() {
+        aggregate_m += layer.theta_m + layer.residual_theta * layer.depth_m;
+        if !aggregate_m.is_finite() {
+            return Err(direct_production_executor_blocked(format!(
+                "direct production lane {} no-final-frost clear produced nonfinite aggregate storage {aggregate_m}",
+                lane_index + 1
+            )));
+        }
+    }
+    let delta_m = target_soil_water_m - aggregate_m;
+    if !delta_m.is_finite() {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production lane {} no-final-frost clear produced nonfinite storage delta {delta_m}",
+            lane_index + 1
+        )));
+    }
+    if delta_m.abs() <= 1.0e-12 {
+        return Ok(());
+    }
+    if layers.is_empty() {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production lane {} no-final-frost clear requires at least one layer",
+            lane_index + 1
+        )));
+    }
+    if delta_m > 0.0 {
+        let top_layer = &mut layers[0];
+        top_layer.theta_m += delta_m;
+        if !top_layer.theta_m.is_finite() || top_layer.theta_m < 0.0 {
+            return Err(direct_production_executor_blocked(format!(
+                "direct production lane {} no-final-frost clear produced invalid top-layer theta {}",
+                lane_index + 1,
+                top_layer.theta_m
+            )));
+        }
+    } else {
+        let mut remaining_m = -delta_m;
+        for layer in layers.iter_mut() {
+            if remaining_m <= 1.0e-12 {
+                break;
+            }
+            if !layer.theta_m.is_finite() || layer.theta_m < 0.0 {
+                return Err(direct_production_executor_blocked(format!(
+                    "direct production lane {} no-final-frost clear requires finite nonnegative layer theta, observed {}",
+                    lane_index + 1,
+                    layer.theta_m
+                )));
+            }
+            let debit_m = layer.theta_m.min(remaining_m);
+            layer.theta_m -= debit_m;
+            remaining_m -= debit_m;
+            if layer.theta_m < 0.0 && layer.theta_m.abs() <= 1.0e-12 {
+                layer.theta_m = 0.0;
+            }
+        }
+        if remaining_m > 1.0e-12 {
+            return Err(direct_production_executor_blocked(format!(
+                "direct production lane {} no-final-frost clear cannot debit storage delta {delta_m}",
+                lane_index + 1
+            )));
+        }
+    }
+    let aggregate_after_m = layers
+        .iter()
+        .try_fold(0.0_f64, |total, layer| {
+            let aggregate = total + layer.theta_m + layer.residual_theta * layer.depth_m;
+            if aggregate.is_finite() {
+                Ok(aggregate)
+            } else {
+                Err(direct_production_executor_blocked(format!(
+                    "direct production lane {} no-final-frost clear produced nonfinite aggregate after rebalance",
+                    lane_index + 1
+                )))
+            }
+        })?;
+    if (aggregate_after_m - target_soil_water_m).abs() > 1.0e-12 {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production lane {} no-final-frost clear aggregate {} differs from target {}",
+            lane_index + 1,
+            aggregate_after_m,
+            target_soil_water_m
+        )));
+    }
+    Ok(())
 }
 
 fn direct_production_typed_frost_soil_conductivity(
@@ -1123,7 +1319,9 @@ fn direct_publication_interception_state(
         interception_rainfall_input_m: rainfall_input_m,
         canopy_cover_fraction: require_runtime_surface_scalar(runtime_surface, "cancov")?,
         leaf_area_index: require_runtime_surface_scalar(runtime_surface, "lai")?,
-        vegetative_dry_matter_kg_m2: require_runtime_surface_scalar(runtime_surface, "vdmt")?,
+        interception_live_biomass_kg_m2: direct_growth_interception_live_biomass_from_seed(
+            runtime_surface,
+        )?,
     })
     .map_err(|source| direct_publication_runtime_error(&source))
 }

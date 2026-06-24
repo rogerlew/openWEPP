@@ -419,7 +419,9 @@ fn seed_direct_production_lane_constructor_inputs(
         require_runtime_surface_scalar(&day_zero_seed_surface, "wb11_soil_water")?;
     lane_inputs.subsurface_layers = direct_publication_layer_states(&day_zero_seed_surface)?;
     lane_inputs.evapotranspiration_stage_state =
-        direct_publication_stage_state(&day_zero_seed_surface)?;
+        direct_publication_stage_state(&day_zero_seed_surface)?.map(Box::new);
+    *lane_inputs.plant_growth_state = direct_growth_state_surface_from_seed(&day_zero_seed_surface)?;
+    lane_inputs.plant_water_stress = require_runtime_surface_scalar(&day_zero_seed_surface, "Ws")?;
     lane_inputs.winter_column.snow =
         DirectProductionSnowFrostAuthority::from_seed(&day_zero_seed_surface)?
             .initial_snow_lane_state();

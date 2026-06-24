@@ -573,6 +573,7 @@ pub(super) fn execute_persistent_scheduler_kernel_lifecycle(
         context,
     )?;
     let sequence_summary = persistent_sequence_summary(&sequence_report)?;
+    maybe_record_r7h_compat_layer_trace(&sequence_report, &context)?;
     replace_persistent_lane_state_from_report_moving(lane_state, sequence_report)?;
     restore_persistent_lane_pl_sentinels(lane_state, lane_preparation.pl_activation_sentinels);
     if context.indexed_scheduler_runtime_enabled {
@@ -611,6 +612,278 @@ pub(super) fn pl_runtime_activation_sentinel_value(
         .state_surface
         .get(&BoundarySymbol::from("pl_schedule_slot_count"))
         .copied()
+}
+
+#[allow(clippy::too_many_lines)]
+fn maybe_record_r7h_compat_layer_trace(
+    sequence_report: &OfeLaneSequenceExecutionReport,
+    context: &SchedulerLifecycleContext<'_>,
+) -> Result<(), HillslopeCliError> {
+    let Some(trace_path) = std::env::var_os("OPENWEPP_R7H_COMPAT_LAYER_TRACE_PATH") else {
+        return Ok(());
+    };
+    if r7h_optional_usize_env("OPENWEPP_R7H_COMPAT_LAYER_TRACE_DAY_INDEX")?
+        .is_some_and(|day_index| day_index != context.sim_day_index)
+    {
+        return Ok(());
+    }
+    let lane_filter = r7h_optional_usize_env("OPENWEPP_R7H_COMPAT_LAYER_TRACE_LANE_INDEX")?;
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&trace_path)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "r7h_compat_layer_trace",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} failed opening compatibility layer trace {}: {error}",
+                std::path::PathBuf::from(&trace_path).display()
+            ),
+        })?;
+
+    for (lane_index, lane_report) in sequence_report.lane_reports.iter().enumerate() {
+        if lane_filter.is_some_and(|filter| filter != lane_index) {
+            continue;
+        }
+        let surface = &lane_report.kernel_report.writeback_surface;
+        let layer_count = r7h_trace_layer_count(surface);
+        let mut row = serde_json::json!({
+            "schema": "openwepp-r7h-compat-layer-trace-v1",
+            "run_name": context.run_name,
+            "simulation_year": context.simulation_year,
+            "calendar_year": context.calendar_day.year,
+            "julian_day": context.calendar_day.julian_day,
+            "day_index": context.sim_day_index,
+            "lane_index": lane_index,
+            "ofe_id": lane_report.ofe_id,
+            "layer_count": layer_count,
+            "wb11_soil_water_m": r7h_state_scalar(surface, "wb11_soil_water"),
+            "root_depth_m": r7h_state_scalar(surface, "rtd"),
+            "leaf_area_index": r7h_state_scalar(surface, "lai"),
+            "canopy_cover_fraction": r7h_state_scalar(surface, "cancov"),
+            "residue_interception_m": r7h_state_scalar(surface, "wb17_residue_interception"),
+            "plant_tolerance": r7h_state_scalar(surface, "pltol"),
+            "effective_plant_tolerance": r7h_state_scalar(surface, "swu_effective_pltol"),
+            "pmet_soil_evaporation_state_m": r7h_state_scalar(surface, "pmet.es_m"),
+            "pmet_plant_transpiration_state_m": r7h_state_scalar(surface, "pmet.ep_m"),
+            "pmet_soil_evaporation_flux_m": r7h_flux_scalar(surface, "pmet.es_m"),
+            "pmet_plant_transpiration_flux_m": r7h_flux_scalar(surface, "pmet.ep_m"),
+            "et_m": r7h_flux_scalar(surface, "ET"),
+            "water_stress": r7h_flux_scalar(surface, "Ws"),
+            "plant_transpiration_m": r7h_flux_scalar(surface, "Ep"),
+            "soil_evaporation_m": r7h_flux_scalar(surface, "Es"),
+            "residue_evaporation_m": r7h_flux_scalar(surface, "Er"),
+            "uptake_potential_m": r7h_flux_scalar(surface, "UPi"),
+            "uptake_actual_m": r7h_flux_scalar(surface, "Ui"),
+            "runoff_m": r7h_flux_scalar(surface, "Q"),
+            "subsurface_loss_m": r7h_flux_scalar(surface, "Qd"),
+            "drainage_m": r7h_flux_scalar(surface, "Qdd"),
+            "percolation_loss_m": r7h_flux_scalar(surface, "D"),
+            "lateral_q_m": r7h_flux_scalar(surface, "q"),
+            "layer_theta_m": r7h_layer_state_array(surface, "theta", layer_count),
+            "layer_upper_limit_m": r7h_layer_state_array(surface, "ul", layer_count),
+            "layer_field_capacity_m": r7h_layer_state_array(surface, "fc", layer_count),
+            "layer_frozen_water_m": r7h_layer_state_array(surface, "frzw", layer_count),
+            "layer_frozen_depth_m": r7h_layer_state_array(surface, "frozen_depth", layer_count),
+            "layer_depth_m": r7h_layer_depth_array(surface, layer_count),
+            "layer_uptake_potential_m": r7h_layer_flux_array(surface, "UPi", layer_count),
+            "layer_uptake_actual_m": r7h_layer_flux_array(surface, "Ui", layer_count),
+        });
+        if let Some(row_object) = row.as_object_mut() {
+            row_object.insert(
+                "infiltration_m".to_string(),
+                serde_json::json!(r7h_state_scalar(surface, "wb12_infiltration")),
+            );
+            row_object.insert(
+                "same_pass_lineage".to_string(),
+                serde_json::json!(r7h_state_scalar(
+                    surface,
+                    "wb12_infiltration_same_pass_lineage"
+                )),
+            );
+            row_object.insert(
+                "percolation_lane_substeps".to_string(),
+                serde_json::json!(r7h_state_scalar(surface, "wb18_perc_lane_substeps")),
+            );
+            row_object.insert(
+                "percolation_layer_flux_m".to_string(),
+                serde_json::json!(r7h_layer_flux_array(
+                    surface,
+                    "wb18_perc_pei",
+                    layer_count
+                )),
+            );
+            r7h_insert_scalar(row_object, "storage_initial_m", r7h_state_scalar(surface, "wb12_storage_initial"));
+            r7h_insert_scalar(row_object, "storage_reconciled_m", r7h_state_scalar(surface, "wb12_storage_reconciled"));
+            r7h_insert_scalar(row_object, "precip_input_m", r7h_state_scalar(surface, "wb12_precip_input"));
+            r7h_insert_scalar(row_object, "snow_coupling_s_m", r7h_surface_scalar_prefer_flux(surface, "S"));
+            r7h_insert_scalar(row_object, "irrigation_input_m", r7h_surface_scalar_prefer_flux(surface, "Irr"));
+            r7h_insert_scalar(
+                row_object,
+                "runon_input_m",
+                r7h_surface_scalar_prefer_flux(surface, "wb12_runoff_carryover")
+                    .or_else(|| r7h_state_scalar(surface, "wb12_runon_input")),
+            );
+            r7h_insert_scalar(row_object, "interception_m", r7h_surface_scalar_prefer_flux(surface, "I"));
+            r7h_insert_scalar(
+                row_object,
+                "frost_frwatc_net_liquid_delta_m",
+                r7h_surface_scalar_prefer_flux(surface, "frost.runtime_frwatc_net_liquid_delta_m"),
+            );
+            r7h_insert_scalar(
+                row_object,
+                "frost_frwatc_soil_water_before_m",
+                r7h_surface_scalar_prefer_flux(surface, "frost.runtime_frwatc_soil_water_before_m"),
+            );
+            r7h_insert_scalar(
+                row_object,
+                "frost_frwatc_soil_water_after_m",
+                r7h_surface_scalar_prefer_flux(surface, "frost.runtime_frwatc_soil_water_after_m"),
+            );
+            r7h_insert_scalar(
+                row_object,
+                "frost_frwatc_frozen_water_before_m",
+                r7h_surface_scalar_prefer_flux(
+                    surface,
+                    "frost.runtime_frwatc_frozen_water_before_m",
+                ),
+            );
+            r7h_insert_scalar(
+                row_object,
+                "frost_frwatc_frozen_water_after_m",
+                r7h_surface_scalar_prefer_flux(
+                    surface,
+                    "frost.runtime_frwatc_frozen_water_after_m",
+                ),
+            );
+            r7h_insert_scalar(
+                row_object,
+                "frost_frwatc_freeze_debit_m",
+                r7h_surface_scalar_prefer_flux(surface, "frost.runtime_frwatc_freeze_debit_m"),
+            );
+            r7h_insert_scalar(
+                row_object,
+                "frost_frwatc_thaw_credit_m",
+                r7h_surface_scalar_prefer_flux(surface, "frost.runtime_frwatc_thaw_credit_m"),
+            );
+            r7h_insert_scalar(
+                row_object,
+                "frost_shadow_frwatc_residual_m",
+                r7h_surface_scalar_prefer_flux(surface, "frost.runtime_shadow_frwatc_residual_m"),
+            );
+            r7h_insert_scalar(row_object, "frost_watpdg_m", r7h_surface_scalar_prefer_flux(surface, "frost.runtime_watpdg_m"));
+            r7h_insert_scalar(row_object, "frost_watbtm_m", r7h_surface_scalar_prefer_flux(surface, "frost.runtime_watbtm_m"));
+        }
+        let row_line = format!("{row}\n");
+        std::io::Write::write_all(&mut file, row_line.as_bytes()).map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "r7h_compat_layer_trace",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} failed writing compatibility layer trace {}: {error}",
+                std::path::PathBuf::from(&trace_path).display()
+            ),
+        })?;
+    }
+
+    Ok(())
+}
+
+fn r7h_optional_usize_env(name: &'static str) -> Result<Option<usize>, HillslopeCliError> {
+    let Some(raw) = std::env::var_os(name) else {
+        return Ok(None);
+    };
+    let raw = raw.to_string_lossy();
+    raw.parse::<usize>()
+        .map(Some)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "r7h_compat_layer_trace",
+            detail: format!("{SIMPIPE_GUARD_ID} invalid {name}={raw}: {error}"),
+        })
+}
+
+fn r7h_trace_layer_count(surface: &HillslopeWritebackSurface) -> usize {
+    let mut layer_count = 0;
+    for layer_index in 1..=256 {
+        if r7h_layer_has_any_state(surface, layer_index) {
+            layer_count = layer_index;
+        }
+    }
+    layer_count
+}
+
+fn r7h_layer_has_any_state(surface: &HillslopeWritebackSurface, layer_index: usize) -> bool {
+    ["theta", "ul", "fc", "frzw", "frozen_depth"]
+        .iter()
+        .any(|field| {
+            surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from(format!(
+                    "wb18_perc_{field}_{layer_index:04}"
+                )))
+        })
+        || surface
+            .state_surface
+            .contains_key(&BoundarySymbol::from(format!("wb19_dg_{layer_index:04}")))
+}
+
+fn r7h_state_scalar(surface: &HillslopeWritebackSurface, symbol: &str) -> Option<f64> {
+    surface
+        .state_surface
+        .get(&BoundarySymbol::from(symbol))
+        .copied()
+        .map(BoundaryValue::as_f64)
+}
+
+fn r7h_flux_scalar(surface: &HillslopeWritebackSurface, symbol: &str) -> Option<f64> {
+    surface
+        .flux_surface
+        .get(&BoundarySymbol::from(symbol))
+        .copied()
+        .map(BoundaryValue::as_f64)
+}
+
+fn r7h_surface_scalar_prefer_flux(
+    surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Option<f64> {
+    r7h_flux_scalar(surface, symbol).or_else(|| r7h_state_scalar(surface, symbol))
+}
+
+fn r7h_insert_scalar(
+    row_object: &mut serde_json::Map<String, serde_json::Value>,
+    key: &str,
+    value: Option<f64>,
+) {
+    row_object.insert(key.to_string(), serde_json::json!(value));
+}
+
+fn r7h_layer_state_array(
+    surface: &HillslopeWritebackSurface,
+    field: &str,
+    layer_count: usize,
+) -> Vec<Option<f64>> {
+    (1..=layer_count)
+        .map(|layer_index| {
+            r7h_state_scalar(surface, &format!("wb18_perc_{field}_{layer_index:04}"))
+        })
+        .collect()
+}
+
+fn r7h_layer_depth_array(
+    surface: &HillslopeWritebackSurface,
+    layer_count: usize,
+) -> Vec<Option<f64>> {
+    (1..=layer_count)
+        .map(|layer_index| r7h_state_scalar(surface, &format!("wb19_dg_{layer_index:04}")))
+        .collect()
+}
+
+fn r7h_layer_flux_array(
+    surface: &HillslopeWritebackSurface,
+    root: &str,
+    layer_count: usize,
+) -> Vec<Option<f64>> {
+    (1..=layer_count)
+        .map(|layer_index| r7h_flux_scalar(surface, &format!("{root}_{layer_index:04}")))
+        .collect()
 }
 
 pub(super) fn seed_scheduler_calendar_symbols(

@@ -1414,6 +1414,42 @@ mod tests {
     }
 
     #[test]
+    fn r7h_direct_production_winter_hourly_forcing_uses_shared_context_geometry() {
+        let source = direct_publication_day_input_and_helpers_source();
+        let builder_struct = source
+            .split("struct DirectProductionDayInputBuilder")
+            .nth(1)
+            .and_then(|tail| tail.split("\n}").next())
+            .expect("R7H production builder struct must be present");
+        assert!(
+            builder_struct.contains("winter_hourly_geometry: DirectProductionWinterHourlyGeometry"),
+            "production direct must carry shared climate-context winter hourly geometry"
+        );
+
+        let impl_body = source
+            .split("impl DirectProductionSnowFrostAuthority")
+            .nth(1)
+            .expect("R7H snow/frost authority impl must be present");
+        for helper_name in ["frost_hourly_forcing", "snow_liquid_partition"] {
+            let helper_body = impl_body
+                .split(&format!("    fn {helper_name}("))
+                .nth(1)
+                .and_then(|tail| tail.split("\n    fn ").next())
+                .expect("R7H winter hourly helper body must be present");
+            assert!(
+                helper_body.contains("avg_slope: winter_hourly_geometry.avg_slope")
+                    && helper_body.contains("azimuth: winter_hourly_geometry.azimuth"),
+                "{helper_name} must source winter hourly radiation geometry from shared climate context"
+            );
+            assert!(
+                !helper_body.contains("avg_slope: self.avg_slope")
+                    && !helper_body.contains("azimuth: self.azimuth"),
+                "{helper_name} must not use lane-local slope/aspect for winter hourly radiation"
+            );
+        }
+    }
+
+    #[test]
     fn r7g_direct_production_reads_winter_column_snow_not_runtime_carry() {
         let source = direct_publication_day_input_and_helpers_source();
         let helper = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";
@@ -1676,6 +1712,179 @@ mod tests {
                 .contains("requires committed direct-carried layers"),
             "unexpected error: {error}"
         );
+    }
+
+    #[test]
+    fn r7h_growth_overlay_replaces_stale_interception_plant_aliases() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("wb12_rainfall_input", 0.010),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 3_600.0),
+            ("intsty_0001", 0.010 / 3_600.0),
+            ("sumgdd", 1.0),
+            ("cancov", 0.1),
+            ("lai", 0.1),
+            ("vdmt", 0.01),
+            ("rtmass", 0.02),
+            ("rtd", 0.03),
+            ("hia", 0.0),
+            ("I", 0.009),
+        ]);
+        let carried_growth = openwepp_hillslope_orchestrator::DirectGrowthStateSurface {
+            sumgdd: 12.0,
+            live_biomass_kg_m2: 0.2,
+            interception_live_biomass_kg_m2: 0.18,
+            canopy_cover_fraction: 0.5,
+            leaf_area_index: 1.0,
+            root_mass_kg_m2: 0.25,
+            root_depth_m: 0.30,
+            harvest_index: 0.1,
+        };
+
+        overlay_direct_publication_growth_state(&mut runtime_surface, 0, carried_growth)
+            .expect("carried growth state should overlay stale plant aliases");
+
+        let hyetograph = direct_publication_hyetograph(&runtime_surface)
+            .expect("hyetograph should be available for direct WB15");
+        let interception = direct_publication_interception_state(&runtime_surface, 0.010, &hyetograph)
+            .expect("interception should consume overlaid carried growth state");
+        let expected_interception_m =
+            0.5 * ((0.000_627 * 1_800.0 - 3.733_49e-8 * 1_800.0_f64.powi(2)) / 1_000.0);
+        let stale_interception_m =
+            0.1 * ((0.000_627 * 100.0 - 3.733_49e-8 * 100.0_f64.powi(2)) / 1_000.0);
+
+        assert!((interception.interception_m - expected_interception_m).abs() < 1.0e-12);
+        assert_ne!(
+            interception.interception_m.to_bits(),
+            stale_interception_m.to_bits(),
+            "direct WB15 must not consume stale static plant aliases after day-zero"
+        );
+    }
+
+    #[test]
+    fn r7h_growth_authority_selects_current_ofe_slot_not_primary_ofe() {
+        let mut day = canonical_calendar_day_probe();
+        day.julian_day = 165;
+        let forcing = r7g_snow_forcing(20.0, 10.0);
+        let authority = DirectProductionGrowthAuthority {
+            active: true,
+            rotation_years: 1,
+            rotation_repeats: 1,
+            slots: vec![
+                DirectProductionGrowthSlotAuthority {
+                    ofe_index: 1,
+                    year_in_rotation: 1,
+                    rotation_index: 1,
+                    crops: vec![r7h_growth_crop_with_bb(0.11)],
+                },
+                DirectProductionGrowthSlotAuthority {
+                    ofe_index: 2,
+                    year_in_rotation: 1,
+                    rotation_index: 1,
+                    crops: vec![r7h_growth_crop_with_bb(0.22)],
+                },
+            ],
+            monthly_temperature_max_c: [20.0; 12],
+            monthly_temperature_min_c: [10.0; 12],
+            soil_depth_m: 1.0,
+        };
+
+        let (annual_inputs, perennial_inputs) = authority
+            .inputs(
+                &day,
+                1,
+                2,
+                &forcing,
+                openwepp_hillslope_orchestrator::DirectGrowthStateSurface {
+                    sumgdd: 1.0,
+                    live_biomass_kg_m2: 0.1,
+                    interception_live_biomass_kg_m2: 0.1,
+                    canopy_cover_fraction: 0.2,
+                    leaf_area_index: 0.3,
+                    root_mass_kg_m2: 0.4,
+                    root_depth_m: 0.5,
+                    harvest_index: 0.0,
+                },
+                1.0,
+                &DirectEvapotranspirationComputeInputs::zero(),
+            )
+            .expect("OFE-specific active growth selection should succeed");
+
+        assert_eq!(annual_inputs.bb.to_bits(), 0.22_f64.to_bits());
+        assert_eq!(
+            perennial_inputs.active_context,
+            DirectGrowthActiveContext::Inactive
+        );
+    }
+
+    #[test]
+    fn r7h_growth_authority_accepts_unambiguous_lane_local_slot() {
+        let mut day = canonical_calendar_day_probe();
+        day.julian_day = 165;
+        let forcing = r7g_snow_forcing(20.0, 10.0);
+        let authority = DirectProductionGrowthAuthority {
+            active: true,
+            rotation_years: 1,
+            rotation_repeats: 1,
+            slots: vec![DirectProductionGrowthSlotAuthority {
+                ofe_index: 1,
+                year_in_rotation: 1,
+                rotation_index: 1,
+                crops: vec![r7h_growth_crop_with_bb(0.33)],
+            }],
+            monthly_temperature_max_c: [20.0; 12],
+            monthly_temperature_min_c: [10.0; 12],
+            soil_depth_m: 1.0,
+        };
+
+        let (annual_inputs, _) = authority
+            .inputs(
+                &day,
+                1,
+                4,
+                &forcing,
+                openwepp_hillslope_orchestrator::DirectGrowthStateSurface {
+                    sumgdd: 1.0,
+                    live_biomass_kg_m2: 0.1,
+                    interception_live_biomass_kg_m2: 0.1,
+                    canopy_cover_fraction: 0.2,
+                    leaf_area_index: 0.3,
+                    root_mass_kg_m2: 0.4,
+                    root_depth_m: 0.5,
+                    harvest_index: 0.0,
+                },
+                1.0,
+                &DirectEvapotranspirationComputeInputs::zero(),
+            )
+            .expect("lane-local OFE-1 authority should apply to its lane");
+
+        assert_eq!(annual_inputs.bb.to_bits(), 0.33_f64.to_bits());
+    }
+
+    fn r7h_growth_crop_with_bb(bb: f64) -> DirectProductionGrowthCropAuthority {
+        DirectProductionGrowthCropAuthority {
+            schedule_imngmt: 1,
+            imngmt: 1,
+            jdharv: 300,
+            jdplt: 1,
+            jdstop: 0,
+            btemp: 0.0,
+            otemp: 30.0,
+            gddmax: 1_000.0,
+            dlai: 0.8,
+            dropfc: 1.0,
+            decfct: 1.0,
+            spriod: 1.0,
+            bb,
+            beinp: 1.0,
+            extnct: 0.5,
+            hi: 0.4,
+            xmxlai: 3.0,
+            rsr: 0.2,
+            rtmmax: 1.0,
+            rdmax: 1.0,
+        }
     }
 
     fn r6f_wat_marker_sample_row() -> HillslopeWatRow {
@@ -2480,6 +2689,7 @@ mod tests {
             ("cancov", 0.5),
             ("lai", 1.0),
             ("vdmt", 0.2),
+            ("hia", 0.0),
             ("I", 0.009),
         ]);
 

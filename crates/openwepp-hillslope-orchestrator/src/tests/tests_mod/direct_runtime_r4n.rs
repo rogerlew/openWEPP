@@ -37,6 +37,7 @@ fn r4n_surface_et_matches_wb17_soil_evaporation_layer_mutation_fixture() {
         growth_context_required: false,
         stage_state: None,
         pmet: None,
+        pmet_compute: None,
     };
     day.run_r4m_percolation_span()
         .expect("R4M no-loss percolation should seed R4N layers");
@@ -114,6 +115,7 @@ fn r4n_root_uptake_matches_swu_fixture_and_finalizes_aggregate_et() {
             plant_transpiration_m: 0.006,
             soil_evaporation_storage_return_m: 0.0,
         }),
+        pmet_compute: None,
     };
     day.run_r4m_percolation_span()
         .expect("R4M no-loss percolation should seed R4N layers");
@@ -193,6 +195,7 @@ fn r4o_consumes_r4n_surface_et_mutated_layer_state_when_present() {
         growth_context_required: false,
         stage_state: None,
         pmet: None,
+        pmet_compute: None,
     };
     day.run_r4m_percolation_span()
         .expect("R4M no-loss percolation should seed R4N layers");
@@ -254,6 +257,7 @@ fn r4n_feeds_r4b_final_et_not_handoff_or_publication_aliases() {
             plant_transpiration_m: 0.006,
             soil_evaporation_storage_return_m: 0.0,
         }),
+        pmet_compute: None,
     };
     day.run_r4m_percolation_span()
         .expect("R4M no-loss percolation should seed R4N layers");
@@ -358,6 +362,7 @@ fn r4n_fails_closed_on_missing_upstream_and_invalid_domain() {
                 plant_transpiration_m: 0.006,
                 soil_evaporation_storage_return_m: 0.0,
             }),
+            pmet_compute: None,
         };
     root_without_subsurface_day
         .run_r4m_percolation_span()

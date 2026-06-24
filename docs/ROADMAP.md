@@ -340,12 +340,21 @@ typed winter-column authority is present.
    after those gates pass can R7H release readiness or direct-default activation
    proceed.
 
-   Current execution: `20260624-r7h-closure-activation-gates-001` is held at
-   `HOLD-R7H-H2637-DIRECT-PERFORMANCE-AND-PROTECTED-PARITY`. The package fixed
-   two no-material frost closure failures and current direct H2637 reaches
-   endpoint with `compatibility_edge_invocations=0`, but timing is red
-   (`113.53 s` versus `91.2 s`) and protected parity is not green. Default
-   activation remains disabled.
+   Current status (2026-06-24, operator-directed re-sequence): the R7H frost
+   bit-parity grind is CLOSED OPT-IN, not finished. `r7h-iterative-completion`
+   cleared the performance gate (direct default-candidate `61.40 s`, ~6.7x
+   legacy, within `<=10x`, via hot-path frost-guard symbol-formatting removal)
+   and kept `compatibility_edge_invocations=0`, but the sole remaining blocker is
+   bit-parity to a compatibility frost solver never validated to frost-depth
+   magnitude. Rather than grind direct output to match a soon-to-be-replaced
+   frost model, the frost-influenced public-output divergence is reclassified as
+   a contract-tracked delta under reopened `GAP-SNOWFREEZE-002`. Direct mode
+   stays opt-in; default activation and compatibility deletion are deferred until
+   frost is contract-correct. Next: a frost-depth heat-flow fidelity DC validated
+   against historic frost-depth observations via site hillslope models. (The
+   working tree is interrupted/uncommitted; Codex must separate the keep-worthy
+   perf fix and frost trace instrumentation from abandoned parity experiments on
+   reset.)
 
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 H2637 magnitude arc is no longer an active queue item. Absolute forest lateral-flow

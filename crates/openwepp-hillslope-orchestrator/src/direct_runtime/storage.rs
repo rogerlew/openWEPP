@@ -2,8 +2,259 @@ use super::{
     DIRECT_AUDIT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT,
     DIRECT_R4D_PHASE_SPAN_COUNT, DIRECT_R4E_PHASE_SPAN_COUNT, DIRECT_R4F_PHASE_SPAN_COUNT,
     DIRECT_R4G_PHASE_SPAN_COUNT, DirectDayFrame, DirectRuntimeError, DirectSnowLaneState,
-    validate_finite, validate_nonnegative_direct_m,
+    DirectSubsurfaceLayerState, WB11_ZERO_THRESHOLD, validate_finite,
+    validate_nonnegative_direct_m,
 };
+
+#[derive(Debug, Clone)]
+struct R7hStorageTraceConfig {
+    path: std::path::PathBuf,
+    exact_day_index: Option<usize>,
+    exact_lane_index: Option<usize>,
+}
+
+static R7H_STORAGE_TRACE_CONFIG: std::sync::OnceLock<Option<R7hStorageTraceConfig>> =
+    std::sync::OnceLock::new();
+
+fn r7h_storage_trace_config() -> Option<&'static R7hStorageTraceConfig> {
+    R7H_STORAGE_TRACE_CONFIG
+        .get_or_init(|| {
+            let path = std::env::var_os("OPENWEPP_R7H_STORAGE_TRACE_PATH")?;
+            if path.is_empty() {
+                return None;
+            }
+            Some(R7hStorageTraceConfig {
+                path: std::path::PathBuf::from(path),
+                exact_day_index: r7h_storage_trace_env_usize(
+                    "OPENWEPP_R7H_STORAGE_TRACE_DAY_INDEX",
+                ),
+                exact_lane_index: r7h_storage_trace_env_usize(
+                    "OPENWEPP_R7H_STORAGE_TRACE_LANE_INDEX",
+                ),
+            })
+        })
+        .as_ref()
+}
+
+fn r7h_storage_trace_env_usize(name: &str) -> Option<usize> {
+    let value = std::env::var(name).ok()?;
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    trimmed.parse::<usize>().ok()
+}
+
+fn r7h_storage_trace_number(value: f64) -> String {
+    if value.is_finite() {
+        format!("{value:.17}")
+    } else {
+        "null".to_string()
+    }
+}
+
+fn r7h_storage_trace_f64_array(values: impl IntoIterator<Item = f64>) -> String {
+    let mut output = String::from("[");
+    let mut first = true;
+    for value in values {
+        if !first {
+            output.push(',');
+        }
+        first = false;
+        output.push_str(&r7h_storage_trace_number(value));
+    }
+    output.push(']');
+    output
+}
+
+fn r7h_storage_trace_layer_aggregate_m(day_frame: &DirectDayFrame) -> f64 {
+    let mut aggregate_m = 0.0;
+    for layer in &day_frame
+        .evapotranspiration_compute
+        .layer_state_after_root_uptake
+    {
+        let unfrozen_depth_m = (layer.depth_m - layer.frozen_depth_m).max(0.0);
+        aggregate_m += layer.theta_m + layer.residual_theta * unfrozen_depth_m;
+    }
+    aggregate_m
+}
+
+fn r4b_aggregate_liquid_soil_water(
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<f64, DirectRuntimeError> {
+    let mut aggregate_m = 0.0;
+    for layer in layers {
+        validate_nonnegative_direct_m(
+            "storage_reconciliation.frost_storage_projection_theta_m",
+            layer.theta_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "storage_reconciliation.frost_storage_projection_depth_m",
+            layer.depth_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "storage_reconciliation.frost_storage_projection_frozen_depth_m",
+            layer.frozen_depth_m,
+        )?;
+        if layer.frozen_depth_m > layer.depth_m + WB11_ZERO_THRESHOLD {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "storage_reconciliation.frost_storage_projection_frozen_depth_m",
+            });
+        }
+        let unfrozen_depth_m = (layer.depth_m - layer.frozen_depth_m).max(0.0);
+        aggregate_m += layer.theta_m + layer.residual_theta * unfrozen_depth_m;
+        validate_finite(
+            "storage_reconciliation.frost_storage_projection_aggregate_m",
+            aggregate_m,
+        )?;
+    }
+    Ok(aggregate_m)
+}
+
+#[allow(clippy::too_many_lines)]
+fn maybe_write_r7h_storage_trace(day_frame: &DirectDayFrame) {
+    let Some(config) = r7h_storage_trace_config() else {
+        return;
+    };
+    if let Some(exact_day_index) = config.exact_day_index
+        && day_frame.day_index != exact_day_index
+    {
+        return;
+    }
+    if let Some(exact_lane_index) = config.exact_lane_index
+        && day_frame.lane_index != exact_lane_index
+    {
+        return;
+    }
+
+    let storage = day_frame.storage_reconciliation;
+    let mut line = String::new();
+    line.push('{');
+    line.push_str("\"schema\":\"openwepp-r7h-storage-trace-v1\"");
+    line.push_str(",\"day_index\":");
+    line.push_str(&day_frame.day_index.to_string());
+    line.push_str(",\"lane_index\":");
+    line.push_str(&day_frame.lane_index.to_string());
+    line.push_str(",\"storage_initial_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.storage_initial_m));
+    line.push_str(",\"precip_input_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.precip_input_m));
+    line.push_str(",\"snow_coupling_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.snow_coupling_m));
+    line.push_str(",\"frost_liquid_delta_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.frost_liquid_delta_m));
+    line.push_str(",\"runon_input_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.runon_input_m));
+    line.push_str(",\"runoff_liquid_input_m\":");
+    line.push_str(&r7h_storage_trace_number(
+        day_frame.runoff_partition.liquid_input_m,
+    ));
+    line.push_str(",\"runoff_runon_input_m\":");
+    line.push_str(&r7h_storage_trace_number(
+        day_frame.runoff_partition.runon_input_m,
+    ));
+    line.push_str(",\"runoff_cumulative_infiltration_m\":");
+    line.push_str(&r7h_storage_trace_number(
+        day_frame.runoff_partition.cumulative_infiltration_m,
+    ));
+    line.push_str(",\"runoff_depression_storage_delta_m\":");
+    line.push_str(&r7h_storage_trace_number(
+        day_frame.runoff_partition.depression_storage_delta_m,
+    ));
+    line.push_str(",\"runoff_frost_retained_local_liquid_m\":");
+    line.push_str(&r7h_storage_trace_number(
+        day_frame
+            .runoff_partition_inputs
+            .frost_retained_local_liquid_m,
+    ));
+    line.push_str(",\"runoff_frost_preprojected_local_liquid_m\":");
+    line.push_str(&r7h_storage_trace_number(
+        day_frame
+            .runoff_partition_inputs
+            .frost_preprojected_local_liquid_m,
+    ));
+    line.push_str(",\"runoff_partition_runoff_m\":");
+    line.push_str(&r7h_storage_trace_number(
+        day_frame.runoff_partition.partition_runoff_m,
+    ));
+    line.push_str(",\"surface_saturation_runoff_m\":");
+    line.push_str(&r7h_storage_trace_number(
+        day_frame.saturation_addback.surface_saturation_runoff_m,
+    ));
+    line.push_str(",\"interception_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.interception_m));
+    line.push_str(",\"q_runoff_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.q_runoff_m));
+    line.push_str(",\"evapotranspiration_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.evapotranspiration_m));
+    if let Some(pmet) = day_frame.evapotranspiration_compute_inputs.pmet {
+        line.push_str(",\"pmet_soil_evaporation_m\":");
+        line.push_str(&r7h_storage_trace_number(pmet.soil_evaporation_m));
+        line.push_str(",\"pmet_plant_transpiration_m\":");
+        line.push_str(&r7h_storage_trace_number(pmet.plant_transpiration_m));
+        line.push_str(",\"pmet_soil_evaporation_storage_return_m\":");
+        line.push_str(&r7h_storage_trace_number(
+            pmet.soil_evaporation_storage_return_m,
+        ));
+    } else {
+        line.push_str(",\"pmet_soil_evaporation_m\":null");
+        line.push_str(",\"pmet_plant_transpiration_m\":null");
+        line.push_str(",\"pmet_soil_evaporation_storage_return_m\":null");
+    }
+    line.push_str(",\"deep_seepage_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.deep_seepage_m));
+    line.push_str(",\"subsurface_loss_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.subsurface_loss_m));
+    line.push_str(",\"storage_reconciled_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.storage_reconciled_m));
+    line.push_str(",\"root_uptake_layer_aggregate_m\":");
+    line.push_str(&r7h_storage_trace_number(
+        r7h_storage_trace_layer_aggregate_m(day_frame),
+    ));
+    line.push_str(",\"root_uptake_soil_water_after_m\":");
+    line.push_str(&r7h_storage_trace_number(
+        day_frame.evapotranspiration_compute.soil_water_after_m,
+    ));
+    line.push_str(",\"root_layer_theta_m\":");
+    line.push_str(&r7h_storage_trace_f64_array(
+        day_frame
+            .evapotranspiration_compute
+            .layer_state_after_root_uptake
+            .iter()
+            .map(|layer| layer.theta_m),
+    ));
+    line.push_str(",\"root_layer_upper_limit_m\":");
+    line.push_str(&r7h_storage_trace_f64_array(
+        day_frame
+            .evapotranspiration_compute
+            .layer_state_after_root_uptake
+            .iter()
+            .map(|layer| layer.upper_limit_m),
+    ));
+    line.push_str(",\"root_layer_frozen_water_m\":");
+    line.push_str(&r7h_storage_trace_f64_array(
+        day_frame
+            .evapotranspiration_compute
+            .layer_state_after_root_uptake
+            .iter()
+            .map(|layer| layer.frozen_water_m),
+    ));
+    line.push_str(",\"closure_residual_m\":");
+    line.push_str(&r7h_storage_trace_number(storage.closure_residual_m));
+    line.push('}');
+    line.push('\n');
+
+    if let Some(parent) = config.path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&config.path)
+    {
+        let _ = std::io::Write::write_all(&mut file, line.as_bytes());
+    }
+}
 
 impl DirectDayFrame {
     pub fn run_r4c_storage_input_span(
@@ -246,9 +497,19 @@ impl DirectDayFrame {
         DIRECT_AUDIT.record_phase_span_run();
         let phase_count = DIRECT_R4B_PHASE_SPAN_COUNT;
         let mut phase_entry_count = 0_u64;
+        let mut state_mutation_count = 0_u64;
 
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
+        if let Some(frost_storage_liquid_delta_m) = self.frost_storage_liquid_delta_m {
+            validate_finite(
+                "storage_reconciliation.frost_storage_liquid_delta_m",
+                frost_storage_liquid_delta_m,
+            )?;
+            self.storage_reconciliation_inputs.frost_liquid_delta_m = frost_storage_liquid_delta_m;
+            DIRECT_AUDIT.record_direct_state_mutation();
+            state_mutation_count += 1;
+        }
         let storage_reconciliation = self.compute_r4b_storage_reconciliation()?;
         DIRECT_AUDIT.record_direct_compute_operation();
 
@@ -257,6 +518,13 @@ impl DirectDayFrame {
         self.storage_reconciliation = storage_reconciliation;
         self.water.soil_water_m = storage_reconciliation.storage_reconciled_m;
         DIRECT_AUDIT.record_direct_state_mutation();
+        state_mutation_count += 1;
+        if self.rebalance_r4b_explicit_frost_storage_projection(
+            storage_reconciliation.storage_reconciled_m,
+        )? {
+            DIRECT_AUDIT.record_direct_state_mutation();
+            state_mutation_count += 1;
+        }
         self.storage_downstream_operands =
             DirectStorageDownstreamOperands::from(storage_reconciliation);
         DIRECT_AUDIT.record_downstream_operand_production();
@@ -279,17 +547,72 @@ impl DirectDayFrame {
         };
         self.storage_shadow_projection = Some(storage_shadow_projection);
         DIRECT_AUDIT.record_shadow_projection();
+        maybe_write_r7h_storage_trace(self);
 
         Ok(DirectStorageReconciliationSpanReport {
             phase_count,
             phase_entry_count,
             direct_compute_count: 1,
-            state_mutation_count: 1,
+            state_mutation_count,
             downstream_operand_count: 1,
             shadow_projection_count: 1,
             compatibility_edge_invocation_count: 0,
             storage_shadow_projection,
         })
+    }
+
+    fn rebalance_r4b_explicit_frost_storage_projection(
+        &mut self,
+        storage_reconciled_m: f64,
+    ) -> Result<bool, DirectRuntimeError> {
+        if self.frost_storage_liquid_delta_m.is_none() {
+            return Ok(false);
+        }
+        // The explicit WB12 frost storage source owns only the aggregate
+        // storage delta here. Layer-depth fidelity is deferred to the
+        // observation-anchored frost-depth work, so this path must not infer a
+        // compatibility layer distribution.
+        let aggregate_m = r4b_aggregate_liquid_soil_water(
+            &self
+                .evapotranspiration_compute
+                .layer_state_after_root_uptake,
+        )?;
+        let delta_m = storage_reconciled_m - aggregate_m;
+        validate_finite(
+            "storage_reconciliation.frost_storage_projection_delta_m",
+            delta_m,
+        )?;
+        if delta_m.abs() <= WB11_ZERO_THRESHOLD {
+            return Ok(false);
+        }
+        let Some(layer) = self
+            .evapotranspiration_compute
+            .layer_state_after_root_uptake
+            .first_mut()
+        else {
+            return Err(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "R4N evapotranspiration/root-uptake producer",
+            });
+        };
+        layer.theta_m += delta_m;
+        validate_nonnegative_direct_m(
+            "storage_reconciliation.frost_storage_projection_theta_m",
+            layer.theta_m,
+        )?;
+        validate_finite(
+            "storage_reconciliation.frost_storage_projection_theta_m",
+            layer.theta_m,
+        )?;
+        self.evapotranspiration_compute.soil_water_after_m = storage_reconciled_m;
+        if let Some(shadow) = &mut self.evapotranspiration_compute_shadow_projection {
+            shadow.soil_water_after_m = storage_reconciled_m;
+            shadow.layer_state_after_root_uptake.clone_from(
+                &self
+                    .evapotranspiration_compute
+                    .layer_state_after_root_uptake,
+            );
+        }
+        Ok(true)
     }
 
     fn compute_r4c_storage_input(&self) -> Result<DirectStorageInputState, DirectRuntimeError> {

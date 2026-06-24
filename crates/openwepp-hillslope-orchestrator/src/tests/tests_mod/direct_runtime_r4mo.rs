@@ -146,6 +146,77 @@ fn r4mo_percolation_hourly_restrictive_branch_matches_wb18_kernel_authority() {
 }
 
 #[test]
+fn r4mo_percolation_hourly_saturated_lower_boundary_uses_frozen_inclusive_storage() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut state_surface = daily_wb18_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.20),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(0.10),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.45),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0002"),
+        BoundaryValue::scalar(0.49),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_frzw_0002"),
+        BoundaryValue::scalar(0.04),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.20 + 0.45 + (0.05 * 0.30) + (0.07 * 0.40)),
+    );
+    let compatibility = run_wb18_compatibility(&state_surface);
+    assert_eq!(
+        compatibility.status.message_id(),
+        "HKERNEL-WB11-PERC-OK-001"
+    );
+
+    let mut day = seeded_day();
+    day.percolation_inputs =
+        daily_percolation_inputs(0.20 + 0.45 + (0.05 * 0.30) + (0.07 * 0.40), 24, false);
+    day.percolation_inputs.layers[0].theta_m = 0.20;
+    day.percolation_inputs.layers[0].field_capacity_m = 0.10;
+    day.percolation_inputs.layers[1].theta_m = 0.45;
+    day.percolation_inputs.layers[1].field_capacity_m = 0.49;
+    day.percolation_inputs.layers[1].frozen_water_m = 0.04;
+
+    day.run_r4m_percolation_span()
+        .expect("hourly saturated-lower direct WB18 should execute");
+
+    let compat_pei_1 =
+        flux_update_scalar(&compatibility.writeback.flux_updates, "wb18_perc_pei_0001")
+            .expect("top per-layer flux should publish");
+    let compat_theta_1 = state_update_scalar(
+        &compatibility.writeback.state_updates,
+        "wb18_perc_theta_0001",
+    )
+    .expect("top theta should publish");
+
+    assert_close(day.percolation.per_layer_flux_m[0], compat_pei_1);
+    assert_close(day.percolation.layer_state_after[0].theta_m, compat_theta_1);
+    assert!(
+        day.percolation.per_layer_flux_m[0] > 0.010,
+        "fixture must force the hourly saturated-lower fx=1 branch"
+    );
+}
+
+#[test]
 fn r4mo_subsurface_compute_feeds_qd_and_shadow_projection() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()

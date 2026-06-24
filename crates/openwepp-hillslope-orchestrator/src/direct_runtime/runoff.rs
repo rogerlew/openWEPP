@@ -18,6 +18,146 @@ use super::{
     validate_finite, validate_nonnegative_direct_m,
 };
 
+#[derive(Debug, Clone)]
+struct R7hRunoffRebalanceTraceConfig {
+    path: std::path::PathBuf,
+    exact_day_index: Option<usize>,
+    exact_lane_index: Option<usize>,
+}
+
+static R7H_RUNOFF_REBALANCE_TRACE_CONFIG: std::sync::OnceLock<
+    Option<R7hRunoffRebalanceTraceConfig>,
+> = std::sync::OnceLock::new();
+
+fn r7h_runoff_rebalance_trace_config() -> Option<&'static R7hRunoffRebalanceTraceConfig> {
+    R7H_RUNOFF_REBALANCE_TRACE_CONFIG
+        .get_or_init(|| {
+            let path = std::env::var_os("OPENWEPP_R7H_RUNOFF_REBALANCE_TRACE_PATH")?;
+            if path.is_empty() {
+                return None;
+            }
+            Some(R7hRunoffRebalanceTraceConfig {
+                path: std::path::PathBuf::from(path),
+                exact_day_index: r7h_runoff_trace_env_usize(
+                    "OPENWEPP_R7H_RUNOFF_REBALANCE_TRACE_DAY_INDEX",
+                ),
+                exact_lane_index: r7h_runoff_trace_env_usize(
+                    "OPENWEPP_R7H_RUNOFF_REBALANCE_TRACE_LANE_INDEX",
+                ),
+            })
+        })
+        .as_ref()
+}
+
+fn r7h_runoff_trace_env_usize(name: &str) -> Option<usize> {
+    let value = std::env::var(name).ok()?;
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    trimmed.parse::<usize>().ok()
+}
+
+fn r7h_runoff_trace_number(value: f64) -> String {
+    if value.is_finite() {
+        format!("{value:.17}")
+    } else {
+        "null".to_string()
+    }
+}
+
+fn maybe_write_r7h_runoff_rebalance_trace(
+    day_frame: &DirectDayFrame,
+    target_m: f64,
+    aggregate_m: f64,
+    delta_m: f64,
+    tolerance_m: f64,
+    accepted: bool,
+) {
+    let Some(config) = r7h_runoff_rebalance_trace_config() else {
+        return;
+    };
+    if let Some(exact_day_index) = config.exact_day_index
+        && day_frame.day_index != exact_day_index
+    {
+        return;
+    }
+    if let Some(exact_lane_index) = config.exact_lane_index
+        && day_frame.lane_index != exact_lane_index
+    {
+        return;
+    }
+
+    let inputs = day_frame.storage_reconciliation_inputs;
+    let runoff_inputs = day_frame.runoff_partition_inputs;
+    let mut line = String::new();
+    line.push('{');
+    line.push_str("\"schema\":\"openwepp-r7h-runoff-rebalance-trace-v1\"");
+    line.push_str(",\"day_index\":");
+    line.push_str(&day_frame.day_index.to_string());
+    line.push_str(",\"lane_index\":");
+    line.push_str(&day_frame.lane_index.to_string());
+    line.push_str(",\"target_m\":");
+    line.push_str(&r7h_runoff_trace_number(target_m));
+    line.push_str(",\"aggregate_m\":");
+    line.push_str(&r7h_runoff_trace_number(aggregate_m));
+    line.push_str(",\"delta_m\":");
+    line.push_str(&r7h_runoff_trace_number(delta_m));
+    line.push_str(",\"tolerance_m\":");
+    line.push_str(&r7h_runoff_trace_number(tolerance_m));
+    line.push_str(",\"accepted\":");
+    line.push_str(if accepted { "true" } else { "false" });
+    line.push_str(",\"storage_initial_m\":");
+    line.push_str(&r7h_runoff_trace_number(inputs.storage_initial_m));
+    line.push_str(",\"precip_input_m\":");
+    line.push_str(&r7h_runoff_trace_number(inputs.precip_input_m));
+    line.push_str(",\"snow_coupling_m\":");
+    line.push_str(&r7h_runoff_trace_number(inputs.snow_coupling_m));
+    line.push_str(",\"runon_input_m\":");
+    line.push_str(&r7h_runoff_trace_number(inputs.runon_input_m));
+    line.push_str(",\"frost_liquid_delta_m\":");
+    line.push_str(&r7h_runoff_trace_number(inputs.frost_liquid_delta_m));
+    line.push_str(",\"interception_m\":");
+    line.push_str(&r7h_runoff_trace_number(inputs.interception_m));
+    line.push_str(",\"q_runoff_m\":");
+    line.push_str(&r7h_runoff_trace_number(
+        day_frame.runoff_partition.q_runoff_m,
+    ));
+    line.push_str(",\"evapotranspiration_m\":");
+    line.push_str(&r7h_runoff_trace_number(inputs.evapotranspiration_m));
+    line.push_str(",\"deep_seepage_m\":");
+    line.push_str(&r7h_runoff_trace_number(inputs.deep_seepage_m));
+    line.push_str(",\"subsurface_loss_m\":");
+    line.push_str(&r7h_runoff_trace_number(inputs.subsurface_loss_m));
+    line.push_str(",\"liquid_input_m\":");
+    line.push_str(&r7h_runoff_trace_number(runoff_inputs.liquid_input_m));
+    line.push_str(",\"cumulative_infiltration_m\":");
+    line.push_str(&r7h_runoff_trace_number(
+        runoff_inputs.cumulative_infiltration_m,
+    ));
+    line.push_str(",\"depression_storage_delta_m\":");
+    line.push_str(&r7h_runoff_trace_number(
+        runoff_inputs.depression_storage_delta_m,
+    ));
+    line.push_str(",\"frost_retained_local_liquid_m\":");
+    line.push_str(&r7h_runoff_trace_number(
+        runoff_inputs.frost_retained_local_liquid_m,
+    ));
+    line.push('}');
+    line.push('\n');
+
+    if let Some(parent) = config.path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&config.path)
+    {
+        let _ = std::io::Write::write_all(&mut file, line.as_bytes());
+    }
+}
+
 impl DirectDayFrame {
     pub fn run_r4i_liquid_input_span(
         &mut self,
@@ -127,16 +267,21 @@ impl DirectDayFrame {
 
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
+        let same_pass_infiltration_m =
+            self.resolve_r4m_same_pass_infiltration_m(infiltration_depression)?;
+        let infiltration_depression = DirectInfiltrationDepressionState {
+            cumulative_infiltration_m: same_pass_infiltration_m,
+            depression_storage_delta_m: infiltration_depression.depression_storage_delta_m,
+        };
         self.infiltration_depression = infiltration_depression;
         self.runoff_partition_inputs.cumulative_infiltration_m =
             infiltration_depression.cumulative_infiltration_m;
         self.runoff_partition_inputs.depression_storage_delta_m =
             infiltration_depression.depression_storage_delta_m;
-        self.percolation_inputs.same_pass_infiltration_m =
-            infiltration_depression.cumulative_infiltration_m;
+        self.percolation_inputs.same_pass_infiltration_m = same_pass_infiltration_m;
         self.percolation_inputs.same_pass_infiltration_lineage = true;
         self.evapotranspiration_compute_inputs
-            .same_pass_infiltration_m = infiltration_depression.cumulative_infiltration_m;
+            .same_pass_infiltration_m = same_pass_infiltration_m;
         DIRECT_AUDIT.record_direct_state_mutation();
         self.infiltration_depression_downstream_operands =
             DirectInfiltrationDepressionDownstreamOperands::from(infiltration_depression);
@@ -213,6 +358,55 @@ impl DirectDayFrame {
         })
     }
 
+    pub(crate) fn project_r4x_winter_local_liquid_before_saturation(
+        &mut self,
+        winter_frost_compute_inputs: Option<&DirectWinterFrostComputeInputs>,
+    ) -> Result<(), DirectRuntimeError> {
+        if winter_frost_compute_inputs.is_none() {
+            return Ok(());
+        }
+        let deferred_local_liquid_m = self.r4a_deferred_local_partition_excess_m()?;
+        if deferred_local_liquid_m <= WB11_ZERO_THRESHOLD {
+            return Ok(());
+        }
+        validate_nonnegative_direct_m(
+            "runoff_partition.winter_local_liquid_projection_before_saturation_m",
+            deferred_local_liquid_m,
+        )?;
+        // WB18 and ET consume the WB12/WB14 same-pass infiltration producer
+        // lineage. Frost-retained local liquid enters typed storage after
+        // surface ET and before saturation/subsurface so WB18 fluxes stay
+        // lineage-clean while saturation runoff sees the retained top water.
+        self.evapotranspiration_surface.soil_water_after_soil_evap_m += deferred_local_liquid_m;
+        project_r4x_local_liquid_to_top_layer(
+            &mut self.evapotranspiration_surface.layer_state_after_soil_evap,
+            deferred_local_liquid_m,
+        )?;
+        self.evapotranspiration_surface_downstream_operands
+            .soil_water_after_soil_evap_m += deferred_local_liquid_m;
+        project_r4x_local_liquid_to_top_layer(
+            &mut self
+                .evapotranspiration_surface_downstream_operands
+                .layer_state_after_soil_evap,
+            deferred_local_liquid_m,
+        )?;
+        let surface_shadow = self
+            .evapotranspiration_surface_shadow_projection
+            .as_mut()
+            .ok_or(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "R4N surface evapotranspiration",
+            })?;
+        surface_shadow.soil_water_after_soil_evap_m += deferred_local_liquid_m;
+        project_r4x_local_liquid_to_top_layer(
+            &mut surface_shadow.layer_state_after_soil_evap,
+            deferred_local_liquid_m,
+        )?;
+        self.water.soil_water_m = self.evapotranspiration_surface.soil_water_after_soil_evap_m;
+        self.runoff_partition_inputs
+            .frost_preprojected_local_liquid_m = deferred_local_liquid_m;
+        Ok(())
+    }
+
     pub fn run_r4a_runoff_partition_span(
         &mut self,
     ) -> Result<DirectRunoffPartitionSpanReport, DirectRuntimeError> {
@@ -231,6 +425,14 @@ impl DirectDayFrame {
         let mut downstream_operand_count = 0_u64;
         let mut shadow_projection_count = 0_u64;
 
+        let frost_reconciled = self.reconcile_r4a_frost_runtime(winter_frost_compute_inputs)?;
+        if frost_reconciled {
+            DIRECT_AUDIT.record_direct_compute_operation();
+            direct_compute_count += 1;
+            DIRECT_AUDIT.record_direct_state_mutation();
+            state_mutation_count += 1;
+        }
+
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
         let runoff_partition = self.compute_r4a_runoff_partition()?;
@@ -245,9 +447,8 @@ impl DirectDayFrame {
         DIRECT_AUDIT.record_direct_state_mutation();
         state_mutation_count += 1;
 
-        if self.reconcile_r4a_frost_runtime(winter_frost_compute_inputs)? {
-            DIRECT_AUDIT.record_direct_compute_operation();
-            direct_compute_count += 1;
+        if frost_reconciled {
+            self.rebalance_r4a_frost_projection_to_storage_target()?;
             DIRECT_AUDIT.record_direct_state_mutation();
             state_mutation_count += 1;
         }
@@ -345,6 +546,52 @@ impl DirectDayFrame {
         Ok(DirectLiquidInputState {
             liquid_input_m: self.liquid_input_inputs.liquid_input_handoff_m,
         })
+    }
+
+    fn resolve_r4m_same_pass_infiltration_m(
+        &self,
+        infiltration_depression: DirectInfiltrationDepressionState,
+    ) -> Result<f64, DirectRuntimeError> {
+        let cumulative_infiltration_m = infiltration_depression.cumulative_infiltration_m;
+        validate_nonnegative_direct_m(
+            "infiltration_depression.cumulative_infiltration_m",
+            cumulative_infiltration_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "infiltration_depression.depression_storage_delta_m",
+            infiltration_depression.depression_storage_delta_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "liquid_input.liquid_input_m",
+            self.liquid_input.liquid_input_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.routed_melt_m",
+            self.snow_coupling_inputs.routed_melt_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.post_winter_rain_m",
+            self.snow_coupling_inputs.post_winter_rain_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "storage_reconciliation.precip_input_m",
+            self.storage_reconciliation_inputs.precip_input_m,
+        )?;
+        if self.snow_coupling_inputs.active_snow_coupling
+            && self.snow_coupling_inputs.routed_melt_m > WB11_ZERO_THRESHOLD
+            && self.snow_coupling_inputs.post_winter_rain_m <= WB11_ZERO_THRESHOLD
+            && self.storage_reconciliation_inputs.precip_input_m <= WB11_ZERO_THRESHOLD
+        {
+            let snow_reconstructed_same_pass_m = normalize_r4a_nonnegative_depth(
+                "percolation.snow_reconstructed_same_pass_infiltration_m",
+                self.liquid_input.liquid_input_m
+                    - infiltration_depression.depression_storage_delta_m,
+            )?;
+            if snow_reconstructed_same_pass_m > cumulative_infiltration_m {
+                return Ok(snow_reconstructed_same_pass_m);
+            }
+        }
+        Ok(cumulative_infiltration_m)
     }
 
     fn compute_r4j_runon_carry(&self) -> Result<DirectRunonCarryState, DirectRuntimeError> {
@@ -469,7 +716,8 @@ impl DirectDayFrame {
             "runoff_partition.partition_runoff_m",
             inputs.liquid_input_m + inputs.runon_input_m
                 - inputs.cumulative_infiltration_m
-                - inputs.depression_storage_delta_m,
+                - inputs.depression_storage_delta_m
+                - inputs.frost_retained_local_liquid_m,
         )?;
         validate_finite("runoff_partition.partition_runoff_m", partition_runoff_m)?;
         validate_nonnegative_direct_m("runoff_partition.partition_runoff_m", partition_runoff_m)?;
@@ -480,6 +728,7 @@ impl DirectDayFrame {
             inputs.liquid_input_m + inputs.runon_input_m + inputs.surface_saturation_runoff_m
                 - inputs.cumulative_infiltration_m
                 - inputs.depression_storage_delta_m
+                - inputs.frost_retained_local_liquid_m
                 - q_runoff_m;
         validate_finite("runoff_partition.closure_residual_m", closure_residual_m)?;
 
@@ -640,6 +889,15 @@ impl DirectDayFrame {
             "runoff_partition.surface_saturation_runoff_m",
             self.runoff_partition_inputs.surface_saturation_runoff_m,
         )?;
+        validate_nonnegative_direct_m(
+            "runoff_partition.frost_retained_local_liquid_m",
+            self.runoff_partition_inputs.frost_retained_local_liquid_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "runoff_partition.frost_preprojected_local_liquid_m",
+            self.runoff_partition_inputs
+                .frost_preprojected_local_liquid_m,
+        )?;
         Ok(())
     }
 
@@ -650,8 +908,11 @@ impl DirectDayFrame {
         let Some(compute_inputs) = winter_frost_compute_inputs else {
             return Ok(false);
         };
-        let layers = self.latest_r4a_frost_layers()?;
+        let base_layers = self.latest_r4a_frost_layers()?;
+        let layers = self.r4a_frost_layers_with_local_partition_excess(&base_layers)?;
         let frost_outcome = self.compute_r4a_winter_frost_partition(compute_inputs, &layers)?;
+        self.runoff_partition_inputs.frost_retained_local_liquid_m =
+            self.r4a_deferred_local_partition_excess_m()?;
         self.apply_r4a_winter_frost_outcome(layers, &frost_outcome)?;
         Ok(true)
     }
@@ -708,6 +969,95 @@ impl DirectDayFrame {
         })
     }
 
+    fn r4a_frost_layers_with_local_partition_excess(
+        &self,
+        layers: &[DirectSubsurfaceLayerState],
+    ) -> Result<Vec<DirectSubsurfaceLayerState>, DirectRuntimeError> {
+        let mut layers = layers.to_vec();
+        let deferred_local_liquid_m = self.r4a_deferred_local_partition_excess_m()?;
+        let unprojected_local_excess_m = deferred_local_liquid_m
+            - self
+                .runoff_partition_inputs
+                .frost_preprojected_local_liquid_m;
+        validate_finite(
+            "runoff_partition.frost_unprojected_local_liquid_m",
+            unprojected_local_excess_m,
+        )?;
+        if unprojected_local_excess_m < -WB11_ZERO_THRESHOLD {
+            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "runoff_partition.frost_preprojected_local_liquid_m",
+            });
+        }
+        if unprojected_local_excess_m <= WB11_ZERO_THRESHOLD {
+            return Ok(layers);
+        }
+        let Some(top_layer) = layers.first_mut() else {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "runoff_partition.frost_layers",
+            });
+        };
+        top_layer.theta_m += unprojected_local_excess_m;
+        validate_nonnegative_direct_m(
+            "runoff_partition.frost_local_partition_excess_m",
+            deferred_local_liquid_m,
+        )?;
+        validate_nonnegative_direct_m("runoff_partition.frost_layer_theta_m", top_layer.theta_m)?;
+        Ok(layers)
+    }
+
+    fn r4a_local_partition_excess_m(&self) -> Result<f64, DirectRuntimeError> {
+        let inputs = self.runoff_partition_inputs;
+        let local_excess_m = normalize_r4a_nonnegative_depth(
+            "runoff_partition.local_partition_excess_m",
+            inputs.liquid_input_m
+                - inputs.cumulative_infiltration_m
+                - inputs.depression_storage_delta_m,
+        )?;
+        validate_finite("runoff_partition.local_partition_excess_m", local_excess_m)?;
+        Ok(local_excess_m)
+    }
+
+    fn r4a_deferred_local_partition_excess_m(&self) -> Result<f64, DirectRuntimeError> {
+        if !self.r4a_has_material_winter_local_liquid_context()? {
+            return Ok(0.0);
+        }
+        let local_partition_excess_m = self.r4a_local_partition_excess_m()?;
+        let same_pass_consumed_local_m = normalize_r4a_nonnegative_depth(
+            "runoff_partition.same_pass_consumed_local_liquid_m",
+            self.percolation_inputs.same_pass_infiltration_m
+                - self.runoff_partition_inputs.cumulative_infiltration_m,
+        )?;
+        validate_finite(
+            "runoff_partition.same_pass_consumed_local_liquid_m",
+            same_pass_consumed_local_m,
+        )?;
+        let deferred_local_liquid_m = (local_partition_excess_m
+            - same_pass_consumed_local_m.min(local_partition_excess_m))
+        .max(0.0);
+        validate_finite(
+            "runoff_partition.deferred_local_partition_excess_m",
+            deferred_local_liquid_m,
+        )?;
+        Ok(deferred_local_liquid_m)
+    }
+
+    fn r4a_has_material_winter_local_liquid_context(&self) -> Result<bool, DirectRuntimeError> {
+        if self.snow_coupling_inputs.active_snow_coupling
+            && self.snow_coupling_inputs.routed_melt_m > WB11_ZERO_THRESHOLD
+            && self.snow_coupling_inputs.post_winter_rain_m <= WB11_ZERO_THRESHOLD
+            && self.storage_reconciliation_inputs.precip_input_m <= WB11_ZERO_THRESHOLD
+        {
+            return Ok(true);
+        }
+        if r4a_frost_lane_has_material_storage_state(&self.winter_column.frost) {
+            return Ok(true);
+        }
+        let Ok(layers) = self.latest_r4a_frost_layers() else {
+            return Ok(false);
+        };
+        r4a_layers_have_coarse_frost_projection(&layers)
+    }
+
     fn r4a_typed_frost_prior_state(&self) -> DirectFrostPriorStateInput {
         direct_frost_prior_state_input(&self.winter_column.frost)
     }
@@ -739,6 +1089,11 @@ impl DirectDayFrame {
                 }
                 self.apply_r4a_frost_layers(&layers, liquid_storage_before_frost_m);
                 self.water.soil_water_m = liquid_storage_before_frost_m;
+            } else if self.runoff_partition_inputs.frost_retained_local_liquid_m
+                > WB11_ZERO_THRESHOLD
+            {
+                self.apply_r4a_frost_layers(&layers, liquid_storage_before_frost_m);
+                self.water.soil_water_m = liquid_storage_before_frost_m;
             }
             self.storage_reconciliation_inputs.frost_liquid_delta_m = 0.0;
             self.hydrology_projection_inputs.frozen_soil_water_m = 0.0;
@@ -762,6 +1117,17 @@ impl DirectDayFrame {
             } else {
                 soil_water_m
             };
+        if !r4a_frost_partition_has_final_frozen_projection(frost_partition)
+            && r4a_layers_have_coarse_frost_projection(&layers)?
+        {
+            clear_r4a_nonmaterial_frost_layer_projection(&mut layers)?;
+            let soil_water_after_clear_m = r4a_aggregate_liquid_soil_water(&layers)?;
+            if (soil_water_after_clear_m - soil_water_m).abs() > 1.0e-9 {
+                return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                    field: "runoff_partition.thawed_frost_storage_clear",
+                });
+            }
+        }
         let frozen_water_m =
             layers
                 .iter()
@@ -839,6 +1205,105 @@ impl DirectDayFrame {
             replace_r4a_frost_layers(&mut shadow.layer_state_after, layers);
         }
     }
+
+    fn rebalance_r4a_frost_projection_to_storage_target(
+        &mut self,
+    ) -> Result<(), DirectRuntimeError> {
+        const R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M: f64 = 1.0e-7;
+        // R7H keeps this as a tiny aggregate-closure bridge only. Frost-depth
+        // layer fidelity is governed by GAP-SNOWFREEZE-002, not compatibility
+        // bit-parity tuning in the direct runtime.
+        if self.storage_input_shadow_projection.is_none() {
+            return Ok(());
+        }
+        let target_m = self.r4a_storage_reconciliation_target_m()?;
+        let mut layers = self.latest_r4a_frost_layers()?;
+        let aggregate_m = r4a_aggregate_liquid_soil_water(&layers)?;
+        let delta_m = target_m - aggregate_m;
+        if delta_m.abs() <= WB11_ZERO_THRESHOLD {
+            maybe_write_r7h_runoff_rebalance_trace(
+                self,
+                target_m,
+                aggregate_m,
+                delta_m,
+                R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M,
+                true,
+            );
+            return Ok(());
+        }
+        maybe_write_r7h_runoff_rebalance_trace(
+            self,
+            target_m,
+            aggregate_m,
+            delta_m,
+            R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M,
+            delta_m.abs() <= R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M,
+        );
+        if delta_m.abs() > R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M {
+            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "runoff_partition.frost_projection_rebalance_m",
+            });
+        }
+        let Some(layer) = layers.first_mut() else {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "runoff_partition.frost_projection_layers",
+            });
+        };
+        layer.theta_m += delta_m;
+        validate_nonnegative_direct_m(
+            "runoff_partition.frost_projection_rebalanced_theta_m",
+            layer.theta_m,
+        )?;
+        let aggregate_after_m = r4a_aggregate_liquid_soil_water(&layers)?;
+        if (aggregate_after_m - target_m).abs() > WB11_ZERO_THRESHOLD {
+            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "runoff_partition.frost_projection_rebalance_m",
+            });
+        }
+        self.apply_r4a_frost_layers(&layers, target_m);
+        self.water.soil_water_m = target_m;
+        Ok(())
+    }
+
+    fn r4a_storage_reconciliation_target_m(&self) -> Result<f64, DirectRuntimeError> {
+        let inputs = self.storage_reconciliation_inputs;
+        let storage_reconciled_m = inputs.storage_initial_m
+            + inputs.precip_input_m
+            + inputs.snow_coupling_m
+            + inputs.runon_input_m
+            + inputs.frost_liquid_delta_m
+            - inputs.interception_m
+            - self.runoff_partition.q_runoff_m
+            - inputs.evapotranspiration_m
+            - inputs.deep_seepage_m
+            - inputs.subsurface_loss_m;
+        validate_finite(
+            "runoff_partition.storage_reconciliation_target_m",
+            storage_reconciled_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "runoff_partition.storage_reconciliation_target_m",
+            storage_reconciled_m,
+        )?;
+        Ok(storage_reconciled_m)
+    }
+}
+
+fn project_r4x_local_liquid_to_top_layer(
+    layers: &mut [DirectSubsurfaceLayerState],
+    local_partition_excess_m: f64,
+) -> Result<(), DirectRuntimeError> {
+    let Some(top_layer) = layers.first_mut() else {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "runoff_partition.winter_local_liquid_projection_layers",
+        });
+    };
+    top_layer.theta_m += local_partition_excess_m;
+    validate_nonnegative_direct_m(
+        "runoff_partition.winter_local_liquid_projection_theta_m",
+        top_layer.theta_m,
+    )?;
+    Ok(())
 }
 
 fn r4a_layers_have_coarse_frost_projection(
@@ -1097,9 +1562,42 @@ fn r4a_frost_partition_has_material_storage_state(
     const DIRECT_FROST_MATERIAL_THRESHOLD_M: f64 = 1.0e-12;
     frost_partition.frost_depth_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
         || frost_partition.frozen_water_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.frwatc_freeze_debit_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.frwatc_thaw_credit_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.frwatc_net_liquid_delta_m.abs() > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.watpdg_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.watbtm_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.soil_water_after_frwatc_m.is_some()
         || frost_partition.layer_projection.iter().any(|layer| {
             layer.frozen_depth_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
                 || layer.frozen_water_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        })
+}
+
+fn r4a_frost_partition_has_final_frozen_projection(
+    frost_partition: &DirectWinterFrostPartitionOutcome,
+) -> bool {
+    const DIRECT_FROST_MATERIAL_THRESHOLD_M: f64 = 1.0e-12;
+    frost_partition.frost_depth_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.frozen_water_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+}
+
+fn r4a_frost_lane_has_material_storage_state(frost_state: &DirectFrostLaneState) -> bool {
+    const DIRECT_FROST_MATERIAL_THRESHOLD_M: f64 = 1.0e-12;
+    frost_state.frdp_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_state.ws_frz_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_state.frwatc_freeze_debit_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_state.frwatc_thaw_credit_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_state.frwatc_net_liquid_delta_m.abs() > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_state.watpdg_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_state.watbtm_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_state.layer_shadows.iter().any(|layer| {
+            layer.frozen_depth_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+                || layer.frozen_water_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        })
+        || frost_state.fine_layers.iter().any(|layer| {
+            layer.slfsd_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+                || layer.slsic_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
         })
 }
 
@@ -1617,7 +2115,7 @@ pub struct DirectCanopyInterceptionInputs {
     pub interception_rainfall_input_m: f64,
     pub canopy_cover_fraction: f64,
     pub leaf_area_index: f64,
-    pub vegetative_dry_matter_kg_m2: f64,
+    pub interception_live_biomass_kg_m2: f64,
 }
 
 impl DirectCanopyInterceptionInputs {
@@ -1628,7 +2126,7 @@ impl DirectCanopyInterceptionInputs {
             interception_rainfall_input_m: 0.0,
             canopy_cover_fraction: 0.0,
             leaf_area_index: 0.0,
-            vegetative_dry_matter_kg_m2: 0.0,
+            interception_live_biomass_kg_m2: 0.0,
         }
     }
 }
@@ -1670,7 +2168,7 @@ pub fn compute_direct_canopy_interception(
     {
         0.0
     } else {
-        let biomass_kg_ha = inputs.vegetative_dry_matter_kg_m2 * WB15_BIOMASS_TO_KG_HA;
+        let biomass_kg_ha = inputs.interception_live_biomass_kg_m2 * WB15_BIOMASS_TO_KG_HA;
         validate_finite("canopy_interception.biomass_kg_ha", biomass_kg_ha)?;
         let interception_biomass_kg_ha = biomass_kg_ha.min(WB15_INTERCEPT_BIOMASS_MAX_KG_HA);
         let potential_interception_m = inputs.canopy_cover_fraction
@@ -1741,8 +2239,8 @@ fn validate_direct_canopy_interception_inputs(
         inputs.leaf_area_index,
     )?;
     validate_nonnegative_direct_m(
-        "canopy_interception.vegetative_dry_matter_kg_m2",
-        inputs.vegetative_dry_matter_kg_m2,
+        "canopy_interception.interception_live_biomass_kg_m2",
+        inputs.interception_live_biomass_kg_m2,
     )?;
     if inputs.interception_rainfall_input_m > inputs.hyetograph_rainfall_m + WB11_ZERO_THRESHOLD {
         return Err(DirectRuntimeError::DirectDomainViolation {
@@ -1872,6 +2370,8 @@ pub struct DirectRunoffPartitionInputs {
     pub cumulative_infiltration_m: f64,
     pub depression_storage_delta_m: f64,
     pub surface_saturation_runoff_m: f64,
+    pub frost_retained_local_liquid_m: f64,
+    pub frost_preprojected_local_liquid_m: f64,
 }
 
 impl DirectRunoffPartitionInputs {
@@ -1883,6 +2383,8 @@ impl DirectRunoffPartitionInputs {
             cumulative_infiltration_m: 0.0,
             depression_storage_delta_m: 0.0,
             surface_saturation_runoff_m: 0.0,
+            frost_retained_local_liquid_m: 0.0,
+            frost_preprojected_local_liquid_m: 0.0,
         }
     }
 }

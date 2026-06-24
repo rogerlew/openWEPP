@@ -216,27 +216,12 @@ impl Wb11HydrologyKernel {
         layer: &FrostLayerWaterState,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
         let thetdr = layer.thetdr;
-        let fgfrst_symbol = request
-            .and_then(|request| {
-                request.hot_state_grid_symbol(
-                    FROST_RUNTIME_FINE_FGFRST_ROOT,
-                    fine.layer_index,
-                    fine.fine_index,
-                )
-            })
-            .map_or_else(
-                || {
-                    Self::frost_fine_layer_symbol(
-                        FROST_RUNTIME_FINE_FGFRST_ROOT,
-                        fine.layer_index,
-                        fine.fine_index,
-                    )
-                },
-                |symbol| symbol.symbol.clone(),
-            );
-        Self::require_dynamic_state_range_for_symbol(
+        Self::require_frost_fine_state_range(
+            request,
             phase_class,
-            &fgfrst_symbol,
+            FROST_RUNTIME_FINE_FGFRST_ROOT,
+            fine.layer_index,
+            fine.fine_index,
             fine.fgfrst,
             Some(0.0),
             Some(3.0),
@@ -245,112 +230,104 @@ impl Wb11HydrologyKernel {
         if (fine.fgfrst - rounded).abs() > WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
-                symbol: fgfrst_symbol,
+                symbol: Self::frost_fine_layer_symbol(
+                    FROST_RUNTIME_FINE_FGFRST_ROOT,
+                    fine.layer_index,
+                    fine.fine_index,
+                ),
                 value: fine.fgfrst,
                 minimum: Some(0.0),
                 maximum: Some(3.0),
             });
         }
-        let slfsd_symbol = request
-            .and_then(|request| {
-                request.hot_state_grid_symbol(
-                    FROST_RUNTIME_FINE_SLFSD_M_ROOT,
-                    fine.layer_index,
-                    fine.fine_index,
-                )
-            })
-            .map_or_else(
-                || {
-                    Self::frost_fine_layer_symbol(
-                        FROST_RUNTIME_FINE_SLFSD_M_ROOT,
-                        fine.layer_index,
-                        fine.fine_index,
-                    )
-                },
-                |symbol| symbol.symbol.clone(),
-            );
-        Self::require_dynamic_state_range_for_symbol(
+        Self::require_frost_fine_state_range(
+            request,
             phase_class,
-            &slfsd_symbol,
+            FROST_RUNTIME_FINE_SLFSD_M_ROOT,
+            fine.layer_index,
+            fine.fine_index,
             fine.slfsd_m,
             Some(0.0),
             Some(fine.fine_layer_thickness_m),
         )?;
-        let slsic_symbol = request
-            .and_then(|request| {
-                request.hot_state_grid_symbol(
-                    FROST_RUNTIME_FINE_SLSIC_M_ROOT,
-                    fine.layer_index,
-                    fine.fine_index,
-                )
-            })
-            .map_or_else(
-                || {
-                    Self::frost_fine_layer_symbol(
-                        FROST_RUNTIME_FINE_SLSIC_M_ROOT,
-                        fine.layer_index,
-                        fine.fine_index,
-                    )
-                },
-                |symbol| symbol.symbol.clone(),
-            );
-        Self::require_dynamic_state_range_for_symbol(
+        Self::require_frost_fine_state_range(
+            request,
             phase_class,
-            &slsic_symbol,
+            FROST_RUNTIME_FINE_SLSIC_M_ROOT,
+            fine.layer_index,
+            fine.fine_index,
             fine.slsic_m,
             Some(0.0),
             Some(Self::fine_layer_ice_capacity_m(layer, fine)),
         )?;
-        let slsw_symbol = request
-            .and_then(|request| {
-                request.hot_state_grid_symbol(
-                    FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
-                    fine.layer_index,
-                    fine.fine_index,
-                )
-            })
-            .map_or_else(
-                || {
-                    Self::frost_fine_layer_symbol(
-                        FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
-                        fine.layer_index,
-                        fine.fine_index,
-                    )
-                },
-                |symbol| symbol.symbol.clone(),
-            );
-        Self::require_dynamic_state_range_for_symbol(
+        Self::require_frost_fine_state_range(
+            request,
             phase_class,
-            &slsw_symbol,
+            FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
+            fine.layer_index,
+            fine.fine_index,
             fine.slsw_theta,
             Some(thetdr),
             Some(Self::fine_layer_liquid_theta_capacity(layer)),
         )?;
-        let sltime_symbol = request
-            .and_then(|request| {
-                request.hot_state_grid_symbol(
-                    FROST_RUNTIME_FINE_SLTIME_S_ROOT,
-                    fine.layer_index,
-                    fine.fine_index,
-                )
-            })
-            .map_or_else(
-                || {
-                    Self::frost_fine_layer_symbol(
-                        FROST_RUNTIME_FINE_SLTIME_S_ROOT,
-                        fine.layer_index,
-                        fine.fine_index,
-                    )
-                },
-                |symbol| symbol.symbol.clone(),
-            );
-        Self::require_dynamic_state_range_for_symbol(
+        Self::require_frost_fine_state_range(
+            request,
             phase_class,
-            &sltime_symbol,
+            FROST_RUNTIME_FINE_SLTIME_S_ROOT,
+            fine.layer_index,
+            fine.fine_index,
             fine.sltime_s,
             Some(0.0),
             Some(FROST_RUNTIME_SECONDS_PER_HOUR),
         )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn require_frost_fine_state_range(
+        request: Option<&HillslopeKernelRequest<'_>>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol_root: &'static str,
+        layer_index: usize,
+        fine_index: usize,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if let Some(symbol) = request
+            .and_then(|request| request.hot_state_grid_symbol(symbol_root, layer_index, fine_index))
+            .map(|symbol| symbol.symbol.clone())
+        {
+            return Self::require_dynamic_state_range_for_symbol(
+                phase_class,
+                &symbol,
+                value,
+                minimum,
+                maximum,
+            );
+        }
+        if let Some(minimum_value) = minimum
+            && value < minimum_value - WB11_ZERO_THRESHOLD
+        {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: Self::frost_fine_layer_symbol(symbol_root, layer_index, fine_index),
+                value,
+                minimum,
+                maximum,
+            });
+        }
+        if let Some(maximum_value) = maximum
+            && value > maximum_value + WB11_ZERO_THRESHOLD
+        {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: Self::frost_fine_layer_symbol(symbol_root, layer_index, fine_index),
+                value,
+                minimum,
+                maximum,
+            });
+        }
+        Ok(())
     }
 
     fn read_or_default_shadow_fine_state(

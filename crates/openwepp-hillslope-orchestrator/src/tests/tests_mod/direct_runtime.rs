@@ -558,6 +558,68 @@ fn r6i_direct_frost_carry_projection_skips_inactive_frost_storage() {
 }
 
 #[test]
+fn r7h_followup_publication_layers_supersede_carried_layers() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity = DirectRunIdentity::new(18, 501, 1, 2)
+        .expect("valid direct publication identity should construct");
+    let mut frame =
+        DirectRunFrame::skeleton(identity).expect("direct frame should construct for capture");
+    frame.lanes[0].area_m2 = 100.0;
+
+    let process_projection = r6f_typed_process_projection();
+    let base_layer_inputs = r6f_typed_base_layer_inputs();
+    let mut first_day = r6f_typed_first_day(
+        DirectSubsurfaceLayerState::from(base_layer_inputs.clone()),
+        base_layer_inputs,
+        process_projection,
+    );
+    first_day.evapotranspiration_compute_inputs = Some(r6h_typed_evapotranspiration_inputs(0.0));
+
+    let mut replacement_layer_inputs = r6f_typed_base_layer_inputs();
+    replacement_layer_inputs.theta_m = 0.123;
+    let replacement_layer = DirectSubsurfaceLayerState::from(replacement_layer_inputs.clone());
+    let mut second_day = r6f_typed_calendar_day(2);
+    second_day.initial_soil_water_m = Some(replacement_layer.theta_m);
+    second_day.percolation_inputs = Some(DirectPercolationInputs {
+        soil_water_initial_m: replacement_layer.theta_m,
+        reconcile_legacy_soil_water_from_layers: false,
+        same_pass_infiltration_m: 0.0,
+        same_pass_infiltration_lineage: false,
+        tillage_depth_m: 0.0,
+        lane_substeps: 1,
+        restrictive_layer_enabled: false,
+        restrictive_layer_conductivity_m_s: 0.0,
+        restrictive_layer_thickness_m: 0.0,
+        layers: vec![replacement_layer],
+    });
+    second_day.subsurface_compute_inputs =
+        Some(r6f_typed_subsurface_inputs(replacement_layer_inputs));
+    second_day.evapotranspiration_compute_inputs = Some(r6h_typed_evapotranspiration_inputs(0.0));
+    second_day.hydrology_projection_inputs = Some(process_projection);
+
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "r7h_followup_publication_layers".to_string(),
+        runtime_selection: "direct-publication-frame-cutover-candidate".to_string(),
+        output_policy: "test".to_string(),
+    };
+
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+        .run_publication_capture_with_day_inputs(&mut frame, metadata, &[first_day, second_day])
+        .expect("typed direct publication capture should execute");
+
+    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
+    assert_eq!(
+        frame.lanes[0].subsurface_layers[0].theta_m.to_bits(),
+        0.123_f64.to_bits(),
+        "nonempty follow-up publication layers must not be overwritten by carried lane layers"
+    );
+}
+
+#[test]
 fn r7d5_erosion_active_publication_fails_closed_without_direct_sediment_producer() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
@@ -1060,6 +1122,7 @@ fn r6h_typed_evapotranspiration_inputs(
             plant_transpiration_m: 0.0,
             soil_evaporation_storage_return_m: 0.0,
         }),
+        pmet_compute: None,
     }
 }
 
@@ -1482,6 +1545,8 @@ fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
         cumulative_infiltration_m: 0.006,
         depression_storage_delta_m: 0.0005,
         surface_saturation_runoff_m: 0.0008,
+        frost_retained_local_liquid_m: 0.0,
+        frost_preprojected_local_liquid_m: 0.0,
     };
     day.percolation_inputs.soil_water_initial_m = 0.21;
     day.percolation_inputs.layers = vec![r7b_constructor_layer(0.18, 0.05, 0.40, 0.30, 0.0)];
@@ -1510,6 +1575,7 @@ fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
             plant_transpiration_m: 0.002,
             soil_evaporation_storage_return_m: 0.0004,
         }),
+        pmet_compute: None,
     };
     day.residue_partition_inputs = crate::DirectResiduePartitionInputs {
         standing_residue_kg_m2: 0.02,

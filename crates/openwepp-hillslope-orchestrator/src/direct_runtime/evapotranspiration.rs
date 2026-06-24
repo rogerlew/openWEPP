@@ -11,6 +11,214 @@ use super::{
     validate_nonnegative_direct_m,
 };
 
+#[derive(Debug, Clone)]
+struct R7hEtTraceConfig {
+    path: std::path::PathBuf,
+    exact_day_index: Option<usize>,
+    exact_lane_index: Option<usize>,
+}
+
+static R7H_ET_TRACE_CONFIG: std::sync::OnceLock<Option<R7hEtTraceConfig>> =
+    std::sync::OnceLock::new();
+
+fn r7h_et_trace_config() -> Option<&'static R7hEtTraceConfig> {
+    R7H_ET_TRACE_CONFIG
+        .get_or_init(|| {
+            let path = std::env::var_os("OPENWEPP_R7H_ET_TRACE_PATH")?;
+            if path.is_empty() {
+                return None;
+            }
+            Some(R7hEtTraceConfig {
+                path: std::path::PathBuf::from(path),
+                exact_day_index: r7h_et_trace_env_usize("OPENWEPP_R7H_ET_TRACE_DAY_INDEX"),
+                exact_lane_index: r7h_et_trace_env_usize("OPENWEPP_R7H_ET_TRACE_LANE_INDEX"),
+            })
+        })
+        .as_ref()
+}
+
+fn r7h_et_trace_env_usize(name: &str) -> Option<usize> {
+    let value = std::env::var(name).ok()?;
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    trimmed.parse::<usize>().ok()
+}
+
+fn r7h_et_trace_number(value: f64) -> String {
+    if value.is_finite() {
+        format!("{value:.17}")
+    } else {
+        "null".to_string()
+    }
+}
+
+fn r7h_et_trace_f64_array(values: impl IntoIterator<Item = f64>) -> String {
+    let mut output = String::from("[");
+    let mut first = true;
+    for value in values {
+        if !first {
+            output.push(',');
+        }
+        first = false;
+        output.push_str(&r7h_et_trace_number(value));
+    }
+    output.push(']');
+    output
+}
+
+#[allow(clippy::too_many_lines)]
+fn maybe_write_r7h_et_trace(day_frame: &DirectDayFrame) {
+    let Some(config) = r7h_et_trace_config() else {
+        return;
+    };
+    if let Some(exact_day_index) = config.exact_day_index
+        && day_frame.day_index != exact_day_index
+    {
+        return;
+    }
+    if let Some(exact_lane_index) = config.exact_lane_index
+        && day_frame.lane_index != exact_lane_index
+    {
+        return;
+    }
+
+    let inputs = day_frame.evapotranspiration_compute_inputs.clone();
+    let surface = &day_frame.evapotranspiration_surface;
+    let root = &day_frame.evapotranspiration_compute;
+    let mut line = String::new();
+    line.push('{');
+    line.push_str("\"schema\":\"openwepp-r7h-et-trace-v1\"");
+    line.push_str(",\"day_index\":");
+    line.push_str(&day_frame.day_index.to_string());
+    line.push_str(",\"lane_index\":");
+    line.push_str(&day_frame.lane_index.to_string());
+    line.push_str(",\"et_demand_m\":");
+    line.push_str(&r7h_et_trace_number(inputs.et_demand_m));
+    line.push_str(",\"root_depth_m\":");
+    line.push_str(&r7h_et_trace_number(inputs.root_depth_m));
+    line.push_str(",\"leaf_area_index\":");
+    line.push_str(&r7h_et_trace_number(inputs.leaf_area_index));
+    line.push_str(",\"canopy_cover_fraction\":");
+    line.push_str(&r7h_et_trace_number(inputs.canopy_cover_fraction));
+    line.push_str(",\"residue_interception_m\":");
+    line.push_str(&r7h_et_trace_number(inputs.residue_interception_m));
+    line.push_str(",\"plant_tolerance\":");
+    line.push_str(&r7h_et_trace_number(inputs.plant_tolerance));
+    line.push_str(",\"growth_input_vdmt_before_kg_m2\":");
+    line.push_str(&r7h_et_trace_number(
+        day_frame
+            .annual_growth_inputs
+            .state_before
+            .live_biomass_kg_m2,
+    ));
+    line.push_str(",\"growth_input_tlive_before_kg_m2\":");
+    line.push_str(&r7h_et_trace_number(
+        day_frame
+            .annual_growth_inputs
+            .state_before
+            .interception_live_biomass_kg_m2,
+    ));
+    line.push_str(",\"growth_input_hia_before\":");
+    line.push_str(&r7h_et_trace_number(
+        day_frame.annual_growth_inputs.state_before.harvest_index,
+    ));
+    line.push_str(",\"growth_output_vdmt_after_kg_m2\":");
+    line.push_str(&r7h_et_trace_number(
+        day_frame.annual_growth.state_after.live_biomass_kg_m2,
+    ));
+    line.push_str(",\"growth_output_tlive_after_kg_m2\":");
+    line.push_str(&r7h_et_trace_number(
+        day_frame
+            .annual_growth
+            .state_after
+            .interception_live_biomass_kg_m2,
+    ));
+    line.push_str(",\"growth_output_hia_after\":");
+    line.push_str(&r7h_et_trace_number(
+        day_frame.annual_growth.state_after.harvest_index,
+    ));
+    if let Some(pmet) = inputs.pmet {
+        line.push_str(",\"pmet_soil_evaporation_m\":");
+        line.push_str(&r7h_et_trace_number(pmet.soil_evaporation_m));
+        line.push_str(",\"pmet_plant_transpiration_m\":");
+        line.push_str(&r7h_et_trace_number(pmet.plant_transpiration_m));
+        line.push_str(",\"pmet_soil_evaporation_storage_return_m\":");
+        line.push_str(&r7h_et_trace_number(pmet.soil_evaporation_storage_return_m));
+    } else {
+        line.push_str(",\"pmet_soil_evaporation_m\":null");
+        line.push_str(",\"pmet_plant_transpiration_m\":null");
+        line.push_str(",\"pmet_soil_evaporation_storage_return_m\":null");
+    }
+    line.push_str(",\"surface_soil_water_before_m\":");
+    line.push_str(&r7h_et_trace_number(surface.soil_water_before_m));
+    line.push_str(",\"surface_soil_water_after_m\":");
+    line.push_str(&r7h_et_trace_number(surface.soil_water_after_soil_evap_m));
+    line.push_str(",\"root_soil_water_before_m\":");
+    line.push_str(&r7h_et_trace_number(root.soil_water_before_root_uptake_m));
+    line.push_str(",\"root_soil_water_after_m\":");
+    line.push_str(&r7h_et_trace_number(root.soil_water_after_m));
+    line.push_str(",\"soil_evaporation_m\":");
+    line.push_str(&r7h_et_trace_number(root.soil_evaporation_m));
+    line.push_str(",\"residue_evaporation_m\":");
+    line.push_str(&r7h_et_trace_number(root.residue_evaporation_m));
+    line.push_str(",\"plant_transpiration_m\":");
+    line.push_str(&r7h_et_trace_number(root.plant_transpiration_m));
+    line.push_str(",\"water_stress\":");
+    line.push_str(&r7h_et_trace_number(root.water_stress));
+    line.push_str(",\"uptake_potential_m\":");
+    line.push_str(&r7h_et_trace_number(root.uptake_potential_m));
+    line.push_str(",\"uptake_actual_m\":");
+    line.push_str(&r7h_et_trace_number(root.uptake_actual_m));
+    line.push_str(",\"surface_layer_theta_m\":");
+    line.push_str(&r7h_et_trace_f64_array(
+        surface
+            .layer_state_after_soil_evap
+            .iter()
+            .map(|layer| layer.theta_m),
+    ));
+    line.push_str(",\"root_layer_theta_m\":");
+    line.push_str(&r7h_et_trace_f64_array(
+        root.layer_state_after_root_uptake
+            .iter()
+            .map(|layer| layer.theta_m),
+    ));
+    line.push_str(",\"root_layer_upper_limit_m\":");
+    line.push_str(&r7h_et_trace_f64_array(
+        root.layer_state_after_root_uptake
+            .iter()
+            .map(|layer| layer.upper_limit_m),
+    ));
+    line.push_str(",\"root_layer_depth_m\":");
+    line.push_str(&r7h_et_trace_f64_array(
+        root.layer_state_after_root_uptake
+            .iter()
+            .map(|layer| layer.depth_m),
+    ));
+    line.push_str(",\"root_layer_uptake_potential_m\":");
+    line.push_str(&r7h_et_trace_f64_array(
+        root.layer_uptake_potential_m.iter().copied(),
+    ));
+    line.push_str(",\"root_layer_uptake_actual_m\":");
+    line.push_str(&r7h_et_trace_f64_array(
+        root.layer_uptake_actual_m.iter().copied(),
+    ));
+    line.push('}');
+    line.push('\n');
+
+    if let Some(parent) = config.path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&config.path)
+    {
+        let _ = std::io::Write::write_all(&mut file, line.as_bytes());
+    }
+}
+
 impl DirectDayFrame {
     pub fn run_r4n_surface_et_span(
         &mut self,
@@ -160,6 +368,7 @@ impl DirectDayFrame {
         self.evapotranspiration_compute_shadow_projection =
             Some(evapotranspiration_compute_shadow_projection.clone());
         DIRECT_AUDIT.record_shadow_projection();
+        maybe_write_r7h_et_trace(self);
 
         Ok(DirectEvapotranspirationComputeSpanReport {
             phase_count,
@@ -191,8 +400,13 @@ impl DirectDayFrame {
         let soil_water_before_m = percolation.soil_water_after_m;
         let mut stage_state_after = inputs.stage_state;
 
+        let computed_pmet = if let Some(pmet_compute) = &inputs.pmet_compute {
+            Some(pmet_compute.compute(&layers, inputs)?)
+        } else {
+            inputs.pmet
+        };
         let (soil_evaporation_with_residue_m, transpiration_demand_m, pmet_component_mode) =
-            if let Some(pmet) = inputs.pmet {
+            if let Some(pmet) = computed_pmet {
                 validate_pmet_inputs(pmet)?;
                 if let Some(top_layer) = layers.first_mut() {
                     top_layer.theta_m += pmet.soil_evaporation_storage_return_m;
@@ -455,7 +669,24 @@ pub struct DirectEvapotranspirationPmetInputs {
     pub soil_evaporation_storage_return_m: f64,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectEvapotranspirationPmetComputeInputs {
+    pub runtime_day_of_year: u16,
+    pub radiation_ly: f64,
+    pub wind_m_s: f64,
+    pub dew_point_c: f64,
+    pub temperature_max_c: f64,
+    pub temperature_min_c: f64,
+    pub latitude_degrees: f64,
+    pub elevation_m: f64,
+    pub kcb: f64,
+    pub rawp: f64,
+    pub canopy_height_m: f64,
+    pub radpot_ly: Option<f64>,
+    pub solthk_m: Vec<Option<f64>>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct DirectEvapotranspirationComputeInputs {
     pub et_demand_m: f64,
     pub leaf_area_index: f64,
@@ -468,11 +699,12 @@ pub struct DirectEvapotranspirationComputeInputs {
     pub growth_context_required: bool,
     pub stage_state: Option<DirectEvapotranspirationStageState>,
     pub pmet: Option<DirectEvapotranspirationPmetInputs>,
+    pub pmet_compute: Option<DirectEvapotranspirationPmetComputeInputs>,
 }
 
 impl DirectEvapotranspirationComputeInputs {
     #[must_use]
-    pub const fn zero() -> Self {
+    pub fn zero() -> Self {
         Self {
             et_demand_m: 0.0,
             leaf_area_index: 0.0,
@@ -485,8 +717,292 @@ impl DirectEvapotranspirationComputeInputs {
             growth_context_required: false,
             stage_state: None,
             pmet: None,
+            pmet_compute: None,
         }
     }
+}
+
+impl DirectEvapotranspirationPmetComputeInputs {
+    #[allow(clippy::manual_midpoint, clippy::similar_names, clippy::too_many_lines)]
+    fn compute(
+        &self,
+        layers: &[DirectSubsurfaceLayerState],
+        et: &DirectEvapotranspirationComputeInputs,
+    ) -> Result<DirectEvapotranspirationPmetInputs, DirectRuntimeError> {
+        validate_et_layers("pmet.layers", layers)?;
+        validate_pmet_runtime_day(self.runtime_day_of_year)?;
+        validate_nonnegative_direct_m("pmet.radiation_ly", self.radiation_ly)?;
+        validate_nonnegative_direct_m("pmet.wind_m_s", self.wind_m_s)?;
+        validate_finite("pmet.dew_point_c", self.dew_point_c)?;
+        validate_finite("pmet.temperature_max_c", self.temperature_max_c)?;
+        validate_finite("pmet.temperature_min_c", self.temperature_min_c)?;
+        validate_finite("pmet.latitude_degrees", self.latitude_degrees)?;
+        validate_finite("pmet.elevation_m", self.elevation_m)?;
+        validate_finite("pmet.kcb", self.kcb)?;
+        validate_finite("pmet.rawp", self.rawp)?;
+        validate_nonnegative_direct_m("pmet.canopy_height_m", self.canopy_height_m)?;
+        if let Some(radpot_ly) = self.radpot_ly {
+            validate_positive("pmet.radpot_ly", radpot_ly)?;
+        }
+        validate_nonnegative_direct_m("pmet.leaf_area_index", et.leaf_area_index)?;
+        validate_nonnegative_direct_m("pmet.root_depth_m", et.root_depth_m)?;
+
+        let tave = f64::midpoint(self.temperature_max_c, self.temperature_min_c);
+        let ed = pmet_saturation_vapor_pressure_kpa(self.dew_point_c);
+        let emaxt = pmet_saturation_vapor_pressure_kpa(self.temperature_max_c);
+        let emint = pmet_saturation_vapor_pressure_kpa(self.temperature_min_c);
+        let ee = f64::midpoint(emaxt, emint);
+        validate_positive("pmet.emaxt", emaxt)?;
+        let radpot = self.radpot_ly.unwrap_or_else(|| {
+            pmet_legacy_sunmap_horizontal_radpot_ly(
+                self.latitude_degrees,
+                f64::from(self.runtime_day_of_year),
+            )
+        });
+        validate_positive("pmet.radpot", radpot)?;
+
+        let ra = self.radiation_ly / 23.9;
+        let rso = radpot / 23.9;
+        let rbo = (0.34 - 0.14 * ed.sqrt())
+            * 4.9e-9
+            * (((self.temperature_max_c + 273.2).powi(4)
+                + (self.temperature_min_c + 273.2).powi(4))
+                / 2.0)
+            * (1.35 * (ra / rso) - 0.35);
+        let rn_mj_m2 = ra.mul_add(0.77, -rbo);
+        let fwv_m_s = self.wind_m_s * 4.87 / (67.8_f64.mul_add(10.0, -5.42)).ln();
+        let dlt =
+            4098.0 / ((tave + 237.3) * (tave + 237.3)) * pmet_saturation_vapor_pressure_kpa(tave);
+        let pressure_base = 1.0 - 0.0065 * self.elevation_m / 293.0;
+        validate_positive("pmet.pressure_base", pressure_base)?;
+        let pb = 101.3 * pressure_base.powf(5.26);
+        let gma = 0.000_665 * pb;
+        let denominator = dlt + gma * self.wind_m_s.mul_add(0.34, 1.0);
+        validate_positive("pmet.etorc_denominator", denominator)?;
+        let etorc_mm = (0.408 * dlt * rn_mj_m2
+            + gma * (900.0 / (tave + 273.0)) * (ee - ed) * fwv_m_s)
+            / denominator;
+        let rhd_pct = ed / emaxt * 100.0;
+        let height_factor = (self.canopy_height_m / 3.0).powf(0.3);
+        let kcbadj = if et.leaf_area_index > 0.0 && et.root_depth_m > 0.0 {
+            self.kcb + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor
+        } else {
+            0.0
+        };
+        let kcbcon = kcbadj * (1.0 - (-0.45 * et.leaf_area_index).exp());
+        let etke = if kcbadj > 0.0 {
+            kcbadj * (-0.45 * et.leaf_area_index).exp()
+        } else {
+            1.2
+        };
+
+        let profile_depth_m = pmet_profile_depth_m(layers)?;
+        let epdp_m = 0.1_f64.min(profile_depth_m);
+        let (tew_mm, rew_mm, wfevp_base_mm) = self.evaporation_storage_terms(layers, epdp_m)?;
+        let wfevp_mm = wfevp_base_mm + et.residue_interception_m * 1_000.0;
+        let etkr = if (tew_mm - wfevp_mm) <= rew_mm {
+            1.0
+        } else {
+            let denominator = tew_mm - rew_mm;
+            if denominator <= 0.0 {
+                1.0
+            } else {
+                (wfevp_mm / denominator).powi(2)
+            }
+        };
+        let tpdp_m = et.root_depth_m.min(profile_depth_m);
+        let (taw_mm, wftrp_mm) = self.transpiration_storage_terms(layers, tpdp_m, wfevp_mm)?;
+        let etcsc = kcbadj * etorc_mm;
+        let rawpaj = self.rawp + 0.04 * (5.0 - etcsc);
+        let raw_mm = rawpaj * taw_mm;
+        let etksden = taw_mm - raw_mm;
+        let etks = if etksden <= 0.0 || (taw_mm - wftrp_mm) <= raw_mm {
+            1.0
+        } else {
+            wftrp_mm / etksden
+        };
+        let potes_m = etorc_mm * etke * 0.001;
+        let es_raw_m = if potes_m > et.residue_interception_m {
+            let bpotes_m = potes_m - et.residue_interception_m;
+            let eaj = (-0.5 * (et.canopy_cover_fraction + 0.1)).exp();
+            let kcmax = 1.2 + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor;
+            let kecon = (etke * etkr).min(eaj * kcmax);
+            kecon * bpotes_m / etke + et.residue_interception_m
+        } else {
+            potes_m
+        };
+        let soil_evaporation_storage_return_m = if es_raw_m < 0.0 { -es_raw_m } else { 0.0 };
+        let soil_evaporation_m = es_raw_m.max(0.0);
+        let ep_raw_m = etorc_mm * etks * kcbcon * 0.001;
+        let plant_transpiration_m = ep_raw_m.max(0.0);
+        for (name, value) in [
+            ("pmet.etorc_mm", etorc_mm),
+            ("pmet.rn_mj_m2", rn_mj_m2),
+            ("pmet.fwv_m_s", fwv_m_s),
+            ("pmet.rhd_pct", rhd_pct),
+            ("pmet.kcbadj", kcbadj),
+            ("pmet.kcbcon", kcbcon),
+            ("pmet.etke", etke),
+            ("pmet.etkr", etkr),
+            ("pmet.etks", etks),
+            ("pmet.tew_mm", tew_mm),
+            ("pmet.rew_mm", rew_mm),
+            ("pmet.wfevp_mm", wfevp_mm),
+            ("pmet.taw_mm", taw_mm),
+            ("pmet.raw_mm", raw_mm),
+            ("pmet.wftrp_mm", wftrp_mm),
+            ("pmet.es_m", soil_evaporation_m),
+            (
+                "pmet.es_storage_return_m",
+                soil_evaporation_storage_return_m,
+            ),
+            ("pmet.ep_m", plant_transpiration_m),
+        ] {
+            validate_finite(name, value)?;
+        }
+        Ok(DirectEvapotranspirationPmetInputs {
+            soil_evaporation_m,
+            plant_transpiration_m,
+            soil_evaporation_storage_return_m,
+        })
+    }
+
+    fn evaporation_storage_terms(
+        &self,
+        layers: &[DirectSubsurfaceLayerState],
+        epdp_m: f64,
+    ) -> Result<(f64, f64, f64), DirectRuntimeError> {
+        let mut tew_mm = 0.0_f64;
+        let mut rew_mm = 0.0_f64;
+        let mut wfevp_mm = 0.0_f64;
+        let mut cumulative_depth_m = 0.0_f64;
+        for (offset, layer) in layers.iter().enumerate() {
+            let layer_index = offset + 1;
+            let solthk = self.solthk(layer_index, cumulative_depth_m, layer.depth_m)?;
+            let layer_fraction = if solthk <= epdp_m {
+                1.0
+            } else if cumulative_depth_m < epdp_m {
+                (epdp_m - cumulative_depth_m) / (solthk - cumulative_depth_m)
+            } else {
+                0.0
+            };
+            if layer.residual_theta > layer.field_capacity_theta {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "pmet.layer_residual_theta",
+                });
+            }
+            if layer_fraction > 0.0 {
+                tew_mm += (layer.field_capacity_theta - 0.5 * layer.residual_theta)
+                    * layer.depth_m
+                    * 1_000.0
+                    * layer_fraction;
+                rew_mm +=
+                    (layer.field_capacity_theta - layer.residual_theta) * layer.depth_m * 1_000.0
+                        / 3.0
+                        * layer_fraction;
+                wfevp_mm += layer.theta_m * 1_000.0 * layer_fraction;
+            }
+            cumulative_depth_m = solthk;
+            if cumulative_depth_m >= epdp_m {
+                break;
+            }
+        }
+        Ok((tew_mm, rew_mm, wfevp_mm))
+    }
+
+    fn transpiration_storage_terms(
+        &self,
+        layers: &[DirectSubsurfaceLayerState],
+        tpdp_m: f64,
+        wfevp_mm: f64,
+    ) -> Result<(f64, f64), DirectRuntimeError> {
+        let mut taw_mm = 0.0_f64;
+        let mut wftrp_mm = 0.0_f64;
+        let mut cumulative_depth_m = 0.0_f64;
+        for (offset, layer) in layers.iter().enumerate() {
+            let layer_index = offset + 1;
+            let solthk = self.solthk(layer_index, cumulative_depth_m, layer.depth_m)?;
+            if tpdp_m <= 0.0 {
+                break;
+            }
+            if solthk <= tpdp_m {
+                taw_mm +=
+                    (layer.field_capacity_theta - layer.residual_theta) * layer.depth_m * 1_000.0;
+                wftrp_mm += layer.theta_m * 1_000.0;
+            } else if cumulative_depth_m < tpdp_m {
+                let layer_span_m = solthk - cumulative_depth_m;
+                validate_positive("pmet.layer_span_m", layer_span_m)?;
+                let fraction = (tpdp_m - cumulative_depth_m) / layer_span_m;
+                taw_mm += (layer.field_capacity_theta - layer.residual_theta)
+                    * layer.depth_m
+                    * 1_000.0
+                    * fraction;
+                wftrp_mm = wfevp_mm + layer.theta_m * 1_000.0 * fraction;
+                break;
+            }
+            cumulative_depth_m = solthk;
+            if cumulative_depth_m >= tpdp_m {
+                break;
+            }
+        }
+        Ok((taw_mm, wftrp_mm))
+    }
+
+    fn solthk(
+        &self,
+        layer_index: usize,
+        cumulative_depth_m: f64,
+        depth_m: f64,
+    ) -> Result<f64, DirectRuntimeError> {
+        let solthk = self
+            .solthk_m
+            .get(layer_index - 1)
+            .and_then(|value| *value)
+            .unwrap_or(cumulative_depth_m + depth_m);
+        if solthk <= cumulative_depth_m {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "pmet.solthk_m",
+            });
+        }
+        Ok(solthk)
+    }
+}
+
+fn pmet_profile_depth_m(layers: &[DirectSubsurfaceLayerState]) -> Result<f64, DirectRuntimeError> {
+    let profile_depth_m = layers.iter().map(|layer| layer.depth_m).sum::<f64>();
+    validate_positive("pmet.profile_depth_m", profile_depth_m)?;
+    Ok(profile_depth_m)
+}
+
+fn validate_pmet_runtime_day(day: u16) -> Result<(), DirectRuntimeError> {
+    if (1..=366).contains(&day) {
+        Ok(())
+    } else {
+        Err(DirectRuntimeError::DirectDomainViolation {
+            field: "pmet.runtime_day_of_year",
+        })
+    }
+}
+
+fn pmet_saturation_vapor_pressure_kpa(temperature_c: f64) -> f64 {
+    0.6108 * (17.27 * temperature_c / (temperature_c + 237.3)).exp()
+}
+
+fn pmet_legacy_sunmap_horizontal_radpot_ly(latitude_degrees: f64, runtime_day: f64) -> f64 {
+    let pi = std::f64::consts::PI;
+    let radlat = latitude_degrees * pi / 180.0;
+    let declination = 0.00698 - 0.4067 * ((runtime_day + 10.0) * 0.0172).cos();
+    let earth_sun_distance_factor = 1.0 - 0.0167 * ((runtime_day - 3.0) * 0.0172).cos();
+    let radiation_factor = (60.0 * 1.94) / (earth_sun_distance_factor * earth_sun_distance_factor);
+    let sunset_argument = -(radlat.tan() * declination.tan()).clamp(-1.0, 1.0);
+    let sunset_angle = sunset_argument.acos();
+    radiation_factor
+        * ((declination.sin() * radlat.sin() * (sunset_angle - -sunset_angle) * 12.0 / pi)
+            + (declination.cos()
+                * radlat.cos()
+                * (sunset_angle.sin() - (-sunset_angle).sin())
+                * 12.0
+                / pi))
 }
 
 #[derive(Debug, Clone, PartialEq)]

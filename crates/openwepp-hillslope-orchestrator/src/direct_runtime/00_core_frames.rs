@@ -152,7 +152,9 @@ pub struct DirectLaneConstructorInputs {
     pub transfer: DirectTransferBuffers,
     pub publication: DirectPublicationFrame,
     pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
-    pub evapotranspiration_stage_state: Option<DirectEvapotranspirationStageState>,
+    pub evapotranspiration_stage_state: Option<Box<DirectEvapotranspirationStageState>>,
+    pub plant_growth_state: Box<DirectGrowthStateSurface>,
+    pub plant_water_stress: f64,
     pub winter_column: Box<DirectWinterColumnState>,
     pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
@@ -413,6 +415,8 @@ impl DirectLaneConstructorInputs {
             publication: DirectPublicationFrame::empty(),
             subsurface_layers: Vec::new(),
             evapotranspiration_stage_state: None,
+            plant_growth_state: Box::new(DirectGrowthStateSurface::zero()),
+            plant_water_stress: 1.0,
             winter_column: Box::new(DirectWinterColumnState::zero()),
             snow_runtime_carry: None,
             frost_runtime_carry: None,
@@ -448,6 +452,7 @@ pub struct DirectDayConstructorInputs {
     pub storage_reconciliation_inputs: DirectStorageReconciliationInputs,
     pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,
     pub erosion_inputs: DirectErosionInputs,
+    pub frost_storage_liquid_delta_m: Option<f64>,
     pub winter_frost_compute_inputs: Option<crate::hydrology::DirectWinterFrostComputeInputs>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
     pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
@@ -483,6 +488,7 @@ impl DirectDayConstructorInputs {
             storage_reconciliation_inputs: DirectStorageReconciliationInputs::zero(),
             hydrology_projection_inputs: DirectHydrologyProjectionInputs::zero(),
             erosion_inputs: DirectErosionInputs::zero(),
+            frost_storage_liquid_delta_m: None,
             winter_frost_compute_inputs: None,
             frost_layer_carry_projection: None,
             snow_runtime_carry: None,
@@ -597,7 +603,7 @@ impl DirectRunFrame {
                 .collect();
         }
         day_frame.evapotranspiration_compute_inputs.stage_state =
-            lane.evapotranspiration_stage_state;
+            lane.evapotranspiration_stage_state.as_deref().copied();
         day_frame.winter_column.clone_from(&lane.winter_column);
         day_frame.snow_runtime_carry =
             direct_snow_runtime_carry_from_winter_state(lane.winter_column.snow)
@@ -823,7 +829,9 @@ pub struct DirectLaneFrame {
     pub publication: DirectPublicationFrame,
     pub erosion_downstream_operands: DirectErosionDownstreamOperands,
     pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
-    pub evapotranspiration_stage_state: Option<DirectEvapotranspirationStageState>,
+    pub evapotranspiration_stage_state: Option<Box<DirectEvapotranspirationStageState>>,
+    pub plant_growth_state: Box<DirectGrowthStateSurface>,
+    pub plant_water_stress: f64,
     pub winter_column: Box<DirectWinterColumnState>,
     pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
@@ -858,6 +866,8 @@ impl DirectLaneFrame {
             erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             subsurface_layers: Vec::new(),
             evapotranspiration_stage_state: None,
+            plant_growth_state: Box::new(DirectGrowthStateSurface::zero()),
+            plant_water_stress: 1.0,
             winter_column: Box::new(DirectWinterColumnState::zero()),
             snow_runtime_carry: None,
             frost_runtime_carry: None,
@@ -901,6 +911,8 @@ impl DirectLaneFrame {
             erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             subsurface_layers: inputs.subsurface_layers,
             evapotranspiration_stage_state: inputs.evapotranspiration_stage_state,
+            plant_growth_state: inputs.plant_growth_state,
+            plant_water_stress: inputs.plant_water_stress,
             winter_column: Box::new(winter_column),
             snow_runtime_carry,
             frost_runtime_carry,
@@ -970,8 +982,16 @@ impl DirectLaneFrame {
                 )?;
             }
         }
-        self.evapotranspiration_stage_state =
-            day_frame.evapotranspiration_surface.stage_state_after;
+        self.evapotranspiration_stage_state = day_frame
+            .evapotranspiration_surface
+            .stage_state_after
+            .map(Box::new);
+        if day_frame.perennial_growth_inputs.active_context.is_active() {
+            *self.plant_growth_state = day_frame.perennial_growth.state_after;
+        } else if day_frame.annual_growth_inputs.active_context.is_active() {
+            *self.plant_growth_state = day_frame.annual_growth.state_after;
+        }
+        self.plant_water_stress = day_frame.evapotranspiration_compute.water_stress;
         self.winter_column.clone_from(&day_frame.winter_column);
         self.snow_runtime_carry =
             direct_snow_runtime_carry_from_winter_state(self.winter_column.snow)
@@ -1089,6 +1109,7 @@ pub struct DirectDayFrame {
     pub storage_reconciliation: DirectStorageReconciliationState,
     pub storage_downstream_operands: DirectStorageDownstreamOperands,
     pub storage_shadow_projection: Option<DirectStorageShadowProjection>,
+    pub frost_storage_liquid_delta_m: Option<f64>,
     pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,
     pub hydrology_projection: DirectHydrologyProjectionState,
     pub hydrology_projection_downstream_operands: DirectHydrologyProjectionDownstreamOperands,
@@ -1224,6 +1245,7 @@ impl DirectDayFrame {
             storage_reconciliation: DirectStorageReconciliationState::zero(),
             storage_downstream_operands: DirectStorageDownstreamOperands::zero(),
             storage_shadow_projection: None,
+            frost_storage_liquid_delta_m: None,
             hydrology_projection_inputs: DirectHydrologyProjectionInputs::zero(),
             hydrology_projection: DirectHydrologyProjectionState::zero(),
             hydrology_projection_downstream_operands:
@@ -1285,6 +1307,7 @@ impl DirectDayFrame {
         self.snow_coupling_inputs = inputs.snow_coupling_inputs;
         self.storage_reconciliation_inputs = inputs.storage_reconciliation_inputs;
         self.storage_reconciliation_inputs.interception_m = inputs.interception_m;
+        self.frost_storage_liquid_delta_m = inputs.frost_storage_liquid_delta_m;
         self.hydrology_projection_inputs = inputs.hydrology_projection_inputs;
         self.erosion_inputs = inputs.erosion_inputs;
         self.frost_layer_carry_projection = inputs.frost_layer_carry_projection;
@@ -1650,9 +1673,14 @@ fn validate_direct_lane_constructor_inputs(
     for layer in &inputs.subsurface_layers {
         validate_direct_subsurface_layer(layer)?;
     }
-    if let Some(stage) = inputs.evapotranspiration_stage_state {
+    if let Some(stage) = inputs.evapotranspiration_stage_state.as_deref().copied() {
         validate_direct_evapotranspiration_stage(stage)?;
     }
+    validate_direct_growth_state_surface(
+        "constructor.plant_growth_state",
+        *inputs.plant_growth_state,
+    )?;
+    validate_unit_interval("constructor.plant_water_stress", inputs.plant_water_stress)?;
     validate_direct_snow_lane_state("constructor.winter_column.snow", inputs.winter_column.snow)?;
     if let Some(carry) = inputs.snow_runtime_carry {
         validate_direct_snow_runtime_carry(carry)?;
@@ -1796,6 +1824,10 @@ fn validate_direct_day_constructor_inputs(
     validate_finite(
         "constructor.storage_reconciliation.frost_liquid_delta_m",
         inputs.storage_reconciliation_inputs.frost_liquid_delta_m,
+    )?;
+    validate_optional_finite_direct_m(
+        "constructor.frost_storage_liquid_delta_m",
+        inputs.frost_storage_liquid_delta_m,
     )?;
     validate_nonnegative_direct_m(
         "constructor.hydrology_projection.aggregate_storage_tolerance_m",
@@ -2147,6 +2179,20 @@ fn validate_direct_evapotranspiration_compute_inputs(
     Ok(())
 }
 
+fn validate_direct_growth_state_surface(
+    field_root: &'static str,
+    inputs: DirectGrowthStateSurface,
+) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m(field_root, inputs.sumgdd)?;
+    validate_nonnegative_direct_m(field_root, inputs.live_biomass_kg_m2)?;
+    validate_nonnegative_direct_m(field_root, inputs.interception_live_biomass_kg_m2)?;
+    validate_unit_interval(field_root, inputs.canopy_cover_fraction)?;
+    validate_nonnegative_direct_m(field_root, inputs.leaf_area_index)?;
+    validate_nonnegative_direct_m(field_root, inputs.root_mass_kg_m2)?;
+    validate_nonnegative_direct_m(field_root, inputs.root_depth_m)?;
+    validate_unit_interval(field_root, inputs.harvest_index)
+}
+
 fn validate_direct_water_state(inputs: &DirectWaterState) -> Result<(), DirectRuntimeError> {
     validate_nonnegative_direct_m("constructor.water.soil_water_m", inputs.soil_water_m)?;
     validate_nonnegative_direct_m("constructor.water.infiltration_m", inputs.infiltration_m)?;
@@ -2252,6 +2298,16 @@ fn validate_optional_nonnegative_direct_m(
 ) -> Result<(), DirectRuntimeError> {
     if let Some(value) = value {
         validate_nonnegative_direct_m(field, value)?;
+    }
+    Ok(())
+}
+
+fn validate_optional_finite_direct_m(
+    field: &'static str,
+    value: Option<f64>,
+) -> Result<(), DirectRuntimeError> {
+    if let Some(value) = value {
+        validate_finite(field, value)?;
     }
     Ok(())
 }

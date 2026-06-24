@@ -13,6 +13,13 @@
 
 State as of `2026-06-24`:
 
+- `20260624-r7h-iterative-completion-001/` is closed `OPT-IN` by operator
+  decision on 2026-06-24. It retained the R7H direct performance fix and
+  zero-compatibility evidence, left direct mode opt-in, and reclassified the
+  remaining typed-frost vs compatibility divergence under reopened
+  `GAP-SNOWFREEZE-002`. Do not resume R7H frost-vs-compatibility bit-parity
+  from this package; the successor work is a frost-depth fidelity DC validated
+  against historic observations.
 - `20260624-r7h-closure-activation-gates-001/` is executed-held at
   `HOLD-R7H-H2637-DIRECT-PERFORMANCE-AND-PROTECTED-PARITY`. It executed the
   ADR-0026 "Closure and activation gates" step after consumer cutover/deletion,

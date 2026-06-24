@@ -214,10 +214,14 @@ fn r7g_frost_trace_usize_array(values: impl IntoIterator<Item = usize>) -> Strin
 
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn maybe_write_r7g_frost_trace(
-    request: &HillslopeKernelRequest<'_>,
+    phase_name: &str,
+    day: Option<f64>,
+    year: Option<f64>,
     prior: ActiveFrostPriorContext,
     profile: ActiveFrostProfileShadowContext,
     thermal: ActiveFrostThermalContext,
+    tmpadj: ActiveFrostTmpadjContext,
+    hourly_forcing: &[DirectFrostHourlyForcing; SIMIMPL29_HOURS_PER_DAY],
     prior_shadow: &FrostFineShadowState,
     hourly_state: &[FrostHourlyState; SIMIMPL29_HOURS_PER_DAY],
     outcome: &FrostCouplingOutcome,
@@ -226,8 +230,6 @@ fn maybe_write_r7g_frost_trace(
     let Some(config) = r7g_frost_trace_config() else {
         return;
     };
-    let day = SelfLikeTrace::state_scalar(request, PL_RUNTIME_DAY_SYMBOL);
-    let year = SelfLikeTrace::state_scalar(request, "year");
     if !r7g_frost_trace_matches_filter(config, day, year) {
         return;
     }
@@ -242,7 +244,7 @@ fn maybe_write_r7g_frost_trace(
     line.push('{');
     line.push_str("\"schema\":\"openwepp-r7g-frost-trace-v1\"");
     line.push_str(",\"phase\":");
-    line.push_str(&r7g_json_string(request.phase_name));
+    line.push_str(&r7g_json_string(phase_name));
     line.push_str(",\"day\":");
     line.push_str(&r7g_frost_trace_optional_number(day));
     line.push_str(",\"year\":");
@@ -271,6 +273,16 @@ fn maybe_write_r7g_frost_trace(
     line.push_str(&r7g_frost_trace_number(thermal.snow_conductivity_w_m_k));
     line.push_str(",\"residue_depth_m\":");
     line.push_str(&r7g_frost_trace_number(thermal.residue_depth_m));
+    line.push_str(",\"wind_m_s\":");
+    line.push_str(&r7g_frost_trace_number(tmpadj.wind_m_s));
+    line.push_str(",\"albedo\":");
+    line.push_str(&r7g_frost_trace_number(tmpadj.albedo));
+    line.push_str(",\"canopy_height_m\":");
+    line.push_str(&r7g_frost_trace_number(tmpadj.canopy_height_m));
+    line.push_str(",\"random_roughness_m\":");
+    line.push_str(&r7g_frost_trace_number(tmpadj.random_roughness_m));
+    line.push_str(",\"kfactor_selected\":");
+    line.push_str(&r7g_frost_trace_number(thermal.kfactor_selected));
     line.push_str(",\"final_frdp_m\":");
     line.push_str(&r7g_frost_trace_number(final_depth.frdp));
     line.push_str(",\"final_thdp_m\":");
@@ -285,6 +297,54 @@ fn maybe_write_r7g_frost_trace(
     line.push_str(&r7g_frost_trace_number(outcome.frwatc_freeze_debit));
     line.push_str(",\"frwatc_net_liquid_delta_m\":");
     line.push_str(&r7g_frost_trace_number(outcome.frwatc_net_liquid_delta));
+    line.push_str(",\"final_layer_theta_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        outcome
+            .layer_topology_state
+            .iter()
+            .map(|layer| layer.theta_after_m),
+    ));
+    line.push_str(",\"final_layer_frozen_depth_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        outcome
+            .layer_topology_state
+            .iter()
+            .map(|layer| layer.frozen_depth_m),
+    ));
+    line.push_str(",\"final_layer_frozen_water_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        outcome.layer_topology_state.iter().map(|layer| layer.frzw_m),
+    ));
+    line.push_str(",\"shadow_layer_soil_water_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        outcome
+            .shadow_layer_state
+            .iter()
+            .map(|layer| layer.soil_water_m),
+    ));
+    line.push_str(",\"shadow_layer_frozen_depth_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        outcome
+            .shadow_layer_state
+            .iter()
+            .map(|layer| layer.frozen_depth_m),
+    ));
+    line.push_str(",\"shadow_layer_frozen_water_m\":");
+    line.push_str(&r7g_frost_trace_array(
+        outcome.shadow_layer_state.iter().map(|layer| layer.frzw_m),
+    ));
+    line.push_str(",\"hour_radiation_mj_m2\":");
+    line.push_str(&r7g_frost_trace_array(
+        hourly_forcing.iter().map(|hourly| hourly.radiation_mj_m2),
+    ));
+    line.push_str(",\"hour_air_temperature_c\":");
+    line.push_str(&r7g_frost_trace_array(
+        hourly_forcing.iter().map(|hourly| hourly.air_temperature_c),
+    ));
+    line.push_str(",\"hour_cloud_fraction\":");
+    line.push_str(&r7g_frost_trace_array(
+        hourly_forcing.iter().map(|hourly| hourly.cloud_fraction),
+    ));
     line.push_str(",\"hour_frzflg\":");
     line.push_str(&r7g_frost_trace_array(
         hourly_state.iter().map(|hourly| hourly.frzflg),
@@ -2537,6 +2597,7 @@ impl Wb11HydrologyKernel {
         ))
     }
 
+    #[allow(clippy::too_many_lines)]
     pub(crate) fn compute_active_frost_coupling_from_typed(
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveFrostPartitionInputs,
@@ -2576,7 +2637,7 @@ impl Wb11HydrologyKernel {
                 controls.ksoilf,
             )?
         {
-            return Self::no_freeze_active_frost_outcome(
+            let outcome = Self::no_freeze_active_frost_outcome(
                 phase_class,
                 &inputs.hourly,
                 tmpadj,
@@ -2587,7 +2648,23 @@ impl Wb11HydrologyKernel {
                 total_fine_layer_count,
                 &layer_water_state,
                 &prior_shadow_fine_state,
+            )?;
+            let hourly_state = outcome.hourly_state;
+            maybe_write_r7g_frost_trace(
+                "direct-typed-active-frost",
+                Some(thermal_context.sdate),
+                None,
+                prior_context,
+                profile_shadow_context,
+                thermal_context,
+                tmpadj,
+                &inputs.hourly,
+                &prior_shadow_fine_state,
+                &hourly_state,
+                &outcome,
+                true,
             );
+            return Ok(outcome);
         }
         let hourly_context = ActiveFrostHourlyContext {
             phase_class,
@@ -2612,16 +2689,32 @@ impl Wb11HydrologyKernel {
             freeze_started,
             fgthwd_flag,
         };
-        Self::finalize_active_frost_coupling(
+        let outcome = Self::finalize_active_frost_coupling(
             None,
             completion_context,
             shadow_fine_state,
             &hourly_state,
             layer_water_state,
             total_fine_layer_count,
-        )
+        )?;
+        maybe_write_r7g_frost_trace(
+            "direct-typed-active-frost",
+            Some(thermal_context.sdate),
+            None,
+            prior_context,
+            profile_shadow_context,
+            thermal_context,
+            tmpadj,
+            &inputs.hourly,
+            &prior_shadow_fine_state,
+            &hourly_state,
+            &outcome,
+            false,
+        );
+        Ok(outcome)
     }
 
+    #[allow(clippy::too_many_lines)]
     pub(crate) fn compute_active_frost_coupling(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
@@ -2671,11 +2764,17 @@ impl Wb11HydrologyKernel {
                 &prior_shadow_fine_state,
             )?;
             let hourly_state = outcome.hourly_state;
+            let day = SelfLikeTrace::state_scalar(request, PL_RUNTIME_DAY_SYMBOL);
+            let year = SelfLikeTrace::state_scalar(request, "year");
             maybe_write_r7g_frost_trace(
-                request,
+                request.phase_name,
+                day,
+                year,
                 prior_context,
                 profile_shadow_context,
                 thermal_context,
+                tmpadj,
+                &hourly_forcing,
                 &prior_shadow_fine_state,
                 &hourly_state,
                 &outcome,
@@ -2714,11 +2813,17 @@ impl Wb11HydrologyKernel {
             layer_water_state,
             total_fine_layer_count,
         )?;
+        let day = SelfLikeTrace::state_scalar(request, PL_RUNTIME_DAY_SYMBOL);
+        let year = SelfLikeTrace::state_scalar(request, "year");
         maybe_write_r7g_frost_trace(
-            request,
+            request.phase_name,
+            day,
+            year,
             prior_context,
             profile_shadow_context,
             thermal_context,
+            tmpadj,
+            &hourly_forcing,
             &prior_shadow_fine_state,
             &hourly_state,
             &outcome,

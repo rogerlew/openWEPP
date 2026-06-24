@@ -351,7 +351,8 @@ impl DirectFrameExecutor {
             day_frame.peak_runoff_inputs = peak_runoff_inputs.clone();
         }
         Self::apply_publication_subsurface_input(day_frame, day_input)?;
-        if let Some(evapotranspiration_compute_inputs) = day_input.evapotranspiration_compute_inputs
+        if let Some(evapotranspiration_compute_inputs) =
+            day_input.evapotranspiration_compute_inputs.clone()
         {
             let mut evapotranspiration_compute_inputs = evapotranspiration_compute_inputs;
             if evapotranspiration_compute_inputs.stage_state.is_none() {
@@ -359,6 +360,12 @@ impl DirectFrameExecutor {
                     day_frame.evapotranspiration_compute_inputs.stage_state;
             }
             day_frame.evapotranspiration_compute_inputs = evapotranspiration_compute_inputs;
+        }
+        if let Some(annual_growth_inputs) = day_input.annual_growth_inputs {
+            day_frame.annual_growth_inputs = annual_growth_inputs;
+        }
+        if let Some(perennial_growth_inputs) = day_input.perennial_growth_inputs {
+            day_frame.perennial_growth_inputs = perennial_growth_inputs;
         }
         if let Some(snow_coupling_inputs) = day_input.snow_coupling_inputs {
             day_frame.snow_coupling_inputs = snow_coupling_inputs;
@@ -368,6 +375,13 @@ impl DirectFrameExecutor {
         }
         if let Some(erosion_inputs) = &day_input.erosion_inputs {
             day_frame.erosion_inputs = erosion_inputs.clone();
+        }
+        if let Some(frost_storage_liquid_delta_m) = day_input.frost_storage_liquid_delta_m {
+            validate_finite(
+                "publication_input.frost_storage_liquid_delta_m",
+                frost_storage_liquid_delta_m,
+            )?;
+            day_frame.frost_storage_liquid_delta_m = Some(frost_storage_liquid_delta_m);
         }
         day_frame
             .frost_layer_carry_projection
@@ -389,17 +403,16 @@ impl DirectFrameExecutor {
         };
         let mut percolation_inputs = percolation_inputs.clone();
         if day_frame.day_index > 0 && !day_frame.percolation_inputs.layers.is_empty() {
-            if !percolation_inputs.layers.is_empty()
-                && percolation_inputs.layers.len() != day_frame.percolation_inputs.layers.len()
-            {
+            if percolation_inputs.layers.is_empty() {
+                percolation_inputs
+                    .layers
+                    .clone_from(&day_frame.percolation_inputs.layers);
+                percolation_inputs.soil_water_initial_m = day_frame.water.soil_water_m;
+            } else if percolation_inputs.layers.len() != day_frame.percolation_inputs.layers.len() {
                 return Err(DirectRuntimeError::DirectDomainViolation {
                     field: "publication_input.percolation_layers",
                 });
             }
-            percolation_inputs
-                .layers
-                .clone_from(&day_frame.percolation_inputs.layers);
-            percolation_inputs.soil_water_initial_m = day_frame.water.soil_water_m;
         } else if percolation_inputs.layers.is_empty() {
             percolation_inputs
                 .layers
@@ -419,17 +432,17 @@ impl DirectFrameExecutor {
         };
         let mut subsurface_compute_inputs = subsurface_compute_inputs.clone();
         if day_frame.day_index > 0 && !day_frame.subsurface_compute_inputs.layers.is_empty() {
-            if !subsurface_compute_inputs.layers.is_empty()
-                && subsurface_compute_inputs.layers.len()
-                    != day_frame.subsurface_compute_inputs.layers.len()
+            if subsurface_compute_inputs.layers.is_empty() {
+                subsurface_compute_inputs
+                    .layers
+                    .clone_from(&day_frame.subsurface_compute_inputs.layers);
+            } else if subsurface_compute_inputs.layers.len()
+                != day_frame.subsurface_compute_inputs.layers.len()
             {
                 return Err(DirectRuntimeError::DirectDomainViolation {
                     field: "publication_input.subsurface_layers",
                 });
             }
-            subsurface_compute_inputs
-                .layers
-                .clone_from(&day_frame.subsurface_compute_inputs.layers);
         } else if subsurface_compute_inputs.layers.is_empty() {
             subsurface_compute_inputs
                 .layers
@@ -629,6 +642,8 @@ impl DirectFrameExecutor {
         record_direct_span_report!(counters, day_frame.run_r4k_infiltration_depression_span());
         record_direct_span_report!(counters, day_frame.run_r4m_percolation_span());
         record_direct_span_report!(counters, day_frame.run_r4n_surface_et_span());
+        day_frame
+            .project_r4x_winter_local_liquid_before_saturation(winter_frost_compute_inputs)?;
         record_direct_span_report!(counters, day_frame.run_r4o_subsurface_compute_span());
         record_direct_span_report!(counters, day_frame.run_r4n_root_uptake_span());
         record_direct_span_report!(counters, day_frame.run_r4g_snow_coupling_span());

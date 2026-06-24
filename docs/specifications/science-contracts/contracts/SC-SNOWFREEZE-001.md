@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 69
+contract_version: 71
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Infiltration/runoff partition consumers affected by frozen-soil state
   - Soil/erosion coupling consumers requiring freeze-thaw context
 evidence_level: static
-last_reviewed: 2026-06-12
+last_reviewed: 2026-06-24
 supersedes: []
 superseded_by: []
 ---
@@ -72,6 +72,7 @@ Out of scope:
 | REF-SNOWFREEZE-LEGACY-WB13-RM-SNOW | `/workdir/wepp-forest_260430_baseline/src/contin.for:847-880`, `/workdir/wepp-forest_260430_baseline/src/watbalprint.for:84-106`, and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1082-1142`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | WB13 snow-related publication consumes post-winter `rain(iplane)`, daily `wmelt(iplane)`, and snowpack storage `snodpy(iplane)*densg(iplane)` rather than reconstructing `RM` from raw precipitation and SWE delta. | `[DIRECT][Static]` |
 | REF-SNOWFREEZE-LEGACY-WNTTIM-MIN | `/workdir/wepp-forest_260430_baseline/src/winter.for:206-235`, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-95`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline precipitation-phase start-time authority for snow/freeze forcing: finite `wnttim < 1.0` is normalized to `1.0` before `stmtim` active membership and rain/snow branch selection. | `[DIRECT][Static]` |
 | REF-SNOWFREEZE-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative snow depth/water and bounded densities are required for physical validity. | `[INFERENCE][Static]` |
+| REF-SNOWFREEZE-FROST-OBS | `tests/fixtures/snowfreeze_observed/` (five WEPP hillslope fixtures + per-site manifests) and the historic frost-depth observation corpus they bind: USGS Sleepers River (`DOI 10.5066/P96753GI`, frost tube + paired snow depth), NRCS SCAN soil temperature (`stationTriplets=2020:ND:SCAN`, derived `0 degC` isotherm), NSIDC GGD498 Midwest frost tubes (`DOI 10.7265/1mcs-q536`), USDA-ARS Reynolds Creek soil temperature (CC-BY), and the WEPP-lineage Dun et al. 2010 Pullman/Morris frost validation (`doi:10.13031/2013.34896`, request-only). | External-authority frost-depth observations under ADR-0017 (legacy/compatibility frost output is a flag, not the acceptance target). | `[DIRECT][Static]` |
 
 ## Variables and Units
 
@@ -185,6 +186,7 @@ Out of scope:
 | INV-SNOWFREEZE-044 | HPHYS0318 `stmtim` control-surface trace invariant: the combined `57` carried rows remain one ADR0017 `UNRESOLVED` route unless paired fixed-baseline/openWEPP `stmtim` control surfaces are present at the 2013 day 11 hour 11 key. OpenWEPP must publish trace maps for `rain`, `stmdur`, rounded `wntdur`, adjusted `wnttim`, `hrtemp`, `rst`, `hrrain`, `hrsnow`, active interval membership, rain branch, and snow branch via `snow.hourly.stmtim.*_####`; those maps are observability for the existing SIMIMPL28 partition result, not a snow-producer correction. If fixed-baseline paired observe values remain unavailable after OpenWEPP instrumentation, the route stays `paired-fixed-baseline-stmtim-observe-hold`, and snow producer, drift, melt-term, branch-predicate, WB13, WB17, WB18, WB19, or WB12 edits remain invalid. | governance-hold | INV-SNOWFREEZE-043, SC-CLIMATE-001#INV-CLIMATE-016, SC-WATBAL-001#INV-WATBAL-092, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-95` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-045 | HPHYS0319 fixed-baseline `stmtim` observe recovery invariant: snow/freeze continuation must recover fixed-baseline H1/H7/H39 2013 day 11 hour 11 `stmtim` observe values for `rain`, `stmdur`, rounded `wntdur`, adjusted `wnttim`, `hrtemp`, `rst`, `hrrain`, `hrsnow`, active interval membership, rain branch, and snow branch from the pinned baseline commit before assigning snow producer ownership. The paired ledger must compare those fixed-baseline values to regenerated OpenWEPP `snow.hourly.stmtim.*_0011` diagnostics, preserve the combined `57` carried rows, and distinguish absent/extra active interval, rain-vs-snow branch, and value-magnitude deltas. Temporary observe-only Fortran instrumentation is diagnostic evidence only and must be patch-recorded against source lines; it does not replace canonical `SC-*` authority or prove equations by itself. If the ledger does not establish same-unit same-lineage source-line-owned OpenWEPP defect authority plus independent correctness authority, the route remains ADR0017 `UNRESOLVED`/`HOLD`, and snow producer, drift, melt-term, branch-predicate, WB13, WB17, WB18, WB19, or WB12 edits remain invalid. | governance-hold | INV-SNOWFREEZE-044, SC-CLIMATE-001#INV-CLIMATE-017, SC-WATBAL-001#INV-WATBAL-093, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-95`, `/workdir/wepp-forest_260430_baseline/src/winter.for:292-300`, `/workdir/wepp-forest_260430_baseline/src/wepp_observe.for` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-046 | HPHYS0320 `stmtim` start-time snow/freeze closure invariant: snow/freeze producer ownership for the combined `57` carried rows is source-line proven when OpenWEPP SIMIMPL28 normalizes finite `wnttim < 1.0` to `1.0` before `stmtim` active interval and branch selection, matching pinned-baseline `winter.for:206-235`. For H1/H7/H39 2013 day 11 hour 11 this closes the active-interval and snow-branch divergence (`wntdur = 11`, `wnttim = 1`, active interval `1`, snow branch `1`, `hrsnow ~= 0.00074545 m`) when paired rerun evidence matches HPHYS0319 fixed-baseline observe values. Snow drift, melt-term, WB13, WB17, WB18, WB19, or WB12 compensation remains invalid for this route unless residual paired evidence proves a different source lane. | hard-fail | REF-SNOWFREEZE-LEGACY-WNTTIM-MIN, SC-CLIMATE-001#INV-CLIMATE-018, SC-WATBAL-001#INV-WATBAL-094 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-047 | Frost-depth observation-validation correspondence invariant (`GAP-SNOWFREEZE-002`; draft): modeled frost-front depth `frdp` is validated against historic site observations as an external authority (ADR-0017 - observation agreement is the acceptance target; legacy/compatibility frost output is only a flag). The observation-to-`frdp` correspondence is fixed by measurement method and must not be conflated: (a) frost-tube depth (the frozen/unfrozen free-water boundary) is the magnitude authority and compares to `frdp` directly within `TOL-SNOWFREEZE-007`; (b) soil-temperature `0 degC`-isotherm depth is a timing authority and an upper bound on `frdp` (the soil ice front is shallower than the `0 degC` isotherm by the freezing-point-depression band), validated for onset/thaw timing and frozen duration within `TOL-SNOWFREEZE-008` and for magnitude only as `frdp <= isotherm_depth + TOL-SNOWFREEZE-007`; (c) penetrometer/mechanical-resistance depth is method-dependent and is secondary/non-authoritative for magnitude. A frost-depth divergence may be classified `OPENWEPP-DEFECTIVE` only when all hold: (1) modeled snow depth agrees with paired observed snow depth within `TOL-SNOWFREEZE-009` so the snow-insulation confound is controlled; (2) the comparison is like-for-like by method per (a)-(c); (3) censoring is honored - left-censored onset (frost-tube observers begin at 1-2 in of frost) is excluded from onset-timing error and right-censored sensor-depth caps (e.g. SCAN ~1.0 m) are excluded from magnitude error; and (4) the divergence exceeds the tier tolerance over a defined aggregation (seasonal-maximum depth and the observation-date depth series). Divergences failing (1)-(3) are `HARNESS-SURFACE-MISMATCH` or `UNRESOLVED`, never silently a model defect. This invariant validates fidelity only; it does not relax the `INV-SNOWFREEZE-006` heat-flow formulation authority, and every tolerance is provisional pending hydrology-reviewer ratification and the first validation pass. | governance-hold | REF-SNOWFREEZE-FROST-OBS, INV-SNOWFREEZE-006, INV-SNOWFREEZE-012, ADR-0017, TOL-SNOWFREEZE-007, TOL-SNOWFREEZE-008, TOL-SNOWFREEZE-009 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Porting-Fidelity Authority
 
@@ -488,6 +490,9 @@ parity). Contract-specific interpretation tolerances:
 | TOL-SNOWFREEZE-004 | Zero-depth/zero-density closure tolerance | If `Dsnew <= 1e-12 m`, require `ρsnew <= 1e-9 kg m^-3` | Prevents false closure from product-only checks that can mask invalid nonzero density. |
 | TOL-SNOWFREEZE-005 | Frost heat-flow equation residual tolerance for iterative closure diagnostics | `<= 1e-8` in routine-native flux units | Diagnostic/comparator aid; not a silent runtime correction mechanism. |
 | TOL-SNOWFREEZE-006 | Stage-1 snow storage closure tolerance | `1e-9 m` water equivalent per daily snow coupling step | Runtime conservation gate for `old SWE + snowfall water equivalent + retained rain - new SWE - routed snowpack melt`; violations are typed errors, not hidden clamps. |
+| TOL-SNOWFREEZE-007 | Frost-depth magnitude acceptance band (frost-tube authority; `INV-SNOWFREEZE-047`) | provisional: greater of `0.10 m` or `25 %` of observed seasonal-maximum depth | DRAFT validation band (not a comparator FP tolerance). To be calibrated from the first `tests/fixtures/snowfreeze_observed/` validation pass and ratified by the hydrology reviewer; bounded below by frost-tube read/registration uncertainty. |
+| TOL-SNOWFREEZE-008 | Frost onset/thaw timing and frozen-duration acceptance band (`INV-SNOWFREEZE-047`) | provisional: `+/- 14 days` | DRAFT. Bounded by observation cadence (frost tubes/penetrometer read 2-4x/month to biweekly), so sub-fortnight timing is unresolvable from the data; not a runtime tolerance. |
+| TOL-SNOWFREEZE-009 | Snow-insulation confound-control band for attributing a frost-depth divergence (`INV-SNOWFREEZE-047`) | provisional: paired modeled-vs-observed snow depth within greater of `0.10 m` or `30 %` | DRAFT. Beyond this band the frost-depth comparison is inconclusive (snow-driven), not a frost-model verdict; snow depth and density, not SWE, govern insulation. |
 
 ## CLIM05 Parsed Snow-Control Runtime Coupling Addendum
 
@@ -998,12 +1003,82 @@ to about `0.76`, and forced-snow frozen-duration residual collapsed from
 a millimetre target; the stable upper-envelope outlier set is a characterized
 handoff rather than an authorization for comparator tuning.
 
+## GAP-SNOWFREEZE-002 Frost-Depth Observation Validation Addendum
+
+Status: draft (2026-06-24). This addendum scopes the observation-anchored
+validation method reopened by `GAP-SNOWFREEZE-002` and bound by
+`INV-SNOWFREEZE-047`. It changes no physics; `INV-SNOWFREEZE-006` remains the
+frost heat-flow formulation authority. All tolerances are provisional pending
+hydrology-reviewer ratification and the first validation pass.
+
+### Why observations, not legacy
+
+FDHP01 closed `GAP-SNOWFREEZE-002` at the ADR-0017 conservation/activation
+boundary: frost-depth timing/shape improved (depth correlation ~`0.76`,
+frozen-duration residual `+61` days) but absolute frost-depth magnitude was never
+closed to a physical envelope and was held as a comparator flag. Under ADR-0017
+the legacy binary is a flag, not an acceptance oracle, so the missing authority
+is external. This addendum supplies it: measured frost depth at instrumented
+sites, modeled with the same WEPP hillslope inputs the operator builds through
+wepp.cloud.
+
+### Validation substrate
+
+The pilot substrate is `tests/fixtures/snowfreeze_observed/` (see its `README.md`
+and per-site `manifest.md`): five single-hillslope WEPP input sets with frost
+enabled (`ksflag = 1`), spanning agricultural + forest + rangeland and
+frost-tube + soil-temperature authorities, each modeled centroid matched to an
+observation site. Observed series are fetched from the datasets in
+`REF-SNOWFREEZE-FROST-OBS`; they are not stored in-repo.
+
+### Measurement correspondence (binding under `INV-SNOWFREEZE-047`)
+
+| Observation method | Pilot sites | Relation to model `frdp` | Authority role |
+|---|---|---|---|
+| Frost tube (frozen/unfrozen free-water boundary) | Sleepers River, GGD498 Morris | Closest field analog to the ice front; direct comparison to `frdp` | Magnitude (`TOL-SNOWFREEZE-007`) |
+| Soil-temperature `0 degC` isotherm | SCAN Mandan, Reynolds Creek | Deeper than the ice front by freezing-point depression; `frdp <= isotherm + TOL` | Timing/duration (`TOL-SNOWFREEZE-008`); magnitude upper-bound only |
+| Penetrometer / mechanical resistance | (Marcell; not in pilot) | Method-dependent | Secondary; non-authoritative for magnitude |
+
+Conflating these definitions manufactures a false model error - a `0 degC`-isotherm
+target makes a correct ice front read as too shallow. The correspondence is a
+contract decision, fixed here before any divergence is adjudicated.
+
+### Required validation obligations
+
+1. Compare modeled `frdp` to observed depth only like-for-like by method.
+2. Gate every magnitude/timing verdict on snow-insulation control
+   (`TOL-SNOWFREEZE-009`): when modeled snow depth diverges from paired observed
+   snow beyond the band, the frost comparison is inconclusive, not a frost
+   verdict. Snow depth and density (not SWE) govern insulation.
+3. Honor censoring: exclude left-censored onset (observers begin at 1-2 in) from
+   onset-timing error; exclude right-censored sensor-depth caps from magnitude
+   error.
+4. Aggregate over both seasonal-maximum depth and the observation-date depth
+   series; do not reduce to a single annual scalar.
+5. Apply the ADR-0017 verdict taxonomy (`HARNESS-SURFACE-MISMATCH`,
+   `LEGACY-DEFECTIVE`, `OPENWEPP-DEFECTIVE`, `UNRESOLVED`); `OPENWEPP-DEFECTIVE`
+   additionally requires independent correctness authority (conservation/energy
+   balance or documented WEPP reference equations), not observation disagreement
+   alone.
+
+### Open items for ratification
+
+- Calibrate `TOL-SNOWFREEZE-007/008/009` from the first validation pass.
+- Characterize the frost-tube-vs-ice-front bias rather than assuming it is zero
+  (free water in the tube freezes near `0 degC`; the residual offset to the matric
+  ice front is expected small but unmeasured).
+- Decide whether to acquire the request-only Dun-2010 Pullman/Morris series to
+  anchor the WEPP-lineage agricultural tier directly (Site 4 GGD498 is the public
+  ~11 km bridge in the interim).
+- Resolve the per-site climate caveats in the manifests (Site 4 observation
+  period vs DAYMET availability; Site 5 CLIGEN-station-to-hillslope lapse).
+
 ## Known Gaps
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-SNOWFREEZE-001 | Per-invariant comparator vectors for hourly winter outputs (`hrmelt`, frost depth/thaw depth, freeze-thaw cycles) are not yet curated. | Limits immediate automated regression depth on hourly-heavy winter internals. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-SNOWFREEZE-002 | Closed by FDHP01 Increment Dk at the declared single-OFE ADR-0017 boundary. The D2 layered-store continuation, fine-layer freeze/thaw state machine, capacity/overflow ownership, in-hour resistance feedback, seasonal lower-front heat, residue/shallow-front resistance, fixed frozen-path conductivity refutation, and `hr_tmp`/`tmpadj` surface-temperature synthesis now run with `43/43` clean cohorts and years 2-6 additive storage closure at WAT-publication texture. Dk's residue pre-check found no in-envelope frost projection defect and routed dynamic daily `resdep` lifecycle to residue/decomposition producer scope. | No longer blocks MOFE. Residual items are handoffs: F4 snow density/depth-split magnitude review, `p2` individual attribution, dynamic residue lifecycle exposure, and characterized upper-envelope subgroup deltas reopenable on new source-line evidence. | closed | `[DIRECT][Ran] + [INFERENCE][Static]` |
+| GAP-SNOWFREEZE-002 | **Reopened 2026-06-24 (operator-directed).** FDHP01 Increment Dk had closed this at the single-OFE ADR-0017 *conservation/activation* boundary: the fine-layer freeze/thaw state machine, capacity/overflow ownership, in-hour resistance feedback, seasonal lower-front heat, and `hr_tmp`/`tmpadj` surface-temperature synthesis run `43/43` clean with additive storage closure to numerical noise, and timing/shape improved to depth correlation ~`0.76` and frozen-duration residual `+61` days. But absolute frost-depth *magnitude* was never closed to a physical envelope (the legacy 240-503 mm envelope was held as a comparator flag, not a millimetre target; upper-envelope outliers were a characterized handoff). The R7G/R7H array-native winter-column migration made frost a typed sub-solver but established that bit-parity to this conservation-closed-but-magnitude-unvalidated solver is not an acceptable frost acceptance basis. Frost-depth fidelity is reopened as the governing question, to be established against **historic frost-depth observations** through site hillslope models under external-authority discipline (ADR-0017), not by matching legacy or compatibility output. The validation method is bound by `INV-SNOWFREEZE-047` and the GAP-SNOWFREEZE-002 Frost-Depth Observation Validation Addendum; pilot substrate `tests/fixtures/snowfreeze_observed/`. | Blocks frost-depth fidelity sign-off and array-native *default* activation for frost-influenced outputs; does not block opt-in direct mode. Successor: a frost-depth heat-flow fidelity Defect-Closure ExecPlan with an observation-based validation fixture. | open | `[DIRECT][Static] + operator decision` |
 | GAP-SNOWFREEZE-003 | Snow drifting equations are documented in Chapter 3 but explicitly inactive in the August 1995 lineage; active-path authority for openWEPP is unresolved. | Drift-related claims cannot be promoted as active behavior yet. | non-promotable | `[DIRECT][Static]` |
 | GAP-SNOWFREEZE-004 | Cross-contract boundary ownership with `SC-SOIL-001` and `SC-RUNOFFPART-001` is explicit, but executable cross-contract comparator vectors for frost-hourly internals are still incomplete. | Promotable contract authority exists; evidence depth for coupled frost vectors remains limited pending SIMIMPL32 and SIMIMPL35. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-005 | `Dsavail` alias is fixed (`snow.hourly.depth_available_m`) and SIMIMPL29 emits the hourly family, but comparator-tier depth/density/melt vector breadth remains limited for broad climate regimes. | Residual risk is evidence-depth, not missing alias/state publication. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -1012,6 +1087,8 @@ handoff rather than an authorization for comparator tuning.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-24` | `71` | `Claude Code` | Drafted the `GAP-SNOWFREEZE-002` frost-depth observation-validation method: added `INV-SNOWFREEZE-047` (measurement-to-`frdp` correspondence + censoring/snow-confound gates), `REF-SNOWFREEZE-FROST-OBS`, provisional `TOL-SNOWFREEZE-007/008/009`, and the GAP-SNOWFREEZE-002 Frost-Depth Observation Validation Addendum bound to `tests/fixtures/snowfreeze_observed/`. Tolerances provisional pending hydrology-reviewer ratification. |
+| `2026-06-24` | `70` | `Claude Code` | Reopened `GAP-SNOWFREEZE-002` on operator direction: frost-depth fidelity decoupled from array-native bit-parity. Acceptance basis re-pinned to historic frost-depth observations via site hillslope models (ADR-0017 external authority), not legacy/compatibility output. Closes out the interrupted R7H frost bit-parity grind in favour of a heat-flow fidelity DC. |
 | `2026-06-12` | `69` | `Codex` | FDHP01 Increment Dk certification: closed/re-stated `GAP-SNOWFREEZE-002`, recorded the residue pre-check disposition, and unblocked MOFE under ADR-0017. |
 | `2026-06-12` | `68` | `Codex` | FDHP01 Increment Dj amendment: bound frost top heat flow to legacy `hr_tmp`/`tmpadj` adjusted surface-temperature synthesis, registered `frost.hourly.surface_temp_c_####`, and recorded Dj's executed-hold cohort outcome. |
 | `2026-06-12` | `67` | `Codex` | FDHP01 Increment Dh amendment: refuted per-soil frozen-path conductivity as an implementation target and bound fixed legacy `kftill`/`kfutil` constants for the frozen tilled/untilled surface path. |

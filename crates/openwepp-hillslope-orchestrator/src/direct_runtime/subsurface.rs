@@ -12,6 +12,275 @@ use super::{
     validate_nonnegative_direct_m,
 };
 
+#[derive(Debug, Clone)]
+struct R7hSubsurfaceSaturationTraceConfig {
+    path: std::path::PathBuf,
+    exact_day_index: Option<usize>,
+    exact_lane_index: Option<usize>,
+}
+
+static R7H_SUBSURFACE_SATURATION_TRACE_CONFIG: std::sync::OnceLock<
+    Option<R7hSubsurfaceSaturationTraceConfig>,
+> = std::sync::OnceLock::new();
+
+#[derive(Debug, Clone)]
+struct R7hPercolationTraceConfig {
+    path: std::path::PathBuf,
+    exact_day_index: Option<usize>,
+    exact_lane_index: Option<usize>,
+}
+
+static R7H_PERCOLATION_TRACE_CONFIG: std::sync::OnceLock<Option<R7hPercolationTraceConfig>> =
+    std::sync::OnceLock::new();
+
+fn r7h_subsurface_saturation_trace_config() -> Option<&'static R7hSubsurfaceSaturationTraceConfig> {
+    R7H_SUBSURFACE_SATURATION_TRACE_CONFIG
+        .get_or_init(|| {
+            let path = std::env::var_os("OPENWEPP_R7H_SUBSURFACE_SATURATION_TRACE_PATH")?;
+            if path.is_empty() {
+                return None;
+            }
+            Some(R7hSubsurfaceSaturationTraceConfig {
+                path: std::path::PathBuf::from(path),
+                exact_day_index: r7h_subsurface_trace_env_usize(
+                    "OPENWEPP_R7H_SUBSURFACE_SATURATION_TRACE_DAY_INDEX",
+                ),
+                exact_lane_index: r7h_subsurface_trace_env_usize(
+                    "OPENWEPP_R7H_SUBSURFACE_SATURATION_TRACE_LANE_INDEX",
+                ),
+            })
+        })
+        .as_ref()
+}
+
+fn r7h_percolation_trace_config() -> Option<&'static R7hPercolationTraceConfig> {
+    R7H_PERCOLATION_TRACE_CONFIG
+        .get_or_init(|| {
+            let path = std::env::var_os("OPENWEPP_R7H_PERCOLATION_TRACE_PATH")?;
+            if path.is_empty() {
+                return None;
+            }
+            Some(R7hPercolationTraceConfig {
+                path: std::path::PathBuf::from(path),
+                exact_day_index: r7h_subsurface_trace_env_usize(
+                    "OPENWEPP_R7H_PERCOLATION_TRACE_DAY_INDEX",
+                ),
+                exact_lane_index: r7h_subsurface_trace_env_usize(
+                    "OPENWEPP_R7H_PERCOLATION_TRACE_LANE_INDEX",
+                ),
+            })
+        })
+        .as_ref()
+}
+
+fn r7h_subsurface_trace_env_usize(name: &str) -> Option<usize> {
+    let value = std::env::var(name).ok()?;
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    trimmed.parse::<usize>().ok()
+}
+
+fn r7h_subsurface_trace_number(value: f64) -> String {
+    if value.is_finite() {
+        format!("{value:.17}")
+    } else {
+        "null".to_string()
+    }
+}
+
+fn r7h_subsurface_trace_f64_array(values: impl IntoIterator<Item = f64>) -> String {
+    let mut output = String::from("[");
+    let mut first = true;
+    for value in values {
+        if !first {
+            output.push(',');
+        }
+        first = false;
+        output.push_str(&r7h_subsurface_trace_number(value));
+    }
+    output.push(']');
+    output
+}
+
+struct R7hSubsurfaceSaturationTrace<'a> {
+    day_index: usize,
+    lane_index: usize,
+    substep_index: usize,
+    theta_before_m: f64,
+    upper_limit_m: f64,
+    frozen_water_m: f64,
+    effective_upper_limit_m: f64,
+    saturation_excess_m: f64,
+    current_saturation_runoff_m: f64,
+    theta_after_m: f64,
+    inputs: &'a DirectSubsurfaceComputeInputs,
+}
+
+struct R7hPercolationTrace<'a> {
+    day_index: usize,
+    lane_index: usize,
+    state: &'a DirectPercolationState,
+    inputs: &'a DirectPercolationInputs,
+}
+
+fn maybe_write_r7h_percolation_trace(event: &R7hPercolationTrace<'_>) {
+    let Some(config) = r7h_percolation_trace_config() else {
+        return;
+    };
+    if let Some(exact_day_index) = config.exact_day_index
+        && event.day_index != exact_day_index
+    {
+        return;
+    }
+    if let Some(exact_lane_index) = config.exact_lane_index
+        && event.lane_index != exact_lane_index
+    {
+        return;
+    }
+
+    let mut line = String::new();
+    line.push('{');
+    line.push_str("\"schema\":\"openwepp-r7h-percolation-trace-v1\"");
+    line.push_str(",\"day_index\":");
+    line.push_str(&event.day_index.to_string());
+    line.push_str(",\"lane_index\":");
+    line.push_str(&event.lane_index.to_string());
+    line.push_str(",\"lane_substeps\":");
+    line.push_str(&event.inputs.lane_substeps.to_string());
+    line.push_str(",\"same_pass_infiltration_m\":");
+    line.push_str(&r7h_subsurface_trace_number(
+        event.inputs.same_pass_infiltration_m,
+    ));
+    line.push_str(",\"same_pass_infiltration_lineage\":");
+    line.push_str(if event.inputs.same_pass_infiltration_lineage {
+        "true"
+    } else {
+        "false"
+    });
+    line.push_str(",\"tillage_depth_m\":");
+    line.push_str(&r7h_subsurface_trace_number(event.inputs.tillage_depth_m));
+    line.push_str(",\"soil_water_before_m\":");
+    line.push_str(&r7h_subsurface_trace_number(
+        event.state.soil_water_before_m,
+    ));
+    line.push_str(",\"computed_soil_water_before_m\":");
+    line.push_str(&r7h_subsurface_trace_number(
+        event.state.computed_soil_water_before_m,
+    ));
+    line.push_str(",\"soil_water_after_m\":");
+    line.push_str(&r7h_subsurface_trace_number(event.state.soil_water_after_m));
+    line.push_str(",\"deep_seepage_m\":");
+    line.push_str(&r7h_subsurface_trace_number(event.state.deep_seepage_m));
+    line.push_str(",\"per_layer_flux_m\":");
+    line.push_str(&r7h_subsurface_trace_f64_array(
+        event.state.per_layer_flux_m.iter().copied(),
+    ));
+    line.push_str(",\"layer_theta_after_m\":");
+    line.push_str(&r7h_subsurface_trace_f64_array(
+        event
+            .state
+            .layer_state_after
+            .iter()
+            .map(|layer| layer.theta_m),
+    ));
+    line.push_str(",\"layer_upper_limit_m\":");
+    line.push_str(&r7h_subsurface_trace_f64_array(
+        event
+            .state
+            .layer_state_after
+            .iter()
+            .map(|layer| layer.upper_limit_m),
+    ));
+    line.push_str(",\"layer_frozen_water_m\":");
+    line.push_str(&r7h_subsurface_trace_f64_array(
+        event
+            .state
+            .layer_state_after
+            .iter()
+            .map(|layer| layer.frozen_water_m),
+    ));
+    line.push('}');
+    line.push('\n');
+
+    if let Some(parent) = config.path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&config.path)
+    {
+        let _ = std::io::Write::write_all(&mut file, line.as_bytes());
+    }
+}
+
+fn maybe_write_r7h_subsurface_saturation_trace(event: &R7hSubsurfaceSaturationTrace<'_>) {
+    let Some(config) = r7h_subsurface_saturation_trace_config() else {
+        return;
+    };
+    if let Some(exact_day_index) = config.exact_day_index
+        && event.day_index != exact_day_index
+    {
+        return;
+    }
+    if let Some(exact_lane_index) = config.exact_lane_index
+        && event.lane_index != exact_lane_index
+    {
+        return;
+    }
+
+    let mut line = String::new();
+    line.push('{');
+    line.push_str("\"schema\":\"openwepp-r7h-subsurface-saturation-trace-v1\"");
+    line.push_str(",\"day_index\":");
+    line.push_str(&event.day_index.to_string());
+    line.push_str(",\"lane_index\":");
+    line.push_str(&event.lane_index.to_string());
+    line.push_str(",\"substep_index\":");
+    line.push_str(&event.substep_index.to_string());
+    line.push_str(",\"lane_substeps\":");
+    line.push_str(&event.inputs.lane_substeps.to_string());
+    line.push_str(",\"mofe_hourly_carry_arrays_enabled\":");
+    line.push_str(if event.inputs.mofe_hourly_carry_arrays_enabled {
+        "true"
+    } else {
+        "false"
+    });
+    line.push_str(",\"solwpv_mode\":");
+    line.push_str(&event.inputs.solwpv_mode.to_string());
+    line.push_str(",\"theta_before_m\":");
+    line.push_str(&r7h_subsurface_trace_number(event.theta_before_m));
+    line.push_str(",\"upper_limit_m\":");
+    line.push_str(&r7h_subsurface_trace_number(event.upper_limit_m));
+    line.push_str(",\"frozen_water_m\":");
+    line.push_str(&r7h_subsurface_trace_number(event.frozen_water_m));
+    line.push_str(",\"effective_upper_limit_m\":");
+    line.push_str(&r7h_subsurface_trace_number(event.effective_upper_limit_m));
+    line.push_str(",\"saturation_excess_m\":");
+    line.push_str(&r7h_subsurface_trace_number(event.saturation_excess_m));
+    line.push_str(",\"current_saturation_runoff_m\":");
+    line.push_str(&r7h_subsurface_trace_number(
+        event.current_saturation_runoff_m,
+    ));
+    line.push_str(",\"theta_after_m\":");
+    line.push_str(&r7h_subsurface_trace_number(event.theta_after_m));
+    line.push('}');
+    line.push('\n');
+
+    if let Some(parent) = config.path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&config.path)
+    {
+        let _ = std::io::Write::write_all(&mut file, line.as_bytes());
+    }
+}
+
 impl DirectDayFrame {
     pub fn run_r4m_percolation_span(
         &mut self,
@@ -23,6 +292,12 @@ impl DirectDayFrame {
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
         let percolation = self.compute_r4m_percolation()?;
+        maybe_write_r7h_percolation_trace(&R7hPercolationTrace {
+            day_index: self.day_index,
+            lane_index: self.lane_index,
+            state: &percolation,
+            inputs: &self.percolation_inputs,
+        });
         DIRECT_AUDIT.record_direct_compute_operation();
 
         DIRECT_AUDIT.record_direct_phase_entry();
@@ -252,6 +527,8 @@ impl DirectDayFrame {
             &mut layers,
             &self.subsurface_compute_inputs,
             lane_substeps_f64,
+            self.day_index,
+            self.lane_index,
         )?;
         let subsurface_loss_m = lateral.flow_m + drainage.tile_drainage_m;
         validate_finite("subsurface.subsurface_loss_m", subsurface_loss_m)?;
@@ -928,20 +1205,30 @@ fn route_percolation_layer(
     let layer_theta_m = layers[layer_index].theta_m;
     let layer_field_capacity_m = layers[layer_index].field_capacity_m;
     let layer_upper_limit_m = layers[layer_index].upper_limit_m;
+    let layer_frozen_water_m = layers[layer_index].frozen_water_m;
     let layer_count = layers.len();
-    let excess_m = layer_theta_m - layer_field_capacity_m;
+    let effective_field_capacity_m = (layer_field_capacity_m - layer_frozen_water_m).max(0.0);
+    let excess_m = layer_theta_m - effective_field_capacity_m;
     if excess_m <= WB11_ZERO_THRESHOLD {
         return Ok(0.0);
     }
-    let saturation_ratio = layer_theta_m / layer_upper_limit_m;
+    let saturation_ratio = (layer_theta_m + layer_frozen_water_m) / layer_upper_limit_m;
     validate_nonnegative_direct_m("percolation.saturation_ratio", saturation_ratio)?;
     let is_bottom_layer = layer_index == layer_count - 1;
+    let lower_ratio = if is_bottom_layer {
+        0.0
+    } else {
+        let lower_layer = &layers[layer_index + 1];
+        (lower_layer.theta_m + lower_layer.frozen_water_m) / lower_layer.upper_limit_m
+    };
+    validate_nonnegative_direct_m("percolation.lower_saturation_ratio", lower_ratio)?;
+    let saturated_lower_boundary = is_bottom_layer || lower_ratio >= WB18_PERC_SATURATION_THRESHOLD;
     let fx = percolation_layer_fx(
         layer_field_capacity_m,
         layer_upper_limit_m,
         saturation_ratio,
         inputs.lane_substeps == 1,
-        is_bottom_layer,
+        saturated_lower_boundary,
     )?;
     let effective_conductivity_m_s =
         effective_percolation_conductivity(layers, inputs, layer_index, is_bottom_layer)?;
@@ -952,9 +1239,6 @@ fn route_percolation_layer(
     let pei_unscaled_m = if is_bottom_layer {
         pei_pre_m
     } else {
-        let lower_layer = &layers[layer_index + 1];
-        let lower_ratio = lower_layer.theta_m / lower_layer.upper_limit_m;
-        validate_nonnegative_direct_m("percolation.lower_saturation_ratio", lower_ratio)?;
         pei_pre_m * (1.0 - lower_ratio.min(WB18_PERC_SATURATION_THRESHOLD)).sqrt()
     };
     let pei_m = pei_unscaled_m / lane_substeps_f64;
@@ -992,7 +1276,7 @@ fn percolation_layer_fx(
     upper_limit_m: f64,
     saturation_ratio: f64,
     daily_lane: bool,
-    is_bottom_layer: bool,
+    saturated_lower_boundary: bool,
 ) -> Result<f64, DirectRuntimeError> {
     let mut fx = if saturation_ratio < WB18_PERC_SATURATION_THRESHOLD {
         let fc_ul_ratio = field_capacity_m / upper_limit_m;
@@ -1013,7 +1297,7 @@ fn percolation_layer_fx(
     } else {
         1.0
     };
-    if !daily_lane && is_bottom_layer {
+    if !daily_lane && saturated_lower_boundary {
         fx = 1.0;
     }
     validate_positive("percolation.fx", fx)?;
@@ -1292,6 +1576,8 @@ fn run_lateral(
     layers: &mut [DirectSubsurfaceLayerState],
     inputs: &DirectSubsurfaceComputeInputs,
     lane_substeps_f64: f64,
+    day_index: usize,
+    lane_index: usize,
 ) -> Result<LateralRun, DirectRuntimeError> {
     let mut run = LateralRun {
         layer_withdrawal_m: vec![0.0; layers.len()],
@@ -1317,7 +1603,14 @@ fn run_lateral(
         if inputs.mofe_hourly_carry_arrays_enabled {
             run.hourly_lateral_carry[substep_index] = substep_m;
         }
-        record_surface_saturation_carry(layers, inputs, substep_index, &mut run)?;
+        record_surface_saturation_carry(
+            layers,
+            inputs,
+            substep_index,
+            &mut run,
+            day_index,
+            lane_index,
+        )?;
         let depths = lateral_depths(inputs, &metrics, substep_m)?;
         run.water_yield_m = depths.0;
         run.saturated_depth_m = depths.1;
@@ -1580,12 +1873,15 @@ fn record_surface_saturation_carry(
     inputs: &DirectSubsurfaceComputeInputs,
     substep_index: usize,
     run: &mut LateralRun,
+    day_index: usize,
+    lane_index: usize,
 ) -> Result<(), DirectRuntimeError> {
     if !inputs.mofe_hourly_carry_arrays_enabled {
         return Ok(());
     }
+    let theta_before_m = layers[0].theta_m;
     let top_effective_upper_limit_m = (layers[0].upper_limit_m - layers[0].frozen_water_m).max(0.0);
-    let saturation_excess_m = layers[0].theta_m - top_effective_upper_limit_m;
+    let saturation_excess_m = theta_before_m - top_effective_upper_limit_m;
     let current_saturation_runoff_m = if saturation_excess_m > WB11_ZERO_THRESHOLD {
         layers[0].theta_m = top_effective_upper_limit_m;
         saturation_excess_m
@@ -1597,6 +1893,19 @@ fn record_surface_saturation_carry(
         current_saturation_runoff_m,
     )?;
     run.hourly_saturation_carry[substep_index] = current_saturation_runoff_m;
+    maybe_write_r7h_subsurface_saturation_trace(&R7hSubsurfaceSaturationTrace {
+        day_index,
+        lane_index,
+        substep_index,
+        theta_before_m,
+        upper_limit_m: layers[0].upper_limit_m,
+        frozen_water_m: layers[0].frozen_water_m,
+        effective_upper_limit_m: top_effective_upper_limit_m,
+        saturation_excess_m,
+        current_saturation_runoff_m,
+        theta_after_m: layers[0].theta_m,
+        inputs,
+    });
     Ok(())
 }
 

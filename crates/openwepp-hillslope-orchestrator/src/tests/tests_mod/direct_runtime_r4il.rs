@@ -140,7 +140,9 @@ fn assert_r4il_producer_outputs(day: &DirectDayFrame) {
             runon_input_m: 0.140_625,
             cumulative_infiltration_m: 0.25,
             depression_storage_delta_m: 0.0625,
-            surface_saturation_runoff_m: 0.03125
+            surface_saturation_runoff_m: 0.03125,
+            frost_retained_local_liquid_m: 0.0,
+            frost_preprojected_local_liquid_m: 0.0
         }
     );
 }
@@ -693,6 +695,8 @@ fn r4il_seed_day() -> DirectDayFrame {
         cumulative_infiltration_m: 9.0,
         depression_storage_delta_m: 9.0,
         surface_saturation_runoff_m: 9.0,
+        frost_retained_local_liquid_m: 0.0,
+        frost_preprojected_local_liquid_m: 0.0,
     };
     day.liquid_input_inputs = DirectLiquidInputInputs {
         liquid_input_handoff_m: 0.5,

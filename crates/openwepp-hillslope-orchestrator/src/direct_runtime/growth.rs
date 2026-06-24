@@ -223,6 +223,7 @@ impl DirectGrowthAction {
 pub struct DirectGrowthStateSurface {
     pub sumgdd: f64,
     pub live_biomass_kg_m2: f64,
+    pub interception_live_biomass_kg_m2: f64,
     pub canopy_cover_fraction: f64,
     pub leaf_area_index: f64,
     pub root_mass_kg_m2: f64,
@@ -236,6 +237,7 @@ impl DirectGrowthStateSurface {
         Self {
             sumgdd: 0.0,
             live_biomass_kg_m2: 0.0,
+            interception_live_biomass_kg_m2: 0.0,
             canopy_cover_fraction: 0.0,
             leaf_area_index: 0.0,
             root_mass_kg_m2: 0.0,
@@ -247,6 +249,7 @@ impl DirectGrowthStateSurface {
     fn validate(self, field_root: &'static str) -> Result<(), DirectRuntimeError> {
         validate_nonnegative_direct_m(field_root, self.sumgdd)?;
         validate_nonnegative_direct_m(field_root, self.live_biomass_kg_m2)?;
+        validate_nonnegative_direct_m(field_root, self.interception_live_biomass_kg_m2)?;
         validate_between(
             "growth.canopy_cover_fraction",
             self.canopy_cover_fraction,
@@ -345,6 +348,14 @@ impl DirectGrowthInputs {
             .perennial_growth_inputs
             .validate_for_management_class(DirectGrowthManagementClass::Perennial)?;
         Ok(frame.perennial_growth_inputs)
+    }
+
+    pub fn compute_annual_or_fallow(self) -> Result<DirectGrowthState, DirectRuntimeError> {
+        self.compute_for_management_class(DirectGrowthManagementClass::AnnualOrFallow)
+    }
+
+    pub fn compute_perennial(self) -> Result<DirectGrowthState, DirectRuntimeError> {
+        self.compute_for_management_class(DirectGrowthManagementClass::Perennial)
     }
 
     fn validate_for_management_class(
@@ -646,7 +657,10 @@ impl DirectGrowthInputs {
         let ddm = PL_GROWTH_DDM_SCALE * self.beinp * par;
         validate_nonnegative_direct_m("growth.daily_biomass_increment_kg_m2", ddm)?;
 
-        let mut vdmt_next = self.state_before.live_biomass_kg_m2 + ddm * reg;
+        let biomass_increment = ddm * reg;
+        let mut vdmt_next = self.state_before.live_biomass_kg_m2 + biomass_increment;
+        let mut interception_live_biomass_next =
+            self.state_before.interception_live_biomass_kg_m2 + biomass_increment;
         if fphu >= self.dlai && self.spriod > 0.0 {
             let biomass_decline = (1.0 - self.dropfc) / self.spriod;
             validate_between(
@@ -656,8 +670,10 @@ impl DirectGrowthInputs {
                 1.0,
             )?;
             vdmt_next *= 1.0 - biomass_decline;
+            interception_live_biomass_next *= 1.0 - biomass_decline;
         }
         vdmt_next = vdmt_next.max(0.0);
+        interception_live_biomass_next = interception_live_biomass_next.max(0.0);
 
         let hufh_denom = fphu + (6.5 - 10.0 * fphu).exp();
         validate_positive("growth.harvest_index_denominator", hufh_denom)?;
@@ -732,6 +748,7 @@ impl DirectGrowthInputs {
         DirectGrowthStateSurface {
             sumgdd: sumgdd_next,
             live_biomass_kg_m2: vdmt_next,
+            interception_live_biomass_kg_m2: interception_live_biomass_next,
             canopy_cover_fraction: cancov_next,
             leaf_area_index: lai_next,
             root_mass_kg_m2: rtmass_next,
