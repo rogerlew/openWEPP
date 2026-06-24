@@ -13,6 +13,15 @@
 
 State as of `2026-06-24`:
 
+- `20260624-r7h-closure-activation-gates-001/` is executed-held at
+  `HOLD-R7H-H2637-DIRECT-PERFORMANCE-AND-PROTECTED-PARITY`. It executed the
+  ADR-0026 "Closure and activation gates" step after consumer cutover/deletion,
+  fixed two in-envelope no-material frost closure failures exposed by full
+  H2637 direct default-candidate runs, and advanced current direct H2637 to
+  endpoint with `compatibility_edge_invocations = 0`. Activation remains
+  blocked: the current direct endpoint is `113.53 s / 1083636 KiB` against the
+  `91.2 s` `<=10x` budget, and protected-output parity is still red/not
+  current-matrix green. Default activation remains disabled.
 - `20260624-r7g-consumer-cutover-deletion-001/` is complete. It executed the
   ADR-0026 "Consumer cutover and deletion" step after typed frost solver
   extraction by moving R4A/direct-publication consumers from the temporary

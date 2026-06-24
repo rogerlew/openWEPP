@@ -729,9 +729,18 @@ impl DirectDayFrame {
             self.frost_runtime_carry = None;
         }
         if !has_material_storage_state {
-            let _ = liquid_storage_before_frost_m;
-            self.storage_reconciliation_inputs.frost_liquid_delta_m =
-                frost_partition.frwatc_net_liquid_delta_m;
+            if r4a_layers_have_coarse_frost_projection(&layers)? {
+                clear_r4a_nonmaterial_frost_layer_projection(&mut layers)?;
+                let liquid_storage_after_clear_m = r4a_aggregate_liquid_soil_water(&layers)?;
+                if (liquid_storage_after_clear_m - liquid_storage_before_frost_m).abs() > 1.0e-9 {
+                    return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                        field: "runoff_partition.no_material_frost_storage_clear",
+                    });
+                }
+                self.apply_r4a_frost_layers(&layers, liquid_storage_before_frost_m);
+                self.water.soil_water_m = liquid_storage_before_frost_m;
+            }
+            self.storage_reconciliation_inputs.frost_liquid_delta_m = 0.0;
             self.hydrology_projection_inputs.frozen_soil_water_m = 0.0;
             self.hydrology_projection_inputs.frost_depth_m = 0.0;
             validate_finite(
@@ -830,6 +839,72 @@ impl DirectDayFrame {
             replace_r4a_frost_layers(&mut shadow.layer_state_after, layers);
         }
     }
+}
+
+fn r4a_layers_have_coarse_frost_projection(
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<bool, DirectRuntimeError> {
+    for layer in layers {
+        validate_nonnegative_direct_m(
+            "runoff_partition.frost_layer_frozen_depth_m",
+            layer.frozen_depth_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "runoff_partition.frost_layer_frozen_water_m",
+            layer.frozen_water_m,
+        )?;
+        if layer.frozen_depth_m > WB11_ZERO_THRESHOLD || layer.frozen_water_m > WB11_ZERO_THRESHOLD
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+fn clear_r4a_nonmaterial_frost_layer_projection(
+    layers: &mut [DirectSubsurfaceLayerState],
+) -> Result<(), DirectRuntimeError> {
+    for layer in layers {
+        validate_nonnegative_direct_m("runoff_partition.frost_layer_theta_m", layer.theta_m)?;
+        validate_nonnegative_direct_m(
+            "runoff_partition.frost_layer_residual_theta",
+            layer.residual_theta,
+        )?;
+        validate_nonnegative_direct_m("runoff_partition.frost_layer_depth_m", layer.depth_m)?;
+        validate_nonnegative_direct_m(
+            "runoff_partition.frost_layer_frozen_depth_m",
+            layer.frozen_depth_m,
+        )?;
+        if layer.frozen_depth_m > layer.depth_m + WB11_ZERO_THRESHOLD {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "runoff_partition.frost_layer_frozen_depth_m",
+            });
+        }
+        if layer.frozen_depth_m <= WB11_ZERO_THRESHOLD
+            && layer.frozen_water_m <= WB11_ZERO_THRESHOLD
+        {
+            layer.frozen_depth_m = 0.0;
+            layer.frozen_water_m = 0.0;
+            continue;
+        }
+        let aggregate_before_m =
+            layer.theta_m + layer.residual_theta * (layer.depth_m - layer.frozen_depth_m).max(0.0);
+        validate_finite(
+            "runoff_partition.no_material_frost_layer_storage_before_m",
+            aggregate_before_m,
+        )?;
+        layer.frozen_depth_m = 0.0;
+        layer.frozen_water_m = 0.0;
+        layer.theta_m = aggregate_before_m - layer.residual_theta * layer.depth_m;
+        if layer.theta_m < 0.0 && layer.theta_m.abs() <= WB11_ZERO_THRESHOLD {
+            layer.theta_m = 0.0;
+        }
+        validate_nonnegative_direct_m(
+            "runoff_partition.no_material_frost_layer_theta_m",
+            layer.theta_m,
+        )?;
+    }
+    Ok(())
 }
 
 fn replace_r4a_frost_layers(

@@ -340,6 +340,13 @@ typed winter-column authority is present.
    after those gates pass can R7H release readiness or direct-default activation
    proceed.
 
+   Current execution: `20260624-r7h-closure-activation-gates-001` is held at
+   `HOLD-R7H-H2637-DIRECT-PERFORMANCE-AND-PROTECTED-PARITY`. The package fixed
+   two no-material frost closure failures and current direct H2637 reaches
+   endpoint with `compatibility_edge_invocations=0`, but timing is red
+   (`113.53 s` versus `91.2 s`) and protected parity is not green. Default
+   activation remains disabled.
+
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 H2637 magnitude arc is no longer an active queue item. Absolute forest lateral-flow
 magnitude authority is deferred in backlog, not a blocker.)

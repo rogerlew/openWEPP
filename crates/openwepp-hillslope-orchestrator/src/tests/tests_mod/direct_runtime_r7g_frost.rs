@@ -108,6 +108,78 @@ fn r7g_r4a_frost_partition_mutates_winter_column_frost_state() {
             day.winter_column.frost.clone()
         ))
     );
+    assert_eq!(
+        day.storage_reconciliation_inputs
+            .frost_liquid_delta_m
+            .to_bits(),
+        0.0_f64.to_bits(),
+        "active no-material frost carry must not mutate coarse storage"
+    );
+    assert_eq!(
+        day.hydrology_projection_inputs
+            .frozen_soil_water_m
+            .to_bits(),
+        0.0_f64.to_bits()
+    );
+    assert_eq!(
+        day.hydrology_projection_inputs.frost_depth_m.to_bits(),
+        0.0_f64.to_bits()
+    );
+}
+
+#[test]
+fn r7g_inactive_no_material_frost_clears_stale_coarse_projection_without_storage_delta() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(95, 2637, 1, 1).expect("valid direct identity should construct");
+    let mut day =
+        DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
+    day.percolation.layer_state_after = vec![sample_layer_with_frost(0.200, 0.100, 0.005)];
+    let storage_before_no_material_frost =
+        aggregate_test_layer_storage(&day.percolation.layer_state_after[0]);
+    let winter_frost_compute_inputs = sample_winter_frost_compute_inputs(false);
+    day.run_r4i_liquid_input_span()
+        .expect("zero liquid input upstream span should execute");
+    day.run_r4j_runon_carry_span()
+        .expect("zero runon/carry upstream span should execute");
+    day.run_r4k_infiltration_depression_span()
+        .expect("zero infiltration/depression upstream span should execute");
+    day.run_r4l_saturation_addback_span()
+        .expect("zero saturation addback upstream span should execute");
+
+    day.run_r4a_runoff_partition_span_with_winter_frost(Some(&winter_frost_compute_inputs))
+        .expect("inactive no-material frost should clear stale coarse projection");
+
+    assert!(!day.winter_column.frost.active_frost_coupling);
+    assert_eq!(
+        day.storage_reconciliation_inputs
+            .frost_liquid_delta_m
+            .to_bits(),
+        0.0_f64.to_bits(),
+        "inactive no-material frost must not mutate coarse storage"
+    );
+    assert_eq!(
+        day.hydrology_projection_inputs
+            .frozen_soil_water_m
+            .to_bits(),
+        0.0_f64.to_bits()
+    );
+    assert_eq!(
+        day.hydrology_projection_inputs.frost_depth_m.to_bits(),
+        0.0_f64.to_bits()
+    );
+    let cleared_layer = &day.percolation.layer_state_after[0];
+    assert_eq!(cleared_layer.frozen_depth_m.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(cleared_layer.frozen_water_m.to_bits(), 0.0_f64.to_bits());
+    assert!(
+        (aggregate_test_layer_storage(cleared_layer) - storage_before_no_material_frost).abs()
+            <= 1.0e-12,
+        "inactive no-material frost clear must preserve aggregate layer storage"
+    );
 }
 
 #[test]
@@ -359,6 +431,22 @@ fn sample_publication_day_input() -> DirectPublicationDayInput {
 
 fn sample_layer(theta_m: f64) -> DirectSubsurfaceLayerState {
     DirectSubsurfaceLayerState::from(sample_layer_inputs(theta_m))
+}
+
+fn sample_layer_with_frost(
+    theta_m: f64,
+    frozen_depth_m: f64,
+    frozen_water_m: f64,
+) -> DirectSubsurfaceLayerState {
+    DirectSubsurfaceLayerState::from(DirectSubsurfaceLayerInputs {
+        frozen_depth_m,
+        frozen_water_m,
+        ..sample_layer_inputs(theta_m)
+    })
+}
+
+fn aggregate_test_layer_storage(layer: &DirectSubsurfaceLayerState) -> f64 {
+    layer.theta_m + layer.residual_theta * (layer.depth_m - layer.frozen_depth_m).max(0.0)
 }
 
 fn sample_layer_inputs(theta_m: f64) -> DirectSubsurfaceLayerInputs {

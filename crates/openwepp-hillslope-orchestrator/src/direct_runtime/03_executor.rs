@@ -527,6 +527,7 @@ impl DirectFrameExecutor {
             source,
             DirectRuntimeError::DirectClosureToleranceExceeded {
                 field: "hydrology_projection.aggregate_storage_delta_m"
+                    | "hydrology_projection.frozen_layer_storage_m"
             }
         ) {
             if let (Some(storage), Some(evapotranspiration)) = (
@@ -535,7 +536,7 @@ impl DirectFrameExecutor {
                     .evapotranspiration_compute_shadow_projection
                     .as_ref(),
             ) {
-                if let Ok((aggregate_storage_from_layers_m, _frozen_layer_storage_m)) =
+                if let Ok((aggregate_storage_from_layers_m, frozen_layer_storage_m)) =
                     projection::aggregate_storage_from_layers(
                         &evapotranspiration.layer_state_after_root_uptake,
                     )
@@ -543,8 +544,9 @@ impl DirectFrameExecutor {
                     let aggregate_storage_delta_m =
                         aggregate_storage_from_layers_m - storage.storage_reconciled_m;
                     detail = format!(
-                        "{detail}; aggregate_storage_from_layers_m={aggregate_storage_from_layers_m}; storage_reconciled_m={}; aggregate_storage_delta_m={aggregate_storage_delta_m}; tolerance_m={}; storage_initial_m={}; precip_input_m={}; q_runoff_m={}; evapotranspiration_m={}; deep_seepage_m={}; subsurface_loss_m={}; liquid_input_m={}; cumulative_infiltration_m={}; depression_storage_delta_m={}; surface_saturation_runoff_m={}",
+                        "{detail}; aggregate_storage_from_layers_m={aggregate_storage_from_layers_m}; storage_reconciled_m={}; aggregate_storage_delta_m={aggregate_storage_delta_m}; frozen_layer_storage_m={frozen_layer_storage_m}; projected_frozen_soil_water_m={}; tolerance_m={}; storage_initial_m={}; precip_input_m={}; q_runoff_m={}; evapotranspiration_m={}; deep_seepage_m={}; subsurface_loss_m={}; frost_liquid_delta_m={}; liquid_input_m={}; cumulative_infiltration_m={}; depression_storage_delta_m={}; surface_saturation_runoff_m={}",
                         storage.storage_reconciled_m,
+                        day_frame.hydrology_projection_inputs.frozen_soil_water_m,
                         day_frame.hydrology_projection_inputs.aggregate_storage_tolerance_m,
                         storage.storage_initial_m,
                         storage.precip_input_m,
@@ -552,6 +554,7 @@ impl DirectFrameExecutor {
                         storage.evapotranspiration_m,
                         storage.deep_seepage_m,
                         storage.subsurface_loss_m,
+                        storage.frost_liquid_delta_m,
                         day_frame.liquid_input.liquid_input_m,
                         day_frame.infiltration_depression.cumulative_infiltration_m,
                         day_frame
