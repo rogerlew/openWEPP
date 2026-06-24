@@ -1,0 +1,4 @@
+3
+bromegr1,0.95,0.8,1,silt_loam-short_grass
+bromegr1,0.95,0.8,2,silt_loam-short_grass
+bromegr1,0.95,0.8,3,loam-short_grass

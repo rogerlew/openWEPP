@@ -1,0 +1,4 @@
+3
+bromegr1,0.95,0.8,1,silt_loam-agriculture_crops
+Tah_4899,0.95,0.8,2,silt_loam-forest
+Mou_4129,0.95,0.8,3,silt_loam-short_grass

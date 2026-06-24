@@ -1,0 +1,4 @@
+3
+Tah_9591,0.95,0.8,1,loam-shrub
+Tah_9591,0.95,0.8,2,loam-shrub
+Tah_9591,0.95,0.8,3,loam-shrub
