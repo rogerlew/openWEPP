@@ -70,6 +70,14 @@ struct FrostSeasonalTemperatureCurve {
     phase_shift_days: f64,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct ActiveFrostTmpadjContext {
+    wind_m_s: f64,
+    albedo: f64,
+    canopy_height_m: f64,
+    random_roughness_m: f64,
+}
+
 impl Wb11HydrologyKernel {
     pub(crate) fn interval_overlap_duration(
         interval_start: f64,

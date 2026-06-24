@@ -468,7 +468,7 @@ struct DirectProductionSnowFrostAuthority {
     snow_ssd_kg_m3: f64,
     avg_slope: f64,
     azimuth: f64,
-    frost_surface_template: Option<DirectFrostRunoffSurface>,
+    frost_typed_authority: Option<DirectProductionFrostTypedAuthority>,
     frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
     frost_file_present: bool,
     frost_wint_red_enabled: bool,
@@ -477,10 +477,36 @@ struct DirectProductionSnowFrostAuthority {
     frost_active: bool,
 }
 
+#[derive(Clone)]
+struct DirectProductionFrostTypedAuthority {
+    controls: DirectFrostControlInputs,
+    layer_bulk_density_kg_m3: Vec<f64>,
+    soil_conductivity_m_s: Option<f64>,
+    residue_depth_m: f64,
+    theta_residual: f64,
+    theta_field_capacity: f64,
+    albedo: f64,
+    canopy_height_m: f64,
+    random_roughness_m: f64,
+    monthly_max_c: [f64; 12],
+    monthly_min_c: [f64; 12],
+}
+
 struct DirectProductionFrostDayContext {
-    surface: DirectFrostRunoffSurface,
     partition: openwepp_hillslope_orchestrator::DirectFrostLiquidPartition,
     layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
+}
+
+struct DirectProductionFrostTypedComputeContext<'a> {
+    lane_index: usize,
+    lane: &'a openwepp_hillslope_orchestrator::DirectLaneFrame,
+    day: &'a ClimateDayProjection,
+    forcing: &'a HillslopeDirectClimateDayForcing,
+    snow_lane_state: DirectSnowLaneState,
+    frost_lane_state: &'a DirectFrostLaneState,
+    typed_authority: &'a DirectProductionFrostTypedAuthority,
+    hourly: [DirectFrostHourlyForcing;
+        openwepp_hillslope_orchestrator::DIRECT_WINTER_HOURLY_FORCING_COUNT],
 }
 
 #[allow(clippy::struct_field_names)]
@@ -685,7 +711,6 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         }
         if let Some(frost_context) = frost_context {
             day_input.frost_liquid_partition = Some(frost_context.partition);
-            day_input.frost_runoff_surface = Some(frost_context.surface);
             day_input.frost_layer_carry_projection = frost_context.layer_carry_projection;
         }
         day_input.frost_runtime_carry =
@@ -1449,10 +1474,18 @@ impl DirectProductionSnowFrostAuthority {
             || frost_runtime_frozen_water_m > 1.0e-12
             || runtime_surface_symbol_value(seed_surface, "frost.options.fineTop").is_some()
             || runtime_surface_symbol_value(seed_surface, "frost.options.fineBot").is_some();
-        let frost_surface_template =
-            frost_projection_present.then(|| {
-                direct_production_frost_comparator_surface_template(seed_surface)
-            });
+        let frost_typed_authority = if frost_projection_present {
+            let layers = direct_publication_layer_states(seed_surface)?;
+            direct_production_frost_typed_authority(
+                seed_surface,
+                &layers,
+                frost_file_present,
+                frost_wint_red_enabled,
+                frost_projection_present,
+            )?
+        } else {
+            None
+        };
         let frost_layer_carry_projection = if frost_wint_red_enabled {
             direct_publication_frost_layer_carry_projection(seed_surface)?
         } else {
@@ -1469,7 +1502,7 @@ impl DirectProductionSnowFrostAuthority {
             snow_ssd_kg_m3,
             avg_slope,
             azimuth,
-            frost_surface_template,
+            frost_typed_authority,
             frost_layer_carry_projection,
             frost_file_present,
             frost_wint_red_enabled,
@@ -1570,13 +1603,11 @@ impl DirectProductionSnowFrostAuthority {
         lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
         forcing: &HillslopeDirectClimateDayForcing,
         snow_lane_state: DirectSnowLaneState,
-        snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+        _snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
     ) -> Result<Option<DirectProductionFrostDayContext>, HillslopeCliError> {
         let frost_lane_state = self.current_frost_lane_state(lane);
         let frost_runtime_depth_m = frost_lane_state.dfrost_m;
         let frost_runtime_frozen_water_m = frost_lane_state.ws_frz_m;
-        let frost_carry =
-            direct_publication_frost_runtime_carry_from_lane_state(&frost_lane_state);
         let should_project = frost_lane_state.has_runtime_state()
             || self.frost_active
             || self.active_frost_forcing(
@@ -1587,46 +1618,136 @@ impl DirectProductionSnowFrostAuthority {
         if !should_project {
             return Ok(None);
         }
-        let Some(mut surface) = self.frost_surface_template.clone() else {
+        let Some(typed_authority) = self.frost_typed_authority.as_ref() else {
             return Err(direct_production_executor_blocked(format!(
                 "direct production active frost requires frost controls for lane {}",
                 lane_index + 1
             )));
         };
-        if let Some(carry) = frost_carry.as_ref() {
-            direct_production_overlay_frost_runtime_carry(&mut surface, lane_index, carry)?;
-        }
-        self.overlay_frost_day_forcing(
+        let frost_hourly = self.frost_hourly_forcing(
             climate_request,
             day_index,
-            day,
-            &mut surface,
-            forcing,
-            &frost_lane_state,
             snow_lane_state,
-            snow_liquid,
+            frost_runtime_depth_m,
+            frost_runtime_frozen_water_m,
         )?;
-        direct_production_seed_frost_surface_layers(
-            &mut surface,
-            lane_index,
-            &lane.subsurface_layers,
-            lane.water.soil_water_m,
-        )?;
-        let soil_conductivity_m_s =
-            direct_production_frost_soil_conductivity(&surface, &lane.subsurface_layers)?;
-        let partition = surface
-            .compute_frost_liquid_partition(soil_conductivity_m_s)
-            .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_publication_frame",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} direct production active frost partition failed: {source}"
-                ),
+        let partition =
+            Self::compute_typed_frost_partition(&DirectProductionFrostTypedComputeContext {
+                lane_index,
+                lane,
+                day,
+                forcing,
+                snow_lane_state,
+                frost_lane_state: &frost_lane_state,
+                typed_authority,
+                hourly: frost_hourly,
             })?;
         Ok(Some(DirectProductionFrostDayContext {
-            surface,
             partition,
             layer_carry_projection: self.frost_layer_carry_projection.clone(),
         }))
+    }
+
+    fn frost_hourly_forcing(
+        &self,
+        climate_request: &HillslopeClimateRuntimeRequest,
+        day_index: usize,
+        snow_lane_state: DirectSnowLaneState,
+        frost_runtime_depth_m: f64,
+        frost_runtime_frozen_water_m: f64,
+    ) -> Result<
+        [DirectFrostHourlyForcing;
+            openwepp_hillslope_orchestrator::DIRECT_WINTER_HOURLY_FORCING_COUNT],
+        HillslopeCliError,
+    > {
+        let hourly = climate_request
+            .direct_winter_hourly_forcing(
+                day_index,
+                DirectWinterHourlyContext {
+                    snow_runtime_swe_m: snow_lane_state.runtime_swe_m,
+                    frost_runtime_depth_m,
+                    frost_runtime_frozen_water_m,
+                    frost_file_present: self.frost_file_present,
+                    frost_wint_red_enabled: self.frost_wint_red_enabled,
+                    avg_slope: self.avg_slope,
+                    azimuth: self.azimuth,
+                    snow_rst_c: self.snow_rst_c,
+                },
+            )
+            .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production frost hourly forcing failed: {source}"
+                ),
+            })?
+            .ok_or_else(|| {
+                direct_production_executor_blocked(format!(
+                    "direct production active frost requires typed winter hourly forcing for day {}",
+                    day_index + 1
+                ))
+            })?;
+        let mut frost_hourly =
+            [DirectFrostHourlyForcing::zero(); openwepp_hillslope_orchestrator::DIRECT_WINTER_HOURLY_FORCING_COUNT];
+        for (index, hourly) in hourly.into_iter().enumerate() {
+            frost_hourly[index] = DirectFrostHourlyForcing {
+                radiation_mj_m2: hourly.radiation_mj_m2,
+                air_temperature_c: hourly.air_temperature_c,
+                cloud_fraction: hourly.cloud_fraction,
+            };
+        }
+        Ok(frost_hourly)
+    }
+
+    fn compute_typed_frost_partition(
+        context: &DirectProductionFrostTypedComputeContext<'_>,
+    ) -> Result<openwepp_hillslope_orchestrator::DirectFrostLiquidPartition, HillslopeCliError>
+    {
+        let soil_conductivity_m_s = direct_production_typed_frost_soil_conductivity(
+            context.typed_authority,
+            &context.lane.subsurface_layers,
+        )?;
+        let layers = direct_production_frost_layer_inputs(
+            context.lane_index,
+            &context.lane.subsurface_layers,
+            &context.typed_authority.layer_bulk_density_kg_m3,
+        )?;
+        let profile_depth_m = context
+            .lane
+            .subsurface_layers
+            .iter()
+            .map(|layer| layer.depth_m)
+            .sum::<f64>();
+        Wb11HydrologyKernel::compute_direct_frost_liquid_partition_from_typed(
+            &DirectActiveFrostPartitionInputs {
+                controls: context.typed_authority.controls,
+                thermal: DirectFrostThermalInputs {
+                    snow_depth_m: context.snow_lane_state.runtime_depth_m,
+                    snow_density_kg_m3: context.snow_lane_state.runtime_density_kg_m3,
+                    residue_depth_m: context.typed_authority.residue_depth_m,
+                    wind_m_s: context.forcing.vwind_m_s,
+                    albedo: context.typed_authority.albedo,
+                    canopy_height_m: context.typed_authority.canopy_height_m,
+                    random_roughness_m: context.typed_authority.random_roughness_m,
+                    day_of_year: f64::from(context.day.julian_day),
+                    monthly_max_c: context.typed_authority.monthly_max_c,
+                    monthly_min_c: context.typed_authority.monthly_min_c,
+                },
+                profile_depth_m,
+                soil_water_m: context.lane.water.soil_water_m,
+                theta_residual: context.typed_authority.theta_residual,
+                theta_field_capacity: context.typed_authority.theta_field_capacity,
+                soil_conductivity_m_s,
+                prior_state: direct_production_frost_prior_state_input(context.frost_lane_state),
+                layers,
+                hourly: context.hourly,
+            },
+        )
+        .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} direct production typed active frost partition failed: {source}"
+            ),
+        })
     }
 
     fn active_frost_forcing(
@@ -1654,91 +1775,6 @@ impl DirectProductionSnowFrostAuthority {
             return Ok(true);
         }
         Ok(self.frost_wint_red_enabled && forcing.tmin_c < 0.0)
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn overlay_frost_day_forcing(
-        &self,
-        climate_request: &HillslopeClimateRuntimeRequest,
-        day_index: usize,
-        day: &ClimateDayProjection,
-        surface: &mut DirectFrostRunoffSurface,
-        forcing: &HillslopeDirectClimateDayForcing,
-        frost_lane_state: &DirectFrostLaneState,
-        snow_lane_state: DirectSnowLaneState,
-        _snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
-    ) -> Result<(), HillslopeCliError> {
-        let frost_runtime_depth_m = frost_lane_state.dfrost_m;
-        let frost_runtime_frozen_water_m = frost_lane_state.ws_frz_m;
-        let snow_depth_m = snow_lane_state.runtime_depth_m;
-        let snow_density_kg_m3 = snow_lane_state.runtime_density_kg_m3;
-        for (symbol, value) in [
-            ("tmax", forcing.tmax_c),
-            ("tmin", forcing.tmin_c),
-            ("vwind", forcing.vwind_m_s),
-            ("day", f64::from(day.julian_day)),
-            ("year", f64::from(day.year)),
-            (
-                "frost.options.frost_file_present",
-                if self.frost_file_present { 1.0 } else { 0.0 },
-            ),
-            (
-                "frost.options.wintRed",
-                if self.frost_wint_red_enabled { 1.0 } else { 0.0 },
-            ),
-            ("frost.runtime_dfrost", frost_runtime_depth_m),
-            ("frost.runtime_frdp_m", frost_runtime_depth_m),
-            ("frost.runtime_ws_frz", frost_runtime_frozen_water_m),
-            (
-                "frost.runtime_frwatc_frozen_water_after_m",
-                frost_runtime_frozen_water_m,
-            ),
-            ("snow.runtime_depth_m", snow_depth_m),
-            ("snow.runtime_density_kg_m3", snow_density_kg_m3),
-        ] {
-            direct_production_insert_frost_surface_scalar(surface, symbol, value)?;
-        }
-        let hourly = climate_request
-            .direct_winter_hourly_forcing(
-                day_index,
-                DirectWinterHourlyContext {
-                    snow_runtime_swe_m: snow_lane_state.runtime_swe_m,
-                    frost_runtime_depth_m,
-                    frost_runtime_frozen_water_m,
-                    frost_file_present: self.frost_file_present,
-                    frost_wint_red_enabled: self.frost_wint_red_enabled,
-                    avg_slope: self.avg_slope,
-                    azimuth: self.azimuth,
-                    snow_rst_c: self.snow_rst_c,
-                },
-            )
-            .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_publication_frame",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} direct production frost hourly forcing failed: {source}"
-                ),
-            })?
-            .ok_or_else(|| {
-                direct_production_executor_blocked(format!(
-                    "direct production active frost requires typed winter hourly forcing for day {}",
-                    day_index + 1
-                ))
-            })?;
-        for (index, hourly) in hourly.into_iter().enumerate() {
-            let hour = index + 1;
-            for (root, value) in [
-                ("winter.hourly.rad_mj_m2", hourly.radiation_mj_m2),
-                ("winter.hourly.air_temp_c", hourly.air_temperature_c),
-                ("winter.hourly.cloud_fraction", hourly.cloud_fraction),
-            ] {
-                direct_production_insert_frost_surface_scalar(
-                    surface,
-                    direct_production_hourly_symbol(root, hour).as_str(),
-                    value,
-                )?;
-            }
-        }
-        Ok(())
     }
 
     fn snow_liquid_partition(

@@ -217,6 +217,151 @@ pub struct DirectActiveSnowPartitionInputs {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectFrostHourlyForcing {
+    pub radiation_mj_m2: f64,
+    pub air_temperature_c: f64,
+    pub cloud_fraction: f64,
+}
+
+impl DirectFrostHourlyForcing {
+    #[must_use]
+    pub const fn zero() -> Self {
+        Self {
+            radiation_mj_m2: 0.0,
+            air_temperature_c: 0.0,
+            cloud_fraction: 0.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectFrostControlInputs {
+    pub frost_file_present: bool,
+    pub wint_red_enabled: bool,
+    pub fine_top_count: usize,
+    pub fine_bot_count: usize,
+    pub ksnowf: f64,
+    pub kresf: f64,
+    pub ksoilf: f64,
+    pub kfactor1: f64,
+    pub kfactor2: f64,
+    pub kfactor3: f64,
+    pub landuse_class_proxy: Option<f64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectFrostThermalInputs {
+    pub snow_depth_m: f64,
+    pub snow_density_kg_m3: f64,
+    pub residue_depth_m: f64,
+    pub wind_m_s: f64,
+    pub albedo: f64,
+    pub canopy_height_m: f64,
+    pub random_roughness_m: f64,
+    pub day_of_year: f64,
+    pub monthly_max_c: [f64; 12],
+    pub monthly_min_c: [f64; 12],
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectFrostLayerInput {
+    pub layer_index: usize,
+    pub theta_m: f64,
+    pub upper_limit_m: f64,
+    pub depth_m: f64,
+    pub residual_theta: f64,
+    pub bulk_density_kg_m3: f64,
+    pub frozen_depth_m: f64,
+    pub frozen_water_m: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectFrostPriorStateInput {
+    pub active_frost_coupling: bool,
+    pub dfrost_m: f64,
+    pub dthaw_m: f64,
+    pub nft: f64,
+    pub ws_frz_m: f64,
+    pub infcap_frz_m_s: f64,
+    pub frwatc_soil_water_before_m: f64,
+    pub frwatc_soil_water_after_m: f64,
+    pub frwatc_frozen_water_before_m: f64,
+    pub frwatc_frozen_water_after_m: f64,
+    pub frwatc_freeze_debit_m: f64,
+    pub frwatc_thaw_credit_m: f64,
+    pub frwatc_net_liquid_delta_m: f64,
+    pub frdp_m: f64,
+    pub thdp_m: f64,
+    pub tfrdp_m: f64,
+    pub tthawd_m: f64,
+    pub fgthwd_flag: f64,
+    pub total_fine_layer_count: f64,
+    pub conductivity_tilled_w_m_k: f64,
+    pub conductivity_untilled_w_m_k: f64,
+    pub conductivity_residue_w_m_k: f64,
+    pub shadow_total_water_before_m: f64,
+    pub shadow_total_water_after_m: f64,
+    pub shadow_wb_delta_m: f64,
+    pub shadow_frwatc_residual_m: f64,
+    pub watpdg_m: f64,
+    pub watbtm_m: f64,
+    pub layer_shadows: Vec<DirectFrostLayerShadowProjection>,
+    pub fine_layers: Vec<DirectFrostFineLayerProjection>,
+}
+
+impl DirectFrostPriorStateInput {
+    #[must_use]
+    pub fn zero() -> Self {
+        Self {
+            active_frost_coupling: false,
+            dfrost_m: 0.0,
+            dthaw_m: 0.0,
+            nft: 0.0,
+            ws_frz_m: 0.0,
+            infcap_frz_m_s: 0.0,
+            frwatc_soil_water_before_m: 0.0,
+            frwatc_soil_water_after_m: 0.0,
+            frwatc_frozen_water_before_m: 0.0,
+            frwatc_frozen_water_after_m: 0.0,
+            frwatc_freeze_debit_m: 0.0,
+            frwatc_thaw_credit_m: 0.0,
+            frwatc_net_liquid_delta_m: 0.0,
+            frdp_m: 0.0,
+            thdp_m: 0.0,
+            tfrdp_m: 0.0,
+            tthawd_m: 0.0,
+            fgthwd_flag: 0.0,
+            total_fine_layer_count: 0.0,
+            conductivity_tilled_w_m_k: 0.0,
+            conductivity_untilled_w_m_k: 0.0,
+            conductivity_residue_w_m_k: 0.0,
+            shadow_total_water_before_m: 0.0,
+            shadow_total_water_after_m: 0.0,
+            shadow_wb_delta_m: 0.0,
+            shadow_frwatc_residual_m: 0.0,
+            watpdg_m: 0.0,
+            watbtm_m: 0.0,
+            layer_shadows: Vec::new(),
+            fine_layers: Vec::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectActiveFrostPartitionInputs {
+    pub controls: DirectFrostControlInputs,
+    pub thermal: DirectFrostThermalInputs,
+    pub profile_depth_m: f64,
+    pub soil_water_m: f64,
+    pub theta_residual: f64,
+    pub theta_field_capacity: f64,
+    pub soil_conductivity_m_s: f64,
+    pub prior_state: DirectFrostPriorStateInput,
+    pub layers: Vec<DirectFrostLayerInput>,
+    pub hourly: [DirectFrostHourlyForcing; SIMIMPL29_HOURS_PER_DAY],
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectFrostLayerProjection {
     pub layer_index: usize,
     pub theta_after_m: f64,

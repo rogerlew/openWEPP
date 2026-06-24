@@ -13,6 +13,16 @@
 
 State as of `2026-06-24`:
 
+- `20260624-r7g-typed-frost-solver-extraction-001/` is complete. It executed
+  the ADR-0026 "Typed frost solver extraction" step by moving production direct
+  active-frost partition computation from the `DirectFrostRunoffSurface` /
+  `HillslopeKernelRequest` bridge to typed winter-column inputs and typed
+  `Wb11HydrologyKernel` partition compute. Production direct day input no
+  longer assigns a frost runoff surface, focused source scans prove the hot
+  path avoids compatibility request/surface calls, and typed-vs-adapter parity
+  fixtures pass for active and inactive/no-material cases. The residual
+  compatibility surface remains allowed only as a named comparator seam until
+  the later consumer cutover/deletion package.
 - `20260624-r7g-frost-state-skeleton-comparator-seam-001/` is complete.
   It targets the ADR-0026 "Frost state skeleton and comparator seam" step by
   making `DirectWinterColumnState.frost` the canonical direct lane/day

@@ -186,6 +186,24 @@ impl Wb11HydrologyKernel {
         Ok(active_direct_frost_liquid_partition(&frost_coupling))
     }
 
+    pub fn compute_direct_frost_liquid_partition_from_typed(
+        inputs: &DirectActiveFrostPartitionInputs,
+    ) -> Result<DirectFrostLiquidPartition, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_CONDUCTIVITY,
+            inputs.soil_conductivity_m_s,
+            Some(0.0),
+            None,
+        )?;
+        if !inputs.controls.wint_red_enabled {
+            return Ok(inactive_direct_frost_liquid_partition());
+        }
+        let frost_coupling = Self::compute_active_frost_coupling_from_typed(phase_class, inputs)?;
+        Ok(active_direct_frost_liquid_partition(&frost_coupling))
+    }
+
     pub fn compute_direct_snow_liquid_partition(
         state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
         flux_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,

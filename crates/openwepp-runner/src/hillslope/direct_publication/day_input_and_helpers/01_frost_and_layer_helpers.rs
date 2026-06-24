@@ -1,353 +1,77 @@
-fn direct_production_overlay_frost_runtime_carry(
-    surface: &mut DirectFrostRunoffSurface,
-    lane_index: usize,
-    carry: &DirectFrostRuntimeCarry,
-) -> Result<(), HillslopeCliError> {
-    direct_production_insert_frost_runtime_scalars(
-        surface,
-        DirectFrostRuntimeScalarSeed {
-            dfrost_m: carry.dfrost_m,
-            dthaw_m: carry.dthaw_m,
-            nft: carry.nft,
-            ws_frz_m: carry.ws_frz_m,
-            infcap_frz_m_s: carry.infcap_frz_m_s,
-            frwatc_soil_water_before_m: carry.frwatc_soil_water_before_m,
-            frwatc_soil_water_after_m: carry.frwatc_soil_water_after_m,
-            frwatc_frozen_water_before_m: carry.frwatc_frozen_water_before_m,
-            frwatc_frozen_water_after_m: carry.frwatc_frozen_water_after_m,
-            frwatc_freeze_debit_m: carry.frwatc_freeze_debit_m,
-            frwatc_thaw_credit_m: carry.frwatc_thaw_credit_m,
-            frwatc_net_liquid_delta_m: carry.frwatc_net_liquid_delta_m,
-            frdp_m: carry.frdp_m,
-            thdp_m: carry.thdp_m,
-            tfrdp_m: carry.tfrdp_m,
-            tthawd_m: carry.tthawd_m,
-            fgthwd_flag: carry.fgthwd_flag,
-            total_fine_layer_count: carry.total_fine_layer_count,
-            conductivity_tilled_w_m_k: carry.conductivity_tilled_w_m_k,
-            conductivity_untilled_w_m_k: carry.conductivity_untilled_w_m_k,
-            conductivity_residue_w_m_k: carry.conductivity_residue_w_m_k,
-            shadow_total_water_before_m: carry.shadow_total_water_before_m,
-            shadow_total_water_after_m: carry.shadow_total_water_after_m,
-            shadow_wb_delta_m: carry.shadow_wb_delta_m,
-            shadow_frwatc_residual_m: carry.shadow_frwatc_residual_m,
-            watpdg_m: carry.watpdg_m,
-            watbtm_m: carry.watbtm_m,
-            fine_projection: direct_publication_frost_runtime_carry_has_fine_projection(carry),
-        },
-    )?;
-    for layer in &carry.layer_shadows {
-        direct_production_insert_frost_layer_shadow(surface, *layer)?;
-    }
-    for fine in &carry.fine_layers {
-        direct_production_insert_frost_fine_layer(surface, *fine)?;
-    }
-    if !carry.layer_shadows.is_empty() || !carry.fine_layers.is_empty() {
-        let _ = lane_index;
-    }
-    Ok(())
-}
-
-fn direct_production_retains_frost_surface_symbol(symbol: &str) -> bool {
-    matches!(
-        symbol,
-        "wb11_nsl"
-            | "nsl"
-            | "wb11_soil_water"
-            | "thetdr"
-            | "thetfc"
-            | "solthk"
-            | "day"
-            | "year"
-            | "tmax"
-            | "tmin"
-            | "vwind"
-            | "salb"
-            | "canhgt"
-            | "rrc"
-            | "rrinit"
-            | "snow.runtime_depth_m"
-            | "snow.runtime_density_kg_m3"
-    ) || symbol.starts_with("frost.")
-        || symbol.starts_with("wb18_perc_theta_")
-        || symbol.starts_with("wb18_perc_ul_")
-        || symbol.starts_with("wb18_perc_frozen_depth_")
-        || symbol.starts_with("wb18_perc_frzw_")
-        || symbol.starts_with("wb19_dg_")
-        || symbol.starts_with("dg_")
-        || symbol.starts_with("wb19_thetdr_")
-        || symbol.starts_with("thetdr_")
-        || symbol.starts_with("wb19_bulk_density_kg_m3_")
-        || symbol.starts_with("winter.hourly.rad_mj_m2_")
-        || symbol.starts_with("winter.hourly.air_temp_c_")
-        || symbol.starts_with("winter.hourly.cloud_fraction_")
-        || symbol.starts_with("obmaxt_")
-        || symbol.starts_with("obmint_")
-}
-
-fn direct_production_insert_frost_runtime_scalars(
-    surface: &mut DirectFrostRunoffSurface,
-    seed: DirectFrostRuntimeScalarSeed,
-) -> Result<(), HillslopeCliError> {
-    for (symbol, value) in [
-        (
-            "frost.direct_runtime_carry_present",
-            if seed.fine_projection { 1.0 } else { 0.0 },
-        ),
-        ("frost.runtime_dfrost", seed.dfrost_m),
-        ("frost.runtime_dthaw", seed.dthaw_m),
-        ("frost.runtime_nft", seed.nft),
-        ("frost.runtime_ws_frz", seed.ws_frz_m),
-        ("frost.runtime_infcap_frz", seed.infcap_frz_m_s),
-        (
-            "frost.runtime_frwatc_soil_water_before_m",
-            seed.frwatc_soil_water_before_m,
-        ),
-        (
-            "frost.runtime_frwatc_soil_water_after_m",
-            seed.frwatc_soil_water_after_m,
-        ),
-        (
-            "frost.runtime_frwatc_frozen_water_before_m",
-            seed.frwatc_frozen_water_before_m,
-        ),
-        (
-            "frost.runtime_frwatc_frozen_water_after_m",
-            seed.frwatc_frozen_water_after_m,
-        ),
-        (
-            "frost.runtime_frwatc_freeze_debit_m",
-            seed.frwatc_freeze_debit_m,
-        ),
-        (
-            "frost.runtime_frwatc_thaw_credit_m",
-            seed.frwatc_thaw_credit_m,
-        ),
-        (
-            "frost.runtime_frwatc_net_liquid_delta_m",
-            seed.frwatc_net_liquid_delta_m,
-        ),
-        ("frost.runtime_frdp_m", seed.frdp_m),
-        ("frost.runtime_thdp_m", seed.thdp_m),
-        ("frost.runtime_tfrdp_m", seed.tfrdp_m),
-        ("frost.runtime_tthawd_m", seed.tthawd_m),
-        ("frost.runtime_fgthwd_flag", seed.fgthwd_flag),
-        (
-            "frost.runtime_total_fine_layer_count",
-            seed.total_fine_layer_count,
-        ),
-        ("frost.runtime_kftill_w_m_k", seed.conductivity_tilled_w_m_k),
-        (
-            "frost.runtime_kfutil_w_m_k",
-            seed.conductivity_untilled_w_m_k,
-        ),
-        ("frost.runtime_kres_w_m_k", seed.conductivity_residue_w_m_k),
-        (
-            "frost.runtime_shadow_total_water_before_m",
-            seed.shadow_total_water_before_m,
-        ),
-        (
-            "frost.runtime_shadow_total_water_after_m",
-            seed.shadow_total_water_after_m,
-        ),
-        ("frost.runtime_shadow_wb_delta_m", seed.shadow_wb_delta_m),
-        (
-            "frost.runtime_shadow_frwatc_residual_m",
-            seed.shadow_frwatc_residual_m,
-        ),
-        ("frost.runtime_watpdg_m", seed.watpdg_m),
-        ("frost.runtime_watbtm_m", seed.watbtm_m),
-    ] {
-        direct_production_insert_frost_surface_scalar(surface, symbol, value)?;
-    }
-    Ok(())
-}
-
-fn direct_production_insert_frost_layer_shadow(
-    surface: &mut DirectFrostRunoffSurface,
-    layer: DirectFrostLayerShadowCarry,
-) -> Result<(), HillslopeCliError> {
-    for (symbol, value) in [
-        (
-            format!("frost.runtime_shadow_st_m_{:04}", layer.layer_index),
-            layer.st_m,
-        ),
-        (
-            format!(
-                "frost.runtime_shadow_soil_water_m_{:04}",
-                layer.layer_index
-            ),
-            layer.soil_water_m,
-        ),
-        (
-            format!(
-                "frost.runtime_shadow_frozen_depth_m_{:04}",
-                layer.layer_index
-            ),
-            layer.frozen_depth_m,
-        ),
-        (
-            format!("frost.runtime_shadow_frzw_m_{:04}", layer.layer_index),
-            layer.frozen_water_m,
-        ),
-        (
-            format!("frost.runtime_shadow_soilf_m_{:04}", layer.layer_index),
-            layer.soilf_m,
-        ),
-        (
-            format!("frost.runtime_yst_m_{:04}", layer.layer_index),
-            layer.yst_m,
-        ),
-        (
-            format!("frost.runtime_nwfrzz_m_{:04}", layer.layer_index),
-            layer.nwfrzz_m,
-        ),
-    ] {
-        direct_production_insert_frost_surface_scalar(surface, symbol.as_str(), value)?;
-    }
-    Ok(())
-}
-
-fn direct_production_insert_frost_fine_layer(
-    surface: &mut DirectFrostRunoffSurface,
-    fine: DirectFrostFineLayerCarry,
-) -> Result<(), HillslopeCliError> {
-    for (symbol, value) in [
-        (
-            format!(
-                "frost.runtime_fgfrst_{:04}_{:04}",
-                fine.layer_index, fine.fine_index
-            ),
-            fine.fgfrst,
-        ),
-        (
-            format!(
-                "frost.runtime_slfsd_m_{:04}_{:04}",
-                fine.layer_index, fine.fine_index
-            ),
-            fine.slfsd_m,
-        ),
-        (
-            format!(
-                "frost.runtime_slsic_m_{:04}_{:04}",
-                fine.layer_index, fine.fine_index
-            ),
-            fine.slsic_m,
-        ),
-        (
-            format!(
-                "frost.runtime_slsw_theta_{:04}_{:04}",
-                fine.layer_index, fine.fine_index
-            ),
-            fine.slsw_theta,
-        ),
-        (
-            format!(
-                "frost.runtime_sltime_s_{:04}_{:04}",
-                fine.layer_index, fine.fine_index
-            ),
-            fine.sltime_s,
-        ),
-    ] {
-        direct_production_insert_frost_surface_scalar(surface, symbol.as_str(), value)?;
-    }
-    Ok(())
-}
-
-fn direct_production_seed_frost_surface_layers(
-    surface: &mut DirectFrostRunoffSurface,
-    lane_index: usize,
+fn direct_production_frost_typed_authority(
+    seed_surface: &HillslopeWritebackSurface,
     layers: &[DirectSubsurfaceLayerState],
-    soil_water_m: f64,
-) -> Result<(), HillslopeCliError> {
-    if !soil_water_m.is_finite() || soil_water_m < 0.0 {
-        return Err(direct_production_executor_blocked(format!(
-            "direct production lane {} frost soil-water carry must be finite and nonnegative, observed {soil_water_m}",
-            lane_index + 1
-        )));
+    frost_file_present: bool,
+    frost_wint_red_enabled: bool,
+    frost_projection_present: bool,
+) -> Result<Option<DirectProductionFrostTypedAuthority>, HillslopeCliError> {
+    if !frost_projection_present {
+        return Ok(None);
     }
-    let nsl = usize_to_scalar("direct_production.frost_nsl", layers.len())?;
-    direct_production_insert_frost_surface_scalar(surface, "wb11_nsl", nsl)?;
-    direct_production_insert_frost_surface_scalar(surface, "nsl", nsl)?;
-    direct_production_insert_frost_surface_scalar(surface, "wb11_soil_water", soil_water_m)?;
-    for (layer_offset, layer) in layers.iter().enumerate() {
-        let layer_index = layer_offset + 1;
-        for (symbol, value) in direct_production_frost_layer_seed_scalars(layer_index, layer) {
-            direct_production_insert_frost_surface_scalar(surface, symbol.as_str(), value)?;
+    let controls = DirectFrostControlInputs {
+        frost_file_present,
+        wint_red_enabled: frost_wint_red_enabled,
+        fine_top_count: direct_publication_frost_fine_count(seed_surface, "frost.options.fineTop")?,
+        fine_bot_count: direct_publication_frost_fine_count(seed_surface, "frost.options.fineBot")?,
+        ksnowf: direct_publication_required_positive_scalar(seed_surface, "frost.options.ksnowf")?,
+        kresf: direct_publication_required_positive_scalar(seed_surface, "frost.options.kresf")?,
+        ksoilf: direct_publication_required_positive_scalar(seed_surface, "frost.options.ksoilf")?,
+        kfactor1: require_runtime_surface_scalar(seed_surface, "frost.options.kfactor1")?,
+        kfactor2: require_runtime_surface_scalar(seed_surface, "frost.options.kfactor2")?,
+        kfactor3: require_runtime_surface_scalar(seed_surface, "frost.options.kfactor3")?,
+        landuse_class_proxy: runtime_surface_symbol_value(seed_surface, "landuse.class_proxy"),
+    };
+    let mut layer_bulk_density_kg_m3 = Vec::with_capacity(layers.len());
+    for layer_index in 1..=layers.len() {
+        let symbol = format!("wb19_bulk_density_kg_m3_{layer_index:04}");
+        let value = require_runtime_surface_scalar(seed_surface, symbol.as_str())?;
+        if !value.is_finite() || value <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} {symbol} must be finite and > 0.0 for direct production frost typed solver, observed {value}"
+                ),
+            });
         }
+        layer_bulk_density_kg_m3.push(value);
     }
-    Ok(())
+    Ok(Some(DirectProductionFrostTypedAuthority {
+        controls,
+        layer_bulk_density_kg_m3,
+        soil_conductivity_m_s: direct_publication_optional_nonnegative_scalar(
+            seed_surface,
+            &["wb14_soil_conductivity_m_s"],
+        )?,
+        residue_depth_m: direct_publication_optional_nonnegative_scalar(
+            seed_surface,
+            &["frost.runtime_residue_depth_m", "resdep"],
+        )?
+        .unwrap_or(0.0),
+        theta_residual: require_runtime_surface_scalar(seed_surface, "thetdr")?,
+        theta_field_capacity: require_runtime_surface_scalar(seed_surface, "thetfc")?,
+        albedo: require_runtime_surface_scalar(seed_surface, "salb")?,
+        canopy_height_m: direct_publication_optional_nonnegative_scalar(seed_surface, &["canhgt"])?
+            .unwrap_or(0.0),
+        random_roughness_m: direct_publication_optional_nonnegative_scalar(
+            seed_surface,
+            &["rrc", "rrinit"],
+        )?
+        .unwrap_or(0.0),
+        monthly_max_c: direct_production_monthly_temperature(seed_surface, "obmaxt")?,
+        monthly_min_c: direct_production_monthly_temperature(seed_surface, "obmint")?,
+    }))
 }
 
-fn direct_production_frost_soil_conductivity(
-    surface: &DirectFrostRunoffSurface,
-    layers: &[DirectSubsurfaceLayerState],
-) -> Result<f64, HillslopeCliError> {
-    if let Some(value) = surface.optional_scalar("wb14_soil_conductivity_m_s") {
-        if !value.is_finite() || value < 0.0 {
-            return Err(direct_production_executor_blocked(format!(
-                "direct production frost soil conductivity must be finite and nonnegative, observed {value}"
-            )));
-        }
-        if value > 0.0 {
-            return Ok(value);
-        }
+fn direct_production_monthly_temperature(
+    seed_surface: &HillslopeWritebackSurface,
+    root: &str,
+) -> Result<[f64; 12], HillslopeCliError> {
+    let mut values = [0.0; 12];
+    for month in 1..=12 {
+        let symbol = format!("{root}_{month:04}");
+        values[month - 1] = require_runtime_surface_scalar(seed_surface, symbol.as_str())?;
     }
-    layers
-        .first()
-        .map(|layer| layer.conductivity_m_s)
-        .ok_or_else(|| {
-            direct_production_executor_blocked(
-                "direct production active frost requires at least one layer conductivity",
-            )
-        })
-}
-
-fn direct_production_insert_frost_surface_scalar(
-    surface: &mut DirectFrostRunoffSurface,
-    symbol: &str,
-    value: f64,
-) -> Result<(), HillslopeCliError> {
-    if !value.is_finite() {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_publication_frame",
-            detail: format!(
-                "{SIMOUT_GUARD_ID} direct production frost symbol {symbol} is non-finite ({value})"
-            ),
-        });
-    }
-    surface.insert_scalar(symbol, value);
-    Ok(())
-}
-
-fn direct_production_frost_layer_seed_scalars(
-    layer_index: usize,
-    layer: &DirectSubsurfaceLayerState,
-) -> [(String, f64); 6] {
-    [
-        (format!("wb18_perc_theta_{layer_index:04}"), layer.theta_m),
-        (
-            format!("wb18_perc_ul_{layer_index:04}"),
-            layer.upper_limit_m,
-        ),
-        (format!("wb19_dg_{layer_index:04}"), layer.depth_m),
-        (
-            format!("wb19_thetdr_{layer_index:04}"),
-            layer.residual_theta,
-        ),
-        (
-            format!("wb18_perc_frozen_depth_{layer_index:04}"),
-            layer.frozen_depth_m,
-        ),
-        (
-            format!("wb18_perc_frzw_{layer_index:04}"),
-            layer.frozen_water_m,
-        ),
-    ]
-}
-
-fn direct_production_hourly_symbol(root: &str, hour: usize) -> String {
-    format!("{root}_{hour:04}")
+    Ok(values)
 }
 
 fn direct_production_required_snow_state_scalar(
@@ -932,6 +656,117 @@ fn direct_publication_frost_runtime_carry_from_lane_state(
     state: &DirectFrostLaneState,
 ) -> Option<DirectFrostRuntimeCarry> {
     state.has_runtime_state().then(|| state.clone().into())
+}
+
+fn direct_production_frost_prior_state_input(
+    state: &DirectFrostLaneState,
+) -> DirectFrostPriorStateInput {
+    DirectFrostPriorStateInput {
+        active_frost_coupling: state.active_frost_coupling,
+        dfrost_m: state.dfrost_m,
+        dthaw_m: state.dthaw_m,
+        nft: state.nft,
+        ws_frz_m: state.ws_frz_m,
+        infcap_frz_m_s: state.infcap_frz_m_s,
+        frwatc_soil_water_before_m: state.frwatc_soil_water_before_m,
+        frwatc_soil_water_after_m: state.frwatc_soil_water_after_m,
+        frwatc_frozen_water_before_m: state.frwatc_frozen_water_before_m,
+        frwatc_frozen_water_after_m: state.frwatc_frozen_water_after_m,
+        frwatc_freeze_debit_m: state.frwatc_freeze_debit_m,
+        frwatc_thaw_credit_m: state.frwatc_thaw_credit_m,
+        frwatc_net_liquid_delta_m: state.frwatc_net_liquid_delta_m,
+        frdp_m: state.frdp_m,
+        thdp_m: state.thdp_m,
+        tfrdp_m: state.tfrdp_m,
+        tthawd_m: state.tthawd_m,
+        fgthwd_flag: state.fgthwd_flag,
+        total_fine_layer_count: state.total_fine_layer_count,
+        conductivity_tilled_w_m_k: state.conductivity_tilled_w_m_k,
+        conductivity_untilled_w_m_k: state.conductivity_untilled_w_m_k,
+        conductivity_residue_w_m_k: state.conductivity_residue_w_m_k,
+        shadow_total_water_before_m: state.shadow_total_water_before_m,
+        shadow_total_water_after_m: state.shadow_total_water_after_m,
+        shadow_wb_delta_m: state.shadow_wb_delta_m,
+        shadow_frwatc_residual_m: state.shadow_frwatc_residual_m,
+        watpdg_m: state.watpdg_m,
+        watbtm_m: state.watbtm_m,
+        layer_shadows: state
+            .layer_shadows
+            .iter()
+            .map(|layer| DirectFrostLayerShadowProjection {
+                layer_index: layer.layer_index,
+                st_m: layer.st_m,
+                soil_water_m: layer.soil_water_m,
+                frozen_depth_m: layer.frozen_depth_m,
+                frozen_water_m: layer.frozen_water_m,
+                soilf_m: layer.soilf_m,
+                yst_m: layer.yst_m,
+                nwfrzz_m: layer.nwfrzz_m,
+            })
+            .collect(),
+        fine_layers: state
+            .fine_layers
+            .iter()
+            .map(|fine| DirectFrostFineLayerProjection {
+                layer_index: fine.layer_index,
+                fine_index: fine.fine_index,
+                fgfrst: fine.fgfrst,
+                slfsd_m: fine.slfsd_m,
+                slsic_m: fine.slsic_m,
+                slsw_theta: fine.slsw_theta,
+                sltime_s: fine.sltime_s,
+            })
+            .collect(),
+    }
+}
+
+fn direct_production_frost_layer_inputs(
+    lane_index: usize,
+    layers: &[DirectSubsurfaceLayerState],
+    bulk_density_kg_m3: &[f64],
+) -> Result<Vec<DirectFrostLayerInput>, HillslopeCliError> {
+    if layers.len() != bulk_density_kg_m3.len() {
+        return Err(direct_production_executor_blocked(format!(
+            "direct production lane {} frost typed solver requires {} bulk-density values, observed {}",
+            lane_index + 1,
+            layers.len(),
+            bulk_density_kg_m3.len()
+        )));
+    }
+    Ok(layers
+        .iter()
+        .zip(bulk_density_kg_m3.iter().copied())
+        .enumerate()
+        .map(|(offset, (layer, bulk_density_kg_m3))| DirectFrostLayerInput {
+            layer_index: offset + 1,
+            theta_m: layer.theta_m,
+            upper_limit_m: layer.upper_limit_m,
+            depth_m: layer.depth_m,
+            residual_theta: layer.residual_theta,
+            bulk_density_kg_m3,
+            frozen_depth_m: layer.frozen_depth_m,
+            frozen_water_m: layer.frozen_water_m,
+        })
+        .collect())
+}
+
+fn direct_production_typed_frost_soil_conductivity(
+    authority: &DirectProductionFrostTypedAuthority,
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<f64, HillslopeCliError> {
+    if let Some(value) = authority.soil_conductivity_m_s
+        && value > 0.0
+    {
+        return Ok(value);
+    }
+    layers
+        .first()
+        .map(|layer| layer.conductivity_m_s)
+        .ok_or_else(|| {
+            direct_production_executor_blocked(
+                "direct production active frost requires at least one layer conductivity",
+            )
+        })
 }
 
 fn overlay_direct_publication_frost_runtime_carry(

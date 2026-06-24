@@ -1,13 +1,15 @@
 use super::direct_runtime_test_lock;
 use crate::{
-    DirectDayFrame, DirectExecutorMode, DirectFrameExecutor, DirectFrostFineLayerCarry,
-    DirectFrostFineLayerProjection, DirectFrostLaneState, DirectFrostLayerProjection,
-    DirectFrostLayerShadowCarry, DirectFrostLayerShadowProjection, DirectFrostLiquidPartition,
-    DirectFrostRuntimeCarry, DirectHydrologyProjectionInputs, DirectLaneConstructorInputs,
-    DirectPercolationInputs, DirectPublicationCalendarDay, DirectPublicationDayInput,
-    DirectPublicationRunMetadata, DirectRunConstructorInputs, DirectRunFrame, DirectRunIdentity,
-    DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
-    reset_direct_runtime_audit_counters,
+    DirectActiveFrostPartitionInputs, DirectDayFrame, DirectExecutorMode, DirectFrameExecutor,
+    DirectFrostControlInputs, DirectFrostFineLayerCarry, DirectFrostFineLayerProjection,
+    DirectFrostHourlyForcing, DirectFrostLaneState, DirectFrostLayerInput,
+    DirectFrostLayerProjection, DirectFrostLayerShadowCarry, DirectFrostLayerShadowProjection,
+    DirectFrostLiquidPartition, DirectFrostPriorStateInput, DirectFrostRunoffSurface,
+    DirectFrostRuntimeCarry, DirectFrostThermalInputs, DirectHydrologyProjectionInputs,
+    DirectLaneConstructorInputs, DirectPercolationInputs, DirectPublicationCalendarDay,
+    DirectPublicationDayInput, DirectPublicationRunMetadata, DirectRunConstructorInputs,
+    DirectRunFrame, DirectRunIdentity, DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs,
+    DirectSubsurfaceLayerState, Wb11HydrologyKernel, reset_direct_runtime_audit_counters,
 };
 
 #[test]
@@ -137,6 +139,166 @@ fn r7g_executor_commits_r4a_winter_column_frost_state_to_lane() {
             frame.lanes[0].winter_column.frost.clone()
         ))
     );
+}
+
+#[test]
+fn r7g_typed_active_no_freeze_partition_matches_surface_adapter() {
+    let mut frost_surface = DirectFrostRunoffSurface::default();
+    seed_no_freeze_frost_surface(&mut frost_surface, true);
+
+    let adapter_partition = frost_surface
+        .compute_frost_liquid_partition(1.0e-6)
+        .expect("active no-freeze adapter partition should compute");
+    let typed_partition = Wb11HydrologyKernel::compute_direct_frost_liquid_partition_from_typed(
+        &no_freeze_typed_frost_inputs(true),
+    )
+    .expect("active no-freeze typed partition should compute");
+
+    assert_eq!(typed_partition, adapter_partition);
+    assert!(typed_partition.active_frost_coupling);
+    assert_eq!(
+        typed_partition.frost_depth_after_m.to_bits(),
+        0.0_f64.to_bits()
+    );
+    assert!(typed_partition.layer_projection.is_empty());
+    assert!(!typed_partition.layer_shadow_projection.is_empty());
+    assert!(!typed_partition.fine_layer_projection.is_empty());
+}
+
+#[test]
+fn r7g_typed_inactive_frost_partition_matches_surface_adapter_without_material() {
+    let mut frost_surface = DirectFrostRunoffSurface::default();
+    frost_surface.insert_scalar("frost.options.frost_file_present", 0.0);
+    frost_surface.insert_scalar("frost.options.wintRed", 0.0);
+
+    let adapter_partition = frost_surface
+        .compute_frost_liquid_partition(1.0e-6)
+        .expect("inactive adapter partition should compute");
+    let typed_partition = Wb11HydrologyKernel::compute_direct_frost_liquid_partition_from_typed(
+        &no_freeze_typed_frost_inputs(false),
+    )
+    .expect("inactive typed partition should compute");
+
+    assert_eq!(typed_partition, adapter_partition);
+    assert!(!typed_partition.active_frost_coupling);
+    assert!(typed_partition.layer_projection.is_empty());
+    assert!(typed_partition.layer_shadow_projection.is_empty());
+    assert!(typed_partition.fine_layer_projection.is_empty());
+}
+
+fn seed_no_freeze_frost_surface(surface: &mut DirectFrostRunoffSurface, wint_red: bool) {
+    for (symbol, value) in [
+        ("frost.options.frost_file_present", 0.0),
+        ("frost.options.wintRed", if wint_red { 1.0 } else { 0.0 }),
+        ("frost.options.fineTop", 10.0),
+        ("frost.options.fineBot", 10.0),
+        ("frost.options.ksnowf", 1.0),
+        ("frost.options.kresf", 1.0),
+        ("frost.options.ksoilf", 1.0),
+        ("frost.options.kfactor1", 0.5),
+        ("frost.options.kfactor2", 0.5),
+        ("frost.options.kfactor3", 0.5),
+        ("nsl", 1.0),
+        ("wb11_nsl", 1.0),
+        ("solthk", 0.400),
+        ("dg_0001", 0.400),
+        ("wb19_dg_m_0001", 0.400),
+        ("wb18_perc_theta_0001", 0.200),
+        ("wb18_perc_ul_0001", 0.500),
+        ("thetdr", 0.050),
+        ("thetfc", 0.250),
+        ("wb19_thetdr_0001", 0.050),
+        ("wb19_bulk_density_kg_m3_0001", 1_300.0),
+        ("frost.runtime_dfrost", 0.0),
+        ("frost.runtime_dthaw", 0.0),
+        ("frost.runtime_nft", 0.0),
+        ("frost.runtime_ws_frz", 0.0),
+        ("frost.runtime_frdp_m", 0.0),
+        ("frost.runtime_thdp_m", 0.0),
+        ("frost.runtime_tfrdp_m", 0.0),
+        ("frost.runtime_tthawd_m", 0.0),
+        ("frost.runtime_fgthwd_flag", 0.0),
+        ("frost.runtime_infcap_frz", 1.0e-6),
+        ("frost.runtime_frwatc_frozen_water_after_m", 0.0),
+        ("frost.runtime_residue_depth_m", 0.0),
+        ("wb11_soil_water", 0.220),
+        ("tmax", 6.0),
+        ("tmin", 4.0),
+        ("vwind", 1.0),
+        ("day", 5.0),
+        ("year", 2026.0),
+        ("snow.runtime_depth_m", 0.0),
+        ("snow.runtime_density_kg_m3", 0.0),
+        ("salb", 0.20),
+        ("canhgt", 0.0),
+        ("rrinit", 0.0),
+    ] {
+        surface.insert_scalar(symbol, value);
+    }
+    for hour in 1..=24 {
+        surface.insert_scalar(format!("winter.hourly.air_temp_c_{hour:04}").as_str(), 5.0);
+        surface.insert_scalar(format!("winter.hourly.rad_mj_m2_{hour:04}").as_str(), 0.0);
+        surface.insert_scalar(
+            format!("winter.hourly.cloud_fraction_{hour:04}").as_str(),
+            1.0,
+        );
+    }
+    for month in 1..=12 {
+        surface.insert_scalar(format!("obmaxt_{month:04}").as_str(), 8.0);
+        surface.insert_scalar(format!("obmint_{month:04}").as_str(), 2.0);
+    }
+}
+
+fn no_freeze_typed_frost_inputs(wint_red_enabled: bool) -> DirectActiveFrostPartitionInputs {
+    let hourly = [DirectFrostHourlyForcing {
+        radiation_mj_m2: 0.0,
+        air_temperature_c: 5.0,
+        cloud_fraction: 1.0,
+    }; 24];
+    DirectActiveFrostPartitionInputs {
+        controls: DirectFrostControlInputs {
+            frost_file_present: false,
+            wint_red_enabled,
+            fine_top_count: 10,
+            fine_bot_count: 10,
+            ksnowf: 1.0,
+            kresf: 1.0,
+            ksoilf: 1.0,
+            kfactor1: 0.5,
+            kfactor2: 0.5,
+            kfactor3: 0.5,
+            landuse_class_proxy: None,
+        },
+        thermal: DirectFrostThermalInputs {
+            snow_depth_m: 0.0,
+            snow_density_kg_m3: 0.0,
+            residue_depth_m: 0.0,
+            wind_m_s: 1.0,
+            albedo: 0.20,
+            canopy_height_m: 0.0,
+            random_roughness_m: 0.0,
+            day_of_year: 5.0,
+            monthly_max_c: [8.0; 12],
+            monthly_min_c: [2.0; 12],
+        },
+        profile_depth_m: 0.400,
+        soil_water_m: 0.220,
+        theta_residual: 0.050,
+        theta_field_capacity: 0.250,
+        soil_conductivity_m_s: 1.0e-6,
+        prior_state: DirectFrostPriorStateInput::zero(),
+        layers: vec![DirectFrostLayerInput {
+            layer_index: 1,
+            theta_m: 0.200,
+            upper_limit_m: 0.500,
+            depth_m: 0.400,
+            residual_theta: 0.050,
+            bulk_density_kg_m3: 1_300.0,
+            frozen_depth_m: 0.0,
+            frozen_water_m: 0.0,
+        }],
+        hourly,
+    }
 }
 
 fn sample_frost_runtime_carry(

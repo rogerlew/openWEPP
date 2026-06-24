@@ -644,6 +644,114 @@ impl Wb11HydrologyKernel {
         })
     }
 
+    pub(super) fn compute_shadow_fine_state_from_typed(
+        prior_state: &DirectFrostPriorStateInput,
+        phase_class: HillslopeKernelPhaseClass,
+        layers: &[FrostLayerWaterState],
+    ) -> Result<FrostFineShadowState, Wb11HydrologyKernelGuardError> {
+        let mut all_fine_layers = Vec::new();
+        let mut shadow_layers = Vec::with_capacity(layers.len());
+        let mut total_water_before_m = 0.0;
+        let mut total_water_after_m = 0.0;
+        let mut wb_delta_m = 0.0;
+        let watpdg_m = 0.0;
+        let mut watbtm_m = 0.0;
+
+        for layer in layers {
+            let mut remaining_frozen_depth_m = layer.frozen_depth_m;
+            let mut fine_layers = Vec::with_capacity(layer.fine_layer_count);
+            for fine_index in 1..=layer.fine_layer_count {
+                let default = Self::default_fine_layer_from_coarse(
+                    layer,
+                    fine_index,
+                    &mut remaining_frozen_depth_m,
+                );
+                let prior = prior_state
+                    .fine_layers
+                    .iter()
+                    .find(|fine| {
+                        fine.layer_index == layer.layer_index && fine.fine_index == fine_index
+                    });
+                let mut fine = FrostFineLayerState {
+                    layer_index: layer.layer_index,
+                    fine_index,
+                    fine_layer_thickness_m: layer.fine_layer_thickness_m,
+                    fgfrst: prior.map_or(default.fgfrst, |fine| fine.fgfrst),
+                    slfsd_m: prior.map_or(default.slfsd_m, |fine| fine.slfsd_m),
+                    slsic_m: prior.map_or(default.slsic_m, |fine| fine.slsic_m),
+                    slsw_theta: prior.map_or(default.slsw_theta, |fine| fine.slsw_theta),
+                    sltime_s: prior.map_or(0.0, |fine| fine.sltime_s),
+                };
+                Self::canonicalize_fine_layer_liquid_theta(&mut fine, layer);
+                Self::require_shadow_fine_state_domains(None, phase_class, &fine, layer)?;
+                fine_layers.push(fine);
+            }
+
+            let prior_layer = prior_state
+                .layer_shadows
+                .iter()
+                .find(|shadow| shadow.layer_index == layer.layer_index);
+            let nwfrzz_m = prior_layer.map_or(0.0, |shadow| shadow.nwfrzz_m);
+            Self::require_dynamic_state_range(
+                phase_class,
+                Self::frost_layer_symbol(FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT, layer.layer_index),
+                nwfrzz_m,
+                Some(0.0),
+                None,
+            )?;
+            let st_m = layer.theta_m + nwfrzz_m;
+            let yst_m = prior_layer.map_or(st_m, |shadow| shadow.yst_m);
+            Self::require_dynamic_state_range(
+                phase_class,
+                Self::frost_layer_symbol(FROST_RUNTIME_LAYER_YST_M_ROOT, layer.layer_index),
+                yst_m,
+                Some(0.0),
+                None,
+            )?;
+            let soilf_m = layer.frzw_m + layer.thetdr * layer.frozen_depth_m;
+            let mut shadow_layer = FrostLayerExchangeState {
+                layer_index: layer.layer_index,
+                thetdr: layer.thetdr,
+                st_m,
+                yst_m,
+                nwfrzz_m,
+                frozen_m: layer.frozen_depth_m,
+                frzw_m: layer.frzw_m,
+                soilf_m,
+                soil_water_m: layer.theta_m
+                    + layer.thetdr * (layer.dg_m - layer.frozen_depth_m).max(0.0)
+                    + nwfrzz_m,
+            };
+            let before_m = Self::fine_layer_total_water(&fine_layers, shadow_layer.nwfrzz_m);
+            wb_delta_m += shadow_layer.st_m - shadow_layer.yst_m;
+            Self::apply_shadow_frwatc_ingress(
+                &mut fine_layers,
+                &mut shadow_layer,
+                layer,
+                &mut watbtm_m,
+            );
+            Self::aggregate_shadow_layer(&fine_layers, &mut shadow_layer);
+            let after_m = Self::fine_layer_total_water(&fine_layers, shadow_layer.nwfrzz_m);
+            total_water_before_m += before_m;
+            total_water_after_m += after_m;
+            shadow_layers.push(shadow_layer);
+            all_fine_layers.extend(fine_layers);
+        }
+
+        Ok(FrostFineShadowState {
+            fine_layers: all_fine_layers,
+            layer_state: shadow_layers,
+            total_water_before_m,
+            total_water_after_m,
+            wb_delta_m,
+            residual_m: total_water_after_m + watpdg_m + watbtm_m
+                - total_water_before_m
+                - wb_delta_m,
+            watpdg_m,
+            watbtm_m,
+        })
+    }
+
     fn push_frost_segment(segments: &mut Vec<(bool, f64)>, frozen: bool, length_m: f64) {
         if length_m <= WB11_ZERO_THRESHOLD {
             return;
@@ -974,7 +1082,7 @@ impl Wb11HydrologyKernel {
         (square_error / 12.0).sqrt()
     }
 
-    fn fit_legacy_tmpcft_curve(monthly_max_c: &[f64; 12], monthly_min_c: &[f64; 12]) -> FrostSeasonalTemperatureCurve {
+    pub(super) fn fit_legacy_tmpcft_curve(monthly_max_c: &[f64; 12], monthly_min_c: &[f64; 12]) -> FrostSeasonalTemperatureCurve {
         let mut monthly_mean_c = [0.0; 12];
         let mut annual_mean_c = 0.0;
         let mut maximum_mean_c = f64::NEG_INFINITY;
@@ -1657,7 +1765,7 @@ impl Wb11HydrologyKernel {
         }
     }
 
-    fn tmpadj_snow_conductivity_w_m_k(
+    pub(super) fn tmpadj_snow_conductivity_w_m_k(
         phase_class: HillslopeKernelPhaseClass,
         snow_density_kg_m3: f64,
         ksnowf: f64,
@@ -1681,32 +1789,12 @@ impl Wb11HydrologyKernel {
         Ok((base * ksnowf).max(WB11_ZERO_THRESHOLD))
     }
 
-    fn require_tmpadj_random_roughness_m(
-        request: &HillslopeKernelRequest<'_>,
-        phase_class: HillslopeKernelPhaseClass,
-    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let rrc_symbol = BoundarySymbol::from("rrc");
-        let rrinit_symbol = BoundarySymbol::from("rrinit");
-        let (symbol, roughness_m) =
-            if let Some(value) =
-                Self::optional_state_scalar_for_symbol(request, phase_class, &rrc_symbol)?
-            {
-                (rrc_symbol, value)
-            } else {
-                (
-                    rrinit_symbol.clone(),
-                    Self::require_state_scalar_for_symbol(request, phase_class, &rrinit_symbol)?,
-                )
-            };
-        Self::require_state_range_for_symbol(phase_class, &symbol, roughness_m, Some(0.0), None)?;
-        Ok(roughness_m)
-    }
-
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-    pub(super) fn legacy_tmpadj_surface_temperature_c(
-        request: &HillslopeKernelRequest<'_>,
+    pub(super) fn legacy_tmpadj_surface_temperature_from_typed(
         phase_class: HillslopeKernelPhaseClass,
         hour: usize,
+        hourly_forcing: DirectFrostHourlyForcing,
+        tmpadj: ActiveFrostTmpadjContext,
         snow_depth_m: f64,
         snow_density_kg_m3: f64,
         ksnowf: f64,
@@ -1722,13 +1810,10 @@ impl Wb11HydrologyKernel {
         const TMPADJ_SURFACE_EMISSIVITY: f64 = 1.0;
         const TMPADJ_SNOW_ALBEDO: f64 = 0.5;
 
-        let (air_symbol, hourly_air_temp_c) = Self::require_state_scalar_for_series_or_symbol(
-            request,
-            phase_class,
-            WINTER_HOURLY_AIR_TEMP_ROOT,
-            hour,
-            || Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour),
-        )?;
+        let hourly_air_temp_c = hourly_forcing.air_temperature_c;
+        let hourly_rad_mj_m2 = hourly_forcing.radiation_mj_m2;
+        let cloud_fraction = hourly_forcing.cloud_fraction;
+        let air_symbol = Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour);
         Self::require_state_range_for_symbol(
             phase_class,
             &air_symbol,
@@ -1736,14 +1821,7 @@ impl Wb11HydrologyKernel {
             Some(-273.16),
             None,
         )?;
-
-        let (rad_symbol, hourly_rad_mj_m2) = Self::require_state_scalar_for_series_or_symbol(
-            request,
-            phase_class,
-            WINTER_HOURLY_RAD_ROOT,
-            hour,
-            || Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour),
-        )?;
+        let rad_symbol = Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour);
         Self::require_state_range_for_symbol(
             phase_class,
             &rad_symbol,
@@ -1751,14 +1829,7 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
-
-        let (cloud_symbol, cloud_fraction) = Self::require_state_scalar_for_series_or_symbol(
-            request,
-            phase_class,
-            WINTER_HOURLY_CLOUD_ROOT,
-            hour,
-            || Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour),
-        )?;
+        let cloud_symbol = Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour);
         Self::require_state_range_for_symbol(
             phase_class,
             &cloud_symbol,
@@ -1766,29 +1837,35 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             Some(1.0),
         )?;
-
         let vwind_symbol = BoundarySymbol::from("vwind");
-        let vwind_m_s =
-            Self::require_state_scalar_for_symbol(request, phase_class, &vwind_symbol)?;
         Self::require_state_range_for_symbol(
             phase_class,
             &vwind_symbol,
-            vwind_m_s,
+            tmpadj.wind_m_s,
             Some(0.0),
             None,
         )?;
-
         let salb_symbol = BoundarySymbol::from("salb");
-        let salb = Self::require_state_scalar_for_symbol(request, phase_class, &salb_symbol)?;
-        Self::require_state_range_for_symbol(phase_class, &salb_symbol, salb, Some(0.0), Some(1.0))?;
-
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &salb_symbol,
+            tmpadj.albedo,
+            Some(0.0),
+            Some(1.0),
+        )?;
         let canhgt_symbol = BoundarySymbol::from("canhgt");
-        let canhgt_m =
-            Self::require_state_scalar_for_symbol(request, phase_class, &canhgt_symbol)?;
         Self::require_state_range_for_symbol(
             phase_class,
             &canhgt_symbol,
-            canhgt_m,
+            tmpadj.canopy_height_m,
+            Some(0.0),
+            None,
+        )?;
+        let random_roughness_symbol = BoundarySymbol::from("rrc");
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &random_roughness_symbol,
+            tmpadj.random_roughness_m,
             Some(0.0),
             None,
         )?;
@@ -1796,7 +1873,7 @@ impl Wb11HydrologyKernel {
         let albedo = if snow_depth_m > 0.01 {
             TMPADJ_SNOW_ALBEDO
         } else {
-            salb
+            tmpadj.albedo
         };
         let incoming_shortwave_w_m2 = (hourly_rad_mj_m2 / FROST_RUNTIME_SECONDS_PER_HOUR) * 1.0e6;
         let air_temp_k = hourly_air_temp_c + 273.16;
@@ -1804,18 +1881,18 @@ impl Wb11HydrologyKernel {
             * (1.0 - 0.261 * (7.77e-4 * hourly_air_temp_c.powi(2)).exp())
             + (0.84 * cloud_fraction);
 
-        let mut displacement_m = 0.77 * canhgt_m;
+        let mut displacement_m = 0.77 * tmpadj.canopy_height_m;
         if displacement_m >= TMPADJ_WIND_MEASUREMENT_HEIGHT_M {
             displacement_m = 0.77 * TMPADJ_WIND_MEASUREMENT_HEIGHT_M;
         }
-        let mut wind_roughness_m = if snow_depth_m < 0.01 && canhgt_m > 0.0 {
-            0.13 * canhgt_m
+        let mut wind_roughness_m = if snow_depth_m < 0.01 && tmpadj.canopy_height_m > 0.0 {
+            0.13 * tmpadj.canopy_height_m
         } else if snow_depth_m < 0.01 {
-            Self::require_tmpadj_random_roughness_m(request, phase_class)?
-        } else if snow_depth_m > canhgt_m {
+            tmpadj.random_roughness_m
+        } else if snow_depth_m > tmpadj.canopy_height_m {
             0.0002
         } else {
-            0.13 * (canhgt_m - snow_depth_m)
+            0.13 * (tmpadj.canopy_height_m - snow_depth_m)
         };
         wind_roughness_m = wind_roughness_m.clamp(0.001, 0.26);
         let transfer_roughness_m = 0.2 * wind_roughness_m;
@@ -1940,7 +2017,7 @@ impl Wb11HydrologyKernel {
         };
 
         let turbulent_exchange_w_m2_k =
-            longwave_transfer_w_m2_k + convective_heat_transfer_j_m3_k * vwind_m_s;
+            longwave_transfer_w_m2_k + convective_heat_transfer_j_m3_k * tmpadj.wind_m_s;
         let surface_temp_c = if system_depth_m > 0.0 {
             (net_radiation_w_m2 + turbulent_exchange_w_m2_k * hourly_air_temp_c)
                 / (turbulent_exchange_w_m2_k + effective_conductivity_w_m_k / system_depth_m)

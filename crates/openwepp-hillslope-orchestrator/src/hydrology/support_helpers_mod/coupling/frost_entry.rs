@@ -59,10 +59,11 @@ struct ActiveFrostThermalContext {
     kfactor_selected: f64,
 }
 
-struct ActiveFrostHourlyContext<'request, 'surface> {
-    request: &'request HillslopeKernelRequest<'surface>,
+struct ActiveFrostHourlyContext<'forcing> {
     phase_class: HillslopeKernelPhaseClass,
-    layer_water_state: &'request [FrostLayerWaterState],
+    hourly_forcing: &'forcing [DirectFrostHourlyForcing; SIMIMPL29_HOURS_PER_DAY],
+    tmpadj: ActiveFrostTmpadjContext,
+    layer_water_state: &'forcing [FrostLayerWaterState],
     profile_depth_m: f64,
     effective_prior_frdp_m: f64,
     thermal: ActiveFrostThermalContext,
@@ -1139,12 +1140,610 @@ impl Wb11HydrologyKernel {
         })
     }
 
+    fn require_active_frost_hourly_forcing(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<[DirectFrostHourlyForcing; SIMIMPL29_HOURS_PER_DAY], Wb11HydrologyKernelGuardError>
+    {
+        let mut hourly_forcing = [DirectFrostHourlyForcing::zero(); SIMIMPL29_HOURS_PER_DAY];
+        for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
+            let (_rad_symbol, radiation_mj_m2) = Self::require_state_scalar_for_series_or_symbol(
+                request,
+                phase_class,
+                WINTER_HOURLY_RAD_ROOT,
+                hour,
+                || Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour),
+            )?;
+            let (_air_symbol, air_temperature_c) =
+                Self::require_state_scalar_for_series_or_symbol(
+                    request,
+                    phase_class,
+                    WINTER_HOURLY_AIR_TEMP_ROOT,
+                    hour,
+                    || Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour),
+                )?;
+            let (_cloud_symbol, cloud_fraction) =
+                Self::require_state_scalar_for_series_or_symbol(
+                    request,
+                    phase_class,
+                    WINTER_HOURLY_CLOUD_ROOT,
+                    hour,
+                    || Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour),
+                )?;
+            hourly_forcing[hour - 1] = DirectFrostHourlyForcing {
+                radiation_mj_m2,
+                air_temperature_c,
+                cloud_fraction,
+            };
+        }
+        Ok(hourly_forcing)
+    }
+
+    fn require_active_frost_tmpadj_context(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<ActiveFrostTmpadjContext, Wb11HydrologyKernelGuardError> {
+        let vwind_symbol = BoundarySymbol::from("vwind");
+        let wind_m_s = Self::require_state_scalar_for_symbol(request, phase_class, &vwind_symbol)?;
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &vwind_symbol,
+            wind_m_s,
+            Some(0.0),
+            None,
+        )?;
+        let salb_symbol = BoundarySymbol::from("salb");
+        let albedo = Self::require_state_scalar_for_symbol(request, phase_class, &salb_symbol)?;
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &salb_symbol,
+            albedo,
+            Some(0.0),
+            Some(1.0),
+        )?;
+        let canhgt_symbol = BoundarySymbol::from("canhgt");
+        let canopy_height_m =
+            Self::require_state_scalar_for_symbol(request, phase_class, &canhgt_symbol)?;
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &canhgt_symbol,
+            canopy_height_m,
+            Some(0.0),
+            None,
+        )?;
+        let rrc_symbol = BoundarySymbol::from("rrc");
+        let rrinit_symbol = BoundarySymbol::from("rrinit");
+        let (roughness_symbol, random_roughness_m) =
+            if let Some(value) =
+                Self::optional_state_scalar_for_symbol(request, phase_class, &rrc_symbol)?
+            {
+                (rrc_symbol, value)
+            } else {
+                (
+                    rrinit_symbol.clone(),
+                    Self::require_state_scalar_for_symbol(request, phase_class, &rrinit_symbol)?,
+                )
+            };
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &roughness_symbol,
+            random_roughness_m,
+            Some(0.0),
+            None,
+        )?;
+        Ok(ActiveFrostTmpadjContext {
+            wind_m_s,
+            albedo,
+            canopy_height_m,
+            random_roughness_m,
+        })
+    }
+
+    fn require_active_frost_controls_from_typed(
+        inputs: DirectFrostControlInputs,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<ActiveFrostControls, Wb11HydrologyKernelGuardError> {
+        if !inputs.wint_red_enabled {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_FROST_WINT_RED),
+                value: 0.0,
+                minimum: Some(1.0),
+                maximum: Some(1.0),
+            });
+        }
+        let fine_top_count = Self::require_frost_fine_count_value(
+            phase_class,
+            WB14_SYMBOL_FROST_FINE_TOP,
+            Self::diagnostic_count_to_f64(inputs.fine_top_count),
+        )?;
+        let fine_bot_count = Self::require_frost_fine_count_value(
+            phase_class,
+            WB14_SYMBOL_FROST_FINE_BOT,
+            Self::diagnostic_count_to_f64(inputs.fine_bot_count),
+        )?;
+        for (symbol, value) in [
+            (WB14_SYMBOL_FROST_KSNOWF, inputs.ksnowf),
+            (WB14_SYMBOL_FROST_KRESF, inputs.kresf),
+            (WB14_SYMBOL_FROST_KSOILF, inputs.ksoilf),
+        ] {
+            Self::require_state_range(phase_class, symbol, value, Some(0.1), Some(10.0))?;
+        }
+        for (symbol, value) in [
+            (WB14_SYMBOL_FROST_KFACTOR1, inputs.kfactor1),
+            (WB14_SYMBOL_FROST_KFACTOR2, inputs.kfactor2),
+            (WB14_SYMBOL_FROST_KFACTOR3, inputs.kfactor3),
+        ] {
+            if value <= 0.0 + WB11_ZERO_THRESHOLD || value > 1.0 + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(symbol),
+                    value,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: Some(1.0),
+                });
+            }
+        }
+        Ok(ActiveFrostControls {
+            fine_top_count,
+            fine_bot_count,
+            ksnowf: inputs.ksnowf,
+            kresf: inputs.kresf,
+            ksoilf: inputs.ksoilf,
+            kfactor1: inputs.kfactor1,
+            kfactor2: inputs.kfactor2,
+            kfactor3: inputs.kfactor3,
+        })
+    }
+
+    fn require_frost_layer_water_state_from_typed(
+        phase_class: HillslopeKernelPhaseClass,
+        layer: DirectFrostLayerInput,
+        layer_count: usize,
+        controls: ActiveFrostControls,
+    ) -> Result<FrostLayerWaterState, Wb11HydrologyKernelGuardError> {
+        if layer.layer_index == 0 || layer.layer_index > layer_count {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("wb11_nsl"),
+                value: Self::diagnostic_count_to_f64(layer.layer_index),
+                minimum: Some(1.0),
+                maximum: Some(Self::diagnostic_count_to_f64(layer_count)),
+            });
+        }
+        let dg_symbol = Self::wb19_dg_symbol(layer.layer_index);
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &dg_symbol,
+            layer.depth_m,
+            Some(WB11_ZERO_THRESHOLD),
+            None,
+        )?;
+        let fine_layer_count = Self::frost_fine_layer_count_for_layer(
+            phase_class,
+            &dg_symbol,
+            layer.depth_m,
+            layer.layer_index,
+            layer_count,
+            controls,
+        )?;
+        let theta_symbol = Self::wb18_perc_state_symbol("theta", layer.layer_index);
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &theta_symbol,
+            layer.theta_m,
+            Some(0.0),
+            None,
+        )?;
+        let upper_limit_symbol = Self::wb18_perc_state_symbol("ul", layer.layer_index);
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &upper_limit_symbol,
+            layer.upper_limit_m,
+            Some(0.0),
+            None,
+        )?;
+        let thetdr_symbol = Self::wb19_thetdr_symbol(layer.layer_index);
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &thetdr_symbol,
+            layer.residual_theta,
+            Some(0.0),
+            Some(1.0),
+        )?;
+        let bulk_density_symbol = Self::wb19_bulk_density_kg_m3_symbol(layer.layer_index);
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &bulk_density_symbol,
+            layer.bulk_density_kg_m3,
+            Some(WB11_ZERO_THRESHOLD),
+            Some(2_650.0),
+        )?;
+        let frozen_depth_symbol =
+            Self::wb18_perc_state_symbol("frozen_depth", layer.layer_index);
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &frozen_depth_symbol,
+            layer.frozen_depth_m,
+            Some(0.0),
+            Some(layer.depth_m),
+        )?;
+        let frzw_symbol = Self::wb18_perc_state_symbol("frzw", layer.layer_index);
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &frzw_symbol,
+            layer.frozen_water_m,
+            Some(0.0),
+            Some(layer.upper_limit_m),
+        )?;
+        Ok(FrostLayerWaterState {
+            layer_index: layer.layer_index,
+            fine_layer_count,
+            fine_layer_thickness_m: layer.depth_m / Self::diagnostic_count_to_f64(fine_layer_count),
+            dg_m: layer.depth_m,
+            bulk_density_kg_m3: layer.bulk_density_kg_m3,
+            thetdr: layer.residual_theta,
+            theta_m: layer.theta_m,
+            upper_limit_m: layer.upper_limit_m,
+            frozen_depth_m: layer.frozen_depth_m,
+            frzw_m: layer.frozen_water_m,
+        })
+    }
+
+    fn require_active_frost_layer_water_state_from_typed(
+        inputs: &[DirectFrostLayerInput],
+        phase_class: HillslopeKernelPhaseClass,
+        controls: ActiveFrostControls,
+    ) -> Result<(usize, Vec<FrostLayerWaterState>), Wb11HydrologyKernelGuardError> {
+        if inputs.is_empty() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("wb11_nsl"),
+                value: 0.0,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+        let mut layer_water_state = Vec::with_capacity(inputs.len());
+        let mut total_fine_layer_count = 0usize;
+        for layer in inputs {
+            let layer_state = Self::require_frost_layer_water_state_from_typed(
+                phase_class,
+                *layer,
+                inputs.len(),
+                controls,
+            )?;
+            total_fine_layer_count += layer_state.fine_layer_count;
+            layer_water_state.push(layer_state);
+        }
+        Ok((total_fine_layer_count, layer_water_state))
+    }
+
+    fn require_frost_profile_shadow_context_from_typed(
+        inputs: &DirectActiveFrostPartitionInputs,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_water_state: &[FrostLayerWaterState],
+    ) -> Result<(FrostFineShadowState, ActiveFrostProfileShadowContext), Wb11HydrologyKernelGuardError>
+    {
+        let profile_depth_symbol = BoundarySymbol::from(PL_GROWTH_SOIL_DEPTH_SYMBOL);
+        Self::require_dynamic_state_range(
+            phase_class,
+            profile_depth_symbol,
+            inputs.profile_depth_m,
+            Some(WB11_ZERO_THRESHOLD),
+            None,
+        )?;
+        let prior_layer_frozen_depth_m = layer_water_state
+            .iter()
+            .map(|layer| layer.frozen_depth_m)
+            .sum::<f64>();
+        let prior_layer_frozen_store_m = Self::frost_layer_soilf_sum(layer_water_state);
+        let prior_layer_state_active = prior_layer_frozen_depth_m > WB11_ZERO_THRESHOLD
+            || prior_layer_frozen_store_m > WB11_ZERO_THRESHOLD;
+        let shadow_fine_state = Self::compute_shadow_fine_state_from_typed(
+            &inputs.prior_state,
+            phase_class,
+            layer_water_state,
+        )?;
+        let prior_depth_summary =
+            Self::derived_frost_depths_from_fine_state(&shadow_fine_state.fine_layers);
+        let prior_fine_frozen_store_m = shadow_fine_state
+            .layer_state
+            .iter()
+            .map(|layer| layer.soilf_m)
+            .sum::<f64>();
+        let prior_fine_state_active = prior_depth_summary.frdp > WB11_ZERO_THRESHOLD
+            || prior_fine_frozen_store_m > WB11_ZERO_THRESHOLD;
+        Ok((
+            shadow_fine_state,
+            ActiveFrostProfileShadowContext {
+                profile_depth_m: inputs.profile_depth_m,
+                prior_depth_summary,
+                prior_layer_frozen_depth_m,
+                prior_layer_frozen_store_m,
+                prior_fine_frozen_store_m,
+                prior_layer_state_active,
+                prior_fine_state_active,
+            },
+        ))
+    }
+
+    fn require_profile_bounded_typed_frost_value(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol_name: &'static str,
+        value: f64,
+        profile_depth_m: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let symbol = BoundarySymbol::from(symbol_name);
+        Self::require_dynamic_state_range(
+            phase_class,
+            symbol,
+            value,
+            Some(0.0),
+            Some(profile_depth_m),
+        )?;
+        Ok(value)
+    }
+
+    fn require_typed_active_frost_storage_inputs(
+        inputs: &DirectActiveFrostPartitionInputs,
+        phase_class: HillslopeKernelPhaseClass,
+        profile: ActiveFrostProfileShadowContext,
+    ) -> Result<ActiveFrostPriorContext, Wb11HydrologyKernelGuardError> {
+        let effective_prior_frdp_m =
+            Self::resolve_typed_effective_prior_frdp_m(inputs, phase_class, profile)?;
+        Self::require_typed_active_frost_storage_scalars(inputs, phase_class)?;
+        let prior_ws_frz = Self::resolve_typed_prior_ws_frz(inputs, phase_class, profile)?;
+        Ok(ActiveFrostPriorContext {
+            profile_depth_m: profile.profile_depth_m,
+            prior_depth_summary: profile.prior_depth_summary,
+            effective_prior_frdp_m,
+            prior_nft: inputs.prior_state.nft,
+            soil_water: inputs.soil_water_m,
+            prior_ws_frz,
+            fgthwd_flag: inputs.prior_state.fgthwd_flag,
+        })
+    }
+
+    fn resolve_typed_effective_prior_frdp_m(
+        inputs: &DirectActiveFrostPartitionInputs,
+        phase_class: HillslopeKernelPhaseClass,
+        profile: ActiveFrostProfileShadowContext,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let prior_frdp_m = Self::require_profile_bounded_typed_frost_value(
+            phase_class,
+            FROST_RUNTIME_FRDP_M_SYMBOL,
+            inputs.prior_state.frdp_m,
+            profile.profile_depth_m,
+        )?;
+        let _prior_thdp_m = Self::require_profile_bounded_typed_frost_value(
+            phase_class,
+            FROST_RUNTIME_THDP_M_SYMBOL,
+            inputs.prior_state.thdp_m,
+            profile.profile_depth_m,
+        )?;
+        let _prior_top_frost_depth_m = Self::require_profile_bounded_typed_frost_value(
+            phase_class,
+            FROST_RUNTIME_TFRDP_M_SYMBOL,
+            inputs.prior_state.tfrdp_m,
+            profile.profile_depth_m,
+        )?;
+        let _prior_tthawd_m = Self::require_profile_bounded_typed_frost_value(
+            phase_class,
+            FROST_RUNTIME_TTHAWD_M_SYMBOL,
+            inputs.prior_state.tthawd_m,
+            profile.profile_depth_m,
+        )?;
+        let effective_prior_frdp_m = if profile.prior_fine_state_active {
+            profile.prior_depth_summary.frdp
+        } else if profile.prior_layer_state_active {
+            profile.prior_layer_frozen_depth_m
+        } else {
+            prior_frdp_m
+        };
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from(FROST_RUNTIME_FRDP_M_SYMBOL),
+            effective_prior_frdp_m,
+            Some(0.0),
+            Some(profile.profile_depth_m),
+        )?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from(FROST_RUNTIME_FGTHWD_FLAG_SYMBOL),
+            inputs.prior_state.fgthwd_flag,
+            Some(0.0),
+            Some(1.0),
+        )?;
+        Ok(effective_prior_frdp_m)
+    }
+
+    fn require_typed_active_frost_storage_scalars(
+        inputs: &DirectActiveFrostPartitionInputs,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_FROST_RUNTIME_NFT,
+            inputs.prior_state.nft,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_THETA_RESIDUAL,
+            inputs.theta_residual,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY,
+            inputs.theta_field_capacity,
+            Some(0.0),
+            None,
+        )?;
+        if inputs.theta_field_capacity < inputs.theta_residual - WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY),
+                value: inputs.theta_field_capacity,
+                minimum: Some(inputs.theta_residual),
+                maximum: None,
+            });
+        }
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            inputs.soil_water_m,
+            Some(0.0),
+            None,
+        )?;
+        Ok(())
+    }
+
+    fn resolve_typed_prior_ws_frz(
+        inputs: &DirectActiveFrostPartitionInputs,
+        phase_class: HillslopeKernelPhaseClass,
+        profile: ActiveFrostProfileShadowContext,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let prior_runtime_ws_frz = inputs.prior_state.ws_frz_m;
+        let prior_ws_frz = if profile.prior_layer_state_active {
+            profile.prior_layer_frozen_store_m
+        } else if profile.prior_fine_state_active {
+            profile.prior_fine_frozen_store_m
+        } else {
+            prior_runtime_ws_frz
+        };
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_FROST_RUNTIME_WS_FRZ,
+            prior_ws_frz,
+            Some(0.0),
+            None,
+        )?;
+        Ok(prior_ws_frz)
+    }
+
+    fn resolve_frozen_soil_kfactor_from_typed(
+        phase_class: HillslopeKernelPhaseClass,
+        controls: DirectFrostControlInputs,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let Some(class_proxy) = controls.landuse_class_proxy else {
+            return Ok(controls.kfactor1.min(controls.kfactor2.min(controls.kfactor3)));
+        };
+        let rounded = class_proxy.round();
+        let symbol = BoundarySymbol::from(FROST_LANDUSE_CLASS_PROXY_SYMBOL);
+        if (class_proxy - rounded).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol,
+                value: class_proxy,
+                minimum: Some(1.0),
+                maximum: Some(3.0),
+            });
+        }
+        match format!("{rounded:.0}").parse::<i32>().map_err(|_| {
+            Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(FROST_LANDUSE_CLASS_PROXY_SYMBOL),
+                value: class_proxy,
+                minimum: Some(1.0),
+                maximum: Some(3.0),
+            }
+        })? {
+            1 => Ok(controls.kfactor1),
+            2 => Ok(controls.kfactor2),
+            3 => Ok(controls.kfactor3),
+            _ => Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(FROST_LANDUSE_CLASS_PROXY_SYMBOL),
+                value: class_proxy,
+                minimum: Some(1.0),
+                maximum: Some(3.0),
+            }),
+        }
+    }
+
+    fn require_active_frost_thermal_context_from_typed(
+        inputs: &DirectActiveFrostPartitionInputs,
+        phase_class: HillslopeKernelPhaseClass,
+        controls: ActiveFrostControls,
+    ) -> Result<ActiveFrostThermalContext, Wb11HydrologyKernelGuardError> {
+        let kfactor_selected =
+            Self::resolve_frozen_soil_kfactor_from_typed(phase_class, inputs.controls)?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from(FROST_RUNTIME_SNOW_DEPTH_SYMBOL),
+            inputs.thermal.snow_depth_m,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+            inputs.thermal.snow_density_kg_m3,
+            Some(0.0),
+            Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+        )?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from(FROST_RUNTIME_RESIDUE_DEPTH_SYMBOL),
+            inputs.thermal.residue_depth_m,
+            Some(0.0),
+            None,
+        )?;
+        let conductivity_residue_w_m_k = FROST_RUNTIME_KRES_BASE_W_M_K * controls.kresf;
+        let snow_conductivity_w_m_k =
+            if inputs.thermal.snow_depth_m <= SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
+                || inputs.thermal.snow_density_kg_m3 <= 0.0
+            {
+                0.0
+            } else {
+                Self::tmpadj_snow_conductivity_w_m_k(
+                    phase_class,
+                    inputs.thermal.snow_density_kg_m3,
+                    controls.ksnowf,
+                )?
+            };
+        let sdate = inputs.thermal.day_of_year.round();
+        if (inputs.thermal.day_of_year - sdate).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(PL_RUNTIME_DAY_SYMBOL),
+                value: inputs.thermal.day_of_year,
+                minimum: Some(1.0),
+                maximum: Some(366.0),
+            });
+        }
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from(PL_RUNTIME_DAY_SYMBOL),
+            sdate,
+            Some(1.0),
+            Some(366.0),
+        )?;
+        let seasonal_temperature_curve =
+            Self::fit_legacy_tmpcft_curve(&inputs.thermal.monthly_max_c, &inputs.thermal.monthly_min_c);
+        Ok(ActiveFrostThermalContext {
+            snow_depth_m: inputs.thermal.snow_depth_m,
+            snow_density_kg_m3: inputs.thermal.snow_density_kg_m3,
+            ksnowf: controls.ksnowf,
+            residue_depth_m: inputs.thermal.residue_depth_m,
+            conductivity_residue_w_m_k,
+            snow_conductivity_w_m_k,
+            seasonal_temperature_curve,
+            sdate,
+            kfactor_selected,
+        })
+    }
+
     fn frost_branch_matches(actual: f64, expected: f64) -> bool {
         (actual - expected).abs() <= WB11_ZERO_THRESHOLD
     }
 
     fn apply_active_frost_freeze_step(
-        context: &ActiveFrostHourlyContext<'_, '_>,
+        context: &ActiveFrostHourlyContext<'_>,
         shadow_fine_state: &mut FrostFineShadowState,
         hourly: &mut FrostHourlyState,
         surface_temp_c: f64,
@@ -1185,7 +1784,7 @@ impl Wb11HydrologyKernel {
     }
 
     fn apply_active_frost_thaw_step(
-        context: &ActiveFrostHourlyContext<'_, '_>,
+        context: &ActiveFrostHourlyContext<'_>,
         shadow_fine_state: &mut FrostFineShadowState,
         hourly: &mut FrostHourlyState,
         depth_before: FrostDepthSummary,
@@ -1275,7 +1874,7 @@ impl Wb11HydrologyKernel {
     }
 
     fn advance_active_frost_hour(
-        context: &ActiveFrostHourlyContext<'_, '_>,
+        context: &ActiveFrostHourlyContext<'_>,
         shadow_fine_state: &mut FrostFineShadowState,
         hourly: &mut FrostHourlyState,
         fgthwd_flag: &mut f64,
@@ -1284,10 +1883,11 @@ impl Wb11HydrologyKernel {
         Self::reset_fine_layer_hour_timers(&mut shadow_fine_state.fine_layers);
         let depth_before = Self::derived_frost_depths_from_fine_state(&shadow_fine_state.fine_layers);
         let hourly_frdp_m = depth_before.frdp.min(context.profile_depth_m);
-        let surface_temp_c = Self::legacy_tmpadj_surface_temperature_c(
-            context.request,
+        let surface_temp_c = Self::legacy_tmpadj_surface_temperature_from_typed(
             context.phase_class,
             hourly.hour,
+            context.hourly_forcing[hourly.hour - 1],
+            context.tmpadj,
             context.thermal.snow_depth_m,
             context.thermal.snow_density_kg_m3,
             context.thermal.ksnowf,
@@ -1357,7 +1957,7 @@ impl Wb11HydrologyKernel {
     }
 
     fn compute_active_frost_hourly_state(
-        context: &ActiveFrostHourlyContext<'_, '_>,
+        context: &ActiveFrostHourlyContext<'_>,
         shadow_fine_state: &mut FrostFineShadowState,
         prior_fgthwd_flag: f64,
     ) -> Result<([FrostHourlyState; SIMIMPL29_HOURS_PER_DAY], bool, f64), Wb11HydrologyKernelGuardError>
@@ -1401,8 +2001,9 @@ impl Wb11HydrologyKernel {
     }
 
     fn active_frost_zero_prior_can_start_freeze(
-        request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
+        hourly_forcing: &[DirectFrostHourlyForcing; SIMIMPL29_HOURS_PER_DAY],
+        tmpadj: ActiveFrostTmpadjContext,
         layer_water_state: &[FrostLayerWaterState],
         shadow_fine_state: &FrostFineShadowState,
         thermal_context: ActiveFrostThermalContext,
@@ -1425,10 +2026,11 @@ impl Wb11HydrologyKernel {
             ksoilf,
         );
         for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
-            let surface_temp_c = Self::legacy_tmpadj_surface_temperature_c(
-                request,
+            let surface_temp_c = Self::legacy_tmpadj_surface_temperature_from_typed(
                 phase_class,
                 hour,
+                hourly_forcing[hour - 1],
+                tmpadj,
                 thermal_context.snow_depth_m,
                 thermal_context.snow_density_kg_m3,
                 thermal_context.ksnowf,
@@ -1464,8 +2066,9 @@ impl Wb11HydrologyKernel {
 
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     fn no_freeze_active_frost_outcome(
-        request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
+        hourly_forcing: &[DirectFrostHourlyForcing; SIMIMPL29_HOURS_PER_DAY],
+        tmpadj: ActiveFrostTmpadjContext,
         prior_context: ActiveFrostPriorContext,
         thermal_context: ActiveFrostThermalContext,
         soil_conductivity: f64,
@@ -1509,10 +2112,11 @@ impl Wb11HydrologyKernel {
             untilled_frozen_depth_m: 0.0,
         });
         for hourly in &mut hourly_state {
-            let surface_temp_c = Self::legacy_tmpadj_surface_temperature_c(
-                request,
+            let surface_temp_c = Self::legacy_tmpadj_surface_temperature_from_typed(
                 phase_class,
                 hourly.hour,
+                hourly_forcing[hourly.hour - 1],
+                tmpadj,
                 thermal_context.snow_depth_m,
                 thermal_context.snow_density_kg_m3,
                 thermal_context.ksnowf,
@@ -1593,7 +2197,7 @@ impl Wb11HydrologyKernel {
     }
 
     fn validate_aggregated_active_frost_layers(
-        request: &HillslopeKernelRequest<'_>,
+        request: Option<&HillslopeKernelRequest<'_>>,
         phase_class: HillslopeKernelPhaseClass,
         shadow_fine_state: &mut FrostFineShadowState,
         layer_water_state: &mut [FrostLayerWaterState],
@@ -1610,7 +2214,7 @@ impl Wb11HydrologyKernel {
             else {
                 continue;
             };
-            Self::require_shadow_fine_state_domains(Some(request), phase_class, fine, water_layer)?;
+            Self::require_shadow_fine_state_domains(request, phase_class, fine, water_layer)?;
         }
         Ok(())
     }
@@ -1901,7 +2505,7 @@ impl Wb11HydrologyKernel {
     }
 
     fn finalize_active_frost_coupling(
-        request: &HillslopeKernelRequest<'_>,
+        request: Option<&HillslopeKernelRequest<'_>>,
         context: ActiveFrostCompletionContext,
         mut shadow_fine_state: FrostFineShadowState,
         hourly_state: &[FrostHourlyState; SIMIMPL29_HOURS_PER_DAY],
@@ -1933,6 +2537,91 @@ impl Wb11HydrologyKernel {
         ))
     }
 
+    pub(crate) fn compute_active_frost_coupling_from_typed(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveFrostPartitionInputs,
+    ) -> Result<FrostCouplingOutcome, Wb11HydrologyKernelGuardError> {
+        let controls = Self::require_active_frost_controls_from_typed(inputs.controls, phase_class)?;
+        let (total_fine_layer_count, layer_water_state) =
+            Self::require_active_frost_layer_water_state_from_typed(
+                &inputs.layers,
+                phase_class,
+                controls,
+            )?;
+        let (mut shadow_fine_state, profile_shadow_context) =
+            Self::require_frost_profile_shadow_context_from_typed(
+                inputs,
+                phase_class,
+                &layer_water_state,
+            )?;
+        let prior_shadow_fine_state = shadow_fine_state.clone();
+        let prior_context =
+            Self::require_typed_active_frost_storage_inputs(inputs, phase_class, profile_shadow_context)?;
+        let thermal_context =
+            Self::require_active_frost_thermal_context_from_typed(inputs, phase_class, controls)?;
+        let tmpadj = ActiveFrostTmpadjContext {
+            wind_m_s: inputs.thermal.wind_m_s,
+            albedo: inputs.thermal.albedo,
+            canopy_height_m: inputs.thermal.canopy_height_m,
+            random_roughness_m: inputs.thermal.random_roughness_m,
+        };
+        if Self::active_frost_prior_is_zero(prior_context, profile_shadow_context)
+            && !Self::active_frost_zero_prior_can_start_freeze(
+                phase_class,
+                &inputs.hourly,
+                tmpadj,
+                &layer_water_state,
+                &prior_shadow_fine_state,
+                thermal_context,
+                controls.ksoilf,
+            )?
+        {
+            return Self::no_freeze_active_frost_outcome(
+                phase_class,
+                &inputs.hourly,
+                tmpadj,
+                prior_context,
+                thermal_context,
+                inputs.soil_conductivity_m_s,
+                controls.ksoilf,
+                total_fine_layer_count,
+                &layer_water_state,
+                &prior_shadow_fine_state,
+            );
+        }
+        let hourly_context = ActiveFrostHourlyContext {
+            phase_class,
+            hourly_forcing: &inputs.hourly,
+            tmpadj,
+            layer_water_state: &layer_water_state,
+            profile_depth_m: prior_context.profile_depth_m,
+            effective_prior_frdp_m: prior_context.effective_prior_frdp_m,
+            thermal: thermal_context,
+            ksoilf: controls.ksoilf,
+        };
+        let (hourly_state, freeze_started, fgthwd_flag) = Self::compute_active_frost_hourly_state(
+            &hourly_context,
+            &mut shadow_fine_state,
+            prior_context.fgthwd_flag,
+        )?;
+        let completion_context = ActiveFrostCompletionContext {
+            phase_class,
+            prior: prior_context,
+            thermal: thermal_context,
+            soil_conductivity: inputs.soil_conductivity_m_s,
+            freeze_started,
+            fgthwd_flag,
+        };
+        Self::finalize_active_frost_coupling(
+            None,
+            completion_context,
+            shadow_fine_state,
+            &hourly_state,
+            layer_water_state,
+            total_fine_layer_count,
+        )
+    }
+
     pub(crate) fn compute_active_frost_coupling(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
@@ -1956,10 +2645,13 @@ impl Wb11HydrologyKernel {
             controls,
             surface_inputs,
         )?;
+        let hourly_forcing = Self::require_active_frost_hourly_forcing(request, phase_class)?;
+        let tmpadj = Self::require_active_frost_tmpadj_context(request, phase_class)?;
         if Self::active_frost_prior_is_zero(prior_context, profile_shadow_context)
             && !Self::active_frost_zero_prior_can_start_freeze(
-                request,
                 phase_class,
+                &hourly_forcing,
+                tmpadj,
                 &layer_water_state,
                 &prior_shadow_fine_state,
                 thermal_context,
@@ -1967,8 +2659,9 @@ impl Wb11HydrologyKernel {
             )?
         {
             let outcome = Self::no_freeze_active_frost_outcome(
-                request,
                 phase_class,
+                &hourly_forcing,
+                tmpadj,
                 prior_context,
                 thermal_context,
                 soil_conductivity,
@@ -1991,8 +2684,9 @@ impl Wb11HydrologyKernel {
             return Ok(outcome);
         }
         let hourly_context = ActiveFrostHourlyContext {
-            request,
             phase_class,
+            hourly_forcing: &hourly_forcing,
+            tmpadj,
             layer_water_state: &layer_water_state,
             profile_depth_m: prior_context.profile_depth_m,
             effective_prior_frdp_m: prior_context.effective_prior_frdp_m,
@@ -2013,7 +2707,7 @@ impl Wb11HydrologyKernel {
             fgthwd_flag,
         };
         let outcome = Self::finalize_active_frost_coupling(
-            request,
+            Some(request),
             completion_context,
             shadow_fine_state,
             &hourly_state,

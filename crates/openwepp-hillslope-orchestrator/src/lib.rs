@@ -153,8 +153,10 @@ pub use direct_runtime::{
     record_direct_runtime_compatibility_edge_invocation, reset_direct_runtime_audit_counters,
 };
 pub use hydrology::{
-    DirectActiveSnowPartitionInputs, DirectFrostFineLayerProjection, DirectFrostLayerProjection,
-    DirectFrostLayerShadowProjection, DirectFrostLiquidPartition, DirectFrostRunoffSurface,
+    DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs, DirectFrostControlInputs,
+    DirectFrostFineLayerProjection, DirectFrostHourlyForcing, DirectFrostLayerInput,
+    DirectFrostLayerProjection, DirectFrostLayerShadowProjection, DirectFrostLiquidPartition,
+    DirectFrostPriorStateInput, DirectFrostRunoffSurface, DirectFrostThermalInputs,
     DirectSnowHourlyForcing, DirectSnowLiquidPartition, HillslopeHydrologyRoutingError,
     Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
 };
