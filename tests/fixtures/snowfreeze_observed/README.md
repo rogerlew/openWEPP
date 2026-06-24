@@ -77,7 +77,8 @@ cadence, period, and censoring caveats. Summary access:
 - Sleepers River VT — `DOI 10.5066/P96753GI` (CSV, per-plot coords + snow depth)
 - SCAN Mandan ND — NRCS AWDB API, `stationTriplets=2020:ND:SCAN`, element `STO`
 - GGD498 Morris MN — `ftp://sidads.colorado.edu/pub/DATASETS/fgdc/ggd498_seasfrost_usa/` (`DOI 10.7265/1mcs-q536`)
-- Reynolds Creek ID — USDA-ARS Box / Ag Data Commons (soil temperature, CC-BY)
+- Reynolds Creek ID — USDA-ARS Box / Ag Data Commons (soil temperature,
+  public-domain archive license with citation requested)
 
 ## Fixture contents
 

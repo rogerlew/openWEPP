@@ -2,7 +2,7 @@
 
 Evidence class: Ran.
 
-Status: queued.
+Status: complete.
 
 Measure touched Rust files before closure.
 
@@ -14,5 +14,5 @@ Policy:
 
 | File | Lines | Disposition |
 | --- | ---: | --- |
-
-No Rust files have been touched yet.
+| `tests/integration/snowfreeze_observed_frost_depth_contract.rs` | 224 | Below warning threshold. |
+| `tools/snowfreeze_observed/observed_harness.py` | 1261 | Python harness; below package concern threshold, but should be split if expanded with additional source adapters. |

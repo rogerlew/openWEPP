@@ -1,0 +1,40 @@
+{
+  "access_date": "2026-06-24",
+  "license_or_terms": "USGS ScienceBase public data release DOI 10.5066/P96753GI; cite the USGS data release.",
+  "normalized_files": [
+    {
+      "bytes": 80393,
+      "path": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/observations/sites/site1_sleepers_south_field_vt.csv",
+      "sha256": "22e2404c8cd41d9f1af4d3db88345074afac005cafeb9966b1f12141b85f563b"
+    },
+    {
+      "bytes": 42511,
+      "path": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/observations/sites/site2_sleepers_w9_hardwood_vt.csv",
+      "sha256": "9b522c0bb423a21e7766fb46fb0dd8c2751cb9932c88454079d6fea3f4c9e251"
+    }
+  ],
+  "normalized_row_count": 592,
+  "parser_assumptions": "Frost-tube Fbottom and snow-depth values are centimeters; site rows average available tubes by date.",
+  "parser_version": "snowfreeze-observed-harness-v1",
+  "raw_files": [
+    {
+      "bytes": 2143,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/sleepers/sleepers_site_description.csv",
+      "sha256": "09ff367c63c22e16b34bfcdc87f6e06de3961be500e541cf8da455008ce18005"
+    },
+    {
+      "bytes": 2478673,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/sleepers/sleepers_frost1983_2020.csv",
+      "sha256": "f42014641581abe745593fd1c0f38bca37c1af0418d30bca8bbcef128dc7356d"
+    },
+    {
+      "bytes": 136323,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/sleepers/sleepers_frost_metadata.xml",
+      "sha256": "85d26d872ad9344affc9260cbe0a55abe35f55a4935c4c2369a6ea5349b83c23"
+    }
+  ],
+  "source_id": "usgs_sleepers_p96753gi",
+  "source_url": "https://www.sciencebase.gov/catalog/item/5e6bce83e4b01d5092632650?format=json",
+  "status": "acquired",
+  "title": "USGS ScienceBase DOI 10.5066/P96753GI"
+}

@@ -1,6 +1,7 @@
 # SNOWFREEZE Observed Frost-Depth Harness
 
-Status: queued
+Status: complete — observation harness/corpus landed; frost-defect attribution
+remains `UNRESOLVED` pending modeled snow-depth diagnostics.
 
 Package type: Defect-Closure ExecPlan / external-observation harness and
 fidelity characterization.
@@ -121,7 +122,8 @@ Public source references checked during scaffolding:
   `https://nsidc.org/data/ggd498/versions/1`
 - Reynolds Creek data overview:
   `https://www.ars.usda.gov/pacific-west-area/boise-id/northwest-watershed-research-center/docs/reynolds-creek-experimental-watershed-data/`
-- Reynolds Creek soil-temperature data (USDA-ARS Box / Ag Data Commons, CC-BY;
+- Reynolds Creek soil-temperature data (USDA-ARS Box / Ag Data Commons,
+  public-domain archive license with citation requested;
   the HydroShare copy is access-gated, do not depend on it):
   `https://ars-usda.app.box.com/s/4jwgmxyxb8vacosvp1t5sdlibdc5qxoe`
 
@@ -342,6 +344,37 @@ The package may close complete only when:
   timing/upper-bound, snow-confounded, censored, blocked, and unresolved cases;
 - no production frost physics changes are hidden in the harness package;
 - closure artifacts record current commands and results.
+
+## Closure Disposition
+
+Closed 2026-06-24 as `COMPLETE-SNOWFREEZE-OBSERVED-HARNESS`.
+
+Delivered:
+
+- public redistributable sources acquired or reproducibly fetched for USGS
+  Sleepers River, NRCS SCAN Mandan, NSIDC GGD498 Morris, and USDA-ARS
+  Reynolds Creek station 127;
+- Dun-2010 request-only sources classified explicitly as `SOURCE-BLOCKED`;
+- normalized observation corpus and provenance locks under
+  `tests/fixtures/snowfreeze_observed/observations/`;
+- offline validation and contract tests;
+- a `compare` harness command that runs openWEPP direct-production executor by
+  default, reads WAT `frdp`, aligns dates, and emits JSON/Markdown reports;
+- method-specific metrics that keep frost-tube residuals, soil-temperature
+  upper-bound checks, censoring exclusions, and seasonal timing summaries
+  separate;
+- direct end-to-end comparison attempts for all five acquired sites.
+
+Known limitation carried forward:
+
+- modeled snow depth is not yet exposed as a contract-approved diagnostic.
+  Therefore site residuals are reported as `UNRESOLVED`, not
+  `OPENWEPP-DEFECTIVE`, until `INV-SNOWFREEZE-047` snow-control criteria can be
+  applied.
+- direct-runtime storage-reconciliation guard failures currently block
+  comparison reports for `site3_scan_mandan_nd` and `site4_ggd498_morris_mn`.
+  They are recorded as `HARNESS-SURFACE-MISMATCH`, not observation-model
+  defects.
 
 Legitimate hold states:
 

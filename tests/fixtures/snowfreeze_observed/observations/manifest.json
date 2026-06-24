@@ -1,0 +1,228 @@
+{
+  "access_date": "2026-06-24",
+  "measurement_contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-047",
+  "normal_depth_units": "m",
+  "normal_temperature_units": "degC",
+  "parser_version": "snowfreeze-observed-harness-v1",
+  "schema": "snowfreeze-observed-manifest-v1",
+  "sites": [
+    {
+      "end_date": "2017-04-17",
+      "fixture": "site1_sleepers_south_field_vt",
+      "method": "frost_tube",
+      "normalized_file_bytes": 80393,
+      "normalized_file_sha256": "22e2404c8cd41d9f1af4d3db88345074afac005cafeb9966b1f12141b85f563b",
+      "normalized_row_count": 392,
+      "observation_file": "sites/site1_sleepers_south_field_vt.csv",
+      "site_id": "site1_sleepers_south_field_vt",
+      "source_id": "usgs_sleepers_p96753gi",
+      "start_date": "1983-11-27",
+      "status": "acquired"
+    },
+    {
+      "end_date": "2020-03-16",
+      "fixture": "site2_sleepers_w9_hardwood_vt",
+      "method": "frost_tube",
+      "normalized_file_bytes": 42511,
+      "normalized_file_sha256": "9b522c0bb423a21e7766fb46fb0dd8c2751cb9932c88454079d6fea3f4c9e251",
+      "normalized_row_count": 200,
+      "observation_file": "sites/site2_sleepers_w9_hardwood_vt.csv",
+      "site_id": "site2_sleepers_w9_hardwood_vt",
+      "source_id": "usgs_sleepers_p96753gi",
+      "start_date": "1993-11-30",
+      "status": "acquired"
+    },
+    {
+      "end_date": "1984-04-23",
+      "fixture": "site4_ggd498_morris_mn",
+      "method": "frost_tube",
+      "normalized_file_bytes": 42407,
+      "normalized_file_sha256": "2f2a2e77cc09ec4d1ca4e2af3d051fa29b7880a09be2512f694a74ecfaaa1869",
+      "normalized_row_count": 232,
+      "observation_file": "sites/site4_ggd498_morris_mn.csv",
+      "site_id": "site4_ggd498_morris_mn",
+      "source_id": "nsidc_ggd498_morris_10",
+      "start_date": "1971-12-15",
+      "status": "acquired"
+    },
+    {
+      "end_date": "2024-12-31",
+      "fixture": "site3_scan_mandan_nd",
+      "method": "soil_temperature_zero_c_isotherm",
+      "normalized_file_bytes": 2231127,
+      "normalized_file_sha256": "dc6b0902c258df3b9edea0440e49cd2338719c1433ebbbcf809c0ac80bff1602",
+      "normalized_row_count": 10643,
+      "observation_file": "sites/site3_scan_mandan_nd.csv",
+      "site_id": "site3_scan_mandan_nd",
+      "source_id": "nrcs_scan_mandan_2020",
+      "start_date": "1994-10-06",
+      "status": "acquired"
+    },
+    {
+      "end_date": "1996-10-01",
+      "fixture": "site5_reynolds_creek_us_rls_id",
+      "method": "soil_temperature_zero_c_isotherm",
+      "normalized_file_bytes": 1217098,
+      "normalized_file_sha256": "66253fd30e774a39308cf51377d2efe12abc894ed45a4d9970ab5a8a1baed085",
+      "normalized_row_count": 4356,
+      "observation_file": "sites/site5_reynolds_creek_us_rls_id.csv",
+      "site_id": "site5_reynolds_creek_us_rls_id",
+      "source_id": "usda_ars_reynolds_creek_soil_temperature",
+      "start_date": "1982-01-06",
+      "status": "acquired"
+    }
+  ],
+  "snow_depth_control": {
+    "modeled_status": "UNRESOLVED_NO_MODELED_SNOW_DEPTH_DIAGNOSTIC",
+    "note": "WAT Snow-Water is SWE and is not a snow-depth diagnostic."
+  },
+  "sources": [
+    {
+      "access_date": "2026-06-24",
+      "license_or_terms": "USGS ScienceBase public data release DOI 10.5066/P96753GI; cite the USGS data release.",
+      "normalized_files": [
+        {
+          "bytes": 80393,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/observations/sites/site1_sleepers_south_field_vt.csv",
+          "sha256": "22e2404c8cd41d9f1af4d3db88345074afac005cafeb9966b1f12141b85f563b"
+        },
+        {
+          "bytes": 42511,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/observations/sites/site2_sleepers_w9_hardwood_vt.csv",
+          "sha256": "9b522c0bb423a21e7766fb46fb0dd8c2751cb9932c88454079d6fea3f4c9e251"
+        }
+      ],
+      "normalized_row_count": 592,
+      "parser_assumptions": "Frost-tube Fbottom and snow-depth values are centimeters; site rows average available tubes by date.",
+      "parser_version": "snowfreeze-observed-harness-v1",
+      "raw_files": [
+        {
+          "bytes": 2143,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/sleepers/sleepers_site_description.csv",
+          "sha256": "09ff367c63c22e16b34bfcdc87f6e06de3961be500e541cf8da455008ce18005"
+        },
+        {
+          "bytes": 2478673,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/sleepers/sleepers_frost1983_2020.csv",
+          "sha256": "f42014641581abe745593fd1c0f38bca37c1af0418d30bca8bbcef128dc7356d"
+        },
+        {
+          "bytes": 136323,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/sleepers/sleepers_frost_metadata.xml",
+          "sha256": "85d26d872ad9344affc9260cbe0a55abe35f55a4935c4c2369a6ea5349b83c23"
+        }
+      ],
+      "source_id": "usgs_sleepers_p96753gi",
+      "source_url": "https://www.sciencebase.gov/catalog/item/5e6bce83e4b01d5092632650?format=json",
+      "status": "acquired",
+      "title": "USGS ScienceBase DOI 10.5066/P96753GI"
+    },
+    {
+      "access_date": "2026-06-24",
+      "license_or_terms": "NSIDC GGD498 v1 public data; cite DOI 10.7265/1mcs-q536 and the access date.",
+      "normalized_files": [
+        {
+          "bytes": 42407,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/observations/sites/site4_ggd498_morris_mn.csv",
+          "sha256": "2f2a2e77cc09ec4d1ca4e2af3d051fa29b7880a09be2512f694a74ecfaaa1869"
+        }
+      ],
+      "normalized_row_count": 232,
+      "parser_assumptions": "Station 10 flat-file fields are station,date,snow_cm,frost_bottom_cm,thaw_depth_cm plus ancillary soil fields.",
+      "parser_version": "snowfreeze-observed-harness-v1",
+      "raw_files": [
+        {
+          "bytes": 12992,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/ggd498/10.txt",
+          "sha256": "b81e3e84ee34d13b03083b0338ec138fa9831dee3960553d506e692c1e9d7220"
+        },
+        {
+          "bytes": 766,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/ggd498/README.txt",
+          "sha256": "6c05e2cadc82dda91c6ad7c513ad656c4c165f9578e7071037aa7c3baa3b5c15"
+        },
+        {
+          "bytes": 76757,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/ggd498/ggd498-userguide-v1.pdf",
+          "sha256": "b164ea1fa9baba2cd3c42a6e547b3238c6b16c6ac6feadaa3191062065c77169"
+        }
+      ],
+      "source_id": "nsidc_ggd498_morris_10",
+      "source_url": "https://nsidc.org/data/ggd498/versions/1",
+      "status": "acquired",
+      "title": "NSIDC GGD498 DOI 10.7265/1mcs-q536 station 10 Morris"
+    },
+    {
+      "access_date": "2026-06-24",
+      "license_or_terms": "USDA NRCS AWDB public station data; cite USDA NRCS SCAN/AWDB station 2020:ND:SCAN.",
+      "normalized_files": [
+        {
+          "bytes": 2231127,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/observations/sites/site3_scan_mandan_nd.csv",
+          "sha256": "dc6b0902c258df3b9edea0440e49cd2338719c1433ebbbcf809c0ac80bff1602"
+        }
+      ],
+      "normalized_row_count": 10643,
+      "parser_assumptions": "STO profile temperatures are stored in degF with depth in inches; normalized is the interpolated 0 degC isotherm in meters.",
+      "parser_version": "snowfreeze-observed-harness-v1",
+      "raw_files": [
+        {
+          "bytes": 8935267,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/scan/mandan_sto_daily.json",
+          "sha256": "f01bae3e08c0f00c1c473c9c7a254660d685ef8ac521a6b8226ab5f63d68ce30"
+        },
+        {
+          "bytes": 572,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/scan/mandan_station.json",
+          "sha256": "35a76c9d0314af34ff83bdf71d3ffdd77e4221c548e4aa48aa3d1230121f2a4c"
+        },
+        {
+          "bytes": 37970,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/scan/awdb_elements.json",
+          "sha256": "f7cb6911d68c990627b88120b48b3f8d87c95e60a7d4e0f9fa8c75b43fdd7ab5"
+        }
+      ],
+      "source_id": "nrcs_scan_mandan_2020",
+      "source_url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
+      "status": "acquired",
+      "title": "USDA NRCS AWDB station 2020:ND:SCAN soil temperature"
+    },
+    {
+      "access_date": "2026-06-24",
+      "download_url": "https://ndownloader.figshare.com/files/44527883",
+      "license_or_terms": "Included license.txt places the data in the public domain and requests customary citation.",
+      "normalized_files": [
+        {
+          "bytes": 1217098,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/observations/sites/site5_reynolds_creek_us_rls_id.csv",
+          "sha256": "66253fd30e774a39308cf51377d2efe12abc894ed45a4d9970ab5a8a1baed085"
+        }
+      ],
+      "normalized_row_count": 4356,
+      "parser_assumptions": "Weekly and hourly station-127 soil-temperature profiles are normalized to one daily 0 degC isotherm in meters; hourly profiles are averaged by date/depth before interpolation.",
+      "parser_version": "snowfreeze-observed-harness-v1",
+      "raw_files": [
+        {
+          "bytes": 3436463,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/reynolds/soiltemperature.zip",
+          "sha256": "cd7c6d8aeef42d3ac6c74db1aabf7d6365d8b9c16ef4345f0ba8548ab0bdbce8"
+        },
+        {
+          "bytes": 451,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/reynolds/source_status.json",
+          "sha256": "b35c69f758c77662dff6990afa685e50b98a83afd831ea25ea7cb06d4fdcc8bb"
+        },
+        {
+          "bytes": 3661,
+          "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/reynolds/hydroshare_metadata.json",
+          "sha256": "3502de6771f731933ce08895d600f14a53318732146eb6073b0c3f355447d3c8"
+        }
+      ],
+      "source_id": "usda_ars_reynolds_creek_soil_temperature",
+      "source_url": "https://catalog.data.gov/dataset/reynolds-creek-experimental-watershed-idaho-soil-temperature",
+      "station_mapping": "station 127; archive elevation 1652 m matches site5 modeled elevation 1653 m and Low Sagebrush fixture mapping",
+      "status": "acquired",
+      "title": "USDA-ARS Reynolds Creek soil temperature station 127"
+    }
+  ]
+}

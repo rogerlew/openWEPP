@@ -621,6 +621,10 @@ path = "tests/integration/auth08_wb19_solwpv_fcdep_branch_constitutive_contract.
 name = "auth11_required_suite_obligation_guards_contract"
 path = "tests/integration/auth11_required_suite_obligation_guards_contract.rs"
 
+[[test]]
+name = "snowfreeze_observed_frost_depth_contract"
+path = "tests/integration/snowfreeze_observed_frost_depth_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

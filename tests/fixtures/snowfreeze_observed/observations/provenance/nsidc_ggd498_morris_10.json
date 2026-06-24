@@ -1,0 +1,35 @@
+{
+  "access_date": "2026-06-24",
+  "license_or_terms": "NSIDC GGD498 v1 public data; cite DOI 10.7265/1mcs-q536 and the access date.",
+  "normalized_files": [
+    {
+      "bytes": 42407,
+      "path": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/observations/sites/site4_ggd498_morris_mn.csv",
+      "sha256": "2f2a2e77cc09ec4d1ca4e2af3d051fa29b7880a09be2512f694a74ecfaaa1869"
+    }
+  ],
+  "normalized_row_count": 232,
+  "parser_assumptions": "Station 10 flat-file fields are station,date,snow_cm,frost_bottom_cm,thaw_depth_cm plus ancillary soil fields.",
+  "parser_version": "snowfreeze-observed-harness-v1",
+  "raw_files": [
+    {
+      "bytes": 12992,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/ggd498/10.txt",
+      "sha256": "b81e3e84ee34d13b03083b0338ec138fa9831dee3960553d506e692c1e9d7220"
+    },
+    {
+      "bytes": 766,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/ggd498/README.txt",
+      "sha256": "6c05e2cadc82dda91c6ad7c513ad656c4c165f9578e7071037aa7c3baa3b5c15"
+    },
+    {
+      "bytes": 76757,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/ggd498/ggd498-userguide-v1.pdf",
+      "sha256": "b164ea1fa9baba2cd3c42a6e547b3238c6b16c6ac6feadaa3191062065c77169"
+    }
+  ],
+  "source_id": "nsidc_ggd498_morris_10",
+  "source_url": "https://nsidc.org/data/ggd498/versions/1",
+  "status": "acquired",
+  "title": "NSIDC GGD498 DOI 10.7265/1mcs-q536 station 10 Morris"
+}

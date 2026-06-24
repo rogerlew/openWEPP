@@ -1,0 +1,37 @@
+{
+  "access_date": "2026-06-24",
+  "download_url": "https://ndownloader.figshare.com/files/44527883",
+  "license_or_terms": "Included license.txt places the data in the public domain and requests customary citation.",
+  "normalized_files": [
+    {
+      "bytes": 1217098,
+      "path": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/observations/sites/site5_reynolds_creek_us_rls_id.csv",
+      "sha256": "66253fd30e774a39308cf51377d2efe12abc894ed45a4d9970ab5a8a1baed085"
+    }
+  ],
+  "normalized_row_count": 4356,
+  "parser_assumptions": "Weekly and hourly station-127 soil-temperature profiles are normalized to one daily 0 degC isotherm in meters; hourly profiles are averaged by date/depth before interpolation.",
+  "parser_version": "snowfreeze-observed-harness-v1",
+  "raw_files": [
+    {
+      "bytes": 3436463,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/reynolds/soiltemperature.zip",
+      "sha256": "cd7c6d8aeef42d3ac6c74db1aabf7d6365d8b9c16ef4345f0ba8548ab0bdbce8"
+    },
+    {
+      "bytes": 451,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/reynolds/source_status.json",
+      "sha256": "b35c69f758c77662dff6990afa685e50b98a83afd831ea25ea7cb06d4fdcc8bb"
+    },
+    {
+      "bytes": 3661,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/reynolds/hydroshare_metadata.json",
+      "sha256": "3502de6771f731933ce08895d600f14a53318732146eb6073b0c3f355447d3c8"
+    }
+  ],
+  "source_id": "usda_ars_reynolds_creek_soil_temperature",
+  "source_url": "https://catalog.data.gov/dataset/reynolds-creek-experimental-watershed-idaho-soil-temperature",
+  "station_mapping": "station 127; archive elevation 1652 m matches site5 modeled elevation 1653 m and Low Sagebrush fixture mapping",
+  "status": "acquired",
+  "title": "USDA-ARS Reynolds Creek soil temperature station 127"
+}

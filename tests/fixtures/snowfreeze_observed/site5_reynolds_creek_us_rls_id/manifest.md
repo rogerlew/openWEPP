@@ -27,6 +27,7 @@ override of the wepp.cloud non-ag default (`ksflag = 0`); see fixture README.
 - Obs coords: 43.1439, −116.7356, 1608 m
 - Method: **soil temperature** (YSI thermistor profile; SHAW-validated lineage,
   Flerchinger & Hanson 1989) → timing authority only, 0 °C-isotherm proxy
-- Period: 1977–present (DB 1981–1996); public CC-BY
+- Period: 1977–present (DB 1981–1996); public-domain archive license with
+  customary citation requested
 - Access: USDA-ARS Box portal / Ag Data Commons (`soiltemperature.zip`)
 - Tier: 2 / regime breadth (semi-arid rangeland, snow-insulated transect)

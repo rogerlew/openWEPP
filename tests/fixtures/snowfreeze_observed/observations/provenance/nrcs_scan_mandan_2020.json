@@ -1,0 +1,35 @@
+{
+  "access_date": "2026-06-24",
+  "license_or_terms": "USDA NRCS AWDB public station data; cite USDA NRCS SCAN/AWDB station 2020:ND:SCAN.",
+  "normalized_files": [
+    {
+      "bytes": 2231127,
+      "path": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/observations/sites/site3_scan_mandan_nd.csv",
+      "sha256": "dc6b0902c258df3b9edea0440e49cd2338719c1433ebbbcf809c0ac80bff1602"
+    }
+  ],
+  "normalized_row_count": 10643,
+  "parser_assumptions": "STO profile temperatures are stored in degF with depth in inches; normalized is the interpolated 0 degC isotherm in meters.",
+  "parser_version": "snowfreeze-observed-harness-v1",
+  "raw_files": [
+    {
+      "bytes": 8935267,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/scan/mandan_sto_daily.json",
+      "sha256": "f01bae3e08c0f00c1c473c9c7a254660d685ef8ac521a6b8226ab5f63d68ce30"
+    },
+    {
+      "bytes": 572,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/scan/mandan_station.json",
+      "sha256": "35a76c9d0314af34ff83bdf71d3ffdd77e4221c548e4aa48aa3d1230121f2a4c"
+    },
+    {
+      "bytes": 37970,
+      "path": "/home/workdir/openWEPP/target/snowfreeze_observed/raw/scan/awdb_elements.json",
+      "sha256": "f7cb6911d68c990627b88120b48b3f8d87c95e60a7d4e0f9fa8c75b43fdd7ab5"
+    }
+  ],
+  "source_id": "nrcs_scan_mandan_2020",
+  "source_url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
+  "status": "acquired",
+  "title": "USDA NRCS AWDB station 2020:ND:SCAN soil temperature"
+}
