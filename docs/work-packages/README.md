@@ -11,8 +11,17 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-06-23`:
+State as of `2026-06-24`:
 
+- `20260624-r7g-frost-state-skeleton-comparator-seam-001/` is complete.
+  It targets the ADR-0026 "Frost state skeleton and comparator seam" step by
+  making `DirectWinterColumnState.frost` the canonical direct lane/day
+  skeleton, leaving `DirectFrostRuntimeCarry` as a temporary mirror, and
+  isolating the remaining `DirectFrostRunoffSurface` bridge behind named
+  comparator-seam helpers. Focused tests, source scans, workspace Rust gates,
+  dependency policy, and scoped Markdown lint passed. It does not claim typed
+  frost solver extraction, bridge deletion, output parity, default activation,
+  or R7G closure.
 - `20260623-r7g-snow-lane-migration-001/` is complete. It executed the
   ADR-0026 "Snow lane migration" step by making
   `DirectWinterColumnState.snow` the production direct lane/day authority for

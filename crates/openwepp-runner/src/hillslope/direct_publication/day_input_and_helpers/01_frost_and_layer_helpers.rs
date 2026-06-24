@@ -48,15 +48,6 @@ fn direct_production_overlay_frost_runtime_carry(
     Ok(())
 }
 
-fn direct_production_frost_surface_template(
-    seed_surface: &HillslopeWritebackSurface,
-) -> DirectFrostRunoffSurface {
-    let mut state_surface = seed_surface.state_surface.clone();
-    state_surface
-        .retain(|symbol, _| direct_production_retains_frost_surface_symbol(symbol.as_str()));
-    DirectFrostRunoffSurface::from_surface_maps(state_surface, std::collections::BTreeMap::new())
-}
-
 fn direct_production_retains_frost_surface_symbol(symbol: &str) -> bool {
     matches!(
         symbol,
@@ -733,9 +724,11 @@ fn overlay_direct_publication_lane_state(
             ),
         });
     }
-    if let Some(carry) = &lane.frost_runtime_carry {
+    if let Some(carry) =
+        direct_publication_frost_runtime_carry_from_lane_state(&lane.winter_column.frost)
+    {
         insert_direct_seed_scalar(seed_surface, "wb11_soil_water", soil_water_m, lane_index)?;
-        overlay_direct_publication_frost_runtime_carry(seed_surface, lane_index, carry)?;
+        overlay_direct_publication_frost_runtime_carry(seed_surface, lane_index, &carry)?;
         return Ok(());
     }
     overlay_direct_publication_frost_fine_state(
@@ -933,6 +926,12 @@ fn direct_publication_frost_runtime_carry_has_fine_projection(
     carry: &DirectFrostRuntimeCarry,
 ) -> bool {
     !carry.fine_layers.is_empty()
+}
+
+fn direct_publication_frost_runtime_carry_from_lane_state(
+    state: &DirectFrostLaneState,
+) -> Option<DirectFrostRuntimeCarry> {
+    state.has_runtime_state().then(|| state.clone().into())
 }
 
 fn overlay_direct_publication_frost_runtime_carry(
@@ -1742,4 +1741,3 @@ fn direct_publication_layer_count(
         require_runtime_surface_scalar(runtime_surface, nsl_symbol)?,
     )
 }
-

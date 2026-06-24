@@ -4,6 +4,7 @@ use crate::constants::{
     WB16_MAX_DURATION_S, WB16_PEAKRO_FLOOR, WB16_RUNOFF_NEAR_ZERO_THRESHOLD,
 };
 use crate::hydrology::{DirectFrostLiquidPartition, DirectFrostRunoffSurface};
+use crate::winter_column::DirectFrostLaneState;
 
 use super::{
     DIRECT_AUDIT, DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4I_PHASE_SPAN_COUNT,
@@ -702,8 +703,11 @@ impl DirectDayFrame {
         let has_material_storage_state =
             r4a_frost_partition_has_material_storage_state(frost_partition);
         if frost_partition.active_frost_coupling {
-            self.frost_runtime_carry = Some(direct_frost_runtime_carry(frost_partition));
+            let carry = direct_frost_runtime_carry(frost_partition);
+            self.winter_column.frost = carry.clone().into();
+            self.frost_runtime_carry = Some(carry);
         } else {
+            self.winter_column.frost = DirectFrostLaneState::zero();
             self.frost_runtime_carry = None;
         }
         if !has_material_storage_state {

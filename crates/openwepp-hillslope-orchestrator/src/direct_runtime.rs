@@ -3,7 +3,10 @@ use std::fmt;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::constants::{WB11_ZERO_THRESHOLD, WB16_PEAKRO_FLOOR, WB16_RUNOFF_NEAR_ZERO_THRESHOLD};
-use crate::winter_column::{DirectSnowLaneState, DirectWinterColumnState};
+use crate::winter_column::{
+    DirectFrostFineLayerState, DirectFrostLaneState, DirectFrostLayerShadowState,
+    DirectSnowLaneState, DirectWinterColumnState,
+};
 
 pub const DIRECT_TRANSFER_HOUR_COUNT: usize = 24;
 pub const DIRECT_PHASE_COUNT: usize = 14;

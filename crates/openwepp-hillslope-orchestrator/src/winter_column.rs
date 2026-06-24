@@ -137,6 +137,40 @@ impl DirectFrostLaneState {
             fine_layers: Vec::new(),
         }
     }
+
+    #[must_use]
+    pub fn has_runtime_state(&self) -> bool {
+        self.active_frost_coupling
+            || self.dfrost_m != 0.0
+            || self.dthaw_m != 0.0
+            || self.nft != 0.0
+            || self.ws_frz_m != 0.0
+            || self.infcap_frz_m_s != 0.0
+            || self.frwatc_soil_water_before_m != 0.0
+            || self.frwatc_soil_water_after_m != 0.0
+            || self.frwatc_frozen_water_before_m != 0.0
+            || self.frwatc_frozen_water_after_m != 0.0
+            || self.frwatc_freeze_debit_m != 0.0
+            || self.frwatc_thaw_credit_m != 0.0
+            || self.frwatc_net_liquid_delta_m != 0.0
+            || self.frdp_m != 0.0
+            || self.thdp_m != 0.0
+            || self.tfrdp_m != 0.0
+            || self.tthawd_m != 0.0
+            || self.fgthwd_flag != 0.0
+            || self.total_fine_layer_count != 0.0
+            || self.conductivity_tilled_w_m_k != 0.0
+            || self.conductivity_untilled_w_m_k != 0.0
+            || self.conductivity_residue_w_m_k != 0.0
+            || self.shadow_total_water_before_m != 0.0
+            || self.shadow_total_water_after_m != 0.0
+            || self.shadow_wb_delta_m != 0.0
+            || self.shadow_frwatc_residual_m != 0.0
+            || self.watpdg_m != 0.0
+            || self.watbtm_m != 0.0
+            || !self.layer_shadows.is_empty()
+            || !self.fine_layers.is_empty()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

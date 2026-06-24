@@ -252,6 +252,144 @@ pub struct DirectFrostFineLayerCarry {
     pub sltime_s: f64,
 }
 
+impl From<DirectFrostLayerShadowCarry> for DirectFrostLayerShadowState {
+    fn from(carry: DirectFrostLayerShadowCarry) -> Self {
+        Self {
+            layer_index: carry.layer_index,
+            st_m: carry.st_m,
+            soil_water_m: carry.soil_water_m,
+            frozen_depth_m: carry.frozen_depth_m,
+            frozen_water_m: carry.frozen_water_m,
+            soilf_m: carry.soilf_m,
+            yst_m: carry.yst_m,
+            nwfrzz_m: carry.nwfrzz_m,
+        }
+    }
+}
+
+impl From<DirectFrostLayerShadowState> for DirectFrostLayerShadowCarry {
+    fn from(state: DirectFrostLayerShadowState) -> Self {
+        Self {
+            layer_index: state.layer_index,
+            st_m: state.st_m,
+            soil_water_m: state.soil_water_m,
+            frozen_depth_m: state.frozen_depth_m,
+            frozen_water_m: state.frozen_water_m,
+            soilf_m: state.soilf_m,
+            yst_m: state.yst_m,
+            nwfrzz_m: state.nwfrzz_m,
+        }
+    }
+}
+
+impl From<DirectFrostFineLayerCarry> for DirectFrostFineLayerState {
+    fn from(carry: DirectFrostFineLayerCarry) -> Self {
+        Self {
+            layer_index: carry.layer_index,
+            fine_index: carry.fine_index,
+            fgfrst: carry.fgfrst,
+            slfsd_m: carry.slfsd_m,
+            slsic_m: carry.slsic_m,
+            slsw_theta: carry.slsw_theta,
+            sltime_s: carry.sltime_s,
+        }
+    }
+}
+
+impl From<DirectFrostFineLayerState> for DirectFrostFineLayerCarry {
+    fn from(state: DirectFrostFineLayerState) -> Self {
+        Self {
+            layer_index: state.layer_index,
+            fine_index: state.fine_index,
+            fgfrst: state.fgfrst,
+            slfsd_m: state.slfsd_m,
+            slsic_m: state.slsic_m,
+            slsw_theta: state.slsw_theta,
+            sltime_s: state.sltime_s,
+        }
+    }
+}
+
+impl From<DirectFrostRuntimeCarry> for DirectFrostLaneState {
+    fn from(carry: DirectFrostRuntimeCarry) -> Self {
+        Self {
+            active_frost_coupling: carry.active_frost_coupling,
+            dfrost_m: carry.dfrost_m,
+            dthaw_m: carry.dthaw_m,
+            nft: carry.nft,
+            ws_frz_m: carry.ws_frz_m,
+            infcap_frz_m_s: carry.infcap_frz_m_s,
+            frwatc_soil_water_before_m: carry.frwatc_soil_water_before_m,
+            frwatc_soil_water_after_m: carry.frwatc_soil_water_after_m,
+            frwatc_frozen_water_before_m: carry.frwatc_frozen_water_before_m,
+            frwatc_frozen_water_after_m: carry.frwatc_frozen_water_after_m,
+            frwatc_freeze_debit_m: carry.frwatc_freeze_debit_m,
+            frwatc_thaw_credit_m: carry.frwatc_thaw_credit_m,
+            frwatc_net_liquid_delta_m: carry.frwatc_net_liquid_delta_m,
+            frdp_m: carry.frdp_m,
+            thdp_m: carry.thdp_m,
+            tfrdp_m: carry.tfrdp_m,
+            tthawd_m: carry.tthawd_m,
+            fgthwd_flag: carry.fgthwd_flag,
+            total_fine_layer_count: carry.total_fine_layer_count,
+            conductivity_tilled_w_m_k: carry.conductivity_tilled_w_m_k,
+            conductivity_untilled_w_m_k: carry.conductivity_untilled_w_m_k,
+            conductivity_residue_w_m_k: carry.conductivity_residue_w_m_k,
+            shadow_total_water_before_m: carry.shadow_total_water_before_m,
+            shadow_total_water_after_m: carry.shadow_total_water_after_m,
+            shadow_wb_delta_m: carry.shadow_wb_delta_m,
+            shadow_frwatc_residual_m: carry.shadow_frwatc_residual_m,
+            watpdg_m: carry.watpdg_m,
+            watbtm_m: carry.watbtm_m,
+            layer_shadows: carry.layer_shadows.into_iter().map(Into::into).collect(),
+            fine_layers: carry.fine_layers.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+impl From<DirectFrostLaneState> for DirectFrostRuntimeCarry {
+    fn from(state: DirectFrostLaneState) -> Self {
+        Self {
+            active_frost_coupling: state.active_frost_coupling,
+            dfrost_m: state.dfrost_m,
+            dthaw_m: state.dthaw_m,
+            nft: state.nft,
+            ws_frz_m: state.ws_frz_m,
+            infcap_frz_m_s: state.infcap_frz_m_s,
+            frwatc_soil_water_before_m: state.frwatc_soil_water_before_m,
+            frwatc_soil_water_after_m: state.frwatc_soil_water_after_m,
+            frwatc_frozen_water_before_m: state.frwatc_frozen_water_before_m,
+            frwatc_frozen_water_after_m: state.frwatc_frozen_water_after_m,
+            frwatc_freeze_debit_m: state.frwatc_freeze_debit_m,
+            frwatc_thaw_credit_m: state.frwatc_thaw_credit_m,
+            frwatc_net_liquid_delta_m: state.frwatc_net_liquid_delta_m,
+            frdp_m: state.frdp_m,
+            thdp_m: state.thdp_m,
+            tfrdp_m: state.tfrdp_m,
+            tthawd_m: state.tthawd_m,
+            fgthwd_flag: state.fgthwd_flag,
+            total_fine_layer_count: state.total_fine_layer_count,
+            conductivity_tilled_w_m_k: state.conductivity_tilled_w_m_k,
+            conductivity_untilled_w_m_k: state.conductivity_untilled_w_m_k,
+            conductivity_residue_w_m_k: state.conductivity_residue_w_m_k,
+            shadow_total_water_before_m: state.shadow_total_water_before_m,
+            shadow_total_water_after_m: state.shadow_total_water_after_m,
+            shadow_wb_delta_m: state.shadow_wb_delta_m,
+            shadow_frwatc_residual_m: state.shadow_frwatc_residual_m,
+            watpdg_m: state.watpdg_m,
+            watbtm_m: state.watbtm_m,
+            layer_shadows: state.layer_shadows.into_iter().map(Into::into).collect(),
+            fine_layers: state.fine_layers.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+fn direct_frost_runtime_carry_from_winter_state(
+    state: &DirectFrostLaneState,
+) -> Option<DirectFrostRuntimeCarry> {
+    state.has_runtime_state().then(|| state.clone().into())
+}
+
 impl DirectLaneConstructorInputs {
     pub fn from_topology(
         lane_index: usize,
@@ -466,6 +604,9 @@ impl DirectRunFrame {
         day_frame.snow_runtime_carry =
             direct_snow_runtime_carry_from_winter_state(lane.winter_column.snow)
                 .or(lane.snow_runtime_carry);
+        day_frame.frost_runtime_carry =
+            direct_frost_runtime_carry_from_winter_state(&lane.winter_column.frost)
+                .or_else(|| lane.frost_runtime_carry.clone());
         Ok(day_frame)
     }
 
@@ -733,9 +874,17 @@ impl DirectLaneFrame {
                 winter_column.snow = carry.into();
             }
         }
+        if !winter_column.frost.has_runtime_state() {
+            if let Some(carry) = inputs.frost_runtime_carry.clone() {
+                winter_column.frost = carry.into();
+            }
+        }
         let snow_runtime_carry =
             direct_snow_runtime_carry_from_winter_state(winter_column.snow)
                 .or(inputs.snow_runtime_carry);
+        let frost_runtime_carry =
+            direct_frost_runtime_carry_from_winter_state(&winter_column.frost)
+                .or(inputs.frost_runtime_carry);
         Self {
             lane_id: inputs.lane_id,
             upstream_lane_id: inputs.upstream_lane_id,
@@ -756,7 +905,7 @@ impl DirectLaneFrame {
             evapotranspiration_stage_state: inputs.evapotranspiration_stage_state,
             winter_column: Box::new(winter_column),
             snow_runtime_carry,
-            frost_runtime_carry: inputs.frost_runtime_carry,
+            frost_runtime_carry,
             day_inputs: inputs.day_inputs,
         }
     }
@@ -785,7 +934,7 @@ impl DirectLaneFrame {
         self.transfer = day_frame.transfer.clone();
         self.publication = day_frame.publication.clone();
         self.erosion_downstream_operands = day_frame.erosion_downstream_operands.clone();
-        let apply_coarse_frost_projection = day_frame.frost_runtime_carry.is_none()
+        let apply_coarse_frost_projection = !day_frame.winter_column.frost.has_runtime_state()
             && (day_frame.hydrology_projection.frost_depth_m > WB11_ZERO_THRESHOLD
                 || day_frame.hydrology_projection.frozen_soil_water_m > WB11_ZERO_THRESHOLD);
         if !day_frame
@@ -829,8 +978,9 @@ impl DirectLaneFrame {
         self.snow_runtime_carry =
             direct_snow_runtime_carry_from_winter_state(self.winter_column.snow)
                 .or(day_frame.snow_runtime_carry);
-        self.frost_runtime_carry
-            .clone_from(&day_frame.frost_runtime_carry);
+        self.frost_runtime_carry =
+            direct_frost_runtime_carry_from_winter_state(&self.winter_column.frost)
+                .or_else(|| day_frame.frost_runtime_carry.clone());
         Ok(())
     }
 }
@@ -1152,7 +1302,12 @@ impl DirectDayFrame {
         self.snow_runtime_carry =
             direct_snow_runtime_carry_from_winter_state(self.winter_column.snow)
                 .or(inputs.snow_runtime_carry);
-        self.frost_runtime_carry = inputs.frost_runtime_carry;
+        if let Some(carry) = inputs.frost_runtime_carry.clone() {
+            self.winter_column.frost = carry.into();
+        }
+        self.frost_runtime_carry =
+            direct_frost_runtime_carry_from_winter_state(&self.winter_column.frost)
+                .or(inputs.frost_runtime_carry);
         Ok(())
     }
 

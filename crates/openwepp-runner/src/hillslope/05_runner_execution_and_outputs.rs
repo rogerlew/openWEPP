@@ -455,24 +455,26 @@ fn build_direct_production_coupling_vector_provenance(
     let outlet_frost_carry = frame
         .lanes
         .last()
-        .and_then(|lane| lane.frost_runtime_carry.as_ref());
-    let dfrost = outlet_frost_carry.map_or_else(
+        .and_then(|lane| {
+            direct_publication_frost_runtime_carry_from_lane_state(&lane.winter_column.frost)
+        });
+    let dfrost = outlet_frost_carry.as_ref().map_or_else(
         || require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_dfrost"),
         |carry| Ok(carry.dfrost_m),
     )?;
-    let dthaw = outlet_frost_carry.map_or_else(
+    let dthaw = outlet_frost_carry.as_ref().map_or_else(
         || require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_dthaw"),
         |carry| Ok(carry.dthaw_m),
     )?;
-    let nft = outlet_frost_carry.map_or_else(
+    let nft = outlet_frost_carry.as_ref().map_or_else(
         || require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_nft"),
         |carry| Ok(carry.nft),
     )?;
-    let ws_frz = outlet_frost_carry.map_or_else(
+    let ws_frz = outlet_frost_carry.as_ref().map_or_else(
         || require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_ws_frz"),
         |carry| Ok(carry.ws_frz_m),
     )?;
-    let infcap_frz = outlet_frost_carry.map_or_else(
+    let infcap_frz = outlet_frost_carry.as_ref().map_or_else(
         || require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_infcap_frz"),
         |carry| Ok(carry.infcap_frz_m_s),
     )?;

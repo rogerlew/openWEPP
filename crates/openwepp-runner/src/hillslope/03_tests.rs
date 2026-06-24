@@ -1429,6 +1429,33 @@ mod tests {
         );
     }
 
+    #[test]
+    fn r7g_direct_production_reads_winter_column_frost_and_isolates_comparator_seam() {
+        let source = direct_publication_day_input_and_helpers_source();
+        let builder_source = include_str!(
+            "direct_publication/day_input_and_helpers/00_builders_and_authority.rs",
+        );
+        let helper = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";
+
+        assert!(
+            !builder_source.contains("lane.frost_runtime_carry"),
+            "{helper} must not read DirectFrostRuntimeCarry as prior frost authority"
+        );
+        assert!(
+            builder_source.contains("lane.winter_column.frost"),
+            "{helper} must read prior direct frost state from DirectWinterColumnState"
+        );
+        assert!(
+            !builder_source.contains("DirectFrostRunoffSurface::from_surface_maps"),
+            "{helper} must route frost surface construction through the named comparator seam"
+        );
+        assert!(
+            source.contains("direct_publication_frost_comparator_surface_from_seed_surface")
+                && source.contains("direct_production_frost_comparator_surface_template"),
+            "remaining DirectFrostRunoffSurface bridge must live behind named comparator-seam helpers"
+        );
+    }
+
     fn r7g_snow_forcing(tmax_c: f64, tmin_c: f64) -> HillslopeDirectClimateDayForcing {
         HillslopeDirectClimateDayForcing {
             prcp_m: 0.0,
@@ -1447,6 +1474,7 @@ mod tests {
         [
             include_str!("direct_publication/day_input_and_helpers/00_builders_and_authority.rs"),
             include_str!("direct_publication/day_input_and_helpers/01_frost_and_layer_helpers.rs"),
+            include_str!("direct_publication/day_input_and_helpers/03_frost_comparator_seam.rs"),
             include_str!(
                 "direct_publication/day_input_and_helpers/02_publication_and_manifest_helpers.rs",
             ),
