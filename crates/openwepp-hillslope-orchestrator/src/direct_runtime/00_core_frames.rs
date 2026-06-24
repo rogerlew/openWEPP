@@ -448,8 +448,7 @@ pub struct DirectDayConstructorInputs {
     pub storage_reconciliation_inputs: DirectStorageReconciliationInputs,
     pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,
     pub erosion_inputs: DirectErosionInputs,
-    pub frost_runoff_surface: Option<crate::hydrology::DirectFrostRunoffSurface>,
-    pub frost_liquid_partition: Option<crate::hydrology::DirectFrostLiquidPartition>,
+    pub winter_frost_compute_inputs: Option<crate::hydrology::DirectWinterFrostComputeInputs>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
     pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
@@ -484,8 +483,7 @@ impl DirectDayConstructorInputs {
             storage_reconciliation_inputs: DirectStorageReconciliationInputs::zero(),
             hydrology_projection_inputs: DirectHydrologyProjectionInputs::zero(),
             erosion_inputs: DirectErosionInputs::zero(),
-            frost_runoff_surface: None,
-            frost_liquid_partition: None,
+            winter_frost_compute_inputs: None,
             frost_layer_carry_projection: None,
             snow_runtime_carry: None,
             frost_runtime_carry: None,
@@ -1092,8 +1090,6 @@ pub struct DirectDayFrame {
     pub storage_downstream_operands: DirectStorageDownstreamOperands,
     pub storage_shadow_projection: Option<DirectStorageShadowProjection>,
     pub hydrology_projection_inputs: DirectHydrologyProjectionInputs,
-    pub frost_runoff_surface: Option<crate::hydrology::DirectFrostRunoffSurface>,
-    pub frost_liquid_partition: Option<crate::hydrology::DirectFrostLiquidPartition>,
     pub hydrology_projection: DirectHydrologyProjectionState,
     pub hydrology_projection_downstream_operands: DirectHydrologyProjectionDownstreamOperands,
     pub hydrology_projection_shadow_projection: Option<DirectHydrologyProjectionShadowProjection>,
@@ -1229,8 +1225,6 @@ impl DirectDayFrame {
             storage_downstream_operands: DirectStorageDownstreamOperands::zero(),
             storage_shadow_projection: None,
             hydrology_projection_inputs: DirectHydrologyProjectionInputs::zero(),
-            frost_runoff_surface: None,
-            frost_liquid_partition: None,
             hydrology_projection: DirectHydrologyProjectionState::zero(),
             hydrology_projection_downstream_operands:
                 DirectHydrologyProjectionDownstreamOperands::zero(),
@@ -1293,8 +1287,6 @@ impl DirectDayFrame {
         self.storage_reconciliation_inputs.interception_m = inputs.interception_m;
         self.hydrology_projection_inputs = inputs.hydrology_projection_inputs;
         self.erosion_inputs = inputs.erosion_inputs;
-        self.frost_runoff_surface = inputs.frost_runoff_surface;
-        self.frost_liquid_partition = inputs.frost_liquid_partition;
         self.frost_layer_carry_projection = inputs.frost_layer_carry_projection;
         if let Some(carry) = inputs.snow_runtime_carry {
             self.winter_column.snow = carry.into();

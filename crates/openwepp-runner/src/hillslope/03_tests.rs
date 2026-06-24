@@ -1359,12 +1359,18 @@ mod tests {
             .expect("R7G typed production builder build body must be present");
 
         assert!(
-            !build_body.contains("day_input.frost_runoff_surface = Some(frost_context.surface)"),
-            "production active frost contexts must not hand a DirectFrostRunoffSurface to R4A"
+            !build_body.contains("frost_runoff_surface")
+                && !build_body.contains("frost_liquid_partition"),
+            "production active frost contexts must not hand deleted frost bridge fields to R4A"
         );
         assert!(
-            build_body.contains("day_input.frost_liquid_partition = Some(frost_context.partition)"),
-            "active frost contexts must hand the typed precomputed partition through to R4A so the consumer does not recompute from a surface"
+            build_body
+                .contains("day_input.winter_frost_compute_inputs = Some(frost_context.compute_inputs)"),
+            "active frost contexts must hand typed winter frost compute inputs to R4A"
+        );
+        assert!(
+            build_body.contains("frozen_infiltration_capacity_m_s"),
+            "WB14 may consume the typed pre-runoff frozen infiltration capacity scalar"
         );
         assert!(
             !build_body.contains("direct_publication_frost_partition_has_material_state")
@@ -1381,10 +1387,10 @@ mod tests {
             .nth(1)
             .expect("R7G snow/frost authority impl must be present");
         let typed_partition_body = impl_body
-            .split("    fn compute_typed_frost_partition(")
+            .split("    fn typed_winter_frost_compute_inputs(")
             .nth(1)
-            .and_then(|tail| tail.split("\n    fn active_frost_forcing").next())
-            .expect("R7G typed frost partition helper body must be present");
+            .and_then(|tail| tail.split("\n    fn compute_typed_winter_frost_outcome").next())
+            .expect("R7G typed winter frost compute helper body must be present");
         let frost_body = impl_body
             .split("    fn frost_day_context(")
             .nth(1)
@@ -1435,7 +1441,7 @@ mod tests {
     }
 
     #[test]
-    fn r7g_direct_production_reads_winter_column_frost_and_isolates_comparator_seam() {
+    fn r7g_direct_production_reads_winter_column_frost_and_deletes_bridge() {
         let source = direct_publication_day_input_and_helpers_source();
         let builder_source = include_str!(
             "direct_publication/day_input_and_helpers/00_builders_and_authority.rs",
@@ -1450,18 +1456,6 @@ mod tests {
             builder_source.contains("lane.winter_column.frost"),
             "{helper} must read prior direct frost state from DirectWinterColumnState"
         );
-        assert!(
-            !builder_source.contains("DirectFrostRunoffSurface::from_surface_maps"),
-            "{helper} must route frost surface construction through the named comparator seam"
-        );
-        assert!(
-            source.contains("direct_publication_frost_comparator_surface_from_seed_surface"),
-            "remaining DirectFrostRunoffSurface bridge must live behind the named comparator-seam helper"
-        );
-        assert!(
-            !source.contains("direct_production_frost_comparator_surface_template"),
-            "production frost must not retain its own DirectFrostRunoffSurface template"
-        );
 
         let frost_body = builder_source
             .split("    fn frost_day_context(")
@@ -1469,23 +1463,26 @@ mod tests {
             .and_then(|tail| tail.split("\n    fn active_frost_forcing").next())
             .expect("R7G typed frost day context body must be present");
         assert!(
-            frost_body.contains("compute_direct_frost_liquid_partition_from_typed")
-                && frost_body.contains("DirectActiveFrostPartitionInputs"),
+            frost_body.contains("typed_winter_frost_compute_inputs")
+                && frost_body.contains("DirectWinterFrostComputeInputs"),
             "{helper} must compute production frost through typed active-frost inputs"
         );
         for forbidden in [
             "DirectFrostRunoffSurface",
+            "DirectFrostLiquidPartition",
+            "frost_runoff_surface",
+            "frost_liquid_partition",
             "compute_frost_liquid_partition",
             "HillslopeKernelRequest",
         ] {
             assert!(
-                !frost_body.contains(forbidden),
-                "{helper} production frost hot path must not use compatibility surface/request symbol: {forbidden}"
+                !source.contains(forbidden),
+                "{helper} production frost path must delete compatibility bridge symbol: {forbidden}"
             );
         }
         assert!(
-            !builder_source.contains("frost_surface_template"),
-            "{helper} production authority must not retain a frost surface template"
+            source.contains("compute_direct_winter_frost_partition"),
+            "{helper} must use the typed winter frost kernel outcome name"
         );
     }
 
@@ -1507,7 +1504,6 @@ mod tests {
         [
             include_str!("direct_publication/day_input_and_helpers/00_builders_and_authority.rs"),
             include_str!("direct_publication/day_input_and_helpers/01_frost_and_layer_helpers.rs"),
-            include_str!("direct_publication/day_input_and_helpers/03_frost_comparator_seam.rs"),
             include_str!(
                 "direct_publication/day_input_and_helpers/02_publication_and_manifest_helpers.rs",
             ),

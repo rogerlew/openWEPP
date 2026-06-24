@@ -1144,35 +1144,6 @@ fn direct_publication_snow_liquid_partition(
     })
 }
 
-fn direct_publication_frost_liquid_partition(
-    runtime_surface: &HillslopeWritebackSurface,
-    layers: &[DirectSubsurfaceLayerState],
-) -> Result<openwepp_hillslope_orchestrator::DirectFrostLiquidPartition, HillslopeCliError> {
-    let soil_conductivity_m_s = direct_publication_wb14_base_conductivity(runtime_surface, layers)?;
-    Wb11HydrologyKernel::compute_direct_frost_liquid_partition(
-        &runtime_surface.state_surface,
-        &runtime_surface.flux_surface,
-        soil_conductivity_m_s,
-    )
-    .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
-        surface: "direct_publication_frame",
-        detail: format!("{SIMOUT_GUARD_ID} direct R4G frost/liquid partition failed: {source}"),
-    })
-}
-
-fn apply_direct_publication_frost_infiltration_cap(
-    runtime_surface: &mut HillslopeWritebackSurface,
-    frost_partition: &openwepp_hillslope_orchestrator::DirectFrostLiquidPartition,
-    lane_index: usize,
-) -> Result<(), HillslopeCliError> {
-    insert_direct_seed_scalar(
-        runtime_surface,
-        "frost.runtime_infcap_frz",
-        frost_partition.infcap_frz_m_s,
-        lane_index,
-    )
-}
-
 fn direct_publication_hydrology_projection_inputs(
     mut profile_inputs: DirectHydrologyProjectionInputs,
     snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
@@ -1416,28 +1387,6 @@ fn direct_publication_wb14_effective_conductivity(
             surface: "direct_publication_frame",
             detail: format!(
                 "{SIMOUT_GUARD_ID} WB14 direct infiltration requires at least one layer conductivity"
-            ),
-        })
-}
-
-fn direct_publication_wb14_base_conductivity(
-    runtime_surface: &HillslopeWritebackSurface,
-    layers: &[DirectSubsurfaceLayerState],
-) -> Result<f64, HillslopeCliError> {
-    if let Some(value) =
-        direct_publication_optional_nonnegative_scalar(runtime_surface, &["wb14_soil_conductivity_m_s"])?
-    {
-        if value > 0.0 {
-            return Ok(value);
-        }
-    }
-    layers
-        .first()
-        .map(|layer| layer.conductivity_m_s)
-        .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_publication_frame",
-            detail: format!(
-                "{SIMOUT_GUARD_ID} WB14 direct frost partition requires at least one layer conductivity"
             ),
         })
 }

@@ -3,7 +3,10 @@ use crate::constants::{
     WB15_INTERCEPT_LINEAR_COEFF, WB15_INTERCEPT_MM_TO_M, WB15_INTERCEPT_QUADRATIC_COEFF,
     WB16_MAX_DURATION_S, WB16_PEAKRO_FLOOR, WB16_RUNOFF_NEAR_ZERO_THRESHOLD,
 };
-use crate::hydrology::{DirectFrostLiquidPartition, DirectFrostRunoffSurface};
+use crate::hydrology::{
+    DirectActiveFrostPartitionInputs, DirectFrostLayerInput, DirectFrostPriorStateInput,
+    DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome, Wb11HydrologyKernel,
+};
 use crate::winter_column::DirectFrostLaneState;
 
 use super::{
@@ -14,12 +17,6 @@ use super::{
     DirectSubsurfaceLayerState, scaled_direct_transfer_total_m, sum_nonnegative_direct_m,
     validate_finite, validate_nonnegative_direct_m,
 };
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum R4aFrostLiquidDeltaAuthority {
-    PartitionFrwatc,
-    AppliedLayerProjection,
-}
 
 impl DirectDayFrame {
     pub fn run_r4i_liquid_input_span(
@@ -219,6 +216,13 @@ impl DirectDayFrame {
     pub fn run_r4a_runoff_partition_span(
         &mut self,
     ) -> Result<DirectRunoffPartitionSpanReport, DirectRuntimeError> {
+        self.run_r4a_runoff_partition_span_with_winter_frost(None)
+    }
+
+    pub fn run_r4a_runoff_partition_span_with_winter_frost(
+        &mut self,
+        winter_frost_compute_inputs: Option<&DirectWinterFrostComputeInputs>,
+    ) -> Result<DirectRunoffPartitionSpanReport, DirectRuntimeError> {
         DIRECT_AUDIT.record_phase_span_run();
         let phase_count = DIRECT_R4A_PHASE_SPAN_COUNT;
         let mut phase_entry_count = 0_u64;
@@ -241,7 +245,7 @@ impl DirectDayFrame {
         DIRECT_AUDIT.record_direct_state_mutation();
         state_mutation_count += 1;
 
-        if self.reconcile_r4a_frost_runtime()? {
+        if self.reconcile_r4a_frost_runtime(winter_frost_compute_inputs)? {
             DIRECT_AUDIT.record_direct_compute_operation();
             direct_compute_count += 1;
             DIRECT_AUDIT.record_direct_state_mutation();
@@ -639,34 +643,45 @@ impl DirectDayFrame {
         Ok(())
     }
 
-    fn reconcile_r4a_frost_runtime(&mut self) -> Result<bool, DirectRuntimeError> {
-        if let Some(frost_partition) = self.frost_liquid_partition.clone() {
-            let layers = self.latest_r4a_frost_layers()?;
-            self.apply_r4a_frost_partition(
-                layers,
-                &frost_partition,
-                R4aFrostLiquidDeltaAuthority::AppliedLayerProjection,
-            )?;
-            return Ok(true);
-        }
-        let Some(mut frost_runoff_surface) = self.frost_runoff_surface.clone() else {
+    fn reconcile_r4a_frost_runtime(
+        &mut self,
+        winter_frost_compute_inputs: Option<&DirectWinterFrostComputeInputs>,
+    ) -> Result<bool, DirectRuntimeError> {
+        let Some(compute_inputs) = winter_frost_compute_inputs else {
             return Ok(false);
         };
         let layers = self.latest_r4a_frost_layers()?;
-        seed_r4a_frost_surface_layers(&mut frost_runoff_surface, &layers)?;
-        let soil_conductivity_m_s = r4a_frost_soil_conductivity(&frost_runoff_surface, &layers)?;
-        let frost_partition = frost_runoff_surface
-            .compute_frost_liquid_partition(soil_conductivity_m_s)
-            .map_err(|source| DirectRuntimeError::DirectKernelGuardFailure {
-                phase: "runoff_partition.frost_liquid_partition",
-                detail: source.to_string(),
-            })?;
-        self.apply_r4a_frost_partition(
-            layers,
-            &frost_partition,
-            R4aFrostLiquidDeltaAuthority::PartitionFrwatc,
-        )?;
+        let frost_outcome = self.compute_r4a_winter_frost_partition(compute_inputs, &layers)?;
+        self.apply_r4a_winter_frost_outcome(layers, &frost_outcome)?;
         Ok(true)
+    }
+
+    fn compute_r4a_winter_frost_partition(
+        &self,
+        compute_inputs: &DirectWinterFrostComputeInputs,
+        layers: &[DirectSubsurfaceLayerState],
+    ) -> Result<DirectWinterFrostPartitionOutcome, DirectRuntimeError> {
+        let soil_conductivity_m_s = r4a_typed_frost_soil_conductivity(compute_inputs, layers)?;
+        let profile_depth_m = r4a_frost_profile_depth(layers)?;
+        let soil_water_m = r4a_aggregate_liquid_soil_water(layers)?;
+        Wb11HydrologyKernel::compute_direct_winter_frost_partition(
+            &DirectActiveFrostPartitionInputs {
+                controls: compute_inputs.controls,
+                thermal: compute_inputs.thermal,
+                profile_depth_m,
+                soil_water_m,
+                theta_residual: compute_inputs.theta_residual,
+                theta_field_capacity: compute_inputs.theta_field_capacity,
+                soil_conductivity_m_s,
+                prior_state: self.r4a_typed_frost_prior_state(),
+                layers: r4a_typed_frost_layer_inputs(compute_inputs, layers)?,
+                hourly: compute_inputs.hourly,
+            },
+        )
+        .map_err(|source| DirectRuntimeError::DirectKernelGuardFailure {
+            phase: "runoff_partition.winter_frost_partition",
+            detail: source.to_string(),
+        })
     }
 
     fn latest_r4a_frost_layers(
@@ -693,11 +708,14 @@ impl DirectDayFrame {
         })
     }
 
-    fn apply_r4a_frost_partition(
+    fn r4a_typed_frost_prior_state(&self) -> DirectFrostPriorStateInput {
+        direct_frost_prior_state_input(&self.winter_column.frost)
+    }
+
+    fn apply_r4a_winter_frost_outcome(
         &mut self,
         mut layers: Vec<DirectSubsurfaceLayerState>,
-        frost_partition: &DirectFrostLiquidPartition,
-        liquid_delta_authority: R4aFrostLiquidDeltaAuthority,
+        frost_partition: &DirectWinterFrostPartitionOutcome,
     ) -> Result<(), DirectRuntimeError> {
         let liquid_storage_before_frost_m = r4a_aggregate_liquid_soil_water(&layers)?;
         let has_material_storage_state =
@@ -712,7 +730,6 @@ impl DirectDayFrame {
         }
         if !has_material_storage_state {
             let _ = liquid_storage_before_frost_m;
-            let _ = liquid_delta_authority;
             self.storage_reconciliation_inputs.frost_liquid_delta_m =
                 frost_partition.frwatc_net_liquid_delta_m;
             self.hydrology_projection_inputs.frozen_soil_water_m = 0.0;
@@ -753,14 +770,8 @@ impl DirectDayFrame {
         }
         self.apply_r4a_frost_layers(&layers, soil_water_m);
         self.water.soil_water_m = soil_water_m;
-        self.storage_reconciliation_inputs.frost_liquid_delta_m = match liquid_delta_authority {
-            R4aFrostLiquidDeltaAuthority::AppliedLayerProjection => {
-                soil_water_m - liquid_storage_before_frost_m
-            }
-            R4aFrostLiquidDeltaAuthority::PartitionFrwatc => {
-                frost_partition.frwatc_net_liquid_delta_m
-            }
-        };
+        self.storage_reconciliation_inputs.frost_liquid_delta_m =
+            soil_water_m - liquid_storage_before_frost_m;
         validate_finite(
             "runoff_partition.frost_liquid_delta_m",
             self.storage_reconciliation_inputs.frost_liquid_delta_m,
@@ -829,642 +840,15 @@ fn replace_r4a_frost_layers(
     target.extend_from_slice(layers);
 }
 
-fn seed_r4a_frost_surface_layers(
-    surface: &mut DirectFrostRunoffSurface,
-    layers: &[DirectSubsurfaceLayerState],
-) -> Result<(), DirectRuntimeError> {
-    let soil_water_m = r4a_aggregate_liquid_soil_water(layers)?;
-    let profile_depth_m = layers.iter().try_fold(0.0_f64, |total, layer| {
-        validate_positive_direct("runoff_partition.frost_layer_depth_m", layer.depth_m)?;
-        let total = total + layer.depth_m;
-        validate_finite("runoff_partition.frost_profile_depth_m", total)?;
-        Ok::<f64, DirectRuntimeError>(total)
-    })?;
-    insert_r4a_frost_surface_scalar(surface, "solthk", profile_depth_m)?;
-    insert_r4a_frost_surface_scalar(surface, "wb11_soil_water", soil_water_m)?;
-    let has_fine_runtime_projection = r4a_frost_surface_has_fine_runtime_projection(surface)?;
-    for (offset, layer) in layers.iter().enumerate() {
-        let layer_index = offset + 1;
-        if has_fine_runtime_projection
-            && r4a_optional_frost_surface_scalar(
-                surface,
-                format!("frost.runtime_yst_m_{layer_index:04}").as_str(),
-            )?
-            .is_none()
-        {
-            if let Some(day_start_theta_m) = r4a_optional_frost_surface_scalar(
-                surface,
-                format!("wb18_perc_theta_{layer_index:04}").as_str(),
-            )? {
-                insert_r4a_frost_surface_scalar(
-                    surface,
-                    format!("frost.runtime_yst_m_{layer_index:04}").as_str(),
-                    day_start_theta_m,
-                )?;
-            }
-        }
-        insert_r4a_frost_surface_scalar(
-            surface,
-            format!("wb18_perc_theta_{layer_index:04}").as_str(),
-            layer.theta_m,
-        )?;
-        insert_r4a_frost_surface_scalar(
-            surface,
-            format!("wb18_perc_ul_{layer_index:04}").as_str(),
-            layer.upper_limit_m,
-        )?;
-        insert_r4a_frost_surface_scalar(
-            surface,
-            format!("wb19_dg_{layer_index:04}").as_str(),
-            layer.depth_m,
-        )?;
-        insert_r4a_frost_surface_scalar(
-            surface,
-            format!("dg_{layer_index:04}").as_str(),
-            layer.depth_m,
-        )?;
-        insert_r4a_frost_surface_scalar(
-            surface,
-            format!("wb19_thetdr_{layer_index:04}").as_str(),
-            layer.residual_theta,
-        )?;
-        insert_r4a_frost_surface_scalar(
-            surface,
-            format!("thetdr_{layer_index:04}").as_str(),
-            layer.residual_theta,
-        )?;
-        insert_r4a_frost_surface_scalar(
-            surface,
-            format!("wb19_thetfc_{layer_index:04}").as_str(),
-            layer.field_capacity_theta,
-        )?;
-        insert_r4a_frost_surface_scalar(
-            surface,
-            format!("thetfc_{layer_index:04}").as_str(),
-            layer.field_capacity_theta,
-        )?;
-        if layer_index == 1 {
-            insert_r4a_frost_surface_scalar(surface, "thetdr", layer.residual_theta)?;
-            insert_r4a_frost_surface_scalar(surface, "thetfc", layer.field_capacity_theta)?;
-        }
-        insert_r4a_frost_surface_scalar(
-            surface,
-            format!("wb18_perc_frozen_depth_{layer_index:04}").as_str(),
-            layer.frozen_depth_m,
-        )?;
-        insert_r4a_frost_surface_scalar(
-            surface,
-            format!("wb18_perc_frzw_{layer_index:04}").as_str(),
-            layer.frozen_water_m,
-        )?;
-    }
-    seed_r4a_frost_fine_state(surface, layers, has_fine_runtime_projection)?;
-    Ok(())
-}
-
-fn r4a_frost_surface_has_fine_runtime_projection(
-    surface: &DirectFrostRunoffSurface,
-) -> Result<bool, DirectRuntimeError> {
-    let Some(value) = surface.optional_scalar("frost.direct_runtime_carry_present") else {
-        return Ok(false);
-    };
-    validate_finite("runoff_partition.frost_runtime_carry_present", value)?;
-    Ok(value >= 1.0 - WB11_ZERO_THRESHOLD)
-}
-
-fn seed_r4a_frost_fine_state(
-    surface: &mut DirectFrostRunoffSurface,
-    layers: &[DirectSubsurfaceLayerState],
-    has_fine_runtime_projection: bool,
-) -> Result<(), DirectRuntimeError> {
-    let Some(fine_top_count) = r4a_optional_frost_fine_count(surface, "frost.options.fineTop")?
-    else {
-        return Ok(());
-    };
-    let Some(fine_bot_count) = r4a_optional_frost_fine_count(surface, "frost.options.fineBot")?
-    else {
-        return Ok(());
-    };
-    if !has_fine_runtime_projection {
-        remove_r4a_frost_fine_state_symbols(surface);
-    }
-    let layer_count = layers.len();
-    for (layer_offset, layer) in layers.iter().enumerate() {
-        let layer_index = layer_offset + 1;
-        let layer = r4a_layer_with_frost_surface_overrides(surface, layer_index, layer)?;
-        let fine_layer_count = r4a_frost_fine_layer_count(
-            layer_index,
-            layer_count,
-            layer.depth_m,
-            fine_top_count,
-            fine_bot_count,
-        )?;
-        let fine_layer_thickness_m =
-            layer.depth_m / r4a_usize_to_scalar("runoff_partition.frost_nfine", fine_layer_count)?;
-        let mut fine_states = r4a_seed_layer_fine_states(
-            surface,
-            layer_index,
-            &layer,
-            fine_layer_count,
-            fine_layer_thickness_m,
-        )?;
-        if !has_fine_runtime_projection {
-            r4a_reconcile_frost_fine_liquid(layer_index, &layer, &mut fine_states)?;
-        }
-        insert_r4a_frost_fine_states(surface, layer_index, fine_states)?;
-    }
-    Ok(())
-}
-
-fn r4a_layer_with_frost_surface_overrides(
-    surface: &DirectFrostRunoffSurface,
-    layer_index: usize,
-    layer: &DirectSubsurfaceLayerState,
-) -> Result<DirectSubsurfaceLayerState, DirectRuntimeError> {
-    let mut layer = layer.clone();
-    if let Some(surface_depth_m) =
-        r4a_optional_frost_surface_scalar(surface, format!("wb19_dg_{layer_index:04}").as_str())?
-    {
-        validate_finite("runoff_partition.frost_layer_depth_m", surface_depth_m)?;
-        if surface_depth_m <= WB11_ZERO_THRESHOLD {
-            return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "runoff_partition.frost_layer_depth_m",
-            });
-        }
-        layer.depth_m = surface_depth_m;
-    }
-    if let Some(surface_residual_theta) = r4a_optional_frost_surface_scalar(
-        surface,
-        format!("wb19_thetdr_{layer_index:04}").as_str(),
-    )? {
-        validate_nonnegative_direct_m(
-            "runoff_partition.frost_layer_residual_theta",
-            surface_residual_theta,
-        )?;
-        layer.residual_theta = surface_residual_theta;
-    }
-    if let Some(surface_upper_limit_m) = r4a_optional_frost_surface_scalar(
-        surface,
-        format!("wb18_perc_ul_{layer_index:04}").as_str(),
-    )? {
-        validate_nonnegative_direct_m(
-            "runoff_partition.frost_layer_upper_limit_m",
-            surface_upper_limit_m,
-        )?;
-        layer.upper_limit_m = surface_upper_limit_m;
-    }
-    Ok(layer)
-}
-
-fn r4a_seed_layer_fine_states(
-    surface: &DirectFrostRunoffSurface,
-    layer_index: usize,
-    layer: &DirectSubsurfaceLayerState,
-    fine_layer_count: usize,
-    fine_layer_thickness_m: f64,
-) -> Result<Vec<R4aFrostFineStateSeed>, DirectRuntimeError> {
-    let mut remaining_frozen_depth_m = layer.frozen_depth_m;
-    let soilf_m = layer.frozen_water_m + layer.residual_theta * layer.frozen_depth_m;
-    let ice_per_frozen_m = if layer.frozen_depth_m > 1.0e-12 {
-        soilf_m / layer.frozen_depth_m
-    } else {
-        0.0
-    };
-    let default_slsw_theta = r4a_uniform_frost_fine_liquid_theta(layer, fine_layer_thickness_m)?;
-    let mut fine_states = Vec::with_capacity(fine_layer_count);
-    for fine_index in 1..=fine_layer_count {
-        let default_slfsd_m = remaining_frozen_depth_m
-            .min(fine_layer_thickness_m)
-            .max(0.0);
-        remaining_frozen_depth_m = (remaining_frozen_depth_m - default_slfsd_m).max(0.0);
-        fine_states.push(r4a_seed_one_fine_state(
-            surface,
-            layer_index,
-            fine_index,
-            fine_layer_thickness_m,
-            default_slfsd_m,
-            ice_per_frozen_m,
-            default_slsw_theta,
-        )?);
-    }
-    Ok(fine_states)
-}
-
-fn r4a_seed_one_fine_state(
-    surface: &DirectFrostRunoffSurface,
-    layer_index: usize,
-    fine_index: usize,
-    fine_layer_thickness_m: f64,
-    default_slfsd_m: f64,
-    ice_per_frozen_m: f64,
-    default_slsw_theta: f64,
-) -> Result<R4aFrostFineStateSeed, DirectRuntimeError> {
-    let default_fgfrst = if default_slfsd_m >= fine_layer_thickness_m - 1.0e-12 {
-        1.0
-    } else if default_slfsd_m > 1.0e-12 {
-        2.0
-    } else {
-        0.0
-    };
-    let default_slsic_m = ice_per_frozen_m * default_slfsd_m;
-    Ok(R4aFrostFineStateSeed {
-        fine_index,
-        fine_layer_thickness_m,
-        fgfrst: r4a_optional_frost_surface_scalar(
-            surface,
-            format!("frost.runtime_fgfrst_{layer_index:04}_{fine_index:04}").as_str(),
-        )?
-        .unwrap_or(default_fgfrst),
-        slfsd_m: r4a_optional_frost_surface_scalar(
-            surface,
-            format!("frost.runtime_slfsd_m_{layer_index:04}_{fine_index:04}").as_str(),
-        )?
-        .unwrap_or(default_slfsd_m),
-        slsic_m: r4a_optional_frost_surface_scalar(
-            surface,
-            format!("frost.runtime_slsic_m_{layer_index:04}_{fine_index:04}").as_str(),
-        )?
-        .unwrap_or(default_slsic_m),
-        slsw_theta: r4a_optional_frost_surface_scalar(
-            surface,
-            format!("frost.runtime_slsw_theta_{layer_index:04}_{fine_index:04}").as_str(),
-        )?
-        .unwrap_or(default_slsw_theta),
-        sltime_s: r4a_optional_frost_surface_scalar(
-            surface,
-            format!("frost.runtime_sltime_s_{layer_index:04}_{fine_index:04}").as_str(),
-        )?
-        .unwrap_or(0.0),
-    })
-}
-
-fn insert_r4a_frost_fine_states(
-    surface: &mut DirectFrostRunoffSurface,
-    layer_index: usize,
-    fine_states: Vec<R4aFrostFineStateSeed>,
-) -> Result<(), DirectRuntimeError> {
-    for fine in fine_states {
-        for (symbol, value) in r4a_frost_fine_state_symbols(layer_index, fine) {
-            insert_r4a_frost_surface_scalar(surface, symbol.as_str(), value)?;
-        }
-    }
-    Ok(())
-}
-
-fn r4a_frost_fine_state_symbols(
-    layer_index: usize,
-    fine: R4aFrostFineStateSeed,
-) -> [(String, f64); 5] {
-    [
-        (
-            format!(
-                "frost.runtime_fgfrst_{layer_index:04}_{:04}",
-                fine.fine_index
-            ),
-            fine.fgfrst,
-        ),
-        (
-            format!(
-                "frost.runtime_slfsd_m_{layer_index:04}_{:04}",
-                fine.fine_index
-            ),
-            fine.slfsd_m,
-        ),
-        (
-            format!(
-                "frost.runtime_slsic_m_{layer_index:04}_{:04}",
-                fine.fine_index
-            ),
-            fine.slsic_m,
-        ),
-        (
-            format!(
-                "frost.runtime_slsw_theta_{layer_index:04}_{:04}",
-                fine.fine_index
-            ),
-            fine.slsw_theta,
-        ),
-        (
-            format!(
-                "frost.runtime_sltime_s_{layer_index:04}_{:04}",
-                fine.fine_index
-            ),
-            fine.sltime_s,
-        ),
-    ]
-}
-
-fn remove_r4a_frost_fine_state_symbols(surface: &mut DirectFrostRunoffSurface) {
-    surface.retain_state_symbols(|symbol: &str| {
-        !symbol.starts_with("frost.runtime_fgfrst_")
-            && !symbol.starts_with("frost.runtime_slfsd_m_")
-            && !symbol.starts_with("frost.runtime_slsic_m_")
-            && !symbol.starts_with("frost.runtime_slsw_theta_")
-            && !symbol.starts_with("frost.runtime_sltime_s_")
-    });
-}
-
-#[derive(Debug, Clone, Copy)]
-struct R4aFrostFineStateSeed {
-    fine_index: usize,
-    fine_layer_thickness_m: f64,
-    fgfrst: f64,
-    slfsd_m: f64,
-    slsic_m: f64,
-    slsw_theta: f64,
-    sltime_s: f64,
-}
-
-fn r4a_uniform_frost_fine_liquid_theta(
-    layer: &DirectSubsurfaceLayerState,
-    fine_layer_thickness_m: f64,
-) -> Result<f64, DirectRuntimeError> {
-    let unfrozen_depth_m = (layer.depth_m - layer.frozen_depth_m).max(0.0);
-    let raw_slsw_theta = if unfrozen_depth_m > 1.0e-12 {
-        layer.residual_theta + layer.theta_m / unfrozen_depth_m
-    } else {
-        layer.residual_theta
-    };
-    let slsw_theta_capacity = layer.residual_theta + layer.upper_limit_m / layer.depth_m;
-    let slsw_theta = raw_slsw_theta
-        .max(layer.residual_theta)
-        .min(slsw_theta_capacity);
-    validate_finite("runoff_partition.frost_fine_slsw_theta", slsw_theta)?;
-    validate_nonnegative_direct_m(
-        "runoff_partition.frost_fine_thickness_m",
-        fine_layer_thickness_m,
-    )?;
-    Ok(slsw_theta)
-}
-
-fn r4a_reconcile_frost_fine_liquid(
-    layer_index: usize,
-    layer: &DirectSubsurfaceLayerState,
-    fine_states: &mut [R4aFrostFineStateSeed],
-) -> Result<(), DirectRuntimeError> {
-    validate_nonnegative_direct_m("runoff_partition.frost_layer_theta_m", layer.theta_m)?;
-    let metrics = r4a_frost_fine_liquid_metrics(layer_index, layer, fine_states)?;
-    for fine in fine_states {
-        r4a_reconcile_one_frost_fine_liquid(layer_index, layer, fine, metrics)?;
-    }
-    Ok(())
-}
-
-#[derive(Debug, Clone, Copy)]
-struct R4aFrostFineLiquidMetrics {
-    active_capacity_per_m: f64,
-    active_total_m: f64,
-    use_scaled_distribution: bool,
-    uniform_active_per_m: f64,
-    uniform_projection_total_m: f64,
-    uniform_projection_ulps_above: u64,
-    has_material_layer_state: bool,
-}
-
-fn r4a_frost_fine_liquid_metrics(
-    layer_index: usize,
-    layer: &DirectSubsurfaceLayerState,
-    fine_states: &[R4aFrostFineStateSeed],
-) -> Result<R4aFrostFineLiquidMetrics, DirectRuntimeError> {
-    let active_capacity_per_m = layer.upper_limit_m / layer.depth_m;
-    validate_nonnegative_direct_m(
-        "runoff_partition.frost_fine_active_capacity_per_m",
-        active_capacity_per_m,
-    )?;
-    let mut active_total_m = 0.0_f64;
-    let mut unfrozen_total_m = 0.0_f64;
-    for fine in fine_states {
-        validate_nonnegative_direct_m("runoff_partition.frost_fine_slfsd_m", fine.slfsd_m)?;
-        validate_nonnegative_direct_m("runoff_partition.frost_fine_slsic_m", fine.slsic_m)?;
-        let unfrozen_depth_m = (fine.fine_layer_thickness_m - fine.slfsd_m).max(0.0);
-        unfrozen_total_m += unfrozen_depth_m;
-        let active_m = (fine.slsw_theta - layer.residual_theta).max(0.0) * unfrozen_depth_m;
-        active_total_m += active_m;
-    }
-    validate_finite("runoff_partition.frost_fine_active_total_m", active_total_m)?;
-    validate_finite(
-        "runoff_partition.frost_fine_unfrozen_total_m",
-        unfrozen_total_m,
-    )?;
-    if layer.theta_m > WB11_ZERO_THRESHOLD && unfrozen_total_m <= WB11_ZERO_THRESHOLD {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "runoff_partition.frost_fine_unfrozen_depth",
-        });
-    }
-
-    let has_material_layer_state =
-        layer.frozen_depth_m > WB11_ZERO_THRESHOLD || layer.frozen_water_m > WB11_ZERO_THRESHOLD;
-    let use_scaled_distribution = has_material_layer_state
-        && active_total_m > WB11_ZERO_THRESHOLD
-        && fine_states.iter().all(|fine| {
-            let unfrozen_depth_m = (fine.fine_layer_thickness_m - fine.slfsd_m).max(0.0);
-            if unfrozen_depth_m <= WB11_ZERO_THRESHOLD {
-                return true;
-            }
-            let active_m = (fine.slsw_theta - layer.residual_theta).max(0.0) * unfrozen_depth_m;
-            let scaled_active_per_m = active_m * layer.theta_m / active_total_m / unfrozen_depth_m;
-            scaled_active_per_m <= active_capacity_per_m + WB11_ZERO_THRESHOLD
-        });
-    let uniform_active_per_m = if unfrozen_total_m > WB11_ZERO_THRESHOLD {
-        layer.theta_m / unfrozen_total_m
-    } else {
-        0.0
-    };
-    let uniform_projection_total_m = fine_states.iter().fold(0.0_f64, |total, fine| {
-        let unfrozen_depth_m = (fine.fine_layer_thickness_m - fine.slfsd_m).max(0.0);
-        total + uniform_active_per_m * unfrozen_depth_m
-    });
-    let uniform_projection_ulps_above = if uniform_projection_total_m >= layer.theta_m {
-        uniform_projection_total_m
-            .to_bits()
-            .saturating_sub(layer.theta_m.to_bits())
-    } else {
-        0
-    };
-    let suppress_layer6_below_downround =
-        layer_index == 6 && uniform_projection_total_m < layer.theta_m;
-    let adjusted_uniform_active_per_m = if !has_material_layer_state
-        && uniform_active_per_m > WB11_ZERO_THRESHOLD
-        && !suppress_layer6_below_downround
-        && (uniform_projection_total_m < layer.theta_m || uniform_projection_ulps_above > 2)
-    {
-        f64::from_bits(uniform_active_per_m.to_bits().saturating_sub(1))
-    } else {
-        uniform_active_per_m
-    };
-
-    Ok(R4aFrostFineLiquidMetrics {
-        active_capacity_per_m,
-        active_total_m,
-        use_scaled_distribution,
-        uniform_active_per_m: adjusted_uniform_active_per_m,
-        uniform_projection_total_m,
-        uniform_projection_ulps_above,
-        has_material_layer_state,
-    })
-}
-
-fn r4a_reconcile_one_frost_fine_liquid(
-    layer_index: usize,
-    layer: &DirectSubsurfaceLayerState,
-    fine: &mut R4aFrostFineStateSeed,
-    metrics: R4aFrostFineLiquidMetrics,
-) -> Result<(), DirectRuntimeError> {
-    let unfrozen_depth_m = (fine.fine_layer_thickness_m - fine.slfsd_m).max(0.0);
-    let active_per_m =
-        if unfrozen_depth_m <= WB11_ZERO_THRESHOLD || layer.theta_m <= WB11_ZERO_THRESHOLD {
-            0.0
-        } else if metrics.use_scaled_distribution {
-            let active_m = (fine.slsw_theta - layer.residual_theta).max(0.0) * unfrozen_depth_m;
-            active_m * layer.theta_m / metrics.active_total_m / unfrozen_depth_m
-        } else {
-            metrics.uniform_active_per_m
-        };
-    fine.slsw_theta =
-        layer.residual_theta + active_per_m.min(metrics.active_capacity_per_m).max(0.0);
-    if !metrics.has_material_layer_state
-        && fine.slsw_theta.is_finite()
-        && fine.slsw_theta > WB11_ZERO_THRESHOLD
-    {
-        r4a_apply_frost_fine_parity_rounding(layer_index, fine, metrics, layer.theta_m);
-    }
-    validate_finite("runoff_partition.frost_fine_slsw_theta", fine.slsw_theta)?;
-    Ok(())
-}
-
-fn r4a_apply_frost_fine_parity_rounding(
-    layer_index: usize,
-    fine: &mut R4aFrostFineStateSeed,
-    metrics: R4aFrostFineLiquidMetrics,
-    layer_theta_m: f64,
-) {
-    fine.slsw_theta = f64::from_bits(fine.slsw_theta.to_bits() & !1);
-    if layer_index == 7
-        && metrics.uniform_projection_ulps_above == 0
-        && metrics.uniform_projection_total_m >= layer_theta_m
-    {
-        fine.slsw_theta = f64::from_bits(fine.slsw_theta.to_bits().saturating_sub(1));
-    }
-    if layer_index == 2
-        && metrics.uniform_projection_ulps_above == 1
-        && metrics.uniform_active_per_m.to_bits() & 1 == 0
-    {
-        fine.slsw_theta = f64::from_bits(fine.slsw_theta.to_bits().saturating_sub(1));
-    }
-    if layer_index == 8
-        && metrics.uniform_projection_ulps_above == 1
-        && metrics.uniform_projection_total_m.to_bits() & 1 == 0
-    {
-        fine.slsw_theta = f64::from_bits(fine.slsw_theta.to_bits().saturating_sub(1));
-    }
-    if layer_index == 6
-        && metrics.uniform_projection_ulps_above == 0
-        && metrics.uniform_projection_total_m >= layer_theta_m
-    {
-        fine.slsw_theta = f64::from_bits(fine.slsw_theta.to_bits().saturating_sub(1));
-    }
-}
-
-fn r4a_optional_frost_surface_scalar(
-    surface: &DirectFrostRunoffSurface,
-    symbol: &str,
-) -> Result<Option<f64>, DirectRuntimeError> {
-    let Some(value) = surface.optional_scalar(symbol) else {
-        return Ok(None);
-    };
-    validate_finite("runoff_partition.frost_fine_surface_scalar", value)?;
-    Ok(Some(value))
-}
-
-fn r4a_optional_frost_fine_count(
-    surface: &DirectFrostRunoffSurface,
-    symbol: &'static str,
-) -> Result<Option<usize>, DirectRuntimeError> {
-    let Some(value) = surface.optional_scalar(symbol) else {
-        return Ok(None);
-    };
-    validate_finite("runoff_partition.frost_fine_count", value)?;
-    let rounded = value.round();
-    if (value - rounded).abs() > WB11_ZERO_THRESHOLD {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "runoff_partition.frost_fine_count",
-        });
-    }
-    let parsed = format!("{rounded:.0}").parse::<usize>().map_err(|_| {
-        DirectRuntimeError::DirectDomainViolation {
-            field: "runoff_partition.frost_fine_count",
-        }
-    })?;
-    if !(1..=10).contains(&parsed) {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "runoff_partition.frost_fine_count",
-        });
-    }
-    Ok(Some(parsed))
-}
-
-fn r4a_frost_fine_layer_count(
-    layer_index: usize,
-    layer_count: usize,
-    depth_m: f64,
-    fine_top_count: usize,
-    fine_bot_count: usize,
-) -> Result<usize, DirectRuntimeError> {
-    if layer_index != layer_count {
-        return Ok(if layer_index < 3 {
-            fine_top_count
-        } else {
-            fine_bot_count
-        });
-    }
-    let spacing_mm = if layer_index > 2 {
-        200.0 / r4a_usize_to_scalar("runoff_partition.frost_fine_bot", fine_bot_count)?
-    } else {
-        100.0 / r4a_usize_to_scalar("runoff_partition.frost_fine_top", fine_top_count)?
-    };
-    let depth_mm = depth_m * 1_000.0;
-    let depth_mm_trunc = depth_mm.trunc();
-    let ratio_trunc = (depth_mm / spacing_mm).trunc();
-    let mut count = format!("{ratio_trunc:.0}").parse::<usize>().map_err(|_| {
-        DirectRuntimeError::DirectDomainViolation {
-            field: "runoff_partition.frost_fine_layer_count",
-        }
-    })?;
-    let count_trunc_mm =
-        (r4a_usize_to_scalar("runoff_partition.frost_nfine", count)? * spacing_mm).trunc();
-    if (count_trunc_mm - depth_mm_trunc).abs() > 1.0e-12 {
-        count += 1;
-    }
-    Ok(count.max(1))
-}
-
-fn r4a_usize_to_scalar(field: &'static str, value: usize) -> Result<f64, DirectRuntimeError> {
-    let bounded =
-        u32::try_from(value).map_err(|_| DirectRuntimeError::DirectDomainViolation { field })?;
-    let scalar = f64::from(bounded);
-    validate_finite(field, scalar)?;
-    Ok(scalar)
-}
-
-fn insert_r4a_frost_surface_scalar(
-    surface: &mut DirectFrostRunoffSurface,
-    symbol: &str,
-    value: f64,
-) -> Result<(), DirectRuntimeError> {
-    validate_finite("runoff_partition.frost_surface_value", value)?;
-    surface.insert_scalar(symbol, value);
-    Ok(())
-}
-
-fn r4a_frost_soil_conductivity(
-    surface: &DirectFrostRunoffSurface,
+fn r4a_typed_frost_soil_conductivity(
+    compute_inputs: &DirectWinterFrostComputeInputs,
     layers: &[DirectSubsurfaceLayerState],
 ) -> Result<f64, DirectRuntimeError> {
-    if let Some(value) = surface.optional_scalar("wb14_soil_conductivity_m_s") {
+    if let Some(value) = compute_inputs.soil_conductivity_m_s
+        && value > 0.0
+    {
         validate_nonnegative_direct_m("runoff_partition.frost_soil_conductivity_m_s", value)?;
-        if value > WB11_ZERO_THRESHOLD {
-            return Ok(value);
-        }
+        return Ok(value);
     }
     let value = layers.first().map(|layer| layer.conductivity_m_s).ok_or(
         DirectRuntimeError::DirectDomainViolation {
@@ -1475,9 +859,112 @@ fn r4a_frost_soil_conductivity(
     Ok(value)
 }
 
+fn r4a_frost_profile_depth(
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<f64, DirectRuntimeError> {
+    layers.iter().try_fold(0.0_f64, |total, layer| {
+        validate_positive_direct("runoff_partition.frost_layer_depth_m", layer.depth_m)?;
+        let total = total + layer.depth_m;
+        validate_finite("runoff_partition.frost_profile_depth_m", total)?;
+        Ok::<f64, DirectRuntimeError>(total)
+    })
+}
+
+fn r4a_typed_frost_layer_inputs(
+    compute_inputs: &DirectWinterFrostComputeInputs,
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<Vec<DirectFrostLayerInput>, DirectRuntimeError> {
+    if compute_inputs.layer_bulk_density_kg_m3.len() != layers.len() {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "runoff_partition.frost_layer_bulk_density_count",
+        });
+    }
+    layers
+        .iter()
+        .zip(compute_inputs.layer_bulk_density_kg_m3.iter().copied())
+        .enumerate()
+        .map(|(offset, (layer, bulk_density_kg_m3))| {
+            validate_positive_direct(
+                "runoff_partition.frost_layer_bulk_density_kg_m3",
+                bulk_density_kg_m3,
+            )?;
+            Ok(DirectFrostLayerInput {
+                layer_index: offset + 1,
+                theta_m: layer.theta_m,
+                upper_limit_m: layer.upper_limit_m,
+                depth_m: layer.depth_m,
+                residual_theta: layer.residual_theta,
+                bulk_density_kg_m3,
+                frozen_depth_m: layer.frozen_depth_m,
+                frozen_water_m: layer.frozen_water_m,
+            })
+        })
+        .collect()
+}
+
+fn direct_frost_prior_state_input(state: &DirectFrostLaneState) -> DirectFrostPriorStateInput {
+    DirectFrostPriorStateInput {
+        active_frost_coupling: state.active_frost_coupling,
+        dfrost_m: state.dfrost_m,
+        dthaw_m: state.dthaw_m,
+        nft: state.nft,
+        ws_frz_m: state.ws_frz_m,
+        infcap_frz_m_s: state.infcap_frz_m_s,
+        frwatc_soil_water_before_m: state.frwatc_soil_water_before_m,
+        frwatc_soil_water_after_m: state.frwatc_soil_water_after_m,
+        frwatc_frozen_water_before_m: state.frwatc_frozen_water_before_m,
+        frwatc_frozen_water_after_m: state.frwatc_frozen_water_after_m,
+        frwatc_freeze_debit_m: state.frwatc_freeze_debit_m,
+        frwatc_thaw_credit_m: state.frwatc_thaw_credit_m,
+        frwatc_net_liquid_delta_m: state.frwatc_net_liquid_delta_m,
+        frdp_m: state.frdp_m,
+        thdp_m: state.thdp_m,
+        tfrdp_m: state.tfrdp_m,
+        tthawd_m: state.tthawd_m,
+        fgthwd_flag: state.fgthwd_flag,
+        total_fine_layer_count: state.total_fine_layer_count,
+        conductivity_tilled_w_m_k: state.conductivity_tilled_w_m_k,
+        conductivity_untilled_w_m_k: state.conductivity_untilled_w_m_k,
+        conductivity_residue_w_m_k: state.conductivity_residue_w_m_k,
+        shadow_total_water_before_m: state.shadow_total_water_before_m,
+        shadow_total_water_after_m: state.shadow_total_water_after_m,
+        shadow_wb_delta_m: state.shadow_wb_delta_m,
+        shadow_frwatc_residual_m: state.shadow_frwatc_residual_m,
+        watpdg_m: state.watpdg_m,
+        watbtm_m: state.watbtm_m,
+        layer_shadows: state
+            .layer_shadows
+            .iter()
+            .map(|layer| crate::hydrology::DirectFrostLayerShadowProjection {
+                layer_index: layer.layer_index,
+                st_m: layer.st_m,
+                soil_water_m: layer.soil_water_m,
+                frozen_depth_m: layer.frozen_depth_m,
+                frozen_water_m: layer.frozen_water_m,
+                soilf_m: layer.soilf_m,
+                yst_m: layer.yst_m,
+                nwfrzz_m: layer.nwfrzz_m,
+            })
+            .collect(),
+        fine_layers: state
+            .fine_layers
+            .iter()
+            .map(|fine| crate::hydrology::DirectFrostFineLayerProjection {
+                layer_index: fine.layer_index,
+                fine_index: fine.fine_index,
+                fgfrst: fine.fgfrst,
+                slfsd_m: fine.slfsd_m,
+                slsic_m: fine.slsic_m,
+                slsw_theta: fine.slsw_theta,
+                sltime_s: fine.sltime_s,
+            })
+            .collect(),
+    }
+}
+
 fn apply_r4a_frost_layer_projection(
     layers: &mut [DirectSubsurfaceLayerState],
-    frost_partition: &DirectFrostLiquidPartition,
+    frost_partition: &DirectWinterFrostPartitionOutcome,
 ) -> Result<(), DirectRuntimeError> {
     let layer_count = layers.len();
     for projection in &frost_partition.layer_projection {
@@ -1530,7 +1017,7 @@ fn r4a_aggregate_liquid_soil_water(
 }
 
 fn r4a_frost_partition_has_material_storage_state(
-    frost_partition: &DirectFrostLiquidPartition,
+    frost_partition: &DirectWinterFrostPartitionOutcome,
 ) -> bool {
     const DIRECT_FROST_MATERIAL_THRESHOLD_M: f64 = 1.0e-12;
     frost_partition.frost_depth_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
@@ -1542,7 +1029,7 @@ fn r4a_frost_partition_has_material_storage_state(
 }
 
 fn direct_frost_runtime_carry(
-    frost_partition: &DirectFrostLiquidPartition,
+    frost_partition: &DirectWinterFrostPartitionOutcome,
 ) -> DirectFrostRuntimeCarry {
     DirectFrostRuntimeCarry {
         active_frost_coupling: frost_partition.active_frost_coupling,

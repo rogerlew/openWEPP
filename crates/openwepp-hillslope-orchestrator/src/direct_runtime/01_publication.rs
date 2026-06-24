@@ -47,8 +47,7 @@ pub struct DirectPublicationDayInput {
     pub snow_coupling_inputs: Option<DirectSnowCouplingInputs>,
     pub hydrology_projection_inputs: Option<DirectHydrologyProjectionInputs>,
     pub erosion_inputs: Option<DirectErosionInputs>,
-    pub frost_runoff_surface: Option<crate::hydrology::DirectFrostRunoffSurface>,
-    pub frost_liquid_partition: Option<crate::hydrology::DirectFrostLiquidPartition>,
+    pub winter_frost_compute_inputs: Option<crate::hydrology::DirectWinterFrostComputeInputs>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
 }
@@ -73,8 +72,7 @@ impl DirectPublicationDayInput {
             snow_coupling_inputs: None,
             hydrology_projection_inputs: None,
             erosion_inputs: None,
-            frost_runoff_surface: None,
-            frost_liquid_partition: None,
+            winter_frost_compute_inputs: None,
             frost_layer_carry_projection: None,
             frost_runtime_carry: None,
         }

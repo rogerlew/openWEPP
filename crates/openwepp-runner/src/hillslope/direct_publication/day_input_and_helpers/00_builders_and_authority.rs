@@ -103,20 +103,26 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
         day_index: usize,
         lane_index: usize,
     ) -> Result<(DirectPublicationDayInput, HillslopeWritebackSurface), HillslopeCliError> {
-        let frost_lane_state = frame
-            .lanes
-            .get(lane_index)
-            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+        let lane = frame.lanes.get(lane_index).ok_or_else(|| {
+            HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_publication_frame",
                 detail: format!(
                     "{SIMOUT_GUARD_ID} direct publication lane index {} exceeds frame lane count {}",
                     lane_index + 1,
                     frame.lanes.len()
                 ),
-            })?
-            .winter_column
-            .frost
-            .clone();
+            }
+        })?;
+        let frost_lane_state = lane.winter_column.frost.clone();
+        let forcing =
+            self.climate_request
+                .direct_day_forcing(day_index)
+                .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_publication_frame",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} direct publication typed climate forcing failed: {source}"
+                    ),
+                })?;
         if self.record_compatibility_edge_invocations {
             record_direct_runtime_compatibility_edge_invocation();
         }
@@ -136,15 +142,25 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
                 &frost_layers,
             )?;
         }
-        let frost_runoff_surface =
-            direct_publication_frost_comparator_surface_from_seed_surface(&seed_surface);
-        let frost_partition =
-            direct_publication_frost_liquid_partition(&seed_surface, &frost_layers)?;
-        apply_direct_publication_frost_infiltration_cap(
-            &mut seed_surface,
-            &frost_partition,
+        let snow_frost_authority = DirectProductionSnowFrostAuthority::from_seed(&seed_surface)?;
+        let snow_lane_state = snow_frost_authority.current_snow_lane_state(lane);
+        let frost_context = snow_frost_authority.frost_day_context(
+            self.climate_request,
+            day_index,
+            day,
             lane_index,
+            lane,
+            &forcing,
+            snow_lane_state,
         )?;
+        if let Some(frost_context) = &frost_context {
+            insert_direct_seed_scalar(
+                &mut seed_surface,
+                "frost.runtime_infcap_frz",
+                frost_context.frozen_infiltration_capacity_m_s,
+                lane_index,
+            )?;
+        }
         let snow_liquid =
             direct_publication_snow_liquid_partition(&seed_surface, &hyetograph)?;
         let interception_state =
@@ -221,12 +237,10 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
                 *self.profile_inputs(lane_index)?,
                 &snow_liquid,
             ));
-        if frost_partition.active_frost_coupling {
-            day_input.frost_liquid_partition = Some(frost_partition);
+        if let Some(frost_context) = frost_context {
+            day_input.winter_frost_compute_inputs = Some(frost_context.compute_inputs);
+            day_input.frost_layer_carry_projection = frost_context.layer_carry_projection;
         }
-        day_input.frost_runoff_surface = Some(frost_runoff_surface);
-        day_input.frost_layer_carry_projection =
-            direct_publication_frost_layer_carry_projection(&seed_surface)?;
         Ok((day_input, seed_surface))
     }
 
@@ -493,7 +507,8 @@ struct DirectProductionFrostTypedAuthority {
 }
 
 struct DirectProductionFrostDayContext {
-    partition: openwepp_hillslope_orchestrator::DirectFrostLiquidPartition,
+    compute_inputs: DirectWinterFrostComputeInputs,
+    frozen_infiltration_capacity_m_s: f64,
     layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
 }
 
@@ -617,11 +632,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             day_index,
             day,
             lane_index,
-            lane,
-            &forcing,
-            snow_lane_state,
-            &snow_liquid,
-        )?;
+        lane,
+        &forcing,
+        snow_lane_state,
+    )?;
         let interception_state = compute_direct_canopy_interception(
             DirectCanopyInterceptionInputs {
                 hyetograph_rainfall_m: snow_liquid.post_winter_rain_m,
@@ -679,7 +693,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                     hyetograph,
                     frost_context
                         .as_ref()
-                        .map(|context| context.partition.infcap_frz_m_s),
+                        .map(|context| context.frozen_infiltration_capacity_m_s),
                 )?,
         );
         day_input.percolation_inputs =
@@ -710,7 +724,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             day_input.erosion_inputs = Some(authority.erosion.erosion_inputs.clone());
         }
         if let Some(frost_context) = frost_context {
-            day_input.frost_liquid_partition = Some(frost_context.partition);
+            day_input.winter_frost_compute_inputs = Some(frost_context.compute_inputs);
             day_input.frost_layer_carry_projection = frost_context.layer_carry_projection;
         }
         day_input.frost_runtime_carry =
@@ -1603,7 +1617,6 @@ impl DirectProductionSnowFrostAuthority {
         lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
         forcing: &HillslopeDirectClimateDayForcing,
         snow_lane_state: DirectSnowLaneState,
-        _snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
     ) -> Result<Option<DirectProductionFrostDayContext>, HillslopeCliError> {
         let frost_lane_state = self.current_frost_lane_state(lane);
         let frost_runtime_depth_m = frost_lane_state.dfrost_m;
@@ -1631,19 +1644,22 @@ impl DirectProductionSnowFrostAuthority {
             frost_runtime_depth_m,
             frost_runtime_frozen_water_m,
         )?;
-        let partition =
-            Self::compute_typed_frost_partition(&DirectProductionFrostTypedComputeContext {
-                lane_index,
-                lane,
-                day,
-                forcing,
-                snow_lane_state,
-                frost_lane_state: &frost_lane_state,
-                typed_authority,
-                hourly: frost_hourly,
-            })?;
+        let typed_context = DirectProductionFrostTypedComputeContext {
+            lane_index,
+            lane,
+            day,
+            forcing,
+            snow_lane_state,
+            frost_lane_state: &frost_lane_state,
+            typed_authority,
+            hourly: frost_hourly,
+        };
+        let compute_inputs = Self::typed_winter_frost_compute_inputs(&typed_context);
+        let frost_outcome =
+            Self::compute_typed_winter_frost_outcome(&typed_context, &compute_inputs)?;
         Ok(Some(DirectProductionFrostDayContext {
-            partition,
+            compute_inputs,
+            frozen_infiltration_capacity_m_s: frost_outcome.infcap_frz_m_s,
             layer_carry_projection: self.frost_layer_carry_projection.clone(),
         }))
     }
@@ -1698,14 +1714,40 @@ impl DirectProductionSnowFrostAuthority {
         Ok(frost_hourly)
     }
 
-    fn compute_typed_frost_partition(
+    fn typed_winter_frost_compute_inputs(
         context: &DirectProductionFrostTypedComputeContext<'_>,
-    ) -> Result<openwepp_hillslope_orchestrator::DirectFrostLiquidPartition, HillslopeCliError>
-    {
-        let soil_conductivity_m_s = direct_production_typed_frost_soil_conductivity(
-            context.typed_authority,
-            &context.lane.subsurface_layers,
-        )?;
+    ) -> DirectWinterFrostComputeInputs {
+        DirectWinterFrostComputeInputs {
+            controls: context.typed_authority.controls,
+            thermal: DirectFrostThermalInputs {
+                snow_depth_m: context.snow_lane_state.runtime_depth_m,
+                snow_density_kg_m3: context.snow_lane_state.runtime_density_kg_m3,
+                residue_depth_m: context.typed_authority.residue_depth_m,
+                wind_m_s: context.forcing.vwind_m_s,
+                albedo: context.typed_authority.albedo,
+                canopy_height_m: context.typed_authority.canopy_height_m,
+                random_roughness_m: context.typed_authority.random_roughness_m,
+                day_of_year: f64::from(context.day.julian_day),
+                monthly_max_c: context.typed_authority.monthly_max_c,
+                monthly_min_c: context.typed_authority.monthly_min_c,
+            },
+            theta_residual: context.typed_authority.theta_residual,
+            theta_field_capacity: context.typed_authority.theta_field_capacity,
+            soil_conductivity_m_s: context.typed_authority.soil_conductivity_m_s,
+            layer_bulk_density_kg_m3: context.typed_authority.layer_bulk_density_kg_m3.clone(),
+            hourly: context.hourly,
+        }
+    }
+
+    fn compute_typed_winter_frost_outcome(
+        context: &DirectProductionFrostTypedComputeContext<'_>,
+        compute_inputs: &DirectWinterFrostComputeInputs,
+    ) -> Result<DirectWinterFrostPartitionOutcome, HillslopeCliError> {
+        let soil_conductivity_m_s =
+            direct_production_typed_frost_soil_conductivity(
+                context.typed_authority,
+                &context.lane.subsurface_layers,
+            )?;
         let layers = direct_production_frost_layer_inputs(
             context.lane_index,
             &context.lane.subsurface_layers,
@@ -1717,29 +1759,18 @@ impl DirectProductionSnowFrostAuthority {
             .iter()
             .map(|layer| layer.depth_m)
             .sum::<f64>();
-        Wb11HydrologyKernel::compute_direct_frost_liquid_partition_from_typed(
+        Wb11HydrologyKernel::compute_direct_winter_frost_partition(
             &DirectActiveFrostPartitionInputs {
-                controls: context.typed_authority.controls,
-                thermal: DirectFrostThermalInputs {
-                    snow_depth_m: context.snow_lane_state.runtime_depth_m,
-                    snow_density_kg_m3: context.snow_lane_state.runtime_density_kg_m3,
-                    residue_depth_m: context.typed_authority.residue_depth_m,
-                    wind_m_s: context.forcing.vwind_m_s,
-                    albedo: context.typed_authority.albedo,
-                    canopy_height_m: context.typed_authority.canopy_height_m,
-                    random_roughness_m: context.typed_authority.random_roughness_m,
-                    day_of_year: f64::from(context.day.julian_day),
-                    monthly_max_c: context.typed_authority.monthly_max_c,
-                    monthly_min_c: context.typed_authority.monthly_min_c,
-                },
+                controls: compute_inputs.controls,
+                thermal: compute_inputs.thermal,
                 profile_depth_m,
                 soil_water_m: context.lane.water.soil_water_m,
-                theta_residual: context.typed_authority.theta_residual,
-                theta_field_capacity: context.typed_authority.theta_field_capacity,
+                theta_residual: compute_inputs.theta_residual,
+                theta_field_capacity: compute_inputs.theta_field_capacity,
                 soil_conductivity_m_s,
                 prior_state: direct_production_frost_prior_state_input(context.frost_lane_state),
                 layers,
-                hourly: context.hourly,
+                hourly: compute_inputs.hourly,
             },
         )
         .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {

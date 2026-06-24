@@ -127,8 +127,18 @@ impl DirectFrameExecutor {
 
         for day_index in 0..frame.identity.day_count {
             for lane_index in 0..frame.identity.lane_count {
+                let winter_frost_compute_inputs = frame
+                    .lanes
+                    .get(lane_index)
+                    .and_then(|lane| lane.day_inputs.get(day_index))
+                    .and_then(|day_inputs| day_inputs.winter_frost_compute_inputs.clone());
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
-                Self::run_day_spans(&mut day_frame, &mut counters).map_err(|source| {
+                Self::run_day_spans(
+                    &mut day_frame,
+                    &mut counters,
+                    winter_frost_compute_inputs.as_ref(),
+                )
+                .map_err(|source| {
                     Self::day_execution_failure(&day_frame, lane_index, day_index, &source)
                 })?;
                 for phase in phase_plan {
@@ -248,7 +258,12 @@ impl DirectFrameExecutor {
                 let day_input = build_day_input(frame, day_index, lane_index)?;
                 let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
                 Self::apply_publication_day_input(&mut day_frame, &day_input)?;
-                Self::run_day_spans(&mut day_frame, &mut counters).map_err(|source| {
+                Self::run_day_spans(
+                    &mut day_frame,
+                    &mut counters,
+                    day_input.winter_frost_compute_inputs.as_ref(),
+                )
+                .map_err(|source| {
                     Self::day_execution_failure(&day_frame, lane_index, day_index, &source)
                 })?;
                 for phase in phase_plan {
@@ -354,12 +369,6 @@ impl DirectFrameExecutor {
         if let Some(erosion_inputs) = &day_input.erosion_inputs {
             day_frame.erosion_inputs = erosion_inputs.clone();
         }
-        day_frame
-            .frost_runoff_surface
-            .clone_from(&day_input.frost_runoff_surface);
-        day_frame
-            .frost_liquid_partition
-            .clone_from(&day_input.frost_liquid_partition);
         day_frame
             .frost_layer_carry_projection
             .clone_from(&day_input.frost_layer_carry_projection);
@@ -603,6 +612,7 @@ impl DirectFrameExecutor {
     fn run_day_spans(
         day_frame: &mut DirectDayFrame,
         counters: &mut DirectExecutionCounters,
+        winter_frost_compute_inputs: Option<&crate::hydrology::DirectWinterFrostComputeInputs>,
     ) -> Result<(), DirectRuntimeError> {
         record_direct_span_report!(counters, day_frame.run_r5b_normalization_phase());
         record_direct_span_report!(counters, day_frame.run_r5b_storage_bounds_phase());
@@ -620,7 +630,12 @@ impl DirectFrameExecutor {
         record_direct_span_report!(counters, day_frame.run_r4n_root_uptake_span());
         record_direct_span_report!(counters, day_frame.run_r4g_snow_coupling_span());
         record_direct_span_report!(counters, day_frame.run_r4l_saturation_addback_span());
-        record_direct_span_report!(counters, day_frame.run_r4a_runoff_partition_span());
+        record_direct_span_report!(
+            counters,
+            day_frame.run_r4a_runoff_partition_span_with_winter_frost(
+                winter_frost_compute_inputs
+            )
+        );
         record_direct_span_report!(counters, day_frame.run_r7d6_peak_runoff_span());
         record_direct_span_report!(counters, day_frame.run_r4b_storage_reconciliation_span());
         record_direct_span_report!(counters, day_frame.run_r4pqz_hydrology_projection_span());

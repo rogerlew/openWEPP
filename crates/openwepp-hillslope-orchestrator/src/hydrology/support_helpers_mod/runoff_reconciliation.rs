@@ -1,56 +1,8 @@
 #[allow(clippy::wildcard_imports)]
 use super::super::*;
 
-#[derive(Debug, Clone, Default, PartialEq)]
-pub struct DirectFrostRunoffSurface {
-    state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
-    flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
-}
-
-impl DirectFrostRunoffSurface {
-    #[must_use]
-    pub fn from_surface_maps(
-        state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
-        flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
-    ) -> Self {
-        Self {
-            state_surface,
-            flux_surface,
-        }
-    }
-
-    #[must_use]
-    pub fn optional_scalar(&self, symbol: &str) -> Option<f64> {
-        self.state_surface
-            .get(&BoundarySymbol::from(symbol))
-            .copied()
-            .map(BoundaryValue::as_f64)
-    }
-
-    pub fn insert_scalar(&mut self, symbol: &str, value: f64) {
-        self.state_surface
-            .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
-    }
-
-    pub fn retain_state_symbols(&mut self, mut retain: impl FnMut(&str) -> bool) {
-        self.state_surface
-            .retain(|symbol, _| retain(symbol.as_str()));
-    }
-
-    pub fn compute_frost_liquid_partition(
-        &self,
-        soil_conductivity_m_s: f64,
-    ) -> Result<DirectFrostLiquidPartition, Wb11HydrologyKernelGuardError> {
-        Wb11HydrologyKernel::compute_direct_frost_liquid_partition(
-            &self.state_surface,
-            &self.flux_surface,
-            soil_conductivity_m_s,
-        )
-    }
-}
-
-fn inactive_direct_frost_liquid_partition() -> DirectFrostLiquidPartition {
-    DirectFrostLiquidPartition {
+fn inactive_direct_winter_frost_partition() -> DirectWinterFrostPartitionOutcome {
+    DirectWinterFrostPartitionOutcome {
         active_frost_coupling: false,
         dthaw_after_m: 0.0,
         nft_after: 0.0,
@@ -85,10 +37,10 @@ fn inactive_direct_frost_liquid_partition() -> DirectFrostLiquidPartition {
     }
 }
 
-fn active_direct_frost_liquid_partition(
+fn active_direct_winter_frost_partition(
     frost_coupling: &FrostCouplingOutcome,
-) -> DirectFrostLiquidPartition {
-    DirectFrostLiquidPartition {
+) -> DirectWinterFrostPartitionOutcome {
+    DirectWinterFrostPartitionOutcome {
         active_frost_coupling: true,
         dthaw_after_m: frost_coupling.dthaw,
         nft_after: frost_coupling.nft,
@@ -158,37 +110,9 @@ fn active_direct_frost_liquid_partition(
 }
 
 impl Wb11HydrologyKernel {
-    pub fn compute_direct_frost_liquid_partition(
-        state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
-        flux_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
-        soil_conductivity_m_s: f64,
-    ) -> Result<DirectFrostLiquidPartition, Wb11HydrologyKernelGuardError> {
-        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
-        Self::require_state_range(
-            phase_class,
-            WB14_SYMBOL_SOIL_CONDUCTIVITY,
-            soil_conductivity_m_s,
-            Some(0.0),
-            None,
-        )?;
-        let request = HillslopeKernelRequest::new(
-            "direct_frost_liquid_partition",
-            HillslopeConsumerAdapter::Runoff,
-            state_surface,
-            flux_surface,
-        );
-        let active_frost_coupling = Self::resolve_active_frost_coupling(&request, phase_class)?;
-        if !active_frost_coupling {
-            return Ok(inactive_direct_frost_liquid_partition());
-        }
-        let frost_coupling =
-            Self::compute_active_frost_coupling(&request, phase_class, soil_conductivity_m_s)?;
-        Ok(active_direct_frost_liquid_partition(&frost_coupling))
-    }
-
-    pub fn compute_direct_frost_liquid_partition_from_typed(
+    pub fn compute_direct_winter_frost_partition(
         inputs: &DirectActiveFrostPartitionInputs,
-    ) -> Result<DirectFrostLiquidPartition, Wb11HydrologyKernelGuardError> {
+    ) -> Result<DirectWinterFrostPartitionOutcome, Wb11HydrologyKernelGuardError> {
         let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
         Self::require_state_range(
             phase_class,
@@ -198,10 +122,10 @@ impl Wb11HydrologyKernel {
             None,
         )?;
         if !inputs.controls.wint_red_enabled {
-            return Ok(inactive_direct_frost_liquid_partition());
+            return Ok(inactive_direct_winter_frost_partition());
         }
         let frost_coupling = Self::compute_active_frost_coupling_from_typed(phase_class, inputs)?;
-        Ok(active_direct_frost_liquid_partition(&frost_coupling))
+        Ok(active_direct_winter_frost_partition(&frost_coupling))
     }
 
     pub fn compute_direct_snow_liquid_partition(

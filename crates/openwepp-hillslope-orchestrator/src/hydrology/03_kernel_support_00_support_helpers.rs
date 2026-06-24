@@ -361,6 +361,17 @@ pub struct DirectActiveFrostPartitionInputs {
     pub hourly: [DirectFrostHourlyForcing; SIMIMPL29_HOURS_PER_DAY],
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectWinterFrostComputeInputs {
+    pub controls: DirectFrostControlInputs,
+    pub thermal: DirectFrostThermalInputs,
+    pub theta_residual: f64,
+    pub theta_field_capacity: f64,
+    pub soil_conductivity_m_s: Option<f64>,
+    pub layer_bulk_density_kg_m3: Vec<f64>,
+    pub hourly: [DirectFrostHourlyForcing; SIMIMPL29_HOURS_PER_DAY],
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectFrostLayerProjection {
     pub layer_index: usize,
@@ -393,7 +404,7 @@ pub struct DirectFrostFineLayerProjection {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct DirectFrostLiquidPartition {
+pub struct DirectWinterFrostPartitionOutcome {
     pub active_frost_coupling: bool,
     pub dthaw_after_m: f64,
     pub nft_after: f64,
@@ -678,4 +689,3 @@ const SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M: f64 = 0.001;
 
 
 mod support_helpers_mod;
-pub use support_helpers_mod::DirectFrostRunoffSurface;

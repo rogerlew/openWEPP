@@ -13,6 +13,15 @@
 
 State as of `2026-06-24`:
 
+- `20260624-r7g-consumer-cutover-deletion-001/` is complete. It executed the
+  ADR-0026 "Consumer cutover and deletion" step after typed frost solver
+  extraction by moving R4A/direct-publication consumers from the temporary
+  `DirectFrostRunoffSurface` / `DirectFrostLiquidPartition` bridge to typed
+  winter-column state and outcomes, deleting the production bridge fields/API,
+  and preserving the R7B day-frame size bound by passing typed frost compute
+  inputs as execution context instead of resident day-frame state. Required
+  closure gates passed. It does not claim R7G terminal output parity, default
+  activation, or performance closure.
 - `20260624-r7g-typed-frost-solver-extraction-001/` is complete. It executed
   the ADR-0026 "Typed frost solver extraction" step by moving production direct
   active-frost partition computation from the `DirectFrostRunoffSurface` /

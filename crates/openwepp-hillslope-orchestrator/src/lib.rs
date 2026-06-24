@@ -155,10 +155,10 @@ pub use direct_runtime::{
 pub use hydrology::{
     DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs, DirectFrostControlInputs,
     DirectFrostFineLayerProjection, DirectFrostHourlyForcing, DirectFrostLayerInput,
-    DirectFrostLayerProjection, DirectFrostLayerShadowProjection, DirectFrostLiquidPartition,
-    DirectFrostPriorStateInput, DirectFrostRunoffSurface, DirectFrostThermalInputs,
-    DirectSnowHourlyForcing, DirectSnowLiquidPartition, HillslopeHydrologyRoutingError,
-    Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
+    DirectFrostLayerProjection, DirectFrostLayerShadowProjection, DirectFrostPriorStateInput,
+    DirectFrostThermalInputs, DirectSnowHourlyForcing, DirectSnowLiquidPartition,
+    DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome,
+    HillslopeHydrologyRoutingError, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
 };
 pub use phase::HillslopePhase;
 pub use runtime_inputs::{
