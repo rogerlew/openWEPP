@@ -61,6 +61,7 @@ mod direct_runtime_r4n;
 mod direct_runtime_r4pqz;
 mod direct_runtime_r5c;
 mod direct_runtime_r5d;
+mod direct_runtime_r7g_snow;
 mod fixtures;
 mod growth;
 mod hydrology;

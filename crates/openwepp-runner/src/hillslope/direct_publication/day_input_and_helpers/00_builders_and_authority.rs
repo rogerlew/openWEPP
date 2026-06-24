@@ -570,20 +570,20 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let precipitation_m = forcing.prcp_m;
         let mut hyetograph = direct_production_hyetograph(&forcing)?;
         let rainfall_input_m = direct_publication_hyetograph_rainfall_m(&hyetograph)?;
-        let snow_runtime_carry = authority.snow_frost.current_snow_runtime_carry(lane);
+        let snow_lane_state = authority.snow_frost.current_snow_lane_state(lane);
         Self::validate_active_snow_forcing(
             authority,
             lane_index,
             &forcing,
             rainfall_input_m,
-            snow_runtime_carry.map_or(0.0, |carry| carry.runtime_swe_m),
+            snow_lane_state.runtime_swe_m,
         )?;
         let snow_liquid = authority.snow_frost.snow_liquid_partition(
             self.climate_request,
             day_index,
             &forcing,
             rainfall_input_m,
-            snow_runtime_carry,
+            snow_lane_state,
             authority.canopy_cover_fraction,
         )?;
         let frost_context = authority.snow_frost.frost_day_context(
@@ -593,7 +593,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             lane_index,
             lane,
             &forcing,
-            snow_runtime_carry,
+            snow_lane_state,
             &snow_liquid,
         )?;
         let interception_state = compute_direct_canopy_interception(
@@ -634,7 +634,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             )?);
         day_input.snow_coupling_inputs = Some(DirectSnowCouplingInputs {
             snow_coupling_handoff_m: snow_liquid.snow_coupling_signed_s_m,
-            snow_state_projected: snow_runtime_carry.is_some(),
+            snow_state_projected: authority.snow_frost.snow_state_projected(snow_lane_state),
             active_snow_coupling: snow_liquid.active_snow_coupling,
             routed_melt_m: snow_liquid.routed_melt_m,
             post_winter_rain_m: snow_liquid.post_winter_rain_m,
@@ -1478,21 +1478,29 @@ impl DirectProductionSnowFrostAuthority {
         })
     }
 
-    fn initial_snow_runtime_carry(&self) -> Option<DirectSnowRuntimeCarry> {
-        self.snow_controls_projected.then_some(DirectSnowRuntimeCarry {
-            runtime_swe_m: self.snow_runtime_swe_m,
-            runtime_depth_m: self.snow_runtime_depth_m,
-            runtime_density_kg_m3: self.snow_runtime_density_kg_m3,
-            runtime_settle_day_count: self.snow_runtime_settle_day_count,
-        })
+    fn initial_snow_lane_state(&self) -> DirectSnowLaneState {
+        DirectSnowLaneState::from_runtime_values(
+            self.snow_runtime_swe_m,
+            self.snow_runtime_depth_m,
+            self.snow_runtime_density_kg_m3,
+            self.snow_runtime_settle_day_count,
+        )
     }
 
-    fn current_snow_runtime_carry(
+    fn current_snow_lane_state(
         &self,
         lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
-    ) -> Option<DirectSnowRuntimeCarry> {
-        lane.snow_runtime_carry
-            .or_else(|| self.initial_snow_runtime_carry())
+    ) -> DirectSnowLaneState {
+        let lane_state = lane.winter_column.snow;
+        if lane_state.has_runtime_state() {
+            lane_state
+        } else {
+            self.initial_snow_lane_state()
+        }
+    }
+
+    fn snow_state_projected(&self, snow_lane_state: DirectSnowLaneState) -> bool {
+        self.snow_controls_projected || snow_lane_state.has_runtime_state()
     }
 
     fn active_forcing(
@@ -1537,7 +1545,7 @@ impl DirectProductionSnowFrostAuthority {
         lane_index: usize,
         lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
         forcing: &HillslopeDirectClimateDayForcing,
-        snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
+        snow_lane_state: DirectSnowLaneState,
         snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
     ) -> Result<Option<DirectProductionFrostDayContext>, HillslopeCliError> {
         let frost_carry = lane.frost_runtime_carry.as_ref();
@@ -1571,7 +1579,7 @@ impl DirectProductionSnowFrostAuthority {
             &mut surface,
             forcing,
             frost_carry,
-            snow_runtime_carry,
+            snow_lane_state,
             snow_liquid,
         )?;
         direct_production_seed_frost_surface_layers(
@@ -1633,17 +1641,15 @@ impl DirectProductionSnowFrostAuthority {
         surface: &mut DirectFrostRunoffSurface,
         forcing: &HillslopeDirectClimateDayForcing,
         frost_carry: Option<&DirectFrostRuntimeCarry>,
-        snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
-        snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+        snow_lane_state: DirectSnowLaneState,
+        _snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
     ) -> Result<(), HillslopeCliError> {
         let frost_runtime_depth_m =
             frost_carry.map_or(self.frost_runtime_depth_m, |carry| carry.dfrost_m);
         let frost_runtime_frozen_water_m =
             frost_carry.map_or(self.frost_runtime_frozen_water_m, |carry| carry.ws_frz_m);
-        let snow_depth_m = snow_runtime_carry.map_or(0.0, |carry| carry.runtime_depth_m);
-        let snow_density_kg_m3 = snow_runtime_carry.map_or(0.0, |carry| {
-            carry.runtime_density_kg_m3
-        });
+        let snow_depth_m = snow_lane_state.runtime_depth_m;
+        let snow_density_kg_m3 = snow_lane_state.runtime_density_kg_m3;
         for (symbol, value) in [
             ("tmax", forcing.tmax_c),
             ("tmin", forcing.tmin_c),
@@ -1674,8 +1680,7 @@ impl DirectProductionSnowFrostAuthority {
             .direct_winter_hourly_forcing(
                 day_index,
                 DirectWinterHourlyContext {
-                    snow_runtime_swe_m: snow_runtime_carry
-                        .map_or(snow_liquid.runtime_swe_after_m, |carry| carry.runtime_swe_m),
+                    snow_runtime_swe_m: snow_lane_state.runtime_swe_m,
                     frost_runtime_depth_m,
                     frost_runtime_frozen_water_m,
                     frost_file_present: self.frost_file_present,
@@ -1720,38 +1725,26 @@ impl DirectProductionSnowFrostAuthority {
         day_index: usize,
         forcing: &HillslopeDirectClimateDayForcing,
         hyetograph_rainfall_m: f64,
-        carry: Option<DirectSnowRuntimeCarry>,
+        snow_lane_state: DirectSnowLaneState,
         canopy_cover_fraction: f64,
     ) -> Result<openwepp_hillslope_orchestrator::DirectSnowLiquidPartition, HillslopeCliError> {
-        let Some(carry) = carry else {
+        if !self.active_forcing(forcing, hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)? {
             return Ok(openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
                 active_snow_coupling: false,
                 snow_coupling_signed_s_m: 0.0,
                 routed_melt_m: 0.0,
                 post_winter_rain_m: hyetograph_rainfall_m,
-                runtime_swe_after_m: 0.0,
-                runtime_depth_after_m: 0.0,
-                runtime_density_after_kg_m3: 0.0,
-                runtime_settle_day_count_after: 0.0,
-            });
-        };
-        if !self.active_forcing(forcing, hyetograph_rainfall_m, carry.runtime_swe_m)? {
-            return Ok(openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
-                active_snow_coupling: false,
-                snow_coupling_signed_s_m: 0.0,
-                routed_melt_m: 0.0,
-                post_winter_rain_m: hyetograph_rainfall_m,
-                runtime_swe_after_m: carry.runtime_swe_m,
-                runtime_depth_after_m: carry.runtime_depth_m,
-                runtime_density_after_kg_m3: carry.runtime_density_kg_m3,
-                runtime_settle_day_count_after: carry.runtime_settle_day_count,
+                runtime_swe_after_m: snow_lane_state.runtime_swe_m,
+                runtime_depth_after_m: snow_lane_state.runtime_depth_m,
+                runtime_density_after_kg_m3: snow_lane_state.runtime_density_kg_m3,
+                runtime_settle_day_count_after: snow_lane_state.runtime_settle_day_count,
             });
         }
         let hourly = climate_request
             .direct_winter_hourly_forcing(
                 day_index,
                 DirectWinterHourlyContext {
-                    snow_runtime_swe_m: carry.runtime_swe_m,
+                    snow_runtime_swe_m: snow_lane_state.runtime_swe_m,
                     frost_runtime_depth_m: 0.0,
                     frost_runtime_frozen_water_m: 0.0,
                     frost_file_present: false,
@@ -1790,10 +1783,10 @@ impl DirectProductionSnowFrostAuthority {
                 rst_c: self.snow_rst_c,
                 newsnw_kg_m3: self.snow_newsnw_kg_m3,
                 ssd_kg_m3: self.snow_ssd_kg_m3,
-                runtime_swe_m: carry.runtime_swe_m,
-                runtime_depth_m: carry.runtime_depth_m,
-                runtime_density_kg_m3: carry.runtime_density_kg_m3,
-                runtime_settle_day_count: carry.runtime_settle_day_count,
+                runtime_swe_m: snow_lane_state.runtime_swe_m,
+                runtime_depth_m: snow_lane_state.runtime_depth_m,
+                runtime_density_kg_m3: snow_lane_state.runtime_density_kg_m3,
+                runtime_settle_day_count: snow_lane_state.runtime_settle_day_count,
                 tmax_c: forcing.tmax_c,
                 tmin_c: forcing.tmin_c,
                 canopy_cover_fraction,

@@ -1,7 +1,7 @@
 use super::{
     DIRECT_AUDIT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT,
     DIRECT_R4D_PHASE_SPAN_COUNT, DIRECT_R4E_PHASE_SPAN_COUNT, DIRECT_R4F_PHASE_SPAN_COUNT,
-    DIRECT_R4G_PHASE_SPAN_COUNT, DirectDayFrame, DirectRuntimeError, DirectSnowRuntimeCarry,
+    DIRECT_R4G_PHASE_SPAN_COUNT, DirectDayFrame, DirectRuntimeError, DirectSnowLaneState,
     validate_finite, validate_nonnegative_direct_m,
 };
 
@@ -195,12 +195,13 @@ impl DirectDayFrame {
         phase_entry_count += 1;
         self.snow_coupling = snow_coupling;
         if snow_coupling.snow_state_projected {
-            self.snow_runtime_carry = Some(DirectSnowRuntimeCarry {
-                runtime_swe_m: snow_coupling.runtime_swe_after_m,
-                runtime_depth_m: snow_coupling.runtime_depth_after_m,
-                runtime_density_kg_m3: snow_coupling.runtime_density_after_kg_m3,
-                runtime_settle_day_count: snow_coupling.runtime_settle_day_count_after,
-            });
+            self.winter_column.snow = DirectSnowLaneState::from_runtime_values(
+                snow_coupling.runtime_swe_after_m,
+                snow_coupling.runtime_depth_after_m,
+                snow_coupling.runtime_density_after_kg_m3,
+                snow_coupling.runtime_settle_day_count_after,
+            );
+            self.snow_runtime_carry = Some(self.winter_column.snow.into());
         }
         self.storage_reconciliation_inputs.snow_coupling_m = snow_coupling.snow_coupling_m;
         DIRECT_AUDIT.record_direct_state_mutation();

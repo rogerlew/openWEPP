@@ -275,7 +275,11 @@ projection. It later reached full-H2637 active frost endpoint execution with
 `compatibility_edge_invocations=0`, but protected HBP/WAT/PASS parity remained
 red and the fine/shadow carry safeguards regressed direct endpoint timing. R7G
 is therefore held at `HOLD-R7G-FROST-STATEFUL-SUBSOLVER-REQUIRED`, not at the
-older active-snow-authority marker.
+older active-snow-authority marker. The 2026-06-23 snow lane migration moved
+persistent direct snow authority to `DirectWinterColumnState.snow`; the
+remaining `DirectSnowRuntimeCarry` type and `snow_runtime_carry` fields are
+temporary compatibility mirrors only and must be deleted in the consumer
+cutover/deletion step below.
 
 ### W. Winter-column snow/frost implementation sequence
 
@@ -302,7 +306,9 @@ typed winter-column authority is present.
    liquid forcing and publication read post-partition snow. Cut R4B/R4PQZ/direct
    publication consumers to `DirectWinterDayOutcome`, then delete the old
    `DirectSnowCoupling*` state/downstream/shadow plumbing and R4G snow span from
-   direct-runtime modules.
+   direct-runtime modules. The intermediate `DirectSnowRuntimeCarry` bridge is
+   not a retained architecture surface; it is removed by the cutover/deletion
+   package once no direct-runtime consumer requires the compatibility mirror.
 4. **Frost state skeleton and comparator seam.** Promote R7G frost carry evidence
    into canonical `DirectFrostLaneState`: front/thaw scalars, fine layers, layer
    shadows, no-material carry, liquid/frozen exchange ledger, `watpdg/watbtm`,
@@ -321,7 +327,9 @@ typed winter-column authority is present.
    manifest publication to winter-column operands. Then remove the current
    direct-runtime snow/frost retrofit: `DirectFrostRunoffSurface`,
    `DirectFrostLiquidPartition`, `frost_runoff_surface`, `frost_liquid_partition`,
-   `frost_layer_carry_projection`, optional snow/frost runtime carry fields,
+   `frost_layer_carry_projection`, `DirectSnowRuntimeCarry`, every
+   `snow_runtime_carry` field/constructor input/validation path, optional frost
+   runtime carry fields,
    `reconcile_r4a_frost_runtime`, frost surface seeding helpers, and the direct
    publication day-input fields that only exist to shuttle those bridges.
 7. **Closure and activation gates.** Rerun the R7G matrix from the new

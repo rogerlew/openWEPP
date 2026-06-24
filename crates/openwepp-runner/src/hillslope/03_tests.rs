@@ -1387,18 +1387,45 @@ mod tests {
             .expect("R7G frost forcing overlay body must be present");
 
         assert!(
-            overlay_body.contains("snow_runtime_carry.map_or(0.0, |carry| carry.runtime_depth_m)"),
+            overlay_body.contains("let snow_depth_m = snow_lane_state.runtime_depth_m;"),
             "frost forcing must see prior snow depth; legacy winter.for calls frostN before snowd"
         );
         assert!(
             overlay_body
-                .contains("snow_runtime_carry.map_or(0.0, |carry| {\n            carry.runtime_density_kg_m3\n        })"),
-            "frost forcing must see prior snow density only when prior snow carry exists"
+                .contains("let snow_density_kg_m3 = snow_lane_state.runtime_density_kg_m3;"),
+            "frost forcing must see prior snow density from the winter-column snow state"
         );
         assert!(
             !overlay_body.contains("snow_liquid.runtime_depth_after_m")
                 && !overlay_body.contains("snow_liquid.runtime_density_after_kg_m3"),
             "same-day direct snow projection must not insulate the same day's frost solve"
+        );
+    }
+
+    #[test]
+    fn r7g_direct_production_reads_winter_column_snow_not_runtime_carry() {
+        let source = direct_publication_day_input_and_helpers_source();
+        let helper = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";
+
+        for forbidden in [
+            "lane.snow_runtime_carry",
+            "current_snow_runtime_carry",
+            "initial_snow_runtime_carry",
+            "snow_runtime_carry.map_or",
+        ] {
+            assert!(
+                !source.contains(forbidden),
+                "{helper} must not use stale DirectSnowRuntimeCarry authority: {forbidden}"
+            );
+        }
+
+        assert!(
+            source.contains("lane.winter_column.snow"),
+            "{helper} must read prior direct snowpack from DirectWinterColumnState"
+        );
+        assert!(
+            source.contains("snow_state_projected: authority.snow_frost.snow_state_projected(snow_lane_state)"),
+            "{helper} must derive projection status from controls plus winter-column snow state"
         );
     }
 

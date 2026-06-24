@@ -13,6 +13,16 @@
 
 State as of `2026-06-23`:
 
+- `20260623-r7g-snow-lane-migration-001/` is complete. It executed the
+  ADR-0026 "Snow lane migration" step by making
+  `DirectWinterColumnState.snow` the production direct lane/day authority for
+  seeded snow state, R4G same-day snow mutation, and direct publication
+  snow/frost prior-snow reads. `DirectSnowRuntimeCarry` remains only as a
+  temporary direct-runtime compatibility mirror for residual frame surfaces.
+  The package added focused lifecycle/source-scan tests and passed the required
+  Rust closure gates. It does not claim frost subsolver migration, output
+  parity closure, performance closure, default activation, or deletion of
+  residual carry surfaces.
 - `20260623-r7g-winter-column-mechanical-containment-001/` is complete. It
   installed the ADR-0026 winter-column containment boundary outside
   `direct_runtime`, added inert boxed `DirectWinterColumnState` ownership hooks

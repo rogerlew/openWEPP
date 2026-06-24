@@ -42,6 +42,29 @@ impl DirectSnowLaneState {
             runtime_settle_day_count: 0.0,
         }
     }
+
+    #[must_use]
+    pub const fn from_runtime_values(
+        runtime_swe_m: f64,
+        runtime_depth_m: f64,
+        runtime_density_kg_m3: f64,
+        runtime_settle_day_count: f64,
+    ) -> Self {
+        Self {
+            runtime_swe_m,
+            runtime_depth_m,
+            runtime_density_kg_m3,
+            runtime_settle_day_count,
+        }
+    }
+
+    #[must_use]
+    pub fn has_runtime_state(self) -> bool {
+        self.runtime_swe_m > 0.0
+            || self.runtime_depth_m > 0.0
+            || self.runtime_density_kg_m3 > 0.0
+            || self.runtime_settle_day_count > 0.0
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -35,7 +35,7 @@ use openwepp_hillslope_orchestrator::{
     DirectPublicationStorageOperands, DirectPublicationSubsurfaceOperands,
     DirectPublicationTransferOperands, DirectRunConstructorInputs, DirectRunFrame,
     DirectRunIdentity, DirectRunPublicationFrame, DirectRuntimeAuditSnapshot, DirectRuntimeError,
-    DirectSnowCouplingInputs, DirectSnowHourlyForcing, DirectSnowRuntimeCarry,
+    DirectSnowCouplingInputs, DirectSnowHourlyForcing, DirectSnowLaneState,
     DirectStorageInputInputs, DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs,
     DirectSubsurfaceLayerState, DirectWb14HyetographInterval,
     DirectWb14InfiltrationProducerInputs, HillslopeDayFrame,
