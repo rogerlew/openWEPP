@@ -13,6 +13,14 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowfrost-fidelity-g0-pysnobal-input-bridge-001/` is queued as a
+  diagnostic bridge package. It will add a Rust `openwepp-snowbench
+  export-pysnobal` input exporter that reuses openWEPP WEPP parsing and
+  daily-to-hourly forcing surfaces, plus a thin Python PySnobal runner under
+  `tools/snowfreeze_observed/`. The package must validate all five
+  SNOWFROST pilot sites with constant ground-temperature sensitivity lanes and
+  keep PySnobal output as diagnostic evidence only, not correctness authority
+  or production physics.
 - `20260625-snowfrost-fidelity-f-legacy-snow-depth-assessment-001/` is
   complete as the legacy snow-depth comparator/output-capture assessment. It
   added `tools/snowfreeze_observed/legacy_snow_compare.py`, proved pinned
