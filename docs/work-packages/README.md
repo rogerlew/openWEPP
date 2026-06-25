@@ -13,6 +13,15 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowfrost-fidelity-a-observation-residual-classification-001/` is
+  complete as the first Snow and Frost Fidelity Adjudication package. It ran
+  all five observed frost-depth pilot sites through the direct observed
+  harness, added `tools/snowfreeze_observed/classify_residuals.py`, and
+  classified zero sites as eligible for frost-model defect attribution. Sites
+  1/2/4 are `SNOW-CONTROL-BLOCKED`; sites 3/5 are `INCONCLUSIVE`. The next
+  field-validation step must expose modeled snow depth and rerun classification
+  before tuning heat flow, frozen conductivity, SFCC/impedance, or migration
+  heat.
 - `20260625-snowfreeze-frost-depth-literature-annotation-001/` is complete.
   It annotated the newly available frost-depth physics literature, classified
   the two CC-BY vendorable PDFs (`Amico2011.pdf`, `Devoie2022.pdf`), updated

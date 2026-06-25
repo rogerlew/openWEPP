@@ -410,6 +410,18 @@ Recommended work-package sequence:
    `GAP-SNOWFREEZE-002`; compatibility deletion and frost-influenced default
    activation remain blocked until then.
 
+Current status (2026-06-25): SNOWFROST-FIDELITY-A is complete as
+characterization. All five pilot sites emitted direct metric-bearing
+`UNRESOLVED` reports, but zero sites are eligible for frost-model defect
+attribution because modeled snow depth is absent and `TOL-SNOWFREEZE-009`
+cannot be evaluated. Sites 1/2/4 are `SNOW-CONTROL-BLOCKED`; sites 3/5 are
+`INCONCLUSIVE` timing/upper-bound evidence. The next field-validation package
+must expose modeled snow depth and rerun A classification before field
+residuals are used to choose heat-flow, frozen-conductivity, SFCC/impedance, or
+migration/fringe changes. SNOWFROST-FIDELITY-B benchmark work may proceed in
+parallel only as no-`Qwet` physics/energy-conservation benchmarking, not field
+residual tuning.
+
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 H2637 magnitude arc is no longer an active queue item. Absolute forest lateral-flow
 magnitude authority is deferred in backlog, not a blocker.)

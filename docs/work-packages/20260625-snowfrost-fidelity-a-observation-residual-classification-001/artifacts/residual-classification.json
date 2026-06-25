@@ -1,0 +1,170 @@
+{
+  "defect_attribution_eligible_count": 0,
+  "measurement_contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-047",
+  "openwepp_defective_count": 0,
+  "schema": "snowfreeze-observed-residual-classification-v1",
+  "site_count": 5,
+  "sites": [
+    {
+      "defect_attribution_eligible": false,
+      "fixture": "site1_sleepers_south_field_vt",
+      "harness_verdict": "UNRESOLVED",
+      "has_modeled_snow_depth": false,
+      "method_counts": {
+        "frost_tube": 392
+      },
+      "metrics": {
+        "frost_depth_residual_count": 392,
+        "isotherm_upper_bound_count": 0,
+        "isotherm_upper_bound_exceedance_count": 0,
+        "matched_count": 392,
+        "max_abs_residual_m": 0.2641958258624707,
+        "max_isotherm_upper_bound_margin_m": null,
+        "mean_abs_residual_m": 0.04807066138868493,
+        "observation_count": 392
+      },
+      "observed_snow_depth_row_count": 384,
+      "primary_classification": "SNOW-CONTROL-BLOCKED",
+      "reason": "Observed snow depth exists but modeled snow depth is absent; TOL-SNOWFREEZE-009 cannot be evaluated.",
+      "report_path": "target/snowfrost_fidelity_a_observed_compare/site1_sleepers_south_field_vt/comparison_report.json",
+      "residual_family": "snow-confounded",
+      "runtime": "direct-production-executor",
+      "site_id": "site1_sleepers_south_field_vt",
+      "snow_control_status": "UNRESOLVED_NO_MODELED_SNOW_DEPTH_DIAGNOSTIC",
+      "source_id": "usgs_sleepers_p96753gi"
+    },
+    {
+      "defect_attribution_eligible": false,
+      "fixture": "site2_sleepers_w9_hardwood_vt",
+      "harness_verdict": "UNRESOLVED",
+      "has_modeled_snow_depth": false,
+      "method_counts": {
+        "frost_tube": 200
+      },
+      "metrics": {
+        "frost_depth_residual_count": 200,
+        "isotherm_upper_bound_count": 0,
+        "isotherm_upper_bound_exceedance_count": 0,
+        "matched_count": 200,
+        "max_abs_residual_m": 0.3838127878666539,
+        "max_isotherm_upper_bound_margin_m": null,
+        "mean_abs_residual_m": 0.0684098658293702,
+        "observation_count": 200
+      },
+      "observed_snow_depth_row_count": 193,
+      "primary_classification": "SNOW-CONTROL-BLOCKED",
+      "reason": "Observed snow depth exists but modeled snow depth is absent; TOL-SNOWFREEZE-009 cannot be evaluated.",
+      "report_path": "target/snowfrost_fidelity_a_observed_compare/site2_sleepers_w9_hardwood_vt/comparison_report.json",
+      "residual_family": "snow-confounded",
+      "runtime": "direct-production-executor",
+      "site_id": "site2_sleepers_w9_hardwood_vt",
+      "snow_control_status": "UNRESOLVED_NO_MODELED_SNOW_DEPTH_DIAGNOSTIC",
+      "source_id": "usgs_sleepers_p96753gi"
+    },
+    {
+      "defect_attribution_eligible": false,
+      "fixture": "site3_scan_mandan_nd",
+      "harness_verdict": "UNRESOLVED",
+      "has_modeled_snow_depth": false,
+      "method_counts": {
+        "soil_temperature_zero_c_isotherm": 10643
+      },
+      "metrics": {
+        "frost_depth_residual_count": 0,
+        "isotherm_upper_bound_count": 10583,
+        "isotherm_upper_bound_exceedance_count": 3452,
+        "matched_count": 10643,
+        "max_abs_residual_m": null,
+        "max_isotherm_upper_bound_margin_m": 0.9108984039618734,
+        "mean_abs_residual_m": null,
+        "observation_count": 10643
+      },
+      "observed_snow_depth_row_count": 0,
+      "primary_classification": "INCONCLUSIVE",
+      "reason": "No modeled snow-depth diagnostic is available, and this source does not provide paired snow-depth rows.",
+      "report_path": "target/snowfrost_fidelity_a_observed_compare/site3_scan_mandan_nd/comparison_report.json",
+      "residual_family": "snow-control-missing",
+      "runtime": "direct-production-executor",
+      "site_id": "site3_scan_mandan_nd",
+      "snow_control_status": "UNRESOLVED_NO_MODELED_SNOW_DEPTH_DIAGNOSTIC",
+      "source_id": "nrcs_scan_mandan_2020"
+    },
+    {
+      "defect_attribution_eligible": false,
+      "fixture": "site4_ggd498_morris_mn",
+      "harness_verdict": "UNRESOLVED",
+      "has_modeled_snow_depth": false,
+      "method_counts": {
+        "frost_tube": 232
+      },
+      "metrics": {
+        "frost_depth_residual_count": 83,
+        "isotherm_upper_bound_count": 0,
+        "isotherm_upper_bound_exceedance_count": 0,
+        "matched_count": 83,
+        "max_abs_residual_m": 0.990389751515789,
+        "max_isotherm_upper_bound_margin_m": null,
+        "mean_abs_residual_m": 0.3487854015724204,
+        "observation_count": 232
+      },
+      "observed_snow_depth_row_count": 232,
+      "primary_classification": "SNOW-CONTROL-BLOCKED",
+      "reason": "Observed snow depth exists but modeled snow depth is absent; TOL-SNOWFREEZE-009 cannot be evaluated.",
+      "report_path": "target/snowfrost_fidelity_a_observed_compare/site4_ggd498_morris_mn/comparison_report.json",
+      "residual_family": "snow-confounded",
+      "runtime": "direct-production-executor",
+      "site_id": "site4_ggd498_morris_mn",
+      "snow_control_status": "UNRESOLVED_NO_MODELED_SNOW_DEPTH_DIAGNOSTIC",
+      "source_id": "nsidc_ggd498_morris_10"
+    },
+    {
+      "defect_attribution_eligible": false,
+      "fixture": "site5_reynolds_creek_us_rls_id",
+      "harness_verdict": "UNRESOLVED",
+      "has_modeled_snow_depth": false,
+      "method_counts": {
+        "soil_temperature_zero_c_isotherm": 4356
+      },
+      "metrics": {
+        "frost_depth_residual_count": 0,
+        "isotherm_upper_bound_count": 4356,
+        "isotherm_upper_bound_exceedance_count": 104,
+        "matched_count": 4356,
+        "max_abs_residual_m": null,
+        "max_isotherm_upper_bound_margin_m": 0.04947822834385348,
+        "mean_abs_residual_m": null,
+        "observation_count": 4356
+      },
+      "observed_snow_depth_row_count": 0,
+      "primary_classification": "INCONCLUSIVE",
+      "reason": "No modeled snow-depth diagnostic is available, and this source does not provide paired snow-depth rows.",
+      "report_path": "target/snowfrost_fidelity_a_observed_compare/site5_reynolds_creek_us_rls_id/comparison_report.json",
+      "residual_family": "snow-control-missing",
+      "runtime": "direct-production-executor",
+      "site_id": "site5_reynolds_creek_us_rls_id",
+      "snow_control_status": "UNRESOLVED_NO_MODELED_SNOW_DEPTH_DIAGNOSTIC",
+      "source_id": "usda_ars_reynolds_creek_soil_temperature"
+    }
+  ],
+  "snow_control_tolerance": "TOL-SNOWFREEZE-009",
+  "summary": {
+    "inconclusive_sites": [
+      "site3_scan_mandan_nd",
+      "site5_reynolds_creek_us_rls_id"
+    ],
+    "next_action": "Add a modeled snow-depth diagnostic and rerun SNOWFROST-FIDELITY-A classification before field residuals are attributed to frost physics. No Qwet, SFCC, frozen-K, or heat-flow tuning is authorized by these classifications.",
+    "primary_classification_counts": {
+      "INCONCLUSIVE": 2,
+      "SNOW-CONTROL-BLOCKED": 3
+    },
+    "residual_family_counts": {
+      "snow-confounded": 3,
+      "snow-control-missing": 2
+    },
+    "snow_control_blocked_sites": [
+      "site1_sleepers_south_field_vt",
+      "site2_sleepers_w9_hardwood_vt",
+      "site4_ggd498_morris_mn"
+    ]
+  }
+}
