@@ -1,7 +1,8 @@
 use std::path::PathBuf;
 
 use openwepp_runner::{
-    PhysicsBulkRequest, SnowbenchExportRequest, export_pysnobal_inputs, run_physics_bulk_snowbench,
+    PhysicsBulkRequest, PhysicsBulkVariant, SnowbenchExportRequest, export_pysnobal_inputs,
+    run_physics_bulk_snowbench,
 };
 
 fn main() {
@@ -24,6 +25,7 @@ fn run() -> Result<(), String> {
     let mut run_dir: Option<PathBuf> = None;
     let mut run_file: Option<PathBuf> = None;
     let mut output_dir: Option<PathBuf> = None;
+    let mut variant = PhysicsBulkVariant::default();
     while let Some(flag) = args.next() {
         match flag.as_str() {
             "--run-dir" => {
@@ -34,6 +36,12 @@ fn run() -> Result<(), String> {
             }
             "--output-dir" => {
                 output_dir = Some(next_path(&mut args, "--output-dir")?);
+            }
+            "--variant" => {
+                let value = args
+                    .next()
+                    .ok_or_else(|| "SNOWBENCH-E-CLI missing value for --variant".to_string())?;
+                variant = PhysicsBulkVariant::parse(&value).map_err(|error| error.to_string())?;
             }
             "--help" | "-h" => {
                 print_help();
@@ -49,6 +57,9 @@ fn run() -> Result<(), String> {
 
     match command.as_str() {
         "export-pysnobal" => {
+            if variant != PhysicsBulkVariant::CandidateV1 {
+                return Err("SNOWBENCH-E-CLI --variant is only valid for physics-bulk".to_string());
+            }
             let report = export_pysnobal_inputs(&SnowbenchExportRequest {
                 run_dir,
                 run_file,
@@ -66,11 +77,16 @@ fn run() -> Result<(), String> {
                 run_dir,
                 run_file,
                 output_dir,
+                variant,
             })
             .map_err(|error| error.to_string())?;
             println!(
-                "ran {} for {} hourly rows across {} day(s) to {}",
-                report.model_id, report.hourly_row_count, report.day_count, report.output_dir
+                "ran {} ({}) for {} hourly rows across {} day(s) to {}",
+                report.model_id,
+                report.variant,
+                report.hourly_row_count,
+                report.day_count,
+                report.output_dir
             );
         }
         _ => return Err(format!("SNOWBENCH-E-CLI unrecognized command {command}")),
@@ -89,6 +105,6 @@ fn next_path(
 
 fn print_help() {
     println!(
-        "openwepp-snowbench <export-pysnobal|physics-bulk> --run-dir <path> [--run-file <path>] --output-dir <path>"
+        "openwepp-snowbench <export-pysnobal|physics-bulk> --run-dir <path> [--run-file <path>] --output-dir <path> [--variant <candidate_v1|slow_melt_v1|dense_slow_melt_v1|cold_dense_slow_melt_v1>]"
     );
 }

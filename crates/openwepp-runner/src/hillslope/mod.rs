@@ -9,8 +9,9 @@ pub use snowbench::{
     export_openwepp_snow_csv_from_wat, export_pysnobal_inputs,
 };
 pub use snowbench_physics_bulk::{
-    PhysicsBulkConstants, PhysicsBulkReport, PhysicsBulkRequest, fresh_snow_density_kg_m3,
-    physics_bulk_constants, run_physics_bulk_snowbench,
+    PhysicsBulkConstants, PhysicsBulkReport, PhysicsBulkRequest, PhysicsBulkVariant,
+    fresh_snow_density_kg_m3, physics_bulk_constants, physics_bulk_constants_for_variant,
+    run_physics_bulk_snowbench,
 };
 
 include!("00_runner_intake_and_lane_setup.rs");

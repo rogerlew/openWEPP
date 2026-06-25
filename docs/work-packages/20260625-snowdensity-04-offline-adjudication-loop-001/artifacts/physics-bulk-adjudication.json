@@ -1,0 +1,860 @@
+{
+  "candidates": [
+    {
+      "cell_comparison": {
+        "legacy_as_built": {
+          "better": 4,
+          "equal": 14,
+          "unpaired": 0,
+          "worse": 27
+        },
+        "openwepp_as_built": {
+          "better": 4,
+          "equal": 15,
+          "unpaired": 0,
+          "worse": 26
+        },
+        "pysnobal": {
+          "better": 12,
+          "equal": 24,
+          "unpaired": 9,
+          "worse": 0
+        }
+      },
+      "counts_by_label": {
+        "fail": 38,
+        "marginal": 19,
+        "pass": 3,
+        "strong": 5,
+        "unavailable": 15
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 24,
+        "marginal": 13,
+        "pass": 3,
+        "strong": 5,
+        "unavailable": 15
+      },
+      "model_id": "physics_bulk_candidate_v1",
+      "profile_output_dir": "/home/workdir/openWEPP/target/snowdensity04_adjudication/variants/candidate_v1",
+      "robust_available_cell_count": 45,
+      "robust_fail_count": 24,
+      "robust_ordinal_score": 34,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 5,
+            "marginal": 2,
+            "pass": 2,
+            "unavailable": 3
+          },
+          "robust_fail_count": 5,
+          "robust_ordinal_score": 6,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 5,
+            "marginal": 3,
+            "strong": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 5,
+          "robust_ordinal_score": 6,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "marginal": 2,
+            "pass": 1,
+            "strong": 2,
+            "unavailable": 3
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 10,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 5,
+            "marginal": 3,
+            "strong": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 5,
+          "robust_ordinal_score": 6,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 5,
+            "marginal": 3,
+            "strong": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 5,
+          "robust_ordinal_score": 6,
+          "site_id": "snotel_niwot_co"
+        }
+      ],
+      "variant": "candidate_v1"
+    },
+    {
+      "cell_comparison": {
+        "legacy_as_built": {
+          "better": 15,
+          "equal": 23,
+          "unpaired": 0,
+          "worse": 6
+        },
+        "openwepp_as_built": {
+          "better": 14,
+          "equal": 25,
+          "unpaired": 0,
+          "worse": 5
+        },
+        "pysnobal": {
+          "better": 28,
+          "equal": 6,
+          "unpaired": 9,
+          "worse": 1
+        }
+      },
+      "counts_by_label": {
+        "fail": 11,
+        "marginal": 18,
+        "pass": 5,
+        "strong": 30,
+        "unavailable": 16
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 6,
+        "marginal": 8,
+        "pass": 3,
+        "strong": 27,
+        "unavailable": 16
+      },
+      "model_id": "physics_bulk_slow_melt_v1",
+      "profile_output_dir": "/home/workdir/openWEPP/target/snowdensity04_adjudication/variants/slow_melt_v1",
+      "robust_available_cell_count": 44,
+      "robust_fail_count": 6,
+      "robust_ordinal_score": 95,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 2,
+            "strong": 6,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 22,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 8,
+          "robust_counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "strong": 4,
+            "unavailable": 4
+          },
+          "robust_fail_count": 3,
+          "robust_ordinal_score": 13,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 1,
+            "strong": 7,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 23,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "marginal": 4,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 0,
+          "robust_ordinal_score": 19,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 18,
+          "site_id": "snotel_niwot_co"
+        }
+      ],
+      "variant": "slow_melt_v1"
+    },
+    {
+      "cell_comparison": {
+        "legacy_as_built": {
+          "better": 18,
+          "equal": 22,
+          "unpaired": 0,
+          "worse": 4
+        },
+        "openwepp_as_built": {
+          "better": 17,
+          "equal": 24,
+          "unpaired": 0,
+          "worse": 3
+        },
+        "pysnobal": {
+          "better": 29,
+          "equal": 5,
+          "unpaired": 9,
+          "worse": 1
+        }
+      },
+      "counts_by_label": {
+        "fail": 12,
+        "marginal": 15,
+        "pass": 7,
+        "strong": 30,
+        "unavailable": 16
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 6,
+        "marginal": 3,
+        "pass": 6,
+        "strong": 29,
+        "unavailable": 16
+      },
+      "model_id": "physics_bulk_dense_slow_melt_v1",
+      "profile_output_dir": "/home/workdir/openWEPP/target/snowdensity04_adjudication/variants/dense_slow_melt_v1",
+      "robust_available_cell_count": 44,
+      "robust_fail_count": 6,
+      "robust_ordinal_score": 102,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 1,
+            "pass": 2,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 20,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 8,
+          "robust_counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "strong": 4,
+            "unavailable": 4
+          },
+          "robust_fail_count": 3,
+          "robust_ordinal_score": 13,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 2,
+            "strong": 6,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 22,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "marginal": 1,
+            "pass": 2,
+            "strong": 6,
+            "unavailable": 3
+          },
+          "robust_fail_count": 0,
+          "robust_ordinal_score": 23,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "strong": 8,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 24,
+          "site_id": "snotel_niwot_co"
+        }
+      ],
+      "variant": "dense_slow_melt_v1"
+    },
+    {
+      "cell_comparison": {
+        "legacy_as_built": {
+          "better": 13,
+          "equal": 10,
+          "unpaired": 0,
+          "worse": 18
+        },
+        "openwepp_as_built": {
+          "better": 12,
+          "equal": 12,
+          "unpaired": 0,
+          "worse": 17
+        },
+        "pysnobal": {
+          "better": 21,
+          "equal": 10,
+          "unpaired": 8,
+          "worse": 2
+        }
+      },
+      "counts_by_label": {
+        "fail": 31,
+        "marginal": 4,
+        "pass": 8,
+        "strong": 18,
+        "unavailable": 19
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 15,
+        "marginal": 4,
+        "pass": 5,
+        "strong": 17,
+        "unavailable": 19
+      },
+      "model_id": "physics_bulk_cold_dense_slow_melt_v1",
+      "profile_output_dir": "/home/workdir/openWEPP/target/snowdensity04_adjudication/variants/cold_dense_slow_melt_v1",
+      "robust_available_cell_count": 41,
+      "robust_fail_count": 15,
+      "robust_ordinal_score": 65,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "marginal": 2,
+            "pass": 3,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 0,
+          "robust_ordinal_score": 20,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 8,
+          "robust_counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "strong": 4,
+            "unavailable": 4
+          },
+          "robust_fail_count": 3,
+          "robust_ordinal_score": 13,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 8,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "pass": 1,
+            "strong": 3,
+            "unavailable": 4
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 11,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 8,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "pass": 1,
+            "strong": 3,
+            "unavailable": 4
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 11,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 8,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "marginal": 1,
+            "strong": 3,
+            "unavailable": 4
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 10,
+          "site_id": "snotel_niwot_co"
+        }
+      ],
+      "variant": "cold_dense_slow_melt_v1"
+    }
+  ],
+  "comparators": {
+    "legacy_as_built": {
+      "counts_by_label": {
+        "fail": 9,
+        "marginal": 20,
+        "pass": 14,
+        "strong": 22,
+        "unavailable": 15
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 9,
+        "marginal": 8,
+        "pass": 8,
+        "strong": 20,
+        "unavailable": 15
+      },
+      "model_id": "legacy_as_built",
+      "robust_available_cell_count": 45,
+      "robust_fail_count": 9,
+      "robust_ordinal_score": 84,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 2,
+            "strong": 3,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 16,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 14,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 17,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 2,
+            "marginal": 2,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 2,
+          "robust_ordinal_score": 16,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 3,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 21,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    },
+    "legacy_observed_density": {
+      "counts_by_label": {
+        "fail": 22,
+        "marginal": 18,
+        "pass": 10,
+        "strong": 15,
+        "unavailable": 15
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 10,
+        "marginal": 10,
+        "pass": 10,
+        "strong": 15,
+        "unavailable": 15
+      },
+      "model_id": "legacy_observed_density",
+      "robust_available_cell_count": 45,
+      "robust_fail_count": 10,
+      "robust_ordinal_score": 75,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 17,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "marginal": 2,
+            "pass": 2,
+            "strong": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 9,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 2,
+            "strong": 3,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 16,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "pass": 3,
+            "strong": 2,
+            "unavailable": 3
+          },
+          "robust_fail_count": 3,
+          "robust_ordinal_score": 13,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 1,
+            "pass": 2,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 20,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    },
+    "openwepp_as_built": {
+      "counts_by_label": {
+        "fail": 9,
+        "marginal": 20,
+        "pass": 14,
+        "strong": 22,
+        "unavailable": 15
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 9,
+        "marginal": 8,
+        "pass": 8,
+        "strong": 20,
+        "unavailable": 15
+      },
+      "model_id": "openwepp_as_built",
+      "robust_available_cell_count": 45,
+      "robust_fail_count": 9,
+      "robust_ordinal_score": 84,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 3,
+            "strong": 2,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 15,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 15,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 17,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 2,
+            "marginal": 2,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 2,
+          "robust_ordinal_score": 16,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 3,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 21,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    },
+    "openwepp_observed_density": {
+      "counts_by_label": {
+        "fail": 23,
+        "marginal": 17,
+        "pass": 13,
+        "strong": 12,
+        "unavailable": 15
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 11,
+        "marginal": 9,
+        "pass": 13,
+        "strong": 12,
+        "unavailable": 15
+      },
+      "model_id": "openwepp_observed_density",
+      "robust_available_cell_count": 45,
+      "robust_fail_count": 11,
+      "robust_ordinal_score": 71,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 2,
+            "marginal": 2,
+            "pass": 3,
+            "strong": 2,
+            "unavailable": 3
+          },
+          "robust_fail_count": 2,
+          "robust_ordinal_score": 14,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "marginal": 2,
+            "pass": 2,
+            "strong": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 9,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 2,
+            "strong": 3,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 16,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "pass": 4,
+            "strong": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 3,
+          "robust_ordinal_score": 12,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 1,
+            "pass": 2,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 20,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    },
+    "pysnobal": {
+      "counts_by_label": {
+        "fail": 44,
+        "marginal": 6,
+        "pass": 1,
+        "strong": 1,
+        "unavailable": 28
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 28,
+        "marginal": 6,
+        "pass": 1,
+        "strong": 1,
+        "unavailable": 24
+      },
+      "model_id": "pysnobal",
+      "robust_available_cell_count": 36,
+      "robust_fail_count": 28,
+      "robust_ordinal_score": 11,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 6,
+            "marginal": 3,
+            "unavailable": 3
+          },
+          "robust_fail_count": 6,
+          "robust_ordinal_score": 3,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 7,
+            "marginal": 2,
+            "unavailable": 3
+          },
+          "robust_fail_count": 7,
+          "robust_ordinal_score": 2,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 0,
+          "robust_counts_by_label": {
+            "unavailable": 12
+          },
+          "robust_fail_count": 0,
+          "robust_ordinal_score": 0,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 7,
+            "marginal": 1,
+            "strong": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 7,
+          "robust_ordinal_score": 4,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 8,
+            "pass": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 8,
+          "robust_ordinal_score": 2,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    }
+  },
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-051 OBL-SNOWFREEZE-P-026",
+  "h_comparator_json": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/three_way_comparison.json",
+  "no_site_constants": true,
+  "runtime_coupling": "none; offline snowbench candidate only",
+  "schema": "snowdensity04-physics-bulk-adjudication-v1",
+  "snowbench_binary": "/home/workdir/openWEPP/target/debug/openwepp-snowbench",
+  "summary": {
+    "beats_legacy_as_built": true,
+    "beats_openwepp_as_built": true,
+    "best_variant": "dense_slow_melt_v1",
+    "disposition": "PROMOTION-CANDIDATE",
+    "promotion_rule": "candidate robust_fail_count must be lower and robust_ordinal_score not lower than comparator"
+  },
+  "variant_set": [
+    "candidate_v1",
+    "slow_melt_v1",
+    "dense_slow_melt_v1",
+    "cold_dense_slow_melt_v1"
+  ]
+}

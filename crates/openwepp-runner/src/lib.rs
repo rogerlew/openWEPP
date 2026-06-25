@@ -24,8 +24,9 @@ pub use hillslope::{
     PYSNOBAL_FORCING_COLUMNS, SnowbenchError, SnowbenchExportReport, SnowbenchExportRequest,
 };
 pub use hillslope::{
-    PhysicsBulkConstants, PhysicsBulkReport, PhysicsBulkRequest, fresh_snow_density_kg_m3,
-    physics_bulk_constants, run_physics_bulk_snowbench,
+    PhysicsBulkConstants, PhysicsBulkReport, PhysicsBulkRequest, PhysicsBulkVariant,
+    fresh_snow_density_kg_m3, physics_bulk_constants, physics_bulk_constants_for_variant,
+    run_physics_bulk_snowbench,
 };
 pub use hillslope::{
     execute_hillslope_run, execute_hillslope_run_with_runtime_policy,

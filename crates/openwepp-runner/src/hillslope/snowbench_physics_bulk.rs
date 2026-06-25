@@ -10,7 +10,7 @@ use super::snowbench::{
     PYSNOBAL_FORCING_COLUMNS, SnowbenchError, SnowbenchExportRequest, export_pysnobal_inputs,
 };
 
-const MODEL_ID: &str = "physics_bulk_candidate_v1";
+const DEFAULT_MODEL_ID: &str = "physics_bulk_candidate_v1";
 const CONTRACT: &str = "SC-SNOWFREEZE-001 INV-SNOWFREEZE-051 OBL-SNOWFREEZE-P-026 ADR-0027";
 const RHO_WATER_KG_M3: f64 = 1_000.0;
 const RHO_ICE_KG_M3: f64 = 917.0;
@@ -24,12 +24,14 @@ pub struct PhysicsBulkRequest {
     pub run_dir: PathBuf,
     pub run_file: Option<PathBuf>,
     pub output_dir: PathBuf,
+    pub variant: PhysicsBulkVariant,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct PhysicsBulkReport {
     pub schema: &'static str,
     pub model_id: &'static str,
+    pub variant: &'static str,
     pub contract: &'static str,
     pub output_dir: String,
     pub forcing_bridge_dir: String,
@@ -40,6 +42,15 @@ pub struct PhysicsBulkReport {
     pub runtime_coupling: &'static str,
     pub constants: PhysicsBulkConstants,
     pub summary: PhysicsBulkSummary,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+pub enum PhysicsBulkVariant {
+    #[default]
+    CandidateV1,
+    SlowMeltV1,
+    DenseSlowMeltV1,
+    ColdDenseSlowMeltV1,
 }
 
 #[derive(Debug, Clone, Copy, Serialize)]
@@ -57,6 +68,8 @@ pub struct PhysicsBulkConstants {
     pub positive_degree_melt_kg_m2_per_c_hour: f64,
     pub solar_melt_efficiency: f64,
     pub subfreezing_cold_content_relaxation_per_hour: f64,
+    pub dry_compaction_multiplier: f64,
+    pub wet_compaction_multiplier: f64,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -168,20 +181,109 @@ struct SimulationLedger {
 
 #[must_use]
 pub const fn physics_bulk_constants() -> PhysicsBulkConstants {
-    PhysicsBulkConstants {
-        new_snow_density_min_kg_m3: 50.0,
-        new_snow_density_max_kg_m3: 200.0,
-        new_snow_density_base_kg_m3: 50.0,
-        new_snow_density_temperature_threshold_c: -15.0,
-        new_snow_density_temperature_coefficient: 1.7,
-        dry_compaction_max_density_kg_m3: 550.0,
-        dry_compaction_swe_max_kg_m2: 2_000.0,
-        wet_compaction_max_density_kg_m3: 550.0,
-        wet_compaction_half_saturation_ratio: 0.4,
-        max_liquid_water_volume_fraction: 0.01,
-        positive_degree_melt_kg_m2_per_c_hour: 0.18,
-        solar_melt_efficiency: 0.02,
-        subfreezing_cold_content_relaxation_per_hour: 0.015,
+    physics_bulk_constants_for_variant(PhysicsBulkVariant::CandidateV1)
+}
+
+#[must_use]
+pub const fn physics_bulk_constants_for_variant(
+    variant: PhysicsBulkVariant,
+) -> PhysicsBulkConstants {
+    match variant {
+        PhysicsBulkVariant::CandidateV1 => PhysicsBulkConstants {
+            new_snow_density_min_kg_m3: 50.0,
+            new_snow_density_max_kg_m3: 200.0,
+            new_snow_density_base_kg_m3: 50.0,
+            new_snow_density_temperature_threshold_c: -15.0,
+            new_snow_density_temperature_coefficient: 1.7,
+            dry_compaction_max_density_kg_m3: 550.0,
+            dry_compaction_swe_max_kg_m2: 2_000.0,
+            wet_compaction_max_density_kg_m3: 550.0,
+            wet_compaction_half_saturation_ratio: 0.4,
+            max_liquid_water_volume_fraction: 0.01,
+            positive_degree_melt_kg_m2_per_c_hour: 0.18,
+            solar_melt_efficiency: 0.02,
+            subfreezing_cold_content_relaxation_per_hour: 0.015,
+            dry_compaction_multiplier: 1.0,
+            wet_compaction_multiplier: 1.0,
+        },
+        PhysicsBulkVariant::SlowMeltV1 => PhysicsBulkConstants {
+            positive_degree_melt_kg_m2_per_c_hour: 0.05,
+            solar_melt_efficiency: 0.005,
+            ..physics_bulk_constants_for_variant(PhysicsBulkVariant::CandidateV1)
+        },
+        PhysicsBulkVariant::DenseSlowMeltV1 => PhysicsBulkConstants {
+            new_snow_density_min_kg_m3: 75.0,
+            new_snow_density_max_kg_m3: 250.0,
+            new_snow_density_base_kg_m3: 75.0,
+            positive_degree_melt_kg_m2_per_c_hour: 0.05,
+            solar_melt_efficiency: 0.005,
+            dry_compaction_multiplier: 4.0,
+            wet_compaction_multiplier: 2.0,
+            ..physics_bulk_constants_for_variant(PhysicsBulkVariant::CandidateV1)
+        },
+        PhysicsBulkVariant::ColdDenseSlowMeltV1 => PhysicsBulkConstants {
+            new_snow_density_min_kg_m3: 75.0,
+            new_snow_density_max_kg_m3: 250.0,
+            new_snow_density_base_kg_m3: 75.0,
+            positive_degree_melt_kg_m2_per_c_hour: 0.03,
+            solar_melt_efficiency: 0.002,
+            subfreezing_cold_content_relaxation_per_hour: 0.03,
+            dry_compaction_multiplier: 4.0,
+            wet_compaction_multiplier: 2.0,
+            ..physics_bulk_constants_for_variant(PhysicsBulkVariant::CandidateV1)
+        },
+    }
+}
+
+impl PhysicsBulkVariant {
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::CandidateV1 => "candidate_v1",
+            Self::SlowMeltV1 => "slow_melt_v1",
+            Self::DenseSlowMeltV1 => "dense_slow_melt_v1",
+            Self::ColdDenseSlowMeltV1 => "cold_dense_slow_melt_v1",
+        }
+    }
+
+    #[must_use]
+    pub const fn model_id(self) -> &'static str {
+        match self {
+            Self::CandidateV1 => DEFAULT_MODEL_ID,
+            Self::SlowMeltV1 => "physics_bulk_slow_melt_v1",
+            Self::DenseSlowMeltV1 => "physics_bulk_dense_slow_melt_v1",
+            Self::ColdDenseSlowMeltV1 => "physics_bulk_cold_dense_slow_melt_v1",
+        }
+    }
+
+    pub fn parse(value: &str) -> Result<Self, PhysicsBulkError> {
+        match value {
+            "candidate_v1" => Ok(Self::CandidateV1),
+            "slow_melt_v1" => Ok(Self::SlowMeltV1),
+            "dense_slow_melt_v1" => Ok(Self::DenseSlowMeltV1),
+            "cold_dense_slow_melt_v1" => Ok(Self::ColdDenseSlowMeltV1),
+            _ => Err(PhysicsBulkError::Invalid {
+                detail: format!(
+                    "unknown physics_bulk variant '{value}', expected one of {}",
+                    Self::names().join(", ")
+                ),
+            }),
+        }
+    }
+
+    #[must_use]
+    pub fn all() -> &'static [Self] {
+        &[
+            Self::CandidateV1,
+            Self::SlowMeltV1,
+            Self::DenseSlowMeltV1,
+            Self::ColdDenseSlowMeltV1,
+        ]
+    }
+
+    #[must_use]
+    pub fn names() -> Vec<&'static str> {
+        Self::all().iter().map(|variant| variant.name()).collect()
     }
 }
 
@@ -199,15 +301,16 @@ pub fn run_physics_bulk_snowbench(
     })?;
     let forcing_csv = forcing_bridge_dir.join("tg_0p0c_zg0p10m/forcing.csv");
     let forcing = read_physics_bulk_forcing(&forcing_csv)?;
-    let constants = physics_bulk_constants();
-    let simulation = simulate_physics_bulk(&forcing, constants)?;
+    let constants = physics_bulk_constants_for_variant(request.variant);
+    let simulation = simulate_physics_bulk(&forcing, constants, request.variant.model_id())?;
     write_physics_bulk_csv(
         &output_dir.join("physics_bulk_snow.csv"),
         &simulation.daily_rows,
     )?;
     let report = PhysicsBulkReport {
         schema: "snowdensity03-physics-bulk-snowbench-v1",
-        model_id: MODEL_ID,
+        model_id: request.variant.model_id(),
+        variant: request.variant.name(),
         contract: CONTRACT,
         output_dir: output_dir.display().to_string(),
         forcing_bridge_dir: forcing_bridge_dir.display().to_string(),
@@ -353,6 +456,7 @@ fn validate_forcing_row(
 fn simulate_physics_bulk(
     forcing: &[PhysicsBulkForcingRow],
     constants: PhysicsBulkConstants,
+    model_id: &'static str,
 ) -> Result<PhysicsBulkSimulation, PhysicsBulkError> {
     let mut state = PhysicsBulkState::default();
     let mut ledger = SimulationLedger::default();
@@ -367,14 +471,14 @@ fn simulate_physics_bulk(
     let mut daily_release = 0.0;
     for row in forcing {
         if row.date != current_date {
-            daily_rows.push(daily_row(&current_date, &state, daily_release));
+            daily_rows.push(daily_row(&current_date, &state, daily_release, model_id));
             current_date.clone_from(&row.date);
             daily_release = 0.0;
         }
         daily_release += step_physics_bulk(row, &mut state, &mut ledger, constants)?;
         update_density_extrema(&state, &mut ledger);
     }
-    daily_rows.push(daily_row(&current_date, &state, daily_release));
+    daily_rows.push(daily_row(&current_date, &state, daily_release, model_id));
     let summary = PhysicsBulkSummary {
         total_snow_input_kg_m2: ledger.total_snow_input_kg_m2,
         total_rain_on_snow_input_kg_m2: ledger.total_rain_on_snow_input_kg_m2,
@@ -547,7 +651,10 @@ fn apply_time_compaction(state: &mut PhysicsBulkState, constants: PhysicsBulkCon
         * swe
         * (-21.0 * (density / RHO_WATER_KG_M3)).exp()
         / rate;
-    state.density_kg_m3 = (density + (destructive_metamorphism + overburden_compaction) * density)
+    state.density_kg_m3 = (density
+        + constants.dry_compaction_multiplier
+            * (destructive_metamorphism + overburden_compaction)
+            * density)
         .min(constants.dry_compaction_max_density_kg_m3);
 }
 
@@ -568,7 +675,8 @@ fn apply_wet_compaction(
     if h2o_added_ratio <= 1.0e-6 {
         return;
     }
-    let density_delta = (constants.wet_compaction_max_density_kg_m3 - density)
+    let density_delta = constants.wet_compaction_multiplier
+        * (constants.wet_compaction_max_density_kg_m3 - density)
         / (1.0 + constants.wet_compaction_half_saturation_ratio / h2o_added_ratio);
     state.density_kg_m3 = (density + density_delta).min(constants.wet_compaction_max_density_kg_m3);
 }
@@ -616,6 +724,7 @@ fn daily_row(
     date: &str,
     state: &PhysicsBulkState,
     daily_release_kg_m2: f64,
+    model_id: &'static str,
 ) -> PhysicsBulkDailyRow {
     PhysicsBulkDailyRow {
         date: date.to_string(),
@@ -626,7 +735,7 @@ fn daily_row(
         cold_content_j_m2: state.cold_content_j_m2,
         snow_bulk_temperature_c: state.bulk_temperature_c(),
         released_liquid_m: daily_release_kg_m2 / RHO_WATER_KG_M3,
-        source: MODEL_ID,
+        source: model_id,
     }
 }
 
@@ -744,6 +853,7 @@ fn write_markdown(
         "# Physics-Bulk Snowbench Summary\n\n\
          - Schema: `{}`\n\
          - Model: `{}`\n\
+         - Variant: `{}`\n\
          - Contract: `{}`\n\
          - Runtime coupling: `{}`\n\
          - No site constants: `{}`\n\
@@ -761,6 +871,7 @@ fn write_markdown(
          - Forcing bridge: `{}`\n",
         report.schema,
         report.model_id,
+        report.variant,
         report.contract,
         report.runtime_coupling,
         report.no_site_constants,
@@ -797,9 +908,10 @@ fn snowbench_io(path: impl Into<PathBuf>, source: io::Error) -> SnowbenchError {
 #[cfg(test)]
 mod tests {
     use super::{
-        PhysicsBulkConstants, PhysicsBulkForcingRow, PhysicsBulkState, SimulationLedger,
-        fresh_snow_density_kg_m3, liquid_water_capacity_kg_m2, physics_bulk_constants,
-        release_excess_liquid, simulate_physics_bulk, step_physics_bulk,
+        PhysicsBulkConstants, PhysicsBulkForcingRow, PhysicsBulkState, PhysicsBulkVariant,
+        SimulationLedger, fresh_snow_density_kg_m3, liquid_water_capacity_kg_m2,
+        physics_bulk_constants, physics_bulk_constants_for_variant, release_excess_liquid,
+        simulate_physics_bulk, step_physics_bulk,
     };
 
     #[test]
@@ -813,6 +925,25 @@ mod tests {
         assert!(mid > cold);
         assert!(warm > mid);
         assert!(warm <= constants.new_snow_density_max_kg_m3);
+    }
+
+    #[test]
+    fn named_variants_are_global_and_distinct_from_candidate_v1() {
+        let candidate = physics_bulk_constants_for_variant(PhysicsBulkVariant::CandidateV1);
+        let slow = physics_bulk_constants_for_variant(PhysicsBulkVariant::SlowMeltV1);
+        let dense = physics_bulk_constants_for_variant(PhysicsBulkVariant::DenseSlowMeltV1);
+
+        assert_eq!(
+            PhysicsBulkVariant::parse("candidate_v1").expect("variant"),
+            PhysicsBulkVariant::CandidateV1
+        );
+        assert!(PhysicsBulkVariant::parse("site_specific").is_err());
+        assert!(
+            slow.positive_degree_melt_kg_m2_per_c_hour
+                < candidate.positive_degree_melt_kg_m2_per_c_hour
+        );
+        assert!(dense.new_snow_density_base_kg_m3 > candidate.new_snow_density_base_kg_m3);
+        assert!(dense.dry_compaction_multiplier > candidate.dry_compaction_multiplier);
     }
 
     #[test]
@@ -892,9 +1023,11 @@ mod tests {
             sample_row("2000-01-02 00:00:00", 3.0, 120.0, 5.0, 0.0),
         ];
 
-        let simulation = simulate_physics_bulk(&rows, constants).expect("simulation should run");
+        let simulation =
+            simulate_physics_bulk(&rows, constants, "test_variant").expect("simulation should run");
 
         assert_eq!(simulation.daily_rows.len(), 2);
+        assert_eq!(simulation.daily_rows[0].source, "test_variant");
         assert!(simulation.summary.total_snow_input_kg_m2 > 0.0);
         assert!(simulation.summary.total_liquid_release_kg_m2 > 0.0);
         assert!(simulation.summary.max_abs_mass_balance_residual_kg_m2 < 1.0e-9);

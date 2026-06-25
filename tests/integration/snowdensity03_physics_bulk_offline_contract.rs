@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use openwepp_runner::{PhysicsBulkRequest, run_physics_bulk_snowbench};
+use openwepp_runner::{PhysicsBulkRequest, PhysicsBulkVariant, run_physics_bulk_snowbench};
 
 #[test]
 fn physics_bulk_snowbench_runs_offline_for_snotel_fixture() {
@@ -14,11 +14,13 @@ fn physics_bulk_snowbench_runs_offline_for_snotel_fixture() {
         run_dir: PathBuf::from("tests/fixtures/snotel_observed/snotel_mica_creek_st_joe_id"),
         run_file: None,
         output_dir: output_dir.clone(),
+        variant: PhysicsBulkVariant::CandidateV1,
     })
     .expect("offline physics_bulk snowbench should run");
 
     assert_eq!(report.schema, "snowdensity03-physics-bulk-snowbench-v1");
     assert_eq!(report.model_id, "physics_bulk_candidate_v1");
+    assert_eq!(report.variant, "candidate_v1");
     assert!(report.no_site_constants);
     assert_eq!(
         report.runtime_coupling,
@@ -45,6 +47,7 @@ fn physics_bulk_is_confined_to_snowbench_and_diagnostic_surfaces() {
         "crates/openwepp-runner/src/bin/openwepp-snowbench.rs",
         "tests/integration/snowdensity02_contract_adr_guard.rs",
         "tests/integration/snowdensity03_physics_bulk_offline_contract.rs",
+        "tools/snowfreeze_observed/physics_bulk_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_snotel_profile.py",
     ];
     let mut unexpected = Vec::new();

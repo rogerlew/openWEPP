@@ -13,6 +13,14 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowdensity-04-offline-adjudication-loop-001/` is complete as the
+  offline `physics_bulk` adjudication package. It added global named
+  candidate variants, `tools/snowfreeze_observed/physics_bulk_adjudication.py`,
+  and a four-variant/five-site comparison against the H openWEPP/legacy/PySnobal
+  profile. `dense_slow_melt_v1` is the promotion candidate: robust fail count
+  improves from `9` to `6` and robust ordinal score improves from `84` to
+  `102` against both openWEPP and legacy as-built profiles. This is not runtime
+  activation; the next route is `SNOWDENSITY-05 Runtime Opt-In`.
 - `20260625-snowdensity-03-offline-physics-core-001/` is complete as the
   offline Rust `physics_bulk` candidate implementation. It added the
   `openwepp-snowbench physics-bulk` command, a bounded bulk snowpack state

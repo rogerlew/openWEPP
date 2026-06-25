@@ -24,6 +24,7 @@ DEFAULT_OBSERVATIONS = REPO_ROOT / "tests/fixtures/snotel_observed/observations"
 DEFAULT_OUTPUT = REPO_ROOT / "target/snowdensity03_physics_bulk"
 DEFAULT_SNOWBENCH_BINARY = REPO_ROOT / "target/debug/openwepp-snowbench"
 FIXTURE_ROOT = REPO_ROOT / "tests/fixtures/snotel_observed"
+DEFAULT_VARIANT = "candidate_v1"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -31,6 +32,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--observations-dir", type=Path, default=DEFAULT_OBSERVATIONS)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--snowbench-binary", type=Path, default=DEFAULT_SNOWBENCH_BINARY)
+    parser.add_argument("--variant", default=DEFAULT_VARIANT)
     parser.add_argument("--site", action="append", default=[])
     args = parser.parse_args(argv)
 
@@ -39,6 +41,7 @@ def main(argv: list[str] | None = None) -> int:
         observations_dir=args.observations_dir.resolve(),
         output_dir=args.output_dir.resolve(),
         snowbench_binary=args.snowbench_binary.resolve(),
+        variant=args.variant,
         sites=sites,
     )
     snotel.write_json(args.output_dir / "physics_bulk_snotel_profile.json", report)
@@ -53,6 +56,7 @@ def run_profile(
     observations_dir: Path,
     output_dir: Path,
     snowbench_binary: Path,
+    variant: str,
     sites: list[snotel.SnotelSite],
 ) -> dict[str, Any]:
     snotel.validate_observations(observations_dir, sites)
@@ -62,17 +66,20 @@ def run_profile(
     site_reports = []
     for site in sites:
         model_dir = output_dir / "runs" / site.site_id
-        run_snowbench(site, model_dir, snowbench_binary)
+        run_snowbench(site, model_dir, snowbench_binary, variant)
         observations = snotel.read_csv_dicts(observations_dir / "sites" / f"{site.site_id}.csv")
         modeled = load_physics_bulk_series(model_dir / "physics_bulk_snow.csv")
-        metrics = snotel.model_metrics(observations, modeled, "physics_bulk")
-        rubric = snotel.rubric_profile(observations, modeled, "physics_bulk")
+        summary = read_json(model_dir / "physics_bulk_summary.json")
+        model_id = str(summary["model_id"])
+        metrics = snotel.model_metrics(observations, modeled, model_id)
+        rubric = snotel.rubric_profile(observations, modeled, model_id)
         site_reports.append(
             {
                 "site_id": site.site_id,
                 "station_triplet": site.triplet,
                 "snow_climate": site.snow_climate,
-                "model_id": "physics_bulk",
+                "model_id": model_id,
+                "variant": summary["variant"],
                 "run_dir": str(model_dir),
                 "snow_csv": str(model_dir / "physics_bulk_snow.csv"),
                 "summary_json": str(model_dir / "physics_bulk_summary.json"),
@@ -83,7 +90,8 @@ def run_profile(
     return {
         "schema": "snowdensity03-physics-bulk-snotel-profile-v1",
         "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-051 OBL-SNOWFREEZE-P-026",
-        "model_id": "physics_bulk",
+        "model_id": site_reports[0]["model_id"] if site_reports else "physics_bulk",
+        "variant": variant,
         "runtime_coupling": "none; offline snowbench candidate only",
         "no_site_constants": True,
         "snowbench_binary": str(snowbench_binary),
@@ -93,7 +101,12 @@ def run_profile(
     }
 
 
-def run_snowbench(site: snotel.SnotelSite, model_dir: Path, snowbench_binary: Path) -> None:
+def run_snowbench(
+    site: snotel.SnotelSite,
+    model_dir: Path,
+    snowbench_binary: Path,
+    variant: str,
+) -> None:
     model_dir.mkdir(parents=True, exist_ok=True)
     command = [
         str(snowbench_binary),
@@ -102,6 +115,8 @@ def run_snowbench(site: snotel.SnotelSite, model_dir: Path, snowbench_binary: Pa
         str(FIXTURE_ROOT / site.site_id),
         "--output-dir",
         str(model_dir),
+        "--variant",
+        variant,
     ]
     completed = subprocess.run(
         command,
@@ -132,6 +147,11 @@ def load_physics_bulk_series(path: Path) -> dict[dt.date, dict[str, float | None
             "snow_density_kg_m3": parse_float(row["snow_density_kg_m3"]),
         }
     return modeled
+
+
+def read_json(path: Path) -> dict[str, Any]:
+    with path.open(encoding="utf-8") as handle:
+        return json.load(handle)
 
 
 def parse_float(value: str) -> float | None:
@@ -173,6 +193,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         f"- Schema: `{report['schema']}`",
         f"- Model: `{report['model_id']}`",
+        f"- Variant: `{report['variant']}`",
         f"- Contract: `{report['contract']}`",
         f"- Runtime coupling: `{report['runtime_coupling']}`",
         f"- No site constants: `{report['no_site_constants']}`",
