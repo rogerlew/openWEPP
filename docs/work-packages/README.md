@@ -13,8 +13,19 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowfrost-fidelity-g1-pysnobal-sanity-closure-001/` is complete as
+  the PySnobal sanity-closure follow-up. It kept the strict all-lane G0 hold
+  visible for Morris `Tg=-0.5 degC`, added site/lane/window controls and a
+  `site-sane` route, and made `openwepp-snowbench export-pysnobal` publish
+  current openWEPP WAT-backed `openwepp_snow.csv` rows with climate-date
+  mapping. Fresh five-site G1 evidence routes
+  `PROCEED-SNOWFROST-FIDELITY-G1-SANE-SITE-LANES` for the selected
+  `Tg=0.0 degC` lane: every pilot site has sane PySnobal SWE and physical
+  snow depth, and PySnobal-vs-openWEPP depth metrics are now available.
+  PySnobal remains diagnostic hypothesis evidence only.
 - `20260625-snowfrost-fidelity-g0-pysnobal-input-bridge-001/` is
-  executed-held at `HOLD-PYSNOBAL-SANITY-FAILURE`. It added the diagnostic
+  executed-held at `HOLD-PYSNOBAL-SANITY-FAILURE`, superseded for comparator
+  routing by G1's explicit site-sane policy. It added the diagnostic
   Rust `openwepp-snowbench export-pysnobal` exporter, reusing openWEPP WEPP
   parsing and SIMIMPL28 daily-to-hourly forcing surfaces, plus the thin
   `tools/snowfreeze_observed/pysnobal_compare.py` runner. Exporter schema,

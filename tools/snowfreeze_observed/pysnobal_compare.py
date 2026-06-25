@@ -51,10 +51,21 @@ def _stable_check_forcing_df(forcing_data_df):
 pysnobal_runner._check_forcing_df = _stable_check_forcing_df
 
 lane_dir = Path(sys.argv[1])
+start_arg = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else None
+end_arg = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else None
+output_path = Path(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] else lane_dir / "pysnobal_output.csv"
 forcing_path = lane_dir / "forcing.csv"
 config_path = lane_dir / "config.yaml"
-output_path = lane_dir / "pysnobal_output.csv"
 forcing = pd.read_csv(forcing_path, index_col=0, parse_dates=True)
+if start_arg:
+    forcing = forcing.loc[forcing.index >= pd.Timestamp(start_arg)]
+if end_arg:
+    end_timestamp = pd.Timestamp(end_arg)
+    if len(end_arg) == 10:
+        end_timestamp = end_timestamp + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
+    forcing = forcing.loc[forcing.index <= end_timestamp]
+if len(forcing) == 0:
+    raise ValueError("windowed PySnobal forcing contains zero rows")
 forcing_for_checks = forcing.copy(deep=True)
 config = pysnobal_runner.load_config(config_path)
 output = pysnobal_runner.run_snobal(forcing, config, show_pbar=False)
@@ -90,6 +101,8 @@ summary = {
     "peak_snow_depth_datetime": str(peak_depth_idx),
     "positive_snow_precip_rows": int((snow_precip_mass > 1.0e-9).sum()),
     "output_path": str(output_path),
+    "window_start": start_arg,
+    "window_end": end_arg,
 }
 print(json.dumps(summary))
 """
@@ -102,6 +115,31 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-md", type=Path, required=True)
     parser.add_argument("--observations-dir", type=Path, default=DEFAULT_OBSERVATIONS)
     parser.add_argument("--pysnobal-path", type=Path, default=DEFAULT_PYSNOBAL_PATH)
+    parser.add_argument(
+        "--site",
+        action="append",
+        default=[],
+        help="Fixture id or site export directory name to run; may be repeated.",
+    )
+    parser.add_argument(
+        "--lane",
+        action="append",
+        default=[],
+        help="Exact PySnobal lane directory name to run; may be repeated.",
+    )
+    parser.add_argument("--start-date", help="Optional inclusive window start date/time.")
+    parser.add_argument("--end-date", help="Optional inclusive window end date/time.")
+    parser.add_argument(
+        "--reuse-existing",
+        action="store_true",
+        help="Reuse existing full-run pysnobal_output.csv files after revalidating them.",
+    )
+    parser.add_argument(
+        "--route-policy",
+        choices=("all-lanes", "site-sane"),
+        default="all-lanes",
+        help="all-lanes holds on any failed lane; site-sane proceeds when each site has a passing lane.",
+    )
     args = parser.parse_args(argv)
 
     python = Path(os.environ.get("PYSNOBAL_PYTHON", sys.executable))
@@ -110,6 +148,12 @@ def main(argv: list[str] | None = None) -> int:
         observations_dir=args.observations_dir.resolve(),
         pysnobal_python=python,
         pysnobal_path=args.pysnobal_path.resolve(),
+        site_filters=set(args.site),
+        lane_filters=set(args.lane),
+        start_date=args.start_date,
+        end_date=args.end_date,
+        reuse_existing=args.reuse_existing,
+        route_policy=args.route_policy,
     )
     write_json(args.output_json.resolve(), summary)
     write_markdown(args.output_md.resolve(), summary)
@@ -121,6 +165,12 @@ def run_all_sites(
     observations_dir: Path,
     pysnobal_python: Path,
     pysnobal_path: Path,
+    site_filters: set[str],
+    lane_filters: set[str],
+    start_date: str | None,
+    end_date: str | None,
+    reuse_existing: bool,
+    route_policy: str,
 ) -> dict[str, Any]:
     if not input_root.is_dir():
         raise FileNotFoundError(f"input root not found: {input_root}")
@@ -131,11 +181,13 @@ def run_all_sites(
     probe = probe_pysnobal(pysnobal_python, pysnobal_path)
     if probe is not None:
         return {
-            "schema": "snowfrost-fidelity-g0-pysnobal-site-summary-v1",
+            "schema": "snowfrost-fidelity-g1-pysnobal-site-summary-v2",
             "input_root": str(input_root),
             "pysnobal_python": str(pysnobal_python),
             "pysnobal_path": str(pysnobal_path),
             "bulk_density_ceiling_kgm3": BULK_DENSITY_CEILING_KGM3,
+            "route_policy": route_policy,
+            "filters": summary_filters(site_filters, lane_filters, start_date, end_date),
             "sites": [],
             "route_recommendation": "HOLD-PYSNOBAL-UNAVAILABLE",
             "pysnobal_unavailable_reason": probe,
@@ -149,21 +201,46 @@ def run_all_sites(
             continue
         audit = json.loads(audit_path.read_text(encoding="utf-8"))
         fixture_id = Path(audit["run_dir"]).name
+        if site_filters and site_dir.name not in site_filters and fixture_id not in site_filters:
+            continue
         observed = observation_index.get(fixture_id, [])
-        site_summary = run_site(site_dir, fixture_id, observed, pysnobal_python, pysnobal_path)
+        site_summary = run_site(
+            site_dir,
+            fixture_id,
+            observed,
+            pysnobal_python,
+            pysnobal_path,
+            lane_filters=lane_filters,
+            start_date=start_date,
+            end_date=end_date,
+            reuse_existing=reuse_existing,
+        )
         sites.append(site_summary)
 
     if not sites:
-        raise ValueError(f"no G0 site export directories found under {input_root}")
-    route = route_recommendation(sites)
+        raise ValueError(f"no PySnobal site export directories matched under {input_root}")
+    route = route_recommendation(sites, route_policy)
     return {
-        "schema": "snowfrost-fidelity-g0-pysnobal-site-summary-v1",
+        "schema": "snowfrost-fidelity-g1-pysnobal-site-summary-v2",
         "input_root": str(input_root),
         "pysnobal_python": str(pysnobal_python),
         "pysnobal_path": str(pysnobal_path),
         "bulk_density_ceiling_kgm3": BULK_DENSITY_CEILING_KGM3,
+        "route_policy": route_policy,
+        "filters": summary_filters(site_filters, lane_filters, start_date, end_date),
         "sites": sites,
         "route_recommendation": route,
+    }
+
+
+def summary_filters(
+    site_filters: set[str], lane_filters: set[str], start_date: str | None, end_date: str | None
+) -> dict[str, Any]:
+    return {
+        "sites": sorted(site_filters),
+        "lanes": sorted(lane_filters),
+        "start_date": start_date,
+        "end_date": end_date,
     }
 
 
@@ -197,12 +274,30 @@ def run_site(
     observed_rows: list[dict[str, str]],
     pysnobal_python: Path,
     pysnobal_path: Path,
+    lane_filters: set[str],
+    start_date: str | None,
+    end_date: str | None,
+    reuse_existing: bool,
 ) -> dict[str, Any]:
     lanes = []
     for lane_dir in sorted(path for path in site_dir.iterdir() if path.is_dir()):
         if not lane_dir.name.startswith(LANE_DIR_PREFIX):
             continue
-        lanes.append(run_lane(lane_dir, observed_rows, pysnobal_python, pysnobal_path))
+        if lane_filters and lane_dir.name not in lane_filters:
+            continue
+        lanes.append(
+            run_lane(
+                lane_dir,
+                observed_rows,
+                pysnobal_python,
+                pysnobal_path,
+                start_date=start_date,
+                end_date=end_date,
+                reuse_existing=reuse_existing,
+            )
+        )
+    if not lanes:
+        raise ValueError(f"no PySnobal lanes matched under {site_dir}")
     lane_spread = max_lane_depth_spread(lanes)
     return {
         "site_dir": str(site_dir),
@@ -220,6 +315,9 @@ def run_lane(
     observed_rows: list[dict[str, str]],
     pysnobal_python: Path,
     pysnobal_path: Path,
+    start_date: str | None,
+    end_date: str | None,
+    reuse_existing: bool,
 ) -> dict[str, Any]:
     required = ["forcing.csv", "config.yaml", "lineage.json", "audit.json"]
     for name in required:
@@ -230,10 +328,35 @@ def run_lane(
     if lineage_error:
         return lane_failure(lane_dir, lineage_error)
 
+    output_path = selected_output_path(lane_dir, start_date, end_date)
+    if reuse_existing and start_date is None and end_date is None and output_path.is_file():
+        try:
+            summary = summarize_output(
+                lane_dir=lane_dir,
+                output_path=output_path,
+                observed_rows=observed_rows,
+                reused_existing=True,
+                start_date=start_date,
+                end_date=end_date,
+            )
+        except ValueError as error:
+            return lane_failure(lane_dir, f"existing PySnobal output failed sanity: {error}")
+        write_json(lane_dir / "pysnobal_summary.json", summary)
+        write_lane_markdown(lane_dir / "pysnobal_summary.md", summary)
+        return summary
+
     env = os.environ.copy()
     env["PYTHONPATH"] = prepend_path(env.get("PYTHONPATH"), pysnobal_path)
     completed = subprocess.run(
-        [str(pysnobal_python), "-c", CHILD_RUNNER, str(lane_dir)],
+        [
+            str(pysnobal_python),
+            "-c",
+            CHILD_RUNNER,
+            str(lane_dir),
+            start_date or "",
+            end_date or "",
+            str(output_path),
+        ],
         cwd=REPO_ROOT,
         env=env,
         text=True,
@@ -253,20 +376,152 @@ def run_lane(
     except (IndexError, json.JSONDecodeError) as error:
         return lane_failure(lane_dir, f"PySnobal did not return JSON summary: {error}")
 
-    daily_depth = load_daily_depth(Path(summary["output_path"]))
-    observed_metrics = compare_observed_depth(observed_rows, daily_depth)
-    openwepp_metrics = compare_openwepp(lane_dir.parent / "openwepp_snow.csv", daily_depth)
-    summary.update(
-        {
-            "lane_id": lane_dir.name,
-            "lane_dir": str(lane_dir),
-            "observed_depth": observed_metrics,
-            "openwepp_comparison": openwepp_metrics,
-        }
-    )
+    try:
+        summary = summarize_output(
+            lane_dir=lane_dir,
+            output_path=Path(summary["output_path"]),
+            observed_rows=observed_rows,
+            reused_existing=False,
+            start_date=start_date,
+            end_date=end_date,
+            child_summary=summary,
+        )
+    except ValueError as error:
+        return lane_failure(lane_dir, f"PySnobal output failed sanity: {error}")
     write_json(lane_dir / "pysnobal_summary.json", summary)
     write_lane_markdown(lane_dir / "pysnobal_summary.md", summary)
     return summary
+
+
+def selected_output_path(lane_dir: Path, start_date: str | None, end_date: str | None) -> Path:
+    if start_date is None and end_date is None:
+        return lane_dir / "pysnobal_output.csv"
+    label = "{start}_{end}".format(
+        start=safe_label(start_date or "start"),
+        end=safe_label(end_date or "end"),
+    )
+    return lane_dir / f"pysnobal_output_{label}.csv"
+
+
+def safe_label(value: str) -> str:
+    return "".join(character if character.isalnum() else "-" for character in value)
+
+
+def summarize_output(
+    lane_dir: Path,
+    output_path: Path,
+    observed_rows: list[dict[str, str]],
+    reused_existing: bool,
+    start_date: str | None,
+    end_date: str | None,
+    child_summary: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    metrics = output_metrics(output_path)
+    forcing_metrics = forcing_snow_precip_metrics(lane_dir / "forcing.csv", start_date, end_date)
+    if forcing_metrics["positive_snow_precip_rows"] > 0 and max(
+        metrics["max_swe_kgm2"], metrics["max_snow_depth_m"]
+    ) <= 1.0e-9:
+        raise ValueError("positive snow precipitation never produced positive SWE or depth")
+    daily_depth = load_daily_depth(output_path)
+    observed_metrics = compare_observed_depth(observed_rows, daily_depth)
+    openwepp_metrics = compare_openwepp(lane_dir.parent / "openwepp_snow.csv", daily_depth)
+    summary = {
+        "status": "PASS",
+        "lane_id": lane_dir.name,
+        "lane_dir": str(lane_dir),
+        "output_path": str(output_path),
+        "reused_existing_output": reused_existing,
+        "window_start": start_date,
+        "window_end": end_date,
+        "observed_depth": observed_metrics,
+        "openwepp_comparison": openwepp_metrics,
+        **metrics,
+        **forcing_metrics,
+    }
+    if child_summary:
+        summary["child_summary"] = child_summary
+    return summary
+
+
+def output_metrics(output_path: Path) -> dict[str, Any]:
+    if not output_path.is_file():
+        raise ValueError(f"missing PySnobal output {output_path}")
+    row_count = 0
+    max_swe = 0.0
+    max_depth = 0.0
+    peak_depth_datetime = None
+    with output_path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            row_count += 1
+            timestamp = row["Datetime"]
+            swe = float(row["specific_mass_snow_kgm-2"])
+            depth = float(row["thickness_snow_m"])
+            if not math.isfinite(swe) or not math.isfinite(depth):
+                raise ValueError(f"non-finite SWE/depth at {timestamp}")
+            if swe < -1.0e-9 or depth < -1.0e-9:
+                raise ValueError(f"negative SWE/depth at {timestamp}: {swe}, {depth}")
+            if depth > 1.0e-9:
+                density = swe / depth
+                if not math.isfinite(density):
+                    raise ValueError(f"non-finite bulk density at {timestamp}")
+                if density > BULK_DENSITY_CEILING_KGM3:
+                    raise ValueError(
+                        f"bulk density {density} exceeds {BULK_DENSITY_CEILING_KGM3} kg/m^3 at {timestamp}"
+                    )
+            if swe > max_swe:
+                max_swe = swe
+            if depth > max_depth:
+                max_depth = depth
+                peak_depth_datetime = timestamp
+    if row_count == 0:
+        raise ValueError("PySnobal output contains zero rows")
+    return {
+        "row_count": row_count,
+        "max_swe_kgm2": max_swe,
+        "max_snow_depth_m": max_depth,
+        "peak_snow_depth_datetime": peak_depth_datetime,
+    }
+
+
+def forcing_snow_precip_metrics(
+    forcing_path: Path, start_date: str | None, end_date: str | None
+) -> dict[str, int]:
+    row_count = 0
+    positive_snow_precip_rows = 0
+    start = parse_window_start(start_date)
+    end = parse_window_end(end_date)
+    with forcing_path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            timestamp = dt.datetime.fromisoformat(row["Datetime"])
+            if start is not None and timestamp < start:
+                continue
+            if end is not None and timestamp > end:
+                continue
+            row_count += 1
+            snow_mass = float(row["precip_mass_mm"]) * float(row["snow_precip_fraction"])
+            if snow_mass > 1.0e-9:
+                positive_snow_precip_rows += 1
+    return {
+        "forcing_row_count": row_count,
+        "positive_snow_precip_rows": positive_snow_precip_rows,
+    }
+
+
+def parse_window_start(value: str | None) -> dt.datetime | None:
+    if value is None:
+        return None
+    return dt.datetime.fromisoformat(value)
+
+
+def parse_window_end(value: str | None) -> dt.datetime | None:
+    if value is None:
+        return None
+    parsed = dt.datetime.fromisoformat(value)
+    if len(value) == 10:
+        return parsed + dt.timedelta(days=1) - dt.timedelta(seconds=1)
+    return parsed
 
 
 def lane_failure(lane_dir: Path, reason: str) -> dict[str, Any]:
@@ -388,10 +643,17 @@ def max_lane_depth_spread(lanes: list[dict[str, Any]]) -> float | None:
     return max(depths) - min(depths)
 
 
-def route_recommendation(sites: list[dict[str, Any]]) -> str:
+def route_recommendation(sites: list[dict[str, Any]], route_policy: str) -> str:
     failed = [lane for site in sites for lane in site["lanes"] if lane["status"] != "PASS"]
-    if failed:
+    sites_without_pass = [
+        site["fixture_id"]
+        for site in sites
+        if not any(lane["status"] == "PASS" for lane in site["lanes"])
+    ]
+    if route_policy == "all-lanes" and failed:
         return "HOLD-PYSNOBAL-SANITY-FAILURE"
+    if route_policy == "site-sane" and sites_without_pass:
+        return "HOLD-PYSNOBAL-SITE-SANE-FAILURE"
     spreads = [
         site["lane_spread_max_depth_m"]
         for site in sites
@@ -399,6 +661,8 @@ def route_recommendation(sites: list[dict[str, Any]]) -> str:
     ]
     if spreads and max(spreads) > 0.50:
         return "HOLD-FORCING-PROXY-DOMINATES"
+    if route_policy == "site-sane":
+        return "PROCEED-SNOWFROST-FIDELITY-G1-SANE-SITE-LANES"
     return "PROCEED-SNOWFROST-FIDELITY-G"
 
 
@@ -433,14 +697,32 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
 
 
 def write_markdown(path: Path, summary: dict[str, Any]) -> None:
+    failed_lane_count = sum(
+        1
+        for site in summary.get("sites", [])
+        for lane in site.get("lanes", [])
+        if lane.get("status") != "PASS"
+    )
     lines = [
-        "# PySnobal G0 Site Summary",
+        "# PySnobal Site Summary",
         "",
         f"- PySnobal Python: `{summary['pysnobal_python']}`",
         f"- PySnobal path: `{summary['pysnobal_path']}`",
+        f"- Route policy: `{summary.get('route_policy', 'all-lanes')}`",
         f"- Route recommendation: `{summary['route_recommendation']}`",
+        f"- Failed lane count: `{failed_lane_count}`",
         "",
     ]
+    filters = summary.get("filters", {})
+    if any(filters.get(key) for key in ("sites", "lanes", "start_date", "end_date")):
+        lines.extend(
+            [
+                f"- Site filters: `{filters.get('sites', [])}`",
+                f"- Lane filters: `{filters.get('lanes', [])}`",
+                f"- Window: `{filters.get('start_date')}` to `{filters.get('end_date')}`",
+                "",
+            ]
+        )
     if summary.get("pysnobal_unavailable_reason"):
         lines.extend(
             [
@@ -450,15 +732,16 @@ def write_markdown(path: Path, summary: dict[str, Any]) -> None:
         )
     lines.extend(
         [
-            "| Site | Lane | Status | Max SWE kg/m2 | Max depth m | Paired obs | Mean abs obs residual m |",
-            "| --- | --- | --- | ---: | ---: | ---: | ---: |",
+            "| Site | Lane | Status | Max SWE kg/m2 | Max depth m | Paired obs | Mean abs obs residual m | OpenWEPP paired | Mean abs Py-OpenWEPP depth m | Reason |",
+            "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
         ]
     )
     for site in summary["sites"]:
         for lane in site["lanes"]:
             observed = lane.get("observed_depth", {})
+            openwepp = lane.get("openwepp_comparison", {})
             lines.append(
-                "| {site} | {lane} | {status} | {swe} | {depth} | {paired} | {resid} |".format(
+                "| {site} | {lane} | {status} | {swe} | {depth} | {paired} | {resid} | {openwepp_paired} | {openwepp_resid} | {reason} |".format(
                     site=site["fixture_id"],
                     lane=lane["lane_id"],
                     status=lane["status"],
@@ -466,6 +749,9 @@ def write_markdown(path: Path, summary: dict[str, Any]) -> None:
                     depth=fmt(lane.get("max_snow_depth_m")),
                     paired=observed.get("paired_snow_depth_count", 0),
                     resid=fmt(observed.get("mean_abs_residual_m")),
+                    openwepp_paired=openwepp.get("paired_count", 0),
+                    openwepp_resid=fmt(openwepp.get("mean_abs_py_minus_openwepp_depth_m")),
+                    reason=lane.get("reason", ""),
                 )
             )
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -486,6 +772,7 @@ def write_lane_markdown(path: Path, summary: dict[str, Any]) -> None:
         lines.extend(
             [
                 f"- Rows: `{summary['row_count']}`",
+                f"- Reused existing output: `{summary.get('reused_existing_output', False)}`",
                 f"- Max SWE: `{summary['max_swe_kgm2']:.6f}` kg/m2",
                 f"- Max snow depth: `{summary['max_snow_depth_m']:.6f}` m",
                 f"- Peak snow-depth datetime: `{summary['peak_snow_depth_datetime']}`",

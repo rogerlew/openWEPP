@@ -25,7 +25,8 @@ pub use hillslope::{
 };
 pub use hillslope::{
     execute_hillslope_run, execute_hillslope_run_with_runtime_policy,
-    execute_hillslope_run_with_runtime_selection, export_pysnobal_inputs,
+    execute_hillslope_run_with_runtime_selection, export_openwepp_snow_csv_from_wat,
+    export_pysnobal_inputs,
 };
 pub use launch::{build_hillslope_argv, launch_hillslope};
 pub use policy::SidecarPolicy;

@@ -1,7 +1,13 @@
 use std::fs;
 use std::path::PathBuf;
 
-use openwepp_runner::{PYSNOBAL_FORCING_COLUMNS, SnowbenchExportRequest, export_pysnobal_inputs};
+use openwepp_hillslope_output::hillslope_wat::{
+    HillslopeWatRow, InterchangeVersion, write_hillslope_wat_parquet,
+};
+use openwepp_runner::{
+    PYSNOBAL_FORCING_COLUMNS, SnowbenchExportRequest, export_openwepp_snow_csv_from_wat,
+    export_pysnobal_inputs,
+};
 use serde_json::Value;
 
 #[test]
@@ -15,6 +21,7 @@ fn g0_exporter_emits_pysnobal_schema_and_required_anti_alias_lineage() {
         run_dir: PathBuf::from("tests/fixtures/snowfreeze_observed/site1_sleepers_south_field_vt"),
         run_file: None,
         output_dir: output_dir.clone(),
+        include_openwepp_snow_projection: false,
     })
     .expect("G0 PySnobal export should succeed for site1 fixture");
 
@@ -28,6 +35,68 @@ fn g0_exporter_emits_pysnobal_schema_and_required_anti_alias_lineage() {
     assert_lineage(&lane_dir);
     assert_audit(&lane_dir);
     assert_precipitation_reconstructs_audit(&lane_dir);
+}
+
+#[test]
+fn g1_openwepp_snow_projection_extracts_wat_swe_and_physical_depth() {
+    let output_dir = PathBuf::from("target/snowfrost_fidelity_g1_contract/openwepp_snow");
+    if output_dir.exists() {
+        fs::remove_dir_all(&output_dir).expect("test output cleanup should succeed");
+    }
+    fs::create_dir_all(&output_dir).expect("test output directory should be created");
+    let wat_path = output_dir.join("sample.wat.parquet");
+    write_hillslope_wat_parquet(
+        &wat_path,
+        &[sample_wat_row()],
+        InterchangeVersion::default(),
+    )
+    .expect("sample WAT parquet should write");
+
+    let rows = export_openwepp_snow_csv_from_wat(&wat_path, &output_dir)
+        .expect("openwepp snow projection should read sample WAT");
+
+    assert_eq!(rows, 1);
+    assert_openwepp_snow_comparison_rows(&output_dir);
+}
+
+fn sample_wat_row() -> HillslopeWatRow {
+    HillslopeWatRow {
+        wepp_id: 1,
+        ofe_id: 1,
+        year: 1980,
+        sim_day_index: 1,
+        julian: 1,
+        month: 1,
+        day_of_month: 1,
+        water_year: 1980,
+        ofe: 1,
+        p: 0.0,
+        rm: 0.0,
+        q: 0.0,
+        ep: 0.0,
+        es: 0.0,
+        er: 0.0,
+        dp: 0.0,
+        up_strm_q: 0.0,
+        sub_r_in: 0.0,
+        latqcc: 0.0,
+        total_soil_water: 0.0,
+        frozwt: 0.0,
+        frdp: 0.0,
+        snow_water: 42.0,
+        snow_depth: Some(210.0),
+        qofe: 0.0,
+        tile: 0.0,
+        irr: 0.0,
+        area: 1.0,
+        soil_water_total: Some(0.0),
+        profile_depth: Some(0.0),
+        profile_porosity_cap: Some(0.0),
+        profile_fc_store: Some(0.0),
+        profile_wp_store: Some(0.0),
+        interception: Some(0.0),
+        interception_storage: None,
+    }
 }
 
 fn assert_forcing_schema(lane_dir: &std::path::Path) {
@@ -176,6 +245,43 @@ fn assert_precipitation_reconstructs_audit(lane_dir: &std::path::Path) {
         audit["total_snow_precip_mass_mm"]
             .as_f64()
             .expect("audit snow precip total should be numeric"),
+    );
+}
+
+fn assert_openwepp_snow_comparison_rows(output_dir: &std::path::Path) {
+    let snow_csv = fs::read_to_string(output_dir.join("openwepp_snow.csv"))
+        .expect("openwepp snow comparison csv should be present");
+    let mut lines = snow_csv.lines();
+    assert_eq!(
+        lines.next(),
+        Some("date,sim_day_index,Snow-Water_mm,Snow-Depth_mm,source")
+    );
+    let rows = lines.collect::<Vec<_>>();
+    assert!(
+        rows.iter()
+            .any(|row| row.contains(",openwepp_compatibility_wat")),
+        "openwepp snow csv should contain compatibility WAT rows"
+    );
+    assert!(
+        rows.iter()
+            .any(|row| row.contains(",42.000000000000,210.000000000000,")),
+        "openwepp snow csv should preserve Snow-Water and Snow-Depth millimeter values"
+    );
+
+    let availability: Value = serde_json::from_str(
+        &fs::read_to_string(output_dir.join("openwepp_snow_availability.json"))
+            .expect("openwepp snow availability json should be present"),
+    )
+    .expect("openwepp snow availability should parse");
+    assert_eq!(
+        availability["status"].as_str(),
+        Some("EXPORTED_FROM_COMPATIBILITY_WAT")
+    );
+    assert!(
+        availability["row_count"]
+            .as_u64()
+            .is_some_and(|count| count > 0),
+        "openwepp snow availability should record exported row count"
     );
 }
 

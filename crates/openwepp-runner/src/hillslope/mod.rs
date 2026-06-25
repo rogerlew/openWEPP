@@ -5,7 +5,7 @@ mod symbol_registry_audit;
 
 pub use snowbench::{
     PYSNOBAL_FORCING_COLUMNS, SnowbenchError, SnowbenchExportReport, SnowbenchExportRequest,
-    export_pysnobal_inputs,
+    export_openwepp_snow_csv_from_wat, export_pysnobal_inputs,
 };
 
 include!("00_runner_intake_and_lane_setup.rs");

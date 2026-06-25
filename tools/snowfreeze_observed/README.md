@@ -112,8 +112,28 @@ PYSNOBAL_PYTHON=/tmp/pysnobal-g0-venv/bin/python \
   --output-md target/snowfrost_fidelity_g0/pysnobal_site_summary.md
 ```
 
-The G0 bridge is diagnostic only. It uses SIMIMPL28 hourly forcing lineage for
-air temperature, radiation, rain/snow partition, and `snow.txt` new-snow
-density, then labels longwave, net-shortwave, precipitation temperature, and
-constant ground-temperature lanes as proxies. PySnobal output is not openWEPP
-correctness authority.
+For SNOWFROST-FIDELITY-G1 and later, `openwepp-snowbench export-pysnobal`
+also writes `openwepp_snow.csv` from current compatibility WAT `Snow-Water`
+and `Snow-Depth`, mapped by `sim_day_index` back to the exported climate dates.
+The harness supports focused site/lane/window runs and validated reuse of
+existing PySnobal outputs:
+
+```bash
+PYSNOBAL_PYTHON=/tmp/pysnobal-g0-venv/bin/python \
+  .venv/bin/python tools/snowfreeze_observed/pysnobal_compare.py \
+  --input-root target/snowfrost_fidelity_g1 \
+  --lane tg_0p0c_zg0p10m \
+  --reuse-existing \
+  --route-policy site-sane \
+  --output-json target/snowfrost_fidelity_g1/pysnobal_site_sane_summary.json \
+  --output-md target/snowfrost_fidelity_g1/pysnobal_site_sane_summary.md
+```
+
+`--route-policy all-lanes` remains the strict default and holds on any failed
+sensitivity lane. `--route-policy site-sane` proceeds only when every selected
+site has at least one passing lane; failed sensitivity lanes remain visible in
+their own summaries. The bridge is diagnostic only. It uses SIMIMPL28 hourly
+forcing lineage for air temperature, radiation, rain/snow partition, and
+`snow.txt` new-snow density, then labels longwave, net-shortwave,
+precipitation temperature, and constant ground-temperature lanes as proxies.
+PySnobal output is not openWEPP correctness authority.

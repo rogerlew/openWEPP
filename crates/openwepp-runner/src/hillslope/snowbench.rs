@@ -1,18 +1,20 @@
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::fmt;
-use std::fs;
+use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
+use arrow_array::{Array, Float64Array, Int8Array, Int16Array, Int32Array, RecordBatch};
 use openwepp_hillslope_orchestrator::runtime_inputs::{
     DirectWinterHourlyContext, DirectWinterHourlyForcing, build_hillslope_climate_runtime_request,
 };
 use openwepp_input_contract::parsers::climate::ClimateDailyRecord;
 use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
+use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 use serde::Serialize;
 
-use crate::api::HillslopeRunRequest;
+use crate::api::{HillslopeRunRequest, HillslopeRuntimeSelection};
 use crate::hillslope::intake_lane_setup::saturation_vapor_pressure_kpa;
 use crate::{HillslopeCliError, SidecarPolicy};
 
@@ -57,6 +59,7 @@ pub struct SnowbenchExportRequest {
     pub run_dir: PathBuf,
     pub run_file: Option<PathBuf>,
     pub output_dir: PathBuf,
+    pub include_openwepp_snow_projection: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -95,6 +98,9 @@ pub enum SnowbenchError {
     InvalidForcing {
         detail: String,
     },
+    OpenweppSnow {
+        detail: String,
+    },
 }
 
 impl SnowbenchError {
@@ -129,6 +135,12 @@ impl fmt::Display for SnowbenchError {
             Self::InvalidForcing { detail } => {
                 write!(f, "SNOWBENCH-E-006 invalid forcing: {detail}")
             }
+            Self::OpenweppSnow { detail } => {
+                write!(
+                    f,
+                    "SNOWBENCH-E-007 openWEPP snow diagnostic error: {detail}"
+                )
+            }
         }
     }
 }
@@ -141,7 +153,8 @@ impl Error for SnowbenchError {
             Self::Runner { source } => Some(source),
             Self::ClimateRuntime { .. }
             | Self::InvalidInput { .. }
-            | Self::InvalidForcing { .. } => None,
+            | Self::InvalidForcing { .. }
+            | Self::OpenweppSnow { .. } => None,
         }
     }
 }
@@ -232,7 +245,19 @@ struct LineageField {
 struct OpenweppSnowAvailability {
     schema: &'static str,
     status: &'static str,
-    reason: &'static str,
+    reason: String,
+    source_wat_parquet: Option<String>,
+    row_count: usize,
+}
+
+#[derive(Debug)]
+struct OpenweppSnowRow {
+    year: i16,
+    month: i8,
+    day_of_month: i8,
+    sim_day_index: i32,
+    snow_water_mm: f64,
+    snow_depth_mm: Option<f64>,
 }
 
 pub fn export_pysnobal_inputs(
@@ -282,7 +307,11 @@ pub fn export_pysnobal_inputs(
         "snow.options.newsnw",
     )?;
 
-    write_openwepp_snow_placeholder(&output_dir)?;
+    if request.include_openwepp_snow_projection {
+        write_openwepp_snow_projection(&output_dir, &hillslope_request, &daily_forcing)?;
+    } else {
+        write_openwepp_snow_placeholder(&output_dir)?;
+    }
 
     let mut report_total_precip = 0.0;
     let mut report_total_snow = 0.0;
@@ -916,20 +945,355 @@ fn write_audit_markdown(path: &Path, audit: &AuditDocument) -> Result<(), Snowbe
     write_text(path, &text)
 }
 
+fn write_openwepp_snow_projection(
+    output_dir: &Path,
+    request: &HillslopeRunRequest,
+    daily_forcing: &[DailyForcingExport],
+) -> Result<(), SnowbenchError> {
+    let argv = vec![
+        "openwepp-snowbench".to_string(),
+        "export-pysnobal".to_string(),
+        "--diagnostic-openwepp-snow".to_string(),
+    ];
+    let report = super::execute_hillslope_run_with_runtime_selection(
+        request,
+        &argv,
+        HillslopeRuntimeSelection::Compatibility,
+    )?;
+    let wat_path = report
+        .optional_outputs
+        .iter()
+        .find(|path| {
+            path.file_name().and_then(|value| value.to_str()) == Some("snowbench.wat.parquet")
+        })
+        .cloned()
+        .unwrap_or_else(|| request.output_dir.join("snowbench.wat.parquet"));
+    export_openwepp_snow_csv_from_wat_with_dates(&wat_path, output_dir, Some(daily_forcing))?;
+    Ok(())
+}
+
+pub fn export_openwepp_snow_csv_from_wat(
+    wat_path: &Path,
+    output_dir: &Path,
+) -> Result<usize, SnowbenchError> {
+    export_openwepp_snow_csv_from_wat_with_dates(wat_path, output_dir, None)
+}
+
+fn export_openwepp_snow_csv_from_wat_with_dates(
+    wat_path: &Path,
+    output_dir: &Path,
+    daily_forcing: Option<&[DailyForcingExport]>,
+) -> Result<usize, SnowbenchError> {
+    let rows = read_openwepp_snow_rows(wat_path)?;
+    write_openwepp_snow_csv(&output_dir.join("openwepp_snow.csv"), &rows, daily_forcing)?;
+    let availability = OpenweppSnowAvailability {
+        schema: "snowfrost-fidelity-g1-openwepp-snow-availability-v1",
+        status: "EXPORTED_FROM_COMPATIBILITY_WAT",
+        reason: "G1 executes the generated diagnostic run through the existing compatibility publication path and extracts WAT Snow-Water/Snow-Depth rows for PySnobal comparison; this is an output-surface projection, not a new snow calculation.".to_string(),
+        source_wat_parquet: Some(wat_path.display().to_string()),
+        row_count: rows.len(),
+    };
+    write_json(
+        &output_dir.join("openwepp_snow_availability.json"),
+        &availability,
+    )?;
+    Ok(rows.len())
+}
+
 fn write_openwepp_snow_placeholder(output_dir: &Path) -> Result<(), SnowbenchError> {
     write_text(
         &output_dir.join("openwepp_snow.csv"),
-        "date,Snow-Water_mm,Snow-Depth_mm,source\n",
+        "date,sim_day_index,Snow-Water_mm,Snow-Depth_mm,source\n",
     )?;
     let availability = OpenweppSnowAvailability {
-        schema: "snowfrost-fidelity-g0-openwepp-snow-availability-v1",
-        status: "NOT_EXPORTED_BY_G0",
-        reason: "G0 reads WEPP inputs and exports PySnobal forcing. It does not run openWEPP; harness comparisons use openWEPP rows only when a future exporter supplies this CSV.",
+        schema: "snowfrost-fidelity-g1-openwepp-snow-availability-v1",
+        status: "NOT_REQUESTED",
+        reason: "This export disabled compatibility WAT snow projection for a focused schema test. The openwepp-snowbench CLI enables it for diagnostic comparator runs.".to_string(),
+        source_wat_parquet: None,
+        row_count: 0,
     };
     write_json(
         &output_dir.join("openwepp_snow_availability.json"),
         &availability,
     )
+}
+
+fn read_openwepp_snow_rows(path: &Path) -> Result<Vec<OpenweppSnowRow>, SnowbenchError> {
+    let file = File::open(path).map_err(|source| SnowbenchError::OpenweppSnow {
+        detail: format!("failed opening WAT parquet {}: {source}", path.display()),
+    })?;
+    let builder = ParquetRecordBatchReaderBuilder::try_new(file).map_err(|error| {
+        SnowbenchError::OpenweppSnow {
+            detail: format!(
+                "failed reading WAT parquet metadata {}: {error}",
+                path.display()
+            ),
+        }
+    })?;
+    let reader = builder
+        .build()
+        .map_err(|error| SnowbenchError::OpenweppSnow {
+            detail: format!(
+                "failed building WAT parquet reader {}: {error}",
+                path.display()
+            ),
+        })?;
+
+    let mut rows = Vec::new();
+    for batch_result in reader {
+        let batch = batch_result.map_err(|error| SnowbenchError::OpenweppSnow {
+            detail: format!(
+                "failed reading WAT parquet batch {}: {error}",
+                path.display()
+            ),
+        })?;
+        append_openwepp_snow_batch(path, &batch, &mut rows)?;
+    }
+    if rows.is_empty() {
+        return Err(SnowbenchError::OpenweppSnow {
+            detail: format!("WAT parquet {} contained no snow rows", path.display()),
+        });
+    }
+    Ok(rows)
+}
+
+fn append_openwepp_snow_batch(
+    path: &Path,
+    batch: &RecordBatch,
+    rows: &mut Vec<OpenweppSnowRow>,
+) -> Result<(), SnowbenchError> {
+    let years = int16_column(path, batch, "year")?;
+    let months = int8_column(path, batch, "month")?;
+    let days = int8_column(path, batch, "day_of_month")?;
+    let sim_days = int32_column(path, batch, "sim_day_index")?;
+    let snow_water = f64_column(path, batch, "Snow-Water")?;
+    let snow_depth = optional_f64_column(path, batch, "Snow-Depth")?;
+    for row_index in 0..batch.num_rows() {
+        rows.push(OpenweppSnowRow {
+            year: int16_value(path, "year", years, row_index)?,
+            month: int8_value(path, "month", months, row_index)?,
+            day_of_month: int8_value(path, "day_of_month", days, row_index)?,
+            sim_day_index: int32_value(path, "sim_day_index", sim_days, row_index)?,
+            snow_water_mm: f64_value(path, "Snow-Water", snow_water, row_index)?,
+            snow_depth_mm: optional_f64_value(path, "Snow-Depth", snow_depth, row_index)?,
+        });
+    }
+    Ok(())
+}
+
+fn write_openwepp_snow_csv(
+    path: &Path,
+    rows: &[OpenweppSnowRow],
+    daily_forcing: Option<&[DailyForcingExport]>,
+) -> Result<(), SnowbenchError> {
+    let mut file = fs::File::create(path).map_err(|source| SnowbenchError::io(path, source))?;
+    writeln!(
+        file,
+        "date,sim_day_index,Snow-Water_mm,Snow-Depth_mm,source"
+    )
+    .map_err(|source| SnowbenchError::io(path, source))?;
+    for row in rows {
+        let date = openwepp_snow_row_date(row, daily_forcing)?;
+        let snow_depth = row
+            .snow_depth_mm
+            .map(|value| format!("{value:.12}"))
+            .unwrap_or_default();
+        writeln!(
+            file,
+            "{},{},{:.12},{},openwepp_compatibility_wat",
+            date, row.sim_day_index, row.snow_water_mm, snow_depth,
+        )
+        .map_err(|source| SnowbenchError::io(path, source))?;
+    }
+    Ok(())
+}
+
+fn openwepp_snow_row_date(
+    row: &OpenweppSnowRow,
+    daily_forcing: Option<&[DailyForcingExport]>,
+) -> Result<String, SnowbenchError> {
+    if let Some(daily_forcing) = daily_forcing {
+        let index =
+            usize::try_from(row.sim_day_index - 1).map_err(|_| SnowbenchError::OpenweppSnow {
+                detail: format!("sim_day_index must be >= 1, observed {}", row.sim_day_index),
+            })?;
+        let Some(day) = daily_forcing.get(index) else {
+            return Err(SnowbenchError::OpenweppSnow {
+                detail: format!(
+                    "sim_day_index {} exceeds climate date count {}",
+                    row.sim_day_index,
+                    daily_forcing.len()
+                ),
+            });
+        };
+        return Ok(day.date.to_string());
+    }
+    Ok(format!(
+        "{:04}-{:02}-{:02}",
+        row.year, row.month, row.day_of_month
+    ))
+}
+
+fn int8_column<'a>(
+    path: &Path,
+    batch: &'a RecordBatch,
+    name: &str,
+) -> Result<&'a Int8Array, SnowbenchError> {
+    column(path, batch, name)
+}
+
+fn int16_column<'a>(
+    path: &Path,
+    batch: &'a RecordBatch,
+    name: &str,
+) -> Result<&'a Int16Array, SnowbenchError> {
+    column(path, batch, name)
+}
+
+fn int32_column<'a>(
+    path: &Path,
+    batch: &'a RecordBatch,
+    name: &str,
+) -> Result<&'a Int32Array, SnowbenchError> {
+    column(path, batch, name)
+}
+
+fn f64_column<'a>(
+    path: &Path,
+    batch: &'a RecordBatch,
+    name: &str,
+) -> Result<&'a Float64Array, SnowbenchError> {
+    column(path, batch, name)
+}
+
+fn optional_f64_column<'a>(
+    path: &Path,
+    batch: &'a RecordBatch,
+    name: &str,
+) -> Result<Option<&'a Float64Array>, SnowbenchError> {
+    let schema = batch.schema();
+    let Ok(index) = schema.index_of(name) else {
+        return Ok(None);
+    };
+    batch
+        .column(index)
+        .as_any()
+        .downcast_ref::<Float64Array>()
+        .map(Some)
+        .ok_or_else(|| SnowbenchError::OpenweppSnow {
+            detail: format!(
+                "WAT parquet {} column {name} has unsupported type",
+                path.display()
+            ),
+        })
+}
+
+fn column<'a, T: 'static>(
+    path: &Path,
+    batch: &'a RecordBatch,
+    name: &str,
+) -> Result<&'a T, SnowbenchError> {
+    let schema = batch.schema();
+    let index = schema
+        .index_of(name)
+        .map_err(|_| SnowbenchError::OpenweppSnow {
+            detail: format!(
+                "WAT parquet {} is missing required column {name}",
+                path.display()
+            ),
+        })?;
+    batch
+        .column(index)
+        .as_any()
+        .downcast_ref::<T>()
+        .ok_or_else(|| SnowbenchError::OpenweppSnow {
+            detail: format!(
+                "WAT parquet {} column {name} has unsupported type",
+                path.display()
+            ),
+        })
+}
+
+fn int8_value(
+    path: &Path,
+    column_name: &str,
+    column: &Int8Array,
+    row_index: usize,
+) -> Result<i8, SnowbenchError> {
+    if column.is_null(row_index) {
+        return Err(null_openwepp_snow_value(path, column_name, row_index));
+    }
+    Ok(column.value(row_index))
+}
+
+fn int16_value(
+    path: &Path,
+    column_name: &str,
+    column: &Int16Array,
+    row_index: usize,
+) -> Result<i16, SnowbenchError> {
+    if column.is_null(row_index) {
+        return Err(null_openwepp_snow_value(path, column_name, row_index));
+    }
+    Ok(column.value(row_index))
+}
+
+fn int32_value(
+    path: &Path,
+    column_name: &str,
+    column: &Int32Array,
+    row_index: usize,
+) -> Result<i32, SnowbenchError> {
+    if column.is_null(row_index) {
+        return Err(null_openwepp_snow_value(path, column_name, row_index));
+    }
+    Ok(column.value(row_index))
+}
+
+fn f64_value(
+    path: &Path,
+    column_name: &str,
+    column: &Float64Array,
+    row_index: usize,
+) -> Result<f64, SnowbenchError> {
+    if column.is_null(row_index) {
+        return Err(null_openwepp_snow_value(path, column_name, row_index));
+    }
+    let value = column.value(row_index);
+    if value.is_finite() {
+        Ok(value)
+    } else {
+        Err(SnowbenchError::OpenweppSnow {
+            detail: format!(
+                "WAT parquet {} column {column_name} row {row_index} is non-finite: {value}",
+                path.display()
+            ),
+        })
+    }
+}
+
+fn optional_f64_value(
+    path: &Path,
+    column_name: &str,
+    column: Option<&Float64Array>,
+    row_index: usize,
+) -> Result<Option<f64>, SnowbenchError> {
+    let Some(column) = column else {
+        return Ok(None);
+    };
+    if column.is_null(row_index) {
+        return Ok(None);
+    }
+    f64_value(path, column_name, column, row_index).map(Some)
+}
+
+fn null_openwepp_snow_value(path: &Path, column_name: &str, row_index: usize) -> SnowbenchError {
+    SnowbenchError::OpenweppSnow {
+        detail: format!(
+            "WAT parquet {} column {column_name} row {row_index} is null",
+            path.display()
+        ),
+    }
 }
 
 fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<(), SnowbenchError> {
@@ -949,7 +1313,12 @@ fn write_text(path: &Path, text: &str) -> Result<(), SnowbenchError> {
 
 #[cfg(test)]
 mod tests {
-    use super::{CalendarDate, calendar_day_number, validate_next_daily_date};
+    use openwepp_hillslope_orchestrator::runtime_inputs::DirectWinterHourlyForcing;
+
+    use super::{
+        CalendarDate, DailyForcingExport, OpenweppSnowRow, calendar_day_number,
+        openwepp_snow_row_date, validate_next_daily_date,
+    };
 
     #[test]
     fn date_continuity_accepts_leap_day_sequence() {
@@ -1002,5 +1371,43 @@ mod tests {
         let error = validate_next_daily_date(None, invalid)
             .expect_err("invalid non-leap Feb 29 must be rejected");
         assert!(error.to_string().contains("calendar day out of range"));
+    }
+
+    #[test]
+    fn openwepp_snow_projection_uses_climate_date_for_sim_day_index() {
+        let daily = [
+            sample_daily_forcing(CalendarDate {
+                year: 1980,
+                month: 2,
+                day: 28,
+            }),
+            sample_daily_forcing(CalendarDate {
+                year: 1980,
+                month: 2,
+                day: 29,
+            }),
+        ];
+        let row = OpenweppSnowRow {
+            year: 1,
+            month: 2,
+            day_of_month: 29,
+            sim_day_index: 2,
+            snow_water_mm: 42.0,
+            snow_depth_mm: Some(210.0),
+        };
+
+        let date = openwepp_snow_row_date(&row, Some(&daily))
+            .expect("sim day should map to external climate date");
+
+        assert_eq!(date, "1980-02-29");
+    }
+
+    fn sample_daily_forcing(date: CalendarDate) -> DailyForcingExport {
+        DailyForcingExport {
+            date,
+            wind_speed_m_s: 0.0,
+            dew_point_c: 0.0,
+            hourly: [DirectWinterHourlyForcing::zero(); 24],
+        }
     }
 }

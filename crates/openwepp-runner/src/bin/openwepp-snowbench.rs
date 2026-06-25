@@ -53,6 +53,7 @@ fn run() -> Result<(), String> {
         run_dir,
         run_file,
         output_dir,
+        include_openwepp_snow_projection: true,
     })
     .map_err(|error| error.to_string())?;
     println!(

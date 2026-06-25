@@ -1,0 +1,68 @@
+{
+  "bulk_density_ceiling_kgm3": 700.0,
+  "filters": {
+    "end_date": "1980-01-31",
+    "lanes": [
+      "tg_neg0p5c_zg0p10m"
+    ],
+    "sites": [
+      "site4_ggd498_morris_mn"
+    ],
+    "start_date": "1980-01-01"
+  },
+  "input_root": "/home/workdir/openWEPP/target/snowfrost_fidelity_g1",
+  "pysnobal_path": "/home/workdir/pysnobal",
+  "pysnobal_python": "/tmp/pysnobal-g0-venv/bin/python",
+  "route_policy": "all-lanes",
+  "route_recommendation": "PROCEED-SNOWFROST-FIDELITY-G",
+  "schema": "snowfrost-fidelity-g1-pysnobal-site-summary-v2",
+  "sites": [
+    {
+      "fixture_id": "site4_ggd498_morris_mn",
+      "lane_spread_max_depth_m": null,
+      "lanes": [
+        {
+          "child_summary": {
+            "forcing_row_count": 744,
+            "max_snow_depth_m": 0.10667829753276985,
+            "max_swe_kgm2": 10.125578599464097,
+            "output_path": "/home/workdir/openWEPP/target/snowfrost_fidelity_g1/site4/tg_neg0p5c_zg0p10m/pysnobal_output_1980-01-01_1980-01-31.csv",
+            "peak_snow_depth_datetime": "1980-01-06 06:00:00",
+            "positive_snow_precip_rows": 25,
+            "row_count": 743,
+            "status": "PASS",
+            "window_end": "1980-01-31",
+            "window_start": "1980-01-01"
+          },
+          "forcing_row_count": 744,
+          "lane_dir": "/home/workdir/openWEPP/target/snowfrost_fidelity_g1/site4/tg_neg0p5c_zg0p10m",
+          "lane_id": "tg_neg0p5c_zg0p10m",
+          "max_snow_depth_m": 0.10667829753276985,
+          "max_swe_kgm2": 10.125578599464097,
+          "observed_depth": {
+            "max_abs_residual_m": 0.03737691002904893,
+            "mean_abs_residual_m": 0.007475382005809786,
+            "modeled_minus_observed_mean_m": 0.007475382005809786,
+            "paired_snow_depth_count": 5
+          },
+          "openwepp_comparison": {
+            "max_abs_py_minus_openwepp_depth_m": 0.160258711937005,
+            "mean_abs_py_minus_openwepp_depth_m": 0.10673930789440496,
+            "paired_count": 31,
+            "status": "AVAILABLE"
+          },
+          "output_path": "/home/workdir/openWEPP/target/snowfrost_fidelity_g1/site4/tg_neg0p5c_zg0p10m/pysnobal_output_1980-01-01_1980-01-31.csv",
+          "peak_snow_depth_datetime": "1980-01-06 06:00:00",
+          "positive_snow_precip_rows": 25,
+          "reused_existing_output": false,
+          "row_count": 743,
+          "status": "PASS",
+          "window_end": "1980-01-31",
+          "window_start": "1980-01-01"
+        }
+      ],
+      "observed_snow_depth_rows": 232,
+      "site_dir": "/home/workdir/openWEPP/target/snowfrost_fidelity_g1/site4"
+    }
+  ]
+}
