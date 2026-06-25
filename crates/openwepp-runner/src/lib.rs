@@ -24,6 +24,10 @@ pub use hillslope::{
     PYSNOBAL_FORCING_COLUMNS, SnowbenchError, SnowbenchExportReport, SnowbenchExportRequest,
 };
 pub use hillslope::{
+    PhysicsBulkConstants, PhysicsBulkReport, PhysicsBulkRequest, fresh_snow_density_kg_m3,
+    physics_bulk_constants, run_physics_bulk_snowbench,
+};
+pub use hillslope::{
     execute_hillslope_run, execute_hillslope_run_with_runtime_policy,
     execute_hillslope_run_with_runtime_selection, export_openwepp_snow_csv_from_wat,
     export_pysnobal_inputs,

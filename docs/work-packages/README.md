@@ -13,6 +13,16 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowdensity-03-offline-physics-core-001/` is complete as the
+  offline Rust `physics_bulk` candidate implementation. It added the
+  `openwepp-snowbench physics-bulk` command, a bounded bulk snowpack state
+  model, conservation/unit tests, a production-confinement integration guard,
+  and a five-site SNOTEL rubric profile. The candidate remains outside runtime
+  activation and publication paths. First-profile evidence is finite and useful
+  but not production-promotable: forcing-robust counts are `fail=24`,
+  `marginal=13`, `pass=3`, `strong=5`, `unavailable=15`, with
+  `openwepp_defective_cells=0`. The next route is `SNOWDENSITY-04 Offline
+  Adjudication Loop`.
 - `20260625-snowdensity-02-contract-adr-001/` is complete as the contract/ADR
   governance package for snow-density remediation. It amended
   `SC-SNOWFREEZE-001` to v75 with `INV-SNOWFREEZE-051`,
@@ -20,8 +30,8 @@ State as of `2026-06-25`:
   no-site-tuning language, and opt-in activation constraints; added
   ADR-0027; and added `snowdensity02_contract_adr_guard`. It changed no
   production runtime physics, constants, output schemas, parser surfaces, or
-  defaults. The next route is `SNOWDENSITY-03 Offline Physics Core`, limited to
-  Rust snowbench candidate implementation and offline rubric evidence.
+  defaults. It authorized the completed SNOWDENSITY-03 offline implementation
+  route.
 - `20260625-snowdensity-01-evidence-reconciliation-001/` is complete as the
   evidence-only reconciliation package that starts the snow-density strategy
   sequence. It consolidated SNOWFROST-FIDELITY-E/F/H/I0 evidence, pinned H's

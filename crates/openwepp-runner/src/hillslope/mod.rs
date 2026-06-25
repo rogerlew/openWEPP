@@ -1,11 +1,16 @@
 mod indexed_shadow_surface;
 mod intake_lane_setup;
 mod snowbench;
+mod snowbench_physics_bulk;
 mod symbol_registry_audit;
 
 pub use snowbench::{
     PYSNOBAL_FORCING_COLUMNS, SnowbenchError, SnowbenchExportReport, SnowbenchExportRequest,
     export_openwepp_snow_csv_from_wat, export_pysnobal_inputs,
+};
+pub use snowbench_physics_bulk::{
+    PhysicsBulkConstants, PhysicsBulkReport, PhysicsBulkRequest, fresh_snow_density_kg_m3,
+    physics_bulk_constants, run_physics_bulk_snowbench,
 };
 
 include!("00_runner_intake_and_lane_setup.rs");

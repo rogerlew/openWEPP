@@ -1,0 +1,87 @@
+use std::fs;
+use std::path::{Path, PathBuf};
+
+use openwepp_runner::{PhysicsBulkRequest, run_physics_bulk_snowbench};
+
+#[test]
+fn physics_bulk_snowbench_runs_offline_for_snotel_fixture() {
+    let output_dir = PathBuf::from("target/snowdensity03_contract/site1");
+    if output_dir.exists() {
+        fs::remove_dir_all(&output_dir).expect("test output cleanup should succeed");
+    }
+
+    let report = run_physics_bulk_snowbench(&PhysicsBulkRequest {
+        run_dir: PathBuf::from("tests/fixtures/snotel_observed/snotel_mica_creek_st_joe_id"),
+        run_file: None,
+        output_dir: output_dir.clone(),
+    })
+    .expect("offline physics_bulk snowbench should run");
+
+    assert_eq!(report.schema, "snowdensity03-physics-bulk-snowbench-v1");
+    assert_eq!(report.model_id, "physics_bulk_candidate_v1");
+    assert!(report.no_site_constants);
+    assert_eq!(
+        report.runtime_coupling,
+        "none; offline snowbench candidate only"
+    );
+    assert!(report.day_count > 365);
+    assert!(report.positive_snow_hours > 0);
+    assert!(report.summary.max_abs_mass_balance_residual_kg_m2 < 1.0e-8);
+    assert!(report.summary.max_abs_cold_content_residual_j_m2 < 1.0e-5);
+
+    let csv = fs::read_to_string(output_dir.join("physics_bulk_snow.csv"))
+        .expect("physics_bulk daily CSV should exist");
+    assert!(csv.contains("date,snow_water_m,snow_depth_m,snow_density_kg_m3"));
+    assert!(output_dir.join("physics_bulk_summary.json").is_file());
+    assert!(output_dir.join("physics_bulk_summary.md").is_file());
+}
+
+#[test]
+fn physics_bulk_is_confined_to_snowbench_and_diagnostic_surfaces() {
+    let allowed = [
+        "crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs",
+        "crates/openwepp-runner/src/hillslope/mod.rs",
+        "crates/openwepp-runner/src/lib.rs",
+        "crates/openwepp-runner/src/bin/openwepp-snowbench.rs",
+        "tests/integration/snowdensity02_contract_adr_guard.rs",
+        "tests/integration/snowdensity03_physics_bulk_offline_contract.rs",
+        "tools/snowfreeze_observed/physics_bulk_snotel_profile.py",
+    ];
+    let mut unexpected = Vec::new();
+    collect_physics_bulk_hits(Path::new("crates"), &allowed, &mut unexpected);
+    collect_physics_bulk_hits(Path::new("tests/integration"), &allowed, &mut unexpected);
+    collect_physics_bulk_hits(
+        Path::new("tools/snowfreeze_observed"),
+        &allowed,
+        &mut unexpected,
+    );
+
+    assert!(
+        unexpected.is_empty(),
+        "physics_bulk must stay confined to snowbench/diagnostic surfaces: {unexpected:?}"
+    );
+}
+
+fn collect_physics_bulk_hits(path: &Path, allowed: &[&str], unexpected: &mut Vec<String>) {
+    if path.is_dir() {
+        for entry in fs::read_dir(path).expect("directory should be readable") {
+            let entry = entry.expect("directory entry should be readable");
+            collect_physics_bulk_hits(&entry.path(), allowed, unexpected);
+        }
+        return;
+    }
+    if path.extension().and_then(|value| value.to_str()) != Some("rs")
+        && path.extension().and_then(|value| value.to_str()) != Some("py")
+    {
+        return;
+    }
+    let normalized = path.to_string_lossy().replace('\\', "/");
+    let text = fs::read_to_string(path).expect("source file should be readable");
+    if text.contains("physics_bulk")
+        && !allowed
+            .iter()
+            .any(|allowed_path| normalized.ends_with(allowed_path))
+    {
+        unexpected.push(normalized);
+    }
+}
