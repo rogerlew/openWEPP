@@ -89,14 +89,56 @@ impl HillslopeClimateRuntimeRequest {
     ) -> Result<Option<[DirectWinterHourlyForcing; SIMIMPL28_WINTER_HOURS_PER_DAY]>, ClimateRuntimeInputError>
     {
         let forcing = select_day_forcing(&self.shared, day_index)?;
-        build_simimpl28_hourly_winter_forcing_typed(forcing, &self.metadata, context)
+        build_simimpl28_hourly_winter_forcing_typed(
+            forcing,
+            &self.metadata,
+            context,
+            Simimpl28WinterExportMode::ProductionTrigger,
+        )
     }
+
+    /// Build complete diagnostic hourly winter forcing rows for external
+    /// snow-model input export. This uses the same SIMIMPL28 hourly radiation,
+    /// temperature, and rain/snow partition calculations as production direct
+    /// mode, but deliberately bypasses the production winter-trigger
+    /// suppression so warm/no-snow days remain present in the exported series.
+    ///
+    /// This method is diagnostic-only and must not be used to alter production
+    /// winter branch activation.
+    pub fn diagnostic_winter_hourly_forcing(
+        &self,
+        day_index: usize,
+        context: DirectWinterHourlyContext,
+    ) -> Result<[DirectWinterHourlyForcing; SIMIMPL28_WINTER_HOURS_PER_DAY], ClimateRuntimeInputError>
+    {
+        let forcing = select_day_forcing(&self.shared, day_index)?;
+        match build_simimpl28_hourly_winter_forcing_typed(
+            forcing,
+            &self.metadata,
+            context,
+            Simimpl28WinterExportMode::ForceCompleteDiagnosticRows,
+        )? {
+            Some(forcing) => Ok(forcing),
+            None => Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+                symbol: "diagnostic_winter_hourly_forcing".to_string(),
+                value: f64::NAN,
+                allowed: "forced diagnostic export must return hourly rows",
+            }),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Simimpl28WinterExportMode {
+    ProductionTrigger,
+    ForceCompleteDiagnosticRows,
 }
 
 fn build_simimpl28_hourly_winter_forcing_typed(
     forcing: &HillslopeClimateDailyForcing,
     metadata: &ClimateMetadata,
     context: DirectWinterHourlyContext,
+    export_mode: Simimpl28WinterExportMode,
 ) -> Result<Option<[DirectWinterHourlyForcing; SIMIMPL28_WINTER_HOURS_PER_DAY]>, ClimateRuntimeInputError>
 {
     if context.snow_runtime_swe_m < 0.0 {
@@ -143,7 +185,9 @@ fn build_simimpl28_hourly_winter_forcing_typed(
         || context.frost_file_present
         || context.frost_wint_red_enabled
         || f64::midpoint(tmax, tmin) < 0.0;
-    if !winter_trigger_active {
+    if !winter_trigger_active
+        && export_mode == Simimpl28WinterExportMode::ProductionTrigger
+    {
         return Ok(None);
     }
     if context.avg_slope <= 0.0 {

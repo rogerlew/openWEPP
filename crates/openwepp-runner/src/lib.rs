@@ -21,8 +21,11 @@ pub use api::{
 pub use constants::*;
 pub use errors::{HillslopeCliError, ReleaseLintError, ReleaseMetadataError, RunnerError};
 pub use hillslope::{
+    PYSNOBAL_FORCING_COLUMNS, SnowbenchError, SnowbenchExportReport, SnowbenchExportRequest,
+};
+pub use hillslope::{
     execute_hillslope_run, execute_hillslope_run_with_runtime_policy,
-    execute_hillslope_run_with_runtime_selection,
+    execute_hillslope_run_with_runtime_selection, export_pysnobal_inputs,
 };
 pub use launch::{build_hillslope_argv, launch_hillslope};
 pub use policy::SidecarPolicy;

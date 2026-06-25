@@ -93,3 +93,27 @@ Legacy WAT `Snow-Water` is SWE, not physical depth. Date-aligned legacy
 physical snow depth is captured from temporary replay daily-winter hour-24
 rows; large graphics `treal(73)=snodpy*1000` and `treal(75)=densg` are retained
 as sparse operand provenance.
+
+Generate PySnobal-ready diagnostic forcing from WEPP/openWEPP inputs:
+
+```bash
+cargo run -p openwepp-runner --bin openwepp-snowbench -- export-pysnobal \
+  --run-dir tests/fixtures/snowfreeze_observed/site1_sleepers_south_field_vt \
+  --output-dir target/snowfrost_fidelity_g0/site1
+```
+
+Run PySnobal against exported G0 forcing directories:
+
+```bash
+PYSNOBAL_PYTHON=/tmp/pysnobal-g0-venv/bin/python \
+  .venv/bin/python tools/snowfreeze_observed/pysnobal_compare.py \
+  --input-root target/snowfrost_fidelity_g0 \
+  --output-json target/snowfrost_fidelity_g0/pysnobal_site_summary.json \
+  --output-md target/snowfrost_fidelity_g0/pysnobal_site_summary.md
+```
+
+The G0 bridge is diagnostic only. It uses SIMIMPL28 hourly forcing lineage for
+air temperature, radiation, rain/snow partition, and `snow.txt` new-snow
+density, then labels longwave, net-shortwave, precipitation temperature, and
+constant ground-temperature lanes as proxies. PySnobal output is not openWEPP
+correctness authority.

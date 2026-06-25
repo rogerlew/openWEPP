@@ -1,0 +1,90 @@
+{
+  "bulk_density_ceiling_kgm3": 700.0,
+  "input_root": "/home/workdir/openWEPP/target/snowfrost_fidelity_g0",
+  "pysnobal_path": "/home/workdir/pysnobal",
+  "pysnobal_python": "/tmp/pysnobal-g0-venv/bin/python",
+  "route_recommendation": "PROCEED-SNOWFROST-FIDELITY-G",
+  "schema": "snowfrost-fidelity-g0-pysnobal-site-summary-v1",
+  "sites": [
+    {
+      "fixture_id": "site1_sleepers_south_field_vt",
+      "lane_spread_max_depth_m": 0.022447319706000668,
+      "lanes": [
+        {
+          "forcing_row_count": 333120,
+          "lane_dir": "/home/workdir/openWEPP/target/snowfrost_fidelity_g0/site1/tg_0p0c_zg0p10m",
+          "lane_id": "tg_0p0c_zg0p10m",
+          "max_snow_depth_m": 0.9834612066270176,
+          "max_swe_kgm2": 158.29779663059884,
+          "observed_depth": {
+            "max_abs_residual_m": 0.942,
+            "mean_abs_residual_m": 0.2191263110758497,
+            "modeled_minus_observed_mean_m": -0.2045187556568543,
+            "paired_snow_depth_count": 384
+          },
+          "openwepp_comparison": {
+            "max_abs_py_minus_openwepp_depth_m": null,
+            "mean_abs_py_minus_openwepp_depth_m": null,
+            "paired_count": 0,
+            "status": "NO_ROWS"
+          },
+          "output_path": "/home/workdir/openWEPP/target/snowfrost_fidelity_g0/site1/tg_0p0c_zg0p10m/pysnobal_output.csv",
+          "peak_snow_depth_datetime": "2001-02-06 13:00:00",
+          "positive_snow_precip_rows": 9434,
+          "row_count": 333119,
+          "status": "PASS"
+        },
+        {
+          "forcing_row_count": 333120,
+          "lane_dir": "/home/workdir/openWEPP/target/snowfrost_fidelity_g0/site1/tg_neg0p5c_zg0p10m",
+          "lane_id": "tg_neg0p5c_zg0p10m",
+          "max_snow_depth_m": 0.9881974633645302,
+          "max_swe_kgm2": 158.83410241040687,
+          "observed_depth": {
+            "max_abs_residual_m": 0.942,
+            "mean_abs_residual_m": 0.2173395235349548,
+            "modeled_minus_observed_mean_m": -0.20214520884461387,
+            "paired_snow_depth_count": 384
+          },
+          "openwepp_comparison": {
+            "max_abs_py_minus_openwepp_depth_m": null,
+            "mean_abs_py_minus_openwepp_depth_m": null,
+            "paired_count": 0,
+            "status": "NO_ROWS"
+          },
+          "output_path": "/home/workdir/openWEPP/target/snowfrost_fidelity_g0/site1/tg_neg0p5c_zg0p10m/pysnobal_output.csv",
+          "peak_snow_depth_datetime": "2001-02-06 13:00:00",
+          "positive_snow_precip_rows": 9434,
+          "row_count": 333119,
+          "status": "PASS"
+        },
+        {
+          "forcing_row_count": 333120,
+          "lane_dir": "/home/workdir/openWEPP/target/snowfrost_fidelity_g0/site1/tg_neg2p5c_zg0p10m",
+          "lane_id": "tg_neg2p5c_zg0p10m",
+          "max_snow_depth_m": 1.0059085263330183,
+          "max_swe_kgm2": 160.65798052165613,
+          "observed_depth": {
+            "max_abs_residual_m": 0.942,
+            "mean_abs_residual_m": 0.202037861994954,
+            "modeled_minus_observed_mean_m": -0.18363004351428888,
+            "paired_snow_depth_count": 384
+          },
+          "openwepp_comparison": {
+            "max_abs_py_minus_openwepp_depth_m": null,
+            "mean_abs_py_minus_openwepp_depth_m": null,
+            "paired_count": 0,
+            "status": "NO_ROWS"
+          },
+          "output_path": "/home/workdir/openWEPP/target/snowfrost_fidelity_g0/site1/tg_neg2p5c_zg0p10m/pysnobal_output.csv",
+          "peak_snow_depth_datetime": "2001-02-06 13:00:00",
+          "positive_snow_precip_rows": 9434,
+          "row_count": 333119,
+          "status": "PASS"
+        }
+      ],
+      "observed_snow_depth_rows": 384,
+      "site_dir": "/home/workdir/openWEPP/target/snowfrost_fidelity_g0/site1"
+    }
+  ]
+}

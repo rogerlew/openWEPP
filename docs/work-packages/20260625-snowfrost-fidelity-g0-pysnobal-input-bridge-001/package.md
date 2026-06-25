@@ -1,6 +1,6 @@
 # SNOWFROST-FIDELITY-G0 PySnobal Input Bridge
 
-Status: queued
+Status: executed-hold
 
 Package type: diagnostic bridge and harness implementation.
 
@@ -372,6 +372,10 @@ Close as `HOLD` only at one of these named boundaries:
   hourly forcing without production-behavior changes outside this package.
 - `HOLD-PYSNOBAL-SCHEMA-MISMATCH`: PySnobal requires additional inputs or
   semantics not represented by its checked local schema.
+- `HOLD-PYSNOBAL-SANITY-FAILURE`: PySnobal imports and the exported forcing
+  satisfies the required schema, but one or more site/lane runs fail a C-layer
+  numerical guard or return non-finite, negative, density-impossible, or
+  otherwise sanity-invalid SWE/depth outputs under finite exported inputs.
 - `HOLD-FORCING-PROXY-DOMINATES`: the constant `T_g`, longwave, or net
   shortwave proxy lanes dominate results so strongly that PySnobal snow-depth
   comparisons would be misleading without a stronger forcing model.

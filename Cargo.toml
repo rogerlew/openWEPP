@@ -629,6 +629,10 @@ path = "tests/integration/snowfreeze_observed_frost_depth_contract.rs"
 name = "snowfrost_fidelity_c_diagnostics_contract"
 path = "tests/integration/snowfrost_fidelity_c_diagnostics_contract.rs"
 
+[[test]]
+name = "snowfrost_fidelity_g0_pysnobal_bridge_contract"
+path = "tests/integration/snowfrost_fidelity_g0_pysnobal_bridge_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

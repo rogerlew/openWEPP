@@ -1,6 +1,12 @@
 mod indexed_shadow_surface;
 mod intake_lane_setup;
+mod snowbench;
 mod symbol_registry_audit;
+
+pub use snowbench::{
+    PYSNOBAL_FORCING_COLUMNS, SnowbenchError, SnowbenchExportReport, SnowbenchExportRequest,
+    export_pysnobal_inputs,
+};
 
 include!("00_runner_intake_and_lane_setup.rs");
 include!("01_scheduler_and_trace.rs");
