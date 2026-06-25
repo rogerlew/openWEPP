@@ -24,6 +24,8 @@ Classifications in this pass were made conservatively:
 | `vendorable/HEC_RAS_Hydraulic_Reference_Manual_v6_4_1.txt` | Local extract derived from the vendored HEC-RAS source above. |
 | `vendorable/R16_2024_HEC_RAS_Hydraulic_Reference_Manual_v6_6.pdf` | Front matter includes “Approved for Public Release. Distribution Unlimited” and HEC-RAS public-domain statement in the manual front matter block. |
 | `vendorable/R16_2024_HEC_RAS_Hydraulic_Reference_Manual_v6_6.md` | Local extract derived from the vendored HEC-RAS source above. |
+| `vendorable/Amico2011.pdf` | Article text states `CC Attribution 3.0 License`; official Copernicus page confirms DOI `10.5194/tc-5-469-2011`. Added 2026-06-25 for snow/frost research annotation. |
+| `vendorable/Devoie2022.pdf` | Article text states Creative Commons Attribution 4.0 License; official Copernicus page confirms DOI `10.5194/essd-14-3365-2022`. Added 2026-06-25 for snow/frost research annotation. |
 
 ## Left in `copyrighted/` (pending review)
 

@@ -348,14 +348,14 @@ openWEPP note (2026-05-11):
 
 ## R-24: Dun et al. (2010) WEPP frost-simulation subroutine improvements
 
-**Citation**: Dun, S., J. Q. Wu, D. K. McCool, J. R. Frankenberger, and D. C. Flanagan (2010). *Improving Frost-Simulation Subroutines of the Water Erosion Prediction Project (WEPP) Model*. Transactions of the ASABE, 53(5), 1399–1411. https://doi.org/10.13031/2013.34896
-**Local path**: not yet acquired — closed access (ASABE elibrary, AID 34896; confirmed no open-access copy via Unpaywall/Semantic Scholar, 2026-06-12). Acquire via institutional access into `references/copyrighted/dun2010.pdf`; do not vendor.
-**Reference quality**: `verified-primary` (citation/DOI verified against the ASABE Vol. 53 No. 5 TOC; full text not yet read)
-**Topic**: The v2006.5 → v2010.1 rewrite of WEPP's frost simulation: fine-layer soil-profile discretization (10 sublayers/layer), revised thermal/hydraulic parameter computation, hourly freeze/thaw energy balance; validated on Pullman WA and Morris MN plots.
-**Key equations / concepts**: the operative authority lineage for the pinned-baseline frost routines (`frostn`/`frzng`/`frznw`/`mlttp`/`mltbtm`/`frwatc`/`watdst`) that openWEPP's FDHP01 D3 fine-sublayer port implements; CRM eqn [3.8.1]–[3.8.4] energy terms as deployed (note: the eqn [3.8.4] migration-heat middle term is **dead code** in the pinned baseline — `frzng.for` `frzftp = 0.0`; see the frost-heave backlog item).
+**Citation**: Dun, S., J. Q. Wu, D. K. McCool, J. R. Frankenberger, and D. C. Flanagan (2010). *Improving Frost-Simulation Subroutines of the Water Erosion Prediction Project (WEPP) Model*. Transactions of the ASABE, 53(5), 1399-1411. https://doi.org/10.13031/2013.34896
+**Local path**: `references/copyrighted/Dun2008_10.13031@2013.34896.pdf` (local-only copyrighted cache; filename preserves original intake name).
+**Reference quality**: `verified-primary` (full text acquired locally and read for frost-source annotation, 2026-06-25).
+**Topic**: The v2006.5 -> v2010.1 rewrite of WEPP's frost simulation: snow-residue-soil discretization, revised lower-front heat-flow and hydraulic parameter computation, frozen saturated hydraulic conductivity, water migration toward the freezing front, and daily water-balance integration; validated against Pullman WA and Morris MN plots.
+**Key equations / concepts**: the operative authority lineage for the pinned-baseline frost routines (`frostn`/`frzng`/`frznw`/`mlttp`/`mltbtm`/`frwatc`/`watdst`) that openWEPP's FDHP01 D3 fine-sublayer port implements; CRM eqn [3.8.1]-[3.8.4] energy terms; snow thermal conductivity from density; frozen hydraulic conductivity computed from ice-content-adjusted pore space; and published water migration using generalized Clausius-Clapeyron front potential. The paper creates a source-conflict to resolve before `Qwet` promotion: the published study uses active migration/frozen-front potential for Pullman/Morris calibration, while the pinned baseline source disables the Eq. [3.8.4] migration-heat middle term with `frzng.for` `frzftp = 0.0`.
 **Kernel mapping**: `SC-SNOWFREEZE-001` (`INV-SNOWFREEZE-006`/`-012`), FDHP01 work package (`docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`), `docs/backlog/20260612-frost-heave-frozen-fringe-impedance-formulation.md`.
-**Notes / caveats**: **Open verification question** (recorded in the frost-heave backlog item): whether the published v2010.1 description claims the soil-water-migration term active — the shipped code disables it. Resolve when the full text is acquired; until then the paper is cited for the discretization/energy-balance lineage only, not for migration-heat behavior.
-**OAR-6 compliance status**: Primary peer-reviewed source for the frost lineage; full-text acquisition pending.
+**Notes / caveats**: Treat as primary WEPP-lineage evidence and as a `Qwet` source-conflict flag, not as standalone production authority to enable migration heat. Any `Qwet` implementation still requires contract-first reconciliation against pinned baseline source, observed frost-depth/runoff behavior, frozen hydraulic-conductivity authority, and mass/energy gates.
+**OAR-6 compliance status**: Primary peer-reviewed source for the frost lineage; restricted local cache only.
 
 ## R-25: Shen (2011) WSU MS thesis — WEPP snow distribution
 
@@ -366,3 +366,104 @@ openWEPP note (2026-05-11):
 **Kernel mapping**: snow Stage-2 science review (`docs/backlog/20260605-snow-code-deferred-science-review.md`), F4 snow density/depth-split disposition (FDHP01 staged plan).
 **Notes / caveats**: MS thesis, not peer-reviewed journal text; use as lineage/context alongside `snowd.for` source authority.
 **OAR-6 compliance status**: Supporting source for the snow density/depth-split work; not a primary physics authority on its own.
+
+## R-26: Watanabe & Flury (2008) frozen-soil hydraulic conductivity
+
+**Citation**: Watanabe, K., and M. Flury (2008). *Capillary bundle model of hydraulic conductivity for frozen soil*. Water Resources Research, 44, W12402. https://doi.org/10.1029/2008WR007012
+**Local path**: `references/copyrighted/watanabe2008.pdf` (local-only copyrighted cache).
+**Reference quality**: `verified-primary` (full text acquired locally and read for frost-source annotation, 2026-06-25).
+**Topic**: Pore-scale capillary-bundle model for frozen hydraulic conductivity as a function of temperature, pore ice, and unfrozen water.
+**Key equations / concepts**: Gibbs-Thomson freezing-point depression, ice occupying capillary centers, annular water flow around ice, dominance of ice-free capillaries near 0 degC, and divergence from unfrozen-soil hydraulic conductivity at lower temperatures.
+**Kernel mapping**: `SC-SNOWFREEZE-001` future `GAP-SNOWFREEZE-002` adjudication; `docs/backlog/20260612-frost-heave-frozen-fringe-impedance-formulation.md`; candidate `K_frozen(theta_liq, T, soil_params)` research path.
+**Notes / caveats**: Strong mechanistic source for frozen hydraulic conductivity, but not a WEPP implementation spec and not enough alone to enable `Qwet`. Pair with Dun et al. (2010), Kurylyk & Watanabe (2013), and observation gates.
+**OAR-6 compliance status**: Primary restricted-cache source for frozen hydraulic-conductivity physics.
+
+## R-27: Kurylyk & Watanabe (2013) freezing/thawing math review
+
+**Citation**: Kurylyk, B. L., and K. Watanabe (2013). *The mathematical representation of freezing and thawing processes in variably-saturated, non-deformable soils*. Advances in Water Resources, 60, 160-177. https://doi.org/10.1016/j.advwatres.2013.07.016
+**Local path**: `references/copyrighted/kurylyk2013.pdf` (local-only copyrighted cache).
+**Reference quality**: `verified-primary` (review article; local full text read for source annotation).
+**Topic**: Review and synthesis of Clapeyron equations, soil freezing characteristic curves, soil water retention relationships, and hydraulic conductivity models for partially frozen soils.
+**Key equations / concepts**: theory chain from soil water retention or soil freezing characteristic curve to unfrozen water, liquid pressure, and frozen hydraulic conductivity; comparison of model formulations and unresolved assumptions.
+**Kernel mapping**: `SC-SNOWFREEZE-001` future contract-first frost-depth physics amendments; candidate authority for SFCC/frozen-K decision criteria.
+**Notes / caveats**: Best first review before modifying frost physics. It should shape model-selection gates but does not replace WEPP lineage or observation validation.
+**OAR-6 compliance status**: Primary review source; restricted local cache.
+
+## R-28: Dall'Amico et al. (2011) energy-conserving frozen-soil numerics
+
+**Citation**: Dall'Amico, M., S. Endrizzi, S. Gruber, and R. Rigon (2011). *A robust and energy-conserving model of freezing variably-saturated soil*. The Cryosphere, 5, 469-484. https://doi.org/10.5194/tc-5-469-2011
+**Local path**: `references/vendorable/Amico2011.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `redistributable` (article text declares CC Attribution 3.0 License).
+**Topic**: Coupled Richards-equation and energy-equation solution for variably saturated freezing soil with robust nonlinear convergence and latent-heat consistency.
+**Key equations / concepts**: conservative mass/energy formulation, generalized Clapeyron pressure relation, hydraulic-conductivity impedance option, Stefan/Neumann-style validation, and comparison to experimental freezing/thawing data.
+**Kernel mapping**: `SC-SNOWFREEZE-001` future numerical-stability and latent-heat gate design; `GAP-SNOWFREEZE-002` benchmark planning.
+**Notes / caveats**: Use as numerics and conservation reference, not as a drop-in replacement for WEPP's snow-residue-soil winter column.
+**OAR-6 compliance status**: Primary open-access source; vendored under CC-BY 3.0.
+
+## R-29: Kurylyk et al. (2014) cold-regions thaw benchmark solutions
+
+**Citation**: Kurylyk, B. L., J. M. McKenzie, K. T. B. MacQuarrie, and C. I. Voss (2014). *Analytical solutions for benchmarking cold regions subsurface water flow and energy transport models: one-dimensional soil thaw with conduction and advection*. Advances in Water Resources, 70, 172-184. https://doi.org/10.1016/j.advwatres.2014.05.005
+**Local path**: `references/copyrighted/kurylyk2014.pdf` (local-only copyrighted cache; accepted manuscript).
+**Reference quality**: `verified-primary`
+**Topic**: Analytical thaw-front benchmark scenarios with conduction, advection, phase change, porosity, surface temperature, Darcy velocity, and initial-temperature variation.
+**Key equations / concepts**: Lunardini and Neumann benchmark framing, Stefan number sensitivity, and published scenario results suitable for future code-to-analytical checks.
+**Kernel mapping**: Future `GAP-SNOWFREEZE-002` validation package; benchmark tests before field calibration or `Qwet` tuning.
+**Notes / caveats**: Benchmark authority only; it validates one-dimensional thaw/transport numerics, not WEPP winter hydrology as a whole.
+**OAR-6 compliance status**: Primary restricted-cache source.
+
+## R-30: Azmatch et al. (2012) SFCC-derived hydraulic conductivity
+
+**Citation**: Azmatch, T. F., D. C. Sego, L. U. Arenson, and K. W. Biggar (2012). *Using soil freezing characteristic curve to estimate the hydraulic conductivity function of partially frozen soils*. Cold Regions Science and Technology, 83-84, 103-109. https://doi.org/10.1016/j.coldregions.2012.07.002
+**Local path**: `references/copyrighted/azmatch2012.pdf` (local-only copyrighted cache).
+**Reference quality**: `verified-primary`
+**Topic**: Estimating partially frozen hydraulic conductivity from the soil freezing characteristic curve rather than only the unfrozen soil water characteristic curve.
+**Key equations / concepts**: SFCC measurement from unfrozen-water and temperature data; indirect frozen hydraulic-conductivity estimation; comparison against other methods and direct measurements.
+**Kernel mapping**: Candidate future `K_frozen` model under `GAP-SNOWFREEZE-002`; not current runtime authority.
+**Notes / caveats**: Useful candidate for partially frozen soil, but field-scale WEPP adoption requires source-specific parameter availability and observation gates.
+**OAR-6 compliance status**: Primary restricted-cache source.
+
+## R-31: Ming et al. (2020) saturated frozen hydraulic conductivity from SFCC
+
+**Citation**: Ming, F., L. Chen, D. Li, and X. Wei (2020). *Estimation of hydraulic conductivity of saturated frozen soil from the soil freezing characteristic curve*. Science of the Total Environment, 698, 134132. https://doi.org/10.1016/j.scitotenv.2019.134132
+**Local path**: `references/copyrighted/ming2020.pdf` (local-only copyrighted cache).
+**Reference quality**: `verified-primary`
+**Topic**: Saturated frozen hydraulic-conductivity estimation from SFCC-derived pore-size distribution and capillary-bundle assumptions.
+**Key equations / concepts**: SFCC plus Gibbs-Thomson pore-size relation, Hagen-Poiseuille/Darcy formulation, validation across datasets spanning multiple orders of hydraulic conductivity.
+**Kernel mapping**: Candidate saturated-frozen `K_frozen(T)` model for future `Qwet` or infiltration-resistance research.
+**Notes / caveats**: Saturated scope is narrower than openWEPP's variably saturated hillslope column; do not apply blindly to all layers.
+**OAR-6 compliance status**: Primary restricted-cache source.
+
+## R-32: Amankwah et al. (2021) salt-exclusion soil freezing curve
+
+**Citation**: Amankwah, S. K., et al. (2021). *A Model for the Soil Freezing Characteristic Curve That Represents the Dominant Role of Salt Exclusion*. Water Resources Research, 57, e2021WR030070. https://doi.org/10.1029/2021WR030070
+**Local path**: `references/copyrighted/Amankwah2021.pdf` (local-only copyrighted cache).
+**Reference quality**: `verified-primary`
+**Topic**: Soil freezing characteristic curves where solutes/salt exclusion can dominate freezing-point depression relative to capillary-only generalized Clapeyron formulations.
+**Key equations / concepts**: salt-exclusion and combined salt-GCE models, hysteresis and antecedent moisture controls, and salinity as a possible fitting/diagnostic variable.
+**Kernel mapping**: Future optional SFCC extension for saline/roadside/reclaimed/irrigated/arid soils; out of current default frost-depth scope unless site evidence requires it.
+**Notes / caveats**: Important to keep as a known model limitation, but not a first-order authority for ordinary non-saline WEPP upland erosion cases.
+**OAR-6 compliance status**: Primary restricted-cache source.
+
+## R-33: Cheng et al. (2023) frozen hydraulic-conductivity impedance factor
+
+**Citation**: Cheng, S.-H., B. A. Engel, R. Liu, H.-X. Wu, and Y.-B. Wang (2023). *Impedance Factor of Hydraulic Conductivity for Frozen Soil Based on Ice Segregation Theory and Its Application*. Water Resources Research, 59, e2022WR033876. https://doi.org/10.1029/2022WR033876
+**Local path**: `references/copyrighted/Cheng2023.pdf` (local-only copyrighted cache).
+**Reference quality**: `verified-primary`
+**Topic**: Physical interpretation of hydraulic-conductivity impedance factors using ice segregation theory and distinction between closed unsaturated and open saturated freezing systems.
+**Key equations / concepts**: impedance factor tied to pore ice segregation, small impedance effect in closed unsaturated systems, stronger need under open saturated/ice-lens-forming conditions, and coupling with van Genuchten hydraulic conductivity.
+**Kernel mapping**: Candidate constraint for future `Qwet` or frozen-fringe implementation; supports rejecting a blanket empirical impedance multiplier without regime tests.
+**Notes / caveats**: Use to decide when impedance is necessary, not to assert it is universally required.
+**OAR-6 compliance status**: Primary restricted-cache source.
+
+## R-34: Devoie et al. (2022) measured SFCC repository
+
+**Citation**: Devoie, E. G., S. Gruber, and J. M. McKenzie (2022). *A repository of measured soil freezing characteristic curves: 1921 to 2021*. Earth System Science Data, 14, 3365-3377. https://doi.org/10.5194/essd-14-3365-2022
+**Local path**: `references/vendorable/Devoie2022.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `redistributable` (article text declares Creative Commons Attribution 4.0 License).
+**Topic**: Open repository of measured soil freezing characteristic curves from historic and modern studies, with metadata and an R package interface.
+**Key equations / concepts**: SFCC data provenance, parameter-prior support, data gaps for coarse soils and in-situ mountainous measurements, and Zenodo dataset DOI `10.5281/zenodo.5592825`.
+**Kernel mapping**: Future `GAP-SNOWFREEZE-002` parameter priors, uncertainty analysis, and texture-class sanity checks for SFCC model selection.
+**Notes / caveats**: Dataset authority, not an equation authority. Use with original dataset citations and site-specific applicability checks.
+**OAR-6 compliance status**: Primary open-access data-source paper; vendored under CC-BY 4.0.
