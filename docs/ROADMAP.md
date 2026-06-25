@@ -402,22 +402,35 @@ Recommended work-package sequence:
    is a diagnostic publication package only: `Snow-Water` remains SWE, no
    physics constants or process equations change, and no residual tuning is
    authorized.
-5. **SNOWFROST-FIDELITY-E: conditional heat-flow/frozen-K adjudication.** After
-   D supplies the paired snow-depth control, choose the smallest next
-   physics-adjudication package supported by the rerun classification:
-   no-change/pass, snow-insulation/carry-state investigation, heat-flow thermal
-   property correction, lower-boundary heat correction, or frozen-K/SFCC
-   parameter/model adjudication. Any production candidate requires
-   contract-first authority, benchmark conservation evidence, and observation
-   validation.
-6. **SNOWFROST-FIDELITY-F: conditional migration/fringe candidate.** Consider a
+5. **SNOWFROST-FIDELITY-E: snow-depth correspondence and direction audit.**
+   After D supplies the paired snow-depth control, prove the modeled/observed
+   snow-depth comparison is like-for-like before routing residuals: source
+   field semantics, units, daily timing/stage, signed residual direction, and
+   depth-vs-SWE anti-alias evidence. If correspondence passes and
+   `TOL-SNOWFREEZE-009` still fails, frost attribution remains blocked and the
+   next route is snow-depth fidelity, not heat-flow or frozen-K tuning.
+6. **SNOWFROST-FIDELITY-F: snow-depth producer/carry/input/settlement DC.**
+   Close the snow-depth fidelity issue exposed by E. Start from signed residual
+   direction and source-line lineage before production edits: snowpack initial
+   state/carry, snowfall depth input, density/settlement, rain-on-snow storage,
+   melt depletion, and publication lineage. Any correction requires
+   contract-first authority, benchmark/source-line evidence, and rerun
+   observation snow-control gates.
+7. **SNOWFROST-FIDELITY-G: conditional heat-flow/frozen-K adjudication.** After
+   snow-depth control passes or is bounded by a contract-approved snow
+   correction, choose the smallest frost mechanism package still supported by
+   the residuals: no-change/pass, heat-flow thermal property correction,
+   lower-boundary heat correction, or frozen-K/SFCC parameter/model
+   adjudication. Any production candidate requires contract-first authority,
+   benchmark conservation evidence, and observation validation.
+8. **SNOWFROST-FIDELITY-H: conditional migration/fringe candidate.** Consider a
    `Qwet` or frozen-fringe term only if A-C show residuals that cannot be
    explained by snow insulation, no-migration heat flow, lower-boundary heat,
    or frozen conductivity. Any candidate must use a frozen/fringe-limited
    conductivity, explicit source-water caps, mass and latent-heat closure, and
    observation validation. The old unfrozen-`kunsat` maximum-gradient block is
    not a production shortcut.
-7. **SNOWFROST-FIDELITY-G: promotion and activation gate.** Promote the smallest
+9. **SNOWFROST-FIDELITY-I: promotion and activation gate.** Promote the smallest
    physics model that passes field observations, benchmark conservation,
    independent operand reconstruction, snow/frost anti-alias fixtures, public
    output parity where parity remains contractual, and direct-publication
@@ -447,9 +460,15 @@ SNOWFROST-FIDELITY-D completed that diagnostic publication/rerun step:
 modeled snow depth is now published as WAT `Snow-Depth`, but the five-site
 rerun produced `0` defect-attribution eligible sites because three sites fail
 paired snow-depth control and two lack paired observed snow-depth rows.
-Migration/fringe work remains conditional later scope and is not authorized
-unless snow-depth fidelity is adjudicated and no smaller heat-flow or
-frozen-conductivity correction can explain remaining residuals.
+SNOWFROST-FIDELITY-E then added `INV-SNOWFREEZE-048`, signed residual and
+anti-alias audit tooling, and reran the all-site evidence. E found all three
+paired-snow sites are snow-depth fidelity issues, not correspondence blockers:
+the dominant signed direction is modeled snow deeper than observed snow, with
+only `4`, `5`, and `2` adjacent-day timing rescues on Sites 1, 2, and 4. Sites
+3 and 5 remain insufficient for snow-control because they lack paired observed
+snow depth. Heat-flow, frozen-K/SFCC, impedance, and migration/fringe work
+remain unauthorized until a snow-depth producer/carry/input/settlement package
+passes or bounds snow control.
 
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 H2637 magnitude arc is no longer an active queue item. Absolute forest lateral-flow

@@ -861,13 +861,60 @@ def compute_metrics(
         if observed_snow_depth_m is not None and modeled_snow_depth_m is not None:
             residual = modeled_snow_depth_m - observed_snow_depth_m
             tolerance = snow_depth_control_tolerance_m(observed_snow_depth_m)
+            previous_snow_depth_m = snow_depth_for_date(modeled, observed_date, -1)
+            next_snow_depth_m = snow_depth_for_date(modeled, observed_date, 1)
+            offset_candidates = [
+                {
+                    "offset_days": 0,
+                    "modeled_snow_depth_m": modeled_snow_depth_m,
+                    "abs_residual_m": abs(residual),
+                }
+            ]
+            for offset_days, candidate in [
+                (-1, previous_snow_depth_m),
+                (1, next_snow_depth_m),
+            ]:
+                if candidate is not None:
+                    offset_candidates.append(
+                        {
+                            "offset_days": offset_days,
+                            "modeled_snow_depth_m": candidate,
+                            "abs_residual_m": abs(candidate - observed_snow_depth_m),
+                        }
+                    )
+            best_offset = min(offset_candidates, key=lambda row: row["abs_residual_m"])
+            modeled_snow_water_m = modeled_row.get("snow_water_m")
+            snow_water_alias_residual_m = (
+                modeled_snow_water_m - observed_snow_depth_m
+                if modeled_snow_water_m is not None
+                else None
+            )
             snow_depth_residuals.append(
                 {
                     "date": observed_date.isoformat(),
                     "observed_snow_depth_m": observed_snow_depth_m,
                     "modeled_snow_depth_m": modeled_snow_depth_m,
+                    "modeled_snow_water_m": modeled_snow_water_m,
                     "residual_m": residual,
                     "abs_residual_m": abs(residual),
+                    "snow_water_alias_residual_m": snow_water_alias_residual_m,
+                    "snow_water_alias_abs_residual_m": (
+                        abs(snow_water_alias_residual_m)
+                        if snow_water_alias_residual_m is not None
+                        else None
+                    ),
+                    "snow_water_alias_better_than_depth": (
+                        abs(snow_water_alias_residual_m) < abs(residual)
+                        if snow_water_alias_residual_m is not None
+                        else None
+                    ),
+                    "previous_day_modeled_snow_depth_m": previous_snow_depth_m,
+                    "next_day_modeled_snow_depth_m": next_snow_depth_m,
+                    "best_offset_days": best_offset["offset_days"],
+                    "best_offset_abs_residual_m": best_offset["abs_residual_m"],
+                    "best_offset_within_tolerance": (
+                        best_offset["abs_residual_m"] <= tolerance
+                    ),
                     "tolerance_m": tolerance,
                     "within_tolerance": abs(residual) <= tolerance,
                 }
@@ -899,12 +946,21 @@ def compute_metrics(
                 }
             )
     absolute_residuals = [abs(row["residual_m"]) for row in frost_depth_residuals]
+    snow_signed_residuals = [row["residual_m"] for row in snow_depth_residuals]
     snow_absolute_residuals = [row["abs_residual_m"] for row in snow_depth_residuals]
+    snow_water_alias_absolute_residuals = [
+        row["snow_water_alias_abs_residual_m"]
+        for row in snow_depth_residuals
+        if row["snow_water_alias_abs_residual_m"] is not None
+    ]
     seasonal_metrics = seasonal_timing_metrics(matched_series)
     return {
         "observation_count": len(observations),
         "modeled_day_count": len(modeled),
         "modeled_snow_depth_day_count": modeled_snow_depth_day_count,
+        "modeled_snow_water_day_count": sum(
+            1 for row in modeled.values() if row.get("snow_water_m") is not None
+        ),
         "matched_count": len(matched_dates),
         "unmatched_observation_count": unmatched_count,
         "observed_snow_depth_count": observed_snow_depth_count,
@@ -918,9 +974,51 @@ def compute_metrics(
         "max_abs_snow_depth_residual_m": max(snow_absolute_residuals)
         if snow_absolute_residuals
         else None,
+        "max_signed_snow_depth_residual_m": max(snow_signed_residuals)
+        if snow_signed_residuals
+        else None,
+        "min_signed_snow_depth_residual_m": min(snow_signed_residuals)
+        if snow_signed_residuals
+        else None,
+        "mean_signed_snow_depth_residual_m": (
+            sum(snow_signed_residuals) / len(snow_signed_residuals)
+            if snow_signed_residuals
+            else None
+        ),
+        "median_signed_snow_depth_residual_m": median(snow_signed_residuals),
         "mean_abs_snow_depth_residual_m": (
             sum(snow_absolute_residuals) / len(snow_absolute_residuals)
             if snow_absolute_residuals
+            else None
+        ),
+        "snow_depth_modeled_over_observed_count": sum(
+            1 for row in snow_depth_residuals if row["residual_m"] > 0.0
+        ),
+        "snow_depth_modeled_under_observed_count": sum(
+            1 for row in snow_depth_residuals if row["residual_m"] < 0.0
+        ),
+        "snow_depth_modeled_equal_observed_count": sum(
+            1 for row in snow_depth_residuals if row["residual_m"] == 0.0
+        ),
+        "snow_depth_best_offset_rescue_count": sum(
+            1
+            for row in snow_depth_residuals
+            if not row["within_tolerance"] and row["best_offset_within_tolerance"]
+        ),
+        "snow_water_alias_abs_better_count": sum(
+            1
+            for row in snow_depth_residuals
+            if row["snow_water_alias_better_than_depth"] is True
+        ),
+        "max_abs_snow_water_alias_residual_m": (
+            max(snow_water_alias_absolute_residuals)
+            if snow_water_alias_absolute_residuals
+            else None
+        ),
+        "mean_abs_snow_water_alias_residual_m": (
+            sum(snow_water_alias_absolute_residuals)
+            / len(snow_water_alias_absolute_residuals)
+            if snow_water_alias_absolute_residuals
             else None
         ),
         "first_matched_date": matched_dates[0].isoformat() if matched_dates else None,
@@ -956,8 +1054,28 @@ def compute_metrics(
         "seasonal_metrics": seasonal_metrics,
         "sample_residuals": frost_depth_residuals[:20],
         "sample_isotherm_upper_bounds": isotherm_upper_bounds[:20],
+        "snow_depth_residuals": snow_depth_residuals,
         "sample_snow_depth_residuals": snow_depth_residuals[:20],
     }
+
+
+def snow_depth_for_date(
+    modeled: dict[dt.date, dict[str, float | None]], date: dt.date, offset_days: int
+) -> float | None:
+    row = modeled.get(date + dt.timedelta(days=offset_days))
+    if row is None:
+        return None
+    return row.get("snow_depth_m")
+
+
+def median(values: list[float]) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    midpoint = len(ordered) // 2
+    if len(ordered) % 2 == 1:
+        return ordered[midpoint]
+    return (ordered[midpoint - 1] + ordered[midpoint]) / 2.0
 
 
 def snow_depth_control_tolerance_m(observed_snow_depth_m: float) -> float:
@@ -1044,13 +1162,15 @@ def load_modeled_wat(path: Path) -> dict[dt.date, dict[str, float | None]]:
     table = pq.read_table(path)
     columns = table.to_pydict()
     snow_depth_values = columns.get("Snow-Depth", [None] * len(columns["frdp"]))
+    snow_water_values = columns.get("Snow-Water", [None] * len(columns["frdp"]))
     modeled: dict[dt.date, dict[str, float | None]] = {}
-    for water_year_value, month, day, frdp_mm, snow_depth_mm in zip(
+    for water_year_value, month, day, frdp_mm, snow_depth_mm, snow_water_mm in zip(
         columns["water_year"],
         columns["month"],
         columns["day_of_month"],
         columns["frdp"],
         snow_depth_values,
+        snow_water_values,
     ):
         calendar_year = int(water_year_value) - 1 if int(month) >= 10 else int(water_year_value)
         modeled_date = dt.date(calendar_year, int(month), int(day))
@@ -1063,9 +1183,17 @@ def load_modeled_wat(path: Path) -> dict[dt.date, dict[str, float | None]]:
                 raise ValueError(
                     f"{path} has invalid Snow-Depth for {modeled_date}: {snow_depth_mm}"
                 )
+        modeled_snow_water_m = None
+        if snow_water_mm is not None:
+            modeled_snow_water_m = float(snow_water_mm) / 1000.0
+            if not math.isfinite(modeled_snow_water_m):
+                raise ValueError(
+                    f"{path} has invalid Snow-Water for {modeled_date}: {snow_water_mm}"
+                )
         modeled[modeled_date] = {
             "frdp_m": float(frdp_mm) / 1000.0,
             "snow_depth_m": modeled_snow_depth_m,
+            "snow_water_m": modeled_snow_water_m,
         }
     return modeled
 
@@ -1161,6 +1289,12 @@ def write_comparison_reports(output_dir: Path, report: dict[str, Any]) -> None:
                 f"- Observed snow-depth rows: `{metrics['observed_snow_depth_count']}`",
                 f"- Paired snow-depth control rows: `{metrics['snow_depth_control_count']}`",
                 f"- Snow-depth control failures: `{metrics['snow_depth_control_fail_count']}`",
+                f"- Modeled snow deeper than observed rows: `{metrics['snow_depth_modeled_over_observed_count']}`",
+                f"- Modeled snow shallower than observed rows: `{metrics['snow_depth_modeled_under_observed_count']}`",
+                f"- Mean signed snow-depth residual (m): `{format_report_value(metrics['mean_signed_snow_depth_residual_m'])}`",
+                f"- Median signed snow-depth residual (m): `{format_report_value(metrics['median_signed_snow_depth_residual_m'])}`",
+                f"- Adjacent-day timing/stage rescue rows: `{metrics['snow_depth_best_offset_rescue_count']}`",
+                f"- Snow-Water alias better rows: `{metrics['snow_water_alias_abs_better_count']}`",
                 f"- Frost-depth residual rows: `{metrics['frost_depth_residual_count']}`",
                 f"- Isotherm upper-bound rows: `{metrics['isotherm_upper_bound_count']}`",
                 f"- Censored rows excluded: `{metrics['censored_excluded_count']}`",

@@ -42,6 +42,29 @@ blocked. WAT `Snow-Depth` is the modeled snow-depth diagnostic for
 `TOL-SNOWFREEZE-009`; WAT `Snow-Water` is SWE and is not a snow-depth
 diagnostic.
 
+Classify frost residuals and audit snow-depth fidelity:
+
+```bash
+.venv/bin/python tools/snowfreeze_observed/classify_residuals.py \
+  --observations-dir tests/fixtures/snowfreeze_observed/observations \
+  --output-json target/snowfreeze_residual_classification.json \
+  --output-md target/snowfreeze_residual_classification.md \
+  target/snowfreeze_observed_compare_*/comparison_report.json
+
+.venv/bin/python tools/snowfreeze_observed/snow_depth_audit.py \
+  --observations-dir tests/fixtures/snowfreeze_observed/observations \
+  --output-json target/snowfreeze_snow_depth_audit.json \
+  --output-md target/snowfreeze_snow_depth_audit.md \
+  target/snowfreeze_observed_compare_*/comparison_report.json
+```
+
+The snow-depth audit is bound to
+`SC-SNOWFREEZE-001 INV-SNOWFREEZE-048`. It publishes signed residual
+direction, modeled-over/under-observed counts, adjacent-day timing checks, and
+depth-vs-SWE anti-alias checks. Failed snow control blocks frost attribution
+and routes to snow-depth fidelity unless the audit reports a correspondence
+blocker.
+
 Generate SNOWFROST-FIDELITY-C diagnostic SFCC/frozen-K comparison curves:
 
 ```bash

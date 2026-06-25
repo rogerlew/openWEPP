@@ -171,6 +171,24 @@ def classify_site(
             "snow_depth_control_count": metrics.get("snow_depth_control_count"),
             "snow_depth_control_fail_count": metrics.get("snow_depth_control_fail_count"),
             "max_abs_snow_depth_residual_m": metrics.get("max_abs_snow_depth_residual_m"),
+            "mean_signed_snow_depth_residual_m": metrics.get(
+                "mean_signed_snow_depth_residual_m"
+            ),
+            "median_signed_snow_depth_residual_m": metrics.get(
+                "median_signed_snow_depth_residual_m"
+            ),
+            "snow_depth_modeled_over_observed_count": metrics.get(
+                "snow_depth_modeled_over_observed_count"
+            ),
+            "snow_depth_modeled_under_observed_count": metrics.get(
+                "snow_depth_modeled_under_observed_count"
+            ),
+            "snow_depth_best_offset_rescue_count": metrics.get(
+                "snow_depth_best_offset_rescue_count"
+            ),
+            "snow_water_alias_abs_better_count": metrics.get(
+                "snow_water_alias_abs_better_count"
+            ),
         },
     }
 
@@ -219,7 +237,8 @@ def summarize(site_results: list[dict[str, Any]]) -> dict[str, Any]:
         "next_action": (
             "Where snow control passes, use SNOWFROST-FIDELITY-B/C evidence to "
             "adjudicate heat-flow versus frozen-K mechanisms. Where snow control "
-            "fails or lacks paired rows, resolve snow-depth publication/physics "
+            "fails or lacks paired rows, apply SC-SNOWFREEZE-001 "
+            "INV-SNOWFREEZE-048 snow-depth correspondence and anti-alias checks "
             "before attributing frost residuals. No Qwet, SFCC, frozen-K, or "
             "heat-flow tuning is authorized by these classifications."
         ),
@@ -264,13 +283,13 @@ def render_markdown(classification: dict[str, Any]) -> str:
         "",
         "## Site Classifications",
         "",
-        "| Site | Harness | Primary | Family | Matched | Frost residuals | Max abs residual m | Isotherm exceedances | Snow pairs | Snow failures | Max snow residual m | Reason |",
-        "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Site | Harness | Primary | Family | Matched | Frost residuals | Max abs residual m | Isotherm exceedances | Snow pairs | Snow failures | Mean signed snow m | Over | Under | Timing rescues | SWE alias better | Max snow residual m | Reason |",
+        "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for site in classification["sites"]:
         metrics = site["metrics"]
         lines.append(
-            "| {site_id} | {harness} | {primary} | {family} | {matched} | {frost_rows} | {max_abs} | {iso_exceed} | {snow_pairs} | {snow_failures} | {max_snow_abs} | {reason} |".format(
+            "| {site_id} | {harness} | {primary} | {family} | {matched} | {frost_rows} | {max_abs} | {iso_exceed} | {snow_pairs} | {snow_failures} | {mean_signed_snow} | {snow_over} | {snow_under} | {timing_rescues} | {swe_alias_better} | {max_snow_abs} | {reason} |".format(
                 site_id=site["site_id"],
                 harness=site["harness_verdict"],
                 primary=site["primary_classification"],
@@ -281,6 +300,11 @@ def render_markdown(classification: dict[str, Any]) -> str:
                 iso_exceed=fmt(metrics["isotherm_upper_bound_exceedance_count"]),
                 snow_pairs=fmt(metrics["snow_depth_control_count"]),
                 snow_failures=fmt(metrics["snow_depth_control_fail_count"]),
+                mean_signed_snow=fmt(metrics["mean_signed_snow_depth_residual_m"]),
+                snow_over=fmt(metrics["snow_depth_modeled_over_observed_count"]),
+                snow_under=fmt(metrics["snow_depth_modeled_under_observed_count"]),
+                timing_rescues=fmt(metrics["snow_depth_best_offset_rescue_count"]),
+                swe_alias_better=fmt(metrics["snow_water_alias_abs_better_count"]),
                 max_snow_abs=fmt(metrics["max_abs_snow_depth_residual_m"]),
                 reason=site["reason"].replace("|", "\\|"),
             )
@@ -294,7 +318,9 @@ def render_markdown(classification: dict[str, Any]) -> str:
             "A site can move to heat-flow or frozen-K mechanism discrimination "
             "only after `TOL-SNOWFREEZE-009` passes; missing, unmatched, or "
             "failed snow-control rows remain snow-confounded and do not "
-            "authorize heat flow, frozen conductivity, or migration heat tuning.",
+            "authorize heat flow, frozen conductivity, or migration heat tuning. "
+            "Failed snow-control rows must first pass `INV-SNOWFREEZE-048` "
+            "correspondence and anti-alias adjudication.",
             "",
         ]
     )

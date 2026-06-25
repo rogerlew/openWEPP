@@ -7,6 +7,10 @@ const OBSERVATION_ROOT: &str = "tests/fixtures/snowfreeze_observed/observations"
 const HARNESS_SOURCE: &str = include_str!("../../tools/snowfreeze_observed/observed_harness.py");
 const CLASSIFIER_SOURCE: &str =
     include_str!("../../tools/snowfreeze_observed/classify_residuals.py");
+const SNOW_DEPTH_AUDIT_SOURCE: &str =
+    include_str!("../../tools/snowfreeze_observed/snow_depth_audit.py");
+const SC_SNOWFREEZE_SOURCE: &str =
+    include_str!("../../docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
 const PACKAGE: &str = include_str!(
     "../../docs/work-packages/20260624-snowfreeze-observed-frost-depth-harness-001/package.md"
 );
@@ -119,6 +123,53 @@ fn snowfreeze_observed_harness_documents_no_defect_without_snow_depth_control() 
                 || CLASSIFIER_SOURCE.contains(expected)
                 || PACKAGE.contains(expected),
             "harness/package must retain external-observation posture marker {expected}"
+        );
+    }
+}
+
+#[test]
+fn snowfreeze_observed_snow_depth_correspondence_and_anti_alias_are_contract_bound() {
+    for expected in [
+        "INV-SNOWFREEZE-048",
+        "Snow-depth observation correspondence and anti-alias invariant",
+        "WAT `Snow-Depth`",
+        "snow.runtime_depth_m",
+        "WAT `Snow-Water`",
+        "snow-water equivalent",
+        "signed residual direction",
+        "depth-vs-SWE anti-alias evidence",
+    ] {
+        assert!(
+            SC_SNOWFREEZE_SOURCE.contains(expected),
+            "SC-SNOWFREEZE-001 must retain snow-depth correspondence authority marker {expected}"
+        );
+    }
+
+    for expected in [
+        "snowfreeze-observed-snow-depth-audit-v1",
+        "SC-SNOWFREEZE-001 INV-SNOWFREEZE-048",
+        "SNOW-DEPTH-FIDELITY-ISSUE",
+        "CORRESPONDENCE-BLOCKED-SWE-ALIAS-RISK",
+        "CORRESPONDENCE-BLOCKED-TIMING-STAGE-RISK",
+        "FROST-READY-SNOW-CONTROL-PASSED",
+    ] {
+        assert!(
+            SNOW_DEPTH_AUDIT_SOURCE.contains(expected),
+            "snow-depth audit must retain route marker {expected}"
+        );
+    }
+
+    for expected in [
+        "mean_signed_snow_depth_residual_m",
+        "median_signed_snow_depth_residual_m",
+        "snow_depth_modeled_over_observed_count",
+        "snow_depth_modeled_under_observed_count",
+        "snow_depth_best_offset_rescue_count",
+        "snow_water_alias_abs_better_count",
+    ] {
+        assert!(
+            HARNESS_SOURCE.contains(expected) || CLASSIFIER_SOURCE.contains(expected),
+            "observed harness/classifier must retain signed snow-depth diagnostic {expected}"
         );
     }
 }

@@ -13,6 +13,18 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowfrost-fidelity-e-snow-depth-fidelity-adjudication-001/` is
+  complete as the SNOWFROST-FIDELITY-E correspondence and direction audit. It
+  added `SC-SNOWFREEZE-001#INV-SNOWFREEZE-048`, extended the observed harness
+  with signed snow-depth residuals, depth-vs-SWE anti-alias evidence, and
+  adjacent-day timing/stage checks, and added
+  `tools/snowfreeze_observed/snow_depth_audit.py`. Fresh all-site evidence
+  routes Sites 1, 2, and 4 to `SNOW-DEPTH-FIDELITY-ISSUE` with dominant
+  modeled-over-observed snow depth; Sites 3 and 5 remain insufficient for
+  snow-control because they lack paired observed snow-depth rows. No frost
+  heat-flow, frozen-K/SFCC, impedance, or `Qwet` work is authorized from these
+  residuals; the next route is snow-depth producer/carry/input/settlement
+  adjudication.
 - `20260625-snowfrost-fidelity-c-sfcc-frozen-k-diagnostics-001/` is
   complete as diagnostic-only SFCC/frozen-conductivity comparison tooling. It
   added `tools/snowfreeze_observed/frozen_k_diagnostics.py`, a deterministic
