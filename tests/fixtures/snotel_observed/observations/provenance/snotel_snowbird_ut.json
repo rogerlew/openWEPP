@@ -1,0 +1,39 @@
+{
+  "access_date": "2026-06-25",
+  "citation": "USDA NRCS National Water and Climate Center AWDB public SNOTEL data; cite station triplet and access date.",
+  "density_formula": "SWE(mm) / snow_depth(m) = kg m^-3",
+  "normalized_files": [
+    {
+      "bytes": 2227424,
+      "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/sites/snotel_snowbird_ut.csv",
+      "sha256": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992"
+    },
+    {
+      "bytes": null,
+      "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/ssd_characterization.json",
+      "sha256": null
+    }
+  ],
+  "normalized_row_count": 11946,
+  "paired_density_row_count": 2754,
+  "parser_version": "snotel-density-three-way-v1",
+  "raw_files": [
+    {
+      "bytes": 13506421,
+      "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_snowbird_ut/daily.json",
+      "sha256": "cbc5a8e9449c1b407b316d1756ae026469e59cb3c5206a6695227a4015ce3d84"
+    },
+    {
+      "bytes": 55605,
+      "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_snowbird_ut/station.json",
+      "sha256": "2fdf08426b7896532c783561f7d54fc543782736cbb2a0bce76d6d509ed1adbf"
+    }
+  ],
+  "selected_ssd_kg_m3": 445.0,
+  "selected_ssd_source": "observed_peak_swe_period_density_median",
+  "site_id": "snotel_snowbird_ut",
+  "source_id": "nrcs_snotel_766_ut_sntl",
+  "source_url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
+  "station_triplet": "766:UT:SNTL",
+  "title": "USDA NRCS AWDB SNOTEL station 766:UT:SNTL"
+}

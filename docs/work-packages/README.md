@@ -13,6 +13,18 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowfrost-fidelity-h-snotel-density-three-way-001/` is
+  executed-held at `HOLD-PYSNOBAL-CSS-WY2017-SNOBAL-CORE-FAILURE`. It acquired
+  and normalized the five-site SNOTEL SWE/depth/STO corpus, derived
+  observed-density SSD arms from peak-SWE-period density before residual
+  comparison, added the v74 `INV-SNOWFREEZE-050` rubric profile authority, and
+  emitted `snotel-density-three-way-comparison-v2` profiles for openWEPP,
+  pinned legacy WEPP, and PySnobal. All five sites route `STRUCTURAL` in the
+  auxiliary density fork; the rubric remains profile-not-scalar. PySnobal
+  water-year segmented runs pass four sites, but CSS Lab WY2017 fails inside
+  PySnobal's C core despite finite exported forcing, so the next route is an H2
+  PySnobal CSS WY2017 minimal reproducer/disposition before heat-flow,
+  frozen-K, or migration/fringe production physics work.
 - `20260625-snowfrost-fidelity-g1-pysnobal-sanity-closure-001/` is complete as
   the PySnobal sanity-closure follow-up. It kept the strict all-lane G0 hold
   visible for Morris `Tg=-0.5 degC`, added site/lane/window controls and a

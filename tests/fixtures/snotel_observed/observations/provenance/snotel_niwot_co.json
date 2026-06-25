@@ -1,0 +1,39 @@
+{
+  "access_date": "2026-06-25",
+  "citation": "USDA NRCS National Water and Climate Center AWDB public SNOTEL data; cite station triplet and access date.",
+  "density_formula": "SWE(mm) / snow_depth(m) = kg m^-3",
+  "normalized_files": [
+    {
+      "bytes": 2843894,
+      "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/sites/snotel_niwot_co.csv",
+      "sha256": "3f75d2804db807c3a4b93cc94b4dfcb3e9ad44ecdc6ea328182b820b598f4d1c"
+    },
+    {
+      "bytes": null,
+      "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/ssd_characterization.json",
+      "sha256": null
+    }
+  ],
+  "normalized_row_count": 16022,
+  "paired_density_row_count": 3382,
+  "parser_version": "snotel-density-three-way-v1",
+  "raw_files": [
+    {
+      "bytes": 14075951,
+      "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_niwot_co/daily.json",
+      "sha256": "5c5c3e9bc6b4135b201885139e733aa8aff435638dee6f693976e6a530957add"
+    },
+    {
+      "bytes": 22799,
+      "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_niwot_co/station.json",
+      "sha256": "0e009567152cf0bfc3ff02d9ae39c022439945c5dbe3ca9e9f2f4aed27687ba0"
+    }
+  ],
+  "selected_ssd_kg_m3": 340.0,
+  "selected_ssd_source": "observed_peak_swe_period_density_median",
+  "site_id": "snotel_niwot_co",
+  "source_id": "nrcs_snotel_663_co_sntl",
+  "source_url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
+  "station_triplet": "663:CO:SNTL",
+  "title": "USDA NRCS AWDB SNOTEL station 663:CO:SNTL"
+}

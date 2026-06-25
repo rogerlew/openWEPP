@@ -137,3 +137,31 @@ forcing lineage for air temperature, radiation, rain/snow partition, and
 `snow.txt` new-snow density, then labels longwave, net-shortwave,
 precipitation temperature, and constant ground-temperature lanes as proxies.
 PySnobal output is not openWEPP correctness authority.
+
+Run the SNOWFROST-FIDELITY-H SNOTEL density/rubric three-way harness:
+
+```bash
+.venv/bin/python tools/snowfreeze_observed/snotel_density_three_way.py \
+  --cache target/snowfrost_fidelity_h/snotel_awdb_cache \
+  --observations-dir tests/fixtures/snotel_observed/observations \
+  --output-dir target/snowfrost_fidelity_h fetch
+
+.venv/bin/python tools/snowfreeze_observed/snotel_density_three_way.py \
+  --cache target/snowfrost_fidelity_h/snotel_awdb_cache \
+  --observations-dir tests/fixtures/snotel_observed/observations \
+  --output-dir target/snowfrost_fidelity_h normalize
+
+.venv/bin/python tools/snowfreeze_observed/snotel_density_three_way.py \
+  --cache target/snowfrost_fidelity_h/snotel_awdb_cache \
+  --observations-dir tests/fixtures/snotel_observed/observations \
+  --output-dir target/snowfrost_fidelity_h compare \
+  --openwepp-binary target/release/openwepp-cli-hill \
+  --legacy-binary /home/workdir/wepp-forest_260430_baseline/release/wepp_260430_hill \
+  --pysnobal-python /tmp/pysnobal-g0-venv/bin/python \
+  --pysnobal-path /home/workdir/pysnobal
+```
+
+The H comparison emits a v74 `SC-SNOWFREEZE-001` rubric profile, not a scalar
+snow-model verdict. PySnobal SNOTEL runs use the SNOTEL ground-temperature lane
+and water-year segments; CSS Lab WY2017 is currently held in the PySnobal C core
+and needs the H2 reproducer/disposition package.

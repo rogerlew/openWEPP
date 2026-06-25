@@ -1,0 +1,798 @@
+{
+  "access_date": "2026-06-25",
+  "anti_tuning": "SSD values are derived from observed peak-SWE-period SNOTEL density before model residuals are computed; they are not residual fits.",
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-049",
+  "density_cap_kg_m3": 522.0,
+  "peak_window_days": 15,
+  "schema": "snotel-ssd-characterization-v1",
+  "sites": [
+    {
+      "annual_density_count": 23,
+      "annual_peak_window_densities": [
+        {
+          "peak_swe_date": "2003-03-28",
+          "peak_swe_mm": 452.12,
+          "water_year": 2003,
+          "window_density_count": 25,
+          "window_density_median_kg_m3": 374.418605
+        },
+        {
+          "peak_swe_date": "2004-03-05",
+          "peak_swe_mm": 728.98,
+          "water_year": 2004,
+          "window_density_count": 17,
+          "window_density_median_kg_m3": 386.956522
+        },
+        {
+          "peak_swe_date": "2005-04-04",
+          "peak_swe_mm": 259.08,
+          "water_year": 2005,
+          "window_density_count": 28,
+          "window_density_median_kg_m3": 386.44444450000003
+        },
+        {
+          "peak_swe_date": "2006-03-26",
+          "peak_swe_mm": 584.2,
+          "water_year": 2006,
+          "window_density_count": 11,
+          "window_density_median_kg_m3": 351.5625
+        },
+        {
+          "peak_swe_date": "2007-03-03",
+          "peak_swe_mm": 609.6,
+          "water_year": 2007,
+          "window_density_count": 7,
+          "window_density_median_kg_m3": 370.967742
+        },
+        {
+          "peak_swe_date": "2008-04-09",
+          "peak_swe_mm": 1051.56,
+          "water_year": 2008,
+          "window_density_count": 5,
+          "window_density_median_kg_m3": 383.495146
+        },
+        {
+          "peak_swe_date": "2009-04-05",
+          "peak_swe_mm": 736.6,
+          "water_year": 2009,
+          "window_density_count": 20,
+          "window_density_median_kg_m3": 377.55460949999997
+        },
+        {
+          "peak_swe_date": "2010-04-08",
+          "peak_swe_mm": 406.4,
+          "water_year": 2010,
+          "window_density_count": 27,
+          "window_density_median_kg_m3": 378.571429
+        },
+        {
+          "peak_swe_date": "2011-04-22",
+          "peak_swe_mm": 767.08,
+          "water_year": 2011,
+          "window_density_count": 8,
+          "window_density_median_kg_m3": 361.40747450000003
+        },
+        {
+          "peak_swe_date": "2012-03-23",
+          "peak_swe_mm": 652.78,
+          "water_year": 2012,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 315.2146465
+        },
+        {
+          "peak_swe_date": "2013-03-22",
+          "peak_swe_mm": 500.38,
+          "water_year": 2013,
+          "window_density_count": 22,
+          "window_density_median_kg_m3": 386.425532
+        },
+        {
+          "peak_swe_date": "2014-03-28",
+          "peak_swe_mm": 657.86,
+          "water_year": 2014,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 409.7567425
+        },
+        {
+          "peak_swe_date": "2015-02-02",
+          "peak_swe_mm": 266.7,
+          "water_year": 2015,
+          "window_density_count": 20,
+          "window_density_median_kg_m3": 332.795699
+        },
+        {
+          "peak_swe_date": "2016-03-29",
+          "peak_swe_mm": 515.62,
+          "water_year": 2016,
+          "window_density_count": 23,
+          "window_density_median_kg_m3": 408.333333
+        },
+        {
+          "peak_swe_date": "2017-03-09",
+          "peak_swe_mm": 619.76,
+          "water_year": 2017,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 353.4034375
+        },
+        {
+          "peak_swe_date": "2018-04-15",
+          "peak_swe_mm": 769.62,
+          "water_year": 2018,
+          "window_density_count": 30,
+          "window_density_median_kg_m3": 428.778468
+        },
+        {
+          "peak_swe_date": "2019-03-15",
+          "peak_swe_mm": 518.16,
+          "water_year": 2019,
+          "window_density_count": 21,
+          "window_density_median_kg_m3": 344.642857
+        },
+        {
+          "peak_swe_date": "2020-04-05",
+          "peak_swe_mm": 563.88,
+          "water_year": 2020,
+          "window_density_count": 29,
+          "window_density_median_kg_m3": 359.016393
+        },
+        {
+          "peak_swe_date": "2021-03-30",
+          "peak_swe_mm": 622.3,
+          "water_year": 2021,
+          "window_density_count": 25,
+          "window_density_median_kg_m3": 382.539683
+        },
+        {
+          "peak_swe_date": "2022-03-19",
+          "peak_swe_mm": 525.78,
+          "water_year": 2022,
+          "window_density_count": 18,
+          "window_density_median_kg_m3": 359.82456149999996
+        },
+        {
+          "peak_swe_date": "2023-04-03",
+          "peak_swe_mm": 594.36,
+          "water_year": 2023,
+          "window_density_count": 16,
+          "window_density_median_kg_m3": 367.420635
+        },
+        {
+          "peak_swe_date": "2024-03-12",
+          "peak_swe_mm": 381.0,
+          "water_year": 2024,
+          "window_density_count": 8,
+          "window_density_median_kg_m3": 292.1573475
+        },
+        {
+          "peak_swe_date": "2024-12-30",
+          "peak_swe_mm": 261.62,
+          "water_year": 2025,
+          "window_density_count": 9,
+          "window_density_median_kg_m3": 290.909091
+        }
+      ],
+      "as_built_ssd_kg_m3": 250.0,
+      "fallback_prior_kg_m3": 350.0,
+      "observed_density_summary": {
+        "count": 23,
+        "max": 428.778468,
+        "mean": 365.33029995652174,
+        "median": 370.967742,
+        "min": 290.909091
+      },
+      "selected_ssd_kg_m3": 370.0,
+      "selected_ssd_source": "observed_peak_swe_period_density_median",
+      "site_id": "snotel_mica_creek_st_joe_id",
+      "snow_climate": "northern_rockies_intermountain",
+      "station_triplet": "623:ID:SNTL"
+    },
+    {
+      "annual_density_count": 16,
+      "annual_peak_window_densities": [
+        {
+          "peak_swe_date": "2007-04-27",
+          "peak_swe_mm": 1889.76,
+          "water_year": 2007,
+          "window_density_count": 1,
+          "window_density_median_kg_m3": 513.571429
+        },
+        {
+          "peak_swe_date": "2009-05-13",
+          "peak_swe_mm": 2209.8,
+          "water_year": 2009,
+          "window_density_count": 1,
+          "window_density_median_kg_m3": 517.857143
+        },
+        {
+          "peak_swe_date": "2010-05-12",
+          "peak_swe_mm": 1770.38,
+          "water_year": 2010,
+          "window_density_count": 12,
+          "window_density_median_kg_m3": 497.49776799999995
+        },
+        {
+          "peak_swe_date": "2011-05-14",
+          "peak_swe_mm": 2677.16,
+          "water_year": 2011,
+          "window_density_count": 12,
+          "window_density_median_kg_m3": 473.08363399999996
+        },
+        {
+          "peak_swe_date": "2012-04-19",
+          "peak_swe_mm": 2143.76,
+          "water_year": 2012,
+          "window_density_count": 30,
+          "window_density_median_kg_m3": 483.4847535
+        },
+        {
+          "peak_swe_date": "2014-05-11",
+          "peak_swe_mm": 2423.16,
+          "water_year": 2014,
+          "window_density_count": 1,
+          "window_density_median_kg_m3": 521.787709
+        },
+        {
+          "peak_swe_date": "2015-04-14",
+          "peak_swe_mm": 690.88,
+          "water_year": 2015,
+          "window_density_count": 19,
+          "window_density_median_kg_m3": 450.847458
+        },
+        {
+          "peak_swe_date": "2016-04-08",
+          "peak_swe_mm": 1986.28,
+          "water_year": 2016,
+          "window_density_count": 14,
+          "window_density_median_kg_m3": 492.892157
+        },
+        {
+          "peak_swe_date": "2018-04-20",
+          "peak_swe_mm": 2067.56,
+          "water_year": 2018,
+          "window_density_count": 17,
+          "window_density_median_kg_m3": 464.571429
+        },
+        {
+          "peak_swe_date": "2019-04-19",
+          "peak_swe_mm": 1686.56,
+          "water_year": 2019,
+          "window_density_count": 5,
+          "window_density_median_kg_m3": 493.939394
+        },
+        {
+          "peak_swe_date": "2020-04-05",
+          "peak_swe_mm": 2286.0,
+          "water_year": 2020,
+          "window_density_count": 14,
+          "window_density_median_kg_m3": 495.467033
+        },
+        {
+          "peak_swe_date": "2021-04-19",
+          "peak_swe_mm": 2369.82,
+          "water_year": 2021,
+          "window_density_count": 14,
+          "window_density_median_kg_m3": 488.1923395
+        },
+        {
+          "peak_swe_date": "2022-05-15",
+          "peak_swe_mm": 2159.0,
+          "water_year": 2022,
+          "window_density_count": 1,
+          "window_density_median_kg_m3": 513.605442
+        },
+        {
+          "peak_swe_date": "2023-04-28",
+          "peak_swe_mm": 1905.0,
+          "water_year": 2023,
+          "window_density_count": 13,
+          "window_density_median_kg_m3": 466.666667
+        },
+        {
+          "peak_swe_date": "2024-05-09",
+          "peak_swe_mm": 1549.4,
+          "water_year": 2024,
+          "window_density_count": 5,
+          "window_density_median_kg_m3": 517.54386
+        },
+        {
+          "peak_swe_date": "2024-12-30",
+          "peak_swe_mm": 873.76,
+          "water_year": 2025,
+          "window_density_count": 7,
+          "window_density_median_kg_m3": 352.173913
+        }
+      ],
+      "as_built_ssd_kg_m3": 250.0,
+      "fallback_prior_kg_m3": 480.0,
+      "observed_density_summary": {
+        "count": 16,
+        "max": 521.787709,
+        "mean": 483.9488830625,
+        "median": 493.4157755,
+        "min": 352.173913
+      },
+      "selected_ssd_kg_m3": 495.0,
+      "selected_ssd_source": "observed_peak_swe_period_density_median",
+      "site_id": "snotel_paradise_wa",
+      "snow_climate": "cascades_maritime",
+      "station_triplet": "679:WA:SNTL"
+    },
+    {
+      "annual_density_count": 19,
+      "annual_peak_window_densities": [
+        {
+          "peak_swe_date": "2006-04-16",
+          "peak_swe_mm": 1440.18,
+          "water_year": 2006,
+          "window_density_count": 17,
+          "window_density_median_kg_m3": 470.08547
+        },
+        {
+          "peak_swe_date": "2007-02-28",
+          "peak_swe_mm": 701.04,
+          "water_year": 2007,
+          "window_density_count": 17,
+          "window_density_median_kg_m3": 359.210526
+        },
+        {
+          "peak_swe_date": "2008-02-24",
+          "peak_swe_mm": 939.8,
+          "water_year": 2008,
+          "window_density_count": 18,
+          "window_density_median_kg_m3": 381.994048
+        },
+        {
+          "peak_swe_date": "2009-03-16",
+          "peak_swe_mm": 944.88,
+          "water_year": 2009,
+          "window_density_count": 21,
+          "window_density_median_kg_m3": 402.173913
+        },
+        {
+          "peak_swe_date": "2010-04-12",
+          "peak_swe_mm": 1092.2,
+          "water_year": 2010,
+          "window_density_count": 22,
+          "window_density_median_kg_m3": 451.87643
+        },
+        {
+          "peak_swe_date": "2012-04-13",
+          "peak_swe_mm": 675.64,
+          "water_year": 2012,
+          "window_density_count": 27,
+          "window_density_median_kg_m3": 400.0
+        },
+        {
+          "peak_swe_date": "2013-03-08",
+          "peak_swe_mm": 518.16,
+          "water_year": 2013,
+          "window_density_count": 15,
+          "window_density_median_kg_m3": 379.245283
+        },
+        {
+          "peak_swe_date": "2014-04-04",
+          "peak_swe_mm": 297.18,
+          "water_year": 2014,
+          "window_density_count": 23,
+          "window_density_median_kg_m3": 290.47619
+        },
+        {
+          "peak_swe_date": "2014-12-30",
+          "peak_swe_mm": 177.8,
+          "water_year": 2015,
+          "window_density_count": 22,
+          "window_density_median_kg_m3": 287.5
+        },
+        {
+          "peak_swe_date": "2016-03-15",
+          "peak_swe_mm": 965.2,
+          "water_year": 2016,
+          "window_density_count": 16,
+          "window_density_median_kg_m3": 436.694678
+        },
+        {
+          "peak_swe_date": "2017-01-05",
+          "peak_swe_mm": 421.64,
+          "water_year": 2017,
+          "window_density_count": 8,
+          "window_density_median_kg_m3": 247.954671
+        },
+        {
+          "peak_swe_date": "2018-03-26",
+          "peak_swe_mm": 546.1,
+          "water_year": 2018,
+          "window_density_count": 18,
+          "window_density_median_kg_m3": 348.6833855
+        },
+        {
+          "peak_swe_date": "2019-04-02",
+          "peak_swe_mm": 1699.26,
+          "water_year": 2019,
+          "window_density_count": 12,
+          "window_density_median_kg_m3": 450.306836
+        },
+        {
+          "peak_swe_date": "2020-04-06",
+          "peak_swe_mm": 589.28,
+          "water_year": 2020,
+          "window_density_count": 15,
+          "window_density_median_kg_m3": 320.588235
+        },
+        {
+          "peak_swe_date": "2021-03-22",
+          "peak_swe_mm": 751.84,
+          "water_year": 2021,
+          "window_density_count": 17,
+          "window_density_median_kg_m3": 437.878788
+        },
+        {
+          "peak_swe_date": "2022-01-11",
+          "peak_swe_mm": 701.04,
+          "water_year": 2022,
+          "window_density_count": 5,
+          "window_density_median_kg_m3": 340.740741
+        },
+        {
+          "peak_swe_date": "2022-12-30",
+          "peak_swe_mm": 436.88,
+          "water_year": 2023,
+          "window_density_count": 11,
+          "window_density_median_kg_m3": 290.0
+        },
+        {
+          "peak_swe_date": "2024-04-01",
+          "peak_swe_mm": 1023.62,
+          "water_year": 2024,
+          "window_density_count": 16,
+          "window_density_median_kg_m3": 447.6140935
+        },
+        {
+          "peak_swe_date": "2024-12-29",
+          "peak_swe_mm": 386.08,
+          "water_year": 2025,
+          "window_density_count": 14,
+          "window_density_median_kg_m3": 280.0
+        }
+      ],
+      "as_built_ssd_kg_m3": 250.0,
+      "fallback_prior_kg_m3": 480.0,
+      "observed_density_summary": {
+        "count": 19,
+        "max": 470.08547,
+        "mean": 369.63280463157895,
+        "median": 379.245283,
+        "min": 247.954671
+      },
+      "selected_ssd_kg_m3": 380.0,
+      "selected_ssd_source": "observed_peak_swe_period_density_median",
+      "site_id": "snotel_css_lab_ca",
+      "snow_climate": "sierra_maritime",
+      "station_triplet": "428:CA:SNTL"
+    },
+    {
+      "annual_density_count": 21,
+      "annual_peak_window_densities": [
+        {
+          "peak_swe_date": "2003-05-11",
+          "peak_swe_mm": 919.48,
+          "water_year": 2003,
+          "window_density_count": 31,
+          "window_density_median_kg_m3": 468.181818
+        },
+        {
+          "peak_swe_date": "2004-04-27",
+          "peak_swe_mm": 1089.66,
+          "water_year": 2004,
+          "window_density_count": 16,
+          "window_density_median_kg_m3": 492.2737465
+        },
+        {
+          "peak_swe_date": "2005-04-19",
+          "peak_swe_mm": 1628.14,
+          "water_year": 2005,
+          "window_density_count": 11,
+          "window_density_median_kg_m3": 412.666667
+        },
+        {
+          "peak_swe_date": "2006-04-17",
+          "peak_swe_mm": 1732.28,
+          "water_year": 2006,
+          "window_density_count": 12,
+          "window_density_median_kg_m3": 419.91298800000004
+        },
+        {
+          "peak_swe_date": "2007-04-24",
+          "peak_swe_mm": 764.54,
+          "water_year": 2007,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 456.30929749999996
+        },
+        {
+          "peak_swe_date": "2009-04-20",
+          "peak_swe_mm": 1374.14,
+          "water_year": 2009,
+          "window_density_count": 20,
+          "window_density_median_kg_m3": 441.30291
+        },
+        {
+          "peak_swe_date": "2010-05-15",
+          "peak_swe_mm": 1026.16,
+          "water_year": 2010,
+          "window_density_count": 23,
+          "window_density_median_kg_m3": 468.292683
+        },
+        {
+          "peak_swe_date": "2012-04-20",
+          "peak_swe_mm": 833.12,
+          "water_year": 2012,
+          "window_density_count": 28,
+          "window_density_median_kg_m3": 449.62982550000004
+        },
+        {
+          "peak_swe_date": "2013-04-22",
+          "peak_swe_mm": 889.0,
+          "water_year": 2013,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 432.477954
+        },
+        {
+          "peak_swe_date": "2014-04-06",
+          "peak_swe_mm": 825.5,
+          "water_year": 2014,
+          "window_density_count": 25,
+          "window_density_median_kg_m3": 373.333333
+        },
+        {
+          "peak_swe_date": "2015-03-06",
+          "peak_swe_mm": 548.64,
+          "water_year": 2015,
+          "window_density_count": 18,
+          "window_density_median_kg_m3": 372.52453149999997
+        },
+        {
+          "peak_swe_date": "2016-03-31",
+          "peak_swe_mm": 855.98,
+          "water_year": 2016,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 403.800366
+        },
+        {
+          "peak_swe_date": "2017-05-02",
+          "peak_swe_mm": 1506.22,
+          "water_year": 2017,
+          "window_density_count": 3,
+          "window_density_median_kg_m3": 492.857143
+        },
+        {
+          "peak_swe_date": "2018-04-21",
+          "peak_swe_mm": 759.46,
+          "water_year": 2018,
+          "window_density_count": 24,
+          "window_density_median_kg_m3": 447.17279
+        },
+        {
+          "peak_swe_date": "2019-04-21",
+          "peak_swe_mm": 1437.64,
+          "water_year": 2019,
+          "window_density_count": 12,
+          "window_density_median_kg_m3": 457.01011
+        },
+        {
+          "peak_swe_date": "2020-04-23",
+          "peak_swe_mm": 1173.48,
+          "water_year": 2020,
+          "window_density_count": 12,
+          "window_density_median_kg_m3": 484.24202149999996
+        },
+        {
+          "peak_swe_date": "2021-04-27",
+          "peak_swe_mm": 830.58,
+          "water_year": 2021,
+          "window_density_count": 29,
+          "window_density_median_kg_m3": 485.416667
+        },
+        {
+          "peak_swe_date": "2022-04-24",
+          "peak_swe_mm": 861.06,
+          "water_year": 2022,
+          "window_density_count": 21,
+          "window_density_median_kg_m3": 471.428571
+        },
+        {
+          "peak_swe_date": "2023-04-06",
+          "peak_swe_mm": 1793.24,
+          "water_year": 2023,
+          "window_density_count": 16,
+          "window_density_median_kg_m3": 379.13206
+        },
+        {
+          "peak_swe_date": "2024-04-07",
+          "peak_swe_mm": 1234.44,
+          "water_year": 2024,
+          "window_density_count": 18,
+          "window_density_median_kg_m3": 391.077586
+        },
+        {
+          "peak_swe_date": "2024-12-18",
+          "peak_swe_mm": 111.76,
+          "water_year": 2025,
+          "window_density_count": 9,
+          "window_density_median_kg_m3": 257.142857
+        }
+      ],
+      "as_built_ssd_kg_m3": 250.0,
+      "fallback_prior_kg_m3": 350.0,
+      "observed_density_summary": {
+        "count": 21,
+        "max": 492.857143,
+        "mean": 431.2469488333333,
+        "median": 447.17279,
+        "min": 257.142857
+      },
+      "selected_ssd_kg_m3": 445.0,
+      "selected_ssd_source": "observed_peak_swe_period_density_median",
+      "site_id": "snotel_snowbird_ut",
+      "snow_climate": "wasatch_intermountain",
+      "station_triplet": "766:UT:SNTL"
+    },
+    {
+      "annual_density_count": 20,
+      "annual_peak_window_densities": [
+        {
+          "peak_swe_date": "2006-03-26",
+          "peak_swe_mm": 325.12,
+          "water_year": 2006,
+          "window_density_count": 27,
+          "window_density_median_kg_m3": 290.909091
+        },
+        {
+          "peak_swe_date": "2007-04-26",
+          "peak_swe_mm": 454.66,
+          "water_year": 2007,
+          "window_density_count": 24,
+          "window_density_median_kg_m3": 428.57624799999996
+        },
+        {
+          "peak_swe_date": "2008-04-17",
+          "peak_swe_mm": 378.46,
+          "water_year": 2008,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 320.86956499999997
+        },
+        {
+          "peak_swe_date": "2009-04-18",
+          "peak_swe_mm": 406.4,
+          "water_year": 2009,
+          "window_density_count": 23,
+          "window_density_median_kg_m3": 342.424242
+        },
+        {
+          "peak_swe_date": "2010-04-07",
+          "peak_swe_mm": 317.5,
+          "water_year": 2010,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 284.662237
+        },
+        {
+          "peak_swe_date": "2011-05-21",
+          "peak_swe_mm": 431.8,
+          "water_year": 2011,
+          "window_density_count": 27,
+          "window_density_median_kg_m3": 389.473684
+        },
+        {
+          "peak_swe_date": "2012-03-03",
+          "peak_swe_mm": 279.4,
+          "water_year": 2012,
+          "window_density_count": 28,
+          "window_density_median_kg_m3": 262.659698
+        },
+        {
+          "peak_swe_date": "2013-05-10",
+          "peak_swe_mm": 424.18,
+          "water_year": 2013,
+          "window_density_count": 29,
+          "window_density_median_kg_m3": 384.615385
+        },
+        {
+          "peak_swe_date": "2014-04-08",
+          "peak_swe_mm": 469.9,
+          "water_year": 2014,
+          "window_density_count": 25,
+          "window_density_median_kg_m3": 328.571429
+        },
+        {
+          "peak_swe_date": "2015-05-24",
+          "peak_swe_mm": 360.68,
+          "water_year": 2015,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 428.3333335
+        },
+        {
+          "peak_swe_date": "2016-05-01",
+          "peak_swe_mm": 419.1,
+          "water_year": 2016,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 377.6578075
+        },
+        {
+          "peak_swe_date": "2017-04-05",
+          "peak_swe_mm": 386.08,
+          "water_year": 2017,
+          "window_density_count": 25,
+          "window_density_median_kg_m3": 405.555556
+        },
+        {
+          "peak_swe_date": "2018-04-09",
+          "peak_swe_mm": 307.34,
+          "water_year": 2018,
+          "window_density_count": 20,
+          "window_density_median_kg_m3": 330.30303
+        },
+        {
+          "peak_swe_date": "2019-04-13",
+          "peak_swe_mm": 340.36,
+          "water_year": 2019,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 340.317139
+        },
+        {
+          "peak_swe_date": "2020-04-25",
+          "peak_swe_mm": 480.06,
+          "water_year": 2020,
+          "window_density_count": 22,
+          "window_density_median_kg_m3": 417.5883255
+        },
+        {
+          "peak_swe_date": "2021-04-22",
+          "peak_swe_mm": 381.0,
+          "water_year": 2021,
+          "window_density_count": 19,
+          "window_density_median_kg_m3": 350.0
+        },
+        {
+          "peak_swe_date": "2022-04-17",
+          "peak_swe_mm": 322.58,
+          "water_year": 2022,
+          "window_density_count": 31,
+          "window_density_median_kg_m3": 369.69697
+        },
+        {
+          "peak_swe_date": "2023-04-05",
+          "peak_swe_mm": 347.98,
+          "water_year": 2023,
+          "window_density_count": 26,
+          "window_density_median_kg_m3": 317.6633445
+        },
+        {
+          "peak_swe_date": "2024-03-29",
+          "peak_swe_mm": 381.0,
+          "water_year": 2024,
+          "window_density_count": 27,
+          "window_density_median_kg_m3": 319.148936
+        },
+        {
+          "peak_swe_date": "2024-12-30",
+          "peak_swe_mm": 137.16,
+          "water_year": 2025,
+          "window_density_count": 15,
+          "window_density_median_kg_m3": 238.888889
+        }
+      ],
+      "as_built_ssd_kg_m3": 250.0,
+      "fallback_prior_kg_m3": 300.0,
+      "observed_density_summary": {
+        "count": 20,
+        "max": 428.57624799999996,
+        "mean": 346.3957455,
+        "median": 341.3706905,
+        "min": 238.888889
+      },
+      "selected_ssd_kg_m3": 340.0,
+      "selected_ssd_source": "observed_peak_swe_period_density_median",
+      "site_id": "snotel_niwot_co",
+      "snow_climate": "front_range_continental",
+      "station_triplet": "663:CO:SNTL"
+    }
+  ]
+}

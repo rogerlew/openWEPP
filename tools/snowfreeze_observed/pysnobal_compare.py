@@ -140,6 +140,11 @@ def main(argv: list[str] | None = None) -> int:
         default="all-lanes",
         help="all-lanes holds on any failed lane; site-sane proceeds when each site has a passing lane.",
     )
+    parser.add_argument(
+        "--water-year-segments",
+        action="store_true",
+        help="Run each lane as independent water-year windows and merge the diagnostic output.",
+    )
     args = parser.parse_args(argv)
 
     python = Path(os.environ.get("PYSNOBAL_PYTHON", sys.executable))
@@ -154,6 +159,7 @@ def main(argv: list[str] | None = None) -> int:
         end_date=args.end_date,
         reuse_existing=args.reuse_existing,
         route_policy=args.route_policy,
+        water_year_segments=args.water_year_segments,
     )
     write_json(args.output_json.resolve(), summary)
     write_markdown(args.output_md.resolve(), summary)
@@ -171,6 +177,7 @@ def run_all_sites(
     end_date: str | None,
     reuse_existing: bool,
     route_policy: str,
+    water_year_segments: bool,
 ) -> dict[str, Any]:
     if not input_root.is_dir():
         raise FileNotFoundError(f"input root not found: {input_root}")
@@ -187,7 +194,9 @@ def run_all_sites(
             "pysnobal_path": str(pysnobal_path),
             "bulk_density_ceiling_kgm3": BULK_DENSITY_CEILING_KGM3,
             "route_policy": route_policy,
-            "filters": summary_filters(site_filters, lane_filters, start_date, end_date),
+            "filters": summary_filters(
+                site_filters, lane_filters, start_date, end_date, water_year_segments
+            ),
             "sites": [],
             "route_recommendation": "HOLD-PYSNOBAL-UNAVAILABLE",
             "pysnobal_unavailable_reason": probe,
@@ -214,6 +223,7 @@ def run_all_sites(
             start_date=start_date,
             end_date=end_date,
             reuse_existing=reuse_existing,
+            water_year_segments=water_year_segments,
         )
         sites.append(site_summary)
 
@@ -227,20 +237,27 @@ def run_all_sites(
         "pysnobal_path": str(pysnobal_path),
         "bulk_density_ceiling_kgm3": BULK_DENSITY_CEILING_KGM3,
         "route_policy": route_policy,
-        "filters": summary_filters(site_filters, lane_filters, start_date, end_date),
+        "filters": summary_filters(
+            site_filters, lane_filters, start_date, end_date, water_year_segments
+        ),
         "sites": sites,
         "route_recommendation": route,
     }
 
 
 def summary_filters(
-    site_filters: set[str], lane_filters: set[str], start_date: str | None, end_date: str | None
+    site_filters: set[str],
+    lane_filters: set[str],
+    start_date: str | None,
+    end_date: str | None,
+    water_year_segments: bool,
 ) -> dict[str, Any]:
     return {
         "sites": sorted(site_filters),
         "lanes": sorted(lane_filters),
         "start_date": start_date,
         "end_date": end_date,
+        "water_year_segments": water_year_segments,
     }
 
 
@@ -278,6 +295,7 @@ def run_site(
     start_date: str | None,
     end_date: str | None,
     reuse_existing: bool,
+    water_year_segments: bool,
 ) -> dict[str, Any]:
     lanes = []
     for lane_dir in sorted(path for path in site_dir.iterdir() if path.is_dir()):
@@ -294,6 +312,7 @@ def run_site(
                 start_date=start_date,
                 end_date=end_date,
                 reuse_existing=reuse_existing,
+                water_year_segments=water_year_segments,
             )
         )
     if not lanes:
@@ -318,6 +337,7 @@ def run_lane(
     start_date: str | None,
     end_date: str | None,
     reuse_existing: bool,
+    water_year_segments: bool,
 ) -> dict[str, Any]:
     required = ["forcing.csv", "config.yaml", "lineage.json", "audit.json"]
     for name in required:
@@ -327,6 +347,15 @@ def run_lane(
     lineage_error = validate_lineage(lineage)
     if lineage_error:
         return lane_failure(lane_dir, lineage_error)
+
+    if water_year_segments and start_date is None and end_date is None:
+        return run_lane_water_year_segments(
+            lane_dir=lane_dir,
+            observed_rows=observed_rows,
+            pysnobal_python=pysnobal_python,
+            pysnobal_path=pysnobal_path,
+            reuse_existing=reuse_existing,
+        )
 
     output_path = selected_output_path(lane_dir, start_date, end_date)
     if reuse_existing and start_date is None and end_date is None and output_path.is_file():
@@ -393,6 +422,108 @@ def run_lane(
     return summary
 
 
+def run_lane_water_year_segments(
+    lane_dir: Path,
+    observed_rows: list[dict[str, str]],
+    pysnobal_python: Path,
+    pysnobal_path: Path,
+    reuse_existing: bool,
+) -> dict[str, Any]:
+    output_path = lane_dir / "pysnobal_output_water_year_segments.csv"
+    segment_path = lane_dir / "pysnobal_water_year_segments.json"
+    if reuse_existing and output_path.is_file() and segment_path.is_file():
+        try:
+            summary = summarize_output(
+                lane_dir=lane_dir,
+                output_path=output_path,
+                observed_rows=observed_rows,
+                reused_existing=True,
+                start_date=None,
+                end_date=None,
+            )
+            summary["segment_mode"] = "water_year"
+            summary["segment_summaries"] = json.loads(segment_path.read_text(encoding="utf-8"))
+        except ValueError as error:
+            return lane_failure(lane_dir, f"existing segmented PySnobal output failed sanity: {error}")
+        write_json(lane_dir / "pysnobal_summary.json", summary)
+        write_lane_markdown(lane_dir / "pysnobal_summary.md", summary)
+        return summary
+
+    segments = water_year_windows(lane_dir / "forcing.csv")
+    if not segments:
+        return lane_failure(lane_dir, "no water-year windows available for segmented PySnobal run")
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = prepend_path(env.get("PYTHONPATH"), pysnobal_path)
+    segment_summaries = []
+    segment_outputs = []
+    for label, start, end in segments:
+        segment_output = lane_dir / f"pysnobal_output_{label}.csv"
+        completed = subprocess.run(
+            [
+                str(pysnobal_python),
+                "-c",
+                CHILD_RUNNER,
+                str(lane_dir),
+                start,
+                end,
+                str(segment_output),
+            ],
+            cwd=REPO_ROOT,
+            env=env,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        (lane_dir / f"pysnobal_stdout_{label}.txt").write_text(
+            completed.stdout, encoding="utf-8"
+        )
+        (lane_dir / f"pysnobal_stderr_{label}.txt").write_text(
+            completed.stderr, encoding="utf-8"
+        )
+        if completed.returncode != 0:
+            return lane_failure(
+                lane_dir,
+                "PySnobal water-year segment {label} failed with exit code {code}: {stderr}".format(
+                    label=label,
+                    code=completed.returncode,
+                    stderr=completed.stderr.strip(),
+                ),
+            )
+        try:
+            child_summary = json.loads(completed.stdout.strip().splitlines()[-1])
+        except (IndexError, json.JSONDecodeError) as error:
+            return lane_failure(
+                lane_dir,
+                f"PySnobal water-year segment {label} did not return JSON summary: {error}",
+            )
+        child_summary["segment_label"] = label
+        child_summary["segment_start"] = start
+        child_summary["segment_end"] = end
+        segment_summaries.append(child_summary)
+        segment_outputs.append(segment_output)
+
+    merge_segment_outputs(segment_outputs, output_path)
+    write_json(segment_path, {"segments": segment_summaries})
+    try:
+        summary = summarize_output(
+            lane_dir=lane_dir,
+            output_path=output_path,
+            observed_rows=observed_rows,
+            reused_existing=False,
+            start_date=None,
+            end_date=None,
+        )
+    except ValueError as error:
+        return lane_failure(lane_dir, f"segmented PySnobal output failed sanity: {error}")
+    summary["segment_mode"] = "water_year"
+    summary["segment_summaries"] = {"segments": segment_summaries}
+    write_json(lane_dir / "pysnobal_summary.json", summary)
+    write_lane_markdown(lane_dir / "pysnobal_summary.md", summary)
+    return summary
+
+
 def selected_output_path(lane_dir: Path, start_date: str | None, end_date: str | None) -> Path:
     if start_date is None and end_date is None:
         return lane_dir / "pysnobal_output.csv"
@@ -401,6 +532,62 @@ def selected_output_path(lane_dir: Path, start_date: str | None, end_date: str |
         end=safe_label(end_date or "end"),
     )
     return lane_dir / f"pysnobal_output_{label}.csv"
+
+
+def water_year_windows(forcing_path: Path) -> list[tuple[str, str, str]]:
+    first: dt.datetime | None = None
+    last: dt.datetime | None = None
+    with forcing_path.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            timestamp = dt.datetime.fromisoformat(row["Datetime"])
+            if first is None or timestamp < first:
+                first = timestamp
+            if last is None or timestamp > last:
+                last = timestamp
+    if first is None or last is None:
+        return []
+    windows = []
+    for water_year in range(water_year_for(first), water_year_for(last) + 1):
+        start = max(first, dt.datetime(water_year - 1, 10, 1))
+        end = min(last, dt.datetime(water_year, 9, 30, 23, 59, 59))
+        if start > end:
+            continue
+        windows.append(
+            (
+                f"wy{water_year}",
+                start.strftime("%Y-%m-%d %H:%M:%S"),
+                end.strftime("%Y-%m-%d %H:%M:%S"),
+            )
+        )
+    return windows
+
+
+def water_year_for(timestamp: dt.datetime) -> int:
+    return timestamp.year + 1 if timestamp.month >= 10 else timestamp.year
+
+
+def merge_segment_outputs(segment_outputs: list[Path], output_path: Path) -> None:
+    fieldnames: list[str] | None = None
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", newline="", encoding="utf-8") as output_handle:
+        writer: csv.DictWriter[str] | None = None
+        for segment_output in segment_outputs:
+            with segment_output.open(newline="", encoding="utf-8") as input_handle:
+                reader = csv.DictReader(input_handle)
+                if fieldnames is None:
+                    if reader.fieldnames is None:
+                        raise ValueError(f"segment output lacks header: {segment_output}")
+                    fieldnames = list(reader.fieldnames)
+                    writer = csv.DictWriter(output_handle, fieldnames=fieldnames)
+                    writer.writeheader()
+                elif reader.fieldnames != fieldnames:
+                    raise ValueError(f"segment output header changed: {segment_output}")
+                if writer is None:
+                    raise AssertionError("writer initialized when fieldnames are set")
+                for row in reader:
+                    writer.writerow(row)
+    if fieldnames is None:
+        raise ValueError("no segment outputs to merge")
 
 
 def safe_label(value: str) -> str:
@@ -714,12 +901,16 @@ def write_markdown(path: Path, summary: dict[str, Any]) -> None:
         "",
     ]
     filters = summary.get("filters", {})
-    if any(filters.get(key) for key in ("sites", "lanes", "start_date", "end_date")):
+    if any(
+        filters.get(key)
+        for key in ("sites", "lanes", "start_date", "end_date", "water_year_segments")
+    ):
         lines.extend(
             [
                 f"- Site filters: `{filters.get('sites', [])}`",
                 f"- Lane filters: `{filters.get('lanes', [])}`",
                 f"- Window: `{filters.get('start_date')}` to `{filters.get('end_date')}`",
+                f"- Water-year segments: `{filters.get('water_year_segments', False)}`",
                 "",
             ]
         )

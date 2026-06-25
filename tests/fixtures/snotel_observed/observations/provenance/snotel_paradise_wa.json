@@ -1,0 +1,39 @@
+{
+  "access_date": "2026-06-25",
+  "citation": "USDA NRCS National Water and Climate Center AWDB public SNOTEL data; cite station triplet and access date.",
+  "density_formula": "SWE(mm) / snow_depth(m) = kg m^-3",
+  "normalized_files": [
+    {
+      "bytes": 2868928,
+      "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/sites/snotel_paradise_wa.csv",
+      "sha256": "a8505c16a121a27f6d30d034a4d828e0ba3618ac93dbe909324806f708c22795"
+    },
+    {
+      "bytes": null,
+      "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/ssd_characterization.json",
+      "sha256": null
+    }
+  ],
+  "normalized_row_count": 15204,
+  "paired_density_row_count": 3170,
+  "parser_version": "snotel-density-three-way-v1",
+  "raw_files": [
+    {
+      "bytes": 17052913,
+      "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_paradise_wa/daily.json",
+      "sha256": "970f156124d0df927dda2bb77f3922ef505aa14ddbbfea2afbdcfb88e4cf53ff"
+    },
+    {
+      "bytes": 63861,
+      "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_paradise_wa/station.json",
+      "sha256": "5aaf38497d546fc8d45afe95e7894f7317d499e7ea03753e21ecb390e39c1442"
+    }
+  ],
+  "selected_ssd_kg_m3": 495.0,
+  "selected_ssd_source": "observed_peak_swe_period_density_median",
+  "site_id": "snotel_paradise_wa",
+  "source_id": "nrcs_snotel_679_wa_sntl",
+  "source_url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
+  "station_triplet": "679:WA:SNTL",
+  "title": "USDA NRCS AWDB SNOTEL station 679:WA:SNTL"
+}

@@ -425,21 +425,33 @@ Recommended work-package sequence:
    depletion, and publication lineage. Any correction requires
    contract-first authority, benchmark/source-line evidence, and rerun
    observation snow-control gates.
-8. **SNOWFROST-FIDELITY-H: conditional heat-flow/frozen-K adjudication.** After
-   snow-depth control passes or is bounded by a contract-approved snow
-   correction, choose the smallest frost mechanism package still supported by
-   the residuals: no-change/pass, heat-flow thermal property correction,
-   lower-boundary heat correction, or frozen-K/SFCC parameter/model
-   adjudication. Any production candidate requires contract-first authority,
-   benchmark conservation evidence, and observation validation.
-9. **SNOWFROST-FIDELITY-I: conditional migration/fringe candidate.** Consider a
+8. **SNOWFROST-FIDELITY-H: SNOTEL density three-way rubric profile.** Acquire
+   paired SNOTEL SWE/depth/soil-temperature rows for the five SNOTEL fixtures,
+   derive observed-density SSD arms before residual comparison, and score
+   openWEPP, pinned legacy WEPP, and PySnobal as profile overlays under
+   `SC-SNOWFREEZE-001#INV-SNOWFREEZE-050`. Output is a
+   per-model/per-site/per-cell rubric profile, not a scalar tolerance verdict.
+9. **SNOWFROST-FIDELITY-H2: PySnobal CSS WY2017 reproducer/disposition.**
+   Resolve the H hold by reducing the CSS Lab WY2017 PySnobal core failure to a
+   minimal reproducer, fixing the bridge if it is a bridge defect, or ratifying
+   a site/year exclusion or partial-profile policy if it is a PySnobal model
+   limitation.
+10. **SNOWFROST-FIDELITY-I: conditional heat-flow/frozen-K adjudication.** After
+   snow-depth/density control passes or is bounded by a contract-approved snow
+   correction and H2 closes the PySnobal profile overlay, choose the smallest
+   frost mechanism package still supported by the residuals: no-change/pass,
+   heat-flow thermal property correction, lower-boundary heat correction, or
+   frozen-K/SFCC parameter/model adjudication. Any production candidate requires
+   contract-first authority, benchmark conservation evidence, and observation
+   validation.
+11. **SNOWFROST-FIDELITY-J: conditional migration/fringe candidate.** Consider a
    `Qwet` or frozen-fringe term only if A-C show residuals that cannot be
    explained by snow insulation, no-migration heat flow, lower-boundary heat,
    or frozen conductivity. Any candidate must use a frozen/fringe-limited
    conductivity, explicit source-water caps, mass and latent-heat closure, and
    observation validation. The old unfrozen-`kunsat` maximum-gradient block is
    not a production shortcut.
-10. **SNOWFROST-FIDELITY-J: promotion and activation gate.** Promote the smallest
+12. **SNOWFROST-FIDELITY-K: promotion and activation gate.** Promote the smallest
    physics model that passes field observations, benchmark conservation,
    independent operand reconstruction, snow/frost anti-alias fixtures, public
    output parity where parity remains contractual, and direct-publication
@@ -488,7 +500,17 @@ Sleepers W9. Current openWEPP SWE is already close to legacy SWE on common
 model dates (mean absolute deltas about `0.0007-0.0134 m` across the five
 sites), so the next package remains the snow-depth producer/carry/input/
 settlement DC, using legacy as source-line guide and flag evidence rather than
-as a target to bit-match.
+as a target to bit-match. SNOWFROST-FIDELITY-H then added the SNOTEL
+SWE/depth/density corpus and v74 rubric profile report. It derived
+observed-density SSD arms from peak-SWE-period SNOTEL density for all five
+sites and emitted `snotel-density-three-way-comparison-v2` profiles under
+`INV-SNOWFREEZE-050`: all five sites route `STRUCTURAL` in the auxiliary density
+fork, while the rubric remains profile-not-scalar. H is executed-held at
+`HOLD-PYSNOBAL-CSS-WY2017-SNOBAL-CORE-FAILURE`: water-year segmented PySnobal
+passes four sites but CSS Lab WY2017 fails inside PySnobal's C core despite
+finite exported forcing. The next package is H2, a minimal reproducer and
+disposition for that PySnobal profile-overlay blocker before any heat-flow,
+frozen-K, or migration/fringe production physics work.
 
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 H2637 magnitude arc is no longer an active queue item. Absolute forest lateral-flow

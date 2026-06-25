@@ -1,0 +1,269 @@
+{
+  "access_date": "2026-06-25",
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-049",
+  "density_formula": "observed_density_kg_m3 = observed_swe_mm / observed_snow_depth_m",
+  "normal_density_units": "kg m^-3",
+  "normal_depth_units": "m",
+  "normal_swe_units": "mm water equivalent",
+  "normal_temperature_units": "degC",
+  "schema": "snotel-observed-manifest-v1",
+  "sites": [
+    {
+      "fixture": "snotel_mica_creek_st_joe_id",
+      "has_sto": true,
+      "observation_file": "sites/snotel_mica_creek_st_joe_id.csv",
+      "observed_ssd_kg_m3": 370.0,
+      "observed_ssd_source": "observed_peak_swe_period_density_median",
+      "paired_swe_depth_count": 2540,
+      "row_count": 12448,
+      "site_id": "snotel_mica_creek_st_joe_id",
+      "snow_climate": "northern_rockies_intermountain",
+      "station_triplet": "623:ID:SNTL"
+    },
+    {
+      "fixture": "snotel_paradise_wa",
+      "has_sto": true,
+      "observation_file": "sites/snotel_paradise_wa.csv",
+      "observed_ssd_kg_m3": 495.0,
+      "observed_ssd_source": "observed_peak_swe_period_density_median",
+      "paired_swe_depth_count": 3170,
+      "row_count": 15204,
+      "site_id": "snotel_paradise_wa",
+      "snow_climate": "cascades_maritime",
+      "station_triplet": "679:WA:SNTL"
+    },
+    {
+      "fixture": "snotel_css_lab_ca",
+      "has_sto": true,
+      "observation_file": "sites/snotel_css_lab_ca.csv",
+      "observed_ssd_kg_m3": 380.0,
+      "observed_ssd_source": "observed_peak_swe_period_density_median",
+      "paired_swe_depth_count": 1744,
+      "row_count": 15379,
+      "site_id": "snotel_css_lab_ca",
+      "snow_climate": "sierra_maritime",
+      "station_triplet": "428:CA:SNTL"
+    },
+    {
+      "fixture": "snotel_snowbird_ut",
+      "has_sto": true,
+      "observation_file": "sites/snotel_snowbird_ut.csv",
+      "observed_ssd_kg_m3": 445.0,
+      "observed_ssd_source": "observed_peak_swe_period_density_median",
+      "paired_swe_depth_count": 2754,
+      "row_count": 11946,
+      "site_id": "snotel_snowbird_ut",
+      "snow_climate": "wasatch_intermountain",
+      "station_triplet": "766:UT:SNTL"
+    },
+    {
+      "fixture": "snotel_niwot_co",
+      "has_sto": false,
+      "observation_file": "sites/snotel_niwot_co.csv",
+      "observed_ssd_kg_m3": 340.0,
+      "observed_ssd_source": "observed_peak_swe_period_density_median",
+      "paired_swe_depth_count": 3382,
+      "row_count": 16022,
+      "site_id": "snotel_niwot_co",
+      "snow_climate": "front_range_continental",
+      "station_triplet": "663:CO:SNTL"
+    }
+  ],
+  "sources": [
+    {
+      "access_date": "2026-06-25",
+      "citation": "USDA NRCS National Water and Climate Center AWDB public SNOTEL data; cite station triplet and access date.",
+      "density_formula": "SWE(mm) / snow_depth(m) = kg m^-3",
+      "normalized_files": [
+        {
+          "bytes": 2505997,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/sites/snotel_mica_creek_st_joe_id.csv",
+          "sha256": "7050f3ed53e70dd4c600b99f192e074948086ac2c5a7df15f802d91224c037ce"
+        },
+        {
+          "bytes": null,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/ssd_characterization.json",
+          "sha256": null
+        }
+      ],
+      "normalized_row_count": 12448,
+      "paired_density_row_count": 2540,
+      "parser_version": "snotel-density-three-way-v1",
+      "raw_files": [
+        {
+          "bytes": 15202376,
+          "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_mica_creek_st_joe_id/daily.json",
+          "sha256": "691c9ce00a7dfca714e076efc5e6af5748446f4dff01817f972a25cbaafb9ac9"
+        },
+        {
+          "bytes": 63749,
+          "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_mica_creek_st_joe_id/station.json",
+          "sha256": "f892398136fc3d1f9745905468773bc69b453cf93e71e461869609f36e7cc623"
+        }
+      ],
+      "selected_ssd_kg_m3": 370.0,
+      "selected_ssd_source": "observed_peak_swe_period_density_median",
+      "site_id": "snotel_mica_creek_st_joe_id",
+      "source_id": "nrcs_snotel_623_id_sntl",
+      "source_url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
+      "station_triplet": "623:ID:SNTL",
+      "title": "USDA NRCS AWDB SNOTEL station 623:ID:SNTL"
+    },
+    {
+      "access_date": "2026-06-25",
+      "citation": "USDA NRCS National Water and Climate Center AWDB public SNOTEL data; cite station triplet and access date.",
+      "density_formula": "SWE(mm) / snow_depth(m) = kg m^-3",
+      "normalized_files": [
+        {
+          "bytes": 2868928,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/sites/snotel_paradise_wa.csv",
+          "sha256": "a8505c16a121a27f6d30d034a4d828e0ba3618ac93dbe909324806f708c22795"
+        },
+        {
+          "bytes": null,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/ssd_characterization.json",
+          "sha256": null
+        }
+      ],
+      "normalized_row_count": 15204,
+      "paired_density_row_count": 3170,
+      "parser_version": "snotel-density-three-way-v1",
+      "raw_files": [
+        {
+          "bytes": 17052913,
+          "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_paradise_wa/daily.json",
+          "sha256": "970f156124d0df927dda2bb77f3922ef505aa14ddbbfea2afbdcfb88e4cf53ff"
+        },
+        {
+          "bytes": 63861,
+          "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_paradise_wa/station.json",
+          "sha256": "5aaf38497d546fc8d45afe95e7894f7317d499e7ea03753e21ecb390e39c1442"
+        }
+      ],
+      "selected_ssd_kg_m3": 495.0,
+      "selected_ssd_source": "observed_peak_swe_period_density_median",
+      "site_id": "snotel_paradise_wa",
+      "source_id": "nrcs_snotel_679_wa_sntl",
+      "source_url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
+      "station_triplet": "679:WA:SNTL",
+      "title": "USDA NRCS AWDB SNOTEL station 679:WA:SNTL"
+    },
+    {
+      "access_date": "2026-06-25",
+      "citation": "USDA NRCS National Water and Climate Center AWDB public SNOTEL data; cite station triplet and access date.",
+      "density_formula": "SWE(mm) / snow_depth(m) = kg m^-3",
+      "normalized_files": [
+        {
+          "bytes": 2821040,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/sites/snotel_css_lab_ca.csv",
+          "sha256": "c145be9ca6222b8c5ed521b5a11e837f3d213882f0969ab85a53e5d4975eb538"
+        },
+        {
+          "bytes": null,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/ssd_characterization.json",
+          "sha256": null
+        }
+      ],
+      "normalized_row_count": 15379,
+      "paired_density_row_count": 1744,
+      "parser_version": "snotel-density-three-way-v1",
+      "raw_files": [
+        {
+          "bytes": 17217586,
+          "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_css_lab_ca/daily.json",
+          "sha256": "578542af55e03c64cf7d3eadb76043ff59bd3fb0db584e26bddbadd6cc842a78"
+        },
+        {
+          "bytes": 73088,
+          "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_css_lab_ca/station.json",
+          "sha256": "c289e2ba436f1188867d4599c86e20652ca79ae4c1157716600ee081ee52a75d"
+        }
+      ],
+      "selected_ssd_kg_m3": 380.0,
+      "selected_ssd_source": "observed_peak_swe_period_density_median",
+      "site_id": "snotel_css_lab_ca",
+      "source_id": "nrcs_snotel_428_ca_sntl",
+      "source_url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
+      "station_triplet": "428:CA:SNTL",
+      "title": "USDA NRCS AWDB SNOTEL station 428:CA:SNTL"
+    },
+    {
+      "access_date": "2026-06-25",
+      "citation": "USDA NRCS National Water and Climate Center AWDB public SNOTEL data; cite station triplet and access date.",
+      "density_formula": "SWE(mm) / snow_depth(m) = kg m^-3",
+      "normalized_files": [
+        {
+          "bytes": 2227424,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/sites/snotel_snowbird_ut.csv",
+          "sha256": "7fffbfb6e060635c0c5d46835c108022e0386baa94d96e7dabb667b932691992"
+        },
+        {
+          "bytes": null,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/ssd_characterization.json",
+          "sha256": null
+        }
+      ],
+      "normalized_row_count": 11946,
+      "paired_density_row_count": 2754,
+      "parser_version": "snotel-density-three-way-v1",
+      "raw_files": [
+        {
+          "bytes": 13506421,
+          "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_snowbird_ut/daily.json",
+          "sha256": "cbc5a8e9449c1b407b316d1756ae026469e59cb3c5206a6695227a4015ce3d84"
+        },
+        {
+          "bytes": 55605,
+          "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_snowbird_ut/station.json",
+          "sha256": "2fdf08426b7896532c783561f7d54fc543782736cbb2a0bce76d6d509ed1adbf"
+        }
+      ],
+      "selected_ssd_kg_m3": 445.0,
+      "selected_ssd_source": "observed_peak_swe_period_density_median",
+      "site_id": "snotel_snowbird_ut",
+      "source_id": "nrcs_snotel_766_ut_sntl",
+      "source_url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
+      "station_triplet": "766:UT:SNTL",
+      "title": "USDA NRCS AWDB SNOTEL station 766:UT:SNTL"
+    },
+    {
+      "access_date": "2026-06-25",
+      "citation": "USDA NRCS National Water and Climate Center AWDB public SNOTEL data; cite station triplet and access date.",
+      "density_formula": "SWE(mm) / snow_depth(m) = kg m^-3",
+      "normalized_files": [
+        {
+          "bytes": 2843894,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/sites/snotel_niwot_co.csv",
+          "sha256": "3f75d2804db807c3a4b93cc94b4dfcb3e9ad44ecdc6ea328182b820b598f4d1c"
+        },
+        {
+          "bytes": null,
+          "path": "/home/workdir/openWEPP/tests/fixtures/snotel_observed/observations/ssd_characterization.json",
+          "sha256": null
+        }
+      ],
+      "normalized_row_count": 16022,
+      "paired_density_row_count": 3382,
+      "parser_version": "snotel-density-three-way-v1",
+      "raw_files": [
+        {
+          "bytes": 14075951,
+          "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_niwot_co/daily.json",
+          "sha256": "5c5c3e9bc6b4135b201885139e733aa8aff435638dee6f693976e6a530957add"
+        },
+        {
+          "bytes": 22799,
+          "path": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/snotel_awdb_cache/raw/snotel_niwot_co/station.json",
+          "sha256": "0e009567152cf0bfc3ff02d9ae39c022439945c5dbe3ca9e9f2f4aed27687ba0"
+        }
+      ],
+      "selected_ssd_kg_m3": 340.0,
+      "selected_ssd_source": "observed_peak_swe_period_density_median",
+      "site_id": "snotel_niwot_co",
+      "source_id": "nrcs_snotel_663_co_sntl",
+      "source_url": "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
+      "station_triplet": "663:CO:SNTL",
+      "title": "USDA NRCS AWDB SNOTEL station 663:CO:SNTL"
+    }
+  ]
+}
