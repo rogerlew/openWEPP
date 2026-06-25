@@ -76,3 +76,20 @@ Generate SNOWFROST-FIDELITY-C diagnostic SFCC/frozen-K comparison curves:
 The frozen-K diagnostics are research/comparison surfaces only. They do not
 feed production snow/frost runtime physics, do not select texture defaults,
 and do not authorize `Qwet`.
+
+Compare pinned legacy WEPP snow outputs with current openWEPP and observed
+snow-depth rows:
+
+```bash
+.venv/bin/python tools/snowfreeze_observed/legacy_snow_compare.py \
+  --observations-dir tests/fixtures/snowfreeze_observed/observations \
+  --output-dir target/snowfrost_fidelity_f_legacy_compare \
+  --output-json target/snowfrost_fidelity_f_legacy_compare.json \
+  --output-md target/snowfrost_fidelity_f_legacy_compare.md
+```
+
+The legacy comparison helper treats legacy agreement as flag evidence only.
+Legacy WAT `Snow-Water` is SWE, not physical depth. Date-aligned legacy
+physical snow depth is captured from temporary replay daily-winter hour-24
+rows; large graphics `treal(73)=snodpy*1000` and `treal(75)=densg` are retained
+as sparse operand provenance.

@@ -13,6 +13,18 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowfrost-fidelity-f-legacy-snow-depth-assessment-001/` is
+  complete as the legacy snow-depth comparator/output-capture assessment. It
+  added `tools/snowfreeze_observed/legacy_snow_compare.py`, proved pinned
+  legacy WAT `Snow-Water` is SWE only, captured dated legacy physical snow
+  depth from daily-winter hour-24 rows, and retained large graphics
+  `treal(73)=snodpy*1000` / `treal(75)=densg` only as sparse operand
+  provenance. Fresh all-site evidence found legacy closer by mean absolute
+  observed-depth residual on Sleepers South and Morris, current openWEPP closer
+  on Sleepers W9, and both models failing snow-depth control on all three
+  paired-snow sites. Current openWEPP SWE is close to legacy SWE on common
+  dates, so the next route remains snow-depth producer/carry/input/settlement
+  adjudication, not legacy bit-parity or frost heat-flow/frozen-K tuning.
 - `20260625-snowfrost-fidelity-e-snow-depth-fidelity-adjudication-001/` is
   complete as the SNOWFROST-FIDELITY-E correspondence and direction audit. It
   added `SC-SNOWFREEZE-001#INV-SNOWFREEZE-048`, extended the observed harness

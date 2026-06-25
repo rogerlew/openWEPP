@@ -409,28 +409,37 @@ Recommended work-package sequence:
    depth-vs-SWE anti-alias evidence. If correspondence passes and
    `TOL-SNOWFREEZE-009` still fails, frost attribution remains blocked and the
    next route is snow-depth fidelity, not heat-flow or frozen-K tuning.
-6. **SNOWFROST-FIDELITY-F: snow-depth producer/carry/input/settlement DC.**
+6. **SNOWFROST-FIDELITY-F: legacy snow-depth output capture and comparator
+   assessment.** Before production snow-depth correction, capture pinned
+   legacy physical snow depth through an explicit dated output surface and
+   compare legacy snow depth/SWE with current openWEPP and observations. Legacy
+   remains a flagging comparator under ADR-0017, not a correctness target.
+   WAT `Snow-Water` is SWE; physical legacy snow depth must come from
+   daily-winter hour-24 rows, with large graphics retained only as sparse
+   `snodpy`/`densg` operand provenance.
+7. **SNOWFROST-FIDELITY-G: snow-depth producer/carry/input/settlement DC.**
    Close the snow-depth fidelity issue exposed by E. Start from signed residual
-   direction and source-line lineage before production edits: snowpack initial
-   state/carry, snowfall depth input, density/settlement, rain-on-snow storage,
-   melt depletion, and publication lineage. Any correction requires
+   direction, source-line lineage, and F's legacy/openWEPP/observation
+   comparator evidence before production edits: snowpack initial state/carry,
+   snowfall depth input, density/settlement, rain-on-snow storage, melt
+   depletion, and publication lineage. Any correction requires
    contract-first authority, benchmark/source-line evidence, and rerun
    observation snow-control gates.
-7. **SNOWFROST-FIDELITY-G: conditional heat-flow/frozen-K adjudication.** After
+8. **SNOWFROST-FIDELITY-H: conditional heat-flow/frozen-K adjudication.** After
    snow-depth control passes or is bounded by a contract-approved snow
    correction, choose the smallest frost mechanism package still supported by
    the residuals: no-change/pass, heat-flow thermal property correction,
    lower-boundary heat correction, or frozen-K/SFCC parameter/model
    adjudication. Any production candidate requires contract-first authority,
    benchmark conservation evidence, and observation validation.
-8. **SNOWFROST-FIDELITY-H: conditional migration/fringe candidate.** Consider a
+9. **SNOWFROST-FIDELITY-I: conditional migration/fringe candidate.** Consider a
    `Qwet` or frozen-fringe term only if A-C show residuals that cannot be
    explained by snow insulation, no-migration heat flow, lower-boundary heat,
    or frozen conductivity. Any candidate must use a frozen/fringe-limited
    conductivity, explicit source-water caps, mass and latent-heat closure, and
    observation validation. The old unfrozen-`kunsat` maximum-gradient block is
    not a production shortcut.
-9. **SNOWFROST-FIDELITY-I: promotion and activation gate.** Promote the smallest
+10. **SNOWFROST-FIDELITY-J: promotion and activation gate.** Promote the smallest
    physics model that passes field observations, benchmark conservation,
    independent operand reconstruction, snow/frost anti-alias fixtures, public
    output parity where parity remains contractual, and direct-publication
@@ -468,7 +477,18 @@ only `4`, `5`, and `2` adjacent-day timing rescues on Sites 1, 2, and 4. Sites
 3 and 5 remain insufficient for snow-control because they lack paired observed
 snow depth. Heat-flow, frozen-K/SFCC, impedance, and migration/fringe work
 remain unauthorized until a snow-depth producer/carry/input/settlement package
-passes or bounds snow control.
+passes or bounds snow control. SNOWFROST-FIDELITY-F then added a pinned-legacy
+snow comparator and proved legacy physical snow depth must be captured from
+dated daily-winter hour-24 rows; legacy WAT exposes SWE (`Snow-Water`) only,
+and large graphics `treal(73)=snodpy*1000` is sparse operand provenance. Across
+the three paired-snow sites, both current openWEPP and pinned legacy WEPP still
+fail snow-depth control. Legacy is closer by mean absolute observed-depth
+residual on Sleepers South and Morris, while current openWEPP is closer on
+Sleepers W9. Current openWEPP SWE is already close to legacy SWE on common
+model dates (mean absolute deltas about `0.0007-0.0134 m` across the five
+sites), so the next package remains the snow-depth producer/carry/input/
+settlement DC, using legacy as source-line guide and flag evidence rather than
+as a target to bit-match.
 
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 H2637 magnitude arc is no longer an active queue item. Absolute forest lateral-flow
