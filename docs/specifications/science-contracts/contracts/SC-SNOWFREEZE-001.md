@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 74
+contract_version: 75
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -73,6 +73,9 @@ Out of scope:
 | REF-SNOWFREEZE-LEGACY-WNTTIM-MIN | `/workdir/wepp-forest_260430_baseline/src/winter.for:206-235`, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-95`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline precipitation-phase start-time authority for snow/freeze forcing: finite `wnttim < 1.0` is normalized to `1.0` before `stmtim` active membership and rain/snow branch selection. | `[DIRECT][Static]` |
 | REF-SNOWFREEZE-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative snow depth/water and bounded densities are required for physical validity. | `[INFERENCE][Static]` |
 | REF-SNOWFREEZE-FROST-OBS | `tests/fixtures/snowfreeze_observed/` (five WEPP hillslope fixtures + per-site manifests) and the historic frost-depth observation corpus they bind: USGS Sleepers River (`DOI 10.5066/P96753GI`, frost tube + paired snow depth), NRCS SCAN soil temperature (`stationTriplets=2020:ND:SCAN`, derived `0 degC` isotherm), NSIDC GGD498 Midwest frost tubes (`DOI 10.7265/1mcs-q536`), USDA-ARS Reynolds Creek soil temperature (CC-BY), and the WEPP-lineage Dun et al. 2010 Pullman/Morris frost validation (`doi:10.13031/2013.34896`, request-only). | External-authority frost-depth observations under ADR-0017 (legacy/compatibility frost output is a flag, not the acceptance target). | `[DIRECT][Static]` |
+| REF-SNOWFREEZE-SNOWDENSITY01 | `docs/work-packages/20260625-snowdensity-01-evidence-reconciliation-001/` | Evidence reconciliation showing current openWEPP and pinned legacy share the same structural snow-density/depth lineage for the SNOTEL comparison, with maximum as-built openWEPP-vs-legacy density delta `4.351046738461008 kg m^-3`; this routes remediation away from bit-parity and toward a contract-scoped physics candidate. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SNOWFREEZE-ANDERSON1976-CANDIDATE | Anderson snow accumulation/ablation physics lineage as used by SNOBAL/PySnobal-style bulk snowpack densification references; package evidence begins in `docs/work-packages/20260625-snowdensity-01-evidence-reconciliation-001/` and follow-on SNOWDENSITY-03/04 artifacts must bind exact equations/constants before runtime promotion. | Candidate snow-density physics authority only; not a ratified production formula. | `[INFERENCE][Static]` |
+| REF-SNOWFREEZE-SNOBAL-CANDIDATE | Local PySnobal/SNOBAL diagnostic lane and three-way profile evidence from SNOWFROST-FIDELITY-G/H packages. | Reference-implementation profile and sanity evidence for SWE/depth/density behavior; diagnostic flag profile only, not target output and not a runtime dependency. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Variables and Units
 
@@ -127,6 +130,11 @@ Out of scope:
 | `snow_runtime_depth` | `m` | Runtime snow-depth state surface. | winter snow routine | snow/frost diagnostics |
 | `snow_runtime_density` | `kg m^-3` | Runtime snow-density state surface. | winter snow routine | snow/frost diagnostics |
 | `snow_runtime_settle_day_count` | `count` | Runtime snow settle-day counter. | winter snow routine | snow carry-state diagnostics |
+| `snow_model` | `enum` | Snow model selector. Current accepted values are `legacy_wepp` and opt-in candidate `physics_bulk`; `legacy_wepp` remains the default unless a future ratified activation package changes it. | runtime configuration / winter column | snow solver dispatch and diagnostics |
+| `snow_cold_content` | `J m^-2` | Candidate `physics_bulk` bulk snowpack energy deficit relative to isothermal melt conditions. | candidate physics-bulk snow solver | conservation diagnostics and melt/refreeze gates |
+| `snow_liquid_water` | `m water equivalent` | Candidate `physics_bulk` retained liquid-water store within the snowpack before routed release. | candidate physics-bulk snow solver | conservation diagnostics and liquid forcing |
+| `snow_bulk_temperature` | `degC` | Candidate `physics_bulk` bulk snowpack temperature or equivalent thermal state used with cold content. | candidate physics-bulk snow solver | energy-state diagnostics |
+| `snow_cover_age` | `h or day count` | Candidate `physics_bulk` snow-cover age / metamorphism clock independent of legacy `snow_runtime_settle_day_count` naming. | candidate physics-bulk snow solver | densification diagnostics |
 | `snow_hourly_rain` | `m` | Hourly rainfall forcing before snowpack retention. | hourly precipitation partition | snow/rain-retention diagnostics |
 | `snow_hourly_rain_retained` | `m` | Hourly rain retained in snowpack holding capacity. | snow density update | snowpack liquid-storage diagnostics |
 | `snow_hourly_snowfall` | `m` | Hourly snowfall depth forcing. | hourly precipitation partition | snowpack accumulation diagnostics |
@@ -191,6 +199,7 @@ Out of scope:
 | INV-SNOWFREEZE-048 | Snow-depth observation correspondence and anti-alias invariant (`GAP-SNOWFREEZE-002`; draft): the snow-control operand for `INV-SNOWFREEZE-047` is physical snowpack depth, not snow-water equivalent. Modeled depth must be WAT `Snow-Depth` (`mm`) converted from `snow.runtime_depth_m` and may not be substituted with WAT `Snow-Water`, `snow.runtime_swe`, snowfall depth, melt, or any water-storage surface. A snow-control failure may be routed as a snow-depth fidelity issue only after the harness proves all of the following for the paired rows: (1) observed source field semantics are physical snowpack depth with units normalized to `m`; (2) modeled and observed dates represent the same daily stage or any stage difference is explicitly classified; (3) signed residual direction, magnitude, and over/under counts are published, not only absolute residuals; (4) depth-vs-SWE anti-alias evidence shows the failure is not better explained by comparing observed depth to a water-equivalent alias; and (5) missing paired snow rows remain `INCONCLUSIVE`, not a snow or frost defect. When these proofs pass and `TOL-SNOWFREEZE-009` fails, frost-depth attribution stays blocked and the next authorized route is snow-depth fidelity/carry/input/settlement adjudication. When any proof fails, the route is `HARNESS-SURFACE-MISMATCH` or `UNRESOLVED` with a named correspondence blocker. | governance-hold | REF-SNOWFREEZE-FROST-OBS, INV-SNOWFREEZE-047, TOL-SNOWFREEZE-009, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-049 | SNOTEL observed-density correspondence invariant (`GAP-SNOWFREEZE-002`; draft): paired SNOTEL `WTEQ` and `SNWD` rows provide an external-authority snowpack bulk-density surface for snow-depth fidelity adjudication. `WTEQ` is snow-water equivalent in inches and must be normalized to millimeters water equivalent; `SNWD` is physical snowpack depth in inches and must be normalized to meters. Observed bulk density is computed as `observed_density_kg_m3 = observed_swe_mm / observed_snow_depth_m` only when both SWE and physical depth are positive and like-for-like for the same date. Rows with absent depth, absent SWE, zero/trace depth, or impossible/non-finite density are excluded from density verdicts rather than repaired. The `snow.txt` SSD comparison arm may use an observed climatological density only when it is derived before residual comparison from peak-SWE-period SNOTEL density and documented with the derivation; choosing SSD by minimizing modeled-vs-observed depth residual is invalid. Legacy WEPP and PySnobal remain diagnostic flags under ADR-0017; observed SNOTEL SWE/depth/density plus this correspondence are the adjudication authority for the over-accumulation vs low-density fork. Density and SWE tolerances remain provisional under `TOL-SNOWFREEZE-010`; failure routes to snow-depth/density fidelity characterization, not directly to frost or production physics edits. | governance-hold | INV-SNOWFREEZE-003, INV-SNOWFREEZE-048, TOL-SNOWFREEZE-009, TOL-SNOWFREEZE-010, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-050 | Snow/frost fidelity evaluation-rubric invariant (`GAP-SNOWFREEZE-002`; draft): model fidelity to snow/frost observations is assessed by the signature-based, multi-timescale rubric in the GAP-SNOWFREEZE-002 Snow/Frost Fidelity Evaluation Rubric Addendum, not by any single residual tolerance. The rubric decomposes the comparison into process-diagnostic signatures across long-term, seasonal, and event timescales (accumulation, densification/settling, peak magnitude and timing, ablation, rain-on-snow, regime ordering, conservation; for frost: onset, deepening, thaw, frozen duration). Each signature is tagged forcing-robust (`R`) or forcing-limited (`L`): `R` signatures (bulk density, densification trajectory, depth-SWE slope, timing, regime ordering, conservation) are intensive or relative quantities that survive the forcing and representativeness uncertainty budget and carry model verdicts; `L` signatures (absolute peak SWE and depth magnitude) are reported but may not by themselves produce an `OPENWEPP-DEFECTIVE` verdict because they are dominated by gridded-precip, lapse/spatialization, and point-vs-hillslope representativeness error. Time-series cells score by Kling-Gupta-Efficiency decomposition into correlation, bias-ratio, and variability-ratio so the failed mode (timing vs magnitude vs spread) is named rather than smeared; magnitude cells score by median signed bias and IQR; timing cells by date offset. Cell pass-levels are provisional noise-floor estimates under `TOL-SNOWFREEZE-011` and the per-quantity bands `TOL-SNOWFREEZE-007/008/009/010`, calibrated to the uncertainty budget and not fidelity targets. The output is a per-model, per-site, per-cell profile, not a scalar; the ADR-0017 verdict taxonomy is applied per cell; legacy WEPP and PySnobal are scored on the same rubric as diagnostic flag profiles, never as targets. This invariant governs evaluation method only, changes no physics, and supersedes use of `TOL-SNOWFREEZE-009` as a standalone snow-model acceptance band. | governance-hold | INV-SNOWFREEZE-047, INV-SNOWFREEZE-048, INV-SNOWFREEZE-049, REF-SNOWFREEZE-FROST-OBS, ADR-0017, TOL-SNOWFREEZE-011 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-051 | SNOWDENSITY-02 opt-in `physics_bulk` snow-model envelope: openWEPP may develop a deliberate-legacy-divergence snow-density candidate only behind `snow_model = legacy_wepp | physics_bulk`, with `legacy_wepp` remaining the default and `physics_bulk` explicitly opt-in until a later activation package passes this contract's gates. `physics_bulk` is a candidate physics-bulk snowpack model, not an authorized production formula in this amendment. Its candidate state envelope includes SWE, physical depth, bulk density, retained liquid water, snow cold content or bulk temperature, and snow-cover age/metamorphism clock. Its candidate process envelope may include temperature/wind-dependent fresh-snow density, Anderson-1976/SNOBAL-style metamorphism, overburden compaction, wet-snow compaction, liquid retention/release/refreeze, and internal mass/energy closure, but exact equations/constants require SNOWDENSITY-03/04 evidence and hydrology-reviewer ratification before runtime promotion. Site-specific calibration is prohibited: SNOTEL, observed snow depth, legacy WEPP, and PySnobal may classify profile cells and diagnose failure modes, but they may not fit per-site constants, choose SSD by residual minimization, or tune `physics_bulk` separately for a site. `ssd` remains a legacy control-state/provenance input, not a `physics_bulk` density or settlement parameter. PySnobal/SNOBAL and legacy WEPP remain diagnostic flag profiles under ADR-0017, never acceptance targets. Frost physics attribution remains blocked until snow-control failures are passable or bounded by the v74/v75 rubric. | governance-hold | INV-SNOWFREEZE-048, INV-SNOWFREEZE-049, INV-SNOWFREEZE-050, REF-SNOWFREEZE-SNOWDENSITY01, REF-SNOWFREEZE-ANDERSON1976-CANDIDATE, REF-SNOWFREEZE-SNOBAL-CANDIDATE, ADR-0017, ADR-0026, ADR-0027 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Porting-Fidelity Authority
 
@@ -395,6 +404,7 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 - Drift-active process claims in promotion evidence without updated active-lineage authority. `[DIRECT][Static] + [INFERENCE][Static]`
 - Active frost branch execution that omits required routine-chain handoff semantics (`frwatc(1)` at active-day hour-1 ingress and `frwatc(0)` at day-end/thaw-complete egress). `[DIRECT][Static] + [INFERENCE][Static]`
 - Frost-active conductivity coupling that bypasses `frsoil`/`getFreezeCond` authority mapping or exports non-finite `frost.runtime_infcap_frz`. `[DIRECT][Static] + [INFERENCE][Static]`
+- `physics_bulk` selected as a default model, coupled into production runtime, or parameterized from per-site fitted constants before a ratified follow-on package proves the `INV-SNOWFREEZE-051` promotion gates. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -446,6 +456,13 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
   `hrsnow ~= 0.00074545 m`, and preserve downstream compensation prohibitions
   for any residual not owned by the start-time seam.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-026: Any `physics_bulk` producer must remain opt-in,
+  preserve `legacy_wepp` as default and rollback path, expose typed SWE,
+  physical depth, density, liquid-water, and thermal/cold-content state, prove
+  internal mass and energy closure from independent operands, reject per-site
+  tuned constants, and publish v74/v75 rubric profiles before runtime
+  activation or default-candidate promotion.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -479,6 +496,7 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 | HPHYS0318 `stmtim` control-surface trace closure (`INV-SNOWFREEZE-044`) | SIMIMPL28 runtime trace publication and paired fixed-baseline observe ledger | Governance `HOLD` until OpenWEPP diagnostics and fixed-baseline paired `stmtim` observe values exist for the 2013 day 11 hour 11 route; instrumentation alone does not authorize producer/downstream edits | HPHYS0318 `stmtim` trace gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | HPHYS0319 fixed-baseline `stmtim` observe recovery (`INV-SNOWFREEZE-045`) | Temporary fixed-baseline observe recovery plus paired OpenWEPP trace classification | Governance `HOLD` unless paired same-key `stmtim` values prove source-line-owned OpenWEPP defect authority and independent correctness; observe instrumentation alone does not authorize producer/downstream edits | HPHYS0319 fixed-baseline observe gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | HPHYS0320 `stmtim` start-time closure (`INV-SNOWFREEZE-046`) | SIMIMPL28 start-time projection and paired H1/H7/H39 trace rerun | Hard error for non-finite start time; finite below-hour-one starts use baseline `wnttim = 1.0` normalization before snow/rain branch selection; residual divergence stays owned `HOLD` with a named follow-on lane | HPHYS0320 snow/freeze timing closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `physics_bulk` snow-density candidate envelope (`INV-SNOWFREEZE-051`) | Contract, offline snowbench, and future runtime activation review | Governance `HOLD` unless `physics_bulk` remains opt-in, no-site-tuning is proven, candidate equations/constants are ratified, mass/energy closure is independently reconstructed, and v74/v75 rubric profiles show forcing-robust improvement or a documented non-promotion reason | SNOWDENSITY-02 and successors | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Drift activation governance (`INV-SNOWFREEZE-008`) | review/disposition/promotion gate | Governance `HOLD` until active-implementation authority is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
@@ -499,6 +517,36 @@ parity). Contract-specific interpretation tolerances:
 | TOL-SNOWFREEZE-009 | Snow-insulation confound-control band for attributing a frost-depth divergence (`INV-SNOWFREEZE-047`, `INV-SNOWFREEZE-048`) | provisional: paired modeled-vs-observed snow depth within greater of `0.10 m` or `30 %` | DRAFT. Beyond this band the frost-depth comparison is inconclusive (snow-driven), not a frost-model verdict; snow depth and density, not SWE, govern insulation. This band is not by itself a snow-model calibration target; `INV-SNOWFREEZE-048` must first prove like-for-like snow-depth correspondence and anti-alias evidence. |
 | TOL-SNOWFREEZE-010 | SNOTEL SWE/density fork-adjudication band (`INV-SNOWFREEZE-049`) | provisional: SWE within greater of `0.05 m` water equivalent or `25 %`; density within greater of `60 kg m^-3` or `25 %` | DRAFT characterization band for separating over-accumulation from low-density/settling structure. It is not a calibration objective and does not authorize SSD residual fitting, production constant edits, or PySnobal/legacy-as-target decisions. |
 | TOL-SNOWFREEZE-011 | Snow/frost rubric cell pass-levels and forcing-robustness tiering (`INV-SNOWFREEZE-050`) | provisional noise-floor: forcing-robust (`R`) cells score `pass` at KGE `>= 0.6` (correlation, bias-ratio, variability-ratio each near 1) and `marginal` at `0.3-0.6`; timing cells within `+/- 14 days`; density/regime per `TOL-SNOWFREEZE-010`. Forcing-limited (`L`) magnitude cells are reported only - a peak SWE/depth median bias up to `~30 %` is uncertainty-consistent, not a defect. | DRAFT. Pass-levels are noise-floor estimates calibrated to the rubric addendum uncertainty budget, refined from the `tests/fixtures/snotel_observed/` corpus, pending hydrology-reviewer ratification; evaluation bands, not calibration objectives (the `INV-SNOWFREEZE-049` anti-tuning rule applies). |
+
+## Snow-Density Physics-Bulk Candidate Envelope Addendum
+
+1. The only accepted snow-model selector values are
+   `snow_model = legacy_wepp | physics_bulk`. `legacy_wepp` is the default,
+   current production behavior, compatibility comparator surface, and rollback
+   path. `physics_bulk` is opt-in candidate scope only until a later package
+   ratifies exact equations, validates profile evidence, and explicitly changes
+   activation status.
+2. `physics_bulk` must carry at least SWE, physical snow depth, bulk density,
+   retained liquid water, snow cold content or bulk temperature, and a snow-cover
+   age/metamorphism clock as typed state. A bulk model may use a single-column
+   snowpack state at first; layer-resolved snow physics is not required by this
+   amendment.
+3. Candidate process families are limited to temperature/wind-dependent
+   fresh-snow density, Anderson-1976/SNOBAL-style destructive metamorphism,
+   overburden compaction, wet-snow compaction, liquid retention/release/refreeze,
+   and internally closed mass/energy accounting. These names define the
+   allowable research envelope only; no equation or constant is a production
+   authority until SNOWDENSITY-03/04 evidence and hydrology review ratify it.
+4. Site-specific tuning is invalid. SNOTEL and paired snow-depth observations
+   evaluate profile cells and classify failure modes; they do not fit per-site
+   constants. Legacy WEPP and PySnobal are diagnostic flag profiles under
+   ADR-0017, not targets. `ssd` remains legacy control provenance and cannot be
+   repurposed as a `physics_bulk` density/settlement parameter.
+5. A promotable `physics_bulk` implementation must prove independent SWE,
+   depth, density, retained-liquid, and thermal-state closure; publish v74/v75
+   rubric profiles; preserve `legacy_wepp` rollback; and leave frost-depth
+   attribution blocked unless snow-control failures are passable or explicitly
+   bounded.
 
 ## CLIM05 Parsed Snow-Control Runtime Coupling Addendum
 
@@ -1235,6 +1283,7 @@ ratification. They are evaluation bands, not calibration objectives; the
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-25` | `75` | `Codex` | SNOWDENSITY-02 contract/ADR amendment: added `INV-SNOWFREEZE-051`, `OBL-SNOWFREEZE-P-026`, candidate `physics_bulk` state variables, candidate authority anchors, and the Snow-Density Physics-Bulk Candidate Envelope Addendum. `legacy_wepp` remains default; `physics_bulk` is opt-in candidate scope only, with no site-specific tuning and no production formula ratified by this amendment. |
 | `2026-06-25` | `74` | `Claude Code` | SNOWFROST-FIDELITY rubric amendment: added `INV-SNOWFREEZE-050` + the GAP-SNOWFREEZE-002 Snow/Frost Fidelity Evaluation Rubric Addendum (signature-based, multi-timescale, forcing-robustness-tiered, KGE-decomposed, profile-not-scalar evaluation), provisional `TOL-SNOWFREEZE-011`, and an irreducible-uncertainty budget; supersedes `TOL-SNOWFREEZE-009` as a standalone snow-model acceptance band. Reconciled the header `contract_version` (header was lagging at 72 vs the existing v73 H row). All thresholds provisional pending hydrology-reviewer ratification. |
 | `2026-06-25` | `73` | `Codex` | SNOWFROST-FIDELITY-H amendment: added `INV-SNOWFREEZE-049`, provisional `TOL-SNOWFREEZE-010`, and SNOTEL `WTEQ`/`SNWD` observed-density correspondence for over-accumulation vs low-density snow-depth adjudication with an anti-tuning SSD-arm rule. |
 | `2026-06-25` | `72` | `Codex` | SNOWFROST-FIDELITY-E amendment: added `INV-SNOWFREEZE-048`, WAT `Snow-Depth` variable authority, and snow-depth correspondence/anti-alias obligations so `TOL-SNOWFREEZE-009` failures route through source semantics, timing/stage, signed residual, and depth-vs-SWE proof before any snow or frost physics work. |

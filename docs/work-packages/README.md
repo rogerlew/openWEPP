@@ -13,6 +13,15 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowdensity-02-contract-adr-001/` is complete as the contract/ADR
+  governance package for snow-density remediation. It amended
+  `SC-SNOWFREEZE-001` to v75 with `INV-SNOWFREEZE-051`,
+  `OBL-SNOWFREEZE-P-026`, candidate `physics_bulk` state/process authority,
+  no-site-tuning language, and opt-in activation constraints; added
+  ADR-0027; and added `snowdensity02_contract_adr_guard`. It changed no
+  production runtime physics, constants, output schemas, parser surfaces, or
+  defaults. The next route is `SNOWDENSITY-03 Offline Physics Core`, limited to
+  Rust snowbench candidate implementation and offline rubric evidence.
 - `20260625-snowdensity-01-evidence-reconciliation-001/` is complete as the
   evidence-only reconciliation package that starts the snow-density strategy
   sequence. It consolidated SNOWFROST-FIDELITY-E/F/H/I0 evidence, pinned H's
