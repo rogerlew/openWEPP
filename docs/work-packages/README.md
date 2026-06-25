@@ -13,6 +13,15 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowfrost-fidelity-b-no-qwet-heatflow-benchmarks-001/` is
+  complete as benchmark-only no-migration heat-flow closure. It added CLIM06
+  `snowfrost_b_*` gates for a Kurylyk/Stefan-style one-dimensional freezing
+  bound, independent surface resistance reconstruction, snow/residue
+  insulation, lower-front dry heat, and latent-energy-bounded fine-layer
+  mutation. Production `crates/` still contain no `qwet`, `Qwet`, or `frzftp`
+  implementation. The package does not validate field frost-depth fidelity or
+  authorize physics tuning; modeled snow depth exposure and diagnostic
+  SFCC/frozen-K candidate work remain follow-on scope.
 - `20260625-snowfrost-fidelity-a-observation-residual-classification-001/` is
   complete as the first Snow and Frost Fidelity Adjudication package. It ran
   all five observed frost-depth pilot sites through the direct observed

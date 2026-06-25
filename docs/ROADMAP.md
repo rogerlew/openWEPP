@@ -411,16 +411,19 @@ Recommended work-package sequence:
    activation remain blocked until then.
 
 Current status (2026-06-25): SNOWFROST-FIDELITY-A is complete as
-characterization. All five pilot sites emitted direct metric-bearing
-`UNRESOLVED` reports, but zero sites are eligible for frost-model defect
-attribution because modeled snow depth is absent and `TOL-SNOWFREEZE-009`
-cannot be evaluated. Sites 1/2/4 are `SNOW-CONTROL-BLOCKED`; sites 3/5 are
-`INCONCLUSIVE` timing/upper-bound evidence. The next field-validation package
-must expose modeled snow depth and rerun A classification before field
-residuals are used to choose heat-flow, frozen-conductivity, SFCC/impedance, or
-migration/fringe changes. SNOWFROST-FIDELITY-B benchmark work may proceed in
-parallel only as no-`Qwet` physics/energy-conservation benchmarking, not field
-residual tuning.
+characterization and SNOWFROST-FIDELITY-B is complete as benchmark-only
+no-migration heat-flow closure. A found all five pilot sites metric-bearing
+`UNRESOLVED`, but zero sites are eligible for frost-model defect attribution
+because modeled snow depth is absent and `TOL-SNOWFREEZE-009` cannot be
+evaluated. B added CLIM06 gates for independent surface resistance
+reconstruction, a Kurylyk/Stefan-style one-dimensional freezing bound,
+snow/residue insulation, lower-front dry heat, and latent-energy-bounded
+fine-layer mutation; production `crates/` still contain no `qwet`, `Qwet`, or
+`frzftp` implementation. The next field-validation package must expose modeled
+snow depth and rerun A classification before field residuals are used to choose
+heat-flow, frozen-conductivity, SFCC/impedance, or migration/fringe changes.
+SNOWFROST-FIDELITY-C may proceed only as diagnostic-only SFCC/frozen-K
+candidate evaluation until those field attribution gates are available.
 
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 H2637 magnitude arc is no longer an active queue item. Absolute forest lateral-flow
