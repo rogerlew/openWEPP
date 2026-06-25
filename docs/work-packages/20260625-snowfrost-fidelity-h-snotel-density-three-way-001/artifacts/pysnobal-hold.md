@@ -2,7 +2,7 @@
 
 Evidence mode: Ran + Static.
 
-Route: `HOLD-PYSNOBAL-CSS-WY2017-SNOBAL-CORE-FAILURE`.
+Historical route: `HOLD-PYSNOBAL-CSS-WY2017-SNOBAL-CORE-FAILURE`.
 
 The H rerun uses SNOTEL STO-derived ground forcing where available and water-year
 segmentation to avoid one synthetic snowpack state spanning decades. Four of the
@@ -32,7 +32,7 @@ CSS WY2017 exported forcing ranges were finite and physically bounded:
 - `snow_precip_fraction`: `0.0` to `1.0`
 - `downwelling_thermal_Wm-2`: `181.39` to `464.93`
 
-Disposition: H does not claim full PySnobal three-way closure. PySnobal remains
-diagnostic flag evidence only; the CSS WY2017 failure needs a focused PySnobal
-minimal reproducer or a documented site/year-exclusion policy before PySnobal
-can be treated as a complete profile overlay for this corpus.
+Disposition: superseded by `pysnobal-css-wy2017-disposition.md`. H treats CSS
+WY2017 as a known upstream PySnobal/SNOBAL thin-snow numerical instability, marks
+affected PySnobal profile cells unavailable, and closes complete-with-disposition.
+PySnobal remains diagnostic flag evidence only.

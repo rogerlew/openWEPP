@@ -21,7 +21,10 @@ Review B: comparator and rubric authority
 - Finding: legacy WEPP and PySnobal are scored as diagnostic profile overlays,
   not correctness targets. Disposition: accepted.
 - Finding: CSS Lab PySnobal WY2017 fails inside PySnobal despite finite exported
-  forcing. Disposition: hold; do not mark H complete.
+  forcing. Disposition: accepted as a known upstream PySnobal/SNOBAL thin-snow
+  numerical instability per `pysnobal-css-wy2017-disposition.md`; mark affected
+  PySnobal profile cells unavailable and do not read them as openWEPP failures.
 
-Final disposition: executed-held at
-`HOLD-PYSNOBAL-CSS-WY2017-SNOBAL-CORE-FAILURE`.
+Final disposition: complete-with-disposition. The package acceptance criterion
+requiring the PySnobal crash to be resolved or dispositioned is satisfied by
+`pysnobal-css-wy2017-disposition.md`; no production physics change is authorized.

@@ -62,8 +62,9 @@ The normalized H corpus is checked in under `observations/`:
 
 SNOWFROST-FIDELITY-H scores these rows under the v74
 `SC-SNOWFREEZE-001#INV-SNOWFREEZE-050` rubric. PySnobal is diagnostic flag
-evidence only; CSS Lab WY2017 is currently held pending a focused PySnobal
-reproducer/disposition package.
+evidence only; CSS Lab WY2017 is dispositioned as a known upstream
+PySnobal/SNOBAL thin-snow numerical instability, so affected PySnobal profile
+cells are unavailable rather than openWEPP failures.
 
 ## Pairing window (read before validating)
 

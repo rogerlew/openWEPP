@@ -13,18 +13,30 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowfrost-fidelity-i0-non-snotel-rubric-baseline-001/` is complete
+  as the non-SNOTEL v74 rubric baseline before snow-depth structural
+  remediation. It added
+  `tools/snowfreeze_observed/non_snotel_rubric_baseline.py`, reran all five
+  `tests/fixtures/snowfreeze_observed/` sites through the observed harness, and
+  emitted `snowfreeze-non-snotel-rubric-baseline-v1`. Three paired-snow sites
+  still fail snow control and two isotherm sites lack paired observed snow-depth
+  rows; rubric counts are `fail=19`, `marginal=8`, `pass=5`, `strong=20`,
+  `unavailable=63`, with `openwepp_defective_cells=0`. The next route remains
+  snow-depth structural remediation before frost physics attribution.
 - `20260625-snowfrost-fidelity-h-snotel-density-three-way-001/` is
-  executed-held at `HOLD-PYSNOBAL-CSS-WY2017-SNOBAL-CORE-FAILURE`. It acquired
+  complete-with-disposition. It acquired
   and normalized the five-site SNOTEL SWE/depth/STO corpus, derived
   observed-density SSD arms from peak-SWE-period density before residual
   comparison, added the v74 `INV-SNOWFREEZE-050` rubric profile authority, and
   emitted `snotel-density-three-way-comparison-v2` profiles for openWEPP,
   pinned legacy WEPP, and PySnobal. All five sites route `STRUCTURAL` in the
   auxiliary density fork; the rubric remains profile-not-scalar. PySnobal
-  water-year segmented runs pass four sites, but CSS Lab WY2017 fails inside
-  PySnobal's C core despite finite exported forcing, so the next route is an H2
-  PySnobal CSS WY2017 minimal reproducer/disposition before heat-flow,
-  frozen-K, or migration/fringe production physics work.
+  water-year segmented runs pass four sites; CSS Lab WY2017 fails inside
+  PySnobal's C core despite finite exported forcing and is dispositioned as a
+  known upstream PySnobal/SNOBAL thin-snow numerical instability. Affected
+  PySnobal profile cells are unavailable, not openWEPP failures. The next route
+  is snow-depth structural remediation, not heat-flow, frozen-K, or
+  migration/fringe production physics work.
 - `20260625-snowfrost-fidelity-g1-pysnobal-sanity-closure-001/` is complete as
   the PySnobal sanity-closure follow-up. It kept the strict all-lane G0 hold
   visible for Morris `Tg=-0.5 degC`, added site/lane/window controls and a

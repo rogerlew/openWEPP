@@ -163,5 +163,20 @@ Run the SNOWFROST-FIDELITY-H SNOTEL density/rubric three-way harness:
 
 The H comparison emits a v74 `SC-SNOWFREEZE-001` rubric profile, not a scalar
 snow-model verdict. PySnobal SNOTEL runs use the SNOTEL ground-temperature lane
-and water-year segments; CSS Lab WY2017 is currently held in the PySnobal C core
-and needs the H2 reproducer/disposition package.
+and water-year segments; CSS Lab WY2017 is dispositioned as a known upstream
+PySnobal/SNOBAL thin-snow numerical instability, so affected PySnobal profile
+cells are unavailable diagnostic flag evidence.
+
+Run the non-SNOTEL snow/frost rubric baseline before snow-depth remediation:
+
+```bash
+.venv/bin/python tools/snowfreeze_observed/non_snotel_rubric_baseline.py \
+  --observations-dir tests/fixtures/snowfreeze_observed/observations \
+  --output-dir target/snowfrost_fidelity_i0_non_snotel_rubric_baseline \
+  --binary target/release/openwepp-cli-hill
+```
+
+The I0 baseline reuses `observed_harness.py compare` for the five
+`tests/fixtures/snowfreeze_observed/` sites, then emits a v74
+`INV-SNOWFREEZE-050` profile. SWE, density, event, and conservation cells that
+the non-SNOTEL corpus cannot score are explicit unavailable cells.

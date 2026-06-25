@@ -1,6 +1,6 @@
 # SNOWFROST-FIDELITY-H SNOTEL Density Three-Way Comparison
 
-Status: executed-held at `HOLD-PYSNOBAL-CSS-WY2017-SNOBAL-CORE-FAILURE`.
+Status: complete-with-disposition.
 
 Package type: external-observation acquisition + multi-model comparison /
 characterization.

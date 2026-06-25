@@ -1,6 +1,6 @@
 # Worker Handoff
 
-Current state: H is executed-held.
+Current state: H is complete-with-disposition.
 
 Keep:
 
@@ -20,15 +20,20 @@ Do not:
 
 Next recommended package:
 
-`SNOWFROST-FIDELITY-H2-PYSNOBAL-CSS-WY2017-REPRO-001`
+`SNOWFROST-FIDELITY-I-SNOW-DEPTH-STRUCTURAL-REMEDIATION-001`
 
 Objective:
 
-- Build a minimal reproducer for CSS Lab WY2017 PySnobal failure.
-- Determine whether the failure is caused by bridge configuration, PySnobal
-  model limits, or an extreme forcing/state trajectory.
-- If valid, define a site/year exclusion or partial-profile policy; otherwise
-  fix the bridge and rerun H to complete the PySnobal overlay.
+- Resolve the structural snow-depth fork identified by H. All five SNOTEL sites
+  route `STRUCTURAL` in the auxiliary density fork, so changing the SSD seed does
+  not close the observed depth/SWE/density profile.
+- Start from the snow-depth producer/carry/input/settlement scope already queued
+  in ROADMAP W.1: snowpack initial state/carry, snowfall depth input,
+  density/settlement, rain-on-snow storage, melt depletion, and publication
+  lineage.
+- Keep H's v74 rubric profile as the observation scoring authority. Legacy WEPP
+  and PySnobal remain ADR-0017 flag/profile evidence only.
 
-After H2, rerun H with the existing v74 rubric profile and close either complete
-or with a narrower, ratified PySnobal exclusion.
+Optional only: a separate PySnobal-hardening package may strip/retry thin snow
+or patch SNOBAL if broader PySnobal coverage becomes useful. It is not required
+to proceed with openWEPP snow-depth remediation.

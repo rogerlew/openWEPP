@@ -23,6 +23,7 @@ Completed:
 - `cargo deny check`
 - `cargo test --workspace`
 
-All listed gates passed. Package execution is still closed as HOLD because the
-scientific/comparator blocker is the CSS PySnobal WY2017 C-core failure, not a
-Rust or repository validation failure.
+All listed gates passed. Package execution is closed as complete-with-disposition:
+the CSS PySnobal WY2017 C-core failure is dispositioned in
+`pysnobal-css-wy2017-disposition.md` as an upstream PySnobal/SNOBAL thin-snow
+numerical instability, not an openWEPP defect or export/forcing artifact.
