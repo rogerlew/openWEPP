@@ -1,0 +1,128 @@
+{
+  "schema": "snowdensity-01-snotel-density-delta-ledger-v1",
+  "evidence_mode": "Ran",
+  "source": "target/snowfrost_fidelity_h/three_way_comparison.json",
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-049 INV-SNOWFREEZE-050",
+  "site_count": 5,
+  "summary": {
+    "fork_verdict_counts": {
+      "STRUCTURAL": 5
+    },
+    "max_abs_openwepp_minus_legacy_as_built_density_mean_signed_kg_m3": 4.351046738461008,
+    "openwepp_legacy_density_same_lineage": true,
+    "observed_density_arm_closes_depth": false,
+    "pysnobal_adoption_target": false,
+    "production_physics_changed": false
+  },
+  "sites": [
+    {
+      "site_id": "snotel_mica_creek_st_joe_id",
+      "snow_climate": "northern_rockies_intermountain",
+      "as_built_ssd_kg_m3": 250.0,
+      "observed_density_ssd_kg_m3": 370.0,
+      "fork_verdict": "STRUCTURAL",
+      "openwepp_as_built_swe_mean_signed_m": -0.09823988745353221,
+      "openwepp_as_built_depth_mean_signed_m": -0.17786107270029242,
+      "openwepp_as_built_density_mean_signed_kg_m3": -109.53135245031612,
+      "legacy_as_built_density_mean_signed_kg_m3": -105.68073917165354,
+      "openwepp_minus_legacy_density_mean_signed_kg_m3": -3.8506132786625784,
+      "openwepp_as_built_depth_mean_abs_m": 0.26443532629723626,
+      "legacy_as_built_depth_mean_abs_m": 0.2704152362204724,
+      "observed_density_arm_depth_mean_abs_m": 0.5124751388242391,
+      "observed_density_arm_improved_depth_mae_25pct": false,
+      "pysnobal_depth_mean_abs_m": 0.8660079596936909,
+      "pysnobal_rubric_counts": {
+        "fail": 10,
+        "marginal": 3,
+        "unavailable": 3
+      }
+    },
+    {
+      "site_id": "snotel_paradise_wa",
+      "snow_climate": "cascades_maritime",
+      "as_built_ssd_kg_m3": 250.0,
+      "observed_density_ssd_kg_m3": 495.0,
+      "fork_verdict": "STRUCTURAL",
+      "openwepp_as_built_swe_mean_signed_m": -0.4774615866072088,
+      "openwepp_as_built_depth_mean_signed_m": 0.29077638332033634,
+      "openwepp_as_built_density_mean_signed_kg_m3": -298.88791893108,
+      "legacy_as_built_density_mean_signed_kg_m3": -298.5147078823344,
+      "openwepp_minus_legacy_density_mean_signed_kg_m3": -0.3732110487455884,
+      "openwepp_as_built_depth_mean_abs_m": 0.7438008169232545,
+      "legacy_as_built_depth_mean_abs_m": 0.7469728706624605,
+      "observed_density_arm_depth_mean_abs_m": 1.7854171988785925,
+      "observed_density_arm_improved_depth_mae_25pct": false,
+      "pysnobal_depth_mean_abs_m": 2.4736476715648053,
+      "pysnobal_rubric_counts": {
+        "fail": 11,
+        "marginal": 2,
+        "unavailable": 3
+      }
+    },
+    {
+      "site_id": "snotel_css_lab_ca",
+      "snow_climate": "sierra_maritime",
+      "as_built_ssd_kg_m3": 250.0,
+      "observed_density_ssd_kg_m3": 380.0,
+      "fork_verdict": "STRUCTURAL",
+      "openwepp_as_built_swe_mean_signed_m": -0.17918337198353299,
+      "openwepp_as_built_depth_mean_signed_m": -0.2465993494867822,
+      "openwepp_as_built_density_mean_signed_kg_m3": -117.31639533192431,
+      "legacy_as_built_density_mean_signed_kg_m3": -112.9653485934633,
+      "openwepp_minus_legacy_density_mean_signed_kg_m3": -4.351046738461008,
+      "openwepp_as_built_depth_mean_abs_m": 0.4919012988537377,
+      "legacy_as_built_depth_mean_abs_m": 0.5115063646788991,
+      "observed_density_arm_depth_mean_abs_m": 0.6950222875002778,
+      "observed_density_arm_improved_depth_mae_25pct": false,
+      "pysnobal_depth_mean_abs_m": null,
+      "pysnobal_rubric_counts": {
+        "unavailable": 16
+      }
+    },
+    {
+      "site_id": "snotel_snowbird_ut",
+      "snow_climate": "wasatch_intermountain",
+      "as_built_ssd_kg_m3": 250.0,
+      "observed_density_ssd_kg_m3": 445.0,
+      "fork_verdict": "STRUCTURAL",
+      "openwepp_as_built_swe_mean_signed_m": -0.339508855242035,
+      "openwepp_as_built_depth_mean_signed_m": -0.616502953779801,
+      "openwepp_as_built_density_mean_signed_kg_m3": -121.2051066819166,
+      "legacy_as_built_density_mean_signed_kg_m3": -120.61402195860566,
+      "openwepp_minus_legacy_density_mean_signed_kg_m3": -0.5910847233109422,
+      "openwepp_as_built_depth_mean_abs_m": 0.6263701077926422,
+      "legacy_as_built_depth_mean_abs_m": 0.6309544662309368,
+      "observed_density_arm_depth_mean_abs_m": 1.133272294595566,
+      "observed_density_arm_improved_depth_mae_25pct": false,
+      "pysnobal_depth_mean_abs_m": 1.4168766539139017,
+      "pysnobal_rubric_counts": {
+        "fail": 11,
+        "marginal": 1,
+        "strong": 1,
+        "unavailable": 3
+      }
+    },
+    {
+      "site_id": "snotel_niwot_co",
+      "snow_climate": "front_range_continental",
+      "as_built_ssd_kg_m3": 250.0,
+      "observed_density_ssd_kg_m3": 340.0,
+      "fork_verdict": "STRUCTURAL",
+      "openwepp_as_built_swe_mean_signed_m": -0.0737288495503792,
+      "openwepp_as_built_depth_mean_signed_m": -0.22585562246146346,
+      "openwepp_as_built_density_mean_signed_kg_m3": -57.35358689927374,
+      "legacy_as_built_density_mean_signed_kg_m3": -56.39881383086931,
+      "openwepp_minus_legacy_density_mean_signed_kg_m3": -0.9547730684044353,
+      "openwepp_as_built_depth_mean_abs_m": 0.24411187865731138,
+      "legacy_as_built_depth_mean_abs_m": 0.24030484920165582,
+      "observed_density_arm_depth_mean_abs_m": 0.37377602904927326,
+      "observed_density_arm_improved_depth_mae_25pct": false,
+      "pysnobal_depth_mean_abs_m": 0.6579804116481193,
+      "pysnobal_rubric_counts": {
+        "fail": 12,
+        "pass": 1,
+        "unavailable": 3
+      }
+    }
+  ]
+}

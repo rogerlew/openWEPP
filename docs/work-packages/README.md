@@ -13,6 +13,16 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowdensity-01-evidence-reconciliation-001/` is complete as the
+  evidence-only reconciliation package that starts the snow-density strategy
+  sequence. It consolidated SNOWFROST-FIDELITY-E/F/H/I0 evidence, pinned H's
+  openWEPP-vs-pinned-legacy as-built density deltas (`max abs delta =
+  4.351046738461008 kg m^-3`), classified SNOTEL rubric cells into actionable
+  snow-physics, mixed, forcing-limited, and unavailable groups, and reviewed
+  Shen 2011/2012 plus pinned `snowd.for` Eq. 3.7.5 archaeology. It changed no
+  production code or science contract authority. The next route is
+  `SNOWDENSITY-02 Contract + ADR` for an opt-in `physics_bulk` envelope before
+  any runtime physics work.
 - `20260625-snowfrost-fidelity-i0-non-snotel-rubric-baseline-001/` is complete
   as the non-SNOTEL v74 rubric baseline before snow-depth structural
   remediation. It added

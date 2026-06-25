@@ -172,7 +172,7 @@ forcing + prior snow state + model constants
 
 | Stage | Goal | Gate |
 |---|---|---|
-| **SNOWDENSITY-01 Evidence Reconciliation** | Consolidate E/F/H/I0 evidence; pin openWEPP-vs-legacy density deltas; classify which rubric cells are snow-physics vs forcing-limited; read Shen 2011 and the WEPP Eq. 3.7.5 divergence. | Evidence package only; no production code. |
+| **SNOWDENSITY-01 Evidence Reconciliation** | Complete in `docs/work-packages/20260625-snowdensity-01-evidence-reconciliation-001/`: consolidated E/F/H/I0 evidence; pinned openWEPP-vs-legacy density deltas; classified rubric cells; read Shen 2011 and the WEPP Eq. 3.7.5 divergence. | Evidence package only; no production code. |
 | **SNOWDENSITY-02 Contract + ADR** | Amend `SC-SNOWFREEZE-001` with the candidate physics envelope, no-site-tuning rule, state variables, conservation obligations, and opt-in activation constraints. Draft the deliberate-legacy-divergence ADR. | Contract and red tests; no production code. |
 | **SNOWDENSITY-03 Offline Physics Core** | Implement `physics_bulk` in Rust snowbench with literature constants, bulk thermal state, fresh-snow density, densification, and liquid retention/release. | Unit conservation tests + SNOTEL rubric output; no runtime coupling. |
 | **SNOWDENSITY-04 Offline Adjudication Loop** | Iterate only within the ratified physics envelope until the candidate beats legacy on forcing-robust SNOTEL cells or fails with a documented reason. | No per-site constants; profile comparison stored as evidence. |
