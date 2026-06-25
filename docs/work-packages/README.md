@@ -11,8 +11,15 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-06-24`:
+State as of `2026-06-25`:
 
+- `20260625-snowfreeze-frost-depth-literature-annotation-001/` is complete.
+  It annotated the newly available frost-depth physics literature, classified
+  the two CC-BY vendorable PDFs (`Amico2011.pdf`, `Devoie2022.pdf`), updated
+  the reference bibliography, and recorded the physics ladder for
+  `GAP-SNOWFREEZE-002`: observation harness first, snow-insulation attribution,
+  no-`Qwet` heat-flow baseline, then bounded SFCC/frozen-K/impedance candidate
+  evaluation before any migration-heat promotion.
 - `20260624-snowfreeze-direct-storage-reconciliation-unblock-001/` is complete
   as the DC successor to the observed frost-depth harness. It owns
   `SNOWFREEZE-DRSTOR-001` and `SNOWFREEZE-DRSTOR-002`: site3/site4 direct
