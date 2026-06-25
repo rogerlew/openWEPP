@@ -111,6 +111,85 @@ fn r4b_aggregate_liquid_soil_water(
     Ok(aggregate_m)
 }
 
+fn r4b_available_active_theta_m(
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<f64, DirectRuntimeError> {
+    let mut available_m = 0.0;
+    for layer in layers {
+        validate_nonnegative_direct_m(
+            "storage_reconciliation.frost_storage_projection_theta_m",
+            layer.theta_m,
+        )?;
+        available_m += layer.theta_m;
+        validate_finite(
+            "storage_reconciliation.frost_storage_projection_available_theta_m",
+            available_m,
+        )?;
+    }
+    Ok(available_m)
+}
+
+fn r4b_apply_explicit_frost_storage_projection_delta(
+    layers: &mut [DirectSubsurfaceLayerState],
+    delta_m: f64,
+) -> Result<(), DirectRuntimeError> {
+    if layers.is_empty() {
+        return Err(DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R4N evapotranspiration/root-uptake producer",
+        });
+    }
+    if delta_m > 0.0 {
+        layers[0].theta_m += delta_m;
+        validate_nonnegative_direct_m(
+            "storage_reconciliation.frost_storage_projection_theta_m",
+            layers[0].theta_m,
+        )?;
+        validate_finite(
+            "storage_reconciliation.frost_storage_projection_theta_m",
+            layers[0].theta_m,
+        )?;
+        return Ok(());
+    }
+
+    let mut remaining_debit_m = -delta_m;
+    let available_m = r4b_available_active_theta_m(layers)?;
+    if available_m + WB11_ZERO_THRESHOLD < remaining_debit_m {
+        return Err(DirectRuntimeError::NegativeDirectValue {
+            field: "storage_reconciliation.frost_storage_projection_theta_m",
+        });
+    }
+
+    for layer in layers {
+        if remaining_debit_m <= WB11_ZERO_THRESHOLD {
+            break;
+        }
+        let debit_m = layer.theta_m.min(remaining_debit_m);
+        layer.theta_m -= debit_m;
+        if layer.theta_m < 0.0 && layer.theta_m.abs() <= WB11_ZERO_THRESHOLD {
+            layer.theta_m = 0.0;
+        }
+        validate_nonnegative_direct_m(
+            "storage_reconciliation.frost_storage_projection_theta_m",
+            layer.theta_m,
+        )?;
+        validate_finite(
+            "storage_reconciliation.frost_storage_projection_theta_m",
+            layer.theta_m,
+        )?;
+        remaining_debit_m -= debit_m;
+        validate_finite(
+            "storage_reconciliation.frost_storage_projection_remaining_debit_m",
+            remaining_debit_m,
+        )?;
+    }
+    if remaining_debit_m > WB11_ZERO_THRESHOLD {
+        return Err(DirectRuntimeError::NegativeDirectValue {
+            field: "storage_reconciliation.frost_storage_projection_theta_m",
+        });
+    }
+    Ok(())
+}
+
 #[allow(clippy::too_many_lines)]
 fn maybe_write_r7h_storage_trace(day_frame: &DirectDayFrame) {
     let Some(config) = r7h_storage_trace_config() else {
@@ -585,23 +664,11 @@ impl DirectDayFrame {
         if delta_m.abs() <= WB11_ZERO_THRESHOLD {
             return Ok(false);
         }
-        let Some(layer) = self
-            .evapotranspiration_compute
-            .layer_state_after_root_uptake
-            .first_mut()
-        else {
-            return Err(DirectRuntimeError::MissingDirectUpstream {
-                upstream: "R4N evapotranspiration/root-uptake producer",
-            });
-        };
-        layer.theta_m += delta_m;
-        validate_nonnegative_direct_m(
-            "storage_reconciliation.frost_storage_projection_theta_m",
-            layer.theta_m,
-        )?;
-        validate_finite(
-            "storage_reconciliation.frost_storage_projection_theta_m",
-            layer.theta_m,
+        r4b_apply_explicit_frost_storage_projection_delta(
+            &mut self
+                .evapotranspiration_compute
+                .layer_state_after_root_uptake,
+            delta_m,
         )?;
         self.evapotranspiration_compute.soil_water_after_m = storage_reconciled_m;
         if let Some(shadow) = &mut self.evapotranspiration_compute_shadow_projection {

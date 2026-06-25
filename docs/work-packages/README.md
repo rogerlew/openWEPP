@@ -13,12 +13,22 @@
 
 State as of `2026-06-24`:
 
-- `20260624-snowfreeze-observed-frost-depth-harness-001/` is queued as the
-  successor to R7H opt-in closure for reopened `GAP-SNOWFREEZE-002`. It must
-  acquire/normalize historic frost-depth observation datasets, provenance-lock
-  redistributable sources, and build a local openWEPP comparison harness against
-  `tests/fixtures/snowfreeze_observed/` before any frost-model remediation.
-  Direct remains opt-in; compatibility frost bit-parity is not the target.
+- `20260624-snowfreeze-direct-storage-reconciliation-unblock-001/` is complete
+  as the DC successor to the observed frost-depth harness. It owns
+  `SNOWFREEZE-DRSTOR-001` and `SNOWFREEZE-DRSTOR-002`: site3/site4 direct
+  observed comparisons failed before exit-0 metric-bearing comparison at the
+  R4B explicit frost storage projection nonnegative guard. The package closed
+  the in-envelope projection defect without frost physics tuning,
+  observation-threshold changes, default activation, or compatibility-runtime
+  deletion; site3 and site4 now emit metric-bearing `UNRESOLVED` observation
+  reports.
+- `20260624-snowfreeze-observed-frost-depth-harness-001/` is complete. It
+  acquired/normalized the pilot historic frost-depth observation corpus, added
+  the local comparison harness under `tools/snowfreeze_observed/`, and installed
+  local contract coverage for the corpus and harness. Direct remains opt-in;
+  compatibility frost bit-parity is not the target. The site3/site4
+  metric-bearing comparison blocker was lifted by the direct storage
+  reconciliation package above.
 - `20260624-r7h-iterative-completion-001/` is closed `OPT-IN` by operator
   decision on 2026-06-24. It retained the R7H direct performance fix and
   zero-compatibility evidence, left direct mode opt-in, and reclassified the

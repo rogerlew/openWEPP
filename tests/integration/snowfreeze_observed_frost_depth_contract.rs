@@ -172,9 +172,10 @@ fn field<'a>(row: &'a [String], name: &str) -> &'a str {
         .iter()
         .position(|column| column == name)
         .unwrap_or_else(|| panic!("unknown expected column {name}"));
-    row.get(index)
-        .map(String::as_str)
-        .unwrap_or_else(|| panic!("row missing column {name}: {row:?}"))
+    row.get(index).map_or_else(
+        || panic!("row missing column {name}: {row:?}"),
+        String::as_str,
+    )
 }
 
 fn parse_csv_line(line: &str) -> Vec<String> {

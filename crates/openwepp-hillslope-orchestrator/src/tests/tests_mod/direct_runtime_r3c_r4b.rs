@@ -346,6 +346,104 @@ fn r4b_storage_reconciliation_rejects_invalid_values() {
     );
 }
 
+#[test]
+fn r4b_explicit_frost_storage_rebalance_debits_multiple_layers() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
+    let mut day = r4b_valid_day(identity);
+    set_r4b_explicit_frost_projection_fixture(
+        &mut day,
+        vec![
+            r4b_projection_layer(0.010, 0.0),
+            r4b_projection_layer(0.050, 0.0),
+        ],
+        -0.030,
+    );
+
+    let report = day
+        .run_r4b_storage_reconciliation_span()
+        .expect("valid explicit frost storage debit should rebalance across layers");
+
+    assert!(
+        (day.storage_reconciliation.storage_reconciled_m - 0.030).abs() <= 1.0e-12,
+        "storage reconciliation must preserve aggregate explicit frost debit"
+    );
+    assert!(
+        (day.evapotranspiration_compute.soil_water_after_m - 0.030).abs() <= 1.0e-12,
+        "R4N projection aggregate must track reconciled storage"
+    );
+    assert_eq!(
+        day.evapotranspiration_compute.layer_state_after_root_uptake[0]
+            .theta_m
+            .to_bits(),
+        0.0_f64.to_bits()
+    );
+    assert!(
+        (day.evapotranspiration_compute.layer_state_after_root_uptake[1].theta_m - 0.030).abs()
+            <= 1.0e-12,
+        "second layer must carry the residual explicit frost debit"
+    );
+    let shadow = day
+        .evapotranspiration_compute_shadow_projection
+        .as_ref()
+        .expect("R4N shadow projection should remain present");
+    assert!(
+        (shadow.soil_water_after_m - 0.030).abs() <= 1.0e-12,
+        "R4N shadow projection aggregate must track reconciled storage"
+    );
+    assert_eq!(
+        shadow.layer_state_after_root_uptake,
+        day.evapotranspiration_compute.layer_state_after_root_uptake
+    );
+    assert_eq!(report.state_mutation_count, 3);
+}
+
+#[test]
+fn r4b_explicit_frost_storage_rebalance_rejects_insufficient_active_theta() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let identity =
+        DirectRunIdentity::new(7, 2637, 1, 1).expect("valid direct span identity should construct");
+    let mut day = r4b_valid_day(identity);
+    set_r4b_explicit_frost_projection_fixture(
+        &mut day,
+        vec![
+            r4b_projection_layer(0.010, 0.020),
+            r4b_projection_layer(0.005, 0.010),
+        ],
+        -0.030,
+    );
+    let layer_state_before = day
+        .evapotranspiration_compute
+        .layer_state_after_root_uptake
+        .clone();
+    let shadow_before = day.evapotranspiration_compute_shadow_projection.clone();
+
+    assert_eq!(
+        day.run_r4b_storage_reconciliation_span()
+            .expect_err("material active-theta deficit must fail closed"),
+        DirectRuntimeError::NegativeDirectValue {
+            field: "storage_reconciliation.frost_storage_projection_theta_m"
+        }
+    );
+    assert_eq!(
+        day.evapotranspiration_compute.layer_state_after_root_uptake, layer_state_before,
+        "insufficient active theta must fail before mutating layer projection"
+    );
+    assert_eq!(
+        day.evapotranspiration_compute_shadow_projection, shadow_before,
+        "insufficient active theta must fail before mutating shadow projection"
+    );
+}
+
 fn r4b_day_after_r4c(identity: DirectRunIdentity) -> DirectDayFrame {
     let mut day =
         DirectDayFrame::seed(identity, 0, 0).expect("valid direct day frame should construct");
@@ -582,6 +680,56 @@ fn r4b_valid_day(identity: DirectRunIdentity) -> DirectDayFrame {
     day.run_r4a_runoff_partition_span()
         .expect("R4A upstream span should pass before R4B");
     day
+}
+
+fn set_r4b_explicit_frost_projection_fixture(
+    day: &mut DirectDayFrame,
+    layers: Vec<DirectSubsurfaceLayerState>,
+    frost_liquid_delta_m: f64,
+) {
+    let aggregate_m = layers
+        .iter()
+        .map(|layer| layer.theta_m + layer.residual_theta * layer.depth_m)
+        .sum::<f64>();
+    day.frost_storage_liquid_delta_m = Some(frost_liquid_delta_m);
+    day.storage_reconciliation_inputs = DirectStorageReconciliationInputs {
+        storage_initial_m: aggregate_m,
+        precip_input_m: 0.0,
+        snow_coupling_m: 0.0,
+        frost_liquid_delta_m: 0.0,
+        runon_input_m: 0.0,
+        interception_m: 0.0,
+        evapotranspiration_m: 0.0,
+        deep_seepage_m: 0.0,
+        subsurface_loss_m: 0.0,
+        closure_tolerance_m: 0.0,
+    };
+    day.runoff_downstream_operands.q_runoff_m = 0.0;
+    day.evapotranspiration_compute.soil_water_after_m = aggregate_m;
+    day.evapotranspiration_compute
+        .layer_state_after_root_uptake
+        .clone_from(&layers);
+    if let Some(shadow) = &mut day.evapotranspiration_compute_shadow_projection {
+        shadow.soil_water_after_m = aggregate_m;
+        shadow.layer_state_after_root_uptake = layers;
+    }
+}
+
+fn r4b_projection_layer(theta_m: f64, residual_theta: f64) -> DirectSubsurfaceLayerState {
+    DirectSubsurfaceLayerState::from(DirectSubsurfaceLayerInputs {
+        theta_m,
+        field_capacity_m: 1.0,
+        upper_limit_m: 1.0,
+        conductivity_m_s: 1.0,
+        depth_m: 1.0,
+        residual_theta,
+        frozen_depth_m: 0.0,
+        frozen_water_m: 0.0,
+        porosity: 1.0,
+        field_capacity_theta: 0.5,
+        coca: 1.0,
+        lateral_conductivity_m_s: 1.0,
+    })
 }
 
 #[test]
