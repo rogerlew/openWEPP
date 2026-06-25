@@ -39,3 +39,15 @@ the observation acceptance target.
 
 The comparison verdict remains `UNRESOLVED` when modeled snow depth is absent.
 WAT `Snow-Water` is SWE and is not a snow-depth diagnostic.
+
+Generate SNOWFROST-FIDELITY-C diagnostic SFCC/frozen-K comparison curves:
+
+```bash
+.venv/bin/python tools/snowfreeze_observed/frozen_k_diagnostics.py \
+  --output-json target/snowfrost_fidelity_c/diagnostics.json \
+  --output-md target/snowfrost_fidelity_c/diagnostics.md
+```
+
+The frozen-K diagnostics are research/comparison surfaces only. They do not
+feed production snow/frost runtime physics, do not select texture defaults,
+and do not authorize `Qwet`.

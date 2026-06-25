@@ -625,6 +625,10 @@ path = "tests/integration/auth11_required_suite_obligation_guards_contract.rs"
 name = "snowfreeze_observed_frost_depth_contract"
 path = "tests/integration/snowfreeze_observed_frost_depth_contract.rs"
 
+[[test]]
+name = "snowfrost_fidelity_c_diagnostics_contract"
+path = "tests/integration/snowfrost_fidelity_c_diagnostics_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

@@ -13,6 +13,16 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowfrost-fidelity-c-sfcc-frozen-k-diagnostics-001/` is
+  complete as diagnostic-only SFCC/frozen-conductivity comparison tooling. It
+  added `tools/snowfreeze_observed/frozen_k_diagnostics.py`, a deterministic
+  JSON/Markdown diagnostic surface for Clapeyron/SFCC liquid water,
+  SFCC-Mualem frozen conductivity, Watanabe/Flury-style capillary-bundle
+  screening, Cheng-style impedance scaling, and Amankwah-style salinity
+  sensitivity. The focused contract proves bounded/monotonic curves,
+  non-production labels, salinity sensitivity, and no production `crates/`
+  coupling. It does not select texture defaults, authorize `Qwet`, tune field
+  residuals, change production runtime physics, or promote direct activation.
 - `20260625-snowfrost-fidelity-b-no-qwet-heatflow-benchmarks-001/` is
   complete as benchmark-only no-migration heat-flow closure. It added CLIM06
   `snowfrost_b_*` gates for a Kurylyk/Stefan-style one-dimensional freezing
