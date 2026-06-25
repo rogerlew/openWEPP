@@ -1,0 +1,415 @@
+{
+  "fixture_dir": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/site4_ggd498_morris_mn",
+  "measurement_contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-047",
+  "metrics": {
+    "censored_excluded_count": 0,
+    "first_matched_date": "1980-01-02",
+    "frost_depth_residual_count": 83,
+    "isotherm_upper_bound_count": 0,
+    "isotherm_upper_bound_exceedance_count": 0,
+    "last_matched_date": "1984-04-23",
+    "matched_count": 83,
+    "max_abs_residual_m": 0.990389751515789,
+    "max_abs_snow_depth_residual_m": 0.392372927299844,
+    "max_isotherm_upper_bound_margin_m": null,
+    "mean_abs_residual_m": 0.3487854015724204,
+    "mean_abs_snow_depth_residual_m": 0.06871631503702623,
+    "modeled_day_count": 16437,
+    "modeled_snow_depth_day_count": 16437,
+    "observation_count": 232,
+    "observed_snow_depth_count": 232,
+    "sample_isotherm_upper_bounds": [],
+    "sample_residuals": [
+      {
+        "date": "1980-01-02",
+        "modeled_frdp_m": 0.07735717879522543,
+        "observed_m": 0.406,
+        "residual_m": -0.3286428212047746,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-01-09",
+        "modeled_frdp_m": 0.18249518396878275,
+        "observed_m": 0.457,
+        "residual_m": -0.27450481603121724,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-01-16",
+        "modeled_frdp_m": 0.19934613699127732,
+        "observed_m": 0.61,
+        "residual_m": -0.41065386300872264,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-01-23",
+        "modeled_frdp_m": 0.211668356874959,
+        "observed_m": 0.686,
+        "residual_m": -0.47433164312504106,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-01-30",
+        "modeled_frdp_m": 0.23532420348066405,
+        "observed_m": 0.838,
+        "residual_m": -0.6026757965193359,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-02-06",
+        "modeled_frdp_m": 0.25484609562118626,
+        "observed_m": 1.092,
+        "residual_m": -0.8371539043788139,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-02-13",
+        "modeled_frdp_m": 0.2674572315108889,
+        "observed_m": 1.245,
+        "residual_m": -0.9775427684891111,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-02-20",
+        "modeled_frdp_m": 0.279610248484211,
+        "observed_m": 1.27,
+        "residual_m": -0.990389751515789,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-02-27",
+        "modeled_frdp_m": 0.29263869694771066,
+        "observed_m": 1.27,
+        "residual_m": -0.9773613030522894,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-03-05",
+        "modeled_frdp_m": 0.317210836288652,
+        "observed_m": 1.283,
+        "residual_m": -0.9657891637113479,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-03-12",
+        "modeled_frdp_m": 0.3341256401263294,
+        "observed_m": 1.308,
+        "residual_m": -0.9738743598736707,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-03-19",
+        "modeled_frdp_m": 0.3383378161550919,
+        "observed_m": 1.321,
+        "residual_m": -0.9826621838449081,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-03-26",
+        "modeled_frdp_m": 0.3465621497580137,
+        "observed_m": 1.321,
+        "residual_m": -0.9744378502419863,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-04-02",
+        "modeled_frdp_m": 0.3497543068263521,
+        "observed_m": 1.219,
+        "residual_m": -0.869245693173648,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-04-09",
+        "modeled_frdp_m": 0.34975430682635206,
+        "observed_m": 1.041,
+        "residual_m": -0.6912456931736479,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-04-16",
+        "modeled_frdp_m": 0.34975430682635206,
+        "observed_m": 0.94,
+        "residual_m": -0.590245693173648,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-04-23",
+        "modeled_frdp_m": 0.0,
+        "observed_m": 0.864,
+        "residual_m": -0.864,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-04-24",
+        "modeled_frdp_m": 0.0,
+        "observed_m": 0.762,
+        "residual_m": -0.762,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-11-24",
+        "modeled_frdp_m": 0.051381764119006995,
+        "observed_m": 0.076,
+        "residual_m": -0.024618235880993003,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1980-12-01",
+        "modeled_frdp_m": 0.17201992140861366,
+        "observed_m": 0.152,
+        "residual_m": 0.020019921408613667,
+        "target_kind": "frost_depth"
+      }
+    ],
+    "sample_snow_depth_residuals": [
+      {
+        "abs_residual_m": 0.0,
+        "date": "1980-01-02",
+        "modeled_snow_depth_m": 0.0,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.0,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.12024613676529215,
+        "date": "1980-01-09",
+        "modeled_snow_depth_m": 0.12024613676529215,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.12024613676529215,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.13908320895214615,
+        "date": "1980-01-16",
+        "modeled_snow_depth_m": 0.13908320895214615,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.13908320895214615,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.160258711937005,
+        "date": "1980-01-23",
+        "modeled_snow_depth_m": 0.160258711937005,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.160258711937005,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.13983142343939806,
+        "date": "1980-01-30",
+        "modeled_snow_depth_m": 0.13983142343939806,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.13983142343939806,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.10540659441877374,
+        "date": "1980-02-06",
+        "modeled_snow_depth_m": 0.20740659441877374,
+        "observed_snow_depth_m": 0.102,
+        "residual_m": 0.10540659441877374,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.11580270289586546,
+        "date": "1980-02-13",
+        "modeled_snow_depth_m": 0.19180270289586546,
+        "observed_snow_depth_m": 0.076,
+        "residual_m": 0.11580270289586546,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.09719126366147575,
+        "date": "1980-02-20",
+        "modeled_snow_depth_m": 0.17319126366147575,
+        "observed_snow_depth_m": 0.076,
+        "residual_m": 0.09719126366147575,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.11666560092811043,
+        "date": "1980-02-27",
+        "modeled_snow_depth_m": 0.16766560092811042,
+        "observed_snow_depth_m": 0.051,
+        "residual_m": 0.11666560092811043,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.13915256699307058,
+        "date": "1980-03-05",
+        "modeled_snow_depth_m": 0.16415256699307057,
+        "observed_snow_depth_m": 0.025,
+        "residual_m": 0.13915256699307058,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.21185816077391034,
+        "date": "1980-03-12",
+        "modeled_snow_depth_m": 0.23685816077391034,
+        "observed_snow_depth_m": 0.025,
+        "residual_m": 0.21185816077391034,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.12823092783125287,
+        "date": "1980-03-19",
+        "modeled_snow_depth_m": 0.12823092783125287,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.12823092783125287,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.1622573532968917,
+        "date": "1980-03-26",
+        "modeled_snow_depth_m": 0.1622573532968917,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.1622573532968917,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.0,
+        "date": "1980-04-02",
+        "modeled_snow_depth_m": 0.0,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.0,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.0,
+        "date": "1980-04-09",
+        "modeled_snow_depth_m": 0.0,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.0,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.0,
+        "date": "1980-04-16",
+        "modeled_snow_depth_m": 0.0,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.0,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.0,
+        "date": "1980-04-23",
+        "modeled_snow_depth_m": 0.0,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.0,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.0,
+        "date": "1980-04-24",
+        "modeled_snow_depth_m": 0.0,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.0,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.0,
+        "date": "1980-11-24",
+        "modeled_snow_depth_m": 0.0,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.0,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.0,
+        "date": "1980-12-01",
+        "modeled_snow_depth_m": 0.0,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.0,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      }
+    ],
+    "seasonal_max_modeled_on_observation_dates_m": 1.173582350919423,
+    "seasonal_max_observed_m": 1.422,
+    "seasonal_metrics": [
+      {
+        "frozen_duration_residual_observation_days": -2,
+        "modeled_frozen_duration_observation_days": 16,
+        "modeled_onset_date": "1980-01-02",
+        "modeled_thaw_date": "1980-04-16",
+        "observation_dates": 18,
+        "observed_frozen_duration_observation_days": 18,
+        "observed_onset_date": "1980-01-02",
+        "observed_thaw_date": "1980-04-24",
+        "onset_residual_days": 0,
+        "thaw_residual_days": -8,
+        "water_year": 1980
+      },
+      {
+        "frozen_duration_residual_observation_days": 0,
+        "modeled_frozen_duration_observation_days": 19,
+        "modeled_onset_date": "1980-11-24",
+        "modeled_thaw_date": "1981-03-27",
+        "observation_dates": 19,
+        "observed_frozen_duration_observation_days": 19,
+        "observed_onset_date": "1980-11-24",
+        "observed_thaw_date": "1981-03-27",
+        "onset_residual_days": 0,
+        "thaw_residual_days": 0,
+        "water_year": 1981
+      },
+      {
+        "frozen_duration_residual_observation_days": 1,
+        "modeled_frozen_duration_observation_days": 24,
+        "modeled_onset_date": "1982-11-16",
+        "modeled_thaw_date": "1983-04-26",
+        "observation_dates": 24,
+        "observed_frozen_duration_observation_days": 23,
+        "observed_onset_date": "1982-12-01",
+        "observed_thaw_date": "1983-04-26",
+        "onset_residual_days": -15,
+        "thaw_residual_days": 0,
+        "water_year": 1983
+      },
+      {
+        "frozen_duration_residual_observation_days": 0,
+        "modeled_frozen_duration_observation_days": 22,
+        "modeled_onset_date": "1983-12-01",
+        "modeled_thaw_date": "1984-04-23",
+        "observation_dates": 22,
+        "observed_frozen_duration_observation_days": 22,
+        "observed_onset_date": "1983-12-01",
+        "observed_thaw_date": "1984-04-23",
+        "onset_residual_days": 0,
+        "thaw_residual_days": 0,
+        "water_year": 1984
+      }
+    ],
+    "snow_depth_control_count": 83,
+    "snow_depth_control_fail_count": 28,
+    "snow_depth_control_pass_count": 55,
+    "unmatched_observation_count": 149
+  },
+  "modeled_snow_depth_source": "hillslope_wat.Snow-Depth:mm from snow.runtime_depth_m",
+  "runfile": "/home/workdir/openWEPP/target/snowfrost_fidelity_d_observed_compare/site4_ggd498_morris_mn/site4_ggd498_morris_mn.run",
+  "runtime": "direct-production-executor",
+  "schema": "snowfreeze-observed-comparison-v1",
+  "site_id": "site4_ggd498_morris_mn",
+  "snow_control_status": "SNOW_CONTROL_FAILED",
+  "verdict": "UNRESOLVED",
+  "wat_output": "/home/workdir/openWEPP/target/snowfrost_fidelity_d_observed_compare/site4_ggd498_morris_mn/site4_ggd498_morris_mn.wat.parquet"
+}

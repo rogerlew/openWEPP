@@ -879,6 +879,7 @@ use super::*;
             },
             interception_mm: 0.25,
             frdp_mm: 0.0,
+            snow_depth_mm: Some(600.0),
             month: 4,
             day_of_month: 9,
             water_year: 1,
@@ -958,6 +959,7 @@ use super::*;
             },
             interception_mm: 0.75,
             frdp_mm: 0.0,
+            snow_depth_mm: Some(0.0),
             month: 2,
             day_of_month: 11,
             water_year: 2,
@@ -969,6 +971,7 @@ use super::*;
 
         assert_eq!(wat_row.interception, Some(0.75));
         assert_eq!(wat_row.interception_storage, None);
+        assert_eq!(wat_row.snow_depth, Some(0.0));
     }
     #[test]
     fn hphys0288_trace_row_captures_rain_on_snow_release_without_snowpack_loss() {

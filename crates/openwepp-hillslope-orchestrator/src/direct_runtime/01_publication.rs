@@ -399,12 +399,17 @@ fn direct_publication_storage_operands(
         "publication.storage.soil_water_total_publication_m",
         day_frame.hydrology_projection.soil_water_total_m,
     )?;
+    let snow_depth_publication_m = nonnegative_publication_storage_m(
+        "publication.storage.snow_depth_publication_m",
+        day_frame.winter_column.snow.runtime_depth_m,
+    )?;
     Ok(DirectPublicationStorageOperands {
         total_soil_mm: m_to_mm(total_soil_publication_m)?,
         soil_water_total_mm: m_to_mm(soil_water_total_publication_m)?,
         frozwt_mm: m_to_mm(day_frame.hydrology_projection.frozen_soil_water_m)?,
         frdp_mm: Some(m_to_mm(day_frame.hydrology_projection.frost_depth_m)?),
         snow_water_mm: m_to_mm(day_frame.hydrology_projection.snow_water_m)?,
+        snow_depth_mm: m_to_mm(snow_depth_publication_m)?,
     })
 }
 
@@ -503,6 +508,7 @@ pub struct DirectPublicationStorageOperands {
     pub frozwt_mm: f64,
     pub frdp_mm: Option<f64>,
     pub snow_water_mm: f64,
+    pub snow_depth_mm: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

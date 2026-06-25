@@ -5,6 +5,8 @@ use serde_json::Value;
 
 const OBSERVATION_ROOT: &str = "tests/fixtures/snowfreeze_observed/observations";
 const HARNESS_SOURCE: &str = include_str!("../../tools/snowfreeze_observed/observed_harness.py");
+const CLASSIFIER_SOURCE: &str =
+    include_str!("../../tools/snowfreeze_observed/classify_residuals.py");
 const PACKAGE: &str = include_str!(
     "../../docs/work-packages/20260624-snowfreeze-observed-frost-depth-harness-001/package.md"
 );
@@ -106,11 +108,16 @@ fn snowfreeze_observed_harness_documents_no_defect_without_snow_depth_control() 
         "UNRESOLVED_NO_MODELED_SNOW_DEPTH_DIAGNOSTIC",
         "WAT Snow-Water is SWE and is not a snow-depth diagnostic.",
         "direct-production-executor",
+        "Snow-Depth",
+        "snow_depth_control_count",
+        "SNOW_CONTROL_FAILED",
         "isotherm_upper_bound_count",
         "censored_excluded_count",
     ] {
         assert!(
-            HARNESS_SOURCE.contains(expected) || PACKAGE.contains(expected),
+            HARNESS_SOURCE.contains(expected)
+                || CLASSIFIER_SOURCE.contains(expected)
+                || PACKAGE.contains(expected),
             "harness/package must retain external-observation posture marker {expected}"
         );
     }

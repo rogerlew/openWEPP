@@ -395,14 +395,29 @@ Recommended work-package sequence:
    Kurylyk and Watanabe, Azmatch, Ming, Cheng, Amankwah, and Devoie. These are
    research/comparison surfaces until a contract ratifies a selected model,
    parameter source, and texture-class default.
-4. **SNOWFROST-FIDELITY-D: conditional migration/fringe candidate.** Consider a
+4. **SNOWFROST-FIDELITY-D: snow-depth publication and A rerun.** Publish
+   modeled snow depth from the existing `snow.runtime_depth_m` runtime state as
+   a diagnostic WAT surface (`Snow-Depth`, `mm`), consume it in the observed
+   frost-depth harness, and rerun A classification across all pilot sites. This
+   is a diagnostic publication package only: `Snow-Water` remains SWE, no
+   physics constants or process equations change, and no residual tuning is
+   authorized.
+5. **SNOWFROST-FIDELITY-E: conditional heat-flow/frozen-K adjudication.** After
+   D supplies the paired snow-depth control, choose the smallest next
+   physics-adjudication package supported by the rerun classification:
+   no-change/pass, snow-insulation/carry-state investigation, heat-flow thermal
+   property correction, lower-boundary heat correction, or frozen-K/SFCC
+   parameter/model adjudication. Any production candidate requires
+   contract-first authority, benchmark conservation evidence, and observation
+   validation.
+6. **SNOWFROST-FIDELITY-F: conditional migration/fringe candidate.** Consider a
    `Qwet` or frozen-fringe term only if A-C show residuals that cannot be
-   explained by snow insulation, no-migration heat flow, lower-boundary heat, or
-   frozen conductivity. Any candidate must use a frozen/fringe-limited
+   explained by snow insulation, no-migration heat flow, lower-boundary heat,
+   or frozen conductivity. Any candidate must use a frozen/fringe-limited
    conductivity, explicit source-water caps, mass and latent-heat closure, and
    observation validation. The old unfrozen-`kunsat` maximum-gradient block is
    not a production shortcut.
-5. **SNOWFROST-FIDELITY-E: promotion and activation gate.** Promote the smallest
+7. **SNOWFROST-FIDELITY-G: promotion and activation gate.** Promote the smallest
    physics model that passes field observations, benchmark conservation,
    independent operand reconstruction, snow/frost anti-alias fixtures, public
    output parity where parity remains contractual, and direct-publication
@@ -427,10 +442,14 @@ and Amankwah-style salinity sensitivity; it explicitly remains non-production,
 not a texture-default source, and not field-calibration authority. The next
 field-validation package must expose modeled snow depth and rerun A
 classification before field residuals are used to choose heat-flow,
-frozen-conductivity, SFCC/impedance, or migration/fringe changes. D remains
-conditional: migration/fringe work is not authorized unless A-C plus snow-depth
-attribution show that no smaller heat-flow or frozen-conductivity correction
-can explain the residual.
+frozen-conductivity, SFCC/impedance, or migration/fringe changes.
+SNOWFROST-FIDELITY-D completed that diagnostic publication/rerun step:
+modeled snow depth is now published as WAT `Snow-Depth`, but the five-site
+rerun produced `0` defect-attribution eligible sites because three sites fail
+paired snow-depth control and two lack paired observed snow-depth rows.
+Migration/fringe work remains conditional later scope and is not authorized
+unless snow-depth fidelity is adjudicated and no smaller heat-flow or
+frozen-conductivity correction can explain remaining residuals.
 
 (MOFE01 + FARPOINT01 closed hillslope water-routing closure through 19 OFEs; the
 H2637 magnitude arc is no longer an active queue item. Absolute forest lateral-flow

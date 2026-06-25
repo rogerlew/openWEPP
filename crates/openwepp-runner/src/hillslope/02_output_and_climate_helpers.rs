@@ -108,6 +108,7 @@ struct Wb13FrozenStorageInputs {
     frozwt: f64,
     frdp_mm: f64,
     snow_water: f64,
+    snow_depth_mm: Option<f64>,
 }
 
 #[derive(Clone, Copy)]
@@ -738,6 +739,7 @@ fn build_hillslope_wat_row(
         frozwt: wb13_row.wb13_row.frozwt,
         frdp: wb13_row.frdp_mm,
         snow_water: wb13_row.wb13_row.snow_water,
+        snow_depth: wb13_row.snow_depth_mm,
         qofe: wb13_row.wb13_row.qofe,
         tile: wb13_row.wb13_row.tile,
         irr: wb13_row.wb13_row.irr,
@@ -926,6 +928,7 @@ fn build_hillslope_wat_row_from_direct_publication(
         frozwt: row.storage.frozwt_mm,
         frdp: row.storage.frdp_mm.unwrap_or(0.0),
         snow_water: row.storage.snow_water_mm,
+        snow_depth: Some(row.storage.snow_depth_mm),
         qofe: row.runoff.qofe_mm,
         tile: row.subsurface.tile_mm,
         irr: row.liquid_input.irrigation_mm,
@@ -1345,6 +1348,7 @@ fn build_simulation_owned_wb13_row_for_ofe(
         wb13_row,
         interception_mm,
         frdp_mm: storage.frdp_mm,
+        snow_depth_mm: storage.snow_depth_mm,
         month: calendar_keys.month,
         day_of_month: calendar_keys.day_of_month,
         water_year: calendar_keys.water_year,
@@ -1559,11 +1563,20 @@ fn wb13_frozen_storage_inputs(
     }
     let snow_water = runtime_swe_m * 1_000.0;
 
+    let runtime_depth_m = require_runtime_surface_scalar(runtime_surface, "snow.runtime_depth_m")?;
+    if runtime_depth_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "snow.runtime_depth_m must be >= 0.0, observed {runtime_depth_m}"
+        )));
+    }
+    let snow_depth_mm = Some(runtime_depth_m * 1_000.0);
+
     Ok(Wb13FrozenStorageInputs {
         total_soil,
         frozwt,
         frdp_mm,
         snow_water,
+        snow_depth_mm,
     })
 }
 
@@ -1787,6 +1800,7 @@ fn build_wb13_row_surface(
         ("frozwt", inputs.storage.frozwt),
         ("frdp", inputs.storage.frdp_mm),
         ("Snow-Water", inputs.storage.snow_water),
+        ("Snow-Depth", inputs.storage.snow_depth_mm.unwrap_or(0.0)),
         ("QOFE", inputs.runoff.qofe),
         ("Tile", inputs.subsurface.tile),
         ("Irr", inputs.liquid.irrigation_mm),

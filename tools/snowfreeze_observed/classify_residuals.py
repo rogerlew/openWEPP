@@ -14,6 +14,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OBSERVATIONS = REPO_ROOT / "tests/fixtures/snowfreeze_observed/observations"
 SCHEMA = "snowfreeze-observed-residual-classification-v1"
 MISSING_MODELED_SNOW = "UNRESOLVED_NO_MODELED_SNOW_DEPTH_DIAGNOSTIC"
+SNOW_CONTROL_PASSED = "SNOW_CONTROL_PASSED"
+SNOW_CONTROL_FAILED = "SNOW_CONTROL_FAILED"
+SNOW_CONTROL_NO_OBSERVED_ROWS = "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW"
+SNOW_CONTROL_NO_MATCHED_ROWS = "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_MATCHED_PAIRED_SNOW"
 
 
 def main() -> int:
@@ -74,6 +78,8 @@ def classify_site(
     has_modeled_snow_depth = snow_status != MISSING_MODELED_SNOW
     verdict = report.get("verdict")
     matched_count = int(metrics.get("matched_count") or 0)
+    snow_control_count = int(metrics.get("snow_depth_control_count") or 0)
+    snow_control_fail_count = int(metrics.get("snow_depth_control_fail_count") or 0)
 
     if verdict == "SOURCE-BLOCKED":
         primary = "SOURCE-BLOCKED"
@@ -97,8 +103,35 @@ def classify_site(
             "No modeled snow-depth diagnostic is available, and this source "
             "does not provide paired snow-depth rows."
         )
-    else:
+    elif snow_status == SNOW_CONTROL_FAILED or snow_control_fail_count > 0:
+        primary = "SNOW-CONTROL-FAILED"
+        residual_family = "snow-confounded"
+        reason = (
+            "Modeled snow depth is available but fails paired TOL-SNOWFREEZE-009 "
+            "snow-depth control; frost residuals remain snow-confounded."
+        )
+    elif snow_status == SNOW_CONTROL_NO_MATCHED_ROWS or (
+        observed_snow_rows > 0 and snow_control_count == 0
+    ):
+        primary = "INCONCLUSIVE"
+        residual_family = "snow-control-unmatched"
+        reason = (
+            "Observed and modeled snow-depth diagnostics exist, but no paired "
+            "snow-depth rows matched the WAT dates."
+        )
+    elif snow_status == SNOW_CONTROL_NO_OBSERVED_ROWS:
+        primary = "INCONCLUSIVE"
+        residual_family = "snow-control-unavailable"
+        reason = (
+            "Modeled snow depth is available, but this source has no paired "
+            "observed snow-depth rows for TOL-SNOWFREEZE-009."
+        )
+    elif snow_status == SNOW_CONTROL_PASSED:
         primary, residual_family, reason = classify_after_snow_gate(metrics)
+    else:
+        primary = "INCONCLUSIVE"
+        residual_family = "snow-control-unresolved"
+        reason = f"Snow-control status {snow_status} does not authorize defect attribution."
 
     defect_eligible = primary in {
         "HEAT-FLOW-THERMAL-CANDIDATE",
@@ -135,6 +168,9 @@ def classify_site(
             "max_isotherm_upper_bound_margin_m": metrics.get(
                 "max_isotherm_upper_bound_margin_m"
             ),
+            "snow_depth_control_count": metrics.get("snow_depth_control_count"),
+            "snow_depth_control_fail_count": metrics.get("snow_depth_control_fail_count"),
+            "max_abs_snow_depth_residual_m": metrics.get("max_abs_snow_depth_residual_m"),
         },
     }
 
@@ -170,16 +206,22 @@ def summarize(site_results: list[dict[str, Any]]) -> dict[str, Any]:
             for result in site_results
             if result["primary_classification"] == "SNOW-CONTROL-BLOCKED"
         ],
+        "snow_control_failed_sites": [
+            result["site_id"]
+            for result in site_results
+            if result["primary_classification"] == "SNOW-CONTROL-FAILED"
+        ],
         "inconclusive_sites": [
             result["site_id"]
             for result in site_results
             if result["primary_classification"] == "INCONCLUSIVE"
         ],
         "next_action": (
-            "Add a modeled snow-depth diagnostic and rerun SNOWFROST-FIDELITY-A "
-            "classification before field residuals are attributed to frost physics. "
-            "No Qwet, SFCC, frozen-K, or heat-flow tuning is authorized by these "
-            "classifications."
+            "Where snow control passes, use SNOWFROST-FIDELITY-B/C evidence to "
+            "adjudicate heat-flow versus frozen-K mechanisms. Where snow control "
+            "fails or lacks paired rows, resolve snow-depth publication/physics "
+            "before attributing frost residuals. No Qwet, SFCC, frozen-K, or "
+            "heat-flow tuning is authorized by these classifications."
         ),
     }
 
@@ -222,13 +264,13 @@ def render_markdown(classification: dict[str, Any]) -> str:
         "",
         "## Site Classifications",
         "",
-        "| Site | Harness | Primary | Family | Matched | Frost residuals | Max abs residual m | Isotherm exceedances | Snow rows | Reason |",
-        "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Site | Harness | Primary | Family | Matched | Frost residuals | Max abs residual m | Isotherm exceedances | Snow pairs | Snow failures | Max snow residual m | Reason |",
+        "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for site in classification["sites"]:
         metrics = site["metrics"]
         lines.append(
-            "| {site_id} | {harness} | {primary} | {family} | {matched} | {frost_rows} | {max_abs} | {iso_exceed} | {snow_rows} | {reason} |".format(
+            "| {site_id} | {harness} | {primary} | {family} | {matched} | {frost_rows} | {max_abs} | {iso_exceed} | {snow_pairs} | {snow_failures} | {max_snow_abs} | {reason} |".format(
                 site_id=site["site_id"],
                 harness=site["harness_verdict"],
                 primary=site["primary_classification"],
@@ -237,7 +279,9 @@ def render_markdown(classification: dict[str, Any]) -> str:
                 frost_rows=fmt(metrics["frost_depth_residual_count"]),
                 max_abs=fmt(metrics["max_abs_residual_m"]),
                 iso_exceed=fmt(metrics["isotherm_upper_bound_exceedance_count"]),
-                snow_rows=site["observed_snow_depth_row_count"],
+                snow_pairs=fmt(metrics["snow_depth_control_count"]),
+                snow_failures=fmt(metrics["snow_depth_control_fail_count"]),
+                max_snow_abs=fmt(metrics["max_abs_snow_depth_residual_m"]),
                 reason=site["reason"].replace("|", "\\|"),
             )
         )
@@ -246,11 +290,11 @@ def render_markdown(classification: dict[str, Any]) -> str:
             "",
             "## Disposition",
             "",
-            "No site is eligible for frost-model defect attribution in this pass. "
-            "The direct harness produces metric-bearing reports, but modeled "
-            "snow depth is absent, so `TOL-SNOWFREEZE-009` cannot be evaluated. "
-            "Current field residuals are evidence for the next diagnostic gate, "
-            "not authority to tune heat flow, frozen conductivity, or migration heat.",
+            "Defect attribution remains gated by paired snow-depth control. "
+            "A site can move to heat-flow or frozen-K mechanism discrimination "
+            "only after `TOL-SNOWFREEZE-009` passes; missing, unmatched, or "
+            "failed snow-control rows remain snow-confounded and do not "
+            "authorize heat flow, frozen conductivity, or migration heat tuning.",
             "",
         ]
     )

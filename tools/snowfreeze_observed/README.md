@@ -37,8 +37,10 @@ Run one comparison:
 `--runtime compatibility` is available only for flagging/debugging and is not
 the observation acceptance target.
 
-The comparison verdict remains `UNRESOLVED` when modeled snow depth is absent.
-WAT `Snow-Water` is SWE and is not a snow-depth diagnostic.
+The comparison verdict remains `UNRESOLVED` while mechanism attribution is
+blocked. WAT `Snow-Depth` is the modeled snow-depth diagnostic for
+`TOL-SNOWFREEZE-009`; WAT `Snow-Water` is SWE and is not a snow-depth
+diagnostic.
 
 Generate SNOWFROST-FIDELITY-C diagnostic SFCC/frozen-K comparison curves:
 

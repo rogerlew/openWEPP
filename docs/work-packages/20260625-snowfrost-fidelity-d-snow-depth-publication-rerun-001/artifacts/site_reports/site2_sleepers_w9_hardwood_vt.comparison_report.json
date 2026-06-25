@@ -1,0 +1,688 @@
+{
+  "fixture_dir": "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/site2_sleepers_w9_hardwood_vt",
+  "measurement_contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-047",
+  "metrics": {
+    "censored_excluded_count": 0,
+    "first_matched_date": "1993-11-30",
+    "frost_depth_residual_count": 200,
+    "isotherm_upper_bound_count": 0,
+    "isotherm_upper_bound_exceedance_count": 0,
+    "last_matched_date": "2020-03-16",
+    "matched_count": 200,
+    "max_abs_residual_m": 0.3838127878666539,
+    "max_abs_snow_depth_residual_m": 1.059919954616471,
+    "max_isotherm_upper_bound_margin_m": null,
+    "mean_abs_residual_m": 0.0684098658293702,
+    "mean_abs_snow_depth_residual_m": 0.34823857294075905,
+    "modeled_day_count": 16437,
+    "modeled_snow_depth_day_count": 16437,
+    "observation_count": 200,
+    "observed_snow_depth_count": 193,
+    "sample_isotherm_upper_bounds": [],
+    "sample_residuals": [
+      {
+        "date": "1993-11-30",
+        "modeled_frdp_m": 0.0009566875804723183,
+        "observed_m": 0.0,
+        "residual_m": 0.0009566875804723183,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1993-12-01",
+        "modeled_frdp_m": 0.005944427399663827,
+        "observed_m": 0.0,
+        "residual_m": 0.005944427399663827,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1993-12-02",
+        "modeled_frdp_m": 0.006292493407768182,
+        "observed_m": 0.0,
+        "residual_m": 0.006292493407768182,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1993-12-15",
+        "modeled_frdp_m": 0.0,
+        "observed_m": 0.0,
+        "residual_m": 0.0,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1993-12-22",
+        "modeled_frdp_m": 0.0,
+        "observed_m": 0.040833,
+        "residual_m": -0.040833,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-01-03",
+        "modeled_frdp_m": 0.025920721222205678,
+        "observed_m": 0.0364,
+        "residual_m": -0.010479278777794324,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-01-07",
+        "modeled_frdp_m": 0.033379054417182766,
+        "observed_m": 0.035667,
+        "residual_m": -0.0022879455828172315,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-01-12",
+        "modeled_frdp_m": 0.044690414606139914,
+        "observed_m": 0.031833,
+        "residual_m": 0.012857414606139914,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-01-21",
+        "modeled_frdp_m": 0.07992749749846342,
+        "observed_m": 0.024333,
+        "residual_m": 0.05559449749846342,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-02-02",
+        "modeled_frdp_m": 0.1556717765280044,
+        "observed_m": 0.0174,
+        "residual_m": 0.1382717765280044,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-02-04",
+        "modeled_frdp_m": 0.16842927696401966,
+        "observed_m": 0.0185,
+        "residual_m": 0.14992927696401967,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-02-09",
+        "modeled_frdp_m": 0.19781000418754086,
+        "observed_m": 0.018167,
+        "residual_m": 0.17964300418754087,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-03-03",
+        "modeled_frdp_m": 0.2925672619852142,
+        "observed_m": 0.011333,
+        "residual_m": 0.28123426198521423,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-03-18",
+        "modeled_frdp_m": 0.29478642016497736,
+        "observed_m": 0.0,
+        "residual_m": 0.29478642016497736,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-04-07",
+        "modeled_frdp_m": 0.1270471503860197,
+        "observed_m": 0.0,
+        "residual_m": 0.1270471503860197,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-12-14",
+        "modeled_frdp_m": 0.0,
+        "observed_m": 0.010833,
+        "residual_m": -0.010833,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1994-12-28",
+        "modeled_frdp_m": 0.0,
+        "observed_m": 0.0225,
+        "residual_m": -0.0225,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1995-01-04",
+        "modeled_frdp_m": 0.011477785935682437,
+        "observed_m": 0.021167,
+        "residual_m": -0.009689214064317562,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1995-01-18",
+        "modeled_frdp_m": 0.040103973900969696,
+        "observed_m": 0.0,
+        "residual_m": 0.040103973900969696,
+        "target_kind": "frost_depth"
+      },
+      {
+        "date": "1995-01-25",
+        "modeled_frdp_m": 0.055648624992392634,
+        "observed_m": 0.001667,
+        "residual_m": 0.05398162499239263,
+        "target_kind": "frost_depth"
+      }
+    ],
+    "sample_snow_depth_residuals": [
+      {
+        "abs_residual_m": 0.02594863772203801,
+        "date": "1993-12-22",
+        "modeled_snow_depth_m": 0.204051362277962,
+        "observed_snow_depth_m": 0.23,
+        "residual_m": -0.02594863772203801,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.01903283964069774,
+        "date": "1994-01-03",
+        "modeled_snow_depth_m": 0.21296716035930227,
+        "observed_snow_depth_m": 0.232,
+        "residual_m": -0.01903283964069774,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.11730259726924624,
+        "date": "1994-01-07",
+        "modeled_snow_depth_m": 0.3110304027307538,
+        "observed_snow_depth_m": 0.428333,
+        "residual_m": -0.11730259726924624,
+        "tolerance_m": 0.1284999,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.17509831551143534,
+        "date": "1994-01-12",
+        "modeled_snow_depth_m": 0.3612346844885646,
+        "observed_snow_depth_m": 0.536333,
+        "residual_m": -0.17509831551143534,
+        "tolerance_m": 0.16089989999999998,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.07007813250818518,
+        "date": "1994-01-21",
+        "modeled_snow_depth_m": 0.6867451325081851,
+        "observed_snow_depth_m": 0.616667,
+        "residual_m": 0.07007813250818518,
+        "tolerance_m": 0.18500009999999997,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.04629805273592491,
+        "date": "1994-02-02",
+        "modeled_snow_depth_m": 0.7002980527359249,
+        "observed_snow_depth_m": 0.654,
+        "residual_m": 0.04629805273592491,
+        "tolerance_m": 0.1962,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.05196439160961086,
+        "date": "1994-02-04",
+        "modeled_snow_depth_m": 0.7002973916096109,
+        "observed_snow_depth_m": 0.648333,
+        "residual_m": 0.05196439160961086,
+        "tolerance_m": 0.1944999,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.04358570700771658,
+        "date": "1994-02-09",
+        "modeled_snow_depth_m": 0.7327527070077166,
+        "observed_snow_depth_m": 0.689167,
+        "residual_m": 0.04358570700771658,
+        "tolerance_m": 0.2067501,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.08044901084010236,
+        "date": "1994-03-03",
+        "modeled_snow_depth_m": 0.9487820108401024,
+        "observed_snow_depth_m": 0.868333,
+        "residual_m": 0.08044901084010236,
+        "tolerance_m": 0.2604999,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.2691800442653778,
+        "date": "1994-03-18",
+        "modeled_snow_depth_m": 1.1041800442653777,
+        "observed_snow_depth_m": 0.835,
+        "residual_m": 0.2691800442653778,
+        "tolerance_m": 0.2505,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.585276984792739,
+        "date": "1994-04-07",
+        "modeled_snow_depth_m": 1.164276984792739,
+        "observed_snow_depth_m": 0.579,
+        "residual_m": 0.585276984792739,
+        "tolerance_m": 0.1737,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.051043616760511196,
+        "date": "1994-12-14",
+        "modeled_snow_depth_m": 0.1705436167605112,
+        "observed_snow_depth_m": 0.1195,
+        "residual_m": 0.051043616760511196,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.14640692798099586,
+        "date": "1994-12-28",
+        "modeled_snow_depth_m": 0.19723992798099588,
+        "observed_snow_depth_m": 0.050833,
+        "residual_m": 0.14640692798099586,
+        "tolerance_m": 0.1,
+        "within_tolerance": false
+      },
+      {
+        "abs_residual_m": 0.028307143069319057,
+        "date": "1995-01-04",
+        "modeled_snow_depth_m": 0.25330714306931906,
+        "observed_snow_depth_m": 0.225,
+        "residual_m": 0.028307143069319057,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.04508934466650165,
+        "date": "1995-01-18",
+        "modeled_snow_depth_m": 0.04508934466650165,
+        "observed_snow_depth_m": 0.0,
+        "residual_m": 0.04508934466650165,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.06995630155112134,
+        "date": "1995-01-25",
+        "modeled_snow_depth_m": 0.045043698448878663,
+        "observed_snow_depth_m": 0.115,
+        "residual_m": -0.06995630155112134,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.06143643881690808,
+        "date": "1995-02-01",
+        "modeled_snow_depth_m": 0.06689656118309192,
+        "observed_snow_depth_m": 0.128333,
+        "residual_m": -0.06143643881690808,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.09550480997942665,
+        "date": "1995-02-09",
+        "modeled_snow_depth_m": 0.21782819002057333,
+        "observed_snow_depth_m": 0.313333,
+        "residual_m": -0.09550480997942665,
+        "tolerance_m": 0.1,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.10527375025119567,
+        "date": "1995-02-15",
+        "modeled_snow_depth_m": 0.24639324974880433,
+        "observed_snow_depth_m": 0.351667,
+        "residual_m": -0.10527375025119567,
+        "tolerance_m": 0.1055001,
+        "within_tolerance": true
+      },
+      {
+        "abs_residual_m": 0.1780764953328161,
+        "date": "1995-03-02",
+        "modeled_snow_depth_m": 0.43859050466718386,
+        "observed_snow_depth_m": 0.616667,
+        "residual_m": -0.1780764953328161,
+        "tolerance_m": 0.18500009999999997,
+        "within_tolerance": true
+      }
+    ],
+    "seasonal_max_modeled_on_observation_dates_m": 0.38456757620690685,
+    "seasonal_max_observed_m": 0.0786,
+    "seasonal_metrics": [
+      {
+        "frozen_duration_residual_observation_days": 4,
+        "modeled_frozen_duration_observation_days": 13,
+        "modeled_onset_date": "1993-11-30",
+        "modeled_thaw_date": "1994-04-07",
+        "observation_dates": 15,
+        "observed_frozen_duration_observation_days": 9,
+        "observed_onset_date": "1993-12-22",
+        "observed_thaw_date": "1994-03-03",
+        "onset_residual_days": -22,
+        "thaw_residual_days": 35,
+        "water_year": 1994
+      },
+      {
+        "frozen_duration_residual_observation_days": 1,
+        "modeled_frozen_duration_observation_days": 9,
+        "modeled_onset_date": "1995-01-04",
+        "modeled_thaw_date": "1995-03-20",
+        "observation_dates": 11,
+        "observed_frozen_duration_observation_days": 8,
+        "observed_onset_date": "1994-12-14",
+        "observed_thaw_date": "1995-03-02",
+        "onset_residual_days": 21,
+        "thaw_residual_days": 18,
+        "water_year": 1995
+      },
+      {
+        "frozen_duration_residual_observation_days": 6,
+        "modeled_frozen_duration_observation_days": 8,
+        "modeled_onset_date": "1996-01-18",
+        "modeled_thaw_date": "1996-04-02",
+        "observation_dates": 8,
+        "observed_frozen_duration_observation_days": 2,
+        "observed_onset_date": "1996-02-06",
+        "observed_thaw_date": "1996-02-23",
+        "onset_residual_days": -19,
+        "thaw_residual_days": 39,
+        "water_year": 1996
+      },
+      {
+        "frozen_duration_residual_observation_days": 7,
+        "modeled_frozen_duration_observation_days": 8,
+        "modeled_onset_date": "1997-01-15",
+        "modeled_thaw_date": "1997-04-09",
+        "observation_dates": 11,
+        "observed_frozen_duration_observation_days": 1,
+        "observed_onset_date": "1997-01-15",
+        "observed_thaw_date": "1997-01-15",
+        "onset_residual_days": 0,
+        "thaw_residual_days": 84,
+        "water_year": 1997
+      },
+      {
+        "frozen_duration_residual_observation_days": 4,
+        "modeled_frozen_duration_observation_days": 5,
+        "modeled_onset_date": "1998-01-29",
+        "modeled_thaw_date": "1998-03-31",
+        "observation_dates": 6,
+        "observed_frozen_duration_observation_days": 1,
+        "observed_onset_date": "1998-03-18",
+        "observed_thaw_date": "1998-03-18",
+        "onset_residual_days": -48,
+        "thaw_residual_days": 13,
+        "water_year": 1998
+      },
+      {
+        "frozen_duration_residual_observation_days": -1,
+        "modeled_frozen_duration_observation_days": 5,
+        "modeled_onset_date": "1999-01-29",
+        "modeled_thaw_date": "1999-03-24",
+        "observation_dates": 7,
+        "observed_frozen_duration_observation_days": 6,
+        "observed_onset_date": "1998-12-30",
+        "observed_thaw_date": "1999-03-24",
+        "onset_residual_days": 30,
+        "thaw_residual_days": 0,
+        "water_year": 1999
+      },
+      {
+        "frozen_duration_residual_observation_days": 1,
+        "modeled_frozen_duration_observation_days": 7,
+        "modeled_onset_date": "1999-12-30",
+        "modeled_thaw_date": "2000-03-23",
+        "observation_dates": 7,
+        "observed_frozen_duration_observation_days": 6,
+        "observed_onset_date": "1999-12-30",
+        "observed_thaw_date": "2000-03-09",
+        "onset_residual_days": 0,
+        "thaw_residual_days": 14,
+        "water_year": 2000
+      },
+      {
+        "frozen_duration_residual_observation_days": -3,
+        "modeled_frozen_duration_observation_days": 4,
+        "modeled_onset_date": "2001-01-05",
+        "modeled_thaw_date": "2001-03-28",
+        "observation_dates": 8,
+        "observed_frozen_duration_observation_days": 7,
+        "observed_onset_date": "2000-11-27",
+        "observed_thaw_date": "2001-03-28",
+        "onset_residual_days": 39,
+        "thaw_residual_days": 0,
+        "water_year": 2001
+      },
+      {
+        "frozen_duration_residual_observation_days": 4,
+        "modeled_frozen_duration_observation_days": 4,
+        "modeled_onset_date": "2001-12-18",
+        "modeled_thaw_date": "2002-04-11",
+        "observation_dates": 4,
+        "observed_frozen_duration_observation_days": 0,
+        "observed_onset_date": null,
+        "observed_thaw_date": null,
+        "onset_residual_days": null,
+        "thaw_residual_days": null,
+        "water_year": 2002
+      },
+      {
+        "frozen_duration_residual_observation_days": 0,
+        "modeled_frozen_duration_observation_days": 4,
+        "modeled_onset_date": "2004-01-14",
+        "modeled_thaw_date": "2004-03-23",
+        "observation_dates": 6,
+        "observed_frozen_duration_observation_days": 4,
+        "observed_onset_date": "2003-12-10",
+        "observed_thaw_date": "2004-02-11",
+        "onset_residual_days": 35,
+        "thaw_residual_days": 41,
+        "water_year": 2004
+      },
+      {
+        "frozen_duration_residual_observation_days": -1,
+        "modeled_frozen_duration_observation_days": 5,
+        "modeled_onset_date": "2005-01-14",
+        "modeled_thaw_date": "2005-03-10",
+        "observation_dates": 7,
+        "observed_frozen_duration_observation_days": 6,
+        "observed_onset_date": "2004-12-30",
+        "observed_thaw_date": "2005-03-10",
+        "onset_residual_days": 15,
+        "thaw_residual_days": 0,
+        "water_year": 2005
+      },
+      {
+        "frozen_duration_residual_observation_days": 2,
+        "modeled_frozen_duration_observation_days": 6,
+        "modeled_onset_date": "2006-01-17",
+        "modeled_thaw_date": "2006-04-07",
+        "observation_dates": 8,
+        "observed_frozen_duration_observation_days": 4,
+        "observed_onset_date": "2006-01-17",
+        "observed_thaw_date": "2006-03-21",
+        "onset_residual_days": 0,
+        "thaw_residual_days": 17,
+        "water_year": 2006
+      },
+      {
+        "frozen_duration_residual_observation_days": -2,
+        "modeled_frozen_duration_observation_days": 9,
+        "modeled_onset_date": "2007-01-12",
+        "modeled_thaw_date": "2007-03-27",
+        "observation_dates": 11,
+        "observed_frozen_duration_observation_days": 11,
+        "observed_onset_date": "2006-12-29",
+        "observed_thaw_date": "2007-03-27",
+        "onset_residual_days": 14,
+        "thaw_residual_days": 0,
+        "water_year": 2007
+      },
+      {
+        "frozen_duration_residual_observation_days": 2,
+        "modeled_frozen_duration_observation_days": 2,
+        "modeled_onset_date": "2008-01-31",
+        "modeled_thaw_date": "2008-02-22",
+        "observation_dates": 4,
+        "observed_frozen_duration_observation_days": 0,
+        "observed_onset_date": null,
+        "observed_thaw_date": null,
+        "onset_residual_days": null,
+        "thaw_residual_days": null,
+        "water_year": 2008
+      },
+      {
+        "frozen_duration_residual_observation_days": 2,
+        "modeled_frozen_duration_observation_days": 4,
+        "modeled_onset_date": "2008-11-18",
+        "modeled_thaw_date": "2009-04-07",
+        "observation_dates": 7,
+        "observed_frozen_duration_observation_days": 2,
+        "observed_onset_date": "2008-11-28",
+        "observed_thaw_date": "2008-12-17",
+        "onset_residual_days": -10,
+        "thaw_residual_days": 111,
+        "water_year": 2009
+      },
+      {
+        "frozen_duration_residual_observation_days": 4,
+        "modeled_frozen_duration_observation_days": 5,
+        "modeled_onset_date": "2010-01-06",
+        "modeled_thaw_date": "2010-03-24",
+        "observation_dates": 5,
+        "observed_frozen_duration_observation_days": 1,
+        "observed_onset_date": "2010-02-02",
+        "observed_thaw_date": "2010-02-02",
+        "onset_residual_days": -27,
+        "thaw_residual_days": 50,
+        "water_year": 2010
+      },
+      {
+        "frozen_duration_residual_observation_days": -1,
+        "modeled_frozen_duration_observation_days": 6,
+        "modeled_onset_date": "2011-01-04",
+        "modeled_thaw_date": "2011-03-23",
+        "observation_dates": 8,
+        "observed_frozen_duration_observation_days": 7,
+        "observed_onset_date": "2010-12-07",
+        "observed_thaw_date": "2011-03-03",
+        "onset_residual_days": 28,
+        "thaw_residual_days": 20,
+        "water_year": 2011
+      },
+      {
+        "frozen_duration_residual_observation_days": 1,
+        "modeled_frozen_duration_observation_days": 7,
+        "modeled_onset_date": "2011-12-20",
+        "modeled_thaw_date": "2012-03-20",
+        "observation_dates": 8,
+        "observed_frozen_duration_observation_days": 6,
+        "observed_onset_date": "2011-12-20",
+        "observed_thaw_date": "2012-03-07",
+        "onset_residual_days": 0,
+        "thaw_residual_days": 13,
+        "water_year": 2012
+      },
+      {
+        "frozen_duration_residual_observation_days": 1,
+        "modeled_frozen_duration_observation_days": 7,
+        "modeled_onset_date": "2013-01-02",
+        "modeled_thaw_date": "2013-04-02",
+        "observation_dates": 8,
+        "observed_frozen_duration_observation_days": 6,
+        "observed_onset_date": "2013-01-02",
+        "observed_thaw_date": "2013-04-02",
+        "onset_residual_days": 0,
+        "thaw_residual_days": 0,
+        "water_year": 2013
+      },
+      {
+        "frozen_duration_residual_observation_days": -2,
+        "modeled_frozen_duration_observation_days": 5,
+        "modeled_onset_date": "2014-01-08",
+        "modeled_thaw_date": "2014-04-02",
+        "observation_dates": 7,
+        "observed_frozen_duration_observation_days": 7,
+        "observed_onset_date": "2013-12-18",
+        "observed_thaw_date": "2014-04-23",
+        "onset_residual_days": 21,
+        "thaw_residual_days": -21,
+        "water_year": 2014
+      },
+      {
+        "frozen_duration_residual_observation_days": 0,
+        "modeled_frozen_duration_observation_days": 5,
+        "modeled_onset_date": "2015-01-06",
+        "modeled_thaw_date": "2015-04-08",
+        "observation_dates": 6,
+        "observed_frozen_duration_observation_days": 5,
+        "observed_onset_date": "2015-01-06",
+        "observed_thaw_date": "2015-04-08",
+        "onset_residual_days": 0,
+        "thaw_residual_days": 0,
+        "water_year": 2015
+      },
+      {
+        "frozen_duration_residual_observation_days": 1,
+        "modeled_frozen_duration_observation_days": 9,
+        "modeled_onset_date": "2016-01-07",
+        "modeled_thaw_date": "2016-04-19",
+        "observation_dates": 10,
+        "observed_frozen_duration_observation_days": 8,
+        "observed_onset_date": "2016-01-07",
+        "observed_thaw_date": "2016-04-08",
+        "onset_residual_days": 0,
+        "thaw_residual_days": 11,
+        "water_year": 2016
+      },
+      {
+        "frozen_duration_residual_observation_days": 0,
+        "modeled_frozen_duration_observation_days": 8,
+        "modeled_onset_date": "2017-01-06",
+        "modeled_thaw_date": "2017-04-18",
+        "observation_dates": 10,
+        "observed_frozen_duration_observation_days": 8,
+        "observed_onset_date": "2016-12-20",
+        "observed_thaw_date": "2017-04-05",
+        "onset_residual_days": 17,
+        "thaw_residual_days": 13,
+        "water_year": 2017
+      },
+      {
+        "frozen_duration_residual_observation_days": -1,
+        "modeled_frozen_duration_observation_days": 6,
+        "modeled_onset_date": "2019-02-03",
+        "modeled_thaw_date": "2019-04-15",
+        "observation_dates": 10,
+        "observed_frozen_duration_observation_days": 7,
+        "observed_onset_date": "2018-12-13",
+        "observed_thaw_date": "2019-04-15",
+        "onset_residual_days": 52,
+        "thaw_residual_days": 0,
+        "water_year": 2019
+      },
+      {
+        "frozen_duration_residual_observation_days": 0,
+        "modeled_frozen_duration_observation_days": 5,
+        "modeled_onset_date": "2020-01-13",
+        "modeled_thaw_date": "2020-03-16",
+        "observation_dates": 8,
+        "observed_frozen_duration_observation_days": 5,
+        "observed_onset_date": "2019-12-12",
+        "observed_thaw_date": "2020-03-03",
+        "onset_residual_days": 32,
+        "thaw_residual_days": 13,
+        "water_year": 2020
+      }
+    ],
+    "snow_depth_control_count": 193,
+    "snow_depth_control_fail_count": 143,
+    "snow_depth_control_pass_count": 50,
+    "unmatched_observation_count": 0
+  },
+  "modeled_snow_depth_source": "hillslope_wat.Snow-Depth:mm from snow.runtime_depth_m",
+  "runfile": "/home/workdir/openWEPP/target/snowfrost_fidelity_d_observed_compare/site2_sleepers_w9_hardwood_vt/site2_sleepers_w9_hardwood_vt.run",
+  "runtime": "direct-production-executor",
+  "schema": "snowfreeze-observed-comparison-v1",
+  "site_id": "site2_sleepers_w9_hardwood_vt",
+  "snow_control_status": "SNOW_CONTROL_FAILED",
+  "verdict": "UNRESOLVED",
+  "wat_output": "/home/workdir/openWEPP/target/snowfrost_fidelity_d_observed_compare/site2_sleepers_w9_hardwood_vt/site2_sleepers_w9_hardwood_vt.wat.parquet"
+}

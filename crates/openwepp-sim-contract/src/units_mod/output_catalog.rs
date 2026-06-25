@@ -44,6 +44,12 @@ pub fn canonical_output_unit_entries() -> Vec<OutputUnitEntry> {
             "mm",
             "hillslope_wat.Snow-Water",
         ),
+        OutputUnitEntry::boundary_registry(
+            "hillslope_wat",
+            "Snow-Depth",
+            "mm",
+            "hillslope_wat.Snow-Depth",
+        ),
         OutputUnitEntry::boundary_registry("hillslope_wat", "QOFE", "mm", "hillslope_wat.QOFE"),
         OutputUnitEntry::boundary_registry("hillslope_wat", "Tile", "mm", "hillslope_wat.Tile"),
         OutputUnitEntry::boundary_registry("hillslope_wat", "Irr", "mm", "hillslope_wat.Irr"),

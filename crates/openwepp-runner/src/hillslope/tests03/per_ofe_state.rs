@@ -719,6 +719,7 @@ fn me4_wb13_row(ofe: u16, spec: Me4Wb13RowSpec) -> SimulationOwnedWb13Row {
         },
         interception_mm: 0.0,
         frdp_mm: 0.0,
+        snow_depth_mm: Some(0.0),
         month: 1,
         day_of_month: 1,
         water_year: 2000,

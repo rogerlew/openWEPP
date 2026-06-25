@@ -31,6 +31,13 @@ DEFAULT_OBSERVATIONS = REPO_ROOT / "tests/fixtures/snowfreeze_observed/observati
 FIXTURE_ROOT = REPO_ROOT / "tests/fixtures/snowfreeze_observed"
 ACCESS_DATE = "2026-06-24"
 PARSER_VERSION = "snowfreeze-observed-harness-v1"
+MISSING_MODELED_SNOW_STATUS = "UNRESOLVED_NO_MODELED_SNOW_DEPTH_DIAGNOSTIC"
+SNOW_CONTROL_PASSED = "SNOW_CONTROL_PASSED"
+SNOW_CONTROL_FAILED = "SNOW_CONTROL_FAILED"
+SNOW_CONTROL_NO_OBSERVED_ROWS = "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW"
+SNOW_CONTROL_NO_MATCHED_ROWS = "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_MATCHED_PAIRED_SNOW"
+SNOW_DEPTH_ABSOLUTE_TOLERANCE_M = 0.10
+SNOW_DEPTH_RELATIVE_TOLERANCE = 0.30
 
 SOURCE_SCIENCEBASE_ITEM = (
     "https://www.sciencebase.gov/catalog/item/5e6bce83e4b01d5092632650?format=json"
@@ -804,21 +811,29 @@ def compare_site(
         "runtime": runtime,
         "verdict": verdict,
         "measurement_contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-047",
-        "snow_control_status": "UNRESOLVED_NO_MODELED_SNOW_DEPTH_DIAGNOSTIC",
+        "snow_control_status": snow_control_status(metrics),
+        "modeled_snow_depth_source": "hillslope_wat.Snow-Depth:mm from snow.runtime_depth_m",
         "metrics": metrics,
     }
     write_comparison_reports(output_dir, report)
 
 
 def compute_metrics(
-    observations: list[dict[str, str]], modeled: dict[dt.date, dict[str, float]]
+    observations: list[dict[str, str]], modeled: dict[dt.date, dict[str, float | None]]
 ) -> dict[str, Any]:
     frost_depth_residuals = []
     isotherm_upper_bounds = []
+    snow_depth_residuals = []
     matched_dates: list[dt.date] = []
     censored_excluded_count = 0
     unmatched_count = 0
     matched_series = []
+    observed_snow_depth_count = sum(
+        1 for row in observations if parse_optional_float(row["observed_snow_depth_m"]) is not None
+    )
+    modeled_snow_depth_day_count = sum(
+        1 for row in modeled.values() if row.get("snow_depth_m") is not None
+    )
     for observation in observations:
         observed_date = dt.date.fromisoformat(observation["date"])
         modeled_row = modeled.get(observed_date)
@@ -830,6 +845,7 @@ def compute_metrics(
         censoring = observation["censoring"]
         frost_depth_m = parse_optional_float(observation["observed_frost_depth_m"])
         isotherm_depth_m = parse_optional_float(observation["observed_isotherm_depth_m"])
+        observed_snow_depth_m = parse_optional_float(observation["observed_snow_depth_m"])
         observed_depth_m = frost_depth_m if frost_depth_m is not None else isotherm_depth_m
         matched_series.append(
             {
@@ -837,8 +853,25 @@ def compute_metrics(
                 "method": method,
                 "observed_depth_m": observed_depth_m,
                 "modeled_frdp_m": modeled_row["frdp_m"],
+                "observed_snow_depth_m": observed_snow_depth_m,
+                "modeled_snow_depth_m": modeled_row.get("snow_depth_m"),
             }
         )
+        modeled_snow_depth_m = modeled_row.get("snow_depth_m")
+        if observed_snow_depth_m is not None and modeled_snow_depth_m is not None:
+            residual = modeled_snow_depth_m - observed_snow_depth_m
+            tolerance = snow_depth_control_tolerance_m(observed_snow_depth_m)
+            snow_depth_residuals.append(
+                {
+                    "date": observed_date.isoformat(),
+                    "observed_snow_depth_m": observed_snow_depth_m,
+                    "modeled_snow_depth_m": modeled_snow_depth_m,
+                    "residual_m": residual,
+                    "abs_residual_m": abs(residual),
+                    "tolerance_m": tolerance,
+                    "within_tolerance": abs(residual) <= tolerance,
+                }
+            )
         if censoring != "none":
             censored_excluded_count += 1
             continue
@@ -866,12 +899,30 @@ def compute_metrics(
                 }
             )
     absolute_residuals = [abs(row["residual_m"]) for row in frost_depth_residuals]
+    snow_absolute_residuals = [row["abs_residual_m"] for row in snow_depth_residuals]
     seasonal_metrics = seasonal_timing_metrics(matched_series)
     return {
         "observation_count": len(observations),
         "modeled_day_count": len(modeled),
+        "modeled_snow_depth_day_count": modeled_snow_depth_day_count,
         "matched_count": len(matched_dates),
         "unmatched_observation_count": unmatched_count,
+        "observed_snow_depth_count": observed_snow_depth_count,
+        "snow_depth_control_count": len(snow_depth_residuals),
+        "snow_depth_control_pass_count": sum(
+            1 for row in snow_depth_residuals if row["within_tolerance"]
+        ),
+        "snow_depth_control_fail_count": sum(
+            1 for row in snow_depth_residuals if not row["within_tolerance"]
+        ),
+        "max_abs_snow_depth_residual_m": max(snow_absolute_residuals)
+        if snow_absolute_residuals
+        else None,
+        "mean_abs_snow_depth_residual_m": (
+            sum(snow_absolute_residuals) / len(snow_absolute_residuals)
+            if snow_absolute_residuals
+            else None
+        ),
         "first_matched_date": matched_dates[0].isoformat() if matched_dates else None,
         "last_matched_date": matched_dates[-1].isoformat() if matched_dates else None,
         "censored_excluded_count": censored_excluded_count,
@@ -905,7 +956,27 @@ def compute_metrics(
         "seasonal_metrics": seasonal_metrics,
         "sample_residuals": frost_depth_residuals[:20],
         "sample_isotherm_upper_bounds": isotherm_upper_bounds[:20],
+        "sample_snow_depth_residuals": snow_depth_residuals[:20],
     }
+
+
+def snow_depth_control_tolerance_m(observed_snow_depth_m: float) -> float:
+    return max(
+        SNOW_DEPTH_ABSOLUTE_TOLERANCE_M,
+        SNOW_DEPTH_RELATIVE_TOLERANCE * observed_snow_depth_m,
+    )
+
+
+def snow_control_status(metrics: dict[str, Any]) -> str:
+    if int(metrics.get("modeled_snow_depth_day_count") or 0) == 0:
+        return MISSING_MODELED_SNOW_STATUS
+    if int(metrics.get("observed_snow_depth_count") or 0) == 0:
+        return SNOW_CONTROL_NO_OBSERVED_ROWS
+    if int(metrics.get("snow_depth_control_count") or 0) == 0:
+        return SNOW_CONTROL_NO_MATCHED_ROWS
+    if int(metrics.get("snow_depth_control_fail_count") or 0) > 0:
+        return SNOW_CONTROL_FAILED
+    return SNOW_CONTROL_PASSED
 
 
 def row_allows_magnitude(row: dict[str, str]) -> bool:
@@ -962,7 +1033,7 @@ def date_delta_days(lhs: dt.date | None, rhs: dt.date | None) -> int | None:
     return (lhs - rhs).days
 
 
-def load_modeled_wat(path: Path) -> dict[dt.date, dict[str, float]]:
+def load_modeled_wat(path: Path) -> dict[dt.date, dict[str, float | None]]:
     try:
         import pyarrow.parquet as pq
     except ImportError as error:
@@ -970,21 +1041,31 @@ def load_modeled_wat(path: Path) -> dict[dt.date, dict[str, float]]:
             "pyarrow is required for compare; run through .venv/bin/python"
         ) from error
 
-    table = pq.read_table(path, columns=["water_year", "month", "day_of_month", "frdp"])
+    table = pq.read_table(path)
     columns = table.to_pydict()
-    modeled: dict[dt.date, dict[str, float]] = {}
-    for water_year_value, month, day, frdp_mm in zip(
+    snow_depth_values = columns.get("Snow-Depth", [None] * len(columns["frdp"]))
+    modeled: dict[dt.date, dict[str, float | None]] = {}
+    for water_year_value, month, day, frdp_mm, snow_depth_mm in zip(
         columns["water_year"],
         columns["month"],
         columns["day_of_month"],
         columns["frdp"],
+        snow_depth_values,
     ):
         calendar_year = int(water_year_value) - 1 if int(month) >= 10 else int(water_year_value)
         modeled_date = dt.date(calendar_year, int(month), int(day))
         if modeled_date in modeled:
             raise ValueError(f"{path} has duplicate modeled WAT date {modeled_date}")
+        modeled_snow_depth_m = None
+        if snow_depth_mm is not None:
+            modeled_snow_depth_m = float(snow_depth_mm) / 1000.0
+            if not math.isfinite(modeled_snow_depth_m) or modeled_snow_depth_m < 0.0:
+                raise ValueError(
+                    f"{path} has invalid Snow-Depth for {modeled_date}: {snow_depth_mm}"
+                )
         modeled[modeled_date] = {
-            "frdp_m": float(frdp_mm) / 1000.0
+            "frdp_m": float(frdp_mm) / 1000.0,
+            "snow_depth_m": modeled_snow_depth_m,
         }
     return modeled
 
@@ -1076,9 +1157,14 @@ def write_comparison_reports(output_dir: Path, report: dict[str, Any]) -> None:
             [
                 f"- Observation rows: `{metrics['observation_count']}`",
                 f"- Matched rows: `{metrics['matched_count']}`",
+                f"- Modeled snow-depth days: `{metrics['modeled_snow_depth_day_count']}`",
+                f"- Observed snow-depth rows: `{metrics['observed_snow_depth_count']}`",
+                f"- Paired snow-depth control rows: `{metrics['snow_depth_control_count']}`",
+                f"- Snow-depth control failures: `{metrics['snow_depth_control_fail_count']}`",
                 f"- Frost-depth residual rows: `{metrics['frost_depth_residual_count']}`",
                 f"- Isotherm upper-bound rows: `{metrics['isotherm_upper_bound_count']}`",
                 f"- Censored rows excluded: `{metrics['censored_excluded_count']}`",
+                f"- Max absolute snow-depth residual (m): `{format_report_value(metrics['max_abs_snow_depth_residual_m'])}`",
                 f"- Max absolute frost-depth residual (m): `{format_report_value(metrics['max_abs_residual_m'])}`",
             ]
         )

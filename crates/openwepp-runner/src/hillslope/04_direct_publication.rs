@@ -335,6 +335,7 @@ fn direct_publication_row_from_simulation_owned_wb13(
             frozwt_mm: row.wb13_row.frozwt,
             frdp_mm: Some(row.frdp_mm),
             snow_water_mm: row.wb13_row.snow_water,
+            snow_depth_mm: row.snow_depth_mm.unwrap_or(0.0),
         },
         profile: DirectPublicationProfileOperands {
             depth_mm: Some(row.wb13_row.profile_depth),
@@ -570,6 +571,12 @@ fn collect_wat_optional_scalar_mismatch_fields(
     );
     insert_option_float_mismatch(
         mismatches,
+        "Snow-Depth",
+        direct.snow_depth,
+        compatibility.snow_depth,
+    );
+    insert_option_float_mismatch(
+        mismatches,
         "ProfileDepth",
         direct.profile_depth,
         compatibility.profile_depth,
@@ -746,6 +753,7 @@ fn wat_mismatch_field_order() -> &'static [&'static str] {
         "frozwt",
         "frdp",
         "Snow-Water",
+        "Snow-Depth",
         "QOFE",
         "Tile",
         "Irr",

@@ -368,6 +368,10 @@ mod tests {
             BoundarySymbol::from("snow.runtime_swe"),
             BoundaryValue::scalar(0.0),
         );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_depth_m"),
+            BoundaryValue::scalar(0.0),
+        );
         runtime_surface.flux_surface.insert(
             BoundarySymbol::from("snow.routed_melt_m"),
             BoundaryValue::scalar(0.0),
@@ -433,6 +437,10 @@ mod tests {
             BoundarySymbol::from("frost.runtime_frdp_m"),
             BoundaryValue::scalar(0.123),
         );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_depth_m"),
+            BoundaryValue::scalar(0.456),
+        );
 
         let wb13_row = build_simulation_owned_wb13_row(
             &runtime_surface,
@@ -448,6 +456,8 @@ mod tests {
 
         assert!((wb13_row.frdp_mm - 123.0).abs() < 1.0e-12);
         assert!((wat_row.frdp - 123.0).abs() < 1.0e-12);
+        assert_eq!(wb13_row.snow_depth_mm, Some(456.0));
+        assert_eq!(wat_row.snow_depth, Some(456.0));
     }
 
     #[test]
@@ -1912,6 +1922,7 @@ mod tests {
             frozwt: 0.0,
             frdp: 0.0,
             snow_water: 0.0,
+            snow_depth: None,
             qofe: 0.0,
             tile: 0.0,
             irr: 0.0,
@@ -2360,6 +2371,7 @@ mod tests {
                 frozwt_mm: 0.0,
                 frdp_mm: None,
                 snow_water_mm: 0.0,
+                snow_depth_mm: 0.0,
             },
             profile: DirectPublicationProfileOperands {
                 depth_mm: None,
@@ -2506,6 +2518,7 @@ mod tests {
                 frozwt_mm: 1.0,
                 frdp_mm: Some(2.0),
                 snow_water_mm: 3.0,
+                snow_depth_mm: 4.0,
             },
             profile: DirectPublicationProfileOperands {
                 depth_mm: Some(1000.0),
@@ -2784,6 +2797,7 @@ mod tests {
                 frozwt_mm: 1.0 + offset,
                 frdp_mm: Some(2.0 + offset),
                 snow_water_mm: 3.0 + offset,
+                snow_depth_mm: 4.0 + offset,
             },
             profile: DirectPublicationProfileOperands {
                 depth_mm: Some(1000.0 + offset),

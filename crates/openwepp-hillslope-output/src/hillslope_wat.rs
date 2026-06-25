@@ -203,6 +203,7 @@ pub struct HillslopeWatRow {
     pub frozwt: f64,
     pub frdp: f64,
     pub snow_water: f64,
+    pub snow_depth: Option<f64>,
     pub qofe: f64,
     pub tile: f64,
     pub irr: f64,
@@ -403,6 +404,13 @@ pub fn hillslope_wat_schema(
                 false,
                 Some("mm"),
                 Some("Water in surface snow"),
+            ),
+            field_with_meta(
+                "Snow-Depth",
+                DataType::Float64,
+                true,
+                Some("mm"),
+                Some("Runtime snow depth diagnostic from snow.runtime_depth_m"),
             ),
             field_with_meta(
                 "QOFE",
@@ -612,6 +620,7 @@ fn hillslope_wat_rows_to_batch(
     let mut frozwt = Vec::with_capacity(rows.len());
     let mut frdp = Vec::with_capacity(rows.len());
     let mut snow_water = Vec::with_capacity(rows.len());
+    let mut snow_depth = Vec::with_capacity(rows.len());
     let mut qofe = Vec::with_capacity(rows.len());
     let mut tile = Vec::with_capacity(rows.len());
     let mut irr = Vec::with_capacity(rows.len());
@@ -648,6 +657,7 @@ fn hillslope_wat_rows_to_batch(
         frozwt.push(row.frozwt);
         frdp.push(row.frdp);
         snow_water.push(row.snow_water);
+        snow_depth.push(row.snow_depth);
         qofe.push(row.qofe);
         tile.push(row.tile);
         irr.push(row.irr);
@@ -685,6 +695,7 @@ fn hillslope_wat_rows_to_batch(
         Arc::new(Float64Array::from(frozwt)),
         Arc::new(Float64Array::from(frdp)),
         Arc::new(Float64Array::from(snow_water)),
+        Arc::new(Float64Array::from(snow_depth)),
         Arc::new(Float64Array::from(qofe)),
         Arc::new(Float64Array::from(tile)),
         Arc::new(Float64Array::from(irr)),
@@ -735,6 +746,7 @@ mod tests {
             frozwt: 0.0,
             frdp: 0.0,
             snow_water: 0.0,
+            snow_depth: Some(250.0),
             qofe: 0.0,
             tile: 0.0,
             irr: 0.0,
@@ -784,6 +796,31 @@ mod tests {
         assert_eq!(
             p_meta.get("description").map(String::as_str),
             Some("Precipitation")
+        );
+
+        let snow_water_field = schema
+            .fields
+            .iter()
+            .find(|field| field.name() == "Snow-Water")
+            .expect("Snow-Water field should exist");
+        assert!(
+            !snow_water_field.is_nullable(),
+            "Snow-Water remains required SWE, not the optional depth diagnostic"
+        );
+
+        let snow_depth_field = schema
+            .fields
+            .iter()
+            .find(|field| field.name() == "Snow-Depth")
+            .expect("Snow-Depth field should exist");
+        let snow_depth_meta = snow_depth_field.metadata();
+        assert!(snow_depth_field.is_nullable());
+        assert_eq!(snow_depth_meta.get("units").map(String::as_str), Some("mm"));
+        assert!(
+            snow_depth_meta
+                .get("description")
+                .is_some_and(|value| value.contains("snow.runtime_depth_m")),
+            "Snow-Depth description should identify the runtime depth source"
         );
 
         let interception_field = schema
@@ -855,6 +892,15 @@ mod tests {
                 .fields()
                 .iter()
                 .any(|field| field.name() == "InterceptionStorage")
+        );
+        let snow_depth_field = schema
+            .fields()
+            .iter()
+            .find(|field| field.name() == "Snow-Depth")
+            .expect("Snow-Depth field should exist in parquet schema");
+        assert_eq!(
+            snow_depth_field.metadata().get("units").map(String::as_str),
+            Some("mm")
         );
         let p_field = schema
             .fields()

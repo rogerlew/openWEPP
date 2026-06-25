@@ -350,6 +350,7 @@ struct SimulationOwnedWb13Row {
     wb13_row: Wb13DailyWaterBalanceRow,
     interception_mm: f64,
     frdp_mm: f64,
+    snow_depth_mm: Option<f64>,
     month: i8,
     day_of_month: i8,
     water_year: i16,
