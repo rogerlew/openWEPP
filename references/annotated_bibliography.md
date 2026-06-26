@@ -467,3 +467,219 @@ openWEPP note (2026-05-11):
 **Kernel mapping**: Future `GAP-SNOWFREEZE-002` parameter priors, uncertainty analysis, and texture-class sanity checks for SFCC model selection.
 **Notes / caveats**: Dataset authority, not an equation authority. Use with original dataset citations and site-specific applicability checks.
 **OAR-6 compliance status**: Primary open-access data-source paper; vendored under CC-BY 4.0.
+
+## R-35: Anderson (1976) NOAA NWS-19 point energy/mass balance snow model
+
+**Citation**: Anderson, E. A. (1976). *A Point Energy and Mass Balance Model of a Snow Cover*. NOAA Technical Report NWS-19, U.S. Dept. of Commerce / National Weather Service.
+**Local path**: `references/copyrighted/noaa_6392_DS1.pdf` (+ OCR `references/copyrighted/noaa_6392_DS1.md`)
+**Reference quality**: `verified-primary`
+**Distribution status**: `public-domain` (U.S. Government work, 17 U.S.C. 105; eligible to move to `vendorable/`, left in cache to avoid breaking references).
+**Topic**: The foundational energy-balance snow-cover model — surface energy exchange (net radiation + turbulent sensible/latent fluxes + advected heat), within-pack heat transfer, and §III density changes (compaction, destructive/constructive/melt metamorphism). The Anderson-1976 lineage behind SNOBAL densification.
+**Key equations / concepts**: §II energy-balance melt (no degree-day factor — melt is the energy-balance residual); §III "Increase in density due to compaction" (p.37) and metamorphism terms (pp.38–40) = the PTM/POC overburden-compaction authority. Scanned report; OCR text layer added 2026-06-25.
+**Kernel mapping**: `SC-SNOWFREEZE-001` `GAP-SNOWFREEZE-002`; melt-modernization decision and `physics_bulk` densification (`docs/planning/snow-frost-fidelity-strategy.md` §2/§5).
+**Notes / caveats**: Pre-remote-sensing (1976); the energy-balance melt assumed met fluxes that gridded shortwave now supplies. Authority for *compaction* and *energy-balance melt*, not for a degree-day melt factor.
+**OAR-6 compliance status**: Primary physics authority for snow energy-balance melt and densification.
+
+## R-36: Anderson (2006) SNOW-17 NWSRFS documentation
+
+**Citation**: Anderson, E. A. (2006). *Snow Accumulation and Ablation Model — SNOW-17*. NWSRFS User Documentation, NOAA/National Weather Service.
+**Local path**: `references/vendorable/Anderson2006_SNOW17.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `redistributable` (U.S. Government work, public domain; downloaded from weather.gov).
+**Topic**: The operational temperature-index (degree-day) snow model — the lineage of the *melt factor* itself, with seasonally varying `MFMAX`/`MFMIN` (sinusoidal between solstices) and forest-cover reduction.
+**Key equations / concepts**: Non-rain melt `M = Mf·(Ta − Tb)` with seasonal `Mf`; rain-on-snow melt; areal depletion; the forest-class melt-factor table (dense conifer lowest → open highest). The authority for *why a melt factor must vary seasonally and with canopy* rather than being a single fitted constant.
+**Kernel mapping**: Melt-modernization decision (`docs/planning/snow-frost-fidelity-strategy.md` §2/§5); documented lighter-melt fallback context.
+**Notes / caveats**: Distinct from R-35 (NWS-19): SNOW-17 is the degree-day operational model; NWS-19 is the energy-balance research model. Cite the right one for the right claim.
+**OAR-6 compliance status**: Primary authority for the degree-day melt-factor lineage.
+
+## R-37: Ohmura (2001) physical basis of the temperature-index melt method
+
+**Citation**: Ohmura, A. (2001). *Physical Basis for the Temperature-Based Melt-Index Method*. Journal of Applied Meteorology, 40(4), 753–761. https://doi.org/10.1175/1520-0450(2001)040<0753:PBFTTB>2.0.CO;2
+**Local path**: `references/copyrighted/Ohmura2001_meltindex.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (AMS journal copyright; freely readable, not redistributable).
+**Topic**: Why air temperature indexes melt — incoming longwave radiation (the largest ablation-season source) and sensible heat are both temperature-correlated; net shortwave `(1−α)I` is not, and is what the index misses.
+**Key equations / concepts**: ~60% of clear-sky atmospheric emission from the lowest 100 m (>90% under overcast), making screen-height `Ta` a good longwave proxy; the justification for an enhanced temperature-index that adds an explicit shortwave term.
+**Kernel mapping**: Melt-physical-interpretation authority for the strategy decision (`docs/planning/snow-frost-fidelity-strategy.md` §1/§5).
+**Notes / caveats**: Glacier/ice-sheet framing; the physical argument transfers to seasonal snow.
+**OAR-6 compliance status**: Primary authority for the melt-factor physical interpretation.
+
+## R-38: Krinner et al. (2018) ESM-SnowMIP
+
+**Citation**: Krinner, G., et al. (2018). *ESM-SnowMIP: assessing snow models and quantifying snow-related climate feedbacks*. Geoscientific Model Development, 11, 5027–5049. https://doi.org/10.5194/gmd-11-5027-2018
+**Local path**: `references/vendorable/Krinner2018_ESM-SnowMIP.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `redistributable` (Copernicus, CC-BY 4.0).
+**Topic**: Multi-model snow intercomparison; model complexity does not by itself explain performance spread.
+**Key equations / concepts**: "Complexity ≠ skill" evidence supporting modernization-not-complexification of the melt path.
+**Kernel mapping**: Strategy guardrail/justification (`docs/planning/snow-frost-fidelity-strategy.md` §1).
+**Notes / caveats**: Climate-model context; use as a methodological prior, not a parameter source.
+**OAR-6 compliance status**: Supporting intercomparison authority.
+
+## R-39: Lute et al. (2022) SnowClim v1.0
+
+**Citation**: Lute, A. C., J. T. Abatzoglou, and T. E. Link (2022). *SnowClim v1.0: a high-resolution snow modeling framework*. Geoscientific Model Development, 15, 5045–5071. https://doi.org/10.5194/gmd-15-5045-2022
+**Local path**: `references/vendorable/Lute2022_SnowClim.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `redistributable` (Copernicus, CC-BY 4.0).
+**Topic**: Energy-balance snow framework in the Marks/SNOBAL lineage; §2.2.7 documents the shallow-snowpack pack-temperature instability.
+**Key equations / concepts**: Shallow-snow cold-content/mass instability and the `SWE < 15 mm × Δt_hours → T_pack = min(T_air, 0)` clamp; cited in the PySnobal CSS WY2017 disposition.
+**Kernel mapping**: PySnobal thin-snow disposition (`...snowfrost-fidelity-h.../artifacts/pysnobal-css-wy2017-disposition.md`); `GAP-SNOWFREEZE-002`.
+**Notes / caveats**: Reference/diagnostic context under ADR-0017; not a runtime authority.
+**OAR-6 compliance status**: Supporting authority for shallow-snow numerical stability.
+
+## R-40: Vionnet et al. (2012) Crocus / SURFEX
+
+**Citation**: Vionnet, V., et al. (2012). *The detailed snowpack scheme Crocus and its implementation in SURFEX v7.2*. Geoscientific Model Development, 5, 773–791. https://doi.org/10.5194/gmd-5-773-2012
+**Local path**: `references/vendorable/Vionnet2012_Crocus.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `redistributable` (Copernicus, CC-BY 4.0).
+**Topic**: Detailed multilayer snowpack scheme — fresh-snow density, settling/metamorphism, and albedo as a fuller reference implementation.
+**Key equations / concepts**: Temperature/wind fresh-snow density; viscosity-based settling; spectral-band optical-grain-size albedo — candidate fuller alternatives to the bulk approach.
+**Kernel mapping**: `physics_bulk` fresh-snow-density and albedo open decisions (`docs/planning/snow-frost-fidelity-strategy.md` §5/§9).
+**Notes / caveats**: Multilayer scheme; heavier than the bulk target. Reference, not a drop-in.
+**OAR-6 compliance status**: Supporting reference-implementation authority.
+
+## R-41: Gupta et al. (2023) shortwave distribution → coupled melt + ET
+
+**Citation**: Gupta, A., et al. (2023). Hydrology and Earth System Sciences, 27, 191–212. https://doi.org/10.5194/hess-27-191-2023
+**Local path**: `references/vendorable/Gupta2023_HESS.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `redistributable` (Copernicus, CC-BY 4.0).
+**Topic**: Distributing shortwave by slope/aspect shifts snowmelt timing *and* the ET regression slope simultaneously — direct evidence that one radiation field forces both processes.
+**Key equations / concepts**: ~20-day melt-timing shift with concurrent ET-slope change (1.55→1.18); the empirical basis for the "calibrate melt coefficients, never the shared radiation forcing" guardrail.
+**Kernel mapping**: Radiation/ET-coupling guardrail (`docs/planning/snow-frost-fidelity-strategy.md` §2/§4).
+**Notes / caveats**: Confirm exact citation/author list on retrieval (agent-relayed metadata).
+**OAR-6 compliance status**: Supporting authority for the radiation/ET-coupling discipline.
+
+## R-42: Ménard et al. (2021) scientific/human error in snow-model intercomparison
+
+**Citation**: Ménard, C. B., et al. (2021). *Scientific and Human Errors in a Snow Model Intercomparison*. Bulletin of the American Meteorological Society, 102(1), E61–E79. https://doi.org/10.1175/BAMS-D-19-0329.1
+**Local path**: `references/copyrighted/Menard2021_BAMS.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (AMS journal copyright; freely readable, not redistributable).
+**Topic**: Much inter-model spread traces to implementation/human error rather than physics; corrections cut error substantially.
+**Key equations / concepts**: Implementation correctness can dominate model-structure choice — supports investing in a correct energy-balance implementation over added complexity.
+**Kernel mapping**: Strategy methodology prior (`docs/planning/snow-frost-fidelity-strategy.md` §1).
+**Notes / caveats**: Methodological prior, not a parameter source.
+**OAR-6 compliance status**: Supporting intercomparison authority.
+
+## R-43: Pellicciotti et al. (2005) enhanced temperature-index melt model
+
+**Citation**: Pellicciotti, F., B. Brock, U. Strasser, P. Burlando, M. Funk, and J. Corripio (2005). *An enhanced temperature-index glacier melt model including the shortwave radiation balance: development and testing for Haut Glacier d'Arolla, Switzerland*. Journal of Glaciology, 51(175), 573–587. https://doi.org/10.3189/172756505781829124
+**Local path**: `references/copyrighted/pellicciotti2005.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (IGS / Cambridge Core journal copyright; operator-supplied local cache).
+**Topic**: The reference enhanced-temperature-index (ETI) melt model that makes the shortwave term explicit: `M = TF·T + SRF·(1−α)·I` for `T > T_T = 1 °C`.
+**Key equations / concepts**: Calibrated `TF = 0.05 mm h^-1 degC^-1`, `SRF = 0.0094 mm h^-1 W^-1 m^2` (near the physical conversion `0.01078`); accounts for 90–95% of energy-balance reference melt; the documented lighter-melt alternative if the modernized CoE energy balance is ever too heavy.
+**Kernel mapping**: Melt-modernization decision, documented ETI fallback (`docs/planning/snow-frost-fidelity-strategy.md` §2/§5).
+**Notes / caveats**: Glacier development site; degrades under persistent overcast. Use `SRF` as the transferable default, `TF` as a small calibratable knob.
+**OAR-6 compliance status**: Primary authority for the ETI melt form and factor values.
+
+## R-44: Carenzo et al. (2009) ETI transferability/robustness
+
+**Citation**: Carenzo, M., F. Pellicciotti, S. Rimkus, and P. Burlando (2009). *Assessing the transferability and robustness of an enhanced temperature-index glacier-melt model*. Journal of Glaciology, 55(190), 258–274. https://doi.org/10.3189/002214309788608804
+**Local path**: `references/copyrighted/carenzo2009.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (IGS / Cambridge Core; operator-supplied local cache).
+**Topic**: Cross-site/season/glacier transferability of the ETI parameters.
+**Key equations / concepts**: `SRF` mean 0.0093, CV ~6% (stable/transferable) vs `TF` mean 0.055, CV ~56% (volatile); ETI more transferable than a constant degree-day factor — the quantitative basis for "physical default, optional calibration."
+**Kernel mapping**: Melt-modernization guardrail (`docs/planning/snow-frost-fidelity-strategy.md` §2/§4).
+**Notes / caveats**: Glacier context; the transferability asymmetry is the load-bearing finding.
+**OAR-6 compliance status**: Primary authority for ETI parameter transferability.
+
+## R-45: Hock (1999) distributed temperature-index melt with potential solar radiation
+
+**Citation**: Hock, R. (1999). *A distributed temperature-index ice- and snowmelt model including potential direct solar radiation*. Journal of Glaciology, 45(149), 101–111. https://doi.org/10.3189/S0022143000003087
+**Local path**: `references/copyrighted/hock1999.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (IGS / Cambridge Core; operator-supplied local cache).
+**Topic**: Adds DEM-derived potential clear-sky direct radiation to a degree-day model — spatial/diurnal melt structure with no extra met data.
+**Key equations / concepts**: `M = (MF + r_snow/ice·I)·T`; the radiation-index precursor to the Pellicciotti ETI form.
+**Kernel mapping**: ETI lineage context (`docs/planning/snow-frost-fidelity-strategy.md` §5).
+**Notes / caveats**: Potential (modeled) radiation, not measured; superseded by ETI where measured/gridded shortwave is available.
+**OAR-6 compliance status**: Supporting authority for radiation-index melt.
+
+## R-46: Brock, Willis & Sharp (2000) albedo parameterization
+
+**Citation**: Brock, B. W., I. C. Willis, and M. J. Sharp (2000). *Measurement and parameterization of albedo variations at Haut Glacier d'Arolla, Switzerland*. Journal of Glaciology, 46(155), 675–688. https://doi.org/10.3189/172756500781832675
+**Local path**: `references/copyrighted/brock2000.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (IGS / Cambridge Core; operator-supplied local cache).
+**Topic**: Albedo decay as a function of accumulated daily-maximum temperature since snowfall (a metamorphism/grain-size proxy needing only temperature).
+**Key equations / concepts**: Deep-snow logarithmic vs shallow-snow exponential decay toward the underlying surface albedo; the leading temperature-only albedo scheme for the modernized melt shortwave term. (Exact coefficients to be read from the PDF, not from secondary summaries.)
+**Kernel mapping**: Albedo open decision (`docs/planning/snow-frost-fidelity-strategy.md` §5/§9).
+**Notes / caveats**: Glacier site; pair with canopy attenuation for forested fixtures.
+**OAR-6 compliance status**: Primary candidate authority for the albedo state.
+
+## R-47: Walter et al. (2005) process-based snowmelt with minimal data
+
+**Citation**: Walter, M. T., E. S. Brooks, D. K. McCool, L. G. King, M. Molnau, and J. Boll (2005). *Process-based snowmelt modeling: does it require more input data than temperature-index modeling?* Journal of Hydrology, 300, 65–75. https://doi.org/10.1016/j.jhydrol.2004.05.002
+**Local path**: `references/copyrighted/walter2005.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (Elsevier; operator-supplied local cache).
+**Topic**: An uncalibrated surface energy balance driven by `Tmax`/`Tmin` (+ now gridded shortwave) outperforms a best-fit temperature index — in WEPP's own USDA-ARS/PNW author lineage (McCool, King, Boll).
+**Key equations / concepts**: Bristow–Campbell shortwave from temperature range; Stefan–Boltzmann longwave; pooled R²≈0.92 (EB) vs 0.76 (index); melt robust to per-component errors. **The strongest support for modernizing the CoE energy balance rather than adopting a degree-day factor.**
+**Kernel mapping**: Melt-modernization decision (`docs/planning/snow-frost-fidelity-strategy.md` §1/§2/§5).
+**Notes / caveats**: Windy/highly-variable sites are the boundary case; gridded shortwave is an upgrade on the paper's own Bristow–Campbell estimate.
+**OAR-6 compliance status**: Primary WEPP-lineage authority for energy-balance melt on minimal data.
+
+## R-48: Marks et al. (1999) SNOBAL spatially distributed energy-balance snowmelt
+
+**Citation**: Marks, D., J. Domingo, D. Susong, T. Link, and D. Garen (1999). *A spatially distributed energy balance snowmelt model for application in mountain basins*. Hydrological Processes, 13, 1935–1959. https://doi.org/10.1002/(SICI)1099-1085(199909)13:12/13<1935::AID-HYP868>3.0.CO;2-C
+**Local path**: `references/copyrighted/marks1999.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (Wiley; operator-supplied local cache).
+**Topic**: The SNOBAL two-layer energy-balance snowmelt model and the operational realization of Anderson-1976 densification (PTM/POC compaction).
+**Key equations / concepts**: Two-layer mass/energy balance; the compaction lineage implemented in PySnobal `_time_compact.c`/`_h2o_compact.c`; the shallow-snow pack-temperature instability discussed in Lute (2022) traces here.
+**Kernel mapping**: `physics_bulk` densification candidate and PySnobal disposition (`docs/planning/snow-frost-fidelity-strategy.md` §5; CSS WY2017 disposition).
+**Notes / caveats**: Reference implementation under ADR-0017, not a correctness authority.
+**OAR-6 compliance status**: Primary authority for the SNOBAL energy-balance/compaction lineage.
+
+## R-49: Magnusson et al. (2015) snow-model process-representation evaluation
+
+**Citation**: Magnusson, J., D. Wever, R. Essery, N. Helbig, A. Winstral, and T. Jonas (2015). *Evaluating snow models with varying process representations for hydrological applications*. Water Resources Research, 51, 2707–2723. https://doi.org/10.1002/2014WR016498
+**Local path**: `references/copyrighted/magnusson2015.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (Wiley/AGU; operator-supplied local cache).
+**Topic**: Calibrated simple and physical snow models both perform reasonably; the physical model's edge is fewer calibrated parameters → better transferability, not raw accuracy.
+**Key equations / concepts**: Supports "physical defaults + optional calibration" over an over-parameterized empirical fit.
+**Kernel mapping**: Strategy guardrail (`docs/planning/snow-frost-fidelity-strategy.md` §4).
+**Notes / caveats**: Methodological prior.
+**OAR-6 compliance status**: Supporting authority for parameter-parsimony/transferability.
+
+## R-50: Lundquist et al. (2013) forest density and snow retention
+
+**Citation**: Lundquist, J. D., S. E. Dickerson-Lange, J. A. Lutz, and N. C. Cristea (2013). *Lower forest density enhances snow retention in regions with warmer winters: A global framework motivated by Western US observations*. Water Resources Research, 49, 6356–6370. https://doi.org/10.1002/wrcr.20504
+**Local path**: `references/copyrighted/lundquist2013.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (Wiley/AGU; operator-supplied local cache).
+**Topic**: The net canopy effect on snow melt-out flips sign at ~1 °C DJF mean air temperature (shading-dominated below, longwave-dominated above).
+**Key equations / concepts**: A single lumped canopy melt reduction is wrong — the canopy term must be climate-dependent; relevant to the forested SNOTEL/frost fixtures.
+**Kernel mapping**: Canopy albedo/melt open decision (`docs/planning/snow-frost-fidelity-strategy.md` §5/§9).
+**Notes / caveats**: Basis for not hard-coding a constant canopy melt factor.
+**OAR-6 compliance status**: Supporting authority for climate-dependent canopy melt.
+
+## R-51: Varhola et al. (2010) forest canopy snow review
+
+**Citation**: Varhola, A., N. C. Coops, M. Weiler, and R. D. Moore (2010). *Forest canopy effects on snow accumulation and ablation: An integrative review of empirical results*. Journal of Hydrology, 392, 219–233. https://doi.org/10.1016/j.jhydrol.2010.08.009
+**Local path**: `references/copyrighted/varhola2010.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (Elsevier; operator-supplied local cache).
+**Topic**: Empirical synthesis of canopy effects; ablation is more canopy-sensitive than accumulation (canopy change explained 72% of ablation-rate variance vs 57% for accumulation).
+**Key equations / concepts**: Quantitative canopy-density vs melt/accumulation relations for parameterizing forest attenuation without site calibration.
+**Kernel mapping**: Forest canopy attenuation (`docs/planning/snow-frost-fidelity-strategy.md` §5).
+**Notes / caveats**: Review of empirical regressions, not a mechanistic authority.
+**OAR-6 compliance status**: Supporting authority for canopy attenuation magnitudes.
+
+## R-52: WEPP Ch. 3 Winter Hydrology (Savabi et al., NSERL-10)
+
+**Citation**: Savabi, M. R., R. A. Young, G. R. Benoit, J. M. Witte, and D. C. Flanagan (1995). *Chapter 3: Winter Hydrology*, in Flanagan, D. C. and M. A. Nearing (eds.), USDA Water Erosion Prediction Project (WEPP) Hillslope Profile and Watershed Model Documentation, NSERL Report No. 10, USDA-ARS National Soil Erosion Research Laboratory.
+**Local path**: `references/50201000/chap3.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `public-domain` (U.S. Government work, USDA-ARS NSERL).
+**Topic**: WEPP's winter component — the **production CoE energy-balance snowmelt** that openWEPP ports, plus snow accumulation, settling/density, and frost.
+**Key equations / concepts**: `hrmelt = 0.0254 (amelt − bmelt + cmelt + dmelt)`; radiation term `amelt = 0.0607 hrrad (1 − cancov)` then `amelt(0.36 Thr + 1.0)`; turbulent term `cmelt = 0.0188 U (1 − 0.8 cancov)(0.396 Thr + 1.404 hrdew)…`; net radiation `Rnet`; snow settling factor and density (settled-snow ≤ 350) tracking. **No degree-day factor** — confirms the production melt is energy-balance. Modernization target: drive `hrrad` with gridded shortwave + an albedo state, keep `(1 − cancov)`.
+**Kernel mapping**: Melt-modernization decision and the `amelt`/`cmelt` production lineage (`docs/planning/snow-frost-fidelity-strategy.md` §1/§2/§5; `crates/openwepp-hillslope-orchestrator/src/hydrology/`).
+**Notes / caveats**: The `0.0607`/`0.0188` coefficients lump radiation/turbulent transfer; the modernization replaces the `hrrad` *source*, not the energy-balance structure. Other chapters `chap1.pdf`..`chap14.pdf` are co-located in `references/50201000/`.
+**OAR-6 compliance status**: Primary authority for the production WEPP energy-balance melt.

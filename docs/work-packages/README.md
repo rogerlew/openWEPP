@@ -13,14 +13,24 @@
 
 State as of `2026-06-25`:
 
+- `20260625-snowdensity-05-melt-modernization-contract-first-001/` is queued as
+  the contract-first melt modernization package. It supersedes the original
+  SNOWDENSITY-04 runtime-opt-in handoff: `dense_slow_melt_v1` is retained only
+  as a negative benchmark because its profile improvement came from reducing a
+  degree-day melt factor and conflating melt with density. SNOWDENSITY-05 must
+  amend `SC-SNOWFREEZE-001` before code, keep melt separate from density,
+  modernize the production CoE `amelt`/`cmelt` energy-balance path with
+  shortwave/albedo operands, preserve legacy default/rollback, and prohibit
+  radiation-forcing retuning or SNOTEL-fitted defaults.
 - `20260625-snowdensity-04-offline-adjudication-loop-001/` is complete as the
   offline `physics_bulk` adjudication package. It added global named
   candidate variants, `tools/snowfreeze_observed/physics_bulk_adjudication.py`,
   and a four-variant/five-site comparison against the H openWEPP/legacy/PySnobal
-  profile. `dense_slow_melt_v1` is the promotion candidate: robust fail count
-  improves from `9` to `6` and robust ordinal score improves from `84` to
-  `102` against both openWEPP and legacy as-built profiles. This is not runtime
-  activation; the next route is `SNOWDENSITY-05 Runtime Opt-In`.
+  profile. The package closed `COMPLETE-PROMOTION-CANDIDATE` under its original
+  rule (`dense_slow_melt_v1` robust fail count `9 -> 6`, robust ordinal score
+  `84 -> 102` against both openWEPP and legacy as-built profiles), but the
+  2026-06-25 melt-model decision supersedes that route: the variant is not
+  production-promotable as-is and must not be runtime-activated.
 - `20260625-snowdensity-03-offline-physics-core-001/` is complete as the
   offline Rust `physics_bulk` candidate implementation. It added the
   `openwepp-snowbench physics-bulk` command, a bounded bulk snowpack state
