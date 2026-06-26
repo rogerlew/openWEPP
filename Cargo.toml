@@ -657,6 +657,10 @@ path = "tests/integration/snowdensity05c_albedo_state_core.rs"
 name = "snowdensity05d_opt_in_coe_melt"
 path = "tests/integration/snowdensity05d_opt_in_coe_melt.rs"
 
+[[test]]
+name = "snowdensity05e_melt_adjudication"
+path = "tests/integration/snowdensity05e_melt_adjudication.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

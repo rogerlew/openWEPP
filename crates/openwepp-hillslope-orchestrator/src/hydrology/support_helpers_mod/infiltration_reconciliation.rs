@@ -1066,6 +1066,9 @@ pub(crate) fn compute_simimpl29_melt_hour(
             let hrad_mj_m2 = hourly.radiation_mj_m2;
             let hrtemp_c = hourly.air_temperature_c;
             let cloud_fraction = hourly.cloud_fraction;
+            let future_snowfall_this_day = inputs.hourly[hour..]
+                .iter()
+                .any(|future| future.snowfall_m > WB11_ZERO_THRESHOLD);
 
             Self::require_direct_typed_snow_value(
                 phase_class,
@@ -1319,7 +1322,11 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 }
             }
 
-            if !albedo_updated_this_hour {
+            if !albedo_updated_this_hour
+                && (snodep > WB11_ZERO_THRESHOLD
+                    || hrsnow > WB11_ZERO_THRESHOLD
+                    || !future_snowfall_this_day)
+            {
                 let positive_temperature_c_day_increment = hrtemp_c.max(0.0) / 24.0;
                 snow_albedo_state_after = Self::update_hourly_opt_in_snow_albedo_state(
                     phase_class,

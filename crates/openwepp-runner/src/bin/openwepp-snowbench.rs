@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use openwepp_runner::{
-    PhysicsBulkRequest, PhysicsBulkVariant, SnowbenchExportRequest, export_pysnobal_inputs,
-    run_physics_bulk_snowbench,
+    CoeMeltModel, CoeMeltRequest, PhysicsBulkRequest, PhysicsBulkVariant, SnowbenchExportRequest,
+    export_pysnobal_inputs, run_coe_melt_snowbench, run_physics_bulk_snowbench,
 };
 
 fn main() {
@@ -26,6 +26,7 @@ fn run() -> Result<(), String> {
     let mut run_file: Option<PathBuf> = None;
     let mut output_dir: Option<PathBuf> = None;
     let mut variant = PhysicsBulkVariant::default();
+    let mut coe_model = CoeMeltModel::default();
     while let Some(flag) = args.next() {
         match flag.as_str() {
             "--run-dir" => {
@@ -43,6 +44,12 @@ fn run() -> Result<(), String> {
                     .ok_or_else(|| "SNOWBENCH-E-CLI missing value for --variant".to_string())?;
                 variant = PhysicsBulkVariant::parse(&value).map_err(|error| error.to_string())?;
             }
+            "--model" => {
+                let value = args
+                    .next()
+                    .ok_or_else(|| "SNOWBENCH-E-CLI missing value for --model".to_string())?;
+                coe_model = CoeMeltModel::parse(&value).map_err(|error| error.to_string())?;
+            }
             "--help" | "-h" => {
                 print_help();
                 return Ok(());
@@ -57,40 +64,95 @@ fn run() -> Result<(), String> {
 
     match command.as_str() {
         "export-pysnobal" => {
-            if variant != PhysicsBulkVariant::CandidateV1 {
-                return Err("SNOWBENCH-E-CLI --variant is only valid for physics-bulk".to_string());
-            }
-            let report = export_pysnobal_inputs(&SnowbenchExportRequest {
-                run_dir,
-                run_file,
-                output_dir,
-                include_openwepp_snow_projection: true,
-            })
-            .map_err(|error| error.to_string())?;
-            println!(
-                "exported {} hourly rows across {} lane(s) to {}",
-                report.hourly_row_count, report.lane_count, report.output_dir
-            );
+            run_export_pysnobal(run_dir, run_file, output_dir, variant, coe_model)?;
         }
         "physics-bulk" => {
-            let report = run_physics_bulk_snowbench(&PhysicsBulkRequest {
-                run_dir,
-                run_file,
-                output_dir,
-                variant,
-            })
-            .map_err(|error| error.to_string())?;
-            println!(
-                "ran {} ({}) for {} hourly rows across {} day(s) to {}",
-                report.model_id,
-                report.variant,
-                report.hourly_row_count,
-                report.day_count,
-                report.output_dir
-            );
+            run_physics_bulk(run_dir, run_file, output_dir, variant, coe_model)?;
+        }
+        "coe-melt" => {
+            run_coe_melt(run_dir, run_file, output_dir, variant, coe_model)?;
         }
         _ => return Err(format!("SNOWBENCH-E-CLI unrecognized command {command}")),
     }
+    Ok(())
+}
+
+fn run_export_pysnobal(
+    run_dir: PathBuf,
+    run_file: Option<PathBuf>,
+    output_dir: PathBuf,
+    variant: PhysicsBulkVariant,
+    coe_model: CoeMeltModel,
+) -> Result<(), String> {
+    if variant != PhysicsBulkVariant::CandidateV1 {
+        return Err("SNOWBENCH-E-CLI --variant is only valid for physics-bulk".to_string());
+    }
+    if coe_model != CoeMeltModel::LegacyCoe {
+        return Err("SNOWBENCH-E-CLI --model is only valid for coe-melt".to_string());
+    }
+    let report = export_pysnobal_inputs(&SnowbenchExportRequest {
+        run_dir,
+        run_file,
+        output_dir,
+        include_openwepp_snow_projection: true,
+    })
+    .map_err(|error| error.to_string())?;
+    println!(
+        "exported {} hourly rows across {} lane(s) to {}",
+        report.hourly_row_count, report.lane_count, report.output_dir
+    );
+    Ok(())
+}
+
+fn run_physics_bulk(
+    run_dir: PathBuf,
+    run_file: Option<PathBuf>,
+    output_dir: PathBuf,
+    variant: PhysicsBulkVariant,
+    coe_model: CoeMeltModel,
+) -> Result<(), String> {
+    if coe_model != CoeMeltModel::LegacyCoe {
+        return Err("SNOWBENCH-E-CLI --model is only valid for coe-melt".to_string());
+    }
+    let report = run_physics_bulk_snowbench(&PhysicsBulkRequest {
+        run_dir,
+        run_file,
+        output_dir,
+        variant,
+    })
+    .map_err(|error| error.to_string())?;
+    println!(
+        "ran {} ({}) for {} hourly rows across {} day(s) to {}",
+        report.model_id,
+        report.variant,
+        report.hourly_row_count,
+        report.day_count,
+        report.output_dir
+    );
+    Ok(())
+}
+
+fn run_coe_melt(
+    run_dir: PathBuf,
+    run_file: Option<PathBuf>,
+    output_dir: PathBuf,
+    variant: PhysicsBulkVariant,
+    coe_model: CoeMeltModel,
+) -> Result<(), String> {
+    if variant != PhysicsBulkVariant::CandidateV1 {
+        return Err("SNOWBENCH-E-CLI --variant is only valid for physics-bulk".to_string());
+    }
+    let report = run_coe_melt_snowbench(&CoeMeltRequest {
+        run_dir,
+        run_file,
+        output_dir,
+        model: coe_model,
+    })
+    .map_err(|error| error.to_string())?;
+    println!(
+        "ran diagnostic {} CoE melt replay for {} hourly rows across {} day(s) to {}",
+        report.model_id, report.hourly_row_count, report.day_count, report.output_dir
+    );
     Ok(())
 }
 
@@ -105,6 +167,6 @@ fn next_path(
 
 fn print_help() {
     println!(
-        "openwepp-snowbench <export-pysnobal|physics-bulk> --run-dir <path> [--run-file <path>] --output-dir <path> [--variant <candidate_v1|slow_melt_v1|dense_slow_melt_v1|cold_dense_slow_melt_v1>]"
+        "openwepp-snowbench <export-pysnobal|physics-bulk|coe-melt> --run-dir <path> [--run-file <path>] --output-dir <path> [--variant <candidate_v1|slow_melt_v1|dense_slow_melt_v1|cold_dense_slow_melt_v1>] [--model <legacy_coe|coe_shortwave_albedo_v1>]"
     );
 }

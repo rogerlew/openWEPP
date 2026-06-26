@@ -13,6 +13,17 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-05e-melt-rubric-adjudication-001/` is complete as
+  SNOWDENSITY-05E, the melt-rubric adjudication gate. It added diagnostic-only
+  `openwepp-snowbench coe-melt` replay for `legacy_coe` and
+  `coe_shortwave_albedo_v1`, generated five-site SNOTEL rubric profiles, and
+  reran the non-SNOTEL baseline. The opt-in path is a bounded
+  `PROMOTION-CANDIDATE` relative to diagnostic legacy
+  (`robust_fail_count 13 -> 10`, `robust_ordinal_score 61 -> 84`), but not a
+  default-activation result: H as-built context remains
+  `robust_fail_count=9`, `robust_ordinal_score=84`, and non-SNOTEL frost
+  attribution remains blocked by snow-control failures. The next route is
+  `SNOWDENSITY-05F Melt Closure / Density Handoff`.
 - `20260626-snowdensity-05d-opt-in-coe-melt-implementation-001/` is complete
   as SNOWDENSITY-05D, the opt-in CoE melt implementation gate. It amended
   `SC-SNOWFREEZE-001` to v79 with `INV-SNOWFREEZE-055`,
@@ -23,7 +34,7 @@ State as of `2026-06-26`:
   runtime; and exposed raw melt, redistributed melt, routed `wmelt`, and
   SWE-loss lineage totals. `legacy_coe` remains default/rollback; no parser
   surface, output schema, radiation source, coefficient, or default activation
-  changed. The next route is `SNOWDENSITY-05E Melt Rubric Adjudication`.
+  changed. Superseded by `SNOWDENSITY-05E Melt Rubric Adjudication`.
 - `20260626-snowdensity-05c-albedo-state-core-001/` is complete as
   SNOWDENSITY-05C, the albedo-state core gate. It amended
   `SC-SNOWFREEZE-001` to v78 with `INV-SNOWFREEZE-054`,
