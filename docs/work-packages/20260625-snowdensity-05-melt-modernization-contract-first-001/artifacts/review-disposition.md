@@ -1,7 +1,13 @@
 # Review Disposition
 
-Status: queued.
-Evidence mode: not-run.
+Status: complete.
+Evidence mode: Static.
 
-Disposition every review finding as `accepted`, `rejected`, `deferred`, or
-`follow-up` before package closure.
+No R1+ findings were raised in the local review artifacts.
+
+Residual risks are accepted as follow-on scope:
+
+- 05B: source/provenance and unit/anti-alias evidence for shortwave.
+- 05C: albedo state and constants.
+- 05D: implementation, default rollback, and conservation reconstruction.
+- 05E: rubric adjudication.

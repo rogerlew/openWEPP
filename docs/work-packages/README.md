@@ -11,17 +11,18 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-06-25`:
+State as of `2026-06-26`:
 
-- `20260625-snowdensity-05-melt-modernization-contract-first-001/` is queued as
-  the contract-first melt modernization package. It supersedes the original
-  SNOWDENSITY-04 runtime-opt-in handoff: `dense_slow_melt_v1` is retained only
-  as a negative benchmark because its profile improvement came from reducing a
-  degree-day melt factor and conflating melt with density. SNOWDENSITY-05 must
-  amend `SC-SNOWFREEZE-001` before code, keep melt separate from density,
-  modernize the production CoE `amelt`/`cmelt` energy-balance path with
-  shortwave/albedo operands, preserve legacy default/rollback, and prohibit
-  radiation-forcing retuning or SNOTEL-fitted defaults.
+- `20260625-snowdensity-05-melt-modernization-contract-first-001/` is complete
+  as SNOWDENSITY-05A, the melt contract/sign-reconciliation gate. It amended
+  `SC-SNOWFREEZE-001` to v76 with `INV-SNOWFREEZE-052`,
+  `OBL-SNOWFREEZE-P-027`, opt-in
+  `snow_melt_model = legacy_coe | coe_shortwave_albedo_v1`, shortwave/albedo
+  operand placeholders, no-radiation-tuning guard, explicit signed
+  `melt_bmelt_in` convention, and negative-benchmark disposition for
+  `dense_slow_melt_v1`. It changed no production runtime code, constants,
+  parser surfaces, output schemas, or defaults. The next route is
+  `SNOWDENSITY-05B Shortwave Source Binding`.
 - `20260625-snowdensity-04-offline-adjudication-loop-001/` is complete as the
   offline `physics_bulk` adjudication package. It added global named
   candidate variants, `tools/snowfreeze_observed/physics_bulk_adjudication.py`,

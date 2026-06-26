@@ -1,35 +1,28 @@
 # Conflict And Disposition Ledger
 
-Status: queued.
-Evidence mode: static scaffold.
+Status: complete.
+Evidence mode: Static.
 
-## Pre-Code Conflict Check
+## Findings
 
-Static:
+- `SC-SNOWFREEZE-001` lacked the 05A melt-modernization authority before this
+  package.
+- SNOWDENSITY-04's `dense_slow_melt_v1` runtime-opt-in handoff conflicted with
+  the operator decision to keep degree-day melt variants as negative
+  benchmarks.
+- WEPP Chapter 3 prose writes `amelt - bmelt + cmelt + dmelt`, while current
+  openWEPP traces and `clim05_snow_runtime_kernel_contract.rs` use
+  `amelt + bmelt + cmelt + dmelt`.
 
-- `SC-SNOWFREEZE-001#INV-SNOWFREEZE-051` does not authorize production
-  `physics_bulk`; it keeps the model candidate-only and opt-in. No direct
-  contract contradiction with the 2026-06-25 melt decision was found.
-- `SC-SNOWFREEZE-001` lacks the melt-modernization authority requested by the
-  operator: shortwave/albedo operands, albedo state, opt-in melt selector,
-  no-radiation-tuning rule, and explicit negative-benchmark disposition for
-  degree-day snowbench variants.
-- `docs/work-packages/20260625-snowdensity-04-offline-adjudication-loop-001/artifacts/worker-handoff.md`
-  conflicts with the 2026-06-25 decision by routing next work to
-  `dense_slow_melt_v1` runtime opt-in. Treat it as superseded evidence, not
-  active authority.
-- `docs/work-packages/README.md` must describe the supersession so future agents
-  do not follow the stale handoff.
-- The current Rust/test melt-term convention stores raw melt as
-  `amelt + bmelt + cmelt + dmelt` (`clim05_snow_runtime_kernel_contract.rs`),
-  while the operator decision and WEPP Chapter 3 prose write
-  `amelt - bmelt + cmelt + dmelt`. The execution package must resolve this as a
-  sign/alias convention in `SC-SNOWFREEZE-001` before changing formula code.
+## Disposition
 
-## Required Disposition During Execution
-
-- Accept the missing contract authority and resolve it by amendment before code.
-- Reject production promotion of `dense_slow_melt_v1`.
-- Reject any unreviewed `bmelt` sign flip; require contract-bound alias proof.
-- Preserve `SNOWDENSITY-04` artifacts as historical evidence; do not rewrite
-  their closeout numbers to fit the new decision.
+- Accepted: amend `SC-SNOWFREEZE-001` before production code.
+- Accepted: bind `melt_bmelt_in` as an already-signed contribution. No formula
+  code was changed.
+- Accepted: reject `dense_slow_melt_v1` promotion; retain it as a negative
+  benchmark only.
+- Accepted: bind no-radiation-tuning guard to `SC-CLIMATE-001#INV-CLIMATE-013`.
+- Deferred: shortwave source binding to SNOWDENSITY-05B.
+- Deferred: albedo state/constants to SNOWDENSITY-05C.
+- Deferred: opt-in production implementation and conservation reconstruction to
+  SNOWDENSITY-05D.

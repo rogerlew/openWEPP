@@ -1,5 +1,7 @@
 # Active Prompts
 
-Status: queued.
+Status: complete.
 
-Use `snowdensity05_kickoff_agent_prompt.md` to execute this package.
+`snowdensity05_kickoff_agent_prompt.md` is retained as a closed-package pointer.
+Do not use it to resume production implementation; scaffold 05B from the
+worker handoff.

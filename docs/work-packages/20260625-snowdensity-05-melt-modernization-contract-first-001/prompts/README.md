@@ -1,6 +1,7 @@
 # Prompts
 
-Status: queued.
+Status: complete.
 
-Active prompts live in `active/`. Archived or superseded prompts move to
-`archived/` with a short reason.
+The package is closed as SNOWDENSITY-05A. The retained active prompt is a
+closed-package pointer to the 05B handoff, not an execution prompt for
+production melt implementation.

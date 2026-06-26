@@ -1,12 +1,14 @@
 # Kernel Profile Compliance Checklist
 
-Status: queued.
-Evidence mode: not-run.
+Status: complete.
+Evidence mode: Static.
 
-- [ ] Canonical contract amended before production code.
-- [ ] Contract-derived tests added.
-- [ ] Typed fail-closed behavior for invalid selector/albedo/radiation state.
-- [ ] No heuristic/proxy physics outside contract authority.
-- [ ] Default rollback identity proved.
-- [ ] Conservation-sensitive outputs independently reconstructed.
-- [ ] Comparator/observation profiles treated as flags under ADR-0017.
+- [x] Canonical contract amended before production code.
+- [x] Contract-derived tests added.
+- [x] No production code changed in this package.
+- [x] No heuristic/proxy physics outside contract authority.
+- [x] Default rollback identity preserved by no production edits.
+- [x] Conservation-sensitive outputs explicitly deferred to 05D.
+- [x] Comparator/observation profiles remain flags under ADR-0017.
+- [x] No radiation forcing retuning authorized.
+- [x] No degree-day snowbench promotion authorized.

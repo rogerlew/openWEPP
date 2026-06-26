@@ -641,6 +641,10 @@ path = "tests/integration/snowdensity02_contract_adr_guard.rs"
 name = "snowdensity03_physics_bulk_offline_contract"
 path = "tests/integration/snowdensity03_physics_bulk_offline_contract.rs"
 
+[[test]]
+name = "snowdensity05a_melt_contract_guard"
+path = "tests/integration/snowdensity05a_melt_contract_guard.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
