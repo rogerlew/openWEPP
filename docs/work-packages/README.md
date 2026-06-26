@@ -13,6 +13,18 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-10-3-2-canopy-stratum-correspondence-001/` is complete
+  as SNOWDENSITY-10.3.2, the canopy-stratum correspondence gate. It mapped the
+  Harvard and Marcell canopy-stratified observation metadata to the current
+  modeled surfaces and closed with an explicit binding constraint: both current
+  fixtures are single static mixed-forest hillslopes with runtime
+  `cancov = 0.55`, so they do not bind directly to observed
+  open/deciduous-or-hardwood/conifer-or-hemlock strata. They remain valid
+  mixed-hillslope diagnostics and planning anchors, but cannot carry
+  canopy-stratum verdicts until paired stratum model variants or an explicit
+  weighted aggregate observation binding exists. No code, fixture input,
+  science contract, output schema, default, selector, coefficient, radiation,
+  albedo, density, melt, partition, or frost behavior changed.
 - `20260626-snowdensity-10-3-1-canopy-projection-provenance-001/` is complete
   as SNOWDENSITY-10.3.1, the canopy projection provenance package. It archived
   raw `.man` canopy inputs, upstream wepppy seasonal winter `Cancov`
