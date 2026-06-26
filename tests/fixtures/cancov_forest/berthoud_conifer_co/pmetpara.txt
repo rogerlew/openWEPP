@@ -1,0 +1,8 @@
+7
+Tah_4899,0.95,0.8,1,silt_loam-forest
+Tah_4899,0.95,0.8,2,silt_loam-forest
+Tah_9591,0.95,0.8,3,sand_loam-shrub
+Tah_4899,0.95,0.8,4,sand_loam-forest
+Tah_4899,0.95,0.8,5,silt_loam-forest
+Tah_7670,0.95,0.8,6,sand_loam-tall_grass
+Tah_4899,0.95,0.8,7,silt_loam-forest

@@ -1,0 +1,4 @@
+3
+bromegr1,0.95,0.8,1,sand_loam-agriculture_crops
+bromegr1,0.95,0.8,2,sand_loam-agriculture_crops
+bromegr1,0.95,0.8,3,sand_loam-agriculture_crops

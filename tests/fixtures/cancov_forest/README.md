@@ -1,0 +1,80 @@
+# Canopy-Stratified Forest Snow Melt / Cancov Fixtures
+
+Permanent WEPP single-hillslope input fixtures spanning a **canopy gradient**
+(coniferous → mixed → deciduous → pasture) for snow **melt** and **canopy-cover
+(`cancov`)** fidelity work under `SC-SNOWFREEZE-001` / `GAP-SNOWFREEZE-002` and
+the [snow-frost-fidelity strategy](../../../docs/planning/snow-frost-fidelity-strategy.md).
+Companion to [`../snotel_observed/`](../snotel_observed/) (high-`cancov` conifer +
+SNOTEL clearings) and [`../snowfreeze_observed/`](../snowfreeze_observed/) (frost).
+
+## Why this set
+
+The SNOWDENSITY melt-modernization (CoE energy-balance + shortwave + Brock
+albedo) was found **neutral at high evergreen `cancov ≈ 0.9`** (SNOWDENSITY-05G:
+`amelt ∝ (1-cancov) ≈ 0.1`, so the shortwave/albedo term is ~90% attenuated).
+**It has never been tested in the low-`cancov` regime where it could matter** —
+deciduous leaf-off, mixed forest, and pasture, where `(1-cancov)` is large and
+the radiation/albedo melt physics is active. These fixtures provide exactly that
+regime. They also:
+
+- exercise the new wepppy **deciduous / mixed forest managements** (Harvard,
+  Hubbard Brook — distinct winter-canopy phenology vs the evergreen default);
+- include a **pasture** site (Sleepers River) in the same maritime climate as the
+  non-SNOTEL Vermont frost blocker (`NON-SNOTEL-OPT-IN-SNOW-CONTROL-FAILED`,
+  SNOWDENSITY-08/09), where modeled snow over-accumulates — likely a winter-melt
+  problem these low-`cancov` fixtures are positioned to probe.
+
+## Site catalog
+
+| Fixture | Source run (TopazID→pN) | Canopy | Climate | `ksflag` | Observation source |
+|---|---|---|---|---|---|
+| `hjandrews_conifer_or` | joyous-armchair (22→p2) | coniferous | Pacific maritime, 1980–2024 | 0→1 | EDI `MS007` + `719:OR:SNTL` |
+| `tenderfoot_conifer_mt` | askance-regularity (22→p2) | coniferous | N. Rockies continental, 1980–2024 | 0→1 | `1008`/`1009:MT:SNTL` (on-forest) |
+| `berthoud_conifer_co` | old-fluorosis (32→p4) † | coniferous | CO subalpine, 1986–2024 | 0→1 | `05K14S:CO:SNTL` |
+| `morescreek_conifer_id` | praetorian-talcum (42→p6) † | coniferous | ID intermountain, 1986–2024 | 0→1 | `15F01S:ID:SNTL` |
+| `harvard_mixed_ma` | undescended-conserve (43→p8) | **mixed** | NE transitional, 1980–2024 | 0→1 | `HF155` SWE + `HF237` strat. |
+| `marcell_mixed_mn` | juvenile-separatist (61→p10) | **mixed** | Laurentian cold continental, 1980–2024 | 0→1 | USFS `10.2737/RDS-2021-0016` (strat.) |
+| `hubbardbrook_deciduous_nh` | scabby-demographic (62→p10) | **deciduous** | N. Appalachian, 1980–2024 | 0→1 | `knb-lter-hbr.27` + `2069:NH:SCAN` |
+| `sleepers_pasture_vt` | interconnected-fit (23→p3) | pasture/ag | NE VT maritime, 1980–2024 | 1 (already) | USGS `10.5066/P9NMQX70` |
+
+† **RAP_TS-adjusted `cancov`** in the source build (Berthoud, Mores Creek).
+
+The deciduous/mixed/pasture rows are the **low-`cancov`** half of the gradient
+(the new regime); the four coniferous rows are the high-`cancov` control that
+extends `snotel_observed`.
+
+## Frost activation (`ksflag`)
+
+The six forest builds inherited `ksflag = 0` (legacy "frost disabled for non-ag"
+default); each was set to **`1`** so the frost model runs alongside snow — soil
+line `1 0` → `1 1`, comment `# ksflag -> 0` → `# ksflag -> 1`. This is the
+**only** modification to the as-built inputs. `sleepers_pasture_vt` already had
+`ksflag = 1` (ag/pasture default) and was left unchanged. Revert the two edits
+to recover `ksflag = 0`.
+
+## Climate configuration
+
+DAYMET daily precip/temperature + GRIDMET wind + closest CLIGEN station +
+PRISM spatialization (CONUS). Per-site periods in the catalog; Berthoud and
+Mores Creek start 1986 (SNOTEL-aligned), the rest 1980.
+
+## Fixture contents
+
+Each directory: `pN.{run,man,slp,sol,cli}` + hillslope sidecars `snow.txt`,
+`pmetpara.txt`, `gwcoeff.txt`, and a `manifest.md`. Watershed-scoped files
+(`chan.inp`, `chntyp.txt`, `tc.txt`, `wepp_ui.txt`) are excluded.
+
+## Running
+
+```
+openwepp-cli-hill <fixture_dir> pN.run   # produces HBP shard + parquet
+```
+
+## Notes
+
+- **Marcell EF, MN** (`marcell_mixed_mn`, TopazID 61) is the canopy-stratified
+  mixed standout (biweekly SWE/depth/frost by conifer/deciduous/open cover type
+  since 1962). Its earlier delineation failure (WhiteboxTools *"No channels
+  remain after initial qualification thresholding"*, flat peatland terrain) was
+  resolved with a lowered channel-initiation threshold, and the fixture is now
+  included — completing the 8-site set.

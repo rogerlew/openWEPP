@@ -1,0 +1,15 @@
+14
+Dec_4899,0.95,0.8,1,sand_loam-deciduous_forest
+Mix_4899,0.95,0.8,2,sand_loam-mixed_forest
+Dec_4899,0.95,0.8,3,sand_loam-deciduous_forest
+Mix_4899,0.95,0.8,4,sand_loam-mixed_forest
+Dec_4899,0.95,0.8,5,sand_loam-deciduous_forest
+Dec_4899,0.95,0.8,6,sand_loam-deciduous_forest
+Dec_4899,0.95,0.8,7,sand_loam-deciduous_forest
+Mix_4899,0.95,0.8,8,sand_loam-mixed_forest
+Dec_4899,0.95,0.8,9,sand_loam-deciduous_forest
+Dec_4899,0.95,0.8,10,sand_loam-deciduous_forest
+Dec_4899,0.95,0.8,11,sand_loam-deciduous_forest
+Dec_4899,0.95,0.8,12,sand_loam-deciduous_forest
+Dec_4899,0.95,0.8,13,sand_loam-deciduous_forest
+Dec_4899,0.95,0.8,14,sand_loam-deciduous_forest
