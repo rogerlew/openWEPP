@@ -25,7 +25,7 @@ canopy.
 |---|---|
 | `hjandrews_conifer_or` | PASS as high evergreen control. Raw initial, projected evergreen, and openWEPP runtime all equal `0.90`. |
 | `tenderfoot_conifer_mt` | PASS as high evergreen control. Raw initial, projected evergreen, and openWEPP runtime all equal `0.90`. |
-| `berthoud_conifer_co` | RAP_TS-adjusted exception. Runtime `0.05` equals raw initial `0.05`, not generic evergreen `0.90`; do not use as high-canopy control in current snowbench adjudication without explicit RAP_TS context. |
+| `berthoud_conifer_co` | RAP_TS-adjusted sparse/open conifer exception. Runtime `0.05` equals raw initial `0.05`, not generic evergreen `0.90`; operator satellite-imagery check on 2026-06-26 found the low value consistent with site imagery. Do not use as high-canopy control in current snowbench adjudication without explicit RAP_TS/sparse-canopy context. |
 | `morescreek_conifer_id` | RAP_TS-adjusted high-but-not-evergreen exception. Runtime `0.82` equals raw initial `0.82`; acceptable high-canopy evidence only with RAP_TS caveat. |
 | `harvard_mixed_ma` | Static mixed-canopy evidence only. Runtime `0.55` equals raw initial `0.55`; upstream projected winter mean is `0.44446`. Seasonal mixed-canopy verdicts require per-day routing. |
 | `marcell_mixed_mn` | Static mixed-canopy evidence only. Runtime `0.55` equals raw initial `0.55`; upstream projected winter mean is `0.44446`. Seasonal mixed-canopy verdicts require per-day routing. |
@@ -43,4 +43,3 @@ sequence is:
    melt replay before the gradient adjudication.
 3. If no, explicitly label the next adjudication as static-initial-canopy
    evidence and exclude seasonal-phenology claims.
-

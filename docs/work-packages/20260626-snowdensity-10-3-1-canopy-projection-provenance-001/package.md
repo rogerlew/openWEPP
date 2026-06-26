@@ -94,7 +94,9 @@ Mismatch disposition:
   projected evergreen, and openWEPP runtime all equal `0.90`.
 - Berthoud and Mores Creek are RAP_TS-adjusted conifer exceptions: openWEPP
   runtime equals raw initial `0.05` and `0.82`, not the generic evergreen
-  projection `0.90`.
+  projection `0.90`. Post-closeout operator review on 2026-06-26 found the
+  Berthoud `0.05` consistent with satellite imagery, so Berthoud is a
+  sparse/open conifer exception rather than an automatic canopy data error.
 - Harvard and Marcell are static mixed-canopy diagnostics today:
   openWEPP runtime equals raw initial `0.55`, while upstream wepppy projected
   winter mean is `0.44446`.
