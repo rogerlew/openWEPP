@@ -669,6 +669,10 @@ path = "tests/integration/snowdensity05f_melt_closure_handoff.rs"
 name = "snowdensity05g_harness_fidelity_rerun"
 path = "tests/integration/snowdensity05g_harness_fidelity_rerun.rs"
 
+[[test]]
+name = "snowdensity06_density_compaction"
+path = "tests/integration/snowdensity06_density_compaction.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

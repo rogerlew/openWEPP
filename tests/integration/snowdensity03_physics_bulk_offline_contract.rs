@@ -47,6 +47,7 @@ fn physics_bulk_is_confined_to_snowbench_and_diagnostic_surfaces() {
         "crates/openwepp-runner/src/bin/openwepp-snowbench.rs",
         "tests/integration/snowdensity02_contract_adr_guard.rs",
         "tests/integration/snowdensity03_physics_bulk_offline_contract.rs",
+        "tests/integration/snowdensity06_density_compaction.rs",
         "tools/snowfreeze_observed/physics_bulk_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_snotel_profile.py",
     ];

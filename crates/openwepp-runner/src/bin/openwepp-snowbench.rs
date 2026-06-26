@@ -167,6 +167,6 @@ fn next_path(
 
 fn print_help() {
     println!(
-        "openwepp-snowbench <export-pysnobal|physics-bulk|coe-melt> --run-dir <path> [--run-file <path>] --output-dir <path> [--variant <candidate_v1|slow_melt_v1|dense_slow_melt_v1|cold_dense_slow_melt_v1>] [--model <legacy_coe|coe_shortwave_albedo_v1>]"
+        "openwepp-snowbench <export-pysnobal|physics-bulk|coe-melt> --run-dir <path> [--run-file <path>] --output-dir <path> [--variant <candidate_v1|slow_melt_v1|dense_slow_melt_v1|cold_dense_slow_melt_v1|density_compaction_v1>] [--model <legacy_coe|coe_shortwave_albedo_v1>]"
     );
 }

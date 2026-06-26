@@ -13,6 +13,20 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-06-density-compaction-001/` is complete as
+  SNOWDENSITY-06, the density-compaction gate. It amended
+  `SC-SNOWFREEZE-001` to v84 with `INV-SNOWFREEZE-058`,
+  `OBL-SNOWFREEZE-P-033`, and the 06 addendum; added offline
+  `density_compaction_v1`; exposed named SNOBAL-lineage PTM/POC/liquid-water
+  compaction constants; and preserved baseline candidate melt constants,
+  albedo, canopy, radiation, production defaults, and rollback. Five-site
+  SNOTEL adjudication shows density/densification robust-cell improvement
+  against legacy/as-built (`fail 9 -> 7`, score `16 -> 22`) without site tuning
+  or melt changes, but whole-rubric promotion remains blocked (`robust fail
+  9 -> 18`, score `84 -> 46`). No runtime/default activation, parser/runfile/CLI
+  activation selector, output schema, or frost attribution changed. The next
+  route is an offline CoE-bound density replay before any SNOWDENSITY-07
+  runtime opt-in.
 - `20260626-snowdensity-05g-harness-fidelity-rerun-001/` is complete as
   SNOWDENSITY-05G, the harness-fidelity rerun gate. It amended
   `SC-SNOWFREEZE-001` to v83 with `INV-SNOWFREEZE-057`,
@@ -27,10 +41,8 @@ State as of `2026-06-26`:
   regime-limited. External review endorsed the deflating result and clarified
   that conifer neutrality should not retire `coe_shortwave_albedo_v1`; a
   low-canopy/mixed-forest package with real per-day seasonal `cancov` is the
-  decisive melt-value fork. The next density route remains `SNOWDENSITY-06
-  Density Compaction`, using `legacy_coe` as the default/rollback baseline and
-  treating `coe_shortwave_albedo_v1` only as an opt-in diagnostic boundary
-  unless a later activation package reopens melt.
+  decisive melt-value fork. The completed SNOWDENSITY-06 package supersedes this
+  density-route note.
 - `20260626-snowdensity-05f-melt-closure-density-handoff-001/` is complete as
   SNOWDENSITY-05F, the melt-closure and density-handoff gate. It amended
   `SC-SNOWFREEZE-001` to v82 with `INV-SNOWFREEZE-056`,

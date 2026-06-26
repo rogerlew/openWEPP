@@ -27,7 +27,14 @@ DEFAULT_VARIANTS = [
     "slow_melt_v1",
     "dense_slow_melt_v1",
     "cold_dense_slow_melt_v1",
+    "density_compaction_v1",
 ]
+DENSITY_CELL_IDS = {
+    "long_term_cold_season_bulk_density",
+    "seasonal_densification_trajectory",
+    "seasonal_depth_swe_slope",
+    "cross_cutting_bias_sign_consistency",
+}
 LABEL_SCORE = {
     "fail": 0,
     "marginal": 1,
@@ -204,6 +211,60 @@ def summarize_site_profiles(model_id: str, site_profiles: list[dict[str, Any]]) 
         "robust_available_cell_count": robust_available,
         "robust_fail_count": robust_fail,
         "robust_ordinal_score": robust_score,
+        "density_cell_profile": summarize_density_cells(model_id, site_profiles),
+        "site_summaries": site_summaries,
+    }
+
+
+def summarize_density_cells(
+    model_id: str, site_profiles: list[dict[str, Any]]
+) -> dict[str, Any]:
+    counts: dict[str, int] = {}
+    score = 0
+    available = 0
+    fail = 0
+    site_summaries = []
+    for site in site_profiles:
+        site_score = 0
+        site_available = 0
+        site_fail = 0
+        site_cells = []
+        for cell in site["rubric_profile"]["cells"]:
+            if cell["cell_id"] not in DENSITY_CELL_IDS:
+                continue
+            label = cell["ordinal_label"]
+            site_cells.append(
+                {
+                    "cell_id": cell["cell_id"],
+                    "ordinal_label": label,
+                    "ordinal_score": cell["ordinal_score"],
+                }
+            )
+            if label not in LABEL_SCORE:
+                continue
+            counts[label] = counts.get(label, 0) + 1
+            site_available += 1
+            site_score += LABEL_SCORE[label]
+            site_fail += int(label == "fail")
+        available += site_available
+        score += site_score
+        fail += site_fail
+        site_summaries.append(
+            {
+                "site_id": site["site_id"],
+                "available_cell_count": site_available,
+                "fail_count": site_fail,
+                "ordinal_score": site_score,
+                "cells": site_cells,
+            }
+        )
+    return {
+        "model_id": model_id,
+        "cell_ids": sorted(DENSITY_CELL_IDS),
+        "counts_by_label": dict(sorted(counts.items())),
+        "available_cell_count": available,
+        "fail_count": fail,
+        "ordinal_score": score,
         "site_summaries": site_summaries,
     }
 
@@ -267,7 +328,7 @@ def read_json(path: Path) -> dict[str, Any]:
 
 def render_markdown(report: dict[str, Any]) -> str:
     lines = [
-        "# SNOWDENSITY-04 Physics-Bulk Adjudication",
+        "# Physics-Bulk Snowbench Adjudication",
         "",
         f"- Schema: `{report['schema']}`",
         f"- Disposition: `{report['summary']['disposition']}`",
@@ -279,20 +340,23 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "## Comparator Summary",
         "",
-        "| Model | Robust fail | Robust score | Robust counts |",
-        "|---|---:|---:|---|",
+        "| Model | Robust fail | Robust score | Density fail | Density score | Robust counts |",
+        "|---|---:|---:|---:|---:|---|",
     ]
     for model_id in ("openwepp_as_built", "legacy_as_built", "pysnobal"):
         model = report["comparators"][model_id]
         lines.append(summary_row(model_id, model))
-    lines.extend(["", "## Candidate Summary", "", "| Variant | Model | Robust fail | Robust score | Robust counts | vs openWEPP | vs legacy |", "|---|---|---:|---:|---|---|---|"])
+    lines.extend(["", "## Candidate Summary", "", "| Variant | Model | Robust fail | Robust score | Density fail | Density score | Robust counts | vs openWEPP | vs legacy |", "|---|---|---:|---:|---:|---:|---|---|---|"])
     for candidate in report["candidates"]:
+        density = candidate["density_cell_profile"]
         lines.append(
-            "| `{variant}` | `{model}` | {fail} | {score} | `{counts}` | `{openwepp}` | `{legacy}` |".format(
+            "| `{variant}` | `{model}` | {fail} | {score} | {density_fail} | {density_score} | `{counts}` | `{openwepp}` | `{legacy}` |".format(
                 variant=candidate["variant"],
                 model=candidate["model_id"],
                 fail=candidate["robust_fail_count"],
                 score=candidate["robust_ordinal_score"],
+                density_fail=density["fail_count"],
+                density_score=density["ordinal_score"],
                 counts=json.dumps(candidate["forcing_robust_counts_by_label"], sort_keys=True),
                 openwepp=json.dumps(candidate["cell_comparison"]["openwepp_as_built"], sort_keys=True),
                 legacy=json.dumps(candidate["cell_comparison"]["legacy_as_built"], sort_keys=True),
@@ -301,7 +365,7 @@ def render_markdown(report: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
-            "Disposition rule: a candidate must reduce robust fail count and preserve or improve robust ordinal score against both openWEPP as-built and legacy as-built. Comparator agreement is flag evidence only under ADR-0017.",
+            "Disposition rule: a candidate must reduce robust fail count and preserve or improve robust ordinal score against both openWEPP as-built and legacy as-built. SNOWDENSITY-06 additionally requires the density/densification robust-cell profile to improve without melt retuning. Comparator agreement is flag evidence only under ADR-0017.",
             "",
         ]
     )
@@ -309,10 +373,13 @@ def render_markdown(report: dict[str, Any]) -> str:
 
 
 def summary_row(model_id: str, model: dict[str, Any]) -> str:
-    return "| `{}` | {} | {} | `{}` |".format(
+    density = model["density_cell_profile"]
+    return "| `{}` | {} | {} | {} | {} | `{}` |".format(
         model_id,
         model["robust_fail_count"],
         model["robust_ordinal_score"],
+        density["fail_count"],
+        density["ordinal_score"],
         json.dumps(model["forcing_robust_counts_by_label"], sort_keys=True),
     )
 

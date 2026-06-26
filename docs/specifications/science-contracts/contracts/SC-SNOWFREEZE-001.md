@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 83
+contract_version: 84
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -74,8 +74,8 @@ Out of scope:
 | REF-SNOWFREEZE-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative snow depth/water and bounded densities are required for physical validity. | `[INFERENCE][Static]` |
 | REF-SNOWFREEZE-FROST-OBS | `tests/fixtures/snowfreeze_observed/` (five WEPP hillslope fixtures + per-site manifests) and the historic frost-depth observation corpus they bind: USGS Sleepers River (`DOI 10.5066/P96753GI`, frost tube + paired snow depth), NRCS SCAN soil temperature (`stationTriplets=2020:ND:SCAN`, derived `0 degC` isotherm), NSIDC GGD498 Midwest frost tubes (`DOI 10.7265/1mcs-q536`), USDA-ARS Reynolds Creek soil temperature (CC-BY), and the WEPP-lineage Dun et al. 2010 Pullman/Morris frost validation (`doi:10.13031/2013.34896`, request-only). | External-authority frost-depth observations under ADR-0017 (legacy/compatibility frost output is a flag, not the acceptance target). | `[DIRECT][Static]` |
 | REF-SNOWFREEZE-SNOWDENSITY01 | `docs/work-packages/20260625-snowdensity-01-evidence-reconciliation-001/` | Evidence reconciliation showing current openWEPP and pinned legacy share the same structural snow-density/depth lineage for the SNOTEL comparison, with maximum as-built openWEPP-vs-legacy density delta `4.351046738461008 kg m^-3`; this routes remediation away from bit-parity and toward a contract-scoped physics candidate. | `[DIRECT][Static] + [INFERENCE][Static]` |
-| REF-SNOWFREEZE-ANDERSON1976-CANDIDATE | Anderson snow accumulation/ablation physics lineage as used by SNOBAL/PySnobal-style bulk snowpack densification references; package evidence begins in `docs/work-packages/20260625-snowdensity-01-evidence-reconciliation-001/` and follow-on SNOWDENSITY-03/04 artifacts must bind exact equations/constants before runtime promotion. | Candidate snow-density physics authority only; not a ratified production formula. | `[INFERENCE][Static]` |
-| REF-SNOWFREEZE-SNOBAL-CANDIDATE | Local PySnobal/SNOBAL diagnostic lane and three-way profile evidence from SNOWFROST-FIDELITY-G/H packages. | Reference-implementation profile and sanity evidence for SWE/depth/density behavior; diagnostic flag profile only, not target output and not a runtime dependency. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SNOWFREEZE-ANDERSON1976-CANDIDATE | Anderson snow accumulation/ablation physics lineage as used by SNOBAL/PySnobal-style bulk snowpack densification references; package evidence begins in `docs/work-packages/20260625-snowdensity-01-evidence-reconciliation-001/` and SNOWDENSITY-06 binds the density-only candidate to Anderson-1976 §III compaction/metamorphism constants and the SNOBAL PTM/POC implementation lineage. | Candidate snow-density physics authority only; not a ratified production formula. | `[INFERENCE][Static]` |
+| REF-SNOWFREEZE-SNOBAL-CANDIDATE | Local PySnobal/SNOBAL diagnostic lane and three-way profile evidence from SNOWFROST-FIDELITY-G/H packages, plus source-level `_time_compact.c` / `_h2o_compact.c` static inspection for PTM/POC and liquid-water compaction constants. | Reference-implementation profile and sanity evidence for SWE/depth/density behavior; diagnostic flag profile only, not target output and not a runtime dependency. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-MELT-OHMURA2001 | `references/copyrighted/Ohmura2001_meltindex.pdf` | Temperature-index melt factors include radiation/longwave/sensible terms implicitly and are not transferable defaults for the production CoE energy-balance melt path. | `[INFERENCE][Static]` |
 | REF-SNOWFREEZE-MELT-PELLICCIOTTI2005 | `references/copyrighted/pellicciotti2005.pdf` | Enhanced temperature-index melt separates radiation from temperature-index behavior, supporting explicit shortwave/albedo operands rather than retuned degree-day factors. | `[INFERENCE][Static]` |
 | REF-SNOWFREEZE-MELT-CARENZO2009 | `references/copyrighted/carenzo2009.pdf` | Melt-model parameter sensitivity and transferability evidence supporting no site-specific default fitting for snowmelt modernization. | `[INFERENCE][Static]` |
@@ -220,6 +220,7 @@ Out of scope:
 | INV-SNOWFREEZE-055 | SNOWDENSITY-05D opt-in CoE melt implementation: `legacy_coe` remains the default and must preserve current routed-melt behavior. When `snow_melt_model = coe_shortwave_albedo_v1`, the only authorized production melt-term change is the CoE shortwave operand `amelt = 0.0607 * hrrad * (1 - snow_albedo) * (1 - cancov)`, where `hrrad` is the existing `winter.hourly.rad_mj_m2_####` source from `INV-SNOWFREEZE-053`, `snow_albedo` is the typed `brock2000_temperature_age_v1` state from `INV-SNOWFREEZE-054`, and the existing canopy factor remains unchanged. `bmelt`, `cmelt`, `dmelt`, signed raw melt, positive-melt depth cap, density gate, rain retention/release, corrected negative-melt redistribution, runtime SWE/depth/density mutation, WB12 `S`, and WB13 `RM`/liquid forcing lineage must remain the same algorithmic path. The opt-in path must carry the updated albedo state in typed runtime state and fail closed on missing/invalid active-snow state rather than falling back to `legacy_coe`. Acceptance requires independent typed-operand reconstruction of hourly raw melt, redistributed melt, routed `wmelt`, snowpack SWE loss, WB12 signed liquid forcing, and WB13 routed liquid forcing. | hard-fail | INV-SNOWFREEZE-052, INV-SNOWFREEZE-053, INV-SNOWFREEZE-054, INV-SNOWFREEZE-015, INV-SNOWFREEZE-022, REF-SNOWFREEZE-CH3-MELT, REF-SNOWFREEZE-MELT-BROCK2000 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-056 | SNOWDENSITY-05F melt closure / density handoff: SNOWDENSITY-05F closes the melt-modernization ladder without default activation. `legacy_coe` remains the default and rollback path; `coe_shortwave_albedo_v1` remains opt-in only and is accepted only as a density-facing interface for later `physics_bulk` density work. The density-facing interface is the selector `snow_melt_model`, the 05B hourly shortwave source `winter.hourly.rad_mj_m2_####`, 05C albedo state/model/age/reset operands, 05D absorbed-shortwave/raw-melt/redistributed-melt/routed-`wmelt`/SWE-loss/WB12/WB13 liquid-forcing operands, and runtime SWE/depth/density after-state. The activation evidence baseline requires both diagnostic replay and H as-built context: 05E's diagnostic legacy improvement (`robust_fail_count 13 -> 10`, `robust_ordinal_score 61 -> 84`) is insufficient by itself because H as-built context remained `robust_fail_count=9`, `robust_ordinal_score=84`. Those 05E diagnostic replay deltas are regime-limited because the diagnostic harness used `cancov = 0.0` and PySnobal-bridge radiation rather than the configured coniferous forest winter canopy cover of about `0.9` and the native/proven 05B shortwave source. Same-day future snowfall is an explicit cold-start albedo continuity case: when the opt-in path has active same-day snowfall after earlier snow-free hours, the producer must preserve typed albedo continuity through fresh-snow reset, carry a valid previous opt-in state, or fail closed rather than silently clearing albedo only because the morning state was snow-free. SNOWDENSITY-06 may consume the opt-in melt boundary without retuning melt, radiation, or coefficients, but its entry gate must first repair or prove harness fidelity for real per-day canopy cover, with configured coniferous forest winter `cancov` expected near `0.9`, and native/proven shortwave radiation; density packages must not use melt changes as density compensation and must not promote parser/runfile/CLI selectors, output schemas, or default activation without a later ratified activation package. | governance-hold | INV-SNOWFREEZE-050, INV-SNOWFREEZE-052, INV-SNOWFREEZE-053, INV-SNOWFREEZE-054, INV-SNOWFREEZE-055, INV-SNOWFREEZE-051, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-057 | SNOWDENSITY-05G harness-fidelity rerun: diagnostic `coe-melt` SNOTEL adjudication may supersede the 05E regime-limited replay only when the replay consumes configured openWEPP canopy state instead of a `cancov = 0.0` harness constant and publishes the shortwave lineage used for `hrrad`. For the configured coniferous validation fixtures, accepted representative-regime evidence must demonstrate `canopy_cover_fraction` near `0.9` for the winter replay, with the value sourced from the generated openWEPP runtime surface or an explicitly equivalent per-day growth-state series. Shortwave evidence must either consume the native `winter.hourly.rad_mj_m2_####` source from `INV-SNOWFREEZE-053` or prove the PySnobal bridge inversion is like-for-like by recording `net_solar_Wm-2 = native_shortwave_MJ_m-2_h-1 * 1_000_000 / 3600 * 0.8` and `hrrad = net_solar_Wm-2 * 3600 / 1_000_000 / 0.8`, with no fitted radiation scalar. The representative 05G rerun supersedes the 05E promotion-candidate context with a `NON-PROMOTION` disposition for default activation: `legacy_coe` and `coe_shortwave_albedo_v1` both have `robust_fail_count=9`, while the opt-in ordinal score rises only from `84` to `86`. The 05G rerun does not authorize default activation, parser/runfile/CLI selectors, output schemas, coefficient retuning, density-physics changes, or frost attribution. | hard-fail | INV-SNOWFREEZE-050, INV-SNOWFREEZE-053, INV-SNOWFREEZE-055, INV-SNOWFREEZE-056, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-058 | SNOWDENSITY-06 density-only Anderson/SNOBAL compaction candidate: after SNOWDENSITY-05G, density work may add offline `physics_bulk` variants that change only snowpack density/compaction constants while preserving fixed melt, albedo, canopy, and shared-radiation boundaries. The first authorized variant is `density_compaction_v1`, an offline snowbench candidate with baseline candidate melt constants unchanged and named SNOBAL-lineage compaction constants for destructive temperature metamorphism (`ptm_rate_per_hour = 0.01`, `ptm_density_threshold = 100 kg m^-3`, `ptm_density_decay = 0.046 kg^-1 m^3`, `ptm_temperature_decay = 0.04 degC^-1`), overburden compaction (`poc_rate_per_hour = 0.026`, `poc_temperature_decay = 0.08 degC^-1`, `poc_density_decay = 21.0`, `swe_max = 2000 kg m^-2`, `rate_cos_amplitude = 23.5`, `rate_offset = 24.5`, `max_density = 550 kg m^-3`), and liquid-water compaction (`wet_half_saturation_ratio = 0.4`, `wet_max_density = 550 kg m^-3`). The variant may adjust only fresh-snow-density and compaction-strength constants within the SNOWDENSITY-02 candidate envelope; any melt coefficient, albedo constant, canopy series, radiation scalar, or site-specific parameter change invalidates its evidence. Evaluation must publish both whole-rubric context and a density/densification robust-cell profile covering `long_term_cold_season_bulk_density`, `seasonal_densification_trajectory`, `seasonal_depth_swe_slope`, and `cross_cutting_bias_sign_consistency`. A package may close as non-promotion if finite evidence shows those density cells do not beat legacy/as-built; it must not reinterpret the failure as a need to retune melt or default-activate `coe_shortwave_albedo_v1`. | governance-hold | INV-SNOWFREEZE-050, INV-SNOWFREEZE-051, INV-SNOWFREEZE-056, INV-SNOWFREEZE-057, REF-SNOWFREEZE-ANDERSON1976-CANDIDATE, REF-SNOWFREEZE-SNOBAL-CANDIDATE, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Porting-Fidelity Authority
 
@@ -435,6 +436,7 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 - `legacy_coe` default runs requiring, mutating, or consuming `snow_albedo` state. `[INFERENCE][Static]`
 - Default activation, production parser/runfile/CLI selector exposure, output-schema publication, or compatibility rollback removal for `coe_shortwave_albedo_v1` before a later activation package clears the `INV-SNOWFREEZE-056` evidence baseline. `[INFERENCE][Static]`
 - SNOWDENSITY-06 or later density work consuming `coe_shortwave_albedo_v1` while retuning melt coefficients, radiation forcing, or albedo constants to improve density signatures. `[INFERENCE][Static]`
+- SNOWDENSITY-06 `density_compaction_v1` evidence scored without a density/densification robust-cell profile, or claimed as successful because of melt/timing compensation rather than density-cell improvement. `[INFERENCE][Static]`
 - Active same-day future snowfall under `coe_shortwave_albedo_v1` clearing opt-in albedo continuity solely because earlier same-day hours were snow-free, instead of applying fresh-snow reset, carrying a valid previous opt-in state, or failing closed. `[DIRECT][Static] + [INFERENCE][Static]`
 - Any albedo constants or reset thresholds fitted to SNOTEL, frost-site observations, legacy residuals, or PySnobal residuals. `[INFERENCE][Static]`
 - `melt_bmelt_in` sign semantics changed by silent sign flip or double subtraction without a new contract amendment and source-line proof. `[DIRECT][Static] + [INFERENCE][Static]`
@@ -559,6 +561,14 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
   bridge-inversion identity when the PySnobal forcing file is used as the
   transport surface. This proof is evidence for adjudication only and does not
   create a production activation selector.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-033: Any SNOWDENSITY-06 `density_compaction_v1` producer
+  must remain offline/diagnostic, preserve baseline candidate melt coefficients,
+  albedo constants, canopy handling, shared-radiation inputs, production
+  defaults, and rollback paths, publish the named PTM/POC/liquid-water
+  compaction constants in its report, prove SWE conservation and finite thermal
+  residuals, reject site-specific constants, and score both whole-rubric context
+  and density/densification robust cells before any promotion claim.
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
@@ -864,6 +874,35 @@ albedo constants, shared radiation forcing, density physics, or frost verdicts.
    evidence only if the package artifacts carry the canopy and shortwave proof
    and still preserve `legacy_coe` default/rollback and opt-in-only
    `coe_shortwave_albedo_v1`.
+
+## SNOWDENSITY-06 Density Compaction Addendum
+
+Status: draft (2026-06-26). This addendum authorizes only offline density
+compaction evidence for `physics_bulk`. It does not change production defaults,
+production parser/runfile/CLI activation surfaces, output schemas, melt
+coefficients, albedo constants, canopy values, shared radiation forcing, or
+frost verdicts.
+
+1. Fixed melt boundary: SNOWDENSITY-06 begins after the 05G representative
+   coniferous rerun. `legacy_coe` remains default/rollback, and
+   `coe_shortwave_albedo_v1` remains opt-in diagnostic context until a later
+   activation package. The mixed/deciduous low-canopy melt-value fork remains
+   SNOWDENSITY-05H scope and is not required for this density-only package.
+2. Candidate shape: `density_compaction_v1` is an offline `physics_bulk`
+   snowbench variant. It may alter fresh-snow-density and compaction-strength
+   constants within `INV-SNOWFREEZE-051`, but it must preserve baseline
+   candidate melt constants and may not alter radiation, canopy, albedo, or
+   site-specific controls to win a density profile.
+3. Named compaction constants: the producer must publish the PTM, POC, and
+   liquid-water compaction constants named in `INV-SNOWFREEZE-058` in
+   `physics_bulk_summary.json`. Hidden literals are not accepted evidence.
+4. Evaluation surface: disposition is based on the v74/v75 rubric plus a
+   density/densification robust-cell summary covering cold-season bulk density,
+   densification trajectory, depth-SWE slope, and bias-sign consistency. Whole
+   rubric scores remain context, not an escape hatch for melt compensation.
+5. Closure: if finite evidence fails the density-cell gate, SNOWDENSITY-06 must
+   close `NON-PROMOTION` with a specific follow-on; it must not route to melt
+   retuning, default activation, or frost attribution.
 
 ## CLIM05 Parsed Snow-Control Runtime Coupling Addendum
 
@@ -1600,6 +1639,7 @@ ratification. They are evaluation bands, not calibration objectives; the
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-26` | `84` | `Codex` | SNOWDENSITY-06 density-compaction amendment: added `INV-SNOWFREEZE-058`, `OBL-SNOWFREEZE-P-033`, and the 06 addendum authorizing an offline `density_compaction_v1` candidate with fixed melt/radiation/albedo/canopy boundaries, named Anderson/SNOBAL PTM/POC and liquid-water compaction constants, and density/densification robust-cell evidence before any promotion claim. |
 | `2026-06-26` | `83` | `Codex` | SNOWDENSITY-05G harness-fidelity amendment: added `INV-SNOWFREEZE-057`, `OBL-SNOWFREEZE-P-032`, and the 05G addendum requiring diagnostic CoE melt replay to use configured coniferous canopy rather than `cancov = 0.0`, publish native/proven shortwave lineage or PySnobal bridge inversion identity, and rerun SNOTEL rubric evidence without default activation or density-physics changes. The representative rerun closed `NON-PROMOTION` for default activation (`robust_fail_count 9 -> 9`, `robust_ordinal_score 84 -> 86`). |
 | `2026-06-26` | `82` | `Codex` | Operator clarification for SNOWDENSITY-05F: the validation forest management should be configured as coniferous forest with winter `cancov` about `0.9`; therefore the 05E `cancov = 0.0` diagnostic replay is known non-representative, not merely an unverified live-canopy caveat. Updated the SNOWDENSITY-06 harness-fidelity gate accordingly. |
 | `2026-06-26` | `81` | `Codex` | SNOWDENSITY-05F independent-review disposition: labeled 05E diagnostic replay evidence as regime-limited because it used `cancov = 0.0` and PySnobal-bridge radiation, added the SNOWDENSITY-06 harness-fidelity entry gate for live per-day canopy and native/proven shortwave, and recorded local Brock-2000 constant verification. |
