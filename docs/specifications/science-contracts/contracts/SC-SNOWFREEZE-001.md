@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 76
+contract_version: 77
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -125,6 +125,7 @@ Out of scope:
 | `watbtm` | `m` | Frost/thaw excess liquid routed below the active profile when fine-layer storage cannot retain it. | frost routine | water-balance publication and closure identity (`Dp` loss lineage) |
 | `Snow-Water` | `mm` | WB13/hydout snow-water storage publication surface converted from runtime SWE at the output boundary. | winter runtime state publication | WB13/hillslope WAT output |
 | `Snow-Depth` | `mm` | Diagnostic hillslope WAT physical snowpack-depth publication converted from `snow.runtime_depth_m`; distinct from SWE and invalid as water-storage evidence. | winter runtime state publication | snow/frost observed-site correspondence and snow-insulation confound control |
+| `winter_shortwave_daily_radly` | `Ly d^-1` | Canonical daily shortwave source accepted by openWEPP for winter shortwave/melt modernization; this is the existing climate `rad`/`radly` parser/runtime field, not a separate snow forcing column. | climate parser/runtime daily forcing seam | `SC-CLIMATE-001#INV-CLIMATE-013`, ET forcing, and opt-in melt diagnostics |
 | `winter_rad_hourly` | `MJ m^-2 h^-1` | Registry-owned hourly winter radiation forcing surface. | hourly radiation adapter | melt-forcing diagnostics |
 | `winter_air_temp_hourly` | `degC` | Registry-owned hourly winter air-temperature forcing surface. | hourly temperature adapter | melt/frost branch diagnostics |
 | `winter_dewpoint_hourly` | `degC` | Registry-owned hourly winter dewpoint forcing surface. | hourly climate adapter | melt-term diagnostics |
@@ -154,7 +155,7 @@ Out of scope:
 | `snow_albedo` | `fraction` | Candidate opt-in snow-surface albedo state consumed by the modernized shortwave term. | future albedo state update | `coe_shortwave_albedo_v1` melt path diagnostics |
 | `snow_albedo_temperature_age_index` | `degC day` | Candidate temperature/age albedo decay index; exact Brock-style update and constants require SNOWDENSITY-05C ratification before code. | future albedo state update | albedo decay diagnostics |
 | `snow_albedo_model_id` | `enum/string` | Candidate albedo-state provenance/model identifier. | future albedo state update | opt-in melt diagnostics and rollback evidence |
-| `winter_shortwave_source_provenance` | `enum/string` | Candidate provenance surface naming the gridded daily shortwave/radiation source and transformation lineage. | future radiation-source adapter | `SC-CLIMATE-001#INV-CLIMATE-013` anti-alias evidence |
+| `winter_shortwave_source_provenance` | `enum/string` | Candidate provenance ledger naming the upstream gridded/provider source when known, the normalized climate `rad`/`radly` acceptance seam, units, slope/aspect and hourly transformation lineage, and proof that snowmelt does not receive a snow-only radiation scalar. | orchestration provenance plus climate runtime seam | `SC-CLIMATE-001#INV-CLIMATE-013` anti-alias evidence |
 
 ## Invariants
 
@@ -212,6 +213,7 @@ Out of scope:
 | INV-SNOWFREEZE-050 | Snow/frost fidelity evaluation-rubric invariant (`GAP-SNOWFREEZE-002`; draft): model fidelity to snow/frost observations is assessed by the signature-based, multi-timescale rubric in the GAP-SNOWFREEZE-002 Snow/Frost Fidelity Evaluation Rubric Addendum, not by any single residual tolerance. The rubric decomposes the comparison into process-diagnostic signatures across long-term, seasonal, and event timescales (accumulation, densification/settling, peak magnitude and timing, ablation, rain-on-snow, regime ordering, conservation; for frost: onset, deepening, thaw, frozen duration). Each signature is tagged forcing-robust (`R`) or forcing-limited (`L`): `R` signatures (bulk density, densification trajectory, depth-SWE slope, timing, regime ordering, conservation) are intensive or relative quantities that survive the forcing and representativeness uncertainty budget and carry model verdicts; `L` signatures (absolute peak SWE and depth magnitude) are reported but may not by themselves produce an `OPENWEPP-DEFECTIVE` verdict because they are dominated by gridded-precip, lapse/spatialization, and point-vs-hillslope representativeness error. Time-series cells score by Kling-Gupta-Efficiency decomposition into correlation, bias-ratio, and variability-ratio so the failed mode (timing vs magnitude vs spread) is named rather than smeared; magnitude cells score by median signed bias and IQR; timing cells by date offset. Cell pass-levels are provisional noise-floor estimates under `TOL-SNOWFREEZE-011` and the per-quantity bands `TOL-SNOWFREEZE-007/008/009/010`, calibrated to the uncertainty budget and not fidelity targets. The output is a per-model, per-site, per-cell profile, not a scalar; the ADR-0017 verdict taxonomy is applied per cell; legacy WEPP and PySnobal are scored on the same rubric as diagnostic flag profiles, never as targets. This invariant governs evaluation method only, changes no physics, and supersedes use of `TOL-SNOWFREEZE-009` as a standalone snow-model acceptance band. | governance-hold | INV-SNOWFREEZE-047, INV-SNOWFREEZE-048, INV-SNOWFREEZE-049, REF-SNOWFREEZE-FROST-OBS, ADR-0017, TOL-SNOWFREEZE-011 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-051 | SNOWDENSITY-02 opt-in `physics_bulk` snow-model envelope: openWEPP may develop a deliberate-legacy-divergence snow-density candidate only behind `snow_model = legacy_wepp | physics_bulk`, with `legacy_wepp` remaining the default and `physics_bulk` explicitly opt-in until a later activation package passes this contract's gates. `physics_bulk` is a candidate physics-bulk snowpack model, not an authorized production formula in this amendment. Its candidate state envelope includes SWE, physical depth, bulk density, retained liquid water, snow cold content or bulk temperature, and snow-cover age/metamorphism clock. Its candidate process envelope may include temperature/wind-dependent fresh-snow density, Anderson-1976/SNOBAL-style metamorphism, overburden compaction, wet-snow compaction, liquid retention/release/refreeze, and internal mass/energy closure, but exact equations/constants require SNOWDENSITY-03/04 evidence and hydrology-reviewer ratification before runtime promotion. Site-specific calibration is prohibited: SNOTEL, observed snow depth, legacy WEPP, and PySnobal may classify profile cells and diagnose failure modes, but they may not fit per-site constants, choose SSD by residual minimization, or tune `physics_bulk` separately for a site. `ssd` remains a legacy control-state/provenance input, not a `physics_bulk` density or settlement parameter. PySnobal/SNOBAL and legacy WEPP remain diagnostic flag profiles under ADR-0017, never acceptance targets. Frost physics attribution remains blocked until snow-control failures are passable or bounded by the v74/v75 rubric. | governance-hold | INV-SNOWFREEZE-048, INV-SNOWFREEZE-049, INV-SNOWFREEZE-050, REF-SNOWFREEZE-SNOWDENSITY01, REF-SNOWFREEZE-ANDERSON1976-CANDIDATE, REF-SNOWFREEZE-SNOBAL-CANDIDATE, ADR-0017, ADR-0026, ADR-0027 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-052 | SNOWDENSITY-05A CoE melt-modernization contract and sign-convention envelope: openWEPP may develop a deliberate-legacy-divergence melt candidate only behind `snow_melt_model = legacy_coe | coe_shortwave_albedo_v1`, with `legacy_coe` remaining the default, compatibility comparator surface, and rollback path. `coe_shortwave_albedo_v1` is opt-in only and is not production-authorized until SNOWDENSITY-05B/05C/05D bind the shortwave source, albedo state, implementation, and conservation evidence. The modernized path must preserve the WEPP Chapter 3 / Corps-of-Engineers melt-term family (`amelt`, `bmelt`, `cmelt`, `dmelt`), current canopy attenuation `(1 - cancov)`, signed raw melt, corrected daily redistribution, density gate, and routed-melt lineage. Sign convention is fixed before code: WEPP Chapter 3 prose writes this term as `- bmelt`, while openWEPP trace field `melt_bmelt_in` stores the signed `bmelt` contribution, so the runtime raw-melt identity is `hrmelt_raw = 0.0254 * (amelt + melt_bmelt_in + cmelt + dmelt)` as guarded by `tests/integration/clim05_snow_runtime_kernel_contract.rs`; any silent sign flip or double subtraction is invalid without a contract amendment. `dense_slow_melt_v1` remains a negative benchmark, not a promotable production melt path, because its profile improvement reduced a degree-day melt factor to mask a density gap. Shared radiation forcing must not be tuned or rescaled for snowmelt because `SC-CLIMATE-001#INV-CLIMATE-013` owns the winter radiation unit/provenance seam and the same forcing drives other hydrology/ET consumers. | governance-hold | REF-SNOWFREEZE-CH3-MELT, REF-SNOWFREEZE-CH3-MELT-ASSUMP, SC-CLIMATE-001#INV-CLIMATE-013, REF-SNOWFREEZE-MELT-OHMURA2001, REF-SNOWFREEZE-MELT-PELLICCIOTTI2005, REF-SNOWFREEZE-MELT-CARENZO2009, REF-SNOWFREEZE-MELT-BROCK2000, REF-SNOWFREEZE-MELT-WALTER2005, REF-SNOWFREEZE-MELT-GUPTA2023, INV-SNOWFREEZE-015, INV-SNOWFREEZE-050, INV-SNOWFREEZE-051 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-053 | SNOWDENSITY-05B shortwave source/provenance binding: the canonical openWEPP shortwave source is the daily climate `rad`/`radly` field in `Ly d^-1` at the climate parser/runtime seam. Upstream gridded radiation products may feed openWEPP only by being normalized by orchestration into this field with external provenance; openWEPP must not fetch, select, spatialize, or tune gridded shortwave products or maintain a snow-only radiation source. Runtime transformation is exactly the `SC-CLIMATE-001#INV-CLIMATE-013` lineage: preserve `radly` as `Ly d^-1`, perform the single conversion `radmj = radly * 0.04184`, apply slope/aspect transformation through `sunmap`, distribute hourly through `radcur`/`hr_tmp` including the near-isothermal `radmj/24` branch, and publish `winter.hourly.rad_mj_m2_####` in `MJ m^-2 h^-1`. ET and snowmelt consume the same daily radiation authority (`rad`/`RA`/`radiation_ly`); any fitted radiation scalar, already-MJ double conversion, Langley-scale value under an MJ label, silent clipping, or snow-only radiation scalar is invalid. | governance-hold | SC-CLIMATE-001#INV-CLIMATE-013, SC-EVAP-001#INV-EVAP-021, REF-SNOWFREEZE-CH3-HRRAD, REF-SNOWFREEZE-CH3-MELT, INV-SNOWFREEZE-052 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Porting-Fidelity Authority
 
@@ -420,6 +422,9 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 - `coe_shortwave_albedo_v1` selected as a default melt model, activated without SNOWDENSITY-05B/05C/05D source/albedo/implementation gates, or executed with missing albedo/source provenance. `[DIRECT][Static] + [INFERENCE][Static]`
 - `dense_slow_melt_v1` or any degree-day snowbench variant promoted into production melt physics. `[INFERENCE][Static]`
 - Shared radiation forcing tuned, rescaled, clipped, or reinterpreted to improve snowmelt fit instead of preserving `SC-CLIMATE-001#INV-CLIMATE-013` unit/provenance authority. `[DIRECT][Static] + [INFERENCE][Static]`
+- openWEPP runtime or kernel code fetching, selecting, or spatializing gridded shortwave products instead of consuming the normalized climate `rad`/`radly` seam. `[INFERENCE][Static]`
+- A snow-only radiation scalar, parser column, or fitted multiplier feeding `coe_shortwave_albedo_v1` while ET and other hydrology consumers see a different daily radiation authority. `[DIRECT][Static] + [INFERENCE][Static]`
+- Treating already-`MJ m^-2 d^-1` radiation as `radly`, double-converting a daily MJ value, publishing Langley-scale values under `winter.hourly.rad_mj_m2_####`, or clipping high radiation rather than failing `SC-CLIMATE-001#INV-CLIMATE-013`. `[DIRECT][Static] + [INFERENCE][Static]`
 - `melt_bmelt_in` sign semantics changed by silent sign flip or double subtraction without a new contract amendment and source-line proof. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
@@ -489,6 +494,15 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
   variants as negative benchmarks only until a later contract amendment says
   otherwise.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-028: Any `coe_shortwave_albedo_v1` producer or
+  pre-implementation package must publish a source/provenance ledger naming the
+  daily `rad`/`radly` input, units, upstream gridded/provider provenance when
+  available, single-conversion path, slope/aspect and hourly transformation
+  lineage, ET shared-authority proof, and anti-alias rejections. It must close
+  `HOLD` rather than implement if the only available path requires openWEPP to
+  fetch/select/spatialize gridded radiation, tune radiation to snow, or add a
+  snow-only radiation scalar.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -524,6 +538,7 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 | HPHYS0320 `stmtim` start-time closure (`INV-SNOWFREEZE-046`) | SIMIMPL28 start-time projection and paired H1/H7/H39 trace rerun | Hard error for non-finite start time; finite below-hour-one starts use baseline `wnttim = 1.0` normalization before snow/rain branch selection; residual divergence stays owned `HOLD` with a named follow-on lane | HPHYS0320 snow/freeze timing closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `physics_bulk` snow-density candidate envelope (`INV-SNOWFREEZE-051`) | Contract, offline snowbench, and future runtime activation review | Governance `HOLD` unless `physics_bulk` remains opt-in, no-site-tuning is proven, candidate equations/constants are ratified, mass/energy closure is independently reconstructed, and v74/v75 rubric profiles show forcing-robust improvement or a documented non-promotion reason | SNOWDENSITY-02 and successors | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `coe_shortwave_albedo_v1` melt-modernization envelope (`INV-SNOWFREEZE-052`) | Contract, source/albedo/implementation gates, and future runtime activation review | Governance `HOLD` unless the path remains opt-in, signed `melt_bmelt_in` semantics are preserved, `SC-CLIMATE-001#INV-CLIMATE-013` radiation provenance is proven, albedo/source operands are typed, no-site-tuning is proven, and raw/routed melt plus SWE loss are independently reconstructed | SNOWDENSITY-05A through 05F | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Shortwave source binding (`INV-SNOWFREEZE-053`) | Contract, source/provenance ledger, climate/ET anti-alias review, and future opt-in melt implementation | Governance `HOLD` unless `coe_shortwave_albedo_v1` consumes the existing climate `rad`/`radly` daily radiation authority, proves the single `radly -> radmj -> sunmap/radcur/hr_tmp -> winter.hourly.rad_mj_m2_####` path, shares radiation authority with ET, and rejects snow-only/fitted/scaled/clipped/double-converted radiation | SNOWDENSITY-05B and successors | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Drift activation governance (`INV-SNOWFREEZE-008`) | review/disposition/promotion gate | Governance `HOLD` until active-implementation authority is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
@@ -616,6 +631,40 @@ deferred to the SNOWDENSITY-05B/05C/05D ladder.
    are green. Its gate must independently reconstruct raw melt, redistributed
    melt, routed `wmelt`, SWE loss, and downstream liquid forcing from typed
    operands without aliasing SWE, depth, density, or observation residuals.
+
+## SNOWDENSITY-05B Shortwave Source Binding Addendum
+
+Status: draft (2026-06-26). This addendum scopes the radiation-source binding
+gate for the opt-in `coe_shortwave_albedo_v1` melt path. It changes no
+production physics, constants, parser surfaces, output schemas, runtime
+defaults, or upstream forcing ownership.
+
+1. Source decision: openWEPP's canonical shortwave acceptance point is the
+   existing daily climate `rad`/`radly` field in `Ly d^-1`. The engine may use
+   gridded radiation only after orchestration has normalized it into that
+   climate field and preserved provider/spatialization provenance externally or
+   through a typed provenance ledger. openWEPP must not fetch, select,
+   spatialize, or tune gridded shortwave products.
+2. Transformation decision: the executable lineage for winter melt forcing is
+   `SC-CLIMATE-001#INV-CLIMATE-013`: `radly` remains `Ly d^-1`, `radmj =
+   radly * 0.04184` is applied exactly once, `sunmap` performs the slope/aspect
+   daily transformation, `radcur`/`hr_tmp` produce hourly radiation, the
+   near-isothermal branch uses `radmj/24`, and publication is
+   `winter.hourly.rad_mj_m2_####` in `MJ m^-2 h^-1`.
+3. Coupling decision: ET and snowmelt consume the same daily radiation
+   authority (`rad`/`RA`/`radiation_ly`). A separate snow-only radiation scalar,
+   parser field, fitted radiation multiplier, or site-specific radiation
+   correction is invalid because it breaks `SC-EVAP-001#INV-EVAP-021` and the
+   no-radiation-tuning guard from `INV-SNOWFREEZE-052`.
+4. Anti-alias decision: Langleys/day, `MJ m^-2 d^-1`, and hourly
+   `MJ m^-2 h^-1` must remain distinct. A package or runtime path that treats
+   already-MJ daily radiation as `radly`, double converts daily radiation,
+   publishes Langley-scale values under `winter.hourly.rad_mj_m2_####`, clips a
+   high source value, or changes shared radiation to improve snowmelt fit must
+   fail or close `HOLD`.
+5. Handoff: SNOWDENSITY-05C may ratify albedo state and constants against this
+   source binding. SNOWDENSITY-05D may implement production opt-in melt only
+   after 05C is complete and must preserve this source/provenance lineage.
 
 ## CLIM05 Parsed Snow-Control Runtime Coupling Addendum
 
@@ -1352,6 +1401,7 @@ ratification. They are evaluation bands, not calibration objectives; the
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-26` | `77` | `Codex` | SNOWDENSITY-05B source-binding amendment: added `INV-SNOWFREEZE-053`, `OBL-SNOWFREEZE-P-028`, `winter_shortwave_daily_radly`, and the Shortwave Source Binding Addendum. The canonical openWEPP source is the existing climate `rad`/`radly` daily radiation seam in `Ly d^-1`, transformed through `SC-CLIMATE-001#INV-CLIMATE-013`; gridded-provider selection/spatialization remains outside engine ownership, ET and snowmelt share radiation authority, and snow-only/fitted/scaled/clipped/double-converted radiation is invalid. No production runtime code, parser surface, output schema, source selector, albedo constant, or default activation is ratified by this amendment. |
 | `2026-06-26` | `76` | `Codex` | SNOWDENSITY-05A contract/sign amendment: added `INV-SNOWFREEZE-052`, `OBL-SNOWFREEZE-P-027`, opt-in `snow_melt_model = legacy_coe | coe_shortwave_albedo_v1`, shortwave/albedo operand placeholders, no-radiation-tuning guard bound to `SC-CLIMATE-001#INV-CLIMATE-013`, explicit signed `melt_bmelt_in` trace convention, and negative-benchmark disposition for `dense_slow_melt_v1`. No production formula, albedo constants, radiation source, parser surface, output schema, or default activation is ratified by this amendment. |
 | `2026-06-25` | `75` | `Codex` | SNOWDENSITY-02 contract/ADR amendment: added `INV-SNOWFREEZE-051`, `OBL-SNOWFREEZE-P-026`, candidate `physics_bulk` state variables, candidate authority anchors, and the Snow-Density Physics-Bulk Candidate Envelope Addendum. `legacy_wepp` remains default; `physics_bulk` is opt-in candidate scope only, with no site-specific tuning and no production formula ratified by this amendment. |
 | `2026-06-25` | `74` | `Claude Code` | SNOWFROST-FIDELITY rubric amendment: added `INV-SNOWFREEZE-050` + the GAP-SNOWFREEZE-002 Snow/Frost Fidelity Evaluation Rubric Addendum (signature-based, multi-timescale, forcing-robustness-tiered, KGE-decomposed, profile-not-scalar evaluation), provisional `TOL-SNOWFREEZE-011`, and an irreducible-uncertainty budget; supersedes `TOL-SNOWFREEZE-009` as a standalone snow-model acceptance band. Reconciled the header `contract_version` (header was lagging at 72 vs the existing v73 H row). All thresholds provisional pending hydrology-reviewer ratification. |

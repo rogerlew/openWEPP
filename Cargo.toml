@@ -645,6 +645,10 @@ path = "tests/integration/snowdensity03_physics_bulk_offline_contract.rs"
 name = "snowdensity05a_melt_contract_guard"
 path = "tests/integration/snowdensity05a_melt_contract_guard.rs"
 
+[[test]]
+name = "snowdensity05b_shortwave_source_contract"
+path = "tests/integration/snowdensity05b_shortwave_source_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

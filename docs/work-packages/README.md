@@ -13,6 +13,18 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-05b-shortwave-source-binding-001/` is complete as
+  SNOWDENSITY-05B, the shortwave source-binding gate. It amended
+  `SC-SNOWFREEZE-001` to v77 with `INV-SNOWFREEZE-053`,
+  `OBL-SNOWFREEZE-P-028`, `winter_shortwave_daily_radly`, and the Shortwave
+  Source Binding Addendum. The canonical openWEPP source is the existing daily
+  climate `rad`/`radly` field in `Ly d^-1`; upstream gridded-provider
+  selection/spatialization remains outside engine ownership; transformation is
+  the existing `SC-CLIMATE-001#INV-CLIMATE-013` path into
+  `winter.hourly.rad_mj_m2_####`; and ET/snowmelt share daily radiation
+  authority. It changed no production runtime code, constants, parser surfaces,
+  output schemas, source selectors, albedo constants, or defaults. The next
+  route is `SNOWDENSITY-05C Albedo State Core`.
 - `20260625-snowdensity-05-melt-modernization-contract-first-001/` is complete
   as SNOWDENSITY-05A, the melt contract/sign-reconciliation gate. It amended
   `SC-SNOWFREEZE-001` to v76 with `INV-SNOWFREEZE-052`,
@@ -21,8 +33,8 @@ State as of `2026-06-26`:
   operand placeholders, no-radiation-tuning guard, explicit signed
   `melt_bmelt_in` convention, and negative-benchmark disposition for
   `dense_slow_melt_v1`. It changed no production runtime code, constants,
-  parser surfaces, output schemas, or defaults. The next route is
-  `SNOWDENSITY-05B Shortwave Source Binding`.
+  parser surfaces, output schemas, or defaults. Its next-route note is now
+  superseded by `SNOWDENSITY-05B Shortwave Source Binding`.
 - `20260625-snowdensity-04-offline-adjudication-loop-001/` is complete as the
   offline `physics_bulk` adjudication package. It added global named
   candidate variants, `tools/snowfreeze_observed/physics_bulk_adjudication.py`,
