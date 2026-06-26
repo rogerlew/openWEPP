@@ -13,6 +13,16 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-05c-albedo-state-core-001/` is complete as
+  SNOWDENSITY-05C, the albedo-state core gate. It amended
+  `SC-SNOWFREEZE-001` to v78 with `INV-SNOWFREEZE-054`,
+  `OBL-SNOWFREEZE-P-029`, `brock2000_temperature_age_v1`, accumulated
+  positive-temperature age `Ta`, a fresh-snow reset threshold, `[0, 0.85]`
+  albedo bounds, and missing-state fail-closed behavior for active future
+  `coe_shortwave_albedo_v1` snowpack. It added a standalone typed Rust
+  albedo-state core and changed no routed melt, production wiring, parser
+  surface, output schema, radiation source, or default. The next route is
+  `SNOWDENSITY-05D Opt-In CoE Melt Implementation`.
 - `20260626-snowdensity-05b-shortwave-source-binding-001/` is complete as
   SNOWDENSITY-05B, the shortwave source-binding gate. It amended
   `SC-SNOWFREEZE-001` to v77 with `INV-SNOWFREEZE-053`,
@@ -24,7 +34,7 @@ State as of `2026-06-26`:
   `winter.hourly.rad_mj_m2_####`; and ET/snowmelt share daily radiation
   authority. It changed no production runtime code, constants, parser surfaces,
   output schemas, source selectors, albedo constants, or defaults. The next
-  route is `SNOWDENSITY-05C Albedo State Core`.
+  route note is superseded by `SNOWDENSITY-05C Albedo State Core`.
 - `20260625-snowdensity-05-melt-modernization-contract-first-001/` is complete
   as SNOWDENSITY-05A, the melt contract/sign-reconciliation gate. It amended
   `SC-SNOWFREEZE-001` to v76 with `INV-SNOWFREEZE-052`,
