@@ -14,7 +14,7 @@ const PACKAGE: &str =
 fn snowdensity06_contract_records_density_only_gate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 84",
+        "contract_version: 85",
         "INV-SNOWFREEZE-058",
         "SNOWDENSITY-06 density-only Anderson/SNOBAL compaction candidate",
         "`density_compaction_v1`",

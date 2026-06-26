@@ -21,6 +21,10 @@ pub use api::{
 pub use constants::*;
 pub use errors::{HillslopeCliError, ReleaseLintError, ReleaseMetadataError, RunnerError};
 pub use hillslope::{
+    CoeBoundDensityReport, CoeBoundDensityRequest, CoeBoundDensitySummary,
+    run_coe_bound_density_snowbench,
+};
+pub use hillslope::{
     CoeMeltConstants, CoeMeltModel, CoeMeltReport, CoeMeltRequest, CoeMeltSummary,
     run_coe_melt_snowbench,
 };

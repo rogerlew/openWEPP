@@ -13,6 +13,22 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-06b-coe-bound-density-replay-001/` is complete as
+  SNOWDENSITY-06B, the CoE-bound density replay gate. It amended
+  `SC-SNOWFREEZE-001` to v85 with `INV-SNOWFREEZE-059`,
+  `OBL-SNOWFREEZE-P-034`, and the 06B addendum; added diagnostic-only
+  `openwepp-snowbench coe-bound-density`; replayed `density_compaction_v1`
+  against fixed `legacy_coe` and `coe_shortwave_albedo_v1` CoE
+  melt/liquid/SWE-loss boundaries; and ran five-site SNOTEL adjudication.
+  Both CoE-bound candidates preserve daily CoE SWE identity
+  (`max_abs_coe_swe_identity_residual_m ~= 4.44e-16`) and beat openWEPP/legacy
+  as-built on whole-rubric and density-cell gates. Best result:
+  `coe_bound_density_compaction_v1_coe_shortwave_albedo_v1`, robust failures
+  `9 -> 5`, robust score `84 -> 110`, density failures `9 -> 5`, density
+  score `16 -> 41`. This is an offline promotion-candidate result only; no
+  default activation, production runtime selector, parser/runfile/CLI selector,
+  output schema, mixed/deciduous canopy adjudication, or frost attribution
+  changed. The next route is SNOWDENSITY-07 runtime opt-in.
 - `20260626-snowdensity-06-density-compaction-001/` is complete as
   SNOWDENSITY-06, the density-compaction gate. It amended
   `SC-SNOWFREEZE-001` to v84 with `INV-SNOWFREEZE-058`,
@@ -24,9 +40,8 @@ State as of `2026-06-26`:
   against legacy/as-built (`fail 9 -> 7`, score `16 -> 22`) without site tuning
   or melt changes, but whole-rubric promotion remains blocked (`robust fail
   9 -> 18`, score `84 -> 46`). No runtime/default activation, parser/runfile/CLI
-  activation selector, output schema, or frost attribution changed. The next
-  route is an offline CoE-bound density replay before any SNOWDENSITY-07
-  runtime opt-in.
+  activation selector, output schema, or frost attribution changed. The
+  completed SNOWDENSITY-06B package supersedes this next-route note.
 - `20260626-snowdensity-05g-harness-fidelity-rerun-001/` is complete as
   SNOWDENSITY-05G, the harness-fidelity rerun gate. It amended
   `SC-SNOWFREEZE-001` to v83 with `INV-SNOWFREEZE-057`,

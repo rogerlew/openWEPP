@@ -41,6 +41,7 @@ fn physics_bulk_snowbench_runs_offline_for_snotel_fixture() {
 #[test]
 fn physics_bulk_is_confined_to_snowbench_and_diagnostic_surfaces() {
     let allowed = [
+        "crates/openwepp-runner/src/hillslope/snowbench_coe_density.rs",
         "crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs",
         "crates/openwepp-runner/src/hillslope/mod.rs",
         "crates/openwepp-runner/src/lib.rs",
@@ -48,6 +49,8 @@ fn physics_bulk_is_confined_to_snowbench_and_diagnostic_surfaces() {
         "tests/integration/snowdensity02_contract_adr_guard.rs",
         "tests/integration/snowdensity03_physics_bulk_offline_contract.rs",
         "tests/integration/snowdensity06_density_compaction.rs",
+        "tests/integration/snowdensity06b_coe_bound_density_replay.rs",
+        "tools/snowfreeze_observed/coe_bound_density_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_snotel_profile.py",
     ];

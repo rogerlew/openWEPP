@@ -673,6 +673,10 @@ path = "tests/integration/snowdensity05g_harness_fidelity_rerun.rs"
 name = "snowdensity06_density_compaction"
 path = "tests/integration/snowdensity06_density_compaction.rs"
 
+[[test]]
+name = "snowdensity06b_coe_bound_density_replay"
+path = "tests/integration/snowdensity06b_coe_bound_density_replay.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

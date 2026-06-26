@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 
 use openwepp_runner::{
-    CoeMeltModel, CoeMeltRequest, PhysicsBulkRequest, PhysicsBulkVariant, SnowbenchExportRequest,
-    export_pysnobal_inputs, run_coe_melt_snowbench, run_physics_bulk_snowbench,
+    CoeBoundDensityRequest, CoeMeltModel, CoeMeltRequest, PhysicsBulkRequest, PhysicsBulkVariant,
+    SnowbenchExportRequest, export_pysnobal_inputs, run_coe_bound_density_snowbench,
+    run_coe_melt_snowbench, run_physics_bulk_snowbench,
 };
 
 fn main() {
@@ -71,6 +72,9 @@ fn run() -> Result<(), String> {
         }
         "coe-melt" => {
             run_coe_melt(run_dir, run_file, output_dir, variant, coe_model)?;
+        }
+        "coe-bound-density" => {
+            run_coe_bound_density(run_dir, run_file, output_dir, variant, coe_model)?;
         }
         _ => return Err(format!("SNOWBENCH-E-CLI unrecognized command {command}")),
     }
@@ -156,6 +160,28 @@ fn run_coe_melt(
     Ok(())
 }
 
+fn run_coe_bound_density(
+    run_dir: PathBuf,
+    run_file: Option<PathBuf>,
+    output_dir: PathBuf,
+    variant: PhysicsBulkVariant,
+    coe_model: CoeMeltModel,
+) -> Result<(), String> {
+    let report = run_coe_bound_density_snowbench(&CoeBoundDensityRequest {
+        run_dir,
+        run_file,
+        output_dir,
+        coe_model,
+        density_variant: variant,
+    })
+    .map_err(|error| error.to_string())?;
+    println!(
+        "ran {} for {} hourly rows across {} day(s) to {}",
+        report.model_id, report.hourly_row_count, report.day_count, report.output_dir
+    );
+    Ok(())
+}
+
 fn next_path(
     args: &mut impl Iterator<Item = String>,
     flag: &'static str,
@@ -167,6 +193,6 @@ fn next_path(
 
 fn print_help() {
     println!(
-        "openwepp-snowbench <export-pysnobal|physics-bulk|coe-melt> --run-dir <path> [--run-file <path>] --output-dir <path> [--variant <candidate_v1|slow_melt_v1|dense_slow_melt_v1|cold_dense_slow_melt_v1|density_compaction_v1>] [--model <legacy_coe|coe_shortwave_albedo_v1>]"
+        "openwepp-snowbench <export-pysnobal|physics-bulk|coe-melt|coe-bound-density> --run-dir <path> [--run-file <path>] --output-dir <path> [--variant <candidate_v1|slow_melt_v1|dense_slow_melt_v1|cold_dense_slow_melt_v1|density_compaction_v1>] [--model <legacy_coe|coe_shortwave_albedo_v1>]"
     );
 }

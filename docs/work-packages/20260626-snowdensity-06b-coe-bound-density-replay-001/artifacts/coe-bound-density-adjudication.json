@@ -1,0 +1,1775 @@
+{
+  "boundary_set": [
+    "legacy_coe",
+    "coe_shortwave_albedo_v1"
+  ],
+  "candidates": [
+    {
+      "cell_comparison": {
+        "legacy_as_built": {
+          "better": 14,
+          "equal": 28,
+          "unpaired": 0,
+          "worse": 3
+        },
+        "openwepp_as_built": {
+          "better": 13,
+          "equal": 30,
+          "unpaired": 0,
+          "worse": 2
+        },
+        "pysnobal": {
+          "better": 31,
+          "equal": 5,
+          "unpaired": 9,
+          "worse": 0
+        }
+      },
+      "coe_boundary_model": "legacy_coe",
+      "counts_by_label": {
+        "fail": 6,
+        "marginal": 17,
+        "pass": 12,
+        "strong": 30,
+        "unavailable": 15
+      },
+      "density_cell_profile": {
+        "available_cell_count": 20,
+        "cell_ids": [
+          "cross_cutting_bias_sign_consistency",
+          "long_term_cold_season_bulk_density",
+          "seasonal_densification_trajectory",
+          "seasonal_depth_swe_slope"
+        ],
+        "counts_by_label": {
+          "fail": 5,
+          "marginal": 1,
+          "pass": 3,
+          "strong": 11
+        },
+        "fail_count": 5,
+        "model_id": "coe_bound_density_compaction_v1_legacy_coe",
+        "ordinal_score": 40,
+        "site_summaries": [
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 6,
+            "site_id": "snotel_mica_creek_st_joe_id"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 9,
+            "site_id": "snotel_paradise_wa"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 8,
+            "site_id": "snotel_css_lab_ca"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 8,
+            "site_id": "snotel_snowbird_ut"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 9,
+            "site_id": "snotel_niwot_co"
+          }
+        ]
+      },
+      "density_variant": "density_compaction_v1",
+      "forcing_robust_counts_by_label": {
+        "fail": 5,
+        "marginal": 2,
+        "pass": 9,
+        "strong": 29,
+        "unavailable": 15
+      },
+      "max_abs_coe_swe_identity_residual_m": 4.440892098500626e-16,
+      "max_abs_unbounded_swe_residual_m": 0.1285,
+      "model_id": "coe_bound_density_compaction_v1_legacy_coe",
+      "profile_output_dir": "/home/workdir/openWEPP/target/snowdensity06b_coe_bound_density/boundaries/legacy_coe",
+      "robust_available_cell_count": 45,
+      "robust_fail_count": 5,
+      "robust_ordinal_score": 107,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 2,
+            "pass": 3,
+            "strong": 3,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 17,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "strong": 8,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 24,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 2,
+            "strong": 6,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 22,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 3,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 21,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 1,
+            "strong": 7,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 23,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    },
+    {
+      "cell_comparison": {
+        "legacy_as_built": {
+          "better": 15,
+          "equal": 28,
+          "unpaired": 0,
+          "worse": 2
+        },
+        "openwepp_as_built": {
+          "better": 14,
+          "equal": 30,
+          "unpaired": 0,
+          "worse": 1
+        },
+        "pysnobal": {
+          "better": 31,
+          "equal": 5,
+          "unpaired": 9,
+          "worse": 0
+        }
+      },
+      "coe_boundary_model": "coe_shortwave_albedo_v1",
+      "counts_by_label": {
+        "fail": 5,
+        "marginal": 18,
+        "pass": 9,
+        "strong": 33,
+        "unavailable": 15
+      },
+      "density_cell_profile": {
+        "available_cell_count": 20,
+        "cell_ids": [
+          "cross_cutting_bias_sign_consistency",
+          "long_term_cold_season_bulk_density",
+          "seasonal_densification_trajectory",
+          "seasonal_depth_swe_slope"
+        ],
+        "counts_by_label": {
+          "fail": 5,
+          "marginal": 1,
+          "pass": 2,
+          "strong": 12
+        },
+        "fail_count": 5,
+        "model_id": "coe_bound_density_compaction_v1_coe_shortwave_albedo_v1",
+        "ordinal_score": 41,
+        "site_summaries": [
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 6,
+            "site_id": "snotel_mica_creek_st_joe_id"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 9,
+            "site_id": "snotel_paradise_wa"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 8,
+            "site_id": "snotel_css_lab_ca"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 9,
+            "site_id": "snotel_snowbird_ut"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 9,
+            "site_id": "snotel_niwot_co"
+          }
+        ]
+      },
+      "density_variant": "density_compaction_v1",
+      "forcing_robust_counts_by_label": {
+        "fail": 5,
+        "marginal": 2,
+        "pass": 6,
+        "strong": 32,
+        "unavailable": 15
+      },
+      "max_abs_coe_swe_identity_residual_m": 4.440892098500626e-16,
+      "max_abs_unbounded_swe_residual_m": 0.1285,
+      "model_id": "coe_bound_density_compaction_v1_coe_shortwave_albedo_v1",
+      "profile_output_dir": "/home/workdir/openWEPP/target/snowdensity06b_coe_bound_density/boundaries/coe_shortwave_albedo_v1",
+      "robust_available_cell_count": 45,
+      "robust_fail_count": 5,
+      "robust_ordinal_score": 110,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 2,
+            "pass": 3,
+            "strong": 3,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 17,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "strong": 8,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 24,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 2,
+            "strong": 6,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 22,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "strong": 8,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 24,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 1,
+            "strong": 7,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 23,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    }
+  ],
+  "comparators": {
+    "legacy_as_built": {
+      "counts_by_label": {
+        "fail": 9,
+        "marginal": 20,
+        "pass": 14,
+        "strong": 22,
+        "unavailable": 15
+      },
+      "density_cell_profile": {
+        "available_cell_count": 20,
+        "cell_ids": [
+          "cross_cutting_bias_sign_consistency",
+          "long_term_cold_season_bulk_density",
+          "seasonal_densification_trajectory",
+          "seasonal_depth_swe_slope"
+        ],
+        "counts_by_label": {
+          "fail": 9,
+          "marginal": 7,
+          "pass": 3,
+          "strong": 1
+        },
+        "fail_count": 9,
+        "model_id": "legacy_as_built",
+        "ordinal_score": 16,
+        "site_summaries": [
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 4,
+            "site_id": "snotel_mica_creek_st_joe_id"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              }
+            ],
+            "fail_count": 4,
+            "ordinal_score": 0,
+            "site_id": "snotel_paradise_wa"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 3,
+            "site_id": "snotel_css_lab_ca"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              }
+            ],
+            "fail_count": 2,
+            "ordinal_score": 2,
+            "site_id": "snotel_snowbird_ut"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 7,
+            "site_id": "snotel_niwot_co"
+          }
+        ]
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 9,
+        "marginal": 8,
+        "pass": 8,
+        "strong": 20,
+        "unavailable": 15
+      },
+      "model_id": "legacy_as_built",
+      "robust_available_cell_count": 45,
+      "robust_fail_count": 9,
+      "robust_ordinal_score": 84,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 2,
+            "strong": 3,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 16,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 14,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 17,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 2,
+            "marginal": 2,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 2,
+          "robust_ordinal_score": 16,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 3,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 21,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    },
+    "legacy_observed_density": {
+      "counts_by_label": {
+        "fail": 22,
+        "marginal": 18,
+        "pass": 10,
+        "strong": 15,
+        "unavailable": 15
+      },
+      "density_cell_profile": {
+        "available_cell_count": 20,
+        "cell_ids": [
+          "cross_cutting_bias_sign_consistency",
+          "long_term_cold_season_bulk_density",
+          "seasonal_densification_trajectory",
+          "seasonal_depth_swe_slope"
+        ],
+        "counts_by_label": {
+          "fail": 5,
+          "marginal": 4,
+          "pass": 5,
+          "strong": 6
+        },
+        "fail_count": 5,
+        "model_id": "legacy_observed_density",
+        "ordinal_score": 32,
+        "site_summaries": [
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 8,
+            "site_id": "snotel_mica_creek_st_joe_id"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 5,
+            "site_id": "snotel_paradise_wa"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 3,
+            "site_id": "snotel_css_lab_ca"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 7,
+            "site_id": "snotel_snowbird_ut"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 9,
+            "site_id": "snotel_niwot_co"
+          }
+        ]
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 10,
+        "marginal": 10,
+        "pass": 10,
+        "strong": 15,
+        "unavailable": 15
+      },
+      "model_id": "legacy_observed_density",
+      "robust_available_cell_count": 45,
+      "robust_fail_count": 10,
+      "robust_ordinal_score": 75,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 17,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "marginal": 2,
+            "pass": 2,
+            "strong": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 9,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 2,
+            "strong": 3,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 16,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "pass": 3,
+            "strong": 2,
+            "unavailable": 3
+          },
+          "robust_fail_count": 3,
+          "robust_ordinal_score": 13,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 1,
+            "pass": 2,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 20,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    },
+    "openwepp_as_built": {
+      "counts_by_label": {
+        "fail": 9,
+        "marginal": 20,
+        "pass": 14,
+        "strong": 22,
+        "unavailable": 15
+      },
+      "density_cell_profile": {
+        "available_cell_count": 20,
+        "cell_ids": [
+          "cross_cutting_bias_sign_consistency",
+          "long_term_cold_season_bulk_density",
+          "seasonal_densification_trajectory",
+          "seasonal_depth_swe_slope"
+        ],
+        "counts_by_label": {
+          "fail": 9,
+          "marginal": 7,
+          "pass": 3,
+          "strong": 1
+        },
+        "fail_count": 9,
+        "model_id": "openwepp_as_built",
+        "ordinal_score": 16,
+        "site_summaries": [
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 4,
+            "site_id": "snotel_mica_creek_st_joe_id"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              }
+            ],
+            "fail_count": 4,
+            "ordinal_score": 0,
+            "site_id": "snotel_paradise_wa"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 3,
+            "site_id": "snotel_css_lab_ca"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              }
+            ],
+            "fail_count": 2,
+            "ordinal_score": 2,
+            "site_id": "snotel_snowbird_ut"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 7,
+            "site_id": "snotel_niwot_co"
+          }
+        ]
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 9,
+        "marginal": 8,
+        "pass": 8,
+        "strong": 20,
+        "unavailable": 15
+      },
+      "model_id": "openwepp_as_built",
+      "robust_available_cell_count": 45,
+      "robust_fail_count": 9,
+      "robust_ordinal_score": 84,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 3,
+            "strong": 2,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 15,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 15,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 17,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 2,
+            "marginal": 2,
+            "pass": 1,
+            "strong": 4,
+            "unavailable": 3
+          },
+          "robust_fail_count": 2,
+          "robust_ordinal_score": 16,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "pass": 3,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 21,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    },
+    "openwepp_observed_density": {
+      "counts_by_label": {
+        "fail": 23,
+        "marginal": 17,
+        "pass": 13,
+        "strong": 12,
+        "unavailable": 15
+      },
+      "density_cell_profile": {
+        "available_cell_count": 20,
+        "cell_ids": [
+          "cross_cutting_bias_sign_consistency",
+          "long_term_cold_season_bulk_density",
+          "seasonal_densification_trajectory",
+          "seasonal_depth_swe_slope"
+        ],
+        "counts_by_label": {
+          "fail": 5,
+          "marginal": 4,
+          "pass": 7,
+          "strong": 4
+        },
+        "fail_count": 5,
+        "model_id": "openwepp_observed_density",
+        "ordinal_score": 30,
+        "site_summaries": [
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 7,
+            "site_id": "snotel_mica_creek_st_joe_id"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 5,
+            "site_id": "snotel_paradise_wa"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 3,
+            "site_id": "snotel_css_lab_ca"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "pass",
+                "ordinal_score": 2
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 6,
+            "site_id": "snotel_snowbird_ut"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "strong",
+                "ordinal_score": 3
+              }
+            ],
+            "fail_count": 1,
+            "ordinal_score": 9,
+            "site_id": "snotel_niwot_co"
+          }
+        ]
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 11,
+        "marginal": 9,
+        "pass": 13,
+        "strong": 12,
+        "unavailable": 15
+      },
+      "model_id": "openwepp_observed_density",
+      "robust_available_cell_count": 45,
+      "robust_fail_count": 11,
+      "robust_ordinal_score": 71,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 2,
+            "marginal": 2,
+            "pass": 3,
+            "strong": 2,
+            "unavailable": 3
+          },
+          "robust_fail_count": 2,
+          "robust_ordinal_score": 14,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 4,
+            "marginal": 2,
+            "pass": 2,
+            "strong": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 4,
+          "robust_ordinal_score": 9,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 3,
+            "pass": 2,
+            "strong": 3,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 16,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "pass": 4,
+            "strong": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 3,
+          "robust_ordinal_score": 12,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 1,
+            "pass": 2,
+            "strong": 5,
+            "unavailable": 3
+          },
+          "robust_fail_count": 1,
+          "robust_ordinal_score": 20,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    },
+    "pysnobal": {
+      "counts_by_label": {
+        "fail": 44,
+        "marginal": 6,
+        "pass": 1,
+        "strong": 1,
+        "unavailable": 28
+      },
+      "density_cell_profile": {
+        "available_cell_count": 16,
+        "cell_ids": [
+          "cross_cutting_bias_sign_consistency",
+          "long_term_cold_season_bulk_density",
+          "seasonal_densification_trajectory",
+          "seasonal_depth_swe_slope"
+        ],
+        "counts_by_label": {
+          "fail": 12,
+          "marginal": 4
+        },
+        "fail_count": 12,
+        "model_id": "pysnobal",
+        "ordinal_score": 4,
+        "site_summaries": [
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              }
+            ],
+            "fail_count": 2,
+            "ordinal_score": 2,
+            "site_id": "snotel_mica_creek_st_joe_id"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              }
+            ],
+            "fail_count": 3,
+            "ordinal_score": 1,
+            "site_id": "snotel_paradise_wa"
+          },
+          {
+            "available_cell_count": 0,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "unavailable",
+                "ordinal_score": null
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "unavailable",
+                "ordinal_score": null
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "unavailable",
+                "ordinal_score": null
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "unavailable",
+                "ordinal_score": null
+              }
+            ],
+            "fail_count": 0,
+            "ordinal_score": 0,
+            "site_id": "snotel_css_lab_ca"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "marginal",
+                "ordinal_score": 1
+              }
+            ],
+            "fail_count": 3,
+            "ordinal_score": 1,
+            "site_id": "snotel_snowbird_ut"
+          },
+          {
+            "available_cell_count": 4,
+            "cells": [
+              {
+                "cell_id": "long_term_cold_season_bulk_density",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_densification_trajectory",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "seasonal_depth_swe_slope",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              },
+              {
+                "cell_id": "cross_cutting_bias_sign_consistency",
+                "ordinal_label": "fail",
+                "ordinal_score": 0
+              }
+            ],
+            "fail_count": 4,
+            "ordinal_score": 0,
+            "site_id": "snotel_niwot_co"
+          }
+        ]
+      },
+      "forcing_robust_counts_by_label": {
+        "fail": 28,
+        "marginal": 6,
+        "pass": 1,
+        "strong": 1,
+        "unavailable": 24
+      },
+      "model_id": "pysnobal",
+      "robust_available_cell_count": 36,
+      "robust_fail_count": 28,
+      "robust_ordinal_score": 11,
+      "site_summaries": [
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 6,
+            "marginal": 3,
+            "unavailable": 3
+          },
+          "robust_fail_count": 6,
+          "robust_ordinal_score": 3,
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 7,
+            "marginal": 2,
+            "unavailable": 3
+          },
+          "robust_fail_count": 7,
+          "robust_ordinal_score": 2,
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "robust_available_cell_count": 0,
+          "robust_counts_by_label": {
+            "unavailable": 12
+          },
+          "robust_fail_count": 0,
+          "robust_ordinal_score": 0,
+          "site_id": "snotel_css_lab_ca"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 7,
+            "marginal": 1,
+            "strong": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 7,
+          "robust_ordinal_score": 4,
+          "site_id": "snotel_snowbird_ut"
+        },
+        {
+          "robust_available_cell_count": 9,
+          "robust_counts_by_label": {
+            "fail": 8,
+            "pass": 1,
+            "unavailable": 3
+          },
+          "robust_fail_count": 8,
+          "robust_ordinal_score": 2,
+          "site_id": "snotel_niwot_co"
+        }
+      ]
+    }
+  },
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-058 INV-SNOWFREEZE-059 OBL-SNOWFREEZE-P-034",
+  "h_comparator_json": "/home/workdir/openWEPP/target/snowfrost_fidelity_h/three_way_comparison.json",
+  "no_site_constants": true,
+  "runtime_coupling": "none; offline CoE-bound density replay only",
+  "schema": "snowdensity06b-coe-bound-density-adjudication-v1",
+  "snowbench_binary": "/home/workdir/openWEPP/target/debug/openwepp-snowbench",
+  "summary": {
+    "beats_legacy_as_built": true,
+    "beats_openwepp_as_built": true,
+    "best_boundary": "coe_shortwave_albedo_v1",
+    "best_model": "coe_bound_density_compaction_v1_coe_shortwave_albedo_v1",
+    "disposition": "PROMOTION-CANDIDATE",
+    "promotion_rule": "candidate robust_fail_count must be lower, robust_ordinal_score not lower, density fail_count lower, and density ordinal_score not lower than comparator"
+  },
+  "variant": "density_compaction_v1"
+}
