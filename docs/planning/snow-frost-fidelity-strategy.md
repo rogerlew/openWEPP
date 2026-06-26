@@ -11,7 +11,8 @@ code. This file is planning guidance, not canonical science authority. Canonical
 authority remains `SC-SNOWFREEZE-001`, the array-native runtime specification,
 and ADR-0011 / ADR-0017 / ADR-0024 / ADR-0026 until amended. The 2026-06-25
 amendment adds the melt-model decision (§2), guardrails (§4), physics target
-(§5), revised work-package sequence (§7), and references (§10).
+(§5), revised work-package sequence (§7), and references (§11).
+A 2026-06-26 amendment adds the melt-tuning site set and physics guidance (§10).
 
 ## 0. TL;DR
 
@@ -339,6 +340,8 @@ profile can hide a wrong mechanism.
 - SNOTEL fixtures, normalized observations, and observed density:
   `tests/fixtures/snotel_observed/`.
 - Frost-depth fixtures: `tests/fixtures/snowfreeze_observed/`.
+- Canopy-gradient melt-tuning fixtures (8 sites, conifer→mixed→deciduous→
+  pasture): `tests/fixtures/cancov_forest/` (see §10).
 - Rubric authority: `SC-SNOWFREEZE-001` `INV-SNOWFREEZE-050` +
   `TOL-SNOWFREEZE-011`.
 - Correspondence authority: `INV-SNOWFREEZE-048` for depth and
@@ -388,13 +391,160 @@ profile can hide a wrong mechanism.
 - Whether the FDHP01 F4 density discrepancy is still relevant after SNOWSCI-S1
   storage single-sourcing and H's openWEPP≈legacy density evidence.
 
-## 10. References / Authority
+## 10. Melt-Tuning Site Set and Physics Guidance
+
+Added 2026-06-26. The SNOWDENSITY arc closed the SNOTEL **density** gap (06B:
+robust fail `9 -> 5`, beats both as-builts, CoE SWE identity to machine epsilon)
+but left two **melt / accumulation** questions open: the CoE shortwave/albedo
+modernization is **neutral at high evergreen `cancov ≈ 0.9`** (05G) and
+**untested at less-attenuated winter canopies**; and the non-SNOTEL maritime frost
+sites **over-accumulate snow** (08/09
+`NON-SNOTEL-OPT-IN-SNOW-CONTROL-FAILED`). Density compaction did not clear those
+positive residuals, so winter melt, rain-on-snow heat, and snow/rain partition are
+leading hypotheses, not yet adjudicated defects. This site set spans the canopy
+gradient needed to test those regimes without using density as compensation.
+
+### 10.1 Site set (in-repo: `tests/fixtures/cancov_forest/`)
+
+All eight are operator wepp.cloud builds with DAYMET + GRIDMET + CLIGEN + PRISM
+forcing. The current fixtures all run frost with `ksflag=1`: seven forest
+hillslopes were changed from `ksflag=0` to `1` for paired snow/frost diagnostics,
+while `sleepers_pasture_vt` already had `ksflag=1`.
+
+**Coniferous — high `cancov` control (extends `snotel_observed`):**
+
+| Fixture | Site (topaz→wepp, years) | Lat, Lon | Elev | Vegetation / climate | Snow data |
+|---|---|---|---|---|---|
+| `hjandrews_conifer_or` | HJ Andrews EF, OR (22→p2, 1980–2024) | 44.23, −122.17 | 410–1630 m | Douglas-fir / W. hemlock; **Pacific maritime, transient rain-snow** | EDI `MS007` under-canopy + `719:OR:SNTL` |
+| `tenderfoot_conifer_mt` | Tenderfoot Creek EF, MT (22→p2, 1980–2024) | 46.917, −110.850 | 1996–2261 m | Lodgepole / spruce-fir; N. Rockies continental | on-forest `1008`/`1009:MT:SNTL` (SWE+depth) |
+| `berthoud_conifer_co` † | Berthoud Summit / Fraser EF, CO (32→p4, 1986–2024) | 39.80, −105.78 | 3444 m | Engelmann spruce / subalpine fir / lodgepole; continental subalpine | `05K14S:CO:SNTL` (SWE+depth+soil-T) |
+| `morescreek_conifer_id` † | Mores Creek Summit, ID (42→p6, 1986–2024) | 43.933, −115.667 | 1857 m | Ponderosa / lodgepole; intermountain | `15F01S:ID:SNTL` (soil-T since 1992) |
+
+**Mixed / deciduous / pasture — lower `cancov`, the untested regime + the new managements:**
+
+| Fixture | Site (topaz→wepp, years) | Lat, Lon | Elev | Vegetation / winter canopy | Snow data |
+|---|---|---|---|---|---|
+| `marcell_mixed_mn` ★ | Marcell EF, MN (61→p10, 1980–2024) | 47.53, −93.47 | ~422 m | aspen/birch/maple + pine/spruce + tamarack + peat; **stratified conifer/deciduous/open** | USFS RDA `10.2737/RDS-2021-0016` (SWE+depth+frost by cover type, 1962–) |
+| `harvard_mixed_ma` ★ | Harvard Forest, MA (43→p8, 1980–2024) | 42.537, −72.173 | 348 m | red oak/red maple (leaf-off) + pine/hemlock | `HF155` SWE pillow + `HF237` depth/density by **hemlock/hardwood/open** + NEON soil-T |
+| `hubbardbrook_deciduous_nh` | Hubbard Brook EF, NH (62→p10, 1980–2024) | 43.945, −71.720 | 222–1015 m | northern hardwood (sugar maple/beech/birch) leaf-off; spruce-fir up high | EDI `knb-lter-hbr.27` (depth/SWE/frost, 1956–) + `2069:NH:SCAN` |
+| `sleepers_pasture_vt` | Sleepers River, VT (23→p3, 1980–2024) | 44.459, −72.092 | 200–670 m | mixed hardwood-conifer watershed; **fixture hillslope = pasture/clearing** | USGS `10.5066/P9NMQX70` (60-yr depth+SWE); pairs with W9 hardwood frost fixture |
+
+† RAP_TS-adjusted `cancov`. ★ **canopy-stratified observations** (paired open vs
+under-canopy snow at one site/climate). The current fixtures are one representative
+modeled hillslope per site; they become decisive canopy-attenuation evidence only
+after an explicit observation-stratum mapping or paired open/under-canopy model
+variants exist. Marcell + Harvard exercise the new wepppy **mixed-forest**
+management; Hubbard Brook the **deciduous** management.
+
+**Why this spread.** The confirmed raw fixture management values currently span
+conifer `cancov ≈ 0.90`, mixed `≈ 0.55`, and deciduous `≈ 0.20`; the Sleepers
+pasture runtime trajectory still needs to be archived before treating it as the
+lowest-cancov endpoint. Prior wepppy management validation suggested lower effective
+winter values for mixed/deciduous canopies (`≈ 0.44` / `≈ 0.07`), but those values
+are planning targets until the per-day runtime `cancov` projection is captured as
+evidence for these fixtures. Even the raw gradient exercises the CoE melt terms
+`amelt ∝ (1−cancov)` and `cmelt ∝ (1−0.8·cancov)` far more than the 05G evergreen
+case; the first gate is reconciling raw `.man` values, wepppy seasonal projection,
+and openWEPP runtime `cancov`. The climate axis is orthogonal and matters:
+**maritime, near-0 °C-DJF, rain-on-snow** (HJ Andrews, Sleepers, Harvard, Hubbard
+Brook) vs **cold continental** (Berthoud, Tenderfoot, Marcell, Mores Creek).
+
+### 10.2 Physics to consider for melt incorporation / tuning
+
+1. **Canopy attenuation is the first-order control across this set.** The CoE melt
+   already attenuates by `(1−cancov)` (radiation) and `(1−0.8·cancov)` (turbulent).
+   The melt result is only as good as the **per-day winter `cancov`** the
+   managements emit — step one is confirming the wepppy conifer/mixed/deciduous
+   managements produce the right winter `cancov` per fixture (cross-repo). Tune the
+   melt **coefficients/albedo**, never `cancov` to mask a snow error.
+2. **Shortwave + albedo (the modernization, now testable).** At less-attenuated
+   `cancov`, the `SRF·(1−albedo)·I` term is active — where the 05G-neutral
+   modernization could finally pay off. Levers: the Brock-2000 albedo state
+   (verify the five constants against `references/copyrighted/brock2000.pdf` —
+   05F review F5), snowfall albedo reset, and a **canopy shortwave transmissivity**
+   for under-canopy radiation. The ★ stratified sites can isolate this only after
+   the model-to-observation stratum mapping above is made explicit. Keep
+   `SRF ≈ 0.0094` near-physical (Carenzo CV ~6%); expose at most a melt multiplier
+   as a calibration handle.
+3. **Longwave / sub-canopy enhancement — the canopy sign-flip.** Under dense
+   conifer, melt is **longwave-dominated** (warm canopy emits downward); under
+   open/deciduous it is shortwave-dominated. Lundquist (2013): above ~1 °C DJF
+   mean, forest *reduces* snow duration (longwave wins); below it, forest *retains*
+   snow (shading wins). The current `(1−cancov)` shortwave attenuation does **not**
+   capture sub-canopy longwave — a forest longwave-enhancement term is the leading
+   candidate for the warm-maritime forest fixtures, and this set is built to test
+   it (it is also an Open Decision in §9).
+4. **Rain-on-snow / advective melt — a leading frost-blocker hypothesis.** The
+   non-SNOTEL over-accumulation is concentrated at **maritime, thaw-prone** sites
+   and density compaction did not close it. That is consistent with under-melt
+   during winter thaws and rain-on-snow, but phase partition, precipitation bias,
+   wind/undercatch, and representativeness remain live confounders. Check/tune the
+   CoE rain-heat term (warm rain at >0 °C transferring heat to the pack), verify
+   the snow/rain partition first, and confirm the pack ablates during
+   Vermont/Cascades January thaws. HJ Andrews (transient rain-snow) and
+   Sleepers/Harvard/Hubbard Brook (maritime) are the test bed; this is the most
+   direct route to adjudicating `NON-SNOTEL-OPT-IN-SNOW-CONTROL-FAILED`.
+5. **Snow/rain partition + accumulation.** Over-accumulation can also be too much
+   precip falling as snow; the rain-snow partition threshold is most sensitive at
+   near-0 °C maritime sites. Verify the partition before attributing all
+   over-accumulation to melt.
+6. **Forcing limits (carry the existing tiering, §4).** Absolute SWE/depth are
+   **forcing-limited** (DAYMET undercatch, high-relief lapse — Berthoud 3444 m,
+   Hubbard Brook 222–1015 m; point-vs-hillslope), so reported and discounted;
+   **density, densification, depth-SWE slope, onset/peak/melt-out timing, regime
+   ordering, bias sign** are forcing-robust and carry verdict weight
+   (`INV-SNOWFREEZE-050`). The ★ stratified open-vs-canopy observations are
+   forcing-robust *within* a site (same climate), but require explicit modeled
+   stratum mapping before they carry decisive canopy-attenuation verdicts.
+
+### 10.3 Work-Package Tuning Sequence
+
+Treat melt/canopy work as a short sequence of evidence-gated work packages, not as
+a coefficient search. Each package must preserve the §4 discipline: physical
+defaults without required site calibration, no shared-radiation tuning, no
+validation-set fitting, opt-in or diagnostic confinement until ratified, and
+profile/signature scoring rather than absolute-magnitude promotion.
+
+1. **Canopy Projection Provenance.** Archive, for all eight `cancov_forest`
+   fixtures, the raw `.man` values, wepppy projected per-day winter `cancov`, and
+   openWEPP runtime `cancov`. Resolve the Sleepers pasture endpoint and any
+   mixed/deciduous raw-vs-projected mismatch before interpreting melt evidence.
+   Closure gate: per-fixture canopy trajectory evidence plus a disposition for
+   every mismatch; no melt-physics changes.
+2. **Canopy-Stratum Correspondence.** For Marcell and Harvard, map observed open /
+   deciduous / conifer or hemlock / hardwood strata to the modeled hillslope(s).
+   Decide whether one representative hillslope is defensible or whether paired
+   open/under-canopy model variants must be generated. Closure gate: explicit
+   observation-to-model stratum binding before those sites carry canopy verdicts.
+3. **Gradient Melt Adjudication.** Re-run the 05G-style melt adjudication across
+   the confirmed canopy gradient with `legacy_coe` and `coe_shortwave_albedo_v1`.
+   Answer only whether the shortwave/albedo modernization earns value outside the
+   high-evergreen regime. Closure gate: rubric profiles for conifer, mixed,
+   deciduous, and pasture regimes; no coefficient retuning.
+4. **Maritime Over-Accumulation Diagnosis.** Decompose HJ Andrews, Sleepers,
+   Harvard, and Hubbard Brook residuals into candidate causes: snow/rain
+   partition, rain-on-snow heat, winter-thaw melt, precipitation bias,
+   wind/undercatch, representativeness, and possible sub-canopy longwave.
+   Closure gate: ranked blocker disposition with evidence for which mechanisms are
+   defect-eligible versus forcing-limited.
+5. **Opt-In Physics Candidate Package(s).** Only after the diagnosis isolates a
+   defect-eligible mechanism, implement one candidate physics lever per package
+   unless the write set is mechanically inseparable: rain-heat repair, partition
+   repair, sub-canopy longwave, or canopy shortwave transmissivity. Closure gate:
+   conservation, independent operand reconstruction, rollback/default isolation,
+   and rubric improvement without site constants.
+6. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
+   `coe_shortwave_albedo_v1` and any added opt-in melt lever. Closure gate:
+   SNOTEL plus non-SNOTEL rubric profiles, explicit frost-attribution impact, and
+   contract amendments for any production activation.
+
+## 11. References / Authority
 
 DOIs below are from the 2026-06-25 literature sweeps (two independent research
 passes, load-bearing items cross-verified). Verify any DOI on retrieval; a few
 forest-canopy DOIs were agent-inferred and are flagged.
 
-### 10.1 Internal authority
+### 11.1 Internal authority
 
 - `SC-SNOWFREEZE-001` (`INV-SNOWFREEZE-047/048/049/050`,
   `TOL-SNOWFREEZE-007..011`).
@@ -412,7 +562,7 @@ forest-canopy DOIs were agent-inferred and are flagged.
   `crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs`.
 - `docs/backlog/20260605-snow-code-deferred-science-review.md`.
 
-### 10.2 Literature in this repository
+### 11.2 Literature in this repository
 
 Vendored (`references/vendorable/`, redistributable — CC-BY or US-Gov public domain):
 
@@ -491,7 +641,7 @@ identities confirmed by title/page check):
   *J. Hydrology* 392:219–233. DOI `10.1016/j.jhydrol.2010.08.009`. —
   `varhola2010.pdf`.
 
-### 10.3 To track down (still not obtained)
+### 11.3 To track down (still not obtained)
 
 - **Hock, R. (2003).** Temperature index melt modelling in mountain areas.
   *J. Hydrology* 282:104–115. DOI `10.1016/S0022-1694(03)00257-9` (Elsevier).

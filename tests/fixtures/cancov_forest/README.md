@@ -12,17 +12,17 @@ SNOTEL clearings) and [`../snowfreeze_observed/`](../snowfreeze_observed/) (fros
 The SNOWDENSITY melt-modernization (CoE energy-balance + shortwave + Brock
 albedo) was found **neutral at high evergreen `cancov ≈ 0.9`** (SNOWDENSITY-05G:
 `amelt ∝ (1-cancov) ≈ 0.1`, so the shortwave/albedo term is ~90% attenuated).
-**It has never been tested in the low-`cancov` regime where it could matter** —
-deciduous leaf-off, mixed forest, and pasture, where `(1-cancov)` is large and
-the radiation/albedo melt physics is active. These fixtures provide exactly that
-regime. They also:
+**It has never been tested in the lower-`cancov` regime where it could matter** —
+deciduous leaf-off, mixed forest, and pasture, where `(1-cancov)` is larger and
+the radiation/albedo melt physics is more active. These fixtures provide exactly
+that regime. They also:
 
 - exercise the new wepppy **deciduous / mixed forest managements** (Harvard,
   Hubbard Brook — distinct winter-canopy phenology vs the evergreen default);
 - include a **pasture** site (Sleepers River) in the same maritime climate as the
   non-SNOTEL Vermont frost blocker (`NON-SNOTEL-OPT-IN-SNOW-CONTROL-FAILED`,
-  SNOWDENSITY-08/09), where modeled snow over-accumulates — likely a winter-melt
-  problem these low-`cancov` fixtures are positioned to probe.
+  SNOWDENSITY-08/09), where modeled snow over-accumulates — a winter-melt /
+  partition hypothesis these lower-`cancov` fixtures are positioned to probe.
 
 ## Site catalog
 
@@ -39,13 +39,13 @@ regime. They also:
 
 † **RAP_TS-adjusted `cancov`** in the source build (Berthoud, Mores Creek).
 
-The deciduous/mixed/pasture rows are the **low-`cancov`** half of the gradient
+The deciduous/mixed/pasture rows are the **lower-`cancov`** half of the gradient
 (the new regime); the four coniferous rows are the high-`cancov` control that
 extends `snotel_observed`.
 
 ## Frost activation (`ksflag`)
 
-The six forest builds inherited `ksflag = 0` (legacy "frost disabled for non-ag"
+The seven forest builds inherited `ksflag = 0` (legacy "frost disabled for non-ag"
 default); each was set to **`1`** so the frost model runs alongside snow — soil
 line `1 0` → `1 1`, comment `# ksflag -> 0` → `# ksflag -> 1`. This is the
 **only** modification to the as-built inputs. `sleepers_pasture_vt` already had
