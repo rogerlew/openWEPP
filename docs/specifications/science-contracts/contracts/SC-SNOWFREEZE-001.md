@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 82
+contract_version: 83
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -219,6 +219,7 @@ Out of scope:
 | INV-SNOWFREEZE-054 | SNOWDENSITY-05C albedo-state core: the accepted opt-in albedo model for future `coe_shortwave_albedo_v1` implementation is `brock2000_temperature_age_v1`, a temperature-age snow-albedo state derived from Brock et al. (2000) and not fitted to openWEPP SNOTEL or frost-site observations. The state carries `snow_albedo`, `snow_albedo_model_id`, and `snow_albedo_accumulated_positive_temperature_c_day` (`Ta`) and must reset `Ta` when fresh snowfall meets `snow_albedo_fresh_snow_reset_water_equiv_m`. For active snow cover, compute deep-snow albedo as `0.713 - 0.112 * log10(Ta)`, shallow-snow albedo as `underlying_albedo + 0.442 * exp(-0.058 * Ta)`, and combine them with `alpha = (1 - exp(-d / d_star)) * alpha_deep + exp(-d / d_star) * alpha_shallow`, where `d` is snow water-equivalent depth and `d_star = 0.024 m water equivalent`. Computed albedo is bounded to `0 <= snow_albedo <= 0.85`; the upper cap is Brock's reported fresh-snow bound and the lower bound is physical. `legacy_coe` must not consume or require this state. `coe_shortwave_albedo_v1` on active snow must fail closed on missing opt-in albedo state, missing model id, non-finite/negative `Ta`, non-finite/out-of-range albedo, or model-id mismatch; it must not silently synthesize a hidden default. This invariant ratifies the albedo state core only and does not authorize routed-melt wiring, default activation, radiation-source changes, or coefficient fitting. | hard-fail | REF-SNOWFREEZE-MELT-BROCK2000, INV-SNOWFREEZE-052, INV-SNOWFREEZE-053 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-055 | SNOWDENSITY-05D opt-in CoE melt implementation: `legacy_coe` remains the default and must preserve current routed-melt behavior. When `snow_melt_model = coe_shortwave_albedo_v1`, the only authorized production melt-term change is the CoE shortwave operand `amelt = 0.0607 * hrrad * (1 - snow_albedo) * (1 - cancov)`, where `hrrad` is the existing `winter.hourly.rad_mj_m2_####` source from `INV-SNOWFREEZE-053`, `snow_albedo` is the typed `brock2000_temperature_age_v1` state from `INV-SNOWFREEZE-054`, and the existing canopy factor remains unchanged. `bmelt`, `cmelt`, `dmelt`, signed raw melt, positive-melt depth cap, density gate, rain retention/release, corrected negative-melt redistribution, runtime SWE/depth/density mutation, WB12 `S`, and WB13 `RM`/liquid forcing lineage must remain the same algorithmic path. The opt-in path must carry the updated albedo state in typed runtime state and fail closed on missing/invalid active-snow state rather than falling back to `legacy_coe`. Acceptance requires independent typed-operand reconstruction of hourly raw melt, redistributed melt, routed `wmelt`, snowpack SWE loss, WB12 signed liquid forcing, and WB13 routed liquid forcing. | hard-fail | INV-SNOWFREEZE-052, INV-SNOWFREEZE-053, INV-SNOWFREEZE-054, INV-SNOWFREEZE-015, INV-SNOWFREEZE-022, REF-SNOWFREEZE-CH3-MELT, REF-SNOWFREEZE-MELT-BROCK2000 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-056 | SNOWDENSITY-05F melt closure / density handoff: SNOWDENSITY-05F closes the melt-modernization ladder without default activation. `legacy_coe` remains the default and rollback path; `coe_shortwave_albedo_v1` remains opt-in only and is accepted only as a density-facing interface for later `physics_bulk` density work. The density-facing interface is the selector `snow_melt_model`, the 05B hourly shortwave source `winter.hourly.rad_mj_m2_####`, 05C albedo state/model/age/reset operands, 05D absorbed-shortwave/raw-melt/redistributed-melt/routed-`wmelt`/SWE-loss/WB12/WB13 liquid-forcing operands, and runtime SWE/depth/density after-state. The activation evidence baseline requires both diagnostic replay and H as-built context: 05E's diagnostic legacy improvement (`robust_fail_count 13 -> 10`, `robust_ordinal_score 61 -> 84`) is insufficient by itself because H as-built context remained `robust_fail_count=9`, `robust_ordinal_score=84`. Those 05E diagnostic replay deltas are regime-limited because the diagnostic harness used `cancov = 0.0` and PySnobal-bridge radiation rather than the configured coniferous forest winter canopy cover of about `0.9` and the native/proven 05B shortwave source. Same-day future snowfall is an explicit cold-start albedo continuity case: when the opt-in path has active same-day snowfall after earlier snow-free hours, the producer must preserve typed albedo continuity through fresh-snow reset, carry a valid previous opt-in state, or fail closed rather than silently clearing albedo only because the morning state was snow-free. SNOWDENSITY-06 may consume the opt-in melt boundary without retuning melt, radiation, or coefficients, but its entry gate must first repair or prove harness fidelity for real per-day canopy cover, with configured coniferous forest winter `cancov` expected near `0.9`, and native/proven shortwave radiation; density packages must not use melt changes as density compensation and must not promote parser/runfile/CLI selectors, output schemas, or default activation without a later ratified activation package. | governance-hold | INV-SNOWFREEZE-050, INV-SNOWFREEZE-052, INV-SNOWFREEZE-053, INV-SNOWFREEZE-054, INV-SNOWFREEZE-055, INV-SNOWFREEZE-051, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-057 | SNOWDENSITY-05G harness-fidelity rerun: diagnostic `coe-melt` SNOTEL adjudication may supersede the 05E regime-limited replay only when the replay consumes configured openWEPP canopy state instead of a `cancov = 0.0` harness constant and publishes the shortwave lineage used for `hrrad`. For the configured coniferous validation fixtures, accepted representative-regime evidence must demonstrate `canopy_cover_fraction` near `0.9` for the winter replay, with the value sourced from the generated openWEPP runtime surface or an explicitly equivalent per-day growth-state series. Shortwave evidence must either consume the native `winter.hourly.rad_mj_m2_####` source from `INV-SNOWFREEZE-053` or prove the PySnobal bridge inversion is like-for-like by recording `net_solar_Wm-2 = native_shortwave_MJ_m-2_h-1 * 1_000_000 / 3600 * 0.8` and `hrrad = net_solar_Wm-2 * 3600 / 1_000_000 / 0.8`, with no fitted radiation scalar. The representative 05G rerun supersedes the 05E promotion-candidate context with a `NON-PROMOTION` disposition for default activation: `legacy_coe` and `coe_shortwave_albedo_v1` both have `robust_fail_count=9`, while the opt-in ordinal score rises only from `84` to `86`. The 05G rerun does not authorize default activation, parser/runfile/CLI selectors, output schemas, coefficient retuning, density-physics changes, or frost attribution. | hard-fail | INV-SNOWFREEZE-050, INV-SNOWFREEZE-053, INV-SNOWFREEZE-055, INV-SNOWFREEZE-056, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Porting-Fidelity Authority
 
@@ -550,6 +551,15 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
   continuity by fresh-snow reset, valid previous opt-in carry, or typed
   fail-closed disposition.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-032: Any diagnostic replay or density package using
+  SNOWDENSITY-05G melt evidence must carry the representative-regime harness
+  proof forward: configured coniferous validation fixtures must not be scored
+  with `cancov = 0.0`; replay artifacts must publish the canopy source,
+  representative canopy value or series summary, shortwave source, and
+  bridge-inversion identity when the PySnobal forcing file is used as the
+  transport surface. This proof is evidence for adjudication only and does not
+  create a production activation selector.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -826,6 +836,34 @@ changes.
    05F post-review disposition. The deep-snow intercept/log coefficient,
    shallow addend/decay coefficient, `2.4 cm w.e.` transition scale (`0.024 m`
    water equivalent), and upper albedo bound `0.85` match the local reference.
+
+## SNOWDENSITY-05G Harness Fidelity Rerun Addendum
+
+Status: draft (2026-06-26). This addendum repairs the diagnostic evidence
+surface identified by SNOWDENSITY-05F. It does not change production defaults,
+production parser/runfile/CLI surfaces, output schemas, melt coefficients,
+albedo constants, shared radiation forcing, density physics, or frost verdicts.
+
+1. Canopy source: `openwepp-snowbench coe-melt` replay must consume the
+   configured openWEPP runtime canopy value for the validation fixture. The
+   previous `cancov = 0.0` harness constant is invalid representative-regime
+   evidence for configured coniferous-forest fixtures whose winter canopy is
+   expected near `0.9`.
+2. Shortwave source/proof: if the replay continues to transport forcing through
+   the PySnobal forcing CSV, it must publish the bridge identity proving that
+   the replayed `hrrad` is the original openWEPP hourly shortwave after exact
+   inversion of `net_solar = hrrad * 1_000_000 / 3600 * 0.8`. No fitted
+   radiation scalar or snow-only radiation source is authorized.
+3. Rerun evidence: the five-site SNOTEL rubric profile was regenerated for
+   `legacy_coe` and `coe_shortwave_albedo_v1` after the canopy and shortwave
+   proofs were in place. Result: `NON-PROMOTION` for default activation because
+   forcing-robust failures did not improve (`9 -> 9`), even though ordinal score
+   improved slightly (`84 -> 86`). The result updates diagnostic context only;
+   default activation remains deferred to a later ratified activation package.
+4. Density handoff: SNOWDENSITY-06 may use the 05G rerun as its melt boundary
+   evidence only if the package artifacts carry the canopy and shortwave proof
+   and still preserve `legacy_coe` default/rollback and opt-in-only
+   `coe_shortwave_albedo_v1`.
 
 ## CLIM05 Parsed Snow-Control Runtime Coupling Addendum
 
@@ -1562,6 +1600,7 @@ ratification. They are evaluation bands, not calibration objectives; the
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-26` | `83` | `Codex` | SNOWDENSITY-05G harness-fidelity amendment: added `INV-SNOWFREEZE-057`, `OBL-SNOWFREEZE-P-032`, and the 05G addendum requiring diagnostic CoE melt replay to use configured coniferous canopy rather than `cancov = 0.0`, publish native/proven shortwave lineage or PySnobal bridge inversion identity, and rerun SNOTEL rubric evidence without default activation or density-physics changes. The representative rerun closed `NON-PROMOTION` for default activation (`robust_fail_count 9 -> 9`, `robust_ordinal_score 84 -> 86`). |
 | `2026-06-26` | `82` | `Codex` | Operator clarification for SNOWDENSITY-05F: the validation forest management should be configured as coniferous forest with winter `cancov` about `0.9`; therefore the 05E `cancov = 0.0` diagnostic replay is known non-representative, not merely an unverified live-canopy caveat. Updated the SNOWDENSITY-06 harness-fidelity gate accordingly. |
 | `2026-06-26` | `81` | `Codex` | SNOWDENSITY-05F independent-review disposition: labeled 05E diagnostic replay evidence as regime-limited because it used `cancov = 0.0` and PySnobal-bridge radiation, added the SNOWDENSITY-06 harness-fidelity entry gate for live per-day canopy and native/proven shortwave, and recorded local Brock-2000 constant verification. |
 | `2026-06-26` | `80` | `Codex` | SNOWDENSITY-05F melt closure / density handoff amendment: added `INV-SNOWFREEZE-056`, `OBL-SNOWFREEZE-P-031`, boundary disposition, and the 05F addendum. The accepted melt boundary remains opt-in only: `legacy_coe` stays default/rollback, `coe_shortwave_albedo_v1` may be consumed by density work only as a fixed typed interface with no melt/radiation retuning, same-day future snowfall must preserve opt-in albedo continuity or fail closed, and any default-candidate claim must report both 05E diagnostic replay and H as-built context. |

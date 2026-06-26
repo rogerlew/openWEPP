@@ -13,6 +13,24 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-05g-harness-fidelity-rerun-001/` is complete as
+  SNOWDENSITY-05G, the harness-fidelity rerun gate. It amended
+  `SC-SNOWFREEZE-001` to v83 with `INV-SNOWFREEZE-057`,
+  `OBL-SNOWFREEZE-P-032`, and the 05G addendum; corrected diagnostic
+  `openwepp-snowbench coe-melt` replay to consume configured runtime-surface
+  coniferous canopy (`cancov = 0.9` for all five SNOTEL fixtures) instead of
+  the prior `0.0` harness constant; recorded the PySnobal bridge shortwave
+  inversion identity as like-for-like; and reran five-site SNOTEL adjudication.
+  Result: representative-regime `NON-PROMOTION` for default activation because
+  robust failures did not improve (`9 -> 9`), despite ordinal score increasing
+  slightly (`84 -> 86`). The 05E promotion-candidate result is superseded as
+  regime-limited. External review endorsed the deflating result and clarified
+  that conifer neutrality should not retire `coe_shortwave_albedo_v1`; a
+  low-canopy/mixed-forest package with real per-day seasonal `cancov` is the
+  decisive melt-value fork. The next density route remains `SNOWDENSITY-06
+  Density Compaction`, using `legacy_coe` as the default/rollback baseline and
+  treating `coe_shortwave_albedo_v1` only as an opt-in diagnostic boundary
+  unless a later activation package reopens melt.
 - `20260626-snowdensity-05f-melt-closure-density-handoff-001/` is complete as
   SNOWDENSITY-05F, the melt-closure and density-handoff gate. It amended
   `SC-SNOWFREEZE-001` to v82 with `INV-SNOWFREEZE-056`,
@@ -26,9 +44,8 @@ State as of `2026-06-26`:
   `0.9`; and bound activation evidence to both 05E
   diagnostic replay and H as-built context. No default activation,
   parser/runfile/CLI selector, output schema, coefficient, radiation-source, or
-  density-physics change was made. The next route is `SNOWDENSITY-06 Density
-  Compaction`, starting with the harness-fidelity entry gate for configured
-  coniferous-forest canopy and native/proven shortwave.
+  density-physics change was made. The next route note is superseded by
+  `SNOWDENSITY-05G Harness Fidelity Rerun`.
 - `20260626-snowdensity-05e-melt-rubric-adjudication-001/` is complete as
   SNOWDENSITY-05E, the melt-rubric adjudication gate. It added diagnostic-only
   `openwepp-snowbench coe-melt` replay for `legacy_coe` and

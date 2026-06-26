@@ -36,7 +36,7 @@ fn coe_melt_snowbench_runs_both_models_as_diagnostic_only() {
                 .expect("missing coe_melt_summary.json"),
         )
         .expect("invalid coe_melt_summary.json");
-        assert_eq!(summary["schema"], "snowdensity05e-coe-melt-snowbench-v1");
+        assert_eq!(summary["schema"], "snowdensity05g-coe-melt-snowbench-v1");
         assert_eq!(summary["model_id"], model_name);
         assert_eq!(summary["no_site_constants"], true);
         assert!(
@@ -77,4 +77,5 @@ fn coe_melt_adjudication_tool_is_documented_as_non_activation() {
     assert!(script.contains("does not activate the opt-in model in production runtime"));
     assert!(script.contains("legacy_coe"));
     assert!(script.contains("coe_shortwave_albedo_v1"));
+    assert!(script.contains("SNOWDENSITY-05G"));
 }

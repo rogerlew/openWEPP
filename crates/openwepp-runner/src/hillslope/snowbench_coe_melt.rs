@@ -16,10 +16,10 @@ use super::snowbench::{
     PYSNOBAL_FORCING_COLUMNS, SnowbenchError, SnowbenchExportRequest, export_pysnobal_inputs,
 };
 
-const CONTRACT: &str = "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-052 INV-SNOWFREEZE-055";
+const CONTRACT: &str =
+    "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-052 INV-SNOWFREEZE-055 INV-SNOWFREEZE-057";
 const RADIATION_BRIDGE_NET_SHORTWAVE_FACTOR: f64 = 0.80;
 const STEFAN_BOLTZMANN_W_M2_K4: f64 = 5.670_374_419e-8;
-const DEFAULT_CANOPY_COVER_FRACTION: f64 = 0.0;
 const DEFAULT_UNDERLYING_SURFACE_ALBEDO: f64 = 0.2;
 
 #[derive(Debug, Clone)]
@@ -46,6 +46,10 @@ pub struct CoeMeltReport {
     pub no_site_constants: bool,
     pub output_dir: String,
     pub forcing_bridge_dir: String,
+    pub canopy_source: &'static str,
+    pub shortwave_source: &'static str,
+    pub shortwave_bridge_identity: &'static str,
+    pub shortwave_bridge_like_for_like: bool,
     pub day_count: usize,
     pub hourly_row_count: usize,
     pub positive_snow_hours: usize,
@@ -94,6 +98,7 @@ struct CoeMeltHourlyForcing {
 struct CoeMeltDayForcing {
     date: String,
     hourly: [DirectSnowHourlyForcing; 24],
+    canopy_cover_fraction: f64,
     dewpoint_c: f64,
     wind_m_s: f64,
     tmax_c: f64,
@@ -193,25 +198,29 @@ pub fn run_coe_melt_snowbench(request: &CoeMeltRequest) -> Result<CoeMeltReport,
     })?;
     let forcing_csv = forcing_bridge_dir.join("tg_0p0c_zg0p10m/forcing.csv");
     let hourly = read_coe_melt_forcing(&forcing_csv)?;
-    let days = group_daily_forcing(hourly)?;
+    let days = group_daily_forcing(hourly, export_report.primary_canopy_cover_fraction)?;
     let simulation = simulate_coe_melt(&days, request.model, snow.rst, snow.newsnw, snow.ssd)?;
     write_coe_melt_csv(
         &output_dir.join("coe_melt_snow.csv"),
         &simulation.daily_rows,
     )?;
     let report = CoeMeltReport {
-        schema: "snowdensity05e-coe-melt-snowbench-v1",
+        schema: "snowdensity05g-coe-melt-snowbench-v1",
         model_id: request.model.name(),
         contract: CONTRACT,
         runtime_coupling: "diagnostic snowbench replay of typed CoE melt path; no production activation",
         no_site_constants: true,
         output_dir: output_dir.display().to_string(),
         forcing_bridge_dir: export_report.output_dir,
+        canopy_source: "generated_openwepp_runtime_surface.cancov",
+        shortwave_source: "pysnobal_bridge_inversion_of_openwepp_winter_hourly_rad_mj_m2",
+        shortwave_bridge_identity: "net_solar_Wm-2 = hrrad_MJ_m-2_h-1 * 1000000 / 3600 * 0.8; replay hrrad_MJ_m-2_h-1 = net_solar_Wm-2 * 3600 / 1000000 / 0.8",
+        shortwave_bridge_like_for_like: true,
         day_count: simulation.daily_rows.len(),
         hourly_row_count: export_report.hourly_row_count,
         positive_snow_hours: simulation.positive_snow_hours,
         constants: CoeMeltConstants {
-            canopy_cover_fraction: DEFAULT_CANOPY_COVER_FRACTION,
+            canopy_cover_fraction: export_report.primary_canopy_cover_fraction,
             underlying_surface_albedo: DEFAULT_UNDERLYING_SURFACE_ALBEDO,
             radiation_bridge_net_shortwave_factor: RADIATION_BRIDGE_NET_SHORTWAVE_FACTOR,
         },
@@ -447,7 +456,15 @@ fn dewpoint_from_vapor_pressure(vapor_pressure_pa: f64) -> Result<f64, Snowbench
 
 fn group_daily_forcing(
     hourly_rows: Vec<CoeMeltHourlyForcing>,
+    canopy_cover_fraction: f64,
 ) -> Result<Vec<CoeMeltDayForcing>, SnowbenchError> {
+    if !(0.0..=1.0).contains(&canopy_cover_fraction) {
+        return Err(SnowbenchError::InvalidForcing {
+            detail: format!(
+                "CoE melt diagnostic canopy cover fraction must be in [0,1], observed {canopy_cover_fraction}"
+            ),
+        });
+    }
     let mut by_date: BTreeMap<String, Vec<CoeMeltHourlyForcing>> = BTreeMap::new();
     for row in hourly_rows {
         by_date.entry(row.date.clone()).or_default().push(row);
@@ -491,6 +508,7 @@ fn group_daily_forcing(
         days.push(CoeMeltDayForcing {
             date,
             hourly,
+            canopy_cover_fraction,
             dewpoint_c: dewpoint_sum / 24.0,
             wind_m_s: wind_sum / 24.0,
             tmax_c,
@@ -540,7 +558,7 @@ fn simulate_coe_melt(
             runtime_settle_day_count,
             tmax_c: day.tmax_c,
             tmin_c: day.tmin_c,
-            canopy_cover_fraction: DEFAULT_CANOPY_COVER_FRACTION,
+            canopy_cover_fraction: day.canopy_cover_fraction,
             wind_m_s: day.wind_m_s,
             dewpoint_c: day.dewpoint_c,
             snow_melt_model: model.snow_melt_model(),
@@ -655,6 +673,10 @@ fn write_markdown(path: &Path, report: &CoeMeltReport) -> Result<(), SnowbenchEr
          - Contract: `{}`\n\
          - Runtime coupling: `{}`\n\
          - No site constants: `{}`\n\
+         - Canopy source: `{}`\n\
+         - Canopy cover fraction: `{:.6}`\n\
+         - Shortwave source: `{}`\n\
+         - Shortwave bridge like-for-like: `{}`\n\
          - Days: `{}`\n\
          - Hourly rows: `{}`\n\
          - Total snow input: `{:.6}` m water equivalent\n\
@@ -668,6 +690,10 @@ fn write_markdown(path: &Path, report: &CoeMeltReport) -> Result<(), SnowbenchEr
         report.contract,
         report.runtime_coupling,
         report.no_site_constants,
+        report.canopy_source,
+        report.constants.canopy_cover_fraction,
+        report.shortwave_source,
+        report.shortwave_bridge_like_for_like,
         report.day_count,
         report.hourly_row_count,
         report.summary.total_snow_input_m,

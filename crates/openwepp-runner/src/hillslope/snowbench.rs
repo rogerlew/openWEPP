@@ -73,6 +73,7 @@ pub struct SnowbenchExportReport {
     pub lane_count: usize,
     pub total_precip_mass_mm: f64,
     pub total_snow_precip_mass_mm: f64,
+    pub primary_canopy_cover_fraction: f64,
     pub lane_ids: Vec<&'static str>,
 }
 
@@ -293,6 +294,15 @@ pub fn export_pysnobal_inputs(
     let mut sidecars = super::resolve_hillslope_sidecars(&hillslope_request, &inputs, &targets)?;
     let static_parts =
         super::build_static_runtime_surface_parts(&hillslope_request, &inputs, &mut sidecars)?;
+    let primary_canopy_cover_fraction =
+        require_state_scalar(&static_parts.runtime_surface.state_surface, "cancov")?;
+    if !(0.0..=1.0).contains(&primary_canopy_cover_fraction) {
+        return Err(SnowbenchError::InvalidInput {
+            detail: format!(
+                "runtime canopy cover fraction must be in [0,1], observed {primary_canopy_cover_fraction}"
+            ),
+        });
+    }
     let climate_request =
         build_hillslope_climate_runtime_request(&inputs.climate).map_err(|error| {
             SnowbenchError::ClimateRuntime {
@@ -351,6 +361,7 @@ pub fn export_pysnobal_inputs(
         lane_count: GROUND_TEMP_LANES.len(),
         total_precip_mass_mm: report_total_precip,
         total_snow_precip_mass_mm: report_total_snow,
+        primary_canopy_cover_fraction,
         lane_ids: GROUND_TEMP_LANES.iter().map(|lane| lane.id).collect(),
     };
     write_json(&output_dir.join("export_summary.json"), &report)?;

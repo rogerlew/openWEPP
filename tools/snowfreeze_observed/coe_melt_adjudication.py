@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Adjudicate diagnostic CoE melt variants against SNOTEL rubric profiles.
 
-This is SNOWDENSITY-05E evidence tooling. It runs the diagnostic snowbench
+This is SNOWDENSITY-05G evidence tooling. It runs the diagnostic snowbench
 ``coe-melt`` command for ``legacy_coe`` and ``coe_shortwave_albedo_v1`` across
 the five SNOTEL fixtures, then scores the existing INV-SNOWFREEZE-050 rubric.
 It does not activate the opt-in model in production runtime.
@@ -22,7 +22,7 @@ import snotel_density_three_way as snotel
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OBSERVATIONS = REPO_ROOT / "tests/fixtures/snotel_observed/observations"
-DEFAULT_OUTPUT = REPO_ROOT / "target/snowdensity05e_coe_melt_adjudication"
+DEFAULT_OUTPUT = REPO_ROOT / "target/snowdensity05g_coe_melt_adjudication"
 DEFAULT_SNOWBENCH_BINARY = REPO_ROOT / "target/debug/openwepp-snowbench"
 DEFAULT_H_COMPARATOR = REPO_ROOT / "target/snowfrost_fidelity_h/three_way_comparison.json"
 FIXTURE_ROOT = REPO_ROOT / "tests/fixtures/snotel_observed"
@@ -86,8 +86,8 @@ def adjudicate(
     h_comparators = load_h_comparators(h_comparator_json)
     disposition = disposition_from_profiles(opt_in, legacy)
     return {
-        "schema": "snowdensity05e-coe-melt-adjudication-v1",
-        "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-052 INV-SNOWFREEZE-055",
+        "schema": "snowdensity05g-coe-melt-adjudication-v1",
+        "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-052 INV-SNOWFREEZE-055 INV-SNOWFREEZE-057",
         "runtime_coupling": "diagnostic snowbench replay only; no production activation",
         "no_site_constants": True,
         "snowbench_binary": str(snowbench_binary),
@@ -140,8 +140,8 @@ def run_model_profile(
             }
         )
     return {
-        "schema": "snowdensity05e-coe-melt-snotel-profile-v1",
-        "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-055",
+        "schema": "snowdensity05g-coe-melt-snotel-profile-v1",
+        "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-055 INV-SNOWFREEZE-057",
         "model_id": model,
         "runtime_coupling": "diagnostic snowbench replay only",
         "no_site_constants": True,
@@ -350,7 +350,7 @@ def read_json(path: Path) -> dict[str, Any]:
 
 def render_markdown(report: dict[str, Any]) -> str:
     lines = [
-        "# SNOWDENSITY-05E CoE Melt Adjudication",
+        "# SNOWDENSITY-05G CoE Melt Adjudication",
         "",
         f"- Schema: `{report['schema']}`",
         f"- Contract: `{report['contract']}`",
