@@ -25,13 +25,28 @@ albedo, coefficients, or shared radiation to improve density signatures.
 
 ## Activation Evidence Baseline
 
-05E's improvement versus diagnostic legacy is necessary context but insufficient
-for default activation. Any default-candidate claim must report both:
+05E's improvement versus diagnostic legacy is regime-limited context but
+insufficient for default activation. Any default-candidate claim must report
+both:
 
 - 05E diagnostic replay:
   `robust_fail_count 13 -> 10`, `robust_ordinal_score 61 -> 84`.
 - H as-built context:
   `robust_fail_count=9`, `robust_ordinal_score=84`.
+
+Post-review caveat: the 05E diagnostic harness used `cancov = 0.0` and
+PySnobal-bridge radiation. Those conditions are not representative of the
+forested validation-site production regime until live snow-season canopy cover
+and native/proven shortwave are used.
+
+## Brock Constant Verification
+
+Ran: `pdftotext references/copyrighted/brock2000.pdf - | rg ...`.
+
+The local Brock paper confirms the 05C constants carried by
+`08_snow_albedo.rs`: deep-snow intercept/log coefficient, shallow addend/decay
+coefficient, `2.4 cm w.e.` transition scale (`0.024 m` water equivalent), and
+upper albedo bound `0.85`.
 
 ## Cold-Start Albedo
 

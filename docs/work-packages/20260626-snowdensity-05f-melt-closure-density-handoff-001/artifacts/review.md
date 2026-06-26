@@ -4,13 +4,18 @@ Evidence class: Static + Ran.
 
 ## Findings
 
-No blocking findings.
+No blocking findings after independent-review disposition.
 
 ## Checks
 
-- Static: `SC-SNOWFREEZE-001` v80 now binds `INV-SNOWFREEZE-056`,
+- Static: `SC-SNOWFREEZE-001` v81 now binds `INV-SNOWFREEZE-056`,
   `OBL-SNOWFREEZE-P-031`, invalid states, boundary disposition, addendum, and
   revision history.
+- Static: the Claude review caveats are dispositioned: 05E diagnostic replay is
+  labeled regime-limited because it used `cancov = 0.0` and PySnobal-bridge
+  radiation; SNOWDENSITY-06 now has a harness-fidelity entry gate.
+- Ran: Brock-2000 albedo constants were checked against the local PDF and match
+  the constants carried by `08_snow_albedo.rs`.
 - Static: 05F does not modify production physics, parser surfaces, output
   schemas, coefficients, radiation source handling, or default activation.
 - Ran: source scan confirms production default remains `LegacyCoe` and the

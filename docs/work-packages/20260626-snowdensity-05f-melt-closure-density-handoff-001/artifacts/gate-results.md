@@ -29,4 +29,16 @@ Evidence class: Ran.
 - `git diff --check`
   - Pass.
 - Work-package line count:
-  - Package + artifacts + prompt placeholders: `290` total lines.
+  - Package + artifacts + prompt placeholders after independent-review
+    disposition: `554` total lines.
+
+## Independent-Review Disposition Follow-Up
+
+- `pdftotext references/copyrighted/brock2000.pdf - | rg -n -C 3 "..."`
+  - Pass. Confirmed the Brock-2000 constants used by `08_snow_albedo.rs`.
+- `cargo fmt --check`
+  - Pass.
+- `cargo test --test snowdensity05f_melt_closure_handoff`
+  - Pass, `3 passed; 0 failed`.
+- `cargo test --test snowdensity02_contract_adr_guard --test snowdensity05a_melt_contract_guard --test snowdensity05b_shortwave_source_contract --test snowdensity05c_albedo_state_core --test snowdensity05d_opt_in_coe_melt`
+  - Pass, all focused contract guards passed.

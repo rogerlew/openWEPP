@@ -17,7 +17,7 @@ const PRODUCTION_BINS: &[&str] = &[
 fn snowdensity05f_contract_closes_melt_without_default_activation() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 80",
+        "contract_version: 81",
         "INV-SNOWFREEZE-056",
         "SNOWDENSITY-05F melt closure / density handoff",
         "SNOWDENSITY-05F closes the melt-modernization ladder without default activation",
@@ -25,8 +25,12 @@ fn snowdensity05f_contract_closes_melt_without_default_activation() {
         "`coe_shortwave_albedo_v1` remains opt-in only",
         "accepted only as a density-facing interface",
         "activation evidence baseline requires both diagnostic replay and H as-built context",
+        "05E diagnostic replay deltas are regime-limited",
+        "diagnostic harness used `cancov = 0.0` and PySnobal-bridge radiation",
+        "real per-day canopy cover and native/proven shortwave radiation",
         "same-day future snowfall",
         "SNOWDENSITY-06 may consume the opt-in melt boundary without retuning melt",
+        "Brock albedo constants",
         "OBL-SNOWFREEZE-P-031",
         "SNOWDENSITY-05F Melt Closure / Density Handoff Addendum",
     ] {
@@ -75,6 +79,10 @@ fn snowdensity05f_package_closes_with_density_handoff() {
         "Consume `coe_shortwave_albedo_v1` only as a fixed opt-in melt boundary.",
         "Do not retune melt, albedo, coefficients, or shared radiation for density.",
         "Report both 05E diagnostic replay and H as-built context before any default-candidate claim.",
+        "Treat the 05E diagnostic replay deltas as regime-limited",
+        "SNOWDENSITY-06 Entry Gate",
+        "Drive `cancov` from the real per-day growth state.",
+        "native openWEPP shortwave or prove the PySnobal-bridge radiation",
         "legacy_coe` remains the default and rollback path",
     ] {
         assert_contains(&handoff, marker, HANDOFF);
