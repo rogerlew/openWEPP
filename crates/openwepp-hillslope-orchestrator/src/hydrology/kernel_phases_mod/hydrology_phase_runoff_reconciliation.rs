@@ -204,10 +204,14 @@ pub(crate) fn run_runoff_reconciliation(
                 accumulation: 0.0,
                 rain_retained: 0.0,
                 rain_released: 0.0,
+                raw_melt: 0.0,
+                redistributed_melt: 0.0,
+                snowpack_state_loss: 0.0,
                 runtime_swe: 0.0,
                 runtime_depth_m: 0.0,
                 runtime_density_kg_m3: 0.0,
                 runtime_settle_day_count: 0.0,
+                snow_albedo_state_after: None,
                 hourly_state: Vec::new(),
             }
         };

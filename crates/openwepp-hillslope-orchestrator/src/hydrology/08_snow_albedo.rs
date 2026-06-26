@@ -52,6 +52,18 @@ pub struct SnowAlbedoState {
     pub accumulated_positive_temperature_c_day: f64,
 }
 
+impl SnowAlbedoState {
+    /// Validate a persisted albedo state before it is carried across typed runtime state.
+    pub fn validate(self) -> Result<(), SnowAlbedoError> {
+        validate_previous_state(self.model, self)
+    }
+
+    #[must_use]
+    pub fn shortwave_absorbed_fraction(self) -> f64 {
+        1.0 - self.albedo
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct SnowAlbedoUpdateInputs {
     pub melt_model: SnowMeltModel,

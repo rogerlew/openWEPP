@@ -2,7 +2,7 @@ use super::{
     DIRECT_AUDIT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT,
     DIRECT_R4D_PHASE_SPAN_COUNT, DIRECT_R4E_PHASE_SPAN_COUNT, DIRECT_R4F_PHASE_SPAN_COUNT,
     DIRECT_R4G_PHASE_SPAN_COUNT, DirectDayFrame, DirectRuntimeError, DirectSnowLaneState,
-    DirectSubsurfaceLayerState, WB11_ZERO_THRESHOLD, validate_finite,
+    DirectSubsurfaceLayerState, SnowAlbedoState, WB11_ZERO_THRESHOLD, validate_finite,
     validate_nonnegative_direct_m,
 };
 
@@ -525,11 +525,12 @@ impl DirectDayFrame {
         phase_entry_count += 1;
         self.snow_coupling = snow_coupling;
         if snow_coupling.snow_state_projected {
-            self.winter_column.snow = DirectSnowLaneState::from_runtime_values(
+            self.winter_column.snow = DirectSnowLaneState::from_runtime_values_and_albedo_state(
                 snow_coupling.runtime_swe_after_m,
                 snow_coupling.runtime_depth_after_m,
                 snow_coupling.runtime_density_after_kg_m3,
                 snow_coupling.runtime_settle_day_count_after,
+                snow_coupling.snow_albedo_state_after,
             );
             self.snow_runtime_carry = Some(self.winter_column.snow.into());
         }
@@ -544,7 +545,10 @@ impl DirectDayFrame {
             day_index: self.day_index,
             snow_coupling_m: self.snow_coupling_downstream_operands.snow_coupling_m,
             active_snow_coupling: self.snow_coupling_downstream_operands.active_snow_coupling,
+            raw_melt_m: self.snow_coupling_downstream_operands.raw_melt_m,
+            redistributed_melt_m: self.snow_coupling_downstream_operands.redistributed_melt_m,
             routed_melt_m: self.snow_coupling_downstream_operands.routed_melt_m,
+            snowpack_swe_loss_m: self.snow_coupling_downstream_operands.snowpack_swe_loss_m,
             post_winter_rain_m: self.snow_coupling_downstream_operands.post_winter_rain_m,
             runtime_swe_after_m: self.snow_coupling_downstream_operands.runtime_swe_after_m,
             runtime_depth_after_m: self.snow_coupling_downstream_operands.runtime_depth_after_m,
@@ -554,6 +558,9 @@ impl DirectDayFrame {
             runtime_settle_day_count_after: self
                 .snow_coupling_downstream_operands
                 .runtime_settle_day_count_after,
+            snow_albedo_state_after: self
+                .snow_coupling_downstream_operands
+                .snow_albedo_state_after,
         };
         self.snow_coupling_shadow_projection = Some(snow_coupling_shadow_projection);
         DIRECT_AUDIT.record_shadow_projection();
@@ -723,7 +730,10 @@ impl DirectDayFrame {
             snow_coupling_m: self.snow_coupling_inputs.snow_coupling_handoff_m,
             snow_state_projected: self.snow_coupling_inputs.snow_state_projected,
             active_snow_coupling: self.snow_coupling_inputs.active_snow_coupling,
+            raw_melt_m: self.snow_coupling_inputs.raw_melt_m,
+            redistributed_melt_m: self.snow_coupling_inputs.redistributed_melt_m,
             routed_melt_m: self.snow_coupling_inputs.routed_melt_m,
+            snowpack_swe_loss_m: self.snow_coupling_inputs.snowpack_swe_loss_m,
             post_winter_rain_m: self.snow_coupling_inputs.post_winter_rain_m,
             runtime_swe_after_m: self.snow_coupling_inputs.runtime_swe_after_m,
             runtime_depth_after_m: self.snow_coupling_inputs.runtime_depth_after_m,
@@ -731,6 +741,7 @@ impl DirectDayFrame {
             runtime_settle_day_count_after: self
                 .snow_coupling_inputs
                 .runtime_settle_day_count_after,
+            snow_albedo_state_after: self.snow_coupling_inputs.snow_albedo_state_after,
         })
     }
 
@@ -1195,12 +1206,16 @@ pub struct DirectSnowCouplingInputs {
     pub snow_coupling_handoff_m: f64,
     pub snow_state_projected: bool,
     pub active_snow_coupling: bool,
+    pub raw_melt_m: f64,
+    pub redistributed_melt_m: f64,
     pub routed_melt_m: f64,
+    pub snowpack_swe_loss_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
     pub runtime_depth_after_m: f64,
     pub runtime_density_after_kg_m3: f64,
     pub runtime_settle_day_count_after: f64,
+    pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
 impl DirectSnowCouplingInputs {
@@ -1210,12 +1225,16 @@ impl DirectSnowCouplingInputs {
             snow_coupling_handoff_m: 0.0,
             snow_state_projected: false,
             active_snow_coupling: false,
+            raw_melt_m: 0.0,
+            redistributed_melt_m: 0.0,
             routed_melt_m: 0.0,
+            snowpack_swe_loss_m: 0.0,
             post_winter_rain_m: 0.0,
             runtime_swe_after_m: 0.0,
             runtime_depth_after_m: 0.0,
             runtime_density_after_kg_m3: 0.0,
             runtime_settle_day_count_after: 0.0,
+            snow_albedo_state_after: None,
         }
     }
 }
@@ -1225,12 +1244,16 @@ pub struct DirectSnowCouplingState {
     pub snow_coupling_m: f64,
     pub snow_state_projected: bool,
     pub active_snow_coupling: bool,
+    pub raw_melt_m: f64,
+    pub redistributed_melt_m: f64,
     pub routed_melt_m: f64,
+    pub snowpack_swe_loss_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
     pub runtime_depth_after_m: f64,
     pub runtime_density_after_kg_m3: f64,
     pub runtime_settle_day_count_after: f64,
+    pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
 impl DirectSnowCouplingState {
@@ -1240,12 +1263,16 @@ impl DirectSnowCouplingState {
             snow_coupling_m: 0.0,
             snow_state_projected: false,
             active_snow_coupling: false,
+            raw_melt_m: 0.0,
+            redistributed_melt_m: 0.0,
             routed_melt_m: 0.0,
+            snowpack_swe_loss_m: 0.0,
             post_winter_rain_m: 0.0,
             runtime_swe_after_m: 0.0,
             runtime_depth_after_m: 0.0,
             runtime_density_after_kg_m3: 0.0,
             runtime_settle_day_count_after: 0.0,
+            snow_albedo_state_after: None,
         }
     }
 }
@@ -1254,12 +1281,16 @@ impl DirectSnowCouplingState {
 pub struct DirectSnowCouplingDownstreamOperands {
     pub snow_coupling_m: f64,
     pub active_snow_coupling: bool,
+    pub raw_melt_m: f64,
+    pub redistributed_melt_m: f64,
     pub routed_melt_m: f64,
+    pub snowpack_swe_loss_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
     pub runtime_depth_after_m: f64,
     pub runtime_density_after_kg_m3: f64,
     pub runtime_settle_day_count_after: f64,
+    pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
 impl DirectSnowCouplingDownstreamOperands {
@@ -1268,12 +1299,16 @@ impl DirectSnowCouplingDownstreamOperands {
         Self {
             snow_coupling_m: 0.0,
             active_snow_coupling: false,
+            raw_melt_m: 0.0,
+            redistributed_melt_m: 0.0,
             routed_melt_m: 0.0,
+            snowpack_swe_loss_m: 0.0,
             post_winter_rain_m: 0.0,
             runtime_swe_after_m: 0.0,
             runtime_depth_after_m: 0.0,
             runtime_density_after_kg_m3: 0.0,
             runtime_settle_day_count_after: 0.0,
+            snow_albedo_state_after: None,
         }
     }
 }
@@ -1283,12 +1318,16 @@ impl From<DirectSnowCouplingState> for DirectSnowCouplingDownstreamOperands {
         Self {
             snow_coupling_m: state.snow_coupling_m,
             active_snow_coupling: state.active_snow_coupling,
+            raw_melt_m: state.raw_melt_m,
+            redistributed_melt_m: state.redistributed_melt_m,
             routed_melt_m: state.routed_melt_m,
+            snowpack_swe_loss_m: state.snowpack_swe_loss_m,
             post_winter_rain_m: state.post_winter_rain_m,
             runtime_swe_after_m: state.runtime_swe_after_m,
             runtime_depth_after_m: state.runtime_depth_after_m,
             runtime_density_after_kg_m3: state.runtime_density_after_kg_m3,
             runtime_settle_day_count_after: state.runtime_settle_day_count_after,
+            snow_albedo_state_after: state.snow_albedo_state_after,
         }
     }
 }
@@ -1299,12 +1338,16 @@ pub struct DirectSnowCouplingShadowProjection {
     pub day_index: usize,
     pub snow_coupling_m: f64,
     pub active_snow_coupling: bool,
+    pub raw_melt_m: f64,
+    pub redistributed_melt_m: f64,
     pub routed_melt_m: f64,
+    pub snowpack_swe_loss_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
     pub runtime_depth_after_m: f64,
     pub runtime_density_after_kg_m3: f64,
     pub runtime_settle_day_count_after: f64,
+    pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

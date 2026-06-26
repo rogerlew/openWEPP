@@ -157,10 +157,14 @@ pub(crate) struct SnowCouplingOutcome {
     accumulation: f64,
     rain_retained: f64,
     rain_released: f64,
+    raw_melt: f64,
+    redistributed_melt: f64,
+    snowpack_state_loss: f64,
     runtime_swe: f64,
     runtime_depth_m: f64,
     runtime_density_kg_m3: f64,
     runtime_settle_day_count: f64,
+    snow_albedo_state_after: Option<SnowAlbedoState>,
     hourly_state: Vec<SnowHourlyState>,
 }
 
@@ -168,12 +172,16 @@ pub(crate) struct SnowCouplingOutcome {
 pub struct DirectSnowLiquidPartition {
     pub active_snow_coupling: bool,
     pub snow_coupling_signed_s_m: f64,
+    pub raw_melt_m: f64,
+    pub redistributed_melt_m: f64,
     pub routed_melt_m: f64,
+    pub snowpack_swe_loss_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
     pub runtime_depth_after_m: f64,
     pub runtime_density_after_kg_m3: f64,
     pub runtime_settle_day_count_after: f64,
+    pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -213,6 +221,10 @@ pub struct DirectActiveSnowPartitionInputs {
     pub canopy_cover_fraction: f64,
     pub wind_m_s: f64,
     pub dewpoint_c: f64,
+    pub snow_melt_model: SnowMeltModel,
+    pub snow_albedo_model: Option<SnowAlbedoModel>,
+    pub snow_albedo_state: Option<SnowAlbedoState>,
+    pub underlying_surface_albedo: f64,
     pub hourly: [DirectSnowHourlyForcing; SIMIMPL29_HOURS_PER_DAY],
 }
 

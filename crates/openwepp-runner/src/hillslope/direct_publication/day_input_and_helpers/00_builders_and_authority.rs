@@ -210,12 +210,16 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             snow_coupling_handoff_m: snow_liquid.snow_coupling_signed_s_m,
             snow_state_projected: true,
             active_snow_coupling: snow_liquid.active_snow_coupling,
+            raw_melt_m: snow_liquid.raw_melt_m,
+            redistributed_melt_m: snow_liquid.redistributed_melt_m,
             routed_melt_m: snow_liquid.routed_melt_m,
+            snowpack_swe_loss_m: snow_liquid.snowpack_swe_loss_m,
             post_winter_rain_m: snow_liquid.post_winter_rain_m,
             runtime_swe_after_m: snow_liquid.runtime_swe_after_m,
             runtime_depth_after_m: snow_liquid.runtime_depth_after_m,
             runtime_density_after_kg_m3: snow_liquid.runtime_density_after_kg_m3,
             runtime_settle_day_count_after: snow_liquid.runtime_settle_day_count_after,
+            snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
         });
         let percolation_inputs =
             direct_publication_percolation_inputs(&seed_surface, precipitation_m)?;
@@ -838,12 +842,16 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             snow_coupling_handoff_m: snow_liquid.snow_coupling_signed_s_m,
             snow_state_projected: authority.snow_frost.snow_state_projected(snow_lane_state),
             active_snow_coupling: snow_liquid.active_snow_coupling,
+            raw_melt_m: snow_liquid.raw_melt_m,
+            redistributed_melt_m: snow_liquid.redistributed_melt_m,
             routed_melt_m: snow_liquid.routed_melt_m,
+            snowpack_swe_loss_m: snow_liquid.snowpack_swe_loss_m,
             post_winter_rain_m: snow_liquid.post_winter_rain_m,
             runtime_swe_after_m: snow_liquid.runtime_swe_after_m,
             runtime_depth_after_m: snow_liquid.runtime_depth_after_m,
             runtime_density_after_kg_m3: snow_liquid.runtime_density_after_kg_m3,
             runtime_settle_day_count_after: snow_liquid.runtime_settle_day_count_after,
+            snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
         });
         day_input.peak_runoff_inputs = Some(authority.peak_runoff.inputs(hyetograph.clone()));
         day_input.infiltration_depression_inputs = Some(
@@ -2928,12 +2936,16 @@ impl DirectProductionSnowFrostAuthority {
             return Ok(openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
                 active_snow_coupling: false,
                 snow_coupling_signed_s_m: 0.0,
+                raw_melt_m: 0.0,
+                redistributed_melt_m: 0.0,
                 routed_melt_m: 0.0,
+                snowpack_swe_loss_m: 0.0,
                 post_winter_rain_m: hyetograph_rainfall_m,
                 runtime_swe_after_m: snow_lane_state.runtime_swe_m,
                 runtime_depth_after_m: snow_lane_state.runtime_depth_m,
                 runtime_density_after_kg_m3: snow_lane_state.runtime_density_kg_m3,
                 runtime_settle_day_count_after: snow_lane_state.runtime_settle_day_count,
+                snow_albedo_state_after: snow_lane_state.snow_albedo_state,
             });
         }
         let hourly = climate_request
@@ -2988,6 +3000,10 @@ impl DirectProductionSnowFrostAuthority {
                 canopy_cover_fraction,
                 wind_m_s: forcing.vwind_m_s,
                 dewpoint_c: forcing.tdpt_c,
+                snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe,
+                snow_albedo_model: None,
+                snow_albedo_state: snow_lane_state.snow_albedo_state,
+                underlying_surface_albedo: 0.2,
                 hourly: snow_hourly,
             },
         )

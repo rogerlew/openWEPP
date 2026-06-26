@@ -2885,12 +2885,16 @@ fn r4g_snow_coupling_producer_consumes_signed_handoff_and_updates_r4b_input() {
         day_index: 0,
         snow_coupling_m: -0.09375,
         active_snow_coupling: false,
+        raw_melt_m: 0.0,
+        redistributed_melt_m: 0.0,
         routed_melt_m: 0.0,
+        snowpack_swe_loss_m: 0.0,
         post_winter_rain_m: 0.0,
         runtime_swe_after_m: 0.0,
         runtime_depth_after_m: 0.0,
         runtime_density_after_kg_m3: 0.0,
         runtime_settle_day_count_after: 0.0,
+        snow_albedo_state_after: None,
     };
 
     assert_eq!(day.snow_coupling, expected_state);

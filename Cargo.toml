@@ -653,6 +653,10 @@ path = "tests/integration/snowdensity05b_shortwave_source_contract.rs"
 name = "snowdensity05c_albedo_state_core"
 path = "tests/integration/snowdensity05c_albedo_state_core.rs"
 
+[[test]]
+name = "snowdensity05d_opt_in_coe_melt"
+path = "tests/integration/snowdensity05d_opt_in_coe_melt.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

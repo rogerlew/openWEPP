@@ -2,6 +2,125 @@
 use super::super::*;
 
 impl Wb11HydrologyKernel {
+    #[allow(clippy::too_many_arguments)]
+    fn update_hourly_opt_in_snow_albedo_state(
+        phase_class: HillslopeKernelPhaseClass,
+        melt_model: SnowMeltModel,
+        albedo_model: Option<SnowAlbedoModel>,
+        previous_state: Option<SnowAlbedoState>,
+        snow_depth_m: f64,
+        snow_density_kg_m3: f64,
+        fresh_snow_depth_m: f64,
+        fresh_snow_density_kg_m3: f64,
+        positive_temperature_c_day_increment: f64,
+        underlying_surface_albedo: f64,
+    ) -> Result<Option<SnowAlbedoState>, Wb11HydrologyKernelGuardError> {
+        if melt_model == SnowMeltModel::LegacyCoe {
+            return Ok(previous_state);
+        }
+
+        let snow_water_equivalent_m = if snow_depth_m > WB11_ZERO_THRESHOLD
+            && snow_density_kg_m3 > WB11_ZERO_THRESHOLD
+        {
+            openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                snow_depth_m,
+                snow_density_kg_m3,
+            )
+            .map_err(|error| {
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+                    &error,
+                )
+            })?
+        } else {
+            0.0
+        };
+        let fresh_snow_water_equivalent_m = if fresh_snow_depth_m > WB11_ZERO_THRESHOLD
+            && fresh_snow_density_kg_m3 > WB11_ZERO_THRESHOLD
+        {
+            openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                fresh_snow_depth_m,
+                fresh_snow_density_kg_m3,
+            )
+            .map_err(|error| {
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    BoundarySymbol::from(SNOW_HOURLY_SNOWFALL_ROOT),
+                    &error,
+                )
+            })?
+        } else {
+            0.0
+        };
+
+        if snow_water_equivalent_m <= WB11_ZERO_THRESHOLD
+            && fresh_snow_water_equivalent_m <= WB11_ZERO_THRESHOLD
+        {
+            return Ok(None);
+        }
+
+        update_snow_albedo_state(SnowAlbedoUpdateInputs {
+            melt_model,
+            albedo_model,
+            previous_state,
+            snow_water_equivalent_m,
+            fresh_snow_water_equivalent_m,
+            positive_temperature_c_day_increment,
+            underlying_surface_albedo,
+        })
+        .map(|outcome| outcome.state)
+        .map_err(|error| Self::snow_albedo_guard_error(phase_class, &error))
+    }
+
+    fn snow_albedo_guard_error(
+        phase_class: HillslopeKernelPhaseClass,
+        error: &SnowAlbedoError,
+    ) -> Wb11HydrologyKernelGuardError {
+        match error {
+            SnowAlbedoError::MissingRequiredAlbedoModel => {
+                Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class,
+                    symbol: BoundarySymbol::from("snow_albedo_model_id"),
+                }
+            }
+            SnowAlbedoError::MissingRequiredAlbedoState => {
+                Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class,
+                    symbol: BoundarySymbol::from("snow_albedo"),
+                }
+            }
+            SnowAlbedoError::AlbedoModelMismatch { .. } => {
+                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from("snow_albedo_model_id"),
+                    value: f64::NAN,
+                    minimum: None,
+                    maximum: None,
+                }
+            }
+            SnowAlbedoError::NonFiniteInput { symbol, value } => {
+                Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                    phase_class,
+                    symbol: BoundarySymbol::from(*symbol),
+                    value: *value,
+                }
+            }
+            SnowAlbedoError::OutOfRangeInput {
+                symbol,
+                value,
+                minimum,
+                maximum,
+            } => Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(*symbol),
+                value: *value,
+                minimum: Some(*minimum),
+                maximum: Some(*maximum),
+            },
+        }
+    }
+
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn compute_simimpl29_melt_hour(
         phase_class: HillslopeKernelPhaseClass,
@@ -14,6 +133,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
         hrrain_m: f64,
         snow_depth_m: f64,
         snow_density_kg_m3: f64,
+        shortwave_absorbed_fraction: f64,
     ) -> Result<SnowMeltComputation, Wb11HydrologyKernelGuardError> {
         Self::require_dynamic_state_range(
             phase_class,
@@ -64,6 +184,13 @@ pub(crate) fn compute_simimpl29_melt_hour(
             Some(0.0),
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
         )?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from("snow_melt_shortwave_absorbed_fraction"),
+            shortwave_absorbed_fraction,
+            Some(0.0),
+            Some(1.0),
+        )?;
 
         if snow_depth_m <= WB11_ZERO_THRESHOLD || snow_density_kg_m3 <= WB11_ZERO_THRESHOLD {
             return Ok(SnowMeltComputation {
@@ -91,7 +218,10 @@ pub(crate) fn compute_simimpl29_melt_hour(
                     )
                 })?;
 
-        let amelt = 0.0607 * hrad_mj_m2 * (1.0 - cancov * SIMIMPL29_CANOPY_FACTOR);
+        let amelt = 0.0607
+            * hrad_mj_m2
+            * shortwave_absorbed_fraction
+            * (1.0 - cancov * SIMIMPL29_CANOPY_FACTOR);
         let bmelt = 0.025 / 24.0 * hrtef
             - (0.84 * (1.0 - cloud_fraction)) * (1.0 - cancov * SIMIMPL29_CANOPY_FACTOR) / 24.0;
 
@@ -489,6 +619,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
                         hrrain,
                         snodep,
                         dens,
+                        1.0,
                     )?;
                     melt_branch_active = 1.0;
                     melt_terms = melt_computation.terms;
@@ -646,6 +777,10 @@ pub(crate) fn compute_simimpl29_melt_hour(
             });
         }
 
+        let raw_melt_total_m = hourly_state
+            .iter()
+            .map(|hourly| hourly.melt_raw_m)
+            .sum::<f64>();
         let melt_redistribution = Self::redistribute_daily_signed_snowmelt(&mut hourly_state);
         for hourly in &mut hourly_state {
             if hourly.rain_released_m > WB11_ZERO_THRESHOLD {
@@ -764,10 +899,14 @@ pub(crate) fn compute_simimpl29_melt_hour(
             accumulation: accumulation_water_m,
             rain_retained: total_rain_retained_m,
             rain_released: total_rain_released_m,
+            raw_melt: raw_melt_total_m,
+            redistributed_melt: melt_redistribution.routed_melt_total_m,
+            snowpack_state_loss: bounded_state_loss_m,
             runtime_swe: runtime_swe_after,
             runtime_depth_m: snodep,
             runtime_density_kg_m3: dens,
             runtime_settle_day_count: settle_day_count,
+            snow_albedo_state_after: None,
             hourly_state,
         })
     }
@@ -917,6 +1056,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
         let mut accumulation_water_m = 0.0;
         let mut total_rain_retained_m = 0.0;
         let mut total_rain_released_m = 0.0;
+        let mut snow_albedo_state_after = inputs.snow_albedo_state;
         let mut hourly_state = Vec::with_capacity(SIMIMPL29_HOURS_PER_DAY);
 
         for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
@@ -979,6 +1119,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
             let mut melt_m = 0.0;
             let mut melt_terms = SnowMeltTerms::default();
             let mut melt_branch_active = 0.0;
+            let mut albedo_updated_this_hour = false;
 
             if snodep <= WB11_ZERO_THRESHOLD {
                 if hrsnow <= WB11_ZERO_THRESHOLD {
@@ -1029,6 +1170,29 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 }
 
                 if snodep > WB11_ZERO_THRESHOLD {
+                    let positive_temperature_c_day_increment = hrtemp_c.max(0.0) / 24.0;
+                    snow_albedo_state_after = Self::update_hourly_opt_in_snow_albedo_state(
+                        phase_class,
+                        inputs.snow_melt_model,
+                        inputs.snow_albedo_model,
+                        snow_albedo_state_after,
+                        snodep,
+                        dens,
+                        hrsnow,
+                        inputs.newsnw_kg_m3,
+                        positive_temperature_c_day_increment,
+                        inputs.underlying_surface_albedo,
+                    )?;
+                    albedo_updated_this_hour = true;
+                    let shortwave_absorbed_fraction = match inputs.snow_melt_model {
+                        SnowMeltModel::LegacyCoe => 1.0,
+                        SnowMeltModel::CoeShortwaveAlbedoV1 => snow_albedo_state_after
+                            .ok_or(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                                phase_class,
+                                symbol: BoundarySymbol::from("snow_albedo"),
+                            })?
+                            .shortwave_absorbed_fraction(),
+                    };
                     let melt_computation = Self::compute_simimpl29_melt_hour(
                         phase_class,
                         inputs.canopy_cover_fraction,
@@ -1040,6 +1204,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
                         hrrain,
                         snodep,
                         dens,
+                        shortwave_absorbed_fraction,
                     )?;
                     melt_branch_active = 1.0;
                     melt_terms = melt_computation.terms;
@@ -1154,6 +1319,22 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 }
             }
 
+            if !albedo_updated_this_hour {
+                let positive_temperature_c_day_increment = hrtemp_c.max(0.0) / 24.0;
+                snow_albedo_state_after = Self::update_hourly_opt_in_snow_albedo_state(
+                    phase_class,
+                    inputs.snow_melt_model,
+                    inputs.snow_albedo_model,
+                    snow_albedo_state_after,
+                    snodep,
+                    dens,
+                    hrsnow,
+                    inputs.newsnw_kg_m3,
+                    positive_temperature_c_day_increment,
+                    inputs.underlying_surface_albedo,
+                )?;
+            }
+
             if dens > SIMIMPL29_SNOW_DENSITY_CAP_KG_M3 {
                 dens = SIMIMPL29_SNOW_DENSITY_CAP_KG_M3;
             }
@@ -1197,6 +1378,10 @@ pub(crate) fn compute_simimpl29_melt_hour(
             });
         }
 
+        let raw_melt_total_m = hourly_state
+            .iter()
+            .map(|hourly| hourly.melt_raw_m)
+            .sum::<f64>();
         let melt_redistribution = Self::redistribute_daily_signed_snowmelt(&mut hourly_state);
         for hourly in &mut hourly_state {
             if hourly.rain_released_m > WB11_ZERO_THRESHOLD {
@@ -1314,10 +1499,14 @@ pub(crate) fn compute_simimpl29_melt_hour(
             accumulation: accumulation_water_m,
             rain_retained: total_rain_retained_m,
             rain_released: total_rain_released_m,
+            raw_melt: raw_melt_total_m,
+            redistributed_melt: melt_redistribution.routed_melt_total_m,
+            snowpack_state_loss: bounded_state_loss_m,
             runtime_swe: runtime_swe_after,
             runtime_depth_m: snodep,
             runtime_density_kg_m3: dens,
             runtime_settle_day_count: settle_day_count,
+            snow_albedo_state_after,
             hourly_state,
         })
     }

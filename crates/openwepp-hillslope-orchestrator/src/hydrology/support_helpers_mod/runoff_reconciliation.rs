@@ -163,6 +163,9 @@ impl Wb11HydrologyKernel {
                 accumulation: 0.0,
                 rain_retained: 0.0,
                 rain_released: 0.0,
+                raw_melt: 0.0,
+                redistributed_melt: 0.0,
+                snowpack_state_loss: 0.0,
                 runtime_swe,
                 runtime_depth_m: Self::optional_state_scalar_for_symbol(
                     &request,
@@ -182,6 +185,7 @@ impl Wb11HydrologyKernel {
                     &BoundarySymbol::from(SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL),
                 )?
                 .unwrap_or(0.0),
+                snow_albedo_state_after: None,
                 hourly_state: Vec::new(),
             }
         };
@@ -191,12 +195,16 @@ impl Wb11HydrologyKernel {
         Ok(DirectSnowLiquidPartition {
             active_snow_coupling,
             snow_coupling_signed_s_m: snow_coupling.signed_s,
+            raw_melt_m: snow_coupling.raw_melt,
+            redistributed_melt_m: snow_coupling.redistributed_melt,
             routed_melt_m,
+            snowpack_swe_loss_m: snow_coupling.snowpack_state_loss,
             post_winter_rain_m,
             runtime_swe_after_m: snow_coupling.runtime_swe,
             runtime_depth_after_m: snow_coupling.runtime_depth_m,
             runtime_density_after_kg_m3: snow_coupling.runtime_density_kg_m3,
             runtime_settle_day_count_after: snow_coupling.runtime_settle_day_count,
+            snow_albedo_state_after: snow_coupling.snow_albedo_state_after,
         })
     }
 
@@ -256,10 +264,14 @@ impl Wb11HydrologyKernel {
                 accumulation: 0.0,
                 rain_retained: 0.0,
                 rain_released: 0.0,
+                raw_melt: 0.0,
+                redistributed_melt: 0.0,
+                snowpack_state_loss: 0.0,
                 runtime_swe: inputs.runtime_swe_m,
                 runtime_depth_m: inputs.runtime_depth_m,
                 runtime_density_kg_m3: inputs.runtime_density_kg_m3,
                 runtime_settle_day_count: inputs.runtime_settle_day_count,
+                snow_albedo_state_after: inputs.snow_albedo_state,
                 hourly_state: Vec::new(),
             }
         };
@@ -269,12 +281,16 @@ impl Wb11HydrologyKernel {
         Ok(DirectSnowLiquidPartition {
             active_snow_coupling,
             snow_coupling_signed_s_m: snow_coupling.signed_s,
+            raw_melt_m: snow_coupling.raw_melt,
+            redistributed_melt_m: snow_coupling.redistributed_melt,
             routed_melt_m,
+            snowpack_swe_loss_m: snow_coupling.snowpack_state_loss,
             post_winter_rain_m,
             runtime_swe_after_m: snow_coupling.runtime_swe,
             runtime_depth_after_m: snow_coupling.runtime_depth_m,
             runtime_density_after_kg_m3: snow_coupling.runtime_density_kg_m3,
             runtime_settle_day_count_after: snow_coupling.runtime_settle_day_count,
+            snow_albedo_state_after: snow_coupling.snow_albedo_state_after,
         })
     }
 

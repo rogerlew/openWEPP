@@ -590,6 +590,7 @@ fn r7h_active_snowmelt_local_liquid_routes_through_wb18_same_pass() {
         runtime_depth_after_m: 0.0,
         runtime_density_after_kg_m3: 0.0,
         runtime_settle_day_count_after: 0.0,
+        ..DirectSnowCouplingInputs::zero()
     };
     day.infiltration_depression_inputs.producer_inputs =
         Some(DirectWb14InfiltrationProducerInputs {
@@ -710,6 +711,7 @@ fn r7h_mixed_rain_snowmelt_uses_wb14_same_pass_infiltration() {
         runtime_depth_after_m: 0.0,
         runtime_density_after_kg_m3: 0.0,
         runtime_settle_day_count_after: 0.0,
+        ..DirectSnowCouplingInputs::zero()
     };
     day.infiltration_depression_inputs.producer_inputs =
         Some(DirectWb14InfiltrationProducerInputs {

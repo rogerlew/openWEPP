@@ -13,6 +13,17 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-05d-opt-in-coe-melt-implementation-001/` is complete
+  as SNOWDENSITY-05D, the opt-in CoE melt implementation gate. It amended
+  `SC-SNOWFREEZE-001` to v79 with `INV-SNOWFREEZE-055`,
+  `OBL-SNOWFREEZE-P-030`, and
+  `snow_melt_shortwave_absorbed_fraction`; wired
+  `coe_shortwave_albedo_v1` into the typed production CoE melt path behind an
+  explicit selector; carried optional albedo state through the direct snow
+  runtime; and exposed raw melt, redistributed melt, routed `wmelt`, and
+  SWE-loss lineage totals. `legacy_coe` remains default/rollback; no parser
+  surface, output schema, radiation source, coefficient, or default activation
+  changed. The next route is `SNOWDENSITY-05E Melt Rubric Adjudication`.
 - `20260626-snowdensity-05c-albedo-state-core-001/` is complete as
   SNOWDENSITY-05C, the albedo-state core gate. It amended
   `SC-SNOWFREEZE-001` to v78 with `INV-SNOWFREEZE-054`,
@@ -21,8 +32,8 @@ State as of `2026-06-26`:
   albedo bounds, and missing-state fail-closed behavior for active future
   `coe_shortwave_albedo_v1` snowpack. It added a standalone typed Rust
   albedo-state core and changed no routed melt, production wiring, parser
-  surface, output schema, radiation source, or default. The next route is
-  `SNOWDENSITY-05D Opt-In CoE Melt Implementation`.
+  surface, output schema, radiation source, or default. Superseded by
+  SNOWDENSITY-05D.
 - `20260626-snowdensity-05b-shortwave-source-binding-001/` is complete as
   SNOWDENSITY-05B, the shortwave source-binding gate. It amended
   `SC-SNOWFREEZE-001` to v77 with `INV-SNOWFREEZE-053`,

@@ -167,15 +167,17 @@ pub struct DirectSnowRuntimeCarry {
     pub runtime_depth_m: f64,
     pub runtime_density_kg_m3: f64,
     pub runtime_settle_day_count: f64,
+    pub snow_albedo_state: Option<SnowAlbedoState>,
 }
 
 impl From<DirectSnowRuntimeCarry> for DirectSnowLaneState {
     fn from(carry: DirectSnowRuntimeCarry) -> Self {
-        Self::from_runtime_values(
+        Self::from_runtime_values_and_albedo_state(
             carry.runtime_swe_m,
             carry.runtime_depth_m,
             carry.runtime_density_kg_m3,
             carry.runtime_settle_day_count,
+            carry.snow_albedo_state,
         )
     }
 }
@@ -187,6 +189,7 @@ impl From<DirectSnowLaneState> for DirectSnowRuntimeCarry {
             runtime_depth_m: state.runtime_depth_m,
             runtime_density_kg_m3: state.runtime_density_kg_m3,
             runtime_settle_day_count: state.runtime_settle_day_count,
+            snow_albedo_state: state.snow_albedo_state,
         }
     }
 }
@@ -1916,6 +1919,13 @@ fn validate_direct_snow_lane_state(
             field: direct_snow_lane_validation_field(prefix, "runtime_density_kg_m3"),
         });
     }
+    if let Some(snow_albedo_state) = state.snow_albedo_state {
+        snow_albedo_state
+            .validate()
+            .map_err(|_| DirectRuntimeError::DirectDomainViolation {
+                field: direct_snow_lane_validation_field(prefix, "snow_albedo_state"),
+            })?;
+    }
     Ok(())
 }
 
@@ -1936,6 +1946,9 @@ fn direct_snow_lane_validation_field(
         ("constructor.winter_column.snow", "runtime_settle_day_count") => {
             "constructor.winter_column.snow.runtime_settle_day_count"
         }
+        ("constructor.winter_column.snow", "snow_albedo_state") => {
+            "constructor.winter_column.snow.snow_albedo_state"
+        }
         ("constructor.snow_runtime_carry", "runtime_swe_m") => {
             "constructor.snow_runtime_carry.runtime_swe_m"
         }
@@ -1947,6 +1960,9 @@ fn direct_snow_lane_validation_field(
         }
         ("constructor.snow_runtime_carry", "runtime_settle_day_count") => {
             "constructor.snow_runtime_carry.runtime_settle_day_count"
+        }
+        ("constructor.snow_runtime_carry", "snow_albedo_state") => {
+            "constructor.snow_runtime_carry.snow_albedo_state"
         }
         _ => "constructor.snow_lane_state",
     }

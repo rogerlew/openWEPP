@@ -4,6 +4,7 @@
 //! it owns the future snow/frost lane-state boundary, while direct-runtime
 //! phases currently keep their existing behavior until consumer cutover.
 
+use crate::hydrology::SnowAlbedoState;
 use crate::runtime_inputs::{DIRECT_WINTER_HOURLY_FORCING_COUNT, DirectWinterHourlyForcing};
 
 pub const DIRECT_WINTER_HOURS_PER_DAY: usize = DIRECT_WINTER_HOURLY_FORCING_COUNT;
@@ -30,6 +31,7 @@ pub struct DirectSnowLaneState {
     pub runtime_depth_m: f64,
     pub runtime_density_kg_m3: f64,
     pub runtime_settle_day_count: f64,
+    pub snow_albedo_state: Option<SnowAlbedoState>,
 }
 
 impl DirectSnowLaneState {
@@ -40,6 +42,7 @@ impl DirectSnowLaneState {
             runtime_depth_m: 0.0,
             runtime_density_kg_m3: 0.0,
             runtime_settle_day_count: 0.0,
+            snow_albedo_state: None,
         }
     }
 
@@ -55,6 +58,24 @@ impl DirectSnowLaneState {
             runtime_depth_m,
             runtime_density_kg_m3,
             runtime_settle_day_count,
+            snow_albedo_state: None,
+        }
+    }
+
+    #[must_use]
+    pub const fn from_runtime_values_and_albedo_state(
+        runtime_swe_m: f64,
+        runtime_depth_m: f64,
+        runtime_density_kg_m3: f64,
+        runtime_settle_day_count: f64,
+        snow_albedo_state: Option<SnowAlbedoState>,
+    ) -> Self {
+        Self {
+            runtime_swe_m,
+            runtime_depth_m,
+            runtime_density_kg_m3,
+            runtime_settle_day_count,
+            snow_albedo_state,
         }
     }
 
@@ -64,6 +85,7 @@ impl DirectSnowLaneState {
             || self.runtime_depth_m > 0.0
             || self.runtime_density_kg_m3 > 0.0
             || self.runtime_settle_day_count > 0.0
+            || self.snow_albedo_state.is_some()
     }
 }
 
