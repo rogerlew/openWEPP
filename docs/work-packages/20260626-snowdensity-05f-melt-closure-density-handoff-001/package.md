@@ -4,7 +4,7 @@ Status: complete.
 
 Package type: contract closure, activation-boundary, and density handoff.
 
-Primary authority: `SC-SNOWFREEZE-001` v81, especially
+Primary authority: `SC-SNOWFREEZE-001` v82, especially
 `INV-SNOWFREEZE-050`, `INV-SNOWFREEZE-052`, `INV-SNOWFREEZE-053`,
 `INV-SNOWFREEZE-054`, `INV-SNOWFREEZE-055`, `INV-SNOWFREEZE-056`, and
 obligations `OBL-SNOWFREEZE-P-027` through `OBL-SNOWFREEZE-P-031`.
@@ -68,9 +68,10 @@ authorize default activation.
 - Bound activation evidence to both 05E diagnostic replay and H as-built
   context.
 - Dispositioned independent Claude review caveats: 05E diagnostic replay is
-  regime-limited until the harness uses live per-day canopy cover and
-  native/proven shortwave; SNOWDENSITY-06 must clear that harness-fidelity entry
-  gate before density or activation verdicts.
+  regime-limited until the harness uses configured coniferous-forest per-day
+  canopy cover (winter `cancov` about `0.9`) and native/proven shortwave;
+  SNOWDENSITY-06 must clear that harness-fidelity entry gate before density or
+  activation verdicts.
 - Verified the Brock-2000 albedo constants against
   `references/copyrighted/brock2000.pdf`.
 - No default activation, parser/runfile/CLI selector, output schema,

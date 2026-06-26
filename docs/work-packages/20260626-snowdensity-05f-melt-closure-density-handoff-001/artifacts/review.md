@@ -13,7 +13,9 @@ No blocking findings after independent-review disposition.
   revision history.
 - Static: the Claude review caveats are dispositioned: 05E diagnostic replay is
   labeled regime-limited because it used `cancov = 0.0` and PySnobal-bridge
-  radiation; SNOWDENSITY-06 now has a harness-fidelity entry gate.
+  radiation; operator clarification pins the validation management to
+  coniferous forest with winter `cancov` about `0.9`; SNOWDENSITY-06 now has a
+  harness-fidelity entry gate.
 - Ran: Brock-2000 albedo constants were checked against the local PDF and match
   the constants carried by `08_snow_albedo.rs`.
 - Static: 05F does not modify production physics, parser surfaces, output

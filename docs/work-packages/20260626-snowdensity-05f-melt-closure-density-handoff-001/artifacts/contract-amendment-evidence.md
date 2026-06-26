@@ -36,8 +36,10 @@ both:
 
 Post-review caveat: the 05E diagnostic harness used `cancov = 0.0` and
 PySnobal-bridge radiation. Those conditions are not representative of the
-forested validation-site production regime until live snow-season canopy cover
-and native/proven shortwave are used.
+validation-site production regime: operator clarification says the management
+should be configured as coniferous forest with winter `cancov` about `0.9`.
+The harness must use configured coniferous-forest canopy and native/proven
+shortwave before replay evidence carries a density or activation verdict.
 
 ## Brock Constant Verification
 

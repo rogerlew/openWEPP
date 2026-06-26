@@ -22,8 +22,9 @@ Next recommended package: `SNOWDENSITY-06 Density Compaction`.
 - Do not use `coe_shortwave_albedo_v1` as compensation for missing overburden or
   metamorphism compaction.
 - Treat the 05E diagnostic replay deltas as regime-limited until the harness
-  uses live snow-season canopy cover instead of `cancov = 0.0` and
-  native/proven shortwave radiation instead of unproven PySnobal-bridge
+  uses configured coniferous-forest per-day canopy cover instead of
+  `cancov = 0.0`; winter `cancov` is expected near `0.9`. The harness must also
+  use native/proven shortwave radiation instead of unproven PySnobal-bridge
   radiation.
 - Preserve the same-day future snowfall cold-start albedo policy: fresh-snow
   reset, valid previous opt-in carry, or typed fail-closed.
@@ -36,7 +37,8 @@ Next recommended package: `SNOWDENSITY-06 Density Compaction`.
 
 Before SNOWDENSITY-06 rubric evidence can carry a density or activation verdict:
 
-- Drive `cancov` from the real per-day growth state.
+- Drive `cancov` from the real per-day growth state and demonstrate configured
+  coniferous forest winter `cancov` near `0.9`.
 - Consume native openWEPP shortwave or prove the PySnobal-bridge radiation
   inversion like-for-like.
 - Re-run the 05E-style adjudication in that representative regime.
@@ -45,8 +47,9 @@ Before SNOWDENSITY-06 rubric evidence can carry a density or activation verdict:
 
 - 05E improved diagnostic legacy but did not beat H as-built context.
 - The 05E improvement was generated with `cancov = 0.0` and PySnobal-bridge
-  radiation; this likely depresses diagnostic legacy and inflates opt-in
-  shortwave leverage on forested validation sites.
+  radiation; this depresses diagnostic legacy and inflates opt-in shortwave
+  leverage relative to the configured coniferous forest winter `cancov` near
+  `0.9`.
 - Non-SNOTEL frost attribution remains blocked by snow-control failures.
 - Density compaction must prove forcing-robust improvement without melt
   retuning before any activation route can be considered.

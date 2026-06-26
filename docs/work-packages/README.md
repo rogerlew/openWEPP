@@ -15,18 +15,20 @@ State as of `2026-06-26`:
 
 - `20260626-snowdensity-05f-melt-closure-density-handoff-001/` is complete as
   SNOWDENSITY-05F, the melt-closure and density-handoff gate. It amended
-  `SC-SNOWFREEZE-001` to v81 with `INV-SNOWFREEZE-056`,
+  `SC-SNOWFREEZE-001` to v82 with `INV-SNOWFREEZE-056`,
   `OBL-SNOWFREEZE-P-031`, boundary disposition, and the 05F addendum; froze
   `coe_shortwave_albedo_v1` as an opt-in-only density-facing melt interface;
   preserved `legacy_coe` as default/rollback; ratified the same-day future
   snowfall cold-start albedo continuity rule; dispositioned the independent
   Claude review by labeling 05E replay evidence regime-limited (`cancov = 0.0`,
-  PySnobal-bridge radiation); and bound activation evidence to both 05E
+  PySnobal-bridge radiation); recorded the operator clarification that the
+  validation management should be coniferous forest with winter `cancov` about
+  `0.9`; and bound activation evidence to both 05E
   diagnostic replay and H as-built context. No default activation,
   parser/runfile/CLI selector, output schema, coefficient, radiation-source, or
   density-physics change was made. The next route is `SNOWDENSITY-06 Density
-  Compaction`, starting with the harness-fidelity entry gate for live per-day
-  canopy and native/proven shortwave.
+  Compaction`, starting with the harness-fidelity entry gate for configured
+  coniferous-forest canopy and native/proven shortwave.
 - `20260626-snowdensity-05e-melt-rubric-adjudication-001/` is complete as
   SNOWDENSITY-05E, the melt-rubric adjudication gate. It added diagnostic-only
   `openwepp-snowbench coe-melt` replay for `legacy_coe` and

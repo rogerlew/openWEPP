@@ -7,7 +7,9 @@ Input review: `artifacts/claude-review.md`.
 ## Disposition
 
 - F1 accepted: 05E diagnostic replay used `cancov = 0.0`; this is now recorded
-  as a regime-limited evidence caveat.
+  as a regime-limited evidence caveat. Operator clarification pins the
+  validation management to coniferous forest with winter `cancov` about `0.9`,
+  so the replay is known non-representative.
 - F2 accepted: 05E diagnostic replay used PySnobal-bridge radiation; this is
   now recorded as a regime-limited evidence caveat.
 - F3 accepted: the 05F residual-risk register now names the causes, not only the

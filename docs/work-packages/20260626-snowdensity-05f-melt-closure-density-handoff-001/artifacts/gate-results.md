@@ -42,3 +42,15 @@ Evidence class: Ran.
   - Pass, `3 passed; 0 failed`.
 - `cargo test --test snowdensity02_contract_adr_guard --test snowdensity05a_melt_contract_guard --test snowdensity05b_shortwave_source_contract --test snowdensity05c_albedo_state_core --test snowdensity05d_opt_in_coe_melt`
   - Pass, all focused contract guards passed.
+
+## Operator Canopy Clarification Follow-Up
+
+- Operator clarified that validation management should be coniferous forest,
+  not deciduous forest, with winter `cancov` about `0.9`.
+- Contract and focused guards were updated to v82.
+- `cargo fmt --check`
+  - Pass.
+- `cargo test --test snowdensity02_contract_adr_guard --test snowdensity05a_melt_contract_guard --test snowdensity05b_shortwave_source_contract --test snowdensity05c_albedo_state_core --test snowdensity05d_opt_in_coe_melt --test snowdensity05f_melt_closure_handoff`
+  - Pass, all focused SNOWDENSITY contract guards passed.
+- `git diff --check`
+  - Pass.
