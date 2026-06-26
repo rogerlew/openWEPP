@@ -167,16 +167,22 @@ pub struct DirectSnowRuntimeCarry {
     pub runtime_depth_m: f64,
     pub runtime_density_kg_m3: f64,
     pub runtime_settle_day_count: f64,
+    pub coe_boundary_depth_m: f64,
+    pub coe_boundary_density_kg_m3: f64,
+    pub coe_boundary_settle_day_count: f64,
     pub snow_albedo_state: Option<SnowAlbedoState>,
 }
 
 impl From<DirectSnowRuntimeCarry> for DirectSnowLaneState {
     fn from(carry: DirectSnowRuntimeCarry) -> Self {
-        Self::from_runtime_values_and_albedo_state(
+        Self::from_runtime_values_boundary_and_albedo_state(
             carry.runtime_swe_m,
             carry.runtime_depth_m,
             carry.runtime_density_kg_m3,
             carry.runtime_settle_day_count,
+            carry.coe_boundary_depth_m,
+            carry.coe_boundary_density_kg_m3,
+            carry.coe_boundary_settle_day_count,
             carry.snow_albedo_state,
         )
     }
@@ -189,6 +195,9 @@ impl From<DirectSnowLaneState> for DirectSnowRuntimeCarry {
             runtime_depth_m: state.runtime_depth_m,
             runtime_density_kg_m3: state.runtime_density_kg_m3,
             runtime_settle_day_count: state.runtime_settle_day_count,
+            coe_boundary_depth_m: state.coe_boundary_depth_m,
+            coe_boundary_density_kg_m3: state.coe_boundary_density_kg_m3,
+            coe_boundary_settle_day_count: state.coe_boundary_settle_day_count,
             snow_albedo_state: state.snow_albedo_state,
         }
     }
@@ -1911,12 +1920,26 @@ fn validate_direct_snow_lane_state(
             "runtime_settle_day_count",
             state.runtime_settle_day_count,
         ),
+        ("coe_boundary_depth_m", state.coe_boundary_depth_m),
+        (
+            "coe_boundary_density_kg_m3",
+            state.coe_boundary_density_kg_m3,
+        ),
+        (
+            "coe_boundary_settle_day_count",
+            state.coe_boundary_settle_day_count,
+        ),
     ] {
         validate_nonnegative_direct_m(direct_snow_lane_validation_field(prefix, field), value)?;
     }
     if state.runtime_density_kg_m3 > 522.0 {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: direct_snow_lane_validation_field(prefix, "runtime_density_kg_m3"),
+        });
+    }
+    if state.coe_boundary_density_kg_m3 > 522.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: direct_snow_lane_validation_field(prefix, "coe_boundary_density_kg_m3"),
         });
     }
     if let Some(snow_albedo_state) = state.snow_albedo_state {
@@ -1946,6 +1969,15 @@ fn direct_snow_lane_validation_field(
         ("constructor.winter_column.snow", "runtime_settle_day_count") => {
             "constructor.winter_column.snow.runtime_settle_day_count"
         }
+        ("constructor.winter_column.snow", "coe_boundary_depth_m") => {
+            "constructor.winter_column.snow.coe_boundary_depth_m"
+        }
+        ("constructor.winter_column.snow", "coe_boundary_density_kg_m3") => {
+            "constructor.winter_column.snow.coe_boundary_density_kg_m3"
+        }
+        ("constructor.winter_column.snow", "coe_boundary_settle_day_count") => {
+            "constructor.winter_column.snow.coe_boundary_settle_day_count"
+        }
         ("constructor.winter_column.snow", "snow_albedo_state") => {
             "constructor.winter_column.snow.snow_albedo_state"
         }
@@ -1960,6 +1992,15 @@ fn direct_snow_lane_validation_field(
         }
         ("constructor.snow_runtime_carry", "runtime_settle_day_count") => {
             "constructor.snow_runtime_carry.runtime_settle_day_count"
+        }
+        ("constructor.snow_runtime_carry", "coe_boundary_depth_m") => {
+            "constructor.snow_runtime_carry.coe_boundary_depth_m"
+        }
+        ("constructor.snow_runtime_carry", "coe_boundary_density_kg_m3") => {
+            "constructor.snow_runtime_carry.coe_boundary_density_kg_m3"
+        }
+        ("constructor.snow_runtime_carry", "coe_boundary_settle_day_count") => {
+            "constructor.snow_runtime_carry.coe_boundary_settle_day_count"
         }
         ("constructor.snow_runtime_carry", "snow_albedo_state") => {
             "constructor.snow_runtime_carry.snow_albedo_state"

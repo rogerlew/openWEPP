@@ -160,8 +160,11 @@ pub use hydrology::{
     DirectFrostThermalInputs, DirectSnowHourlyForcing, DirectSnowLiquidPartition,
     DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome,
     HillslopeHydrologyRoutingError, SnowAlbedoError, SnowAlbedoModel, SnowAlbedoState,
-    SnowAlbedoUpdateInputs, SnowAlbedoUpdateOutcome, SnowMeltModel, Wb11HydrologyKernel,
-    Wb11HydrologyKernelGuardError, update_snow_albedo_state,
+    SnowAlbedoUpdateInputs, SnowAlbedoUpdateOutcome, SnowDensityCompactionConstants,
+    SnowDensityError, SnowDensityModel, SnowDensityRuntimeInputs, SnowDensityRuntimeOutcome,
+    SnowMeltModel, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
+    snow_density_compaction_v1_constants, update_snow_albedo_state,
+    update_snow_density_runtime_state,
 };
 pub use phase::HillslopePhase;
 pub use runtime_inputs::{

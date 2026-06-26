@@ -677,6 +677,10 @@ path = "tests/integration/snowdensity06_density_compaction.rs"
 name = "snowdensity06b_coe_bound_density_replay"
 path = "tests/integration/snowdensity06b_coe_bound_density_replay.rs"
 
+[[test]]
+name = "snowdensity07_runtime_opt_in"
+path = "tests/integration/snowdensity07_runtime_opt_in.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

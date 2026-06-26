@@ -23,6 +23,9 @@ fn r7g_constructor_prefers_winter_column_snow_over_legacy_carry() {
         runtime_depth_m: 0.75,
         runtime_density_kg_m3: 400.0,
         runtime_settle_day_count: 8.0,
+        coe_boundary_depth_m: 0.75,
+        coe_boundary_density_kg_m3: 400.0,
+        coe_boundary_settle_day_count: 8.0,
         snow_albedo_state: None,
     });
 
@@ -55,6 +58,9 @@ fn r7g_legacy_constructor_snow_carry_migrates_into_winter_column() {
         runtime_depth_m: 0.0625,
         runtime_density_kg_m3: 210.0,
         runtime_settle_day_count: 2.0,
+        coe_boundary_depth_m: 0.0625,
+        coe_boundary_density_kg_m3: 210.0,
+        coe_boundary_settle_day_count: 2.0,
         snow_albedo_state: None,
     });
 
@@ -91,6 +97,9 @@ fn r7g_r4g_snow_coupling_mutates_winter_column_snow_state() {
         runtime_depth_after_m: 0.125,
         runtime_density_after_kg_m3: 250.0,
         runtime_settle_day_count_after: 3.0,
+        coe_boundary_depth_after_m: 0.125,
+        coe_boundary_density_after_kg_m3: 250.0,
+        coe_boundary_settle_day_count_after: 3.0,
         ..DirectSnowCouplingInputs::zero()
     };
 
@@ -126,6 +135,9 @@ fn r7g_executor_commits_r4g_winter_column_snow_state_to_lane() {
         runtime_depth_after_m: 0.1875,
         runtime_density_after_kg_m3: 300.0,
         runtime_settle_day_count_after: 5.0,
+        coe_boundary_depth_after_m: 0.1875,
+        coe_boundary_density_after_kg_m3: 300.0,
+        coe_boundary_settle_day_count_after: 5.0,
         ..DirectSnowCouplingInputs::zero()
     };
     let mut frame = DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(

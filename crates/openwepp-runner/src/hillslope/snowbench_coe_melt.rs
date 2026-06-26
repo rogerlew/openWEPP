@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use openwepp_hillslope_orchestrator::{
     DirectActiveSnowPartitionInputs, DirectSnowHourlyForcing, SnowAlbedoModel, SnowAlbedoState,
-    SnowMeltModel, Wb11HydrologyKernel,
+    SnowDensityModel, SnowMeltModel, Wb11HydrologyKernel,
 };
 use openwepp_input_contract::parsers::snow::{
     ParseMode as SnowParseMode, SnowParseOptions, parse_snow_file,
@@ -562,6 +562,10 @@ fn simulate_coe_melt(
             wind_m_s: day.wind_m_s,
             dewpoint_c: day.dewpoint_c,
             snow_melt_model: model.snow_melt_model(),
+            snow_density_model: SnowDensityModel::LegacyWepp,
+            coe_boundary_depth_m: runtime_depth_m,
+            coe_boundary_density_kg_m3: runtime_density_kg_m3,
+            coe_boundary_settle_day_count: runtime_settle_day_count,
             snow_albedo_model: model.snow_albedo_model(),
             snow_albedo_state,
             underlying_surface_albedo: DEFAULT_UNDERLYING_SURFACE_ALBEDO,

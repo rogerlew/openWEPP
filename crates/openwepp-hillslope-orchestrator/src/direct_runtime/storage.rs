@@ -525,13 +525,17 @@ impl DirectDayFrame {
         phase_entry_count += 1;
         self.snow_coupling = snow_coupling;
         if snow_coupling.snow_state_projected {
-            self.winter_column.snow = DirectSnowLaneState::from_runtime_values_and_albedo_state(
-                snow_coupling.runtime_swe_after_m,
-                snow_coupling.runtime_depth_after_m,
-                snow_coupling.runtime_density_after_kg_m3,
-                snow_coupling.runtime_settle_day_count_after,
-                snow_coupling.snow_albedo_state_after,
-            );
+            self.winter_column.snow =
+                DirectSnowLaneState::from_runtime_values_boundary_and_albedo_state(
+                    snow_coupling.runtime_swe_after_m,
+                    snow_coupling.runtime_depth_after_m,
+                    snow_coupling.runtime_density_after_kg_m3,
+                    snow_coupling.runtime_settle_day_count_after,
+                    snow_coupling.coe_boundary_depth_after_m,
+                    snow_coupling.coe_boundary_density_after_kg_m3,
+                    snow_coupling.coe_boundary_settle_day_count_after,
+                    snow_coupling.snow_albedo_state_after,
+                );
             self.snow_runtime_carry = Some(self.winter_column.snow.into());
         }
         self.storage_reconciliation_inputs.snow_coupling_m = snow_coupling.snow_coupling_m;
@@ -558,6 +562,15 @@ impl DirectDayFrame {
             runtime_settle_day_count_after: self
                 .snow_coupling_downstream_operands
                 .runtime_settle_day_count_after,
+            coe_boundary_depth_after_m: self
+                .snow_coupling_downstream_operands
+                .coe_boundary_depth_after_m,
+            coe_boundary_density_after_kg_m3: self
+                .snow_coupling_downstream_operands
+                .coe_boundary_density_after_kg_m3,
+            coe_boundary_settle_day_count_after: self
+                .snow_coupling_downstream_operands
+                .coe_boundary_settle_day_count_after,
             snow_albedo_state_after: self
                 .snow_coupling_downstream_operands
                 .snow_albedo_state_after,
@@ -741,6 +754,13 @@ impl DirectDayFrame {
             runtime_settle_day_count_after: self
                 .snow_coupling_inputs
                 .runtime_settle_day_count_after,
+            coe_boundary_depth_after_m: self.snow_coupling_inputs.coe_boundary_depth_after_m,
+            coe_boundary_density_after_kg_m3: self
+                .snow_coupling_inputs
+                .coe_boundary_density_after_kg_m3,
+            coe_boundary_settle_day_count_after: self
+                .snow_coupling_inputs
+                .coe_boundary_settle_day_count_after,
             snow_albedo_state_after: self.snow_coupling_inputs.snow_albedo_state_after,
         })
     }
@@ -880,9 +900,27 @@ impl DirectDayFrame {
             "snow_coupling.runtime_settle_day_count_after",
             self.snow_coupling_inputs.runtime_settle_day_count_after,
         )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.coe_boundary_depth_after_m",
+            self.snow_coupling_inputs.coe_boundary_depth_after_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.coe_boundary_density_after_kg_m3",
+            self.snow_coupling_inputs.coe_boundary_density_after_kg_m3,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.coe_boundary_settle_day_count_after",
+            self.snow_coupling_inputs
+                .coe_boundary_settle_day_count_after,
+        )?;
         if self.snow_coupling_inputs.runtime_density_after_kg_m3 > 522.0 {
             return Err(DirectRuntimeError::DirectDomainViolation {
                 field: "snow_coupling.runtime_density_after_kg_m3",
+            });
+        }
+        if self.snow_coupling_inputs.coe_boundary_density_after_kg_m3 > 522.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "snow_coupling.coe_boundary_density_after_kg_m3",
             });
         }
         Ok(())
@@ -1215,6 +1253,9 @@ pub struct DirectSnowCouplingInputs {
     pub runtime_depth_after_m: f64,
     pub runtime_density_after_kg_m3: f64,
     pub runtime_settle_day_count_after: f64,
+    pub coe_boundary_depth_after_m: f64,
+    pub coe_boundary_density_after_kg_m3: f64,
+    pub coe_boundary_settle_day_count_after: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
@@ -1234,6 +1275,9 @@ impl DirectSnowCouplingInputs {
             runtime_depth_after_m: 0.0,
             runtime_density_after_kg_m3: 0.0,
             runtime_settle_day_count_after: 0.0,
+            coe_boundary_depth_after_m: 0.0,
+            coe_boundary_density_after_kg_m3: 0.0,
+            coe_boundary_settle_day_count_after: 0.0,
             snow_albedo_state_after: None,
         }
     }
@@ -1253,6 +1297,9 @@ pub struct DirectSnowCouplingState {
     pub runtime_depth_after_m: f64,
     pub runtime_density_after_kg_m3: f64,
     pub runtime_settle_day_count_after: f64,
+    pub coe_boundary_depth_after_m: f64,
+    pub coe_boundary_density_after_kg_m3: f64,
+    pub coe_boundary_settle_day_count_after: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
@@ -1272,6 +1319,9 @@ impl DirectSnowCouplingState {
             runtime_depth_after_m: 0.0,
             runtime_density_after_kg_m3: 0.0,
             runtime_settle_day_count_after: 0.0,
+            coe_boundary_depth_after_m: 0.0,
+            coe_boundary_density_after_kg_m3: 0.0,
+            coe_boundary_settle_day_count_after: 0.0,
             snow_albedo_state_after: None,
         }
     }
@@ -1290,6 +1340,9 @@ pub struct DirectSnowCouplingDownstreamOperands {
     pub runtime_depth_after_m: f64,
     pub runtime_density_after_kg_m3: f64,
     pub runtime_settle_day_count_after: f64,
+    pub coe_boundary_depth_after_m: f64,
+    pub coe_boundary_density_after_kg_m3: f64,
+    pub coe_boundary_settle_day_count_after: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
@@ -1308,6 +1361,9 @@ impl DirectSnowCouplingDownstreamOperands {
             runtime_depth_after_m: 0.0,
             runtime_density_after_kg_m3: 0.0,
             runtime_settle_day_count_after: 0.0,
+            coe_boundary_depth_after_m: 0.0,
+            coe_boundary_density_after_kg_m3: 0.0,
+            coe_boundary_settle_day_count_after: 0.0,
             snow_albedo_state_after: None,
         }
     }
@@ -1327,6 +1383,9 @@ impl From<DirectSnowCouplingState> for DirectSnowCouplingDownstreamOperands {
             runtime_depth_after_m: state.runtime_depth_after_m,
             runtime_density_after_kg_m3: state.runtime_density_after_kg_m3,
             runtime_settle_day_count_after: state.runtime_settle_day_count_after,
+            coe_boundary_depth_after_m: state.coe_boundary_depth_after_m,
+            coe_boundary_density_after_kg_m3: state.coe_boundary_density_after_kg_m3,
+            coe_boundary_settle_day_count_after: state.coe_boundary_settle_day_count_after,
             snow_albedo_state_after: state.snow_albedo_state_after,
         }
     }
@@ -1347,6 +1406,9 @@ pub struct DirectSnowCouplingShadowProjection {
     pub runtime_depth_after_m: f64,
     pub runtime_density_after_kg_m3: f64,
     pub runtime_settle_day_count_after: f64,
+    pub coe_boundary_depth_after_m: f64,
+    pub coe_boundary_density_after_kg_m3: f64,
+    pub coe_boundary_settle_day_count_after: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 

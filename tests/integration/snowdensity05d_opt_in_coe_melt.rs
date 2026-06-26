@@ -4,7 +4,8 @@ use std::path::Path;
 use openwepp_hillslope_orchestrator::{
     DirectActiveSnowPartitionInputs, DirectDayFrame, DirectRunIdentity, DirectSnowCouplingInputs,
     DirectSnowHourlyForcing, SnowAlbedoModel, SnowAlbedoState, SnowAlbedoUpdateInputs,
-    SnowMeltModel, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError, update_snow_albedo_state,
+    SnowDensityModel, SnowMeltModel, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
+    update_snow_albedo_state,
 };
 use openwepp_kernel_contract::HillslopeKernelPhaseClass;
 
@@ -22,7 +23,7 @@ fn read(path: &str) -> String {
 fn snowdensity05d_contract_markers_bind_opt_in_melt_wiring() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 85",
+        "contract_version: 86",
         "INV-SNOWFREEZE-055",
         "OBL-SNOWFREEZE-P-030",
         "snow_melt_shortwave_absorbed_fraction",
@@ -70,6 +71,10 @@ fn warm_radiation_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitionInput
         wind_m_s: 0.0,
         dewpoint_c: 0.0,
         snow_melt_model: model,
+        snow_density_model: SnowDensityModel::LegacyWepp,
+        coe_boundary_depth_m: 1.0,
+        coe_boundary_density_kg_m3: 400.0,
+        coe_boundary_settle_day_count: 4.0,
         snow_albedo_model: (model == SnowMeltModel::CoeShortwaveAlbedoV1)
             .then_some(SnowAlbedoModel::Brock2000TemperatureAgeV1),
         snow_albedo_state: (model == SnowMeltModel::CoeShortwaveAlbedoV1).then_some(
@@ -170,6 +175,9 @@ fn snowdensity05d_direct_runtime_projects_routed_melt_and_albedo_carry() {
         runtime_depth_after_m: opt_in.runtime_depth_after_m,
         runtime_density_after_kg_m3: opt_in.runtime_density_after_kg_m3,
         runtime_settle_day_count_after: opt_in.runtime_settle_day_count_after,
+        coe_boundary_depth_after_m: opt_in.coe_boundary_depth_after_m,
+        coe_boundary_density_after_kg_m3: opt_in.coe_boundary_density_after_kg_m3,
+        coe_boundary_settle_day_count_after: opt_in.coe_boundary_settle_day_count_after,
         snow_albedo_state_after: opt_in.snow_albedo_state_after,
     };
     day.run_r4g_snow_coupling_span()

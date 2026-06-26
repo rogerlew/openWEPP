@@ -219,6 +219,10 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             runtime_depth_after_m: snow_liquid.runtime_depth_after_m,
             runtime_density_after_kg_m3: snow_liquid.runtime_density_after_kg_m3,
             runtime_settle_day_count_after: snow_liquid.runtime_settle_day_count_after,
+            coe_boundary_depth_after_m: snow_liquid.coe_boundary_depth_after_m,
+            coe_boundary_density_after_kg_m3: snow_liquid.coe_boundary_density_after_kg_m3,
+            coe_boundary_settle_day_count_after: snow_liquid
+                .coe_boundary_settle_day_count_after,
             snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
         });
         let percolation_inputs =
@@ -851,6 +855,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             runtime_depth_after_m: snow_liquid.runtime_depth_after_m,
             runtime_density_after_kg_m3: snow_liquid.runtime_density_after_kg_m3,
             runtime_settle_day_count_after: snow_liquid.runtime_settle_day_count_after,
+            coe_boundary_depth_after_m: snow_liquid.coe_boundary_depth_after_m,
+            coe_boundary_density_after_kg_m3: snow_liquid.coe_boundary_density_after_kg_m3,
+            coe_boundary_settle_day_count_after: snow_liquid
+                .coe_boundary_settle_day_count_after,
             snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
         });
         day_input.peak_runoff_inputs = Some(authority.peak_runoff.inputs(hyetograph.clone()));
@@ -2935,6 +2943,7 @@ impl DirectProductionSnowFrostAuthority {
         if !self.active_forcing(forcing, hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)? {
             return Ok(openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
                 active_snow_coupling: false,
+                snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp,
                 snow_coupling_signed_s_m: 0.0,
                 raw_melt_m: 0.0,
                 redistributed_melt_m: 0.0,
@@ -2945,6 +2954,12 @@ impl DirectProductionSnowFrostAuthority {
                 runtime_depth_after_m: snow_lane_state.runtime_depth_m,
                 runtime_density_after_kg_m3: snow_lane_state.runtime_density_kg_m3,
                 runtime_settle_day_count_after: snow_lane_state.runtime_settle_day_count,
+                coe_boundary_depth_after_m: snow_lane_state.coe_boundary_depth_m,
+                coe_boundary_density_after_kg_m3: snow_lane_state.coe_boundary_density_kg_m3,
+                coe_boundary_settle_day_count_after: snow_lane_state
+                    .coe_boundary_settle_day_count,
+                density_swe_identity_residual_m: 0.0,
+                density_unbounded_swe_residual_m: 0.0,
                 snow_albedo_state_after: snow_lane_state.snow_albedo_state,
             });
         }
@@ -3001,6 +3016,10 @@ impl DirectProductionSnowFrostAuthority {
                 wind_m_s: forcing.vwind_m_s,
                 dewpoint_c: forcing.tdpt_c,
                 snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe,
+                snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp,
+                coe_boundary_depth_m: snow_lane_state.coe_boundary_depth_m,
+                coe_boundary_density_kg_m3: snow_lane_state.coe_boundary_density_kg_m3,
+                coe_boundary_settle_day_count: snow_lane_state.coe_boundary_settle_day_count,
                 snow_albedo_model: None,
                 snow_albedo_state: snow_lane_state.snow_albedo_state,
                 underlying_surface_albedo: 0.2,

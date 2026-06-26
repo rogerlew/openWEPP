@@ -357,6 +357,9 @@ fn apply_projectable_terminal_shadows(
         runtime_depth_after_m: 0.0,
         runtime_density_after_kg_m3: 0.0,
         runtime_settle_day_count_after: 0.0,
+        coe_boundary_depth_after_m: 0.0,
+        coe_boundary_density_after_kg_m3: 0.0,
+        coe_boundary_settle_day_count_after: 0.0,
         snow_albedo_state_after: None,
     });
     day.storage_shadow_projection = Some(DirectStorageShadowProjection {

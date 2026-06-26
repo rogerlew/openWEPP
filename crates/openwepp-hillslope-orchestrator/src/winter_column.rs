@@ -31,6 +31,9 @@ pub struct DirectSnowLaneState {
     pub runtime_depth_m: f64,
     pub runtime_density_kg_m3: f64,
     pub runtime_settle_day_count: f64,
+    pub coe_boundary_depth_m: f64,
+    pub coe_boundary_density_kg_m3: f64,
+    pub coe_boundary_settle_day_count: f64,
     pub snow_albedo_state: Option<SnowAlbedoState>,
 }
 
@@ -42,6 +45,9 @@ impl DirectSnowLaneState {
             runtime_depth_m: 0.0,
             runtime_density_kg_m3: 0.0,
             runtime_settle_day_count: 0.0,
+            coe_boundary_depth_m: 0.0,
+            coe_boundary_density_kg_m3: 0.0,
+            coe_boundary_settle_day_count: 0.0,
             snow_albedo_state: None,
         }
     }
@@ -58,6 +64,9 @@ impl DirectSnowLaneState {
             runtime_depth_m,
             runtime_density_kg_m3,
             runtime_settle_day_count,
+            coe_boundary_depth_m: runtime_depth_m,
+            coe_boundary_density_kg_m3: runtime_density_kg_m3,
+            coe_boundary_settle_day_count: runtime_settle_day_count,
             snow_albedo_state: None,
         }
     }
@@ -75,6 +84,33 @@ impl DirectSnowLaneState {
             runtime_depth_m,
             runtime_density_kg_m3,
             runtime_settle_day_count,
+            coe_boundary_depth_m: runtime_depth_m,
+            coe_boundary_density_kg_m3: runtime_density_kg_m3,
+            coe_boundary_settle_day_count: runtime_settle_day_count,
+            snow_albedo_state,
+        }
+    }
+
+    #[must_use]
+    #[allow(clippy::too_many_arguments)]
+    pub const fn from_runtime_values_boundary_and_albedo_state(
+        runtime_swe_m: f64,
+        runtime_depth_m: f64,
+        runtime_density_kg_m3: f64,
+        runtime_settle_day_count: f64,
+        coe_boundary_depth_m: f64,
+        coe_boundary_density_kg_m3: f64,
+        coe_boundary_settle_day_count: f64,
+        snow_albedo_state: Option<SnowAlbedoState>,
+    ) -> Self {
+        Self {
+            runtime_swe_m,
+            runtime_depth_m,
+            runtime_density_kg_m3,
+            runtime_settle_day_count,
+            coe_boundary_depth_m,
+            coe_boundary_density_kg_m3,
+            coe_boundary_settle_day_count,
             snow_albedo_state,
         }
     }
@@ -85,6 +121,9 @@ impl DirectSnowLaneState {
             || self.runtime_depth_m > 0.0
             || self.runtime_density_kg_m3 > 0.0
             || self.runtime_settle_day_count > 0.0
+            || self.coe_boundary_depth_m > 0.0
+            || self.coe_boundary_density_kg_m3 > 0.0
+            || self.coe_boundary_settle_day_count > 0.0
             || self.snow_albedo_state.is_some()
     }
 }

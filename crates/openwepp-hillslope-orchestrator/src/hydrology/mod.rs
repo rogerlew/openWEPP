@@ -7,3 +7,4 @@ include!("05_pl_phase_dispatch.rs");
 include!("06_growth_state.rs");
 include!("07_decomposition_equations.rs");
 include!("08_snow_albedo.rs");
+include!("09_snow_density.rs");

@@ -194,6 +194,7 @@ impl Wb11HydrologyKernel {
 
         Ok(DirectSnowLiquidPartition {
             active_snow_coupling,
+            snow_density_model: SnowDensityModel::LegacyWepp,
             snow_coupling_signed_s_m: snow_coupling.signed_s,
             raw_melt_m: snow_coupling.raw_melt,
             redistributed_melt_m: snow_coupling.redistributed_melt,
@@ -204,6 +205,11 @@ impl Wb11HydrologyKernel {
             runtime_depth_after_m: snow_coupling.runtime_depth_m,
             runtime_density_after_kg_m3: snow_coupling.runtime_density_kg_m3,
             runtime_settle_day_count_after: snow_coupling.runtime_settle_day_count,
+            coe_boundary_depth_after_m: snow_coupling.runtime_depth_m,
+            coe_boundary_density_after_kg_m3: snow_coupling.runtime_density_kg_m3,
+            coe_boundary_settle_day_count_after: snow_coupling.runtime_settle_day_count,
+            density_swe_identity_residual_m: 0.0,
+            density_unbounded_swe_residual_m: 0.0,
             snow_albedo_state_after: snow_coupling.snow_albedo_state_after,
         })
     }
@@ -277,21 +283,88 @@ impl Wb11HydrologyKernel {
         };
         let (routed_melt_m, post_winter_rain_m) =
             Self::resolve_snow_partition_terms(phase_class, inputs.hyetograph_rainfall_m, &snow_coupling)?;
+        let density_outcome = Self::resolve_typed_snow_density_outcome(
+            phase_class,
+            &inputs,
+            &snow_coupling,
+            routed_melt_m,
+        )?;
 
         Ok(DirectSnowLiquidPartition {
             active_snow_coupling,
+            snow_density_model: inputs.snow_density_model,
             snow_coupling_signed_s_m: snow_coupling.signed_s,
             raw_melt_m: snow_coupling.raw_melt,
             redistributed_melt_m: snow_coupling.redistributed_melt,
             routed_melt_m,
             snowpack_swe_loss_m: snow_coupling.snowpack_state_loss,
             post_winter_rain_m,
-            runtime_swe_after_m: snow_coupling.runtime_swe,
-            runtime_depth_after_m: snow_coupling.runtime_depth_m,
-            runtime_density_after_kg_m3: snow_coupling.runtime_density_kg_m3,
+            runtime_swe_after_m: density_outcome.runtime_swe_after_m,
+            runtime_depth_after_m: density_outcome.runtime_depth_after_m,
+            runtime_density_after_kg_m3: density_outcome.runtime_density_after_kg_m3,
             runtime_settle_day_count_after: snow_coupling.runtime_settle_day_count,
+            coe_boundary_depth_after_m: density_outcome.coe_boundary_depth_after_m,
+            coe_boundary_density_after_kg_m3: density_outcome.coe_boundary_density_after_kg_m3,
+            coe_boundary_settle_day_count_after: snow_coupling.runtime_settle_day_count,
+            density_swe_identity_residual_m: density_outcome.max_abs_swe_identity_residual_m,
+            density_unbounded_swe_residual_m: density_outcome.max_abs_unbounded_swe_residual_m,
             snow_albedo_state_after: snow_coupling.snow_albedo_state_after,
         })
+    }
+
+    fn resolve_typed_snow_density_outcome(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        snow_coupling: &SnowCouplingOutcome,
+        routed_melt_m: f64,
+    ) -> Result<SnowDensityRuntimeOutcome, Wb11HydrologyKernelGuardError> {
+        let mean_air_temperature_c = inputs
+            .hourly
+            .iter()
+            .map(|hour| hour.air_temperature_c)
+            .sum::<f64>()
+            / 24.0;
+        update_snow_density_runtime_state(SnowDensityRuntimeInputs {
+            model: inputs.snow_density_model,
+            prior_swe_m: inputs.runtime_swe_m,
+            prior_depth_m: inputs.runtime_depth_m,
+            prior_density_kg_m3: inputs.runtime_density_kg_m3,
+            boundary_swe_after_m: snow_coupling.runtime_swe,
+            boundary_depth_after_m: snow_coupling.runtime_depth_m,
+            boundary_density_after_kg_m3: snow_coupling.runtime_density_kg_m3,
+            snow_input_m: snow_coupling.accumulation,
+            liquid_for_compaction_m: snow_coupling.snowpack_state_loss + routed_melt_m,
+            mean_air_temperature_c,
+            runtime_density_cap_kg_m3: SIMIMPL29_SNOW_DENSITY_CAP_KG_M3,
+        })
+        .map_err(|error| Self::snow_density_guard_error(phase_class, &error))
+    }
+
+    fn snow_density_guard_error(
+        phase_class: HillslopeKernelPhaseClass,
+        error: &SnowDensityError,
+    ) -> Wb11HydrologyKernelGuardError {
+        match error {
+            SnowDensityError::NonFiniteInput { symbol, value } => {
+                Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                    phase_class,
+                    symbol: BoundarySymbol::from(*symbol),
+                    value: *value,
+                }
+            }
+            SnowDensityError::OutOfRangeInput {
+                symbol,
+                value,
+                minimum,
+                maximum,
+            } => Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(*symbol),
+                value: *value,
+                minimum: *minimum,
+                maximum: *maximum,
+            },
+        }
     }
 
     pub(crate) fn require_direct_typed_snow_value(

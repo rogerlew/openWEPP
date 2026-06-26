@@ -1507,8 +1507,8 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     assert!(lane_constructor <= 1_024);
     assert!(day_constructor <= 4_096);
     assert!(run_frame <= 512);
-    // R7G carries typed snow runtime state at lane scope; keep the added budget tight.
-    assert!(lane_frame <= 1_184);
+    // R7G carries typed snow runtime state plus SNOWDENSITY-07 CoE boundary carry at lane scope.
+    assert!(lane_frame <= 1_208);
     assert!(day_frame <= 12_288);
 }
 
@@ -2894,6 +2894,9 @@ fn r4g_snow_coupling_producer_consumes_signed_handoff_and_updates_r4b_input() {
         runtime_depth_after_m: 0.0,
         runtime_density_after_kg_m3: 0.0,
         runtime_settle_day_count_after: 0.0,
+        coe_boundary_depth_after_m: 0.0,
+        coe_boundary_density_after_kg_m3: 0.0,
+        coe_boundary_settle_day_count_after: 0.0,
         snow_albedo_state_after: None,
     };
 

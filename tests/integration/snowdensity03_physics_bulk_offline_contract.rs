@@ -39,8 +39,9 @@ fn physics_bulk_snowbench_runs_offline_for_snotel_fixture() {
 }
 
 #[test]
-fn physics_bulk_is_confined_to_snowbench_and_diagnostic_surfaces() {
+fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
     let allowed = [
+        "crates/openwepp-hillslope-orchestrator/src/hydrology/09_snow_density.rs",
         "crates/openwepp-runner/src/hillslope/snowbench_coe_density.rs",
         "crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs",
         "crates/openwepp-runner/src/hillslope/mod.rs",
@@ -50,10 +51,17 @@ fn physics_bulk_is_confined_to_snowbench_and_diagnostic_surfaces() {
         "tests/integration/snowdensity03_physics_bulk_offline_contract.rs",
         "tests/integration/snowdensity06_density_compaction.rs",
         "tests/integration/snowdensity06b_coe_bound_density_replay.rs",
+        "tests/integration/snowdensity07_runtime_opt_in.rs",
         "tools/snowfreeze_observed/coe_bound_density_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_snotel_profile.py",
     ];
+    let contract =
+        fs::read_to_string("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md")
+            .expect("SC-SNOWFREEZE-001 should be readable");
+    assert!(contract.contains("INV-SNOWFREEZE-060"));
+    assert!(contract.contains("physics_bulk_density_compaction_v1"));
+
     let mut unexpected = Vec::new();
     collect_physics_bulk_hits(Path::new("crates"), &allowed, &mut unexpected);
     collect_physics_bulk_hits(Path::new("tests/integration"), &allowed, &mut unexpected);
@@ -65,7 +73,7 @@ fn physics_bulk_is_confined_to_snowbench_and_diagnostic_surfaces() {
 
     assert!(
         unexpected.is_empty(),
-        "physics_bulk must stay confined to snowbench/diagnostic surfaces: {unexpected:?}"
+        "physics_bulk must stay confined to diagnostic or SNOWDENSITY-07 opt-in surfaces: {unexpected:?}"
     );
 }
 

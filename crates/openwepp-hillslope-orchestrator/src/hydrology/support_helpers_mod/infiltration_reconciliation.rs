@@ -996,40 +996,74 @@ pub(crate) fn compute_simimpl29_melt_hour(
             });
         }
 
-        let mut runtime_depth_m = inputs.runtime_depth_m;
-        let mut runtime_density_kg_m3 = inputs.runtime_density_kg_m3;
-        let mut settle_day_count = inputs.runtime_settle_day_count;
-
         Self::require_direct_typed_snow_value(
             phase_class,
             BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
-            runtime_depth_m,
+            inputs.runtime_depth_m,
             Some(0.0),
             None,
         )?;
         Self::require_direct_typed_snow_value(
             phase_class,
             BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
-            runtime_density_kg_m3,
+            inputs.runtime_density_kg_m3,
             Some(0.0),
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
         )?;
         Self::require_direct_typed_snow_value(
             phase_class,
             BoundarySymbol::from(SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL),
-            settle_day_count,
+            inputs.runtime_settle_day_count,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow.coe_boundary_depth_m"),
+            inputs.coe_boundary_depth_m,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow.coe_boundary_density_kg_m3"),
+            inputs.coe_boundary_density_kg_m3,
+            Some(0.0),
+            Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow.coe_boundary_settle_day_count"),
+            inputs.coe_boundary_settle_day_count,
             Some(0.0),
             None,
         )?;
 
-        if runtime_depth_m <= WB11_ZERO_THRESHOLD && inputs.runtime_swe_m > WB11_ZERO_THRESHOLD {
-            if runtime_density_kg_m3 <= WB11_ZERO_THRESHOLD {
-                runtime_density_kg_m3 = inputs.newsnw_kg_m3;
+        let mut boundary_depth_m = if inputs.snow_density_model == SnowDensityModel::LegacyWepp {
+            inputs.runtime_depth_m
+        } else {
+            inputs.coe_boundary_depth_m
+        };
+        let mut boundary_density_kg_m3 =
+            if inputs.snow_density_model == SnowDensityModel::LegacyWepp {
+                inputs.runtime_density_kg_m3
+            } else {
+                inputs.coe_boundary_density_kg_m3
+            };
+        let mut settle_day_count = if inputs.snow_density_model == SnowDensityModel::LegacyWepp {
+            inputs.runtime_settle_day_count
+        } else {
+            inputs.coe_boundary_settle_day_count
+        };
+
+        if boundary_depth_m <= WB11_ZERO_THRESHOLD && inputs.runtime_swe_m > WB11_ZERO_THRESHOLD {
+            if boundary_density_kg_m3 <= WB11_ZERO_THRESHOLD {
+                boundary_density_kg_m3 = inputs.newsnw_kg_m3;
             }
-            runtime_depth_m =
+            boundary_depth_m =
                 openwepp_unit_boundary::conversions::water_equivalent_meters_to_snow_depth_meters(
                     inputs.runtime_swe_m,
-                    runtime_density_kg_m3,
+                    boundary_density_kg_m3,
                 )
                 .map_err(|error| {
                     Self::unit_conversion_guard_error(
@@ -1039,18 +1073,18 @@ pub(crate) fn compute_simimpl29_melt_hour(
                     )
                 })?;
         }
-        if runtime_depth_m > WB11_ZERO_THRESHOLD
-            && runtime_density_kg_m3 <= WB11_ZERO_THRESHOLD
+        if boundary_depth_m > WB11_ZERO_THRESHOLD
+            && boundary_density_kg_m3 <= WB11_ZERO_THRESHOLD
         {
-            runtime_density_kg_m3 = inputs.newsnw_kg_m3;
+            boundary_density_kg_m3 = inputs.newsnw_kg_m3;
         }
-        if runtime_depth_m <= WB11_ZERO_THRESHOLD {
-            runtime_depth_m = 0.0;
-            runtime_density_kg_m3 = 0.0;
+        if boundary_depth_m <= WB11_ZERO_THRESHOLD {
+            boundary_depth_m = 0.0;
+            boundary_density_kg_m3 = 0.0;
         }
 
-        let mut snodep = runtime_depth_m;
-        let mut dens = runtime_density_kg_m3;
+        let mut snodep = boundary_depth_m;
+        let mut dens = boundary_density_kg_m3;
         let daily_mean_temp = f64::midpoint(inputs.tmax_c, inputs.tmin_c);
 
         let mut accumulation_water_m = 0.0;

@@ -13,6 +13,17 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-07-runtime-opt-in-001/` is complete as
+  SNOWDENSITY-07, the runtime opt-in gate. It amended `SC-SNOWFREEZE-001`
+  v86 with `INV-SNOWFREEZE-060`, `OBL-SNOWFREEZE-P-035`, typed
+  `snow_density_model`, and CoE boundary carry surfaces; added
+  `physics_bulk_density_compaction_v1` behind an explicit typed selector;
+  preserved `legacy_wepp` as surface-driven default/rollback; and projected
+  opt-in runtime snow depth/density plus separate CoE boundary carry through
+  direct R4G state, downstream operands, shadow projection, runtime carry, and
+  publication-facing winter-column state. Full workspace gates pass. The next
+  route is SNOWDENSITY-08 snow/frost gate rerun with the opt-in available but
+  still not default-activated.
 - `20260626-snowdensity-06b-coe-bound-density-replay-001/` is complete as
   SNOWDENSITY-06B, the CoE-bound density replay gate. It amended
   `SC-SNOWFREEZE-001` to v85 with `INV-SNOWFREEZE-059`,

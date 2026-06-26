@@ -171,6 +171,7 @@ pub(crate) struct SnowCouplingOutcome {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectSnowLiquidPartition {
     pub active_snow_coupling: bool,
+    pub snow_density_model: SnowDensityModel,
     pub snow_coupling_signed_s_m: f64,
     pub raw_melt_m: f64,
     pub redistributed_melt_m: f64,
@@ -181,6 +182,11 @@ pub struct DirectSnowLiquidPartition {
     pub runtime_depth_after_m: f64,
     pub runtime_density_after_kg_m3: f64,
     pub runtime_settle_day_count_after: f64,
+    pub coe_boundary_depth_after_m: f64,
+    pub coe_boundary_density_after_kg_m3: f64,
+    pub coe_boundary_settle_day_count_after: f64,
+    pub density_swe_identity_residual_m: f64,
+    pub density_unbounded_swe_residual_m: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
@@ -222,6 +228,10 @@ pub struct DirectActiveSnowPartitionInputs {
     pub wind_m_s: f64,
     pub dewpoint_c: f64,
     pub snow_melt_model: SnowMeltModel,
+    pub snow_density_model: SnowDensityModel,
+    pub coe_boundary_depth_m: f64,
+    pub coe_boundary_density_kg_m3: f64,
+    pub coe_boundary_settle_day_count: f64,
     pub snow_albedo_model: Option<SnowAlbedoModel>,
     pub snow_albedo_state: Option<SnowAlbedoState>,
     pub underlying_surface_albedo: f64,
