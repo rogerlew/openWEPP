@@ -10,8 +10,10 @@ default run selected `legacy_wepp` for `75,610` direct-production snow rows and
 the opt-in run selected `physics_bulk_density_compaction_v1` for `75,610` rows.
 
 The opt-in improves snow-depth residuals but still fails snow control at
-Sleepers South, Sleepers W9, and GGD498 Morris. SCAN Mandan and Reynolds Creek
-still lack paired observed snow-depth rows for the snow-control gate.
+Sleepers South, Sleepers W9, and GGD498 Morris. These are the only
+gate-eligible paired-snow non-SNOTEL sites in this package. SCAN Mandan ND and
+Reynolds Creek ID lack observed snow-depth rows and are diagnostic-only
+out-of-gate evidence for this snow-control gate.
 
 Next recommended package:
 

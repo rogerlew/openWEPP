@@ -167,10 +167,12 @@ def build_report(
     snotel_gate_cleared = bool(
         snowdensity08["summary"]["snotel_opt_in_density_gate_cleared"]
     )
-    default_counts = default_report["summary"]["snow_control_status_counts"]
-    opt_in_counts = opt_in_report["summary"]["snow_control_status_counts"]
-    default_snow_control_passed = set(default_counts) == {"SNOW_CONTROL_PASSED"}
-    opt_in_snow_control_passed = set(opt_in_counts) == {"SNOW_CONTROL_PASSED"}
+    default_summary = default_report["summary"]
+    opt_in_summary = opt_in_report["summary"]
+    default_counts = default_summary["snow_control_gate_status_counts"]
+    opt_in_counts = opt_in_summary["snow_control_gate_status_counts"]
+    default_snow_control_passed = snow_control_gate_passed(default_summary)
+    opt_in_snow_control_passed = snow_control_gate_passed(opt_in_summary)
     trace_proof = trace_model_proof(default_trace, opt_in_trace)
     coupled_opt_in_wat_path = trace_proof["opt_in_trace_selected_count"] > 0
     frost_attribution_authorized = (
@@ -206,6 +208,23 @@ def build_report(
             "parser_runfile_user_cli_activation_added": False,
             "output_schema_changed": False,
             "no_site_constants": True,
+            "snow_control_gate_rule": (
+                "only sites with observed snow-depth rows participate in the "
+                "snow-control gate; sites without observed snow depth are "
+                "reported as diagnostic-only out-of-gate evidence"
+            ),
+            "default_snow_control_gate_site_count": default_summary[
+                "snow_control_gate_site_count"
+            ],
+            "opt_in_snow_control_gate_site_count": opt_in_summary[
+                "snow_control_gate_site_count"
+            ],
+            "default_snow_control_out_of_gate_site_ids": default_summary[
+                "snow_control_out_of_gate_site_ids"
+            ],
+            "opt_in_snow_control_out_of_gate_site_ids": opt_in_summary[
+                "snow_control_out_of_gate_site_ids"
+            ],
         },
         "diagnostic_selector": {
             "env": DIAGNOSTIC_MODEL_ENV,
@@ -237,6 +256,13 @@ def build_report(
             "default_trace": str((output_dir / "default_direct_snow_trace.jsonl").relative_to(REPO_ROOT)),
             "opt_in_trace": str((output_dir / "opt_in_direct_snow_trace.jsonl").relative_to(REPO_ROOT)),
         },
+    }
+
+
+def snow_control_gate_passed(summary: dict[str, Any]) -> bool:
+    gate_counts = summary["snow_control_gate_status_counts"]
+    return summary["snow_control_gate_site_count"] > 0 and set(gate_counts) == {
+        "SNOW_CONTROL_PASSED"
     }
 
 
@@ -337,7 +363,10 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Opt-in snow-control passed: `{summary['opt_in_snow_control_passed']}`",
         f"- Frost attribution authorized: `{summary['frost_attribution_authorized']}`",
         f"- Default snow-control counts: `{report['default_non_snotel']['summary']['snow_control_status_counts']}`",
+        f"- Default snow-control gate counts: `{report['default_non_snotel']['summary']['snow_control_gate_status_counts']}`",
         f"- Opt-in snow-control counts: `{report['opt_in_non_snotel']['summary']['snow_control_status_counts']}`",
+        f"- Opt-in snow-control gate counts: `{report['opt_in_non_snotel']['summary']['snow_control_gate_status_counts']}`",
+        f"- Diagnostic-only out-of-gate sites: `{summary['opt_in_snow_control_out_of_gate_site_ids']}`",
         f"- Trace proof: `{report['diagnostic_selector']['trace_proof']}`",
         "",
         "## Site Deltas",

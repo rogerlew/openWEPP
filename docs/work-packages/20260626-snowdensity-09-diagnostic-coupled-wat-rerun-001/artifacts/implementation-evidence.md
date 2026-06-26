@@ -4,8 +4,9 @@ Evidence class: Static + Ran.
 
 Implemented:
 
-- `SC-SNOWFREEZE-001` v88 with `INV-SNOWFREEZE-062`,
-  `OBL-SNOWFREEZE-P-037`, and the SNOWDENSITY-09 addendum.
+- `SC-SNOWFREEZE-001` v89 with `INV-SNOWFREEZE-062`,
+  `OBL-SNOWFREEZE-P-037`, the SNOWDENSITY-09 addendum, and the paired-snow
+  gate correction.
 - `DirectProductionSnowFrostAuthority` package-bound diagnostic selector:
   `OPENWEPP_SNOWDENSITY09_DENSITY_MODEL`.
 - Fail-closed selector parsing for unknown or non-UTF-8 values.
@@ -14,7 +15,8 @@ Implemented:
 - `tools/snowfreeze_observed/snowdensity09_coupled_wat_rerun.py` runs default
   and opt-in non-SNOTEL WAT evidence and writes the compact decision report.
 - `tools/snowfreeze_observed/non_snotel_rubric_baseline.py` accepts a model id
-  without changing existing default callers.
+  without changing existing default callers and publishes separate all-site,
+  gate-eligible, and diagnostic-only out-of-gate snow-control status sets.
 - `tests/integration/snowdensity09_coupled_wat_rerun.rs` guards contract,
   package, default isolation, diagnostic selector boundaries, script markers,
   and executed-report truthfulness.
@@ -43,4 +45,7 @@ Observed result:
 Residual blocker:
 
 - `NON-SNOTEL-OPT-IN-SNOW-CONTROL-FAILED`.
+- The blocker is the three gate-eligible paired-snow sites. SCAN Mandan ND and
+  Reynolds Creek ID lack observed snow-depth rows and are diagnostic-only
+  out-of-gate evidence for this gate.
 - Frost attribution remains unauthorized.

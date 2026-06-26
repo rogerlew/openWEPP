@@ -5,7 +5,7 @@ Evidence class: Static + Ran.
 Verified:
 
 - Package status is complete.
-- `SC-SNOWFREEZE-001` contains `contract_version: 88`,
+- `SC-SNOWFREEZE-001` contains `contract_version: 89`,
   `INV-SNOWFREEZE-062`, `OBL-SNOWFREEZE-P-037`, and the SNOWDENSITY-09
   addendum.
 - The executed report schema is

@@ -4,7 +4,7 @@ Status: complete.
 
 Package type: contract-first diagnostic runtime bridge / gate rerun.
 
-Primary authority: `SC-SNOWFREEZE-001` v88, especially
+Primary authority: `SC-SNOWFREEZE-001` v89, especially
 `INV-SNOWFREEZE-047`, `INV-SNOWFREEZE-048`, `INV-SNOWFREEZE-050`,
 `INV-SNOWFREEZE-060`, `INV-SNOWFREEZE-061`, `INV-SNOWFREEZE-062`, and
 `OBL-SNOWFREEZE-P-037`.
@@ -60,7 +60,10 @@ winter-column carry and WAT `Snow-Depth`.
   offline rewritten snow-depth series.
 - The decision report compares default and opt-in non-SNOTEL rubric profiles and
   refuses frost attribution unless snow-control passes under the coupled opt-in
-  path and SNOWDENSITY-08 SNOTEL density evidence remains cleared.
+  path for fixtures with observed snow-depth rows and SNOWDENSITY-08 SNOTEL
+  density evidence remains cleared.
+- Sites without observed snow-depth rows are retained as diagnostic-only
+  out-of-gate evidence and cannot count as snow-control pass, fail, or blocker.
 - No site constants, tuning, output schema, runfile/parser/user CLI selector, or
   default activation are introduced.
 - Focused SNOWDENSITY-09 integration guards pass.
@@ -114,9 +117,11 @@ non-SNOTEL sites but did not pass snow control:
   `0.0672 m -> 0.0586 m`; max absolute residual improved
   `0.3924 m -> 0.3215 m`.
 
-Snow-control status remains three `SNOW_CONTROL_FAILED` sites and two sites
-with no paired observed snow rows. Frost attribution remains unauthorized under
-`INV-SNOWFREEZE-047/048/050/062`.
+Snow-control status remains three `SNOW_CONTROL_FAILED` gate-eligible
+paired-snow sites. SCAN Mandan ND and Reynolds Creek ID have no observed
+snow-depth rows and are reported as diagnostic-only out-of-gate evidence, not
+as snow-control gate pass/fail/blocker inputs. Frost attribution remains
+unauthorized under `INV-SNOWFREEZE-047/048/050/062`.
 
 No default activation, parser/runfile/user CLI selector, output schema,
 coefficient/canopy/radiation/albedo/melt/density/frost tuning, WAT rewriting,

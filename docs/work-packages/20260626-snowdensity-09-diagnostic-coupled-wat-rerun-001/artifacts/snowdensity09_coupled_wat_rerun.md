@@ -7,7 +7,10 @@
 - Opt-in snow-control passed: `False`
 - Frost attribution authorized: `False`
 - Default snow-control counts: `{'MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW': 2, 'SNOW_CONTROL_FAILED': 3}`
+- Default snow-control gate counts: `{'SNOW_CONTROL_FAILED': 3}`
 - Opt-in snow-control counts: `{'MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW': 2, 'SNOW_CONTROL_FAILED': 3}`
+- Opt-in snow-control gate counts: `{'SNOW_CONTROL_FAILED': 3}`
+- Diagnostic-only out-of-gate sites: `['site3_scan_mandan_nd', 'site5_reynolds_creek_us_rls_id']`
 - Trace proof: `{'default_trace_row_count': 75610, 'opt_in_trace_row_count': 75610, 'default_models': {'legacy_wepp': 75610}, 'opt_in_models': {'physics_bulk_density_compaction_v1': 75610}, 'default_trace_legacy_count': 75610, 'default_trace_opt_in_count': 0, 'opt_in_trace_selected_count': 75610}`
 
 ## Site Deltas

@@ -25,4 +25,4 @@ Tests:
 - `Cargo.toml`
 - `tests/integration/snowdensity03_physics_bulk_offline_contract.rs`
 - `tests/integration/snowdensity09_coupled_wat_rerun.rs`
-- SNOWDENSITY contract-version guard tests updated to v88.
+- SNOWDENSITY contract-version guard tests updated to v89.

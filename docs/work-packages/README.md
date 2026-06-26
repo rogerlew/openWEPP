@@ -15,16 +15,19 @@ State as of `2026-06-26`:
 
 - `20260626-snowdensity-09-diagnostic-coupled-wat-rerun-001/` is complete as
   SNOWDENSITY-09, the diagnostic coupled WAT rerun. It amended
-  `SC-SNOWFREEZE-001` to v88 with `INV-SNOWFREEZE-062`,
-  `OBL-SNOWFREEZE-P-037`, and the 09 addendum; added a package-bound
+  `SC-SNOWFREEZE-001` to v89 with `INV-SNOWFREEZE-062`,
+  `OBL-SNOWFREEZE-P-037`, the 09 addendum, and the paired-snow gate correction;
+  added a package-bound
   diagnostic environment selector for direct-production snow density;
   extended direct-production snow trace rows with `snow_density_model`; and
   reran the non-SNOTEL frost-site rubric for default `legacy_wepp` WAT and
   diagnostic `physics_bulk_density_compaction_v1` WAT. Result: the coupled
   opt-in path is proven (`75,610` opt-in trace rows selected the model), and it
   reduces snow-depth residuals at all three paired-snow sites, but snow control
-  still fails at the same three sites and two sites still lack paired observed
-  snow rows. Frost attribution remains blocked as
+  still fails at the same three gate-eligible paired-snow sites. SCAN Mandan ND
+  and Reynolds Creek ID lack observed snow-depth rows and are reported as
+  diagnostic-only out-of-gate evidence, not gate pass/fail/blocker inputs.
+  Frost attribution remains blocked as
   `NON-SNOTEL-OPT-IN-SNOW-CONTROL-FAILED`. No default activation,
   parser/runfile/user CLI selector, output schema, WAT rewriting, site
   constants, tuning, or production physics change was made.

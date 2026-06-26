@@ -21,12 +21,14 @@ const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 fn snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 88",
+        "contract_version: 89",
         "INV-SNOWFREEZE-062",
         "OBL-SNOWFREEZE-P-037",
         "SNOWDENSITY-09 Diagnostic Coupled WAT Rerun Addendum",
         "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
         "WAT `Snow-Depth` remains the publication of",
+        "diagnostic-only out-of-gate evidence",
+        "not counted as pass, fail, or blocker",
     ] {
         assert_contains(&contract, marker, CONTRACT);
     }
@@ -75,6 +77,9 @@ fn snowdensity09_script_preserves_coupled_path_and_report_contract() {
         "coupled_opt_in_wat_path_available",
         "parser_runfile_user_cli_activation_added",
         "frost_attribution_authorized",
+        "snow_control_gate_status_counts",
+        "snow_control_gate_passed",
+        "snow_control_out_of_gate_site_ids",
     ] {
         assert_contains(&script, marker, SCRIPT);
     }
@@ -99,6 +104,21 @@ fn snowdensity09_executed_report_is_truthful_if_present() {
     assert_eq!(
         report["diagnostic_selector"]["opt_in_value"],
         "physics_bulk_density_compaction_v1"
+    );
+    assert_eq!(report["summary"]["opt_in_snow_control_passed"], false);
+    assert_eq!(
+        report["opt_in_non_snotel"]["summary"]["snow_control_gate_status_counts"]["SNOW_CONTROL_FAILED"],
+        3
+    );
+    assert!(
+        report["opt_in_non_snotel"]["summary"]["snow_control_gate_status_counts"]
+            ["MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW"]
+            .is_null(),
+        "no-observed-snow sites must not participate in the snow-control gate"
+    );
+    assert_eq!(
+        report["summary"]["opt_in_snow_control_out_of_gate_site_ids"],
+        serde_json::json!(["site3_scan_mandan_nd", "site5_reynolds_creek_us_rls_id"])
     );
     assert!(
         report["diagnostic_selector"]["trace_proof"]["opt_in_trace_selected_count"]

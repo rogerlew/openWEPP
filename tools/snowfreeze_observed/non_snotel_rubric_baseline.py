@@ -615,6 +615,8 @@ def site_metrics(report: dict[str, Any]) -> dict[str, Any]:
         for key in [
             "observation_count",
             "matched_count",
+            "observed_snow_depth_count",
+            "modeled_snow_depth_day_count",
             "snow_depth_control_count",
             "snow_depth_control_fail_count",
             "mean_signed_snow_depth_residual_m",
@@ -632,9 +634,21 @@ def summarize(site_profiles: list[dict[str, Any]]) -> dict[str, Any]:
     rubric_counts: dict[str, int] = {}
     robust_counts: dict[str, int] = {}
     snow_status_counts: dict[str, int] = {}
+    snow_gate_status_counts: dict[str, int] = {}
+    snow_gate_out_of_gate_status_counts: dict[str, int] = {}
+    snow_gate_site_ids: list[str] = []
+    snow_gate_out_of_gate_site_ids: list[str] = []
     for site in site_profiles:
         status = site["snow_control_status"]
         snow_status_counts[status] = snow_status_counts.get(status, 0) + 1
+        if snow_control_gate_eligible(site):
+            snow_gate_status_counts[status] = snow_gate_status_counts.get(status, 0) + 1
+            snow_gate_site_ids.append(site["site_id"])
+        else:
+            snow_gate_out_of_gate_status_counts[status] = (
+                snow_gate_out_of_gate_status_counts.get(status, 0) + 1
+            )
+            snow_gate_out_of_gate_site_ids.append(site["site_id"])
         for cell in site["rubric_profile"]["cells"]:
             label = cell["ordinal_label"]
             rubric_counts[label] = rubric_counts.get(label, 0) + 1
@@ -644,11 +658,24 @@ def summarize(site_profiles: list[dict[str, Any]]) -> dict[str, Any]:
         "rubric_counts_by_label": dict(sorted(rubric_counts.items())),
         "forcing_robust_rubric_counts_by_label": dict(sorted(robust_counts.items())),
         "snow_control_status_counts": dict(sorted(snow_status_counts.items())),
+        "snow_control_gate_status_counts": dict(sorted(snow_gate_status_counts.items())),
+        "snow_control_gate_site_count": len(snow_gate_site_ids),
+        "snow_control_gate_site_ids": snow_gate_site_ids,
+        "snow_control_out_of_gate_status_counts": dict(
+            sorted(snow_gate_out_of_gate_status_counts.items())
+        ),
+        "snow_control_out_of_gate_site_count": len(snow_gate_out_of_gate_site_ids),
+        "snow_control_out_of_gate_site_ids": snow_gate_out_of_gate_site_ids,
         "openwepp_defective_cells": 0,
         "rubric_profile_not_scalar": True,
         "next_route": "snow-depth structural remediation before frost physics attribution",
         "production_physics_changed": False,
     }
+
+
+def snow_control_gate_eligible(site: dict[str, Any]) -> bool:
+    metrics = site.get("metrics", {})
+    return int(metrics.get("observed_snow_depth_count") or 0) > 0
 
 
 def render_markdown(payload: dict[str, Any]) -> str:
@@ -664,6 +691,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- Rubric counts: `{payload['summary']['rubric_counts_by_label']}`",
         f"- Forcing-robust rubric counts: `{payload['summary']['forcing_robust_rubric_counts_by_label']}`",
         f"- Snow-control status counts: `{payload['summary']['snow_control_status_counts']}`",
+        f"- Snow-control gate status counts: `{payload['summary']['snow_control_gate_status_counts']}`",
+        f"- Snow-control out-of-gate sites: `{payload['summary']['snow_control_out_of_gate_site_ids']}`",
         f"- OpenWEPP defective cells: `{payload['summary']['openwepp_defective_cells']}`",
         f"- Next route: `{payload['summary']['next_route']}`",
         "",

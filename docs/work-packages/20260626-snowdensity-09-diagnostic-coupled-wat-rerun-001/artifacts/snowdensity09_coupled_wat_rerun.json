@@ -12,7 +12,9 @@
           "max_abs_snow_depth_residual_m": 1.596821792509187,
           "max_isotherm_upper_bound_margin_m": null,
           "mean_signed_snow_depth_residual_m": 0.41081660940626946,
+          "modeled_snow_depth_day_count": 13880,
           "observation_count": 392,
+          "observed_snow_depth_count": 384,
           "snow_depth_control_count": 384,
           "snow_depth_control_fail_count": 322
         },
@@ -53,7 +55,9 @@
           "max_abs_snow_depth_residual_m": 1.059919954616471,
           "max_isotherm_upper_bound_margin_m": null,
           "mean_signed_snow_depth_residual_m": 0.32327623539008665,
+          "modeled_snow_depth_day_count": 16437,
           "observation_count": 200,
+          "observed_snow_depth_count": 193,
           "snow_depth_control_count": 193,
           "snow_depth_control_fail_count": 143
         },
@@ -93,7 +97,9 @@
           "max_abs_snow_depth_residual_m": 0.392372927299844,
           "max_isotherm_upper_bound_margin_m": null,
           "mean_signed_snow_depth_residual_m": 0.0672051635094675,
+          "modeled_snow_depth_day_count": 16437,
           "observation_count": 232,
+          "observed_snow_depth_count": 232,
           "snow_depth_control_count": 83,
           "snow_depth_control_fail_count": 28
         },
@@ -134,7 +140,9 @@
           "max_abs_snow_depth_residual_m": null,
           "max_isotherm_upper_bound_margin_m": 0.9108984039618734,
           "mean_signed_snow_depth_residual_m": null,
+          "modeled_snow_depth_day_count": 12419,
           "observation_count": 10643,
+          "observed_snow_depth_count": 0,
           "snow_depth_control_count": 0,
           "snow_depth_control_fail_count": 0
         },
@@ -171,7 +179,9 @@
           "max_abs_snow_depth_residual_m": null,
           "max_isotherm_upper_bound_margin_m": 0.04947822834385348,
           "mean_signed_snow_depth_residual_m": null,
+          "modeled_snow_depth_day_count": 16437,
           "observation_count": 4356,
+          "observed_snow_depth_count": 0,
           "snow_depth_control_count": 0,
           "snow_depth_control_fail_count": 0
         },
@@ -218,6 +228,23 @@
         "unavailable": 63
       },
       "rubric_profile_not_scalar": true,
+      "snow_control_gate_site_count": 3,
+      "snow_control_gate_site_ids": [
+        "site1_sleepers_south_field_vt",
+        "site2_sleepers_w9_hardwood_vt",
+        "site4_ggd498_morris_mn"
+      ],
+      "snow_control_gate_status_counts": {
+        "SNOW_CONTROL_FAILED": 3
+      },
+      "snow_control_out_of_gate_site_count": 2,
+      "snow_control_out_of_gate_site_ids": [
+        "site3_scan_mandan_nd",
+        "site5_reynolds_creek_us_rls_id"
+      ],
+      "snow_control_out_of_gate_status_counts": {
+        "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW": 2
+      },
       "snow_control_status_counts": {
         "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW": 2,
         "SNOW_CONTROL_FAILED": 3
@@ -256,7 +283,9 @@
           "max_abs_snow_depth_residual_m": 1.1601312966141666,
           "max_isotherm_upper_bound_margin_m": null,
           "mean_signed_snow_depth_residual_m": 0.29639692828086844,
+          "modeled_snow_depth_day_count": 13880,
           "observation_count": 392,
+          "observed_snow_depth_count": 384,
           "snow_depth_control_count": 384,
           "snow_depth_control_fail_count": 301
         },
@@ -294,7 +323,9 @@
           "max_abs_snow_depth_residual_m": 0.7380989486538121,
           "max_isotherm_upper_bound_margin_m": null,
           "mean_signed_snow_depth_residual_m": 0.21025928372492458,
+          "modeled_snow_depth_day_count": 16437,
           "observation_count": 200,
+          "observed_snow_depth_count": 193,
           "snow_depth_control_count": 193,
           "snow_depth_control_fail_count": 125
         },
@@ -336,7 +367,9 @@
           "max_abs_snow_depth_residual_m": 0.321467289294978,
           "max_isotherm_upper_bound_margin_m": null,
           "mean_signed_snow_depth_residual_m": 0.058572644425492884,
+          "modeled_snow_depth_day_count": 16437,
           "observation_count": 232,
+          "observed_snow_depth_count": 232,
           "snow_depth_control_count": 83,
           "snow_depth_control_fail_count": 22
         },
@@ -377,7 +410,9 @@
           "max_abs_snow_depth_residual_m": null,
           "max_isotherm_upper_bound_margin_m": 0.9182675622844398,
           "mean_signed_snow_depth_residual_m": null,
+          "modeled_snow_depth_day_count": 12419,
           "observation_count": 10643,
+          "observed_snow_depth_count": 0,
           "snow_depth_control_count": 0,
           "snow_depth_control_fail_count": 0
         },
@@ -414,7 +449,9 @@
           "max_abs_snow_depth_residual_m": null,
           "max_isotherm_upper_bound_margin_m": 0.06570942483366123,
           "mean_signed_snow_depth_residual_m": null,
+          "modeled_snow_depth_day_count": 16437,
           "observation_count": 4356,
+          "observed_snow_depth_count": 0,
           "snow_depth_control_count": 0,
           "snow_depth_control_fail_count": 0
         },
@@ -461,6 +498,23 @@
         "unavailable": 63
       },
       "rubric_profile_not_scalar": true,
+      "snow_control_gate_site_count": 3,
+      "snow_control_gate_site_ids": [
+        "site1_sleepers_south_field_vt",
+        "site2_sleepers_w9_hardwood_vt",
+        "site4_ggd498_morris_mn"
+      ],
+      "snow_control_gate_status_counts": {
+        "SNOW_CONTROL_FAILED": 3
+      },
+      "snow_control_out_of_gate_site_count": 2,
+      "snow_control_out_of_gate_site_ids": [
+        "site3_scan_mandan_nd",
+        "site5_reynolds_creek_us_rls_id"
+      ],
+      "snow_control_out_of_gate_status_counts": {
+        "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW": 2
+      },
       "snow_control_status_counts": {
         "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW": 2,
         "SNOW_CONTROL_FAILED": 3
@@ -752,14 +806,25 @@
     "blocker": "NON-SNOTEL-OPT-IN-SNOW-CONTROL-FAILED",
     "coupled_opt_in_wat_path_available": true,
     "default_activation_changed": false,
+    "default_snow_control_gate_site_count": 3,
+    "default_snow_control_out_of_gate_site_ids": [
+      "site3_scan_mandan_nd",
+      "site5_reynolds_creek_us_rls_id"
+    ],
     "default_snow_control_passed": false,
     "disposition": "COMPLETE-09-COUPLED-OPT-IN-WAT-RERUN-FROST-BLOCKED",
     "frost_attribution_authorized": false,
     "no_site_constants": true,
+    "opt_in_snow_control_gate_site_count": 3,
+    "opt_in_snow_control_out_of_gate_site_ids": [
+      "site3_scan_mandan_nd",
+      "site5_reynolds_creek_us_rls_id"
+    ],
     "opt_in_snow_control_passed": false,
     "output_schema_changed": false,
     "parser_runfile_user_cli_activation_added": false,
     "production_physics_changed": false,
-    "snotel_density_gate_cleared_from_snowdensity08": true
+    "snotel_density_gate_cleared_from_snowdensity08": true,
+    "snow_control_gate_rule": "only sites with observed snow-depth rows participate in the snow-control gate; sites without observed snow depth are reported as diagnostic-only out-of-gate evidence"
   }
 }
