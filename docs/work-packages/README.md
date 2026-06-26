@@ -13,6 +13,20 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-10-3-1-canopy-projection-provenance-001/` is complete
+  as SNOWDENSITY-10.3.1, the canopy projection provenance package. It archived
+  raw `.man` canopy inputs, upstream wepppy seasonal winter `Cancov`
+  projections, and current openWEPP snowbench runtime-surface `cancov` for all
+  eight `tests/fixtures/cancov_forest/` sites. Result: current snowbench CoE
+  melt diagnostics consume static initial-condition canopy, not the upstream
+  per-day seasonal projection. HJ Andrews and Tenderfoot close as high evergreen
+  controls; Berthoud and Mores Creek are RAP_TS-adjusted conifer exceptions;
+  Harvard/Marcell/Hubbard Brook are static mixed/deciduous diagnostics until
+  per-day canopy routing exists; Sleepers is not proven as the lowest-cancov
+  endpoint (`runtime cancov = 0.50`). No fixture inputs, production physics,
+  defaults, output schema, contracts, or selectors changed. Downstream gradient
+  melt adjudication must either route per-day canopy or explicitly scope itself
+  to static-initial-canopy evidence.
 - `20260626-snowdensity-09-diagnostic-coupled-wat-rerun-001/` is complete as
   SNOWDENSITY-09, the diagnostic coupled WAT rerun. It amended
   `SC-SNOWFREEZE-001` to v89 with `INV-SNOWFREEZE-062`,

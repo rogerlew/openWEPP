@@ -1,0 +1,35 @@
+{
+  "schema": "snowdensity05g-coe-melt-snowbench-v1",
+  "model_id": "legacy_coe",
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-052 INV-SNOWFREEZE-055 INV-SNOWFREEZE-057",
+  "runtime_coupling": "diagnostic snowbench replay of typed CoE melt path; no production activation",
+  "no_site_constants": true,
+  "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260626-snowdensity-10-3-1-canopy-projection-provenance-001/artifacts/coe_melt_runtime_surface/berthoud_conifer_co",
+  "forcing_bridge_dir": "/home/workdir/openWEPP/docs/work-packages/20260626-snowdensity-10-3-1-canopy-projection-provenance-001/artifacts/coe_melt_runtime_surface/berthoud_conifer_co/forcing_bridge",
+  "canopy_source": "generated_openwepp_runtime_surface.cancov",
+  "shortwave_source": "pysnobal_bridge_inversion_of_openwepp_winter_hourly_rad_mj_m2",
+  "shortwave_bridge_identity": "net_solar_Wm-2 = hrrad_MJ_m-2_h-1 * 1000000 / 3600 * 0.8; replay hrrad_MJ_m-2_h-1 = net_solar_Wm-2 * 3600 / 1000000 / 0.8",
+  "shortwave_bridge_like_for_like": true,
+  "day_count": 14245,
+  "hourly_row_count": 341880,
+  "positive_snow_hours": 7301,
+  "constants": {
+    "canopy_cover_fraction": 0.05,
+    "underlying_surface_albedo": 0.2,
+    "radiation_bridge_net_shortwave_factor": 0.8
+  },
+  "summary": {
+    "total_snow_input_m": 22.030181713352,
+    "total_rain_input_m": 13.660318286647975,
+    "total_raw_melt_m": 20.697913764278947,
+    "total_redistributed_melt_m": 21.242074317716614,
+    "total_routed_melt_m": 23.842061190476176,
+    "total_swe_loss_m": 21.242074317716614,
+    "final_swe_m": 0.21840000000000398,
+    "final_depth_m": 0.8928881396427804,
+    "final_density_kg_m3": 244.59950838565257,
+    "final_settle_day_count": 1.0,
+    "final_snow_albedo": null,
+    "diagnostic_initial_albedo_seed_count": 0
+  }
+}
