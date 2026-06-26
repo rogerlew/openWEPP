@@ -13,6 +13,17 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-05f-melt-closure-density-handoff-001/` is complete as
+  SNOWDENSITY-05F, the melt-closure and density-handoff gate. It amended
+  `SC-SNOWFREEZE-001` to v80 with `INV-SNOWFREEZE-056`,
+  `OBL-SNOWFREEZE-P-031`, boundary disposition, and the 05F addendum; froze
+  `coe_shortwave_albedo_v1` as an opt-in-only density-facing melt interface;
+  preserved `legacy_coe` as default/rollback; ratified the same-day future
+  snowfall cold-start albedo continuity rule; and bound activation evidence to
+  both 05E diagnostic replay and H as-built context. No default activation,
+  parser/runfile/CLI selector, output schema, coefficient, radiation-source, or
+  density-physics change was made. The next route is `SNOWDENSITY-06 Density
+  Compaction`.
 - `20260626-snowdensity-05e-melt-rubric-adjudication-001/` is complete as
   SNOWDENSITY-05E, the melt-rubric adjudication gate. It added diagnostic-only
   `openwepp-snowbench coe-melt` replay for `legacy_coe` and
