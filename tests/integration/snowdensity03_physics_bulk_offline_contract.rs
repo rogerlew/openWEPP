@@ -46,6 +46,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs",
         "crates/openwepp-runner/src/hillslope/mod.rs",
         "crates/openwepp-runner/src/lib.rs",
+        "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs",
         "crates/openwepp-runner/src/bin/openwepp-snowbench.rs",
         "tests/integration/snowdensity02_contract_adr_guard.rs",
         "tests/integration/snowdensity03_physics_bulk_offline_contract.rs",
@@ -53,16 +54,19 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "tests/integration/snowdensity06b_coe_bound_density_replay.rs",
         "tests/integration/snowdensity07_runtime_opt_in.rs",
         "tests/integration/snowdensity08_gate_rerun.rs",
+        "tests/integration/snowdensity09_coupled_wat_rerun.rs",
         "tools/snowfreeze_observed/coe_bound_density_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_snotel_profile.py",
         "tools/snowfreeze_observed/snowdensity08_gate_rerun.py",
+        "tools/snowfreeze_observed/snowdensity09_coupled_wat_rerun.py",
     ];
     let contract =
         fs::read_to_string("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md")
             .expect("SC-SNOWFREEZE-001 should be readable");
     assert!(contract.contains("INV-SNOWFREEZE-060"));
     assert!(contract.contains("INV-SNOWFREEZE-061"));
+    assert!(contract.contains("INV-SNOWFREEZE-062"));
     assert!(contract.contains("physics_bulk_density_compaction_v1"));
 
     let mut unexpected = Vec::new();

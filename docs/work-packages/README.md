@@ -13,6 +13,21 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-09-diagnostic-coupled-wat-rerun-001/` is complete as
+  SNOWDENSITY-09, the diagnostic coupled WAT rerun. It amended
+  `SC-SNOWFREEZE-001` to v88 with `INV-SNOWFREEZE-062`,
+  `OBL-SNOWFREEZE-P-037`, and the 09 addendum; added a package-bound
+  diagnostic environment selector for direct-production snow density;
+  extended direct-production snow trace rows with `snow_density_model`; and
+  reran the non-SNOTEL frost-site rubric for default `legacy_wepp` WAT and
+  diagnostic `physics_bulk_density_compaction_v1` WAT. Result: the coupled
+  opt-in path is proven (`75,610` opt-in trace rows selected the model), and it
+  reduces snow-depth residuals at all three paired-snow sites, but snow control
+  still fails at the same three sites and two sites still lack paired observed
+  snow rows. Frost attribution remains blocked as
+  `NON-SNOTEL-OPT-IN-SNOW-CONTROL-FAILED`. No default activation,
+  parser/runfile/user CLI selector, output schema, WAT rewriting, site
+  constants, tuning, or production physics change was made.
 - `20260626-snowdensity-08-snow-frost-gate-rerun-001/` is complete as
   SNOWDENSITY-08, the snow/frost gate rerun. It amended
   `SC-SNOWFREEZE-001` to v87 with `INV-SNOWFREEZE-061`,
@@ -27,9 +42,8 @@ State as of `2026-06-26`:
   `legacy_wepp` density, there is no authorized coupled opt-in WAT/publication
   path, three non-SNOTEL sites fail snow control, and two lack paired observed
   snow rows. No default activation, parser/runfile/CLI selector, output schema,
-  tuning, or production physics changed. Next route: build an authorized
-  diagnostic coupled opt-in WAT/publication path for non-SNOTEL frost fixtures
-  before resuming frost attribution.
+  tuning, or production physics changed. Its next-route note is superseded by
+  the completed SNOWDENSITY-09 coupled WAT rerun.
 - `20260626-snowdensity-07-runtime-opt-in-001/` is complete as
   SNOWDENSITY-07, the runtime opt-in gate. It amended `SC-SNOWFREEZE-001`
   v86 with `INV-SNOWFREEZE-060`, `OBL-SNOWFREEZE-P-035`, typed

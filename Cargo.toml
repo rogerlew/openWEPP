@@ -685,6 +685,10 @@ path = "tests/integration/snowdensity07_runtime_opt_in.rs"
 name = "snowdensity08_gate_rerun"
 path = "tests/integration/snowdensity08_gate_rerun.rs"
 
+[[test]]
+name = "snowdensity09_coupled_wat_rerun"
+path = "tests/integration/snowdensity09_coupled_wat_rerun.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

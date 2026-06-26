@@ -23,7 +23,7 @@ fn read(path: &str) -> String {
 fn snowdensity07_contract_and_package_bind_runtime_opt_in_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 87",
+        "contract_version: 88",
         "INV-SNOWFREEZE-060",
         "OBL-SNOWFREEZE-P-035",
         "snow_density_model",
@@ -225,13 +225,14 @@ fn snowdensity07_surface_driven_publication_path_remains_default_disabled() {
     let builder = read(DIRECT_PUBLICATION_BUILDER);
 
     assert!(
-        builder.contains(
-            "snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp"
-        ),
-        "direct publication builder must keep legacy_wepp as the default density model"
+        builder.contains("SNOWDENSITY09_DENSITY_MODEL_ENV")
+            && builder.contains("Err(std::env::VarError::NotPresent)")
+            && builder.contains("SnowDensityModel::LegacyWepp"),
+        "direct publication builder must keep legacy_wepp as the absent-selector default"
     );
     assert!(
-        !builder.contains("SnowDensityModel::PhysicsBulkDensityCompactionV1"),
-        "surface-driven publication path must not default-activate the density opt-in"
+        builder.contains("snow_density_model: self.snow_density_model")
+            && builder.contains("SnowDensityModel::PhysicsBulkDensityCompactionV1"),
+        "surface-driven publication path may expose only the SNOWDENSITY-09 diagnostic env hook"
     );
 }

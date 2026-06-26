@@ -15,12 +15,13 @@ const DIRECT_PUBLICATION_BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00_builders_and_authority.rs"
 );
+const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 
 #[test]
 fn snowdensity08_contract_and_package_bind_gate_rerun_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 87",
+        "contract_version: 88",
         "INV-SNOWFREEZE-061",
         "OBL-SNOWFREEZE-P-036",
         "SNOWDENSITY-08 Snow/Frost Gate Rerun Addendum",
@@ -44,14 +45,15 @@ fn snowdensity08_contract_and_package_bind_gate_rerun_authority() {
 #[test]
 fn snowdensity08_default_path_remains_legacy_and_script_reports_blocker() {
     let builder = read(DIRECT_PUBLICATION_BUILDER);
-    assert_contains(
-        &builder,
-        "snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp",
-        DIRECT_PUBLICATION_BUILDER,
+    assert!(
+        builder.contains("SNOWDENSITY09_DENSITY_MODEL_ENV")
+            && builder.contains("Err(std::env::VarError::NotPresent)")
+            && builder.contains("SnowDensityModel::LegacyWepp"),
+        "surface-driven direct publication path must default to legacy_wepp when the diagnostic selector is absent"
     );
     assert!(
-        !builder.contains("SnowDensityModel::PhysicsBulkDensityCompactionV1"),
-        "surface-driven direct publication path must not default-activate the density opt-in"
+        !read(CLI).contains("physics_bulk_density_compaction_v1"),
+        "openwepp-cli-hill must not expose user CLI density activation"
     );
 
     let script = read(SCRIPT);

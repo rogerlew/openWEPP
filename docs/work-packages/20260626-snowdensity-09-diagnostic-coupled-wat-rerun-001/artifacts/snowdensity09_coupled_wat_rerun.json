@@ -1,0 +1,765 @@
+{
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-047 INV-SNOWFREEZE-048 INV-SNOWFREEZE-050 INV-SNOWFREEZE-060 INV-SNOWFREEZE-061 INV-SNOWFREEZE-062 OBL-SNOWFREEZE-P-037",
+  "default_non_snotel": {
+    "sites": [
+      {
+        "metrics": {
+          "frost_depth_residual_count": 392,
+          "isotherm_upper_bound_count": 0,
+          "isotherm_upper_bound_exceedance_count": 0,
+          "matched_count": 392,
+          "max_abs_residual_m": 0.2641958258624707,
+          "max_abs_snow_depth_residual_m": 1.596821792509187,
+          "max_isotherm_upper_bound_margin_m": null,
+          "mean_signed_snow_depth_residual_m": 0.41081660940626946,
+          "observation_count": 392,
+          "snow_depth_control_count": 384,
+          "snow_depth_control_fail_count": 322
+        },
+        "rubric_summary": {
+          "cell_count": 23,
+          "counts_by_label": {
+            "fail": 5,
+            "marginal": 2,
+            "pass": 2,
+            "strong": 5,
+            "unavailable": 9
+          },
+          "forcing_limited_counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "unavailable": 2
+          },
+          "forcing_robust_counts_by_label": {
+            "fail": 2,
+            "marginal": 1,
+            "pass": 2,
+            "strong": 5,
+            "unavailable": 7
+          },
+          "observation_only_failures_are_unresolved": true,
+          "openwepp_defective_cells": 0
+        },
+        "site_id": "site1_sleepers_south_field_vt",
+        "snow_control_status": "SNOW_CONTROL_FAILED"
+      },
+      {
+        "metrics": {
+          "frost_depth_residual_count": 200,
+          "isotherm_upper_bound_count": 0,
+          "isotherm_upper_bound_exceedance_count": 0,
+          "matched_count": 200,
+          "max_abs_residual_m": 0.3838127878666539,
+          "max_abs_snow_depth_residual_m": 1.059919954616471,
+          "max_isotherm_upper_bound_margin_m": null,
+          "mean_signed_snow_depth_residual_m": 0.32327623539008665,
+          "observation_count": 200,
+          "snow_depth_control_count": 193,
+          "snow_depth_control_fail_count": 143
+        },
+        "rubric_summary": {
+          "cell_count": 23,
+          "counts_by_label": {
+            "fail": 5,
+            "marginal": 2,
+            "pass": 1,
+            "strong": 6,
+            "unavailable": 9
+          },
+          "forcing_limited_counts_by_label": {
+            "fail": 4,
+            "unavailable": 2
+          },
+          "forcing_robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 2,
+            "pass": 1,
+            "strong": 6,
+            "unavailable": 7
+          },
+          "observation_only_failures_are_unresolved": true,
+          "openwepp_defective_cells": 0
+        },
+        "site_id": "site2_sleepers_w9_hardwood_vt",
+        "snow_control_status": "SNOW_CONTROL_FAILED"
+      },
+      {
+        "metrics": {
+          "frost_depth_residual_count": 83,
+          "isotherm_upper_bound_count": 0,
+          "isotherm_upper_bound_exceedance_count": 0,
+          "matched_count": 83,
+          "max_abs_residual_m": 0.990389751515789,
+          "max_abs_snow_depth_residual_m": 0.392372927299844,
+          "max_isotherm_upper_bound_margin_m": null,
+          "mean_signed_snow_depth_residual_m": 0.0672051635094675,
+          "observation_count": 232,
+          "snow_depth_control_count": 83,
+          "snow_depth_control_fail_count": 28
+        },
+        "rubric_summary": {
+          "cell_count": 23,
+          "counts_by_label": {
+            "fail": 5,
+            "marginal": 2,
+            "pass": 2,
+            "strong": 5,
+            "unavailable": 9
+          },
+          "forcing_limited_counts_by_label": {
+            "fail": 3,
+            "pass": 1,
+            "unavailable": 2
+          },
+          "forcing_robust_counts_by_label": {
+            "fail": 2,
+            "marginal": 2,
+            "pass": 1,
+            "strong": 5,
+            "unavailable": 7
+          },
+          "observation_only_failures_are_unresolved": true,
+          "openwepp_defective_cells": 0
+        },
+        "site_id": "site4_ggd498_morris_mn",
+        "snow_control_status": "SNOW_CONTROL_FAILED"
+      },
+      {
+        "metrics": {
+          "frost_depth_residual_count": 0,
+          "isotherm_upper_bound_count": 10583,
+          "isotherm_upper_bound_exceedance_count": 3452,
+          "matched_count": 10643,
+          "max_abs_residual_m": null,
+          "max_abs_snow_depth_residual_m": null,
+          "max_isotherm_upper_bound_margin_m": 0.9108984039618734,
+          "mean_signed_snow_depth_residual_m": null,
+          "observation_count": 10643,
+          "snow_depth_control_count": 0,
+          "snow_depth_control_fail_count": 0
+        },
+        "rubric_summary": {
+          "cell_count": 23,
+          "counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "strong": 1,
+            "unavailable": 18
+          },
+          "forcing_limited_counts_by_label": {
+            "unavailable": 6
+          },
+          "forcing_robust_counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "strong": 1,
+            "unavailable": 12
+          },
+          "observation_only_failures_are_unresolved": true,
+          "openwepp_defective_cells": 0
+        },
+        "site_id": "site3_scan_mandan_nd",
+        "snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW"
+      },
+      {
+        "metrics": {
+          "frost_depth_residual_count": 0,
+          "isotherm_upper_bound_count": 4356,
+          "isotherm_upper_bound_exceedance_count": 104,
+          "matched_count": 4356,
+          "max_abs_residual_m": null,
+          "max_abs_snow_depth_residual_m": null,
+          "max_isotherm_upper_bound_margin_m": 0.04947822834385348,
+          "mean_signed_snow_depth_residual_m": null,
+          "observation_count": 4356,
+          "snow_depth_control_count": 0,
+          "snow_depth_control_fail_count": 0
+        },
+        "rubric_summary": {
+          "cell_count": 23,
+          "counts_by_label": {
+            "fail": 1,
+            "marginal": 1,
+            "strong": 3,
+            "unavailable": 18
+          },
+          "forcing_limited_counts_by_label": {
+            "unavailable": 6
+          },
+          "forcing_robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 1,
+            "strong": 3,
+            "unavailable": 12
+          },
+          "observation_only_failures_are_unresolved": true,
+          "openwepp_defective_cells": 0
+        },
+        "site_id": "site5_reynolds_creek_us_rls_id",
+        "snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW"
+      }
+    ],
+    "summary": {
+      "forcing_robust_rubric_counts_by_label": {
+        "fail": 9,
+        "marginal": 7,
+        "pass": 4,
+        "strong": 20,
+        "unavailable": 45
+      },
+      "next_route": "snow-depth structural remediation before frost physics attribution",
+      "openwepp_defective_cells": 0,
+      "production_physics_changed": false,
+      "rubric_counts_by_label": {
+        "fail": 19,
+        "marginal": 8,
+        "pass": 5,
+        "strong": 20,
+        "unavailable": 63
+      },
+      "rubric_profile_not_scalar": true,
+      "snow_control_status_counts": {
+        "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW": 2,
+        "SNOW_CONTROL_FAILED": 3
+      }
+    }
+  },
+  "diagnostic_selector": {
+    "default_behavior": "legacy_wepp",
+    "env": "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
+    "opt_in_value": "physics_bulk_density_compaction_v1",
+    "trace_env": "OPENWEPP_R7H_SNOW_TRACE_PATH",
+    "trace_proof": {
+      "default_models": {
+        "legacy_wepp": 75610
+      },
+      "default_trace_legacy_count": 75610,
+      "default_trace_opt_in_count": 0,
+      "default_trace_row_count": 75610,
+      "opt_in_models": {
+        "physics_bulk_density_compaction_v1": 75610
+      },
+      "opt_in_trace_row_count": 75610,
+      "opt_in_trace_selected_count": 75610
+    }
+  },
+  "evidence_class": "Static + Ran",
+  "opt_in_non_snotel": {
+    "sites": [
+      {
+        "metrics": {
+          "frost_depth_residual_count": 392,
+          "isotherm_upper_bound_count": 0,
+          "isotherm_upper_bound_exceedance_count": 0,
+          "matched_count": 392,
+          "max_abs_residual_m": 0.22482544847231212,
+          "max_abs_snow_depth_residual_m": 1.1601312966141666,
+          "max_isotherm_upper_bound_margin_m": null,
+          "mean_signed_snow_depth_residual_m": 0.29639692828086844,
+          "observation_count": 392,
+          "snow_depth_control_count": 384,
+          "snow_depth_control_fail_count": 301
+        },
+        "rubric_summary": {
+          "cell_count": 23,
+          "counts_by_label": {
+            "fail": 6,
+            "pass": 2,
+            "strong": 6,
+            "unavailable": 9
+          },
+          "forcing_limited_counts_by_label": {
+            "fail": 4,
+            "unavailable": 2
+          },
+          "forcing_robust_counts_by_label": {
+            "fail": 2,
+            "pass": 2,
+            "strong": 6,
+            "unavailable": 7
+          },
+          "observation_only_failures_are_unresolved": true,
+          "openwepp_defective_cells": 0
+        },
+        "site_id": "site1_sleepers_south_field_vt",
+        "snow_control_status": "SNOW_CONTROL_FAILED"
+      },
+      {
+        "metrics": {
+          "frost_depth_residual_count": 200,
+          "isotherm_upper_bound_count": 0,
+          "isotherm_upper_bound_exceedance_count": 0,
+          "matched_count": 200,
+          "max_abs_residual_m": 0.3867520429295085,
+          "max_abs_snow_depth_residual_m": 0.7380989486538121,
+          "max_isotherm_upper_bound_margin_m": null,
+          "mean_signed_snow_depth_residual_m": 0.21025928372492458,
+          "observation_count": 200,
+          "snow_depth_control_count": 193,
+          "snow_depth_control_fail_count": 125
+        },
+        "rubric_summary": {
+          "cell_count": 23,
+          "counts_by_label": {
+            "fail": 3,
+            "marginal": 2,
+            "pass": 2,
+            "strong": 7,
+            "unavailable": 9
+          },
+          "forcing_limited_counts_by_label": {
+            "fail": 2,
+            "marginal": 1,
+            "pass": 1,
+            "unavailable": 2
+          },
+          "forcing_robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 1,
+            "pass": 1,
+            "strong": 7,
+            "unavailable": 7
+          },
+          "observation_only_failures_are_unresolved": true,
+          "openwepp_defective_cells": 0
+        },
+        "site_id": "site2_sleepers_w9_hardwood_vt",
+        "snow_control_status": "SNOW_CONTROL_FAILED"
+      },
+      {
+        "metrics": {
+          "frost_depth_residual_count": 83,
+          "isotherm_upper_bound_count": 0,
+          "isotherm_upper_bound_exceedance_count": 0,
+          "matched_count": 83,
+          "max_abs_residual_m": 0.7772030421249244,
+          "max_abs_snow_depth_residual_m": 0.321467289294978,
+          "max_isotherm_upper_bound_margin_m": null,
+          "mean_signed_snow_depth_residual_m": 0.058572644425492884,
+          "observation_count": 232,
+          "snow_depth_control_count": 83,
+          "snow_depth_control_fail_count": 22
+        },
+        "rubric_summary": {
+          "cell_count": 23,
+          "counts_by_label": {
+            "fail": 6,
+            "marginal": 1,
+            "pass": 2,
+            "strong": 5,
+            "unavailable": 9
+          },
+          "forcing_limited_counts_by_label": {
+            "fail": 3,
+            "pass": 1,
+            "unavailable": 2
+          },
+          "forcing_robust_counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "pass": 1,
+            "strong": 5,
+            "unavailable": 7
+          },
+          "observation_only_failures_are_unresolved": true,
+          "openwepp_defective_cells": 0
+        },
+        "site_id": "site4_ggd498_morris_mn",
+        "snow_control_status": "SNOW_CONTROL_FAILED"
+      },
+      {
+        "metrics": {
+          "frost_depth_residual_count": 0,
+          "isotherm_upper_bound_count": 10583,
+          "isotherm_upper_bound_exceedance_count": 3394,
+          "matched_count": 10643,
+          "max_abs_residual_m": null,
+          "max_abs_snow_depth_residual_m": null,
+          "max_isotherm_upper_bound_margin_m": 0.9182675622844398,
+          "mean_signed_snow_depth_residual_m": null,
+          "observation_count": 10643,
+          "snow_depth_control_count": 0,
+          "snow_depth_control_fail_count": 0
+        },
+        "rubric_summary": {
+          "cell_count": 23,
+          "counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "strong": 1,
+            "unavailable": 18
+          },
+          "forcing_limited_counts_by_label": {
+            "unavailable": 6
+          },
+          "forcing_robust_counts_by_label": {
+            "fail": 3,
+            "marginal": 1,
+            "strong": 1,
+            "unavailable": 12
+          },
+          "observation_only_failures_are_unresolved": true,
+          "openwepp_defective_cells": 0
+        },
+        "site_id": "site3_scan_mandan_nd",
+        "snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW"
+      },
+      {
+        "metrics": {
+          "frost_depth_residual_count": 0,
+          "isotherm_upper_bound_count": 4356,
+          "isotherm_upper_bound_exceedance_count": 134,
+          "matched_count": 4356,
+          "max_abs_residual_m": null,
+          "max_abs_snow_depth_residual_m": null,
+          "max_isotherm_upper_bound_margin_m": 0.06570942483366123,
+          "mean_signed_snow_depth_residual_m": null,
+          "observation_count": 4356,
+          "snow_depth_control_count": 0,
+          "snow_depth_control_fail_count": 0
+        },
+        "rubric_summary": {
+          "cell_count": 23,
+          "counts_by_label": {
+            "fail": 1,
+            "marginal": 1,
+            "strong": 3,
+            "unavailable": 18
+          },
+          "forcing_limited_counts_by_label": {
+            "unavailable": 6
+          },
+          "forcing_robust_counts_by_label": {
+            "fail": 1,
+            "marginal": 1,
+            "strong": 3,
+            "unavailable": 12
+          },
+          "observation_only_failures_are_unresolved": true,
+          "openwepp_defective_cells": 0
+        },
+        "site_id": "site5_reynolds_creek_us_rls_id",
+        "snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW"
+      }
+    ],
+    "summary": {
+      "forcing_robust_rubric_counts_by_label": {
+        "fail": 10,
+        "marginal": 4,
+        "pass": 4,
+        "strong": 22,
+        "unavailable": 45
+      },
+      "next_route": "snow-depth structural remediation before frost physics attribution",
+      "openwepp_defective_cells": 0,
+      "production_physics_changed": false,
+      "rubric_counts_by_label": {
+        "fail": 19,
+        "marginal": 5,
+        "pass": 6,
+        "strong": 22,
+        "unavailable": 63
+      },
+      "rubric_profile_not_scalar": true,
+      "snow_control_status_counts": {
+        "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW": 2,
+        "SNOW_CONTROL_FAILED": 3
+      }
+    }
+  },
+  "output_dir": "target/snowdensity09_coupled_wat_rerun",
+  "raw_outputs": {
+    "default_json": "target/snowdensity09_coupled_wat_rerun/non_snotel_default_path/non_snotel_rubric_baseline.json",
+    "default_trace": "target/snowdensity09_coupled_wat_rerun/default_direct_snow_trace.jsonl",
+    "opt_in_json": "target/snowdensity09_coupled_wat_rerun/non_snotel_physics_bulk_density_compaction_v1/non_snotel_rubric_baseline.json",
+    "opt_in_trace": "target/snowdensity09_coupled_wat_rerun/opt_in_direct_snow_trace.jsonl"
+  },
+  "schema": "snowdensity09-diagnostic-coupled-wat-rerun-v1",
+  "site_deltas": [
+    {
+      "default_max_abs_snow_depth_residual_m": 1.596821792509187,
+      "default_mean_signed_snow_depth_residual_m": 0.41081660940626946,
+      "default_rubric_summary": {
+        "cell_count": 23,
+        "counts_by_label": {
+          "fail": 5,
+          "marginal": 2,
+          "pass": 2,
+          "strong": 5,
+          "unavailable": 9
+        },
+        "forcing_limited_counts_by_label": {
+          "fail": 3,
+          "marginal": 1,
+          "unavailable": 2
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 2,
+          "marginal": 1,
+          "pass": 2,
+          "strong": 5,
+          "unavailable": 7
+        },
+        "observation_only_failures_are_unresolved": true,
+        "openwepp_defective_cells": 0
+      },
+      "default_snow_control_status": "SNOW_CONTROL_FAILED",
+      "opt_in_max_abs_snow_depth_residual_m": 1.1601312966141666,
+      "opt_in_mean_signed_snow_depth_residual_m": 0.29639692828086844,
+      "opt_in_rubric_summary": {
+        "cell_count": 23,
+        "counts_by_label": {
+          "fail": 6,
+          "pass": 2,
+          "strong": 6,
+          "unavailable": 9
+        },
+        "forcing_limited_counts_by_label": {
+          "fail": 4,
+          "unavailable": 2
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 2,
+          "pass": 2,
+          "strong": 6,
+          "unavailable": 7
+        },
+        "observation_only_failures_are_unresolved": true,
+        "openwepp_defective_cells": 0
+      },
+      "opt_in_snow_control_status": "SNOW_CONTROL_FAILED",
+      "site_id": "site1_sleepers_south_field_vt"
+    },
+    {
+      "default_max_abs_snow_depth_residual_m": 1.059919954616471,
+      "default_mean_signed_snow_depth_residual_m": 0.32327623539008665,
+      "default_rubric_summary": {
+        "cell_count": 23,
+        "counts_by_label": {
+          "fail": 5,
+          "marginal": 2,
+          "pass": 1,
+          "strong": 6,
+          "unavailable": 9
+        },
+        "forcing_limited_counts_by_label": {
+          "fail": 4,
+          "unavailable": 2
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 1,
+          "marginal": 2,
+          "pass": 1,
+          "strong": 6,
+          "unavailable": 7
+        },
+        "observation_only_failures_are_unresolved": true,
+        "openwepp_defective_cells": 0
+      },
+      "default_snow_control_status": "SNOW_CONTROL_FAILED",
+      "opt_in_max_abs_snow_depth_residual_m": 0.7380989486538121,
+      "opt_in_mean_signed_snow_depth_residual_m": 0.21025928372492458,
+      "opt_in_rubric_summary": {
+        "cell_count": 23,
+        "counts_by_label": {
+          "fail": 3,
+          "marginal": 2,
+          "pass": 2,
+          "strong": 7,
+          "unavailable": 9
+        },
+        "forcing_limited_counts_by_label": {
+          "fail": 2,
+          "marginal": 1,
+          "pass": 1,
+          "unavailable": 2
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 1,
+          "marginal": 1,
+          "pass": 1,
+          "strong": 7,
+          "unavailable": 7
+        },
+        "observation_only_failures_are_unresolved": true,
+        "openwepp_defective_cells": 0
+      },
+      "opt_in_snow_control_status": "SNOW_CONTROL_FAILED",
+      "site_id": "site2_sleepers_w9_hardwood_vt"
+    },
+    {
+      "default_max_abs_snow_depth_residual_m": 0.392372927299844,
+      "default_mean_signed_snow_depth_residual_m": 0.0672051635094675,
+      "default_rubric_summary": {
+        "cell_count": 23,
+        "counts_by_label": {
+          "fail": 5,
+          "marginal": 2,
+          "pass": 2,
+          "strong": 5,
+          "unavailable": 9
+        },
+        "forcing_limited_counts_by_label": {
+          "fail": 3,
+          "pass": 1,
+          "unavailable": 2
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 2,
+          "marginal": 2,
+          "pass": 1,
+          "strong": 5,
+          "unavailable": 7
+        },
+        "observation_only_failures_are_unresolved": true,
+        "openwepp_defective_cells": 0
+      },
+      "default_snow_control_status": "SNOW_CONTROL_FAILED",
+      "opt_in_max_abs_snow_depth_residual_m": 0.321467289294978,
+      "opt_in_mean_signed_snow_depth_residual_m": 0.058572644425492884,
+      "opt_in_rubric_summary": {
+        "cell_count": 23,
+        "counts_by_label": {
+          "fail": 6,
+          "marginal": 1,
+          "pass": 2,
+          "strong": 5,
+          "unavailable": 9
+        },
+        "forcing_limited_counts_by_label": {
+          "fail": 3,
+          "pass": 1,
+          "unavailable": 2
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 3,
+          "marginal": 1,
+          "pass": 1,
+          "strong": 5,
+          "unavailable": 7
+        },
+        "observation_only_failures_are_unresolved": true,
+        "openwepp_defective_cells": 0
+      },
+      "opt_in_snow_control_status": "SNOW_CONTROL_FAILED",
+      "site_id": "site4_ggd498_morris_mn"
+    },
+    {
+      "default_max_abs_snow_depth_residual_m": null,
+      "default_mean_signed_snow_depth_residual_m": null,
+      "default_rubric_summary": {
+        "cell_count": 23,
+        "counts_by_label": {
+          "fail": 3,
+          "marginal": 1,
+          "strong": 1,
+          "unavailable": 18
+        },
+        "forcing_limited_counts_by_label": {
+          "unavailable": 6
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 3,
+          "marginal": 1,
+          "strong": 1,
+          "unavailable": 12
+        },
+        "observation_only_failures_are_unresolved": true,
+        "openwepp_defective_cells": 0
+      },
+      "default_snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW",
+      "opt_in_max_abs_snow_depth_residual_m": null,
+      "opt_in_mean_signed_snow_depth_residual_m": null,
+      "opt_in_rubric_summary": {
+        "cell_count": 23,
+        "counts_by_label": {
+          "fail": 3,
+          "marginal": 1,
+          "strong": 1,
+          "unavailable": 18
+        },
+        "forcing_limited_counts_by_label": {
+          "unavailable": 6
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 3,
+          "marginal": 1,
+          "strong": 1,
+          "unavailable": 12
+        },
+        "observation_only_failures_are_unresolved": true,
+        "openwepp_defective_cells": 0
+      },
+      "opt_in_snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW",
+      "site_id": "site3_scan_mandan_nd"
+    },
+    {
+      "default_max_abs_snow_depth_residual_m": null,
+      "default_mean_signed_snow_depth_residual_m": null,
+      "default_rubric_summary": {
+        "cell_count": 23,
+        "counts_by_label": {
+          "fail": 1,
+          "marginal": 1,
+          "strong": 3,
+          "unavailable": 18
+        },
+        "forcing_limited_counts_by_label": {
+          "unavailable": 6
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 1,
+          "marginal": 1,
+          "strong": 3,
+          "unavailable": 12
+        },
+        "observation_only_failures_are_unresolved": true,
+        "openwepp_defective_cells": 0
+      },
+      "default_snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW",
+      "opt_in_max_abs_snow_depth_residual_m": null,
+      "opt_in_mean_signed_snow_depth_residual_m": null,
+      "opt_in_rubric_summary": {
+        "cell_count": 23,
+        "counts_by_label": {
+          "fail": 1,
+          "marginal": 1,
+          "strong": 3,
+          "unavailable": 18
+        },
+        "forcing_limited_counts_by_label": {
+          "unavailable": 6
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 1,
+          "marginal": 1,
+          "strong": 3,
+          "unavailable": 12
+        },
+        "observation_only_failures_are_unresolved": true,
+        "openwepp_defective_cells": 0
+      },
+      "opt_in_snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW",
+      "site_id": "site5_reynolds_creek_us_rls_id"
+    }
+  ],
+  "snowdensity08_source": {
+    "path": "docs/work-packages/20260626-snowdensity-08-snow-frost-gate-rerun-001/artifacts/snowdensity08_gate_rerun.json",
+    "snotel_best_boundary": "coe_shortwave_albedo_v1",
+    "snotel_best_model": "coe_bound_density_compaction_v1_coe_shortwave_albedo_v1"
+  },
+  "summary": {
+    "blocker": "NON-SNOTEL-OPT-IN-SNOW-CONTROL-FAILED",
+    "coupled_opt_in_wat_path_available": true,
+    "default_activation_changed": false,
+    "default_snow_control_passed": false,
+    "disposition": "COMPLETE-09-COUPLED-OPT-IN-WAT-RERUN-FROST-BLOCKED",
+    "frost_attribution_authorized": false,
+    "no_site_constants": true,
+    "opt_in_snow_control_passed": false,
+    "output_schema_changed": false,
+    "parser_runfile_user_cli_activation_added": false,
+    "production_physics_changed": false,
+    "snotel_density_gate_cleared_from_snowdensity08": true
+  }
+}

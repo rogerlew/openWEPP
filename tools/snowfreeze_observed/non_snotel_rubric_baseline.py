@@ -45,6 +45,7 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Read existing site_reports instead of running openwepp-cli-hill.",
     )
+    parser.add_argument("--model-id", default="openwepp_current")
     args = parser.parse_args(argv)
 
     run_baseline(
@@ -53,6 +54,7 @@ def main(argv: list[str] | None = None) -> int:
         binary=args.binary.resolve(),
         runtime=args.runtime,
         skip_model_runs=args.skip_model_runs,
+        model_id=args.model_id,
     )
     return 0
 
@@ -63,6 +65,7 @@ def run_baseline(
     binary: Path,
     runtime: str,
     skip_model_runs: bool,
+    model_id: str = "openwepp_current",
 ) -> None:
     observed_harness.validate_observations(observations_dir)
     manifest = json.loads((observations_dir / "manifest.json").read_text(encoding="utf-8"))
@@ -86,7 +89,7 @@ def run_baseline(
         report = json.loads((site_output / "comparison_report.json").read_text(encoding="utf-8"))
         observations = load_csv(observations_dir / site["observation_file"])
         modeled = observed_harness.load_modeled_wat(Path(report["wat_output"]))
-        site_profiles.append(build_site_profile(site, report, observations, modeled))
+        site_profiles.append(build_site_profile(site, report, observations, modeled, model_id))
 
     payload = {
         "schema": SCHEMA,
@@ -109,6 +112,7 @@ def build_site_profile(
     report: dict[str, Any],
     observations: list[dict[str, str]],
     modeled: dict[dt.date, dict[str, float | None]],
+    model_id: str,
 ) -> dict[str, Any]:
     rows = paired_rows(observations, modeled)
     snow_pairs = [
@@ -144,7 +148,7 @@ def build_site_profile(
     )
     profile = {
         "schema": "snowfrost-fidelity-non-snotel-profile-v1",
-        "model_id": "openwepp_current",
+        "model_id": model_id,
         "contract": CONTRACT,
         "paired_count": len(rows),
         "cells": cells,

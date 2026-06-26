@@ -1,3 +1,5 @@
+const SNOWDENSITY09_DENSITY_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL";
+
 struct DirectPublicationDayInputBuilder<'a> {
     climate_request: &'a HillslopeClimateRuntimeRequest,
     climate_span: &'a ClimateRunSpanSummary,
@@ -569,6 +571,7 @@ struct DirectProductionSnowFrostAuthority {
     snow_runtime_density_kg_m3: f64,
     snow_runtime_settle_day_count: f64,
     snow_controls_projected: bool,
+    snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel,
     snow_rst_c: f64,
     snow_newsnw_kg_m3: f64,
     snow_ssd_kg_m3: f64,
@@ -1039,6 +1042,7 @@ fn maybe_write_r7h_direct_production_snow_trace(
 \"runtime_depth_before_m\":{},\
 \"runtime_density_before_kg_m3\":{},\
 \"runtime_settle_day_count_before\":{},\
+\"snow_density_model\":\"{}\",\
 \"active_snow_coupling\":{},\
 \"snow_coupling_signed_s_m\":{},\
 \"routed_melt_m\":{},\
@@ -1052,6 +1056,7 @@ fn maybe_write_r7h_direct_production_snow_trace(
         direct_production_trace_number(snow_lane_state.runtime_depth_m),
         direct_production_trace_number(snow_lane_state.runtime_density_kg_m3),
         direct_production_trace_number(snow_lane_state.runtime_settle_day_count),
+        snow_liquid.snow_density_model.id(),
         snow_liquid.active_snow_coupling,
         direct_production_trace_number(snow_liquid.snow_coupling_signed_s_m),
         direct_production_trace_number(snow_liquid.routed_melt_m),
@@ -1156,6 +1161,31 @@ fn maybe_write_r7h_direct_production_wb15_trace(
 
 fn direct_production_trace_env_usize(name: &str) -> Option<usize> {
     std::env::var(name).ok()?.trim().parse::<usize>().ok()
+}
+
+fn snowdensity09_diagnostic_snow_density_model(
+) -> Result<openwepp_hillslope_orchestrator::SnowDensityModel, HillslopeCliError> {
+    match std::env::var(SNOWDENSITY09_DENSITY_MODEL_ENV) {
+        Ok(value) => match value.trim() {
+            "" | "legacy_wepp" => Ok(openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp),
+            "physics_bulk_density_compaction_v1" => Ok(
+                openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1,
+            ),
+            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_snow_density_model",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be legacy_wepp or physics_bulk_density_compaction_v1, observed {observed}"
+                ),
+            }),
+        },
+        Err(std::env::VarError::NotPresent) => {
+            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp)
+        }
+        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_density_model",
+            detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be UTF-8"),
+        }),
+    }
 }
 
 fn direct_production_trace_number(value: f64) -> String {
@@ -2620,6 +2650,7 @@ impl DirectProductionSnowFrostAuthority {
             snow_runtime_density_kg_m3,
             snow_runtime_settle_day_count,
             snow_controls_projected,
+            snow_density_model: snowdensity09_diagnostic_snow_density_model()?,
             snow_rst_c,
             snow_newsnw_kg_m3,
             snow_ssd_kg_m3,
@@ -2943,7 +2974,7 @@ impl DirectProductionSnowFrostAuthority {
         if !self.active_forcing(forcing, hyetograph_rainfall_m, snow_lane_state.runtime_swe_m)? {
             return Ok(openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
                 active_snow_coupling: false,
-                snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp,
+                snow_density_model: self.snow_density_model,
                 snow_coupling_signed_s_m: 0.0,
                 raw_melt_m: 0.0,
                 redistributed_melt_m: 0.0,
@@ -3016,7 +3047,7 @@ impl DirectProductionSnowFrostAuthority {
                 wind_m_s: forcing.vwind_m_s,
                 dewpoint_c: forcing.tdpt_c,
                 snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe,
-                snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp,
+                snow_density_model: self.snow_density_model,
                 coe_boundary_depth_m: snow_lane_state.coe_boundary_depth_m,
                 coe_boundary_density_kg_m3: snow_lane_state.coe_boundary_density_kg_m3,
                 coe_boundary_settle_day_count: snow_lane_state.coe_boundary_settle_day_count,
