@@ -17,7 +17,7 @@ fn repo_root() -> PathBuf {
 fn snowdensity05g_contract_records_harness_fidelity_gate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 86",
+        "contract_version: 87",
         "INV-SNOWFREEZE-057",
         "SNOWDENSITY-05G harness-fidelity rerun",
         "configured coniferous validation fixtures",

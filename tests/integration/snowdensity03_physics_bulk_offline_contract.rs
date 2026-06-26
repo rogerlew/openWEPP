@@ -52,14 +52,17 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "tests/integration/snowdensity06_density_compaction.rs",
         "tests/integration/snowdensity06b_coe_bound_density_replay.rs",
         "tests/integration/snowdensity07_runtime_opt_in.rs",
+        "tests/integration/snowdensity08_gate_rerun.rs",
         "tools/snowfreeze_observed/coe_bound_density_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_snotel_profile.py",
+        "tools/snowfreeze_observed/snowdensity08_gate_rerun.py",
     ];
     let contract =
         fs::read_to_string("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md")
             .expect("SC-SNOWFREEZE-001 should be readable");
     assert!(contract.contains("INV-SNOWFREEZE-060"));
+    assert!(contract.contains("INV-SNOWFREEZE-061"));
     assert!(contract.contains("physics_bulk_density_compaction_v1"));
 
     let mut unexpected = Vec::new();
@@ -73,7 +76,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
 
     assert!(
         unexpected.is_empty(),
-        "physics_bulk must stay confined to diagnostic or SNOWDENSITY-07 opt-in surfaces: {unexpected:?}"
+        "physics_bulk must stay confined to diagnostic or authorized typed opt-in surfaces: {unexpected:?}"
     );
 }
 

@@ -1,0 +1,399 @@
+{
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-048 INV-SNOWFREEZE-050 INV-SNOWFREEZE-059 INV-SNOWFREEZE-060 INV-SNOWFREEZE-061 OBL-SNOWFREEZE-P-036",
+  "default_selector": {
+    "builder_path": "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs",
+    "legacy_wepp_marker_present": true,
+    "non_snotel_runtime_opt_in_coupled": false,
+    "physics_bulk_marker_present": false,
+    "reason": "SNOWDENSITY-07 intentionally exposes the density model only to typed callers; the surface-driven direct publication builder remains legacy_wepp and there is no parser/runfile/CLI density selector."
+  },
+  "evidence_class": "Static + Ran",
+  "non_snotel": {
+    "runtime": "direct-production-executor",
+    "schema": "snowfreeze-non-snotel-rubric-baseline-v1",
+    "site_count": 5,
+    "sites": [
+      {
+        "key_metrics": {
+          "frost_depth_residual_count": 392,
+          "isotherm_upper_bound_count": 0,
+          "isotherm_upper_bound_exceedance_count": 0,
+          "matched_count": 392,
+          "max_abs_residual_m": 0.2641958258624707,
+          "max_abs_snow_depth_residual_m": 1.596821792509187,
+          "max_isotherm_upper_bound_margin_m": null,
+          "mean_signed_snow_depth_residual_m": 0.41081660940626946,
+          "observation_count": 392,
+          "snow_depth_control_count": 384,
+          "snow_depth_control_fail_count": 322
+        },
+        "method": "frost_tube",
+        "robust_counts_by_label": {
+          "fail": 2,
+          "marginal": 1,
+          "pass": 2,
+          "strong": 5,
+          "unavailable": 7
+        },
+        "site_id": "site1_sleepers_south_field_vt",
+        "snow_control_status": "SNOW_CONTROL_FAILED"
+      },
+      {
+        "key_metrics": {
+          "frost_depth_residual_count": 200,
+          "isotherm_upper_bound_count": 0,
+          "isotherm_upper_bound_exceedance_count": 0,
+          "matched_count": 200,
+          "max_abs_residual_m": 0.3838127878666539,
+          "max_abs_snow_depth_residual_m": 1.059919954616471,
+          "max_isotherm_upper_bound_margin_m": null,
+          "mean_signed_snow_depth_residual_m": 0.32327623539008665,
+          "observation_count": 200,
+          "snow_depth_control_count": 193,
+          "snow_depth_control_fail_count": 143
+        },
+        "method": "frost_tube",
+        "robust_counts_by_label": {
+          "fail": 1,
+          "marginal": 2,
+          "pass": 1,
+          "strong": 6,
+          "unavailable": 7
+        },
+        "site_id": "site2_sleepers_w9_hardwood_vt",
+        "snow_control_status": "SNOW_CONTROL_FAILED"
+      },
+      {
+        "key_metrics": {
+          "frost_depth_residual_count": 83,
+          "isotherm_upper_bound_count": 0,
+          "isotherm_upper_bound_exceedance_count": 0,
+          "matched_count": 83,
+          "max_abs_residual_m": 0.990389751515789,
+          "max_abs_snow_depth_residual_m": 0.392372927299844,
+          "max_isotherm_upper_bound_margin_m": null,
+          "mean_signed_snow_depth_residual_m": 0.0672051635094675,
+          "observation_count": 232,
+          "snow_depth_control_count": 83,
+          "snow_depth_control_fail_count": 28
+        },
+        "method": "frost_tube",
+        "robust_counts_by_label": {
+          "fail": 2,
+          "marginal": 2,
+          "pass": 1,
+          "strong": 5,
+          "unavailable": 7
+        },
+        "site_id": "site4_ggd498_morris_mn",
+        "snow_control_status": "SNOW_CONTROL_FAILED"
+      },
+      {
+        "key_metrics": {
+          "frost_depth_residual_count": 0,
+          "isotherm_upper_bound_count": 10583,
+          "isotherm_upper_bound_exceedance_count": 3452,
+          "matched_count": 10643,
+          "max_abs_residual_m": null,
+          "max_abs_snow_depth_residual_m": null,
+          "max_isotherm_upper_bound_margin_m": 0.9108984039618734,
+          "mean_signed_snow_depth_residual_m": null,
+          "observation_count": 10643,
+          "snow_depth_control_count": 0,
+          "snow_depth_control_fail_count": 0
+        },
+        "method": "soil_temperature_zero_c_isotherm",
+        "robust_counts_by_label": {
+          "fail": 3,
+          "marginal": 1,
+          "strong": 1,
+          "unavailable": 12
+        },
+        "site_id": "site3_scan_mandan_nd",
+        "snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW"
+      },
+      {
+        "key_metrics": {
+          "frost_depth_residual_count": 0,
+          "isotherm_upper_bound_count": 4356,
+          "isotherm_upper_bound_exceedance_count": 104,
+          "matched_count": 4356,
+          "max_abs_residual_m": null,
+          "max_abs_snow_depth_residual_m": null,
+          "max_isotherm_upper_bound_margin_m": 0.04947822834385348,
+          "mean_signed_snow_depth_residual_m": null,
+          "observation_count": 4356,
+          "snow_depth_control_count": 0,
+          "snow_depth_control_fail_count": 0
+        },
+        "method": "soil_temperature_zero_c_isotherm",
+        "robust_counts_by_label": {
+          "fail": 1,
+          "marginal": 1,
+          "strong": 3,
+          "unavailable": 12
+        },
+        "site_id": "site5_reynolds_creek_us_rls_id",
+        "snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW"
+      }
+    ],
+    "summary": {
+      "forcing_robust_rubric_counts_by_label": {
+        "fail": 9,
+        "marginal": 7,
+        "pass": 4,
+        "strong": 20,
+        "unavailable": 45
+      },
+      "next_route": "snow-depth structural remediation before frost physics attribution",
+      "openwepp_defective_cells": 0,
+      "production_physics_changed": false,
+      "rubric_counts_by_label": {
+        "fail": 19,
+        "marginal": 8,
+        "pass": 5,
+        "strong": 20,
+        "unavailable": 63
+      },
+      "rubric_profile_not_scalar": true,
+      "snow_control_status_counts": {
+        "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW": 2,
+        "SNOW_CONTROL_FAILED": 3
+      }
+    }
+  },
+  "output_dir": "target/snowdensity08_gate_rerun",
+  "raw_outputs": {
+    "non_snotel_json": "target/snowdensity08_gate_rerun/non_snotel_default_path/non_snotel_rubric_baseline.json",
+    "snotel_json": "target/snowdensity08_gate_rerun/snotel_coe_bound_density/coe_bound_density_adjudication.json"
+  },
+  "schema": "snowdensity08-snow-frost-gate-rerun-v1",
+  "snotel": {
+    "candidates": [
+      {
+        "cell_comparison": {
+          "legacy_as_built": {
+            "better": 14,
+            "equal": 28,
+            "unpaired": 0,
+            "worse": 3
+          },
+          "openwepp_as_built": {
+            "better": 13,
+            "equal": 30,
+            "unpaired": 0,
+            "worse": 2
+          },
+          "pysnobal": {
+            "better": 31,
+            "equal": 5,
+            "unpaired": 9,
+            "worse": 0
+          }
+        },
+        "coe_boundary_model": "legacy_coe",
+        "density_cell_profile": {
+          "counts_by_label": {
+            "fail": 5,
+            "marginal": 1,
+            "pass": 3,
+            "strong": 11
+          },
+          "fail_count": 5,
+          "ordinal_score": 40
+        },
+        "density_variant": "density_compaction_v1",
+        "forcing_robust_counts_by_label": {
+          "fail": 5,
+          "marginal": 2,
+          "pass": 9,
+          "strong": 29,
+          "unavailable": 15
+        },
+        "max_abs_coe_swe_identity_residual_m": 4.440892098500626e-16,
+        "max_abs_unbounded_swe_residual_m": 0.1285,
+        "model_id": "coe_bound_density_compaction_v1_legacy_coe",
+        "robust_fail_count": 5,
+        "robust_ordinal_score": 107
+      },
+      {
+        "cell_comparison": {
+          "legacy_as_built": {
+            "better": 15,
+            "equal": 28,
+            "unpaired": 0,
+            "worse": 2
+          },
+          "openwepp_as_built": {
+            "better": 14,
+            "equal": 30,
+            "unpaired": 0,
+            "worse": 1
+          },
+          "pysnobal": {
+            "better": 31,
+            "equal": 5,
+            "unpaired": 9,
+            "worse": 0
+          }
+        },
+        "coe_boundary_model": "coe_shortwave_albedo_v1",
+        "density_cell_profile": {
+          "counts_by_label": {
+            "fail": 5,
+            "marginal": 1,
+            "pass": 2,
+            "strong": 12
+          },
+          "fail_count": 5,
+          "ordinal_score": 41
+        },
+        "density_variant": "density_compaction_v1",
+        "forcing_robust_counts_by_label": {
+          "fail": 5,
+          "marginal": 2,
+          "pass": 6,
+          "strong": 32,
+          "unavailable": 15
+        },
+        "max_abs_coe_swe_identity_residual_m": 4.440892098500626e-16,
+        "max_abs_unbounded_swe_residual_m": 0.1285,
+        "model_id": "coe_bound_density_compaction_v1_coe_shortwave_albedo_v1",
+        "robust_fail_count": 5,
+        "robust_ordinal_score": 110
+      }
+    ],
+    "comparators": {
+      "legacy_as_built": {
+        "density_cell_profile": {
+          "counts_by_label": {
+            "fail": 9,
+            "marginal": 7,
+            "pass": 3,
+            "strong": 1
+          },
+          "fail_count": 9,
+          "ordinal_score": 16
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 9,
+          "marginal": 8,
+          "pass": 8,
+          "strong": 20,
+          "unavailable": 15
+        },
+        "model_id": "legacy_as_built",
+        "robust_fail_count": 9,
+        "robust_ordinal_score": 84
+      },
+      "legacy_observed_density": {
+        "density_cell_profile": {
+          "counts_by_label": {
+            "fail": 5,
+            "marginal": 4,
+            "pass": 5,
+            "strong": 6
+          },
+          "fail_count": 5,
+          "ordinal_score": 32
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 10,
+          "marginal": 10,
+          "pass": 10,
+          "strong": 15,
+          "unavailable": 15
+        },
+        "model_id": "legacy_observed_density",
+        "robust_fail_count": 10,
+        "robust_ordinal_score": 75
+      },
+      "openwepp_as_built": {
+        "density_cell_profile": {
+          "counts_by_label": {
+            "fail": 9,
+            "marginal": 7,
+            "pass": 3,
+            "strong": 1
+          },
+          "fail_count": 9,
+          "ordinal_score": 16
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 9,
+          "marginal": 8,
+          "pass": 8,
+          "strong": 20,
+          "unavailable": 15
+        },
+        "model_id": "openwepp_as_built",
+        "robust_fail_count": 9,
+        "robust_ordinal_score": 84
+      },
+      "openwepp_observed_density": {
+        "density_cell_profile": {
+          "counts_by_label": {
+            "fail": 5,
+            "marginal": 4,
+            "pass": 7,
+            "strong": 4
+          },
+          "fail_count": 5,
+          "ordinal_score": 30
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 11,
+          "marginal": 9,
+          "pass": 13,
+          "strong": 12,
+          "unavailable": 15
+        },
+        "model_id": "openwepp_observed_density",
+        "robust_fail_count": 11,
+        "robust_ordinal_score": 71
+      },
+      "pysnobal": {
+        "density_cell_profile": {
+          "counts_by_label": {
+            "fail": 12,
+            "marginal": 4
+          },
+          "fail_count": 12,
+          "ordinal_score": 4
+        },
+        "forcing_robust_counts_by_label": {
+          "fail": 28,
+          "marginal": 6,
+          "pass": 1,
+          "strong": 1,
+          "unavailable": 24
+        },
+        "model_id": "pysnobal",
+        "robust_fail_count": 28,
+        "robust_ordinal_score": 11
+      }
+    },
+    "summary": {
+      "beats_legacy_as_built": true,
+      "beats_openwepp_as_built": true,
+      "best_boundary": "coe_shortwave_albedo_v1",
+      "best_model": "coe_bound_density_compaction_v1_coe_shortwave_albedo_v1",
+      "disposition": "PROMOTION-CANDIDATE",
+      "promotion_rule": "candidate robust_fail_count must be lower, robust_ordinal_score not lower, density fail_count lower, and density ordinal_score not lower than comparator"
+    }
+  },
+  "summary": {
+    "blocker": "NON-SNOTEL-COUPLED-OPT-IN-WAT-PATH-ABSENT",
+    "default_activation_changed": false,
+    "disposition": "COMPLETE-08-SNOTEL-CLEARED-FROST-ATTRIBUTION-BLOCKED",
+    "frost_attribution_authorized": false,
+    "next_route": "Build an authorized diagnostic coupled opt-in WAT/publication path for non-SNOTEL frost fixtures, or keep frost attribution blocked while snow-depth control fails on the default path.",
+    "no_site_constants": true,
+    "non_snotel_default_snow_control_passed": false,
+    "non_snotel_runtime_opt_in_coupled": false,
+    "production_physics_changed": false,
+    "snotel_best_boundary": "coe_shortwave_albedo_v1",
+    "snotel_best_model": "coe_bound_density_compaction_v1_coe_shortwave_albedo_v1",
+    "snotel_opt_in_density_gate_cleared": true
+  }
+}

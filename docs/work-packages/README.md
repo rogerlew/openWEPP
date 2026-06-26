@@ -13,6 +13,23 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-08-snow-frost-gate-rerun-001/` is complete as
+  SNOWDENSITY-08, the snow/frost gate rerun. It amended
+  `SC-SNOWFREEZE-001` to v87 with `INV-SNOWFREEZE-061`,
+  `OBL-SNOWFREEZE-P-036`, and the 08 addendum; added a compact diagnostic
+  aggregator; reran the accepted CoE-bound density lineage against the SNOTEL
+  rubric; and reran the current direct-production non-SNOTEL frost-site WAT
+  rubric. Result: SNOTEL density evidence still clears
+  (`coe_bound_density_compaction_v1_coe_shortwave_albedo_v1`, robust failures
+  `9 -> 5`, robust score `84 -> 110`, density failures `9 -> 5`, density score
+  `16 -> 41`, CoE SWE identity residual about `4.44e-16 m`), but frost
+  attribution stays blocked. The current non-SNOTEL path is still
+  `legacy_wepp` density, there is no authorized coupled opt-in WAT/publication
+  path, three non-SNOTEL sites fail snow control, and two lack paired observed
+  snow rows. No default activation, parser/runfile/CLI selector, output schema,
+  tuning, or production physics changed. Next route: build an authorized
+  diagnostic coupled opt-in WAT/publication path for non-SNOTEL frost fixtures
+  before resuming frost attribution.
 - `20260626-snowdensity-07-runtime-opt-in-001/` is complete as
   SNOWDENSITY-07, the runtime opt-in gate. It amended `SC-SNOWFREEZE-001`
   v86 with `INV-SNOWFREEZE-060`, `OBL-SNOWFREEZE-P-035`, typed
@@ -21,9 +38,8 @@ State as of `2026-06-26`:
   preserved `legacy_wepp` as surface-driven default/rollback; and projected
   opt-in runtime snow depth/density plus separate CoE boundary carry through
   direct R4G state, downstream operands, shadow projection, runtime carry, and
-  publication-facing winter-column state. Full workspace gates pass. The next
-  route is SNOWDENSITY-08 snow/frost gate rerun with the opt-in available but
-  still not default-activated.
+  publication-facing winter-column state. Full workspace gates pass. Its
+  next-route note is superseded by the completed SNOWDENSITY-08 gate rerun.
 - `20260626-snowdensity-06b-coe-bound-density-replay-001/` is complete as
   SNOWDENSITY-06B, the CoE-bound density replay gate. It amended
   `SC-SNOWFREEZE-001` to v85 with `INV-SNOWFREEZE-059`,
