@@ -13,6 +13,20 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-10-3-3-gradient-melt-adjudication-001/` is complete as
+  SNOWDENSITY-10.3.3, the canopy-gradient melt adjudication gate. It added a
+  diagnostic-only Harvard/Marcell stratified CoE melt replay tool and ran
+  `legacy_coe` versus `coe_shortwave_albedo_v1` across five exact
+  verdict-bearing strata plus two diagnostic mixed aggregates. Result:
+  `LOW-CANOPY-NON-PROMOTION`. Low-canopy exact-bound robust failures worsen
+  `6 -> 7` with no score gain (`70 -> 70`), and whole verdict-bearing evidence
+  worsens `7 -> 8` with no score gain (`92 -> 92`). Conifer and open/pasture are
+  neutral; deciduous worsens by one robust failure, driven by Harvard hardwood;
+  mixed aggregates worsen but remain diagnostic-only. Harvard hemlock remains
+  observation-installed but unbound to a pure hemlock/conifer model hillslope.
+  No production activation, default, selector, output schema, coefficient,
+  radiation, canopy, albedo, density, partition, frost, or fixture-input change
+  was made. The next route is §10.3.4 maritime over-accumulation diagnosis.
 - `20260626-snowdensity-10-3-1a-per-day-cancov-direct-runtime-001/` is complete
   as SNOWDENSITY-10.3.1a, the per-day canopy-cover direct-runtime bridge. It
   amended `SC-SNOWFREEZE-001` to v90 with `cancov_daily_series`,

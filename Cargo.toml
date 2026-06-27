@@ -697,6 +697,10 @@ path = "tests/integration/snowdensity10_3_1a_per_day_cancov.rs"
 name = "cancov_stratified_observations"
 path = "tests/integration/cancov_stratified_observations.rs"
 
+[[test]]
+name = "snowdensity10_3_3_gradient_melt_adjudication"
+path = "tests/integration/snowdensity10_3_3_gradient_melt_adjudication.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
