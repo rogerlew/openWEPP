@@ -453,15 +453,40 @@ Brook) vs **cold continental** (Berthoud, Tenderfoot, Marcell, Mores Creek).
 
 ### 10.2 Physics to consider for melt incorporation / tuning
 
+**Evidence update (2026-06-27, SNOWDENSITY-10.3.3 / 10.3.4).** Two results
+re-order the priorities below:
+
+- **The shortwave/albedo modernization is NON-PROMOTION even at low `cancov`**
+  (10.3.3, `LOW-CANOPY-NON-PROMOTION`): `coe_shortwave_albedo_v1` is neutral-to-
+  worse across the whole gradient — neutral at conifer/open, **worse at
+  deciduous** (`fail 3→4`), 7→8 verdict-bearing. The 05G open question is answered
+  **no**: the low-`cancov` melt deficit is not a radiation/albedo problem, so
+  item 2 below is closed as a default lever (density, 06B `9→5`, remains the win).
+- **The maritime over-accumulation is partition-first, not rain-on-snow-first**
+  (10.3.4, `PARTITION-THAW-FIRST`). Defect-eligible mechanism ranking, with
+  quantitative evidence on the four paired Sleepers/Harvard surfaces: **(1)
+  snow/rain partition near 0 °C** (21.2 m phase-ambiguous precip, 6.9 m "warm"
+  modeled snow input), **(2) winter-thaw melt response** (167,815 positive-temp
+  snowpack hours), **(3) sub-canopy longwave**, **(4) rain-on-snow heat —
+  demoted** (CoE `dmelt` already carries it; magnitude 1.86 m). `precipitation
+  bias` and `representativeness` are **forcing-limited** (report, do not tune);
+  `wind undercatch` is **not-supported** (would worsen). So among items 3–5
+  below, **partition (5) and thaw lead; rain-on-snow (4) is demoted.** Next =
+  `SNOWDENSITY-10.3.5` partition/thaw-window candidate. Over-accumulation appears
+  on **open *and* hardwood** surfaces (canopy-independent), reinforcing partition
+  over sub-canopy longwave as the dominant cause.
+
 1. **Canopy attenuation is the first-order control across this set.** The CoE melt
    already attenuates by `(1−cancov)` (radiation) and `(1−0.8·cancov)` (turbulent).
    The melt result is only as good as the **per-day winter `cancov`** the
    managements emit — step one is confirming the wepppy conifer/mixed/deciduous
    managements produce the right winter `cancov` per fixture (cross-repo). Tune the
    melt **coefficients/albedo**, never `cancov` to mask a snow error.
-2. **Shortwave + albedo (the modernization, now testable).** At less-attenuated
-   `cancov`, the `SRF·(1−albedo)·I` term is active — where the 05G-neutral
-   modernization could finally pay off. Levers: the Brock-2000 albedo state
+2. **Shortwave + albedo (the modernization — tested, NON-PROMOTION).** At
+   less-attenuated `cancov`, the `SRF·(1−albedo)·I` term is active. **10.3.3
+   tested this across the gradient and it did not earn value — neutral-to-worse,
+   worse at deciduous.** Retained here as documentation of the rejected lever, not
+   a live tuning target. Levers (if ever revisited): the Brock-2000 albedo state
    (verify the five constants against `references/copyrighted/brock2000.pdf` —
    05F review F5), snowfall albedo reset, and a **canopy shortwave transmissivity**
    for under-canopy radiation. The ★ stratified sites can isolate this only after
@@ -522,20 +547,57 @@ profile/signature scoring rather than absolute-magnitude promotion.
    the confirmed canopy gradient with `legacy_coe` and `coe_shortwave_albedo_v1`.
    Answer only whether the shortwave/albedo modernization earns value outside the
    high-evergreen regime. Closure gate: rubric profiles for conifer, mixed,
-   deciduous, and pasture regimes; no coefficient retuning.
+   deciduous, and pasture regimes; no coefficient retuning. **Complete (10.3.3):
+   `LOW-CANOPY-NON-PROMOTION` — neutral-to-worse across the gradient, worse at
+   deciduous. The modernization is not a default lever.**
 4. **Maritime Over-Accumulation Diagnosis.** Decompose HJ Andrews, Sleepers,
    Harvard, and Hubbard Brook residuals into candidate causes: snow/rain
    partition, rain-on-snow heat, winter-thaw melt, precipitation bias,
    wind/undercatch, representativeness, and possible sub-canopy longwave.
    Closure gate: ranked blocker disposition with evidence for which mechanisms are
-   defect-eligible versus forcing-limited.
-5. **Opt-In Physics Candidate Package(s).** Only after the diagnosis isolates a
-   defect-eligible mechanism, implement one candidate physics lever per package
-   unless the write set is mechanically inseparable: rain-heat repair, partition
-   repair, sub-canopy longwave, or canopy shortwave transmissivity. Closure gate:
-   conservation, independent operand reconstruction, rollback/default isolation,
-   and rubric improvement without site constants.
-6. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
+   defect-eligible versus forcing-limited. **Complete (10.3.4):
+   `PARTITION-THAW-FIRST` — partition near 0 °C (1) and winter-thaw response (2)
+   are the lead defect-eligible causes; sub-canopy longwave (3); rain-on-snow
+   demoted (4); precip-bias/representativeness forcing-limited; wind not-supported.
+   Next = `SNOWDENSITY-10.3.5` partition/thaw-window candidate.**
+5. **`SNOWDENSITY-10.3.5` Robust Rain/Snow Partition (lead candidate).** 10.3.4
+   isolated **snow/rain partition near 0 °C** as the #1 defect-eligible cause, so
+   the partition is the first opt-in physics package. Per the robustness principle
+   (the code is cheap with AI; the legwork is references / validation / testing),
+   it targets the **most physically defensible** method, not the cheapest:
+   - **Method:** Harder & Pomeroy (2013, R-57) **psychrometric hydrometeor energy
+     balance** as primary — a law, not a fit or a table: it solves the falling
+     particle's ice-bulb temperature from air temp + humidity and partitions on
+     that, so it generalizes by construction and needs no site threshold. Susong
+     (1999, R-54) **dew-point** table is the SNOBAL/SMRF-validated fallback. *Not*
+     a tuned `RST` — Mariana's `−2 °C` for Oregon/DAYMET must be an *emergent
+     output*, never a knob (and is partly a daily-mean artifact: Jennings shows the
+     observed air-temp threshold is ~0–1 °C, above `−2 °C`).
+   - **Resolution:** apply at openWEPP's existing **hourly** partition
+     (`snow.hourly.stmtim.rst_c` lineage); hourly air temp + dew-point are already
+     in the winter routine, so no daily-mean compromise.
+   - **Validation (observed data, not rule-of-thumb):** score against the Jennings
+     (2018, R-53) observed-phase corpus in `tests/fixtures/precip_phase_observed/`
+     — the per-station 50% threshold (`file3`) and the 17.8M **hourly**
+     temp/dew-point/RH/phase obs (`file2`, local). Maritime authority: Marks 1998
+     (R-55, Oregon Cascades rain-on-snow), Kormos 2014 (R-56, transition zone).
+   - **Closure gate (no site calibration):** one physical formulation must
+     reproduce the observed maritime-low / continental-high threshold variation
+     across the `cancov_forest` climates, and cut the 10.3.4 phase-ambiguous
+     (`21.2 m`) / warm-snow (`6.9 m`) over-classification; conservation;
+     opt-in/rollback isolation; contract-first (ADR-0011).
+   - **Execution split:** `10.3.5.a` = new `crates/openwepp-meteorology` crate
+     (the Harder-Pomeroy psychrometric `Ti` core + psychrometric primitives,
+     **clean-room from the paper** — CHM is GPLv3 and excluded; MetPy BSD-3 as
+     reference only); `10.3.5.b` = wire it into the hourly partition and validate
+     against the Jennings corpus under the no-site-calibration gate.
+6. **Subsequent candidate packages (one lever each).** After the partition,
+   the winter-thaw melt response (10.3.4 #2) and then sub-canopy longwave
+   (10.3.4 #3); each its own opt-in package under the same gate (conservation,
+   independent operand reconstruction, rollback/default isolation, rubric
+   improvement without site constants). Rain-heat is **not** revisited first
+   (CoE `dmelt` already carries it; 10.3.4 #4).
+7. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
    `coe_shortwave_albedo_v1` and any added opt-in melt lever. Closure gate:
    SNOTEL plus non-SNOTEL rubric profiles, explicit frost-attribution impact, and
    contract amendments for any production activation.
