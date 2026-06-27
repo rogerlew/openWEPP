@@ -9,6 +9,9 @@ use crate::psychrometrics::{
     thermal_conductivity_air, vapor_density_from_pressure_and_temperature,
 };
 
+const HYDROMETEOR_BRACKET_STEP_C: f64 = 40.0;
+const HYDROMETEOR_BRACKET_MIN_C: f64 = -120.0;
+
 /// Harder-Pomeroy logistic coefficient set.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PhaseTimescale {
@@ -166,17 +169,44 @@ pub fn hydrometeor_temperature_from_relative_humidity_with_options(
         vapor_density_at_hydrometeor_temperature(hydrometeor_temperature_c)?;
 
     for iteration in 1..=options.max_iterations {
-        let next_temperature_c = next_hydrometeor_temperature_c(
+        let Ok(next_temperature_c) = next_hydrometeor_temperature_c(
             air_temperature_k,
             hydrometeor_temperature_c,
             air_vapor_density,
             saturation_density,
             diffusivity,
             conductivity,
-        )?;
+        ) else {
+            return hydrometeor_temperature_from_relative_humidity_bisection(
+                air_temperature,
+                air_vapor_density,
+                diffusivity,
+                conductivity,
+                options,
+            );
+        };
         last_delta_c = (next_temperature_c - hydrometeor_temperature_c).abs();
-        let next_temperature = TemperatureCelsius::try_new(next_temperature_c)?;
-        saturation_density = vapor_density_at_hydrometeor_temperature(next_temperature_c)?;
+        let Ok(next_temperature) = TemperatureCelsius::try_new(next_temperature_c) else {
+            return hydrometeor_temperature_from_relative_humidity_bisection(
+                air_temperature,
+                air_vapor_density,
+                diffusivity,
+                conductivity,
+                options,
+            );
+        };
+        let Ok(next_saturation_density) =
+            vapor_density_at_hydrometeor_temperature(next_temperature_c)
+        else {
+            return hydrometeor_temperature_from_relative_humidity_bisection(
+                air_temperature,
+                air_vapor_density,
+                diffusivity,
+                conductivity,
+                options,
+            );
+        };
+        saturation_density = next_saturation_density;
 
         if last_delta_c <= options.tolerance_c {
             return Ok(HydrometeorTemperatureSolution {
@@ -191,11 +221,134 @@ pub fn hydrometeor_temperature_from_relative_humidity_with_options(
         hydrometeor_temperature_c = next_temperature_c;
     }
 
-    Err(MeteorologyError::SolverDidNotConverge {
+    hydrometeor_temperature_from_relative_humidity_bisection(
+        air_temperature,
+        air_vapor_density,
+        diffusivity,
+        conductivity,
+        options,
+    )
+    .map_err(|_| MeteorologyError::SolverDidNotConverge {
         iterations: options.max_iterations,
         last_temperature_c: hydrometeor_temperature_c,
         last_delta_c,
     })
+}
+
+fn hydrometeor_temperature_from_relative_humidity_bisection(
+    air_temperature: TemperatureCelsius,
+    air_vapor_density: VaporDensityKilogramsPerCubicMeter,
+    diffusivity: DiffusivitySquareMetersPerSecond,
+    conductivity: ThermalConductivityWattsPerMeterKelvin,
+    options: HydrometeorSolverOptions,
+) -> Result<HydrometeorTemperatureSolution, MeteorologyError> {
+    let air_temperature_c = air_temperature.as_celsius();
+    let air_temperature_k = celsius_to_kelvin(air_temperature)?;
+    let mut high_c = air_temperature_c;
+    let mut high_residual = hydrometeor_temperature_residual_c(
+        air_temperature_k,
+        high_c,
+        air_vapor_density,
+        diffusivity,
+        conductivity,
+    )?;
+    if high_residual.abs() <= options.tolerance_c {
+        let saturation_density = vapor_density_at_hydrometeor_temperature(high_c)?;
+        return Ok(HydrometeorTemperatureSolution {
+            temperature: air_temperature,
+            iterations: 1,
+            air_vapor_density,
+            saturation_vapor_density: saturation_density,
+            last_delta_c: high_residual.abs(),
+        });
+    }
+
+    let mut low_c = (air_temperature_c - HYDROMETEOR_BRACKET_STEP_C)
+        .min(air_temperature_c - options.tolerance_c)
+        .max(HYDROMETEOR_BRACKET_MIN_C);
+    let mut low_residual = hydrometeor_temperature_residual_c(
+        air_temperature_k,
+        low_c,
+        air_vapor_density,
+        diffusivity,
+        conductivity,
+    )?;
+    while same_sign(low_residual, high_residual) && low_c > HYDROMETEOR_BRACKET_MIN_C {
+        low_c = (low_c - HYDROMETEOR_BRACKET_STEP_C).max(HYDROMETEOR_BRACKET_MIN_C);
+        low_residual = hydrometeor_temperature_residual_c(
+            air_temperature_k,
+            low_c,
+            air_vapor_density,
+            diffusivity,
+            conductivity,
+        )?;
+    }
+    if same_sign(low_residual, high_residual) {
+        return Err(MeteorologyError::SolverDidNotConverge {
+            iterations: options.max_iterations,
+            last_temperature_c: low_c,
+            last_delta_c: low_residual.abs().min(high_residual.abs()),
+        });
+    }
+
+    let mut last_delta_c = (high_c - low_c).abs();
+    for iteration in 1..=options.max_iterations {
+        let mid_c = 0.5 * (low_c + high_c);
+        let mid_residual = hydrometeor_temperature_residual_c(
+            air_temperature_k,
+            mid_c,
+            air_vapor_density,
+            diffusivity,
+            conductivity,
+        )?;
+        last_delta_c = (high_c - low_c).abs();
+        if mid_residual.abs() <= options.tolerance_c || last_delta_c <= options.tolerance_c {
+            let temperature = TemperatureCelsius::try_new(mid_c)?;
+            let saturation_density = vapor_density_at_hydrometeor_temperature(mid_c)?;
+            return Ok(HydrometeorTemperatureSolution {
+                temperature,
+                iterations: options.max_iterations + iteration,
+                air_vapor_density,
+                saturation_vapor_density: saturation_density,
+                last_delta_c,
+            });
+        }
+        if same_sign(mid_residual, high_residual) {
+            high_c = mid_c;
+            high_residual = mid_residual;
+        } else {
+            low_c = mid_c;
+        }
+    }
+
+    Err(MeteorologyError::SolverDidNotConverge {
+        iterations: options.max_iterations * 2,
+        last_temperature_c: 0.5 * (low_c + high_c),
+        last_delta_c,
+    })
+}
+
+fn hydrometeor_temperature_residual_c(
+    air_temperature_k: f64,
+    hydrometeor_temperature_c: f64,
+    air_vapor_density: VaporDensityKilogramsPerCubicMeter,
+    diffusivity: DiffusivitySquareMetersPerSecond,
+    conductivity: ThermalConductivityWattsPerMeterKelvin,
+) -> Result<f64, MeteorologyError> {
+    let saturation_density = vapor_density_at_hydrometeor_temperature(hydrometeor_temperature_c)?;
+    let next_temperature_c = next_hydrometeor_temperature_c(
+        air_temperature_k,
+        hydrometeor_temperature_c,
+        air_vapor_density,
+        saturation_density,
+        diffusivity,
+        conductivity,
+    )?;
+    Ok(hydrometeor_temperature_c - next_temperature_c)
+}
+
+fn same_sign(lhs: f64, rhs: f64) -> bool {
+    lhs.is_sign_positive() == rhs.is_sign_positive()
 }
 
 /// Compute Harder-Pomeroy rain/snow fractions from hydrometeor temperature.
@@ -290,6 +443,28 @@ mod tests {
         assert_eq!(solution.iterations, 1);
         assert_close(solution.temperature.as_celsius(), 0.0, 1.0e-12);
         assert_close(solution.last_delta_c, 0.0, 1.0e-12);
+    }
+
+    #[test]
+    fn bisection_fallback_solves_warm_unsaturated_hydrometeor_temperature() {
+        let air = TemperatureCelsius::try_new(20.0).expect("valid air temperature");
+        let rh = FractionUnitInterval::try_new(0.8).expect("valid RH");
+        let solution =
+            hydrometeor_temperature_from_relative_humidity(air, rh).expect("valid solution");
+
+        assert!(
+            solution.iterations > HydrometeorSolverOptions::default().max_iterations,
+            "warm unsaturated case should require the bracketing fallback"
+        );
+        assert_close(
+            solution.temperature.as_celsius(),
+            17.512_407_020_910_7,
+            1.0e-8,
+        );
+        assert!(
+            solution.temperature.as_celsius() < air.as_celsius(),
+            "unsaturated air should cool the hydrometeor below air temperature"
+        );
     }
 
     #[test]

@@ -13,6 +13,22 @@
 
 State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-5c-phase-partition-snow-depth-impact-001/` is
+  complete as SNOWDENSITY-10.3.5c, the coupled WAT snow-depth impact
+  adjudication for the opt-in `harder_pomeroy_hourly` phase partition validated
+  in SNOWDENSITY-10.3.5b. It used the real direct-production WAT path and
+  compared absent/default `legacy_rst` against
+  `OPENWEPP_SNOWDENSITY1035_PHASE_MODEL=harder_pomeroy_hourly` across seven
+  maritime diagnostic surfaces. The execution exposed and fixed a valid-input
+  Harder-Pomeroy hydrometeor solver non-convergence by adding a bracketing
+  fallback that preserves the same equation and keeps saturated identity. Final
+  result: `PHASE-PARTITION-NEUTRAL-OR-WORSE`. Opt-in WAT changed all seven
+  surfaces but worsened all four paired Sleepers/Harvard snow-depth surfaces:
+  snow-control failures increased `1147 -> 1273`. No default activation,
+  parser/runfile/user CLI selector, fixture edit, public output schema change,
+  density/melt/canopy/radiation/frost change, or site calibration was made. The
+  next route is 10.3.4 rank-2 winter-thaw melt response before sub-canopy
+  longwave or rain heat.
 - `20260627-snowdensity-10-3-5b-hourly-partition-jennings-validation-001/` is
   complete as SNOWDENSITY-10.3.5b, the opt-in hourly rain/snow partition and
   Jennings observed-phase validation package. It amended `SC-SNOWFREEZE-001` to

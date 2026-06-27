@@ -453,8 +453,8 @@ Brook) vs **cold continental** (Berthoud, Tenderfoot, Marcell, Mores Creek).
 
 ### 10.2 Physics to consider for melt incorporation / tuning
 
-**Evidence update (2026-06-27, SNOWDENSITY-10.3.3 / 10.3.4).** Two results
-re-order the priorities below:
+**Evidence update (2026-06-27, SNOWDENSITY-10.3.3 / 10.3.4 / 10.3.5c).** Three
+results re-order the priorities below:
 
 - **The shortwave/albedo modernization is NON-PROMOTION even at low `cancov`**
   (10.3.3, `LOW-CANOPY-NON-PROMOTION`): `coe_shortwave_albedo_v1` is neutral-to-
@@ -475,6 +475,15 @@ re-order the priorities below:
   `SNOWDENSITY-10.3.5` partition/thaw-window candidate. Over-accumulation appears
   on **open *and* hardwood** surfaces (canopy-independent), reinforcing partition
   over sub-canopy longwave as the dominant cause.
+- **The 10.3.5 phase candidate did not remediate snow depth** (10.3.5c,
+  `PHASE-PARTITION-NEUTRAL-OR-WORSE`). The Harder-Pomeroy hourly selector
+  improves observed-phase classification in Jennings validation, but coupled WAT
+  snow-depth evidence worsened on all four paired Sleepers/Harvard surfaces:
+  snow-control failures increased `1147 -> 1273`, and all seven maritime
+  diagnostic surfaces accumulated more snow-depth days under the opt-in path. Keep
+  `harder_pomeroy_hourly` opt-in only; do not promote it as a snow-depth
+  remediation. The active route moves to 10.3.4 rank-2 **winter-thaw melt
+  response** before sub-canopy longwave or rain heat.
 
 1. **Canopy attenuation is the first-order control across this set.** The CoE melt
    already attenuates by `(1−cancov)` (radiation) and `(1−0.8·cancov)` (turbulent).
@@ -590,7 +599,12 @@ profile/signature scoring rather than absolute-magnitude promotion.
      (the Harder-Pomeroy psychrometric `Ti` core + psychrometric primitives,
      **clean-room from the paper** — CHM is GPLv3 and excluded; MetPy BSD-3 as
      reference only); `10.3.5.b` = wire it into the hourly partition and validate
-     against the Jennings corpus under the no-site-calibration gate.
+     against the Jennings corpus under the no-site-calibration gate; `10.3.5.c`
+     = coupled WAT snow-depth impact gate. **Complete (10.3.5c):
+     `PHASE-PARTITION-NEUTRAL-OR-WORSE` — opt-in WAT changed all seven surfaces
+     but worsened paired snow-depth evidence (`1147 -> 1273` failures; all four
+     paired surfaces worse). The selector remains opt-in and is not a snow-depth
+     promotion candidate.**
 6. **Subsequent candidate packages (one lever each).** After the partition,
    the winter-thaw melt response (10.3.4 #2) and then sub-canopy longwave
    (10.3.4 #3); each its own opt-in package under the same gate (conservation,

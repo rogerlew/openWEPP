@@ -714,6 +714,10 @@ path = "tests/integration/snowdensity10_3_5a_meteorology_crate_contract.rs"
 name = "snowdensity10_3_5b_hourly_partition_jennings_contract"
 path = "tests/integration/snowdensity10_3_5b_hourly_partition_jennings_contract.rs"
 
+[[test]]
+name = "snowdensity10_3_5c_phase_partition_snowdepth_impact"
+path = "tests/integration/snowdensity10_3_5c_phase_partition_snowdepth_impact.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
