@@ -256,6 +256,9 @@ def modeled_window_summary(
     rain_input_m = 0.0
     rain_retained_m = 0.0
     rain_released_m = 0.0
+    liquid_water_released_m = 0.0
+    max_liquid_holding_capacity_m = 0.0
+    max_liquid_water_retained_m = 0.0
     raw_melt_m = 0.0
     redistributed_melt_m = 0.0
     routed_melt_m = 0.0
@@ -274,6 +277,15 @@ def modeled_window_summary(
         rain_input_m += row.get("rain_input_m") or 0.0
         rain_retained_m += row.get("rain_retained_m") or 0.0
         rain_released_m += row.get("rain_released_m") or 0.0
+        liquid_water_released_m += row.get("liquid_water_released_m") or 0.0
+        max_liquid_holding_capacity_m = max(
+            max_liquid_holding_capacity_m,
+            row.get("liquid_holding_capacity_m") or 0.0,
+        )
+        max_liquid_water_retained_m = max(
+            max_liquid_water_retained_m,
+            row.get("liquid_water_retained_m") or 0.0,
+        )
         raw_melt_m += row.get("raw_melt_m") or 0.0
         redistributed_melt_m += row.get("redistributed_melt_m") or 0.0
         routed_melt_m += row.get("routed_melt_m") or 0.0
@@ -300,6 +312,9 @@ def modeled_window_summary(
         "rain_input_m": rain_input_m,
         "rain_retained_m": rain_retained_m,
         "rain_released_m": rain_released_m,
+        "liquid_water_released_m": liquid_water_released_m,
+        "max_liquid_holding_capacity_m": max_liquid_holding_capacity_m,
+        "max_liquid_water_retained_m": max_liquid_water_retained_m,
         "raw_melt_m": raw_melt_m,
         "redistributed_melt_m": redistributed_melt_m,
         "routed_melt_m": routed_melt_m,
@@ -328,6 +343,9 @@ def surface_thaw_summary(
         "total_snowpack_swe_loss_m": modeled["snowpack_swe_loss_m"],
         "total_rain_retained_m": modeled["rain_retained_m"],
         "total_rain_released_m": modeled["rain_released_m"],
+        "total_liquid_water_released_m": modeled["liquid_water_released_m"],
+        "max_liquid_holding_capacity_m": modeled["max_liquid_holding_capacity_m"],
+        "max_liquid_water_retained_m": modeled["max_liquid_water_retained_m"],
         "max_abs_swe_balance_residual_m": modeled["max_abs_swe_balance_residual_m"],
         "max_abs_routed_state_loss_residual_m": modeled[
             "max_abs_routed_state_loss_residual_m"
@@ -373,6 +391,23 @@ def summarize_intervals(intervals: list[dict[str, Any]]) -> dict[str, Any]:
         ),
         "total_rain_released_m": sum(
             item["modeled_window"]["rain_released_m"] for item in thaw_ablation
+        ),
+        "total_liquid_water_released_m": sum(
+            item["modeled_window"]["liquid_water_released_m"] for item in thaw_ablation
+        ),
+        "max_liquid_holding_capacity_m": max(
+            (
+                item["modeled_window"]["max_liquid_holding_capacity_m"]
+                for item in thaw_ablation
+            ),
+            default=0.0,
+        ),
+        "max_liquid_water_retained_m": max(
+            (
+                item["modeled_window"]["max_liquid_water_retained_m"]
+                for item in thaw_ablation
+            ),
+            default=0.0,
         ),
         "max_abs_swe_balance_residual_m": max(
             (
@@ -470,6 +505,17 @@ def summarize(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
         ),
         "total_rain_released_m": sum(
             item["total_rain_released_m"] for item in event_summaries
+        ),
+        "total_liquid_water_released_m": sum(
+            item["total_liquid_water_released_m"] for item in event_summaries
+        ),
+        "max_liquid_holding_capacity_m": max(
+            (item["max_liquid_holding_capacity_m"] for item in event_summaries),
+            default=0.0,
+        ),
+        "max_liquid_water_retained_m": max(
+            (item["max_liquid_water_retained_m"] for item in event_summaries),
+            default=0.0,
         ),
         "max_abs_swe_balance_residual_m": max(
             (item["max_abs_swe_balance_residual_m"] for item in event_summaries),

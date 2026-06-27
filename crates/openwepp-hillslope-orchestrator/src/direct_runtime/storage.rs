@@ -526,7 +526,7 @@ impl DirectDayFrame {
         self.snow_coupling = snow_coupling;
         if snow_coupling.snow_state_projected {
             self.winter_column.snow =
-                DirectSnowLaneState::from_runtime_values_boundary_and_albedo_state(
+                DirectSnowLaneState::from_runtime_values_boundary_liquid_and_albedo_state(
                     snow_coupling.runtime_swe_after_m,
                     snow_coupling.runtime_depth_after_m,
                     snow_coupling.runtime_density_after_kg_m3,
@@ -534,6 +534,7 @@ impl DirectDayFrame {
                     snow_coupling.coe_boundary_depth_after_m,
                     snow_coupling.coe_boundary_density_after_kg_m3,
                     snow_coupling.coe_boundary_settle_day_count_after,
+                    snow_coupling.liquid_water_retained_after_m,
                     snow_coupling.snow_albedo_state_after,
                 );
             self.snow_runtime_carry = Some(self.winter_column.snow.into());
@@ -761,6 +762,11 @@ impl DirectDayFrame {
             coe_boundary_settle_day_count_after: self
                 .snow_coupling_inputs
                 .coe_boundary_settle_day_count_after,
+            liquid_holding_capacity_after_m: self
+                .snow_coupling_inputs
+                .liquid_holding_capacity_after_m,
+            liquid_water_retained_after_m: self.snow_coupling_inputs.liquid_water_retained_after_m,
+            liquid_water_released_m: self.snow_coupling_inputs.liquid_water_released_m,
             snow_albedo_state_after: self.snow_coupling_inputs.snow_albedo_state_after,
         })
     }
@@ -912,6 +918,18 @@ impl DirectDayFrame {
             "snow_coupling.coe_boundary_settle_day_count_after",
             self.snow_coupling_inputs
                 .coe_boundary_settle_day_count_after,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.liquid_holding_capacity_after_m",
+            self.snow_coupling_inputs.liquid_holding_capacity_after_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.liquid_water_retained_after_m",
+            self.snow_coupling_inputs.liquid_water_retained_after_m,
+        )?;
+        validate_nonnegative_direct_m(
+            "snow_coupling.liquid_water_released_m",
+            self.snow_coupling_inputs.liquid_water_released_m,
         )?;
         if self.snow_coupling_inputs.runtime_density_after_kg_m3 > 522.0 {
             return Err(DirectRuntimeError::DirectDomainViolation {
@@ -1256,6 +1274,9 @@ pub struct DirectSnowCouplingInputs {
     pub coe_boundary_depth_after_m: f64,
     pub coe_boundary_density_after_kg_m3: f64,
     pub coe_boundary_settle_day_count_after: f64,
+    pub liquid_holding_capacity_after_m: f64,
+    pub liquid_water_retained_after_m: f64,
+    pub liquid_water_released_m: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
@@ -1278,6 +1299,9 @@ impl DirectSnowCouplingInputs {
             coe_boundary_depth_after_m: 0.0,
             coe_boundary_density_after_kg_m3: 0.0,
             coe_boundary_settle_day_count_after: 0.0,
+            liquid_holding_capacity_after_m: 0.0,
+            liquid_water_retained_after_m: 0.0,
+            liquid_water_released_m: 0.0,
             snow_albedo_state_after: None,
         }
     }
@@ -1300,6 +1324,9 @@ pub struct DirectSnowCouplingState {
     pub coe_boundary_depth_after_m: f64,
     pub coe_boundary_density_after_kg_m3: f64,
     pub coe_boundary_settle_day_count_after: f64,
+    pub liquid_holding_capacity_after_m: f64,
+    pub liquid_water_retained_after_m: f64,
+    pub liquid_water_released_m: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
@@ -1322,6 +1349,9 @@ impl DirectSnowCouplingState {
             coe_boundary_depth_after_m: 0.0,
             coe_boundary_density_after_kg_m3: 0.0,
             coe_boundary_settle_day_count_after: 0.0,
+            liquid_holding_capacity_after_m: 0.0,
+            liquid_water_retained_after_m: 0.0,
+            liquid_water_released_m: 0.0,
             snow_albedo_state_after: None,
         }
     }
@@ -1343,6 +1373,9 @@ pub struct DirectSnowCouplingDownstreamOperands {
     pub coe_boundary_depth_after_m: f64,
     pub coe_boundary_density_after_kg_m3: f64,
     pub coe_boundary_settle_day_count_after: f64,
+    pub liquid_holding_capacity_after_m: f64,
+    pub liquid_water_retained_after_m: f64,
+    pub liquid_water_released_m: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
 }
 
@@ -1364,6 +1397,9 @@ impl DirectSnowCouplingDownstreamOperands {
             coe_boundary_depth_after_m: 0.0,
             coe_boundary_density_after_kg_m3: 0.0,
             coe_boundary_settle_day_count_after: 0.0,
+            liquid_holding_capacity_after_m: 0.0,
+            liquid_water_retained_after_m: 0.0,
+            liquid_water_released_m: 0.0,
             snow_albedo_state_after: None,
         }
     }
@@ -1386,6 +1422,9 @@ impl From<DirectSnowCouplingState> for DirectSnowCouplingDownstreamOperands {
             coe_boundary_depth_after_m: state.coe_boundary_depth_after_m,
             coe_boundary_density_after_kg_m3: state.coe_boundary_density_after_kg_m3,
             coe_boundary_settle_day_count_after: state.coe_boundary_settle_day_count_after,
+            liquid_holding_capacity_after_m: state.liquid_holding_capacity_after_m,
+            liquid_water_retained_after_m: state.liquid_water_retained_after_m,
+            liquid_water_released_m: state.liquid_water_released_m,
             snow_albedo_state_after: state.snow_albedo_state_after,
         }
     }

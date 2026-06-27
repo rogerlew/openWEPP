@@ -26,6 +26,7 @@ fn r7g_constructor_prefers_winter_column_snow_over_legacy_carry() {
         coe_boundary_depth_m: 0.75,
         coe_boundary_density_kg_m3: 400.0,
         coe_boundary_settle_day_count: 8.0,
+        liquid_water_retained_m: 0.0,
         snow_albedo_state: None,
     });
 
@@ -61,6 +62,7 @@ fn r7g_legacy_constructor_snow_carry_migrates_into_winter_column() {
         coe_boundary_depth_m: 0.0625,
         coe_boundary_density_kg_m3: 210.0,
         coe_boundary_settle_day_count: 2.0,
+        liquid_water_retained_m: 0.0,
         snow_albedo_state: None,
     });
 

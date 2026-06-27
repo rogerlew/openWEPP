@@ -34,6 +34,7 @@ pub struct DirectSnowLaneState {
     pub coe_boundary_depth_m: f64,
     pub coe_boundary_density_kg_m3: f64,
     pub coe_boundary_settle_day_count: f64,
+    pub liquid_water_retained_m: f64,
     pub snow_albedo_state: Option<SnowAlbedoState>,
 }
 
@@ -48,6 +49,7 @@ impl DirectSnowLaneState {
             coe_boundary_depth_m: 0.0,
             coe_boundary_density_kg_m3: 0.0,
             coe_boundary_settle_day_count: 0.0,
+            liquid_water_retained_m: 0.0,
             snow_albedo_state: None,
         }
     }
@@ -67,6 +69,7 @@ impl DirectSnowLaneState {
             coe_boundary_depth_m: runtime_depth_m,
             coe_boundary_density_kg_m3: runtime_density_kg_m3,
             coe_boundary_settle_day_count: runtime_settle_day_count,
+            liquid_water_retained_m: 0.0,
             snow_albedo_state: None,
         }
     }
@@ -87,6 +90,7 @@ impl DirectSnowLaneState {
             coe_boundary_depth_m: runtime_depth_m,
             coe_boundary_density_kg_m3: runtime_density_kg_m3,
             coe_boundary_settle_day_count: runtime_settle_day_count,
+            liquid_water_retained_m: 0.0,
             snow_albedo_state,
         }
     }
@@ -111,6 +115,33 @@ impl DirectSnowLaneState {
             coe_boundary_depth_m,
             coe_boundary_density_kg_m3,
             coe_boundary_settle_day_count,
+            liquid_water_retained_m: 0.0,
+            snow_albedo_state,
+        }
+    }
+
+    #[must_use]
+    #[allow(clippy::too_many_arguments)]
+    pub const fn from_runtime_values_boundary_liquid_and_albedo_state(
+        runtime_swe_m: f64,
+        runtime_depth_m: f64,
+        runtime_density_kg_m3: f64,
+        runtime_settle_day_count: f64,
+        coe_boundary_depth_m: f64,
+        coe_boundary_density_kg_m3: f64,
+        coe_boundary_settle_day_count: f64,
+        liquid_water_retained_m: f64,
+        snow_albedo_state: Option<SnowAlbedoState>,
+    ) -> Self {
+        Self {
+            runtime_swe_m,
+            runtime_depth_m,
+            runtime_density_kg_m3,
+            runtime_settle_day_count,
+            coe_boundary_depth_m,
+            coe_boundary_density_kg_m3,
+            coe_boundary_settle_day_count,
+            liquid_water_retained_m,
             snow_albedo_state,
         }
     }

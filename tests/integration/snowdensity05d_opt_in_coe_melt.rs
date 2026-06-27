@@ -23,7 +23,7 @@ fn read(path: &str) -> String {
 fn snowdensity05d_contract_markers_bind_opt_in_melt_wiring() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 94",
+        "contract_version: 95",
         "INV-SNOWFREEZE-055",
         "OBL-SNOWFREEZE-P-030",
         "snow_melt_shortwave_absorbed_fraction",
@@ -65,6 +65,7 @@ fn warm_radiation_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitionInput
         runtime_depth_m: 1.0,
         runtime_density_kg_m3: 400.0,
         runtime_settle_day_count: 4.0,
+        liquid_water_retained_m: 0.0,
         tmax_c: 0.0,
         tmin_c: 0.0,
         canopy_cover_fraction: 0.0,
@@ -178,6 +179,9 @@ fn snowdensity05d_direct_runtime_projects_routed_melt_and_albedo_carry() {
         coe_boundary_depth_after_m: opt_in.coe_boundary_depth_after_m,
         coe_boundary_density_after_kg_m3: opt_in.coe_boundary_density_after_kg_m3,
         coe_boundary_settle_day_count_after: opt_in.coe_boundary_settle_day_count_after,
+        liquid_holding_capacity_after_m: opt_in.liquid_holding_capacity_after_m,
+        liquid_water_retained_after_m: opt_in.liquid_water_retained_after_m,
+        liquid_water_released_m: opt_in.liquid_water_released_m,
         snow_albedo_state_after: opt_in.snow_albedo_state_after,
     };
     day.run_r4g_snow_coupling_span()

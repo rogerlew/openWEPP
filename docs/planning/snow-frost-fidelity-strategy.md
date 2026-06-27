@@ -644,23 +644,24 @@ profile/signature scoring rather than absolute-magnitude promotion.
    surface worse. This is an opt-in improvement, not activation or full
    snow-control closure: `978/1415` coupled paired rows still fail snow control,
    so the remaining residuals route to the next one-lever package.
-   - **Durable fix (next): replace the `350 kg m^-3` density-gate proxy
-     (`INV-SNOWFREEZE-002`) with a physical liquid-water holding-capacity drainage
-     model.** Meltwater drains once the pack's liquid content exceeds its holding
-     capacity, not once density crosses a threshold — which is what traps cold
-     maritime packs (low density + retained melt → never ripens → over-accumulates,
-     the §10.2 item-4 mechanism). A holding-capacity law is physically correct
-     across cold *and* warm regimes and subsumes the 10.3.7 thaw-branch override.
-     **Authority is fully in-repo — no track-down needed:** Marks 1998 (R-55) the
-     `wc,max` liquid-water-holding volume ratio (constant ≈ `0.01`); Anderson 1976
-     NWS-19 the retention/transmission physics (`W_e` fractional holding capacity,
-     `W_f`, `W_x` excess → drainage); SNOW-17 (Anderson 2006) the operational
-     `PLWHC` (with its density dependence); SNOBAL `_runoff.c` the reference
-     implementation (`h2o_max`, runoff = excess above capacity, relative
-     saturation). Keep `PLWHC`/`wc,max` a **physical default from this authority,
-     never fit to the fixtures**; contract-first amend `INV-SNOWFREEZE-002`.
-     (Colbeck 1974 capillary/pore-space physics is an optional deeper grounding,
-     only if a saturation-dependent capacity is wanted over a constant fraction.)
+   - **Durable fix completed as opt-in 10.3.8:** `docs/work-packages/20260627-snowdensity-10-3-8-liquid-holding-capacity-001/`
+     amended `SC-SNOWFREEZE-001` v95 and added `coe_liquid_holding_capacity_v1`.
+     The candidate replaces the `350 kg m^-3` density-gate proxy with a persistent
+     retained-liquid snow-lane store and a physical holding-capacity drainage
+     bound from in-repo authority (`max_liquid_water_volume_fraction = 0.01`,
+     Marks R-55, Anderson 1976 NWS-19, SNOW-17 PLWHC, and SNOBAL-lineage
+     `h2o_max`/excess-runoff semantics). It preserves `legacy_coe` default and
+     rollback behavior, CoE melt terms, radiation, canopy, phase partition,
+     density constants, rain heat, sub-canopy longwave, frost, fixtures, public
+     schemas, parser/runfile/user surfaces, and compatibility runtime. Event-
+     window evidence improves under-ablation `132 -> 94` and aggregate deficit
+     `24.105 m -> 15.506 m` with conservation closed. Real coupled direct-
+     production WAT evidence improves snow-control failures `1147 -> 761` with
+     no paired surface worse. This is still **not default activation or full
+     snow-control closure**: `761/1415` paired rows still fail snow control and
+     three surfaces remain observation-blocked, so subsequent work must target
+     the remaining one-lever snow-control residuals without tuning the capacity
+     constant to fixtures.
 7. **Subsequent candidate packages (one lever each).** After winter-thaw melt
    response, evaluate sub-canopy longwave / forest energy (10.3.4 #3), then only
    revisit rain-on-snow heat if event-window reconstruction proves the existing

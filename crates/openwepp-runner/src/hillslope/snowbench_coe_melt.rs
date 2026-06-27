@@ -36,6 +36,7 @@ pub enum CoeMeltModel {
     LegacyCoe,
     CoeShortwaveAlbedoV1,
     CoeWinterThawStateLossV1,
+    CoeLiquidHoldingCapacityV1,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -75,9 +76,12 @@ pub struct CoeMeltSummary {
     pub total_redistributed_melt_m: f64,
     pub total_routed_melt_m: f64,
     pub total_swe_loss_m: f64,
+    pub total_liquid_water_released_m: f64,
     pub final_swe_m: f64,
     pub final_depth_m: f64,
     pub final_density_kg_m3: f64,
+    pub final_liquid_holding_capacity_m: f64,
+    pub final_liquid_water_retained_m: f64,
     pub final_settle_day_count: f64,
     pub final_snow_albedo: Option<f64>,
     pub diagnostic_initial_albedo_seed_count: usize,
@@ -119,6 +123,9 @@ struct CoeMeltDailyRow {
     rain_input_m: f64,
     rain_retained_m: f64,
     rain_released_m: f64,
+    liquid_holding_capacity_m: f64,
+    liquid_water_retained_m: f64,
+    liquid_water_released_m: f64,
     snow_water_m: f64,
     snow_depth_m: f64,
     snow_density_kg_m3: f64,
@@ -148,6 +155,7 @@ struct CoeMeltLedger {
     total_redistributed_melt_m: f64,
     total_routed_melt_m: f64,
     total_swe_loss_m: f64,
+    total_liquid_water_released_m: f64,
     positive_snow_hours: usize,
     diagnostic_initial_albedo_seed_count: usize,
 }
@@ -159,6 +167,7 @@ impl CoeMeltModel {
             Self::LegacyCoe => "legacy_coe",
             Self::CoeShortwaveAlbedoV1 => "coe_shortwave_albedo_v1",
             Self::CoeWinterThawStateLossV1 => "coe_winter_thaw_state_loss_v1",
+            Self::CoeLiquidHoldingCapacityV1 => "coe_liquid_holding_capacity_v1",
         }
     }
 
@@ -167,9 +176,10 @@ impl CoeMeltModel {
             "legacy_coe" => Ok(Self::LegacyCoe),
             "coe_shortwave_albedo_v1" => Ok(Self::CoeShortwaveAlbedoV1),
             "coe_winter_thaw_state_loss_v1" => Ok(Self::CoeWinterThawStateLossV1),
+            "coe_liquid_holding_capacity_v1" => Ok(Self::CoeLiquidHoldingCapacityV1),
             _ => Err(SnowbenchError::InvalidInput {
                 detail: format!(
-                    "unknown CoE melt model '{value}', expected legacy_coe, coe_shortwave_albedo_v1, or coe_winter_thaw_state_loss_v1"
+                    "unknown CoE melt model '{value}', expected legacy_coe, coe_shortwave_albedo_v1, coe_winter_thaw_state_loss_v1, or coe_liquid_holding_capacity_v1"
                 ),
             }),
         }
@@ -180,12 +190,15 @@ impl CoeMeltModel {
             Self::LegacyCoe => SnowMeltModel::LegacyCoe,
             Self::CoeShortwaveAlbedoV1 => SnowMeltModel::CoeShortwaveAlbedoV1,
             Self::CoeWinterThawStateLossV1 => SnowMeltModel::CoeWinterThawStateLossV1,
+            Self::CoeLiquidHoldingCapacityV1 => SnowMeltModel::CoeLiquidHoldingCapacityV1,
         }
     }
 
     const fn snow_albedo_model(self) -> Option<SnowAlbedoModel> {
         match self {
-            Self::LegacyCoe | Self::CoeWinterThawStateLossV1 => None,
+            Self::LegacyCoe | Self::CoeWinterThawStateLossV1 | Self::CoeLiquidHoldingCapacityV1 => {
+                None
+            }
             Self::CoeShortwaveAlbedoV1 => Some(SnowAlbedoModel::Brock2000TemperatureAgeV1),
         }
     }
@@ -650,6 +663,7 @@ fn simulate_coe_melt(
     let mut runtime_depth_m = 0.0;
     let mut runtime_density_kg_m3 = 0.0;
     let mut runtime_settle_day_count = 0.0;
+    let mut liquid_water_retained_m = 0.0;
     let mut snow_albedo_state: Option<SnowAlbedoState> = None;
     let mut ledger = CoeMeltLedger::default();
     let mut daily_rows = Vec::with_capacity(days.len());
@@ -675,6 +689,7 @@ fn simulate_coe_melt(
             runtime_depth_m,
             runtime_density_kg_m3,
             runtime_settle_day_count,
+            liquid_water_retained_m,
             tmax_c: day.tmax_c,
             tmin_c: day.tmin_c,
             canopy_cover_fraction: day.canopy_cover_fraction,
@@ -714,6 +729,7 @@ fn simulate_coe_melt(
         ledger.total_redistributed_melt_m += partition.redistributed_melt_m;
         ledger.total_routed_melt_m += partition.routed_melt_m;
         ledger.total_swe_loss_m += partition.snowpack_swe_loss_m;
+        ledger.total_liquid_water_released_m += partition.liquid_water_released_m;
         ledger.positive_snow_hours += day
             .hourly
             .iter()
@@ -723,6 +739,7 @@ fn simulate_coe_melt(
         runtime_depth_m = partition.runtime_depth_after_m;
         runtime_density_kg_m3 = partition.runtime_density_after_kg_m3;
         runtime_settle_day_count = partition.runtime_settle_day_count_after;
+        liquid_water_retained_m = partition.liquid_water_retained_after_m;
         snow_albedo_state = partition.snow_albedo_state_after;
         daily_rows.push(CoeMeltDailyRow {
             date: day.date.clone(),
@@ -731,6 +748,9 @@ fn simulate_coe_melt(
             rain_input_m: day.rain_m,
             rain_retained_m: partition.rain_retained_m,
             rain_released_m: partition.rain_released_m,
+            liquid_holding_capacity_m: partition.liquid_holding_capacity_after_m,
+            liquid_water_retained_m: partition.liquid_water_retained_after_m,
+            liquid_water_released_m: partition.liquid_water_released_m,
             snow_water_m: runtime_swe_m,
             snow_depth_m: runtime_depth_m,
             snow_density_kg_m3: runtime_density_kg_m3,
@@ -745,6 +765,9 @@ fn simulate_coe_melt(
             source: model.name(),
         });
     }
+    let final_liquid_holding_capacity_m = daily_rows
+        .last()
+        .map_or(0.0, |row| row.liquid_holding_capacity_m);
     Ok(CoeMeltSimulation {
         daily_rows,
         positive_snow_hours: ledger.positive_snow_hours,
@@ -755,9 +778,12 @@ fn simulate_coe_melt(
             total_redistributed_melt_m: ledger.total_redistributed_melt_m,
             total_routed_melt_m: ledger.total_routed_melt_m,
             total_swe_loss_m: ledger.total_swe_loss_m,
+            total_liquid_water_released_m: ledger.total_liquid_water_released_m,
             final_swe_m: runtime_swe_m,
             final_depth_m: runtime_depth_m,
             final_density_kg_m3: runtime_density_kg_m3,
+            final_liquid_holding_capacity_m,
+            final_liquid_water_retained_m: liquid_water_retained_m,
             final_settle_day_count: runtime_settle_day_count,
             final_snow_albedo: snow_albedo_state.map(|state| state.albedo),
             diagnostic_initial_albedo_seed_count: ledger.diagnostic_initial_albedo_seed_count,
@@ -769,7 +795,7 @@ fn write_coe_melt_csv(path: &Path, rows: &[CoeMeltDailyRow]) -> Result<(), Snowb
     let mut file = fs::File::create(path).map_err(|source| snowbench_io(path, source))?;
     writeln!(
         file,
-        "date,snow_water_before_m,snow_input_m,rain_input_m,rain_retained_m,rain_released_m,snow_water_m,snow_depth_m,snow_density_kg_m3,raw_melt_m,redistributed_melt_m,routed_melt_m,snowpack_swe_loss_m,snowpack_swe_balance_residual_m,routed_state_loss_residual_m,state_loss_available_storage_margin_m,snow_albedo,source"
+        "date,snow_water_before_m,snow_input_m,rain_input_m,rain_retained_m,rain_released_m,liquid_holding_capacity_m,liquid_water_retained_m,liquid_water_released_m,snow_water_m,snow_depth_m,snow_density_kg_m3,raw_melt_m,redistributed_melt_m,routed_melt_m,snowpack_swe_loss_m,snowpack_swe_balance_residual_m,routed_state_loss_residual_m,state_loss_available_storage_margin_m,snow_albedo,source"
     )
     .map_err(|source| snowbench_io(path, source))?;
     for row in rows {
@@ -779,13 +805,16 @@ fn write_coe_melt_csv(path: &Path, rows: &[CoeMeltDailyRow]) -> Result<(), Snowb
             .unwrap_or_default();
         writeln!(
             file,
-            "{},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{},{}",
+            "{},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{},{}",
             row.date,
             row.snow_water_before_m,
             row.snow_input_m,
             row.rain_input_m,
             row.rain_retained_m,
             row.rain_released_m,
+            row.liquid_holding_capacity_m,
+            row.liquid_water_retained_m,
+            row.liquid_water_released_m,
             row.snow_water_m,
             row.snow_depth_m,
             row.snow_density_kg_m3,

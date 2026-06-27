@@ -5,6 +5,7 @@ This is the review-disposition gate for SNOWDENSITY-10.3.7. It exercises the
 real ``openwepp-cli-hill --direct-production-executor`` WAT path for the same
 snow-depth surfaces used by SNOWDENSITY-10.3.5c, changing only the package-bound
 diagnostic melt selector ``OPENWEPP_SNOWDENSITY1037_MELT_MODEL``.
+Default artifact: ``coupled-wat-melt-response.json``.
 """
 
 from __future__ import annotations
@@ -37,11 +38,11 @@ PACKAGE_DIR = (
 PACKAGE_ARTIFACTS = PACKAGE_DIR / "artifacts"
 DEFAULT_OUTPUT = REPO_ROOT / "target/snowdensity10_3_7_coupled_wat_melt_response"
 DEFAULT_HILL_BINARY = REPO_ROOT / "target/debug/openwepp-cli-hill"
-MELT_ENV = "OPENWEPP_SNOWDENSITY1037_MELT_MODEL"
+DEFAULT_MELT_ENV = "OPENWEPP_SNOWDENSITY1037_MELT_MODEL"
 SNOW_TRACE_ENV = "OPENWEPP_R7H_SNOW_TRACE_PATH"
 DEFAULT_MODEL = "legacy_coe"
-CANDIDATE_MODEL = "coe_winter_thaw_state_loss_v1"
-MODELS = [DEFAULT_MODEL, CANDIDATE_MODEL]
+DEFAULT_CANDIDATE_MODEL = "coe_winter_thaw_state_loss_v1"
+DEFAULT_ARTIFACT_STEM = "coupled-wat-melt-response"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -49,6 +50,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--package-artifacts-dir", type=Path, default=PACKAGE_ARTIFACTS)
     parser.add_argument("--hill-binary", type=Path, default=DEFAULT_HILL_BINARY)
+    parser.add_argument("--melt-env", default=DEFAULT_MELT_ENV)
+    parser.add_argument("--candidate-model", default=DEFAULT_CANDIDATE_MODEL)
+    parser.add_argument("--schema", default=SCHEMA)
+    parser.add_argument("--contract", default=CONTRACT)
+    parser.add_argument("--artifact-stem", default=DEFAULT_ARTIFACT_STEM)
     parser.add_argument("--skip-model-runs", action="store_true")
     args = parser.parse_args(argv)
 
@@ -56,6 +62,11 @@ def main(argv: list[str] | None = None) -> int:
         output_dir=args.output_dir.resolve(),
         package_artifacts_dir=args.package_artifacts_dir.resolve(),
         hill_binary=args.hill_binary.resolve(),
+        melt_env=args.melt_env,
+        candidate_model=args.candidate_model,
+        schema=args.schema,
+        contract=args.contract,
+        artifact_stem=args.artifact_stem,
         run_models=not args.skip_model_runs,
     )
     print(json.dumps(report["summary"], indent=2, sort_keys=True))
@@ -66,6 +77,11 @@ def adjudicate(
     output_dir: Path,
     package_artifacts_dir: Path,
     hill_binary: Path,
+    melt_env: str,
+    candidate_model: str,
+    schema: str,
+    contract: str,
+    artifact_stem: str,
     run_models: bool,
 ) -> dict[str, Any]:
     if run_models and not hill_binary.is_file():
@@ -75,31 +91,34 @@ def adjudicate(
 
     surfaces = []
     trace_paths: dict[str, Path] = {}
+    models = [DEFAULT_MODEL, candidate_model]
     for surface in phase.SURFACES:
         model_results = {}
-        for model in MODELS:
+        for model in models:
             trace_path = output_dir / "traces" / f"{surface.surface_id}_{model}.jsonl"
             trace_paths[f"{surface.surface_id}:{model}"] = trace_path
             model_results[model] = run_and_analyze(
                 surface=surface,
                 output_dir=output_dir,
                 hill_binary=hill_binary,
+                melt_env=melt_env,
+                candidate_model=candidate_model,
                 model=model,
                 trace_path=trace_path,
                 run_model=run_models,
             )
         surfaces.append(build_surface_report(surface, model_results))
 
-    trace_proof = build_trace_proof(trace_paths)
+    trace_proof = build_trace_proof(trace_paths, candidate_model)
     report = {
-        "schema": SCHEMA,
-        "contract": CONTRACT,
+        "schema": schema,
+        "contract": contract,
         "evidence_class": "Static + Ran",
         "runtime_coupling": "real direct-production WAT via openwepp-cli-hill",
         "diagnostic_selector": {
-            "env": MELT_ENV,
+            "env": melt_env,
             "default_behavior": "absent selector -> legacy_coe",
-            "opt_in_value": CANDIDATE_MODEL,
+            "opt_in_value": candidate_model,
             "trace_env": SNOW_TRACE_ENV,
             "trace_proof": trace_proof,
         },
@@ -115,16 +134,17 @@ def adjudicate(
         "surfaces": surfaces,
         "raw_outputs": {
             "output_dir": rel(output_dir),
-            "package_json": rel(package_artifacts_dir / "coupled-wat-melt-response.json"),
-            "package_markdown": rel(package_artifacts_dir / "coupled-wat-melt-response.md"),
+            "package_json": rel(package_artifacts_dir / f"{artifact_stem}.json"),
+            "package_markdown": rel(package_artifacts_dir / f"{artifact_stem}.md"),
         },
     }
-    rubric.write_json(package_artifacts_dir / "coupled-wat-melt-response.json", report)
-    (package_artifacts_dir / "coupled-wat-melt-response.md").write_text(
+    report["diagnostic_selector"]["env"] = melt_env
+    rubric.write_json(package_artifacts_dir / f"{artifact_stem}.json", report)
+    (package_artifacts_dir / f"{artifact_stem}.md").write_text(
         render_markdown(report), encoding="utf-8"
     )
-    rubric.write_json(output_dir / "coupled-wat-melt-response.json", report)
-    (output_dir / "coupled-wat-melt-response.md").write_text(
+    rubric.write_json(output_dir / f"{artifact_stem}.json", report)
+    (output_dir / f"{artifact_stem}.md").write_text(
         render_markdown(report), encoding="utf-8"
     )
     return report
@@ -134,6 +154,8 @@ def run_and_analyze(
     surface: phase.Surface,
     output_dir: Path,
     hill_binary: Path,
+    melt_env: str,
+    candidate_model: str,
     model: str,
     trace_path: Path,
     run_model: bool,
@@ -154,9 +176,9 @@ def run_and_analyze(
         run_dir,
         "direct-production-executor",
     )
-    env_value = None if model == DEFAULT_MODEL else CANDIDATE_MODEL
+    env_value = None if model == DEFAULT_MODEL else candidate_model
     if run_model:
-        with scoped_env({MELT_ENV: env_value, SNOW_TRACE_ENV: str(trace_path)}):
+        with scoped_env({melt_env: env_value, SNOW_TRACE_ENV: str(trace_path)}):
             completed = subprocess.run(
                 command,
                 cwd=REPO_ROOT,
@@ -180,7 +202,7 @@ def run_and_analyze(
     pairs = phase.pair_observations(observations, modeled, surface.observation_kind)
     return {
         "model": model,
-        "env": None if model == DEFAULT_MODEL else {MELT_ENV: CANDIDATE_MODEL},
+        "env": None if model == DEFAULT_MODEL else {melt_env: candidate_model},
         "command": [str(value) for value in command],
         "run_dir": rel(run_dir),
         "runfile": rel(runfile_path),
@@ -216,7 +238,8 @@ def build_surface_report(
     model_results: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     default_result = model_results[DEFAULT_MODEL]
-    candidate_result = model_results[CANDIDATE_MODEL]
+    candidate_model = next(model for model in model_results if model != DEFAULT_MODEL)
+    candidate_result = model_results[candidate_model]
     deltas = wat_summary_delta(default_result["wat_summary"], candidate_result["wat_summary"])
     paired_delta = phase.paired_residual_delta(
         default_result["residuals"], candidate_result["residuals"]
@@ -335,8 +358,8 @@ def summarize(surfaces: list[dict[str, Any]], trace_proof: dict[str, Any]) -> di
     }
 
 
-def build_trace_proof(trace_paths: dict[str, Path]) -> dict[str, Any]:
-    by_model = {DEFAULT_MODEL: {}, CANDIDATE_MODEL: {}}
+def build_trace_proof(trace_paths: dict[str, Path], candidate_model: str) -> dict[str, Any]:
+    by_model = {DEFAULT_MODEL: {}, candidate_model: {}}
     default_selected = 0
     candidate_selected = 0
     for key, path in trace_paths.items():
@@ -344,7 +367,7 @@ def build_trace_proof(trace_paths: dict[str, Path]) -> dict[str, Any]:
         counts = count_trace_melt_models(path)
         by_model[model][rel(path)] = counts
         default_selected += counts.get(DEFAULT_MODEL, 0)
-        candidate_selected += counts.get(CANDIDATE_MODEL, 0)
+        candidate_selected += counts.get(candidate_model, 0)
     return {
         "default_trace_selected_count": default_selected,
         "candidate_trace_selected_count": candidate_selected,

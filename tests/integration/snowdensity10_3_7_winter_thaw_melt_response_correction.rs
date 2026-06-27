@@ -41,7 +41,7 @@ fn assert_contains(haystack: &str, needle: &str, context: &str) {
 fn contract_and_package_bind_thaw_state_loss_candidate() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 94",
+        "contract_version: 95",
         "coe_winter_thaw_state_loss_v1",
         "INV-SNOWFREEZE-066",
         "OBL-SNOWFREEZE-P-041",
@@ -90,6 +90,7 @@ fn low_density_positive_thaw_inputs(model: SnowMeltModel) -> DirectActiveSnowPar
         runtime_depth_m: 1.0,
         runtime_density_kg_m3: 200.0,
         runtime_settle_day_count: 4.0,
+        liquid_water_retained_m: 0.0,
         tmax_c: 2.0,
         tmin_c: 2.0,
         canopy_cover_fraction: 0.0,

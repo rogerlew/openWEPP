@@ -170,12 +170,13 @@ pub struct DirectSnowRuntimeCarry {
     pub coe_boundary_depth_m: f64,
     pub coe_boundary_density_kg_m3: f64,
     pub coe_boundary_settle_day_count: f64,
+    pub liquid_water_retained_m: f64,
     pub snow_albedo_state: Option<SnowAlbedoState>,
 }
 
 impl From<DirectSnowRuntimeCarry> for DirectSnowLaneState {
     fn from(carry: DirectSnowRuntimeCarry) -> Self {
-        Self::from_runtime_values_boundary_and_albedo_state(
+        Self::from_runtime_values_boundary_liquid_and_albedo_state(
             carry.runtime_swe_m,
             carry.runtime_depth_m,
             carry.runtime_density_kg_m3,
@@ -183,6 +184,7 @@ impl From<DirectSnowRuntimeCarry> for DirectSnowLaneState {
             carry.coe_boundary_depth_m,
             carry.coe_boundary_density_kg_m3,
             carry.coe_boundary_settle_day_count,
+            carry.liquid_water_retained_m,
             carry.snow_albedo_state,
         )
     }
@@ -198,6 +200,7 @@ impl From<DirectSnowLaneState> for DirectSnowRuntimeCarry {
             coe_boundary_depth_m: state.coe_boundary_depth_m,
             coe_boundary_density_kg_m3: state.coe_boundary_density_kg_m3,
             coe_boundary_settle_day_count: state.coe_boundary_settle_day_count,
+            liquid_water_retained_m: state.liquid_water_retained_m,
             snow_albedo_state: state.snow_albedo_state,
         }
     }
@@ -1929,6 +1932,7 @@ fn validate_direct_snow_lane_state(
             "coe_boundary_settle_day_count",
             state.coe_boundary_settle_day_count,
         ),
+        ("liquid_water_retained_m", state.liquid_water_retained_m),
     ] {
         validate_nonnegative_direct_m(direct_snow_lane_validation_field(prefix, field), value)?;
     }

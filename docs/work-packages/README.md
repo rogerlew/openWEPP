@@ -13,6 +13,26 @@
 
 State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-8-liquid-holding-capacity-001/` is complete as
+  SNOWDENSITY-10.3.8, the opt-in liquid holding-capacity drainage correction.
+  It amended `SC-SNOWFREEZE-001` to v95 with in-repo retained-liquid authority,
+  `coe_liquid_holding_capacity_v1`, `INV-SNOWFREEZE-067`,
+  `OBL-SNOWFREEZE-P-042`, and the Opt-In Liquid Holding-Capacity Addendum. The
+  candidate preserves `legacy_coe` default/rollback behavior, CoE melt terms,
+  radiation, canopy, phase partition, density constants, rain heat, sub-canopy
+  longwave, frost, fixtures, public schemas, parser/runfile/user surfaces, and
+  compatibility runtime. Its only algorithmic delta is an explicit opt-in
+  persistent retained-liquid snow-lane store: liquid is retained up to the
+  non-fitted in-repo holding capacity (`max_liquid_water_volume_fraction = 0.01`)
+  and excess drains to downstream liquid forcing. Event-window evidence improves
+  paired Sleepers/Harvard under-ablation `132 -> 94` and aggregate depth-loss
+  deficit `24.105 m -> 15.506 m`, with produced-artifact SWE/routed-liquid
+  conservation closed. Real direct-production WAT evidence improves paired
+  snow-control failures `1147 -> 761` with no paired surface worse, but the
+  snow-control gate is still not cleared (`761/1415` rows fail; three surfaces
+  remain observation-blocked). The result is `WINTER-THAW-MELT-RESPONSE-
+  CANDIDATE-IMPROVES` / `WINTER-THAW-COUPLED-WAT-IMPROVES`, not default
+  activation.
 - `20260627-snowdensity-10-3-7-winter-thaw-melt-response-correction-001/` is
   complete as SNOWDENSITY-10.3.7, the opt-in winter-thaw melt-response
   correction. It amended `SC-SNOWFREEZE-001` to v94 with

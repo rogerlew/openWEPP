@@ -37,8 +37,8 @@ PACKAGE_ARTIFACTS = (
 )
 DEFAULT_SNOWBENCH_BINARY = REPO_ROOT / "target/debug/openwepp-snowbench"
 LEGACY_MODEL = "legacy_coe"
-CANDIDATE_MODEL = "coe_winter_thaw_state_loss_v1"
-MODELS = [LEGACY_MODEL, CANDIDATE_MODEL]
+DEFAULT_CANDIDATE_MODEL = "coe_winter_thaw_state_loss_v1"
+DEFAULT_ARTIFACT_STEM = "winter-thaw-melt-response-correction"
 CONSERVATION_TOL_M = 1.0e-9
 
 
@@ -47,6 +47,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--package-artifacts-dir", type=Path, default=PACKAGE_ARTIFACTS)
     parser.add_argument("--snowbench-binary", type=Path, default=DEFAULT_SNOWBENCH_BINARY)
+    parser.add_argument("--candidate-model", default=DEFAULT_CANDIDATE_MODEL)
+    parser.add_argument("--schema", default=SCHEMA)
+    parser.add_argument("--contract", default=CONTRACT)
+    parser.add_argument("--artifact-stem", default=DEFAULT_ARTIFACT_STEM)
     parser.add_argument("--skip-runs", action="store_true")
     args = parser.parse_args(argv)
 
@@ -54,6 +58,10 @@ def main(argv: list[str] | None = None) -> int:
         output_dir=args.output_dir.resolve(),
         package_artifacts_dir=args.package_artifacts_dir.resolve(),
         snowbench_binary=args.snowbench_binary.resolve(),
+        candidate_model=args.candidate_model,
+        schema=args.schema,
+        contract=args.contract,
+        artifact_stem=args.artifact_stem,
         run_snowbench=not args.skip_runs,
     )
     print(
@@ -79,6 +87,10 @@ def diagnose(
     output_dir: Path,
     package_artifacts_dir: Path,
     snowbench_binary: Path,
+    candidate_model: str,
+    schema: str,
+    contract: str,
+    artifact_stem: str,
     run_snowbench: bool,
 ) -> dict[str, Any]:
     if run_snowbench and not snowbench_binary.is_file():
@@ -86,6 +98,7 @@ def diagnose(
     output_dir.mkdir(parents=True, exist_ok=True)
     package_artifacts_dir.mkdir(parents=True, exist_ok=True)
 
+    models = [LEGACY_MODEL, candidate_model]
     model_reports = {
         model: analyze_model(
             model=model,
@@ -93,26 +106,26 @@ def diagnose(
             snowbench_binary=snowbench_binary,
             run_snowbench=run_snowbench,
         )
-        for model in MODELS
+        for model in models
     }
     comparison = compare_summaries(
-        model_reports[CANDIDATE_MODEL]["summary"],
+        model_reports[candidate_model]["summary"],
         model_reports[LEGACY_MODEL]["summary"],
     )
-    conservation = conservation_gate(model_reports)
+    conservation = conservation_gate(model_reports, candidate_model)
     disposition = disposition_from_comparison(comparison)
     if disposition == "WINTER-THAW-MELT-RESPONSE-CANDIDATE-IMPROVES" and not conservation[
         "candidate_conservation_passed"
     ]:
         disposition = "WINTER-THAW-MELT-RESPONSE-CANDIDATE-HOLD"
     report = {
-        "schema": SCHEMA,
-        "contract": CONTRACT,
+        "schema": schema,
+        "contract": contract,
         "runtime_coupling": "diagnostic snowbench replay of typed CoE melt path; opt-in only",
         "evidence_mode": "Static/Ran",
-        "models": MODELS,
+        "models": models,
         "legacy_model": LEGACY_MODEL,
-        "candidate_model": CANDIDATE_MODEL,
+        "candidate_model": candidate_model,
         "no_tuning": True,
         "no_site_constants": True,
         "default_activation_changed": False,
@@ -136,16 +149,16 @@ def diagnose(
         "model_reports": model_reports,
         "static_scope_scan": static_scope_scan_record(),
     }
-    rubric.write_json(output_dir / "winter-thaw-melt-response-correction.json", report)
-    (output_dir / "winter-thaw-melt-response-correction.md").write_text(
+    rubric.write_json(output_dir / f"{artifact_stem}.json", report)
+    (output_dir / f"{artifact_stem}.md").write_text(
         render_markdown(report),
         encoding="utf-8",
     )
     rubric.write_json(
-        package_artifacts_dir / "winter-thaw-melt-response-correction.json",
+        package_artifacts_dir / f"{artifact_stem}.json",
         report,
     )
-    (package_artifacts_dir / "winter-thaw-melt-response-correction.md").write_text(
+    (package_artifacts_dir / f"{artifact_stem}.md").write_text(
         render_markdown(report),
         encoding="utf-8",
     )
@@ -233,6 +246,24 @@ def compare_summaries(candidate: dict[str, Any], legacy: dict[str, Any]) -> dict
         "candidate_total_rain_retained_m": candidate["total_rain_retained_m"],
         "legacy_total_rain_released_m": legacy["total_rain_released_m"],
         "candidate_total_rain_released_m": candidate["total_rain_released_m"],
+        "legacy_total_liquid_water_released_m": legacy.get(
+            "total_liquid_water_released_m", 0.0
+        ),
+        "candidate_total_liquid_water_released_m": candidate.get(
+            "total_liquid_water_released_m", 0.0
+        ),
+        "legacy_max_liquid_holding_capacity_m": legacy.get(
+            "max_liquid_holding_capacity_m", 0.0
+        ),
+        "candidate_max_liquid_holding_capacity_m": candidate.get(
+            "max_liquid_holding_capacity_m", 0.0
+        ),
+        "legacy_max_liquid_water_retained_m": legacy.get(
+            "max_liquid_water_retained_m", 0.0
+        ),
+        "candidate_max_liquid_water_retained_m": candidate.get(
+            "max_liquid_water_retained_m", 0.0
+        ),
         "legacy_max_abs_swe_balance_residual_m": legacy[
             "max_abs_swe_balance_residual_m"
         ],
@@ -256,7 +287,10 @@ def compare_summaries(candidate: dict[str, Any], legacy: dict[str, Any]) -> dict
     }
 
 
-def conservation_gate(model_reports: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def conservation_gate(
+    model_reports: dict[str, dict[str, Any]],
+    candidate_model: str,
+) -> dict[str, Any]:
     by_model = {}
     for model, model_report in model_reports.items():
         summary = model_report["summary"]
@@ -268,6 +302,9 @@ def conservation_gate(model_reports: dict[str, dict[str, Any]]) -> dict[str, Any
             "max_abs_swe_balance_residual_m": max_swe,
             "max_abs_routed_state_loss_residual_m": max_route,
             "min_state_loss_available_storage_margin_m": min_margin,
+            "total_liquid_water_released_m": summary.get("total_liquid_water_released_m", 0.0),
+            "max_liquid_holding_capacity_m": summary.get("max_liquid_holding_capacity_m", 0.0),
+            "max_liquid_water_retained_m": summary.get("max_liquid_water_retained_m", 0.0),
             "swe_balance_passed": max_swe <= CONSERVATION_TOL_M,
             "routed_state_loss_passed": max_route <= CONSERVATION_TOL_M,
             "state_loss_available_storage_passed": min_margin_value >= -CONSERVATION_TOL_M,
@@ -282,11 +319,12 @@ def conservation_gate(model_reports: dict[str, dict[str, Any]]) -> dict[str, Any
         "rule": (
             "daily emitted rows must close prior SWE + snow input + retained rain "
             "- SWE loss - after SWE, route SWE state loss as routed melt after "
-            "separating released rain, and never lose more SWE than prior SWE plus "
-            "same-day snow/rain input"
+            "separating released rain, bind retained liquid by capacity when "
+            "present, and never lose more SWE than prior SWE plus same-day "
+            "snow/rain input"
         ),
         "models": by_model,
-        "candidate_conservation_passed": by_model[CANDIDATE_MODEL]["passed"],
+        "candidate_conservation_passed": by_model[candidate_model]["passed"],
     }
 
 
@@ -312,7 +350,7 @@ def render_markdown(report: dict[str, Any]) -> str:
     comparison = summary["opt_in_vs_legacy"]
     conservation = summary["conservation_gate"]
     lines = [
-        "# SNOWDENSITY-10.3.7 Winter-Thaw Melt Response Correction",
+        "# Winter-Thaw Melt Response Correction",
         "",
         "Evidence mode: Static/Ran.",
         "",
@@ -364,6 +402,18 @@ def render_markdown(report: dict[str, Any]) -> str:
         "| `total_rain_released_m` | {legacy} | {candidate} | |".format(
             legacy=fmt(comparison["legacy_total_rain_released_m"]),
             candidate=fmt(comparison["candidate_total_rain_released_m"]),
+        ),
+        "| `total_liquid_water_released_m` | {legacy} | {candidate} | |".format(
+            legacy=fmt(comparison["legacy_total_liquid_water_released_m"]),
+            candidate=fmt(comparison["candidate_total_liquid_water_released_m"]),
+        ),
+        "| `max_liquid_holding_capacity_m` | {legacy} | {candidate} | |".format(
+            legacy=fmt(comparison["legacy_max_liquid_holding_capacity_m"]),
+            candidate=fmt(comparison["candidate_max_liquid_holding_capacity_m"]),
+        ),
+        "| `max_liquid_water_retained_m` | {legacy} | {candidate} | |".format(
+            legacy=fmt(comparison["legacy_max_liquid_water_retained_m"]),
+            candidate=fmt(comparison["candidate_max_liquid_water_retained_m"]),
         ),
         "",
         "## Conservation Gate",

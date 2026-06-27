@@ -14,7 +14,7 @@ const DAY_INPUT_BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_pub
 fn snowdensity10_3_1a_contract_and_package_bind_daily_cancov() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 94",
+        "contract_version: 95",
         "cancov_daily_series",
         "INV-SNOWFREEZE-063",
         "OBL-SNOWFREEZE-P-038",
@@ -77,9 +77,9 @@ fn snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar() {
     let coe_boundary = read(&output_dir.join("coe_melt_snow.csv").display().to_string());
     assert!(
         coe_boundary.starts_with(
-            "date,snow_water_before_m,snow_input_m,rain_input_m,rain_retained_m,rain_released_m,snow_water_m,snow_depth_m,snow_density_kg_m3,raw_melt_m,redistributed_melt_m,routed_melt_m,snowpack_swe_loss_m,snowpack_swe_balance_residual_m,routed_state_loss_residual_m,state_loss_available_storage_margin_m,snow_albedo,source\n"
+            "date,snow_water_before_m,snow_input_m,rain_input_m,rain_retained_m,rain_released_m,liquid_holding_capacity_m,liquid_water_retained_m,liquid_water_released_m,snow_water_m,snow_depth_m,snow_density_kg_m3,raw_melt_m,redistributed_melt_m,routed_melt_m,snowpack_swe_loss_m,snowpack_swe_balance_residual_m,routed_state_loss_residual_m,state_loss_available_storage_margin_m,snow_albedo,source\n"
         ),
-        "CoE boundary CSV schema should include conservation operands"
+        "CoE boundary CSV schema should include conservation and liquid-capacity operands"
     );
 }
 

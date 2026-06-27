@@ -121,6 +121,18 @@ impl Wb11HydrologyKernel {
         }
     }
 
+    fn snow_liquid_holding_capacity_m(snow_depth_m: f64, snow_density_kg_m3: f64) -> f64 {
+        if snow_depth_m <= WB11_ZERO_THRESHOLD
+            || snow_density_kg_m3 <= WB11_ZERO_THRESHOLD
+            || snow_density_kg_m3 >= SIMIMPL29_RHO_ICE_KG_M3
+        {
+            return 0.0;
+        }
+        let pore_fraction = 1.0 - (snow_density_kg_m3 / SIMIMPL29_RHO_ICE_KG_M3);
+        (SIMIMPL29_LIQUID_HOLDING_CAPACITY_VOLUME_FRACTION * pore_fraction * snow_depth_m)
+            .max(0.0)
+    }
+
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn compute_simimpl29_melt_hour(
         phase_class: HillslopeKernelPhaseClass,
@@ -760,6 +772,10 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 density_after_kg_m3: dens,
                 rain_retained_m,
                 rain_released_m,
+                liquid_holding_capacity_m: 0.0,
+                liquid_water_retained_before_m: 0.0,
+                liquid_water_retained_after_m: 0.0,
+                liquid_water_released_m: 0.0,
                 melt_raw_m,
                 melt_m,
                 melt_amelt_in: melt_terms.amelt_in,
@@ -899,6 +915,9 @@ pub(crate) fn compute_simimpl29_melt_hour(
             accumulation: accumulation_water_m,
             rain_retained: total_rain_retained_m,
             rain_released: total_rain_released_m,
+            liquid_holding_capacity: 0.0,
+            liquid_water_retained: 0.0,
+            liquid_water_released: 0.0,
             raw_melt: raw_melt_total_m,
             redistributed_melt: melt_redistribution.routed_melt_total_m,
             snowpack_state_loss: bounded_state_loss_m,
@@ -1090,6 +1109,15 @@ pub(crate) fn compute_simimpl29_melt_hour(
         let mut accumulation_water_m = 0.0;
         let mut total_rain_retained_m = 0.0;
         let mut total_rain_released_m = 0.0;
+        let capacity_drainage_opt_in =
+            inputs.snow_melt_model == SnowMeltModel::CoeLiquidHoldingCapacityV1;
+        let mut liquid_water_retained_m = if capacity_drainage_opt_in {
+            inputs.liquid_water_retained_m
+        } else {
+            0.0
+        };
+        let mut total_liquid_water_released_m = 0.0;
+        let mut final_liquid_holding_capacity_m = 0.0;
         let mut snow_albedo_state_after = inputs.snow_albedo_state;
         let mut hourly_state = Vec::with_capacity(SIMIMPL29_HOURS_PER_DAY);
 
@@ -1152,6 +1180,9 @@ pub(crate) fn compute_simimpl29_melt_hour(
             let depth_available_m = depth_before_m;
             let mut rain_retained_m = 0.0;
             let mut rain_released_m = 0.0;
+            let liquid_water_retained_before_m = liquid_water_retained_m;
+            let mut liquid_holding_capacity_m = 0.0;
+            let mut liquid_water_released_m = 0.0;
             let mut melt_raw_m = 0.0;
             let mut melt_m = 0.0;
             let mut melt_terms = SnowMeltTerms::default();
@@ -1222,7 +1253,9 @@ pub(crate) fn compute_simimpl29_melt_hour(
                     )?;
                     albedo_updated_this_hour = true;
                     let shortwave_absorbed_fraction = match inputs.snow_melt_model {
-                        SnowMeltModel::LegacyCoe | SnowMeltModel::CoeWinterThawStateLossV1 => 1.0,
+                        SnowMeltModel::LegacyCoe
+                        | SnowMeltModel::CoeWinterThawStateLossV1
+                        | SnowMeltModel::CoeLiquidHoldingCapacityV1 => 1.0,
                         SnowMeltModel::CoeShortwaveAlbedoV1 => snow_albedo_state_after
                             .ok_or(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
                                 phase_class,
@@ -1279,6 +1312,13 @@ pub(crate) fn compute_simimpl29_melt_hour(
                                     )
                                 })?;
                         }
+                        if capacity_drainage_opt_in
+                            && liquid_water_retained_m > WB11_ZERO_THRESHOLD
+                        {
+                            melt_m += liquid_water_retained_m;
+                            liquid_water_released_m += liquid_water_retained_m;
+                            liquid_water_retained_m = 0.0;
+                        }
                         snodep = 0.0;
                         dens = 0.0;
                     } else if dens >= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
@@ -1302,18 +1342,64 @@ pub(crate) fn compute_simimpl29_melt_hour(
                         let thaw_state_loss_opt_in =
                             inputs.snow_melt_model == SnowMeltModel::CoeWinterThawStateLossV1
                                 && wmelt > WB11_ZERO_THRESHOLD;
-                        let mut densgt = if thaw_state_loss_opt_in {
+                        let capacity_drainage_melt_opt_in =
+                            capacity_drainage_opt_in && wmelt > WB11_ZERO_THRESHOLD;
+                        let mut densgt = if thaw_state_loss_opt_in
+                            || capacity_drainage_melt_opt_in
+                        {
                             dens
                         } else {
                             dens * (snodpt_after_inputs / snodep)
                         };
                         if densgt <= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
-                            melt_m = if thaw_state_loss_opt_in {
+                            if capacity_drainage_melt_opt_in {
+                                liquid_holding_capacity_m =
+                                    Self::snow_liquid_holding_capacity_m(snodep, densgt);
+                                let mut available_capacity_m = (liquid_holding_capacity_m
+                                    - liquid_water_retained_m)
+                                    .max(0.0);
+                                let retained_melt_m = wmelt.min(available_capacity_m);
+                                let released_melt_m = (wmelt - retained_melt_m).max(0.0);
+                                available_capacity_m -= retained_melt_m;
+                                rain_retained_m = hrrain.min(available_capacity_m);
+                                rain_released_m = (hrrain - rain_retained_m).max(0.0);
+                                liquid_water_retained_m += retained_melt_m + rain_retained_m;
+                                liquid_water_released_m += released_melt_m;
+                                melt_m = released_melt_m;
+                                let pack_water_after_m =
+                                    openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                                        snodpt_after_inputs,
+                                        dens,
+                                    )
+                                    .map_err(|error| {
+                                        Self::unit_conversion_guard_error(
+                                            phase_class,
+                                            BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+                                            &error,
+                                        )
+                                    })?
+                                        + rain_retained_m
+                                        - released_melt_m;
+                                densgt =
+                                    openwepp_unit_boundary::conversions::water_depth_meters_to_snow_density_increment(
+                                        pack_water_after_m.max(0.0),
+                                        snodep,
+                                    )
+                                    .map_err(|error| {
+                                        Self::unit_conversion_guard_error(
+                                            phase_class,
+                                            BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+                                            &error,
+                                        )
+                                    })?;
+                            } else {
+                                melt_m = if thaw_state_loss_opt_in {
                                 wmelt
                             } else {
                                 wmelt.min(0.0)
                             };
-                            if hrrain > WB11_ZERO_THRESHOLD {
+                            }
+                            if hrrain > WB11_ZERO_THRESHOLD && !capacity_drainage_melt_opt_in {
                                 let densic = openwepp_unit_boundary::conversions::water_depth_meters_to_snow_density_increment(
                                     hrrain,
                                     snodep,
@@ -1393,6 +1479,21 @@ pub(crate) fn compute_simimpl29_melt_hour(
             if snodep <= WB11_ZERO_THRESHOLD {
                 snodep = 0.0;
                 dens = 0.0;
+                if capacity_drainage_opt_in && liquid_water_retained_m > WB11_ZERO_THRESHOLD {
+                    melt_m += liquid_water_retained_m;
+                    liquid_water_released_m += liquid_water_retained_m;
+                    liquid_water_retained_m = 0.0;
+                }
+            } else if capacity_drainage_opt_in {
+                liquid_holding_capacity_m = Self::snow_liquid_holding_capacity_m(snodep, dens);
+                if liquid_water_retained_m
+                    > liquid_holding_capacity_m + WB11_ZERO_THRESHOLD
+                {
+                    let excess_m = liquid_water_retained_m - liquid_holding_capacity_m;
+                    melt_m += excess_m;
+                    liquid_water_released_m += excess_m;
+                    liquid_water_retained_m = liquid_holding_capacity_m;
+                }
             }
             if depth_before_m > WB11_ZERO_THRESHOLD
                 && hrrain > rain_retained_m + WB11_ZERO_THRESHOLD
@@ -1403,6 +1504,8 @@ pub(crate) fn compute_simimpl29_melt_hour(
             accumulation_water_m += hrsnow * 0.1;
             total_rain_retained_m += rain_retained_m;
             total_rain_released_m += rain_released_m;
+            total_liquid_water_released_m += liquid_water_released_m;
+            final_liquid_holding_capacity_m = liquid_holding_capacity_m;
 
             hourly_state.push(SnowHourlyState {
                 hour,
@@ -1413,6 +1516,10 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 density_after_kg_m3: dens,
                 rain_retained_m,
                 rain_released_m,
+                liquid_holding_capacity_m,
+                liquid_water_retained_before_m,
+                liquid_water_retained_after_m: liquid_water_retained_m,
+                liquid_water_released_m,
                 melt_raw_m,
                 melt_m,
                 melt_amelt_in: melt_terms.amelt_in,
@@ -1427,6 +1534,30 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 melt_branch_active,
                 dewpoint_c: inputs.dewpoint_c,
                 wind_m_s: inputs.wind_m_s,
+            });
+        }
+
+        if let Some(last_hour) = hourly_state.last() {
+            final_liquid_holding_capacity_m = last_hour.liquid_holding_capacity_m;
+            liquid_water_retained_m = last_hour.liquid_water_retained_after_m;
+        }
+        let hourly_liquid_released_total_m = hourly_state
+            .iter()
+            .map(|hourly| hourly.liquid_water_released_m)
+            .sum::<f64>();
+        let _max_retained_liquid_before_hour_m = hourly_state
+            .iter()
+            .map(|hourly| hourly.liquid_water_retained_before_m)
+            .fold(0.0, f64::max);
+        if (hourly_liquid_released_total_m - total_liquid_water_released_m).abs()
+            > WB11_ZERO_THRESHOLD
+        {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("snow_liquid_water_released_m"),
+                value: hourly_liquid_released_total_m - total_liquid_water_released_m,
+                minimum: Some(-WB11_ZERO_THRESHOLD),
+                maximum: Some(WB11_ZERO_THRESHOLD),
             });
         }
 
@@ -1489,6 +1620,8 @@ pub(crate) fn compute_simimpl29_melt_hour(
         if runtime_swe_after <= WB11_ZERO_THRESHOLD {
             snodep = 0.0;
             dens = 0.0;
+            liquid_water_retained_m = 0.0;
+            final_liquid_holding_capacity_m = 0.0;
         } else if dens > WB11_ZERO_THRESHOLD {
             snodep =
                 openwepp_unit_boundary::conversions::water_equivalent_meters_to_snow_depth_meters(
@@ -1503,11 +1636,13 @@ pub(crate) fn compute_simimpl29_melt_hour(
                     )
                 })?;
         }
-        let signed_s = melt_redistribution.routed_melt_total_m
-            - accumulation_water_m
-            - total_rain_retained_m;
-        let routed_melt_total_m =
-            melt_redistribution.routed_melt_total_m + total_rain_released_m;
+        let routed_snowpack_m = if capacity_drainage_opt_in {
+            bounded_state_loss_m
+        } else {
+            melt_redistribution.routed_melt_total_m
+        };
+        let signed_s = routed_snowpack_m - accumulation_water_m - total_rain_retained_m;
+        let routed_melt_total_m = routed_snowpack_m + total_rain_released_m;
         if !signed_s.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -1551,6 +1686,9 @@ pub(crate) fn compute_simimpl29_melt_hour(
             accumulation: accumulation_water_m,
             rain_retained: total_rain_retained_m,
             rain_released: total_rain_released_m,
+            liquid_holding_capacity: final_liquid_holding_capacity_m,
+            liquid_water_retained: liquid_water_retained_m,
+            liquid_water_released: total_liquid_water_released_m,
             raw_melt: raw_melt_total_m,
             redistributed_melt: melt_redistribution.routed_melt_total_m,
             snowpack_state_loss: bounded_state_loss_m,

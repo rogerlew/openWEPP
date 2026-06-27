@@ -1507,8 +1507,9 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     assert!(lane_constructor <= 1_024);
     assert!(day_constructor <= 4_096);
     assert!(run_frame <= 512);
-    // R7G carries typed snow runtime state plus SNOWDENSITY-07 CoE boundary carry at lane scope.
-    assert!(lane_frame <= 1_208);
+    // R7G carries typed snow runtime state plus SNOWDENSITY-07 CoE boundary carry and
+    // SNOWDENSITY-10.3.8 retained-liquid storage at lane scope.
+    assert!(lane_frame <= 1_216);
     assert!(day_frame <= 12_288);
 }
 

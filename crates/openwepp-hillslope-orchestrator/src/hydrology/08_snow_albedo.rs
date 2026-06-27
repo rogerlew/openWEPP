@@ -4,6 +4,7 @@ use std::fmt;
 const LEGACY_COE_MODEL_ID: &str = "legacy_coe";
 const COE_SHORTWAVE_ALBEDO_MODEL_ID: &str = "coe_shortwave_albedo_v1";
 const COE_WINTER_THAW_STATE_LOSS_MODEL_ID: &str = "coe_winter_thaw_state_loss_v1";
+const COE_LIQUID_HOLDING_CAPACITY_MODEL_ID: &str = "coe_liquid_holding_capacity_v1";
 const BROCK2000_ALBEDO_MODEL_ID: &str = "brock2000_temperature_age_v1";
 const SNOW_ALBEDO_MIN: f64 = 0.0;
 const SNOW_ALBEDO_MAX_BROCK2000: f64 = 0.85;
@@ -21,6 +22,7 @@ pub enum SnowMeltModel {
     LegacyCoe,
     CoeShortwaveAlbedoV1,
     CoeWinterThawStateLossV1,
+    CoeLiquidHoldingCapacityV1,
 }
 
 impl SnowMeltModel {
@@ -30,6 +32,7 @@ impl SnowMeltModel {
             Self::LegacyCoe => LEGACY_COE_MODEL_ID,
             Self::CoeShortwaveAlbedoV1 => COE_SHORTWAVE_ALBEDO_MODEL_ID,
             Self::CoeWinterThawStateLossV1 => COE_WINTER_THAW_STATE_LOSS_MODEL_ID,
+            Self::CoeLiquidHoldingCapacityV1 => COE_LIQUID_HOLDING_CAPACITY_MODEL_ID,
         }
     }
 

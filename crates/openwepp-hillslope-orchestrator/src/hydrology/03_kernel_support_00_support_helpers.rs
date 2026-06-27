@@ -13,6 +13,10 @@ pub(crate) struct SnowHourlyState {
     density_after_kg_m3: f64,
     rain_retained_m: f64,
     rain_released_m: f64,
+    liquid_holding_capacity_m: f64,
+    liquid_water_retained_before_m: f64,
+    liquid_water_retained_after_m: f64,
+    liquid_water_released_m: f64,
     melt_raw_m: f64,
     melt_m: f64,
     melt_amelt_in: f64,
@@ -62,6 +66,10 @@ mod tests {
             density_after_kg_m3: 0.0,
             rain_retained_m: 0.0,
             rain_released_m: 0.0,
+            liquid_holding_capacity_m: 0.0,
+            liquid_water_retained_before_m: 0.0,
+            liquid_water_retained_after_m: 0.0,
+            liquid_water_released_m: 0.0,
             melt_raw_m: melt_m,
             melt_m,
             melt_amelt_in: 0.0,
@@ -157,6 +165,9 @@ pub(crate) struct SnowCouplingOutcome {
     accumulation: f64,
     rain_retained: f64,
     rain_released: f64,
+    liquid_holding_capacity: f64,
+    liquid_water_retained: f64,
+    liquid_water_released: f64,
     raw_melt: f64,
     redistributed_melt: f64,
     snowpack_state_loss: f64,
@@ -179,6 +190,9 @@ pub struct DirectSnowLiquidPartition {
     pub snowpack_swe_loss_m: f64,
     pub rain_retained_m: f64,
     pub rain_released_m: f64,
+    pub liquid_holding_capacity_after_m: f64,
+    pub liquid_water_retained_after_m: f64,
+    pub liquid_water_released_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
     pub runtime_depth_after_m: f64,
@@ -224,6 +238,7 @@ pub struct DirectActiveSnowPartitionInputs {
     pub runtime_depth_m: f64,
     pub runtime_density_kg_m3: f64,
     pub runtime_settle_day_count: f64,
+    pub liquid_water_retained_m: f64,
     pub tmax_c: f64,
     pub tmin_c: f64,
     pub canopy_cover_fraction: f64,
@@ -704,6 +719,8 @@ const SIMIMPL29_HOURS_PER_DAY: usize = 24;
 const SIMIMPL29_SNOW_DENSITY_CAP_KG_M3: f64 = 522.0;
 const SIMIMPL29_DENSITY_MELT_GATE_KG_M3: f64 = 350.0;
 const SIMIMPL29_SNOWPACK_SETTLE_BASE: f64 = 0.041_666_7;
+const SIMIMPL29_LIQUID_HOLDING_CAPACITY_VOLUME_FRACTION: f64 = 0.01;
+const SIMIMPL29_RHO_ICE_KG_M3: f64 = 917.0;
 const SIMIMPL29_CANOPY_FACTOR: f64 = 1.0;
 const SIMIMPL29_WIND_MEASUREMENT_HEIGHT_M: f64 = 10.0;
 const SIMIMPL29_SNOWPACK_STATE_LOSS_OVERDRAW_TOLERANCE_M: f64 = 0.005;

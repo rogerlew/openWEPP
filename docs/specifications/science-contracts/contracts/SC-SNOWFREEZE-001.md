@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 94
+contract_version: 95
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -77,6 +77,10 @@ Out of scope:
 | REF-SNOWFREEZE-SNOWDENSITY01 | `docs/work-packages/20260625-snowdensity-01-evidence-reconciliation-001/` | Evidence reconciliation showing current openWEPP and pinned legacy share the same structural snow-density/depth lineage for the SNOTEL comparison, with maximum as-built openWEPP-vs-legacy density delta `4.351046738461008 kg m^-3`; this routes remediation away from bit-parity and toward a contract-scoped physics candidate. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-ANDERSON1976-CANDIDATE | Anderson snow accumulation/ablation physics lineage as used by SNOBAL/PySnobal-style bulk snowpack densification references; package evidence begins in `docs/work-packages/20260625-snowdensity-01-evidence-reconciliation-001/` and SNOWDENSITY-06 binds the density-only candidate to Anderson-1976 §III compaction/metamorphism constants and the SNOBAL PTM/POC implementation lineage. | Candidate snow-density physics authority only; not a ratified production formula. | `[INFERENCE][Static]` |
 | REF-SNOWFREEZE-SNOBAL-CANDIDATE | Local PySnobal/SNOBAL diagnostic lane and three-way profile evidence from SNOWFROST-FIDELITY-G/H packages, plus source-level `_time_compact.c` / `_h2o_compact.c` static inspection for PTM/POC and liquid-water compaction constants. | Reference-implementation profile and sanity evidence for SWE/depth/density behavior; diagnostic flag profile only, not target output and not a runtime dependency. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SNOWFREEZE-MARKS1998-LIQUID-CAPACITY | Marks et al. 1998 R-55 snow energy/mass-balance report, local authority under `references/copyrighted/` where available; package evidence in `docs/work-packages/20260627-snowdensity-10-3-8-liquid-holding-capacity-001/`. | In-repo liquid-water holding-capacity authority for the provisional `wc,max` / `max_liquid_water_volume_fraction = 0.01` volume-ratio default used by the opt-in capacity drainage candidate. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SNOWFREEZE-ANDERSON1976-LIQUID | Anderson 1976 NWS-19 accumulation/ablation model (`references/copyrighted/noaa_6392_DS1.md`). | Conceptual retained/free/excess water partition authority for pack liquid transmission: retained liquid is bounded by a pack holding capacity and excess liquid drains rather than being represented as unbounded density-only compaction. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SNOWFREEZE-SNOW17-PLWHC | Anderson 2006 SNOW-17 operational description, local authority under `references/copyrighted/` where available. | Operational precedent for a liquid-water holding-capacity parameter that is separate from snow density and melt-energy terms. | `[INFERENCE][Static]` |
+| REF-SNOWFREEZE-SNOBAL-LIQUID-CAPACITY | Local SNOBAL-lineage code inspection, including in-repo candidate constant `max_liquid_water_volume_fraction = 0.01` in `crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs` and package evidence for SNOBAL `_runoff.c` concepts. | Reference-implementation precedent for `h2o_max`/excess-liquid runoff semantics and the existing openWEPP diagnostic constant used as non-fitted capacity authority. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-MELT-OHMURA2001 | `references/copyrighted/Ohmura2001_meltindex.pdf` | Temperature-index melt factors include radiation/longwave/sensible terms implicitly and are not transferable defaults for the production CoE energy-balance melt path. | `[INFERENCE][Static]` |
 | REF-SNOWFREEZE-MELT-PELLICCIOTTI2005 | `references/copyrighted/pellicciotti2005.pdf` | Enhanced temperature-index melt separates radiation from temperature-index behavior, supporting explicit shortwave/albedo operands rather than retuned degree-day factors. | `[INFERENCE][Static]` |
 | REF-SNOWFREEZE-MELT-CARENZO2009 | `references/copyrighted/carenzo2009.pdf` | Melt-model parameter sensitivity and transferability evidence supporting no site-specific default fitting for snowmelt modernization. | `[INFERENCE][Static]` |
@@ -155,6 +159,9 @@ Out of scope:
 | `snow_coe_boundary_settle_day_count` | `count` | CoE/legacy settle-day carry used only to compute the next fixed CoE melt/liquid boundary when opt-in density mutates publication depth/density. | typed winter runtime carry | CoE melt boundary anti-alias evidence |
 | `snow_cold_content` | `J m^-2` | Candidate `physics_bulk` bulk snowpack energy deficit relative to isothermal melt conditions. | candidate physics-bulk snow solver | conservation diagnostics and melt/refreeze gates |
 | `snow_liquid_water` | `m water equivalent` | Candidate `physics_bulk` retained liquid-water store within the snowpack before routed release. | candidate physics-bulk snow solver | conservation diagnostics and liquid forcing |
+| `snow_liquid_holding_capacity` | `m water equivalent` | Opt-in CoE capacity-drainage candidate maximum retained liquid-water storage computed from snow depth, snow density/porosity proxy, and the non-fitted in-repo liquid holding-capacity ratio. | `coe_liquid_holding_capacity_v1` candidate | retained/released melt and rain partition |
+| `snow_liquid_water_retained` | `m water equivalent` | Persistent retained liquid-water store carried by the opt-in snow lane after bounded melt/rain retention and excess drainage. | `coe_liquid_holding_capacity_v1` candidate | next-day capacity, conservation diagnostics, and snow-state closure |
+| `snow_liquid_water_released` | `m water equivalent` | Melt/rain liquid in excess of holding capacity routed to downstream liquid forcing. | `coe_liquid_holding_capacity_v1` candidate | routed melt, WAT liquid balance, and coupled snow-control diagnostics |
 | `snow_bulk_temperature` | `degC` | Candidate `physics_bulk` bulk snowpack temperature or equivalent thermal state used with cold content. | candidate physics-bulk snow solver | energy-state diagnostics |
 | `snow_cover_age` | `h or day count` | Candidate `physics_bulk` snow-cover age / metamorphism clock independent of legacy `snow_runtime_settle_day_count` naming. | candidate physics-bulk snow solver | densification diagnostics |
 | `snow_hourly_rain` | `m` | Hourly rainfall forcing before snowpack retention. | hourly precipitation partition | snow/rain-retention diagnostics |
@@ -166,7 +173,7 @@ Out of scope:
 | `snow_hourly_melt_raw` | `m` | Signed hourly raw melt before daily redistribution. | melt routine | negative-melt diagnostics |
 | `snow_hourly_melt_branch_active` | `dimensionless` | Hourly melt-branch active flag. | melt routine | melt-forcing diagnostics |
 | `snow_hourly_melt_terms` | `in` | Hourly `amelt`/`bmelt`/`cmelt`/`dmelt` term family before metric conversion. | melt routine | term-level melt diagnostics |
-| `snow_melt_model` | `enum` | Melt model selector. Current accepted values are `legacy_coe`, opt-in candidate `coe_shortwave_albedo_v1`, and opt-in candidate `coe_winter_thaw_state_loss_v1`; `legacy_coe` remains the default unless a future ratified activation package changes it. | runtime configuration / winter column | CoE melt-term dispatch and diagnostics |
+| `snow_melt_model` | `enum` | Melt model selector. Current accepted values are `legacy_coe`, opt-in candidate `coe_shortwave_albedo_v1`, opt-in candidate `coe_winter_thaw_state_loss_v1`, and opt-in candidate `coe_liquid_holding_capacity_v1`; `legacy_coe` remains the default unless a future ratified activation package changes it. | runtime configuration / winter column | CoE melt-term dispatch and diagnostics |
 | `snow_albedo` | `fraction` | Opt-in snow-surface albedo state consumed by the future `coe_shortwave_albedo_v1` shortwave term; accepted domain is `0 <= snow_albedo <= 0.85` under `brock2000_temperature_age_v1`. | SNOWDENSITY-05C albedo state update | `coe_shortwave_albedo_v1` melt path diagnostics |
 | `snow_albedo_accumulated_positive_temperature_c_day` | `degC day` | Accumulated positive-temperature age index (`Ta`) since the latest fresh-snow reset for `brock2000_temperature_age_v1`. | SNOWDENSITY-05C albedo state update | albedo decay diagnostics |
 | `snow_albedo_fresh_snow_reset_water_equiv_m` | `m water equivalent` | Fresh-snow water-equivalent increment threshold that resets `Ta` and returns albedo toward the fresh-snow cap; default core threshold is `0.001 m` water equivalent. | SNOWDENSITY-05C albedo state update | albedo reset diagnostics |
@@ -179,7 +186,7 @@ Out of scope:
 | Invariant ID | Statement | Severity | Authority | Evidence |
 |---|---|---|---|---|
 | INV-SNOWFREEZE-001 | Melt bound and non-negativity branch semantics: post-branch exported melt satisfies `0 <= hrmelt <= Dsavail`, where `Dsavail` is the pre-hour available snow-depth state used by Eq. [3.6.1] branch logic. | hard-fail | REF-SNOWFREEZE-CH3-MELT, REF-SNOWFREEZE-CH3-MELT-ASSUMP, REF-SNOWFREEZE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SNOWFREEZE-002 | Snow-density melt gate for legacy/CoE-default behavior: liquid melt export to infiltration/runoff is not allowed until post-update snow density reaches `ρsnew >= 350 kg m^-3`; below this threshold melt remains in-pack and increases density. The only currently authorized exception is the explicitly opt-in `coe_winter_thaw_state_loss_v1` candidate governed by `INV-SNOWFREEZE-066`, which must preserve `legacy_coe` default behavior and publish separate evidence that positive thaw melt leaves the snowpack as state loss rather than silently disappearing into density-only compaction. | hard-fail | REF-SNOWFREEZE-CH3-MELT, REF-SNOWFREEZE-CH3-SNOWDENS, INV-SNOWFREEZE-066 | `[DIRECT][Static]` |
+| INV-SNOWFREEZE-002 | Snow-density melt gate for legacy/CoE-default behavior: liquid melt export to infiltration/runoff is not allowed until post-update snow density reaches `ρsnew >= 350 kg m^-3`; below this threshold melt remains in-pack and increases density. The only currently authorized exceptions are explicitly opt-in candidates governed by `INV-SNOWFREEZE-066` and `INV-SNOWFREEZE-067`, which must preserve `legacy_coe` default behavior and publish separate evidence that positive thaw liquid leaves the snowpack through an auditable state-loss/drainage ledger rather than silently disappearing into density-only compaction. | hard-fail | REF-SNOWFREEZE-CH3-MELT, REF-SNOWFREEZE-CH3-SNOWDENS, INV-SNOWFREEZE-066, INV-SNOWFREEZE-067 | `[DIRECT][Static]` |
 | INV-SNOWFREEZE-003 | Snow depth-density domain bounds: `Dsold >= 0`, `Dsnew >= 0`, `ρsold >= 0`, `ρsnew >= 0`, and `ρsnew <= 522 kg m^-3`; when `Dsnew = 0`, `ρsnew = 0`. | hard-fail | REF-SNOWFREEZE-CH3-SNOWDENS, REF-SNOWFREEZE-CH3-SNOWDENS-LIM, REF-SNOWFREEZE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-004 | Active snow-update branch consistency: fresh snowfall contribution uses `100 kg m^-3` density and active depth/density updates follow Eq. [3.7.1]-[3.7.5] for settling, snowfall, melt, and melt+snowfall cases; drift-term equations remain governance-only while drift is inactive. | hard-fail | REF-SNOWFREEZE-CH3-SNOWDENS, REF-SNOWFREEZE-CH3-DRIFT-INACTIVE | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-005 | Rain/snow partition consistency: precipitation phase partition follows daily temperature logic (`Tmax < 0` => all snow; `Tmin > 0` => all rain; mixed day uses hourly occurrence/diurnal temperature function). | hard-fail | REF-SNOWFREEZE-CH3-INTRO, REF-SNOWFREEZE-CH3-HRPRECIP, REF-SNOWFREEZE-CH5-COUPLING | `[DIRECT][Static]` |
@@ -244,6 +251,7 @@ Out of scope:
 | INV-SNOWFREEZE-064 | SNOWDENSITY-10.3.5a openWEPP meteorology candidate crate: `crates/openwepp-meteorology` may implement pure psychrometric primitives and the Harder-Pomeroy hydrometeor-temperature precipitation-phase candidate only as a reusable library. The crate must expose typed Celsius, unit-interval humidity, vapor-pressure/density, latent-heat, air-diffusivity, air-conductivity, hydrometeor-temperature, and rain/snow fraction APIs with finite-domain guards and typed errors. Harder-Pomeroy rain and snow fractions must remain bounded in `[0, 1]`, close to one within roundoff, and be monotonic with hydrometeor temperature for each ratified coefficient set. This amendment does not authorize replacement of production `RST`, changes to `stmtim`/daily-hourly WEPP partition behavior, parser/runfile/user selectors, output schema, fixture edits, default activation, or compatibility-runtime changes. Production crates must not depend on or call `openwepp-meteorology` until a later contract amendment and work package explicitly authorizes an adjudication or activation seam. | hard-fail | REF-SNOWFREEZE-HARDER-POMEROY-2013, INV-SNOWFREEZE-005, INV-SNOWFREEZE-050, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-065 | SNOWDENSITY-10.3.5b opt-in hourly Harder-Pomeroy partition: production direct-runtime hourly winter partition may depend on `openwepp-meteorology` only behind an explicit package-bound selector with accepted values `legacy_rst` and `harder_pomeroy_hourly`; `legacy_rst` remains the default and must preserve the existing `stmtim` `RST` threshold branch exactly. The opt-in path must compute hourly Harder-Pomeroy fractions from the synthesized hourly air temperature and finite unit-interval relative humidity derived from the daily dew point or supplied RH, using the hourly coefficient set. Dewpoint-derived supersaturation may be normalized only to exact saturation (`RH=1.0`) with evidence; non-finite, negative, zero-saturation, or otherwise out-of-domain humidity inputs fail closed. For each active precipitation hour, `hrrain + hrsnow / 10` must reconstruct the active hourly precipitation depth within roundoff, preserving the legacy snowfall-depth scale while allowing fractional rain/snow coexistence only in the opt-in path. The real direct snow consumer must receive the selected hourly partition; producer-only symbol evidence is insufficient. This amendment does not authorize default activation, parser/runfile/user CLI selectors, fixture edits, public WAT/HBP/PASS schema changes, snow density/melt/canopy/radiation/frost changes, compatibility-runtime behavior changes, or site-calibrated phase coefficients. Jennings et al. observed-phase validation is required as adjudication evidence, not as a tuning target. | hard-fail | REF-SNOWFREEZE-HARDER-POMEROY-2013, INV-SNOWFREEZE-005, INV-SNOWFREEZE-050, INV-SNOWFREEZE-064, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-066 | SNOWDENSITY-10.3.7 opt-in winter-thaw melt-response correction: production direct-runtime CoE melt may add `snow_melt_model = coe_winter_thaw_state_loss_v1` only as an explicit opt-in candidate with `legacy_coe` remaining the default, comparator surface, and rollback path. The candidate must preserve CoE raw-melt terms (`amelt`, `bmelt`, `cmelt`, `dmelt`), signed raw melt, corrected negative-melt redistribution, radiation source, canopy attenuation, phase partition, density constants, rain retention/release, frost physics, and public output schemas. Its only authorized algorithmic delta is the positive-thaw application branch when the legacy density gate would keep `wmelt > 0` in-pack below `350 kg m^-3`: the candidate may route that positive `wmelt` to snowpack SWE state loss, routed melt, and downstream liquid forcing while preserving proportional depth/SWE loss and bounded non-negative snow state. `coe_shortwave_albedo_v1` behavior and albedo fail-closed rules are unchanged; `coe_winter_thaw_state_loss_v1` must not require or consume albedo state. A package-bound diagnostic direct-production selector, `OPENWEPP_SNOWDENSITY1037_MELT_MODEL`, may accept only `legacy_coe` or `coe_winter_thaw_state_loss_v1`; absent/empty values must preserve `legacy_coe`, and unknown values must fail closed. Acceptance requires default-identity tests, independent reconstruction of raw melt, redistributed melt, routed melt, retained/released rain, SWE loss, depth loss, final snow-state closure, and downstream WAT/liquid-routing evidence from produced artifacts. The candidate is only an opt-in improvement, not a fix, unless it both reduces paired Sleepers/Harvard event-window under-ablation and aggregate depth-loss deficit and does not worsen the coupled direct-production WAT snow-control gate relative to `legacy_coe`; if conservation or coupled WAT evidence is missing, failing, or worse, the package must close with `HOLD` rather than activate or widen scope. | hard-fail | INV-SNOWFREEZE-002, INV-SNOWFREEZE-015, INV-SNOWFREEZE-050, INV-SNOWFREEZE-055, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-067 | SNOWDENSITY-10.3.8 opt-in liquid holding-capacity drainage correction: production direct-runtime CoE melt may add `snow_melt_model = coe_liquid_holding_capacity_v1` only as an explicit opt-in candidate with `legacy_coe` remaining the default, comparator surface, and rollback path. The candidate must preserve CoE raw-melt terms (`amelt`, `bmelt`, `cmelt`, `dmelt`), signed raw melt, corrected negative-melt redistribution, radiation source, canopy attenuation, precipitation phase partition, density constants, frost physics, public output schemas, and `coe_shortwave_albedo_v1` albedo behavior. Its only authorized algorithmic delta is the positive-liquid application branch when the legacy density gate would retain positive melt or rain as density-only compaction below `350 kg m^-3`: the candidate may retain liquid only up to a non-fitted holding capacity derived from in-repo authority (`max_liquid_water_volume_fraction = 0.01`) and must route excess liquid as snowpack SWE state loss/released rain into downstream liquid forcing. Retained liquid must be a bounded, non-negative persistent snow-lane store, release must never exceed incoming liquid plus previously retained liquid above current capacity, and final snow SWE/depth/density/liquid-state closure must be independently reconstructable from produced operands. A package-bound diagnostic direct-production selector, `OPENWEPP_SNOWDENSITY1038_MELT_MODEL`, may accept only `legacy_coe` or `coe_liquid_holding_capacity_v1`; absent/empty values must preserve `legacy_coe`, and unknown values must fail closed. Acceptance requires default-identity tests, capacity-bound and drain-down tests, independent reconstruction of raw melt, redistributed melt, routed melt, retained/released rain, retained/released snow liquid, SWE loss, depth loss, final snow-state closure, and downstream WAT/liquid-routing evidence from produced artifacts. The candidate is only an opt-in improvement unless it both reduces paired Sleepers/Harvard event-window under-ablation and aggregate depth-loss deficit and does not worsen the coupled direct-production WAT snow-control gate relative to `legacy_coe`; if conservation/routing, persistent-store, or coupled WAT evidence is missing, failing, or worse, the package must close with `HOLD`. | hard-fail | INV-SNOWFREEZE-002, INV-SNOWFREEZE-015, INV-SNOWFREEZE-050, INV-SNOWFREEZE-055, REF-SNOWFREEZE-MARKS1998-LIQUID-CAPACITY, REF-SNOWFREEZE-ANDERSON1976-LIQUID, REF-SNOWFREEZE-SNOW17-PLWHC, REF-SNOWFREEZE-SNOBAL-LIQUID-CAPACITY, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Porting-Fidelity Authority
 
@@ -711,6 +719,34 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
   density/frost changes, sub-canopy longwave, rain heat, Qwet/frzftp, site
   constants, or compatibility-runtime changes.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-042: Any SNOWDENSITY-10.3.8 liquid holding-capacity
+  drainage producer must amend this contract before runtime code, add
+  contract-derived tests for `INV-SNOWFREEZE-067`, preserve `legacy_coe`
+  default identity, preserve `coe_shortwave_albedo_v1` and
+  `coe_winter_thaw_state_loss_v1` behavior, and expose
+  `coe_liquid_holding_capacity_v1` only as an explicit opt-in typed/snowbench
+  diagnostic selector. Any direct-production WAT rerun for this package must
+  use the package-bound diagnostic selector
+  `OPENWEPP_SNOWDENSITY1038_MELT_MODEL`, preserve absent-selector
+  `legacy_coe` behavior, reject unknown values, and avoid parser/runfile/user
+  CLI activation. The producer must independently reconstruct raw CoE melt,
+  redistributed melt, routed melt, retained/released rain, retained/released
+  snow liquid, liquid holding capacity, persistent retained-liquid after-state,
+  snowpack SWE loss, modeled depth loss, final snow-state closure, under-
+  ablation counts, aggregate depth-loss deficit, and coupled direct-production
+  WAT snow-control deltas from produced artifacts. It must prove that released
+  snowpack water is bounded by incoming liquid plus previously retained liquid
+  above current holding capacity, and that released liquid is routed into
+  downstream liquid/WAT balance rather than disappearing as an isolated depth
+  decrement. It must improve both paired Sleepers/Harvard under-ablation count
+  and aggregate depth-loss deficit relative to `legacy_coe` before closure, and
+  it must report whether the coupled direct-production WAT snow-control gate
+  improves, is neutral, worsens, or remains blocked. It must not add
+  parser/runfile/user CLI activation, public output-schema changes, fixture
+  edits, default activation, melt coefficient tuning, radiation/canopy/phase/
+  density/frost changes, sub-canopy longwave, rain heat, Qwet/frzftp, site
+  constants, or compatibility-runtime changes.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -729,6 +765,7 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 |---|---|---|---|---|
 | Melt bounds and density gate (`INV-SNOWFREEZE-001/002`) | melt post-processing and pre-routing checks | Explicit branch applies melt bounds; hard error only if post-branch state remains invalid or if density gate is violated | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Opt-in winter-thaw state-loss correction (`INV-SNOWFREEZE-066`) | typed CoE melt selector, low-density positive-thaw application branch, snowbench replay, and paired event-window adjudication | Hard error on default drift, invalid snow-state closure, albedo dependency, missing operand reconstruction, or closure without paired event-window improvement; otherwise opt-in candidate remains diagnostic until later activation | SNOWDENSITY-10.3.7 thaw-response gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Opt-in liquid holding-capacity drainage correction (`INV-SNOWFREEZE-067`) | typed CoE melt selector, retained-liquid state, capacity-bound low-density positive-liquid branch, snowbench replay, and paired/coupled adjudication | Hard error on default drift, invalid snow-state closure, unbounded liquid release, missing persistent retained-liquid evidence, missing operand reconstruction, or closure without paired event-window and coupled WAT evidence; otherwise opt-in candidate remains diagnostic until later activation | SNOWDENSITY-10.3.8 capacity-drainage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Snow depth/density domain (`INV-SNOWFREEZE-003/004`) | hourly snowpack state update | Hard error on domain/branch inconsistency | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Partition and activation branches (`INV-SNOWFREEZE-005/009`) | daily/hourly branch selection | Hard error on branch mismatch or silent bypass | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Frost heat-flow semantics (`INV-SNOWFREEZE-006`) | frost routine bookkeeping | Hard error on invalid equation domain; investigate hourly-heavy deltas per ADR confidence tiers | Tier-B investigation gate | `[DIRECT][Static]` |
@@ -1311,6 +1348,63 @@ low-density gate.
    coupled impact before any fix or activation claim. A snowbench-only
    improvement is not sufficient closure.
 8. Isolation: this package must not change default behavior, compatibility
+   runtime, public output schemas, parser/runfile/user interfaces, fixtures,
+   coefficients, radiation, canopy, phase partition, density constants, frost,
+   sub-canopy longwave, rain heat, or Qwet/frzftp behavior.
+
+## SNOWDENSITY-10.3.8 Opt-In Liquid Holding-Capacity Addendum
+
+Status: draft (2026-06-27). This addendum authorizes one opt-in capacity-
+drainage candidate to replace the 10.3.7 all-positive-thaw release experiment
+with a physically bounded retained-liquid store.
+
+1. Selector boundary: the only newly authorized melt selector is
+   `coe_liquid_holding_capacity_v1`. `legacy_coe` remains the default,
+   compatibility/comparator surface, and rollback path. `coe_shortwave_albedo_v1`
+   and `coe_winter_thaw_state_loss_v1` remain separate opt-in candidates and are
+   not activated, retired, or promoted by this addendum. Parser, runfile, public
+   output, and user CLI activation surfaces are out of scope.
+2. In-repo authority: the liquid capacity default is the non-fitted in-repo
+   `max_liquid_water_volume_fraction = 0.01` lineage, supported by Marks R-55,
+   Anderson retained/free/excess-water semantics, SNOW-17 PLWHC precedent, and
+   local SNOBAL-lineage capacity/runoff inspection. Fixture residuals may
+   adjudicate the candidate but must not fit the capacity default.
+3. Authorized delta: the candidate keeps the current CoE melt-energy family and
+   signed raw-melt lineage unchanged. When the snowpack is active and positive
+   melt/rain would be retained below the legacy `350 kg m^-3` density gate, the
+   candidate may retain liquid only up to its computed holding capacity and must
+   route excess liquid as snowpack SWE state loss or released rain into the
+   downstream liquid-forcing path.
+4. Persistent state: retained liquid is a typed snow-lane state surface, not a
+   daily scratch variable. It must be finite, non-negative, bounded by current
+   capacity after each snow update, and carried into the next day until released
+   or the pack disappears. Pack disappearance must clear retained liquid through
+   routed release or a zero-state closure proof, not silent deletion.
+5. Preserved boundaries: the candidate must not change `amelt`, `bmelt`,
+   `cmelt`, `dmelt`, corrected negative-melt redistribution, radiation source,
+   canopy attenuation, precipitation phase partition, snow-density constants,
+   frost physics, output schemas, fixture inputs, `coe_shortwave_albedo_v1`
+   albedo behavior, or `coe_winter_thaw_state_loss_v1` behavior. Rain heat,
+   sub-canopy longwave, Qwet/frzftp, and any forest-energy revision remain
+   separate later levers.
+6. Conservation and anti-alias acceptance: the package must reconstruct raw
+   melt, redistributed melt, routed melt, snowpack SWE loss, modeled depth loss,
+   retained/released rain, retained/released snow liquid, liquid capacity,
+   retained-liquid after-state, and final SWE/depth/density/liquid closure from
+   produced artifacts. The reconstruction must prove released liquid is bounded
+   by incoming liquid plus prior retained liquid above current capacity and
+   appears in routed liquid/WAT balance.
+7. Event-window acceptance: paired Sleepers/Harvard thaw-ablation evidence must
+   show lower under-ablation count and lower aggregate depth-loss deficit than
+   `legacy_coe`, with no site constants or coefficient tuning. Failure to meet
+   both improvement gates is a `HOLD` disposition, not activation authority.
+8. Coupled WAT acceptance: the opt-in selector must be exercised through the
+   real direct-production WAT path with `OPENWEPP_SNOWDENSITY1038_MELT_MODEL`.
+   The report must prove the selected model reached the direct snow partition,
+   compare paired snow-depth control against `legacy_coe`, and classify the
+   coupled impact before any fix or activation claim. A snowbench-only
+   improvement is not sufficient closure.
+9. Isolation: this package must not change default behavior, compatibility
    runtime, public output schemas, parser/runfile/user interfaces, fixtures,
    coefficients, radiation, canopy, phase partition, density constants, frost,
    sub-canopy longwave, rain heat, or Qwet/frzftp behavior.
@@ -2050,6 +2144,7 @@ ratification. They are evaluation bands, not calibration objectives; the
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-27` | `95` | `Codex` | SNOWDENSITY-10.3.8 liquid holding-capacity amendment: added in-repo retained-liquid authority anchors, `coe_liquid_holding_capacity_v1`, `INV-SNOWFREEZE-067`, `OBL-SNOWFREEZE-P-042`, and the Opt-In Liquid Holding-Capacity Addendum. The amendment authorizes only an explicit opt-in capacity-bound drainage candidate with persistent retained-liquid state, default `legacy_coe` identity, no output-schema/parser/runfile/user activation, and closure gates requiring event-window improvement, conservation/routing proof, and coupled direct-production WAT evidence. |
 | `2026-06-27` | `94` | `Codex` | SNOWDENSITY-10.3.7 review disposition amendment: made conservation proof and coupled direct-production WAT snow-control rerun current-scope gates for `coe_winter_thaw_state_loss_v1`, authorized only the package-bound diagnostic selector `OPENWEPP_SNOWDENSITY1037_MELT_MODEL`, and clarified that event-window improvement without retained/released-rain closure and WAT coupling evidence is an opt-in signal, not a fix or activation authority. |
 | `2026-06-27` | `93` | `Codex` | SNOWDENSITY-10.3.7 opt-in winter-thaw melt-response amendment: added `coe_winter_thaw_state_loss_v1`, qualified the legacy density gate through `INV-SNOWFREEZE-066`, added `OBL-SNOWFREEZE-P-041`, and added the Opt-In Winter-Thaw State-Loss Addendum. The amendment authorizes only an explicit opt-in positive-thaw state-loss candidate that preserves CoE melt terms, default `legacy_coe`, `coe_shortwave_albedo_v1` behavior, and all forcing/canopy/phase/density/frost/output-schema boundaries; closure requires independent operand reconstruction and paired Sleepers/Harvard event-window improvement evidence without site constants. |
 | `2026-06-27` | `92` | `Codex` | SNOWDENSITY-10.3.5b opt-in hourly partition amendment: added `snow_phase_partition_model`, exact-saturation humidity normalization, `INV-SNOWFREEZE-065`, `OBL-SNOWFREEZE-P-040`, and the Opt-In Hourly Partition And Jennings Validation Addendum. The amendment authorizes only a package-bound `legacy_rst`/`harder_pomeroy_hourly` selector at the direct-runtime hourly winter partition seam, preserves default `legacy_rst`, requires precipitation reconstruction and direct-consumer evidence, and requires Jennings observed-phase validation without tuning or parser/runfile/user activation. |

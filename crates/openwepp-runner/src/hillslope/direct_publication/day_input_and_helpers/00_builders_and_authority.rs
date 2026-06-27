@@ -1,6 +1,7 @@
 const SNOWDENSITY09_DENSITY_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL";
 const SNOWDENSITY1035_PHASE_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL";
 const SNOWDENSITY1037_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1037_MELT_MODEL";
+const SNOWDENSITY1038_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1038_MELT_MODEL";
 
 struct DirectPublicationDayInputBuilder<'a> {
     climate_request: &'a HillslopeClimateRuntimeRequest,
@@ -227,6 +228,9 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             coe_boundary_density_after_kg_m3: snow_liquid.coe_boundary_density_after_kg_m3,
             coe_boundary_settle_day_count_after: snow_liquid
                 .coe_boundary_settle_day_count_after,
+            liquid_holding_capacity_after_m: snow_liquid.liquid_holding_capacity_after_m,
+            liquid_water_retained_after_m: snow_liquid.liquid_water_retained_after_m,
+            liquid_water_released_m: snow_liquid.liquid_water_released_m,
             snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
         });
         let percolation_inputs =
@@ -867,6 +871,9 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             coe_boundary_density_after_kg_m3: snow_liquid.coe_boundary_density_after_kg_m3,
             coe_boundary_settle_day_count_after: snow_liquid
                 .coe_boundary_settle_day_count_after,
+            liquid_holding_capacity_after_m: snow_liquid.liquid_holding_capacity_after_m,
+            liquid_water_retained_after_m: snow_liquid.liquid_water_retained_after_m,
+            liquid_water_released_m: snow_liquid.liquid_water_released_m,
             snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
         });
         day_input.peak_runoff_inputs = Some(authority.peak_runoff.inputs(hyetograph.clone()));
@@ -1048,6 +1055,7 @@ fn maybe_write_r7h_direct_production_snow_trace(
 \"runtime_depth_before_m\":{},\
 \"runtime_density_before_kg_m3\":{},\
 \"runtime_settle_day_count_before\":{},\
+\"liquid_water_retained_before_m\":{},\
 \"snow_density_model\":\"{}\",\
 \"snow_melt_model\":\"{}\",\
 \"active_snow_coupling\":{},\
@@ -1057,6 +1065,9 @@ fn maybe_write_r7h_direct_production_snow_trace(
 \"routed_melt_m\":{},\
 \"rain_retained_m\":{},\
 \"rain_released_m\":{},\
+\"liquid_holding_capacity_after_m\":{},\
+\"liquid_water_retained_after_m\":{},\
+\"liquid_water_released_m\":{},\
 \"post_winter_rain_m\":{},\
 \"runtime_swe_after_m\":{},\
 \"runtime_depth_after_m\":{},\
@@ -1067,6 +1078,7 @@ fn maybe_write_r7h_direct_production_snow_trace(
         direct_production_trace_number(snow_lane_state.runtime_depth_m),
         direct_production_trace_number(snow_lane_state.runtime_density_kg_m3),
         direct_production_trace_number(snow_lane_state.runtime_settle_day_count),
+        direct_production_trace_number(snow_lane_state.liquid_water_retained_m),
         snow_liquid.snow_density_model.id(),
         snow_melt_model.id(),
         snow_liquid.active_snow_coupling,
@@ -1076,6 +1088,9 @@ fn maybe_write_r7h_direct_production_snow_trace(
         direct_production_trace_number(snow_liquid.routed_melt_m),
         direct_production_trace_number(snow_liquid.rain_retained_m),
         direct_production_trace_number(snow_liquid.rain_released_m),
+        direct_production_trace_number(snow_liquid.liquid_holding_capacity_after_m),
+        direct_production_trace_number(snow_liquid.liquid_water_retained_after_m),
+        direct_production_trace_number(snow_liquid.liquid_water_released_m),
         direct_production_trace_number(snow_liquid.post_winter_rain_m),
         direct_production_trace_number(snow_liquid.runtime_swe_after_m),
         direct_production_trace_number(snow_liquid.runtime_depth_after_m),
@@ -1252,6 +1267,29 @@ fn snowdensity1037_diagnostic_snow_melt_model(
         Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_melt_model",
             detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY1037_MELT_MODEL_ENV} must be UTF-8"),
+        }),
+    }
+}
+
+fn snowdensity1038_diagnostic_snow_melt_model(
+) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
+    match std::env::var(SNOWDENSITY1038_MELT_MODEL_ENV) {
+        Ok(value) => match value.trim() {
+            "" | "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
+            "coe_liquid_holding_capacity_v1" => {
+                Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1)
+            }
+            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_snow_melt_model",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be legacy_coe or coe_liquid_holding_capacity_v1, observed {observed}"
+                ),
+            }),
+        },
+        Err(std::env::VarError::NotPresent) => snowdensity1037_diagnostic_snow_melt_model(),
+        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_melt_model",
+            detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be UTF-8"),
         }),
     }
 }
