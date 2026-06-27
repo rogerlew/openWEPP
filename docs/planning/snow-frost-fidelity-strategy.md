@@ -520,16 +520,20 @@ results re-order the priorities below:
    capture sub-canopy longwave — a forest longwave-enhancement term is the leading
    candidate for the warm-maritime forest fixtures, and this set is built to test
    it (it is also an Open Decision in §9).
-4. **Rain-on-snow / advective melt — a leading frost-blocker hypothesis.** The
-   non-SNOTEL over-accumulation is concentrated at **maritime, thaw-prone** sites
-   and density compaction did not close it. That is consistent with under-melt
-   during winter thaws and rain-on-snow, but phase partition, precipitation bias,
-   wind/undercatch, and representativeness remain live confounders. Check/tune the
-   CoE rain-heat term (warm rain at >0 °C transferring heat to the pack), verify
-   the snow/rain partition first, and confirm the pack ablates during
-   Vermont/Cascades January thaws. HJ Andrews (transient rain-snow) and
-   Sleepers/Harvard/Hubbard Brook (maritime) are the test bed; this is the most
-   direct route to adjudicating `NON-SNOTEL-OPT-IN-SNOW-CONTROL-FAILED`.
+4. **Winter-thaw under-ablation — the confirmed over-accumulation lever
+   (adjudicated 2026-06-27).** The hypotheses here have been tested against
+   *coupled* evidence (see the §10.2 callout), which overruled the 10.3.4
+   diagnostic ranking: the snow/rain **partition** was the #1 diagnostic suspect
+   but is **neutral-or-worse for snow depth** in the coupled model (10.3.5c), and
+   **rain-on-snow heat is demoted** (CoE `dmelt` already carries it; 0.19 m,
+   10.3.4/10.3.6). The dominant lever is **winter-thaw under-ablation** (10.3.6):
+   on the paired Sleepers/Harvard surfaces the pack under-ablates in ~60% of
+   observed thaw windows (24.1 m aggregate depth-loss deficit). The **tell is a
+   melt-realization gap** — raw CoE melt `8.69 m` but modeled SWE loss only
+   `4.63 m`, so ~half the computed melt energy is not realized as pack loss. The
+   correction (§10.3 step 6) targets that melt→SWE-loss application — *not* the
+   rain-heat or partition terms — to adjudicate
+   `NON-SNOTEL-OPT-IN-SNOW-CONTROL-FAILED`.
 5. **Snow/rain partition + accumulation.** Over-accumulation can also be too much
    precip falling as snow; the rain-snow partition threshold is most sensitive at
    near-0 °C maritime sites. Verify the partition before attributing all
@@ -622,7 +626,12 @@ profile/signature scoring rather than absolute-magnitude promotion.
    `WINTER-THAW-MELT-RESPONSE-DEFECT-ELIGIBLE`: `132/219` paired thaw-ablation
    windows under-ablated by the
    diagnostic threshold, with `24.105 m` depth-loss deficit and only `0.190 m`
-   warm-rain heat equivalent. The next package should be contract-first and
+   warm-rain heat equivalent. **The defect localizes to the melt→SWE-loss
+   application** — raw CoE melt `8.685 m` but modeled SWE loss only `4.628 m`, so
+   ~half the computed thaw-window melt energy is not realized as pack loss (likely
+   locus: refreeze / liquid retention / how the melt is applied to the pack), not
+   the melt-energy computation — so start the operand reconstruction there. The
+   next package should be contract-first and
    opt-in: reconstruct the CoE thaw-window operands independently, preserve
    default/rollback isolation, prove conservation, and improve rubric signatures
    without site constants. Keep rain heat and sub-canopy longwave separate; do
