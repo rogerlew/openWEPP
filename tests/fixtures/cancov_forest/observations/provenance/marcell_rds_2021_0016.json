@@ -1,0 +1,43 @@
+{
+  "access_date": "2026-06-26",
+  "citation": "Sebestyen, Stephen D.; Verry, Elon S.; Elling, Arthur E.; Kyllander, Richard L.; Roman, Daniel T.; Burdick, Jacob M.; Lany, Nina K.; Kolka, Randall K. 2021. Marcell Experimental Forest biweekly snow depth, frost depth, and snow water equivalent, 1962 - ongoing. Fort Collins, CO: Forest Service Research Data Archive. https://doi.org/10.2737/RDS-2021-0016",
+  "download_url": "https://www.fs.usda.gov/rds/archive/products/RDS-2021-0016/RDS-2021-0016.zip",
+  "license_or_terms": "Collected using U.S. Government funding and usable without additional permissions or fees; cite the data publication.",
+  "parser_assumptions": [
+    "SnowDEPTH and SWE are centimeters and are normalized to meters and millimeters.",
+    "Density is derived as SWE(mm) / snow_depth(m) where depth is positive.",
+    "S11/S21/S22/S51 map to deciduous; S23/S54/PINE map to conifer; S5WS/S52/JUNC map to open.",
+    "S53 appears in the snow/SWE table but is not described in the RDS metadata or coordinate supplement; it is retained in point and snowcourse tables as unknown and excluded from stratum means."
+  ],
+  "parser_version": "cancov-stratified-observations-v1",
+  "raw_files": [
+    {
+      "bytes": 90038,
+      "path": "target/cancov_stratified_observed/raw/marcell/RDS-2021-0016.zip",
+      "sha256": "a507b825a705caeb32c928228b07fb431ea8ad3093d927f22adacb6eb03b76d3"
+    },
+    {
+      "bytes": 592903,
+      "path": "target/cancov_stratified_observed/raw/marcell/extracted/Data/MEF_snowSWE_biweekly.csv",
+      "sha256": "9ee1fdfd81135c0b5c5a523905e3b352d816ce88aafb346a06b21fefd8e86927"
+    },
+    {
+      "bytes": 3276,
+      "path": "target/cancov_stratified_observed/raw/marcell/extracted/Supplements/MEF_snowcourse_coordinates.csv",
+      "sha256": "bbf674e8034ac315e4a8eab74c1ca205e6e1f833814cba75616bb8c24c079a7b"
+    },
+    {
+      "bytes": 35265,
+      "path": "target/cancov_stratified_observed/raw/marcell/extracted/_metadata_RDS-2021-0016.html",
+      "sha256": "e13a55e7a66ada93487dc68ca6e288067655835062ad61861f9b337b2565160b"
+    },
+    {
+      "bytes": 2570,
+      "path": "target/cancov_stratified_observed/raw/marcell/extracted/_fileindex_RDS-2021-0016.html",
+      "sha256": "5bb105a941bd10339a7a853a98a98c0d533bf00c51973c3dbf3cfb5b64b1bcdc"
+    }
+  ],
+  "source_id": "marcell_rds_2021_0016",
+  "source_url": "https://www.fs.usda.gov/rds/archive/Catalog/RDS-2021-0016",
+  "title": "Marcell Experimental Forest biweekly snow depth, frost depth, and snow water equivalent, 1962 - ongoing"
+}

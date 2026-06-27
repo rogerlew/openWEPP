@@ -46,17 +46,17 @@ model counterparts per stratum:
   A clean hemlock pairing needs either a re-delineation that isolates an evergreen
   hillslope or an explicit hemlock↔mixed proxy rule.
 
-**Two preconditions still gate canopy-stratum verdicts** (this revision resolves
-only the *spatial* binding):
+**Revision 2026-06-26 — follow-on prerequisites resolved**
 
-1. **Per-day canopy (SNOWDENSITY-10.3.1).** The new per-stratum hillslopes still
-   run the static initial `cancov` in the diagnostic (e.g. deciduous static `0.20`
-   vs winter `0.067`); the leaf-off trajectory must be routed in before melt
-   verdicts, or the deciduous/open strata will be mis-attenuated.
-2. **Observation ingest.** The HF237 (Harvard) and USDA RDA (Marcell) stratified
-   observation tables are still not installed under `tests/fixtures/`; the binding
-   is metadata-level until they are.
+The two non-spatial preconditions named above are now resolved outside the
+original package:
 
-Revised closure: spatial stratum binding **RESOLVED for Marcell, PARTIAL for
-Harvard (hemlock unbound)**; canopy-stratum verdicts remain gated on 10.3.1
-per-day canopy and on observation ingest.
+- **Per-day canopy:** SNOWDENSITY-10.3.1a routes direct-production daily
+  `cancov` into snowbench and CoE replay through `canopy_series.csv`.
+- **Observation ingest:** Harvard HF237 and Marcell RDS-2021-0016 normalized
+  tables are installed under `tests/fixtures/cancov_forest/observations/`.
+
+Current 10.3.3 readiness: Marcell conifer/deciduous/open and Harvard
+open/hardwood are model-bound with observations installed. Harvard hemlock is
+observation-installed but still unbound to a pure model hillslope; it must be
+excluded, reported unbound, or explicitly proxy-scoped before verdict use.

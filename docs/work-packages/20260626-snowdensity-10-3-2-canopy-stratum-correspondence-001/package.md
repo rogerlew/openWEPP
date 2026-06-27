@@ -97,12 +97,16 @@ per-stratum within-watershed hillslopes were added to
   open (`harvard_open_ma`) bind, but the Harvard delineation has no pure conifer
   hillslope, so the **hemlock** stratum is unbound (mixed proxy only).
 
-Canopy-stratum verdicts remain gated on two unchanged preconditions: per-day
-winter `cancov` routed into the diagnostic (SNOWDENSITY-10.3.1) and ingest of the
-HF237 / USDA RDA stratified observation tables.
+The two package-level follow-on preconditions have since been resolved:
+SNOWDENSITY-10.3.1a routed per-day winter `cancov` into direct-production
+diagnostic replay, and the Harvard HF237 / Marcell RDS-2021-0016 stratified
+observation tables were installed under
+`tests/fixtures/cancov_forest/observations/`.
 
-No code, fixtures, science contracts, production physics, defaults, output
-schemas, selectors, or observations changed.
+Remaining scope constraint: Harvard hemlock is observation-installed but has no
+pure conifer/hemlock model fixture. Marcell conifer/deciduous/open and Harvard
+open/hardwood are ready for 10.3.3 stratum verdicts; Harvard hemlock must be
+excluded, reported unbound, or explicitly proxy-scoped before verdict use.
 
 ## Closeout Artifacts
 

@@ -28,15 +28,16 @@ State as of `2026-06-26`:
 - `20260626-snowdensity-10-3-2-canopy-stratum-correspondence-001/` is complete
   as SNOWDENSITY-10.3.2, the canopy-stratum correspondence gate. It mapped the
   Harvard and Marcell canopy-stratified observation metadata to the current
-  modeled surfaces and closed with an explicit binding constraint: both current
-  fixtures are single static mixed-forest hillslopes with runtime
-  `cancov = 0.55`, so they do not bind directly to observed
-  open/deciduous-or-hardwood/conifer-or-hemlock strata. They remain valid
-  mixed-hillslope diagnostics and planning anchors, but cannot carry
-  canopy-stratum verdicts until paired stratum model variants or an explicit
-  weighted aggregate observation binding exists. No code, fixture input,
-  science contract, output schema, default, selector, coefficient, radiation,
-  albedo, density, melt, partition, or frost behavior changed.
+  modeled surfaces and later revised the binding after paired stratum fixtures
+  were added. Marcell conifer/deciduous/open and Harvard hardwood/open now have
+  model counterparts, and follow-on observation ingest installed Harvard HF237
+  and Marcell RDS-2021-0016 normalized tables under
+  `tests/fixtures/cancov_forest/observations/`. Harvard hemlock remains
+  observation-installed but unbound to a pure model hillslope; 10.3.3 must
+  exclude it, report it unbound, or explicitly proxy-scope it before verdict use.
+  No production code, science contract, output schema, default, selector,
+  coefficient, radiation, albedo, density, melt, partition, or frost behavior
+  changed.
 - `20260626-snowdensity-10-3-1-canopy-projection-provenance-001/` is complete
   as SNOWDENSITY-10.3.1, the canopy projection provenance package. It archived
   raw `.man` canopy inputs, upstream wepppy seasonal winter `Cancov`

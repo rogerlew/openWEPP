@@ -693,6 +693,10 @@ path = "tests/integration/snowdensity09_coupled_wat_rerun.rs"
 name = "snowdensity10_3_1a_per_day_cancov"
 path = "tests/integration/snowdensity10_3_1a_per_day_cancov.rs"
 
+[[test]]
+name = "cancov_stratified_observations"
+path = "tests/integration/cancov_stratified_observations.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

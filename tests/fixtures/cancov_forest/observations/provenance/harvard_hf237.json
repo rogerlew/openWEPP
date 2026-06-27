@@ -1,0 +1,28 @@
+{
+  "access_date": "2026-06-26",
+  "citation": "Hellstrom R. 2023. Snowpack in Hemlock, Hardwood, and Open Sites at Harvard Forest 2008-2014. Harvard Forest Data Archive: HF237 (v.4). Environmental Data Initiative. https://doi.org/10.6073/pasta/be69b1f46b57354a25d85a437c0679c8.",
+  "license_or_terms": "Creative Commons Zero v1.0 Universal (CC0-1.0).",
+  "parser_assumptions": [
+    "HF237 shaler columns are normalized as the open stratum.",
+    "HF237 lph columns are normalized as the hardwood stratum.",
+    "HF237 hemlock columns are installed but marked unbound because no pure Harvard hemlock model fixture exists.",
+    "Depth and SWE in HF237-01 are centimeters; density is kg m^-3.",
+    "HF237-01 density is source-provided daily interpolation."
+  ],
+  "parser_version": "cancov-stratified-observations-v1",
+  "raw_files": [
+    {
+      "bytes": 40201,
+      "path": "target/cancov_stratified_observed/raw/harvard/hf237-01-snow-depth.csv",
+      "sha256": "2c80d505952350879df3993d61262608ee0f5a695f5a9409c1213edd1d0271ff"
+    },
+    {
+      "bytes": 4223,
+      "path": "target/cancov_stratified_observed/raw/harvard/hf237-02-snow-density.csv",
+      "sha256": "b57eca8cad0d2f8e8e909a825dbba22b0f1feab7ad073ba01e2f9585853232e9"
+    }
+  ],
+  "source_id": "harvard_hf237",
+  "source_url": "https://harvardforest1.fas.harvard.edu/exist/apps/datasets/showData.html?id=HF237",
+  "title": "Snowpack in Hemlock, Hardwood, and Open Sites at Harvard Forest 2008-2014"
+}

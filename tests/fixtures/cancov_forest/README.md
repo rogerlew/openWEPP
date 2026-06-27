@@ -78,6 +78,25 @@ the canopy-attenuation term from snow-state/forcing error.
   `agriculture crops`; it provides no forest strata, so `sleepers_pasture_vt`
   alone represents it.
 
+## Stratified observation tables
+
+Normalized Harvard HF237 and Marcell RDS-2021-0016 observations are installed in
+`observations/`:
+
+- `observations/sites/harvard_hf237_strata.csv` provides daily Harvard open,
+  hardwood, and hemlock snow depth/SWE/density rows.
+- `observations/profiles/harvard_hf237_density_profiles.csv` provides Harvard
+  vertical density profile rows.
+- `observations/sites/marcell_rds_2021_0016_points.csv` preserves Marcell
+  point-level snow depth/SWE observations.
+- `observations/sites/marcell_rds_2021_0016_snowcourse_means.csv` and
+  `observations/sites/marcell_rds_2021_0016_stratum_means.csv` provide
+  snowcourse and conifer/deciduous/open means.
+
+Harvard hemlock remains installed as an observation stratum but unbound to a
+pure model hillslope. Marcell conifer/deciduous/open and Harvard open/hardwood
+are model-bound for 10.3.3-style gradient adjudication.
+
 ## Frost activation (`ksflag`)
 
 The forest and short-grass builds inherited `ksflag = 0` (legacy "frost disabled

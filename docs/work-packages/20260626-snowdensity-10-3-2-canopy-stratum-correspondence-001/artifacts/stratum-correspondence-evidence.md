@@ -25,10 +25,11 @@ surface remains static at `0.55`.
 | Harvard Forest | `HF155` snow-pillow SWE + `HF237` depth/density | `hemlock`, `hardwood`, `open` for `HF237`; `HF155` is not a stratum-resolved depth/density surface in current metadata. |
 | Marcell Experimental Forest | USFS RDA `10.2737/RDS-2021-0016` | `conifer`, `deciduous`, `open` SWE/depth/frost by cover type. |
 
-No Harvard `HF237` or Marcell RDA observation tables are currently installed
-under `tests/fixtures/cancov_forest/` or `tests/fixtures/snowfreeze_observed/`.
-This package therefore binds metadata-level strata to modeled surfaces; it does
-not ingest or compare observations.
+Revision note: the Harvard `HF237` and Marcell RDA observation tables are now
+installed under `tests/fixtures/cancov_forest/observations/` as a follow-on to
+this package. The original 10.3.2 package bound metadata-level strata only; the
+installed tables now provide normalized observation surfaces for downstream
+10.3.3 gradient adjudication.
 
 ## Binding Table
 
@@ -81,8 +82,13 @@ Enumeration basis: the `.sol` disturbed `luse` per hillslope across each
 watershed. Marcell's delineation contains all four cover classes; Harvard's
 contains only `mixed`, `deciduous`, and `short grass` (no pure `forest`).
 
-The static-`cancov` limitation from SNOWDENSITY-10.3.1 is **unchanged** by this
-revision — the new hillslopes still seed static initial `cancov` into the
-diagnostic (deciduous `0.20` vs winter `0.067`, etc.). This revision resolves the
-*spatial* (canopy-type) binding only; the *temporal* (per-day winter canopy)
-precondition and observation ingest remain open before any stratum verdict.
+The static-`cancov` limitation from SNOWDENSITY-10.3.1 was resolved by
+SNOWDENSITY-10.3.1a, which routes per-day canopy through direct-production day
+inputs and CoE replay. The observation-ingest limitation is resolved by
+`tests/fixtures/cancov_forest/observations/`.
+
+Remaining scope constraint for 10.3.3: Harvard hemlock is observation-installed
+but still unbound to a pure model hillslope. Marcell conifer/deciduous/open and
+Harvard open/hardwood may carry stratum verdicts; Harvard hemlock must be
+excluded, reported as unbound, or explicitly proxy-scoped before it carries a
+verdict.

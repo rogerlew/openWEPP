@@ -1,0 +1,174 @@
+{
+  "access_date": "2026-06-26",
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-063",
+  "normal_density_units": "kg m^-3",
+  "normal_depth_units": "m",
+  "normal_swe_units": "mm water equivalent",
+  "output_files": [
+    {
+      "bytes": 57965,
+      "path": "tests/fixtures/cancov_forest/observations/profiles/harvard_hf237_density_profiles.csv",
+      "sha256": "ba98edb548736037b7f010fd37a35419e6cf5b810748b60676c1c9aa50814892"
+    },
+    {
+      "bytes": 1474,
+      "path": "tests/fixtures/cancov_forest/observations/provenance/harvard_hf237.json",
+      "sha256": "b7a4be2c161c6f5aa076d3d3cb225fdb339f364e563c46673b0036fb35258a5c"
+    },
+    {
+      "bytes": 2545,
+      "path": "tests/fixtures/cancov_forest/observations/provenance/marcell_rds_2021_0016.json",
+      "sha256": "c911052902a745bde8f722b942830f311d6c02d548a47464f923cb40f3239bb7"
+    },
+    {
+      "bytes": 430693,
+      "path": "tests/fixtures/cancov_forest/observations/sites/harvard_hf237_strata.csv",
+      "sha256": "63240caf3c681df2c641dffc50591e10ce3a0a7506cf40aa994dd03be1e5e1ea"
+    },
+    {
+      "bytes": 4189940,
+      "path": "tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_points.csv",
+      "sha256": "21db671239f5515d12a8da3fd28e89ff814e2316771fbead3aa15b852e3ba4a0"
+    },
+    {
+      "bytes": 477977,
+      "path": "tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_snowcourse_means.csv",
+      "sha256": "5e58d48bd5251618fc107d4a64a108bcee59ef3063e4cb7e3301027cfc9647e2"
+    },
+    {
+      "bytes": 180103,
+      "path": "tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_stratum_means.csv",
+      "sha256": "17838330c032755dd0d9f7036f4897ba7bf9d61bad15a41d12650af1e2a88365"
+    }
+  ],
+  "parser_version": "cancov-stratified-observations-v1",
+  "profiles": [
+    {
+      "end_date": "2014-03-11",
+      "normalized_file_bytes": 57965,
+      "normalized_file_sha256": "ba98edb548736037b7f010fd37a35419e6cf5b810748b60676c1c9aa50814892",
+      "observation_file": "profiles/harvard_hf237_density_profiles.csv",
+      "observed_strata": [
+        "hardwood",
+        "hemlock",
+        "open"
+      ],
+      "row_count": 376,
+      "site_id": "harvard_hf237_density_profiles",
+      "start_date": "2008-12-07"
+    }
+  ],
+  "raw_cache_root": "/home/workdir/openWEPP/target/cancov_stratified_observed/raw",
+  "raw_inputs": {
+    "harvard_density": "/home/workdir/openWEPP/target/cancov_stratified_observed/raw/harvard/hf237-02-snow-density.csv",
+    "harvard_depth": "/home/workdir/openWEPP/target/cancov_stratified_observed/raw/harvard/hf237-01-snow-depth.csv",
+    "marcell_coordinates": "/home/workdir/openWEPP/target/cancov_stratified_observed/raw/marcell/extracted/Supplements/MEF_snowcourse_coordinates.csv",
+    "marcell_file_index_html": "/home/workdir/openWEPP/target/cancov_stratified_observed/raw/marcell/extracted/_fileindex_RDS-2021-0016.html",
+    "marcell_metadata_html": "/home/workdir/openWEPP/target/cancov_stratified_observed/raw/marcell/extracted/_metadata_RDS-2021-0016.html",
+    "marcell_snow_swe": "/home/workdir/openWEPP/target/cancov_stratified_observed/raw/marcell/extracted/Data/MEF_snowSWE_biweekly.csv",
+    "marcell_zip": "/home/workdir/openWEPP/target/cancov_stratified_observed/raw/marcell/RDS-2021-0016.zip"
+  },
+  "schema": "cancov-stratified-observations-manifest-v1",
+  "sites": [
+    {
+      "end_date": "2014-04-19",
+      "normalized_file_bytes": 430693,
+      "normalized_file_sha256": "63240caf3c681df2c641dffc50591e10ce3a0a7506cf40aa994dd03be1e5e1ea",
+      "observation_file": "sites/harvard_hf237_strata.csv",
+      "observed_strata": [
+        "hardwood",
+        "hemlock",
+        "open"
+      ],
+      "row_count": 2463,
+      "site_id": "harvard_hf237",
+      "start_date": "2008-12-01"
+    },
+    {
+      "end_date": "2019-04-18",
+      "normalized_file_bytes": 4189940,
+      "normalized_file_sha256": "21db671239f5515d12a8da3fd28e89ff814e2316771fbead3aa15b852e3ba4a0",
+      "observation_file": "sites/marcell_rds_2021_0016_points.csv",
+      "observed_strata": [
+        "conifer",
+        "deciduous",
+        "open",
+        "unknown"
+      ],
+      "row_count": 19114,
+      "site_id": "marcell_rds_2021_0016_points",
+      "start_date": "1962-03-12"
+    },
+    {
+      "end_date": "2019-04-18",
+      "normalized_file_bytes": 477977,
+      "normalized_file_sha256": "5e58d48bd5251618fc107d4a64a108bcee59ef3063e4cb7e3301027cfc9647e2",
+      "observation_file": "sites/marcell_rds_2021_0016_snowcourse_means.csv",
+      "observed_strata": [
+        "conifer",
+        "deciduous",
+        "open",
+        "unknown"
+      ],
+      "row_count": 1942,
+      "site_id": "marcell_rds_2021_0016_snowcourse_means",
+      "start_date": "1962-03-12"
+    },
+    {
+      "end_date": "2019-04-18",
+      "normalized_file_bytes": 180103,
+      "normalized_file_sha256": "17838330c032755dd0d9f7036f4897ba7bf9d61bad15a41d12650af1e2a88365",
+      "observation_file": "sites/marcell_rds_2021_0016_stratum_means.csv",
+      "observed_strata": [
+        "conifer",
+        "deciduous",
+        "open"
+      ],
+      "row_count": 706,
+      "site_id": "marcell_rds_2021_0016_stratum_means",
+      "start_date": "1962-03-12"
+    }
+  ],
+  "sources": [
+    {
+      "normalized_files": [
+        {
+          "bytes": 430693,
+          "path": "tests/fixtures/cancov_forest/observations/sites/harvard_hf237_strata.csv",
+          "sha256": "63240caf3c681df2c641dffc50591e10ce3a0a7506cf40aa994dd03be1e5e1ea"
+        },
+        {
+          "bytes": 57965,
+          "path": "tests/fixtures/cancov_forest/observations/profiles/harvard_hf237_density_profiles.csv",
+          "sha256": "ba98edb548736037b7f010fd37a35419e6cf5b810748b60676c1c9aa50814892"
+        }
+      ],
+      "provenance_file": "provenance/harvard_hf237.json",
+      "source_id": "harvard_hf237",
+      "source_url": "https://harvardforest1.fas.harvard.edu/exist/apps/datasets/showData.html?id=HF237"
+    },
+    {
+      "download_url": "https://www.fs.usda.gov/rds/archive/products/RDS-2021-0016/RDS-2021-0016.zip",
+      "normalized_files": [
+        {
+          "bytes": 4189940,
+          "path": "tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_points.csv",
+          "sha256": "21db671239f5515d12a8da3fd28e89ff814e2316771fbead3aa15b852e3ba4a0"
+        },
+        {
+          "bytes": 477977,
+          "path": "tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_snowcourse_means.csv",
+          "sha256": "5e58d48bd5251618fc107d4a64a108bcee59ef3063e4cb7e3301027cfc9647e2"
+        },
+        {
+          "bytes": 180103,
+          "path": "tests/fixtures/cancov_forest/observations/sites/marcell_rds_2021_0016_stratum_means.csv",
+          "sha256": "17838330c032755dd0d9f7036f4897ba7bf9d61bad15a41d12650af1e2a88365"
+        }
+      ],
+      "provenance_file": "provenance/marcell_rds_2021_0016.json",
+      "source_id": "marcell_rds_2021_0016",
+      "source_url": "https://www.fs.usda.gov/rds/archive/Catalog/RDS-2021-0016"
+    }
+  ]
+}

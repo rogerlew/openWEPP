@@ -6,16 +6,17 @@ Closure: `COMPLETE-10-3-2-CANOPY-STRATUM-BINDING-DISPOSITIONED`.
 
 Carry-forward constraints:
 
-- Harvard and Marcell current fixtures are single mixed-hillslope diagnostics
-  only.
-- Do not use current Harvard/Marcell outputs as open, deciduous/hardwood, or
-  conifer/hemlock stratum verdicts.
-- Before canopy-stratified Harvard/Marcell verdicts, either generate paired
-  model variants for observed strata or author a documented aggregation rule
-  with explicit stratum weights.
-- 10.3.3 gradient melt adjudication may proceed only if it excludes these
-  unbound stratum verdicts, scopes them to mixed-hillslope diagnostics, or first
-  creates the paired variants.
+- Paired model variants now exist for Marcell conifer/deciduous/open and Harvard
+  hardwood/open.
+- Harvard HF237 and Marcell RDS-2021-0016 stratified observation tables are
+  installed under `tests/fixtures/cancov_forest/observations/`.
+- SNOWDENSITY-10.3.1a routes per-day direct-production `cancov` into snowbench
+  and CoE replay.
+- 10.3.3 gradient melt adjudication may use Marcell conifer/deciduous/open and
+  Harvard hardwood/open as stratum-bound cells.
+- Harvard hemlock remains observation-installed but unbound to a pure model
+  hillslope; exclude it, report it as unbound, or explicitly proxy-scope it
+  before verdict use.
 
-No code, fixture, contract, schema, selector, constant, or production behavior
-changed.
+No production code, contract, output schema, selector, constant, or production
+behavior changed by the observation install.
