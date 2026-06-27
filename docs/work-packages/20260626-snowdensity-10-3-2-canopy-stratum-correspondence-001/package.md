@@ -83,6 +83,24 @@ Downstream closure condition before Harvard/Marcell carry canopy verdicts:
 - author a documented observation aggregation rule with explicit stratum
   weights and bind the current model only to that aggregate.
 
+## Revision 2026-06-26 — Paired Strata Built
+
+The first closure option (generate paired model variants) was executed: six
+per-stratum within-watershed hillslopes were added to
+`tests/fixtures/cancov_forest/` (see the disposition and
+`stratum-correspondence-evidence.md` revisions for the full binding table).
+
+- **Marcell: spatial binding RESOLVED** — conifer (`marcell_conifer_mn`),
+  deciduous (`marcell_deciduous_mn`), and open (`marcell_open_mn`) now bind to the
+  three observed strata.
+- **Harvard: spatial binding PARTIAL** — hardwood (`harvard_deciduous_ma`) and
+  open (`harvard_open_ma`) bind, but the Harvard delineation has no pure conifer
+  hillslope, so the **hemlock** stratum is unbound (mixed proxy only).
+
+Canopy-stratum verdicts remain gated on two unchanged preconditions: per-day
+winter `cancov` routed into the diagnostic (SNOWDENSITY-10.3.1) and ingest of the
+HF237 / USDA RDA stratified observation tables.
+
 No code, fixtures, science contracts, production physics, defaults, output
 schemas, selectors, or observations changed.
 

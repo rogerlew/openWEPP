@@ -60,3 +60,29 @@ It is not defensible for:
 
 Reason: the observed datasets intentionally separate canopy regimes, while the
 current model surface collapses them into one static mixed canopy.
+
+## Revision 2026-06-26 — Updated Binding (Paired Strata Built)
+
+Per-stratum within-watershed hillslopes were added to
+`tests/fixtures/cancov_forest/`, replacing the single-mixed-hillslope binding for
+the spatial (canopy-type) axis:
+
+| Site | Observed stratum | Model binding | `luse` | Disposition |
+|---|---|---|---|---|
+| Marcell | `conifer` | `marcell_conifer_mn` (52→p8) | `forest` (evergreen) | bound |
+| Marcell | `deciduous` | `marcell_deciduous_mn` (73→p15) | `deciduous forest` | bound |
+| Marcell | `open` | `marcell_open_mn` (42→p6) | `short grass` | bound |
+| Marcell | (mixed) | `marcell_mixed_mn` (61→p10) | `mixed forest` | context |
+| Harvard | `hardwood` | `harvard_deciduous_ma` (41→p6) | `deciduous forest` | bound |
+| Harvard | `open` | `harvard_open_ma` (31→p3) | `short grass` | bound |
+| Harvard | `hemlock` | `harvard_mixed_ma` (proxy only) | `mixed forest` | **unbound** — no pure conifer hillslope in Harvard delineation |
+
+Enumeration basis: the `.sol` disturbed `luse` per hillslope across each
+watershed. Marcell's delineation contains all four cover classes; Harvard's
+contains only `mixed`, `deciduous`, and `short grass` (no pure `forest`).
+
+The static-`cancov` limitation from SNOWDENSITY-10.3.1 is **unchanged** by this
+revision — the new hillslopes still seed static initial `cancov` into the
+diagnostic (deciduous `0.20` vs winter `0.067`, etc.). This revision resolves the
+*spatial* (canopy-type) binding only; the *temporal* (per-day winter canopy)
+precondition and observation ingest remain open before any stratum verdict.

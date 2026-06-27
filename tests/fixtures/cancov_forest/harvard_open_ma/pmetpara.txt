@@ -1,0 +1,9 @@
+8
+Mou_4129,0.95,0.8,1,loam-short_grass
+Mix_4899,0.95,0.8,2,sand_loam-mixed_forest
+Mou_4129,0.95,0.8,3,sand_loam-short_grass
+Mix_4899,0.95,0.8,4,sand_loam-mixed_forest
+Mou_4129,0.95,0.8,5,sand_loam-short_grass
+Dec_4899,0.95,0.8,6,loam-deciduous_forest
+Mix_4899,0.95,0.8,7,loam-mixed_forest
+Mix_4899,0.95,0.8,8,sand_loam-mixed_forest

@@ -19,3 +19,44 @@ explicit aggregate observation binding exists.
 No fixture inputs, production Rust code, science contracts, output schemas,
 defaults, selectors, coefficients, radiation, albedo, density, melt, or frost
 behavior changed.
+
+## Revision 2026-06-26 — paired per-stratum hillslopes built
+
+The closure condition above ("generate paired model variants for the observed
+strata") is now **met for Marcell and partial for Harvard.** Six additional
+within-watershed hillslopes were added to `tests/fixtures/cancov_forest/`, giving
+model counterparts per stratum:
+
+| Site | Observed stratum | New model binding | Status |
+|---|---|---|---|
+| Marcell | conifer | `marcell_conifer_mn` (topaz 52→p8, `forest`) | bound |
+| Marcell | deciduous | `marcell_deciduous_mn` (topaz 73→p15) | bound |
+| Marcell | open | `marcell_open_mn` (topaz 42→p6, `short grass`) | bound |
+| Harvard | hardwood | `harvard_deciduous_ma` (topaz 41→p6) | bound |
+| Harvard | open | `harvard_open_ma` (topaz 31→p3, `short grass`) | bound |
+| Harvard | **hemlock** | — (no pure conifer hillslope in Harvard delineation) | **unbound** |
+
+- **Marcell is now fully stratified** — its delineation contains `forest`/conifer,
+  `deciduous`, `mixed`, and `short grass`/open hillslopes, so all three observed
+  strata (conifer/deciduous/open) have model counterparts. The spatial binding
+  constraint is resolved for Marcell.
+- **Harvard is partial** — hardwood and open now bind, but the Harvard NLCD
+  delineation produced no pure conifer/evergreen hillslope, so the **hemlock**
+  stratum has no pure model counterpart (`harvard_mixed_ma` is the closest proxy).
+  A clean hemlock pairing needs either a re-delineation that isolates an evergreen
+  hillslope or an explicit hemlock↔mixed proxy rule.
+
+**Two preconditions still gate canopy-stratum verdicts** (this revision resolves
+only the *spatial* binding):
+
+1. **Per-day canopy (SNOWDENSITY-10.3.1).** The new per-stratum hillslopes still
+   run the static initial `cancov` in the diagnostic (e.g. deciduous static `0.20`
+   vs winter `0.067`); the leaf-off trajectory must be routed in before melt
+   verdicts, or the deciduous/open strata will be mis-attenuated.
+2. **Observation ingest.** The HF237 (Harvard) and USDA RDA (Marcell) stratified
+   observation tables are still not installed under `tests/fixtures/`; the binding
+   is metadata-level until they are.
+
+Revised closure: spatial stratum binding **RESOLVED for Marcell, PARTIAL for
+Harvard (hemlock unbound)**; canopy-stratum verdicts remain gated on 10.3.1
+per-day canopy and on observation ingest.

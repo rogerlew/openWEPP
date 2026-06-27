@@ -43,10 +43,45 @@ The deciduous/mixed/pasture rows are the **lower-`cancov`** half of the gradient
 (the new regime); the four coniferous rows are the high-`cancov` control that
 extends `snotel_observed`.
 
+## Canopy-stratified hillslopes (Marcell / Harvard / Hubbard Brook)
+
+Per SNOWDENSITY-10.3.2, a single mixed hillslope cannot bind to the **stratified**
+observations (Marcell `conifer/deciduous/open`; Harvard `hemlock/hardwood/open`).
+These additional **within-watershed** hillslopes provide model counterparts for
+each stratum — same site, same climate, so they are forcing-robust for isolating
+the canopy-attenuation term from snow-state/forcing error.
+
+| Fixture | Source (topaz→p) | Stratum (`luse`) | Pairs with observed stratum |
+|---|---|---|---|
+| `marcell_conifer_mn` | 52→p8 | `forest` (evergreen conifer) | Marcell **conifer** |
+| `marcell_deciduous_mn` | 73→p15 | `deciduous forest` | Marcell **deciduous** |
+| `marcell_mixed_mn` (catalog) | 61→p10 | `mixed forest` | — |
+| `marcell_open_mn` | 42→p6 | `short grass` (open) | Marcell **open** |
+| `harvard_deciduous_ma` | 41→p6 | `deciduous forest` (hardwood) | Harvard **hardwood** |
+| `harvard_mixed_ma` (catalog) | 43→p8 | `mixed forest` | — |
+| `harvard_open_ma` | 31→p3 | `short grass` (open) | Harvard **open** |
+| `hubbardbrook_mixed_nh` | 33→p4 | `mixed forest` | complements `hubbardbrook_deciduous_nh` |
+
+**Coverage and limits (from the NLCD-delineation enumeration):**
+
+- **Marcell is the clean stratified site** — its delineation contains all four
+  strata (`forest`/conifer, `deciduous`, `mixed`, `short grass`/open), so the full
+  conifer/deciduous/open observation trio has model counterparts.
+- **Harvard has no pure conifer/hemlock hillslope** — its delineation produced only
+  `mixed`, `deciduous`, and `short grass`. The Harvard **hemlock** observation
+  stratum therefore has no pure model counterpart; the `mixed` hillslope is the
+  closest proxy.
+- **Hubbard Brook** is `deciduous` + `mixed` only (no pure conifer or open in the
+  delineation); `hubbardbrook_mixed_nh` adds the within-site deciduous-vs-mixed
+  contrast.
+- **Sleepers River is mono-cover** — all three of its hillslopes are
+  `agriculture crops`; it provides no forest strata, so `sleepers_pasture_vt`
+  alone represents it.
+
 ## Frost activation (`ksflag`)
 
-The seven forest builds inherited `ksflag = 0` (legacy "frost disabled for non-ag"
-default); each was set to **`1`** so the frost model runs alongside snow — soil
+The forest and short-grass builds inherited `ksflag = 0` (legacy "frost disabled
+for non-ag" default); each was set to **`1`** so the frost model runs alongside snow — soil
 line `1 0` → `1 1`, comment `# ksflag -> 0` → `# ksflag -> 1`. This is the
 **only** modification to the as-built inputs. `sleepers_pasture_vt` already had
 `ksflag = 1` (ag/pasture default) and was left unchanged. Revert the two edits
@@ -77,4 +112,5 @@ openwepp-cli-hill <fixture_dir> pN.run   # produces HBP shard + parquet
   since 1962). Its earlier delineation failure (WhiteboxTools *"No channels
   remain after initial qualification thresholding"*, flat peatland terrain) was
   resolved with a lowered channel-initiation threshold, and the fixture is now
-  included — completing the 8-site set.
+  included — completing the conifer→pasture gradient (now extended to 14 fixtures
+  with the per-stratum hillslopes above).
