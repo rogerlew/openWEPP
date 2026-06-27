@@ -710,6 +710,10 @@ path = "tests/integration/snowdensity10_3_4_maritime_overaccumulation_diagnosis.
 name = "snowdensity10_3_5a_meteorology_crate_contract"
 path = "tests/integration/snowdensity10_3_5a_meteorology_crate_contract.rs"
 
+[[test]]
+name = "snowdensity10_3_5b_hourly_partition_jennings_contract"
+path = "tests/integration/snowdensity10_3_5b_hourly_partition_jennings_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

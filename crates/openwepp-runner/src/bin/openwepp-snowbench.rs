@@ -1,9 +1,10 @@
 use std::path::PathBuf;
 
 use openwepp_runner::{
-    CoeBoundDensityRequest, CoeMeltModel, CoeMeltRequest, PhysicsBulkRequest, PhysicsBulkVariant,
-    SnowbenchExportRequest, export_pysnobal_inputs, run_coe_bound_density_snowbench,
-    run_coe_melt_snowbench, run_physics_bulk_snowbench,
+    CoeBoundDensityRequest, CoeMeltModel, CoeMeltRequest, JenningsPhaseValidationRequest,
+    PhysicsBulkRequest, PhysicsBulkVariant, SnowbenchExportRequest, export_pysnobal_inputs,
+    run_coe_bound_density_snowbench, run_coe_melt_snowbench, run_jennings_phase_validation,
+    run_physics_bulk_snowbench,
 };
 
 fn main() {
@@ -22,6 +23,9 @@ fn run() -> Result<(), String> {
     if command == "--help" || command == "-h" {
         print_help();
         return Ok(());
+    }
+    if command == "jennings-phase" {
+        return run_jennings_phase_args(args);
     }
     let mut run_dir: Option<PathBuf> = None;
     let mut run_file: Option<PathBuf> = None;
@@ -182,6 +186,63 @@ fn run_coe_bound_density(
     Ok(())
 }
 
+fn run_jennings_phase_args(mut args: impl Iterator<Item = String>) -> Result<(), String> {
+    let mut observations_path: Option<PathBuf> = None;
+    let mut thresholds_path: Option<PathBuf> = None;
+    let mut output_dir: Option<PathBuf> = None;
+    let mut max_rows: Option<usize> = None;
+    while let Some(flag) = args.next() {
+        match flag.as_str() {
+            "--observations" => {
+                observations_path = Some(next_path(&mut args, "--observations")?);
+            }
+            "--thresholds" => {
+                thresholds_path = Some(next_path(&mut args, "--thresholds")?);
+            }
+            "--output-dir" => {
+                output_dir = Some(next_path(&mut args, "--output-dir")?);
+            }
+            "--max-rows" => {
+                let value = args
+                    .next()
+                    .ok_or_else(|| "SNOWBENCH-E-CLI missing value for --max-rows".to_string())?;
+                max_rows = Some(value.parse::<usize>().map_err(|_| {
+                    format!(
+                        "SNOWBENCH-E-CLI --max-rows must be a positive integer, observed {value}"
+                    )
+                })?);
+            }
+            "--help" | "-h" => {
+                print_help();
+                return Ok(());
+            }
+            _ => return Err(format!("SNOWBENCH-E-CLI unrecognized argument {flag}")),
+        }
+    }
+    let observations_path =
+        observations_path.ok_or_else(|| "SNOWBENCH-E-CLI missing --observations".to_string())?;
+    let thresholds_path =
+        thresholds_path.ok_or_else(|| "SNOWBENCH-E-CLI missing --thresholds".to_string())?;
+    let output_dir =
+        output_dir.ok_or_else(|| "SNOWBENCH-E-CLI missing --output-dir".to_string())?;
+    let report = run_jennings_phase_validation(&JenningsPhaseValidationRequest {
+        observations_path,
+        thresholds_path,
+        output_dir,
+        max_rows,
+    })
+    .map_err(|error| error.to_string())?;
+    println!(
+        "scored {} Jennings rows across {} station(s); Harder-Pomeroy accuracy {:.6}; legacy RST accuracy {:.6}; report {}",
+        report.rows_scored,
+        report.stations_scored,
+        report.harder_pomeroy_hourly.accuracy,
+        report.legacy_rst_0c.accuracy,
+        report.report_json_path
+    );
+    Ok(())
+}
+
 fn next_path(
     args: &mut impl Iterator<Item = String>,
     flag: &'static str,
@@ -193,6 +254,6 @@ fn next_path(
 
 fn print_help() {
     println!(
-        "openwepp-snowbench <export-pysnobal|physics-bulk|coe-melt|coe-bound-density> --run-dir <path> [--run-file <path>] --output-dir <path> [--variant <candidate_v1|slow_melt_v1|dense_slow_melt_v1|cold_dense_slow_melt_v1|density_compaction_v1>] [--model <legacy_coe|coe_shortwave_albedo_v1>]"
+        "openwepp-snowbench <export-pysnobal|physics-bulk|coe-melt|coe-bound-density> --run-dir <path> [--run-file <path>] --output-dir <path> [--variant <candidate_v1|slow_melt_v1|dense_slow_melt_v1|cold_dense_slow_melt_v1|density_compaction_v1>] [--model <legacy_coe|coe_shortwave_albedo_v1>]\nopenwepp-snowbench jennings-phase --observations <file2.csv> --thresholds <file3.csv> --output-dir <path> [--max-rows <n>]"
     );
 }

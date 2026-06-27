@@ -169,6 +169,7 @@ pub use hydrology::{
 pub use phase::HillslopePhase;
 pub use runtime_inputs::{
     DIRECT_WINTER_HOURLY_FORCING_COUNT, DirectWinterHourlyContext, DirectWinterHourlyForcing,
+    SnowPhasePartitionModel,
 };
 pub use scheduler::{
     HillslopeKernelExecutionReport, HillslopeKernelPhaseReport, HillslopePhaseGraph,

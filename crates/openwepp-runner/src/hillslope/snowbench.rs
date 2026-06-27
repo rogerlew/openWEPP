@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use arrow_array::{Array, Float64Array, Int8Array, Int16Array, Int32Array, RecordBatch};
 use openwepp_hillslope_orchestrator::runtime_inputs::{
     DirectWinterHourlyContext, DirectWinterHourlyForcing, HillslopeClimateRuntimeRequest,
-    build_hillslope_climate_runtime_request,
+    SnowPhasePartitionModel, build_hillslope_climate_runtime_request,
 };
 use openwepp_hillslope_orchestrator::{
     DirectExecutorMode, DirectFrameExecutor, DirectPublicationRunMetadata, DirectRuntimeError,
@@ -516,6 +516,7 @@ fn winter_context_from_surface(
         avg_slope: require_state_scalar(surface, "avgslp")?,
         azimuth: require_state_scalar(surface, "azm")?,
         snow_rst_c: require_state_scalar(surface, "snow.options.rst")?,
+        snow_phase_model: SnowPhasePartitionModel::LegacyRst,
     })
 }
 

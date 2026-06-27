@@ -29,6 +29,9 @@ pub use hillslope::{
     run_coe_melt_snowbench,
 };
 pub use hillslope::{
+    JenningsPhaseValidationReport, JenningsPhaseValidationRequest, run_jennings_phase_validation,
+};
+pub use hillslope::{
     PYSNOBAL_FORCING_COLUMNS, SnowbenchCanopySeriesSummary, SnowbenchError, SnowbenchExportReport,
     SnowbenchExportRequest,
 };

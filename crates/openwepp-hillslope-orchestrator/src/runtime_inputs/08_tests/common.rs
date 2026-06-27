@@ -23,7 +23,8 @@
         build_hillslope_runtime_surface_from_management,
         build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_soil,
         legacy_correct_layer_moisture, legacy_expand_soil_layers_to_200mm,
-        simimpl28_stmtim_hourly_partition, LegacySoilLayerSeed,
+        simimpl28_stmtim_hourly_partition, simimpl28_stmtim_hourly_partition_with_model,
+        LegacySoilLayerSeed, SnowPhasePartitionModel,
     };
 
     const VALID_CLIMATE: &str =

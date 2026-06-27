@@ -521,6 +521,85 @@
     }
 
     #[test]
+    fn snowdensity1035b_legacy_partition_keeps_threshold_identity() {
+        let legacy = simimpl28_stmtim_hourly_partition(
+            0.024, 3_600.0, 1.0, 1.0, 0.0, 0.2,
+        )
+        .expect("legacy active rain branch should partition");
+        let selected = simimpl28_stmtim_hourly_partition_with_model(
+            0.024,
+            3_600.0,
+            1.0,
+            1.0,
+            0.0,
+            0.2,
+            -1.0,
+            SnowPhasePartitionModel::LegacyRst,
+        )
+        .expect("explicit legacy selector should partition");
+
+        assert_eq!(selected.phase_model, SnowPhasePartitionModel::LegacyRst);
+        assert!((selected.hrrain_m - legacy.hrrain_m).abs() < 1.0e-12);
+        assert!((selected.hrsnow_m - legacy.hrsnow_m).abs() < 1.0e-12);
+        assert!(selected.rain_branch);
+        assert!(!selected.snow_branch);
+        assert!((selected.rain_fraction - 1.0).abs() < 1.0e-12);
+        assert!(selected.hydrometeor_temperature_c.is_none());
+        assert!(selected.relative_humidity.is_none());
+    }
+
+    #[test]
+    fn snowdensity1035b_harder_pomeroy_hourly_is_fractional_and_conservative() {
+        let partition = simimpl28_stmtim_hourly_partition_with_model(
+            0.024,
+            3_600.0,
+            1.0,
+            1.0,
+            0.0,
+            0.2,
+            0.2,
+            SnowPhasePartitionModel::HarderPomeroyHourly,
+        )
+        .expect("saturated near-freezing Harder-Pomeroy partition should solve");
+
+        assert_eq!(
+            partition.phase_model,
+            SnowPhasePartitionModel::HarderPomeroyHourly
+        );
+        assert!(partition.rain_branch);
+        assert!(partition.snow_branch);
+        assert!(partition.rain_fraction > 0.0 && partition.rain_fraction < 1.0);
+        assert!(partition.snow_fraction > 0.0 && partition.snow_fraction < 1.0);
+        assert!(
+            (partition.rain_fraction + partition.snow_fraction - 1.0).abs() < 1.0e-12
+        );
+        let reconstructed = partition.hrrain_m + partition.hrsnow_m / 10.0;
+        assert!((reconstructed - 0.024).abs() < 1.0e-12);
+        assert!(partition.hydrometeor_temperature_c.is_some());
+        assert_eq!(partition.relative_humidity, Some(1.0));
+    }
+
+    #[test]
+    fn snowdensity1035b_supersaturated_dewpoint_normalizes_to_exact_saturation() {
+        let partition = simimpl28_stmtim_hourly_partition_with_model(
+            0.024,
+            3_600.0,
+            1.0,
+            1.0,
+            0.0,
+            -2.0,
+            1.0,
+            SnowPhasePartitionModel::HarderPomeroyHourly,
+        )
+        .expect("supersaturated dewpoint-derived RH should normalize to saturation");
+
+        assert_eq!(partition.relative_humidity, Some(1.0));
+        assert!(
+            (partition.hrrain_m + partition.hrsnow_m / 10.0 - 0.024).abs() < 1.0e-12
+        );
+    }
+
+    #[test]
     fn climate_runtime_surface_with_context_uses_cold_trigger_without_snow_sidecar() {
         let cold_climate = VALID_CLIMATE.replace("12.0 2.0 200.0", "-1.0 -3.0 200.0");
         let climate = parse_climate_from_str(&cold_climate, ClimateParserMode::Strict)

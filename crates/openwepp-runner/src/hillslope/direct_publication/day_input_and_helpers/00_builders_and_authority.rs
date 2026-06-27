@@ -1,4 +1,5 @@
 const SNOWDENSITY09_DENSITY_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL";
+const SNOWDENSITY1035_PHASE_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL";
 
 struct DirectPublicationDayInputBuilder<'a> {
     climate_request: &'a HillslopeClimateRuntimeRequest,
@@ -572,6 +573,7 @@ struct DirectProductionSnowFrostAuthority {
     snow_runtime_settle_day_count: f64,
     snow_controls_projected: bool,
     snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel,
+    snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel,
     snow_rst_c: f64,
     snow_newsnw_kg_m3: f64,
     snow_ssd_kg_m3: f64,
@@ -1185,6 +1187,33 @@ fn snowdensity09_diagnostic_snow_density_model(
         Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_density_model",
             detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be UTF-8"),
+        }),
+    }
+}
+
+fn snowdensity1035_diagnostic_snow_phase_model(
+) -> Result<openwepp_hillslope_orchestrator::SnowPhasePartitionModel, HillslopeCliError> {
+    match std::env::var(SNOWDENSITY1035_PHASE_MODEL_ENV) {
+        Ok(value) => match value.trim() {
+            "" | "legacy_rst" => {
+                Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst)
+            }
+            "harder_pomeroy_hourly" => Ok(
+                openwepp_hillslope_orchestrator::SnowPhasePartitionModel::HarderPomeroyHourly,
+            ),
+            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_snow_phase_model",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} {SNOWDENSITY1035_PHASE_MODEL_ENV} must be legacy_rst or harder_pomeroy_hourly, observed {observed}"
+                ),
+            }),
+        },
+        Err(std::env::VarError::NotPresent) => {
+            Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst)
+        }
+        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_phase_model",
+            detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY1035_PHASE_MODEL_ENV} must be UTF-8"),
         }),
     }
 }
@@ -2652,6 +2681,7 @@ impl DirectProductionSnowFrostAuthority {
             snow_runtime_settle_day_count,
             snow_controls_projected,
             snow_density_model: snowdensity09_diagnostic_snow_density_model()?,
+            snow_phase_model: snowdensity1035_diagnostic_snow_phase_model()?,
             snow_rst_c,
             snow_newsnw_kg_m3,
             snow_ssd_kg_m3,
@@ -2841,6 +2871,7 @@ impl DirectProductionSnowFrostAuthority {
                     avg_slope: winter_hourly_geometry.avg_slope,
                     azimuth: winter_hourly_geometry.azimuth,
                     snow_rst_c: self.snow_rst_c,
+                    snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst,
                 },
             )
             .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
@@ -3007,6 +3038,7 @@ impl DirectProductionSnowFrostAuthority {
                     avg_slope: winter_hourly_geometry.avg_slope,
                     azimuth: winter_hourly_geometry.azimuth,
                     snow_rst_c: self.snow_rst_c,
+                    snow_phase_model: self.snow_phase_model,
                 },
             )
             .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {

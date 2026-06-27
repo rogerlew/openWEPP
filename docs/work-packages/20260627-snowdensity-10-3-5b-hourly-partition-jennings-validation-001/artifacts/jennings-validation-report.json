@@ -1,0 +1,46 @@
+{
+  "observations_path": "tests/fixtures/precip_phase_observed/jennings2018/jennings_et_al_2018_file2_ppt_phase_met_observations.csv",
+  "thresholds_path": "tests/fixtures/precip_phase_observed/jennings2018/jennings_et_al_2018_file3_temp50_observed_by_station.csv",
+  "output_dir": "docs/work-packages/20260627-snowdensity-10-3-5b-hourly-partition-jennings-validation-001/artifacts",
+  "rows_read": 17810805,
+  "rows_scored": 11711058,
+  "rows_skipped": 6099747,
+  "stations_scored": 6883,
+  "rh_normalized_to_saturation": 0,
+  "harder_pomeroy_hourly": {
+    "rows_scored": 11711058,
+    "accuracy": 0.903140775154559,
+    "observed_rain_predicted_rain": 3396066,
+    "observed_rain_predicted_snow": 498328,
+    "observed_snow_predicted_rain": 635996,
+    "observed_snow_predicted_snow": 7180668
+  },
+  "legacy_rst_0c": {
+    "rows_scored": 11711058,
+    "accuracy": 0.8583309893948096,
+    "observed_rain_predicted_rain": 3574653,
+    "observed_rain_predicted_snow": 319741,
+    "observed_snow_predicted_rain": 1339353,
+    "observed_snow_predicted_snow": 6477311
+  },
+  "threshold_summary": {
+    "station_count": 6883,
+    "mean_predicted_temp50_c": 1.5279383989539679,
+    "mean_observed_temp50_c": 0.9734716332037862,
+    "mean_bias_c": 0.5544667657501591,
+    "mean_absolute_error_c": 0.9442641952971071,
+    "max_absolute_error_c": 8.47833261727197
+  },
+  "humidity_threshold_contrast": {
+    "low_rh_station_count": 688,
+    "high_rh_station_count": 688,
+    "low_rh_mean_observed_temp50_c": 1.54723942811569,
+    "high_rh_mean_observed_temp50_c": 0.6641344481909265,
+    "low_rh_mean_predicted_temp50_c": 1.934883720930235,
+    "high_rh_mean_predicted_temp50_c": 1.1648255813953503,
+    "observed_high_minus_low_c": -0.8831049799247636,
+    "predicted_high_minus_low_c": -0.7700581395348847
+  },
+  "report_json_path": "docs/work-packages/20260627-snowdensity-10-3-5b-hourly-partition-jennings-validation-001/artifacts/jennings-validation-report.json",
+  "report_markdown_path": "docs/work-packages/20260627-snowdensity-10-3-5b-hourly-partition-jennings-validation-001/artifacts/jennings-validation-report.md"
+}

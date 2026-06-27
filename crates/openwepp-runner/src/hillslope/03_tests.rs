@@ -1460,6 +1460,51 @@ mod tests {
     }
 
     #[test]
+    fn snowdensity1035b_direct_snow_consumer_receives_phase_selector() {
+        let source = direct_publication_day_input_and_helpers_source();
+        let authority_struct = source
+            .split("struct DirectProductionSnowFrostAuthority")
+            .nth(1)
+            .and_then(|tail| tail.split("\n}").next())
+            .expect("direct snow/frost authority struct must be present");
+        assert!(
+            authority_struct.contains("snow_phase_model"),
+            "direct snow/frost authority must carry the selected snow phase model"
+        );
+
+        let impl_body = source
+            .split("impl DirectProductionSnowFrostAuthority")
+            .nth(1)
+            .expect("direct snow/frost authority impl must be present");
+        let snow_body = impl_body
+            .split("    fn snow_liquid_partition(")
+            .nth(1)
+            .and_then(|tail| {
+                tail.split(
+                    "\n        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed",
+                )
+                .next()
+            })
+            .expect("snow liquid partition helper body must be present");
+        assert!(
+            snow_body.contains("snow_phase_model: self.snow_phase_model"),
+            "real direct snow consumer forcing must receive the selected opt-in phase model"
+        );
+
+        let frost_body = impl_body
+            .split("    fn frost_hourly_forcing(")
+            .nth(1)
+            .and_then(|tail| tail.split("\n    fn typed_winter_frost_compute_inputs").next())
+            .expect("frost hourly forcing helper body must be present");
+        assert!(
+            frost_body.contains(
+                "snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst",
+            ),
+            "frost hourly forcing must remain on legacy phase partition in 10.3.5b"
+        );
+    }
+
+    #[test]
     fn r7g_direct_production_reads_winter_column_snow_not_runtime_carry() {
         let source = direct_publication_day_input_and_helpers_source();
         let helper = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";

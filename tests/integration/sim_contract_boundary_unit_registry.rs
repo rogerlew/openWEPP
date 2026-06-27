@@ -203,6 +203,31 @@ fn canonical_registry_resolves_climate_soil_and_snow_runtime_aliases() {
             DimensionClass::Fraction,
         ),
         (
+            "snow.hourly.stmtim.phase_model_0011",
+            "dimensionless",
+            DimensionClass::Fraction,
+        ),
+        (
+            "snow.hourly.stmtim.rain_fraction_0011",
+            "dimensionless",
+            DimensionClass::Fraction,
+        ),
+        (
+            "snow.hourly.stmtim.snow_fraction_0011",
+            "dimensionless",
+            DimensionClass::Fraction,
+        ),
+        (
+            "snow.hourly.stmtim.relative_humidity_0011",
+            "dimensionless",
+            DimensionClass::Fraction,
+        ),
+        (
+            "snow.hourly.stmtim.hydrometeor_temperature_c_0011",
+            "degC",
+            DimensionClass::Temperature,
+        ),
+        (
             "snow.hourly.depth_before_m_0011",
             "m",
             DimensionClass::Depth,
@@ -307,6 +332,11 @@ fn hphys0275_registry_marks_only_migrated_aliases_typed_required() {
         "snow.hourly.stmtim.active_interval_0001",
         "snow.hourly.stmtim.rain_branch_0001",
         "snow.hourly.stmtim.snow_branch_0001",
+        "snow.hourly.stmtim.phase_model_0001",
+        "snow.hourly.stmtim.rain_fraction_0001",
+        "snow.hourly.stmtim.snow_fraction_0001",
+        "snow.hourly.stmtim.relative_humidity_0001",
+        "snow.hourly.stmtim.hydrometeor_temperature_c_0001",
         "wind",
         "hs21_prcp",
         "hs21_rad",

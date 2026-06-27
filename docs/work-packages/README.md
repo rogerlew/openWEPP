@@ -13,6 +13,19 @@
 
 State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-5b-hourly-partition-jennings-validation-001/` is
+  complete as SNOWDENSITY-10.3.5b, the opt-in hourly rain/snow partition and
+  Jennings observed-phase validation package. It amended `SC-SNOWFREEZE-001` to
+  v92, wired `openwepp-meteorology` into the hourly winter partition seam behind
+  an explicit `legacy_rst` / `harder_pomeroy_hourly` selector, proved the real
+  direct snow consumer reads the opt-in path, and ran the Jennings file2/file3
+  validation with no site calibration. The full local validation scored
+  `11,711,058` rows across `6,883` stations: Harder-Pomeroy hourly accuracy
+  `0.903141` versus legacy `RST` 0 C accuracy `0.858331`. Default `RST`
+  behavior and rollback isolation remain intact; no default activation,
+  parser/runfile selector, fixture input edit, public output schema change,
+  density/melt/canopy/radiation/frost change, or compatibility-runtime deletion
+  was made.
 - `20260627-snowdensity-10-3-5a-openwepp-meteorology-crate-001/` is complete as
   SNOWDENSITY-10.3.5a, the production-free `openwepp-meteorology` foundation for
   robust rain/snow partition work. It amended `SC-SNOWFREEZE-001` to v91,
