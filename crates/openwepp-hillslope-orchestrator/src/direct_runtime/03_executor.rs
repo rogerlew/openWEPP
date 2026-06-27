@@ -324,6 +324,17 @@ impl DirectFrameExecutor {
             "publication_input.effective_temperature_c",
             day_input.effective_temperature_c,
         )?;
+        if let Some(canopy_cover_fraction) = day_input.canopy_cover_fraction {
+            validate_finite(
+                "publication_input.canopy_cover_fraction",
+                canopy_cover_fraction,
+            )?;
+            if !(0.0..=1.0).contains(&canopy_cover_fraction) {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "publication_input.canopy_cover_fraction",
+                });
+            }
+        }
         day_frame.forcing.precipitation_m = day_input.precipitation_m;
         day_frame.forcing.effective_temperature_c = day_input.effective_temperature_c;
         day_frame.interception_m = day_input.interception_m;

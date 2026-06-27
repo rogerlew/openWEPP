@@ -837,6 +837,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         day_input.precipitation_m = precipitation_m;
         day_input.effective_temperature_c = day.effective_temperature_c;
         day_input.interception_m = interception_state.interception_m;
+        day_input.canopy_cover_fraction = Some(growth_state_for_publication.canopy_cover_fraction);
         day_input.initial_soil_water_m = Some(direct_production_lane_soil_water(lane, lane_index)?);
         day_input.storage_input_inputs = Some(DirectStorageInputInputs {
             precip_input_handoff_m: Some(precipitation_m),

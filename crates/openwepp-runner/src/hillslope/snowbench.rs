@@ -7,7 +7,11 @@ use std::path::{Path, PathBuf};
 
 use arrow_array::{Array, Float64Array, Int8Array, Int16Array, Int32Array, RecordBatch};
 use openwepp_hillslope_orchestrator::runtime_inputs::{
-    DirectWinterHourlyContext, DirectWinterHourlyForcing, build_hillslope_climate_runtime_request,
+    DirectWinterHourlyContext, DirectWinterHourlyForcing, HillslopeClimateRuntimeRequest,
+    build_hillslope_climate_runtime_request,
+};
+use openwepp_hillslope_orchestrator::{
+    DirectExecutorMode, DirectFrameExecutor, DirectPublicationRunMetadata, DirectRuntimeError,
 };
 use openwepp_input_contract::parsers::climate::ClimateDailyRecord;
 use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
@@ -53,6 +57,9 @@ const DEFAULT_AIR_TEMP_HEIGHT_M: f64 = 2.0;
 const DEFAULT_WIND_SPEED_HEIGHT_M: f64 = 2.0;
 const DEFAULT_ROUGHNESS_LENGTH_M: f64 = 0.005;
 const STEFAN_BOLTZMANN_W_M2_K4: f64 = 5.670_374_419e-8;
+const CANOPY_SERIES_SOURCE: &str =
+    "direct_production_day_input.growth_state_for_publication.cancov";
+const CANOPY_SERIES_FILENAME: &str = "canopy_series.csv";
 
 #[derive(Debug, Clone)]
 pub struct SnowbenchExportRequest {
@@ -74,7 +81,21 @@ pub struct SnowbenchExportReport {
     pub total_precip_mass_mm: f64,
     pub total_snow_precip_mass_mm: f64,
     pub primary_canopy_cover_fraction: f64,
+    pub canopy_source: &'static str,
+    pub canopy_series_path: String,
+    pub canopy_series_summary: SnowbenchCanopySeriesSummary,
     pub lane_ids: Vec<&'static str>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize)]
+pub struct SnowbenchCanopySeriesSummary {
+    pub day_count: usize,
+    pub min: f64,
+    pub max: f64,
+    pub mean: f64,
+    pub first: f64,
+    pub last: f64,
+    pub dynamic: bool,
 }
 
 #[derive(Debug)]
@@ -182,6 +203,12 @@ struct DailyForcingExport {
 }
 
 #[derive(Debug, Clone, Copy)]
+struct CanopySeriesDay {
+    date: CalendarDate,
+    canopy_cover_fraction: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct CalendarDate {
     year: i32,
     month: i32,
@@ -292,10 +319,11 @@ pub fn export_pysnobal_inputs(
     let inputs = super::load_hillslope_run_inputs(&hillslope_request)?;
     let targets = super::resolve_hillslope_output_targets(&inputs.runfile)?;
     let mut sidecars = super::resolve_hillslope_sidecars(&hillslope_request, &inputs, &targets)?;
-    let static_parts =
-        super::build_static_runtime_surface_parts(&hillslope_request, &inputs, &mut sidecars)?;
+    let static_setup =
+        super::build_static_hillslope_runtime_setup(&hillslope_request, &inputs, &mut sidecars)?;
+    let runtime_surface = &static_setup.execution_state.runtime_surface;
     let primary_canopy_cover_fraction =
-        require_state_scalar(&static_parts.runtime_surface.state_surface, "cancov")?;
+        require_state_scalar(&runtime_surface.state_surface, "cancov")?;
     if !(0.0..=1.0).contains(&primary_canopy_cover_fraction) {
         return Err(SnowbenchError::InvalidInput {
             detail: format!(
@@ -309,13 +337,19 @@ pub fn export_pysnobal_inputs(
                 detail: error.to_string(),
             }
         })?;
-    let context = winter_context_from_surface(&static_parts.runtime_surface.state_surface)?;
+    let context = winter_context_from_surface(&runtime_surface.state_surface)?;
     let daily_forcing =
         build_daily_forcing(&inputs.climate.daily_records, &climate_request, context)?;
-    let snow_density = require_state_scalar(
-        &static_parts.snow_surface.state_surface,
-        "snow.options.newsnw",
+    let canopy_series = build_direct_runtime_canopy_series(
+        targets.output_hillslope_id,
+        &static_setup.execution_state,
+        &climate_request,
     )?;
+    validate_canopy_series_alignment(&daily_forcing, &canopy_series)?;
+    let canopy_series_summary = summarize_canopy_series(&canopy_series)?;
+    let canopy_series_path = output_dir.join(CANOPY_SERIES_FILENAME);
+    write_canopy_series_csv(&canopy_series_path, &canopy_series)?;
+    let snow_density = require_state_scalar(&runtime_surface.state_surface, "snow.options.newsnw")?;
 
     if request.include_openwepp_snow_projection {
         write_openwepp_snow_projection(&output_dir, &hillslope_request, &daily_forcing)?;
@@ -323,33 +357,14 @@ pub fn export_pysnobal_inputs(
         write_openwepp_snow_placeholder(&output_dir)?;
     }
 
-    let mut report_total_precip = 0.0;
-    let mut report_total_snow = 0.0;
-    for lane in GROUND_TEMP_LANES {
-        let rows = lane_rows(&daily_forcing, lane, snow_density)?;
-        let lane_dir = output_dir.join(lane.id);
-        fs::create_dir_all(&lane_dir).map_err(|source| SnowbenchError::io(&lane_dir, source))?;
-        write_forcing_csv(&lane_dir.join("forcing.csv"), &rows)?;
-        write_config_yaml(
-            &lane_dir.join("config.yaml"),
-            &lane_dir.join("forcing.csv"),
-            &lane_dir.join("pysnobal_output.csv"),
-            lane,
-            climate_request.direct_elevation_m(),
-        )?;
-        write_lineage_json(&lane_dir.join("lineage.json"), lane)?;
-        let audit = audit_document(
-            &request.run_dir,
-            &generated_runfile,
-            lane,
-            &rows,
-            daily_forcing.len(),
-        );
-        write_json(&lane_dir.join("audit.json"), &audit)?;
-        write_audit_markdown(&lane_dir.join("audit.md"), &audit)?;
-        report_total_precip = audit.total_precip_mass_mm;
-        report_total_snow = audit.total_snow_precip_mass_mm;
-    }
+    let (report_total_precip, report_total_snow) = write_pysnobal_lane_exports(
+        &output_dir,
+        &request.run_dir,
+        &generated_runfile,
+        &daily_forcing,
+        &climate_request,
+        snow_density,
+    )?;
 
     let report = SnowbenchExportReport {
         schema: "snowfrost-fidelity-g0-pysnobal-export-v1",
@@ -362,6 +377,9 @@ pub fn export_pysnobal_inputs(
         total_precip_mass_mm: report_total_precip,
         total_snow_precip_mass_mm: report_total_snow,
         primary_canopy_cover_fraction,
+        canopy_source: CANOPY_SERIES_SOURCE,
+        canopy_series_path: canopy_series_path.display().to_string(),
+        canopy_series_summary,
         lane_ids: GROUND_TEMP_LANES.iter().map(|lane| lane.id).collect(),
     };
     write_json(&output_dir.join("export_summary.json"), &report)?;
@@ -374,6 +392,44 @@ fn make_absolute(path: &Path) -> Result<PathBuf, SnowbenchError> {
     }
     let cwd = std::env::current_dir().map_err(|source| SnowbenchError::io(".", source))?;
     Ok(cwd.join(path))
+}
+
+fn write_pysnobal_lane_exports(
+    output_dir: &Path,
+    request_run_dir: &Path,
+    generated_runfile: &Path,
+    daily_forcing: &[DailyForcingExport],
+    climate_request: &HillslopeClimateRuntimeRequest,
+    snow_density: f64,
+) -> Result<(f64, f64), SnowbenchError> {
+    let mut report_total_precip = 0.0;
+    let mut report_total_snow = 0.0;
+    for lane in GROUND_TEMP_LANES {
+        let rows = lane_rows(daily_forcing, lane, snow_density)?;
+        let lane_dir = output_dir.join(lane.id);
+        fs::create_dir_all(&lane_dir).map_err(|source| SnowbenchError::io(&lane_dir, source))?;
+        write_forcing_csv(&lane_dir.join("forcing.csv"), &rows)?;
+        write_config_yaml(
+            &lane_dir.join("config.yaml"),
+            &lane_dir.join("forcing.csv"),
+            &lane_dir.join("pysnobal_output.csv"),
+            lane,
+            climate_request.direct_elevation_m(),
+        )?;
+        write_lineage_json(&lane_dir.join("lineage.json"), lane)?;
+        let audit = audit_document(
+            request_run_dir,
+            generated_runfile,
+            lane,
+            &rows,
+            daily_forcing.len(),
+        );
+        write_json(&lane_dir.join("audit.json"), &audit)?;
+        write_audit_markdown(&lane_dir.join("audit.md"), &audit)?;
+        report_total_precip = audit.total_precip_mass_mm;
+        report_total_snow = audit.total_snow_precip_mass_mm;
+    }
+    Ok((report_total_precip, report_total_snow))
 }
 
 fn discover_single_legacy_run_file(run_dir: &Path) -> Result<PathBuf, SnowbenchError> {
@@ -475,6 +531,187 @@ fn require_state_scalar(
         .as_f64();
     require_finite(symbol, value)?;
     Ok(value)
+}
+
+fn build_direct_runtime_canopy_series(
+    output_hillslope_id: u32,
+    state: &super::HillslopeClimateExecutionState,
+    climate_request: &HillslopeClimateRuntimeRequest,
+) -> Result<Vec<CanopySeriesDay>, SnowbenchError> {
+    let lane_seed_surfaces = super::direct_production_lane_seed_surfaces(
+        &state.runtime_surface,
+        state.persistent_lane_state.as_ref(),
+        state.per_ofe_lane_areas_m2.len(),
+    )?;
+    let mut frame =
+        super::build_direct_production_run_frame(&super::DirectProductionRunFrameBuildInputs {
+            output_hillslope_id,
+            lane_areas_m2: &state.per_ofe_lane_areas_m2,
+            runoff_publication_geometries: &state.per_ofe_runoff_publication_geometries,
+            day_count: state.climate_span.days.len(),
+            climate_request,
+            climate_span: &state.climate_span,
+            climate_context_surface: &state.runtime_surface,
+            lane_seed_surfaces: &lane_seed_surfaces,
+            execution_lane: state.lane_context.lane,
+        })?;
+    let day_input_builder = super::DirectProductionDayInputBuilder::new(
+        climate_request,
+        &state.climate_span,
+        &lane_seed_surfaces,
+        &state.runtime_surface,
+        state.lane_context.lane,
+    )?;
+    let metadata = DirectPublicationRunMetadata {
+        run_name: "snowbench-per-day-cancov".to_string(),
+        runtime_selection: HillslopeRuntimeSelection::DirectProductionExecutor
+            .as_str()
+            .to_string(),
+        output_policy: super::direct_publication_output_policy(
+            HillslopeRuntimeSelection::DirectProductionExecutor,
+        )
+        .to_string(),
+    };
+    let mut canopy_by_day = vec![None; state.climate_span.days.len()];
+    DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
+        .run_publication_capture_with_interleaved_day_inputs(
+            &mut frame,
+            metadata,
+            |frame, day_index, lane_index| {
+                let day_input = day_input_builder
+                    .build(frame, day_index, lane_index)
+                    .map_err(|error| super::direct_publication_day_input_build_error(&error))?;
+                if lane_index == 0 {
+                    let canopy_cover_fraction = day_input.canopy_cover_fraction.ok_or(
+                        DirectRuntimeError::DirectDomainViolation {
+                            field: "publication_input.canopy_cover_fraction",
+                        },
+                    )?;
+                    let day = state.climate_span.days.get(day_index).ok_or(
+                        DirectRuntimeError::DayIndexOutOfRange {
+                            day_index,
+                            day_count: state.climate_span.days.len(),
+                        },
+                    )?;
+                    canopy_by_day[day_index] = Some(CanopySeriesDay {
+                        date: CalendarDate {
+                            year: day.year,
+                            month: day.month,
+                            day: day.day_of_month,
+                        },
+                        canopy_cover_fraction,
+                    });
+                }
+                Ok(day_input)
+            },
+        )
+        .map_err(|source| SnowbenchError::Runner {
+            source: super::direct_production_runtime_error(&source),
+        })?;
+    canopy_by_day
+        .into_iter()
+        .enumerate()
+        .map(|(day_index, value)| {
+            value.ok_or_else(|| SnowbenchError::OpenweppSnow {
+                detail: format!(
+                    "direct production canopy series missing day {}",
+                    day_index + 1
+                ),
+            })
+        })
+        .collect()
+}
+
+fn validate_canopy_series_alignment(
+    daily_forcing: &[DailyForcingExport],
+    canopy_series: &[CanopySeriesDay],
+) -> Result<(), SnowbenchError> {
+    if daily_forcing.len() != canopy_series.len() {
+        return Err(SnowbenchError::InvalidForcing {
+            detail: format!(
+                "daily canopy series length {} does not match forcing day count {}",
+                canopy_series.len(),
+                daily_forcing.len()
+            ),
+        });
+    }
+    for (index, (forcing, canopy)) in daily_forcing.iter().zip(canopy_series).enumerate() {
+        if forcing.date != canopy.date {
+            return Err(SnowbenchError::InvalidForcing {
+                detail: format!(
+                    "daily canopy date mismatch at day {}: forcing {} vs canopy {}",
+                    index + 1,
+                    forcing.date,
+                    canopy.date
+                ),
+            });
+        }
+        require_unit_interval("cancov_daily_series", canopy.canopy_cover_fraction)?;
+    }
+    Ok(())
+}
+
+fn summarize_canopy_series(
+    canopy_series: &[CanopySeriesDay],
+) -> Result<SnowbenchCanopySeriesSummary, SnowbenchError> {
+    let first = canopy_series
+        .first()
+        .ok_or_else(|| SnowbenchError::InvalidForcing {
+            detail: "daily canopy series is empty".to_string(),
+        })?
+        .canopy_cover_fraction;
+    let last = canopy_series
+        .last()
+        .ok_or_else(|| SnowbenchError::InvalidForcing {
+            detail: "daily canopy series is empty".to_string(),
+        })?
+        .canopy_cover_fraction;
+    let mut min = f64::INFINITY;
+    let mut max = f64::NEG_INFINITY;
+    let mut sum = 0.0;
+    for day in canopy_series {
+        require_unit_interval("cancov_daily_series", day.canopy_cover_fraction)?;
+        min = min.min(day.canopy_cover_fraction);
+        max = max.max(day.canopy_cover_fraction);
+        sum += day.canopy_cover_fraction;
+    }
+    let day_count =
+        u32::try_from(canopy_series.len()).map_err(|_| SnowbenchError::InvalidForcing {
+            detail: format!(
+                "daily canopy series length {} exceeds supported summary range",
+                canopy_series.len()
+            ),
+        })?;
+    Ok(SnowbenchCanopySeriesSummary {
+        day_count: canopy_series.len(),
+        min,
+        max,
+        mean: sum / f64::from(day_count),
+        first,
+        last,
+        dynamic: (max - min).abs() > 1.0e-12,
+    })
+}
+
+fn write_canopy_series_csv(
+    path: &Path,
+    canopy_series: &[CanopySeriesDay],
+) -> Result<(), SnowbenchError> {
+    let mut file = fs::File::create(path).map_err(|source| SnowbenchError::io(path, source))?;
+    writeln!(file, "date,day_index,canopy_cover_fraction,source")
+        .map_err(|source| SnowbenchError::io(path, source))?;
+    for (day_index, day) in canopy_series.iter().enumerate() {
+        writeln!(
+            file,
+            "{},{},{:.12},{}",
+            day.date,
+            day_index + 1,
+            day.canopy_cover_fraction,
+            CANOPY_SERIES_SOURCE
+        )
+        .map_err(|source| SnowbenchError::io(path, source))?;
+    }
+    Ok(())
 }
 
 fn build_daily_forcing(

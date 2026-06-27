@@ -689,6 +689,10 @@ path = "tests/integration/snowdensity08_gate_rerun.rs"
 name = "snowdensity09_coupled_wat_rerun"
 path = "tests/integration/snowdensity09_coupled_wat_rerun.rs"
 
+[[test]]
+name = "snowdensity10_3_1a_per_day_cancov"
+path = "tests/integration/snowdensity10_3_1a_per_day_cancov.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

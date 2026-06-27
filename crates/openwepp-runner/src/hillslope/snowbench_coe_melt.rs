@@ -13,7 +13,8 @@ use openwepp_input_contract::parsers::snow::{
 use serde::Serialize;
 
 use super::snowbench::{
-    PYSNOBAL_FORCING_COLUMNS, SnowbenchError, SnowbenchExportRequest, export_pysnobal_inputs,
+    PYSNOBAL_FORCING_COLUMNS, SnowbenchCanopySeriesSummary, SnowbenchError, SnowbenchExportRequest,
+    export_pysnobal_inputs,
 };
 
 const CONTRACT: &str =
@@ -47,6 +48,8 @@ pub struct CoeMeltReport {
     pub output_dir: String,
     pub forcing_bridge_dir: String,
     pub canopy_source: &'static str,
+    pub canopy_series_path: String,
+    pub canopy_series_summary: SnowbenchCanopySeriesSummary,
     pub shortwave_source: &'static str,
     pub shortwave_bridge_identity: &'static str,
     pub shortwave_bridge_like_for_like: bool,
@@ -198,7 +201,8 @@ pub fn run_coe_melt_snowbench(request: &CoeMeltRequest) -> Result<CoeMeltReport,
     })?;
     let forcing_csv = forcing_bridge_dir.join("tg_0p0c_zg0p10m/forcing.csv");
     let hourly = read_coe_melt_forcing(&forcing_csv)?;
-    let days = group_daily_forcing(hourly, export_report.primary_canopy_cover_fraction)?;
+    let canopy_by_date = read_canopy_series(&PathBuf::from(&export_report.canopy_series_path))?;
+    let days = group_daily_forcing(hourly, &canopy_by_date)?;
     let simulation = simulate_coe_melt(&days, request.model, snow.rst, snow.newsnw, snow.ssd)?;
     write_coe_melt_csv(
         &output_dir.join("coe_melt_snow.csv"),
@@ -212,7 +216,9 @@ pub fn run_coe_melt_snowbench(request: &CoeMeltRequest) -> Result<CoeMeltReport,
         no_site_constants: true,
         output_dir: output_dir.display().to_string(),
         forcing_bridge_dir: export_report.output_dir,
-        canopy_source: "generated_openwepp_runtime_surface.cancov",
+        canopy_source: export_report.canopy_source,
+        canopy_series_path: export_report.canopy_series_path,
+        canopy_series_summary: export_report.canopy_series_summary,
         shortwave_source: "pysnobal_bridge_inversion_of_openwepp_winter_hourly_rad_mj_m2",
         shortwave_bridge_identity: "net_solar_Wm-2 = hrrad_MJ_m-2_h-1 * 1000000 / 3600 * 0.8; replay hrrad_MJ_m-2_h-1 = net_solar_Wm-2 * 3600 / 1000000 / 0.8",
         shortwave_bridge_like_for_like: true,
@@ -220,7 +226,7 @@ pub fn run_coe_melt_snowbench(request: &CoeMeltRequest) -> Result<CoeMeltReport,
         hourly_row_count: export_report.hourly_row_count,
         positive_snow_hours: simulation.positive_snow_hours,
         constants: CoeMeltConstants {
-            canopy_cover_fraction: export_report.primary_canopy_cover_fraction,
+            canopy_cover_fraction: export_report.canopy_series_summary.mean,
             underlying_surface_albedo: DEFAULT_UNDERLYING_SURFACE_ALBEDO,
             radiation_bridge_net_shortwave_factor: RADIATION_BRIDGE_NET_SHORTWAVE_FACTOR,
         },
@@ -264,6 +270,91 @@ fn read_coe_melt_forcing(path: &Path) -> Result<Vec<CoeMeltHourlyForcing>, Snowb
     if rows.is_empty() {
         return Err(SnowbenchError::InvalidForcing {
             detail: format!("{} contained no forcing rows", path.display()),
+        });
+    }
+    Ok(rows)
+}
+
+fn read_canopy_series(path: &Path) -> Result<BTreeMap<String, f64>, SnowbenchError> {
+    let text = fs::read_to_string(path).map_err(|source| snowbench_io(path, source))?;
+    let mut lines = text.lines();
+    let header = lines.next().ok_or_else(|| SnowbenchError::InvalidForcing {
+        detail: format!("{} missing header", path.display()),
+    })?;
+    let expected_header = "date,day_index,canopy_cover_fraction,source";
+    if header != expected_header {
+        return Err(SnowbenchError::InvalidForcing {
+            detail: format!(
+                "{} has unexpected canopy header '{header}', expected '{expected_header}'",
+                path.display()
+            ),
+        });
+    }
+    let mut rows = BTreeMap::new();
+    let mut expected_day_index = 1_usize;
+    for (line_index, line) in lines.enumerate() {
+        if line.trim().is_empty() {
+            continue;
+        }
+        let columns = line.split(',').collect::<Vec<_>>();
+        if columns.len() != 4 {
+            return Err(SnowbenchError::InvalidForcing {
+                detail: format!(
+                    "{} line {} has {} canopy columns, expected 4",
+                    path.display(),
+                    line_index + 2,
+                    columns.len()
+                ),
+            });
+        }
+        let day_index =
+            columns[1]
+                .parse::<usize>()
+                .map_err(|error| SnowbenchError::InvalidForcing {
+                    detail: format!(
+                        "{} line {} canopy day_index is not numeric '{}': {error}",
+                        path.display(),
+                        line_index + 2,
+                        columns[1]
+                    ),
+                })?;
+        if day_index != expected_day_index {
+            return Err(SnowbenchError::InvalidForcing {
+                detail: format!(
+                    "{} line {} canopy day_index {}, expected {}",
+                    path.display(),
+                    line_index + 2,
+                    day_index,
+                    expected_day_index
+                ),
+            });
+        }
+        expected_day_index += 1;
+        let canopy_cover_fraction =
+            parse_column(path, line_index + 2, "canopy_cover_fraction", columns[2])?;
+        require_unit_interval(
+            path,
+            line_index + 2,
+            "canopy_cover_fraction",
+            canopy_cover_fraction,
+        )?;
+        if rows
+            .insert(columns[0].to_string(), canopy_cover_fraction)
+            .is_some()
+        {
+            return Err(SnowbenchError::InvalidForcing {
+                detail: format!(
+                    "{} line {} duplicates canopy date {}",
+                    path.display(),
+                    line_index + 2,
+                    columns[0]
+                ),
+            });
+        }
+    }
+    if rows.is_empty() {
+        return Err(SnowbenchError::InvalidForcing {
+            detail: format!("{} contained no canopy rows", path.display()),
         });
     }
     Ok(rows)
@@ -456,21 +547,36 @@ fn dewpoint_from_vapor_pressure(vapor_pressure_pa: f64) -> Result<f64, Snowbench
 
 fn group_daily_forcing(
     hourly_rows: Vec<CoeMeltHourlyForcing>,
-    canopy_cover_fraction: f64,
+    canopy_by_date: &BTreeMap<String, f64>,
 ) -> Result<Vec<CoeMeltDayForcing>, SnowbenchError> {
-    if !(0.0..=1.0).contains(&canopy_cover_fraction) {
-        return Err(SnowbenchError::InvalidForcing {
-            detail: format!(
-                "CoE melt diagnostic canopy cover fraction must be in [0,1], observed {canopy_cover_fraction}"
-            ),
-        });
-    }
     let mut by_date: BTreeMap<String, Vec<CoeMeltHourlyForcing>> = BTreeMap::new();
     for row in hourly_rows {
         by_date.entry(row.date.clone()).or_default().push(row);
     }
+    if canopy_by_date.len() != by_date.len() {
+        return Err(SnowbenchError::InvalidForcing {
+            detail: format!(
+                "CoE melt diagnostic canopy day count {} does not match forcing day count {}",
+                canopy_by_date.len(),
+                by_date.len()
+            ),
+        });
+    }
     let mut days = Vec::with_capacity(by_date.len());
     for (date, rows) in by_date {
+        let canopy_cover_fraction =
+            *canopy_by_date
+                .get(&date)
+                .ok_or_else(|| SnowbenchError::InvalidForcing {
+                    detail: format!("CoE melt diagnostic missing canopy row for {date}"),
+                })?;
+        if !(0.0..=1.0).contains(&canopy_cover_fraction) {
+            return Err(SnowbenchError::InvalidForcing {
+                detail: format!(
+                    "CoE melt diagnostic canopy cover fraction must be in [0,1], observed {canopy_cover_fraction} for {date}"
+                ),
+            });
+        }
         if rows.len() != 24 {
             return Err(SnowbenchError::InvalidForcing {
                 detail: format!("date {date} has {} hourly rows, expected 24", rows.len()),
@@ -678,7 +784,8 @@ fn write_markdown(path: &Path, report: &CoeMeltReport) -> Result<(), SnowbenchEr
          - Runtime coupling: `{}`\n\
          - No site constants: `{}`\n\
          - Canopy source: `{}`\n\
-         - Canopy cover fraction: `{:.6}`\n\
+         - Canopy series: `{}`\n\
+         - Canopy mean/min/max: `{:.6}` / `{:.6}` / `{:.6}`\n\
          - Shortwave source: `{}`\n\
          - Shortwave bridge like-for-like: `{}`\n\
          - Days: `{}`\n\
@@ -695,7 +802,10 @@ fn write_markdown(path: &Path, report: &CoeMeltReport) -> Result<(), SnowbenchEr
         report.runtime_coupling,
         report.no_site_constants,
         report.canopy_source,
-        report.constants.canopy_cover_fraction,
+        report.canopy_series_path,
+        report.canopy_series_summary.mean,
+        report.canopy_series_summary.min,
+        report.canopy_series_summary.max,
         report.shortwave_source,
         report.shortwave_bridge_like_for_like,
         report.day_count,

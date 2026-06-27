@@ -13,6 +13,18 @@
 
 State as of `2026-06-26`:
 
+- `20260626-snowdensity-10-3-1a-per-day-cancov-direct-runtime-001/` is complete
+  as SNOWDENSITY-10.3.1a, the per-day canopy-cover direct-runtime bridge. It
+  amended `SC-SNOWFREEZE-001` to v90 with `cancov_daily_series`,
+  `INV-SNOWFREEZE-063`, `OBL-SNOWFREEZE-P-038`, and the 10.3.1a addendum;
+  routed direct-production day input canopy from
+  `growth_state_for_publication.canopy_cover_fraction`; exported
+  `canopy_series.csv` from snowbench; and changed CoE melt replay to consume the
+  daily sidecar by date instead of a scalar initial canopy value. The old scalar
+  field remains summary-only/backward-compatible, and the CoE boundary CSV
+  schema remains unchanged. No production snow physics default, fixture input,
+  parser/runfile selector, melt coefficient, albedo constant, density
+  coefficient, or public WAT schema changed. Full workspace gates passed.
 - `20260626-snowdensity-10-3-2-canopy-stratum-correspondence-001/` is complete
   as SNOWDENSITY-10.3.2, the canopy-stratum correspondence gate. It mapped the
   Harvard and Marcell canopy-stratified observation metadata to the current

@@ -17,7 +17,7 @@ fn repo_root() -> PathBuf {
 fn snowdensity05g_contract_records_harness_fidelity_gate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 89",
+        "contract_version: 90",
         "INV-SNOWFREEZE-057",
         "SNOWDENSITY-05G harness-fidelity rerun",
         "configured coniferous validation fixtures",
@@ -55,7 +55,7 @@ fn snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave() 
     assert_eq!(summary["schema"], "snowdensity05g-coe-melt-snowbench-v1");
     assert_eq!(
         summary["canopy_source"],
-        "generated_openwepp_runtime_surface.cancov"
+        "direct_production_day_input.growth_state_for_publication.cancov"
     );
     let cancov = summary["constants"]["canopy_cover_fraction"]
         .as_f64()
@@ -63,6 +63,16 @@ fn snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave() 
     assert!(
         (cancov - 0.9).abs() < 1e-12,
         "CSS Lab coniferous canopy should replay at 0.9, observed {cancov}"
+    );
+    assert_eq!(
+        summary["canopy_series_summary"]["day_count"],
+        summary["day_count"]
+    );
+    assert!(
+        summary["canopy_series_path"]
+            .as_str()
+            .expect("canopy_series_path")
+            .ends_with("canopy_series.csv")
     );
     assert_eq!(
         summary["shortwave_source"],
@@ -91,11 +101,7 @@ fn snowdensity05g_package_and_source_preserve_diagnostic_confinement() {
 
     let source = read(SNOWBENCH_COE);
     assert_not_contains(&source, "DEFAULT_CANOPY_COVER_FRACTION", SNOWBENCH_COE);
-    assert_contains(
-        &source,
-        "generated_openwepp_runtime_surface.cancov",
-        SNOWBENCH_COE,
-    );
+    assert_contains(&source, "read_canopy_series", SNOWBENCH_COE);
     assert_contains(
         &source,
         "shortwave_bridge_like_for_like: true",

@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 89
+contract_version: 90
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -107,6 +107,7 @@ Out of scope:
 | `Tmin` | `degC` | Daily minimum air temperature. | climate forcing | rain/snow partition and hourly temperature |
 | `hrrad` | `MJ m^-2` | Hourly radiation on sloping surface. | SUNMAP routine | melt radiation term |
 | `cancov` | `fraction` | Canopy cover fraction (`0..1`). | plant/canopy state | melt attenuation term |
+| `cancov_daily_series` | `fraction by simulation day` | Direct-production per-day canopy-cover trajectory used by snow liquid partition and diagnostic CoE melt replay; scalar canopy values are summaries only once this series is available. | direct production growth-state day input | melt attenuation term and snowbench/CoE replay diagnostics |
 | `clouds` | `fraction` | Cloud-cover fraction (`0..1`). | hourly radiation/cloud routine | melt and surface-temperature terms |
 | `Qsrf` | `W m^-2` | Heat flux through snow-residue-frozen-soil layered system. | frost routine | freeze/thaw depth update bookkeeping |
 | `Quf` | `W m^-2` | Heat flow from unfrozen soil below freezing front. | frost routine | freeze/thaw depth update bookkeeping |
@@ -229,6 +230,7 @@ Out of scope:
 | INV-SNOWFREEZE-060 | SNOWDENSITY-07 runtime opt-in: the accepted CoE-bound density result may be coupled into the typed winter-column/direct snow-coupling runtime only behind `snow_density_model = physics_bulk_density_compaction_v1`, with `snow_density_model = legacy_wepp` as the default, compatibility surface, and rollback path. The opt-in producer must preserve CoE SWE/liquid authority: `snow.runtime_swe`, signed `S`, raw melt, redistributed melt, routed `wmelt`, post-winter rain, snowpack SWE loss, albedo state, and downstream WB12/WB13 liquid-forcing operands remain those produced by the selected CoE melt boundary (`legacy_coe` or `coe_shortwave_albedo_v1`). The density model may mutate only physical `snow.runtime_depth_m` and `snow.runtime_density_kg_m3` by applying the SNOWDENSITY-06B `density_compaction_v1` fresh-snow, dry-compaction, and wet-compaction update, then force-normalizing mass back to the CoE runtime SWE. To prevent aliasing, the runtime must carry a separate CoE boundary depth/density/settle-count state for the next CoE melt calculation whenever opt-in density depth/density differ from the boundary state; feeding opt-in density/depth back into the CoE melt boundary is invalid unless a later contract amendment explicitly retires the boundary split. Acceptance requires default-disabled isolation, independent SWE/depth-density anti-alias checks, direct R4G state mutation/downstream/shadow/runtime-carry evidence, no site-specific constants, no output-schema/parser/runfile/default activation, and full workspace gates. | hard-fail | INV-SNOWFREEZE-050, INV-SNOWFREEZE-055, INV-SNOWFREEZE-056, INV-SNOWFREEZE-058, INV-SNOWFREEZE-059, REF-SNOWFREEZE-ANDERSON1976-CANDIDATE, REF-SNOWFREEZE-SNOBAL-CANDIDATE, ADR-0026, ADR-0027 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-061 | SNOWDENSITY-08 snow/frost gate rerun: after the typed runtime opt-in exists, the next evidence package must rerun the SNOTEL snow-density rubric for the accepted `physics_bulk_density_compaction_v1` lineage and the non-SNOTEL frost-site snow-control/frost rubric before any frost-attribution work resumes. SNOTEL evidence may use the SNOWDENSITY-06B CoE-bound replay when it proves the same density update, fixed CoE SWE/liquid boundaries, no site constants, and daily SWE identity. Non-SNOTEL frost attribution may be marked unblocked only when an authorized coupled WAT/publication run has applied the opt-in density state to the same snow-depth surface used by frost and WAT `Snow-Depth`; default-path WAT failures or offline snow-only substitutions cannot clear this gate. The rerun report must publish `frost_attribution_authorized`, SNOTEL robust/density-cell deltas, non-SNOTEL snow-control status counts, whether a coupled opt-in WAT path was available, CoE boundary anti-alias evidence, and the next blocker. It must not tune coefficients, canopy, radiation, albedo, melt, frost physics, parser/runfile/CLI selectors, output schemas, or defaults. | hard-fail | INV-SNOWFREEZE-047, INV-SNOWFREEZE-048, INV-SNOWFREEZE-050, INV-SNOWFREEZE-059, INV-SNOWFREEZE-060, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-062 | SNOWDENSITY-09 diagnostic coupled WAT rerun: a non-production diagnostic path may run the direct-production executor with `snow_density_model = physics_bulk_density_compaction_v1` for the non-SNOTEL frost fixtures only when the selector is package-bound, explicit, and absent by default. The authorized selector is the environment variable `OPENWEPP_SNOWDENSITY09_DENSITY_MODEL` with accepted values `legacy_wepp` and `physics_bulk_density_compaction_v1`; any other non-empty value must fail closed. This selector is diagnostic harness plumbing, not a parser/runfile/user CLI activation surface, and it must not affect compatibility runtime, default-candidate rollback, output schema, coefficients, canopy, radiation, albedo, melt, density constants, or frost physics. Acceptance requires paired default-vs-opt-in WAT reports, trace evidence that the direct-production snow partition selected the opt-in model, proof that WAT `Snow-Depth` remains sourced from `snow.runtime_depth_m`, no WAT rewriting/offline snow-only substitution, no site-specific constants, and a decision report that keeps frost attribution blocked unless the coupled opt-in snow-control gate passes and the SNOWDENSITY-08 SNOTEL density gate remains cleared. The coupled opt-in snow-control gate is evaluated only over fixtures with observed snow-depth rows; fixtures without observed snow-depth rows remain diagnostic frost/isotherm evidence and must be reported separately as out-of-gate, not counted as pass, fail, or blocker for the snow-depth control gate. | hard-fail | INV-SNOWFREEZE-047, INV-SNOWFREEZE-048, INV-SNOWFREEZE-050, INV-SNOWFREEZE-060, INV-SNOWFREEZE-061, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-063 | SNOWDENSITY-10.3.1a per-day `cancov` direct-runtime bridge: snowbench and CoE melt diagnostic replay may no longer use a repeated scalar `cancov` runtime-surface value as canopy authority when direct-production day inputs can provide a per-day canopy trajectory. The daily series must be generated by the same direct production growth-state path that computes `growth_state_for_publication.canopy_cover_fraction` before snow liquid partition, must carry one finite `[0, 1]` value per simulation day, and must be date-aligned with the forcing rows consumed by replay. The legacy scalar `primary_canopy_cover_fraction` may remain as a backward-compatible summary/initial-state diagnostic, but it is not low-canopy or seasonal-canopy evidence once `cancov_daily_series` is available. CoE replay must fail closed on missing, duplicated, non-finite, out-of-range, or length-mismatched daily canopy rows. This amendment does not authorize canopy tuning, melt coefficient changes, density changes, radiation/albedo changes, default activation, parser/runfile/user CLI selectors, production output schema changes, fixture edits, or compatibility-runtime deletion. | hard-fail | INV-SNOWFREEZE-050, INV-SNOWFREEZE-056, INV-SNOWFREEZE-057, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Porting-Fidelity Authority
 
@@ -621,6 +623,17 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
   must report no-observed-snow fixtures separately as diagnostic-only
   out-of-gate evidence, and must not add parser/runfile/user CLI activation,
   output-schema changes, constants, tuning, or frost-physics edits.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-038: Any SNOWDENSITY-10.3 low-canopy/mixed/deciduous melt
+  adjudication producer must consume the direct-production per-day
+  `cancov_daily_series` when using snowbench or CoE melt replay. The producer
+  must publish the series source, row count, date alignment, min/max/mean/first/
+  last summary, and fail-closed validation for missing, duplicated, non-finite,
+  out-of-range, or length-mismatched rows. A scalar runtime-surface `cancov`
+  may be reported only as an initial-state or backward-compatible summary, not
+  as seasonal canopy authority. This obligation does not authorize canopy
+  tuning, coefficient tuning, production activation, output-schema changes, or
+  fixture edits.
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
@@ -1068,6 +1081,34 @@ path.
    default activation, output schema changes, compatibility-runtime changes,
    coefficient/canopy/radiation/albedo/melt/density/frost tuning, or new site
    constants.
+
+## SNOWDENSITY-10.3.1a Per-Day Cancov Direct-Runtime Addendum
+
+Status: draft (2026-06-26). This addendum resolves the SNOWDENSITY-10.3.1
+blocker that current snowbench/CoE melt diagnostics archived only a scalar
+runtime-surface `cancov`, while the mixed/deciduous melt question requires the
+per-day canopy state used by the direct runtime.
+
+1. Source authority: the accepted daily canopy source is the direct production
+   growth-state path that computes
+   `growth_state_for_publication.canopy_cover_fraction` before snow liquid
+   partition and canopy interception. A separate diagnostic canopy model is not
+   authorized.
+2. Replay authority: `openwepp-snowbench coe-melt` must consume a date-aligned
+   daily canopy series when it replays CoE melt. Repeating
+   `primary_canopy_cover_fraction` across all days is stale initial-condition
+   evidence and cannot carry low-canopy or seasonal-canopy verdicts.
+3. Validation: the producer must fail closed on missing, duplicate,
+   non-contiguous, non-finite, out-of-bounds, or length-mismatched canopy rows.
+   The report must publish row count, min, max, mean, first, last, dynamic
+   status, and source.
+4. Compatibility: the PySnobal forcing CSV and CoE boundary CSV schemas may
+   remain unchanged; the canopy trajectory is a separate diagnostic sidecar and
+   JSON/Markdown summary. This amendment does not change production output
+   schemas.
+5. Boundaries: no canopy tuning, melt/density/albedo/radiation/frost physics
+   change, fixture edit, parser/runfile/user CLI selector, default activation,
+   or compatibility-runtime deletion is ratified here.
 
 ## CLIM05 Parsed Snow-Control Runtime Coupling Addendum
 
@@ -1806,6 +1847,7 @@ ratification. They are evaluation bands, not calibration objectives; the
 |---|---|---|---|
 | `2026-06-26` | `88` | `Codex` | SNOWDENSITY-09 diagnostic coupled WAT amendment: added `INV-SNOWFREEZE-062`, `OBL-SNOWFREEZE-P-037`, and the 09 addendum authorizing a package-bound diagnostic environment selector for direct-production non-SNOTEL WAT reruns while preserving `legacy_wepp` default behavior and forbidding parser/runfile/user CLI activation, WAT rewriting, tuning, or frost attribution unless the coupled opt-in snow-control gate passes. |
 | `2026-06-26` | `89` | `Codex` | SNOWDENSITY-09 gate correction: clarified that the coupled opt-in snow-control gate is evaluated only over fixtures with observed snow-depth rows, while SCAN Mandan ND, Reynolds Creek ID, and other no-observed-snow fixtures remain reported as diagnostic-only out-of-gate evidence rather than pass/fail/blocker inputs. |
+| `2026-06-26` | `90` | `Codex` | SNOWDENSITY-10.3.1a per-day canopy bridge amendment: added `cancov_daily_series`, `INV-SNOWFREEZE-063`, `OBL-SNOWFREEZE-P-038`, and the 10.3.1a addendum requiring snowbench/CoE melt replay to consume direct-production per-day growth-state canopy rather than a repeated scalar runtime-surface value before low-canopy or seasonal-canopy melt adjudication. |
 | `2026-06-26` | `87` | `Codex` | SNOWDENSITY-08 gate-rerun amendment: added `INV-SNOWFREEZE-061`, `OBL-SNOWFREEZE-P-036`, and the 08 addendum requiring SNOTEL density-rubric evidence and non-SNOTEL frost-site snow-control evidence to be reported separately; frost attribution cannot resume unless an authorized coupled opt-in WAT/publication run applies `physics_bulk_density_compaction_v1` to the snow-depth state consumed by frost and WAT `Snow-Depth`. |
 | `2026-06-26` | `86` | `Codex` | SNOWDENSITY-07 runtime opt-in amendment: added `INV-SNOWFREEZE-060`, `OBL-SNOWFREEZE-P-035`, `snow_density_model`, CoE boundary carry surfaces, and the 07 addendum authorizing typed opt-in `physics_bulk_density_compaction_v1` only when CoE SWE/liquid boundaries remain authoritative and depth/density mutation is projected through direct runtime state, downstream operands, shadow, carry, and publication-facing snow state. |
 | `2026-06-26` | `85` | `Codex` | SNOWDENSITY-06B CoE-bound density replay amendment: added `INV-SNOWFREEZE-059`, `OBL-SNOWFREEZE-P-034`, and the 06B addendum authorizing offline replay of `density_compaction_v1` against fixed CoE SWE/liquid boundaries with daily SWE identity and density-cell/whole-rubric adjudication before runtime opt-in. |

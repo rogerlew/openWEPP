@@ -28,6 +28,30 @@ fn g0_exporter_emits_pysnobal_schema_and_required_anti_alias_lineage() {
     assert_eq!(report.lane_count, 3);
     assert!(report.hourly_row_count > 24);
     assert!(report.total_snow_precip_mass_mm > 0.0);
+    assert_eq!(
+        report.canopy_source,
+        "direct_production_day_input.growth_state_for_publication.cancov"
+    );
+    assert_eq!(report.canopy_series_summary.day_count, report.day_count);
+    assert!(
+        (0.0..=1.0).contains(&report.canopy_series_summary.min),
+        "canopy min must be bounded"
+    );
+    assert!(
+        (0.0..=1.0).contains(&report.canopy_series_summary.max),
+        "canopy max must be bounded"
+    );
+    let canopy_series = fs::read_to_string(output_dir.join("canopy_series.csv"))
+        .expect("canopy_series.csv should be emitted");
+    assert!(canopy_series.starts_with("date,day_index,canopy_cover_fraction,source\n"));
+    assert_eq!(
+        canopy_series
+            .lines()
+            .filter(|line| !line.trim().is_empty())
+            .count()
+            - 1,
+        report.day_count
+    );
 
     let lane_dir = output_dir.join("tg_neg2p5c_zg0p10m");
     assert_forcing_schema(&lane_dir);

@@ -29,7 +29,8 @@ pub use hillslope::{
     run_coe_melt_snowbench,
 };
 pub use hillslope::{
-    PYSNOBAL_FORCING_COLUMNS, SnowbenchError, SnowbenchExportReport, SnowbenchExportRequest,
+    PYSNOBAL_FORCING_COLUMNS, SnowbenchCanopySeriesSummary, SnowbenchError, SnowbenchExportReport,
+    SnowbenchExportRequest,
 };
 pub use hillslope::{
     PhysicsBulkConstants, PhysicsBulkReport, PhysicsBulkRequest, PhysicsBulkVariant,
