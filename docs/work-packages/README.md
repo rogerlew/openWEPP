@@ -13,6 +13,23 @@
 
 State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-6-winter-thaw-melt-response-001/` is complete as
+  SNOWDENSITY-10.3.6, the rank-2 winter-thaw melt-response diagnosis. It added a
+  diagnostic-only `legacy_coe` snowbench event-window tool and compared observed
+  snow-depth ablation intervals against modeled snow-depth loss, CoE melt/SWE
+  loss, positive-temperature snowpack hours, and warm-rain heat context across
+  the four paired Sleepers/Harvard maritime surfaces. Result:
+  `WINTER-THAW-MELT-RESPONSE-DEFECT-ELIGIBLE`. Across `219` observed thaw-
+  ablation windows, `132` under-ablated by the package threshold (`0.603`
+  fraction), with `24.105 m` aggregate depth-loss deficit, `19,166` positive-
+  temperature snowpack hours, `8.685 m` raw melt, `4.628 m` modeled SWE loss, and
+  only `0.190 m` warm-rain heat equivalent. HJ Andrews and Hubbard Brook remain
+  observation-blocked diagnostic-only surfaces. No production physics, default,
+  fixture input, public schema, parser/runfile/user selector, coefficient,
+  radiation, canopy, phase, density, frost, longwave, or rain-heat change was
+  made. The next route is a contract-first opt-in winter-thaw melt-response
+  correction package; rain heat and sub-canopy longwave stay separate later
+  levers.
 - `20260627-snowdensity-10-3-5c-phase-partition-snow-depth-impact-001/` is
   complete as SNOWDENSITY-10.3.5c, the coupled WAT snow-depth impact
   adjudication for the opt-in `harder_pomeroy_hourly` phase partition validated

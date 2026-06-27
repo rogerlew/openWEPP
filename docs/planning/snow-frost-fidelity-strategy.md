@@ -453,7 +453,7 @@ Brook) vs **cold continental** (Berthoud, Tenderfoot, Marcell, Mores Creek).
 
 ### 10.2 Physics to consider for melt incorporation / tuning
 
-**Evidence update (2026-06-27, SNOWDENSITY-10.3.3 / 10.3.4 / 10.3.5c).** Three
+**Evidence update (2026-06-27, SNOWDENSITY-10.3.3 / 10.3.4 / 10.3.5c / 10.3.6).** Four
 results re-order the priorities below:
 
 - **The shortwave/albedo modernization is NON-PROMOTION even at low `cancov`**
@@ -484,6 +484,16 @@ results re-order the priorities below:
   `harder_pomeroy_hourly` opt-in only; do not promote it as a snow-depth
   remediation. The active route moves to 10.3.4 rank-2 **winter-thaw melt
   response** before sub-canopy longwave or rain heat.
+- **The winter-thaw melt response is defect-eligible** (10.3.6,
+  `WINTER-THAW-MELT-RESPONSE-DEFECT-ELIGIBLE`). Across the four paired
+  Sleepers/Harvard surfaces, the event-window diagnostic found `219` observed
+  thaw-ablation windows and `132` under-ablation windows (`0.603` fraction), with
+  `24.105 m` aggregate snow-depth loss deficit, `19,166` positive-temperature
+  snowpack hours, `8.685 m` raw CoE melt, `4.628 m` modeled SWE loss, and only
+  `0.190 m` warm-rain heat equivalent. This moves the next active route to a
+  contract-first **opt-in winter-thaw melt-response correction** package. Rain
+  heat remains contextual and sub-canopy longwave remains the following separate
+  lever.
 
 1. **Canopy attenuation is the first-order control across this set.** The CoE melt
    already attenuates by `(1−cancov)` (radiation) and `(1−0.8·cancov)` (turbulent).
@@ -568,7 +578,9 @@ profile/signature scoring rather than absolute-magnitude promotion.
    `PARTITION-THAW-FIRST` — partition near 0 °C (1) and winter-thaw response (2)
    are the lead defect-eligible causes; sub-canopy longwave (3); rain-on-snow
    demoted (4); precip-bias/representativeness forcing-limited; wind not-supported.
-   Next = `SNOWDENSITY-10.3.5` partition/thaw-window candidate.**
+   Next = `SNOWDENSITY-10.3.5` partition/thaw-window candidate. Follow-up
+   10.3.6 adjudicated the rank-2 thaw branch as defect-eligible after 10.3.5c
+   failed to remediate snow depth.**
 5. **`SNOWDENSITY-10.3.5` Robust Rain/Snow Partition (lead candidate).** 10.3.4
    isolated **snow/rain partition near 0 °C** as the #1 defect-eligible cause, so
    the partition is the first opt-in physics package. Per the robustness principle
@@ -605,13 +617,25 @@ profile/signature scoring rather than absolute-magnitude promotion.
      but worsened paired snow-depth evidence (`1147 -> 1273` failures; all four
      paired surfaces worse). The selector remains opt-in and is not a snow-depth
      promotion candidate.**
-6. **Subsequent candidate packages (one lever each).** After the partition,
-   the winter-thaw melt response (10.3.4 #2) and then sub-canopy longwave
-   (10.3.4 #3); each its own opt-in package under the same gate (conservation,
-   independent operand reconstruction, rollback/default isolation, rubric
-   improvement without site constants). Rain-heat is **not** revisited first
-   (CoE `dmelt` already carries it; 10.3.4 #4).
-7. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
+6. **Winter-Thaw Melt Response Correction (next active package).** 10.3.6
+   confirmed the rank-2 thaw branch as
+   `WINTER-THAW-MELT-RESPONSE-DEFECT-ELIGIBLE`: `132/219` paired thaw-ablation
+   windows under-ablated by the
+   diagnostic threshold, with `24.105 m` depth-loss deficit and only `0.190 m`
+   warm-rain heat equivalent. The next package should be contract-first and
+   opt-in: reconstruct the CoE thaw-window operands independently, preserve
+   default/rollback isolation, prove conservation, and improve rubric signatures
+   without site constants. Keep rain heat and sub-canopy longwave separate; do
+   not tune melt coefficients to compensate for density, phase, canopy, or
+   forcing defects.
+7. **Subsequent candidate packages (one lever each).** After winter-thaw melt
+   response, evaluate sub-canopy longwave / forest energy (10.3.4 #3), then only
+   revisit rain-on-snow heat if event-window reconstruction proves the existing
+   CoE `dmelt` path is numerically inactive during observed failures. Each lever
+   must remain opt-in until the same gate is met: conservation, independent
+   operand reconstruction, rollback/default isolation, and rubric improvement
+   without site constants.
+8. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
    `coe_shortwave_albedo_v1` and any added opt-in melt lever. Closure gate:
    SNOTEL plus non-SNOTEL rubric profiles, explicit frost-attribution impact, and
    contract amendments for any production activation.
