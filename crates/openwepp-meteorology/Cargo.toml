@@ -1,0 +1,14 @@
+[package]
+name = "openwepp-meteorology"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+openwepp-unit-boundary = { path = "../openwepp-unit-boundary", version = "0.1.0" }

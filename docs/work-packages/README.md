@@ -13,13 +13,13 @@
 
 State as of `2026-06-27`:
 
-- `20260627-snowdensity-10-3-5a-openwepp-meteorology-crate-001/` is queued as
+- `20260627-snowdensity-10-3-5a-openwepp-meteorology-crate-001/` is complete as
   SNOWDENSITY-10.3.5a, the production-free `openwepp-meteorology` foundation for
-  robust rain/snow partition work. It must amend `SC-SNOWFREEZE-001` before
-  implementation, add a clean-room Harder-Pomeroy psychrometric hydrometeor
-  temperature core plus checked meteorological primitives, and prove no
-  production `RST`/runtime/default/schema wiring changed. The follow-on
-  10.3.5b package owns production wiring and Jennings observed-phase validation.
+  robust rain/snow partition work. It amended `SC-SNOWFREEZE-001` to v91,
+  added checked psychrometric primitives plus a candidate-only Harder-Pomeroy
+  hydrometeor-temperature phase core, and proved no production
+  `RST`/runtime/default/schema wiring changed. The follow-on 10.3.5b package
+  owns production wiring and Jennings observed-phase validation.
 - `20260627-snowdensity-10-3-4-maritime-overaccumulation-diagnosis-001/` is
   complete as SNOWDENSITY-10.3.4, the maritime over-accumulation diagnosis
   gate. It added a diagnostic-only legacy-CoE snowbench replay tool across HJ

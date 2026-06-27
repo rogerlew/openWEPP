@@ -21,7 +21,7 @@ const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 fn snowdensity08_contract_and_package_bind_gate_rerun_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 90",
+        "contract_version: 91",
         "INV-SNOWFREEZE-061",
         "OBL-SNOWFREEZE-P-036",
         "SNOWDENSITY-08 Snow/Frost Gate Rerun Addendum",

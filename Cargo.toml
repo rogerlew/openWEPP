@@ -20,6 +20,7 @@ members = [
     "crates/openwepp-hillslope-orchestrator",
     "crates/openwepp-watershed-orchestrator",
     "crates/openwepp-legacy-bridge",
+    "crates/openwepp-meteorology",
     "crates/openwepp-unit-boundary",
     "crates/openwepp-summary-accumulator",
     "crates/openwepp-comparator-metadata",
@@ -704,6 +705,10 @@ path = "tests/integration/snowdensity10_3_3_gradient_melt_adjudication.rs"
 [[test]]
 name = "snowdensity10_3_4_maritime_overaccumulation_diagnosis"
 path = "tests/integration/snowdensity10_3_4_maritime_overaccumulation_diagnosis.rs"
+
+[[test]]
+name = "snowdensity10_3_5a_meteorology_crate_contract"
+path = "tests/integration/snowdensity10_3_5a_meteorology_crate_contract.rs"
 
 [profile.release]
 lto = "thin"

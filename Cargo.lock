@@ -769,6 +769,13 @@ name = "openwepp-legacy-bridge"
 version = "0.1.0"
 
 [[package]]
+name = "openwepp-meteorology"
+version = "0.1.0"
+dependencies = [
+ "openwepp-unit-boundary",
+]
+
+[[package]]
 name = "openwepp-runner"
 version = "0.1.0"
 dependencies = [

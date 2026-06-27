@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 90
+contract_version: 91
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Infiltration/runoff partition consumers affected by frozen-soil state
   - Soil/erosion coupling consumers requiring freeze-thaw context
 evidence_level: static
-last_reviewed: 2026-06-26
+last_reviewed: 2026-06-27
 supersedes: []
 superseded_by: []
 ---
@@ -71,6 +71,7 @@ Out of scope:
 | REF-SNOWFREEZE-LEGACY-WMELT-INFIL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for` lines 342-345 and `/workdir/wepp-forest_260430_baseline/src/grna.for` lines 267-269, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative meltwater partition: daily redistributed `wmelt(iplane)` is included in `fin` water available for infiltration and as Green-Ampt event forcing (`smrate = wmelt(iplane) / dur`) before residual runoff is finalized. | `[DIRECT][Static]` |
 | REF-SNOWFREEZE-LEGACY-WB13-RM-SNOW | `/workdir/wepp-forest_260430_baseline/src/contin.for:847-880`, `/workdir/wepp-forest_260430_baseline/src/watbalprint.for:84-106`, and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1082-1142`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | WB13 snow-related publication consumes post-winter `rain(iplane)`, daily `wmelt(iplane)`, and snowpack storage `snodpy(iplane)*densg(iplane)` rather than reconstructing `RM` from raw precipitation and SWE delta. | `[DIRECT][Static]` |
 | REF-SNOWFREEZE-LEGACY-WNTTIM-MIN | `/workdir/wepp-forest_260430_baseline/src/winter.for:206-235`, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-95`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline precipitation-phase start-time authority for snow/freeze forcing: finite `wnttim < 1.0` is normalized to `1.0` before `stmtim` active membership and rain/snow branch selection. | `[DIRECT][Static]` |
+| REF-SNOWFREEZE-HARDER-POMEROY-2013 | `references/copyrighted/source_pdfs/harder2013.pdf` | Hydrometeor-temperature precipitation-phase candidate authority: psychrometric vapor density, water-vapor diffusivity, air thermal conductivity, latent heat, iterative hydrometeor-temperature solution, and logistic rainfall-fraction coefficients from Harder and Pomeroy (2013). This is candidate meteorology authority only and does not supersede the production WEPP `RST` partition. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative snow depth/water and bounded densities are required for physical validity. | `[INFERENCE][Static]` |
 | REF-SNOWFREEZE-FROST-OBS | `tests/fixtures/snowfreeze_observed/` (five WEPP hillslope fixtures + per-site manifests) and the historic frost-depth observation corpus they bind: USGS Sleepers River (`DOI 10.5066/P96753GI`, frost tube + paired snow depth), NRCS SCAN soil temperature (`stationTriplets=2020:ND:SCAN`, derived `0 degC` isotherm), NSIDC GGD498 Midwest frost tubes (`DOI 10.7265/1mcs-q536`), USDA-ARS Reynolds Creek soil temperature (CC-BY), and the WEPP-lineage Dun et al. 2010 Pullman/Morris frost validation (`doi:10.13031/2013.34896`, request-only). | External-authority frost-depth observations under ADR-0017 (legacy/compatibility frost output is a flag, not the acceptance target). | `[DIRECT][Static]` |
 | REF-SNOWFREEZE-SNOWDENSITY01 | `docs/work-packages/20260625-snowdensity-01-evidence-reconciliation-001/` | Evidence reconciliation showing current openWEPP and pinned legacy share the same structural snow-density/depth lineage for the SNOTEL comparison, with maximum as-built openWEPP-vs-legacy density delta `4.351046738461008 kg m^-3`; this routes remediation away from bit-parity and toward a contract-scoped physics candidate. | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -97,6 +98,13 @@ Out of scope:
 | `grdri` | `m` | Ground drift contribution used by legacy drift equations. | legacy drift formulation (inactive in target lineage) | governance/provenance only |
 | `hrmelt` | `m` | Hourly melt water from snowpack. | melt routine | DISAG/infiltration-runoff coupling |
 | `hrrain` | `m` | Hourly rainfall amount. | hourly precip partition | melt term and runoff/infiltration forcing |
+| `hydrometeor_temperature` | `degC` | Candidate Harder-Pomeroy hydrometeor temperature (`Ti`) computed from air temperature and humidity before precipitation-phase fractioning. | candidate `openwepp-meteorology` crate | candidate phase diagnostics and future adjudication |
+| `relative_humidity` | `fraction` | Candidate unit-interval relative humidity input for psychrometric precipitation-phase methods. | candidate meteorology caller | candidate hydrometeor-temperature solver |
+| `dew_point_temperature` | `degC` | Candidate dew-point input/diagnostic used to derive relative humidity and actual vapor pressure where caller supplies dew point rather than RH. | candidate meteorology caller | candidate psychrometric primitives |
+| `air_vapor_density` | `kg m^-3` | Candidate actual water-vapor density of free air. | candidate `openwepp-meteorology` crate | hydrometeor-temperature solver diagnostics |
+| `hydrometeor_saturation_vapor_density` | `kg m^-3` | Candidate saturated water-vapor density at the hydrometeor surface temperature. | candidate `openwepp-meteorology` crate | hydrometeor-temperature solver diagnostics |
+| `harder_pomeroy_rain_fraction` | `fraction` | Candidate rainfall fraction from the Harder-Pomeroy logistic function at `hydrometeor_temperature`. | candidate `openwepp-meteorology` crate | candidate phase diagnostics |
+| `harder_pomeroy_snow_fraction` | `fraction` | Candidate snowfall fraction equal to `1 - harder_pomeroy_rain_fraction`; fractions must close to one within roundoff. | candidate `openwepp-meteorology` crate | candidate phase diagnostics |
 | `hrrain_store` | `m` | Hourly rain retained in sub-`350 kg m^-3` snowpack holding capacity. | snow density update | daily `S`, runtime SWE, liquid-forcing reduction |
 | `hrrain_release` | `m` | Residual positive rain-on-snow left in `hrrain` after holding-capacity accounting and added into `hrmlt`/`wmelt` during daily winter post-processing. | snow density update + winter post-processing | routed snowmelt event forcing (`wmelt -> fin/smrate`) |
 | `wmelt` | `m` | Daily routed snowmelt liquid after hourly melt redistribution and residual rain-on-snow release. | winter routine | runoff/infiltration forcing and WB13 `RM` publication |
@@ -231,6 +239,7 @@ Out of scope:
 | INV-SNOWFREEZE-061 | SNOWDENSITY-08 snow/frost gate rerun: after the typed runtime opt-in exists, the next evidence package must rerun the SNOTEL snow-density rubric for the accepted `physics_bulk_density_compaction_v1` lineage and the non-SNOTEL frost-site snow-control/frost rubric before any frost-attribution work resumes. SNOTEL evidence may use the SNOWDENSITY-06B CoE-bound replay when it proves the same density update, fixed CoE SWE/liquid boundaries, no site constants, and daily SWE identity. Non-SNOTEL frost attribution may be marked unblocked only when an authorized coupled WAT/publication run has applied the opt-in density state to the same snow-depth surface used by frost and WAT `Snow-Depth`; default-path WAT failures or offline snow-only substitutions cannot clear this gate. The rerun report must publish `frost_attribution_authorized`, SNOTEL robust/density-cell deltas, non-SNOTEL snow-control status counts, whether a coupled opt-in WAT path was available, CoE boundary anti-alias evidence, and the next blocker. It must not tune coefficients, canopy, radiation, albedo, melt, frost physics, parser/runfile/CLI selectors, output schemas, or defaults. | hard-fail | INV-SNOWFREEZE-047, INV-SNOWFREEZE-048, INV-SNOWFREEZE-050, INV-SNOWFREEZE-059, INV-SNOWFREEZE-060, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-062 | SNOWDENSITY-09 diagnostic coupled WAT rerun: a non-production diagnostic path may run the direct-production executor with `snow_density_model = physics_bulk_density_compaction_v1` for the non-SNOTEL frost fixtures only when the selector is package-bound, explicit, and absent by default. The authorized selector is the environment variable `OPENWEPP_SNOWDENSITY09_DENSITY_MODEL` with accepted values `legacy_wepp` and `physics_bulk_density_compaction_v1`; any other non-empty value must fail closed. This selector is diagnostic harness plumbing, not a parser/runfile/user CLI activation surface, and it must not affect compatibility runtime, default-candidate rollback, output schema, coefficients, canopy, radiation, albedo, melt, density constants, or frost physics. Acceptance requires paired default-vs-opt-in WAT reports, trace evidence that the direct-production snow partition selected the opt-in model, proof that WAT `Snow-Depth` remains sourced from `snow.runtime_depth_m`, no WAT rewriting/offline snow-only substitution, no site-specific constants, and a decision report that keeps frost attribution blocked unless the coupled opt-in snow-control gate passes and the SNOWDENSITY-08 SNOTEL density gate remains cleared. The coupled opt-in snow-control gate is evaluated only over fixtures with observed snow-depth rows; fixtures without observed snow-depth rows remain diagnostic frost/isotherm evidence and must be reported separately as out-of-gate, not counted as pass, fail, or blocker for the snow-depth control gate. | hard-fail | INV-SNOWFREEZE-047, INV-SNOWFREEZE-048, INV-SNOWFREEZE-050, INV-SNOWFREEZE-060, INV-SNOWFREEZE-061, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-063 | SNOWDENSITY-10.3.1a per-day `cancov` direct-runtime bridge: snowbench and CoE melt diagnostic replay may no longer use a repeated scalar `cancov` runtime-surface value as canopy authority when direct-production day inputs can provide a per-day canopy trajectory. The daily series must be generated by the same direct production growth-state path that computes `growth_state_for_publication.canopy_cover_fraction` before snow liquid partition, must carry one finite `[0, 1]` value per simulation day, and must be date-aligned with the forcing rows consumed by replay. The legacy scalar `primary_canopy_cover_fraction` may remain as a backward-compatible summary/initial-state diagnostic, but it is not low-canopy or seasonal-canopy evidence once `cancov_daily_series` is available. CoE replay must fail closed on missing, duplicated, non-finite, out-of-range, or length-mismatched daily canopy rows. This amendment does not authorize canopy tuning, melt coefficient changes, density changes, radiation/albedo changes, default activation, parser/runfile/user CLI selectors, production output schema changes, fixture edits, or compatibility-runtime deletion. | hard-fail | INV-SNOWFREEZE-050, INV-SNOWFREEZE-056, INV-SNOWFREEZE-057, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-064 | SNOWDENSITY-10.3.5a openWEPP meteorology candidate crate: `crates/openwepp-meteorology` may implement pure psychrometric primitives and the Harder-Pomeroy hydrometeor-temperature precipitation-phase candidate only as a reusable library. The crate must expose typed Celsius, unit-interval humidity, vapor-pressure/density, latent-heat, air-diffusivity, air-conductivity, hydrometeor-temperature, and rain/snow fraction APIs with finite-domain guards and typed errors. Harder-Pomeroy rain and snow fractions must remain bounded in `[0, 1]`, close to one within roundoff, and be monotonic with hydrometeor temperature for each ratified coefficient set. This amendment does not authorize replacement of production `RST`, changes to `stmtim`/daily-hourly WEPP partition behavior, parser/runfile/user selectors, output schema, fixture edits, default activation, or compatibility-runtime changes. Production crates must not depend on or call `openwepp-meteorology` until a later contract amendment and work package explicitly authorizes an adjudication or activation seam. | hard-fail | REF-SNOWFREEZE-HARDER-POMEROY-2013, INV-SNOWFREEZE-005, INV-SNOWFREEZE-050, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Porting-Fidelity Authority
 
@@ -381,6 +390,9 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 | `hrmelt` | `snow.hourly.melt_m` | hourly redistributed melt forcing and trace family after daily winter post-processing | `m` -> `m`; final routed values are finite/non-negative and daily routed melt is the summed coupling quantity | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `hrmelt_raw` | `snow.hourly.melt_raw_m` | signed hourly melt before daily redistribution | `m` -> `m`; negative values are valid diagnostics before daily post-processing | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `hrrain` | `snow.hourly.rain_m` | hourly rainfall forcing before snowpack holding-capacity retention | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `hydrometeor_temperature` | `openwepp_meteorology::phase::HydrometeorTemperatureSolution::temperature` | candidate crate API only; not a production runtime surface | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `harder_pomeroy_rain_fraction`, `harder_pomeroy_snow_fraction` | `openwepp_meteorology::phase::PrecipitationPhaseFractions::{rain_fraction,snow_fraction}` | candidate crate API only; not a production runtime surface | fractions remain in `[0, 1]` and close to one | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `relative_humidity`, `dew_point_temperature`, `air_vapor_density`, `hydrometeor_saturation_vapor_density` | `openwepp_meteorology::psychrometrics::*` typed primitives | candidate crate API only; not a production runtime surface | dimensionless fraction, `degC`, and `kg m^-3` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `hrrain_store` | `snow.hourly.rain_retained_m` | hourly rain retained in snowpack holding capacity | `m` -> `m`, finite and non-negative | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `hrrain_release` | `snow.hourly.rain_released_m` | residual rain-on-snow added into final `hrmelt`/`wmelt` after holding-capacity accounting | `m` -> `m`, finite and non-negative | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `rain(iplane)` after winter processing | `snow.post_winter_rain_m` | daily direct-rain depth remaining after winter clearing/restoration, rain retention, and rain-on-snow promotion into routed `wmelt` | `m` -> `m`, finite and non-negative | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -451,6 +463,8 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 - Active same-day future snowfall under `coe_shortwave_albedo_v1` clearing opt-in albedo continuity solely because earlier same-day hours were snow-free, instead of applying fresh-snow reset, carrying a valid previous opt-in state, or failing closed. `[DIRECT][Static] + [INFERENCE][Static]`
 - Any albedo constants or reset thresholds fitted to SNOTEL, frost-site observations, legacy residuals, or PySnobal residuals. `[INFERENCE][Static]`
 - `melt_bmelt_in` sign semantics changed by silent sign flip or double subtraction without a new contract amendment and source-line proof. `[DIRECT][Static] + [INFERENCE][Static]`
+- `openwepp-meteorology` selected or invoked by production winter precipitation partitioning, `RST` replacement, parser/runfile/user configuration, output publication, fixture mutation, compatibility-runtime behavior, or default activation before a later ratified activation package. `[INFERENCE][Static]`
+- Harder-Pomeroy candidate APIs returning non-finite hydrometeor temperature, vapor pressure, vapor density, latent heat, diffusivity, conductivity, or precipitation fractions; rainfall/snowfall fractions outside `[0, 1]`; or rainfall plus snowfall fraction not closing to one within numerical roundoff. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -634,6 +648,20 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
   as seasonal canopy authority. This obligation does not authorize canopy
   tuning, coefficient tuning, production activation, output-schema changes, or
   fixture edits.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-039: Any SNOWDENSITY-10.3.5a meteorology-crate producer must
+  implement only a pure reusable `openwepp-meteorology` crate and must publish
+  contract-first evidence, clean-room provenance, and production non-wiring
+  scans before closure. The crate must use typed unit-boundary inputs/outputs or
+  locally typed wrappers for Celsius temperature, unit-interval humidity, vapor
+  pressure, vapor density, latent heat, diffusivity, conductivity, hydrometeor
+  temperature, and rain/snow fractions. Tests must cover finite-domain guards,
+  water/ice saturation-vapor-pressure reference values, dewpoint/RH round trips,
+  Harder-Pomeroy fixed-point convergence, saturated-air identity, rainfall-
+  fraction monotonicity for coefficient sets, fraction closure, and explicit
+  non-convergence behavior. The package must fail closed rather than wire this
+  crate into production `RST`, `stmtim`, parser/runfile/user selectors, output
+  schema, compatibility runtime, or default behavior.
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
@@ -1109,6 +1137,43 @@ per-day canopy state used by the direct runtime.
 5. Boundaries: no canopy tuning, melt/density/albedo/radiation/frost physics
    change, fixture edit, parser/runfile/user CLI selector, default activation,
    or compatibility-runtime deletion is ratified here.
+
+## SNOWDENSITY-10.3.5a Harder-Pomeroy Meteorology Crate Addendum
+
+Status: draft (2026-06-27). This addendum authorizes a production-free
+meteorology library so rain/snow phase candidates can be tested without
+modifying the active WEPP `RST` partition.
+
+1. Scope: the only authorized implementation product is
+   `crates/openwepp-meteorology`, a pure Rust library of psychrometric
+   primitives and Harder-Pomeroy hydrometeor-temperature phase-fraction
+   functions. It may be a workspace member but must not be a dependency of
+   production runtime, runner, parser, output, or compatibility crates in this
+   package.
+2. Authority: Harder and Pomeroy (2013) supplies the candidate hydrometeor
+   temperature equation, vapor-density supporting equations, latent-heat/
+   diffusivity/conductivity terms, and logistic rain-fraction coefficient sets.
+   Standard saturation/dewpoint helper functions must be cited in code comments
+   or package evidence when they extend beyond the paper's printed equations.
+3. API discipline: public candidate APIs must accept typed Celsius temperature
+   and unit-interval humidity inputs, return typed candidate outputs, and
+   surface typed errors for non-finite, out-of-domain, or non-convergent cases.
+   The solver must expose iteration metadata so future validation can separate
+   numerical failure from physics failure.
+4. Test discipline: tests must cover saturation-vapor-pressure reference
+   values, dewpoint/RH round trips, saturated-air identity (`Ti == Ta` within
+   tolerance), unsaturated ordering (`Ti < Ta` where applicable),
+   Harder-Pomeroy fixed-point convergence against independent numeric
+   reference values, coefficient-set monotonicity, fraction closure, and
+   explicit non-convergence behavior.
+5. Isolation: this package must not change `RST`, `stmtim`, daily/hourly WEPP
+   partition behavior, production selectors, parser/runfile schemas, output
+   schemas, fixtures, default activation, compatibility runtime, snowmelt,
+   density, canopy, albedo, radiation, or frost physics.
+6. Deferred work: Jennings/observed-phase corpus validation, mixed/deciduous
+   production adjudication, production phase selector design, default
+   activation, and any route from hydrometeor-temperature fractions into
+   `hrrain`/`hrsnow` are follow-on packages requiring new contract amendments.
 
 ## CLIM05 Parsed Snow-Control Runtime Coupling Addendum
 
@@ -1845,6 +1910,7 @@ ratification. They are evaluation bands, not calibration objectives; the
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-27` | `91` | `Codex` | SNOWDENSITY-10.3.5a meteorology-crate amendment: added `REF-SNOWFREEZE-HARDER-POMEROY-2013`, hydrometeor-temperature/psychrometric candidate variables, `INV-SNOWFREEZE-064`, `OBL-SNOWFREEZE-P-039`, candidate API aliases, invalid-state isolation guards, and the Harder-Pomeroy Meteorology Crate Addendum. The amendment authorizes only a pure `openwepp-meteorology` crate and explicitly forbids production `RST`/`stmtim` replacement, parser/runfile/user selectors, output-schema changes, default activation, fixture edits, and compatibility-runtime changes. |
 | `2026-06-26` | `88` | `Codex` | SNOWDENSITY-09 diagnostic coupled WAT amendment: added `INV-SNOWFREEZE-062`, `OBL-SNOWFREEZE-P-037`, and the 09 addendum authorizing a package-bound diagnostic environment selector for direct-production non-SNOTEL WAT reruns while preserving `legacy_wepp` default behavior and forbidding parser/runfile/user CLI activation, WAT rewriting, tuning, or frost attribution unless the coupled opt-in snow-control gate passes. |
 | `2026-06-26` | `89` | `Codex` | SNOWDENSITY-09 gate correction: clarified that the coupled opt-in snow-control gate is evaluated only over fixtures with observed snow-depth rows, while SCAN Mandan ND, Reynolds Creek ID, and other no-observed-snow fixtures remain reported as diagnostic-only out-of-gate evidence rather than pass/fail/blocker inputs. |
 | `2026-06-26` | `90` | `Codex` | SNOWDENSITY-10.3.1a per-day canopy bridge amendment: added `cancov_daily_series`, `INV-SNOWFREEZE-063`, `OBL-SNOWFREEZE-P-038`, and the 10.3.1a addendum requiring snowbench/CoE melt replay to consume direct-production per-day growth-state canopy rather than a repeated scalar runtime-surface value before low-canopy or seasonal-canopy melt adjudication. |

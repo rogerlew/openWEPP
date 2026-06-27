@@ -1,7 +1,7 @@
 # Verification Agent B
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: Static/Ran
 
 Verification scope:
 
@@ -10,4 +10,14 @@ Verification scope:
 - Production isolation check.
 - Clean-room provenance check.
 
-Result: NOT RUN.
+Result: PASS.
+
+Evidence:
+
+- Static: `SC-SNOWFREEZE-001` v91 defines the candidate-only
+  Harder-Pomeroy meteorology authority before production wiring.
+- Static/Ran: package contract tests assert the v91 candidate markers and prove
+  no workspace package depends on `openwepp-meteorology`.
+- Static/Ran: no production runtime/default/schema/selector source was touched
+  or references the new crate.
+- Static: clean-room artifact records equation provenance and no CHM/GPL use.

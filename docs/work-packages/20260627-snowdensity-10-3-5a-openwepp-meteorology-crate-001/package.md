@@ -1,7 +1,7 @@
 # SNOWDENSITY-10.3.5a - `openwepp-meteorology` Crate
 
-Status: queued (revised by Codex, 2026-06-27); ready for execution after
-operator approval.
+Status: complete as `COMPLETE-10-3-5A-METEOROLOGY-CRATE` (executed by Codex,
+2026-06-27).
 
 Package type: foundational physics/numerics crate; clean-room implementation;
 candidate-only, production-free increment.
