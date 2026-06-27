@@ -31,6 +31,7 @@ Classifications in this pass were made conservatively:
 | `vendorable/Gupta2023_HESS.pdf` | Copernicus *Hydrology and Earth System Sciences*, CC-BY 4.0. DOI `10.5194/hess-27-191-2023`. Added 2026-06-25 for shortwave radiation -> coupled melt+ET evidence. |
 | `vendorable/Vionnet2012_Crocus.pdf` | Copernicus *Geoscientific Model Development*, CC-BY 4.0. DOI `10.5194/gmd-5-773-2012`. Added 2026-06-25 for snow density/albedo reference-implementation. |
 | `vendorable/Anderson2006_SNOW17.pdf` | NOAA/NWS NWSRFS documentation (SNOW-17). U.S. Government work, public domain (17 U.S.C. 105). Downloaded from `weather.gov`. Added 2026-06-25 for the seasonal degree-day melt-factor lineage. |
+| `vendorable/Jennings2018_NatComm.pdf` | *Nature Communications* 9:1148, CC-BY 4.0 (license statement in article). DOI `10.1038/s41467-018-03629-7`. Added 2026-06-26 for rain/snow partition — observed-phase dataset + temperature/RH threshold method. |
 
 ## Left in `copyrighted/` (pending review)
 
@@ -57,6 +58,12 @@ redistributable): `pellicciotti2005.pdf`, `carenzo2009.pdf`, `hock1999.pdf`,
 `brock2000.pdf`, `walter2005.pdf`, `marks1999.pdf`, `magnusson2015.pdf`,
 `lundquist2013.pdf`, `varhola2010.pdf`. Indexed as R-43..R-51 in
 `annotated_bibliography.md`.
+
+Operator-supplied rain/snow-partition papers (2026-06-26), kept in
+`copyrighted/source_pdfs/` as journal copyright (Wiley/Elsevier): `susong1999.pdf`
+(+ duplicate `susong1999-2.pdf`), `marks1998.pdf`, `kormos2014.pdf`,
+`harder2013.pdf`. Indexed as R-54..R-57. (`Jennings2018_NatComm.pdf` is CC-BY and
+sits in `vendorable/`.)
 
 ## Evidence references used in this pass
 

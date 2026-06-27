@@ -683,3 +683,63 @@ openWEPP note (2026-05-11):
 **Kernel mapping**: Melt-modernization decision and the `amelt`/`cmelt` production lineage (`docs/planning/snow-frost-fidelity-strategy.md` §1/§2/§5; `crates/openwepp-hillslope-orchestrator/src/hydrology/`).
 **Notes / caveats**: The `0.0607`/`0.0188` coefficients lump radiation/turbulent transfer; the modernization replaces the `hrrad` *source*, not the energy-balance structure. Other chapters `chap1.pdf`..`chap14.pdf` are co-located in `references/50201000/`.
 **OAR-6 compliance status**: Primary authority for the production WEPP energy-balance melt.
+
+## R-53: Jennings et al. (2018) rain–snow temperature threshold across the NH
+
+**Citation**: Jennings, K. S., T. S. Winchell, B. Livneh, and N. P. Molotch (2018). *Spatial variation of the rain–snow temperature threshold across the Northern Hemisphere*. Nature Communications, 9, 1148. https://doi.org/10.1038/s41467-018-03629-7
+**Local path**: `references/vendorable/Jennings2018_NatComm.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `redistributable` (Nature Communications, CC-BY 4.0).
+**Topic**: Observed precipitation-phase dataset and a temperature + relative-humidity method for partitioning rain vs snow — the "observed data" basis for replacing a single tuned air-temperature threshold (e.g. WEPP `RST`).
+**Key equations / concepts**: ~17.8M Northern-Hemisphere land-station phase observations; the 50% rain/snow **air-temperature** threshold averages 1.0 °C and ranges −0.4 to 2.4 °C (95%), varying with **relative humidity** (humid maritime low, dry continental high) — so a spatially uniform air-temp threshold is structurally wrong. A binary-logistic phase method on temperature + RH outperforms it. Note: Mariana's `RST=-2 °C` for Oregon/DAYMET sits *below* this observed air-temp range, indicating it also corrects the DAYMET **daily-mean** resolution, not only humidity.
+**Kernel mapping**: SNOWDENSITY-10.3.4 partition-first disposition; the `10.3.5` partition/thaw candidate (`docs/planning/snow-frost-fidelity-strategy.md` §10.2/§10.3). Complements SMRF's dew-point `Susong1999` partition.
+**Notes / caveats**: The supplementary station dataset (figshare) is the observed-phase corpus for validation; not yet installed under `tests/fixtures/`.
+**OAR-6 compliance status**: Primary authority for observed-data rain/snow partition.
+
+## R-54: Susong, Marks & Garen (1999) dew-point precipitation-phase method
+
+**Citation**: Susong, D., D. Marks, and D. Garen (1999). *Methods for developing time-series climate surfaces to drive topographically distributed energy- and water-balance models*. Hydrological Processes, 13(12–13), 2003–2021. https://doi.org/10.1002/(SICI)1099-1085(199909)13:12/13<2003::AID-HYP884>3.0.CO;2-K
+**Local path**: `references/copyrighted/source_pdfs/susong1999.pdf` (duplicate `susong1999-2.pdf` may be removed)
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (Wiley; operator-supplied local cache).
+**Topic**: The SNOBAL/SMRF default precipitation-phase + new-snow-density method — the `Susong1999` NASDE model ("follows the IPW command `mkprecip`").
+**Key equations / concepts**: A **dew-point** lookup table mapping precipitation (dew-point) temperature → fractional percent-snow and new-snow density (transition −0.5 to +0.5 °C dew-point: 100% / 75% / 25% / 0% snow; ρ 75–250 kg/m³). Humidity-aware and fractional — the SNOBAL baseline above WEPP's single-air-temp `RST`.
+**Kernel mapping**: rain/snow partition candidate for SNOWDENSITY-10.3.5 (`docs/planning/snow-frost-fidelity-strategy.md` §10.2/§10.3); the SMRF method openWEPP would compare against.
+**Notes / caveats**: A parameterized table, not a hydrometeor energy balance; the more physical option is Harder & Pomeroy (R-57).
+**OAR-6 compliance status**: Primary authority for the SNOBAL/SMRF dew-point partition.
+
+## R-55: Marks, Kimball, Tingey & Link (1998) rain-on-snow, 1996 PNW flood
+
+**Citation**: Marks, D., J. Kimball, D. Tingey, and T. Link (1998). *The sensitivity of snowmelt processes to climate conditions and forest cover during rain on snow: a case study of the 1996 Pacific Northwest flood*. Hydrological Processes, 12(10–11), 1569–1587.
+**Local path**: `references/copyrighted/source_pdfs/marks1998.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (Wiley; operator-supplied local cache).
+**Topic**: Energy-balance analysis of rain-on-snow melt and forest-cover effects during the 1996 PNW flood — **Oregon Cascades** sites (Hogg Pass / McKenzie), directly analogous to the `hjandrews_conifer_or` maritime regime and the 10.3.4 maritime over-accumulation/thaw blocker.
+**Key equations / concepts**: Rain-on-snow advective + turbulent melt partitioning; the dominance of net radiation + sensible/latent fluxes over rain-heat in maritime RoS; forest-cover modulation. Context for the 10.3.4 thaw/rain-on-snow mechanism ranking.
+**Kernel mapping**: SNOWDENSITY-10.3.4 maritime diagnosis; partition/thaw work (§10.2 items 3–4).
+**Notes / caveats**: DOI not printed in the PDF (1998); SICI DOI `10.1002/(SICI)1099-1085(199808/09)12:10/11<1569::AID-HYP682>3.0.CO;2-L` is recalled — verify on retrieval. PDF is the authority.
+**OAR-6 compliance status**: Supporting authority for maritime rain-on-snow melt physics.
+
+## R-56: Kormos et al. (2014) mountain rain-snow transition zone
+
+**Citation**: Kormos, P. R., D. Marks, J. P. McNamara, H. P. Marshall, A. Winstral, and A. N. Flores (2014). *Snow distribution, melt and surface water inputs to the soil in the mountain rain-snow transition zone*. Journal of Hydrology, 519 (Part D), 190–204. https://doi.org/10.1016/j.jhydrol.2014.06.051
+**Local path**: `references/copyrighted/source_pdfs/kormos2014.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (Elsevier; operator-supplied local cache).
+**Topic**: Observations and energy-balance modeling in the **mountain rain-snow transition zone** — the regime where phase partition and intermittent melt dominate (the openWEPP maritime blocker regime).
+**Key equations / concepts**: Transition-zone snowpack intermittency, surface-water-input timing, and the sensitivity to phase partition; supports the 10.3.4 partition-first finding.
+**Kernel mapping**: SNOWDENSITY-10.3.4/10.3.5 (§10.2/§10.3).
+**Notes / caveats**: Site-specific (Dry Creek, ID) but the transition-zone process framing transfers.
+**OAR-6 compliance status**: Supporting authority for rain-snow transition-zone behavior.
+
+## R-57: Harder & Pomeroy (2013) psychrometric precipitation-phase method
+
+**Citation**: Harder, P., and J. Pomeroy (2013). *Estimating precipitation phase using a psychrometric energy balance method*. Hydrological Processes, 27(13), 1901–1914. https://doi.org/10.1002/hyp.9799
+**Local path**: `references/copyrighted/source_pdfs/harder2013.pdf`
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (Wiley; operator-supplied local cache).
+**Topic**: The **most physically-based** rain/snow partition — a psychrometric energy balance solving the falling hydrometeor's (ice-bulb) temperature from air temperature + humidity, then partitioning on that physical temperature.
+**Key equations / concepts**: Iterative hydrometeor energy/mass balance (sensible + latent exchange of the falling particle); needs only air temp + humidity (both available hourly in openWEPP's winter routine); no site calibration; generalizes by construction (a law, not a fit or table). **The recommended primary method for the SNOWDENSITY-10.3.5 robust partition**, with Susong (R-54) as fallback and Jennings (R-53) as the observed-phase validation set.
+**Kernel mapping**: SNOWDENSITY-10.3.5 robust rain/snow partition (`docs/planning/snow-frost-fidelity-strategy.md` §10.2/§10.3).
+**Notes / caveats**: Per-event/sub-daily method — apply at openWEPP's existing hourly partition resolution (`snow.hourly.stmtim.rst_c` lineage), not a daily mean.
+**OAR-6 compliance status**: Primary candidate authority for a physics-based, calibration-free rain/snow partition.
