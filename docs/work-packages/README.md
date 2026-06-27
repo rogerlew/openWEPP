@@ -11,8 +11,25 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-06-26`:
+State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-4-maritime-overaccumulation-diagnosis-001/` is
+  complete as SNOWDENSITY-10.3.4, the maritime over-accumulation diagnosis
+  gate. It added a diagnostic-only legacy-CoE snowbench replay tool across HJ
+  Andrews, Sleepers, Harvard, and Hubbard Brook maritime surfaces, plus focused
+  contract guard tests and JSON/Markdown evidence artifacts. Result:
+  `PARTITION-THAW-FIRST`. All four paired Sleepers/Harvard surfaces
+  over-accumulate modeled snow depth; HJ Andrews and Hubbard Brook are
+  observation-blocked because paired snow-depth tables are not installed. The
+  ranked defect-eligible mechanisms are near-zero snow/rain partition,
+  winter-thaw melt response, sub-canopy longwave or forest energy, and then
+  rain-on-snow heat. Precipitation bias and representativeness remain
+  forcing-limited, and wind undercatch is not supported as a correction lever
+  for modeled-over-observed snow depth. No production physics, defaults,
+  publication schema, fixture input, coefficient, radiation, canopy, albedo,
+  density, partition, precipitation, frost, or promotion decision changed. The
+  next route is §10.3.5 partition/thaw-window decomposition before rain-heat or
+  longwave production changes.
 - `20260626-snowdensity-10-3-3-gradient-melt-adjudication-001/` is complete as
   SNOWDENSITY-10.3.3, the canopy-gradient melt adjudication gate. It added a
   diagnostic-only Harvard/Marcell stratified CoE melt replay tool and ran
