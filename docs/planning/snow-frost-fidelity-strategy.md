@@ -677,16 +677,62 @@ profile/signature scoring rather than absolute-magnitude promotion.
      not a new mass/precipitation correction. Hubbard Brook mixed/deciduous and
      HJ Andrews remain observation-blocked for residual verdicts until paired
      snow-depth observations are installed.
+   - **Spring pack-depletion/compaction adjudication completed as diagnostic
+     10.3.10:**
+     `docs/work-packages/20260627-snowdensity-10-3-10-spring-pack-depletion-compaction-adjudication-001/`
+     tested whether the 10.3.9 over-persistent March/April rows can fit the
+     observed depth tolerance by compaction alone under the existing
+     `SC-SNOWFREEZE-001` `522 kg m^-3` density cap. Result:
+     `SPRING-COMPACTION-FIRST`. Of `282` failed March/April rows, `190` are
+     compaction-only feasible within the cap, `33` are cap-limited depletion
+     required, `16` are patchy meltout or depletion required, and `43` are
+     under-persistence. Depletion-required rows remain real (`49/282`, row-sum
+     required SWE depletion at cap `1.230 m`), especially Harvard open (`23`
+     rows) and Sleepers open field (`21` rows), but they are a tail rather than
+     the leading lever. Next route: an opt-in spring compaction/densification
+     candidate that preserves the cap and mass conservation; only after that
+     gate should a separate spring depletion / patchy snow-cover process be
+     considered.
+   - **Spring compaction/densification candidate completed as opt-in 10.3.11:**
+     `docs/work-packages/20260627-snowdensity-10-3-11-spring-compaction-densification-candidate-001/`
+     amended `SC-SNOWFREEZE-001` v96 and added
+     `physics_bulk_spring_densification_v1` to test whether wet-snow compaction
+     acceleration reduces the 10.3.10 compaction-feasible residuals. It does
+     **not** promote: the existing `physics_bulk_density_compaction_v1` arm,
+     when paired with `coe_liquid_holding_capacity_v1`, improves the prior
+     10.3.8 coupled WAT failures `761 -> 498`, but the new spring
+     densification arm worsens that density baseline `498 -> 502` with three
+     paired surfaces worse. The cause is over-densification into
+     under-persistence after the bulk compaction arm has already consumed the
+     available headroom: `harvard_hardwood` has `0` remaining compaction-only
+     rows, yet the spring add-on produces `64` under-persistence rows and
+     worsens failures `153 -> 156`. The 10.3.10 diagnosis remains correct
+     (compaction is a dominant lever), but the proposed spring-rate mechanism is
+     exhausted. The remaining active baseline is therefore the holding-capacity +
+     existing density-compaction bundle, not
+     `physics_bulk_spring_densification_v1`. Snow-control remains blocked
+     (`498/1415` paired rows fail under the best current bundle). Carry the
+     `522 kg m^-3` cap as an explicit authority check, not a hidden tuning knob.
 7. **Subsequent candidate packages (one lever each).** After winter-thaw melt
-   response and the 10.3.9 residual attribution, first evaluate the spring
-   pack-depletion/compaction lever that can explain over-persistent March/April
-   depth without inventing mass. Then evaluate sub-canopy longwave / forest
-   energy (10.3.4 #3) only if the spring depletion gate does not close the
-   residuals. Revisit rain-on-snow heat only if event-window reconstruction
-   proves the existing CoE `dmelt` path is numerically inactive during observed
-   failures. Each lever must remain opt-in until the same gate is met:
-   conservation, independent operand reconstruction, rollback/default isolation,
-   and rubric improvement without site constants.
+   response and the 10.3.9/10.3.10 residual adjudication, 10.3.11 tested and
+   retired the spring wet-time densification candidate. Do not pursue another
+   wet-compaction acceleration or density-rate variant without new external
+   authority and a different residual class. The next package should first
+   ratify/adjudicate the current best combined opt-in bundle,
+   `coe_liquid_holding_capacity_v1 + physics_bulk_density_compaction_v1`, because
+   it is the first coupled bundle with a defended number (`761 -> 498`). Then
+   classify the remaining `498` coupled failures. After that, evaluate
+   open-surface ablation for residual cap-limited mass rows, especially Harvard open
+   and Sleepers open field; treat patchy meltout as structural/non-target unless
+   a separate correspondence package makes it verdict-bearing. Check the
+   physical defensibility of the `522 kg m^-3` ripe-snow cap as its own
+   contract-first authority package if needed, not as a fitted constant.
+   Evaluate sub-canopy longwave / forest energy (10.3.4 #3) only if these
+   spring-pack gates do not close the residuals. Revisit rain-on-snow heat only
+   if event-window reconstruction proves the existing CoE `dmelt` path is
+   numerically inactive during observed failures. Each lever must remain opt-in
+   until the same gate is met: conservation, independent operand reconstruction,
+   rollback/default isolation, and rubric improvement without site constants.
 8. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
    `coe_shortwave_albedo_v1` and any added opt-in melt lever. Closure gate:
    SNOTEL plus non-SNOTEL rubric profiles, explicit frost-attribution impact, and

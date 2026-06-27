@@ -13,6 +13,23 @@
 
 State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-10-spring-pack-depletion-compaction-adjudication-001/`
+  is complete as SNOWDENSITY-10.3.10, the diagnostic spring pack-depletion and
+  compaction adjudication gate after SNOWDENSITY-10.3.9. It consumed the
+  SNOWDENSITY-10.3.8 opt-in coupled WAT candidate and used the existing
+  `SC-SNOWFREEZE-001` `522 kg m^-3` upper snow-density cap to test whether
+  modeled SWE can fit observed March/April snow-depth tolerance by compaction
+  alone. Result: `SPRING-COMPACTION-FIRST`. Of `282` failed March/April paired
+  rows, `190` are compaction-only feasible within the existing cap, `33` are
+  cap-limited depletion required, `16` are patchy meltout or depletion required,
+  and `43` are under-persistence. Depletion-required rows are real but secondary:
+  `49/282` failed rows, with row-summed diagnostic SWE depletion at cap
+  `1.230 m`, concentrated in Harvard open (`23`) and Sleepers open field (`21`).
+  No production physics, default, selector, fixture, public schema, coefficient,
+  radiation, canopy, phase, density, melt, rain heat, longwave, frost, or density
+  cap changed. The next one-lever route is an opt-in spring
+  compaction/densification candidate that preserves the cap and mass
+  conservation before any separate spring depletion / patchy snow-cover process.
 - `20260627-snowdensity-10-3-9-march-april-residual-attribution-001/` is
   complete as SNOWDENSITY-10.3.9, the diagnostic March/April residual
   attribution gate after the SNOWDENSITY-10.3.8 opt-in liquid holding-capacity

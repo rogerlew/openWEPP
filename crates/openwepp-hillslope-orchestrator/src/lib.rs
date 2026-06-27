@@ -163,8 +163,8 @@ pub use hydrology::{
     SnowAlbedoUpdateInputs, SnowAlbedoUpdateOutcome, SnowDensityCompactionConstants,
     SnowDensityError, SnowDensityModel, SnowDensityRuntimeInputs, SnowDensityRuntimeOutcome,
     SnowMeltModel, Wb11HydrologyKernel, Wb11HydrologyKernelGuardError,
-    snow_density_compaction_v1_constants, update_snow_albedo_state,
-    update_snow_density_runtime_state,
+    snow_density_compaction_v1_constants, snow_density_spring_densification_v1_constants,
+    update_snow_albedo_state, update_snow_density_runtime_state,
 };
 pub use phase::HillslopePhase;
 pub use runtime_inputs::{

@@ -18,6 +18,7 @@ const LATENT_HEAT_FUSION_J_KG: f64 = 333_500.0;
 const SPECIFIC_HEAT_ICE_J_KG_K: f64 = 2_100.0;
 const SPECIFIC_HEAT_WATER_J_KG_K: f64 = 4_186.0;
 const ZERO_MASS_KG_M2: f64 = 1.0e-9;
+const DAILY_COMPACTION_STEPS: u8 = 24;
 
 #[derive(Debug, Clone)]
 pub struct PhysicsBulkRequest {
@@ -52,6 +53,7 @@ pub enum PhysicsBulkVariant {
     DenseSlowMeltV1,
     ColdDenseSlowMeltV1,
     DensityCompactionV1,
+    SpringDensificationV1,
 }
 
 #[derive(Debug, Clone, Copy, Serialize)]
@@ -71,6 +73,7 @@ pub struct PhysicsBulkConstants {
     pub subfreezing_cold_content_relaxation_per_hour: f64,
     pub dry_compaction_multiplier: f64,
     pub wet_compaction_multiplier: f64,
+    pub wet_compaction_substeps_per_day: u8,
     pub compaction_rate_cos_amplitude: f64,
     pub compaction_rate_offset: f64,
     pub ptm_rate_per_hour: f64,
@@ -215,6 +218,7 @@ pub const fn physics_bulk_constants_for_variant(
             subfreezing_cold_content_relaxation_per_hour: 0.015,
             dry_compaction_multiplier: 1.0,
             wet_compaction_multiplier: 1.0,
+            wet_compaction_substeps_per_day: 1,
             compaction_rate_cos_amplitude: 23.5,
             compaction_rate_offset: 24.5,
             ptm_rate_per_hour: 0.01,
@@ -259,6 +263,15 @@ pub const fn physics_bulk_constants_for_variant(
             wet_compaction_multiplier: 2.0,
             ..physics_bulk_constants_for_variant(PhysicsBulkVariant::CandidateV1)
         },
+        PhysicsBulkVariant::SpringDensificationV1 => PhysicsBulkConstants {
+            new_snow_density_min_kg_m3: 75.0,
+            new_snow_density_max_kg_m3: 250.0,
+            new_snow_density_base_kg_m3: 75.0,
+            dry_compaction_multiplier: 4.0,
+            wet_compaction_multiplier: 2.0,
+            wet_compaction_substeps_per_day: DAILY_COMPACTION_STEPS,
+            ..physics_bulk_constants_for_variant(PhysicsBulkVariant::CandidateV1)
+        },
     }
 }
 
@@ -271,6 +284,7 @@ impl PhysicsBulkVariant {
             Self::DenseSlowMeltV1 => "dense_slow_melt_v1",
             Self::ColdDenseSlowMeltV1 => "cold_dense_slow_melt_v1",
             Self::DensityCompactionV1 => "density_compaction_v1",
+            Self::SpringDensificationV1 => "spring_densification_v1",
         }
     }
 
@@ -282,6 +296,7 @@ impl PhysicsBulkVariant {
             Self::DenseSlowMeltV1 => "physics_bulk_dense_slow_melt_v1",
             Self::ColdDenseSlowMeltV1 => "physics_bulk_cold_dense_slow_melt_v1",
             Self::DensityCompactionV1 => "physics_bulk_density_compaction_v1",
+            Self::SpringDensificationV1 => "physics_bulk_spring_densification_v1",
         }
     }
 
@@ -292,6 +307,7 @@ impl PhysicsBulkVariant {
             "dense_slow_melt_v1" => Ok(Self::DenseSlowMeltV1),
             "cold_dense_slow_melt_v1" => Ok(Self::ColdDenseSlowMeltV1),
             "density_compaction_v1" => Ok(Self::DensityCompactionV1),
+            "spring_densification_v1" => Ok(Self::SpringDensificationV1),
             _ => Err(PhysicsBulkError::Invalid {
                 detail: format!(
                     "unknown physics_bulk variant '{value}', expected one of {}",
@@ -309,6 +325,7 @@ impl PhysicsBulkVariant {
             Self::DenseSlowMeltV1,
             Self::ColdDenseSlowMeltV1,
             Self::DensityCompactionV1,
+            Self::SpringDensificationV1,
         ]
     }
 
@@ -567,11 +584,22 @@ fn step_physics_bulk(
 
     let refreeze = refreeze_liquid_water(state);
     let cold_used_for_refreeze = refreeze * LATENT_HEAT_FUSION_J_KG;
-    if melt + rain_on_snow > ZERO_MASS_KG_M2 {
-        apply_wet_compaction(state, melt + rain_on_snow, constants);
+    let wet_liquid_for_compaction = melt + rain_on_snow;
+    if wet_liquid_for_compaction > ZERO_MASS_KG_M2 {
+        apply_wet_compaction(state, wet_liquid_for_compaction, constants);
     }
     if state.has_snow() {
-        apply_time_compaction(state, constants);
+        apply_time_compaction_scaled(
+            state,
+            constants,
+            if constants.wet_compaction_substeps_per_day > 1
+                && wet_liquid_for_compaction > ZERO_MASS_KG_M2
+            {
+                constants.wet_compaction_multiplier
+            } else {
+                1.0
+            },
+        );
     }
     let release = release_excess_liquid(state, constants);
     ledger.total_liquid_release_kg_m2 += release;
@@ -658,7 +686,11 @@ fn refreeze_liquid_water(state: &mut PhysicsBulkState) -> f64 {
     refreeze
 }
 
-fn apply_time_compaction(state: &mut PhysicsBulkState, constants: PhysicsBulkConstants) {
+fn apply_time_compaction_scaled(
+    state: &mut PhysicsBulkState,
+    constants: PhysicsBulkConstants,
+    multiplier_scale: f64,
+) {
     let density = state.observed_density_kg_m3();
     if density <= 0.0 || density >= constants.dry_compaction_max_density_kg_m3 {
         return;
@@ -690,6 +722,7 @@ fn apply_time_compaction(state: &mut PhysicsBulkState, constants: PhysicsBulkCon
         / rate;
     state.density_kg_m3 = (density
         + constants.dry_compaction_multiplier
+            * multiplier_scale
             * (destructive_metamorphism + overburden_compaction)
             * density)
         .min(constants.dry_compaction_max_density_kg_m3);
@@ -971,6 +1004,7 @@ mod tests {
         let dense = physics_bulk_constants_for_variant(PhysicsBulkVariant::DenseSlowMeltV1);
         let density_only =
             physics_bulk_constants_for_variant(PhysicsBulkVariant::DensityCompactionV1);
+        let spring = physics_bulk_constants_for_variant(PhysicsBulkVariant::SpringDensificationV1);
 
         assert_eq!(
             PhysicsBulkVariant::parse("candidate_v1").expect("variant"),
@@ -979,6 +1013,10 @@ mod tests {
         assert_eq!(
             PhysicsBulkVariant::parse("density_compaction_v1").expect("variant"),
             PhysicsBulkVariant::DensityCompactionV1
+        );
+        assert_eq!(
+            PhysicsBulkVariant::parse("spring_densification_v1").expect("variant"),
+            PhysicsBulkVariant::SpringDensificationV1
         );
         assert!(PhysicsBulkVariant::parse("site_specific").is_err());
         assert!(
@@ -998,6 +1036,19 @@ mod tests {
         assert!(density_only.dry_compaction_multiplier > candidate.dry_compaction_multiplier);
         assert_close(density_only.ptm_rate_per_hour, 0.01);
         assert_close(density_only.poc_density_decay, 21.0);
+        assert_close(
+            spring.dry_compaction_max_density_kg_m3,
+            density_only.dry_compaction_max_density_kg_m3,
+        );
+        assert_close(
+            spring.wet_compaction_max_density_kg_m3,
+            density_only.wet_compaction_max_density_kg_m3,
+        );
+        assert_eq!(spring.wet_compaction_substeps_per_day, 24);
+        assert_close(
+            spring.wet_compaction_multiplier,
+            density_only.wet_compaction_multiplier,
+        );
     }
 
     #[test]

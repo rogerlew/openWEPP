@@ -254,6 +254,6 @@ fn next_path(
 
 fn print_help() {
     println!(
-        "openwepp-snowbench <export-pysnobal|physics-bulk|coe-melt|coe-bound-density> --run-dir <path> [--run-file <path>] --output-dir <path> [--variant <candidate_v1|slow_melt_v1|dense_slow_melt_v1|cold_dense_slow_melt_v1|density_compaction_v1>] [--model <legacy_coe|coe_shortwave_albedo_v1|coe_winter_thaw_state_loss_v1>]\nopenwepp-snowbench jennings-phase --observations <file2.csv> --thresholds <file3.csv> --output-dir <path> [--max-rows <n>]"
+        "openwepp-snowbench <export-pysnobal|physics-bulk|coe-melt|coe-bound-density> --run-dir <path> [--run-file <path>] --output-dir <path> [--variant <candidate_v1|slow_melt_v1|dense_slow_melt_v1|cold_dense_slow_melt_v1|density_compaction_v1|spring_densification_v1>] [--model <legacy_coe|coe_shortwave_albedo_v1|coe_winter_thaw_state_loss_v1>]\nopenwepp-snowbench jennings-phase --observations <file2.csv> --thresholds <file3.csv> --output-dir <path> [--max-rows <n>]"
     );
 }

@@ -13,7 +13,7 @@ const PACKAGE: &str =
 fn snowdensity06b_contract_records_coe_bound_density_gate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 95",
+        "contract_version: 96",
         "INV-SNOWFREEZE-059",
         "SNOWDENSITY-06B CoE-bound density replay",
         "preserve CoE `snow_water_m` identity",
@@ -121,7 +121,7 @@ fn coe_bound_density_rejects_non_density_compaction_variants() {
 
     assert_contains(
         &error.to_string(),
-        "accepts only density_compaction_v1",
+        "accepts only density_compaction_v1 or spring_densification_v1",
         "error",
     );
 }

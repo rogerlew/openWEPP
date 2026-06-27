@@ -1,12 +1,15 @@
 const SNOW_DENSITY_LEGACY_MODEL_ID: &str = "legacy_wepp";
 const SNOW_DENSITY_COMPACTION_MODEL_ID: &str = "physics_bulk_density_compaction_v1";
+const SNOW_DENSITY_SPRING_DENSIFICATION_MODEL_ID: &str = "physics_bulk_spring_densification_v1";
 const SNOW_DENSITY_RHO_WATER_KG_M3: f64 = 1_000.0;
 const SNOW_DENSITY_ZERO_MASS_KG_M2: f64 = 1.0e-9;
+const SNOW_DENSITY_DAILY_COMPACTION_STEPS: u8 = 24;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SnowDensityModel {
     LegacyWepp,
     PhysicsBulkDensityCompactionV1,
+    PhysicsBulkSpringDensificationV1,
 }
 
 impl SnowDensityModel {
@@ -15,6 +18,9 @@ impl SnowDensityModel {
         match self {
             Self::LegacyWepp => SNOW_DENSITY_LEGACY_MODEL_ID,
             Self::PhysicsBulkDensityCompactionV1 => SNOW_DENSITY_COMPACTION_MODEL_ID,
+            Self::PhysicsBulkSpringDensificationV1 => {
+                SNOW_DENSITY_SPRING_DENSIFICATION_MODEL_ID
+            }
         }
     }
 }
@@ -32,6 +38,7 @@ pub struct SnowDensityCompactionConstants {
     pub wet_compaction_half_saturation_ratio: f64,
     pub dry_compaction_multiplier: f64,
     pub wet_compaction_multiplier: f64,
+    pub wet_compaction_substeps_per_day: u8,
     pub compaction_rate_cos_amplitude: f64,
     pub compaction_rate_offset: f64,
     pub ptm_rate_per_hour: f64,
@@ -57,6 +64,7 @@ pub const fn snow_density_compaction_v1_constants() -> SnowDensityCompactionCons
         wet_compaction_half_saturation_ratio: 0.4,
         dry_compaction_multiplier: 4.0,
         wet_compaction_multiplier: 2.0,
+        wet_compaction_substeps_per_day: 1,
         compaction_rate_cos_amplitude: 23.5,
         compaction_rate_offset: 24.5,
         ptm_rate_per_hour: 0.01,
@@ -66,6 +74,14 @@ pub const fn snow_density_compaction_v1_constants() -> SnowDensityCompactionCons
         poc_rate_per_hour: 0.026,
         poc_temperature_decay_per_c: 0.08,
         poc_density_decay: 21.0,
+    }
+}
+
+#[must_use]
+pub const fn snow_density_spring_densification_v1_constants() -> SnowDensityCompactionConstants {
+    SnowDensityCompactionConstants {
+        wet_compaction_substeps_per_day: SNOW_DENSITY_DAILY_COMPACTION_STEPS,
+        ..snow_density_compaction_v1_constants()
     }
 }
 
@@ -161,7 +177,7 @@ pub fn update_snow_density_runtime_state(
         });
     }
 
-    let constants = snow_density_compaction_v1_constants();
+    let constants = snow_density_constants_for_model(inputs.model);
     let mut state = CoeBoundDensityState {
         mass_kg_m2: inputs.prior_swe_m * SNOW_DENSITY_RHO_WATER_KG_M3,
         density_kg_m3: inputs.prior_density_kg_m3,
@@ -184,18 +200,12 @@ pub fn update_snow_density_runtime_state(
         )?;
     }
 
-    let liquid_for_compaction_kg_m2 =
-        inputs.liquid_for_compaction_m * SNOW_DENSITY_RHO_WATER_KG_M3;
-    if liquid_for_compaction_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2 {
-        apply_wet_compaction(&mut state, liquid_for_compaction_kg_m2, constants);
-    }
-    for _ in 0..24 {
-        apply_time_compaction(
-            &mut state,
-            inputs.mean_air_temperature_c.clamp(-30.0, 0.0),
-            constants,
-        );
-    }
+    apply_daily_compaction(
+        &mut state,
+        inputs.liquid_for_compaction_m * SNOW_DENSITY_RHO_WATER_KG_M3,
+        inputs.mean_air_temperature_c.clamp(-30.0, 0.0),
+        constants,
+    );
 
     let unbounded_swe_m = state.mass_kg_m2 / SNOW_DENSITY_RHO_WATER_KG_M3;
     state.mass_kg_m2 = inputs.boundary_swe_after_m * SNOW_DENSITY_RHO_WATER_KG_M3;
@@ -212,12 +222,25 @@ pub fn update_snow_density_runtime_state(
         model: inputs.model,
         runtime_swe_after_m,
         runtime_depth_after_m: state.depth_m(),
-        runtime_density_after_kg_m3: state.observed_density_kg_m3(),
+        runtime_density_after_kg_m3: state.density_kg_m3,
         coe_boundary_depth_after_m: inputs.boundary_depth_after_m,
         coe_boundary_density_after_kg_m3: inputs.boundary_density_after_kg_m3,
         max_abs_swe_identity_residual_m: identity_residual_m.abs(),
         max_abs_unbounded_swe_residual_m: (unbounded_swe_m - inputs.boundary_swe_after_m).abs(),
     })
+}
+
+const fn snow_density_constants_for_model(
+    model: SnowDensityModel,
+) -> SnowDensityCompactionConstants {
+    match model {
+        SnowDensityModel::LegacyWepp | SnowDensityModel::PhysicsBulkDensityCompactionV1 => {
+            snow_density_compaction_v1_constants()
+        }
+        SnowDensityModel::PhysicsBulkSpringDensificationV1 => {
+            snow_density_spring_densification_v1_constants()
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -296,6 +319,84 @@ fn apply_time_compaction(
         / rate;
     state.density_kg_m3 = (density
         + constants.dry_compaction_multiplier
+            * (destructive_metamorphism + overburden_compaction)
+            * density)
+        .min(constants.dry_compaction_max_density_kg_m3);
+}
+
+fn apply_daily_compaction(
+    state: &mut CoeBoundDensityState,
+    liquid_for_compaction_kg_m2: f64,
+    snow_temperature_c: f64,
+    constants: SnowDensityCompactionConstants,
+) {
+    let wet_substeps = constants.wet_compaction_substeps_per_day.max(1);
+    if wet_substeps == 1 {
+        if liquid_for_compaction_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2 {
+            apply_wet_compaction(state, liquid_for_compaction_kg_m2, constants);
+        }
+        for _ in 0..SNOW_DENSITY_DAILY_COMPACTION_STEPS {
+            apply_time_compaction(state, snow_temperature_c, constants);
+        }
+        return;
+    }
+
+    let liquid_per_step = liquid_for_compaction_kg_m2 / f64::from(wet_substeps);
+    if liquid_for_compaction_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2 {
+        apply_wet_compaction(state, liquid_for_compaction_kg_m2, constants);
+    }
+    for step in 0..SNOW_DENSITY_DAILY_COMPACTION_STEPS {
+        let wet_step = step < wet_substeps && liquid_per_step > SNOW_DENSITY_ZERO_MASS_KG_M2;
+        apply_time_compaction_scaled(
+            state,
+            snow_temperature_c,
+            constants,
+            if wet_step {
+                constants.wet_compaction_multiplier
+            } else {
+                1.0
+            },
+        );
+    }
+}
+
+fn apply_time_compaction_scaled(
+    state: &mut CoeBoundDensityState,
+    snow_temperature_c: f64,
+    constants: SnowDensityCompactionConstants,
+    multiplier_scale: f64,
+) {
+    let density = state.observed_density_kg_m3();
+    if density <= 0.0 || density >= constants.dry_compaction_max_density_kg_m3 {
+        return;
+    }
+    let swe = state.mass_kg_m2;
+    let rate = if swe >= constants.dry_compaction_swe_max_kg_m2 {
+        1.0
+    } else {
+        constants.compaction_rate_cos_amplitude
+            * (std::f64::consts::PI * swe / constants.dry_compaction_swe_max_kg_m2).cos()
+            + constants.compaction_rate_offset
+    };
+    let c11 = if density < constants.ptm_density_threshold_kg_m3 {
+        1.0
+    } else {
+        (-constants.ptm_density_decay_m3_per_kg * (density - constants.ptm_density_threshold_kg_m3))
+            .exp()
+    };
+    let freeze_minus_snow_temp = -snow_temperature_c.min(0.0);
+    let destructive_metamorphism = constants.ptm_rate_per_hour
+        * c11
+        * (-constants.ptm_temperature_decay_per_c * freeze_minus_snow_temp).exp()
+        / rate;
+    let overburden_compaction = constants.poc_rate_per_hour
+        * (-constants.poc_temperature_decay_per_c * freeze_minus_snow_temp).exp()
+        * swe
+        * (-constants.poc_density_decay * (density / SNOW_DENSITY_RHO_WATER_KG_M3)).exp()
+        / rate;
+    state.density_kg_m3 = (density
+        + constants.dry_compaction_multiplier
+            * multiplier_scale
             * (destructive_metamorphism + overburden_compaction)
             * density)
         .min(constants.dry_compaction_max_density_kg_m3);

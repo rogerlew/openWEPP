@@ -15,6 +15,7 @@ use super::snowbench_physics_bulk::{
 const CONTRACT: &str = "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-058 INV-SNOWFREEZE-059 OBL-SNOWFREEZE-P-034";
 const RHO_WATER_KG_M3: f64 = 1_000.0;
 const ZERO_MASS_KG_M2: f64 = 1.0e-9;
+const DAILY_COMPACTION_STEPS: u8 = 24;
 
 #[derive(Debug, Clone)]
 pub struct CoeBoundDensityRequest {
@@ -112,9 +113,12 @@ struct CoeBoundDensityLedger {
 pub fn run_coe_bound_density_snowbench(
     request: &CoeBoundDensityRequest,
 ) -> Result<CoeBoundDensityReport, SnowbenchError> {
-    if request.density_variant != PhysicsBulkVariant::DensityCompactionV1 {
+    if !matches!(
+        request.density_variant,
+        PhysicsBulkVariant::DensityCompactionV1 | PhysicsBulkVariant::SpringDensificationV1
+    ) {
         return Err(SnowbenchError::InvalidInput {
-            detail: "coe-bound-density currently accepts only density_compaction_v1".to_string(),
+            detail: "coe-bound-density currently accepts only density_compaction_v1 or spring_densification_v1".to_string(),
         });
     }
     let output_dir = absolute_path(&request.output_dir)?;
@@ -452,19 +456,13 @@ fn simulate_coe_bound_density(
                 constants,
             )?;
         }
-        let liquid_for_compaction_kg_m2 =
+        apply_daily_compaction(
+            &mut state,
             (boundary_day.snowpack_swe_loss_m + boundary_day.routed_melt_m).max(0.0)
-                * RHO_WATER_KG_M3;
-        if liquid_for_compaction_kg_m2 > ZERO_MASS_KG_M2 {
-            apply_wet_compaction(&mut state, liquid_for_compaction_kg_m2, constants);
-        }
-        for _ in 0..24 {
-            apply_time_compaction(
-                &mut state,
-                forcing_day.mean_air_temperature_c.clamp(-30.0, 0.0),
-                constants,
-            );
-        }
+                * RHO_WATER_KG_M3,
+            forcing_day.mean_air_temperature_c.clamp(-30.0, 0.0),
+            constants,
+        );
         let unbounded_swe_m = state.mass_kg_m2 / RHO_WATER_KG_M3;
         let coe_swe_m = boundary_day.snow_water_m.max(0.0);
         ledger.max_abs_unbounded_swe_residual_m = ledger
@@ -563,6 +561,84 @@ fn apply_time_compaction(
         / rate;
     state.density_kg_m3 = (density
         + constants.dry_compaction_multiplier
+            * (destructive_metamorphism + overburden_compaction)
+            * density)
+        .min(constants.dry_compaction_max_density_kg_m3);
+}
+
+fn apply_daily_compaction(
+    state: &mut CoeBoundDensityState,
+    liquid_for_compaction_kg_m2: f64,
+    snow_temperature_c: f64,
+    constants: PhysicsBulkConstants,
+) {
+    let wet_substeps = constants.wet_compaction_substeps_per_day.max(1);
+    if wet_substeps == 1 {
+        if liquid_for_compaction_kg_m2 > ZERO_MASS_KG_M2 {
+            apply_wet_compaction(state, liquid_for_compaction_kg_m2, constants);
+        }
+        for _ in 0..DAILY_COMPACTION_STEPS {
+            apply_time_compaction(state, snow_temperature_c, constants);
+        }
+        return;
+    }
+
+    let liquid_per_step = liquid_for_compaction_kg_m2 / f64::from(wet_substeps);
+    if liquid_for_compaction_kg_m2 > ZERO_MASS_KG_M2 {
+        apply_wet_compaction(state, liquid_for_compaction_kg_m2, constants);
+    }
+    for step in 0..DAILY_COMPACTION_STEPS {
+        let wet_step = step < wet_substeps && liquid_per_step > ZERO_MASS_KG_M2;
+        apply_time_compaction_scaled(
+            state,
+            snow_temperature_c,
+            constants,
+            if wet_step {
+                constants.wet_compaction_multiplier
+            } else {
+                1.0
+            },
+        );
+    }
+}
+
+fn apply_time_compaction_scaled(
+    state: &mut CoeBoundDensityState,
+    snow_temperature_c: f64,
+    constants: PhysicsBulkConstants,
+    multiplier_scale: f64,
+) {
+    let density = state.observed_density_kg_m3();
+    if density <= 0.0 || density >= constants.dry_compaction_max_density_kg_m3 {
+        return;
+    }
+    let swe = state.mass_kg_m2;
+    let rate = if swe >= constants.dry_compaction_swe_max_kg_m2 {
+        1.0
+    } else {
+        constants.compaction_rate_cos_amplitude
+            * (std::f64::consts::PI * swe / constants.dry_compaction_swe_max_kg_m2).cos()
+            + constants.compaction_rate_offset
+    };
+    let c11 = if density < constants.ptm_density_threshold_kg_m3 {
+        1.0
+    } else {
+        (-constants.ptm_density_decay_m3_per_kg * (density - constants.ptm_density_threshold_kg_m3))
+            .exp()
+    };
+    let freeze_minus_snow_temp = -snow_temperature_c.min(0.0);
+    let destructive_metamorphism = constants.ptm_rate_per_hour
+        * c11
+        * (-constants.ptm_temperature_decay_per_c * freeze_minus_snow_temp).exp()
+        / rate;
+    let overburden_compaction = constants.poc_rate_per_hour
+        * (-constants.poc_temperature_decay_per_c * freeze_minus_snow_temp).exp()
+        * swe
+        * (-constants.poc_density_decay * (density / RHO_WATER_KG_M3)).exp()
+        / rate;
+    state.density_kg_m3 = (density
+        + constants.dry_compaction_multiplier
+            * multiplier_scale
             * (destructive_metamorphism + overburden_compaction)
             * density)
         .min(constants.dry_compaction_max_density_kg_m3);

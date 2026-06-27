@@ -734,6 +734,14 @@ path = "tests/integration/snowdensity10_3_8_liquid_holding_capacity.rs"
 name = "snowdensity10_3_9_march_april_residual_attribution"
 path = "tests/integration/snowdensity10_3_9_march_april_residual_attribution.rs"
 
+[[test]]
+name = "snowdensity10_3_10_spring_pack_depletion_compaction"
+path = "tests/integration/snowdensity10_3_10_spring_pack_depletion_compaction.rs"
+
+[[test]]
+name = "snowdensity10_3_11_spring_compaction_densification"
+path = "tests/integration/snowdensity10_3_11_spring_compaction_densification.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
