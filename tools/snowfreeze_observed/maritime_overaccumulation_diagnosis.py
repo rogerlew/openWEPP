@@ -581,6 +581,11 @@ def read_coe_rows(path: Path) -> dict[dt.date, dict[str, float | None]]:
     for row in rows:
         date = dt.date.fromisoformat(row["date"])
         result[date] = {
+            "snow_water_before_m": optional_float(row.get("snow_water_before_m")),
+            "snow_input_m": optional_float(row.get("snow_input_m")),
+            "rain_input_m": optional_float(row.get("rain_input_m")),
+            "rain_retained_m": optional_float(row.get("rain_retained_m")),
+            "rain_released_m": optional_float(row.get("rain_released_m")),
             "snow_water_m": optional_float(row["snow_water_m"]),
             "snow_depth_m": optional_float(row["snow_depth_m"]),
             "snow_density_kg_m3": optional_float(row["snow_density_kg_m3"]),
@@ -588,6 +593,15 @@ def read_coe_rows(path: Path) -> dict[dt.date, dict[str, float | None]]:
             "redistributed_melt_m": optional_float(row["redistributed_melt_m"]),
             "routed_melt_m": optional_float(row["routed_melt_m"]),
             "snowpack_swe_loss_m": optional_float(row["snowpack_swe_loss_m"]),
+            "snowpack_swe_balance_residual_m": optional_float(
+                row.get("snowpack_swe_balance_residual_m")
+            ),
+            "routed_state_loss_residual_m": optional_float(
+                row.get("routed_state_loss_residual_m")
+            ),
+            "state_loss_available_storage_margin_m": optional_float(
+                row.get("state_loss_available_storage_margin_m")
+            ),
         }
     return result
 

@@ -11,6 +11,10 @@ const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00_builders_and_authority.rs"
 );
+const AUTHORITY_IMPL: &str = concat!(
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
+    "00a_snow_frost_authority_impl.rs"
+);
 const REPORT: &str = concat!(
     "docs/work-packages/20260626-snowdensity-09-diagnostic-coupled-wat-rerun-001/",
     "artifacts/snowdensity09_coupled_wat_rerun.json"
@@ -21,7 +25,7 @@ const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 fn snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 92",
+        "contract_version: 94",
         "INV-SNOWFREEZE-062",
         "OBL-SNOWFREEZE-P-037",
         "SNOWDENSITY-09 Diagnostic Coupled WAT Rerun Addendum",
@@ -61,10 +65,16 @@ fn snowdensity09_implementation_keeps_cli_default_and_env_diagnostic() {
         "SnowDensityModel::LegacyWepp",
         "SnowDensityModel::PhysicsBulkDensityCompactionV1",
         "\\\"snow_density_model\\\":\\\"{}\\\"",
-        "snow_density_model: self.snow_density_model",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
+
+    let authority_impl = read(AUTHORITY_IMPL);
+    assert_contains(
+        &authority_impl,
+        "snow_density_model: self.snow_density_model",
+        AUTHORITY_IMPL,
+    );
 }
 
 #[test]

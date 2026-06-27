@@ -301,47 +301,63 @@ fn read_coe_boundary(path: &Path) -> Result<Vec<CoeBoundaryRow>, SnowbenchError>
     let header = lines.next().ok_or_else(|| SnowbenchError::InvalidForcing {
         detail: format!("{} missing header", path.display()),
     })?;
-    let expected = "date,snow_water_m,snow_depth_m,snow_density_kg_m3,raw_melt_m,redistributed_melt_m,routed_melt_m,snowpack_swe_loss_m,snow_albedo,source";
-    if header != expected {
-        return Err(SnowbenchError::InvalidForcing {
-            detail: format!(
-                "{} has unexpected CoE boundary header '{header}'",
-                path.display()
-            ),
-        });
-    }
+    let header_columns = header.split(',').collect::<Vec<_>>();
+    let date_index = coe_boundary_required_column(path, &header_columns, "date")?;
+    let snow_water_index = coe_boundary_required_column(path, &header_columns, "snow_water_m")?;
+    let snow_depth_index = coe_boundary_required_column(path, &header_columns, "snow_depth_m")?;
+    let snow_density_index =
+        coe_boundary_required_column(path, &header_columns, "snow_density_kg_m3")?;
+    let routed_melt_index = coe_boundary_required_column(path, &header_columns, "routed_melt_m")?;
+    let snowpack_swe_loss_index =
+        coe_boundary_required_column(path, &header_columns, "snowpack_swe_loss_m")?;
     let mut rows = Vec::new();
     for (line_index, line) in lines.enumerate() {
         if line.trim().is_empty() {
             continue;
         }
         let columns = line.split(',').collect::<Vec<_>>();
-        if columns.len() != 10 {
+        if columns.len() != header_columns.len() {
             return Err(SnowbenchError::InvalidForcing {
                 detail: format!(
-                    "{} line {} has {} columns, expected 10",
+                    "{} line {} has {} columns, expected {}",
                     path.display(),
                     line_index + 2,
-                    columns.len()
+                    columns.len(),
+                    header_columns.len()
                 ),
             });
         }
         rows.push(CoeBoundaryRow {
-            date: columns[0].to_string(),
-            snow_water_m: parse_column(path, line_index + 2, "snow_water_m", columns[1])?,
-            snow_depth_m: parse_column(path, line_index + 2, "snow_depth_m", columns[2])?,
+            date: columns[date_index].to_string(),
+            snow_water_m: parse_column(
+                path,
+                line_index + 2,
+                "snow_water_m",
+                columns[snow_water_index],
+            )?,
+            snow_depth_m: parse_column(
+                path,
+                line_index + 2,
+                "snow_depth_m",
+                columns[snow_depth_index],
+            )?,
             snow_density_kg_m3: parse_column(
                 path,
                 line_index + 2,
                 "snow_density_kg_m3",
-                columns[3],
+                columns[snow_density_index],
             )?,
-            routed_melt_m: parse_column(path, line_index + 2, "routed_melt_m", columns[6])?,
+            routed_melt_m: parse_column(
+                path,
+                line_index + 2,
+                "routed_melt_m",
+                columns[routed_melt_index],
+            )?,
             snowpack_swe_loss_m: parse_column(
                 path,
                 line_index + 2,
                 "snowpack_swe_loss_m",
-                columns[7],
+                columns[snowpack_swe_loss_index],
             )?,
         });
     }
@@ -351,6 +367,22 @@ fn read_coe_boundary(path: &Path) -> Result<Vec<CoeBoundaryRow>, SnowbenchError>
         });
     }
     Ok(rows)
+}
+
+fn coe_boundary_required_column(
+    path: &Path,
+    header_columns: &[&str],
+    field: &'static str,
+) -> Result<usize, SnowbenchError> {
+    header_columns
+        .iter()
+        .position(|column| *column == field)
+        .ok_or_else(|| SnowbenchError::InvalidForcing {
+            detail: format!(
+                "{} CoE boundary header missing required field {field}",
+                path.display()
+            ),
+        })
 }
 
 fn parse_column(

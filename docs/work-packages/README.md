@@ -13,6 +13,28 @@
 
 State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-7-winter-thaw-melt-response-correction-001/` is
+  complete as SNOWDENSITY-10.3.7, the opt-in winter-thaw melt-response
+  correction. It amended `SC-SNOWFREEZE-001` to v94 with
+  `coe_winter_thaw_state_loss_v1`, `INV-SNOWFREEZE-066`,
+  `OBL-SNOWFREEZE-P-041`, and the Opt-In Winter-Thaw State-Loss Addendum. The
+  correction preserves `legacy_coe` as default/rollback and keeps CoE melt
+  terms, radiation, canopy, phase partition, density constants, rain heat,
+  sub-canopy longwave, frost, public schemas, and fixtures unchanged. Its only
+  algorithmic delta is the explicit opt-in positive-thaw state-loss branch when
+  legacy would retain positive `wmelt` as density-only compaction below
+  `350 kg m^-3`. Paired Sleepers/Harvard thaw-ablation evidence improves:
+  under-ablation windows `132 -> 108`, aggregate depth-loss deficit
+  `24.105 m -> 17.629 m`, modeled depth loss `15.868 m -> 26.400 m`, routed
+  melt `5.895 m -> 11.235 m`, and snowpack SWE loss `4.628 m -> 10.615 m`.
+  The operator-review conservation gap was resolved with zero active-ledger SWE
+  balance and routed-state-loss residuals. The operator-review coupled gate was
+  resolved with real direct-production WAT evidence: snow-control failures
+  improve `1147 -> 978` with no paired surface worse, but the package remains
+  blocked from activation because `978/1415` paired rows still fail snow control.
+  The result is `WINTER-THAW-MELT-RESPONSE-CANDIDATE-IMPROVES`, not default
+  activation and not full snow-control closure; remaining snow-depth residuals
+  route to the next one-lever adjudication package.
 - `20260627-snowdensity-10-3-6-winter-thaw-melt-response-001/` is complete as
   SNOWDENSITY-10.3.6, the rank-2 winter-thaw melt-response diagnosis. It added a
   diagnostic-only `legacy_coe` snowbench event-window tool and compared observed

@@ -13,7 +13,7 @@ const PACKAGE: &str =
 fn snowdensity06b_contract_records_coe_bound_density_gate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 92",
+        "contract_version: 94",
         "INV-SNOWFREEZE-059",
         "SNOWDENSITY-06B CoE-bound density replay",
         "preserve CoE `snow_water_m` identity",
@@ -61,15 +61,26 @@ fn coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface() {
     assert!(report.no_site_constants);
     assert!(report.summary.max_abs_coe_swe_identity_residual_m < 1.0e-12);
 
-    let replay = read_csv(&output_dir.join("coe_bound_density_snow.csv"));
-    let coe = read_csv(&output_dir.join("coe_boundary/coe_melt_snow.csv"));
+    let (replay_header, replay) = read_csv(&output_dir.join("coe_bound_density_snow.csv"));
+    let (coe_header, coe) = read_csv(&output_dir.join("coe_boundary/coe_melt_snow.csv"));
     assert_eq!(replay.len(), coe.len());
     let mut density_difference_count = 0;
     for (replay_row, coe_row) in replay.iter().zip(&coe) {
-        assert_eq!(replay_row[0], coe_row[0], "date alignment");
-        assert_close(parse(&replay_row[1]), parse(&coe_row[1]), 1.0e-12);
-        if parse(&coe_row[1]) > 1.0e-9 {
-            let density_delta = (parse(&replay_row[3]) - parse(&coe_row[3])).abs();
+        assert_eq!(
+            csv_field(&replay_header, replay_row, "date"),
+            csv_field(&coe_header, coe_row, "date"),
+            "date alignment"
+        );
+        assert_close(
+            parse(csv_field(&replay_header, replay_row, "snow_water_m")),
+            parse(csv_field(&coe_header, coe_row, "snow_water_m")),
+            1.0e-12,
+        );
+        if parse(csv_field(&coe_header, coe_row, "snow_water_m")) > 1.0e-9 {
+            let density_delta =
+                (parse(csv_field(&replay_header, replay_row, "snow_density_kg_m3"))
+                    - parse(csv_field(&coe_header, coe_row, "snow_density_kg_m3")))
+                .abs();
             if density_delta > 1.0e-9 {
                 density_difference_count += 1;
             }
@@ -119,14 +130,30 @@ fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|err| panic!("failed to read {path}: {err}"))
 }
 
-fn read_csv(path: &Path) -> Vec<Vec<String>> {
+fn read_csv(path: &Path) -> (Vec<String>, Vec<Vec<String>>) {
     let text = fs::read_to_string(path)
         .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()));
-    text.lines()
-        .skip(1)
+    let mut lines = text.lines();
+    let header = lines
+        .next()
+        .unwrap_or_else(|| panic!("{} missing CSV header", path.display()))
+        .split(',')
+        .map(str::to_string)
+        .collect::<Vec<_>>();
+    let rows = lines
         .filter(|line| !line.trim().is_empty())
         .map(|line| line.split(',').map(str::to_string).collect())
-        .collect()
+        .collect();
+    (header, rows)
+}
+
+fn csv_field<'a>(header: &[String], row: &'a [String], field: &str) -> &'a str {
+    let index = header
+        .iter()
+        .position(|column| column == field)
+        .unwrap_or_else(|| panic!("missing CSV field {field}"));
+    row.get(index)
+        .unwrap_or_else(|| panic!("row missing CSV field {field}"))
 }
 
 fn parse(value: &str) -> f64 {

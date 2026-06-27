@@ -59,7 +59,12 @@ fn coe_melt_snowbench_runs_both_models_as_diagnostic_only() {
 
         let csv = fs::read_to_string(output.join("coe_melt_snow.csv"))
             .expect("missing coe_melt_snow.csv");
-        assert!(csv.starts_with("date,snow_water_m,snow_depth_m,snow_density_kg_m3,raw_melt_m,"));
+        assert!(csv.starts_with(
+            "date,snow_water_before_m,snow_input_m,rain_input_m,rain_retained_m,rain_released_m,"
+        ));
+        assert!(csv.contains(
+            "snowpack_swe_balance_residual_m,routed_state_loss_residual_m,state_loss_available_storage_margin_m"
+        ));
         assert!(
             csv.lines().count() > 100,
             "diagnostic snow series should contain many daily rows"

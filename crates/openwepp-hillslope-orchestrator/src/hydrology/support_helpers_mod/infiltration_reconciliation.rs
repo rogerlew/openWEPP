@@ -15,8 +15,8 @@ impl Wb11HydrologyKernel {
         positive_temperature_c_day_increment: f64,
         underlying_surface_albedo: f64,
     ) -> Result<Option<SnowAlbedoState>, Wb11HydrologyKernelGuardError> {
-        if melt_model == SnowMeltModel::LegacyCoe {
-            return Ok(previous_state);
+        if !melt_model.requires_snow_albedo_state() {
+            return Ok(None);
         }
 
         let snow_water_equivalent_m = if snow_depth_m > WB11_ZERO_THRESHOLD
@@ -1222,7 +1222,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
                     )?;
                     albedo_updated_this_hour = true;
                     let shortwave_absorbed_fraction = match inputs.snow_melt_model {
-                        SnowMeltModel::LegacyCoe => 1.0,
+                        SnowMeltModel::LegacyCoe | SnowMeltModel::CoeWinterThawStateLossV1 => 1.0,
                         SnowMeltModel::CoeShortwaveAlbedoV1 => snow_albedo_state_after
                             .ok_or(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
                                 phase_class,
@@ -1299,9 +1299,20 @@ pub(crate) fn compute_simimpl29_melt_hour(
                             melt_m = wmelt.min(0.0);
                         }
                     } else {
-                        let mut densgt = dens * (snodpt_after_inputs / snodep);
+                        let thaw_state_loss_opt_in =
+                            inputs.snow_melt_model == SnowMeltModel::CoeWinterThawStateLossV1
+                                && wmelt > WB11_ZERO_THRESHOLD;
+                        let mut densgt = if thaw_state_loss_opt_in {
+                            dens
+                        } else {
+                            dens * (snodpt_after_inputs / snodep)
+                        };
                         if densgt <= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
-                            melt_m = wmelt.min(0.0);
+                            melt_m = if thaw_state_loss_opt_in {
+                                wmelt
+                            } else {
+                                wmelt.min(0.0)
+                            };
                             if hrrain > WB11_ZERO_THRESHOLD {
                                 let densic = openwepp_unit_boundary::conversions::water_depth_meters_to_snow_density_increment(
                                     hrrain,

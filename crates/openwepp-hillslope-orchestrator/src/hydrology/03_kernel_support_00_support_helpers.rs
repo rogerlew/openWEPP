@@ -177,6 +177,8 @@ pub struct DirectSnowLiquidPartition {
     pub redistributed_melt_m: f64,
     pub routed_melt_m: f64,
     pub snowpack_swe_loss_m: f64,
+    pub rain_retained_m: f64,
+    pub rain_released_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
     pub runtime_depth_after_m: f64,

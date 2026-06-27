@@ -5,6 +5,7 @@ const PACKAGE: &str =
     "docs/work-packages/20260626-snowdensity-05f-melt-closure-density-handoff-001/package.md";
 const HANDOFF: &str = "docs/work-packages/20260626-snowdensity-05f-melt-closure-density-handoff-001/artifacts/worker-handoff.md";
 const BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";
+const SNOW_FROST_IMPL: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs";
 const SNOWBENCH: &str = "crates/openwepp-runner/src/bin/openwepp-snowbench.rs";
 const PRODUCTION_BINS: &[&str] = &[
     "crates/openwepp-runner/src/bin/open_wepp_runner.rs",
@@ -17,7 +18,7 @@ const PRODUCTION_BINS: &[&str] = &[
 fn snowdensity05f_contract_closes_melt_without_default_activation() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 92",
+        "contract_version: 94",
         "INV-SNOWFREEZE-056",
         "SNOWDENSITY-05F melt closure / density handoff",
         "SNOWDENSITY-05F closes the melt-modernization ladder without default activation",
@@ -41,13 +42,22 @@ fn snowdensity05f_contract_closes_melt_without_default_activation() {
 
 #[test]
 fn snowdensity05f_production_default_and_cli_remain_confined() {
-    let builder = read(BUILDER);
+    let builder = format!("{}\n{}", read(BUILDER), read(SNOW_FROST_IMPL));
     assert_contains(
         &builder,
-        "snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe",
-        BUILDER,
+        "snow_melt_model: self.snow_melt_model",
+        "direct publication snow/frost sources",
     );
-    assert_not_contains(&builder, "SnowMeltModel::CoeShortwaveAlbedoV1", BUILDER);
+    assert_contains(
+        &builder,
+        "Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe)",
+        "direct publication snow/frost sources",
+    );
+    assert_not_contains(
+        &builder,
+        "SnowMeltModel::CoeShortwaveAlbedoV1",
+        "direct publication snow/frost sources",
+    );
 
     for path in PRODUCTION_BINS {
         let source = read(path);

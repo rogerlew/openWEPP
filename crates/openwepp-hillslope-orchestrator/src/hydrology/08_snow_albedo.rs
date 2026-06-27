@@ -3,6 +3,7 @@ use std::fmt;
 
 const LEGACY_COE_MODEL_ID: &str = "legacy_coe";
 const COE_SHORTWAVE_ALBEDO_MODEL_ID: &str = "coe_shortwave_albedo_v1";
+const COE_WINTER_THAW_STATE_LOSS_MODEL_ID: &str = "coe_winter_thaw_state_loss_v1";
 const BROCK2000_ALBEDO_MODEL_ID: &str = "brock2000_temperature_age_v1";
 const SNOW_ALBEDO_MIN: f64 = 0.0;
 const SNOW_ALBEDO_MAX_BROCK2000: f64 = 0.85;
@@ -19,6 +20,7 @@ const BROCK2000_DEPTH_TRANSITION_SCALE_M: f64 = 0.024;
 pub enum SnowMeltModel {
     LegacyCoe,
     CoeShortwaveAlbedoV1,
+    CoeWinterThawStateLossV1,
 }
 
 impl SnowMeltModel {
@@ -27,7 +29,13 @@ impl SnowMeltModel {
         match self {
             Self::LegacyCoe => LEGACY_COE_MODEL_ID,
             Self::CoeShortwaveAlbedoV1 => COE_SHORTWAVE_ALBEDO_MODEL_ID,
+            Self::CoeWinterThawStateLossV1 => COE_WINTER_THAW_STATE_LOSS_MODEL_ID,
         }
+    }
+
+    #[must_use]
+    pub const fn requires_snow_albedo_state(self) -> bool {
+        matches!(self, Self::CoeShortwaveAlbedoV1)
     }
 }
 
@@ -139,7 +147,7 @@ impl Error for SnowAlbedoError {}
 pub fn update_snow_albedo_state(
     inputs: SnowAlbedoUpdateInputs,
 ) -> Result<SnowAlbedoUpdateOutcome, SnowAlbedoError> {
-    if inputs.melt_model == SnowMeltModel::LegacyCoe {
+    if !inputs.melt_model.requires_snow_albedo_state() {
         return Ok(SnowAlbedoUpdateOutcome {
             active: false,
             state: None,

@@ -12,6 +12,10 @@ const DIRECT_PUBLICATION_BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00_builders_and_authority.rs"
 );
+const DIRECT_PUBLICATION_SNOW_FROST_IMPL: &str = concat!(
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
+    "00a_snow_frost_authority_impl.rs"
+);
 const HOUR_COUNT: usize = 24;
 const TOL: f64 = 1.0e-12;
 
@@ -23,7 +27,7 @@ fn read(path: &str) -> String {
 fn snowdensity07_contract_and_package_bind_runtime_opt_in_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 92",
+        "contract_version: 94",
         "INV-SNOWFREEZE-060",
         "OBL-SNOWFREEZE-P-035",
         "snow_density_model",
@@ -222,7 +226,11 @@ fn snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge() {
 
 #[test]
 fn snowdensity07_surface_driven_publication_path_remains_default_disabled() {
-    let builder = read(DIRECT_PUBLICATION_BUILDER);
+    let builder = format!(
+        "{}\n{}",
+        read(DIRECT_PUBLICATION_BUILDER),
+        read(DIRECT_PUBLICATION_SNOW_FROST_IMPL)
+    );
 
     assert!(
         builder.contains("SNOWDENSITY09_DENSITY_MODEL_ENV")
@@ -233,6 +241,11 @@ fn snowdensity07_surface_driven_publication_path_remains_default_disabled() {
     assert!(
         builder.contains("snow_density_model: self.snow_density_model")
             && builder.contains("SnowDensityModel::PhysicsBulkDensityCompactionV1"),
-        "surface-driven publication path may expose only the SNOWDENSITY-09 diagnostic env hook"
+        "surface-driven publication path must preserve the SNOWDENSITY-09 diagnostic density env hook"
+    );
+    assert!(
+        builder.contains("SNOWDENSITY1037_MELT_MODEL_ENV")
+            && builder.contains("SnowMeltModel::LegacyCoe"),
+        "newer melt diagnostic hooks must preserve absent-selector legacy_coe behavior"
     );
 }

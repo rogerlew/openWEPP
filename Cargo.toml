@@ -722,6 +722,10 @@ path = "tests/integration/snowdensity10_3_5c_phase_partition_snowdepth_impact.rs
 name = "snowdensity10_3_6_winter_thaw_melt_response"
 path = "tests/integration/snowdensity10_3_6_winter_thaw_melt_response.rs"
 
+[[test]]
+name = "snowdensity10_3_7_winter_thaw_melt_response_correction"
+path = "tests/integration/snowdensity10_3_7_winter_thaw_melt_response_correction.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

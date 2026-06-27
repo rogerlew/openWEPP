@@ -621,22 +621,46 @@ profile/signature scoring rather than absolute-magnitude promotion.
      but worsened paired snow-depth evidence (`1147 -> 1273` failures; all four
      paired surfaces worse). The selector remains opt-in and is not a snow-depth
      promotion candidate.**
-6. **Winter-Thaw Melt Response Correction (next active package).** 10.3.6
-   confirmed the rank-2 thaw branch as
+6. **Winter-Thaw Melt Response Correction.** Complete in
+   `docs/work-packages/20260627-snowdensity-10-3-7-winter-thaw-melt-response-correction-001/`.
+   10.3.6 confirmed the rank-2 thaw branch as
    `WINTER-THAW-MELT-RESPONSE-DEFECT-ELIGIBLE`: `132/219` paired thaw-ablation
-   windows under-ablated by the
-   diagnostic threshold, with `24.105 m` depth-loss deficit and only `0.190 m`
-   warm-rain heat equivalent. **The defect localizes to the melt→SWE-loss
-   application** — raw CoE melt `8.685 m` but modeled SWE loss only `4.628 m`, so
-   ~half the computed thaw-window melt energy is not realized as pack loss (likely
-   locus: refreeze / liquid retention / how the melt is applied to the pack), not
-   the melt-energy computation — so start the operand reconstruction there. The
-   next package should be contract-first and
-   opt-in: reconstruct the CoE thaw-window operands independently, preserve
-   default/rollback isolation, prove conservation, and improve rubric signatures
-   without site constants. Keep rain heat and sub-canopy longwave separate; do
-   not tune melt coefficients to compensate for density, phase, canopy, or
-   forcing defects.
+   windows under-ablated by the diagnostic threshold, with `24.105 m`
+   depth-loss deficit and only `0.190 m` warm-rain heat equivalent. 10.3.7
+   amended `SC-SNOWFREEZE-001` v94 and added the opt-in
+   `coe_winter_thaw_state_loss_v1` candidate to test the localized
+   melt-to-SWE-loss application defect. The candidate preserves CoE melt terms,
+   radiation, canopy, phase partition, density constants, rain heat,
+   sub-canopy longwave, frost, fixtures, public schemas, and default
+   `legacy_coe`; its only delta routes positive thaw `wmelt` to state loss when
+   the legacy below-`350 kg m^-3` gate would absorb it as density-only
+   compaction. Paired Sleepers/Harvard evidence improves but does not close all
+   residuals: under-ablation windows `132 -> 108`, aggregate deficit
+   `24.105 m -> 17.629 m`, modeled depth loss `15.868 m -> 26.400 m`, routed
+   melt `5.895 m -> 11.235 m`, and SWE loss `4.628 m -> 10.615 m`. Operator
+   review then forced the two load-bearing gates into the package: active-ledger
+   conservation/routing residuals are zero, and the real direct-production WAT
+   coupled rerun improves snow-control failures `1147 -> 978` with no paired
+   surface worse. This is an opt-in improvement, not activation or full
+   snow-control closure: `978/1415` coupled paired rows still fail snow control,
+   so the remaining residuals route to the next one-lever package.
+   - **Durable fix (next): replace the `350 kg m^-3` density-gate proxy
+     (`INV-SNOWFREEZE-002`) with a physical liquid-water holding-capacity drainage
+     model.** Meltwater drains once the pack's liquid content exceeds its holding
+     capacity, not once density crosses a threshold — which is what traps cold
+     maritime packs (low density + retained melt → never ripens → over-accumulates,
+     the §10.2 item-4 mechanism). A holding-capacity law is physically correct
+     across cold *and* warm regimes and subsumes the 10.3.7 thaw-branch override.
+     **Authority is fully in-repo — no track-down needed:** Marks 1998 (R-55) the
+     `wc,max` liquid-water-holding volume ratio (constant ≈ `0.01`); Anderson 1976
+     NWS-19 the retention/transmission physics (`W_e` fractional holding capacity,
+     `W_f`, `W_x` excess → drainage); SNOW-17 (Anderson 2006) the operational
+     `PLWHC` (with its density dependence); SNOBAL `_runoff.c` the reference
+     implementation (`h2o_max`, runoff = excess above capacity, relative
+     saturation). Keep `PLWHC`/`wc,max` a **physical default from this authority,
+     never fit to the fixtures**; contract-first amend `INV-SNOWFREEZE-002`.
+     (Colbeck 1974 capillary/pore-space physics is an optional deeper grounding,
+     only if a saturation-dependent capacity is wanted over a constant fraction.)
 7. **Subsequent candidate packages (one lever each).** After winter-thaw melt
    response, evaluate sub-canopy longwave / forest energy (10.3.4 #3), then only
    revisit rain-on-snow heat if event-window reconstruction proves the existing

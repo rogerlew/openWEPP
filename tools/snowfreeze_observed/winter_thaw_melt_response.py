@@ -252,10 +252,17 @@ def modeled_window_summary(
     dates: list[dt.date],
     coe_rows: dict[dt.date, dict[str, float | None]],
 ) -> dict[str, Any]:
+    snow_input_m = 0.0
+    rain_input_m = 0.0
+    rain_retained_m = 0.0
+    rain_released_m = 0.0
     raw_melt_m = 0.0
     redistributed_melt_m = 0.0
     routed_melt_m = 0.0
     snowpack_swe_loss_m = 0.0
+    max_abs_swe_balance_residual_m = 0.0
+    max_abs_routed_state_loss_residual_m = 0.0
+    min_state_loss_available_storage_margin_m: float | None = None
     snowpack_day_count = 0
     for date in dates:
         row = coe_rows.get(date)
@@ -263,16 +270,43 @@ def modeled_window_summary(
             continue
         if maritime.daily_snowpack_present(date, coe_rows):
             snowpack_day_count += 1
+        snow_input_m += row.get("snow_input_m") or 0.0
+        rain_input_m += row.get("rain_input_m") or 0.0
+        rain_retained_m += row.get("rain_retained_m") or 0.0
+        rain_released_m += row.get("rain_released_m") or 0.0
         raw_melt_m += row.get("raw_melt_m") or 0.0
         redistributed_melt_m += row.get("redistributed_melt_m") or 0.0
         routed_melt_m += row.get("routed_melt_m") or 0.0
         snowpack_swe_loss_m += row.get("snowpack_swe_loss_m") or 0.0
+        if row_participates_in_snowpack_liquid_ledger(row):
+            max_abs_swe_balance_residual_m = max(
+                max_abs_swe_balance_residual_m,
+                abs(row.get("snowpack_swe_balance_residual_m") or 0.0),
+            )
+            max_abs_routed_state_loss_residual_m = max(
+                max_abs_routed_state_loss_residual_m,
+                abs(row.get("routed_state_loss_residual_m") or 0.0),
+            )
+            margin = row.get("state_loss_available_storage_margin_m")
+            if margin is not None:
+                min_state_loss_available_storage_margin_m = (
+                    margin
+                    if min_state_loss_available_storage_margin_m is None
+                    else min(min_state_loss_available_storage_margin_m, margin)
+                )
     return {
         "snowpack_day_count": snowpack_day_count,
+        "snow_input_m": snow_input_m,
+        "rain_input_m": rain_input_m,
+        "rain_retained_m": rain_retained_m,
+        "rain_released_m": rain_released_m,
         "raw_melt_m": raw_melt_m,
         "redistributed_melt_m": redistributed_melt_m,
         "routed_melt_m": routed_melt_m,
         "snowpack_swe_loss_m": snowpack_swe_loss_m,
+        "max_abs_swe_balance_residual_m": max_abs_swe_balance_residual_m,
+        "max_abs_routed_state_loss_residual_m": max_abs_routed_state_loss_residual_m,
+        "min_state_loss_available_storage_margin_m": min_state_loss_available_storage_margin_m,
     }
 
 
@@ -292,6 +326,15 @@ def surface_thaw_summary(
         "total_raw_melt_m": modeled["raw_melt_m"],
         "total_routed_melt_m": modeled["routed_melt_m"],
         "total_snowpack_swe_loss_m": modeled["snowpack_swe_loss_m"],
+        "total_rain_retained_m": modeled["rain_retained_m"],
+        "total_rain_released_m": modeled["rain_released_m"],
+        "max_abs_swe_balance_residual_m": modeled["max_abs_swe_balance_residual_m"],
+        "max_abs_routed_state_loss_residual_m": modeled[
+            "max_abs_routed_state_loss_residual_m"
+        ],
+        "min_state_loss_available_storage_margin_m": modeled[
+            "min_state_loss_available_storage_margin_m"
+        ],
         "warm_rain_heat_melt_equiv_m": forcing["warm_rain_heat_melt_equiv_m"],
     }
 
@@ -324,6 +367,30 @@ def summarize_intervals(intervals: list[dict[str, Any]]) -> dict[str, Any]:
         ),
         "total_snowpack_swe_loss_m": sum(
             item["modeled_window"]["snowpack_swe_loss_m"] for item in thaw_ablation
+        ),
+        "total_rain_retained_m": sum(
+            item["modeled_window"]["rain_retained_m"] for item in thaw_ablation
+        ),
+        "total_rain_released_m": sum(
+            item["modeled_window"]["rain_released_m"] for item in thaw_ablation
+        ),
+        "max_abs_swe_balance_residual_m": max(
+            (
+                item["modeled_window"]["max_abs_swe_balance_residual_m"]
+                for item in thaw_ablation
+            ),
+            default=0.0,
+        ),
+        "max_abs_routed_state_loss_residual_m": max(
+            (
+                item["modeled_window"]["max_abs_routed_state_loss_residual_m"]
+                for item in thaw_ablation
+            ),
+            default=0.0,
+        ),
+        "min_state_loss_available_storage_margin_m": min_optional(
+            item["modeled_window"]["min_state_loss_available_storage_margin_m"]
+            for item in thaw_ablation
         ),
         "warm_rain_heat_melt_equiv_m": sum(
             item["forcing_window"]["warm_rain_heat_melt_equiv_m"] for item in thaw_ablation
@@ -398,6 +465,23 @@ def summarize(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
         "total_snowpack_swe_loss_m": sum(
             item["total_snowpack_swe_loss_m"] for item in event_summaries
         ),
+        "total_rain_retained_m": sum(
+            item["total_rain_retained_m"] for item in event_summaries
+        ),
+        "total_rain_released_m": sum(
+            item["total_rain_released_m"] for item in event_summaries
+        ),
+        "max_abs_swe_balance_residual_m": max(
+            (item["max_abs_swe_balance_residual_m"] for item in event_summaries),
+            default=0.0,
+        ),
+        "max_abs_routed_state_loss_residual_m": max(
+            (item["max_abs_routed_state_loss_residual_m"] for item in event_summaries),
+            default=0.0,
+        ),
+        "min_state_loss_available_storage_margin_m": min_optional(
+            item["min_state_loss_available_storage_margin_m"] for item in event_summaries
+        ),
         "warm_rain_heat_melt_equiv_m": sum(
             item["warm_rain_heat_melt_equiv_m"] for item in event_summaries
         ),
@@ -448,6 +532,27 @@ def date_range(start_date: dt.date, end_date: dt.date) -> list[dt.date]:
 
 def sum_positive(values: Any) -> float:
     return sum(value for value in values if value > 0.0)
+
+
+def min_optional(values: Any) -> float | None:
+    finite = [value for value in values if value is not None]
+    return min(finite) if finite else None
+
+
+def row_participates_in_snowpack_liquid_ledger(row: dict[str, float | None]) -> bool:
+    return any(
+        (row.get(key) or 0.0) > 0.0
+        for key in [
+            "snow_water_before_m",
+            "snow_water_m",
+            "rain_retained_m",
+            "rain_released_m",
+            "raw_melt_m",
+            "redistributed_melt_m",
+            "routed_melt_m",
+            "snowpack_swe_loss_m",
+        ]
+    )
 
 
 def static_scope_scan_record() -> dict[str, Any]:
