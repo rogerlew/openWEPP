@@ -1,4 +1,4 @@
-# Frost / Daylength Canopy Decline — Hemisphere-Robust Senescence
+# Frost / Daylength Canopy Phenology — Hemisphere-Robust Leaf-Off and Leaf-On
 
 ## Status
 
@@ -6,6 +6,9 @@
   canopy fidelity becomes load-bearing for the snow program (SNOWDENSITY is
   currently on conifer / high-cancov; this matters once the mixed-forest
   fixtures are active) and before a growth/canopy science contract is authored.
+  Scope covers the **full deciduous/mixed canopy cycle** — autumn leaf-off
+  (frost/daylength decline) **and** spring leaf-on (thermal-time green-up) —
+  since a hemisphere-robust canopy needs both limbs physically driven.
 - `date`: 2026-06-26 (created, Claude Code)
 - `relates`:
   [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md)
@@ -29,6 +32,16 @@ contract-first reimplementation not bound by the legacy cropland/rangeland
 branch split — can implement this decline as a **first-class, landuse-agnostic,
 hemisphere-robust** mechanism, superseding the fixed-Northern-Hemisphere
 calendar-date workaround that legacy WEPP and WEPPcloud are forced into.
+
+Deciduous and mixed canopies are a **full annual cycle**, not a one-way decline:
+the canopy must also **rebuild in spring (leaf-on / green-up)** from its winter
+minimum to the summer maximum. WEPPcloud's managements disable WEPP's heat-unit
+growth (`gddmax=0`) and fall back to fixed management dates for **both** limbs,
+so spring leaf-out is as climate-blind and Northern-Hemisphere-bound as autumn
+leaf-off. This item therefore covers the **whole phenology**: a hemisphere-robust
+canopy needs both the cold/short-day **leaf-off** and the thermal-time
+**leaf-on** driven by physical forcing, with **no fixed Julian dates** in either
+limb.
 
 ## Origin (the structural finding)
 
@@ -93,6 +106,61 @@ temperature. This is what makes openWEPP's version superior to the legacy
 rangeland code (which still assumes NH winter bookkeeping elsewhere) and to the
 WEPPcloud fixed-date fallback.
 
+## Leaf-on (spring green-up) — the complementary limb
+
+Canopy phenology is a full annual cycle: deciduous and mixed forests not only
+drop their canopy in autumn (the decline above) but **rebuild it in spring** from
+the winter minimum to the summer maximum during **budburst → leaf expansion**.
+Because WEPPcloud disables heat-unit growth (`gddmax=0`) and leans on fixed
+management dates, spring leaf-out is just as **climate-blind, fixed-date, and
+NH-bound** as the autumn leaf-off. A hemisphere-robust canopy needs **both**
+limbs driven by physical forcing.
+
+### The GDD asymmetry (one mechanism, two directions)
+
+The 2026-06-26 negative experiment found heat-unit accumulation is the **wrong**
+mechanism for **autumn senescence** (a warmer site accumulates GDD faster, so it
+senesces *earlier* — the reverse of reality). The same physics is the **right**
+mechanism for **spring leaf-out**: budburst is governed by spring thermal-time
+accumulation, and a **warmer spring genuinely does leaf out earlier**. So GDD is
+not "wrong for forests" wholesale — it is **correct for the green-up limb and
+backwards for the senescence limb**. This resolves the apparent paradox in the
+negative experiment: GDD failed because it was asked to drive the limb it has
+backwards, not because it is unusable.
+
+The clean design that follows:
+
+- **Spring leaf-on:** a spring thermal-time (growing-degree-day above a base
+  temperature) threshold, optionally gated by a **chilling requirement** (winter
+  cold accumulation, which blocks premature budburst during a mid-winter thaw)
+  and/or photoperiod. Warm-first ordering is correct here — keep GDD on this limb.
+- **Autumn leaf-off:** the frost/daylength decline above (cold-and-short-day
+  first). Warm-first ordering is wrong here — GDD must **not** drive this limb.
+
+### Hemisphere robustness (same rule)
+
+Spring green-up is SH-spring (≈Sep–Nov) in the Southern Hemisphere. The same
+design rule applies: **no fixed Julian dates** — leaf-out must emerge from spring
+temperature accumulation (plus chilling/photoperiod) computed from local forcing
+and **signed latitude**, so SH timing falls out automatically. A unified
+continuous phenology index driven by minimum temperature, photoperiod, and
+humidity (e.g. the Jolly et al. 2005 GSI) is one candidate formulation that
+delivers **both** limbs from the same hemisphere-symmetric quantities openWEPP's
+energy balance already computes.
+
+## Scoping note — leaf-on is not the current spring-melt residual
+
+A SNOWDENSITY-10.3.8 seasonal analysis (2026-06-27) localized the residual
+maritime over-accumulation to the **spring melt season (Feb–May)** but showed it
+is **canopy-independent**: bare open surfaces (`harvard_open`,
+`sleepers_south_field`) over-accumulate as much as or more than the paired
+forested surfaces (`harvard_hardwood`, `sleepers_w9_hardwood`), with nearly
+identical seasonal SWE profiles. The residual is spring melt/ablation
+realization, **not** canopy attenuation. Leaf-on timing therefore changes the
+**forested-surface canopy ordering** and late-spring melt attenuation under
+deciduous/mixed canopy, but it is **not** the lever for the present spring
+over-accumulation — keep the two distinct.
+
 ## Governing constraints
 
 - **Contract-first (ADR-0011):** author/extend a growth–canopy science contract
@@ -111,16 +179,25 @@ WEPPcloud fixed-date fallback.
 
 ## Falsifiable validation gates
 
-1. **NH direction:** at two NH sites of contrasting climate (e.g. a cold/high
-   site vs a warm/low one), the **cold site leaf-off precedes the warm site** —
-   the direction the GDD route got backwards.
-2. **SH correctness:** at a Southern-Hemisphere site, leaf-off occurs in the
-   **SH autumn (Apr–Jun)**, not on an NH-autumn date — no calendar inversion.
-   (Requires an SH climate source; see open questions.)
-3. **Magnitude/ordering:** deciduous winter `cancov` low, mixed intermediate,
-   evergreen high (the snow-relevant ordering), with canopy recovering at
-   spring leaf-out.
-4. **Conservation:** biomass/canopy ledger balances across the decline.
+1. **Leaf-off NH direction:** at two NH sites of contrasting climate (e.g. a
+   cold/high site vs a warm/low one), the **cold site leaf-off precedes the warm
+   site** — the direction the GDD route got backwards.
+2. **Leaf-on NH direction:** the **warm-spring site leafs out earlier** than the
+   cold site — the symmetric complement of gate 1, and the direction GDD gets
+   *right* (so the two limbs are validated to move oppositely with warmth).
+3. **SH correctness (both limbs):** at a Southern-Hemisphere site, leaf-off
+   occurs in **SH autumn (Apr–Jun)** and leaf-on in **SH spring (Sep–Nov)** —
+   no calendar inversion of either limb. (Requires an SH climate source; see
+   open questions.)
+4. **Chilling guard (if implemented):** a warm mid-winter thaw does **not**
+   trigger premature budburst — leaf-on waits for the chilling requirement.
+5. **Magnitude/ordering:** deciduous winter `cancov` low, mixed intermediate,
+   evergreen high (the snow-relevant ordering); the canopy rebuilds to its
+   summer maximum at spring leaf-out and returns to the same seasonal envelope
+   year-over-year (no inter-annual drift).
+6. **Conservation:** the biomass/canopy ledger balances across **both** the
+   decline and the green-up (no canopy created or destroyed without a matching
+   biomass state change).
 
 ## Promotion criteria
 
@@ -139,6 +216,24 @@ route the new physics through top-down contract authoring.
 
 - What currently drives openWEPP's `canopy_decline` in `06_growth_state.rs`, and
   does adding the frost/daylength decrement compose with it or replace it?
+- **Leaf-on driver:** pure spring-GDD threshold vs GDD + chilling vs GDD +
+  photoperiod (the sequential/parallel/alternating phenology-model families),
+  and base-temperature/threshold defaults for deciduous vs mixed canopies. Is a
+  simple spring-GDD threshold defensible at first pass, or is a chilling term
+  required to suppress mid-winter-thaw budburst in the target climates?
+- **One index or two laws:** drive leaf-on and leaf-off from a single unified
+  continuous index (e.g. GSI from `Tmin` + photoperiod + VPD) vs two explicit
+  limb-specific laws (spring thermal-time, autumn frost/daylength). The unified
+  index is more parsimonious and hemisphere-robust by construction; the two-law
+  form maps more directly onto the legacy `dec` abstraction.
+- **Reuse the growth GDD machinery?** Spring green-up could reuse the existing
+  `gddmax`/`sumgdd`/`fphu` growth phase rather than a dedicated canopy-phenology
+  state — but the WEPPcloud managements set `gddmax=0`, so this interacts with
+  how the deciduous/mixed managements are parameterized.
+- **Mixed-forest evergreen floor:** mixed canopy = evergreen component + a
+  deciduous overstory fraction; only the deciduous fraction leafs on/off, so
+  mixed `cancov` never goes to zero. Define the evergreen floor (and reconcile
+  with the bare-canopy branch/stem floor noted below).
 - Source of `daylen`/`daymin` in openWEPP (existing solar/radiation code already
   computes declination for the energy balance — reuse it; confirm signed-latitude
   handling).
@@ -155,10 +250,23 @@ route the new physics through top-down contract authoring.
 
 - `grow.for` (wepp-forest): rangeland decline `dec = 0.5·vdmt·(1-fphu)·
   max(fhr,frst)` (~804-850); cropland-perennial branch (`:751`); daylength
-  factor `fhr = 0.35 - (1.0 - daylen/(daymin+1))` (~813).
+  factor `fhr = 0.35 - (1.0 - daylen/(daymin+1))` (~813); the heat-unit growth
+  phase (`fphu = sumgdd/gddmax`) is the spring-limb analogue to extend.
 - wepppy `ADR-0009-deciduous-mixed-forest-managements.md` (Alternative #5) and
   `gdd-senescence-experiment.md` — the negative investigation establishing that
-  GDD senescence is the wrong mechanism and the correct one is rangeland-only.
+  GDD senescence is the wrong mechanism for autumn leaf-off (it is, however, the
+  right-direction mechanism for spring leaf-on — the asymmetry above).
+- **Jolly, W. M., Nemani, R., Running, S. W. (2005).** *A generalized,
+  bioclimatic index to predict foliar phenology in response to climate.* Global
+  Change Biology 11:619–632. A continuous 0–1 phenology index from minimum
+  temperature, photoperiod, and VPD — globally validated and hemisphere-robust
+  by construction; a candidate to drive **both** limbs from one law.
+- **Chuine, I. (2000).** *A unified model for budburst of trees.* J. Theor. Biol.
+  207:337–347 — the chilling+forcing budburst formulation for the leaf-on limb.
+- **White, M. A., Thornton, P. E., Running, S. W. (1997).** *A continental
+  phenology model for monitoring vegetation responses to interannual climatic
+  variability.* Global Biogeochem. Cycles 11:217–234 — leaf-on/leaf-off thermal
+  and photoperiod thresholds in an ecosystem-model context.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/06_growth_state.rs` —
   the openWEPP canopy state (`cancov`, `canopy_decline`) this would extend.
 - [snow-frost-fidelity-strategy](../planning/snow-frost-fidelity-strategy.md) —
