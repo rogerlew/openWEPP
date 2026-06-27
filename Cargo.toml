@@ -730,6 +730,10 @@ path = "tests/integration/snowdensity10_3_7_winter_thaw_melt_response_correction
 name = "snowdensity10_3_8_liquid_holding_capacity"
 path = "tests/integration/snowdensity10_3_8_liquid_holding_capacity.rs"
 
+[[test]]
+name = "snowdensity10_3_9_march_april_residual_attribution"
+path = "tests/integration/snowdensity10_3_9_march_april_residual_attribution.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

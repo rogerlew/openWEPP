@@ -13,6 +13,23 @@
 
 State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-9-march-april-residual-attribution-001/` is
+  complete as SNOWDENSITY-10.3.9, the diagnostic March/April residual
+  attribution gate after the SNOWDENSITY-10.3.8 opt-in liquid holding-capacity
+  correction. It consumed the 10.3.8 coupled direct-production WAT artifact
+  without changing production physics, defaults, selectors, fixtures, public
+  schemas, coefficients, radiation, canopy, phase partition, density, melt, rain
+  heat, longwave, or frost code. Paired Sleepers/Harvard evidence shows
+  March/April accounts for `282/761` remaining failures (`37.1%`) and fails
+  `282/463` paired March/April rows (`60.9%`). Failures are shared across open
+  field, hardwood, and open covers (`112`, `109`, and `61` rows). Dominant
+  attribution is not a defended SWE-excess mass signal: depth-only
+  over-persistence (`127`), density/compaction (`86`), and patchy meltout or
+  snow-cover depletion (`26`) dominate, with `43` under-persistence rows and
+  Harvard SWE/mass attribution correspondence-caveated. The next one-lever route
+  is spring pack-depletion and compaction adjudication. HJ Andrews and Hubbard
+  Brook mixed/deciduous remain observation-blocked for residual verdicts until
+  paired snow-depth observations are installed.
 - `20260627-snowdensity-10-3-8-liquid-holding-capacity-001/` is complete as
   SNOWDENSITY-10.3.8, the opt-in liquid holding-capacity drainage correction.
   It amended `SC-SNOWFREEZE-001` to v95 with in-repo retained-liquid authority,

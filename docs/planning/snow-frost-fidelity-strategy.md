@@ -662,13 +662,31 @@ profile/signature scoring rather than absolute-magnitude promotion.
      three surfaces remain observation-blocked, so subsequent work must target
      the remaining one-lever snow-control residuals without tuning the capacity
      constant to fixtures.
+   - **March/April residual attribution completed as diagnostic 10.3.9:**
+     `docs/work-packages/20260627-snowdensity-10-3-9-march-april-residual-attribution-001/`
+     consumed the 10.3.8 coupled WAT artifact and classified the remaining
+     paired Sleepers/Harvard failures. March/April accounts for `282/761`
+     residual failures (`37.1%` of failures) and fails `282/463` paired
+     March/April rows (`60.9%`). Failures are shared across open field,
+     hardwood, and open covers (`112`, `109`, and `61` rows respectively).
+     Attribution is dominated by depth-only over-persistence, density/compaction,
+     and patchy meltout or snow-cover depletion (`127 + 86 + 26 = 239/282`),
+     with `43` under-persistence rows and no defended SWE-excess mass verdict
+     because Harvard SWE/depth/density correspondence is source-caveated. The
+     next one-lever route is spring pack-depletion and compaction adjudication,
+     not a new mass/precipitation correction. Hubbard Brook mixed/deciduous and
+     HJ Andrews remain observation-blocked for residual verdicts until paired
+     snow-depth observations are installed.
 7. **Subsequent candidate packages (one lever each).** After winter-thaw melt
-   response, evaluate sub-canopy longwave / forest energy (10.3.4 #3), then only
-   revisit rain-on-snow heat if event-window reconstruction proves the existing
-   CoE `dmelt` path is numerically inactive during observed failures. Each lever
-   must remain opt-in until the same gate is met: conservation, independent
-   operand reconstruction, rollback/default isolation, and rubric improvement
-   without site constants.
+   response and the 10.3.9 residual attribution, first evaluate the spring
+   pack-depletion/compaction lever that can explain over-persistent March/April
+   depth without inventing mass. Then evaluate sub-canopy longwave / forest
+   energy (10.3.4 #3) only if the spring depletion gate does not close the
+   residuals. Revisit rain-on-snow heat only if event-window reconstruction
+   proves the existing CoE `dmelt` path is numerically inactive during observed
+   failures. Each lever must remain opt-in until the same gate is met:
+   conservation, independent operand reconstruction, rollback/default isolation,
+   and rubric improvement without site constants.
 8. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
    `coe_shortwave_albedo_v1` and any added opt-in melt lever. Closure gate:
    SNOTEL plus non-SNOTEL rubric profiles, explicit frost-attribution impact, and
