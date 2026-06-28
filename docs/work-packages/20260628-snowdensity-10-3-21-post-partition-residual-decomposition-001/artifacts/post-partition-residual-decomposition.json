@@ -1,0 +1,2018 @@
+{
+  "authority": {
+    "admission_authority_for_future_candidates": "ADR-0028",
+    "forcing_limited_absolute_swe_depth_report_only": true,
+    "forcing_robust_cells_carry_verdicts": true,
+    "legacy_and_pysnobal_are_flags_not_targets": true,
+    "new_contract_gate_authority_added": false,
+    "rubric": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050"
+  },
+  "before_after_partition_comparison": {
+    "current_default_10_3_20_profile": {
+      "model_id": "activated_bundle",
+      "robust_available_cell_count": 90,
+      "robust_fail_count": 15,
+      "robust_ordinal_score": 179
+    },
+    "current_default_beats_legacy_flag_profile": true,
+    "introduced_fail_cells_after_partition": [],
+    "legacy_flag_profile": {
+      "model_id": "legacy_baseline",
+      "robust_available_cell_count": 90,
+      "robust_fail_count": 16,
+      "robust_ordinal_score": 176
+    },
+    "persisted_fail_cells_after_partition": [
+      {
+        "cell_id": "seasonal_densification_trajectory",
+        "signature": "densification trajectory rho(t)",
+        "site_id": "harvard_hardwood",
+        "snow_climate": "humid_new_england_hardwood"
+      },
+      {
+        "cell_id": "seasonal_depth_swe_slope",
+        "signature": "depth-SWE seasonal slope",
+        "site_id": "harvard_hardwood",
+        "snow_climate": "humid_new_england_hardwood"
+      },
+      {
+        "cell_id": "seasonal_depth_swe_slope",
+        "signature": "depth-SWE seasonal slope",
+        "site_id": "harvard_open",
+        "snow_climate": "humid_new_england_open"
+      },
+      {
+        "cell_id": "seasonal_densification_trajectory",
+        "signature": "densification trajectory rho(t)",
+        "site_id": "marcell_conifer",
+        "snow_climate": "laurentian_continental_conifer"
+      },
+      {
+        "cell_id": "seasonal_densification_trajectory",
+        "signature": "densification trajectory rho(t)",
+        "site_id": "marcell_deciduous",
+        "snow_climate": "laurentian_continental_deciduous"
+      },
+      {
+        "cell_id": "seasonal_densification_trajectory",
+        "signature": "densification trajectory rho(t)",
+        "site_id": "marcell_open",
+        "snow_climate": "laurentian_continental_open"
+      },
+      {
+        "cell_id": "seasonal_densification_trajectory",
+        "signature": "densification trajectory rho(t)",
+        "site_id": "snotel_css_lab_ca",
+        "snow_climate": "sierra_maritime"
+      },
+      {
+        "cell_id": "seasonal_ablation_meltout_date",
+        "signature": "ablation melt-out date",
+        "site_id": "snotel_mica_creek_st_joe_id",
+        "snow_climate": "northern_rockies_intermountain"
+      },
+      {
+        "cell_id": "seasonal_densification_trajectory",
+        "signature": "densification trajectory rho(t)",
+        "site_id": "snotel_mica_creek_st_joe_id",
+        "snow_climate": "northern_rockies_intermountain"
+      },
+      {
+        "cell_id": "seasonal_densification_trajectory",
+        "signature": "densification trajectory rho(t)",
+        "site_id": "snotel_niwot_co",
+        "snow_climate": "front_range_continental"
+      },
+      {
+        "cell_id": "seasonal_peak_swe_date",
+        "signature": "peak SWE date",
+        "site_id": "snotel_niwot_co",
+        "snow_climate": "front_range_continental"
+      },
+      {
+        "cell_id": "seasonal_ablation_meltout_date",
+        "signature": "ablation melt-out date",
+        "site_id": "snotel_paradise_wa",
+        "snow_climate": "cascades_maritime"
+      },
+      {
+        "cell_id": "seasonal_densification_trajectory",
+        "signature": "densification trajectory rho(t)",
+        "site_id": "snotel_paradise_wa",
+        "snow_climate": "cascades_maritime"
+      },
+      {
+        "cell_id": "seasonal_densification_trajectory",
+        "signature": "densification trajectory rho(t)",
+        "site_id": "snotel_snowbird_ut",
+        "snow_climate": "wasatch_intermountain"
+      },
+      {
+        "cell_id": "seasonal_peak_swe_date",
+        "signature": "peak SWE date",
+        "site_id": "snotel_snowbird_ut",
+        "snow_climate": "wasatch_intermountain"
+      }
+    ],
+    "post_partition_10_3_18_harder_pomeroy_profile": {
+      "model_id": "harder_pomeroy_partition",
+      "robust_available_cell_count": 90,
+      "robust_fail_count": 15,
+      "robust_ordinal_score": 179
+    },
+    "pre_partition_activated_bundle": {
+      "model_id": "activated_bundle",
+      "robust_available_cell_count": 90,
+      "robust_fail_count": 17,
+      "robust_ordinal_score": 172
+    },
+    "read": "Harder-Pomeroy partition improved the activated bundle from 17/172 to 15/179 and the current default reconfirms 15/179. The remaining fail set is not the same as the pre-partition activated bundle.",
+    "resolved_fail_cells_after_partition": [
+      {
+        "cell_id": "seasonal_peak_depth_date",
+        "signature": "peak depth date",
+        "site_id": "snotel_niwot_co",
+        "snow_climate": "front_range_continental"
+      },
+      {
+        "cell_id": "seasonal_peak_swe_date",
+        "signature": "peak SWE date",
+        "site_id": "snotel_paradise_wa",
+        "snow_climate": "cascades_maritime"
+      }
+    ]
+  },
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 ADR-0028 ADR-0017",
+  "current_default_source": {
+    "evidence_class": "Static + Ran",
+    "model_id": "activated_bundle",
+    "path": "docs/work-packages/20260628-snowdensity-10-3-20-sublimation-stage-b-unlock-001/artifacts/sublimation-stage-b-unlock.json",
+    "robust_fail_count": 15,
+    "robust_ordinal_score": 179,
+    "runtime_coupling": "real direct-production WAT via openwepp-cli-hill",
+    "schema": "snowdensity10-3-20-sublimation-stage-b-unlock-v1"
+  },
+  "diagnostic_only": true,
+  "evidence_class": "Static + Reused Ran",
+  "forcing_limited_report_only": {
+    "counts_by_label": {
+      "fail": 16,
+      "marginal": 14,
+      "pass": 6,
+      "strong": 4
+    },
+    "report_only_fail_or_marginal_rows": [
+      {
+        "cell_id": "long_term_peak_swe_bias",
+        "corpus": "snotel_observed",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 23,
+          "median_signed_bias": -0.21411963049128274
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak SWE bias",
+        "site_id": "snotel_mica_creek_st_joe_id",
+        "snow_climate": "northern_rockies_intermountain"
+      },
+      {
+        "cell_id": "long_term_peak_depth_bias",
+        "corpus": "snotel_observed",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 23,
+          "median_signed_bias": -0.6487057468523505
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak depth bias",
+        "site_id": "snotel_mica_creek_st_joe_id",
+        "snow_climate": "northern_rockies_intermountain"
+      },
+      {
+        "cell_id": "seasonal_swe_timeseries",
+        "corpus": "snotel_observed",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.40964972266082533,
+          "gamma": 1.8059819394118541,
+          "kge": -0.06429882936336684,
+          "paired_count": 2540,
+          "r": 0.6331053808357244
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "SWE trajectory",
+        "site_id": "snotel_mica_creek_st_joe_id",
+        "snow_climate": "northern_rockies_intermountain"
+      },
+      {
+        "cell_id": "seasonal_depth_timeseries",
+        "corpus": "snotel_observed",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.35106583942304226,
+          "gamma": 1.9350693413674942,
+          "kge": -0.16344324289333145,
+          "paired_count": 2540,
+          "r": 0.7588984415127281
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "depth trajectory",
+        "site_id": "snotel_mica_creek_st_joe_id",
+        "snow_climate": "northern_rockies_intermountain"
+      },
+      {
+        "cell_id": "long_term_peak_swe_bias",
+        "corpus": "snotel_observed",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 19,
+          "median_signed_bias": -1.0984369257353996
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak SWE bias",
+        "site_id": "snotel_paradise_wa",
+        "snow_climate": "cascades_maritime"
+      },
+      {
+        "cell_id": "long_term_peak_depth_bias",
+        "corpus": "snotel_observed",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 19,
+          "median_signed_bias": -2.1028400500701276
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak depth bias",
+        "site_id": "snotel_paradise_wa",
+        "snow_climate": "cascades_maritime"
+      },
+      {
+        "cell_id": "seasonal_swe_timeseries",
+        "corpus": "snotel_observed",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.33920240533253654,
+          "gamma": 1.8223390114460587,
+          "kge": -0.10946775560326727,
+          "paired_count": 3170,
+          "r": 0.656454093520291
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "SWE trajectory",
+        "site_id": "snotel_paradise_wa",
+        "snow_climate": "cascades_maritime"
+      },
+      {
+        "cell_id": "seasonal_depth_timeseries",
+        "corpus": "snotel_observed",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.38494506763275765,
+          "gamma": 1.7455783653551267,
+          "kge": 0.019492782498365613,
+          "paired_count": 3170,
+          "r": 0.8350311094239232
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "depth trajectory",
+        "site_id": "snotel_paradise_wa",
+        "snow_climate": "cascades_maritime"
+      },
+      {
+        "cell_id": "long_term_peak_swe_bias",
+        "corpus": "snotel_observed",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 20,
+          "median_signed_bias": -0.38674493767772866
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak SWE bias",
+        "site_id": "snotel_css_lab_ca",
+        "snow_climate": "sierra_maritime"
+      },
+      {
+        "cell_id": "long_term_peak_depth_bias",
+        "corpus": "snotel_observed",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 20,
+          "median_signed_bias": -1.2878580290693526
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak depth bias",
+        "site_id": "snotel_css_lab_ca",
+        "snow_climate": "sierra_maritime"
+      },
+      {
+        "cell_id": "seasonal_swe_timeseries",
+        "corpus": "snotel_observed",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.2562353472070959,
+          "gamma": 1.7387625472320336,
+          "kge": -0.11369234726018518,
+          "paired_count": 1744,
+          "r": 0.6240283462693113
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "SWE trajectory",
+        "site_id": "snotel_css_lab_ca",
+        "snow_climate": "sierra_maritime"
+      },
+      {
+        "cell_id": "seasonal_depth_timeseries",
+        "corpus": "snotel_observed",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.24555049482344551,
+          "gamma": 2.004064453949868,
+          "kge": -0.2868933027952587,
+          "paired_count": 1744,
+          "r": 0.7193669847781717
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "depth trajectory",
+        "site_id": "snotel_css_lab_ca",
+        "snow_climate": "sierra_maritime"
+      },
+      {
+        "cell_id": "long_term_peak_swe_bias",
+        "corpus": "snotel_observed",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 22,
+          "median_signed_bias": -0.6160385778810245
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak SWE bias",
+        "site_id": "snotel_snowbird_ut",
+        "snow_climate": "wasatch_intermountain"
+      },
+      {
+        "cell_id": "long_term_peak_depth_bias",
+        "corpus": "snotel_observed",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 22,
+          "median_signed_bias": -1.4028668766893222
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak depth bias",
+        "site_id": "snotel_snowbird_ut",
+        "snow_climate": "wasatch_intermountain"
+      },
+      {
+        "cell_id": "seasonal_swe_timeseries",
+        "corpus": "snotel_observed",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.28989480728832606,
+          "gamma": 1.6671983815724072,
+          "kge": -0.02503536209976276,
+          "paired_count": 2754,
+          "r": 0.6817321435236215
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "SWE trajectory",
+        "site_id": "snotel_snowbird_ut",
+        "snow_climate": "wasatch_intermountain"
+      },
+      {
+        "cell_id": "seasonal_depth_timeseries",
+        "corpus": "snotel_observed",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.30094805555729437,
+          "gamma": 1.894101851706317,
+          "kge": -0.15912659075088964,
+          "paired_count": 2754,
+          "r": 0.7644523166490751
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "depth trajectory",
+        "site_id": "snotel_snowbird_ut",
+        "snow_climate": "wasatch_intermountain"
+      },
+      {
+        "cell_id": "long_term_peak_swe_bias",
+        "corpus": "snotel_observed",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 20,
+          "median_signed_bias": -0.17351306447953846
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak SWE bias",
+        "site_id": "snotel_niwot_co",
+        "snow_climate": "front_range_continental"
+      },
+      {
+        "cell_id": "long_term_peak_depth_bias",
+        "corpus": "snotel_observed",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 20,
+          "median_signed_bias": -0.7674219254981811
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak depth bias",
+        "site_id": "snotel_niwot_co",
+        "snow_climate": "front_range_continental"
+      },
+      {
+        "cell_id": "seasonal_swe_timeseries",
+        "corpus": "snotel_observed",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.31312446970633545,
+          "gamma": 1.804282514083716,
+          "kge": -0.2031156831002221,
+          "paired_count": 3382,
+          "r": 0.4265725936574985
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "SWE trajectory",
+        "site_id": "snotel_niwot_co",
+        "snow_climate": "front_range_continental"
+      },
+      {
+        "cell_id": "seasonal_depth_timeseries",
+        "corpus": "snotel_observed",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.29740650035412,
+          "gamma": 1.9360215791214148,
+          "kge": -0.24194640192842498,
+          "paired_count": 3382,
+          "r": 0.584480033046102
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "depth trajectory",
+        "site_id": "snotel_niwot_co",
+        "snow_climate": "front_range_continental"
+      },
+      {
+        "cell_id": "long_term_peak_swe_bias",
+        "corpus": "cancov_forest",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 5,
+          "median_signed_bias": -1.615410563122779
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak SWE bias",
+        "site_id": "harvard_open",
+        "snow_climate": "humid_new_england_open"
+      },
+      {
+        "cell_id": "seasonal_swe_timeseries",
+        "corpus": "cancov_forest",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.1397865827787913,
+          "gamma": 0.7199436178748236,
+          "kge": -0.016778155403525563,
+          "paired_count": 352,
+          "r": 0.5358458047487191
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "SWE trajectory",
+        "site_id": "harvard_open",
+        "snow_climate": "humid_new_england_open"
+      },
+      {
+        "cell_id": "seasonal_depth_timeseries",
+        "corpus": "cancov_forest",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 1.4188394191725402,
+          "gamma": 0.8285466760114388,
+          "kge": 0.4493015870024908,
+          "paired_count": 352,
+          "r": 0.6862388795302103
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "depth trajectory",
+        "site_id": "harvard_open",
+        "snow_climate": "humid_new_england_open"
+      },
+      {
+        "cell_id": "long_term_peak_swe_bias",
+        "corpus": "cancov_forest",
+        "metric": "median signed annual peak bias, IQR",
+        "metrics": {
+          "annual_count": 5,
+          "median_signed_bias": -1.7699941221952256
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "mean peak SWE bias",
+        "site_id": "harvard_hardwood",
+        "snow_climate": "humid_new_england_hardwood"
+      },
+      {
+        "cell_id": "seasonal_swe_timeseries",
+        "corpus": "cancov_forest",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.12032312999285448,
+          "gamma": 0.9055450240638384,
+          "kge": 0.03536823039769921,
+          "paired_count": 442,
+          "r": 0.615602662832588
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "SWE trajectory",
+        "site_id": "harvard_hardwood",
+        "snow_climate": "humid_new_england_hardwood"
+      },
+      {
+        "cell_id": "seasonal_swe_timeseries",
+        "corpus": "cancov_forest",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.9519226041400404,
+          "gamma": 1.3783514443604838,
+          "kge": 0.5779643605682739,
+          "paired_count": 146,
+          "r": 0.8192990605774105
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "SWE trajectory",
+        "site_id": "marcell_conifer",
+        "snow_climate": "laurentian_continental_conifer"
+      },
+      {
+        "cell_id": "seasonal_depth_timeseries",
+        "corpus": "cancov_forest",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.6473831814017841,
+          "gamma": 1.5469493153842553,
+          "kge": 0.33043345960620585,
+          "paired_count": 146,
+          "r": 0.8424335769991533
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "depth trajectory",
+        "site_id": "marcell_conifer",
+        "snow_climate": "laurentian_continental_conifer"
+      },
+      {
+        "cell_id": "seasonal_swe_timeseries",
+        "corpus": "cancov_forest",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.7443730992822317,
+          "gamma": 1.5990295313180138,
+          "kge": 0.31115969241845565,
+          "paired_count": 145,
+          "r": 0.7756799661479485
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "SWE trajectory",
+        "site_id": "marcell_deciduous",
+        "snow_climate": "laurentian_continental_deciduous"
+      },
+      {
+        "cell_id": "seasonal_depth_timeseries",
+        "corpus": "cancov_forest",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.5445717941326474,
+          "gamma": 1.700266988682043,
+          "kge": 0.1469694116592276,
+          "paired_count": 145,
+          "r": 0.8271634341129395
+        },
+        "ordinal_label": "fail",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "depth trajectory",
+        "site_id": "marcell_deciduous",
+        "snow_climate": "laurentian_continental_deciduous"
+      },
+      {
+        "cell_id": "seasonal_depth_timeseries",
+        "corpus": "cancov_forest",
+        "metric": "KGE decomposed into r, beta, gamma",
+        "metrics": {
+          "beta": 0.5937708933620903,
+          "gamma": 1.4024314342846795,
+          "kge": 0.4119253779064843,
+          "paired_count": 144,
+          "r": 0.862673328263688
+        },
+        "ordinal_label": "marginal",
+        "report_only_reason": "Forcing-limited absolute SWE/depth magnitude cells are reported under INV-SNOWFREEZE-050 but do not carry promotion or frost-threshold verdicts.",
+        "signature": "depth trajectory",
+        "site_id": "marcell_open",
+        "snow_climate": "laurentian_continental_open"
+      }
+    ]
+  },
+  "frost_attribution_threshold_input": {
+    "counts": {
+      "canopy_or_subcanopy_signal_rows": 2,
+      "density_irreducible_or_new_structure_rows": 9,
+      "over_persistence_fail_count": 0,
+      "total_robust_fails": 15,
+      "under_persistence_fail_count": 4,
+      "wind_or_forcing_signal_rows": 4
+    },
+    "current_default_vs_legacy_flag": {
+      "current_default": {
+        "model_id": "activated_bundle",
+        "robust_available_cell_count": 90,
+        "robust_fail_count": 15,
+        "robust_ordinal_score": 179
+      },
+      "current_default_beats_legacy": true,
+      "legacy_flag": {
+        "model_id": "legacy_baseline",
+        "robust_available_cell_count": 90,
+        "robust_fail_count": 16,
+        "robust_ordinal_score": 176
+      }
+    },
+    "decision_scope": "operator_input_only_no_frost_unblock_decision",
+    "not_a_decision": true,
+    "one_more_lever_evidence": [
+      "Humid-New-England depth-SWE slope failures point to a possible canopy/sub-canopy class.",
+      "Mountain timing under-persistence points to wind redistribution or forcing/representativeness limits.",
+      "Density trajectory failures dominate count, but explored density-family variants did not recover them."
+    ],
+    "snow_good_enough_evidence": [
+      "Current no-env default is 15/179 and beats the legacy flag profile 16/176.",
+      "The SNOBAL/CoE/Anderson mechanism family has no remaining promoted candidate.",
+      "Residual fails are diffuse by site; no site has more than two robust fails.",
+      "No over-persistence timing tail remains after partition."
+    ],
+    "threshold_input_read": "MIXED-NO-SINGLE-GLOBAL-SNOW-LEVER: the residual is not zero, but it is mostly density-structure plus under-persistent mountain timing, with only a small mechanism-coherent cancov forest geometry cluster. This supports an operator frost-threshold decision rather than an automatic snow promotion or automatic frost unblock."
+  },
+  "frost_threshold_decision_made": false,
+  "mass_density_depth_decomposition": {
+    "interpretation": "SWE/depth/density are direct corpus quantities. Component directions are site-level medians and are used for diagnosis only; forcing-limited absolute SWE/depth magnitude cells remain report-only.",
+    "median_of_site_median_signed": {
+      "density": 23.623358162459454,
+      "depth": -0.29454220518030305,
+      "swe": -0.21903524997142934
+    },
+    "site_direction_counts": {
+      "density": {
+        "over": 8,
+        "under": 2
+      },
+      "depth": {
+        "over": 2,
+        "under": 8
+      },
+      "swe": {
+        "under": 10
+      }
+    },
+    "site_rows": [
+      {
+        "components": {
+          "density": {
+            "direction": "over",
+            "mean_abs": 206.94585239654825,
+            "mean_signed": -58.517810027448114,
+            "median_signed": 51.87232294598505,
+            "modeled_over_observed_count": 1573,
+            "modeled_under_observed_count": 967
+          },
+          "depth": {
+            "direction": "under",
+            "mean_abs": 0.6103248540110948,
+            "mean_signed": -0.609809920035773,
+            "median_signed": -0.5725511447468514,
+            "modeled_over_observed_count": 19,
+            "modeled_under_observed_count": 2521
+          },
+          "swe": {
+            "direction": "under",
+            "mean_abs": 0.18879827696558585,
+            "mean_signed": -0.18852540931687875,
+            "median_signed": -0.13132155846931332,
+            "modeled_over_observed_count": 41,
+            "modeled_under_observed_count": 2499
+          }
+        },
+        "corpus": "snotel_observed",
+        "paired_count": 2540,
+        "site_id": "snotel_mica_creek_st_joe_id",
+        "snow_climate": "northern_rockies_intermountain"
+      },
+      {
+        "components": {
+          "density": {
+            "direction": "under",
+            "mean_abs": 273.85225731647364,
+            "mean_signed": -233.87072732207378,
+            "median_signed": -34.47482955881847,
+            "modeled_over_observed_count": 1094,
+            "modeled_under_observed_count": 2076
+          },
+          "depth": {
+            "direction": "under",
+            "mean_abs": 1.6036960459419372,
+            "mean_signed": -1.6032273709766627,
+            "median_signed": -1.694170983567537,
+            "modeled_over_observed_count": 5,
+            "modeled_under_observed_count": 3165
+          },
+          "swe": {
+            "direction": "under",
+            "mean_abs": 0.8863761919366451,
+            "mean_signed": -0.8862803488655427,
+            "median_signed": -0.8509,
+            "modeled_over_observed_count": 12,
+            "modeled_under_observed_count": 3158
+          }
+        },
+        "corpus": "snotel_observed",
+        "paired_count": 3170,
+        "site_id": "snotel_paradise_wa",
+        "snow_climate": "cascades_maritime"
+      },
+      {
+        "components": {
+          "density": {
+            "direction": "over",
+            "mean_abs": 197.5195026463195,
+            "mean_signed": -77.12958396405374,
+            "median_signed": 17.8495772569988,
+            "modeled_over_observed_count": 960,
+            "modeled_under_observed_count": 784
+          },
+          "depth": {
+            "direction": "under",
+            "mean_abs": 0.9759051028581465,
+            "mean_signed": -0.9758195252610516,
+            "median_signed": -0.9164656186100357,
+            "modeled_over_observed_count": 2,
+            "modeled_under_observed_count": 1742
+          },
+          "swe": {
+            "direction": "under",
+            "mean_abs": 0.35680702697737543,
+            "mean_signed": -0.3566692771882322,
+            "median_signed": -0.30674894147354537,
+            "modeled_over_observed_count": 8,
+            "modeled_under_observed_count": 1736
+          }
+        },
+        "corpus": "snotel_observed",
+        "paired_count": 1744,
+        "site_id": "snotel_css_lab_ca",
+        "snow_climate": "sierra_maritime"
+      },
+      {
+        "components": {
+          "density": {
+            "direction": "under",
+            "mean_abs": 154.63276725587133,
+            "mean_signed": -74.36729768204393,
+            "median_signed": -7.030292967032423,
+            "modeled_over_observed_count": 1272,
+            "modeled_under_observed_count": 1482
+          },
+          "depth": {
+            "direction": "under",
+            "mean_abs": 1.1630095461010688,
+            "mean_signed": -1.1629869306891711,
+            "median_signed": -1.1794172119063742,
+            "modeled_over_observed_count": 3,
+            "modeled_under_observed_count": 2751
+          },
+          "swe": {
+            "direction": "under",
+            "mean_abs": 0.4469715326306991,
+            "mean_signed": -0.4469603872442096,
+            "median_signed": -0.3937,
+            "modeled_over_observed_count": 4,
+            "modeled_under_observed_count": 2750
+          }
+        },
+        "corpus": "snotel_observed",
+        "paired_count": 2754,
+        "site_id": "snotel_snowbird_ut",
+        "snow_climate": "wasatch_intermountain"
+      },
+      {
+        "components": {
+          "density": {
+            "direction": "over",
+            "mean_abs": 166.84669606442236,
+            "mean_signed": -36.36105946712803,
+            "median_signed": 7.514872772500368,
+            "modeled_over_observed_count": 1782,
+            "modeled_under_observed_count": 1600
+          },
+          "depth": {
+            "direction": "under",
+            "mean_abs": 0.4780862059740863,
+            "mean_signed": -0.47764362781162434,
+            "median_signed": -0.4473344103606061,
+            "modeled_over_observed_count": 27,
+            "modeled_under_observed_count": 3355
+          },
+          "swe": {
+            "direction": "under",
+            "mean_abs": 0.13372810032507768,
+            "mean_signed": -0.13371440068596102,
+            "median_signed": -0.09825714034600183,
+            "modeled_over_observed_count": 13,
+            "modeled_under_observed_count": 3369
+          }
+        },
+        "corpus": "snotel_observed",
+        "paired_count": 3382,
+        "site_id": "snotel_niwot_co",
+        "snow_climate": "front_range_continental"
+      },
+      {
+        "components": {
+          "density": {
+            "direction": "over",
+            "mean_abs": 78.35198459711579,
+            "mean_signed": 16.30515643388029,
+            "median_signed": 12.718513695236794,
+            "modeled_over_observed_count": 188,
+            "modeled_under_observed_count": 164
+          },
+          "depth": {
+            "direction": "over",
+            "mean_abs": 0.1363907705968543,
+            "mean_signed": 0.10193742341054411,
+            "median_signed": 0.10085728858154239,
+            "modeled_over_observed_count": 274,
+            "modeled_under_observed_count": 75
+          },
+          "swe": {
+            "direction": "under",
+            "mean_abs": 0.6993668444883683,
+            "mean_signed": -0.6928628069618099,
+            "median_signed": -0.6095672229141613,
+            "modeled_over_observed_count": 21,
+            "modeled_under_observed_count": 328
+          }
+        },
+        "corpus": "cancov_forest",
+        "paired_count": 352,
+        "site_id": "harvard_open",
+        "snow_climate": "humid_new_england_open"
+      },
+      {
+        "components": {
+          "density": {
+            "direction": "over",
+            "mean_abs": 109.78699280299078,
+            "mean_signed": 6.82394588196124,
+            "median_signed": 29.397139067920108,
+            "modeled_over_observed_count": 267,
+            "modeled_under_observed_count": 175
+          },
+          "depth": {
+            "direction": "over",
+            "mean_abs": 0.11663915511546934,
+            "mean_signed": 0.052846414101981425,
+            "median_signed": 0.039997393607729914,
+            "modeled_over_observed_count": 261,
+            "modeled_under_observed_count": 166
+          },
+          "swe": {
+            "direction": "under",
+            "mean_abs": 0.735204175796214,
+            "mean_signed": -0.7294551275905407,
+            "median_signed": -0.6425675120685996,
+            "modeled_over_observed_count": 27,
+            "modeled_under_observed_count": 400
+          }
+        },
+        "corpus": "cancov_forest",
+        "paired_count": 442,
+        "site_id": "harvard_hardwood",
+        "snow_climate": "humid_new_england_hardwood"
+      },
+      {
+        "components": {
+          "density": {
+            "direction": "over",
+            "mean_abs": 170.3471552974657,
+            "mean_signed": 74.71256685189428,
+            "median_signed": 91.7572331951172,
+            "modeled_over_observed_count": 119,
+            "modeled_under_observed_count": 27
+          },
+          "depth": {
+            "direction": "under",
+            "mean_abs": 0.12002772405999969,
+            "mean_signed": -0.11151404967416903,
+            "median_signed": -0.10777506007720232,
+            "modeled_over_observed_count": 16,
+            "modeled_under_observed_count": 130
+          },
+          "swe": {
+            "direction": "under",
+            "mean_abs": 0.02219575298299615,
+            "mean_signed": -0.00323040485721929,
+            "median_signed": -0.0016506321677412514,
+            "modeled_over_observed_count": 70,
+            "modeled_under_observed_count": 76
+          }
+        },
+        "corpus": "cancov_forest",
+        "paired_count": 146,
+        "site_id": "marcell_conifer",
+        "snow_climate": "laurentian_continental_conifer"
+      },
+      {
+        "components": {
+          "density": {
+            "direction": "over",
+            "mean_abs": 170.85770887669946,
+            "mean_signed": 29.810726724249342,
+            "median_signed": 63.47421095276118,
+            "modeled_over_observed_count": 104,
+            "modeled_under_observed_count": 41
+          },
+          "depth": {
+            "direction": "under",
+            "mean_abs": 0.16038993692286027,
+            "mean_signed": -0.15808243132582955,
+            "median_signed": -0.14175,
+            "modeled_over_observed_count": 5,
+            "modeled_under_observed_count": 140
+          },
+          "swe": {
+            "direction": "under",
+            "mean_abs": 0.027203260481069233,
+            "mean_signed": -0.0197704471801895,
+            "median_signed": -0.014243569143996382,
+            "modeled_over_observed_count": 37,
+            "modeled_under_observed_count": 108
+          }
+        },
+        "corpus": "cancov_forest",
+        "paired_count": 145,
+        "site_id": "marcell_deciduous",
+        "snow_climate": "laurentian_continental_deciduous"
+      },
+      {
+        "components": {
+          "density": {
+            "direction": "over",
+            "mean_abs": 152.52068529631552,
+            "mean_signed": 65.55920024852514,
+            "median_signed": 76.43076671000085,
+            "modeled_over_observed_count": 116,
+            "modeled_under_observed_count": 28
+          },
+          "depth": {
+            "direction": "under",
+            "mean_abs": 0.14533117587619093,
+            "mean_signed": -0.14078498217237864,
+            "median_signed": -0.13518919985780276,
+            "modeled_over_observed_count": 6,
+            "modeled_under_observed_count": 138
+          },
+          "swe": {
+            "direction": "under",
+            "mean_abs": 0.021672984063757224,
+            "mean_signed": -0.01401300124199898,
+            "median_signed": -0.011168325052041482,
+            "modeled_over_observed_count": 34,
+            "modeled_under_observed_count": 110
+          }
+        },
+        "corpus": "cancov_forest",
+        "paired_count": 144,
+        "site_id": "marcell_open",
+        "snow_climate": "laurentian_continental_open"
+      }
+    ]
+  },
+  "mechanism_class_read": {
+    "candidate_framing_under_adr0028": "Any new canopy, sub-canopy longwave, or wind redistribution lever is a later opt-in candidate only if it has defensible physics, improves forcing-robust rubric cells across regimes without fixture fitting, and preserves conservation.",
+    "mechanism_family_exhausted_input": true,
+    "new_mechanism_class_counts": {
+      "canopy_snow_interception_or_subcanopy_longwave": 2,
+      "wind_redistribution_or_forcing_representativeness": 4
+    },
+    "residual_rows_by_new_mechanism_class": {
+      "canopy_snow_interception_or_subcanopy_longwave": [
+        {
+          "cell_id": "seasonal_depth_swe_slope",
+          "direction": "over_depth_per_swe",
+          "site_id": "harvard_hardwood"
+        },
+        {
+          "cell_id": "seasonal_depth_swe_slope",
+          "direction": "over_depth_per_swe",
+          "site_id": "harvard_open"
+        }
+      ],
+      "wind_redistribution_or_forcing_representativeness": [
+        {
+          "cell_id": "seasonal_ablation_meltout_date",
+          "direction": "under_persistence",
+          "site_id": "snotel_mica_creek_st_joe_id"
+        },
+        {
+          "cell_id": "seasonal_ablation_meltout_date",
+          "direction": "under_persistence",
+          "site_id": "snotel_paradise_wa"
+        },
+        {
+          "cell_id": "seasonal_peak_swe_date",
+          "direction": "under_persistence",
+          "site_id": "snotel_niwot_co"
+        },
+        {
+          "cell_id": "seasonal_peak_swe_date",
+          "direction": "under_persistence",
+          "site_id": "snotel_snowbird_ut"
+        }
+      ]
+    },
+    "snobal_coe_anderson_family_read": "The remaining robust fail set is evaluated after the adopted holding-capacity, density-compaction, and Harder-Pomeroy partition changes, and after rejected spring/shallow/sublimation variants. No further in-family lever is identified by this diagnostic."
+  },
+  "over_under_persistence_split": {
+    "all_robust_fail_direction_counts": {
+      "density_shape_over_beta": 4,
+      "density_shape_under_beta": 5,
+      "over_depth_per_swe": 2,
+      "under_persistence": 4
+    },
+    "binding_constraint_read": "under_persistence_tail_present_not_sole_constraint",
+    "density_structure_fail_count": 11,
+    "interpretation": "The post-partition robust fail set has no over-persistence timing tail. All timing failures are early/under-persistent, while most fail cells are density-structure signatures.",
+    "over_persistence_fail_count": 0,
+    "timing_or_duration_fail_direction_counts": {
+      "under_persistence": 4
+    },
+    "under_persistence_fail_count": 4
+  },
+  "pre_partition_source": {
+    "evidence_class": "Static + Reused",
+    "path": "docs/work-packages/20260627-snowdensity-10-3-18-cross-snotel-mechanism-rubric-001/artifacts/cross-snotel-mechanism-rubric.json",
+    "schema": "snowdensity10-3-18-cross-snotel-mechanism-rubric-v1"
+  },
+  "promotion_or_activation_decision_made": false,
+  "protected_boundaries": {
+    "density_cap_changed": false,
+    "fixture_inputs_changed": false,
+    "frost_physics_changed": false,
+    "legacy_or_pysnobal_used_as_target": false,
+    "output_schema_changed": false,
+    "production_default_changed": false,
+    "selector_added": false,
+    "site_calibration_performed": false
+  },
+  "raw_outputs": {
+    "output_dir": "target/snowdensity10_3_21_post_partition_residual",
+    "package_json": "docs/work-packages/20260628-snowdensity-10-3-21-post-partition-residual-decomposition-001/artifacts/post-partition-residual-decomposition.json",
+    "package_markdown": "docs/work-packages/20260628-snowdensity-10-3-21-post-partition-residual-decomposition-001/artifacts/post-partition-residual-decomposition.md"
+  },
+  "residual_clusters": {
+    "by_cell_id": {
+      "seasonal_ablation_meltout_date": 2,
+      "seasonal_densification_trajectory": 9,
+      "seasonal_depth_swe_slope": 2,
+      "seasonal_peak_swe_date": 2
+    },
+    "by_component_class": {
+      "density": 9,
+      "depth_density_geometry": 2,
+      "timing": 4
+    },
+    "by_mechanism_class_signal": {
+      "canopy_snow_interception_or_subcanopy_longwave": 2,
+      "irreducible_or_new_density_structure": 9,
+      "wind_redistribution_or_forcing_representativeness": 4
+    },
+    "by_site_id": {
+      "harvard_hardwood": 2,
+      "harvard_open": 1,
+      "marcell_conifer": 1,
+      "marcell_deciduous": 1,
+      "marcell_open": 1,
+      "snotel_css_lab_ca": 1,
+      "snotel_mica_creek_st_joe_id": 2,
+      "snotel_niwot_co": 2,
+      "snotel_paradise_wa": 2,
+      "snotel_snowbird_ut": 2
+    },
+    "by_snow_climate": {
+      "cascades_maritime": 2,
+      "front_range_continental": 2,
+      "humid_new_england_hardwood": 2,
+      "humid_new_england_open": 1,
+      "laurentian_continental_conifer": 1,
+      "laurentian_continental_deciduous": 1,
+      "laurentian_continental_open": 1,
+      "northern_rockies_intermountain": 2,
+      "sierra_maritime": 1,
+      "wasatch_intermountain": 2
+    },
+    "fail_count": 15,
+    "residual_clusters": [
+      {
+        "beta_over_count": 4,
+        "beta_under_count": 5,
+        "climates": [
+          "cascades_maritime",
+          "front_range_continental",
+          "humid_new_england_hardwood",
+          "laurentian_continental_conifer",
+          "laurentian_continental_deciduous",
+          "laurentian_continental_open",
+          "northern_rockies_intermountain",
+          "sierra_maritime",
+          "wasatch_intermountain"
+        ],
+        "cluster_id": "density_trajectory_diffuse",
+        "dominant_direction": "mixed_density_shape",
+        "fail_count": 9,
+        "mechanism_class_signal": "irreducible_or_new_density_structure",
+        "read": "Densification trajectory is the dominant residual signature and is diffuse across SNOTEL and cancov sites. Because Anderson/SNOBAL/CoE density variants have been exhausted, this does not point to another in-family density lever.",
+        "site_ids": [
+          "harvard_hardwood",
+          "marcell_conifer",
+          "marcell_deciduous",
+          "marcell_open",
+          "snotel_css_lab_ca",
+          "snotel_mica_creek_st_joe_id",
+          "snotel_niwot_co",
+          "snotel_paradise_wa",
+          "snotel_snowbird_ut"
+        ]
+      },
+      {
+        "climates": [
+          "cascades_maritime",
+          "front_range_continental",
+          "northern_rockies_intermountain",
+          "wasatch_intermountain"
+        ],
+        "cluster_id": "mountain_under_persistence_timing",
+        "dominant_direction": "under_persistence",
+        "fail_count": 4,
+        "mechanism_class_signal": "wind_redistribution_or_forcing_representativeness",
+        "median_offsets_days": [
+          -35,
+          -37,
+          -31.0,
+          -45.0
+        ],
+        "read": "All robust timing failures are early modeled peak or meltout dates. This keeps an under-persistence tail, but it is not an over-persistence guardrail blocker and is concentrated in mountain SNOTEL timing cells.",
+        "site_ids": [
+          "snotel_mica_creek_st_joe_id",
+          "snotel_niwot_co",
+          "snotel_paradise_wa",
+          "snotel_snowbird_ut"
+        ]
+      },
+      {
+        "climates": [
+          "humid_new_england_hardwood",
+          "humid_new_england_open"
+        ],
+        "cluster_id": "cancov_depth_swe_slope_geometry",
+        "dominant_direction": "over_depth_per_swe",
+        "fail_count": 2,
+        "mechanism_class_signal": "canopy_snow_interception_or_subcanopy_longwave",
+        "read": "The depth-SWE slope failures are confined to the humid-New-England paired set. They are frost-relevant because snow depth insulates frost, but the open-stratum member keeps this from being a pure canopy-only diagnosis.",
+        "site_ids": [
+          "harvard_hardwood",
+          "harvard_open"
+        ],
+        "slope_ratios": [
+          10.686127922875853,
+          9.615155171722606
+        ]
+      }
+    ],
+    "signature_concentration_read": "signature_concentrated",
+    "site_concentration_read": "diffuse_by_site"
+  },
+  "robust_fail_rows": [
+    {
+      "cell_id": "seasonal_densification_trajectory",
+      "cell_metrics": {
+        "beta": 1.0209187027854776,
+        "gamma": 1.9356069063341228,
+        "kge": -0.16439129158346222,
+        "paired_count": 442,
+        "r": 0.30717303414989094
+      },
+      "component_class": "density",
+      "corpus": "cancov_forest",
+      "direction": "density_shape_over_beta",
+      "frost_threshold_relevance": "high_forest_depth_density_relevance",
+      "mechanism_class_read": "The signature names a density trajectory shape error. Existing SNOBAL/Anderson density-family levers did not recover it; no specific new mechanism is isolated by this cell alone.",
+      "mechanism_class_signal": "irreducible_or_new_density_structure",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "densification trajectory rho(t)",
+      "site_id": "harvard_hardwood",
+      "site_residuals": {
+        "density": {
+          "fail_count": 214,
+          "mean_abs": 109.78699280299078,
+          "mean_signed": 6.82394588196124,
+          "median_abs": 79.91719050263708,
+          "median_signed": 29.397139067920108,
+          "modeled_over_observed_count": 267,
+          "modeled_under_observed_count": 175
+        },
+        "depth": {
+          "fail_count": 176,
+          "mean_abs": 0.11663915511546934,
+          "mean_signed": 0.052846414101981425,
+          "median_abs": 0.08874347015784614,
+          "median_signed": 0.039997393607729914,
+          "modeled_over_observed_count": 261,
+          "modeled_under_observed_count": 166
+        },
+        "paired_count": 442,
+        "swe": {
+          "fail_count": 403,
+          "mean_abs": 0.735204175796214,
+          "mean_signed": -0.7294551275905407,
+          "median_abs": 0.6425675120685996,
+          "median_signed": -0.6425675120685996,
+          "modeled_over_observed_count": 27,
+          "modeled_under_observed_count": 400
+        }
+      },
+      "snow_climate": "humid_new_england_hardwood",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_densification_trajectory",
+      "cell_metrics": {
+        "beta": 1.3342031562788343,
+        "gamma": 2.196879360595785,
+        "kge": -0.62312632257153,
+        "paired_count": 146,
+        "r": -0.04418729428090072
+      },
+      "component_class": "density",
+      "corpus": "cancov_forest",
+      "direction": "density_shape_over_beta",
+      "frost_threshold_relevance": "high_forest_depth_density_relevance",
+      "mechanism_class_read": "The signature names a density trajectory shape error. Existing SNOBAL/Anderson density-family levers did not recover it; no specific new mechanism is isolated by this cell alone.",
+      "mechanism_class_signal": "irreducible_or_new_density_structure",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "densification trajectory rho(t)",
+      "site_id": "marcell_conifer",
+      "site_residuals": {
+        "density": {
+          "fail_count": 122,
+          "mean_abs": 170.3471552974657,
+          "mean_signed": 74.71256685189428,
+          "median_abs": 169.46467636100567,
+          "median_signed": 91.7572331951172,
+          "modeled_over_observed_count": 119,
+          "modeled_under_observed_count": 27
+        },
+        "depth": {
+          "fail_count": 76,
+          "mean_abs": 0.12002772405999969,
+          "mean_signed": -0.11151404967416903,
+          "median_abs": 0.10859749776020705,
+          "median_signed": -0.10777506007720232,
+          "modeled_over_observed_count": 16,
+          "modeled_under_observed_count": 130
+        },
+        "paired_count": 146,
+        "swe": {
+          "fail_count": 10,
+          "mean_abs": 0.02219575298299615,
+          "mean_signed": -0.00323040485721929,
+          "median_abs": 0.019713201887190557,
+          "median_signed": -0.0016506321677412514,
+          "modeled_over_observed_count": 70,
+          "modeled_under_observed_count": 76
+        }
+      },
+      "snow_climate": "laurentian_continental_conifer",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_densification_trajectory",
+      "cell_metrics": {
+        "beta": 1.125978389263898,
+        "gamma": 2.71565202956248,
+        "kge": -1.0884182242306135,
+        "paired_count": 145,
+        "r": -0.18412762749425204
+      },
+      "component_class": "density",
+      "corpus": "cancov_forest",
+      "direction": "density_shape_over_beta",
+      "frost_threshold_relevance": "moderate_density_relevance",
+      "mechanism_class_read": "The signature names a density trajectory shape error. Existing SNOBAL/Anderson density-family levers did not recover it; no specific new mechanism is isolated by this cell alone.",
+      "mechanism_class_signal": "irreducible_or_new_density_structure",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "densification trajectory rho(t)",
+      "site_id": "marcell_deciduous",
+      "site_residuals": {
+        "density": {
+          "fail_count": 114,
+          "mean_abs": 170.85770887669946,
+          "mean_signed": 29.810726724249342,
+          "median_abs": 186.92821032871313,
+          "median_signed": 63.47421095276118,
+          "modeled_over_observed_count": 104,
+          "modeled_under_observed_count": 41
+        },
+        "depth": {
+          "fail_count": 85,
+          "mean_abs": 0.16038993692286027,
+          "mean_signed": -0.15808243132582955,
+          "median_abs": 0.14175,
+          "median_signed": -0.14175,
+          "modeled_over_observed_count": 5,
+          "modeled_under_observed_count": 140
+        },
+        "paired_count": 145,
+        "swe": {
+          "fail_count": 24,
+          "mean_abs": 0.027203260481069233,
+          "mean_signed": -0.0197704471801895,
+          "median_abs": 0.019667,
+          "median_signed": -0.014243569143996382,
+          "modeled_over_observed_count": 37,
+          "modeled_under_observed_count": 108
+        }
+      },
+      "snow_climate": "laurentian_continental_deciduous",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_densification_trajectory",
+      "cell_metrics": {
+        "beta": 1.2712390674189462,
+        "gamma": 2.159142760074446,
+        "kge": -0.46793260491726296,
+        "paired_count": 144,
+        "r": 0.14113821679394994
+      },
+      "component_class": "density",
+      "corpus": "cancov_forest",
+      "direction": "density_shape_over_beta",
+      "frost_threshold_relevance": "moderate_density_relevance",
+      "mechanism_class_read": "The signature names a density trajectory shape error. Existing SNOBAL/Anderson density-family levers did not recover it; no specific new mechanism is isolated by this cell alone.",
+      "mechanism_class_signal": "irreducible_or_new_density_structure",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "densification trajectory rho(t)",
+      "site_id": "marcell_open",
+      "site_residuals": {
+        "density": {
+          "fail_count": 103,
+          "mean_abs": 152.52068529631552,
+          "mean_signed": 65.55920024852514,
+          "median_abs": 148.4358568568162,
+          "median_signed": 76.43076671000085,
+          "modeled_over_observed_count": 116,
+          "modeled_under_observed_count": 28
+        },
+        "depth": {
+          "fail_count": 79,
+          "mean_abs": 0.14533117587619093,
+          "mean_signed": -0.14078498217237864,
+          "median_abs": 0.13518919985780276,
+          "median_signed": -0.13518919985780276,
+          "modeled_over_observed_count": 6,
+          "modeled_under_observed_count": 138
+        },
+        "paired_count": 144,
+        "swe": {
+          "fail_count": 14,
+          "mean_abs": 0.021672984063757224,
+          "mean_signed": -0.01401300124199898,
+          "median_abs": 0.017012399499081225,
+          "median_signed": -0.011168325052041482,
+          "modeled_over_observed_count": 34,
+          "modeled_under_observed_count": 110
+        }
+      },
+      "snow_climate": "laurentian_continental_open",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_densification_trajectory",
+      "cell_metrics": {
+        "beta": 0.7779124631106726,
+        "gamma": 2.5561029221613385,
+        "kge": -0.8693132612327308,
+        "paired_count": 1744,
+        "r": -0.011707907560241702
+      },
+      "component_class": "density",
+      "corpus": "snotel_observed",
+      "direction": "density_shape_under_beta",
+      "frost_threshold_relevance": "moderate_density_relevance",
+      "mechanism_class_read": "The signature names a density trajectory shape error. Existing SNOBAL/Anderson density-family levers did not recover it; no specific new mechanism is isolated by this cell alone.",
+      "mechanism_class_signal": "irreducible_or_new_density_structure",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "densification trajectory rho(t)",
+      "site_id": "snotel_css_lab_ca",
+      "site_residuals": {
+        "density": {
+          "fail_count": 1105,
+          "mean_abs": 197.5195026463195,
+          "mean_signed": -77.12958396405374,
+          "median_abs": 147.02448934862628,
+          "median_signed": 17.8495772569988,
+          "modeled_over_observed_count": 960,
+          "modeled_under_observed_count": 784
+        },
+        "depth": {
+          "fail_count": 1669,
+          "mean_abs": 0.9759051028581465,
+          "mean_signed": -0.9758195252610516,
+          "median_abs": 0.9164656186100357,
+          "median_signed": -0.9164656186100357,
+          "modeled_over_observed_count": 2,
+          "modeled_under_observed_count": 1742
+        },
+        "paired_count": 1744,
+        "swe": {
+          "fail_count": 1518,
+          "mean_abs": 0.35680702697737543,
+          "mean_signed": -0.3566692771882322,
+          "median_abs": 0.30674894147354537,
+          "median_signed": -0.30674894147354537,
+          "modeled_over_observed_count": 8,
+          "modeled_under_observed_count": 1736
+        }
+      },
+      "snow_climate": "sierra_maritime",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_densification_trajectory",
+      "cell_metrics": {
+        "beta": 0.8260736395492969,
+        "gamma": 2.7429608601817774,
+        "kge": -1.1601908148403997,
+        "paired_count": 2540,
+        "r": -0.2642236422150947
+      },
+      "component_class": "density",
+      "corpus": "snotel_observed",
+      "direction": "density_shape_under_beta",
+      "frost_threshold_relevance": "moderate_density_relevance",
+      "mechanism_class_read": "The signature names a density trajectory shape error. Existing SNOBAL/Anderson density-family levers did not recover it; no specific new mechanism is isolated by this cell alone.",
+      "mechanism_class_signal": "irreducible_or_new_density_structure",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "densification trajectory rho(t)",
+      "site_id": "snotel_mica_creek_st_joe_id",
+      "site_residuals": {
+        "density": {
+          "fail_count": 1932,
+          "mean_abs": 206.94585239654825,
+          "mean_signed": -58.517810027448114,
+          "median_abs": 154.45006778484625,
+          "median_signed": 51.87232294598505,
+          "modeled_over_observed_count": 1573,
+          "modeled_under_observed_count": 967
+        },
+        "depth": {
+          "fail_count": 2263,
+          "mean_abs": 0.6103248540110948,
+          "mean_signed": -0.609809920035773,
+          "median_abs": 0.5725511447468514,
+          "median_signed": -0.5725511447468514,
+          "modeled_over_observed_count": 19,
+          "modeled_under_observed_count": 2521
+        },
+        "paired_count": 2540,
+        "swe": {
+          "fail_count": 1789,
+          "mean_abs": 0.18879827696558585,
+          "mean_signed": -0.18852540931687875,
+          "median_abs": 0.13132155846931332,
+          "median_signed": -0.13132155846931332,
+          "modeled_over_observed_count": 41,
+          "modeled_under_observed_count": 2499
+        }
+      },
+      "snow_climate": "northern_rockies_intermountain",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_densification_trajectory",
+      "cell_metrics": {
+        "beta": 0.8711461877904706,
+        "gamma": 2.503212167021838,
+        "kge": -0.9612137822012601,
+        "paired_count": 3382,
+        "r": -0.2530400534271648
+      },
+      "component_class": "density",
+      "corpus": "snotel_observed",
+      "direction": "density_shape_under_beta",
+      "frost_threshold_relevance": "moderate_density_relevance",
+      "mechanism_class_read": "The signature names a density trajectory shape error. Existing SNOBAL/Anderson density-family levers did not recover it; no specific new mechanism is isolated by this cell alone.",
+      "mechanism_class_signal": "irreducible_or_new_density_structure",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "densification trajectory rho(t)",
+      "site_id": "snotel_niwot_co",
+      "site_residuals": {
+        "density": {
+          "fail_count": 2259,
+          "mean_abs": 166.84669606442236,
+          "mean_signed": -36.36105946712803,
+          "median_abs": 131.48662845504091,
+          "median_signed": 7.514872772500368,
+          "modeled_over_observed_count": 1782,
+          "modeled_under_observed_count": 1600
+        },
+        "depth": {
+          "fail_count": 3000,
+          "mean_abs": 0.4780862059740863,
+          "mean_signed": -0.47764362781162434,
+          "median_abs": 0.4473344103606061,
+          "median_signed": -0.4473344103606061,
+          "modeled_over_observed_count": 27,
+          "modeled_under_observed_count": 3355
+        },
+        "paired_count": 3382,
+        "swe": {
+          "fail_count": 2567,
+          "mean_abs": 0.13372810032507768,
+          "mean_signed": -0.13371440068596102,
+          "median_abs": 0.09825714034600183,
+          "median_signed": -0.09825714034600183,
+          "modeled_over_observed_count": 13,
+          "modeled_under_observed_count": 3369
+        }
+      },
+      "snow_climate": "front_range_continental",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_densification_trajectory",
+      "cell_metrics": {
+        "beta": 0.5953152964446622,
+        "gamma": 0.7990513375410797,
+        "kge": -0.4513758134946624,
+        "paired_count": 3170,
+        "r": -0.3792540294527299
+      },
+      "component_class": "density",
+      "corpus": "snotel_observed",
+      "direction": "density_shape_under_beta",
+      "frost_threshold_relevance": "moderate_density_relevance",
+      "mechanism_class_read": "The signature names a density trajectory shape error. Existing SNOBAL/Anderson density-family levers did not recover it; no specific new mechanism is isolated by this cell alone.",
+      "mechanism_class_signal": "irreducible_or_new_density_structure",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "densification trajectory rho(t)",
+      "site_id": "snotel_paradise_wa",
+      "site_residuals": {
+        "density": {
+          "fail_count": 1088,
+          "mean_abs": 273.85225731647364,
+          "mean_signed": -233.87072732207378,
+          "median_abs": 66.67924500000004,
+          "median_signed": -34.47482955881847,
+          "modeled_over_observed_count": 1094,
+          "modeled_under_observed_count": 2076
+        },
+        "depth": {
+          "fail_count": 3080,
+          "mean_abs": 1.6036960459419372,
+          "mean_signed": -1.6032273709766627,
+          "median_abs": 1.694170983567537,
+          "median_signed": -1.694170983567537,
+          "modeled_over_observed_count": 5,
+          "modeled_under_observed_count": 3165
+        },
+        "paired_count": 3170,
+        "swe": {
+          "fail_count": 3061,
+          "mean_abs": 0.8863761919366451,
+          "mean_signed": -0.8862803488655427,
+          "median_abs": 0.8509,
+          "median_signed": -0.8509,
+          "modeled_over_observed_count": 12,
+          "modeled_under_observed_count": 3158
+        }
+      },
+      "snow_climate": "cascades_maritime",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_densification_trajectory",
+      "cell_metrics": {
+        "beta": 0.79261267092006,
+        "gamma": 2.120957376095992,
+        "kge": -0.5575843149148034,
+        "paired_count": 2754,
+        "r": -0.06137361696138602
+      },
+      "component_class": "density",
+      "corpus": "snotel_observed",
+      "direction": "density_shape_under_beta",
+      "frost_threshold_relevance": "moderate_density_relevance",
+      "mechanism_class_read": "The signature names a density trajectory shape error. Existing SNOBAL/Anderson density-family levers did not recover it; no specific new mechanism is isolated by this cell alone.",
+      "mechanism_class_signal": "irreducible_or_new_density_structure",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "densification trajectory rho(t)",
+      "site_id": "snotel_snowbird_ut",
+      "site_residuals": {
+        "density": {
+          "fail_count": 1288,
+          "mean_abs": 154.63276725587133,
+          "mean_signed": -74.36729768204393,
+          "median_abs": 72.55629645302375,
+          "median_signed": -7.030292967032423,
+          "modeled_over_observed_count": 1272,
+          "modeled_under_observed_count": 1482
+        },
+        "depth": {
+          "fail_count": 2687,
+          "mean_abs": 1.1630095461010688,
+          "mean_signed": -1.1629869306891711,
+          "median_abs": 1.1794172119063742,
+          "median_signed": -1.1794172119063742,
+          "modeled_over_observed_count": 3,
+          "modeled_under_observed_count": 2751
+        },
+        "paired_count": 2754,
+        "swe": {
+          "fail_count": 2581,
+          "mean_abs": 0.4469715326306991,
+          "mean_signed": -0.4469603872442096,
+          "median_abs": 0.3937,
+          "median_signed": -0.3937,
+          "modeled_over_observed_count": 4,
+          "modeled_under_observed_count": 2750
+        }
+      },
+      "snow_climate": "wasatch_intermountain",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_depth_swe_slope",
+      "cell_metrics": {
+        "modeled_slope_depth_per_swe": 2.8354907355446026,
+        "observed_slope_depth_per_swe": 0.265343139817244,
+        "paired_count": 442,
+        "slope_ratio": 10.686127922875853
+      },
+      "component_class": "depth_density_geometry",
+      "corpus": "cancov_forest",
+      "direction": "over_depth_per_swe",
+      "frost_threshold_relevance": "high_depth_insulation_relevance",
+      "mechanism_class_read": "Forest-paired depth/SWE geometry can be affected by interception, canopy unloading, sublimation from canopy storage, and sub-canopy longwave. The open member means representativeness remains plausible.",
+      "mechanism_class_signal": "canopy_snow_interception_or_subcanopy_longwave",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "depth-SWE seasonal slope",
+      "site_id": "harvard_hardwood",
+      "site_residuals": {
+        "density": {
+          "fail_count": 214,
+          "mean_abs": 109.78699280299078,
+          "mean_signed": 6.82394588196124,
+          "median_abs": 79.91719050263708,
+          "median_signed": 29.397139067920108,
+          "modeled_over_observed_count": 267,
+          "modeled_under_observed_count": 175
+        },
+        "depth": {
+          "fail_count": 176,
+          "mean_abs": 0.11663915511546934,
+          "mean_signed": 0.052846414101981425,
+          "median_abs": 0.08874347015784614,
+          "median_signed": 0.039997393607729914,
+          "modeled_over_observed_count": 261,
+          "modeled_under_observed_count": 166
+        },
+        "paired_count": 442,
+        "swe": {
+          "fail_count": 403,
+          "mean_abs": 0.735204175796214,
+          "mean_signed": -0.7294551275905407,
+          "median_abs": 0.6425675120685996,
+          "median_signed": -0.6425675120685996,
+          "modeled_over_observed_count": 27,
+          "modeled_under_observed_count": 400
+        }
+      },
+      "snow_climate": "humid_new_england_hardwood",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_depth_swe_slope",
+      "cell_metrics": {
+        "modeled_slope_depth_per_swe": 2.5511048960850964,
+        "observed_slope_depth_per_swe": 0.2653212403256569,
+        "paired_count": 352,
+        "slope_ratio": 9.615155171722606
+      },
+      "component_class": "depth_density_geometry",
+      "corpus": "cancov_forest",
+      "direction": "over_depth_per_swe",
+      "frost_threshold_relevance": "high_depth_insulation_relevance",
+      "mechanism_class_read": "Forest-paired depth/SWE geometry can be affected by interception, canopy unloading, sublimation from canopy storage, and sub-canopy longwave. The open member means representativeness remains plausible.",
+      "mechanism_class_signal": "canopy_snow_interception_or_subcanopy_longwave",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "depth-SWE seasonal slope",
+      "site_id": "harvard_open",
+      "site_residuals": {
+        "density": {
+          "fail_count": 138,
+          "mean_abs": 78.35198459711579,
+          "mean_signed": 16.30515643388029,
+          "median_abs": 62.136513861351204,
+          "median_signed": 12.718513695236794,
+          "modeled_over_observed_count": 188,
+          "modeled_under_observed_count": 164
+        },
+        "depth": {
+          "fail_count": 179,
+          "mean_abs": 0.1363907705968543,
+          "mean_signed": 0.10193742341054411,
+          "median_abs": 0.11759358179148725,
+          "median_signed": 0.10085728858154239,
+          "modeled_over_observed_count": 274,
+          "modeled_under_observed_count": 75
+        },
+        "paired_count": 352,
+        "swe": {
+          "fail_count": 328,
+          "mean_abs": 0.6993668444883683,
+          "mean_signed": -0.6928628069618099,
+          "median_abs": 0.6095672229141613,
+          "median_signed": -0.6095672229141613,
+          "modeled_over_observed_count": 21,
+          "modeled_under_observed_count": 328
+        }
+      },
+      "snow_climate": "humid_new_england_open",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_ablation_meltout_date",
+      "cell_metrics": {
+        "annual_count": 23,
+        "iqr_offset_days": 15.0,
+        "median_offset_days": -35
+      },
+      "component_class": "timing",
+      "corpus": "snotel_observed",
+      "direction": "under_persistence",
+      "frost_threshold_relevance": "moderate_snow_duration_relevance",
+      "mechanism_class_read": "Early peak or meltout in mountain SNOTEL profiles can indicate missing wind redistribution/exposure physics or forcing/point-vs-hillslope representativeness rather than another density-family lever.",
+      "mechanism_class_signal": "wind_redistribution_or_forcing_representativeness",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "ablation melt-out date",
+      "site_id": "snotel_mica_creek_st_joe_id",
+      "site_residuals": {
+        "density": {
+          "fail_count": 1932,
+          "mean_abs": 206.94585239654825,
+          "mean_signed": -58.517810027448114,
+          "median_abs": 154.45006778484625,
+          "median_signed": 51.87232294598505,
+          "modeled_over_observed_count": 1573,
+          "modeled_under_observed_count": 967
+        },
+        "depth": {
+          "fail_count": 2263,
+          "mean_abs": 0.6103248540110948,
+          "mean_signed": -0.609809920035773,
+          "median_abs": 0.5725511447468514,
+          "median_signed": -0.5725511447468514,
+          "modeled_over_observed_count": 19,
+          "modeled_under_observed_count": 2521
+        },
+        "paired_count": 2540,
+        "swe": {
+          "fail_count": 1789,
+          "mean_abs": 0.18879827696558585,
+          "mean_signed": -0.18852540931687875,
+          "median_abs": 0.13132155846931332,
+          "median_signed": -0.13132155846931332,
+          "modeled_over_observed_count": 41,
+          "modeled_under_observed_count": 2499
+        }
+      },
+      "snow_climate": "northern_rockies_intermountain",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_ablation_meltout_date",
+      "cell_metrics": {
+        "annual_count": 19,
+        "iqr_offset_days": 14.0,
+        "median_offset_days": -37
+      },
+      "component_class": "timing",
+      "corpus": "snotel_observed",
+      "direction": "under_persistence",
+      "frost_threshold_relevance": "moderate_snow_duration_relevance",
+      "mechanism_class_read": "Early peak or meltout in mountain SNOTEL profiles can indicate missing wind redistribution/exposure physics or forcing/point-vs-hillslope representativeness rather than another density-family lever.",
+      "mechanism_class_signal": "wind_redistribution_or_forcing_representativeness",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "ablation melt-out date",
+      "site_id": "snotel_paradise_wa",
+      "site_residuals": {
+        "density": {
+          "fail_count": 1088,
+          "mean_abs": 273.85225731647364,
+          "mean_signed": -233.87072732207378,
+          "median_abs": 66.67924500000004,
+          "median_signed": -34.47482955881847,
+          "modeled_over_observed_count": 1094,
+          "modeled_under_observed_count": 2076
+        },
+        "depth": {
+          "fail_count": 3080,
+          "mean_abs": 1.6036960459419372,
+          "mean_signed": -1.6032273709766627,
+          "median_abs": 1.694170983567537,
+          "median_signed": -1.694170983567537,
+          "modeled_over_observed_count": 5,
+          "modeled_under_observed_count": 3165
+        },
+        "paired_count": 3170,
+        "swe": {
+          "fail_count": 3061,
+          "mean_abs": 0.8863761919366451,
+          "mean_signed": -0.8862803488655427,
+          "median_abs": 0.8509,
+          "median_signed": -0.8509,
+          "modeled_over_observed_count": 12,
+          "modeled_under_observed_count": 3158
+        }
+      },
+      "snow_climate": "cascades_maritime",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_peak_swe_date",
+      "cell_metrics": {
+        "annual_count": 20,
+        "iqr_offset_days": 54.25,
+        "median_offset_days": -31.0
+      },
+      "component_class": "timing",
+      "corpus": "snotel_observed",
+      "direction": "under_persistence",
+      "frost_threshold_relevance": "moderate_snow_duration_relevance",
+      "mechanism_class_read": "Early peak or meltout in mountain SNOTEL profiles can indicate missing wind redistribution/exposure physics or forcing/point-vs-hillslope representativeness rather than another density-family lever.",
+      "mechanism_class_signal": "wind_redistribution_or_forcing_representativeness",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "peak SWE date",
+      "site_id": "snotel_niwot_co",
+      "site_residuals": {
+        "density": {
+          "fail_count": 2259,
+          "mean_abs": 166.84669606442236,
+          "mean_signed": -36.36105946712803,
+          "median_abs": 131.48662845504091,
+          "median_signed": 7.514872772500368,
+          "modeled_over_observed_count": 1782,
+          "modeled_under_observed_count": 1600
+        },
+        "depth": {
+          "fail_count": 3000,
+          "mean_abs": 0.4780862059740863,
+          "mean_signed": -0.47764362781162434,
+          "median_abs": 0.4473344103606061,
+          "median_signed": -0.4473344103606061,
+          "modeled_over_observed_count": 27,
+          "modeled_under_observed_count": 3355
+        },
+        "paired_count": 3382,
+        "swe": {
+          "fail_count": 2567,
+          "mean_abs": 0.13372810032507768,
+          "mean_signed": -0.13371440068596102,
+          "median_abs": 0.09825714034600183,
+          "median_signed": -0.09825714034600183,
+          "modeled_over_observed_count": 13,
+          "modeled_under_observed_count": 3369
+        }
+      },
+      "snow_climate": "front_range_continental",
+      "timescale": "Seasonal"
+    },
+    {
+      "cell_id": "seasonal_peak_swe_date",
+      "cell_metrics": {
+        "annual_count": 22,
+        "iqr_offset_days": 45.75,
+        "median_offset_days": -45.0
+      },
+      "component_class": "timing",
+      "corpus": "snotel_observed",
+      "direction": "under_persistence",
+      "frost_threshold_relevance": "moderate_snow_duration_relevance",
+      "mechanism_class_read": "Early peak or meltout in mountain SNOTEL profiles can indicate missing wind redistribution/exposure physics or forcing/point-vs-hillslope representativeness rather than another density-family lever.",
+      "mechanism_class_signal": "wind_redistribution_or_forcing_representativeness",
+      "ordinal_label": "fail",
+      "ordinal_score": 0,
+      "signature": "peak SWE date",
+      "site_id": "snotel_snowbird_ut",
+      "site_residuals": {
+        "density": {
+          "fail_count": 1288,
+          "mean_abs": 154.63276725587133,
+          "mean_signed": -74.36729768204393,
+          "median_abs": 72.55629645302375,
+          "median_signed": -7.030292967032423,
+          "modeled_over_observed_count": 1272,
+          "modeled_under_observed_count": 1482
+        },
+        "depth": {
+          "fail_count": 2687,
+          "mean_abs": 1.1630095461010688,
+          "mean_signed": -1.1629869306891711,
+          "median_abs": 1.1794172119063742,
+          "median_signed": -1.1794172119063742,
+          "modeled_over_observed_count": 3,
+          "modeled_under_observed_count": 2751
+        },
+        "paired_count": 2754,
+        "swe": {
+          "fail_count": 2581,
+          "mean_abs": 0.4469715326306991,
+          "mean_signed": -0.4469603872442096,
+          "median_abs": 0.3937,
+          "median_signed": -0.3937,
+          "modeled_over_observed_count": 4,
+          "modeled_under_observed_count": 2750
+        }
+      },
+      "snow_climate": "wasatch_intermountain",
+      "timescale": "Seasonal"
+    }
+  ],
+  "schema": "snowdensity10-3-21-post-partition-residual-decomposition-v1",
+  "summary": {
+    "current_default_robust_fail_count": 15,
+    "current_default_robust_ordinal_score": 179,
+    "disposition": "DIAGNOSTIC-COMPLETE-NO-PROMOTION-NO-FROST-DECISION",
+    "dominant_component_class": "density",
+    "dominant_failed_signature": "seasonal_densification_trajectory",
+    "forcing_limited_absolute_swe_depth_report_only": true,
+    "legacy_flag_robust_fail_count": 16,
+    "legacy_flag_robust_ordinal_score": 176,
+    "pre_partition_activated_robust_fail_count": 17,
+    "pre_partition_activated_robust_ordinal_score": 172,
+    "production_or_frost_change_authorized": false,
+    "robust_fail_count": 15,
+    "signature_concentration_read": "signature_concentrated",
+    "site_concentration_read": "diffuse_by_site",
+    "under_persistence_binding_read": "under_persistence_tail_present_not_sole_constraint"
+  }
+}

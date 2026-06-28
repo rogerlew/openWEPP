@@ -778,6 +778,10 @@ path = "tests/integration/snowdensity10_3_19_harder_pomeroy_default_activation.r
 name = "snowdensity10_3_20_sublimation_stage_b_unlock"
 path = "tests/integration/snowdensity10_3_20_sublimation_stage_b_unlock.rs"
 
+[[test]]
+name = "snowdensity10_3_21_post_partition_residual_decomposition"
+path = "tests/integration/snowdensity10_3_21_post_partition_residual_decomposition.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

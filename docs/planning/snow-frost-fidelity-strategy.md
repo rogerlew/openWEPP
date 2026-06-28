@@ -1083,6 +1083,24 @@ profile/signature scoring rather than absolute-magnitude promotion.
      The density-bias offset hypothesis did not hold on the primary rubric, and
      no fixture/schema/cap/frost/default/user-surface or `.run` disable change
      is authorized.
+   - **Post-partition residual decomposition completed as SNOWDENSITY-10.3.21
+     (`DIAGNOSTIC-COMPLETE-NO-PROMOTION-NO-FROST-DECISION`).**
+     `docs/work-packages/20260628-snowdensity-10-3-21-post-partition-residual-decomposition-001/`.
+     The diagnostic consumes `INV-SNOWFREEZE-050` and ADR-0028 without new
+     gate authority. Current default remains **15 / 179**. The residual is
+     **signature-concentrated but site-diffuse**: densification trajectory
+     contributes `9/15` robust fails across SNOTEL and `cancov_forest`,
+     humid-New-England depth-SWE geometry contributes `2/15`, and mountain
+     SNOTEL timing under-persistence contributes `4/15`. The under-persistence
+     tail remains present post-partition, but it is not the sole binding
+     constraint; density-structure dominates and no over-persistence timing tail
+     remains. Frost-threshold input read:
+     `MIXED-NO-SINGLE-GLOBAL-SNOW-LEVER`. Candidate mechanism signals for later
+     ADR-0028 packages are canopy/sub-canopy snow processes in the cancov
+     geometry cluster and wind redistribution or forcing/representativeness in
+     the mountain timing cluster; no frost-attribution threshold decision,
+     production/default/cap/schema/fixture/frost change, selector, or site
+     calibration is made.
 9. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
    any opt-in snow melt/density bundle. Closure gate: Activation Policy B
    workspace-suite no-regression plus composite snow-state conservation evidence

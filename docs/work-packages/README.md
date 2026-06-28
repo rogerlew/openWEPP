@@ -13,6 +13,20 @@
 
 State as of `2026-06-28`:
 
+- `20260628-snowdensity-10-3-21-post-partition-residual-decomposition-001/` is
+  complete as SNOWDENSITY-10.3.21, the post-partition residual decomposition and
+  frost-attribution-threshold input diagnostic. It consumed the 10.3.20 real
+  current-default WAT/trace artifact and the 10.3.18 pre-partition rubric
+  artifact under `SC-SNOWFREEZE-001` `INV-SNOWFREEZE-050` and ADR-0028. Result:
+  `DIAGNOSTIC-COMPLETE-NO-PROMOTION-NO-FROST-DECISION`. The current no-env
+  default remains `15` robust fails / `179` score, above the legacy flag profile
+  (`16` / `176`). The residual is signature-concentrated but site-diffuse:
+  densification trajectory accounts for `9/15` robust fails, humid-New-England
+  depth-SWE geometry for `2/15`, and mountain timing under-persistence for
+  `4/15`. The frost-threshold input read is
+  `MIXED-NO-SINGLE-GLOBAL-SNOW-LEVER`; no frost-attribution threshold decision,
+  production/default/cap/schema/fixture/frost change, selector, or site
+  calibration was made.
 - `20260628-snowdensity-10-3-20-sublimation-stage-b-unlock-001/` is complete as
   SNOWDENSITY-10.3.20, the sublimation implementation diagnosis,
   partition+sublimation composition test, and Stage B surface-layer unlock. It
