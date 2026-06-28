@@ -13,6 +13,38 @@
 
 State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-12-bundle-activation-adjudication-001/` is
+  complete as SNOWDENSITY-10.3.12, the activation adjudication for the current
+  best combined opt-in bundle,
+  `coe_liquid_holding_capacity_v1 + physics_bulk_density_compaction_v1`. It
+  amended `SC-SNOWFREEZE-001` to v98 with `INV-SNOWFREEZE-069`,
+  `OBL-SNOWFREEZE-P-044`, Activation Policy B, and the Combined Bundle
+  Activation Adjudication Addendum, then reran the real direct-production WAT
+  path across all seven snow-depth fidelity surfaces. Result:
+  `HOLD-OPT-IN-BUNDLE`. The bundle is the
+  best current path: default `1147` paired failures, holding-capacity-only
+  `761`, bundle `498`, and spring densification `502`; no paired surface
+  worsens versus holding-capacity-only, and direct trace rows prove both bundle
+  members were selected `112502` times. The bundle is not activation-ready
+  because full-model-surface no-regression evidence was not produced; frost
+  attribution remains separately blocked because `498/1415` paired rows still
+  fail snow control. Remaining failures split into modeled-over-observed `264`
+  and modeled-under-observed `234`, with March/April now dominated by
+  under-persistence (`128`) rather than compaction-only headroom (`20`).
+- `20260627-snowdensity-10-3-11-spring-compaction-densification-candidate-001/`
+  is complete as SNOWDENSITY-10.3.11, the opt-in spring compaction/
+  densification candidate. It amended `SC-SNOWFREEZE-001` to v96 with
+  `physics_bulk_spring_densification_v1`, `INV-SNOWFREEZE-068`, and
+  `OBL-SNOWFREEZE-P-043`, then ran the real direct-production WAT path with
+  fixed `coe_liquid_holding_capacity_v1` melt/liquid boundary and compared the
+  existing density-compaction bundle against the spring densification candidate.
+  Result: `SPRING-DENSIFICATION-NON-PROMOTION`. The existing
+  `physics_bulk_density_compaction_v1` arm under holding capacity improves
+  `761 -> 498`, but the spring densification candidate worsens that baseline
+  `498 -> 502` with three paired surfaces worse and clear over-densification
+  into under-persistence. No default activation, fixture/schema/parser/user
+  surface, density-cap, melt/radiation/canopy/phase/frost, Qwet/frzftp, or
+  compatibility-runtime change was made.
 - `20260627-snowdensity-10-3-10-spring-pack-depletion-compaction-adjudication-001/`
   is complete as SNOWDENSITY-10.3.10, the diagnostic spring pack-depletion and
   compaction adjudication gate after SNOWDENSITY-10.3.9. It consumed the
