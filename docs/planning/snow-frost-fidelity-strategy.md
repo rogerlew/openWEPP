@@ -748,29 +748,52 @@ profile/signature scoring rather than absolute-magnitude promotion.
      hypothesis and argues against additional compaction-rate acceleration.
      March/April classes remain cap-limited depletion `33`, patchy depletion
      `16`, compaction-feasible `20`, and under-persistence `128` under the
-     active `522 kg m^-3` cap. The `550 kg m^-3` SNOBAL cap re-anchor remains a
-     separate contract-first follow-up, not a hidden diagnostic change.
+   active `522 kg m^-3` cap. The `550 kg m^-3` SNOBAL cap re-anchor remains a
+   separate contract-first follow-up, not a hidden diagnostic change.
+   - **Policy-B no-regression / cap-authority diagnostic completed as
+     10.3.14:**
+     `docs/work-packages/20260627-snowdensity-10-3-14-policy-b-no-regression-cap-authority-001/`
+     amended `SC-SNOWFREEZE-001` v100 with `INV-SNOWFREEZE-071` and
+     `OBL-SNOWFREEZE-P-046`, consumed the 10.3.12 real direct-production bundle
+     report plus the 10.3.13 residual diagnostic, and ran the full workspace
+     no-regression gate under the package-bound bundle selectors
+     `OPENWEPP_SNOWDENSITY1038_MELT_MODEL=coe_liquid_holding_capacity_v1` and
+     `OPENWEPP_SNOWDENSITY09_DENSITY_MODEL=physics_bulk_density_compaction_v1`.
+     Result: `READY-FOR-ACTIVATION-PACKAGE-UNDER-ACTIVE-CAP`. Composite trace
+     state closure was clean (`1.11e-16 m` max SWE-depth-density residual, zero
+     cap exceedances), and no production cap/default/schema/fixture/runtime-
+     selector change was made. The active `522 kg m^-3` cap is sufficient for a
+     separate default-activation package. The `550 kg m^-3` SNOBAL cap
+     projection remains mixed follow-up evidence only: cap-pinned paired
+     failures project `105 -> 102`, but `3` passing rows become projected
+     under-persistence, so dynamic cap re-anchoring requires its own contract-
+     first implementation and rerun if pursued.
 7. **Subsequent candidate packages (one lever each).** After winter-thaw melt
    response and the 10.3.9/10.3.10 residual adjudication, 10.3.11 retired the
    spring wet-time densification candidate and 10.3.12 held the best current
    bundle as opt-in only; 10.3.13 then confirmed that most under-persistence is
-   newly induced by the bulk-compaction arm. Do not pursue another wet-
-   compaction acceleration or density-rate variant without new external
-   authority and a different residual class. The next package should either
-   define/run the Policy-B no-regression activation basis or adjudicate the
-   `550 kg m^-3` SNOBAL cap authority before more residual attribution. Open-
-   surface ablation remains the leading over-persistence follow-on for cap-
-   limited mass rows, especially Harvard open and Sleepers open field, but it
-   should wait until the cap authority question is settled. Under-persistence
-   is now large (`234` rows total; `128` March/April rows) and mostly induced by
-   the density arm, so activation safety requires mechanism-cost review before
-   promotion.
+   newly induced by the bulk-compaction arm, and 10.3.14 supplied the Policy-B
+   full-workspace no-regression evidence under the active `522 kg m^-3` cap. Do
+   not pursue another wet-compaction acceleration or density-rate variant
+   without new external authority and a different residual class. The next
+   package should be a default-activation package for
+   `coe_liquid_holding_capacity_v1 + physics_bulk_density_compaction_v1` under
+   the active cap, with explicit rollback/default isolation, selector removal or
+   policy decision, fixture/schema non-mutation proof, and release-note/contract
+   activation authority. Open-surface ablation remains the leading
+   over-persistence follow-on for cap-limited mass rows, especially Harvard open
+   and Sleepers open field, but it should follow activation so it does not move
+   the activation target. Under-persistence is now large (`234` rows total;
+   `128` March/April rows) and mostly induced by the density arm; it is a known
+   mechanism cost to carry into activation release notes and follow-up residual
+   work, not an authorization for another density-rate acceleration.
    Treat patchy meltout as structural/non-target unless a separate
    correspondence package makes it verdict-bearing. Check the physical
    defensibility of the `522 kg m^-3` ripe-snow cap as its own contract-first
-   authority package if needed, not as a fitted constant; the current direction
-   is to evaluate a SNOBAL `_h2o_compact` `550 kg m^-3` cap re-anchor before
-   further residual attribution if authority and full-surface gates support it.
+   authority package if needed, not as a fitted constant; 10.3.14 showed the
+   SNOBAL `_h2o_compact` `550 kg m^-3` cap projection is mixed and not required
+   for activation, so any cap re-anchor now requires a dynamic implementation
+   package and full rerun rather than same-SWE projection evidence.
    Evaluate sub-canopy longwave / forest energy (10.3.4 #3) only if these
    spring-pack gates do not close the residuals. Revisit rain-on-snow heat only
    if event-window reconstruction proves the existing CoE `dmelt` path is

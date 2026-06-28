@@ -750,6 +750,10 @@ path = "tests/integration/snowdensity10_3_12_bundle_activation_adjudication.rs"
 name = "snowdensity10_3_13_residual_policy_b_diagnostic"
 path = "tests/integration/snowdensity10_3_13_residual_policy_b_diagnostic.rs"
 
+[[test]]
+name = "snowdensity10_3_14_policy_b_no_regression_cap_authority"
+path = "tests/integration/snowdensity10_3_14_policy_b_no_regression_cap_authority.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

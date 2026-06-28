@@ -26,7 +26,7 @@ fn contract_authorizes_only_opt_in_hourly_partition_with_rollback() {
     let contract = repo_text(CONTRACT);
 
     for marker in [
-        "contract_version: 99",
+        "contract_version: 100",
         "snow_phase_partition_model",
         "harder_pomeroy_hourly",
         "legacy_rst",

@@ -13,6 +13,24 @@
 
 State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-14-policy-b-no-regression-cap-authority-001/` is
+  complete as SNOWDENSITY-10.3.14, the Policy-B no-regression and cap-authority
+  diagnostic after the 10.3.13 residual-tail HOLD. It amended
+  `SC-SNOWFREEZE-001` to v100 with `INV-SNOWFREEZE-071`,
+  `OBL-SNOWFREEZE-P-046`, and a diagnostic addendum, then ran the full
+  workspace gate under the current best bundle selectors:
+  `OPENWEPP_SNOWDENSITY1038_MELT_MODEL=coe_liquid_holding_capacity_v1` and
+  `OPENWEPP_SNOWDENSITY09_DENSITY_MODEL=physics_bulk_density_compaction_v1`.
+  Result: `READY-FOR-ACTIVATION-PACKAGE-UNDER-ACTIVE-CAP`. The active-cap
+  bundle remains strictly better than current default (`1147 -> 498` paired
+  failures), has no paired surface worse versus holding-only, and passed the
+  selector-scoped workspace gate. Composite trace closure was clean
+  (`1.11e-16 m` max SWE-depth-density residual; zero cap exceedances). The
+  `550 kg m^-3` cap projection is mixed follow-up evidence only: among `248`
+  cap-pinned paired rows, projected failures change `105 -> 102`, but `3`
+  passing rows become projected under-persistence. No default activation,
+  density cap, production physics, fixture/schema, parser/runfile/user selector,
+  Qwet/frzftp, frost attribution, or compatibility-runtime change was made.
 - `20260627-snowdensity-10-3-13-residual-policy-b-diagnostic-001/` is complete
   as SNOWDENSITY-10.3.13, the residual-tail and Policy-B diagnostic after the
   bundle activation adjudication. It amended `SC-SNOWFREEZE-001` to v99 with
