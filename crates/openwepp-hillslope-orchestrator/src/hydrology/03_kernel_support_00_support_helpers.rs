@@ -17,6 +17,7 @@ pub(crate) struct SnowHourlyState {
     liquid_water_retained_before_m: f64,
     liquid_water_retained_after_m: f64,
     liquid_water_released_m: f64,
+    sublimation_m: f64,
     melt_raw_m: f64,
     melt_m: f64,
     melt_amelt_in: f64,
@@ -70,6 +71,7 @@ mod tests {
             liquid_water_retained_before_m: 0.0,
             liquid_water_retained_after_m: 0.0,
             liquid_water_released_m: 0.0,
+            sublimation_m: 0.0,
             melt_raw_m: melt_m,
             melt_m,
             melt_amelt_in: 0.0,
@@ -168,6 +170,7 @@ pub(crate) struct SnowCouplingOutcome {
     liquid_holding_capacity: f64,
     liquid_water_retained: f64,
     liquid_water_released: f64,
+    sublimation: f64,
     raw_melt: f64,
     redistributed_melt: f64,
     snowpack_state_loss: f64,
@@ -188,11 +191,13 @@ pub struct DirectSnowLiquidPartition {
     pub redistributed_melt_m: f64,
     pub routed_melt_m: f64,
     pub snowpack_swe_loss_m: f64,
+    pub accumulation_m: f64,
     pub rain_retained_m: f64,
     pub rain_released_m: f64,
     pub liquid_holding_capacity_after_m: f64,
     pub liquid_water_retained_after_m: f64,
     pub liquid_water_released_m: f64,
+    pub sublimation_m: f64,
     pub post_winter_rain_m: f64,
     pub runtime_swe_after_m: f64,
     pub runtime_depth_after_m: f64,
@@ -639,6 +644,7 @@ const SNOW_HOURLY_RAIN_ROOT: &str = "snow.hourly.rain_m";
 const SNOW_HOURLY_RAIN_RETAINED_ROOT: &str = "snow.hourly.rain_retained_m";
 const SNOW_HOURLY_RAIN_RELEASED_ROOT: &str = "snow.hourly.rain_released_m";
 const SNOW_HOURLY_SNOWFALL_ROOT: &str = "snow.hourly.snowfall_m";
+const SNOW_HOURLY_SUBLIMATION_ROOT: &str = "snow.hourly.sublimation_m";
 
 const WINTER_HOURLY_RAD_ROOT: &str = "winter.hourly.rad_mj_m2";
 const WINTER_HOURLY_AIR_TEMP_ROOT: &str = "winter.hourly.air_temp_c";
@@ -724,6 +730,14 @@ const SIMIMPL29_RHO_ICE_KG_M3: f64 = 917.0;
 const SIMIMPL29_CANOPY_FACTOR: f64 = 1.0;
 const SIMIMPL29_WIND_MEASUREMENT_HEIGHT_M: f64 = 10.0;
 const SIMIMPL29_SNOWPACK_STATE_LOSS_OVERDRAW_TOLERANCE_M: f64 = 0.005;
+const SNOW_SUBLIMATION_ROUGHNESS_LENGTH_M: f64 = 0.005;
+const SNOW_SUBLIMATION_VON_KARMAN: f64 = 0.4;
+const SNOW_SUBLIMATION_WATER_MOLECULAR_WEIGHT_KG_MOL: f64 = 0.018_015_28;
+const SNOW_SUBLIMATION_UNIVERSAL_GAS_CONSTANT_J_MOL_K: f64 = 8.314_462_618;
+const SNOW_SUBLIMATION_SURFACE_TEMP_K: f64 = 273.15;
+const SNOW_SUBLIMATION_MIN_AIR_TEMP_K: f64 = 173.15;
+const SNOW_SUBLIMATION_KPA_TO_PA: f64 = 1_000.0;
+const SNOW_SUBLIMATION_RHO_WATER_KG_M3: f64 = 1_000.0;
 const WB14_INTERVAL_INFILTRATION_ROUNDOFF_TOLERANCE_M: f64 = 1.0e-9;
 // UNIT-CONVERSION-ALLOW: mm_m_scale legacy minimum snow-depth threshold in meters, not conversion.
 const SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M: f64 = 0.001;

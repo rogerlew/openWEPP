@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 101
+contract_version: 102
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -82,6 +82,8 @@ Out of scope:
 | REF-SNOWFREEZE-ANDERSON1976-LIQUID | Anderson 1976 NWS-19 accumulation/ablation model (`references/copyrighted/noaa_6392_DS1.md`). | Conceptual retained/free/excess water partition authority for pack liquid transmission: retained liquid is bounded by a pack holding capacity and excess liquid drains rather than being represented as unbounded density-only compaction. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-SNOW17-PLWHC | Anderson 2006 SNOW-17 operational description, local authority under `references/copyrighted/` where available. | Operational precedent for a liquid-water holding-capacity parameter that is separate from snow density and melt-energy terms. | `[INFERENCE][Static]` |
 | REF-SNOWFREEZE-SNOBAL-LIQUID-CAPACITY | Local SNOBAL-lineage code inspection, including in-repo candidate constant `max_liquid_water_volume_fraction = 0.01` in `crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs` and package evidence for SNOBAL `_runoff.c` concepts. | Reference-implementation precedent for `h2o_max`/excess-liquid runoff semantics and the existing openWEPP diagnostic constant used as non-fitted capacity authority. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SNOWFREEZE-MARKS1998-TURBULENT | `references/copyrighted/source_pdfs/marks1998.pdf` | Marks/SNOBAL energy-balance authority: snow-cover energy balance is `DQ = Rn + H + LvE + G + M`; turbulent transfer terms solve for sensible heat `H` and snow-surface evaporation/condensation mass flux `E`; model mass-balance output treats evaporation as a snow-cover mass flux. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SNOWFREEZE-MARKS1999-SUBLIMATION | `references/copyrighted/marks1999.pdf` | Marks/ISNOBAL distributed authority: input forcing includes vapor pressure and wind speed; output includes average `LvE` and total snow evaporation `Es`; exposed windy/dry sites show rapid snow-cover loss attributed to sublimation / turbulent mass exchange, while humidity/wind forcing uncertainty is a core limitation. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SNOWFREEZE-MELT-OHMURA2001 | `references/copyrighted/Ohmura2001_meltindex.pdf` | Temperature-index melt factors include radiation/longwave/sensible terms implicitly and are not transferable defaults for the production CoE energy-balance melt path. | `[INFERENCE][Static]` |
 | REF-SNOWFREEZE-MELT-PELLICCIOTTI2005 | `references/copyrighted/pellicciotti2005.pdf` | Enhanced temperature-index melt separates radiation from temperature-index behavior, supporting explicit shortwave/albedo operands rather than retuned degree-day factors. | `[INFERENCE][Static]` |
 | REF-SNOWFREEZE-MELT-CARENZO2009 | `references/copyrighted/carenzo2009.pdf` | Melt-model parameter sensitivity and transferability evidence supporting no site-specific default fitting for snowmelt modernization. | `[INFERENCE][Static]` |
@@ -174,7 +176,8 @@ Out of scope:
 | `snow_hourly_melt_raw` | `m` | Signed hourly raw melt before daily redistribution. | melt routine | negative-melt diagnostics |
 | `snow_hourly_melt_branch_active` | `dimensionless` | Hourly melt-branch active flag. | melt routine | melt-forcing diagnostics |
 | `snow_hourly_melt_terms` | `in` | Hourly `amelt`/`bmelt`/`cmelt`/`dmelt` term family before metric conversion. | melt routine | term-level melt diagnostics |
-| `snow_melt_model` | `enum` | Melt model selector. After SNOWDENSITY-10.3.15, absent direct-production selector state defaults to `coe_liquid_holding_capacity_v1`; `legacy_coe` remains an explicit rollback/test selector and compatibility comparator surface. `coe_shortwave_albedo_v1` and `coe_winter_thaw_state_loss_v1` remain non-default historical/diagnostic candidates unless separately re-ratified. | runtime configuration / winter column | CoE melt-term dispatch and diagnostics |
+| `snow_melt_model` | `enum` | Melt model selector. After SNOWDENSITY-10.3.15, absent direct-production selector state defaults to `coe_liquid_holding_capacity_v1`; `legacy_coe` remains an explicit rollback/test selector and compatibility comparator surface. SNOWDENSITY-10.3.16 authorizes `coe_open_sublimation_stage_a_v1` only as an opt-in diagnostic candidate. `coe_shortwave_albedo_v1` and `coe_winter_thaw_state_loss_v1` remain non-default historical/diagnostic candidates unless separately re-ratified. | runtime configuration / winter column | CoE melt-term dispatch and diagnostics |
+| `snow_sublimation` | `m water equivalent` | Opt-in Stage A vapor mass-loss sink from the snowpack. It is separate from routed melt/liquid, bounded by available snowpack SWE, published only in internal trace/conservation ledgers, and must not alter public WAT/HBP/PASS schema without later authority. | `coe_open_sublimation_stage_a_v1` candidate | open-surface ablation diagnostics and snow-state conservation |
 | `snow_albedo` | `fraction` | Opt-in snow-surface albedo state consumed by the future `coe_shortwave_albedo_v1` shortwave term; accepted domain is `0 <= snow_albedo <= 0.85` under `brock2000_temperature_age_v1`. | SNOWDENSITY-05C albedo state update | `coe_shortwave_albedo_v1` melt path diagnostics |
 | `snow_albedo_accumulated_positive_temperature_c_day` | `degC day` | Accumulated positive-temperature age index (`Ta`) since the latest fresh-snow reset for `brock2000_temperature_age_v1`. | SNOWDENSITY-05C albedo state update | albedo decay diagnostics |
 | `snow_albedo_fresh_snow_reset_water_equiv_m` | `m water equivalent` | Fresh-snow water-equivalent increment threshold that resets `Ta` and returns albedo toward the fresh-snow cap; default core threshold is `0.001 m` water equivalent. | SNOWDENSITY-05C albedo state update | albedo reset diagnostics |
@@ -258,6 +261,7 @@ Out of scope:
 | INV-SNOWFREEZE-070 | SNOWDENSITY-10.3.13 residual-tail and Policy-B diagnostic: after the combined bundle adjudication, diagnostic tooling may consume committed real direct-production WAT reports and paired observations to classify date-level residual transitions across current default, `coe_liquid_holding_capacity_v1`, `coe_liquid_holding_capacity_v1 + physics_bulk_density_compaction_v1`, and the rejected `physics_bulk_spring_densification_v1` candidate. The diagnostic must report whether bundle under-persistence rows were newly introduced by the density arm, persisted from earlier arms, or came from opposite-sign over-persistence/pass states; must classify remaining over-persistence into cap-limited, patchy, compaction-feasible, or unresolved rows using the active `522 kg m^-3` cap; and must define the missing Policy-B workspace-suite/conservation evidence separately from frost-attribution snow-control residuals. This diagnostic is evidence only: it does not authorize default activation, cap changes, coefficient changes, new compaction-rate variants, open-surface ablation, parser/runfile/user selector changes, fixture edits, output-schema changes, frost attribution, Qwet/frzftp, or compatibility-runtime changes. If the SNOBAL `550 kg m^-3` cap re-anchor is pursued, it requires a separate contract-first package and Policy-B evidence; it must not be smuggled into this diagnostic. | hard-fail | INV-SNOWFREEZE-003, INV-SNOWFREEZE-047, INV-SNOWFREEZE-050, INV-SNOWFREEZE-060, INV-SNOWFREEZE-067, INV-SNOWFREEZE-068, INV-SNOWFREEZE-069, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-071 | SNOWDENSITY-10.3.14 Policy-B no-regression and cap-authority diagnostic: before default activation of the current best bundle, package evidence must run the workspace-suite no-regression gate under the existing package-bound selectors `OPENWEPP_SNOWDENSITY1038_MELT_MODEL=coe_liquid_holding_capacity_v1` and `OPENWEPP_SNOWDENSITY09_DENSITY_MODEL=physics_bulk_density_compaction_v1`, and must independently verify the composed direct trace state remains density-cap bounded and closes `runtime_swe = runtime_depth_m * runtime_density_kg_m3 / 1000` within tolerance. The gate means the existing suite passes under the bundle selectors plus composite snow-state conservation closure; downstream snow-affected output deltas are conserved-by-construction and not separately diffed by this diagnostic. This amendment does not itself change the default model or activate parser/runfile/user configuration. The active runtime density cap remains `522 kg m^-3` under `INV-SNOWFREEZE-003`; `550 kg m^-3` SNOBAL cap evidence may be evaluated only as a same-SWE, cap-pinned projection unless a later contract amendment authorizes a real dynamic cap implementation and rerun. The diagnostic must report whether the active-cap bundle is ready for a separate default-activation package, and must keep any cap re-anchor, shallow-pack compaction guard, open-surface ablation, or other residual physics as follow-up unless dynamic evidence exists. It must not change production physics, density caps, output schemas, fixture inputs, compatibility runtime, Qwet/frzftp, frost attribution, or add new selectors. | hard-fail | INV-SNOWFREEZE-003, INV-SNOWFREEZE-047, INV-SNOWFREEZE-050, INV-SNOWFREEZE-060, INV-SNOWFREEZE-067, INV-SNOWFREEZE-069, INV-SNOWFREEZE-070, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-072 | SNOWDENSITY-10.3.15 default activation under active cap: the direct-production default snow bundle is `snow_melt_model = coe_liquid_holding_capacity_v1` plus `snow_density_model = physics_bulk_density_compaction_v1` when the package-bound selector environment variables are absent. This supersedes only the older default-selection posture of `INV-SNOWFREEZE-060` and `INV-SNOWFREEZE-067`; their conservation, rollback, boundary-split, no-site-tuning, and fail-closed requirements remain binding. `OPENWEPP_SNOWDENSITY1038_MELT_MODEL=legacy_coe` and `OPENWEPP_SNOWDENSITY09_DENSITY_MODEL=legacy_wepp` remain explicit rollback/test selectors, not parser/runfile/user CLI controls. Empty selector values select the activated defaults; unknown or unsupported values must fail closed. The rejected `physics_bulk_spring_densification_v1`, `coe_winter_thaw_state_loss_v1`, and `coe_shortwave_albedo_v1` candidates are not accepted by the active default selector path unless a later package re-ratifies them. Acceptance requires real downstream direct-production evidence that no-env WAT/trace rows select the activated bundle, explicit rollback evidence, unchanged output schema and user-facing configuration surfaces, active `522 kg m^-3` cap preservation, workspace gates on the no-env default path, and carry-forward release notes that downstream snow-affected output deltas are expected conserved consequences, `498/1415` paired snow-depth failures remain, and frost attribution remains blocked by `SNOW-CONTROL-RESIDUALS-REMAIN`. | hard-fail | INV-SNOWFREEZE-003, INV-SNOWFREEZE-047, INV-SNOWFREEZE-050, INV-SNOWFREEZE-060, INV-SNOWFREEZE-067, INV-SNOWFREEZE-069, INV-SNOWFREEZE-071, REF-SNOWFREEZE-SNOWDENSITY1015, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-073 | SNOWDENSITY-10.3.16 open-surface ablation Stage A: production direct-runtime CoE melt may add `snow_melt_model = coe_open_sublimation_stage_a_v1` only as an explicit package-bound opt-in candidate with the activated default `coe_liquid_holding_capacity_v1` and rollback `legacy_coe` retained. Its only authorized algorithmic delta from `coe_liquid_holding_capacity_v1` is a finite, non-negative, bounded turbulent latent mass-loss sink `snow_sublimation` that subtracts snowpack SWE as vapor from the runtime snow state. Sublimated mass must never be routed as melt, rain, runoff, infiltration, liquid holding-capacity release, or density-only compaction; it must be tracked in internal trace/conservation ledgers and included in snow-state closure as vapor export. The Stage A candidate must preserve CoE raw melt terms, signed melt redistribution, liquid holding-capacity semantics, phase partition, canopy/radiation/longwave/albedo/frost behavior, density cap, density model default, output schemas, fixture inputs, compatibility runtime, parser/runfile/user surfaces, and Qwet/frzftp posture. Acceptance requires real coupled direct-production WAT/trace evidence that the opt-in candidate reached the snow partition, reduces the open-surface cap-limited over-persistence tail, does not worsen under-persistence, keeps sublimation magnitude in a literature-defensible range without fixture tuning, and closes whole-model snow-state conservation. If any gate is missing, worse, or fails, the package must close `HOLD` or non-promotion and must not activate the candidate. | hard-fail | INV-SNOWFREEZE-047, INV-SNOWFREEZE-050, INV-SNOWFREEZE-067, INV-SNOWFREEZE-072, REF-SNOWFREEZE-MARKS1998-TURBULENT, REF-SNOWFREEZE-MARKS1999-SUBLIMATION, ADR-0017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Porting-Fidelity Authority
 
@@ -486,6 +490,7 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 - `harder_pomeroy_hourly` producing active-hour precipitation partitions where `hrrain + hrsnow / 10` fails to reconstruct the active hourly precipitation depth within roundoff, or where the default `legacy_rst` branch differs from the pre-10.3.5b threshold behavior. `[DIRECT][Static] + [INFERENCE][Static]`
 - Supersaturated dewpoint/RH inputs silently clamped without the `INV-SNOWFREEZE-065` exact-saturation normalization evidence, or any non-finite/negative/zero-saturation humidity input proceeding through the opt-in hourly partition. `[DIRECT][Static] + [INFERENCE][Static]`
 - `coe_winter_thaw_state_loss_v1` selected by default, exposed through parser/runfile/user activation, consuming albedo state, altering CoE melt coefficients/forcing/canopy/phase/density constants, or reported as closure without paired thaw-window under-ablation and aggregate-deficit improvement evidence. `[DIRECT][Static] + [INFERENCE][Static]`
+- `coe_open_sublimation_stage_a_v1` selected by default, exposed through parser/runfile/user activation, changing the activated density cap/default, reading PySnobal/libsnobal C source without confirmed non-GPL-family licensing, using fixture-fitted turbulent constants, routing sublimated vapor as melt/liquid, leaving sublimated mass out of the internal snow-state conservation ledger, changing public output schemas, worsening paired under-persistence, or claiming activation/frost attribution from Stage A evidence. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -843,6 +848,23 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
   forward the `498/1415` residual snow-control failure count as a frost-
   attribution blocker rather than a hidden activation pass.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-048: Any SNOWDENSITY-10.3.16 open-surface ablation Stage A
+  producer must amend this contract before production edits, then implement
+  `coe_open_sublimation_stage_a_v1` only behind an explicit opt-in selector
+  while preserving the activated `coe_liquid_holding_capacity_v1` default and
+  `legacy_coe` rollback. It must derive turbulent latent mass-loss constants
+  from Marks/SNOBAL paper authority or physical constants, not fixture tuning;
+  must fail closed on unsupported selector values; must bound sublimated mass by
+  available snowpack SWE; must publish sublimation only in internal trace and
+  conservation artifacts unless a later schema amendment authorizes public
+  output; must prove that sublimation is not routed melt/liquid; and must run
+  coupled direct-production WAT/trace gates for open-surface cap-limited
+  over-persistence reduction, under-persistence non-worsening, magnitude range,
+  and whole-model snow-state conservation. It must not change defaults, density
+  caps, output schemas, parser/runfile/user controls, fixture inputs,
+  compatibility runtime, frost attribution, Qwet/frzftp, or two-layer
+  snow-surface structure.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -867,6 +889,7 @@ namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 | Residual-tail and Policy-B diagnostic (`INV-SNOWFREEZE-070`) | date-level residual transition report, cap-classification matrix, and Policy-B workspace-suite/conservation evidence matrix | Hard error on missing real WAT lineage, aggregate-only under-persistence attribution, hidden density-cap change, or activation/frost-attribution claim from diagnostic evidence alone; otherwise follow-ons target classified residuals and missing Policy-B scopes | SNOWDENSITY-10.3.13 residual diagnostic gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Policy-B no-regression and cap-authority diagnostic (`INV-SNOWFREEZE-071`) | package-bound bundle selectors, workspace-suite no-regression gate, composite trace state identity, active-cap bounds, and same-SWE cap-pinned projection | Hard error on hidden default/cap mutation, missing trace/WAT lineage, missing workspace-suite/conservation gate status, trace identity or cap-bound failure, claiming `550 kg m^-3` dynamic readiness from projection only, or claiming frost attribution; otherwise active-cap activation may proceed only through a separate package with default/rollback gates | SNOWDENSITY-10.3.14 Policy-B/cap gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Default activation under active cap (`INV-SNOWFREEZE-072`) | no-env direct-production selector path, rollback/test selector path, WAT trace proof, output/user-surface scan, workspace gates, and downstream snow-affected delta documentation | Hard error on no-env legacy fallback, unsupported candidate acceptance, missing rollback, hidden parser/runfile/user CLI exposure, output-schema drift, density-cap mutation, missing real downstream WAT/trace evidence, or frost-attribution claim while `498/1415` paired snow-depth failures remain; otherwise the active-cap bundle is the direct-production default with explicit rollback/test selectors | SNOWDENSITY-10.3.15 default-activation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Open-surface ablation Stage A (`INV-SNOWFREEZE-073`) | explicit opt-in melt selector, snow-sublimation vapor ledger, coupled WAT/trace residual classification, and snow-state conservation | Hard error on default activation, unsupported selector fallback, fixture-tuned constants, sublimation routed as liquid, missing vapor ledger, missing coupled WAT/trace evidence, open-surface tail non-improvement, under-persistence worsening, out-of-range sublimation magnitude, conservation failure, schema/fixture/default/cap/frost drift, or two-layer-surface scope creep; otherwise candidate remains opt-in diagnostic only | SNOWDENSITY-10.3.16 Stage A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Snow depth/density domain (`INV-SNOWFREEZE-003/004`) | hourly snowpack state update | Hard error on domain/branch inconsistency | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Partition and activation branches (`INV-SNOWFREEZE-005/009`) | daily/hourly branch selection | Hard error on branch mismatch or silent bypass | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Frost heat-flow semantics (`INV-SNOWFREEZE-006`) | frost routine bookkeeping | Hard error on invalid equation domain; investigate hourly-heavy deltas per ADR confidence tiers | Tier-B investigation gate | `[DIRECT][Static]` |
@@ -1712,6 +1735,46 @@ Policy-B readiness under explicit selectors.
    Policy-B active-cap evidence remain a release-note item, and frost
    attribution remains blocked by `SNOW-CONTROL-RESIDUALS-REMAIN`.
 
+## SNOWDENSITY-10.3.16 Open-Surface Ablation Stage A Addendum
+
+Status: draft (2026-06-27). This addendum authorizes an opt-in diagnostic
+candidate for the open-surface mass-excess tail remaining after default
+activation of the active-cap snow-depth bundle.
+
+1. Candidate selector: `coe_open_sublimation_stage_a_v1` may be selected only by
+   the package-bound melt selector used for direct-production diagnostics.
+   Absent or empty selector values continue to select the activated
+   `coe_liquid_holding_capacity_v1` default. `legacy_coe` remains the explicit
+   rollback/test selector. Unknown values fail closed.
+2. Single authorized delta: Stage A may add only `snow_sublimation`, a bounded
+   turbulent latent mass-loss SWE sink. It must subtract finite non-negative
+   water-equivalent mass from runtime snowpack SWE as vapor export. It must not
+   become routed melt, post-winter rain, liquid-water release, infiltration,
+   runoff, density-only compaction, or public WAT/HBP/PASS schema.
+3. Authority and constants: the candidate must use Marks/SNOBAL paper authority
+   and physical constants for latent mass-loss. PySnobal/libsnobal C source is
+   not implementation authority unless a non-GPL-family license is confirmed
+   against `deny.toml`. Fixture-tuned constants are invalid.
+4. Conservation ledger: package evidence must independently reconstruct
+   `runtime_swe_before + snowfall_water + rain_retained - snowpack_state_loss -
+   snow_sublimation = runtime_swe_after` within tolerance. The same evidence
+   must show `snow_sublimation` does not appear in routed melt/liquid totals.
+5. Coupled evidence gate: package evidence must include real direct-production
+   WAT and trace rows proving the opt-in candidate reached the snow partition
+   and comparing against the activated default on paired observed snow-depth
+   surfaces. The package must report open-surface cap-limited over-persistence,
+   under-persistence, sublimation magnitude, conservation status, and protected
+   boundary scans.
+6. Promotion boundary: Stage A cannot activate the candidate. If open-surface
+   cap-limited over-persistence is not reduced, under-persistence worsens,
+   sublimation magnitude is outside the literature-defensible range, or
+   conservation fails/missing, the package must close `HOLD` or non-promotion.
+7. Protected boundaries: this addendum does not authorize default activation,
+   two-layer snow-surface structure, density-cap changes, density-model changes,
+   albedo/radiation/canopy/phase/rain-heat/longwave/frost/Qwet/frzftp changes,
+   parser/runfile/user controls, fixture edits, compatibility-runtime changes,
+   public output-schema changes, or frost attribution.
+
 ## CLIM05 Parsed Snow-Control Runtime Coupling Addendum
 
 ## HPHYS0247 Winter Activation Trigger Addendum
@@ -2447,6 +2510,7 @@ ratification. They are evaluation bands, not calibration objectives; the
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-27` | `102` | `Codex` | SNOWDENSITY-10.3.16 open-surface ablation Stage A amendment: added Marks/SNOBAL turbulent latent mass-loss authority, `snow_sublimation`, `coe_open_sublimation_stage_a_v1`, `INV-SNOWFREEZE-073`, `OBL-SNOWFREEZE-P-048`, boundary disposition, and the Stage A addendum. The amendment authorizes only an opt-in diagnostic vapor mass-loss sink separate from routed liquid, preserves the activated default and rollback selectors, forbids fixture-tuned constants and PySnobal C implementation authority without permissive-license confirmation, and requires coupled WAT/trace gates for open-surface tail reduction, under-persistence non-worsening, magnitude range, and snow-state conservation; it does not authorize activation. |
 | `2026-06-27` | `101` | `Codex` | SNOWDENSITY-10.3.15 default activation amendment: added `REF-SNOWFREEZE-SNOWDENSITY1015`, `INV-SNOWFREEZE-072`, `OBL-SNOWFREEZE-P-047`, boundary disposition, and the Default Activation Under Active Cap Addendum. The amendment activates `coe_liquid_holding_capacity_v1 + physics_bulk_density_compaction_v1` as the direct-production no-env default under the active `522 kg m^-3` cap, retains `legacy_coe`/`legacy_wepp` explicit rollback/test selectors, rejects unsupported candidates in the active default selector path, and keeps `498/1415` paired snow-depth residual failures as a frost-attribution blocker. |
 | `2026-06-27` | `100` | `Codex` | SNOWDENSITY-10.3.14 Policy-B no-regression and cap-authority amendment: added `INV-SNOWFREEZE-071`, `OBL-SNOWFREEZE-P-046`, boundary disposition, and the Policy-B No-Regression And Cap Authority Addendum. The amendment requires a workspace-suite no-regression gate under the current opt-in bundle selectors, composite trace closure, composite snow-state conservation closure, and active `522 kg m^-3` cap bounds before any separate default-activation package; downstream snow-affected output deltas are conserved-by-construction and not separately diffed, and `550 kg m^-3` remains projection-only until a later dynamic cap amendment and rerun. |
 | `2026-06-27` | `99` | `Codex` | SNOWDENSITY-10.3.13 residual-tail and Policy-B diagnostic amendment: added `INV-SNOWFREEZE-070`, `OBL-SNOWFREEZE-P-045`, boundary disposition, and the Residual-Tail And Policy-B Diagnostic Addendum. The amendment authorizes date-level residual transition attribution and a Policy-B workspace-suite/conservation evidence matrix while explicitly forbidding production physics, default activation, density-cap changes, and frost attribution. |

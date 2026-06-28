@@ -17,7 +17,7 @@ use super::snowbench::{
     export_pysnobal_inputs,
 };
 
-const CONTRACT: &str = "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-052 INV-SNOWFREEZE-055 INV-SNOWFREEZE-057 INV-SNOWFREEZE-066";
+const CONTRACT: &str = "SC-SNOWFREEZE-001 INV-SNOWFREEZE-050 INV-SNOWFREEZE-052 INV-SNOWFREEZE-055 INV-SNOWFREEZE-057 INV-SNOWFREEZE-066 INV-SNOWFREEZE-073";
 const RADIATION_BRIDGE_NET_SHORTWAVE_FACTOR: f64 = 0.80;
 const STEFAN_BOLTZMANN_W_M2_K4: f64 = 5.670_374_419e-8;
 const DEFAULT_UNDERLYING_SURFACE_ALBEDO: f64 = 0.2;
@@ -37,6 +37,7 @@ pub enum CoeMeltModel {
     CoeShortwaveAlbedoV1,
     CoeWinterThawStateLossV1,
     CoeLiquidHoldingCapacityV1,
+    CoeOpenSublimationStageAV1,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -76,6 +77,7 @@ pub struct CoeMeltSummary {
     pub total_redistributed_melt_m: f64,
     pub total_routed_melt_m: f64,
     pub total_swe_loss_m: f64,
+    pub total_sublimation_m: f64,
     pub total_liquid_water_released_m: f64,
     pub final_swe_m: f64,
     pub final_depth_m: f64,
@@ -133,6 +135,7 @@ struct CoeMeltDailyRow {
     redistributed_melt_m: f64,
     routed_melt_m: f64,
     snowpack_swe_loss_m: f64,
+    sublimation_m: f64,
     snowpack_swe_balance_residual_m: f64,
     routed_state_loss_residual_m: f64,
     state_loss_available_storage_margin_m: f64,
@@ -155,6 +158,7 @@ struct CoeMeltLedger {
     total_redistributed_melt_m: f64,
     total_routed_melt_m: f64,
     total_swe_loss_m: f64,
+    total_sublimation_m: f64,
     total_liquid_water_released_m: f64,
     positive_snow_hours: usize,
     diagnostic_initial_albedo_seed_count: usize,
@@ -168,6 +172,7 @@ impl CoeMeltModel {
             Self::CoeShortwaveAlbedoV1 => "coe_shortwave_albedo_v1",
             Self::CoeWinterThawStateLossV1 => "coe_winter_thaw_state_loss_v1",
             Self::CoeLiquidHoldingCapacityV1 => "coe_liquid_holding_capacity_v1",
+            Self::CoeOpenSublimationStageAV1 => "coe_open_sublimation_stage_a_v1",
         }
     }
 
@@ -177,9 +182,10 @@ impl CoeMeltModel {
             "coe_shortwave_albedo_v1" => Ok(Self::CoeShortwaveAlbedoV1),
             "coe_winter_thaw_state_loss_v1" => Ok(Self::CoeWinterThawStateLossV1),
             "coe_liquid_holding_capacity_v1" => Ok(Self::CoeLiquidHoldingCapacityV1),
+            "coe_open_sublimation_stage_a_v1" => Ok(Self::CoeOpenSublimationStageAV1),
             _ => Err(SnowbenchError::InvalidInput {
                 detail: format!(
-                    "unknown CoE melt model '{value}', expected legacy_coe, coe_shortwave_albedo_v1, coe_winter_thaw_state_loss_v1, or coe_liquid_holding_capacity_v1"
+                    "unknown CoE melt model '{value}', expected legacy_coe, coe_shortwave_albedo_v1, coe_winter_thaw_state_loss_v1, coe_liquid_holding_capacity_v1, or coe_open_sublimation_stage_a_v1"
                 ),
             }),
         }
@@ -191,14 +197,16 @@ impl CoeMeltModel {
             Self::CoeShortwaveAlbedoV1 => SnowMeltModel::CoeShortwaveAlbedoV1,
             Self::CoeWinterThawStateLossV1 => SnowMeltModel::CoeWinterThawStateLossV1,
             Self::CoeLiquidHoldingCapacityV1 => SnowMeltModel::CoeLiquidHoldingCapacityV1,
+            Self::CoeOpenSublimationStageAV1 => SnowMeltModel::CoeOpenSublimationStageAV1,
         }
     }
 
     const fn snow_albedo_model(self) -> Option<SnowAlbedoModel> {
         match self {
-            Self::LegacyCoe | Self::CoeWinterThawStateLossV1 | Self::CoeLiquidHoldingCapacityV1 => {
-                None
-            }
+            Self::LegacyCoe
+            | Self::CoeWinterThawStateLossV1
+            | Self::CoeLiquidHoldingCapacityV1
+            | Self::CoeOpenSublimationStageAV1 => None,
             Self::CoeShortwaveAlbedoV1 => Some(SnowAlbedoModel::Brock2000TemperatureAgeV1),
         }
     }
@@ -718,17 +726,21 @@ fn simulate_coe_melt(
         let snowpack_swe_balance_residual_m =
             snow_water_before_m + day.snow_input_m + partition.rain_retained_m
                 - partition.snowpack_swe_loss_m
+                - partition.sublimation_m
                 - partition.runtime_swe_after_m;
         let routed_state_loss_residual_m =
             partition.routed_melt_m - partition.rain_released_m - partition.snowpack_swe_loss_m;
         let state_loss_available_storage_margin_m =
-            snow_water_before_m + day.snow_input_m + day.rain_m - partition.snowpack_swe_loss_m;
+            snow_water_before_m + day.snow_input_m + day.rain_m
+                - partition.snowpack_swe_loss_m
+                - partition.sublimation_m;
         ledger.total_snow_input_m += day.snow_input_m;
         ledger.total_rain_input_m += day.rain_m;
         ledger.total_raw_melt_m += partition.raw_melt_m;
         ledger.total_redistributed_melt_m += partition.redistributed_melt_m;
         ledger.total_routed_melt_m += partition.routed_melt_m;
         ledger.total_swe_loss_m += partition.snowpack_swe_loss_m;
+        ledger.total_sublimation_m += partition.sublimation_m;
         ledger.total_liquid_water_released_m += partition.liquid_water_released_m;
         ledger.positive_snow_hours += day
             .hourly
@@ -758,6 +770,7 @@ fn simulate_coe_melt(
             redistributed_melt_m: partition.redistributed_melt_m,
             routed_melt_m: partition.routed_melt_m,
             snowpack_swe_loss_m: partition.snowpack_swe_loss_m,
+            sublimation_m: partition.sublimation_m,
             snowpack_swe_balance_residual_m,
             routed_state_loss_residual_m,
             state_loss_available_storage_margin_m,
@@ -778,6 +791,7 @@ fn simulate_coe_melt(
             total_redistributed_melt_m: ledger.total_redistributed_melt_m,
             total_routed_melt_m: ledger.total_routed_melt_m,
             total_swe_loss_m: ledger.total_swe_loss_m,
+            total_sublimation_m: ledger.total_sublimation_m,
             total_liquid_water_released_m: ledger.total_liquid_water_released_m,
             final_swe_m: runtime_swe_m,
             final_depth_m: runtime_depth_m,
@@ -795,7 +809,7 @@ fn write_coe_melt_csv(path: &Path, rows: &[CoeMeltDailyRow]) -> Result<(), Snowb
     let mut file = fs::File::create(path).map_err(|source| snowbench_io(path, source))?;
     writeln!(
         file,
-        "date,snow_water_before_m,snow_input_m,rain_input_m,rain_retained_m,rain_released_m,liquid_holding_capacity_m,liquid_water_retained_m,liquid_water_released_m,snow_water_m,snow_depth_m,snow_density_kg_m3,raw_melt_m,redistributed_melt_m,routed_melt_m,snowpack_swe_loss_m,snowpack_swe_balance_residual_m,routed_state_loss_residual_m,state_loss_available_storage_margin_m,snow_albedo,source"
+        "date,snow_water_before_m,snow_input_m,rain_input_m,rain_retained_m,rain_released_m,liquid_holding_capacity_m,liquid_water_retained_m,liquid_water_released_m,snow_water_m,snow_depth_m,snow_density_kg_m3,raw_melt_m,redistributed_melt_m,routed_melt_m,snowpack_swe_loss_m,sublimation_m,snowpack_swe_balance_residual_m,routed_state_loss_residual_m,state_loss_available_storage_margin_m,snow_albedo,source"
     )
     .map_err(|source| snowbench_io(path, source))?;
     for row in rows {
@@ -805,7 +819,7 @@ fn write_coe_melt_csv(path: &Path, rows: &[CoeMeltDailyRow]) -> Result<(), Snowb
             .unwrap_or_default();
         writeln!(
             file,
-            "{},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{},{}",
+            "{},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{:.12},{},{}",
             row.date,
             row.snow_water_before_m,
             row.snow_input_m,
@@ -822,6 +836,7 @@ fn write_coe_melt_csv(path: &Path, rows: &[CoeMeltDailyRow]) -> Result<(), Snowb
             row.redistributed_melt_m,
             row.routed_melt_m,
             row.snowpack_swe_loss_m,
+            row.sublimation_m,
             row.snowpack_swe_balance_residual_m,
             row.routed_state_loss_residual_m,
             row.state_loss_available_storage_margin_m,

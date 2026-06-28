@@ -549,6 +549,68 @@ results re-order the priorities below:
    (`INV-SNOWFREEZE-050`). The ★ stratified open-vs-canopy observations are
    forcing-robust *within* a site (same climate), but require explicit modeled
    stratum mapping before they carry decisive canopy-attenuation verdicts.
+7. **Open-surface ablation via the SNOBAL two-layer energy balance (the active
+   next lever).** After bundle activation (§10.3), the residual splits into two
+   opposite-sign defects: a density-arm-induced under-persistence tail, and an
+   over-persistence **mass excess** that compaction cannot remove (cap-limited
+   depletion, concentrated at wind-exposed open surfaces — Harvard open, Sleepers
+   open field). The over-persistence tail is an **ablation deficit**: openWEPP
+   carries too much SWE at open exposures because the CoE melt under-realizes mass
+   loss there. The reference mechanism is the SNOBAL two-layer point energy-mass
+   balance — authority **Marks et al. 1999** (`references/copyrighted/marks1999.pdf`);
+   the `pysnobal` `libsnobal` C is an equation/structure cross-reference only, and
+   any port requires confirming its license is not GPL-family per `deny.toml`
+   (implement clean-room from the paper, the CHM/MetPy precedent).
+   - **Two-layer thermal structure (`_calc_layers.c` / `_adj_layers.c`).** A
+     fixed-thickness **active surface layer** (`max_z_s_0`, ~0.25 m) plus a lower
+     layer, each with its own temperature and **cold content**
+     (`T_s_0`/`cc_s_0`, `T_s_l`/`cc_s_l`) over one bulk density. It collapses to a
+     single layer — and dumps a sub-threshold remnant to liquid — for shallow
+     snow (the numerical-robustness rule the bulk model lacks). The structure
+     exists for the energy balance: the thin surface layer responds fast to
+     forcing and sets the surface temperature, so melt is
+     **surface-temperature-driven, not bulk-average** — the surface ripens and
+     ablates while the base stays cold, exactly the open-exposure regime.
+   - **Surface energy budget (`_e_bal.c`):**
+     `ΔQ_0 = R_n + H + L_v·E + G_0 + M` — net all-wave radiation, turbulent
+     **sensible** heat `H`, turbulent **latent** heat `L_v·E`, surface↔lower
+     conduction `G_0`, and advected precip heat `M`; total
+     `ΔQ = ΔQ_0 + G − G_0` adds soil heat `G` at the lower boundary. The turbulent
+     `H`/`L_v·E`/`E` are bulk-aerodynamic (Monin-Obukhov; `_h_le.c` / `hle1.c`),
+     so **wind drives them** — the open-exposure amplifier.
+   - **Melt realization (`_snowmelt.c`):** surface energy
+     `Q_0 = ΔQ_0·Δt + cc_s_0`; melt only when `Q_0 > 0` (`melt = Q_0 / L_f`),
+     else the deficit deepens cold content. Melt is **cold-content-gated at the
+     surface layer**; lower-layer melt follows only after the surface ripens.
+   - **Sublimation / direct mass loss (`_evap_cond.c`) — the term CoE most likely
+     lacks.** The latent flux removes **mass** directly: `E_s = E·Δt` reduces SWE
+     and depth, liquid favored over ice by the vaporization/sublimation ratio
+     `0.882`. At open, windy, dry sites this is a **first-order SWE sink with no
+     melt-energy analogue** — if openWEPP never sublimates, open-exposure SWE
+     stays too high regardless of melt tuning. This is the prime suspect for the
+     open-surface mass excess.
+   - **Mapping to openWEPP's CoE melt.** CoE already carries radiation (`amelt`),
+     a wind/temperature term (`cmelt`, ~`H`), and rain/advected heat (`dmelt`,
+     ~`M`). What it lacks: **(a) a turbulent latent-heat / sublimation mass-loss
+     term** (`L_v·E → E_s`) and **(b) the surface-vs-bulk cold-content
+     distinction** (a fast surface layer that ripens/melts ahead of the bulk).
+     (a) is the cheap, likely-dominant increment for the open mass tail; (b) is
+     the structural two-layer addition.
+   - **Staging (one-lever discipline).** *Stage A* — add the **sublimation /
+     latent mass-loss term** to the existing CoE energy balance as an opt-in
+     candidate: a single additive, mass-conserving SWE sink (sublimated mass
+     leaves as vapor, tracked in the WB). *Stage B* (only if A under-delivers) —
+     adopt the **two-layer surface cold-content structure** for surface-driven
+     melt. Keep the activated bundle as default and full rollback; contract-first
+     `SC-SNOWFREEZE-001` amendment; turbulent-transfer constants from Marks 1999,
+     **not** fitted to fixtures.
+   - **Falsifiable gates.** (1) cuts the cap-limited over-persistence / mass-excess
+     tail at the open surfaces (Harvard open, Sleepers open field) in the coupled
+     WAT gate; (2) **does not worsen the under-persistence tail** (the standing
+     bidirectional guardrail — sublimation removes mass, so watch shallow packs and
+     meltout timing); (3) sublimation magnitude falls in the literature range for
+     the regime, not tuned to a fixture; (4) whole-model conservation closes (the
+     vapor sink is balanced in the water balance).
 
 ### 10.3 Work-Package Tuning Sequence
 
@@ -810,26 +872,50 @@ profile/signature scoring rather than absolute-magnitude promotion.
    (activation basis and user-facing output-change consequence documented in
    step 6 above and the behavior-change note). Do not pursue another
    wet-compaction acceleration or density-rate variant without new external
-   authority and a different residual class. Open-surface ablation remains the
-   leading over-persistence follow-on for cap-limited mass rows, especially
-   Harvard open and Sleepers open field. Under-persistence is now large (`234`
-   rows total;
-   `128` March/April rows) and mostly induced by the density arm; it is a known
-   mechanism cost to carry into activation release notes and follow-up residual
-   work, not an authorization for another density-rate acceleration.
-   Treat patchy meltout as structural/non-target unless a separate
-   correspondence package makes it verdict-bearing. Check the physical
-   defensibility of the `522 kg m^-3` ripe-snow cap as its own contract-first
-   authority package if needed, not as a fitted constant; 10.3.14 showed the
-   SNOBAL `_h2o_compact` `550 kg m^-3` cap projection is mixed and not required
-   for activation, so any cap re-anchor now requires a dynamic implementation
-   package and full rerun rather than same-SWE projection evidence.
-   Evaluate sub-canopy longwave / forest energy (10.3.4 #3) only if these
-   spring-pack gates do not close the residuals. Revisit rain-on-snow heat only
-   if event-window reconstruction proves the existing CoE `dmelt` path is
-   numerically inactive during observed failures. Each lever must remain opt-in
-   until the same gate is met: conservation, independent operand reconstruction,
-   rollback/default isolation, and rubric improvement without site constants.
+   authority and a different residual class.
+   - **Open-surface ablation Stage A completed as opt-in non-promotion
+     10.3.16:**
+     `docs/work-packages/20260627-snowdensity-10-3-16-open-surface-ablation-stage-a-001/`
+     amended `SC-SNOWFREEZE-001` v102 with `INV-SNOWFREEZE-073`,
+     `OBL-SNOWFREEZE-P-048`, and opt-in
+     `coe_open_sublimation_stage_a_v1`. The candidate's only algorithmic delta
+     from the activated default is a Marks-lineage turbulent latent mass-loss
+     sink (`snow_sublimation`) that removes SWE as vapor and keeps routed liquid
+     melt separate. Real coupled direct-production WAT/trace evidence proves the
+     selector reached the snow partition and conservation closed (max snow-state
+     residual `5.55e-17 m`); sublimation magnitude stayed within the provisional
+     literature sanity envelope (total traced `0.586 m`, max daily-lane
+     `0.0048 m`). It still **does not promote**: the open-surface cap-limited
+     tail improved only `30 -> 27`, while under-persistence worsened `54 -> 57`
+     (`sleepers_south_field` `19 -> 22`; Harvard open neutral `35 -> 35`).
+     The standing bidirectional guardrail failed, so the Stage A selector remains
+     diagnostic-only, default/rollback/output schema/fixtures/density cap/frost
+     attribution stay unchanged, and standalone sublimation is not a production
+     lever.
+   - **Carry-forward after Stage A.** The open mass tail is still defect-shaped,
+     but the next ablation package must not simply increase vapor loss. It needs
+     a mechanism that can reduce excess open-surface SWE without tipping shallow
+     packs into earlier meltout: the likely route is the Stage B two-layer
+     surface cold-content / surface-temperature structure from §10.2 item 7, or
+     another independently authorized open-exposure process with the same
+     bidirectional guardrail. Under-persistence remains large (`234` rows total;
+     `128` March/April rows) and mostly induced by the density arm; it is a known
+     mechanism cost to carry into activation release notes and follow-up residual
+     work, not an authorization for another density-rate acceleration or larger
+     ablation sink. Treat patchy meltout as structural/non-target unless a
+     separate correspondence package makes it verdict-bearing. Check the physical
+     defensibility of the `522 kg m^-3` ripe-snow cap as its own contract-first
+     authority package if needed, not as a fitted constant; 10.3.14 showed the
+     SNOBAL `_h2o_compact` `550 kg m^-3` cap projection is mixed and not required
+     for activation, so any cap re-anchor now requires a dynamic implementation
+     package and full rerun rather than same-SWE projection evidence. Evaluate
+     sub-canopy longwave / forest energy (10.3.4 #3) only if these spring-pack
+     gates do not close the residuals. Revisit rain-on-snow heat only if
+     event-window reconstruction proves the existing CoE `dmelt` path is
+     numerically inactive during observed failures. Each lever must remain opt-in
+     until the same gate is met: conservation, independent operand
+     reconstruction, rollback/default isolation, and rubric improvement without
+     site constants.
 8. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
    any opt-in snow melt/density bundle. Closure gate: Activation Policy B full-
    model-surface no-regression evidence for default activation, explicit frost-

@@ -27,7 +27,7 @@ fn read(path: &str) -> String {
 fn snowdensity07_contract_and_package_bind_runtime_opt_in_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 101",
+        "contract_version: 102",
         "INV-SNOWFREEZE-060",
         "OBL-SNOWFREEZE-P-035",
         "snow_density_model",
@@ -157,6 +157,7 @@ fn snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge() {
         redistributed_melt_m: opt_in.redistributed_melt_m,
         routed_melt_m: opt_in.routed_melt_m,
         snowpack_swe_loss_m: opt_in.snowpack_swe_loss_m,
+        sublimation_m: opt_in.sublimation_m,
         post_winter_rain_m: opt_in.post_winter_rain_m,
         runtime_swe_after_m: opt_in.runtime_swe_after_m,
         runtime_depth_after_m: opt_in.runtime_depth_after_m,

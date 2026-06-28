@@ -2890,6 +2890,7 @@ fn r4g_snow_coupling_producer_consumes_signed_handoff_and_updates_r4b_input() {
         redistributed_melt_m: 0.0,
         routed_melt_m: 0.0,
         snowpack_swe_loss_m: 0.0,
+        sublimation_m: 0.0,
         post_winter_rain_m: 0.0,
         runtime_swe_after_m: 0.0,
         runtime_depth_after_m: 0.0,

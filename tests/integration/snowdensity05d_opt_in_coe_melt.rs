@@ -23,7 +23,7 @@ fn read(path: &str) -> String {
 fn snowdensity05d_contract_markers_bind_opt_in_melt_wiring() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 101",
+        "contract_version: 102",
         "INV-SNOWFREEZE-055",
         "OBL-SNOWFREEZE-P-030",
         "snow_melt_shortwave_absorbed_fraction",
@@ -171,6 +171,7 @@ fn snowdensity05d_direct_runtime_projects_routed_melt_and_albedo_carry() {
         redistributed_melt_m: opt_in.redistributed_melt_m,
         routed_melt_m: opt_in.routed_melt_m,
         snowpack_swe_loss_m: opt_in.snowpack_swe_loss_m,
+        sublimation_m: opt_in.sublimation_m,
         post_winter_rain_m: opt_in.post_winter_rain_m,
         runtime_swe_after_m: opt_in.runtime_swe_after_m,
         runtime_depth_after_m: opt_in.runtime_depth_after_m,

@@ -133,6 +133,94 @@ impl Wb11HydrologyKernel {
             .max(0.0)
     }
 
+    fn coe_open_sublimation_stage_a_hour_m(
+        phase_class: HillslopeKernelPhaseClass,
+        canopy_cover_fraction: f64,
+        wind_m_s: f64,
+        air_temperature_c: f64,
+        dewpoint_c: f64,
+        snow_depth_m: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from(WB15_SYMBOL_PLANT_CANCOV),
+            canopy_cover_fraction,
+            Some(0.0),
+            Some(1.0),
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow_sublimation.wind_m_s"),
+            wind_m_s,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow_sublimation.air_temperature_c"),
+            air_temperature_c,
+            None,
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow_sublimation.dewpoint_c"),
+            dewpoint_c,
+            None,
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+            snow_depth_m,
+            Some(0.0),
+            None,
+        )?;
+
+        if snow_depth_m <= WB11_ZERO_THRESHOLD || wind_m_s <= WB11_ZERO_THRESHOLD {
+            return Ok(0.0);
+        }
+
+        let roughness_ratio =
+            SIMIMPL29_WIND_MEASUREMENT_HEIGHT_M / SNOW_SUBLIMATION_ROUGHNESS_LENGTH_M;
+        let neutral_transfer_coefficient =
+            (SNOW_SUBLIMATION_VON_KARMAN / roughness_ratio.ln()).powi(2);
+        let surface_vapor_pressure_pa =
+            Self::saturation_vapor_pressure_water_kpa(0.0) * SNOW_SUBLIMATION_KPA_TO_PA;
+        let air_vapor_pressure_pa =
+            Self::saturation_vapor_pressure_water_kpa(dewpoint_c) * SNOW_SUBLIMATION_KPA_TO_PA;
+        let vapor_pressure_deficit_pa = (surface_vapor_pressure_pa - air_vapor_pressure_pa).max(0.0);
+        if vapor_pressure_deficit_pa <= WB11_ZERO_THRESHOLD {
+            return Ok(0.0);
+        }
+
+        let air_temperature_k =
+            (air_temperature_c + SNOW_SUBLIMATION_SURFACE_TEMP_K)
+                .max(SNOW_SUBLIMATION_MIN_AIR_TEMP_K);
+        let vapor_density_deficit_kg_m3 = SNOW_SUBLIMATION_WATER_MOLECULAR_WEIGHT_KG_MOL
+            * vapor_pressure_deficit_pa
+            / (SNOW_SUBLIMATION_UNIVERSAL_GAS_CONSTANT_J_MOL_K * air_temperature_k);
+        let open_canopy_fraction = (1.0 - canopy_cover_fraction).clamp(0.0, 1.0);
+        let sublimation_kg_m2 = neutral_transfer_coefficient
+            * wind_m_s
+            * vapor_density_deficit_kg_m3
+            * FROST_RUNTIME_SECONDS_PER_HOUR
+            * open_canopy_fraction;
+        let sublimation_m = sublimation_kg_m2 / SNOW_SUBLIMATION_RHO_WATER_KG_M3;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow_sublimation"),
+            sublimation_m,
+            Some(0.0),
+            None,
+        )?;
+        Ok(sublimation_m)
+    }
+
+    fn saturation_vapor_pressure_water_kpa(temperature_c: f64) -> f64 {
+        0.6108 * ((17.27 * temperature_c) / (temperature_c + 237.3)).exp()
+    }
+
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn compute_simimpl29_melt_hour(
         phase_class: HillslopeKernelPhaseClass,
@@ -506,6 +594,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
         let mut accumulation_water_m = 0.0;
         let mut total_rain_retained_m = 0.0;
         let mut total_rain_released_m = 0.0;
+        let total_sublimation_m = 0.0_f64;
         let mut hourly_state = Vec::with_capacity(SIMIMPL29_HOURS_PER_DAY);
 
         for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
@@ -776,6 +865,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 liquid_water_retained_before_m: 0.0,
                 liquid_water_retained_after_m: 0.0,
                 liquid_water_released_m: 0.0,
+                sublimation_m: 0.0,
                 melt_raw_m,
                 melt_m,
                 melt_amelt_in: melt_terms.amelt_in,
@@ -837,7 +927,25 @@ pub(crate) fn compute_simimpl29_melt_hour(
         } else {
             melt_redistribution.snowpack_state_loss_m
         };
-        let runtime_swe_after_raw = available_runtime_swe_for_state_loss - bounded_state_loss_m;
+        if !total_sublimation_m.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(SNOW_HOURLY_SUBLIMATION_ROOT),
+                value: total_sublimation_m,
+            });
+        }
+        let available_swe_after_state_loss_m =
+            (available_runtime_swe_for_state_loss - bounded_state_loss_m).max(0.0);
+        let bounded_sublimation_m = total_sublimation_m.min(available_swe_after_state_loss_m);
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow_sublimation"),
+            bounded_sublimation_m,
+            Some(0.0),
+            Some(available_swe_after_state_loss_m),
+        )?;
+        let runtime_swe_after_raw =
+            available_runtime_swe_for_state_loss - bounded_state_loss_m - bounded_sublimation_m;
         if !runtime_swe_after_raw.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
                 phase_class,
@@ -918,6 +1026,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
             liquid_holding_capacity: 0.0,
             liquid_water_retained: 0.0,
             liquid_water_released: 0.0,
+            sublimation: 0.0,
             raw_melt: raw_melt_total_m,
             redistributed_melt: melt_redistribution.routed_melt_total_m,
             snowpack_state_loss: bounded_state_loss_m,
@@ -1109,14 +1218,18 @@ pub(crate) fn compute_simimpl29_melt_hour(
         let mut accumulation_water_m = 0.0;
         let mut total_rain_retained_m = 0.0;
         let mut total_rain_released_m = 0.0;
-        let capacity_drainage_opt_in =
-            inputs.snow_melt_model == SnowMeltModel::CoeLiquidHoldingCapacityV1;
+        let capacity_drainage_opt_in = matches!(
+            inputs.snow_melt_model,
+            SnowMeltModel::CoeLiquidHoldingCapacityV1
+                | SnowMeltModel::CoeOpenSublimationStageAV1
+        );
         let mut liquid_water_retained_m = if capacity_drainage_opt_in {
             inputs.liquid_water_retained_m
         } else {
             0.0
         };
         let mut total_liquid_water_released_m = 0.0;
+        let mut total_sublimation_m = 0.0;
         let mut final_liquid_holding_capacity_m = 0.0;
         let mut snow_albedo_state_after = inputs.snow_albedo_state;
         let mut hourly_state = Vec::with_capacity(SIMIMPL29_HOURS_PER_DAY);
@@ -1183,6 +1296,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
             let liquid_water_retained_before_m = liquid_water_retained_m;
             let mut liquid_holding_capacity_m = 0.0;
             let mut liquid_water_released_m = 0.0;
+            let mut sublimation_m = 0.0;
             let mut melt_raw_m = 0.0;
             let mut melt_m = 0.0;
             let mut melt_terms = SnowMeltTerms::default();
@@ -1255,7 +1369,8 @@ pub(crate) fn compute_simimpl29_melt_hour(
                     let shortwave_absorbed_fraction = match inputs.snow_melt_model {
                         SnowMeltModel::LegacyCoe
                         | SnowMeltModel::CoeWinterThawStateLossV1
-                        | SnowMeltModel::CoeLiquidHoldingCapacityV1 => 1.0,
+                        | SnowMeltModel::CoeLiquidHoldingCapacityV1
+                        | SnowMeltModel::CoeOpenSublimationStageAV1 => 1.0,
                         SnowMeltModel::CoeShortwaveAlbedoV1 => snow_albedo_state_after
                             .ok_or(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
                                 phase_class,
@@ -1476,6 +1591,18 @@ pub(crate) fn compute_simimpl29_melt_hour(
             if dens > SIMIMPL29_SNOW_DENSITY_CAP_KG_M3 {
                 dens = SIMIMPL29_SNOW_DENSITY_CAP_KG_M3;
             }
+            if inputs.snow_melt_model == SnowMeltModel::CoeOpenSublimationStageAV1
+                && snodep > WB11_ZERO_THRESHOLD
+            {
+                sublimation_m = Self::coe_open_sublimation_stage_a_hour_m(
+                    phase_class,
+                    inputs.canopy_cover_fraction,
+                    inputs.wind_m_s,
+                    hrtemp_c,
+                    inputs.dewpoint_c,
+                    snodep,
+                )?;
+            }
             if snodep <= WB11_ZERO_THRESHOLD {
                 snodep = 0.0;
                 dens = 0.0;
@@ -1505,6 +1632,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
             total_rain_retained_m += rain_retained_m;
             total_rain_released_m += rain_released_m;
             total_liquid_water_released_m += liquid_water_released_m;
+            total_sublimation_m += sublimation_m;
             final_liquid_holding_capacity_m = liquid_holding_capacity_m;
 
             hourly_state.push(SnowHourlyState {
@@ -1520,6 +1648,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 liquid_water_retained_before_m,
                 liquid_water_retained_after_m: liquid_water_retained_m,
                 liquid_water_released_m,
+                sublimation_m,
                 melt_raw_m,
                 melt_m,
                 melt_amelt_in: melt_terms.amelt_in,
@@ -1556,6 +1685,19 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 phase_class,
                 symbol: BoundarySymbol::from("snow_liquid_water_released_m"),
                 value: hourly_liquid_released_total_m - total_liquid_water_released_m,
+                minimum: Some(-WB11_ZERO_THRESHOLD),
+                maximum: Some(WB11_ZERO_THRESHOLD),
+            });
+        }
+        let hourly_sublimation_total_m = hourly_state
+            .iter()
+            .map(|hourly| hourly.sublimation_m)
+            .sum::<f64>();
+        if (hourly_sublimation_total_m - total_sublimation_m).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(SNOW_HOURLY_SUBLIMATION_ROOT),
+                value: hourly_sublimation_total_m - total_sublimation_m,
                 minimum: Some(-WB11_ZERO_THRESHOLD),
                 maximum: Some(WB11_ZERO_THRESHOLD),
             });
@@ -1604,7 +1746,25 @@ pub(crate) fn compute_simimpl29_melt_hour(
         } else {
             melt_redistribution.snowpack_state_loss_m
         };
-        let runtime_swe_after_raw = available_runtime_swe_for_state_loss - bounded_state_loss_m;
+        if !total_sublimation_m.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(SNOW_HOURLY_SUBLIMATION_ROOT),
+                value: total_sublimation_m,
+            });
+        }
+        let available_swe_after_state_loss_m =
+            (available_runtime_swe_for_state_loss - bounded_state_loss_m).max(0.0);
+        let bounded_sublimation_m = total_sublimation_m.min(available_swe_after_state_loss_m);
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow_sublimation"),
+            bounded_sublimation_m,
+            Some(0.0),
+            Some(available_swe_after_state_loss_m),
+        )?;
+        let runtime_swe_after_raw =
+            available_runtime_swe_for_state_loss - bounded_state_loss_m - bounded_sublimation_m;
         if !runtime_swe_after_raw.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
                 phase_class,
@@ -1689,6 +1849,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
             liquid_holding_capacity: final_liquid_holding_capacity_m,
             liquid_water_retained: liquid_water_retained_m,
             liquid_water_released: total_liquid_water_released_m,
+            sublimation: bounded_sublimation_m,
             raw_melt: raw_melt_total_m,
             redistributed_melt: melt_redistribution.routed_melt_total_m,
             snowpack_state_loss: bounded_state_loss_m,

@@ -495,6 +495,7 @@ impl DirectProductionSnowFrostAuthority {
                 redistributed_melt_m: 0.0,
                 routed_melt_m: 0.0,
                 snowpack_swe_loss_m: 0.0,
+                accumulation_m: 0.0,
                 rain_retained_m: 0.0,
                 rain_released_m: 0.0,
                 post_winter_rain_m: hyetograph_rainfall_m,
@@ -505,6 +506,7 @@ impl DirectProductionSnowFrostAuthority {
                 liquid_holding_capacity_after_m: 0.0,
                 liquid_water_retained_after_m: snow_lane_state.liquid_water_retained_m,
                 liquid_water_released_m: 0.0,
+                sublimation_m: 0.0,
                 coe_boundary_depth_after_m: snow_lane_state.coe_boundary_depth_m,
                 coe_boundary_density_after_kg_m3: snow_lane_state.coe_boundary_density_kg_m3,
                 coe_boundary_settle_day_count_after: snow_lane_state

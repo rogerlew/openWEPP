@@ -166,6 +166,7 @@ impl Wb11HydrologyKernel {
                 liquid_holding_capacity: 0.0,
                 liquid_water_retained: 0.0,
                 liquid_water_released: 0.0,
+                sublimation: 0.0,
                 raw_melt: 0.0,
                 redistributed_melt: 0.0,
                 snowpack_state_loss: 0.0,
@@ -203,11 +204,13 @@ impl Wb11HydrologyKernel {
             redistributed_melt_m: snow_coupling.redistributed_melt,
             routed_melt_m,
             snowpack_swe_loss_m: snow_coupling.snowpack_state_loss,
+            accumulation_m: snow_coupling.accumulation,
             rain_retained_m: snow_coupling.rain_retained,
             rain_released_m: snow_coupling.rain_released,
             liquid_holding_capacity_after_m: snow_coupling.liquid_holding_capacity,
             liquid_water_retained_after_m: snow_coupling.liquid_water_retained,
             liquid_water_released_m: snow_coupling.liquid_water_released,
+            sublimation_m: snow_coupling.sublimation,
             post_winter_rain_m,
             runtime_swe_after_m: snow_coupling.runtime_swe,
             runtime_depth_after_m: snow_coupling.runtime_depth_m,
@@ -245,52 +248,7 @@ impl Wb11HydrologyKernel {
         let snow_coupling = if active_snow_coupling {
             Self::compute_active_snow_coupling_from_typed(phase_class, &inputs)?
         } else {
-            Self::require_direct_typed_snow_value(
-                phase_class,
-                BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
-                inputs.runtime_swe_m,
-                Some(0.0),
-                None,
-            )?;
-            Self::require_direct_typed_snow_value(
-                phase_class,
-                BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
-                inputs.runtime_depth_m,
-                Some(0.0),
-                None,
-            )?;
-            Self::require_direct_typed_snow_value(
-                phase_class,
-                BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
-                inputs.runtime_density_kg_m3,
-                Some(0.0),
-                Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
-            )?;
-            Self::require_direct_typed_snow_value(
-                phase_class,
-                BoundarySymbol::from(SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL),
-                inputs.runtime_settle_day_count,
-                Some(0.0),
-                None,
-            )?;
-            SnowCouplingOutcome {
-                signed_s: 0.0,
-                accumulation: 0.0,
-                rain_retained: 0.0,
-                rain_released: 0.0,
-                liquid_holding_capacity: 0.0,
-                liquid_water_retained: inputs.liquid_water_retained_m,
-                liquid_water_released: 0.0,
-                raw_melt: 0.0,
-                redistributed_melt: 0.0,
-                snowpack_state_loss: 0.0,
-                runtime_swe: inputs.runtime_swe_m,
-                runtime_depth_m: inputs.runtime_depth_m,
-                runtime_density_kg_m3: inputs.runtime_density_kg_m3,
-                runtime_settle_day_count: inputs.runtime_settle_day_count,
-                snow_albedo_state_after: inputs.snow_albedo_state,
-                hourly_state: Vec::new(),
-            }
+            Self::inactive_snow_coupling_from_typed(phase_class, &inputs)?
         };
         let (routed_melt_m, post_winter_rain_m) =
             Self::resolve_snow_partition_terms(phase_class, inputs.hyetograph_rainfall_m, &snow_coupling)?;
@@ -309,11 +267,13 @@ impl Wb11HydrologyKernel {
             redistributed_melt_m: snow_coupling.redistributed_melt,
             routed_melt_m,
             snowpack_swe_loss_m: snow_coupling.snowpack_state_loss,
+            accumulation_m: snow_coupling.accumulation,
             rain_retained_m: snow_coupling.rain_retained,
             rain_released_m: snow_coupling.rain_released,
             liquid_holding_capacity_after_m: snow_coupling.liquid_holding_capacity,
             liquid_water_retained_after_m: snow_coupling.liquid_water_retained,
             liquid_water_released_m: snow_coupling.liquid_water_released,
+            sublimation_m: snow_coupling.sublimation,
             post_winter_rain_m,
             runtime_swe_after_m: density_outcome.runtime_swe_after_m,
             runtime_depth_after_m: density_outcome.runtime_depth_after_m,
@@ -325,6 +285,59 @@ impl Wb11HydrologyKernel {
             density_swe_identity_residual_m: density_outcome.max_abs_swe_identity_residual_m,
             density_unbounded_swe_residual_m: density_outcome.max_abs_unbounded_swe_residual_m,
             snow_albedo_state_after: snow_coupling.snow_albedo_state_after,
+        })
+    }
+
+    fn inactive_snow_coupling_from_typed(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+    ) -> Result<SnowCouplingOutcome, Wb11HydrologyKernelGuardError> {
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
+            inputs.runtime_swe_m,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+            inputs.runtime_depth_m,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+            inputs.runtime_density_kg_m3,
+            Some(0.0),
+            Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from(SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL),
+            inputs.runtime_settle_day_count,
+            Some(0.0),
+            None,
+        )?;
+        Ok(SnowCouplingOutcome {
+            signed_s: 0.0,
+            accumulation: 0.0,
+            rain_retained: 0.0,
+            rain_released: 0.0,
+            liquid_holding_capacity: 0.0,
+            liquid_water_retained: inputs.liquid_water_retained_m,
+            liquid_water_released: 0.0,
+            sublimation: 0.0,
+            raw_melt: 0.0,
+            redistributed_melt: 0.0,
+            snowpack_state_loss: 0.0,
+            runtime_swe: inputs.runtime_swe_m,
+            runtime_depth_m: inputs.runtime_depth_m,
+            runtime_density_kg_m3: inputs.runtime_density_kg_m3,
+            runtime_settle_day_count: inputs.runtime_settle_day_count,
+            snow_albedo_state_after: inputs.snow_albedo_state,
+            hourly_state: Vec::new(),
         })
     }
 

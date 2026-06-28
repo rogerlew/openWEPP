@@ -2330,3 +2330,10 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 - `package.md` dependencies for authored packages should include:
   - `/workdir/openWEPP/docs/codex_exec_plans.md`
 - Missing kernel-profile/procedure compliance keeps disposition in `HOLD`.
+
+## Active / Recent Snow-Density Packages
+
+- `20260627-snowdensity-10-3-16-open-surface-ablation-stage-a-001/` —
+  executed non-promotion for the Stage A opt-in open-surface sublimation /
+  latent mass-loss candidate; cap-limited tail improved `30 -> 27`, but
+  under-persistence worsened `54 -> 57`.

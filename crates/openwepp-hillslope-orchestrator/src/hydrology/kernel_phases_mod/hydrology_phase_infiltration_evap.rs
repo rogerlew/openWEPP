@@ -466,6 +466,7 @@ pub(crate) fn compute_same_pass_wb14_infiltration_lineage(
                 liquid_holding_capacity: 0.0,
                 liquid_water_retained: 0.0,
                 liquid_water_released: 0.0,
+                sublimation: 0.0,
                 raw_melt: 0.0,
                 redistributed_melt: 0.0,
                 snowpack_state_loss: 0.0,

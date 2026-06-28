@@ -219,6 +219,7 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             redistributed_melt_m: snow_liquid.redistributed_melt_m,
             routed_melt_m: snow_liquid.routed_melt_m,
             snowpack_swe_loss_m: snow_liquid.snowpack_swe_loss_m,
+            sublimation_m: snow_liquid.sublimation_m,
             post_winter_rain_m: snow_liquid.post_winter_rain_m,
             runtime_swe_after_m: snow_liquid.runtime_swe_after_m,
             runtime_depth_after_m: snow_liquid.runtime_depth_after_m,
@@ -862,6 +863,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             redistributed_melt_m: snow_liquid.redistributed_melt_m,
             routed_melt_m: snow_liquid.routed_melt_m,
             snowpack_swe_loss_m: snow_liquid.snowpack_swe_loss_m,
+            sublimation_m: snow_liquid.sublimation_m,
             post_winter_rain_m: snow_liquid.post_winter_rain_m,
             runtime_swe_after_m: snow_liquid.runtime_swe_after_m,
             runtime_depth_after_m: snow_liquid.runtime_depth_after_m,
@@ -1062,6 +1064,8 @@ fn maybe_write_r7h_direct_production_snow_trace(
 \"snow_coupling_signed_s_m\":{},\
 \"raw_melt_m\":{},\
 \"snowpack_swe_loss_m\":{},\
+\"accumulation_m\":{},\
+\"sublimation_m\":{},\
 \"routed_melt_m\":{},\
 \"rain_retained_m\":{},\
 \"rain_released_m\":{},\
@@ -1085,6 +1089,8 @@ fn maybe_write_r7h_direct_production_snow_trace(
         direct_production_trace_number(snow_liquid.snow_coupling_signed_s_m),
         direct_production_trace_number(snow_liquid.raw_melt_m),
         direct_production_trace_number(snow_liquid.snowpack_swe_loss_m),
+        direct_production_trace_number(snow_liquid.accumulation_m),
+        direct_production_trace_number(snow_liquid.sublimation_m),
         direct_production_trace_number(snow_liquid.routed_melt_m),
         direct_production_trace_number(snow_liquid.rain_retained_m),
         direct_production_trace_number(snow_liquid.rain_released_m),
@@ -1279,11 +1285,14 @@ fn snowdensity1015_default_snow_melt_model(
             "" | "coe_liquid_holding_capacity_v1" => {
                 Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1)
             }
+            "coe_open_sublimation_stage_a_v1" => Ok(
+                openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageAV1,
+            ),
             "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
             observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_production_snow_melt_model",
                 detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be legacy_coe or coe_liquid_holding_capacity_v1, observed {observed}"
+                    "{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be legacy_coe, coe_liquid_holding_capacity_v1, or coe_open_sublimation_stage_a_v1, observed {observed}"
                 ),
             }),
         },
