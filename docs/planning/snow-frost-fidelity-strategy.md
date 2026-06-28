@@ -1025,6 +1025,37 @@ profile/signature scoring rather than absolute-magnitude promotion.
         is captured domain-general as
         [ADR-0028](../decisions/0028-observed-data-admission-authority.md)
         (observed-data admission authority when scientific authority is lacking).
+   - **Completed: 10.3.19 (partition adopted) and 10.3.20 (ablation class
+     exhausted).**
+     - **10.3.19** activated the Harder-Pomeroy hourly phase into the no-env
+       default (bundle + partition). On the cross-SNOTEL forcing-robust rubric the
+       default rose to **15 fail / 179**, now **above legacy (16 / 176)** —
+       resolving the 10.3.18 "bundle below legacy" finding. The partition is the
+       arc's decisive cross-climate lever. (Humid-NE depth regression remains the
+       deferred roadmap item per decision 3; `legacy_rst` preserved as rollback.)
+     - **10.3.20** (`NON-PROMOTION-GATE-NOT-MET`) closed the open-surface ablation
+       thread as a triple negative against the 15/179 default: partition + Stage A
+       sublimation `19 / 168` (1 better / 8 worse cells); Stage B two-layer surface
+       layer `15 / 178` (1 better / 3 worse). Both fail primary + bidirectional
+       guardrail; conservation closed; the CC0 `libsnobal` Stage B port executed
+       cleanly (commit `bf8b41c…`, provenance captured). Diagnostic reads: it is
+       **not merely a bad Stage A implementation** (the faithful two-layer port also
+       fails); the density complementarity is refuted at the rubric level (8 worse
+       cells); sublimation stays physically valid but is **not a rubric lever on
+       this corpus** (likely wrong regime / signatures not sensitive / guardrail-
+       blocked) — the ADR-0028 discrimination working as designed. Review:
+       `docs/work-packages/20260628-snowdensity-10-3-20-sublimation-stage-b-unlock-001/artifacts/claude-review-mechanism-family-exhausted.md`.
+   - **The SNOBAL/CoE/Anderson mechanism family is now substantially exhausted.**
+     Adopted: holding-capacity melt, bulk density compaction, Harder-Pomeroy
+     partition. Rejected/neutral: melt-shortwave modernization, winter-thaw
+     (superseded), spring densification, shallow-pack guard, sublimation, two-layer
+     Stage B. The 15/179 default is a local optimum for the family; **further levers
+     must be a new mechanism class admitted under ADR-0028** (canopy snow
+     interception/sublimation, sub-canopy longwave, wind redistribution), not
+     another variant. **Next = residual decomposition on the post-partition default
+     + the frost-attribution-threshold decision** (step 9), not another family
+     candidate. The under-persistence tail (density-arm mechanism cost, never
+     recovered) is the prime suspect for the binding constraint.
    - **Default phase activation completed as 10.3.19 (`ACTIVATED`).**
      `docs/work-packages/20260628-snowdensity-10-3-19-harder-pomeroy-default-activation-001/`.
      `SC-SNOWFREEZE-001` v104 activates `harder_pomeroy_hourly` as the
