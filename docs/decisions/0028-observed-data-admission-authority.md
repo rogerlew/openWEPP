@@ -1,9 +1,13 @@
 # ADR-0028: Observed-data admission authority when scientific authority is lacking
 
-**Status:** Proposed (operator-decided 2026-06-28; pending ratification by a Codex package)
+**Status:** Accepted (ratified 2026-06-28 by Codex package `20260628-adr0029-paradigm-2-ratification-001`)
 **Date:** 2026-06-28
 **Deciders:** Roger Lew, Codex
 **Author of draft:** Claude Code (drafted at decider Roger Lew's direction)
+**Ratification provenance:** Accepted by Roger Lew and Codex via
+`docs/work-packages/20260628-adr0029-paradigm-2-ratification-001/` after
+verification against `INV-SNOWFREEZE-050`, the 10.3.x snow candidate gates, and
+the accepted ADR set.
 **Extends:** [ADR-0011](0011-architecture-first-top-down-science-contracts.md) — the top-down science-contract authority model
 **Reaffirms:** [ADR-0017](0017-re-pin-operational-distrust-comparator-is-flag-not-target.md) — comparators are flags, not targets
 **Relates:** [ADR-0024](0024-reference-implementation-intent-authority.md) — reference-implementation intent as empirical anchor; [ADR-0003](0003-parity-semantic-not-bit.md) — parity is semantic, with named tolerance

@@ -13,6 +13,16 @@
 
 State as of `2026-06-28`:
 
+- `20260628-adr0029-paradigm-2-ratification-001/` is complete as the ADR-0029
+  Paradigm 2 ratification package. Result: `RATIFIED-COMPLETE`. It ratified
+  ADR-0028 first as the observed-data admission basis, then ratified ADR-0029 as
+  the staged Paradigm 2 multilayer snow program commitment. The package verified
+  `INV-SNOWFREEZE-050` operationalization, the `15` / `179` current-default snow
+  floor, SNOWDENSITY-10.3.22's `HOLD-GATE-FAILURE-NON-PROMOTION`, the ADR-0026
+  variable-layer frost precedent, and PARADIGM-2 Stage 0 completion. The
+  paradigm-assessment WP-local Paradigm-1-first ADR candidate is superseded by
+  ADR-0029. No code, physics, science-contract, fixture, schema, default, or
+  runtime behavior changed.
 - `20260628-paradigm-2-stage-0-surface-energy-balance-001/` is complete as
   PARADIGM-2 STAGE 0, the pure `openwepp-meteorology` surface energy-balance
   foundation. Result: `EXECUTED-COMPLETE`. The crate now exposes
@@ -25,30 +35,28 @@ State as of `2026-06-28`:
   amendment changed.
 - `20260628-snowdensity-10-3-22-climate-class-density-specialization-001/` is
   held as SNOWDENSITY-10.3.22, the comprehensive climate-class snow-density
-  specialization candidate. It amended `SC-SNOWFREEZE-001` to v106 with
+  specialization candidate. It amended `SC-SNOWFREEZE-001` with
   `INV-SNOWFREEZE-077`, `OBL-SNOWFREEZE-P-052`, Sturm 2010/1995 and
   NSIDC-0768 authority anchors, reserved opt-in
   `physics_bulk_climate_class_density_v1`, and implemented explicit-unit Sturm
   2010 density trajectory support for the five locally parameterized classes.
-  Result: `HOLD-AUTHORITY-GAP-NO-PROMOTION`. Local authority did not provide
-  numeric Sturm 1995 forcing decision-tree thresholds or Sturm 2010 ephemeral
-  density parameters, so no class thresholds or parameters were fitted to
-  fixtures, no cross-SNOTEL promotion gate was run, and no production default,
-  fixture, schema, density-cap, frost, parser/runfile/user selector, or `.run`
-  control changed.
+  The rerun closed the original authority gap by source-verifying Sturm 1995
+  thresholds, then ran the real cross-SNOTEL+cancov WAT/trace gate. Result:
+  `HOLD-GATE-FAILURE-NON-PROMOTION`. Source authority and conservation passed,
+  but the candidate scored `16` robust fails / `168` robust score versus the
+  current default at `15` / `179`, failed the bidirectional densification flip,
+  and worsened `13` robust cells. No production default, fixture, schema,
+  density-cap, frost, parser/runfile/user selector, or `.run` control changed.
 - `20260628-snow-density-paradigm-assessment-001/` is complete as the
   post-10.3.21 snow-density paradigm assessment. Result: `PARADIGM-ASSESSED`.
   The assessment compares climate-class parameter specialization, multilayer
-  snowpack physics, and accepting the current floor. Recommendation: use
-  **Paradigm 1**, climate-class snow-density specialization, as the next
-  snow-density candidate package under ADR-0028, with an opt-in selector only,
-  independent Sturm 1995/2010 or NSIDC-0768 class authority, no fixture fitting,
-  and the cross-SNOTEL forcing-robust rubric plus conservation as the promotion
-  gate. Paradigm 2 remains the escalation path if the class-aware candidate
-  fails or frost/canopy evidence requires vertical snow structure. The current
-  `15` / `179` snow floor remains valid input for a parallel frost-attribution
-  threshold process with uncertainty carried forward. No production density code,
-  contract, fixture, schema, default, density-cap, or frost change was made.
+  snowpack physics, and accepting the current floor. Its WP-local
+  Paradigm-1-first ADR candidate is superseded by ADR-0029 after
+  SNOWDENSITY-10.3.22 failed the source-verified climate-class gate. The current
+  `15` / `179` snow floor remains valid input for frost-attribution threshold
+  work with uncertainty carried forward, while ADR-0029 now owns the staged
+  Paradigm 2 program decision. No production density code, contract, fixture,
+  schema, default, density-cap, or frost change was made.
 - `20260628-snowdensity-10-3-21-post-partition-residual-decomposition-001/` is
   complete as SNOWDENSITY-10.3.21, the post-partition residual decomposition and
   frost-attribution-threshold input diagnostic. It consumed the 10.3.20 real

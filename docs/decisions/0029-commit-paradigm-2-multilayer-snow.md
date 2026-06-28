@@ -1,9 +1,13 @@
 # ADR-0029: Commit to Paradigm 2 — staged multilayer snow physics
 
-**Status:** Proposed (operator-decided 2026-06-28; pending ratification by a Codex package)
+**Status:** Accepted (ratified 2026-06-28 by Codex package `20260628-adr0029-paradigm-2-ratification-001`)
 **Date:** 2026-06-28
 **Deciders:** Roger Lew, Codex
 **Author of draft:** Claude Code (drafted at decider Roger Lew's direction)
+**Ratification provenance:** Accepted by Roger Lew and Codex via
+`docs/work-packages/20260628-adr0029-paradigm-2-ratification-001/` after
+ratifying ADR-0028 and verifying the Paradigm 2 de-risking, bulk-floor,
+Paradigm-1 refutation, Stage 0, and ADR-consistency claims.
 **Supersedes:** the "climate-class (Paradigm 1) first" recommendation in the
 [snow-density paradigm assessment](../work-packages/20260628-snow-density-paradigm-assessment-001/)
 (a WP-local ADR-candidate), which SNOWDENSITY-10.3.22 refuted

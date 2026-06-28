@@ -1,6 +1,15 @@
 # ADR Candidate: Climate-Class Snow-Density Specialization First
 
-Status: Proposed.
+Status: Superseded by ADR-0029.
+
+Superseded by:
+`docs/decisions/0029-commit-paradigm-2-multilayer-snow.md`, ratified by
+`docs/work-packages/20260628-adr0029-paradigm-2-ratification-001/`.
+
+Reason: SNOWDENSITY-10.3.22 source-verified and executed the climate-class
+candidate, but it closed `HOLD-GATE-FAILURE-NON-PROMOTION`; ADR-0029 therefore
+supersedes this WP-local Paradigm-1-first candidate with the staged Paradigm 2
+program decision.
 
 Proposed by:
 `docs/work-packages/20260628-snow-density-paradigm-assessment-001/`.
