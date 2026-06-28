@@ -21,7 +21,7 @@ fn contract_and_package_bind_policy_b_cap_authority() {
         "INV-SNOWFREEZE-071",
         "OBL-SNOWFREEZE-P-046",
         "SNOWDENSITY-10.3.14 Policy-B No-Regression And Cap Authority Addendum",
-        "full-workspace no-regression gate",
+        "workspace-suite no-regression gate",
         "same-SWE, cap-pinned projection",
         "`550 kg m^-3` remains projection-only",
     ] {

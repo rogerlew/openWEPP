@@ -20,7 +20,7 @@ fn contract_and_package_bind_bundle_activation_boundary() {
         "OBL-SNOWFREEZE-P-044",
         "SNOWDENSITY-10.3.12 Combined Bundle Activation Adjudication Addendum",
         "Activation Policy B supersedes any zero-paired-snow-failure activation rule",
-        "full-model-surface no-regression evidence",
+        "workspace-suite no-regression gate",
         "Observation-blocked surfaces remain diagnostic-only",
     ] {
         assert_contains(&contract, marker, CONTRACT);

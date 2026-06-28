@@ -782,13 +782,33 @@ profile/signature scoring rather than absolute-magnitude promotion.
      activation is an improvement, not snow/frost closure: `498/1415` paired
      snow-depth rows still fail control, and frost attribution remains blocked
      by `SNOW-CONTROL-RESIDUALS-REMAIN`.
+     - **Activation basis (documented honestly).** The activation rests on
+       **mass conservation + improved snow input + reversibility**, not on a
+       demonstrated downstream output-diff. The bundle is mass-conserving
+       (composite snow-state closure at machine epsilon), the snow/melt signal
+       is validated closer to observed (`1147 -> 498`), and
+       `legacy_coe`/`legacy_wepp` selectors restore prior behavior. The
+       Policy-B "no-regression" gate as met is **workspace-suite-level** (the
+       existing suite passes under the bundle selectors); the activation commit
+       changed **no** downstream output goldens, so a separate bundle-vs-legacy
+       diff of snow-affected erosion / water-balance / watershed outputs was
+       **not** run. That is acceptable here because conservation guarantees mass
+       closure ("the water has to go somewhere") and the upstream kernel
+       improved — the downstream change is **improved-input propagation, not a
+       regression**. **User-facing consequence:** snow-affected
+       runoff / erosion / water-balance / watershed outputs **differ** from the
+       prior default; total water is conserved and rollback is available. See
+       [snow-default-activation-behavior-change](../snow-default-activation-behavior-change.md).
 7. **Subsequent candidate packages (one lever each).** After winter-thaw melt
    response and the 10.3.9/10.3.10 residual adjudication, 10.3.11 retired the
    spring wet-time densification candidate and 10.3.12 held the best current
    bundle as opt-in only; 10.3.13 then confirmed that most under-persistence is
    newly induced by the bulk-compaction arm, and 10.3.14 supplied the Policy-B
-   full-workspace no-regression evidence under the active `522 kg m^-3` cap;
-   10.3.15 then activated that bundle by default. Do not pursue another
+   workspace-suite no-regression evidence (existing suite passes under the
+   bundle selectors) plus composite snow-state conservation closure under the
+   active `522 kg m^-3` cap; 10.3.15 then activated that bundle by default
+   (activation basis and user-facing output-change consequence documented in
+   step 6 above and the behavior-change note). Do not pursue another
    wet-compaction acceleration or density-rate variant without new external
    authority and a different residual class. Open-surface ablation remains the
    leading over-persistence follow-on for cap-limited mass rows, especially

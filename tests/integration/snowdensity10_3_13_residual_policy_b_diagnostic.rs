@@ -20,7 +20,7 @@ fn contract_and_package_bind_residual_policy_b_diagnostic() {
         "OBL-SNOWFREEZE-P-045",
         "SNOWDENSITY-10.3.13 Residual-Tail And Policy-B Diagnostic Addendum",
         "date-level residual transition report",
-        "Policy-B full-surface evidence matrix",
+        "Policy-B workspace-suite/conservation evidence matrix",
         "This diagnostic does not amend `INV-SNOWFREEZE-003`",
     ] {
         assert_contains(&contract, marker, CONTRACT);
