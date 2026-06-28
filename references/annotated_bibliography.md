@@ -759,11 +759,35 @@ openWEPP note (2026-05-11):
 ## R-59: Sturm, Holmgren & Liston (1995) seasonal snow-cover classification
 
 **Citation**: Sturm, M., J. Holmgren, and G. E. Liston (1995). *A Seasonal Snow Cover Classification System for Local to Global Applications*. Journal of Climate, 8(5), 1261–1283. https://doi.org/10.1175/1520-0442(1995)008<1261:ASSCCS>2.0.CO;2
-**Local path**: _to track down_ — AMS landing `https://journals.ametsoc.org/view/journals/clim/8/5/1520-0442_1995_008_1261_assccs_2_0_co_2.xml`; an open author copy exists on morageology.com/pubs but was not auto-locatable on 2026-06-28. Gridded operational successor: Global Seasonal-Snow Classification v1, **NSIDC-0768** (Liston/Sturm), `https://nsidc.org/data/nsidc-0768/versions/1`.
-**Reference quality**: `to-track-down`
-**Distribution status**: `restricted` (AMS journal copyright).
-**Topic**: The six-class seasonal snow classification (tundra / taiga / alpine / maritime / prairie / ephemeral) underlying Sturm 2010's density-by-class — and the classification driver for Paradigm 1.
-**Key equations / concepts**: A **binary decision tree on three climate variables — wind, precipitation, air temperature** — assigns the class; each class carries a distinct density / stratigraphy / grain-morphology signature; NH distribution mapped on a 0.5° grid (NSIDC-0768 is the modern gridded product). The {wind, precip, air-temp} drivers are quantities openWEPP already has.
-**Kernel mapping**: Paradigm 1 classification driver; snow-density paradigm assessment.
-**Notes / caveats**: Track-down (AMS). Also worth pulling: *"Differences in compaction behavior of three climate classes of snow"* (Annals of Glaciology, Cambridge — regime-divergent **compaction**, directly on cluster-1; citation to confirm on retrieval).
+**Local path**: `references/copyrighted/sturm1995.pdf` (operator-supplied, 2026-06-28).
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (AMS journal copyright; local cache).
+**Topic**: The six-class seasonal snow classification (tundra / taiga / alpine / maritime / prairie / ephemeral) underlying Sturm 2010's density-by-class — and the classification driver for Paradigm 1. **This is the binding authority for SNOWDENSITY-10.3.22's `HOLD-AUTHORITY-GAP`** (the numeric decision thresholds were missing); now acquired.
+**Key equations / concepts**: A **binary decision tree on three climate variables — wind, precipitation, air temperature** — assigns the class; each class carries a distinct density / stratigraphy / grain-morphology signature; NH distribution mapped on a 0.5° grid. The {wind, precip, air-temp} drivers are quantities openWEPP already has. The numeric class thresholds are the authority openWEPP must use for forcing-derived class assignment (paired with Sturm 2010 Table 4 density params; ephemeral excluded by Sturm 2010 → fresh-snow fallback).
+**Kernel mapping**: Paradigm 1 classification driver; SNOWDENSITY-10.3.22 re-run unblock.
+**Notes / caveats**: Class assignment is **climatological** (multi-year normals of cooling-degree-months / precip / wind), not single-day. Modern successors: NSIDC-0768 user guide (R-60) and Sturm & Liston 2021 (R-61, renamed Alpine→Montane Forest, Taiga→Boreal Forest). Still worth pulling: *"Differences in compaction behavior of three climate classes of snow"* (Annals of Glaciology — regime-divergent compaction, cluster-1).
 **OAR-6 compliance status**: Classification authority for regime-divergent snow modeling.
+
+## R-60: NSIDC-0768 Global Seasonal-Snow Classification v1 — User Guide (Liston/Sturm)
+
+**Citation**: Liston, G. E., and M. Sturm (2021). *Global Seasonal-Snow Classification, Version 1* (NSIDC-0768) User Guide. NASA National Snow and Ice Data Center DAAC, Boulder, CO. https://nsidc.org/data/nsidc-0768/versions/1
+**Local path**: `references/vendorable/NSIDC-0768_GlobalSeasonalSnowClassification_v1_UserGuide.pdf` (downloaded 2026-06-28)
+**Reference quality**: `verified-primary`
+**Distribution status**: `redistributable` (NSIDC/NASA DAAC open data; citation-on-use requested — vendorable).
+**Topic**: The operational **gridded** classification algorithm (Liston/Sturm update of Sturm 1995), driven by air-temperature, precipitation, and wind-speed climatologies.
+**Key equations / concepts**: Confirms the three classification drivers and the threshold *types* (a cooling-degree-month threshold delineates ephemeral; a high/low water-equivalent snowfall-rate threshold; wind). Renames Alpine→Montane Forest, Taiga→Boreal Forest. Documents the algorithm at overview level — the full numeric tree is in Sturm 1995 (R-59) / Sturm & Liston 2021 (R-61). The gridded product itself is a lat/lon→class lookup (geographic); openWEPP prefers forcing-derived assignment from the run's own climate.
+**Kernel mapping**: Paradigm 1 supporting authority; SNOWDENSITY-10.3.22 (cross-check / variable confirmation).
+**Notes / caveats**: Public-domain-leaning NSIDC/NASA open data with a citation requirement → `vendorable/` (committed). The user-guide PDF is the doc; the gridded data array is a separate large product, not pulled.
+**OAR-6 compliance status**: Supporting authority (classification algorithm + drivers).
+
+## R-61: Sturm & Liston (2021) revisited global seasonal snow classification
+
+**Citation**: Sturm, M., and G. E. Liston (2021). *Revisiting the Global Seasonal Snow Classification: An Updated Dataset for Earth System Applications*. Journal of Hydrometeorology, 22(11), 2917–2938. https://doi.org/10.1175/JHM-D-21-0070.1
+**Local path**: `references/copyrighted/hydr-JHM-D-21-0070.1.pdf` (operator-supplied, 2026-06-28)
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (AMS journal copyright; local cache).
+**Topic**: The updated, higher-resolution global classification with **explicit revised thresholds** — the modern companion to Sturm 1995's tree.
+**Key equations / concepts**: Updated decision thresholds on the same three drivers (temperature/precip/wind climatologies); **renames Alpine→Montane Forest and Taiga→Boreal Forest** (a remap is required to pair with Sturm 2010 Table 4, which uses the 1995 names). Useful as a cross-check on the Sturm 1995 thresholds and for global generality.
+**Kernel mapping**: Paradigm 1 alternative/cross-check threshold authority; SNOWDENSITY-10.3.22.
+**Notes / caveats**: For openWEPP, Sturm 1995 (R-59) is the cleaner pairing (matching class names); use 2021 to validate/extend the thresholds, with name-mapping documented.
+**OAR-6 compliance status**: Updated classification-threshold authority.

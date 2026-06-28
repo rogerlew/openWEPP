@@ -32,6 +32,7 @@ Classifications in this pass were made conservatively:
 | `vendorable/Vionnet2012_Crocus.pdf` | Copernicus *Geoscientific Model Development*, CC-BY 4.0. DOI `10.5194/gmd-5-773-2012`. Added 2026-06-25 for snow density/albedo reference-implementation. |
 | `vendorable/Anderson2006_SNOW17.pdf` | NOAA/NWS NWSRFS documentation (SNOW-17). U.S. Government work, public domain (17 U.S.C. 105). Downloaded from `weather.gov`. Added 2026-06-25 for the seasonal degree-day melt-factor lineage. |
 | `vendorable/Jennings2018_NatComm.pdf` | *Nature Communications* 9:1148, CC-BY 4.0 (license statement in article). DOI `10.1038/s41467-018-03629-7`. Added 2026-06-26 for rain/snow partition — observed-phase dataset + temperature/RH threshold method. |
+| `vendorable/NSIDC-0768_GlobalSeasonalSnowClassification_v1_UserGuide.pdf` | NSIDC/NASA DAAC (Liston/Sturm) Global Seasonal-Snow Classification v1 user guide. NSIDC/NASA EOSDIS open data; document states a citation-on-use requirement, no redistribution restriction. Downloaded from `nsidc.org` 2026-06-28 for the climate-class snow-density paradigm (R-60). |
 
 ## Left in `copyrighted/` (pending review)
 
@@ -51,9 +52,16 @@ copyright (freely readable but not redistributable):
   DOI `10.1175/2010JHM1202.1`. AMS journal copyright (freely readable, not
   redistributable); author open copy (morageology.com/pubs/296.pdf) cached locally
   2026-06-28 for the regime-divergent (climate-class) snow-density paradigm
-  assessment (R-58). Sturm et al. 1995 classification (R-59, J. Climate, AMS) and
-  the Annals of Glaciology "compaction behavior of three climate classes" paper are
-  track-down items, not yet cached.
+  assessment (R-58).
+- `copyrighted/sturm1995.pdf` — *J. Climate* 8(5):1261–1283,
+  DOI `10.1175/1520-0442(1995)008<1261:ASSCCS>2.0.CO;2`. AMS journal copyright;
+  operator-supplied local cache 2026-06-28 (R-59). The binding decision-threshold
+  authority that unblocks SNOWDENSITY-10.3.22.
+- `copyrighted/hydr-JHM-D-21-0070.1.pdf` — Sturm & Liston (2021),
+  *J. Hydrometeorol.* 22(11):2917–2938, DOI `10.1175/JHM-D-21-0070.1`. AMS journal
+  copyright; operator-supplied local cache 2026-06-28 (R-61); updated thresholds,
+  renamed classes. The Annals of Glaciology "compaction behavior of three climate
+  classes" paper remains a track-down item, not yet cached.
 
 Note: `copyrighted/noaa_6392_DS1.pdf` (Anderson 1976, NOAA Tech. Report NWS-19)
 is a U.S. Government work and is public domain; it is eligible for promotion to
