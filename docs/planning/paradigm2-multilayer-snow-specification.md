@@ -31,6 +31,33 @@ So the question is not "is multilayer worth it for the density residual" but "is
 multilayer snowpack the right foundation for frost + water-temperature + runoff." A
 defer decision should be made against that scope; this document specifies it.
 
+### 1.1 Authority note — the Paradigm-1 source ranks Paradigm 2 as more accurate
+
+Sturm et al. (2010, R-58) frame their own climate-class model as the *easier* — not
+the *better* — option, and the distinction is exactly the openWEPP fork. In their
+words: the class approach (McKay & Findlay 1971; McKay & Gray 1981; Sturm &
+Holmgren 1998) captures bulk-densification differences empirically and "is general";
+"the alternative would be to explicitly model compaction processes, as has been done
+in several physically based snow models (cf. Anderson 1976; Koren et al. 1999;
+Liston et al. 2007; … Rutter et al. 2009 …). The problem is that these physical
+models require high-quality daily or even hourly weather and snowfall data because
+they must **track individual snow layer settlement through time**." They conclude:
+"our model is general and **potentially less accurate than explicit locally applied
+physical models**, [but] far easier to apply globally or regionally."
+
+The constraint that justified the class model is the **global/regional
+applicability** problem — you cannot run a layer-settlement model with hourly
+forcing everywhere on Earth. **openWEPP does not have that constraint:** it is a
+per-hillslope process model that already carries hourly weather and snowfall forcing
+(the winter routine) and already runs a process densification per hillslope. So
+openWEPP sits squarely in the regime where the *explicit layer-settlement physical
+model* — the Paradigm 2 / Anderson–Liston–Crocus lineage — is both feasible **and**,
+by the Paradigm-1 authors' own assessment, **more accurate**. 10.3.22 separately
+showed the class model cannot resolve openWEPP's split-sign anyway. This is a
+direct, authority-grounded confirmation of the ADR-0029 commit: the empirical class
+model was the global-applicability compromise; the explicit per-layer model is the
+accuracy path, and openWEPP is in its applicable regime.
+
 ## 2. The cross-program payoff (and the current limitation each removes)
 
 | Goal | Current (bulk) limitation | What multilayer provides |
