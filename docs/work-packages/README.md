@@ -13,6 +13,21 @@
 
 State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-18-cross-snotel-mechanism-rubric-001/` is
+  complete as SNOWDENSITY-10.3.18, the diagnostic-only cross-SNOTEL mechanism x
+  legacy rubric run. It consumed `SC-SNOWFREEZE-001` `INV-SNOWFREEZE-050` and
+  the SNOWFROST-FIDELITY-H lineage to score SNOTEL and bound `cancov_forest`
+  SWE/depth/density profiles across supported current direct-runtime
+  mechanisms, rejected/archival opt-in candidates, legacy, and PySnobal flag
+  profiles. Result: `DIAGNOSTIC-COMPLETE-NO-PROMOTION-DECISION`. The ranked
+  supported next-lever read is `harder_pomeroy_partition` (`+7` robust score
+  delta, `+2` robust fail delta vs activated), but this is investigation-only
+  because 10.3.5c non-SNOTEL evidence still blocks promotion. The 10.3.17
+  shallow-pack guard remains non-promoted, 10.3.16 sublimation is worse in this
+  profile, and humid-New-England cancov residuals are not representative of the
+  mountain SNOTEL activated-bundle fail signature set. No
+  production/default/cap/schema/fixture/frost change and no promotion or
+  activation decision was made.
 - `20260627-snowdensity-10-3-14-policy-b-no-regression-cap-authority-001/` is
   complete as SNOWDENSITY-10.3.14, the Policy-B no-regression and cap-authority
   diagnostic after the 10.3.13 residual-tail HOLD. It amended

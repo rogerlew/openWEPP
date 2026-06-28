@@ -766,6 +766,10 @@ path = "tests/integration/snowdensity10_3_16_open_surface_ablation_stage_a.rs"
 name = "snowdensity10_3_17_shallow_pack_compaction_guard"
 path = "tests/integration/snowdensity10_3_17_shallow_pack_compaction_guard.rs"
 
+[[test]]
+name = "snowdensity10_3_18_cross_snotel_mechanism_rubric"
+path = "tests/integration/snowdensity10_3_18_cross_snotel_mechanism_rubric.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
