@@ -105,11 +105,25 @@ in 4.1 runs against the final cap. This is **not** an unguarded edit:
   (`_h2o_compact` `MAX_DENSITY = 550`); ADR-0017 permits preferring a better-justified
   authority over legacy WEPP, but the amendment to `INV-SNOWFREEZE-003` /
   `REF-SNOWFREEZE-CH3-n` must cite it.
-- A raised **ceiling** only bites packs pinned at the cap — the dense, over-deep ones
-  (the cap-limited over-persistence tail), **not** the shallow under-persistence tail
-  — so it is inherently more targeted and lower-risk than the 10.3.11 *rate* increase.
-  Expect a *partial* reduction of the over-persistence tail (≈5% density headroom),
-  not a silver bullet; true mass-excess rows still need ablation.
+- A raised **ceiling** bites only packs pinned at the cap. That makes it inherently
+  more targeted than the 10.3.11 *rate* increase and it helps the over-persistence
+  tail — but it is **not unconditionally safe for under-persistence**, and 10.3.13
+  refines the earlier claim here. The under-persistence tail has two populations:
+  *natural* under-persistence (light/shallow packs, nowhere near the cap — unaffected
+  by a ceiling raise) and **induced** under-persistence (`177` rows the density arm
+  over-densified; 10.3.13). Over-densified packs sit at *high* density and may be
+  **cap-pinned at 522** — `harvard_hardwood` carried 0 compaction-only headroom in
+  10.3.11 and `73` induced-under rows in 10.3.13, i.e. its packs are pushed to/near
+  the cap. Raising the ceiling there could **deepen** over-densification and *worsen*
+  its induced-under tail. So the cap raise's net effect is **surface-dependent and
+  empirical**: it likely helps `sleepers_south_field` (over-persistence/ablation tail)
+  while possibly hurting `harvard_hardwood` (cap-pinned induced-under). 10.3.14 must
+  **measure the density distribution of the induced-under rows** (are they pinned at
+  522?) before raising the cap; if they are, the right lever for `harvard_hardwood`
+  is a SNOBAL-style **shallow-pack compaction guard** (reduce densification
+  aggressiveness for shallow packs), not a higher ceiling. Expect at most a *partial*
+  reduction of the over-persistence tail (≈5% density headroom) regardless; true
+  mass-excess rows still need ablation.
 - Re-verify the **density→holding-capacity coupling** at the new ceiling (denser cap →
   less pore space → slightly less liquid retained) and re-run the coupled WAT gate
   (over-persistence should improve without worsening under-persistence).
