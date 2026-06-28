@@ -23,6 +23,12 @@ pub enum MeteorologyError {
         last_temperature_c: f64,
         last_delta_c: f64,
     },
+    /// Monin-Obukhov turbulent-transfer iteration did not converge.
+    TurbulentTransferDidNotConverge {
+        iterations: usize,
+        last_obukhov_length_m: f64,
+        last_delta_m: f64,
+    },
 }
 
 impl fmt::Display for MeteorologyError {
@@ -51,6 +57,14 @@ impl fmt::Display for MeteorologyError {
             } => write!(
                 f,
                 "hydrometeor-temperature solver did not converge after {iterations} iterations; last temperature {last_temperature_c} degC, delta {last_delta_c} degC"
+            ),
+            Self::TurbulentTransferDidNotConverge {
+                iterations,
+                last_obukhov_length_m,
+                last_delta_m,
+            } => write!(
+                f,
+                "turbulent-transfer solver did not converge after {iterations} iterations; last Obukhov length {last_obukhov_length_m} m, delta {last_delta_m} m"
             ),
         }
     }

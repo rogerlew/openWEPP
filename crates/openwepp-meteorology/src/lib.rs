@@ -11,5 +11,6 @@
 pub mod error;
 pub mod phase;
 pub mod psychrometrics;
+pub mod surface_energy;
 
 pub use error::MeteorologyError;

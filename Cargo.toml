@@ -711,6 +711,10 @@ name = "snowdensity10_3_5a_meteorology_crate_contract"
 path = "tests/integration/snowdensity10_3_5a_meteorology_crate_contract.rs"
 
 [[test]]
+name = "paradigm2_stage0_surface_energy_balance_contract"
+path = "tests/integration/paradigm2_stage0_surface_energy_balance_contract.rs"
+
+[[test]]
 name = "snowdensity10_3_5b_hourly_partition_jennings_contract"
 path = "tests/integration/snowdensity10_3_5b_hourly_partition_jennings_contract.rs"
 

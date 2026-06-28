@@ -32,6 +32,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0026](0026-stateful-winter-column-sub-solver.md) | Stateful winter-column sub-solver for snow/frost | Accepted |
 | [0027](0027-opt-in-physics-bulk-snow-model.md) | Opt-in physics-bulk snow model for snow-density remediation | Accepted |
 | [0028](0028-observed-data-admission-authority.md) | Observed-data admission authority when scientific authority is lacking (domain-general; extends 0011, reaffirms 0017) | Proposed |
+| [0029](0029-commit-paradigm-2-multilayer-snow.md) | Commit to Paradigm 2 — staged multilayer snow physics (foundation for frost insulation, winter water temperature, runoff dynamics; admitted under 0028, homed in 0026) | Proposed |
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further
@@ -48,6 +49,14 @@ admitted on measurable rubric improvement (no calibration to the set, comparator
 stay flags, conservation non-negotiable). It sits below derivable contracts
 (ADR-0011) and above reference comparators (ADR-0017); the snow/frost rubric is
 the first instance. Proposed, pending Codex ratification.
+ADR-0029 commits to staged multilayer snow physics (Paradigm 2) after both the
+bulk family and climate-class specialization failed to resolve the structural
+densification-trajectory residual. It is the shared foundation for frost
+insulation, winter water temperature, and runoff dynamics; admitted under ADR-0028,
+homed in the ADR-0026 winter-column sub-solver (whose variable-layer Vec exception
+de-risks it), opt-in and staged with the bulk default as rollback. Stage 0 (the
+openwepp-meteorology surface energy balance) is done. Proposed, pending Codex
+ratification.
 
 ## ADR template
 

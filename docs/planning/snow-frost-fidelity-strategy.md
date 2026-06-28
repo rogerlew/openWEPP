@@ -1140,6 +1140,51 @@ profile/signature scoring rather than absolute-magnitude promotion.
    construction, documented not separately diffed — §10.3 step 6), explicit
    frost-attribution impact as a separate snow-control gate, and contract
    amendments for any production activation.
+10. **Paradigm 2 — multilayer snow physics (committed, staged).** After Paradigm 1
+    (climate-class density) was refuted (10.3.22: our corpus maps to the indistinct
+    high-ρmax {alpine/maritime/prairie} cluster, so Sturm's class divergence —
+    which lives in tundra/taiga — cannot resolve the split-sign; the residual is
+    structural, not parametric), the multilayer paradigm was scoped in
+    [paradigm2-multilayer-snow-specification](paradigm2-multilayer-snow-specification.md)
+    and **committed (operator, 2026-06-28)**. Rationale: the multilayer snowpack is
+    the **shared structural foundation for three program goals** — frost insulation
+    (the depth-weighted thermal-conductivity profile the bulk snow→frost handoff
+    cannot supply; depth/density is the frost driver and where the residual sits),
+    **winter water temperature** (per-layer cold content + surface energy balance →
+    meltwater temperature), and **runoff dynamics** (melt-front + per-layer
+    percolation/refreeze) — so the cost amortizes across the program, not the
+    15-cell density residual. The architecture is **de-risked**: the
+    variable-length-layer-in-array-native obstacle is already solved for frost
+    (ADR-0026 winter-column Vec exception), and the winter-column sub-solver is the
+    ratified home; multilayer snow adopts the same precedented pattern, avoiding the
+    R7G coarse-layer-projection hazard. The bulk `coe_liquid_holding_capacity_v1 +
+    physics_bulk_density_compaction_v1 + harder_pomeroy` default (15/179, beats
+    legacy) **remains the default/rollback**; Paradigm 2 is built opt-in and staged,
+    each stage independently gated (cross-SNOTEL forcing-robust rubric +
+    conservation + ADR-0025 perf) and independently valuable:
+    - **Stage 0** — add the surface energy balance (net radiation, turbulent
+      sensible/latent, ground conduction) to `openwepp-meteorology` as
+      surface-agnostic primitives. The current crate has psychrometrics + phase but
+      not the energy balance; this is the prerequisite for Stages 2–3 and is shared
+      with the stream-water-temperature program. Pure crate, no runtime wiring.
+    - **Stage 1** — n-layer snow state + per-layer densification under *local*
+      overburden (the density split-sign fix bulk could not deliver). Gate:
+      cross-SNOTEL rubric + bidirectional densification flip + conservation + perf.
+    - **Stage 2** — per-layer thermal solve + the snow→frost insulation-profile
+      coupling (replaces the bulk `snow_depth_m`/`snow_density_kg_m3` handoff). The
+      frost-insulation improvement; gate against the frost observation corpus.
+    - **Stage 3** — per-layer liquid routing + meltwater temperature (runoff
+      dynamics + the winter water-temperature source). Gate: runoff/melt-timing +
+      NWIS water-temperature evidence.
+    Stages can be reordered to the priority goal (frost-first = Stage 0 → a minimal
+    Stage 2 thermal layering), but Stage 0 gates 2–3. Reference: libsnobal (CC0)
+    ports the energy balance + 2-layer thermal + liquid routing; the n-layer density
+    profile extends beyond it (2-layer shown insufficient at 10.3.20 Stage B), with
+    Crocus (R-40) as the n-layer reference. The staging is the risk control — stop
+    at any stage that proves disproportionate. **Frost attribution proceeds in
+    parallel and is itself served by Stage 2.** Governance: the Paradigm-1-first
+    ADR-candidate (paradigm-assessment WP) is superseded; an ADR ratifying the
+    Paradigm 2 commit (citing the spec + ADR-0028) is the next governance step.
 
 ## 11. References / Authority
 

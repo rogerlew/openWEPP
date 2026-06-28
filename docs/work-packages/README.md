@@ -13,6 +13,16 @@
 
 State as of `2026-06-28`:
 
+- `20260628-paradigm-2-stage-0-surface-energy-balance-001/` is complete as
+  PARADIGM-2 STAGE 0, the pure `openwepp-meteorology` surface energy-balance
+  foundation. Result: `EXECUTED-COMPLETE`. The crate now exposes
+  surface-agnostic net all-wave radiation, Monin-Obukhov sensible/latent/vapor
+  mass flux, conductive heat exchange, precipitation advected heat, and
+  latent<->mass/balance-sum helpers. Clean-room provenance records libsnobal
+  CC0 commit `bf8b41c71e3e54ae654ae04005ddf72566c47ee6` and the
+  `setup.py` `license="CC0 1.0"` declaration. No production runtime wiring,
+  selector, default, fixture, output schema, density cap, frost behavior, or SC
+  amendment changed.
 - `20260628-snowdensity-10-3-22-climate-class-density-specialization-001/` is
   held as SNOWDENSITY-10.3.22, the comprehensive climate-class snow-density
   specialization candidate. It amended `SC-SNOWFREEZE-001` to v106 with
