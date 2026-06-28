@@ -972,6 +972,54 @@ profile/signature scoring rather than absolute-magnitude promotion.
    This also feeds the open **frost-attribution-threshold** question (what residual
    is "good enough"), which can only be answered on a representative cross-climate
    instrument rather than the narrow humid subset.
+   - **Completed as 10.3.18 (`DIAGNOSTIC-COMPLETE-NO-PROMOTION-DECISION`).**
+     `docs/work-packages/20260627-snowdensity-10-3-18-cross-snotel-mechanism-rubric-001/`.
+     Reads: humid-New-England is **NOT representative** of the mountain SNOTEL
+     signature set (`fail_cell_jaccard = 0.2`). On the forcing-robust rubric the
+     **activated bundle (17 fail / 172) is marginally below legacy (16 / 176)** — a
+     trade: it fixed the density bias (legacy median `−55.6 kg/m^-3` → bundle `≈0`)
+     but **degraded snowmelt/accumulation timing across all five mountain climates**
+     (peak-SWE / peak-depth / meltout / duration dates) and **deepened the
+     depth/SWE under-bias** (the under-persistence mechanism cost, now confirmed
+     global, not a humid-NE artifact). **`harder_pomeroy_partition` (activated
+     bundle + Harder-Pomeroy hourly phase) is the top lever (15 / 179; 9 better,
+     2 worse cells)** — fixes timing across every climate, wrongly rejected at
+     10.3.5c on the now-invalidated humid gate. Sublimation (10.3.16) is worst
+     (20 / 153); shallow-pack guard (10.3.17) is neutral (172, non-promoted);
+     PySnobal is a weak flag (28 / 11).
+   - **Decisions (operator, 2026-06-28).**
+     1. **The cross-SNOTEL forcing-robust rubric is the standing primary gate.**
+        Every snow candidate is scored on `INV-SNOWFREEZE-050` over the five SNOTEL
+        climates + the `cancov_forest` paired set; humid-NE depth becomes one
+        reported surface, not the gate.
+     2. **Adopt `harder_pomeroy_partition` (bundle + Harder-Pomeroy hourly phase)
+        as the new default** — justified on the primary rubric (15 / 179 vs
+        17 / 172). Activation under Policy B = cross-SNOTEL rubric improvement +
+        workspace-suite no-regression + conservation (partition is mass-conserving).
+        Caveat: it re-introduces a **`+23.6 kg/m^-3` density bias** (bundle was
+        ≈0), so density recovery is a follow-on (decision 4).
+     3. **Humid-NE depth regression is a roadmap item, not a blocker.** The
+        partition worsened the humid-NE depth gate (10.3.5c, `1147 → 1273`), but
+        that gate is non-representative. Likely handling: a **hillslope `.run`-file
+        option to disable the partition** — a deliberate new *user-facing* control
+        (distinct from the internal env rollback selectors), scoped contract-first
+        as its own package.
+     4. **Sublimation is not abandoned — diagnose the implementation.** The science
+        says sublimation matters (especially dry/windy SNOTEL), so the 10.3.16
+        `−19` robust delta is an **implementation-quality** problem, not a wrong
+        mechanism. Diagnose it; **unlock Stage B** (the two-layer surface
+        cold-content structure) if Stage A's single-layer form is the limit. Test
+        the **partition + sublimation composition** — the `+23.6` / `−23.0` density
+        biases are nearly equal-and-opposite, so together they may hold density ≈0
+        while combining partition timing with sublimation mass loss.
+     5. **New process/science amendments are admissible — SNOBAL is a reference,
+        not a ceiling.** A candidate need not be a SNOBAL/legacy port; a novel
+        mechanism is admissible if its physics are defensible **and** it improves
+        cross-SNOTEL forcing-robust robustness against the observed-data rubric
+        (ADR-0011 contract-first; ADR-0017 legacy/PySnobal as flags). This posture
+        is captured domain-general as
+        [ADR-0028](../decisions/0028-observed-data-admission-authority.md)
+        (observed-data admission authority when scientific authority is lacking).
 9. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
    any opt-in snow melt/density bundle. Closure gate: Activation Policy B
    workspace-suite no-regression plus composite snow-state conservation evidence

@@ -31,6 +31,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0025](0025-array-native-hillslope-day-frame.md) | Array-native HillslopeDayFrame hot-path runtime (comprehensive re-architecture; completes 0023, narrows 0022) | Accepted (ratified 2026-06-18) |
 | [0026](0026-stateful-winter-column-sub-solver.md) | Stateful winter-column sub-solver for snow/frost | Accepted |
 | [0027](0027-opt-in-physics-bulk-snow-model.md) | Opt-in physics-bulk snow model for snow-density remediation | Accepted |
+| [0028](0028-observed-data-admission-authority.md) | Observed-data admission authority when scientific authority is lacking (domain-general; extends 0011, reaffirms 0017) | Proposed |
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further
@@ -40,6 +41,13 @@ pure-phase direct-frame model.
 ADR-0027 authorizes only an opt-in `physics_bulk` snow-density remediation lane;
 `legacy_wepp` remains default until a later package and contract amendment
 ratify runtime promotion.
+ADR-0028 adds a domain-general third authority tier: when established scientific
+authority is insufficient to derive a contract and a defensible observed-data
+corpus + forcing-robust rubric exist, a physically-defensible mechanism may be
+admitted on measurable rubric improvement (no calibration to the set, comparators
+stay flags, conservation non-negotiable). It sits below derivable contracts
+(ADR-0011) and above reference comparators (ADR-0017); the snow/frost rubric is
+the first instance. Proposed, pending Codex ratification.
 
 ## ADR template
 
