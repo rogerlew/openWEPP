@@ -557,10 +557,15 @@ results re-order the priorities below:
    open field). The over-persistence tail is an **ablation deficit**: openWEPP
    carries too much SWE at open exposures because the CoE melt under-realizes mass
    loss there. The reference mechanism is the SNOBAL two-layer point energy-mass
-   balance — authority **Marks et al. 1999** (`references/copyrighted/marks1999.pdf`);
-   the `pysnobal` `libsnobal` C is an equation/structure cross-reference only, and
-   any port requires confirming its license is not GPL-family per `deny.toml`
-   (implement clean-room from the paper, the CHM/MetPy precedent).
+   balance — authority **Marks et al. 1999** (`references/copyrighted/marks1999.pdf`).
+   The `pysnobal` `libsnobal` C (USDA-ARS-NWRC clone, **CC0 1.0 / public-domain
+   dedication** declared in `setup.py`; US-Government-work origin) is now usable as
+   a **direct implementation reference and port source**, not only an equation
+   cross-reference — CC0 is Apache-2.0-compatible and outside the `deny.toml`
+   GPL/AGPL/LGPL denials (no clean-room restriction). Ground the physics in Marks
+   1999, port the structure from `libsnobal`, and record the clone commit + the
+   `setup.py` CC0 declaration as provenance (no standalone `LICENSE` file ships in
+   the repo).
    - **Two-layer thermal structure (`_calc_layers.c` / `_adj_layers.c`).** A
      fixed-thickness **active surface layer** (`max_z_s_0`, ~0.25 m) plus a lower
      layer, each with its own temperature and **cold content**
