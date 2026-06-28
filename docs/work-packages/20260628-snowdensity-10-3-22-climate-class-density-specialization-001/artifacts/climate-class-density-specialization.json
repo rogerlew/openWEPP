@@ -1,0 +1,54 @@
+{
+  "schema": "snowdensity10-3-22-climate-class-density-specialization-v1",
+  "package": "SNOWDENSITY-10.3.22",
+  "disposition": "HOLD-AUTHORITY-GAP-NO-PROMOTION",
+  "activation_authorized": false,
+  "default_changed": false,
+  "candidate": {
+    "snow_density_model": "physics_bulk_climate_class_density_v1",
+    "selector": "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
+    "selector_scope": "package_bound_internal_density_selector",
+    "fail_closed_without_authoritative_class_assignment": true,
+    "raw_sturm_density_form_fallback_flagged": true
+  },
+  "sturm_class_labels": [
+    "tundra",
+    "taiga",
+    "alpine",
+    "maritime",
+    "prairie",
+    "ephemeral"
+  ],
+  "sturm2010_parameterized_classes": [
+    "alpine",
+    "maritime",
+    "prairie",
+    "tundra",
+    "taiga"
+  ],
+  "missing_sturm2010_parameter_classes": [
+    "ephemeral"
+  ],
+  "authority": {
+    "sturm1995_numeric_decision_tree_thresholds_available": false,
+    "sturm2010_ephemeral_density_parameters_available": false,
+    "nsidc0768_runtime_lookup_allowed": false,
+    "fixture_fitting_used": false
+  },
+  "gates": {
+    "cross_snotel_forcing_robust_rubric_beats_current_default_15_179": "missing_authority_not_run",
+    "bidirectional_densification_flip": "missing_authority_not_run",
+    "no_new_bidirectional_persistence_tail": "missing_authority_not_run",
+    "whole_model_conservation": "missing_real_wat_run",
+    "focused_explicit_class_swe_identity": "covered_by_unit_test"
+  },
+  "protected_boundaries": {
+    "output_schema_changed": false,
+    "fixture_changed": false,
+    "density_cap_changed": false,
+    "frost_changed": false,
+    "default_changed": false,
+    "parser_runfile_user_cli_selector_added": false,
+    "run_file_control_added": false
+  }
+}

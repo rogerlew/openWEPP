@@ -24,7 +24,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_spring_densification_candidate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 105",
+        "contract_version: 106",
         "physics_bulk_spring_densification_v1",
         "INV-SNOWFREEZE-068",
         "OBL-SNOWFREEZE-P-043",
@@ -100,7 +100,7 @@ fn selector_and_tool_keep_diagnostic_boundaries() {
     for marker in [
         "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
         "SnowDensityModel::PhysicsBulkDensityCompactionV1",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, or physics_bulk_shallow_guard_v1",
+        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, or physics_bulk_climate_class_density_v1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }

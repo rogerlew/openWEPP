@@ -2,6 +2,7 @@ const SNOW_DENSITY_LEGACY_MODEL_ID: &str = "legacy_wepp";
 const SNOW_DENSITY_COMPACTION_MODEL_ID: &str = "physics_bulk_density_compaction_v1";
 const SNOW_DENSITY_SPRING_DENSIFICATION_MODEL_ID: &str = "physics_bulk_spring_densification_v1";
 const SNOW_DENSITY_SHALLOW_GUARD_MODEL_ID: &str = "physics_bulk_shallow_guard_v1";
+const SNOW_DENSITY_CLIMATE_CLASS_MODEL_ID: &str = "physics_bulk_climate_class_density_v1";
 const SNOW_DENSITY_SHALLOW_GUARD_DEPTH_THRESHOLD_M: f64 = 0.25;
 const SNOW_DENSITY_RHO_WATER_KG_M3: f64 = 1_000.0;
 const SNOW_DENSITY_ZERO_MASS_KG_M2: f64 = 1.0e-9;
@@ -13,6 +14,7 @@ pub enum SnowDensityModel {
     PhysicsBulkDensityCompactionV1,
     PhysicsBulkSpringDensificationV1,
     PhysicsBulkShallowGuardV1,
+    PhysicsBulkClimateClassDensityV1,
 }
 
 impl SnowDensityModel {
@@ -25,8 +27,107 @@ impl SnowDensityModel {
                 SNOW_DENSITY_SPRING_DENSIFICATION_MODEL_ID
             }
             Self::PhysicsBulkShallowGuardV1 => SNOW_DENSITY_SHALLOW_GUARD_MODEL_ID,
+            Self::PhysicsBulkClimateClassDensityV1 => SNOW_DENSITY_CLIMATE_CLASS_MODEL_ID,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SnowClimateClass {
+    Tundra,
+    Taiga,
+    Alpine,
+    Maritime,
+    Prairie,
+    Ephemeral,
+}
+
+impl SnowClimateClass {
+    #[must_use]
+    pub const fn id(self) -> &'static str {
+        match self {
+            Self::Tundra => "tundra",
+            Self::Taiga => "taiga",
+            Self::Alpine => "alpine",
+            Self::Maritime => "maritime",
+            Self::Prairie => "prairie",
+            Self::Ephemeral => "ephemeral",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Sturm2010DensityParameters {
+    pub max_density_g_cm3: f64,
+    pub initial_density_g_cm3: f64,
+    pub depth_densification_per_cm: f64,
+    pub day_densification_per_day: f64,
+}
+
+#[must_use]
+pub const fn sturm2010_density_parameters_for_class(
+    class: SnowClimateClass,
+) -> Option<Sturm2010DensityParameters> {
+    match class {
+        SnowClimateClass::Alpine => Some(Sturm2010DensityParameters {
+            max_density_g_cm3: 0.5975,
+            initial_density_g_cm3: 0.2237,
+            depth_densification_per_cm: 0.0012,
+            day_densification_per_day: 0.0038,
+        }),
+        SnowClimateClass::Maritime => Some(Sturm2010DensityParameters {
+            max_density_g_cm3: 0.5979,
+            initial_density_g_cm3: 0.2578,
+            depth_densification_per_cm: 0.0010,
+            day_densification_per_day: 0.0038,
+        }),
+        SnowClimateClass::Prairie => Some(Sturm2010DensityParameters {
+            max_density_g_cm3: 0.5940,
+            initial_density_g_cm3: 0.2332,
+            depth_densification_per_cm: 0.0016,
+            day_densification_per_day: 0.0031,
+        }),
+        SnowClimateClass::Tundra => Some(Sturm2010DensityParameters {
+            max_density_g_cm3: 0.3630,
+            initial_density_g_cm3: 0.2425,
+            depth_densification_per_cm: 0.0029,
+            day_densification_per_day: 0.0049,
+        }),
+        SnowClimateClass::Taiga => Some(Sturm2010DensityParameters {
+            max_density_g_cm3: 0.2170,
+            initial_density_g_cm3: 0.2170,
+            depth_densification_per_cm: 0.0,
+            day_densification_per_day: 0.0,
+        }),
+        SnowClimateClass::Ephemeral => None,
+    }
+}
+
+pub fn sturm2010_bulk_density_kg_m3(
+    class: SnowClimateClass,
+    snow_depth_m: f64,
+    sturm_day_of_year: f64,
+) -> Result<f64, SnowDensityError> {
+    density_validate_nonnegative("sturm2010_snow_depth_m", snow_depth_m)?;
+    density_validate_positive("sturm2010_day_of_year", sturm_day_of_year)?;
+    if sturm_day_of_year > 366.0 {
+        return Err(SnowDensityError::OutOfRangeInput {
+            symbol: "sturm2010_day_of_year",
+            value: sturm_day_of_year,
+            minimum: Some(f64::MIN_POSITIVE),
+            maximum: Some(366.0),
+        });
+    }
+    let parameters = sturm2010_density_parameters_for_class(class).ok_or(
+        SnowDensityError::MissingClimateClassDensityParameters { class: class.id() },
+    )?;
+    let depth_cm = snow_depth_m * 100.0;
+    let exponent = -parameters.depth_densification_per_cm * depth_cm
+        - parameters.day_densification_per_day * sturm_day_of_year;
+    let density_g_cm3 = (parameters.max_density_g_cm3 - parameters.initial_density_g_cm3)
+        * (1.0 - exponent.exp())
+        + parameters.initial_density_g_cm3;
+    Ok(density_g_cm3 * SNOW_DENSITY_RHO_WATER_KG_M3)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -112,6 +213,8 @@ pub struct SnowDensityRuntimeInputs {
     pub liquid_for_compaction_m: f64,
     pub mean_air_temperature_c: f64,
     pub runtime_density_cap_kg_m3: f64,
+    pub sturm_climate_class: Option<SnowClimateClass>,
+    pub sturm_day_of_year: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -124,6 +227,7 @@ pub struct SnowDensityRuntimeOutcome {
     pub coe_boundary_density_after_kg_m3: f64,
     pub max_abs_swe_identity_residual_m: f64,
     pub max_abs_unbounded_swe_residual_m: f64,
+    pub sturm_density_form_fallback_used: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -137,6 +241,15 @@ pub enum SnowDensityError {
         value: f64,
         minimum: Option<f64>,
         maximum: Option<f64>,
+    },
+    MissingClimateClassAssignment {
+        model: &'static str,
+    },
+    MissingSturmDayOfYear {
+        model: &'static str,
+    },
+    MissingClimateClassDensityParameters {
+        class: &'static str,
     },
 }
 
@@ -154,6 +267,18 @@ impl std::fmt::Display for SnowDensityError {
             } => write!(
                 f,
                 "snow-density input {symbol}={value} outside [{minimum:?}, {maximum:?}]"
+            ),
+            Self::MissingClimateClassAssignment { model } => write!(
+                f,
+                "snow-density model {model} requires forcing-derived Sturm climate class"
+            ),
+            Self::MissingSturmDayOfYear { model } => write!(
+                f,
+                "snow-density model {model} requires Sturm density day-of-year"
+            ),
+            Self::MissingClimateClassDensityParameters { class } => write!(
+                f,
+                "missing Sturm 2010 density parameters for snow climate class {class}"
             ),
         }
     }
@@ -188,6 +313,7 @@ pub fn update_snow_density_runtime_state(
             coe_boundary_density_after_kg_m3: inputs.boundary_density_after_kg_m3,
             max_abs_swe_identity_residual_m: 0.0,
             max_abs_unbounded_swe_residual_m: 0.0,
+            sturm_density_form_fallback_used: false,
         });
     }
 
@@ -220,6 +346,12 @@ pub fn update_snow_density_runtime_state(
         inputs.mean_air_temperature_c.clamp(-30.0, 0.0),
         constants,
     );
+    let sturm_density_form_fallback_used = apply_sturm2010_density_form_fallback(
+        &mut state,
+        inputs.model,
+        inputs.sturm_climate_class,
+        inputs.sturm_day_of_year,
+    )?;
 
     let unbounded_swe_m = state.mass_kg_m2 / SNOW_DENSITY_RHO_WATER_KG_M3;
     state.mass_kg_m2 = inputs.boundary_swe_after_m * SNOW_DENSITY_RHO_WATER_KG_M3;
@@ -241,6 +373,7 @@ pub fn update_snow_density_runtime_state(
         coe_boundary_density_after_kg_m3: inputs.boundary_density_after_kg_m3,
         max_abs_swe_identity_residual_m: identity_residual_m.abs(),
         max_abs_unbounded_swe_residual_m: (unbounded_swe_m - inputs.boundary_swe_after_m).abs(),
+        sturm_density_form_fallback_used,
     })
 }
 
@@ -248,7 +381,9 @@ const fn snow_density_constants_for_model(
     model: SnowDensityModel,
 ) -> SnowDensityCompactionConstants {
     match model {
-        SnowDensityModel::LegacyWepp | SnowDensityModel::PhysicsBulkDensityCompactionV1 => {
+        SnowDensityModel::LegacyWepp
+        | SnowDensityModel::PhysicsBulkDensityCompactionV1
+        | SnowDensityModel::PhysicsBulkClimateClassDensityV1 => {
             snow_density_compaction_v1_constants()
         }
         SnowDensityModel::PhysicsBulkSpringDensificationV1 => {
@@ -256,6 +391,27 @@ const fn snow_density_constants_for_model(
         }
         SnowDensityModel::PhysicsBulkShallowGuardV1 => snow_density_shallow_guard_v1_constants(),
     }
+}
+
+fn apply_sturm2010_density_form_fallback(
+    state: &mut CoeBoundDensityState,
+    model: SnowDensityModel,
+    sturm_climate_class: Option<SnowClimateClass>,
+    sturm_day_of_year: Option<f64>,
+) -> Result<bool, SnowDensityError> {
+    if model != SnowDensityModel::PhysicsBulkClimateClassDensityV1 {
+        return Ok(false);
+    }
+    let class = sturm_climate_class.ok_or(SnowDensityError::MissingClimateClassAssignment {
+        model: model.id(),
+    })?;
+    let day =
+        sturm_day_of_year.ok_or(SnowDensityError::MissingSturmDayOfYear { model: model.id() })?;
+    let target_density_kg_m3 = sturm2010_bulk_density_kg_m3(class, state.depth_m(), day)?;
+    if state.mass_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2 {
+        state.density_kg_m3 = target_density_kg_m3;
+    }
+    Ok(true)
 }
 
 #[derive(Debug, Clone, Copy, Default)]

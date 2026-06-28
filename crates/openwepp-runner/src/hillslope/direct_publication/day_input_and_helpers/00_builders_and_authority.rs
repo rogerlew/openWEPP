@@ -1215,10 +1215,13 @@ fn snowdensity1015_default_snow_density_model(
             "physics_bulk_shallow_guard_v1" => Ok(
                 openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkShallowGuardV1,
             ),
+            "physics_bulk_climate_class_density_v1" => Ok(
+                openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkClimateClassDensityV1,
+            ),
             observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_production_snow_density_model",
                 detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be legacy_wepp, physics_bulk_density_compaction_v1, or physics_bulk_shallow_guard_v1, observed {observed}"
+                    "{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, or physics_bulk_climate_class_density_v1, observed {observed}"
                 ),
             }),
         },

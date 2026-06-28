@@ -15,7 +15,7 @@ const REPORT: &str = concat!(
 fn contract_and_package_bind_residual_policy_b_diagnostic() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 105",
+        "contract_version: 106",
         "INV-SNOWFREEZE-070",
         "OBL-SNOWFREEZE-P-045",
         "SNOWDENSITY-10.3.13 Residual-Tail And Policy-B Diagnostic Addendum",

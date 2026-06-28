@@ -25,7 +25,7 @@ const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 fn snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 105",
+        "contract_version: 106",
         "INV-SNOWFREEZE-062",
         "OBL-SNOWFREEZE-P-037",
         "SNOWDENSITY-09 Diagnostic Coupled WAT Rerun Addendum",
@@ -64,7 +64,7 @@ fn snowdensity09_selector_is_now_10_3_15_default_with_legacy_rollback() {
         "snowdensity1015_default_snow_density_model",
         "SnowDensityModel::LegacyWepp",
         "SnowDensityModel::PhysicsBulkDensityCompactionV1",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, or physics_bulk_shallow_guard_v1",
+        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, or physics_bulk_climate_class_density_v1",
         "\\\"snow_density_model\\\":\\\"{}\\\"",
     ] {
         assert_contains(&builder, marker, BUILDER);

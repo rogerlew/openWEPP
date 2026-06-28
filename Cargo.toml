@@ -782,6 +782,10 @@ path = "tests/integration/snowdensity10_3_20_sublimation_stage_b_unlock.rs"
 name = "snowdensity10_3_21_post_partition_residual_decomposition"
 path = "tests/integration/snowdensity10_3_21_post_partition_residual_decomposition.rs"
 
+[[test]]
+name = "snowdensity10_3_22_climate_class_density_specialization"
+path = "tests/integration/snowdensity10_3_22_climate_class_density_specialization.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

@@ -13,6 +13,19 @@
 
 State as of `2026-06-28`:
 
+- `20260628-snowdensity-10-3-22-climate-class-density-specialization-001/` is
+  held as SNOWDENSITY-10.3.22, the comprehensive climate-class snow-density
+  specialization candidate. It amended `SC-SNOWFREEZE-001` to v106 with
+  `INV-SNOWFREEZE-077`, `OBL-SNOWFREEZE-P-052`, Sturm 2010/1995 and
+  NSIDC-0768 authority anchors, reserved opt-in
+  `physics_bulk_climate_class_density_v1`, and implemented explicit-unit Sturm
+  2010 density trajectory support for the five locally parameterized classes.
+  Result: `HOLD-AUTHORITY-GAP-NO-PROMOTION`. Local authority did not provide
+  numeric Sturm 1995 forcing decision-tree thresholds or Sturm 2010 ephemeral
+  density parameters, so no class thresholds or parameters were fitted to
+  fixtures, no cross-SNOTEL promotion gate was run, and no production default,
+  fixture, schema, density-cap, frost, parser/runfile/user selector, or `.run`
+  control changed.
 - `20260628-snow-density-paradigm-assessment-001/` is complete as the
   post-10.3.21 snow-density paradigm assessment. Result: `PARADIGM-ASSESSED`.
   The assessment compares climate-class parameter specialization, multilayer

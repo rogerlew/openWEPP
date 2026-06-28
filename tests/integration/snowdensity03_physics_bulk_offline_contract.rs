@@ -65,6 +65,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "tests/integration/snowdensity10_3_19_harder_pomeroy_default_activation.rs",
         "tests/integration/snowdensity10_3_20_sublimation_stage_b_unlock.rs",
         "tests/integration/snowdensity10_3_21_post_partition_residual_decomposition.rs",
+        "tests/integration/snowdensity10_3_22_climate_class_density_specialization.rs",
         "tools/snowfreeze_observed/bundle_activation_adjudication.py",
         "tools/snowfreeze_observed/coe_bound_density_adjudication.py",
         "tools/snowfreeze_observed/cross_snotel_mechanism_rubric.py",
@@ -91,6 +92,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
     assert!(contract.contains("INV-SNOWFREEZE-069"));
     assert!(contract.contains("INV-SNOWFREEZE-070"));
     assert!(contract.contains("INV-SNOWFREEZE-071"));
+    assert!(contract.contains("INV-SNOWFREEZE-077"));
     assert!(contract.contains("physics_bulk_density_compaction_v1"));
 
     let mut unexpected = Vec::new();

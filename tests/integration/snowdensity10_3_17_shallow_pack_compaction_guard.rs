@@ -29,7 +29,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_shallow_guard_candidate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 105",
+        "contract_version: 106",
         "physics_bulk_shallow_guard_v1",
         "snow_shallow_compaction_guard_depth_threshold",
         "INV-SNOWFREEZE-074",
@@ -121,7 +121,7 @@ fn selector_and_tool_keep_diagnostic_boundaries() {
         "physics_bulk_density_compaction_v1",
         "physics_bulk_shallow_guard_v1",
         "SnowDensityModel::PhysicsBulkShallowGuardV1",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, or physics_bulk_shallow_guard_v1",
+        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, or physics_bulk_climate_class_density_v1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
@@ -197,6 +197,8 @@ fn shallow_inputs(model: SnowDensityModel, prior_depth_m: f64) -> SnowDensityRun
         liquid_for_compaction_m: 0.015,
         mean_air_temperature_c: -1.0,
         runtime_density_cap_kg_m3: 522.0,
+        sturm_climate_class: None,
+        sturm_day_of_year: None,
     }
 }
 

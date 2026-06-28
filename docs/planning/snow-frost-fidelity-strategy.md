@@ -1107,17 +1107,32 @@ profile/signature scoring rather than absolute-magnitude promotion.
      The post-10.3.21 decision assessment compares climate-class parameter
      specialization (Paradigm 1), multilayer snowpack physics (Paradigm 2), and
      accepting the current floor. It recommends Paradigm 1 as the next
-     snow-density candidate package because it directly targets the diffuse,
-     split-sign densification-trajectory residual while fitting the existing
-     scalar bulk density lane as an opt-in candidate. The clean form is
-     independently assigned Sturm 1995/2010 or NSIDC-0768 snow class driving
-     Anderson/SNOBAL-style coefficient specialization, not fixture-fitted raw
-     empirical regression. Paradigm 2 remains the escalation path if the
-     class-aware candidate fails or frost/canopy evidence requires vertical snow
-     structure. The current `15` / `179` snow floor remains usable for the
-     parallel frost-attribution-threshold process with uncertainty carried
-     forward. No production density code, contract, fixture, schema, default,
-     density-cap, or frost change is made.
+   snow-density candidate package because it directly targets the diffuse,
+   split-sign densification-trajectory residual while fitting the existing
+   scalar bulk density lane as an opt-in candidate. The clean form is
+   independently assigned Sturm 1995/2010 or NSIDC-0768 snow class driving
+   Anderson/SNOBAL-style coefficient specialization, not fixture-fitted raw
+   empirical regression. Paradigm 2 remains the escalation path if the
+   class-aware candidate fails or frost/canopy evidence requires vertical snow
+   structure. The current `15` / `179` snow floor remains usable for the
+   parallel frost-attribution-threshold process with uncertainty carried
+   forward. No production density code, contract, fixture, schema, default,
+   density-cap, or frost change is made.
+  - **Climate-class specialization attempted as SNOWDENSITY-10.3.22
+    (`HOLD-AUTHORITY-GAP-NO-PROMOTION`).**
+    `docs/work-packages/20260628-snowdensity-10-3-22-climate-class-density-specialization-001/`.
+    The package amended `SC-SNOWFREEZE-001` to v106, reserved opt-in
+    `physics_bulk_climate_class_density_v1`, and implemented Sturm 2010
+    density-trajectory support for the five locally parameterized classes
+    (alpine, maritime, prairie, tundra, taiga). It did not promote or activate:
+    local authority did not expose the numeric Sturm 1995 wind/precipitation/
+    air-temperature decision thresholds needed for forcing-derived class
+    assignment, and Sturm 2010 excludes ephemeral measurements and supplies no
+    ephemeral parameter row. No thresholds or parameters were inferred from
+    fixtures, no NSIDC geographic lookup was used, and no cross-SNOTEL gate was
+    run. Follow-on requires authoritative decision-tree thresholds plus an
+    ephemeral parameter/fallback authority before Paradigm 1 can be judged on
+    the primary rubric.
 9. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
    any opt-in snow melt/density bundle. Closure gate: Activation Policy B
    workspace-suite no-regression plus composite snow-state conservation evidence
