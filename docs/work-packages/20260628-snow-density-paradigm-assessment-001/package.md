@@ -1,10 +1,10 @@
 # Snow-Density Paradigm Assessment — climate-class (Paradigm 1) vs multilayer (Paradigm 2)
 
-Status: scaffolded (assessment not yet executed)
+Status: executed (`PARADIGM-ASSESSED`)
 Type: **design/architecture decision package** — produces a comparison + recommendation + ADR-candidate. **No production code.**
-Owner: TBD (design reasoning is Claude Code's lane; current-implementation grounding may be delegated to Codex)
+Owner: Codex execution (design assessment and current-implementation grounding)
 Date: 2026-06-28
-Closure target: `PARADIGM-ASSESSED` (recommendation + ADR-candidate) or named `HOLD-...`.
+Closure: `PARADIGM-ASSESSED` (recommendation + ADR-candidate complete).
 
 ## Objective
 
@@ -100,6 +100,22 @@ For each option, score and justify against:
 - An **ADR-candidate** (draft, if a paradigm is chosen) — domain-scoped to snow
   density-structure, citing ADR-0028 as the admission basis.
 
+Delivered:
+
+- `artifacts/required-reading.md`
+- `artifacts/implementation-grounding.md`
+- `artifacts/paradigm-comparison.md`
+- `artifacts/recommendation.md`
+- `artifacts/adr-candidate-snow-density-paradigm.md`
+- `artifacts/review_pass_a.md`
+- `artifacts/review_pass_b.md`
+- `artifacts/review-disposition.md`
+- `artifacts/verification_pass_a.md`
+- `artifacts/verification_pass_b.md`
+- `artifacts/line-count-governance.md`
+- `artifacts/gate-results.md`
+- `artifacts/disposition.md`
+
 ## Non-scope
 
 - No production density code, no contract amendment beyond the ADR-candidate draft,
@@ -112,6 +128,14 @@ For each option, score and justify against:
 - The recommendation names the next package (candidate implementation or frost).
 - If no option is clearly superior, close `HOLD-PARADIGM-UNDECIDED` with the
   specific evidence each option still needs.
+
+Closure result:
+
+- `PARADIGM-ASSESSED`.
+- Recommendation: scaffold a later opt-in climate-class density specialization
+  candidate under ADR-0028. Frost-attribution threshold work may proceed in
+  parallel using the current `15` / `179` snow floor with uncertainty carried
+  forward.
 
 ## Note on sequencing
 

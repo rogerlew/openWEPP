@@ -13,6 +13,19 @@
 
 State as of `2026-06-28`:
 
+- `20260628-snow-density-paradigm-assessment-001/` is complete as the
+  post-10.3.21 snow-density paradigm assessment. Result: `PARADIGM-ASSESSED`.
+  The assessment compares climate-class parameter specialization, multilayer
+  snowpack physics, and accepting the current floor. Recommendation: use
+  **Paradigm 1**, climate-class snow-density specialization, as the next
+  snow-density candidate package under ADR-0028, with an opt-in selector only,
+  independent Sturm 1995/2010 or NSIDC-0768 class authority, no fixture fitting,
+  and the cross-SNOTEL forcing-robust rubric plus conservation as the promotion
+  gate. Paradigm 2 remains the escalation path if the class-aware candidate
+  fails or frost/canopy evidence requires vertical snow structure. The current
+  `15` / `179` snow floor remains valid input for a parallel frost-attribution
+  threshold process with uncertainty carried forward. No production density code,
+  contract, fixture, schema, default, density-cap, or frost change was made.
 - `20260628-snowdensity-10-3-21-post-partition-residual-decomposition-001/` is
   complete as SNOWDENSITY-10.3.21, the post-partition residual decomposition and
   frost-attribution-threshold input diagnostic. It consumed the 10.3.20 real
