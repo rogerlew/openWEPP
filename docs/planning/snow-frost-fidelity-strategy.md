@@ -549,6 +549,17 @@ results re-order the priorities below:
    (`INV-SNOWFREEZE-050`). The ★ stratified open-vs-canopy observations are
    forcing-robust *within* a site (same climate), but require explicit modeled
    stratum mapping before they carry decisive canopy-attenuation verdicts.
+   **Sub-daily precipitation structure is synthetic (a forcing limit to carry into
+   every event-scale interpretation).** For these snow/frost climates the daily
+   precipitation *total* is from DAYMET, spatialized by PRISM — but the storm
+   **duration and intensity** (the within-day disaggregation) are **stochastically
+   assigned by CLIGEN** (`/workdir/jimf-cligen532`), not observed. So hourly
+   precip intensity/timing — which drives rain-on-snow events, melt-event timing,
+   the hourly rain/snow partition, and runoff intensity — is a **stochastic
+   realization**, not measured forcing. Event-scale / intensity-dependent
+   signatures are therefore forcing-limited (report-only); only the forcing-robust
+   signatures above carry verdicts. This is why the rubric tiering exists, and it
+   bounds what any sub-daily-resolved model (e.g. Paradigm 2) can be validated to.
 7. **Open-surface ablation via the SNOBAL two-layer energy balance (deferred
    after narrow-lever non-promotions).** After bundle activation (§10.3), the residual splits into two
    opposite-sign defects: a density-arm-induced under-persistence tail, and an

@@ -58,6 +58,21 @@ direct, authority-grounded confirmation of the ADR-0029 commit: the empirical cl
 model was the global-applicability compromise; the explicit per-layer model is the
 accuracy path, and openWEPP is in its applicable regime.
 
+**Forcing caveat (qualifies the "hourly data" precondition).** openWEPP satisfies
+Sturm's "requires hourly weather and snowfall data" precondition for a
+layer-settlement model — but with an asterisk: for these snow/frost climates the
+daily precipitation *total* is DAYMET spatialized by PRISM, while the within-day
+storm **duration and intensity** are **stochastically assigned by CLIGEN**
+(`/workdir/jimf-cligen532`), not observed. So the hourly intensity/timing a
+per-layer model would resolve (settlement, melt-front, rain-on-snow, refreeze) is a
+*stochastic realization*, not measured forcing. This does **not** block Paradigm 2
+— a layer model still runs correctly on synthetic sub-daily forcing — but it
+**bounds the validation**: Paradigm 2's gains must be claimed on the forcing-robust
+signatures (density, depth-SWE slope, densification trajectory, timing, regime
+ordering — strategy §10.2 item 6), **not** on event-scale intensity fidelity the
+synthetic sub-daily forcing cannot support. Carry the forcing-robust tiering into
+every stage gate.
+
 ## 2. The cross-program payoff (and the current limitation each removes)
 
 | Goal | Current (bulk) limitation | What multilayer provides |
