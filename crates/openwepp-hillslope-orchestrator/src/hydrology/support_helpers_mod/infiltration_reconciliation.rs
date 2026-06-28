@@ -141,6 +141,86 @@ impl Wb11HydrologyKernel {
         dewpoint_c: f64,
         snow_depth_m: f64,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        Self::coe_open_sublimation_hour_m(
+            phase_class,
+            canopy_cover_fraction,
+            wind_m_s,
+            air_temperature_c,
+            dewpoint_c,
+            snow_depth_m,
+            0.0,
+        )
+    }
+
+    fn coe_open_sublimation_stage_b_hour_m(
+        phase_class: HillslopeKernelPhaseClass,
+        canopy_cover_fraction: f64,
+        wind_m_s: f64,
+        air_temperature_c: f64,
+        dewpoint_c: f64,
+        snow_depth_m: f64,
+        snow_density_kg_m3: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+            snow_density_kg_m3,
+            Some(0.0),
+            None,
+        )?;
+        let surface_layer_depth_m =
+            snow_depth_m.min(SNOW_SUBLIMATION_STAGE_B_ACTIVE_LAYER_DEPTH_M);
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow_sublimation.surface_layer_depth_m"),
+            surface_layer_depth_m,
+            Some(0.0),
+            Some(SNOW_SUBLIMATION_STAGE_B_ACTIVE_LAYER_DEPTH_M),
+        )?;
+        let surface_temperature_c = air_temperature_c.min(0.0);
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow_sublimation.surface_temperature_c"),
+            surface_temperature_c,
+            None,
+            Some(0.0),
+        )?;
+        let surface_layer_mass_kg_m2 = surface_layer_depth_m * snow_density_kg_m3;
+        let surface_layer_cold_content_j_m2 = if surface_temperature_c < 0.0 {
+            SNOW_SUBLIMATION_STAGE_B_ICE_HEAT_CAPACITY_J_KG_K
+                * surface_layer_mass_kg_m2
+                * surface_temperature_c
+        } else {
+            0.0
+        };
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow_sublimation.surface_layer_cold_content_j_m2"),
+            surface_layer_cold_content_j_m2,
+            None,
+            Some(0.0),
+        )?;
+
+        Self::coe_open_sublimation_hour_m(
+            phase_class,
+            canopy_cover_fraction,
+            wind_m_s,
+            air_temperature_c,
+            dewpoint_c,
+            snow_depth_m,
+            surface_temperature_c,
+        )
+    }
+
+    fn coe_open_sublimation_hour_m(
+        phase_class: HillslopeKernelPhaseClass,
+        canopy_cover_fraction: f64,
+        wind_m_s: f64,
+        air_temperature_c: f64,
+        dewpoint_c: f64,
+        snow_depth_m: f64,
+        surface_temperature_c: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         Self::require_direct_typed_snow_value(
             phase_class,
             BoundarySymbol::from(WB15_SYMBOL_PLANT_CANCOV),
@@ -180,13 +260,21 @@ impl Wb11HydrologyKernel {
         if snow_depth_m <= WB11_ZERO_THRESHOLD || wind_m_s <= WB11_ZERO_THRESHOLD {
             return Ok(0.0);
         }
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow_sublimation.surface_temperature_c"),
+            surface_temperature_c,
+            None,
+            Some(0.0),
+        )?;
 
         let roughness_ratio =
             SIMIMPL29_WIND_MEASUREMENT_HEIGHT_M / SNOW_SUBLIMATION_ROUGHNESS_LENGTH_M;
         let neutral_transfer_coefficient =
             (SNOW_SUBLIMATION_VON_KARMAN / roughness_ratio.ln()).powi(2);
-        let surface_vapor_pressure_pa =
-            Self::saturation_vapor_pressure_water_kpa(0.0) * SNOW_SUBLIMATION_KPA_TO_PA;
+        let surface_vapor_pressure_pa = Self::saturation_vapor_pressure_water_kpa(
+            surface_temperature_c,
+        ) * SNOW_SUBLIMATION_KPA_TO_PA;
         let air_vapor_pressure_pa =
             Self::saturation_vapor_pressure_water_kpa(dewpoint_c) * SNOW_SUBLIMATION_KPA_TO_PA;
         let vapor_pressure_deficit_pa = (surface_vapor_pressure_pa - air_vapor_pressure_pa).max(0.0);
@@ -1222,6 +1310,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
             inputs.snow_melt_model,
             SnowMeltModel::CoeLiquidHoldingCapacityV1
                 | SnowMeltModel::CoeOpenSublimationStageAV1
+                | SnowMeltModel::CoeOpenSublimationStageBV1
         );
         let mut liquid_water_retained_m = if capacity_drainage_opt_in {
             inputs.liquid_water_retained_m
@@ -1370,7 +1459,8 @@ pub(crate) fn compute_simimpl29_melt_hour(
                         SnowMeltModel::LegacyCoe
                         | SnowMeltModel::CoeWinterThawStateLossV1
                         | SnowMeltModel::CoeLiquidHoldingCapacityV1
-                        | SnowMeltModel::CoeOpenSublimationStageAV1 => 1.0,
+                        | SnowMeltModel::CoeOpenSublimationStageAV1
+                        | SnowMeltModel::CoeOpenSublimationStageBV1 => 1.0,
                         SnowMeltModel::CoeShortwaveAlbedoV1 => snow_albedo_state_after
                             .ok_or(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
                                 phase_class,
@@ -1591,17 +1681,34 @@ pub(crate) fn compute_simimpl29_melt_hour(
             if dens > SIMIMPL29_SNOW_DENSITY_CAP_KG_M3 {
                 dens = SIMIMPL29_SNOW_DENSITY_CAP_KG_M3;
             }
-            if inputs.snow_melt_model == SnowMeltModel::CoeOpenSublimationStageAV1
-                && snodep > WB11_ZERO_THRESHOLD
-            {
-                sublimation_m = Self::coe_open_sublimation_stage_a_hour_m(
-                    phase_class,
-                    inputs.canopy_cover_fraction,
-                    inputs.wind_m_s,
-                    hrtemp_c,
-                    inputs.dewpoint_c,
-                    snodep,
-                )?;
+            if snodep > WB11_ZERO_THRESHOLD {
+                sublimation_m = match inputs.snow_melt_model {
+                    SnowMeltModel::CoeOpenSublimationStageAV1 => {
+                        Self::coe_open_sublimation_stage_a_hour_m(
+                            phase_class,
+                            inputs.canopy_cover_fraction,
+                            inputs.wind_m_s,
+                            hrtemp_c,
+                            inputs.dewpoint_c,
+                            snodep,
+                        )?
+                    }
+                    SnowMeltModel::CoeOpenSublimationStageBV1 => {
+                        Self::coe_open_sublimation_stage_b_hour_m(
+                            phase_class,
+                            inputs.canopy_cover_fraction,
+                            inputs.wind_m_s,
+                            hrtemp_c,
+                            inputs.dewpoint_c,
+                            snodep,
+                            dens,
+                        )?
+                    }
+                    SnowMeltModel::LegacyCoe
+                    | SnowMeltModel::CoeShortwaveAlbedoV1
+                    | SnowMeltModel::CoeWinterThawStateLossV1
+                    | SnowMeltModel::CoeLiquidHoldingCapacityV1 => 0.0,
+                };
             }
             if snodep <= WB11_ZERO_THRESHOLD {
                 snodep = 0.0;

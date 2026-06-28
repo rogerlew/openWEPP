@@ -1037,6 +1037,21 @@ profile/signature scoring rather than absolute-magnitude promotion.
      regression as a non-representative roadmap item and the `+23.6 kg/m^-3`
      density-bias rise as separate recovery work. No fixture/schema/cap/frost
      change or `.run` disable option is included in 10.3.19.
+   - **Sublimation diagnosis / Stage B unlock completed as 10.3.20
+     (`NON-PROMOTION-GATE-NOT-MET`).**
+     `docs/work-packages/20260628-snowdensity-10-3-20-sublimation-stage-b-unlock-001/`.
+     `SC-SNOWFREEZE-001` v105 records libsnobal CC0 provenance
+     (`bf8b41c71e3e54ae654ae04005ddf72566c47ee6`, `setup.py`
+     `license="CC0 1.0"`), authorizes opt-in
+     `coe_open_sublimation_stage_b_v1`, and keeps the cross-SNOTEL
+     forcing-robust rubric as the promotion gate. Real WAT/trace result:
+     current default remains `15` robust fails / `179` score; partition +
+     Stage A sublimation is worse (`19` / `168`); Stage B cuts aggregate
+     sublimation magnitude and conserves vapor/phase mass, but scores `15` /
+     `178` and worsens three robust cells, so it remains opt-in diagnostic only.
+     The density-bias offset hypothesis did not hold on the primary rubric, and
+     no fixture/schema/cap/frost/default/user-surface or `.run` disable change
+     is authorized.
 9. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
    any opt-in snow melt/density bundle. Closure gate: Activation Policy B
    workspace-suite no-regression plus composite snow-state conservation evidence

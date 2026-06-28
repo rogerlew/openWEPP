@@ -63,6 +63,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "tests/integration/snowdensity10_3_17_shallow_pack_compaction_guard.rs",
         "tests/integration/snowdensity10_3_18_cross_snotel_mechanism_rubric.rs",
         "tests/integration/snowdensity10_3_19_harder_pomeroy_default_activation.rs",
+        "tests/integration/snowdensity10_3_20_sublimation_stage_b_unlock.rs",
         "tools/snowfreeze_observed/bundle_activation_adjudication.py",
         "tools/snowfreeze_observed/coe_bound_density_adjudication.py",
         "tools/snowfreeze_observed/cross_snotel_mechanism_rubric.py",
@@ -74,6 +75,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "tools/snowfreeze_observed/residual_policy_b_diagnostic.py",
         "tools/snowfreeze_observed/shallow_pack_compaction_guard.py",
         "tools/snowfreeze_observed/spring_compaction_densification_candidate.py",
+        "tools/snowfreeze_observed/sublimation_stage_b_unlock.py",
         "tools/snowfreeze_observed/snowdensity08_gate_rerun.py",
         "tools/snowfreeze_observed/snowdensity09_coupled_wat_rerun.py",
     ];

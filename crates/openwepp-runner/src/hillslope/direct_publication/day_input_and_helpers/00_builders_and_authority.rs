@@ -1295,11 +1295,14 @@ fn snowdensity1015_default_snow_melt_model(
             "coe_open_sublimation_stage_a_v1" => Ok(
                 openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageAV1,
             ),
+            "coe_open_sublimation_stage_b_v1" => Ok(
+                openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageBV1,
+            ),
             "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
             observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_production_snow_melt_model",
                 detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be legacy_coe, coe_liquid_holding_capacity_v1, or coe_open_sublimation_stage_a_v1, observed {observed}"
+                    "{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be legacy_coe, coe_liquid_holding_capacity_v1, coe_open_sublimation_stage_a_v1, or coe_open_sublimation_stage_b_v1, observed {observed}"
                 ),
             }),
         },

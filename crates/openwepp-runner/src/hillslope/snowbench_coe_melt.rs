@@ -38,6 +38,7 @@ pub enum CoeMeltModel {
     CoeWinterThawStateLossV1,
     CoeLiquidHoldingCapacityV1,
     CoeOpenSublimationStageAV1,
+    CoeOpenSublimationStageBV1,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -173,6 +174,7 @@ impl CoeMeltModel {
             Self::CoeWinterThawStateLossV1 => "coe_winter_thaw_state_loss_v1",
             Self::CoeLiquidHoldingCapacityV1 => "coe_liquid_holding_capacity_v1",
             Self::CoeOpenSublimationStageAV1 => "coe_open_sublimation_stage_a_v1",
+            Self::CoeOpenSublimationStageBV1 => "coe_open_sublimation_stage_b_v1",
         }
     }
 
@@ -183,9 +185,10 @@ impl CoeMeltModel {
             "coe_winter_thaw_state_loss_v1" => Ok(Self::CoeWinterThawStateLossV1),
             "coe_liquid_holding_capacity_v1" => Ok(Self::CoeLiquidHoldingCapacityV1),
             "coe_open_sublimation_stage_a_v1" => Ok(Self::CoeOpenSublimationStageAV1),
+            "coe_open_sublimation_stage_b_v1" => Ok(Self::CoeOpenSublimationStageBV1),
             _ => Err(SnowbenchError::InvalidInput {
                 detail: format!(
-                    "unknown CoE melt model '{value}', expected legacy_coe, coe_shortwave_albedo_v1, coe_winter_thaw_state_loss_v1, coe_liquid_holding_capacity_v1, or coe_open_sublimation_stage_a_v1"
+                    "unknown CoE melt model '{value}', expected legacy_coe, coe_shortwave_albedo_v1, coe_winter_thaw_state_loss_v1, coe_liquid_holding_capacity_v1, coe_open_sublimation_stage_a_v1, or coe_open_sublimation_stage_b_v1"
                 ),
             }),
         }
@@ -198,6 +201,7 @@ impl CoeMeltModel {
             Self::CoeWinterThawStateLossV1 => SnowMeltModel::CoeWinterThawStateLossV1,
             Self::CoeLiquidHoldingCapacityV1 => SnowMeltModel::CoeLiquidHoldingCapacityV1,
             Self::CoeOpenSublimationStageAV1 => SnowMeltModel::CoeOpenSublimationStageAV1,
+            Self::CoeOpenSublimationStageBV1 => SnowMeltModel::CoeOpenSublimationStageBV1,
         }
     }
 
@@ -206,7 +210,8 @@ impl CoeMeltModel {
             Self::LegacyCoe
             | Self::CoeWinterThawStateLossV1
             | Self::CoeLiquidHoldingCapacityV1
-            | Self::CoeOpenSublimationStageAV1 => None,
+            | Self::CoeOpenSublimationStageAV1
+            | Self::CoeOpenSublimationStageBV1 => None,
             Self::CoeShortwaveAlbedoV1 => Some(SnowAlbedoModel::Brock2000TemperatureAgeV1),
         }
     }

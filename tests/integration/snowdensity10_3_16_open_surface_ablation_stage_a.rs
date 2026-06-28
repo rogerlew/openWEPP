@@ -36,7 +36,7 @@ fn assert_contains(text: &str, marker: &str, path: &str) {
 fn contract_and_package_bind_stage_a_without_activation() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 104",
+        "contract_version: 105",
         "REF-SNOWFREEZE-MARKS1998-TURBULENT",
         "REF-SNOWFREEZE-MARKS1999-SUBLIMATION",
         "snow_sublimation",
@@ -141,7 +141,7 @@ fn selector_and_trace_are_opt_in_only() {
         "SnowMeltModel::CoeLiquidHoldingCapacityV1",
         "SnowMeltModel::CoeOpenSublimationStageAV1",
         "coe_open_sublimation_stage_a_v1",
-        "must be legacy_coe, coe_liquid_holding_capacity_v1, or coe_open_sublimation_stage_a_v1",
+        "must be legacy_coe, coe_liquid_holding_capacity_v1, coe_open_sublimation_stage_a_v1, or coe_open_sublimation_stage_b_v1",
         "\\\"sublimation_m\\\":{}",
     ] {
         assert_contains(&builder, marker, BUILDER);

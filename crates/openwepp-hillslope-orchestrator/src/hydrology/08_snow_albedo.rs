@@ -6,6 +6,7 @@ const COE_SHORTWAVE_ALBEDO_MODEL_ID: &str = "coe_shortwave_albedo_v1";
 const COE_WINTER_THAW_STATE_LOSS_MODEL_ID: &str = "coe_winter_thaw_state_loss_v1";
 const COE_LIQUID_HOLDING_CAPACITY_MODEL_ID: &str = "coe_liquid_holding_capacity_v1";
 const COE_OPEN_SUBLIMATION_STAGE_A_MODEL_ID: &str = "coe_open_sublimation_stage_a_v1";
+const COE_OPEN_SUBLIMATION_STAGE_B_MODEL_ID: &str = "coe_open_sublimation_stage_b_v1";
 const BROCK2000_ALBEDO_MODEL_ID: &str = "brock2000_temperature_age_v1";
 const SNOW_ALBEDO_MIN: f64 = 0.0;
 const SNOW_ALBEDO_MAX_BROCK2000: f64 = 0.85;
@@ -25,6 +26,7 @@ pub enum SnowMeltModel {
     CoeWinterThawStateLossV1,
     CoeLiquidHoldingCapacityV1,
     CoeOpenSublimationStageAV1,
+    CoeOpenSublimationStageBV1,
 }
 
 impl SnowMeltModel {
@@ -36,6 +38,7 @@ impl SnowMeltModel {
             Self::CoeWinterThawStateLossV1 => COE_WINTER_THAW_STATE_LOSS_MODEL_ID,
             Self::CoeLiquidHoldingCapacityV1 => COE_LIQUID_HOLDING_CAPACITY_MODEL_ID,
             Self::CoeOpenSublimationStageAV1 => COE_OPEN_SUBLIMATION_STAGE_A_MODEL_ID,
+            Self::CoeOpenSublimationStageBV1 => COE_OPEN_SUBLIMATION_STAGE_B_MODEL_ID,
         }
     }
 

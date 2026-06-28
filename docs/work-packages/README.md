@@ -13,6 +13,21 @@
 
 State as of `2026-06-28`:
 
+- `20260628-snowdensity-10-3-20-sublimation-stage-b-unlock-001/` is complete as
+  SNOWDENSITY-10.3.20, the sublimation implementation diagnosis,
+  partition+sublimation composition test, and Stage B surface-layer unlock. It
+  amended `SC-SNOWFREEZE-001` to v105 with `INV-SNOWFREEZE-076`,
+  `OBL-SNOWFREEZE-P-051`, `REF-SNOWFREEZE-SNOWDENSITY1020`, and
+  `REF-SNOWFREEZE-LIBSNOBAL-CC0`; recorded the PySnobal/libsnobal clone commit
+  `bf8b41c71e3e54ae654ae04005ddf72566c47ee6` plus the `setup.py`
+  `license="CC0 1.0"` declaration; added opt-in
+  `coe_open_sublimation_stage_b_v1`; and ran the real cross-SNOTEL WAT/trace
+  gate. Result: `NON-PROMOTION-GATE-NOT-MET`. Current default remains `15`
+  robust fails / `179` score; partition + Stage A sublimation scored `19` /
+  `168`; Stage B conserved vapor and phase mass but scored `15` / `178` and
+  worsened three robust cells. No activation, fixture, public schema,
+  density-cap, frost, parser/runfile/user CLI, `.run` disable, Qwet/frzftp,
+  compatibility-runtime, or site-calibration change was made.
 - `20260628-snowdensity-10-3-19-harder-pomeroy-default-activation-001/` is
   complete as SNOWDENSITY-10.3.19, the direct-production default activation for
   `harder_pomeroy_hourly` phase partitioning composed with the activated
