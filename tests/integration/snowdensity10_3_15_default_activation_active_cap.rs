@@ -26,7 +26,7 @@ const REPORT: &str = concat!(
 fn contract_and_package_bind_default_activation_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 103",
+        "contract_version: 104",
         "REF-SNOWFREEZE-SNOWDENSITY1015",
         "INV-SNOWFREEZE-072",
         "OBL-SNOWFREEZE-P-047",

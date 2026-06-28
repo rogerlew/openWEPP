@@ -11,8 +11,23 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-06-27`:
+State as of `2026-06-28`:
 
+- `20260628-snowdensity-10-3-19-harder-pomeroy-default-activation-001/` is
+  complete as SNOWDENSITY-10.3.19, the direct-production default activation for
+  `harder_pomeroy_hourly` phase partitioning composed with the activated
+  `coe_liquid_holding_capacity_v1 + physics_bulk_density_compaction_v1` bundle.
+  It amended `SC-SNOWFREEZE-001` to v104 with `INV-SNOWFREEZE-075` and
+  `OBL-SNOWFREEZE-P-050`, then ran the real cross-SNOTEL direct-production
+  activation gate. Result: `ACTIVATED`. The new no-env default scores `15`
+  robust fails / `179` on the forcing-robust rubric versus the prior activated
+  bundle with explicit `legacy_rst` phase at `17` / `172`; selector trace proof
+  and partition conservation close (`5.55e-17 m` max residual), workspace
+  validation passes, explicit `legacy_rst` rollback/test selection remains, and
+  no fixture, public schema, density-cap, frost, parser/runfile/user selector,
+  or `.run` disable change was made. Humid-New-England depth regression remains
+  a non-representative roadmap item, and the `+23.6 kg m^-3` density-bias rise
+  is tracked separately.
 - `20260627-snowdensity-10-3-18-cross-snotel-mechanism-rubric-001/` is
   complete as SNOWDENSITY-10.3.18, the diagnostic-only cross-SNOTEL mechanism x
   legacy rubric run. It consumed `SC-SNOWFREEZE-001` `INV-SNOWFREEZE-050` and

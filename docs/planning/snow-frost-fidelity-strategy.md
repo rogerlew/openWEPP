@@ -1025,6 +1025,18 @@ profile/signature scoring rather than absolute-magnitude promotion.
         is captured domain-general as
         [ADR-0028](../decisions/0028-observed-data-admission-authority.md)
         (observed-data admission authority when scientific authority is lacking).
+   - **Default phase activation completed as 10.3.19 (`ACTIVATED`).**
+     `docs/work-packages/20260628-snowdensity-10-3-19-harder-pomeroy-default-activation-001/`.
+     `SC-SNOWFREEZE-001` v104 activates `harder_pomeroy_hourly` as the
+     direct-production no-env phase default, composed with the activated
+     melt+density bundle, and keeps explicit `legacy_rst` rollback/test
+     selection. Real cross-SNOTEL direct-production rerun reconfirms the primary
+     gate (`15` robust fails / `179` score vs prior bundle `17` / `172`), with
+     selector trace proof and partition conservation closed (`5.55e-17 m` max
+     trace residual). Release notes carry forward humid-New-England depth
+     regression as a non-representative roadmap item and the `+23.6 kg/m^-3`
+     density-bias rise as separate recovery work. No fixture/schema/cap/frost
+     change or `.run` disable option is included in 10.3.19.
 9. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
    any opt-in snow melt/density bundle. Closure gate: Activation Policy B
    workspace-suite no-regression plus composite snow-state conservation evidence

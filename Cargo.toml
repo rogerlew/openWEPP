@@ -770,6 +770,10 @@ path = "tests/integration/snowdensity10_3_17_shallow_pack_compaction_guard.rs"
 name = "snowdensity10_3_18_cross_snotel_mechanism_rubric"
 path = "tests/integration/snowdensity10_3_18_cross_snotel_mechanism_rubric.rs"
 
+[[test]]
+name = "snowdensity10_3_19_harder_pomeroy_default_activation"
+path = "tests/integration/snowdensity10_3_19_harder_pomeroy_default_activation.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

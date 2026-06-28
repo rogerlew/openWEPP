@@ -23,7 +23,7 @@ fn read(path: &str) -> String {
 fn snowdensity05d_contract_markers_bind_opt_in_melt_wiring() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 103",
+        "contract_version: 104",
         "INV-SNOWFREEZE-055",
         "OBL-SNOWFREEZE-P-030",
         "snow_melt_shortwave_absorbed_fraction",

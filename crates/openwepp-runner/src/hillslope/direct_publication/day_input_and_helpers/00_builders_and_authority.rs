@@ -790,6 +790,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             rainfall_input_m,
             snow_lane_state,
             authority.snow_frost.snow_melt_model,
+            authority.snow_frost.snow_phase_model,
             snow_liquid,
         )?;
         let frost_context = authority.snow_frost.frost_day_context(
@@ -1016,6 +1017,7 @@ fn maybe_write_r7h_direct_production_snow_trace(
     hyetograph_rainfall_m: f64,
     snow_lane_state: openwepp_hillslope_orchestrator::DirectSnowLaneState,
     snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel,
+    snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel,
     snow_liquid: openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
 ) -> Result<(), HillslopeCliError> {
     let Some(path) = std::env::var_os("OPENWEPP_R7H_SNOW_TRACE_PATH") else {
@@ -1060,6 +1062,7 @@ fn maybe_write_r7h_direct_production_snow_trace(
 \"liquid_water_retained_before_m\":{},\
 \"snow_density_model\":\"{}\",\
 \"snow_melt_model\":\"{}\",\
+\"snow_phase_model\":\"{}\",\
 \"active_snow_coupling\":{},\
 \"snow_coupling_signed_s_m\":{},\
 \"raw_melt_m\":{},\
@@ -1085,6 +1088,7 @@ fn maybe_write_r7h_direct_production_snow_trace(
         direct_production_trace_number(snow_lane_state.liquid_water_retained_m),
         snow_liquid.snow_density_model.id(),
         snow_melt_model.id(),
+        snow_phase_model.id(),
         snow_liquid.active_snow_coupling,
         direct_production_trace_number(snow_liquid.snow_coupling_signed_s_m),
         direct_production_trace_number(snow_liquid.raw_melt_m),
@@ -1232,21 +1236,21 @@ fn snowdensity1035_diagnostic_snow_phase_model(
 ) -> Result<openwepp_hillslope_orchestrator::SnowPhasePartitionModel, HillslopeCliError> {
     match std::env::var(SNOWDENSITY1035_PHASE_MODEL_ENV) {
         Ok(value) => match value.trim() {
-            "" | "legacy_rst" => {
-                Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst)
-            }
-            "harder_pomeroy_hourly" => Ok(
+            "" | "harder_pomeroy_hourly" => Ok(
                 openwepp_hillslope_orchestrator::SnowPhasePartitionModel::HarderPomeroyHourly,
             ),
+            "legacy_rst" => {
+                Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst)
+            }
             observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_production_snow_phase_model",
                 detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOWDENSITY1035_PHASE_MODEL_ENV} must be legacy_rst or harder_pomeroy_hourly, observed {observed}"
+                    "{SIMOUT_GUARD_ID} {SNOWDENSITY1035_PHASE_MODEL_ENV} must be legacy_rst, harder_pomeroy_hourly, or empty default, observed {observed}"
                 ),
             }),
         },
         Err(std::env::VarError::NotPresent) => {
-            Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst)
+            Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::HarderPomeroyHourly)
         }
         Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_phase_model",
