@@ -549,8 +549,8 @@ results re-order the priorities below:
    (`INV-SNOWFREEZE-050`). The ★ stratified open-vs-canopy observations are
    forcing-robust *within* a site (same climate), but require explicit modeled
    stratum mapping before they carry decisive canopy-attenuation verdicts.
-7. **Open-surface ablation via the SNOBAL two-layer energy balance (the active
-   next lever).** After bundle activation (§10.3), the residual splits into two
+7. **Open-surface ablation via the SNOBAL two-layer energy balance (deferred
+   after narrow-lever non-promotions).** After bundle activation (§10.3), the residual splits into two
    opposite-sign defects: a density-arm-induced under-persistence tail, and an
    over-persistence **mass excess** that compaction cannot remove (cap-limited
    depletion, concentrated at wind-exposed open surfaces — Harvard open, Sleepers
@@ -890,15 +890,37 @@ profile/signature scoring rather than absolute-magnitude promotion.
      (`sleepers_south_field` `19 -> 22`; Harvard open neutral `35 -> 35`).
      The standing bidirectional guardrail failed, so the Stage A selector remains
      diagnostic-only, default/rollback/output schema/fixtures/density cap/frost
-     attribution stay unchanged, and standalone sublimation is not a production
-     lever.
-   - **Carry-forward after Stage A.** The open mass tail is still defect-shaped,
+   attribution stay unchanged, and standalone sublimation is not a production
+   lever.
+   - **Shallow-pack compaction guard completed as opt-in non-promotion
+     10.3.17:**
+     `docs/work-packages/20260627-snowdensity-10-3-17-shallow-pack-compaction-guard-001/`
+     amended `SC-SNOWFREEZE-001` v103 with `INV-SNOWFREEZE-074`,
+     `OBL-SNOWFREEZE-P-049`, and opt-in
+     `physics_bulk_shallow_guard_v1`. The only algorithmic delta from the
+     activated density arm is a `0.25 m` authority-derived shallow-pack guard
+     that reduces dry/wet densification increments below the Marks/SNOBAL active
+     layer threshold. It still **does not promote**: real coupled WAT evidence
+     improves induced under-persistence only `177 -> 176`, recovers `0` induced
+     under rows at `harvard_hardwood` (`73 -> 73`), worsens over-persistence
+     `264 -> 267` with `3` new over rows from non-over rows, and worsens total
+     snow-control failures `498 -> 500`. Local SWE-depth-density identity closes,
+     but downstream snow mass terms change (`3.342e-03 m` max mass-term delta),
+     so the "only density aggressiveness" whole-model gate fails. The selector
+     remains diagnostic-only; no default/cap/schema/fixture/user-surface/frost
+     change is authorized.
+   - **Carry-forward after Stage A and shallow guard.** The open mass tail is still defect-shaped,
      but the next ablation package must not simply increase vapor loss. It needs
      a mechanism that can reduce excess open-surface SWE without tipping shallow
      packs into earlier meltout: the likely route is the Stage B two-layer
      surface cold-content / surface-temperature structure from §10.2 item 7, or
      another independently authorized open-exposure process with the same
-     bidirectional guardrail. Under-persistence remains large (`234` rows total;
+     bidirectional guardrail. But narrow humid-subset levers have now washed in
+     both directions (10.3.11 densification, 10.3.16 sublimation, 10.3.17 shallow
+     guard), which is the signal that the **instrument is too narrow**. The next
+     step is the cross-SNOTEL rubric diagnostic (step 8) to widen the instrument
+     before committing more ablation or density work — **not Stage B by
+     default.** Under-persistence remains large (`234` rows total;
      `128` March/April rows) and mostly induced by the density arm; it is a known
      mechanism cost to carry into activation release notes and follow-up residual
      work, not an authorization for another density-rate acceleration or larger
@@ -916,11 +938,47 @@ profile/signature scoring rather than absolute-magnitude promotion.
      until the same gate is met: conservation, independent operand
      reconstruction, rollback/default isolation, and rubric improvement without
      site constants.
-8. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
-   any opt-in snow melt/density bundle. Closure gate: Activation Policy B full-
-   model-surface no-regression evidence for default activation, explicit frost-
-   attribution impact as a separate snow-control gate, and contract amendments
-   for any production activation.
+8. **Cross-SNOTEL Mechanism × Legacy Rubric Diagnostic (queued after the
+   shallow-pack guard non-promotion).** The one-lever arc (10.3.5–10.3.17) gated almost entirely
+   on the narrow `cancov_forest` humid-New-England paired subset (depth-dominated,
+   Sleepers/Harvard), where several levers washed out — partition (10.3.5c),
+   spring densification (10.3.11), and open sublimation (10.3.16). Repeated washes
+   on one regime are the signal that the instrument is too narrow. The richer
+   `tests/fixtures/snotel_observed/` corpus (five mountain climates — Paradise WA,
+   Snowbird UT, CSS Lab CA, Mica Creek ID, Niwot CO — with observed **SWE + depth
+   + density**, built in SNOWFROST-FIDELITY-H) was sidelined for the activation
+   arc. Before committing more levers, run a diagnostic that:
+   - applies the `INV-SNOWFREEZE-050` forcing-robust fidelity rubric (the
+     frost-style rubric) across all five SNOTEL climates plus the `cancov_forest`
+     paired set for continuity;
+   - scores **every** mechanism and the activated bundle, plus **legacy**
+     (`legacy_coe + legacy_wepp`) and PySnobal **as flag profiles, never targets**
+     (ADR-0017);
+   - decomposes the residual into **mass (SWE) vs density vs depth directly** — the
+     SNOTEL corpus has all three, so no cap-test inference (the limitation that
+     caveated 10.3.9 on the depth-only sites);
+   - carries verdicts only on **forcing-robust** signatures (density, depth-SWE
+     slope, densification trajectory, timing, regime ordering, bias sign) and
+     reports forcing-limited absolute SWE/depth without verdict weight
+     (`INV-SNOWFREEZE-050`);
+   - answers which mechanism improves which signature in which climate regime,
+     whether the humid-New-England residual is representative, and the right next
+     *global* lever.
+   Sequencing: the shallow-pack compaction guard (10.3.17) closed as
+   non-promotion, so this diagnostic now assesses all mechanisms cross-climate
+   and carries `physics_bulk_shallow_guard_v1` as a rejected opt-in profile, not
+   an in-bundle candidate. Diagnostic-only:
+   no promotion/activation/cap/schema/fixture/frost change, no site calibration.
+   This also feeds the open **frost-attribution-threshold** question (what residual
+   is "good enough"), which can only be answered on a representative cross-climate
+   instrument rather than the narrow humid subset.
+9. **Activation / Retirement Decision.** Decide whether to promote, hold, or retire
+   any opt-in snow melt/density bundle. Closure gate: Activation Policy B
+   workspace-suite no-regression plus composite snow-state conservation evidence
+   for default activation (downstream snow-affected output deltas conserved-by-
+   construction, documented not separately diffed — §10.3 step 6), explicit
+   frost-attribution impact as a separate snow-control gate, and contract
+   amendments for any production activation.
 
 ## 11. References / Authority
 

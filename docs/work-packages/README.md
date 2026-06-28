@@ -2337,3 +2337,12 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   executed non-promotion for the Stage A opt-in open-surface sublimation /
   latent mass-loss candidate; cap-limited tail improved `30 -> 27`, but
   under-persistence worsened `54 -> 57`.
+- `20260627-snowdensity-10-3-17-shallow-pack-compaction-guard-001/` —
+  executed non-promotion for the opt-in `physics_bulk_shallow_guard_v1`
+  shallow-pack density guard. The candidate reached the real direct-production
+  WAT path but did not meet gates: induced under-persistence improved only
+  `177 -> 176`, `harvard_hardwood` recovered `0` induced-under rows
+  (`73 -> 73`), over-persistence worsened `264 -> 267`, total snow-control
+  failures worsened `498 -> 500`, and downstream mass terms changed despite
+  local SWE-depth-density identity closure. No default activation, density cap,
+  fixture/schema, user-surface, rollback, or frost-attribution change was made.

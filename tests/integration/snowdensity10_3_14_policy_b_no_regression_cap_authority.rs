@@ -17,7 +17,7 @@ const REPORT: &str = concat!(
 fn contract_and_package_bind_policy_b_cap_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 102",
+        "contract_version: 103",
         "INV-SNOWFREEZE-071",
         "OBL-SNOWFREEZE-P-046",
         "SNOWDENSITY-10.3.14 Policy-B No-Regression And Cap Authority Addendum",

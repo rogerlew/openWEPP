@@ -762,6 +762,10 @@ path = "tests/integration/snowdensity10_3_15_default_activation_active_cap.rs"
 name = "snowdensity10_3_16_open_surface_ablation_stage_a"
 path = "tests/integration/snowdensity10_3_16_open_surface_ablation_stage_a.rs"
 
+[[test]]
+name = "snowdensity10_3_17_shallow_pack_compaction_guard"
+path = "tests/integration/snowdensity10_3_17_shallow_pack_compaction_guard.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
