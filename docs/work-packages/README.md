@@ -13,6 +13,19 @@
 
 State as of `2026-06-27`:
 
+- `20260627-snowdensity-10-3-13-residual-policy-b-diagnostic-001/` is complete
+  as SNOWDENSITY-10.3.13, the residual-tail and Policy-B diagnostic after the
+  bundle activation adjudication. It amended `SC-SNOWFREEZE-001` to v99 with
+  `INV-SNOWFREEZE-070`, `OBL-SNOWFREEZE-P-045`, and a diagnostic addendum, then
+  classified date-level transitions across current default, holding-capacity-
+  only, combined bundle, and rejected spring densification. Result:
+  `HOLD-ACTIVATION-EVIDENCE-MISSING`. The bundle remains better than default
+  (`1147 -> 498`) but lacks Policy-B full-surface no-regression evidence. The
+  under-persistence tail is now attributed as mechanism-cost evidence:
+  `177/234` bundle under-persistence rows were induced by the density arm from
+  holding-only pass/over rows, while `57` persisted from holding-only under-
+  persistence. The active cap remains `522 kg m^-3`; `550 kg m^-3` SNOBAL cap
+  re-anchoring is follow-up only.
 - `20260627-snowdensity-10-3-12-bundle-activation-adjudication-001/` is
   complete as SNOWDENSITY-10.3.12, the activation adjudication for the current
   best combined opt-in bundle,

@@ -732,19 +732,39 @@ profile/signature scoring rather than absolute-magnitude promotion.
      February `112`, March `170`, and April `27`. March/April classes are now
      dominated by under-persistence (`128`), with cap-limited depletion (`33`),
      patchy depletion (`16`), and only `20` compaction-only rows. Frost
-     attribution remains blocked by snow-control residuals.
+   attribution remains blocked by snow-control residuals.
+   - **Residual-tail / Policy-B diagnostic completed as 10.3.13:**
+     `docs/work-packages/20260627-snowdensity-10-3-13-residual-policy-b-diagnostic-001/`
+     amended `SC-SNOWFREEZE-001` v99 with `INV-SNOWFREEZE-070` and
+     `OBL-SNOWFREEZE-P-045`, then classified date-level transitions across
+     current default, holding-capacity-only, combined bundle, and rejected
+     spring densification. Result: `HOLD-ACTIVATION-EVIDENCE-MISSING`. The
+     bundle remains strictly better than default (`1147 -> 498`) but lacks
+     Policy-B full-surface no-regression evidence. The under-persistence tail is
+     now mechanism-cost evidence: `177/234` bundle under-persistence failures
+     were induced from holding-only pass or over-persistence rows (`150` from
+     pass, `27` from over), while `57` persisted from holding-only
+     under-persistence. This supports the bulk-compaction mechanism-cost
+     hypothesis and argues against additional compaction-rate acceleration.
+     March/April classes remain cap-limited depletion `33`, patchy depletion
+     `16`, compaction-feasible `20`, and under-persistence `128` under the
+     active `522 kg m^-3` cap. The `550 kg m^-3` SNOBAL cap re-anchor remains a
+     separate contract-first follow-up, not a hidden diagnostic change.
 7. **Subsequent candidate packages (one lever each).** After winter-thaw melt
    response and the 10.3.9/10.3.10 residual adjudication, 10.3.11 retired the
    spring wet-time densification candidate and 10.3.12 held the best current
-   bundle as opt-in only. Do not pursue another wet-compaction acceleration or
-   density-rate variant without new external authority and a different residual
-   class. The next package should target one residual class from the bundle
-   report. Open-surface ablation is the leading over-persistence follow-on for
-   cap-limited mass rows, especially Harvard open and Sleepers open field.
-   Under-persistence is now large (`234` rows total; `128` March/April rows) and
-   needs a separate diagnosis before any new depletion or accumulation lever is
-   promoted. The lead hypothesis to falsify is that the under-persistence tail
-   is a mechanism cost of the bulk-compaction arm, masked by net improvement.
+   bundle as opt-in only; 10.3.13 then confirmed that most under-persistence is
+   newly induced by the bulk-compaction arm. Do not pursue another wet-
+   compaction acceleration or density-rate variant without new external
+   authority and a different residual class. The next package should either
+   define/run the Policy-B no-regression activation basis or adjudicate the
+   `550 kg m^-3` SNOBAL cap authority before more residual attribution. Open-
+   surface ablation remains the leading over-persistence follow-on for cap-
+   limited mass rows, especially Harvard open and Sleepers open field, but it
+   should wait until the cap authority question is settled. Under-persistence
+   is now large (`234` rows total; `128` March/April rows) and mostly induced by
+   the density arm, so activation safety requires mechanism-cost review before
+   promotion.
    Treat patchy meltout as structural/non-target unless a separate
    correspondence package makes it verdict-bearing. Check the physical
    defensibility of the `522 kg m^-3` ripe-snow cap as its own contract-first

@@ -746,6 +746,10 @@ path = "tests/integration/snowdensity10_3_11_spring_compaction_densification.rs"
 name = "snowdensity10_3_12_bundle_activation_adjudication"
 path = "tests/integration/snowdensity10_3_12_bundle_activation_adjudication.rs"
 
+[[test]]
+name = "snowdensity10_3_13_residual_policy_b_diagnostic"
+path = "tests/integration/snowdensity10_3_13_residual_policy_b_diagnostic.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

@@ -1,0 +1,1327 @@
+{
+  "active_density_cap": {
+    "authority": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-003 / REF-SNOWFREEZE-CH3-SNOWDENS-LIM",
+    "changed_by_this_package": false,
+    "density_cap_kg_m3": 522.0,
+    "snobal_550_reanchor_status": "FOLLOW_UP_ONLY_NOT_EVALUATED_HERE"
+  },
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-070 OBL-SNOWFREEZE-P-045",
+  "evidence_class": "Static + Ran",
+  "policy_b_evidence_matrix": [
+    {
+      "evidence": "10.3.12 trace rows count both selected bundle members.",
+      "scope": "direct bundle trace proof",
+      "status": "PASS"
+    },
+    {
+      "evidence": "default 1147 -> bundle 498; delta 649",
+      "scope": "gate-eligible paired-snow improvement versus current default",
+      "status": "PASS"
+    },
+    {
+      "evidence": "worse surface count 0",
+      "scope": "paired surface no-worse guard versus holding-only",
+      "status": "PASS"
+    },
+    {
+      "evidence": "No default-activation branch was exercised in this diagnostic.",
+      "scope": "full workspace regression/identity with bundle as default",
+      "status": "MISSING"
+    },
+    {
+      "evidence": "No global default bundle run over non-snow climates was produced.",
+      "scope": "non-snow climate no-regression",
+      "status": "MISSING"
+    },
+    {
+      "evidence": "No global default bundle comparison over erosion/WB outputs was produced.",
+      "scope": "erosion and water-balance no-regression",
+      "status": "MISSING"
+    },
+    {
+      "evidence": "No watershed default bundle comparison was produced.",
+      "scope": "watershed routing no-regression",
+      "status": "MISSING"
+    },
+    {
+      "evidence": "Component conservation exists, but composite global activation evidence is absent.",
+      "scope": "composite melt-density conservation under bundle",
+      "status": "MISSING"
+    }
+  ],
+  "protected_boundaries": {
+    "compatibility_runtime_changed": false,
+    "default_activation_changed": false,
+    "density_cap_changed": false,
+    "fixture_inputs_changed": false,
+    "frost_attribution_authorized": false,
+    "observed_depth_or_density_consumed_by_runtime": false,
+    "parser_runfile_user_surface_changed": false,
+    "production_physics_changed": false,
+    "public_output_schema_changed": false,
+    "qwet_or_frzftp_changed": false,
+    "selector_added": false,
+    "site_calibration_performed": false
+  },
+  "raw_outputs": {
+    "output_dir": "target/snowdensity10_3_13_residual_policy_b_diagnostic",
+    "package_json": "docs/work-packages/20260627-snowdensity-10-3-13-residual-policy-b-diagnostic-001/artifacts/residual-policy-b-diagnostic.json",
+    "package_markdown": "docs/work-packages/20260627-snowdensity-10-3-13-residual-policy-b-diagnostic-001/artifacts/residual-policy-b-diagnostic.md"
+  },
+  "schema": "snowdensity10-3-13-residual-policy-b-diagnostic-v1",
+  "source": {
+    "bundle_report": "docs/work-packages/20260627-snowdensity-10-3-12-bundle-activation-adjudication-001/artifacts/bundle-activation-adjudication.json",
+    "bundle_schema": "snowdensity10-3-12-bundle-activation-adjudication-v1",
+    "runtime_coupling": "real direct-production WAT via openwepp-cli-hill"
+  },
+  "summary": {
+    "activation_blocker": "POLICY-B-FULL-SURFACE-NO-REGRESSION-EVIDENCE-MISSING",
+    "activation_policy": "POLICY-B",
+    "activation_ready": false,
+    "bundle_snow_control_fail_count": 498,
+    "complete_transition_row_count": 1414,
+    "default_snow_control_fail_count": 1147,
+    "disposition": "HOLD-ACTIVATION-EVIDENCE-MISSING",
+    "fail_delta_default_minus_bundle": 649,
+    "frost_attribution_blocker": "SNOW-CONTROL-RESIDUALS-REMAIN",
+    "frost_attribution_unblocked": false,
+    "holding_to_bundle_transition_counts": {
+      "OVER_FAIL->OVER_FAIL": 254,
+      "OVER_FAIL->PASS": 421,
+      "OVER_FAIL->UNDER_FAIL": 27,
+      "PASS->OVER_FAIL": 10,
+      "PASS->PASS": 493,
+      "PASS->UNDER_FAIL": 150,
+      "UNDER_FAIL->PASS": 2,
+      "UNDER_FAIL->UNDER_FAIL": 57
+    },
+    "lead_under_persistence_hypothesis": "BULK_COMPACTION_MECHANISM_COST_SUPPORTED",
+    "march_april_bundle_cap_class_counts": {
+      "CAP_LIMITED_DEPLETION_REQUIRED": 33,
+      "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 20,
+      "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 16,
+      "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 128
+    },
+    "next_recommended_package": "SNOWDENSITY-10.3.14-POLICY-B-NO-REGRESSION-AND-CAP-AUTHORITY",
+    "paired_surface_count": 4,
+    "source_bundle_paired_row_count": 1415,
+    "under_persistence_induced_by_bundle_density_arm_count": 177,
+    "under_persistence_induced_by_bundle_density_arm_fraction": 0.7564102564102564,
+    "under_persistence_transition_counts": {
+      "UNDER_INDUCED_FROM_HOLDING_OVER": 27,
+      "UNDER_INDUCED_FROM_HOLDING_PASS": 150,
+      "UNDER_PERSISTED_FROM_HOLDING": 57
+    }
+  },
+  "surfaces": [
+    {
+      "cover": "conifer",
+      "note": "Fixture exists, but paired snow-depth observations are not installed.",
+      "observation_source": "not_installed",
+      "paired_row_count": 0,
+      "site_group": "hjandrews",
+      "surface_id": "hjandrews_conifer",
+      "transition_summary": {},
+      "verdict_scope": "observation_blocked"
+    },
+    {
+      "bundle_vs_holding_physics_delta": {
+        "max_abs_density_delta_kg_m3": 392.24793718343255,
+        "max_abs_depth_delta_m": 0.6603293256368655,
+        "max_abs_swe_delta_m": 0.0001844950930554659,
+        "mean_density_delta_kg_m3": 126.41737780672612,
+        "mean_depth_delta_m": -0.13637442131168473,
+        "mean_swe_delta_m": -8.893103123449923e-07
+      },
+      "cover": "open_field",
+      "march_april": {
+        "bundle_failure_count": 55,
+        "cap_class_counts": {
+          "CAP_LIMITED_DEPLETION_REQUIRED": 13,
+          "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 15,
+          "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 8,
+          "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 19
+        },
+        "over_fail_count": 36,
+        "under_fail_count": 19
+      },
+      "note": "Sleepers South field paired frost-site snow-depth rows.",
+      "observation_kind": "snowfreeze_depth",
+      "observation_source": "snowfreeze_observed",
+      "over_persistence": {
+        "bundle_over_fail_count": 123,
+        "cap_class_counts": {
+          "CAP_LIMITED_DEPLETION_REQUIRED": 21,
+          "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 94,
+          "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 8
+        },
+        "cap_limited_or_patchy_count": 29,
+        "compaction_feasible_count": 94
+      },
+      "paired_row_count": 383,
+      "samples": {
+        "over_persistence": [
+          {
+            "bundle_depth_residual_m": 0.5346900397937804,
+            "bundle_minus_holding_density_kg_m3": 37.06800932857976,
+            "bundle_minus_holding_depth_m": -0.126571692395407,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2000-12-27",
+            "holding_depth_residual_m": 0.6612617321891874,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "CAP_LIMITED_DEPLETION_REQUIRED",
+            "observed_snow_depth_m": 0.126
+          },
+          {
+            "bundle_depth_residual_m": 0.503743825007672,
+            "bundle_minus_holding_density_kg_m3": 140.6869565099891,
+            "bundle_minus_holding_depth_m": -0.518701947983416,
+            "bundle_minus_holding_swe_m": -1.1102230246251565e-16,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2008-03-07",
+            "holding_depth_residual_m": 1.022445772991088,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "CAP_LIMITED_DEPLETION_REQUIRED",
+            "observed_snow_depth_m": 0.42
+          },
+          {
+            "bundle_depth_residual_m": 0.49129578066763846,
+            "bundle_minus_holding_density_kg_m3": -9.33931526758343,
+            "bundle_minus_holding_depth_m": 0.035378525646953984,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "1986-02-06",
+            "holding_depth_residual_m": 0.4559172550206845,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.4566
+          },
+          {
+            "bundle_depth_residual_m": 0.42762051737911794,
+            "bundle_minus_holding_density_kg_m3": -12.832209731490423,
+            "bundle_minus_holding_depth_m": 0.042114881233243806,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "1986-01-30",
+            "holding_depth_residual_m": 0.38550563614587413,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.3946
+          },
+          {
+            "bundle_depth_residual_m": 0.4104772058679812,
+            "bundle_minus_holding_density_kg_m3": 63.379481339558396,
+            "bundle_minus_holding_depth_m": -0.2598946400274571,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2014-03-18",
+            "holding_depth_residual_m": 0.6703718458954383,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.576
+          },
+          {
+            "bundle_depth_residual_m": 0.3835470326254121,
+            "bundle_minus_holding_density_kg_m3": 18.742527571384215,
+            "bundle_minus_holding_depth_m": -0.04739335548610735,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2001-01-10",
+            "holding_depth_residual_m": 0.43094038811151947,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.251
+          },
+          {
+            "bundle_depth_residual_m": 0.3719924264176555,
+            "bundle_minus_holding_density_kg_m3": 76.1660654803525,
+            "bundle_minus_holding_depth_m": -0.2761898878219917,
+            "bundle_minus_holding_swe_m": -5.551115123125783e-17,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2001-02-14",
+            "holding_depth_residual_m": 0.6481823142396472,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.5038
+          },
+          {
+            "bundle_depth_residual_m": 0.36445358219450913,
+            "bundle_minus_holding_density_kg_m3": 66.16078087275181,
+            "bundle_minus_holding_depth_m": -0.21692400452961502,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2014-03-04",
+            "holding_depth_residual_m": 0.5813775867241242,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.456
+          }
+        ],
+        "under_persistence": [
+          {
+            "bundle_depth_residual_m": -0.27693541449565506,
+            "bundle_minus_holding_density_kg_m3": 135.8748460155324,
+            "bundle_minus_holding_depth_m": -0.10160833314709164,
+            "bundle_minus_holding_swe_m": -4.163336342344337e-17,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "1991-03-01",
+            "holding_depth_residual_m": -0.1753270813485634,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.464
+          },
+          {
+            "bundle_depth_residual_m": -0.2317801437787619,
+            "bundle_minus_holding_density_kg_m3": 273.46178847734615,
+            "bundle_minus_holding_depth_m": -0.004643083056249336,
+            "bundle_minus_holding_swe_m": -1.4129374326793398e-08,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "1985-04-11",
+            "holding_depth_residual_m": -0.22713706072251258,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.236
+          },
+          {
+            "bundle_depth_residual_m": -0.23165558008289683,
+            "bundle_minus_holding_density_kg_m3": 273.4620231133715,
+            "bundle_minus_holding_depth_m": -0.10600611613395662,
+            "bundle_minus_holding_swe_m": -5.6553273314330355e-09,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "1985-04-04",
+            "holding_depth_residual_m": -0.12564946394894022,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.328
+          },
+          {
+            "bundle_depth_residual_m": -0.22540725583098628,
+            "bundle_minus_holding_density_kg_m3": 284.42639429270855,
+            "bundle_minus_holding_depth_m": -0.23357867212664504,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "1991-01-16",
+            "holding_depth_residual_m": 0.008171416295658762,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.3686
+          },
+          {
+            "bundle_depth_residual_m": -0.21511596115097606,
+            "bundle_minus_holding_density_kg_m3": 353.8662619066211,
+            "bundle_minus_holding_depth_m": -0.1028833151638956,
+            "bundle_minus_holding_swe_m": 2.557284571741425e-07,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "1995-03-14",
+            "holding_depth_residual_m": -0.11223264598708046,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.264
+          },
+          {
+            "bundle_depth_residual_m": -0.20779536118798658,
+            "bundle_minus_holding_density_kg_m3": 269.5772007134965,
+            "bundle_minus_holding_depth_m": -0.39750145810605075,
+            "bundle_minus_holding_swe_m": -5.461520755090099e-07,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_OVER",
+            "date": "1997-04-04",
+            "holding_depth_residual_m": 0.18970609691806417,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.58
+          },
+          {
+            "bundle_depth_residual_m": -0.19984531879506945,
+            "bundle_minus_holding_density_kg_m3": 294.4502280259094,
+            "bundle_minus_holding_depth_m": -0.12908291831111193,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "1991-02-12",
+            "holding_depth_residual_m": -0.07076240048395752,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.2996
+          },
+          {
+            "bundle_depth_residual_m": -0.19925833352564995,
+            "bundle_minus_holding_density_kg_m3": 232.88256934695062,
+            "bundle_minus_holding_depth_m": -0.22708356599434362,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "1991-01-25",
+            "holding_depth_residual_m": 0.027825232468693673,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.3716
+          }
+        ]
+      },
+      "site_group": "sleepers",
+      "surface_id": "sleepers_south_field",
+      "transition_summary": {
+        "bundle_state_counts": {
+          "OVER_FAIL": 123,
+          "PASS": 233,
+          "UNDER_FAIL": 27
+        },
+        "bundle_to_spring_counts": {
+          "OVER_FAIL->OVER_FAIL": 122,
+          "OVER_FAIL->PASS": 1,
+          "PASS->PASS": 233,
+          "UNDER_FAIL->UNDER_FAIL": 27
+        },
+        "default_to_bundle_counts": {
+          "OVER_FAIL->OVER_FAIL": 119,
+          "OVER_FAIL->PASS": 181,
+          "OVER_FAIL->UNDER_FAIL": 21,
+          "PASS->OVER_FAIL": 4,
+          "PASS->PASS": 52,
+          "PASS->UNDER_FAIL": 5,
+          "UNDER_FAIL->UNDER_FAIL": 1
+        },
+        "holding_to_bundle_counts": {
+          "OVER_FAIL->OVER_FAIL": 116,
+          "OVER_FAIL->PASS": 127,
+          "OVER_FAIL->UNDER_FAIL": 5,
+          "PASS->OVER_FAIL": 7,
+          "PASS->PASS": 106,
+          "PASS->UNDER_FAIL": 16,
+          "UNDER_FAIL->UNDER_FAIL": 6
+        },
+        "paired_row_count": 383
+      },
+      "under_persistence": {
+        "bundle_under_fail_count": 27,
+        "induced_by_bundle_density_arm_count": 21,
+        "induced_by_bundle_density_arm_fraction": 0.7777777777777778,
+        "lead_hypothesis": "BULK_COMPACTION_MECHANISM_COST_SUPPORTED",
+        "transition_counts": {
+          "UNDER_INDUCED_FROM_HOLDING_OVER": 5,
+          "UNDER_INDUCED_FROM_HOLDING_PASS": 16,
+          "UNDER_PERSISTED_FROM_HOLDING": 6
+        }
+      },
+      "verdict_scope": "paired_observation"
+    },
+    {
+      "bundle_vs_holding_physics_delta": {
+        "max_abs_density_delta_kg_m3": 350.8454975904873,
+        "max_abs_depth_delta_m": 0.7671658827572033,
+        "max_abs_swe_delta_m": 1.1102230246251565e-16,
+        "mean_density_delta_kg_m3": 101.5561182032733,
+        "mean_depth_delta_m": -0.14381966888559367,
+        "mean_swe_delta_m": 3.793022315348252e-18
+      },
+      "cover": "hardwood",
+      "march_april": {
+        "bundle_failure_count": 16,
+        "cap_class_counts": {
+          "CAP_LIMITED_DEPLETION_REQUIRED": 2,
+          "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 2,
+          "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 2,
+          "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 10
+        },
+        "over_fail_count": 6,
+        "under_fail_count": 10
+      },
+      "note": "Sleepers W9 hardwood paired frost-site snow-depth rows.",
+      "observation_kind": "snowfreeze_depth",
+      "observation_source": "snowfreeze_observed",
+      "over_persistence": {
+        "bundle_over_fail_count": 30,
+        "cap_class_counts": {
+          "CAP_LIMITED_DEPLETION_REQUIRED": 2,
+          "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 26,
+          "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 2
+        },
+        "cap_limited_or_patchy_count": 4,
+        "compaction_feasible_count": 26
+      },
+      "paired_row_count": 193,
+      "samples": {
+        "over_persistence": [
+          {
+            "bundle_depth_residual_m": 0.5456760343859007,
+            "bundle_minus_holding_density_kg_m3": 40.75725562082866,
+            "bundle_minus_holding_depth_m": -0.19016061525565997,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2000-12-19",
+            "holding_depth_residual_m": 0.7358366496415607,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.238
+          },
+          {
+            "bundle_depth_residual_m": 0.35048743405266236,
+            "bundle_minus_holding_density_kg_m3": 56.48417204349593,
+            "bundle_minus_holding_depth_m": -0.20835591393051844,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2014-03-10",
+            "holding_depth_residual_m": 0.5588433479831808,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.576
+          },
+          {
+            "bundle_depth_residual_m": 0.30581566859451637,
+            "bundle_minus_holding_density_kg_m3": 3.2139696731957486,
+            "bundle_minus_holding_depth_m": -0.0127928679295366,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2014-02-19",
+            "holding_depth_residual_m": 0.31860853652405297,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.69
+          },
+          {
+            "bundle_depth_residual_m": 0.2874762067524718,
+            "bundle_minus_holding_density_kg_m3": 22.595421033100706,
+            "bundle_minus_holding_depth_m": -0.05277275562892625,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2014-01-08",
+            "holding_depth_residual_m": 0.34024896238139807,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.298
+          },
+          {
+            "bundle_depth_residual_m": 0.26169003072906394,
+            "bundle_minus_holding_density_kg_m3": -17.82375731179721,
+            "bundle_minus_holding_depth_m": 0.06478684440327986,
+            "bundle_minus_holding_swe_m": 8.326672684688674e-17,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2015-02-04",
+            "holding_depth_residual_m": 0.19690318632578407,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.652
+          },
+          {
+            "bundle_depth_residual_m": 0.25821167396285766,
+            "bundle_minus_holding_density_kg_m3": 4.686883167765728,
+            "bundle_minus_holding_depth_m": -0.014004923570787198,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2001-01-05",
+            "holding_depth_residual_m": 0.27221659753364486,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.4924
+          },
+          {
+            "bundle_depth_residual_m": 0.24266301322250294,
+            "bundle_minus_holding_density_kg_m3": 30.108695308990548,
+            "bundle_minus_holding_depth_m": -0.11459215892039776,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "1998-01-29",
+            "holding_depth_residual_m": 0.3572551721429007,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.713333
+          },
+          {
+            "bundle_depth_residual_m": 0.2371552790327109,
+            "bundle_minus_holding_density_kg_m3": 90.93254259279533,
+            "bundle_minus_holding_depth_m": -0.1997313821370329,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2014-01-30",
+            "holding_depth_residual_m": 0.4368866611697438,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.312
+          }
+        ],
+        "under_persistence": [
+          {
+            "bundle_depth_residual_m": -0.382612510320848,
+            "bundle_minus_holding_density_kg_m3": 148.09420910191423,
+            "bundle_minus_holding_depth_m": -0.2170785077175097,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "2005-02-11",
+            "holding_depth_residual_m": -0.16553400260333828,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.692
+          },
+          {
+            "bundle_depth_residual_m": -0.322086851972269,
+            "bundle_minus_holding_density_kg_m3": 350.8454975904873,
+            "bundle_minus_holding_depth_m": -0.10504824618265934,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "1995-03-14",
+            "holding_depth_residual_m": -0.21703860578960965,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.373333
+          },
+          {
+            "bundle_depth_residual_m": -0.3141224124931852,
+            "bundle_minus_holding_density_kg_m3": 111.91783151323287,
+            "bundle_minus_holding_depth_m": -0.20309526173890602,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "2002-02-14",
+            "holding_depth_residual_m": -0.11102715075427916,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.7468
+          },
+          {
+            "bundle_depth_residual_m": -0.2994967225696436,
+            "bundle_minus_holding_density_kg_m3": 216.39787791374306,
+            "bundle_minus_holding_depth_m": -0.2031250223289331,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "1996-01-18",
+            "holding_depth_residual_m": -0.09637170024071051,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.536667
+          },
+          {
+            "bundle_depth_residual_m": -0.2674915076055221,
+            "bundle_minus_holding_density_kg_m3": 118.46804617100494,
+            "bundle_minus_holding_depth_m": -0.26060386186962126,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "2000-02-24",
+            "holding_depth_residual_m": -0.006887645735900838,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.811667
+          },
+          {
+            "bundle_depth_residual_m": -0.25514231503389406,
+            "bundle_minus_holding_density_kg_m3": 94.04704402776795,
+            "bundle_minus_holding_depth_m": -0.1426456506285141,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "2005-02-28",
+            "holding_depth_residual_m": -0.11249666440537998,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.6344
+          },
+          {
+            "bundle_depth_residual_m": -0.2315759999865093,
+            "bundle_minus_holding_density_kg_m3": -27.02338660721233,
+            "bundle_minus_holding_depth_m": 0.04208958953346409,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2005-12-20",
+            "holding_depth_residual_m": -0.2736655895199734,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.511667
+          },
+          {
+            "bundle_depth_residual_m": -0.22017945702523015,
+            "bundle_minus_holding_density_kg_m3": -7.8901926169462655,
+            "bundle_minus_holding_depth_m": 0.008191798971706327,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2018-11-15",
+            "holding_depth_residual_m": -0.22837125599693647,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.33
+          }
+        ]
+      },
+      "site_group": "sleepers",
+      "surface_id": "sleepers_w9_hardwood",
+      "transition_summary": {
+        "bundle_state_counts": {
+          "OVER_FAIL": 30,
+          "PASS": 136,
+          "UNDER_FAIL": 27
+        },
+        "bundle_to_spring_counts": {
+          "OVER_FAIL->OVER_FAIL": 30,
+          "PASS->PASS": 136,
+          "UNDER_FAIL->UNDER_FAIL": 27
+        },
+        "default_to_bundle_counts": {
+          "OVER_FAIL->OVER_FAIL": 29,
+          "OVER_FAIL->PASS": 97,
+          "OVER_FAIL->UNDER_FAIL": 13,
+          "PASS->OVER_FAIL": 1,
+          "PASS->PASS": 38,
+          "PASS->UNDER_FAIL": 11,
+          "UNDER_FAIL->PASS": 1,
+          "UNDER_FAIL->UNDER_FAIL": 3
+        },
+        "holding_to_bundle_counts": {
+          "OVER_FAIL->OVER_FAIL": 27,
+          "OVER_FAIL->PASS": 64,
+          "OVER_FAIL->UNDER_FAIL": 5,
+          "PASS->OVER_FAIL": 3,
+          "PASS->PASS": 70,
+          "PASS->UNDER_FAIL": 17,
+          "UNDER_FAIL->PASS": 2,
+          "UNDER_FAIL->UNDER_FAIL": 5
+        },
+        "paired_row_count": 193
+      },
+      "under_persistence": {
+        "bundle_under_fail_count": 27,
+        "induced_by_bundle_density_arm_count": 22,
+        "induced_by_bundle_density_arm_fraction": 0.8148148148148148,
+        "lead_hypothesis": "BULK_COMPACTION_MECHANISM_COST_SUPPORTED",
+        "transition_counts": {
+          "UNDER_INDUCED_FROM_HOLDING_OVER": 5,
+          "UNDER_INDUCED_FROM_HOLDING_PASS": 17,
+          "UNDER_PERSISTED_FROM_HOLDING": 5
+        }
+      },
+      "verdict_scope": "paired_observation"
+    },
+    {
+      "bundle_vs_holding_physics_delta": {
+        "max_abs_density_delta_kg_m3": 417.2805123993937,
+        "max_abs_depth_delta_m": 0.3882085882867031,
+        "max_abs_swe_delta_m": 0.0019612613852923056,
+        "mean_density_delta_kg_m3": 168.80072470539386,
+        "mean_depth_delta_m": -0.11301630266617677,
+        "mean_swe_delta_m": -3.431791681747482e-05
+      },
+      "cover": "hardwood",
+      "march_april": {
+        "bundle_failure_count": 65,
+        "cap_class_counts": {
+          "CAP_LIMITED_DEPLETION_REQUIRED": 1,
+          "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 64
+        },
+        "over_fail_count": 1,
+        "under_fail_count": 64
+      },
+      "note": "Harvard HF237 hardwood stratum bound by 10.3.2.",
+      "observation_kind": "swe_depth_density",
+      "observation_source": "harvard_hf237",
+      "over_persistence": {
+        "bundle_over_fail_count": 47,
+        "cap_class_counts": {
+          "CAP_LIMITED_DEPLETION_REQUIRED": 1,
+          "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 46
+        },
+        "cap_limited_or_patchy_count": 1,
+        "compaction_feasible_count": 46
+      },
+      "paired_row_count": 448,
+      "samples": {
+        "over_persistence": [
+          {
+            "bundle_depth_residual_m": 0.3054986424039873,
+            "bundle_minus_holding_density_kg_m3": 23.078390113739914,
+            "bundle_minus_holding_depth_m": -0.05956928093820146,
+            "bundle_minus_holding_swe_m": -3.518561808457665e-05,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-01-10",
+            "holding_depth_residual_m": 0.36506792334218874,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.15
+          },
+          {
+            "bundle_depth_residual_m": 0.2590242692959088,
+            "bundle_minus_holding_density_kg_m3": 31.142111208310382,
+            "bundle_minus_holding_depth_m": -0.10973528214959194,
+            "bundle_minus_holding_swe_m": -3.518561808457665e-05,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-01-28",
+            "holding_depth_residual_m": 0.36875955144550077,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.39
+          },
+          {
+            "bundle_depth_residual_m": 0.24655099518816737,
+            "bundle_minus_holding_density_kg_m3": 12.229362231088999,
+            "bundle_minus_holding_depth_m": -0.03610529236627602,
+            "bundle_minus_holding_swe_m": -3.518561808457665e-05,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-01-11",
+            "holding_depth_residual_m": 0.2826562875544434,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.28
+          },
+          {
+            "bundle_depth_residual_m": 0.2393659219497512,
+            "bundle_minus_holding_density_kg_m3": 141.60689014927965,
+            "bundle_minus_holding_depth_m": -0.2704144298325112,
+            "bundle_minus_holding_swe_m": -2.4562417046875007e-05,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-03-01",
+            "holding_depth_residual_m": 0.5097803517822623,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "CAP_LIMITED_DEPLETION_REQUIRED",
+            "observed_snow_depth_m": 0.19
+          },
+          {
+            "bundle_depth_residual_m": 0.230247877092488,
+            "bundle_minus_holding_density_kg_m3": 7.129147663809931,
+            "bundle_minus_holding_depth_m": -0.028575120101332785,
+            "bundle_minus_holding_swe_m": 1.7817382076262822e-06,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2014-02-13",
+            "holding_depth_residual_m": 0.2588229971938208,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.3
+          },
+          {
+            "bundle_depth_residual_m": 0.22499567752795258,
+            "bundle_minus_holding_density_kg_m3": 17.09224928770027,
+            "bundle_minus_holding_depth_m": -0.04745285306197122,
+            "bundle_minus_holding_swe_m": -3.518561808457665e-05,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-01-12",
+            "holding_depth_residual_m": 0.2724485305899238,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.28
+          },
+          {
+            "bundle_depth_residual_m": 0.2210490702456236,
+            "bundle_minus_holding_density_kg_m3": 37.44690853588088,
+            "bundle_minus_holding_depth_m": -0.12394500258178887,
+            "bundle_minus_holding_swe_m": -3.518561808457665e-05,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-01-29",
+            "holding_depth_residual_m": 0.34499407282741246,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.4
+          },
+          {
+            "bundle_depth_residual_m": 0.2149218555340805,
+            "bundle_minus_holding_density_kg_m3": 20.573438164730618,
+            "bundle_minus_holding_depth_m": -0.06056154876558539,
+            "bundle_minus_holding_swe_m": -3.518561808457665e-05,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-01-30",
+            "holding_depth_residual_m": 0.2754834042996659,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.4
+          }
+        ],
+        "under_persistence": [
+          {
+            "bundle_depth_residual_m": -0.4234964302433719,
+            "bundle_minus_holding_density_kg_m3": 319.66494680206296,
+            "bundle_minus_holding_depth_m": -0.1605527681974653,
+            "bundle_minus_holding_swe_m": 7.517179231372739e-05,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2013-03-08",
+            "holding_depth_residual_m": -0.26294366204590663,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.52
+          },
+          {
+            "bundle_depth_residual_m": -0.41308951871856947,
+            "bundle_minus_holding_density_kg_m3": 328.18837533969963,
+            "bundle_minus_holding_depth_m": -0.11283158580762284,
+            "bundle_minus_holding_swe_m": 9.116918657658957e-05,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2013-03-09",
+            "holding_depth_residual_m": -0.3002579329109466,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.48
+          },
+          {
+            "bundle_depth_residual_m": -0.34296782735771136,
+            "bundle_minus_holding_density_kg_m3": 328.18837533969975,
+            "bundle_minus_holding_depth_m": -0.06213819131153095,
+            "bundle_minus_holding_swe_m": 0.00011042476323161812,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2013-03-10",
+            "holding_depth_residual_m": -0.2808296360461804,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.38
+          },
+          {
+            "bundle_depth_residual_m": -0.3310252398257906,
+            "bundle_minus_holding_density_kg_m3": 328.18837533969975,
+            "bundle_minus_holding_depth_m": -0.014542042981412819,
+            "bundle_minus_holding_swe_m": 0.00012699498452970089,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2013-03-11",
+            "holding_depth_residual_m": -0.31648319684437776,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.34
+          },
+          {
+            "bundle_depth_residual_m": -0.2689440021514005,
+            "bundle_minus_holding_density_kg_m3": 202.08570553467874,
+            "bundle_minus_holding_depth_m": -0.14312904337962312,
+            "bundle_minus_holding_swe_m": 5.934059341128339e-09,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2010-01-24",
+            "holding_depth_residual_m": -0.1258149587717774,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.39
+          },
+          {
+            "bundle_depth_residual_m": -0.2658730815114225,
+            "bundle_minus_holding_density_kg_m3": 198.60395399165898,
+            "bundle_minus_holding_depth_m": -0.15446506002457305,
+            "bundle_minus_holding_swe_m": 5.934059341128339e-09,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "2010-01-23",
+            "holding_depth_residual_m": -0.11140802148684947,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.39
+          },
+          {
+            "bundle_depth_residual_m": -0.26577098772592944,
+            "bundle_minus_holding_density_kg_m3": 198.36310731287406,
+            "bundle_minus_holding_depth_m": -0.15445643853517854,
+            "bundle_minus_holding_swe_m": 5.934059341128339e-09,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "2010-01-22",
+            "holding_depth_residual_m": -0.1113145491907509,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.39
+          },
+          {
+            "bundle_depth_residual_m": -0.26565912950468035,
+            "bundle_minus_holding_density_kg_m3": 198.43608940908888,
+            "bundle_minus_holding_depth_m": -0.1550361941357648,
+            "bundle_minus_holding_swe_m": 5.934059341128339e-09,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "2010-01-21",
+            "holding_depth_residual_m": -0.11062293536891554,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.39
+          }
+        ]
+      },
+      "site_group": "harvard",
+      "surface_id": "harvard_hardwood",
+      "transition_summary": {
+        "bundle_state_counts": {
+          "OVER_FAIL": 47,
+          "PASS": 295,
+          "UNDER_FAIL": 106
+        },
+        "bundle_to_spring_counts": {
+          "OVER_FAIL->OVER_FAIL": 46,
+          "OVER_FAIL->PASS": 1,
+          "PASS->PASS": 291,
+          "PASS->UNDER_FAIL": 4,
+          "UNDER_FAIL->UNDER_FAIL": 106
+        },
+        "default_to_bundle_counts": {
+          "OVER_FAIL->OVER_FAIL": 47,
+          "OVER_FAIL->PASS": 226,
+          "OVER_FAIL->UNDER_FAIL": 83,
+          "PASS->PASS": 69,
+          "PASS->UNDER_FAIL": 22,
+          "UNDER_FAIL->UNDER_FAIL": 1
+        },
+        "holding_to_bundle_counts": {
+          "OVER_FAIL->OVER_FAIL": 47,
+          "OVER_FAIL->PASS": 116,
+          "OVER_FAIL->UNDER_FAIL": 10,
+          "PASS->PASS": 179,
+          "PASS->UNDER_FAIL": 63,
+          "UNDER_FAIL->UNDER_FAIL": 33
+        },
+        "paired_row_count": 448
+      },
+      "under_persistence": {
+        "bundle_under_fail_count": 106,
+        "induced_by_bundle_density_arm_count": 73,
+        "induced_by_bundle_density_arm_fraction": 0.6886792452830188,
+        "lead_hypothesis": "BULK_COMPACTION_MECHANISM_COST_SUPPORTED",
+        "transition_counts": {
+          "UNDER_INDUCED_FROM_HOLDING_OVER": 10,
+          "UNDER_INDUCED_FROM_HOLDING_PASS": 63,
+          "UNDER_PERSISTED_FROM_HOLDING": 33
+        }
+      },
+      "verdict_scope": "paired_observation"
+    },
+    {
+      "bundle_vs_holding_physics_delta": {
+        "max_abs_density_delta_kg_m3": 417.28480552142867,
+        "max_abs_depth_delta_m": 0.3941473652545944,
+        "max_abs_swe_delta_m": 5.551115123125783e-17,
+        "mean_density_delta_kg_m3": 172.04662559995026,
+        "mean_depth_delta_m": -0.12911399021101674,
+        "mean_swe_delta_m": -2.3329806747431677e-18
+      },
+      "cover": "open",
+      "march_april": {
+        "bundle_failure_count": 61,
+        "cap_class_counts": {
+          "CAP_LIMITED_DEPLETION_REQUIRED": 17,
+          "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 3,
+          "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 6,
+          "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 35
+        },
+        "over_fail_count": 26,
+        "under_fail_count": 35
+      },
+      "note": "Harvard HF237 open stratum bound by 10.3.2.",
+      "observation_kind": "swe_depth_density",
+      "observation_source": "harvard_hf237",
+      "over_persistence": {
+        "bundle_over_fail_count": 64,
+        "cap_class_counts": {
+          "CAP_LIMITED_DEPLETION_REQUIRED": 17,
+          "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 41,
+          "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 6
+        },
+        "cap_limited_or_patchy_count": 23,
+        "compaction_feasible_count": 41
+      },
+      "paired_row_count": 390,
+      "samples": {
+        "over_persistence": [
+          {
+            "bundle_depth_residual_m": 0.2932702630750993,
+            "bundle_minus_holding_density_kg_m3": 20.01970902509086,
+            "bundle_minus_holding_depth_m": -0.05173834116990589,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-01-10",
+            "holding_depth_residual_m": 0.3450086042450052,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.12
+          },
+          {
+            "bundle_depth_residual_m": 0.2845158548913603,
+            "bundle_minus_holding_density_kg_m3": 23.284871980743674,
+            "bundle_minus_holding_depth_m": -0.05764577340241239,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2013-02-08",
+            "holding_depth_residual_m": 0.34216162829377267,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.02
+          },
+          {
+            "bundle_depth_residual_m": 0.269963492475117,
+            "bundle_minus_holding_density_kg_m3": 140.94671972762274,
+            "bundle_minus_holding_depth_m": -0.25013036311431913,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-03-01",
+            "holding_depth_residual_m": 0.5200938555894361,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "CAP_LIMITED_DEPLETION_REQUIRED",
+            "observed_snow_depth_m": 0.12
+          },
+          {
+            "bundle_depth_residual_m": 0.2576150083803225,
+            "bundle_minus_holding_density_kg_m3": 172.0024279891997,
+            "bundle_minus_holding_depth_m": -0.25429926403116465,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2011-03-16",
+            "holding_depth_residual_m": 0.5119142724114871,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "CAP_LIMITED_DEPLETION_REQUIRED",
+            "observed_snow_depth_m": 0.1
+          },
+          {
+            "bundle_depth_residual_m": 0.2377254530711454,
+            "bundle_minus_holding_density_kg_m3": 27.526205244214452,
+            "bundle_minus_holding_depth_m": -0.07049900800693853,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-01-17",
+            "holding_depth_residual_m": 0.30822446107808393,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.2
+          },
+          {
+            "bundle_depth_residual_m": 0.2376975373739949,
+            "bundle_minus_holding_density_kg_m3": 36.15138634080708,
+            "bundle_minus_holding_depth_m": -0.12717358785808364,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-01-28",
+            "holding_depth_residual_m": 0.36487112523207854,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.36
+          },
+          {
+            "bundle_depth_residual_m": 0.22655478076555244,
+            "bundle_minus_holding_density_kg_m3": 26.53358010303316,
+            "bundle_minus_holding_depth_m": -0.06977088850903346,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-01-13",
+            "holding_depth_residual_m": 0.2963256692745859,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.21
+          },
+          {
+            "bundle_depth_residual_m": 0.21466438428531842,
+            "bundle_minus_holding_density_kg_m3": 36.63536226807096,
+            "bundle_minus_holding_depth_m": -0.09146848227218757,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "OVER_FAIL",
+            "bundle_under_transition": null,
+            "date": "2009-01-15",
+            "holding_depth_residual_m": 0.306132866557506,
+            "holding_state": "OVER_FAIL",
+            "march_april_cap_class": "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP",
+            "observed_snow_depth_m": 0.2
+          }
+        ],
+        "under_persistence": [
+          {
+            "bundle_depth_residual_m": -0.3995660747784115,
+            "bundle_minus_holding_density_kg_m3": 322.2585831365377,
+            "bundle_minus_holding_depth_m": -0.19643684775781017,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2013-03-08",
+            "holding_depth_residual_m": -0.20312922702060132,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.52
+          },
+          {
+            "bundle_depth_residual_m": -0.37786019440656904,
+            "bundle_minus_holding_density_kg_m3": 324.42573352973307,
+            "bundle_minus_holding_depth_m": -0.16771810390205827,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2013-03-09",
+            "holding_depth_residual_m": -0.21014209050451077,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.48
+          },
+          {
+            "bundle_depth_residual_m": -0.29138970637630995,
+            "bundle_minus_holding_density_kg_m3": 324.42573352973307,
+            "bundle_minus_holding_depth_m": -0.14550204346311923,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2013-03-10",
+            "holding_depth_residual_m": -0.1458876629131907,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.38
+          },
+          {
+            "bundle_depth_residual_m": -0.24959149690316257,
+            "bundle_minus_holding_density_kg_m3": 393.7546475919995,
+            "bundle_minus_holding_depth_m": -0.09336392466374085,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2013-12-21",
+            "holding_depth_residual_m": -0.15622757223942174,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.28
+          },
+          {
+            "bundle_depth_residual_m": -0.24646288806369113,
+            "bundle_minus_holding_density_kg_m3": 324.42573352973307,
+            "bundle_minus_holding_depth_m": -0.12075120868630632,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_PERSISTED_FROM_HOLDING",
+            "date": "2013-03-11",
+            "holding_depth_residual_m": -0.1257116793773848,
+            "holding_state": "UNDER_FAIL",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.32
+          },
+          {
+            "bundle_depth_residual_m": -0.23377420232472051,
+            "bundle_minus_holding_density_kg_m3": 245.13326787132888,
+            "bundle_minus_holding_depth_m": -0.2862000939799034,
+            "bundle_minus_holding_swe_m": -1.3877787807814457e-17,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "2014-02-23",
+            "holding_depth_residual_m": 0.05242589165518291,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.45
+          },
+          {
+            "bundle_depth_residual_m": -0.21399492894347844,
+            "bundle_minus_holding_density_kg_m3": 245.44600580616685,
+            "bundle_minus_holding_depth_m": -0.28617667717690864,
+            "bundle_minus_holding_swe_m": -1.3877787807814457e-17,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "2014-02-24",
+            "holding_depth_residual_m": 0.07218174823343021,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.43
+          },
+          {
+            "bundle_depth_residual_m": -0.20885904214599843,
+            "bundle_minus_holding_density_kg_m3": 269.64509383871643,
+            "bundle_minus_holding_depth_m": -0.28242945062974856,
+            "bundle_minus_holding_swe_m": 0.0,
+            "bundle_state": "UNDER_FAIL",
+            "bundle_under_transition": "UNDER_INDUCED_FROM_HOLDING_PASS",
+            "date": "2011-02-18",
+            "holding_depth_residual_m": 0.07357040848375013,
+            "holding_state": "PASS",
+            "march_april_cap_class": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "observed_snow_depth_m": 0.45
+          }
+        ]
+      },
+      "site_group": "harvard",
+      "surface_id": "harvard_open",
+      "transition_summary": {
+        "bundle_state_counts": {
+          "OVER_FAIL": 64,
+          "PASS": 252,
+          "UNDER_FAIL": 74
+        },
+        "bundle_to_spring_counts": {
+          "OVER_FAIL->OVER_FAIL": 64,
+          "PASS->PASS": 250,
+          "PASS->UNDER_FAIL": 2,
+          "UNDER_FAIL->UNDER_FAIL": 74
+        },
+        "default_to_bundle_counts": {
+          "OVER_FAIL->OVER_FAIL": 64,
+          "OVER_FAIL->PASS": 200,
+          "OVER_FAIL->UNDER_FAIL": 60,
+          "PASS->PASS": 52,
+          "PASS->UNDER_FAIL": 13,
+          "UNDER_FAIL->UNDER_FAIL": 1
+        },
+        "holding_to_bundle_counts": {
+          "OVER_FAIL->OVER_FAIL": 64,
+          "OVER_FAIL->PASS": 114,
+          "OVER_FAIL->UNDER_FAIL": 7,
+          "PASS->PASS": 138,
+          "PASS->UNDER_FAIL": 54,
+          "UNDER_FAIL->UNDER_FAIL": 13
+        },
+        "paired_row_count": 390
+      },
+      "under_persistence": {
+        "bundle_under_fail_count": 74,
+        "induced_by_bundle_density_arm_count": 61,
+        "induced_by_bundle_density_arm_fraction": 0.8243243243243243,
+        "lead_hypothesis": "BULK_COMPACTION_MECHANISM_COST_SUPPORTED",
+        "transition_counts": {
+          "UNDER_INDUCED_FROM_HOLDING_OVER": 7,
+          "UNDER_INDUCED_FROM_HOLDING_PASS": 54,
+          "UNDER_PERSISTED_FROM_HOLDING": 13
+        }
+      },
+      "verdict_scope": "paired_observation"
+    },
+    {
+      "cover": "deciduous",
+      "note": "Fixture exists, but paired snow-depth observations are not installed.",
+      "observation_source": "not_installed",
+      "paired_row_count": 0,
+      "site_group": "hubbardbrook",
+      "surface_id": "hubbardbrook_deciduous",
+      "transition_summary": {},
+      "verdict_scope": "observation_blocked"
+    },
+    {
+      "cover": "mixed",
+      "note": "Fixture exists, but paired snow-depth observations are not installed.",
+      "observation_source": "not_installed",
+      "paired_row_count": 0,
+      "site_group": "hubbardbrook",
+      "surface_id": "hubbardbrook_mixed",
+      "transition_summary": {},
+      "verdict_scope": "observation_blocked"
+    }
+  ]
+}

@@ -24,7 +24,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_spring_densification_candidate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 98",
+        "contract_version: 99",
         "physics_bulk_spring_densification_v1",
         "INV-SNOWFREEZE-068",
         "OBL-SNOWFREEZE-P-043",

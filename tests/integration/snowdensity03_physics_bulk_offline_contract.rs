@@ -57,10 +57,12 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "tests/integration/snowdensity09_coupled_wat_rerun.rs",
         "tests/integration/snowdensity10_3_11_spring_compaction_densification.rs",
         "tests/integration/snowdensity10_3_12_bundle_activation_adjudication.rs",
+        "tests/integration/snowdensity10_3_13_residual_policy_b_diagnostic.rs",
         "tools/snowfreeze_observed/bundle_activation_adjudication.py",
         "tools/snowfreeze_observed/coe_bound_density_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_snotel_profile.py",
+        "tools/snowfreeze_observed/residual_policy_b_diagnostic.py",
         "tools/snowfreeze_observed/spring_compaction_densification_candidate.py",
         "tools/snowfreeze_observed/snowdensity08_gate_rerun.py",
         "tools/snowfreeze_observed/snowdensity09_coupled_wat_rerun.py",
@@ -73,6 +75,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
     assert!(contract.contains("INV-SNOWFREEZE-062"));
     assert!(contract.contains("INV-SNOWFREEZE-068"));
     assert!(contract.contains("INV-SNOWFREEZE-069"));
+    assert!(contract.contains("INV-SNOWFREEZE-070"));
     assert!(contract.contains("physics_bulk_density_compaction_v1"));
 
     let mut unexpected = Vec::new();
