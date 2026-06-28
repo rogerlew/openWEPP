@@ -67,6 +67,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "tests/integration/snowdensity10_3_21_post_partition_residual_decomposition.rs",
         "tests/integration/snowdensity10_3_22_climate_class_density_specialization.rs",
         "tools/snowfreeze_observed/bundle_activation_adjudication.py",
+        "tools/snowfreeze_observed/climate_class_density_specialization.py",
         "tools/snowfreeze_observed/coe_bound_density_adjudication.py",
         "tools/snowfreeze_observed/cross_snotel_mechanism_rubric.py",
         "tools/snowfreeze_observed/default_activation_active_cap.py",

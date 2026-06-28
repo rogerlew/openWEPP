@@ -36,7 +36,7 @@ fn assert_contains(text: &str, marker: &str, path: &str) {
 fn contract_and_package_bind_stage_a_without_activation() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 106",
+        "contract_version: 107",
         "REF-SNOWFREEZE-MARKS1998-TURBULENT",
         "REF-SNOWFREEZE-MARKS1999-SUBLIMATION",
         "snow_sublimation",
@@ -90,6 +90,8 @@ fn dry_windy_open_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitionInput
         dewpoint_c: -18.0,
         snow_melt_model: model,
         snow_density_model: SnowDensityModel::LegacyWepp,
+        sturm_climate_class: None,
+        sturm_day_of_year: None,
         coe_boundary_depth_m: 1.0,
         coe_boundary_density_kg_m3: 450.0,
         coe_boundary_settle_day_count: 30.0,

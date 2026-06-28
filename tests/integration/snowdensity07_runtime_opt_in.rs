@@ -27,7 +27,7 @@ fn read(path: &str) -> String {
 fn snowdensity07_contract_and_package_bind_runtime_opt_in_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 106",
+        "contract_version: 107",
         "INV-SNOWFREEZE-060",
         "OBL-SNOWFREEZE-P-035",
         "snow_density_model",
@@ -79,6 +79,8 @@ fn cold_pack_inputs(model: SnowDensityModel) -> DirectActiveSnowPartitionInputs 
         dewpoint_c: -6.0,
         snow_melt_model: SnowMeltModel::LegacyCoe,
         snow_density_model: model,
+        sturm_climate_class: None,
+        sturm_day_of_year: None,
         coe_boundary_depth_m: 1.0,
         coe_boundary_density_kg_m3: 200.0,
         coe_boundary_settle_day_count: 4.0,

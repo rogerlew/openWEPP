@@ -251,6 +251,8 @@ pub struct DirectActiveSnowPartitionInputs {
     pub dewpoint_c: f64,
     pub snow_melt_model: SnowMeltModel,
     pub snow_density_model: SnowDensityModel,
+    pub sturm_climate_class: Option<SnowClimateClass>,
+    pub sturm_day_of_year: Option<f64>,
     pub coe_boundary_depth_m: f64,
     pub coe_boundary_density_kg_m3: f64,
     pub coe_boundary_settle_day_count: f64,

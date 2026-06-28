@@ -1,6 +1,6 @@
 # Authority Gap And Disposition
 
-Evidence mode: `Static + focused runtime unit evidence`
+Evidence mode: `Static + Ran`
 
 ## Authority Checked
 
@@ -22,22 +22,49 @@ Ephemeral is part of the six-class Sturm snow-class system, but the local
 Sturm 2010 authority states ephemeral measurements were excluded and supplies no
 parameter row.
 
-## Blocking Gap
+The numeric Sturm 1995 binary decision-tree thresholds are now source-verified
+from `references/copyrighted/sturm1995.pdf` and recorded in
+`sturm-thresholds-source-verification.md`. The verified thresholds are:
 
-The package requirement is forcing-derived class assignment from the run's own
-wind, precipitation, and air temperature. The local authority set did not expose
-the numeric Sturm 1995 binary decision-tree thresholds needed to implement that
-assignment. Implementing thresholds from fixture behavior, site names, NSIDC
-raster lookup, or visual inference would violate `INV-SNOWFREEZE-077`.
+- `Tc=10 degC`
+- `CDM=30/125 degC-month`
+- `SPR=2 mm day^-1`
+- wind low/high evidence bracketed by `0.5-2.0 m s^-1`
+
+Sturm/Liston 2021 is a cross-check only: it changes the ephemeral threshold to
+`61 degC-month`, the precipitation threshold to `4 mm day^-1`, and renames
+Taiga/Alpine to Boreal Forest/Montane Forest.
+
+## Runtime Boundaries
+
+- Sturm 1995 brackets actual wind separation but does not select a single
+  numeric wind cutoff. The candidate therefore fails closed for wind-dependent
+  branches inside `0.5 < wind < 2.0 m s^-1`.
+- The rare deep-tundra/deep-taiga branches fail closed because they are not
+  standard six-class labels.
+- Ephemeral has no Sturm 2010 density row; the candidate uses the documented
+  process-first fresh-snow/Anderson fallback rather than fabricated parameters.
+- Promotion requires the real cross-SNOTEL primary rubric, bidirectional
+  densification flip, persistence guardrail, and conservation evidence.
+
+## Rerun Gate Result
+
+The real cross-SNOTEL+cancov direct-production rerun completed after source
+verification:
+
+- activated default: `15` robust fails / `179` robust score;
+- climate-class candidate: `16` robust fails / `168` robust score;
+- candidate robust improvements: `4`;
+- candidate robust regressions: `13`;
+- bidirectional densification flip: failed, with
+  `harvard_open:seasonal_densification_trajectory:-1`;
+- conservation: passed, with `159986` candidate trace rows, max snow-state
+  residual `4.440892098500626e-16 m`, and max partition residual
+  `5.551115123125783e-17 m` under `1e-9 m`.
 
 ## Disposition
 
-The selector is reserved and fail-closed. The candidate is not promoted and the
-default is not changed.
-
-Required follow-on authority:
-
-- Numeric Sturm 1995 decision-tree thresholds or equivalent cited authority.
-- Ephemeral density parameters or a separately ratified fallback.
-- A real cross-SNOTEL direct-production WAT/trace rerun after those authorities
-  are present.
+The selector is reserved and fail-closed. The source authority gap is closed,
+but the candidate is not promoted and the default is not changed because the
+primary observed-data rubric, bidirectional densification flip, and persistence
+guardrail failed.

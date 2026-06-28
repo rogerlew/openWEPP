@@ -365,8 +365,8 @@ impl Wb11HydrologyKernel {
             liquid_for_compaction_m: snow_coupling.snowpack_state_loss + routed_melt_m,
             mean_air_temperature_c,
             runtime_density_cap_kg_m3: SIMIMPL29_SNOW_DENSITY_CAP_KG_M3,
-            sturm_climate_class: None,
-            sturm_day_of_year: None,
+            sturm_climate_class: inputs.sturm_climate_class,
+            sturm_day_of_year: inputs.sturm_day_of_year,
         })
         .map_err(|error| Self::snow_density_guard_error(phase_class, &error))
     }

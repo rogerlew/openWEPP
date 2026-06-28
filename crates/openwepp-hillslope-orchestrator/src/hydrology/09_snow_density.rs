@@ -7,6 +7,12 @@ const SNOW_DENSITY_SHALLOW_GUARD_DEPTH_THRESHOLD_M: f64 = 0.25;
 const SNOW_DENSITY_RHO_WATER_KG_M3: f64 = 1_000.0;
 const SNOW_DENSITY_ZERO_MASS_KG_M2: f64 = 1.0e-9;
 const SNOW_DENSITY_DAILY_COMPACTION_STEPS: u8 = 24;
+pub const STURM1995_CDM_CRITICAL_TEMPERATURE_C: f64 = 10.0;
+pub const STURM1995_EPHEMERAL_CDM_THRESHOLD_C_MONTH: f64 = 30.0;
+pub const STURM1995_HIGH_LOW_CDM_THRESHOLD_C_MONTH: f64 = 125.0;
+pub const STURM1995_HIGH_PRECIP_SPR_THRESHOLD_MM_DAY: f64 = 2.0;
+pub const STURM1995_LOW_WIND_MAX_M_S: f64 = 0.5;
+pub const STURM1995_HIGH_WIND_MIN_M_S: f64 = 2.0;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SnowDensityModel {
@@ -53,6 +59,138 @@ impl SnowClimateClass {
             Self::Prairie => "prairie",
             Self::Ephemeral => "ephemeral",
         }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Sturm1995ClimateNormals {
+    pub cooling_degree_month_c: f64,
+    pub snowfall_precipitation_rate_mm_day: f64,
+    pub winter_wind_m_s: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Sturm1995ClimateClassAssignmentError {
+    NonFiniteInput {
+        symbol: &'static str,
+        value: f64,
+    },
+    NegativeInput {
+        symbol: &'static str,
+        value: f64,
+    },
+    AmbiguousWindThreshold {
+        wind_m_s: f64,
+        low_max_m_s: f64,
+        high_min_m_s: f64,
+    },
+    RareClassCombination {
+        cooling_degree_month_c: f64,
+        snowfall_precipitation_rate_mm_day: f64,
+    },
+}
+
+impl std::fmt::Display for Sturm1995ClimateClassAssignmentError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::NonFiniteInput { symbol, value } => {
+                write!(f, "non-finite Sturm 1995 climate normal {symbol}={value}")
+            }
+            Self::NegativeInput { symbol, value } => {
+                write!(f, "negative Sturm 1995 climate normal {symbol}={value}")
+            }
+            Self::AmbiguousWindThreshold {
+                wind_m_s,
+                low_max_m_s,
+                high_min_m_s,
+            } => write!(
+                f,
+                "Sturm 1995 wind normal {wind_m_s} m/s is inside unresolved ({low_max_m_s}, {high_min_m_s}) m/s bracket"
+            ),
+            Self::RareClassCombination {
+                cooling_degree_month_c,
+                snowfall_precipitation_rate_mm_day,
+            } => write!(
+                f,
+                "Sturm 1995 rare deep-snow branch has no six-class runtime label: CDM={cooling_degree_month_c}, SPR={snowfall_precipitation_rate_mm_day}"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for Sturm1995ClimateClassAssignmentError {}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Sturm1995WindBranch {
+    Low,
+    High,
+}
+
+pub fn sturm1995_climate_class_from_normals(
+    normals: Sturm1995ClimateNormals,
+) -> Result<SnowClimateClass, Sturm1995ClimateClassAssignmentError> {
+    validate_sturm1995_normal(
+        "cooling_degree_month_c",
+        normals.cooling_degree_month_c,
+    )?;
+    validate_sturm1995_normal(
+        "snowfall_precipitation_rate_mm_day",
+        normals.snowfall_precipitation_rate_mm_day,
+    )?;
+    validate_sturm1995_normal("winter_wind_m_s", normals.winter_wind_m_s)?;
+
+    if normals.cooling_degree_month_c < STURM1995_EPHEMERAL_CDM_THRESHOLD_C_MONTH {
+        return Ok(SnowClimateClass::Ephemeral);
+    }
+    let low_temperature =
+        normals.cooling_degree_month_c >= STURM1995_HIGH_LOW_CDM_THRESHOLD_C_MONTH;
+    let high_precipitation =
+        normals.snowfall_precipitation_rate_mm_day >= STURM1995_HIGH_PRECIP_SPR_THRESHOLD_MM_DAY;
+
+    if low_temperature && high_precipitation {
+        return Err(Sturm1995ClimateClassAssignmentError::RareClassCombination {
+            cooling_degree_month_c: normals.cooling_degree_month_c,
+            snowfall_precipitation_rate_mm_day: normals.snowfall_precipitation_rate_mm_day,
+        });
+    }
+    if !low_temperature && high_precipitation {
+        return Ok(SnowClimateClass::Maritime);
+    }
+
+    match (low_temperature, sturm1995_wind_branch(normals.winter_wind_m_s)?) {
+        (true, Sturm1995WindBranch::Low) => Ok(SnowClimateClass::Taiga),
+        (true, Sturm1995WindBranch::High) => Ok(SnowClimateClass::Tundra),
+        (false, Sturm1995WindBranch::Low) => Ok(SnowClimateClass::Alpine),
+        (false, Sturm1995WindBranch::High) => Ok(SnowClimateClass::Prairie),
+    }
+}
+
+fn validate_sturm1995_normal(
+    symbol: &'static str,
+    value: f64,
+) -> Result<(), Sturm1995ClimateClassAssignmentError> {
+    if !value.is_finite() {
+        return Err(Sturm1995ClimateClassAssignmentError::NonFiniteInput { symbol, value });
+    }
+    if value < 0.0 {
+        return Err(Sturm1995ClimateClassAssignmentError::NegativeInput { symbol, value });
+    }
+    Ok(())
+}
+
+fn sturm1995_wind_branch(
+    wind_m_s: f64,
+) -> Result<Sturm1995WindBranch, Sturm1995ClimateClassAssignmentError> {
+    if wind_m_s <= STURM1995_LOW_WIND_MAX_M_S {
+        Ok(Sturm1995WindBranch::Low)
+    } else if wind_m_s >= STURM1995_HIGH_WIND_MIN_M_S {
+        Ok(Sturm1995WindBranch::High)
+    } else {
+        Err(Sturm1995ClimateClassAssignmentError::AmbiguousWindThreshold {
+            wind_m_s,
+            low_max_m_s: STURM1995_LOW_WIND_MAX_M_S,
+            high_min_m_s: STURM1995_HIGH_WIND_MIN_M_S,
+        })
     }
 }
 
@@ -405,6 +543,9 @@ fn apply_sturm2010_density_form_fallback(
     let class = sturm_climate_class.ok_or(SnowDensityError::MissingClimateClassAssignment {
         model: model.id(),
     })?;
+    if class == SnowClimateClass::Ephemeral {
+        return Ok(false);
+    }
     let day =
         sturm_day_of_year.ok_or(SnowDensityError::MissingSturmDayOfYear { model: model.id() })?;
     let target_density_kg_m3 = sturm2010_bulk_density_kg_m3(class, state.depth_m(), day)?;

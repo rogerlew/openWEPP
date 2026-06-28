@@ -1,7 +1,7 @@
 {
   "schema": "snowdensity10-3-22-climate-class-density-specialization-v1",
   "package": "SNOWDENSITY-10.3.22",
-  "disposition": "HOLD-AUTHORITY-GAP-NO-PROMOTION",
+  "disposition": "HOLD-GATE-FAILURE-NON-PROMOTION",
   "activation_authorized": false,
   "default_changed": false,
   "candidate": {
@@ -9,6 +9,8 @@
     "selector": "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
     "selector_scope": "package_bound_internal_density_selector",
     "fail_closed_without_authoritative_class_assignment": true,
+    "fail_closed_for_wind_ambiguous_1995_interval": true,
+    "fail_closed_for_rare_1995_deep_snow_branches": true,
     "raw_sturm_density_form_fallback_flagged": true
   },
   "sturm_class_labels": [
@@ -30,17 +32,51 @@
     "ephemeral"
   ],
   "authority": {
-    "sturm1995_numeric_decision_tree_thresholds_available": false,
+    "sturm1995_numeric_decision_tree_thresholds_available": true,
+    "sturm1995_thresholds": {
+      "tc_c": 10.0,
+      "ephemeral_cdm_c_month": 30.0,
+      "high_low_cdm_c_month": 125.0,
+      "high_precip_spr_mm_day": 2.0,
+      "low_wind_max_m_s": 0.5,
+      "high_wind_min_m_s": 2.0,
+      "wind_between_0_5_and_2_0_m_s": "fail_closed"
+    },
+    "sturm2021_cross_check": {
+      "ephemeral_cdm_c_month": 61.0,
+      "high_precip_spr_mm_day": 4.0,
+      "taiga_renamed_boreal_forest": true,
+      "alpine_renamed_montane_forest": true,
+      "runtime_uses_1995_thresholds_and_names": true
+    },
     "sturm2010_ephemeral_density_parameters_available": false,
+    "ephemeral_fresh_snow_anderson_fallback_documented": true,
     "nsidc0768_runtime_lookup_allowed": false,
     "fixture_fitting_used": false
   },
   "gates": {
-    "cross_snotel_forcing_robust_rubric_beats_current_default_15_179": "missing_authority_not_run",
-    "bidirectional_densification_flip": "missing_authority_not_run",
-    "no_new_bidirectional_persistence_tail": "missing_authority_not_run",
-    "whole_model_conservation": "missing_real_wat_run",
+    "source_thresholds_verified": "pass",
+    "cross_snotel_forcing_robust_rubric_beats_current_default_15_179": "fail_candidate_16_168_vs_default_15_179",
+    "bidirectional_densification_flip": "fail_no_improvements_harvard_open_regression",
+    "no_new_bidirectional_persistence_tail": "fail_13_worse_robust_cells",
+    "whole_model_conservation": "pass_trace_rows_159986_max_snow_state_4_440892098500626e_16_m_max_partition_5_551115123125783e_17_m",
     "focused_explicit_class_swe_identity": "covered_by_unit_test"
+  },
+  "cross_snotel_rerun": {
+    "activated_default_robust_fail_count": 15,
+    "activated_default_robust_ordinal_score": 179,
+    "candidate_robust_fail_count": 16,
+    "candidate_robust_ordinal_score": 168,
+    "candidate_better_robust_cells_vs_activated": 4,
+    "candidate_worse_robust_cells_vs_activated": 13,
+    "candidate_equal_robust_cells_vs_activated": 73,
+    "bidirectional_densification_regressions": [
+      "harvard_open:seasonal_densification_trajectory:-1"
+    ],
+    "candidate_trace_row_count": 159986,
+    "max_abs_snow_state_residual_m": 4.440892098500626e-16,
+    "max_abs_partition_residual_m": 5.551115123125783e-17,
+    "conservation_tolerance_m": 1.0e-9
   },
   "protected_boundaries": {
     "output_schema_changed": false,

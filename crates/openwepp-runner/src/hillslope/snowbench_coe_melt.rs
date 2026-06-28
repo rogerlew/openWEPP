@@ -710,6 +710,8 @@ fn simulate_coe_melt(
             dewpoint_c: day.dewpoint_c,
             snow_melt_model: model.snow_melt_model(),
             snow_density_model: SnowDensityModel::LegacyWepp,
+            sturm_climate_class: None,
+            sturm_day_of_year: None,
             coe_boundary_depth_m: runtime_depth_m,
             coe_boundary_density_kg_m3: runtime_density_kg_m3,
             coe_boundary_settle_day_count: runtime_settle_day_count,

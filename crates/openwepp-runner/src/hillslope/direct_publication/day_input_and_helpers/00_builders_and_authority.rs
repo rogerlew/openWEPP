@@ -445,6 +445,7 @@ struct DirectProductionDayInputBuilder<'a> {
     climate_span: &'a ClimateRunSpanSummary,
     lane_authority: Vec<DirectProductionLaneDayInputAuthority>,
     winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
+    sturm_climate_class: Option<openwepp_hillslope_orchestrator::SnowClimateClass>,
 }
 
 #[derive(Clone)]
@@ -680,6 +681,11 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 Self::build_lane_authority(&day_zero_seed_surface)
             })
             .collect::<Result<Vec<_>, _>>()?;
+        let sturm_climate_class = direct_production_sturm_climate_class_for_density_candidate(
+            climate_request,
+            climate_span,
+            &lane_authority,
+        )?;
         let winter_hourly_geometry =
             DirectProductionWinterHourlyGeometry::from_climate_context_surface(
                 seed_surfaces.last().ok_or_else(|| {
@@ -696,6 +702,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             climate_span,
             lane_authority,
             winter_hourly_geometry,
+            sturm_climate_class,
         })
     }
 
@@ -775,6 +782,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             rainfall_input_m,
             snow_lane_state.runtime_swe_m,
         )?;
+        let sturm_day_of_year = self.sturm_climate_class.map(|_| f64::from(day.julian_day));
         let snow_liquid = authority.snow_frost.snow_liquid_partition(
             self.climate_request,
             day_index,
@@ -782,6 +790,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             rainfall_input_m,
             snow_lane_state,
             growth_state_for_publication.canopy_cover_fraction,
+            self.sturm_climate_class,
+            sturm_day_of_year,
             self.winter_hourly_geometry,
         )?;
         maybe_write_r7h_direct_production_snow_trace(
@@ -1232,6 +1242,131 @@ fn snowdensity1015_default_snow_density_model(
             surface: "direct_production_snow_density_model",
             detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be UTF-8"),
         }),
+    }
+}
+
+fn direct_production_sturm_climate_class_for_density_candidate(
+    climate_request: &HillslopeClimateRuntimeRequest,
+    climate_span: &ClimateRunSpanSummary,
+    lane_authority: &[DirectProductionLaneDayInputAuthority],
+) -> Result<Option<openwepp_hillslope_orchestrator::SnowClimateClass>, HillslopeCliError> {
+    if !lane_authority.iter().any(|authority| {
+        authority.snow_frost.snow_density_model
+            == openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkClimateClassDensityV1
+    }) {
+        return Ok(None);
+    }
+    let normals = direct_production_sturm1995_climate_normals(climate_request, climate_span)?;
+    openwepp_hillslope_orchestrator::sturm1995_climate_class_from_normals(normals)
+        .map(Some)
+        .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_sturm1995_climate_class",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} failed assigning Sturm 1995 climate class from run forcing normals: {source}"
+            ),
+        })
+}
+
+fn direct_production_sturm1995_climate_normals(
+    climate_request: &HillslopeClimateRuntimeRequest,
+    climate_span: &ClimateRunSpanSummary,
+) -> Result<openwepp_hillslope_orchestrator::Sturm1995ClimateNormals, HillslopeCliError> {
+    if climate_span.days.is_empty() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_sturm1995_climate_class",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} cannot assign Sturm 1995 climate class for empty climate span"
+            ),
+        });
+    }
+    let mut months = [DirectProductionSturm1995MonthlyAccumulator::default(); 12];
+    for (day_index, day) in climate_span.days.iter().enumerate() {
+        let forcing = climate_request.direct_day_forcing(day_index).map_err(|source| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_sturm1995_climate_class",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} failed reading daily forcing for Sturm 1995 climate normals: {source}"
+                ),
+            }
+        })?;
+        let month_index =
+            usize::try_from(day.month - 1).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_sturm1995_climate_class",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} invalid climate month {} for Sturm 1995 climate normals",
+                    day.month
+                ),
+            })?;
+        let Some(month) = months.get_mut(month_index) else {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_sturm1995_climate_class",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} invalid climate month {} for Sturm 1995 climate normals",
+                    day.month
+                ),
+            });
+        };
+        month.add(
+            f64::midpoint(forcing.tmax_c, forcing.tmin_c),
+            (forcing.prcp_m * 1_000.0).max(0.0),
+            forcing.vwind_m_s,
+        );
+    }
+
+    let mut cdm_c_month = 0.0;
+    let mut spr_sum_mm_day = 0.0;
+    let mut cold_month_count = 0u32;
+    let mut winter_wind_sum_m_s = 0.0;
+    let mut winter_wind_day_count = 0u32;
+    for month in months.iter().filter(|month| month.day_count > 0) {
+        let mean_temperature_c = month.mean_temperature_c();
+        if mean_temperature_c < openwepp_hillslope_orchestrator::STURM1995_CDM_CRITICAL_TEMPERATURE_C
+        {
+            cdm_c_month += openwepp_hillslope_orchestrator::STURM1995_CDM_CRITICAL_TEMPERATURE_C
+                - mean_temperature_c;
+            spr_sum_mm_day += month.mean_precipitation_mm_day();
+            cold_month_count += 1;
+            winter_wind_sum_m_s += month.wind_m_s_sum;
+            winter_wind_day_count += month.day_count;
+        }
+    }
+    Ok(openwepp_hillslope_orchestrator::Sturm1995ClimateNormals {
+        cooling_degree_month_c: cdm_c_month,
+        snowfall_precipitation_rate_mm_day: if cold_month_count > 0 {
+            spr_sum_mm_day / f64::from(cold_month_count)
+        } else {
+            0.0
+        },
+        winter_wind_m_s: if winter_wind_day_count > 0 {
+            winter_wind_sum_m_s / f64::from(winter_wind_day_count)
+        } else {
+            0.0
+        },
+    })
+}
+
+#[derive(Clone, Copy, Default)]
+struct DirectProductionSturm1995MonthlyAccumulator {
+    temperature_c_sum: f64,
+    precipitation_mm_sum: f64,
+    wind_m_s_sum: f64,
+    day_count: u32,
+}
+
+impl DirectProductionSturm1995MonthlyAccumulator {
+    fn add(&mut self, temperature_c: f64, precipitation_mm: f64, wind_m_s: f64) {
+        self.temperature_c_sum += temperature_c;
+        self.precipitation_mm_sum += precipitation_mm;
+        self.wind_m_s_sum += wind_m_s;
+        self.day_count += 1;
+    }
+
+    fn mean_temperature_c(self) -> f64 {
+        self.temperature_c_sum / f64::from(self.day_count)
+    }
+
+    fn mean_precipitation_mm_day(self) -> f64 {
+        self.precipitation_mm_sum / f64::from(self.day_count)
     }
 }
 
