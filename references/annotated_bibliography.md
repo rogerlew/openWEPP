@@ -743,3 +743,27 @@ openWEPP note (2026-05-11):
 **Kernel mapping**: SNOWDENSITY-10.3.5 robust rain/snow partition (`docs/planning/snow-frost-fidelity-strategy.md` §10.2/§10.3).
 **Notes / caveats**: Per-event/sub-daily method — apply at openWEPP's existing hourly partition resolution (`snow.hourly.stmtim.rst_c` lineage), not a daily mean.
 **OAR-6 compliance status**: Primary candidate authority for a physics-based, calibration-free rain/snow partition.
+
+## R-58: Sturm, Taras, Liston et al. (2010) SWE from snow depth + climate classes
+
+**Citation**: Sturm, M., B. Taras, G. E. Liston, C. Derksen, T. Jonas, and J. Lea (2010). *Estimating Snow Water Equivalent Using Snow Depth Data and Climate Classes*. Journal of Hydrometeorology, 11(6), 1380–1394. https://doi.org/10.1175/2010JHM1202.1
+**Local path**: `references/copyrighted/sturm2010_swe_climate_classes.pdf` (author open copy, morageology.com/pubs/296.pdf, downloaded 2026-06-28)
+**Reference quality**: `verified-primary`
+**Distribution status**: `restricted` (AMS journal copyright; author open copy cached locally, not redistributable).
+**Topic**: **Regime-divergent (climate-class) snow bulk density** — the canonical Paradigm-1 reference. Bulk density = f(**snow depth, day-of-year, snow climate class**) with *class-specific* densification parameters.
+**Key equations / concepts**: ρ(h, DOY) relaxes from ρ0 toward ρmax via class-specific **k1** (depth densification) and **k2** (DOY densification); the six snow classes are Sturm 1995 (alpine / maritime / prairie / tundra / taiga / ephemeral); Bayesian fit to 25,688 depth–density–SWE observations. Direct authority for a **regime-divergent densification trajectory** — the openWEPP cluster-1 split-sign density residual (10.3.21: over-densified at humid-forest, under-densified at mountain).
+**Kernel mapping**: Paradigm 1 of the snow-density paradigm assessment (`docs/work-packages/.../snow-density-paradigm-assessment`); post-10.3.21 density-structure decision (§10.2/§10.3).
+**Notes / caveats**: It is an **empirical depth+DOY+class regression**, not a process model — under ADR-0028 the clean adoption is to make the existing Anderson/SNOBAL densification *coefficients* regime-adaptive by class, never to fit class params to our SNOTEL/cancov fixtures.
+**OAR-6 compliance status**: Primary authority for regime-divergent (climate-class) snow density.
+
+## R-59: Sturm, Holmgren & Liston (1995) seasonal snow-cover classification
+
+**Citation**: Sturm, M., J. Holmgren, and G. E. Liston (1995). *A Seasonal Snow Cover Classification System for Local to Global Applications*. Journal of Climate, 8(5), 1261–1283. https://doi.org/10.1175/1520-0442(1995)008<1261:ASSCCS>2.0.CO;2
+**Local path**: _to track down_ — AMS landing `https://journals.ametsoc.org/view/journals/clim/8/5/1520-0442_1995_008_1261_assccs_2_0_co_2.xml`; an open author copy exists on morageology.com/pubs but was not auto-locatable on 2026-06-28. Gridded operational successor: Global Seasonal-Snow Classification v1, **NSIDC-0768** (Liston/Sturm), `https://nsidc.org/data/nsidc-0768/versions/1`.
+**Reference quality**: `to-track-down`
+**Distribution status**: `restricted` (AMS journal copyright).
+**Topic**: The six-class seasonal snow classification (tundra / taiga / alpine / maritime / prairie / ephemeral) underlying Sturm 2010's density-by-class — and the classification driver for Paradigm 1.
+**Key equations / concepts**: A **binary decision tree on three climate variables — wind, precipitation, air temperature** — assigns the class; each class carries a distinct density / stratigraphy / grain-morphology signature; NH distribution mapped on a 0.5° grid (NSIDC-0768 is the modern gridded product). The {wind, precip, air-temp} drivers are quantities openWEPP already has.
+**Kernel mapping**: Paradigm 1 classification driver; snow-density paradigm assessment.
+**Notes / caveats**: Track-down (AMS). Also worth pulling: *"Differences in compaction behavior of three climate classes of snow"* (Annals of Glaciology, Cambridge — regime-divergent **compaction**, directly on cluster-1; citation to confirm on retrieval).
+**OAR-6 compliance status**: Classification authority for regime-divergent snow modeling.

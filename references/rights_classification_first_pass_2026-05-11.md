@@ -47,6 +47,13 @@ copyright (freely readable but not redistributable):
   authority for the temperature-index melt factor.
 - `copyrighted/Menard2021_BAMS.pdf` — *BAMS* 102(1):E61–E79,
   DOI `10.1175/BAMS-D-19-0329.1`. Snow-model implementation-error intercomparison.
+- `copyrighted/sturm2010_swe_climate_classes.pdf` — *J. Hydrometeorol.* 11(6):1380–1394,
+  DOI `10.1175/2010JHM1202.1`. AMS journal copyright (freely readable, not
+  redistributable); author open copy (morageology.com/pubs/296.pdf) cached locally
+  2026-06-28 for the regime-divergent (climate-class) snow-density paradigm
+  assessment (R-58). Sturm et al. 1995 classification (R-59, J. Climate, AMS) and
+  the Annals of Glaciology "compaction behavior of three climate classes" paper are
+  track-down items, not yet cached.
 
 Note: `copyrighted/noaa_6392_DS1.pdf` (Anderson 1976, NOAA Tech. Report NWS-19)
 is a U.S. Government work and is public domain; it is eligible for promotion to
