@@ -1194,26 +1194,23 @@ fn direct_production_trace_env_usize(name: &str) -> Option<usize> {
     std::env::var(name).ok()?.trim().parse::<usize>().ok()
 }
 
-fn snowdensity09_diagnostic_snow_density_model(
+fn snowdensity1015_default_snow_density_model(
 ) -> Result<openwepp_hillslope_orchestrator::SnowDensityModel, HillslopeCliError> {
     match std::env::var(SNOWDENSITY09_DENSITY_MODEL_ENV) {
         Ok(value) => match value.trim() {
-            "" | "legacy_wepp" => Ok(openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp),
-            "physics_bulk_density_compaction_v1" => Ok(
+            "" | "physics_bulk_density_compaction_v1" => Ok(
                 openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1,
             ),
-            "physics_bulk_spring_densification_v1" => Ok(
-                openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkSpringDensificationV1,
-            ),
+            "legacy_wepp" => Ok(openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp),
             observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_production_snow_density_model",
                 detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be legacy_wepp, physics_bulk_density_compaction_v1, or physics_bulk_spring_densification_v1, observed {observed}"
+                    "{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be legacy_wepp or physics_bulk_density_compaction_v1, observed {observed}"
                 ),
             }),
         },
         Err(std::env::VarError::NotPresent) => {
-            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp)
+            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1)
         }
         Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_density_model",
@@ -1249,6 +1246,7 @@ fn snowdensity1035_diagnostic_snow_phase_model(
     }
 }
 
+#[allow(dead_code)]
 fn snowdensity1037_diagnostic_snow_melt_model(
 ) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
     match std::env::var(SNOWDENSITY1037_MELT_MODEL_ENV) {
@@ -1274,14 +1272,14 @@ fn snowdensity1037_diagnostic_snow_melt_model(
     }
 }
 
-fn snowdensity1038_diagnostic_snow_melt_model(
+fn snowdensity1015_default_snow_melt_model(
 ) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
     match std::env::var(SNOWDENSITY1038_MELT_MODEL_ENV) {
         Ok(value) => match value.trim() {
-            "" | "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
-            "coe_liquid_holding_capacity_v1" => {
+            "" | "coe_liquid_holding_capacity_v1" => {
                 Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1)
             }
+            "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
             observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_production_snow_melt_model",
                 detail: format!(
@@ -1289,7 +1287,9 @@ fn snowdensity1038_diagnostic_snow_melt_model(
                 ),
             }),
         },
-        Err(std::env::VarError::NotPresent) => snowdensity1037_diagnostic_snow_melt_model(),
+        Err(std::env::VarError::NotPresent) => {
+            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1)
+        }
         Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_melt_model",
             detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be UTF-8"),

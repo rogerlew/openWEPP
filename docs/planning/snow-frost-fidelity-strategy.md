@@ -265,16 +265,19 @@ package needs broader PySnobal coverage.
 
 ```text
 snow_melt_model =
-    legacy_coe                 # current default production CoE melt
+    coe_liquid_holding_capacity_v1  # current default production CoE melt boundary
+    legacy_coe                 # explicit rollback/test selector
     coe_shortwave_albedo_v1    # opt-in modernized CoE melt
 
 snow_model =
-    legacy_wepp                # current empirical WEPP depth/density lineage
-    physics_bulk               # later opt-in density/pack sub-solver
+    physics_bulk_density_compaction_v1  # current default production depth/density lineage
+    legacy_wepp                # explicit rollback/test selector
 ```
 
-- Keep density/pack selection through an explicit runtime option:
-  `snow_model = legacy_wepp | physics_bulk`.
+- SNOWDENSITY-10.3.15 activated `coe_liquid_holding_capacity_v1` plus
+  `physics_bulk_density_compaction_v1` as the direct-production no-env default
+  under the active `522 kg m^-3` cap. Legacy melt/density remain explicit
+  rollback/test selectors, not parser/runfile/user CLI surfaces.
 - Keep the modernized melt implementation in the production winter-column CoE
   melt seam (`amelt`/`bmelt`/`cmelt`/`dmelt` in
   `crates/openwepp-hillslope-orchestrator/src/hydrology/`). Do not route it
@@ -767,23 +770,30 @@ profile/signature scoring rather than absolute-magnitude promotion.
      projection remains mixed follow-up evidence only: cap-pinned paired
      failures project `105 -> 102`, but `3` passing rows become projected
      under-persistence, so dynamic cap re-anchoring requires its own contract-
-     first implementation and rerun if pursued.
+   first implementation and rerun if pursued.
+   - **Default activation completed as 10.3.15:**
+     `docs/work-packages/20260627-snowdensity-10-3-15-default-activation-active-cap-001/`
+     amended `SC-SNOWFREEZE-001` v101 with `INV-SNOWFREEZE-072` and
+     `OBL-SNOWFREEZE-P-047`, activated the no-env direct-production default
+     bundle `coe_liquid_holding_capacity_v1 + physics_bulk_density_compaction_v1`,
+     retained `legacy_coe`/`legacy_wepp` as explicit rollback/test selectors,
+     and preserved parser/runfile/user CLI, fixture, output-schema,
+     compatibility-runtime, Qwet/frzftp, and active-cap boundaries. The
+     activation is an improvement, not snow/frost closure: `498/1415` paired
+     snow-depth rows still fail control, and frost attribution remains blocked
+     by `SNOW-CONTROL-RESIDUALS-REMAIN`.
 7. **Subsequent candidate packages (one lever each).** After winter-thaw melt
    response and the 10.3.9/10.3.10 residual adjudication, 10.3.11 retired the
    spring wet-time densification candidate and 10.3.12 held the best current
    bundle as opt-in only; 10.3.13 then confirmed that most under-persistence is
    newly induced by the bulk-compaction arm, and 10.3.14 supplied the Policy-B
-   full-workspace no-regression evidence under the active `522 kg m^-3` cap. Do
-   not pursue another wet-compaction acceleration or density-rate variant
-   without new external authority and a different residual class. The next
-   package should be a default-activation package for
-   `coe_liquid_holding_capacity_v1 + physics_bulk_density_compaction_v1` under
-   the active cap, with explicit rollback/default isolation, selector removal or
-   policy decision, fixture/schema non-mutation proof, and release-note/contract
-   activation authority. Open-surface ablation remains the leading
-   over-persistence follow-on for cap-limited mass rows, especially Harvard open
-   and Sleepers open field, but it should follow activation so it does not move
-   the activation target. Under-persistence is now large (`234` rows total;
+   full-workspace no-regression evidence under the active `522 kg m^-3` cap;
+   10.3.15 then activated that bundle by default. Do not pursue another
+   wet-compaction acceleration or density-rate variant without new external
+   authority and a different residual class. Open-surface ablation remains the
+   leading over-persistence follow-on for cap-limited mass rows, especially
+   Harvard open and Sleepers open field. Under-persistence is now large (`234`
+   rows total;
    `128` March/April rows) and mostly induced by the density arm; it is a known
    mechanism cost to carry into activation release notes and follow-up residual
    work, not an authorization for another density-rate acceleration.

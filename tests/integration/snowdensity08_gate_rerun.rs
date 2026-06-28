@@ -21,7 +21,7 @@ const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 fn snowdensity08_contract_and_package_bind_gate_rerun_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 100",
+        "contract_version: 101",
         "INV-SNOWFREEZE-061",
         "OBL-SNOWFREEZE-P-036",
         "SNOWDENSITY-08 Snow/Frost Gate Rerun Addendum",
@@ -43,13 +43,14 @@ fn snowdensity08_contract_and_package_bind_gate_rerun_authority() {
 }
 
 #[test]
-fn snowdensity08_default_path_remains_legacy_and_script_reports_blocker() {
+fn snowdensity08_default_is_superseded_by_10_3_15_and_script_reports_blocker() {
     let builder = read(DIRECT_PUBLICATION_BUILDER);
     assert!(
         builder.contains("SNOWDENSITY09_DENSITY_MODEL_ENV")
             && builder.contains("Err(std::env::VarError::NotPresent)")
-            && builder.contains("SnowDensityModel::LegacyWepp"),
-        "surface-driven direct publication path must default to legacy_wepp when the diagnostic selector is absent"
+            && builder.contains("SnowDensityModel::PhysicsBulkDensityCompactionV1")
+            && builder.contains("\"legacy_wepp\" => Ok"),
+        "SNOWDENSITY-10.3.15 must supersede the SNOWDENSITY-08 default while retaining legacy rollback"
     );
     assert!(
         !read(CLI).contains("physics_bulk_density_compaction_v1"),

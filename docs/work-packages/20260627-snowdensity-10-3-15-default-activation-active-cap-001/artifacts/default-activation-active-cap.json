@@ -1,0 +1,1957 @@
+{
+  "activated_default": {
+    "density_env": "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
+    "melt_env": "OPENWEPP_SNOWDENSITY1038_MELT_MODEL",
+    "selector_state": "absent/empty environment values select activated defaults",
+    "snow_density_model": "physics_bulk_density_compaction_v1",
+    "snow_melt_model": "coe_liquid_holding_capacity_v1",
+    "trace_env": "OPENWEPP_R7H_SNOW_TRACE_PATH",
+    "trace_proof": {
+      "expected_snow_density_model": "physics_bulk_density_compaction_v1",
+      "expected_snow_density_model_count": 112502,
+      "expected_snow_melt_model": "coe_liquid_holding_capacity_v1",
+      "expected_snow_melt_model_count": 112502,
+      "trace_counts_by_surface": {
+        "harvard_hardwood": {
+          "counts": {
+            "snow_density_model": {
+              "physics_bulk_density_compaction_v1": 16437
+            },
+            "snow_melt_model": {
+              "coe_liquid_holding_capacity_v1": 16437
+            }
+          },
+          "path": "target/snowdensity10_3_15_default_activation_active_cap/traces/harvard_hardwood_default_no_env.jsonl"
+        },
+        "harvard_open": {
+          "counts": {
+            "snow_density_model": {
+              "physics_bulk_density_compaction_v1": 16437
+            },
+            "snow_melt_model": {
+              "coe_liquid_holding_capacity_v1": 16437
+            }
+          },
+          "path": "target/snowdensity10_3_15_default_activation_active_cap/traces/harvard_open_default_no_env.jsonl"
+        },
+        "hjandrews_conifer": {
+          "counts": {
+            "snow_density_model": {
+              "physics_bulk_density_compaction_v1": 16437
+            },
+            "snow_melt_model": {
+              "coe_liquid_holding_capacity_v1": 16437
+            }
+          },
+          "path": "target/snowdensity10_3_15_default_activation_active_cap/traces/hjandrews_conifer_default_no_env.jsonl"
+        },
+        "hubbardbrook_deciduous": {
+          "counts": {
+            "snow_density_model": {
+              "physics_bulk_density_compaction_v1": 16437
+            },
+            "snow_melt_model": {
+              "coe_liquid_holding_capacity_v1": 16437
+            }
+          },
+          "path": "target/snowdensity10_3_15_default_activation_active_cap/traces/hubbardbrook_deciduous_default_no_env.jsonl"
+        },
+        "hubbardbrook_mixed": {
+          "counts": {
+            "snow_density_model": {
+              "physics_bulk_density_compaction_v1": 16437
+            },
+            "snow_melt_model": {
+              "coe_liquid_holding_capacity_v1": 16437
+            }
+          },
+          "path": "target/snowdensity10_3_15_default_activation_active_cap/traces/hubbardbrook_mixed_default_no_env.jsonl"
+        },
+        "sleepers_south_field": {
+          "counts": {
+            "snow_density_model": {
+              "physics_bulk_density_compaction_v1": 13880
+            },
+            "snow_melt_model": {
+              "coe_liquid_holding_capacity_v1": 13880
+            }
+          },
+          "path": "target/snowdensity10_3_15_default_activation_active_cap/traces/sleepers_south_field_default_no_env.jsonl"
+        },
+        "sleepers_w9_hardwood": {
+          "counts": {
+            "snow_density_model": {
+              "physics_bulk_density_compaction_v1": 16437
+            },
+            "snow_melt_model": {
+              "coe_liquid_holding_capacity_v1": 16437
+            }
+          },
+          "path": "target/snowdensity10_3_15_default_activation_active_cap/traces/sleepers_w9_hardwood_default_no_env.jsonl"
+        }
+      },
+      "unexpected_snow_density_models": {},
+      "unexpected_snow_melt_models": {}
+    }
+  },
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-072 OBL-SNOWFREEZE-P-047",
+  "evidence_class": "Static + Ran",
+  "protected_boundaries": {
+    "active_density_cap_kg_m3": 522.0,
+    "compatibility_runtime_changed": false,
+    "density_cap_changed": false,
+    "fixture_inputs_changed": false,
+    "melt_radiation_canopy_phase_rain_heat_longwave_frost_changed": false,
+    "new_process_physics_added": false,
+    "observed_depth_or_density_consumed_by_runtime": false,
+    "parser_runfile_user_cli_selector_added": false,
+    "public_output_schema_changed": false,
+    "qwet_or_frzftp_changed": false,
+    "site_calibration_performed": false
+  },
+  "raw_outputs": {
+    "output_dir": "target/snowdensity10_3_15_default_activation_active_cap",
+    "package_json": "docs/work-packages/20260627-snowdensity-10-3-15-default-activation-active-cap-001/artifacts/default-activation-active-cap.json",
+    "package_markdown": "docs/work-packages/20260627-snowdensity-10-3-15-default-activation-active-cap-001/artifacts/default-activation-active-cap.md"
+  },
+  "rollback": {
+    "run": {
+      "command": [
+        "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+        "--run-dir",
+        "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/site1_sleepers_south_field_vt",
+        "--run-file",
+        "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_south_field/rollback_legacy/sleepers_south_field_rollback_legacy.run",
+        "--output-dir",
+        "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_south_field/rollback_legacy",
+        "--legacy-sidecar-discovery",
+        "--direct-production-executor"
+      ],
+      "env_updates": {
+        "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/traces/sleepers_south_field_rollback_legacy.jsonl",
+        "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "legacy_wepp",
+        "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "legacy_coe"
+      },
+      "failure_samples": [
+        {
+          "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+          "date": "1983-12-08",
+          "depth_residual_m": 0.29666612540710313,
+          "depth_tolerance_m": 0.1,
+          "modeled_snow_depth_m": 0.5326661254071031,
+          "modeled_snow_water_m": 0.10591864192697688,
+          "observed_snow_depth_m": 0.236,
+          "water_year": 1984
+        },
+        {
+          "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+          "date": "1983-12-16",
+          "depth_residual_m": 0.5553777790539117,
+          "depth_tolerance_m": 0.1,
+          "modeled_snow_depth_m": 0.5883777790539118,
+          "modeled_snow_water_m": 0.14331864192697688,
+          "observed_snow_depth_m": 0.033,
+          "water_year": 1984
+        },
+        {
+          "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+          "date": "1983-12-21",
+          "depth_residual_m": 0.5013806646548313,
+          "depth_tolerance_m": 0.1,
+          "modeled_snow_depth_m": 0.6063806646548313,
+          "modeled_snow_water_m": 0.15211864192697688,
+          "observed_snow_depth_m": 0.105,
+          "water_year": 1984
+        },
+        {
+          "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+          "date": "1983-12-29",
+          "depth_residual_m": 0.5283361635081715,
+          "depth_tolerance_m": 0.1,
+          "modeled_snow_depth_m": 0.7963361635081715,
+          "modeled_snow_water_m": 0.1923186419269769,
+          "observed_snow_depth_m": 0.268,
+          "water_year": 1984
+        },
+        {
+          "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+          "date": "1984-01-06",
+          "depth_residual_m": 0.47844030857387415,
+          "depth_tolerance_m": 0.1,
+          "modeled_snow_depth_m": 0.7914403085738742,
+          "modeled_snow_water_m": 0.19881864192697687,
+          "observed_snow_depth_m": 0.313,
+          "water_year": 1984
+        },
+        {
+          "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+          "date": "1984-01-12",
+          "depth_residual_m": 0.4814231360002055,
+          "depth_tolerance_m": 0.1176,
+          "modeled_snow_depth_m": 0.8734231360002055,
+          "modeled_snow_water_m": 0.21911864192697686,
+          "observed_snow_depth_m": 0.392,
+          "water_year": 1984
+        },
+        {
+          "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+          "date": "1984-01-18",
+          "depth_residual_m": 0.4575484762084158,
+          "depth_tolerance_m": 0.1293,
+          "modeled_snow_depth_m": 0.8885484762084158,
+          "modeled_snow_water_m": 0.22311864192697686,
+          "observed_snow_depth_m": 0.431,
+          "water_year": 1984
+        },
+        {
+          "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+          "date": "1984-01-27",
+          "depth_residual_m": 0.5662822792935106,
+          "depth_tolerance_m": 0.1146,
+          "modeled_snow_depth_m": 0.9482822792935106,
+          "modeled_snow_water_m": 0.23251864192697685,
+          "observed_snow_depth_m": 0.382,
+          "water_year": 1984
+        }
+      ],
+      "march_april_cap_adjudication": {
+        "class_counts_all_rows": {
+          "CAP_LIMITED_DEPLETION_REQUIRED": 70,
+          "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 46,
+          "PASS": 5,
+          "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 28
+        },
+        "class_counts_failures": {
+          "CAP_LIMITED_DEPLETION_REQUIRED": 70,
+          "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 46,
+          "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 28
+        },
+        "compaction_only_feasible_failure_count": 46,
+        "compaction_only_fraction_of_failures": 0.3194444444444444,
+        "depletion_required_failure_count": 98,
+        "depletion_required_fraction_of_failures": 0.6805555555555556,
+        "failure_count": 144,
+        "max_required_density_for_compaction_only_rows_kg_m3": 495.3767176519199,
+        "max_required_swe_depletion_to_clear_at_cap_m": 0.35485556647375366,
+        "mean_required_density_for_compaction_only_rows_kg_m3": 377.1815527402974,
+        "mean_required_swe_depletion_to_clear_at_cap_m": 0.12725062201884788,
+        "paired_count": 149,
+        "row_sum_required_swe_depletion_to_clear_at_cap_m": 12.470560957847093
+      },
+      "observation_row_count": 392,
+      "paired_row_count": 384,
+      "remaining_failures": {
+        "counts_by_month": {
+          "1": 64,
+          "2": 66,
+          "3": 91,
+          "4": 53,
+          "5": 1,
+          "11": 3,
+          "12": 44
+        },
+        "counts_by_residual_sign": {
+          "MODELED_OVER_OBSERVED": 321,
+          "MODELED_UNDER_OBSERVED": 1
+        },
+        "counts_by_water_year": {
+          "1984": 23,
+          "1985": 19,
+          "1986": 13,
+          "1987": 16,
+          "1988": 14,
+          "1989": 21,
+          "1990": 10,
+          "1991": 15,
+          "1992": 14,
+          "1993": 14,
+          "1994": 6,
+          "1995": 1,
+          "1996": 10,
+          "1997": 12,
+          "1998": 8,
+          "1999": 7,
+          "2000": 5,
+          "2001": 10,
+          "2002": 2,
+          "2004": 8,
+          "2005": 6,
+          "2007": 13,
+          "2008": 4,
+          "2009": 7,
+          "2010": 5,
+          "2011": 10,
+          "2012": 8,
+          "2013": 5,
+          "2014": 9,
+          "2015": 9,
+          "2016": 8,
+          "2017": 10
+        },
+        "failure_count": 322,
+        "mean_abs_depth_residual_m": 0.4829441087912823,
+        "mean_signed_depth_residual_m": 0.4822675033717134
+      },
+      "residuals": {
+        "max_abs_depth_residual_m": 1.596821792509187,
+        "mean_abs_depth_residual_m": 0.414589958156585,
+        "mean_signed_depth_residual_m": 0.41081660940626946,
+        "modeled_over_observed_fraction": 0.9453125,
+        "paired_count": 384,
+        "sample_pairs": [
+          {
+            "date": "1983-12-08",
+            "depth_residual_m": 0.29666612540710313,
+            "modeled_snow_depth_m": 0.5326661254071031,
+            "modeled_snow_water_m": 0.10591864192697688,
+            "observed_snow_depth_m": 0.236,
+            "water_year": 1984
+          },
+          {
+            "date": "1983-12-16",
+            "depth_residual_m": 0.5553777790539117,
+            "modeled_snow_depth_m": 0.5883777790539118,
+            "modeled_snow_water_m": 0.14331864192697688,
+            "observed_snow_depth_m": 0.033,
+            "water_year": 1984
+          },
+          {
+            "date": "1983-12-21",
+            "depth_residual_m": 0.5013806646548313,
+            "modeled_snow_depth_m": 0.6063806646548313,
+            "modeled_snow_water_m": 0.15211864192697688,
+            "observed_snow_depth_m": 0.105,
+            "water_year": 1984
+          },
+          {
+            "date": "1983-12-29",
+            "depth_residual_m": 0.5283361635081715,
+            "modeled_snow_depth_m": 0.7963361635081715,
+            "modeled_snow_water_m": 0.1923186419269769,
+            "observed_snow_depth_m": 0.268,
+            "water_year": 1984
+          },
+          {
+            "date": "1984-01-06",
+            "depth_residual_m": 0.47844030857387415,
+            "modeled_snow_depth_m": 0.7914403085738742,
+            "modeled_snow_water_m": 0.19881864192697687,
+            "observed_snow_depth_m": 0.313,
+            "water_year": 1984
+          },
+          {
+            "date": "1984-01-12",
+            "depth_residual_m": 0.4814231360002055,
+            "modeled_snow_depth_m": 0.8734231360002055,
+            "modeled_snow_water_m": 0.21911864192697686,
+            "observed_snow_depth_m": 0.392,
+            "water_year": 1984
+          },
+          {
+            "date": "1984-01-18",
+            "depth_residual_m": 0.4575484762084158,
+            "modeled_snow_depth_m": 0.8885484762084158,
+            "modeled_snow_water_m": 0.22311864192697686,
+            "observed_snow_depth_m": 0.431,
+            "water_year": 1984
+          },
+          {
+            "date": "1984-01-27",
+            "depth_residual_m": 0.5662822792935106,
+            "modeled_snow_depth_m": 0.9482822792935106,
+            "modeled_snow_water_m": 0.23251864192697685,
+            "observed_snow_depth_m": 0.382,
+            "water_year": 1984
+          },
+          {
+            "date": "1984-01-31",
+            "depth_residual_m": 0.49396876401868584,
+            "modeled_snow_depth_m": 0.9425687640186858,
+            "modeled_snow_water_m": 0.23671864192697686,
+            "observed_snow_depth_m": 0.4486,
+            "water_year": 1984
+          },
+          {
+            "date": "1984-02-08",
+            "depth_residual_m": 0.5546910591624026,
+            "modeled_snow_depth_m": 1.0216910591624027,
+            "modeled_snow_water_m": 0.25656864192697687,
+            "observed_snow_depth_m": 0.467,
+            "water_year": 1984
+          },
+          {
+            "date": "1984-02-14",
+            "depth_residual_m": 0.5034147787182177,
+            "modeled_snow_depth_m": 0.9334147787182177,
+            "modeled_snow_water_m": 0.26026864192697685,
+            "observed_snow_depth_m": 0.43,
+            "water_year": 1984
+          },
+          {
+            "date": "1984-02-24",
+            "depth_residual_m": 0.6232955949533311,
+            "modeled_snow_depth_m": 0.8642955949533311,
+            "modeled_snow_water_m": 0.2925686419269769,
+            "observed_snow_depth_m": 0.241,
+            "water_year": 1984
+          }
+        ],
+        "snow_control_fail_count": 322,
+        "snow_control_fail_fraction": 0.8385416666666666,
+        "status": "PAIRED_OBSERVED_SNOW_DEPTH"
+      },
+      "run_dir": "target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_south_field/rollback_legacy",
+      "runfile": "target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_south_field/rollback_legacy/sleepers_south_field_rollback_legacy.run",
+      "scenario": "rollback_legacy",
+      "trace": "target/snowdensity10_3_15_default_activation_active_cap/traces/sleepers_south_field_rollback_legacy.jsonl",
+      "wat": "target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_south_field/rollback_legacy/sleepers_south_field_rollback_legacy.wat.parquet",
+      "wat_summary": {
+        "day_count": 13880,
+        "depth_day_sum_m_days": 3703.6636522996455,
+        "mean_snow_depth_m": 0.266834557082107,
+        "mean_snow_water_m": 0.0703552666439492,
+        "peak_snow_depth_m": 1.9350427803711576,
+        "peak_snow_water_m": 0.5095266666666667,
+        "snow_depth_day_count": 13880,
+        "snow_water_day_count": 13880,
+        "swe_day_sum_m_days": 976.531101018015
+      }
+    },
+    "snow_density_model": "legacy_wepp",
+    "snow_melt_model": "legacy_coe",
+    "surface_id": "sleepers_south_field",
+    "trace_proof": {
+      "expected_snow_density_model": "legacy_wepp",
+      "expected_snow_density_model_count": 13880,
+      "expected_snow_melt_model": "legacy_coe",
+      "expected_snow_melt_model_count": 13880,
+      "trace_counts_by_surface": {
+        "sleepers_south_field": {
+          "counts": {
+            "snow_density_model": {
+              "legacy_wepp": 13880
+            },
+            "snow_melt_model": {
+              "legacy_coe": 13880
+            }
+          },
+          "path": "target/snowdensity10_3_15_default_activation_active_cap/traces/sleepers_south_field_rollback_legacy.jsonl"
+        }
+      },
+      "unexpected_snow_density_models": {},
+      "unexpected_snow_melt_models": {}
+    }
+  },
+  "runtime_coupling": "real direct-production WAT via openwepp-cli-hill",
+  "schema": "snowdensity10-3-15-default-activation-active-cap-v1",
+  "summary": {
+    "activation_complete": true,
+    "active_density_cap_kg_m3": 522.0,
+    "default_trace_ok": true,
+    "disposition": "COMPLETE-DEFAULT-ACTIVATED-UNDER-ACTIVE-CAP",
+    "expected_policy_b_paired_row_count": 1415,
+    "expected_policy_b_snow_control_fail_count": 498,
+    "fail_delta_from_legacy_default_policy_b": 649,
+    "frost_attribution_blocker": "SNOW-CONTROL-RESIDUALS-REMAIN",
+    "frost_attribution_unblocked": false,
+    "observation_blocked_surface_count": 3,
+    "observation_blocked_surface_ids": [
+      "hjandrews_conifer",
+      "hubbardbrook_deciduous",
+      "hubbardbrook_mixed"
+    ],
+    "paired_row_count": 1415,
+    "protected_boundaries_changed": false,
+    "residuals_match_policy_b_active_cap_evidence": true,
+    "rollback_trace_ok": true,
+    "snow_control_fail_count": 498
+  },
+  "surfaces": [
+    {
+      "cover": "conifer",
+      "default_no_env": {
+        "command": [
+          "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/tests/fixtures/cancov_forest/hjandrews_conifer_or",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/hjandrews_conifer/default_no_env/hjandrews_conifer_default_no_env.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/hjandrews_conifer/default_no_env",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "env_updates": {
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/traces/hjandrews_conifer_default_no_env.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "<absent>",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "<absent>"
+        },
+        "failure_samples": [],
+        "march_april_cap_adjudication": {
+          "class_counts_all_rows": {},
+          "class_counts_failures": {},
+          "compaction_only_feasible_failure_count": 0,
+          "compaction_only_fraction_of_failures": null,
+          "depletion_required_failure_count": 0,
+          "depletion_required_fraction_of_failures": null,
+          "failure_count": 0,
+          "max_required_density_for_compaction_only_rows_kg_m3": null,
+          "max_required_swe_depletion_to_clear_at_cap_m": null,
+          "mean_required_density_for_compaction_only_rows_kg_m3": null,
+          "mean_required_swe_depletion_to_clear_at_cap_m": null,
+          "paired_count": 0,
+          "row_sum_required_swe_depletion_to_clear_at_cap_m": 0.0
+        },
+        "observation_row_count": 0,
+        "paired_row_count": 0,
+        "remaining_failures": {
+          "counts_by_month": {},
+          "counts_by_residual_sign": {},
+          "counts_by_water_year": {},
+          "failure_count": 0,
+          "mean_abs_depth_residual_m": null,
+          "mean_signed_depth_residual_m": null
+        },
+        "residuals": {
+          "max_abs_depth_residual_m": null,
+          "mean_abs_depth_residual_m": null,
+          "mean_signed_depth_residual_m": null,
+          "modeled_over_observed_fraction": null,
+          "paired_count": 0,
+          "sample_pairs": [],
+          "snow_control_fail_count": 0,
+          "snow_control_fail_fraction": null,
+          "status": "NO_PAIRED_OBSERVED_SNOW_DEPTH"
+        },
+        "run_dir": "target/snowdensity10_3_15_default_activation_active_cap/runs/hjandrews_conifer/default_no_env",
+        "runfile": "target/snowdensity10_3_15_default_activation_active_cap/runs/hjandrews_conifer/default_no_env/hjandrews_conifer_default_no_env.run",
+        "scenario": "default_no_env",
+        "trace": "target/snowdensity10_3_15_default_activation_active_cap/traces/hjandrews_conifer_default_no_env.jsonl",
+        "wat": "target/snowdensity10_3_15_default_activation_active_cap/runs/hjandrews_conifer/default_no_env/hjandrews_conifer_default_no_env.wat.parquet",
+        "wat_summary": {
+          "day_count": 16437,
+          "depth_day_sum_m_days": 202.59340607192718,
+          "mean_snow_depth_m": 0.012325449052255714,
+          "mean_snow_water_m": 0.004867355026387489,
+          "peak_snow_depth_m": 0.8241659837823131,
+          "peak_snow_water_m": 0.27506898864986445,
+          "snow_depth_day_count": 16437,
+          "snow_water_day_count": 16437,
+          "swe_day_sum_m_days": 80.00471456873116
+        }
+      },
+      "fixture_dir": "tests/fixtures/cancov_forest/hjandrews_conifer_or",
+      "observation_kind": "none",
+      "observation_source": "not_installed",
+      "site_group": "hjandrews",
+      "surface_id": "hjandrews_conifer",
+      "verdict_scope": "observation_blocked"
+    },
+    {
+      "cover": "open_field",
+      "default_no_env": {
+        "command": [
+          "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/site1_sleepers_south_field_vt",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_south_field/default_no_env/sleepers_south_field_default_no_env.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_south_field/default_no_env",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "env_updates": {
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/traces/sleepers_south_field_default_no_env.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "<absent>",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "<absent>"
+        },
+        "failure_samples": [
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "1983-12-16",
+            "depth_residual_m": 0.10771429688504805,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.14071429688504805,
+            "modeled_snow_water_m": 0.07345286297399509,
+            "observed_snow_depth_m": 0.033,
+            "water_year": 1984
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "1983-12-21",
+            "depth_residual_m": 0.1264126046742663,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.23141260467426628,
+            "modeled_snow_water_m": 0.08127272804096893,
+            "observed_snow_depth_m": 0.105,
+            "water_year": 1984
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "1983-12-29",
+            "depth_residual_m": 0.12865050533268374,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.39665050533268376,
+            "modeled_snow_water_m": 0.12145656094160476,
+            "observed_snow_depth_m": 0.268,
+            "water_year": 1984
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "1984-01-06",
+            "depth_residual_m": 0.11307017035417988,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.4260701703541799,
+            "modeled_snow_water_m": 0.12795656094160476,
+            "observed_snow_depth_m": 0.313,
+            "water_year": 1984
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "1984-01-12",
+            "depth_residual_m": 0.21523811371131718,
+            "depth_tolerance_m": 0.1176,
+            "modeled_snow_depth_m": 0.6072381137113172,
+            "modeled_snow_water_m": 0.14825656094160475,
+            "observed_snow_depth_m": 0.392,
+            "water_year": 1984
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "1984-01-18",
+            "depth_residual_m": 0.17091785239913887,
+            "depth_tolerance_m": 0.1293,
+            "modeled_snow_depth_m": 0.6019178523991389,
+            "modeled_snow_water_m": 0.15225656094160475,
+            "observed_snow_depth_m": 0.431,
+            "water_year": 1984
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "1984-01-27",
+            "depth_residual_m": 0.19461852039951144,
+            "depth_tolerance_m": 0.1146,
+            "modeled_snow_depth_m": 0.5766185203995114,
+            "modeled_snow_water_m": 0.16107153333385946,
+            "observed_snow_depth_m": 0.382,
+            "water_year": 1984
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "1984-01-31",
+            "depth_residual_m": 0.13532073083883733,
+            "depth_tolerance_m": 0.13458,
+            "modeled_snow_depth_m": 0.5839207308388373,
+            "modeled_snow_water_m": 0.16500598002902486,
+            "observed_snow_depth_m": 0.4486,
+            "water_year": 1984
+          }
+        ],
+        "march_april_cap_adjudication": {
+          "class_counts_all_rows": {
+            "CAP_LIMITED_DEPLETION_REQUIRED": 13,
+            "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 15,
+            "PASS": 94,
+            "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 8,
+            "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 19
+          },
+          "class_counts_failures": {
+            "CAP_LIMITED_DEPLETION_REQUIRED": 13,
+            "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 15,
+            "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 8,
+            "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 19
+          },
+          "compaction_only_feasible_failure_count": 15,
+          "compaction_only_fraction_of_failures": 0.2727272727272727,
+          "depletion_required_failure_count": 21,
+          "depletion_required_fraction_of_failures": 0.38181818181818183,
+          "failure_count": 55,
+          "max_required_density_for_compaction_only_rows_kg_m3": 472.9641713148468,
+          "max_required_swe_depletion_to_clear_at_cap_m": 0.07848718517190423,
+          "mean_required_density_for_compaction_only_rows_kg_m3": 355.7374429147707,
+          "mean_required_swe_depletion_to_clear_at_cap_m": 0.030858504911253998,
+          "paired_count": 149,
+          "row_sum_required_swe_depletion_to_clear_at_cap_m": 0.6480286031363339
+        },
+        "observation_row_count": 392,
+        "paired_row_count": 384,
+        "remaining_failures": {
+          "counts_by_month": {
+            "1": 38,
+            "2": 35,
+            "3": 36,
+            "4": 19,
+            "11": 2,
+            "12": 20
+          },
+          "counts_by_residual_sign": {
+            "MODELED_OVER_OBSERVED": 123,
+            "MODELED_UNDER_OBSERVED": 27
+          },
+          "counts_by_water_year": {
+            "1984": 11,
+            "1985": 8,
+            "1986": 9,
+            "1987": 7,
+            "1988": 1,
+            "1989": 4,
+            "1990": 6,
+            "1991": 8,
+            "1992": 5,
+            "1993": 4,
+            "1994": 3,
+            "1995": 2,
+            "1996": 9,
+            "1997": 2,
+            "1998": 7,
+            "1999": 2,
+            "2001": 7,
+            "2004": 6,
+            "2005": 2,
+            "2007": 4,
+            "2008": 3,
+            "2009": 4,
+            "2010": 2,
+            "2011": 4,
+            "2012": 5,
+            "2013": 2,
+            "2014": 8,
+            "2015": 6,
+            "2016": 3,
+            "2017": 6
+          },
+          "failure_count": 150,
+          "mean_abs_depth_residual_m": 0.21087898301463526,
+          "mean_signed_depth_residual_m": 0.15044287037788454
+        },
+        "residuals": {
+          "max_abs_depth_residual_m": 0.5346900397937804,
+          "mean_abs_depth_residual_m": 0.11516290821212598,
+          "mean_signed_depth_residual_m": 0.06871690590773595,
+          "modeled_over_observed_fraction": 0.6458333333333334,
+          "paired_count": 384,
+          "sample_pairs": [
+            {
+              "date": "1983-12-08",
+              "depth_residual_m": -0.09187161472477981,
+              "modeled_snow_depth_m": 0.14412838527522018,
+              "modeled_snow_water_m": 0.07523501711366494,
+              "observed_snow_depth_m": 0.236,
+              "water_year": 1984
+            },
+            {
+              "date": "1983-12-16",
+              "depth_residual_m": 0.10771429688504805,
+              "modeled_snow_depth_m": 0.14071429688504805,
+              "modeled_snow_water_m": 0.07345286297399509,
+              "observed_snow_depth_m": 0.033,
+              "water_year": 1984
+            },
+            {
+              "date": "1983-12-21",
+              "depth_residual_m": 0.1264126046742663,
+              "modeled_snow_depth_m": 0.23141260467426628,
+              "modeled_snow_water_m": 0.08127272804096893,
+              "observed_snow_depth_m": 0.105,
+              "water_year": 1984
+            },
+            {
+              "date": "1983-12-29",
+              "depth_residual_m": 0.12865050533268374,
+              "modeled_snow_depth_m": 0.39665050533268376,
+              "modeled_snow_water_m": 0.12145656094160476,
+              "observed_snow_depth_m": 0.268,
+              "water_year": 1984
+            },
+            {
+              "date": "1984-01-06",
+              "depth_residual_m": 0.11307017035417988,
+              "modeled_snow_depth_m": 0.4260701703541799,
+              "modeled_snow_water_m": 0.12795656094160476,
+              "observed_snow_depth_m": 0.313,
+              "water_year": 1984
+            },
+            {
+              "date": "1984-01-12",
+              "depth_residual_m": 0.21523811371131718,
+              "modeled_snow_depth_m": 0.6072381137113172,
+              "modeled_snow_water_m": 0.14825656094160475,
+              "observed_snow_depth_m": 0.392,
+              "water_year": 1984
+            },
+            {
+              "date": "1984-01-18",
+              "depth_residual_m": 0.17091785239913887,
+              "modeled_snow_depth_m": 0.6019178523991389,
+              "modeled_snow_water_m": 0.15225656094160475,
+              "observed_snow_depth_m": 0.431,
+              "water_year": 1984
+            },
+            {
+              "date": "1984-01-27",
+              "depth_residual_m": 0.19461852039951144,
+              "modeled_snow_depth_m": 0.5766185203995114,
+              "modeled_snow_water_m": 0.16107153333385946,
+              "observed_snow_depth_m": 0.382,
+              "water_year": 1984
+            },
+            {
+              "date": "1984-01-31",
+              "depth_residual_m": 0.13532073083883733,
+              "modeled_snow_depth_m": 0.5839207308388373,
+              "modeled_snow_water_m": 0.16500598002902486,
+              "observed_snow_depth_m": 0.4486,
+              "water_year": 1984
+            },
+            {
+              "date": "1984-02-08",
+              "depth_residual_m": 0.13235793491411602,
+              "modeled_snow_depth_m": 0.599357934914116,
+              "modeled_snow_water_m": 0.18485598002902487,
+              "observed_snow_depth_m": 0.467,
+              "water_year": 1984
+            },
+            {
+              "date": "1984-02-14",
+              "depth_residual_m": -0.10377863942765941,
+              "modeled_snow_depth_m": 0.3262213605723406,
+              "modeled_snow_water_m": 0.16165758777238695,
+              "observed_snow_depth_m": 0.43,
+              "water_year": 1984
+            },
+            {
+              "date": "1984-02-24",
+              "depth_residual_m": -0.029798962692705794,
+              "modeled_snow_depth_m": 0.2112010373072942,
+              "modeled_snow_water_m": 0.11024694147440758,
+              "observed_snow_depth_m": 0.241,
+              "water_year": 1984
+            }
+          ],
+          "snow_control_fail_count": 150,
+          "snow_control_fail_fraction": 0.390625,
+          "status": "PAIRED_OBSERVED_SNOW_DEPTH"
+        },
+        "run_dir": "target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_south_field/default_no_env",
+        "runfile": "target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_south_field/default_no_env/sleepers_south_field_default_no_env.run",
+        "scenario": "default_no_env",
+        "trace": "target/snowdensity10_3_15_default_activation_active_cap/traces/sleepers_south_field_default_no_env.jsonl",
+        "wat": "target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_south_field/default_no_env/sleepers_south_field_default_no_env.wat.parquet",
+        "wat_summary": {
+          "day_count": 13880,
+          "depth_day_sum_m_days": 1971.4803315626682,
+          "mean_snow_depth_m": 0.14203748786474554,
+          "mean_snow_water_m": 0.04453264842017612,
+          "peak_snow_depth_m": 1.2372771610395905,
+          "peak_snow_water_m": 0.41998237721175596,
+          "snow_depth_day_count": 13880,
+          "snow_water_day_count": 13880,
+          "swe_day_sum_m_days": 618.1131600720445
+        }
+      },
+      "fixture_dir": "tests/fixtures/snowfreeze_observed/site1_sleepers_south_field_vt",
+      "observation_kind": "snowfreeze_depth",
+      "observation_source": "snowfreeze_observed",
+      "site_group": "sleepers",
+      "surface_id": "sleepers_south_field",
+      "verdict_scope": "paired_observation"
+    },
+    {
+      "cover": "hardwood",
+      "default_no_env": {
+        "command": [
+          "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/tests/fixtures/snowfreeze_observed/site2_sleepers_w9_hardwood_vt",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_w9_hardwood/default_no_env/sleepers_w9_hardwood_default_no_env.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_w9_hardwood/default_no_env",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "env_updates": {
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/traces/sleepers_w9_hardwood_default_no_env.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "<absent>",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "<absent>"
+        },
+        "failure_samples": [
+          {
+            "attribution": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "date": "1993-12-22",
+            "depth_residual_m": -0.10405263911460905,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.12594736088539096,
+            "modeled_snow_water_m": 0.027005371150321946,
+            "observed_snow_depth_m": 0.23,
+            "water_year": 1994
+          },
+          {
+            "attribution": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "date": "1995-03-02",
+            "depth_residual_m": -0.19475491823788532,
+            "depth_tolerance_m": 0.18500009999999997,
+            "modeled_snow_depth_m": 0.42191208176211464,
+            "modeled_snow_water_m": 0.0703,
+            "observed_snow_depth_m": 0.616667,
+            "water_year": 1995
+          },
+          {
+            "attribution": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "date": "1995-03-14",
+            "depth_residual_m": -0.322086851972269,
+            "depth_tolerance_m": 0.1119999,
+            "modeled_snow_depth_m": 0.051246148027731024,
+            "modeled_snow_water_m": 0.026750489270475596,
+            "observed_snow_depth_m": 0.373333,
+            "water_year": 1995
+          },
+          {
+            "attribution": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "date": "1995-03-20",
+            "depth_residual_m": -0.175,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.0,
+            "modeled_snow_water_m": 0.0,
+            "observed_snow_depth_m": 0.175,
+            "water_year": 1995
+          },
+          {
+            "attribution": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "date": "1996-01-18",
+            "depth_residual_m": -0.2994967225696436,
+            "depth_tolerance_m": 0.1610001,
+            "modeled_snow_depth_m": 0.2371702774303564,
+            "modeled_snow_water_m": 0.11124842788377544,
+            "observed_snow_depth_m": 0.536667,
+            "water_year": 1996
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "1996-02-06",
+            "depth_residual_m": 0.21399065667579337,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.4406576566757934,
+            "modeled_snow_water_m": 0.12796118226968048,
+            "observed_snow_depth_m": 0.226667,
+            "water_year": 1996
+          },
+          {
+            "attribution": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "date": "1996-02-23",
+            "depth_residual_m": -0.12477209687303098,
+            "depth_tolerance_m": 0.12419999999999999,
+            "modeled_snow_depth_m": 0.289227903126969,
+            "modeled_snow_water_m": 0.14963910198455874,
+            "observed_snow_depth_m": 0.414,
+            "water_year": 1996
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "1998-01-29",
+            "depth_residual_m": 0.24266301322250294,
+            "depth_tolerance_m": 0.2139999,
+            "modeled_snow_depth_m": 0.9559960132225029,
+            "modeled_snow_water_m": 0.2689153279035765,
+            "observed_snow_depth_m": 0.713333,
+            "water_year": 1998
+          }
+        ],
+        "march_april_cap_adjudication": {
+          "class_counts_all_rows": {
+            "CAP_LIMITED_DEPLETION_REQUIRED": 2,
+            "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 2,
+            "PASS": 46,
+            "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 2,
+            "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 10
+          },
+          "class_counts_failures": {
+            "CAP_LIMITED_DEPLETION_REQUIRED": 2,
+            "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 2,
+            "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 2,
+            "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 10
+          },
+          "compaction_only_feasible_failure_count": 2,
+          "compaction_only_fraction_of_failures": 0.125,
+          "depletion_required_failure_count": 4,
+          "depletion_required_fraction_of_failures": 0.25,
+          "failure_count": 16,
+          "max_required_density_for_compaction_only_rows_kg_m3": 394.80487854785736,
+          "max_required_swe_depletion_to_clear_at_cap_m": 0.023751967447723427,
+          "mean_required_density_for_compaction_only_rows_kg_m3": 387.72950562782086,
+          "mean_required_swe_depletion_to_clear_at_cap_m": 0.009335113442771825,
+          "paired_count": 62,
+          "row_sum_required_swe_depletion_to_clear_at_cap_m": 0.0373404537710873
+        },
+        "observation_row_count": 200,
+        "paired_row_count": 193,
+        "remaining_failures": {
+          "counts_by_month": {
+            "1": 15,
+            "2": 12,
+            "3": 12,
+            "4": 4,
+            "11": 3,
+            "12": 11
+          },
+          "counts_by_residual_sign": {
+            "MODELED_OVER_OBSERVED": 30,
+            "MODELED_UNDER_OBSERVED": 27
+          },
+          "counts_by_water_year": {
+            "1994": 1,
+            "1995": 3,
+            "1996": 3,
+            "1998": 3,
+            "1999": 2,
+            "2000": 4,
+            "2001": 4,
+            "2002": 3,
+            "2005": 5,
+            "2006": 1,
+            "2007": 3,
+            "2009": 2,
+            "2010": 1,
+            "2011": 1,
+            "2012": 2,
+            "2013": 3,
+            "2014": 6,
+            "2015": 3,
+            "2016": 3,
+            "2017": 2,
+            "2019": 2
+          },
+          "failure_count": 57,
+          "mean_abs_depth_residual_m": 0.19835817999235925,
+          "mean_signed_depth_residual_m": 0.0075639818491552565
+        },
+        "residuals": {
+          "max_abs_depth_residual_m": 0.5456760343859007,
+          "mean_abs_depth_residual_m": 0.10551055267495335,
+          "mean_signed_depth_residual_m": 0.0013006910861279235,
+          "modeled_over_observed_fraction": 0.48186528497409326,
+          "paired_count": 193,
+          "sample_pairs": [
+            {
+              "date": "1993-12-22",
+              "depth_residual_m": -0.10405263911460905,
+              "modeled_snow_depth_m": 0.12594736088539096,
+              "modeled_snow_water_m": 0.027005371150321946,
+              "observed_snow_depth_m": 0.23,
+              "water_year": 1994
+            },
+            {
+              "date": "1994-01-03",
+              "depth_residual_m": 0.0004799166071284555,
+              "modeled_snow_depth_m": 0.23247991660712847,
+              "modeled_snow_water_m": 0.037005371150321945,
+              "observed_snow_depth_m": 0.232,
+              "water_year": 1994
+            },
+            {
+              "date": "1994-01-07",
+              "depth_residual_m": 0.04010526637643308,
+              "modeled_snow_depth_m": 0.4684382663764331,
+              "modeled_snow_water_m": 0.06170537115032195,
+              "observed_snow_depth_m": 0.428333,
+              "water_year": 1994
+            },
+            {
+              "date": "1994-01-12",
+              "depth_residual_m": -0.08302897554826005,
+              "modeled_snow_depth_m": 0.4533040244517399,
+              "modeled_snow_water_m": 0.07140537115032194,
+              "observed_snow_depth_m": 0.536333,
+              "water_year": 1994
+            },
+            {
+              "date": "1994-01-21",
+              "depth_residual_m": 0.1551176143973405,
+              "modeled_snow_depth_m": 0.7717846143973405,
+              "modeled_snow_water_m": 0.12350537115032195,
+              "observed_snow_depth_m": 0.616667,
+              "water_year": 1994
+            },
+            {
+              "date": "1994-02-02",
+              "depth_residual_m": 0.07551060327888526,
+              "modeled_snow_depth_m": 0.7295106032788853,
+              "modeled_snow_water_m": 0.15730537115032195,
+              "observed_snow_depth_m": 0.654,
+              "water_year": 1994
+            },
+            {
+              "date": "1994-02-04",
+              "depth_residual_m": 0.05013818543951776,
+              "modeled_snow_depth_m": 0.6984711854395178,
+              "modeled_snow_water_m": 0.15730537115032195,
+              "observed_snow_depth_m": 0.648333,
+              "water_year": 1994
+            },
+            {
+              "date": "1994-02-09",
+              "depth_residual_m": 0.11300960952518457,
+              "modeled_snow_depth_m": 0.8021766095251845,
+              "modeled_snow_water_m": 0.17070537115032194,
+              "observed_snow_depth_m": 0.689167,
+              "water_year": 1994
+            },
+            {
+              "date": "1994-03-03",
+              "depth_residual_m": -0.0954899320328817,
+              "modeled_snow_depth_m": 0.7728430679671183,
+              "modeled_snow_water_m": 0.20391934416160948,
+              "observed_snow_depth_m": 0.868333,
+              "water_year": 1994
+            },
+            {
+              "date": "1994-03-18",
+              "depth_residual_m": -0.05719874427245886,
+              "modeled_snow_depth_m": 0.7778012557275411,
+              "modeled_snow_water_m": 0.25208411660424324,
+              "observed_snow_depth_m": 0.835,
+              "water_year": 1994
+            },
+            {
+              "date": "1994-04-07",
+              "depth_residual_m": -0.10460655416486497,
+              "modeled_snow_depth_m": 0.474393445835135,
+              "modeled_snow_water_m": 0.23994383088674354,
+              "observed_snow_depth_m": 0.579,
+              "water_year": 1994
+            },
+            {
+              "date": "1994-12-14",
+              "depth_residual_m": -0.05335111099352338,
+              "modeled_snow_depth_m": 0.06614888900647661,
+              "modeled_snow_water_m": 0.0092,
+              "observed_snow_depth_m": 0.1195,
+              "water_year": 1995
+            }
+          ],
+          "snow_control_fail_count": 57,
+          "snow_control_fail_fraction": 0.29533678756476683,
+          "status": "PAIRED_OBSERVED_SNOW_DEPTH"
+        },
+        "run_dir": "target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_w9_hardwood/default_no_env",
+        "runfile": "target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_w9_hardwood/default_no_env/sleepers_w9_hardwood_default_no_env.run",
+        "scenario": "default_no_env",
+        "trace": "target/snowdensity10_3_15_default_activation_active_cap/traces/sleepers_w9_hardwood_default_no_env.jsonl",
+        "wat": "target/snowdensity10_3_15_default_activation_active_cap/runs/sleepers_w9_hardwood/default_no_env/sleepers_w9_hardwood_default_no_env.wat.parquet",
+        "wat_summary": {
+          "day_count": 16437,
+          "depth_day_sum_m_days": 2565.697065547705,
+          "mean_snow_depth_m": 0.15609278247537292,
+          "mean_snow_water_m": 0.049496229920619986,
+          "peak_snow_depth_m": 1.3922024745372925,
+          "peak_snow_water_m": 0.46281282601478274,
+          "snow_depth_day_count": 16437,
+          "snow_water_day_count": 16437,
+          "swe_day_sum_m_days": 813.5695312052308
+        }
+      },
+      "fixture_dir": "tests/fixtures/snowfreeze_observed/site2_sleepers_w9_hardwood_vt",
+      "observation_kind": "snowfreeze_depth",
+      "observation_source": "snowfreeze_observed",
+      "site_group": "sleepers",
+      "surface_id": "sleepers_w9_hardwood",
+      "verdict_scope": "paired_observation"
+    },
+    {
+      "cover": "hardwood",
+      "default_no_env": {
+        "command": [
+          "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/tests/fixtures/cancov_forest/harvard_deciduous_ma",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/harvard_hardwood/default_no_env/harvard_hardwood_default_no_env.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/harvard_hardwood/default_no_env",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "env_updates": {
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/traces/harvard_hardwood_default_no_env.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "<absent>",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "<absent>"
+        },
+        "failure_samples": [
+          {
+            "attribution": "DENSITY_OR_COMPACTION_DEFICIT",
+            "date": "2008-12-19",
+            "depth_residual_m": 0.14034375793710874,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.22034375793710875,
+            "modeled_snow_water_m": 0.03654630021047189,
+            "observed_snow_depth_m": 0.08,
+            "water_year": 2009
+          },
+          {
+            "attribution": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "date": "2008-12-24",
+            "depth_residual_m": -0.12385449628569797,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.166145503714302,
+            "modeled_snow_water_m": 0.060555391119562804,
+            "observed_snow_depth_m": 0.29,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "2008-12-25",
+            "depth_residual_m": 0.10947754795507082,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.15947754795507083,
+            "modeled_snow_water_m": 0.06014300044208344,
+            "observed_snow_depth_m": 0.05,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "2008-12-26",
+            "depth_residual_m": 0.10921325764598773,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.15921325764598773,
+            "modeled_snow_water_m": 0.06013361645776788,
+            "observed_snow_depth_m": 0.05,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "2009-01-07",
+            "depth_residual_m": 0.20600409435004535,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.32600409435004535,
+            "modeled_snow_water_m": 0.07586294927770175,
+            "observed_snow_depth_m": 0.12,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "2009-01-08",
+            "depth_residual_m": 0.1650593196918213,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.3450593196918213,
+            "modeled_snow_water_m": 0.07996294927770176,
+            "observed_snow_depth_m": 0.18,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "2009-01-09",
+            "depth_residual_m": 0.18995898079361653,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.3399589807936165,
+            "modeled_snow_water_m": 0.07996294927770176,
+            "observed_snow_depth_m": 0.15,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "2009-01-10",
+            "depth_residual_m": 0.3054986424039873,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.4554986424039873,
+            "modeled_snow_water_m": 0.09116294927770176,
+            "observed_snow_depth_m": 0.15,
+            "water_year": 2009
+          }
+        ],
+        "march_april_cap_adjudication": {
+          "class_counts_all_rows": {
+            "CAP_LIMITED_DEPLETION_REQUIRED": 1,
+            "PASS": 91,
+            "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 64
+          },
+          "class_counts_failures": {
+            "CAP_LIMITED_DEPLETION_REQUIRED": 1,
+            "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 64
+          },
+          "compaction_only_feasible_failure_count": 0,
+          "compaction_only_fraction_of_failures": 0.0,
+          "depletion_required_failure_count": 1,
+          "depletion_required_fraction_of_failures": 0.015384615384615385,
+          "failure_count": 65,
+          "max_required_density_for_compaction_only_rows_kg_m3": null,
+          "max_required_swe_depletion_to_clear_at_cap_m": 0.0060007007351441655,
+          "mean_required_density_for_compaction_only_rows_kg_m3": null,
+          "mean_required_swe_depletion_to_clear_at_cap_m": 0.0060007007351441655,
+          "paired_count": 156,
+          "row_sum_required_swe_depletion_to_clear_at_cap_m": 0.0060007007351441655
+        },
+        "observation_row_count": 821,
+        "paired_row_count": 448,
+        "remaining_failures": {
+          "counts_by_month": {
+            "1": 48,
+            "2": 31,
+            "3": 61,
+            "4": 4,
+            "12": 9
+          },
+          "counts_by_residual_sign": {
+            "MODELED_OVER_OBSERVED": 47,
+            "MODELED_UNDER_OBSERVED": 106
+          },
+          "counts_by_water_year": {
+            "2009": 39,
+            "2010": 25,
+            "2011": 21,
+            "2013": 32,
+            "2014": 36
+          },
+          "failure_count": 153,
+          "mean_abs_depth_residual_m": 0.17318816310465895,
+          "mean_signed_depth_residual_m": -0.0724081312607933
+        },
+        "residuals": {
+          "max_abs_depth_residual_m": 0.4234964302433719,
+          "mean_abs_depth_residual_m": 0.08963936326330703,
+          "mean_signed_depth_residual_m": -0.03820467466120684,
+          "modeled_over_observed_fraction": 0.3392857142857143,
+          "paired_count": 448,
+          "sample_pairs": [
+            {
+              "date": "2008-12-06",
+              "depth_residual_m": 0.046391314252508656,
+              "modeled_snow_depth_m": 0.046391314252508656,
+              "modeled_snow_water_m": 0.020117803173236568,
+              "observed_density_kg_m3": null,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": null,
+              "swe_residual_m": null,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-07",
+              "depth_residual_m": 0.044195554634014506,
+              "modeled_snow_depth_m": 0.05419555463401451,
+              "modeled_snow_water_m": 0.02111780317323657,
+              "observed_density_kg_m3": 194.0,
+              "observed_snow_depth_m": 0.01,
+              "observed_swe_m": 0.02,
+              "swe_residual_m": 0.001117803173236568,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-08",
+              "depth_residual_m": 0.034077754195636134,
+              "modeled_snow_depth_m": 0.05407775419563613,
+              "modeled_snow_water_m": 0.021109298183683206,
+              "observed_density_kg_m3": 214.0,
+              "observed_snow_depth_m": 0.02,
+              "observed_swe_m": 0.04,
+              "swe_residual_m": -0.018890701816316795,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-09",
+              "depth_residual_m": 0.010079798222583439,
+              "modeled_snow_depth_m": 0.05007979822258344,
+              "modeled_snow_water_m": 0.021355262514499363,
+              "observed_density_kg_m3": 233.0,
+              "observed_snow_depth_m": 0.04,
+              "observed_swe_m": 0.09,
+              "swe_residual_m": -0.06864473748550064,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-10",
+              "depth_residual_m": 0.013643896603385998,
+              "modeled_snow_depth_m": 0.013643896603385998,
+              "modeled_snow_water_m": 0.007122114026967491,
+              "observed_density_kg_m3": 253.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.007122114026967491,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-11",
+              "depth_residual_m": 0.02518791684966447,
+              "modeled_snow_depth_m": 0.02518791684966447,
+              "modeled_snow_water_m": 0.013148092595524854,
+              "observed_density_kg_m3": 272.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.013148092595524854,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-12",
+              "depth_residual_m": 0.03837007065936026,
+              "modeled_snow_depth_m": 0.03837007065936026,
+              "modeled_snow_water_m": 0.017273092595524855,
+              "observed_density_kg_m3": 292.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.017273092595524855,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-13",
+              "depth_residual_m": 0.038368533251550596,
+              "modeled_snow_depth_m": 0.038368533251550596,
+              "modeled_snow_water_m": 0.017273092595524855,
+              "observed_density_kg_m3": 311.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.017273092595524855,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-14",
+              "depth_residual_m": 0.038366286278715994,
+              "modeled_snow_depth_m": 0.038366286278715994,
+              "modeled_snow_water_m": 0.017273092595524855,
+              "observed_density_kg_m3": 331.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.017273092595524855,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-15",
+              "depth_residual_m": 0.020191738133230937,
+              "modeled_snow_depth_m": 0.020191738133230937,
+              "modeled_snow_water_m": 0.01054008730554655,
+              "observed_density_kg_m3": 350.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.01054008730554655,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-16",
+              "depth_residual_m": 0.02293989612089593,
+              "modeled_snow_depth_m": 0.02293989612089593,
+              "modeled_snow_water_m": 0.011974625775107675,
+              "observed_density_kg_m3": 369.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.011974625775107675,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-17",
+              "depth_residual_m": -0.03050502799322588,
+              "modeled_snow_depth_m": 0.06949497200677413,
+              "modeled_snow_water_m": 0.018846300210471886,
+              "observed_density_kg_m3": 389.0,
+              "observed_snow_depth_m": 0.1,
+              "observed_swe_m": 0.39,
+              "swe_residual_m": -0.3711536997895281,
+              "water_year": 2009
+            }
+          ],
+          "snow_control_fail_count": 153,
+          "snow_control_fail_fraction": 0.34151785714285715,
+          "status": "PAIRED_OBSERVED_SNOW_DEPTH"
+        },
+        "run_dir": "target/snowdensity10_3_15_default_activation_active_cap/runs/harvard_hardwood/default_no_env",
+        "runfile": "target/snowdensity10_3_15_default_activation_active_cap/runs/harvard_hardwood/default_no_env/harvard_hardwood_default_no_env.run",
+        "scenario": "default_no_env",
+        "trace": "target/snowdensity10_3_15_default_activation_active_cap/traces/harvard_hardwood_default_no_env.jsonl",
+        "wat": "target/snowdensity10_3_15_default_activation_active_cap/runs/harvard_hardwood/default_no_env/harvard_hardwood_default_no_env.wat.parquet",
+        "wat_summary": {
+          "day_count": 16437,
+          "depth_day_sum_m_days": 986.7841997691686,
+          "mean_snow_depth_m": 0.06003432498443564,
+          "mean_snow_water_m": 0.018571963532449443,
+          "peak_snow_depth_m": 1.1523359543494034,
+          "peak_snow_water_m": 0.3450281072704723,
+          "snow_depth_day_count": 16437,
+          "snow_water_day_count": 16437,
+          "swe_day_sum_m_days": 305.2673645828715
+        }
+      },
+      "fixture_dir": "tests/fixtures/cancov_forest/harvard_deciduous_ma",
+      "observation_kind": "swe_depth_density",
+      "observation_source": "harvard_hf237",
+      "site_group": "harvard",
+      "surface_id": "harvard_hardwood",
+      "verdict_scope": "paired_observation"
+    },
+    {
+      "cover": "open",
+      "default_no_env": {
+        "command": [
+          "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/tests/fixtures/cancov_forest/harvard_open_ma",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/harvard_open/default_no_env/harvard_open_default_no_env.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/harvard_open/default_no_env",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "env_updates": {
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/traces/harvard_open_default_no_env.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "<absent>",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "<absent>"
+        },
+        "failure_samples": [
+          {
+            "attribution": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "date": "2008-12-24",
+            "depth_residual_m": -0.17585561179477052,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.12414438820522947,
+            "modeled_snow_water_m": 0.04870909090909091,
+            "observed_snow_depth_m": 0.3,
+            "water_year": 2009
+          },
+          {
+            "attribution": "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT",
+            "date": "2009-01-01",
+            "depth_residual_m": -0.12944705221887348,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.050552947781126505,
+            "modeled_snow_water_m": 0.026388638741748037,
+            "observed_snow_depth_m": 0.18,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "2009-01-07",
+            "depth_residual_m": 0.190297795760711,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.290297795760711,
+            "modeled_snow_water_m": 0.059060175526728,
+            "observed_snow_depth_m": 0.1,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "2009-01-08",
+            "depth_residual_m": 0.186872295502646,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.306872295502646,
+            "modeled_snow_water_m": 0.06316017552672801,
+            "observed_snow_depth_m": 0.12,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DEPTH_ONLY_OVERPERSISTENCE_UNRESOLVED",
+            "date": "2009-01-09",
+            "depth_residual_m": 0.1807041821968387,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.3007041821968387,
+            "modeled_snow_water_m": 0.06316017552672801,
+            "observed_snow_depth_m": 0.12,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DENSITY_OR_COMPACTION_DEFICIT",
+            "date": "2009-01-10",
+            "depth_residual_m": 0.2932702630750993,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.4132702630750993,
+            "modeled_snow_water_m": 0.07436017552672801,
+            "observed_snow_depth_m": 0.12,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DENSITY_OR_COMPACTION_DEFICIT",
+            "date": "2009-01-11",
+            "depth_residual_m": 0.20076463777781345,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.4807646377778135,
+            "modeled_snow_water_m": 0.08406017552672801,
+            "observed_snow_depth_m": 0.28,
+            "water_year": 2009
+          },
+          {
+            "attribution": "DENSITY_OR_COMPACTION_DEFICIT",
+            "date": "2009-01-12",
+            "depth_residual_m": 0.17751111166260514,
+            "depth_tolerance_m": 0.1,
+            "modeled_snow_depth_m": 0.45751111166260516,
+            "modeled_snow_water_m": 0.08406017552672801,
+            "observed_snow_depth_m": 0.28,
+            "water_year": 2009
+          }
+        ],
+        "march_april_cap_adjudication": {
+          "class_counts_all_rows": {
+            "CAP_LIMITED_DEPLETION_REQUIRED": 17,
+            "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 3,
+            "PASS": 35,
+            "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 6,
+            "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 35
+          },
+          "class_counts_failures": {
+            "CAP_LIMITED_DEPLETION_REQUIRED": 17,
+            "COMPACTION_ONLY_FEASIBLE_WITHIN_522_CAP": 3,
+            "PATCHY_MELTOUT_OR_DEPLETION_REQUIRED": 6,
+            "UNDER_PERSISTENCE_OR_ACCUMULATION_DEFICIT": 35
+          },
+          "compaction_only_feasible_failure_count": 3,
+          "compaction_only_fraction_of_failures": 0.04918032786885246,
+          "depletion_required_failure_count": 23,
+          "depletion_required_fraction_of_failures": 0.3770491803278688,
+          "failure_count": 61,
+          "max_required_density_for_compaction_only_rows_kg_m3": 370.13830469711496,
+          "max_required_swe_depletion_to_clear_at_cap_m": 0.04622853644046599,
+          "mean_required_density_for_compaction_only_rows_kg_m3": 350.7578297177922,
+          "mean_required_swe_depletion_to_clear_at_cap_m": 0.023415908966851747,
+          "paired_count": 96,
+          "row_sum_required_swe_depletion_to_clear_at_cap_m": 0.5385659062375902
+        },
+        "observation_row_count": 821,
+        "paired_row_count": 390,
+        "remaining_failures": {
+          "counts_by_month": {
+            "1": 37,
+            "2": 34,
+            "3": 61,
+            "12": 6
+          },
+          "counts_by_residual_sign": {
+            "MODELED_OVER_OBSERVED": 64,
+            "MODELED_UNDER_OBSERVED": 74
+          },
+          "counts_by_water_year": {
+            "2009": 42,
+            "2010": 11,
+            "2011": 26,
+            "2013": 36,
+            "2014": 23
+          },
+          "failure_count": 138,
+          "mean_abs_depth_residual_m": 0.16807453455454774,
+          "mean_signed_depth_residual_m": -0.016136984732771812
+        },
+        "residuals": {
+          "max_abs_depth_residual_m": 0.3995660747784115,
+          "mean_abs_depth_residual_m": 0.08923786283156838,
+          "mean_signed_depth_residual_m": -0.009857837117862495,
+          "modeled_over_observed_fraction": 0.4846153846153846,
+          "paired_count": 390,
+          "sample_pairs": [
+            {
+              "date": "2008-12-06",
+              "depth_residual_m": 0.03655579075797702,
+              "modeled_snow_depth_m": 0.03655579075797702,
+              "modeled_snow_water_m": 0.015037122487339865,
+              "observed_density_kg_m3": null,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": null,
+              "swe_residual_m": null,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-07",
+              "depth_residual_m": 0.03428560657341496,
+              "modeled_snow_depth_m": 0.04428560657341496,
+              "modeled_snow_water_m": 0.016037122487339864,
+              "observed_density_kg_m3": 194.0,
+              "observed_snow_depth_m": 0.01,
+              "observed_swe_m": 0.02,
+              "swe_residual_m": -0.003962877512660137,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-08",
+              "depth_residual_m": 0.024278188013822522,
+              "modeled_snow_depth_m": 0.04427818801382252,
+              "modeled_snow_water_m": 0.016037122487339864,
+              "observed_density_kg_m3": 214.0,
+              "observed_snow_depth_m": 0.02,
+              "observed_swe_m": 0.04,
+              "swe_residual_m": -0.023962877512660137,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-09",
+              "depth_residual_m": -0.05103090920425372,
+              "modeled_snow_depth_m": 0.03896909079574628,
+              "modeled_snow_water_m": 0.016287122487339864,
+              "observed_density_kg_m3": 233.0,
+              "observed_snow_depth_m": 0.09,
+              "observed_swe_m": 0.21,
+              "swe_residual_m": -0.19371287751266014,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-10",
+              "depth_residual_m": 0.0006428301731917827,
+              "modeled_snow_depth_m": 0.0006428301731917827,
+              "modeled_snow_water_m": 0.00033555735040611054,
+              "observed_density_kg_m3": 253.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.00033555735040611054,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-11",
+              "depth_residual_m": 0.0,
+              "modeled_snow_depth_m": 0.0,
+              "modeled_snow_water_m": 0.0,
+              "observed_density_kg_m3": 272.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.0,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-12",
+              "depth_residual_m": 0.02034242285193842,
+              "modeled_snow_depth_m": 0.02034242285193842,
+              "modeled_snow_water_m": 0.0033000000000000004,
+              "observed_density_kg_m3": 292.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.0033000000000000004,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-13",
+              "depth_residual_m": 0.02025903146116233,
+              "modeled_snow_depth_m": 0.02025903146116233,
+              "modeled_snow_water_m": 0.0033000000000000004,
+              "observed_density_kg_m3": 311.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.0033000000000000004,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-14",
+              "depth_residual_m": 0.020144387711599633,
+              "modeled_snow_depth_m": 0.020144387711599633,
+              "modeled_snow_water_m": 0.0033000000000000004,
+              "observed_density_kg_m3": 331.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.0033000000000000004,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-15",
+              "depth_residual_m": 0.0,
+              "modeled_snow_depth_m": 0.0,
+              "modeled_snow_water_m": 0.0,
+              "observed_density_kg_m3": 350.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.0,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-16",
+              "depth_residual_m": 0.0,
+              "modeled_snow_depth_m": 0.0,
+              "modeled_snow_water_m": 0.0,
+              "observed_density_kg_m3": 369.0,
+              "observed_snow_depth_m": 0.0,
+              "observed_swe_m": 0.0,
+              "swe_residual_m": 0.0,
+              "water_year": 2009
+            },
+            {
+              "date": "2008-12-17",
+              "depth_residual_m": -0.07320127545513716,
+              "modeled_snow_depth_m": 0.04679872454486284,
+              "modeled_snow_water_m": 0.006900000000000002,
+              "observed_density_kg_m3": 389.0,
+              "observed_snow_depth_m": 0.12,
+              "observed_swe_m": 0.47,
+              "swe_residual_m": -0.46309999999999996,
+              "water_year": 2009
+            }
+          ],
+          "snow_control_fail_count": 138,
+          "snow_control_fail_fraction": 0.35384615384615387,
+          "status": "PAIRED_OBSERVED_SNOW_DEPTH"
+        },
+        "run_dir": "target/snowdensity10_3_15_default_activation_active_cap/runs/harvard_open/default_no_env",
+        "runfile": "target/snowdensity10_3_15_default_activation_active_cap/runs/harvard_open/default_no_env/harvard_open_default_no_env.run",
+        "scenario": "default_no_env",
+        "trace": "target/snowdensity10_3_15_default_activation_active_cap/traces/harvard_open_default_no_env.jsonl",
+        "wat": "target/snowdensity10_3_15_default_activation_active_cap/runs/harvard_open/default_no_env/harvard_open_default_no_env.wat.parquet",
+        "wat_summary": {
+          "day_count": 16437,
+          "depth_day_sum_m_days": 954.6918286372717,
+          "mean_snow_depth_m": 0.05808187799703545,
+          "mean_snow_water_m": 0.018446436739703358,
+          "peak_snow_depth_m": 1.1449327829233205,
+          "peak_snow_water_m": 0.33925127648729747,
+          "snow_depth_day_count": 16437,
+          "snow_water_day_count": 16437,
+          "swe_day_sum_m_days": 303.2040806905041
+        }
+      },
+      "fixture_dir": "tests/fixtures/cancov_forest/harvard_open_ma",
+      "observation_kind": "swe_depth_density",
+      "observation_source": "harvard_hf237",
+      "site_group": "harvard",
+      "surface_id": "harvard_open",
+      "verdict_scope": "paired_observation"
+    },
+    {
+      "cover": "deciduous",
+      "default_no_env": {
+        "command": [
+          "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/hubbardbrook_deciduous/default_no_env/hubbardbrook_deciduous_default_no_env.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/hubbardbrook_deciduous/default_no_env",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "env_updates": {
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/traces/hubbardbrook_deciduous_default_no_env.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "<absent>",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "<absent>"
+        },
+        "failure_samples": [],
+        "march_april_cap_adjudication": {
+          "class_counts_all_rows": {},
+          "class_counts_failures": {},
+          "compaction_only_feasible_failure_count": 0,
+          "compaction_only_fraction_of_failures": null,
+          "depletion_required_failure_count": 0,
+          "depletion_required_fraction_of_failures": null,
+          "failure_count": 0,
+          "max_required_density_for_compaction_only_rows_kg_m3": null,
+          "max_required_swe_depletion_to_clear_at_cap_m": null,
+          "mean_required_density_for_compaction_only_rows_kg_m3": null,
+          "mean_required_swe_depletion_to_clear_at_cap_m": null,
+          "paired_count": 0,
+          "row_sum_required_swe_depletion_to_clear_at_cap_m": 0.0
+        },
+        "observation_row_count": 0,
+        "paired_row_count": 0,
+        "remaining_failures": {
+          "counts_by_month": {},
+          "counts_by_residual_sign": {},
+          "counts_by_water_year": {},
+          "failure_count": 0,
+          "mean_abs_depth_residual_m": null,
+          "mean_signed_depth_residual_m": null
+        },
+        "residuals": {
+          "max_abs_depth_residual_m": null,
+          "mean_abs_depth_residual_m": null,
+          "mean_signed_depth_residual_m": null,
+          "modeled_over_observed_fraction": null,
+          "paired_count": 0,
+          "sample_pairs": [],
+          "snow_control_fail_count": 0,
+          "snow_control_fail_fraction": null,
+          "status": "NO_PAIRED_OBSERVED_SNOW_DEPTH"
+        },
+        "run_dir": "target/snowdensity10_3_15_default_activation_active_cap/runs/hubbardbrook_deciduous/default_no_env",
+        "runfile": "target/snowdensity10_3_15_default_activation_active_cap/runs/hubbardbrook_deciduous/default_no_env/hubbardbrook_deciduous_default_no_env.run",
+        "scenario": "default_no_env",
+        "trace": "target/snowdensity10_3_15_default_activation_active_cap/traces/hubbardbrook_deciduous_default_no_env.jsonl",
+        "wat": "target/snowdensity10_3_15_default_activation_active_cap/runs/hubbardbrook_deciduous/default_no_env/hubbardbrook_deciduous_default_no_env.wat.parquet",
+        "wat_summary": {
+          "day_count": 16437,
+          "depth_day_sum_m_days": 1447.3870423356939,
+          "mean_snow_depth_m": 0.08805664308180897,
+          "mean_snow_water_m": 0.028270455934809646,
+          "peak_snow_depth_m": 0.961354999137524,
+          "peak_snow_water_m": 0.27434516192972686,
+          "snow_depth_day_count": 16437,
+          "snow_water_day_count": 16437,
+          "swe_day_sum_m_days": 464.6814842004662
+        }
+      },
+      "fixture_dir": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh",
+      "observation_kind": "none",
+      "observation_source": "not_installed",
+      "site_group": "hubbardbrook",
+      "surface_id": "hubbardbrook_deciduous",
+      "verdict_scope": "observation_blocked"
+    },
+    {
+      "cover": "mixed",
+      "default_no_env": {
+        "command": [
+          "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+          "--run-dir",
+          "/home/workdir/openWEPP/tests/fixtures/cancov_forest/hubbardbrook_mixed_nh",
+          "--run-file",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/hubbardbrook_mixed/default_no_env/hubbardbrook_mixed_default_no_env.run",
+          "--output-dir",
+          "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/runs/hubbardbrook_mixed/default_no_env",
+          "--legacy-sidecar-discovery",
+          "--direct-production-executor"
+        ],
+        "env_updates": {
+          "OPENWEPP_R7H_SNOW_TRACE_PATH": "/home/workdir/openWEPP/target/snowdensity10_3_15_default_activation_active_cap/traces/hubbardbrook_mixed_default_no_env.jsonl",
+          "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL": "<absent>",
+          "OPENWEPP_SNOWDENSITY1038_MELT_MODEL": "<absent>"
+        },
+        "failure_samples": [],
+        "march_april_cap_adjudication": {
+          "class_counts_all_rows": {},
+          "class_counts_failures": {},
+          "compaction_only_feasible_failure_count": 0,
+          "compaction_only_fraction_of_failures": null,
+          "depletion_required_failure_count": 0,
+          "depletion_required_fraction_of_failures": null,
+          "failure_count": 0,
+          "max_required_density_for_compaction_only_rows_kg_m3": null,
+          "max_required_swe_depletion_to_clear_at_cap_m": null,
+          "mean_required_density_for_compaction_only_rows_kg_m3": null,
+          "mean_required_swe_depletion_to_clear_at_cap_m": null,
+          "paired_count": 0,
+          "row_sum_required_swe_depletion_to_clear_at_cap_m": 0.0
+        },
+        "observation_row_count": 0,
+        "paired_row_count": 0,
+        "remaining_failures": {
+          "counts_by_month": {},
+          "counts_by_residual_sign": {},
+          "counts_by_water_year": {},
+          "failure_count": 0,
+          "mean_abs_depth_residual_m": null,
+          "mean_signed_depth_residual_m": null
+        },
+        "residuals": {
+          "max_abs_depth_residual_m": null,
+          "mean_abs_depth_residual_m": null,
+          "mean_signed_depth_residual_m": null,
+          "modeled_over_observed_fraction": null,
+          "paired_count": 0,
+          "sample_pairs": [],
+          "snow_control_fail_count": 0,
+          "snow_control_fail_fraction": null,
+          "status": "NO_PAIRED_OBSERVED_SNOW_DEPTH"
+        },
+        "run_dir": "target/snowdensity10_3_15_default_activation_active_cap/runs/hubbardbrook_mixed/default_no_env",
+        "runfile": "target/snowdensity10_3_15_default_activation_active_cap/runs/hubbardbrook_mixed/default_no_env/hubbardbrook_mixed_default_no_env.run",
+        "scenario": "default_no_env",
+        "trace": "target/snowdensity10_3_15_default_activation_active_cap/traces/hubbardbrook_mixed_default_no_env.jsonl",
+        "wat": "target/snowdensity10_3_15_default_activation_active_cap/runs/hubbardbrook_mixed/default_no_env/hubbardbrook_mixed_default_no_env.wat.parquet",
+        "wat_summary": {
+          "day_count": 16437,
+          "depth_day_sum_m_days": 1567.763043670179,
+          "mean_snow_depth_m": 0.09538012068322559,
+          "mean_snow_water_m": 0.03130099040118499,
+          "peak_snow_depth_m": 0.944343455272579,
+          "peak_snow_water_m": 0.2677172487325587,
+          "snow_depth_day_count": 16437,
+          "snow_water_day_count": 16437,
+          "swe_day_sum_m_days": 514.4943792242776
+        }
+      },
+      "fixture_dir": "tests/fixtures/cancov_forest/hubbardbrook_mixed_nh",
+      "observation_kind": "none",
+      "observation_source": "not_installed",
+      "site_group": "hubbardbrook",
+      "surface_id": "hubbardbrook_mixed",
+      "verdict_scope": "observation_blocked"
+    }
+  ]
+}

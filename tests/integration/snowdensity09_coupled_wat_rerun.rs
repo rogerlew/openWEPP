@@ -25,7 +25,7 @@ const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 fn snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 100",
+        "contract_version: 101",
         "INV-SNOWFREEZE-062",
         "OBL-SNOWFREEZE-P-037",
         "SNOWDENSITY-09 Diagnostic Coupled WAT Rerun Addendum",
@@ -49,7 +49,7 @@ fn snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat() {
 }
 
 #[test]
-fn snowdensity09_implementation_keeps_cli_default_and_env_diagnostic() {
+fn snowdensity09_selector_is_now_10_3_15_default_with_legacy_rollback() {
     let cli = read(CLI);
     assert!(
         !cli.contains("SNOWDENSITY09")
@@ -61,13 +61,18 @@ fn snowdensity09_implementation_keeps_cli_default_and_env_diagnostic() {
     let builder = read(BUILDER);
     for marker in [
         "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
-        "snowdensity09_diagnostic_snow_density_model",
+        "snowdensity1015_default_snow_density_model",
         "SnowDensityModel::LegacyWepp",
         "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+        "must be legacy_wepp or physics_bulk_density_compaction_v1",
         "\\\"snow_density_model\\\":\\\"{}\\\"",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
+    assert!(
+        !builder.contains("SnowDensityModel::PhysicsBulkSpringDensificationV1"),
+        "rejected spring densification must not remain accepted by the active default selector"
+    );
 
     let authority_impl = read(AUTHORITY_IMPL);
     assert_contains(

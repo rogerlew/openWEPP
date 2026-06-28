@@ -38,7 +38,7 @@ fn assert_contains(haystack: &str, needle: &str, context: &str) {
 fn contract_and_package_bind_liquid_holding_capacity_candidate() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 100",
+        "contract_version: 101",
         "REF-SNOWFREEZE-MARKS1998-LIQUID-CAPACITY",
         "REF-SNOWFREEZE-ANDERSON1976-LIQUID",
         "REF-SNOWFREEZE-SNOW17-PLWHC",
@@ -144,7 +144,7 @@ fn opt_in_retains_liquid_to_capacity_and_routes_excess() {
 }
 
 #[test]
-fn opt_in_preserves_default_identity_and_selector_isolation() {
+fn activation_preserves_rollback_identity_and_selector_isolation() {
     let builder = format!(
         "{}\n{}",
         repo_text(DIRECT_PUBLICATION_BUILDER),
@@ -152,11 +152,10 @@ fn opt_in_preserves_default_identity_and_selector_isolation() {
     );
     for marker in [
         "OPENWEPP_SNOWDENSITY1038_MELT_MODEL",
-        "snowdensity1038_diagnostic_snow_melt_model",
+        "snowdensity1015_default_snow_melt_model",
         "SnowMeltModel::LegacyCoe",
         "SnowMeltModel::CoeLiquidHoldingCapacityV1",
         "must be legacy_coe or coe_liquid_holding_capacity_v1",
-        "snowdensity1037_diagnostic_snow_melt_model()",
         "liquid_water_retained_before_m",
         "liquid_water_retained_after_m",
     ] {

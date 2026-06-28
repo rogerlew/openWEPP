@@ -27,7 +27,7 @@ fn read(path: &str) -> String {
 fn snowdensity07_contract_and_package_bind_runtime_opt_in_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 100",
+        "contract_version: 101",
         "INV-SNOWFREEZE-060",
         "OBL-SNOWFREEZE-P-035",
         "snow_density_model",
@@ -229,7 +229,7 @@ fn snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge() {
 }
 
 #[test]
-fn snowdensity07_surface_driven_publication_path_remains_default_disabled() {
+fn snowdensity07_runtime_opt_in_is_superseded_by_10_3_15_default_activation() {
     let builder = format!(
         "{}\n{}",
         read(DIRECT_PUBLICATION_BUILDER),
@@ -239,17 +239,19 @@ fn snowdensity07_surface_driven_publication_path_remains_default_disabled() {
     assert!(
         builder.contains("SNOWDENSITY09_DENSITY_MODEL_ENV")
             && builder.contains("Err(std::env::VarError::NotPresent)")
-            && builder.contains("SnowDensityModel::LegacyWepp"),
-        "direct publication builder must keep legacy_wepp as the absent-selector default"
+            && builder.contains("SnowDensityModel::PhysicsBulkDensityCompactionV1")
+            && builder.contains("\"legacy_wepp\" => Ok"),
+        "SNOWDENSITY-10.3.15 must make physics_bulk_density_compaction_v1 the absent-selector default while retaining legacy rollback"
     );
     assert!(
         builder.contains("snow_density_model: self.snow_density_model")
             && builder.contains("SnowDensityModel::PhysicsBulkDensityCompactionV1"),
-        "surface-driven publication path must preserve the SNOWDENSITY-09 diagnostic density env hook"
+        "surface-driven publication path must preserve selected density handoff"
     );
     assert!(
         builder.contains("SNOWDENSITY1037_MELT_MODEL_ENV")
-            && builder.contains("SnowMeltModel::LegacyCoe"),
-        "newer melt diagnostic hooks must preserve absent-selector legacy_coe behavior"
+            && builder.contains("SnowMeltModel::LegacyCoe")
+            && builder.contains("SnowMeltModel::CoeLiquidHoldingCapacityV1"),
+        "historical melt diagnostic hook and active default/rollback models must remain visible"
     );
 }

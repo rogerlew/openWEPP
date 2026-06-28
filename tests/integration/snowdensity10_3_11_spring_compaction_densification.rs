@@ -24,7 +24,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_spring_densification_candidate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 100",
+        "contract_version: 101",
         "physics_bulk_spring_densification_v1",
         "INV-SNOWFREEZE-068",
         "OBL-SNOWFREEZE-P-043",
@@ -99,11 +99,15 @@ fn selector_and_tool_keep_diagnostic_boundaries() {
     let builder = read(BUILDER);
     for marker in [
         "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
-        "SnowDensityModel::PhysicsBulkSpringDensificationV1",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, or physics_bulk_spring_densification_v1",
+        "SnowDensityModel::PhysicsBulkDensityCompactionV1",
+        "must be legacy_wepp or physics_bulk_density_compaction_v1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
+    assert!(
+        !builder.contains("SnowDensityModel::PhysicsBulkSpringDensificationV1"),
+        "SNOWDENSITY-10.3.15 must not retain rejected spring densification in the active selector"
+    );
 
     let tool = read(TOOL);
     for marker in [
