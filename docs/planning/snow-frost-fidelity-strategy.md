@@ -1320,15 +1320,21 @@ actionable.
    forcing uncertainty), Morris remains `BLOCKED` by systematic snow-cover
    timing/regime mismatch, and Mandan/Reynolds Creek remain
    `INCONCLUSIVE-NO-PAIRED-SNOW`.
-2. **Attribute the frost-depth magnitude residual** (`GAP-SNOWFREEZE-002`) at the
-   routed sites via the `INV-SNOWFREEZE-050` forcing-robust rubric. Start with the
-   two Sleepers sites; carry snow-depth magnitude uncertainty explicitly and do
-   not treat forcing-limited magnitude residuals as frost-model defects. Morris
-   needs a snow-control blocker disposition before frost attribution.
-3. **Resolve the specific frost-model item** *only if* attribution points to it — the
-   record's named candidates: the **residue-lifecycle handoff** (static vs dynamic
-   `resdep`), the **magnitude outliers above the legacy envelope** (13/43 forced-snow
-   cases), and the absent **`Qwet`** evaporative term.
+2. **Attribute the frost-depth residual** (`GAP-SNOWFREEZE-002`) at the routed
+   sites via the `INV-SNOWFREEZE-050` forcing-robust rubric — complete in
+   `docs/work-packages/20260629-frost-step2-sleepers-attribution-001/`. Result:
+   `EXECUTED-COMPLETE-DIAGNOSTIC-ATTRIBUTION`. Both Sleepers sites have timing
+   residuals whose direction is not explained by modeled-over-observed snow:
+   South Field has `4` thaw-late candidate cells, and W9 has `14` early-onset /
+   thaw-late candidate cells. Magnitude remains forcing-limited and non-verdict-
+   bearing (South Field mixed-sign; W9 sign-incoherent). Morris remains blocked,
+   and Mandan/Reynolds Creek remain inconclusive.
+3. **Resolve the specific frost-model item** pointed to by Step 2. The primary
+   pointer is the **residue-lifecycle handoff** (static vs dynamic `resdep`),
+   with the **magnitude outliers above the legacy envelope** (13/43 forced-snow
+   cases) as ADR-0017 comparator context. The absent **`Qwet`** evaporative term
+   remains a named strategy candidate but is not the primary pointer from the
+   Sleepers sign-coherence pass.
 4. **Ratify** the frost validation invariants (047/048/050: draft → accepted) once
    the harness method is exercised.
 5. **Frost-default activation** once `GAP-SNOWFREEZE-002` closes against observations

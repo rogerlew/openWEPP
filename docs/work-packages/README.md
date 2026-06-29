@@ -13,6 +13,23 @@
 
 State as of `2026-06-29`:
 
+- `20260629-frost-step2-sleepers-attribution-001/` is complete as FROST STEP 2,
+  the diagnostic attribution package for the two Step 1-unblocked Sleepers
+  sites. Result: `EXECUTED-COMPLETE-DIAGNOSTIC-ATTRIBUTION`. It consumed the
+  Step 1 current-snow reports without rerunning the harness, scored
+  onset/thaw/frozen-duration timing signatures against the `+/-14 day`
+  forcing-robust tolerance, reconstructed full frost-depth residual
+  distributions from the recorded WAT outputs, and applied sign coherence
+  against the modeled-over-observed snow residual. Both sites expose
+  candidate frost-model timing defects not explained by deeper modeled snow:
+  South Field has `4` thaw-late candidate cells, while W9 Hardwood has `14`
+  early-onset/thaw-late candidate cells. Magnitude remains forcing-limited and
+  non-verdict-bearing: South Field is mixed-sign, W9 is sign-incoherent. The
+  Step 3 pointer is residue-lifecycle handoff (`static` vs dynamic `resdep`),
+  with the legacy-envelope outlier set as ADR-0017 comparator context; absent
+  `Qwet` is not the primary pointer from this sign-coherence pass. No frost,
+  snow, Qwet, frozen-K, SFCC, impedance, contract-physics, default, fixture,
+  schema, selector, or ratification change was made.
 - `20260629-frost-step1-current-snow-control-rerun-001/` is complete as FROST
   STEP 1, the current-default snow-control rerun for observed frost sites.
   Result: `EXECUTED-COMPLETE-DIAGNOSTIC-ROUTING`. It reran the existing

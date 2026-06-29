@@ -1,0 +1,2315 @@
+{
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-047/048/050",
+  "evidence_mode": "Ran",
+  "schema": "frost-step2-sleepers-attribution-v1",
+  "scope": {
+    "excluded_sites": {
+      "site3_scan_mandan_nd": "Step 1 INCONCLUSIVE-NO-PAIRED-SNOW",
+      "site4_ggd498_morris_mn": "Step 1 BLOCKED",
+      "site5_reynolds_creek_us_rls_id": "Step 1 INCONCLUSIVE-NO-PAIRED-SNOW"
+    },
+    "included_sites": [
+      "site1_sleepers_south_field_vt",
+      "site2_sleepers_w9_hardwood_vt"
+    ]
+  },
+  "sites": [
+    {
+      "candidate_defect_count": 4,
+      "candidate_defects": [
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 19,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 1986
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 20,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 1987
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 17,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 2007
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 20,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 2015
+        }
+      ],
+      "magnitude": {
+        "max_abs_residual_m": 0.20213143040558826,
+        "mean_abs_residual_m": 0.05326166236356989,
+        "mean_signed_residual_m": 0.029998466975850416,
+        "median_signed_residual_m": 0.0224745300415371,
+        "negative_residual_count": 135,
+        "positive_residual_count": 250,
+        "reason": "Seasonal maximum modeled frost is shallower, but the full residual distribution has positive central tendency; magnitude remains forcing-limited and non-verdict-bearing.",
+        "residual_count": 392,
+        "seasonal_max_modeled_m": 0.24441540541730744,
+        "seasonal_max_observed_m": 0.3122,
+        "seasonal_max_signed_residual_m": -0.06778459458269254,
+        "step3_pointer": "legacy-envelope outlier flag plus residue-lifecycle handoff check",
+        "tag": "FORCING-LIMITED-MIXED-SIGN"
+      },
+      "report_path": "docs/work-packages/20260629-frost-step1-current-snow-control-rerun-001/artifacts/site_reports/site1_sleepers_south_field_vt.comparison_report.json",
+      "site_disposition": "site1_sleepers_south_field_vt: frost timing does not fully agree; 4 timing cells are candidate frost-model defects. Step 3 pointers: residue-lifecycle handoff; compare against legacy-envelope outlier flag.",
+      "site_id": "site1_sleepers_south_field_vt",
+      "step1_route": "FORCING-LIMITED",
+      "step1_snow_direction": "modeled-over-observed",
+      "step1_snow_mean_signed_depth_residual_m": 0.15606590909970983,
+      "step1_snow_over_rows": 315,
+      "step1_snow_under_rows": 56,
+      "timing_rows": [
+        {
+          "modeled_onset_date": "1983-12-21",
+          "modeled_thaw_date": "1984-04-12",
+          "observed_onset_date": "1983-11-27",
+          "observed_thaw_date": "1984-04-06",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 24,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 1984
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 6,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1984
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1984
+            }
+          ],
+          "water_year": 1984
+        },
+        {
+          "modeled_onset_date": "1984-11-20",
+          "modeled_thaw_date": "1985-04-18",
+          "observed_onset_date": "1984-11-20",
+          "observed_thaw_date": "1985-04-18",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1985
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1985
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1985
+            }
+          ],
+          "water_year": 1985
+        },
+        {
+          "modeled_onset_date": "1985-12-04",
+          "modeled_thaw_date": "1986-04-14",
+          "observed_onset_date": "1985-12-04",
+          "observed_thaw_date": "1986-03-26",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1986
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 19,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 1986
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 2,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1986
+            }
+          ],
+          "water_year": 1986
+        },
+        {
+          "modeled_onset_date": "1987-01-06",
+          "modeled_thaw_date": "1987-04-07",
+          "observed_onset_date": "1986-12-04",
+          "observed_thaw_date": "1987-03-18",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 33,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 1987
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 20,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 1987
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 4,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1987
+            }
+          ],
+          "water_year": 1987
+        },
+        {
+          "modeled_onset_date": "1987-12-03",
+          "modeled_thaw_date": "1988-04-06",
+          "observed_onset_date": "1987-12-03",
+          "observed_thaw_date": "1988-03-23",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1988
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 14,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1988
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1988
+            }
+          ],
+          "water_year": 1988
+        },
+        {
+          "modeled_onset_date": "1988-11-29",
+          "modeled_thaw_date": "1989-04-20",
+          "observed_onset_date": "1988-11-29",
+          "observed_thaw_date": "1989-04-13",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1989
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 7,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1989
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1989
+            }
+          ],
+          "water_year": 1989
+        },
+        {
+          "modeled_onset_date": "1989-12-29",
+          "modeled_thaw_date": "1990-04-04",
+          "observed_onset_date": "1989-12-13",
+          "observed_thaw_date": "1990-03-26",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 16,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 1990
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 9,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1990
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1990
+            }
+          ],
+          "water_year": 1990
+        },
+        {
+          "modeled_onset_date": "1990-12-27",
+          "modeled_thaw_date": "1991-04-05",
+          "observed_onset_date": "1990-12-11",
+          "observed_thaw_date": "1991-04-05",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 16,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 1991
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1991
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -2,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1991
+            }
+          ],
+          "water_year": 1991
+        },
+        {
+          "modeled_onset_date": "1991-12-10",
+          "modeled_thaw_date": "1992-04-21",
+          "observed_onset_date": "1991-12-10",
+          "observed_thaw_date": "1992-04-21",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1992
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1992
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1992
+            }
+          ],
+          "water_year": 1992
+        },
+        {
+          "modeled_onset_date": "1992-12-07",
+          "modeled_thaw_date": "1993-04-15",
+          "observed_onset_date": "1992-12-14",
+          "observed_thaw_date": "1993-04-15",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -7,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1993
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1993
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1993
+            }
+          ],
+          "water_year": 1993
+        },
+        {
+          "modeled_onset_date": "1993-12-15",
+          "modeled_thaw_date": "1994-04-07",
+          "observed_onset_date": "1993-12-27",
+          "observed_thaw_date": "1994-04-07",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -12,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1994
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1994
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1994
+            }
+          ],
+          "water_year": 1994
+        },
+        {
+          "modeled_onset_date": "1994-12-14",
+          "modeled_thaw_date": "1995-03-22",
+          "observed_onset_date": "1994-12-14",
+          "observed_thaw_date": "1995-03-22",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1995
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1995
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1995
+            }
+          ],
+          "water_year": 1995
+        },
+        {
+          "modeled_onset_date": "1996-01-18",
+          "modeled_thaw_date": "1996-04-25",
+          "observed_onset_date": "1996-01-18",
+          "observed_thaw_date": "1996-04-19",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1996
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 6,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1996
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1996
+            }
+          ],
+          "water_year": 1996
+        },
+        {
+          "modeled_onset_date": "1996-12-23",
+          "modeled_thaw_date": "1997-04-23",
+          "observed_onset_date": "1996-12-23",
+          "observed_thaw_date": "1997-04-16",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1997
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 7,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1997
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1997
+            }
+          ],
+          "water_year": 1997
+        },
+        {
+          "modeled_onset_date": "1998-01-14",
+          "modeled_thaw_date": "1998-03-31",
+          "observed_onset_date": "1997-12-10",
+          "observed_thaw_date": "1998-03-18",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 35,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 1998
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 13,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1998
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1998
+            }
+          ],
+          "water_year": 1998
+        },
+        {
+          "modeled_onset_date": "1998-12-30",
+          "modeled_thaw_date": "1999-04-07",
+          "observed_onset_date": "1998-12-30",
+          "observed_thaw_date": "1999-03-24",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1999
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 14,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1999
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1999
+            }
+          ],
+          "water_year": 1999
+        },
+        {
+          "modeled_onset_date": "2000-01-03",
+          "modeled_thaw_date": "2000-04-05",
+          "observed_onset_date": "2000-01-03",
+          "observed_thaw_date": "2000-03-23",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2000
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 13,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2000
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2000
+            }
+          ],
+          "water_year": 2000
+        },
+        {
+          "modeled_onset_date": "2000-12-13",
+          "modeled_thaw_date": "2001-04-18",
+          "observed_onset_date": "2000-12-13",
+          "observed_thaw_date": "2001-04-18",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2001
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2001
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2001
+            }
+          ],
+          "water_year": 2001
+        },
+        {
+          "modeled_onset_date": "2001-12-18",
+          "modeled_thaw_date": "2002-04-09",
+          "observed_onset_date": "2001-12-18",
+          "observed_thaw_date": "2002-04-09",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2002
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2002
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2002
+            }
+          ],
+          "water_year": 2002
+        },
+        {
+          "modeled_onset_date": "2003-12-10",
+          "modeled_thaw_date": "2004-04-13",
+          "observed_onset_date": "2003-12-10",
+          "observed_thaw_date": "2004-03-30",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2004
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 14,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2004
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2004
+            }
+          ],
+          "water_year": 2004
+        },
+        {
+          "modeled_onset_date": "2004-12-20",
+          "modeled_thaw_date": "2005-03-09",
+          "observed_onset_date": "2004-12-20",
+          "observed_thaw_date": "2005-03-09",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2005
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2005
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2005
+            }
+          ],
+          "water_year": 2005
+        },
+        {
+          "modeled_onset_date": "2006-12-29",
+          "modeled_thaw_date": "2007-04-23",
+          "observed_onset_date": "2006-12-29",
+          "observed_thaw_date": "2007-04-06",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2007
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 17,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 2007
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2007
+            }
+          ],
+          "water_year": 2007
+        },
+        {
+          "modeled_onset_date": "2007-11-20",
+          "modeled_thaw_date": "2008-03-07",
+          "observed_onset_date": "2007-11-27",
+          "observed_thaw_date": "2008-03-07",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -7,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2008
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2008
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2008
+            }
+          ],
+          "water_year": 2008
+        },
+        {
+          "modeled_onset_date": "2008-11-18",
+          "modeled_thaw_date": "2009-04-07",
+          "observed_onset_date": "2008-11-21",
+          "observed_thaw_date": "2009-03-24",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -3,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2009
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 14,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2009
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 2,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2009
+            }
+          ],
+          "water_year": 2009
+        },
+        {
+          "modeled_onset_date": "2010-02-02",
+          "modeled_thaw_date": "2010-03-24",
+          "observed_onset_date": "2010-01-05",
+          "observed_thaw_date": "2010-03-16",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 28,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 2010
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 8,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2010
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2010
+            }
+          ],
+          "water_year": 2010
+        },
+        {
+          "modeled_onset_date": "2010-12-07",
+          "modeled_thaw_date": "2011-04-22",
+          "observed_onset_date": "2010-12-07",
+          "observed_thaw_date": "2011-04-11",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2011
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 11,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2011
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2011
+            }
+          ],
+          "water_year": 2011
+        },
+        {
+          "modeled_onset_date": "2011-12-13",
+          "modeled_thaw_date": "2012-03-20",
+          "observed_onset_date": "2011-12-13",
+          "observed_thaw_date": "2012-03-13",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2012
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 7,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2012
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2012
+            }
+          ],
+          "water_year": 2012
+        },
+        {
+          "modeled_onset_date": "2012-11-27",
+          "modeled_thaw_date": "2013-04-15",
+          "observed_onset_date": "2012-11-27",
+          "observed_thaw_date": "2013-04-15",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2013
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2013
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2013
+            }
+          ],
+          "water_year": 2013
+        },
+        {
+          "modeled_onset_date": "2014-01-09",
+          "modeled_thaw_date": "2014-04-16",
+          "observed_onset_date": "2013-12-18",
+          "observed_thaw_date": "2014-04-16",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 22,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 2014
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2014
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2014
+            }
+          ],
+          "water_year": 2014
+        },
+        {
+          "modeled_onset_date": "2014-12-31",
+          "modeled_thaw_date": "2015-04-28",
+          "observed_onset_date": "2014-12-31",
+          "observed_thaw_date": "2015-04-08",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2015
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 20,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 2015
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2015
+            }
+          ],
+          "water_year": 2015
+        },
+        {
+          "modeled_onset_date": "2015-12-26",
+          "modeled_thaw_date": "2016-04-19",
+          "observed_onset_date": "2016-01-07",
+          "observed_thaw_date": "2016-04-05",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -12,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2016
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 14,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2016
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 2,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2016
+            }
+          ],
+          "water_year": 2016
+        },
+        {
+          "modeled_onset_date": "2016-12-06",
+          "modeled_thaw_date": "2017-04-17",
+          "observed_onset_date": "2016-12-06",
+          "observed_thaw_date": "2017-04-10",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2017
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 7,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2017
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2017
+            }
+          ],
+          "water_year": 2017
+        }
+      ],
+      "timing_summary": {
+        "candidate_defect_count": 4,
+        "forcing_attributable_failure_count": 7,
+        "pass_count": 85,
+        "signature_count": 96
+      }
+    },
+    {
+      "candidate_defect_count": 14,
+      "candidate_defects": [
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": -22,
+          "signature": "onset",
+          "step3_pointer": "residue-lifecycle handoff / static-vs-dynamic resdep",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 1994
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 35,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 1994
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 18,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 1995
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": -19,
+          "signature": "onset",
+          "step3_pointer": "residue-lifecycle handoff / static-vs-dynamic resdep",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 1996
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 39,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 1996
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": -23,
+          "signature": "onset",
+          "step3_pointer": "residue-lifecycle handoff / static-vs-dynamic resdep",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 1997
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 84,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 1997
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": -48,
+          "signature": "onset",
+          "step3_pointer": "residue-lifecycle handoff / static-vs-dynamic resdep",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 1998
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 41,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 2004
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 17,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 2006
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 111,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 2009
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 50,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 2010
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": 20,
+          "signature": "thaw",
+          "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 2011
+        },
+        {
+          "attribution": "candidate-frost-model-defect",
+          "reason": "Residual direction is not explained by deeper modeled snow.",
+          "residual": -22,
+          "signature": "onset",
+          "step3_pointer": "residue-lifecycle handoff / static-vs-dynamic resdep",
+          "verdict": "FAIL-CANDIDATE-DEFECT",
+          "water_year": 2013
+        }
+      ],
+      "magnitude": {
+        "max_abs_residual_m": 0.3902776857204331,
+        "mean_abs_residual_m": 0.09840656303367384,
+        "mean_signed_residual_m": 0.09425806822038008,
+        "median_signed_residual_m": 0.0707481748584452,
+        "negative_residual_count": 31,
+        "positive_residual_count": 150,
+        "reason": "Seasonal maximum modeled frost is deeper despite deeper modeled snow; reported as a forcing-limited magnitude signal, not a verdict-bearing defect.",
+        "residual_count": 200,
+        "seasonal_max_modeled_m": 0.39028457718330656,
+        "seasonal_max_observed_m": 0.0786,
+        "seasonal_max_signed_residual_m": 0.31168457718330655,
+        "step3_pointer": "legacy-envelope outlier flag plus residue-lifecycle handoff check",
+        "tag": "FORCING-LIMITED-SIGN-INCOHERENT"
+      },
+      "report_path": "docs/work-packages/20260629-frost-step1-current-snow-control-rerun-001/artifacts/site_reports/site2_sleepers_w9_hardwood_vt.comparison_report.json",
+      "site_disposition": "site2_sleepers_w9_hardwood_vt: frost timing does not fully agree; 14 timing cells are candidate frost-model defects. Step 3 pointers: residue-lifecycle handoff / static-vs-dynamic resdep, residue-lifecycle handoff; compare against legacy-envelope outlier flag.",
+      "site_id": "site2_sleepers_w9_hardwood_vt",
+      "step1_route": "FORCING-LIMITED",
+      "step1_snow_direction": "modeled-over-observed",
+      "step1_snow_mean_signed_depth_residual_m": 0.08137700789858286,
+      "step1_snow_over_rows": 134,
+      "step1_snow_under_rows": 54,
+      "timing_rows": [
+        {
+          "modeled_onset_date": "1993-11-30",
+          "modeled_thaw_date": "1994-04-07",
+          "observed_onset_date": "1993-12-22",
+          "observed_thaw_date": "1994-03-03",
+          "signatures": [
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": -22,
+              "signature": "onset",
+              "step3_pointer": "residue-lifecycle handoff / static-vs-dynamic resdep",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 1994
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 35,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 1994
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 4,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1994
+            }
+          ],
+          "water_year": 1994
+        },
+        {
+          "modeled_onset_date": "1994-12-14",
+          "modeled_thaw_date": "1995-03-20",
+          "observed_onset_date": "1994-12-14",
+          "observed_thaw_date": "1995-03-02",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1995
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 18,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 1995
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 3,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1995
+            }
+          ],
+          "water_year": 1995
+        },
+        {
+          "modeled_onset_date": "1996-01-18",
+          "modeled_thaw_date": "1996-04-02",
+          "observed_onset_date": "1996-02-06",
+          "observed_thaw_date": "1996-02-23",
+          "signatures": [
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": -19,
+              "signature": "onset",
+              "step3_pointer": "residue-lifecycle handoff / static-vs-dynamic resdep",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 1996
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 39,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 1996
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 6,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1996
+            }
+          ],
+          "water_year": 1996
+        },
+        {
+          "modeled_onset_date": "1996-12-23",
+          "modeled_thaw_date": "1997-04-09",
+          "observed_onset_date": "1997-01-15",
+          "observed_thaw_date": "1997-01-15",
+          "signatures": [
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": -23,
+              "signature": "onset",
+              "step3_pointer": "residue-lifecycle handoff / static-vs-dynamic resdep",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 1997
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 84,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 1997
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 9,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1997
+            }
+          ],
+          "water_year": 1997
+        },
+        {
+          "modeled_onset_date": "1998-01-29",
+          "modeled_thaw_date": "1998-03-31",
+          "observed_onset_date": "1998-03-18",
+          "observed_thaw_date": "1998-03-18",
+          "signatures": [
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": -48,
+              "signature": "onset",
+              "step3_pointer": "residue-lifecycle handoff / static-vs-dynamic resdep",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 1998
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 13,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1998
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 4,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1998
+            }
+          ],
+          "water_year": 1998
+        },
+        {
+          "modeled_onset_date": "1998-12-30",
+          "modeled_thaw_date": "1999-03-24",
+          "observed_onset_date": "1998-12-30",
+          "observed_thaw_date": "1999-03-24",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1999
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1999
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 1999
+            }
+          ],
+          "water_year": 1999
+        },
+        {
+          "modeled_onset_date": "1999-12-30",
+          "modeled_thaw_date": "2000-03-23",
+          "observed_onset_date": "1999-12-30",
+          "observed_thaw_date": "2000-03-09",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2000
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 14,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2000
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2000
+            }
+          ],
+          "water_year": 2000
+        },
+        {
+          "modeled_onset_date": "2000-12-14",
+          "modeled_thaw_date": "2001-03-28",
+          "observed_onset_date": "2000-11-27",
+          "observed_thaw_date": "2001-03-28",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 17,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 2001
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2001
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -2,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2001
+            }
+          ],
+          "water_year": 2001
+        },
+        {
+          "modeled_onset_date": "2001-12-18",
+          "modeled_thaw_date": "2002-04-11",
+          "observed_onset_date": null,
+          "observed_thaw_date": null,
+          "signatures": [
+            {
+              "attribution": "not-attributed",
+              "reason": "No comparable date pair for this signature.",
+              "residual": null,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "NO-DATA",
+              "water_year": 2002
+            },
+            {
+              "attribution": "not-attributed",
+              "reason": "No comparable date pair for this signature.",
+              "residual": null,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "NO-DATA",
+              "water_year": 2002
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 4,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2002
+            }
+          ],
+          "water_year": 2002
+        },
+        {
+          "modeled_onset_date": "2004-01-14",
+          "modeled_thaw_date": "2004-03-23",
+          "observed_onset_date": "2003-12-10",
+          "observed_thaw_date": "2004-02-11",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 35,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 2004
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 41,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 2004
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2004
+            }
+          ],
+          "water_year": 2004
+        },
+        {
+          "modeled_onset_date": "2005-01-14",
+          "modeled_thaw_date": "2005-03-10",
+          "observed_onset_date": "2004-12-30",
+          "observed_thaw_date": "2005-03-10",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 15,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 2005
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2005
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2005
+            }
+          ],
+          "water_year": 2005
+        },
+        {
+          "modeled_onset_date": "2006-01-17",
+          "modeled_thaw_date": "2006-04-07",
+          "observed_onset_date": "2006-01-17",
+          "observed_thaw_date": "2006-03-21",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2006
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 17,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 2006
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 2,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2006
+            }
+          ],
+          "water_year": 2006
+        },
+        {
+          "modeled_onset_date": "2006-12-29",
+          "modeled_thaw_date": "2007-03-27",
+          "observed_onset_date": "2006-12-29",
+          "observed_thaw_date": "2007-03-27",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2007
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2007
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2007
+            }
+          ],
+          "water_year": 2007
+        },
+        {
+          "modeled_onset_date": "2008-01-31",
+          "modeled_thaw_date": "2008-02-22",
+          "observed_onset_date": null,
+          "observed_thaw_date": null,
+          "signatures": [
+            {
+              "attribution": "not-attributed",
+              "reason": "No comparable date pair for this signature.",
+              "residual": null,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "NO-DATA",
+              "water_year": 2008
+            },
+            {
+              "attribution": "not-attributed",
+              "reason": "No comparable date pair for this signature.",
+              "residual": null,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "NO-DATA",
+              "water_year": 2008
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 2,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2008
+            }
+          ],
+          "water_year": 2008
+        },
+        {
+          "modeled_onset_date": "2008-11-18",
+          "modeled_thaw_date": "2009-04-07",
+          "observed_onset_date": "2008-11-28",
+          "observed_thaw_date": "2008-12-17",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -10,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2009
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 111,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 2009
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 3,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2009
+            }
+          ],
+          "water_year": 2009
+        },
+        {
+          "modeled_onset_date": "2010-01-19",
+          "modeled_thaw_date": "2010-03-24",
+          "observed_onset_date": "2010-02-02",
+          "observed_thaw_date": "2010-02-02",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -14,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2010
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 50,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 2010
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 3,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2010
+            }
+          ],
+          "water_year": 2010
+        },
+        {
+          "modeled_onset_date": "2011-01-04",
+          "modeled_thaw_date": "2011-03-23",
+          "observed_onset_date": "2010-12-07",
+          "observed_thaw_date": "2011-03-03",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 28,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 2011
+            },
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": 20,
+              "signature": "thaw",
+              "step3_pointer": "residue-lifecycle handoff; compare against legacy-envelope outlier flag",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 2011
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2011
+            }
+          ],
+          "water_year": 2011
+        },
+        {
+          "modeled_onset_date": "2011-12-20",
+          "modeled_thaw_date": "2012-03-20",
+          "observed_onset_date": "2011-12-20",
+          "observed_thaw_date": "2012-03-07",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2012
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 13,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2012
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2012
+            }
+          ],
+          "water_year": 2012
+        },
+        {
+          "modeled_onset_date": "2012-12-11",
+          "modeled_thaw_date": "2013-04-02",
+          "observed_onset_date": "2013-01-02",
+          "observed_thaw_date": "2013-04-02",
+          "signatures": [
+            {
+              "attribution": "candidate-frost-model-defect",
+              "reason": "Residual direction is not explained by deeper modeled snow.",
+              "residual": -22,
+              "signature": "onset",
+              "step3_pointer": "residue-lifecycle handoff / static-vs-dynamic resdep",
+              "verdict": "FAIL-CANDIDATE-DEFECT",
+              "water_year": 2013
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2013
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 2,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2013
+            }
+          ],
+          "water_year": 2013
+        },
+        {
+          "modeled_onset_date": "2014-01-08",
+          "modeled_thaw_date": "2014-04-02",
+          "observed_onset_date": "2013-12-18",
+          "observed_thaw_date": "2014-04-23",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 21,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 2014
+            },
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": -21,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 2014
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -2,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2014
+            }
+          ],
+          "water_year": 2014
+        },
+        {
+          "modeled_onset_date": "2015-01-06",
+          "modeled_thaw_date": "2015-04-08",
+          "observed_onset_date": "2015-01-06",
+          "observed_thaw_date": "2015-04-08",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2015
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2015
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2015
+            }
+          ],
+          "water_year": 2015
+        },
+        {
+          "modeled_onset_date": "2016-01-07",
+          "modeled_thaw_date": "2016-04-19",
+          "observed_onset_date": "2016-01-07",
+          "observed_thaw_date": "2016-04-08",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2016
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 11,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2016
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2016
+            }
+          ],
+          "water_year": 2016
+        },
+        {
+          "modeled_onset_date": "2017-01-06",
+          "modeled_thaw_date": "2017-04-18",
+          "observed_onset_date": "2016-12-20",
+          "observed_thaw_date": "2017-04-05",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 17,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 2017
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 13,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2017
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2017
+            }
+          ],
+          "water_year": 2017
+        },
+        {
+          "modeled_onset_date": "2019-02-03",
+          "modeled_thaw_date": "2019-04-15",
+          "observed_onset_date": "2018-12-13",
+          "observed_thaw_date": "2019-04-15",
+          "signatures": [
+            {
+              "attribution": "forcing-attributable",
+              "reason": "Residual direction matches deeper modeled snow: later onset, earlier thaw, shorter duration, or shallower frost.",
+              "residual": 52,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "FAIL-FORCING-ATTRIBUTABLE",
+              "water_year": 2019
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2019
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": -1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2019
+            }
+          ],
+          "water_year": 2019
+        },
+        {
+          "modeled_onset_date": "2019-12-12",
+          "modeled_thaw_date": "2020-03-16",
+          "observed_onset_date": "2019-12-12",
+          "observed_thaw_date": "2020-03-03",
+          "signatures": [
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 0,
+              "signature": "onset",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2020
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 13,
+              "signature": "thaw",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2020
+            },
+            {
+              "attribution": "agrees-within-tolerance",
+              "reason": "Within +/-14 days.",
+              "residual": 1,
+              "signature": "frozen_duration",
+              "step3_pointer": null,
+              "verdict": "PASS",
+              "water_year": 2020
+            }
+          ],
+          "water_year": 2020
+        }
+      ],
+      "timing_summary": {
+        "candidate_defect_count": 14,
+        "forcing_attributable_failure_count": 8,
+        "pass_count": 49,
+        "signature_count": 75
+      }
+    }
+  ],
+  "step1_systematic_timing_fraction_cutoff_note": "Step 1 used a package-local >0.25 systematic-timing-fraction cutoff; only the 14-day timing tolerance is inherited here.",
+  "summary": {
+    "candidate_defect_sites": [
+      "site1_sleepers_south_field_vt",
+      "site2_sleepers_w9_hardwood_vt"
+    ],
+    "gap_snowfreeze_002": "open_narrowed_to_sleepers_timing_candidate_defects",
+    "production_changes": false,
+    "timing_agreement_sites": []
+  },
+  "timing_tolerance_days": 14
+}
