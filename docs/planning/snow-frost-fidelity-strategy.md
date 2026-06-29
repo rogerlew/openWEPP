@@ -1173,27 +1173,48 @@ profile/signature scoring rather than absolute-magnitude promotion.
     legacy) **remains the default/rollback**; Paradigm 2 is built opt-in and staged,
     each stage independently gated (cross-SNOTEL forcing-robust rubric +
     conservation + ADR-0025 perf) and independently valuable:
-    - **Stage 0** — add the surface energy balance (net radiation, turbulent
-      sensible/latent, ground conduction) to `openwepp-meteorology` as
-      surface-agnostic primitives. The current crate has psychrometrics + phase but
-      not the energy balance; this is the prerequisite for Stages 2–3 and is shared
-      with the stream-water-temperature program. Pure crate, no runtime wiring.
-    - **Stage 1** — n-layer snow state + per-layer densification under *local*
-      overburden (the density split-sign fix bulk could not deliver). Gate:
-      cross-SNOTEL rubric + bidirectional densification flip + conservation + perf.
-    - **Stage 2** — per-layer thermal solve + the snow→frost insulation-profile
-      coupling (replaces the bulk `snow_depth_m`/`snow_density_kg_m3` handoff). The
-      frost-insulation improvement; gate against the frost observation corpus.
-    - **Stage 3** — per-layer liquid routing + meltwater temperature (runoff
-      dynamics + the winter water-temperature source). Gate: runoff/melt-timing +
-      NWIS water-temperature evidence.
-    Stages can be reordered to the priority goal (frost-first = Stage 0 → a minimal
-    Stage 2 thermal layering), but Stage 0 gates 2–3. Reference: libsnobal (CC0)
-    ports the energy balance + 2-layer thermal + liquid routing; the n-layer density
-    profile extends beyond it (2-layer shown insufficient at 10.3.20 Stage B), with
-    Crocus (R-40) as the n-layer reference. The staging is the risk control — stop
-    at any stage that proves disproportionate. **Frost attribution proceeds in
-    parallel and is itself served by Stage 2.** Governance: the Paradigm-1-first
+    - **Stage 0 (done)** — surface energy balance in `openwepp-meteorology` (net
+      radiation, turbulent sensible/latent, ground conduction) as surface-agnostic
+      primitives; pure crate, no wiring. Shared with the stream-water-temperature
+      program.
+    - **Stage 1 (done — `HOLD-GATE-FAILURE-NON-PROMOTION`)** — n-layer snow state +
+      per-layer densification under local overburden. The gradient is **real**
+      (49,548 positive basal-minus-surface gradients), conservation + layer closure
+      clean — but the candidate did not beat the bulk-density rubric (16/177 vs
+      15/179; densification-trajectory cells unmoved). **Finding: the bulk *average*
+      density is robust to the layer decomposition.**
+    - **Stage 2 (done — `HOLD-GATE-FAILURE-NON-PROMOTION`)** — snow→frost
+      insulation-profile coupling (depth-weighted layer-stack thermal resistance →
+      frost). Forcing-robust frost cells **identical** to the bulk handoff (0
+      improved / 0 worsened; both 3/49). **Finding: the total insulation
+      *resistance* is likewise decomposition-robust, and the snow-insulation-profile
+      refinement is NOT the frost lever — the Paradigm-2 frost premise did not
+      hold.**
+    - **Stage 3 (active)** — per-layer liquid routing + meltwater temperature →
+      runoff dynamics + the winter water-temperature *source*. The remaining merited
+      goal: meltwater temperature is a **new capability with no bulk equivalent**,
+      so the decomposition-robustness that sank Stages 1–2 does not apply. Gate on
+      conservation (mass + energy + liquid), physically-reasonable meltwater
+      temperature, and forcing-robust runoff/melt-timing — **not** the snow-density
+      rubric. Downstream observed validation (NWIS) is the stream-temperature
+      program's gate.
+    **Key finding (Stages 1–2, twice confirmed): the per-layer profile is real, but
+    the aggregates the consumers use — bulk density and total insulation resistance —
+    are ROBUST to the layer decomposition, so the multilayer structure improves
+    neither the density rubric nor frost insulation.** This **refutes the ADR-0029
+    frost premise**: the snow-insulation-profile refinement is not the frost lever;
+    the frost residual is elsewhere (soil thermal solver / forcing / the
+    forcing-limited snow-depth magnitude), so **the frost program should redirect
+    away from snow-insulation work.** **Decision (operator, 2026-06-28): accept the
+    bulk model for density and frost; proceed to Stage 3 for winter water
+    temperature** — the one Paradigm-2 goal that enables a capability the bulk model
+    cannot provide. Runoff timing is the secondary, at-robustness-risk goal. The
+    n-layer infrastructure (built, conserving, gradient-real) carries Stage 3.
+    Stage 0 gates 2–3. Reference: libsnobal (CC0) ports the energy balance + 2-layer
+    thermal + liquid routing; Crocus (R-40) is the n-layer reference. The staging is
+    the risk control — stop at any stage that proves disproportionate. **Frost
+    attribution proceeds in parallel but is NOT served by the snow-insulation
+    profile (Stage 2 refuted that); redirect it to its actual limiter.** Governance: the Paradigm-1-first
     ADR-candidate (paradigm-assessment WP) is superseded; an ADR ratifying the
     Paradigm 2 commit (citing the spec + ADR-0028) is the next governance step.
 
