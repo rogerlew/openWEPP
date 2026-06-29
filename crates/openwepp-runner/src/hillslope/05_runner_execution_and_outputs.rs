@@ -1617,7 +1617,7 @@ pub fn execute_hillslope_run_with_runtime_selection(
         argv,
         HillslopeRuntimeSelectionPolicy::new(
             runtime_selection,
-            HillslopeDefaultRuntimeActivation::Disabled,
+            HillslopeDefaultRuntimeActivation::default(),
         ),
     )
 }
@@ -1642,7 +1642,12 @@ pub fn execute_hillslope_run_with_runtime_policy(
 
     let inputs = load_hillslope_run_inputs(request)?;
     let targets = resolve_hillslope_output_targets(&inputs.runfile)?;
-    let runtime_resolution = runtime_policy.resolve();
+    let unsupported_default_candidate_reason =
+        default_candidate_direct_unsupported_reason(request, &inputs);
+    let runtime_resolution = runtime_policy.resolve_with_default_candidate_support(
+        unsupported_default_candidate_reason.is_none(),
+        unsupported_default_candidate_reason.unwrap_or("direct-default-candidate-unsupported"),
+    );
     let runtime_selection = runtime_resolution.selected();
     select_direct_runtime_skeleton_once(runtime_selection, &inputs, &targets)?;
     let direct_runtime_counter_baseline = direct_runtime_audit_snapshot();
@@ -1714,6 +1719,19 @@ pub fn execute_hillslope_run_with_runtime_policy(
         manifest_path,
         sidecar_warnings,
     })
+}
+
+fn default_candidate_direct_unsupported_reason(
+    request: &HillslopeRunRequest,
+    inputs: &ParsedHillslopeRunInputs,
+) -> Option<&'static str> {
+    if inputs.slope.ofe_count > 1 {
+        return Some("direct-default-candidate-mofe-unsupported");
+    }
+    if request.legacy_sidecar_discovery {
+        return Some("direct-default-candidate-legacy-sidecar-discovery-unsupported");
+    }
+    None
 }
 
 fn build_hillslope_runtime_selection_provenance(

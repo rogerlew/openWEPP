@@ -52,8 +52,8 @@ impl HillslopeRuntimeSelection {
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum HillslopeDefaultRuntimeActivation {
-    #[default]
     Disabled,
+    #[default]
     DirectProductionCandidate,
 }
 
@@ -142,6 +142,30 @@ impl HillslopeRuntimeSelectionPolicy {
                 fallback_reason: None,
             },
         }
+    }
+
+    #[must_use]
+    pub const fn resolve_with_default_candidate_support(
+        self,
+        default_candidate_direct_supported: bool,
+        unsupported_fallback_reason: &'static str,
+    ) -> HillslopeRuntimeSelectionResolution {
+        if matches!(self.requested, HillslopeRuntimeSelection::DefaultCandidate)
+            && matches!(
+                self.default_activation,
+                HillslopeDefaultRuntimeActivation::DirectProductionCandidate
+            )
+            && !default_candidate_direct_supported
+        {
+            return HillslopeRuntimeSelectionResolution {
+                requested: self.requested,
+                selected: HillslopeRuntimeSelection::Compatibility,
+                default_activation: self.default_activation,
+                selection_reason: "default-candidate-no-regression-compatibility-rollback",
+                fallback_reason: Some(unsupported_fallback_reason),
+            };
+        }
+        self.resolve()
     }
 }
 

@@ -29,7 +29,7 @@ fn contract_declares_candidate_meteorology_scope_without_rst_cutover() {
     let contract = repo_text(CONTRACT);
 
     for marker in [
-        "contract_version: 113",
+        "contract_version: 114",
         "REF-SNOWFREEZE-HARDER-POMEROY-2013",
         "hydrometeor_temperature",
         "harder_pomeroy_rain_fraction",

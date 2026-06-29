@@ -3,7 +3,9 @@ use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
 use openwepp_runner::{
-    HillslopeRunReport, HillslopeRunRequest, SidecarPolicy, execute_hillslope_run,
+    HillslopeDefaultRuntimeActivation, HillslopeRunReport, HillslopeRunRequest,
+    HillslopeRuntimeSelection, HillslopeRuntimeSelectionPolicy, SidecarPolicy,
+    execute_hillslope_run_with_runtime_policy,
 };
 
 #[test]
@@ -190,7 +192,7 @@ fn execute_fixture_with_runfile_report(
     fs::write(&run_file_path, runfile_payload).expect("runfile fixture should be writable");
 
     let output_dir = temp_run_dir.join("output");
-    let report = execute_hillslope_run(
+    let report = execute_hillslope_run_with_runtime_policy(
         &HillslopeRunRequest {
             run_dir: temp_run_dir.clone(),
             run_file: PathBuf::from("case.run"),
@@ -200,6 +202,10 @@ fn execute_fixture_with_runfile_report(
             manifest_path: None,
         },
         &["openwepp-cli-hill".to_string()],
+        HillslopeRuntimeSelectionPolicy::new(
+            HillslopeRuntimeSelection::Compatibility,
+            HillslopeDefaultRuntimeActivation::default(),
+        ),
     )
     .expect("fixture run should succeed before WB13 provenance assertions");
 

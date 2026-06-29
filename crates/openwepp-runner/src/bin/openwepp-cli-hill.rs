@@ -22,7 +22,8 @@ fn run() -> Result<(), String> {
     let mut manifest_path: Option<PathBuf> = None;
     let mut runtime_selection = HillslopeRuntimeSelection::DefaultCandidate;
     let mut runtime_selection_flag: Option<&'static str> = None;
-    let mut default_activation = HillslopeDefaultRuntimeActivation::Disabled;
+    let mut default_activation = HillslopeDefaultRuntimeActivation::default();
+    let mut default_activation_flag: Option<&'static str> = None;
 
     let args: Vec<String> = std::env::args().collect();
     let mut cursor = 1usize;
@@ -109,6 +110,13 @@ fn run() -> Result<(), String> {
                 )?;
             }
             "--direct-default-candidate" => {
+                if default_activation_flag.is_some() {
+                    return Err(
+                        "CLIHILL-E-001 duplicate default activation flag --direct-default-candidate"
+                            .to_string(),
+                    );
+                }
+                default_activation_flag = Some("--direct-default-candidate");
                 default_activation = HillslopeDefaultRuntimeActivation::DirectProductionCandidate;
             }
             "--help" | "-h" => {
@@ -132,13 +140,13 @@ fn run() -> Result<(), String> {
     let Some(output_dir) = output_dir else {
         return Err("CLIHILL-E-001 missing --output-dir".to_string());
     };
-    if default_activation == HillslopeDefaultRuntimeActivation::DirectProductionCandidate
-        && runtime_selection != HillslopeRuntimeSelection::DefaultCandidate
-    {
-        return Err(
-            "CLIHILL-E-001 --direct-default-candidate cannot be combined with an explicit runtime flag"
-                .to_string(),
-        );
+    if default_activation_flag.is_some() && runtime_selection_flag.is_some() {
+        let Some(default_activation_flag) = default_activation_flag else {
+            return Err("CLIHILL-E-001 internal default activation flag state error".to_string());
+        };
+        return Err(format!(
+            "CLIHILL-E-001 {default_activation_flag} cannot be combined with an explicit runtime flag"
+        ));
     }
 
     let report = execute_hillslope_run_with_runtime_policy(

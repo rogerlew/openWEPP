@@ -14,6 +14,12 @@ const SC_SNOWFREEZE_SOURCE: &str =
 const PACKAGE: &str = include_str!(
     "../../docs/work-packages/20260624-snowfreeze-observed-frost-depth-harness-001/package.md"
 );
+const FROST_RATIFICATION_PACKAGE: &str = include_str!(
+    "../../docs/work-packages/20260629-frost-ratification-default-activation-001/package.md"
+);
+const FROST_RATIFICATION_ADJUDICATION: &str = include_str!(
+    "../../docs/work-packages/20260629-frost-ratification-default-activation-001/artifacts/ratification-adjudication.md"
+);
 
 #[test]
 fn snowfreeze_observed_manifest_binds_external_authority_and_source_statuses() {
@@ -170,6 +176,60 @@ fn snowfreeze_observed_snow_depth_correspondence_and_anti_alias_are_contract_bou
         assert!(
             HARNESS_SOURCE.contains(expected) || CLASSIFIER_SOURCE.contains(expected),
             "observed harness/classifier must retain signed snow-depth diagnostic {expected}"
+        );
+    }
+}
+
+#[test]
+fn snowfreeze_observed_frost_ratification_and_default_activation_are_contract_bound() {
+    for expected in [
+        "INV-SNOWFREEZE-047",
+        "INV-SNOWFREEZE-048",
+        "INV-SNOWFREEZE-050",
+        "accepted",
+        "TOL-SNOWFREEZE-007",
+        "TOL-SNOWFREEZE-008",
+        "TOL-SNOWFREEZE-009",
+        "TOL-SNOWFREEZE-010",
+        "TOL-SNOWFREEZE-011",
+        "The Step 1 `>0.25` systematic-timing-fraction cutoff is not ratified",
+        "`frdp` is the bottom extent of the modeled frozen domain",
+        "may thaw from the surface downward and grow `thdp`",
+        "open-but-attributed/bounded",
+        "INV-SNOWFREEZE-084",
+        "DefaultCandidate",
+        "DirectProductionExecutor",
+        "legacy sidecar-discovery runs",
+        "Explicit `Compatibility` runtime selection remains the production rollback path",
+    ] {
+        assert!(
+            SC_SNOWFREEZE_SOURCE.contains(expected),
+            "SC-SNOWFREEZE-001 must retain frost ratification/default marker {expected}"
+        );
+    }
+
+    for expected in [
+        "The `>0.25` systematic-timing-fraction cutoff",
+        "is **not ratified**",
+        "`frdp` remains the bottom extent",
+        "`thdp`, the surface-thawed cap",
+        "snow-free persistent thaw-late cells deferred to future wet-heat/Qwet work",
+        "Policy B analog",
+    ] {
+        assert!(
+            FROST_RATIFICATION_ADJUDICATION.contains(expected),
+            "ratification adjudication artifact must retain marker {expected}"
+        );
+    }
+
+    for expected in [
+        "FROST Ratification and Default Activation",
+        "Contract ratification lands before runtime default activation",
+        "Full gates pass or the package closes `HOLD`",
+    ] {
+        assert!(
+            FROST_RATIFICATION_PACKAGE.contains(expected),
+            "ratification package must retain scope/gate marker {expected}"
         );
     }
 }

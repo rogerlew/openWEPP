@@ -13,6 +13,24 @@
 
 State as of `2026-06-29`:
 
+- None.
+
+## Execution Log
+
+- `20260629-frost-ratification-default-activation-001/` is complete as FROST
+  RATIFICATION AND DEFAULT ACTIVATION. Result:
+  `EXECUTED-COMPLETE-PRODUCTION-DEFAULT-ACTIVATION`. It ratified
+  `INV-SNOWFREEZE-047/048/050`, adjudicated the Step 1 `>0.25`
+  systematic-timing-fraction cutoff as diagnostic-local rather than invariant
+  authority, recorded the H1b `frdp` bottom-extent / `thdp` top-thaw
+  correspondence, re-dispositioned `GAP-SNOWFREEZE-002` as
+  open-but-attributed/bounded, and flipped the no-env hillslope default to direct
+  production for supported modern single-OFE runs, with explicit compatibility
+  rollback for unsupported multi-OFE/Wave-2 and legacy sidecar-discovery
+  surfaces. Full gates passed: `cargo fmt --check`, `cargo clippy --workspace
+  --all-targets -- -D warnings`, `cargo test --workspace`, `cargo deny check`,
+  authority-suite anti-evasion, required-suite obligation guards, and scoped
+  Markdown lint.
 - `20260629-frost-h1b-state-machine-thaw-asymmetry-check-001/` is complete as
   FROST H1b STATE-MACHINE THAW-ASYMMETRY CHECK. Result:
   `EXECUTED-COMPLETE-DIAGNOSTIC-NARROW-EDGE`. It consumed the post-residue

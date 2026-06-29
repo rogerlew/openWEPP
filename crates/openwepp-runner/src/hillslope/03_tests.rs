@@ -507,7 +507,7 @@ mod tests {
             prefix,
             HillslopeRuntimeSelectionPolicy::new(
                 runtime_selection,
-                HillslopeDefaultRuntimeActivation::Disabled,
+                HillslopeDefaultRuntimeActivation::default(),
             ),
         )
     }
@@ -515,6 +515,18 @@ mod tests {
     fn execute_fixture_run_with_runtime_policy_unlocked(
         prefix: &str,
         runtime_policy: HillslopeRuntimeSelectionPolicy,
+    ) -> (HillslopeRunReport, PathBuf) {
+        execute_fixture_run_with_runtime_policy_and_legacy_discovery_unlocked(
+            prefix,
+            runtime_policy,
+            false,
+        )
+    }
+
+    fn execute_fixture_run_with_runtime_policy_and_legacy_discovery_unlocked(
+        prefix: &str,
+        runtime_policy: HillslopeRuntimeSelectionPolicy,
+        legacy_sidecar_discovery: bool,
     ) -> (HillslopeRunReport, PathBuf) {
         reset_direct_runtime_audit_counters();
 
@@ -528,7 +540,7 @@ mod tests {
                 run_file: PathBuf::from("case.run"),
                 output_dir,
                 sidecar_policy: SidecarPolicy::Compat,
-                legacy_sidecar_discovery: false,
+                legacy_sidecar_discovery,
                 manifest_path: None,
             },
             &["openwepp-cli-hill".to_string()],
@@ -568,12 +580,12 @@ mod tests {
     }
 
     #[test]
-    fn r7e_default_candidate_disabled_uses_compatibility_rollback_manifest() {
+    fn r7e_default_candidate_uses_direct_production_manifest() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         let (report, _temp_run_dir) = execute_fixture_run_with_runtime_policy_unlocked(
-            "r7e_default_candidate_disabled",
+            "r7e_default_candidate_direct_default",
             HillslopeRuntimeSelectionPolicy::default(),
         );
 
@@ -590,19 +602,19 @@ mod tests {
             manifest_json
                 .pointer("/runtime_selection/selected")
                 .and_then(serde_json::Value::as_str),
-            Some("compatibility")
+            Some("direct-production-executor")
         );
         assert_eq!(
             manifest_json
-                .pointer("/runtime_selection/fallback_reason")
+                .pointer("/runtime_selection/default_activation_gate")
                 .and_then(serde_json::Value::as_str),
-            Some("direct-default-candidate-gate-disabled")
+            Some("direct-production-candidate")
         );
         assert_eq!(
             manifest_json
                 .pointer("/runtime_selection/output_policy")
                 .and_then(serde_json::Value::as_str),
-            Some("compatibility-public-output")
+            Some("direct-production-executor/direct-publication-frame")
         );
         assert_eq!(
             manifest_json
@@ -614,16 +626,22 @@ mod tests {
             manifest_json
                 .pointer("/execution_provenance/scheduler_kernel_executed")
                 .and_then(serde_json::Value::as_bool),
-            Some(true)
+            Some(false)
         );
         assert!(
-            manifest_json.pointer("/direct_runtime_counters").is_none(),
-            "disabled default candidate must not construct direct runtime counters"
+            manifest_json
+                .pointer("/runtime_selection/fallback_reason")
+                .is_none()
+                || manifest_json
+                    .pointer("/runtime_selection/fallback_reason")
+                    .is_some_and(serde_json::Value::is_null),
+            "default direct production should not report a fallback reason"
         );
-        let audit = direct_runtime_audit_snapshot();
-        assert_eq!(audit.run_frame_constructions, 0);
-        assert_eq!(audit.executor_constructions, 0);
-        assert_eq!(audit.compatibility_edge_invocations, 0);
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/compatibility_edge_invocations",
+            0,
+        );
     }
 
     #[test]
@@ -683,12 +701,137 @@ mod tests {
     }
 
     #[test]
-    fn r7e_runtime_selection_policy_resolves_default_direct_and_rollback_modes() {
-        let default_disabled = HillslopeRuntimeSelectionPolicy::default().resolve();
+    fn r7e_default_candidate_legacy_sidecar_discovery_uses_compatibility_rollback_manifest() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (report, _temp_run_dir) =
+            execute_fixture_run_with_runtime_policy_and_legacy_discovery_unlocked(
+                "r7e_default_candidate_legacy_sidecar_discovery_rollback",
+                HillslopeRuntimeSelectionPolicy::new(
+                    HillslopeRuntimeSelection::DefaultCandidate,
+                    HillslopeDefaultRuntimeActivation::DirectProductionCandidate,
+                ),
+                true,
+            );
+
+        assert!(report.output_pass.is_file());
+        assert!(report.output_loss.is_file());
+        let manifest_json = read_manifest_json(&report);
         assert_eq!(
-            default_disabled.requested(),
+            manifest_json
+                .pointer("/runtime_selection/requested")
+                .and_then(serde_json::Value::as_str),
+            Some("default-candidate")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/selected")
+                .and_then(serde_json::Value::as_str),
+            Some("compatibility")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/selection_reason")
+                .and_then(serde_json::Value::as_str),
+            Some("default-candidate-no-regression-compatibility-rollback")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/fallback_reason")
+                .and_then(serde_json::Value::as_str),
+            Some("direct-default-candidate-legacy-sidecar-discovery-unsupported")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/execution_provenance/scheduler_kernel_executed")
+                .and_then(serde_json::Value::as_bool),
+            Some(true)
+        );
+        assert!(
+            manifest_json.pointer("/direct_runtime_counters").is_none(),
+            "legacy sidecar discovery fallback must not construct direct runtime counters"
+        );
+    }
+
+    #[test]
+    fn r7e_disabled_default_candidate_policy_preserves_compatibility_rollback_manifest() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (report, _temp_run_dir) = execute_fixture_run_with_runtime_policy_unlocked(
+            "r7e_default_candidate_disabled_rollback",
+            HillslopeRuntimeSelectionPolicy::new(
+                HillslopeRuntimeSelection::DefaultCandidate,
+                HillslopeDefaultRuntimeActivation::Disabled,
+            ),
+        );
+
+        assert!(report.output_pass.is_file());
+        assert!(report.output_loss.is_file());
+        let manifest_json = read_manifest_json(&report);
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/requested")
+                .and_then(serde_json::Value::as_str),
+            Some("default-candidate")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/selected")
+                .and_then(serde_json::Value::as_str),
+            Some("compatibility")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/fallback_reason")
+                .and_then(serde_json::Value::as_str),
+            Some("direct-default-candidate-gate-disabled")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/output_policy")
+                .and_then(serde_json::Value::as_str),
+            Some("compatibility-public-output")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/execution_provenance/scheduler_kernel_executed")
+                .and_then(serde_json::Value::as_bool),
+            Some(true)
+        );
+        assert!(
+            manifest_json.pointer("/direct_runtime_counters").is_none(),
+            "disabled default candidate must not construct direct runtime counters"
+        );
+        let audit = direct_runtime_audit_snapshot();
+        assert_eq!(audit.run_frame_constructions, 0);
+        assert_eq!(audit.executor_constructions, 0);
+        assert_eq!(audit.compatibility_edge_invocations, 0);
+    }
+
+    #[test]
+    fn r7e_runtime_selection_policy_resolves_default_direct_and_rollback_modes() {
+        let default_activated = HillslopeRuntimeSelectionPolicy::default().resolve();
+        assert_eq!(
+            default_activated.requested(),
             HillslopeRuntimeSelection::DefaultCandidate
         );
+        assert_eq!(
+            default_activated.selected(),
+            HillslopeRuntimeSelection::DirectProductionExecutor
+        );
+        assert_eq!(
+            default_activated.default_activation(),
+            HillslopeDefaultRuntimeActivation::DirectProductionCandidate
+        );
+        assert_eq!(default_activated.fallback_reason(), None);
+
+        let default_disabled = HillslopeRuntimeSelectionPolicy::new(
+            HillslopeRuntimeSelection::DefaultCandidate,
+            HillslopeDefaultRuntimeActivation::Disabled,
+        )
+        .resolve();
         assert_eq!(
             default_disabled.selected(),
             HillslopeRuntimeSelection::Compatibility
@@ -698,20 +841,24 @@ mod tests {
             Some("direct-default-candidate-gate-disabled")
         );
 
-        let default_activated = HillslopeRuntimeSelectionPolicy::new(
-            HillslopeRuntimeSelection::DefaultCandidate,
-            HillslopeDefaultRuntimeActivation::DirectProductionCandidate,
-        )
-        .resolve();
+        let default_unsupported = HillslopeRuntimeSelectionPolicy::default()
+            .resolve_with_default_candidate_support(false, "direct-default-candidate-test-unsupported");
         assert_eq!(
-            default_activated.selected(),
-            HillslopeRuntimeSelection::DirectProductionExecutor
+            default_unsupported.selected(),
+            HillslopeRuntimeSelection::Compatibility
         );
-        assert_eq!(default_activated.fallback_reason(), None);
+        assert_eq!(
+            default_unsupported.selection_reason(),
+            "default-candidate-no-regression-compatibility-rollback"
+        );
+        assert_eq!(
+            default_unsupported.fallback_reason(),
+            Some("direct-default-candidate-test-unsupported")
+        );
 
         let explicit_rollback = HillslopeRuntimeSelectionPolicy::new(
             HillslopeRuntimeSelection::Compatibility,
-            HillslopeDefaultRuntimeActivation::Disabled,
+            HillslopeDefaultRuntimeActivation::DirectProductionCandidate,
         )
         .resolve();
         assert_eq!(

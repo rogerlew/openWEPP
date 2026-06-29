@@ -619,12 +619,7 @@ fn build_direct_publication_mofe_hourly_carry_provenance(
     };
     let current_carry_total_m = upstream_carry_total_m;
     Ok(HillslopeMofeHourlyCarryProvenance {
-        policy: if facts.publishes_per_ofe_records {
-            MOFE_HOURLY_CARRY_POLICY
-        } else {
-            "single-ofe-direct-publication-no-carry"
-        }
-        .to_string(),
+        policy: MOFE_HOURLY_CARRY_POLICY.to_string(),
         active: facts.publishes_per_ofe_records,
         substep_count: if facts.publishes_per_ofe_records {
             MOFE_HOURLY_CARRY_ARRAY_COUNT

@@ -1290,15 +1290,15 @@ actionable, see the convergence below.)
 
 ### Where it left off — the open gap
 
-The heat-flow model is built, conservation-closed, and timing-validated, **but the
-absolute frost-depth *magnitude* is not validated against observations**.
-`GAP-SNOWFREEZE-002` was **reopened (2026-06-24)** for exactly this (legacy depth is
-a flag, not a target; some cases exceed the legacy envelope as characterized
-handoffs). Magnitude validation is **blocked on the snow-depth control gate**
-(`INV-SNOWFREEZE-048`): a frost-depth residual cannot be attributed to *frost* until
-the site's snow depth is validated. Currently **3 of 5 sites fail the snow-depth gate
-and 2 isotherm sites are inconclusive**, so frost attribution is `UNRESOLVED`. The
-validation invariants (047/048/050) remain **draft** (governance-hold).
+The heat-flow model is built, conservation-closed, timing-validated, and the
+observation arc has now bounded the remaining frost-depth residuals without
+claiming a zero-residual fit. `GAP-SNOWFREEZE-002` was **reopened (2026-06-24)**
+because legacy depth is a flag, not a target; the 2026-06-29 frost arc
+re-dispositioned it as **open-but-attributed/bounded**. The validation invariants
+(`INV-SNOWFREEZE-047/048/050`) are accepted, and frost default activation follows
+the snow Policy B analog: residuals must be attributed and bounded and the full
+surface must pass no-regression/conservation gates. Zero paired failures are not
+required because that would overfit the observation corpus.
 
 ### The convergence that unblocks it
 
@@ -1441,10 +1441,27 @@ actionable.
    H1b is therefore not a structural state-machine blocker for ratification.
    `GAP-SNOWFREEZE-002` remains open for the sparse snow-persistence uncertainty
    and the two snow-free wet-heat/Qwet candidates.
-7. **Ratify** the frost validation invariants (047/048/050: draft → accepted) once
-   the harness method is exercised.
-8. **Frost-default activation** once `GAP-SNOWFREEZE-002` closes against observations
-   (currently opt-in-direct only).
+7. **Ratify** the frost validation invariants (047/048/050: draft → accepted) —
+   complete in
+   `docs/work-packages/20260629-frost-ratification-default-activation-001/`.
+   Result: `EXECUTED-COMPLETE-PRODUCTION-DEFAULT-ACTIVATION`. The package
+   accepted `TOL-SNOWFREEZE-007..011` as observation/rubric evaluation bands,
+   explicitly did **not** ratify the Step 1 `>0.25`
+   systematic-timing-fraction cutoff, and incorporated the H1b finding that
+   `frdp` is the bottom extent of the frozen domain while `thdp` records a
+   surface-thawed cap.
+8. **Frost-default activation** under the frost Policy B analog — complete in
+   `docs/work-packages/20260629-frost-ratification-default-activation-001/`.
+   Activation no longer waits for `GAP-SNOWFREEZE-002` to close to zero. It
+   requires `GAP-SNOWFREEZE-002` to be attributed and bounded, plus a full
+   no-regression/conservation gate on the activated no-env direct-production
+   default. Supported modern single-OFE no-env runs select direct production;
+   current multi-OFE/Wave-2 and legacy sidecar-discovery no-env runs fall back
+   to compatibility with explicit reasons until separate direct-surface
+   promotion. Explicit compatibility runtime remains the rollback. Full gates
+   passed: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D
+   warnings`, `cargo test --workspace`, `cargo deny check`, authority-suite
+   anti-evasion, required-suite obligation guards, and scoped Markdown lint.
 9. *(deferred)* R7G consumer cutover / `DirectFrostRunoffSurface` deletion — not a
    validation prerequisite.
 
