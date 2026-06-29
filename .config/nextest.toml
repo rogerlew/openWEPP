@@ -1,0 +1,147 @@
+# openWEPP nextest scheduling policy.
+#
+# Goals:
+# - keep ordinary contract/unit tests highly parallel;
+# - keep subprocess-heavy CLI, snowbench, SNOTEL, PySnobal, and frost fixtures
+#   from saturating CPU and parquet I/O at the same time;
+# - provide explicit quick/full/frost profiles for local and CI gate selection.
+
+[store]
+dir = "target/nextest"
+
+[profile.default]
+default-filter = "all()"
+fail-fast = true
+retries = 0
+test-threads = "num-cpus"
+slow-timeout = { period = "60s", terminate-after = 10 }
+status-level = "slow"
+final-status-level = "flaky"
+failure-output = "immediate-final"
+success-output = "never"
+
+[profile.default.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-default"
+store-success-output = false
+store-failure-output = true
+
+# Fast implementation loop: excludes the known long-running fixture families.
+# Use `cargo nextest run --workspace --profile quick`.
+[profile.quick]
+inherits = "default"
+default-filter = '''
+all() - (
+    binary(/^(cli01_runner_hillslope_integration|cli03_runner_contract_derived_tests|cli04_runner_wat_parquet_contract_derived_tests)$/)
+    | binary(/^(r6_direct_publication_cutover_cli_contract|simimpl04_.*)$/)
+    | binary(/^(snowdensity03_physics_bulk_offline_contract|snowdensity05e_melt_adjudication|snowdensity05g_harness_fidelity_rerun)$/)
+    | binary(/^(snowdensity06_density_compaction|snowdensity06b_coe_bound_density_replay|snowdensity10_3_1a_per_day_cancov)$/)
+    | binary(/^(snowfrost_fidelity_g0_pysnobal_bridge_contract)$/)
+    | test(/(snowbench|pysnobal|snotel|coe_melt_snowbench|physics_bulk_snowbench|density_compaction_snowbench)/)
+    | test(/(r6j_|r7c_direct_production|r7d_direct|r7e_default_candidate|simimpl14_contract_gate)/)
+)
+'''
+fail-fast = true
+
+[profile.quick.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-quick"
+store-success-output = false
+store-failure-output = true
+
+# Handoff gate: full workspace, but with slow fixture families scheduled through
+# the groups below instead of unconstrained parallel execution.
+# Use `cargo nextest run --workspace --profile full`.
+[profile.full]
+inherits = "default"
+default-filter = "all()"
+fail-fast = false
+slow-timeout = { period = "90s", terminate-after = 8 }
+
+[profile.full.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-full"
+store-success-output = false
+store-failure-output = true
+
+# Snow/frost-focused gate for the fidelity arc. This intentionally includes
+# snow-density, frost, Paradigm 2, PySnobal, and snow carry lineage tests.
+# Use `cargo nextest run --workspace --profile frost`.
+[profile.frost]
+inherits = "default"
+default-filter = '''
+binary(/^(clim05_snow_runtime_kernel_contract|clim06_frost_frozen_soil_kernel_contract)$/)
+| binary(/^(snowdensity.*|snowfrost.*|paradigm2.*|cancov_stratified_observations)$/)
+| binary(/^(hphys03(09|10|11|12|13|15|16|17|18|19|20).*)$/)
+| test(/(snow|frost|swe|snotel|pysnobal|snowbench|melt|winter|stmtim)/)
+'''
+fail-fast = false
+slow-timeout = { period = "90s", terminate-after = 8 }
+
+[profile.frost.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-frost"
+store-success-output = false
+store-failure-output = true
+
+[test-groups.snowbench]
+max-threads = 1
+
+[test-groups.cli-fixture]
+max-threads = 2
+
+[test-groups.frost-fixture]
+max-threads = 2
+
+[test-groups.runner-fixture]
+max-threads = 2
+
+# The snowbench/PySnobal tests are the observed top wall-time offenders. Keep
+# them serial to avoid multiple full WAT/PySnobal export pipelines competing for
+# parquet and target-dir I/O.
+[[profile.default.overrides]]
+filter = '''
+binary(/^(snowdensity03_physics_bulk_offline_contract|snowdensity05e_melt_adjudication|snowdensity05g_harness_fidelity_rerun)$/)
+| binary(/^(snowdensity06_density_compaction|snowdensity06b_coe_bound_density_replay|snowdensity10_3_1a_per_day_cancov)$/)
+| binary(/^(snowfrost_fidelity_g0_pysnobal_bridge_contract)$/)
+| test(/(snowbench|pysnobal|snotel|coe_melt_snowbench|physics_bulk_snowbench|density_compaction_snowbench)/)
+'''
+test-group = "snowbench"
+threads-required = 4
+slow-timeout = { period = "90s", terminate-after = 8 }
+
+# CLI integration fixtures spawn openwepp binaries and write parquet/manifest
+# output. Let a couple run concurrently, but do not let them occupy every CPU.
+[[profile.default.overrides]]
+filter = '''
+binary(/^(cli01_runner_hillslope_integration|cli03_runner_contract_derived_tests|cli04_runner_wat_parquet_contract_derived_tests)$/)
+| binary(/^(r6_direct_publication_cutover_cli_contract|simimpl04_.*|watershed_cli_behavior_contract)$/)
+'''
+test-group = "cli-fixture"
+threads-required = 2
+slow-timeout = { period = "90s", terminate-after = 6 }
+
+# Snow/frost observation and mechanism diagnostics can be expensive even when
+# they are not snowbench exports. Cap their concurrency separately from general
+# CLI tests so the frost profile remains usable on developer machines.
+[[profile.default.overrides]]
+filter = '''
+binary(/^(clim05_snow_runtime_kernel_contract|clim06_frost_frozen_soil_kernel_contract)$/)
+| binary(/^(snowdensity.*|snowfrost.*|paradigm2.*|cancov_stratified_observations)$/)
+| test(/(snow|frost|swe|melt|winter|stmtim)/)
+'''
+test-group = "frost-fixture"
+threads-required = 2
+slow-timeout = { period = "90s", terminate-after = 6 }
+
+# Runner library fixture tests are individual libtest cases under the
+# openwepp_runner binary. Nextest can split them, so cap them by test name rather
+# than serializing the whole runner unit-test suite.
+[[profile.default.overrides]]
+filter = '''
+package(openwepp-runner)
+& test(/(r6j_|r7c_direct_production|r7d_direct|r7e_default_candidate|simimpl14_contract_gate)/)
+'''
+test-group = "runner-fixture"
+threads-required = 2
+slow-timeout = { period = "90s", terminate-after = 6 }

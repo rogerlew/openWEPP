@@ -40,8 +40,9 @@
 - Comparator agreement is an investigation signal, not standalone acceptance or rejection authority.
 
 ## Validation Checklist
-- Fast iteration when useful: focused `cargo test -p <crate> <filter>` or `cargo check -p <crate>`.
-- Required closure before implementation package disposition: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, `cargo deny check`.
+- Fast iteration when useful: focused `cargo nextest run -p <crate>` or `cargo check -p <crate>`.
+- Required closure before implementation package disposition: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo nextest run --workspace --profile full`, `cargo deny check`.
+- Use `cargo nextest run --workspace --profile quick` for ordinary local loops and `cargo nextest run --workspace --profile frost` for snow/frost-focused work; fall back to `cargo test` only for libtest-specific behavior or explicitly required legacy harness checks.
 - Contract-derived tests and closure checks for touched state surfaces.
 - Legacy comparator delta review using confidence tiers when migration/parity is in scope.
 

@@ -126,7 +126,8 @@
 
 ## Mechanical Refactor Requirements
 - Follow `docs/standards/mechanical-refactor-authoring-guide.md` for structural, behavior-preserving work.
-- Required final closure loop for Rust implementation/mechanical refactor disposition is `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, and `cargo deny check`. Package prompts may define narrower focused iteration gates or additional gates, but may not waive final root closure gates unless a canonical decision or contract explicitly authorizes the exception.
+- Required final closure loop for Rust implementation/mechanical refactor disposition is `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo nextest run --workspace --profile full`, and `cargo deny check`. Package prompts may define narrower focused iteration gates, such as `cargo nextest run --workspace --profile quick` or `cargo nextest run --workspace --profile frost`, or additional gates, but may not waive final root closure gates unless a canonical decision or contract explicitly authorizes the exception.
+- Fall back to `cargo test --workspace` only for libtest-specific behavior or explicitly required legacy harness checks, and label that as a compatibility run rather than the default closure path.
 - Package-required validation overrides generic ambient instructions to skip tests.
 - Reconcile tests mechanically only; do not hide semantic changes inside refactor diffs.
 

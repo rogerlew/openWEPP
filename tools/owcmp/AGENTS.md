@@ -96,8 +96,8 @@ Focused validation for `owcmp` changes usually includes:
 ```bash
 .venv/bin/python -m py_compile tools/owcmp/owcmp tools/owcmp/*.py
 cargo fmt --check
-cargo test --test owcmp_cli_contract
-cargo test --test owcmp_agent_config_contract
+cargo nextest run --test owcmp_cli_contract
+cargo nextest run --test owcmp_agent_config_contract
 git diff --check
 ```
 

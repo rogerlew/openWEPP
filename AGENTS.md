@@ -60,12 +60,16 @@ openWEPP is the Rust simulation engine. openWEPP owns its architecture and scien
 Before declaring Rust kernel implementation complete, run and record:
 1. `cargo fmt --check`
 2. `cargo clippy --workspace --all-targets -- -D warnings`
-3. `cargo test --workspace`
+3. `cargo nextest run --workspace --profile full`
 4. `cargo deny check`
 5. Touched contract invariants and closure checks.
 6. Legacy comparator delta review using confidence tiers.
 7. For conservation-sensitive outputs, independent operand reconstruction and
    real closure evidence per `docs/standards/kernel-work-package-preparation.md`.
+- Use `cargo nextest run --workspace --profile quick` for fast local loops and
+  `cargo nextest run --workspace --profile frost` for snow/frost-focused gates.
+  Fall back to `cargo test --workspace` only for libtest-specific behavior or an
+  explicitly required legacy harness check.
 
 ## Error Handling and Numerics
 - No broad `Result<_, Box<dyn Error>>` swallowing in production paths; use typed error enums per crate.
@@ -94,7 +98,7 @@ Before declaring Rust kernel implementation complete, run and record:
 ## Security Guardrails
 - Never commit secrets or tokens.
 - Preserve validation, typed guards, fail-closed behavior, and serialization safeguards.
-- For edits touching external-authority suite posture, cohort fixtures, or required-case bindings, run source-level anti-evasion guards before disposition: `bash tools/release/check_authority_suite_antievasion.sh` and `cargo test --test auth11_required_suite_obligation_guards_contract`.
+- For edits touching external-authority suite posture, cohort fixtures, or required-case bindings, run source-level anti-evasion guards before disposition: `bash tools/release/check_authority_suite_antievasion.sh` and `cargo nextest run --test auth11_required_suite_obligation_guards_contract`.
 
 ## Agent Feedback Loop
 - Treat avoidable friction as diagnostic signal about codebase, docs, tooling, or task framing.
@@ -103,7 +107,7 @@ Before declaring Rust kernel implementation complete, run and record:
 
 ## Truthfulness
 - Match verbs to evidence. Label evidence class (`Static:` vs `Ran:`) at the top of reviews and audits.
-- A validator (`cargo check`, `cargo build`) is not the workflow (`cargo test`, comparator harness run).
+- A validator (`cargo check`, `cargo build`) is not the workflow (`cargo nextest run`, comparator harness run).
 - When skipping execution, say so plainly.
 
 ## Root Exclusions
