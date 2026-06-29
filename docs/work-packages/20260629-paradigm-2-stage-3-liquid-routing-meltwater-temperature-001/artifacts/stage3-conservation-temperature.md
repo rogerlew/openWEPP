@@ -11,7 +11,7 @@ Focused gate command:
 cargo test --test paradigm2_stage3_liquid_routing_meltwater_temperature
 ```
 
-Result: passed, `5` tests.
+Result after deferred-gate follow-up: passed, `6` tests.
 
 Covered checks:
 
@@ -26,6 +26,11 @@ Covered checks:
 - Meltwater flux temperature is typed as `TemperatureCelsius` and equals ripe
   melt (`0 degC`) within tolerance.
 - Layer temperatures remain `<= 0 degC`.
+- Persisted cold-content carry is capped to the physically representable range
+  for the current layer mass before reconstructing layer temperature. This fixes
+  the first deferred observed-gate failure, where stale cold content after layer
+  evolution could imply a layer temperature below absolute zero and fail the
+  Stage 0 conductive-flux domain guard.
 
 Thermal-solve scope:
 

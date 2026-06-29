@@ -14,6 +14,7 @@ const STAGE3_DEFAULT_SNOW_ALBEDO: f64 = 0.82;
 const STAGE3_SECONDS_PER_HOUR: f64 = 3_600.0;
 const STAGE3_LIQUID_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
 const STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2: f64 = 1.0e-6;
+const STAGE3_MIN_LAYER_TEMPERATURE_C: f64 = -273.15;
 
 fn inactive_direct_winter_frost_partition() -> DirectWinterFrostPartitionOutcome {
     DirectWinterFrostPartitionOutcome {
@@ -614,16 +615,29 @@ impl Wb11HydrologyKernel {
     }
 
     fn stage3_layer_cold_content_j_m2(layer: &DirectSnowLayerState) -> f64 {
-        if layer.cold_content_j_m2 > WB11_ZERO_THRESHOLD {
-            return layer.cold_content_j_m2;
-        }
-        if layer.temperature_c >= 0.0 || layer.mass_swe_m <= WB11_ZERO_THRESHOLD {
+        let cold_content = if layer.cold_content_j_m2 > WB11_ZERO_THRESHOLD {
+            layer.cold_content_j_m2
+        } else if layer.temperature_c >= 0.0 || layer.mass_swe_m <= WB11_ZERO_THRESHOLD {
+            0.0
+        } else {
+            layer.mass_swe_m
+                * STAGE3_RHO_WATER_KG_M3
+                * STAGE3_SPECIFIC_HEAT_ICE_J_KG_K
+                * (-layer.temperature_c)
+        };
+        cold_content
+            .max(0.0)
+            .min(Self::stage3_max_cold_content_j_m2(layer.mass_swe_m))
+    }
+
+    fn stage3_max_cold_content_j_m2(mass_swe_m: f64) -> f64 {
+        if mass_swe_m <= WB11_ZERO_THRESHOLD {
             return 0.0;
         }
-        layer.mass_swe_m
+        mass_swe_m
             * STAGE3_RHO_WATER_KG_M3
             * STAGE3_SPECIFIC_HEAT_ICE_J_KG_K
-            * (-layer.temperature_c)
+            * (-STAGE3_MIN_LAYER_TEMPERATURE_C)
     }
 
     fn stage3_hourly_surface_energy_potentials_j_m2(
@@ -841,7 +855,9 @@ impl Wb11HydrologyKernel {
         if cold_content_j_m2 <= WB11_ZERO_THRESHOLD || mass_swe_m <= WB11_ZERO_THRESHOLD {
             0.0
         } else {
-            -cold_content_j_m2
+            let capped_cold_content =
+                cold_content_j_m2.min(Self::stage3_max_cold_content_j_m2(mass_swe_m));
+            -capped_cold_content
                 / (mass_swe_m * STAGE3_RHO_WATER_KG_M3 * STAGE3_SPECIFIC_HEAT_ICE_J_KG_K)
         }
     }

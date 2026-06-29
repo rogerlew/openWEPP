@@ -13,6 +13,8 @@ const RUNNER_BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_public
 const RUNNER_IMPL: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs";
 const HYDROLOGY_IMPL: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs";
 const RUNNER_BINS: &str = "crates/openwepp-runner/src/bin";
+const OBSERVED_GATE_TOOL: &str =
+    "tools/snowfreeze_observed/paradigm2_stage3_liquid_routing_meltwater_temperature.py";
 
 #[test]
 fn stage3_contract_package_and_selector_are_bound() {
@@ -67,6 +69,18 @@ fn stage3_contract_package_and_selector_are_bound() {
         "stage3_energy_residual_j_m2",
     ] {
         assert_contains(&hydrology_impl, marker, HYDROLOGY_IMPL);
+    }
+
+    let observed_gate_tool = read(OBSERVED_GATE_TOOL);
+    for marker in [
+        "paradigm2-stage3-liquid-routing-meltwater-temperature-gates-v1",
+        "INV-SNOWFREEZE-080",
+        "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL",
+        "layered_thermal_liquid_v1",
+        "stage1_layered_density_disabled_stage3",
+        "runoff_timing_guardrail_vs_stage1",
+    ] {
+        assert_contains(&observed_gate_tool, marker, OBSERVED_GATE_TOOL);
     }
 }
 
@@ -148,6 +162,23 @@ fn stage3_requires_multilayer_density_model() {
             .contains("snow.stage3_requires_multilayer_density_model"),
         "unexpected error: {error}"
     );
+}
+
+#[test]
+fn stage3_caps_persisted_cold_content_to_current_layer_mass() {
+    let mut inputs = warm_layered_inputs(SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1);
+    inputs.snow_layers[0].cold_content_j_m2 = 1.0e12;
+    inputs.snow_layers[1].cold_content_j_m2 = 1.0e12;
+
+    let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
+        .expect("physically capped Stage 3 cold-content carry should compute");
+
+    assert!(partition.stage3_diagnostics.enabled);
+    assert!(partition.snow_layers_after.iter().all(|layer| {
+        (-273.15..=0.0).contains(&layer.temperature_c)
+            && layer.cold_content_j_m2.is_finite()
+            && layer.cold_content_j_m2 >= 0.0
+    }));
 }
 
 fn warm_layered_inputs(

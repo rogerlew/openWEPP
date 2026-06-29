@@ -1190,15 +1190,19 @@ profile/signature scoring rather than absolute-magnitude promotion.
       *resistance* is likewise decomposition-robust, and the snow-insulation-profile
       refinement is NOT the frost lever — the Paradigm-2 frost premise did not
       hold.**
-    - **Stage 3 (done — `HOLD-H2637-ENDPOINT-NOT-RUN-NON-PROMOTION`)** — per-layer
+    - **Stage 3 (done — `HOLD-FULL-ARM-SNOW-GUARDRAIL-NON-PROMOTION`)** — per-layer
       liquid routing + meltwater temperature → runoff dynamics + the winter
       water-temperature *source*. The package implemented the opt-in diagnostic
       candidate, conserved the focused liquid/energy ledgers, produced typed ripe
-      meltwater temperature, and preserved the CoE melt-mass path/default. It did
-      **not** promote: real H2637 endpoint timing/RSS and forcing-robust observed
-      runoff/melt-timing gates were not run. The stream-temperature program may
-      consume the typed source in a later package; Stage 3 does not activate full
-      in-stream routing.
+      meltwater temperature, and preserved the CoE melt-mass path/default.
+      Deferred gates were then run: H2637 passed (`72.59 s`, `1150608 KiB`,
+      within the ADR-0025 `<=10x` budget), and the Stage 3 increment was neutral
+      versus Stage 1 rollback on observed snow/runoff-timing guardrails (`0`
+      worse robust cells; `0` worse runoff/timing cells). It did **not** promote:
+      the full opt-in arm still inherits Stage 1's non-promoted snow profile
+      (`16`/`177` versus current default `15`/`179`). The stream-temperature
+      program may consume the typed source in a later package; Stage 3 does not
+      activate full in-stream routing.
     **Key finding (Stages 1–2, twice confirmed): the per-layer profile is real, but
     the aggregates the consumers use — bulk density and total insulation resistance —
     are ROBUST to the layer decomposition, so the multilayer structure improves

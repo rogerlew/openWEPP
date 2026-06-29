@@ -78,6 +78,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "tools/snowfreeze_observed/physics_bulk_snotel_profile.py",
         "tools/snowfreeze_observed/paradigm2_stage1_layered_density.py",
         "tools/snowfreeze_observed/paradigm2_stage2_insulation_profile.py",
+        "tools/snowfreeze_observed/paradigm2_stage3_liquid_routing_meltwater_temperature.py",
         "tools/snowfreeze_observed/policy_b_no_regression_cap_authority.py",
         "tools/snowfreeze_observed/post_partition_residual_decomposition.py",
         "tools/snowfreeze_observed/residual_policy_b_diagnostic.py",

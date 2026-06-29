@@ -16,19 +16,23 @@ State as of `2026-06-29`:
 - `20260629-paradigm-2-stage-3-liquid-routing-meltwater-temperature-001/` is
   complete as PARADIGM-2 STAGE 3, the opt-in per-layer liquid-routing and
   meltwater-temperature diagnostic candidate. Result:
-  `HOLD-H2637-ENDPOINT-NOT-RUN-NON-PROMOTION`. It amended
+  `HOLD-FULL-ARM-SNOW-GUARDRAIL-NON-PROMOTION`. It amended
   `SC-SNOWFREEZE-001` to v110 with `INV-SNOWFREEZE-080`, added per-layer
   thermal/liquid/refreeze state, consumed Stage 0 surface-energy and conduction
   primitives, routed the existing CoE melt/rain liquid through Stage 1 layers
   diagnostically, and produced typed meltwater-flux temperature for the future
-  stream-temperature program. Focused conservation/temperature tests, adjacent
-  snow regressions, workspace clippy, full workspace tests, and `cargo deny
-  check` passed; ADR-0025 hot-frame size bounds pass with optional boxed
-  diagnostic carry. No activation, CoE melt-mass replacement, fixture, public
-  schema, density-cap, frost behavior, parser/runfile/user CLI, `.run`, or full
-  stream-temperature routing change was made. Promotion is blocked because real
-  H2637 endpoint timing/RSS, cross-SNOTEL snow guardrail, and forcing-robust
-  runoff/melt-timing observed gates were not run.
+  stream-temperature program. Focused conservation/temperature tests, the
+  deferred cross-SNOTEL/cancov observed guardrail wrapper, H2637 endpoint
+  timing/RSS, adjacent snow regressions, workspace clippy, full workspace tests,
+  and `cargo deny check` passed; ADR-0025 hot-frame size bounds pass with
+  optional boxed diagnostic carry, and H2637 measured `72.59 s` / `1150608 KiB`
+  within the `<=10x` budget. No activation, CoE melt-mass replacement, fixture,
+  public schema, density-cap, frost behavior, parser/runfile/user CLI, `.run`,
+  or full stream-temperature routing change was made. Stage 3's incremental
+  liquid/temperature path was neutral versus Stage 1 rollback (`0` worse robust
+  cells; `0` worse runoff/timing cells), but promotion remains blocked because
+  the full opt-in arm inherits Stage 1's non-promoted snow profile (`16`/`177`
+  versus the current default `15`/`179`).
 - `20260628-paradigm-2-stage-2-snow-frost-insulation-profile-001/` is complete
   as PARADIGM-2 STAGE 2, the opt-in snow-to-frost insulation-profile coupling
   package. Result: `HOLD-GATE-FAILURE-NON-PROMOTION`. It amended

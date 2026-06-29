@@ -1,6 +1,6 @@
 # PARADIGM-2 Stage 3 Liquid Routing and Meltwater Temperature
 
-Status: `HOLD-H2637-ENDPOINT-NOT-RUN-NON-PROMOTION`
+Status: `HOLD-FULL-ARM-SNOW-GUARDRAIL-NON-PROMOTION`
 Date: `2026-06-29`
 Contract: `SC-SNOWFREEZE-001` v110, `INV-SNOWFREEZE-080`,
 `OBL-SNOWFREEZE-P-055`
@@ -78,6 +78,8 @@ and public output schemas remain intact.
 - `artifacts/authority-provenance.md`
 - `artifacts/stage3-conservation-temperature.md`
 - `artifacts/runoff-and-snow-guardrails.md`
+- `artifacts/paradigm2-stage3-observed-guardrails.md`
+- `artifacts/paradigm2-stage3-observed-guardrails.json`
 - `artifacts/performance-h2637.md`
 - `artifacts/review.md`
 - `artifacts/verification.md`
@@ -96,16 +98,28 @@ implementation is retained but not promoted:
   meltwater-flux temperature.
 - The disabled default, CoE melt mass path, rollback boundaries, frost behavior,
   density cap, fixtures, and public output schemas are preserved.
-- Focused conservation/temperature tests, adjacent snow tests, workspace clippy,
-  full workspace tests, and `cargo deny check` passed.
+- A deferred observed-gate run completed all cross-SNOTEL/cancov direct-runtime
+  arms after the package fixed a stale-cold-content domain bug exposed by the
+  first real run. Incremental Stage 3 versus Stage 1 rollback was no-worse:
+  `0` worse robust cells, `0` worse runoff/timing cells, and identical
+  `16`/`177` robust snow profiles.
+- Focused conservation/temperature tests, the observed-gate wrapper,
+  adjacent snow tests, workspace clippy, full workspace tests, and
+  `cargo deny check` passed.
 - ADR-0025 hot-frame size guard passed after Stage 3 diagnostics were moved to
   optional boxed direct-runtime trace carry.
+- Real H2637 endpoint timing/RSS passed: Stage 1 rollback `69.91 s` /
+  `1150608 KiB`; Stage 3 `72.59 s` / `1150608 KiB`; Stage 3 remains within the
+  ADR-0025 `<=10x` H2637 wall-time budget of `91.2 s`.
 
 Promotion/default activation is blocked:
 
-- Real H2637 endpoint timing/RSS was not run.
-- Cross-SNOTEL snow rubric and forcing-robust runoff timing were not rerun as
-  observed-data gates.
+- The full opt-in Stage 3 arm depends on Stage 1 layered density and therefore
+  still inherits the non-promoted Stage 1 snow profile (`16` robust fails /
+  `177` score) versus the current no-env default (`15` / `179`). That fails the
+  full-arm snow guardrail for any default or promotion claim, even though the
+  Stage 3 liquid/temperature increment itself was neutral versus the Stage 1
+  rollback baseline.
 - Full in-stream water-temperature routing remains separate stream-temperature
   program scope.
 
