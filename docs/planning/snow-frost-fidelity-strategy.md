@@ -1389,11 +1389,31 @@ actionable.
    **legacy-envelope magnitude outliers** (13/43 forced-snow cases, ADR-0017
    comparator context) remain secondary candidate pointers, not established
    causes.
-4. **Ratify** the frost validation invariants (047/048/050: draft → accepted) once
+4. **Bucket the post-residue thaw residual** — complete in
+   `docs/work-packages/20260629-frost-thaw-residual-diagnostic-001/`.
+   Result: `EXECUTED-COMPLETE-DIAGNOSTIC-SNOW-BURIED-DOMINANT`. The diagnostic consumed
+   the post-residue seasonal Sleepers runs and R7G frost traces. The `11`
+   thaw-late cells split to `9` `H1a` missing wet/advective thaw energy, `2`
+   `H1b` state-machine thaw asymmetry, and `0` `H2` tiny-tail detector artifacts
+   for material thresholds through `0.05 m` (only an unadopted `0.10 m` sweep
+   classifies four cells as H2). Post-review snow-depth-controlled re-bucketing
+   accepted the finding that H1a alone over-routed the residual to `Qwet`: at
+   the diagnostic `0.10 m` snow-control split, thaw-late cells route to `7`
+   snow-buried cells (`5` under-melt/linger, `2` accumulation/near-balance), `2`
+   snow-free persistent `Qwet` candidates, and `2` mixed cells. The snow-buried
+   count is stable across `0.05`, `0.10`, and `0.20 m`. The `2` early-onset
+   cells are material early-freeze cells and remain a separate onset diagnostic.
+   **Next primary lever:** snow-persistence decomposition first, separating
+   forcing-limited over-accumulation from fixable spring under-melt before any
+   broad `Qwet` build. Do not change the thaw detector threshold unless a later
+   package anchors it to frost-tube observation protocol rather than these
+   residuals; `Qwet` is limited to the snow-free persistent subset, and H1b
+   top-retreat/state-machine work is secondary.
+5. **Ratify** the frost validation invariants (047/048/050: draft → accepted) once
    the harness method is exercised.
-5. **Frost-default activation** once `GAP-SNOWFREEZE-002` closes against observations
+6. **Frost-default activation** once `GAP-SNOWFREEZE-002` closes against observations
    (currently opt-in-direct only).
-6. *(deferred)* R7G consumer cutover / `DirectFrostRunoffSurface` deletion — not a
+7. *(deferred)* R7G consumer cutover / `DirectFrostRunoffSurface` deletion — not a
    validation prerequisite.
 
 ## 12. References / Authority

@@ -13,6 +13,24 @@
 
 State as of `2026-06-29`:
 
+- `20260629-frost-thaw-residual-diagnostic-001/` is complete as FROST
+  THAW-RESIDUAL DIAGNOSTIC. Result:
+  `EXECUTED-COMPLETE-DIAGNOSTIC-SNOW-BURIED-DOMINANT`. It consumed the post-residue
+  Step 3 seasonal Sleepers runs plus R7G frost traces and bucketed the remaining
+  `13` candidate-defect timing cells. The `11` thaw-late cells split to `9`
+  `H1a` missing wet/advective thaw energy, `2` `H1b` state-machine thaw
+  asymmetry, and `0` `H2` tiny-tail cells through material thresholds up to
+  `0.05 m`; only an unadopted `0.10 m` material threshold would classify four
+  cells as H2. The Claude review finding was accepted: H1a over-routed to
+  `Qwet` because snow depth was not controlled. Post-review snow-depth
+  re-bucketing at diagnostic `0.10 m` routes the thaw-late cells to `7`
+  snow-buried cells (`5` under-melt/linger, `2` accumulation/near-balance), `2`
+  snow-free persistent `Qwet` candidates, and `2` mixed cells; the snow-buried
+  count is stable across `0.05`, `0.10`, and `0.20 m`. The two early-onset cells
+  are material early-freeze cells and remain a separate onset diagnostic.
+  `GAP-SNOWFREEZE-002` remains open but is narrowed: next primary route is
+  snow-persistence decomposition before any broad `Qwet` build. No solver,
+  detector, fixture, contract, default, or output-schema change was made.
 - `20260629-frost-residue-cover-implementation-001/` is complete as FROST
   RESIDUE-COVER IMPLEMENTATION, the contract-first dynamic seasonal forest
   litter/residue-depth coupling for the frost surface heat path. Result:
