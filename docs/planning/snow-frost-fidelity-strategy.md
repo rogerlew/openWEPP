@@ -1228,6 +1228,16 @@ profile/signature scoring rather than absolute-magnitude promotion.
       ADR-0025 `<=10x` budget. This completes the Paradigm 2 deliverable without
       activating a new default or paying layer overhead outside the water-
       temperature use case.
+    - **Multilayer promotion (done —
+      `EXECUTED-COMPLETE-PRODUCTION-OPT-IN`)** — the Stage 3-Decouple arm is now
+      ratified as a production-supported internal opt-in capability, not a
+      package-local diagnostic. The no-env bulk default remains unchanged; real
+      cross-SNOTEL/cancov guardrail reconfirmed exact default equivalence
+      (`15`/`179`, `0` worse robust cells), real WAT parquet output now publishes
+      nullable `MeltwaterTemperature` in `degC`, default/rollback WAT rows remain
+      null, H2637 measured `70.65 s` / `1153680 KiB`, and HBP/watershed
+      serialization plus runfile/WEPPpy user exposure remain deferred to the
+      stream-water-temperature program.
     **Paradigm 2 conclusion.** The staged program resolves to a single deliverable:
     density (Stage 1) and frost insulation (Stage 2) gain nothing from the layers
     (decomposition-robust — the bulk default stays for both); the multilayer
@@ -1256,7 +1266,71 @@ profile/signature scoring rather than absolute-magnitude promotion.
     ADR-candidate (paradigm-assessment WP) is superseded; an ADR ratifying the
     Paradigm 2 commit (citing the spec + ADR-0028) is the next governance step.
 
-## 11. References / Authority
+## 11. Frost-Depth Fidelity — State and Remaining Sequence
+
+(State as of 2026-06-29, reconstructed from the record. The snow program above was
+the prerequisite — "frost is blocked by snow insulation"; that blocker is now
+actionable, see the convergence below.)
+
+### What is done
+
+- **Activation + single-OFE conservation** (FQ-4, FROSTVAL01): frost engages on
+  freezing substrate (`ksflag=1`); single-OFE conservation closes.
+- **FDHP01 heat-flow depth model (the keystone)** — replaced the freeze-index
+  *proxy* (`0.20 m` cap, depth correlation **0.13**, frozen-duration **+258 days**)
+  with the heat-flow model (fine-layer freeze/thaw state machine, `Qdry` lower
+  front, `hr_tmp`/`tmpadj` surface temperature). Result: correlation **0.76**,
+  frozen-duration residual **+61 days**, conservation at machine epsilon; certified
+  at the ADR-0017 conservation/activation boundary (MOFE unblocked).
+- **Typed winter-column frost solver** (R7G) — `DirectFrostLaneState` behind the
+  typed kernel boundary.
+- **Observation harness** — five frost-depth sites (Sleepers South/W9 frost tubes,
+  SCAN Mandan isotherm, GGD498 Morris frost tube, Reynolds Creek soil-temp) under
+  the `INV-SNOWFREEZE-047/048/050` correspondence + fidelity rubric.
+
+### Where it left off — the open gap
+
+The heat-flow model is built, conservation-closed, and timing-validated, **but the
+absolute frost-depth *magnitude* is not validated against observations**.
+`GAP-SNOWFREEZE-002` was **reopened (2026-06-24)** for exactly this (legacy depth is
+a flag, not a target; some cases exceed the legacy envelope as characterized
+handoffs). Magnitude validation is **blocked on the snow-depth control gate**
+(`INV-SNOWFREEZE-048`): a frost-depth residual cannot be attributed to *frost* until
+the site's snow depth is validated. Currently **3 of 5 sites fail the snow-depth gate
+and 2 isotherm sites are inconclusive**, so frost attribution is `UNRESOLVED`. The
+validation invariants (047/048/050) remain **draft** (governance-hold).
+
+### The convergence that unblocks it
+
+Two recent results remove the blocker's prerequisites: (1) the **snow arc reached its
+floor** (beats legacy) — the snow depth feeding the gate is as good as it gets; and
+(2) **Paradigm 2 Stage 2 proved the snow-insulation *representation* is not the frost
+lever** (bulk vs layered insulation → identical frost), so the frost residual, if
+real, is in the **frost solver** or **forcing-limited** (snow-depth magnitude / air
+temp / CLIGEN), not in snow insulation. Frost attribution is therefore now
+actionable.
+
+### Remaining sequence
+
+1. **Re-run the frost observation harness on the current (floor) snow** → re-assess
+   the snow-depth control gate per site (now passes / forcing-limited / still
+   blocked). Unblocks attribution. **[immediate next step]**
+2. **Attribute the frost-depth magnitude residual** (`GAP-SNOWFREEZE-002`) at the
+   unblocked sites via the `INV-SNOWFREEZE-050` forcing-robust rubric
+   (onset / deepening / thaw / frozen-duration carry verdicts; absolute magnitude is
+   forcing-limited): real frost-model defect vs forcing-limited.
+3. **Resolve the specific frost-model item** *only if* attribution points to it — the
+   record's named candidates: the **residue-lifecycle handoff** (static vs dynamic
+   `resdep`), the **magnitude outliers above the legacy envelope** (13/43 forced-snow
+   cases), and the absent **`Qwet`** evaporative term.
+4. **Ratify** the frost validation invariants (047/048/050: draft → accepted) once
+   the harness method is exercised.
+5. **Frost-default activation** once `GAP-SNOWFREEZE-002` closes against observations
+   (currently opt-in-direct only).
+6. *(deferred)* R7G consumer cutover / `DirectFrostRunoffSurface` deletion — not a
+   validation prerequisite.
+
+## 12. References / Authority
 
 DOIs below are from the 2026-06-25 literature sweeps (two independent research
 passes, load-bearing items cross-verified). Verify any DOI on retrieval; a few
