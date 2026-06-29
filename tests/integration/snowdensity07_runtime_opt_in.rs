@@ -27,7 +27,7 @@ fn read(path: &str) -> String {
 fn snowdensity07_contract_and_package_bind_runtime_opt_in_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 108",
+        "contract_version: 109",
         "INV-SNOWFREEZE-060",
         "OBL-SNOWFREEZE-P-035",
         "snow_density_model",

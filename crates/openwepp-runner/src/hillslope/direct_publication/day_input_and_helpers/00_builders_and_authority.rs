@@ -2,6 +2,8 @@ const SNOWDENSITY09_DENSITY_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY09_DENSITY_MO
 const SNOWDENSITY1035_PHASE_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL";
 const SNOWDENSITY1037_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1037_MELT_MODEL";
 const SNOWDENSITY1038_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1038_MELT_MODEL";
+const SNOWFROST_STAGE2_INSULATION_MODEL_ENV: &str =
+    "OPENWEPP_SNOWFROST_STAGE2_INSULATION_MODEL";
 
 struct DirectPublicationDayInputBuilder<'a> {
     climate_request: &'a HillslopeClimateRuntimeRequest,
@@ -1089,28 +1091,7 @@ fn r7h_direct_production_snow_trace_line(
     snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel,
     snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
 ) -> String {
-    let layer_count_before = snow_lane_state.layers.len();
-    let layer_count_after = snow_liquid.snow_layers_after.len();
-    let layer_swe_sum_before_m = snow_lane_state
-        .layers
-        .iter()
-        .map(|layer| layer.mass_swe_m)
-        .sum::<f64>();
-    let layer_swe_sum_after_m = snow_liquid
-        .snow_layers_after
-        .iter()
-        .map(|layer| layer.mass_swe_m)
-        .sum::<f64>();
-    let layer_depth_sum_before_m = snow_lane_state
-        .layers
-        .iter()
-        .map(|layer| layer.thickness_m)
-        .sum::<f64>();
-    let layer_depth_sum_after_m = snow_liquid
-        .snow_layers_after
-        .iter()
-        .map(|layer| layer.thickness_m)
-        .sum::<f64>();
+    let layer = direct_snow_trace_layer_diagnostics(snow_lane_state, snow_liquid);
     let line = format!(
         "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v1\",\
 \"day_index\":{day_index},\
@@ -1121,9 +1102,12 @@ fn r7h_direct_production_snow_trace_line(
 \"runtime_density_before_kg_m3\":{},\
 \"runtime_settle_day_count_before\":{},\
 \"liquid_water_retained_before_m\":{},\
-\"snow_layer_count_before\":{layer_count_before},\
+\"snow_layer_count_before\":{},\
 \"snow_layer_swe_sum_before_m\":{},\
 \"snow_layer_depth_sum_before_m\":{},\
+\"snow_layer_surface_density_before_kg_m3\":{},\
+\"snow_layer_basal_density_before_kg_m3\":{},\
+\"snow_layer_density_gradient_before_kg_m3\":{},\
 \"snow_density_model\":\"{}\",\
 \"snow_melt_model\":\"{}\",\
 \"snow_phase_model\":\"{}\",\
@@ -1144,17 +1128,24 @@ fn r7h_direct_production_snow_trace_line(
 \"runtime_depth_after_m\":{},\
 \"runtime_density_after_kg_m3\":{},\
 \"runtime_settle_day_count_after\":{},\
-\"snow_layer_count_after\":{layer_count_after},\
+\"snow_layer_count_after\":{},\
 \"snow_layer_swe_sum_after_m\":{},\
-\"snow_layer_depth_sum_after_m\":{}}}",
+\"snow_layer_depth_sum_after_m\":{},\
+\"snow_layer_surface_density_after_kg_m3\":{},\
+\"snow_layer_basal_density_after_kg_m3\":{},\
+\"snow_layer_density_gradient_after_kg_m3\":{}}}",
         direct_production_trace_number(hyetograph_rainfall_m),
         direct_production_trace_number(snow_lane_state.runtime_swe_m),
         direct_production_trace_number(snow_lane_state.runtime_depth_m),
         direct_production_trace_number(snow_lane_state.runtime_density_kg_m3),
         direct_production_trace_number(snow_lane_state.runtime_settle_day_count),
         direct_production_trace_number(snow_lane_state.liquid_water_retained_m),
-        direct_production_trace_number(layer_swe_sum_before_m),
-        direct_production_trace_number(layer_depth_sum_before_m),
+        layer.count_before,
+        direct_production_trace_number(layer.swe_sum_before_m),
+        direct_production_trace_number(layer.depth_sum_before_m),
+        direct_production_trace_number(layer.surface_density_before_kg_m3),
+        direct_production_trace_number(layer.basal_density_before_kg_m3),
+        direct_production_trace_number(layer.density_gradient_before_kg_m3),
         snow_liquid.snow_density_model.id(),
         snow_melt_model.id(),
         snow_phase_model.id(),
@@ -1175,10 +1166,77 @@ fn r7h_direct_production_snow_trace_line(
         direct_production_trace_number(snow_liquid.runtime_depth_after_m),
         direct_production_trace_number(snow_liquid.runtime_density_after_kg_m3),
         direct_production_trace_number(snow_liquid.runtime_settle_day_count_after),
-        direct_production_trace_number(layer_swe_sum_after_m),
-        direct_production_trace_number(layer_depth_sum_after_m),
+        layer.count_after,
+        direct_production_trace_number(layer.swe_sum_after_m),
+        direct_production_trace_number(layer.depth_sum_after_m),
+        direct_production_trace_number(layer.surface_density_after_kg_m3),
+        direct_production_trace_number(layer.basal_density_after_kg_m3),
+        direct_production_trace_number(layer.density_gradient_after_kg_m3),
     );
     format!("{line}\n")
+}
+
+struct DirectSnowTraceLayerDiagnostics {
+    count_before: usize,
+    count_after: usize,
+    swe_sum_before_m: f64,
+    swe_sum_after_m: f64,
+    depth_sum_before_m: f64,
+    depth_sum_after_m: f64,
+    surface_density_before_kg_m3: f64,
+    basal_density_before_kg_m3: f64,
+    density_gradient_before_kg_m3: f64,
+    surface_density_after_kg_m3: f64,
+    basal_density_after_kg_m3: f64,
+    density_gradient_after_kg_m3: f64,
+}
+
+fn direct_snow_trace_layer_diagnostics(
+    snow_lane_state: &openwepp_hillslope_orchestrator::DirectSnowLaneState,
+    snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+) -> DirectSnowTraceLayerDiagnostics {
+    let (surface_before, basal_before, gradient_before) =
+        snow_layer_density_profile(&snow_lane_state.layers);
+    let (surface_after, basal_after, gradient_after) =
+        snow_layer_density_profile(&snow_liquid.snow_layers_after);
+    DirectSnowTraceLayerDiagnostics {
+        count_before: snow_lane_state.layers.len(),
+        count_after: snow_liquid.snow_layers_after.len(),
+        swe_sum_before_m: snow_layer_swe_sum(&snow_lane_state.layers),
+        swe_sum_after_m: snow_layer_swe_sum(&snow_liquid.snow_layers_after),
+        depth_sum_before_m: snow_layer_depth_sum(&snow_lane_state.layers),
+        depth_sum_after_m: snow_layer_depth_sum(&snow_liquid.snow_layers_after),
+        surface_density_before_kg_m3: surface_before,
+        basal_density_before_kg_m3: basal_before,
+        density_gradient_before_kg_m3: gradient_before,
+        surface_density_after_kg_m3: surface_after,
+        basal_density_after_kg_m3: basal_after,
+        density_gradient_after_kg_m3: gradient_after,
+    }
+}
+
+fn snow_layer_swe_sum(
+    layers: &[openwepp_hillslope_orchestrator::DirectSnowLayerState],
+) -> f64 {
+    layers.iter().map(|layer| layer.mass_swe_m).sum()
+}
+
+fn snow_layer_depth_sum(
+    layers: &[openwepp_hillslope_orchestrator::DirectSnowLayerState],
+) -> f64 {
+    layers.iter().map(|layer| layer.thickness_m).sum()
+}
+
+fn snow_layer_density_profile(
+    layers: &[openwepp_hillslope_orchestrator::DirectSnowLayerState],
+) -> (f64, f64, f64) {
+    let Some(surface) = layers.first() else {
+        return (0.0, 0.0, 0.0);
+    };
+    let basal = layers.last().unwrap_or(surface);
+    let surface_density = surface.density_kg_m3;
+    let basal_density = basal.density_kg_m3;
+    (surface_density, basal_density, basal_density - surface_density)
 }
 
 fn maybe_write_r7h_direct_production_wb15_trace(

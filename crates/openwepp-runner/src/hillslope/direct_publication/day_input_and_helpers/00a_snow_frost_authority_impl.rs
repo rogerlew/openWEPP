@@ -309,7 +309,7 @@ impl DirectProductionSnowFrostAuthority {
             typed_authority,
             hourly: frost_hourly,
         };
-        let compute_inputs = Self::typed_winter_frost_compute_inputs(&typed_context);
+        let compute_inputs = Self::typed_winter_frost_compute_inputs(&typed_context)?;
         let frost_outcome =
             Self::compute_typed_winter_frost_outcome(&typed_context, &compute_inputs)?;
         let target_soil_water_m = direct_production_lane_soil_water(lane, lane_index)?;
@@ -383,26 +383,51 @@ impl DirectProductionSnowFrostAuthority {
 
     fn typed_winter_frost_compute_inputs(
         context: &DirectProductionFrostTypedComputeContext<'_>,
-    ) -> DirectWinterFrostComputeInputs {
-        DirectWinterFrostComputeInputs {
+    ) -> Result<DirectWinterFrostComputeInputs, HillslopeCliError> {
+        Ok(DirectWinterFrostComputeInputs {
             controls: context.typed_authority.controls,
-            thermal: DirectFrostThermalInputs {
-                snow_depth_m: context.snow_lane_state.runtime_depth_m,
-                snow_density_kg_m3: context.snow_lane_state.runtime_density_kg_m3,
-                residue_depth_m: context.typed_authority.residue_depth_m,
-                wind_m_s: context.forcing.vwind_m_s,
-                albedo: context.typed_authority.albedo,
-                canopy_height_m: context.typed_authority.canopy_height_m,
-                random_roughness_m: context.typed_authority.random_roughness_m,
-                day_of_year: f64::from(context.day.julian_day),
-                monthly_max_c: context.typed_authority.monthly_max_c,
-                monthly_min_c: context.typed_authority.monthly_min_c,
-            },
+            thermal: Self::typed_winter_frost_thermal_inputs(context)?,
             theta_residual: context.typed_authority.theta_residual,
             theta_field_capacity: context.typed_authority.theta_field_capacity,
             soil_conductivity_m_s: context.typed_authority.soil_conductivity_m_s,
             layer_bulk_density_kg_m3: context.typed_authority.layer_bulk_density_kg_m3.clone(),
             hourly: context.hourly,
+        })
+    }
+
+    fn typed_winter_frost_thermal_inputs(
+        context: &DirectProductionFrostTypedComputeContext<'_>,
+    ) -> Result<DirectFrostThermalInputs, HillslopeCliError> {
+        let (snow_depth_m, snow_density_kg_m3) =
+            Self::snow_frost_insulation_depth_density(context)?;
+        Ok(DirectFrostThermalInputs {
+            snow_depth_m,
+            snow_density_kg_m3,
+            residue_depth_m: context.typed_authority.residue_depth_m,
+            wind_m_s: context.forcing.vwind_m_s,
+            albedo: context.typed_authority.albedo,
+            canopy_height_m: context.typed_authority.canopy_height_m,
+            random_roughness_m: context.typed_authority.random_roughness_m,
+            day_of_year: f64::from(context.day.julian_day),
+            monthly_max_c: context.typed_authority.monthly_max_c,
+            monthly_min_c: context.typed_authority.monthly_min_c,
+        })
+    }
+
+    fn snow_frost_insulation_depth_density(
+        context: &DirectProductionFrostTypedComputeContext<'_>,
+    ) -> Result<(f64, f64), HillslopeCliError> {
+        match direct_production_snow_frost_insulation_model()? {
+            DirectProductionSnowFrostInsulationModel::BulkDepthDensity => Ok((
+                context.snow_lane_state.runtime_depth_m,
+                context.snow_lane_state.runtime_density_kg_m3,
+            )),
+            DirectProductionSnowFrostInsulationModel::LayeredResistanceV1 => {
+                layered_snow_frost_insulation_depth_density(
+                    context.snow_lane_state,
+                    context.typed_authority.controls.ksnowf,
+                )
+            }
         }
     }
 
@@ -601,5 +626,191 @@ fn inactive_direct_snow_liquid_partition(
         density_unbounded_swe_residual_m: 0.0,
         snow_albedo_state_after: snow_lane_state.snow_albedo_state,
         snow_layers_after: snow_lane_state.layers.clone(),
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DirectProductionSnowFrostInsulationModel {
+    BulkDepthDensity,
+    LayeredResistanceV1,
+}
+
+fn direct_production_snow_frost_insulation_model(
+) -> Result<DirectProductionSnowFrostInsulationModel, HillslopeCliError> {
+    match std::env::var(SNOWFROST_STAGE2_INSULATION_MODEL_ENV) {
+        Ok(value) => match value.trim() {
+            "" | "bulk_depth_density" => {
+                Ok(DirectProductionSnowFrostInsulationModel::BulkDepthDensity)
+            }
+            "layered_resistance_v1" => {
+                Ok(DirectProductionSnowFrostInsulationModel::LayeredResistanceV1)
+            }
+            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_snow_frost_insulation_model",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} {SNOWFROST_STAGE2_INSULATION_MODEL_ENV} must be bulk_depth_density, layered_resistance_v1, or empty default, observed {observed}"
+                ),
+            }),
+        },
+        Err(std::env::VarError::NotPresent) => {
+            Ok(DirectProductionSnowFrostInsulationModel::BulkDepthDensity)
+        }
+        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_frost_insulation_model",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} {SNOWFROST_STAGE2_INSULATION_MODEL_ENV} must be UTF-8"
+            ),
+        }),
+    }
+}
+
+fn layered_snow_frost_insulation_depth_density(
+    snow: &DirectSnowLaneState,
+    ksnowf: f64,
+) -> Result<(f64, f64), HillslopeCliError> {
+    const SNOW_DENSITY_CAP_KG_M3: f64 = 522.0;
+    const SNOW_LAYER_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
+
+    if snow.runtime_depth_m <= SNOW_LAYER_CLOSURE_TOLERANCE_M
+        && snow.runtime_swe_m <= SNOW_LAYER_CLOSURE_TOLERANCE_M
+    {
+        return Ok((snow.runtime_depth_m.max(0.0), 0.0));
+    }
+    if snow.layers.is_empty() {
+        return Err(stage2_insulation_error(
+            "layered_resistance_v1 requires nonempty prior-day snow layers when snow is present",
+        ));
+    }
+    let layer_depth_m = snow
+        .layers
+        .iter()
+        .map(|layer| require_stage2_layer_value("layer.thickness_m", layer.thickness_m))
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .sum::<f64>();
+    let layer_swe_m = snow
+        .layers
+        .iter()
+        .map(|layer| require_stage2_layer_value("layer.mass_swe_m", layer.mass_swe_m))
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .sum::<f64>();
+    if (layer_depth_m - snow.runtime_depth_m).abs() > SNOW_LAYER_CLOSURE_TOLERANCE_M {
+        return Err(stage2_insulation_error(&format!(
+            "layered_resistance_v1 layer depth {layer_depth_m} m does not reconstruct runtime snow depth {} m",
+            snow.runtime_depth_m
+        )));
+    }
+    if (layer_swe_m - snow.runtime_swe_m).abs() > SNOW_LAYER_CLOSURE_TOLERANCE_M {
+        return Err(stage2_insulation_error(&format!(
+            "layered_resistance_v1 layer SWE {layer_swe_m} m does not reconstruct runtime snow SWE {} m",
+            snow.runtime_swe_m
+        )));
+    }
+
+    let mut resistance_m2_k_w = 0.0;
+    for layer in &snow.layers {
+        let thickness_m = require_stage2_layer_value("layer.thickness_m", layer.thickness_m)?;
+        let density_kg_m3 =
+            require_stage2_layer_value("layer.density_kg_m3", layer.density_kg_m3)?;
+        if thickness_m <= SNOW_LAYER_CLOSURE_TOLERANCE_M {
+            continue;
+        }
+        if density_kg_m3 <= 0.0 || density_kg_m3 > SNOW_DENSITY_CAP_KG_M3 {
+            return Err(stage2_insulation_error(&format!(
+                "layered_resistance_v1 layer density {density_kg_m3} kg m^-3 is outside 0..={SNOW_DENSITY_CAP_KG_M3}"
+            )));
+        }
+        let conductivity_w_m_k = sturm1997_snow_conductivity_w_m_k(density_kg_m3, ksnowf)?;
+        resistance_m2_k_w += thickness_m / conductivity_w_m_k;
+    }
+    if resistance_m2_k_w <= 0.0 || !resistance_m2_k_w.is_finite() {
+        return Err(stage2_insulation_error(&format!(
+            "layered_resistance_v1 computed invalid snow resistance {resistance_m2_k_w} m^2 K W^-1"
+        )));
+    }
+    let effective_conductivity_w_m_k = snow.runtime_depth_m / resistance_m2_k_w;
+    let effective_density_kg_m3 =
+        invert_sturm1997_snow_density_kg_m3(effective_conductivity_w_m_k, ksnowf)?;
+    Ok((snow.runtime_depth_m, effective_density_kg_m3))
+}
+
+fn require_stage2_layer_value(symbol: &str, value: f64) -> Result<f64, HillslopeCliError> {
+    if !value.is_finite() || value < 0.0 {
+        return Err(stage2_insulation_error(&format!(
+            "layered_resistance_v1 {symbol} must be finite and nonnegative, observed {value}"
+        )));
+    }
+    Ok(value)
+}
+
+fn sturm1997_snow_conductivity_w_m_k(
+    density_kg_m3: f64,
+    ksnowf: f64,
+) -> Result<f64, HillslopeCliError> {
+    if !density_kg_m3.is_finite() || density_kg_m3 < 0.0 {
+        return Err(stage2_insulation_error(&format!(
+            "Sturm 1997 snow conductivity density must be finite and nonnegative, observed {density_kg_m3}"
+        )));
+    }
+    if !ksnowf.is_finite() || ksnowf <= 0.0 {
+        return Err(stage2_insulation_error(&format!(
+            "Sturm 1997 snow conductivity ksnowf must be finite and positive, observed {ksnowf}"
+        )));
+    }
+    let density_g_cm3 = density_kg_m3 / 1_000.0;
+    let base = if density_kg_m3 < 156.0 {
+        0.023 + (0.234 * density_g_cm3)
+    } else {
+        0.138 - (1.01 * density_g_cm3) + (3.233 * density_g_cm3.powi(2))
+    };
+    let conductivity = base * ksnowf;
+    if conductivity.is_finite() && conductivity > 0.0 {
+        Ok(conductivity)
+    } else {
+        Err(stage2_insulation_error(&format!(
+            "Sturm 1997 snow conductivity is invalid for density {density_kg_m3} kg m^-3 and ksnowf {ksnowf}: {conductivity}"
+        )))
+    }
+}
+
+fn invert_sturm1997_snow_density_kg_m3(
+    target_conductivity_w_m_k: f64,
+    ksnowf: f64,
+) -> Result<f64, HillslopeCliError> {
+    const SNOW_DENSITY_CAP_KG_M3: f64 = 522.0;
+    const CONDUCTIVITY_TOLERANCE_W_M_K: f64 = 1.0e-12;
+    if !target_conductivity_w_m_k.is_finite() || target_conductivity_w_m_k <= 0.0 {
+        return Err(stage2_insulation_error(&format!(
+            "layered_resistance_v1 target conductivity must be finite and positive, observed {target_conductivity_w_m_k}"
+        )));
+    }
+    let min_conductivity = sturm1997_snow_conductivity_w_m_k(0.0, ksnowf)?;
+    let max_conductivity = sturm1997_snow_conductivity_w_m_k(SNOW_DENSITY_CAP_KG_M3, ksnowf)?;
+    if target_conductivity_w_m_k < min_conductivity - CONDUCTIVITY_TOLERANCE_W_M_K
+        || target_conductivity_w_m_k > max_conductivity + CONDUCTIVITY_TOLERANCE_W_M_K
+    {
+        return Err(stage2_insulation_error(&format!(
+            "layered_resistance_v1 target conductivity {target_conductivity_w_m_k} W m^-1 K^-1 is outside the 0..={SNOW_DENSITY_CAP_KG_M3} kg m^-3 Sturm 1997 range [{min_conductivity}, {max_conductivity}]"
+        )));
+    }
+    let mut low = 0.0;
+    let mut high = SNOW_DENSITY_CAP_KG_M3;
+    for _ in 0..80 {
+        let mid = f64::midpoint(low, high);
+        let conductivity = sturm1997_snow_conductivity_w_m_k(mid, ksnowf)?;
+        if conductivity < target_conductivity_w_m_k {
+            low = mid;
+        } else {
+            high = mid;
+        }
+    }
+    Ok(f64::midpoint(low, high))
+}
+
+fn stage2_insulation_error(detail: &str) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_production_snow_frost_insulation_model",
+        detail: format!("{SIMOUT_GUARD_ID} {detail}"),
     }
 }

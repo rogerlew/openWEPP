@@ -67,6 +67,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "tests/integration/snowdensity10_3_21_post_partition_residual_decomposition.rs",
         "tests/integration/snowdensity10_3_22_climate_class_density_specialization.rs",
         "tests/integration/paradigm2_stage1_layered_snow_density.rs",
+        "tests/integration/paradigm2_stage2_snow_frost_insulation_profile.rs",
         "tools/snowfreeze_observed/bundle_activation_adjudication.py",
         "tools/snowfreeze_observed/climate_class_density_specialization.py",
         "tools/snowfreeze_observed/coe_bound_density_adjudication.py",
@@ -76,6 +77,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "tools/snowfreeze_observed/physics_bulk_adjudication.py",
         "tools/snowfreeze_observed/physics_bulk_snotel_profile.py",
         "tools/snowfreeze_observed/paradigm2_stage1_layered_density.py",
+        "tools/snowfreeze_observed/paradigm2_stage2_insulation_profile.py",
         "tools/snowfreeze_observed/policy_b_no_regression_cap_authority.py",
         "tools/snowfreeze_observed/post_partition_residual_decomposition.py",
         "tools/snowfreeze_observed/residual_policy_b_diagnostic.py",
@@ -97,6 +99,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
     assert!(contract.contains("INV-SNOWFREEZE-071"));
     assert!(contract.contains("INV-SNOWFREEZE-077"));
     assert!(contract.contains("INV-SNOWFREEZE-078"));
+    assert!(contract.contains("INV-SNOWFREEZE-079"));
     assert!(contract.contains("physics_bulk_density_compaction_v1"));
 
     let mut unexpected = Vec::new();

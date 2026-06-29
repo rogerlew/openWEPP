@@ -240,8 +240,18 @@
         let typed_partition_body = impl_body
             .split("    fn typed_winter_frost_compute_inputs(")
             .nth(1)
-            .and_then(|tail| tail.split("\n    fn compute_typed_winter_frost_outcome").next())
+            .and_then(|tail| tail.split("\n    fn typed_winter_frost_thermal_inputs").next())
             .expect("R7G typed winter frost compute helper body must be present");
+        let typed_thermal_body = impl_body
+            .split("    fn typed_winter_frost_thermal_inputs(")
+            .nth(1)
+            .and_then(|tail| tail.split("\n    fn snow_frost_insulation_depth_density").next())
+            .expect("R7G typed winter frost thermal helper body must be present");
+        let insulation_body = impl_body
+            .split("    fn snow_frost_insulation_depth_density(")
+            .nth(1)
+            .and_then(|tail| tail.split("\n    fn compute_typed_winter_frost_outcome").next())
+            .expect("R7G snow/frost insulation helper body must be present");
         let frost_body = impl_body
             .split("    fn frost_day_context(")
             .nth(1)
@@ -249,12 +259,19 @@
             .expect("R7G typed frost day context body must be present");
 
         assert!(
-            typed_partition_body.contains("snow_depth_m: context.snow_lane_state.runtime_depth_m"),
+            typed_partition_body.contains("thermal: Self::typed_winter_frost_thermal_inputs(context)?"),
+            "frost compute inputs must route thermal state through the typed prior-snow helper"
+        );
+        assert!(
+            typed_thermal_body.contains("Self::snow_frost_insulation_depth_density(context)?"),
+            "frost thermal inputs must consume the snow/frost insulation helper"
+        );
+        assert!(
+            insulation_body.contains("context.snow_lane_state.runtime_depth_m"),
             "frost forcing must see prior snow depth; legacy winter.for calls frostN before snowd"
         );
         assert!(
-            typed_partition_body
-                .contains("snow_density_kg_m3: context.snow_lane_state.runtime_density_kg_m3"),
+            insulation_body.contains("context.snow_lane_state.runtime_density_kg_m3"),
             "frost forcing must see prior snow density from the winter-column snow state"
         );
         assert!(

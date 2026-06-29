@@ -13,6 +13,20 @@
 
 State as of `2026-06-28`:
 
+- `20260628-paradigm-2-stage-2-snow-frost-insulation-profile-001/` is complete
+  as PARADIGM-2 STAGE 2, the opt-in snow-to-frost insulation-profile coupling
+  package. Result: `HOLD-GATE-FAILURE-NON-PROMOTION`. It amended
+  `SC-SNOWFREEZE-001` to v109 with `INV-SNOWFREEZE-079`, instrumented the Stage
+  1 density-gradient entry gate, and implemented internal
+  `OPENWEPP_SNOWFROST_STAGE2_INSULATION_MODEL=layered_resistance_v1` by deriving
+  an insulation-equivalent bulk density from the prior-day Stage 1 layer-stack
+  thermal resistance. The gradient entry gate passed (`56831` multi-layer rows;
+  `49548` positive basal-minus-surface gradient rows), but the real
+  frost-observation primary gate did not improve: bulk handoff and layered
+  resistance both scored `3` robust fails / `49` with `0` improved robust cells.
+  No activation, default, rollback, fixture, public schema, frost output,
+  density-cap, melt, phase, canopy, radiation, parser, runfile, user CLI, `.run`,
+  Qwet/frzftp, compatibility-runtime, or site-calibration change was made.
 - `20260628-adr0029-paradigm-2-ratification-001/` is complete as the ADR-0029
   Paradigm 2 ratification package. Result: `RATIFIED-COMPLETE`. It ratified
   ADR-0028 first as the observed-data admission basis, then ratified ADR-0029 as
