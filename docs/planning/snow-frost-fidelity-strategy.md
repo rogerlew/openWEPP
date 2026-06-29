@@ -1217,6 +1217,17 @@ profile/signature scoring rather than absolute-magnitude promotion.
       thermal/liquid solver.** This returns the snow-density rubric to the default
       `15`/`179` while keeping the meltwater-temperature source — promotable, or a
       clean opt-in for the stream-temperature program at zero density cost.
+    - **Stage 3-Decouple (done — `EXECUTED-COMPLETE-OPT-IN-CAPABILITY`)** — the
+      decision above is implemented as an opt-in arm:
+      `OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL=layered_thermal_liquid_v1` now runs
+      on bulk-equivalent private layers and no longer requires
+      `physics_bulk_multilayer_density_v1`. The real cross-SNOTEL/cancov guardrail
+      exactly matches the no-env default (`15`/`179`; `0` worse robust cells), the
+      runoff/timing guardrail has `0` worse cells, conservation/temperature focused
+      tests pass, and H2637 performance is `70.68 s` / `1150612 KiB` within the
+      ADR-0025 `<=10x` budget. This completes the Paradigm 2 deliverable without
+      activating a new default or paying layer overhead outside the water-
+      temperature use case.
     **Paradigm 2 conclusion.** The staged program resolves to a single deliverable:
     density (Stage 1) and frost insulation (Stage 2) gain nothing from the layers
     (decomposition-robust — the bulk default stays for both); the multilayer

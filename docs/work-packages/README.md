@@ -13,6 +13,25 @@
 
 State as of `2026-06-29`:
 
+- `20260629-paradigm-2-stage-3-decouple-water-temperature-001/` is complete as
+  PARADIGM-2 STAGE 3-DECOUPLE, the snow-neutral water-temperature opt-in arm.
+  Result: `EXECUTED-COMPLETE-OPT-IN-CAPABILITY`. It amended
+  `SC-SNOWFREEZE-001` to v111 with `INV-SNOWFREEZE-081` and
+  `OBL-SNOWFREEZE-P-056`, removed the Stage 3 runtime requirement for
+  `physics_bulk_multilayer_density_v1`, and now runs
+  `OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL=layered_thermal_liquid_v1` over a
+  bulk-equivalent private layer stack using the current bulk density model. The
+  real cross-SNOTEL/cancov guardrail exactly matched the no-env default (`15`
+  robust fails / `179`; `0` better, `90` equal, `0` worse robust cells) and
+  runoff/timing was no-worse (`0` better, `40` equal, `0` worse cells).
+  Focused conservation/temperature tests, full workspace tests, clippy, deny,
+  authority anti-evasion guards, scoped Markdown lint/validate, and H2637
+  performance passed; H2637 measured `70.68 s` / `1150612 KiB`, within the
+  ADR-0025 `<=10x` budget. No default activation, Stage 1 per-layer
+  densification requirement, CoE melt-mass replacement, public schema change
+  beyond the diagnostic meltwater-temperature flux, full in-stream temperature
+  routing, fixture, frost, density-cap, parser/runfile/user CLI, `.run`,
+  Qwet/frzftp, or compatibility-runtime change was made.
 - `20260629-paradigm-2-stage-3-liquid-routing-meltwater-temperature-001/` is
   complete as PARADIGM-2 STAGE 3, the opt-in per-layer liquid-routing and
   meltwater-temperature diagnostic candidate. Result:

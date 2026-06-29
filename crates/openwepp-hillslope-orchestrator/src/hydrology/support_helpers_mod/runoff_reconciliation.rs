@@ -15,6 +15,16 @@ const STAGE3_SECONDS_PER_HOUR: f64 = 3_600.0;
 const STAGE3_LIQUID_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
 const STAGE3_ENERGY_CLOSURE_TOLERANCE_J_M2: f64 = 1.0e-6;
 const STAGE3_MIN_LAYER_TEMPERATURE_C: f64 = -273.15;
+const STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
+const STAGE3_BULK_EQUIVALENT_MAX_LAYERS: usize = 16;
+
+#[derive(Clone, Copy)]
+struct Stage3AggregateState {
+    swe_after_m: f64,
+    depth_after_m: f64,
+    density_after_kg_m3: f64,
+    settle_day_count_after: f64,
+}
 
 fn inactive_direct_winter_frost_partition() -> DirectWinterFrostPartitionOutcome {
     DirectWinterFrostPartitionOutcome {
@@ -280,7 +290,12 @@ impl Wb11HydrologyKernel {
             phase_class,
             inputs,
             routed_melt_m,
-            density_outcome.runtime_swe_after_m,
+            Stage3AggregateState {
+                swe_after_m: density_outcome.runtime_swe_after_m,
+                depth_after_m: density_outcome.runtime_depth_after_m,
+                density_after_kg_m3: density_outcome.runtime_density_after_kg_m3,
+                settle_day_count_after: snow_coupling.runtime_settle_day_count,
+            },
             &mut snow_layers_after,
         )?;
 
@@ -372,18 +387,13 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveSnowPartitionInputs,
         incoming_liquid_m: f64,
-        runtime_swe_after_m: f64,
-        layers: &mut [DirectSnowLayerState],
+        aggregate: Stage3AggregateState,
+        layers: &mut Vec<DirectSnowLayerState>,
     ) -> Result<DirectSnowStage3Diagnostics, Wb11HydrologyKernelGuardError> {
-        if !Self::stage3_liquid_routing_enabled(
-            phase_class,
-            inputs,
-            incoming_liquid_m,
-            runtime_swe_after_m,
-            layers,
-        )? {
+        if !Self::stage3_liquid_routing_enabled(phase_class, inputs, incoming_liquid_m)? {
             return Ok(DirectSnowStage3Diagnostics::disabled());
         }
+        Self::prepare_stage3_layer_stack(phase_class, inputs, aggregate, layers)?;
         if layers.is_empty() {
             let meltwater_temperature_c = if incoming_liquid_m > WB11_ZERO_THRESHOLD {
                 Some(Self::stage3_temperature(phase_class, 0.0)?)
@@ -481,8 +491,6 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveSnowPartitionInputs,
         incoming_liquid_m: f64,
-        runtime_swe_after_m: f64,
-        layers: &[DirectSnowLayerState],
     ) -> Result<bool, Wb11HydrologyKernelGuardError> {
         if inputs.stage3_liquid_routing_model == SnowStage3LiquidRoutingModel::Disabled {
             return Ok(false);
@@ -498,10 +506,14 @@ impl Wb11HydrologyKernel {
                 Some(0.0),
             ));
         }
-        if inputs.snow_density_model != SnowDensityModel::PhysicsBulkMultilayerDensityV1 {
+        if !matches!(
+            inputs.snow_density_model,
+            SnowDensityModel::PhysicsBulkDensityCompactionV1
+                | SnowDensityModel::PhysicsBulkMultilayerDensityV1
+        ) {
             return Err(Self::stage3_domain_error(
                 phase_class,
-                "snow.stage3_requires_multilayer_density_model",
+                "snow.stage3_requires_bulk_or_multilayer_density_model",
                 1.0,
                 Some(0.0),
                 Some(0.0),
@@ -514,16 +526,188 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
-        if runtime_swe_after_m > WB11_ZERO_THRESHOLD && layers.is_empty() {
+        Ok(true)
+    }
+
+    fn prepare_stage3_layer_stack(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        aggregate: Stage3AggregateState,
+        layers: &mut Vec<DirectSnowLayerState>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if inputs.snow_density_model == SnowDensityModel::PhysicsBulkMultilayerDensityV1 {
+            if aggregate.swe_after_m > WB11_ZERO_THRESHOLD && layers.is_empty() {
+                return Err(Self::stage3_domain_error(
+                    phase_class,
+                    "snow.stage3_missing_layers_with_snow",
+                    aggregate.swe_after_m,
+                    None,
+                    Some(0.0),
+                ));
+            }
+            return Ok(());
+        }
+
+        if aggregate.swe_after_m <= WB11_ZERO_THRESHOLD {
+            layers.clear();
+            return Ok(());
+        }
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow.stage3_bulk_equivalent_runtime_depth_m"),
+            aggregate.depth_after_m,
+            Some(WB11_ZERO_THRESHOLD),
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow.stage3_bulk_equivalent_density_kg_m3"),
+            aggregate.density_after_kg_m3,
+            Some(WB11_ZERO_THRESHOLD),
+            Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+        )?;
+
+        if layers.is_empty() {
+            layers.extend(inputs.snow_layers.iter().copied());
+        }
+        Self::adjust_stage3_layer_swe_to_target(
+            layers,
+            aggregate.swe_after_m,
+            aggregate.depth_after_m,
+            aggregate.density_after_kg_m3,
+            aggregate.settle_day_count_after,
+        );
+        Self::merge_stage3_bulk_equivalent_bottom_layers(layers);
+        Self::apply_stage3_bulk_equivalent_density(phase_class, layers, aggregate)
+    }
+
+    fn adjust_stage3_layer_swe_to_target(
+        layers: &mut Vec<DirectSnowLayerState>,
+        target_swe_m: f64,
+        target_depth_m: f64,
+        target_density_kg_m3: f64,
+        settle_day_count: f64,
+    ) {
+        layers.retain(|layer| layer.mass_swe_m > WB11_ZERO_THRESHOLD);
+        let mut current_swe_m = layers.iter().map(|layer| layer.mass_swe_m).sum::<f64>();
+        if current_swe_m <= WB11_ZERO_THRESHOLD {
+            layers.push(DirectSnowLayerState::new(
+                target_swe_m,
+                target_depth_m,
+                target_density_kg_m3,
+                settle_day_count,
+            ));
+            return;
+        }
+
+        if current_swe_m > target_swe_m + STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M {
+            let mut remaining_removal_m = current_swe_m - target_swe_m;
+            while remaining_removal_m > STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M
+                && !layers.is_empty()
+            {
+                if layers[0].mass_swe_m <= remaining_removal_m
+                    + STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M
+                {
+                    remaining_removal_m -= layers[0].mass_swe_m;
+                    layers.remove(0);
+                } else {
+                    let original_mass_m = layers[0].mass_swe_m;
+                    let retained_fraction =
+                        ((original_mass_m - remaining_removal_m) / original_mass_m).max(0.0);
+                    layers[0].mass_swe_m -= remaining_removal_m;
+                    layers[0].liquid_water_m *= retained_fraction;
+                    layers[0].cold_content_j_m2 *= retained_fraction;
+                    layers[0].refrozen_liquid_m *= retained_fraction;
+                    remaining_removal_m = 0.0;
+                }
+            }
+        } else if target_swe_m
+            > current_swe_m + STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M
+        {
+            let added_swe_m = target_swe_m - current_swe_m;
+            layers.insert(
+                0,
+                DirectSnowLayerState::new(
+                    added_swe_m,
+                    added_swe_m * STAGE3_RHO_WATER_KG_M3 / target_density_kg_m3,
+                    target_density_kg_m3,
+                    settle_day_count,
+                ),
+            );
+        }
+
+        current_swe_m = layers.iter().map(|layer| layer.mass_swe_m).sum::<f64>();
+        if let Some(surface) = layers.first_mut() {
+            surface.mass_swe_m += target_swe_m - current_swe_m;
+        }
+    }
+
+    fn merge_stage3_bulk_equivalent_bottom_layers(layers: &mut Vec<DirectSnowLayerState>) {
+        while layers.len() > STAGE3_BULK_EQUIVALENT_MAX_LAYERS {
+            let Some(bottom) = layers.pop() else {
+                break;
+            };
+            let Some(previous_bottom) = layers.last_mut() else {
+                layers.push(bottom);
+                break;
+            };
+            let combined_mass_m = previous_bottom.mass_swe_m + bottom.mass_swe_m;
+            if combined_mass_m > WB11_ZERO_THRESHOLD {
+                previous_bottom.settle_day_count = (previous_bottom.settle_day_count
+                    * previous_bottom.mass_swe_m
+                    + bottom.settle_day_count * bottom.mass_swe_m)
+                    / combined_mass_m;
+            }
+            previous_bottom.mass_swe_m = combined_mass_m;
+            previous_bottom.liquid_water_m += bottom.liquid_water_m;
+            previous_bottom.cold_content_j_m2 += bottom.cold_content_j_m2;
+            previous_bottom.refrozen_liquid_m += bottom.refrozen_liquid_m;
+        }
+    }
+
+    fn apply_stage3_bulk_equivalent_density(
+        phase_class: HillslopeKernelPhaseClass,
+        layers: &mut [DirectSnowLayerState],
+        aggregate: Stage3AggregateState,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if layers.is_empty() && aggregate.swe_after_m > WB11_ZERO_THRESHOLD {
             return Err(Self::stage3_domain_error(
                 phase_class,
                 "snow.stage3_missing_layers_with_snow",
-                runtime_swe_after_m,
+                aggregate.swe_after_m,
                 None,
                 Some(0.0),
             ));
         }
-        Ok(true)
+        for layer in layers.iter_mut() {
+            if layer.settle_day_count <= WB11_ZERO_THRESHOLD {
+                layer.settle_day_count = aggregate.settle_day_count_after;
+            }
+            layer.density_kg_m3 = aggregate.density_after_kg_m3;
+            layer.thickness_m = layer.mass_swe_m * STAGE3_RHO_WATER_KG_M3
+                / aggregate.density_after_kg_m3;
+            layer.cold_content_j_m2 = Self::stage3_layer_cold_content_j_m2(layer);
+            layer.temperature_c = Self::stage3_temperature_from_cold_content(layer);
+            layer.refrozen_liquid_m = layer.refrozen_liquid_m.max(0.0);
+            layer.liquid_water_m = layer.liquid_water_m.max(0.0);
+        }
+
+        let layer_swe_sum_m = layers.iter().map(|layer| layer.mass_swe_m).sum::<f64>();
+        let layer_depth_sum_m = layers.iter().map(|layer| layer.thickness_m).sum::<f64>();
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow.stage3_bulk_equivalent_layer_swe_residual_m"),
+            (layer_swe_sum_m - aggregate.swe_after_m).abs(),
+            None,
+            Some(STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M),
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            BoundarySymbol::from("snow.stage3_bulk_equivalent_layer_depth_residual_m"),
+            (layer_depth_sum_m - aggregate.depth_after_m).abs(),
+            None,
+            Some(STAGE3_BULK_EQUIVALENT_LAYER_CLOSURE_TOLERANCE_M),
+        )
     }
 
     fn route_stage3_liquid_through_layers(

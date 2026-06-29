@@ -18,7 +18,7 @@ const PRODUCTION_BINS: &[&str] = &[
 fn snowdensity05f_contract_closes_melt_without_default_activation() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 110",
+        "contract_version: 111",
         "INV-SNOWFREEZE-056",
         "SNOWDENSITY-05F melt closure / density handoff",
         "SNOWDENSITY-05F closes the melt-modernization ladder without default activation",

@@ -20,7 +20,7 @@ const OBSERVED_GATE_TOOL: &str =
 fn stage3_contract_package_and_selector_are_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 110",
+        "contract_version: 111",
         "REF-SNOWFREEZE-PARADIGM2-STAGE3",
         "INV-SNOWFREEZE-080",
         "OBL-SNOWFREEZE-P-055",
@@ -151,17 +151,28 @@ fn stage3_routes_liquid_closes_energy_and_produces_typed_temperature() {
 }
 
 #[test]
-fn stage3_requires_multilayer_density_model() {
+fn stage3_accepts_bulk_density_model_after_decouple() {
     let mut inputs = warm_layered_inputs(SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1);
     inputs.snow_density_model = SnowDensityModel::PhysicsBulkDensityCompactionV1;
-    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
-        .expect_err("Stage 3 must fail closed without the Stage 1 layer model");
+    let mut disabled_inputs = inputs.clone();
+    disabled_inputs.stage3_liquid_routing_model = SnowStage3LiquidRoutingModel::Disabled;
+
+    let disabled =
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&disabled_inputs)
+            .expect("bulk-density disabled Stage 3 partition should compute");
+    let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
+        .expect("Stage 3 must run on the bulk-density model after decoupling");
+
+    assert!(partition.stage3_diagnostics.enabled);
+    assert!((partition.runtime_swe_after_m - disabled.runtime_swe_after_m).abs() <= 1.0e-12);
+    assert!((partition.runtime_depth_after_m - disabled.runtime_depth_after_m).abs() <= 1.0e-12);
     assert!(
-        error
-            .to_string()
-            .contains("snow.stage3_requires_multilayer_density_model"),
-        "unexpected error: {error}"
+        (partition.runtime_density_after_kg_m3 - disabled.runtime_density_after_kg_m3).abs()
+            <= 1.0e-12
     );
+    assert!(partition.snow_layers_after.iter().all(|layer| {
+        (layer.density_kg_m3 - partition.runtime_density_after_kg_m3).abs() <= 1.0e-12
+    }));
 }
 
 #[test]

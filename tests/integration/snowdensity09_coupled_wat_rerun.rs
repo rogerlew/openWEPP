@@ -25,7 +25,7 @@ const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 fn snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 110",
+        "contract_version: 111",
         "INV-SNOWFREEZE-062",
         "OBL-SNOWFREEZE-P-037",
         "SNOWDENSITY-09 Diagnostic Coupled WAT Rerun Addendum",
