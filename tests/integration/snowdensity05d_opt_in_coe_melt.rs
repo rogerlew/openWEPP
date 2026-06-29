@@ -23,7 +23,7 @@ fn read(path: &str) -> String {
 fn snowdensity05d_contract_markers_bind_opt_in_melt_wiring() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 109",
+        "contract_version: 110",
         "INV-SNOWFREEZE-055",
         "OBL-SNOWFREEZE-P-030",
         "snow_melt_shortwave_absorbed_fraction",
@@ -73,6 +73,8 @@ fn warm_radiation_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitionInput
         dewpoint_c: 0.0,
         snow_melt_model: model,
         snow_density_model: SnowDensityModel::LegacyWepp,
+        stage3_liquid_routing_model:
+            openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled,
         sturm_climate_class: None,
         sturm_day_of_year: None,
         coe_boundary_depth_m: 1.0,
@@ -188,6 +190,7 @@ fn snowdensity05d_direct_runtime_projects_routed_melt_and_albedo_carry() {
         liquid_water_released_m: opt_in.liquid_water_released_m,
         snow_albedo_state_after: opt_in.snow_albedo_state_after,
         snow_layers_after: opt_in.snow_layers_after.clone(),
+        stage3_diagnostics: opt_in.stage3_diagnostics.boxed_when_enabled(),
     };
     day.run_r4g_snow_coupling_span()
         .expect("direct snow-coupling span should project opt-in carry");

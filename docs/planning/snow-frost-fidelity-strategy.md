@@ -1190,14 +1190,15 @@ profile/signature scoring rather than absolute-magnitude promotion.
       *resistance* is likewise decomposition-robust, and the snow-insulation-profile
       refinement is NOT the frost lever — the Paradigm-2 frost premise did not
       hold.**
-    - **Stage 3 (active)** — per-layer liquid routing + meltwater temperature →
-      runoff dynamics + the winter water-temperature *source*. The remaining merited
-      goal: meltwater temperature is a **new capability with no bulk equivalent**,
-      so the decomposition-robustness that sank Stages 1–2 does not apply. Gate on
-      conservation (mass + energy + liquid), physically-reasonable meltwater
-      temperature, and forcing-robust runoff/melt-timing — **not** the snow-density
-      rubric. Downstream observed validation (NWIS) is the stream-temperature
-      program's gate.
+    - **Stage 3 (done — `HOLD-H2637-ENDPOINT-NOT-RUN-NON-PROMOTION`)** — per-layer
+      liquid routing + meltwater temperature → runoff dynamics + the winter
+      water-temperature *source*. The package implemented the opt-in diagnostic
+      candidate, conserved the focused liquid/energy ledgers, produced typed ripe
+      meltwater temperature, and preserved the CoE melt-mass path/default. It did
+      **not** promote: real H2637 endpoint timing/RSS and forcing-robust observed
+      runoff/melt-timing gates were not run. The stream-temperature program may
+      consume the typed source in a later package; Stage 3 does not activate full
+      in-stream routing.
     **Key finding (Stages 1–2, twice confirmed): the per-layer profile is real, but
     the aggregates the consumers use — bulk density and total insulation resistance —
     are ROBUST to the layer decomposition, so the multilayer structure improves

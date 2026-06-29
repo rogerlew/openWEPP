@@ -45,6 +45,10 @@ pub struct DirectSnowLayerState {
     pub thickness_m: f64,
     pub density_kg_m3: f64,
     pub settle_day_count: f64,
+    pub temperature_c: f64,
+    pub liquid_water_m: f64,
+    pub cold_content_j_m2: f64,
+    pub refrozen_liquid_m: f64,
 }
 
 impl DirectSnowLayerState {
@@ -60,7 +64,26 @@ impl DirectSnowLayerState {
             thickness_m,
             density_kg_m3,
             settle_day_count,
+            temperature_c: 0.0,
+            liquid_water_m: 0.0,
+            cold_content_j_m2: 0.0,
+            refrozen_liquid_m: 0.0,
         }
+    }
+
+    #[must_use]
+    pub const fn with_stage3_thermal_liquid_state(
+        mut self,
+        temperature_c: f64,
+        liquid_water_m: f64,
+        cold_content_j_m2: f64,
+        refrozen_liquid_m: f64,
+    ) -> Self {
+        self.temperature_c = temperature_c;
+        self.liquid_water_m = liquid_water_m;
+        self.cold_content_j_m2 = cold_content_j_m2;
+        self.refrozen_liquid_m = refrozen_liquid_m;
+        self
     }
 }
 

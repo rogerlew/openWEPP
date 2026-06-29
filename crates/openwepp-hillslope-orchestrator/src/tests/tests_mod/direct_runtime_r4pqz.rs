@@ -362,6 +362,7 @@ fn apply_projectable_terminal_shadows(
         coe_boundary_density_after_kg_m3: 0.0,
         coe_boundary_settle_day_count_after: 0.0,
         snow_albedo_state_after: None,
+        stage3_diagnostics: None,
     });
     day.storage_shadow_projection = Some(DirectStorageShadowProjection {
         lane_index,

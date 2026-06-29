@@ -2900,11 +2900,15 @@ fn r4g_snow_coupling_producer_consumes_signed_handoff_and_updates_r4b_input() {
         coe_boundary_density_after_kg_m3: 0.0,
         coe_boundary_settle_day_count_after: 0.0,
         snow_albedo_state_after: None,
+        stage3_diagnostics: None,
     };
 
     assert_eq!(day.snow_coupling, expected_state);
     assert_eq!(day.snow_coupling_downstream_operands, expected_operands);
-    assert_eq!(day.snow_coupling_shadow_projection, Some(expected_shadow));
+    assert_eq!(
+        day.snow_coupling_shadow_projection,
+        Some(expected_shadow.clone())
+    );
     assert_eq!(
         day.storage_reconciliation_inputs.snow_coupling_m.to_bits(),
         (-0.09375_f64).to_bits()

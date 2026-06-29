@@ -16,7 +16,7 @@ const AUTHORITY: &str = "docs/work-packages/20260626-snowdensity-05c-albedo-stat
 fn snowdensity05c_contract_ratifies_albedo_state_core() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 109",
+        "contract_version: 110",
         "INV-SNOWFREEZE-054",
         "SNOWDENSITY-05C albedo-state core",
         "`brock2000_temperature_age_v1`",

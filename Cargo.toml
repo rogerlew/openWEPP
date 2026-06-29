@@ -723,6 +723,10 @@ name = "paradigm2_stage2_snow_frost_insulation_profile"
 path = "tests/integration/paradigm2_stage2_snow_frost_insulation_profile.rs"
 
 [[test]]
+name = "paradigm2_stage3_liquid_routing_meltwater_temperature"
+path = "tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs"
+
+[[test]]
 name = "snowdensity10_3_5b_hourly_partition_jennings_contract"
 path = "tests/integration/snowdensity10_3_5b_hourly_partition_jennings_contract.rs"
 

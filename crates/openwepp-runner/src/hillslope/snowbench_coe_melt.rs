@@ -710,6 +710,8 @@ fn simulate_coe_melt(
             dewpoint_c: day.dewpoint_c,
             snow_melt_model: model.snow_melt_model(),
             snow_density_model: SnowDensityModel::LegacyWepp,
+            stage3_liquid_routing_model:
+                openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled,
             sturm_climate_class: None,
             sturm_day_of_year: None,
             coe_boundary_depth_m: runtime_depth_m,

@@ -1,4 +1,6 @@
 
+use openwepp_unit_boundary::TemperatureCelsius;
+
 use crate::winter_column::DirectSnowLayerState;
 
 /// WB11 hydrology production kernel for ET/perc/lateral/drain lanes.
@@ -212,6 +214,70 @@ pub struct DirectSnowLiquidPartition {
     pub density_unbounded_swe_residual_m: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
     pub snow_layers_after: Vec<DirectSnowLayerState>,
+    pub stage3_diagnostics: DirectSnowStage3Diagnostics,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SnowStage3LiquidRoutingModel {
+    Disabled,
+    LayeredThermalLiquidV1,
+}
+
+impl SnowStage3LiquidRoutingModel {
+    #[must_use]
+    pub const fn id(self) -> &'static str {
+        match self {
+            Self::Disabled => "disabled",
+            Self::LayeredThermalLiquidV1 => "layered_thermal_liquid_v1",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectSnowStage3Diagnostics {
+    pub enabled: bool,
+    pub meltwater_temperature_c: Option<TemperatureCelsius>,
+    pub incoming_liquid_m: f64,
+    pub routed_liquid_m: f64,
+    pub retained_liquid_m: f64,
+    pub refrozen_liquid_m: f64,
+    pub liquid_closure_residual_m: f64,
+    pub cold_content_before_j_m2: f64,
+    pub cold_content_after_j_m2: f64,
+    pub surface_energy_j_m2: f64,
+    pub conduction_energy_j_m2: f64,
+    pub latent_refreeze_energy_j_m2: f64,
+    pub energy_closure_residual_j_m2: f64,
+}
+
+impl DirectSnowStage3Diagnostics {
+    #[must_use]
+    pub const fn disabled() -> Self {
+        Self {
+            enabled: false,
+            meltwater_temperature_c: None,
+            incoming_liquid_m: 0.0,
+            routed_liquid_m: 0.0,
+            retained_liquid_m: 0.0,
+            refrozen_liquid_m: 0.0,
+            liquid_closure_residual_m: 0.0,
+            cold_content_before_j_m2: 0.0,
+            cold_content_after_j_m2: 0.0,
+            surface_energy_j_m2: 0.0,
+            conduction_energy_j_m2: 0.0,
+            latent_refreeze_energy_j_m2: 0.0,
+            energy_closure_residual_j_m2: 0.0,
+        }
+    }
+
+    #[must_use]
+    pub fn boxed_when_enabled(self) -> Option<Box<Self>> {
+        if self.enabled {
+            Some(Box::new(self))
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -254,6 +320,7 @@ pub struct DirectActiveSnowPartitionInputs {
     pub dewpoint_c: f64,
     pub snow_melt_model: SnowMeltModel,
     pub snow_density_model: SnowDensityModel,
+    pub stage3_liquid_routing_model: SnowStage3LiquidRoutingModel,
     pub sturm_climate_class: Option<SnowClimateClass>,
     pub sturm_day_of_year: Option<f64>,
     pub coe_boundary_depth_m: f64,

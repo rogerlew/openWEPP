@@ -599,6 +599,10 @@ fn update_multilayer_snow_density_runtime_state(
                 mass_kg_m2: snow_input_kg_m2,
                 density_kg_m3: fresh_snow_density_kg_m3(inputs.mean_air_temperature_c, constants)?,
                 settle_day_count: 1.0,
+                temperature_c: inputs.mean_air_temperature_c.min(0.0),
+                liquid_water_m: 0.0,
+                cold_content_j_m2: 0.0,
+                refrozen_liquid_m: 0.0,
             },
         );
     }
@@ -661,6 +665,10 @@ struct SnowDensityLayerWorkState {
     mass_kg_m2: f64,
     density_kg_m3: f64,
     settle_day_count: f64,
+    temperature_c: f64,
+    liquid_water_m: f64,
+    cold_content_j_m2: f64,
+    refrozen_liquid_m: f64,
 }
 
 impl SnowDensityLayerWorkState {
@@ -678,6 +686,12 @@ impl SnowDensityLayerWorkState {
             self.depth_m(),
             self.density_kg_m3,
             self.settle_day_count,
+        )
+        .with_stage3_thermal_liquid_state(
+            self.temperature_c,
+            self.liquid_water_m,
+            self.cold_content_j_m2,
+            self.refrozen_liquid_m,
         )
     }
 }
@@ -711,6 +725,10 @@ fn initialize_multilayer_density_state(
                 mass_kg_m2: layer.mass_swe_m * SNOW_DENSITY_RHO_WATER_KG_M3,
                 density_kg_m3: density,
                 settle_day_count: layer.settle_day_count,
+                temperature_c: layer.temperature_c,
+                liquid_water_m: layer.liquid_water_m,
+                cold_content_j_m2: layer.cold_content_j_m2,
+                refrozen_liquid_m: layer.refrozen_liquid_m,
             });
         }
         if (swe_sum_m - inputs.prior_swe_m).abs() > SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M {
@@ -744,6 +762,10 @@ fn initialize_multilayer_density_state(
         mass_kg_m2: inputs.prior_swe_m * SNOW_DENSITY_RHO_WATER_KG_M3,
         density_kg_m3: density,
         settle_day_count: inputs.prior_settle_day_count,
+        temperature_c: 0.0,
+        liquid_water_m: 0.0,
+        cold_content_j_m2: 0.0,
+        refrozen_liquid_m: 0.0,
     }])
 }
 
@@ -822,6 +844,10 @@ fn apply_multilayer_boundary_mass(
             mass_kg_m2: target_mass_kg_m2,
             density_kg_m3: density,
             settle_day_count: 1.0,
+            temperature_c: 0.0,
+            liquid_water_m: 0.0,
+            cold_content_j_m2: 0.0,
+            refrozen_liquid_m: 0.0,
         });
         return;
     }
@@ -833,7 +859,16 @@ fn apply_multilayer_boundary_mass(
                 mass_to_remove -= layers[0].mass_kg_m2;
                 layers.remove(0);
             } else {
+                let old_mass = layers[0].mass_kg_m2;
                 layers[0].mass_kg_m2 -= mass_to_remove;
+                let scale = if old_mass > SNOW_DENSITY_ZERO_MASS_KG_M2 {
+                    (layers[0].mass_kg_m2 / old_mass).clamp(0.0, 1.0)
+                } else {
+                    0.0
+                };
+                layers[0].liquid_water_m *= scale;
+                layers[0].cold_content_j_m2 *= scale;
+                layers[0].refrozen_liquid_m *= scale;
                 mass_to_remove = 0.0;
             }
         }
@@ -849,6 +884,10 @@ fn apply_multilayer_boundary_mass(
                 mass_kg_m2: mass_to_add,
                 density_kg_m3: constants.new_snow_density_min_kg_m3,
                 settle_day_count: 1.0,
+                temperature_c: 0.0,
+                liquid_water_m: 0.0,
+                cold_content_j_m2: 0.0,
+                refrozen_liquid_m: 0.0,
             });
         }
     }
@@ -876,9 +915,23 @@ fn merge_multilayer_bottom_layers(layers: &mut Vec<SnowDensityLayerWorkState>) {
         } else {
             0.0
         };
+        let temperature_c = if mass > SNOW_DENSITY_ZERO_MASS_KG_M2 {
+            (above_bottom.temperature_c * above_bottom.mass_kg_m2
+                + bottom.temperature_c * bottom.mass_kg_m2)
+                / mass
+        } else {
+            0.0
+        };
+        let liquid_water_m = above_bottom.liquid_water_m + bottom.liquid_water_m;
+        let cold_content_j_m2 = above_bottom.cold_content_j_m2 + bottom.cold_content_j_m2;
+        let refrozen_liquid_m = above_bottom.refrozen_liquid_m + bottom.refrozen_liquid_m;
         above_bottom.mass_kg_m2 = mass;
         above_bottom.density_kg_m3 = if depth > 0.0 { mass / depth } else { 0.0 };
         above_bottom.settle_day_count = settle;
+        above_bottom.temperature_c = temperature_c;
+        above_bottom.liquid_water_m = liquid_water_m;
+        above_bottom.cold_content_j_m2 = cold_content_j_m2;
+        above_bottom.refrozen_liquid_m = refrozen_liquid_m;
     }
 }
 

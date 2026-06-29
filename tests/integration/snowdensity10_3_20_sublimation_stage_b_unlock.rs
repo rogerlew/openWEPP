@@ -27,7 +27,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_stage_b_unlock_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 109",
+        "contract_version: 110",
         "REF-SNOWFREEZE-SNOWDENSITY1020",
         "REF-SNOWFREEZE-LIBSNOBAL-CC0",
         "INV-SNOWFREEZE-076",
@@ -184,6 +184,8 @@ fn dry_windy_open_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitionInput
         dewpoint_c: -18.0,
         snow_melt_model: model,
         snow_density_model: SnowDensityModel::LegacyWepp,
+        stage3_liquid_routing_model:
+            openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled,
         sturm_climate_class: None,
         sturm_day_of_year: None,
         coe_boundary_depth_m: 1.0,

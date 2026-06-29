@@ -4,6 +4,8 @@ const SNOWDENSITY1037_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1037_MELT_MODE
 const SNOWDENSITY1038_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1038_MELT_MODEL";
 const SNOWFROST_STAGE2_INSULATION_MODEL_ENV: &str =
     "OPENWEPP_SNOWFROST_STAGE2_INSULATION_MODEL";
+const PARADIGM2_STAGE3_LIQUID_MODEL_ENV: &str =
+    "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL";
 
 struct DirectPublicationDayInputBuilder<'a> {
     climate_request: &'a HillslopeClimateRuntimeRequest,
@@ -236,6 +238,7 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             liquid_water_released_m: snow_liquid.liquid_water_released_m,
             snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
             snow_layers_after: snow_liquid.snow_layers_after.clone(),
+            stage3_diagnostics: snow_liquid.stage3_diagnostics.boxed_when_enabled(),
         });
         let percolation_inputs =
             direct_publication_percolation_inputs(&seed_surface, precipitation_m)?;
@@ -584,6 +587,8 @@ struct DirectProductionSnowFrostAuthority {
     snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel,
     snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel,
     snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel,
+    stage3_liquid_routing_model:
+        openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel,
     snow_rst_c: f64,
     snow_newsnw_kg_m3: f64,
     snow_ssd_kg_m3: f64,
@@ -892,6 +897,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             liquid_water_released_m: snow_liquid.liquid_water_released_m,
             snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
             snow_layers_after: snow_liquid.snow_layers_after.clone(),
+            stage3_diagnostics: snow_liquid.stage3_diagnostics.boxed_when_enabled(),
         });
         day_input.peak_runoff_inputs = Some(authority.peak_runoff.inputs(hyetograph.clone()));
         day_input.infiltration_depression_inputs = Some(
@@ -1380,6 +1386,33 @@ fn direct_production_sturm_climate_class_for_density_candidate(
                 "{SIMOUT_GUARD_ID} failed assigning Sturm 1995 climate class from run forcing normals: {source}"
             ),
         })
+}
+
+fn paradigm2_stage3_liquid_routing_model(
+) -> Result<openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel, HillslopeCliError> {
+    match std::env::var(PARADIGM2_STAGE3_LIQUID_MODEL_ENV) {
+        Ok(value) => match value.trim() {
+            "" | "disabled" => {
+                Ok(openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled)
+            }
+            "layered_thermal_liquid_v1" => Ok(
+                openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::LayeredThermalLiquidV1,
+            ),
+            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_stage3_liquid_routing_model",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} {PARADIGM2_STAGE3_LIQUID_MODEL_ENV} must be disabled, layered_thermal_liquid_v1, or empty default, observed {observed}"
+                ),
+            }),
+        },
+        Err(std::env::VarError::NotPresent) => {
+            Ok(openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel::Disabled)
+        }
+        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_stage3_liquid_routing_model",
+            detail: format!("{SIMOUT_GUARD_ID} {PARADIGM2_STAGE3_LIQUID_MODEL_ENV} must be UTF-8"),
+        }),
+    }
 }
 
 fn direct_production_sturm1995_climate_normals(

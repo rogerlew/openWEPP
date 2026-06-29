@@ -165,6 +165,7 @@ impl DirectProductionSnowFrostAuthority {
             snow_density_model: snowdensity1015_default_snow_density_model()?,
             snow_phase_model: snowdensity1035_diagnostic_snow_phase_model()?,
             snow_melt_model: snowdensity1015_default_snow_melt_model()?,
+            stage3_liquid_routing_model: paradigm2_stage3_liquid_routing_model()?,
             snow_rst_c,
             snow_newsnw_kg_m3,
             snow_ssd_kg_m3,
@@ -575,6 +576,7 @@ impl DirectProductionSnowFrostAuthority {
             dewpoint_c: forcing.tdpt_c,
             snow_melt_model: self.snow_melt_model,
             snow_density_model: self.snow_density_model,
+            stage3_liquid_routing_model: self.stage3_liquid_routing_model,
             sturm_climate_class,
             sturm_day_of_year,
             coe_boundary_depth_m: snow_lane_state.coe_boundary_depth_m,
@@ -626,6 +628,7 @@ fn inactive_direct_snow_liquid_partition(
         density_unbounded_swe_residual_m: 0.0,
         snow_albedo_state_after: snow_lane_state.snow_albedo_state,
         snow_layers_after: snow_lane_state.layers.clone(),
+        stage3_diagnostics: openwepp_hillslope_orchestrator::DirectSnowStage3Diagnostics::disabled(),
     }
 }
 

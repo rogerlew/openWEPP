@@ -5,6 +5,9 @@ const PACKAGE: &str =
     "docs/work-packages/20260628-paradigm-2-stage-0-surface-energy-balance-001/package.md";
 const PROVENANCE: &str = "docs/work-packages/20260628-paradigm-2-stage-0-surface-energy-balance-001/artifacts/clean-room-provenance.md";
 const NO_WIRING: &str = "docs/work-packages/20260628-paradigm-2-stage-0-surface-energy-balance-001/artifacts/no-production-wiring-scan.md";
+const STAGE3_PACKAGE: &str = "docs/work-packages/20260629-paradigm-2-stage-3-liquid-routing-meltwater-temperature-001/package.md";
+const SNOWFREEZE_CONTRACT: &str =
+    "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const METEOROLOGY_LIB: &str = "crates/openwepp-meteorology/src/lib.rs";
 const SURFACE_ENERGY: &str = "crates/openwepp-meteorology/src/surface_energy.rs";
 
@@ -22,6 +25,11 @@ const SURFACE_ENERGY_RUNTIME_TOKENS: &[&str] = &[
     "turbulent_fluxes_monin_obukhov",
     "conductive_heat_flux",
     "precipitation_advected_heat_flux",
+];
+
+const STAGE3_ALLOWED_RUNTIME_FILES: &[&str] = &[
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs",
 ];
 
 fn repo_path(relative_path: &str) -> PathBuf {
@@ -115,11 +123,22 @@ fn meteorology_surface_energy_module_is_public_and_complete() {
 }
 
 #[test]
-fn production_runtime_sources_do_not_wire_stage0_flux_primitives() {
+fn production_runtime_sources_only_wire_stage0_flux_primitives_through_stage3_opt_in() {
     let no_wiring = repo_text(NO_WIRING);
     assert!(
         no_wiring.contains("No production runtime source references"),
         "no-production-wiring artifact must record the scan result"
+    );
+    let stage3_package = repo_text(STAGE3_PACKAGE);
+    assert!(
+        stage3_package.contains("OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL=layered_thermal_liquid_v1"),
+        "Stage 3 package must bind the only allowed runtime use of Stage 0 primitives"
+    );
+    let snowfreeze_contract = repo_text(SNOWFREEZE_CONTRACT);
+    assert!(
+        snowfreeze_contract.contains("INV-SNOWFREEZE-080")
+            && snowfreeze_contract.contains("Stage 0 surface-energy primitives"),
+        "SC-SNOWFREEZE-001 must authorize the Stage 3 opt-in use of Stage 0 primitives"
     );
 
     let mut rust_files = Vec::new();
@@ -131,8 +150,16 @@ fn production_runtime_sources_do_not_wire_stage0_flux_primitives() {
     for path in rust_files {
         let text = fs::read_to_string(&path)
             .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()));
+        let relative_path = path
+            .strip_prefix(repo_path(""))
+            .unwrap_or(path.as_path())
+            .to_string_lossy();
         for token in SURFACE_ENERGY_RUNTIME_TOKENS {
-            if text.contains(token) {
+            if text.contains(token)
+                && !STAGE3_ALLOWED_RUNTIME_FILES
+                    .iter()
+                    .any(|allowed| relative_path == *allowed)
+            {
                 violations.push(format!("{} contains {token}", path.display()));
             }
         }
@@ -140,7 +167,7 @@ fn production_runtime_sources_do_not_wire_stage0_flux_primitives() {
 
     assert!(
         violations.is_empty(),
-        "Stage 0 surface-energy primitives must remain unwired:\n{}",
+        "Stage 0 surface-energy primitives must remain unwired outside the Stage 3 opt-in boundary:\n{}",
         violations.join("\n")
     );
 }
