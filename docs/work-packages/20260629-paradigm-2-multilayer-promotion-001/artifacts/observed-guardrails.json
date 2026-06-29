@@ -1,0 +1,22 @@
+{
+  "schema": "paradigm2-multilayer-promotion-observed-guardrails-v1",
+  "evidence_class": "Ran + Static",
+  "source_artifact": "paradigm2-stage3-decouple-observed-guardrails.json",
+  "hill_binary": "target/release/openwepp-cli-hill",
+  "current_default": {
+    "robust_fail_count": 15,
+    "robust_ordinal_score": 179
+  },
+  "promoted_opt_in": {
+    "selector": "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL=layered_thermal_liquid_v1",
+    "robust_fail_count": 15,
+    "robust_ordinal_score": 179
+  },
+  "comparison": {
+    "better_robust_cells": 0,
+    "worse_robust_cells": 0,
+    "timing_vs_default_worse_robust_cells": 0
+  },
+  "passed": true,
+  "elapsed_seconds": 111.8569821966812
+}

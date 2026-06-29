@@ -13,6 +13,25 @@
 
 State as of `2026-06-29`:
 
+- `20260629-paradigm-2-multilayer-promotion-001/` is complete as PARADIGM-2
+  MULTILAYER PROMOTION, ratifying the Stage 3-Decouple snow-neutral
+  water-temperature arm as a production-supported internal opt-in capability.
+  Result: `EXECUTED-COMPLETE-PRODUCTION-OPT-IN`. It amended
+  `SC-SNOWFREEZE-001` to v112 with `INV-SNOWFREEZE-082` and
+  `OBL-SNOWFREEZE-P-057`, kept the no-env bulk snow default and rollback
+  unchanged, and publishes nullable hillslope WAT parquet
+  `MeltwaterTemperature` in `degC` from the Stage 3 meltwater-flux temperature
+  when `OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL=layered_thermal_liquid_v1` is
+  selected. Real cross-SNOTEL/cancov guardrails reconfirmed exact current-
+  default equivalence (`15` robust fails / `179`, `0` worse robust cells) and
+  runoff/timing `0` worse cells. Real WAT output evidence found `27965`
+  non-null opt-in meltwater-temperature rows across the observed corpus and
+  `35730` non-null rows on H2637, all `0.0 degC`; default/rollback runs publish
+  null values. H2637 measured `70.65 s` / `1153680 KiB`, within the ADR-0025
+  `<=10x` budget. No default activation, density/frost change, Stage 1
+  densification dependency, CoE melt-mass replacement, HBP/watershed
+  serialization, full in-stream routing, fixture, parser/runfile/user CLI,
+  WEPPpy, `.run`, or compatibility-runtime change was made.
 - `20260629-paradigm-2-stage-3-decouple-water-temperature-001/` is complete as
   PARADIGM-2 STAGE 3-DECOUPLE, the snow-neutral water-temperature opt-in arm.
   Result: `EXECUTED-COMPLETE-OPT-IN-CAPABILITY`. It amended

@@ -204,6 +204,7 @@ pub struct HillslopeWatRow {
     pub frdp: f64,
     pub snow_water: f64,
     pub snow_depth: Option<f64>,
+    pub meltwater_temperature: Option<f64>,
     pub qofe: f64,
     pub tile: f64,
     pub irr: f64,
@@ -411,6 +412,15 @@ pub fn hillslope_wat_schema(
                 true,
                 Some("mm"),
                 Some("Runtime snow depth diagnostic from snow.runtime_depth_m"),
+            ),
+            field_with_meta(
+                "MeltwaterTemperature",
+                DataType::Float64,
+                true,
+                Some("degC"),
+                Some(
+                    "Supported Stage 3-Decouple meltwater flux temperature source; null unless layered_thermal_liquid_v1 produces routed meltwater temperature",
+                ),
             ),
             field_with_meta(
                 "QOFE",
@@ -621,6 +631,7 @@ fn hillslope_wat_rows_to_batch(
     let mut frdp = Vec::with_capacity(rows.len());
     let mut snow_water = Vec::with_capacity(rows.len());
     let mut snow_depth = Vec::with_capacity(rows.len());
+    let mut meltwater_temperature = Vec::with_capacity(rows.len());
     let mut qofe = Vec::with_capacity(rows.len());
     let mut tile = Vec::with_capacity(rows.len());
     let mut irr = Vec::with_capacity(rows.len());
@@ -658,6 +669,7 @@ fn hillslope_wat_rows_to_batch(
         frdp.push(row.frdp);
         snow_water.push(row.snow_water);
         snow_depth.push(row.snow_depth);
+        meltwater_temperature.push(row.meltwater_temperature);
         qofe.push(row.qofe);
         tile.push(row.tile);
         irr.push(row.irr);
@@ -696,6 +708,7 @@ fn hillslope_wat_rows_to_batch(
         Arc::new(Float64Array::from(frdp)),
         Arc::new(Float64Array::from(snow_water)),
         Arc::new(Float64Array::from(snow_depth)),
+        Arc::new(Float64Array::from(meltwater_temperature)),
         Arc::new(Float64Array::from(qofe)),
         Arc::new(Float64Array::from(tile)),
         Arc::new(Float64Array::from(irr)),
@@ -747,6 +760,7 @@ mod tests {
             frdp: 0.0,
             snow_water: 0.0,
             snow_depth: Some(250.0),
+            meltwater_temperature: Some(0.0),
             qofe: 0.0,
             tile: 0.0,
             irr: 0.0,
@@ -823,6 +837,24 @@ mod tests {
             "Snow-Depth description should identify the runtime depth source"
         );
 
+        let meltwater_temperature_field = schema
+            .fields
+            .iter()
+            .find(|field| field.name() == "MeltwaterTemperature")
+            .expect("MeltwaterTemperature field should exist");
+        let meltwater_temperature_meta = meltwater_temperature_field.metadata();
+        assert!(meltwater_temperature_field.is_nullable());
+        assert_eq!(
+            meltwater_temperature_meta.get("units").map(String::as_str),
+            Some("degC")
+        );
+        assert!(
+            meltwater_temperature_meta
+                .get("description")
+                .is_some_and(|value| value.contains("meltwater flux temperature source")),
+            "MeltwaterTemperature description should identify the supported temperature source"
+        );
+
         let interception_field = schema
             .fields
             .iter()
@@ -892,6 +924,18 @@ mod tests {
                 .fields()
                 .iter()
                 .any(|field| field.name() == "InterceptionStorage")
+        );
+        let meltwater_temperature_field = schema
+            .fields()
+            .iter()
+            .find(|field| field.name() == "MeltwaterTemperature")
+            .expect("MeltwaterTemperature field should exist in parquet schema");
+        assert_eq!(
+            meltwater_temperature_field
+                .metadata()
+                .get("units")
+                .map(String::as_str),
+            Some("degC")
         );
         let snow_depth_field = schema
             .fields()

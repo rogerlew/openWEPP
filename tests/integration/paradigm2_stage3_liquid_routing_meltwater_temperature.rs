@@ -20,7 +20,7 @@ const OBSERVED_GATE_TOOL: &str =
 fn stage3_contract_package_and_selector_are_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 111",
+        "contract_version: 112",
         "REF-SNOWFREEZE-PARADIGM2-STAGE3",
         "INV-SNOWFREEZE-080",
         "OBL-SNOWFREEZE-P-055",
@@ -99,7 +99,7 @@ fn stage3_internal_selector_not_user_cli_exposed() {
             .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()));
         assert!(
             !text.contains("layered_thermal_liquid_v1"),
-            "Stage 3 selector must remain package-bound, not CLI/user-facing: {}",
+            "Stage 3 selector must remain internal, not CLI/user-facing: {}",
             path.display()
         );
     }

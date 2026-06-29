@@ -1524,6 +1524,7 @@ mod tests {
             frdp: 0.0,
             snow_water: 0.0,
             snow_depth: None,
+            meltwater_temperature: None,
             qofe: 0.0,
             tile: 0.0,
             irr: 0.0,
@@ -1974,12 +1975,8 @@ mod tests {
                 snow_water_mm: 0.0,
                 snow_depth_mm: 0.0,
             },
-            profile: DirectPublicationProfileOperands {
-                depth_mm: None,
-                porosity_cap_mm: None,
-                fc_store_mm: None,
-                wp_store_mm: None,
-            },
+            water_temperature: r6_test_no_water_temperature(),
+            profile: r6_test_empty_profile(),
             interception: DirectPublicationInterceptionOperands {
                 interception_mm: 0.0,
                 interception_storage_mm: None,
@@ -2121,6 +2118,7 @@ mod tests {
                 snow_water_mm: 3.0,
                 snow_depth_mm: 4.0,
             },
+            water_temperature: r6_test_no_water_temperature(),
             profile: DirectPublicationProfileOperands {
                 depth_mm: Some(1000.0),
                 porosity_cap_mm: Some(450.0),
@@ -2400,6 +2398,7 @@ mod tests {
                 snow_water_mm: 3.0 + offset,
                 snow_depth_mm: 4.0 + offset,
             },
+            water_temperature: r6_test_no_water_temperature(),
             profile: DirectPublicationProfileOperands {
                 depth_mm: Some(1000.0 + offset),
                 porosity_cap_mm: Some(450.0 + offset),
@@ -2426,6 +2425,21 @@ mod tests {
     fn runner_execution_lock() -> &'static Mutex<()> {
         static RUN_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
         RUN_LOCK.get_or_init(|| Mutex::new(()))
+    }
+
+    fn r6_test_no_water_temperature() -> DirectPublicationWaterTemperatureOperands {
+        DirectPublicationWaterTemperatureOperands {
+            meltwater_temperature_c: None,
+        }
+    }
+
+    fn r6_test_empty_profile() -> DirectPublicationProfileOperands {
+        DirectPublicationProfileOperands {
+            depth_mm: None,
+            porosity_cap_mm: None,
+            fc_store_mm: None,
+            wp_store_mm: None,
+        }
     }
 
     fn fixture_path(name: &str) -> PathBuf {

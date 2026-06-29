@@ -109,6 +109,7 @@ fn sample_wat_row() -> HillslopeWatRow {
         frdp: 0.0,
         snow_water: 42.0,
         snow_depth: Some(210.0),
+        meltwater_temperature: None,
         qofe: 0.0,
         tile: 0.0,
         irr: 0.0,

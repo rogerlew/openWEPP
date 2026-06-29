@@ -4,10 +4,11 @@
 
 - `state`: **breadcrumb (deferred — not being planned now).** The prerequisites are
   met: the `openwepp-meteorology` surface energy balance is built (Paradigm 2
-  Stage 0), and the snow-side meltwater-temperature **source** is delivered as a
-  typed flux (Paradigm 2 Stage 3-decouple). So it is ready to pick up when stream
-  temperature is prioritized. **Open question to settle when picked up: can hourly
-  water + temperature be serialized across the HBP shard and consumed by the
+  Stage 0), and the snow-side meltwater-temperature **source** is production-
+  supported as an opt-in hillslope WAT field (`MeltwaterTemperature`, Paradigm 2
+  multilayer promotion). So it is ready to pick up when stream temperature is
+  prioritized. **Open question to settle when picked up: can hourly water +
+  temperature be serialized across the HBP shard and consumed by the
   `openwepp-cli-watershed` CLI for in-stream routing?**
 - `date`: 2026-06-27 (created); 2026-06-29 (prerequisites met; left as a breadcrumb,
   Claude Code)
@@ -70,7 +71,9 @@ and consumed by the `openwepp-cli-watershed` CLI** for in-stream routing — the
 concrete form of design decision 2 (hourly-vs-daily resolution, HBP-schema
 feasibility under ADR-0019, the typed-flux-temperature boundary, mass-weighted
 confluence mixing). The snow-side meltwater-temperature source already exists as a
-typed flux (Stage 3-decouple). Not planned further here — breadcrumb only.
+production-supported opt-in hillslope WAT field (Paradigm 2 multilayer
+promotion), but HBP/watershed carrying remains deliberately unimplemented. Not
+planned further here — breadcrumb only.
 
 ## Architecture landing (fits the subprocess-per-hillslope model)
 

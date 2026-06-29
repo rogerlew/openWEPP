@@ -17,7 +17,7 @@ const PACKAGE: &str =
 fn stage1_contract_and_selector_are_package_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 111",
+        "contract_version: 112",
         "REF-SNOWFREEZE-PARADIGM2-STAGE1",
         "INV-SNOWFREEZE-078",
         "OBL-SNOWFREEZE-P-053",

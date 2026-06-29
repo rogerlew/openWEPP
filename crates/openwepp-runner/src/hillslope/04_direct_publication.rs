@@ -337,6 +337,9 @@ fn direct_publication_row_from_simulation_owned_wb13(
             snow_water_mm: row.wb13_row.snow_water,
             snow_depth_mm: row.snow_depth_mm.unwrap_or(0.0),
         },
+        water_temperature: DirectPublicationWaterTemperatureOperands {
+            meltwater_temperature_c: None,
+        },
         profile: DirectPublicationProfileOperands {
             depth_mm: Some(row.wb13_row.profile_depth),
             porosity_cap_mm: Some(row.wb13_row.profile_porosity_cap),

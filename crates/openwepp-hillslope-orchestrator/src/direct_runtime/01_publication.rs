@@ -261,6 +261,7 @@ pub struct DirectPublicationDayRow {
     pub subsurface: DirectPublicationSubsurfaceOperands,
     pub transfer: DirectPublicationTransferOperands,
     pub storage: DirectPublicationStorageOperands,
+    pub water_temperature: DirectPublicationWaterTemperatureOperands,
     pub profile: DirectPublicationProfileOperands,
     pub interception: DirectPublicationInterceptionOperands,
     pub erosion: DirectPublicationErosionOperands,
@@ -283,6 +284,7 @@ impl DirectPublicationDayRow {
         let interception_m = day_frame.interception_m;
         validate_nonnegative_direct_m("publication.interception_m", interception_m)?;
         let storage = direct_publication_storage_operands(day_frame)?;
+        let water_temperature = direct_publication_water_temperature_operands(day_frame)?;
         let erosion = direct_publication_erosion_operands(day_frame, day_input)?;
 
         Ok(Self {
@@ -326,6 +328,7 @@ impl DirectPublicationDayRow {
                 upstream_lateral_mm: m_to_mm(day_frame.normalization.lateral_transfer_m)?,
             },
             storage,
+            water_temperature,
             profile: DirectPublicationProfileOperands {
                 depth_mm: option_m_to_mm(day_frame.hydrology_projection.profile_depth_m)?,
                 porosity_cap_mm: option_m_to_mm(
@@ -412,6 +415,31 @@ fn direct_publication_storage_operands(
         frdp_mm: Some(m_to_mm(day_frame.hydrology_projection.frost_depth_m)?),
         snow_water_mm: m_to_mm(day_frame.hydrology_projection.snow_water_m)?,
         snow_depth_mm: m_to_mm(snow_depth_publication_m)?,
+    })
+}
+
+fn direct_publication_water_temperature_operands(
+    day_frame: &DirectDayFrame,
+) -> Result<DirectPublicationWaterTemperatureOperands, DirectRuntimeError> {
+    let meltwater_temperature_c = day_frame
+        .snow_coupling_shadow_projection
+        .as_ref()
+        .and_then(|projection| projection.stage3_diagnostics.as_deref())
+        .and_then(|diagnostics| diagnostics.meltwater_temperature_c)
+        .map(openwepp_unit_boundary::TemperatureCelsius::as_celsius);
+    if let Some(value) = meltwater_temperature_c {
+        validate_finite(
+            "publication.water_temperature.meltwater_temperature_c",
+            value,
+        )?;
+        if value > WB11_ZERO_THRESHOLD {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "publication.water_temperature.meltwater_temperature_c",
+            });
+        }
+    }
+    Ok(DirectPublicationWaterTemperatureOperands {
+        meltwater_temperature_c,
     })
 }
 
@@ -511,6 +539,11 @@ pub struct DirectPublicationStorageOperands {
     pub frdp_mm: Option<f64>,
     pub snow_water_mm: f64,
     pub snow_depth_mm: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectPublicationWaterTemperatureOperands {
+    pub meltwater_temperature_c: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
