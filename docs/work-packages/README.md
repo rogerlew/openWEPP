@@ -13,6 +13,22 @@
 
 State as of `2026-06-29`:
 
+- `20260629-frost-step3-residue-parameterization-001/` is complete as FROST
+  STEP 3, the diagnostic residue-parameterization test for the two Step
+  1-unblocked Sleepers sites. Result:
+  `EXECUTED-COMPLETE-DIAGNOSTIC-BRANCH-C`. The entry gate ran the existing
+  `hubbardbrook_deciduous_nh` `Dec_4899` seasonal deciduous fixture with
+  `OPENWEPP_R7G_FROST_TRACE_PATH` enabled and confirmed the solver-side
+  `residue_depth_m` path is flat: `32874` trace rows, min/max/mean all
+  `0.02302585092994045 m`, and equal autumn/spring means. Because `Dec_*` did
+  not produce a seasonal residue trajectory at the frost solver, the package
+  stopped before the Sleepers A-versus-B re-score. `GAP-SNOWFREEZE-002`
+  remains open; the follow-on is to promote the surface residue / forest litter
+  cover dimension of
+  `docs/backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md`
+  before rerunning Sleepers timing attribution. No frost-model, snow-model,
+  production fixture, contract-physics, default, output-schema, selector, or
+  harness-default change was made.
 - `20260629-frost-step2-sleepers-attribution-001/` is complete as FROST STEP 2,
   the diagnostic attribution package for the two Step 1-unblocked Sleepers
   sites. Result: `EXECUTED-COMPLETE-DIAGNOSTIC-ATTRIBUTION`. It consumed the

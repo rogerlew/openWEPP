@@ -1,0 +1,190 @@
+{
+  "decision_branch": {
+    "branch": "C",
+    "justification": "Dec_* residue_depth_m is flat or does not show the required autumn-to-spring decline.",
+    "label": "Dec_* does not drive seasonal residue_depth_m"
+  },
+  "entry_gate": {
+    "decision_reason": "Dec_* residue_depth_m is flat or does not show the required autumn-to-spring decline.",
+    "fixture": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh",
+    "monthly_trajectory_path": "docs/work-packages/20260629-frost-step3-residue-parameterization-001/artifacts/entry_gate_residue_monthly_trajectory.csv",
+    "passes": false,
+    "physically_reasonable": false,
+    "report_path": "target/frost_step3_residue_parameterization/runs/entry_gate_hubbardbrook_deciduous/comparison_report.json",
+    "run_output": "target/frost_step3_residue_parameterization/runs/entry_gate_hubbardbrook_deciduous",
+    "run_stem": "p10",
+    "seasonal_residue_depth_m": false,
+    "trace_summary": {
+      "autumn_mean_residue_depth_m": 0.02302585092994045,
+      "first_date": "2001-01-01",
+      "first_rows": [
+        {
+          "date": "2001-01-01",
+          "residue_depth_m": 0.02302585092994045,
+          "snow_depth_m": 0.0
+        },
+        {
+          "date": "2001-01-01",
+          "residue_depth_m": 0.02302585092994045,
+          "snow_depth_m": 0.0
+        },
+        {
+          "date": "2001-01-02",
+          "residue_depth_m": 0.02302585092994045,
+          "snow_depth_m": 0.0
+        },
+        {
+          "date": "2001-01-02",
+          "residue_depth_m": 0.02302585092994045,
+          "snow_depth_m": 0.0
+        },
+        {
+          "date": "2001-01-03",
+          "residue_depth_m": 0.02302585092994045,
+          "snow_depth_m": 0.0
+        },
+        {
+          "date": "2001-01-03",
+          "residue_depth_m": 0.02302585092994045,
+          "snow_depth_m": 0.0
+        },
+        {
+          "date": "2001-01-04",
+          "residue_depth_m": 0.02302585092994045,
+          "snow_depth_m": 0.0
+        },
+        {
+          "date": "2001-01-04",
+          "residue_depth_m": 0.02302585092994045,
+          "snow_depth_m": 0.0
+        },
+        {
+          "date": "2001-01-05",
+          "residue_depth_m": 0.02302585092994045,
+          "snow_depth_m": 0.0
+        },
+        {
+          "date": "2001-01-05",
+          "residue_depth_m": 0.02302585092994045,
+          "snow_depth_m": 0.0
+        }
+      ],
+      "last_date": "2001-12-31",
+      "max_month_mean_residue_depth_m": 0.02302585092994045,
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "median_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month_of_max_mean_residue_depth_m": 1,
+      "monthly": [
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 1,
+          "row_count": 2790
+        },
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 2,
+          "row_count": 2520
+        },
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 3,
+          "row_count": 2790
+        },
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 4,
+          "row_count": 2700
+        },
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 5,
+          "row_count": 2790
+        },
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 6,
+          "row_count": 2700
+        },
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 7,
+          "row_count": 2790
+        },
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 8,
+          "row_count": 2790
+        },
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 9,
+          "row_count": 2700
+        },
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 10,
+          "row_count": 2790
+        },
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 11,
+          "row_count": 2700
+        },
+        {
+          "max_residue_depth_m": 0.02302585092994045,
+          "mean_residue_depth_m": 0.02302585092994045,
+          "min_residue_depth_m": 0.02302585092994045,
+          "month": 12,
+          "row_count": 2814
+        }
+      ],
+      "row_count": 32874,
+      "spring_mean_residue_depth_m": 0.02302585092994045,
+      "trace_path": "target/frost_step3_residue_parameterization/runs/entry_gate_hubbardbrook_deciduous/frost_trace.jsonl",
+      "unique_rounded_residue_depth_count_1e6": 1
+    },
+    "trace_summary_path": "docs/work-packages/20260629-frost-step3-residue-parameterization-001/artifacts/entry_gate_residue_trace_summary.json"
+  },
+  "evidence_mode": "Ran",
+  "gap_snowfreeze_002": "GAP-SNOWFREEZE-002 remains open; cropland Dec_* management did not prove a physically seasonal residue_depth_m path to the frost solver, so first-class forest litter cover should be promoted before fixture repointing.",
+  "schema": "frost-step3-residue-parameterization-v1",
+  "scope": {
+    "excluded_sites": {
+      "site3_scan_mandan_nd": "Step 1 INCONCLUSIVE-NO-PAIRED-SNOW",
+      "site4_ggd498_morris_mn": "Step 1 BLOCKED",
+      "site5_reynolds_creek_us_rls_id": "Step 1 INCONCLUSIVE-NO-PAIRED-SNOW"
+    },
+    "included_sites": [
+      "site1_sleepers_south_field_vt",
+      "site2_sleepers_w9_hardwood_vt"
+    ]
+  },
+  "seasonal_management_source": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh/p10.man",
+  "sites": [],
+  "step2_analyzer": "docs/work-packages/20260629-frost-step2-sleepers-attribution-001/artifacts/attribute_sleepers.py",
+  "step4_note": "The Step 1 >0.25 systematic-timing-fraction cutoff is diagnostic-script-local; only TOLERANCE_DAYS=14 is inherited by this package."
+}

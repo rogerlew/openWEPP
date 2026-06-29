@@ -14,7 +14,11 @@
   2026-06-29 from the frost Step-3 diagnosis. **Contingent dimension** — gated on
   the frost Step-3 finding: implement a forest residue-cover representation here
   only if cropland-management residue (`Dec_*`) cannot represent forest litter
-  seasonality (see Surface-residue section below).
+  seasonality (see Surface-residue section below). FROST STEP 3
+  (`docs/work-packages/20260629-frost-step3-residue-parameterization-001/`)
+  closed branch C: `hubbardbrook_deciduous_nh` `Dec_4899` reached the frost
+  solver but kept `residue_depth_m` flat at `0.02302585092994045 m` for all
+  `32874` trace rows.
 - `date`: 2026-06-26 (created, Claude Code)
 - `relates`:
   [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md)
@@ -204,12 +208,42 @@ residue model can produce a **physically correct seasonal forest litter cycle**:
   split that strands the canopy decline (`grow.for:751`) can strand the litter
   input.
 
-If a cropland management **can** carry a realistic seasonal `residue_depth_m`
-(frost Step-3 confirms `Dec_*` does), this dimension needs **no implementation** —
-the fix is parameterization (repoint the deciduous fixtures), and the frost model
-is vindicated. If it **cannot**, implement a **first-class, landuse-agnostic
-forest residue-cover representation** here — the litter analogue of the
-landuse-agnostic canopy decline this backlog already argues for.
+### What frost Step 3 actually found (2026-06-29) — the gap is a missing coupling
+
+Frost Step 3 (`docs/work-packages/20260629-frost-step3-residue-parameterization-001/`)
+routed to **branch C**: the `Dec_*` entry-gate run reached the frost solver but
+`residue_depth_m` was **perfectly flat** (`0.0230259 m` min = max = autumn = spring
+mean across `32874` rows). The **root cause** (Claude review of the production wiring)
+is more fundamental — and more contained — than "cropland can't represent forests":
+
+- openWEPP **already computes a *dynamic* surface-residue mass** —
+  `07_decomposition_equations.rs` (`sumsrm_next = sumsrm_seed · surface_decay`) and
+  `direct_runtime/decomposition.rs` (`surface_residue_kg_m2` with decay factors).
+- But `frost.runtime_residue_depth_m` (the symbol `frost_surface_heat_path` reads)
+  is **seeded once** from the legacy initial condition in
+  `runtime_inputs/01_management.rs` (`("resdep", seed…)`,
+  `("frost.runtime_residue_depth", seed…)`, asserted in tests as "legacy
+  init1/res_dp lineage") and **never updated from the dynamic mass.** The only
+  writebacks are the two seed sites.
+- So **residue depth is static for *every* landuse**, not just forests. The flat
+  `Dec_*` trace is the symptom; the missing `mass → depth → frost` coupling is the
+  disease.
+
+**This reshapes the implementation scope.** It is a **wiring** task (connect the
+existing dynamic surface-residue mass to `frost.runtime_residue_depth_m` via a
+mass→depth conversion), **not** a from-scratch litter model — *provided* the
+`Dec_*` surface-residue **mass** is itself seasonal. The **first implementation
+task** is to determine that: does the dynamic `surface_residue_kg_m2` under `Dec_*`
+already show autumn senescence input + winter/spring decay (→ pure wiring), or does
+the senescence not deposit recurring annual leaf-drop (→ also build the litter
+*input* limb)? The cropland decomposition-rate concern below applies in either case.
+
+If, once wired, a cropland management **can** carry a realistic seasonal
+`residue_depth_m`, the residue dimension is satisfied by the coupling + the existing
+`Dec_*` parameterization. If it **cannot** (crop decay too fast, or no recurring
+perennial leaf-drop), implement a **first-class, landuse-agnostic forest
+residue-cover representation** here — the litter analogue of the landuse-agnostic
+canopy decline this backlog already argues for.
 
 ### Residue-specific validation gates (add to the gates below)
 

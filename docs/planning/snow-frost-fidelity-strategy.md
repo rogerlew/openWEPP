@@ -1358,9 +1358,25 @@ actionable.
    (`docs/backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md`)
    and implement a forest residue-cover representation there. Entry gate for Step 3:
    confirm `Dec_*` actually drives a seasonal `residue_depth_m` reaching the solver
-   (not only seasonal canopy/`cancov`). Any timing residual that survives a *correct*
-   seasonal residue is then the genuine frost-model item — the **`Qwet`** evaporative
-   term and the **legacy-envelope magnitude outliers** (13/43 forced-snow cases,
+   (not only seasonal canopy/`cancov`). **Executed result
+   (`20260629-frost-step3-residue-parameterization-001`): branch C.** The
+   `hubbardbrook_deciduous_nh` `Dec_4899` entry-gate run reached the frost solver
+   but emitted a flat `residue_depth_m = 0.02302585092994045 m` across `32874`
+   trace rows, with equal autumn and spring means. Therefore the existing
+   cropland-management `Dec_*` files cannot represent the forest litter insulation
+   test vehicle; promote the residue-cover backlog before rerunning Sleepers
+   timing attribution. **Root cause (Claude review, 2026-06-29):** openWEPP already
+   computes a *dynamic* surface-residue **mass** (`07_decomposition_equations.rs`,
+   `sumsrm_next = sumsrm_seed · surface_decay`; `decomposition.rs`
+   `surface_residue_kg_m2`), but `frost.runtime_residue_depth_m` is **seeded once**
+   from the legacy initial condition (`runtime_inputs/01_management.rs`) and never
+   wired to that mass — so residue depth is **static for *every* landuse**, not just
+   forests. The implementation is therefore a **missing `mass → depth → frost`
+   coupling**, not a from-scratch litter model; scope hinges on whether the `Dec_*`
+   surface-residue *mass* is already seasonal (autumn senescence input + decay) or
+   only decays from the seed. Any timing residual that survives a *correct* seasonal
+   residue is then the genuine frost-model item — the **`Qwet`** evaporative term
+   and the **legacy-envelope magnitude outliers** (13/43 forced-snow cases,
    ADR-0017 comparator context) remain the secondary candidates for that residual.
 4. **Ratify** the frost validation invariants (047/048/050: draft → accepted) once
    the harness method is exercised.

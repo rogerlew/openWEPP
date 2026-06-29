@@ -1,0 +1,153 @@
+{
+  "autumn_mean_residue_depth_m": 0.02302585092994045,
+  "first_date": "2001-01-01",
+  "first_rows": [
+    {
+      "date": "2001-01-01",
+      "residue_depth_m": 0.02302585092994045,
+      "snow_depth_m": 0.0
+    },
+    {
+      "date": "2001-01-01",
+      "residue_depth_m": 0.02302585092994045,
+      "snow_depth_m": 0.0
+    },
+    {
+      "date": "2001-01-02",
+      "residue_depth_m": 0.02302585092994045,
+      "snow_depth_m": 0.0
+    },
+    {
+      "date": "2001-01-02",
+      "residue_depth_m": 0.02302585092994045,
+      "snow_depth_m": 0.0
+    },
+    {
+      "date": "2001-01-03",
+      "residue_depth_m": 0.02302585092994045,
+      "snow_depth_m": 0.0
+    },
+    {
+      "date": "2001-01-03",
+      "residue_depth_m": 0.02302585092994045,
+      "snow_depth_m": 0.0
+    },
+    {
+      "date": "2001-01-04",
+      "residue_depth_m": 0.02302585092994045,
+      "snow_depth_m": 0.0
+    },
+    {
+      "date": "2001-01-04",
+      "residue_depth_m": 0.02302585092994045,
+      "snow_depth_m": 0.0
+    },
+    {
+      "date": "2001-01-05",
+      "residue_depth_m": 0.02302585092994045,
+      "snow_depth_m": 0.0
+    },
+    {
+      "date": "2001-01-05",
+      "residue_depth_m": 0.02302585092994045,
+      "snow_depth_m": 0.0
+    }
+  ],
+  "last_date": "2001-12-31",
+  "max_month_mean_residue_depth_m": 0.02302585092994045,
+  "max_residue_depth_m": 0.02302585092994045,
+  "mean_residue_depth_m": 0.02302585092994045,
+  "median_residue_depth_m": 0.02302585092994045,
+  "min_residue_depth_m": 0.02302585092994045,
+  "month_of_max_mean_residue_depth_m": 1,
+  "monthly": [
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 1,
+      "row_count": 2790
+    },
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 2,
+      "row_count": 2520
+    },
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 3,
+      "row_count": 2790
+    },
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 4,
+      "row_count": 2700
+    },
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 5,
+      "row_count": 2790
+    },
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 6,
+      "row_count": 2700
+    },
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 7,
+      "row_count": 2790
+    },
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 8,
+      "row_count": 2790
+    },
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 9,
+      "row_count": 2700
+    },
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 10,
+      "row_count": 2790
+    },
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 11,
+      "row_count": 2700
+    },
+    {
+      "max_residue_depth_m": 0.02302585092994045,
+      "mean_residue_depth_m": 0.02302585092994045,
+      "min_residue_depth_m": 0.02302585092994045,
+      "month": 12,
+      "row_count": 2814
+    }
+  ],
+  "row_count": 32874,
+  "spring_mean_residue_depth_m": 0.02302585092994045,
+  "trace_path": "target/frost_step3_residue_parameterization/runs/entry_gate_hubbardbrook_deciduous/frost_trace.jsonl",
+  "unique_rounded_residue_depth_count_1e6": 1
+}
