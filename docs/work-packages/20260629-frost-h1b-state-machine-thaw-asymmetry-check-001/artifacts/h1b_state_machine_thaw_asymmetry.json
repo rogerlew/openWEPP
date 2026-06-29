@@ -1,0 +1,995 @@
+{
+  "aggregate": {
+    "eligible_branch3_warm_material_days": 570,
+    "frdp_retreat_days": 497,
+    "h1b_cells_no_frdp_retreat_days": 10,
+    "h1b_cells_no_frdp_with_top_retreat_days": 10,
+    "no_frdp_retreat_days": 73,
+    "no_frdp_retreat_with_top_retreat_days": 58,
+    "no_frdp_retreat_without_top_retreat_days": 15,
+    "structural_stall_fraction_of_eligible": 0.02631578947368421
+  },
+  "determination": {
+    "named_blocking_term": "No branch guard blocks top retreat in the H1b cells. The apparent stall is the `frdp` bottom-extent detector staying fixed while branch 3 grows `thdp`, the surface-thawed cap; residual persistence is lower frozen-domain persistence, not absent top-front thaw.",
+    "ratification_route": "proceed-to-ratification-with-bounded-residual-note",
+    "rationale": "The top-down thaw path is present and branch-3 top retreat is visible in the H1b cells through `thdp` growth. True warm/material branch-3 days with neither `frdp` retreat nor `thdp` advance are rare in the full Sleepers scan.",
+    "verdict": "NARROW-EDGE"
+  },
+  "evidence_mode": "Static+Ran",
+  "generalization_scan": [
+    {
+      "by_water_year": [
+        {
+          "eligible_branch3_days": 19,
+          "frdp_retreat_days": 19,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1980
+        },
+        {
+          "eligible_branch3_days": 10,
+          "frdp_retreat_days": 10,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1981
+        },
+        {
+          "eligible_branch3_days": 17,
+          "frdp_retreat_days": 17,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1983
+        },
+        {
+          "eligible_branch3_days": 13,
+          "frdp_retreat_days": 13,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1985
+        },
+        {
+          "eligible_branch3_days": 9,
+          "frdp_retreat_days": 9,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1986
+        },
+        {
+          "eligible_branch3_days": 12,
+          "frdp_retreat_days": 12,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1987
+        },
+        {
+          "eligible_branch3_days": 9,
+          "frdp_retreat_days": 9,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1988
+        },
+        {
+          "eligible_branch3_days": 8,
+          "frdp_retreat_days": 8,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1989
+        },
+        {
+          "eligible_branch3_days": 17,
+          "frdp_retreat_days": 9,
+          "no_frdp_retreat_days": 8,
+          "no_frdp_with_top_retreat_days": 6,
+          "no_frdp_without_top_retreat_days": 2,
+          "water_year": 1990
+        },
+        {
+          "eligible_branch3_days": 20,
+          "frdp_retreat_days": 18,
+          "no_frdp_retreat_days": 2,
+          "no_frdp_with_top_retreat_days": 1,
+          "no_frdp_without_top_retreat_days": 1,
+          "water_year": 1991
+        },
+        {
+          "eligible_branch3_days": 7,
+          "frdp_retreat_days": 7,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1993
+        },
+        {
+          "eligible_branch3_days": 30,
+          "frdp_retreat_days": 15,
+          "no_frdp_retreat_days": 15,
+          "no_frdp_with_top_retreat_days": 12,
+          "no_frdp_without_top_retreat_days": 3,
+          "water_year": 1995
+        },
+        {
+          "eligible_branch3_days": 7,
+          "frdp_retreat_days": 7,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1999
+        },
+        {
+          "eligible_branch3_days": 12,
+          "frdp_retreat_days": 12,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2000
+        },
+        {
+          "eligible_branch3_days": 5,
+          "frdp_retreat_days": 5,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2003
+        },
+        {
+          "eligible_branch3_days": 5,
+          "frdp_retreat_days": 5,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2004
+        },
+        {
+          "eligible_branch3_days": 12,
+          "frdp_retreat_days": 12,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2005
+        },
+        {
+          "eligible_branch3_days": 17,
+          "frdp_retreat_days": 17,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2006
+        },
+        {
+          "eligible_branch3_days": 2,
+          "frdp_retreat_days": 2,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2007
+        },
+        {
+          "eligible_branch3_days": 3,
+          "frdp_retreat_days": 3,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2009
+        },
+        {
+          "eligible_branch3_days": 17,
+          "frdp_retreat_days": 11,
+          "no_frdp_retreat_days": 6,
+          "no_frdp_with_top_retreat_days": 5,
+          "no_frdp_without_top_retreat_days": 1,
+          "water_year": 2010
+        },
+        {
+          "eligible_branch3_days": 14,
+          "frdp_retreat_days": 10,
+          "no_frdp_retreat_days": 4,
+          "no_frdp_with_top_retreat_days": 4,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2012
+        },
+        {
+          "eligible_branch3_days": 7,
+          "frdp_retreat_days": 7,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2013
+        },
+        {
+          "eligible_branch3_days": 16,
+          "frdp_retreat_days": 10,
+          "no_frdp_retreat_days": 6,
+          "no_frdp_with_top_retreat_days": 4,
+          "no_frdp_without_top_retreat_days": 2,
+          "water_year": 2016
+        }
+      ],
+      "eligible_branch3_warm_material_days": 288,
+      "frdp_retreat_days": 247,
+      "no_frdp_retreat_days": 41,
+      "no_frdp_retreat_with_top_retreat_days": 32,
+      "no_frdp_retreat_without_top_retreat_days": 9,
+      "site_id": "site1_sleepers_south_field_vt",
+      "structural_stall_examples": [
+        {
+          "branch3_hours": 13,
+          "date": "1990-03-23",
+          "frdp_m": 0.05608179810032588,
+          "max_qsrf_w_m2": 1.6622035498061378,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 9.65357240753003,
+          "next_frdp_retreat_m": 9.908711380061941e-05,
+          "next_top_retreat_m": 5.814918646685017e-05,
+          "residue_depth_m": 0.15974113484289026,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00211831155622607,
+          "warm_branch3_hours": 13,
+          "water_year": 1990
+        },
+        {
+          "branch3_hours": 8,
+          "date": "1990-03-26",
+          "frdp_m": 0.05494668334969246,
+          "max_qsrf_w_m2": 3.5876656631149095,
+          "max_quf_w_m2": 0.4059355935066331,
+          "max_surface_temp_c": 6.026222008974957,
+          "next_frdp_retreat_m": 0.0009468613979129389,
+          "next_top_retreat_m": 0.0,
+          "residue_depth_m": 0.159739870890721,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00263002539430422,
+          "warm_branch3_hours": 8,
+          "water_year": 1990
+        },
+        {
+          "branch3_hours": 17,
+          "date": "1991-03-29",
+          "frdp_m": 0.05563752199403322,
+          "max_qsrf_w_m2": 0.7683251554048072,
+          "max_quf_w_m2": 0.9657562544421806,
+          "max_surface_temp_c": 9.401686432921341,
+          "next_frdp_retreat_m": 0.0007350483218502221,
+          "next_top_retreat_m": -0.0001384821000863601,
+          "residue_depth_m": 0.16359416698711465,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00087353042193658,
+          "warm_branch3_hours": 17,
+          "water_year": 1991
+        },
+        {
+          "branch3_hours": 17,
+          "date": "1995-01-21",
+          "frdp_m": 0.02,
+          "max_qsrf_w_m2": 0.21699908656871025,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 3.3621621182938286,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 9.394879722739169e-05,
+          "residue_depth_m": 0.18484666419794968,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.01596511595545733,
+          "warm_branch3_hours": 17,
+          "water_year": 1995
+        },
+        {
+          "branch3_hours": 7,
+          "date": "1995-01-22",
+          "frdp_m": 0.02,
+          "max_qsrf_w_m2": 0.6565811714213267,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 1.181903745776864,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 0.0,
+          "residue_depth_m": 0.1848377925073855,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.01605906475268472,
+          "warm_branch3_hours": 7,
+          "water_year": 1995
+        },
+        {
+          "branch3_hours": 17,
+          "date": "1995-03-23",
+          "frdp_m": 0.08923624201273506,
+          "max_qsrf_w_m2": 0.34221238780304364,
+          "max_quf_w_m2": 0.0081094697832031,
+          "max_surface_temp_c": 4.351496608373181,
+          "next_frdp_retreat_m": 0.0004373469045915179,
+          "next_top_retreat_m": 1.1854165975330212e-05,
+          "residue_depth_m": 0.1844246678434297,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00452126338702313,
+          "warm_branch3_hours": 17,
+          "water_year": 1995
+        },
+        {
+          "branch3_hours": 13,
+          "date": "2010-03-24",
+          "frdp_m": 0.08304272240732428,
+          "max_qsrf_w_m2": 0.6901414801576671,
+          "max_quf_w_m2": 0.16634556686396978,
+          "max_surface_temp_c": 4.354869204091045,
+          "next_frdp_retreat_m": 0.0008201372417388358,
+          "next_top_retreat_m": 0.0,
+          "residue_depth_m": 0.20972685961237456,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00874036994431079,
+          "warm_branch3_hours": 13,
+          "water_year": 2010
+        },
+        {
+          "branch3_hours": 14,
+          "date": "2016-03-18",
+          "frdp_m": 0.06526324092643115,
+          "max_qsrf_w_m2": 0.44897098574211,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 3.380938741831091,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 1.2861140996869993e-05,
+          "residue_depth_m": 0.20676209762825867,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.0001606947000036,
+          "warm_branch3_hours": 14,
+          "water_year": 2016
+        },
+        {
+          "branch3_hours": 10,
+          "date": "2016-03-22",
+          "frdp_m": 0.06526324092643115,
+          "max_qsrf_w_m2": 1.906811148981578,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 6.504569563570069,
+          "next_frdp_retreat_m": 8.145370242849947e-05,
+          "next_top_retreat_m": 0.0,
+          "residue_depth_m": 0.20675273863687854,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00102891144855216,
+          "warm_branch3_hours": 10,
+          "water_year": 2016
+        }
+      ],
+      "structural_stall_fraction_of_eligible": 0.03125,
+      "water_years_with_frdp_retreat_days": [
+        1980,
+        1981,
+        1983,
+        1985,
+        1986,
+        1987,
+        1988,
+        1989,
+        1990,
+        1991,
+        1993,
+        1995,
+        1999,
+        2000,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2009,
+        2010,
+        2012,
+        2013,
+        2016
+      ],
+      "water_years_with_structural_stall_days": [
+        1990,
+        1991,
+        1995,
+        2010,
+        2016
+      ]
+    },
+    {
+      "by_water_year": [
+        {
+          "eligible_branch3_days": 16,
+          "frdp_retreat_days": 16,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1980
+        },
+        {
+          "eligible_branch3_days": 9,
+          "frdp_retreat_days": 9,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1981
+        },
+        {
+          "eligible_branch3_days": 16,
+          "frdp_retreat_days": 16,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1983
+        },
+        {
+          "eligible_branch3_days": 10,
+          "frdp_retreat_days": 10,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1985
+        },
+        {
+          "eligible_branch3_days": 9,
+          "frdp_retreat_days": 9,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1986
+        },
+        {
+          "eligible_branch3_days": 12,
+          "frdp_retreat_days": 12,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1987
+        },
+        {
+          "eligible_branch3_days": 11,
+          "frdp_retreat_days": 11,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1988
+        },
+        {
+          "eligible_branch3_days": 7,
+          "frdp_retreat_days": 7,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1989
+        },
+        {
+          "eligible_branch3_days": 16,
+          "frdp_retreat_days": 9,
+          "no_frdp_retreat_days": 7,
+          "no_frdp_with_top_retreat_days": 5,
+          "no_frdp_without_top_retreat_days": 2,
+          "water_year": 1990
+        },
+        {
+          "eligible_branch3_days": 8,
+          "frdp_retreat_days": 8,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1991
+        },
+        {
+          "eligible_branch3_days": 6,
+          "frdp_retreat_days": 6,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1993
+        },
+        {
+          "eligible_branch3_days": 31,
+          "frdp_retreat_days": 17,
+          "no_frdp_retreat_days": 14,
+          "no_frdp_with_top_retreat_days": 12,
+          "no_frdp_without_top_retreat_days": 2,
+          "water_year": 1995
+        },
+        {
+          "eligible_branch3_days": 2,
+          "frdp_retreat_days": 2,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1998
+        },
+        {
+          "eligible_branch3_days": 5,
+          "frdp_retreat_days": 5,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 1999
+        },
+        {
+          "eligible_branch3_days": 11,
+          "frdp_retreat_days": 11,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2000
+        },
+        {
+          "eligible_branch3_days": 1,
+          "frdp_retreat_days": 1,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2002
+        },
+        {
+          "eligible_branch3_days": 2,
+          "frdp_retreat_days": 2,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2003
+        },
+        {
+          "eligible_branch3_days": 3,
+          "frdp_retreat_days": 3,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2004
+        },
+        {
+          "eligible_branch3_days": 10,
+          "frdp_retreat_days": 10,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2005
+        },
+        {
+          "eligible_branch3_days": 14,
+          "frdp_retreat_days": 14,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2006
+        },
+        {
+          "eligible_branch3_days": 1,
+          "frdp_retreat_days": 1,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2007
+        },
+        {
+          "eligible_branch3_days": 15,
+          "frdp_retreat_days": 11,
+          "no_frdp_retreat_days": 4,
+          "no_frdp_with_top_retreat_days": 4,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2010
+        },
+        {
+          "eligible_branch3_days": 11,
+          "frdp_retreat_days": 9,
+          "no_frdp_retreat_days": 2,
+          "no_frdp_with_top_retreat_days": 2,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2012
+        },
+        {
+          "eligible_branch3_days": 5,
+          "frdp_retreat_days": 5,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2013
+        },
+        {
+          "eligible_branch3_days": 10,
+          "frdp_retreat_days": 9,
+          "no_frdp_retreat_days": 1,
+          "no_frdp_with_top_retreat_days": 1,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2016
+        },
+        {
+          "eligible_branch3_days": 4,
+          "frdp_retreat_days": 4,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2020
+        },
+        {
+          "eligible_branch3_days": 15,
+          "frdp_retreat_days": 15,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2021
+        },
+        {
+          "eligible_branch3_days": 19,
+          "frdp_retreat_days": 15,
+          "no_frdp_retreat_days": 4,
+          "no_frdp_with_top_retreat_days": 2,
+          "no_frdp_without_top_retreat_days": 2,
+          "water_year": 2022
+        },
+        {
+          "eligible_branch3_days": 3,
+          "frdp_retreat_days": 3,
+          "no_frdp_retreat_days": 0,
+          "no_frdp_with_top_retreat_days": 0,
+          "no_frdp_without_top_retreat_days": 0,
+          "water_year": 2024
+        }
+      ],
+      "eligible_branch3_warm_material_days": 282,
+      "frdp_retreat_days": 250,
+      "no_frdp_retreat_days": 32,
+      "no_frdp_retreat_with_top_retreat_days": 26,
+      "no_frdp_retreat_without_top_retreat_days": 6,
+      "site_id": "site2_sleepers_w9_hardwood_vt",
+      "structural_stall_examples": [
+        {
+          "branch3_hours": 12,
+          "date": "1990-03-21",
+          "frdp_m": 0.07119046251863095,
+          "max_qsrf_w_m2": 0.914601053055862,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 3.2532903298456874,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 0.0,
+          "residue_depth_m": 0.15454898875979808,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00302179524415287,
+          "warm_branch3_hours": 12,
+          "water_year": 1990
+        },
+        {
+          "branch3_hours": 7,
+          "date": "1990-03-26",
+          "frdp_m": 0.07042512206996726,
+          "max_qsrf_w_m2": 3.6715511455806977,
+          "max_quf_w_m2": 0.5322760627065759,
+          "max_surface_temp_c": 4.924598828941801,
+          "next_frdp_retreat_m": 0.0005734054794571258,
+          "next_top_retreat_m": 0.0,
+          "residue_depth_m": 0.1545262257077346,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00356024920425037,
+          "warm_branch3_hours": 7,
+          "water_year": 1990
+        },
+        {
+          "branch3_hours": 15,
+          "date": "1995-01-21",
+          "frdp_m": 0.02,
+          "max_qsrf_w_m2": 0.3347502893847538,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 2.8853092332631367,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": -0.00064458692471577,
+          "residue_depth_m": 0.1791914771167182,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.01289814602497016,
+          "warm_branch3_hours": 15,
+          "water_year": 1995
+        },
+        {
+          "branch3_hours": 5,
+          "date": "1995-01-22",
+          "frdp_m": 0.02,
+          "max_qsrf_w_m2": 0.8155282362313999,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 0.6973807449794742,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": -0.0031654147810879912,
+          "residue_depth_m": 0.1791844397235241,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.01225355910025439,
+          "warm_branch3_hours": 5,
+          "water_year": 1995
+        },
+        {
+          "branch3_hours": 18,
+          "date": "2022-03-21",
+          "frdp_m": 0.12299397673413551,
+          "max_qsrf_w_m2": 0.278130964884839,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 5.8798364724219985,
+          "next_frdp_retreat_m": 1.3877787807814457e-17,
+          "next_top_retreat_m": 2.7905842568390002e-05,
+          "residue_depth_m": 0.2047568413479883,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00030841526302155,
+          "warm_branch3_hours": 18,
+          "water_year": 2022
+        },
+        {
+          "branch3_hours": 12,
+          "date": "2022-03-23",
+          "frdp_m": 0.12291006117330688,
+          "max_qsrf_w_m2": 2.0709867786133933,
+          "max_quf_w_m2": 0.16838998298382574,
+          "max_surface_temp_c": 10.50337923688111,
+          "next_frdp_retreat_m": 0.0001998144087110021,
+          "next_top_retreat_m": 0.0,
+          "residue_depth_m": 0.2047446504097311,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00071304110431363,
+          "warm_branch3_hours": 12,
+          "water_year": 2022
+        }
+      ],
+      "structural_stall_fraction_of_eligible": 0.02127659574468085,
+      "water_years_with_frdp_retreat_days": [
+        1980,
+        1981,
+        1983,
+        1985,
+        1986,
+        1987,
+        1988,
+        1989,
+        1990,
+        1991,
+        1993,
+        1995,
+        1998,
+        1999,
+        2000,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2010,
+        2012,
+        2013,
+        2016,
+        2020,
+        2021,
+        2022,
+        2024
+      ],
+      "water_years_with_structural_stall_days": [
+        1990,
+        1995,
+        2022
+      ]
+    }
+  ],
+  "h1b_cells": [
+    {
+      "blocking_term": "none: branch 3 grows thdp while frdp bottom extent remains fixed",
+      "branch3_warm_material_days": 6,
+      "cell_id": "site2_sleepers_w9_hardwood_vt:1995:thaw",
+      "evidence_days": [
+        {
+          "branch3_hours": 24,
+          "date": "1995-03-15",
+          "frdp_m": 0.13685475605808725,
+          "max_qsrf_w_m2": 0.0,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 19.539221349279888,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 0.00215634962342215,
+          "residue_depth_m": 0.1789913719129368,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00308944451744856,
+          "warm_branch3_hours": 24,
+          "water_year": 1995
+        },
+        {
+          "branch3_hours": 24,
+          "date": "1995-03-16",
+          "frdp_m": 0.13685475605808725,
+          "max_qsrf_w_m2": 0.0,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 12.762755100420321,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 0.0012614227574340997,
+          "residue_depth_m": 0.17895509314779157,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00524579414087071,
+          "warm_branch3_hours": 24,
+          "water_year": 1995
+        },
+        {
+          "branch3_hours": 22,
+          "date": "1995-03-17",
+          "frdp_m": 0.13685475605808725,
+          "max_qsrf_w_m2": 0.04418019596909983,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 7.857249139786416,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 0.0004090040336880204,
+          "residue_depth_m": 0.1789303672936267,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00650721689830481,
+          "warm_branch3_hours": 22,
+          "water_year": 1995
+        },
+        {
+          "branch3_hours": 14,
+          "date": "1995-03-18",
+          "frdp_m": 0.13685475605808725,
+          "max_qsrf_w_m2": 0.4891598265376738,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 3.6203935920239516,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 0.0016168049523812003,
+          "residue_depth_m": 0.1789176173896636,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00691622093199283,
+          "warm_branch3_hours": 14,
+          "water_year": 1995
+        },
+        {
+          "branch3_hours": 15,
+          "date": "1995-03-19",
+          "frdp_m": 0.13685475605808725,
+          "max_qsrf_w_m2": 1.4638736270205137,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 14.305598424302737,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 0.0014404229713780598,
+          "residue_depth_m": 0.17889729507432897,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00853302588437403,
+          "warm_branch3_hours": 15,
+          "water_year": 1995
+        },
+        {
+          "branch3_hours": 16,
+          "date": "1995-03-20",
+          "frdp_m": 0.13685475605808725,
+          "max_qsrf_w_m2": 1.0110493132715286,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 11.60186340319697,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 0.0020157608517605494,
+          "residue_depth_m": 0.1788725772060041,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00997344885575209,
+          "warm_branch3_hours": 16,
+          "water_year": 1995
+        }
+      ],
+      "max_frdp_m": 0.13685475605808725,
+      "max_snow_depth_m": 0.44522985490716027,
+      "max_surface_temp_c": 19.539221349279888,
+      "max_thdp_m": 0.00997344885575209,
+      "median_snow_depth_m": 0.1362759656904619,
+      "modeled_thaw_date": "1995-03-20",
+      "no_frdp_retreat_days": 6,
+      "no_frdp_retreat_with_top_retreat_days": 6,
+      "no_frdp_retreat_without_top_retreat_days": 0,
+      "observed_thaw_date": "1995-03-02",
+      "site_id": "site2_sleepers_w9_hardwood_vt",
+      "snow_route": "MIXED-SNOW-CONTROL",
+      "thaw_residual_days": 18,
+      "thdp_gain_over_window_m": 0.00997344885575209,
+      "warm_material_days": 6,
+      "water_year": 1995,
+      "window_days": 19
+    },
+    {
+      "blocking_term": "none: branch 3 grows thdp while frdp bottom extent remains fixed",
+      "branch3_warm_material_days": 6,
+      "cell_id": "site2_sleepers_w9_hardwood_vt:2010:thaw",
+      "evidence_days": [
+        {
+          "branch3_hours": 19,
+          "date": "2010-03-19",
+          "frdp_m": 0.1058136925231759,
+          "max_qsrf_w_m2": 0.6091111024164346,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 21.936430046977815,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 0.0029306075061004094,
+          "residue_depth_m": 0.20825071315729218,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00341712909807117,
+          "warm_branch3_hours": 19,
+          "water_year": 2010
+        },
+        {
+          "branch3_hours": 21,
+          "date": "2010-03-20",
+          "frdp_m": 0.1058136925231759,
+          "max_qsrf_w_m2": 0.3373746878209724,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 18.38909003781743,
+          "next_frdp_retreat_m": 0.0,
+          "next_top_retreat_m": 0.0010250941526367807,
+          "residue_depth_m": 0.2081958437157634,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00634773660417158,
+          "warm_branch3_hours": 21,
+          "water_year": 2010
+        },
+        {
+          "branch3_hours": 14,
+          "date": "2010-03-21",
+          "frdp_m": 0.1058136925231759,
+          "max_qsrf_w_m2": 0.9575901146538246,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 8.90088362671274,
+          "next_frdp_retreat_m": 1.3877787807814457e-17,
+          "next_top_retreat_m": 0.0013661731063315504,
+          "residue_depth_m": 0.20818100846419016,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00737283075680836,
+          "warm_branch3_hours": 14,
+          "water_year": 2010
+        },
+        {
+          "branch3_hours": 17,
+          "date": "2010-03-22",
+          "frdp_m": 0.10581369252317589,
+          "max_qsrf_w_m2": 0.5656473718305026,
+          "max_quf_w_m2": 0.0,
+          "max_surface_temp_c": 10.825186741789876,
+          "next_frdp_retreat_m": 0.0003132105023788967,
+          "next_top_retreat_m": 0.0008709644138343593,
+          "residue_depth_m": 0.20816042424250011,
+          "snow_depth_m": 0.0,
+          "thdp_m": 0.00873900386313991,
+          "warm_branch3_hours": 17,
+          "water_year": 2010
+        }
+      ],
+      "max_frdp_m": 0.1058136925231759,
+      "max_snow_depth_m": 0.7048336639289843,
+      "max_surface_temp_c": 21.936430046977815,
+      "max_thdp_m": 0.00989751151595609,
+      "median_snow_depth_m": 0.5351900054790975,
+      "modeled_thaw_date": "2010-03-24",
+      "no_frdp_retreat_days": 4,
+      "no_frdp_retreat_with_top_retreat_days": 4,
+      "no_frdp_retreat_without_top_retreat_days": 0,
+      "observed_thaw_date": "2010-02-02",
+      "site_id": "site2_sleepers_w9_hardwood_vt",
+      "snow_route": "SNOW-BURIED-UNDER-MELT",
+      "thaw_residual_days": 50,
+      "thdp_gain_over_window_m": 0.00989751151595609,
+      "warm_material_days": 6,
+      "water_year": 2010,
+      "window_days": 51
+    }
+  ],
+  "schema": "frost-h1b-state-machine-thaw-asymmetry-v1",
+  "source": {
+    "detector_note": "The prior thaw-date detector is based on modeled frdp > 0.0; this diagnostic also tracks thdp because branch-3 top retreat can grow a thawed cap while frdp, the bottom frozen extent, stays unchanged.",
+    "prior_thaw_residual_buckets": "docs/work-packages/20260629-frost-thaw-residual-diagnostic-001/artifacts/thaw_residual_buckets.json",
+    "run_root": "target/frost_step3_residue_parameterization/runs",
+    "state_machine_static_code": {
+      "branch_3_driver": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling/frost_entry.rs:1846-1904",
+      "branch_selection": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling/frost.rs:1711-1743",
+      "top_thaw_resistance_feedback": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling/frost.rs:1654-1702",
+      "top_thaw_step": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling/frost.rs:1582-1650",
+      "trace_writer": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling/frost_entry.rs:216-408"
+    }
+  },
+  "static_code_read": {
+    "classification": "PRESENT",
+    "entry_guards": [
+      "branch 3 requires positive signed surface flux over material frost",
+      "`thaw_fine_top_with_resistance_feedback` returns early when surface_temp_c <= 0",
+      "`top_flux_w_m2 = surface_temp_c / thaw_surface_heat_path(...)` must be positive",
+      "a fine layer must contain frozen depth and ice mass before `thaw_fine_top_step` consumes energy"
+    ],
+    "important_metric_distinction": "`frdp` is the bottom extent of the frozen domain. `thdp` is the thawed surface cap above a frozen segment. Top-front retreat may increase `thdp` without reducing `frdp` on the same day.",
+    "summary": "A top-down thaw path exists. `select_frost_branch` chooses branch 3 when signed surface flux is positive over an existing frozen column, `apply_active_frost_thaw_step` calls `thaw_fine_top_with_resistance_feedback`, and `thaw_fine_top_step` reduces fine-layer `slfsd_m`/`slsic_m` from the surface downward."
+  },
+  "thresholds": {
+    "frdp_retreat_epsilon_m": 0.001,
+    "material_frost_m": 0.02,
+    "status": "diagnostic-only constants inherited from prior analysis or used only for trace sensitivity; not production thresholds",
+    "top_retreat_epsilon_m": 0.0001
+  }
+}

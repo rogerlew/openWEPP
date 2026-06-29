@@ -1409,11 +1409,43 @@ actionable.
    package anchors it to frost-tube observation protocol rather than these
    residuals; `Qwet` is limited to the snow-free persistent subset, and H1b
    top-retreat/state-machine work is secondary.
-5. **Ratify** the frost validation invariants (047/048/050: draft → accepted) once
+5. **Decompose snow-buried thaw persistence by observed-vs-modeled ablation
+   rate** — complete in
+   `docs/work-packages/20260629-frost-snow-persistence-decomposition-001/`.
+   Result: `EXECUTED-COMPLETE-DIAGNOSTIC-SPARSE-OBS-NO-UNDER-MELT`. The
+   diagnostic consumed the `7` snow-buried thaw-late cells plus the buried
+   portions of `2` mixed cells, paired Sleepers observed snow-depth rows, and
+   post-residue Step 3 WAT outputs. Using the existing snow-program ablation-rate
+   discriminator (paired intervals <= `45 d`, observed depth loss >= `0.05 m`,
+   modeled loss deficit > `max(0.05 m, 0.3 * observed_loss)`), the cells route
+   to `8` `INCONCLUSIVE-SPARSE-OBS`, `1`
+   `OVER-ACCUMULATION-FORCING-LIMITED`, and `0`
+   `SPRING-UNDER-MELT-FIXABLE`. The Sleepers frost thaw-late residual therefore
+   does **not** establish a shared spring-under-melt defect with the
+   SNOWDENSITY-10.3.8/10.3.10 spring-melt lineage. Do not promote a snow
+   melt-rate fix from these cells alone; carry the snow-buried cells as sparse
+   snow-persistence uncertainty / forcing-limited evidence, and keep `Qwet`
+   limited to the two snow-free persistent cells.
+6. **Check H1b state-machine thaw asymmetry before ratification** — complete in
+   `docs/work-packages/20260629-frost-h1b-state-machine-thaw-asymmetry-check-001/`.
+   Result: `EXECUTED-COMPLETE-DIAGNOSTIC-NARROW-EDGE`. Static code reading
+   classifies the top-down thaw path as `PRESENT`: positive surface thaw selects
+   branch 3, which calls `thaw_fine_top_with_resistance_feedback` and reduces
+   surface fine-layer frozen depth/ice from the top downward. The two prior H1b
+   W9 cells are not structural top-thaw failures: all no-`frdp`-retreat
+   warm/material days in the cell windows show `thdp` growth, so branch 3 is
+   creating a surface-thawed cap while `frdp` remains fixed as the bottom extent
+   of the frozen domain. Full Sleepers prevalence scan found `570` branch-3
+   warm/material days, `497` with next-day `frdp` retreat, `58` with no `frdp`
+   retreat but `thdp` advance, and only `15` (`0.026`) with neither retreat.
+   H1b is therefore not a structural state-machine blocker for ratification.
+   `GAP-SNOWFREEZE-002` remains open for the sparse snow-persistence uncertainty
+   and the two snow-free wet-heat/Qwet candidates.
+7. **Ratify** the frost validation invariants (047/048/050: draft → accepted) once
    the harness method is exercised.
-6. **Frost-default activation** once `GAP-SNOWFREEZE-002` closes against observations
+8. **Frost-default activation** once `GAP-SNOWFREEZE-002` closes against observations
    (currently opt-in-direct only).
-7. *(deferred)* R7G consumer cutover / `DirectFrostRunoffSurface` deletion — not a
+9. *(deferred)* R7G consumer cutover / `DirectFrostRunoffSurface` deletion — not a
    validation prerequisite.
 
 ## 12. References / Authority

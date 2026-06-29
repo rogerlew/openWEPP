@@ -13,6 +13,39 @@
 
 State as of `2026-06-29`:
 
+- `20260629-frost-h1b-state-machine-thaw-asymmetry-check-001/` is complete as
+  FROST H1b STATE-MACHINE THAW-ASYMMETRY CHECK. Result:
+  `EXECUTED-COMPLETE-DIAGNOSTIC-NARROW-EDGE`. It consumed the post-residue
+  Sleepers R7G frost traces, the Step 3 seasonal WAT outputs, and the prior
+  thaw-residual H1b cells (`site2_sleepers_w9_hardwood_vt:1995:thaw` and
+  `site2_sleepers_w9_hardwood_vt:2010:thaw`). Static code reading classifies the
+  top-down thaw path as present: positive surface thaw selects branch 3, which
+  calls `thaw_fine_top_with_resistance_feedback` and reduces surface fine-layer
+  frozen depth/ice. The two H1b cells are not structural top-thaw failures:
+  every no-`frdp`-retreat warm/material day in the cell windows shows `thdp`
+  growth, so branch 3 is creating a surface-thawed cap while `frdp` remains the
+  bottom extent of the frozen domain. Full Sleepers prevalence scan found `570`
+  branch-3 warm/material days, `497` with next-day `frdp` retreat, `58` with no
+  `frdp` retreat but `thdp` advance, and only `15` (`0.026`) with neither
+  retreat. `GAP-SNOWFREEZE-002` remains open for snow-persistence uncertainty
+  and the snow-free wet-heat/Qwet subset, but H1b is not a ratification blocker.
+  No solver, state-machine, contract, detector, fixture, default, or schema
+  change was made.
+- `20260629-frost-snow-persistence-decomposition-001/` is complete as FROST
+  SNOW-PERSISTENCE DECOMPOSITION. Result:
+  `EXECUTED-COMPLETE-DIAGNOSTIC-SPARSE-OBS-NO-UNDER-MELT`. It consumed the
+  snow-buried thaw-late cells from
+  `20260629-frost-thaw-residual-diagnostic-001/`, paired Sleepers observed
+  snow-depth rows, and the post-residue Step 3 seasonal WAT outputs. The `9`
+  scoped cells (`7` snow-buried plus the buried portions of `2` mixed cells)
+  route to `8` `INCONCLUSIVE-SPARSE-OBS`, `1`
+  `OVER-ACCUMULATION-FORCING-LIMITED`, and `0`
+  `SPRING-UNDER-MELT-FIXABLE`. The diagnostic therefore does **not** establish
+  that the Sleepers frost thaw-late residual unifies with the
+  SNOWDENSITY-10.3.8/10.3.10 spring-melt residual. `GAP-SNOWFREEZE-002`
+  remains open; do not promote a snow melt-rate fix from these cells alone, and
+  keep `Qwet` limited to the two snow-free persistent cells. No melt-model,
+  snow-model, frost-model, contract, fixture, default, or schema change was made.
 - `20260629-frost-thaw-residual-diagnostic-001/` is complete as FROST
   THAW-RESIDUAL DIAGNOSTIC. Result:
   `EXECUTED-COMPLETE-DIAGNOSTIC-SNOW-BURIED-DOMINANT`. It consumed the post-residue

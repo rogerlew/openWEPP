@@ -1,0 +1,3 @@
+cell_id,water_year,thaw_residual_days,warm_material_days,branch3_warm_material_days,no_frdp_retreat_days,no_frdp_retreat_with_top_retreat_days,no_frdp_retreat_without_top_retreat_days,max_frdp_m,max_thdp_m,thdp_gain_over_window_m,blocking_term
+site2_sleepers_w9_hardwood_vt:1995:thaw,1995,18,6,6,6,6,0,0.13685475605808725,0.00997344885575209,0.00997344885575209,none: branch 3 grows thdp while frdp bottom extent remains fixed
+site2_sleepers_w9_hardwood_vt:2010:thaw,2010,50,6,6,4,4,0,0.1058136925231759,0.00989751151595609,0.00989751151595609,none: branch 3 grows thdp while frdp bottom extent remains fixed
