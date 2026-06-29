@@ -2,18 +2,15 @@
 
 ## Status
 
-- `state`: **active program candidate** — the two prerequisites are now met: the
-  `openwepp-meteorology` surface energy balance is built (Paradigm 2 **Stage 0**),
-  and the snow-side meltwater-temperature **source** is delivered as a typed flux
-  (Paradigm 2 **Stage 3-decouple**, the snow-neutral water-temperature arm). Stream
-  water temperature is the next watershed-side program. **Lead entry investigation
-  (operator, 2026-06-29): determine whether hourly water + temperature can be
-  serialized across the HBP shard and consumed by the `openwepp-cli-watershed` CLI
-  for in-stream routing** — the concrete form of design decision 2; it gates both
-  this program and the Paradigm-2 multilayer promotion (what that promotion
-  serializes). See the lead-investigation section below.
-- `date`: 2026-06-27 (created); 2026-06-29 (elevated to active program candidate +
-  serialization determination, Claude Code)
+- `state`: **breadcrumb (deferred — not being planned now).** The prerequisites are
+  met: the `openwepp-meteorology` surface energy balance is built (Paradigm 2
+  Stage 0), and the snow-side meltwater-temperature **source** is delivered as a
+  typed flux (Paradigm 2 Stage 3-decouple). So it is ready to pick up when stream
+  temperature is prioritized. **Open question to settle when picked up: can hourly
+  water + temperature be serialized across the HBP shard and consumed by the
+  `openwepp-cli-watershed` CLI for in-stream routing?**
+- `date`: 2026-06-27 (created); 2026-06-29 (prerequisites met; left as a breadcrumb,
+  Claude Code)
 - `relates`:
   [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md)
   (contract-first new physics),
@@ -66,35 +63,14 @@ canopy attenuation that shades snowmelt shades the stream. The leverage is two
    painful path. This is contract-first: a new `SC-*` for **thermal transport**
    (conservation of thermal energy advected with the water mass).
 
-## Lead investigation — hourly water + temperature serialization to the watershed CLI
+## When picked up — the key open question
 
-The first concrete step (and the gate for the Paradigm-2 multilayer promotion that
-follows): determine the **feasibility and resolution** of carrying water +
-temperature across the subprocess boundary to the watershed CLI.
-
-- **What the watershed CLI consumes.** `openwepp-cli-watershed` routes over completed
-  per-hillslope HBP shards. In-stream temperature needs each hillslope's exported
-  water **fluxes** plus their **temperatures** at the routing timestep.
-- **Resolution question (the crux): hourly vs daily.** The HBP boundary today is
-  **daily** (per-day rows). Diurnal stream temperature wants **hourly** water +
-  temperature — but that is ~24× the per-flux data crossing the HBP, and the hourly
-  intensity is **CLIGEN-stochastic** (strategy §10.2 item 6 / paradigm2 spec §1.1),
-  so diurnal stream temperature would be **forcing-limited** while daily/seasonal
-  aggregates stay forcing-robust. Decide hourly-vs-daily against that
-  fidelity-vs-cost-vs-forcing tradeoff.
-- **Serialization feasibility.** Can the HBP shard schema (ADR-0019 output surface)
-  carry per-flux hourly water + a typed temperature, and can the watershed routing
-  timestep actually consume it — or does the watershed route daily, making daily
-  serialization sufficient?
-- **The typed-flux-temperature boundary (design decision 2, now concrete).** The
-  meltwater-temperature source already exists as a typed flux (Stage 3-decouple);
-  this settles whether/how it — plus the lateral / baseflow / surface-runoff / rain
-  source temperatures — serialize to the HBP and are **mass-weighted-mixed** at
-  confluence in the watershed.
-- **Output:** a feasibility determination (hourly serializable + watershed-consumable
-  — yes/no, at what resolution) + the HBP boundary decision. This **feeds the
-  multilayer promotion** (whether it serializes hourly or daily water + temperature)
-  and the eventual `SC-*` thermal-transport contract.
+Settle whether **hourly water + temperature can be serialized across the HBP shard
+and consumed by the `openwepp-cli-watershed` CLI** for in-stream routing — the
+concrete form of design decision 2 (hourly-vs-daily resolution, HBP-schema
+feasibility under ADR-0019, the typed-flux-temperature boundary, mass-weighted
+confluence mixing). The snow-side meltwater-temperature source already exists as a
+typed flux (Stage 3-decouple). Not planned further here — breadcrumb only.
 
 ## Architecture landing (fits the subprocess-per-hillslope model)
 
