@@ -53,14 +53,33 @@ water-temperature arm)** — gated on physical correctness + conservation + snow
 no-regress + the dry-site signature where it *can* register — **not** a default
 promotion contingent on a rubric win it cannot achieve for forcing reasons.
 
-## Why it is worth it
+## Why it is worth it — the streamflow / ET-tuning case (stronger than fidelity)
 
 Sublimation is a recognized, important snow process (10–40% of snowfall in some
-environments) that the bulk model lacks entirely — **desirable to end users** (snow
-hydrology). Like water temperature, it is a capability/fidelity improvement valued
-for physical correctness even where the forcing-robust rubric cannot fully validate
-the magnitude.
+environments) the bulk model lacks entirely. But the **strongest** argument is a
+water-balance one (operator, 2026-06-29): **users currently calibrate by inflating
+ET to reduce over-predicted runoff.** A sublimating snowpack removes water
+(SWE → vapor) that would otherwise become melt → runoff — i.e. it does
+**physically** what the ET tuning fakes. So physical sublimation could **improve
+streamflow estimates and reduce the need for the ET calibration fudge** — physics
+replacing a tuning knob.
+
+This **shifts the validation target**: the payoff registers in **gauged streamflow /
+the snow-season runoff bias** — the actual, *observed* calibration target — rather
+than only the forcing-limited snow SWE magnitude. That substantially weakens the
+"magnitude is forcing-limited so the rubric can't reward it" caveat above and moves
+sublimation from a fidelity nicety toward a **defect-shaped streamflow improvement**.
+
+**Cautions (so it does not become the next fudge):** parameterize sublimation from
+**physics** (VPD/wind via the surface energy balance), **never fit it to
+streamflow** — replacing the ET knob with a sublimation knob is the same fudge in
+new clothes. And **diagnose first** that the over-predicted runoff is actually
+*snowmelt-driven* (sublimation-addressable) rather than an ET-kernel or
+infiltration/runoff-partition issue (cf. the H2637 runoff/lateral-magnitude arc); it
+is snow-catchment-specific.
 
 ## Sequence
 
-After frost. Breadcrumb only — not planned further here.
+Sequenced after frost. The streamflow/ET-tuning relevance above could justify
+**revisiting this sequence** (it is more defect-shaped than a fidelity nicety); left
+after frost unless reprioritized. Breadcrumb only — not planned further here.
