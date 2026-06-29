@@ -38,7 +38,7 @@ fn assert_contains(haystack: &str, needle: &str, context: &str) {
 fn contract_and_package_bind_liquid_holding_capacity_candidate() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 107",
+        "contract_version: 108",
         "REF-SNOWFREEZE-MARKS1998-LIQUID-CAPACITY",
         "REF-SNOWFREEZE-ANDERSON1976-LIQUID",
         "REF-SNOWFREEZE-SNOW17-PLWHC",
@@ -103,6 +103,7 @@ fn low_density_capacity_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitio
         coe_boundary_settle_day_count: 4.0,
         snow_albedo_model: None,
         snow_albedo_state: None,
+        snow_layers: Vec::new(),
         underlying_surface_albedo: 0.2,
         hourly,
     }
@@ -111,11 +112,11 @@ fn low_density_capacity_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitio
 #[test]
 fn opt_in_retains_liquid_to_capacity_and_routes_excess() {
     let legacy = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        low_density_capacity_inputs(SnowMeltModel::LegacyCoe),
+        &low_density_capacity_inputs(SnowMeltModel::LegacyCoe),
     )
     .expect("legacy CoE melt should compute");
     let candidate = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        low_density_capacity_inputs(SnowMeltModel::CoeLiquidHoldingCapacityV1),
+        &low_density_capacity_inputs(SnowMeltModel::CoeLiquidHoldingCapacityV1),
     )
     .expect("capacity candidate should compute");
 

@@ -367,7 +367,7 @@
             "{helper} must read prior direct snowpack from DirectWinterColumnState"
         );
         assert!(
-            source.contains("snow_state_projected: authority.snow_frost.snow_state_projected(snow_lane_state)"),
+            source.contains("snow_state_projected: authority.snow_frost.snow_state_projected(&snow_lane_state)"),
             "{helper} must derive projection status from controls plus winter-column snow state"
         );
     }

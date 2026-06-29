@@ -27,7 +27,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_stage_b_unlock_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 107",
+        "contract_version: 108",
         "REF-SNOWFREEZE-SNOWDENSITY1020",
         "REF-SNOWFREEZE-LIBSNOBAL-CC0",
         "INV-SNOWFREEZE-076",
@@ -78,11 +78,11 @@ fn stage_b_selector_is_opt_in_and_no_user_surface_is_added() {
 #[test]
 fn stage_b_surface_temperature_gate_reduces_stage_a_sublimation_without_liquid_routing() {
     let stage_a = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        dry_windy_open_inputs(SnowMeltModel::CoeOpenSublimationStageAV1),
+        &dry_windy_open_inputs(SnowMeltModel::CoeOpenSublimationStageAV1),
     )
     .expect("Stage A should compute");
     let stage_b = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        dry_windy_open_inputs(SnowMeltModel::CoeOpenSublimationStageBV1),
+        &dry_windy_open_inputs(SnowMeltModel::CoeOpenSublimationStageBV1),
     )
     .expect("Stage B should compute");
 
@@ -191,6 +191,7 @@ fn dry_windy_open_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitionInput
         coe_boundary_settle_day_count: 30.0,
         snow_albedo_model: None,
         snow_albedo_state: None,
+        snow_layers: Vec::new(),
         underlying_surface_albedo: 0.2,
         hourly,
     }

@@ -717,11 +717,12 @@ fn simulate_coe_melt(
             coe_boundary_settle_day_count: runtime_settle_day_count,
             snow_albedo_model: model.snow_albedo_model(),
             snow_albedo_state,
+            snow_layers: Vec::new(),
             underlying_surface_albedo: DEFAULT_UNDERLYING_SURFACE_ALBEDO,
             hourly: day.hourly,
         };
         let partition = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-            inputs,
+            &inputs,
         )
         .map_err(|error| SnowbenchError::InvalidForcing {
             detail: format!(

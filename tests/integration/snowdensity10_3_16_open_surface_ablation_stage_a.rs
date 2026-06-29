@@ -36,7 +36,7 @@ fn assert_contains(text: &str, marker: &str, path: &str) {
 fn contract_and_package_bind_stage_a_without_activation() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 107",
+        "contract_version: 108",
         "REF-SNOWFREEZE-MARKS1998-TURBULENT",
         "REF-SNOWFREEZE-MARKS1999-SUBLIMATION",
         "snow_sublimation",
@@ -97,6 +97,7 @@ fn dry_windy_open_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitionInput
         coe_boundary_settle_day_count: 30.0,
         snow_albedo_model: None,
         snow_albedo_state: None,
+        snow_layers: Vec::new(),
         underlying_surface_albedo: 0.2,
         hourly,
     }
@@ -105,11 +106,11 @@ fn dry_windy_open_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitionInput
 #[test]
 fn stage_a_exports_vapor_without_routing_it_as_liquid() {
     let base = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        dry_windy_open_inputs(SnowMeltModel::CoeLiquidHoldingCapacityV1),
+        &dry_windy_open_inputs(SnowMeltModel::CoeLiquidHoldingCapacityV1),
     )
     .expect("activated capacity model should compute");
     let candidate = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        dry_windy_open_inputs(SnowMeltModel::CoeOpenSublimationStageAV1),
+        &dry_windy_open_inputs(SnowMeltModel::CoeOpenSublimationStageAV1),
     )
     .expect("Stage A sublimation candidate should compute");
 

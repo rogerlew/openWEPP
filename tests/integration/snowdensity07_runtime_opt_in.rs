@@ -27,7 +27,7 @@ fn read(path: &str) -> String {
 fn snowdensity07_contract_and_package_bind_runtime_opt_in_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 107",
+        "contract_version: 108",
         "INV-SNOWFREEZE-060",
         "OBL-SNOWFREEZE-P-035",
         "snow_density_model",
@@ -86,6 +86,7 @@ fn cold_pack_inputs(model: SnowDensityModel) -> DirectActiveSnowPartitionInputs 
         coe_boundary_settle_day_count: 4.0,
         snow_albedo_model: None,
         snow_albedo_state: None,
+        snow_layers: Vec::new(),
         underlying_surface_albedo: 0.2,
         hourly,
     }
@@ -94,11 +95,11 @@ fn cold_pack_inputs(model: SnowDensityModel) -> DirectActiveSnowPartitionInputs 
 #[test]
 fn snowdensity07_opt_in_changes_only_runtime_density_depth_surface() {
     let legacy = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        cold_pack_inputs(SnowDensityModel::LegacyWepp),
+        &cold_pack_inputs(SnowDensityModel::LegacyWepp),
     )
     .expect("legacy density path should compute");
     let opt_in = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        cold_pack_inputs(SnowDensityModel::PhysicsBulkDensityCompactionV1),
+        &cold_pack_inputs(SnowDensityModel::PhysicsBulkDensityCompactionV1),
     )
     .expect("opt-in density path should compute");
 
@@ -144,7 +145,7 @@ fn snowdensity07_opt_in_changes_only_runtime_density_depth_surface() {
 #[test]
 fn snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge() {
     let opt_in = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        cold_pack_inputs(SnowDensityModel::PhysicsBulkDensityCompactionV1),
+        &cold_pack_inputs(SnowDensityModel::PhysicsBulkDensityCompactionV1),
     )
     .expect("opt-in density path should compute");
     let identity =
@@ -172,6 +173,7 @@ fn snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge() {
         liquid_water_retained_after_m: opt_in.liquid_water_retained_after_m,
         liquid_water_released_m: opt_in.liquid_water_released_m,
         snow_albedo_state_after: opt_in.snow_albedo_state_after,
+        snow_layers_after: opt_in.snow_layers_after.clone(),
     };
 
     let report = day

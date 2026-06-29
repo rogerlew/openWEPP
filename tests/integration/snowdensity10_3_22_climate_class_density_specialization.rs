@@ -37,7 +37,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_source_verified_climate_class_candidate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 107",
+        "contract_version: 108",
         "physics_bulk_climate_class_density_v1",
         "snow_climate_class",
         "sturm1995_climate_normals",
@@ -132,7 +132,7 @@ fn sturm2010_density_parameters_are_explicit_and_ephemeral_fails_closed() {
 
 #[test]
 fn climate_class_candidate_requires_authoritative_operands_and_conserves_when_explicit() {
-    let missing_class = update_snow_density_runtime_state(climate_inputs(None, Some(100.0)))
+    let missing_class = update_snow_density_runtime_state(&climate_inputs(None, Some(100.0)))
         .expect_err("candidate should require class assignment");
     assert_contains(
         &missing_class.to_string(),
@@ -141,7 +141,7 @@ fn climate_class_candidate_requires_authoritative_operands_and_conserves_when_ex
     );
 
     let missing_day =
-        update_snow_density_runtime_state(climate_inputs(Some(SnowClimateClass::Alpine), None))
+        update_snow_density_runtime_state(&climate_inputs(Some(SnowClimateClass::Alpine), None))
             .expect_err("candidate should require Sturm day");
     assert_contains(
         &missing_day.to_string(),
@@ -149,7 +149,7 @@ fn climate_class_candidate_requires_authoritative_operands_and_conserves_when_ex
         "missing day error",
     );
 
-    let ephemeral_fallback = update_snow_density_runtime_state(climate_inputs(
+    let ephemeral_fallback = update_snow_density_runtime_state(&climate_inputs(
         Some(SnowClimateClass::Ephemeral),
         Some(100.0),
     ))
@@ -161,7 +161,7 @@ fn climate_class_candidate_requires_authoritative_operands_and_conserves_when_ex
     assert!(!ephemeral_fallback.sturm_density_form_fallback_used);
     assert_close(ephemeral_fallback.runtime_swe_after_m, 0.2);
 
-    let outcome = update_snow_density_runtime_state(climate_inputs(
+    let outcome = update_snow_density_runtime_state(&climate_inputs(
         Some(SnowClimateClass::Alpine),
         Some(100.0),
     ))
@@ -188,7 +188,7 @@ fn selector_is_internal_opt_in_only_and_artifact_records_non_promotion() {
         "sturm_day_of_year",
         "direct_production_sturm_climate_class_for_density_candidate",
         "sturm1995_climate_class_from_normals",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, or physics_bulk_climate_class_density_v1",
+        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
@@ -256,6 +256,8 @@ fn climate_inputs(
         prior_swe_m: 0.2,
         prior_depth_m: 0.8,
         prior_density_kg_m3: 250.0,
+        prior_settle_day_count: 0.0,
+        prior_layers: Vec::new(),
         boundary_swe_after_m: 0.2,
         boundary_depth_after_m: 0.8,
         boundary_density_after_kg_m3: 250.0,

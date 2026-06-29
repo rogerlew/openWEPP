@@ -161,7 +161,7 @@ pub struct DirectLaneConstructorInputs {
     pub day_inputs: Vec<DirectDayConstructorInputs>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DirectSnowRuntimeCarry {
     pub runtime_swe_m: f64,
     pub runtime_depth_m: f64,
@@ -172,11 +172,12 @@ pub struct DirectSnowRuntimeCarry {
     pub coe_boundary_settle_day_count: f64,
     pub liquid_water_retained_m: f64,
     pub snow_albedo_state: Option<SnowAlbedoState>,
+    pub layers: Vec<DirectSnowLayerState>,
 }
 
 impl From<DirectSnowRuntimeCarry> for DirectSnowLaneState {
     fn from(carry: DirectSnowRuntimeCarry) -> Self {
-        Self::from_runtime_values_boundary_liquid_and_albedo_state(
+        Self::from_runtime_values_boundary_liquid_albedo_and_layers(
             carry.runtime_swe_m,
             carry.runtime_depth_m,
             carry.runtime_density_kg_m3,
@@ -186,7 +187,25 @@ impl From<DirectSnowRuntimeCarry> for DirectSnowLaneState {
             carry.coe_boundary_settle_day_count,
             carry.liquid_water_retained_m,
             carry.snow_albedo_state,
+            carry.layers,
         )
+    }
+}
+
+impl From<&DirectSnowLaneState> for DirectSnowRuntimeCarry {
+    fn from(state: &DirectSnowLaneState) -> Self {
+        Self {
+            runtime_swe_m: state.runtime_swe_m,
+            runtime_depth_m: state.runtime_depth_m,
+            runtime_density_kg_m3: state.runtime_density_kg_m3,
+            runtime_settle_day_count: state.runtime_settle_day_count,
+            coe_boundary_depth_m: state.coe_boundary_depth_m,
+            coe_boundary_density_kg_m3: state.coe_boundary_density_kg_m3,
+            coe_boundary_settle_day_count: state.coe_boundary_settle_day_count,
+            liquid_water_retained_m: state.liquid_water_retained_m,
+            snow_albedo_state: state.snow_albedo_state,
+            layers: state.layers.clone(),
+        }
     }
 }
 
@@ -202,14 +221,17 @@ impl From<DirectSnowLaneState> for DirectSnowRuntimeCarry {
             coe_boundary_settle_day_count: state.coe_boundary_settle_day_count,
             liquid_water_retained_m: state.liquid_water_retained_m,
             snow_albedo_state: state.snow_albedo_state,
+            layers: state.layers,
         }
     }
 }
 
 fn direct_snow_runtime_carry_from_winter_state(
-    state: DirectSnowLaneState,
+    state: &DirectSnowLaneState,
 ) -> Option<DirectSnowRuntimeCarry> {
-    state.has_runtime_state().then_some(state.into())
+    state
+        .has_runtime_state()
+        .then(|| DirectSnowRuntimeCarry::from(state))
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -470,7 +492,7 @@ pub struct DirectDayConstructorInputs {
     pub frost_storage_liquid_delta_m: Option<f64>,
     pub winter_frost_compute_inputs: Option<crate::hydrology::DirectWinterFrostComputeInputs>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
-    pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
+    pub snow_runtime_carry: Option<Box<DirectSnowRuntimeCarry>>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
 }
 
@@ -621,8 +643,8 @@ impl DirectRunFrame {
             lane.evapotranspiration_stage_state.as_deref().copied();
         day_frame.winter_column.clone_from(&lane.winter_column);
         day_frame.snow_runtime_carry =
-            direct_snow_runtime_carry_from_winter_state(lane.winter_column.snow)
-                .or(lane.snow_runtime_carry);
+            direct_snow_runtime_carry_from_winter_state(&lane.winter_column.snow)
+                .or_else(|| lane.snow_runtime_carry.as_deref().cloned());
         day_frame.frost_runtime_carry =
             direct_frost_runtime_carry_from_winter_state(&lane.winter_column.frost)
                 .or_else(|| lane.frost_runtime_carry.clone());
@@ -848,7 +870,7 @@ pub struct DirectLaneFrame {
     pub plant_growth_state: Box<DirectGrowthStateSurface>,
     pub plant_water_stress: f64,
     pub winter_column: Box<DirectWinterColumnState>,
-    pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
+    pub snow_runtime_carry: Option<Box<DirectSnowRuntimeCarry>>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
     pub day_inputs: Vec<DirectDayConstructorInputs>,
 }
@@ -893,7 +915,7 @@ impl DirectLaneFrame {
     fn from_constructor_inputs(inputs: DirectLaneConstructorInputs) -> Self {
         let mut winter_column = *inputs.winter_column;
         if !winter_column.snow.has_runtime_state() {
-            if let Some(carry) = inputs.snow_runtime_carry {
+            if let Some(carry) = inputs.snow_runtime_carry.clone() {
                 winter_column.snow = carry.into();
             }
         }
@@ -903,8 +925,9 @@ impl DirectLaneFrame {
             }
         }
         let snow_runtime_carry =
-            direct_snow_runtime_carry_from_winter_state(winter_column.snow)
-                .or(inputs.snow_runtime_carry);
+            direct_snow_runtime_carry_from_winter_state(&winter_column.snow)
+                .or(inputs.snow_runtime_carry)
+                .map(Box::new);
         let frost_runtime_carry =
             direct_frost_runtime_carry_from_winter_state(&winter_column.frost)
                 .or(inputs.frost_runtime_carry);
@@ -1009,8 +1032,9 @@ impl DirectLaneFrame {
         self.plant_water_stress = day_frame.evapotranspiration_compute.water_stress;
         self.winter_column.clone_from(&day_frame.winter_column);
         self.snow_runtime_carry =
-            direct_snow_runtime_carry_from_winter_state(self.winter_column.snow)
-                .or(day_frame.snow_runtime_carry);
+            direct_snow_runtime_carry_from_winter_state(&self.winter_column.snow)
+                .or_else(|| day_frame.snow_runtime_carry.clone())
+                .map(Box::new);
         self.frost_runtime_carry =
             direct_frost_runtime_carry_from_winter_state(&self.winter_column.frost)
                 .or_else(|| day_frame.frost_runtime_carry.clone());
@@ -1326,12 +1350,12 @@ impl DirectDayFrame {
         self.hydrology_projection_inputs = inputs.hydrology_projection_inputs;
         self.erosion_inputs = inputs.erosion_inputs;
         self.frost_layer_carry_projection = inputs.frost_layer_carry_projection;
-        if let Some(carry) = inputs.snow_runtime_carry {
-            self.winter_column.snow = carry.into();
+        if let Some(carry) = inputs.snow_runtime_carry.as_deref() {
+            self.winter_column.snow = carry.clone().into();
         }
         self.snow_runtime_carry =
-            direct_snow_runtime_carry_from_winter_state(self.winter_column.snow)
-                .or(inputs.snow_runtime_carry);
+            direct_snow_runtime_carry_from_winter_state(&self.winter_column.snow)
+                .or_else(|| inputs.snow_runtime_carry.map(|carry| *carry));
         if let Some(carry) = inputs.frost_runtime_carry.clone() {
             self.winter_column.frost = carry.into();
         }
@@ -1696,8 +1720,8 @@ fn validate_direct_lane_constructor_inputs(
         *inputs.plant_growth_state,
     )?;
     validate_unit_interval("constructor.plant_water_stress", inputs.plant_water_stress)?;
-    validate_direct_snow_lane_state("constructor.winter_column.snow", inputs.winter_column.snow)?;
-    if let Some(carry) = inputs.snow_runtime_carry {
+    validate_direct_snow_lane_state("constructor.winter_column.snow", &inputs.winter_column.snow)?;
+    if let Some(carry) = &inputs.snow_runtime_carry {
         validate_direct_snow_runtime_carry(carry)?;
     }
     if inputs.day_inputs.len() != identity.day_count {
@@ -1893,21 +1917,21 @@ fn validate_direct_frost_constructor_inputs(
     if let Some(carry) = &inputs.frost_runtime_carry {
         validate_direct_frost_runtime_carry(carry)?;
     }
-    if let Some(carry) = inputs.snow_runtime_carry {
+    if let Some(carry) = &inputs.snow_runtime_carry {
         validate_direct_snow_runtime_carry(carry)?;
     }
     Ok(())
 }
 
 fn validate_direct_snow_runtime_carry(
-    carry: DirectSnowRuntimeCarry,
+    carry: &DirectSnowRuntimeCarry,
 ) -> Result<(), DirectRuntimeError> {
-    validate_direct_snow_lane_state("constructor.snow_runtime_carry", carry.into())
+    validate_direct_snow_lane_state("constructor.snow_runtime_carry", &carry.clone().into())
 }
 
 fn validate_direct_snow_lane_state(
     prefix: &'static str,
-    state: DirectSnowLaneState,
+    state: &DirectSnowLaneState,
 ) -> Result<(), DirectRuntimeError> {
     for (field, value) in [
         ("runtime_swe_m", state.runtime_swe_m),
@@ -1952,6 +1976,57 @@ fn validate_direct_snow_lane_state(
             .map_err(|_| DirectRuntimeError::DirectDomainViolation {
                 field: direct_snow_lane_validation_field(prefix, "snow_albedo_state"),
             })?;
+    }
+    validate_direct_snow_layers(prefix, state)?;
+    Ok(())
+}
+
+fn validate_direct_snow_layers(
+    prefix: &'static str,
+    state: &DirectSnowLaneState,
+) -> Result<(), DirectRuntimeError> {
+    const LAYER_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
+
+    if state.layers.is_empty() {
+        return Ok(());
+    }
+
+    let mut layer_swe_sum_m = 0.0;
+    let mut layer_depth_sum_m = 0.0;
+    for layer in &state.layers {
+        for (field, value) in [
+            ("layers.mass_swe_m", layer.mass_swe_m),
+            ("layers.thickness_m", layer.thickness_m),
+            ("layers.density_kg_m3", layer.density_kg_m3),
+            ("layers.settle_day_count", layer.settle_day_count),
+        ] {
+            validate_nonnegative_direct_m(direct_snow_lane_validation_field(prefix, field), value)?;
+        }
+        if layer.density_kg_m3 > 522.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: direct_snow_lane_validation_field(prefix, "layers.density_kg_m3"),
+            });
+        }
+        layer_swe_sum_m += layer.mass_swe_m;
+        layer_depth_sum_m += layer.thickness_m;
+    }
+
+    if (layer_swe_sum_m - state.runtime_swe_m).abs() > LAYER_CLOSURE_TOLERANCE_M {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: direct_snow_lane_validation_field(prefix, "layers.mass_swe_m"),
+        });
+    }
+    if (layer_depth_sum_m - state.runtime_depth_m).abs() > LAYER_CLOSURE_TOLERANCE_M {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: direct_snow_lane_validation_field(prefix, "layers.thickness_m"),
+        });
+    }
+    if state.runtime_swe_m <= LAYER_CLOSURE_TOLERANCE_M
+        || state.runtime_depth_m <= LAYER_CLOSURE_TOLERANCE_M
+    {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: direct_snow_lane_validation_field(prefix, "layers"),
+        });
     }
     Ok(())
 }

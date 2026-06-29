@@ -25,7 +25,7 @@ impl DirectWinterColumnState {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DirectSnowLaneState {
     pub runtime_swe_m: f64,
     pub runtime_depth_m: f64,
@@ -36,6 +36,32 @@ pub struct DirectSnowLaneState {
     pub coe_boundary_settle_day_count: f64,
     pub liquid_water_retained_m: f64,
     pub snow_albedo_state: Option<SnowAlbedoState>,
+    pub layers: Vec<DirectSnowLayerState>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectSnowLayerState {
+    pub mass_swe_m: f64,
+    pub thickness_m: f64,
+    pub density_kg_m3: f64,
+    pub settle_day_count: f64,
+}
+
+impl DirectSnowLayerState {
+    #[must_use]
+    pub const fn new(
+        mass_swe_m: f64,
+        thickness_m: f64,
+        density_kg_m3: f64,
+        settle_day_count: f64,
+    ) -> Self {
+        Self {
+            mass_swe_m,
+            thickness_m,
+            density_kg_m3,
+            settle_day_count,
+        }
+    }
 }
 
 impl DirectSnowLaneState {
@@ -51,6 +77,7 @@ impl DirectSnowLaneState {
             coe_boundary_settle_day_count: 0.0,
             liquid_water_retained_m: 0.0,
             snow_albedo_state: None,
+            layers: Vec::new(),
         }
     }
 
@@ -71,6 +98,7 @@ impl DirectSnowLaneState {
             coe_boundary_settle_day_count: runtime_settle_day_count,
             liquid_water_retained_m: 0.0,
             snow_albedo_state: None,
+            layers: Vec::new(),
         }
     }
 
@@ -92,6 +120,7 @@ impl DirectSnowLaneState {
             coe_boundary_settle_day_count: runtime_settle_day_count,
             liquid_water_retained_m: 0.0,
             snow_albedo_state,
+            layers: Vec::new(),
         }
     }
 
@@ -117,6 +146,7 @@ impl DirectSnowLaneState {
             coe_boundary_settle_day_count,
             liquid_water_retained_m: 0.0,
             snow_albedo_state,
+            layers: Vec::new(),
         }
     }
 
@@ -143,11 +173,40 @@ impl DirectSnowLaneState {
             coe_boundary_settle_day_count,
             liquid_water_retained_m,
             snow_albedo_state,
+            layers: Vec::new(),
         }
     }
 
     #[must_use]
-    pub fn has_runtime_state(self) -> bool {
+    #[allow(clippy::too_many_arguments)]
+    pub fn from_runtime_values_boundary_liquid_albedo_and_layers(
+        runtime_swe_m: f64,
+        runtime_depth_m: f64,
+        runtime_density_kg_m3: f64,
+        runtime_settle_day_count: f64,
+        coe_boundary_depth_m: f64,
+        coe_boundary_density_kg_m3: f64,
+        coe_boundary_settle_day_count: f64,
+        liquid_water_retained_m: f64,
+        snow_albedo_state: Option<SnowAlbedoState>,
+        layers: Vec<DirectSnowLayerState>,
+    ) -> Self {
+        Self {
+            runtime_swe_m,
+            runtime_depth_m,
+            runtime_density_kg_m3,
+            runtime_settle_day_count,
+            coe_boundary_depth_m,
+            coe_boundary_density_kg_m3,
+            coe_boundary_settle_day_count,
+            liquid_water_retained_m,
+            snow_albedo_state,
+            layers,
+        }
+    }
+
+    #[must_use]
+    pub fn has_runtime_state(&self) -> bool {
         self.runtime_swe_m > 0.0
             || self.runtime_depth_m > 0.0
             || self.runtime_density_kg_m3 > 0.0
@@ -156,6 +215,7 @@ impl DirectSnowLaneState {
             || self.coe_boundary_density_kg_m3 > 0.0
             || self.coe_boundary_settle_day_count > 0.0
             || self.snow_albedo_state.is_some()
+            || !self.layers.is_empty()
     }
 }
 

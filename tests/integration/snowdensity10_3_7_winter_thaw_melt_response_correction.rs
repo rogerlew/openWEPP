@@ -41,7 +41,7 @@ fn assert_contains(haystack: &str, needle: &str, context: &str) {
 fn contract_and_package_bind_thaw_state_loss_candidate() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 107",
+        "contract_version: 108",
         "coe_winter_thaw_state_loss_v1",
         "INV-SNOWFREEZE-066",
         "OBL-SNOWFREEZE-P-041",
@@ -105,6 +105,7 @@ fn low_density_positive_thaw_inputs(model: SnowMeltModel) -> DirectActiveSnowPar
         coe_boundary_settle_day_count: 4.0,
         snow_albedo_model: None,
         snow_albedo_state: None,
+        snow_layers: Vec::new(),
         underlying_surface_albedo: 0.2,
         hourly,
     }
@@ -113,11 +114,11 @@ fn low_density_positive_thaw_inputs(model: SnowMeltModel) -> DirectActiveSnowPar
 #[test]
 fn opt_in_routes_positive_low_density_thaw_melt_to_state_loss() {
     let legacy = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        low_density_positive_thaw_inputs(SnowMeltModel::LegacyCoe),
+        &low_density_positive_thaw_inputs(SnowMeltModel::LegacyCoe),
     )
     .expect("legacy CoE melt should compute");
     let candidate = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        low_density_positive_thaw_inputs(SnowMeltModel::CoeWinterThawStateLossV1),
+        &low_density_positive_thaw_inputs(SnowMeltModel::CoeWinterThawStateLossV1),
     )
     .expect("candidate CoE melt should compute");
 
@@ -150,7 +151,7 @@ fn opt_in_routes_positive_low_density_thaw_melt_to_state_loss() {
 #[test]
 fn opt_in_state_loss_is_conservation_closed_and_routed() {
     let inputs = low_density_positive_thaw_inputs(SnowMeltModel::CoeWinterThawStateLossV1);
-    let outcome = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(inputs)
+    let outcome = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
         .expect("candidate CoE melt should compute");
 
     let available_swe_m = inputs.runtime_swe_m

@@ -1,4 +1,6 @@
 
+use crate::winter_column::DirectSnowLayerState;
+
 /// WB11 hydrology production kernel for ET/perc/lateral/drain lanes.
 #[derive(Debug, Clone, Default)]
 pub struct Wb11HydrologyKernel;
@@ -182,7 +184,7 @@ pub(crate) struct SnowCouplingOutcome {
     hourly_state: Vec<SnowHourlyState>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DirectSnowLiquidPartition {
     pub active_snow_coupling: bool,
     pub snow_density_model: SnowDensityModel,
@@ -209,6 +211,7 @@ pub struct DirectSnowLiquidPartition {
     pub density_swe_identity_residual_m: f64,
     pub density_unbounded_swe_residual_m: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
+    pub snow_layers_after: Vec<DirectSnowLayerState>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -233,7 +236,7 @@ impl DirectSnowHourlyForcing {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DirectActiveSnowPartitionInputs {
     pub hyetograph_rainfall_m: f64,
     pub rst_c: f64,
@@ -258,6 +261,7 @@ pub struct DirectActiveSnowPartitionInputs {
     pub coe_boundary_settle_day_count: f64,
     pub snow_albedo_model: Option<SnowAlbedoModel>,
     pub snow_albedo_state: Option<SnowAlbedoState>,
+    pub snow_layers: Vec<DirectSnowLayerState>,
     pub underlying_surface_albedo: f64,
     pub hourly: [DirectSnowHourlyForcing; SIMIMPL29_HOURS_PER_DAY],
 }

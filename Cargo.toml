@@ -715,6 +715,10 @@ name = "paradigm2_stage0_surface_energy_balance_contract"
 path = "tests/integration/paradigm2_stage0_surface_energy_balance_contract.rs"
 
 [[test]]
+name = "paradigm2_stage1_layered_snow_density"
+path = "tests/integration/paradigm2_stage1_layered_snow_density.rs"
+
+[[test]]
 name = "snowdensity10_3_5b_hourly_partition_jennings_contract"
 path = "tests/integration/snowdensity10_3_5b_hourly_partition_jennings_contract.rs"
 

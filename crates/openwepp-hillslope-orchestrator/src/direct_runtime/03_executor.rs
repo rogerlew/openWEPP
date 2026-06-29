@@ -378,8 +378,8 @@ impl DirectFrameExecutor {
         if let Some(perennial_growth_inputs) = day_input.perennial_growth_inputs {
             day_frame.perennial_growth_inputs = perennial_growth_inputs;
         }
-        if let Some(snow_coupling_inputs) = day_input.snow_coupling_inputs {
-            day_frame.snow_coupling_inputs = snow_coupling_inputs;
+        if let Some(snow_coupling_inputs) = &day_input.snow_coupling_inputs {
+            day_frame.snow_coupling_inputs = snow_coupling_inputs.clone();
         }
         if let Some(hydrology_projection_inputs) = day_input.hydrology_projection_inputs {
             day_frame.hydrology_projection_inputs = hydrology_projection_inputs;

@@ -192,7 +192,7 @@ impl DirectProductionSnowFrostAuthority {
         &self,
         lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
     ) -> DirectSnowLaneState {
-        let lane_state = lane.winter_column.snow;
+        let lane_state = lane.winter_column.snow.clone();
         if lane_state.has_runtime_state() {
             lane_state
         } else {
@@ -200,7 +200,7 @@ impl DirectProductionSnowFrostAuthority {
         }
     }
 
-    fn snow_state_projected(&self, snow_lane_state: DirectSnowLaneState) -> bool {
+    fn snow_state_projected(&self, snow_lane_state: &DirectSnowLaneState) -> bool {
         self.snow_controls_projected || snow_lane_state.has_runtime_state()
     }
 
@@ -268,7 +268,7 @@ impl DirectProductionSnowFrostAuthority {
         lane_index: usize,
         lane: &openwepp_hillslope_orchestrator::DirectLaneFrame,
         forcing: &HillslopeDirectClimateDayForcing,
-        snow_lane_state: DirectSnowLaneState,
+        snow_lane_state: &DirectSnowLaneState,
         winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
         clear_no_final_hydrology_layers: bool,
     ) -> Result<Option<DirectProductionFrostDayContext>, HillslopeCliError> {
@@ -333,7 +333,7 @@ impl DirectProductionSnowFrostAuthority {
         &self,
         climate_request: &HillslopeClimateRuntimeRequest,
         day_index: usize,
-        snow_lane_state: DirectSnowLaneState,
+        snow_lane_state: &DirectSnowLaneState,
         frost_runtime_depth_m: f64,
         frost_runtime_frozen_water_m: f64,
         winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
@@ -482,7 +482,7 @@ impl DirectProductionSnowFrostAuthority {
         day_index: usize,
         forcing: &HillslopeDirectClimateDayForcing,
         hyetograph_rainfall_m: f64,
-        snow_lane_state: DirectSnowLaneState,
+        snow_lane_state: &DirectSnowLaneState,
         canopy_cover_fraction: f64,
         sturm_climate_class: Option<openwepp_hillslope_orchestrator::SnowClimateClass>,
         sturm_day_of_year: Option<f64>,
@@ -533,35 +533,35 @@ impl DirectProductionSnowFrostAuthority {
                 cloud_fraction: hourly.cloud_fraction,
             };
         }
-        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-            DirectActiveSnowPartitionInputs {
-                hyetograph_rainfall_m,
-                rst_c: self.snow_rst_c,
-                newsnw_kg_m3: self.snow_newsnw_kg_m3,
-                ssd_kg_m3: self.snow_ssd_kg_m3,
-                runtime_swe_m: snow_lane_state.runtime_swe_m,
-                runtime_depth_m: snow_lane_state.runtime_depth_m,
-                runtime_density_kg_m3: snow_lane_state.runtime_density_kg_m3,
-                runtime_settle_day_count: snow_lane_state.runtime_settle_day_count,
-                liquid_water_retained_m: snow_lane_state.liquid_water_retained_m,
-                tmax_c: forcing.tmax_c,
-                tmin_c: forcing.tmin_c,
-                canopy_cover_fraction,
-                wind_m_s: forcing.vwind_m_s,
-                dewpoint_c: forcing.tdpt_c,
-                snow_melt_model: self.snow_melt_model,
-                snow_density_model: self.snow_density_model,
-                sturm_climate_class,
-                sturm_day_of_year,
-                coe_boundary_depth_m: snow_lane_state.coe_boundary_depth_m,
-                coe_boundary_density_kg_m3: snow_lane_state.coe_boundary_density_kg_m3,
-                coe_boundary_settle_day_count: snow_lane_state.coe_boundary_settle_day_count,
-                snow_albedo_model: None,
-                snow_albedo_state: snow_lane_state.snow_albedo_state,
-                underlying_surface_albedo: 0.2,
-                hourly: snow_hourly,
-            },
-        )
+        let partition_inputs = DirectActiveSnowPartitionInputs {
+            hyetograph_rainfall_m,
+            rst_c: self.snow_rst_c,
+            newsnw_kg_m3: self.snow_newsnw_kg_m3,
+            ssd_kg_m3: self.snow_ssd_kg_m3,
+            runtime_swe_m: snow_lane_state.runtime_swe_m,
+            runtime_depth_m: snow_lane_state.runtime_depth_m,
+            runtime_density_kg_m3: snow_lane_state.runtime_density_kg_m3,
+            runtime_settle_day_count: snow_lane_state.runtime_settle_day_count,
+            liquid_water_retained_m: snow_lane_state.liquid_water_retained_m,
+            tmax_c: forcing.tmax_c,
+            tmin_c: forcing.tmin_c,
+            canopy_cover_fraction,
+            wind_m_s: forcing.vwind_m_s,
+            dewpoint_c: forcing.tdpt_c,
+            snow_melt_model: self.snow_melt_model,
+            snow_density_model: self.snow_density_model,
+            sturm_climate_class,
+            sturm_day_of_year,
+            coe_boundary_depth_m: snow_lane_state.coe_boundary_depth_m,
+            coe_boundary_density_kg_m3: snow_lane_state.coe_boundary_density_kg_m3,
+            coe_boundary_settle_day_count: snow_lane_state.coe_boundary_settle_day_count,
+            snow_albedo_model: None,
+            snow_albedo_state: snow_lane_state.snow_albedo_state,
+            snow_layers: snow_lane_state.layers.clone(),
+            underlying_surface_albedo: 0.2,
+            hourly: snow_hourly,
+        };
+        Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&partition_inputs)
         .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_publication_frame",
             detail: format!("{SIMOUT_GUARD_ID} direct production typed snow partition failed: {source}"),
@@ -572,7 +572,7 @@ impl DirectProductionSnowFrostAuthority {
 fn inactive_direct_snow_liquid_partition(
     snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel,
     hyetograph_rainfall_m: f64,
-    snow_lane_state: DirectSnowLaneState,
+    snow_lane_state: &DirectSnowLaneState,
 ) -> openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
     openwepp_hillslope_orchestrator::DirectSnowLiquidPartition {
         active_snow_coupling: false,
@@ -600,5 +600,6 @@ fn inactive_direct_snow_liquid_partition(
         density_swe_identity_residual_m: 0.0,
         density_unbounded_swe_residual_m: 0.0,
         snow_albedo_state_after: snow_lane_state.snow_albedo_state,
+        snow_layers_after: snow_lane_state.layers.clone(),
     }
 }

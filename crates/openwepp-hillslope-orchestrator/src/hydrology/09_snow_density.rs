@@ -3,10 +3,13 @@ const SNOW_DENSITY_COMPACTION_MODEL_ID: &str = "physics_bulk_density_compaction_
 const SNOW_DENSITY_SPRING_DENSIFICATION_MODEL_ID: &str = "physics_bulk_spring_densification_v1";
 const SNOW_DENSITY_SHALLOW_GUARD_MODEL_ID: &str = "physics_bulk_shallow_guard_v1";
 const SNOW_DENSITY_CLIMATE_CLASS_MODEL_ID: &str = "physics_bulk_climate_class_density_v1";
+const SNOW_DENSITY_MULTILAYER_MODEL_ID: &str = "physics_bulk_multilayer_density_v1";
 const SNOW_DENSITY_SHALLOW_GUARD_DEPTH_THRESHOLD_M: f64 = 0.25;
 const SNOW_DENSITY_RHO_WATER_KG_M3: f64 = 1_000.0;
 const SNOW_DENSITY_ZERO_MASS_KG_M2: f64 = 1.0e-9;
 const SNOW_DENSITY_DAILY_COMPACTION_STEPS: u8 = 24;
+const SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M: f64 = 1.0e-9;
+const SNOW_DENSITY_MULTILAYER_MAX_LAYERS: usize = 16;
 pub const STURM1995_CDM_CRITICAL_TEMPERATURE_C: f64 = 10.0;
 pub const STURM1995_EPHEMERAL_CDM_THRESHOLD_C_MONTH: f64 = 30.0;
 pub const STURM1995_HIGH_LOW_CDM_THRESHOLD_C_MONTH: f64 = 125.0;
@@ -21,6 +24,7 @@ pub enum SnowDensityModel {
     PhysicsBulkSpringDensificationV1,
     PhysicsBulkShallowGuardV1,
     PhysicsBulkClimateClassDensityV1,
+    PhysicsBulkMultilayerDensityV1,
 }
 
 impl SnowDensityModel {
@@ -34,6 +38,7 @@ impl SnowDensityModel {
             }
             Self::PhysicsBulkShallowGuardV1 => SNOW_DENSITY_SHALLOW_GUARD_MODEL_ID,
             Self::PhysicsBulkClimateClassDensityV1 => SNOW_DENSITY_CLIMATE_CLASS_MODEL_ID,
+            Self::PhysicsBulkMultilayerDensityV1 => SNOW_DENSITY_MULTILAYER_MODEL_ID,
         }
     }
 }
@@ -338,12 +343,14 @@ pub const fn snow_density_shallow_guard_v1_constants() -> SnowDensityCompactionC
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SnowDensityRuntimeInputs {
     pub model: SnowDensityModel,
     pub prior_swe_m: f64,
     pub prior_depth_m: f64,
     pub prior_density_kg_m3: f64,
+    pub prior_settle_day_count: f64,
+    pub prior_layers: Vec<DirectSnowLayerState>,
     pub boundary_swe_after_m: f64,
     pub boundary_depth_after_m: f64,
     pub boundary_density_after_kg_m3: f64,
@@ -355,7 +362,7 @@ pub struct SnowDensityRuntimeInputs {
     pub sturm_day_of_year: Option<f64>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SnowDensityRuntimeOutcome {
     pub model: SnowDensityModel,
     pub runtime_swe_after_m: f64,
@@ -366,6 +373,7 @@ pub struct SnowDensityRuntimeOutcome {
     pub max_abs_swe_identity_residual_m: f64,
     pub max_abs_unbounded_swe_residual_m: f64,
     pub sturm_density_form_fallback_used: bool,
+    pub layers_after: Vec<DirectSnowLayerState>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -388,6 +396,11 @@ pub enum SnowDensityError {
     },
     MissingClimateClassDensityParameters {
         class: &'static str,
+    },
+    LayerAggregateMismatch {
+        symbol: &'static str,
+        value: f64,
+        expected: f64,
     },
 }
 
@@ -418,6 +431,14 @@ impl std::fmt::Display for SnowDensityError {
                 f,
                 "missing Sturm 2010 density parameters for snow climate class {class}"
             ),
+            Self::LayerAggregateMismatch {
+                symbol,
+                value,
+                expected,
+            } => write!(
+                f,
+                "snow-density layer aggregate {symbol}={value} does not match expected {expected}"
+            ),
         }
     }
 }
@@ -425,11 +446,12 @@ impl std::fmt::Display for SnowDensityError {
 impl std::error::Error for SnowDensityError {}
 
 pub fn update_snow_density_runtime_state(
-    inputs: SnowDensityRuntimeInputs,
+    inputs: &SnowDensityRuntimeInputs,
 ) -> Result<SnowDensityRuntimeOutcome, SnowDensityError> {
     density_validate_nonnegative("prior_swe_m", inputs.prior_swe_m)?;
     density_validate_nonnegative("prior_depth_m", inputs.prior_depth_m)?;
     density_validate_nonnegative("prior_density_kg_m3", inputs.prior_density_kg_m3)?;
+    density_validate_nonnegative("prior_settle_day_count", inputs.prior_settle_day_count)?;
     density_validate_nonnegative("boundary_swe_after_m", inputs.boundary_swe_after_m)?;
     density_validate_nonnegative("boundary_depth_after_m", inputs.boundary_depth_after_m)?;
     density_validate_nonnegative(
@@ -452,7 +474,12 @@ pub fn update_snow_density_runtime_state(
             max_abs_swe_identity_residual_m: 0.0,
             max_abs_unbounded_swe_residual_m: 0.0,
             sturm_density_form_fallback_used: false,
+            layers_after: Vec::new(),
         });
+    }
+
+    if inputs.model == SnowDensityModel::PhysicsBulkMultilayerDensityV1 {
+        return update_multilayer_snow_density_runtime_state(inputs);
     }
 
     let constants = snow_density_constants_for_model(inputs.model);
@@ -512,6 +539,7 @@ pub fn update_snow_density_runtime_state(
         max_abs_swe_identity_residual_m: identity_residual_m.abs(),
         max_abs_unbounded_swe_residual_m: (unbounded_swe_m - inputs.boundary_swe_after_m).abs(),
         sturm_density_form_fallback_used,
+        layers_after: Vec::new(),
     })
 }
 
@@ -521,7 +549,8 @@ const fn snow_density_constants_for_model(
     match model {
         SnowDensityModel::LegacyWepp
         | SnowDensityModel::PhysicsBulkDensityCompactionV1
-        | SnowDensityModel::PhysicsBulkClimateClassDensityV1 => {
+        | SnowDensityModel::PhysicsBulkClimateClassDensityV1
+        | SnowDensityModel::PhysicsBulkMultilayerDensityV1 => {
             snow_density_compaction_v1_constants()
         }
         SnowDensityModel::PhysicsBulkSpringDensificationV1 => {
@@ -555,11 +584,318 @@ fn apply_sturm2010_density_form_fallback(
     Ok(true)
 }
 
+fn update_multilayer_snow_density_runtime_state(
+    inputs: &SnowDensityRuntimeInputs,
+) -> Result<SnowDensityRuntimeOutcome, SnowDensityError> {
+    let constants = snow_density_constants_for_model(inputs.model);
+    let mut layers = initialize_multilayer_density_state(inputs, constants)?;
+    increment_multilayer_settle_clock(&mut layers);
+
+    let snow_input_kg_m2 = inputs.snow_input_m * SNOW_DENSITY_RHO_WATER_KG_M3;
+    if snow_input_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2 {
+        layers.insert(
+            0,
+            SnowDensityLayerWorkState {
+                mass_kg_m2: snow_input_kg_m2,
+                density_kg_m3: fresh_snow_density_kg_m3(inputs.mean_air_temperature_c, constants)?,
+                settle_day_count: 1.0,
+            },
+        );
+    }
+
+    apply_multilayer_daily_compaction(
+        &mut layers,
+        inputs.liquid_for_compaction_m * SNOW_DENSITY_RHO_WATER_KG_M3,
+        inputs.mean_air_temperature_c.clamp(-30.0, 0.0),
+        constants,
+    );
+    let unbounded_swe_m = multilayer_mass_kg_m2(&layers) / SNOW_DENSITY_RHO_WATER_KG_M3;
+    apply_multilayer_boundary_mass(
+        &mut layers,
+        inputs.boundary_swe_after_m * SNOW_DENSITY_RHO_WATER_KG_M3,
+        inputs.boundary_density_after_kg_m3,
+        constants,
+    );
+    merge_multilayer_bottom_layers(&mut layers);
+    cap_multilayer_density(&mut layers, inputs.runtime_density_cap_kg_m3);
+
+    let runtime_swe_after_m = multilayer_mass_kg_m2(&layers) / SNOW_DENSITY_RHO_WATER_KG_M3;
+    let runtime_depth_after_m = multilayer_depth_m(&layers);
+    let mut runtime_density_after_kg_m3 = if runtime_swe_after_m
+        > SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M
+        && runtime_depth_after_m > SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M
+    {
+        (runtime_swe_after_m * SNOW_DENSITY_RHO_WATER_KG_M3) / runtime_depth_after_m
+    } else {
+        0.0
+    };
+    runtime_density_after_kg_m3 =
+        runtime_density_after_kg_m3.min(inputs.runtime_density_cap_kg_m3);
+    let identity_residual_m = runtime_swe_after_m - inputs.boundary_swe_after_m;
+
+    Ok(SnowDensityRuntimeOutcome {
+        model: inputs.model,
+        runtime_swe_after_m,
+        runtime_depth_after_m,
+        runtime_density_after_kg_m3,
+        coe_boundary_depth_after_m: inputs.boundary_depth_after_m,
+        coe_boundary_density_after_kg_m3: inputs.boundary_density_after_kg_m3,
+        max_abs_swe_identity_residual_m: identity_residual_m.abs(),
+        max_abs_unbounded_swe_residual_m: (unbounded_swe_m - inputs.boundary_swe_after_m).abs(),
+        sturm_density_form_fallback_used: false,
+        layers_after: layers
+            .into_iter()
+            .map(SnowDensityLayerWorkState::into_direct_state)
+            .collect(),
+    })
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 struct CoeBoundDensityState {
     mass_kg_m2: f64,
     density_kg_m3: f64,
 }
+
+#[derive(Debug, Clone, Copy, Default)]
+struct SnowDensityLayerWorkState {
+    mass_kg_m2: f64,
+    density_kg_m3: f64,
+    settle_day_count: f64,
+}
+
+impl SnowDensityLayerWorkState {
+    fn depth_m(self) -> f64 {
+        if self.mass_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2 || self.density_kg_m3 <= 0.0 {
+            0.0
+        } else {
+            self.mass_kg_m2 / self.density_kg_m3
+        }
+    }
+
+    fn into_direct_state(self) -> DirectSnowLayerState {
+        DirectSnowLayerState::new(
+            self.mass_kg_m2 / SNOW_DENSITY_RHO_WATER_KG_M3,
+            self.depth_m(),
+            self.density_kg_m3,
+            self.settle_day_count,
+        )
+    }
+}
+
+fn initialize_multilayer_density_state(
+    inputs: &SnowDensityRuntimeInputs,
+    constants: SnowDensityCompactionConstants,
+) -> Result<Vec<SnowDensityLayerWorkState>, SnowDensityError> {
+    if !inputs.prior_layers.is_empty() {
+        let mut layers = Vec::with_capacity(inputs.prior_layers.len());
+        let mut swe_sum_m = 0.0;
+        let mut depth_sum_m = 0.0;
+        for layer in &inputs.prior_layers {
+            density_validate_nonnegative("prior_layers.mass_swe_m", layer.mass_swe_m)?;
+            density_validate_nonnegative("prior_layers.thickness_m", layer.thickness_m)?;
+            density_validate_nonnegative("prior_layers.density_kg_m3", layer.density_kg_m3)?;
+            density_validate_nonnegative("prior_layers.settle_day_count", layer.settle_day_count)?;
+            if layer.mass_swe_m <= SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M {
+                continue;
+            }
+            let density = if layer.density_kg_m3 > 0.0 {
+                layer.density_kg_m3
+            } else if layer.thickness_m > SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M {
+                layer.mass_swe_m * SNOW_DENSITY_RHO_WATER_KG_M3 / layer.thickness_m
+            } else {
+                constants.new_snow_density_min_kg_m3
+            };
+            swe_sum_m += layer.mass_swe_m;
+            depth_sum_m += layer.thickness_m;
+            layers.push(SnowDensityLayerWorkState {
+                mass_kg_m2: layer.mass_swe_m * SNOW_DENSITY_RHO_WATER_KG_M3,
+                density_kg_m3: density,
+                settle_day_count: layer.settle_day_count,
+            });
+        }
+        if (swe_sum_m - inputs.prior_swe_m).abs() > SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M {
+            return Err(SnowDensityError::LayerAggregateMismatch {
+                symbol: "prior_layers.mass_swe_m",
+                value: swe_sum_m,
+                expected: inputs.prior_swe_m,
+            });
+        }
+        if (depth_sum_m - inputs.prior_depth_m).abs() > SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M {
+            return Err(SnowDensityError::LayerAggregateMismatch {
+                symbol: "prior_layers.thickness_m",
+                value: depth_sum_m,
+                expected: inputs.prior_depth_m,
+            });
+        }
+        return Ok(layers);
+    }
+
+    if inputs.prior_swe_m <= SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M {
+        return Ok(Vec::new());
+    }
+    let density = if inputs.prior_density_kg_m3 > 0.0 {
+        inputs.prior_density_kg_m3
+    } else if inputs.prior_depth_m > SNOW_DENSITY_LAYER_CLOSURE_TOLERANCE_M {
+        inputs.prior_swe_m * SNOW_DENSITY_RHO_WATER_KG_M3 / inputs.prior_depth_m
+    } else {
+        constants.new_snow_density_min_kg_m3
+    };
+    Ok(vec![SnowDensityLayerWorkState {
+        mass_kg_m2: inputs.prior_swe_m * SNOW_DENSITY_RHO_WATER_KG_M3,
+        density_kg_m3: density,
+        settle_day_count: inputs.prior_settle_day_count,
+    }])
+}
+
+fn increment_multilayer_settle_clock(layers: &mut [SnowDensityLayerWorkState]) {
+    for layer in layers {
+        layer.settle_day_count += 1.0;
+    }
+}
+
+fn apply_multilayer_daily_compaction(
+    layers: &mut [SnowDensityLayerWorkState],
+    liquid_for_compaction_kg_m2: f64,
+    snow_temperature_c: f64,
+    constants: SnowDensityCompactionConstants,
+) {
+    if layers.is_empty() {
+        return;
+    }
+    let total_mass_kg_m2 = multilayer_mass_kg_m2(layers);
+    if liquid_for_compaction_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2
+        && total_mass_kg_m2 > SNOW_DENSITY_ZERO_MASS_KG_M2
+    {
+        for layer in layers.iter_mut() {
+            let liquid_for_layer_kg_m2 =
+                liquid_for_compaction_kg_m2 * layer.mass_kg_m2 / total_mass_kg_m2;
+            let mut state = layer.as_coe_bound_state();
+            apply_wet_compaction(&mut state, liquid_for_layer_kg_m2, constants, 1.0);
+            layer.density_kg_m3 = state.density_kg_m3;
+        }
+    }
+
+    for _ in 0..SNOW_DENSITY_DAILY_COMPACTION_STEPS {
+        let mut overburden_kg_m2 = 0.0;
+        for layer in layers.iter_mut() {
+            let mut state = layer.as_coe_bound_state();
+            apply_time_compaction_scaled_with_overburden(
+                &mut state,
+                overburden_kg_m2,
+                snow_temperature_c,
+                constants,
+                1.0,
+            );
+            layer.density_kg_m3 = state.density_kg_m3;
+            overburden_kg_m2 += layer.mass_kg_m2;
+        }
+    }
+}
+
+impl SnowDensityLayerWorkState {
+    fn as_coe_bound_state(self) -> CoeBoundDensityState {
+        CoeBoundDensityState {
+            mass_kg_m2: self.mass_kg_m2,
+            density_kg_m3: self.density_kg_m3,
+        }
+    }
+}
+
+fn apply_multilayer_boundary_mass(
+    layers: &mut Vec<SnowDensityLayerWorkState>,
+    target_mass_kg_m2: f64,
+    boundary_density_kg_m3: f64,
+    constants: SnowDensityCompactionConstants,
+) {
+    if target_mass_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2 {
+        layers.clear();
+        return;
+    }
+    let mut current_mass_kg_m2 = multilayer_mass_kg_m2(layers);
+    if current_mass_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2 {
+        let density = if boundary_density_kg_m3 > 0.0 {
+            boundary_density_kg_m3
+        } else {
+            constants.new_snow_density_min_kg_m3
+        };
+        layers.push(SnowDensityLayerWorkState {
+            mass_kg_m2: target_mass_kg_m2,
+            density_kg_m3: density,
+            settle_day_count: 1.0,
+        });
+        return;
+    }
+
+    if current_mass_kg_m2 > target_mass_kg_m2 {
+        let mut mass_to_remove = current_mass_kg_m2 - target_mass_kg_m2;
+        while mass_to_remove > SNOW_DENSITY_ZERO_MASS_KG_M2 && !layers.is_empty() {
+            if layers[0].mass_kg_m2 <= mass_to_remove + SNOW_DENSITY_ZERO_MASS_KG_M2 {
+                mass_to_remove -= layers[0].mass_kg_m2;
+                layers.remove(0);
+            } else {
+                layers[0].mass_kg_m2 -= mass_to_remove;
+                mass_to_remove = 0.0;
+            }
+        }
+        return;
+    }
+
+    let mass_to_add = target_mass_kg_m2 - current_mass_kg_m2;
+    if mass_to_add > SNOW_DENSITY_ZERO_MASS_KG_M2 {
+        if let Some(surface_layer) = layers.first_mut() {
+            surface_layer.mass_kg_m2 += mass_to_add;
+        } else {
+            layers.push(SnowDensityLayerWorkState {
+                mass_kg_m2: mass_to_add,
+                density_kg_m3: constants.new_snow_density_min_kg_m3,
+                settle_day_count: 1.0,
+            });
+        }
+    }
+    current_mass_kg_m2 = multilayer_mass_kg_m2(layers);
+    if current_mass_kg_m2 <= SNOW_DENSITY_ZERO_MASS_KG_M2 {
+        layers.clear();
+    }
+}
+
+fn merge_multilayer_bottom_layers(layers: &mut Vec<SnowDensityLayerWorkState>) {
+    while layers.len() > SNOW_DENSITY_MULTILAYER_MAX_LAYERS {
+        let Some(bottom) = layers.pop() else {
+            return;
+        };
+        let Some(above_bottom) = layers.last_mut() else {
+            layers.push(bottom);
+            return;
+        };
+        let mass = above_bottom.mass_kg_m2 + bottom.mass_kg_m2;
+        let depth = above_bottom.depth_m() + bottom.depth_m();
+        let settle = if mass > SNOW_DENSITY_ZERO_MASS_KG_M2 {
+            (above_bottom.settle_day_count * above_bottom.mass_kg_m2
+                + bottom.settle_day_count * bottom.mass_kg_m2)
+                / mass
+        } else {
+            0.0
+        };
+        above_bottom.mass_kg_m2 = mass;
+        above_bottom.density_kg_m3 = if depth > 0.0 { mass / depth } else { 0.0 };
+        above_bottom.settle_day_count = settle;
+    }
+}
+
+fn cap_multilayer_density(layers: &mut [SnowDensityLayerWorkState], density_cap_kg_m3: f64) {
+    for layer in layers {
+        layer.density_kg_m3 = layer.density_kg_m3.min(density_cap_kg_m3);
+    }
+}
+
+fn multilayer_mass_kg_m2(layers: &[SnowDensityLayerWorkState]) -> f64 {
+    layers.iter().map(|layer| layer.mass_kg_m2).sum()
+}
+
+fn multilayer_depth_m(layers: &[SnowDensityLayerWorkState]) -> f64 {
+    layers.iter().map(|layer| layer.depth_m()).sum()
+}
+
 
 fn add_fresh_snow(
     state: &mut CoeBoundDensityState,
@@ -702,16 +1038,32 @@ fn apply_time_compaction_scaled(
     constants: SnowDensityCompactionConstants,
     multiplier_scale: f64,
 ) {
+    apply_time_compaction_scaled_with_overburden(
+        state,
+        state.mass_kg_m2,
+        snow_temperature_c,
+        constants,
+        multiplier_scale,
+    );
+}
+
+fn apply_time_compaction_scaled_with_overburden(
+    state: &mut CoeBoundDensityState,
+    overburden_kg_m2: f64,
+    snow_temperature_c: f64,
+    constants: SnowDensityCompactionConstants,
+    multiplier_scale: f64,
+) {
     let density = state.observed_density_kg_m3();
     if density <= 0.0 || density >= constants.dry_compaction_max_density_kg_m3 {
         return;
     }
-    let swe = state.mass_kg_m2;
-    let rate = if swe >= constants.dry_compaction_swe_max_kg_m2 {
+    let overburden = overburden_kg_m2.max(0.0);
+    let rate = if overburden >= constants.dry_compaction_swe_max_kg_m2 {
         1.0
     } else {
         constants.compaction_rate_cos_amplitude
-            * (std::f64::consts::PI * swe / constants.dry_compaction_swe_max_kg_m2).cos()
+            * (std::f64::consts::PI * overburden / constants.dry_compaction_swe_max_kg_m2).cos()
             + constants.compaction_rate_offset
     };
     let c11 = if density < constants.ptm_density_threshold_kg_m3 {
@@ -727,7 +1079,7 @@ fn apply_time_compaction_scaled(
         / rate;
     let overburden_compaction = constants.poc_rate_per_hour
         * (-constants.poc_temperature_decay_per_c * freeze_minus_snow_temp).exp()
-        * swe
+        * overburden
         * (-constants.poc_density_decay * (density / SNOW_DENSITY_RHO_WATER_KG_M3)).exp()
         / rate;
     state.density_kg_m3 = (density

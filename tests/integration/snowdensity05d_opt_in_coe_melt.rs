@@ -23,7 +23,7 @@ fn read(path: &str) -> String {
 fn snowdensity05d_contract_markers_bind_opt_in_melt_wiring() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 107",
+        "contract_version: 108",
         "INV-SNOWFREEZE-055",
         "OBL-SNOWFREEZE-P-030",
         "snow_melt_shortwave_absorbed_fraction",
@@ -87,6 +87,7 @@ fn warm_radiation_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitionInput
                 accumulated_positive_temperature_c_day: 16.0,
             },
         ),
+        snow_layers: Vec::new(),
         underlying_surface_albedo: 0.2,
         hourly,
     }
@@ -95,11 +96,11 @@ fn warm_radiation_inputs(model: SnowMeltModel) -> DirectActiveSnowPartitionInput
 #[test]
 fn snowdensity05d_opt_in_changes_only_shortwave_amelt_operand() {
     let legacy = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        warm_radiation_inputs(SnowMeltModel::LegacyCoe),
+        &warm_radiation_inputs(SnowMeltModel::LegacyCoe),
     )
     .expect("legacy CoE melt should compute");
     let opt_in = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        warm_radiation_inputs(SnowMeltModel::CoeShortwaveAlbedoV1),
+        &warm_radiation_inputs(SnowMeltModel::CoeShortwaveAlbedoV1),
     )
     .expect("opt-in CoE melt should compute with prior albedo state");
 
@@ -143,7 +144,7 @@ fn snowdensity05d_missing_active_opt_in_albedo_state_fails_closed() {
     let mut inputs = warm_radiation_inputs(SnowMeltModel::CoeShortwaveAlbedoV1);
     inputs.snow_albedo_state = None;
 
-    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(inputs)
+    let error = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(&inputs)
         .expect_err("active opt-in snow without prior albedo state must fail closed");
 
     assert!(matches!(
@@ -158,7 +159,7 @@ fn snowdensity05d_missing_active_opt_in_albedo_state_fails_closed() {
 #[test]
 fn snowdensity05d_direct_runtime_projects_routed_melt_and_albedo_carry() {
     let opt_in = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        warm_radiation_inputs(SnowMeltModel::CoeShortwaveAlbedoV1),
+        &warm_radiation_inputs(SnowMeltModel::CoeShortwaveAlbedoV1),
     )
     .expect("opt-in CoE melt should compute");
     let identity =
@@ -186,6 +187,7 @@ fn snowdensity05d_direct_runtime_projects_routed_melt_and_albedo_carry() {
         liquid_water_retained_after_m: opt_in.liquid_water_retained_after_m,
         liquid_water_released_m: opt_in.liquid_water_released_m,
         snow_albedo_state_after: opt_in.snow_albedo_state_after,
+        snow_layers_after: opt_in.snow_layers_after.clone(),
     };
     day.run_r4g_snow_coupling_span()
         .expect("direct snow-coupling span should project opt-in carry");

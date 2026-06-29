@@ -6,7 +6,7 @@ use crate::constants::{WB11_ZERO_THRESHOLD, WB16_PEAKRO_FLOOR, WB16_RUNOFF_NEAR_
 use crate::hydrology::SnowAlbedoState;
 use crate::winter_column::{
     DirectFrostFineLayerState, DirectFrostLaneState, DirectFrostLayerShadowState,
-    DirectSnowLaneState, DirectWinterColumnState,
+    DirectSnowLaneState, DirectSnowLayerState, DirectWinterColumnState,
 };
 
 pub const DIRECT_TRANSFER_HOUR_COUNT: usize = 24;

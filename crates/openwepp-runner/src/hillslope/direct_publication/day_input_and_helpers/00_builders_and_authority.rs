@@ -157,7 +157,7 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             lane_index,
             lane,
             &forcing,
-            snow_lane_state,
+            &snow_lane_state,
             winter_hourly_geometry,
             precipitation_m > 1.0e-12 || snow_lane_state.runtime_swe_m > 1.0e-12,
         )?;
@@ -233,6 +233,7 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             liquid_water_retained_after_m: snow_liquid.liquid_water_retained_after_m,
             liquid_water_released_m: snow_liquid.liquid_water_released_m,
             snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
+            snow_layers_after: snow_liquid.snow_layers_after.clone(),
         });
         let percolation_inputs =
             direct_publication_percolation_inputs(&seed_surface, precipitation_m)?;
@@ -621,7 +622,7 @@ struct DirectProductionFrostTypedComputeContext<'a> {
     lane: &'a openwepp_hillslope_orchestrator::DirectLaneFrame,
     day: &'a ClimateDayProjection,
     forcing: &'a HillslopeDirectClimateDayForcing,
-    snow_lane_state: DirectSnowLaneState,
+    snow_lane_state: &'a DirectSnowLaneState,
     frost_lane_state: &'a DirectFrostLaneState,
     typed_authority: &'a DirectProductionFrostTypedAuthority,
     hourly: [DirectFrostHourlyForcing;
@@ -788,7 +789,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             day_index,
             &forcing,
             rainfall_input_m,
-            snow_lane_state,
+            &snow_lane_state,
             growth_state_for_publication.canopy_cover_fraction,
             self.sturm_climate_class,
             sturm_day_of_year,
@@ -798,10 +799,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             day_index,
             lane_index,
             rainfall_input_m,
-            snow_lane_state,
+            &snow_lane_state,
             authority.snow_frost.snow_melt_model,
             authority.snow_frost.snow_phase_model,
-            snow_liquid,
+            &snow_liquid,
         )?;
         let frost_context = authority.snow_frost.frost_day_context(
             self.climate_request,
@@ -810,7 +811,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             lane_index,
             lane,
             &forcing,
-            snow_lane_state,
+            &snow_lane_state,
             self.winter_hourly_geometry,
             rainfall_input_m > 1.0e-12 || snow_liquid.routed_melt_m > 1.0e-12,
         )?;
@@ -868,7 +869,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             )?);
         day_input.snow_coupling_inputs = Some(DirectSnowCouplingInputs {
             snow_coupling_handoff_m: snow_liquid.snow_coupling_signed_s_m,
-            snow_state_projected: authority.snow_frost.snow_state_projected(snow_lane_state),
+            snow_state_projected: authority.snow_frost.snow_state_projected(&snow_lane_state),
             active_snow_coupling: snow_liquid.active_snow_coupling,
             raw_melt_m: snow_liquid.raw_melt_m,
             redistributed_melt_m: snow_liquid.redistributed_melt_m,
@@ -888,6 +889,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             liquid_water_retained_after_m: snow_liquid.liquid_water_retained_after_m,
             liquid_water_released_m: snow_liquid.liquid_water_released_m,
             snow_albedo_state_after: snow_liquid.snow_albedo_state_after,
+            snow_layers_after: snow_liquid.snow_layers_after.clone(),
         });
         day_input.peak_runoff_inputs = Some(authority.peak_runoff.inputs(hyetograph.clone()));
         day_input.infiltration_depression_inputs = Some(
@@ -1025,10 +1027,10 @@ fn maybe_write_r7h_direct_production_snow_trace(
     day_index: usize,
     lane_index: usize,
     hyetograph_rainfall_m: f64,
-    snow_lane_state: openwepp_hillslope_orchestrator::DirectSnowLaneState,
+    snow_lane_state: &openwepp_hillslope_orchestrator::DirectSnowLaneState,
     snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel,
     snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel,
-    snow_liquid: openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+    snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
 ) -> Result<(), HillslopeCliError> {
     let Some(path) = std::env::var_os("OPENWEPP_R7H_SNOW_TRACE_PATH") else {
         return Ok(());
@@ -1060,6 +1062,55 @@ fn maybe_write_r7h_direct_production_snow_trace(
                 std::path::PathBuf::from(&path).display()
             ),
         })?;
+    let line = r7h_direct_production_snow_trace_line(
+        day_index,
+        lane_index,
+        hyetograph_rainfall_m,
+        snow_lane_state,
+        snow_melt_model,
+        snow_phase_model,
+        snow_liquid,
+    );
+    std::io::Write::write_all(&mut file, line.as_bytes()).map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_production_snow_trace",
+        detail: format!(
+            "{SIMOUT_GUARD_ID} failed writing direct production snow trace {}: {error}",
+            std::path::PathBuf::from(&path).display()
+        ),
+    })
+}
+
+fn r7h_direct_production_snow_trace_line(
+    day_index: usize,
+    lane_index: usize,
+    hyetograph_rainfall_m: f64,
+    snow_lane_state: &openwepp_hillslope_orchestrator::DirectSnowLaneState,
+    snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel,
+    snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel,
+    snow_liquid: &openwepp_hillslope_orchestrator::DirectSnowLiquidPartition,
+) -> String {
+    let layer_count_before = snow_lane_state.layers.len();
+    let layer_count_after = snow_liquid.snow_layers_after.len();
+    let layer_swe_sum_before_m = snow_lane_state
+        .layers
+        .iter()
+        .map(|layer| layer.mass_swe_m)
+        .sum::<f64>();
+    let layer_swe_sum_after_m = snow_liquid
+        .snow_layers_after
+        .iter()
+        .map(|layer| layer.mass_swe_m)
+        .sum::<f64>();
+    let layer_depth_sum_before_m = snow_lane_state
+        .layers
+        .iter()
+        .map(|layer| layer.thickness_m)
+        .sum::<f64>();
+    let layer_depth_sum_after_m = snow_liquid
+        .snow_layers_after
+        .iter()
+        .map(|layer| layer.thickness_m)
+        .sum::<f64>();
     let line = format!(
         "{{\"schema\":\"openwepp-r7h-direct-production-snow-trace-v1\",\
 \"day_index\":{day_index},\
@@ -1070,6 +1121,9 @@ fn maybe_write_r7h_direct_production_snow_trace(
 \"runtime_density_before_kg_m3\":{},\
 \"runtime_settle_day_count_before\":{},\
 \"liquid_water_retained_before_m\":{},\
+\"snow_layer_count_before\":{layer_count_before},\
+\"snow_layer_swe_sum_before_m\":{},\
+\"snow_layer_depth_sum_before_m\":{},\
 \"snow_density_model\":\"{}\",\
 \"snow_melt_model\":\"{}\",\
 \"snow_phase_model\":\"{}\",\
@@ -1089,13 +1143,18 @@ fn maybe_write_r7h_direct_production_snow_trace(
 \"runtime_swe_after_m\":{},\
 \"runtime_depth_after_m\":{},\
 \"runtime_density_after_kg_m3\":{},\
-\"runtime_settle_day_count_after\":{}}}",
+\"runtime_settle_day_count_after\":{},\
+\"snow_layer_count_after\":{layer_count_after},\
+\"snow_layer_swe_sum_after_m\":{},\
+\"snow_layer_depth_sum_after_m\":{}}}",
         direct_production_trace_number(hyetograph_rainfall_m),
         direct_production_trace_number(snow_lane_state.runtime_swe_m),
         direct_production_trace_number(snow_lane_state.runtime_depth_m),
         direct_production_trace_number(snow_lane_state.runtime_density_kg_m3),
         direct_production_trace_number(snow_lane_state.runtime_settle_day_count),
         direct_production_trace_number(snow_lane_state.liquid_water_retained_m),
+        direct_production_trace_number(layer_swe_sum_before_m),
+        direct_production_trace_number(layer_depth_sum_before_m),
         snow_liquid.snow_density_model.id(),
         snow_melt_model.id(),
         snow_phase_model.id(),
@@ -1116,15 +1175,10 @@ fn maybe_write_r7h_direct_production_snow_trace(
         direct_production_trace_number(snow_liquid.runtime_depth_after_m),
         direct_production_trace_number(snow_liquid.runtime_density_after_kg_m3),
         direct_production_trace_number(snow_liquid.runtime_settle_day_count_after),
+        direct_production_trace_number(layer_swe_sum_after_m),
+        direct_production_trace_number(layer_depth_sum_after_m),
     );
-    let line = format!("{line}\n");
-    std::io::Write::write_all(&mut file, line.as_bytes()).map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-        surface: "direct_production_snow_trace",
-        detail: format!(
-            "{SIMOUT_GUARD_ID} failed writing direct production snow trace {}: {error}",
-            std::path::PathBuf::from(&path).display()
-        ),
-    })
+    format!("{line}\n")
 }
 
 fn maybe_write_r7h_direct_production_wb15_trace(
@@ -1228,10 +1282,13 @@ fn snowdensity1015_default_snow_density_model(
             "physics_bulk_climate_class_density_v1" => Ok(
                 openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkClimateClassDensityV1,
             ),
+            "physics_bulk_multilayer_density_v1" => Ok(
+                openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkMultilayerDensityV1,
+            ),
             observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_production_snow_density_model",
                 detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, or physics_bulk_climate_class_density_v1, observed {observed}"
+                    "{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1, observed {observed}"
                 ),
             }),
         },

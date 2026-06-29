@@ -222,11 +222,12 @@ impl Wb11HydrologyKernel {
             density_swe_identity_residual_m: 0.0,
             density_unbounded_swe_residual_m: 0.0,
             snow_albedo_state_after: snow_coupling.snow_albedo_state_after,
+            snow_layers_after: Vec::new(),
         })
     }
 
     pub fn compute_direct_snow_liquid_partition_from_typed(
-        inputs: DirectActiveSnowPartitionInputs,
+        inputs: &DirectActiveSnowPartitionInputs,
     ) -> Result<DirectSnowLiquidPartition, Wb11HydrologyKernelGuardError> {
         let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
         Self::require_direct_typed_snow_value(
@@ -246,15 +247,15 @@ impl Wb11HydrologyKernel {
                     || f64::midpoint(inputs.tmax_c, inputs.tmin_c) < 0.0
             };
         let snow_coupling = if active_snow_coupling {
-            Self::compute_active_snow_coupling_from_typed(phase_class, &inputs)?
+            Self::compute_active_snow_coupling_from_typed(phase_class, inputs)?
         } else {
-            Self::inactive_snow_coupling_from_typed(phase_class, &inputs)?
+            Self::inactive_snow_coupling_from_typed(phase_class, inputs)?
         };
         let (routed_melt_m, post_winter_rain_m) =
             Self::resolve_snow_partition_terms(phase_class, inputs.hyetograph_rainfall_m, &snow_coupling)?;
         let density_outcome = Self::resolve_typed_snow_density_outcome(
             phase_class,
-            &inputs,
+            inputs,
             &snow_coupling,
             routed_melt_m,
         )?;
@@ -285,6 +286,7 @@ impl Wb11HydrologyKernel {
             density_swe_identity_residual_m: density_outcome.max_abs_swe_identity_residual_m,
             density_unbounded_swe_residual_m: density_outcome.max_abs_unbounded_swe_residual_m,
             snow_albedo_state_after: snow_coupling.snow_albedo_state_after,
+            snow_layers_after: density_outcome.layers_after,
         })
     }
 
@@ -353,11 +355,13 @@ impl Wb11HydrologyKernel {
             .map(|hour| hour.air_temperature_c)
             .sum::<f64>()
             / 24.0;
-        update_snow_density_runtime_state(SnowDensityRuntimeInputs {
+        update_snow_density_runtime_state(&SnowDensityRuntimeInputs {
             model: inputs.snow_density_model,
             prior_swe_m: inputs.runtime_swe_m,
             prior_depth_m: inputs.runtime_depth_m,
             prior_density_kg_m3: inputs.runtime_density_kg_m3,
+            prior_settle_day_count: inputs.runtime_settle_day_count,
+            prior_layers: inputs.snow_layers.clone(),
             boundary_swe_after_m: snow_coupling.runtime_swe,
             boundary_depth_after_m: snow_coupling.runtime_depth_m,
             boundary_density_after_kg_m3: snow_coupling.runtime_density_kg_m3,
@@ -413,6 +417,17 @@ impl Wb11HydrologyKernel {
                     symbol: BoundarySymbol::from("sturm2010_density_parameters"),
                 }
             }
+            SnowDensityError::LayerAggregateMismatch {
+                symbol,
+                value,
+                expected,
+            } => Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(*symbol),
+                value: *value,
+                minimum: Some(*expected),
+                maximum: Some(*expected),
+            },
         }
     }
 

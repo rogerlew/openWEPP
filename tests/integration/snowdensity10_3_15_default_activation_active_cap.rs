@@ -26,7 +26,7 @@ const REPORT: &str = concat!(
 fn contract_and_package_bind_default_activation_authority() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 107",
+        "contract_version: 108",
         "REF-SNOWFREEZE-SNOWDENSITY1015",
         "INV-SNOWFREEZE-072",
         "OBL-SNOWFREEZE-P-047",
@@ -62,7 +62,7 @@ fn implementation_selects_activated_default_without_user_surface() {
         "Err(std::env::VarError::NotPresent)",
         "SnowDensityModel::PhysicsBulkDensityCompactionV1",
         "SnowMeltModel::CoeLiquidHoldingCapacityV1",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, or physics_bulk_climate_class_density_v1",
+        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1",
         "must be legacy_coe, coe_liquid_holding_capacity_v1, coe_open_sublimation_stage_a_v1, or coe_open_sublimation_stage_b_v1",
     ] {
         assert_contains(&builder, marker, BUILDER);

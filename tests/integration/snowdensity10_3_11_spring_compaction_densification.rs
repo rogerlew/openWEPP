@@ -24,7 +24,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_spring_densification_candidate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 107",
+        "contract_version: 108",
         "physics_bulk_spring_densification_v1",
         "INV-SNOWFREEZE-068",
         "OBL-SNOWFREEZE-P-043",
@@ -56,11 +56,11 @@ fn runtime_candidate_preserves_swe_and_density_cap() {
     assert_close(constants.wet_compaction_max_density_kg_m3, 550.0);
 
     let density_baseline = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        wet_spring_inputs(SnowDensityModel::PhysicsBulkDensityCompactionV1),
+        &wet_spring_inputs(SnowDensityModel::PhysicsBulkDensityCompactionV1),
     )
     .expect("density compaction baseline should compute");
     let spring = Wb11HydrologyKernel::compute_direct_snow_liquid_partition_from_typed(
-        wet_spring_inputs(SnowDensityModel::PhysicsBulkSpringDensificationV1),
+        &wet_spring_inputs(SnowDensityModel::PhysicsBulkSpringDensificationV1),
     )
     .expect("spring densification candidate should compute");
 
@@ -100,7 +100,7 @@ fn selector_and_tool_keep_diagnostic_boundaries() {
     for marker in [
         "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",
         "SnowDensityModel::PhysicsBulkDensityCompactionV1",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, or physics_bulk_climate_class_density_v1",
+        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
@@ -183,6 +183,7 @@ fn wet_spring_inputs(model: SnowDensityModel) -> DirectActiveSnowPartitionInputs
         coe_boundary_settle_day_count: 20.0,
         snow_albedo_model: None,
         snow_albedo_state: None,
+        snow_layers: Vec::new(),
         underlying_surface_albedo: 0.2,
         hourly,
     }

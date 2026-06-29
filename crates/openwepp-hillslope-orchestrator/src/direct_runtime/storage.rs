@@ -2,9 +2,10 @@ use super::{
     DIRECT_AUDIT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT,
     DIRECT_R4D_PHASE_SPAN_COUNT, DIRECT_R4E_PHASE_SPAN_COUNT, DIRECT_R4F_PHASE_SPAN_COUNT,
     DIRECT_R4G_PHASE_SPAN_COUNT, DirectDayFrame, DirectRuntimeError, DirectSnowLaneState,
-    DirectSubsurfaceLayerState, SnowAlbedoState, WB11_ZERO_THRESHOLD, validate_finite,
-    validate_nonnegative_direct_m,
+    DirectSnowRuntimeCarry, DirectSubsurfaceLayerState, SnowAlbedoState, WB11_ZERO_THRESHOLD,
+    validate_finite, validate_nonnegative_direct_m,
 };
+use crate::winter_column::DirectSnowLayerState;
 
 #[derive(Debug, Clone)]
 struct R7hStorageTraceConfig {
@@ -523,10 +524,10 @@ impl DirectDayFrame {
 
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
-        self.snow_coupling = snow_coupling;
+        self.snow_coupling = snow_coupling.clone();
         if snow_coupling.snow_state_projected {
             self.winter_column.snow =
-                DirectSnowLaneState::from_runtime_values_boundary_liquid_and_albedo_state(
+                DirectSnowLaneState::from_runtime_values_boundary_liquid_albedo_and_layers(
                     snow_coupling.runtime_swe_after_m,
                     snow_coupling.runtime_depth_after_m,
                     snow_coupling.runtime_density_after_kg_m3,
@@ -536,8 +537,9 @@ impl DirectDayFrame {
                     snow_coupling.coe_boundary_settle_day_count_after,
                     snow_coupling.liquid_water_retained_after_m,
                     snow_coupling.snow_albedo_state_after,
+                    snow_coupling.snow_layers_after.clone(),
                 );
-            self.snow_runtime_carry = Some(self.winter_column.snow.into());
+            self.snow_runtime_carry = Some(DirectSnowRuntimeCarry::from(&self.winter_column.snow));
         }
         self.storage_reconciliation_inputs.snow_coupling_m = snow_coupling.snow_coupling_m;
         DIRECT_AUDIT.record_direct_state_mutation();
@@ -770,6 +772,7 @@ impl DirectDayFrame {
             liquid_water_retained_after_m: self.snow_coupling_inputs.liquid_water_retained_after_m,
             liquid_water_released_m: self.snow_coupling_inputs.liquid_water_released_m,
             snow_albedo_state_after: self.snow_coupling_inputs.snow_albedo_state_after,
+            snow_layers_after: self.snow_coupling_inputs.snow_layers_after.clone(),
         })
     }
 
@@ -1263,7 +1266,7 @@ pub struct DirectEvapotranspirationShadowProjection {
     pub evapotranspiration_m: f64,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DirectSnowCouplingInputs {
     pub snow_coupling_handoff_m: f64,
     pub snow_state_projected: bool,
@@ -1285,6 +1288,7 @@ pub struct DirectSnowCouplingInputs {
     pub liquid_water_retained_after_m: f64,
     pub liquid_water_released_m: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
+    pub snow_layers_after: Vec<DirectSnowLayerState>,
 }
 
 impl DirectSnowCouplingInputs {
@@ -1311,11 +1315,12 @@ impl DirectSnowCouplingInputs {
             liquid_water_retained_after_m: 0.0,
             liquid_water_released_m: 0.0,
             snow_albedo_state_after: None,
+            snow_layers_after: Vec::new(),
         }
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DirectSnowCouplingState {
     pub snow_coupling_m: f64,
     pub snow_state_projected: bool,
@@ -1337,6 +1342,7 @@ pub struct DirectSnowCouplingState {
     pub liquid_water_retained_after_m: f64,
     pub liquid_water_released_m: f64,
     pub snow_albedo_state_after: Option<SnowAlbedoState>,
+    pub snow_layers_after: Vec<DirectSnowLayerState>,
 }
 
 impl DirectSnowCouplingState {
@@ -1363,6 +1369,7 @@ impl DirectSnowCouplingState {
             liquid_water_retained_after_m: 0.0,
             liquid_water_released_m: 0.0,
             snow_albedo_state_after: None,
+            snow_layers_after: Vec::new(),
         }
     }
 }

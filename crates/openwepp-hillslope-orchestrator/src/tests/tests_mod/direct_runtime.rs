@@ -2880,7 +2880,7 @@ fn r4g_snow_coupling_producer_consumes_signed_handoff_and_updates_r4b_input() {
         snow_coupling_m: -0.09375,
         ..DirectSnowCouplingState::zero()
     };
-    let expected_operands = DirectSnowCouplingDownstreamOperands::from(expected_state);
+    let expected_operands = DirectSnowCouplingDownstreamOperands::from(expected_state.clone());
     let expected_shadow = DirectSnowCouplingShadowProjection {
         lane_index: 0,
         day_index: 0,
@@ -2918,11 +2918,11 @@ fn r4g_snow_coupling_producer_consumes_signed_handoff_and_updates_r4b_input() {
     assert_eq!(report.compatibility_edge_invocation_count, 0);
     assert_eq!(report.snow_coupling_shadow_projection, expected_shadow);
 
-    assert_r4g_snow_coupling_anti_aliases(expected_state, &day);
+    assert_r4g_snow_coupling_anti_aliases(&expected_state, &day);
 }
 
 fn assert_r4g_snow_coupling_anti_aliases(
-    expected_state: DirectSnowCouplingState,
+    expected_state: &DirectSnowCouplingState,
     day: &DirectDayFrame,
 ) {
     assert_ne!(

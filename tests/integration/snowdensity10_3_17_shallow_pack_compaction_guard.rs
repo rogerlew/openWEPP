@@ -29,7 +29,7 @@ const TOL: f64 = 1.0e-12;
 fn contract_and_package_bind_shallow_guard_candidate() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 107",
+        "contract_version: 108",
         "physics_bulk_shallow_guard_v1",
         "snow_shallow_compaction_guard_depth_threshold",
         "INV-SNOWFREEZE-074",
@@ -63,12 +63,12 @@ fn shallow_guard_reduces_only_shallow_density_aggression() {
     assert_close(constants.dry_compaction_multiplier, 4.0);
     assert_close(constants.wet_compaction_multiplier, 2.0);
 
-    let baseline_shallow = update_snow_density_runtime_state(shallow_inputs(
+    let baseline_shallow = update_snow_density_runtime_state(&shallow_inputs(
         SnowDensityModel::PhysicsBulkDensityCompactionV1,
         0.18,
     ))
     .expect("density baseline should compute");
-    let guarded_shallow = update_snow_density_runtime_state(shallow_inputs(
+    let guarded_shallow = update_snow_density_runtime_state(&shallow_inputs(
         SnowDensityModel::PhysicsBulkShallowGuardV1,
         0.18,
     ))
@@ -93,12 +93,12 @@ fn shallow_guard_reduces_only_shallow_density_aggression() {
         "same-SWE shallow guard should retain more physical depth"
     );
 
-    let baseline_deep = update_snow_density_runtime_state(shallow_inputs(
+    let baseline_deep = update_snow_density_runtime_state(&shallow_inputs(
         SnowDensityModel::PhysicsBulkDensityCompactionV1,
         0.35,
     ))
     .expect("deep baseline should compute");
-    let guarded_deep = update_snow_density_runtime_state(shallow_inputs(
+    let guarded_deep = update_snow_density_runtime_state(&shallow_inputs(
         SnowDensityModel::PhysicsBulkShallowGuardV1,
         0.35,
     ))
@@ -121,7 +121,7 @@ fn selector_and_tool_keep_diagnostic_boundaries() {
         "physics_bulk_density_compaction_v1",
         "physics_bulk_shallow_guard_v1",
         "SnowDensityModel::PhysicsBulkShallowGuardV1",
-        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, or physics_bulk_climate_class_density_v1",
+        "must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1",
     ] {
         assert_contains(&builder, marker, BUILDER);
     }
@@ -190,6 +190,8 @@ fn shallow_inputs(model: SnowDensityModel, prior_depth_m: f64) -> SnowDensityRun
         prior_swe_m,
         prior_depth_m,
         prior_density_kg_m3: 250.0,
+        prior_settle_day_count: 0.0,
+        prior_layers: Vec::new(),
         boundary_swe_after_m: prior_swe_m,
         boundary_depth_after_m: prior_depth_m,
         boundary_density_after_kg_m3: 250.0,

@@ -190,9 +190,10 @@ pub use scheduler::{
 };
 pub use winter_column::{
     DIRECT_WINTER_HOURS_PER_DAY, DirectFrostFineLayerState, DirectFrostLaneState,
-    DirectFrostLayerShadowState, DirectSnowLaneState, DirectWinterColumnState,
-    DirectWinterDayForcing, DirectWinterDayOutcome, DirectWinterFrostOutcome,
-    DirectWinterPublicationOutcome, DirectWinterSnowOutcome, DirectWinterStorageOutcome,
+    DirectFrostLayerShadowState, DirectSnowLaneState, DirectSnowLayerState,
+    DirectWinterColumnState, DirectWinterDayForcing, DirectWinterDayOutcome,
+    DirectWinterFrostOutcome, DirectWinterPublicationOutcome, DirectWinterSnowOutcome,
+    DirectWinterStorageOutcome,
 };
 
 pub(crate) use hydrology::{

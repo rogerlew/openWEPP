@@ -17,7 +17,7 @@ fn r7g_constructor_prefers_winter_column_snow_over_legacy_carry() {
     let mut lane = DirectLaneConstructorInputs::from_topology(0, 1, 1)
         .expect("single OFE lane constructor input should build");
     let canonical_snow = DirectSnowLaneState::from_runtime_values(0.03125, 0.125, 275.0, 4.0);
-    lane.winter_column.snow = canonical_snow;
+    lane.winter_column.snow = canonical_snow.clone();
     lane.snow_runtime_carry = Some(DirectSnowRuntimeCarry {
         runtime_swe_m: 0.5,
         runtime_depth_m: 0.75,
@@ -28,6 +28,7 @@ fn r7g_constructor_prefers_winter_column_snow_over_legacy_carry() {
         coe_boundary_settle_day_count: 8.0,
         liquid_water_retained_m: 0.0,
         snow_albedo_state: None,
+        layers: Vec::new(),
     });
 
     let frame = DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(
@@ -38,8 +39,8 @@ fn r7g_constructor_prefers_winter_column_snow_over_legacy_carry() {
 
     assert_eq!(frame.lanes[0].winter_column.snow, canonical_snow);
     assert_eq!(
-        frame.lanes[0].snow_runtime_carry,
-        Some(DirectSnowRuntimeCarry::from(canonical_snow))
+        frame.lanes[0].snow_runtime_carry.as_deref(),
+        Some(&DirectSnowRuntimeCarry::from(canonical_snow))
     );
 }
 
@@ -64,6 +65,7 @@ fn r7g_legacy_constructor_snow_carry_migrates_into_winter_column() {
         coe_boundary_settle_day_count: 2.0,
         liquid_water_retained_m: 0.0,
         snow_albedo_state: None,
+        layers: Vec::new(),
     });
 
     let frame = DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(
@@ -74,7 +76,13 @@ fn r7g_legacy_constructor_snow_carry_migrates_into_winter_column() {
 
     assert_eq!(
         frame.lanes[0].winter_column.snow,
-        DirectSnowLaneState::from(frame.lanes[0].snow_runtime_carry.expect("legacy mirror"))
+        DirectSnowLaneState::from(
+            frame.lanes[0]
+                .snow_runtime_carry
+                .as_deref()
+                .cloned()
+                .expect("legacy mirror")
+        )
     );
 }
 
@@ -155,7 +163,7 @@ fn r7g_executor_commits_r4g_winter_column_snow_state_to_lane() {
     let expected_snow = DirectSnowLaneState::from_runtime_values(0.046_875, 0.1875, 300.0, 5.0);
     assert_eq!(frame.lanes[0].winter_column.snow, expected_snow);
     assert_eq!(
-        frame.lanes[0].snow_runtime_carry,
-        Some(DirectSnowRuntimeCarry::from(expected_snow))
+        frame.lanes[0].snow_runtime_carry.as_deref(),
+        Some(&DirectSnowRuntimeCarry::from(expected_snow))
     );
 }
