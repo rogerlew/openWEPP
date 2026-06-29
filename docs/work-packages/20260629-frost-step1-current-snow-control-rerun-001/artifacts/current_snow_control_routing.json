@@ -1,0 +1,647 @@
+{
+  "contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-047/048/050",
+  "disposition": {
+    "gap": "GAP-SNOWFREEZE-002",
+    "status": "open_narrowed",
+    "summary": "Frost timing attribution is unblocked at paired sites whose only remaining snow-control failure is forcing-limited absolute magnitude; frost magnitude attribution is Step 2. Sites without paired snow depth remain inconclusive for snow control."
+  },
+  "evidence_mode": "Ran",
+  "routing_counts": {
+    "BLOCKED": 1,
+    "FORCING-LIMITED": 2,
+    "INCONCLUSIVE-NO-PAIRED-SNOW": 2
+  },
+  "schema": "frost-step1-current-snow-control-routing-v1",
+  "sites": [
+    {
+      "attributable_frost_signatures": "frost timing attributable; magnitude carries snow forcing uncertainty",
+      "comparison_report": "target/frost_step1_current_snow_control/site1/comparison_report.json",
+      "forcing_robust_notes": [
+        "frost timing residuals exist and are deferred to Step 2, not snow-control"
+      ],
+      "frost_depth_residual_rows": 392,
+      "harness_verdict": "UNRESOLVED",
+      "isotherm_upper_bound_exceedances": 0,
+      "isotherm_upper_bound_rows": 0,
+      "max_abs_frost_depth_residual_m": 0.20213143040558826,
+      "max_abs_snow_depth_residual_m": 0.7897087938117313,
+      "mean_signed_snow_depth_residual_m": 0.15606590909970983,
+      "median_signed_snow_depth_residual_m": 0.13661465153804614,
+      "modeled_over_observed_rows": 315,
+      "modeled_under_observed_rows": 56,
+      "observed_snow_depth_rows": 384,
+      "paired_snow_depth_rows": 384,
+      "route": "FORCING-LIMITED",
+      "seasonal_timing_failure_count": 11,
+      "site_id": "site1_sleepers_south_field_vt",
+      "snow_control_status": "SNOW_CONTROL_FAILED",
+      "snow_depth_failures": 218,
+      "snow_gate_status": "magnitude-only snow-depth residual",
+      "snow_regime_metrics": {
+        "cover_agreement_fraction": 0.9401041666666666,
+        "modeled_only_cover_rows": 19,
+        "observed_only_cover_rows": 4,
+        "paired_rows": 384,
+        "regime_mismatch_fraction": 0.059895833333333336,
+        "seasonal_offsets": [
+          {
+            "modeled_snow_dates": 23,
+            "observed_snow_dates": 23,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1984
+          },
+          {
+            "modeled_snow_dates": 20,
+            "observed_snow_dates": 21,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 7,
+            "water_year": 1985
+          },
+          {
+            "modeled_snow_dates": 17,
+            "observed_snow_dates": 14,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 19,
+            "water_year": 1986
+          },
+          {
+            "modeled_snow_dates": 17,
+            "observed_snow_dates": 16,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 7,
+            "water_year": 1987
+          },
+          {
+            "modeled_snow_dates": 17,
+            "observed_snow_dates": 18,
+            "onset_offset_days": 0,
+            "thaw_offset_days": -7,
+            "water_year": 1988
+          },
+          {
+            "modeled_snow_dates": 20,
+            "observed_snow_dates": 20,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1989
+          },
+          {
+            "modeled_snow_dates": 15,
+            "observed_snow_dates": 15,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1990
+          },
+          {
+            "modeled_snow_dates": 15,
+            "observed_snow_dates": 15,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1991
+          },
+          {
+            "modeled_snow_dates": 17,
+            "observed_snow_dates": 17,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1992
+          },
+          {
+            "modeled_snow_dates": 18,
+            "observed_snow_dates": 17,
+            "onset_offset_days": -7,
+            "thaw_offset_days": 0,
+            "water_year": 1993
+          },
+          {
+            "modeled_snow_dates": 9,
+            "observed_snow_dates": 9,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1994
+          },
+          {
+            "modeled_snow_dates": 9,
+            "observed_snow_dates": 9,
+            "onset_offset_days": 0,
+            "thaw_offset_days": -8,
+            "water_year": 1995
+          },
+          {
+            "modeled_snow_dates": 10,
+            "observed_snow_dates": 10,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1996
+          },
+          {
+            "modeled_snow_dates": 12,
+            "observed_snow_dates": 11,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 7,
+            "water_year": 1997
+          },
+          {
+            "modeled_snow_dates": 8,
+            "observed_snow_dates": 8,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1998
+          },
+          {
+            "modeled_snow_dates": 7,
+            "observed_snow_dates": 6,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 14,
+            "water_year": 1999
+          },
+          {
+            "modeled_snow_dates": 7,
+            "observed_snow_dates": 7,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2000
+          },
+          {
+            "modeled_snow_dates": 10,
+            "observed_snow_dates": 9,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 14,
+            "water_year": 2001
+          },
+          {
+            "modeled_snow_dates": 5,
+            "observed_snow_dates": 5,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2002
+          },
+          {
+            "modeled_snow_dates": 8,
+            "observed_snow_dates": 7,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 14,
+            "water_year": 2004
+          },
+          {
+            "modeled_snow_dates": 7,
+            "observed_snow_dates": 7,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2005
+          },
+          {
+            "modeled_snow_dates": 12,
+            "observed_snow_dates": 12,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2007
+          },
+          {
+            "modeled_snow_dates": 5,
+            "observed_snow_dates": 4,
+            "onset_offset_days": -7,
+            "thaw_offset_days": 0,
+            "water_year": 2008
+          },
+          {
+            "modeled_snow_dates": 7,
+            "observed_snow_dates": 6,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 14,
+            "water_year": 2009
+          },
+          {
+            "modeled_snow_dates": 7,
+            "observed_snow_dates": 6,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 8,
+            "water_year": 2010
+          },
+          {
+            "modeled_snow_dates": 11,
+            "observed_snow_dates": 10,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 11,
+            "water_year": 2011
+          },
+          {
+            "modeled_snow_dates": 8,
+            "observed_snow_dates": 8,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2012
+          },
+          {
+            "modeled_snow_dates": 9,
+            "observed_snow_dates": 9,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2013
+          },
+          {
+            "modeled_snow_dates": 9,
+            "observed_snow_dates": 9,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2014
+          },
+          {
+            "modeled_snow_dates": 9,
+            "observed_snow_dates": 8,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 20,
+            "water_year": 2015
+          },
+          {
+            "modeled_snow_dates": 8,
+            "observed_snow_dates": 6,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2016
+          },
+          {
+            "modeled_snow_dates": 11,
+            "observed_snow_dates": 10,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 7,
+            "water_year": 2017
+          }
+        ],
+        "timing_check_count": 64,
+        "timing_failure_count": 2,
+        "timing_failure_fraction": 0.03125
+      },
+      "snow_water_alias_better_rows": 188,
+      "step2_frost_magnitude_attribution_ready": true,
+      "timing_rescue_rows": 25
+    },
+    {
+      "attributable_frost_signatures": "frost timing attributable; magnitude carries snow forcing uncertainty",
+      "comparison_report": "target/frost_step1_current_snow_control/site2/comparison_report.json",
+      "forcing_robust_notes": [
+        "frost timing residuals exist and are deferred to Step 2, not snow-control"
+      ],
+      "frost_depth_residual_rows": 200,
+      "harness_verdict": "UNRESOLVED",
+      "isotherm_upper_bound_exceedances": 0,
+      "isotherm_upper_bound_rows": 0,
+      "max_abs_frost_depth_residual_m": 0.3902776857204331,
+      "max_abs_snow_depth_residual_m": 0.5825943749751785,
+      "mean_signed_snow_depth_residual_m": 0.08137700789858286,
+      "median_signed_snow_depth_residual_m": 0.07135798002990856,
+      "modeled_over_observed_rows": 134,
+      "modeled_under_observed_rows": 54,
+      "observed_snow_depth_rows": 193,
+      "paired_snow_depth_rows": 193,
+      "route": "FORCING-LIMITED",
+      "seasonal_timing_failure_count": 22,
+      "site_id": "site2_sleepers_w9_hardwood_vt",
+      "snow_control_status": "SNOW_CONTROL_FAILED",
+      "snow_depth_failures": 72,
+      "snow_gate_status": "magnitude-only snow-depth residual",
+      "snow_regime_metrics": {
+        "cover_agreement_fraction": 0.9585492227979274,
+        "modeled_only_cover_rows": 7,
+        "observed_only_cover_rows": 1,
+        "paired_rows": 193,
+        "regime_mismatch_fraction": 0.04145077720207254,
+        "seasonal_offsets": [
+          {
+            "modeled_snow_dates": 11,
+            "observed_snow_dates": 11,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1994
+          },
+          {
+            "modeled_snow_dates": 9,
+            "observed_snow_dates": 10,
+            "onset_offset_days": 0,
+            "thaw_offset_days": -6,
+            "water_year": 1995
+          },
+          {
+            "modeled_snow_dates": 8,
+            "observed_snow_dates": 8,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1996
+          },
+          {
+            "modeled_snow_dates": 10,
+            "observed_snow_dates": 10,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1997
+          },
+          {
+            "modeled_snow_dates": 6,
+            "observed_snow_dates": 6,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 1998
+          },
+          {
+            "modeled_snow_dates": 7,
+            "observed_snow_dates": 6,
+            "onset_offset_days": -21,
+            "thaw_offset_days": 0,
+            "water_year": 1999
+          },
+          {
+            "modeled_snow_dates": 7,
+            "observed_snow_dates": 7,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2000
+          },
+          {
+            "modeled_snow_dates": 8,
+            "observed_snow_dates": 7,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 35,
+            "water_year": 2001
+          },
+          {
+            "modeled_snow_dates": 4,
+            "observed_snow_dates": 4,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2002
+          },
+          {
+            "modeled_snow_dates": 6,
+            "observed_snow_dates": 6,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2004
+          },
+          {
+            "modeled_snow_dates": 7,
+            "observed_snow_dates": 7,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2005
+          },
+          {
+            "modeled_snow_dates": 8,
+            "observed_snow_dates": 8,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2006
+          },
+          {
+            "modeled_snow_dates": 11,
+            "observed_snow_dates": 11,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2007
+          },
+          {
+            "modeled_snow_dates": 4,
+            "observed_snow_dates": 4,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2008
+          },
+          {
+            "modeled_snow_dates": 6,
+            "observed_snow_dates": 6,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2009
+          },
+          {
+            "modeled_snow_dates": 5,
+            "observed_snow_dates": 5,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2010
+          },
+          {
+            "modeled_snow_dates": 8,
+            "observed_snow_dates": 8,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2011
+          },
+          {
+            "modeled_snow_dates": 6,
+            "observed_snow_dates": 6,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2012
+          },
+          {
+            "modeled_snow_dates": 8,
+            "observed_snow_dates": 7,
+            "onset_offset_days": -22,
+            "thaw_offset_days": 0,
+            "water_year": 2013
+          },
+          {
+            "modeled_snow_dates": 7,
+            "observed_snow_dates": 6,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 21,
+            "water_year": 2014
+          },
+          {
+            "modeled_snow_dates": 6,
+            "observed_snow_dates": 6,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2015
+          },
+          {
+            "modeled_snow_dates": 8,
+            "observed_snow_dates": 7,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 10,
+            "water_year": 2016
+          },
+          {
+            "modeled_snow_dates": 9,
+            "observed_snow_dates": 8,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 13,
+            "water_year": 2017
+          },
+          {
+            "modeled_snow_dates": 10,
+            "observed_snow_dates": 9,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 16,
+            "water_year": 2019
+          },
+          {
+            "modeled_snow_dates": 8,
+            "observed_snow_dates": 8,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 0,
+            "water_year": 2020
+          }
+        ],
+        "timing_check_count": 50,
+        "timing_failure_count": 5,
+        "timing_failure_fraction": 0.1
+      },
+      "snow_water_alias_better_rows": 35,
+      "step2_frost_magnitude_attribution_ready": true,
+      "timing_rescue_rows": 15
+    },
+    {
+      "attributable_frost_signatures": "frost timing report-only until independent snow control exists",
+      "comparison_report": "target/frost_step1_current_snow_control/site3/comparison_report.json",
+      "forcing_robust_notes": [
+        "frost timing residuals exist and are deferred to Step 2, not snow-control"
+      ],
+      "frost_depth_residual_rows": 0,
+      "harness_verdict": "UNRESOLVED",
+      "isotherm_upper_bound_exceedances": 3658,
+      "isotherm_upper_bound_rows": 10583,
+      "max_abs_frost_depth_residual_m": null,
+      "max_abs_snow_depth_residual_m": null,
+      "mean_signed_snow_depth_residual_m": null,
+      "median_signed_snow_depth_residual_m": null,
+      "modeled_over_observed_rows": 0,
+      "modeled_under_observed_rows": 0,
+      "observed_snow_depth_rows": 0,
+      "paired_snow_depth_rows": 0,
+      "route": "INCONCLUSIVE-NO-PAIRED-SNOW",
+      "seasonal_timing_failure_count": 44,
+      "site_id": "site3_scan_mandan_nd",
+      "snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW",
+      "snow_depth_failures": 0,
+      "snow_gate_status": "snow control cannot be established",
+      "snow_regime_metrics": {
+        "cover_agreement_fraction": null,
+        "modeled_only_cover_rows": 0,
+        "observed_only_cover_rows": 0,
+        "paired_rows": 0,
+        "regime_mismatch_fraction": null,
+        "seasonal_offsets": [],
+        "timing_check_count": 0,
+        "timing_failure_count": 0,
+        "timing_failure_fraction": null
+      },
+      "snow_water_alias_better_rows": 0,
+      "step2_frost_magnitude_attribution_ready": false,
+      "timing_rescue_rows": 0
+    },
+    {
+      "attributable_frost_signatures": "no frost attribution; snow defect would alias into frost",
+      "comparison_report": "target/frost_step1_current_snow_control/site4/comparison_report.json",
+      "forcing_robust_notes": [
+        "systematic snow-cover onset/thaw offset exceeds 14 days",
+        "frost timing residuals exist and are deferred to Step 2, not snow-control"
+      ],
+      "frost_depth_residual_rows": 83,
+      "harness_verdict": "UNRESOLVED",
+      "isotherm_upper_bound_exceedances": 0,
+      "isotherm_upper_bound_rows": 0,
+      "max_abs_frost_depth_residual_m": 0.9306711100136333,
+      "max_abs_snow_depth_residual_m": 0.22323340797447816,
+      "mean_signed_snow_depth_residual_m": 0.04400065299290993,
+      "median_signed_snow_depth_residual_m": 0.0,
+      "modeled_over_observed_rows": 39,
+      "modeled_under_observed_rows": 3,
+      "observed_snow_depth_rows": 232,
+      "paired_snow_depth_rows": 83,
+      "route": "BLOCKED",
+      "seasonal_timing_failure_count": 1,
+      "site_id": "site4_ggd498_morris_mn",
+      "snow_control_status": "SNOW_CONTROL_FAILED",
+      "snow_depth_failures": 20,
+      "snow_gate_status": "forcing-robust snow-control defect remains",
+      "snow_regime_metrics": {
+        "cover_agreement_fraction": 0.7590361445783133,
+        "modeled_only_cover_rows": 18,
+        "observed_only_cover_rows": 2,
+        "paired_rows": 83,
+        "regime_mismatch_fraction": 0.24096385542168675,
+        "seasonal_offsets": [
+          {
+            "modeled_snow_dates": 12,
+            "observed_snow_dates": 6,
+            "onset_offset_days": -28,
+            "thaw_offset_days": 14,
+            "water_year": 1980
+          },
+          {
+            "modeled_snow_dates": 7,
+            "observed_snow_dates": 3,
+            "onset_offset_days": -23,
+            "thaw_offset_days": 49,
+            "water_year": 1981
+          },
+          {
+            "modeled_snow_dates": 7,
+            "observed_snow_dates": 4,
+            "onset_offset_days": 17,
+            "thaw_offset_days": 21,
+            "water_year": 1983
+          },
+          {
+            "modeled_snow_dates": 14,
+            "observed_snow_dates": 11,
+            "onset_offset_days": 0,
+            "thaw_offset_days": 7,
+            "water_year": 1984
+          }
+        ],
+        "timing_check_count": 8,
+        "timing_failure_count": 5,
+        "timing_failure_fraction": 0.625
+      },
+      "snow_water_alias_better_rows": 35,
+      "step2_frost_magnitude_attribution_ready": false,
+      "timing_rescue_rows": 3
+    },
+    {
+      "attributable_frost_signatures": "frost timing report-only until independent snow control exists",
+      "comparison_report": "target/frost_step1_current_snow_control/site5/comparison_report.json",
+      "forcing_robust_notes": [
+        "frost timing residuals exist and are deferred to Step 2, not snow-control"
+      ],
+      "frost_depth_residual_rows": 0,
+      "harness_verdict": "UNRESOLVED",
+      "isotherm_upper_bound_exceedances": 125,
+      "isotherm_upper_bound_rows": 4356,
+      "max_abs_frost_depth_residual_m": null,
+      "max_abs_snow_depth_residual_m": null,
+      "mean_signed_snow_depth_residual_m": null,
+      "median_signed_snow_depth_residual_m": null,
+      "modeled_over_observed_rows": 0,
+      "modeled_under_observed_rows": 0,
+      "observed_snow_depth_rows": 0,
+      "paired_snow_depth_rows": 0,
+      "route": "INCONCLUSIVE-NO-PAIRED-SNOW",
+      "seasonal_timing_failure_count": 13,
+      "site_id": "site5_reynolds_creek_us_rls_id",
+      "snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW",
+      "snow_depth_failures": 0,
+      "snow_gate_status": "snow control cannot be established",
+      "snow_regime_metrics": {
+        "cover_agreement_fraction": null,
+        "modeled_only_cover_rows": 0,
+        "observed_only_cover_rows": 0,
+        "paired_rows": 0,
+        "regime_mismatch_fraction": null,
+        "seasonal_offsets": [],
+        "timing_check_count": 0,
+        "timing_failure_count": 0,
+        "timing_failure_fraction": null
+      },
+      "snow_water_alias_better_rows": 0,
+      "step2_frost_magnitude_attribution_ready": false,
+      "timing_rescue_rows": 0
+    }
+  ],
+  "step2_unblocked_sites": [
+    "site1_sleepers_south_field_vt",
+    "site2_sleepers_w9_hardwood_vt"
+  ]
+}

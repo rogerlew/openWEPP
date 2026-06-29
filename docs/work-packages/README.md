@@ -13,6 +13,21 @@
 
 State as of `2026-06-29`:
 
+- `20260629-frost-step1-current-snow-control-rerun-001/` is complete as FROST
+  STEP 1, the current-default snow-control rerun for observed frost sites.
+  Result: `EXECUTED-COMPLETE-DIAGNOSTIC-ROUTING`. It reran the existing
+  five-site frost observation harness through `openwepp-cli-hill` on the
+  current no-env snow default (`coe_liquid_holding_capacity_v1 +
+  physics_bulk_density_compaction_v1 + harder_pomeroy_hourly`) and preserved
+  diagnostic-only scope. The legacy scalar `INV-SNOWFREEZE-048` audit still
+  reports three paired snow-depth failures plus two no-paired-snow sites, but
+  applying `INV-SNOWFREEZE-050` forcing-robust tiering narrows the route:
+  Sleepers South and Sleepers W9 are `FORCING-LIMITED` (frost timing
+  attributable; magnitude carries snow-depth forcing uncertainty), Morris
+  remains `BLOCKED` by systematic snow-cover timing/regime mismatch, and
+  Mandan/Reynolds Creek remain `INCONCLUSIVE-NO-PAIRED-SNOW`. No frost-model,
+  snow-model, contract-physics, default, fixture, schema, selector, or
+  ratification change was made.
 - `20260629-paradigm-2-multilayer-promotion-001/` is complete as PARADIGM-2
   MULTILAYER PROMOTION, ratifying the Stage 3-Decouple snow-neutral
   water-temperature arm as a production-supported internal opt-in capability.

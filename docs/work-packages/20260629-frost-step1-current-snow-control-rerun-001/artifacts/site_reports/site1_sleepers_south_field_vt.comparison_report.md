@@ -1,0 +1,22 @@
+# Snowfreeze Observed Frost-Depth Comparison
+
+- Site: `site1_sleepers_south_field_vt`
+- Verdict: `UNRESOLVED`
+- Snow control: `SNOW_CONTROL_FAILED`
+- Observation rows: `392`
+- Matched rows: `392`
+- Modeled snow-depth days: `13880`
+- Observed snow-depth rows: `384`
+- Paired snow-depth control rows: `384`
+- Snow-depth control failures: `218`
+- Modeled snow deeper than observed rows: `315`
+- Modeled snow shallower than observed rows: `56`
+- Mean signed snow-depth residual (m): `0.15606590909970983`
+- Median signed snow-depth residual (m): `0.13661465153804614`
+- Adjacent-day timing/stage rescue rows: `25`
+- Snow-Water alias better rows: `188`
+- Frost-depth residual rows: `392`
+- Isotherm upper-bound rows: `0`
+- Censored rows excluded: `0`
+- Max absolute snow-depth residual (m): `0.7897087938117313`
+- Max absolute frost-depth residual (m): `0.20213143040558826`

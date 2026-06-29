@@ -1,0 +1,22 @@
+# Snowfreeze Observed Frost-Depth Comparison
+
+- Site: `site4_ggd498_morris_mn`
+- Verdict: `UNRESOLVED`
+- Snow control: `SNOW_CONTROL_FAILED`
+- Observation rows: `232`
+- Matched rows: `83`
+- Modeled snow-depth days: `16437`
+- Observed snow-depth rows: `232`
+- Paired snow-depth control rows: `83`
+- Snow-depth control failures: `20`
+- Modeled snow deeper than observed rows: `39`
+- Modeled snow shallower than observed rows: `3`
+- Mean signed snow-depth residual (m): `0.04400065299290993`
+- Median signed snow-depth residual (m): `0.0`
+- Adjacent-day timing/stage rescue rows: `3`
+- Snow-Water alias better rows: `35`
+- Frost-depth residual rows: `83`
+- Isotherm upper-bound rows: `0`
+- Censored rows excluded: `0`
+- Max absolute snow-depth residual (m): `0.22323340797447816`
+- Max absolute frost-depth residual (m): `0.9306711100136333`

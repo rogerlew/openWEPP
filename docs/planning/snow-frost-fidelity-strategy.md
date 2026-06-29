@@ -1312,13 +1312,19 @@ actionable.
 
 ### Remaining sequence
 
-1. **Re-run the frost observation harness on the current (floor) snow** → re-assess
-   the snow-depth control gate per site (now passes / forcing-limited / still
-   blocked). Unblocks attribution. **[immediate next step]**
+1. **Re-run the frost observation harness on the current (floor) snow** — complete
+   in `docs/work-packages/20260629-frost-step1-current-snow-control-rerun-001/`.
+   Result: `EXECUTED-COMPLETE-DIAGNOSTIC-ROUTING`. The current no-env default snow
+   rerun narrows the gate: Sleepers South and Sleepers W9 are
+   `FORCING-LIMITED` (frost timing attributable; magnitude carries snow-depth
+   forcing uncertainty), Morris remains `BLOCKED` by systematic snow-cover
+   timing/regime mismatch, and Mandan/Reynolds Creek remain
+   `INCONCLUSIVE-NO-PAIRED-SNOW`.
 2. **Attribute the frost-depth magnitude residual** (`GAP-SNOWFREEZE-002`) at the
-   unblocked sites via the `INV-SNOWFREEZE-050` forcing-robust rubric
-   (onset / deepening / thaw / frozen-duration carry verdicts; absolute magnitude is
-   forcing-limited): real frost-model defect vs forcing-limited.
+   routed sites via the `INV-SNOWFREEZE-050` forcing-robust rubric. Start with the
+   two Sleepers sites; carry snow-depth magnitude uncertainty explicitly and do
+   not treat forcing-limited magnitude residuals as frost-model defects. Morris
+   needs a snow-control blocker disposition before frost attribution.
 3. **Resolve the specific frost-model item** *only if* attribution points to it — the
    record's named candidates: the **residue-lifecycle handoff** (static vs dynamic
    `resdep`), the **magnitude outliers above the legacy envelope** (13/43 forced-snow
