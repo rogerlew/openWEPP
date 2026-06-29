@@ -2,11 +2,18 @@
 
 ## Status
 
-- `state`: **backlog (concept)** — not promotable before stream water
-  temperature becomes a prioritized deliverable. **But two design decisions are
-  cheap now and expensive to retrofit, and one of them (the
-  `openwepp-meteorology` crate scope) should be made before that crate hardens.**
-- `date`: 2026-06-27 (created, Claude Code)
+- `state`: **active program candidate** — the two prerequisites are now met: the
+  `openwepp-meteorology` surface energy balance is built (Paradigm 2 **Stage 0**),
+  and the snow-side meltwater-temperature **source** is delivered as a typed flux
+  (Paradigm 2 **Stage 3-decouple**, the snow-neutral water-temperature arm). Stream
+  water temperature is the next watershed-side program. **Lead entry investigation
+  (operator, 2026-06-29): determine whether hourly water + temperature can be
+  serialized across the HBP shard and consumed by the `openwepp-cli-watershed` CLI
+  for in-stream routing** — the concrete form of design decision 2; it gates both
+  this program and the Paradigm-2 multilayer promotion (what that promotion
+  serializes). See the lead-investigation section below.
+- `date`: 2026-06-27 (created); 2026-06-29 (elevated to active program candidate +
+  serialization determination, Claude Code)
 - `relates`:
   [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md)
   (contract-first new physics),
@@ -45,13 +52,12 @@ canopy attenuation that shades snowmelt shades the stream. The leverage is two
 
 ## Two design decisions (cheap now, expensive to retrofit)
 
-1. **Scope `openwepp-meteorology` as the shared *surface energy balance*, not a
-   rain/snow-partition helper.** It already holds the psychrometric primitives and
-   the Harder-Pomeroy hydrometeor energy balance. As the snow/partition work needs
-   them anyway, add **net radiation, sensible-heat, and latent-heat/evaporation**
-   as pure, **surface-agnostic** functions so a snow surface, a soil surface, and a
-   water surface all call the same flux code. Make this scoping choice while the
-   crate is young.
+1. **(DONE — Paradigm 2 Stage 0.)** **Scope `openwepp-meteorology` as the shared
+   *surface energy balance*, not a rain/snow-partition helper.** The surface-agnostic
+   net-radiation / turbulent sensible / latent / conduction primitives now exist in
+   the crate (`surface_energy.rs`), alongside the psychrometric primitives and the
+   Harder-Pomeroy hydrometeor energy balance — so a snow, soil, or water surface all
+   call the same flux code. This decision is settled.
 2. **Carry water temperature as a typed *intensive* state on each water flux**,
    mixed **mass-weighted** at confluence, threaded hillslope → **HBP shard** →
    channel. Declaring now that `wmelt`, lateral, baseflow, and runoff each carry a
@@ -59,6 +65,36 @@ canopy attenuation that shades snowmelt shades the stream. The leverage is two
    later extension; retrofitting temperature onto a frozen flux architecture is the
    painful path. This is contract-first: a new `SC-*` for **thermal transport**
    (conservation of thermal energy advected with the water mass).
+
+## Lead investigation — hourly water + temperature serialization to the watershed CLI
+
+The first concrete step (and the gate for the Paradigm-2 multilayer promotion that
+follows): determine the **feasibility and resolution** of carrying water +
+temperature across the subprocess boundary to the watershed CLI.
+
+- **What the watershed CLI consumes.** `openwepp-cli-watershed` routes over completed
+  per-hillslope HBP shards. In-stream temperature needs each hillslope's exported
+  water **fluxes** plus their **temperatures** at the routing timestep.
+- **Resolution question (the crux): hourly vs daily.** The HBP boundary today is
+  **daily** (per-day rows). Diurnal stream temperature wants **hourly** water +
+  temperature — but that is ~24× the per-flux data crossing the HBP, and the hourly
+  intensity is **CLIGEN-stochastic** (strategy §10.2 item 6 / paradigm2 spec §1.1),
+  so diurnal stream temperature would be **forcing-limited** while daily/seasonal
+  aggregates stay forcing-robust. Decide hourly-vs-daily against that
+  fidelity-vs-cost-vs-forcing tradeoff.
+- **Serialization feasibility.** Can the HBP shard schema (ADR-0019 output surface)
+  carry per-flux hourly water + a typed temperature, and can the watershed routing
+  timestep actually consume it — or does the watershed route daily, making daily
+  serialization sufficient?
+- **The typed-flux-temperature boundary (design decision 2, now concrete).** The
+  meltwater-temperature source already exists as a typed flux (Stage 3-decouple);
+  this settles whether/how it — plus the lateral / baseflow / surface-runoff / rain
+  source temperatures — serialize to the HBP and are **mass-weighted-mixed** at
+  confluence in the watershed.
+- **Output:** a feasibility determination (hourly serializable + watershed-consumable
+  — yes/no, at what resolution) + the HBP boundary decision. This **feeds the
+  multilayer promotion** (whether it serializes hourly or daily water + temperature)
+  and the eventual `SC-*` thermal-transport contract.
 
 ## Architecture landing (fits the subprocess-per-hillslope model)
 
