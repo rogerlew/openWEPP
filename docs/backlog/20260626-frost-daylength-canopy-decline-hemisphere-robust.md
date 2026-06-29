@@ -9,16 +9,12 @@
   Scope covers the **full deciduous/mixed canopy cycle** — autumn leaf-off
   (frost/daylength decline) **and** spring leaf-on (thermal-time green-up) —
   since a hemisphere-robust canopy needs both limbs physically driven. Scope
-  **also covers the ground-side complement: seasonal surface residue / litter
+  **also covered the ground-side complement: seasonal surface residue / litter
   cover** (autumn leaf-drop → litter → soil thermal insulation → frost), added
-  2026-06-29 from the frost Step-3 diagnosis. **Contingent dimension** — gated on
-  the frost Step-3 finding: implement a forest residue-cover representation here
-  only if cropland-management residue (`Dec_*`) cannot represent forest litter
-  seasonality (see Surface-residue section below). FROST STEP 3
-  (`docs/work-packages/20260629-frost-step3-residue-parameterization-001/`)
-  closed branch C: `hubbardbrook_deciduous_nh` `Dec_4899` reached the frost
-  solver but kept `residue_depth_m` flat at `0.02302585092994045 m` for all
-  `32874` trace rows.
+  2026-06-29 from the frost Step-3 diagnosis. That residue-cover dimension has
+  now been implemented by
+  `docs/work-packages/20260629-frost-residue-cover-implementation-001/`; the
+  remaining backlog scope is the canopy leaf-off/leaf-on cycle.
 - `date`: 2026-06-26 (created, Claude Code)
 - `relates`:
   [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md)
@@ -244,6 +240,19 @@ If, once wired, a cropland management **can** carry a realistic seasonal
 perennial leaf-drop), implement a **first-class, landuse-agnostic forest
 residue-cover representation** here — the litter analogue of the landuse-agnostic
 canopy decline this backlog already argues for.
+
+FROST RESIDUE-COVER IMPLEMENTATION
+(`docs/work-packages/20260629-frost-residue-cover-implementation-001/`) resolved
+this residue-cover dimension. Phase 0 found the `Dec_*` surface-residue mass was
+flat under zero-rate/no-input management, so the package added the missing
+litter-input limb plus dynamic `mass -> depth -> frost` wiring. The post-fix
+entry gate passed after review disposition with autumn mean `0.165028 m`, spring
+mean `0.159910 m`, and max monthly mean in October. The Sleepers A-vs-B rerun
+routed to branch A as a partial contributor: candidate-defect timing cells
+shrank from 18 to 13. Residual cells remain for later frost attribution, and the
+fall litter-drop window still uses the management fall date (`jdharv`) until the
+physical frost/daylength phenology backlog replaces that anchor, but the
+residue-cover backlog item is implemented.
 
 ### Residue-specific validation gates (add to the gates below)
 

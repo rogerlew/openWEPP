@@ -17,7 +17,7 @@ const OBSERVED_GATE_TOOL: &str =
 fn stage3_decouple_contract_package_and_selector_are_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 112",
+        "contract_version: 113",
         "REF-SNOWFREEZE-PARADIGM2-STAGE3-DECOUPLE",
         "INV-SNOWFREEZE-081",
         "OBL-SNOWFREEZE-P-056",

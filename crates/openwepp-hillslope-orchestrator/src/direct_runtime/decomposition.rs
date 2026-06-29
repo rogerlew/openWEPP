@@ -32,8 +32,10 @@ impl DirectDayFrame {
             day_index: self.day_index,
             active_context: decomposition.active_context,
             active_action: decomposition.active_action,
+            surface_litter_input_kg_m2: decomposition.surface_litter_input_kg_m2,
             surface_residue_kg_m2: self.decomposition_downstream_operands.surface_residue_kg_m2,
             root_residue_kg_m2: self.decomposition_downstream_operands.root_residue_kg_m2,
+            residue_depth_m: self.decomposition_downstream_operands.residue_depth_m,
             environment_index: self.decomposition_downstream_operands.environment_index,
             surface_decay_factor: self.decomposition_downstream_operands.surface_decay_factor,
             root_decay_factor: self.decomposition_downstream_operands.root_decay_factor,
@@ -112,57 +114,7 @@ impl DirectDayFrame {
             });
         }
         let inputs = DirectDecompositionInputs::from_frame(self)?;
-        inputs.validate_active_context()?;
-        inputs.validate_action_domain()?;
-        inputs.validate_pool_and_rate_domain()?;
-
-        if inputs.active_context == DirectDecompositionActiveContext::Inactive {
-            return Ok(DirectDecompositionState::inactive(inputs));
-        }
-
-        let temperature_factor = decomposition_temperature_factor(inputs)?;
-        let surface_water_factor = standing_surface_water_factor(inputs)?;
-        let flat_water_factor = inputs.water_stress_fraction;
-        let environmental_index = temperature_factor.min(flat_water_factor);
-        validate_unit_fraction("decomposition.environment_index", environmental_index)?;
-
-        let surface_decay_factor = decay_factor(
-            "decomposition.surface_decay_factor",
-            environmental_index,
-            inputs.surface_decomposition_rate,
-        )?;
-        let root_decay_factor = decay_factor(
-            "decomposition.root_decay_factor",
-            environmental_index,
-            inputs.root_decomposition_rate,
-        )?;
-
-        let surface_after_decay = inputs.surface_residue_seed_kg_m2 * surface_decay_factor;
-        let root_after_decay = inputs.root_residue_seed_kg_m2 * root_decay_factor;
-        let (surface_residue_kg_m2, root_residue_kg_m2) =
-            apply_decomposition_action(inputs, surface_after_decay, root_after_decay)?;
-
-        validate_nonnegative_direct_m(
-            "decomposition.surface_residue_kg_m2",
-            surface_residue_kg_m2,
-        )?;
-        validate_nonnegative_direct_m("decomposition.root_residue_kg_m2", root_residue_kg_m2)?;
-
-        Ok(DirectDecompositionState {
-            active_context: inputs.active_context,
-            active_action: inputs.active_action,
-            residue_type_selector: inputs.residue_type_selector,
-            surface_residue_seed_kg_m2: inputs.surface_residue_seed_kg_m2,
-            root_residue_seed_kg_m2: inputs.root_residue_seed_kg_m2,
-            temperature_factor,
-            surface_water_factor,
-            flat_water_factor,
-            environment_index: environmental_index,
-            surface_decay_factor,
-            root_decay_factor,
-            surface_residue_kg_m2,
-            root_residue_kg_m2,
-        })
+        inputs.compute_state()
     }
 
     fn compute_r5c_residue_partition(
@@ -351,6 +303,8 @@ pub struct DirectDecompositionInputs {
     pub residue_type_selector: f64,
     pub surface_residue_seed_kg_m2: f64,
     pub root_residue_seed_kg_m2: f64,
+    pub surface_litter_input_kg_m2: f64,
+    pub residue_depth_conversion_m_per_kg_m2: f64,
     pub temperature_max_c: f64,
     pub temperature_min_c: f64,
     pub precipitation_m: f64,
@@ -372,6 +326,8 @@ impl DirectDecompositionInputs {
             residue_type_selector: 0.0,
             surface_residue_seed_kg_m2: 0.0,
             root_residue_seed_kg_m2: 0.0,
+            surface_litter_input_kg_m2: 0.0,
+            residue_depth_conversion_m_per_kg_m2: 0.0,
             temperature_max_c: 0.0,
             temperature_min_c: 0.0,
             precipitation_m: 0.0,
@@ -394,6 +350,69 @@ impl DirectDecompositionInputs {
         self.validate_active_context()?;
         self.validate_action_domain()?;
         self.validate_pool_and_rate_domain()
+    }
+
+    pub fn compute_state(self) -> Result<DirectDecompositionState, DirectRuntimeError> {
+        self.validate()?;
+
+        if self.active_context == DirectDecompositionActiveContext::Inactive {
+            return Ok(DirectDecompositionState::inactive(self));
+        }
+
+        let temperature_factor = decomposition_temperature_factor(self)?;
+        let surface_water_factor = standing_surface_water_factor(self)?;
+        let flat_water_factor = self.water_stress_fraction;
+        let environmental_index = temperature_factor.min(flat_water_factor);
+        validate_unit_fraction("decomposition.environment_index", environmental_index)?;
+
+        let surface_decay_factor = decay_factor(
+            "decomposition.surface_decay_factor",
+            environmental_index,
+            self.surface_decomposition_rate,
+        )?;
+        let root_decay_factor = decay_factor(
+            "decomposition.root_decay_factor",
+            environmental_index,
+            self.root_decomposition_rate,
+        )?;
+
+        let surface_before_decay =
+            self.surface_residue_seed_kg_m2 + self.surface_litter_input_kg_m2;
+        validate_nonnegative_direct_m(
+            "decomposition.surface_before_decay_kg_m2",
+            surface_before_decay,
+        )?;
+        let surface_after_decay = surface_before_decay * surface_decay_factor;
+        let root_after_decay = self.root_residue_seed_kg_m2 * root_decay_factor;
+        let (surface_residue_kg_m2, root_residue_kg_m2) =
+            apply_decomposition_action(self, surface_after_decay, root_after_decay)?;
+        let residue_depth_m = surface_residue_kg_m2 * self.residue_depth_conversion_m_per_kg_m2;
+
+        validate_nonnegative_direct_m(
+            "decomposition.surface_residue_kg_m2",
+            surface_residue_kg_m2,
+        )?;
+        validate_nonnegative_direct_m("decomposition.root_residue_kg_m2", root_residue_kg_m2)?;
+        validate_nonnegative_direct_m("decomposition.residue_depth_m", residue_depth_m)?;
+
+        Ok(DirectDecompositionState {
+            active_context: self.active_context,
+            active_action: self.active_action,
+            residue_type_selector: self.residue_type_selector,
+            surface_residue_seed_kg_m2: self.surface_residue_seed_kg_m2,
+            root_residue_seed_kg_m2: self.root_residue_seed_kg_m2,
+            surface_litter_input_kg_m2: self.surface_litter_input_kg_m2,
+            residue_depth_conversion_m_per_kg_m2: self.residue_depth_conversion_m_per_kg_m2,
+            temperature_factor,
+            surface_water_factor,
+            flat_water_factor,
+            environment_index: environmental_index,
+            surface_decay_factor,
+            root_decay_factor,
+            surface_residue_kg_m2,
+            root_residue_kg_m2,
+            residue_depth_m,
+        })
     }
 
     fn validate_active_context(self) -> Result<(), DirectRuntimeError> {
@@ -461,6 +480,14 @@ impl DirectDecompositionInputs {
             "decomposition.root_residue_seed_kg_m2",
             self.root_residue_seed_kg_m2,
         )?;
+        validate_nonnegative_direct_m(
+            "decomposition.surface_litter_input_kg_m2",
+            self.surface_litter_input_kg_m2,
+        )?;
+        validate_nonnegative_direct_m(
+            "decomposition.residue_depth_conversion_m_per_kg_m2",
+            self.residue_depth_conversion_m_per_kg_m2,
+        )?;
         validate_finite("decomposition.temperature_max_c", self.temperature_max_c)?;
         validate_finite("decomposition.temperature_min_c", self.temperature_min_c)?;
         validate_nonnegative_direct_m("decomposition.precipitation_m", self.precipitation_m)?;
@@ -486,6 +513,8 @@ pub struct DirectDecompositionState {
     pub residue_type_selector: f64,
     pub surface_residue_seed_kg_m2: f64,
     pub root_residue_seed_kg_m2: f64,
+    pub surface_litter_input_kg_m2: f64,
+    pub residue_depth_conversion_m_per_kg_m2: f64,
     pub temperature_factor: f64,
     pub surface_water_factor: f64,
     pub flat_water_factor: f64,
@@ -494,6 +523,7 @@ pub struct DirectDecompositionState {
     pub root_decay_factor: f64,
     pub surface_residue_kg_m2: f64,
     pub root_residue_kg_m2: f64,
+    pub residue_depth_m: f64,
 }
 
 impl DirectDecompositionState {
@@ -505,6 +535,8 @@ impl DirectDecompositionState {
             residue_type_selector: 0.0,
             surface_residue_seed_kg_m2: 0.0,
             root_residue_seed_kg_m2: 0.0,
+            surface_litter_input_kg_m2: 0.0,
+            residue_depth_conversion_m_per_kg_m2: 0.0,
             temperature_factor: 0.0,
             surface_water_factor: 0.0,
             flat_water_factor: 0.0,
@@ -513,6 +545,7 @@ impl DirectDecompositionState {
             root_decay_factor: 1.0,
             surface_residue_kg_m2: 0.0,
             root_residue_kg_m2: 0.0,
+            residue_depth_m: 0.0,
         }
     }
 
@@ -524,6 +557,8 @@ impl DirectDecompositionState {
             residue_type_selector: inputs.residue_type_selector,
             surface_residue_seed_kg_m2: inputs.surface_residue_seed_kg_m2,
             root_residue_seed_kg_m2: inputs.root_residue_seed_kg_m2,
+            surface_litter_input_kg_m2: inputs.surface_litter_input_kg_m2,
+            residue_depth_conversion_m_per_kg_m2: inputs.residue_depth_conversion_m_per_kg_m2,
             temperature_factor: 0.0,
             surface_water_factor: 0.0,
             flat_water_factor: inputs.water_stress_fraction,
@@ -532,6 +567,8 @@ impl DirectDecompositionState {
             root_decay_factor: 1.0,
             surface_residue_kg_m2: inputs.surface_residue_seed_kg_m2,
             root_residue_kg_m2: inputs.root_residue_seed_kg_m2,
+            residue_depth_m: inputs.surface_residue_seed_kg_m2
+                * inputs.residue_depth_conversion_m_per_kg_m2,
         }
     }
 }
@@ -541,8 +578,10 @@ pub struct DirectDecompositionDownstreamOperands {
     pub active_context: DirectDecompositionActiveContext,
     pub active_action: DirectDecompositionAction,
     pub residue_type_selector: f64,
+    pub surface_litter_input_kg_m2: f64,
     pub surface_residue_kg_m2: f64,
     pub root_residue_kg_m2: f64,
+    pub residue_depth_m: f64,
     pub temperature_factor: f64,
     pub surface_water_factor: f64,
     pub flat_water_factor: f64,
@@ -558,8 +597,10 @@ impl DirectDecompositionDownstreamOperands {
             active_context: DirectDecompositionActiveContext::Inactive,
             active_action: DirectDecompositionAction::None,
             residue_type_selector: 0.0,
+            surface_litter_input_kg_m2: 0.0,
             surface_residue_kg_m2: 0.0,
             root_residue_kg_m2: 0.0,
+            residue_depth_m: 0.0,
             temperature_factor: 0.0,
             surface_water_factor: 0.0,
             flat_water_factor: 0.0,
@@ -576,8 +617,10 @@ impl From<DirectDecompositionState> for DirectDecompositionDownstreamOperands {
             active_context: state.active_context,
             active_action: state.active_action,
             residue_type_selector: state.residue_type_selector,
+            surface_litter_input_kg_m2: state.surface_litter_input_kg_m2,
             surface_residue_kg_m2: state.surface_residue_kg_m2,
             root_residue_kg_m2: state.root_residue_kg_m2,
+            residue_depth_m: state.residue_depth_m,
             temperature_factor: state.temperature_factor,
             surface_water_factor: state.surface_water_factor,
             flat_water_factor: state.flat_water_factor,
@@ -596,6 +639,8 @@ pub struct DirectDecompositionShadowProjection {
     pub active_action: DirectDecompositionAction,
     pub surface_residue_kg_m2: f64,
     pub root_residue_kg_m2: f64,
+    pub surface_litter_input_kg_m2: f64,
+    pub residue_depth_m: f64,
     pub environment_index: f64,
     pub surface_decay_factor: f64,
     pub root_decay_factor: f64,

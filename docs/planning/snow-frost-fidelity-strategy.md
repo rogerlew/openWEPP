@@ -1358,14 +1358,12 @@ actionable.
    (`docs/backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md`)
    and implement a forest residue-cover representation there. Entry gate for Step 3:
    confirm `Dec_*` actually drives a seasonal `residue_depth_m` reaching the solver
-   (not only seasonal canopy/`cancov`). **Executed result
+   (not only seasonal canopy/`cancov`). **Initial executed result
    (`20260629-frost-step3-residue-parameterization-001`): branch C.** The
    `hubbardbrook_deciduous_nh` `Dec_4899` entry-gate run reached the frost solver
    but emitted a flat `residue_depth_m = 0.02302585092994045 m` across `32874`
-   trace rows, with equal autumn and spring means. Therefore the existing
-   cropland-management `Dec_*` files cannot represent the forest litter insulation
-   test vehicle; promote the residue-cover backlog before rerunning Sleepers
-   timing attribution. **Root cause (Claude review, 2026-06-29):** openWEPP already
+   trace rows, with equal autumn and spring means. **Root cause (Claude review,
+   2026-06-29):** openWEPP already
    computes a *dynamic* surface-residue **mass** (`07_decomposition_equations.rs`,
    `sumsrm_next = sumsrm_seed · surface_decay`; `decomposition.rs`
    `surface_residue_kg_m2`), but `frost.runtime_residue_depth_m` is **seeded once**
@@ -1374,10 +1372,23 @@ actionable.
    forests. The implementation is therefore a **missing `mass → depth → frost`
    coupling**, not a from-scratch litter model; scope hinges on whether the `Dec_*`
    surface-residue *mass* is already seasonal (autumn senescence input + decay) or
-   only decays from the seed. Any timing residual that survives a *correct* seasonal
-   residue is then the genuine frost-model item — the **`Qwet`** evaporative term
-   and the **legacy-envelope magnitude outliers** (13/43 forced-snow cases,
-   ADR-0017 comparator context) remain the secondary candidates for that residual.
+   only decays from the seed. **FROST RESIDUE-COVER IMPLEMENTATION
+   (`20260629-frost-residue-cover-implementation-001`): executed complete.**
+   Phase 0 found no seasonal mass input, so the package added the missing
+   litter-input limb plus dynamic `mass -> depth -> frost` coupling. The
+   post-review entry gate passed under the authority-aligned
+   `k=0.5 yr^-1` forest-litter fallback (autumn mean `0.165028 m`, spring mean
+   `0.159910 m`, max month October), and the Sleepers A-vs-B rerun routed to
+   branch A as a partial contributor with candidate-defect timing cells reduced
+   from 18 to 13. The fall litter-drop window is still anchored to the
+   management fall date (`jdharv`), matching the current canopy fixture anchor;
+   re-anchor it to the physical frost/daylength phenology trigger when the
+   leaf-on/leaf-off backlog lands. The 13 residual timing cells remain
+   unattributed and require follow-up separation of spring litter persistence
+   versus genuine frost-solver items; the **`Qwet`** evaporative term and the
+   **legacy-envelope magnitude outliers** (13/43 forced-snow cases, ADR-0017
+   comparator context) remain secondary candidate pointers, not established
+   causes.
 4. **Ratify** the frost validation invariants (047/048/050: draft → accepted) once
    the harness method is exercised.
 5. **Frost-default activation** once `GAP-SNOWFREEZE-002` closes against observations

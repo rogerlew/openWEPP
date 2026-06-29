@@ -4,18 +4,19 @@ title: Residue Management Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 10
+contract_version: 11
 producer_scope:
   - Cropland residue and root decomposition state/flux surfaces (standing, flat, buried, root)
   - Cropland management-operation residue transitions (tillage, cutting/shredding, burning, removal)
   - Rangeland residue/litter and root decomposition state surfaces
+  - Forest litter/residue mass-to-depth boundary state consumed by frost surface resistance
   - Residue cover boundary surfaces consumed by ET, runoff/erosion, and coupled domains
 consumer_scope:
   - ET and water-balance consumers using residue mass/cover attenuation signals
   - Soil and erosion consumers using residue placement/cover effects on erodibility and transport
   - Plant-management and snow/freeze consumers requiring residue boundary continuity
 evidence_level: Static
-last_reviewed: 2026-05-25
+last_reviewed: 2026-06-29
 supersedes: []
 superseded_by: []
 ---
@@ -40,6 +41,7 @@ In scope:
 - Environmental modifiers and management-operation equations that update residue mass/cover states. `[DIRECT][Static]`
 - Rangeland residue/litter and root decomposition semantics and management-coupled state behavior. `[DIRECT][Static]`
 - Coupled boundary obligations for ET attenuation and erosion-facing cover/erodibility adjustment pathways. `[DIRECT][Static] + [INFERENCE][Static]`
+- Dynamic litter/residue depth boundary semantics for snow/freeze surface heat resistance, including mass-to-depth conversion and recurring senescence deposition into the surface-residue pool. `[DIRECT][Static] + [INFERENCE][Static]`
 
 Out of scope:
 - Rust implementation details, field names, and data-structure choices. `[INFERENCE][Static]`
@@ -61,6 +63,9 @@ Out of scope:
 | REF-RESIDUE-CH11-EROSION | `references/50201000/chap11.pdf` §11.3 Eq. [11.3.7]-[11.3.10], §11.6 | Erosion adjustments include residue effects via soil-parameter adjustments and surface-cover semantics from plant/residue routines. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-RESIDUE-CH7-RIDGE-SOIL | `references/50201000/chap7.pdf` §7.6, §7.10, §7.11 | Ridge/furrow criteria and soil erodibility pathways coupled to residue placement/cover conditions. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-RESIDUE-LEGACY-ORATE-DOMAIN | `/workdir/wepp-forest_260430_baseline/src/infile.for:539-541`, `/workdir/wepp-forest_260430_baseline/src/decomp.for:575-633` | Legacy decomposition-rate domain authority: `oratea/orater` are consumed directly by exponential decay equations; zero-valued constants yield no-decay factors (`exp(0)=1`). | `[DIRECT][Static]` |
+| REF-RESIDUE-LEGACY-RESDEP-CONVERSION | `/workdir/wepp-forest_260430_baseline/src/winter.for:247-249`, `/workdir/wepp-forest_260430_baseline/src/res_dp.for:81-126`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Legacy residue-depth conversion authority for frost surface resistance: current ground residue mass and residue type are converted to `resdep` before frost consumes residue thickness. | `[DIRECT][Static]` |
+| REF-RESIDUE-FOREST-LITTER-DECAY | Olson first-order litter decay model and forest-litter decomposition evidence (`research.fs.usda.gov/download/treesearch/55092.pdf`, long-term temperate deciduous forest-floor persistence; broadleaf forest syntheses report roughly `43%` first-year turnover, corresponding to `k≈0.56 yr^-1`) | Forest-litter fallback decay-rate class when a seasonal litter crop has recurring senescence input but zero crop-straw `oratea`; authorizes a moderate `k=0.5 yr^-1` first-order surface-litter fallback, not fixture tuning. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-RESIDUE-FROST-COVER-20260629 | `docs/work-packages/20260629-frost-residue-cover-implementation-001/` | FROST RESIDUE-COVER IMPLEMENTATION package: Phase-0 evidence showed seasonal `Dec_*` residue mass is flat under current inputs (`sumsrm_seed=0.5 kg m^-2`, `oratea=0`, no recurring leaf-drop input), requiring both senescence deposition into surface residue and dynamic mass-to-depth frost coupling. | `[DIRECT][Ran] + [INFERENCE][Static]` |
 | REF-RESIDUE-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative biomass pools, bounded fractions, and mass-transfer closure across management/decomposition operations. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -89,6 +94,8 @@ Out of scope:
 | `Cn`, `αf`, `αr`, `ωL`, `χ`, `τ`, `ν` | `fraction` | Rangeland decomposition coefficients/factors and weighted-time terms. | rangeland environment pathway | rangeland residue/root decomposition |
 | `FERIND`, `PSZIND` | `fraction` | Fertility and residue particle-size decomposition modifiers. | residue updater | cropland decomposition branch logic |
 | `Bc` | `kg m^-2` | Daily disappearance of rangeland litter from insects/rodents. | rangeland updater | rangeland decomposition branch logic |
+| `Mlit_in` | `kg m^-2 d^-1` | Daily above-ground senescence/litter input deposited into the surface-residue pool before residue depth is published for frost. | plant-growth/residue handoff | residue decomposition and frost-residue depth boundary |
+| `residue_depth_m` | `m` | Dynamic residue/litter thickness derived from the current surface-residue mass through the authorized residue-depth conversion. | residue boundary publisher | snow/freeze frost surface heat resistance |
 
 ## Algorithm State Surfaces (PL12/PL16/PL17 Transition Execution)
 
@@ -100,7 +107,7 @@ Out of scope:
 | Decomposition seed state | `iresd_seed`, `sumrtm_seed`, `sumsrm_seed` |
 | Annual transition controls | `resmgt`, `jdherb`, `jdburn`, `jdslge`, `jdcut`, `jdmove`, `fbrnag`, `fbrnog`, `frcut`, `frmove` |
 | Perennial transition controls | `mgtopt`, `ncut`, `ncycle`, `cutday[*]`, `gday[*]`, `gend[*]`, `animal[*]`, `bodywt[*]`, `area[*]`, `digest[*]` |
-| Decomposition equation controls | `tmax`, `tmin`, `prcp`, `Ws`, `oratea`, `orater` |
+| Decomposition equation controls | `tmax`, `tmin`, `prcp`, `Ws`, `oratea`, `orater`, optional `surface_litter_input_kg_m2`, `residue_depth_conversion_m_per_kg_m2` |
 | Growth transition controls | `jdplt`, `jdharv`, `jdstop`, `rw`, `mgtopt`, runtime day-window checks |
 | Growth transition state surface | `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` |
 | Ordering constraints | `pl_order_decomp_before_soil`, `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` |
@@ -109,7 +116,7 @@ Out of scope:
 
 | Surface | Output |
 |---|---|
-| Typed decomposition context | management class (`annual/fallow` or `perennial`), active slot/crop identity, runtime day, seed state, transition-control payload, active day transition selector, and equation-updated tracked seed-pool values |
+| Typed decomposition context | management class (`annual/fallow` or `perennial`), active slot/crop identity, runtime day, seed state, transition-control payload, active day transition selector, surface-litter input when produced by growth senescence, dynamic residue-depth boundary value, and equation-updated tracked seed-pool values |
 | Typed growth context | management class (`annual/fallow` or `perennial`), active slot/crop identity, runtime day, growth transition-control payload, and pre/post transition state snapshot for key growth surfaces |
 | Scheduler failure surface | typed hard-fail status when required transition-control inputs are missing/non-finite/out-of-domain/non-contiguous |
 
@@ -197,7 +204,7 @@ delegated to kernel handlers consuming the typed contexts.
    - `oratea=0` and/or `orater=0` are valid and produce no-decay factors
      (`surface_decay=1` and/or `root_decay=1`) for the affected pool updates.
 4. Apply decomposition kinetics to tracked pools:
-   - `sumsrm_next = sumsrm_prev * surface_decay`
+   - `sumsrm_next = (sumsrm_prev + surface_litter_input) * surface_decay`
    - `sumrtm_next = sumrtm_prev * root_decay`
 5. Apply same-day annual transition modifiers when active:
    - `burn`: `sumsrm_next *= (1 - fbrnog)`
@@ -215,6 +222,19 @@ delegated to kernel handlers consuming the typed contexts.
 8. Growth and hydrology ordering obligations from PL16/INT10 remain unchanged:
    decomposition payload update completion is a prerequisite for downstream
    growth/watbal lane progression.
+9. When the active plant-growth branch produces above-ground senescence or
+   litterfall before the frost surface heat path is evaluated, the lost live
+   biomass must be deposited into the tracked surface-residue pool as
+   `surface_litter_input_kg_m2`. The transfer is a mass-conserving plant-to-
+   residue handoff; it is not a fitted frost parameter and must not disappear
+   from the residue ledger.
+10. The dynamic residue-depth boundary is derived from the current
+    `sumsrm_next` surface-residue mass using an authorized mass-to-depth
+    conversion (`residue_depth_conversion_m_per_kg_m2`) established from the
+    legacy `res_dp` lineage and the t0 residue type/packing state. The
+    published `residue_depth_m` must be finite and non-negative and must track
+    the current mass; the initial-condition seed is a t0 value, not a static
+    season-long frost boundary once dynamic residue updates are active.
 
 ## Branch and Guard Table (PL12/PL16/PL17 Transition Controls)
 
@@ -234,6 +254,7 @@ delegated to kernel handlers consuming the typed contexts.
 | `BR-RES-PL16-GROWTH-EQUATION` | active non-reset growth day | climate (`tmax/tmin/rad`), stress (`Ws`), projected crop-parameter symbols, growth state surface | runtime | typed hard-fail on missing/non-finite/out-of-domain equation symbols or non-equation fallback behavior |
 | `BR-RES-PL17-DECOMP-EQUATION` | decomposition transition branch active | `sumrtm_seed`, `sumsrm_seed`, `tmax`, `tmin`, `prcp`, `Ws`, `oratea`, `orater` | runtime | typed hard-fail on missing/non-finite/out-of-domain decomposition equation inputs or non-equation fallback behavior |
 | `BR-RES-PL17-DECOMP-EVENT-TRANSFER` | active annual/perennial decomposition management action day | `resmgt`/`mgtopt` action controls + event fractions/payloads | runtime | typed hard-fail on invalid event-domain/transfer behavior; no silent no-op fallback for covered event branches |
+| `BR-RES-PL17-FROST-RESIDUE-DEPTH` | residue boundary feeds frost surface resistance | `sumsrm_seed`, `surface_litter_input_kg_m2`, `oratea`, `residue_depth_conversion_m_per_kg_m2` | runtime | typed hard-fail on non-finite/negative mass, negative litter input, invalid conversion, or static seed-depth reuse after dynamic residue mass changes |
 | `BR-RES-INT10-ORDER` | coupled replay lane closure (`decomp -> growth -> watbal`) | `pl_order_decomp_before_soil`, `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` | runtime | typed hard-fail on missing/non-finite/out-of-domain ordering symbols; hydrology phase entry blocked |
 
 ## Invariants
@@ -258,6 +279,7 @@ delegated to kernel handlers consuming the typed contexts.
 | INV-RESIDUE-016 | INT10 coupled replay invariant: daily coupled transition/hydrology execution preserves `decomp -> growth -> watbal` ordering, with typed context and writeback state transfer observable by downstream hydrology phases; ordering-symbol violations are hard-fail with no silent fallback. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-CH5-ET, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-017 | PL17 decomposition equation-update invariant: active decomposition payload assembly updates tracked seed residue/root pools (`sumsrm_seed`, `sumrtm_seed`) using explicit equation-driven exponential decay factors derived from environmental indices and decomposition-rate constants; pass-through/no-op fallback is prohibited for covered branches. | hard-fail | REF-RESIDUE-CH9-CROP-DECOMP, REF-RESIDUE-CH9-MGMT, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-018 | PL17 decomposition required-symbol guard invariant: decomposition equation and event-transfer inputs (`tmax`, `tmin`, `prcp`, `Ws`, `oratea`, `orater`, event fractions/payloads) must be present, finite, and domain-valid or runtime must hard-fail as typed boundary error; `oratea/orater` are non-negative with zero-valued no-decay constants allowed, while negative values are invalid. Silent defaults/clamps are prohibited. | hard-fail | REF-RESIDUE-CH9-CROP-DECOMP, REF-RESIDUE-CH9-MGMT, REF-RESIDUE-LEGACY-ORATE-DOMAIN, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RESIDUE-019 | Dynamic frost-residue boundary invariant: when residue state is consumed by snow/freeze frost surface resistance, the published residue depth must be derived from the current surface-residue mass after same-day senescence/litter input and decomposition, using an authority-backed mass-to-depth conversion. Live above-ground biomass lost through deciduous/perennial senescence must be transferred to the surface-residue pool before the frost boundary is published; decomposition/removal/grazing are the only authorized losses. For recurring perennial forest litter, non-fall senescence losses may be conserved in a pending surface-litter bucket and published as frost-visible surface residue only during the fall litter-drop window ending on the management fall date. The t0 `resdep`/`frost.runtime_residue_depth_m` seed is preserved as the initial value and conversion provenance, but a static seed depth may not be reused for later frost days once dynamic residue mass changes. Zero `oratea` remains a valid no-decay constant for inert/no-senescence residue; when recurring seasonal forest litter input is active and the crop surface-decomposition rate is zero, the producer must apply the authority-backed forest-litter turnover fallback (`k=0.5 yr^-1`, converted to a daily first-order rate) rather than accumulating litter without decay or using crop-straw tuning. The fall litter-drop window is presently anchored to the management fall date; it must be re-anchored to the physical frost/daylength phenology trigger when that canopy backlog lands. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-LEGACY-RESDEP-CONVERSION, REF-RESIDUE-FOREST-LITTER-DECAY, REF-RESIDUE-FROST-COVER-20260629, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Ran] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -281,6 +303,7 @@ delegated to kernel handlers consuming the typed contexts.
 | `INV-RESIDUE-016` | runtime | Coupled replay transition/hydrology lane-order guard and state-transfer boundary checks | Typed hard error on missing/non-finite/invalid ordering symbols or failed transition preconditions before watbal lane | Tier-A gate for INT10 coupled replay | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RESIDUE-017` | runtime | Decomposition transition payload equation updater (`state_after`) for tracked residue/root seed pools | Typed hard error when covered decomposition branches emit pass-through/no-op state in place of equation update | Tier-A gate for PL17 decomposition physics closure | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RESIDUE-018` | runtime | Decomposition equation/event input validator before payload update execution | Typed hard error on missing/non-finite/negative required decomposition symbols; zero-valued `oratea/orater` are valid no-decay constants | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RESIDUE-019` | runtime | Dynamic residue-depth publisher consumed by snow/freeze frost surface resistance | Typed hard error on stale static-depth reuse after mass changes, invalid litter input, invalid mass-to-depth conversion, or non-conserved plant-to-residue transfer | Frost-residue coupling gate | `[DIRECT][Ran] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -322,6 +345,8 @@ field names remain provisional and must preserve these mappings.
 - Missing residue coupling payloads required for ET attenuation (`Cr`) or erosion/cover adjustment pathways. `[DIRECT][Static] + [INFERENCE][Static]`
 - Silent reordering of daily residue update stages relative to the §9.4 sequence. `[DIRECT][Static] + [INFERENCE][Static]`
 - Negative decomposition-rate constants (`oratea`, `orater`) in decomposition payload surfaces. `[DIRECT][Static] + [INFERENCE][Static]`
+- Static reuse of the initial frost residue depth after the tracked surface-residue mass or senescence/litter input has changed. `[DIRECT][Ran] + [INFERENCE][Static]`
+- Negative, non-finite, or silently clipped surface-litter input or mass-to-depth conversion factors. `[INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -329,6 +354,7 @@ field names remain provisional and must preserve these mappings.
 - OBL-RESIDUE-P-002: Apply Chapter-9 equation branches explicitly for decomposition, cover, and management operations; no implicit fallbacks. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-RESIDUE-P-003: Propagate invariant failures as typed errors; do not silently clamp materially invalid mass/cover states. `[INFERENCE][Static]`
 - OBL-RESIDUE-P-004: Publish ET/erosion-consumable residue payloads (`Cr`, cover fractions, residue placement context) with explicit units and timing semantics. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-RESIDUE-P-005: Publish frost-consumable dynamic `residue_depth_m` from current surface-residue mass, including same-day senescence/litter input where active, and preserve a residue mass/depth ledger showing deposition, decomposition, and removal terms. `[DIRECT][Ran] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -336,6 +362,7 @@ field names remain provisional and must preserve these mappings.
 - OBL-RESIDUE-C-002: Soil/erosion consumers must preserve residue cover and placement semantics that drive erodibility/shear adjustments and interrill/rill behavior. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-RESIDUE-C-003: Plant-management consumers must provide deterministic handoff of biomass-to-residue transfers and event controls used by Chapter-9 branches. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-RESIDUE-C-004: Snow/freeze and hydrology consumers must preserve residue boundary fields needed for coupled thermal/evaporation and cover pathways. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-RESIDUE-C-005: Snow/freeze consumers must reject missing, non-finite, or stale static residue-depth payloads when dynamic residue mass is available. `[DIRECT][Ran] + [INFERENCE][Static]`
 
 ## Boundary Disposition
 
@@ -346,6 +373,7 @@ field names remain provisional and must preserve these mappings.
 | Management-event semantics (`INV-RESIDUE-008/009`) | management event handler | Hard error on invalid event-factor/date behavior or burial/removal mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Rangeland residue decomposition (`INV-RESIDUE-010`) | rangeland residue update stage | Hard error on invalid antecedent-moisture/domain or negative outputs | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Coupling payload and update order (`INV-RESIDUE-011/012`) | residue boundary publish and workflow validator | Hard error on missing payloads or sequencing divergence | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Dynamic frost-residue boundary (`INV-RESIDUE-019`) | residue-depth publish before frost thermal input construction | Hard error on static seed-depth reuse after dynamic mass changes, invalid conversion, or non-conserved litter input; otherwise frost consumes the dynamic depth as the current residue boundary | Frost residue-cover implementation gate | `[DIRECT][Ran] + [INFERENCE][Static]` |
 | Parameter-range governance (`INV-RESIDUE-013`) | review/verification/promotion | Governance `HOLD` until explicit labeling/rationale is recorded | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
@@ -358,6 +386,8 @@ field names remain provisional and must preserve these mappings.
 | `FRACTION_MIN` | fraction | `0.0` | lower bound for transition fractions (`Fcut`, `Fbs`, `Fbf`, `Frm`) | REF-RESIDUE-CH9-MGMT |
 | `FRACTION_MAX` | fraction | `1.0` | upper bound for transition fractions (`Fcut`, `Fbs`, `Fbf`, `Frm`) | REF-RESIDUE-CH9-MGMT |
 | `INDEX_ORIGIN` | index | `1` | first valid index for `cutday[*]` and grazing cycle families | REF-RESIDUE-CH9-CROP-SUMMARY |
+| `FOREST_LITTER_FALLBACK_DECAY_RATE` | `d^-1` | `0.5 / 365.25` | First-order forest-litter turnover fallback when recurring seasonal litter input is active and `oratea=0`; not used for inert/no-senescence residue. | REF-RESIDUE-FOREST-LITTER-DECAY |
+| `FOREST_LITTER_DROP_WINDOW_DAYS` | day | `45` | Width of the frost-visible fall litter-drop publication window ending on the management fall date for recurring perennial forest litter. | REF-RESIDUE-FROST-COVER-20260629 |
 
 ## Tolerance and Numeric Notes
 
@@ -434,6 +464,15 @@ Minimum required scenario families for contract conformance:
    - negative `oratea`/`orater` values fail with typed domain status;
    - non-finite `prcp` or out-of-domain `Ws` fails with typed status;
    - active branch does not silently default missing decomposition symbols.
+14. Dynamic frost-residue boundary obligations:
+   - a seasonal deciduous/perennial fixture shows recurring litter input into
+     `sumsrm_seed` during senescence rather than a flat initial seed only;
+   - `residue_depth_m` changes consistently with current surface-residue mass
+     and remains finite/non-negative;
+   - an inert/no-senescence fixture remains identity-stable against its t0
+     residue-depth seed;
+   - frost thermal inputs consume the dynamic `residue_depth_m` on the real
+     downstream path, not a producer-only shadow counter.
 
 ## ARCH22 Typed Production-Surface Addendum
 
@@ -480,3 +519,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `8` | `Codex` | PL17 amendment: added decomposition equation/update addendum with legacy-aligned environmental factors and decay forms, introduced decomposition payload equation-updated seed-pool authority and event-transfer update obligations, added `INV-RESIDUE-017/018` plus guard-map rows, and expanded PL17 test-vector obligations for decomposition kinetics and required-symbol failure posture. |
 | `2026-05-23` | `9` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring residue-coupled production interfaces to consume boundary symbols via ARCH22 typed symbol families while preserving PL17/INT10 typed failure semantics under migration. |
 | `2026-05-25` | `10` | `Codex` | MOFE11 amendment: added legacy `oratea/orater` domain authority (`infile.for` direct read + `decomp.for` exponential usage), revised PL17 required-symbol domain semantics to allow zero-valued no-decay constants, and updated guard/test vectors to typed-reject negative decomposition-rate constants. |
+| `2026-06-29` | `11` | `Codex` | FROST RESIDUE-COVER IMPLEMENTATION amendment: added dynamic frost-residue boundary authority (`INV-RESIDUE-019`), Phase-0 evidence that current `Dec_*` residue mass is flat under zero-rate/no-input fixtures, required senescence/litter input into the surface-residue pool, bound `residue_depth_m` to current surface-residue mass through legacy `res_dp`-lineage conversion, added the narrow `k=0.5 yr^-1` forest-litter turnover fallback plus fall litter-drop publication window ending on the management fall date for recurring seasonal litter with zero `oratea`, recorded the fixed management-date anchor as a known limitation until the physical frost/daylength phenology backlog lands, and required real frost consumers to read the dynamic depth rather than the t0 seed. |

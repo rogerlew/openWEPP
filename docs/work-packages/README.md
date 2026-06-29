@@ -13,6 +13,27 @@
 
 State as of `2026-06-29`:
 
+- `20260629-frost-residue-cover-implementation-001/` is complete as FROST
+  RESIDUE-COVER IMPLEMENTATION, the contract-first dynamic seasonal forest
+  litter/residue-depth coupling for the frost surface heat path. Result:
+  `EXECUTED-COMPLETE-IMPLEMENTATION-BRANCH-A`. It amended `SC-RESIDUE-001` to
+  revision 11 with `INV-RESIDUE-019` and `SC-SNOWFREEZE-001` to revision 113
+  with `INV-SNOWFREEZE-083`, then wired direct-production surface-residue mass
+  through a dynamic mass-to-depth publisher consumed by frost thermal inputs.
+  Phase 0 showed the existing `Dec_*` mass path was flat under zero-rate/no-input
+  management, so the implementation also added the missing recurring forest
+  litter input limb: pending non-fall senescence mass is conserved until the
+  45-day fall litter-drop window ending on the management fall date, with a
+  forest-litter turnover fallback when `oratea=0`. Review disposition aligned
+  that fallback to the cited authority (`k=0.5 yr^-1`) and recorded the
+  management fall-date (`jdharv`) litter-drop anchor as a known limitation until
+  the physical frost/daylength phenology backlog lands. The real Step 3 entry
+  gate now passes (`autumn=0.165028 m`, `spring=0.159910 m`, max month October),
+  and the Sleepers A-vs-B rerun routes to branch A as a partial contributor:
+  candidate-defect timing cells reduced from `18` to `13`, with `13` cells
+  remaining for follow-up frost attribution. No canopy leaf-on/off, Qwet,
+  frozen-K, SFCC, impedance, frost-default activation, public schema,
+  snow-model, fixture repoint, or legacy-comparator targeting change was made.
 - `20260629-frost-step3-residue-parameterization-001/` is complete as FROST
   STEP 3, the diagnostic residue-parameterization test for the two Step
   1-unblocked Sleepers sites. Result:
@@ -26,7 +47,8 @@ State as of `2026-06-29`:
   remains open; the follow-on is to promote the surface residue / forest litter
   cover dimension of
   `docs/backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md`
-  before rerunning Sleepers timing attribution. No frost-model, snow-model,
+  before rerunning Sleepers timing attribution. That follow-on was executed by
+  `20260629-frost-residue-cover-implementation-001/`. No frost-model, snow-model,
   production fixture, contract-physics, default, output-schema, selector, or
   harness-default change was made.
 - `20260629-frost-step2-sleepers-attribution-001/` is complete as FROST STEP 2,

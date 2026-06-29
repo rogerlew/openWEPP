@@ -372,6 +372,12 @@ impl DirectFrameExecutor {
             }
             day_frame.evapotranspiration_compute_inputs = evapotranspiration_compute_inputs;
         }
+        if let Some(decomposition_inputs) = day_input.decomposition_inputs {
+            day_frame.decomposition_inputs = decomposition_inputs;
+        }
+        if let Some(residue_partition_inputs) = day_input.residue_partition_inputs {
+            day_frame.residue_partition_inputs = residue_partition_inputs;
+        }
         if let Some(annual_growth_inputs) = day_input.annual_growth_inputs {
             day_frame.annual_growth_inputs = annual_growth_inputs;
         }

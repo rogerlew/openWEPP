@@ -1495,6 +1495,8 @@ mod tests {
             rsr: 0.2,
             rtmmax: 1.0,
             rdmax: 1.0,
+            oratea: 0.0,
+            orater: 0.0,
         }
     }
 

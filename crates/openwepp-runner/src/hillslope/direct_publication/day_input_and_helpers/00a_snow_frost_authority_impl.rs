@@ -272,6 +272,7 @@ impl DirectProductionSnowFrostAuthority {
         snow_lane_state: &DirectSnowLaneState,
         winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
         clear_no_final_hydrology_layers: bool,
+        residue_depth_m_override: Option<f64>,
     ) -> Result<Option<DirectProductionFrostDayContext>, HillslopeCliError> {
         let frost_lane_state = self.current_frost_lane_state(lane);
         let frost_runtime_depth_m = frost_lane_state.dfrost_m;
@@ -308,6 +309,7 @@ impl DirectProductionSnowFrostAuthority {
             snow_lane_state,
             frost_lane_state: &frost_lane_state,
             typed_authority,
+            residue_depth_m_override,
             hourly: frost_hourly,
         };
         let compute_inputs = Self::typed_winter_frost_compute_inputs(&typed_context)?;
@@ -401,10 +403,21 @@ impl DirectProductionSnowFrostAuthority {
     ) -> Result<DirectFrostThermalInputs, HillslopeCliError> {
         let (snow_depth_m, snow_density_kg_m3) =
             Self::snow_frost_insulation_depth_density(context)?;
+        let residue_depth_m = context
+            .residue_depth_m_override
+            .unwrap_or(context.typed_authority.residue_depth_m);
+        if !residue_depth_m.is_finite() || residue_depth_m < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_frost_residue_depth",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production frost residue depth must be finite and nonnegative, observed {residue_depth_m}"
+                ),
+            });
+        }
         Ok(DirectFrostThermalInputs {
             snow_depth_m,
             snow_density_kg_m3,
-            residue_depth_m: context.typed_authority.residue_depth_m,
+            residue_depth_m,
             wind_m_s: context.forcing.vwind_m_s,
             albedo: context.typed_authority.albedo,
             canopy_height_m: context.typed_authority.canopy_height_m,

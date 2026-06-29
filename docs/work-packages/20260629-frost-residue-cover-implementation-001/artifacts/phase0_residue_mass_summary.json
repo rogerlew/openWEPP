@@ -1,0 +1,21 @@
+{
+  "schema": "frost-residue-cover-phase0-characterization-v1",
+  "fixture": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh/p10.man",
+  "plant_name": "Dec_4899",
+  "sim_years": 45,
+  "source_lines": {
+    "sim_years": 3,
+    "plant_name": 9,
+    "residue_line": 18,
+    "initial_terminal_seed_line": 41
+  },
+  "parameters": {
+    "oratea": 0.0,
+    "orater": 0.0,
+    "initial_surface_residue_kg_m2": 0.5,
+    "initial_root_residue_kg_m2": 0.5
+  },
+  "branch": "MASS-NOT-SEASONAL-NO-INPUT-ZERO-DECAY",
+  "interpretation": "The existing Dec_* fixture provides neither recurring litter input nor decomposition decay to the surface residue mass pool. The implementation must add the litter-input limb before wiring dynamic mass-to-depth-to-frost.",
+  "monthly_csv": "docs/work-packages/20260629-frost-residue-cover-implementation-001/artifacts/phase0_residue_mass_monthly.csv"
+}

@@ -6,6 +6,8 @@ const SNOWFROST_STAGE2_INSULATION_MODEL_ENV: &str =
     "OPENWEPP_SNOWFROST_STAGE2_INSULATION_MODEL";
 const PARADIGM2_STAGE3_LIQUID_MODEL_ENV: &str =
     "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL";
+const FOREST_LITTER_FALLBACK_DECAY_RATE_PER_DAY: f64 = 0.5 / 365.25;
+const FOREST_LITTER_DROP_WINDOW_DAYS: usize = 45;
 
 struct DirectPublicationDayInputBuilder<'a> {
     climate_request: &'a HillslopeClimateRuntimeRequest,
@@ -164,6 +166,7 @@ impl<'a> DirectPublicationDayInputBuilder<'a> {
             &snow_lane_state,
             winter_hourly_geometry,
             precipitation_m > 1.0e-12 || snow_lane_state.runtime_swe_m > 1.0e-12,
+            None,
         )?;
         if let Some(frost_context) = &frost_context {
             insert_direct_seed_scalar(
@@ -450,6 +453,7 @@ struct DirectProductionDayInputBuilder<'a> {
     climate_request: &'a HillslopeClimateRuntimeRequest,
     climate_span: &'a ClimateRunSpanSummary,
     lane_authority: Vec<DirectProductionLaneDayInputAuthority>,
+    residue_cover_state: std::cell::RefCell<Vec<DirectProductionResidueCoverState>>,
     winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
     sturm_climate_class: Option<openwepp_hillslope_orchestrator::SnowClimateClass>,
 }
@@ -461,6 +465,7 @@ struct DirectProductionLaneDayInputAuthority {
     subsurface: DirectSubsurfaceComputeInputs,
     infiltration: DirectProductionInfiltrationAuthority,
     evapotranspiration: DirectProductionEvapotranspirationAuthority,
+    residue_cover: DirectProductionResidueCoverAuthority,
     growth: DirectProductionGrowthAuthority,
     hydrology_projection: DirectHydrologyProjectionInputs,
     erosion: DirectProductionErosionAuthority,
@@ -548,6 +553,40 @@ struct DirectProductionGrowthCropAuthority {
     rsr: f64,
     rtmmax: f64,
     rdmax: f64,
+    oratea: f64,
+    orater: f64,
+}
+
+#[derive(Clone, Copy)]
+struct DirectProductionResidueCoverAuthority {
+    initial_surface_residue_kg_m2: f64,
+    initial_root_residue_kg_m2: f64,
+    residue_type_selector: f64,
+    residue_depth_conversion_m_per_kg_m2: f64,
+}
+
+#[derive(Clone, Copy)]
+struct DirectProductionResidueCoverState {
+    surface_residue_kg_m2: f64,
+    root_residue_kg_m2: f64,
+    pending_surface_litter_kg_m2: f64,
+    residue_depth_m: f64,
+}
+
+#[derive(Clone, Copy)]
+struct DirectProductionResidueCoverProjection {
+    decomposition_inputs: DirectDecompositionInputs,
+    residue_partition_inputs: DirectResiduePartitionInputs,
+    state_before: DirectProductionResidueCoverState,
+    state_after: DirectProductionResidueCoverState,
+    surface_litter_input_kg_m2: f64,
+    pending_surface_litter_after_kg_m2: f64,
+}
+
+#[derive(Clone, Copy)]
+struct DirectProductionSurfaceLitterProjection {
+    surface_litter_input_kg_m2: f64,
+    pending_surface_litter_after_kg_m2: f64,
 }
 
 #[derive(Clone)]
@@ -632,6 +671,7 @@ struct DirectProductionFrostTypedComputeContext<'a> {
     snow_lane_state: &'a DirectSnowLaneState,
     frost_lane_state: &'a DirectFrostLaneState,
     typed_authority: &'a DirectProductionFrostTypedAuthority,
+    residue_depth_m_override: Option<f64>,
     hourly: [DirectFrostHourlyForcing;
         openwepp_hillslope_orchestrator::DIRECT_WINTER_HOURLY_FORCING_COUNT],
 }
@@ -694,6 +734,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             climate_span,
             &lane_authority,
         )?;
+        let residue_cover_state = lane_authority
+            .iter()
+            .map(|authority| authority.residue_cover.initial_state())
+            .collect::<Vec<_>>();
         let winter_hourly_geometry =
             DirectProductionWinterHourlyGeometry::from_climate_context_surface(
                 seed_surfaces.last().ok_or_else(|| {
@@ -709,6 +753,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             climate_request,
             climate_span,
             lane_authority,
+            residue_cover_state: std::cell::RefCell::new(residue_cover_state),
             winter_hourly_geometry,
             sturm_climate_class,
         })
@@ -783,6 +828,26 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             &perennial_growth_inputs,
             growth_state_before,
         )?;
+        let residue_cover_projection = {
+            let mut states = self.residue_cover_state.borrow_mut();
+            if lane_index >= states.len() {
+                states.resize(lane_index + 1, authority.residue_cover.initial_state());
+            }
+            let projection = authority.residue_cover.project_day(
+                &authority.growth,
+                day,
+                simulation_year,
+                lane_index + 1,
+                &forcing,
+                states[lane_index],
+                growth_state_before,
+                growth_state_for_publication,
+                lane.plant_water_stress,
+            )?;
+            states[lane_index] = projection.state_after;
+            projection
+        };
+        maybe_write_frost_residue_cover_trace(day_index, lane_index, &residue_cover_projection)?;
         Self::validate_active_snow_forcing(
             authority,
             lane_index,
@@ -821,6 +886,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             &snow_lane_state,
             self.winter_hourly_geometry,
             rainfall_input_m > 1.0e-12 || snow_liquid.routed_melt_m > 1.0e-12,
+            Some(residue_cover_projection.state_after.residue_depth_m),
         )?;
         let interception_state = compute_direct_canopy_interception(
             DirectCanopyInterceptionInputs {
@@ -918,6 +984,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             Some(authority.subsurface_inputs(lane_index, hydrology_layers)?);
         let evapotranspiration_compute_inputs = pre_growth_evapotranspiration_compute_inputs;
         day_input.evapotranspiration_compute_inputs = Some(evapotranspiration_compute_inputs);
+        day_input.decomposition_inputs = Some(residue_cover_projection.decomposition_inputs);
+        day_input.residue_partition_inputs = Some(residue_cover_projection.residue_partition_inputs);
         day_input.annual_growth_inputs = Some(annual_growth_inputs);
         day_input.perennial_growth_inputs = Some(perennial_growth_inputs);
         let mut hydrology_projection_inputs =
@@ -990,6 +1058,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 seed_surface,
                 layers.len(),
             )?,
+            residue_cover: DirectProductionResidueCoverAuthority::from_seed(seed_surface)?,
             growth: DirectProductionGrowthAuthority::from_seed(seed_surface)?,
             hydrology_projection: direct_publication_profile_inputs(seed_surface)?,
             erosion: DirectProductionErosionAuthority::from_seed(seed_surface)?,
@@ -1666,6 +1735,325 @@ impl DirectProductionLaneDayInputAuthority {
         inputs.frost_depth_m = direct_production_frost_depth_m(layers);
         inputs
     }
+}
+
+impl DirectProductionResidueCoverAuthority {
+    fn from_seed(seed_surface: &HillslopeWritebackSurface) -> Result<Self, HillslopeCliError> {
+        let initial_surface_residue_kg_m2 =
+            direct_publication_optional_nonnegative_scalar(seed_surface, &["sumsrm_seed"])?
+                .unwrap_or(0.0);
+        let initial_root_residue_kg_m2 =
+            direct_publication_optional_nonnegative_scalar(seed_surface, &["sumrtm_seed"])?
+                .unwrap_or(0.0);
+        let residue_type_selector =
+            direct_publication_optional_nonnegative_scalar(seed_surface, &["iresd_seed"])?
+                .unwrap_or(0.0);
+        let initial_residue_depth_m = direct_publication_optional_nonnegative_scalar(
+            seed_surface,
+            &["frost.runtime_residue_depth_m", "resdep"],
+        )?
+        .unwrap_or(0.0);
+        let residue_depth_conversion_m_per_kg_m2 = if initial_surface_residue_kg_m2 > 0.0 {
+            initial_residue_depth_m / initial_surface_residue_kg_m2
+        } else {
+            0.0
+        };
+        if !residue_depth_conversion_m_per_kg_m2.is_finite()
+            || residue_depth_conversion_m_per_kg_m2 < 0.0
+        {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_residue_cover",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production residue depth conversion must be finite and nonnegative, observed {residue_depth_conversion_m_per_kg_m2}"
+                ),
+            });
+        }
+        Ok(Self {
+            initial_surface_residue_kg_m2,
+            initial_root_residue_kg_m2,
+            residue_type_selector,
+            residue_depth_conversion_m_per_kg_m2,
+        })
+    }
+
+    fn initial_state(self) -> DirectProductionResidueCoverState {
+        DirectProductionResidueCoverState {
+            surface_residue_kg_m2: self.initial_surface_residue_kg_m2,
+            root_residue_kg_m2: self.initial_root_residue_kg_m2,
+            pending_surface_litter_kg_m2: 0.0,
+            residue_depth_m: self.initial_surface_residue_kg_m2
+                * self.residue_depth_conversion_m_per_kg_m2,
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn project_day(
+        self,
+        growth: &DirectProductionGrowthAuthority,
+        day: &ClimateDayProjection,
+        simulation_year: i32,
+        ofe_index: usize,
+        forcing: &HillslopeDirectClimateDayForcing,
+        state_before: DirectProductionResidueCoverState,
+        plant_state_before: DirectGrowthStateSurface,
+        plant_state_after: DirectGrowthStateSurface,
+        water_stress: f64,
+    ) -> Result<DirectProductionResidueCoverProjection, HillslopeCliError> {
+        let runtime_year =
+            direct_growth_i32_to_usize("simulation_year", simulation_year, 1, usize::MAX)?;
+        let ofe_index_valid = direct_growth_validate_usize("ofe_index", ofe_index, 1, usize::MAX)?;
+        let runtime_day = direct_growth_u16_to_usize("day", day.julian_day, 1, 366)?;
+        let active_crop = if growth.active {
+            growth
+                .active_crop(runtime_year, runtime_day, ofe_index_valid)?
+                .map(|selection| selection.crop)
+        } else {
+            None
+        };
+        let surface_litter_projection = direct_production_surface_litter_projection(
+            active_crop,
+            runtime_day,
+            state_before,
+            plant_state_before,
+            plant_state_after,
+        )?;
+        let decomposition_inputs = self.decomposition_inputs(
+            growth,
+            day,
+            simulation_year,
+            ofe_index,
+            forcing,
+            state_before,
+            surface_litter_projection.surface_litter_input_kg_m2,
+            water_stress,
+        )?;
+        let decomposition_state = decomposition_inputs
+            .compute_state()
+            .map_err(|source| direct_publication_runtime_error(&source))?;
+        let state_after = DirectProductionResidueCoverState {
+            surface_residue_kg_m2: decomposition_state.surface_residue_kg_m2,
+            root_residue_kg_m2: decomposition_state.root_residue_kg_m2,
+            pending_surface_litter_kg_m2: surface_litter_projection
+                .pending_surface_litter_after_kg_m2,
+            residue_depth_m: decomposition_state.residue_depth_m,
+        };
+        Ok(DirectProductionResidueCoverProjection {
+            decomposition_inputs,
+            residue_partition_inputs: DirectResiduePartitionInputs {
+                standing_residue_kg_m2: 0.0,
+                flat_residue_offset_kg_m2: 0.0,
+                buried_residue_kg_m2: 0.0,
+                cover_fraction: 0.0,
+            },
+            state_before,
+            state_after,
+            surface_litter_input_kg_m2: surface_litter_projection.surface_litter_input_kg_m2,
+            pending_surface_litter_after_kg_m2: surface_litter_projection
+                .pending_surface_litter_after_kg_m2,
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn decomposition_inputs(
+        self,
+        growth: &DirectProductionGrowthAuthority,
+        day: &ClimateDayProjection,
+        simulation_year: i32,
+        ofe_index: usize,
+        forcing: &HillslopeDirectClimateDayForcing,
+        state_before: DirectProductionResidueCoverState,
+        surface_litter_input_kg_m2: f64,
+        water_stress: f64,
+    ) -> Result<DirectDecompositionInputs, HillslopeCliError> {
+        if !growth.active {
+            return Ok(DirectDecompositionInputs::zero());
+        }
+        let runtime_year =
+            direct_growth_i32_to_usize("simulation_year", simulation_year, 1, usize::MAX)?;
+        let ofe_index = direct_growth_validate_usize("ofe_index", ofe_index, 1, usize::MAX)?;
+        let runtime_day = direct_growth_u16_to_usize("day", day.julian_day, 1, 366)?;
+        let Some(selection) = growth.active_crop(runtime_year, runtime_day, ofe_index)? else {
+            return Ok(DirectDecompositionInputs {
+                surface_residue_seed_kg_m2: state_before.surface_residue_kg_m2,
+                root_residue_seed_kg_m2: state_before.root_residue_kg_m2,
+                surface_litter_input_kg_m2,
+                residue_depth_conversion_m_per_kg_m2: self
+                    .residue_depth_conversion_m_per_kg_m2,
+                ..DirectDecompositionInputs::zero()
+            });
+        };
+        let runtime_day = direct_growth_usize_to_u16("day", runtime_day)?;
+        let slot_index = direct_growth_usize_to_u16("slot_index", selection.slot_index)?;
+        let crop_slot_index =
+            direct_growth_usize_to_u16("crop_slot_index", selection.crop_slot_index)?;
+        let active_context = match selection.crop.imngmt {
+            1 | 3 => DirectDecompositionActiveContext::AnnualOrFallow {
+                active_slot_index: slot_index,
+                active_crop_slot_index: crop_slot_index,
+                runtime_day_of_year: runtime_day,
+            },
+            2 => DirectDecompositionActiveContext::Perennial {
+                active_slot_index: slot_index,
+                active_crop_slot_index: crop_slot_index,
+                runtime_day_of_year: runtime_day,
+            },
+            _ => {
+                return Err(direct_growth_failure(format!(
+                    "unsupported direct production decomposition management class {}",
+                    selection.crop.imngmt
+                )));
+            }
+        };
+        Ok(DirectDecompositionInputs {
+            active_context,
+            active_action: DirectDecompositionAction::None,
+            residue_type_selector: self.residue_type_selector,
+            surface_residue_seed_kg_m2: state_before.surface_residue_kg_m2,
+            root_residue_seed_kg_m2: state_before.root_residue_kg_m2,
+            surface_litter_input_kg_m2,
+            residue_depth_conversion_m_per_kg_m2: self.residue_depth_conversion_m_per_kg_m2,
+            temperature_max_c: forcing.tmax_c,
+            temperature_min_c: forcing.tmin_c,
+            precipitation_m: forcing.prcp_m,
+            water_stress_fraction: water_stress,
+            surface_decomposition_rate: selection.crop.surface_decomposition_rate(),
+            root_decomposition_rate: selection.crop.orater,
+            burn_surface_fraction: 0.0,
+            remove_surface_fraction: 0.0,
+            cut_transfer_fraction: 0.0,
+            grazing_digest_fraction: 0.0,
+        })
+    }
+}
+
+fn direct_production_surface_litter_projection(
+    active_crop: Option<&DirectProductionGrowthCropAuthority>,
+    runtime_day: usize,
+    residue_state_before: DirectProductionResidueCoverState,
+    state_before: DirectGrowthStateSurface,
+    state_after: DirectGrowthStateSurface,
+) -> Result<DirectProductionSurfaceLitterProjection, HillslopeCliError> {
+    let daily_litter_loss_kg_m2 =
+        (state_before.live_biomass_kg_m2 - state_after.live_biomass_kg_m2).max(0.0);
+    if !daily_litter_loss_kg_m2.is_finite() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_residue_cover",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} direct production litter input must be finite, observed {daily_litter_loss_kg_m2}"
+            ),
+        });
+    }
+    let projection = match active_crop {
+        Some(crop) if crop.uses_fall_litter_drop_schedule() => {
+            let pending =
+                residue_state_before.pending_surface_litter_kg_m2 + daily_litter_loss_kg_m2;
+            if !pending.is_finite() || pending < 0.0 {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_production_residue_cover",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} direct production pending litter must be finite and nonnegative, observed {pending}"
+                    ),
+                });
+            }
+            if crop.fall_litter_drop_window_contains(runtime_day) {
+                DirectProductionSurfaceLitterProjection {
+                    surface_litter_input_kg_m2: pending,
+                    pending_surface_litter_after_kg_m2: 0.0,
+                }
+            } else {
+                DirectProductionSurfaceLitterProjection {
+                    surface_litter_input_kg_m2: 0.0,
+                    pending_surface_litter_after_kg_m2: pending,
+                }
+            }
+        }
+        _ => DirectProductionSurfaceLitterProjection {
+            surface_litter_input_kg_m2: daily_litter_loss_kg_m2,
+            pending_surface_litter_after_kg_m2: 0.0,
+        },
+    };
+    if !projection.surface_litter_input_kg_m2.is_finite()
+        || projection.surface_litter_input_kg_m2 < 0.0
+        || !projection.pending_surface_litter_after_kg_m2.is_finite()
+        || projection.pending_surface_litter_after_kg_m2 < 0.0
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_residue_cover",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} direct production litter projection must be finite and nonnegative, input={} pending={}",
+                projection.surface_litter_input_kg_m2,
+                projection.pending_surface_litter_after_kg_m2
+            ),
+        });
+    }
+    Ok(projection)
+}
+
+fn maybe_write_frost_residue_cover_trace(
+    day_index: usize,
+    lane_index: usize,
+    projection: &DirectProductionResidueCoverProjection,
+) -> Result<(), HillslopeCliError> {
+    let Some(path) = std::env::var_os("OPENWEPP_FROST_RESIDUE_COVER_TRACE_PATH") else {
+        return Ok(());
+    };
+    if path.is_empty() {
+        return Ok(());
+    }
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_residue_cover_trace",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} failed opening direct production residue-cover trace {}: {error}",
+                std::path::PathBuf::from(&path).display()
+            ),
+        })?;
+    let line = format!(
+        "{{\"schema\":\"openwepp-frost-residue-cover-trace-v1\",\
+\"day_index\":{day_index},\
+\"lane_index\":{lane_index},\
+\"surface_residue_before_kg_m2\":{},\
+\"root_residue_before_kg_m2\":{},\
+\"pending_surface_litter_before_kg_m2\":{},\
+\"residue_depth_before_m\":{},\
+\"surface_litter_input_kg_m2\":{},\
+\"surface_residue_after_kg_m2\":{},\
+\"root_residue_after_kg_m2\":{},\
+\"pending_surface_litter_after_kg_m2\":{},\
+\"residue_depth_after_m\":{},\
+\"residue_depth_conversion_m_per_kg_m2\":{},\
+\"surface_decomposition_rate\":{},\
+\"root_decomposition_rate\":{}}}",
+        direct_production_trace_number(projection.state_before.surface_residue_kg_m2),
+        direct_production_trace_number(projection.state_before.root_residue_kg_m2),
+        direct_production_trace_number(projection.state_before.pending_surface_litter_kg_m2),
+        direct_production_trace_number(projection.state_before.residue_depth_m),
+        direct_production_trace_number(projection.surface_litter_input_kg_m2),
+        direct_production_trace_number(projection.state_after.surface_residue_kg_m2),
+        direct_production_trace_number(projection.state_after.root_residue_kg_m2),
+        direct_production_trace_number(projection.pending_surface_litter_after_kg_m2),
+        direct_production_trace_number(projection.state_after.residue_depth_m),
+        direct_production_trace_number(
+            projection
+                .decomposition_inputs
+                .residue_depth_conversion_m_per_kg_m2,
+        ),
+        direct_production_trace_number(projection.decomposition_inputs.surface_decomposition_rate),
+        direct_production_trace_number(projection.decomposition_inputs.root_decomposition_rate),
+    );
+    let line = format!("{line}\n");
+    std::io::Write::write_all(&mut file, line.as_bytes()).map_err(|error| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_residue_cover_trace",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} failed writing direct production residue-cover trace {}: {error}",
+                std::path::PathBuf::from(&path).display()
+            ),
+        }
+    })
 }
 
 impl DirectProductionPeakRunoffAuthority {
@@ -2561,6 +2949,14 @@ impl DirectProductionGrowthCropAuthority {
                 seed_surface,
                 &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "rdmax"),
             )?,
+            oratea: direct_growth_required_scalar(
+                seed_surface,
+                &direct_decomp_slot_crop_symbol(slot_index, crop_slot_index, "oratea"),
+            )?,
+            orater: direct_growth_required_scalar(
+                seed_surface,
+                &direct_decomp_slot_crop_symbol(slot_index, crop_slot_index, "orater"),
+            )?,
         })
     }
 
@@ -2588,6 +2984,33 @@ impl DirectProductionGrowthCropAuthority {
                 usize::from(self.jdharv.max(1)),
             )
         }
+    }
+
+    fn surface_decomposition_rate(self) -> f64 {
+        if self.oratea == 0.0 && self.has_seasonal_litter_signal() {
+            FOREST_LITTER_FALLBACK_DECAY_RATE_PER_DAY
+        } else {
+            self.oratea
+        }
+    }
+
+    fn has_seasonal_litter_signal(self) -> bool {
+        self.spriod > 0.0 && (self.dropfc < 1.0 || self.decfct < 1.0)
+    }
+
+    fn uses_fall_litter_drop_schedule(self) -> bool {
+        self.imngmt == 2 && self.jdharv > 0 && self.has_seasonal_litter_signal()
+    }
+
+    fn fall_litter_drop_window_contains(self, runtime_day: usize) -> bool {
+        if !self.uses_fall_litter_drop_schedule() {
+            return false;
+        }
+        let end = usize::from(self.jdharv);
+        let start = end
+            .saturating_sub(FOREST_LITTER_DROP_WINDOW_DAYS)
+            .max(1);
+        runtime_day >= start && runtime_day <= end
     }
 }
 
@@ -2707,6 +3130,14 @@ fn direct_growth_slot_crop_symbol(
     root: &str,
 ) -> String {
     format!("pl_growth_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
+}
+
+fn direct_decomp_slot_crop_symbol(
+    slot_index: usize,
+    crop_slot_index: usize,
+    root: &str,
+) -> String {
+    format!("pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
 }
 
 fn direct_growth_day_is_within_window(

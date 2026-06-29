@@ -690,6 +690,25 @@ fn maybe_record_r7h_compat_layer_trace(
         });
         if let Some(row_object) = row.as_object_mut() {
             row_object.insert(
+                "surface_residue_kg_m2".to_string(),
+                serde_json::json!(r7h_state_scalar(surface, "sumsrm_seed")),
+            );
+            row_object.insert(
+                "root_residue_kg_m2".to_string(),
+                serde_json::json!(r7h_state_scalar(surface, "sumrtm_seed")),
+            );
+            row_object.insert(
+                "frost_runtime_residue_depth_m".to_string(),
+                serde_json::json!(r7h_state_scalar(
+                    surface,
+                    "frost.runtime_residue_depth_m"
+                )),
+            );
+            row_object.insert(
+                "resdep_m".to_string(),
+                serde_json::json!(r7h_state_scalar(surface, "resdep")),
+            );
+            row_object.insert(
                 "infiltration_m".to_string(),
                 serde_json::json!(r7h_state_scalar(surface, "wb12_infiltration")),
             );

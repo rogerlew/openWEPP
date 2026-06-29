@@ -497,10 +497,11 @@ def decide_branch(sites: list[dict[str, Any]]) -> dict[str, Any]:
     )
     if total_seasonal < total_baseline:
         branch = "A"
-        label = "Parameterization cause confirmed"
+        label = "Residue parameterization is a partial contributor"
         justification = (
             f"Seasonal Dec_* residue reduced candidate-defect timing cells "
-            f"from {total_baseline} to {total_seasonal}."
+            f"from {total_baseline} to {total_seasonal}; residual cells remain "
+            f"for follow-up frost attribution."
         )
     else:
         branch = "B"
@@ -521,10 +522,14 @@ def decide_branch(sites: list[dict[str, Any]]) -> dict[str, Any]:
 def gap_disposition(payload: dict[str, Any]) -> str:
     branch = payload["decision_branch"]["branch"]
     if branch == "A":
+        total_baseline = payload["decision_branch"]["total_baseline_candidate_defect_count"]
+        total_seasonal = payload["decision_branch"]["total_seasonal_candidate_defect_count"]
+        cleared = total_baseline - total_seasonal
         return (
-            "GAP-SNOWFREEZE-002 remains open but the Sleepers timing candidate "
-            "defects are attributed to fixture residue parameterization; follow-on "
-            "fix is production-fixture repoint or first-class forest litter cover."
+            "GAP-SNOWFREEZE-002 remains open. Seasonal residue is a confirmed "
+            f"partial contributor: it cleared {cleared} of {total_baseline} "
+            f"candidate-defect timing cells, while {total_seasonal} cells remain "
+            "for follow-up frost attribution."
         )
     if branch == "B":
         return (

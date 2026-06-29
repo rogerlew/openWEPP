@@ -1510,7 +1510,10 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // R7G carries typed snow runtime state plus SNOWDENSITY-07 CoE boundary carry and
     // SNOWDENSITY-10.3.8 retained-liquid storage at lane scope.
     assert!(lane_frame <= 1_216);
-    assert!(day_frame <= 12_288);
+    // FROST RESIDUE-COVER IMPLEMENTATION carries explicit daily litter input and
+    // residue-depth operands through the direct frame so frost consumes the dynamic
+    // residue cover instead of a static management seed.
+    assert!(day_frame <= 12_320);
 }
 
 fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {

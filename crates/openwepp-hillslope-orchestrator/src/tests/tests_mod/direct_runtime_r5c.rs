@@ -48,6 +48,8 @@ fn r5c_decomposition_phase_computes_mutates_downstream_and_shadow_projects_annua
         active_action: inputs.active_action,
         surface_residue_kg_m2: expected_state.surface_residue_kg_m2,
         root_residue_kg_m2: expected_state.root_residue_kg_m2,
+        surface_litter_input_kg_m2: expected_state.surface_litter_input_kg_m2,
+        residue_depth_m: expected_state.residue_depth_m,
         environment_index: expected_state.environment_index,
         surface_decay_factor: expected_state.surface_decay_factor,
         root_decay_factor: expected_state.root_decay_factor,
@@ -103,6 +105,8 @@ fn r5c_decomposition_phase_supports_perennial_grazing_and_zero_decay() {
         residue_type_selector: 3.0,
         surface_residue_seed_kg_m2: 0.6,
         root_residue_seed_kg_m2: 0.2,
+        surface_litter_input_kg_m2: 0.0,
+        residue_depth_conversion_m_per_kg_m2: 0.0,
         temperature_max_c: 5.0,
         temperature_min_c: 1.0,
         precipitation_m: 0.01,
@@ -375,6 +379,8 @@ fn annual_cut_inputs() -> DirectDecompositionInputs {
         residue_type_selector: 4.0,
         surface_residue_seed_kg_m2: 0.8,
         root_residue_seed_kg_m2: 0.3,
+        surface_litter_input_kg_m2: 0.0,
+        residue_depth_conversion_m_per_kg_m2: 0.0,
         temperature_max_c: 22.0,
         temperature_min_c: 10.0,
         precipitation_m: 0.002,
@@ -406,6 +412,8 @@ fn expected_annual_cut_state(inputs: DirectDecompositionInputs) -> DirectDecompo
         residue_type_selector: inputs.residue_type_selector,
         surface_residue_seed_kg_m2: inputs.surface_residue_seed_kg_m2,
         root_residue_seed_kg_m2: inputs.root_residue_seed_kg_m2,
+        surface_litter_input_kg_m2: inputs.surface_litter_input_kg_m2,
+        residue_depth_conversion_m_per_kg_m2: inputs.residue_depth_conversion_m_per_kg_m2,
         temperature_factor,
         surface_water_factor,
         flat_water_factor,
@@ -414,6 +422,8 @@ fn expected_annual_cut_state(inputs: DirectDecompositionInputs) -> DirectDecompo
         root_decay_factor,
         surface_residue_kg_m2: surface_after_decay - cut_transfer,
         root_residue_kg_m2: root_after_decay + cut_transfer,
+        residue_depth_m: (surface_after_decay - cut_transfer)
+            * inputs.residue_depth_conversion_m_per_kg_m2,
     }
 }
 
@@ -487,6 +497,14 @@ fn assert_decomposition_state_close(
         observed.root_residue_seed_kg_m2,
         expected.root_residue_seed_kg_m2,
     );
+    assert_close(
+        observed.surface_litter_input_kg_m2,
+        expected.surface_litter_input_kg_m2,
+    );
+    assert_close(
+        observed.residue_depth_conversion_m_per_kg_m2,
+        expected.residue_depth_conversion_m_per_kg_m2,
+    );
     assert_close(observed.temperature_factor, expected.temperature_factor);
     assert_close(observed.surface_water_factor, expected.surface_water_factor);
     assert_close(observed.flat_water_factor, expected.flat_water_factor);
@@ -498,6 +516,7 @@ fn assert_decomposition_state_close(
         expected.surface_residue_kg_m2,
     );
     assert_close(observed.root_residue_kg_m2, expected.root_residue_kg_m2);
+    assert_close(observed.residue_depth_m, expected.residue_depth_m);
 }
 
 fn assert_decomposition_operands_close(
@@ -515,6 +534,11 @@ fn assert_decomposition_operands_close(
         expected.surface_residue_kg_m2,
     );
     assert_close(observed.root_residue_kg_m2, expected.root_residue_kg_m2);
+    assert_close(
+        observed.surface_litter_input_kg_m2,
+        expected.surface_litter_input_kg_m2,
+    );
+    assert_close(observed.residue_depth_m, expected.residue_depth_m);
     assert_close(observed.temperature_factor, expected.temperature_factor);
     assert_close(observed.surface_water_factor, expected.surface_water_factor);
     assert_close(observed.flat_water_factor, expected.flat_water_factor);
@@ -546,6 +570,11 @@ fn assert_decomposition_shadow_value_close(
         expected.surface_residue_kg_m2,
     );
     assert_close(observed.root_residue_kg_m2, expected.root_residue_kg_m2);
+    assert_close(
+        observed.surface_litter_input_kg_m2,
+        expected.surface_litter_input_kg_m2,
+    );
+    assert_close(observed.residue_depth_m, expected.residue_depth_m);
     assert_close(observed.environment_index, expected.environment_index);
     assert_close(observed.surface_decay_factor, expected.surface_decay_factor);
     assert_close(observed.root_decay_factor, expected.root_decay_factor);
