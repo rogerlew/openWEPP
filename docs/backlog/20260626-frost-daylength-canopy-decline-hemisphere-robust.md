@@ -8,7 +8,13 @@
   fixtures are active) and before a growth/canopy science contract is authored.
   Scope covers the **full deciduous/mixed canopy cycle** — autumn leaf-off
   (frost/daylength decline) **and** spring leaf-on (thermal-time green-up) —
-  since a hemisphere-robust canopy needs both limbs physically driven.
+  since a hemisphere-robust canopy needs both limbs physically driven. Scope
+  **also covers the ground-side complement: seasonal surface residue / litter
+  cover** (autumn leaf-drop → litter → soil thermal insulation → frost), added
+  2026-06-29 from the frost Step-3 diagnosis. **Contingent dimension** — gated on
+  the frost Step-3 finding: implement a forest residue-cover representation here
+  only if cropland-management residue (`Dec_*`) cannot represent forest litter
+  seasonality (see Surface-residue section below).
 - `date`: 2026-06-26 (created, Claude Code)
 - `relates`:
   [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md)
@@ -161,12 +167,71 @@ realization, **not** canopy attenuation. Leaf-on timing therefore changes the
 deciduous/mixed canopy, but it is **not** the lever for the present spring
 over-accumulation — keep the two distinct.
 
+## Surface residue / litter cover — the ground-side complement (frost insulation)
+
+The **same autumn leaf-drop** that thins the canopy (the decline above) deposits
+that biomass on the ground as **surface residue / litter**. These are two
+consequences of one event, with **opposite-direction** snow/frost effects:
+
+- **Canopy side (above-ground, in scope above):** leaf-off lowers `cancov` → more
+  shortwave reaches the snow → more CoE melt (`amelt = 0.0607·hrad·(1-cancov)`).
+- **Residue side (ground-side, this dimension):** leaf-drop **raises surface
+  litter depth** → more soil thermal insulation → frost **onset delayed** and
+  **thaw advanced** as the litter decays through winter into spring.
+
+This is a **live lever, not a hypothetical** — confirmed 2026-06-29 in the frost
+Step-3 diagnosis: the frost solver's `frost_surface_heat_path`
+(`crates/.../hydrology/support_helpers_mod/coupling/frost.rs`) adds
+`residue_depth_m / residue_conductivity_w_m_k` directly into the surface thermal
+resistance. A **static** `residue_depth_m` (the inert `Tah_*` "no senescence or
+decomposition" plant the deciduous frost fixtures use) **under-insulates in fall
+(→ early frost onset) and over-insulates in spring (→ late thaw)** — exactly the
+Sleepers W9 early-onset + late-thaw timing signature. So a correct **seasonal**
+litter trajectory is required for deciduous-site frost timing.
+
+### The structural question (the same cropland/rangeland limitation)
+
+The biomass ledger already routes leaf-off biomass to litter/residue (see the
+Conservation constraint below). The open question is whether the **cropland**
+residue model can produce a **physically correct seasonal forest litter cycle**:
+
+- Crop residue **decomposition coefficients** are calibrated for crop straw and
+  may **decay forest leaf litter too fast**, collapsing the insulating layer
+  before spring (the leaf litter would vanish, not persist as a slowly-decaying
+  multi-year forest floor).
+- A **perennial** management (`imngmt==2`) may yield **no recurring annual
+  leaf-drop** to the surface-residue pool — the same cropland/rangeland branch
+  split that strands the canopy decline (`grow.for:751`) can strand the litter
+  input.
+
+If a cropland management **can** carry a realistic seasonal `residue_depth_m`
+(frost Step-3 confirms `Dec_*` does), this dimension needs **no implementation** —
+the fix is parameterization (repoint the deciduous fixtures), and the frost model
+is vindicated. If it **cannot**, implement a **first-class, landuse-agnostic
+forest residue-cover representation** here — the litter analogue of the
+landuse-agnostic canopy decline this backlog already argues for.
+
+### Residue-specific validation gates (add to the gates below)
+
+- **Seasonal litter trajectory:** `residue_depth_m` at a deciduous site **peaks in
+  autumn** (post-leaf-drop) and **declines through winter/spring** — not flat, and
+  not collapsed to zero before snowmelt.
+- **Frost-timing response:** running a deciduous site with the seasonal residue (vs
+  the inert static residue) moves frost **onset later and thaw earlier** toward the
+  observations (the Step-3 attribution direction).
+- **Multi-year forest floor:** the litter layer persists across years (a forest
+  floor is a standing pool), rather than fully mineralizing each summer like crop
+  residue.
+
 ## Governing constraints
 
 - **Contract-first (ADR-0011):** author/extend a growth–canopy science contract
   for the decline (state, invariants, the `dec`/`fhr`/`frst` abstraction,
   hemisphere invariant) before default adoption. Candidate home: the plant-growth
-  canopy contract that governs `06_growth_state.rs` `cancov`.
+  canopy contract that governs `06_growth_state.rs` `cancov`. The **surface-residue
+  dimension** extends the same contract on the ground side: seasonal litter depth
+  from leaf-drop, a forest-appropriate decomposition rate, and the
+  `residue_depth_m` → `frost_surface_heat_path` insulation coupling.
 - **Landuse-agnostic:** the mechanism must be available to the
   forest/perennial path, not gated behind a rangeland branch — the explicit
   break from the legacy limitation.

@@ -1329,12 +1329,39 @@ actionable.
    thaw-late candidate cells. Magnitude remains forcing-limited and non-verdict-
    bearing (South Field mixed-sign; W9 sign-incoherent). Morris remains blocked,
    and Mandan/Reynolds Creek remain inconclusive.
-3. **Resolve the specific frost-model item** pointed to by Step 2. The primary
-   pointer is the **residue-lifecycle handoff** (static vs dynamic `resdep`),
-   with the **magnitude outliers above the legacy envelope** (13/43 forced-snow
-   cases) as ADR-0017 comparator context. The absent **`Qwet`** evaporative term
-   remains a named strategy candidate but is not the primary pointer from the
-   Sleepers sign-coherence pass.
+3. **Resolve the residue pointer — which is a *fixture-parameterization* cause, not
+   a frost-model code defect** (diagnosed 2026-06-29, post-Step-2). The Step-2
+   residue-lifecycle pointer was run to ground: the deciduous frost fixtures
+   (Sleepers W9 "hardwood", South Field) use the **inert `Tah_*` plant
+   ("With no Senescence or decomposition")**, which holds `residue_depth_m`
+   *constant* all year. The frost solver **does** read residue —
+   `frost_surface_heat_path` (`coupling/frost.rs`) adds
+   `residue_depth_m / residue_conductivity_w_m_k` into the surface thermal
+   resistance — so a static residue **under-insulates in fall (→ early onset) and
+   over-insulates in spring (→ late thaw)**, reproducing exactly the W9
+   early-onset + late-thaw signature. The static choice was **deliberate** (the
+   harness runs all sites as inert cropland to isolate the *snow* confound, per the
+   fixture README), so the Step-2 "candidate frost-model defect" is in significant
+   part a **fixture-isolation artifact**. We already authored seasonal `Dec_*`
+   deciduous managements (2026-06-26, derived from the same `Tah_*` base — shared
+   `4899` suffix — with senescence/decomposition params populated) that the frost
+   fixtures are **not** using. **Step 3 is therefore a diagnostic test, not a model
+   change:** run the Sleepers sites with inert `Tah_*` vs seasonal `Dec_*` residue
+   and re-score the frost timing signature. **Decision branch:** if the
+   cropland-management residue model (`Dec_*`) produces a physically reasonable
+   *seasonal* `residue_depth_m` and shrinks the timing signature → the cause was
+   parameterization; fix = repoint the deciduous fixtures (no frost-model change,
+   frost model vindicated). If a cropland management **cannot** correctly represent
+   forest litter cover (crop decomposition decays the litter too fast, or a
+   perennial yields no recurring annual leaf-drop) → escalate to the
+   **leaf-on/leaf-off backlog residue-cover dimension**
+   (`docs/backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md`)
+   and implement a forest residue-cover representation there. Entry gate for Step 3:
+   confirm `Dec_*` actually drives a seasonal `residue_depth_m` reaching the solver
+   (not only seasonal canopy/`cancov`). Any timing residual that survives a *correct*
+   seasonal residue is then the genuine frost-model item — the **`Qwet`** evaporative
+   term and the **legacy-envelope magnitude outliers** (13/43 forced-snow cases,
+   ADR-0017 comparator context) remain the secondary candidates for that residual.
 4. **Ratify** the frost validation invariants (047/048/050: draft → accepted) once
    the harness method is exercised.
 5. **Frost-default activation** once `GAP-SNOWFREEZE-002` closes against observations
