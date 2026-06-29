@@ -125,6 +125,10 @@ fn maybe_write_r7h_runoff_rebalance_trace(
     ));
     line.push_str(",\"evapotranspiration_m\":");
     line.push_str(&r7h_runoff_trace_number(inputs.evapotranspiration_m));
+    line.push_str(",\"evapotranspiration_storage_return_m\":");
+    line.push_str(&r7h_runoff_trace_number(
+        inputs.evapotranspiration_storage_return_m,
+    ));
     line.push_str(",\"deep_seepage_m\":");
     line.push_str(&r7h_runoff_trace_number(inputs.deep_seepage_m));
     line.push_str(",\"subsurface_loss_m\":");
@@ -1272,6 +1276,7 @@ impl DirectDayFrame {
             + inputs.snow_coupling_m
             + inputs.runon_input_m
             + inputs.frost_liquid_delta_m
+            + inputs.evapotranspiration_storage_return_m
             - inputs.interception_m
             - self.runoff_partition.q_runoff_m
             - inputs.evapotranspiration_m

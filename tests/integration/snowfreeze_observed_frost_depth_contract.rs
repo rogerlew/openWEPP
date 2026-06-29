@@ -200,7 +200,7 @@ fn snowfreeze_observed_frost_ratification_and_default_activation_are_contract_bo
         "DefaultCandidate",
         "DirectProductionExecutor",
         "legacy sidecar-discovery runs",
-        "Explicit `Compatibility` runtime selection remains the production rollback path",
+        "Explicit `Compatibility` selection, if still present in code during staged deletion, is a deprecated comparator/deletion seam only",
     ] {
         assert!(
             SC_SNOWFREEZE_SOURCE.contains(expected),

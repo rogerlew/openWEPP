@@ -2,6 +2,7 @@ use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{LazyLock, Mutex, MutexGuard};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
 use serde_json::Value;
@@ -248,13 +249,45 @@ pub fn write_release_sidecar_for_binary(
     let metadata = build_release_metadata_document(binary_path, role)?;
     let json = serde_json::to_string_pretty(&metadata)
         .map_err(|source| ReleaseMetadataError::JsonSerialize { source })?;
-    fs::write(&sidecar_path, json).map_err(|source| ReleaseMetadataError::Io {
-        path: sidecar_path.clone(),
-        source,
-    })?;
+    write_release_sidecar_atomically(&sidecar_path, &json)?;
 
     validate_release_sidecar_unlocked(&sidecar_path)?;
     Ok(sidecar_path)
+}
+
+fn write_release_sidecar_atomically(
+    sidecar_path: &Path,
+    json: &str,
+) -> Result<(), ReleaseMetadataError> {
+    let temp_path = release_sidecar_temp_path(sidecar_path);
+    fs::write(&temp_path, json).map_err(|source| ReleaseMetadataError::Io {
+        path: temp_path.clone(),
+        source,
+    })?;
+    fs::rename(&temp_path, sidecar_path).map_err(|source| {
+        let _ = fs::remove_file(&temp_path);
+        ReleaseMetadataError::Io {
+            path: sidecar_path.to_path_buf(),
+            source,
+        }
+    })?;
+    Ok(())
+}
+
+fn release_sidecar_temp_path(sidecar_path: &Path) -> PathBuf {
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_or(0, |duration| duration.as_nanos());
+    let file_name = sidecar_path
+        .file_name()
+        .and_then(OsStr::to_str)
+        .unwrap_or("openwepp-release-sidecar.json");
+    sidecar_path.with_file_name(format!(
+        "{}.{}.{}.tmp",
+        file_name,
+        std::process::id(),
+        nanos
+    ))
 }
 
 fn sidecar_is_fresh_for_binary_unlocked(

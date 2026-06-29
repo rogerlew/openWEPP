@@ -17,6 +17,18 @@ State as of `2026-06-29`:
 
 ## Execution Log
 
+- `20260629-frost-direct-cutover-correction-001/` is complete as FROST DIRECT
+  CUTOVER CORRECTION. Result:
+  `EXECUTED-COMPLETE-DIRECT-CUTOVER-CORRECTION`. It amended
+  `SC-SNOWFREEZE-001` v115 to supersede the v114 compatibility-fallback carve-out:
+  current hillslope no-env `DefaultCandidate` runs, including multi-OFE/Wave-2
+  and legacy sidecar-discovery surfaces, must select direct production. The
+  package removed the default-candidate fallback gate, relabeled remaining
+  explicit compatibility as a deprecated deletion seam, and closed the legacy
+  sidecar-discovery direct replay ledger defect by carrying the PMET soil
+  evaporation storage-return operand into direct storage reconciliation. Focused
+  gates passed for PL14S legacy-discovery replay, R7E default-candidate selection,
+  and R7H frost storage source isolation; full gates are recorded in the package.
 - `20260629-frost-ratification-default-activation-001/` is complete as FROST
   RATIFICATION AND DEFAULT ACTIVATION. Result:
   `EXECUTED-COMPLETE-PRODUCTION-DEFAULT-ACTIVATION`. It ratified
@@ -25,9 +37,10 @@ State as of `2026-06-29`:
   authority, recorded the H1b `frdp` bottom-extent / `thdp` top-thaw
   correspondence, re-dispositioned `GAP-SNOWFREEZE-002` as
   open-but-attributed/bounded, and flipped the no-env hillslope default to direct
-  production for supported modern single-OFE runs, with explicit compatibility
-  rollback for unsupported multi-OFE/Wave-2 and legacy sidecar-discovery
-  surfaces. Full gates passed: `cargo fmt --check`, `cargo clippy --workspace
+  production for supported modern single-OFE runs. Its multi-OFE/Wave-2 and
+  legacy sidecar-discovery compatibility-fallback carve-out is superseded by
+  `20260629-frost-direct-cutover-correction-001/`. Full gates passed:
+  `cargo fmt --check`, `cargo clippy --workspace
   --all-targets -- -D warnings`, `cargo test --workspace`, `cargo deny check`,
   authority-suite anti-evasion, required-suite obligation guards, and scoped
   Markdown lint.

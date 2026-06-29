@@ -2,8 +2,8 @@ use super::{
     DIRECT_AUDIT, DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT,
     DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT, DirectDayFrame, DirectDownstreamOperands,
     DirectInputAccountingState, DirectRuntimeError, DirectShadowProjection,
-    DirectStorageReconciliationInputs, sum_nonnegative_direct_m, validate_finite,
-    validate_nonnegative_direct_m,
+    DirectStorageReconciliationInputs, scaled_direct_transfer_total_m, sum_nonnegative_direct_m,
+    validate_finite, validate_nonnegative_direct_m,
 };
 
 impl DirectDayFrame {
@@ -226,18 +226,31 @@ impl DirectNormalizationInputs {
             frame.publication.lateral_flow_m,
         )?;
 
+        let raw_surface_transfer_m = sum_nonnegative_direct_m(
+            "normalization.surface_carry_m",
+            &frame.transfer.surface_carry_m,
+        )?;
+        let raw_lateral_transfer_m = sum_nonnegative_direct_m(
+            "normalization.lateral_carry_m",
+            &frame.transfer.lateral_carry_m,
+        )?;
+        let surface_transfer_m = scaled_direct_transfer_total_m(
+            "normalization.surface_transfer_m",
+            raw_surface_transfer_m,
+            frame.upstream_area_ratio,
+        )?;
+        let lateral_transfer_m = scaled_direct_transfer_total_m(
+            "normalization.lateral_transfer_m",
+            raw_lateral_transfer_m,
+            frame.upstream_area_ratio,
+        )?;
+
         Ok(Self {
             precipitation_m: frame.forcing.precipitation_m,
             effective_temperature_c: frame.forcing.effective_temperature_c,
             storage_initial_m: frame.water.soil_water_m,
-            surface_transfer_m: sum_nonnegative_direct_m(
-                "normalization.surface_carry_m",
-                &frame.transfer.surface_carry_m,
-            )?,
-            lateral_transfer_m: sum_nonnegative_direct_m(
-                "normalization.lateral_carry_m",
-                &frame.transfer.lateral_carry_m,
-            )?,
+            surface_transfer_m,
+            lateral_transfer_m,
             upstream_flow_m: frame.transfer.upstream_flow_m,
             subsurface_input_m: frame.transfer.subsurface_input_m,
         })
@@ -427,6 +440,7 @@ impl From<DirectStorageBoundsState> for DirectStorageReconciliationInputs {
             runon_input_m: 0.0,
             interception_m: 0.0,
             evapotranspiration_m: 0.0,
+            evapotranspiration_storage_return_m: 0.0,
             deep_seepage_m: 0.0,
             subsurface_loss_m: 0.0,
             closure_tolerance_m: state.closure_tolerance_m,

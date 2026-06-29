@@ -1455,15 +1455,17 @@ actionable.
    Activation no longer waits for `GAP-SNOWFREEZE-002` to close to zero. It
    requires `GAP-SNOWFREEZE-002` to be attributed and bounded, plus a full
    no-regression/conservation gate on the activated no-env direct-production
-   default. Supported modern single-OFE no-env runs select direct production;
-   current multi-OFE/Wave-2 and legacy sidecar-discovery no-env runs fall back
-   to compatibility with explicit reasons until separate direct-surface
-   promotion. Explicit compatibility runtime remains the rollback. Full gates
-   passed: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D
-   warnings`, `cargo test --workspace`, `cargo deny check`, authority-suite
-   anti-evasion, required-suite obligation guards, and scoped Markdown lint.
-9. *(deferred)* R7G consumer cutover / `DirectFrostRunoffSurface` deletion — not a
-   validation prerequisite.
+   default. v115 corrective package
+   `docs/work-packages/20260629-frost-direct-cutover-correction-001/`
+   supersedes the earlier fallback carve-out: current hillslope no-env
+   `DefaultCandidate` runs, including multi-OFE/Wave-2 and legacy
+   sidecar-discovery surfaces, must select direct production. Direct failures are
+   blockers to fix or hold, not compatibility fallbacks. Any remaining explicit
+   compatibility selector is a deprecated comparator/deletion seam and cannot
+   satisfy default-activation evidence.
+9. *(deferred)* Source removal of the deprecated explicit compatibility seam and
+   any parser-side compatibility cleanups that are not needed for the current
+   default cutover.
 
 ## 12. References / Authority
 

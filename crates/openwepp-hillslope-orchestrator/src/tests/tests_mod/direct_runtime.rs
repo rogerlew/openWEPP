@@ -491,15 +491,19 @@ fn r7d4_publication_capture_copies_mofe_carry_to_downstream_lane_before_r4j() {
         "fixture must anti-alias surface runoff from lateral carry"
     );
     assert!((downstream_surface_m - upstream_q_runoff_m).abs() < 1.0e-12);
+    let scaled_downstream_surface_m = downstream_surface_m * frame.lanes[1].upstream_area_ratio;
+    let scaled_downstream_lateral_m = downstream_lateral_m * frame.lanes[1].upstream_area_ratio;
     assert!(
-        (rows[1].transfer.upstream_surface_mm / 1_000.0 - downstream_surface_m).abs() < 1.0e-12
+        (rows[1].transfer.upstream_surface_mm / 1_000.0 - scaled_downstream_surface_m).abs()
+            < 1.0e-12
     );
     assert!(
-        (rows[1].transfer.upstream_lateral_mm / 1_000.0 - downstream_lateral_m).abs() < 1.0e-12
+        (rows[1].transfer.upstream_lateral_mm / 1_000.0 - scaled_downstream_lateral_m).abs()
+            < 1.0e-12
     );
     assert!(
         (rows[1].runoff.q_mm / 1_000.0
-            - (downstream_surface_m + downstream_lateral_m) * frame.lanes[1].upstream_area_ratio)
+            - (scaled_downstream_surface_m + scaled_downstream_lateral_m))
             .abs()
             < 1.0e-9
     );
@@ -1510,10 +1514,9 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // R7G carries typed snow runtime state plus SNOWDENSITY-07 CoE boundary carry and
     // SNOWDENSITY-10.3.8 retained-liquid storage at lane scope.
     assert!(lane_frame <= 1_216);
-    // FROST RESIDUE-COVER IMPLEMENTATION carries explicit daily litter input and
-    // residue-depth operands through the direct frame so frost consumes the dynamic
-    // residue cover instead of a static management seed.
-    assert!(day_frame <= 12_320);
+    // FROST RESIDUE-COVER IMPLEMENTATION carries dynamic residue-depth operands;
+    // the direct-cutover correction carries PMET storage-return closure operands.
+    assert!(day_frame <= 12_416);
 }
 
 fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
@@ -1599,6 +1602,7 @@ fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
         runon_input_m: 0.0,
         interception_m: 0.0,
         evapotranspiration_m: 0.003,
+        evapotranspiration_storage_return_m: 0.0,
         deep_seepage_m: 0.001,
         subsurface_loss_m: 0.0007,
         closure_tolerance_m: 1.0e-9,

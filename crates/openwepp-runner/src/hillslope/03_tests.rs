@@ -620,7 +620,13 @@ mod tests {
             manifest_json
                 .pointer("/runtime_selection/compatibility_rollback_available")
                 .and_then(serde_json::Value::as_bool),
-            Some(true)
+            Some(false)
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/rollback_runtime")
+                .and_then(serde_json::Value::as_str),
+            Some("none")
         );
         assert_eq!(
             manifest_json
@@ -701,13 +707,13 @@ mod tests {
     }
 
     #[test]
-    fn r7e_default_candidate_legacy_sidecar_discovery_uses_compatibility_rollback_manifest() {
+    fn r7e_default_candidate_legacy_sidecar_discovery_uses_direct_manifest() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         let (report, _temp_run_dir) =
             execute_fixture_run_with_runtime_policy_and_legacy_discovery_unlocked(
-                "r7e_default_candidate_legacy_sidecar_discovery_rollback",
+                "r7e_default_candidate_legacy_sidecar_discovery_direct",
                 HillslopeRuntimeSelectionPolicy::new(
                     HillslopeRuntimeSelection::DefaultCandidate,
                     HillslopeDefaultRuntimeActivation::DirectProductionCandidate,
@@ -728,34 +734,38 @@ mod tests {
             manifest_json
                 .pointer("/runtime_selection/selected")
                 .and_then(serde_json::Value::as_str),
-            Some("compatibility")
+            Some("direct-production-executor")
         );
         assert_eq!(
             manifest_json
                 .pointer("/runtime_selection/selection_reason")
                 .and_then(serde_json::Value::as_str),
-            Some("default-candidate-no-regression-compatibility-rollback")
+            Some("default-candidate-activation-gate-direct-production")
         );
-        assert_eq!(
+        assert!(
             manifest_json
                 .pointer("/runtime_selection/fallback_reason")
-                .and_then(serde_json::Value::as_str),
-            Some("direct-default-candidate-legacy-sidecar-discovery-unsupported")
+                .is_none()
+                || manifest_json
+                    .pointer("/runtime_selection/fallback_reason")
+                    .is_some_and(serde_json::Value::is_null),
+            "legacy sidecar discovery direct default must not report a fallback reason"
         );
         assert_eq!(
             manifest_json
                 .pointer("/execution_provenance/scheduler_kernel_executed")
                 .and_then(serde_json::Value::as_bool),
-            Some(true)
+            Some(false)
         );
-        assert!(
-            manifest_json.pointer("/direct_runtime_counters").is_none(),
-            "legacy sidecar discovery fallback must not construct direct runtime counters"
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/compatibility_edge_invocations",
+            0,
         );
     }
 
     #[test]
-    fn r7e_disabled_default_candidate_policy_preserves_compatibility_rollback_manifest() {
+    fn r7e_disabled_default_candidate_policy_uses_deprecated_compatibility_selection() {
         let _execution_guard = runner_execution_lock()
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -796,6 +806,24 @@ mod tests {
         );
         assert_eq!(
             manifest_json
+                .pointer("/runtime_selection/selection_reason")
+                .and_then(serde_json::Value::as_str),
+            Some("default-candidate-disabled-deprecated-compatibility-selection")
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/compatibility_rollback_available")
+                .and_then(serde_json::Value::as_bool),
+            Some(false)
+        );
+        assert_eq!(
+            manifest_json
+                .pointer("/runtime_selection/rollback_runtime")
+                .and_then(serde_json::Value::as_str),
+            Some("none")
+        );
+        assert_eq!(
+            manifest_json
                 .pointer("/execution_provenance/scheduler_kernel_executed")
                 .and_then(serde_json::Value::as_bool),
             Some(true)
@@ -811,7 +839,7 @@ mod tests {
     }
 
     #[test]
-    fn r7e_runtime_selection_policy_resolves_default_direct_and_rollback_modes() {
+    fn r7e_runtime_selection_policy_resolves_default_direct_and_deprecated_compatibility_modes() {
         let default_activated = HillslopeRuntimeSelectionPolicy::default().resolve();
         assert_eq!(
             default_activated.requested(),
@@ -841,32 +869,17 @@ mod tests {
             Some("direct-default-candidate-gate-disabled")
         );
 
-        let default_unsupported = HillslopeRuntimeSelectionPolicy::default()
-            .resolve_with_default_candidate_support(false, "direct-default-candidate-test-unsupported");
-        assert_eq!(
-            default_unsupported.selected(),
-            HillslopeRuntimeSelection::Compatibility
-        );
-        assert_eq!(
-            default_unsupported.selection_reason(),
-            "default-candidate-no-regression-compatibility-rollback"
-        );
-        assert_eq!(
-            default_unsupported.fallback_reason(),
-            Some("direct-default-candidate-test-unsupported")
-        );
-
-        let explicit_rollback = HillslopeRuntimeSelectionPolicy::new(
+        let explicit_compatibility = HillslopeRuntimeSelectionPolicy::new(
             HillslopeRuntimeSelection::Compatibility,
             HillslopeDefaultRuntimeActivation::DirectProductionCandidate,
         )
         .resolve();
         assert_eq!(
-            explicit_rollback.selection_reason(),
-            "explicit-compatibility-rollback"
+            explicit_compatibility.selection_reason(),
+            "explicit-deprecated-compatibility-selection"
         );
         assert_eq!(
-            explicit_rollback.selected(),
+            explicit_compatibility.selected(),
             HillslopeRuntimeSelection::Compatibility
         );
 

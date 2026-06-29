@@ -494,6 +494,7 @@ fn r7h_winter_local_liquid_projects_after_surface_et_before_saturation() {
         transpiration_demand_m: 0.0,
         soil_evaporation_m: 0.0,
         residue_evaporation_m: 0.0,
+        soil_evaporation_storage_return_m: 0.0,
         residue_interception_after_m: 0.0,
         stage_state_after: None,
         layer_soil_evaporation_withdrawal_m: vec![0.0],
@@ -511,6 +512,7 @@ fn r7h_winter_local_liquid_projects_after_surface_et_before_saturation() {
             transpiration_demand_m: surface.transpiration_demand_m,
             soil_evaporation_m: surface.soil_evaporation_m,
             residue_evaporation_m: surface.residue_evaporation_m,
+            soil_evaporation_storage_return_m: surface.soil_evaporation_storage_return_m,
             residue_interception_after_m: surface.residue_interception_after_m,
             layer_soil_evaporation_withdrawal_m: surface
                 .layer_soil_evaporation_withdrawal_m
@@ -637,6 +639,7 @@ fn r7h_active_snowmelt_local_liquid_routes_through_wb18_same_pass() {
         transpiration_demand_m: 0.0,
         soil_evaporation_m: 0.0,
         residue_evaporation_m: 0.0,
+        soil_evaporation_storage_return_m: 0.0,
         residue_interception_after_m: 0.0,
         stage_state_after: None,
         layer_soil_evaporation_withdrawal_m: vec![0.0],
@@ -654,6 +657,7 @@ fn r7h_active_snowmelt_local_liquid_routes_through_wb18_same_pass() {
             transpiration_demand_m: surface.transpiration_demand_m,
             soil_evaporation_m: surface.soil_evaporation_m,
             residue_evaporation_m: surface.residue_evaporation_m,
+            soil_evaporation_storage_return_m: surface.soil_evaporation_storage_return_m,
             residue_interception_after_m: surface.residue_interception_after_m,
             layer_soil_evaporation_withdrawal_m: surface
                 .layer_soil_evaporation_withdrawal_m
@@ -757,6 +761,7 @@ fn r7h_mixed_rain_snowmelt_uses_wb14_same_pass_infiltration() {
         transpiration_demand_m: 0.0,
         soil_evaporation_m: 0.0,
         residue_evaporation_m: 0.0,
+        soil_evaporation_storage_return_m: 0.0,
         residue_interception_after_m: 0.0,
         stage_state_after: None,
         layer_soil_evaporation_withdrawal_m: vec![0.0],
@@ -774,6 +779,7 @@ fn r7h_mixed_rain_snowmelt_uses_wb14_same_pass_infiltration() {
             transpiration_demand_m: surface.transpiration_demand_m,
             soil_evaporation_m: surface.soil_evaporation_m,
             residue_evaporation_m: surface.residue_evaporation_m,
+            soil_evaporation_storage_return_m: surface.soil_evaporation_storage_return_m,
             residue_interception_after_m: surface.residue_interception_after_m,
             layer_soil_evaporation_withdrawal_m: surface
                 .layer_soil_evaporation_withdrawal_m

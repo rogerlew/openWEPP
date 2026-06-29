@@ -680,12 +680,7 @@ fn direct_production_frost_storage_liquid_delta(
     frost_outcome: &DirectWinterFrostPartitionOutcome,
 ) -> Option<f64> {
     const MATERIAL_FROST_THRESHOLD_M: f64 = 1.0e-12;
-    if frost_outcome.frwatc_net_liquid_delta_m <= MATERIAL_FROST_THRESHOLD_M {
-        return None;
-    }
-    if frost_outcome.frost_depth_after_m > MATERIAL_FROST_THRESHOLD_M
-        || frost_outcome.frozen_water_after_m > MATERIAL_FROST_THRESHOLD_M
-    {
+    if frost_outcome.frwatc_net_liquid_delta_m.abs() <= MATERIAL_FROST_THRESHOLD_M {
         return None;
     }
     Some(frost_outcome.frwatc_net_liquid_delta_m)

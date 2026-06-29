@@ -260,6 +260,9 @@ impl DirectDayFrame {
                 residue_evaporation_m: self
                     .evapotranspiration_surface_downstream_operands
                     .residue_evaporation_m,
+                soil_evaporation_storage_return_m: self
+                    .evapotranspiration_surface_downstream_operands
+                    .soil_evaporation_storage_return_m,
                 residue_interception_after_m: self
                     .evapotranspiration_surface_downstream_operands
                     .residue_interception_after_m,
@@ -307,6 +310,9 @@ impl DirectDayFrame {
         self.evapotranspiration_compute = evapotranspiration_compute.clone();
         self.storage_reconciliation_inputs.evapotranspiration_m =
             evapotranspiration_compute.evapotranspiration_m;
+        self.storage_reconciliation_inputs
+            .evapotranspiration_storage_return_m =
+            evapotranspiration_compute.soil_evaporation_storage_return_m;
         DIRECT_AUDIT.record_direct_state_mutation();
 
         self.evapotranspiration_compute_downstream_operands =
@@ -334,6 +340,9 @@ impl DirectDayFrame {
                 residue_evaporation_m: self
                     .evapotranspiration_compute_downstream_operands
                     .residue_evaporation_m,
+                soil_evaporation_storage_return_m: self
+                    .evapotranspiration_compute_downstream_operands
+                    .soil_evaporation_storage_return_m,
                 plant_transpiration_m: self
                     .evapotranspiration_compute_downstream_operands
                     .plant_transpiration_m,
@@ -405,6 +414,8 @@ impl DirectDayFrame {
         } else {
             inputs.pmet
         };
+        let soil_evaporation_storage_return_m =
+            computed_pmet.map_or(0.0, |pmet| pmet.soil_evaporation_storage_return_m);
         let (soil_evaporation_with_residue_m, transpiration_demand_m, pmet_component_mode) =
             if let Some(pmet) = computed_pmet {
                 validate_pmet_inputs(pmet)?;
@@ -524,6 +535,7 @@ impl DirectDayFrame {
             transpiration_demand_m,
             soil_evaporation_m,
             residue_evaporation_m,
+            soil_evaporation_storage_return_m,
             residue_interception_after_m: 0.0,
             stage_state_after,
             layer_soil_evaporation_withdrawal_m,
@@ -611,6 +623,7 @@ impl DirectDayFrame {
 
         let evapotranspiration_m = surface.evapotranspiration_seed_m + uptake_actual_m;
         validate_nonnegative_direct_m("root_uptake.evapotranspiration_m", evapotranspiration_m)?;
+        validate_surface_shadow_storage_return(surface)?;
         let water_stress = if surface.transpiration_demand_m <= WB11_ZERO_THRESHOLD
             || effective_root_depth_m <= WB11_ZERO_THRESHOLD
         {
@@ -626,6 +639,7 @@ impl DirectDayFrame {
             evapotranspiration_m,
             soil_evaporation_m: surface.soil_evaporation_m,
             residue_evaporation_m: surface.residue_evaporation_m,
+            soil_evaporation_storage_return_m: surface.soil_evaporation_storage_return_m,
             plant_transpiration_m,
             transpiration_demand_m: surface.transpiration_demand_m,
             water_stress,
@@ -652,6 +666,15 @@ impl DirectDayFrame {
         }
         Ok(())
     }
+}
+
+fn validate_surface_shadow_storage_return(
+    surface: &DirectEvapotranspirationSurfaceShadowProjection,
+) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m(
+        "root_uptake.soil_evaporation_storage_return_m",
+        surface.soil_evaporation_storage_return_m,
+    )
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -1013,6 +1036,7 @@ pub struct DirectEvapotranspirationSurfaceState {
     pub transpiration_demand_m: f64,
     pub soil_evaporation_m: f64,
     pub residue_evaporation_m: f64,
+    pub soil_evaporation_storage_return_m: f64,
     pub residue_interception_after_m: f64,
     pub stage_state_after: Option<DirectEvapotranspirationStageState>,
     pub layer_soil_evaporation_withdrawal_m: Vec<f64>,
@@ -1029,6 +1053,7 @@ impl DirectEvapotranspirationSurfaceState {
             transpiration_demand_m: 0.0,
             soil_evaporation_m: 0.0,
             residue_evaporation_m: 0.0,
+            soil_evaporation_storage_return_m: 0.0,
             residue_interception_after_m: 0.0,
             stage_state_after: None,
             layer_soil_evaporation_withdrawal_m: Vec::new(),
@@ -1045,6 +1070,7 @@ pub struct DirectEvapotranspirationSurfaceDownstreamOperands {
     pub transpiration_demand_m: f64,
     pub soil_evaporation_m: f64,
     pub residue_evaporation_m: f64,
+    pub soil_evaporation_storage_return_m: f64,
     pub residue_interception_after_m: f64,
     pub layer_soil_evaporation_withdrawal_m: Vec<f64>,
     pub layer_state_after_soil_evap: Vec<DirectSubsurfaceLayerState>,
@@ -1060,6 +1086,7 @@ impl DirectEvapotranspirationSurfaceDownstreamOperands {
             transpiration_demand_m: 0.0,
             soil_evaporation_m: 0.0,
             residue_evaporation_m: 0.0,
+            soil_evaporation_storage_return_m: 0.0,
             residue_interception_after_m: 0.0,
             layer_soil_evaporation_withdrawal_m: Vec::new(),
             layer_state_after_soil_evap: Vec::new(),
@@ -1078,6 +1105,7 @@ impl From<DirectEvapotranspirationSurfaceState>
             transpiration_demand_m: state.transpiration_demand_m,
             soil_evaporation_m: state.soil_evaporation_m,
             residue_evaporation_m: state.residue_evaporation_m,
+            soil_evaporation_storage_return_m: state.soil_evaporation_storage_return_m,
             residue_interception_after_m: state.residue_interception_after_m,
             layer_soil_evaporation_withdrawal_m: state.layer_soil_evaporation_withdrawal_m,
             layer_state_after_soil_evap: state.layer_state_after_soil_evap,
@@ -1095,6 +1123,7 @@ pub struct DirectEvapotranspirationSurfaceShadowProjection {
     pub transpiration_demand_m: f64,
     pub soil_evaporation_m: f64,
     pub residue_evaporation_m: f64,
+    pub soil_evaporation_storage_return_m: f64,
     pub residue_interception_after_m: f64,
     pub layer_soil_evaporation_withdrawal_m: Vec<f64>,
     pub layer_state_after_soil_evap: Vec<DirectSubsurfaceLayerState>,
@@ -1107,6 +1136,7 @@ pub struct DirectEvapotranspirationComputeState {
     pub evapotranspiration_m: f64,
     pub soil_evaporation_m: f64,
     pub residue_evaporation_m: f64,
+    pub soil_evaporation_storage_return_m: f64,
     pub plant_transpiration_m: f64,
     pub transpiration_demand_m: f64,
     pub water_stress: f64,
@@ -1127,6 +1157,7 @@ impl DirectEvapotranspirationComputeState {
             evapotranspiration_m: 0.0,
             soil_evaporation_m: 0.0,
             residue_evaporation_m: 0.0,
+            soil_evaporation_storage_return_m: 0.0,
             plant_transpiration_m: 0.0,
             transpiration_demand_m: 0.0,
             water_stress: 1.0,
@@ -1147,6 +1178,7 @@ pub struct DirectEvapotranspirationComputeDownstreamOperands {
     pub evapotranspiration_m: f64,
     pub soil_evaporation_m: f64,
     pub residue_evaporation_m: f64,
+    pub soil_evaporation_storage_return_m: f64,
     pub plant_transpiration_m: f64,
     pub transpiration_demand_m: f64,
     pub water_stress: f64,
@@ -1167,6 +1199,7 @@ impl DirectEvapotranspirationComputeDownstreamOperands {
             evapotranspiration_m: 0.0,
             soil_evaporation_m: 0.0,
             residue_evaporation_m: 0.0,
+            soil_evaporation_storage_return_m: 0.0,
             plant_transpiration_m: 0.0,
             transpiration_demand_m: 0.0,
             water_stress: 1.0,
@@ -1190,6 +1223,7 @@ impl From<DirectEvapotranspirationComputeState>
             evapotranspiration_m: state.evapotranspiration_m,
             soil_evaporation_m: state.soil_evaporation_m,
             residue_evaporation_m: state.residue_evaporation_m,
+            soil_evaporation_storage_return_m: state.soil_evaporation_storage_return_m,
             plant_transpiration_m: state.plant_transpiration_m,
             transpiration_demand_m: state.transpiration_demand_m,
             water_stress: state.water_stress,
@@ -1212,6 +1246,7 @@ pub struct DirectEvapotranspirationComputeShadowProjection {
     pub evapotranspiration_m: f64,
     pub soil_evaporation_m: f64,
     pub residue_evaporation_m: f64,
+    pub soil_evaporation_storage_return_m: f64,
     pub plant_transpiration_m: f64,
     pub transpiration_demand_m: f64,
     pub water_stress: f64,

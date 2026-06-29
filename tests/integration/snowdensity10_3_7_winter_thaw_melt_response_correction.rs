@@ -41,7 +41,7 @@ fn assert_contains(haystack: &str, needle: &str, context: &str) {
 fn contract_and_package_bind_thaw_state_loss_candidate() {
     let contract = repo_text(CONTRACT);
     for marker in [
-        "contract_version: 114",
+        "contract_version: 115",
         "coe_winter_thaw_state_loss_v1",
         "INV-SNOWFREEZE-066",
         "OBL-SNOWFREEZE-P-041",

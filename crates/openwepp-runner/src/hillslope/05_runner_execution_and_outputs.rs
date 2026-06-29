@@ -132,6 +132,13 @@ fn execute_hillslope_direct_production_days(
         persistent_lane_state.as_ref(),
         per_ofe_lane_areas_m2.len(),
     )?;
+    let execution_runtime_surface = direct_production_execution_runtime_surface(
+        &runtime_surface,
+        &lane_seed_surfaces,
+        &climate_request,
+        &climate_span,
+        lane_context.lane,
+    )?;
     let mut frame = build_direct_production_run_frame(&DirectProductionRunFrameBuildInputs {
         output_hillslope_id,
         lane_areas_m2: &per_ofe_lane_areas_m2,
@@ -172,12 +179,13 @@ fn execute_hillslope_direct_production_days(
         )
         .map_err(|source| direct_production_runtime_error(&source))?;
     let coupling_vectors = build_direct_production_coupling_vector_provenance(
-        &runtime_surface,
+        &execution_runtime_surface,
         &frame,
         &direct_execution.publication_frame,
     )?;
     let executed_day_count = climate_span.days.len();
     let persistent_lane_active = persistent_lane_state.is_some();
+    let erod14_wave2_enabled = direct_production_erod14_wave2_enabled(&execution_runtime_surface)?;
 
     Ok(HillslopeClimateExecution {
         selected_lane: lane_context.lane,
@@ -185,12 +193,12 @@ fn execute_hillslope_direct_production_days(
         contributor_ofe_count,
         static_per_ofe_slice_count,
         persistent_lane_active,
-        runtime_surface,
+        runtime_surface: execution_runtime_surface,
         climate_span,
         wb13_rows: Vec::new(),
         pass_rows: Vec::new(),
         coupling_vectors,
-        erod14_wave2_kernel_status_seen: false,
+        erod14_wave2_kernel_status_seen: erod14_wave2_enabled,
         scheduler_outcome_class: SchedulerOutcomeClass::Completed,
         scheduler_status_message_id: "R7C-DIRECT-PRODUCTION-EXECUTOR".to_string(),
         kernel_phase_message_ids: Vec::new(),
@@ -387,6 +395,34 @@ fn direct_production_lane_seed_surfaces(
         )));
     }
     Ok(vec![runtime_surface.clone()])
+}
+
+fn direct_production_execution_runtime_surface(
+    runtime_surface: &HillslopeWritebackSurface,
+    lane_seed_surfaces: &[HillslopeWritebackSurface],
+    climate_request: &HillslopeClimateRuntimeRequest,
+    climate_span: &ClimateRunSpanSummary,
+    execution_lane: ExecutionLane,
+) -> Result<HillslopeWritebackSurface, HillslopeCliError> {
+    let lane_index = lane_seed_surfaces.len().saturating_sub(1);
+    let seed_authority =
+        direct_production_lane_seed_authority(lane_seed_surfaces, lane_index, lane_seed_surfaces.len())?;
+    direct_publication_day_zero_seed_surface(
+        climate_request,
+        climate_span,
+        seed_authority,
+        runtime_surface,
+        execution_lane,
+    )
+}
+
+fn direct_production_erod14_wave2_enabled(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<bool, HillslopeCliError> {
+    parse_mofe03_binary_flag(
+        "erod14_wave2_enabled",
+        runtime_surface_symbol_value(runtime_surface, "erod14_wave2_enabled").unwrap_or(0.0),
+    )
 }
 
 fn seed_direct_production_lane_constructor_inputs(
@@ -1642,12 +1678,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
 
     let inputs = load_hillslope_run_inputs(request)?;
     let targets = resolve_hillslope_output_targets(&inputs.runfile)?;
-    let unsupported_default_candidate_reason =
-        default_candidate_direct_unsupported_reason(request, &inputs);
-    let runtime_resolution = runtime_policy.resolve_with_default_candidate_support(
-        unsupported_default_candidate_reason.is_none(),
-        unsupported_default_candidate_reason.unwrap_or("direct-default-candidate-unsupported"),
-    );
+    let runtime_resolution = runtime_policy.resolve();
     let runtime_selection = runtime_resolution.selected();
     select_direct_runtime_skeleton_once(runtime_selection, &inputs, &targets)?;
     let direct_runtime_counter_baseline = direct_runtime_audit_snapshot();
@@ -1721,19 +1752,6 @@ pub fn execute_hillslope_run_with_runtime_policy(
     })
 }
 
-fn default_candidate_direct_unsupported_reason(
-    request: &HillslopeRunRequest,
-    inputs: &ParsedHillslopeRunInputs,
-) -> Option<&'static str> {
-    if inputs.slope.ofe_count > 1 {
-        return Some("direct-default-candidate-mofe-unsupported");
-    }
-    if request.legacy_sidecar_discovery {
-        return Some("direct-default-candidate-legacy-sidecar-discovery-unsupported");
-    }
-    None
-}
-
 fn build_hillslope_runtime_selection_provenance(
     resolution: HillslopeRuntimeSelectionResolution,
     selected_runtime: HillslopeRuntimeSelection,
@@ -1745,10 +1763,8 @@ fn build_hillslope_runtime_selection_provenance(
         default_activation_gate: resolution.default_activation().as_str().to_string(),
         fallback_reason: resolution.fallback_reason().map(str::to_string),
         output_policy: direct_publication_output_policy(selected_runtime).to_string(),
-        rollback_runtime: HillslopeRuntimeSelection::Compatibility
-            .as_str()
-            .to_string(),
-        compatibility_rollback_available: true,
+        rollback_runtime: "none".to_string(),
+        compatibility_rollback_available: false,
     }
 }
 

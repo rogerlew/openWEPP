@@ -1,7 +1,7 @@
 # Science Contract Registry
 
 Status: Active
-Last updated: 2026-06-27
+Last updated: 2026-06-29
 
 This is the canonical lifecycle registry for openWEPP science contracts.
 
