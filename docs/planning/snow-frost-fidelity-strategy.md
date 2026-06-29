@@ -1203,6 +1203,28 @@ profile/signature scoring rather than absolute-magnitude promotion.
       (`16`/`177` versus current default `15`/`179`). The stream-temperature
       program may consume the typed source in a later package; Stage 3 does not
       activate full in-stream routing.
+    - **Decouple decision (operator, 2026-06-29).** The water-temperature capability
+      is **correct, conserving, and affordable** (perf passed) and the Stage 3
+      increment is snow-neutral — the full arm is blocked **only** because it
+      inherits Stage 1's per-layer densification (`16`/`177`), which Stages 1–2
+      already showed contributes nothing (decomposition-robust). The meltwater-
+      temperature capability needs the **per-layer thermal/liquid solver + the layer
+      state**, but **not** Stage 1's per-layer density gradient (the per-layer
+      *temperature* profile develops from the surface energy balance + conduction
+      regardless of the density gradient). Decision: **decouple — ship a snow-neutral
+      water-temperature arm = the n-layer state with bulk-equivalent per-layer
+      density (drop the non-helping Stage 1 densification) + the Stage 3
+      thermal/liquid solver.** This returns the snow-density rubric to the default
+      `15`/`179` while keeping the meltwater-temperature source — promotable, or a
+      clean opt-in for the stream-temperature program at zero density cost.
+    **Paradigm 2 conclusion.** The staged program resolves to a single deliverable:
+    density (Stage 1) and frost insulation (Stage 2) gain nothing from the layers
+    (decomposition-robust — the bulk default stays for both); the multilayer
+    structure's real and only payoff is the **winter water-temperature source**
+    (Stage 3), shipped as the snow-neutral arm above. The infrastructure earned its
+    place by enabling the one capability the bulk model cannot provide; the bulk
+    model remains the default for everything else, and the frost program redirects
+    off snow insulation to its actual limiter.
     **Key finding (Stages 1–2, twice confirmed): the per-layer profile is real, but
     the aggregates the consumers use — bulk density and total insulation resistance —
     are ROBUST to the layer decomposition, so the multilayer structure improves
