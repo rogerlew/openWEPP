@@ -25,6 +25,12 @@ struct DirectProductionSeedAuthority {
     erod14_wave2_enabled: bool,
 }
 
+struct DirectProductionSnowbenchExportSeed {
+    primary_canopy_cover_fraction: f64,
+    winter_context: openwepp_hillslope_orchestrator::DirectWinterHourlyContext,
+    snow_density_kg_m3: f64,
+}
+
 #[derive(Clone)]
 struct DirectProductionLaneSeedAuthority {
     constructor: DirectProductionLaneConstructorSeed,
@@ -370,63 +376,6 @@ impl DirectProductionSeedAuthority {
         })
     }
 
-    fn from_day_zero_seed_surfaces(
-        climate_request: &HillslopeClimateRuntimeRequest,
-        climate_span: &ClimateRunSpanSummary,
-        lane_seed_surfaces: &[HillslopeWritebackSurface],
-        climate_context_surface: &HillslopeWritebackSurface,
-        execution_lane: ExecutionLane,
-    ) -> Result<Self, HillslopeCliError> {
-        if lane_seed_surfaces.is_empty() {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_publication_frame",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} direct production requires at least one lane seed authority"
-                ),
-            });
-        }
-
-        let mut lanes = Vec::with_capacity(lane_seed_surfaces.len());
-        let mut outlet_day_zero_seed_surface = None;
-        for seed_surface in lane_seed_surfaces {
-            let day_zero_seed_surface = direct_publication_day_zero_seed_surface(
-                climate_request,
-                climate_span,
-                seed_surface,
-                climate_context_surface,
-                execution_lane,
-            )?;
-            let constructor = DirectProductionLaneConstructorSeed::from_day_zero_seed_surface(
-                &day_zero_seed_surface,
-            )?;
-            let day_input =
-                DirectProductionDayInputBuilder::build_lane_authority(&day_zero_seed_surface)?;
-            outlet_day_zero_seed_surface = Some(day_zero_seed_surface);
-            lanes.push(DirectProductionLaneSeedAuthority {
-                constructor,
-                day_input,
-            });
-        }
-
-        let outlet_day_zero_seed_surface =
-            outlet_day_zero_seed_surface.ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_publication_frame",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} direct production requires outlet seed authority"
-                ),
-            })?;
-        Ok(Self {
-            lanes,
-            winter_hourly_geometry:
-                DirectProductionWinterHourlyGeometry::from_climate_context_surface(
-                    &outlet_day_zero_seed_surface,
-                )?,
-            erod14_wave2_enabled: direct_production_erod14_wave2_enabled(
-                &outlet_day_zero_seed_surface,
-            )?,
-        })
-    }
-
     fn lane(
         &self,
         lane_index: usize,
@@ -463,31 +412,32 @@ impl DirectProductionSeedAuthority {
                 )
             })
     }
-}
 
-#[allow(dead_code)]
-impl DirectProductionLaneConstructorSeed {
-    fn from_day_zero_seed_surface(
-        day_zero_seed_surface: &HillslopeWritebackSurface,
-    ) -> Result<Self, HillslopeCliError> {
-        Ok(Self {
-            soil_water_m: require_runtime_surface_scalar(
-                day_zero_seed_surface,
-                "wb11_soil_water",
-            )?,
-            subsurface_layers: direct_publication_layer_states(day_zero_seed_surface)?,
-            evapotranspiration_stage_state: direct_publication_stage_state(
-                day_zero_seed_surface,
-            )?,
-            plant_growth_state: direct_growth_state_surface_from_seed(day_zero_seed_surface)?,
-            plant_water_stress: require_runtime_surface_scalar(day_zero_seed_surface, "Ws")?,
-            snow_lane_state: DirectProductionSnowFrostAuthority::from_seed(
-                day_zero_seed_surface,
-            )?
-            .initial_snow_lane_state(),
+    fn snowbench_export_seed(&self) -> Result<DirectProductionSnowbenchExportSeed, HillslopeCliError> {
+        let primary_lane = self.lane(0)?;
+        let outlet_snow_frost = self.outlet_snow_frost()?;
+        Ok(DirectProductionSnowbenchExportSeed {
+            primary_canopy_cover_fraction: primary_lane
+                .day_input
+                .evapotranspiration
+                .canopy_cover_fraction,
+            winter_context: openwepp_hillslope_orchestrator::DirectWinterHourlyContext {
+                snow_runtime_swe_m: outlet_snow_frost.snow_runtime_swe_m,
+                frost_runtime_depth_m: outlet_snow_frost.frost_runtime_depth_m,
+                frost_runtime_frozen_water_m: outlet_snow_frost.frost_runtime_frozen_water_m,
+                frost_file_present: outlet_snow_frost.frost_file_present,
+                frost_wint_red_enabled: outlet_snow_frost.frost_wint_red_enabled,
+                avg_slope: self.winter_hourly_geometry.avg_slope,
+                azimuth: self.winter_hourly_geometry.azimuth,
+                snow_rst_c: outlet_snow_frost.snow_rst_c,
+                snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst,
+            },
+            snow_density_kg_m3: outlet_snow_frost.snow_newsnw_kg_m3,
         })
     }
+}
 
+impl DirectProductionLaneConstructorSeed {
     fn apply_to_lane_constructor(&self, lane_inputs: &mut DirectLaneConstructorInputs) {
         lane_inputs.water.soil_water_m = self.soil_water_m;
         lane_inputs
@@ -2281,59 +2231,6 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         day_input.frost_runtime_carry =
             direct_publication_frost_runtime_carry_from_lane_state(&lane.winter_column.frost);
         Ok(day_input)
-    }
-
-    fn build_lane_authority(
-        seed_surface: &HillslopeWritebackSurface,
-    ) -> Result<DirectProductionLaneDayInputAuthority, HillslopeCliError> {
-        let layers = direct_publication_layer_states(seed_surface)?;
-        let percolation = direct_publication_percolation_inputs(seed_surface, 0.0)?;
-        let subsurface = direct_publication_subsurface_inputs(seed_surface)?;
-        Ok(DirectProductionLaneDayInputAuthority {
-            peak_runoff: DirectProductionPeakRunoffAuthority {
-                irrigation_rate_m_s: direct_publication_optional_nonnegative_scalar(
-                    seed_surface,
-                    &["irrigation.runtime_rate_m_per_s"],
-                )?
-                .unwrap_or(0.0),
-                efflen_m: require_runtime_surface_scalar(seed_surface, "efflen")?,
-                ealpha: require_runtime_surface_scalar(seed_surface, "ealpha")?,
-                exponent_m: require_runtime_surface_scalar(seed_surface, "m")?,
-            },
-            percolation,
-            subsurface,
-            infiltration: DirectProductionInfiltrationAuthority {
-                effective_conductivity_m_s: direct_publication_optional_nonnegative_scalar(
-                    seed_surface,
-                    &[
-                        "wb14_effective_conductivity_m_s",
-                        "frost.runtime_infcap_frz",
-                        "wb14_soil_conductivity_m_s",
-                    ],
-                )?,
-                matric_potential_m: direct_publication_optional_nonnegative_scalar(
-                    seed_surface,
-                    &["wb14_matric_potential_m"],
-                )?,
-                depression_storage_capacity_m: direct_publication_optional_nonnegative_scalar(
-                    seed_surface,
-                    &[
-                        "wb14_depression_storage_capacity_m",
-                        "wb12_depression_storage_capacity_m",
-                    ],
-                )?
-                .unwrap_or(0.0),
-            },
-            evapotranspiration: DirectProductionEvapotranspirationAuthority::from_seed(
-                seed_surface,
-                layers.len(),
-            )?,
-            residue_cover: DirectProductionResidueCoverAuthority::from_seed(seed_surface)?,
-            growth: DirectProductionGrowthAuthority::from_seed(seed_surface)?,
-            hydrology_projection: direct_publication_profile_inputs(seed_surface)?,
-            erosion: DirectProductionErosionAuthority::from_seed(seed_surface)?,
-            snow_frost: DirectProductionSnowFrostAuthority::from_seed(seed_surface)?,
-        })
     }
 
     fn lane_authority(

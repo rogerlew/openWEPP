@@ -1,7 +1,7 @@
 # Disposition
 
 Result:
-`EXECUTED-CHECKPOINT-GATE1-PASSED-PHASE3-PENDING`.
+`EXECUTED-CHECKPOINT-GATE1-PASSED-PHASE3-PRODUCTION-SEED-SURFACE-DELETED`.
 
 This package expanded the typed day-zero seed-computation slice. The production
 surface seeder now calls typed projection cores for:
@@ -38,6 +38,25 @@ Gate 1 passed with real endpoint evidence:
   anti-evasion, required-suite obligation guard, Markdown lint/validate, and
   whitespace diff check.
 
-Next action: Phase 3 deletion of the now-orphaned symbol-map seed authority and
-production compatibility runtime machinery, keeping only the explicit
-deprecated `--compatibility-runtime` seam.
+Phase 3 production seed-surface deletion then removed the direct setup's last
+production symbol-map seed authority:
+
+- Direct production setup no longer builds static `HillslopeWritebackSurface`
+  seed parts, persistent lane symbol-map state, symbol registry, or hot symbol
+  tables.
+- The obsolete direct-publication day-zero seed-surface bridge was removed.
+- The dead `DirectProductionDayInputBuilder::build_lane_authority` surface
+  reader was removed.
+- Snowbench/PySnobal export diagnostics now read their initial canopy cover,
+  winter hourly context, and snow density from the typed seed carrier. Their
+  bridge snow-phase policy remains `LegacyRst`, matching the pre-deletion
+  diagnostic export contract.
+- A source guard now asserts that the direct setup branch skips those symbol-map
+  builders.
+- H2637 protected outputs remain byte-identical and the direct-runtime counter
+  reports `compatibility_edge_invocations=0`.
+- H2637 RSS is `84776 KiB` after this deletion pass.
+
+Next action: broader Phase 3 deletion of scheduler/day-frame/carrier code that
+is not needed by tests or the explicit deprecated `--compatibility-runtime`
+seam, followed by the Phase 4 no-compatibility proof.

@@ -304,31 +304,6 @@ fn direct_publication_erod14_class_symbol(root: &str, class_index: usize) -> Str
     format!("{root}_{class_index:04}")
 }
 
-#[allow(dead_code)]
-fn direct_publication_day_zero_seed_surface(
-    climate_request: &HillslopeClimateRuntimeRequest,
-    climate_span: &ClimateRunSpanSummary,
-    seed_authority: &HillslopeWritebackSurface,
-    climate_context_surface: &HillslopeWritebackSurface,
-    execution_lane: ExecutionLane,
-) -> Result<HillslopeWritebackSurface, HillslopeCliError> {
-    let day = climate_span.days.first().ok_or_else(|| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_publication_frame",
-            detail: format!("{SIMOUT_GUARD_ID} direct publication requires at least one climate day"),
-        }
-    })?;
-    direct_publication_validate_day(day)?;
-    let mut seed_surface = seed_authority.clone();
-    let mut climate_surface = build_day_climate_surface(climate_request, 0, climate_context_surface, day)?;
-    seed_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
-        seed_surface,
-        std::mem::take(&mut climate_surface),
-    );
-    seed_wb11_runtime_surface_inputs(&mut seed_surface, execution_lane)?;
-    Ok(seed_surface)
-}
-
 fn direct_publication_validate_day(day: &ClimateDayProjection) -> Result<(), HillslopeCliError> {
     if !day.precipitation_mm.is_finite() || day.precipitation_mm < 0.0 {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {

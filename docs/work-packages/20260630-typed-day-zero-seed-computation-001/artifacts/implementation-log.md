@@ -127,3 +127,55 @@ Results:
 - Remaining release gates: passed.
 
 Gate result: `GATE1-PASSED-PHASE3-PENDING`.
+
+## Phase 3 Production Seed-Surface Deletion
+
+Static:
+
+- Changed `build_static_hillslope_runtime_setup` so the direct-production
+  branch no longer constructs `build_static_runtime_surface_parts`,
+  `build_persistent_lane_state`, a symbol registry, or hot symbol tables. The
+  direct branch now carries only the geometry/typed setup inputs needed by the
+  typed `DirectRunFrame`; the retained symbol-map construction is confined to
+  non-direct compatibility selection.
+- Removed the obsolete direct-publication day-zero seed-surface bridge:
+  `DirectProductionSeedAuthority::from_day_zero_seed_surfaces`,
+  `direct_publication_day_zero_seed_surface`,
+  `direct_production_lane_seed_surfaces`, and the day-zero
+  `DirectProductionLaneConstructorSeed` constructor.
+- Removed the dead `DirectProductionDayInputBuilder::build_lane_authority`
+  surface reader. Production direct day input authority is now assembled from
+  typed carrier values before builder construction.
+- Added a typed snowbench export seed snapshot on
+  `DirectProductionSeedAuthority`, and switched the snowbench/PySnobal bridge
+  to read initial canopy cover, winter hourly context, and snow density from the
+  typed carrier. The bridge keeps its existing `LegacyRst` snow-phase policy so
+  diagnostic forcing output remains identity-stable.
+- Added the source guard
+  `typed_seed_authority_direct_setup_skips_symbol_map_seed_surface`, asserting
+  that the direct-production setup branch does not call static symbol-map seed
+  builders.
+
+Ran:
+
+```text
+cargo fmt --check
+cargo check -p openwepp-runner
+cargo nextest run -p openwepp-runner publication_wb11_seed publication_wb19_wb12_wb16
+cargo nextest run r7f_typed_day_input_hot_loop_excludes_runtime_surface_reads physics_bulk_snowbench_runs_offline_for_snotel_fixture coe_melt_snowbench_runs_both_models_as_diagnostic_only snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave density_compaction_snowbench_runs_offline_with_closure coe_bound_density_replay_preserves_coe_swe_and_changes_density_surface snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar g0_exporter_emits_pysnobal_schema_and_required_anti_alias_lineage --no-fail-fast
+cargo nextest run -p openwepp-runner r7f_typed_day_input_hot_loop_excludes_runtime_surface_reads typed_seed_authority_direct_setup_skips_symbol_map_seed_surface
+cargo build -p openwepp-runner --bin openwepp-cli-hill --release
+target/release/openwepp-cli-hill ... H2637 endpoint
+```
+
+Results:
+
+- `cargo fmt --check`: pass.
+- `cargo check -p openwepp-runner`: pass.
+- Focused seed tests: `41` passed.
+- Snowbench/PySnobal diagnostic rerun: `7` passed (`633.961s`, `1` slow).
+- Setup/source guards: `2` passed.
+- H2637 HBP/loss/PASS/WAT/plot byte-identical against the clean Gate 1
+  baseline.
+- H2637 current run: `1:07.35`, `84776 KiB`,
+  `direct_runtime_counters.compatibility_edge_invocations=0`.

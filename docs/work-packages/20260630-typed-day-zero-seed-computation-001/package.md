@@ -1,6 +1,6 @@
 # Typed Day-Zero Seed Computation
 
-Status: EXECUTED-CHECKPOINT-GATE1-PASSED-PHASE3-PENDING
+Status: EXECUTED-CHECKPOINT-GATE1-PASSED-PHASE3-PRODUCTION-SEED-SURFACE-DELETED
 
 Package id: `20260630-typed-day-zero-seed-computation-001`
 
@@ -95,7 +95,7 @@ time/RSS.
 ## Disposition
 
 Result:
-`EXECUTED-CHECKPOINT-GATE1-PASSED-PHASE3-PENDING`.
+`EXECUTED-CHECKPOINT-GATE1-PASSED-PHASE3-PRODUCTION-SEED-SURFACE-DELETED`.
 
 Phase 1 expanded the typed seed-computation slice. The existing surface seeder
 now delegates these sub-computations to typed projection cores:
@@ -128,6 +128,19 @@ Gate 1 is passed. H2637 protected outputs are byte-identical against clean
 multi-OFE/Wave-2 fixture passes, full workspace gates pass, and H2637 RSS
 improves from `113268 KiB` to `91692 KiB`.
 
-Phase 3 deletion remains: remove the now-orphaned symbol-map seed authority and
-production compatibility runtime machinery, while keeping only the explicit
-deprecated `--compatibility-runtime` replay seam.
+Phase 3 production seed-surface deletion is partly complete. The direct
+production setup branch no longer builds static `HillslopeWritebackSurface`
+seed parts, persistent lane symbol-map state, symbol registry, or hot symbol
+tables. The obsolete direct-publication day-zero seed-surface bridge
+(`from_day_zero_seed_surfaces`, `direct_publication_day_zero_seed_surface`, and
+lane seed-surface helpers) and the dead
+`DirectProductionDayInputBuilder::build_lane_authority` surface reader have
+been removed. Snowbench/PySnobal export diagnostics now source initial canopy,
+winter context, and snow-density bridge values from the typed seed carrier
+instead of the deleted setup surface. H2637 protected outputs remain
+byte-identical and the direct-runtime counter reports
+`compatibility_edge_invocations=0`; final H2637 RSS is `84776 KiB`.
+
+Remaining Phase 3 work is the broader symbol-map runtime/code deletion that can
+be removed without breaking the explicit deprecated `--compatibility-runtime`
+replay seam.

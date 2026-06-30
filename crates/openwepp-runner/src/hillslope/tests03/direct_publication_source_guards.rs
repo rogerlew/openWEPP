@@ -70,6 +70,39 @@
     }
 
     #[test]
+    fn typed_seed_authority_direct_setup_skips_symbol_map_seed_surface() {
+        let source = include_str!("../00_runner_intake_and_lane_setup.rs");
+        let setup_body = source
+            .split("fn build_static_hillslope_runtime_setup")
+            .nth(1)
+            .and_then(|tail| tail.split("\nfn ").next())
+            .expect("typed seed authority setup function body must be present");
+        let direct_branch = setup_body
+            .split("if runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor")
+            .nth(1)
+            .and_then(|tail| tail.split("} else {").next())
+            .expect("direct production setup branch must be explicit");
+        assert!(
+            direct_branch.contains("HillslopeWritebackSurface::default()"),
+            "direct production setup must not construct a symbol-map seed surface"
+        );
+        for forbidden in [
+            "build_static_runtime_surface_parts(",
+            "build_persistent_lane_state(",
+            "build_hillslope_runtime_surface_from_soil",
+            "build_hillslope_runtime_surface_from_management",
+            "build_hillslope_runtime_surface_from_slope",
+            "build_hillslope_runtime_surface_from_snow",
+            "build_hillslope_runtime_surface_from_frost",
+        ] {
+            assert!(
+                !direct_branch.contains(forbidden),
+                "direct production setup branch must not call symbol-map seed surface builder {forbidden}"
+            );
+        }
+    }
+
+    #[test]
     fn r7f_typed_day_input_hot_loop_excludes_runtime_surface_reads() {
         let source = direct_publication_day_input_and_helpers_source();
         let impl_body = source
@@ -79,7 +112,7 @@
         let build_body = impl_body
             .split("    fn build(")
             .nth(1)
-            .and_then(|tail| tail.split("\n    fn build_lane_authority").next())
+            .and_then(|tail| tail.split("\n    fn lane_authority").next())
             .expect("R7F typed production builder hot-loop build body must be present");
         assert!(
             build_body.contains("direct_day_forcing"),

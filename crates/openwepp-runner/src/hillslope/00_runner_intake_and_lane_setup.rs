@@ -1621,17 +1621,23 @@ fn build_static_hillslope_runtime_setup(
         .collect::<Vec<_>>();
     let per_ofe_runoff_publication_geometries =
         build_per_ofe_runoff_publication_geometries(&static_per_ofe_slices)?;
-    let runtime_parts = build_static_runtime_surface_parts(request, inputs, sidecars)?;
-    let persistent_lane_state = build_persistent_lane_state(PersistentLaneStateInputs {
-        static_per_ofe_slices: &static_per_ofe_slices,
-        slope: &inputs.slope,
-        soil: &inputs.soil,
-        management: &inputs.management,
-        snow_surface: &runtime_parts.snow_surface,
-        frost_surface: &runtime_parts.frost_surface,
-        pmetpara_template: &runtime_parts.pmetpara_template,
-        pmetpara_parse_mode: request.sidecar_policy.as_pmetpara_parse_mode(),
-    })?;
+    let (runtime_surface, persistent_lane_state) =
+        if runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor {
+            (HillslopeWritebackSurface::default(), None)
+        } else {
+            let runtime_parts = build_static_runtime_surface_parts(request, inputs, sidecars)?;
+            let persistent_lane_state = build_persistent_lane_state(PersistentLaneStateInputs {
+                static_per_ofe_slices: &static_per_ofe_slices,
+                slope: &inputs.slope,
+                soil: &inputs.soil,
+                management: &inputs.management,
+                snow_surface: &runtime_parts.snow_surface,
+                frost_surface: &runtime_parts.frost_surface,
+                pmetpara_template: &runtime_parts.pmetpara_template,
+                pmetpara_parse_mode: request.sidecar_policy.as_pmetpara_parse_mode(),
+            })?;
+            (runtime_parts.runtime_surface, persistent_lane_state)
+        };
     let lane_context =
         crate::hillslope::intake_lane_setup::build_execution_lane_context(&sidecars.mode_selection)?;
     let timestep_policy =
@@ -1645,7 +1651,7 @@ fn build_static_hillslope_runtime_setup(
         static_per_ofe_slice_count: static_per_ofe_slices.len(),
         per_ofe_lane_areas_m2,
         per_ofe_runoff_publication_geometries,
-        runtime_surface: runtime_parts.runtime_surface,
+        runtime_surface,
         lane_context,
         climate_span,
         persistent_lane_state,

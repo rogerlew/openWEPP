@@ -337,43 +337,6 @@ fn direct_production_runoff_publication_geometry(
     })
 }
 
-#[allow(dead_code)]
-fn direct_production_lane_seed_surfaces(
-    runtime_surface: &HillslopeWritebackSurface,
-    persistent_lane_state: Option<&OfeLanePersistentStateSequence>,
-    lane_count: usize,
-) -> Result<Vec<HillslopeWritebackSurface>, HillslopeCliError> {
-    if let Some(persistent_lane_state) = persistent_lane_state {
-        let lane_states = persistent_lane_state.lane_states();
-        if lane_states.len() != lane_count {
-            return Err(direct_production_executor_blocked(format!(
-                "direct production lane seed authority count {} does not match lane count {lane_count}",
-                lane_states.len()
-            )));
-        }
-        return Ok(lane_states
-            .iter()
-            .map(|lane_state| lane_state.writeback_surface.clone())
-            .collect());
-    }
-    if lane_count != 1 {
-        return Err(direct_production_executor_blocked(format!(
-            "direct production multi-OFE run requires lane-indexed seed authority, observed lane_count={lane_count} with no persistent lane state"
-        )));
-    }
-    Ok(vec![runtime_surface.clone()])
-}
-
-#[allow(dead_code)]
-fn direct_production_erod14_wave2_enabled(
-    runtime_surface: &HillslopeWritebackSurface,
-) -> Result<bool, HillslopeCliError> {
-    parse_mofe03_binary_flag(
-        "erod14_wave2_enabled",
-        runtime_surface_symbol_value(runtime_surface, "erod14_wave2_enabled").unwrap_or(0.0),
-    )
-}
-
 fn seed_direct_production_lane_constructor_inputs(
     lane_inputs: &mut DirectLaneConstructorInputs,
     lane_index: usize,

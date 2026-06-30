@@ -7,14 +7,14 @@ use std::path::{Path, PathBuf};
 
 use arrow_array::{Array, Float64Array, Int8Array, Int16Array, Int32Array, RecordBatch};
 use openwepp_hillslope_orchestrator::runtime_inputs::{
-    DirectWinterHourlyContext, DirectWinterHourlyForcing, HillslopeClimateRuntimeRequest,
-    SnowPhasePartitionModel, build_hillslope_climate_runtime_request,
+    DirectWinterHourlyForcing, HillslopeClimateRuntimeRequest,
+    build_hillslope_climate_runtime_request,
 };
 use openwepp_hillslope_orchestrator::{
     DirectExecutorMode, DirectFrameExecutor, DirectPublicationRunMetadata, DirectRuntimeError,
+    DirectWinterHourlyContext,
 };
 use openwepp_input_contract::parsers::climate::ClimateDailyRecord;
-use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 use serde::Serialize;
 
@@ -325,9 +325,21 @@ pub fn export_pysnobal_inputs(
         &mut sidecars,
         HillslopeRuntimeSelection::DirectProductionExecutor,
     )?;
-    let runtime_surface = &static_setup.execution_state.runtime_surface;
-    let primary_canopy_cover_fraction =
-        require_state_scalar(&runtime_surface.state_surface, "cancov")?;
+    let climate_request =
+        build_hillslope_climate_runtime_request(&inputs.climate).map_err(|error| {
+            SnowbenchError::ClimateRuntime {
+                detail: error.to_string(),
+            }
+        })?;
+    let seed_authority = super::DirectProductionSeedAuthority::from_typed_inputs(
+        &climate_request,
+        &inputs,
+        &sidecars,
+        static_setup.execution_state.per_ofe_lane_areas_m2.len(),
+        static_setup.execution_state.lane_context.lane,
+    )?;
+    let snowbench_seed = seed_authority.snowbench_export_seed()?;
+    let primary_canopy_cover_fraction = snowbench_seed.primary_canopy_cover_fraction;
     if !(0.0..=1.0).contains(&primary_canopy_cover_fraction) {
         return Err(SnowbenchError::InvalidInput {
             detail: format!(
@@ -335,13 +347,7 @@ pub fn export_pysnobal_inputs(
             ),
         });
     }
-    let climate_request =
-        build_hillslope_climate_runtime_request(&inputs.climate).map_err(|error| {
-            SnowbenchError::ClimateRuntime {
-                detail: error.to_string(),
-            }
-        })?;
-    let context = winter_context_from_surface(&runtime_surface.state_surface)?;
+    let context = snowbench_seed.winter_context;
     let daily_forcing =
         build_daily_forcing(&inputs.climate.daily_records, &climate_request, context)?;
     let canopy_series = build_direct_runtime_canopy_series(
@@ -355,7 +361,7 @@ pub fn export_pysnobal_inputs(
     let canopy_series_summary = summarize_canopy_series(&canopy_series)?;
     let canopy_series_path = output_dir.join(CANOPY_SERIES_FILENAME);
     write_canopy_series_csv(&canopy_series_path, &canopy_series)?;
-    let snow_density = require_state_scalar(&runtime_surface.state_surface, "snow.options.newsnw")?;
+    let snow_density = snowbench_seed.snow_density_kg_m3;
 
     if request.include_openwepp_snow_projection {
         write_openwepp_snow_projection(&output_dir, &hillslope_request, &daily_forcing)?;
@@ -507,37 +513,6 @@ fn toml_path(path: &Path) -> String {
         .to_string()
         .replace('\\', "\\\\")
         .replace('"', "\\\"")
-}
-
-fn winter_context_from_surface(
-    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
-) -> Result<DirectWinterHourlyContext, SnowbenchError> {
-    Ok(DirectWinterHourlyContext {
-        snow_runtime_swe_m: 0.0,
-        frost_runtime_depth_m: 0.0,
-        frost_runtime_frozen_water_m: 0.0,
-        frost_file_present: require_state_scalar(surface, "frost.options.frost_file_present")?
-            > 0.5,
-        frost_wint_red_enabled: require_state_scalar(surface, "frost.options.wintRed")? > 0.5,
-        avg_slope: require_state_scalar(surface, "avgslp")?,
-        azimuth: require_state_scalar(surface, "azm")?,
-        snow_rst_c: require_state_scalar(surface, "snow.options.rst")?,
-        snow_phase_model: SnowPhasePartitionModel::LegacyRst,
-    })
-}
-
-fn require_state_scalar(
-    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
-    symbol: &'static str,
-) -> Result<f64, SnowbenchError> {
-    let value = surface
-        .get(&BoundarySymbol::from(symbol))
-        .ok_or_else(|| SnowbenchError::InvalidInput {
-            detail: format!("missing required runtime symbol {symbol}"),
-        })?
-        .as_f64();
-    require_finite(symbol, value)?;
-    Ok(value)
 }
 
 fn build_direct_runtime_canopy_series(
