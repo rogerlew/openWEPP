@@ -261,31 +261,25 @@ default/direct byte identity for HBP/WAT/PASS/loss/plot with
 | 5 | **`REFINTENT001-KSATADJ-SATFRAC` defect closure** | Rebuild the WB14 `ksatadj` operand lineage so `sat_frac` is formed per `SC-SUBHYD-001#INV-SUBHYD-032` source intent: rock-corrected `avpor*avcpm` denominator, total-water + `avsm15` residual numerator, the two `avsat` caps, top-two-tillage weighted averaging, not `sum(theta)/sum(ul)` | `INV-SUBHYD-032` satisfied; non-aliased tests where surrogate differs from intended formula; determinism preserved; re-run H2637 + close the FARPOINT01 71% flag by source-intent conformance | ✅ **complete-with-correction 2026-06-18** (`REFINTENT001-KSATADJ-SATFRAC`) — source-intent `sat_frac` fix landed (correct, gate-clean, non-aliased-tested; valuable for `ksatadj=1` soils). **But Claude review found it byte-inert on H2637** (`ksatadj = 0`; WAT SHA identical pre/post), so it does **not** close FARPOINT01 — flag re-opens. The 71% is base-conductivity-driven → item 6. |
 | 6 | **H2637 base lateral/percolation conductivity adjudication** | The H2637 71% lateral magnitude is driven by the **base soil conductivity** (`Ke`/`ssc`, soil-file `ksat` + the 200 mm runtime-layer normalization), **not** `ksatadj` (which is off for H2637). Adjudicate that conductivity lineage under `SC-SUBHYD-001` / `SC-INFILE-SOIL-001`, same intent-vs-behavior discipline | Per-term verdict on the base-conductivity lineage (`CORRECT`/`OPENWEPP-DEFECTIVE`/`CONTRACT-GAP`); resolve or re-route the FARPOINT01 71% flag | ✅ **`STAGE2-BASE-CONDUCTIVITY-H2637-MAGNITUDE` complete 2026-06-18** — base `ksat` is byte-live (`ksat_x0.9` changed WAT/PASS checksums and magnitude outputs). Verdict `OPENWEPP-DEFECTIVE`: vertical `wb18_perc_ssc` split-layer normalization is arithmetic but source intent is inverse-conductivity/harmonic (`117.955408` vs `270.8259 mm/h` on H2637 layer 3). Hourly `wb19_lateral_ssh` remains arithmetic and must be preserved. |
 | **P** | **PERF - comprehensive array-native re-architecture (direct runtime)** | Comprehensive array-native migration remains the perf direction, but PERFDEEP03 and PERFDEEP05 falsified the current partial hydrology-island shape as a production endpoint win. PERFDEEP05 removed the PERFDEEP04 full-sync hotspot, while the accumulated plumbing also taxed the default-disabled path (`701.95 s` vs `669.97 s`). PERFDEEP06 converted that into a direct-frame plan with a zero-cost-disabled P0 gate. PERFDEEP07 improved but did not close that gate (`685.85 s` retained vs `<= 676.67 s`); PERFDEEP08 tested disabled diagnostic-hook caching and was slower (`691.93 s`). PERFDEEP09 closed the disabled-path blocker, R2A created the separate direct-runtime skeleton without phase math or publication cutover, R3A proved the first complete direct phase span, R3B proved a richer direct water-ledger span, R3C proved run-level multi-lane transfer/topology propagation, R4A through R4P/Q/Z closed the direct hydrology path through shadow-only projection, R5A through R5E completed full OFE-day direct endpoint readiness while preserving no-publication/no-default/no-scheduler boundaries, and R6A added the missing run-bound direct publication frame plus direct HBP/WAT/PASS/loss/manifest projection consumers. R6 promoted the publication operand ledger into architecture authority and added a fail-closed cutover candidate. R6B proved the candidate still lacked a production typed operand bridge; R6C corrected that failure mode so cutover failed before skeleton capture; R6D added a cutover-only retained production `DirectRunPublicationFrame` in the climate lifecycle; R6E resolved direct-runtime input binding for parsed climate; R6F closed the current-fixture HBP byte blocker; R6G reduced WAT to `HOLD-R6G-WAT-PMET-DAY-STATE-CARRY-BUILDER-ABSENT`; R6H cleared that blocker by adding an interleaved PMET day/lane input builder and reducing WAT to `HOLD-R6H-WAT-PMET-LAYER-CARRY-ULP-PARITY`; R6I closed the PMET layer-carry ULP blocker by carrying active-frost fine-layer projection through direct lane commit; and R6J completed direct publication cutover, including manifest/direct-counter provenance, direct-only public writes, PASS byte-stable metadata, H2637 default `640.41 s / 227396 KiB`, H2637 direct cutover `637.53 s / 349400 KiB`, HBP/WAT/PASS/loss/plot byte identity, and `compatibility_edge_invocations=0`. | Next: scope post-R6 work separately. Immediate technical debt before more publication growth: split `00_runner_intake_and_lane_setup.rs` (`2997` lines) and `direct_runtime.rs` publication-row construction (`2922` lines). Default activation, broader nonzero erosion authority, and performance tuning require separate packages and gates. | **COMPLETE: R6 direct publication cutover** - opt-in direct public outputs are direct-manifested and byte-identical to default on H2637; default remains disabled. |
-| **W** | **R7G hold-lift: winter-column snow/frost sub-solver cutover** | Replace the current direct-runtime snow/frost retrofit with the coupled winter-column architecture ratified by [ADR-0026](decisions/0026-stateful-winter-column-sub-solver.md) and [coupled-frost-sub-solver-specification.md](architecture/coupled-frost-sub-solver-specification.md). The current direct-runtime snow/frost pieces (`DirectSnowCoupling*`, `DirectSnowRuntimeCarry`, `DirectFrostRuntimeCarry`, `DirectFrostRunoffSurface`, `DirectFrostLiquidPartition`, `frost_layer_carry_projection`, the R4G snow span, and the R4A frost-surface reconciliation helpers) are temporary scaffolding: migrate authority into a typed winter sub-solver outside the direct-runtime phase modules, then remove those direct-runtime bridges once consumers are cut over. | R7G terminal gates from the new architecture: `compatibility_edge_invocations=0`; no production references to `DirectFrostRunoffSurface`, `BoundarySymbol`, `BoundaryValue`, `HillslopeWritebackSurface`, or `HillslopeKernelRequest` in the winter hot path; HBP/WAT/PASS/loss/plot/manifest byte/Arrow identity; anti-alias fixtures; independent snow/frost operand reconstruction; H2637 direct default `<=10x` legacy. | **CLOSED OPT-IN / FIDELITY SUCCESSOR** - R7G/R7H moved snow/frost into the typed winter-column shape with `compatibility_edge_invocations=0`; direct remains opt-in. Default activation and compatibility deletion are blocked by `GAP-SNOWFREEZE-002`; execute W.1 before any frost-influenced release readiness. |
+| **W** | **R7 terminal cleanup: compatibility runtime deletion** | The ADR-0026 winter-column sub-solver, frost observed-data ratification/default activation, and the direct cutover correction are complete. ADR-0030 amends the R7 terminal contract: compatibility frost bit-parity is no longer the acceptance target, direct production is the no-env hillslope default, and silent compatibility fallback is a defect. | Delete obsolete skeleton/shadow/cutover transition modes and production hot-loop symbol-map machinery under no-regression/static-proof gates; retain explicit `--compatibility-runtime` as deprecated replay-only seam until a later full-deletion package. | **IN EXECUTION** - `20260630-compatibility-runtime-deletion-001` deletes obsolete production transition modes. Full symbol-map/setup-carrier deletion and RSS reduction remain separate follow-on work. |
 
-Current direct-runtime note: R7D8 closed the current H2637 5-day
-direct-production publication-parity gate. R7E added default-candidate and
-rollback selection mechanics. R7F closed
-`HOLD-R7F-DIRECT-DAY-INPUT-BUILDER-COMPATIBILITY-SURFACE-HOT-EDGE` by moving
-production direct hot-loop day-input construction to typed direct
-day-input/state projection. R7G then ran the full same-binary H2637 matrix and
-closed the initial sidecar-only active snow blocker with typed snow controls,
-state, partition compute, mutation, downstream operands, and publication
-projection. It later reached full-H2637 active frost endpoint execution with
-`compatibility_edge_invocations=0`, but protected HBP/WAT/PASS parity remained
-red and the fine/shadow carry safeguards regressed direct endpoint timing. R7G
-is therefore held at `HOLD-R7G-FROST-STATEFUL-SUBSOLVER-REQUIRED`, not at the
-older active-snow-authority marker. The 2026-06-23 snow lane migration moved
-persistent direct snow authority to `DirectWinterColumnState.snow`; the
-remaining `DirectSnowRuntimeCarry` type and `snow_runtime_carry` fields are
-temporary compatibility mirrors only and must be deleted in the consumer
-cutover/deletion step below.
+Current direct-runtime note: R7D8 through R7F closed the direct publication,
+default-candidate, rollback, and typed day-input hot-loop blockers. R7G/R7H
+then moved snow/frost into the ADR-0026 winter-column architecture and reached
+zero compatibility-edge counters. The later frost validation arc ratified
+`INV-SNOWFREEZE-047/048/050`, bounded `GAP-SNOWFREEZE-002`, activated direct
+production as the no-env default, and corrected the temporary multi-OFE/Wave-2
+and legacy sidecar-discovery compatibility fallback. The active runtime cleanup
+is now ADR-0030 compatibility-runtime deletion: obsolete skeleton/shadow/cutover
+transition modes are removed, while explicit `--compatibility-runtime` remains
+only as a deprecated replay seam until a later full-deletion package.
 
 ### W. Winter-column snow/frost implementation sequence
 
-This sequence is the next viable direct-runtime route. It deliberately stops
-patching the current direct-runtime snow/frost retrofit and removes it after the
-typed winter-column authority is present.
+This sequence is retained as historical context for the R7G/R7H winter-column
+cutover that is now complete. It deliberately stopped patching the old direct
+snow/frost retrofit and removed it after typed winter-column authority was
+present.
 
 1. **Ordering gate under ADR-0026.** Apply the ratified stateful sub-solver
    exception and complete the source trace for whether frost liquid partition
@@ -340,17 +334,11 @@ typed winter-column authority is present.
    after those gates pass can R7H release readiness or direct-default activation
    proceed.
 
-   Current status (2026-06-24, operator-directed re-sequence): the R7H frost
-   bit-parity grind is CLOSED OPT-IN, not finished. `r7h-iterative-completion`
-   cleared the performance gate (direct default-candidate `61.40 s`, ~6.7x
-   legacy, within `<=10x`, via hot-path frost-guard symbol-formatting removal)
-   and kept `compatibility_edge_invocations=0`, but the sole remaining blocker is
-   bit-parity to a compatibility frost solver never validated to frost-depth
-   magnitude. Rather than grind direct output to match a soon-to-be-replaced
-   frost model, the frost-influenced public-output divergence is reclassified as
-   a contract-tracked delta under reopened `GAP-SNOWFREEZE-002`. Direct mode
-   stays opt-in; default activation and compatibility deletion are deferred until
-   frost is contract-correct.
+   Current status (2026-06-30): complete and superseded by ADR-0030 runtime
+   cleanup. The frost ratification/default-activation package and direct
+   cutover correction moved production default execution to direct mode for all
+   supported surfaces. Compatibility deletion is no longer blocked by frost
+   bit-parity; only the explicit replay seam remains intentionally retained.
 
 ### W.1 Snow and Frost Fidelity Adjudication
 

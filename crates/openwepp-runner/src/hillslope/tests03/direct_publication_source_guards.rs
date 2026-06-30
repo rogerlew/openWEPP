@@ -22,6 +22,36 @@
     }
 
     #[test]
+    fn compatibility_runtime_deletion_removes_obsolete_transition_modes() {
+        let sources = [
+            include_str!("../../api.rs"),
+            include_str!("../../bin/openwepp-cli-hill.rs"),
+            include_str!("../04_direct_publication.rs"),
+            include_str!("../05_runner_execution_and_outputs.rs"),
+            include_str!("../direct_publication/day_input_and_helpers/00_builders_and_authority.rs"),
+        ]
+        .join("\n");
+        for forbidden in [
+            "DirectSkeletonNoop",
+            "DirectSkeletonShadowOnly",
+            "DirectPublicationFrameShadow",
+            "DirectPublicationFrameCutover",
+            "--direct-runtime-skeleton",
+            "--direct-publication-frame-shadow",
+            "--direct-publication-frame-cutover",
+            "DirectPublicationDayInputBuilder",
+            "build_retained_direct_publication_frame",
+            "RetainedDirectPublicationRequest",
+            "build_direct_publication_execution_from_simulation_outputs",
+        ] {
+            assert!(
+                !sources.contains(forbidden),
+                "deleted compatibility transition surface reappeared: {forbidden}"
+            );
+        }
+    }
+
+    #[test]
     fn r7f_production_direct_uses_typed_day_input_builder() {
         let source = include_str!("../05_runner_execution_and_outputs.rs");
         let direct_body = source

@@ -11,12 +11,26 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-06-29`:
+State as of `2026-06-30`:
 
 - None.
 
 ## Execution Log
 
+- `20260630-compatibility-runtime-deletion-001/` is complete as COMPATIBILITY
+  RUNTIME DELETION. Result: `EXECUTED-COMPLETE-PARTIAL-DELETION`. It added
+  ADR-0030, removed obsolete skeleton/shadow/cutover runtime selections and CLI
+  flags, deleted the compatibility-shaped direct publication day-input builder
+  and cutover adapter family, removed stale transition-mode tests, and added a
+  source guard blocking their reintroduction. The no-env default and legacy
+  sidecar-discovery paths remain direct production, with explicit
+  `--compatibility-runtime` retained only as a deprecated replay/comparator seam.
+  Full Rust gates passed (`cargo fmt --check`, `cargo clippy --workspace
+  --all-targets -- -D warnings`, `cargo nextest run --workspace --profile full`,
+  `cargo deny check`, authority anti-evasion, and required-suite obligation
+  guards). Full deletion of setup-time symbol-map carriers and the replay seam is
+  deferred to a separate typed-setup/full-deletion package; RSS reduction was
+  out of scope.
 - `20260629-frost-direct-cutover-correction-001/` is complete as FROST DIRECT
   CUTOVER CORRECTION. Result:
   `EXECUTED-COMPLETE-DIRECT-CUTOVER-CORRECTION`. It amended

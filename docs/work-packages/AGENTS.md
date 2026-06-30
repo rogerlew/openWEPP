@@ -61,10 +61,11 @@
   producer source, in-memory state/frame object, runner handoff, downstream
   consumer call site, output or API surface, and the negative proof that the old
   compatibility path is not used for that claim.
-- `DirectSkeletonNoop`, `DirectSkeletonShadowOnly`, and similar scaffolds may
-  exercise dimensions and counters, but they cannot satisfy endpoint,
-  publication, activation, or cutover acceptance. Any package using them must
-  label the evidence as scaffolding only.
+- Historical direct skeleton/shadow transition modes such as
+  `DirectSkeletonNoop`, `DirectSkeletonShadowOnly`, and
+  `DirectPublicationFrameCutover` are deleted runtime selections. Do not revive
+  them for new evidence; use production direct execution or an explicitly named
+  diagnostic harness instead.
 - Before closure, run a "what still reads the old path?" check over the named
   downstream consumers. If any current-scope consumer still reads compatibility
   state, runtime symbols, writeback payloads, stale logical state, or a wrapper

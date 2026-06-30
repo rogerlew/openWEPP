@@ -33,6 +33,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0027](0027-opt-in-physics-bulk-snow-model.md) | Opt-in physics-bulk snow model for snow-density remediation | Accepted |
 | [0028](0028-observed-data-admission-authority.md) | Observed-data admission authority when scientific authority is lacking (domain-general; extends 0011, reaffirms 0017) | Accepted (ratified 2026-06-28) |
 | [0029](0029-commit-paradigm-2-multilayer-snow.md) | Commit to Paradigm 2 — staged multilayer snow physics (foundation for frost insulation, winter water temperature, runoff dynamics; admitted under 0028, homed in 0026) | Accepted (ratified 2026-06-28) |
+| [0030](0030-r7-terminal-contract-and-compatibility-runtime-deletion.md) | R7 terminal contract and compatibility runtime deletion | Accepted |
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further
@@ -58,6 +59,12 @@ homed in the ADR-0026 winter-column sub-solver (whose variable-layer Vec excepti
 de-risks it), opt-in and staged with the bulk default as rollback. Stage 0 (the
 openwepp-meteorology surface energy balance) is done. Ratified by
 `docs/work-packages/20260628-adr0029-paradigm-2-ratification-001/`.
+ADR-0030 amends the R7 terminal contract after frost ratification/default
+activation: compatibility frost bit-parity is no longer the acceptance target,
+production direct mode must not silently fall back to compatibility, obsolete
+transition modes may be deleted under no-regression/static-proof gates, and the
+explicit `--compatibility-runtime` seam remains only as deprecated diagnostic
+replay until a later full-deletion package.
 
 ## ADR template
 

@@ -77,30 +77,6 @@ fn run() -> Result<(), String> {
                     "--compatibility-runtime",
                 )?;
             }
-            "--direct-runtime-skeleton" => {
-                set_runtime_selection(
-                    &mut runtime_selection,
-                    &mut runtime_selection_flag,
-                    HillslopeRuntimeSelection::DirectSkeletonNoop,
-                    "--direct-runtime-skeleton",
-                )?;
-            }
-            "--direct-publication-frame-shadow" => {
-                set_runtime_selection(
-                    &mut runtime_selection,
-                    &mut runtime_selection_flag,
-                    HillslopeRuntimeSelection::DirectPublicationFrameShadow,
-                    "--direct-publication-frame-shadow",
-                )?;
-            }
-            "--direct-publication-frame-cutover" => {
-                set_runtime_selection(
-                    &mut runtime_selection,
-                    &mut runtime_selection_flag,
-                    HillslopeRuntimeSelection::DirectPublicationFrameCutover,
-                    "--direct-publication-frame-cutover",
-                )?;
-            }
             "--direct-production-executor" => {
                 set_runtime_selection(
                     &mut runtime_selection,
@@ -188,6 +164,6 @@ fn set_runtime_selection(
 
 fn print_help() {
     println!(
-        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--manifest-path <path>] [--compatibility-runtime] [--direct-default-candidate] [--direct-runtime-skeleton] [--direct-publication-frame-shadow] [--direct-publication-frame-cutover] [--direct-production-executor]"
+        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--manifest-path <path>] [--compatibility-runtime] [--direct-default-candidate] [--direct-production-executor]"
     );
 }

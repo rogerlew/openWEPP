@@ -1,7 +1,6 @@
 fn execute_hillslope_climate_days(
     run_name: &str,
     output_hillslope_id: u32,
-    runtime_selection: HillslopeRuntimeSelection,
     state: HillslopeClimateExecutionState,
     climate: &ClimateFile,
 ) -> Result<HillslopeClimateExecution, HillslopeCliError> {
@@ -29,18 +28,6 @@ fn execute_hillslope_climate_days(
     let indexed_scheduler_runtime_enabled = symbol_registry.is_some() && hot_symbol_tables.is_some();
     let persistent_lane_active = persistent_lane_state.is_some();
     let hphys0245_trace_config = hphys0245_trace_config_from_env()?;
-    let retained_direct_publication = build_retained_direct_publication_frame(
-        &RetainedDirectPublicationRequest {
-            runtime_selection,
-            run_name,
-            output_hillslope_id,
-            execution_lane: lane_context.lane,
-            lane_areas_m2: &per_ofe_lane_areas_m2,
-            climate_request: &climate_request,
-            climate_span: &climate_span,
-            static_runtime_surface: &runtime_surface,
-        },
-    )?;
     let context = ClimateExecutionContext {
         run_name,
         output_hillslope_id,
@@ -56,7 +43,7 @@ fn execute_hillslope_climate_days(
         runtime_surface,
         climate_span.days.len(),
         contributor_ofe_count,
-        retained_direct_publication,
+        None,
     )?;
 
     for (day_index, day_projection) in climate_span.days.iter().enumerate() {
@@ -815,11 +802,7 @@ fn build_hillslope_execution_provenance(
     let erod14_qin_source_policy = erod14_qin_source_policy(erod14_wave2_enabled, sidecar_warnings);
     Ok(HillslopeExecutionProvenance {
         scheduler_kernel_executed: runtime_selection != HillslopeRuntimeSelection::DirectProductionExecutor,
-        publication_source: if matches!(
-            runtime_selection,
-            HillslopeRuntimeSelection::DirectPublicationFrameCutover
-                | HillslopeRuntimeSelection::DirectProductionExecutor
-        ) {
+        publication_source: if runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor {
             DIRECT_PUBLICATION_FRAME_PUBLICATION_SOURCE
         } else {
             SCHEDULER_KERNEL_PUBLICATION_SOURCE
@@ -874,14 +857,10 @@ fn build_hillslope_publication_provenance(
     ),
     HillslopeCliError,
 > {
-    if matches!(
-        runtime_selection,
-        HillslopeRuntimeSelection::DirectPublicationFrameCutover
-            | HillslopeRuntimeSelection::DirectProductionExecutor
-    ) {
+    if runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor {
         let artifacts = execution.direct_publication.as_ref().ok_or_else(|| {
             direct_publication_cutover_blocked(
-                "direct publication cutover requires retained direct publication artifacts",
+                "direct production publication requires retained direct publication artifacts",
             )
         })?;
         return build_direct_publication_manifest_provenance(
@@ -914,11 +893,7 @@ fn write_hillslope_run_outputs(
     execution: &HillslopeClimateExecution,
     runtime_selection: HillslopeRuntimeSelection,
 ) -> Result<(), HillslopeCliError> {
-    if matches!(
-        runtime_selection,
-        HillslopeRuntimeSelection::DirectPublicationFrameCutover
-            | HillslopeRuntimeSelection::DirectProductionExecutor
-    ) {
+    if runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor {
         return write_hillslope_direct_publication_outputs(inputs, targets, execution);
     }
 
@@ -1512,11 +1487,7 @@ fn direct_runtime_counters_for_manifest(
     baseline: DirectRuntimeAuditSnapshot,
     current: DirectRuntimeAuditSnapshot,
 ) -> Option<HillslopeDirectRuntimeCounterProvenance> {
-    if !matches!(
-        runtime_selection,
-        HillslopeRuntimeSelection::DirectPublicationFrameCutover
-            | HillslopeRuntimeSelection::DirectProductionExecutor
-    ) {
+    if runtime_selection != HillslopeRuntimeSelection::DirectProductionExecutor {
         return None;
     }
     Some(direct_runtime_counter_provenance(
@@ -1626,13 +1597,7 @@ fn execute_selected_hillslope_days(
     let execution_result = if production_direct_selected {
         execute_hillslope_direct_production_days(run_name, output_hillslope_id, state, climate)
     } else {
-        execute_hillslope_climate_days(
-            run_name,
-            output_hillslope_id,
-            runtime_selection,
-            state,
-            climate,
-        )
+        execute_hillslope_climate_days(run_name, output_hillslope_id, state, climate)
     };
     if let Some(symbol_registry_audit) = symbol_registry_audit {
         symbol_registry_audit.finish()?;
@@ -1680,7 +1645,6 @@ pub fn execute_hillslope_run_with_runtime_policy(
     let targets = resolve_hillslope_output_targets(&inputs.runfile)?;
     let runtime_resolution = runtime_policy.resolve();
     let runtime_selection = runtime_resolution.selected();
-    select_direct_runtime_skeleton_once(runtime_selection, &inputs, &targets)?;
     let direct_runtime_counter_baseline = direct_runtime_audit_snapshot();
     let mut sidecars = resolve_hillslope_sidecars(request, &inputs, &targets)?;
     let runtime_setup = build_static_hillslope_runtime_setup(request, &inputs, &mut sidecars)?;
@@ -1765,49 +1729,6 @@ fn build_hillslope_runtime_selection_provenance(
         output_policy: direct_publication_output_policy(selected_runtime).to_string(),
         rollback_runtime: "none".to_string(),
         compatibility_rollback_available: false,
-    }
-}
-
-fn select_direct_runtime_skeleton_once(
-    runtime_selection: HillslopeRuntimeSelection,
-    inputs: &ParsedHillslopeRunInputs,
-    targets: &HillslopeOutputTargets,
-) -> Result<(), HillslopeCliError> {
-    let mode = match runtime_selection {
-        HillslopeRuntimeSelection::DefaultCandidate
-        | HillslopeRuntimeSelection::Compatibility
-        | HillslopeRuntimeSelection::DirectPublicationFrameShadow
-        | HillslopeRuntimeSelection::DirectPublicationFrameCutover
-        | HillslopeRuntimeSelection::DirectProductionExecutor => return Ok(()),
-        HillslopeRuntimeSelection::DirectSkeletonNoop => DirectExecutorMode::Noop,
-        HillslopeRuntimeSelection::DirectSkeletonShadowOnly => DirectExecutorMode::ShadowOnly,
-    };
-
-    let identity = DirectRunIdentity::new(
-        u64::from(targets.output_hillslope_id),
-        targets.output_hillslope_id,
-        inputs.slope.ofe_count,
-        inputs.climate.daily_records.len(),
-    )
-    .map_err(|source| direct_runtime_skeleton_error(&source))?;
-    let mut frame =
-        DirectRunFrame::skeleton(identity).map_err(|source| direct_runtime_skeleton_error(&source))?;
-    let executor = DirectFrameExecutor::new(mode);
-    let report = executor
-        .run_skeleton(&mut frame)
-        .map_err(|source| direct_runtime_skeleton_error(&source))?;
-    debug_assert_eq!(report.mode.as_str(), mode.as_str());
-    record_direct_runtime_compatibility_edge_invocation();
-
-    Ok(())
-}
-
-fn direct_runtime_skeleton_error(
-    source: &openwepp_hillslope_orchestrator::DirectRuntimeError,
-) -> HillslopeCliError {
-    HillslopeCliError::RuntimeSurfaceFailure {
-        surface: "r2a_direct_runtime_skeleton",
-        detail: source.to_string(),
     }
 }
 

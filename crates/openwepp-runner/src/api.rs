@@ -28,10 +28,6 @@ pub enum HillslopeRuntimeSelection {
     #[default]
     DefaultCandidate,
     Compatibility,
-    DirectSkeletonNoop,
-    DirectSkeletonShadowOnly,
-    DirectPublicationFrameShadow,
-    DirectPublicationFrameCutover,
     DirectProductionExecutor,
 }
 
@@ -41,10 +37,6 @@ impl HillslopeRuntimeSelection {
         match self {
             Self::DefaultCandidate => "default-candidate",
             Self::Compatibility => "compatibility",
-            Self::DirectSkeletonNoop => "direct-skeleton-noop",
-            Self::DirectSkeletonShadowOnly => "direct-skeleton-shadow-only",
-            Self::DirectPublicationFrameShadow => "direct-publication-frame-shadow",
-            Self::DirectPublicationFrameCutover => "direct-publication-frame-cutover",
             Self::DirectProductionExecutor => "direct-production-executor",
         }
     }
@@ -134,13 +126,6 @@ impl HillslopeRuntimeSelectionPolicy {
                     fallback_reason: None,
                 }
             }
-            (selection, _) => HillslopeRuntimeSelectionResolution {
-                requested: self.requested,
-                selected: selection,
-                default_activation: self.default_activation,
-                selection_reason: "explicit-nondefault-runtime",
-                fallback_reason: None,
-            },
         }
     }
 }
