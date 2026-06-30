@@ -408,18 +408,16 @@ fn direct_publication_calendar_day(
 fn validate_direct_publication_artifacts(
     artifacts: &DirectPublicationArtifacts,
 ) -> Result<(), HillslopeCliError> {
-    let frame = &artifacts.execution.publication_frame;
-    let row_count = frame.rows().len();
-    let pass_row_count = frame.identity.day_count;
+    let row_count = artifacts.execution.row_count;
+    let pass_row_count = artifacts.execution.identity.day_count;
     let wat_row_count_valid = artifacts
-        .wat_rows
-        .as_ref()
-        .is_none_or(|rows| rows.len() == row_count);
+        .wat_rows_written
+        .is_none_or(|rows_written| rows_written == row_count);
     let pass_row_count_valid = artifacts
-        .pass_projection_rows
-        .as_ref()
-        .is_none_or(|rows| rows.len() == pass_row_count);
+        .pass_projection_rows_written
+        .is_none_or(|rows_written| rows_written == pass_row_count);
     if row_count == 0
+        || artifacts.summary.row_count != row_count
         || artifacts.hbp_bytes.is_empty()
         || !wat_row_count_valid
         || !pass_row_count_valid
@@ -436,6 +434,7 @@ fn validate_direct_publication_artifacts(
     Ok(())
 }
 
+#[cfg(test)]
 fn build_direct_publication_manifest_provenance(
     publication: &DirectRunPublicationFrame,
 ) -> Result<
@@ -448,21 +447,39 @@ fn build_direct_publication_manifest_provenance(
     let facts = direct_publication_manifest_facts(publication)?;
     Ok((
         build_direct_publication_wb13_manifest_provenance(&facts)?,
-        build_direct_publication_mofe_hourly_carry_provenance(&facts)?,
+        build_direct_publication_mofe_hourly_carry_provenance(&facts),
+    ))
+}
+
+fn build_streamed_direct_publication_manifest_provenance(
+    summary: &DirectPublicationOutputSummary,
+) -> Result<
+    (
+        HillslopeWb13PublicationProvenance,
+        HillslopeMofeHourlyCarryProvenance,
+    ),
+    HillslopeCliError,
+> {
+    let facts = streamed_direct_publication_manifest_facts(summary)?;
+    Ok((
+        build_direct_publication_wb13_manifest_provenance(&facts)?,
+        build_direct_publication_mofe_hourly_carry_provenance(&facts),
     ))
 }
 
 struct DirectPublicationManifestFacts<'a> {
-    rows: &'a [openwepp_hillslope_orchestrator::DirectPublicationDayRow],
     first_row: &'a openwepp_hillslope_orchestrator::DirectPublicationDayRow,
     last_row: &'a openwepp_hillslope_orchestrator::DirectPublicationDayRow,
     contributor_ofe_count: usize,
     expected_row_count: usize,
+    row_count: usize,
     publishes_per_ofe_records: bool,
     sim_day_index_monotonic: bool,
     publication_area_m2: f64,
+    upstream_carry_total_m: f64,
 }
 
+#[cfg(test)]
 fn direct_publication_manifest_facts(
     publication: &DirectRunPublicationFrame,
 ) -> Result<DirectPublicationManifestFacts<'_>, HillslopeCliError> {
@@ -526,15 +543,63 @@ fn direct_publication_manifest_facts(
         )));
     }
     let publication_area_m2 = area_by_ofe.values().sum();
+    let upstream_carry_total_m = sum_direct_publication_upstream_carry_m(rows)?;
     Ok(DirectPublicationManifestFacts {
-        rows,
         first_row,
         last_row,
         contributor_ofe_count,
         expected_row_count,
+        row_count: rows.len(),
         publishes_per_ofe_records,
         sim_day_index_monotonic,
         publication_area_m2,
+        upstream_carry_total_m,
+    })
+}
+
+fn streamed_direct_publication_manifest_facts(
+    summary: &DirectPublicationOutputSummary,
+) -> Result<DirectPublicationManifestFacts<'_>, HillslopeCliError> {
+    let first_row = summary.first_row()?;
+    let last_row = summary.last_row()?;
+    let contributor_ofe_count = summary.identity.lane_count;
+    if contributor_ofe_count == 0 {
+        return Err(direct_publication_cutover_blocked(
+            "direct publication manifest provenance requires at least one lane",
+        ));
+    }
+    let expected_row_count = summary
+        .identity
+        .lane_count
+        .checked_mul(summary.identity.day_count)
+        .ok_or_else(|| {
+            direct_publication_cutover_blocked(
+                "direct publication manifest expected row count overflowed",
+            )
+        })?;
+    if summary.row_count != expected_row_count {
+        return Err(direct_publication_cutover_blocked(format!(
+            "direct publication manifest row count mismatch: expected {expected_row_count}, actual {}",
+            summary.row_count
+        )));
+    }
+    if summary.area_by_ofe.len() != contributor_ofe_count {
+        return Err(direct_publication_cutover_blocked(format!(
+            "direct publication manifest area lane count mismatch: expected {contributor_ofe_count}, observed {}",
+            summary.area_by_ofe.len()
+        )));
+    }
+    let publishes_per_ofe_records = contributor_ofe_count > 1;
+    Ok(DirectPublicationManifestFacts {
+        first_row,
+        last_row,
+        contributor_ofe_count,
+        expected_row_count,
+        row_count: summary.row_count,
+        publishes_per_ofe_records,
+        sim_day_index_monotonic: summary.sim_day_index_monotonic,
+        publication_area_m2: summary.publication_area_m2(),
+        upstream_carry_total_m: summary.upstream_carry_total_m(),
     })
 }
 
@@ -568,7 +633,7 @@ fn build_direct_publication_wb13_manifest_provenance(
         .to_string(),
         per_ofe_dynamic_water_balance_state: true,
         per_ofe_dynamic_wb_state: true,
-        per_ofe_record_count: direct_manifest_per_ofe_value(publishes_per_ofe_records, facts.rows.len()),
+        per_ofe_record_count: direct_manifest_per_ofe_value(publishes_per_ofe_records, facts.row_count),
         transfer_identity_status: identity_status.to_string(),
         per_element_identity_status: identity_status.to_string(),
         aggregate_identity_status: identity_status.to_string(),
@@ -592,7 +657,7 @@ fn build_direct_publication_wb13_manifest_provenance(
         aggregate_transfer_cancellation_max_abs_mm: 0.0,
         hillslope_total_identity_max_abs_mm: 0.0,
         publication_area_m2: facts.publication_area_m2,
-        row_count: facts.rows.len(),
+        row_count: facts.row_count,
         sim_day_index_monotonic: facts.sim_day_index_monotonic,
         first_row_key: direct_publication_row_key_provenance(facts.first_row)?,
         last_row_key: direct_publication_row_key_provenance(facts.last_row)?,
@@ -609,14 +674,14 @@ fn direct_manifest_per_ofe_value(active: bool, value: usize) -> usize {
 
 fn build_direct_publication_mofe_hourly_carry_provenance(
     facts: &DirectPublicationManifestFacts<'_>,
-) -> Result<HillslopeMofeHourlyCarryProvenance, HillslopeCliError> {
+) -> HillslopeMofeHourlyCarryProvenance {
     let upstream_carry_total_m = if facts.publishes_per_ofe_records {
-        sum_direct_publication_upstream_carry_m(facts.rows)?
+        facts.upstream_carry_total_m
     } else {
         0.0
     };
     let current_carry_total_m = upstream_carry_total_m;
-    Ok(HillslopeMofeHourlyCarryProvenance {
+    HillslopeMofeHourlyCarryProvenance {
         policy: MOFE_HOURLY_CARRY_POLICY.to_string(),
         active: facts.publishes_per_ofe_records,
         substep_count: if facts.publishes_per_ofe_records {
@@ -634,9 +699,10 @@ fn build_direct_publication_mofe_hourly_carry_provenance(
         },
         upstream_carry_total_m,
         current_carry_total_m,
-    })
+    }
 }
 
+#[cfg(test)]
 fn sum_direct_publication_upstream_carry_m(
     rows: &[openwepp_hillslope_orchestrator::DirectPublicationDayRow],
 ) -> Result<f64, HillslopeCliError> {

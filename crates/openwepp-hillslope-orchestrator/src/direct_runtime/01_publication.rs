@@ -202,18 +202,6 @@ impl DirectRunPublicationFrame {
         }
     }
 
-    fn push_day_row(
-        &mut self,
-        day_frame: &DirectDayFrame,
-        day_input: &DirectPublicationDayInput,
-        lane: &DirectLaneFrame,
-    ) -> Result<(), DirectRuntimeError> {
-        self.rows.push(DirectPublicationDayRow::from_day_frame(
-            day_frame, day_input, lane,
-        )?);
-        Ok(())
-    }
-
     fn validate_complete(&self) -> Result<(), DirectRuntimeError> {
         let expected_row_count = self
             .identity

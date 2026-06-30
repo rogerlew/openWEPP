@@ -13,14 +13,26 @@
 
 State as of `2026-06-30`:
 
-- `20260630-direct-publication-rss-reduction-001/` is held after a large
-  identity-preserving partial RSS reduction. Result:
-  `EXECUTED-HOLD-PARTIAL-RSS-REDUCTION`.
 - `20260630-typed-direct-setup-symbol-map-elimination-001/` is held after Stage
   0. Result: `EXECUTED-HOLD-STAGE0-PREMISE-CORRECTED`.
 
 ## Execution Log
 
+- `20260630-direct-publication-streaming-sink-001/` is complete as DIRECT
+  PUBLICATION STREAMING SINK. Result:
+  `EXECUTED-COMPLETE-STREAMING-RSS-REDUCTION`. It made the production direct
+  publication endpoint stream `DirectPublicationDayRow` values into compact
+  summary state and requested WAT/PASS parquet row-group writers, then drop each
+  row instead of retaining `DirectRunPublicationFrame.rows` whole-run. It also
+  added incremental WAT/PASS parquet writers while preserving the existing
+  slice-writing helpers. H2637 full-output RSS dropped from the prior held
+  package's `316212 KiB` to `112652 KiB`; H2637 required-output RSS dropped
+  from `184644 KiB` to `52228 KiB`. The required-output endpoint is now close to
+  the `16437`-day W9 observed fixture (`47856 KiB`) despite H2637 emitting
+  `235961` rows. H2637 HBP/loss/plot/WAT/PASS and cli01 HBP/loss/plot/WAT data
+  outputs are byte-identical to the retained-row baseline. Full gates passed,
+  including `cargo nextest run --workspace --profile full` after restoring the
+  expected untracked `.venv` Python dependencies (`pyarrow`, `pandas`).
 - `20260630-direct-publication-rss-reduction-001/` is held as DIRECT
   PUBLICATION RSS REDUCTION. Result:
   `EXECUTED-HOLD-PARTIAL-RSS-REDUCTION`. Stage A corrected the Stage 0 RSS

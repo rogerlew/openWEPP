@@ -233,6 +233,9 @@ pub enum DirectRuntimeError {
     PublicationDayInputBuildFailure {
         detail: String,
     },
+    PublicationSinkFailure {
+        detail: String,
+    },
     DirectClosureToleranceExceeded {
         field: &'static str,
     },
@@ -365,6 +368,9 @@ impl fmt::Display for DirectRuntimeError {
                     formatter,
                     "direct publication day-input builder failed: {detail}"
                 )
+            }
+            Self::PublicationSinkFailure { detail } => {
+                write!(formatter, "direct publication sink failed: {detail}")
             }
             Self::DirectClosureToleranceExceeded { field } => {
                 write!(

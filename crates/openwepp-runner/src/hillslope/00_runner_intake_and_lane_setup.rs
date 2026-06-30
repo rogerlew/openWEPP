@@ -33,9 +33,10 @@ use openwepp_hillslope_orchestrator::{
     DirectWinterFrostPartitionOutcome,
     DirectInfiltrationDepressionInputs, DirectLaneConstructorInputs, DirectLiquidInputInputs,
     DirectPeakRunoffInputs, DirectPercolationInputs, DirectPublicationCalendarDay,
-    DirectPublicationDayInput, DirectPublicationExecution, DirectPublicationRunMetadata,
+    DirectPublicationDayInput, DirectPublicationDayRow, DirectPublicationRunMetadata,
     DirectRunConstructorInputs, DirectRunFrame,
-    DirectRunIdentity, DirectRunPublicationFrame, DirectRuntimeAuditSnapshot, DirectRuntimeError,
+    DirectRunIdentity, DirectRuntimeAuditSnapshot, DirectRuntimeError,
+    DirectStreamingPublicationExecution,
     DirectSnowCouplingInputs, DirectSnowHourlyForcing, DirectSnowLaneState,
     DirectResiduePartitionInputs, DirectStorageInputInputs, DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs,
     DirectSubsurfaceLayerState, DirectWb14HyetographInterval,
@@ -45,12 +46,15 @@ use openwepp_hillslope_orchestrator::{
     SchedulerOutcomeClass, TransferInput, TransferOutput, Wb11HydrologyKernel,
     build_hillslope_hot_symbol_tables, compute_direct_canopy_interception, direct_runtime_audit_snapshot,
 };
+#[cfg(test)]
+use openwepp_hillslope_orchestrator::DirectRunPublicationFrame;
 use openwepp_hillslope_output::contracts::{HillslopeOutputConfig, validate_output_contract};
 use openwepp_hillslope_output::hillslope_pass::{
-    HillslopePassRow, write_hillslope_pass_parquet,
+    HillslopePassParquetRowGroupWriter, HillslopePassRow, write_hillslope_pass_parquet,
 };
 use openwepp_hillslope_output::hillslope_wat::{
-    HillslopeWatRow, InterchangeVersion, write_hillslope_wat_parquet,
+    HillslopeWatParquetRowGroupWriter, HillslopeWatRow, InterchangeVersion,
+    write_hillslope_wat_parquet,
 };
 use openwepp_hillslope_output::manifest::{OutputChecksumEntry, assemble_output_checksums};
 use openwepp_hillslope_output::writers::{optional_output_paths, required_output_paths};
@@ -925,17 +929,50 @@ struct HillslopeClimateExecution {
     hphys0245_trace_rows: Vec<Hphys0245TraceRow>,
     per_ofe_internal_wb13_summary: PerOfeInternalWb13RunSummary,
     executed_day_count: usize,
-    retained_direct_publication: Option<DirectPublicationExecution>,
+    retained_direct_publication: Option<RetainedDirectPublication>,
     direct_publication: Option<DirectPublicationArtifacts>,
 }
 
 struct DirectPublicationArtifacts {
-    execution: DirectPublicationExecution,
+    execution: DirectStreamingPublicationExecution,
+    summary: DirectPublicationOutputSummary,
     hbp_bytes: Vec<u8>,
-    wat_rows: Option<Vec<HillslopeWatRow>>,
-    pass_projection_rows: Option<Vec<HillslopePassRow>>,
+    wat_rows_written: Option<usize>,
+    pass_projection_rows_written: Option<usize>,
     loss_text: String,
     manifest_text: String,
+}
+
+struct RetainedDirectPublication {
+    execution: DirectStreamingPublicationExecution,
+    stream: DirectPublicationStreamResult,
+}
+
+struct DirectPublicationStreamResult {
+    summary: DirectPublicationOutputSummary,
+    wat_rows_written: Option<usize>,
+    pass_projection_rows_written: Option<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct DirectPublicationOutputSummary {
+    identity: DirectRunIdentity,
+    metadata: DirectPublicationRunMetadata,
+    row_count: usize,
+    first_row: Option<DirectPublicationDayRow>,
+    last_row: Option<DirectPublicationDayRow>,
+    hbp_sediment_row: Option<DirectPublicationDayRow>,
+    parity_grade_row_seen: bool,
+    area_by_ofe: BTreeMap<u32, f64>,
+    sim_day_index_monotonic: bool,
+    previous_sim_day_index: Option<i32>,
+    upstream_carry_total_mm: f64,
+}
+
+#[derive(Clone)]
+struct DirectPublicationStreamingTargets {
+    wat: Option<PathBuf>,
+    pass_parquet: Option<PathBuf>,
 }
 
 #[derive(Clone, Copy)]
@@ -989,7 +1026,7 @@ struct ClimateExecutionAccumulator {
     kernel_phase_message_ids: std::collections::BTreeSet<String>,
     hphys0245_trace_rows: Vec<Hphys0245TraceRow>,
     per_ofe_internal_wb13_summary: PerOfeInternalWb13RunSummary,
-    retained_direct_publication: Option<DirectPublicationExecution>,
+    retained_direct_publication: Option<RetainedDirectPublication>,
 }
 
 struct ClimateExecutionCompletion {

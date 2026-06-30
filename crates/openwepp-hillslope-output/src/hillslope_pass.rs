@@ -204,35 +204,73 @@ pub fn write_hillslope_pass_parquet(
     rows: &[HillslopePassRow],
     version: InterchangeVersion,
 ) -> Result<WriteSummary, HillslopePassParquetError> {
-    let schema = hillslope_pass_schema(version)?;
-    let batch = hillslope_pass_rows_to_batch(&schema, rows)?;
+    let mut writer = HillslopePassParquetRowGroupWriter::create(path, version)?;
+    writer.write_rows(rows)?;
+    writer.close()
+}
 
-    let file = File::create(path).map_err(|source| HillslopePassParquetError::Io {
-        path: path.to_path_buf(),
-        source,
-    })?;
-    let writer_properties = WriterProperties::builder()
-        .set_compression(Compression::SNAPPY)
-        .set_key_value_metadata(Some(
-            stable_arrow_schema_file_metadata(&schema)
-                .map_err(|error| HillslopePassParquetError::parquet(error.to_string()))?,
-        ))
-        .build();
-    let writer_options = ArrowWriterOptions::new()
-        .with_properties(writer_properties)
-        .with_skip_arrow_metadata(true);
-    let mut writer = ArrowWriter::try_new_with_options(file, Arc::new(schema), writer_options)
-        .map_err(|error| HillslopePassParquetError::parquet(error.to_string()))?;
-    writer
-        .write(&batch)
-        .map_err(|error| HillslopePassParquetError::parquet(error.to_string()))?;
-    writer
-        .close()
-        .map_err(|error| HillslopePassParquetError::parquet(error.to_string()))?;
+pub struct HillslopePassParquetRowGroupWriter {
+    writer: ArrowWriter<File>,
+    schema: Arc<Schema>,
+    rows_written: usize,
+}
 
-    Ok(WriteSummary {
-        rows_written: rows.len(),
-    })
+impl HillslopePassParquetRowGroupWriter {
+    pub fn create(
+        path: &Path,
+        version: InterchangeVersion,
+    ) -> Result<Self, HillslopePassParquetError> {
+        let schema = Arc::new(hillslope_pass_schema(version)?);
+        let file = File::create(path).map_err(|source| HillslopePassParquetError::Io {
+            path: path.to_path_buf(),
+            source,
+        })?;
+        let writer_properties = WriterProperties::builder()
+            .set_compression(Compression::SNAPPY)
+            .set_key_value_metadata(Some(
+                stable_arrow_schema_file_metadata(&schema)
+                    .map_err(|error| HillslopePassParquetError::parquet(error.to_string()))?,
+            ))
+            .build();
+        let writer_options = ArrowWriterOptions::new()
+            .with_properties(writer_properties)
+            .with_skip_arrow_metadata(true);
+        let writer = ArrowWriter::try_new_with_options(file, Arc::clone(&schema), writer_options)
+            .map_err(|error| HillslopePassParquetError::parquet(error.to_string()))?;
+        Ok(Self {
+            writer,
+            schema,
+            rows_written: 0,
+        })
+    }
+
+    pub fn write_rows(
+        &mut self,
+        rows: &[HillslopePassRow],
+    ) -> Result<(), HillslopePassParquetError> {
+        if rows.is_empty() {
+            return Ok(());
+        }
+        let batch = hillslope_pass_rows_to_batch(self.schema.as_ref(), rows)?;
+        self.writer
+            .write(&batch)
+            .map_err(|error| HillslopePassParquetError::parquet(error.to_string()))?;
+        self.rows_written = self.rows_written.checked_add(rows.len()).ok_or_else(|| {
+            HillslopePassParquetError::parquet(
+                "hillslope PASS row count overflow while writing parquet",
+            )
+        })?;
+        Ok(())
+    }
+
+    pub fn close(self) -> Result<WriteSummary, HillslopePassParquetError> {
+        self.writer
+            .close()
+            .map_err(|error| HillslopePassParquetError::parquet(error.to_string()))?;
+        Ok(WriteSummary {
+            rows_written: self.rows_written,
+        })
+    }
 }
 
 fn output_registry_error(error: &OutputUnitRegistryError) -> HillslopePassParquetError {

@@ -1,4 +1,309 @@
 const DIRECT_PUBLICATION_EROSION_MIN_POST_INTERCEPTION_RAINFALL_M: f64 = 0.001;
+const DIRECT_PUBLICATION_PARQUET_ROW_GROUP_ROWS: usize = 8192;
+
+struct DirectPublicationStreamingSink {
+    summary: DirectPublicationOutputSummary,
+    expected_row_count: usize,
+    outlet_ofe_id: u32,
+    simulation_start_year: Option<i32>,
+    wat_writer: Option<HillslopeWatParquetRowGroupWriter>,
+    wat_chunk: Vec<HillslopeWatRow>,
+    wat_rows_written: usize,
+    pass_writer: Option<HillslopePassParquetRowGroupWriter>,
+    pass_chunk: Vec<HillslopePassRow>,
+    pass_projection_rows_written: usize,
+}
+
+impl DirectPublicationStreamingSink {
+    fn create(
+        identity: DirectRunIdentity,
+        metadata: DirectPublicationRunMetadata,
+        targets: &DirectPublicationStreamingTargets,
+    ) -> Result<Self, HillslopeCliError> {
+        let expected_row_count =
+            identity
+                .lane_count
+                .checked_mul(identity.day_count)
+                .ok_or_else(|| {
+                    direct_publication_output_failure(
+                        "direct publication expected row count overflow",
+                    )
+                })?;
+        let outlet_ofe_id = u32::try_from(identity.lane_count).map_err(|_| {
+            direct_publication_output_failure(format!(
+                "direct publication lane count out of u32 range: {}",
+                identity.lane_count
+            ))
+        })?;
+        let wat_writer = targets
+            .wat
+            .as_deref()
+            .map(|path| {
+                HillslopeWatParquetRowGroupWriter::create(path, InterchangeVersion::default())
+                    .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                        surface: "outputs.wat",
+                        detail: error.to_string(),
+                    })
+            })
+            .transpose()?;
+        let pass_writer = targets
+            .pass_parquet
+            .as_deref()
+            .map(|path| {
+                HillslopePassParquetRowGroupWriter::create(path, InterchangeVersion::default())
+                    .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                        surface: "outputs.pass_parquet",
+                        detail: error.to_string(),
+                    })
+            })
+            .transpose()?;
+        Ok(Self {
+            summary: DirectPublicationOutputSummary::new(identity, metadata),
+            expected_row_count,
+            outlet_ofe_id,
+            simulation_start_year: None,
+            wat_writer,
+            wat_chunk: Vec::with_capacity(DIRECT_PUBLICATION_PARQUET_ROW_GROUP_ROWS),
+            wat_rows_written: 0,
+            pass_writer,
+            pass_chunk: Vec::with_capacity(DIRECT_PUBLICATION_PARQUET_ROW_GROUP_ROWS),
+            pass_projection_rows_written: 0,
+        })
+    }
+
+    fn observe_row(
+        &mut self,
+        row: &DirectPublicationDayRow,
+    ) -> Result<(), HillslopeCliError> {
+        require_direct_publication_output_family_authority_row(row)?;
+        let simulation_start_year = *self
+            .simulation_start_year
+            .get_or_insert(row.calendar.year);
+        self.summary.observe(row)?;
+        if self.wat_writer.is_some() {
+            let wat_row =
+                build_hillslope_wat_row_from_direct_publication(row, simulation_start_year)?;
+            self.wat_chunk.push(wat_row);
+            if self.wat_chunk.len() >= DIRECT_PUBLICATION_PARQUET_ROW_GROUP_ROWS {
+                self.flush_wat_chunk()?;
+            }
+        }
+        if self.pass_writer.is_some() && row.ofe_id == self.outlet_ofe_id {
+            let pass_row =
+                build_hillslope_pass_row_from_direct_publication(row, simulation_start_year)?;
+            self.pass_chunk.push(pass_row);
+            if self.pass_chunk.len() >= DIRECT_PUBLICATION_PARQUET_ROW_GROUP_ROWS {
+                self.flush_pass_chunk()?;
+            }
+        }
+        Ok(())
+    }
+
+    fn finish(mut self) -> Result<DirectPublicationStreamResult, HillslopeCliError> {
+        self.summary.validate_complete(self.expected_row_count)?;
+        self.flush_wat_chunk()?;
+        self.flush_pass_chunk()?;
+        let wat_rows_written = self
+            .wat_writer
+            .take()
+            .map(|writer| {
+                writer.close().map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "outputs.wat",
+                    detail: error.to_string(),
+                })
+            })
+            .transpose()?
+            .map(|summary| summary.rows_written);
+        let pass_projection_rows_written = self
+            .pass_writer
+            .take()
+            .map(|writer| {
+                writer.close().map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "outputs.pass_parquet",
+                    detail: error.to_string(),
+                })
+            })
+            .transpose()?
+            .map(|summary| summary.rows_written);
+        Ok(DirectPublicationStreamResult {
+            summary: self.summary,
+            wat_rows_written,
+            pass_projection_rows_written,
+        })
+    }
+
+    fn flush_wat_chunk(&mut self) -> Result<(), HillslopeCliError> {
+        if self.wat_chunk.is_empty() {
+            return Ok(());
+        }
+        let writer = self.wat_writer.as_mut().ok_or_else(|| {
+            direct_publication_output_failure("direct WAT chunk exists without a WAT writer")
+        })?;
+        writer
+            .write_rows(&self.wat_chunk)
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.wat",
+                detail: error.to_string(),
+            })?;
+        self.wat_rows_written =
+            self.wat_rows_written
+                .checked_add(self.wat_chunk.len())
+                .ok_or_else(|| {
+                    direct_publication_output_failure("direct WAT row count overflow")
+                })?;
+        self.wat_chunk.clear();
+        Ok(())
+    }
+
+    fn flush_pass_chunk(&mut self) -> Result<(), HillslopeCliError> {
+        if self.pass_chunk.is_empty() {
+            return Ok(());
+        }
+        let writer = self.pass_writer.as_mut().ok_or_else(|| {
+            direct_publication_output_failure("direct PASS chunk exists without a PASS writer")
+        })?;
+        writer
+            .write_rows(&self.pass_chunk)
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.pass_parquet",
+                detail: error.to_string(),
+            })?;
+        self.pass_projection_rows_written = self
+            .pass_projection_rows_written
+            .checked_add(self.pass_chunk.len())
+            .ok_or_else(|| direct_publication_output_failure("direct PASS row count overflow"))?;
+        self.pass_chunk.clear();
+        Ok(())
+    }
+}
+
+impl DirectPublicationOutputSummary {
+    fn new(identity: DirectRunIdentity, metadata: DirectPublicationRunMetadata) -> Self {
+        Self {
+            identity,
+            metadata,
+            row_count: 0,
+            first_row: None,
+            last_row: None,
+            hbp_sediment_row: None,
+            parity_grade_row_seen: false,
+            area_by_ofe: BTreeMap::new(),
+            sim_day_index_monotonic: true,
+            previous_sim_day_index: None,
+            upstream_carry_total_mm: 0.0,
+        }
+    }
+
+    fn observe(&mut self, row: &DirectPublicationDayRow) -> Result<(), HillslopeCliError> {
+        self.observe_manifest_aggregates(row)?;
+        if self.row_count == 0 {
+            self.first_row = Some(row.clone());
+        }
+        if direct_publication_row_has_hbp_sediment(row) {
+            self.hbp_sediment_row = Some(row.clone());
+        }
+        if !direct_publication_row_lacks_parity_grade_output_producers(row) {
+            self.parity_grade_row_seen = true;
+        }
+        self.last_row = Some(row.clone());
+        self.row_count = self.row_count.checked_add(1).ok_or_else(|| {
+            direct_publication_output_failure("direct publication summary row count overflow")
+        })?;
+        Ok(())
+    }
+
+    fn observe_manifest_aggregates(
+        &mut self,
+        row: &DirectPublicationDayRow,
+    ) -> Result<(), HillslopeCliError> {
+        if !row.area_m2.is_finite() || row.area_m2 <= 0.0 {
+            return Err(direct_publication_cutover_blocked(format!(
+                "direct publication manifest row area must be finite and > 0.0, observed {}",
+                row.area_m2
+            )));
+        }
+        if let Some(existing) = self.area_by_ofe.insert(row.ofe_id, row.area_m2) {
+            if existing.to_bits() != row.area_m2.to_bits() {
+                return Err(direct_publication_cutover_blocked(format!(
+                    "direct publication manifest area changed for OFE {}: first={}, observed={}",
+                    row.ofe_id, existing, row.area_m2
+                )));
+            }
+        }
+        if self
+            .previous_sim_day_index
+            .is_some_and(|previous| previous > row.sim_day_index)
+        {
+            self.sim_day_index_monotonic = false;
+        }
+        self.previous_sim_day_index = Some(row.sim_day_index);
+        let upstream_surface_mm = row.transfer.upstream_surface_mm;
+        let upstream_lateral_mm = row.transfer.upstream_lateral_mm;
+        if !upstream_surface_mm.is_finite()
+            || upstream_surface_mm < 0.0
+            || !upstream_lateral_mm.is_finite()
+            || upstream_lateral_mm < 0.0
+        {
+            return Err(direct_publication_cutover_blocked(format!(
+                "direct publication manifest carry totals require finite nonnegative transfer operands, observed upstream_surface_mm={} upstream_lateral_mm={} for OFE {} sim day {}",
+                upstream_surface_mm, upstream_lateral_mm, row.ofe_id, row.sim_day_index
+            )));
+        }
+        self.upstream_carry_total_mm += upstream_surface_mm + upstream_lateral_mm;
+        if !self.upstream_carry_total_mm.is_finite() || self.upstream_carry_total_mm < 0.0 {
+            return Err(direct_publication_cutover_blocked(
+                "direct publication manifest carry total is invalid",
+            ));
+        }
+        Ok(())
+    }
+
+    fn validate_complete(&self, expected_row_count: usize) -> Result<(), HillslopeCliError> {
+        if self.row_count != expected_row_count {
+            return Err(direct_publication_output_failure(format!(
+                "direct publication row count {} does not match expected row count {expected_row_count}",
+                self.row_count
+            )));
+        }
+        if self.first_row.is_none() || self.last_row.is_none() {
+            return Err(direct_publication_output_failure(
+                "direct publication summary requires first and last rows",
+            ));
+        }
+        if self.area_by_ofe.len() != self.identity.lane_count {
+            return Err(direct_publication_cutover_blocked(format!(
+                "direct publication manifest area lane count mismatch: expected {}, observed {}",
+                self.identity.lane_count,
+                self.area_by_ofe.len()
+            )));
+        }
+        Ok(())
+    }
+
+    fn first_row(&self) -> Result<&DirectPublicationDayRow, HillslopeCliError> {
+        self.first_row.as_ref().ok_or_else(|| {
+            direct_publication_output_failure("missing first direct publication row")
+        })
+    }
+
+    fn last_row(&self) -> Result<&DirectPublicationDayRow, HillslopeCliError> {
+        self.last_row.as_ref().ok_or_else(|| {
+            direct_publication_output_failure("missing last direct publication row")
+        })
+    }
+
+    fn hbp_sediment_row(&self) -> Option<&DirectPublicationDayRow> {
+        self.hbp_sediment_row.as_ref()
+    }
+
+    fn publication_area_m2(&self) -> f64 {
+        self.area_by_ofe.values().sum()
+    }
+
+    fn upstream_carry_total_m(&self) -> f64 {
+        self.upstream_carry_total_mm / 1_000.0
+    }
+}
 
 fn annotate_day_runtime_error(
     error: HillslopeCliError,
@@ -28,6 +333,121 @@ fn hillslope_id_for_pass_output(output_hillslope_id: u32) -> Result<i32, Hillslo
     })
 }
 
+fn build_hbp_output_from_direct_publication_summary(
+    output_pass: &Path,
+    summary: &DirectPublicationOutputSummary,
+) -> Result<Vec<u8>, HillslopeCliError> {
+    let latest_row = summary.last_row()?;
+    let sediment_row = summary.hbp_sediment_row().unwrap_or(latest_row);
+    let nofe = u16::try_from(summary.identity.lane_count).map_err(|_| {
+        direct_publication_output_failure(format!(
+            "direct publication lane count out of u16 range: {}",
+            summary.identity.lane_count
+        ))
+    })?;
+    if nofe == 0 {
+        return Err(direct_publication_output_failure(
+            "direct publication lane count must be >= 1",
+        ));
+    }
+    let sediment_concentration_kg_m3 = sediment_row
+        .erosion
+        .hbp_sediment_concentration_kg_m3
+        .map_or_else(
+            || {
+                direct_publication_required_sediment_concentration(
+                    sediment_row.erosion.sediment_concentration_kg_m3,
+                )
+                .map(|values| values[0])
+            },
+            |value| {
+                direct_publication_required_erosion_scalar(
+                    "erosion.hbp_sediment_concentration_kg_m3",
+                    Some(value),
+                )
+            },
+        )?;
+
+    build_schema1_hbp_event_fixture(HbpEventFixtureInput {
+        hillslope_id: parse_hillslope_id_from_output_pass_path(output_pass)?,
+        nofe,
+        julian_day: latest_row.calendar.julian_day,
+        peak_runoff_m3_s: direct_publication_required_erosion_scalar(
+            "runoff.peak_runoff_m3_s or erosion.peak_runoff_m3_s",
+            latest_row
+                .runoff
+                .peak_runoff_m3_s
+                .or(latest_row.erosion.peak_runoff_m3_s),
+        )?,
+        duration_seconds: direct_publication_required_erosion_scalar(
+            "runoff.runoff_duration_s or erosion.runoff_duration_s",
+            latest_row
+                .runoff
+                .runoff_duration_s
+                .or(latest_row.erosion.runoff_duration_s),
+        )?,
+        total_detachment_kg: direct_publication_required_erosion_scalar(
+            "erosion.hbp_total_detachment_kg or erosion.total_detachment_kg",
+            sediment_row
+                .erosion
+                .hbp_total_detachment_kg
+                .or(sediment_row.erosion.total_detachment_kg),
+        )?,
+        total_deposition_kg: direct_publication_required_erosion_scalar(
+            "erosion.hbp_total_deposition_kg or erosion.total_deposition_kg",
+            sediment_row
+                .erosion
+                .hbp_total_deposition_kg
+                .or(sediment_row.erosion.total_deposition_kg),
+        )?,
+        sediment_concentration_kg_m3,
+        particle_flow_fraction: 1.0,
+        particle_diameter_m: HBP_DEFAULT_PARTICLE_DIAMETER_M,
+    })
+}
+
+fn build_loss_output_json_from_direct_publication_summary(
+    summary: &DirectPublicationOutputSummary,
+    ofe_count: usize,
+    snow_override_applied: bool,
+    frost_wint_red: i32,
+) -> Result<String, HillslopeCliError> {
+    let first_day = summary.first_row()?;
+    let last_day = summary.last_row()?;
+    let payload = serde_json::json!({
+        "schema": "openwepp-hillslope-loss-v1",
+        "run_name": summary.metadata.run_name,
+        "first_day_year": first_day.calendar.year,
+        "first_day_julian": first_day.calendar.julian_day,
+        "last_day_year": last_day.calendar.year,
+        "last_day_julian": last_day.calendar.julian_day,
+        "precipitation_mm": first_day.climate.precipitation_mm,
+        "climate_day_count": summary.identity.day_count,
+        "executed_day_count": summary.identity.day_count,
+        "ofe_count": ofe_count,
+        "snow_override_applied": snow_override_applied,
+        "frost_wint_red": frost_wint_red,
+    });
+
+    serde_json::to_string_pretty(&payload)
+        .map_err(|source| HillslopeCliError::ManifestSerialize { source })
+}
+
+fn build_manifest_text_from_direct_publication_summary(
+    summary: &DirectPublicationOutputSummary,
+) -> Result<String, HillslopeCliError> {
+    summary.validate_complete(summary.row_count)?;
+    Ok(format!(
+        "direct_publication_frame_v1\nrun_name={}\nruntime_selection={}\noutput_policy={}\nrow_count={}\nlane_count={}\nday_count={}\n",
+        summary.metadata.run_name,
+        summary.metadata.runtime_selection,
+        summary.metadata.output_policy,
+        summary.row_count,
+        summary.identity.lane_count,
+        summary.identity.day_count
+    ))
+}
+
 fn build_direct_publication_artifacts(
     runtime_selection: HillslopeRuntimeSelection,
     inputs: &ParsedHillslopeRunInputs,
@@ -38,41 +458,27 @@ fn build_direct_publication_artifacts(
     if runtime_selection != HillslopeRuntimeSelection::DirectProductionExecutor {
         return Ok(None);
     }
-    let direct_execution = execution.retained_direct_publication.take().ok_or_else(|| {
+    let retained = execution.retained_direct_publication.take().ok_or_else(|| {
         direct_production_executor_blocked(
             "direct production executor requires retained direct execution artifacts",
         )
     })?;
-    validate_retained_direct_publication_frame(&direct_execution.publication_frame)?;
-    let publication_frame = &direct_execution.publication_frame;
-    let hbp_bytes =
-        build_hbp_output_from_direct_publication(&targets.output_pass, publication_frame)?;
-    let wat_rows = inputs
-        .runfile
-        .output_config
-        .wat
-        .is_some()
-        .then(|| build_hillslope_wat_rows_from_direct_publication(publication_frame))
-        .transpose()?;
-    let pass_projection_rows = inputs
-        .runfile
-        .output_config
-        .pass_parquet
-        .is_some()
-        .then(|| build_hillslope_pass_rows_from_direct_publication(publication_frame))
-        .transpose()?;
-    let loss_text = build_loss_output_json_from_direct_publication(
-        publication_frame,
+    validate_streamed_direct_publication(&retained.execution, &retained.stream)?;
+    let summary = retained.stream.summary;
+    let hbp_bytes = build_hbp_output_from_direct_publication_summary(&targets.output_pass, &summary)?;
+    let loss_text = build_loss_output_json_from_direct_publication_summary(
+        &summary,
         inputs.soil.ofes.len(),
         sidecars.snow.sidecar_present,
         sidecars.frost.wint_red,
     )?;
-    let manifest_text = build_manifest_text_from_direct_publication(publication_frame)?;
+    let manifest_text = build_manifest_text_from_direct_publication_summary(&summary)?;
     let artifacts = DirectPublicationArtifacts {
-        execution: direct_execution,
+        execution: retained.execution,
+        summary,
         hbp_bytes,
-        wat_rows,
-        pass_projection_rows,
+        wat_rows_written: retained.stream.wat_rows_written,
+        pass_projection_rows_written: retained.stream.pass_projection_rows_written,
         loss_text,
         manifest_text,
     };
@@ -405,6 +811,8 @@ fn direct_publication_expected_row_count(
         })
 }
 
+#[cfg(test)]
+#[allow(dead_code)]
 fn validate_retained_direct_publication_frame(
     publication_frame: &DirectRunPublicationFrame,
 ) -> Result<(), HillslopeCliError> {
@@ -428,6 +836,53 @@ fn validate_retained_direct_publication_frame(
                 surface: "direct_publication_frame",
                 detail: format!(
                     "{SIMOUT_GUARD_ID} retained direct publication row identity is inconsistent"
+                ),
+            });
+        }
+    }
+    Ok(())
+}
+
+fn validate_streamed_direct_publication(
+    execution: &DirectStreamingPublicationExecution,
+    stream: &DirectPublicationStreamResult,
+) -> Result<(), HillslopeCliError> {
+    let expected_row_count = direct_publication_expected_row_count(&execution.identity)?;
+    if execution.row_count != expected_row_count || stream.summary.row_count != expected_row_count {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} streamed direct publication row count mismatch: expected {expected_row_count}, execution {}, summary {}",
+                execution.row_count, stream.summary.row_count
+            ),
+        });
+    }
+    if execution.identity != stream.summary.identity || execution.metadata != stream.summary.metadata
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} streamed direct publication summary identity is inconsistent"
+            ),
+        });
+    }
+    for row in [
+        stream.summary.first_row.as_ref(),
+        stream.summary.last_row.as_ref(),
+        stream.summary.hbp_sediment_row.as_ref(),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        if row.run_id != execution.identity.run_id
+            || row.hillslope_id != execution.identity.hillslope_id
+            || row.lane_index >= execution.identity.lane_count
+            || row.day_index >= execution.identity.day_count
+        {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} streamed direct publication row identity is inconsistent"
                 ),
             });
         }

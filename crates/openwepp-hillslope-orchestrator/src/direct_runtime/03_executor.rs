@@ -220,7 +220,7 @@ impl DirectFrameExecutor {
         &self,
         frame: &mut DirectRunFrame,
         metadata: DirectPublicationRunMetadata,
-        mut build_day_input: F,
+        build_day_input: F,
     ) -> Result<DirectPublicationExecution, DirectRuntimeError>
     where
         F: FnMut(
@@ -228,6 +228,47 @@ impl DirectFrameExecutor {
             usize,
             usize,
         ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+    {
+        let expected_row_count = frame
+            .identity
+            .lane_count
+            .checked_mul(frame.identity.day_count)
+            .ok_or(DirectRuntimeError::DirectDomainViolation {
+                field: "publication.expected_row_count",
+            })?;
+        let mut publication_frame =
+            DirectRunPublicationFrame::new(frame.identity, metadata.clone(), expected_row_count);
+        let execution = self.run_publication_stream_with_interleaved_day_inputs(
+            frame,
+            metadata,
+            build_day_input,
+            |row| {
+                publication_frame.rows.push(row.clone());
+                Ok(())
+            },
+        )?;
+        publication_frame.validate_complete()?;
+
+        Ok(DirectPublicationExecution {
+            report: execution.report,
+            publication_frame,
+        })
+    }
+
+    pub fn run_publication_stream_with_interleaved_day_inputs<F, S>(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        mut build_day_input: F,
+        mut consume_row: S,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        S: FnMut(&DirectPublicationDayRow) -> Result<(), DirectRuntimeError>,
     {
         DIRECT_AUDIT.record_publication_capture_run();
         let expected_row_count = frame
@@ -237,11 +278,11 @@ impl DirectFrameExecutor {
             .ok_or(DirectRuntimeError::DirectDomainViolation {
                 field: "publication.expected_row_count",
             })?;
-        let mut publication_frame =
-            DirectRunPublicationFrame::new(frame.identity, metadata, expected_row_count);
+        let identity = frame.identity;
         let mut phase_view_count = 0_u64;
         let mut counters = DirectExecutionCounters::default();
         let phase_plan = *frame.phase_plan.phases();
+        let mut row_count = 0_usize;
 
         let transfer_span_report = frame.run_r3c_lane_transfer_span()?;
         counters.record_span(
@@ -280,7 +321,13 @@ impl DirectFrameExecutor {
                             lane_index,
                             lane_count: frame.lanes.len(),
                         })?;
-                publication_frame.push_day_row(&day_frame, &day_input, lane)?;
+                let row = DirectPublicationDayRow::from_day_frame(&day_frame, &day_input, lane)?;
+                consume_row(&row)?;
+                row_count = row_count.checked_add(1).ok_or(
+                    DirectRuntimeError::DirectDomainViolation {
+                        field: "publication.row_count",
+                    },
+                )?;
                 if Self::publish_dynamic_transfer_to_downstream(frame, &day_frame)? {
                     counters.record_dynamic_transfer_publication();
                 }
@@ -288,9 +335,14 @@ impl DirectFrameExecutor {
                 counters.record_day_frame_commit();
             }
         }
-        publication_frame.validate_complete()?;
+        if row_count != expected_row_count {
+            return Err(DirectRuntimeError::PublicationRowCountMismatch {
+                expected_row_count,
+                actual_row_count: row_count,
+            });
+        }
 
-        Ok(DirectPublicationExecution {
+        Ok(DirectStreamingPublicationExecution {
             report: DirectExecutionReport {
                 mode: self.mode,
                 lane_count: frame.lanes.len(),
@@ -308,7 +360,9 @@ impl DirectFrameExecutor {
                 compatibility_edge_invocation_count: counters.compatibility_edges,
                 day_frame_commit_count: counters.day_frame_commits,
             },
-            publication_frame,
+            identity,
+            metadata,
+            row_count,
         })
     }
 

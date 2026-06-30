@@ -431,3 +431,11 @@ pub struct DirectPublicationExecution {
     pub report: DirectExecutionReport,
     pub publication_frame: DirectRunPublicationFrame,
 }
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectStreamingPublicationExecution {
+    pub report: DirectExecutionReport,
+    pub identity: DirectRunIdentity,
+    pub metadata: DirectPublicationRunMetadata,
+    pub row_count: usize,
+}

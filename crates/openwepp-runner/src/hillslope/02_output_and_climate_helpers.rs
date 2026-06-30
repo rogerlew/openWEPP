@@ -755,6 +755,8 @@ fn build_hillslope_wat_row(
     })
 }
 
+#[cfg(test)]
+#[allow(dead_code)]
 fn build_hbp_output_from_direct_publication(
     output_pass: &Path,
     publication: &DirectRunPublicationFrame,
@@ -828,23 +830,33 @@ fn build_hbp_output_from_direct_publication(
     })
 }
 
+#[cfg(test)]
+#[allow(dead_code)]
 fn direct_publication_last_hbp_sediment_row(
     publication: &DirectRunPublicationFrame,
 ) -> Option<&openwepp_hillslope_orchestrator::DirectPublicationDayRow> {
-    publication.rows().iter().rev().find(|row| {
-        row.erosion
-            .hbp_total_detachment_kg
-            .or(row.erosion.total_detachment_kg)
+    publication
+        .rows()
+        .iter()
+        .rev()
+        .find(|row| direct_publication_row_has_hbp_sediment(row))
+}
+
+fn direct_publication_row_has_hbp_sediment(
+    row: &openwepp_hillslope_orchestrator::DirectPublicationDayRow,
+) -> bool {
+    row.erosion
+        .hbp_total_detachment_kg
+        .or(row.erosion.total_detachment_kg)
+        .is_some_and(|value| value > 0.0)
+        || row
+            .erosion
+            .hbp_sediment_concentration_kg_m3
             .is_some_and(|value| value > 0.0)
-            || row
-                .erosion
-                .hbp_sediment_concentration_kg_m3
-                .is_some_and(|value| value > 0.0)
-            || row
-                .erosion
-                .sediment_concentration_kg_m3
-                .is_some_and(|values| values.iter().any(|value| *value > 0.0))
-    })
+        || row
+            .erosion
+            .sediment_concentration_kg_m3
+            .is_some_and(|values| values.iter().any(|value| *value > 0.0))
 }
 
 fn direct_publication_required_erosion_scalar(
@@ -882,6 +894,7 @@ fn direct_publication_required_sediment_concentration(
     Ok(value)
 }
 
+#[cfg(test)]
 fn build_hillslope_wat_rows_from_direct_publication(
     publication: &DirectRunPublicationFrame,
 ) -> Result<Vec<HillslopeWatRow>, HillslopeCliError> {
@@ -945,6 +958,7 @@ fn build_hillslope_wat_row_from_direct_publication(
     })
 }
 
+#[cfg(test)]
 fn build_hillslope_pass_rows_from_direct_publication(
     publication: &DirectRunPublicationFrame,
 ) -> Result<Vec<HillslopePassRow>, HillslopeCliError> {
@@ -996,6 +1010,7 @@ fn build_hillslope_pass_row_from_direct_publication(
     })
 }
 
+#[cfg(test)]
 fn build_loss_output_json_from_direct_publication(
     publication: &DirectRunPublicationFrame,
     ofe_count: usize,
@@ -1027,6 +1042,7 @@ fn build_loss_output_json_from_direct_publication(
         .map_err(|source| HillslopeCliError::ManifestSerialize { source })
 }
 
+#[cfg(test)]
 fn build_manifest_text_from_direct_publication(
     publication: &DirectRunPublicationFrame,
 ) -> Result<String, HillslopeCliError> {

@@ -94,6 +94,7 @@ fn execute_hillslope_direct_production_days(
     output_hillslope_id: u32,
     state: HillslopeClimateExecutionState,
     climate: &ClimateFile,
+    streaming_targets: &DirectPublicationStreamingTargets,
 ) -> Result<HillslopeClimateExecution, HillslopeCliError> {
     let climate_request = build_hillslope_climate_runtime_request(climate).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
@@ -154,21 +155,16 @@ fn execute_hillslope_direct_production_days(
         )
         .to_string(),
     };
-    let direct_execution = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
-        .run_publication_capture_with_interleaved_day_inputs(
-            &mut frame,
-            metadata,
-            |frame, day_index, lane_index| {
-                day_input_builder
-                    .build(frame, day_index, lane_index)
-                    .map_err(|error| direct_publication_day_input_build_error(&error))
-            },
-        )
-        .map_err(|source| direct_production_runtime_error(&source))?;
+    let retained_direct_publication = execute_direct_publication_stream(
+        &mut frame,
+        metadata,
+        &day_input_builder,
+        streaming_targets,
+    )?;
     let coupling_vectors = build_direct_production_coupling_vector_provenance(
         &execution_runtime_surface,
         &frame,
-        &direct_execution.publication_frame,
+        &retained_direct_publication.stream.summary,
     )?;
     let executed_day_count = climate_span.days.len();
     let persistent_lane_active = persistent_lane_state.is_some();
@@ -193,9 +189,39 @@ fn execute_hillslope_direct_production_days(
         hphys0245_trace_rows: Vec::new(),
         per_ofe_internal_wb13_summary: PerOfeInternalWb13RunSummary::default(),
         executed_day_count,
-        retained_direct_publication: Some(direct_execution),
+        retained_direct_publication: Some(retained_direct_publication),
         direct_publication: None,
     })
+}
+
+fn execute_direct_publication_stream(
+    frame: &mut DirectRunFrame,
+    metadata: DirectPublicationRunMetadata,
+    day_input_builder: &DirectProductionDayInputBuilder<'_>,
+    streaming_targets: &DirectPublicationStreamingTargets,
+) -> Result<RetainedDirectPublication, HillslopeCliError> {
+    let mut stream_sink =
+        DirectPublicationStreamingSink::create(frame.identity, metadata.clone(), streaming_targets)?;
+    let execution = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
+        .run_publication_stream_with_interleaved_day_inputs(
+            frame,
+            metadata,
+            |frame, day_index, lane_index| {
+                day_input_builder
+                    .build(frame, day_index, lane_index)
+                    .map_err(|error| direct_publication_day_input_build_error(&error))
+            },
+            |row| {
+                stream_sink.observe_row(row).map_err(|error| {
+                    DirectRuntimeError::PublicationSinkFailure {
+                        detail: error.to_string(),
+                    }
+                })
+            },
+        )
+        .map_err(|source| direct_production_runtime_error(&source))?;
+    let stream = stream_sink.finish()?;
+    Ok(RetainedDirectPublication { execution, stream })
 }
 
 struct DirectProductionRunFrameBuildInputs<'a> {
@@ -453,13 +479,9 @@ fn seed_direct_production_lane_constructor_inputs(
 fn build_direct_production_coupling_vector_provenance(
     runtime_surface: &HillslopeWritebackSurface,
     frame: &DirectRunFrame,
-    publication: &DirectRunPublicationFrame,
+    publication: &DirectPublicationOutputSummary,
 ) -> Result<HillslopeCouplingVectorProvenance, HillslopeCliError> {
-    let row = publication.last_day().ok_or_else(|| {
-        direct_production_executor_blocked(
-            "direct production executor requires at least one direct publication row",
-        )
-    })?;
+    let row = publication.last_row()?;
     let snow_file_present = parse_simimpl10_binary_flag(
         "snow.options.snow_file_present",
         require_simimpl10_coupling_scalar(runtime_surface, "snow.options.snow_file_present")?,
@@ -558,7 +580,7 @@ impl ClimateExecutionAccumulator {
         runtime_surface: HillslopeWritebackSurface,
         day_count: usize,
         contributor_ofe_count: usize,
-        retained_direct_publication: Option<DirectPublicationExecution>,
+        retained_direct_publication: Option<RetainedDirectPublication>,
     ) -> Result<Self, HillslopeCliError> {
         let runtime_swe_publication_state_m =
             require_runtime_surface_scalar(&runtime_surface, "snow.runtime_swe")?;
@@ -862,9 +884,7 @@ fn build_hillslope_publication_provenance(
                 "direct production publication requires retained direct publication artifacts",
             )
         })?;
-        return build_direct_publication_manifest_provenance(
-            &artifacts.execution.publication_frame,
-        );
+        return build_streamed_direct_publication_manifest_provenance(&artifacts.summary);
     }
 
     let per_ofe_summary = execution
@@ -960,9 +980,7 @@ fn require_direct_publication_cutover_gates(
     inputs: &ParsedHillslopeRunInputs,
     artifacts: &DirectPublicationArtifacts,
 ) -> Result<(), HillslopeCliError> {
-    if direct_publication_lacks_parity_grade_output_producers(
-        &artifacts.execution.publication_frame,
-    ) {
+    if !artifacts.summary.parity_grade_row_seen {
         return Err(direct_publication_cutover_blocked(
             "HOLD-R6E-PRODUCTION-DIRECT-RUNTIME-INPUT-BINDING-ABSENT \
              retained direct publication contains parsed climate/calendar/geometry rows, \
@@ -972,15 +990,12 @@ fn require_direct_publication_cutover_gates(
              direct publication authority",
         ));
     }
-    let direct_row_count = artifacts.execution.publication_frame.rows().len();
+    let direct_row_count = artifacts.execution.row_count;
     if direct_row_count == 0 {
         return Err(direct_publication_cutover_blocked(
             "direct publication cutover requires at least one typed direct row",
         ));
     }
-    require_direct_publication_output_family_authority(
-        &artifacts.execution.publication_frame,
-    )?;
     if artifacts.hbp_bytes.is_empty() || artifacts.loss_text.is_empty() {
         return Err(direct_publication_cutover_blocked(
             "direct publication cutover requires non-empty direct HBP and loss artifacts",
@@ -988,87 +1003,80 @@ fn require_direct_publication_cutover_gates(
     }
     if inputs.runfile.output_config.wat.is_some()
         && artifacts
-            .wat_rows
-            .as_ref()
-            .is_none_or(|rows| rows.len() != direct_row_count)
+            .wat_rows_written
+            .is_none_or(|rows_written| rows_written != direct_row_count)
     {
         return Err(direct_publication_cutover_blocked(format!(
             "direct WAT projection row-count mismatch: direct_rows={} projection_rows={}",
             direct_row_count,
-            artifacts.wat_rows.as_ref().map_or(0, Vec::len)
+            artifacts.wat_rows_written.unwrap_or(0)
         )));
     }
-    let direct_pass_row_count = artifacts.execution.publication_frame.identity.day_count;
+    let direct_pass_row_count = artifacts.execution.identity.day_count;
     if inputs.runfile.output_config.pass_parquet.is_some()
         && artifacts
-            .pass_projection_rows
-            .as_ref()
-            .is_none_or(|rows| rows.len() != direct_pass_row_count)
+            .pass_projection_rows_written
+            .is_none_or(|rows_written| rows_written != direct_pass_row_count)
     {
         return Err(direct_publication_cutover_blocked(format!(
             "direct PASS projection row-count mismatch: direct_days={} projection_rows={}",
             direct_pass_row_count,
-            artifacts.pass_projection_rows.as_ref().map_or(0, Vec::len)
+            artifacts.pass_projection_rows_written.unwrap_or(0)
         )));
     }
     Ok(())
 }
 
-fn require_direct_publication_output_family_authority(
-    publication: &DirectRunPublicationFrame,
+fn require_direct_publication_output_family_authority_row(
+    row: &DirectPublicationDayRow,
 ) -> Result<(), HillslopeCliError> {
-    for row in publication.rows() {
-        require_finite_nonnegative_direct_publication_scalar("area_m2", row.area_m2)?;
+    require_finite_nonnegative_direct_publication_scalar("area_m2", row.area_m2)?;
+    require_finite_nonnegative_direct_publication_scalar(
+        "climate.precipitation_mm",
+        row.climate.precipitation_mm,
+    )?;
+    require_finite_nonnegative_direct_publication_scalar(
+        "runoff.runvol_m3",
+        row.runoff.runvol_m3,
+    )?;
+    require_direct_publication_option(
+        "erosion.peak_runoff_m3_s",
+        row.erosion.peak_runoff_m3_s,
+    )?;
+    require_direct_publication_option(
+        "erosion.runoff_duration_s",
+        row.erosion.runoff_duration_s,
+    )?;
+    require_direct_publication_option(
+        "erosion.total_detachment_kg",
+        row.erosion.total_detachment_kg,
+    )?;
+    require_direct_publication_option(
+        "erosion.total_deposition_kg",
+        row.erosion.total_deposition_kg,
+    )?;
+    require_direct_publication_option(
+        "erosion.hbp_total_detachment_kg",
+        row.erosion.hbp_total_detachment_kg,
+    )?;
+    require_direct_publication_option(
+        "erosion.hbp_total_deposition_kg",
+        row.erosion.hbp_total_deposition_kg,
+    )?;
+    require_direct_publication_option(
+        "erosion.hbp_sediment_concentration_kg_m3",
+        row.erosion.hbp_sediment_concentration_kg_m3,
+    )?;
+    let sediment = row.erosion.sediment_concentration_kg_m3.ok_or_else(|| {
+        direct_publication_cutover_blocked(
+            "direct publication cutover requires producer-authoritative erosion.sediment_concentration_kg_m3",
+        )
+    })?;
+    for (index, value) in sediment.iter().enumerate() {
         require_finite_nonnegative_direct_publication_scalar(
-            "climate.precipitation_mm",
-            row.climate.precipitation_mm,
+            &format!("erosion.sediment_concentration_kg_m3[{index}]"),
+            *value,
         )?;
-        require_finite_nonnegative_direct_publication_scalar(
-            "runoff.runvol_m3",
-            row.runoff.runvol_m3,
-        )?;
-        require_direct_publication_option(
-            "erosion.peak_runoff_m3_s",
-            row.erosion.peak_runoff_m3_s,
-        )?;
-        require_direct_publication_option(
-            "erosion.runoff_duration_s",
-            row.erosion.runoff_duration_s,
-        )?;
-        require_direct_publication_option(
-            "erosion.total_detachment_kg",
-            row.erosion.total_detachment_kg,
-        )?;
-        require_direct_publication_option(
-            "erosion.total_deposition_kg",
-            row.erosion.total_deposition_kg,
-        )?;
-        require_direct_publication_option(
-            "erosion.hbp_total_detachment_kg",
-            row.erosion.hbp_total_detachment_kg,
-        )?;
-        require_direct_publication_option(
-            "erosion.hbp_total_deposition_kg",
-            row.erosion.hbp_total_deposition_kg,
-        )?;
-        require_direct_publication_option(
-            "erosion.hbp_sediment_concentration_kg_m3",
-            row.erosion.hbp_sediment_concentration_kg_m3,
-        )?;
-        let sediment = row
-            .erosion
-            .sediment_concentration_kg_m3
-            .ok_or_else(|| {
-                direct_publication_cutover_blocked(
-                    "direct publication cutover requires producer-authoritative erosion.sediment_concentration_kg_m3",
-                )
-            })?;
-        for (index, value) in sediment.iter().enumerate() {
-            require_finite_nonnegative_direct_publication_scalar(
-                &format!("erosion.sediment_concentration_kg_m3[{index}]"),
-                *value,
-            )?;
-        }
     }
     Ok(())
 }
@@ -1104,36 +1112,34 @@ fn write_hillslope_direct_publication_optional_outputs(
     artifacts: &DirectPublicationArtifacts,
 ) -> Result<(), HillslopeCliError> {
     if let Some(wat_output) = inputs.runfile.output_config.wat.as_ref() {
-        let wat_rows = artifacts.wat_rows.as_ref().ok_or_else(|| {
+        let rows_written = artifacts.wat_rows_written.ok_or_else(|| {
             direct_publication_cutover_blocked(
-                "direct WAT output requested but direct WAT projection rows were not built",
+                "direct WAT output requested but direct WAT projection rows were not streamed",
             )
         })?;
-        write_hillslope_wat_parquet(
-            wat_output,
-            wat_rows,
-            InterchangeVersion::default(),
-        )
-        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "outputs.wat",
-            detail: error.to_string(),
-        })?;
+        if rows_written != artifacts.execution.row_count || !wat_output.is_file() {
+            return Err(direct_publication_cutover_blocked(format!(
+                "direct WAT streamed row-count mismatch: direct_rows={} streamed_rows={} path={}",
+                artifacts.execution.row_count,
+                rows_written,
+                wat_output.display()
+            )));
+        }
     }
     if let Some(pass_parquet_output) = inputs.runfile.output_config.pass_parquet.as_ref() {
-        let pass_projection_rows = artifacts.pass_projection_rows.as_ref().ok_or_else(|| {
+        let rows_written = artifacts.pass_projection_rows_written.ok_or_else(|| {
             direct_publication_cutover_blocked(
-                "direct PASS output requested but direct PASS projection rows were not built",
+                "direct PASS output requested but direct PASS projection rows were not streamed",
             )
         })?;
-        write_hillslope_pass_parquet(
-            pass_parquet_output,
-            pass_projection_rows,
-            InterchangeVersion::default(),
-        )
-        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "outputs.pass_parquet",
-            detail: error.to_string(),
-        })?;
+        if rows_written != artifacts.execution.identity.day_count || !pass_parquet_output.is_file() {
+            return Err(direct_publication_cutover_blocked(format!(
+                "direct PASS streamed row-count mismatch: direct_days={} streamed_rows={} path={}",
+                artifacts.execution.identity.day_count,
+                rows_written,
+                pass_parquet_output.display()
+            )));
+        }
     }
     write_hphys0245_trace_output(execution)?;
     write_generic_optional_outputs(inputs, targets, execution)
@@ -1207,60 +1213,68 @@ fn direct_publication_has_only_zero_or_absent_operands(
     })
 }
 
+fn direct_publication_row_lacks_parity_grade_output_producers(
+    row: &DirectPublicationDayRow,
+) -> bool {
+    let hydrology_scalars = [
+        row.liquid_input.rm_mm,
+        row.liquid_input.irrigation_mm,
+        row.runoff.q_mm,
+        row.runoff.qofe_mm,
+        row.runoff.runvol_m3,
+        row.evaporation.ep_mm,
+        row.evaporation.es_mm,
+        row.evaporation.er_mm,
+        row.evaporation.total_evapotranspiration_mm,
+        row.subsurface.dp_mm,
+        row.subsurface.latqcc_mm,
+        row.subsurface.tile_mm,
+        row.subsurface.sbrunv_m3,
+        row.transfer.upstream_surface_mm,
+        row.transfer.upstream_lateral_mm,
+        row.storage.total_soil_mm,
+        row.storage.soil_water_total_mm,
+        row.storage.frozwt_mm,
+        row.storage.snow_water_mm,
+        row.interception.interception_mm,
+    ];
+    let optional_hydrology_scalars = [
+        row.runoff.peak_runoff_m3_s,
+        row.runoff.runoff_duration_s,
+        row.storage.frdp_mm,
+        row.profile.depth_mm,
+        row.profile.porosity_cap_mm,
+        row.profile.fc_store_mm,
+        row.profile.wp_store_mm,
+        row.interception.interception_storage_mm,
+        row.erosion.peak_runoff_m3_s,
+        row.erosion.runoff_duration_s,
+        row.erosion.total_detachment_kg,
+        row.erosion.total_deposition_kg,
+        row.erosion.hbp_total_detachment_kg,
+        row.erosion.hbp_total_deposition_kg,
+        row.erosion.hbp_sediment_concentration_kg_m3,
+    ];
+    let erosion_material = row
+        .erosion
+        .sediment_concentration_kg_m3
+        .is_some_and(|fractions| fractions.iter().any(|value| *value != 0.0));
+
+    hydrology_scalars.iter().all(|value| *value == 0.0)
+        && optional_hydrology_scalars
+            .iter()
+            .all(|value| value.map(|value| value == 0.0).unwrap_or(true))
+        && !erosion_material
+}
+
+#[cfg(test)]
 fn direct_publication_lacks_parity_grade_output_producers(
     publication: &DirectRunPublicationFrame,
 ) -> bool {
-    publication.rows().iter().all(|row| {
-        let hydrology_scalars = [
-            row.liquid_input.rm_mm,
-            row.liquid_input.irrigation_mm,
-            row.runoff.q_mm,
-            row.runoff.qofe_mm,
-            row.runoff.runvol_m3,
-            row.evaporation.ep_mm,
-            row.evaporation.es_mm,
-            row.evaporation.er_mm,
-            row.evaporation.total_evapotranspiration_mm,
-            row.subsurface.dp_mm,
-            row.subsurface.latqcc_mm,
-            row.subsurface.tile_mm,
-            row.subsurface.sbrunv_m3,
-            row.transfer.upstream_surface_mm,
-            row.transfer.upstream_lateral_mm,
-            row.storage.total_soil_mm,
-            row.storage.soil_water_total_mm,
-            row.storage.frozwt_mm,
-            row.storage.snow_water_mm,
-            row.interception.interception_mm,
-        ];
-        let optional_hydrology_scalars = [
-            row.runoff.peak_runoff_m3_s,
-            row.runoff.runoff_duration_s,
-            row.storage.frdp_mm,
-            row.profile.depth_mm,
-            row.profile.porosity_cap_mm,
-            row.profile.fc_store_mm,
-            row.profile.wp_store_mm,
-            row.interception.interception_storage_mm,
-            row.erosion.peak_runoff_m3_s,
-            row.erosion.runoff_duration_s,
-            row.erosion.total_detachment_kg,
-            row.erosion.total_deposition_kg,
-            row.erosion.hbp_total_detachment_kg,
-            row.erosion.hbp_total_deposition_kg,
-            row.erosion.hbp_sediment_concentration_kg_m3,
-        ];
-        let erosion_material = row
-            .erosion
-            .sediment_concentration_kg_m3
-            .is_some_and(|fractions| fractions.iter().any(|value| *value != 0.0));
-
-        hydrology_scalars.iter().all(|value| *value == 0.0)
-            && optional_hydrology_scalars
-                .iter()
-                .all(|value| value.map(|value| value == 0.0).unwrap_or(true))
-            && !erosion_material
-    })
+    publication
+        .rows()
+        .iter()
+        .all(direct_publication_row_lacks_parity_grade_output_producers)
 }
 
 fn ensure_hillslope_output_parent_directories(
@@ -1598,6 +1612,7 @@ fn execute_selected_hillslope_days(
     runtime_selection: HillslopeRuntimeSelection,
     state: HillslopeClimateExecutionState,
     climate: &ClimateFile,
+    streaming_targets: &DirectPublicationStreamingTargets,
 ) -> Result<HillslopeClimateExecution, HillslopeCliError> {
     let production_direct_selected =
         runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor;
@@ -1612,7 +1627,13 @@ fn execute_selected_hillslope_days(
         indexed_shadow_surface::begin_if_requested(&state, climate)?
     };
     let execution_result = if production_direct_selected {
-        execute_hillslope_direct_production_days(run_name, output_hillslope_id, state, climate)
+        execute_hillslope_direct_production_days(
+            run_name,
+            output_hillslope_id,
+            state,
+            climate,
+            streaming_targets,
+        )
     } else {
         execute_hillslope_climate_days(run_name, output_hillslope_id, state, climate)
     };
@@ -1660,6 +1681,11 @@ pub fn execute_hillslope_run_with_runtime_policy(
 
     let inputs = load_hillslope_run_inputs(request)?;
     let targets = resolve_hillslope_output_targets(&inputs.runfile)?;
+    ensure_hillslope_output_parent_directories(&targets)?;
+    let streaming_targets = DirectPublicationStreamingTargets {
+        wat: inputs.runfile.output_config.wat.clone(),
+        pass_parquet: inputs.runfile.output_config.pass_parquet.clone(),
+    };
     let runtime_resolution = runtime_policy.resolve();
     let runtime_selection = runtime_resolution.selected();
     let direct_runtime_counter_baseline = direct_runtime_audit_snapshot();
@@ -1676,6 +1702,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
         runtime_selection,
         execution_state,
         &inputs.climate,
+        &streaming_targets,
     )?;
     execution.direct_publication =
         build_direct_publication_artifacts(runtime_selection, &inputs, &targets, &sidecars, &mut execution)?;
