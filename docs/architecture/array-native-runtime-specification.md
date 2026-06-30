@@ -1441,6 +1441,25 @@ The ordering matters: type the remaining consumers first, delete last. Deleting
 only exposes dead support code; it does not complete the single-authority
 architecture.
 
+**Execution correction (2026-06-30): this is a WHOLESALE program, not incremental
+slices.** Three holds disproved two assumptions in the sequence above. (1) "Migrate
+diagnostics first" only works for diagnostics whose data **source is already typed**
+(the direct R7H runoff/ET/percolation/saturation traces); **kernel-data-dependent**
+diagnostics (frost, HPHYS, shadow/audit, WB13) have no typed source until the kernel
+output is typed, so they migrate **with** their phase, not before it. (2) The phase
+boundary is **not family-separable**: each phase embeds snow, frost, irrigation, MOFE
+hourly carry, indexed writeback, and HPHYS/WB13 diagnostics in one
+`HillslopeKernelRequest`/`KernelWritebackPayload`, so there is **no clean bounded slice**
+(by diagnostic or by family). The corrected execution: **define the comprehensive typed
+phase boundary first** (typed phase context sourcing every cross-cutting input from the
+already-typed `DirectRunFrame`), then migrate the entire entangled interface onto it as
+**one coordinated program** — driving through the entanglement rather than holding on it.
+The single-authority rule still forbids a wrapper around the symbol surface; the
+discipline is *not* "make any slice small," it is "type wholesale, never wrap." Safety
+for the wholesale change is the full test suite (~1,878 tests) + byte/value identity +
+git rollback, with frequent full-gated checkpoints; hold only on a genuine regression,
+not on scope.
+
 ### 8.3 Package Rules
 
 Every package in this program must state whether it:
