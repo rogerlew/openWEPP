@@ -56,6 +56,16 @@ State as of `2026-06-30`:
 
 ## Execution Log
 
+- `20260630-kernel-boundary-survivor-inventory-001/` is complete as
+  KERNEL-BOUNDARY SURVIVOR INVENTORY. Result:
+  `EXECUTED-COMPLETE-SURVIVOR-CLASSIFICATION`. It executed step 1 of the
+  kernel-boundary typing program from the array-native runtime specification:
+  static scans classified the remaining symbol-map survivor surface into
+  executable scheduler/day-frame runtime, kernel request/writeback boundary,
+  diagnostic/trace support, WB13/publication/audit support, tests, and genuine
+  intake/output adapters. The core survivor scan found `1,284` matches across
+  `74` Rust files, while `BoundarySymbol`/`BoundaryValue` accounted for another
+  `4,137` lower-level serialization/guard references. No code behavior changed.
 - `20260630-direct-publication-streaming-sink-001/` is complete as DIRECT
   PUBLICATION STREAMING SINK. Result:
   `EXECUTED-COMPLETE-STREAMING-RSS-REDUCTION`. It made the production direct
