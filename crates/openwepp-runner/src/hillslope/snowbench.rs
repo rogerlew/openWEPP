@@ -319,8 +319,12 @@ pub fn export_pysnobal_inputs(
     let inputs = super::load_hillslope_run_inputs(&hillslope_request)?;
     let targets = super::resolve_hillslope_output_targets(&inputs.runfile)?;
     let mut sidecars = super::resolve_hillslope_sidecars(&hillslope_request, &inputs, &targets)?;
-    let static_setup =
-        super::build_static_hillslope_runtime_setup(&hillslope_request, &inputs, &mut sidecars)?;
+    let static_setup = super::build_static_hillslope_runtime_setup(
+        &hillslope_request,
+        &inputs,
+        &mut sidecars,
+        HillslopeRuntimeSelection::DirectProductionExecutor,
+    )?;
     let runtime_surface = &static_setup.execution_state.runtime_surface;
     let primary_canopy_cover_fraction =
         require_state_scalar(&runtime_surface.state_surface, "cancov")?;
@@ -342,6 +346,8 @@ pub fn export_pysnobal_inputs(
         build_daily_forcing(&inputs.climate.daily_records, &climate_request, context)?;
     let canopy_series = build_direct_runtime_canopy_series(
         targets.output_hillslope_id,
+        &inputs,
+        &sidecars,
         &static_setup.execution_state,
         &climate_request,
     )?;
@@ -536,13 +542,17 @@ fn require_state_scalar(
 
 fn build_direct_runtime_canopy_series(
     output_hillslope_id: u32,
+    inputs: &super::ParsedHillslopeRunInputs,
+    sidecars: &super::HillslopeSidecarResolution,
     state: &super::HillslopeClimateExecutionState,
     climate_request: &HillslopeClimateRuntimeRequest,
 ) -> Result<Vec<CanopySeriesDay>, SnowbenchError> {
-    let lane_seed_surfaces = super::direct_production_lane_seed_surfaces(
-        &state.runtime_surface,
-        state.persistent_lane_state.as_ref(),
+    let seed_authority = super::DirectProductionSeedAuthority::from_typed_inputs(
+        climate_request,
+        inputs,
+        sidecars,
         state.per_ofe_lane_areas_m2.len(),
+        state.lane_context.lane,
     )?;
     let mut frame =
         super::build_direct_production_run_frame(&super::DirectProductionRunFrameBuildInputs {
@@ -550,18 +560,12 @@ fn build_direct_runtime_canopy_series(
             lane_areas_m2: &state.per_ofe_lane_areas_m2,
             runoff_publication_geometries: &state.per_ofe_runoff_publication_geometries,
             day_count: state.climate_span.days.len(),
-            climate_request,
-            climate_span: &state.climate_span,
-            climate_context_surface: &state.runtime_surface,
-            lane_seed_surfaces: &lane_seed_surfaces,
-            execution_lane: state.lane_context.lane,
+            seed_authority: &seed_authority,
         })?;
     let day_input_builder = super::DirectProductionDayInputBuilder::new(
         climate_request,
         &state.climate_span,
-        &lane_seed_surfaces,
-        &state.runtime_surface,
-        state.lane_context.lane,
+        &seed_authority,
     )?;
     let metadata = DirectPublicationRunMetadata {
         run_name: "snowbench-per-day-cancov".to_string(),

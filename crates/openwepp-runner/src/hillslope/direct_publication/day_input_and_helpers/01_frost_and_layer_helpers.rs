@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 fn direct_production_frost_typed_authority(
     seed_surface: &HillslopeWritebackSurface,
     layers: &[DirectSubsurfaceLayerState],
@@ -62,6 +63,7 @@ fn direct_production_frost_typed_authority(
     }))
 }
 
+#[allow(dead_code)]
 fn direct_production_monthly_temperature(
     seed_surface: &HillslopeWritebackSurface,
     root: &str,
@@ -74,6 +76,7 @@ fn direct_production_monthly_temperature(
     Ok(values)
 }
 
+#[allow(dead_code)]
 fn direct_production_required_snow_state_scalar(
     runtime_surface: &HillslopeWritebackSurface,
     symbol: &'static str,
@@ -189,6 +192,7 @@ fn direct_production_frost_depth_m(layers: &[DirectSubsurfaceLayerState]) -> f64
     frost_depth_m
 }
 
+#[allow(dead_code)]
 fn direct_publication_erod13_inputs(
     seed_surface: &HillslopeWritebackSurface,
 ) -> Result<DirectErod13Inputs, HillslopeCliError> {
@@ -224,6 +228,7 @@ fn direct_publication_erod13_inputs(
     })
 }
 
+#[allow(dead_code)]
 fn direct_publication_erod14_inputs(
     seed_surface: &HillslopeWritebackSurface,
 ) -> Result<DirectErod14Inputs, HillslopeCliError> {
@@ -294,10 +299,12 @@ fn direct_publication_erod14_inputs(
     })
 }
 
+#[allow(dead_code)]
 fn direct_publication_erod14_class_symbol(root: &str, class_index: usize) -> String {
     format!("{root}_{class_index:04}")
 }
 
+#[allow(dead_code)]
 fn direct_publication_day_zero_seed_surface(
     climate_request: &HillslopeClimateRuntimeRequest,
     climate_span: &ClimateRunSpanSummary,
@@ -635,6 +642,7 @@ fn direct_production_typed_frost_soil_conductivity(
         })
 }
 
+#[allow(dead_code)]
 fn direct_publication_percolation_inputs(
     runtime_surface: &HillslopeWritebackSurface,
     _precipitation_m: f64,
@@ -848,6 +856,7 @@ fn direct_publication_wb14_top_storage_capacity(
         .sum())
 }
 
+#[allow(dead_code)]
 fn direct_publication_optional_nonnegative_scalar(
     runtime_surface: &HillslopeWritebackSurface,
     symbols: &[&str],
@@ -868,6 +877,7 @@ fn direct_publication_optional_nonnegative_scalar(
     Ok(None)
 }
 
+#[allow(dead_code)]
 fn direct_publication_subsurface_inputs(
     runtime_surface: &HillslopeWritebackSurface,
 ) -> Result<DirectSubsurfaceComputeInputs, HillslopeCliError> {
@@ -916,6 +926,7 @@ fn direct_publication_subsurface_inputs(
     })
 }
 
+#[allow(dead_code)]
 fn direct_publication_layer_states(
     runtime_surface: &HillslopeWritebackSurface,
 ) -> Result<Vec<DirectSubsurfaceLayerState>, HillslopeCliError> {
@@ -930,6 +941,7 @@ fn direct_publication_layer_states(
     Ok(layers)
 }
 
+#[allow(dead_code)]
 fn direct_publication_layer_count(
     runtime_surface: &HillslopeWritebackSurface,
 ) -> Result<usize, HillslopeCliError> {

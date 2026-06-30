@@ -745,17 +745,64 @@ fn fixeddate_event_next_record(event: &FixedDateEvent) -> &Line3Record {
     }
 }
 
-/// Seed parsed snow-control runtime symbols into an existing hillslope runtime
-/// surface.
+/// Typed parsed snow-control seed projection.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct TypedSnowRuntimeProjection {
+    pub rst_c: f64,
+    pub newsnw_kg_m3: f64,
+    pub ssd_kg_m3: f64,
+    pub snow_file_present: bool,
+    pub runtime_swe_m: f64,
+    pub runtime_depth_m: f64,
+    pub runtime_density_kg_m3: f64,
+    pub runtime_settle_day_count: f64,
+}
+
+/// Typed parsed frost-control seed projection.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct TypedFrostRuntimeProjection {
+    pub wint_red: bool,
+    pub fine_top: i32,
+    pub fine_bot: i32,
+    pub ksnowf: f64,
+    pub kresf: f64,
+    pub ksoilf: f64,
+    pub kfactor1: f64,
+    pub kfactor2: f64,
+    pub kfactor3: f64,
+    pub frost_file_present: bool,
+    pub dfrost_m: f64,
+    pub dthaw_m: f64,
+    pub nft: f64,
+    pub ws_frz_m: f64,
+    pub frwatc_soil_water_before_m: f64,
+    pub frwatc_soil_water_after_m: f64,
+    pub frwatc_frozen_water_before_m: f64,
+    pub frwatc_frozen_water_after_m: f64,
+    pub frwatc_freeze_debit_m: f64,
+    pub frwatc_thaw_credit_m: f64,
+    pub frwatc_net_liquid_delta_m: f64,
+    pub infcap_frz_m_s: f64,
+    pub frdp_m: f64,
+    pub thdp_m: f64,
+    pub tfrdp_m: f64,
+    pub tthawd_m: f64,
+    pub fgthwd_flag: f64,
+    pub total_fine_layer_count: f64,
+    pub kftill_w_m_k: f64,
+    pub kfutil_w_m_k: f64,
+    pub kres_w_m_k: f64,
+    pub residue_depth_m: f64,
+}
+
+/// Project typed snow controls from parsed snow input.
 ///
 /// # Errors
 ///
-/// Returns `HillslopeRuntimeInputError` when parsed snow controls are
-/// non-finite or violate required CLIM05 domains.
-pub fn seed_hillslope_runtime_surface_from_snow(
-    runtime_surface: &mut HillslopeWritebackSurface,
+/// Returns `HillslopeRuntimeInputError` when controls violate CLIM05 domains.
+pub fn project_typed_snow_runtime(
     snow: &SnowParseOutput,
-) -> Result<(), HillslopeRuntimeInputError> {
+) -> Result<TypedSnowRuntimeProjection, HillslopeRuntimeInputError> {
     let rst = validate_snow_control_finite("snow.options.rst", snow.rst)?;
     let newsnw = validate_snow_control_finite("snow.options.newsnw", snow.newsnw)?;
     let ssd = validate_snow_control_finite("snow.options.ssd", snow.ssd)?;
@@ -782,91 +829,26 @@ pub fn seed_hillslope_runtime_surface_from_snow(
         });
     }
 
-    let state_surface = &mut runtime_surface.state_surface;
-    state_surface.insert(
-        BoundarySymbol::from("snow.options.rst"),
-        BoundaryValue::scalar(rst),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("snow.options.newsnw"),
-        BoundaryValue::scalar(newsnw),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("snow.options.ssd"),
-        BoundaryValue::scalar(ssd),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("snow.options.snow_file_present"),
-        BoundaryValue::scalar(if snow.sidecar_present { 1.0 } else { 0.0 }),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("snow.runtime_swe"),
-        snow_runtime_boundary_value(
-            "snow.runtime_swe",
-            0.0,
-            ">= 0.0",
-            BoundaryValue::water_depth_meters,
-        )?,
-    );
-    state_surface.insert(
-        BoundarySymbol::from("snow.runtime_depth_m"),
-        snow_runtime_boundary_value(
-            "snow.runtime_depth_m",
-            0.0,
-            ">= 0.0",
-            BoundaryValue::water_depth_meters,
-        )?,
-    );
-    state_surface.insert(
-        BoundarySymbol::from("snow.runtime_density_kg_m3"),
-        snow_runtime_boundary_value(
-            "snow.runtime_density_kg_m3",
-            0.0,
-            ">= 0.0",
-            BoundaryValue::density_kilograms_per_cubic_meter,
-        )?,
-    );
-    state_surface.insert(
-        BoundarySymbol::from("snow.runtime_settle_day_count"),
-        BoundaryValue::scalar(0.0),
-    );
-
-    Ok(())
-}
-
-fn snow_runtime_boundary_value(
-    field: &'static str,
-    value: f64,
-    allowed: &'static str,
-    constructor: fn(f64) -> Result<BoundaryValue, BoundaryError>,
-) -> Result<BoundaryValue, HillslopeRuntimeInputError> {
-    constructor(value).map_err(|error| match error {
-        BoundaryError::NonFinite { value, .. } => HillslopeRuntimeInputError::NonFiniteSnowControl {
-            field,
-            value,
-        },
-        BoundaryError::BelowMinimum { value, .. } | BoundaryError::AboveMaximum { value, .. } => {
-            HillslopeRuntimeInputError::SnowControlOutOfDomain {
-                field,
-                value,
-                allowed,
-            }
-        }
+    Ok(TypedSnowRuntimeProjection {
+        rst_c: rst,
+        newsnw_kg_m3: newsnw,
+        ssd_kg_m3: ssd,
+        snow_file_present: snow.sidecar_present,
+        runtime_swe_m: 0.0,
+        runtime_depth_m: 0.0,
+        runtime_density_kg_m3: 0.0,
+        runtime_settle_day_count: 0.0,
     })
 }
 
-/// Seed parsed frost-control runtime symbols into an existing hillslope runtime
-/// surface.
+/// Project typed frost controls from parsed frost input.
 ///
 /// # Errors
 ///
-/// Returns `HillslopeRuntimeInputError` when parsed frost controls are
-/// non-finite or violate required CLIM06 domains.
-#[allow(clippy::too_many_lines)]
-pub fn seed_hillslope_runtime_surface_from_frost(
-    runtime_surface: &mut HillslopeWritebackSurface,
+/// Returns `HillslopeRuntimeInputError` when controls violate CLIM06 domains.
+pub fn project_typed_frost_runtime(
     frost: &FrostParseOutput,
-) -> Result<(), HillslopeRuntimeInputError> {
+) -> Result<TypedFrostRuntimeProjection, HillslopeRuntimeInputError> {
     let wint_red = f64::from(frost.wint_red);
     let fine_top = f64::from(frost.fine_top);
     let fine_bot = f64::from(frost.fine_bot);
@@ -925,117 +907,278 @@ pub fn seed_hillslope_runtime_surface_from_frost(
         }
     }
 
+    Ok(TypedFrostRuntimeProjection {
+        wint_red: frost.wint_red == 1,
+        fine_top: frost.fine_top,
+        fine_bot: frost.fine_bot,
+        ksnowf,
+        kresf,
+        ksoilf,
+        kfactor1,
+        kfactor2,
+        kfactor3,
+        frost_file_present: frost.frost_file_present,
+        dfrost_m: 0.0,
+        dthaw_m: 0.0,
+        nft: 0.0,
+        ws_frz_m: 0.0,
+        frwatc_soil_water_before_m: 0.0,
+        frwatc_soil_water_after_m: 0.0,
+        frwatc_frozen_water_before_m: 0.0,
+        frwatc_frozen_water_after_m: 0.0,
+        frwatc_freeze_debit_m: 0.0,
+        frwatc_thaw_credit_m: 0.0,
+        frwatc_net_liquid_delta_m: 0.0,
+        infcap_frz_m_s: 0.0,
+        frdp_m: 0.0,
+        thdp_m: 0.0,
+        tfrdp_m: 0.0,
+        tthawd_m: 0.0,
+        fgthwd_flag: 0.0,
+        total_fine_layer_count: 0.0,
+        kftill_w_m_k: 1.75,
+        kfutil_w_m_k: 2.1,
+        kres_w_m_k: 0.05 * kresf,
+        residue_depth_m: 0.0,
+    })
+}
+
+/// Seed parsed snow-control runtime symbols into an existing hillslope runtime
+/// surface.
+///
+/// # Errors
+///
+/// Returns `HillslopeRuntimeInputError` when parsed snow controls are
+/// non-finite or violate required CLIM05 domains.
+pub fn seed_hillslope_runtime_surface_from_snow(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    snow: &SnowParseOutput,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let projection = project_typed_snow_runtime(snow)?;
+
+    let state_surface = &mut runtime_surface.state_surface;
+    state_surface.insert(
+        BoundarySymbol::from("snow.options.rst"),
+        BoundaryValue::scalar(projection.rst_c),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.options.newsnw"),
+        BoundaryValue::scalar(projection.newsnw_kg_m3),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.options.ssd"),
+        BoundaryValue::scalar(projection.ssd_kg_m3),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.options.snow_file_present"),
+        BoundaryValue::scalar(if projection.snow_file_present { 1.0 } else { 0.0 }),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_swe"),
+        snow_runtime_boundary_value(
+            "snow.runtime_swe",
+            projection.runtime_swe_m,
+            ">= 0.0",
+            BoundaryValue::water_depth_meters,
+        )?,
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_depth_m"),
+        snow_runtime_boundary_value(
+            "snow.runtime_depth_m",
+            projection.runtime_depth_m,
+            ">= 0.0",
+            BoundaryValue::water_depth_meters,
+        )?,
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_density_kg_m3"),
+        snow_runtime_boundary_value(
+            "snow.runtime_density_kg_m3",
+            projection.runtime_density_kg_m3,
+            ">= 0.0",
+            BoundaryValue::density_kilograms_per_cubic_meter,
+        )?,
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_settle_day_count"),
+        BoundaryValue::scalar(projection.runtime_settle_day_count),
+    );
+
+    Ok(())
+}
+
+fn snow_runtime_boundary_value(
+    field: &'static str,
+    value: f64,
+    allowed: &'static str,
+    constructor: fn(f64) -> Result<BoundaryValue, BoundaryError>,
+) -> Result<BoundaryValue, HillslopeRuntimeInputError> {
+    constructor(value).map_err(|error| match error {
+        BoundaryError::NonFinite { value, .. } => HillslopeRuntimeInputError::NonFiniteSnowControl {
+            field,
+            value,
+        },
+        BoundaryError::BelowMinimum { value, .. } | BoundaryError::AboveMaximum { value, .. } => {
+            HillslopeRuntimeInputError::SnowControlOutOfDomain {
+                field,
+                value,
+                allowed,
+            }
+        }
+    })
+}
+
+/// Seed parsed frost-control runtime symbols into an existing hillslope runtime
+/// surface.
+///
+/// # Errors
+///
+/// Returns `HillslopeRuntimeInputError` when parsed frost controls are
+/// non-finite or violate required CLIM06 domains.
+#[allow(clippy::too_many_lines)]
+pub fn seed_hillslope_runtime_surface_from_frost(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    frost: &FrostParseOutput,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let projection = project_typed_frost_runtime(frost)?;
+
     let state_surface = &mut runtime_surface.state_surface;
     state_surface.insert(
         BoundarySymbol::from("frost.options.wintRed"),
-        BoundaryValue::scalar(wint_red),
+        BoundaryValue::scalar(if projection.wint_red { 1.0 } else { 0.0 }),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.options.fineTop"),
-        BoundaryValue::scalar(fine_top),
+        BoundaryValue::scalar(f64::from(projection.fine_top)),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.options.fineBot"),
-        BoundaryValue::scalar(fine_bot),
+        BoundaryValue::scalar(f64::from(projection.fine_bot)),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.options.ksnowf"),
-        BoundaryValue::scalar(ksnowf),
+        BoundaryValue::scalar(projection.ksnowf),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.options.kresf"),
-        BoundaryValue::scalar(kresf),
+        BoundaryValue::scalar(projection.kresf),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.options.ksoilf"),
-        BoundaryValue::scalar(ksoilf),
+        BoundaryValue::scalar(projection.ksoilf),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.options.kfactor1"),
-        BoundaryValue::scalar(kfactor1),
+        BoundaryValue::scalar(projection.kfactor1),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.options.kfactor2"),
-        BoundaryValue::scalar(kfactor2),
+        BoundaryValue::scalar(projection.kfactor2),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.options.kfactor3"),
-        BoundaryValue::scalar(kfactor3),
+        BoundaryValue::scalar(projection.kfactor3),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.options.frost_file_present"),
-        BoundaryValue::scalar(if frost.frost_file_present { 1.0 } else { 0.0 }),
+        BoundaryValue::scalar(if projection.frost_file_present {
+            1.0
+        } else {
+            0.0
+        }),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_dfrost"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.dfrost_m),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_dthaw"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.dthaw_m),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_nft"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.nft),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_ws_frz"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.ws_frz_m),
     );
-    for symbol in [
-        "frost.runtime_frwatc_soil_water_before_m",
-        "frost.runtime_frwatc_soil_water_after_m",
-        "frost.runtime_frwatc_frozen_water_before_m",
-        "frost.runtime_frwatc_frozen_water_after_m",
-        "frost.runtime_frwatc_freeze_debit_m",
-        "frost.runtime_frwatc_thaw_credit_m",
-        "frost.runtime_frwatc_net_liquid_delta_m",
+    for (symbol, value) in [
+        (
+            "frost.runtime_frwatc_soil_water_before_m",
+            projection.frwatc_soil_water_before_m,
+        ),
+        (
+            "frost.runtime_frwatc_soil_water_after_m",
+            projection.frwatc_soil_water_after_m,
+        ),
+        (
+            "frost.runtime_frwatc_frozen_water_before_m",
+            projection.frwatc_frozen_water_before_m,
+        ),
+        (
+            "frost.runtime_frwatc_frozen_water_after_m",
+            projection.frwatc_frozen_water_after_m,
+        ),
+        (
+            "frost.runtime_frwatc_freeze_debit_m",
+            projection.frwatc_freeze_debit_m,
+        ),
+        (
+            "frost.runtime_frwatc_thaw_credit_m",
+            projection.frwatc_thaw_credit_m,
+        ),
+        (
+            "frost.runtime_frwatc_net_liquid_delta_m",
+            projection.frwatc_net_liquid_delta_m,
+        ),
     ] {
-        state_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(0.0));
+        state_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
     }
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_infcap_frz"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.infcap_frz_m_s),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_frdp_m"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.frdp_m),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_thdp_m"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.thdp_m),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_tfrdp_m"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.tfrdp_m),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_tthawd_m"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.tthawd_m),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_fgthwd_flag"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.fgthwd_flag),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_total_fine_layer_count"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.total_fine_layer_count),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_kftill_w_m_k"),
-        BoundaryValue::scalar(1.75),
+        BoundaryValue::scalar(projection.kftill_w_m_k),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_kfutil_w_m_k"),
-        BoundaryValue::scalar(2.1),
+        BoundaryValue::scalar(projection.kfutil_w_m_k),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_kres_w_m_k"),
-        BoundaryValue::scalar(0.05 * kresf),
+        BoundaryValue::scalar(projection.kres_w_m_k),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_residue_depth_m"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(projection.residue_depth_m),
     );
 
     Ok(())

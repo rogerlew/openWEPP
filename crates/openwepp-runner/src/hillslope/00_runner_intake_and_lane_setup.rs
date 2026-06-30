@@ -16,6 +16,9 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
     build_hillslope_runtime_surface_from_frost, build_hillslope_runtime_surface_from_management,
     build_hillslope_runtime_surface_from_slope_with_options,
     build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
+    build_hillslope_pl_runtime_surfaces_from_management,
+    project_typed_frost_runtime, project_typed_snow_runtime, project_typed_soil_wb11_runtime,
+    TypedSoilWb11RuntimeProjection,
 };
 use openwepp_hillslope_orchestrator::{
     DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs, DirectCanopyInterceptionInputs, DirectErod13Inputs,
@@ -877,6 +880,7 @@ struct HillslopeSidecarResolution {
     frost: FrostParseOutput,
     mode_selection: HillslopeModeSelectionProvenance,
     pmetpara: PmetparaFile,
+    pmetpara_mode: PmetparaParseMode,
     resolved_sidecars: BTreeMap<String, String>,
     sidecar_warnings: Vec<String>,
     input_paths: HillslopeSidecarInputPaths,
@@ -1260,6 +1264,7 @@ fn resolve_legacy_hillslope_sidecars(
             &wepp_ui,
         )?,
         pmetpara,
+        pmetpara_mode: request.sidecar_policy.as_pmetpara_parse_mode(),
         resolved_sidecars,
         sidecar_warnings,
         input_paths,
@@ -1463,6 +1468,7 @@ fn resolve_runfile_hillslope_sidecars(
             &wepp_ui,
         )?,
         pmetpara,
+        pmetpara_mode: request.sidecar_policy.as_pmetpara_parse_mode(),
         resolved_sidecars,
         sidecar_warnings,
         input_paths,
@@ -1599,6 +1605,7 @@ fn build_static_hillslope_runtime_setup(
     request: &HillslopeRunRequest,
     inputs: &ParsedHillslopeRunInputs,
     sidecars: &mut HillslopeSidecarResolution,
+    runtime_selection: HillslopeRuntimeSelection,
 ) -> Result<StaticHillslopeRuntimeSetup, HillslopeCliError> {
     let publication_area_m2 = derive_mofe04_publication_area_from_slope(&inputs.slope)?;
     let contributor_ofe_count = inputs.slope.ofe_count;
@@ -1645,30 +1652,32 @@ fn build_static_hillslope_runtime_setup(
         symbol_registry: None,
         hot_symbol_tables: None,
     };
-    let symbol_registry = symbol_registry_audit::build_registry_for_run(
-        &execution_state,
-        &inputs.climate,
-        "indexed_runtime_surface",
-    )?;
-    let hot_symbol_tables = build_hillslope_hot_symbol_tables(&symbol_registry);
-    if let Some(persistent_lane_state) = execution_state.persistent_lane_state.as_mut() {
-        persistent_lane_state
-            .activate_indexed_writeback_authority(&symbol_registry)
-            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "indexed_runtime_surface",
-                detail: error.to_string(),
-            })?;
-        if perfdeep03_lane_dense_state_enabled() {
+    if runtime_selection != HillslopeRuntimeSelection::DirectProductionExecutor {
+        let symbol_registry = symbol_registry_audit::build_registry_for_run(
+            &execution_state,
+            &inputs.climate,
+            "indexed_runtime_surface",
+        )?;
+        let hot_symbol_tables = build_hillslope_hot_symbol_tables(&symbol_registry);
+        if let Some(persistent_lane_state) = execution_state.persistent_lane_state.as_mut() {
             persistent_lane_state
-                .activate_lane_dense_state(&symbol_registry, &hot_symbol_tables)
+                .activate_indexed_writeback_authority(&symbol_registry)
                 .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-                    surface: "perfdeep03_lane_dense_state",
+                    surface: "indexed_runtime_surface",
                     detail: error.to_string(),
                 })?;
+            if perfdeep03_lane_dense_state_enabled() {
+                persistent_lane_state
+                    .activate_lane_dense_state(&symbol_registry, &hot_symbol_tables)
+                    .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                        surface: "perfdeep03_lane_dense_state",
+                        detail: error.to_string(),
+                    })?;
+            }
         }
+        execution_state.symbol_registry = Some(symbol_registry);
+        execution_state.hot_symbol_tables = Some(hot_symbol_tables);
     }
-    execution_state.symbol_registry = Some(symbol_registry);
-    execution_state.hot_symbol_tables = Some(hot_symbol_tables);
 
     Ok(StaticHillslopeRuntimeSetup {
         timestep_policy,

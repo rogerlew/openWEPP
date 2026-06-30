@@ -89,6 +89,16 @@ impl HillslopeClimateRuntimeRequest {
     pub const fn direct_elevation_m(&self) -> f64 {
         self.metadata.elev
     }
+
+    #[must_use]
+    pub const fn direct_monthly_max_c(&self) -> [f64; 12] {
+        self.monthly.obmaxt
+    }
+
+    #[must_use]
+    pub const fn direct_monthly_min_c(&self) -> [f64; 12] {
+        self.monthly.obmint
+    }
 }
 
 /// Seed a hillslope runtime writeback surface with one climate forcing record.

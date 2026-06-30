@@ -3,6 +3,7 @@
 
     use openwepp_input_contract::parsers::{
         climate::{CompatibilityOptions, ParserMode as ClimateParserMode, parse_climate_from_str},
+        frost::{ParseMode as FrostParseMode, parse_frost_from_str},
         management::{
             DrainScenario, InitialScenarioData, ParseMode as ManagementParseMode,
             PlantScenarioData, ScenarioMeta, YearlyAnnualExtension, YearlyAnnualFallowData,
@@ -10,6 +11,7 @@
             YearlyScenarioData,
             parse_management_from_str,
         },
+        snow::{ParseMode as SnowParseMode, SnowParseOptions, parse_snow_from_str},
         slope::{SlopeParserOptions, parse_slope_str},
         soil::{ParserMode, SoilDatver, SoilParserOptions, parse_soil},
     };
@@ -21,8 +23,14 @@
         build_hillslope_runtime_surface_from_climate,
         build_hillslope_runtime_surface_from_climate_with_context,
         build_hillslope_runtime_surface_from_management,
+        build_hillslope_runtime_surface_from_frost,
+        build_hillslope_runtime_surface_from_snow,
         build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_soil,
         legacy_correct_layer_moisture, legacy_expand_soil_layers_to_200mm,
+        project_typed_frost_runtime,
+        project_typed_snow_runtime,
+        project_typed_slope_runtime,
+        project_typed_soil_wb11_runtime,
         simimpl28_stmtim_hourly_partition, simimpl28_stmtim_hourly_partition_with_model,
         LegacySoilLayerSeed, SnowPhasePartitionModel,
     };
@@ -55,6 +63,11 @@
     const VALID_97_5: &str = include_str!("../../../../../tests/fixtures/infile/soil/valid_97_5.sol");
     const MANAGEMENT_CANONICAL_NONZERO_98_4: &str = include_str!(
         "../../../../../tests/fixtures/infile/management/canonical_cropland_nonzero_98_4.man"
+    );
+    const SNOW_STRICT_VALID: &str =
+        include_str!("../../../../../tests/fixtures/infile/snow/strict_valid.txt");
+    const FROST_STRICT_VALID_TWO_LINE: &str = include_str!(
+        "../../../../../tests/fixtures/infile/frost/strict_valid_two_line.txt"
     );
 
     fn build_breakpoint_fixture(nbrkpt: usize) -> String {

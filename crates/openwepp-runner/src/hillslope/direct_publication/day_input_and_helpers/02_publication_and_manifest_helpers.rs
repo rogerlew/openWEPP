@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 fn direct_publication_frost_layer_carry_projection(
     runtime_surface: &HillslopeWritebackSurface,
 ) -> Result<Option<Vec<DirectFrostLayerCarryProjection>>, HillslopeCliError> {
@@ -53,6 +54,7 @@ fn direct_publication_frost_layer_carry_projection(
     Ok(Some(projection))
 }
 
+#[allow(dead_code)]
 fn direct_publication_frost_fine_count(
     runtime_surface: &HillslopeWritebackSurface,
     symbol: &str,
@@ -108,6 +110,7 @@ fn direct_publication_frost_fine_layer_count(
     Ok(count.max(1))
 }
 
+#[allow(dead_code)]
 fn direct_publication_layer_state(
     runtime_surface: &HillslopeWritebackSurface,
     layer_index: usize,
@@ -179,6 +182,7 @@ fn direct_publication_layer_state(
     ))
 }
 
+#[allow(dead_code)]
 fn direct_publication_lateral_conductivity_m_s(
     runtime_surface: &HillslopeWritebackSurface,
     layer_index: usize,
@@ -212,6 +216,7 @@ fn direct_publication_lateral_conductivity_m_s(
     Ok(vertical_conductivity_m_s)
 }
 
+#[allow(dead_code)]
 fn direct_publication_stage_state(
     runtime_surface: &HillslopeWritebackSurface,
 ) -> Result<Option<DirectEvapotranspirationStageState>, HillslopeCliError> {
@@ -238,6 +243,7 @@ fn direct_publication_stage_state(
     }
 }
 
+#[allow(dead_code)]
 fn direct_publication_enabled_flag(
     runtime_surface: &HillslopeWritebackSurface,
     symbol: &'static str,
@@ -246,6 +252,7 @@ fn direct_publication_enabled_flag(
     direct_publication_parse_enabled_flag(symbol, value)
 }
 
+#[allow(dead_code)]
 fn direct_publication_optional_enabled_flag(
     runtime_surface: &HillslopeWritebackSurface,
     symbol: &'static str,
@@ -271,6 +278,7 @@ fn direct_publication_parse_enabled_flag(
     }
 }
 
+#[allow(dead_code)]
 fn direct_publication_required_positive_scalar(
     runtime_surface: &HillslopeWritebackSurface,
     symbol: &'static str,
@@ -287,6 +295,7 @@ fn direct_publication_required_positive_scalar(
     })
 }
 
+#[allow(dead_code)]
 fn require_preferred_or_legacy_runtime_surface_scalar(
     runtime_surface: &HillslopeWritebackSurface,
     preferred_symbol: &str,
@@ -298,6 +307,7 @@ fn require_preferred_or_legacy_runtime_surface_scalar(
     require_runtime_surface_scalar(runtime_surface, legacy_symbol)
 }
 
+#[allow(dead_code)]
 fn direct_publication_profile_inputs(
     static_runtime_surface: &HillslopeWritebackSurface,
 ) -> Result<DirectHydrologyProjectionInputs, HillslopeCliError> {
@@ -344,6 +354,7 @@ fn direct_publication_profile_inputs(
     })
 }
 
+#[allow(dead_code)]
 fn direct_publication_static_mm_to_m(
     static_runtime_surface: &HillslopeWritebackSurface,
     symbol: &'static str,

@@ -136,6 +136,119 @@
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
+    fn typed_soil_wb11_projection_matches_runtime_surface_adapter() {
+        let soil = parse_soil(
+            VALID_9002,
+            SoilParserOptions {
+                mode: ParserMode::Strict,
+                allow_legacy_aliases: false,
+                expected_topology_count: None,
+                topology_scope: None,
+            },
+        )
+        .expect("9002 soil fixture should parse");
+
+        let typed = project_typed_soil_wb11_runtime(&soil)
+            .expect("typed soil WB11 projection should build from parsed soil");
+        let surface = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect("runtime surface should build from parsed soil");
+
+        assert_eq!(typed.nsl, 2);
+        assert_eq!(
+            f64::from(u32::try_from(typed.nsl).expect("nsl should fit u32")).to_bits(),
+            soil_runtime_scalar(&surface, "wb11_nsl").to_bits()
+        );
+        assert_eq!(typed.sat.to_bits(), soil_runtime_scalar(&surface, "sat").to_bits());
+        assert_eq!(
+            typed.solwpv.to_bits(),
+            soil_runtime_scalar(&surface, "solwpv").to_bits()
+        );
+        assert_eq!(typed.salb.to_bits(), soil_runtime_scalar(&surface, "salb").to_bits());
+        assert_eq!(
+            typed.solthk_m.to_bits(),
+            soil_runtime_scalar(&surface, "solthk").to_bits()
+        );
+        assert_eq!(
+            typed.lateral_anisotropy_ratio.to_bits(),
+            soil_runtime_scalar(&surface, "wb19_lateral_anisotropy_ratio").to_bits()
+        );
+        assert_eq!(
+            (if typed.ksatadj { 1.0_f64 } else { 0.0_f64 }).to_bits(),
+            soil_runtime_scalar(&surface, "ksatadj").to_bits()
+        );
+        assert_eq!(
+            typed.profile_depth_mm.map(f64::to_bits),
+            Some(soil_runtime_scalar(&surface, "wb13_profile_depth_mm").to_bits())
+        );
+        assert_eq!(
+            typed.profile_porosity_cap_mm.map(f64::to_bits),
+            Some(soil_runtime_scalar(&surface, "wb13_profile_porosity_cap_mm").to_bits())
+        );
+        assert_eq!(
+            typed.profile_fc_store_mm.map(f64::to_bits),
+            Some(soil_runtime_scalar(&surface, "wb13_profile_fc_store_mm").to_bits())
+        );
+        assert_eq!(
+            typed.profile_wp_store_mm.map(f64::to_bits),
+            Some(soil_runtime_scalar(&surface, "wb13_profile_wp_store_mm").to_bits())
+        );
+        assert_eq!(
+            typed.profile_fc_tail_mm.map(f64::to_bits),
+            Some(soil_runtime_scalar(&surface, "wb13_profile_fc_tail_mm").to_bits())
+        );
+
+        for (offset, layer) in typed.layers.iter().enumerate() {
+            let layer_index = offset + 1;
+            assert_eq!(
+                layer.solthk_m.to_bits(),
+                soil_runtime_scalar(&surface, &format!("wb19_solthk_{layer_index:04}")).to_bits()
+            );
+            assert_eq!(
+                layer.dg_m.to_bits(),
+                soil_runtime_scalar(&surface, &format!("wb19_dg_{layer_index:04}")).to_bits()
+            );
+            assert_eq!(
+                layer.porosity.to_bits(),
+                soil_runtime_scalar(&surface, &format!("wb19_por_{layer_index:04}")).to_bits()
+            );
+            assert_eq!(
+                layer.cpm.to_bits(),
+                soil_runtime_scalar(&surface, &format!("cpm_{layer_index:04}")).to_bits()
+            );
+            assert_eq!(
+                layer.coca.to_bits(),
+                soil_runtime_scalar(&surface, &format!("wb19_coca_{layer_index:04}")).to_bits()
+            );
+            assert_eq!(
+                layer.bulk_density_kg_m3.to_bits(),
+                soil_runtime_scalar(
+                    &surface,
+                    &format!("wb19_bulk_density_kg_m3_{layer_index:04}")
+                )
+                .to_bits()
+            );
+            assert_eq!(
+                layer.thetfc.to_bits(),
+                soil_runtime_scalar(&surface, &format!("wb19_thetfc_{layer_index:04}")).to_bits()
+            );
+            assert_eq!(
+                layer.thetdr.to_bits(),
+                soil_runtime_scalar(&surface, &format!("wb19_thetdr_{layer_index:04}")).to_bits()
+            );
+            assert_eq!(
+                layer.ssc_m_s.to_bits(),
+                soil_runtime_scalar(&surface, &format!("ssc_{layer_index:04}")).to_bits()
+            );
+            assert_eq!(
+                layer.lateral_ssh_m_s.to_bits(),
+                soil_runtime_scalar(&surface, &format!("wb19_lateral_ssh_{layer_index:04}"))
+                    .to_bits()
+            );
+        }
+    }
+
+    #[test]
     fn soil_runtime_surface_projects_harmonic_vertical_ssc_below_top_interval() {
         let mut soil = parse_soil(
             VALID_9002,

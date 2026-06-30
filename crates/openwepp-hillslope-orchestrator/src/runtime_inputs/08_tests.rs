@@ -6,6 +6,7 @@ mod tests {
     include!("08_tests/soil.rs");
     include!("08_tests/slope.rs");
     include!("08_tests/management.rs");
+    include!("08_tests/snow_frost_irrigation.rs");
     include!("08_tests/climate.rs");
     include!("08_tests/irrigation_fixeddate.rs");
 }

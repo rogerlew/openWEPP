@@ -183,7 +183,7 @@ pub(crate) fn build_static_per_ofe_lane_runtime_surface(
     Ok(runtime_surface)
 }
 
-fn build_lane_slope_profile(
+pub(crate) fn build_lane_slope_profile(
     slice: &StaticOfeLaneSlice,
     slope: &SlopeProfile,
 ) -> Result<SlopeProfile, HillslopeCliError> {
@@ -207,7 +207,7 @@ fn build_lane_slope_profile(
     })
 }
 
-fn build_lane_soil_profile(
+pub(crate) fn build_lane_soil_profile(
     slice: &StaticOfeLaneSlice,
     soil: &openwepp_input_contract::parsers::soil::SoilProfile,
 ) -> Result<openwepp_input_contract::parsers::soil::SoilProfile, HillslopeCliError> {
@@ -234,7 +234,7 @@ fn build_lane_soil_profile(
     })
 }
 
-fn build_lane_management_output(
+pub(crate) fn build_lane_management_output(
     slice: &StaticOfeLaneSlice,
     management: &ManagementParseOutput,
 ) -> Result<ManagementParseOutput, HillslopeCliError> {

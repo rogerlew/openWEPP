@@ -15,6 +15,33 @@ State as of `2026-06-30`:
 
 - `20260630-typed-direct-setup-symbol-map-elimination-001/` is held after Stage
   0. Result: `EXECUTED-HOLD-STAGE0-PREMISE-CORRECTED`.
+- `20260630-typed-direct-setup-symbol-map-carrier-deletion-001/` is held as
+  TYPED DIRECT SETUP + SYMBOL-MAP CARRIER DELETION. Result:
+  `EXECUTED-HOLD-STAGE1-TYPED-SEED-AUTHORITY-MISSING`.
+- `20260630-stage1-seed-authority-migration-001/` is held as STAGE 1
+  SEED-AUTHORITY MIGRATION. Result:
+  `EXECUTED-HOLD-STAGE1C-TYPED-LANE-SEED-AUTHORITY-MISSING`. Stage 1B moved
+  direct runoff publication `efflen_m` to typed topology geometry and verified
+  H2637 plus multi-OFE/Wave-2 identity, reducing the seed-read inventory
+  `208 -> 207`. Stage 1C is blocked until a typed per-lane seed-authority
+  carrier exists for day-zero constructor and day-input authority state.
+- `20260630-typed-seed-authority-carrier-rearchitecture-001/` is held as TYPED
+  SEED-AUTHORITY CARRIER RE-ARCHITECTURE. Result:
+  `EXECUTED-HOLD-PHASE1-TYPED-PROJECTION-APIS-MISSING`. Static execution
+  confirmed the remaining seed authority is an ordered computed symbol-map
+  pipeline, not independent reads. The package cannot build a legitimate typed
+  carrier until the static per-lane seed projection and WB11 day-zero projection
+  are factored into typed projection APIs with surface-writer adapters kept only
+  for compatibility replay and shadow comparison.
+- `20260630-typed-day-zero-seed-computation-001/` is held as TYPED DAY-ZERO
+  SEED COMPUTATION. Result:
+  `EXECUTED-HOLD-PHASE1-EXPANDED-TYPED-SEED-PROJECTION`. It factored and
+  shadow-tested typed projections for lane substeps, hyetograph normalization,
+  WB11 initial storage, fine-frost refresh, residue/`Ws` defaults, WB12
+  reconciliation defaults, ET-demand, `efflen`/`m`, and the WB16 `ealpha`
+  compatibility default. It stops before full Phase 1 seed identity because
+  static parsed-input projection, full WB16 producer inputs, MOFE03/Wave-2 seed
+  projections, and full carrier assembly remain.
 
 ## Execution Log
 

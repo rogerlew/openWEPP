@@ -514,6 +514,70 @@ struct PrimaryWb11LayerRuntimeSymbols {
     lateral_ssh_m_s: f64,
 }
 
+/// Typed parsed-soil projection for the primary WB11/WB18/WB19 runtime
+/// layer seed. This is the non-symbol authority used by direct setup; the
+/// legacy runtime-surface writer is an adapter over the same projection.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct TypedSoilWb11LayerRuntimeProjection {
+    pub solthk_m: f64,
+    pub dg_m: f64,
+    pub porosity: f64,
+    pub cpm: f64,
+    pub coca: f64,
+    pub bulk_density_kg_m3: f64,
+    pub thetfc: f64,
+    pub thetdr: f64,
+    pub ssc_m_s: f64,
+    pub lateral_ssh_m_s: f64,
+}
+
+/// Typed parsed-soil projection for the static WB11 seed authority.
+#[derive(Clone, Debug, PartialEq)]
+pub struct TypedSoilWb11RuntimeProjection {
+    pub nsl: usize,
+    pub sat: f64,
+    pub solwpv: f64,
+    pub salb: f64,
+    pub solthk_m: f64,
+    pub lateral_anisotropy_ratio: f64,
+    pub ksatadj: bool,
+    pub ksatfac_mm_h: Option<f64>,
+    pub ksatrec_per_day: Option<f64>,
+    pub lkeff_mm_h: Option<f64>,
+    pub restrictive_layer: Option<TypedSoilRestrictiveLayerProjection>,
+    pub profile_depth_mm: Option<f64>,
+    pub profile_porosity_cap_mm: Option<f64>,
+    pub profile_fc_store_mm: Option<f64>,
+    pub profile_wp_store_mm: Option<f64>,
+    pub profile_fc_tail_mm: Option<f64>,
+    pub layers: Vec<TypedSoilWb11LayerRuntimeProjection>,
+}
+
+/// Typed parsed-soil projection for an optional restrictive layer.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct TypedSoilRestrictiveLayerProjection {
+    pub slflag: bool,
+    pub ui_bdrkth_m: f64,
+    pub kslast_m_s: f64,
+}
+
+impl From<PrimaryWb11LayerRuntimeSymbols> for TypedSoilWb11LayerRuntimeProjection {
+    fn from(layer: PrimaryWb11LayerRuntimeSymbols) -> Self {
+        Self {
+            solthk_m: layer.solthk_m,
+            dg_m: layer.dg_m,
+            porosity: layer.porosity,
+            cpm: layer.cpm,
+            coca: layer.coca,
+            bulk_density_kg_m3: layer.bulk_density_kg_m3,
+            thetfc: layer.thetfc,
+            thetdr: layer.thetdr,
+            ssc_m_s: layer.ssc_m_s,
+            lateral_ssh_m_s: layer.lateral_ssh_m_s,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 struct LegacySoilLayerSeed {
     depth_mm: f64,
@@ -564,6 +628,149 @@ enum FcWpRockMultiplierPolicy {
 const WB13_PROFILE_LAYER_THICKNESS_M: f64 = 0.2;
 const LEGACY_INPUT_DELTA_EPS_M: f64 = 0.001;
 const PROFILE_FC_TAIL_TOLERANCE_MM: f64 = 1.0e-9;
+
+/// Project typed static WB11/WB18/WB19 soil seed values from parsed soil input.
+///
+/// # Errors
+///
+/// Returns `HillslopeRuntimeInputError` when the parsed soil profile is
+/// missing required fields or violates the same normalization/domain rules
+/// used by the runtime-surface adapter.
+#[allow(clippy::too_many_lines)]
+pub fn project_typed_soil_wb11_runtime(
+    soil: &SoilProfile,
+) -> Result<TypedSoilWb11RuntimeProjection, HillslopeRuntimeInputError> {
+    let primary_ofe = soil
+        .ofes
+        .first()
+        .ok_or(HillslopeRuntimeInputError::MissingSoilOfe)?;
+    let primary_top_layer = primary_ofe
+        .layers
+        .first()
+        .ok_or(HillslopeRuntimeInputError::MissingSoilLayer)?;
+
+    if soil.ntemp != soil.ofes.len() {
+        return Err(HillslopeRuntimeInputError::SoilOfeCountMismatch {
+            declared_ofe_count: soil.ntemp,
+            observed_ofes: soil.ofes.len(),
+        });
+    }
+    if primary_ofe.nsl != primary_ofe.layers.len() {
+        return Err(HillslopeRuntimeInputError::SoilLayerCountMismatch {
+            ofe_index: 1,
+            declared_nsl: primary_ofe.nsl,
+            observed_layers: primary_ofe.layers.len(),
+        });
+    }
+
+    let primary_profile_depth_mm = primary_ofe
+        .layers
+        .last()
+        .ok_or(HillslopeRuntimeInputError::MissingSoilLayer)?
+        .depth_mm;
+    if !primary_profile_depth_mm.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFiniteProfileDepth {
+            value_mm: primary_profile_depth_mm,
+        });
+    }
+    if primary_profile_depth_mm <= 0.0 {
+        return Err(HillslopeRuntimeInputError::NonPositiveProfileDepth {
+            value_mm: primary_profile_depth_mm,
+        });
+    }
+
+    let profile_symbols = compute_wb13_profile_symbols(primary_ofe, soil.datver);
+    let primary_wb11_layers =
+        compute_normalized_wb11_primary_layer_runtime_symbols(primary_ofe, 1, soil.datver)?;
+    let profile_fc_tail_mm = if let Some(profile_symbols) = profile_symbols {
+        let layer_fc_store_mm = aggregate_profile_fc_store_mm_from_primary_wb11_layers(
+            &primary_wb11_layers,
+        );
+        let mut tail_mm = profile_symbols.fc_store - layer_fc_store_mm;
+        if !tail_mm.is_finite() {
+            return Err(HillslopeRuntimeInputError::NonFiniteProfileFcTailContribution {
+                ofe_index: 1,
+                value_mm: tail_mm,
+            });
+        }
+        if tail_mm < 0.0 {
+            if tail_mm >= -PROFILE_FC_TAIL_TOLERANCE_MM {
+                tail_mm = 0.0;
+            } else {
+                return Err(HillslopeRuntimeInputError::NegativeProfileFcTailContribution {
+                    ofe_index: 1,
+                    value_mm: tail_mm,
+                });
+            }
+        }
+        Some(tail_mm)
+    } else {
+        None
+    };
+
+    let (ksatadj, ksatfac_mm_h, ksatrec_per_day, lkeff_mm_h) = match &primary_ofe.policy {
+        Some(DisturbedPolicy::V9002 {
+            ksatadj,
+            ksatfac_mm_h,
+            ksatrec_per_day,
+            ..
+        }) => (*ksatadj, Some(*ksatfac_mm_h), Some(*ksatrec_per_day), None),
+        Some(
+            DisturbedPolicy::V9003 {
+                ksatadj,
+                lkeff_mm_h,
+                ..
+            }
+            | DisturbedPolicy::V9005 {
+                ksatadj,
+                lkeff_mm_h,
+                ..
+            },
+        ) => (*ksatadj, None, None, Some(*lkeff_mm_h)),
+        None => (false, None, None, None),
+    };
+
+    let lateral_anisotropy_ratio = match soil.datver {
+        SoilDatver::V7778 | SoilDatver::V9002 | SoilDatver::V9003 | SoilDatver::V9005 => 1.0,
+        SoilDatver::V97_5 | SoilDatver::V2006_2 | SoilDatver::V7777 => {
+            primary_top_layer.anisotropy_ratio.unwrap_or(1.0)
+        }
+    };
+    let restrictive_layer =
+        soil.restrictive_layer
+            .as_ref()
+            .map(|restrictive| TypedSoilRestrictiveLayerProjection {
+                slflag: restrictive.slflag,
+                ui_bdrkth_m: restrictive.ui_bdrkth_mm / 1_000.0,
+                kslast_m_s: restrictive.kslast_mm_h / 3.6e6,
+            });
+    let layers: Vec<TypedSoilWb11LayerRuntimeProjection> = primary_wb11_layers
+        .into_iter()
+        .map(Into::into)
+        .collect::<Vec<_>>();
+    let nsl = layers.len();
+    Ok(TypedSoilWb11RuntimeProjection {
+        nsl,
+        sat: primary_ofe.sat,
+        solwpv: soil.datver_raw,
+        salb: primary_ofe.salb,
+        solthk_m: layers
+            .last()
+            .map_or(primary_profile_depth_mm / 1_000.0, |layer| layer.solthk_m),
+        lateral_anisotropy_ratio,
+        ksatadj,
+        ksatfac_mm_h,
+        ksatrec_per_day,
+        lkeff_mm_h,
+        restrictive_layer,
+        profile_depth_mm: profile_symbols.map(|profile| profile.depth),
+        profile_porosity_cap_mm: profile_symbols.map(|profile| profile.porosity_cap),
+        profile_fc_store_mm: profile_symbols.map(|profile| profile.fc_store),
+        profile_wp_store_mm: profile_symbols.map(|profile| profile.wp_store),
+        profile_fc_tail_mm,
+        layers,
+    })
+}
 
 fn fc_wp_rock_multiplier_policy(soil_datver: SoilDatver) -> FcWpRockMultiplierPolicy {
     match soil_datver {
@@ -1571,6 +1778,115 @@ impl Default for SlopeRuntimeSurfaceOptions {
     }
 }
 
+/// Typed parsed slope runtime projection.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TypedSlopeRuntimeProjection {
+    pub ofe_count: usize,
+    pub ofes: Vec<TypedSlopeOfeRuntimeProjection>,
+}
+
+/// Typed parsed slope OFE runtime projection.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TypedSlopeOfeRuntimeProjection {
+    pub nslpts: usize,
+    pub slplen_m: f64,
+    pub avgslp: f64,
+    pub avgslp_floor_applied: bool,
+    pub azimuth_deg: f64,
+    pub points: Vec<TypedSlopePointRuntimeProjection>,
+}
+
+/// Typed parsed slope point runtime projection.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TypedSlopePointRuntimeProjection {
+    pub xinput: f64,
+    pub slpinp: f64,
+}
+
+/// Project typed slope runtime geometry from parsed slope input.
+///
+/// # Errors
+///
+/// Returns `HillslopeRuntimeInputError` when slope parser output violates
+/// runtime guard policy.
+#[allow(clippy::too_many_lines)]
+pub fn project_typed_slope_runtime_with_options(
+    slope: &SlopeProfile,
+    options: SlopeRuntimeSurfaceOptions,
+) -> Result<TypedSlopeRuntimeProjection, HillslopeRuntimeInputError> {
+    validate_slope_profile_shape(slope)?;
+
+    let _ofe_count =
+        u32::try_from(slope.ofe_count).map_err(|_| {
+            HillslopeRuntimeInputError::SlopeOfeCountOutOfRange {
+                value: slope.ofe_count,
+            }
+        })?;
+    let mut ofes = Vec::with_capacity(slope.ofe_count);
+    for (ofe_position, ofe) in slope.ofes.iter().enumerate() {
+        let ofe_index = ofe_position + 1;
+        validate_slope_ofe_shape(ofe_index, ofe.nslpts, ofe.points.len())?;
+        validate_slope_points(ofe_index, &ofe.points)?;
+
+        let _nslpts = u32::try_from(ofe.nslpts).map_err(|_| {
+            HillslopeRuntimeInputError::SlopePointCountOutOfRange {
+                ofe_index,
+                value: ofe.nslpts,
+            }
+        })?;
+
+        let slplen_m = ofe.slplen;
+        if !slplen_m.is_finite() {
+            return Err(HillslopeRuntimeInputError::NonFiniteSlopeLength {
+                ofe_index,
+                value_m: slplen_m,
+            });
+        }
+        if slplen_m <= 0.0 {
+            return Err(HillslopeRuntimeInputError::NonPositiveSlopeLength {
+                ofe_index,
+                value_m: slplen_m,
+            });
+        }
+
+        let (avgslp, avgslp_floor_applied) =
+            derive_avgslp(ofe_index, &ofe.points, options.non_positive_avgslp_floor)?;
+        ofes.push(TypedSlopeOfeRuntimeProjection {
+            nslpts: ofe.nslpts,
+            slplen_m,
+            avgslp,
+            avgslp_floor_applied,
+            azimuth_deg: ofe.azm,
+            points: ofe
+                .points
+                .iter()
+                .map(|point| TypedSlopePointRuntimeProjection {
+                    xinput: point.xinput,
+                    slpinp: point.slpinp,
+                })
+                .collect(),
+        });
+    }
+
+    Ok(TypedSlopeRuntimeProjection {
+        ofe_count: slope.ofe_count,
+        ofes,
+    })
+}
+
+/// Project typed slope runtime geometry from parsed slope input using strict
+/// nonpositive-average-slope guard semantics.
+///
+/// # Errors
+///
+/// Returns `HillslopeRuntimeInputError` when slope parser output violates
+/// runtime guard policy.
+pub fn project_typed_slope_runtime(
+    slope: &SlopeProfile,
+) -> Result<TypedSlopeRuntimeProjection, HillslopeRuntimeInputError> {
+    project_typed_slope_runtime_with_options(slope, SlopeRuntimeSurfaceOptions::strict())
+}
+
 /// Build an orchestrator-owned hillslope runtime surface from parsed slope
 /// input.
 ///
@@ -1590,12 +1906,11 @@ pub fn build_hillslope_runtime_surface_from_slope_with_options(
     slope: &SlopeProfile,
     options: SlopeRuntimeSurfaceOptions,
 ) -> Result<HillslopeWritebackSurface, HillslopeRuntimeInputError> {
-    validate_slope_profile_shape(slope)?;
-
+    let projection = project_typed_slope_runtime_with_options(slope, options)?;
     let mut state_surface = BTreeMap::new();
-    let ofe_count = u32::try_from(slope.ofe_count).map_err(|_| {
+    let ofe_count = u32::try_from(projection.ofe_count).map_err(|_| {
         HillslopeRuntimeInputError::SlopeOfeCountOutOfRange {
-            value: slope.ofe_count,
+            value: projection.ofe_count,
         }
     })?;
     state_surface.insert(
@@ -1607,48 +1922,27 @@ pub fn build_hillslope_runtime_surface_from_slope_with_options(
         BoundaryValue::scalar(f64::from(ofe_count)),
     );
 
-    for (ofe_position, ofe) in slope.ofes.iter().enumerate() {
+    for (ofe_position, ofe) in projection.ofes.iter().enumerate() {
         let ofe_index = ofe_position + 1;
-        validate_slope_ofe_shape(ofe_index, ofe.nslpts, ofe.points.len())?;
-        validate_slope_points(ofe_index, &ofe.points)?;
-
         let nslpts = u32::try_from(ofe.nslpts).map_err(|_| {
             HillslopeRuntimeInputError::SlopePointCountOutOfRange {
                 ofe_index,
                 value: ofe.nslpts,
             }
         })?;
-
-        let slplen = ofe.slplen;
-        if !slplen.is_finite() {
-            return Err(HillslopeRuntimeInputError::NonFiniteSlopeLength {
-                ofe_index,
-                value_m: slplen,
-            });
-        }
-        if slplen <= 0.0 {
-            return Err(HillslopeRuntimeInputError::NonPositiveSlopeLength {
-                ofe_index,
-                value_m: slplen,
-            });
-        }
-
-        let (avgslp, avgslp_floor_applied) =
-            derive_avgslp(ofe_index, &ofe.points, options.non_positive_avgslp_floor)?;
-        let azm = ofe.azm;
         state_surface.insert(
             slope_ofe_symbol("nslpts", ofe_index),
             BoundaryValue::scalar(f64::from(nslpts)),
         );
         state_surface.insert(
             slope_ofe_symbol("slplen", ofe_index),
-            BoundaryValue::scalar(slplen),
+            BoundaryValue::scalar(ofe.slplen_m),
         );
         state_surface.insert(
             slope_ofe_symbol("avgslp", ofe_index),
-            BoundaryValue::scalar(avgslp),
+            BoundaryValue::scalar(ofe.avgslp),
         );
-        if avgslp_floor_applied {
+        if ofe.avgslp_floor_applied {
             state_surface.insert(
                 slope_ofe_symbol("avgslp_floor_applied", ofe_index),
                 BoundaryValue::scalar(1.0),
@@ -1656,7 +1950,7 @@ pub fn build_hillslope_runtime_surface_from_slope_with_options(
         }
         state_surface.insert(
             slope_ofe_symbol("azm", ofe_index),
-            BoundaryValue::scalar(azm),
+            BoundaryValue::scalar(ofe.azimuth_deg),
         );
 
         for (point_position, point) in ofe.points.iter().enumerate() {
@@ -1678,19 +1972,22 @@ pub fn build_hillslope_runtime_surface_from_slope_with_options(
             );
             state_surface.insert(
                 BoundarySymbol::from("slplen"),
-                BoundaryValue::scalar(slplen),
+                BoundaryValue::scalar(ofe.slplen_m),
             );
             state_surface.insert(
                 BoundarySymbol::from("avgslp"),
-                BoundaryValue::scalar(avgslp),
+                BoundaryValue::scalar(ofe.avgslp),
             );
-            if avgslp_floor_applied {
+            if ofe.avgslp_floor_applied {
                 state_surface.insert(
                     BoundarySymbol::from("avgslp_floor_applied"),
                     BoundaryValue::scalar(1.0),
                 );
             }
-            state_surface.insert(BoundarySymbol::from("azm"), BoundaryValue::scalar(azm));
+            state_surface.insert(
+                BoundarySymbol::from("azm"),
+                BoundaryValue::scalar(ofe.azimuth_deg),
+            );
 
             for (point_position, point) in ofe.points.iter().enumerate() {
                 let point_index = point_position + 1;

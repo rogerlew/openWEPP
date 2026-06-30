@@ -18,12 +18,75 @@ pub(super) const MOFE03_ROUTE_SEGMENT_INDEX: usize = 2;
 
 #[derive(Debug, Clone, Copy)]
 pub(super) struct Mofe03Wave2CaseScalars {
-    case_value: f64,
-    qj_minus_1: f64,
-    vj: f64,
-    qj: f64,
-    fh: f64,
-    fp: f64,
+    pub(super) case_value: f64,
+    pub(super) qj_minus_1: f64,
+    pub(super) vj: f64,
+    pub(super) qj: f64,
+    pub(super) fh: f64,
+    pub(super) fp: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct TypedMofe03Wave2ClassProjection {
+    pub(crate) fall_m_s: f64,
+    pub(crate) frcflw: f64,
+    pub(crate) frac: f64,
+    pub(crate) fidel: f64,
+    pub(crate) tcf1: f64,
+    pub(crate) ssa_class: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct TypedMofe03Wave2Projection {
+    pub(crate) wave2_enabled: bool,
+    pub(crate) class_count: usize,
+    pub(crate) xtop_m: f64,
+    pub(crate) xbot_m: f64,
+    pub(crate) xdetst_m: f64,
+    pub(crate) ldtop_kg_s_m: f64,
+    pub(crate) ldbot_kg_s_m: f64,
+    pub(crate) lddend_kg: f64,
+    pub(crate) qout_m3_s: f64,
+    pub(crate) qin_m3_s: f64,
+    pub(crate) qostar_m: f64,
+    pub(crate) slplen_m: f64,
+    pub(crate) ktrato: f64,
+    pub(crate) aintc: f64,
+    pub(crate) bintc: f64,
+    pub(crate) cintc: f64,
+    pub(crate) beta: f64,
+    pub(crate) theta: f64,
+    pub(crate) qj_minus_1_m3_s: f64,
+    pub(crate) vj_m: f64,
+    pub(crate) qj_m3_s: f64,
+    pub(crate) fh_m: f64,
+    pub(crate) fp_m: f64,
+    pub(crate) case_value: f64,
+    pub(crate) ssa_soil: f64,
+    pub(crate) route_qostar_m: f64,
+    pub(crate) route_xdetst_m: f64,
+    pub(crate) route_lddend_kg: f64,
+    pub(crate) route_xu_m: f64,
+    pub(crate) route_xl_m: f64,
+    pub(crate) route_ainf: f64,
+    pub(crate) route_binf: f64,
+    pub(crate) route_cinf: f64,
+    pub(crate) route_ainftc: f64,
+    pub(crate) route_binftc: f64,
+    pub(crate) route_cinftc: f64,
+    pub(crate) classes: Vec<TypedMofe03Wave2ClassProjection>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct TypedMofe03Wave2Input {
+    pub(crate) wave2_enabled: bool,
+    pub(crate) slplen_m: f64,
+    pub(crate) qout_m3_s: f64,
+    pub(crate) qin_m3_s: f64,
+    pub(crate) efflen_m: Option<f64>,
+    pub(crate) ssa_soil: Option<f64>,
+    pub(crate) beta: f64,
+    pub(crate) theta: f64,
 }
 
 pub(super) fn seed_mofe03_wave2_runtime_surface_inputs(
@@ -36,22 +99,199 @@ pub(super) fn seed_mofe03_wave2_runtime_surface_inputs(
         return Ok(());
     }
 
-    let slplen = require_mofe03_positive_runtime_surface_scalar(
+    let slplen_m = require_mofe03_positive_runtime_surface_scalar(
         runtime_surface,
         "slplen",
         "Wave-2 seeding",
     )?;
     let qout = resolve_mofe03_wave2_qout(runtime_surface)?;
     let qin = resolve_mofe03_wave2_qin(runtime_surface)?;
-    let qostar = resolve_mofe03_wave2_qostar(runtime_surface, slplen, qout, qin)?;
-    let case_scalars = build_mofe03_wave2_case_scalars(qout);
-
-    seed_mofe03_wave2_core_scalars(runtime_surface, ofe_count, slplen, qout, qin, qostar)?;
-    seed_mofe03_wave2_route_topology_ingress(runtime_surface, qostar);
     let (beta, theta) = resolve_mofe03_wave2_beta_theta(runtime_surface)?;
-    seed_mofe03_wave2_case_state(runtime_surface, case_scalars, beta, theta);
-    seed_mofe03_wave2_ssa_soil(runtime_surface)?;
-    seed_mofe03_wave2_class_symbols(runtime_surface, ofe_count)?;
+    let projection = project_typed_mofe03_wave2(TypedMofe03Wave2Input {
+        wave2_enabled,
+        slplen_m,
+        qout_m3_s: qout,
+        qin_m3_s: qin,
+        efflen_m: runtime_surface_symbol_value(runtime_surface, "efflen"),
+        ssa_soil: runtime_surface_symbol_value(runtime_surface, "erod14_ssa_soil"),
+        beta,
+        theta,
+    })?;
+    publish_typed_mofe03_wave2_projection(runtime_surface, &projection)?;
+    Ok(())
+}
+
+pub(crate) fn project_typed_mofe03_wave2(
+    input: TypedMofe03Wave2Input,
+) -> Result<TypedMofe03Wave2Projection, HillslopeCliError> {
+    if !input.wave2_enabled {
+        return Ok(TypedMofe03Wave2Projection::disabled());
+    }
+    require_mofe03_positive_seed_scalar(input.slplen_m, "slplen")?;
+    let qout_m3_s = require_mofe03_non_negative_seed_scalar(input.qout_m3_s, "erod14_qout")?;
+    let qin_m3_s = require_mofe03_non_negative_seed_scalar(input.qin_m3_s, "erod14_qin")?;
+    let qostar = project_typed_mofe03_wave2_qostar(
+        input.slplen_m,
+        qout_m3_s,
+        qin_m3_s,
+        input.efflen_m,
+    )?;
+    let ssa_soil = match input.ssa_soil {
+        Some(value) => require_mofe03_positive_seed_scalar(value, "erod14_ssa_soil")?,
+        None => MOFE03_WAVE2_DEFAULT_SSA_SOIL,
+    };
+    let beta = require_mofe03_non_negative_seed_scalar(input.beta, "beta")?;
+    let theta = require_mofe03_non_negative_seed_scalar(input.theta, "theta")?;
+    let case_scalars = build_mofe03_wave2_case_scalars(qout_m3_s);
+    let route_qostar_m = qostar.max(MOFE03_WAVE2_DEFAULT_QOSTAR);
+    Ok(TypedMofe03Wave2Projection {
+        wave2_enabled: true,
+        class_count: MOFE03_WAVE2_PARTICLE_CLASS_COUNT,
+        xtop_m: MOFE03_WAVE2_DEFAULT_XTOP,
+        xbot_m: MOFE03_WAVE2_DEFAULT_XBOT,
+        xdetst_m: MOFE03_WAVE2_DEFAULT_XDETST,
+        ldtop_kg_s_m: MOFE03_WAVE2_DEFAULT_LDTOP,
+        ldbot_kg_s_m: MOFE03_WAVE2_DEFAULT_LDBOT,
+        lddend_kg: MOFE03_WAVE2_DEFAULT_LDDEND,
+        qout_m3_s,
+        qin_m3_s,
+        qostar_m: qostar,
+        slplen_m: input.slplen_m,
+        ktrato: MOFE03_WAVE2_DEFAULT_KTRATO,
+        aintc: MOFE03_WAVE2_DEFAULT_AINTC,
+        bintc: MOFE03_WAVE2_DEFAULT_BINTC,
+        cintc: MOFE03_WAVE2_DEFAULT_CINTC,
+        beta,
+        theta,
+        qj_minus_1_m3_s: case_scalars.qj_minus_1,
+        vj_m: case_scalars.vj,
+        qj_m3_s: case_scalars.qj,
+        fh_m: case_scalars.fh,
+        fp_m: case_scalars.fp,
+        case_value: case_scalars.case_value,
+        ssa_soil,
+        route_qostar_m,
+        route_xdetst_m: MOFE03_WAVE2_DEFAULT_XDETST,
+        route_lddend_kg: MOFE03_WAVE2_DEFAULT_LDDEND,
+        route_xu_m: MOFE03_WAVE2_DEFAULT_XTOP,
+        route_xl_m: MOFE03_WAVE2_DEFAULT_XBOT,
+        route_ainf: MOFE03_WAVE2_DEFAULT_AINTC,
+        route_binf: MOFE03_WAVE2_DEFAULT_BINTC,
+        route_cinf: MOFE03_WAVE2_DEFAULT_CINTC,
+        route_ainftc: MOFE03_WAVE2_DEFAULT_AINTC,
+        route_binftc: MOFE03_WAVE2_DEFAULT_BINTC,
+        route_cinftc: MOFE03_WAVE2_DEFAULT_CINTC,
+        classes: project_typed_mofe03_wave2_classes()?,
+    })
+}
+
+impl TypedMofe03Wave2Projection {
+    fn disabled() -> Self {
+        Self {
+            wave2_enabled: false,
+            class_count: 0,
+            xtop_m: 0.0,
+            xbot_m: 0.0,
+            xdetst_m: 0.0,
+            ldtop_kg_s_m: 0.0,
+            ldbot_kg_s_m: 0.0,
+            lddend_kg: 0.0,
+            qout_m3_s: 0.0,
+            qin_m3_s: 0.0,
+            qostar_m: 0.0,
+            slplen_m: 0.0,
+            ktrato: 0.0,
+            aintc: 0.0,
+            bintc: 0.0,
+            cintc: 0.0,
+            beta: 0.0,
+            theta: 0.0,
+            qj_minus_1_m3_s: 0.0,
+            vj_m: 0.0,
+            qj_m3_s: 0.0,
+            fh_m: 0.0,
+            fp_m: 0.0,
+            case_value: 0.0,
+            ssa_soil: 0.0,
+            route_qostar_m: 0.0,
+            route_xdetst_m: 0.0,
+            route_lddend_kg: 0.0,
+            route_xu_m: 0.0,
+            route_xl_m: 0.0,
+            route_ainf: 0.0,
+            route_binf: 0.0,
+            route_cinf: 0.0,
+            route_ainftc: 0.0,
+            route_binftc: 0.0,
+            route_cinftc: 0.0,
+            classes: Vec::new(),
+        }
+    }
+}
+
+fn project_typed_mofe03_wave2_qostar(
+    slplen_m: f64,
+    qout_m3_s: f64,
+    qin_m3_s: f64,
+    efflen_m: Option<f64>,
+) -> Result<f64, HillslopeCliError> {
+    let del = qout_m3_s - qin_m3_s;
+    let qostar = if qout_m3_s <= 0.0 {
+        let efflen_m = efflen_m.unwrap_or(slplen_m);
+        require_mofe03_positive_seed_scalar(efflen_m, "efflen")?;
+        -efflen_m / slplen_m
+    } else if del.abs() > 1.0e-10 {
+        if qin_m3_s <= 0.0 { 0.0 } else { qin_m3_s / del }
+    } else if del >= 0.0 {
+        qin_m3_s / 1.0e-10
+    } else {
+        -qin_m3_s / 1.0e-10
+    };
+    require_mofe03_seed_scalar(qostar, "erod14_qostar")?;
+    Ok(if (qostar + 1.0).abs() <= MOFE03_WAVE2_ENABLE_TOLERANCE {
+        -1.001
+    } else {
+        qostar
+    })
+}
+
+fn project_typed_mofe03_wave2_classes(
+) -> Result<Vec<TypedMofe03Wave2ClassProjection>, HillslopeCliError> {
+    let class_count_f64 = usize_to_scalar("erod14_class_count", MOFE03_WAVE2_PARTICLE_CLASS_COUNT)?;
+    let class_fraction = 1.0 / class_count_f64;
+    let mut classes = Vec::with_capacity(MOFE03_WAVE2_PARTICLE_CLASS_COUNT);
+    for class_index in 1..=MOFE03_WAVE2_PARTICLE_CLASS_COUNT {
+        let class_index_f64 = usize_to_scalar("erod14_class_index", class_index)?;
+        let reverse_class_index = MOFE03_WAVE2_PARTICLE_CLASS_COUNT.saturating_sub(class_index) + 1;
+        let reverse_class_index_f64 =
+            usize_to_scalar("erod14_reverse_class_index", reverse_class_index)?;
+        let class_offset = class_index.saturating_sub(1);
+        let class_offset_f64 = usize_to_scalar("erod14_class_offset", class_offset)?;
+        classes.push(TypedMofe03Wave2ClassProjection {
+            fall_m_s: (0.02 / class_index_f64).max(MOFE03_WAVE2_MIN_POSITIVE),
+            frcflw: class_fraction,
+            frac: class_fraction,
+            fidel: (0.20 + (0.10 * class_index_f64)).min(0.95),
+            tcf1: 0.20 + (0.05 * reverse_class_index_f64),
+            ssa_class: 1.5 + (2.5 * class_offset_f64),
+        });
+    }
+    Ok(classes)
+}
+
+fn publish_typed_mofe03_wave2_projection(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    projection: &TypedMofe03Wave2Projection,
+) -> Result<(), HillslopeCliError> {
+    write_mofe03_wave2_enabled(runtime_surface, projection.wave2_enabled);
+    if !projection.wave2_enabled {
+        return Ok(());
+    }
+    seed_mofe03_wave2_core_scalars(runtime_surface, projection)?;
+    seed_mofe03_wave2_route_topology_ingress(runtime_surface, projection);
+    seed_mofe03_wave2_case_state(runtime_surface, projection);
+    seed_mofe03_wave2_ssa_soil(runtime_surface, projection);
+    seed_mofe03_wave2_class_symbols(runtime_surface, projection)?;
     Ok(())
 }
 
@@ -129,32 +369,6 @@ pub(super) fn resolve_mofe03_wave2_qin(
     )
 }
 
-pub(super) fn resolve_mofe03_wave2_qostar(
-    runtime_surface: &HillslopeWritebackSurface,
-    slplen: f64,
-    qout: f64,
-    qin: f64,
-) -> Result<f64, HillslopeCliError> {
-    let del = qout - qin;
-    let qostar = if qout <= 0.0 {
-        let efflen = runtime_surface_symbol_value(runtime_surface, "efflen").unwrap_or(slplen);
-        require_mofe03_positive_seed_scalar(efflen, "efflen")?;
-        -efflen / slplen
-    } else if del.abs() > 1.0e-10 {
-        if qin <= 0.0 { 0.0 } else { qin / del }
-    } else if del >= 0.0 {
-        qin / 1.0e-10
-    } else {
-        -qin / 1.0e-10
-    };
-    require_mofe03_seed_scalar(qostar, "erod14_qostar")?;
-    Ok(if (qostar + 1.0).abs() <= MOFE03_WAVE2_ENABLE_TOLERANCE {
-        -1.001
-    } else {
-        qostar
-    })
-}
-
 pub(super) fn build_mofe03_wave2_case_scalars(qout: f64) -> Mofe03Wave2CaseScalars {
     if qout > MOFE03_WAVE2_ENABLE_TOLERANCE {
         return Mofe03Wave2CaseScalars {
@@ -178,113 +392,92 @@ pub(super) fn build_mofe03_wave2_case_scalars(qout: f64) -> Mofe03Wave2CaseScala
 
 pub(super) fn seed_mofe03_wave2_core_scalars(
     runtime_surface: &mut HillslopeWritebackSurface,
-    _ofe_count: usize,
-    slplen: f64,
-    qout: f64,
-    qin: f64,
-    qostar: f64,
+    projection: &TypedMofe03Wave2Projection,
 ) -> Result<(), HillslopeCliError> {
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_class_count"),
-        BoundaryValue::scalar(usize_to_scalar(
-            "erod14_class_count",
-            MOFE03_WAVE2_PARTICLE_CLASS_COUNT,
-        )?),
+        BoundaryValue::scalar(usize_to_scalar("erod14_class_count", projection.class_count)?),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_xtop"),
-        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_XTOP),
+        BoundaryValue::scalar(projection.xtop_m),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_xbot"),
-        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_XBOT),
+        BoundaryValue::scalar(projection.xbot_m),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_xdetst"),
-        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_XDETST),
+        BoundaryValue::scalar(projection.xdetst_m),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_ldtop"),
-        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_LDTOP),
+        BoundaryValue::scalar(projection.ldtop_kg_s_m),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_ldbot"),
-        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_LDBOT),
+        BoundaryValue::scalar(projection.ldbot_kg_s_m),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_lddend"),
-        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_LDDEND),
+        BoundaryValue::scalar(projection.lddend_kg),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_qout"),
-        BoundaryValue::scalar(qout),
+        BoundaryValue::scalar(projection.qout_m3_s),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_qin"),
-        BoundaryValue::scalar(qin),
+        BoundaryValue::scalar(projection.qin_m3_s),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_qostar"),
-        BoundaryValue::scalar(qostar.max(MOFE03_WAVE2_DEFAULT_QOSTAR)),
+        BoundaryValue::scalar(projection.qostar_m.max(MOFE03_WAVE2_DEFAULT_QOSTAR)),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_slplen"),
-        BoundaryValue::scalar(slplen),
+        BoundaryValue::scalar(projection.slplen_m),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_ktrato"),
-        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_KTRATO),
+        BoundaryValue::scalar(projection.ktrato),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_ainftc"),
-        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_AINTC),
+        BoundaryValue::scalar(projection.aintc),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_binftc"),
-        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_BINTC),
+        BoundaryValue::scalar(projection.bintc),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_cinftc"),
-        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_CINTC),
+        BoundaryValue::scalar(projection.cintc),
     );
     Ok(())
 }
 
 pub(super) fn seed_mofe03_wave2_route_topology_ingress(
     runtime_surface: &mut HillslopeWritebackSurface,
-    qostar: f64,
+    projection: &TypedMofe03Wave2Projection,
 ) {
-    let xu = runtime_surface_symbol_value(runtime_surface, "erod14_xtop")
-        .unwrap_or(MOFE03_WAVE2_DEFAULT_XTOP);
-    let xl = runtime_surface_symbol_value(runtime_surface, "erod14_xbot")
-        .unwrap_or(MOFE03_WAVE2_DEFAULT_XBOT);
-    let xdetst = runtime_surface_symbol_value(runtime_surface, "erod14_xdetst")
-        .unwrap_or(MOFE03_WAVE2_DEFAULT_XDETST);
-    let lddend = runtime_surface_symbol_value(runtime_surface, "erod14_lddend")
-        .unwrap_or(MOFE03_WAVE2_DEFAULT_LDDEND);
-    let ainftc = runtime_surface_symbol_value(runtime_surface, "erod14_ainftc")
-        .unwrap_or(MOFE03_WAVE2_DEFAULT_AINTC);
-    let binftc = runtime_surface_symbol_value(runtime_surface, "erod14_binftc")
-        .unwrap_or(MOFE03_WAVE2_DEFAULT_BINTC);
-    let cinftc = runtime_surface_symbol_value(runtime_surface, "erod14_cinftc")
-        .unwrap_or(MOFE03_WAVE2_DEFAULT_CINTC);
     let segment = MOFE03_ROUTE_SEGMENT_INDEX;
 
     seed_mofe03_scalar_if_absent(
         runtime_surface,
         "qostar",
-        qostar.max(MOFE03_WAVE2_DEFAULT_QOSTAR),
+        projection.route_qostar_m,
     );
-    seed_mofe03_scalar_if_absent(runtime_surface, "xdetst", xdetst);
-    seed_mofe03_scalar_if_absent(runtime_surface, "lddend", lddend);
-    seed_mofe03_segment_scalar_if_absent(runtime_surface, "xu", segment, xu);
-    seed_mofe03_segment_scalar_if_absent(runtime_surface, "xl", segment, xl);
-    seed_mofe03_segment_scalar_if_absent(runtime_surface, "ainf", segment, ainftc);
-    seed_mofe03_segment_scalar_if_absent(runtime_surface, "binf", segment, binftc);
-    seed_mofe03_segment_scalar_if_absent(runtime_surface, "cinf", segment, cinftc);
-    seed_mofe03_segment_scalar_if_absent(runtime_surface, "ainftc", segment, ainftc);
-    seed_mofe03_segment_scalar_if_absent(runtime_surface, "binftc", segment, binftc);
-    seed_mofe03_segment_scalar_if_absent(runtime_surface, "cinftc", segment, cinftc);
+    seed_mofe03_scalar_if_absent(runtime_surface, "xdetst", projection.route_xdetst_m);
+    seed_mofe03_scalar_if_absent(runtime_surface, "lddend", projection.route_lddend_kg);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "xu", segment, projection.route_xu_m);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "xl", segment, projection.route_xl_m);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "ainf", segment, projection.route_ainf);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "binf", segment, projection.route_binf);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "cinf", segment, projection.route_cinf);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "ainftc", segment, projection.route_ainftc);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "binftc", segment, projection.route_binftc);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "cinftc", segment, projection.route_cinftc);
 }
 
 pub(super) fn seed_mofe03_scalar_if_absent(
@@ -340,107 +533,92 @@ pub(super) fn resolve_mofe03_wave2_beta_theta(
 
 pub(super) fn seed_mofe03_wave2_case_state(
     runtime_surface: &mut HillslopeWritebackSurface,
-    case_scalars: Mofe03Wave2CaseScalars,
-    beta: f64,
-    theta: f64,
+    projection: &TypedMofe03Wave2Projection,
 ) {
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_beta"),
-        BoundaryValue::scalar(beta),
+        BoundaryValue::scalar(projection.beta),
     );
     runtime_surface
         .state_surface
-        .insert(BoundarySymbol::from("theta"), BoundaryValue::scalar(theta));
+        .insert(BoundarySymbol::from("theta"), BoundaryValue::scalar(projection.theta));
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_Qj_minus_1"),
-        BoundaryValue::scalar(case_scalars.qj_minus_1),
+        BoundaryValue::scalar(projection.qj_minus_1_m3_s),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_Vj"),
-        BoundaryValue::scalar(case_scalars.vj),
+        BoundaryValue::scalar(projection.vj_m),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_Qj"),
-        BoundaryValue::scalar(case_scalars.qj),
+        BoundaryValue::scalar(projection.qj_m3_s),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_Fh"),
-        BoundaryValue::scalar(case_scalars.fh),
+        BoundaryValue::scalar(projection.fh_m),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_Fp"),
-        BoundaryValue::scalar(case_scalars.fp),
+        BoundaryValue::scalar(projection.fp_m),
     );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_case"),
-        BoundaryValue::scalar(case_scalars.case_value),
+        BoundaryValue::scalar(projection.case_value),
     );
 }
 
 pub(super) fn seed_mofe03_wave2_ssa_soil(
     runtime_surface: &mut HillslopeWritebackSurface,
-) -> Result<(), HillslopeCliError> {
-    let ssa_soil = match runtime_surface_symbol_value(runtime_surface, "erod14_ssa_soil") {
-        Some(value) => require_mofe03_positive_seed_scalar(value, "erod14_ssa_soil")?,
-        None => MOFE03_WAVE2_DEFAULT_SSA_SOIL,
-    };
+    projection: &TypedMofe03Wave2Projection,
+) {
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("erod14_ssa_soil"),
-        BoundaryValue::scalar(ssa_soil),
+        BoundaryValue::scalar(projection.ssa_soil),
     );
-    Ok(())
 }
 
 pub(super) fn seed_mofe03_wave2_class_symbols(
     runtime_surface: &mut HillslopeWritebackSurface,
-    _ofe_count: usize,
+    projection: &TypedMofe03Wave2Projection,
 ) -> Result<(), HillslopeCliError> {
-    let class_count = MOFE03_WAVE2_PARTICLE_CLASS_COUNT;
-    let class_count_f64 = usize_to_scalar("erod14_class_count", class_count)?;
-    let class_fraction = 1.0 / class_count_f64;
-    for class_index in 1..=class_count {
-        let class_index_f64 = usize_to_scalar("erod14_class_index", class_index)?;
-        let reverse_class_index = class_count.saturating_sub(class_index) + 1;
-        let reverse_class_index_f64 =
-            usize_to_scalar("erod14_reverse_class_index", reverse_class_index)?;
-        let class_offset = class_index.saturating_sub(1);
-        let class_offset_f64 = usize_to_scalar("erod14_class_offset", class_offset)?;
-
+    for (class_offset, class_projection) in projection.classes.iter().enumerate() {
+        let class_index = class_offset + 1;
         seed_mofe03_wave2_class_symbol(
             runtime_surface,
             "erod14_fall",
             class_index,
-            (0.02 / class_index_f64).max(MOFE03_WAVE2_MIN_POSITIVE),
+            class_projection.fall_m_s,
         )?;
         seed_mofe03_wave2_class_symbol(
             runtime_surface,
             "erod14_frcflw",
             class_index,
-            class_fraction,
+            class_projection.frcflw,
         )?;
         seed_mofe03_wave2_class_symbol(
             runtime_surface,
             "erod14_frac",
             class_index,
-            class_fraction,
+            class_projection.frac,
         )?;
         seed_mofe03_wave2_class_symbol(
             runtime_surface,
             "erod14_fidel",
             class_index,
-            (0.20 + (0.10 * class_index_f64)).min(0.95),
+            class_projection.fidel,
         )?;
         seed_mofe03_wave2_class_symbol(
             runtime_surface,
             "erod14_tcf1",
             class_index,
-            0.20 + (0.05 * reverse_class_index_f64),
+            class_projection.tcf1,
         )?;
         seed_mofe03_wave2_class_symbol(
             runtime_surface,
             "erod14_ssa_class",
             class_index,
-            1.5 + (2.5 * class_offset_f64),
+            class_projection.ssa_class,
         )?;
     }
     Ok(())

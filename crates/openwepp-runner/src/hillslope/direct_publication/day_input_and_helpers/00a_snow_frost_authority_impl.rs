@@ -1,7 +1,8 @@
+#[allow(dead_code)]
 impl DirectProductionSnowFrostAuthority {
     #[allow(clippy::too_many_lines)]
     fn from_seed(seed_surface: &HillslopeWritebackSurface) -> Result<Self, HillslopeCliError> {
-        let _snow_file_present = direct_publication_optional_enabled_flag(
+        let snow_file_present = direct_publication_optional_enabled_flag(
             seed_surface,
             "snow.options.snow_file_present",
         )?
@@ -157,6 +158,7 @@ impl DirectProductionSnowFrostAuthority {
             None
         };
         Ok(Self {
+            snow_file_present,
             snow_runtime_swe_m,
             snow_runtime_depth_m,
             snow_runtime_density_kg_m3,
