@@ -1,0 +1,37 @@
+# Backlog Tracker
+
+State of the `docs/backlog/` concept notes. This is the at-a-glance index;
+each note holds the authoritative detail. Update the row when a note's state
+changes (promote, prune, block). See [README.md](README.md) for the
+concept → work-package → contract-authoring promotion path.
+
+**State vocabulary:**
+- `concept` — concept note exists; not yet prioritized for a work-package.
+- `breadcrumb` — deliberately-thin placeholder to return to; not being planned.
+- `staged` — partially addressed; a dimension is implemented/active, remainder concept.
+- `blocked` — concept, gated on a named prerequisite.
+- `complete` — superseded by completed work; **prune candidate** (move detail to the
+  execution log and delete the note).
+
+Last updated: 2026-06-30 (Claude Code).
+
+| Item | State | Gate / blocker | Notes |
+|---|---|---|---|
+| [1.5D top-slope trapezoidal kinematic wave](20260512-1p5d-top-slope-trapezoidal-kinematic-wave.md) | `concept` | not prioritized | Hillslope-geometry kinematic-wave extension. |
+| [Residue moisture storage — full state](20260512-residue-moisture-storage-full-state.md) | `concept` | not prioritized | Full residue moisture-storage state (beyond the current residue cover). |
+| [Hairsine–Rose multiclass sediment model](20260526-hairsine-rose-multiclass-sediment-model.md) | `concept` | not prioritized | Alternative multiclass erosion model. |
+| [Snow-code deferred science review](20260605-snow-code-deferred-science-review.md) | `staged` | Stage-2 snowd.for review concept | **Substantially addressed** by the snow-fidelity arc (Harder–Pomeroy phase, holding-capacity, density compaction; density is legacy-as-built-equivalent). The `snowd.for` Eq. 3.7.5 code-vs-doc divergence review (Stage 2) remains. |
+| [Frost-depth model — heat-flow parity](20260607-frost-depth-model-heat-flow-parity.md) | `complete` | — | **FDHP01 done; frost ratified** (`INV-SNOWFREEZE-047/048/050`, default-activated). Prune candidate — detail is in the `20260608-fdhp01-*` and `20260629-frost-*` work-packages. |
+| [Frost-heave / frozen-fringe / impedance (`Qwet`)](20260612-frost-heave-frozen-fringe-impedance-formulation.md) | `concept` | ungated (FDHP01 done); deferred | The deferred wet-heat/`Qwet` candidate for the **2 snow-free frost cells** the frost arc bounded. Legacy `frzftp=0` (no authority); needs external/literature authority. |
+| [Irrigation management-gated activation](20260617-irrigation-management-gated-activation.md) | `concept` | deferred (runs only when management declares it) | Out of scope for the perf migration; activate when irrigation is prioritized. |
+| [Forest lateral-flow absolute-magnitude authority](20260618-forest-lateral-flow-absolute-magnitude-authority.md) | `blocked` | external-authority gap | The FARPOINT01 71% `runvol` `CONTRACT-GAP` (`CORRECT-BY-CONSTRUCTION`); absolute magnitude unvalidatable without external authority. |
+| [Frost / daylength canopy decline + leaf-on/leaf-off + residue cover](20260626-frost-daylength-canopy-decline-hemisphere-robust.md) | `staged` | canopy phenology + litter daylength re-anchor concept | **Residue-cover dimension implemented** (dynamic forest-litter coupling, `SC-RESIDUE-001` `INV-RESIDUE-019`). Remaining: hemisphere-robust canopy leaf-off/leaf-on, and re-anchoring the litter-drop window off fixed `jdharv` to a physical photoperiod/frost cue. |
+| [Canopy snow interception / sublimation](20260627-canopy-snow-interception-sublimation.md) | `concept` | not load-bearing yet | The canopy side of sublimation (distinct from the surface-pack side below). |
+| [Stream water temperature — surface energy balance](20260627-stream-water-temperature-surface-energy-balance.md) | `breadcrumb` | prerequisites met; not being planned | Surface-EB foundation + opt-in meltwater-temperature source exist. Open question on pickup: can hourly water+temperature serialize across HBP and be consumed by `openwepp-cli-watershed`. |
+| [Multilayer surface-EB sublimation + longwave](20260629-multilayer-surface-sublimation-longwave.md) | `breadcrumb` | sequenced after frost | Surface-pack sublimation via the per-layer surface energy balance; the streamflow/ET-tuning case makes it more defect-shaped than a fidelity nicety. |
+
+## Active program (not backlog — tracked here for cross-reference)
+
+| Program | State | Authority | Notes |
+|---|---|---|---|
+| **Kernel-boundary typing program** | `active` (started 2026-06-30) | array-native spec §8.2 (8-step sequence); ADR-0031 execution scope | Eliminate the symbol-map carrier types (the kernel-invocation boundary, ~1007 refs / ~56 files) by typing the kernel request/writeback interface, then deleting `scheduler.rs`/`day_frame.rs`. The last symbol-map-free step and likely `<=5x` lever. On the ROADMAP queue. |
