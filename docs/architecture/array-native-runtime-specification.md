@@ -969,7 +969,7 @@ closure when executed. Do not collapse a later package into an earlier package
 unless the earlier package's acceptance gates can still be proved without
 weakening review, rollback, fixture, and performance evidence.
 
-##### R7A - Architecture State Reconciliation
+**R7A - Architecture State Reconciliation**
 
 Objective: reconcile this specification, ADR-0025 references, and the
 work-package log with the actual post-R6J state.
@@ -996,7 +996,7 @@ Acceptance gates:
   explicit enough for autonomous execution.
 - Scoped Markdown lint passes.
 
-##### R7B - Parsed-Input Typed Frame Constructors
+**R7B - Parsed-Input Typed Frame Constructors**
 
 Objective: build production-grade typed `DirectRunFrame`, `DirectLaneFrame`,
 and `DirectDayFrame` constructors from parsed run, soil, slope, climate,
@@ -1034,7 +1034,7 @@ constructor scans, and executable type-size/layout evidence. It did not
 activate production direct mode, route the executor from parsed inputs, replace
 publication producer authority, or change output schemas.
 
-##### R7C - Production Direct Executor Path
+**R7C - Production Direct Executor Path**
 
 Objective: create the production direct executor path that bypasses
 compatibility climate-day execution for direct mode.
@@ -1082,7 +1082,7 @@ default compatibility, so R7C does not close direct publication producer
 authority, output parity, default activation, compatibility deletion, or
 release readiness.
 
-##### R7D - Direct Publication Producer Authority
+**R7D - Direct Publication Producer Authority**
 
 Objective: remove WB13-row and runtime-surface authority from direct
 publication production.
@@ -1184,7 +1184,7 @@ The remaining R7 work is R7E-R7H: default activation candidate, hot
 compatibility isolation/deletion, performance closure, fixture hardening, and
 release readiness.
 
-##### R7E - Default Activation Candidate
+**R7E - Default Activation Candidate**
 
 Objective: make production direct mode the default candidate behind an explicit
 activation gate and rollback policy.
@@ -1220,7 +1220,7 @@ compatibility unless explicitly activated, explicit compatibility rollback is
 available, and manifests record runtime-selection provenance. This did not
 activate direct mode by default.
 
-##### R7F - Compatibility Runtime Isolation And Deletion
+**R7F - Compatibility Runtime Isolation And Deletion**
 
 Objective: remove or isolate the logical/indexed/dense hot-loop runtime from
 production direct mode.
@@ -1258,7 +1258,7 @@ source scans, and manifests now prove production direct reports
 because accounting suppressed it. Static process-control authority still comes
 from setup-time seeded surfaces and remains future migration scope.
 
-##### R7G - Performance Closure And Fixture Hardening
+**R7G - Performance Closure And Fixture Hardening**
 
 Objective: close the array-native runtime against the architecture viability
 target and broaden validation beyond the current protected fixture.
@@ -1310,7 +1310,7 @@ winter-column sub-solver, cut direct consumers to typed winter operands, remove
 the current direct snow/frost bridges, then rerun the R7G timing, parity,
 no-compatibility, fixture, and reconstruction gates.
 
-##### R7H - Release Cutover Readiness
+**R7H - Release Cutover Readiness**
 
 Objective: prepare the direct runtime for release as the normal hillslope
 execution path.
