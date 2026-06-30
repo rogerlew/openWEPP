@@ -13,10 +13,47 @@
 
 State as of `2026-06-30`:
 
-- None.
+- `20260630-direct-publication-rss-reduction-001/` is held after a large
+  identity-preserving partial RSS reduction. Result:
+  `EXECUTED-HOLD-PARTIAL-RSS-REDUCTION`.
+- `20260630-typed-direct-setup-symbol-map-elimination-001/` is held after Stage
+  0. Result: `EXECUTED-HOLD-STAGE0-PREMISE-CORRECTED`.
 
 ## Execution Log
 
+- `20260630-direct-publication-rss-reduction-001/` is held as DIRECT
+  PUBLICATION RSS REDUCTION. Result:
+  `EXECUTED-HOLD-PARTIAL-RSS-REDUCTION`. Stage A corrected the Stage 0 RSS
+  attribution one level further: the dominant direct endpoint allocation was a
+  typed direct setup vector,
+  `Vec<DirectDayConstructorInputs>`, preallocated for every H2637 day/OFE
+  (`235961` rows x `4040 B` = about `909 MiB`) even though production direct
+  execution constructs day inputs dynamically. The package removed that
+  preallocation, moved retained direct publication execution instead of cloning
+  it, and skipped WAT/PASS projection row construction when those outputs are
+  not requested. H2637 full-output RSS dropped from `1159672 KiB` to
+  `316212 KiB`, and H2637 HBP/loss-only dropped from `1159296 KiB` to
+  `184644 KiB`, with HBP/WAT/PASS/loss/plot bytes unchanged for full output and
+  HBP/loss bytes unchanged for minimized output. The package remains held
+  because RSS is materially lower but not yet run-length-flat: the direct
+  publication frame still retains all `DirectPublicationDayRow` values, and
+  full-output WAT/PASS projection plus parquet/Arrow buffers still scale with
+  row count. Full-profile `nextest` also failed in this worktree because
+  Python-backed harness tests could not launch `.venv/bin/python`.
+- `20260630-typed-direct-setup-symbol-map-elimination-001/` is held as TYPED
+  DIRECT SETUP PATH + SYMBOL-MAP CARRIER ELIMINATION + RSS REDUCTION. Result:
+  `EXECUTED-HOLD-STAGE0-PREMISE-CORRECTED`. Stage 0 built the release CLI and
+  profiled H2637 direct production (`1:09.18`, `1159672 KiB`), an H2637
+  minimized-output variant (`1:13.77`, `1159296 KiB`), and the small `cli01`
+  fixture (`0:00.09`, `19584 KiB`). Both H2637 manifests selected
+  `direct-production-executor` with `compatibility_edge_invocations=0`, but
+  removing optional WAT/PASS/plot outputs did not move RSS. Static audit found
+  the setup-time symbol-map carrier is still present, but the dominant RSS
+  suspect is whole-run retained direct publication/ledger state and
+  unconditional output projection row materialization. The package stops before
+  Stage 1 under blocker `BLOCKED-BY-RETAINED-DIRECT-PUBLICATION-RSS`; next work
+  should stream/drop retained direct publication artifacts before resuming typed
+  setup and symbol-map carrier deletion.
 - `20260630-compatibility-runtime-deletion-001/` is complete as COMPATIBILITY
   RUNTIME DELETION. Result: `EXECUTED-COMPLETE-PARTIAL-DELETION`. It added
   ADR-0030, removed obsolete skeleton/shadow/cutover runtime selections and CLI

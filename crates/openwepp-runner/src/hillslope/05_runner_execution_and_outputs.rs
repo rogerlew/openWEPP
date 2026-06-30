@@ -241,10 +241,9 @@ fn build_direct_production_run_frame(
         .copied()
         .enumerate()
         .map(|(lane_index, area_m2)| {
-            let mut lane_inputs = DirectLaneConstructorInputs::from_topology(
+            let mut lane_inputs = DirectLaneConstructorInputs::from_topology_with_dynamic_day_inputs(
                 lane_index,
                 lane_areas_m2.len(),
-                day_count,
             )
             .map_err(|source| direct_production_runtime_error(&source))?;
             if !area_m2.is_finite() || area_m2 <= 0.0 {
@@ -987,21 +986,29 @@ fn require_direct_publication_cutover_gates(
             "direct publication cutover requires non-empty direct HBP and loss artifacts",
         ));
     }
-    if inputs.runfile.output_config.wat.is_some() && artifacts.wat_rows.len() != direct_row_count {
+    if inputs.runfile.output_config.wat.is_some()
+        && artifacts
+            .wat_rows
+            .as_ref()
+            .is_none_or(|rows| rows.len() != direct_row_count)
+    {
         return Err(direct_publication_cutover_blocked(format!(
             "direct WAT projection row-count mismatch: direct_rows={} projection_rows={}",
             direct_row_count,
-            artifacts.wat_rows.len()
+            artifacts.wat_rows.as_ref().map_or(0, Vec::len)
         )));
     }
     let direct_pass_row_count = artifacts.execution.publication_frame.identity.day_count;
     if inputs.runfile.output_config.pass_parquet.is_some()
-        && artifacts.pass_projection_rows.len() != direct_pass_row_count
+        && artifacts
+            .pass_projection_rows
+            .as_ref()
+            .is_none_or(|rows| rows.len() != direct_pass_row_count)
     {
         return Err(direct_publication_cutover_blocked(format!(
             "direct PASS projection row-count mismatch: direct_days={} projection_rows={}",
             direct_pass_row_count,
-            artifacts.pass_projection_rows.len()
+            artifacts.pass_projection_rows.as_ref().map_or(0, Vec::len)
         )));
     }
     Ok(())
@@ -1097,9 +1104,14 @@ fn write_hillslope_direct_publication_optional_outputs(
     artifacts: &DirectPublicationArtifacts,
 ) -> Result<(), HillslopeCliError> {
     if let Some(wat_output) = inputs.runfile.output_config.wat.as_ref() {
+        let wat_rows = artifacts.wat_rows.as_ref().ok_or_else(|| {
+            direct_publication_cutover_blocked(
+                "direct WAT output requested but direct WAT projection rows were not built",
+            )
+        })?;
         write_hillslope_wat_parquet(
             wat_output,
-            &artifacts.wat_rows,
+            wat_rows,
             InterchangeVersion::default(),
         )
         .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
@@ -1108,9 +1120,14 @@ fn write_hillslope_direct_publication_optional_outputs(
         })?;
     }
     if let Some(pass_parquet_output) = inputs.runfile.output_config.pass_parquet.as_ref() {
+        let pass_projection_rows = artifacts.pass_projection_rows.as_ref().ok_or_else(|| {
+            direct_publication_cutover_blocked(
+                "direct PASS output requested but direct PASS projection rows were not built",
+            )
+        })?;
         write_hillslope_pass_parquet(
             pass_parquet_output,
-            &artifacts.pass_projection_rows,
+            pass_projection_rows,
             InterchangeVersion::default(),
         )
         .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
@@ -1661,7 +1678,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
         &inputs.climate,
     )?;
     execution.direct_publication =
-        build_direct_publication_artifacts(runtime_selection, &inputs, &targets, &sidecars, &execution)?;
+        build_direct_publication_artifacts(runtime_selection, &inputs, &targets, &sidecars, &mut execution)?;
     let direct_runtime_counters = direct_runtime_counters_for_manifest(
         runtime_selection,
         direct_runtime_counter_baseline,

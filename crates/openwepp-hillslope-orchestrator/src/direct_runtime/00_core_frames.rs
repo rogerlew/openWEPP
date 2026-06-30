@@ -430,6 +430,13 @@ fn direct_frost_runtime_carry_from_winter_state(
 }
 
 impl DirectLaneConstructorInputs {
+    pub fn from_topology_with_dynamic_day_inputs(
+        lane_index: usize,
+        lane_count: usize,
+    ) -> Result<Self, DirectRuntimeError> {
+        Self::from_topology(lane_index, lane_count, 0)
+    }
+
     pub fn from_topology(
         lane_index: usize,
         lane_count: usize,
@@ -1724,7 +1731,7 @@ fn validate_direct_lane_constructor_inputs(
     if let Some(carry) = &inputs.snow_runtime_carry {
         validate_direct_snow_runtime_carry(carry)?;
     }
-    if inputs.day_inputs.len() != identity.day_count {
+    if !(inputs.day_inputs.is_empty() || inputs.day_inputs.len() == identity.day_count) {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: "constructor.day_inputs",
         });

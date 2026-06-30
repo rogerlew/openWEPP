@@ -411,10 +411,18 @@ fn validate_direct_publication_artifacts(
     let frame = &artifacts.execution.publication_frame;
     let row_count = frame.rows().len();
     let pass_row_count = frame.identity.day_count;
+    let wat_row_count_valid = artifacts
+        .wat_rows
+        .as_ref()
+        .is_none_or(|rows| rows.len() == row_count);
+    let pass_row_count_valid = artifacts
+        .pass_projection_rows
+        .as_ref()
+        .is_none_or(|rows| rows.len() == pass_row_count);
     if row_count == 0
         || artifacts.hbp_bytes.is_empty()
-        || artifacts.wat_rows.len() != row_count
-        || artifacts.pass_projection_rows.len() != pass_row_count
+        || !wat_row_count_valid
+        || !pass_row_count_valid
         || artifacts.loss_text.is_empty()
         || artifacts.manifest_text.is_empty()
     {

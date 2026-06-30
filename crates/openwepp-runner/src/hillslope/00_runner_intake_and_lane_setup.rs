@@ -932,8 +932,8 @@ struct HillslopeClimateExecution {
 struct DirectPublicationArtifacts {
     execution: DirectPublicationExecution,
     hbp_bytes: Vec<u8>,
-    wat_rows: Vec<HillslopeWatRow>,
-    pass_projection_rows: Vec<HillslopePassRow>,
+    wat_rows: Option<Vec<HillslopeWatRow>>,
+    pass_projection_rows: Option<Vec<HillslopePassRow>>,
     loss_text: String,
     manifest_text: String,
 }

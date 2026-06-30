@@ -33,12 +33,12 @@ fn build_direct_publication_artifacts(
     inputs: &ParsedHillslopeRunInputs,
     targets: &HillslopeOutputTargets,
     sidecars: &HillslopeSidecarResolution,
-    execution: &HillslopeClimateExecution,
+    execution: &mut HillslopeClimateExecution,
 ) -> Result<Option<DirectPublicationArtifacts>, HillslopeCliError> {
     if runtime_selection != HillslopeRuntimeSelection::DirectProductionExecutor {
         return Ok(None);
     }
-    let direct_execution = execution.retained_direct_publication.clone().ok_or_else(|| {
+    let direct_execution = execution.retained_direct_publication.take().ok_or_else(|| {
         direct_production_executor_blocked(
             "direct production executor requires retained direct execution artifacts",
         )
@@ -47,8 +47,20 @@ fn build_direct_publication_artifacts(
     let publication_frame = &direct_execution.publication_frame;
     let hbp_bytes =
         build_hbp_output_from_direct_publication(&targets.output_pass, publication_frame)?;
-    let wat_rows = build_hillslope_wat_rows_from_direct_publication(publication_frame)?;
-    let pass_projection_rows = build_hillslope_pass_rows_from_direct_publication(publication_frame)?;
+    let wat_rows = inputs
+        .runfile
+        .output_config
+        .wat
+        .is_some()
+        .then(|| build_hillslope_wat_rows_from_direct_publication(publication_frame))
+        .transpose()?;
+    let pass_projection_rows = inputs
+        .runfile
+        .output_config
+        .pass_parquet
+        .is_some()
+        .then(|| build_hillslope_pass_rows_from_direct_publication(publication_frame))
+        .transpose()?;
     let loss_text = build_loss_output_json_from_direct_publication(
         publication_frame,
         inputs.soil.ofes.len(),
