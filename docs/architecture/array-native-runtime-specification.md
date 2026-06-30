@@ -1397,6 +1397,50 @@ symbol-map-free frontier (and a likely `<=5x` contributor); it is **backlogged**
 the functional single-authority of the production runtime selection stands as
 the achieved terminal state.
 
+When that backlogged frontier is taken up, it is a **kernel-boundary typing program**,
+not a blind file deletion. The sequence:
+
+1. **Inventory and classify survivors** — classify every remaining
+   `HillslopeWritebackSurface`, `HillslopeKernelRequest`,
+   `KernelWritebackPayload`, `SymbolRegistry`, `scheduler.rs`, and
+   `day_frame.rs` reference as executable compatibility runtime,
+   kernel request/writeback boundary, diagnostic/trace support,
+   WB13/publication/audit support, test-only support, or a genuine I/O
+   serialization edge. This produces the temporary allowlist; everything else
+   is a deletion target.
+2. **Define the typed kernel boundary** — introduce typed phase context, typed
+   phase result/mutation APIs, typed diagnostic sinks, and typed
+   audit/publication event streams. These types must be authority-bearing typed
+   state, not wrappers around symbol maps.
+3. **Migrate diagnostics and trace first** — move frost, HPHYS, runoff,
+   infiltration, reconciliation, and other trace helpers off
+   `HillslopeKernelRequest` and symbol lookup into typed trace/event payloads.
+   This removes the common reason support helpers still need request-carried
+   symbol access.
+4. **Migrate tests off scheduler surfaces** — replace scheduler-era tests with
+   direct-frame or typed-boundary tests, preserving contract coverage while
+   deleting tests that only validate the removed runtime.
+5. **Type phase return paths** — phase families return typed mutations/results
+   directly to `DirectRunFrame`; direct execution must not construct
+   symbol-keyed writeback payloads, registries, or writeback surfaces.
+6. **Stream runtime events** — emit publication, audit, and trace rows as typed
+   event streams from the direct runtime and drop them after the sink consumes
+   them. No compatibility WB13 reconstruction or whole-run symbol row cache may
+   be a publication authority.
+7. **Delete the symbol boundary** — after every live consumer reads typed
+   boundaries, delete `scheduler.rs`, `day_frame.rs`, carrier exports, and
+   non-allowlisted symbol-keyed helpers. Any survivor must be documented as a
+   true I/O adapter, not an executable runtime path.
+8. **Prove the terminal state** — H2637 plus multi-OFE and Wave-2 identity,
+   `compatibility_edge_invocations=0`, static call-graph/source-scan proof,
+   RSS/time no regression, and the full workspace gates must pass before
+   claiming compatibility cruft is gone.
+
+The ordering matters: type the remaining consumers first, delete last. Deleting
+`scheduler.rs` before typed diagnostics, publication, and phase boundaries exist
+only exposes dead support code; it does not complete the single-authority
+architecture.
+
 ### 8.3 Package Rules
 
 Every package in this program must state whether it:
