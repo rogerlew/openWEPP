@@ -17,6 +17,12 @@ records that frost ratification/default activation has closed that deferral:
 production direct mode is the normal hillslope execution path, and obsolete
 compatibility transition modes may be deleted under no-regression/static-proof
 gates while the explicit replay seam remains deprecated and diagnostic-only.
+Revision 6 also records the direct-publication RSS arc (the endpoint is now
+run-length-flat; §4.11, §8.2) and reframes the final compatibility removal as a
+**single-authority re-architecture of the seed/setup layer**, not a clean
+deletion — the typed frame is still seeded from a computed symbol-map day-zero
+surface, and making it typed-from-parse is the last single-authority step
+(§1.3, §8.2).
 Audience: all contributors working on runtime, scheduler, kernel, publication,
 or performance packages.
 Owner: architecture authority; implementation by Codex work packages.
@@ -136,6 +142,16 @@ The program has already tested the major partial strategies:
   endpoint failed at `911.11 s`.
 - **PERFDEEP07**: remove dense-first tax in the disabled path and improve hot
   lookup tables. Identity passed, endpoint still failed at `685.85 s`.
+- **Seed-layer read burn-down (2026-06-30)**: after the hot path was direct,
+  migrating the ~207 day-zero seed reads off the symbol-map surface one at a
+  time moved `208 → 207` before holding. The day-zero seed authority is a
+  *computed ordered pipeline* (`seed_wb11_runtime_surface_inputs`: WB18/19
+  controls, hyetograph, initial layer stores, fine-frost, ET-demand,
+  `efflen`/WB16, MOFE03/Wave-2), not independent reads that can be peeled off —
+  and a typed carrier that merely *wraps* that symbol-map computation is a
+  **false single-authority**. The seed/setup layer, like the hot path, must be
+  replaced **wholesale** (a typed re-implementation of the computation), not
+  peeled or wrapped.
 
 These are not isolated misses. They show that partial migration keeps paying
 the old runtime's boundary costs while adding new representation management.
@@ -542,6 +558,22 @@ Binding rules:
   unsafe indexing.
 - Any `unsafe` must carry a local invariant proof and be justified by
   profiling after safe forms were tried.
+- **Publication and per-run state must not retain whole-run rows.** The
+  publication path streams per-day/per-OFE rows to the output sink and drops
+  them; it must not accumulate all `DirectPublicationDayRow`/WAT/PASS rows for
+  the run, nor clone the publication execution. Parquet writers flush
+  incrementally by row group (value/schema/row-count identity is the gate for
+  parquet; row-group layout may differ — see §5.2).
+- **Setup must not pre-allocate per-day×OFE structures.** Day inputs are
+  constructed dynamically; a `Vec<DirectDayConstructorInputs>` (or equivalent)
+  sized to `days × OFEs` is forbidden — it was the dominant H2637 RSS cost
+  (~909 MiB for 235,961 rows), not the symbol-map carrier.
+- **RSS must be run-length-flat.** Endpoint resident memory must not scale with
+  `days × OFEs`. RSS is a first-class gate, measured at multiple run lengths;
+  the slope must flatten. The PERFARCH03 hot-path working-set floor is ~3 MB; a
+  full publishing run adds only bounded per-emit and aggregate buffers, not
+  whole-run retention. (Arc: direct H2637 publication went 1.13 GiB → 110 MiB
+  full / 51 MiB required-only, byte/value-identical and run-length-flat.)
 
 ### 4.12 Runtime Modes
 
@@ -937,7 +969,7 @@ closure when executed. Do not collapse a later package into an earlier package
 unless the earlier package's acceptance gates can still be proved without
 weakening review, rollback, fixture, and performance evidence.
 
-##### R7A - Architecture State Reconciliation
+**R7A - Architecture State Reconciliation**
 
 Objective: reconcile this specification, ADR-0025 references, and the
 work-package log with the actual post-R6J state.
@@ -964,7 +996,7 @@ Acceptance gates:
   explicit enough for autonomous execution.
 - Scoped Markdown lint passes.
 
-##### R7B - Parsed-Input Typed Frame Constructors
+**R7B - Parsed-Input Typed Frame Constructors**
 
 Objective: build production-grade typed `DirectRunFrame`, `DirectLaneFrame`,
 and `DirectDayFrame` constructors from parsed run, soil, slope, climate,
@@ -1002,7 +1034,7 @@ constructor scans, and executable type-size/layout evidence. It did not
 activate production direct mode, route the executor from parsed inputs, replace
 publication producer authority, or change output schemas.
 
-##### R7C - Production Direct Executor Path
+**R7C - Production Direct Executor Path**
 
 Objective: create the production direct executor path that bypasses
 compatibility climate-day execution for direct mode.
@@ -1050,7 +1082,7 @@ default compatibility, so R7C does not close direct publication producer
 authority, output parity, default activation, compatibility deletion, or
 release readiness.
 
-##### R7D - Direct Publication Producer Authority
+**R7D - Direct Publication Producer Authority**
 
 Objective: remove WB13-row and runtime-surface authority from direct
 publication production.
@@ -1152,7 +1184,7 @@ The remaining R7 work is R7E-R7H: default activation candidate, hot
 compatibility isolation/deletion, performance closure, fixture hardening, and
 release readiness.
 
-##### R7E - Default Activation Candidate
+**R7E - Default Activation Candidate**
 
 Objective: make production direct mode the default candidate behind an explicit
 activation gate and rollback policy.
@@ -1188,7 +1220,7 @@ compatibility unless explicitly activated, explicit compatibility rollback is
 available, and manifests record runtime-selection provenance. This did not
 activate direct mode by default.
 
-##### R7F - Compatibility Runtime Isolation And Deletion
+**R7F - Compatibility Runtime Isolation And Deletion**
 
 Objective: remove or isolate the logical/indexed/dense hot-loop runtime from
 production direct mode.
@@ -1226,7 +1258,7 @@ source scans, and manifests now prove production direct reports
 because accounting suppressed it. Static process-control authority still comes
 from setup-time seeded surfaces and remains future migration scope.
 
-##### R7G - Performance Closure And Fixture Hardening
+**R7G - Performance Closure And Fixture Hardening**
 
 Objective: close the array-native runtime against the architecture viability
 target and broaden validation beyond the current protected fixture.
@@ -1278,7 +1310,7 @@ winter-column sub-solver, cut direct consumers to typed winter operands, remove
 the current direct snow/frost bridges, then rerun the R7G timing, parity,
 no-compatibility, fixture, and reconstruction gates.
 
-##### R7H - Release Cutover Readiness
+**R7H - Release Cutover Readiness**
 
 Objective: prepare the direct runtime for release as the normal hillslope
 execution path.
@@ -1323,6 +1355,45 @@ target, production direct mode must not silently fall back to compatibility, and
 obsolete skeleton/shadow/cutover transition modes are deletion targets. The
 explicit `--compatibility-runtime` seam remains only as deprecated replay/
 comparator support until a separate full-deletion package removes it.
+
+Execution status (2026-06-30): the obsolete skeleton/shadow/cutover **transition
+modes are deleted**, and the **direct-publication RSS arc is complete** — the
+direct endpoint is run-length-flat (1.13 GiB → 110/51 MiB, byte/value-identical;
+the dominant cost was the per-day×OFE setup pre-alloc of §4.11, not the
+symbol-map carrier). The **remaining single-authority work is the seed/setup
+layer**, the last place still symbol-map-authoritative. Production direct has a
+typed hot loop but its setup still converts typed parse into
+`HillslopeWritebackSurface` fragments, runs the computed day-zero seed physics
+(`seed_wb11_runtime_surface_inputs`) on that surface, and seeds the typed frame
+*from* it via `from_seed(&HillslopeWritebackSurface)` consumers (~207 reads).
+The typed frame is therefore **downstream of a symbol-map seed authority** — not
+yet the §0 "typed from parse" single authority.
+
+Closing this is a **single-authority re-architecture, not a deletion** (the
+incremental read burn-down held; §1.3). The binding approach:
+
+1. **Re-implement the day-zero seed *computation* in typed form** — a typed
+   per-lane seed carrier built from typed parse + day-one climate, covering the
+   full `seed_wb11_runtime_surface_inputs` content and the static input
+   projection. Build it **sub-computation by sub-computation**; each typed core
+   becomes the computation and the symbol-map writer *delegates* to it.
+2. **Shadow-prove value identity** per sub-computation — the typed core's values
+   must equal the current day-zero surface values (the symbol-map writer stays
+   authoritative until cutover). A typed core that *wraps* the symbol-map
+   computation rather than re-implementing it is a **false single-authority and
+   is forbidden**.
+3. **Cut all consumers over at once** to `from_typed_seed`, against
+   already-proven seed values (outputs must not move).
+4. **Delete** the symbol-map seed surface, `seed_wb11_runtime_surface_inputs`,
+   the fragment builders, `scheduler.rs`, `day_frame.rs`, and the carrier types
+   across the orchestrator; keep only the explicit `--compatibility-runtime`
+   seam.
+
+Acceptance: `compatibility_edge_invocations=0` with no production symbol-map
+construction, identity preserved, and an H2637 re-measure toward the `<=5x`
+ideal (the per-hillslope setup cost this removes is multiplicative at watershed
+scale). This is the final step that makes the typed frame the sole authority
+from parse to output.
 
 ### 8.3 Package Rules
 
