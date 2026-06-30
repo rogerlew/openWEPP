@@ -1186,7 +1186,7 @@ fn write_openwepp_snow_projection(
     let report = super::execute_hillslope_run_with_runtime_selection(
         request,
         &argv,
-        HillslopeRuntimeSelection::Compatibility,
+        HillslopeRuntimeSelection::DirectProductionExecutor,
     )?;
     let wat_path = report
         .optional_outputs

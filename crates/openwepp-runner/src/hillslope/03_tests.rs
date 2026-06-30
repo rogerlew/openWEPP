@@ -9,7 +9,6 @@ mod tests {
         DIRECT_R5C_DECOMPOSITION_PHASE_SPAN_COUNT, DIRECT_R5C_RESIDUE_PARTITION_PHASE_SPAN_COUNT,
         DIRECT_R5D_ANNUAL_GROWTH_PHASE_SPAN_COUNT,
         DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT,
-        direct_runtime_audit_snapshot,
         DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT,
         DIRECT_R4G_PHASE_SPAN_COUNT, DIRECT_R4I_PHASE_SPAN_COUNT,
         DIRECT_R4J_PHASE_SPAN_COUNT, DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT,
@@ -482,7 +481,10 @@ mod tests {
     }
 
     fn execute_fixture_run(prefix: &str) -> (HillslopeRunReport, PathBuf) {
-        execute_fixture_run_with_runtime_selection(prefix, HillslopeRuntimeSelection::Compatibility)
+        execute_fixture_run_with_runtime_selection(
+            prefix,
+            HillslopeRuntimeSelection::DirectProductionExecutor,
+        )
     }
 
     fn execute_fixture_run_with_runtime_selection(
@@ -736,7 +738,7 @@ mod tests {
             manifest_json
                 .pointer("/runtime_selection/selection_reason")
                 .and_then(serde_json::Value::as_str),
-            Some("default-candidate-activation-gate-direct-production")
+            Some("default-candidate-direct-production-single-authority")
         );
         assert!(
             manifest_json
@@ -761,81 +763,7 @@ mod tests {
     }
 
     #[test]
-    fn r7e_disabled_default_candidate_policy_uses_deprecated_compatibility_selection() {
-        let _execution_guard = runner_execution_lock()
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        let (report, _temp_run_dir) = execute_fixture_run_with_runtime_policy_unlocked(
-            "r7e_default_candidate_disabled_rollback",
-            HillslopeRuntimeSelectionPolicy::new(
-                HillslopeRuntimeSelection::DefaultCandidate,
-                HillslopeDefaultRuntimeActivation::Disabled,
-            ),
-        );
-
-        assert!(report.output_pass.is_file());
-        assert!(report.output_loss.is_file());
-        let manifest_json = read_manifest_json(&report);
-        assert_eq!(
-            manifest_json
-                .pointer("/runtime_selection/requested")
-                .and_then(serde_json::Value::as_str),
-            Some("default-candidate")
-        );
-        assert_eq!(
-            manifest_json
-                .pointer("/runtime_selection/selected")
-                .and_then(serde_json::Value::as_str),
-            Some("compatibility")
-        );
-        assert_eq!(
-            manifest_json
-                .pointer("/runtime_selection/fallback_reason")
-                .and_then(serde_json::Value::as_str),
-            Some("direct-default-candidate-gate-disabled")
-        );
-        assert_eq!(
-            manifest_json
-                .pointer("/runtime_selection/output_policy")
-                .and_then(serde_json::Value::as_str),
-            Some("compatibility-public-output")
-        );
-        assert_eq!(
-            manifest_json
-                .pointer("/runtime_selection/selection_reason")
-                .and_then(serde_json::Value::as_str),
-            Some("default-candidate-disabled-deprecated-compatibility-selection")
-        );
-        assert_eq!(
-            manifest_json
-                .pointer("/runtime_selection/compatibility_rollback_available")
-                .and_then(serde_json::Value::as_bool),
-            Some(false)
-        );
-        assert_eq!(
-            manifest_json
-                .pointer("/runtime_selection/rollback_runtime")
-                .and_then(serde_json::Value::as_str),
-            Some("none")
-        );
-        assert_eq!(
-            manifest_json
-                .pointer("/execution_provenance/scheduler_kernel_executed")
-                .and_then(serde_json::Value::as_bool),
-            Some(true)
-        );
-        assert!(
-            manifest_json.pointer("/direct_runtime_counters").is_none(),
-            "disabled default candidate must not construct direct runtime counters"
-        );
-        let audit = direct_runtime_audit_snapshot();
-        assert_eq!(audit.run_frame_constructions, 0);
-        assert_eq!(audit.executor_constructions, 0);
-        assert_eq!(audit.compatibility_edge_invocations, 0);
-    }
-
-    #[test]
-    fn r7e_runtime_selection_policy_resolves_default_direct_and_deprecated_compatibility_modes() {
+    fn r7e_runtime_selection_policy_resolves_only_direct_modes() {
         let default_activated = HillslopeRuntimeSelectionPolicy::default().resolve();
         assert_eq!(
             default_activated.requested(),
@@ -851,62 +779,19 @@ mod tests {
         );
         assert_eq!(default_activated.fallback_reason(), None);
 
-        let default_disabled = HillslopeRuntimeSelectionPolicy::new(
-            HillslopeRuntimeSelection::DefaultCandidate,
-            HillslopeDefaultRuntimeActivation::Disabled,
-        )
-        .resolve();
-        assert_eq!(
-            default_disabled.selected(),
-            HillslopeRuntimeSelection::Compatibility
-        );
-        assert_eq!(
-            default_disabled.fallback_reason(),
-            Some("direct-default-candidate-gate-disabled")
-        );
-
-        let explicit_compatibility = HillslopeRuntimeSelectionPolicy::new(
-            HillslopeRuntimeSelection::Compatibility,
+        let explicit_direct = HillslopeRuntimeSelectionPolicy::new(
+            HillslopeRuntimeSelection::DirectProductionExecutor,
             HillslopeDefaultRuntimeActivation::DirectProductionCandidate,
         )
         .resolve();
         assert_eq!(
-            explicit_compatibility.selection_reason(),
-            "explicit-deprecated-compatibility-selection"
+            explicit_direct.selection_reason(),
+            "explicit-direct-production"
         );
         assert_eq!(
-            explicit_compatibility.selected(),
-            HillslopeRuntimeSelection::Compatibility
+            explicit_direct.selected(),
+            HillslopeRuntimeSelection::DirectProductionExecutor
         );
-    }
-
-    #[test]
-    fn r2a_default_fixture_run_constructs_no_direct_runtime_skeleton() {
-        let _execution_guard = runner_execution_lock()
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        let (report, _temp_run_dir) = execute_fixture_run_with_runtime_selection_unlocked(
-            "r2a_default_direct_skeleton_disabled",
-            HillslopeRuntimeSelection::Compatibility,
-        );
-
-        assert!(report.output_pass.is_file());
-        assert!(report.output_loss.is_file());
-        let audit = direct_runtime_audit_snapshot();
-        assert_eq!(audit.run_frame_constructions, 0);
-        assert_eq!(audit.day_frame_constructions, 0);
-        assert_eq!(audit.day_frame_commits, 0);
-        assert_eq!(audit.executor_constructions, 0);
-        assert_eq!(audit.skeleton_runs, 0);
-        assert_eq!(audit.publication_capture_runs, 0);
-        assert_eq!(audit.phase_view_constructions, 0);
-        assert_eq!(audit.phase_span_runs, 0);
-        assert_eq!(audit.direct_phase_entries, 0);
-        assert_eq!(audit.direct_compute_operations, 0);
-        assert_eq!(audit.direct_state_mutations, 0);
-        assert_eq!(audit.downstream_operand_productions, 0);
-        assert_eq!(audit.shadow_projections, 0);
-        assert_eq!(audit.compatibility_edge_invocations, 0);
     }
 
     #[test]

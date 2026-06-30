@@ -34,6 +34,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0028](0028-observed-data-admission-authority.md) | Observed-data admission authority when scientific authority is lacking (domain-general; extends 0011, reaffirms 0017) | Accepted (ratified 2026-06-28) |
 | [0029](0029-commit-paradigm-2-multilayer-snow.md) | Commit to Paradigm 2 — staged multilayer snow physics (foundation for frost insulation, winter water temperature, runoff dynamics; admitted under 0028, homed in 0026) | Accepted (ratified 2026-06-28) |
 | [0030](0030-r7-terminal-contract-and-compatibility-runtime-deletion.md) | R7 terminal contract and compatibility runtime deletion | Accepted |
+| [0031](0031-delete-compatibility-runtime-single-authority-terminal.md) | Delete the compatibility runtime - single-authority terminal state | Accepted |
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further
@@ -65,6 +66,11 @@ production direct mode must not silently fall back to compatibility, obsolete
 transition modes may be deleted under no-regression/static-proof gates, and the
 explicit `--compatibility-runtime` seam remains only as deprecated diagnostic
 replay until a later full-deletion package.
+ADR-0031 supersedes ADR-0030's seam-retention clause and authorizes deletion of
+the explicit `--compatibility-runtime` seam with rollback by release/git
+history. The ratification package removed the public selector but held before
+full `scheduler.rs`/carrier deletion because the remaining symbol-keyed support
+surface is still compiled and test-backed as a unit.
 
 ## ADR template
 

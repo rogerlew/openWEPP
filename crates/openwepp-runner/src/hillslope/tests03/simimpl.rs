@@ -103,7 +103,7 @@ use crate::hillslope::intake_lane_setup::build_execution_lane_context;
             2,
         );
         assert_json_i64(&manifest_json, "/wb13_publication/row_count", 2);
-        assert_json_i64(&manifest_json, "/wb13_publication/first_row_key/year", 1);
+        assert_json_i64(&manifest_json, "/wb13_publication/first_row_key/year", 2000);
         let monotonic = manifest_json
             .pointer("/wb13_publication/sim_day_index_monotonic")
             .and_then(serde_json::Value::as_bool)

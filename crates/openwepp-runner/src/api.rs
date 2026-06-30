@@ -27,7 +27,6 @@ pub struct HillslopeRunRequest {
 pub enum HillslopeRuntimeSelection {
     #[default]
     DefaultCandidate,
-    Compatibility,
     DirectProductionExecutor,
 }
 
@@ -36,7 +35,6 @@ impl HillslopeRuntimeSelection {
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::DefaultCandidate => "default-candidate",
-            Self::Compatibility => "compatibility",
             Self::DirectProductionExecutor => "direct-production-executor",
         }
     }
@@ -44,7 +42,6 @@ impl HillslopeRuntimeSelection {
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum HillslopeDefaultRuntimeActivation {
-    Disabled,
     #[default]
     DirectProductionCandidate,
 }
@@ -53,7 +50,6 @@ impl HillslopeDefaultRuntimeActivation {
     #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
-            Self::Disabled => "disabled",
             Self::DirectProductionCandidate => "direct-production-candidate",
         }
     }
@@ -89,35 +85,15 @@ impl HillslopeRuntimeSelectionPolicy {
 
     #[must_use]
     pub const fn resolve(self) -> HillslopeRuntimeSelectionResolution {
-        match (self.requested, self.default_activation) {
-            (
-                HillslopeRuntimeSelection::DefaultCandidate,
-                HillslopeDefaultRuntimeActivation::DirectProductionCandidate,
-            ) => HillslopeRuntimeSelectionResolution {
+        match self.requested {
+            HillslopeRuntimeSelection::DefaultCandidate => HillslopeRuntimeSelectionResolution {
                 requested: self.requested,
                 selected: HillslopeRuntimeSelection::DirectProductionExecutor,
                 default_activation: self.default_activation,
-                selection_reason: "default-candidate-activation-gate-direct-production",
+                selection_reason: "default-candidate-direct-production-single-authority",
                 fallback_reason: None,
             },
-            (
-                HillslopeRuntimeSelection::DefaultCandidate,
-                HillslopeDefaultRuntimeActivation::Disabled,
-            ) => HillslopeRuntimeSelectionResolution {
-                requested: self.requested,
-                selected: HillslopeRuntimeSelection::Compatibility,
-                default_activation: self.default_activation,
-                selection_reason: "default-candidate-disabled-deprecated-compatibility-selection",
-                fallback_reason: Some("direct-default-candidate-gate-disabled"),
-            },
-            (HillslopeRuntimeSelection::Compatibility, _) => HillslopeRuntimeSelectionResolution {
-                requested: self.requested,
-                selected: HillslopeRuntimeSelection::Compatibility,
-                default_activation: self.default_activation,
-                selection_reason: "explicit-deprecated-compatibility-selection",
-                fallback_reason: None,
-            },
-            (HillslopeRuntimeSelection::DirectProductionExecutor, _) => {
+            HillslopeRuntimeSelection::DirectProductionExecutor => {
                 HillslopeRuntimeSelectionResolution {
                     requested: self.requested,
                     selected: HillslopeRuntimeSelection::DirectProductionExecutor,

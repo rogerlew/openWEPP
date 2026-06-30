@@ -577,22 +577,20 @@ Binding rules:
 
 ### 4.12 Runtime Modes
 
-The architecture has three modes:
+The public runtime architecture has one mode:
 
 1. **Direct mode**
    The production target. Runs only typed frames and typed projections.
 
-2. **Compatibility mode**
-   Maintains the current logical/indexed runtime for replay, comparison,
-   migration fallback, and emergency fallback while direct mode is being
-   validated. It is a declared non-normal execution mode, not the performance
-   target, and its existence does not authorize direct-mode hot loops to
-   construct or query compatibility surfaces.
+Removed historical modes:
 
-3. **Shadow mode**
-   Runs direct and compatibility paths together for selected fixtures or
-   packages, then compares field, phase, and output identity. Shadow mode is a
-   validation harness, not a shipping hot path.
+- **Compatibility mode** had maintained the logical/indexed runtime for replay,
+  comparison, and fallback during validation. ADR-0031 removes the public
+  selector; any remaining symbol-keyed code is a held support-boundary deletion,
+  not a public execution mode.
+- **Shadow mode** ran direct and compatibility paths together for selected
+  fixtures/packages. It was a validation harness, not a shipping hot path, and
+  public transition selectors are deleted.
 
 Mode selection is outside the hot loop.
 
@@ -946,15 +944,15 @@ activate direct mode or relax any R7 gate.
 | R5A-R5E | Full canonical OFE-day direct executor lifecycle and 14-phase coverage complete. | One canonical 14-phase entry per OFE-day, direct R4/R5 spans folded under canonical phase entries, protected output identity and endpoint/RSS evidence. | Public outputs remained compatibility-authoritative at R5E; no default activation. |
 | R6A-R6I | Direct publication frame and producer-authority blockers iteratively reduced. | Run-bound publication frame, direct projection consumers, typed day-input builder, PMET layer carry correction, and current-fixture parity closures. | Earlier held states are historical; R6J is the terminal R6 publication cutover package. |
 | R6J | Historical opt-in direct publication cutover complete. | `DirectPublicationFrameCutover` proved direct public-output publication could write HBP/WAT/PASS/loss/plot/manifest from direct artifacts with H2637 byte/Arrow identity and direct manifest provenance. | Superseded by R7 direct production and ADR-0030 deletion: cutover/shadow transition modes are not retained production surfaces. |
-| R7 | Production direct runtime is activated as the normal hillslope execution path. R7A-H, the ADR-0026 winter-column build, frost observed-data ratification, frost default activation, and the follow-up cutover correction are complete. | R7A-H work packages, `docs/work-packages/20260629-frost-ratification-default-activation-001/`, `docs/work-packages/20260629-frost-direct-cutover-correction-001/`, ADR-0026, ADR-0030, and this compatibility deletion package. | Obsolete skeleton/shadow/cutover transition modes are deleted. The explicit `--compatibility-runtime` replay seam remains deprecated and diagnostic-only; full removal of every symbol-map/setup carrier is a separate typed-setup/full-deletion package. |
+| R7 | Production direct runtime is activated as the normal hillslope execution path. R7A-H, the ADR-0026 winter-column build, frost observed-data ratification, frost default activation, and the follow-up cutover correction are complete. | R7A-H work packages, `docs/work-packages/20260629-frost-ratification-default-activation-001/`, `docs/work-packages/20260629-frost-direct-cutover-correction-001/`, ADR-0026, ADR-0030, ADR-0031, and the compatibility deletion packages. | Obsolete skeleton/shadow/cutover transition modes are deleted. The public `--compatibility-runtime` selector is removed. Full removal of the compiled scheduler/day-frame/carrier support surface is held as a separate support-boundary deletion. |
 
 Current runtime-mode matrix:
 
 | Mode | Selection status | Execution authority | Publication authority | Manifest/provenance | Remaining blocker |
 |---|---|---|---|---|---|
-| Compatibility mode | Explicit `--compatibility-runtime` only. Deprecated replay/comparator seam. | Compatibility scheduler, `HillslopeWritebackSurface`, kernel request/writeback, and WB13 publication rows. | Compatibility output builders. | Compatibility-provenanced outputs; direct runtime counters are not production authority. | Diagnostic-only seam retained until a later full-deletion package. No input shape may select it implicitly. |
+| Compatibility mode | Removed from public API/CLI/harness selection. | No production entrypoint may select compatibility execution. Compiled scheduler/day-frame/carrier support remains only as a held deletion boundary and legacy test surface. | N/A for production. | N/A for production. | Delete or replace the compiled symbol-keyed support boundary, preserving only documented I/O serialization adapters. |
 | Shadow / cutover transition modes | Deleted. | N/A | N/A | Source guards reject reintroduction of the obsolete skeleton, shadow, and cutover selectors. | Historical evidence only. |
-| Production direct mode | No-env default and explicit `--direct-production-executor`. | Parsed typed run/lane/day frames, `DirectFrameExecutor`, `DirectProductionDayInputBuilder`, and winter-column snow/frost state. | Direct publication artifacts retained from direct executor-owned production state. | Direct runtime counters, direct output provenance, and top-level runtime-selection provenance are recorded when direct reaches execution. | Must remain no-silent-fallback; compatibility is explicit replay only. |
+| Production direct mode | No-env default and explicit `--direct-production-executor`. | Parsed typed run/lane/day frames, `DirectFrameExecutor`, `DirectProductionDayInputBuilder`, and winter-column snow/frost state. | Direct publication artifacts retained from direct executor-owned production state. | Direct runtime counters, direct output provenance, and top-level runtime-selection provenance are recorded when direct reaches execution. | Must remain no-silent-fallback; no public compatibility selector remains. |
 
 The terminal architecture remains stricter than the R6J cutover path. A direct
 publication object built from compatibility WB13 rows may be valid R6J adapter
@@ -1326,8 +1324,8 @@ Required work:
 Acceptance gates:
 
 - Release checklist passes with direct mode as the declared normal path.
-- Compatibility mode is documented as fallback/replay/shadow, not normal
-  execution.
+- No public compatibility/fallback selector remains; any retained symbol-keyed
+  code is documented as a held support-boundary deletion or real I/O adapter.
 - Required anti-evasion guards run and pass.
 - Workspace Rust gates, `cargo deny check`, protected-output comparison,
   benchmark evidence, and scoped docs lint pass.
@@ -1352,47 +1350,35 @@ as the no-env default, and corrected the temporary multi-OFE/Wave-2 and legacy
 sidecar-discovery compatibility fallback. ADR-0030 therefore amends the R7
 terminal contract: compatibility frost bit-parity is no longer the acceptance
 target, production direct mode must not silently fall back to compatibility, and
-obsolete skeleton/shadow/cutover transition modes are deletion targets. The
-explicit `--compatibility-runtime` seam remains only as deprecated replay/
-comparator support until a separate full-deletion package removes it.
+obsolete skeleton/shadow/cutover transition modes are deletion targets. ADR-0031
+supersedes the retained replay seam and removes the public
+`--compatibility-runtime` selector; rollback is release/git history.
 
 Execution status (2026-06-30): the obsolete skeleton/shadow/cutover **transition
 modes are deleted**, and the **direct-publication RSS arc is complete** — the
 direct endpoint is run-length-flat (1.13 GiB → 110/51 MiB, byte/value-identical;
 the dominant cost was the per-day×OFE setup pre-alloc of §4.11, not the
-symbol-map carrier). The **remaining single-authority work is the seed/setup
-layer**, the last place still symbol-map-authoritative. Production direct has a
-typed hot loop but its setup still converts typed parse into
-`HillslopeWritebackSurface` fragments, runs the computed day-zero seed physics
-(`seed_wb11_runtime_surface_inputs`) on that surface, and seeds the typed frame
-*from* it via `from_seed(&HillslopeWritebackSurface)` consumers (~207 reads).
-The typed frame is therefore **downstream of a symbol-map seed authority** — not
-yet the §0 "typed from parse" single authority.
+symbol-map carrier). The typed day-zero seed computation has since cut production
+setup to `DirectProductionSeedAuthority`, and ADR-0031 removed the public
+compatibility selector. The **remaining single-authority work is support-boundary
+deletion**: `scheduler.rs`, `day_frame.rs`, symbol-keyed carriers, scheduler
+lifecycle helpers, WB13 scheduler publication, HPHYS trace, audit/shadow support,
+and their legacy tests remain compiled as a unit even though no public runtime
+selector may invoke compatibility execution.
 
-Closing this is a **single-authority re-architecture, not a deletion** (the
-incremental read burn-down held; §1.3). The binding approach:
+Closing this now requires a coherent support-boundary deletion:
 
-1. **Re-implement the day-zero seed *computation* in typed form** — a typed
-   per-lane seed carrier built from typed parse + day-one climate, covering the
-   full `seed_wb11_runtime_surface_inputs` content and the static input
-   projection. Build it **sub-computation by sub-computation**; each typed core
-   becomes the computation and the symbol-map writer *delegates* to it.
-2. **Shadow-prove value identity** per sub-computation — the typed core's values
-   must equal the current day-zero surface values (the symbol-map writer stays
-   authoritative until cutover). A typed core that *wraps* the symbol-map
-   computation rather than re-implementing it is a **false single-authority and
-   is forbidden**.
-3. **Cut all consumers over at once** to `from_typed_seed`, against
-   already-proven seed values (outputs must not move).
-4. **Delete** the symbol-map seed surface, `seed_wb11_runtime_surface_inputs`,
-   the fragment builders, `scheduler.rs`, `day_frame.rs`, and the carrier types
-   across the orchestrator; keep only the explicit `--compatibility-runtime`
-   seam.
+1. Delete legacy scheduler tests that only validate the removed runtime.
+2. Preserve direct-native typed publication/seed tests.
+3. Move any genuinely still-needed symbol-keyed serialization helpers out of the
+   executable scheduler namespace and document them as I/O adapters.
+4. Delete `scheduler.rs`, `day_frame.rs`, and carrier exports that no longer have
+   a real adapter role.
 
-Acceptance: `compatibility_edge_invocations=0` with no production symbol-map
-construction, identity preserved, and an H2637 re-measure toward the `<=5x`
-ideal (the per-hillslope setup cost this removes is multiplicative at watershed
-scale). This is the final step that makes the typed frame the sole authority
+Acceptance: no public compatibility selector, no production symbol-map execution
+path, direct identity preserved, full gates clean, and only documented
+serialization adapters surviving. This is the final step that makes the typed
+frame the sole authority
 from parse to output.
 
 ### 8.3 Package Rules

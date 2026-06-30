@@ -37,7 +37,7 @@ plot = "output/H5.plot.parquet"
     assert_json_string(
         &manifest_json,
         "/wb13_publication/source",
-        "simulation-owned",
+        "direct-publication-frame",
     );
     assert_json_bool(
         &manifest_json,
@@ -49,15 +49,10 @@ plot = "output/H5.plot.parquet"
         "/wb13_publication/guard_id",
         "HS-SIMOUT-E-001",
     );
-    assert_json_string(
+    assert_json_array_len(
         &manifest_json,
-        "/wb13_publication/replay_candidate_surfaces/0",
-        "interchange/H.wat.parquet",
-    );
-    assert_json_string(
-        &manifest_json,
-        "/wb13_publication/replay_candidate_surfaces/1",
-        "interchange/H.pass.parquet",
+        "/wb13_publication/replay_candidate_surfaces",
+        0,
     );
 }
 
@@ -98,7 +93,7 @@ plot = "output/H5.plot.parquet"
         "/wb13_publication/sim_day_index_monotonic",
         true,
     );
-    assert_json_i64(&manifest_json, "/wb13_publication/first_row_key/year", 1);
+    assert_json_i64(&manifest_json, "/wb13_publication/first_row_key/year", 2000);
     assert_json_i64(
         &manifest_json,
         "/wb13_publication/last_row_key/julian_day",
@@ -178,6 +173,15 @@ fn assert_json_i64(document: &serde_json::Value, pointer: &str, expected: i64) {
     assert_eq!(observed, expected, "unexpected value at {pointer}");
 }
 
+fn assert_json_array_len(document: &serde_json::Value, pointer: &str, expected: usize) {
+    let observed = document
+        .pointer(pointer)
+        .and_then(serde_json::Value::as_array)
+        .unwrap_or_else(|| panic!("missing array JSON pointer {pointer}"))
+        .len();
+    assert_eq!(observed, expected, "unexpected array length at {pointer}");
+}
+
 fn execute_fixture_with_runfile_report(
     runfile_payload: &str,
     prefix: &str,
@@ -203,7 +207,7 @@ fn execute_fixture_with_runfile_report(
         },
         &["openwepp-cli-hill".to_string()],
         HillslopeRuntimeSelectionPolicy::new(
-            HillslopeRuntimeSelection::Compatibility,
+            HillslopeRuntimeSelection::DirectProductionExecutor,
             HillslopeDefaultRuntimeActivation::default(),
         ),
     )

@@ -156,9 +156,9 @@ def main(argv: list[str] | None = None) -> int:
     compare_parser.add_argument("--no-run", action="store_true")
     compare_parser.add_argument(
         "--runtime",
-        choices=["direct-production-executor", "compatibility"],
+        choices=["direct-production-executor"],
         default="direct-production-executor",
-        help="runtime surface to compare; compatibility is a flagging surface only",
+        help="runtime surface to compare; direct production is the only supported runtime",
     )
 
     args = parser.parse_args(argv)
@@ -1230,8 +1230,6 @@ def cli_command(
 ) -> list[str]:
     if runtime == "direct-production-executor":
         runtime_flag = "--direct-production-executor"
-    elif runtime == "compatibility":
-        runtime_flag = "--compatibility-runtime"
     else:
         raise ValueError(f"unsupported runtime {runtime}")
 

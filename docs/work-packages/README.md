@@ -46,6 +46,14 @@ State as of `2026-06-30`:
   still retains the explicit deprecated `--compatibility-runtime`
   replay/comparator seam.
 
+- `20260630-compatibility-runtime-full-deletion-001/` held as
+  COMPATIBILITY RUNTIME FULL DELETION. Result:
+  `EXECUTED-HOLD-SYMBOL-SURFACE-SUPPORT-BOUNDARY`. ADR-0031 is ratified and the
+  public `--compatibility-runtime` selector is removed from API/CLI/harness
+  entrypoints, but full deletion of `scheduler.rs`, `day_frame.rs`, and carrier
+  types is held because the remaining symbol-keyed support surface is still
+  compiled and test-backed as a unit.
+
 ## Execution Log
 
 - `20260630-direct-publication-streaming-sink-001/` is complete as DIRECT

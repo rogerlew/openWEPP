@@ -40,12 +40,12 @@ plot = "output/H5.plot.parquet"
     assert_json_bool(
         &manifest_json,
         "/execution_provenance/scheduler_kernel_executed",
-        true,
+        false,
     );
     assert_json_string(
         &manifest_json,
         "/execution_provenance/publication_source",
-        "scheduler-kernel",
+        "direct-publication-frame",
     );
     assert_json_string(
         &manifest_json,
@@ -106,7 +106,7 @@ fn execute_fixture_with_runfile_report(
         },
         &["openwepp-cli-hill".to_string()],
         HillslopeRuntimeSelectionPolicy::new(
-            HillslopeRuntimeSelection::Compatibility,
+            HillslopeRuntimeSelection::DirectProductionExecutor,
             HillslopeDefaultRuntimeActivation::default(),
         ),
     )

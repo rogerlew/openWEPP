@@ -790,11 +790,9 @@ fn wat_mismatch_field_order() -> &'static [&'static str] {
 
 fn direct_publication_output_policy(runtime_selection: HillslopeRuntimeSelection) -> &'static str {
     match runtime_selection {
-        HillslopeRuntimeSelection::DirectProductionExecutor => {
+        HillslopeRuntimeSelection::DirectProductionExecutor
+        | HillslopeRuntimeSelection::DefaultCandidate => {
             "direct-production-executor/direct-publication-frame"
-        }
-        HillslopeRuntimeSelection::DefaultCandidate | HillslopeRuntimeSelection::Compatibility => {
-            "compatibility-public-output"
         }
     }
 }

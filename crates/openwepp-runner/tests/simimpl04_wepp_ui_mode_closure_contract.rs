@@ -140,7 +140,7 @@ wat = "output/H5.wat.parquet"
     assert_json_string(
         &manifest_json,
         "/coupling_vectors/hydout_equivalent/source",
-        "simulation-owned",
+        "direct-publication-frame",
     );
     assert_json_bool(
         &manifest_json,
@@ -209,7 +209,7 @@ fn execute_fixture_with_runfile_report(
         },
         &["openwepp-cli-hill".to_string()],
         HillslopeRuntimeSelectionPolicy::new(
-            HillslopeRuntimeSelection::Compatibility,
+            HillslopeRuntimeSelection::DirectProductionExecutor,
             HillslopeDefaultRuntimeActivation::default(),
         ),
     )
