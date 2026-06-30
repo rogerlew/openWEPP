@@ -1,7 +1,7 @@
 # Disposition
 
 Result:
-`EXECUTED-CHECKPOINT-GATE1-PASSED-PHASE3-PRODUCTION-SEED-SURFACE-DELETED`.
+`EXECUTED-HOLD-PHASE3-SEAM-BOUNDARY`.
 
 This package expanded the typed day-zero seed-computation slice. The production
 surface seeder now calls typed projection cores for:
@@ -57,6 +57,9 @@ production symbol-map seed authority:
   reports `compatibility_edge_invocations=0`.
 - H2637 RSS is `84776 KiB` after this deletion pass.
 
-Next action: broader Phase 3 deletion of scheduler/day-frame/carrier code that
-is not needed by tests or the explicit deprecated `--compatibility-runtime`
-seam, followed by the Phase 4 no-compatibility proof.
+Hold boundary: broader Phase 3 deletion of `scheduler.rs`, `day_frame.rs`, and
+carrier types cannot proceed without deleting or replacing the explicit
+deprecated `--compatibility-runtime` replay/comparator seam retained by
+ADR-0030. The production direct path is single-authority at setup and hot loop;
+the remaining symbol-map runtime is not production-reachable without explicit
+compatibility selection.

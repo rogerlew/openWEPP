@@ -1,6 +1,6 @@
 # Typed Day-Zero Seed Computation
 
-Status: EXECUTED-CHECKPOINT-GATE1-PASSED-PHASE3-PRODUCTION-SEED-SURFACE-DELETED
+Status: EXECUTED-HOLD-PHASE3-SEAM-BOUNDARY
 
 Package id: `20260630-typed-day-zero-seed-computation-001`
 
@@ -95,7 +95,7 @@ time/RSS.
 ## Disposition
 
 Result:
-`EXECUTED-CHECKPOINT-GATE1-PASSED-PHASE3-PRODUCTION-SEED-SURFACE-DELETED`.
+`EXECUTED-HOLD-PHASE3-SEAM-BOUNDARY`.
 
 Phase 1 expanded the typed seed-computation slice. The existing surface seeder
 now delegates these sub-computations to typed projection cores:
@@ -141,6 +141,8 @@ instead of the deleted setup surface. H2637 protected outputs remain
 byte-identical and the direct-runtime counter reports
 `compatibility_edge_invocations=0`; final H2637 RSS is `84776 KiB`.
 
-Remaining Phase 3 work is the broader symbol-map runtime/code deletion that can
-be removed without breaking the explicit deprecated `--compatibility-runtime`
-replay seam.
+Broader Phase 3 deletion is held at the accepted ADR-0030 seam boundary:
+`scheduler.rs`, `day_frame.rs`, and the carrier types remain needed by tests
+and the explicit deprecated `--compatibility-runtime` replay/comparator seam.
+Deleting them requires a separate governance decision to remove or replace that
+seam.

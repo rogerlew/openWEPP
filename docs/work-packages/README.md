@@ -35,13 +35,16 @@ State as of `2026-06-30`:
   for compatibility replay and shadow comparison.
 - `20260630-typed-day-zero-seed-computation-001/` is held as TYPED DAY-ZERO
   SEED COMPUTATION. Result:
-  `EXECUTED-HOLD-PHASE1-EXPANDED-TYPED-SEED-PROJECTION`. It factored and
-  shadow-tested typed projections for lane substeps, hyetograph normalization,
-  WB11 initial storage, fine-frost refresh, residue/`Ws` defaults, WB12
-  reconciliation defaults, ET-demand, `efflen`/`m`, and the WB16 `ealpha`
-  compatibility default. It stops before full Phase 1 seed identity because
-  static parsed-input projection, full WB16 producer inputs, MOFE03/Wave-2 seed
-  projections, and full carrier assembly remain.
+  `EXECUTED-HOLD-PHASE3-SEAM-BOUNDARY`. It completed the typed carrier,
+  cut production direct consumers over to typed seed authority, removed direct
+  setup's static `HillslopeWritebackSurface` seed construction, removed the
+  obsolete day-zero seed-surface bridge and dead lane-authority surface reader,
+  and moved snowbench/PySnobal diagnostics to typed seed bridge values. H2637
+  protected outputs are byte-identical, `compatibility_edge_invocations=0`, RSS
+  is `84776 KiB`, and full gates passed (`1880` nextest passed). It holds before
+  deleting `scheduler.rs`, `day_frame.rs`, and carrier types because ADR-0030
+  still retains the explicit deprecated `--compatibility-runtime`
+  replay/comparator seam.
 
 ## Execution Log
 
