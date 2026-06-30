@@ -1381,6 +1381,22 @@ serialization adapters surviving. This is the final step that makes the typed
 frame the sole authority
 from parse to output.
 
+**Scope correction (2026-06-30, ADR-0031 execution scope).** The public
+`--compatibility-runtime` selector and the `Compatibility` executor are removed, so
+the symbol-map runtime is unreachable from any production input — the single-authority
+terminal state **is achieved for production runtime selection (direct-only)**. But the
+carrier types are **not** merely scheduler support: `HillslopeWritebackSurface`,
+`HillslopeKernelRequest`, `KernelWritebackPayload`, and `SymbolRegistry` are the
+**kernel-invocation boundary**, referenced at ~1007 sites across ~56 source files
+(~20 hydrology-kernel files, ~20 runner files, plus `openwepp-kernel-contract`). Their
+elimination is therefore a **re-typing of the kernel request/writeback interface across
+the hydrology physics — a separate, deliberately-scoped kernel-boundary-typing
+program**, not a unit deletion and not forced through 1007 references. `scheduler.rs`/
+`day_frame.rs` deletion rides with that untangling. This is the remaining
+symbol-map-free frontier (and a likely `<=5x` contributor); it is **backlogged**, while
+the functional single-authority of the production runtime selection stands as
+the achieved terminal state.
+
 ### 8.3 Package Rules
 
 Every package in this program must state whether it:

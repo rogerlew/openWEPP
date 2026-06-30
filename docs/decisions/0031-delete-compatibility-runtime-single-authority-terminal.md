@@ -64,14 +64,36 @@ symbol-map runtime, reaching the single-authority terminal state:
   the array-native activation rule: a rollback path exists, but it need not be
   in-tree executable code.
 
+### Execution scope (2026-06-30): runtime selection removed; carrier-type deletion is a separate program
+
+This package executed the self-contained half of the decision: the public
+`--compatibility-runtime` selector and the `Compatibility` executor are **removed**,
+so the symbol-map runtime is **unreachable** from any production input, user flag, or
+topology. The single-authority terminal state is achieved for production **runtime
+selection** (direct-only).
+
+The carrier types (`HillslopeWritebackSurface`, `HillslopeKernelRequest`,
+`KernelWritebackPayload`, `SymbolRegistry`) are **not** the compatibility runtime's
+private code — they are the **kernel-invocation boundary**, referenced at ~1007 sites
+across ~56 source files (notably ~20 hydrology-kernel files and ~20 runner files) plus
+`openwepp-kernel-contract`. Deleting them is therefore not a unit deletion but a
+re-typing of the entire kernel request/writeback interface across the hydrology
+physics. That **kernel-boundary typing is a separate, deliberately-scoped program**,
+not this package; forcing it through 1007 references would violate the deletion
+discipline. Per §0 of the array-native spec, the carrier types accordingly **survive
+for now as the kernel-invocation interface**, with their elimination deferred to that
+program (the remaining symbol-map-free frontier, and a likely contributor to the
+`<=5x` ideal). `scheduler.rs`/`day_frame.rs` deletion rides with that same untangling.
+
 ## Consequences
 
 Positive:
 
-- True single-authority: the typed frame is the only runtime representation.
-- Removes a stale alternate runtime and its maintenance and silent-divergence
-  risks.
-- Completes the ADR-0025 re-architecture terminal state for hillslope execution.
+- True single-authority for production **runtime selection**: the typed frame is the
+  only reachable runtime; the symbol-map runtime is unreachable.
+- Removes the stale alternate-runtime *selection* and its silent-fallback risk.
+- Advances the ADR-0025 terminal state; the symbol-map-free codebase (carrier-type
+  deletion = kernel-boundary typing) is the remaining backlogged frontier.
 
 Negative / costs:
 
