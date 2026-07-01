@@ -51,6 +51,11 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
+- `20260701-wshedfixture01-committed-watershed-fixture-adoption-001/` is queued
+  as WSHED-FIXTURE01 COMMITTED WATERSHED FIXTURE ADOPTION. Result:
+  `QUEUED-HANDOFF-AUTHORED`. It contains the active handoff prompt for adopting
+  a committed 32-hillslope watershed fixture under `tests/fixtures/watershed/`
+  before W2/W3 runtime packages use persistent fixture gates.
 
 ## Execution Log
 
