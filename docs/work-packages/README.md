@@ -51,13 +51,15 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
-- `20260701-wshedw4-typed-watershed-network-frame-001/` is queued as WSHED-W4
-  TYPED WATERSHED NETWORK FRAME. Result: `QUEUED-HANDOFF-AUTHORED`. It
-  contains the active handoff prompt for replacing production
-  `WatershedWritebackSurface` routing/publication with typed
-  `WatershedNetworkFrame` and `WatershedPublicationFrame` consumers, including
-  old-surface inventory, source guards, protected-output identity or
-  contract-governed deltas, and conservation/output operand-lineage evidence.
+- `20260701-wshedw4-typed-watershed-network-frame-001/` is held as WSHED-W4
+  TYPED WATERSHED NETWORK FRAME. Result:
+  `EXECUTED-HOLD-TYPED-ROUTING-KERNEL-WRITEBACK-REMAINS-COMPATIBILITY-EDGE`.
+  It landed typed `WatershedNetworkFrame` and `WatershedPublicationFrame`
+  handoff in the public watershed CLI path, including typed hillslope
+  contribution collection and typed publication consumption, but cannot close
+  complete because routing still projects through `compatibility_writeback_surface`
+  into `execute_watershed_dispatch_with_kernel` and the WS10 dispatch/kernel
+  writeback path still reads/writes `WatershedWritebackSurface`.
 
 ## Execution Log
 

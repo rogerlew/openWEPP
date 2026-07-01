@@ -5,10 +5,14 @@ pub mod runtime_inputs;
 mod lib_mod;
 
 pub use lib_mod::{
-    DispatchDiagnostic, DispatchDiagnosticCode, DispatchStep, MESSAGE_CYCLE_DETECTED,
-    MESSAGE_DISPATCH_OK, MESSAGE_MISSING_DEPENDENCY, MESSAGE_PRECONDITION_FAILED,
-    WatershedDispatchError, WatershedDispatchReport, WatershedKernelExecutionReport,
-    WatershedKernelStepReport, WatershedWritebackSurface, Ws10ChannelImpoundmentKernel,
+    DispatchDiagnostic, DispatchDiagnosticCode, DispatchStep, HillslopeContribution,
+    MESSAGE_CYCLE_DETECTED, MESSAGE_DISPATCH_OK, MESSAGE_MISSING_DEPENDENCY,
+    MESSAGE_PRECONDITION_FAILED, RoutedChannelState, RoutedImpoundmentState,
+    WatershedChannelControlRecord, WatershedChannelRatingCurveControl,
+    WatershedChannelSegmentPoint, WatershedDispatchError, WatershedDispatchReport,
+    WatershedImpoundmentControlRecord, WatershedKernelExecutionReport, WatershedKernelStepReport,
+    WatershedNetworkFrame, WatershedNetworkFrameError, WatershedPublicationFrame,
+    WatershedRoutingGlobals, WatershedWritebackSurface, Ws10ChannelImpoundmentKernel,
     execute_watershed_dispatch_with_gate_and_kernel, execute_watershed_dispatch_with_kernel,
     schedule_watershed_dispatch, schedule_watershed_dispatch_with_gate,
 };

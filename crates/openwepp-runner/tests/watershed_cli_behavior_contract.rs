@@ -631,6 +631,61 @@ fn wshedw3_worker_pool_removes_stale_generated_passes_and_fails_inventory_before
 }
 
 #[test]
+fn wshedw4_public_cli_handoff_uses_typed_network_and_publication_frames() {
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let cli_source = fs::read_to_string(
+        repo_root.join("crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs"),
+    )
+    .expect("watershed CLI source should be readable");
+    let frame_source = fs::read_to_string(
+        repo_root.join("crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs"),
+    )
+    .expect("watershed network frame source should be readable");
+
+    for required in [
+        "WatershedNetworkFrame::from_parsed_inputs",
+        "network_frame.add_hillslope_contribution",
+        "compatibility_writeback_surface",
+        "harvest_compatibility_routing_report",
+        "publication_frame_to_row_seed",
+    ] {
+        assert!(
+            cli_source.contains(required),
+            "public watershed CLI should contain typed W4 handoff marker {required}"
+        );
+    }
+
+    for forbidden in [
+        "BoundarySymbol",
+        "BoundaryValue",
+        "WatershedWritebackSurface",
+        "build_watershed_output_row_seed",
+        "build_default_chaninp_surface",
+        ".writeback_surface",
+        "state_surface.insert",
+        "flux_surface.insert",
+    ] {
+        assert!(
+            !cli_source.contains(forbidden),
+            "public watershed CLI should not directly use old symbol-map surface marker {forbidden}"
+        );
+    }
+
+    for required in [
+        "pub struct WatershedNetworkFrame",
+        "pub struct WatershedPublicationFrame",
+        "pub struct HillslopeContribution",
+        "compatibility_writeback_surface",
+        "named W4 migration edge",
+    ] {
+        assert!(
+            frame_source.contains(required),
+            "typed watershed frame source should contain migration marker {required}"
+        );
+    }
+}
+
+#[test]
 fn watershed_cli_accepts_explicit_zero_impoundment_file_when_structure_has_none() {
     let _execution_guard = watershed_execution_lock()
         .lock()

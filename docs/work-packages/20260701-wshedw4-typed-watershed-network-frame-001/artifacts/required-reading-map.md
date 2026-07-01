@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: `QUEUED`
+Status: `EXECUTED-READ`
 
 ## Core Authority
 

@@ -1,5 +1,6 @@
 pub(crate) mod dispatch;
 pub(crate) mod kernel;
+mod network_frame;
 mod types;
 
 pub use dispatch::{
@@ -7,6 +8,12 @@ pub use dispatch::{
     schedule_watershed_dispatch, schedule_watershed_dispatch_with_gate,
 };
 pub use kernel::Ws10ChannelImpoundmentKernel;
+pub use network_frame::{
+    HillslopeContribution, RoutedChannelState, RoutedImpoundmentState,
+    WatershedChannelControlRecord, WatershedChannelRatingCurveControl,
+    WatershedChannelSegmentPoint, WatershedImpoundmentControlRecord, WatershedNetworkFrame,
+    WatershedNetworkFrameError, WatershedPublicationFrame, WatershedRoutingGlobals,
+};
 pub use types::{
     DispatchDiagnostic, DispatchDiagnosticCode, DispatchStep, MESSAGE_CYCLE_DETECTED,
     MESSAGE_DISPATCH_OK, MESSAGE_MISSING_DEPENDENCY, MESSAGE_PRECONDITION_FAILED,

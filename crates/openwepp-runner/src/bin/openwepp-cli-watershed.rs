@@ -16,10 +16,6 @@ use openwepp_input_contract::parsers::watershed_structure::{
     ParseMode as WatershedStructureParseMode, WatershedStructureFile,
     WatershedStructureParseOptions, parse_watershed_structure_from_path,
 };
-use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, WatershedChannelFluxField, WatershedChannelStateField,
-    WatershedImpoundmentFluxField, WatershedProductionFluxSymbol, WatershedProductionStateSymbol,
-};
 use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
     SidecarRequirement, adapt_sidecar_bindings,
@@ -32,15 +28,9 @@ use openwepp_topology::{
     ContributorTriplet, TopologyContributors, TopologyGraph, TopologyNode, TopologyNodeKey,
     TopologyNodeKind, validate_pre_execution_topology,
 };
-use openwepp_watershed_orchestrator::runtime_inputs::{
-    build_watershed_runtime_surface_from_chaninp,
-    seed_watershed_runtime_surface_from_slope_channel_profile,
-    seed_watershed_runtime_surface_from_watershed_channel,
-    seed_watershed_runtime_surface_from_watershed_impoundment,
-};
 use openwepp_watershed_orchestrator::{
-    WatershedKernelExecutionReport, WatershedWritebackSurface, Ws10ChannelImpoundmentKernel,
-    execute_watershed_dispatch_with_kernel,
+    HillslopeContribution, WatershedNetworkFrame, WatershedPublicationFrame,
+    Ws10ChannelImpoundmentKernel, execute_watershed_dispatch_with_kernel,
 };
 use openwepp_watershed_output::contracts::{WatershedOutputConfig, validate_output_contract};
 use openwepp_watershed_output::writers::{
@@ -281,7 +271,7 @@ fn run() -> Result<(), String> {
 
     let mut sidecar_warnings = runfile.runfile_warnings;
 
-    let mut runtime_surface = if let Some(chaninp_path) = runfile.chaninp_path.as_ref() {
+    let chaninp = if let Some(chaninp_path) = runfile.chaninp_path.as_ref() {
         let valid_channel_element_ids = structure
             .rows
             .iter()
@@ -309,36 +299,25 @@ fn run() -> Result<(), String> {
                         chaninp_path.display()
                     )
                 })?;
-
-        build_watershed_runtime_surface_from_chaninp(&chaninp).map_err(|error| {
-            format!("CLIWAT-E-013 failed building runtime surface from chan.inp: {error}")
-        })?
+        Some(chaninp)
     } else {
         sidecar_warnings.push(
             "chan.inp sidecar not provided; applying deterministic fallback channel globals (dtchr=3600, ntchr=24, nchnum=0, cbase=0).".to_string(),
         );
-        build_default_chaninp_surface(&watershed_channel)
+        None
     };
 
-    seed_watershed_runtime_surface_from_watershed_channel(&mut runtime_surface, &watershed_channel)
-        .map_err(|error| {
-            format!("CLIWAT-E-014 failed seeding watershed channel runtime surface: {error}")
-        })?;
-    seed_watershed_runtime_surface_from_slope_channel_profile(
-        &mut runtime_surface,
-        &watershed_channel,
-        &slope,
+    let mut network_frame = WatershedNetworkFrame::from_parsed_inputs(
+        topology.clone(),
+        chaninp,
+        watershed_channel,
+        slope,
+        watershed_impoundment,
+        DEFAULT_DTCHR_SECONDS,
+        DEFAULT_NTCHR,
     )
     .map_err(|error| {
-        format!("CLIWAT-E-039 failed seeding watershed channel segment runtime surface: {error}")
-    })?;
-
-    seed_watershed_runtime_surface_from_watershed_impoundment(
-        &mut runtime_surface,
-        &watershed_impoundment,
-    )
-    .map_err(|error| {
-        format!("CLIWAT-E-015 failed seeding watershed impoundment runtime surface: {error}")
+        format!("CLIWAT-E-013 failed building typed watershed network frame: {error}")
     })?;
 
     let contributor_hillslopes = contributor_hillslope_ids(&topology);
@@ -374,43 +353,9 @@ fn run() -> Result<(), String> {
         let sediment_concentrations = &payload.sediment_concentration_kg_m3;
         let particle_diameters = &payload.particle_diameter_m;
         let particle_flow_fractions = &payload.particle_flow_fraction;
-
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(WatershedProductionStateSymbol::HillslopeContributorPeak {
-                hillslope_id,
-            }),
-            BoundaryValue::scalar(peak),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(
-                WatershedProductionStateSymbol::HillslopeContributorDuration { hillslope_id },
-            ),
-            BoundaryValue::scalar(duration),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(
-                WatershedProductionStateSymbol::HillslopeContributorTotalDetachmentKg {
-                    hillslope_id,
-                },
-            ),
-            BoundaryValue::scalar(total_detachment),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(
-                WatershedProductionStateSymbol::HillslopeContributorTotalDepositionKg {
-                    hillslope_id,
-                },
-            ),
-            BoundaryValue::scalar(total_deposition),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(
-                WatershedProductionStateSymbol::HillslopeContributorParticleClassCount {
-                    hillslope_id,
-                },
-            ),
-            BoundaryValue::scalar(f64::from(entry.npart)),
-        );
+        let mut typed_sediment_concentrations = Vec::with_capacity(class_count);
+        let mut typed_particle_diameters = Vec::with_capacity(class_count);
+        let mut typed_particle_flow_fractions = Vec::with_capacity(class_count);
 
         for class_index in 1..=class_count {
             let concentration = sediment_concentrations
@@ -437,44 +382,38 @@ fn run() -> Result<(), String> {
                         "CLIWAT-E-018 missing particle_flow_fraction class={class_index} for hillslope {hillslope_id}"
                     )
                 })?;
-            runtime_surface.state_surface.insert(
-                BoundarySymbol::from(
-                    WatershedProductionStateSymbol::HillslopeContributorSedimentConcentrationKgM3 {
-                        hillslope_id,
-                        class_index,
-                    },
-                ),
-                BoundaryValue::scalar(concentration),
-            );
-            runtime_surface.state_surface.insert(
-                BoundarySymbol::from(
-                    WatershedProductionStateSymbol::HillslopeContributorParticleDiameterMeters {
-                        hillslope_id,
-                        class_index,
-                    },
-                ),
-                BoundaryValue::scalar(particle_diameter),
-            );
-            runtime_surface.state_surface.insert(
-                BoundarySymbol::from(
-                    WatershedProductionStateSymbol::HillslopeContributorParticleFlowFraction {
-                        hillslope_id,
-                        class_index,
-                    },
-                ),
-                BoundaryValue::scalar(fraction),
-            );
+            typed_sediment_concentrations.push(concentration);
+            typed_particle_diameters.push(particle_diameter);
+            typed_particle_flow_fractions.push(fraction);
         }
+
+        network_frame.add_hillslope_contribution(HillslopeContribution {
+            hillslope_id,
+            peak_runoff_m3_s: peak,
+            duration_seconds: duration,
+            total_detachment_kg: total_detachment,
+            total_deposition_kg: total_deposition,
+            sediment_concentration_kg_m3: typed_sediment_concentrations,
+            particle_diameter_m: typed_particle_diameters,
+            particle_flow_fraction: typed_particle_flow_fractions,
+        });
     }
     let routing_input_elapsed_ms = routing_input_started.elapsed().as_millis();
 
     let mut kernel = Ws10ChannelImpoundmentKernel;
     let watershed_dispatch_started = Instant::now();
+    let compatibility_surface = network_frame
+        .compatibility_writeback_surface()
+        .map_err(|error| {
+            format!(
+                "CLIWAT-E-019 failed projecting typed watershed network frame for compatibility routing: {error}"
+            )
+        })?;
     let report = execute_watershed_dispatch_with_kernel(
-        &topology,
+        network_frame.topology(),
         &topology_validation,
         &mut kernel,
-        runtime_surface,
+        compatibility_surface,
     )
     .map_err(|error| format!("CLIWAT-E-019 watershed execution failed: {error}"))?;
     let watershed_dispatch_elapsed_ms = watershed_dispatch_started.elapsed().as_millis();
@@ -490,7 +429,8 @@ fn run() -> Result<(), String> {
         eprintln!("sidecar-warning: {warning}");
     }
 
-    let row_seed = build_watershed_output_row_seed(&report);
+    let publication_frame = network_frame.harvest_compatibility_routing_report(&report);
+    let row_seed = publication_frame_to_row_seed(&publication_frame);
     let output_publication_started = Instant::now();
     write_watershed_interchange_outputs(&runfile.outputs, &[row_seed])?;
     let output_publication_elapsed_ms = output_publication_started.elapsed().as_millis();
@@ -2121,39 +2061,6 @@ fn resolve_structure_contributor_local_id(
     Ok(node_key.id)
 }
 
-fn build_default_chaninp_surface(
-    watershed_channel: &openwepp_input_contract::parsers::watershed_channel::WatershedChannelFile,
-) -> WatershedWritebackSurface {
-    let mut state_surface = BTreeMap::new();
-    state_surface.insert(
-        BoundarySymbol::from(WatershedProductionStateSymbol::Ipeak),
-        BoundaryValue::scalar(f64::from(watershed_channel.ipeak)),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("nchan"),
-        BoundaryValue::scalar(f64::from(
-            u32::try_from(watershed_channel.nchan).unwrap_or(u32::MAX),
-        )),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("dtchr"),
-        BoundaryValue::scalar(DEFAULT_DTCHR_SECONDS),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("ntchr"),
-        BoundaryValue::scalar(DEFAULT_NTCHR),
-    );
-    state_surface.insert(BoundarySymbol::from("nchnum"), BoundaryValue::scalar(0.0));
-
-    let mut flux_surface = BTreeMap::new();
-    flux_surface.insert(BoundarySymbol::from("cbase"), BoundaryValue::scalar(0.0));
-
-    WatershedWritebackSurface {
-        state_surface,
-        flux_surface,
-    }
-}
-
 fn write_watershed_interchange_outputs(
     outputs: &WatershedOutputsResolved,
     row_seeds: &[WatershedInterchangeRowSeed],
@@ -2166,149 +2073,55 @@ fn write_watershed_interchange_outputs(
     .map_err(|error| format!("CLIWAT-E-034 watershed output writer failure: {error}"))
 }
 
-#[allow(clippy::too_many_lines)]
-fn build_watershed_output_row_seed(
-    report: &WatershedKernelExecutionReport,
+fn publication_frame_to_row_seed(
+    publication_frame: &WatershedPublicationFrame,
 ) -> WatershedInterchangeRowSeed {
-    let mut channel_ids = BTreeSet::new();
-    let mut impoundment_ids = BTreeSet::new();
-    let mut contributor_hillslopes = BTreeSet::new();
-
-    for step in &report.dispatch_report.steps {
-        match step.node.kind {
-            TopologyNodeKind::Channel => {
-                channel_ids.insert(step.node.id);
-            }
-            TopologyNodeKind::Impoundment => {
-                impoundment_ids.insert(step.node.id);
-            }
-            TopologyNodeKind::Hillslope => {}
-        }
-        contributor_hillslopes.extend(step.contributor_hillslopes.iter().copied());
-    }
-
-    let runoff_volume_m3 = channel_ids
-        .iter()
-        .copied()
-        .map(|node_id| {
-            boundary_scalar(
-                &report.writeback_surface.flux_surface,
-                WatershedProductionFluxSymbol::ChannelNode {
-                    node_id,
-                    field: WatershedChannelFluxField::Roff,
-                },
-            )
-        })
-        .sum::<f64>();
-    let channel_outflow_m3 = impoundment_ids
-        .iter()
-        .copied()
-        .map(|node_id| {
-            boundary_scalar(
-                &report.writeback_surface.flux_surface,
-                WatershedProductionFluxSymbol::ImpoundmentNode {
-                    node_id,
-                    field: WatershedImpoundmentFluxField::OutflowVolume,
-                },
-            )
-        })
-        .sum::<f64>();
-    let peak_discharge_m3_s = channel_ids.iter().copied().next().map_or(0.0, |node_id| {
-        boundary_scalar(
-            &report.writeback_surface.state_surface,
-            WatershedProductionStateSymbol::ChannelNode {
-                node_id,
-                field: WatershedChannelStateField::Qpo,
-            },
-        )
-    });
-    let sediment_yield_kg = channel_ids
-        .iter()
-        .copied()
-        .map(|node_id| {
-            report
-                .writeback_surface
-                .state_surface
-                .get(&BoundarySymbol::from(format!(
-                    "ws10_channel_{node_id}_qsed"
-                )))
-                .map_or(0.0, |value| value.as_f64())
-        })
-        .sum::<f64>();
-    let soluble_pollutant_kg = 0.0;
-    let particulate_pollutant_kg = contributor_hillslopes
-        .iter()
-        .copied()
-        .map(|hillslope_id| {
-            boundary_scalar(
-                &report.writeback_surface.state_surface,
-                WatershedProductionStateSymbol::HillslopeContributorTotalDetachmentKg {
-                    hillslope_id,
-                },
-            )
-        })
-        .sum::<f64>();
-
     WatershedInterchangeRowSeed {
-        year: 1,
-        simulation_year: 1,
-        sim_day_index: i32::try_from(report.dispatch_report.steps.len().max(1)).unwrap_or(i32::MAX),
-        julian: 1,
-        month: 1,
-        day_of_month: 1,
-        water_year: 1,
-        element_id: i32::try_from(channel_ids.iter().copied().next().unwrap_or(1))
-            .unwrap_or(i32::MAX),
-        channel_id: i32::try_from(channel_ids.iter().copied().next().unwrap_or(1))
-            .unwrap_or(i32::MAX),
-        runoff_volume_m3,
-        peak_discharge_m3_s,
-        sediment_yield_kg,
-        soluble_pollutant_kg,
-        particulate_pollutant_kg,
-        channel_outflow_m3,
-        channel_storage_m3: 0.0,
-        channel_baseflow_m3: boundary_scalar(
-            &report.writeback_surface.flux_surface,
-            WatershedProductionFluxSymbol::Cbase,
-        ),
-        channel_loss_m3: 0.0,
-        area_m2: 1.0,
-        precipitation_mm: 0.0,
-        rain_melt_mm: 0.0,
-        runoff_mm: runoff_volume_m3 * 1_000.0,
-        deep_percolation_mm: 0.0,
-        lateral_flow_mm: 0.0,
-        qofe_mm: 0.0,
-        transpiration_mm: 0.0,
-        evaporation_soil_mm: 0.0,
-        evaporation_residue_mm: 0.0,
-        upstream_q_mm: 0.0,
-        subsurface_runon_mm: 0.0,
-        total_soil_water_mm: 0.0,
-        soil_water_total_mm: 0.0,
-        profile_depth_mm: 0.0,
-        profile_porosity_cap_mm: 0.0,
-        profile_fc_store_mm: 0.0,
-        profile_wp_store_mm: 0.0,
-        interception_mm: 0.0,
-        interception_storage_mm: 0.0,
-        frozen_water_mm: 0.0,
-        snow_water_mm: 0.0,
-        tile_mm: 0.0,
-        irrigation_mm: 0.0,
-        baseflow_mm: 0.0,
+        year: publication_frame.year,
+        simulation_year: publication_frame.simulation_year,
+        sim_day_index: publication_frame.sim_day_index,
+        julian: publication_frame.julian,
+        month: publication_frame.month,
+        day_of_month: publication_frame.day_of_month,
+        water_year: publication_frame.water_year,
+        element_id: publication_frame.element_id,
+        channel_id: publication_frame.channel_id,
+        runoff_volume_m3: publication_frame.runoff_volume_m3,
+        peak_discharge_m3_s: publication_frame.peak_discharge_m3_s,
+        sediment_yield_kg: publication_frame.sediment_yield_kg,
+        soluble_pollutant_kg: publication_frame.soluble_pollutant_kg,
+        particulate_pollutant_kg: publication_frame.particulate_pollutant_kg,
+        channel_outflow_m3: publication_frame.channel_outflow_m3,
+        channel_storage_m3: publication_frame.channel_storage_m3,
+        channel_baseflow_m3: publication_frame.channel_baseflow_m3,
+        channel_loss_m3: publication_frame.channel_loss_m3,
+        area_m2: publication_frame.area_m2,
+        precipitation_mm: publication_frame.precipitation_mm,
+        rain_melt_mm: publication_frame.rain_melt_mm,
+        runoff_mm: publication_frame.runoff_mm,
+        deep_percolation_mm: publication_frame.deep_percolation_mm,
+        lateral_flow_mm: publication_frame.lateral_flow_mm,
+        qofe_mm: publication_frame.qofe_mm,
+        transpiration_mm: publication_frame.transpiration_mm,
+        evaporation_soil_mm: publication_frame.evaporation_soil_mm,
+        evaporation_residue_mm: publication_frame.evaporation_residue_mm,
+        upstream_q_mm: publication_frame.upstream_q_mm,
+        subsurface_runon_mm: publication_frame.subsurface_runon_mm,
+        total_soil_water_mm: publication_frame.total_soil_water_mm,
+        soil_water_total_mm: publication_frame.soil_water_total_mm,
+        profile_depth_mm: publication_frame.profile_depth_mm,
+        profile_porosity_cap_mm: publication_frame.profile_porosity_cap_mm,
+        profile_fc_store_mm: publication_frame.profile_fc_store_mm,
+        profile_wp_store_mm: publication_frame.profile_wp_store_mm,
+        interception_mm: publication_frame.interception_mm,
+        interception_storage_mm: publication_frame.interception_storage_mm,
+        frozen_water_mm: publication_frame.frozen_water_mm,
+        snow_water_mm: publication_frame.snow_water_mm,
+        tile_mm: publication_frame.tile_mm,
+        irrigation_mm: publication_frame.irrigation_mm,
+        baseflow_mm: publication_frame.baseflow_mm,
         ..WatershedInterchangeRowSeed::default()
     }
-}
-
-fn boundary_scalar<T>(surface: &BTreeMap<BoundarySymbol, BoundaryValue>, symbol: T) -> f64
-where
-    T: Into<BoundarySymbol>,
-{
-    surface
-        .get(&symbol.into())
-        .map_or(0.0, |value| value.as_f64())
 }
 
 fn print_help() {
