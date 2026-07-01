@@ -54,6 +54,18 @@ State as of `2026-06-30`:
 
 ## Execution Log
 
+- `20260701-kernel-boundary-cqr-row7-wb-publication-001/` is complete as
+  KERNEL-BOUNDARY CQR ROW 7 WB PUBLICATION. Result:
+  `EXECUTED-COMPLETE-ROW7-CQR`. It executed row #7 of
+  `kernel-boundary-cqr-burndown-execplan.md`, reducing row #7 owned production
+  offenders from 17 unique entries (`34` duplicated report rows) to `0`
+  entries above CRAP 30. It restored typed assertions for retained publication
+  frame guards, snow/frost insulation, snow selector parsing, Sturm climate
+  normals, growth/residue projection, Priestley-Taylor demand, no-final-frost
+  rebalance, frost carry projection, WB11 frozen-depth refresh, and WB16
+  equivalent-plane alpha. Full gates passed (`1239` nextest passed); H2637
+  measured `1:07.39` / `79588 KiB`, protected H2637 outputs were
+  byte-identical, and `compatibility_edge_invocations=0`.
 - `20260701-kernel-boundary-cqr-row4-runtime-inputs-001/` is complete as
   KERNEL-BOUNDARY CQR ROW 4 RUNTIME INPUTS. Result:
   `EXECUTED-COMPLETE-ROW4-CQR`. It executed row #4 of

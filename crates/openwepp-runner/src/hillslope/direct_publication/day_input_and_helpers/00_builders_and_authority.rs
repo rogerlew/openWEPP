@@ -1964,39 +1964,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         day_index: usize,
         lane_index: usize,
     ) -> Result<DirectPublicationDayInput, HillslopeCliError> {
-        let day = self.climate_span.days.get(day_index).ok_or_else(|| {
-            HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_publication_frame",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} direct production day index {} exceeds climate span {}",
-                    day_index + 1,
-                    self.climate_span.days.len()
-                ),
-            }
-        })?;
-        direct_publication_validate_day(day)?;
-        let simulation_year =
-            simulation_year_from_calendar_year(day.year, self.climate_span.first_day.year)?;
-        let forcing =
-            self.climate_request
-                .direct_day_forcing(day_index)
-                .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
-                    surface: "direct_publication_frame",
-                    detail: format!(
-                        "{SIMOUT_GUARD_ID} direct production typed climate forcing failed: {source}"
-                    ),
-                })?;
-        let lane = frame
-            .lanes
-            .get(lane_index)
-            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_publication_frame",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} direct production lane index {} exceeds frame lane count {}",
-                    lane_index + 1,
-                    frame.lanes.len()
-                ),
-        })?;
+        let (day, simulation_year, forcing) = self.climate_day_for_build(day_index)?;
+        let lane = Self::frame_lane_for_build(frame, lane_index)?;
         let authority = self.lane_authority(lane_index)?;
         let precipitation_m = forcing.prcp_m;
         let mut hyetograph = direct_production_hyetograph(&forcing)?;
@@ -2005,7 +1974,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let growth_state_before = *lane.plant_growth_state;
         let pre_growth_evapotranspiration_compute_inputs =
             authority.evapotranspiration.inputs_with_growth_surface(
-                day,
+                &day,
                 &forcing,
                 lane.evapotranspiration_stage_state.as_deref().copied(),
                 &lane.subsurface_layers,
@@ -2013,7 +1982,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 growth_state_before,
             )?;
         let (annual_growth_inputs, perennial_growth_inputs) = authority.growth.inputs(
-            day,
+            &day,
             simulation_year,
             lane_index + 1,
             &forcing,
@@ -2026,25 +1995,16 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             &perennial_growth_inputs,
             growth_state_before,
         )?;
-        let residue_cover_projection = {
-            let mut states = self.residue_cover_state.borrow_mut();
-            if lane_index >= states.len() {
-                states.resize(lane_index + 1, authority.residue_cover.initial_state());
-            }
-            let projection = authority.residue_cover.project_day(
-                &authority.growth,
-                day,
-                simulation_year,
-                lane_index + 1,
-                &forcing,
-                states[lane_index],
-                growth_state_before,
-                growth_state_for_publication,
-                lane.plant_water_stress,
-            )?;
-            states[lane_index] = projection.state_after;
-            projection
-        };
+        let residue_cover_projection = self.residue_cover_projection_for_build(
+            authority,
+            day,
+            simulation_year,
+            lane_index,
+            &forcing,
+            growth_state_before,
+            growth_state_for_publication,
+            lane.plant_water_stress,
+        )?;
         maybe_write_frost_residue_cover_trace(day_index, lane_index, &residue_cover_projection)?;
         Self::validate_active_snow_forcing(
             authority,
@@ -2077,7 +2037,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let frost_context = authority.snow_frost.frost_day_context(
             self.climate_request,
             day_index,
-            day,
+            &day,
             lane_index,
             lane,
             &forcing,
@@ -2125,7 +2085,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             });
 
         let mut day_input =
-            DirectPublicationDayInput::calendar_only(direct_publication_calendar_day(day)?);
+            DirectPublicationDayInput::calendar_only(direct_publication_calendar_day(&day)?);
         day_input.precipitation_m = precipitation_m;
         day_input.effective_temperature_c = day.effective_temperature_c;
         day_input.interception_m = interception_state.interception_m;
@@ -2190,25 +2150,90 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             authority.hydrology_projection_inputs(hydrology_layers);
         hydrology_projection_inputs.snow_water_m = snow_liquid.runtime_swe_after_m;
         day_input.hydrology_projection_inputs = Some(hydrology_projection_inputs);
-        let erosion_active = authority.erosion.wave2_enabled
-            && direct_publication_hyetograph_rainfall_m(
-                day_input
-                    .peak_runoff_inputs
-                    .as_ref()
-                    .map_or(&[][..], |inputs| inputs.hyetograph.as_slice()),
-            )? >= DIRECT_PUBLICATION_EROSION_MIN_POST_INTERCEPTION_RAINFALL_M;
-        day_input.erosion_producer_required = erosion_active;
-        if erosion_active {
-            day_input.erosion_inputs = Some(authority.erosion.erosion_inputs.clone());
-        }
-        if let Some(frost_context) = frost_context {
-            day_input.winter_frost_compute_inputs = Some(frost_context.compute_inputs);
-            day_input.frost_storage_liquid_delta_m = frost_context.storage_liquid_delta_m;
-            day_input.frost_layer_carry_projection = frost_context.layer_carry_projection;
-        }
+        let erosion_active = direct_production_erosion_active(authority, &day_input)?;
+        apply_direct_production_erosion_inputs(&mut day_input, authority, erosion_active);
+        apply_direct_production_frost_context(&mut day_input, frost_context);
         day_input.frost_runtime_carry =
             direct_publication_frost_runtime_carry_from_lane_state(&lane.winter_column.frost);
         Ok(day_input)
+    }
+
+    fn climate_day_for_build(
+        &self,
+        day_index: usize,
+    ) -> Result<(ClimateDayProjection, i32, HillslopeDirectClimateDayForcing), HillslopeCliError>
+    {
+        let day = *self.climate_span.days.get(day_index).ok_or_else(|| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production day index {} exceeds climate span {}",
+                    day_index + 1,
+                    self.climate_span.days.len()
+                ),
+            }
+        })?;
+        direct_publication_validate_day(&day)?;
+        let simulation_year =
+            simulation_year_from_calendar_year(day.year, self.climate_span.first_day.year)?;
+        let forcing =
+            self.climate_request
+                .direct_day_forcing(day_index)
+                .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_publication_frame",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} direct production typed climate forcing failed: {source}"
+                    ),
+                })?;
+        Ok((day, simulation_year, forcing))
+    }
+
+    fn frame_lane_for_build(
+        frame: &DirectRunFrame,
+        lane_index: usize,
+    ) -> Result<&DirectLaneFrame, HillslopeCliError> {
+        frame
+            .lanes
+            .get(lane_index)
+            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_publication_frame",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production lane index {} exceeds frame lane count {}",
+                    lane_index + 1,
+                    frame.lanes.len()
+                ),
+            })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn residue_cover_projection_for_build(
+        &self,
+        authority: &DirectProductionLaneDayInputAuthority,
+        day: ClimateDayProjection,
+        simulation_year: i32,
+        lane_index: usize,
+        forcing: &HillslopeDirectClimateDayForcing,
+        growth_state_before: DirectGrowthStateSurface,
+        growth_state_for_publication: DirectGrowthStateSurface,
+        plant_water_stress: f64,
+    ) -> Result<DirectProductionResidueCoverProjection, HillslopeCliError> {
+        let mut states = self.residue_cover_state.borrow_mut();
+        if lane_index >= states.len() {
+            states.resize(lane_index + 1, authority.residue_cover.initial_state());
+        }
+        let projection = authority.residue_cover.project_day(
+            &authority.growth,
+            &day,
+            simulation_year,
+            lane_index + 1,
+            forcing,
+            states[lane_index],
+            growth_state_before,
+            growth_state_for_publication,
+            plant_water_stress,
+        )?;
+        states[lane_index] = projection.state_after;
+        Ok(projection)
     }
 
     fn lane_authority(
@@ -2467,22 +2492,15 @@ fn maybe_write_r7h_direct_production_wb15_trace(
     post_winter_rain_m: f64,
     interception_state: openwepp_hillslope_orchestrator::DirectCanopyInterceptionState,
 ) -> Result<(), HillslopeCliError> {
-    let Some(path) = std::env::var_os("OPENWEPP_R7H_WB15_TRACE_PATH") else {
+    let Some(path) = direct_production_trace_output_path("OPENWEPP_R7H_WB15_TRACE_PATH") else {
         return Ok(());
     };
-    if path.is_empty() {
-        return Ok(());
-    }
-    if let Some(filter_day_index) = direct_production_trace_env_usize(
+    if !direct_production_trace_filters_allow(
+        day_index,
+        lane_index,
         "OPENWEPP_R7H_WB15_TRACE_DAY_INDEX",
-    ) && filter_day_index != day_index
-    {
-        return Ok(());
-    }
-    if let Some(filter_lane_index) = direct_production_trace_env_usize(
         "OPENWEPP_R7H_WB15_TRACE_LANE_INDEX",
-    ) && filter_lane_index != lane_index
-    {
+    ) {
         return Ok(());
     }
     let projected_interception_live_biomass_kg_m2 =
@@ -2542,36 +2560,105 @@ fn maybe_write_r7h_direct_production_wb15_trace(
     })
 }
 
+fn direct_production_trace_output_path(name: &str) -> Option<std::ffi::OsString> {
+    std::env::var_os(name).filter(|path| !path.is_empty())
+}
+
+fn direct_production_trace_filters_allow(
+    day_index: usize,
+    lane_index: usize,
+    day_filter_name: &str,
+    lane_filter_name: &str,
+) -> bool {
+    direct_production_trace_index_filter_allows(day_filter_name, day_index)
+        && direct_production_trace_index_filter_allows(lane_filter_name, lane_index)
+}
+
+fn direct_production_trace_index_filter_allows(name: &str, observed: usize) -> bool {
+    match direct_production_trace_env_usize(name) {
+        Some(filter) => filter == observed,
+        None => true,
+    }
+}
+
 fn direct_production_trace_env_usize(name: &str) -> Option<usize> {
     std::env::var(name).ok()?.trim().parse::<usize>().ok()
+}
+
+fn parse_snowdensity1015_default_snow_density_model(
+    value: Option<&str>,
+) -> Result<openwepp_hillslope_orchestrator::SnowDensityModel, HillslopeCliError> {
+    match value.map_or("", str::trim) {
+        "" | "physics_bulk_density_compaction_v1" => {
+            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1)
+        }
+        "legacy_wepp" => Ok(openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp),
+        "physics_bulk_shallow_guard_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkShallowGuardV1,
+        ),
+        "physics_bulk_climate_class_density_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkClimateClassDensityV1,
+        ),
+        "physics_bulk_multilayer_density_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkMultilayerDensityV1,
+        ),
+        observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_density_model",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1, observed {observed}"
+            ),
+        }),
+    }
+}
+
+fn parse_snowdensity1037_diagnostic_snow_melt_model(
+    value: Option<&str>,
+) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
+    match value.map_or("", str::trim) {
+        "" | "legacy_coe" => {
+            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe)
+        }
+        "coe_winter_thaw_state_loss_v1" => {
+            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeWinterThawStateLossV1)
+        }
+        observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_melt_model",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} {SNOWDENSITY1037_MELT_MODEL_ENV} must be legacy_coe or coe_winter_thaw_state_loss_v1, observed {observed}"
+            ),
+        }),
+    }
+}
+
+fn parse_snowdensity1015_default_snow_melt_model(
+    value: Option<&str>,
+) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
+    match value.map_or("", str::trim) {
+        "" | "coe_liquid_holding_capacity_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1,
+        ),
+        "coe_open_sublimation_stage_a_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageAV1,
+        ),
+        "coe_open_sublimation_stage_b_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageBV1,
+        ),
+        "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
+        observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_snow_melt_model",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be legacy_coe, coe_liquid_holding_capacity_v1, coe_open_sublimation_stage_a_v1, or coe_open_sublimation_stage_b_v1, observed {observed}"
+            ),
+        }),
+    }
 }
 
 fn snowdensity1015_default_snow_density_model(
 ) -> Result<openwepp_hillslope_orchestrator::SnowDensityModel, HillslopeCliError> {
     match std::env::var(SNOWDENSITY09_DENSITY_MODEL_ENV) {
-        Ok(value) => match value.trim() {
-            "" | "physics_bulk_density_compaction_v1" => Ok(
-                openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1,
-            ),
-            "legacy_wepp" => Ok(openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp),
-            "physics_bulk_shallow_guard_v1" => Ok(
-                openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkShallowGuardV1,
-            ),
-            "physics_bulk_climate_class_density_v1" => Ok(
-                openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkClimateClassDensityV1,
-            ),
-            "physics_bulk_multilayer_density_v1" => Ok(
-                openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkMultilayerDensityV1,
-            ),
-            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_snow_density_model",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOWDENSITY09_DENSITY_MODEL_ENV} must be legacy_wepp, physics_bulk_density_compaction_v1, physics_bulk_shallow_guard_v1, physics_bulk_climate_class_density_v1, or physics_bulk_multilayer_density_v1, observed {observed}"
-                ),
-            }),
-        },
+        Ok(value) => parse_snowdensity1015_default_snow_density_model(Some(&value)),
         Err(std::env::VarError::NotPresent) => {
-            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1)
+            parse_snowdensity1015_default_snow_density_model(None)
         }
         Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_density_model",
@@ -2763,20 +2850,9 @@ fn snowdensity1035_diagnostic_snow_phase_model(
 fn snowdensity1037_diagnostic_snow_melt_model(
 ) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
     match std::env::var(SNOWDENSITY1037_MELT_MODEL_ENV) {
-        Ok(value) => match value.trim() {
-            "" | "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
-            "coe_winter_thaw_state_loss_v1" => {
-                Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeWinterThawStateLossV1)
-            }
-            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_snow_melt_model",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOWDENSITY1037_MELT_MODEL_ENV} must be legacy_coe or coe_winter_thaw_state_loss_v1, observed {observed}"
-                ),
-            }),
-        },
+        Ok(value) => parse_snowdensity1037_diagnostic_snow_melt_model(Some(&value)),
         Err(std::env::VarError::NotPresent) => {
-            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe)
+            parse_snowdensity1037_diagnostic_snow_melt_model(None)
         }
         Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_melt_model",
@@ -2788,31 +2864,52 @@ fn snowdensity1037_diagnostic_snow_melt_model(
 fn snowdensity1015_default_snow_melt_model(
 ) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
     match std::env::var(SNOWDENSITY1038_MELT_MODEL_ENV) {
-        Ok(value) => match value.trim() {
-            "" | "coe_liquid_holding_capacity_v1" => {
-                Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1)
-            }
-            "coe_open_sublimation_stage_a_v1" => Ok(
-                openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageAV1,
-            ),
-            "coe_open_sublimation_stage_b_v1" => Ok(
-                openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageBV1,
-            ),
-            "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
-            observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_snow_melt_model",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be legacy_coe, coe_liquid_holding_capacity_v1, coe_open_sublimation_stage_a_v1, or coe_open_sublimation_stage_b_v1, observed {observed}"
-                ),
-            }),
-        },
+        Ok(value) => parse_snowdensity1015_default_snow_melt_model(Some(&value)),
         Err(std::env::VarError::NotPresent) => {
-            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1)
+            parse_snowdensity1015_default_snow_melt_model(None)
         }
         Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_melt_model",
             detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be UTF-8"),
         }),
+    }
+}
+
+fn direct_production_erosion_active(
+    authority: &DirectProductionLaneDayInputAuthority,
+    day_input: &DirectPublicationDayInput,
+) -> Result<bool, HillslopeCliError> {
+    if !authority.erosion.wave2_enabled {
+        return Ok(false);
+    }
+    let rainfall_m = direct_publication_hyetograph_rainfall_m(
+        day_input
+            .peak_runoff_inputs
+            .as_ref()
+            .map_or(&[][..], |inputs| inputs.hyetograph.as_slice()),
+    )?;
+    Ok(rainfall_m >= DIRECT_PUBLICATION_EROSION_MIN_POST_INTERCEPTION_RAINFALL_M)
+}
+
+fn apply_direct_production_erosion_inputs(
+    day_input: &mut DirectPublicationDayInput,
+    authority: &DirectProductionLaneDayInputAuthority,
+    erosion_active: bool,
+) {
+    day_input.erosion_producer_required = erosion_active;
+    if erosion_active {
+        day_input.erosion_inputs = Some(authority.erosion.erosion_inputs.clone());
+    }
+}
+
+fn apply_direct_production_frost_context(
+    day_input: &mut DirectPublicationDayInput,
+    frost_context: Option<DirectProductionFrostDayContext>,
+) {
+    if let Some(frost_context) = frost_context {
+        day_input.winter_frost_compute_inputs = Some(frost_context.compute_inputs);
+        day_input.frost_storage_liquid_delta_m = frost_context.storage_liquid_delta_m;
+        day_input.frost_layer_carry_projection = frost_context.layer_carry_projection;
     }
 }
 

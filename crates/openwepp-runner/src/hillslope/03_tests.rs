@@ -876,6 +876,37 @@ mod tests {
     }
 
     #[test]
+    fn cqr_row7_retained_publication_frame_validator_covers_count_and_identity_guards() {
+        let identity =
+            DirectRunIdentity::new(42, 2637, 2, 2).expect("valid direct identity should construct");
+        let metadata = DirectPublicationRunMetadata {
+            run_name: "cqr_row7_retained".to_string(),
+            runtime_selection: "direct-production-executor".to_string(),
+            output_policy: "test".to_string(),
+        };
+        let frame = DirectRunPublicationFrame {
+            identity,
+            metadata: metadata.clone(),
+            rows: vec![
+                r6j_multiofe_publication_row(1, 1),
+                r6j_multiofe_publication_row(2, 1),
+                r6j_multiofe_publication_row(1, 2),
+                r6j_multiofe_publication_row(2, 2),
+            ],
+        };
+        validate_retained_direct_publication_frame(&frame)
+            .expect("complete retained frame should validate");
+
+        let mut bad_count = frame.clone();
+        bad_count.rows.pop();
+        assert!(validate_retained_direct_publication_frame(&bad_count).is_err());
+
+        let mut bad_identity = frame;
+        bad_identity.rows[0].lane_index = 3;
+        assert!(validate_retained_direct_publication_frame(&bad_identity).is_err());
+    }
+
+    #[test]
     fn r6a_direct_projection_consumers_read_publication_frame_operands() {
         let frame = r6a_direct_projection_fixture_frame();
 
@@ -1120,6 +1151,483 @@ mod tests {
                 sediment_concentration_kg_m3: Some([0.1, 0.2, 0.3, 0.4, 0.5]),
             },
         }
+    }
+
+    fn cqr_row7_snow_lane_state(
+        layers: Vec<openwepp_hillslope_orchestrator::DirectSnowLayerState>,
+    ) -> DirectSnowLaneState {
+        let runtime_swe_m = layers.iter().map(|layer| layer.mass_swe_m).sum();
+        let runtime_depth_m = layers.iter().map(|layer| layer.thickness_m).sum();
+        DirectSnowLaneState {
+            runtime_swe_m,
+            runtime_depth_m,
+            runtime_density_kg_m3: if runtime_depth_m > 0.0 {
+                runtime_swe_m / runtime_depth_m * 1_000.0
+            } else {
+                0.0
+            },
+            runtime_settle_day_count: 0.0,
+            coe_boundary_depth_m: runtime_depth_m,
+            coe_boundary_density_kg_m3: 0.0,
+            coe_boundary_settle_day_count: 0.0,
+            liquid_water_retained_m: 0.0,
+            snow_albedo_state: None,
+            layers,
+        }
+    }
+
+    #[test]
+    fn cqr_row7_snow_frost_insulation_helpers_cover_layered_and_sturm_paths() {
+        let layers = vec![
+            openwepp_hillslope_orchestrator::DirectSnowLayerState::new(0.03, 0.10, 300.0, 0.0),
+            openwepp_hillslope_orchestrator::DirectSnowLayerState::new(0.08, 0.20, 400.0, 0.0),
+        ];
+        let snow = cqr_row7_snow_lane_state(layers);
+        let (depth_m, density_kg_m3) =
+            layered_snow_frost_insulation_depth_density(&snow, 1.0)
+                .expect("layered snow insulation should compute");
+        assert_eq!(depth_m.to_bits(), snow.runtime_depth_m.to_bits());
+        assert!(density_kg_m3.is_finite() && density_kg_m3 > 0.0);
+
+        let dry_snow = cqr_row7_snow_lane_state(Vec::new());
+        assert_eq!(
+            layered_snow_frost_insulation_depth_density(&dry_snow, 1.0)
+                .expect("zero snow should be inert"),
+            (0.0, 0.0)
+        );
+
+        let mut missing_layers = dry_snow.clone();
+        missing_layers.runtime_swe_m = 0.01;
+        missing_layers.runtime_depth_m = 0.05;
+        assert!(layered_snow_frost_insulation_depth_density(&missing_layers, 1.0).is_err());
+
+        let mut mismatch = snow.clone();
+        mismatch.runtime_depth_m += 0.01;
+        assert!(layered_snow_frost_insulation_depth_density(&mismatch, 1.0).is_err());
+
+        let low_density_conductivity =
+            sturm1997_snow_conductivity_w_m_k(100.0, 1.0).expect("low density branch");
+        let high_density_conductivity =
+            sturm1997_snow_conductivity_w_m_k(300.0, 1.0).expect("high density branch");
+        assert!(low_density_conductivity > 0.0);
+        assert!(high_density_conductivity > low_density_conductivity);
+        assert!(sturm1997_snow_conductivity_w_m_k(-1.0, 1.0).is_err());
+        assert!(sturm1997_snow_conductivity_w_m_k(100.0, 0.0).is_err());
+
+        let inverted = invert_sturm1997_snow_density_kg_m3(high_density_conductivity, 1.0)
+            .expect("conductivity should invert to density");
+        assert!((inverted - 300.0).abs() < 1.0e-6);
+        assert!(invert_sturm1997_snow_density_kg_m3(0.0, 1.0).is_err());
+    }
+
+    #[test]
+    fn cqr_row7_snow_selector_parsers_cover_defaults_variants_and_rejections() {
+        assert_eq!(
+            parse_snowdensity1015_default_snow_density_model(None)
+                .expect("missing density selector should default"),
+            openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1
+        );
+        assert_eq!(
+            parse_snowdensity1015_default_snow_density_model(Some("legacy_wepp"))
+                .expect("legacy density selector should parse"),
+            openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp
+        );
+        assert!(
+            parse_snowdensity1015_default_snow_density_model(Some("bad_density")).is_err()
+        );
+
+        assert_eq!(
+            parse_snowdensity1037_diagnostic_snow_melt_model(None)
+                .expect("missing diagnostic melt selector should default"),
+            openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe
+        );
+        assert_eq!(
+            parse_snowdensity1037_diagnostic_snow_melt_model(Some(
+                "coe_winter_thaw_state_loss_v1",
+            ))
+            .expect("diagnostic melt selector should parse"),
+            openwepp_hillslope_orchestrator::SnowMeltModel::CoeWinterThawStateLossV1
+        );
+        assert!(parse_snowdensity1037_diagnostic_snow_melt_model(Some("bad_melt")).is_err());
+
+        assert_eq!(
+            parse_snowdensity1015_default_snow_melt_model(None)
+                .expect("missing default melt selector should default"),
+            openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1
+        );
+        assert_eq!(
+            parse_snowdensity1015_default_snow_melt_model(Some(
+                "coe_open_sublimation_stage_b_v1",
+            ))
+            .expect("default melt selector should parse stage B"),
+            openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageBV1
+        );
+        assert!(parse_snowdensity1015_default_snow_melt_model(Some("bad_default_melt")).is_err());
+    }
+
+    fn cqr_row7_test_climate_file() -> ClimateFile {
+        ClimateFile {
+            datver: 5.3,
+            mode: openwepp_input_contract::parsers::climate::ClimateModeFlags {
+                itemp: 1,
+                breakpoint_enabled: false,
+                iwind: 0,
+            },
+            station_id: "cqr-row7".to_string(),
+            metadata: openwepp_input_contract::parsers::climate::ClimateMetadata {
+                deglat: 45.0,
+                deglon: -116.0,
+                elev: 1_500.0,
+                obsyrs: 1,
+                ibyear: 2020,
+                numyr: 1,
+                generator_cmd: None,
+            },
+            monthly: openwepp_input_contract::parsers::climate::ClimateMonthlyStats {
+                obmaxt: [0.0; 12],
+                obmint: [0.0; 12],
+                radave: [0.0; 12],
+                obrain: [0.0; 12],
+            },
+            daily_records: vec![
+                ClimateDailyRecord::NoBreakpoint(
+                    openwepp_input_contract::parsers::climate::NoBreakpointDay {
+                        day: 1,
+                        mon: 1,
+                        year: 2020,
+                        prcp: 0.012,
+                        stmdur: 3_600.0,
+                        timep: 0.5,
+                        ip: 10.0,
+                        tmax: -2.0,
+                        tmin: -8.0,
+                        rad: 120.0,
+                        vwind: 2.0,
+                        wind: 180.0,
+                        tdpt: -10.0,
+                    },
+                ),
+                ClimateDailyRecord::NoBreakpoint(
+                    openwepp_input_contract::parsers::climate::NoBreakpointDay {
+                        day: 2,
+                        mon: 1,
+                        year: 2020,
+                        prcp: 0.006,
+                        stmdur: 3_600.0,
+                        timep: 0.5,
+                        ip: 10.0,
+                        tmax: 2.0,
+                        tmin: -4.0,
+                        rad: 140.0,
+                        vwind: 4.0,
+                        wind: 180.0,
+                        tdpt: -6.0,
+                    },
+                ),
+            ],
+        }
+    }
+
+    fn cqr_row7_climate_span(days: Vec<ClimateDayProjection>) -> ClimateRunSpanSummary {
+        let first_day = *days.first().expect("test climate span should be nonempty");
+        let last_day = *days.last().expect("test climate span should be nonempty");
+        ClimateRunSpanSummary {
+            days,
+            first_day,
+            last_day,
+        }
+    }
+
+    #[test]
+    fn cqr_row7_sturm1995_climate_normals_cover_nominal_and_guard_paths() {
+        let climate = cqr_row7_test_climate_file();
+        let climate_request = build_hillslope_climate_runtime_request(&climate)
+            .expect("test climate should build runtime request");
+        let span = cqr_row7_climate_span(vec![
+            ClimateDayProjection {
+                year: 2020,
+                month: 1,
+                day_of_month: 1,
+                julian_day: 1,
+                precipitation_mm: 12.0,
+                effective_temperature_c: -5.0,
+            },
+            ClimateDayProjection {
+                year: 2020,
+                month: 1,
+                day_of_month: 2,
+                julian_day: 2,
+                precipitation_mm: 6.0,
+                effective_temperature_c: -1.0,
+            },
+        ]);
+
+        let normals = direct_production_sturm1995_climate_normals(&climate_request, &span)
+            .expect("valid climate span should produce Sturm normals");
+        assert!(normals.cooling_degree_month_c > 0.0);
+        assert!(normals.snowfall_precipitation_rate_mm_day > 0.0);
+        assert_eq!(normals.winter_wind_m_s.to_bits(), 3.0_f64.to_bits());
+
+        let empty_span = ClimateRunSpanSummary {
+            days: Vec::new(),
+            first_day: span.first_day,
+            last_day: span.last_day,
+        };
+        assert!(direct_production_sturm1995_climate_normals(&climate_request, &empty_span).is_err());
+
+        let bad_month_span = cqr_row7_climate_span(vec![ClimateDayProjection {
+            month: 13,
+            ..span.first_day
+        }]);
+        assert!(
+            direct_production_sturm1995_climate_normals(&climate_request, &bad_month_span).is_err()
+        );
+    }
+
+    fn cqr_row7_insert_projection_scalar(
+        surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+        symbol: String,
+        value: f64,
+    ) {
+        surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
+
+    fn cqr_row7_growth_projection() -> openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces {
+        let mut projection =
+            openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces {
+                pl_schedule_surface: BTreeMap::new(),
+                pl_growth_surface: BTreeMap::new(),
+                pl_decomp_surface: BTreeMap::new(),
+            };
+        cqr_row7_insert_projection_scalar(
+            &mut projection.pl_schedule_surface,
+            direct_growth_schedule_slot_crop_symbol(1, 1, "imngmt"),
+            2.0,
+        );
+        for (root, value) in [
+            ("imngmt", 2.0),
+            ("jdplt", 0.0),
+            ("jdharv", 100.0),
+            ("jdstop", 200.0),
+            ("mgtopt", 1.0),
+            ("btemp", 0.0),
+            ("otemp", 20.0),
+            ("gddmax", 100.0),
+            ("dlai", 10.0),
+            ("dropfc", 0.5),
+            ("decfct", 0.8),
+            ("spriod", 1.0),
+            ("bb", 1.0),
+            ("beinp", 1.0),
+            ("extnct", 0.5),
+            ("hi", 0.4),
+            ("xmxlai", 2.0),
+            ("rsr", 0.2),
+            ("rtmmax", 1.0),
+            ("rdmax", 1.0),
+        ] {
+            cqr_row7_insert_projection_scalar(
+                &mut projection.pl_growth_surface,
+                direct_growth_slot_crop_symbol(1, 1, root),
+                value,
+            );
+        }
+        for (root, value) in [("oratea", 0.0), ("orater", 0.03)] {
+            cqr_row7_insert_projection_scalar(
+                &mut projection.pl_decomp_surface,
+                direct_decomp_slot_crop_symbol(1, 1, root),
+                value,
+            );
+        }
+        projection
+    }
+
+    fn cqr_row7_growth_surface(live_biomass_kg_m2: f64) -> DirectGrowthStateSurface {
+        DirectGrowthStateSurface {
+            live_biomass_kg_m2,
+            ..DirectGrowthStateSurface::zero()
+        }
+    }
+
+    #[test]
+    fn cqr_row7_growth_crop_and_surface_litter_projection_cover_schedule_paths() {
+        let projection = cqr_row7_growth_projection();
+        let crop = direct_production_typed_growth_crop_authority(&projection, 1, 1)
+            .expect("typed growth crop authority should project");
+        assert!(crop.uses_fall_litter_drop_schedule());
+        assert_eq!(
+            crop.surface_decomposition_rate().to_bits(),
+            FOREST_LITTER_FALLBACK_DECAY_RATE_PER_DAY.to_bits()
+        );
+
+        let mut annual_projection = cqr_row7_growth_projection();
+        cqr_row7_insert_projection_scalar(
+            &mut annual_projection.pl_schedule_surface,
+            direct_growth_schedule_slot_crop_symbol(1, 1, "imngmt"),
+            1.0,
+        );
+        cqr_row7_insert_projection_scalar(
+            &mut annual_projection.pl_growth_surface,
+            direct_growth_slot_crop_symbol(1, 1, "jdplt"),
+            10.0,
+        );
+        let annual_crop = direct_production_typed_growth_crop_authority(&annual_projection, 1, 1)
+            .expect("annual crop authority should project without fall stop management");
+        assert_eq!(annual_crop.schedule_imngmt, 1);
+        assert_eq!(annual_crop.jdplt, 10);
+        assert_eq!(annual_crop.jdstop, 0);
+
+        let mut invalid_schedule = cqr_row7_growth_projection();
+        cqr_row7_insert_projection_scalar(
+            &mut invalid_schedule.pl_schedule_surface,
+            direct_growth_schedule_slot_crop_symbol(1, 1, "imngmt"),
+            4.0,
+        );
+        assert!(direct_production_typed_growth_crop_authority(&invalid_schedule, 1, 1).is_err());
+
+        let mut missing_scalar = cqr_row7_growth_projection();
+        missing_scalar.pl_growth_surface.remove(&BoundarySymbol::from(
+            direct_growth_slot_crop_symbol(1, 1, "btemp"),
+        ));
+        assert!(direct_production_typed_growth_crop_authority(&missing_scalar, 1, 1).is_err());
+
+        let residue = DirectProductionResidueCoverState {
+            surface_residue_kg_m2: 0.0,
+            root_residue_kg_m2: 0.0,
+            pending_surface_litter_kg_m2: 0.2,
+            residue_depth_m: 0.0,
+        };
+        let before = cqr_row7_growth_surface(2.0);
+        let after = cqr_row7_growth_surface(1.5);
+
+        let in_window =
+            direct_production_surface_litter_projection(Some(&crop), 100, residue, before, after)
+                .expect("in-window litter should drop");
+        assert_eq!(in_window.surface_litter_input_kg_m2.to_bits(), 0.7_f64.to_bits());
+        assert_eq!(in_window.pending_surface_litter_after_kg_m2.to_bits(), 0.0_f64.to_bits());
+
+        let out_of_window =
+            direct_production_surface_litter_projection(Some(&crop), 1, residue, before, after)
+                .expect("out-of-window litter should remain pending");
+        assert_eq!(out_of_window.surface_litter_input_kg_m2.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(
+            out_of_window.pending_surface_litter_after_kg_m2.to_bits(),
+            0.7_f64.to_bits()
+        );
+
+        let no_crop =
+            direct_production_surface_litter_projection(None, 1, residue, before, after)
+                .expect("non-scheduled crop should emit daily litter directly");
+        assert_eq!(no_crop.surface_litter_input_kg_m2.to_bits(), 0.5_f64.to_bits());
+    }
+
+    fn cqr_row7_forcing(rad_ly: f64, tmax_c: f64, tmin_c: f64) -> HillslopeDirectClimateDayForcing {
+        HillslopeDirectClimateDayForcing {
+            prcp_m: 0.0,
+            tmax_c,
+            tmin_c,
+            rad_ly,
+            vwind_m_s: 1.0,
+            wind_deg: 180.0,
+            tdpt_c: tmin_c,
+            timem_s: Vec::new(),
+            intsty_m_s: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn cqr_row7_priestley_taylor_demand_covers_canopy_and_guard_paths() {
+        let authority = DirectProductionPriestleyTaylorAuthority { salb: 0.2 };
+        let forcing = cqr_row7_forcing(160.0, 12.0, 2.0);
+        let bare = authority
+            .compute_demand(&forcing, 0.0, 0.0)
+            .expect("bare soil ET demand should compute");
+        let canopy = authority
+            .compute_demand(&forcing, 2.0, 0.6)
+            .expect("canopy ET demand should compute");
+        assert!(bare.is_finite() && bare > 0.0);
+        assert!(canopy.is_finite() && canopy > 0.0);
+
+        assert!(authority.compute_demand(&cqr_row7_forcing(-1.0, 12.0, 2.0), 0.0, 0.0).is_err());
+        assert!(
+            DirectProductionPriestleyTaylorAuthority { salb: 1.2 }
+                .compute_demand(&forcing, 0.0, 0.0)
+                .is_err()
+        );
+        assert!(
+            authority
+                .compute_demand(&cqr_row7_forcing(160.0, -300.0, -300.0), 0.0, 0.0)
+                .is_err()
+        );
+    }
+
+    fn cqr_row7_subsurface_layer(theta_m: f64) -> DirectSubsurfaceLayerState {
+        let mut layer = DirectSubsurfaceLayerState::neutral();
+        layer.theta_m = theta_m;
+        layer.residual_theta = 0.10;
+        layer.depth_m = 0.20;
+        layer
+    }
+
+    #[test]
+    fn cqr_row7_no_final_frost_rebalance_covers_credit_debit_and_guards() {
+        let mut credit_layers = vec![cqr_row7_subsurface_layer(0.02)];
+        rebalance_direct_production_no_final_frost_layers_to_storage(0, &mut credit_layers, 0.07)
+            .expect("positive delta should credit top layer");
+        assert!((credit_layers[0].theta_m - 0.05).abs() < 1.0e-12);
+
+        let mut debit_layers = vec![
+            cqr_row7_subsurface_layer(0.05),
+            cqr_row7_subsurface_layer(0.04),
+        ];
+        rebalance_direct_production_no_final_frost_layers_to_storage(0, &mut debit_layers, 0.05)
+            .expect("negative delta should debit layers");
+        let aggregate: f64 = debit_layers
+            .iter()
+            .map(|layer| layer.theta_m + layer.residual_theta * layer.depth_m)
+            .sum();
+        assert!((aggregate - 0.05).abs() < 1.0e-12);
+
+        let mut unchanged_layers = vec![cqr_row7_subsurface_layer(0.02)];
+        rebalance_direct_production_no_final_frost_layers_to_storage(
+            0,
+            &mut unchanged_layers,
+            0.04,
+        )
+        .expect("zero delta should leave storage unchanged");
+        assert_eq!(unchanged_layers[0].theta_m.to_bits(), 0.02_f64.to_bits());
+
+        let mut empty = Vec::new();
+        assert!(
+            rebalance_direct_production_no_final_frost_layers_to_storage(0, &mut empty, 0.01)
+                .is_err()
+        );
+
+        let mut cannot_debit = vec![cqr_row7_subsurface_layer(0.0)];
+        assert!(
+            rebalance_direct_production_no_final_frost_layers_to_storage(
+                0,
+                &mut cannot_debit,
+                0.0
+            )
+            .is_err()
+        );
+
+        let mut invalid_top_credit = vec![cqr_row7_subsurface_layer(-1.0)];
+        assert!(
+            rebalance_direct_production_no_final_frost_layers_to_storage(
+                0,
+                &mut invalid_top_credit,
+                0.0
+            )
+            .is_err()
+        );
+
+        let mut invalid = vec![cqr_row7_subsurface_layer(f64::NAN)];
+        assert!(
+            rebalance_direct_production_no_final_frost_layers_to_storage(0, &mut invalid, 0.01)
+                .is_err()
+        );
     }
 
     fn runner_execution_lock() -> &'static Mutex<()> {

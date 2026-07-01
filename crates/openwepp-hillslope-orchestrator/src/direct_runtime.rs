@@ -240,3 +240,63 @@ include!("direct_runtime/01_publication.rs");
 include!("direct_runtime/02_state_reports.rs");
 include!("direct_runtime/03_executor.rs");
 include!("direct_runtime/04_audit_error_helpers.rs");
+
+#[cfg(test)]
+mod cqr_row7_publication_tests {
+    use super::*;
+
+    fn valid_subsurface_layer() -> DirectSubsurfaceLayerState {
+        let mut layer = DirectSubsurfaceLayerState::neutral();
+        layer.depth_m = 0.20;
+        layer.theta_m = 0.03;
+        layer.residual_theta = 0.12;
+        layer.frozen_depth_m = 0.08;
+        layer.frozen_water_m = 0.01;
+        layer
+    }
+
+    #[test]
+    fn cqr_row7_frost_layer_carry_projection_validates_domains_and_projects_theta() {
+        let layer = valid_subsurface_layer();
+        let projection = DirectFrostLayerCarryProjection {
+            layer_index: 1,
+            fine_layer_count: 4,
+            fine_layer_thickness_m: 0.05,
+        };
+
+        projection
+            .validate_for_layer(1, &layer)
+            .expect("valid frost carry projection should pass");
+        assert!(projection.projected_theta_m(&layer).is_finite());
+
+        let invalid_projection_cases = [
+            DirectFrostLayerCarryProjection {
+                layer_index: 2,
+                ..projection
+            },
+            DirectFrostLayerCarryProjection {
+                fine_layer_count: 0,
+                ..projection
+            },
+            DirectFrostLayerCarryProjection {
+                fine_layer_thickness_m: f64::NAN,
+                ..projection
+            },
+            DirectFrostLayerCarryProjection {
+                fine_layer_thickness_m: 0.30,
+                ..projection
+            },
+        ];
+        for invalid in invalid_projection_cases {
+            assert!(invalid.validate_for_layer(1, &layer).is_err());
+        }
+
+        let mut invalid_layer = layer.clone();
+        invalid_layer.frozen_depth_m = -1.0e-6;
+        assert!(projection.validate_for_layer(1, &invalid_layer).is_err());
+
+        invalid_layer = layer;
+        invalid_layer.frozen_depth_m = 0.30;
+        assert!(projection.validate_for_layer(1, &invalid_layer).is_err());
+    }
+}

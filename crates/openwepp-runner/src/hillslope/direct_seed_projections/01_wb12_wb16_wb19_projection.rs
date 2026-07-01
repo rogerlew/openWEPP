@@ -624,3 +624,103 @@ fn wb16_validate_ealpha(ealpha: f64) -> Result<f64, HillslopeCliError> {
     }
     Ok(ealpha)
 }
+
+#[cfg(test)]
+mod cqr_row7_seed_projection_tests {
+    use super::*;
+
+    fn frost_layer(
+        depth_m: f64,
+        fine_frozen_depths_m: Option<Vec<f64>>,
+    ) -> TypedWb11FrozenDepthLayerInput {
+        TypedWb11FrozenDepthLayerInput {
+            depth_m,
+            fine_frozen_depths_m,
+        }
+    }
+
+    #[test]
+    fn cqr_row7_wb11_frozen_depth_refresh_covers_fine_scalar_and_guard_paths() {
+        let fine_projection = project_typed_wb11_frozen_depth_refresh(
+            None,
+            &[
+                frost_layer(0.10, Some(vec![0.02, 0.03])),
+                frost_layer(0.20, Some(vec![0.05])),
+            ],
+        )
+        .expect("fine-layer frost depths should aggregate");
+        assert_eq!(fine_projection.frozen_depths_m, vec![0.05, 0.05]);
+
+        let scalar_projection = project_typed_wb11_frozen_depth_refresh(
+            Some(0.15),
+            &[frost_layer(0.10, None), frost_layer(0.20, None)],
+        )
+        .expect("scalar frost depth should be distributed by layer depth");
+        assert_eq!(scalar_projection.frozen_depths_m[0].to_bits(), 0.10_f64.to_bits());
+        assert!((scalar_projection.frozen_depths_m[1] - 0.05).abs() < 1.0e-12);
+
+        assert!(project_typed_wb11_frozen_depth_refresh(Some(0.0), &[]).is_err());
+        assert!(project_typed_wb11_frozen_depth_refresh(Some(0.0), &[frost_layer(0.0, None)]).is_err());
+        assert!(
+            project_typed_wb11_frozen_depth_refresh(None, &[frost_layer(0.10, Some(vec![]))])
+                .is_err()
+        );
+        assert!(
+            project_typed_wb11_frozen_depth_refresh(None, &[frost_layer(0.10, Some(vec![-0.01]))])
+                .is_err()
+        );
+        assert!(
+            project_typed_wb11_frozen_depth_refresh(
+                None,
+                &[frost_layer(0.10, Some(vec![0.09, 0.02]))],
+            )
+            .is_err()
+        );
+        assert!(
+            project_typed_wb11_frozen_depth_refresh(Some(f64::NAN), &[frost_layer(0.10, None)])
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn cqr_row7_wb16_equivalent_plane_alpha_covers_single_multi_and_error_paths() {
+        let powers = wb16_ealpha_powers_from_exponent(1.5).expect("valid exponent");
+        let single = wb16_equivalent_plane_alpha(
+            &[Wb16OfeAlphaResult {
+                alpha: 2.0,
+                slplen: 10.0,
+            }],
+            powers,
+        )
+        .expect("single OFE alpha should pass through validation");
+        assert_eq!(single.to_bits(), 2.0_f64.to_bits());
+
+        let multi = wb16_equivalent_plane_alpha(
+            &[
+                Wb16OfeAlphaResult {
+                    alpha: 2.0,
+                    slplen: 10.0,
+                },
+                Wb16OfeAlphaResult {
+                    alpha: 3.0,
+                    slplen: 20.0,
+                },
+            ],
+            powers,
+        )
+        .expect("multi-OFE equivalent plane alpha should compute");
+        assert!(multi.is_finite() && multi > 0.0);
+
+        assert!(wb16_equivalent_plane_alpha(&[], powers).is_err());
+        assert!(
+            wb16_equivalent_plane_alpha(
+                &[Wb16OfeAlphaResult {
+                    alpha: 0.0,
+                    slplen: 10.0,
+                }],
+                powers,
+            )
+            .is_err()
+        );
+    }
+}
