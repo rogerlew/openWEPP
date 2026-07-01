@@ -4,6 +4,12 @@ This directory holds end-user-facing documentation, organized following the wepp
 
 See wepppy's usersum specification at `wepppy/wepppy/weppcloud/routes/usersum/specification.md` for the vendor workflow and document-manifest conventions.
 
+Authoring conventions for documents in this directory are normative in the
+openWEPP repository at `docs/standards/usersum-authoring-style-guide.md`
+(document shapes, audience/register, style rules, and the pre-landing
+checklist). It is contributor documentation, deliberately not hyperlinked or
+vendored here.
+
 ## Audiences
 
 - Modelers running openWEPP via wepppy
