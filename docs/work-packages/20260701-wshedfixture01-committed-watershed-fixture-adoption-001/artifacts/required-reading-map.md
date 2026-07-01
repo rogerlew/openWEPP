@@ -1,6 +1,11 @@
 # Required Reading Map
 
-Status: `QUEUED`
+Status: `EXECUTED`
+
+Execution note: core required reading completed during WSHED-FIXTURE01
+execution. Conditional wepppy orientation files were not present at the listed
+paths. `/wc1/runs/ca/carnivorous-adobo/wepp` was readable and used only as
+source substrate for the committed openWEPP fixture.
 
 ## Core
 

@@ -51,14 +51,16 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
-- `20260701-wshedfixture01-committed-watershed-fixture-adoption-001/` is queued
-  as WSHED-FIXTURE01 COMMITTED WATERSHED FIXTURE ADOPTION. Result:
-  `QUEUED-HANDOFF-AUTHORED`. It contains the active handoff prompt for adopting
-  a committed 32-hillslope watershed fixture under `tests/fixtures/watershed/`
-  before W2/W3 runtime packages use persistent fixture gates.
-
 ## Execution Log
 
+- `20260701-wshedfixture01-committed-watershed-fixture-adoption-001/` is
+  complete as WSHED-FIXTURE01 COMMITTED WATERSHED FIXTURE ADOPTION. Result:
+  `EXECUTED-COMPLETE-WSHED-FIXTURE01`. It adopted the 32-hillslope
+  carnivorous-adobo development fixture under
+  `tests/fixtures/watershed/carnivorous-adobo/`, recorded source provenance,
+  topology summary, required input/runfile inventory, and checksum manifest, and
+  added a focused integration gate proving the persistent fixture path is the
+  committed openWEPP path rather than `/wc1` or wepppy.
 - `20260701-wshedperf01-watershed-baseline-performance-characterization-001/`
   is complete as WSHEDPERF01 WATERSHED BASELINE PERFORMANCE CHARACTERIZATION.
   Result: `EXECUTED-COMPLETE-WSHEDPERF01`. It measured pinned legacy
