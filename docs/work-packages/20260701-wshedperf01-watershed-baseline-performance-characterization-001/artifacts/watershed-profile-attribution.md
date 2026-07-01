@@ -5,34 +5,34 @@ Status: `UPDATED`
 ## Attribution Summary
 
 Ran:
-- `perf`-backed coarse attribution for routed-stage openWEPP was collected from:
-  - `/tmp/wshedperf01_20260701_083200/timing/openwepp_watershed_perf_routed.time`
-
-- `perf stat` counters (single routed run):
+- Routed-stage `perf stat` evidence for openWEPP from
+  `/tmp/wshedperf01_20260701_083200/timing/openwepp_watershed_perf_routed.time`.
+- Routed-stage `perf stat` metrics:
   - `task-clock: 80.46 msec`
   - `cycles: 229,855,976`
   - `instructions: 338,400,048`
   - `branches: 66,967,370`
-  - `branch-misses: 3,263,638` (4.87% of branches)
+  - `branch-misses: 3,263,638` (`4.87%` of branches)
   - `ts_user=0.07`, `ts_sys=0.02`, `ts_elapsed=0.11`, `ts_maxrss=13056`.
-  - `/usr/bin/time` route command for repeats: wall `0:00.07`/`0:00.08`, max RSS `8,448 KB`, user `0.07`, system `0.00`.
+- Full end-to-end `perf stat` evidence from
+  `/tmp/wshedperf01_20260701_101739/perf_full_e2e/timing/openwepp_watershed_end2e_full_perf_perfstat.csv` and corresponding `/usr/bin/time` wrapper.
+- Full path `perf stat` counters:
+  - `task-clock: 62,005.57 msec`
+  - `cycles: 198,953,606,460`
+  - `instructions: 376,497,201,914`
+  - `branches: 60,387,052,322`
+  - `branch-misses: 603,162,941` (`1.00%`)
+  - `context-switches: 326`
+  - `cpu-migrations: 12`
+  - `page-faults: 127,347`
+  - `ts_user=61.48`, `ts_sys=0.56`, `ts_elapsed=1:02.07`, `ts_maxrss=16896`.
 
 ## Coarse staged interpretation
 
 Ran:
-- The command is short and dominated by process-level overhead and fast pass-oriented execution rather than long compute loops.
-- Routing + CLI orchestration appears lightweight:
-  - very low memory (`~8 MiB` RSS)
-  - low instruction count and elapsed time (`~0.07–0.11s`)
-- Output writing is present but small for surfaced outputs (`~288` bytes in one repeat, 576 bytes on the short full-attempt), indicating post-processing is not the long-latency component at this stage.
-- Significant extra sidecar warnings were observed in routed runs (`legacy-sidecar-discovery` and `LSB-W-002`), which adds process startup/lookup work and confirms compatibility path handling remains active.
-
-## End-to-end attribution notes
-
-Ran:
-- Validated full-path openWEPP command:
-  - `/tmp/wshedperf01_20260701_102200/timing/openwepp_watershed_end2end_full_validated.time`
-- Measured timing: wall `1:02.27`, user `61.74`, system `0.53`, max RSS `16,896 KB`.
-- Output validation: `14` non-empty parquet files were produced under `/tmp/wshedperf01_20260701_102200/outs/openwepp_end_to_end_validated/interchange`.
-- No targeted `perf stat` run was executed for this full path in this phase; this is command-timing-only evidence.
-- The practical architecture signal remains: routed-stage remains tiny, and end-to-end cost is dominated by hillslope command fanout/concurrent execution plus output aggregation surface.
+- Routed stage remains short and orchestration-light (`0.07–0.11 s`, ~8 MiB RSS), with most time spent in fast parse/dispatch+intake and minimal output payload.
+- Full openWEPP watershed path is clearly dominated by hillslope command fanout and run execution:
+  - 36 `openwepp-cli-hill` invocations plus one routed-stage handoff.
+  - walltime is now stable near ~61.6 s with tight RSS and low context-switching.
+- Branch-miss ratio improves on full-chain profile (`1.00%`) versus routed command (`4.87%`), consistent with longer steady compute and more regular instruction streams.
+- Sidecar compatibility probing remains active (`legacy-sidecar-discovery`, `LSB-W-002` unknown sidecar warnings), indicating non-native input resolution overhead remains present in validated path.

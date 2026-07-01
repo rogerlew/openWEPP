@@ -13,11 +13,6 @@
 
 State as of `2026-07-01`:
 
-- `20260701-wshedperf01-watershed-baseline-performance-characterization-001/`
-  is executing as WATERSHED BASELINE PERFORMANCE CHARACTERIZATION. It measures
-  arboreal-dendrite legacy watershed walltime against current openWEPP watershed
-  execution surfaces, then records a profiling-backed architecture handoff for
-  CPU-scalable watershed execution. Result: `EXECUTING-DISPATCHED`.
 - `20260630-typed-direct-setup-symbol-map-elimination-001/` is held after Stage
   0. Result: `EXECUTED-HOLD-STAGE0-PREMISE-CORRECTED`.
 - `20260630-typed-direct-setup-symbol-map-carrier-deletion-001/` is held as
@@ -59,6 +54,30 @@ State as of `2026-07-01`:
 
 ## Execution Log
 
+- `20260701-wshedperf01-watershed-baseline-performance-characterization-001/`
+  is complete as WSHEDPERF01 WATERSHED BASELINE PERFORMANCE CHARACTERIZATION.
+  Result: `EXECUTED-COMPLETE-WSHEDPERF01`. It measured pinned legacy
+  `full-legacy-watershed` at `0:07.86`, openWEPP routed-stage from existing HBP
+  at `0:00.07-0:00.08`, and practical full openWEPP command-chain repeats at
+  `1:02.38`, `1:01.41`, and `1:01.06` (`avg 1:01.62`) plus a full-chain profile
+  run at `1:02.07`. The package closes with no active blockers; legacy and
+  openWEPP timing scopes remain non-equivalent unless a legacy-equivalent
+  openWEPP surface is introduced. The initial comparator subagent dispatch
+  errored due model capacity, so benchmark runs completed locally with
+  command-level evidence.
+- `20260701-wshedarch01-watershed-runtime-architecture-specification-001/` is
+  complete as WSHEDARCH01 WATERSHED RUNTIME ARCHITECTURE SPECIFICATION. Result:
+  `EXECUTED-COMPLETE-DRAFT-SPEC-REV2-DUAL-REVIEW-DISPOSITIONED`. It reviewed WSHEDPERF01 and current
+  watershed CLI/orchestrator seams, then authored the draft architecture spec at
+  `docs/architecture/watershed-runtime-architecture-specification.md`. The spec
+  specifies a ground-up watershed runtime rewrite with full deletion of the
+  existing runtime after replacement. The staged direction is bounded
+  subprocess fanout, typed run planning, deterministic pass inventory, typed
+  watershed network-frame replacement, and old-runtime/test retirement.
+  Dual-review findings were accepted and dispositioned in Revision 2, adding
+  fail-closed latest-event semantics, consumer-path proof, cross-scope legacy
+  wording, ADR-owned `--jobs` defaults, deletion coverage restoration, and Rust
+  closure gates. It remains draft authority pending ADR ratification.
 - `20260701-kernel-boundary-cqr-row2-climate-parser-001/` is complete as
   KERNEL-BOUNDARY CQR ROW 2 CLIMATE PARSER. Result:
   `EXECUTED-COMPLETE-ROW2-CQR`. It executed row #2 of

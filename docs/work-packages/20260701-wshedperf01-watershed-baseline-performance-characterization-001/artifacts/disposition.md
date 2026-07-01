@@ -2,16 +2,19 @@
 
 Status: `UPDATED`
 
-Final disposition: `OPEN`.
+Final disposition: `EXECUTED-COMPLETE-WSHEDPERF01`.
 
-- Package evidence now includes a validated full openWEPP end-to-end command with non-empty outputs and zero exit.
-- Resolved blocker:
-  - `openWEPP` full end-to-end simulation now runs as:
-  - `/tmp/wshedperf01_20260701_102200/timing/openwepp_watershed_end2end_full_validated.time`
-  - `outs/openwepp_end_to_end_validated/interchange` contains 14 non-empty routed outputs.
+- Reproducible scoped baseline evidence is now present for all required phases.
+- Legacy baseline canonical run is recorded as non-equivalent baseline scope (`full-legacy-watershed`).
+- openWEPP routed-stage scope and full practical end-to-end scope are both timed with release binaries and non-empty outputs.
+- Full end-to-end path now has 3 successful stability repeats and 1 profiling run under isolated `/tmp/wshedperf01_20260701_101739` roots.
 
-- Active scope note:
-  - This is still not a legacy-equivalent ratio benchmark; legacy full run remains a different executable and scope baseline.
+- Remaining action: none in this package.
 
-- Remaining package action:
-  - Re-run the validated command with repeats for stability before any slope-to-slope speed-ratio claims.
+- Subagent note:
+  - Initial `comparator_suite_runner` dispatch errored because the selected
+    model was at capacity; benchmark runs were executed locally with
+    command-level evidence.
+
+- Scope mismatch reminder:
+  - Legacy and openWEPP scopes are not equivalent unless a fresh full legacy-equivalent hillslope generation + routing surface for pw0 is introduced. All ratio statements must call out this mismatch explicitly.
