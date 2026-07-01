@@ -67,3 +67,19 @@ stage. `build_simimpl28_hourly_winter_forcing_typed` no longer appears above
 the 1.2% cut: the F3-narrowed variant is now formally **dropped** (not just
 deferred) as below churn threshold; likewise the span-report projection-drop
 refactor stays deferred (memmove 5.0% total, only part of it that pattern).
+
+## Quiet-window 3-rep (A1 disposition; gate 4 satisfied as written)
+
+Ran 2026-07-01 16:42–16:45, load average 3.1–4.4, no watershed processes:
+
+| Rep | Wall | Max RSS |
+|---|---:|---:|
+| 1 | 46.78 s | 79,988 KiB |
+| 2 | 46.63 s | 80,724 KiB |
+| 3 | 46.69 s | 80,392 KiB |
+
+Median **46.69 s**; same-window legacy `wepp_260430_hill` 9.72 s →
+**4.80× legacy**. Agreement across all three measurement conditions (quiet
+single-rep 4.75×, loaded 3-rep 4.80×, quiet 3-rep 4.80×) makes the ratio
+robust to host load. Codex's independent identity run (45.89 s) is a fourth
+concordant point.

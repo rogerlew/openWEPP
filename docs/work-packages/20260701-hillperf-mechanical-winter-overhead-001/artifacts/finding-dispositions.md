@@ -13,12 +13,18 @@ Identity gate CLEAN.
 Deferred-construction (`_with`) guard variants added
 (`require_state_range_with`, `require_dynamic_state_range_with`,
 `require_direct_typed_snow_value_with`); `require_state_range` (enum form)
-defers internally, fixing every enum call site with no call-site change. All
-eager guard-feeding symbol constructions across `frost.rs`, `frost_entry.rs`,
-`runoff_reconciliation.rs`, `infiltration_reconciliation.rs` converted
+defers internally, fixing every enum call site with no call-site change. The
+eager guard-feeding symbol constructions at the converted helper call sites
+across `frost.rs`, `frost_entry.rs`, `runoff_reconciliation.rs`,
+`infiltration_reconciliation.rs` were converted
 (7 tmpadj/hour + 2 frost-layer sites; 8-symbol layer-state cluster;
 6 + 9 inline-static dynamic-range sites; 20 + 32 + 5 snow-value funnel
-sites). Dead eager variants deleted. Error values byte-identical (same
+sites). Dead eager variants deleted. *(Review scope correction, Codex D2:
+one eager construction outside those helper families remains —
+`BoundarySymbol::from(FROST_LANDUSE_CLASS_PROXY_SYMBOL)` at
+`frost_entry.rs:956`, built before success-path checks. Once per solve, not
+per hour/layer, so its weight is negligible; queued to the WP-2 contingency
+tail rather than churning the reviewed final state.)* Error values byte-identical (same
 constructors, same strings, built in the failure branch). Static: verified
 the seven tmpadj symbols and the layer-state cluster symbols have no
 success-path consumer. Ran: identity gate CLEAN (51.57 s indicative — the
@@ -39,14 +45,18 @@ only worth doing if the exit re-profile still shows material weight in
 `build_simimpl28_hourly_winter_forcing_typed`; deferred to that decision
 point.
 
-## F5 — in progress
+## F5 — landed (commit `2398ed44`)
 
 Verified (Static): `fit_legacy_tmpcft_curve` inputs are exactly the twelve
-monthly max/min normals, static per lane for the run — the fit hoists to the
-frost typed authority (once per lane) and rides `DirectFrostThermalInputs`
-(3 `Copy` f64 fields) into both solves. Only 3 construction sites ripple.
-`DirectFrostThermalInputs::zero()` composes with the fit's zero-input early
-return ({0,0,0}) so the zero case is value-identical.
+monthly max/min normals, static per lane for the run. Landed as: the fit
+runs once per lane at frost-authority construction (public
+`Wb11HydrologyKernel::fit_seasonal_temperature_curve`) and the fitted
+`FrostSeasonalTemperatureCurve` (3 `Copy` f64 fields) **replaces** the
+monthly arrays in `DirectFrostThermalInputs`, so the kernel cannot re-fit by
+construction. Three construction sites rippled (runner authority, per-day
+thermal copy, frost test). Ran: identity gate CLEAN, 45.85 s indicative
+(from 51.57 s). Codex review concurred with the field-replacement API choice
+(review-codex.md, Required-Point Assessment).
 
 ## F6 — partially landed (this package), remainder assessed
 
@@ -85,10 +95,16 @@ the branch base) will be recorded here with evidence before the F2 commit.
 Ran: all eight failures were instant (≤0.2 s) Python-environment errors —
 `required repo-local Python interpreter missing: .venv/bin/python` for seven
 (the fresh worktree lacks the untracked `.venv`), and
-`ModuleNotFoundError: pandas` inside the hphys0298 harness's transitive
-import for the eighth (present in the main checkout's `.venv` but absent
-from `tools/owcmp/requirements.lock.txt` — an untracked test dependency
-worth a lock-file follow-up, out of this package's write set). After
+`ModuleNotFoundError: pandas` for the eighth. Exact chain (Ran — the
+captured traceback from executing the hphys0298 harness directly):
+`hphys0298_paired_lineage_partition.py` imports
+`docs/work-packages/20260603-hphys0265-…-001/artifacts/hphys0265_diagnostics.py`,
+whose line 18 is `import pandas as pd`. (Codex review R1 correctly demanded
+the named module — a static `rg` of the harness alone misses this
+cross-package artifact import. `pandas` is present in the main checkout's
+`.venv` but absent from `tools/owcmp/requirements.lock.txt`; the untracked
+test dependency is real and the lock-file follow-up stands, attributed to
+`hphys0265_diagnostics.py:18`, out of this package's write set.) After
 `uv venv` + `uv pip sync tools/owcmp/requirements.lock.txt` + `pandas`, the
 whole 40-test group passes. No physics/assertion failure occurred at any
 point; no production code was changed in response.
