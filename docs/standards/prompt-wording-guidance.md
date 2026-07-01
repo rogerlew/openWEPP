@@ -69,15 +69,27 @@ scope.
   self-consistency checks are supporting evidence only.
 
 4a. Explicitly authorize AND require subagent spawning for delegated/heavy work
-- If a prompt expects delegated review, verification, comparator execution, or
-  other subagent work, it must include the phrase
+- Current OpenAI subagent tooling may require explicit user/session
+  authorization before any spawn, even when repository governance requires
+  delegated review or verification. Repository docs and package text cannot
+  override that higher-precedence tool rule by themselves.
+- Maintainers should include this standing authorization in the recurring
+  openWEPP launch prompt/session instructions:
+  `For openWEPP work-package execution, I explicitly authorize Codex to`
+  `spawn/delegate to subagents whenever the active work package, AGENTS.md, or`
+  `package governance requires or authorizes review, verification, comparator`
+  `execution, or parallel agent work.`
+- Package prompts still must include the phrase
   `explicitly authorizes subagent spawning/delegation`, name the authorized
   role(s), scope, expected compact outputs/artifacts, and whether the role is
-  read-only or has a bounded package write set.
+  read-only or has a bounded package write set. This package-local wording is
+  repo-governance evidence and lets agents use the standing session
+  authorization without asking again.
 - Wording such as `dispatch <role>` is not enough by itself; the explicit
-  authorization phrase is required so subagent tool policy ("spawn only when
-  explicitly requested by the user") is satisfied — the kickoff prompt IS that
-  explicit request.
+  authorization phrase is required in the package prompt. If the standing
+  user/session authorization is absent and tool policy blocks spawning, ask for
+  one-time authorization or record the block and run the equivalent gate locally
+  only when package governance allows local substitution.
 - **Required, not optional, for heavy batch/closure/comparator work.** When a
   package runs the full closure loop (`cargo test --workspace`, clippy, deny),
   comparator/parity suites, release gates, or population/cohort batches, the
@@ -122,9 +134,11 @@ scope.
 - `Subagent requirement: <none | REQUIRED: spawn comparator_suite_runner for all`
   `heavy batch/closure/comparator runs (cargo test --workspace, suites, gates,`
   `population batches); do NOT run them on the parent model unless the subagent is`
-  `unavailable, in which case record command-level evidence. This prompt`
-  `explicitly authorizes subagent spawning/delegation to <roles> for <scope>;`
-  `outputs: compact metrics + log paths; write access: <read-only|bounded>.>`
+  `unavailable, in which case record command-level evidence. Standing user`
+  `authorization for openWEPP subagent delegation is expected in the session.`
+  `This prompt explicitly authorizes subagent spawning/delegation to <roles> for`
+  `<scope>; outputs: compact metrics + log paths; write access:`
+  `<read-only|bounded>.>`
 - `Autonomy: execute package phases end-to-end and update required artifacts`
   `without requesting additional user direction unless hard-blocked.`
 - `Outputs: update package artifacts/disposition for all completed phases.`

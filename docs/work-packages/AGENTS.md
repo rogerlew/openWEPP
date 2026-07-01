@@ -100,7 +100,17 @@
 - Work packages that require delegated review, verification, comparator execution, or parallel agent work must explicitly authorize subagent spawning/delegation in `package.md` and the active kickoff prompt.
 - Use direct wording: `Subagent authorization: this package explicitly authorizes spawning/delegating to <role> subagents for <scope>; expected outputs are <artifacts>; write access is <read-only|bounded write-set>.`
 - Naming a role, saying `dispatch`, or listing an agent config path is not sufficient; include `explicitly authorizes subagent spawning/delegation` so tool policies can recognize user-approved delegation.
+- Higher-precedence tool policy may still require explicit user/session
+  authorization before any spawn. Package authorization is necessary repo
+  governance, but it may not be sufficient by itself in newer tool sessions.
+  Use the standing authorization wording in
+  `docs/standards/prompt-wording-guidance.md` for recurring openWEPP launch
+  prompts so agents do not need a per-task reminder.
 - If a package lacks explicit authorization, do not claim delegated work occurred. Either run the gate locally when equivalent, or record the missing authorization as a package-documentation defect/blocker and update the package before delegated closure.
+- If package authorization is present but session-level tool authorization is
+  absent or blocked, ask for one-time authorization before spawning, or record
+  the tool-policy block and run an equivalent local gate only when the package
+  allows local substitution.
 
 ## Work-Package Authoring Requirements
 - Use directory format `YYYYMMDD-<slug>-001` under `docs/work-packages/`.

@@ -27,6 +27,9 @@
 - Do not split work into tiny diagnostic-only packages unless authority, safety, validation-cost, or write-set boundaries require it.
 - Substantive implementation work must occur within an authorized `docs/work-packages/<id>/` scope, or as user-directed follow-on work from that package.
 - If follow-on work extends beyond the current package objective/write set, evaluate closing the package and planning a new one first.
+- For package-required subagent review, verification, comparator, or parallel
+  work, follow `docs/work-packages/AGENTS.md` and the standing user
+  authorization wording in `docs/standards/prompt-wording-guidance.md`.
 - Producer-only, skeleton-only, counter-only, or shadow-only evidence cannot close
   endpoint, direct-path, publication, or cutover claims. The real downstream
   consumer must be proven to read the new path.
