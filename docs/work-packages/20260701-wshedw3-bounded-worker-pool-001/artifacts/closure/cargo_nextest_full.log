@@ -1,0 +1,15 @@
+COMMAND: cargo nextest run --workspace --profile full
+RESULT: PASS
+EXIT_CODE: 0
+
+OUTPUT:
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.35s
+────────────
+ Nextest run ID 155fff46-0fcd-4765-a478-968656ee1cfb with nextest profile: full
+    Starting 1283 tests across 158 binaries (1 test skipped)
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+        SLOW [> 90.000s] (─────────) openwepp::snowfrost_fidelity_g0_pysnobal_bridge_contract g0_exporter_emits_pysnobal_schema_and_required_anti_alias_lineage
+────────────
+     Summary [ 663.594s] 1283 tests run: 1283 passed (2 slow), 1 skipped

@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: `QUEUED`
+Status: `EXECUTED`
 
 ## Core Authority
 
@@ -18,6 +18,8 @@ Status: `QUEUED`
 | `docs/work-packages/20260701-wshedfixture01-committed-watershed-fixture-adoption-001/package.md` | Fixture adoption contract and auditability boundary. |
 | `tests/fixtures/watershed/carnivorous-adobo/README.md` | Committed 32-hillslope canonical W3 fixture context. |
 | `docs/work-packages/20260701-wshedw3-bounded-worker-pool-001/package.md` | Active W3 package contract. |
+| `docs/specifications/science-contracts/AGENTS.md` | Science-contract guard posture for the user-authorized fixture-only `radly` clamp. |
+| `docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md` | `INV-CLIMATE-013` daily `radly` guard and no-production-clipping authority. |
 
 ## Conditional Authority
 
@@ -42,3 +44,9 @@ Status: `QUEUED`
 The required-reading set is acceptable for an implementation package that edits
 the W2 supervisor and public CLI. Use targeted `rg` and section reads for
 on-demand context rather than loading unrelated architecture or contract text.
+
+Execution note: no production kernel science-contract, latest-event semantic,
+routing physics, or publication-schema edits were made. Conditional
+science-contract authority was triggered only by the user-authorized
+fixture-data `radly` clamp; production runtime guard behavior remains
+fail-closed and unmodified.

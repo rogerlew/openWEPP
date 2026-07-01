@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 
 use openwepp_input_contract::parsers::chaninp::{ChaninpParseOptions, parse_chaninp_from_path};
 use openwepp_input_contract::parsers::slope::{SlopeParserOptions, parse_slope_file};
@@ -23,7 +24,10 @@ use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
     SidecarRequirement, adapt_sidecar_bindings,
 };
-use openwepp_runner::{HillslopeJob, PassInventoryExpectation, SidecarPolicy, WatershedRunPlan};
+use openwepp_runner::{
+    HillslopeJob, HillslopeWorkerPoolReport, PassInventoryExpectation, SidecarPolicy,
+    WatershedRunPlan,
+};
 use openwepp_topology::{
     ContributorTriplet, TopologyContributors, TopologyGraph, TopologyNode, TopologyNodeKey,
     TopologyNodeKind, validate_pre_execution_topology,
@@ -44,7 +48,7 @@ use openwepp_watershed_output::writers::{
     write_interchange_parquet_outputs_from_rows,
 };
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::{Value, json};
 
 const WATERSHED_RUNFILE_SCHEMA_ID: &str = "openwepp-watershed-runfile-v1";
 const HILLSLOPE_RUN_MANIFEST_SCHEMA_ID: &str = "openwepp-hillslope-run-manifest-v1";
@@ -163,6 +167,7 @@ fn run() -> Result<(), String> {
             output_dir.display()
         )
     })?;
+    let supervisor_started = Instant::now();
 
     let run_file_path = resolve_run_file(&run_dir, &run_file);
     if !run_file_path.is_file() {
@@ -345,9 +350,13 @@ fn run() -> Result<(), String> {
         }
     }
 
-    run_plan.execute_hillslope_jobs_serial(sidecar_policy, legacy_sidecar_discovery)?;
+    let worker_report =
+        run_plan.execute_hillslope_jobs(sidecar_policy, legacy_sidecar_discovery)?;
+    let pass_inventory_started = Instant::now();
     let pass_inventory = run_plan.validate_pass_inventory()?;
+    let pass_inventory_elapsed_ms = pass_inventory_started.elapsed().as_millis();
 
+    let routing_input_started = Instant::now();
     for entry in pass_inventory.entries() {
         let hillslope_id = entry.hillslope_id;
         let class_count = usize::from(entry.npart);
@@ -457,8 +466,10 @@ fn run() -> Result<(), String> {
             );
         }
     }
+    let routing_input_elapsed_ms = routing_input_started.elapsed().as_millis();
 
     let mut kernel = Ws10ChannelImpoundmentKernel;
+    let watershed_dispatch_started = Instant::now();
     let report = execute_watershed_dispatch_with_kernel(
         &topology,
         &topology_validation,
@@ -466,6 +477,7 @@ fn run() -> Result<(), String> {
         runtime_surface,
     )
     .map_err(|error| format!("CLIWAT-E-019 watershed execution failed: {error}"))?;
+    let watershed_dispatch_elapsed_ms = watershed_dispatch_started.elapsed().as_millis();
 
     if !report.dispatch_report.is_success() {
         return Err(format!(
@@ -479,9 +491,73 @@ fn run() -> Result<(), String> {
     }
 
     let row_seed = build_watershed_output_row_seed(&report);
+    let output_publication_started = Instant::now();
     write_watershed_interchange_outputs(&runfile.outputs, &[row_seed])?;
+    let output_publication_elapsed_ms = output_publication_started.elapsed().as_millis();
+    write_watershed_supervisor_timing(
+        &output_dir,
+        runfile.run_name.as_str(),
+        sidecar_policy,
+        legacy_sidecar_discovery,
+        &worker_report,
+        WatershedSupervisorTiming {
+            pass_inventory: pass_inventory_elapsed_ms,
+            routing_input: routing_input_elapsed_ms,
+            watershed_dispatch: watershed_dispatch_elapsed_ms,
+            output_publication: output_publication_elapsed_ms,
+            total: supervisor_started.elapsed().as_millis(),
+        },
+    )?;
 
     Ok(())
+}
+
+#[derive(Debug, Clone, Copy)]
+struct WatershedSupervisorTiming {
+    pass_inventory: u128,
+    routing_input: u128,
+    watershed_dispatch: u128,
+    output_publication: u128,
+    total: u128,
+}
+
+fn write_watershed_supervisor_timing(
+    output_dir: &Path,
+    run_name: &str,
+    sidecar_policy: SidecarPolicy,
+    legacy_sidecar_discovery: bool,
+    worker_report: &HillslopeWorkerPoolReport,
+    timing: WatershedSupervisorTiming,
+) -> Result<(), String> {
+    let path = output_dir.join("watershed-supervisor.timing.json");
+    let payload = json!({
+        "schema": "openwepp-watershed-supervisor-timing-v1",
+        "run_name": run_name,
+        "sidecar_policy": format!("{sidecar_policy:?}"),
+        "legacy_sidecar_discovery": legacy_sidecar_discovery,
+        "worker_pool": {
+            "requested_jobs": worker_report.requested_jobs,
+            "worker_count": worker_report.worker_count,
+            "launched_jobs": worker_report.launched_jobs,
+            "completed_jobs": worker_report.completed_jobs,
+            "skipped_jobs": worker_report.skipped_jobs,
+            "elapsed_ms": worker_report.elapsed_ms,
+        },
+        "pass_inventory_elapsed_ms": timing.pass_inventory,
+        "routing_input_elapsed_ms": timing.routing_input,
+        "watershed_dispatch_elapsed_ms": timing.watershed_dispatch,
+        "output_publication_elapsed_ms": timing.output_publication,
+        "total_elapsed_ms": timing.total,
+    });
+    let text = serde_json::to_string_pretty(&payload).map_err(|error| {
+        format!("CLIWAT-E-034 failed serializing watershed supervisor timing: {error}")
+    })?;
+    fs::write(&path, text).map_err(|error| {
+        format!(
+            "CLIWAT-E-034 failed writing watershed supervisor timing {}: {error}",
+            path.display()
+        )
+    })
 }
 
 fn resolve_run_file(run_dir: &Path, run_file: &Path) -> PathBuf {
@@ -508,12 +584,6 @@ fn parse_jobs_arg(value: &str) -> Result<usize, String> {
         .map_err(|_| format!("CLIWAT-E-041 invalid --jobs value '{value}'"))?;
     if jobs == 0 {
         return Err("CLIWAT-E-041 --jobs must be greater than zero".to_string());
-    }
-    if jobs > 1 {
-        return Err(
-            "CLIWAT-E-041 --jobs values greater than 1 require the W3 worker-pool package"
-                .to_string(),
-        );
     }
     Ok(jobs)
 }
@@ -2243,6 +2313,6 @@ where
 
 fn print_help() {
     println!(
-        "openwepp-cli-watershed --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--jobs 1] [--hillslope-binary <path>]"
+        "openwepp-cli-watershed --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--jobs N] [--hillslope-binary <path>]"
     );
 }

@@ -1,0 +1,3 @@
+COMMAND: git diff --check
+RESULT: PASS
+EXIT_CODE: 0

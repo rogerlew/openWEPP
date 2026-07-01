@@ -1,0 +1,73 @@
+{
+  "schema": "openwepp-w3-canonical-smoke-v1",
+  "fixture": "tests/fixtures/watershed/carnivorous-adobo/",
+  "stage_root": "/tmp/wshedw3_ca_artifact_smoke",
+  "run_dir": "/tmp/wshedw3_ca_artifact_smoke/runs",
+  "output_dir": "/tmp/wshedw3_ca_artifact_smoke/out-jobs2",
+  "jobs": 2,
+  "sidecar_policy": "compat",
+  "legacy_sidecar_discovery": false,
+  "clamp_manifest": "artifacts/scaling/carnivorous-adobo-radly-clamp-manifest.json",
+  "hillslope_runfile_binding": "generated TOML from committed pN.{sol,man,slp,cli} plus pmetpara.txt and wepp_ui=true",
+  "command": [
+    "/home/workdir/openWEPP/target/debug/openwepp-cli-watershed",
+    "--run-dir",
+    "/tmp/wshedw3_ca_artifact_smoke/runs",
+    "--run-file",
+    "case.run",
+    "--output-dir",
+    "/tmp/wshedw3_ca_artifact_smoke/out-jobs2",
+    "--policy",
+    "compat",
+    "--jobs",
+    "2",
+    "--hillslope-binary",
+    "/home/workdir/openWEPP/target/debug/openwepp-cli-hill"
+  ],
+  "started_epoch": 1782940446.5542593,
+  "exit_code": 0,
+  "elapsed_seconds": 251.07548994384706,
+  "parent_stderr_tail": "",
+  "child_stderr_paths": [
+    {
+      "path": "/tmp/wshedw3_ca_artifact_smoke/out-jobs2/hillslope-jobs/H1/H1.stderr.log",
+      "text": ""
+    },
+    {
+      "path": "/tmp/wshedw3_ca_artifact_smoke/out-jobs2/hillslope-jobs/H10/H10.stderr.log",
+      "text": ""
+    },
+    {
+      "path": "/tmp/wshedw3_ca_artifact_smoke/out-jobs2/hillslope-jobs/H11/H11.stderr.log",
+      "text": ""
+    },
+    {
+      "path": "/tmp/wshedw3_ca_artifact_smoke/out-jobs2/hillslope-jobs/H12/H12.stderr.log",
+      "text": ""
+    },
+    {
+      "path": "/tmp/wshedw3_ca_artifact_smoke/out-jobs2/hillslope-jobs/H13/H13.stderr.log",
+      "text": ""
+    },
+    {
+      "path": "/tmp/wshedw3_ca_artifact_smoke/out-jobs2/hillslope-jobs/H14/H14.stderr.log",
+      "text": ""
+    }
+  ],
+  "output_files": [
+    "interchange/chan.out.parquet",
+    "interchange/chanwb.parquet",
+    "interchange/chnwb.parquet",
+    "interchange/ebe_pw0.parquet",
+    "interchange/loss_pw0.all_years.chn.parquet",
+    "interchange/loss_pw0.all_years.class_data.parquet",
+    "interchange/loss_pw0.all_years.hill.parquet",
+    "interchange/loss_pw0.all_years.out.parquet",
+    "interchange/loss_pw0.chn.parquet",
+    "interchange/loss_pw0.class_data.parquet",
+    "interchange/loss_pw0.hill.parquet",
+    "interchange/loss_pw0.out.parquet",
+    "interchange/soil_pw0.parquet",
+    "interchange/totalwatsed3.parquet"
+  ]
+}

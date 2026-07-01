@@ -1,0 +1,28 @@
+{
+  "schema": "openwepp-w3-canonical-smoke-v1",
+  "fixture": "tests/fixtures/watershed/carnivorous-adobo/",
+  "stage_root": "/tmp/wshedw3_ca_artifact_smoke",
+  "run_dir": "/tmp/wshedw3_ca_artifact_smoke/runs",
+  "output_dir": "/tmp/wshedw3_ca_artifact_smoke/out-jobs2",
+  "jobs": 2,
+  "sidecar_policy": "compat",
+  "legacy_sidecar_discovery": false,
+  "clamp_manifest": "artifacts/scaling/carnivorous-adobo-radly-clamp-manifest.json",
+  "hillslope_runfile_binding": "generated TOML from committed pN.{sol,man,slp,cli} plus pmetpara.txt and wepp_ui=true",
+  "command": [
+    "/home/workdir/openWEPP/target/debug/openwepp-cli-watershed",
+    "--run-dir",
+    "/tmp/wshedw3_ca_artifact_smoke/runs",
+    "--run-file",
+    "case.run",
+    "--output-dir",
+    "/tmp/wshedw3_ca_artifact_smoke/out-jobs2",
+    "--policy",
+    "compat",
+    "--jobs",
+    "2",
+    "--hillslope-binary",
+    "/home/workdir/openWEPP/target/debug/openwepp-cli-hill"
+  ],
+  "started_epoch": 1782940446.5542593
+}

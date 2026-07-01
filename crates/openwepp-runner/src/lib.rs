@@ -56,6 +56,7 @@ pub use totalwatsed3::{
     Totalwatsed3Config, Totalwatsed3Error, Totalwatsed3WriteSummary, write_totalwatsed3,
 };
 pub use watershed_supervisor::{
-    HillslopeJob, PassInventory, PassInventoryEntry, PassInventoryExpectation, WatershedRunPlan,
+    HillslopeJob, HillslopeWorkerPool, HillslopeWorkerPoolReport, PassInventory,
+    PassInventoryEntry, PassInventoryExpectation, WatershedRunPlan,
 };
 pub use watershed_wat::{WatershedWatPublicationError, build_watershed_daily_rows_from_wat};

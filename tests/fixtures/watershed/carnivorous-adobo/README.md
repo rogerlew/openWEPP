@@ -11,6 +11,14 @@ Status: committed development fixture for WSHED-FIXTURE01.
 - Soil-file comments were sanitized to remove embedded absolute source-soil
   paths and helper implementation names from the committed fixture. WEPP data
   records were not intentionally changed.
+- Daily climate `rad` values were normalized on 2026-07-01 for WSHED-W3 after
+  the direct-runtime hillslope child path failed `SC-CLIMATE-001#INV-CLIMATE-013`
+  on over-bound `radly` rows. The correction clamps only fixture data: `39`
+  unique daily records, copied across `p1.cli` through `p32.cli` and `pw0.cli`,
+  were reduced to `floor(baseline sunmap horizontal r3)` for latitude `48.25`.
+  Production runtime guards still fail closed and do not mutate `radly`.
+  Detailed clamp evidence is recorded in
+  `docs/work-packages/20260701-wshedw3-bounded-worker-pool-001/artifacts/scaling/carnivorous-adobo-radly-clamp-manifest.json`.
 - Committed text fixture files were normalized to LF line endings, with trailing
   spaces/tabs and trailing blank EOF lines stripped for repository diff hygiene.
 - Adopting package:

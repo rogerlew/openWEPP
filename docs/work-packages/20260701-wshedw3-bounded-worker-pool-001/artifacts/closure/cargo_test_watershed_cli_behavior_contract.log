@@ -1,0 +1,13 @@
+COMMAND: cargo test -p openwepp-runner --test watershed_cli_behavior_contract -- --nocapture
+RESULT: PASS
+EXIT_CODE: 0
+
+OUTPUT:
+running 23 tests
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 69.70s
+
+FOCUSED_W3_COMMAND: cargo test -p openwepp-runner --test watershed_cli_behavior_contract wshedw3 -- --nocapture
+FOCUSED_W3_RESULT: PASS
+FOCUSED_W3_OUTPUT:
+running 3 tests
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 20 filtered out; finished in 41.58s

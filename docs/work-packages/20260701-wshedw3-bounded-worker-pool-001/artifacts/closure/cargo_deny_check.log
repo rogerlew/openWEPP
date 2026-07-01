@@ -1,0 +1,6 @@
+COMMAND: cargo deny check
+RESULT: PASS
+EXIT_CODE: 0
+
+OUTPUT:
+advisories ok, bans ok, licenses ok, sources ok

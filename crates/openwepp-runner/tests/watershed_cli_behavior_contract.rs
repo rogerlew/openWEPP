@@ -121,7 +121,7 @@ fn watershed_cli_emits_watershed_output_parquet_files() {
 }
 
 #[test]
-fn wshedw2_watershed_cli_rejects_invalid_jobs_values() {
+fn wshedw2_watershed_cli_rejects_zero_negative_and_invalid_jobs_values() {
     let _execution_guard = watershed_execution_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -176,22 +176,22 @@ fn wshedw2_watershed_cli_rejects_invalid_jobs_values() {
         "expected jobs validator code for invalid --jobs, observed: {invalid_stderr}"
     );
 
-    let too_many = run_watershed_cli_with_options(
+    let negative = run_watershed_cli_with_options(
         &run_dir,
         &output_dir,
         Some("compat"),
         false,
-        Some("2"),
+        Some("-1"),
         None,
     );
     assert!(
-        !too_many.status.success(),
-        "watershed CLI should reject --jobs > 1 until W3"
+        !negative.status.success(),
+        "watershed CLI should reject negative --jobs"
     );
-    let too_many_stderr = String::from_utf8_lossy(&too_many.stderr);
+    let negative_stderr = String::from_utf8_lossy(&negative.stderr);
     assert!(
-        too_many_stderr.contains("CLIWAT-E-041"),
-        "expected jobs validator code for --jobs > 1, observed: {too_many_stderr}"
+        negative_stderr.contains("CLIWAT-E-041"),
+        "expected jobs validator code for negative --jobs, observed: {negative_stderr}"
     );
 }
 
@@ -438,6 +438,196 @@ fn wshedw2_watershed_cli_rejects_pass_without_latest_event_payload() {
         stderr.contains("CLIWAT-E-045") && stderr.contains("NoEvent"),
         "expected pass-inventory NoEvent authority failure, observed: {stderr}"
     );
+}
+
+#[test]
+fn wshedw3_watershed_cli_worker_pool_matches_jobs1_outputs_and_isolates_artifacts() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let jobs1_output_dir = run_generated_multi_hillslope_case("wshedw3_jobs1_identity", "1");
+    let jobs3_output_dir = run_generated_multi_hillslope_case("wshedw3_jobs3_identity", "3");
+
+    assert_watershed_outputs_row_equivalent(&jobs1_output_dir, &jobs3_output_dir);
+
+    for hillslope_id in [1, 2, 3] {
+        let job_root = jobs3_output_dir.join(format!("hillslope-jobs/H{hillslope_id}"));
+        for relative in [
+            format!("H{hillslope_id}.run.toml"),
+            format!("H{hillslope_id}.hbp"),
+            format!("H{hillslope_id}.manifest.json"),
+            format!("H{hillslope_id}.stdout.log"),
+            format!("H{hillslope_id}.stderr.log"),
+            format!("H{hillslope_id}.timing.json"),
+            format!("H{hillslope_id}.freshness"),
+        ] {
+            let path = job_root.join(relative);
+            assert!(
+                path.is_file(),
+                "worker pool should isolate generated job artifact {}",
+                path.display()
+            );
+        }
+        let timing = fs::read_to_string(job_root.join(format!("H{hillslope_id}.timing.json")))
+            .expect("worker timing JSON should be readable");
+        assert!(
+            timing.contains(r#""worker_concurrency": 3"#),
+            "worker timing should record requested bounded concurrency, observed: {timing}"
+        );
+    }
+}
+
+#[test]
+#[cfg(unix)]
+fn wshedw3_worker_pool_stops_pending_jobs_after_child_failure_and_skips_routing() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw3_child_failure_policy");
+    prepare_multi_hillslope_output_guard_fixture(&run_dir);
+    for hillslope_id in [1, 2, 3] {
+        write_hillslope_source_runfile_fixture(&run_dir, hillslope_id);
+    }
+    write_generated_watershed_runfile(&run_dir, &[1, 2, 3]);
+    let fake_child = write_w3_failure_hillslope_binary(&run_dir);
+
+    let output_dir = run_dir.join("out");
+    let stale_pending_root = output_dir.join("hillslope-jobs/H3");
+    fs::create_dir_all(&stale_pending_root).expect("stale pending job root should be writable");
+    fs::write(
+        stale_pending_root.join("H3.stdout.log"),
+        "stale stdout from prior run\n",
+    )
+    .expect("stale pending stdout should be writable");
+    fs::write(
+        stale_pending_root.join("H3.stderr.log"),
+        "stale stderr from prior run\n",
+    )
+    .expect("stale pending stderr should be writable");
+    let output = run_watershed_cli_with_options(
+        &run_dir,
+        &output_dir,
+        Some("compat"),
+        false,
+        Some("2"),
+        Some(&fake_child),
+    );
+    assert!(
+        !output.status.success(),
+        "worker pool should fail closed when a child exits non-zero"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-043") && stderr.contains("skipped_pending=1"),
+        "expected worker-pool failure with pending job skipped, observed: {stderr}"
+    );
+    assert!(
+        !output_dir.join("interchange/ebe_pw0.parquet").exists(),
+        "worker-pool child failure must skip watershed routing/publication"
+    );
+
+    assert!(
+        output_dir
+            .join("hillslope-jobs/H1/H1.timing.json")
+            .is_file(),
+        "in-flight H1 should be waited on and record timing"
+    );
+    assert!(
+        output_dir
+            .join("hillslope-jobs/H2/H2.timing.json")
+            .is_file(),
+        "failed H2 should record timing before supervisor returns"
+    );
+    assert!(
+        !output_dir.join("hillslope-jobs/H3/H3.stdout.log").exists()
+            && !output_dir.join("hillslope-jobs/H3/H3.stderr.log").exists()
+            && !output_dir.join("hillslope-jobs/H3/H3.timing.json").exists()
+            && !output_dir.join("hillslope-jobs/H3/H3.freshness").exists(),
+        "pending H3 should not launch after the first hard failure or retain stale logs"
+    );
+    assert!(
+        !run_dir.join("unexpected-h3-launch.txt").exists(),
+        "fake child records H3 launch only if the worker-pool failure policy regresses"
+    );
+}
+
+#[test]
+#[cfg(unix)]
+fn wshedw3_worker_pool_removes_stale_generated_passes_and_fails_inventory_before_routing() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw3_stale_generated_pass_parallel");
+    prepare_multi_hillslope_output_guard_fixture(&run_dir);
+    for hillslope_id in [1, 2, 3] {
+        write_hillslope_source_runfile_fixture(&run_dir, hillslope_id);
+    }
+    write_generated_watershed_runfile(&run_dir, &[1, 2, 3]);
+
+    let output_dir = run_dir.join("out");
+    for hillslope_id in [1, 2, 3] {
+        let job_root = output_dir.join(format!("hillslope-jobs/H{hillslope_id}"));
+        fs::create_dir_all(&job_root).expect("stale job root should be writable");
+        write_hbp_fixture(
+            job_root.join(format!("H{hillslope_id}.hbp")),
+            hillslope_id,
+            0.25,
+            1.0,
+            5.0,
+            4.0,
+            1_800.0,
+            1_200.0,
+        );
+        write_hillslope_manifest_fixture(
+            job_root.join(format!("H{hillslope_id}.manifest.json")),
+            1,
+            1_800.0,
+        );
+    }
+
+    let fake_child = write_successful_noop_hillslope_binary(&run_dir);
+    let output = run_watershed_cli_with_options(
+        &run_dir,
+        &output_dir,
+        Some("compat"),
+        false,
+        Some("2"),
+        Some(&fake_child),
+    );
+    assert!(
+        !output.status.success(),
+        "worker pool should fail at pass inventory when children publish no passes"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-045")
+            && stderr.contains("missing")
+            && !stderr.contains("CLIWAT-E-043"),
+        "expected missing generated pass inventory failure after successful worker pool, observed: {stderr}"
+    );
+    assert!(
+        !output_dir.join("interchange/ebe_pw0.parquet").exists(),
+        "missing generated pass inventory must skip watershed routing/publication"
+    );
+    for hillslope_id in [1, 2, 3] {
+        let job_root = output_dir.join(format!("hillslope-jobs/H{hillslope_id}"));
+        assert!(
+            job_root
+                .join(format!("H{hillslope_id}.timing.json"))
+                .is_file(),
+            "successful noop child H{hillslope_id} should be launched before inventory validation"
+        );
+        assert!(
+            !job_root.join(format!("H{hillslope_id}.hbp")).exists()
+                && !job_root
+                    .join(format!("H{hillslope_id}.manifest.json"))
+                    .exists(),
+            "stale generated pass artifacts for H{hillslope_id} should be removed before child launch"
+        );
+    }
 }
 
 #[test]
@@ -935,7 +1125,60 @@ fn run_watershed_cli_with_current_dir(
 }
 
 fn assert_all_watershed_outputs_exist(output_dir: &Path) {
-    let expected_outputs = [
+    for output_name in watershed_output_relative_paths() {
+        let output_path = output_dir.join("interchange").join(output_name);
+        assert!(
+            output_path.is_file(),
+            "missing expected watershed parquet output {}",
+            output_path.display()
+        );
+    }
+}
+
+fn assert_watershed_outputs_row_equivalent(serial_output_dir: &Path, parallel_output_dir: &Path) {
+    for output_name in watershed_output_relative_paths() {
+        let serial_path = serial_output_dir.join("interchange").join(output_name);
+        let parallel_path = parallel_output_dir.join("interchange").join(output_name);
+        let serial_rows = read_all_parquet_rows(&serial_path);
+        let parallel_rows = read_all_parquet_rows(&parallel_path);
+        assert_eq!(
+            serial_rows, parallel_rows,
+            "watershed output {output_name} should have identical decoded row order and values between --jobs 1 and --jobs N"
+        );
+    }
+}
+
+fn read_all_parquet_rows(path: &Path) -> Vec<String> {
+    let file = File::open(path).unwrap_or_else(|error| {
+        panic!(
+            "parquet output should be readable ({}): {error}",
+            path.display()
+        )
+    });
+    let reader = SerializedFileReader::new(file).unwrap_or_else(|error| {
+        panic!("parquet output should parse ({}): {error}", path.display())
+    });
+    reader
+        .get_row_iter(None)
+        .unwrap_or_else(|error| {
+            panic!(
+                "parquet row iterator should open ({}): {error}",
+                path.display()
+            )
+        })
+        .map(|row| {
+            format!(
+                "{:?}",
+                row.unwrap_or_else(|error| {
+                    panic!("parquet row should decode ({}): {error}", path.display())
+                })
+            )
+        })
+        .collect()
+}
+
+fn watershed_output_relative_paths() -> &'static [&'static str] {
+    &[
         "ebe_pw0.parquet",
         "chan.out.parquet",
         "chanwb.parquet",
@@ -950,16 +1193,34 @@ fn assert_all_watershed_outputs_exist(output_dir: &Path) {
         "loss_pw0.all_years.chn.parquet",
         "loss_pw0.all_years.out.parquet",
         "loss_pw0.all_years.class_data.parquet",
-    ];
+    ]
+}
 
-    for output_name in expected_outputs {
-        let output_path = output_dir.join("interchange").join(output_name);
-        assert!(
-            output_path.is_file(),
-            "missing expected watershed parquet output {}",
-            output_path.display()
-        );
+fn run_generated_multi_hillslope_case(prefix: &str, jobs: &str) -> PathBuf {
+    let run_dir = build_watershed_fixture_dir(prefix);
+    prepare_multi_hillslope_output_guard_fixture(&run_dir);
+    for hillslope_id in [1, 2, 3] {
+        write_hillslope_source_runfile_fixture(&run_dir, hillslope_id);
     }
+    write_generated_watershed_runfile(&run_dir, &[1, 2, 3]);
+
+    let output_dir = run_dir.join("out");
+    let hill_binary = Path::new(env!("CARGO_BIN_EXE_openwepp-cli-hill"));
+    let output = run_watershed_cli_with_options(
+        &run_dir,
+        &output_dir,
+        Some("compat"),
+        false,
+        Some(jobs),
+        Some(hill_binary),
+    );
+    assert!(
+        output.status.success(),
+        "generated multi-hillslope watershed run should complete for --jobs {jobs}; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_all_watershed_outputs_exist(&output_dir);
+    output_dir
 }
 
 #[test]
@@ -1280,9 +1541,59 @@ fn write_successful_noop_hillslope_binary(run_dir: &Path) -> PathBuf {
     path
 }
 
+#[cfg(unix)]
+fn write_w3_failure_hillslope_binary(run_dir: &Path) -> PathBuf {
+    let path = run_dir.join("w3-failing-openwepp-cli-hill.sh");
+    let launch_marker = run_dir.join("unexpected-h3-launch.txt");
+    let payload = format!(
+        r#"#!/bin/sh
+runfile=""
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = "--run-file" ]; then
+    shift
+    runfile="$1"
+  fi
+  shift
+done
+case "$runfile" in
+  *H1.run.toml)
+    sleep 1
+    exit 0
+    ;;
+  *H2.run.toml)
+    exit 23
+    ;;
+  *H3.run.toml)
+    echo "$runfile" >> "{launch_marker}"
+    exit 0
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+"#,
+        launch_marker = launch_marker.display()
+    );
+    fs::write(&path, payload).expect("failing fake hillslope binary should be writable");
+    let mut permissions = fs::metadata(&path)
+        .expect("failing fake hillslope binary metadata should be readable")
+        .permissions();
+    permissions.set_mode(0o755);
+    fs::set_permissions(&path, permissions)
+        .expect("failing fake hillslope binary should be executable");
+    path
+}
+
 fn prepare_output_guard_fixture(run_dir: &Path) {
     fs::write(run_dir.join("pw0.str"), "94.301\n2 1 0 0 0 0 0 0 0 0\n")
         .expect("channel-only structure fixture should be writable");
+    fs::write(run_dir.join("chan.inp"), "3 600\n0.000001\n1\n2\n")
+        .expect("channel-only chan.inp fixture should be writable");
+}
+
+fn prepare_multi_hillslope_output_guard_fixture(run_dir: &Path) {
+    fs::write(run_dir.join("pw0.str"), "94.301\n2 1 2 3 0 0 0 0 0 0\n")
+        .expect("multi-hillslope channel-only structure fixture should be writable");
     fs::write(run_dir.join("chan.inp"), "3 600\n0.000001\n1\n2\n")
         .expect("channel-only chan.inp fixture should be writable");
 }

@@ -51,15 +51,24 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
-- `20260701-wshedw3-bounded-worker-pool-001/` is queued as WSHED-W3 BOUNDED
-  WORKER POOL. Result: `QUEUED-HANDOFF-AUTHORED`. It contains the active
-  handoff prompt for implementing explicit `--jobs N` bounded worker-pool
-  execution, preserving `--jobs 1` determinism, proving `--jobs 1`/`--jobs N`
-  output identity and fail-closed child/pass behavior, and recording canonical
-  scaling evidence on the committed carnivorous-adobo fixture.
 
 ## Execution Log
 
+- `20260701-wshedw3-bounded-worker-pool-001/` is complete as WSHED-W3 BOUNDED
+  WORKER POOL. Result: `EXECUTED-COMPLETE-WSHED-W3`. It added
+  `HillslopeWorkerPool`, removed the temporary public `--jobs > 1` rejection,
+  preserved invalid/zero/negative `--jobs` rejection, records per-job
+  concurrency/failure policy timing, clears stale generated pass/log/timing
+  artifacts before launch, and proves focused `--jobs 1`/`--jobs 3`
+  row-equivalence plus child-failure and missing-pass fail-closed behavior.
+  User-authorized fixture-only `radly` normalization resolved the committed
+  carnivorous-adobo direct-runtime guard without changing production clipping
+  posture. The canonical release scaling matrix passed `1/2/4/8/16/32`, three
+  repeats each, all row-equivalent to `jobs1-rep1`; average wall time improved
+  from `36.96 s` at `--jobs 1` to `2.04 s` at `--jobs 32`. Final gates passed:
+  `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo nextest run --workspace --profile full` (`1283` passed, `1` skipped),
+  and `cargo deny check`.
 - `20260701-wshedw2-serial-watershed-supervisor-skeleton-001/` is complete as
   WSHED-W2 SERIAL WATERSHED SUPERVISOR SKELETON. Result:
   `EXECUTED-COMPLETE-WSHED-W2`. It implemented the public

@@ -1,0 +1,7 @@
+COMMAND: sha256sum -c input-manifest.sha256
+WORKDIR: tests/fixtures/watershed/carnivorous-adobo
+RESULT: PASS
+EXIT_CODE: 0
+
+OUTPUT:
+all 175 fixture files validated

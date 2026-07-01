@@ -2,6 +2,8 @@ use std::collections::BTreeSet;
 use std::fs::{self, File};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::sync::mpsc;
+use std::thread;
 use std::time::{Instant, SystemTime};
 
 use openwepp_input_contract::parsers::hbp::{
@@ -34,12 +36,6 @@ impl WatershedRunPlan {
     ) -> Result<Self, String> {
         if jobs == 0 {
             return Err("CLIWAT-E-041 --jobs must be a positive integer".to_string());
-        }
-        if jobs > 1 {
-            return Err(
-                "CLIWAT-E-041 --jobs values greater than 1 require the W3 worker-pool package"
-                    .to_string(),
-            );
         }
         if expected_passes.is_empty() {
             return Err(
@@ -79,8 +75,24 @@ impl WatershedRunPlan {
                 "CLIWAT-E-041 serial watershed supervisor only supports --jobs 1".to_string(),
             );
         }
+        self.execute_hillslope_jobs(sidecar_policy, legacy_sidecar_discovery)
+            .map(|_| ())
+    }
+
+    pub fn execute_hillslope_jobs(
+        &self,
+        sidecar_policy: SidecarPolicy,
+        legacy_sidecar_discovery: bool,
+    ) -> Result<HillslopeWorkerPoolReport, String> {
         if self.hillslope_jobs.is_empty() {
-            return Ok(());
+            return Ok(HillslopeWorkerPoolReport {
+                requested_jobs: self.jobs,
+                worker_count: 0,
+                launched_jobs: 0,
+                completed_jobs: 0,
+                skipped_jobs: 0,
+                elapsed_ms: 0,
+            });
         }
         if !self.hillslope_binary.is_file() {
             return Err(format!(
@@ -91,19 +103,189 @@ impl WatershedRunPlan {
 
         for job in &self.hillslope_jobs {
             job.prepare_generated_runfile()?;
-            job.execute(
-                &self.hillslope_binary,
-                sidecar_policy,
-                legacy_sidecar_discovery,
-            )?;
         }
 
-        Ok(())
+        HillslopeWorkerPool::new(self.jobs)?.execute(
+            &self.hillslope_binary,
+            &self.hillslope_jobs,
+            sidecar_policy,
+            legacy_sidecar_discovery,
+        )
     }
 
     pub fn validate_pass_inventory(&self) -> Result<PassInventory, String> {
         PassInventory::validate(&self.expected_passes)
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct HillslopeWorkerPoolReport {
+    pub requested_jobs: usize,
+    pub worker_count: usize,
+    pub launched_jobs: usize,
+    pub completed_jobs: usize,
+    pub skipped_jobs: usize,
+    pub elapsed_ms: u128,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct HillslopeWorkerPool {
+    worker_count: usize,
+}
+
+impl HillslopeWorkerPool {
+    pub fn new(worker_count: usize) -> Result<Self, String> {
+        if worker_count == 0 {
+            return Err("CLIWAT-E-041 --jobs must be a positive integer".to_string());
+        }
+        Ok(Self { worker_count })
+    }
+
+    pub fn execute(
+        &self,
+        hillslope_binary: &Path,
+        jobs: &[HillslopeJob],
+        sidecar_policy: SidecarPolicy,
+        legacy_sidecar_discovery: bool,
+    ) -> Result<HillslopeWorkerPoolReport, String> {
+        let started = Instant::now();
+        let worker_count = self.worker_count.min(jobs.len()).max(1);
+        let (sender, receiver) = mpsc::channel::<HillslopeJobCompletion>();
+        let mut handles = Vec::with_capacity(jobs.len());
+        let mut next_job_index = 0usize;
+        let mut launched_jobs = 0usize;
+        let mut completed_jobs = 0usize;
+        let mut in_flight_jobs = 0usize;
+        let mut first_failure: Option<String> = None;
+
+        while in_flight_jobs < worker_count && next_job_index < jobs.len() {
+            let spawn_result = spawn_hillslope_job(
+                sender.clone(),
+                &mut handles,
+                jobs[next_job_index].clone(),
+                hillslope_binary.to_path_buf(),
+                sidecar_policy,
+                legacy_sidecar_discovery,
+                worker_count,
+            );
+            if let Err(error) = spawn_result {
+                first_failure = Some(error);
+                break;
+            }
+            next_job_index += 1;
+            launched_jobs += 1;
+            in_flight_jobs += 1;
+        }
+
+        while in_flight_jobs > 0 {
+            let completion = match receiver.recv() {
+                Ok(completion) => completion,
+                Err(error) => {
+                    first_failure = Some(format!(
+                        "CLIWAT-E-043 hillslope worker pool lost a worker result: {error}"
+                    ));
+                    break;
+                }
+            };
+            in_flight_jobs -= 1;
+            completed_jobs += 1;
+            if first_failure.is_none() {
+                if let Err(error) = completion.result {
+                    first_failure = Some(format!(
+                        "hillslope job {} failed: {error}",
+                        completion.hillslope_id
+                    ));
+                }
+            }
+
+            while first_failure.is_none()
+                && in_flight_jobs < worker_count
+                && next_job_index < jobs.len()
+            {
+                let spawn_result = spawn_hillslope_job(
+                    sender.clone(),
+                    &mut handles,
+                    jobs[next_job_index].clone(),
+                    hillslope_binary.to_path_buf(),
+                    sidecar_policy,
+                    legacy_sidecar_discovery,
+                    worker_count,
+                );
+                if let Err(error) = spawn_result {
+                    first_failure = Some(error);
+                    break;
+                }
+                next_job_index += 1;
+                launched_jobs += 1;
+                in_flight_jobs += 1;
+            }
+        }
+        drop(sender);
+
+        for handle in handles {
+            if handle.join().is_err() && first_failure.is_none() {
+                first_failure =
+                    Some("hillslope worker thread panicked after sending no result".to_string());
+            }
+        }
+
+        let skipped_jobs = jobs.len().saturating_sub(launched_jobs);
+        if let Some(failure) = first_failure {
+            return Err(format!(
+                "CLIWAT-E-043 hillslope worker pool failed; launched={launched_jobs}, completed={completed_jobs}, skipped_pending={skipped_jobs}; {failure}"
+            ));
+        }
+
+        Ok(HillslopeWorkerPoolReport {
+            requested_jobs: self.worker_count,
+            worker_count,
+            launched_jobs,
+            completed_jobs,
+            skipped_jobs,
+            elapsed_ms: started.elapsed().as_millis(),
+        })
+    }
+}
+
+#[derive(Debug)]
+struct HillslopeJobCompletion {
+    hillslope_id: u32,
+    result: Result<(), String>,
+}
+
+fn spawn_hillslope_job(
+    sender: mpsc::Sender<HillslopeJobCompletion>,
+    handles: &mut Vec<thread::JoinHandle<()>>,
+    job: HillslopeJob,
+    hillslope_binary: PathBuf,
+    sidecar_policy: SidecarPolicy,
+    legacy_sidecar_discovery: bool,
+    worker_count: usize,
+) -> Result<(), String> {
+    let hillslope_id = job.hillslope_id;
+    let handle = thread::Builder::new()
+        .name(format!("openwepp-hillslope-H{hillslope_id}"))
+        .spawn(move || {
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                job.execute(
+                    &hillslope_binary,
+                    sidecar_policy,
+                    legacy_sidecar_discovery,
+                    worker_count,
+                )
+            }))
+            .map_err(|_| format!("CLIWAT-E-043 hillslope job {hillslope_id} panicked"))
+            .and_then(|inner| inner);
+            let _ = sender.send(HillslopeJobCompletion {
+                hillslope_id,
+                result,
+            });
+        })
+        .map_err(|error| {
+            format!("CLIWAT-E-043 failed spawning hillslope worker {hillslope_id}: {error}")
+        })?;
+    handles.push(handle);
+    Ok(())
 }
 
 #[derive(Debug, Clone)]
@@ -168,6 +350,8 @@ impl HillslopeJob {
                 &self.freshness_marker_path,
                 "stale generated freshness marker",
             ),
+            (&self.stdout_log_path, "stale generated stdout log"),
+            (&self.stderr_log_path, "stale generated stderr log"),
         ] {
             remove_file_if_exists(path, label)?;
         }
@@ -179,6 +363,7 @@ impl HillslopeJob {
         hillslope_binary: &Path,
         sidecar_policy: SidecarPolicy,
         legacy_sidecar_discovery: bool,
+        worker_count: usize,
     ) -> Result<(), String> {
         let run_dir = self
             .source_run_file_path
@@ -223,6 +408,8 @@ impl HillslopeJob {
             "elapsed_ms": elapsed_ms,
             "status_code": status.code(),
             "success": status.success(),
+            "worker_concurrency": worker_count,
+            "failure_policy": "stop-launching-pending-jobs-after-first-hard-failure;wait-for-in-flight-jobs",
             "argv": argv,
             "stdout_log": self.stdout_log_path.display().to_string(),
             "stderr_log": self.stderr_log_path.display().to_string(),

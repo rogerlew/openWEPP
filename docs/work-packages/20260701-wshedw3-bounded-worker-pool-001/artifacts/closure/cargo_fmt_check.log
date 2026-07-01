@@ -1,0 +1,3 @@
+COMMAND: cargo fmt --check
+RESULT: PASS
+EXIT_CODE: 0
