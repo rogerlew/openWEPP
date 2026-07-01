@@ -159,8 +159,12 @@ impl Wb11HydrologyKernel {
         }
     }
 
+    // `as f64` and parsing the decimal string both round to nearest, so this
+    // is bit-identical to the former string round-trip for every usize,
+    // including values above 2^53.
+    #[allow(clippy::cast_precision_loss)]
     pub(crate) fn diagnostic_count_to_f64(value: usize) -> f64 {
-        value.to_string().parse::<f64>().unwrap_or(f64::INFINITY)
+        value as f64
     }
 
 }

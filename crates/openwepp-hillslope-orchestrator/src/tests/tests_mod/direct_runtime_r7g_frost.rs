@@ -1209,3 +1209,29 @@ fn sample_layer_inputs(theta_m: f64) -> DirectSubsurfaceLayerInputs {
         lateral_conductivity_m_s: 1.0e-6,
     }
 }
+
+#[test]
+fn diagnostic_count_to_f64_matches_decimal_string_parse_bit_for_bit() {
+    // The former implementation round-tripped through a decimal string; the
+    // cast must stay bit-identical across the whole usize range, including
+    // values above 2^53 where nearest-rounding is exercised.
+    let samples: [usize; 8] = [
+        0,
+        1,
+        365,
+        4_038,
+        (1_usize << 53) - 1,
+        1_usize << 53,
+        (1_usize << 53) + 1,
+        usize::MAX,
+    ];
+    for value in samples {
+        let via_cast = Wb11HydrologyKernel::diagnostic_count_to_f64(value);
+        let via_parse = value.to_string().parse::<f64>().unwrap();
+        assert_eq!(
+            via_cast.to_bits(),
+            via_parse.to_bits(),
+            "diagnostic_count_to_f64({value}) diverged from decimal parse"
+        );
+    }
+}
