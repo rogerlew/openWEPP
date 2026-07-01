@@ -2,49 +2,6 @@
 use super::super::*;
 
 impl Wb11HydrologyKernel {
-    #[allow(clippy::needless_pass_by_value)]
-    pub(crate) fn require_dynamic_state_range(
-        phase_class: HillslopeKernelPhaseClass,
-        symbol: BoundarySymbol,
-        value: f64,
-        minimum: Option<f64>,
-        maximum: Option<f64>,
-    ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        Self::require_dynamic_state_range_for_symbol(phase_class, &symbol, value, minimum, maximum)
-    }
-
-    pub(crate) fn require_dynamic_state_range_for_symbol(
-        phase_class: HillslopeKernelPhaseClass,
-        symbol: &BoundarySymbol,
-        value: f64,
-        minimum: Option<f64>,
-        maximum: Option<f64>,
-    ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        if let Some(minimum_value) = minimum
-            && value < minimum_value - WB11_ZERO_THRESHOLD
-        {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: symbol.clone(),
-                value,
-                minimum,
-                maximum,
-            });
-        }
-        if let Some(maximum_value) = maximum
-            && value > maximum_value + WB11_ZERO_THRESHOLD
-        {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: symbol.clone(),
-                value,
-                minimum,
-                maximum,
-            });
-        }
-        Ok(())
-    }
-
     pub(crate) fn require_state_range(
         phase_class: HillslopeKernelPhaseClass,
         symbol: HillslopeProductionStateSymbol,
@@ -52,18 +9,23 @@ impl Wb11HydrologyKernel {
         minimum: Option<f64>,
         maximum: Option<f64>,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &BoundarySymbol::from(symbol),
+            || BoundarySymbol::from(symbol),
             value,
             minimum,
             maximum,
         )
     }
 
-    pub(crate) fn require_state_range_for_symbol(
+    // Range guards run on the success path thousands of times per OFE-day;
+    // the symbol name is only needed when a check fails. These `_with`
+    // variants defer the owned-`BoundarySymbol` construction (a heap `String`
+    // plus the registry-audit hook) to the failure branch. Error values are
+    // identical to the eager forms.
+    pub(crate) fn require_state_range_with(
         phase_class: HillslopeKernelPhaseClass,
-        symbol: &BoundarySymbol,
+        symbol: impl Fn() -> BoundarySymbol,
         value: f64,
         minimum: Option<f64>,
         maximum: Option<f64>,
@@ -73,7 +35,7 @@ impl Wb11HydrologyKernel {
         {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
-                symbol: symbol.clone(),
+                symbol: symbol(),
                 value,
                 minimum,
                 maximum,
@@ -84,13 +46,23 @@ impl Wb11HydrologyKernel {
         {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
-                symbol: symbol.clone(),
+                symbol: symbol(),
                 value,
                 minimum,
                 maximum,
             });
         }
         Ok(())
+    }
+
+    pub(crate) fn require_dynamic_state_range_with(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: impl Fn() -> BoundarySymbol,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        Self::require_state_range_with(phase_class, symbol, value, minimum, maximum)
     }
 
     pub(crate) fn hourly_symbol(root: &str, hour: usize) -> BoundarySymbol {

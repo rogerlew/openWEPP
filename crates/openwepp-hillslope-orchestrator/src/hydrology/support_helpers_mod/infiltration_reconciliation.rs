@@ -287,26 +287,26 @@ impl Wb11HydrologyKernel {
         snow_depth_m: f64,
         snow_density_kg_m3: f64,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+            || BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
             snow_density_kg_m3,
             Some(0.0),
             None,
         )?;
         let surface_layer_depth_m =
             snow_depth_m.min(SNOW_SUBLIMATION_STAGE_B_ACTIVE_LAYER_DEPTH_M);
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow_sublimation.surface_layer_depth_m"),
+            || BoundarySymbol::from("snow_sublimation.surface_layer_depth_m"),
             surface_layer_depth_m,
             Some(0.0),
             Some(SNOW_SUBLIMATION_STAGE_B_ACTIVE_LAYER_DEPTH_M),
         )?;
         let surface_temperature_c = air_temperature_c.min(0.0);
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow_sublimation.surface_temperature_c"),
+            || BoundarySymbol::from("snow_sublimation.surface_temperature_c"),
             surface_temperature_c,
             None,
             Some(0.0),
@@ -319,9 +319,9 @@ impl Wb11HydrologyKernel {
         } else {
             0.0
         };
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow_sublimation.surface_layer_cold_content_j_m2"),
+            || BoundarySymbol::from("snow_sublimation.surface_layer_cold_content_j_m2"),
             surface_layer_cold_content_j_m2,
             None,
             Some(0.0),
@@ -347,37 +347,37 @@ impl Wb11HydrologyKernel {
         snow_depth_m: f64,
         surface_temperature_c: f64,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(WB15_SYMBOL_PLANT_CANCOV),
+            || BoundarySymbol::from(WB15_SYMBOL_PLANT_CANCOV),
             canopy_cover_fraction,
             Some(0.0),
             Some(1.0),
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow_sublimation.wind_m_s"),
+            || BoundarySymbol::from("snow_sublimation.wind_m_s"),
             wind_m_s,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow_sublimation.air_temperature_c"),
+            || BoundarySymbol::from("snow_sublimation.air_temperature_c"),
             air_temperature_c,
             None,
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow_sublimation.dewpoint_c"),
+            || BoundarySymbol::from("snow_sublimation.dewpoint_c"),
             dewpoint_c,
             None,
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+            || BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
             snow_depth_m,
             Some(0.0),
             None,
@@ -386,9 +386,9 @@ impl Wb11HydrologyKernel {
         if snow_depth_m <= WB11_ZERO_THRESHOLD || wind_m_s <= WB11_ZERO_THRESHOLD {
             return Ok(0.0);
         }
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow_sublimation.surface_temperature_c"),
+            || BoundarySymbol::from("snow_sublimation.surface_temperature_c"),
             surface_temperature_c,
             None,
             Some(0.0),
@@ -421,9 +421,9 @@ impl Wb11HydrologyKernel {
             * FROST_RUNTIME_SECONDS_PER_HOUR
             * open_canopy_fraction;
         let sublimation_m = sublimation_kg_m2 / SNOW_SUBLIMATION_RHO_WATER_KG_M3;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow_sublimation"),
+            || BoundarySymbol::from("snow_sublimation"),
             sublimation_m,
             Some(0.0),
             None,
@@ -506,58 +506,58 @@ impl Wb11HydrologyKernel {
         snow_density_kg_m3: f64,
         shortwave_absorbed_fraction: f64,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from("cancov"),
+            || BoundarySymbol::from("cancov"),
             cancov,
             Some(0.0),
             Some(1.0),
         )?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(SNOW_HOURLY_RAIN_ROOT),
+            || BoundarySymbol::from(SNOW_HOURLY_RAIN_ROOT),
             hrrain_m,
             Some(0.0),
             None,
         )?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(WINTER_HOURLY_RAD_ROOT),
+            || BoundarySymbol::from(WINTER_HOURLY_RAD_ROOT),
             hrad_mj_m2,
             Some(0.0),
             None,
         )?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(WINTER_HOURLY_CLOUD_ROOT),
+            || BoundarySymbol::from(WINTER_HOURLY_CLOUD_ROOT),
             cloud_fraction,
             Some(0.0),
             Some(1.0),
         )?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from("vwind"),
+            || BoundarySymbol::from("vwind"),
             vwind_m_s,
             Some(0.0),
             None,
         )?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+            || BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
             snow_depth_m,
             Some(0.0),
             None,
         )?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+            || BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
             snow_density_kg_m3,
             Some(0.0),
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
         )?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from("snow_melt_shortwave_absorbed_fraction"),
+            || BoundarySymbol::from("snow_melt_shortwave_absorbed_fraction"),
             shortwave_absorbed_fraction,
             Some(0.0),
             Some(1.0),
@@ -697,9 +697,9 @@ impl Wb11HydrologyKernel {
                     &error,
                 )
             })?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+            || BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
             wmelt_m,
             None,
             Some(maximum_melt_m),
@@ -756,72 +756,72 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveSnowPartitionInputs,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+            || BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
             inputs.hyetograph_rainfall_m,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(WB14_SYMBOL_SNOW_RST),
+            || BoundarySymbol::from(WB14_SYMBOL_SNOW_RST),
             inputs.rst_c,
             None,
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(WB14_SYMBOL_SNOW_NEWSNW),
+            || BoundarySymbol::from(WB14_SYMBOL_SNOW_NEWSNW),
             inputs.newsnw_kg_m3,
             Some(WB11_ZERO_THRESHOLD),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(WB14_SYMBOL_SNOW_SSD),
+            || BoundarySymbol::from(WB14_SYMBOL_SNOW_SSD),
             inputs.ssd_kg_m3,
             Some(WB11_ZERO_THRESHOLD),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
+            || BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
             inputs.runtime_swe_m,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(WB14_SYMBOL_TMAX),
+            || BoundarySymbol::from(WB14_SYMBOL_TMAX),
             inputs.tmax_c,
             None,
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(WB14_SYMBOL_TMIN),
+            || BoundarySymbol::from(WB14_SYMBOL_TMIN),
             inputs.tmin_c,
             None,
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(WB15_SYMBOL_PLANT_CANCOV),
+            || BoundarySymbol::from(WB15_SYMBOL_PLANT_CANCOV),
             inputs.canopy_cover_fraction,
             Some(0.0),
             Some(1.0),
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("vwind"),
+            || BoundarySymbol::from("vwind"),
             inputs.wind_m_s,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("tdpt"),
+            || BoundarySymbol::from("tdpt"),
             inputs.dewpoint_c,
             None,
             None,
@@ -842,44 +842,44 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveSnowPartitionInputs,
     ) -> Result<ActiveSnowBoundaryState, Wb11HydrologyKernelGuardError> {
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+            || BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
             inputs.runtime_depth_m,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+            || BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
             inputs.runtime_density_kg_m3,
             Some(0.0),
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL),
+            || BoundarySymbol::from(SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL),
             inputs.runtime_settle_day_count,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow.coe_boundary_depth_m"),
+            || BoundarySymbol::from("snow.coe_boundary_depth_m"),
             inputs.coe_boundary_depth_m,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow.coe_boundary_density_kg_m3"),
+            || BoundarySymbol::from("snow.coe_boundary_density_kg_m3"),
             inputs.coe_boundary_density_kg_m3,
             Some(0.0),
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow.coe_boundary_settle_day_count"),
+            || BoundarySymbol::from("snow.coe_boundary_settle_day_count"),
             inputs.coe_boundary_settle_day_count,
             Some(0.0),
             None,
@@ -1008,37 +1008,37 @@ impl Wb11HydrologyKernel {
         hour: usize,
         hourly: DirectSnowHourlyForcing,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            Self::hourly_symbol(SNOW_HOURLY_RAIN_ROOT, hour),
+            || Self::hourly_symbol(SNOW_HOURLY_RAIN_ROOT, hour),
             hourly.rain_m,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            Self::hourly_symbol(SNOW_HOURLY_SNOWFALL_ROOT, hour),
+            || Self::hourly_symbol(SNOW_HOURLY_SNOWFALL_ROOT, hour),
             hourly.snowfall_m,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour),
+            || Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour),
             hourly.radiation_mj_m2,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour),
+            || Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour),
             hourly.air_temperature_c,
             None,
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour),
+            || Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour),
             hourly.cloud_fraction,
             Some(0.0),
             Some(1.0),
@@ -1806,9 +1806,9 @@ impl Wb11HydrologyKernel {
         let available_swe_after_state_loss_m =
             (available_runtime_swe_for_state_loss - bounded_state_loss_m).max(0.0);
         let bounded_sublimation_m = total_sublimation_m.min(available_swe_after_state_loss_m);
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow_sublimation"),
+            || BoundarySymbol::from("snow_sublimation"),
             bounded_sublimation_m,
             Some(0.0),
             Some(available_swe_after_state_loss_m),
@@ -1882,30 +1882,30 @@ impl Wb11HydrologyKernel {
                 maximum: None,
             });
         }
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from("snow.routed_melt_m"),
+            || BoundarySymbol::from("snow.routed_melt_m"),
             routed_melt_total_m,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
+            || BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
             runtime_swe_after,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+            || BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
             runtime_depth_after_m,
             Some(0.0),
             None,
         )?;
-        Self::require_direct_typed_snow_value(
+        Self::require_direct_typed_snow_value_with(
             phase_class,
-            BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+            || BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
             runtime_density_after_kg_m3,
             Some(0.0),
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),

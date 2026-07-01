@@ -465,18 +465,18 @@ impl Wb11HydrologyKernel {
                 .iter()
                 .find(|shadow| shadow.layer_index == layer.layer_index);
             let nwfrzz_m = prior_layer.map_or(0.0, |shadow| shadow.nwfrzz_m);
-            Self::require_dynamic_state_range(
+            Self::require_dynamic_state_range_with(
                 phase_class,
-                Self::frost_layer_symbol(FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT, layer.layer_index),
+                || Self::frost_layer_symbol(FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT, layer.layer_index),
                 nwfrzz_m,
                 Some(0.0),
                 None,
             )?;
             let st_m = layer.theta_m + nwfrzz_m;
             let yst_m = prior_layer.map_or(st_m, |shadow| shadow.yst_m);
-            Self::require_dynamic_state_range(
+            Self::require_dynamic_state_range_with(
                 phase_class,
-                Self::frost_layer_symbol(FROST_RUNTIME_LAYER_YST_M_ROOT, layer.layer_index),
+                || Self::frost_layer_symbol(FROST_RUNTIME_LAYER_YST_M_ROOT, layer.layer_index),
                 yst_m,
                 Some(0.0),
                 None,
@@ -1537,58 +1537,51 @@ impl Wb11HydrologyKernel {
         let hourly_air_temp_c = hourly_forcing.air_temperature_c;
         let hourly_rad_mj_m2 = hourly_forcing.radiation_mj_m2;
         let cloud_fraction = hourly_forcing.cloud_fraction;
-        let air_symbol = Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour);
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &air_symbol,
+            || Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour),
             hourly_air_temp_c,
             Some(-273.16),
             None,
         )?;
-        let rad_symbol = Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour);
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &rad_symbol,
+            || Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour),
             hourly_rad_mj_m2,
             Some(0.0),
             None,
         )?;
-        let cloud_symbol = Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour);
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &cloud_symbol,
+            || Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour),
             cloud_fraction,
             Some(0.0),
             Some(1.0),
         )?;
-        let vwind_symbol = BoundarySymbol::from("vwind");
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &vwind_symbol,
+            || BoundarySymbol::from("vwind"),
             tmpadj.wind_m_s,
             Some(0.0),
             None,
         )?;
-        let salb_symbol = BoundarySymbol::from("salb");
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &salb_symbol,
+            || BoundarySymbol::from("salb"),
             tmpadj.albedo,
             Some(0.0),
             Some(1.0),
         )?;
-        let canhgt_symbol = BoundarySymbol::from("canhgt");
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &canhgt_symbol,
+            || BoundarySymbol::from("canhgt"),
             tmpadj.canopy_height_m,
             Some(0.0),
             None,
         )?;
-        let random_roughness_symbol = BoundarySymbol::from("rrc");
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &random_roughness_symbol,
+            || BoundarySymbol::from("rrc"),
             tmpadj.random_roughness_m,
             Some(0.0),
             None,
