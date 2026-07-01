@@ -60,6 +60,13 @@ State as of `2026-07-01`:
   complete because routing still projects through `compatibility_writeback_surface`
   into `execute_watershed_dispatch_with_kernel` and the WS10 dispatch/kernel
   writeback path still reads/writes `WatershedWritebackSurface`.
+- `20260701-wshedw4dc01-typed-routing-kernel-writeback-closure-001/` is queued
+  as WSHED-W4DC01 TYPED ROUTING KERNEL WRITEBACK CLOSURE. Result:
+  `QUEUED-HANDOFF-AUTHORED`. It is a defect-closure hold-lift package for
+  `WSHED-W4-HOLD-001`, with the first actionable item to replace production
+  `compatibility_writeback_surface` + `execute_watershed_dispatch_with_kernel`
+  routing with `WatershedNetworkFrame`-native dispatch before WSHED-W5 can
+  proceed.
 
 ## Execution Log
 
