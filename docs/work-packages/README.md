@@ -54,6 +54,18 @@ State as of `2026-06-30`:
 
 ## Execution Log
 
+- `20260701-kernel-boundary-cqr-row4-runtime-inputs-001/` is complete as
+  KERNEL-BOUNDARY CQR ROW 4 RUNTIME INPUTS. Result:
+  `EXECUTED-COMPLETE-ROW4-CQR`. It executed row #4 of
+  `kernel-boundary-cqr-burndown-execplan.md`, reducing row #4 CRAP offenders
+  from 24 unique production entries (`48` duplicated report rows) to `0`
+  entries above CRAP 30. It added typed assertions for runtime input error
+  code/display coverage, annual-extension and perennial grazing projection,
+  and SIMIMPL28 hourly winter forcing branches, plus behavior-preserving helper
+  extraction in SIMIMPL28 sunmap and winter window normalization. Full gates
+  passed (`1229` nextest passed); H2637 measured `1:06.99` / `79684 KiB`,
+  protected H2637 outputs were byte-identical, and
+  `compatibility_edge_invocations=0`.
 - `20260630-kernel-boundary-terminal-typing-001/` is complete as
   KERNEL-BOUNDARY TERMINAL TYPING. Result:
   `EXECUTED-COMPLETE-TERMINAL-SINGLE-AUTHORITY`. It deleted the compiled

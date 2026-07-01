@@ -902,3 +902,104 @@ fn pl_decomp_slot_crop_indexed_symbol(
 fn slope_ofe_symbol(root: &str, ofe_index: usize) -> BoundarySymbol {
     BoundarySymbol::from(format!("ofe{ofe_index}_{root}"))
 }
+
+#[cfg(test)]
+mod cqr_row4_projection_helper_tests {
+    use super::*;
+    use openwepp_input_contract::parsers::management::{
+        YearlyAnnualExtension, YearlyPerennialData, YearlyPerennialGrazingCycle,
+    };
+
+    fn perennial_with_cycle(cycle: YearlyPerennialGrazingCycle) -> YearlyPerennialData {
+        YearlyPerennialData {
+            jdharv: 100,
+            jdplt: 120,
+            jdstop: 260,
+            rw: 0.5,
+            mgtopt: 3,
+            cut_days: vec![180],
+            grazing_cycles: vec![cycle],
+        }
+    }
+
+    fn valid_grazing_cycle() -> YearlyPerennialGrazingCycle {
+        YearlyPerennialGrazingCycle {
+            animal: 2.0,
+            area: 3.0,
+            bodywt: 450.0,
+            digest: 0.61,
+            gday: 90,
+            gend: 120,
+        }
+    }
+
+    #[test]
+    fn cqr_row4_annual_extension_variant_names_cover_all_payloads() {
+        let herbicide = YearlyAnnualExtension::Herbicide { jdherb: 140 };
+        let burn = YearlyAnnualExtension::Burn {
+            jdburn: 150,
+            fbmag: 0.1,
+            fbrnog: 0.2,
+        };
+        let silage = YearlyAnnualExtension::Silage { jdslge: 160 };
+        let cut = YearlyAnnualExtension::Cut {
+            jdcut: 170,
+            frcut: 0.4,
+        };
+        let remove = YearlyAnnualExtension::Remove {
+            jdmove: 180,
+            frmove: 0.5,
+        };
+
+        assert_eq!(annual_extension_variant_name(Some(&herbicide)), "herbicide");
+        assert_eq!(annual_extension_variant_name(Some(&burn)), "burn");
+        assert_eq!(annual_extension_variant_name(Some(&silage)), "silage");
+        assert_eq!(annual_extension_variant_name(Some(&cut)), "cut");
+        assert_eq!(annual_extension_variant_name(Some(&remove)), "remove");
+        assert_eq!(annual_extension_variant_name(None), "none");
+    }
+
+    #[test]
+    fn cqr_row4_perennial_grazing_cycle_symbols_project_typed_payload() {
+        let perennial = perennial_with_cycle(valid_grazing_cycle());
+        let mut surface = BTreeMap::new();
+
+        project_perennial_grazing_cycle_symbols(&mut surface, 2, 3, &perennial)
+            .expect("valid grazing cycle should project");
+
+        let expected = [
+            ("gday", 90.0),
+            ("gend", 120.0),
+            ("animal", 2.0),
+            ("bodywt", 450.0),
+            ("area", 3.0),
+            ("digest", 0.61),
+        ];
+        for (root, value) in expected {
+            let symbol = pl_decomp_slot_crop_indexed_symbol(root, 2, 3, 1);
+            let actual = surface
+                .get(&symbol)
+                .unwrap_or_else(|| panic!("{symbol} should be projected"))
+                .as_f64();
+            assert!((actual - value).abs() < 1.0e-12);
+        }
+    }
+
+    #[test]
+    fn cqr_row4_perennial_grazing_cycle_symbols_reject_invalid_domains() {
+        let mut invalid_window = valid_grazing_cycle();
+        invalid_window.gend = invalid_window.gday;
+        let perennial = perennial_with_cycle(invalid_window);
+        let mut surface = BTreeMap::new();
+        let error = project_perennial_grazing_cycle_symbols(&mut surface, 2, 3, &perennial)
+            .expect_err("gday >= gend must fail closed");
+        assert_eq!(error.code(), "HS-RUNTIME-E-049");
+
+        let mut invalid_digest = valid_grazing_cycle();
+        invalid_digest.digest = 1.5;
+        let perennial = perennial_with_cycle(invalid_digest);
+        let error = project_perennial_grazing_cycle_symbols(&mut surface, 2, 3, &perennial)
+            .expect_err("digest outside unit interval must fail closed");
+        assert_eq!(error.code(), "HS-RUNTIME-E-050");
+    }
+}

@@ -1250,3 +1250,466 @@ impl fmt::Display for HillslopeRuntimeInputError {
 }
 
 impl Error for HillslopeRuntimeInputError {}
+
+#[cfg(test)]
+mod cqr_row4_runtime_input_error_tests {
+    use super::*;
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn cqr_row4_error_codes_and_display_cover_all_runtime_input_variants() {
+        let cases = vec![
+            (HillslopeRuntimeInputError::MissingSoilOfe, "HS-RUNTIME-E-001"),
+            (HillslopeRuntimeInputError::MissingSoilLayer, "HS-RUNTIME-E-002"),
+            (
+                HillslopeRuntimeInputError::MissingThetaResidual,
+                "HS-RUNTIME-E-003",
+            ),
+            (
+                HillslopeRuntimeInputError::MissingThetaFieldCapacity,
+                "HS-RUNTIME-E-004",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteProfileDepth { value_mm: f64::NAN },
+                "HS-RUNTIME-E-005",
+            ),
+            (
+                HillslopeRuntimeInputError::NonPositiveProfileDepth { value_mm: 0.0 },
+                "HS-RUNTIME-E-006",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteTopLayerDepth { value_mm: f64::NAN },
+                "HS-RUNTIME-E-007",
+            ),
+            (
+                HillslopeRuntimeInputError::NonPositiveTopLayerDepth { value_mm: 0.0 },
+                "HS-RUNTIME-E-008",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteThetaResidual { value: f64::NAN },
+                "HS-RUNTIME-E-009",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity { value: f64::NAN },
+                "HS-RUNTIME-E-010",
+            ),
+            (
+                HillslopeRuntimeInputError::SoilOfeCountMismatch {
+                    declared_ofe_count: 2,
+                    observed_ofes: 1,
+                },
+                "HS-RUNTIME-E-026",
+            ),
+            (
+                HillslopeRuntimeInputError::SoilOfeCountOutOfRange { value: usize::MAX },
+                "HS-RUNTIME-E-027",
+            ),
+            (
+                HillslopeRuntimeInputError::SoilLayerCountMismatch {
+                    ofe_index: 1,
+                    declared_nsl: 3,
+                    observed_layers: 2,
+                },
+                "HS-RUNTIME-E-028",
+            ),
+            (
+                HillslopeRuntimeInputError::SoilLayerCountOutOfRange {
+                    ofe_index: 1,
+                    value: usize::MAX,
+                },
+                "HS-RUNTIME-E-029",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteLayerDepth {
+                    ofe_index: 1,
+                    layer_index: 1,
+                    value_mm: f64::NAN,
+                },
+                "HS-RUNTIME-E-030",
+            ),
+            (
+                HillslopeRuntimeInputError::NonPositiveLayerDepth {
+                    ofe_index: 1,
+                    layer_index: 1,
+                    value_mm: 0.0,
+                },
+                "HS-RUNTIME-E-031",
+            ),
+            (
+                HillslopeRuntimeInputError::NonMonotoneLayerDepth {
+                    ofe_index: 1,
+                    upper_layer_index: 1,
+                    upper_depth_mm: 300.0,
+                    lower_layer_index: 2,
+                    lower_depth_mm: 250.0,
+                },
+                "HS-RUNTIME-E-032",
+            ),
+            (
+                HillslopeRuntimeInputError::MissingSaturatedConductivity {
+                    ofe_index: 1,
+                    layer_index: 1,
+                },
+                "HS-RUNTIME-E-033",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteSaturatedConductivity {
+                    ofe_index: 1,
+                    layer_index: 1,
+                    value_mm_h: f64::NAN,
+                },
+                "HS-RUNTIME-E-034",
+            ),
+            (
+                HillslopeRuntimeInputError::NonPositiveSaturatedConductivity {
+                    ofe_index: 1,
+                    layer_index: 1,
+                    value_mm_h: 0.0,
+                },
+                "HS-RUNTIME-E-035",
+            ),
+            (
+                HillslopeRuntimeInputError::MissingCorrectedLayerNormalizationInput {
+                    ofe_index: 1,
+                    layer_index: 1,
+                    field: "bulk_density_g_cm3",
+                },
+                "HS-RUNTIME-E-060",
+            ),
+            (
+                HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable {
+                    ofe_index: 1,
+                },
+                "HS-RUNTIME-E-061",
+            ),
+            (
+                HillslopeRuntimeInputError::CorrectedLayerMappingIncomplete {
+                    ofe_index: 1,
+                    layer_index: 1,
+                    layer_top_depth_mm: 0.0,
+                    layer_bottom_depth_mm: 100.0,
+                    covered_depth_mm: 50.0,
+                },
+                "HS-RUNTIME-E-062",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteProfileFcTailContribution {
+                    ofe_index: 1,
+                    value_mm: f64::NAN,
+                },
+                "HS-RUNTIME-E-063",
+            ),
+            (
+                HillslopeRuntimeInputError::NegativeProfileFcTailContribution {
+                    ofe_index: 1,
+                    value_mm: -1.0,
+                },
+                "HS-RUNTIME-E-064",
+            ),
+            (HillslopeRuntimeInputError::MissingSlopeOfe, "HS-RUNTIME-E-011"),
+            (
+                HillslopeRuntimeInputError::SlopeOfeCountMismatch {
+                    declared_ofe_count: 2,
+                    observed_ofes: 1,
+                },
+                "HS-RUNTIME-E-012",
+            ),
+            (
+                HillslopeRuntimeInputError::SlopeOfeCountOutOfRange { value: usize::MAX },
+                "HS-RUNTIME-E-013",
+            ),
+            (
+                HillslopeRuntimeInputError::SlopePointCountMismatch {
+                    ofe_index: 1,
+                    declared_nslpts: 3,
+                    observed_points: 2,
+                },
+                "HS-RUNTIME-E-014",
+            ),
+            (
+                HillslopeRuntimeInputError::SlopePointCountOutOfRange {
+                    ofe_index: 1,
+                    value: usize::MAX,
+                },
+                "HS-RUNTIME-E-015",
+            ),
+            (
+                HillslopeRuntimeInputError::InsufficientSlopePoints {
+                    ofe_index: 1,
+                    observed_points: 1,
+                },
+                "HS-RUNTIME-E-016",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteSlopeLength {
+                    ofe_index: 1,
+                    value_m: f64::NAN,
+                },
+                "HS-RUNTIME-E-017",
+            ),
+            (
+                HillslopeRuntimeInputError::NonPositiveSlopeLength {
+                    ofe_index: 1,
+                    value_m: 0.0,
+                },
+                "HS-RUNTIME-E-018",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteXinput {
+                    ofe_index: 1,
+                    point_index: 1,
+                    value: f64::NAN,
+                },
+                "HS-RUNTIME-E-019",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteSlpinp {
+                    ofe_index: 1,
+                    point_index: 1,
+                    value: f64::NAN,
+                },
+                "HS-RUNTIME-E-020",
+            ),
+            (
+                HillslopeRuntimeInputError::NonMonotoneXinput {
+                    ofe_index: 1,
+                    left_point_index: 1,
+                    left_value: 2.0,
+                    right_point_index: 2,
+                    right_value: 1.0,
+                },
+                "HS-RUNTIME-E-021",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteDerivedAverageSlope {
+                    ofe_index: 1,
+                    value: f64::NAN,
+                },
+                "HS-RUNTIME-E-022",
+            ),
+            (
+                HillslopeRuntimeInputError::NonPositiveDerivedAverageSlope {
+                    ofe_index: 1,
+                    value: 0.0,
+                },
+                "HS-RUNTIME-E-023",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteDerivedSlopeLength {
+                    ofe_index: 1,
+                    value_m: f64::NAN,
+                },
+                "HS-RUNTIME-E-024",
+            ),
+            (
+                HillslopeRuntimeInputError::NonPositiveDerivedSlopeLength {
+                    ofe_index: 1,
+                    value_m: 0.0,
+                },
+                "HS-RUNTIME-E-025",
+            ),
+            (
+                HillslopeRuntimeInputError::ManagementTopologyCountMismatch {
+                    expected_ofes: 2,
+                    schedule_initial_refs: 1,
+                },
+                "HS-RUNTIME-E-036",
+            ),
+            (
+                HillslopeRuntimeInputError::ManagementScheduleSlotCountMismatch {
+                    expected_slots: 2,
+                    observed_slots: 1,
+                },
+                "HS-RUNTIME-E-037",
+            ),
+            (
+                HillslopeRuntimeInputError::ManagementScheduleSlotArityMismatch {
+                    slot_index: 1,
+                    crop_slots: 2,
+                    yearly_refs: 1,
+                },
+                "HS-RUNTIME-E-038",
+            ),
+            (
+                HillslopeRuntimeInputError::ManagementScheduleOfeIndexOutOfRange {
+                    slot_index: 1,
+                    ofe_index: 3,
+                    max_ofe_index: 2,
+                },
+                "HS-RUNTIME-E-045",
+            ),
+            (
+                HillslopeRuntimeInputError::ManagementInitialReferenceOutOfRange {
+                    ofe_index: 1,
+                    initial_ref: 3,
+                    max_initial_ref: 2,
+                },
+                "HS-RUNTIME-E-039",
+            ),
+            (
+                HillslopeRuntimeInputError::ManagementYearlyReferenceOutOfRange {
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    yearly_ref: 3,
+                    max_yearly_ref: 2,
+                },
+                "HS-RUNTIME-E-040",
+            ),
+            (
+                HillslopeRuntimeInputError::UnsupportedPlLanduse {
+                    section: "crop",
+                    value: 99,
+                },
+                "HS-RUNTIME-E-041",
+            ),
+            (
+                HillslopeRuntimeInputError::UnsupportedPlManagementOption {
+                    field: "mgtopt",
+                    value: 99,
+                    allowed: "1..=3",
+                },
+                "HS-RUNTIME-E-042",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFinitePlProjectionField {
+                    field: "rw",
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    value: f64::NAN,
+                },
+                "HS-RUNTIME-E-043",
+            ),
+            (
+                HillslopeRuntimeInputError::PlProjectionCountOutOfRange {
+                    field: "nrots",
+                    value: usize::MAX,
+                },
+                "HS-RUNTIME-E-044",
+            ),
+            (
+                HillslopeRuntimeInputError::PlProjectionDayOutOfDomain {
+                    field: "jdharv",
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    value: 366,
+                    allowed: "1..=365",
+                },
+                "HS-RUNTIME-E-046",
+            ),
+            (
+                HillslopeRuntimeInputError::PlAnnualExtensionMismatch {
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    resmgt: 2,
+                    expected: "burn",
+                    observed: "none",
+                },
+                "HS-RUNTIME-E-047",
+            ),
+            (
+                HillslopeRuntimeInputError::PlProjectionCardinalityInvalid {
+                    field: "ncycle",
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    value: 0,
+                    expected: ">0",
+                },
+                "HS-RUNTIME-E-048",
+            ),
+            (
+                HillslopeRuntimeInputError::PlGrazingWindowOutOfDomain {
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    cycle_index: 1,
+                    gday: 10,
+                    gend: 5,
+                },
+                "HS-RUNTIME-E-049",
+            ),
+            (
+                HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                    field: "digest",
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    value: 1.5,
+                    allowed: "0.0..=1.0",
+                },
+                "HS-RUNTIME-E-050",
+            ),
+            (
+                HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                    field: "resmgt",
+                    slot_index: 1,
+                    crop_slot_index: 1,
+                    reason: "unsupported branch",
+                },
+                "HS-RUNTIME-E-051",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteSnowControl {
+                    field: "rst",
+                    value: f64::NAN,
+                },
+                "HS-RUNTIME-E-052",
+            ),
+            (
+                HillslopeRuntimeInputError::SnowControlOutOfDomain {
+                    field: "rst",
+                    value: -100.0,
+                    allowed: "finite",
+                },
+                "HS-RUNTIME-E-053",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteFrostControl {
+                    field: "frdp",
+                    value: f64::NAN,
+                },
+                "HS-RUNTIME-E-054",
+            ),
+            (
+                HillslopeRuntimeInputError::FrostControlOutOfDomain {
+                    field: "frdp",
+                    value: -1.0,
+                    allowed: ">=0",
+                },
+                "HS-RUNTIME-E-055",
+            ),
+            (
+                HillslopeRuntimeInputError::MissingIrrigationScheduleField { field: "iramt" },
+                "HS-RUNTIME-E-056",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteIrrigationScheduleField {
+                    field: "iramt",
+                    value: f64::NAN,
+                },
+                "HS-RUNTIME-E-057",
+            ),
+            (
+                HillslopeRuntimeInputError::IrrigationScheduleFieldOutOfDomain {
+                    field: "iramt",
+                    value: -1.0,
+                    allowed: ">=0",
+                },
+                "HS-RUNTIME-E-058",
+            ),
+            (
+                HillslopeRuntimeInputError::IrrigationScheduleCountOutOfRange {
+                    field: "nirr",
+                    value: usize::MAX,
+                },
+                "HS-RUNTIME-E-059",
+            ),
+        ];
+
+        for (error, expected_code) in cases {
+            assert_eq!(error.code(), expected_code);
+            let display = error.to_string();
+            assert!(
+                display.starts_with(expected_code),
+                "display did not start with {expected_code}: {display}"
+            );
+        }
+    }
+}

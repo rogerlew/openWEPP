@@ -386,6 +386,67 @@ fn simimpl28_psolr(sol_d: f64, v: f64, w: f64, x: f64, y: f64) -> f64 {
         + (sol_d.cos() * w.cos() * ((x + v).sin() - (y + v).sin()) * 12.0 / SIMIMPL28_PI)
 }
 
+#[allow(clippy::too_many_arguments)]
+fn simimpl28_sunmap_slope_radiation_langleys(
+    r1: f64,
+    declination: f64,
+    geometry: Simimpl28AspectGeometry,
+    t3: f64,
+    t2_effective: f64,
+    mut t6: f64,
+    mut t7: f64,
+    t1: f64,
+    t0: f64,
+) -> f64 {
+    t6 += 2.0 * SIMIMPL28_PI;
+    if t6 < t1 {
+        let t8 = t6;
+        let t9 = t1;
+        return r1
+            * (simimpl28_psolr(
+                declination,
+                geometry.delong,
+                geometry.eqlat,
+                t3,
+                t2_effective,
+            ) + simimpl28_psolr(
+                declination,
+                geometry.delong,
+                geometry.eqlat,
+                t9,
+                t8,
+            ));
+    }
+
+    t7 -= 2.0 * SIMIMPL28_PI;
+    if t7 > t0 {
+        let t8 = t0;
+        let t9 = t7;
+        return r1
+            * (simimpl28_psolr(
+                declination,
+                geometry.delong,
+                geometry.eqlat,
+                t3,
+                t2_effective,
+            ) + simimpl28_psolr(
+                declination,
+                geometry.delong,
+                geometry.eqlat,
+                t9,
+                t8,
+            ));
+    }
+
+    r1 * simimpl28_psolr(
+        declination,
+        geometry.delong,
+        geometry.eqlat,
+        t3,
+        t2_effective,
+    )
+}
+
 #[allow(clippy::too_many_lines, clippy::many_single_char_names)]
 fn simimpl28_sunmap(
     radly: f64,
@@ -414,8 +475,8 @@ fn simimpl28_sunmap(
     let mut x = -((geometry.eqlat.sin() / geometry.eqlat.cos()) * (d.sin() / d.cos()));
     x = x.clamp(-1.0, 1.0);
     let t = x.acos();
-    let mut t7 = t - geometry.delong;
-    let mut t6 = -t - geometry.delong;
+    let t7 = t - geometry.delong;
+    let t6 = -t - geometry.delong;
 
     x = -(geometry.radlat.tan() * d.tan());
     x = x.clamp(-1.0, 1.0);
@@ -433,24 +494,8 @@ fn simimpl28_sunmap(
     if t3 < t2_effective {
         t2_effective = t3;
     }
-    t6 += 2.0 * SIMIMPL28_PI;
-
-    let r4_ly = if t6 < t1 {
-        let t8 = t6;
-        let t9 = t1;
-        r1 * (simimpl28_psolr(d, geometry.delong, geometry.eqlat, t3, t2_effective)
-            + simimpl28_psolr(d, geometry.delong, geometry.eqlat, t9, t8))
-    } else {
-        t7 -= 2.0 * SIMIMPL28_PI;
-        if t7 > t0 {
-            let t8 = t0;
-            let t9 = t7;
-            r1 * (simimpl28_psolr(d, geometry.delong, geometry.eqlat, t3, t2_effective)
-                + simimpl28_psolr(d, geometry.delong, geometry.eqlat, t9, t8))
-        } else {
-            r1 * simimpl28_psolr(d, geometry.delong, geometry.eqlat, t3, t2_effective)
-        }
-    };
+    let r4_ly =
+        simimpl28_sunmap_slope_radiation_langleys(r1, d, geometry, t3, t2_effective, t6, t7, t1, t0);
     let r4 = simimpl28_langleys_to_mj_m2("sunmap.r4", r4_ly)?;
 
     let t4 = t2_effective * 12.0 / SIMIMPL28_PI;
@@ -687,7 +732,7 @@ fn simimpl28_stmtim_hourly_partition_with_model(
     rain_m: f64,
     stmdur_s: f64,
     hour: f64,
-    mut wnttim: f64,
+    wnttim: f64,
     rst: f64,
     hrtemp_c: f64,
     dew_point_c: f64,
@@ -705,7 +750,7 @@ fn simimpl28_stmtim_hourly_partition_with_model(
             value: stmdur_s,
         });
     }
-    wnttim = simimpl28_stmtim_start_time(wnttim)?;
+    let wnttim = simimpl28_stmtim_start_time(wnttim)?;
     if rain_m <= 0.0001 {
         return Ok(simimpl28_partition_result(
             0.0,
@@ -717,43 +762,7 @@ fn simimpl28_stmtim_hourly_partition_with_model(
             None,
         ));
     }
-    let tmpvr3 = openwepp_unit_boundary::conversions::seconds_to_legacy_stmtim_hours(stmdur_s)
-        .map_err(|error| match error {
-            openwepp_unit_boundary::BoundaryError::NonFinite { value, .. } => {
-                ClimateRuntimeInputError::NonFiniteField {
-                    field: "stmdur",
-                    value,
-                }
-            }
-            openwepp_unit_boundary::BoundaryError::BelowMinimum { value, .. }
-            | openwepp_unit_boundary::BoundaryError::AboveMaximum { value, .. } => {
-                ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-                    symbol: "stmdur".to_string(),
-                    value,
-                    allowed: "finite and >= 0",
-                }
-            }
-        })?;
-    let mut wntdur = tmpvr3.floor();
-    if (tmpvr3 - wntdur) >= 0.5 {
-        wntdur += 1.0;
-    }
-    if wntdur < 0.0001 {
-        wntdur = 1.0;
-    }
-    if (wnttim + wntdur) > 24.0 {
-        wnttim = 24.0 - wntdur;
-    }
-    if (wntdur - 24.0).abs() <= SIMIMPL28_DOMAIN_EPS {
-        wnttim = 1.0;
-    }
-    if wntdur <= SIMIMPL28_DOMAIN_EPS {
-        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-            symbol: "wntdur".to_string(),
-            value: wntdur,
-            allowed: "> 0",
-        });
-    }
+    let (wnttim, wntdur) = simimpl28_normalized_winter_precipitation_window(stmdur_s, wnttim)?;
 
     let active_interval = (hour >= wnttim) && (hour < (wnttim + wntdur));
     if !active_interval {
@@ -827,6 +836,51 @@ fn simimpl28_stmtim_hourly_partition_with_model(
         hydrometeor_temperature_c,
         relative_humidity,
     ))
+}
+
+fn simimpl28_normalized_winter_precipitation_window(
+    stmdur_s: f64,
+    wnttim: f64,
+) -> Result<(f64, f64), ClimateRuntimeInputError> {
+    let mut wnttim = simimpl28_stmtim_start_time(wnttim)?;
+    let tmpvr3 = openwepp_unit_boundary::conversions::seconds_to_legacy_stmtim_hours(stmdur_s)
+        .map_err(|error| match error {
+            openwepp_unit_boundary::BoundaryError::NonFinite { value, .. } => {
+                ClimateRuntimeInputError::NonFiniteField {
+                    field: "stmdur",
+                    value,
+                }
+            }
+            openwepp_unit_boundary::BoundaryError::BelowMinimum { value, .. }
+            | openwepp_unit_boundary::BoundaryError::AboveMaximum { value, .. } => {
+                ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+                    symbol: "stmdur".to_string(),
+                    value,
+                    allowed: "finite and >= 0",
+                }
+            }
+        })?;
+    let mut wntdur = tmpvr3.floor();
+    if (tmpvr3 - wntdur) >= 0.5 {
+        wntdur += 1.0;
+    }
+    if wntdur < 0.0001 {
+        wntdur = 1.0;
+    }
+    if (wnttim + wntdur) > 24.0 {
+        wnttim = 24.0 - wntdur;
+    }
+    if (wntdur - 24.0).abs() <= SIMIMPL28_DOMAIN_EPS {
+        wnttim = 1.0;
+    }
+    if wntdur <= SIMIMPL28_DOMAIN_EPS {
+        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: "wntdur".to_string(),
+            value: wntdur,
+            allowed: "> 0",
+        });
+    }
+    Ok((wnttim, wntdur))
 }
 
 fn simimpl28_legacy_stmtim_snowfall_depth_m(rain_m: f64, wntdur: f64) -> f64 {
@@ -970,4 +1024,266 @@ fn simimpl28_winter_random_start_hour(sdate: i32) -> f64 {
         wnttim = 1.0;
     }
     wnttim
+}
+
+#[cfg(test)]
+mod cqr_row4_simimpl28_hourly_forcing_tests {
+    use super::*;
+    use openwepp_climate_runtime_adapter::{
+        SharedBreakpointForcing, SharedNoBreakpointForcing,
+    };
+
+    fn metadata() -> ClimateMetadata {
+        ClimateMetadata {
+            deglat: 45.0,
+            deglon: -116.0,
+            elev: 1_500.0,
+            obsyrs: 1,
+            ibyear: 2020,
+            numyr: 1,
+            generator_cmd: None,
+        }
+    }
+
+    fn no_breakpoint_forcing(tmax: f64, tmin: f64) -> HillslopeClimateDailyForcing {
+        HillslopeClimateDailyForcing::NoBreakpoint(SharedNoBreakpointForcing {
+            day: 15,
+            mon: 1,
+            year: 2020,
+            prcp: 0.012,
+            stmdur: 3_600.0,
+            timep: 0.5,
+            ip: 10.0,
+            ninten: 1,
+            avrint: 10.0,
+            mxint: 10.0,
+            timem: vec![0.0],
+            intsty: vec![10.0],
+            tmax,
+            tmin,
+            rad: 180.0,
+            vwind: 1.0,
+            wind: 1.0,
+            tdpt: tmin,
+        })
+    }
+
+    fn breakpoint_forcing() -> HillslopeClimateDailyForcing {
+        HillslopeClimateDailyForcing::Breakpoint(SharedBreakpointForcing {
+            day: 15,
+            mon: 1,
+            year: 2020,
+            nbrkpt: 1,
+            stmstr: 1.0,
+            prcp: 0.012,
+            stmdur: 3_600.0,
+            mxint: 10.0,
+            timem: vec![0.0],
+            intsty: vec![10.0],
+            tmax: -1.0,
+            tmin: -5.0,
+            rad: 180.0,
+            vwind: 1.0,
+            wind: 1.0,
+            tdpt: -6.0,
+        })
+    }
+
+    fn warm_context() -> DirectWinterHourlyContext {
+        DirectWinterHourlyContext {
+            snow_runtime_swe_m: 0.0,
+            frost_runtime_depth_m: 0.0,
+            frost_runtime_frozen_water_m: 0.0,
+            frost_file_present: false,
+            frost_wint_red_enabled: false,
+            avg_slope: 0.1,
+            azimuth: 180.0,
+            snow_rst_c: 0.0,
+            snow_phase_model: SnowPhasePartitionModel::LegacyRst,
+        }
+    }
+
+    fn assert_exact_f64(actual: f64, expected: f64) {
+        assert_eq!(
+            actual.to_bits(),
+            expected.to_bits(),
+            "expected exact branch constant {expected}, got {actual}"
+        );
+    }
+
+    #[test]
+    fn cqr_row4_build_forcing_suppresses_production_and_forces_diagnostic_rows() {
+        let forcing = no_breakpoint_forcing(10.0, 4.0);
+        let suppressed = build_simimpl28_hourly_winter_forcing_typed(
+            &forcing,
+            &metadata(),
+            warm_context(),
+            Simimpl28WinterExportMode::ProductionTrigger,
+        )
+        .expect("warm no-snow production day should evaluate trigger");
+        assert!(suppressed.is_none());
+
+        let diagnostic = build_simimpl28_hourly_winter_forcing_typed(
+            &forcing,
+            &metadata(),
+            warm_context(),
+            Simimpl28WinterExportMode::ForceCompleteDiagnosticRows,
+        )
+        .expect("forced diagnostic rows should build")
+        .expect("forced diagnostic mode should return rows");
+        assert_eq!(diagnostic.len(), SIMIMPL28_WINTER_HOURS_PER_DAY);
+        assert!(diagnostic.iter().all(|row| row.radiation_mj_m2 >= 0.0));
+    }
+
+    #[test]
+    fn cqr_row4_build_forcing_covers_context_guards_and_breakpoint_trigger() {
+        let forcing = no_breakpoint_forcing(2.0, -2.0);
+        for (mut context, symbol) in [
+            (
+                DirectWinterHourlyContext {
+                    snow_runtime_swe_m: -1.0,
+                    ..warm_context()
+                },
+                "snow.runtime_swe",
+            ),
+            (
+                DirectWinterHourlyContext {
+                    frost_runtime_depth_m: -1.0,
+                    ..warm_context()
+                },
+                "frost.runtime_dfrost",
+            ),
+            (
+                DirectWinterHourlyContext {
+                    frost_runtime_frozen_water_m: -1.0,
+                    ..warm_context()
+                },
+                "frost.runtime_ws_frz",
+            ),
+            (
+                DirectWinterHourlyContext {
+                    avg_slope: 0.0,
+                    ..warm_context()
+                },
+                "avgslp",
+            ),
+        ] {
+            context.frost_file_present = true;
+            let error = build_simimpl28_hourly_winter_forcing_typed(
+                &forcing,
+                &metadata(),
+                context,
+                Simimpl28WinterExportMode::ForceCompleteDiagnosticRows,
+            )
+            .expect_err("invalid context should fail closed");
+            assert!(format!("{error:?}").contains(symbol));
+        }
+
+        let rows = build_simimpl28_hourly_winter_forcing_typed(
+            &breakpoint_forcing(),
+            &metadata(),
+            warm_context(),
+            Simimpl28WinterExportMode::ProductionTrigger,
+        )
+        .expect("cold breakpoint day should build")
+        .expect("cold breakpoint day should trigger production rows");
+        assert!(rows.iter().any(|row| row.snowfall_m > 0.0));
+    }
+
+    #[test]
+    fn cqr_row4_sunmap_covers_success_and_domain_errors() {
+        let geometry =
+            simimpl28_aspect_geometry(45.0, 0.1, 180.0).expect("geometry should be valid");
+        let sunmap = simimpl28_sunmap(180.0, 15, geometry).expect("sunmap should build");
+        assert!(sunmap.halfdy.is_finite());
+        assert!(sunmap.rpoth_mj_m2 > 0.0);
+        assert!((0.0..=1.0).contains(&sunmap.cloud_fraction));
+
+        let error = simimpl28_sunmap(f64::NAN, 15, geometry)
+            .expect_err("non-finite radiation should fail closed");
+        assert!(format!("{error:?}").contains("radly"));
+
+        let error = simimpl28_sunmap(100_000.0, 15, geometry)
+            .expect_err("excess daily radiation should fail closed");
+        assert!(format!("{error:?}").contains("radly"));
+    }
+
+    #[test]
+    fn cqr_row4_stmtim_partition_covers_legacy_and_harder_pomeroy_branches() {
+        let zero = simimpl28_stmtim_hourly_partition_with_model(
+            0.0,
+            3_600.0,
+            1.0,
+            1.0,
+            0.0,
+            -2.0,
+            -3.0,
+            SnowPhasePartitionModel::LegacyRst,
+        )
+        .expect("zero precipitation should partition");
+        assert_exact_f64(zero.hrrain_m, 0.0);
+        assert_exact_f64(zero.hrsnow_m, 0.0);
+
+        let inactive = simimpl28_stmtim_hourly_partition_with_model(
+            0.012,
+            3_600.0,
+            4.0,
+            1.0,
+            0.0,
+            -2.0,
+            -3.0,
+            SnowPhasePartitionModel::LegacyRst,
+        )
+        .expect("inactive hour should partition");
+        assert_exact_f64(inactive.hrrain_m, 0.0);
+        assert_exact_f64(inactive.hrsnow_m, 0.0);
+
+        let legacy_snow = simimpl28_stmtim_hourly_partition_with_model(
+            0.012,
+            3_600.0,
+            1.0,
+            1.0,
+            0.0,
+            -2.0,
+            -3.0,
+            SnowPhasePartitionModel::LegacyRst,
+        )
+        .expect("cold legacy hour should partition as snow");
+        assert_exact_f64(legacy_snow.rain_fraction, 0.0);
+        assert_exact_f64(legacy_snow.snow_fraction, 1.0);
+        assert!(legacy_snow.hrsnow_m > 0.0);
+
+        let legacy_rain = simimpl28_stmtim_hourly_partition_with_model(
+            0.012,
+            3_600.0,
+            1.0,
+            1.0,
+            0.0,
+            2.0,
+            -1.0,
+            SnowPhasePartitionModel::LegacyRst,
+        )
+        .expect("warm legacy hour should partition as rain");
+        assert_exact_f64(legacy_rain.rain_fraction, 1.0);
+        assert_exact_f64(legacy_rain.snow_fraction, 0.0);
+        assert!(legacy_rain.hrrain_m > 0.0);
+
+        let harder_pomeroy = simimpl28_stmtim_hourly_partition_with_model(
+            0.012,
+            3_600.0,
+            1.0,
+            1.0,
+            0.0,
+            -1.0,
+            -2.0,
+            SnowPhasePartitionModel::HarderPomeroyHourly,
+        )
+        .expect("Harder-Pomeroy hourly branch should partition");
+        assert_eq!(
+            harder_pomeroy.phase_model,
+            SnowPhasePartitionModel::HarderPomeroyHourly
+        );
+        assert!(harder_pomeroy.hydrometeor_temperature_c.is_some());
+        assert!(harder_pomeroy.relative_humidity.is_some());
+    }
 }
