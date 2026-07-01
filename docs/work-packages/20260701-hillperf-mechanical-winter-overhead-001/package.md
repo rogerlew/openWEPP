@@ -1,6 +1,6 @@
 # Hillslope Mechanical Winter-Overhead Sweep (sub-5× WP-1)
 
-Status: IN PROGRESS
+Status: REVIEW-READY (implementation complete; Codex review + merge pending)
 
 Package id: `20260701-hillperf-mechanical-winter-overhead-001`
 
