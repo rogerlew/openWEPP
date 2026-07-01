@@ -1,10 +1,36 @@
 # Kernel-Boundary CQR Burndown ExecPlan
 
-Status: **active** — **CRAP-reduction** (code-quality) burndown following the symbol-map
-kernel-boundary deletion; coverage is the secondary closure gate.
+Status: **closed 2026-07-01** — **CRAP-reduction** (code-quality) burndown
+following the symbol-map kernel-boundary deletion; coverage was the secondary
+closure gate.
 Dispatch surface: **main** (packages run on `main` directly, not in a worktree).
 Owner: maintainers (Claude Code maintains this doc; Codex runs the CQR packages).
 Last updated: 2026-07-01.
+
+## Closure Result
+
+Ran final full-workspace LCOV + CRAP measurement after row #2:
+`/tmp/openwepp-row2-after.lcov` and `/tmp/openwepp-crap-row2-after.json`.
+
+Burndown-owned production scopes above CRAP 30:
+
+| Row | Result |
+| --- | ---: |
+| #4 runtime inputs | 0 |
+| #7 WB publication | 0 |
+| #9 direct runtime physics | 0 |
+| #5 hydrology WB kernel | 0 |
+| #6 growth + decomposition | 0 |
+| #8 per-OFE / MOFE | 0 |
+| #3 management + plant parser | 0 |
+| #1 soil parser | 0 |
+| #2 climate parser | 0 |
+
+Full workspace functions above CRAP 30: `266`, all outside this burndown's
+owned row scopes and left to the broader CQR backlog/dispositions. The
+symbol-map-runtime tests listed under "Retired with justification" were not
+restored; the retained ratified-contract assertions were restored at typed
+runtime/parser surfaces in the row packages.
 
 ## Why this exists
 

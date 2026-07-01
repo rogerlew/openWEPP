@@ -13,7 +13,7 @@ concept → work-package → contract-authoring promotion path.
 - `complete` — superseded by completed work; **prune candidate** (move detail to the
   execution log and delete the note).
 
-Last updated: 2026-06-30 (Claude Code).
+Last updated: 2026-07-01 (Codex).
 
 | Item | State | Gate / blocker | Notes |
 |---|---|---|---|
@@ -34,4 +34,4 @@ Last updated: 2026-06-30 (Claude Code).
 
 | Program | State | Authority | Notes |
 |---|---|---|---|
-| **Kernel-boundary typing program** | `runtime-deletion-complete; CQR burndown active` (2026-06-30) | array-native spec §8.2; ADR-0031; [kernel-boundary-cqr-burndown-execplan.md](../work-packages/kernel-boundary-cqr-burndown-execplan.md) | Symbol-map runtime (`scheduler.rs`/`day_frame.rs`/carriers) **deleted** on main (`a381702b`, merged `c588023e`); production direct-only, `compatibility_edge_invocations=0`, H2637 byte-identical. **Not closed:** the wholesale deletion removed ~657 tests (1,878 → 1,221) incl. ratified-contract coverage — being restored via the CQR burndown (9 modules, contract-anchored, net-coverage gate to ≥1,878). ROADMAP item K. |
+| **Kernel-boundary typing program** | `complete; CQR burndown closed` (2026-07-01) | array-native spec §8.2; ADR-0031; [kernel-boundary-cqr-burndown-execplan.md](../work-packages/kernel-boundary-cqr-burndown-execplan.md) | Symbol-map runtime (`scheduler.rs`/`day_frame.rs`/carriers) **deleted** on main (`a381702b`, merged `c588023e`); production direct-only, `compatibility_edge_invocations=0`, H2637 byte-identical. The nine-row CQR burndown is complete: all owned row scopes measure `0` production functions above CRAP 30, H2637 remained byte-identical per row, and final full-workspace CRAP evidence is recorded in the execplan. Obsolete symbol-map-runtime tests were retired with justification; retained ratified-contract assertions were restored at typed runtime/parser surfaces. ROADMAP item K closed. |
