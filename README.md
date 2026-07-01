@@ -206,16 +206,19 @@ A routine can overwrite a value another routine still needs, or store a
 physically impossible number such as a negative depth, and nothing stops it — the
 bad value simply flows downstream until something far away misbehaves.
 
-In openWEPP a process does not write into the shared state itself. It hands its
-results to the orchestrator, which checks each value against its allowed range and
-then decides whether to apply it. A negative storage or an out-of-range flux is
-caught at the moment it is produced and rejected, not discovered days of simulated
-time later. There is exactly one place where state changes are committed, and it
-is guarded — so the "what overwrote my variable?" class of bug cannot occur.
+In openWEPP a process does not write into shared state at will. Each phase
+computes over typed inputs, and its results pass through typed guards — finite,
+nonnegative, in-range, conservation-closed — before they land in the day's
+state frame; what survives the day crosses into carry state at exactly one
+guarded commit point. A negative storage or an out-of-range flux is caught at
+the moment it is produced and rejected with the lane and day that produced it,
+not discovered days of simulated time later — so the "what overwrote my
+variable?" class of bug cannot occur.
 
-*In the repo:* crate `openwepp-kernel-contract`; contract
-`kernel-writeback-contract`; `evaluate_kernel_writeback`,
-`KernelWritebackPayload`, `WritebackField`, `KernelWritebackDecision`.
+*In the repo:* `DirectDayFrame` phase spans and `DirectLaneFrame::commit_day`
+in `crates/openwepp-hillslope-orchestrator/src/direct_runtime/`; typed guard
+errors (`validate_finite`, closure tolerance checks); walkthrough in
+[docs/dev-guide/03-hillslope-codeflow.md](docs/dev-guide/03-hillslope-codeflow.md).
 
 ### Quantities carry their units, and WEPP's names are kept
 
@@ -379,6 +382,7 @@ Dependency license posture: no viral copyleft (GPL / AGPL / LGPL denied at the `
 
 ## See also
 
+- [docs/dev-guide/](docs/dev-guide/README.md) — Developer onboarding guide (architecture, codeflows, principles, glossary)
 - [AGENTS.md](AGENTS.md) — Codex coding playbook
 - [CLAUDE.md](CLAUDE.md) — Claude Code review / debug playbook
 - [docs/README.md](docs/README.md) — Documentation index

@@ -29,6 +29,7 @@ Last updated: 2026-07-01 (Codex).
 | [Canopy snow interception / sublimation](20260627-canopy-snow-interception-sublimation.md) | `concept` | not load-bearing yet | The canopy side of sublimation (distinct from the surface-pack side below). |
 | [Stream water temperature — surface energy balance](20260627-stream-water-temperature-surface-energy-balance.md) | `breadcrumb` | prerequisites met; not being planned | Surface-EB foundation + opt-in meltwater-temperature source exist. Open question on pickup: can hourly water+temperature serialize across HBP and be consumed by `openwepp-cli-watershed`. |
 | [Multilayer surface-EB sublimation + longwave](20260629-multilayer-surface-sublimation-longwave.md) | `breadcrumb` | sequenced after frost | Surface-pack sublimation via the per-layer surface energy balance; the streamflow/ET-tuning case makes it more defect-shaped than a fidelity nicety. |
+| [Hillslope sub-5× performance assessment](20260701-hillslope-sub5x-performance-assessment.md) | `concept` | promotable; F1 needs SC-SNOWFREEZE adjudication | **Ran** 2026-07-01: H2637 direct 71.4 s vs legacy 9.65 s (7.40×); perf profile attributes ~64% to the winter subsystem — frost partition solved **twice** per winter OFE-day (F1, ~21 s), success-path guard-symbol `String` formatting (F2, ~7–11 s), duplicate hourly forcing + cacheable curve fits (F3/F5). Composite F1+F2..F8 projects ~3.5–4.5×. Day-frame lifecycle measured non-problem (~3%). |
 
 ## Active program (not backlog — tracked here for cross-reference)
 

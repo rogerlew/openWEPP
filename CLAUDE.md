@@ -132,6 +132,7 @@ When proactively scanning openWEPP for vulnerabilities:
 | `AGENTS.md` | Codex | Conventions, validation gates |
 | `README.md` | All | Project identity, scope |
 | `docs/ROADMAP.md` | All | **Canonical** engine roadmap: forward-only planning queue (next + deferred); completed work lives in `docs/work-packages/` |
+| `docs/dev-guide/` | New developers | Human onboarding: architecture narrative, codeflows, principles, glossary |
 | `docs/architecture/` | All contributors | Runtime topology |
 | `docs/specifications/` | All | Science-contract authority model; `SC-*` registry |
 | `docs/contracts/` | All | Interface contracts |
