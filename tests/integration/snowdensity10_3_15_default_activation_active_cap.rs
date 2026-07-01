@@ -11,10 +11,6 @@ const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00_builders_and_authority.rs"
 );
-const AUTHORITY_IMPL: &str = concat!(
-    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
-    "00a_snow_frost_authority_impl.rs"
-);
 const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 const TOOL: &str = "tools/snowfreeze_observed/default_activation_active_cap.py";
 const REPORT: &str = concat!(
@@ -72,12 +68,11 @@ fn implementation_selects_activated_default_without_user_surface() {
         "active default selector must not accept rejected spring densification"
     );
 
-    let authority = read(AUTHORITY_IMPL);
     for marker in [
         "snow_density_model: snowdensity1015_default_snow_density_model()?",
         "snow_melt_model: snowdensity1015_default_snow_melt_model()?",
     ] {
-        assert_contains(&authority, marker, AUTHORITY_IMPL);
+        assert_contains(&builder, marker, BUILDER);
     }
 
     let cli = read(CLI);

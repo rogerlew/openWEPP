@@ -7,9 +7,9 @@ use crate::constants::{
 
 use super::{
     DIRECT_AUDIT, DIRECT_R4M_PHASE_SPAN_COUNT, DIRECT_R4O_PHASE_SPAN_COUNT, DirectDayFrame,
-    DirectDeepSeepageDownstreamOperands, DirectDeepSeepageState, DirectRuntimeError,
-    DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossState, validate_finite,
-    validate_nonnegative_direct_m,
+    DirectDeepSeepageDownstreamOperands, DirectDeepSeepageState, DirectPercolationTraceEvent,
+    DirectRuntimeError, DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossState,
+    DirectSubsurfaceSaturationTraceEvent, validate_finite, validate_nonnegative_direct_m,
 };
 
 #[derive(Debug, Clone)]
@@ -104,28 +104,7 @@ fn r7h_subsurface_trace_f64_array(values: impl IntoIterator<Item = f64>) -> Stri
     output
 }
 
-struct R7hSubsurfaceSaturationTrace<'a> {
-    day_index: usize,
-    lane_index: usize,
-    substep_index: usize,
-    theta_before_m: f64,
-    upper_limit_m: f64,
-    frozen_water_m: f64,
-    effective_upper_limit_m: f64,
-    saturation_excess_m: f64,
-    current_saturation_runoff_m: f64,
-    theta_after_m: f64,
-    inputs: &'a DirectSubsurfaceComputeInputs,
-}
-
-struct R7hPercolationTrace<'a> {
-    day_index: usize,
-    lane_index: usize,
-    state: &'a DirectPercolationState,
-    inputs: &'a DirectPercolationInputs,
-}
-
-fn maybe_write_r7h_percolation_trace(event: &R7hPercolationTrace<'_>) {
+fn maybe_write_r7h_percolation_trace(event: &DirectPercolationTraceEvent) {
     let Some(config) = r7h_percolation_trace_config() else {
         return;
     };
@@ -148,47 +127,38 @@ fn maybe_write_r7h_percolation_trace(event: &R7hPercolationTrace<'_>) {
     line.push_str(",\"lane_index\":");
     line.push_str(&event.lane_index.to_string());
     line.push_str(",\"lane_substeps\":");
-    line.push_str(&event.inputs.lane_substeps.to_string());
+    line.push_str(&event.lane_substeps.to_string());
     line.push_str(",\"same_pass_infiltration_m\":");
-    line.push_str(&r7h_subsurface_trace_number(
-        event.inputs.same_pass_infiltration_m,
-    ));
+    line.push_str(&r7h_subsurface_trace_number(event.same_pass_infiltration_m));
     line.push_str(",\"same_pass_infiltration_lineage\":");
-    line.push_str(if event.inputs.same_pass_infiltration_lineage {
+    line.push_str(if event.same_pass_infiltration_lineage {
         "true"
     } else {
         "false"
     });
     line.push_str(",\"tillage_depth_m\":");
-    line.push_str(&r7h_subsurface_trace_number(event.inputs.tillage_depth_m));
+    line.push_str(&r7h_subsurface_trace_number(event.tillage_depth_m));
     line.push_str(",\"soil_water_before_m\":");
-    line.push_str(&r7h_subsurface_trace_number(
-        event.state.soil_water_before_m,
-    ));
+    line.push_str(&r7h_subsurface_trace_number(event.soil_water_before_m));
     line.push_str(",\"computed_soil_water_before_m\":");
     line.push_str(&r7h_subsurface_trace_number(
-        event.state.computed_soil_water_before_m,
+        event.computed_soil_water_before_m,
     ));
     line.push_str(",\"soil_water_after_m\":");
-    line.push_str(&r7h_subsurface_trace_number(event.state.soil_water_after_m));
+    line.push_str(&r7h_subsurface_trace_number(event.soil_water_after_m));
     line.push_str(",\"deep_seepage_m\":");
-    line.push_str(&r7h_subsurface_trace_number(event.state.deep_seepage_m));
+    line.push_str(&r7h_subsurface_trace_number(event.deep_seepage_m));
     line.push_str(",\"per_layer_flux_m\":");
     line.push_str(&r7h_subsurface_trace_f64_array(
-        event.state.per_layer_flux_m.iter().copied(),
+        event.per_layer_flux_m.iter().copied(),
     ));
     line.push_str(",\"layer_theta_after_m\":");
     line.push_str(&r7h_subsurface_trace_f64_array(
-        event
-            .state
-            .layer_state_after
-            .iter()
-            .map(|layer| layer.theta_m),
+        event.layer_state_after.iter().map(|layer| layer.theta_m),
     ));
     line.push_str(",\"layer_upper_limit_m\":");
     line.push_str(&r7h_subsurface_trace_f64_array(
         event
-            .state
             .layer_state_after
             .iter()
             .map(|layer| layer.upper_limit_m),
@@ -196,7 +166,6 @@ fn maybe_write_r7h_percolation_trace(event: &R7hPercolationTrace<'_>) {
     line.push_str(",\"layer_frozen_water_m\":");
     line.push_str(&r7h_subsurface_trace_f64_array(
         event
-            .state
             .layer_state_after
             .iter()
             .map(|layer| layer.frozen_water_m),
@@ -216,7 +185,7 @@ fn maybe_write_r7h_percolation_trace(event: &R7hPercolationTrace<'_>) {
     }
 }
 
-fn maybe_write_r7h_subsurface_saturation_trace(event: &R7hSubsurfaceSaturationTrace<'_>) {
+fn maybe_write_r7h_subsurface_saturation_trace(event: &DirectSubsurfaceSaturationTraceEvent) {
     let Some(config) = r7h_subsurface_saturation_trace_config() else {
         return;
     };
@@ -241,15 +210,15 @@ fn maybe_write_r7h_subsurface_saturation_trace(event: &R7hSubsurfaceSaturationTr
     line.push_str(",\"substep_index\":");
     line.push_str(&event.substep_index.to_string());
     line.push_str(",\"lane_substeps\":");
-    line.push_str(&event.inputs.lane_substeps.to_string());
+    line.push_str(&event.lane_substeps.to_string());
     line.push_str(",\"mofe_hourly_carry_arrays_enabled\":");
-    line.push_str(if event.inputs.mofe_hourly_carry_arrays_enabled {
+    line.push_str(if event.mofe_hourly_carry_arrays_enabled {
         "true"
     } else {
         "false"
     });
     line.push_str(",\"solwpv_mode\":");
-    line.push_str(&event.inputs.solwpv_mode.to_string());
+    line.push_str(&event.solwpv_mode.to_string());
     line.push_str(",\"theta_before_m\":");
     line.push_str(&r7h_subsurface_trace_number(event.theta_before_m));
     line.push_str(",\"upper_limit_m\":");
@@ -292,12 +261,12 @@ impl DirectDayFrame {
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
         let percolation = self.compute_r4m_percolation()?;
-        maybe_write_r7h_percolation_trace(&R7hPercolationTrace {
-            day_index: self.day_index,
-            lane_index: self.lane_index,
-            state: &percolation,
-            inputs: &self.percolation_inputs,
-        });
+        maybe_write_r7h_percolation_trace(&DirectPercolationTraceEvent::from_state(
+            self.day_index,
+            self.lane_index,
+            &percolation,
+            &self.percolation_inputs,
+        ));
         DIRECT_AUDIT.record_direct_compute_operation();
 
         DIRECT_AUDIT.record_direct_phase_entry();
@@ -1893,19 +1862,21 @@ fn record_surface_saturation_carry(
         current_saturation_runoff_m,
     )?;
     run.hourly_saturation_carry[substep_index] = current_saturation_runoff_m;
-    maybe_write_r7h_subsurface_saturation_trace(&R7hSubsurfaceSaturationTrace {
-        day_index,
-        lane_index,
-        substep_index,
-        theta_before_m,
-        upper_limit_m: layers[0].upper_limit_m,
-        frozen_water_m: layers[0].frozen_water_m,
-        effective_upper_limit_m: top_effective_upper_limit_m,
-        saturation_excess_m,
-        current_saturation_runoff_m,
-        theta_after_m: layers[0].theta_m,
-        inputs,
-    });
+    maybe_write_r7h_subsurface_saturation_trace(
+        &DirectSubsurfaceSaturationTraceEvent::from_substep(
+            day_index,
+            lane_index,
+            substep_index,
+            inputs,
+            theta_before_m,
+            layers[0].upper_limit_m,
+            layers[0].frozen_water_m,
+            top_effective_upper_limit_m,
+            saturation_excess_m,
+            current_saturation_runoff_m,
+            layers[0].theta_m,
+        ),
+    );
     Ok(())
 }
 

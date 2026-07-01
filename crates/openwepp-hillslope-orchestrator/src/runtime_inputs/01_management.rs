@@ -1533,19 +1533,3 @@ fn projection_usize_from_surface(
         }
     })
 }
-
-/// Build one merged state surface from strict PL management projection
-/// sub-surfaces.
-///
-/// # Errors
-///
-/// Returns `HillslopeRuntimeInputError` when PL management projection fails.
-pub fn build_hillslope_runtime_surface_from_management(
-    management: &ManagementParseOutput,
-) -> Result<HillslopeWritebackSurface, HillslopeRuntimeInputError> {
-    let pl_surfaces = build_hillslope_pl_runtime_surfaces_from_management(management)?;
-    Ok(HillslopeWritebackSurface {
-        state_surface: pl_surfaces.merged_state_surface(),
-        flux_surface: BTreeMap::new(),
-    })
-}

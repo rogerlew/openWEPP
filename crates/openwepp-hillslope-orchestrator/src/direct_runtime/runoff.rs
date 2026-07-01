@@ -13,9 +13,9 @@ use super::{
     DIRECT_AUDIT, DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4I_PHASE_SPAN_COUNT,
     DIRECT_R4J_PHASE_SPAN_COUNT, DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT,
     DIRECT_R7D6_PEAK_RUNOFF_PHASE_SPAN_COUNT, DirectDayFrame, DirectFrostFineLayerCarry,
-    DirectFrostLayerShadowCarry, DirectFrostRuntimeCarry, DirectRuntimeError,
-    DirectSubsurfaceLayerState, scaled_direct_transfer_total_m, sum_nonnegative_direct_m,
-    validate_finite, validate_nonnegative_direct_m,
+    DirectFrostLayerShadowCarry, DirectFrostRuntimeCarry, DirectRunoffRebalanceTraceEvent,
+    DirectRuntimeError, DirectSubsurfaceLayerState, scaled_direct_transfer_total_m,
+    sum_nonnegative_direct_m, validate_finite, validate_nonnegative_direct_m,
 };
 
 #[derive(Debug, Clone)]
@@ -66,86 +66,71 @@ fn r7h_runoff_trace_number(value: f64) -> String {
     }
 }
 
-fn maybe_write_r7h_runoff_rebalance_trace(
-    day_frame: &DirectDayFrame,
-    target_m: f64,
-    aggregate_m: f64,
-    delta_m: f64,
-    tolerance_m: f64,
-    accepted: bool,
-) {
+fn maybe_write_r7h_runoff_rebalance_trace(event: &DirectRunoffRebalanceTraceEvent) {
     let Some(config) = r7h_runoff_rebalance_trace_config() else {
         return;
     };
     if let Some(exact_day_index) = config.exact_day_index
-        && day_frame.day_index != exact_day_index
+        && event.day_index != exact_day_index
     {
         return;
     }
     if let Some(exact_lane_index) = config.exact_lane_index
-        && day_frame.lane_index != exact_lane_index
+        && event.lane_index != exact_lane_index
     {
         return;
     }
 
-    let inputs = day_frame.storage_reconciliation_inputs;
-    let runoff_inputs = day_frame.runoff_partition_inputs;
     let mut line = String::new();
     line.push('{');
     line.push_str("\"schema\":\"openwepp-r7h-runoff-rebalance-trace-v1\"");
     line.push_str(",\"day_index\":");
-    line.push_str(&day_frame.day_index.to_string());
+    line.push_str(&event.day_index.to_string());
     line.push_str(",\"lane_index\":");
-    line.push_str(&day_frame.lane_index.to_string());
+    line.push_str(&event.lane_index.to_string());
     line.push_str(",\"target_m\":");
-    line.push_str(&r7h_runoff_trace_number(target_m));
+    line.push_str(&r7h_runoff_trace_number(event.target_m));
     line.push_str(",\"aggregate_m\":");
-    line.push_str(&r7h_runoff_trace_number(aggregate_m));
+    line.push_str(&r7h_runoff_trace_number(event.aggregate_m));
     line.push_str(",\"delta_m\":");
-    line.push_str(&r7h_runoff_trace_number(delta_m));
+    line.push_str(&r7h_runoff_trace_number(event.delta_m));
     line.push_str(",\"tolerance_m\":");
-    line.push_str(&r7h_runoff_trace_number(tolerance_m));
+    line.push_str(&r7h_runoff_trace_number(event.tolerance_m));
     line.push_str(",\"accepted\":");
-    line.push_str(if accepted { "true" } else { "false" });
+    line.push_str(if event.accepted { "true" } else { "false" });
     line.push_str(",\"storage_initial_m\":");
-    line.push_str(&r7h_runoff_trace_number(inputs.storage_initial_m));
+    line.push_str(&r7h_runoff_trace_number(event.storage_initial_m));
     line.push_str(",\"precip_input_m\":");
-    line.push_str(&r7h_runoff_trace_number(inputs.precip_input_m));
+    line.push_str(&r7h_runoff_trace_number(event.precip_input_m));
     line.push_str(",\"snow_coupling_m\":");
-    line.push_str(&r7h_runoff_trace_number(inputs.snow_coupling_m));
+    line.push_str(&r7h_runoff_trace_number(event.snow_coupling_m));
     line.push_str(",\"runon_input_m\":");
-    line.push_str(&r7h_runoff_trace_number(inputs.runon_input_m));
+    line.push_str(&r7h_runoff_trace_number(event.runon_input_m));
     line.push_str(",\"frost_liquid_delta_m\":");
-    line.push_str(&r7h_runoff_trace_number(inputs.frost_liquid_delta_m));
+    line.push_str(&r7h_runoff_trace_number(event.frost_liquid_delta_m));
     line.push_str(",\"interception_m\":");
-    line.push_str(&r7h_runoff_trace_number(inputs.interception_m));
+    line.push_str(&r7h_runoff_trace_number(event.interception_m));
     line.push_str(",\"q_runoff_m\":");
-    line.push_str(&r7h_runoff_trace_number(
-        day_frame.runoff_partition.q_runoff_m,
-    ));
+    line.push_str(&r7h_runoff_trace_number(event.q_runoff_m));
     line.push_str(",\"evapotranspiration_m\":");
-    line.push_str(&r7h_runoff_trace_number(inputs.evapotranspiration_m));
+    line.push_str(&r7h_runoff_trace_number(event.evapotranspiration_m));
     line.push_str(",\"evapotranspiration_storage_return_m\":");
     line.push_str(&r7h_runoff_trace_number(
-        inputs.evapotranspiration_storage_return_m,
+        event.evapotranspiration_storage_return_m,
     ));
     line.push_str(",\"deep_seepage_m\":");
-    line.push_str(&r7h_runoff_trace_number(inputs.deep_seepage_m));
+    line.push_str(&r7h_runoff_trace_number(event.deep_seepage_m));
     line.push_str(",\"subsurface_loss_m\":");
-    line.push_str(&r7h_runoff_trace_number(inputs.subsurface_loss_m));
+    line.push_str(&r7h_runoff_trace_number(event.subsurface_loss_m));
     line.push_str(",\"liquid_input_m\":");
-    line.push_str(&r7h_runoff_trace_number(runoff_inputs.liquid_input_m));
+    line.push_str(&r7h_runoff_trace_number(event.liquid_input_m));
     line.push_str(",\"cumulative_infiltration_m\":");
-    line.push_str(&r7h_runoff_trace_number(
-        runoff_inputs.cumulative_infiltration_m,
-    ));
+    line.push_str(&r7h_runoff_trace_number(event.cumulative_infiltration_m));
     line.push_str(",\"depression_storage_delta_m\":");
-    line.push_str(&r7h_runoff_trace_number(
-        runoff_inputs.depression_storage_delta_m,
-    ));
+    line.push_str(&r7h_runoff_trace_number(event.depression_storage_delta_m));
     line.push_str(",\"frost_retained_local_liquid_m\":");
     line.push_str(&r7h_runoff_trace_number(
-        runoff_inputs.frost_retained_local_liquid_m,
+        event.frost_retained_local_liquid_m,
     ));
     line.push('}');
     line.push('\n');
@@ -1226,23 +1211,25 @@ impl DirectDayFrame {
         let delta_m = target_m - aggregate_m;
         if delta_m.abs() <= WB11_ZERO_THRESHOLD {
             maybe_write_r7h_runoff_rebalance_trace(
-                self,
-                target_m,
-                aggregate_m,
-                delta_m,
-                R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M,
-                true,
+                &DirectRunoffRebalanceTraceEvent::from_day_frame(
+                    self,
+                    target_m,
+                    aggregate_m,
+                    delta_m,
+                    R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M,
+                    true,
+                ),
             );
             return Ok(());
         }
-        maybe_write_r7h_runoff_rebalance_trace(
+        maybe_write_r7h_runoff_rebalance_trace(&DirectRunoffRebalanceTraceEvent::from_day_frame(
             self,
             target_m,
             aggregate_m,
             delta_m,
             R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M,
             delta_m.abs() <= R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M,
-        );
+        ));
         if delta_m.abs() > R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M {
             return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
                 field: "runoff_partition.frost_projection_rebalance_m",

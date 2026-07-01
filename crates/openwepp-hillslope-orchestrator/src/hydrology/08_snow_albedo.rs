@@ -1,6 +1,3 @@
-use std::error::Error;
-use std::fmt;
-
 const LEGACY_COE_MODEL_ID: &str = "legacy_coe";
 const COE_SHORTWAVE_ALBEDO_MODEL_ID: &str = "coe_shortwave_albedo_v1";
 const COE_WINTER_THAW_STATE_LOSS_MODEL_ID: &str = "coe_winter_thaw_state_loss_v1";

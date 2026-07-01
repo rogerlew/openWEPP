@@ -1,13 +1,3 @@
-fn validate_irrigation_finite(
-    field: &'static str,
-    value: f64,
-) -> Result<f64, HillslopeRuntimeInputError> {
-    if !value.is_finite() {
-        return Err(HillslopeRuntimeInputError::NonFiniteIrrigationScheduleField { field, value });
-    }
-    Ok(value)
-}
-
 fn build_hillslope_series_surface(
     forcing: &HillslopeClimateDailyForcing,
 ) -> Result<ClimateForcingSymbolSurface, ClimateRuntimeInputError> {
@@ -33,39 +23,4 @@ fn map_surface_build_error(error: &ClimateForcingSymbolSurfaceError) -> ClimateR
             max: *supported_max,
         },
     }
-}
-
-fn insert_typed_series_values(
-    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
-    symbols: &[BoundarySymbol],
-    values: &[f64],
-    field: &'static str,
-    allowed: &'static str,
-    constructor: fn(f64) -> Result<BoundaryValue, BoundaryError>,
-) -> Result<(), ClimateRuntimeInputError> {
-    debug_assert_eq!(symbols.len(), values.len());
-    for (symbol, value) in symbols.iter().zip(values.iter()) {
-        let typed_value = climate_boundary_value(field, allowed, constructor(*value))?;
-        surface.insert(symbol.clone(), typed_value);
-    }
-    Ok(())
-}
-
-fn climate_boundary_value(
-    field: &'static str,
-    allowed: &'static str,
-    value: Result<BoundaryValue, BoundaryError>,
-) -> Result<BoundaryValue, ClimateRuntimeInputError> {
-    value.map_err(|error| match error {
-        BoundaryError::NonFinite { value, .. } => {
-            ClimateRuntimeInputError::NonFiniteField { field, value }
-        }
-        BoundaryError::BelowMinimum { value, .. } | BoundaryError::AboveMaximum { value, .. } => {
-            ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-                symbol: field.to_string(),
-                value,
-                allowed,
-            }
-        }
-    })
 }

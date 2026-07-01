@@ -1,59 +1,17 @@
 #![allow(clippy::missing_errors_doc)]
 
 pub mod runtime_inputs;
-pub mod schedule_export;
 
 mod constants;
-mod consumer_boundary;
-mod day_frame;
 mod direct_runtime;
 mod hydrology;
-mod phase;
-mod scheduler;
 mod winter_column;
 
 #[cfg(test)]
 mod tests;
 
-use std::collections::{BTreeMap, BTreeSet};
-use std::error::Error;
-use std::fmt;
+use openwepp_kernel_contract::{HillslopeProductionFluxSymbol, HillslopeProductionStateSymbol};
 
-use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, HillslopeActiveGrazingCycle, HillslopeAnnualDecompositionAction,
-    HillslopeAnnualDecompositionControl, HillslopeAnnualGrowthAction, HillslopeAnnualGrowthControl,
-    HillslopeConsumerAdapter, HillslopeDecompositionKernelContext,
-    HillslopeDecompositionManagementClass, HillslopeDecompositionTransitionControl,
-    HillslopeDecompositionTransitionPayload, HillslopeGrowthKernelContext,
-    HillslopeGrowthManagementClass, HillslopeGrowthStateSurface, HillslopeGrowthTransitionControl,
-    HillslopeGrowthTransitionPayload, HillslopeIrrigationDepletionPeriodField,
-    HillslopeIrrigationFixedDateEventField, HillslopeKernel, HillslopeKernelPhaseClass,
-    HillslopeKernelRequest, HillslopePerennialDecompositionAction,
-    HillslopePerennialDecompositionControl, HillslopePerennialGrowthAction,
-    HillslopePerennialGrowthControl, HillslopeProductionFluxSymbol, HillslopeProductionStateSymbol,
-    HotSymbolTables, IndexedBoundarySymbol, IndexedKernelWritebackPayload, IndexedWritebackField,
-    IndexedWritebackSurface, KernelRunResponse, KernelWritebackApplyResult, KernelWritebackPayload,
-    MAX_CLIMATE_FORCING_SERIES_POINTS, SymbolId, SymbolRegistry, SymbolRegistryError,
-    WRITEBACK_APPLY_MESSAGE_ID, WritebackDecisionOutcome, WritebackError, WritebackField,
-    apply_indexed_kernel_writeback, apply_kernel_writeback, evaluate_indexed_kernel_writeback,
-    evaluate_kernel_writeback,
-};
-use openwepp_sim_contract::closure::ClosureViolation;
-use openwepp_sim_contract::status::{
-    BoundaryClass, ClampClass, SimulationPhase, SimulationStatus, StatusClassification, StatusError,
-};
-use openwepp_topology::TopologyValidationReport;
-
-pub use consumer_boundary::{
-    HillslopeConsumerBoundaryError, HillslopeDecompositionBoundaryError,
-    HillslopeGrowthBoundaryError, HillslopePlActiveSlotResolutionError,
-    hillslope_consumer_adapter_for_phase, required_hillslope_consumer_state_symbols,
-    validate_hillslope_consumer_boundary,
-};
-pub use day_frame::{
-    HillslopeDayFrame, HillslopeDayFrameError, HillslopeDayFrameIoEdgeScalars,
-    HillslopeDayFrameMismatch, HillslopeDayFrameShadowReport, HillslopeLaneDenseState,
-};
 pub use direct_runtime::{
     DIRECT_PHASE_COUNT, DIRECT_R3A_INPUT_ACCOUNTING_SPAN, DIRECT_R3A_PHASE_SPAN_COUNT,
     DIRECT_R3B_PHASE_SPAN_COUNT, DIRECT_R3B_WATER_LEDGER_SPAN, DIRECT_R3C_LANE_TRANSFER_SPAN,
@@ -96,11 +54,11 @@ pub use direct_runtime::{
     DirectEvapotranspirationStageState, DirectEvapotranspirationState,
     DirectEvapotranspirationSurfaceDownstreamOperands,
     DirectEvapotranspirationSurfaceShadowProjection, DirectEvapotranspirationSurfaceSpanReport,
-    DirectEvapotranspirationSurfaceState, DirectExecutionReport, DirectExecutorMode,
-    DirectFrameExecutor, DirectFrostFineLayerCarry, DirectFrostLayerCarryProjection,
-    DirectFrostLayerShadowCarry, DirectFrostRuntimeCarry, DirectGrowthAction,
-    DirectGrowthActiveContext, DirectGrowthDownstreamOperands, DirectGrowthInputs,
-    DirectGrowthShadowProjection, DirectGrowthSpanReport, DirectGrowthState,
+    DirectEvapotranspirationSurfaceState, DirectEvapotranspirationTraceEvent,
+    DirectExecutionReport, DirectExecutorMode, DirectFrameExecutor, DirectFrostFineLayerCarry,
+    DirectFrostLayerCarryProjection, DirectFrostLayerShadowCarry, DirectFrostRuntimeCarry,
+    DirectGrowthAction, DirectGrowthActiveContext, DirectGrowthDownstreamOperands,
+    DirectGrowthInputs, DirectGrowthShadowProjection, DirectGrowthSpanReport, DirectGrowthState,
     DirectGrowthStateSurface, DirectHydrologyProjectionDownstreamOperands,
     DirectHydrologyProjectionInputs, DirectHydrologyProjectionShadowProjection,
     DirectHydrologyProjectionSpanReport, DirectHydrologyProjectionState,
@@ -115,21 +73,22 @@ pub use direct_runtime::{
     DirectPeakRunoffDownstreamOperands, DirectPeakRunoffInputs, DirectPeakRunoffShadowProjection,
     DirectPeakRunoffSpanReport, DirectPeakRunoffState, DirectPercolationDownstreamOperands,
     DirectPercolationInputs, DirectPercolationShadowProjection, DirectPercolationSpanReport,
-    DirectPercolationState, DirectPhaseKind, DirectPhaseLifecycleStatus, DirectPhasePlan,
-    DirectPhaseSpanReport, DirectPhaseStatusCount, DirectPhaseView, DirectPublicationCalendarDay,
-    DirectPublicationClimateOperands, DirectPublicationDayInput, DirectPublicationDayRow,
-    DirectPublicationErosionOperands, DirectPublicationEvaporationOperands,
-    DirectPublicationExecution, DirectPublicationFrame, DirectPublicationInterceptionOperands,
-    DirectPublicationLiquidInputOperands, DirectPublicationProfileOperands,
-    DirectPublicationRunMetadata, DirectPublicationRunoffOperands,
-    DirectPublicationStorageOperands, DirectPublicationSubsurfaceOperands,
-    DirectPublicationTransferOperands, DirectPublicationWaterTemperatureOperands,
-    DirectResiduePartitionDownstreamOperands, DirectResiduePartitionInputs,
-    DirectResiduePartitionShadowProjection, DirectResiduePartitionSpanReport,
-    DirectResiduePartitionState, DirectRunConstructorInputs, DirectRunFrame, DirectRunIdentity,
-    DirectRunPublicationFrame, DirectRunTransferDownstreamOperands,
-    DirectRunTransferShadowProjection, DirectRunTransferSpanReport, DirectRunoffDownstreamOperands,
-    DirectRunoffPartitionInputs, DirectRunoffPartitionSpanReport, DirectRunoffPartitionState,
+    DirectPercolationState, DirectPercolationTraceEvent, DirectPhaseKind,
+    DirectPhaseLifecycleStatus, DirectPhasePlan, DirectPhaseSpanReport, DirectPhaseStatusCount,
+    DirectPhaseView, DirectPublicationCalendarDay, DirectPublicationClimateOperands,
+    DirectPublicationDayInput, DirectPublicationDayRow, DirectPublicationErosionOperands,
+    DirectPublicationEvaporationOperands, DirectPublicationExecution, DirectPublicationFrame,
+    DirectPublicationInterceptionOperands, DirectPublicationLiquidInputOperands,
+    DirectPublicationProfileOperands, DirectPublicationRunMetadata,
+    DirectPublicationRunoffOperands, DirectPublicationStorageOperands,
+    DirectPublicationSubsurfaceOperands, DirectPublicationTransferOperands,
+    DirectPublicationWaterTemperatureOperands, DirectResiduePartitionDownstreamOperands,
+    DirectResiduePartitionInputs, DirectResiduePartitionShadowProjection,
+    DirectResiduePartitionSpanReport, DirectResiduePartitionState, DirectRunConstructorInputs,
+    DirectRunFrame, DirectRunIdentity, DirectRunPublicationFrame,
+    DirectRunTransferDownstreamOperands, DirectRunTransferShadowProjection,
+    DirectRunTransferSpanReport, DirectRunoffDownstreamOperands, DirectRunoffPartitionInputs,
+    DirectRunoffPartitionSpanReport, DirectRunoffPartitionState, DirectRunoffRebalanceTraceEvent,
     DirectRunoffShadowProjection, DirectRunonCarryDownstreamOperands, DirectRunonCarryInputs,
     DirectRunonCarryShadowProjection, DirectRunonCarrySpanReport, DirectRunonCarryState,
     DirectRuntimeAuditSnapshot, DirectRuntimeError, DirectSaturationAddbackDownstreamOperands,
@@ -149,10 +108,11 @@ pub use direct_runtime::{
     DirectSubsurfaceComputeState, DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
     DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
     DirectSubsurfaceLossShadowProjection, DirectSubsurfaceLossSpanReport,
-    DirectSubsurfaceLossState, DirectTransferBuffers, DirectWaterLedgerState, DirectWaterState,
-    DirectWb14HyetographInterval, DirectWb14InfiltrationProducerInputs,
-    compute_direct_canopy_interception, direct_runtime_audit_snapshot,
-    record_direct_runtime_compatibility_edge_invocation, reset_direct_runtime_audit_counters,
+    DirectSubsurfaceLossState, DirectSubsurfaceSaturationTraceEvent, DirectTransferBuffers,
+    DirectWaterLedgerState, DirectWaterState, DirectWb14HyetographInterval,
+    DirectWb14InfiltrationProducerInputs, compute_direct_canopy_interception,
+    direct_runtime_audit_snapshot, record_direct_runtime_compatibility_edge_invocation,
+    reset_direct_runtime_audit_counters,
 };
 pub use hydrology::{
     DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs, DirectFrostControlInputs,
@@ -160,11 +120,10 @@ pub use hydrology::{
     DirectFrostLayerProjection, DirectFrostLayerShadowProjection, DirectFrostPriorStateInput,
     DirectFrostThermalInputs, DirectSnowHourlyForcing, DirectSnowLiquidPartition,
     DirectSnowStage3Diagnostics, DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome,
-    HillslopeHydrologyRoutingError, STURM1995_CDM_CRITICAL_TEMPERATURE_C,
-    STURM1995_EPHEMERAL_CDM_THRESHOLD_C_MONTH, STURM1995_HIGH_LOW_CDM_THRESHOLD_C_MONTH,
-    STURM1995_HIGH_PRECIP_SPR_THRESHOLD_MM_DAY, STURM1995_HIGH_WIND_MIN_M_S,
-    STURM1995_LOW_WIND_MAX_M_S, SnowAlbedoError, SnowAlbedoModel, SnowAlbedoState,
-    SnowAlbedoUpdateInputs, SnowAlbedoUpdateOutcome, SnowClimateClass,
+    STURM1995_CDM_CRITICAL_TEMPERATURE_C, STURM1995_EPHEMERAL_CDM_THRESHOLD_C_MONTH,
+    STURM1995_HIGH_LOW_CDM_THRESHOLD_C_MONTH, STURM1995_HIGH_PRECIP_SPR_THRESHOLD_MM_DAY,
+    STURM1995_HIGH_WIND_MIN_M_S, STURM1995_LOW_WIND_MAX_M_S, SnowAlbedoError, SnowAlbedoModel,
+    SnowAlbedoState, SnowAlbedoUpdateInputs, SnowAlbedoUpdateOutcome, SnowClimateClass,
     SnowDensityCompactionConstants, SnowDensityError, SnowDensityModel, SnowDensityRuntimeInputs,
     SnowDensityRuntimeOutcome, SnowMeltModel, SnowStage3LiquidRoutingModel,
     Sturm1995ClimateClassAssignmentError, Sturm1995ClimateNormals, Sturm2010DensityParameters,
@@ -174,20 +133,9 @@ pub use hydrology::{
     sturm2010_density_parameters_for_class, update_snow_albedo_state,
     update_snow_density_runtime_state,
 };
-pub use phase::HillslopePhase;
 pub use runtime_inputs::{
     DIRECT_WINTER_HOURLY_FORCING_COUNT, DirectWinterHourlyContext, DirectWinterHourlyForcing,
     SnowPhasePartitionModel,
-};
-pub use scheduler::{
-    HillslopeKernelExecutionReport, HillslopeKernelPhaseReport, HillslopePhaseGraph,
-    HillslopePhaseOutcome, HillslopePhaseScheduler, HillslopeSchedulerError,
-    HillslopeSchedulerReport, HillslopeWritebackSurface, MOFE_TRANSFER_HOUR_COUNT,
-    OfeLaneExecutionInput, OfeLaneExecutionReport, OfeLanePersistentState,
-    OfeLanePersistentStateSequence, OfeLaneSequenceError, OfeLaneSequenceExecutionReport,
-    PerOfeDailyWaterBalanceCollection, PerOfeDailyWaterBalanceError, PerOfeDailyWaterBalanceRecord,
-    PhaseDependency, SchedulerOutcomeClass, TransferInput, TransferOutput,
-    build_hillslope_hot_symbol_tables,
 };
 pub use winter_column::{
     DIRECT_WINTER_HOURS_PER_DAY, DirectFrostFineLayerState, DirectFrostLaneState,
@@ -195,16 +143,4 @@ pub use winter_column::{
     DirectWinterColumnState, DirectWinterDayForcing, DirectWinterDayOutcome,
     DirectWinterFrostOutcome, DirectWinterPublicationOutcome, DirectWinterSnowOutcome,
     DirectWinterStorageOutcome,
-};
-
-pub(crate) use hydrology::{
-    DecompositionPhaseDispatch, GrowthPhaseDispatch,
-    decomposition_phase_dispatch_for_state_indexed, growth_phase_dispatch_for_state_indexed,
-    hillslope_phase_class_for_phase, hydrology_phase_dispatch_for_phase, is_decomposition_phase,
-    is_growth_phase,
-};
-
-#[cfg(test)]
-pub(crate) use hydrology::{
-    decomposition_phase_dispatch_for_state, growth_phase_dispatch_for_state,
 };

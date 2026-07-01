@@ -2,11 +2,8 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 
-use openwepp_hillslope_orchestrator::{
-    HillslopeWritebackSurface, runtime_inputs::build_hillslope_runtime_surface_from_soil,
-};
+use openwepp_hillslope_orchestrator::runtime_inputs::project_typed_soil_profile_publication;
 use openwepp_input_contract::parsers::soil::{ParserMode, SoilParserOptions, parse_soil};
-use openwepp_kernel_contract::BoundarySymbol;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -64,14 +61,6 @@ fn strict_soil_parser_options() -> SoilParserOptions {
     }
 }
 
-fn state_scalar(surface: &HillslopeWritebackSurface, symbol: &str) -> f64 {
-    surface
-        .state_surface
-        .get(&BoundarySymbol::from(symbol))
-        .unwrap_or_else(|| panic!("missing state symbol {symbol}"))
-        .as_f64()
-}
-
 fn rock_bucket(rock_pct: f64, thresholds: &BucketThresholds) -> String {
     if rock_pct <= thresholds.low_max {
         "low".to_string()
@@ -87,8 +76,12 @@ fn evaluate_case(case: &CohortCase, fixture: &CohortFixture) -> CaseResult {
     let soil_text = repo_file(&format!("{root}/{}", case.soil_file));
     let soil = parse_soil(&soil_text, strict_soil_parser_options())
         .unwrap_or_else(|error| panic!("{} should parse: {error}", case.case_id));
-    let surface = build_hillslope_runtime_surface_from_soil(&soil)
-        .unwrap_or_else(|error| panic!("{} runtime surface should build: {error}", case.case_id));
+    let projection = project_typed_soil_profile_publication(&soil).unwrap_or_else(|error| {
+        panic!(
+            "{} typed soil profile publication projection should build: {error}",
+            case.case_id
+        )
+    });
 
     let ofe = soil
         .ofes
@@ -121,14 +114,15 @@ fn evaluate_case(case: &CohortCase, fixture: &CohortFixture) -> CaseResult {
     } else {
         0.0
     };
-    let nsl = format!("{:.0}", state_scalar(&surface, "nsl"))
-        .parse::<usize>()
-        .unwrap_or_else(|error| panic!("{} invalid nsl projection: {error}", case.case_id));
     let mut model_fc_store_mm = 0.0_f64;
-    for layer_index in 1..=nsl {
-        let dg = state_scalar(&surface, &format!("dg_{layer_index:04}"));
-        let thetfc = state_scalar(&surface, &format!("thetfc_{layer_index:04}"));
-        model_fc_store_mm += thetfc * dg * 1_000.0;
+    assert_eq!(
+        projection.nsl,
+        projection.layers.len(),
+        "{} typed nsl should match typed layer count",
+        case.case_id
+    );
+    for layer in &projection.layers {
+        model_fc_store_mm += layer.thetfc * layer.dg_m * 1_000.0;
     }
     let relative_error =
         (model_fc_store_mm - authority_fc_store_mm).abs() / authority_fc_store_mm.max(f64::EPSILON);
@@ -206,10 +200,12 @@ fn collect_case_mismatches(fixture: &CohortFixture, results: &[CaseResult]) -> V
             };
         if observed_threshold_status != case.expected_threshold_status {
             mismatches.push(format!(
-                "{} threshold status mismatch: expected={} observed={} (rel_err={} threshold={})",
+                "{} threshold status mismatch: expected={} observed={} (authority_fc_store_mm={} model_fc_store_mm={} rel_err={} threshold={})",
                 result.case_id,
                 case.expected_threshold_status,
                 observed_threshold_status,
+                result.authority_fc_store_mm,
+                result.model_fc_store_mm,
                 result.relative_error,
                 fixture.max_relative_error_threshold,
             ));

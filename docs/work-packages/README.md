@@ -46,16 +46,23 @@ State as of `2026-06-30`:
   still retains the explicit deprecated `--compatibility-runtime`
   replay/comparator seam.
 
-- `20260630-compatibility-runtime-full-deletion-001/` held as
-  COMPATIBILITY RUNTIME FULL DELETION. Result:
-  `EXECUTED-HOLD-SYMBOL-SURFACE-SUPPORT-BOUNDARY`. ADR-0031 is ratified and the
-  public `--compatibility-runtime` selector is removed from API/CLI/harness
-  entrypoints, but full deletion of `scheduler.rs`, `day_frame.rs`, and carrier
-  types is held because the remaining symbol-keyed support surface is still
-  compiled and test-backed as a unit.
+- `20260630-compatibility-runtime-full-deletion-001/`,
+  `20260630-kernel-boundary-typed-diagnostic-events-001/`, and
+  `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
+  `20260630-kernel-boundary-terminal-typing-001/`, which completed the
+  coordinated terminal deletion instead of continuing the held slices.
 
 ## Execution Log
 
+- `20260630-kernel-boundary-terminal-typing-001/` is complete as
+  KERNEL-BOUNDARY TERMINAL TYPING. Result:
+  `EXECUTED-COMPLETE-TERMINAL-SINGLE-AUTHORITY`. It deleted the compiled
+  symbol-map scheduler/day-frame runtime, carrier exports, scheduler
+  trace/publication/seed support, and scheduler-only tests. Production hillslope
+  execution is direct-only; forbidden carrier/runtime names remain only in
+  source-guard literals. Full gates passed (`1221` nextest passed), H2637
+  measured `1:10.69` / `79284 KiB`, protected H2637 outputs were
+  byte-identical, and `compatibility_edge_invocations=0`.
 - `20260630-kernel-boundary-survivor-inventory-001/` is complete as
   KERNEL-BOUNDARY SURVIVOR INVENTORY. Result:
   `EXECUTED-COMPLETE-SURVIVOR-CLASSIFICATION`. It executed step 1 of the

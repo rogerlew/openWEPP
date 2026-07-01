@@ -1,56 +1,3 @@
-fn insert_common_day_symbols(
-    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
-    day: i32,
-    mon: i32,
-    year: i32,
-) {
-    surface.insert(
-        BoundarySymbol::from("day"),
-        BoundaryValue::scalar(f64::from(day)),
-    );
-    surface.insert(
-        BoundarySymbol::from("mon"),
-        BoundaryValue::scalar(f64::from(mon)),
-    );
-    surface.insert(
-        BoundarySymbol::from("year"),
-        BoundaryValue::scalar(f64::from(year)),
-    );
-}
-
-fn insert_monthly_climate_symbols(
-    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
-    monthly: &ClimateMonthlyStats,
-) -> Result<(), ClimateRuntimeInputError> {
-    insert_monthly_vector_symbols(surface, "obmaxt", "obmaxt[*]", &monthly.obmaxt)?;
-    insert_monthly_vector_symbols(surface, "obmint", "obmint[*]", &monthly.obmint)?;
-    insert_monthly_vector_symbols(surface, "radave", "radave[*]", &monthly.radave)?;
-    insert_monthly_vector_symbols(surface, "obrain", "obrain[*]", &monthly.obrain)?;
-    Ok(())
-}
-
-fn insert_monthly_vector_symbols(
-    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
-    root: &str,
-    field: &'static str,
-    values: &[f64; 12],
-) -> Result<(), ClimateRuntimeInputError> {
-    for (index, value) in values.iter().enumerate() {
-        if !value.is_finite() {
-            return Err(ClimateRuntimeInputError::NonFiniteField {
-                field,
-                value: *value,
-            });
-        }
-        let month = index + 1;
-        surface.insert(
-            BoundarySymbol::from(format!("{root}_{month:04}")),
-            BoundaryValue::scalar(*value),
-        );
-    }
-    Ok(())
-}
-
 fn validate_snow_control_finite(
     field: &'static str,
     value: f64,
@@ -205,16 +152,6 @@ fn derive_avgslp(
 fn usize_to_f64(field: &'static str, value: usize) -> Result<f64, HillslopeRuntimeInputError> {
     let value_u32 = u32::try_from(value)
         .map_err(|_| HillslopeRuntimeInputError::PlProjectionCountOutOfRange { field, value })?;
-    Ok(f64::from(value_u32))
-}
-
-fn irrigation_count_to_f64(
-    field: &'static str,
-    value: usize,
-) -> Result<f64, HillslopeRuntimeInputError> {
-    let value_u32 = u32::try_from(value).map_err(|_| {
-        HillslopeRuntimeInputError::IrrigationScheduleCountOutOfRange { field, value }
-    })?;
     Ok(f64::from(value_u32))
 }
 
@@ -964,36 +901,4 @@ fn pl_decomp_slot_crop_indexed_symbol(
 
 fn slope_ofe_symbol(root: &str, ofe_index: usize) -> BoundarySymbol {
     BoundarySymbol::from(format!("ofe{ofe_index}_{root}"))
-}
-
-fn slope_ofe_point_symbol(root: &str, ofe_index: usize, point_index: usize) -> BoundarySymbol {
-    BoundarySymbol::from(format!("ofe{ofe_index}_{root}_{point_index:04}"))
-}
-
-fn slope_primary_point_symbol(root: &str, point_index: usize) -> BoundarySymbol {
-    BoundarySymbol::from(format!("{root}_{point_index:04}"))
-}
-
-fn soil_ofe_symbol(root: &str, ofe_index: usize) -> BoundarySymbol {
-    BoundarySymbol::from(format!("ofe{ofe_index}_{root}"))
-}
-
-fn soil_ofe_layer_symbol(root: &str, ofe_index: usize, layer_index: usize) -> BoundarySymbol {
-    BoundarySymbol::from(format!("ofe{ofe_index}_{root}_{layer_index:04}"))
-}
-
-fn soil_primary_layer_symbol(root: &str, layer_index: usize) -> BoundarySymbol {
-    BoundarySymbol::from(format!("{root}_{layer_index:04}"))
-}
-
-fn irrigation_depletion_period_symbol(period_index: usize, field: &str) -> BoundarySymbol {
-    BoundarySymbol::from(format!(
-        "irrigation.depletion.period_{period_index:04}.{field}"
-    ))
-}
-
-fn irrigation_fixeddate_event_symbol(event_index: usize, field: &str) -> BoundarySymbol {
-    BoundarySymbol::from(format!(
-        "irrigation.fixeddate.event_{event_index:04}.{field}"
-    ))
 }

@@ -70,8 +70,7 @@ store-failure-output = true
 [profile.frost]
 inherits = "default"
 default-filter = '''
-binary(/^(clim05_snow_runtime_kernel_contract|clim06_frost_frozen_soil_kernel_contract)$/)
-| binary(/^(snowdensity.*|snowfrost.*|paradigm2.*|cancov_stratified_observations)$/)
+binary(/^(snowdensity.*|snowfrost.*|paradigm2.*|cancov_stratified_observations)$/)
 | binary(/^(hphys03(09|10|11|12|13|15|16|17|18|19|20).*)$/)
 | test(/(snow|frost|swe|snotel|pysnobal|snowbench|melt|winter|stmtim)/)
 '''
@@ -126,8 +125,7 @@ slow-timeout = { period = "90s", terminate-after = 6 }
 # CLI tests so the frost profile remains usable on developer machines.
 [[profile.default.overrides]]
 filter = '''
-binary(/^(clim05_snow_runtime_kernel_contract|clim06_frost_frozen_soil_kernel_contract)$/)
-| binary(/^(snowdensity.*|snowfrost.*|paradigm2.*|cancov_stratified_observations)$/)
+binary(/^(snowdensity.*|snowfrost.*|paradigm2.*|cancov_stratified_observations)$/)
 | test(/(snow|frost|swe|melt|winter|stmtim)/)
 '''
 test-group = "frost-fixture"

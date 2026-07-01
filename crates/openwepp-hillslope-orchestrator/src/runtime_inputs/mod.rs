@@ -6,4 +6,3 @@ include!("04_snow_frost_irrigation.rs");
 include!("05_projection_helpers.rs");
 include!("06_simimpl28_hourly_forcing.rs");
 include!("07_series_helpers.rs");
-include!("08_tests.rs");

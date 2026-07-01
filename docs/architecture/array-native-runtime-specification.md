@@ -944,7 +944,7 @@ activate direct mode or relax any R7 gate.
 | R5A-R5E | Full canonical OFE-day direct executor lifecycle and 14-phase coverage complete. | One canonical 14-phase entry per OFE-day, direct R4/R5 spans folded under canonical phase entries, protected output identity and endpoint/RSS evidence. | Public outputs remained compatibility-authoritative at R5E; no default activation. |
 | R6A-R6I | Direct publication frame and producer-authority blockers iteratively reduced. | Run-bound publication frame, direct projection consumers, typed day-input builder, PMET layer carry correction, and current-fixture parity closures. | Earlier held states are historical; R6J is the terminal R6 publication cutover package. |
 | R6J | Historical opt-in direct publication cutover complete. | `DirectPublicationFrameCutover` proved direct public-output publication could write HBP/WAT/PASS/loss/plot/manifest from direct artifacts with H2637 byte/Arrow identity and direct manifest provenance. | Superseded by R7 direct production and ADR-0030 deletion: cutover/shadow transition modes are not retained production surfaces. |
-| R7 | Production direct runtime is activated as the normal hillslope execution path. R7A-H, the ADR-0026 winter-column build, frost observed-data ratification, frost default activation, and the follow-up cutover correction are complete. | R7A-H work packages, `docs/work-packages/20260629-frost-ratification-default-activation-001/`, `docs/work-packages/20260629-frost-direct-cutover-correction-001/`, ADR-0026, ADR-0030, ADR-0031, and the compatibility deletion packages. | Obsolete skeleton/shadow/cutover transition modes are deleted. The public `--compatibility-runtime` selector is removed. Full removal of the compiled scheduler/day-frame/carrier support surface is held as a separate support-boundary deletion. |
+| R7 | Production direct runtime is activated as the normal hillslope execution path. R7A-H, the ADR-0026 winter-column build, frost observed-data ratification, frost default activation, and the follow-up cutover correction are complete. | R7A-H work packages, `docs/work-packages/20260629-frost-ratification-default-activation-001/`, `docs/work-packages/20260629-frost-direct-cutover-correction-001/`, ADR-0026, ADR-0030, ADR-0031, and the compatibility deletion packages. | Obsolete skeleton/shadow/cutover transition modes are deleted. The public `--compatibility-runtime` selector is removed. The compiled scheduler/day-frame/carrier support surface was deleted by `20260630-kernel-boundary-terminal-typing-001`. |
 
 Current runtime-mode matrix:
 
@@ -1384,21 +1384,14 @@ from parse to output.
 **Scope correction (2026-06-30, ADR-0031 execution scope).** The public
 `--compatibility-runtime` selector and the `Compatibility` executor are removed, so
 the symbol-map runtime is unreachable from any production input — the single-authority
-terminal state **is achieved for production runtime selection (direct-only)**. But the
-carrier types are **not** merely scheduler support: `HillslopeWritebackSurface`,
-`HillslopeKernelRequest`, `KernelWritebackPayload`, and `SymbolRegistry` are the
-**kernel-invocation boundary**, referenced at ~1007 sites across ~56 source files
-(~20 hydrology-kernel files, ~20 runner files, plus `openwepp-kernel-contract`). Their
-elimination is therefore a **re-typing of the kernel request/writeback interface across
-the hydrology physics — a separate, deliberately-scoped kernel-boundary-typing
-program**, not a unit deletion and not forced through 1007 references. `scheduler.rs`/
-`day_frame.rs` deletion rides with that untangling. This is the remaining
-symbol-map-free frontier (and a likely `<=5x` contributor); it is **backlogged**, while
-the functional single-authority of the production runtime selection stands as
-the achieved terminal state.
+terminal state **is achieved for production runtime selection (direct-only)**. The
+remaining carrier types were not merely scheduler support:
+`HillslopeWritebackSurface`, `HillslopeKernelRequest`,
+`KernelWritebackPayload`, and `SymbolRegistry` were the kernel-invocation
+boundary. Their elimination was therefore executed as a coordinated
+kernel-boundary typing program, not a blind file deletion.
 
-When that backlogged frontier is taken up, it is a **kernel-boundary typing program**,
-not a blind file deletion. The sequence:
+The completed sequence:
 
 1. **Inventory and classify survivors** — classify every remaining
    `HillslopeWritebackSurface`, `HillslopeKernelRequest`,
@@ -1459,6 +1452,26 @@ discipline is *not* "make any slice small," it is "type wholesale, never wrap." 
 for the wholesale change is the full test suite (~1,878 tests) + byte/value identity +
 git rollback, with frequent full-gated checkpoints; hold only on a genuine regression,
 not on scope.
+
+**Completion note, 2026-06-30:** `20260630-kernel-boundary-terminal-typing-001`
+executed this coordinated program to the terminal state. The compiled
+symbol-map scheduler/day-frame runtime and carrier exports are deleted from
+production; production hillslope execution is direct-only. Remaining
+`BoundarySymbol`/`BoundaryValue` references are watershed/intake serialization
+adapters, typed guard/error labels, diagnostic naming helpers, or source-guard
+test literals, not executable runtime authority. The closeout gate recorded
+H2637 protected output identity, `compatibility_edge_invocations=0`, `1:10.69`
+wall time, and `79284 KiB` max RSS.
+
+**Coverage caveat (open):** the wholesale deletion also removed 85 test files
+(~657 tests; the full suite went 1,878 → 1,221) with zero replacements, including
+real ratified-contract coverage (FC/WP policy, BASECOND01 harmonic-`ssc`, WB11–19
+closure, input parsers, MOFE conservation, hydrology, growth). The runtime deletion
+is terminal, but the **program is not fully closed** until that coverage is restored
+at the stable contract surface — tracked and burned down via
+[kernel-boundary-cqr-burndown-execplan.md](../work-packages/kernel-boundary-cqr-burndown-execplan.md)
+under the CQR discipline (contract-anchored requirements, no silent retirement,
+net-coverage gate returning the suite to ≥1,878).
 
 ### 8.3 Package Rules
 

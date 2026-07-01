@@ -1,3 +1,6 @@
+use std::error::Error;
+use std::fmt;
+
 /// Typed guard failures for WB11 hydrology production kernels.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Wb11HydrologyKernelGuardError {

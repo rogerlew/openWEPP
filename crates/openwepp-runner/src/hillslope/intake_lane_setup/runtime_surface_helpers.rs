@@ -1,31 +1,5 @@
 #[allow(clippy::wildcard_imports)]
 use super::super::*;
-pub(crate) fn merge_runtime_surfaces(
-    mut base: HillslopeWritebackSurface,
-    overlay: HillslopeWritebackSurface,
-) -> HillslopeWritebackSurface {
-    base.state_surface.extend(overlay.state_surface);
-    base.flux_surface.extend(overlay.flux_surface);
-    base
-}
-
-pub(crate) fn extend_runtime_surface_from(
-    base: &mut HillslopeWritebackSurface,
-    overlay: &HillslopeWritebackSurface,
-) {
-    base.state_surface.extend(
-        overlay
-            .state_surface
-            .iter()
-            .map(|(symbol, value)| (symbol.clone(), *value)),
-    );
-    base.flux_surface.extend(
-        overlay
-            .flux_surface
-            .iter()
-            .map(|(symbol, value)| (symbol.clone(), *value)),
-    );
-}
 
 pub(crate) fn absent_pmetpara_file() -> PmetparaFile {
     PmetparaFile {
@@ -96,65 +70,6 @@ pub(crate) fn project_typed_pmetpara_runtime(
             fallback_first_row_used: pmetpara.lookup.fallback_first_row_used,
         }),
     })
-}
-
-pub(crate) fn build_hillslope_runtime_surface_from_pmetpara(
-    management: &ManagementParseOutput,
-    pmetpara: &mut PmetparaFile,
-    mode: PmetparaParseMode,
-) -> Result<HillslopeWritebackSurface, HillslopeCliError> {
-    let projection = project_typed_pmetpara_runtime(management, pmetpara, mode)?;
-    let mut surface = HillslopeWritebackSurface::default();
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.mode.sidecar_present"),
-        BoundaryValue::scalar(if projection.sidecar_present { 1.0 } else { 0.0 }),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.mode.iflget"),
-        BoundaryValue::scalar(f64::from(projection.iflget)),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.record_count"),
-        BoundaryValue::scalar(usize_to_scalar(
-            "pmetpara.record_count",
-            projection.record_count,
-        )?),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.line_count_closed"),
-        BoundaryValue::scalar(if projection.line_count_closed {
-            1.0
-        } else {
-            0.0
-        }),
-    );
-
-    let Some(selected) = projection.selected else {
-        return Ok(surface);
-    };
-
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.selected.kcb"),
-        BoundaryValue::scalar(selected.kcb),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.selected.rawp"),
-        BoundaryValue::scalar(selected.rawp),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.selected.line_index"),
-        BoundaryValue::scalar(f64::from(selected.line_index)),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.lookup.fallback_first_row_used"),
-        BoundaryValue::scalar(if selected.fallback_first_row_used {
-            1.0
-        } else {
-            0.0
-        }),
-    );
-
-    Ok(surface)
 }
 
 pub(crate) fn active_management_crop_name(

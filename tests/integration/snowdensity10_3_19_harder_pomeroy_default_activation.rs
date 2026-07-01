@@ -71,12 +71,13 @@ fn implementation_selects_harder_pomeroy_without_env_and_preserves_rollback() {
         assert_contains(&builder, marker, BUILDER);
     }
 
-    let authority = read(AUTHORITY_IMPL);
     assert_contains(
-        &authority,
+        &builder,
         "snow_phase_model: snowdensity1035_diagnostic_snow_phase_model()?",
-        AUTHORITY_IMPL,
+        BUILDER,
     );
+
+    let authority = read(AUTHORITY_IMPL);
     assert_contains(
         &authority,
         "snow_phase_model: self.snow_phase_model",

@@ -65,12 +65,6 @@ struct DirectProductionLaneConstructorSeed {
 #[derive(Clone)]
 struct DirectProductionTypedLayerSeed {
     soil_water_m: f64,
-    #[cfg(test)]
-    field_capacity_m: f64,
-    #[cfg(test)]
-    drainable_storage_m: f64,
-    #[cfg(test)]
-    drainage_coefficient: f64,
     layers: Vec<DirectSubsurfaceLayerState>,
 }
 
@@ -217,20 +211,7 @@ struct DirectProductionWinterHourlyGeometry {
     azimuth: f64,
 }
 
-#[allow(dead_code)]
 impl DirectProductionWinterHourlyGeometry {
-    fn from_climate_context_surface(
-        climate_context_surface: &HillslopeWritebackSurface,
-    ) -> Result<Self, HillslopeCliError> {
-        Ok(Self {
-            avg_slope: direct_publication_required_positive_scalar(
-                climate_context_surface,
-                "avgslp",
-            )?,
-            azimuth: require_runtime_surface_scalar(climate_context_surface, "azm")?,
-        })
-    }
-
     fn from_typed_inputs(
         inputs: &ParsedHillslopeRunInputs,
         lane_count: usize,
@@ -963,17 +944,18 @@ fn direct_production_typed_erosion_authority(
     let first_layer = soil.layers.first().ok_or_else(|| {
         direct_production_executor_blocked("typed erosion seed requires at least one soil layer")
     })?;
-    let wave2_projection =
-        scheduler_trace::project_typed_mofe03_wave2(scheduler_trace::TypedMofe03Wave2Input {
+    let wave2_projection = direct_seed_projections::project_typed_mofe03_wave2(
+        direct_seed_projections::TypedMofe03Wave2Input {
             wave2_enabled,
             slplen_m: first_ofe.slplen_m,
             qout_m3_s: 0.0,
             qin_m3_s: 0.0,
             efflen_m: Some(peak_runoff.efflen_m),
             ssa_soil: None,
-            beta: scheduler_trace::MOFE03_WAVE2_DEFAULT_BETA,
+            beta: direct_seed_projections::MOFE03_WAVE2_DEFAULT_BETA,
             theta: 0.5 * (first_layer.thetdr + first_layer.thetfc),
-        })?;
+        },
+    )?;
     Ok(DirectProductionErosionAuthority {
         wave2_enabled,
         erosion_inputs: DirectErosionInputs {
@@ -989,7 +971,7 @@ fn direct_production_typed_erosion_authority(
 }
 
 fn direct_production_erod14_inputs_from_typed_projection(
-    projection: &scheduler_trace::TypedMofe03Wave2Projection,
+    projection: &direct_seed_projections::TypedMofe03Wave2Projection,
     efflen_m: f64,
 ) -> DirectErod14Inputs {
     if !projection.wave2_enabled {
@@ -1016,7 +998,9 @@ fn direct_production_erod14_inputs_from_typed_projection(
         lddend_kg: projection.lddend_kg,
         qout_m3_s: projection.qout_m3_s,
         qin_m3_s: projection.qin_m3_s,
-        qostar_m: projection.qostar_m.max(scheduler_trace::MOFE03_WAVE2_DEFAULT_QOSTAR),
+        qostar_m: projection
+            .qostar_m
+            .max(direct_seed_projections::MOFE03_WAVE2_DEFAULT_QOSTAR),
         hbp_sediment_concentration_scale: efflen_m / projection.slplen_m,
         slplen_m: projection.slplen_m,
         ktrato: projection.ktrato,
@@ -1911,12 +1895,6 @@ fn direct_production_typed_layer_seed(
 
     Ok(DirectProductionTypedLayerSeed {
         soil_water_m: storage.totals.soil_water,
-        #[cfg(test)]
-        field_capacity_m: storage.totals.field_capacity,
-        #[cfg(test)]
-        drainable_storage_m: storage.totals.drainable_storage,
-        #[cfg(test)]
-        drainage_coefficient: storage.totals.drainage_coefficient.max(1.0e-6),
         layers,
     })
 }
@@ -2904,46 +2882,7 @@ impl DirectProductionLaneDayInputAuthority {
     }
 }
 
-#[allow(dead_code)]
 impl DirectProductionResidueCoverAuthority {
-    fn from_seed(seed_surface: &HillslopeWritebackSurface) -> Result<Self, HillslopeCliError> {
-        let initial_surface_residue_kg_m2 =
-            direct_publication_optional_nonnegative_scalar(seed_surface, &["sumsrm_seed"])?
-                .unwrap_or(0.0);
-        let initial_root_residue_kg_m2 =
-            direct_publication_optional_nonnegative_scalar(seed_surface, &["sumrtm_seed"])?
-                .unwrap_or(0.0);
-        let residue_type_selector =
-            direct_publication_optional_nonnegative_scalar(seed_surface, &["iresd_seed"])?
-                .unwrap_or(0.0);
-        let initial_residue_depth_m = direct_publication_optional_nonnegative_scalar(
-            seed_surface,
-            &["frost.runtime_residue_depth_m", "resdep"],
-        )?
-        .unwrap_or(0.0);
-        let residue_depth_conversion_m_per_kg_m2 = if initial_surface_residue_kg_m2 > 0.0 {
-            initial_residue_depth_m / initial_surface_residue_kg_m2
-        } else {
-            0.0
-        };
-        if !residue_depth_conversion_m_per_kg_m2.is_finite()
-            || residue_depth_conversion_m_per_kg_m2 < 0.0
-        {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_residue_cover",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} direct production residue depth conversion must be finite and nonnegative, observed {residue_depth_conversion_m_per_kg_m2}"
-                ),
-            });
-        }
-        Ok(Self {
-            initial_surface_residue_kg_m2,
-            initial_root_residue_kg_m2,
-            residue_type_selector,
-            residue_depth_conversion_m_per_kg_m2,
-        })
-    }
-
     fn initial_state(self) -> DirectProductionResidueCoverState {
         DirectProductionResidueCoverState {
             surface_residue_kg_m2: self.initial_surface_residue_kg_m2,
@@ -3275,56 +3214,7 @@ impl DirectProductionInfiltrationAuthority {
     }
 }
 
-#[allow(dead_code)]
 impl DirectProductionEvapotranspirationAuthority {
-    fn from_seed(
-        seed_surface: &HillslopeWritebackSurface,
-        layer_count: usize,
-    ) -> Result<Self, HillslopeCliError> {
-        let iflget =
-            runtime_surface_symbol_value(seed_surface, "pmetpara.mode.iflget").unwrap_or(1.0);
-        if !iflget.is_finite() {
-            return Err(direct_production_executor_blocked(format!(
-                "pmetpara.mode.iflget must be finite when present, observed {iflget}"
-            )));
-        }
-        let pmet = if (iflget - 1.0).abs() <= 1.0e-12 {
-            None
-        } else {
-            Some(DirectProductionPmetAuthority {
-                kcb: require_runtime_surface_scalar(seed_surface, "pmetpara.selected.kcb")?,
-                rawp: require_runtime_surface_scalar(seed_surface, "pmetpara.selected.rawp")?,
-                canhgt: require_runtime_surface_scalar(seed_surface, "canhgt")?,
-                radpot_ly: runtime_surface_symbol_value(seed_surface, "radpot"),
-                solthk_m: (1..=layer_count)
-                    .map(|layer_index| {
-                        runtime_surface_symbol_value(
-                            seed_surface,
-                            format!("wb19_solthk_{layer_index:04}").as_str(),
-                        )
-                    })
-                    .collect(),
-            })
-        };
-        Ok(Self {
-            leaf_area_index: require_runtime_surface_scalar(seed_surface, "lai")?,
-            canopy_cover_fraction: require_runtime_surface_scalar(seed_surface, "cancov")?,
-            residue_interception_m: require_runtime_surface_scalar(
-                seed_surface,
-                "wb17_residue_interception",
-            )?,
-            root_depth_m: require_runtime_surface_scalar(seed_surface, "rtd")?,
-            plant_tolerance: require_preferred_or_legacy_runtime_surface_scalar(
-                seed_surface,
-                "swu_effective_pltol",
-                "pltol",
-            )?,
-            priestley_taylor: DirectProductionPriestleyTaylorAuthority {
-                salb: require_runtime_surface_scalar(seed_surface, "salb")?,
-            },
-            pmet,
-        })
-    }
     #[allow(clippy::too_many_arguments)]
     fn inputs(
         &self,
@@ -3702,56 +3592,7 @@ impl DirectProductionPmetAuthority {
     }
 }
 
-#[allow(dead_code)]
 impl DirectProductionGrowthAuthority {
-    fn from_seed(seed_surface: &HillslopeWritebackSurface) -> Result<Self, HillslopeCliError> {
-        let Some(slot_count_value) =
-            runtime_surface_symbol_value(seed_surface, "pl_schedule_slot_count")
-        else {
-            return Ok(Self::inactive());
-        };
-        let slot_count = direct_growth_integral_usize(
-            "pl_schedule_slot_count",
-            slot_count_value,
-            1,
-            usize::MAX,
-        )?;
-        let rotation_years = direct_growth_required_integral_usize(
-            seed_surface,
-            "pl_schedule_rotation_years",
-            1,
-            usize::MAX,
-        )?;
-        let rotation_repeats = direct_growth_required_integral_usize(
-            seed_surface,
-            "pl_schedule_rotation_repeats",
-            1,
-            usize::MAX,
-        )?;
-        let mut slots = Vec::with_capacity(slot_count);
-        for slot_index in 1..=slot_count {
-            slots.push(DirectProductionGrowthSlotAuthority::from_seed(
-                seed_surface,
-                slot_index,
-            )?);
-        }
-        Ok(Self {
-            active: true,
-            rotation_years,
-            rotation_repeats,
-            slots,
-            monthly_temperature_max_c: direct_production_monthly_temperature(
-                seed_surface,
-                "obmaxt",
-            )?,
-            monthly_temperature_min_c: direct_production_monthly_temperature(
-                seed_surface,
-                "obmint",
-            )?,
-            soil_depth_m: direct_publication_required_positive_scalar(seed_surface, "solthk")?,
-        })
-    }
-
     fn inactive() -> Self {
         Self {
             active: false,
@@ -3961,177 +3802,7 @@ impl DirectProductionGrowthAuthority {
     }
 }
 
-#[allow(dead_code)]
-impl DirectProductionGrowthSlotAuthority {
-    fn from_seed(
-        seed_surface: &HillslopeWritebackSurface,
-        slot_index: usize,
-    ) -> Result<Self, HillslopeCliError> {
-        let crop_slots = direct_growth_required_integral_usize(
-            seed_surface,
-            &direct_growth_schedule_slot_symbol(slot_index, "crop_slots"),
-            1,
-            usize::MAX,
-        )?;
-        let mut crops = Vec::with_capacity(crop_slots);
-        for crop_slot_index in 1..=crop_slots {
-            crops.push(DirectProductionGrowthCropAuthority::from_seed(
-                seed_surface,
-                slot_index,
-                crop_slot_index,
-            )?);
-        }
-        Ok(Self {
-            ofe_index: direct_growth_required_integral_usize(
-                seed_surface,
-                &direct_growth_schedule_slot_symbol(slot_index, "ofe_index"),
-                1,
-                usize::MAX,
-            )?,
-            year_in_rotation: direct_growth_required_integral_usize(
-                seed_surface,
-                &direct_growth_schedule_slot_symbol(slot_index, "year_in_rotation"),
-                1,
-                usize::MAX,
-            )?,
-            rotation_index: direct_growth_required_integral_usize(
-                seed_surface,
-                &direct_growth_schedule_slot_symbol(slot_index, "rotation_index"),
-                1,
-                usize::MAX,
-            )?,
-            crops,
-        })
-    }
-}
-#[allow(dead_code)]
 impl DirectProductionGrowthCropAuthority {
-    #[allow(clippy::too_many_lines)]
-    fn from_seed(
-        seed_surface: &HillslopeWritebackSurface,
-        slot_index: usize,
-        crop_slot_index: usize,
-    ) -> Result<Self, HillslopeCliError> {
-        let schedule_imngmt = direct_growth_required_integral_u8(
-            seed_surface,
-            &direct_growth_schedule_slot_crop_symbol(slot_index, crop_slot_index, "imngmt"),
-            1,
-            3,
-        )?;
-        let imngmt = direct_growth_required_integral_u8(
-            seed_surface,
-            &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "imngmt"),
-            1,
-            3,
-        )?;
-        let jdplt_min = usize::from(schedule_imngmt != 2);
-        let jdplt = direct_growth_required_integral_u16(
-            seed_surface,
-            &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "jdplt"),
-            jdplt_min,
-            366,
-        )?;
-        let jdharv = direct_growth_required_integral_u16(
-            seed_surface,
-            &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "jdharv"),
-            0,
-            366,
-        )?;
-        let (jdstop, _mgtopt) = if schedule_imngmt == 2 {
-            (
-                direct_growth_required_integral_u16(
-                    seed_surface,
-                    &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "jdstop"),
-                    0,
-                    366,
-                )?,
-                direct_growth_required_integral_u8(
-                    seed_surface,
-                    &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "mgtopt"),
-                    1,
-                    3,
-                )?,
-            )
-        } else {
-            (0, 1)
-        };
-        Ok(Self {
-            schedule_imngmt,
-            imngmt,
-            jdharv,
-            jdplt,
-            jdstop,
-            btemp: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "btemp"),
-            )?,
-            otemp: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "otemp"),
-            )?,
-            gddmax: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "gddmax"),
-            )?,
-            dlai: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "dlai"),
-            )?,
-            dropfc: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "dropfc"),
-            )?,
-            decfct: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "decfct"),
-            )?,
-            spriod: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "spriod"),
-            )?,
-            bb: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "bb"),
-            )?,
-            beinp: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "beinp"),
-            )?,
-            extnct: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "extnct"),
-            )?,
-            hi: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "hi"),
-            )?,
-            xmxlai: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "xmxlai"),
-            )?,
-            rsr: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "rsr"),
-            )?,
-            rtmmax: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "rtmmax"),
-            )?,
-            rdmax: direct_growth_required_scalar(
-                seed_surface,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "rdmax"),
-            )?,
-            oratea: direct_growth_required_scalar(
-                seed_surface,
-                &direct_decomp_slot_crop_symbol(slot_index, crop_slot_index, "oratea"),
-            )?,
-            orater: direct_growth_required_scalar(
-                seed_surface,
-                &direct_decomp_slot_crop_symbol(slot_index, crop_slot_index, "orater"),
-            )?,
-        })
-    }
-
     fn active_on_day(self, runtime_day: usize) -> bool {
         if self.schedule_imngmt == 2 {
             if self.jdplt == 0 {
@@ -4190,39 +3861,6 @@ struct DirectGrowthActiveCropSelection<'a> {
     slot_index: usize,
     crop_slot_index: usize,
     crop: &'a DirectProductionGrowthCropAuthority,
-}
-
-#[allow(dead_code)]
-fn direct_growth_state_surface_from_seed(
-    seed_surface: &HillslopeWritebackSurface,
-) -> Result<DirectGrowthStateSurface, HillslopeCliError> {
-    Ok(DirectGrowthStateSurface {
-        sumgdd: require_runtime_surface_scalar(seed_surface, "sumgdd")?,
-        live_biomass_kg_m2: require_runtime_surface_scalar(seed_surface, "vdmt")?,
-        interception_live_biomass_kg_m2: direct_growth_interception_live_biomass_from_seed(
-            seed_surface,
-        )?,
-        canopy_cover_fraction: require_runtime_surface_scalar(seed_surface, "cancov")?,
-        leaf_area_index: require_runtime_surface_scalar(seed_surface, "lai")?,
-        root_mass_kg_m2: require_runtime_surface_scalar(seed_surface, "rtmass")?,
-        root_depth_m: require_runtime_surface_scalar(seed_surface, "rtd")?,
-        harvest_index: require_runtime_surface_scalar(seed_surface, "hia")?,
-    })
-}
-
-#[allow(dead_code)]
-fn direct_growth_interception_live_biomass_from_seed(
-    seed_surface: &HillslopeWritebackSurface,
-) -> Result<f64, HillslopeCliError> {
-    let vdmt = require_runtime_surface_scalar(seed_surface, "vdmt")?;
-    direct_growth_nonnegative_scalar("vdmt", vdmt)?;
-    let hia = require_runtime_surface_scalar(seed_surface, "hia")?;
-    direct_growth_validate_harvest_index(hia)?;
-    if let Some(tlive) = runtime_surface_symbol_value(seed_surface, "tlive") {
-        direct_growth_nonnegative_scalar("tlive", tlive)?;
-        return Ok(tlive);
-    }
-    Ok(vdmt)
 }
 
 fn direct_growth_interception_live_biomass_from_state(
@@ -4300,59 +3938,6 @@ fn direct_growth_day_is_within_window(
     } else {
         runtime_day >= start_day || runtime_day <= end_day
     }
-}
-
-#[allow(dead_code)]
-fn direct_growth_required_scalar(
-    seed_surface: &HillslopeWritebackSurface,
-    symbol: &str,
-) -> Result<f64, HillslopeCliError> {
-    require_runtime_surface_scalar(seed_surface, symbol)
-}
-
-#[allow(dead_code)]
-fn direct_growth_required_integral_usize(
-    seed_surface: &HillslopeWritebackSurface,
-    symbol: &str,
-    min_allowed: usize,
-    max_allowed: usize,
-) -> Result<usize, HillslopeCliError> {
-    let value = require_runtime_surface_scalar(seed_surface, symbol)?;
-    direct_growth_integral_usize(symbol, value, min_allowed, max_allowed)
-}
-
-#[allow(dead_code)]
-fn direct_growth_required_integral_u16(
-    seed_surface: &HillslopeWritebackSurface,
-    symbol: &str,
-    min_allowed: usize,
-    max_allowed: usize,
-) -> Result<u16, HillslopeCliError> {
-    let value = direct_growth_required_integral_usize(
-        seed_surface,
-        symbol,
-        min_allowed,
-        max_allowed,
-    )?;
-    direct_growth_usize_to_u16(symbol, value)
-}
-
-#[allow(dead_code)]
-fn direct_growth_required_integral_u8(
-    seed_surface: &HillslopeWritebackSurface,
-    symbol: &str,
-    min_allowed: usize,
-    max_allowed: usize,
-) -> Result<u8, HillslopeCliError> {
-    let value = direct_growth_required_integral_usize(
-        seed_surface,
-        symbol,
-        min_allowed,
-        max_allowed,
-    )?;
-    u8::try_from(value).map_err(|_| {
-        direct_growth_failure(format!("{symbol} value {value} exceeds u8 range"))
-    })
 }
 
 fn direct_growth_integral_usize(
@@ -4451,37 +4036,5 @@ fn direct_growth_failure(detail: impl Into<String>) -> HillslopeCliError {
     HillslopeCliError::RuntimeSurfaceFailure {
         surface: "direct_publication_frame",
         detail: format!("{SIMOUT_GUARD_ID} {}", detail.into()),
-    }
-}
-
-#[allow(dead_code)]
-impl DirectProductionErosionAuthority {
-    fn from_seed(
-        seed_surface: &HillslopeWritebackSurface,
-    ) -> Result<Self, HillslopeCliError> {
-        let wave1_enabled =
-            direct_publication_optional_enabled_flag(seed_surface, "erod13_core_enabled")?
-                .unwrap_or(false);
-        let wave2_enabled = parse_mofe03_binary_flag(
-            "erod14_wave2_enabled",
-            runtime_surface_symbol_value(seed_surface, "erod14_wave2_enabled").unwrap_or(0.0),
-        )?;
-        Ok(Self {
-            wave2_enabled,
-            erosion_inputs: DirectErosionInputs {
-                wave1_enabled,
-                wave2_enabled,
-                wave1: if wave1_enabled {
-                    direct_publication_erod13_inputs(seed_surface)?
-                } else {
-                    DirectErod13Inputs::zero()
-                },
-                wave2: if wave2_enabled {
-                    direct_publication_erod14_inputs(seed_surface)?
-                } else {
-                    DirectErod14Inputs::zero()
-                },
-            },
-        })
     }
 }
