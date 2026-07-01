@@ -1026,8 +1026,9 @@ fn no_freeze_typed_frost_inputs(wint_red_enabled: bool) -> DirectActiveFrostPart
             canopy_height_m: 0.0,
             random_roughness_m: 0.0,
             day_of_year: 5.0,
-            monthly_max_c: [8.0; 12],
-            monthly_min_c: [2.0; 12],
+            seasonal_temperature_curve: Wb11HydrologyKernel::fit_seasonal_temperature_curve(
+                &[8.0; 12], &[2.0; 12],
+            ),
         },
         profile_depth_m: 0.400,
         soil_water_m: 0.220,

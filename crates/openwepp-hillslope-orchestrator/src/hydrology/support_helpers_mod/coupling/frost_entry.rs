@@ -1044,7 +1044,7 @@ impl Wb11HydrologyKernel {
             Some(366.0),
         )?;
         let seasonal_temperature_curve =
-            Self::fit_legacy_tmpcft_curve(&inputs.thermal.monthly_max_c, &inputs.thermal.monthly_min_c);
+            inputs.thermal.seasonal_temperature_curve;
         Ok(ActiveFrostThermalContext {
             snow_depth_m: inputs.thermal.snow_depth_m,
             snow_density_kg_m3: inputs.thermal.snow_density_kg_m3,

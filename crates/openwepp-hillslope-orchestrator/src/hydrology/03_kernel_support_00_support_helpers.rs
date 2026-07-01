@@ -280,8 +280,18 @@ pub struct DirectFrostThermalInputs {
     pub canopy_height_m: f64,
     pub random_roughness_m: f64,
     pub day_of_year: f64,
-    pub monthly_max_c: [f64; 12],
-    pub monthly_min_c: [f64; 12],
+    pub seasonal_temperature_curve: FrostSeasonalTemperatureCurve,
+}
+
+// The fitted legacy tmpcft seasonal air-temperature wave. Derived once per
+// lane from the twelve monthly max/min normals (which are static for a run)
+// via `Wb11HydrologyKernel::fit_seasonal_temperature_curve`, and carried as
+// the single authority so the kernel never re-fits per solve.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct FrostSeasonalTemperatureCurve {
+    pub annual_mean_c: f64,
+    pub amplitude_c: f64,
+    pub phase_shift_days: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

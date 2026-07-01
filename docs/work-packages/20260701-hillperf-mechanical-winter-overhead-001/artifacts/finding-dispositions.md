@@ -55,11 +55,15 @@ Landed: erosion enabled-check hoisted above the inputs clone
 (2 Vec clones) construction moved behind their `OnceLock` config checks.
 Remainder assessed (Static): the span-report shadow-projection clones can
 only be saved by dropping the projection fields from the span reports
-(production discards them; only tests read them) — a report-shape refactor,
-queued behind F5. The `format!("{ratio_trunc:.0}").parse::<usize>()`
-round-trip in `frost_fine_layer_count_for_layer` is an F7-sibling —
-candidate for the same treatment with care for parse-failure domain
-equivalence; queued.
+(production discards them; only tests read them) — a report-shape refactor.
+The `format!("{ratio_trunc:.0}").parse::<usize>()` round-trip in
+`frost_fine_layer_count_for_layer` is an F7-sibling — candidate for the same
+treatment with care for parse-failure domain equivalence. **Both deferred to
+the exit re-profile decision point** (same rule as F3-narrowed): with the
+endpoint already at ~52 s indicative after F2, each remaining item is
+individually ≤1–2 s and only worth its churn if the re-profile still shows
+the corresponding bins as material. This keeps the package converging on its
+gate rather than grinding the tail.
 
 ## F8 — SKIPPED (manifest-entangled, low value)
 

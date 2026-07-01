@@ -841,6 +841,16 @@ impl Wb11HydrologyKernel {
         (square_error / 12.0).sqrt()
     }
 
+    // Public authority for deriving the seasonal curve carried in
+    // `DirectFrostThermalInputs`; the kernel itself never re-fits.
+    #[must_use]
+    pub fn fit_seasonal_temperature_curve(
+        monthly_max_c: &[f64; 12],
+        monthly_min_c: &[f64; 12],
+    ) -> FrostSeasonalTemperatureCurve {
+        Self::fit_legacy_tmpcft_curve(monthly_max_c, monthly_min_c)
+    }
+
     pub(super) fn fit_legacy_tmpcft_curve(
         monthly_max_c: &[f64; 12],
         monthly_min_c: &[f64; 12],

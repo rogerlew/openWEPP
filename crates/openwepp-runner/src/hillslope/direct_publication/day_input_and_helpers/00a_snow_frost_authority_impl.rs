@@ -242,8 +242,7 @@ impl DirectProductionSnowFrostAuthority {
             canopy_height_m: context.typed_authority.canopy_height_m,
             random_roughness_m: context.typed_authority.random_roughness_m,
             day_of_year: f64::from(context.day.julian_day),
-            monthly_max_c: context.typed_authority.monthly_max_c,
-            monthly_min_c: context.typed_authority.monthly_min_c,
+            seasonal_temperature_curve: context.typed_authority.seasonal_temperature_curve,
         })
     }
 

@@ -25,6 +25,7 @@ use openwepp_hillslope_orchestrator::{
     DirectFrostLaneState, DirectFrostLayerCarryProjection, DirectFrostLayerInput,
     DirectFrostLayerShadowProjection,
     DirectFrostPriorStateInput, DirectFrostRuntimeCarry, DirectFrostThermalInputs,
+    FrostSeasonalTemperatureCurve,
     DirectDecompositionAction, DirectDecompositionActiveContext, DirectDecompositionInputs,
     DirectGrowthAction, DirectGrowthActiveContext, DirectGrowthInputs, DirectGrowthStateSurface,
     DirectHydrologyProjectionInputs, DirectWinterFrostComputeInputs,

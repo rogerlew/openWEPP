@@ -281,8 +281,7 @@ struct DirectProductionFrostTypedAuthority {
     albedo: f64,
     canopy_height_m: f64,
     random_roughness_m: f64,
-    monthly_max_c: [f64; 12],
-    monthly_min_c: [f64; 12],
+    seasonal_temperature_curve: FrostSeasonalTemperatureCurve,
 }
 
 struct DirectProductionFrostDayContext {
@@ -1451,8 +1450,13 @@ fn direct_production_typed_frost_authority(
             "rrinit",
         )?)
         .unwrap_or(0.0),
-        monthly_max_c: climate_request.direct_monthly_max_c(),
-        monthly_min_c: climate_request.direct_monthly_min_c(),
+        // Fitted once per lane at authority construction; the normals are
+        // static for the run, so the kernel carries the curve instead of
+        // re-fitting per solve.
+        seasonal_temperature_curve: Wb11HydrologyKernel::fit_seasonal_temperature_curve(
+            &climate_request.direct_monthly_max_c(),
+            &climate_request.direct_monthly_min_c(),
+        ),
     })
 }
 
