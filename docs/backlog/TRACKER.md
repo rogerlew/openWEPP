@@ -34,4 +34,4 @@ Last updated: 2026-06-30 (Claude Code).
 
 | Program | State | Authority | Notes |
 |---|---|---|---|
-| **Kernel-boundary typing program** | `active` (started 2026-06-30) | array-native spec §8.2 (8-step sequence); ADR-0031 execution scope | Eliminate the symbol-map carrier types (the kernel-invocation boundary, ~1007 refs / ~56 files) by typing the kernel request/writeback interface, then deleting `scheduler.rs`/`day_frame.rs`. The last symbol-map-free step and likely `<=5x` lever. On the ROADMAP queue. |
+| **Kernel-boundary typing program** | `runtime-deletion-complete; CQR burndown active` (2026-06-30) | array-native spec §8.2; ADR-0031; [kernel-boundary-cqr-burndown-execplan.md](../work-packages/kernel-boundary-cqr-burndown-execplan.md) | Symbol-map runtime (`scheduler.rs`/`day_frame.rs`/carriers) **deleted** on main (`a381702b`, merged `c588023e`); production direct-only, `compatibility_edge_invocations=0`, H2637 byte-identical. **Not closed:** the wholesale deletion removed ~657 tests (1,878 → 1,221) incl. ratified-contract coverage — being restored via the CQR burndown (9 modules, contract-anchored, net-coverage gate to ≥1,878). ROADMAP item K. |
