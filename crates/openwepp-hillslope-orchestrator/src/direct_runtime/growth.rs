@@ -428,98 +428,111 @@ impl DirectGrowthInputs {
         management_class: DirectGrowthManagementClass,
     ) -> Result<(), DirectRuntimeError> {
         match management_class {
-            DirectGrowthManagementClass::AnnualOrFallow => {
-                validate_runtime_day(self.planting_day)?;
-                validate_runtime_day(self.harvest_day)?;
-                match self.active_action {
-                    DirectGrowthAction::None | DirectGrowthAction::Cut => {
-                        if self.active_context.is_active()
-                            && !self.is_annual_active_growth_window()?
-                        {
-                            return Err(DirectRuntimeError::DirectDomainViolation {
-                                field: "growth.annual_active_window",
-                            });
-                        }
-                    }
-                    DirectGrowthAction::PrePlantSkip => {
-                        if self.active_context.is_active()
-                            && self.is_annual_active_growth_window()?
-                        {
-                            return Err(DirectRuntimeError::DirectDomainViolation {
-                                field: "growth.active_action",
-                            });
-                        }
-                    }
-                    DirectGrowthAction::PlantingReset => {
-                        if self.active_context.is_active()
-                            && self.active_context.runtime_day_of_year()? != self.planting_day
-                        {
-                            return Err(DirectRuntimeError::DirectDomainViolation {
-                                field: "growth.planting_day",
-                            });
-                        }
-                    }
-                    DirectGrowthAction::HarvestReset => {
-                        if self.active_context.is_active()
-                            && self.active_context.runtime_day_of_year()? != self.harvest_day
-                        {
-                            return Err(DirectRuntimeError::DirectDomainViolation {
-                                field: "growth.harvest_day",
-                            });
-                        }
-                    }
-                    DirectGrowthAction::StopReset | DirectGrowthAction::Grazing => {
-                        return Err(DirectRuntimeError::DirectDomainViolation {
-                            field: "growth.active_action",
-                        });
-                    }
-                }
-            }
-            DirectGrowthManagementClass::Perennial => {
-                validate_optional_runtime_day(self.planting_day)?;
-                validate_optional_runtime_day(self.harvest_day)?;
-                validate_optional_runtime_day(self.stop_day)?;
-                match self.active_action {
-                    DirectGrowthAction::None
-                    | DirectGrowthAction::Cut
-                    | DirectGrowthAction::Grazing => {}
-                    DirectGrowthAction::PlantingReset => {
-                        if self.active_context.is_active()
-                            && self.planting_day != 0
-                            && self.active_context.runtime_day_of_year()? != self.planting_day
-                        {
-                            return Err(DirectRuntimeError::DirectDomainViolation {
-                                field: "growth.planting_day",
-                            });
-                        }
-                    }
-                    DirectGrowthAction::StopReset => {
-                        if self.active_context.is_active()
-                            && (self.stop_day == 0
-                                || self.active_context.runtime_day_of_year()? != self.stop_day)
-                        {
-                            return Err(DirectRuntimeError::DirectDomainViolation {
-                                field: "growth.stop_day",
-                            });
-                        }
-                    }
-                    DirectGrowthAction::HarvestReset | DirectGrowthAction::PrePlantSkip => {
-                        return Err(DirectRuntimeError::DirectDomainViolation {
-                            field: "growth.active_action",
-                        });
-                    }
-                }
-            }
+            DirectGrowthManagementClass::AnnualOrFallow => self.validate_annual_schedule_domain(),
+            DirectGrowthManagementClass::Perennial => self.validate_perennial_schedule_domain(),
         }
-        Ok(())
     }
 
-    #[allow(clippy::too_many_lines)]
+    fn validate_annual_schedule_domain(self) -> Result<(), DirectRuntimeError> {
+        validate_runtime_day(self.planting_day)?;
+        validate_runtime_day(self.harvest_day)?;
+        match self.active_action {
+            DirectGrowthAction::None | DirectGrowthAction::Cut => {
+                self.validate_annual_active_window_required()
+            }
+            DirectGrowthAction::PrePlantSkip => self.validate_annual_preplant_skip(),
+            DirectGrowthAction::PlantingReset => {
+                self.validate_active_day_matches("growth.planting_day", self.planting_day)
+            }
+            DirectGrowthAction::HarvestReset => {
+                self.validate_active_day_matches("growth.harvest_day", self.harvest_day)
+            }
+            DirectGrowthAction::StopReset | DirectGrowthAction::Grazing => {
+                Err(growth_active_action_domain_error())
+            }
+        }
+    }
+
+    fn validate_annual_active_window_required(self) -> Result<(), DirectRuntimeError> {
+        if self.active_context.is_active() && !self.is_annual_active_growth_window()? {
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "growth.annual_active_window",
+            })
+        } else {
+            Ok(())
+        }
+    }
+
+    fn validate_annual_preplant_skip(self) -> Result<(), DirectRuntimeError> {
+        if self.active_context.is_active() && self.is_annual_active_growth_window()? {
+            Err(growth_active_action_domain_error())
+        } else {
+            Ok(())
+        }
+    }
+
+    fn validate_perennial_schedule_domain(self) -> Result<(), DirectRuntimeError> {
+        validate_optional_runtime_day(self.planting_day)?;
+        validate_optional_runtime_day(self.harvest_day)?;
+        validate_optional_runtime_day(self.stop_day)?;
+        match self.active_action {
+            DirectGrowthAction::None | DirectGrowthAction::Cut | DirectGrowthAction::Grazing => {
+                Ok(())
+            }
+            DirectGrowthAction::PlantingReset => self.validate_perennial_planting_reset(),
+            DirectGrowthAction::StopReset => self.validate_perennial_stop_reset(),
+            DirectGrowthAction::HarvestReset | DirectGrowthAction::PrePlantSkip => {
+                Err(growth_active_action_domain_error())
+            }
+        }
+    }
+
+    fn validate_perennial_planting_reset(self) -> Result<(), DirectRuntimeError> {
+        if self.active_context.is_active() && self.planting_day != 0 {
+            self.validate_active_day_matches("growth.planting_day", self.planting_day)
+        } else {
+            Ok(())
+        }
+    }
+
+    fn validate_perennial_stop_reset(self) -> Result<(), DirectRuntimeError> {
+        if !self.active_context.is_active() {
+            return Ok(());
+        }
+        if self.stop_day == 0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "growth.stop_day",
+            });
+        }
+        self.validate_active_day_matches("growth.stop_day", self.stop_day)
+    }
+
+    fn validate_active_day_matches(
+        self,
+        field: &'static str,
+        expected_day: u16,
+    ) -> Result<(), DirectRuntimeError> {
+        if self.active_context.is_active()
+            && self.active_context.runtime_day_of_year()? != expected_day
+        {
+            Err(DirectRuntimeError::DirectDomainViolation { field })
+        } else {
+            Ok(())
+        }
+    }
+
     fn validate_equation_inputs(
         self,
         management_class: DirectGrowthManagementClass,
     ) -> Result<(), DirectRuntimeError> {
         self.validate_downstream_inputs()?;
+        self.validate_weather_and_thermal_inputs()?;
+        self.validate_growth_shape_inputs()?;
+        self.validate_root_growth_inputs(management_class)?;
+        self.validate_monthly_gddmax_inputs_if_needed()
+    }
+
+    fn validate_weather_and_thermal_inputs(self) -> Result<(), DirectRuntimeError> {
         validate_between("growth.water_stress", self.water_stress, 0.0, 1.0)?;
         validate_finite("growth.temperature_max_c", self.temperature_max_c)?;
         validate_finite("growth.temperature_min_c", self.temperature_min_c)?;
@@ -532,6 +545,10 @@ impl DirectGrowthInputs {
                 field: "growth.otemp",
             });
         }
+        Ok(())
+    }
+
+    fn validate_growth_shape_inputs(self) -> Result<(), DirectRuntimeError> {
         validate_nonnegative_direct_m("growth.gddmax", self.gddmax)?;
         validate_between("growth.dlai", self.dlai, f64::EPSILON, 1.0)?;
         validate_between("growth.dropfc", self.dropfc, 0.0, 1.0)?;
@@ -543,12 +560,22 @@ impl DirectGrowthInputs {
         validate_between("growth.hi", self.hi, 0.0, 1.0)?;
         validate_nonnegative_direct_m("growth.xmxlai", self.xmxlai)?;
         validate_nonnegative_direct_m("growth.rsr", self.rsr)?;
+        Ok(())
+    }
+
+    fn validate_root_growth_inputs(
+        self,
+        management_class: DirectGrowthManagementClass,
+    ) -> Result<(), DirectRuntimeError> {
         if management_class == DirectGrowthManagementClass::Perennial {
             validate_positive("growth.rtmmax", self.rtmmax)?;
         } else {
             validate_nonnegative_direct_m("growth.rtmmax", self.rtmmax)?;
         }
-        validate_positive("growth.rdmax", self.rdmax)?;
+        validate_positive("growth.rdmax", self.rdmax)
+    }
+
+    fn validate_monthly_gddmax_inputs_if_needed(self) -> Result<(), DirectRuntimeError> {
         if self.gddmax <= 0.0 {
             for value in self.monthly_temperature_max_c {
                 validate_finite("growth.monthly_temperature_max_c", value)?;
@@ -1071,6 +1098,12 @@ fn validate_optional_runtime_day(day: u16) -> Result<(), DirectRuntimeError> {
     }
 }
 
+fn growth_active_action_domain_error() -> DirectRuntimeError {
+    DirectRuntimeError::DirectDomainViolation {
+        field: "growth.active_action",
+    }
+}
+
 fn validate_positive(field: &'static str, value: f64) -> Result<(), DirectRuntimeError> {
     validate_finite(field, value)?;
     if value > WB11_ZERO_THRESHOLD {
@@ -1109,4 +1142,450 @@ fn day_count_to_f64(day_count: usize) -> Result<f64, DirectRuntimeError> {
             field: "growth.gddmax_day_count",
         })?;
     Ok(f64::from(day_count_u16))
+}
+
+#[cfg(test)]
+mod cqr_row6_growth_tests {
+    use super::*;
+
+    fn annual_context(runtime_day_of_year: u16) -> DirectGrowthActiveContext {
+        DirectGrowthActiveContext::AnnualOrFallow {
+            active_slot_index: 1,
+            active_crop_slot_index: 1,
+            runtime_day_of_year,
+        }
+    }
+
+    fn perennial_context(runtime_day_of_year: u16) -> DirectGrowthActiveContext {
+        DirectGrowthActiveContext::Perennial {
+            active_slot_index: 2,
+            active_crop_slot_index: 1,
+            runtime_day_of_year,
+        }
+    }
+
+    fn annual_inputs() -> DirectGrowthInputs {
+        DirectGrowthInputs {
+            active_context: annual_context(150),
+            active_action: DirectGrowthAction::Cut,
+            state_before: DirectGrowthStateSurface {
+                sumgdd: 100.0,
+                live_biomass_kg_m2: 0.30,
+                interception_live_biomass_kg_m2: 0.28,
+                canopy_cover_fraction: 0.20,
+                leaf_area_index: 0.80,
+                root_mass_kg_m2: 0.05,
+                root_depth_m: 0.20,
+                harvest_index: 0.02,
+            },
+            planting_day: 100,
+            harvest_day: 250,
+            stop_day: 0,
+            water_stress: 0.70,
+            temperature_max_c: 25.0,
+            temperature_min_c: 15.0,
+            radiation_mj_m2: 18.0,
+            monthly_temperature_max_c: [20.0; 12],
+            monthly_temperature_min_c: [10.0; 12],
+            soil_depth_m: 1.20,
+            btemp: 5.0,
+            otemp: 25.0,
+            gddmax: 1000.0,
+            dlai: 0.80,
+            dropfc: 0.50,
+            decfct: 0.60,
+            spriod: 20.0,
+            bb: 1.80,
+            beinp: 30.0,
+            extnct: 0.65,
+            hi: 0.50,
+            xmxlai: 5.0,
+            rsr: 0.30,
+            rtmmax: 0.0,
+            rdmax: 1.0,
+            et_demand_m: 0.006,
+            residue_interception_m: 0.001,
+            plant_tolerance: 0.25,
+        }
+    }
+
+    fn perennial_inputs() -> DirectGrowthInputs {
+        DirectGrowthInputs {
+            active_context: perennial_context(210),
+            active_action: DirectGrowthAction::Grazing,
+            state_before: DirectGrowthStateSurface {
+                sumgdd: 220.0,
+                live_biomass_kg_m2: 0.42,
+                interception_live_biomass_kg_m2: 0.42,
+                canopy_cover_fraction: 0.30,
+                leaf_area_index: 1.20,
+                root_mass_kg_m2: 0.35,
+                root_depth_m: 0.50,
+                harvest_index: 0.0,
+            },
+            planting_day: 0,
+            harvest_day: 0,
+            stop_day: 320,
+            water_stress: 0.85,
+            temperature_max_c: 27.0,
+            temperature_min_c: 13.0,
+            radiation_mj_m2: 20.0,
+            monthly_temperature_max_c: [21.0; 12],
+            monthly_temperature_min_c: [9.0; 12],
+            soil_depth_m: 1.50,
+            btemp: 4.0,
+            otemp: 24.0,
+            gddmax: 1200.0,
+            dlai: 0.75,
+            dropfc: 0.55,
+            decfct: 0.65,
+            spriod: 25.0,
+            bb: 1.60,
+            beinp: 28.0,
+            extnct: 0.70,
+            hi: 0.40,
+            xmxlai: 4.5,
+            rsr: 0.45,
+            rtmmax: 1.20,
+            rdmax: 1.30,
+            et_demand_m: 0.007,
+            residue_interception_m: 0.002,
+            plant_tolerance: 0.30,
+        }
+    }
+
+    fn assert_direct_domain(result: Result<(), DirectRuntimeError>, field: &'static str) {
+        match result {
+            Err(DirectRuntimeError::DirectDomainViolation { field: actual }) => {
+                assert_eq!(actual, field);
+            }
+            other => panic!("expected DirectDomainViolation for {field}, got {other:?}"),
+        }
+    }
+
+    fn assert_negative(result: Result<(), DirectRuntimeError>, field: &'static str) {
+        match result {
+            Err(DirectRuntimeError::NegativeDirectValue { field: actual }) => {
+                assert_eq!(actual, field);
+            }
+            other => panic!("expected NegativeDirectValue for {field}, got {other:?}"),
+        }
+    }
+
+    fn assert_nonfinite(result: Result<(), DirectRuntimeError>, field: &'static str) {
+        match result {
+            Err(DirectRuntimeError::NonFiniteDirectValue { field: actual }) => {
+                assert_eq!(actual, field);
+            }
+            other => panic!("expected NonFiniteDirectValue for {field}, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn cqr_row6_annual_schedule_domain_covers_action_and_window_branches() {
+        let base = annual_inputs();
+
+        for action in [DirectGrowthAction::None, DirectGrowthAction::Cut] {
+            DirectGrowthInputs {
+                active_action: action,
+                ..base
+            }
+            .validate_schedule_domain(DirectGrowthManagementClass::AnnualOrFallow)
+            .expect("annual active growth window should accept normal growth actions");
+        }
+
+        DirectGrowthInputs {
+            active_context: annual_context(50),
+            active_action: DirectGrowthAction::PrePlantSkip,
+            ..base
+        }
+        .validate_schedule_domain(DirectGrowthManagementClass::AnnualOrFallow)
+        .expect("annual pre-plant action should pass outside the active window");
+
+        DirectGrowthInputs {
+            active_context: annual_context(100),
+            active_action: DirectGrowthAction::PlantingReset,
+            ..base
+        }
+        .validate_schedule_domain(DirectGrowthManagementClass::AnnualOrFallow)
+        .expect("planting reset should align with planting day");
+
+        DirectGrowthInputs {
+            active_context: annual_context(250),
+            active_action: DirectGrowthAction::HarvestReset,
+            ..base
+        }
+        .validate_schedule_domain(DirectGrowthManagementClass::AnnualOrFallow)
+        .expect("harvest reset should align with harvest day");
+
+        DirectGrowthInputs {
+            active_context: annual_context(20),
+            planting_day: 300,
+            harvest_day: 100,
+            active_action: DirectGrowthAction::Cut,
+            ..base
+        }
+        .validate_schedule_domain(DirectGrowthManagementClass::AnnualOrFallow)
+        .expect("winter annual window should wrap across year boundary");
+
+        assert_direct_domain(
+            DirectGrowthInputs {
+                active_context: annual_context(260),
+                active_action: DirectGrowthAction::Cut,
+                ..base
+            }
+            .validate_schedule_domain(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.annual_active_window",
+        );
+        assert_direct_domain(
+            DirectGrowthInputs {
+                active_action: DirectGrowthAction::PrePlantSkip,
+                ..base
+            }
+            .validate_schedule_domain(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.active_action",
+        );
+        assert_direct_domain(
+            DirectGrowthInputs {
+                active_context: annual_context(99),
+                active_action: DirectGrowthAction::PlantingReset,
+                ..base
+            }
+            .validate_schedule_domain(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.planting_day",
+        );
+        assert_direct_domain(
+            DirectGrowthInputs {
+                active_context: annual_context(249),
+                active_action: DirectGrowthAction::HarvestReset,
+                ..base
+            }
+            .validate_schedule_domain(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.harvest_day",
+        );
+        for action in [DirectGrowthAction::StopReset, DirectGrowthAction::Grazing] {
+            assert_direct_domain(
+                DirectGrowthInputs {
+                    active_action: action,
+                    ..base
+                }
+                .validate_schedule_domain(DirectGrowthManagementClass::AnnualOrFallow),
+                "growth.active_action",
+            );
+        }
+    }
+
+    #[test]
+    fn cqr_row6_perennial_schedule_domain_covers_action_and_optional_day_branches() {
+        let base = perennial_inputs();
+
+        for action in [
+            DirectGrowthAction::None,
+            DirectGrowthAction::Cut,
+            DirectGrowthAction::Grazing,
+        ] {
+            DirectGrowthInputs {
+                active_action: action,
+                ..base
+            }
+            .validate_schedule_domain(DirectGrowthManagementClass::Perennial)
+            .expect("perennial growth should accept normal perennial actions");
+        }
+
+        DirectGrowthInputs {
+            planting_day: 0,
+            active_action: DirectGrowthAction::PlantingReset,
+            ..base
+        }
+        .validate_schedule_domain(DirectGrowthManagementClass::Perennial)
+        .expect("perennial planting reset may omit an optional planting day");
+
+        DirectGrowthInputs {
+            planting_day: 210,
+            active_action: DirectGrowthAction::PlantingReset,
+            ..base
+        }
+        .validate_schedule_domain(DirectGrowthManagementClass::Perennial)
+        .expect("perennial planting reset should align with nonzero planting day");
+
+        DirectGrowthInputs {
+            active_action: DirectGrowthAction::StopReset,
+            stop_day: 210,
+            ..base
+        }
+        .validate_schedule_domain(DirectGrowthManagementClass::Perennial)
+        .expect("perennial stop reset should align with stop day");
+
+        assert_direct_domain(
+            DirectGrowthInputs {
+                planting_day: 211,
+                active_action: DirectGrowthAction::PlantingReset,
+                ..base
+            }
+            .validate_schedule_domain(DirectGrowthManagementClass::Perennial),
+            "growth.planting_day",
+        );
+        assert_direct_domain(
+            DirectGrowthInputs {
+                active_action: DirectGrowthAction::StopReset,
+                stop_day: 0,
+                ..base
+            }
+            .validate_schedule_domain(DirectGrowthManagementClass::Perennial),
+            "growth.stop_day",
+        );
+        assert_direct_domain(
+            DirectGrowthInputs {
+                active_action: DirectGrowthAction::StopReset,
+                stop_day: 211,
+                ..base
+            }
+            .validate_schedule_domain(DirectGrowthManagementClass::Perennial),
+            "growth.stop_day",
+        );
+        for action in [
+            DirectGrowthAction::HarvestReset,
+            DirectGrowthAction::PrePlantSkip,
+        ] {
+            assert_direct_domain(
+                DirectGrowthInputs {
+                    active_action: action,
+                    ..base
+                }
+                .validate_schedule_domain(DirectGrowthManagementClass::Perennial),
+                "growth.active_action",
+            );
+        }
+        assert_direct_domain(
+            DirectGrowthInputs {
+                harvest_day: 367,
+                ..base
+            }
+            .validate_schedule_domain(DirectGrowthManagementClass::Perennial),
+            "growth.optional_day_of_year",
+        );
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn cqr_row6_equation_input_validation_covers_guard_families() {
+        let annual = annual_inputs();
+        annual
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow)
+            .expect("valid annual equation inputs should pass");
+        perennial_inputs()
+            .validate_equation_inputs(DirectGrowthManagementClass::Perennial)
+            .expect("valid perennial equation inputs should pass");
+
+        assert_direct_domain(
+            DirectGrowthInputs {
+                water_stress: 1.1,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.water_stress",
+        );
+        assert_negative(
+            DirectGrowthInputs {
+                water_stress: -0.1,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.water_stress",
+        );
+        assert_nonfinite(
+            DirectGrowthInputs {
+                temperature_max_c: f64::NAN,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.temperature_max_c",
+        );
+        assert_negative(
+            DirectGrowthInputs {
+                radiation_mj_m2: -1.0e-6,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.radiation_mj_m2",
+        );
+        assert_direct_domain(
+            DirectGrowthInputs {
+                soil_depth_m: 0.0,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.soil_depth_m",
+        );
+        assert_direct_domain(
+            DirectGrowthInputs {
+                otemp: annual.btemp,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.otemp",
+        );
+        assert_negative(
+            DirectGrowthInputs {
+                dlai: -1.0e-4,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.dlai",
+        );
+        assert_direct_domain(
+            DirectGrowthInputs { hi: 1.1, ..annual }
+                .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.hi",
+        );
+        assert_negative(
+            DirectGrowthInputs {
+                rtmmax: -1.0e-6,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.rtmmax",
+        );
+        assert_direct_domain(
+            DirectGrowthInputs {
+                rtmmax: 0.0,
+                ..perennial_inputs()
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::Perennial),
+            "growth.rtmmax",
+        );
+        assert_direct_domain(
+            DirectGrowthInputs {
+                rdmax: 0.0,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.rdmax",
+        );
+        assert_nonfinite(
+            DirectGrowthInputs {
+                gddmax: 0.0,
+                monthly_temperature_max_c: [f64::NAN; 12],
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.monthly_temperature_max_c",
+        );
+        assert_negative(
+            DirectGrowthInputs {
+                et_demand_m: -1.0e-6,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.et_demand_m",
+        );
+        assert_nonfinite(
+            DirectGrowthInputs {
+                plant_tolerance: f64::NAN,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.plant_tolerance",
+        );
+    }
 }

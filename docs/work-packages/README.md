@@ -54,6 +54,17 @@ State as of `2026-06-30`:
 
 ## Execution Log
 
+- `20260701-kernel-boundary-cqr-row6-growth-decomposition-001/` is complete as
+  KERNEL-BOUNDARY CQR ROW 6 GROWTH DECOMPOSITION. Result:
+  `EXECUTED-COMPLETE-ROW6-CQR`. It executed row #6 of
+  `kernel-boundary-cqr-burndown-execplan.md`, reducing row #6 owned production
+  offenders from 2 unique entries (`4` duplicated report rows) to `0` entries
+  above CRAP 30. It added typed assertions for annual/perennial growth schedule
+  branches and growth equation guard families, and split the direct growth
+  schedule/equation validators into behavior-preserving helper groups. Full
+  gates passed (`1257` nextest passed); H2637 measured `1:06.19` / `79828
+  KiB`, protected H2637 outputs were byte-identical, and
+  `compatibility_edge_invocations=0`.
 - `20260701-kernel-boundary-cqr-row5-hydrology-wb-kernel-001/` is complete as
   KERNEL-BOUNDARY CQR ROW 5 HYDROLOGY WB KERNEL. Result:
   `EXECUTED-COMPLETE-ROW5-CQR`. It executed row #5 of
