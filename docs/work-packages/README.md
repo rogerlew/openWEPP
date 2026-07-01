@@ -51,6 +51,13 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
+- `20260701-wshedw3-bounded-worker-pool-001/` is queued as WSHED-W3 BOUNDED
+  WORKER POOL. Result: `QUEUED-HANDOFF-AUTHORED`. It contains the active
+  handoff prompt for implementing explicit `--jobs N` bounded worker-pool
+  execution, preserving `--jobs 1` determinism, proving `--jobs 1`/`--jobs N`
+  output identity and fail-closed child/pass behavior, and recording canonical
+  scaling evidence on the committed carnivorous-adobo fixture.
+
 ## Execution Log
 
 - `20260701-wshedw2-serial-watershed-supervisor-skeleton-001/` is complete as
