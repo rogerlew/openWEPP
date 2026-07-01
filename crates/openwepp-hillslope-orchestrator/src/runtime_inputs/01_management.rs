@@ -1533,3 +1533,154 @@ fn projection_usize_from_surface(
         }
     })
 }
+
+#[cfg(test)]
+mod cqr_row3_management_tests {
+    use super::*;
+    use openwepp_input_contract::parsers::management::{
+        DrainScenario, ManagementParseOutput, ManagementScenarioRegistries, ManagementSchedule,
+        ManagementSectionCounts, ManagementSectionMeta, ScenarioMeta,
+    };
+
+    fn scenario_meta(name: &str) -> ScenarioMeta {
+        ScenarioMeta {
+            name: name.to_string(),
+            description: [String::new(), String::new(), String::new()],
+            landuse: 1,
+        }
+    }
+
+    fn management_meta() -> ManagementSectionMeta {
+        ManagementSectionMeta {
+            name: "management".to_string(),
+            description: [String::new(), String::new(), String::new()],
+            nofes: 1,
+        }
+    }
+
+    fn drain_scenario(ddrain: f64, sdrain: f64, drdiam: f64) -> DrainScenario {
+        DrainScenario {
+            meta: scenario_meta("drain"),
+            ddrain,
+            drainc: 0.0,
+            drdiam,
+            sdrain,
+        }
+    }
+
+    fn management_with_drains(drains: Vec<DrainScenario>) -> ManagementParseOutput {
+        ManagementParseOutput {
+            datver: "98.4".to_string(),
+            topology_count: 1,
+            declared_total_years: 1,
+            section_counts: ManagementSectionCounts {
+                ncrop: 0,
+                nop: 0,
+                nini: 0,
+                nseq: 0,
+                ncnt: 0,
+                ndrain: drains.len(),
+                nscen: 0,
+            },
+            registries: ManagementScenarioRegistries {
+                plants: Vec::new(),
+                operations: Vec::new(),
+                initials: Vec::new(),
+                surfaces: Vec::new(),
+                contours: Vec::new(),
+                drains,
+                yearlies: Vec::new(),
+                management_meta: management_meta(),
+            },
+            schedule: ManagementSchedule {
+                ofe_initial_refs: Vec::new(),
+                rotation_repeats: 0,
+                rotation_years: 0,
+                slots: Vec::new(),
+            },
+        }
+    }
+
+    fn scalar(surface: &BTreeMap<BoundarySymbol, BoundaryValue>, symbol: &str) -> f64 {
+        surface
+            .get(&BoundarySymbol::from(symbol))
+            .unwrap_or_else(|| panic!("missing scalar {symbol}"))
+            .as_f64()
+    }
+
+    fn assert_scalar(surface: &BTreeMap<BoundarySymbol, BoundaryValue>, symbol: &str, expected: f64) {
+        let actual = scalar(surface, symbol);
+        assert!(
+            (actual - expected).abs() <= f64::EPSILON,
+            "{symbol}: expected {expected}, observed {actual}"
+        );
+    }
+
+    #[test]
+    fn cqr_row3_project_primary_drain_controls_disables_absent_drain() {
+        let management = management_with_drains(Vec::new());
+        let mut surface = BTreeMap::new();
+
+        project_primary_drain_controls(&mut surface, &management, 1, 1, 0).unwrap();
+
+        assert_scalar(&surface, "drset", 0.0);
+        assert_scalar(&surface, "wb19_drain_enabled", 0.0);
+        assert!(!surface.contains_key(&BoundarySymbol::from("wb19_drain_depth")));
+        assert!(!surface.contains_key(&BoundarySymbol::from("wb19_drain_spacing")));
+        assert!(!surface.contains_key(&BoundarySymbol::from("wb19_drain_diameter")));
+    }
+
+    #[test]
+    fn cqr_row3_project_primary_drain_controls_projects_enabled_geometry() {
+        let management = management_with_drains(vec![drain_scenario(1.25, 2.5, 0.75)]);
+        let mut surface = BTreeMap::new();
+
+        project_primary_drain_controls(&mut surface, &management, 2, 3, 1).unwrap();
+
+        assert_scalar(&surface, "drset", 1.0);
+        assert_scalar(&surface, "wb19_drain_enabled", 1.0);
+        assert_scalar(&surface, "wb19_drain_depth", 1.25);
+        assert_scalar(&surface, "wb19_drain_spacing", 2.5);
+        assert_scalar(&surface, "wb19_drain_diameter", 0.75);
+    }
+
+    #[test]
+    fn cqr_row3_project_primary_drain_controls_rejects_dangling_reference() {
+        let management = management_with_drains(vec![drain_scenario(1.25, 2.5, 0.75)]);
+        let mut surface = BTreeMap::new();
+
+        let err = project_primary_drain_controls(&mut surface, &management, 4, 5, 2)
+            .expect_err("dangling drain reference must fail closed");
+
+        assert!(matches!(
+            err,
+            HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "drset",
+                slot_index: 4,
+                crop_slot_index: 5,
+                value: 2.0,
+                allowed: "1..=drain_scenario_count"
+            }
+        ));
+    }
+
+    #[test]
+    fn cqr_row3_project_primary_drain_controls_rejects_zero_geometry() {
+        let management = management_with_drains(vec![drain_scenario(1.25, 0.0, 0.75)]);
+        let mut surface = BTreeMap::new();
+
+        let err = project_primary_drain_controls(&mut surface, &management, 6, 7, 1)
+            .expect_err("enabled drain with zero spacing must fail closed");
+
+        assert!(matches!(
+            err,
+            HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "wb19_drain_spacing",
+                slot_index: 6,
+                crop_slot_index: 7,
+                value: 0.0,
+                allowed: "> 0.0 when wb19_drain_enabled=1"
+            }
+        ));
+    }
+}

@@ -54,6 +54,16 @@ State as of `2026-06-30`:
 
 ## Execution Log
 
+- `20260701-kernel-boundary-cqr-row3-management-parser-001/` is complete as
+  KERNEL-BOUNDARY CQR ROW 3 MANAGEMENT PARSER. Result:
+  `EXECUTED-COMPLETE-ROW3-CQR`. It executed row #3 of
+  `kernel-boundary-cqr-burndown-execplan.md`, reducing row #3 owned production
+  offenders from 1 unique entry (`2` duplicated report rows) to `0` entries
+  above CRAP 30. It added typed assertions for disabled primary drain
+  projection, enabled drain geometry projection, dangling drain references, and
+  zero enabled-drain geometry fail-closed behavior. Full gates passed (`1264`
+  nextest passed); H2637 measured `1:06.75` / `80052 KiB`, protected H2637
+  outputs were byte-identical, and `compatibility_edge_invocations=0`.
 - `20260701-kernel-boundary-cqr-row8-per-ofe-mofe-001/` is complete as
   KERNEL-BOUNDARY CQR ROW 8 PER-OFE MOFE. Result:
   `EXECUTED-COMPLETE-ROW8-CQR`. It executed row #8 of
