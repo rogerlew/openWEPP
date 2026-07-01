@@ -1,0 +1,10 @@
+# Review Disposition
+
+Status: `QUEUED`
+
+Dual independent review plus science-contract review is required before
+closure. Record each finding as `accepted`, `rejected`, `deferred`, or
+`follow-up`, with evidence paths and parent disposition.
+
+Reviews must check gate legitimacy, consumer-path proof, conservation/output
+acceptance, and line-count governance.

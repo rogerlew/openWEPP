@@ -51,6 +51,13 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
+- `20260701-wshedw4-typed-watershed-network-frame-001/` is queued as WSHED-W4
+  TYPED WATERSHED NETWORK FRAME. Result: `QUEUED-HANDOFF-AUTHORED`. It
+  contains the active handoff prompt for replacing production
+  `WatershedWritebackSurface` routing/publication with typed
+  `WatershedNetworkFrame` and `WatershedPublicationFrame` consumers, including
+  old-surface inventory, source guards, protected-output identity or
+  contract-governed deltas, and conservation/output operand-lineage evidence.
 
 ## Execution Log
 
