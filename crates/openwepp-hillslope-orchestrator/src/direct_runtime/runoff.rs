@@ -70,14 +70,7 @@ fn maybe_write_r7h_runoff_rebalance_trace(event: &DirectRunoffRebalanceTraceEven
     let Some(config) = r7h_runoff_rebalance_trace_config() else {
         return;
     };
-    if let Some(exact_day_index) = config.exact_day_index
-        && event.day_index != exact_day_index
-    {
-        return;
-    }
-    if let Some(exact_lane_index) = config.exact_lane_index
-        && event.lane_index != exact_lane_index
-    {
+    if !r7h_runoff_rebalance_trace_allows(config, event) {
         return;
     }
 
@@ -135,13 +128,34 @@ fn maybe_write_r7h_runoff_rebalance_trace(event: &DirectRunoffRebalanceTraceEven
     line.push('}');
     line.push('\n');
 
-    if let Some(parent) = config.path.parent() {
+    r7h_runoff_append_trace_line(&config.path, &line);
+}
+
+fn r7h_runoff_rebalance_trace_allows(
+    config: &R7hRunoffRebalanceTraceConfig,
+    event: &DirectRunoffRebalanceTraceEvent,
+) -> bool {
+    if let Some(exact_day_index) = config.exact_day_index
+        && event.day_index != exact_day_index
+    {
+        return false;
+    }
+    if let Some(exact_lane_index) = config.exact_lane_index
+        && event.lane_index != exact_lane_index
+    {
+        return false;
+    }
+    true
+}
+
+fn r7h_runoff_append_trace_line(path: &std::path::Path, line: &str) {
+    if let Some(parent) = path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
     if let Ok(mut file) = std::fs::OpenOptions::new()
         .create(true)
         .append(true)
-        .open(&config.path)
+        .open(path)
     {
         let _ = std::io::Write::write_all(&mut file, line.as_bytes());
     }
@@ -1195,7 +1209,7 @@ impl DirectDayFrame {
         }
     }
 
-    fn rebalance_r4a_frost_projection_to_storage_target(
+    pub(super) fn rebalance_r4a_frost_projection_to_storage_target(
         &mut self,
     ) -> Result<(), DirectRuntimeError> {
         const R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M: f64 = 1.0e-7;

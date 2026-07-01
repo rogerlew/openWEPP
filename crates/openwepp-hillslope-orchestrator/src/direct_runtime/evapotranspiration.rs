@@ -73,14 +73,7 @@ fn maybe_write_r7h_et_trace(event: &DirectEvapotranspirationTraceEvent) {
     let Some(config) = r7h_et_trace_config() else {
         return;
     };
-    if let Some(exact_day_index) = config.exact_day_index
-        && event.day_index != exact_day_index
-    {
-        return;
-    }
-    if let Some(exact_lane_index) = config.exact_lane_index
-        && event.lane_index != exact_lane_index
-    {
+    if !r7h_et_trace_allows(config, event) {
         return;
     }
 
@@ -178,13 +171,34 @@ fn maybe_write_r7h_et_trace(event: &DirectEvapotranspirationTraceEvent) {
     line.push('}');
     line.push('\n');
 
-    if let Some(parent) = config.path.parent() {
+    r7h_append_trace_line(&config.path, &line);
+}
+
+fn r7h_et_trace_allows(
+    config: &R7hEtTraceConfig,
+    event: &DirectEvapotranspirationTraceEvent,
+) -> bool {
+    if let Some(exact_day_index) = config.exact_day_index
+        && event.day_index != exact_day_index
+    {
+        return false;
+    }
+    if let Some(exact_lane_index) = config.exact_lane_index
+        && event.lane_index != exact_lane_index
+    {
+        return false;
+    }
+    true
+}
+
+fn r7h_append_trace_line(path: &std::path::Path, line: &str) {
+    if let Some(parent) = path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
     if let Ok(mut file) = std::fs::OpenOptions::new()
         .create(true)
         .append(true)
-        .open(&config.path)
+        .open(path)
     {
         let _ = std::io::Write::write_all(&mut file, line.as_bytes());
     }
@@ -378,86 +392,14 @@ impl DirectDayFrame {
         let mut layers = percolation.layer_state_after.clone();
         validate_et_layers("evapotranspiration.layers", &layers)?;
         let soil_water_before_m = percolation.soil_water_after_m;
-        let mut stage_state_after = inputs.stage_state;
-
-        let computed_pmet = if let Some(pmet_compute) = &inputs.pmet_compute {
-            Some(pmet_compute.compute(&layers, inputs)?)
-        } else {
-            inputs.pmet
-        };
-        let soil_evaporation_storage_return_m =
-            computed_pmet.map_or(0.0, |pmet| pmet.soil_evaporation_storage_return_m);
-        let (soil_evaporation_with_residue_m, transpiration_demand_m, pmet_component_mode) =
-            if let Some(pmet) = computed_pmet {
-                validate_pmet_inputs(pmet)?;
-                if let Some(top_layer) = layers.first_mut() {
-                    top_layer.theta_m += pmet.soil_evaporation_storage_return_m;
-                    validate_finite("evapotranspiration.top_layer_storage_m", top_layer.theta_m)?;
-                }
-                (
-                    normalize_within_zero_tolerance(pmet.soil_evaporation_m)?,
-                    pmet.plant_transpiration_m,
-                    true,
-                )
-            } else {
-                let soil_evaporation_partition_potential_m = inputs.et_demand_m
-                    * (-WB17_CANOPY_EAJ_COEFFICIENT
-                        * (inputs.canopy_cover_fraction + WB17_CANOPY_BARE_SOIL_OFFSET))
-                        .exp();
-                validate_nonnegative_direct_m(
-                    "evapotranspiration.soil_evaporation_partition_potential_m",
-                    soil_evaporation_partition_potential_m,
-                )?;
-                if soil_evaporation_partition_potential_m > inputs.et_demand_m + WB11_ZERO_THRESHOLD
-                {
-                    return Err(DirectRuntimeError::DirectDomainViolation {
-                        field: "evapotranspiration.soil_evaporation_partition_potential_m",
-                    });
-                }
-
-                let transpiration_partition_potential_m = if inputs.leaf_area_index
-                    > WB17_TRANSPIRATION_LAI_FULL_COVER
-                {
-                    inputs.et_demand_m
-                } else {
-                    inputs.leaf_area_index * inputs.et_demand_m / WB17_TRANSPIRATION_LAI_FULL_COVER
-                };
-                validate_nonnegative_direct_m(
-                    "evapotranspiration.transpiration_partition_potential_m",
-                    transpiration_partition_potential_m,
-                )?;
-
-                let residue_evaporation_m = inputs
-                    .residue_interception_m
-                    .min(soil_evaporation_partition_potential_m);
-                let soil_evaporation_potential_m =
-                    soil_evaporation_partition_potential_m - residue_evaporation_m;
-                let soil_evaporation_demand_m = if let Some(stage_state) = inputs.stage_state {
-                    let (stage_soil_evaporation_m, next_stage) = compute_stage_soil_evaporation(
-                        stage_state,
-                        inputs.same_pass_infiltration_m,
-                        soil_evaporation_potential_m,
-                    )?;
-                    stage_state_after = Some(next_stage);
-                    stage_soil_evaporation_m
-                } else {
-                    soil_evaporation_potential_m
-                };
-
-                let mut soil_evaporation_with_residue_m =
-                    soil_evaporation_demand_m + inputs.residue_interception_m;
-                let potential_et_before_layer_m =
-                    soil_evaporation_with_residue_m + transpiration_partition_potential_m;
-                if inputs.et_demand_m < potential_et_before_layer_m {
-                    soil_evaporation_with_residue_m =
-                        (inputs.et_demand_m - transpiration_partition_potential_m).max(0.0);
-                }
-                (
-                    soil_evaporation_with_residue_m,
-                    transpiration_partition_potential_m,
-                    false,
-                )
-            };
+        let surface_demand = compute_surface_et_demand_components(&mut layers, inputs)?;
+        let SurfaceEtDemandComponents {
+            soil_evaporation_with_residue_m,
+            transpiration_demand_m,
+            pmet_component_mode,
+            soil_evaporation_storage_return_m,
+            stage_state_after,
+        } = surface_demand;
 
         validate_nonnegative_direct_m(
             "evapotranspiration.soil_evaporation_with_residue_m",
@@ -718,7 +660,7 @@ impl DirectEvapotranspirationComputeInputs {
 
 impl DirectEvapotranspirationPmetComputeInputs {
     #[allow(clippy::manual_midpoint, clippy::similar_names, clippy::too_many_lines)]
-    fn compute(
+    pub(super) fn compute(
         &self,
         layers: &[DirectSubsurfaceLayerState],
         et: &DirectEvapotranspirationComputeInputs,
@@ -747,12 +689,7 @@ impl DirectEvapotranspirationPmetComputeInputs {
         let emint = pmet_saturation_vapor_pressure_kpa(self.temperature_min_c);
         let ee = f64::midpoint(emaxt, emint);
         validate_positive("pmet.emaxt", emaxt)?;
-        let radpot = self.radpot_ly.unwrap_or_else(|| {
-            pmet_legacy_sunmap_horizontal_radpot_ly(
-                self.latitude_degrees,
-                f64::from(self.runtime_day_of_year),
-            )
-        });
+        let radpot = self.radpot_or_legacy();
         validate_positive("pmet.radpot", radpot)?;
 
         let ra = self.radiation_ly / 23.9;
@@ -778,53 +715,24 @@ impl DirectEvapotranspirationPmetComputeInputs {
             / denominator;
         let rhd_pct = ed / emaxt * 100.0;
         let height_factor = (self.canopy_height_m / 3.0).powf(0.3);
-        let kcbadj = if et.leaf_area_index > 0.0 && et.root_depth_m > 0.0 {
-            self.kcb + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor
-        } else {
-            0.0
-        };
+        let kcbadj = pmet_adjusted_crop_coefficient(et, self.kcb, fwv_m_s, rhd_pct, height_factor);
         let kcbcon = kcbadj * (1.0 - (-0.45 * et.leaf_area_index).exp());
-        let etke = if kcbadj > 0.0 {
-            kcbadj * (-0.45 * et.leaf_area_index).exp()
-        } else {
-            1.2
-        };
+        let etke = pmet_soil_evaporation_coefficient(kcbadj, et.leaf_area_index);
 
         let profile_depth_m = pmet_profile_depth_m(layers)?;
         let epdp_m = 0.1_f64.min(profile_depth_m);
         let (tew_mm, rew_mm, wfevp_base_mm) = self.evaporation_storage_terms(layers, epdp_m)?;
         let wfevp_mm = wfevp_base_mm + et.residue_interception_m * 1_000.0;
-        let etkr = if (tew_mm - wfevp_mm) <= rew_mm {
-            1.0
-        } else {
-            let denominator = tew_mm - rew_mm;
-            if denominator <= 0.0 {
-                1.0
-            } else {
-                (wfevp_mm / denominator).powi(2)
-            }
-        };
+        let etkr = pmet_evaporation_reduction_coefficient(tew_mm, rew_mm, wfevp_mm);
         let tpdp_m = et.root_depth_m.min(profile_depth_m);
         let (taw_mm, wftrp_mm) = self.transpiration_storage_terms(layers, tpdp_m, wfevp_mm)?;
         let etcsc = kcbadj * etorc_mm;
         let rawpaj = self.rawp + 0.04 * (5.0 - etcsc);
         let raw_mm = rawpaj * taw_mm;
-        let etksden = taw_mm - raw_mm;
-        let etks = if etksden <= 0.0 || (taw_mm - wftrp_mm) <= raw_mm {
-            1.0
-        } else {
-            wftrp_mm / etksden
-        };
+        let etks = pmet_transpiration_stress_coefficient(taw_mm, wftrp_mm, raw_mm);
         let potes_m = etorc_mm * etke * 0.001;
-        let es_raw_m = if potes_m > et.residue_interception_m {
-            let bpotes_m = potes_m - et.residue_interception_m;
-            let eaj = (-0.5 * (et.canopy_cover_fraction + 0.1)).exp();
-            let kcmax = 1.2 + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor;
-            let kecon = (etke * etkr).min(eaj * kcmax);
-            kecon * bpotes_m / etke + et.residue_interception_m
-        } else {
-            potes_m
-        };
+        let es_raw_m =
+            pmet_raw_soil_evaporation_m(et, potes_m, etke, etkr, fwv_m_s, rhd_pct, height_factor);
         let soil_evaporation_storage_return_m = if es_raw_m < 0.0 { -es_raw_m } else { 0.0 };
         let soil_evaporation_m = es_raw_m.max(0.0);
         let ep_raw_m = etorc_mm * etks * kcbcon * 0.001;
@@ -861,7 +769,16 @@ impl DirectEvapotranspirationPmetComputeInputs {
         })
     }
 
-    fn evaporation_storage_terms(
+    fn radpot_or_legacy(&self) -> f64 {
+        self.radpot_ly.unwrap_or_else(|| {
+            pmet_legacy_sunmap_horizontal_radpot_ly(
+                self.latitude_degrees,
+                f64::from(self.runtime_day_of_year),
+            )
+        })
+    }
+
+    pub(super) fn evaporation_storage_terms(
         &self,
         layers: &[DirectSubsurfaceLayerState],
         epdp_m: f64,
@@ -904,7 +821,7 @@ impl DirectEvapotranspirationPmetComputeInputs {
         Ok((tew_mm, rew_mm, wfevp_mm))
     }
 
-    fn transpiration_storage_terms(
+    pub(super) fn transpiration_storage_terms(
         &self,
         layers: &[DirectSubsurfaceLayerState],
         tpdp_m: f64,
@@ -959,6 +876,79 @@ impl DirectEvapotranspirationPmetComputeInputs {
             });
         }
         Ok(solthk)
+    }
+}
+
+pub(super) fn pmet_adjusted_crop_coefficient(
+    et: &DirectEvapotranspirationComputeInputs,
+    kcb: f64,
+    fwv_m_s: f64,
+    rhd_pct: f64,
+    height_factor: f64,
+) -> f64 {
+    if et.leaf_area_index > 0.0 && et.root_depth_m > 0.0 {
+        kcb + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor
+    } else {
+        0.0
+    }
+}
+
+pub(super) fn pmet_soil_evaporation_coefficient(kcbadj: f64, leaf_area_index: f64) -> f64 {
+    if kcbadj > 0.0 {
+        kcbadj * (-0.45 * leaf_area_index).exp()
+    } else {
+        1.2
+    }
+}
+
+pub(super) fn pmet_evaporation_reduction_coefficient(
+    tew_mm: f64,
+    rew_mm: f64,
+    wfevp_mm: f64,
+) -> f64 {
+    if (tew_mm - wfevp_mm) <= rew_mm {
+        1.0
+    } else {
+        let denominator = tew_mm - rew_mm;
+        if denominator <= 0.0 {
+            1.0
+        } else {
+            (wfevp_mm / denominator).powi(2)
+        }
+    }
+}
+
+pub(super) fn pmet_transpiration_stress_coefficient(
+    taw_mm: f64,
+    wftrp_mm: f64,
+    raw_mm: f64,
+) -> f64 {
+    let etksden = taw_mm - raw_mm;
+    if etksden <= 0.0 || (taw_mm - wftrp_mm) <= raw_mm {
+        1.0
+    } else {
+        wftrp_mm / etksden
+    }
+}
+
+pub(super) fn pmet_raw_soil_evaporation_m(
+    et: &DirectEvapotranspirationComputeInputs,
+    potes_m: f64,
+    soil_evaporation_coefficient: f64,
+    evaporation_reduction_coefficient: f64,
+    fwv_m_s: f64,
+    rhd_pct: f64,
+    height_factor: f64,
+) -> f64 {
+    if potes_m > et.residue_interception_m {
+        let bpotes_m = potes_m - et.residue_interception_m;
+        let eaj = (-0.5 * (et.canopy_cover_fraction + 0.1)).exp();
+        let kcmax = 1.2 + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor;
+        let kecon =
+            (soil_evaporation_coefficient * evaporation_reduction_coefficient).min(eaj * kcmax);
+        kecon * bpotes_m / soil_evaporation_coefficient + et.residue_interception_m
+    } else {
+        potes_m
     }
 }
 
@@ -1325,6 +1315,117 @@ fn validate_pmet_inputs(
     Ok(())
 }
 
+struct SurfaceEtDemandComponents {
+    soil_evaporation_with_residue_m: f64,
+    transpiration_demand_m: f64,
+    pmet_component_mode: bool,
+    soil_evaporation_storage_return_m: f64,
+    stage_state_after: Option<DirectEvapotranspirationStageState>,
+}
+
+fn compute_surface_et_demand_components(
+    layers: &mut [DirectSubsurfaceLayerState],
+    inputs: &DirectEvapotranspirationComputeInputs,
+) -> Result<SurfaceEtDemandComponents, DirectRuntimeError> {
+    let computed_pmet = if let Some(pmet_compute) = &inputs.pmet_compute {
+        Some(pmet_compute.compute(layers, inputs)?)
+    } else {
+        inputs.pmet
+    };
+    if let Some(pmet) = computed_pmet {
+        return compute_pmet_surface_et_demand(layers, pmet, inputs.stage_state);
+    }
+    compute_manual_surface_et_demand(inputs)
+}
+
+fn compute_pmet_surface_et_demand(
+    layers: &mut [DirectSubsurfaceLayerState],
+    pmet: DirectEvapotranspirationPmetInputs,
+    stage_state_after: Option<DirectEvapotranspirationStageState>,
+) -> Result<SurfaceEtDemandComponents, DirectRuntimeError> {
+    validate_pmet_inputs(pmet)?;
+    if let Some(top_layer) = layers.first_mut() {
+        top_layer.theta_m += pmet.soil_evaporation_storage_return_m;
+        validate_finite("evapotranspiration.top_layer_storage_m", top_layer.theta_m)?;
+    }
+    Ok(SurfaceEtDemandComponents {
+        soil_evaporation_with_residue_m: normalize_within_zero_tolerance(pmet.soil_evaporation_m)?,
+        transpiration_demand_m: pmet.plant_transpiration_m,
+        pmet_component_mode: true,
+        soil_evaporation_storage_return_m: pmet.soil_evaporation_storage_return_m,
+        stage_state_after,
+    })
+}
+
+fn compute_manual_surface_et_demand(
+    inputs: &DirectEvapotranspirationComputeInputs,
+) -> Result<SurfaceEtDemandComponents, DirectRuntimeError> {
+    let soil_evaporation_partition_potential_m = inputs.et_demand_m
+        * (-WB17_CANOPY_EAJ_COEFFICIENT
+            * (inputs.canopy_cover_fraction + WB17_CANOPY_BARE_SOIL_OFFSET))
+            .exp();
+    validate_nonnegative_direct_m(
+        "evapotranspiration.soil_evaporation_partition_potential_m",
+        soil_evaporation_partition_potential_m,
+    )?;
+    if soil_evaporation_partition_potential_m > inputs.et_demand_m + WB11_ZERO_THRESHOLD {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "evapotranspiration.soil_evaporation_partition_potential_m",
+        });
+    }
+
+    let transpiration_partition_potential_m =
+        if inputs.leaf_area_index > WB17_TRANSPIRATION_LAI_FULL_COVER {
+            inputs.et_demand_m
+        } else {
+            inputs.leaf_area_index * inputs.et_demand_m / WB17_TRANSPIRATION_LAI_FULL_COVER
+        };
+    validate_nonnegative_direct_m(
+        "evapotranspiration.transpiration_partition_potential_m",
+        transpiration_partition_potential_m,
+    )?;
+
+    let residue_evaporation_m = inputs
+        .residue_interception_m
+        .min(soil_evaporation_partition_potential_m);
+    let soil_evaporation_potential_m =
+        soil_evaporation_partition_potential_m - residue_evaporation_m;
+    let (soil_evaporation_demand_m, stage_state_after) =
+        compute_manual_soil_evaporation_demand(inputs, soil_evaporation_potential_m)?;
+
+    let mut soil_evaporation_with_residue_m =
+        soil_evaporation_demand_m + inputs.residue_interception_m;
+    let potential_et_before_layer_m =
+        soil_evaporation_with_residue_m + transpiration_partition_potential_m;
+    if inputs.et_demand_m < potential_et_before_layer_m {
+        soil_evaporation_with_residue_m =
+            (inputs.et_demand_m - transpiration_partition_potential_m).max(0.0);
+    }
+    Ok(SurfaceEtDemandComponents {
+        soil_evaporation_with_residue_m,
+        transpiration_demand_m: transpiration_partition_potential_m,
+        pmet_component_mode: false,
+        soil_evaporation_storage_return_m: 0.0,
+        stage_state_after,
+    })
+}
+
+fn compute_manual_soil_evaporation_demand(
+    inputs: &DirectEvapotranspirationComputeInputs,
+    soil_evaporation_potential_m: f64,
+) -> Result<(f64, Option<DirectEvapotranspirationStageState>), DirectRuntimeError> {
+    if let Some(stage_state) = inputs.stage_state {
+        let (stage_soil_evaporation_m, next_stage) = compute_stage_soil_evaporation(
+            stage_state,
+            inputs.same_pass_infiltration_m,
+            soil_evaporation_potential_m,
+        )?;
+        Ok((stage_soil_evaporation_m, Some(next_stage)))
+    } else {
+        Ok((soil_evaporation_potential_m, None))
+    }
+}
+
 fn validate_et_layers(
     field: &'static str,
     layers: &[DirectSubsurfaceLayerState],
@@ -1360,7 +1461,7 @@ fn validate_et_layers(
     Ok(())
 }
 
-fn compute_stage_soil_evaporation(
+pub(super) fn compute_stage_soil_evaporation(
     stage: DirectEvapotranspirationStageState,
     infiltration_m: f64,
     soil_evaporation_potential_m: f64,

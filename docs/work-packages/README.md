@@ -54,6 +54,17 @@ State as of `2026-06-30`:
 
 ## Execution Log
 
+- `20260701-kernel-boundary-cqr-row9-direct-runtime-physics-001/` is complete as
+  KERNEL-BOUNDARY CQR ROW 9 DIRECT RUNTIME PHYSICS. Result:
+  `EXECUTED-COMPLETE-ROW9-CQR`. It executed row #9 of
+  `kernel-boundary-cqr-burndown-execplan.md`, reducing row #9 owned production
+  offenders from 14 unique entries (`28` duplicated report rows) to `0`
+  entries above CRAP 30. It added typed assertions for PMET compute/storage
+  terms, staged soil evaporation, R4N surface ET PMET/manual demand paths,
+  day/lane constructor validators, snow/frost carry guards, day commit
+  layer-source priority, and R4A frost rebalance. Full gates passed (`1246`
+  nextest passed); H2637 measured `1:07.27` / `79736 KiB`, protected H2637
+  outputs were byte-identical, and `compatibility_edge_invocations=0`.
 - `20260701-kernel-boundary-cqr-row7-wb-publication-001/` is complete as
   KERNEL-BOUNDARY CQR ROW 7 WB PUBLICATION. Result:
   `EXECUTED-COMPLETE-ROW7-CQR`. It executed row #7 of

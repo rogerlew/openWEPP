@@ -196,14 +196,7 @@ fn maybe_write_r7h_storage_trace(day_frame: &DirectDayFrame) {
     let Some(config) = r7h_storage_trace_config() else {
         return;
     };
-    if let Some(exact_day_index) = config.exact_day_index
-        && day_frame.day_index != exact_day_index
-    {
-        return;
-    }
-    if let Some(exact_lane_index) = config.exact_lane_index
-        && day_frame.lane_index != exact_lane_index
-    {
+    if !r7h_storage_trace_allows(config, day_frame) {
         return;
     }
 
@@ -324,13 +317,31 @@ fn maybe_write_r7h_storage_trace(day_frame: &DirectDayFrame) {
     line.push('}');
     line.push('\n');
 
-    if let Some(parent) = config.path.parent() {
+    r7h_storage_append_trace_line(&config.path, &line);
+}
+
+fn r7h_storage_trace_allows(config: &R7hStorageTraceConfig, day_frame: &DirectDayFrame) -> bool {
+    if let Some(exact_day_index) = config.exact_day_index
+        && day_frame.day_index != exact_day_index
+    {
+        return false;
+    }
+    if let Some(exact_lane_index) = config.exact_lane_index
+        && day_frame.lane_index != exact_lane_index
+    {
+        return false;
+    }
+    true
+}
+
+fn r7h_storage_append_trace_line(path: &std::path::Path, line: &str) {
+    if let Some(parent) = path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
     if let Ok(mut file) = std::fs::OpenOptions::new()
         .create(true)
         .append(true)
-        .open(&config.path)
+        .open(path)
     {
         let _ = std::io::Write::write_all(&mut file, line.as_bytes());
     }

@@ -1797,7 +1797,23 @@ fn validate_direct_constructor_topology(
 fn validate_direct_day_constructor_inputs(
     inputs: &DirectDayConstructorInputs,
 ) -> Result<(), DirectRuntimeError> {
-    validate_nonnegative_direct_m("constructor.forcing.precipitation_m", inputs.forcing.precipitation_m)?;
+    validate_direct_day_forcing_constructor_inputs(inputs)?;
+    validate_direct_day_runoff_constructor_inputs(inputs)?;
+    validate_direct_day_storage_constructor_inputs(inputs)?;
+    validate_direct_day_projection_constructor_inputs(inputs)?;
+    validate_direct_evapotranspiration_compute_inputs(&inputs.evapotranspiration_compute_inputs)?;
+    validate_direct_day_layer_constructor_inputs(inputs)?;
+    validate_direct_frost_constructor_inputs(inputs)?;
+    Ok(())
+}
+
+fn validate_direct_day_forcing_constructor_inputs(
+    inputs: &DirectDayConstructorInputs,
+) -> Result<(), DirectRuntimeError> {
+    validate_nonnegative_direct_m(
+        "constructor.forcing.precipitation_m",
+        inputs.forcing.precipitation_m,
+    )?;
     validate_finite(
         "constructor.forcing.effective_temperature_c",
         inputs.forcing.effective_temperature_c,
@@ -1815,6 +1831,12 @@ fn validate_direct_day_constructor_inputs(
         "constructor.storage_bounds.closure_tolerance_m",
         inputs.storage_bounds_inputs.closure_tolerance_m,
     )?;
+    Ok(())
+}
+
+fn validate_direct_day_runoff_constructor_inputs(
+    inputs: &DirectDayConstructorInputs,
+) -> Result<(), DirectRuntimeError> {
     if let Some(precip_input_handoff_m) = inputs.storage_input_inputs.precip_input_handoff_m {
         validate_nonnegative_direct_m(
             "constructor.storage_input.precip_input_handoff_m",
@@ -1841,6 +1863,12 @@ fn validate_direct_day_constructor_inputs(
         "constructor.percolation.soil_water_initial_m",
         inputs.percolation_inputs.soil_water_initial_m,
     )?;
+    Ok(())
+}
+
+fn validate_direct_day_storage_constructor_inputs(
+    inputs: &DirectDayConstructorInputs,
+) -> Result<(), DirectRuntimeError> {
     validate_nonnegative_direct_m(
         "constructor.deep_seepage_handoff_m",
         inputs.deep_seepage_inputs.deep_seepage_handoff_m,
@@ -1875,6 +1903,12 @@ fn validate_direct_day_constructor_inputs(
         "constructor.frost_storage_liquid_delta_m",
         inputs.frost_storage_liquid_delta_m,
     )?;
+    Ok(())
+}
+
+fn validate_direct_day_projection_constructor_inputs(
+    inputs: &DirectDayConstructorInputs,
+) -> Result<(), DirectRuntimeError> {
     validate_nonnegative_direct_m(
         "constructor.hydrology_projection.aggregate_storage_tolerance_m",
         inputs
@@ -1885,11 +1919,6 @@ fn validate_direct_day_constructor_inputs(
         "constructor.hydrology_projection.profile_depth_m",
         inputs.hydrology_projection_inputs.profile_depth_m,
     )?;
-    validate_direct_evapotranspiration_compute_inputs(
-        &inputs.evapotranspiration_compute_inputs,
-    )?;
-    validate_direct_day_layer_constructor_inputs(inputs)?;
-    validate_direct_frost_constructor_inputs(inputs)?;
     Ok(())
 }
 
