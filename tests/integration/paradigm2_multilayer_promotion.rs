@@ -10,6 +10,7 @@ const PACKAGE: &str = "docs/work-packages/20260629-paradigm-2-multilayer-promoti
 const DIRECT_PUBLICATION: &str =
     "crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs";
 const RUNNER_WAT: &str = "crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs";
+const RUNNER_TESTS: &str = "crates/openwepp-runner/src/hillslope/03_tests.rs";
 const RUNNER_BINS: &str = "crates/openwepp-runner/src/bin";
 const HILLSLOPE_PASS_SCHEMA: &str = "crates/openwepp-hillslope-output/src/hillslope_pass.rs";
 
@@ -90,7 +91,10 @@ fn direct_publication_consumes_stage3_diagnostics_and_default_path_is_null() {
         "meltwater_temperature: row.water_temperature.meltwater_temperature_c",
         RUNNER_WAT,
     );
-    assert_contains(&runner_wat, "meltwater_temperature: None", RUNNER_WAT);
+
+    let runner_tests = read(RUNNER_TESTS);
+    assert_contains(&runner_tests, "meltwater_temperature: None", RUNNER_TESTS);
+    assert_contains(&runner_tests, "meltwater_temperature_c: None", RUNNER_TESTS);
 }
 
 #[test]

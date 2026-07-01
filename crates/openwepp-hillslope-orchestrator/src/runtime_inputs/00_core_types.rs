@@ -11,13 +11,6 @@ use openwepp_climate_runtime_adapter::{
 use openwepp_input_contract::parsers::{
     climate::{ClimateFile, ClimateMetadata, ClimateMonthlyStats},
     frost::FrostParseOutput,
-    irrigation_depletion::{
-        FurrowPeriodData, IrrigationDepletionFile, IrrigationPeriodData, IrrigationPeriodRecord,
-        IrrigationSystemType, SprinklerPeriodData,
-    },
-    irrigation_fixeddate::{
-        FixedDateEvent, FixedDateIrrigationFile, FurrowEvent, Line3Record, SprinklerEvent,
-    },
     management::{
         InitialScenarioData, ManagementParseOutput, PlantScenarioData, YearlyAnnualExtension,
         YearlyCroplandBranch, YearlyScenarioData,
@@ -35,7 +28,6 @@ use crate::constants::{
     PL_GROWTH_ANNUAL_LAI_A, PL_GROWTH_ANNUAL_LAI_B, PL_GROWTH_CANCOV_MAX,
     PL_GROWTH_PERENNIAL_LAI_A, PL_GROWTH_PERENNIAL_LAI_B,
 };
-use crate::HillslopeWritebackSurface;
 
 /// Typed errors for parser-to-hillslope runtime surface adaptation.
 #[derive(Debug, Clone, PartialEq)]

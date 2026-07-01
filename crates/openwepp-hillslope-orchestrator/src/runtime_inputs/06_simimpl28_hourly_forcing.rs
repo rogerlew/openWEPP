@@ -40,11 +40,6 @@ struct Simimpl28SunmapResult {
 struct Simimpl28StmtimHourlyPartition {
     hrrain_m: f64,
     hrsnow_m: f64,
-    wntdur_h: f64,
-    wnttim_h: f64,
-    active_interval: bool,
-    rain_branch: bool,
-    snow_branch: bool,
     rain_fraction: f64,
     snow_fraction: f64,
     phase_model: SnowPhasePartitionModel,
@@ -289,369 +284,11 @@ fn build_simimpl28_hourly_winter_forcing_typed(
     Ok(Some(hourly))
 }
 
-#[allow(clippy::too_many_lines)]
-fn build_simimpl28_hourly_winter_forcing_symbols(
-    forcing: &HillslopeClimateDailyForcing,
-    metadata: &ClimateMetadata,
-    winter_context_state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
-) -> Result<BTreeMap<BoundarySymbol, BoundaryValue>, ClimateRuntimeInputError> {
-    let snow_file_present = optional_runtime_context_scalar(
-        winter_context_state_surface,
-        "snow.options.snow_file_present",
-    )?
-    .unwrap_or(0.0);
-    let frost_file_present = optional_runtime_context_scalar(
-        winter_context_state_surface,
-        "frost.options.frost_file_present",
-    )?
-    .unwrap_or(0.0);
-    let frost_wint_red = optional_runtime_context_scalar(
-        winter_context_state_surface,
-        "frost.options.wintRed",
-    )?
-    .unwrap_or(0.0);
-
-    if !(is_binary_flag(snow_file_present)
-        && is_binary_flag(frost_file_present)
-        && is_binary_flag(frost_wint_red))
-    {
-        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-            symbol:
-                "snow.options.snow_file_present / frost.options.frost_file_present / frost.options.wintRed"
-                    .to_string(),
-            value: snow_file_present.max(frost_file_present).max(frost_wint_red),
-            allowed: "{0,1}",
-        });
-    }
-
-    let (day, mon, year, rain_m, stmdur_s, tmax, tmin, radly, tdpt, wnttim) = match forcing {
-        HillslopeClimateDailyForcing::NoBreakpoint(day) => (
-            day.day,
-            day.mon,
-            day.year,
-            day.prcp,
-            day.stmdur,
-            day.tmax,
-            day.tmin,
-            day.rad,
-            day.tdpt,
-            simimpl28_winter_random_start_hour(simimpl28_day_of_year(day.day, day.mon, day.year)?),
-        ),
-        HillslopeClimateDailyForcing::Breakpoint(day) => (
-            day.day,
-            day.mon,
-            day.year,
-            day.prcp,
-            day.stmdur,
-            day.tmax,
-            day.tmin,
-            day.rad,
-            day.tdpt,
-            day.stmstr,
-        ),
-    };
-    let runtime_swe = optional_runtime_context_scalar(
-        winter_context_state_surface,
-        "snow.runtime_swe",
-    )?
-    .unwrap_or(0.0);
-    if runtime_swe < 0.0 {
-        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-            symbol: "snow.runtime_swe".to_string(),
-            value: runtime_swe,
-            allowed: ">= 0",
-        });
-    }
-    let frost_depth = optional_runtime_context_scalar(
-        winter_context_state_surface,
-        "frost.runtime_dfrost",
-    )?
-    .unwrap_or(0.0);
-    if frost_depth < 0.0 {
-        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-            symbol: "frost.runtime_dfrost".to_string(),
-            value: frost_depth,
-            allowed: ">= 0",
-        });
-    }
-    let frozen_water = optional_runtime_context_scalar(
-        winter_context_state_surface,
-        "frost.runtime_ws_frz",
-    )?
-    .unwrap_or(0.0);
-    if frozen_water < 0.0 {
-        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-            symbol: "frost.runtime_ws_frz".to_string(),
-            value: frozen_water,
-            allowed: ">= 0",
-        });
-    }
-    let winter_trigger_active = runtime_swe > SIMIMPL28_DOMAIN_EPS
-        || frost_depth > SIMIMPL28_DOMAIN_EPS
-        || frozen_water > SIMIMPL28_DOMAIN_EPS
-        || frost_file_present > SIMIMPL28_DOMAIN_EPS
-        || frost_wint_red > SIMIMPL28_DOMAIN_EPS
-        || f64::midpoint(tmax, tmin) < 0.0;
-
-    if !winter_trigger_active {
-        return Ok(BTreeMap::new());
-    }
-
-    let avgslp = require_runtime_context_scalar(winter_context_state_surface, "avgslp")?;
-    if avgslp <= 0.0 {
-        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-            symbol: "avgslp".to_string(),
-            value: avgslp,
-            allowed: "> 0",
-        });
-    }
-    let azm = require_runtime_context_scalar(winter_context_state_surface, "azm")?;
-    let rst = require_runtime_context_scalar(winter_context_state_surface, "snow.options.rst")?;
-    let phase_model =
-        simimpl28_optional_phase_model_from_surface(winter_context_state_surface)?;
-
-    let sdate = simimpl28_day_of_year(day, mon, year)?;
-    let geometry = simimpl28_aspect_geometry(metadata.deglat, avgslp, azm)?;
-    let radmj = simimpl28_langleys_to_mj_m2("rad", radly)?;
-    let sunmap = simimpl28_sunmap(radly, sdate, geometry)?;
-    let itflag = (tmax - tmin) <= 1.0;
-
-    let mut symbols = BTreeMap::new();
-    for hour in 1..=SIMIMPL28_WINTER_HOURS_PER_DAY {
-        let cratio = simimpl28_radcur(sdate, hour, geometry.radlat, sunmap.dsunmp)?;
-        let (hrrad_mj_m2, hrtemp_c) =
-            simimpl28_hr_tmp_hour(itflag, hour, sunmap, cratio, radmj, tmax, tmin)?;
-        let hour_u32 = u32::try_from(hour).map_err(|_| {
-            ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-                symbol: "hour".to_string(),
-                value: f64::from(u32::MAX),
-                allowed: "1..=24",
-            }
-        })?;
-        let partition = simimpl28_stmtim_hourly_partition_with_model(
-            rain_m,
-            stmdur_s,
-            f64::from(hour_u32),
-            wnttim,
-            rst,
-            hrtemp_c,
-            tdpt,
-            phase_model,
-        )?;
-
-        symbols.insert(
-            simimpl28_hourly_symbol("winter.hourly.rad_mj_m2", hour),
-            climate_boundary_value(
-                "winter.hourly.rad_mj_m2",
-                ">= 0",
-                BoundaryValue::solar_radiation_megajoules_per_square_meter_per_hour(hrrad_mj_m2),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("winter.hourly.air_temp_c", hour),
-            climate_boundary_value(
-                "winter.hourly.air_temp_c",
-                "finite",
-                BoundaryValue::temperature_celsius(hrtemp_c),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("winter.hourly.cloud_fraction", hour),
-            climate_boundary_value(
-                "winter.hourly.cloud_fraction",
-                "0..=1",
-                BoundaryValue::fraction_unit_interval(sunmap.cloud_fraction),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.rain_m", hour),
-            climate_boundary_value(
-                "snow.hourly.rain_m",
-                ">= 0",
-                BoundaryValue::water_depth_meters(partition.hrrain_m),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.snowfall_m", hour),
-            climate_boundary_value(
-                "snow.hourly.snowfall_m",
-                ">= 0",
-                BoundaryValue::water_depth_meters(partition.hrsnow_m),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.rain_m", hour),
-            climate_boundary_value(
-                "snow.hourly.stmtim.rain_m",
-                ">= 0",
-                BoundaryValue::water_depth_meters(rain_m),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.stmdur_s", hour),
-            climate_boundary_value(
-                "snow.hourly.stmtim.stmdur_s",
-                ">= 0",
-                BoundaryValue::elapsed_time_seconds(stmdur_s),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.wntdur_h", hour),
-            BoundaryValue::scalar(partition.wntdur_h),
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.wnttim_h", hour),
-            BoundaryValue::scalar(partition.wnttim_h),
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.hrtemp_c", hour),
-            climate_boundary_value(
-                "snow.hourly.stmtim.hrtemp_c",
-                "finite",
-                BoundaryValue::temperature_celsius(hrtemp_c),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.rst_c", hour),
-            climate_boundary_value(
-                "snow.hourly.stmtim.rst_c",
-                "finite",
-                BoundaryValue::temperature_celsius(rst),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.hrrain_m", hour),
-            climate_boundary_value(
-                "snow.hourly.stmtim.hrrain_m",
-                ">= 0",
-                BoundaryValue::water_depth_meters(partition.hrrain_m),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.hrsnow_m", hour),
-            climate_boundary_value(
-                "snow.hourly.stmtim.hrsnow_m",
-                ">= 0",
-                BoundaryValue::water_depth_meters(partition.hrsnow_m),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.active_interval", hour),
-            climate_boundary_value(
-                "snow.hourly.stmtim.active_interval",
-                "0..=1",
-                BoundaryValue::fraction_unit_interval(simimpl28_bool_flag(
-                    partition.active_interval,
-                )),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.rain_branch", hour),
-            climate_boundary_value(
-                "snow.hourly.stmtim.rain_branch",
-                "0..=1",
-                BoundaryValue::fraction_unit_interval(simimpl28_bool_flag(partition.rain_branch)),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.snow_branch", hour),
-            climate_boundary_value(
-                "snow.hourly.stmtim.snow_branch",
-                "0..=1",
-                BoundaryValue::fraction_unit_interval(simimpl28_bool_flag(partition.snow_branch)),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.phase_model", hour),
-            BoundaryValue::scalar(match partition.phase_model {
-                SnowPhasePartitionModel::LegacyRst => 0.0,
-                SnowPhasePartitionModel::HarderPomeroyHourly => 1.0,
-            }),
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.rain_fraction", hour),
-            climate_boundary_value(
-                "snow.hourly.stmtim.rain_fraction",
-                "0..=1",
-                BoundaryValue::fraction_unit_interval(partition.rain_fraction),
-            )?,
-        );
-        symbols.insert(
-            simimpl28_hourly_symbol("snow.hourly.stmtim.snow_fraction", hour),
-            climate_boundary_value(
-                "snow.hourly.stmtim.snow_fraction",
-                "0..=1",
-                BoundaryValue::fraction_unit_interval(partition.snow_fraction),
-            )?,
-        );
-        if let Some(relative_humidity) = partition.relative_humidity {
-            symbols.insert(
-                simimpl28_hourly_symbol("snow.hourly.stmtim.relative_humidity", hour),
-                climate_boundary_value(
-                    "snow.hourly.stmtim.relative_humidity",
-                    "0..=1",
-                    BoundaryValue::fraction_unit_interval(relative_humidity),
-                )?,
-            );
-        }
-        if let Some(hydrometeor_temperature_c) = partition.hydrometeor_temperature_c {
-            symbols.insert(
-                simimpl28_hourly_symbol("snow.hourly.stmtim.hydrometeor_temperature_c", hour),
-                climate_boundary_value(
-                    "snow.hourly.stmtim.hydrometeor_temperature_c",
-                    "finite",
-                    BoundaryValue::temperature_celsius(hydrometeor_temperature_c),
-                )?,
-            );
-        }
-    }
-
-    Ok(symbols)
-}
-
-fn optional_runtime_context_scalar(
-    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
-    symbol: &'static str,
-) -> Result<Option<f64>, ClimateRuntimeInputError> {
-    let value = surface.get(&BoundarySymbol::from(symbol));
-    match value {
-        Some(value) => {
-            let scalar = value.as_f64();
-            if !scalar.is_finite() {
-                return Err(ClimateRuntimeInputError::NonFiniteField {
-                    field: symbol,
-                    value: scalar,
-                });
-            }
-            Ok(Some(scalar))
-        }
-        None => Ok(None),
-    }
-}
-
-fn require_runtime_context_scalar(
-    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
-    symbol: &'static str,
-) -> Result<f64, ClimateRuntimeInputError> {
-    let value = optional_runtime_context_scalar(surface, symbol)?.ok_or_else(|| {
-        ClimateRuntimeInputError::MissingRuntimeContextSymbol {
-            symbol: symbol.to_string(),
-        }
-    })?;
-    Ok(value)
-}
-
-fn is_binary_flag(value: f64) -> bool {
-    (value - 0.0).abs() <= SIMIMPL28_DOMAIN_EPS || (value - 1.0).abs() <= SIMIMPL28_DOMAIN_EPS
-}
 
 fn simimpl28_hourly_symbol(root: &str, hour: usize) -> BoundarySymbol {
     BoundarySymbol::from(format!("{root}_{hour:04}"))
 }
 
-const fn simimpl28_bool_flag(value: bool) -> f64 {
-    if value { 1.0 } else { 0.0 }
-}
 
 fn simimpl28_day_of_year(day: i32, mon: i32, year: i32) -> Result<i32, ClimateRuntimeInputError> {
     if !(1..=12).contains(&mon) || day < 1 {
@@ -1045,27 +682,6 @@ fn simimpl28_hr_tmp_hour(
     Ok((hrrad_mj_m2, hrtemp_c))
 }
 
-#[cfg(test)]
-fn simimpl28_stmtim_hourly_partition(
-    rain_m: f64,
-    stmdur_s: f64,
-    hour: f64,
-    wnttim: f64,
-    rst: f64,
-    hrtemp_c: f64,
-) -> Result<Simimpl28StmtimHourlyPartition, ClimateRuntimeInputError> {
-    simimpl28_stmtim_hourly_partition_with_model(
-        rain_m,
-        stmdur_s,
-        hour,
-        wnttim,
-        rst,
-        hrtemp_c,
-        hrtemp_c,
-        SnowPhasePartitionModel::LegacyRst,
-    )
-}
-
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn simimpl28_stmtim_hourly_partition_with_model(
     rain_m: f64,
@@ -1094,9 +710,6 @@ fn simimpl28_stmtim_hourly_partition_with_model(
         return Ok(simimpl28_partition_result(
             0.0,
             0.0,
-            0.0,
-            wnttim,
-            false,
             0.0,
             0.0,
             phase_model,
@@ -1147,9 +760,6 @@ fn simimpl28_stmtim_hourly_partition_with_model(
         return Ok(simimpl28_partition_result(
             0.0,
             0.0,
-            wntdur,
-            wnttim,
-            false,
             0.0,
             0.0,
             phase_model,
@@ -1211,9 +821,6 @@ fn simimpl28_stmtim_hourly_partition_with_model(
     Ok(simimpl28_partition_result(
         hrrain_m,
         hrsnow_m,
-        wntdur,
-        wnttim,
-        true,
         rain_fraction,
         snow_fraction,
         phase_model,
@@ -1230,9 +837,6 @@ fn simimpl28_legacy_stmtim_snowfall_depth_m(rain_m: f64, wntdur: f64) -> f64 {
 const fn simimpl28_partition_result(
     hrrain_m: f64,
     hrsnow_m: f64,
-    wntdur_h: f64,
-    wnttim_h: f64,
-    active_interval: bool,
     rain_fraction: f64,
     snow_fraction: f64,
     phase_model: SnowPhasePartitionModel,
@@ -1242,11 +846,6 @@ const fn simimpl28_partition_result(
     Simimpl28StmtimHourlyPartition {
         hrrain_m,
         hrsnow_m,
-        wntdur_h,
-        wnttim_h,
-        active_interval,
-        rain_branch: active_interval && rain_fraction > SIMIMPL28_DOMAIN_EPS,
-        snow_branch: active_interval && snow_fraction > SIMIMPL28_DOMAIN_EPS,
         rain_fraction,
         snow_fraction,
         phase_model,
@@ -1324,26 +923,6 @@ fn simimpl28_relative_humidity_from_dewpoint_saturated(
     })
 }
 
-fn simimpl28_optional_phase_model_from_surface(
-    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
-) -> Result<SnowPhasePartitionModel, ClimateRuntimeInputError> {
-    let value = optional_runtime_context_scalar(
-        surface,
-        "snow.options.phase_partition_model_harder_pomeroy_hourly",
-    )?
-    .unwrap_or(0.0);
-    if (value - 0.0).abs() <= SIMIMPL28_DOMAIN_EPS {
-        Ok(SnowPhasePartitionModel::LegacyRst)
-    } else if (value - 1.0).abs() <= SIMIMPL28_DOMAIN_EPS {
-        Ok(SnowPhasePartitionModel::HarderPomeroyHourly)
-    } else {
-        Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-            symbol: "snow.options.phase_partition_model_harder_pomeroy_hourly".to_string(),
-            value,
-            allowed: "{0 legacy_rst, 1 harder_pomeroy_hourly}",
-        })
-    }
-}
 
 fn simimpl28_stmtim_start_time(mut wnttim: f64) -> Result<f64, ClimateRuntimeInputError> {
     if !wnttim.is_finite() {

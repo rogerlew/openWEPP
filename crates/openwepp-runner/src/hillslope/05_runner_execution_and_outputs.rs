@@ -1,94 +1,3 @@
-fn execute_hillslope_climate_days(
-    run_name: &str,
-    output_hillslope_id: u32,
-    state: HillslopeClimateExecutionState,
-    climate: &ClimateFile,
-) -> Result<HillslopeClimateExecution, HillslopeCliError> {
-    let climate_request = build_hillslope_climate_runtime_request(climate).map_err(|error| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "climate",
-            detail: error.to_string(),
-        }
-    })?;
-    let HillslopeClimateExecutionState {
-        publication_area_m2,
-        contributor_ofe_count,
-        static_per_ofe_slice_count,
-        per_ofe_lane_areas_m2,
-        per_ofe_runoff_publication_geometries,
-        runtime_surface,
-        lane_context,
-        climate_span,
-        mut persistent_lane_state,
-        symbol_registry,
-        hot_symbol_tables,
-    } = state;
-    let symbol_registry = symbol_registry.as_ref();
-    let hot_symbol_tables = hot_symbol_tables.as_ref();
-    let indexed_scheduler_runtime_enabled = symbol_registry.is_some() && hot_symbol_tables.is_some();
-    let persistent_lane_active = persistent_lane_state.is_some();
-    let hphys0245_trace_config = hphys0245_trace_config_from_env()?;
-    let context = ClimateExecutionContext {
-        run_name,
-        output_hillslope_id,
-        lane: lane_context.lane,
-        publication_area_m2,
-        first_calendar_year: climate_span.first_day.year,
-        hphys0245_trace_config: hphys0245_trace_config.as_ref(),
-        symbol_registry,
-        hot_symbol_tables,
-        indexed_scheduler_runtime_enabled,
-    };
-    let mut accumulator = ClimateExecutionAccumulator::new(
-        runtime_surface,
-        climate_span.days.len(),
-        contributor_ofe_count,
-        None,
-    )?;
-
-    for (day_index, day_projection) in climate_span.days.iter().enumerate() {
-        let climate_surface = build_day_climate_surface(
-            &climate_request,
-            day_index,
-            &accumulator.runtime_surface,
-            day_projection,
-        )?;
-        let stale_climate_symbols = accumulator.previous_climate_symbols.clone();
-        remove_stale_climate_symbols(&mut accumulator.runtime_surface, &stale_climate_symbols);
-        let simulation_year =
-            simulation_year_from_calendar_year(day_projection.year, context.first_calendar_year)?;
-        accumulator.previous_climate_symbols.clear();
-        accumulator
-            .previous_climate_symbols
-            .extend(climate_surface.state_surface.keys().cloned());
-        let mut apply = HillslopeDayApply {
-            persistent_lane_state: &mut persistent_lane_state,
-            climate_surface,
-            stale_climate_symbols: &stale_climate_symbols,
-            per_ofe_lane_areas_m2: &per_ofe_lane_areas_m2,
-            per_ofe_runoff_publication_geometries: &per_ofe_runoff_publication_geometries,
-            context,
-            day_index,
-            day_projection,
-            simulation_year,
-            runtime_swe_before_m: accumulator.runtime_swe_publication_state_m,
-        };
-        accumulator.apply_hillslope_day(&mut apply)?;
-    }
-
-    let executed_day_count = climate_span.days.len();
-    accumulator.finish(ClimateExecutionCompletion {
-        selected_lane: lane_context.lane,
-        publication_area_m2,
-        contributor_ofe_count,
-        static_per_ofe_slice_count,
-        persistent_lane_active,
-        climate_span,
-        hphys0245_trace_config,
-        executed_day_count,
-    })
-}
-
 fn execute_hillslope_direct_production_days(
     run_name: &str,
     output_hillslope_id: u32,
@@ -105,17 +14,10 @@ fn execute_hillslope_direct_production_days(
         }
     })?;
     let HillslopeClimateExecutionState {
-        publication_area_m2,
-        contributor_ofe_count,
-        static_per_ofe_slice_count,
         per_ofe_lane_areas_m2,
         per_ofe_runoff_publication_geometries,
-        runtime_surface: _runtime_surface,
         lane_context,
         climate_span,
-        persistent_lane_state: _persistent_lane_state,
-        symbol_registry: _,
-        hot_symbol_tables: _,
     } = state;
     let seed_authority = DirectProductionSeedAuthority::from_typed_inputs(
         &climate_request,
@@ -158,27 +60,16 @@ fn execute_hillslope_direct_production_days(
         &retained_direct_publication.stream.summary,
     )?;
     let executed_day_count = climate_span.days.len();
-    let persistent_lane_active = per_ofe_lane_areas_m2.len() > 1;
     let erod14_wave2_enabled = seed_authority.erod14_wave2_enabled;
 
     Ok(HillslopeClimateExecution {
         selected_lane: lane_context.lane,
-        publication_area_m2,
-        contributor_ofe_count,
-        static_per_ofe_slice_count,
-        persistent_lane_active,
-        runtime_surface: HillslopeWritebackSurface::default(),
         climate_span,
-        wb13_rows: Vec::new(),
-        pass_rows: Vec::new(),
         coupling_vectors,
         erod14_wave2_kernel_status_seen: erod14_wave2_enabled,
-        scheduler_outcome_class: SchedulerOutcomeClass::Completed,
+        scheduler_outcome_class: "completed",
         scheduler_status_message_id: "R7C-DIRECT-PRODUCTION-EXECUTOR".to_string(),
         kernel_phase_message_ids: Vec::new(),
-        hphys0245_trace_config: None,
-        hphys0245_trace_rows: Vec::new(),
-        per_ofe_internal_wb13_summary: PerOfeInternalWb13RunSummary::default(),
         executed_day_count,
         retained_direct_publication: Some(retained_direct_publication),
         direct_publication: None,
@@ -427,274 +318,24 @@ fn build_direct_production_coupling_vector_provenance(
     })
 }
 
-impl ClimateExecutionAccumulator {
-    fn new(
-        runtime_surface: HillslopeWritebackSurface,
-        day_count: usize,
-        contributor_ofe_count: usize,
-        retained_direct_publication: Option<RetainedDirectPublication>,
-    ) -> Result<Self, HillslopeCliError> {
-        let runtime_swe_publication_state_m =
-            require_runtime_surface_scalar(&runtime_surface, "snow.runtime_swe")?;
-        Ok(Self {
-            runtime_surface,
-            runtime_swe_publication_state_m,
-            wb13_rows: Vec::with_capacity(day_count * contributor_ofe_count.max(1)),
-            pass_rows: Vec::with_capacity(day_count),
-            coupling_vectors: None,
-            erod14_wave2_kernel_status_seen: false,
-            scheduler_outcome_class: SchedulerOutcomeClass::Completed,
-            scheduler_status_message_id: String::new(),
-            previous_climate_symbols: Vec::new(),
-            kernel_phase_message_ids: std::collections::BTreeSet::new(),
-            hphys0245_trace_rows: Vec::new(),
-            per_ofe_internal_wb13_summary: PerOfeInternalWb13RunSummary::default(),
-            retained_direct_publication,
-        })
-    }
-
-    fn finish(
-        self,
-        completion: ClimateExecutionCompletion,
-    ) -> Result<HillslopeClimateExecution, HillslopeCliError> {
-        let coupling_vectors =
-            self.coupling_vectors
-                .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
-                    surface: "execution_provenance",
-                    detail: format!(
-                        "{SIMPIPE_GUARD_ID} climate span contained no executable days after parser validation"
-                    ),
-                })?;
-        Ok(HillslopeClimateExecution {
-            selected_lane: completion.selected_lane,
-            publication_area_m2: completion.publication_area_m2,
-            contributor_ofe_count: completion.contributor_ofe_count,
-            static_per_ofe_slice_count: completion.static_per_ofe_slice_count,
-            persistent_lane_active: completion.persistent_lane_active,
-            runtime_surface: self.runtime_surface,
-            climate_span: completion.climate_span,
-            wb13_rows: self.wb13_rows,
-            pass_rows: self.pass_rows,
-            coupling_vectors,
-            erod14_wave2_kernel_status_seen: self.erod14_wave2_kernel_status_seen,
-            scheduler_outcome_class: self.scheduler_outcome_class,
-            scheduler_status_message_id: self.scheduler_status_message_id,
-            kernel_phase_message_ids: self.kernel_phase_message_ids.into_iter().collect(),
-            hphys0245_trace_config: completion.hphys0245_trace_config,
-            hphys0245_trace_rows: self.hphys0245_trace_rows,
-            per_ofe_internal_wb13_summary: self.per_ofe_internal_wb13_summary,
-            executed_day_count: completion.executed_day_count,
-            retained_direct_publication: self.retained_direct_publication,
-            direct_publication: None,
-        })
-    }
-
-    fn apply_hillslope_day(
-        &mut self,
-        apply: &mut HillslopeDayApply<'_>,
-    ) -> Result<(), HillslopeCliError> {
-        let context = SchedulerLifecycleContext {
-            run_name: apply.context.run_name,
-            execution_lane: apply.context.lane,
-            publication_area_m2: apply.context.publication_area_m2,
-            simulation_year: apply.simulation_year,
-            sim_day_index: apply.day_index + 1,
-            calendar_day: apply.day_projection,
-            runtime_swe_before_m: apply.runtime_swe_before_m,
-            hphys0245_trace_config: apply.context.hphys0245_trace_config,
-            symbol_registry: apply.context.symbol_registry,
-            hot_symbol_tables: apply.context.hot_symbol_tables,
-            indexed_scheduler_runtime_enabled: apply.context.indexed_scheduler_runtime_enabled,
-        };
-        if let Some(persistent_lane_state) = apply.persistent_lane_state.as_mut() {
-            let persistent_result = execute_persistent_scheduler_kernel_lifecycle(
-                persistent_lane_state,
-                &apply.climate_surface,
-                apply.stale_climate_symbols,
-                apply.per_ofe_lane_areas_m2,
-                apply.per_ofe_runoff_publication_geometries,
-                context,
-            )
-            .map_err(|error| {
-                annotate_day_runtime_error(error, apply.day_index, apply.day_projection)
-            })?;
-            self.publish_persistent_day_result(persistent_result, apply.context)?;
-        } else {
-            indexed_shadow_surface::observe_clone_source_surface(&self.runtime_surface)?;
-            self.runtime_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
-                std::mem::take(&mut self.runtime_surface),
-                std::mem::take(&mut apply.climate_surface),
-            );
-            let execution_result = execute_scheduler_kernel_lifecycle(
-                std::mem::take(&mut self.runtime_surface),
-                context,
-            )
-            .map_err(|error| {
-                annotate_day_runtime_error(error, apply.day_index, apply.day_projection)
-            })?;
-            self.publish_single_lane_day_result(execution_result, apply.context)?;
-        }
-        Ok(())
-    }
-
-    fn publish_persistent_day_result(
-        &mut self,
-        persistent_result: PersistentDailyExecutionResult,
-        context: ClimateExecutionContext<'_>,
-    ) -> Result<(), HillslopeCliError> {
-        self.per_ofe_internal_wb13_summary
-            .observe_day(&persistent_result.internal_wb13_collection)?;
-        self.runtime_swe_publication_state_m = persistent_result
-            .internal_wb13_collection
-            .outlet_row()
-            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "per_ofe_internal_wb13",
-                detail: format!("{SIMPIPE_GUARD_ID} internal WB13 collection has no outlet row"),
-            })?
-            .wb13_row
-            .snow_water
-            / 1_000.0;
-        persistent_result
-            .internal_wb13_collection
-            .append_publication_rows_to(&mut self.wb13_rows);
-        persistent_result
-            .internal_wb13_collection
-            .append_runoff_delivery_rows_to(
-                hillslope_id_for_pass_output(context.output_hillslope_id)?,
-                context.publication_area_m2,
-                HillslopePassPublicationScalars::from_runtime_surface(
-                    &persistent_result.runtime_surface,
-                )?,
-                &mut self.pass_rows,
-            )?;
-        self.observe_persistent_day_result(persistent_result);
-        Ok(())
-    }
-
-    fn publish_single_lane_day_result(
-        &mut self,
-        execution_result: DailyExecutionResult,
-        context: ClimateExecutionContext<'_>,
-    ) -> Result<(), HillslopeCliError> {
-        self.runtime_swe_publication_state_m =
-            execution_result.wb13_row.wb13_row.snow_water / 1_000.0;
-        let publication_scalars =
-            HillslopePassPublicationScalars::from_runtime_surface(&execution_result.runtime_surface)?;
-        self.pass_rows.push(build_hillslope_pass_row(
-            hillslope_id_for_pass_output(context.output_hillslope_id)?,
-            &execution_result.wb13_row,
-            publication_scalars,
-        )?);
-        self.wb13_rows.push(execution_result.wb13_row.clone());
-        indexed_shadow_surface::validate_shadow_surface(&execution_result.runtime_surface)?;
-        self.observe_single_lane_day_result(execution_result);
-        Ok(())
-    }
-
-    fn observe_persistent_day_result(&mut self, result: PersistentDailyExecutionResult) {
-        self.runtime_surface = result.runtime_surface;
-        self.scheduler_outcome_class = result.scheduler_outcome_class;
-        self.scheduler_status_message_id = result.scheduler_status_message_id;
-        self.coupling_vectors = Some(result.coupling_vectors);
-        self.kernel_phase_message_ids
-            .extend(result.kernel_phase_message_ids);
-        self.erod14_wave2_kernel_status_seen |= result.erod14_wave2_kernel_status_seen;
-        self.hphys0245_trace_rows
-            .extend(result.hphys0245_trace_rows);
-    }
-
-    fn observe_single_lane_day_result(&mut self, result: DailyExecutionResult) {
-        self.runtime_surface = result.runtime_surface;
-        self.scheduler_outcome_class = result.scheduler_outcome_class;
-        self.scheduler_status_message_id = result.scheduler_status_message_id;
-        self.coupling_vectors = Some(result.coupling_vectors);
-        self.kernel_phase_message_ids
-            .extend(result.kernel_phase_message_ids);
-        self.erod14_wave2_kernel_status_seen |= result.erod14_wave2_kernel_status_seen;
-        self.hphys0245_trace_rows
-            .extend(result.hphys0245_trace_rows);
-    }
-}
-
-fn build_day_climate_surface(
-    climate_request: &HillslopeClimateRuntimeRequest,
-    day_index: usize,
-    runtime_surface: &HillslopeWritebackSurface,
-    day_projection: &ClimateDayProjection,
-) -> Result<HillslopeWritebackSurface, HillslopeCliError> {
-    build_hillslope_runtime_surface_from_climate_request_with_context(
-        climate_request,
-        day_index,
-        &runtime_surface.state_surface,
-    )
-    .map_err(|error| {
-        annotate_day_runtime_error(
-            HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "climate",
-                detail: error.to_string(),
-            },
-            day_index,
-            day_projection,
-        )
-    })
-}
-
-fn remove_stale_climate_symbols(
-    runtime_surface: &mut HillslopeWritebackSurface,
-    stale_climate_symbols: &[BoundarySymbol],
-) {
-    for symbol in stale_climate_symbols {
-        runtime_surface.state_surface.remove(symbol);
-        runtime_surface.flux_surface.remove(symbol);
-    }
-}
-
 fn build_hillslope_execution_provenance(
     execution: &HillslopeClimateExecution,
     runtime_selection: HillslopeRuntimeSelection,
     sidecar_warnings: &mut Vec<String>,
-) -> Result<HillslopeExecutionProvenance, HillslopeCliError> {
-    let wb16_ealpha_compatibility_seed_used =
-        if runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor {
-            false
-        } else {
-            parse_mofe03_binary_flag(
-                WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL,
-                runtime_surface_symbol_value(
-                    &execution.runtime_surface,
-                    WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL,
-                )
-                .unwrap_or(0.0),
-            )?
-        };
-    if wb16_ealpha_compatibility_seed_used {
-        sidecar_warnings.push(format!(
-            "{WB16_EALPHA_SEED_WARNING_ID} WB16 ealpha seeded with compatibility constant 1.0 because no runtime producer was present; full baseline-authoritative ealpha producer-chain migration remains open."
-        ));
-    }
-    let erod14_wave2_enabled =
-        if runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor {
-            execution.erod14_wave2_kernel_status_seen
-        } else {
-            parse_mofe03_binary_flag(
-                "erod14_wave2_enabled",
-                runtime_surface_symbol_value(&execution.runtime_surface, "erod14_wave2_enabled")
-                    .unwrap_or(0.0),
-            )?
-        };
+) -> HillslopeExecutionProvenance {
+    debug_assert_eq!(
+        runtime_selection,
+        HillslopeRuntimeSelection::DirectProductionExecutor
+    );
+    let wb16_ealpha_compatibility_seed_used = false;
+    let erod14_wave2_enabled = execution.erod14_wave2_kernel_status_seen;
     let erod14_qin_source_policy = erod14_qin_source_policy(erod14_wave2_enabled, sidecar_warnings);
-    Ok(HillslopeExecutionProvenance {
-        scheduler_kernel_executed: runtime_selection != HillslopeRuntimeSelection::DirectProductionExecutor,
-        publication_source: if runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor {
-            DIRECT_PUBLICATION_FRAME_PUBLICATION_SOURCE
-        } else {
-            SCHEDULER_KERNEL_PUBLICATION_SOURCE
-        }
-        .to_string(),
+    HillslopeExecutionProvenance {
+        scheduler_kernel_executed: false,
+        publication_source: DIRECT_PUBLICATION_FRAME_PUBLICATION_SOURCE.to_string(),
         simpipe_guard_id: SIMPIPE_GUARD_ID.to_string(),
         selected_lane: execution.selected_lane.as_str().to_string(),
-        scheduler_outcome_class: scheduler_outcome_class_as_str(execution.scheduler_outcome_class)
-            .to_string(),
+        scheduler_outcome_class: execution.scheduler_outcome_class.to_string(),
         scheduler_status_message_id: execution.scheduler_status_message_id.clone(),
         climate_day_count: execution.climate_span.days.len(),
         executed_day_count: execution.executed_day_count,
@@ -705,7 +346,7 @@ fn build_hillslope_execution_provenance(
         erod14_qin_sediment_coupled: false,
         wb16_ealpha_compatibility_seed_used,
         wb16_ealpha_seed_policy: wb16_ealpha_seed_policy(wb16_ealpha_compatibility_seed_used),
-    })
+    }
 }
 
 fn erod14_qin_source_policy(
@@ -723,11 +364,8 @@ fn erod14_qin_source_policy(
 }
 
 fn wb16_ealpha_seed_policy(wb16_ealpha_compatibility_seed_used: bool) -> String {
-    if wb16_ealpha_compatibility_seed_used {
-        WB16_EALPHA_SEED_POLICY_COMPATIBILITY.to_string()
-    } else {
-        WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED.to_string()
-    }
+    debug_assert!(!wb16_ealpha_compatibility_seed_used);
+    WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED.to_string()
 }
 
 fn build_hillslope_publication_provenance(
@@ -740,31 +378,16 @@ fn build_hillslope_publication_provenance(
     ),
     HillslopeCliError,
 > {
-    if runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor {
-        let artifacts = execution.direct_publication.as_ref().ok_or_else(|| {
-            direct_publication_cutover_blocked(
-                "direct production publication requires retained direct publication artifacts",
-            )
-        })?;
-        return build_streamed_direct_publication_manifest_provenance(&artifacts.summary);
-    }
-
-    let per_ofe_summary = execution
-        .persistent_lane_active
-        .then_some(&execution.per_ofe_internal_wb13_summary);
-    let wb13_publication = build_wb13_publication_provenance(
-        &execution.wb13_rows,
-        execution.contributor_ofe_count,
-        execution.static_per_ofe_slice_count,
-        execution.publication_area_m2,
-        execution.persistent_lane_active,
-        per_ofe_summary,
-    )?;
-    let mofe_hourly_carry = build_mofe_hourly_carry_provenance(
-        &execution.runtime_surface,
-        execution.contributor_ofe_count,
-    )?;
-    Ok((wb13_publication, mofe_hourly_carry))
+    debug_assert_eq!(
+        runtime_selection,
+        HillslopeRuntimeSelection::DirectProductionExecutor
+    );
+    let artifacts = execution.direct_publication.as_ref().ok_or_else(|| {
+        direct_publication_cutover_blocked(
+            "direct production publication requires retained direct publication artifacts",
+        )
+    })?;
+    build_streamed_direct_publication_manifest_provenance(&artifacts.summary)
 }
 
 fn write_hillslope_run_outputs(
@@ -774,39 +397,12 @@ fn write_hillslope_run_outputs(
     execution: &HillslopeClimateExecution,
     runtime_selection: HillslopeRuntimeSelection,
 ) -> Result<(), HillslopeCliError> {
-    if runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor {
-        return write_hillslope_direct_publication_outputs(inputs, targets, execution);
-    }
-
-    let pass_bytes = build_hbp_output(
-        &targets.output_pass,
-        &execution.wb13_rows,
-        &execution.runtime_surface,
-        execution.contributor_ofe_count,
-    )?;
-    let loss_text = build_loss_output_json(
-        &inputs.runfile.run_name,
-        &inputs.soil,
-        &sidecars.snow,
-        &sidecars.frost,
-        &execution.climate_span,
-        execution.executed_day_count,
-    )?;
-    ensure_hillslope_output_parent_directories(targets)?;
-    fs::write(&targets.output_pass, pass_bytes).map_err(|source| {
-        HillslopeCliError::OutputWrite {
-            path: targets.output_pass.clone(),
-            source,
-        }
-    })?;
-    fs::write(&targets.output_loss, loss_text).map_err(|source| {
-        HillslopeCliError::OutputWrite {
-            path: targets.output_loss.clone(),
-            source,
-        }
-    })?;
-    write_hillslope_optional_outputs(inputs, targets, execution)?;
-    validate_required_hillslope_outputs(targets)
+    debug_assert_eq!(
+        runtime_selection,
+        HillslopeRuntimeSelection::DirectProductionExecutor
+    );
+    let _ = sidecars;
+    write_hillslope_direct_publication_outputs(inputs, targets, execution)
 }
 
 fn write_hillslope_direct_publication_outputs(
@@ -1003,7 +599,6 @@ fn write_hillslope_direct_publication_optional_outputs(
             )));
         }
     }
-    write_hphys0245_trace_output(execution)?;
     write_generic_optional_outputs(inputs, targets, execution)
 }
 
@@ -1147,44 +742,6 @@ fn ensure_hillslope_output_parent_directories(
         .chain(targets.optional_outputs.iter())
     {
         crate::hillslope::intake_lane_setup::ensure_output_parent_directory(path)?;
-    }
-    Ok(())
-}
-
-fn write_hillslope_optional_outputs(
-    inputs: &ParsedHillslopeRunInputs,
-    targets: &HillslopeOutputTargets,
-    execution: &HillslopeClimateExecution,
-) -> Result<(), HillslopeCliError> {
-    if let Some(wat_output) = inputs.runfile.output_config.wat.as_ref() {
-        let wat_rows = build_hillslope_wat_rows(&execution.wb13_rows)?;
-        write_hillslope_wat_parquet(wat_output, &wat_rows, InterchangeVersion::default()).map_err(
-            |error| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "outputs.wat",
-                detail: error.to_string(),
-            },
-        )?;
-    }
-    if let Some(pass_parquet_output) = inputs.runfile.output_config.pass_parquet.as_ref() {
-        write_hillslope_pass_parquet(
-            pass_parquet_output,
-            &execution.pass_rows,
-            InterchangeVersion::default(),
-        )
-        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "outputs.pass_parquet",
-            detail: error.to_string(),
-        })?;
-    }
-    write_hphys0245_trace_output(execution)?;
-    write_generic_optional_outputs(inputs, targets, execution)
-}
-
-fn write_hphys0245_trace_output(
-    execution: &HillslopeClimateExecution,
-) -> Result<(), HillslopeCliError> {
-    if let Some(trace_config) = execution.hphys0245_trace_config.as_ref() {
-        write_hphys0245_trace_jsonl(trace_config, &execution.hphys0245_trace_rows)?;
     }
     Ok(())
 }
@@ -1479,38 +1036,19 @@ fn execute_selected_hillslope_days(
     climate: &ClimateFile,
     streaming_targets: &DirectPublicationStreamingTargets,
 ) -> Result<HillslopeClimateExecution, HillslopeCliError> {
-    let production_direct_selected =
-        runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor;
-    let symbol_registry_audit = if production_direct_selected {
-        None
-    } else {
-        symbol_registry_audit::begin_if_requested(&state, climate)?
-    };
-    let indexed_shadow = if production_direct_selected {
-        None
-    } else {
-        indexed_shadow_surface::begin_if_requested(&state, climate)?
-    };
-    let execution_result = if production_direct_selected {
-        execute_hillslope_direct_production_days(
-            run_name,
-            output_hillslope_id,
-            inputs,
-            sidecars,
-            state,
-            climate,
-            streaming_targets,
-        )
-    } else {
-        execute_hillslope_climate_days(run_name, output_hillslope_id, state, climate)
-    };
-    if let Some(symbol_registry_audit) = symbol_registry_audit {
-        symbol_registry_audit.finish()?;
-    }
-    if let Some(indexed_shadow) = indexed_shadow {
-        indexed_shadow.finish()?;
-    }
-    execution_result
+    debug_assert_eq!(
+        runtime_selection,
+        HillslopeRuntimeSelection::DirectProductionExecutor
+    );
+    execute_hillslope_direct_production_days(
+        run_name,
+        output_hillslope_id,
+        inputs,
+        sidecars,
+        state,
+        climate,
+        streaming_targets,
+    )
 }
 
 pub fn execute_hillslope_run_with_runtime_selection(
@@ -1557,8 +1095,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
     let runtime_selection = runtime_resolution.selected();
     let direct_runtime_counter_baseline = direct_runtime_audit_snapshot();
     let mut sidecars = resolve_hillslope_sidecars(request, &inputs, &targets)?;
-    let runtime_setup =
-        build_static_hillslope_runtime_setup(request, &inputs, &mut sidecars, runtime_selection)?;
+    let runtime_setup = build_static_hillslope_runtime_setup(request, &inputs, &sidecars, runtime_selection)?;
     let StaticHillslopeRuntimeSetup {
         timestep_policy,
         adapter_boundary,
@@ -1585,7 +1122,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
         &execution,
         runtime_selection,
         &mut sidecars.sidecar_warnings,
-    )?;
+    );
     let (wb13_publication, mofe_hourly_carry) =
         build_hillslope_publication_provenance(&execution, runtime_selection)?;
     write_hillslope_run_outputs(&inputs, &targets, &sidecars, &execution, runtime_selection)?;

@@ -318,11 +318,11 @@ pub fn export_pysnobal_inputs(
     };
     let inputs = super::load_hillslope_run_inputs(&hillslope_request)?;
     let targets = super::resolve_hillslope_output_targets(&inputs.runfile)?;
-    let mut sidecars = super::resolve_hillslope_sidecars(&hillslope_request, &inputs, &targets)?;
+    let sidecars = super::resolve_hillslope_sidecars(&hillslope_request, &inputs, &targets)?;
     let static_setup = super::build_static_hillslope_runtime_setup(
         &hillslope_request,
         &inputs,
-        &mut sidecars,
+        &sidecars,
         HillslopeRuntimeSelection::DirectProductionExecutor,
     )?;
     let climate_request =

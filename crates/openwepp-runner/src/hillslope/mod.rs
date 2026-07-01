@@ -1,11 +1,10 @@
-mod indexed_shadow_surface;
+mod direct_seed_projections;
 mod intake_lane_setup;
 mod snowbench;
 mod snowbench_coe_density;
 mod snowbench_coe_melt;
 mod snowbench_jennings_phase;
 mod snowbench_physics_bulk;
-mod symbol_registry_audit;
 
 pub use snowbench::{
     PYSNOBAL_FORCING_COLUMNS, SnowbenchCanopySeriesSummary, SnowbenchError, SnowbenchExportReport,

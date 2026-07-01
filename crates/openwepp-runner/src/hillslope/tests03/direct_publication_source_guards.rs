@@ -77,13 +77,12 @@
             .nth(1)
             .and_then(|tail| tail.split("\nfn ").next())
             .expect("typed seed authority setup function body must be present");
-        let direct_branch = setup_body
-            .split("if runtime_selection == HillslopeRuntimeSelection::DirectProductionExecutor")
-            .nth(1)
-            .and_then(|tail| tail.split("} else {").next())
-            .expect("direct production setup branch must be explicit");
         assert!(
-            direct_branch.contains("HillslopeWritebackSurface::default()"),
+            setup_body.contains("HillslopeRuntimeSelection::DirectProductionExecutor"),
+            "direct production setup must assert the terminal direct-only runtime"
+        );
+        assert!(
+            !setup_body.contains("HillslopeWritebackSurface::default()"),
             "direct production setup must not construct a symbol-map seed surface"
         );
         for forbidden in [
@@ -96,7 +95,7 @@
             "build_hillslope_runtime_surface_from_frost",
         ] {
             assert!(
-                !direct_branch.contains(forbidden),
+                !setup_body.contains(forbidden),
                 "direct production setup branch must not call symbol-map seed surface builder {forbidden}"
             );
         }
@@ -137,61 +136,6 @@
                 "R7F hot-loop build body must not contain runtime-surface or compatibility read {forbidden}"
             );
         }
-    }
-
-    #[test]
-    fn r7g_snow_sidecar_presence_is_not_active_snow_coupling() {
-        let authority = DirectProductionSnowFrostAuthority::from_seed(&wb11_seed_test_surface(&[
-            ("snow.options.snow_file_present", 1.0),
-            ("snow.options.rst", 0.0),
-            ("snow.options.newsnw", 0.1),
-            ("snow.options.ssd", 0.5),
-            ("snow.runtime_swe", 0.0),
-            ("snow.runtime_depth_m", 0.0),
-            ("snow.runtime_density_kg_m3", 0.0),
-            ("snow.runtime_settle_day_count", 0.0),
-            ("avgslp", 0.2),
-            ("azm", 180.0),
-        ]))
-        .expect("valid projected snow controls and zero runtime state");
-
-        assert!(
-            !authority
-                .active_forcing(&r7g_snow_forcing(5.0, 1.0), 0.01, 0.0)
-                .expect("finite forcing"),
-            "sidecar presence alone must not activate direct snow coupling"
-        );
-        assert!(
-            !authority
-                .active_forcing(&r7g_snow_forcing(1.0, -3.0), 0.0, 0.0)
-                .expect("finite forcing"),
-            "cold dry day with zero runtime SWE is a no-op snow partition"
-        );
-        assert!(
-            authority
-                .active_forcing(&r7g_snow_forcing(1.0, -3.0), 0.01, 0.0)
-                .expect("finite forcing"),
-            "thermally active wet day with projected controls still requires typed snow authority"
-        );
-    }
-
-    #[test]
-    fn r7g_runtime_swe_activates_snow_without_sidecar_presence() {
-        let authority = DirectProductionSnowFrostAuthority::from_seed(&wb11_seed_test_surface(&[
-            ("snow.options.snow_file_present", 0.0),
-            ("snow.runtime_swe", 0.001),
-            ("snow.runtime_depth_m", 0.01),
-            ("snow.runtime_density_kg_m3", 100.0),
-            ("snow.runtime_settle_day_count", 1.0),
-        ]))
-        .expect("valid runtime snowpack state");
-
-        assert!(
-            authority
-                .active_forcing(&r7g_snow_forcing(10.0, 5.0), 0.0, 0.001)
-                .expect("finite forcing"),
-            "runtime SWE must activate direct snow coupling independent of sidecar provenance"
-        );
     }
 
     #[test]

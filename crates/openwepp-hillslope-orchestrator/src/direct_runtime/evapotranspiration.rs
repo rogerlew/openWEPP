@@ -7,8 +7,8 @@ use crate::constants::{
 
 use super::{
     DIRECT_AUDIT, DIRECT_R4N_ROOT_PHASE_SPAN_COUNT, DIRECT_R4N_SURFACE_PHASE_SPAN_COUNT,
-    DirectDayFrame, DirectRuntimeError, DirectSubsurfaceLayerState, validate_finite,
-    validate_nonnegative_direct_m,
+    DirectDayFrame, DirectEvapotranspirationTraceEvent, DirectRuntimeError,
+    DirectSubsurfaceLayerState, validate_finite, validate_nonnegative_direct_m,
 };
 
 #[derive(Debug, Clone)]
@@ -69,140 +69,111 @@ fn r7h_et_trace_f64_array(values: impl IntoIterator<Item = f64>) -> String {
 }
 
 #[allow(clippy::too_many_lines)]
-fn maybe_write_r7h_et_trace(day_frame: &DirectDayFrame) {
+fn maybe_write_r7h_et_trace(event: &DirectEvapotranspirationTraceEvent) {
     let Some(config) = r7h_et_trace_config() else {
         return;
     };
     if let Some(exact_day_index) = config.exact_day_index
-        && day_frame.day_index != exact_day_index
+        && event.day_index != exact_day_index
     {
         return;
     }
     if let Some(exact_lane_index) = config.exact_lane_index
-        && day_frame.lane_index != exact_lane_index
+        && event.lane_index != exact_lane_index
     {
         return;
     }
 
-    let inputs = day_frame.evapotranspiration_compute_inputs.clone();
-    let surface = &day_frame.evapotranspiration_surface;
-    let root = &day_frame.evapotranspiration_compute;
     let mut line = String::new();
     line.push('{');
     line.push_str("\"schema\":\"openwepp-r7h-et-trace-v1\"");
     line.push_str(",\"day_index\":");
-    line.push_str(&day_frame.day_index.to_string());
+    line.push_str(&event.day_index.to_string());
     line.push_str(",\"lane_index\":");
-    line.push_str(&day_frame.lane_index.to_string());
+    line.push_str(&event.lane_index.to_string());
     line.push_str(",\"et_demand_m\":");
-    line.push_str(&r7h_et_trace_number(inputs.et_demand_m));
+    line.push_str(&r7h_et_trace_number(event.et_demand_m));
     line.push_str(",\"root_depth_m\":");
-    line.push_str(&r7h_et_trace_number(inputs.root_depth_m));
+    line.push_str(&r7h_et_trace_number(event.root_depth_m));
     line.push_str(",\"leaf_area_index\":");
-    line.push_str(&r7h_et_trace_number(inputs.leaf_area_index));
+    line.push_str(&r7h_et_trace_number(event.leaf_area_index));
     line.push_str(",\"canopy_cover_fraction\":");
-    line.push_str(&r7h_et_trace_number(inputs.canopy_cover_fraction));
+    line.push_str(&r7h_et_trace_number(event.canopy_cover_fraction));
     line.push_str(",\"residue_interception_m\":");
-    line.push_str(&r7h_et_trace_number(inputs.residue_interception_m));
+    line.push_str(&r7h_et_trace_number(event.residue_interception_m));
     line.push_str(",\"plant_tolerance\":");
-    line.push_str(&r7h_et_trace_number(inputs.plant_tolerance));
+    line.push_str(&r7h_et_trace_number(event.plant_tolerance));
     line.push_str(",\"growth_input_vdmt_before_kg_m2\":");
-    line.push_str(&r7h_et_trace_number(
-        day_frame
-            .annual_growth_inputs
-            .state_before
-            .live_biomass_kg_m2,
-    ));
+    line.push_str(&r7h_et_trace_number(event.growth_input_vdmt_before_kg_m2));
     line.push_str(",\"growth_input_tlive_before_kg_m2\":");
-    line.push_str(&r7h_et_trace_number(
-        day_frame
-            .annual_growth_inputs
-            .state_before
-            .interception_live_biomass_kg_m2,
-    ));
+    line.push_str(&r7h_et_trace_number(event.growth_input_tlive_before_kg_m2));
     line.push_str(",\"growth_input_hia_before\":");
-    line.push_str(&r7h_et_trace_number(
-        day_frame.annual_growth_inputs.state_before.harvest_index,
-    ));
+    line.push_str(&r7h_et_trace_number(event.growth_input_hia_before));
     line.push_str(",\"growth_output_vdmt_after_kg_m2\":");
-    line.push_str(&r7h_et_trace_number(
-        day_frame.annual_growth.state_after.live_biomass_kg_m2,
-    ));
+    line.push_str(&r7h_et_trace_number(event.growth_output_vdmt_after_kg_m2));
     line.push_str(",\"growth_output_tlive_after_kg_m2\":");
-    line.push_str(&r7h_et_trace_number(
-        day_frame
-            .annual_growth
-            .state_after
-            .interception_live_biomass_kg_m2,
-    ));
+    line.push_str(&r7h_et_trace_number(event.growth_output_tlive_after_kg_m2));
     line.push_str(",\"growth_output_hia_after\":");
-    line.push_str(&r7h_et_trace_number(
-        day_frame.annual_growth.state_after.harvest_index,
-    ));
-    if let Some(pmet) = inputs.pmet {
+    line.push_str(&r7h_et_trace_number(event.growth_output_hia_after));
+    if let Some(pmet_soil_evaporation_m) = event.pmet_soil_evaporation_m {
         line.push_str(",\"pmet_soil_evaporation_m\":");
-        line.push_str(&r7h_et_trace_number(pmet.soil_evaporation_m));
+        line.push_str(&r7h_et_trace_number(pmet_soil_evaporation_m));
         line.push_str(",\"pmet_plant_transpiration_m\":");
-        line.push_str(&r7h_et_trace_number(pmet.plant_transpiration_m));
+        line.push_str(&r7h_et_trace_number(
+            event.pmet_plant_transpiration_m.unwrap_or(0.0),
+        ));
         line.push_str(",\"pmet_soil_evaporation_storage_return_m\":");
-        line.push_str(&r7h_et_trace_number(pmet.soil_evaporation_storage_return_m));
+        line.push_str(&r7h_et_trace_number(
+            event.pmet_soil_evaporation_storage_return_m.unwrap_or(0.0),
+        ));
     } else {
         line.push_str(",\"pmet_soil_evaporation_m\":null");
         line.push_str(",\"pmet_plant_transpiration_m\":null");
         line.push_str(",\"pmet_soil_evaporation_storage_return_m\":null");
     }
     line.push_str(",\"surface_soil_water_before_m\":");
-    line.push_str(&r7h_et_trace_number(surface.soil_water_before_m));
+    line.push_str(&r7h_et_trace_number(event.surface_soil_water_before_m));
     line.push_str(",\"surface_soil_water_after_m\":");
-    line.push_str(&r7h_et_trace_number(surface.soil_water_after_soil_evap_m));
+    line.push_str(&r7h_et_trace_number(event.surface_soil_water_after_m));
     line.push_str(",\"root_soil_water_before_m\":");
-    line.push_str(&r7h_et_trace_number(root.soil_water_before_root_uptake_m));
+    line.push_str(&r7h_et_trace_number(event.root_soil_water_before_m));
     line.push_str(",\"root_soil_water_after_m\":");
-    line.push_str(&r7h_et_trace_number(root.soil_water_after_m));
+    line.push_str(&r7h_et_trace_number(event.root_soil_water_after_m));
     line.push_str(",\"soil_evaporation_m\":");
-    line.push_str(&r7h_et_trace_number(root.soil_evaporation_m));
+    line.push_str(&r7h_et_trace_number(event.soil_evaporation_m));
     line.push_str(",\"residue_evaporation_m\":");
-    line.push_str(&r7h_et_trace_number(root.residue_evaporation_m));
+    line.push_str(&r7h_et_trace_number(event.residue_evaporation_m));
     line.push_str(",\"plant_transpiration_m\":");
-    line.push_str(&r7h_et_trace_number(root.plant_transpiration_m));
+    line.push_str(&r7h_et_trace_number(event.plant_transpiration_m));
     line.push_str(",\"water_stress\":");
-    line.push_str(&r7h_et_trace_number(root.water_stress));
+    line.push_str(&r7h_et_trace_number(event.water_stress));
     line.push_str(",\"uptake_potential_m\":");
-    line.push_str(&r7h_et_trace_number(root.uptake_potential_m));
+    line.push_str(&r7h_et_trace_number(event.uptake_potential_m));
     line.push_str(",\"uptake_actual_m\":");
-    line.push_str(&r7h_et_trace_number(root.uptake_actual_m));
+    line.push_str(&r7h_et_trace_number(event.uptake_actual_m));
     line.push_str(",\"surface_layer_theta_m\":");
     line.push_str(&r7h_et_trace_f64_array(
-        surface
-            .layer_state_after_soil_evap
-            .iter()
-            .map(|layer| layer.theta_m),
+        event.surface_layer_theta_m.iter().copied(),
     ));
     line.push_str(",\"root_layer_theta_m\":");
     line.push_str(&r7h_et_trace_f64_array(
-        root.layer_state_after_root_uptake
-            .iter()
-            .map(|layer| layer.theta_m),
+        event.root_layer_theta_m.iter().copied(),
     ));
     line.push_str(",\"root_layer_upper_limit_m\":");
     line.push_str(&r7h_et_trace_f64_array(
-        root.layer_state_after_root_uptake
-            .iter()
-            .map(|layer| layer.upper_limit_m),
+        event.root_layer_upper_limit_m.iter().copied(),
     ));
     line.push_str(",\"root_layer_depth_m\":");
     line.push_str(&r7h_et_trace_f64_array(
-        root.layer_state_after_root_uptake
-            .iter()
-            .map(|layer| layer.depth_m),
+        event.root_layer_depth_m.iter().copied(),
     ));
     line.push_str(",\"root_layer_uptake_potential_m\":");
     line.push_str(&r7h_et_trace_f64_array(
-        root.layer_uptake_potential_m.iter().copied(),
+        event.root_layer_uptake_potential_m.iter().copied(),
     ));
     line.push_str(",\"root_layer_uptake_actual_m\":");
     line.push_str(&r7h_et_trace_f64_array(
-        root.layer_uptake_actual_m.iter().copied(),
+        event.root_layer_uptake_actual_m.iter().copied(),
     ));
     line.push('}');
     line.push('\n');
@@ -377,7 +348,7 @@ impl DirectDayFrame {
         self.evapotranspiration_compute_shadow_projection =
             Some(evapotranspiration_compute_shadow_projection.clone());
         DIRECT_AUDIT.record_shadow_projection();
-        maybe_write_r7h_et_trace(self);
+        maybe_write_r7h_et_trace(&DirectEvapotranspirationTraceEvent::from_day_frame(self));
 
         Ok(DirectEvapotranspirationComputeSpanReport {
             phase_count,

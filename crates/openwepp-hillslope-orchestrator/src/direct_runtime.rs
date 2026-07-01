@@ -144,6 +144,7 @@ pub const DIRECT_R7D6_EROSION_SPAN: [DirectPhaseKind; DIRECT_R7D6_EROSION_PHASE_
 static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::new();
 
 mod decomposition;
+mod diagnostic_events;
 mod erosion;
 mod evapotranspiration;
 mod growth;
@@ -160,6 +161,10 @@ pub use decomposition::{
     DirectResiduePartitionDownstreamOperands, DirectResiduePartitionInputs,
     DirectResiduePartitionShadowProjection, DirectResiduePartitionSpanReport,
     DirectResiduePartitionState,
+};
+pub use diagnostic_events::{
+    DirectEvapotranspirationTraceEvent, DirectPercolationTraceEvent,
+    DirectRunoffRebalanceTraceEvent, DirectSubsurfaceSaturationTraceEvent,
 };
 pub use erosion::{
     DirectErod13Inputs, DirectErod13State, DirectErod14ClassInputs, DirectErod14ClassState,

@@ -23,4 +23,3 @@ pub const SIMIMPL09_ADOPT_PROFILE: &str = "SIMIMPL08-adopt-only";
 pub(crate) const DAILY_TIMESTEP_SECONDS: u32 = 86_400;
 pub(crate) const HOURLY_TIMESTEP_SECONDS: u32 = 3_600;
 pub(crate) const SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM: f64 = 1.0e-6;
-pub(crate) const SIMIMPL10_FLAG_TOLERANCE: f64 = 1.0e-9;

@@ -210,14 +210,12 @@ impl Wb11HydrologyKernel {
 
     #[allow(clippy::too_many_lines)]
     pub(super) fn require_shadow_fine_state_domains(
-        request: Option<&HillslopeKernelRequest<'_>>,
         phase_class: HillslopeKernelPhaseClass,
         fine: &FrostFineLayerState,
         layer: &FrostLayerWaterState,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
         let thetdr = layer.thetdr;
         Self::require_frost_fine_state_range(
-            request,
             phase_class,
             FROST_RUNTIME_FINE_FGFRST_ROOT,
             fine.layer_index,
@@ -241,7 +239,6 @@ impl Wb11HydrologyKernel {
             });
         }
         Self::require_frost_fine_state_range(
-            request,
             phase_class,
             FROST_RUNTIME_FINE_SLFSD_M_ROOT,
             fine.layer_index,
@@ -251,7 +248,6 @@ impl Wb11HydrologyKernel {
             Some(fine.fine_layer_thickness_m),
         )?;
         Self::require_frost_fine_state_range(
-            request,
             phase_class,
             FROST_RUNTIME_FINE_SLSIC_M_ROOT,
             fine.layer_index,
@@ -261,7 +257,6 @@ impl Wb11HydrologyKernel {
             Some(Self::fine_layer_ice_capacity_m(layer, fine)),
         )?;
         Self::require_frost_fine_state_range(
-            request,
             phase_class,
             FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
             fine.layer_index,
@@ -271,7 +266,6 @@ impl Wb11HydrologyKernel {
             Some(Self::fine_layer_liquid_theta_capacity(layer)),
         )?;
         Self::require_frost_fine_state_range(
-            request,
             phase_class,
             FROST_RUNTIME_FINE_SLTIME_S_ROOT,
             fine.layer_index,
@@ -284,7 +278,6 @@ impl Wb11HydrologyKernel {
 
     #[allow(clippy::too_many_arguments)]
     fn require_frost_fine_state_range(
-        request: Option<&HillslopeKernelRequest<'_>>,
         phase_class: HillslopeKernelPhaseClass,
         symbol_root: &'static str,
         layer_index: usize,
@@ -293,18 +286,6 @@ impl Wb11HydrologyKernel {
         minimum: Option<f64>,
         maximum: Option<f64>,
     ) -> Result<(), Wb11HydrologyKernelGuardError> {
-        if let Some(symbol) = request
-            .and_then(|request| request.hot_state_grid_symbol(symbol_root, layer_index, fine_index))
-            .map(|symbol| symbol.symbol.clone())
-        {
-            return Self::require_dynamic_state_range_for_symbol(
-                phase_class,
-                &symbol,
-                value,
-                minimum,
-                maximum,
-            );
-        }
         if let Some(minimum_value) = minimum
             && value < minimum_value - WB11_ZERO_THRESHOLD
         {
@@ -330,104 +311,6 @@ impl Wb11HydrologyKernel {
         Ok(())
     }
 
-    fn read_or_default_shadow_fine_state(
-        request: &HillslopeKernelRequest<'_>,
-        phase_class: HillslopeKernelPhaseClass,
-        layer: &FrostLayerWaterState,
-    ) -> Result<Vec<FrostFineLayerState>, Wb11HydrologyKernelGuardError> {
-        let mut remaining_frozen_depth_m = layer.frozen_depth_m;
-        let mut fine_layers = Vec::with_capacity(layer.fine_layer_count);
-        for fine_index in 1..=layer.fine_layer_count {
-            let default =
-                Self::default_fine_layer_from_coarse(layer, fine_index, &mut remaining_frozen_depth_m);
-
-            let mut fine = FrostFineLayerState {
-                layer_index: layer.layer_index,
-                fine_index,
-                fine_layer_thickness_m: layer.fine_layer_thickness_m,
-                fgfrst: Self::optional_state_scalar_for_grid_or_symbol(
-                    request,
-                    phase_class,
-                    FROST_RUNTIME_FINE_FGFRST_ROOT,
-                    layer.layer_index,
-                    fine_index,
-                    || {
-                        Self::frost_fine_layer_symbol(
-                            FROST_RUNTIME_FINE_FGFRST_ROOT,
-                            layer.layer_index,
-                            fine_index,
-                        )
-                    },
-                )?
-                .map_or(default.fgfrst, |(_, value)| value),
-                slfsd_m: Self::optional_state_scalar_for_grid_or_symbol(
-                    request,
-                    phase_class,
-                    FROST_RUNTIME_FINE_SLFSD_M_ROOT,
-                    layer.layer_index,
-                    fine_index,
-                    || {
-                        Self::frost_fine_layer_symbol(
-                            FROST_RUNTIME_FINE_SLFSD_M_ROOT,
-                            layer.layer_index,
-                            fine_index,
-                        )
-                    },
-                )?
-                .map_or(default.slfsd_m, |(_, value)| value),
-                slsic_m: Self::optional_state_scalar_for_grid_or_symbol(
-                    request,
-                    phase_class,
-                    FROST_RUNTIME_FINE_SLSIC_M_ROOT,
-                    layer.layer_index,
-                    fine_index,
-                    || {
-                        Self::frost_fine_layer_symbol(
-                            FROST_RUNTIME_FINE_SLSIC_M_ROOT,
-                            layer.layer_index,
-                            fine_index,
-                        )
-                    },
-                )?
-                .map_or(default.slsic_m, |(_, value)| value),
-                slsw_theta: Self::optional_state_scalar_for_grid_or_symbol(
-                    request,
-                    phase_class,
-                    FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
-                    layer.layer_index,
-                    fine_index,
-                    || {
-                        Self::frost_fine_layer_symbol(
-                            FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
-                            layer.layer_index,
-                            fine_index,
-                        )
-                    },
-                )?
-                .map_or(default.slsw_theta, |(_, value)| value),
-                sltime_s: Self::optional_state_scalar_for_grid_or_symbol(
-                    request,
-                    phase_class,
-                    FROST_RUNTIME_FINE_SLTIME_S_ROOT,
-                    layer.layer_index,
-                    fine_index,
-                    || {
-                        Self::frost_fine_layer_symbol(
-                            FROST_RUNTIME_FINE_SLTIME_S_ROOT,
-                            layer.layer_index,
-                            fine_index,
-                        )
-                    },
-                )?
-                .map_or(0.0, |(_, value)| value),
-            };
-            Self::canonicalize_fine_layer_liquid_theta(&mut fine, layer);
-            Self::require_shadow_fine_state_domains(Some(request), phase_class, &fine, layer)?;
-            fine_layers.push(fine);
-        }
-        Ok(fine_layers)
-    }
-
     fn apply_shadow_frwatc_ingress(
         fine_layers: &mut [FrostFineLayerState],
         layer: &mut FrostLayerExchangeState,
@@ -437,16 +320,13 @@ impl Wb11HydrologyKernel {
         let mut remaining_delta_m = layer.st_m - layer.yst_m;
         if remaining_delta_m > WB11_ZERO_THRESHOLD {
             if layer.frozen_m > WB11_ZERO_THRESHOLD {
-                let frozen_zone_capacity_m = (
-                    Self::fine_layer_capacity_per_m(water_layer) * layer.frozen_m
-                        - layer.soilf_m
-                        - layer.nwfrzz_m
-                )
+                let frozen_zone_capacity_m = (Self::fine_layer_capacity_per_m(water_layer)
+                    * layer.frozen_m
+                    - layer.soilf_m
+                    - layer.nwfrzz_m)
                     .max(0.0);
-                let requested_frozen_zone_m =
-                    remaining_delta_m * layer.frozen_m / water_layer.dg_m;
-                let into_frozen_zone_m =
-                    requested_frozen_zone_m.min(frozen_zone_capacity_m);
+                let requested_frozen_zone_m = remaining_delta_m * layer.frozen_m / water_layer.dg_m;
+                let into_frozen_zone_m = requested_frozen_zone_m.min(frozen_zone_capacity_m);
                 layer.nwfrzz_m += into_frozen_zone_m;
                 remaining_delta_m -= into_frozen_zone_m;
             }
@@ -519,108 +399,6 @@ impl Wb11HydrologyKernel {
         layer.yst_m = layer.st_m;
     }
 
-    pub(super) fn compute_shadow_fine_state(
-        request: &HillslopeKernelRequest<'_>,
-        phase_class: HillslopeKernelPhaseClass,
-        layers: &[FrostLayerWaterState],
-    ) -> Result<FrostFineShadowState, Wb11HydrologyKernelGuardError> {
-        let mut all_fine_layers = Vec::new();
-        let mut shadow_layers = Vec::with_capacity(layers.len());
-        let mut total_water_before_m = 0.0;
-        let mut total_water_after_m = 0.0;
-        let mut wb_delta_m = 0.0;
-        let watpdg_m = 0.0;
-        let mut watbtm_m = 0.0;
-
-        for layer in layers {
-            let mut fine_layers =
-                Self::read_or_default_shadow_fine_state(request, phase_class, layer)?;
-            let (nwfrzz_symbol, nwfrzz_m) =
-                Self::optional_state_scalar_for_series_or_symbol(
-                    request,
-                    phase_class,
-                    FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT,
-                    layer.layer_index,
-                    || Self::frost_layer_symbol(FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT, layer.layer_index),
-                )?
-                .unwrap_or_else(|| {
-                    (
-                        Self::frost_layer_symbol(FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT, layer.layer_index),
-                        0.0,
-                    )
-                });
-            Self::require_dynamic_state_range(
-                phase_class,
-                nwfrzz_symbol,
-                nwfrzz_m,
-                Some(0.0),
-                None,
-            )?;
-            let st_m = layer.theta_m + nwfrzz_m;
-            let (yst_symbol, yst_m) = Self::optional_state_scalar_for_series_or_symbol(
-                request,
-                phase_class,
-                FROST_RUNTIME_LAYER_YST_M_ROOT,
-                layer.layer_index,
-                || Self::frost_layer_symbol(FROST_RUNTIME_LAYER_YST_M_ROOT, layer.layer_index),
-            )?
-            .unwrap_or_else(|| {
-                (
-                    Self::frost_layer_symbol(FROST_RUNTIME_LAYER_YST_M_ROOT, layer.layer_index),
-                    st_m,
-                )
-            });
-            Self::require_dynamic_state_range(
-                phase_class,
-                yst_symbol,
-                yst_m,
-                Some(0.0),
-                None,
-            )?;
-            let soilf_m = layer.frzw_m + layer.thetdr * layer.frozen_depth_m;
-            let mut shadow_layer = FrostLayerExchangeState {
-                layer_index: layer.layer_index,
-                thetdr: layer.thetdr,
-                st_m,
-                yst_m,
-                nwfrzz_m,
-                frozen_m: layer.frozen_depth_m,
-                frzw_m: layer.frzw_m,
-                soilf_m,
-                soil_water_m: layer.theta_m
-                    + layer.thetdr * (layer.dg_m - layer.frozen_depth_m).max(0.0)
-                    + nwfrzz_m,
-            };
-            let before_m = Self::fine_layer_total_water(&fine_layers, shadow_layer.nwfrzz_m);
-            wb_delta_m += shadow_layer.st_m - shadow_layer.yst_m;
-            Self::apply_shadow_frwatc_ingress(
-                &mut fine_layers,
-                &mut shadow_layer,
-                layer,
-                &mut watbtm_m,
-            );
-            Self::aggregate_shadow_layer(&fine_layers, &mut shadow_layer);
-            let after_m = Self::fine_layer_total_water(&fine_layers, shadow_layer.nwfrzz_m);
-            total_water_before_m += before_m;
-            total_water_after_m += after_m;
-            shadow_layers.push(shadow_layer);
-            all_fine_layers.extend(fine_layers);
-        }
-
-        Ok(FrostFineShadowState {
-            fine_layers: all_fine_layers,
-            layer_state: shadow_layers,
-            total_water_before_m,
-            total_water_after_m,
-            wb_delta_m,
-            residual_m: total_water_after_m + watpdg_m + watbtm_m
-                - total_water_before_m
-                - wb_delta_m,
-            watpdg_m,
-            watbtm_m,
-        })
-    }
-
     pub(super) fn compute_shadow_fine_state_from_typed(
         prior_state: &DirectFrostPriorStateInput,
         phase_class: HillslopeKernelPhaseClass,
@@ -657,10 +435,10 @@ impl Wb11HydrologyKernel {
                     slfsd_m: prior.map_or(default.slfsd_m, |fine| fine.slfsd_m),
                     slsic_m: prior.map_or(default.slsic_m, |fine| fine.slsic_m),
                     slsw_theta: prior.map_or(default.slsw_theta, |fine| fine.slsw_theta),
-                    sltime_s: prior.map_or(0.0, |fine| fine.sltime_s),
+                sltime_s: prior.map_or(0.0, |fine| fine.sltime_s),
                 };
                 Self::canonicalize_fine_layer_liquid_theta(&mut fine, layer);
-                Self::require_shadow_fine_state_domains(None, phase_class, &fine, layer)?;
+                Self::require_shadow_fine_state_domains(phase_class, &fine, layer)?;
                 fine_layers.push(fine);
             }
 
@@ -1028,20 +806,6 @@ impl Wb11HydrologyKernel {
             .unwrap_or(FROST_RUNTIME_SHALLOW_FRONT_MIN_CONDUCTION_PATH_M)
     }
 
-    fn require_monthly_temperature_vector(
-        request: &HillslopeKernelRequest<'_>,
-        phase_class: HillslopeKernelPhaseClass,
-        root: &str,
-    ) -> Result<[f64; 12], Wb11HydrologyKernelGuardError> {
-        let mut monthly = [0.0; 12];
-        for (month_index, value) in monthly.iter_mut().enumerate() {
-            let month = month_index + 1;
-            let symbol = BoundarySymbol::from(format!("{root}_{month:04}"));
-            *value = Self::require_state_scalar_for_symbol(request, phase_class, &symbol)?;
-        }
-        Ok(monthly)
-    }
-
     fn legacy_tmpfun(
         annual_mean_c: f64,
         amplitude_c: f64,
@@ -1059,7 +823,10 @@ impl Wb11HydrologyKernel {
         (square_error / 12.0).sqrt()
     }
 
-    pub(super) fn fit_legacy_tmpcft_curve(monthly_max_c: &[f64; 12], monthly_min_c: &[f64; 12]) -> FrostSeasonalTemperatureCurve {
+    pub(super) fn fit_legacy_tmpcft_curve(
+        monthly_max_c: &[f64; 12],
+        monthly_min_c: &[f64; 12],
+    ) -> FrostSeasonalTemperatureCurve {
         let mut monthly_mean_c = [0.0; 12];
         let mut annual_mean_c = 0.0;
         let mut maximum_mean_c = f64::NEG_INFINITY;
@@ -1131,43 +898,6 @@ impl Wb11HydrologyKernel {
             amplitude_c,
             phase_shift_days,
         }
-    }
-
-    pub(super) fn require_frost_seasonal_temperature_curve(
-        request: &HillslopeKernelRequest<'_>,
-        phase_class: HillslopeKernelPhaseClass,
-    ) -> Result<FrostSeasonalTemperatureCurve, Wb11HydrologyKernelGuardError> {
-        let monthly_max_c =
-            Self::require_monthly_temperature_vector(request, phase_class, PL_GROWTH_CLIMATE_OBMAX_ROOT)?;
-        let monthly_min_c =
-            Self::require_monthly_temperature_vector(request, phase_class, PL_GROWTH_CLIMATE_OBMIN_ROOT)?;
-        Ok(Self::fit_legacy_tmpcft_curve(&monthly_max_c, &monthly_min_c))
-    }
-
-    pub(super) fn require_integral_state_day(
-        request: &HillslopeKernelRequest<'_>,
-        phase_class: HillslopeKernelPhaseClass,
-    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let day_symbol = BoundarySymbol::from(PL_RUNTIME_DAY_SYMBOL);
-        let day = Self::require_state_scalar_for_symbol(request, phase_class, &day_symbol)?;
-        Self::require_dynamic_state_range(
-            phase_class,
-            day_symbol.clone(),
-            day,
-            Some(1.0),
-            Some(366.0),
-        )?;
-        let rounded = day.round();
-        if (day - rounded).abs() > WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: day_symbol,
-                value: day,
-                minimum: Some(1.0),
-                maximum: Some(366.0),
-            });
-        }
-        Ok(rounded)
     }
 
     fn seasonal_lower_front_temperature_c(

@@ -305,34 +305,6 @@ impl DirectPublicationOutputSummary {
     }
 }
 
-fn annotate_day_runtime_error(
-    error: HillslopeCliError,
-    day_index: usize,
-    day_projection: &ClimateDayProjection,
-) -> HillslopeCliError {
-    match error {
-        HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
-            HillslopeCliError::RuntimeSurfaceFailure {
-                surface,
-                detail: format!(
-                    "{detail} [sim_day_index={}, calendar_year={}, julian_day={}]",
-                    day_index + 1,
-                    day_projection.year,
-                    day_projection.julian_day
-                ),
-            }
-        }
-        other => other,
-    }
-}
-
-fn hillslope_id_for_pass_output(output_hillslope_id: u32) -> Result<i32, HillslopeCliError> {
-    i32::try_from(output_hillslope_id).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
-        surface: "outputs.pass_parquet",
-        detail: format!("{SIMOUT_GUARD_ID} hillslope id {output_hillslope_id} exceeds i32 range"),
-    })
-}
-
 fn build_hbp_output_from_direct_publication_summary(
     output_pass: &Path,
     summary: &DirectPublicationOutputSummary,
@@ -455,9 +427,10 @@ fn build_direct_publication_artifacts(
     sidecars: &HillslopeSidecarResolution,
     execution: &mut HillslopeClimateExecution,
 ) -> Result<Option<DirectPublicationArtifacts>, HillslopeCliError> {
-    if runtime_selection != HillslopeRuntimeSelection::DirectProductionExecutor {
-        return Ok(None);
-    }
+    debug_assert_eq!(
+        runtime_selection,
+        HillslopeRuntimeSelection::DirectProductionExecutor
+    );
     let retained = execution.retained_direct_publication.take().ok_or_else(|| {
         direct_production_executor_blocked(
             "direct production executor requires retained direct execution artifacts",

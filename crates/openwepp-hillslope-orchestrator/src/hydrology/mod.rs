@@ -1,10 +1,22 @@
-include!("00_pl_slot_resolution.rs");
-include!("01_phase_routing.rs");
+use openwepp_kernel_contract::{
+    BoundarySymbol, HillslopeKernelPhaseClass, HillslopeProductionStateSymbol,
+};
+use openwepp_sim_contract::status::BoundaryClass;
+
+use crate::constants::{
+    PL_GROWTH_SOIL_DEPTH_SYMBOL, PL_RUNTIME_DAY_SYMBOL, WB11_SYMBOL_SOIL_WATER,
+    WB11_ZERO_THRESHOLD, WB12_SYMBOL_RAINFALL_INPUT, WB12_SYMBOL_SNOW_COUPLING_S,
+    WB14_SYMBOL_FROST_FINE_BOT, WB14_SYMBOL_FROST_FINE_TOP, WB14_SYMBOL_FROST_KFACTOR1,
+    WB14_SYMBOL_FROST_KFACTOR2, WB14_SYMBOL_FROST_KFACTOR3, WB14_SYMBOL_FROST_KRESF,
+    WB14_SYMBOL_FROST_KSNOWF, WB14_SYMBOL_FROST_KSOILF, WB14_SYMBOL_FROST_RUNTIME_DFROST,
+    WB14_SYMBOL_FROST_RUNTIME_DTHAW, WB14_SYMBOL_FROST_RUNTIME_INFCAP_FRZ,
+    WB14_SYMBOL_FROST_RUNTIME_NFT, WB14_SYMBOL_FROST_RUNTIME_WS_FRZ, WB14_SYMBOL_FROST_WINT_RED,
+    WB14_SYMBOL_SNOW_NEWSNW, WB14_SYMBOL_SNOW_RST, WB14_SYMBOL_SNOW_RUNTIME_SWE,
+    WB14_SYMBOL_SNOW_SSD, WB14_SYMBOL_SOIL_CONDUCTIVITY, WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY,
+    WB14_SYMBOL_SOIL_THETA_RESIDUAL, WB14_SYMBOL_TMAX, WB14_SYMBOL_TMIN, WB15_SYMBOL_PLANT_CANCOV,
+};
+
 include!("02_guard_errors.rs");
 include!("03_kernel_support.rs");
-include!("04_kernel_execution.rs");
-include!("05_pl_phase_dispatch.rs");
-include!("06_growth_state.rs");
-include!("07_decomposition_equations.rs");
 include!("08_snow_albedo.rs");
 include!("09_snow_density.rs");

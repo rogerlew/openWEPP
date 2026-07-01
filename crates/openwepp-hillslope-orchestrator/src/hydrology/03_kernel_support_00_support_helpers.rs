@@ -8,14 +8,8 @@ use crate::winter_column::DirectSnowLayerState;
 pub struct Wb11HydrologyKernel;
 
 #[derive(Debug, Clone, Copy)]
+#[allow(clippy::struct_field_names)]
 pub(crate) struct SnowHourlyState {
-    hour: usize,
-    depth_before_m: f64,
-    depth_available_m: f64,
-    density_before_kg_m3: f64,
-    depth_after_m: f64,
-    density_after_kg_m3: f64,
-    rain_retained_m: f64,
     rain_released_m: f64,
     liquid_holding_capacity_m: f64,
     liquid_water_retained_before_m: f64,
@@ -24,37 +18,11 @@ pub(crate) struct SnowHourlyState {
     sublimation_m: f64,
     melt_raw_m: f64,
     melt_m: f64,
-    melt_amelt_in: f64,
-    melt_bmelt_in: f64,
-    melt_cmelt_in: f64,
-    melt_dmelt_in: f64,
-    melt_hrtef_f: f64,
-    melt_hrdtf_f: f64,
-    melt_vwmph: f64,
-    melt_rainin: f64,
-    melt_wind_adjustment: f64,
-    melt_branch_active: f64,
-    dewpoint_c: f64,
-    wind_m_s: f64,
-}
-
-#[derive(Debug, Clone, Copy, Default)]
-pub(crate) struct SnowMeltTerms {
-    amelt_in: f64,
-    bmelt_in: f64,
-    cmelt_in: f64,
-    dmelt_in: f64,
-    hrtef_f: f64,
-    hrdtf_f: f64,
-    vwmph: f64,
-    rainin: f64,
-    wind_adjustment: f64,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct SnowMeltComputation {
     wmelt_m: f64,
-    terms: SnowMeltTerms,
 }
 
 #[cfg(test)]
@@ -63,13 +31,6 @@ mod tests {
 
     fn snowsci_stage1_hourly_state(melt_m: f64) -> SnowHourlyState {
         SnowHourlyState {
-            hour: 1,
-            depth_before_m: 0.0,
-            depth_available_m: 0.0,
-            density_before_kg_m3: 0.0,
-            depth_after_m: 0.0,
-            density_after_kg_m3: 0.0,
-            rain_retained_m: 0.0,
             rain_released_m: 0.0,
             liquid_holding_capacity_m: 0.0,
             liquid_water_retained_before_m: 0.0,
@@ -78,18 +39,6 @@ mod tests {
             sublimation_m: 0.0,
             melt_raw_m: melt_m,
             melt_m,
-            melt_amelt_in: 0.0,
-            melt_bmelt_in: 0.0,
-            melt_cmelt_in: 0.0,
-            melt_dmelt_in: 0.0,
-            melt_hrtef_f: 0.0,
-            melt_hrdtf_f: 0.0,
-            melt_vwmph: 0.0,
-            melt_rainin: 0.0,
-            melt_wind_adjustment: 0.0,
-            melt_branch_active: 1.0,
-            dewpoint_c: 0.0,
-            wind_m_s: 0.0,
         }
     }
 
@@ -119,50 +68,6 @@ mod tests {
         assert!(hourly_state.iter().all(|hourly| hourly.melt_m >= 0.0));
     }
 
-    #[test]
-    fn hphys0250_wb15_interception_scale_canonicalizes_near_zero_liquid_roundoff() {
-        let (liquid_after_interception, rainfall_scale) =
-            Wb11HydrologyKernel::resolve_interception_rainfall_scale(
-                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
-                0.001_08,
-                0.0,
-                2.168_404_344_971_009e-19,
-            )
-            .expect("within-tolerance liquid roundoff should canonicalize");
-
-        assert!(liquid_after_interception.abs() < f64::EPSILON);
-        assert!(rainfall_scale.abs() < f64::EPSILON);
-    }
-
-    #[test]
-    fn fq3dc_wb15_accepts_finite_non_negative_corn_vdmt_above_legacy_cap() {
-        let mut state_surface = std::collections::BTreeMap::new();
-        let flux_surface = std::collections::BTreeMap::new();
-        state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.72));
-        state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(2.4));
-        state_surface.insert(
-            BoundarySymbol::from("vdmt"),
-            BoundaryValue::scalar(2.4),
-        );
-        let request = HillslopeKernelRequest::with_phase_context(
-            "runoff_reconciliation",
-            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
-            HillslopeConsumerAdapter::Runoff,
-            None,
-            &state_surface,
-            &flux_surface,
-        );
-
-        let interception = Wb11HydrologyKernel::compute_canopy_interception_depth(
-            &request,
-            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
-            0.004,
-        )
-        .expect("finite non-negative plant biomass should be valid WB15 input");
-
-        assert!(interception.is_finite());
-        assert!(interception > 0.0);
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -183,7 +88,6 @@ pub(crate) struct SnowCouplingOutcome {
     runtime_density_kg_m3: f64,
     runtime_settle_day_count: f64,
     snow_albedo_state_after: Option<SnowAlbedoState>,
-    hourly_state: Vec<SnowHourlyState>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -563,7 +467,6 @@ pub(crate) struct SnowMeltRedistributionOutcome {
 
 #[derive(Debug, Clone)]
 pub(crate) struct FrostCouplingOutcome {
-    dfrost: f64,
     dthaw: f64,
     nft: f64,
     ws_frz: f64,
@@ -580,7 +483,6 @@ pub(crate) struct FrostCouplingOutcome {
     thdp_m: f64,
     tfrdp_m: f64,
     tthawd_m: f64,
-    profile_depth_m: f64,
     fgthwd_flag: f64,
     total_fine_layer_count: f64,
     conductivity_tilled_w_m_k: f64,
@@ -599,24 +501,6 @@ pub(crate) struct FrostCouplingOutcome {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub(crate) struct MofeHourlyUpstreamCarryover {
-    pub(crate) surface_runoff: f64,
-    pub(crate) lateral_runon: f64,
-}
-
-impl MofeHourlyUpstreamCarryover {
-    pub(crate) fn total(self) -> f64 {
-        self.surface_runoff + self.lateral_runon
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub(crate) struct MofeHourlyCurrentSaturationCarry {
-    pub(crate) values: [f64; MOFE_HOURLY_CARRY_ARRAY_COUNT],
-    pub(crate) clipped_top_layer_theta: Option<f64>,
-}
-
-#[derive(Debug, Clone, Copy)]
 pub(crate) struct FrostHourlyState {
     hour: usize,
     frzflg: f64,
@@ -624,8 +508,6 @@ pub(crate) struct FrostHourlyState {
     qsrf_w_m2: f64,
     quf_w_m2: f64,
     ksrf_w_m_k: f64,
-    snow_depth_m: f64,
-    residue_depth_m: f64,
     tilled_frozen_depth_m: f64,
     untilled_frozen_depth_m: f64,
 }
@@ -633,10 +515,6 @@ pub(crate) struct FrostHourlyState {
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct FrostLayerTopologyState {
     layer_index: usize,
-    fine_layer_count: usize,
-    fine_layer_thickness_m: f64,
-    dg_m: f64,
-    upper_limit_m: f64,
     theta_after_m: f64,
     frozen_depth_m: f64,
     frzw_m: f64,
@@ -663,123 +541,26 @@ pub(crate) struct FrostFineLayerDiagnosticState {
     slsic_m: f64,
     slsw_theta: f64,
     sltime_s: f64,
-    slsic_capacity_m: f64,
-    slsw_theta_capacity: f64,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub(crate) enum IrrigationScheduleSource {
-    Depletion,
-    FixedDate,
-}
-
-impl IrrigationScheduleSource {
-    const fn as_scalar(self) -> f64 {
-        match self {
-            Self::Depletion => 1.0,
-            Self::FixedDate => 2.0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub(crate) struct ActiveIrrigationEvent {
-    source: IrrigationScheduleSource,
-    event_index: usize,
-    system_type: f64,
-    depth_m: f64,
-    duration_s: f64,
-    rate_m_per_s: f64,
 }
 
 const SNOW_RUNTIME_DEPTH_M_SYMBOL: &str = "snow.runtime_depth_m";
 const SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL: &str = "snow.runtime_density_kg_m3";
-const SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL: &str = "snow.runtime_settle_day_count";
-
-const SNOW_HOURLY_DEPTH_BEFORE_ROOT: &str = "snow.hourly.depth_before_m";
-const SNOW_HOURLY_DEPTH_AVAILABLE_ROOT: &str = "snow.hourly.depth_available_m";
-const SNOW_HOURLY_DENSITY_BEFORE_ROOT: &str = "snow.hourly.density_before_kg_m3";
-const SNOW_HOURLY_DEPTH_AFTER_ROOT: &str = "snow.hourly.depth_after_m";
-const SNOW_HOURLY_DENSITY_AFTER_ROOT: &str = "snow.hourly.density_after_kg_m3";
-const SNOW_HOURLY_MELT_ROOT: &str = "snow.hourly.melt_m";
-const SNOW_HOURLY_MELT_RAW_ROOT: &str = "snow.hourly.melt_raw_m";
-const SNOW_HOURLY_MELT_AMELT_ROOT: &str = "snow.hourly.melt_amelt_in";
-const SNOW_HOURLY_MELT_BMELT_ROOT: &str = "snow.hourly.melt_bmelt_in";
-const SNOW_HOURLY_MELT_CMELT_ROOT: &str = "snow.hourly.melt_cmelt_in";
-const SNOW_HOURLY_MELT_DMELT_ROOT: &str = "snow.hourly.melt_dmelt_in";
-const SNOW_HOURLY_MELT_HRTEF_ROOT: &str = "snow.hourly.melt_hrtef_f";
-const SNOW_HOURLY_MELT_HRDTF_ROOT: &str = "snow.hourly.melt_hrdtf_f";
-const SNOW_HOURLY_MELT_VWMPH_ROOT: &str = "snow.hourly.melt_vwmph";
-const SNOW_HOURLY_MELT_RAININ_ROOT: &str = "snow.hourly.melt_rainin";
-const SNOW_HOURLY_MELT_WIND_ADJUSTMENT_ROOT: &str = "snow.hourly.melt_wind_adjustment";
-const SNOW_HOURLY_MELT_BRANCH_ACTIVE_ROOT: &str = "snow.hourly.melt_branch_active";
-const SNOW_HOURLY_RAIN_ROOT: &str = "snow.hourly.rain_m";
-const SNOW_HOURLY_RAIN_RETAINED_ROOT: &str = "snow.hourly.rain_retained_m";
-const SNOW_HOURLY_RAIN_RELEASED_ROOT: &str = "snow.hourly.rain_released_m";
-const SNOW_HOURLY_SNOWFALL_ROOT: &str = "snow.hourly.snowfall_m";
+const SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL: &str = "snow.runtime_settle_day_count";const SNOW_HOURLY_MELT_ROOT: &str = "snow.hourly.melt_m";const SNOW_HOURLY_RAIN_ROOT: &str = "snow.hourly.rain_m";const SNOW_HOURLY_SNOWFALL_ROOT: &str = "snow.hourly.snowfall_m";
 const SNOW_HOURLY_SUBLIMATION_ROOT: &str = "snow.hourly.sublimation_m";
 
 const WINTER_HOURLY_RAD_ROOT: &str = "winter.hourly.rad_mj_m2";
 const WINTER_HOURLY_AIR_TEMP_ROOT: &str = "winter.hourly.air_temp_c";
-const WINTER_HOURLY_CLOUD_ROOT: &str = "winter.hourly.cloud_fraction";
-const WINTER_HOURLY_DEWPOINT_ROOT: &str = "winter.hourly.dewpoint_c";
-const WINTER_HOURLY_WIND_ROOT: &str = "winter.hourly.wind_m_s";
-const FROST_HOURLY_QSRF_ROOT: &str = "frost.hourly.qsrf_w_m2";
-const FROST_HOURLY_QUF_ROOT: &str = "frost.hourly.quf_w_m2";
-const FROST_HOURLY_KSRF_ROOT: &str = "frost.hourly.ksrf_w_m_k";
-const FROST_HOURLY_SURFACE_TEMP_ROOT: &str = "frost.hourly.surface_temp_c";
-const FROST_HOURLY_SNOW_DEPTH_ROOT: &str = "frost.hourly.snow_depth_m";
-const FROST_HOURLY_RESIDUE_DEPTH_ROOT: &str = "frost.hourly.residue_depth_m";
-const FROST_HOURLY_TILLED_FROZEN_DEPTH_ROOT: &str = "frost.hourly.tilled_frozen_depth_m";
-const FROST_HOURLY_UNTILLED_FROZEN_DEPTH_ROOT: &str = "frost.hourly.untilled_frozen_depth_m";
-const FROST_HOURLY_FRZFLG_ROOT: &str = "frost.hourly.frzflg";
-const FROST_RUNTIME_FRDP_M_SYMBOL: &str = "frost.runtime_frdp_m";
+const WINTER_HOURLY_CLOUD_ROOT: &str = "winter.hourly.cloud_fraction";const FROST_RUNTIME_FRDP_M_SYMBOL: &str = "frost.runtime_frdp_m";
 const FROST_RUNTIME_THDP_M_SYMBOL: &str = "frost.runtime_thdp_m";
 const FROST_RUNTIME_TFRDP_M_SYMBOL: &str = "frost.runtime_tfrdp_m";
 const FROST_RUNTIME_TTHAWD_M_SYMBOL: &str = "frost.runtime_tthawd_m";
-const FROST_RUNTIME_FGTHWD_FLAG_SYMBOL: &str = "frost.runtime_fgthwd_flag";
-const FROST_RUNTIME_TOTAL_FINE_LAYER_COUNT_SYMBOL: &str = "frost.runtime_total_fine_layer_count";
-const FROST_RUNTIME_LAYER_FINE_COUNT_ROOT: &str = "frost.runtime_nfine";
-const FROST_RUNTIME_LAYER_FINE_THICKNESS_ROOT: &str = "frost.runtime_fine_thickness_m";
-const FROST_RUNTIME_FINE_FGFRST_ROOT: &str = "frost.runtime_fgfrst";
+const FROST_RUNTIME_FGTHWD_FLAG_SYMBOL: &str = "frost.runtime_fgthwd_flag";const FROST_RUNTIME_FINE_FGFRST_ROOT: &str = "frost.runtime_fgfrst";
 const FROST_RUNTIME_FINE_SLFSD_M_ROOT: &str = "frost.runtime_slfsd_m";
 const FROST_RUNTIME_FINE_SLSIC_M_ROOT: &str = "frost.runtime_slsic_m";
 const FROST_RUNTIME_FINE_SLSW_THETA_ROOT: &str = "frost.runtime_slsw_theta";
 const FROST_RUNTIME_FINE_SLTIME_S_ROOT: &str = "frost.runtime_sltime_s";
 const FROST_RUNTIME_LAYER_YST_M_ROOT: &str = "frost.runtime_yst_m";
-const FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT: &str = "frost.runtime_nwfrzz_m";
-const FROST_RUNTIME_SHADOW_TOTAL_WATER_BEFORE_SYMBOL: &str =
-    "frost.runtime_shadow_total_water_before_m";
-const FROST_RUNTIME_SHADOW_TOTAL_WATER_AFTER_SYMBOL: &str =
-    "frost.runtime_shadow_total_water_after_m";
-const FROST_RUNTIME_SHADOW_WB_DELTA_SYMBOL: &str = "frost.runtime_shadow_wb_delta_m";
-const FROST_RUNTIME_SHADOW_FRWATC_RESIDUAL_SYMBOL: &str =
-    "frost.runtime_shadow_frwatc_residual_m";
-const FROST_RUNTIME_WATPDG_SYMBOL: &str = "frost.runtime_watpdg_m";
-const FROST_RUNTIME_WATBTM_SYMBOL: &str = "frost.runtime_watbtm_m";
-const FROST_RUNTIME_SHADOW_ST_ROOT: &str = "frost.runtime_shadow_st_m";
-const FROST_RUNTIME_SHADOW_SOIL_WATER_ROOT: &str = "frost.runtime_shadow_soil_water_m";
-const FROST_RUNTIME_SHADOW_FROZEN_DEPTH_ROOT: &str = "frost.runtime_shadow_frozen_depth_m";
-const FROST_RUNTIME_SHADOW_FRZW_ROOT: &str = "frost.runtime_shadow_frzw_m";
-const FROST_RUNTIME_SHADOW_SOILF_ROOT: &str = "frost.runtime_shadow_soilf_m";
-const FROST_RUNTIME_CONDUCTIVITY_TILLED_SYMBOL: &str = "frost.runtime_kftill_w_m_k";
-const FROST_RUNTIME_CONDUCTIVITY_UNTILLED_SYMBOL: &str = "frost.runtime_kfutil_w_m_k";
-const FROST_RUNTIME_CONDUCTIVITY_RESIDUE_SYMBOL: &str = "frost.runtime_kres_w_m_k";
-const FROST_RUNTIME_FRWATC_SOIL_WATER_BEFORE_SYMBOL: &str =
-    "frost.runtime_frwatc_soil_water_before_m";
-const FROST_RUNTIME_FRWATC_SOIL_WATER_AFTER_SYMBOL: &str =
-    "frost.runtime_frwatc_soil_water_after_m";
-const FROST_RUNTIME_FRWATC_FROZEN_WATER_BEFORE_SYMBOL: &str =
-    "frost.runtime_frwatc_frozen_water_before_m";
-const FROST_RUNTIME_FRWATC_FROZEN_WATER_AFTER_SYMBOL: &str =
-    "frost.runtime_frwatc_frozen_water_after_m";
-const FROST_RUNTIME_FRWATC_FREEZE_DEBIT_SYMBOL: &str =
-    "frost.runtime_frwatc_freeze_debit_m";
-const FROST_RUNTIME_FRWATC_THAW_CREDIT_SYMBOL: &str =
-    "frost.runtime_frwatc_thaw_credit_m";
-const FROST_RUNTIME_FRWATC_NET_LIQUID_DELTA_SYMBOL: &str =
-    "frost.runtime_frwatc_net_liquid_delta_m";
-const FROST_RUNTIME_SNOW_DEPTH_SYMBOL: &str = "snow.runtime_depth_m";
+const FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT: &str = "frost.runtime_nwfrzz_m";const FROST_RUNTIME_SNOW_DEPTH_SYMBOL: &str = "snow.runtime_depth_m";
 const FROST_RUNTIME_RESIDUE_DEPTH_SYMBOL: &str = "frost.runtime_residue_depth_m";
 const FROST_LANDUSE_CLASS_PROXY_SYMBOL: &str = "landuse.class_proxy";
 const FROST_RUNTIME_TILLAGE_DEPTH_M: f64 = 0.20;
@@ -812,9 +593,7 @@ const SNOW_SUBLIMATION_MIN_AIR_TEMP_K: f64 = 173.15;
 const SNOW_SUBLIMATION_KPA_TO_PA: f64 = 1_000.0;
 const SNOW_SUBLIMATION_RHO_WATER_KG_M3: f64 = 1_000.0;
 const SNOW_SUBLIMATION_STAGE_B_ACTIVE_LAYER_DEPTH_M: f64 = 0.25;
-const SNOW_SUBLIMATION_STAGE_B_ICE_HEAT_CAPACITY_J_KG_K: f64 = 2_100.0;
-const WB14_INTERVAL_INFILTRATION_ROUNDOFF_TOLERANCE_M: f64 = 1.0e-9;
-// UNIT-CONVERSION-ALLOW: mm_m_scale legacy minimum snow-depth threshold in meters, not conversion.
+const SNOW_SUBLIMATION_STAGE_B_ICE_HEAT_CAPACITY_J_KG_K: f64 = 2_100.0;// UNIT-CONVERSION-ALLOW: mm_m_scale legacy minimum snow-depth threshold in meters, not conversion.
 const SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M: f64 = 0.001;
 
 
