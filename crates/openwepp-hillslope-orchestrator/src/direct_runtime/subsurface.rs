@@ -372,12 +372,16 @@ impl DirectDayFrame {
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
         let percolation = self.compute_r4m_percolation()?;
-        maybe_write_r7h_percolation_trace(&DirectPercolationTraceEvent::from_state(
-            self.day_index,
-            self.lane_index,
-            &percolation,
-            &self.percolation_inputs,
-        ));
+        // Event construction clones two layer Vecs; build it only when the
+        // trace sink is configured.
+        if r7h_percolation_trace_config().is_some() {
+            maybe_write_r7h_percolation_trace(&DirectPercolationTraceEvent::from_state(
+                self.day_index,
+                self.lane_index,
+                &percolation,
+                &self.percolation_inputs,
+            ));
+        }
         DIRECT_AUDIT.record_direct_compute_operation();
 
         DIRECT_AUDIT.record_direct_phase_entry();

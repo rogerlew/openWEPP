@@ -362,7 +362,11 @@ impl DirectDayFrame {
         self.evapotranspiration_compute_shadow_projection =
             Some(evapotranspiration_compute_shadow_projection.clone());
         DIRECT_AUDIT.record_shadow_projection();
-        maybe_write_r7h_et_trace(&DirectEvapotranspirationTraceEvent::from_day_frame(self));
+        // Event construction clones six layer Vecs; build it only when the
+        // trace sink is configured.
+        if r7h_et_trace_config().is_some() {
+            maybe_write_r7h_et_trace(&DirectEvapotranspirationTraceEvent::from_day_frame(self));
+        }
 
         Ok(DirectEvapotranspirationComputeSpanReport {
             phase_count,
