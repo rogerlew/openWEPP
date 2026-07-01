@@ -51,6 +51,13 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
+- `20260701-wshedw2-serial-watershed-supervisor-skeleton-001/` is queued as
+  WSHED-W2 SERIAL WATERSHED SUPERVISOR SKELETON. Result:
+  `QUEUED-HANDOFF-AUTHORED`. It contains the active handoff prompt for
+  implementing `--jobs 1` serial watershed supervision with `WatershedRunPlan`,
+  `HillslopeJob`, `PassInventory`, fail-closed pass validation, and
+  consumer-path proof.
+
 ## Execution Log
 
 - `20260701-wshedfixture01-committed-watershed-fixture-adoption-001/` is
