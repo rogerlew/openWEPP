@@ -2,6 +2,7 @@ use std::error::Error as _;
 use std::fmt::Write as _;
 use std::path::PathBuf;
 
+use openwepp_hillslope_orchestrator::runtime_inputs::build_hillslope_climate_runtime_request;
 use openwepp_input_contract::parsers::climate::{
     ClimateDailyRecord, ClimateParseError, CompatibilityOptions, ParserMode, parse_climate_file,
     parse_climate_from_str,
@@ -33,6 +34,21 @@ fn build_breakpoint_fixture(nbrkpt: usize) -> String {
     climate
 }
 
+fn assert_close(observed: f64, expected: f64, tolerance: f64, label: &str) {
+    assert!(
+        (observed - expected).abs() <= tolerance,
+        "{label}: observed {observed}, expected {expected}"
+    );
+}
+
+fn reconstruct_precip_m(timem_s: &[f64], intsty_m_s: &[f64]) -> f64 {
+    timem_s
+        .windows(2)
+        .zip(intsty_m_s.iter())
+        .map(|(window, intensity)| (window[1] - window[0]) * *intensity)
+        .sum()
+}
+
 #[test]
 fn strict_mode_accepts_valid_non_breakpoint_fixture() {
     let parsed = parse_climate_file(fixture_path("strict_valid.cli"), ParserMode::Strict).unwrap();
@@ -49,6 +65,66 @@ fn strict_mode_accepts_valid_non_breakpoint_fixture() {
 }
 
 #[test]
+fn strict_climate_parser_projects_non_breakpoint_direct_runtime_request() {
+    let parsed = parse_climate_file(fixture_path("strict_valid.cli"), ParserMode::Strict)
+        .expect("strict valid climate should parse");
+
+    let request = build_hillslope_climate_runtime_request(&parsed)
+        .expect("strict climate should project to hillslope runtime request");
+
+    assert_close(
+        request.direct_latitude_degrees(),
+        45.0,
+        1.0e-12,
+        "direct latitude",
+    );
+    assert_close(
+        request.direct_elevation_m(),
+        1000.0,
+        1.0e-12,
+        "direct elevation",
+    );
+    assert_close(
+        request.direct_monthly_max_c()[0],
+        1.0,
+        1.0e-12,
+        "monthly maximum temperature",
+    );
+    assert_close(
+        request.direct_monthly_min_c()[11],
+        6.0,
+        1.0e-12,
+        "monthly minimum temperature",
+    );
+
+    let day1 = request
+        .direct_day_forcing(0)
+        .expect("day 1 direct forcing should project");
+    assert_close(day1.prcp_m, 0.010, 1.0e-12, "day 1 precipitation");
+    assert_close(day1.tmax_c, 12.0, 1.0e-12, "day 1 tmax");
+    assert_close(day1.tmin_c, 2.0, 1.0e-12, "day 1 tmin");
+    assert_close(day1.rad_ly, 200.0, 1.0e-12, "day 1 radiation");
+    assert_close(day1.vwind_m_s, 3.0, 1.0e-12, "day 1 wind speed");
+    assert_close(day1.wind_deg, 180.0, 1.0e-12, "day 1 wind direction");
+    assert_close(day1.tdpt_c, -1.0, 1.0e-12, "day 1 dew point");
+    assert_eq!(day1.timem_s.len(), day1.intsty_m_s.len());
+    assert_eq!(day1.timem_s.len(), 11);
+    assert_close(
+        reconstruct_precip_m(&day1.timem_s, &day1.intsty_m_s),
+        day1.prcp_m,
+        1.0e-12,
+        "day 1 disaggregated precipitation closure",
+    );
+
+    let day2 = request
+        .direct_day_forcing(1)
+        .expect("day 2 dry direct forcing should project");
+    assert_close(day2.prcp_m, 0.0, 1.0e-12, "day 2 precipitation");
+    assert!(day2.timem_s.is_empty());
+    assert!(day2.intsty_m_s.is_empty());
+}
+
+#[test]
 fn strict_mode_accepts_datver_5_323_and_canonicalizes_to_5_3() {
     let parsed = parse_climate_file(fixture_path("datver_5_323.cli"), ParserMode::Strict)
         .expect("5.323 should be accepted as CLIGEN 5.3-family datver");
@@ -59,6 +135,55 @@ fn strict_mode_accepts_datver_5_323_and_canonicalizes_to_5_3() {
         Some("CLIGEN 5.323 --seed 123")
     );
     assert_eq!(parsed.daily_records.len(), 2);
+}
+
+#[test]
+fn legacy_datver_zero_projects_direct_runtime_without_v4_intensity_policy() {
+    let legacy = parse_climate_file(fixture_path("legacy_datver_0.cli"), ParserMode::Strict)
+        .expect("legacy datver 0 climate should parse");
+    let v4_source =
+        include_str!("../fixtures/infile/climate/legacy_datver_0.cli").replacen("0.0", "5.30", 1);
+    let v4 = parse_climate_from_str(&v4_source, ParserMode::Strict)
+        .expect("v4 policy comparison climate should parse");
+
+    let legacy_request = build_hillslope_climate_runtime_request(&legacy)
+        .expect("datver 0 climate should project with legacy override");
+    let v4_request = build_hillslope_climate_runtime_request(&v4)
+        .expect("datver 5.30 climate should project with v4 policy");
+
+    let legacy_day = legacy_request
+        .direct_day_forcing(0)
+        .expect("legacy direct forcing should project");
+    let v4_day = v4_request
+        .direct_day_forcing(0)
+        .expect("v4 direct forcing should project");
+
+    assert_close(legacy_day.prcp_m, 0.005, 1.0e-12, "legacy precipitation");
+    assert_close(
+        v4_day.prcp_m,
+        legacy_day.prcp_m,
+        1.0e-12,
+        "v4 precipitation",
+    );
+    assert_close(
+        reconstruct_precip_m(&legacy_day.timem_s, &legacy_day.intsty_m_s),
+        legacy_day.prcp_m,
+        1.0e-12,
+        "legacy disaggregated precipitation closure",
+    );
+    assert_close(
+        reconstruct_precip_m(&v4_day.timem_s, &v4_day.intsty_m_s),
+        v4_day.prcp_m,
+        1.0e-12,
+        "v4 disaggregated precipitation closure",
+    );
+
+    let legacy_peak = legacy_day.intsty_m_s.iter().copied().fold(0.0, f64::max);
+    let v4_peak = v4_day.intsty_m_s.iter().copied().fold(0.0, f64::max);
+    assert!(
+        legacy_peak > v4_peak,
+        "datver 0 override must not apply the datver>=4.0 intensity reduction"
+    );
 }
 
 #[test]
@@ -83,6 +208,22 @@ fn compat_mode_allows_itemp2_when_enabled() {
 
     assert_eq!(parsed.mode.itemp, 2);
     assert_eq!(parsed.daily_records.len(), 1);
+}
+
+#[test]
+fn compatibility_itemp2_parse_is_rejected_by_hillslope_runtime_request() {
+    let mode = ParserMode::Compatibility(CompatibilityOptions {
+        allow_single_storm: true,
+        allow_breakpoint_cardinality_override: false,
+        allow_legacy_zero_drain_non_positive_dtime: false,
+    });
+    let parsed = parse_climate_file(fixture_path("single_storm_itemp2.cli"), mode)
+        .expect("compat parser should allow itemp=2");
+
+    let error = build_hillslope_climate_runtime_request(&parsed)
+        .expect_err("hillslope runtime request must reject itemp=2");
+
+    assert_eq!(error.code(), "CLIM-RUNTIME-E-002");
 }
 
 #[test]
@@ -155,6 +296,64 @@ fn strict_mode_accepts_curated_wc1_breakpoint_fixture_with_zero_points() {
 }
 
 #[test]
+fn strict_climate_parser_projects_breakpoint_direct_runtime_request() {
+    let parsed = parse_climate_file(
+        fixture_path("wc1_major_restlessness_breakpoint_nbrkpt_42.cli"),
+        ParserMode::Strict,
+    )
+    .expect("curated breakpoint climate should parse");
+
+    let request = build_hillslope_climate_runtime_request(&parsed)
+        .expect("breakpoint climate should project to hillslope runtime request");
+
+    assert_close(
+        request.direct_latitude_degrees(),
+        40.66,
+        1.0e-12,
+        "breakpoint latitude",
+    );
+    assert_close(
+        request.direct_elevation_m(),
+        3253.0,
+        1.0e-12,
+        "breakpoint elevation",
+    );
+
+    let day = request
+        .direct_day_forcing(0)
+        .expect("breakpoint direct forcing should project");
+
+    assert_close(day.prcp_m, 0.0888, 1.0e-12, "breakpoint precipitation");
+    assert_close(day.tmax_c, 13.5, 1.0e-12, "breakpoint tmax");
+    assert_close(day.tmin_c, 8.5, 1.0e-12, "breakpoint tmin");
+    assert_close(day.rad_ly, 193.0, 1.0e-12, "breakpoint radiation");
+    assert_close(day.vwind_m_s, 3.7, 1.0e-12, "breakpoint wind speed");
+    assert_close(day.wind_deg, 0.0, 1.0e-12, "breakpoint wind direction");
+    assert_close(day.tdpt_c, 9.5, 1.0e-12, "breakpoint dew point");
+    assert_eq!(day.timem_s.len(), 42);
+    assert_eq!(day.intsty_m_s.len(), 42);
+    assert_close(day.timem_s[0], 0.0, 1.0e-12, "first breakpoint time");
+    assert_close(
+        day.timem_s[1],
+        0.3 * 3600.0,
+        1.0e-9,
+        "second breakpoint time",
+    );
+    assert_close(
+        day.intsty_m_s[0],
+        0.00229 / (0.3 * 3600.0),
+        1.0e-15,
+        "first breakpoint intensity",
+    );
+    assert_close(
+        reconstruct_precip_m(&day.timem_s, &day.intsty_m_s),
+        day.prcp_m,
+        1.0e-12,
+        "breakpoint precipitation closure",
+    );
+}
+
+#[test]
 fn strict_mode_accepts_breakpoint_cardinality_at_1500_boundary() {
     let parsed = parse_climate_from_str(&build_breakpoint_fixture(1_500), ParserMode::Strict)
         .expect("1500 breakpoint rows should parse in strict mode");
@@ -224,6 +423,24 @@ fn strict_mode_rejects_duplicate_breakpoint_times() {
         err,
         ClimateParseError::BreakpointTimeMonotonicity { .. }
     ));
+}
+
+#[test]
+fn direct_day_forcing_reports_out_of_range_runtime_error() {
+    let parsed = parse_climate_file(fixture_path("strict_valid.cli"), ParserMode::Strict)
+        .expect("strict valid climate should parse");
+    let request = build_hillslope_climate_runtime_request(&parsed)
+        .expect("strict climate should project to runtime request");
+
+    let error = request
+        .direct_day_forcing(2)
+        .expect_err("day index beyond parsed forcing span must fail");
+
+    assert_eq!(error.code(), "CLIM-RUNTIME-E-004");
+    assert_eq!(
+        error.to_string(),
+        "CLIM-RUNTIME-E-004: requested day index 2 exceeds available climate records 2"
+    );
 }
 
 #[test]

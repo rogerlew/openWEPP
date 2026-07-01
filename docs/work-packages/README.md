@@ -54,6 +54,16 @@ State as of `2026-06-30`:
 
 ## Execution Log
 
+- `20260701-kernel-boundary-cqr-row2-climate-parser-001/` is complete as
+  KERNEL-BOUNDARY CQR ROW 2 CLIMATE PARSER. Result:
+  `EXECUTED-COMPLETE-ROW2-CQR`. It executed row #2 of
+  `kernel-boundary-cqr-burndown-execplan.md`; row #2 was already CRAP-clean and
+  remained `0 -> 0` owned production functions above CRAP 30. It restored typed
+  assertions for non-breakpoint direct climate forcing, breakpoint direct
+  climate forcing, datver-0 override behavior, itemp runtime rejection, and
+  direct-day out-of-range errors. Full gates passed (`1272` nextest passed);
+  H2637 measured `1:07.75` / `77720 KiB`, protected H2637 outputs were
+  byte-identical, and `compatibility_edge_invocations=0`.
 - `20260701-kernel-boundary-cqr-row1-soil-parser-001/` is complete as
   KERNEL-BOUNDARY CQR ROW 1 SOIL PARSER. Result:
   `EXECUTED-COMPLETE-ROW1-CQR`. It executed row #1 of
