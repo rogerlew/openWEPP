@@ -11,8 +11,13 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-06-30`:
+State as of `2026-07-01`:
 
+- `20260701-wshedperf01-watershed-baseline-performance-characterization-001/`
+  is executing as WATERSHED BASELINE PERFORMANCE CHARACTERIZATION. It measures
+  arboreal-dendrite legacy watershed walltime against current openWEPP watershed
+  execution surfaces, then records a profiling-backed architecture handoff for
+  CPU-scalable watershed execution. Result: `EXECUTING-DISPATCHED`.
 - `20260630-typed-direct-setup-symbol-map-elimination-001/` is held after Stage
   0. Result: `EXECUTED-HOLD-STAGE0-PREMISE-CORRECTED`.
 - `20260630-typed-direct-setup-symbol-map-carrier-deletion-001/` is held as
