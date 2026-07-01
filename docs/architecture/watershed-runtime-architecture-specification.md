@@ -1,6 +1,6 @@
 # Watershed Runtime Architecture Specification
 
-Status: **Draft, Revision 2** - proposed design authority for watershed
+Status: **Draft, Revision 4** - proposed design authority for watershed
 performance work. Revision 1 incorporated the hillslope performance lesson that
 partial compatibility-runtime refactors were not aggressive enough: watershed
 performance work is specified as a ground-up runtime rewrite with full deletion
@@ -8,8 +8,16 @@ of the existing watershed runtime after replacement, not as incremental
 hardening of the current runtime. Revision 2 dispositions dual-review findings
 by tightening pass-payload validation, benchmark truthfulness, `--jobs`
 authority, consumer-path proof, deletion-test coverage, and implementation gate
-requirements. This document is not ratified yet; it should be promoted by a
-follow-on ADR after implementation package review.
+requirements. Revision 3 adds the fixture ladder and auditability rule:
+arboreal-dendrite remains a tiny smoke/baseline fixture, carnivorous-adobo is
+the preferred near-term watershed-development fixture, larger 1,000+
+hillslope fixtures are required after runtime progress, and any adopted gate
+fixture must be committed to this repository for future auditability. Revision
+4 dispositions Claude static verification by adding the sidecar-discovery
+measurement axis, recording the roadmap activation requirement, naming
+`chan_out`, and making the latest-event `NoEvent` decision an explicit
+contract-first follow-up. This document is not ratified yet; it should be
+promoted by a follow-on ADR after implementation package review.
 
 Audience: contributors working on watershed CLI, watershed orchestration,
 hillslope fanout, HBP/pass handoff, output publication, and performance
@@ -109,13 +117,20 @@ not equivalent scopes unless a fresh legacy-equivalent hillslope generation plus
 routing surface is introduced. Cross-scope comparisons must be labeled as
 contextual engineering budget only.
 
+The accepted WSHEDPERF01 full-chain runs used `--legacy-sidecar-discovery`.
+That mode is part of the measured baseline scope. Future canonical benchmark
+runs that remove legacy sidecar discovery are a different scope unless the
+performance record labels the sidecar/input-discovery mode and justifies the
+comparison.
+
 ### 1.2 Architectural Signal
 
 The routed-stage command is too small to explain the end-to-end gap. Its
 `perf stat` sample recorded about `80.46 msec task-clock`, `338,400,048`
 instructions, and low memory. The full chain's repeated user time averages
 about `60.69 s`, so current end-to-end cost is dominated by hillslope execution
-and command fanout.
+and command fanout. Arboreal-dendrite is still useful as a tiny smoke/baseline
+fixture, but it is not enough by itself to drive watershed runtime architecture.
 
 This means:
 
@@ -124,6 +139,9 @@ This means:
    deterministic before performance numbers are trusted.
 3. Routed-stage typed cleanup is still necessary, but it is not the first
    walltime package.
+4. Fixture strategy must include more than arboreal-dendrite: a small
+   multi-hillslope development fixture first, then larger stress fixtures once
+   the new runtime is stable.
 
 ### 1.3 Existing Runtime Constraints
 
@@ -327,7 +345,7 @@ kernels do not perform symbol lookup during production routing.
 `WatershedPublicationFrame` is the output projection edge for:
 
 - `ebe_pw0.parquet`;
-- `chan.out.parquet`;
+- `chan.out.parquet` (`chan_out` output/runfile field);
 - `chanwb.parquet`;
 - `chnwb.parquet`;
 - `soil_pw0.parquet`;
@@ -451,6 +469,19 @@ Every watershed performance package must label timing scope:
 - `openwepp-end-to-end-jobs-1`;
 - `openwepp-end-to-end-jobs-N`.
 
+Every watershed performance package must also label sidecar/input-discovery
+mode:
+
+- `legacy-sidecar-discovery-on`;
+- `canonical-sidecar-discovery-off`;
+- `strict-committed-fixture`.
+
+WSHEDPERF01 full-chain evidence is `legacy-sidecar-discovery-on` because the
+validated command used `--legacy-sidecar-discovery`. The canonical performance
+target is `canonical-sidecar-discovery-off` or `strict-committed-fixture` after
+fixture adoption, so the first CPU-scaling package must not compare
+discovery-on and discovery-off timings as the same measurement surface.
+
 Ratios are valid only when the compared scopes are named and justified. Direct
 speedup/parity language is allowed only for equivalent scopes. Cross-scope
 legacy comparisons are contextual engineering-budget evidence, not parity
@@ -464,6 +495,7 @@ arboreal-dendrite where hardware permits and report:
 - median of at least three clean repeats;
 - wall, user, system, max RSS;
 - job count and CPU inventory;
+- sidecar/input-discovery mode;
 - per-job duration distribution;
 - route-stage duration;
 - output identity between `--jobs 1` and `--jobs N`;
@@ -485,7 +517,8 @@ gates:
 - no regression in routed-stage walltime;
 - output identity or documented contract-governed deltas;
 - no `BoundarySymbol` lookup in production channel/impoundment kernel loops;
-- no legacy sidecar discovery warnings in canonical benchmark mode;
+- no legacy sidecar discovery warnings in canonical benchmark mode, with
+  discovery mode labeled separately from WSHEDPERF01;
 - retained replay/comparator adapters remain available at edges.
 
 ### 5.4 Implementation Closure Gates
@@ -504,6 +537,38 @@ boundary states otherwise:
 Fast local loops may use narrower package gates, but final closure must either
 run these gates or close in `EXECUTED-HOLD` with the exact blocker.
 
+### 5.5 Fixture Ladder and Auditability
+
+Watershed runtime work needs a fixture ladder, not a single small case:
+
+- **Smoke/baseline tier:** arboreal-dendrite remains the historical tiny
+  benchmark and smoke fixture for comparing with WSHEDPERF01 evidence.
+- **Near-term development tier:** `/wc1/runs/ca/carnivorous-adobo/wepp` is the
+  preferred next development candidate because it is still small enough for fast
+  local iteration while exercising a 32-hillslope watershed.
+- **Large-scaling tier:** after W2/W3 make progress, add one or more larger
+  watershed fixtures. Watersheds with more than 1,000 hillslopes are common, so
+  the scaling gate must eventually include at least one fixture in that class or
+  an explicitly justified representative reduction.
+
+Paths under `/wc1/runs/...` are exploratory substrates only. A fixture is
+**adopted** when it becomes part of a work-package gate, ratification
+requirement, recurring benchmark, regression test, or release-readiness claim.
+Every adopted watershed fixture must be committed to this repository, preferably
+under a dedicated `tests/fixtures/watershed/` subtree, with enough provenance for
+future audit:
+
+- source substrate path and date captured;
+- expected hillslope count and topology summary;
+- input/runfile files needed to reproduce the gate;
+- expected output manifest or checksum set when outputs are part of the gate;
+- fixture README naming the adopting package and intended scope.
+
+Do not make `/wc1`-only, operator-local, or scratch-only data the sole evidence
+for a persistent gate. If a fixture is too large to commit, the package must
+hold or first define a committed reduced fixture plus a separate external-scale
+exploration note; it cannot ratify the gate on uncommitted data alone.
+
 ---
 
 ## 6. Migration Sequence
@@ -516,6 +581,24 @@ architecture orientation. Re-run W1 only when code changes, machine changes, or
 ADR ratification requires independent confirmation of the baseline. This
 package does not change code; it hardens or refreshes the baseline and command
 surface.
+
+### W1A - Adopt Carnivorous-Adobo Development Fixture
+
+Before using carnivorous-adobo as a repeated development or acceptance gate,
+commit an auditable fixture derived from `/wc1/runs/ca/carnivorous-adobo/wepp`
+into the repository. This is a fixture-adoption package, not runtime
+optimization.
+
+Acceptance:
+
+- committed fixture contains all required inputs/runfiles for the intended
+  watershed gate;
+- fixture metadata records `32` hillslopes, source substrate path, and capture
+  provenance;
+- fixture README defines whether it is smoke, development, performance, or
+  output-contract scope;
+- package evidence proves tests/benchmarks read the committed fixture path, not
+  `/wc1` directly.
 
 ### W2 - New Runtime Skeleton and Supervisor Plan
 
@@ -530,7 +613,8 @@ Acceptance:
 - `--jobs 1` outputs match the validated serial command;
 - per-job logs and timings are written;
 - pass inventory validates before routing;
-- latest-event payloads are fail-closed or explicitly typed as valid `NoEvent`;
+- latest-event payload handling is resolved contract-first, then implemented as
+  fail-closed `EventPayload` or explicitly typed valid `NoEvent`;
 - existing routed-stage reuse mode remains available;
 - consumer-path proof shows the public runner reads the new plan/inventory path
   and does not use the old shell/shared-output path for the claim.
@@ -544,6 +628,8 @@ Acceptance:
 - `--jobs 1` and `--jobs N` routed outputs are identical;
 - failures fail closed before routing;
 - scaling curve is recorded on arboreal-dendrite;
+- scaling evidence labels sidecar/input-discovery mode and does not compare
+  discovery-on and discovery-off timings as the same surface;
 - median `--jobs N` end-to-end walltime is compared to pinned legacy as a
   labeled cross-scope engineering budget unless a legacy-equivalent scope has
   been introduced;
@@ -616,8 +702,12 @@ becomes material on larger networks.
    wepppy-supplied value?
 4. Which artifact hashes are required before existing pass reuse is considered
    fresh enough for production?
-5. Which larger watershed fixture should become the routed-stage scaling gate
-   after arboreal-dendrite fanout is faster than legacy?
+5. Which 1,000+ hillslope fixture should become the large-scaling gate after the
+   new runtime's worker-pool path is stable on committed small fixtures?
+6. Which science contract defines when a pass with no latest-event payload is a
+   valid `NoEvent` state rather than a hard error?
+7. Which sidecar/input-discovery mode is the ratified canonical benchmark mode
+   once committed watershed fixtures are in place?
 
 ---
 
@@ -627,14 +717,19 @@ Before this document becomes binding architecture authority:
 
 1. WSHEDPERF01 repeat evidence is accepted as the current baseline, or a
    follow-on benchmark package refreshes it after relevant code or host changes.
-2. An ADR selects the public entrypoint and default `--jobs` policy.
+2. An ADR selects the public entrypoint, default `--jobs` policy, and canonical
+   sidecar/input-discovery benchmark mode.
 3. A W2 implementation package proves serial supervisor output identity.
 4. A W3 implementation package proves parallel output determinism and records a
    scaling curve.
-5. W2-W5 packages include consumer-path proof for every production-readiness
+5. Carnivorous-adobo or any successor adopted fixture is committed to the repo
+   with provenance before it is used as a persistent gate.
+6. W2-W5 packages include consumer-path proof for every production-readiness
    claim.
-6. A W5 deletion package removes the old watershed runtime from production or
+7. A W5 deletion package removes the old watershed runtime from production or
    records the exact blocker that prevents deletion.
-7. W2-W5 packages run or explicitly hold on the required Rust closure loop.
-8. Work-package evidence confirms no production source changes were made merely
+8. W2-W5 packages run or explicitly hold on the required Rust closure loop.
+9. Work-package evidence confirms no production source changes were made merely
    to fit the benchmark harness.
+10. `docs/ROADMAP.md` carries the active WSHED-ADR/W2-W6 planning queue until
+    the rungs close and move to the work-package execution log.

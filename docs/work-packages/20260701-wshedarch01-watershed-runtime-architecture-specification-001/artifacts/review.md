@@ -1,6 +1,6 @@
 # WSHEDARCH01 Review
 
-Status: `UPDATED-REV2`
+Status: `UPDATED-REV4`
 
 Static:
 
@@ -37,3 +37,23 @@ Dual-review follow-up:
 - Revision 2 accepts and fixes the identified payload-validation,
   benchmark-truthfulness, cross-scope comparison, default-policy, consumer-path,
   deletion-coverage, and closure-gate gaps.
+
+Fixture-strategy follow-up:
+
+- Revision 3 adds a fixture ladder:
+  - arboreal-dendrite remains tiny smoke/baseline evidence;
+  - carnivorous-adobo (`/wc1/runs/ca/carnivorous-adobo/wepp`) is the preferred
+    next development fixture because it is small but has 32 hillslopes;
+  - larger 1,000+ hillslope fixtures are required after worker-pool/runtime
+    progress;
+  - fixtures adopted for gates, recurring benchmarks, ratification, regression,
+    or release-readiness must be committed to the repository with provenance.
+
+Claude static verification follow-up:
+
+- Claude's static verification review is dispositioned in
+  `artifacts/claude-static-verification-disposition.md`.
+- Revision 4 accepts and fixes the sidecar-discovery benchmark-scope gap,
+  ROADMAP queue gap, and `chan_out` naming note.
+- Revision 4 keeps the latest-event `NoEvent` question open intentionally, but
+  moves it into explicit contract-first W2/open-question language.

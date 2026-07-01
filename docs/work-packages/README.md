@@ -67,7 +67,8 @@ State as of `2026-07-01`:
   command-level evidence.
 - `20260701-wshedarch01-watershed-runtime-architecture-specification-001/` is
   complete as WSHEDARCH01 WATERSHED RUNTIME ARCHITECTURE SPECIFICATION. Result:
-  `EXECUTED-COMPLETE-DRAFT-SPEC-REV2-DUAL-REVIEW-DISPOSITIONED`. It reviewed WSHEDPERF01 and current
+  `EXECUTED-COMPLETE-DRAFT-SPEC-REV4-CLAUDE-STATIC-VERIFICATION-DISPOSITIONED`.
+  It reviewed WSHEDPERF01 and current
   watershed CLI/orchestrator seams, then authored the draft architecture spec at
   `docs/architecture/watershed-runtime-architecture-specification.md`. The spec
   specifies a ground-up watershed runtime rewrite with full deletion of the
@@ -77,7 +78,14 @@ State as of `2026-07-01`:
   Dual-review findings were accepted and dispositioned in Revision 2, adding
   fail-closed latest-event semantics, consumer-path proof, cross-scope legacy
   wording, ADR-owned `--jobs` defaults, deletion coverage restoration, and Rust
-  closure gates. It remains draft authority pending ADR ratification.
+  closure gates. Revision 3 adds the fixture ladder: arboreal-dendrite remains
+  smoke/baseline only, carnivorous-adobo is the preferred 32-hillslope
+  near-term development fixture, larger 1,000+ hillslope fixtures are required
+  after runtime progress, and adopted gate fixtures must be committed to the
+  repository for auditability. Revision 4 dispositions Claude static
+  verification by adding sidecar-discovery benchmark taxonomy, a ROADMAP
+  WSHED-ADR/W2-W6 queue, `chan_out` naming, and contract-first `NoEvent`
+  follow-up. It remains draft authority pending ADR ratification.
 - `20260701-kernel-boundary-cqr-row2-climate-parser-001/` is complete as
   KERNEL-BOUNDARY CQR ROW 2 CLIMATE PARSER. Result:
   `EXECUTED-COMPLETE-ROW2-CQR`. It executed row #2 of

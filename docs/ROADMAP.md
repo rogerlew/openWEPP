@@ -1,7 +1,7 @@
 # openWEPP Engine Roadmap
 
 Status: living — **canonical**, **forward-only planning queue**
-Last updated: 2026-06-30
+Last updated: 2026-07-01
 Audience: all contributors
 Owner: maintainers (Claude Code maintains this document)
 
@@ -247,6 +247,25 @@ parity, stabilized PASS Parquet metadata, and proved fresh same-binary H2637
 default/direct byte identity for HBP/WAT/PASS/loss/plot with
 `compatibility_edge_invocations=0`.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
+
+---
+
+## Watershed Runtime Performance Queue
+
+The watershed runtime performance direction is queued by
+[watershed-runtime-architecture-specification.md](architecture/watershed-runtime-architecture-specification.md).
+This queue remains draft until ADR ratification, but it is the active planning
+path for moving watershed walltime below pinned legacy by using additional CPUs.
+
+| # | Item | Mechanism | Acceptance target | State |
+|---|---|---|---|---|
+| WSHED-ADR | **Watershed runtime ratification** | Select the public entrypoint, default `--jobs` policy, and canonical sidecar/input-discovery benchmark mode | ADR ratified; benchmark taxonomy distinguishes discovery-on, discovery-off, and committed-fixture surfaces | Draft queue from WSHEDARCH01 Rev 4 |
+| WSHED-FIXTURE01 | **Committed 32-hillslope fixture adoption** | Capture an auditable fixture derived from `/wc1/runs/ca/carnivorous-adobo/wepp` under `tests/fixtures/watershed/` | Fixture committed with provenance, 32-hillslope topology summary, required inputs/runfiles, README, and package evidence that gates read the committed path | Draft queue from WSHEDARCH01 Rev 3/4 |
+| WSHED-W2 | **Serial watershed supervisor skeleton** | Implement `WatershedRunPlan`, `HillslopeJob`, and `PassInventory` for `--jobs 1` without shell-loop/shared-output orchestration | Output identity, per-job evidence, fail-closed pass validation, contract-first `EventPayload`/`NoEvent` handling, and consumer-path proof | Draft queue |
+| WSHED-W3 | **Bounded worker pool** | Run multiple single-threaded hillslope subprocesses concurrently under `--jobs N` | `--jobs 1`/`--jobs N` output identity, fail-closed child/pass failures, sidecar-mode-labeled scaling curve, and consumer-path proof | Draft queue |
+| WSHED-W4 | **Typed watershed network frame** | Replace production routing reads/writes through `WatershedWritebackSurface` with typed channel, impoundment, contribution, and publication frame fields | No production routing-loop symbol lookup, no routed-stage regression, protected output identity or contract-governed deltas | Draft queue |
+| WSHED-W5 | **Old watershed runtime deletion** | Delete the old production runtime and obsolete old-surface tests after replacement | No public old-runtime selector, no production `WatershedWritebackSurface` routing path, deletion manifest, protected-coverage restoration, full gates or named hold | Draft queue |
+| WSHED-W6 | **Publication and large-watershed scaling** | Stream publication from typed projection state and adopt larger committed scaling fixtures | Larger fixture coverage includes a 1,000+ hillslope class case or justified representative reduction; output contracts and scaling evidence recorded | Draft queue |
 
 ---
 
