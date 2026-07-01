@@ -54,6 +54,16 @@ State as of `2026-06-30`:
 
 ## Execution Log
 
+- `20260701-kernel-boundary-cqr-row1-soil-parser-001/` is complete as
+  KERNEL-BOUNDARY CQR ROW 1 SOIL PARSER. Result:
+  `EXECUTED-COMPLETE-ROW1-CQR`. It executed row #1 of
+  `kernel-boundary-cqr-burndown-execplan.md`; row #1 was already CRAP-clean and
+  remained `0 -> 0` owned production functions above CRAP 30. It restored typed
+  assertions for 9002 disturbed policy/measured FC-WP values, corrected typed
+  theta stores, restrictive conductivity projection, and harmonic vertical
+  `ssc` behavior. Full gates passed (`1267` nextest passed); H2637 measured
+  `1:06.89` / `77756 KiB`, protected H2637 outputs were byte-identical, and
+  `compatibility_edge_invocations=0`.
 - `20260701-kernel-boundary-cqr-row3-management-parser-001/` is complete as
   KERNEL-BOUNDARY CQR ROW 3 MANAGEMENT PARSER. Result:
   `EXECUTED-COMPLETE-ROW3-CQR`. It executed row #3 of
