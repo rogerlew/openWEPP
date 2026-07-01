@@ -1,6 +1,6 @@
 # Watershed Runtime Architecture Specification
 
-Status: **Draft, Revision 4** - proposed design authority for watershed
+Status: **Draft, Revision 5** - proposed design authority for watershed
 performance work. Revision 1 incorporated the hillslope performance lesson that
 partial compatibility-runtime refactors were not aggressive enough: watershed
 performance work is specified as a ground-up runtime rewrite with full deletion
@@ -16,8 +16,10 @@ fixture must be committed to this repository for future auditability. Revision
 4 dispositions Claude static verification by adding the sidecar-discovery
 measurement axis, recording the roadmap activation requirement, naming
 `chan_out`, and making the latest-event `NoEvent` decision an explicit
-contract-first follow-up. This document is not ratified yet; it should be
-promoted by a follow-on ADR after implementation package review.
+contract-first follow-up. Revision 5 records ADR-0032 ratification of the public
+entrypoint, `--jobs` default, and canonical benchmark mode. This document is
+not fully binding runtime authority yet; implementation ratification still
+requires the W2/W3/W5 evidence listed in section 9.
 
 Audience: contributors working on watershed CLI, watershed orchestration,
 hillslope fanout, HBP/pass handoff, output publication, and performance
@@ -33,6 +35,9 @@ Related authority:
   hillslope runtime representation authority and performance precedent.
 - [watershed-dispatch-scheduler-graph.md](watershed-dispatch-scheduler-graph.md):
   deterministic channel/impoundment dispatch graph.
+- [ADR-0032](../decisions/0032-watershed-runtime-ratification.md):
+  watershed runtime public entrypoint, `--jobs` default, and canonical
+  benchmark mode.
 - WSHEDPERF01:
   `../work-packages/20260701-wshedperf01-watershed-baseline-performance-characterization-001/`.
 
@@ -285,11 +290,11 @@ arguments. Shell interpolation is not part of the production path.
 The worker pool schedules `HillslopeJob` values with bounded concurrency:
 
 - `--jobs N` is the public CLI control.
-- Default policy is not ratified by this draft. Until ADR ratification,
-  implementation packages must require explicit `--jobs` for performance runs
-  and use `--jobs 1` as the deterministic functional baseline. Candidate
-  defaults such as `min(available_parallelism, hillslope_count)` require ADR
-  selection before becoming production behavior.
+- ADR-0032 ratifies the default: omitting `--jobs` is equivalent to `--jobs 1`.
+  CPU scaling is explicit through positive integer `--jobs N`; `--jobs 0` and
+  negative values are invalid.
+- Performance packages should pass and report `--jobs` explicitly even when the
+  value is `1`, so timing evidence is unambiguous.
 - `--jobs 1` is the deterministic serial baseline.
 - `--jobs N` must preserve identical outputs relative to `--jobs 1`.
 - On hard failure, the supervisor stops launching new jobs, waits for or
@@ -376,6 +381,18 @@ coverage-restoration package.
 ---
 
 ## 4. Execution Model
+
+ADR-0032 keeps `openwepp-cli-watershed` as the public watershed runtime binary.
+The destination binary has two explicit modes:
+
+- full watershed run mode: build the run plan, run hillslope subprocesses,
+  validate pass inventory, route, and publish;
+- routed-stage reuse mode: route from an existing declared pass inventory for
+  profiling, replay, diagnostics, and comparator work.
+
+Full watershed run mode is the production destination. Routed-stage reuse must
+remain explicit and cannot act as a silent fallback to the old
+shell-loop/shared-output runtime.
 
 ### 4.1 Serial Baseline
 
@@ -477,10 +494,12 @@ mode:
 - `strict-committed-fixture`.
 
 WSHEDPERF01 full-chain evidence is `legacy-sidecar-discovery-on` because the
-validated command used `--legacy-sidecar-discovery`. The canonical performance
-target is `canonical-sidecar-discovery-off` or `strict-committed-fixture` after
-fixture adoption, so the first CPU-scaling package must not compare
-discovery-on and discovery-off timings as the same measurement surface.
+validated command used `--legacy-sidecar-discovery`. ADR-0032 ratifies
+`strict-committed-fixture` as the canonical benchmark and ratification mode.
+`canonical-sidecar-discovery-off` remains valid for production-style operator
+measurements that use canonical paths but are not based on a committed fixture.
+The first CPU-scaling package must not compare discovery-on and discovery-off
+timings as the same measurement surface.
 
 Ratios are valid only when the compared scopes are named and justified. Direct
 speedup/parity language is allowed only for equivalent scopes. Cross-scope
@@ -693,21 +712,17 @@ becomes material on larger networks.
 
 ## 8. Open Questions
 
-1. Should the supervisor live in `openwepp-cli-watershed` or a separate
-   `openwepp-cli-watershed-run` entrypoint while routed-stage reuse remains
-   available?
-2. What is the canonical scratch-directory retention policy for failed
+ADR-0032 resolves the public entrypoint, `--jobs` default, and canonical
+benchmark mode. Remaining open questions:
+
+1. What is the canonical scratch-directory retention policy for failed
    subprocess jobs?
-3. Should `--jobs` default to all logical CPUs, physical cores, or a
-   wepppy-supplied value?
-4. Which artifact hashes are required before existing pass reuse is considered
+2. Which artifact hashes are required before existing pass reuse is considered
    fresh enough for production?
-5. Which 1,000+ hillslope fixture should become the large-scaling gate after the
+3. Which 1,000+ hillslope fixture should become the large-scaling gate after the
    new runtime's worker-pool path is stable on committed small fixtures?
-6. Which science contract defines when a pass with no latest-event payload is a
+4. Which science contract defines when a pass with no latest-event payload is a
    valid `NoEvent` state rather than a hard error?
-7. Which sidecar/input-discovery mode is the ratified canonical benchmark mode
-   once committed watershed fixtures are in place?
 
 ---
 
@@ -717,8 +732,8 @@ Before this document becomes binding architecture authority:
 
 1. WSHEDPERF01 repeat evidence is accepted as the current baseline, or a
    follow-on benchmark package refreshes it after relevant code or host changes.
-2. An ADR selects the public entrypoint, default `--jobs` policy, and canonical
-   sidecar/input-discovery benchmark mode.
+2. ADR-0032 has selected the public entrypoint, default `--jobs` policy, and
+   canonical sidecar/input-discovery benchmark mode.
 3. A W2 implementation package proves serial supervisor output identity.
 4. A W3 implementation package proves parallel output determinism and records a
    scaling curve.
@@ -731,5 +746,5 @@ Before this document becomes binding architecture authority:
 8. W2-W5 packages run or explicitly hold on the required Rust closure loop.
 9. Work-package evidence confirms no production source changes were made merely
    to fit the benchmark harness.
-10. `docs/ROADMAP.md` carries the active WSHED-ADR/W2-W6 planning queue until
-    the rungs close and move to the work-package execution log.
+10. `docs/ROADMAP.md` carries the active watershed runtime planning queue until
+    each rung closes and moves to the work-package execution log.

@@ -35,6 +35,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0029](0029-commit-paradigm-2-multilayer-snow.md) | Commit to Paradigm 2 — staged multilayer snow physics (foundation for frost insulation, winter water temperature, runoff dynamics; admitted under 0028, homed in 0026) | Accepted (ratified 2026-06-28) |
 | [0030](0030-r7-terminal-contract-and-compatibility-runtime-deletion.md) | R7 terminal contract and compatibility runtime deletion | Accepted |
 | [0031](0031-delete-compatibility-runtime-single-authority-terminal.md) | Delete the compatibility runtime - single-authority terminal state | Accepted |
+| [0032](0032-watershed-runtime-ratification.md) | Watershed runtime entrypoint, job default, and canonical benchmark mode | Accepted |
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further
@@ -71,6 +72,11 @@ the explicit `--compatibility-runtime` seam with rollback by release/git
 history. The ratification package removed the public selector but held before
 full `scheduler.rs`/carrier deletion because the remaining symbol-keyed support
 surface is still compiled and test-backed as a unit.
+ADR-0032 ratifies the watershed runtime public entrypoint and benchmark posture:
+the full watershed supervisor remains under `openwepp-cli-watershed`,
+`--jobs` defaults to deterministic serial `1`, CPU scaling is explicit through
+`--jobs N`, and canonical benchmark/ratification evidence uses
+`strict-committed-fixture` mode with legacy sidecar discovery disabled.
 
 ## ADR template
 

@@ -85,7 +85,17 @@ State as of `2026-07-01`:
   repository for auditability. Revision 4 dispositions Claude static
   verification by adding sidecar-discovery benchmark taxonomy, a ROADMAP
   WSHED-ADR/W2-W6 queue, `chan_out` naming, and contract-first `NoEvent`
-  follow-up. It remains draft authority pending ADR ratification.
+  follow-up. It remains draft authority pending W2/W3/W5 implementation
+  evidence.
+- `20260701-wshedadr01-watershed-runtime-ratification-001/` is complete as
+  WSHEDADR01 WATERSHED RUNTIME RATIFICATION. Result:
+  `EXECUTED-COMPLETE-ADR0032-WATERSHED-RUNTIME-RATIFIED`. It ratified ADR-0032:
+  the public watershed runtime remains `openwepp-cli-watershed`, the `--jobs`
+  default is deterministic serial `1`, CPU scaling is explicit through
+  positive `--jobs N`, and canonical benchmark/ratification evidence uses
+  `strict-committed-fixture` mode with legacy sidecar discovery disabled.
+  WSHED-ADR was removed from `docs/ROADMAP.md`; WSHED-FIXTURE01 remains the
+  next watershed runtime queue item.
 - `20260701-kernel-boundary-cqr-row2-climate-parser-001/` is complete as
   KERNEL-BOUNDARY CQR ROW 2 CLIMATE PARSER. Result:
   `EXECUTED-COMPLETE-ROW2-CQR`. It executed row #2 of
