@@ -384,3 +384,236 @@ impl fmt::Display for Wb11HydrologyKernelGuardError {
 }
 
 impl Error for Wb11HydrologyKernelGuardError {}
+
+#[cfg(test)]
+mod cqr_row5_guard_error_tests {
+    use super::*;
+
+    fn symbol() -> BoundarySymbol {
+        BoundarySymbol::from("row5.symbol")
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn guard_error_codes_cover_phase_and_erosion_families() {
+        let phase_cases = [
+            (
+                HillslopeKernelPhaseClass::HydrologyEvapotranspiration,
+                "HKERNEL-WB11-ET-E-001",
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+                "HKERNEL-WB11-PERC-E-001",
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyLateralTransfer,
+                "HKERNEL-WB11-LAT-E-001",
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyDrainage,
+                "HKERNEL-WB11-DRAIN-E-001",
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyPlantRootUptake,
+                "HKERNEL-WB17-SWU-E-001",
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "HKERNEL-WB14-RUNOFF-E-001",
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyStorageReconciliation,
+                "HKERNEL-WB12-STORAGE-E-001",
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyPeakRunoff,
+                "HKERNEL-WB16-PEAK-E-001",
+            ),
+            (
+                HillslopeKernelPhaseClass::GrowthAnnualTransition,
+                "HKERNEL-WB11-GEN-E-001",
+            ),
+        ];
+        for (phase_class, expected_code) in phase_cases {
+            assert_eq!(
+                Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class,
+                    symbol: symbol(),
+                }
+                .code(),
+                expected_code
+            );
+        }
+
+        assert_eq!(
+            Wb11HydrologyKernelGuardError::NonFiniteFluxSymbol {
+                phase_class: HillslopeKernelPhaseClass::Hydrology,
+                symbol: symbol(),
+                value: f64::NAN,
+            }
+            .code(),
+            "HKERNEL-WB11-GEN-E-002"
+        );
+        assert_eq!(
+            Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
+                phase_class: HillslopeKernelPhaseClass::Hydrology,
+                symbol: symbol(),
+                value: 4.0,
+                minimum: Some(0.0),
+                maximum: Some(1.0),
+            }
+            .code(),
+            "HKERNEL-WB11-GEN-E-003"
+        );
+
+        let erosion_cases = [
+            (
+                Wb11HydrologyKernelGuardError::Erod13MissingRequiredSymbol { symbol: symbol() },
+                "HKERNEL-EROD13-CORE-E-001",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::Erod13NonFiniteSymbol {
+                    symbol: symbol(),
+                    value: f64::NAN,
+                },
+                "HKERNEL-EROD13-CORE-E-002",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                    symbol: symbol(),
+                    value: -1.0,
+                    minimum: Some(0.0),
+                    maximum: None,
+                },
+                "HKERNEL-EROD13-CORE-E-003",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::Erod14MissingRequiredSymbol { symbol: symbol() },
+                "HKERNEL-EROD14-WAVE2-E-001",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::Erod14NonFiniteSymbol {
+                    symbol: symbol(),
+                    value: f64::NAN,
+                },
+                "HKERNEL-EROD14-WAVE2-E-002",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::Erod14DomainViolation {
+                    symbol: symbol(),
+                    value: -1.0,
+                    minimum: Some(0.0),
+                    maximum: None,
+                },
+                "HKERNEL-EROD14-WAVE2-E-003",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::Erod18MissingRequiredSymbol { symbol: symbol() },
+                "HKERNEL-EROD18-ROUTE-E-001",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::Erod18NonFiniteSymbol {
+                    symbol: symbol(),
+                    value: f64::NAN,
+                },
+                "HKERNEL-EROD18-ROUTE-E-002",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                    symbol: symbol(),
+                    value: -1.0,
+                    minimum: Some(0.0),
+                    maximum: None,
+                },
+                "HKERNEL-EROD18-ROUTE-E-003",
+            ),
+        ];
+        for (error, expected_code) in erosion_cases {
+            assert_eq!(error.code(), expected_code);
+        }
+    }
+
+    #[test]
+    fn guard_error_display_covers_symbol_kinds_and_range_shapes() {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        let cases = [
+            (
+                Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class,
+                    symbol: symbol(),
+                },
+                "missing required state symbol",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::MissingRequiredFluxSymbol {
+                    phase_class,
+                    symbol: symbol(),
+                },
+                "missing required flux symbol",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                    phase_class,
+                    symbol: symbol(),
+                    value: f64::NAN,
+                },
+                "state symbol row5.symbol is non-finite",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::NonFiniteFluxSymbol {
+                    phase_class,
+                    symbol: symbol(),
+                    value: f64::NAN,
+                },
+                "flux symbol row5.symbol is non-finite",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: symbol(),
+                    value: 3.0,
+                    minimum: Some(0.0),
+                    maximum: Some(2.0),
+                },
+                "state symbol row5.symbol=3 outside",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
+                    phase_class,
+                    symbol: symbol(),
+                    value: 3.0,
+                    minimum: Some(0.0),
+                    maximum: None,
+                },
+                "flux symbol row5.symbol=3 outside",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::Erod13MissingRequiredSymbol { symbol: symbol() },
+                "missing required EROD13 Wave-1 symbol",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::Erod14NonFiniteSymbol {
+                    symbol: symbol(),
+                    value: f64::NAN,
+                },
+                "non-finite EROD14 Wave-2 symbol",
+            ),
+            (
+                Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                    symbol: symbol(),
+                    value: -1.0,
+                    minimum: Some(0.0),
+                    maximum: Some(1.0),
+                },
+                "EROD18 route topology symbol row5.symbol=-1 outside",
+            ),
+        ];
+
+        for (error, expected_fragment) in cases {
+            assert!(
+                error.to_string().contains(expected_fragment),
+                "{error:?} rendered as {error}"
+            );
+        }
+    }
+}

@@ -1224,3 +1224,64 @@ fn density_validate_positive(symbol: &'static str, value: f64) -> Result<(), Sno
         })
     }
 }
+
+#[cfg(test)]
+mod cqr_row5_snow_density_tests {
+    use super::*;
+
+    fn layer(mass_kg_m2: f64, density_kg_m3: f64) -> SnowDensityLayerWorkState {
+        SnowDensityLayerWorkState {
+            mass_kg_m2,
+            density_kg_m3,
+            settle_day_count: 3.0,
+            temperature_c: -2.0,
+            liquid_water_m: 0.02,
+            cold_content_j_m2: 50.0,
+            refrozen_liquid_m: 0.01,
+        }
+    }
+
+    fn assert_close(actual: f64, expected: f64) {
+        assert!(
+            (actual - expected).abs() <= 1.0e-12,
+            "actual={actual} expected={expected}"
+        );
+    }
+
+    #[test]
+    fn multilayer_boundary_mass_covers_clear_create_trim_and_add_paths() {
+        let constants = snow_density_compaction_v1_constants();
+
+        let mut layers = vec![layer(10.0, 100.0)];
+        apply_multilayer_boundary_mass(&mut layers, 0.0, 0.0, constants);
+        assert!(layers.is_empty());
+
+        apply_multilayer_boundary_mass(&mut layers, 12.0, 180.0, constants);
+        assert_eq!(layers.len(), 1);
+        assert_close(layers[0].mass_kg_m2, 12.0);
+        assert_close(layers[0].density_kg_m3, 180.0);
+
+        layers.clear();
+        apply_multilayer_boundary_mass(&mut layers, 8.0, 0.0, constants);
+        assert_close(
+            layers[0].density_kg_m3,
+            constants.new_snow_density_min_kg_m3,
+        );
+
+        layers = vec![layer(10.0, 100.0), layer(10.0, 200.0)];
+        apply_multilayer_boundary_mass(&mut layers, 15.0, 0.0, constants);
+        assert_eq!(layers.len(), 2);
+        assert!((layers[0].mass_kg_m2 - 5.0).abs() <= 1.0e-12);
+        assert!((layers[0].liquid_water_m - 0.01).abs() <= 1.0e-12);
+        assert!((layers[0].cold_content_j_m2 - 25.0).abs() <= 1.0e-12);
+        assert!((layers[0].refrozen_liquid_m - 0.005).abs() <= 1.0e-12);
+
+        apply_multilayer_boundary_mass(&mut layers, 5.0, 0.0, constants);
+        assert_eq!(layers.len(), 1);
+        assert!((multilayer_mass_kg_m2(&layers) - 5.0).abs() <= 1.0e-12);
+
+        apply_multilayer_boundary_mass(&mut layers, 20.0, 0.0, constants);
+        assert_eq!(layers.len(), 1);
+        assert!((layers[0].mass_kg_m2 - 20.0).abs() <= 1.0e-12);
+    }
+}

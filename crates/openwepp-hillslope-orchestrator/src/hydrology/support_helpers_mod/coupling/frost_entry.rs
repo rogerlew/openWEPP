@@ -15,6 +15,93 @@ struct ActiveFrostControls {
     ksoilf: f64,
 }
 
+#[cfg(test)]
+mod cqr_row5_tests {
+    use super::*;
+
+    fn controls(landuse_class_proxy: Option<f64>) -> DirectFrostControlInputs {
+        DirectFrostControlInputs {
+            frost_file_present: true,
+            wint_red_enabled: true,
+            fine_top_count: 1,
+            fine_bot_count: 1,
+            ksnowf: 1.0,
+            kresf: 2.0,
+            ksoilf: 3.0,
+            kfactor1: 0.31,
+            kfactor2: 0.42,
+            kfactor3: 0.53,
+            landuse_class_proxy,
+        }
+    }
+
+    fn assert_close(actual: f64, expected: f64) {
+        assert!(
+            (actual - expected).abs() <= 1.0e-12,
+            "actual={actual} expected={expected}"
+        );
+    }
+
+    #[test]
+    fn r7g_json_string_escapes_special_and_control_characters() {
+        assert_eq!(r7g_json_string("plain"), "\"plain\"");
+        assert_eq!(
+            r7g_json_string("quote\" slash\\ newline\n carriage\r tab\t control\u{001f}"),
+            "\"quote\\\" slash\\\\ newline\\n carriage\\r tab\\t control\\u001f\""
+        );
+    }
+
+    #[test]
+    fn frozen_soil_kfactor_resolves_proxy_classes_and_errors() {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        assert_close(
+            Wb11HydrologyKernel::resolve_frozen_soil_kfactor_from_typed(
+                phase_class,
+                controls(None)
+            )
+            .unwrap(),
+            0.31
+        );
+        assert_close(
+            Wb11HydrologyKernel::resolve_frozen_soil_kfactor_from_typed(
+                phase_class,
+                controls(Some(1.0))
+            )
+            .unwrap(),
+            0.31
+        );
+        assert_close(
+            Wb11HydrologyKernel::resolve_frozen_soil_kfactor_from_typed(
+                phase_class,
+                controls(Some(2.0))
+            )
+            .unwrap(),
+            0.42
+        );
+        assert_close(
+            Wb11HydrologyKernel::resolve_frozen_soil_kfactor_from_typed(
+                phase_class,
+                controls(Some(3.0))
+            )
+            .unwrap(),
+            0.53
+        );
+
+        for proxy in [1.25, 4.0] {
+            let error = Wb11HydrologyKernel::resolve_frozen_soil_kfactor_from_typed(
+                phase_class,
+                controls(Some(proxy)),
+            )
+            .unwrap_err();
+            assert!(matches!(
+                error,
+                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange { .. }
+            ));
+            assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 struct ActiveFrostPriorContext {
     profile_depth_m: f64,

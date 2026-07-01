@@ -54,6 +54,18 @@ State as of `2026-06-30`:
 
 ## Execution Log
 
+- `20260701-kernel-boundary-cqr-row5-hydrology-wb-kernel-001/` is complete as
+  KERNEL-BOUNDARY CQR ROW 5 HYDROLOGY WB KERNEL. Result:
+  `EXECUTED-COMPLETE-ROW5-CQR`. It executed row #5 of
+  `kernel-boundary-cqr-burndown-execplan.md`, reducing row #5 owned production
+  offenders from 11 unique entries (`22` duplicated report rows) to `0`
+  entries above CRAP 30. It added typed assertions for hydrology guard
+  code/display coverage, snow albedo display variants, snow-density
+  boundary-mass updates, R7G frost trace string escaping, frozen-soil k-factor
+  resolution, snow-density guard mapping, SIMIMPL29 melt branches, and
+  active-snow coupling edge paths. Full gates passed (`1254` nextest passed);
+  H2637 measured `1:08.04` / `79916 KiB`, protected H2637 outputs were
+  byte-identical, and `compatibility_edge_invocations=0`.
 - `20260701-kernel-boundary-cqr-row9-direct-runtime-physics-001/` is complete as
   KERNEL-BOUNDARY CQR ROW 9 DIRECT RUNTIME PHYSICS. Result:
   `EXECUTED-COMPLETE-ROW9-CQR`. It executed row #9 of

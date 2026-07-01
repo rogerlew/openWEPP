@@ -4,6 +4,24 @@ use super::super::super::*;
 #[allow(clippy::wildcard_imports)]
 use super::*;
 
+const TMPADJ_WIND_MEASUREMENT_HEIGHT_M: f64 = 2.0;
+
+#[derive(Debug, Clone, Copy)]
+#[allow(clippy::struct_field_names)]
+struct TmpadjAerodynamicRoughness {
+    displacement_m: f64,
+    wind_roughness_m: f64,
+    transfer_roughness_m: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+#[allow(clippy::struct_field_names)]
+struct TmpadjGradientDepths {
+    total_m: f64,
+    tilled_m: f64,
+    untilled_m: f64,
+}
+
 impl Wb11HydrologyKernel {
     pub(super) fn frost_layer_soilf_sum(layers: &[FrostLayerWaterState]) -> f64 {
         layers
@@ -1513,7 +1531,6 @@ impl Wb11HydrologyKernel {
         const TMPADJ_VON_KARMAN: f64 = 0.4;
         const TMPADJ_AIR_DENSITY_KG_M3: f64 = 1.2;
         const TMPADJ_AIR_HEAT_CAPACITY_J_KG_K: f64 = 1012.0;
-        const TMPADJ_WIND_MEASUREMENT_HEIGHT_M: f64 = 2.0;
         const TMPADJ_SURFACE_EMISSIVITY: f64 = 1.0;
         const TMPADJ_SNOW_ALBEDO: f64 = 0.5;
 
@@ -1588,29 +1605,21 @@ impl Wb11HydrologyKernel {
             * (1.0 - 0.261 * (7.77e-4 * hourly_air_temp_c.powi(2)).exp())
             + (0.84 * cloud_fraction);
 
-        let mut displacement_m = 0.77 * tmpadj.canopy_height_m;
-        if displacement_m >= TMPADJ_WIND_MEASUREMENT_HEIGHT_M {
-            displacement_m = 0.77 * TMPADJ_WIND_MEASUREMENT_HEIGHT_M;
-        }
-        let mut wind_roughness_m = if snow_depth_m < 0.01 && tmpadj.canopy_height_m > 0.0 {
-            0.13 * tmpadj.canopy_height_m
-        } else if snow_depth_m < 0.01 {
-            tmpadj.random_roughness_m
-        } else if snow_depth_m > tmpadj.canopy_height_m {
-            0.0002
-        } else {
-            0.13 * (tmpadj.canopy_height_m - snow_depth_m)
-        };
-        wind_roughness_m = wind_roughness_m.clamp(0.001, 0.26);
-        let transfer_roughness_m = 0.2 * wind_roughness_m;
+        let roughness = Self::tmpadj_aerodynamic_roughness(
+            snow_depth_m,
+            tmpadj.canopy_height_m,
+            tmpadj.random_roughness_m,
+        );
         let convective_heat_transfer_j_m3_k = (TMPADJ_VON_KARMAN.powi(2)
             * TMPADJ_AIR_DENSITY_KG_M3
             * TMPADJ_AIR_HEAT_CAPACITY_J_KG_K)
-            / (((TMPADJ_WIND_MEASUREMENT_HEIGHT_M - displacement_m + transfer_roughness_m)
-                / transfer_roughness_m)
+            / (((TMPADJ_WIND_MEASUREMENT_HEIGHT_M - roughness.displacement_m
+                + roughness.transfer_roughness_m)
+                / roughness.transfer_roughness_m)
                 .ln()
-                * ((TMPADJ_WIND_MEASUREMENT_HEIGHT_M - displacement_m + wind_roughness_m)
-                    / wind_roughness_m)
+                * ((TMPADJ_WIND_MEASUREMENT_HEIGHT_M - roughness.displacement_m
+                    + roughness.wind_roughness_m)
+                    / roughness.wind_roughness_m)
                     .ln());
         let longwave_transfer_w_m2_k = 4.0
             * TMPADJ_SURFACE_EMISSIVITY
@@ -1621,53 +1630,11 @@ impl Wb11HydrologyKernel {
                 * TMPADJ_STEFAN_BOLTZMANN_W_M2_K4
                 * air_temp_k.powi(4);
 
-        let mut gradient_depth_m = if hourly_air_temp_c < 0.0 {
-            if depth_summary.tfrdp > 0.001 {
-                if depth_summary.thdp > 0.001 {
-                    0.0
-                } else {
-                    depth_summary.tfrdp
-                }
-            } else if depth_summary.frdp > 0.001 {
-                if depth_summary.thdp > 0.001 {
-                    0.0
-                } else {
-                    depth_summary.frdp
-                }
-            } else {
-                0.0
-            }
-        } else if depth_summary.tfrdp > 0.001 {
-            depth_summary.thdp
-        } else if depth_summary.frdp > 0.001 {
-            if depth_summary.thdp > 0.001 {
-                depth_summary.thdp
-            } else {
-                0.0
-            }
-        } else {
-            0.0
-        };
+        let gradient_depths = Self::tmpadj_gradient_depths(hourly_air_temp_c, depth_summary);
 
-        let (mut tilled_gradient_depth_m, mut untilled_gradient_depth_m) =
-            if gradient_depth_m <= FROST_RUNTIME_TILLAGE_DEPTH_M {
-                (gradient_depth_m, 0.0)
-            } else {
-                (
-                    FROST_RUNTIME_TILLAGE_DEPTH_M,
-                    gradient_depth_m - FROST_RUNTIME_TILLAGE_DEPTH_M,
-                )
-            };
-        if tilled_gradient_depth_m < 0.001 {
-            tilled_gradient_depth_m = 0.0;
-        }
-        if untilled_gradient_depth_m < 0.001 {
-            untilled_gradient_depth_m = 0.0;
-        }
-        if gradient_depth_m < 0.001 {
-            gradient_depth_m = 0.0;
-        }
-
+        let mut gradient_depth_m = gradient_depths.total_m;
+        let mut tilled_gradient_depth_m = gradient_depths.tilled_m;
+        let untilled_gradient_depth_m = gradient_depths.untilled_m;
         let mut system_depth_m = snow_depth_m + residue_depth_m + gradient_depth_m;
         let snow_conductivity_w_m_k = if snow_depth_m < 0.0001 {
             1.0
@@ -1736,6 +1703,98 @@ impl Wb11HydrologyKernel {
             Ok(0.0)
         } else {
             Ok(surface_temp_c)
+        }
+    }
+
+    fn tmpadj_aerodynamic_roughness(
+        snow_depth_m: f64,
+        canopy_height_m: f64,
+        random_roughness_m: f64,
+    ) -> TmpadjAerodynamicRoughness {
+        let mut displacement_m = 0.77 * canopy_height_m;
+        if displacement_m >= TMPADJ_WIND_MEASUREMENT_HEIGHT_M {
+            displacement_m = 0.77 * TMPADJ_WIND_MEASUREMENT_HEIGHT_M;
+        }
+        let wind_roughness_m = if snow_depth_m < 0.01 && canopy_height_m > 0.0 {
+            0.13 * canopy_height_m
+        } else if snow_depth_m < 0.01 {
+            random_roughness_m
+        } else if snow_depth_m > canopy_height_m {
+            0.0002
+        } else {
+            0.13 * (canopy_height_m - snow_depth_m)
+        }
+        .clamp(0.001, 0.26);
+        TmpadjAerodynamicRoughness {
+            displacement_m,
+            wind_roughness_m,
+            transfer_roughness_m: 0.2 * wind_roughness_m,
+        }
+    }
+
+    fn tmpadj_gradient_depths(
+        hourly_air_temp_c: f64,
+        depth_summary: FrostDepthSummary,
+    ) -> TmpadjGradientDepths {
+        let gradient_depth_m =
+            Self::tmpadj_gradient_depth_m(hourly_air_temp_c, depth_summary);
+        Self::tmpadj_split_gradient_depth(gradient_depth_m)
+    }
+
+    fn tmpadj_gradient_depth_m(
+        hourly_air_temp_c: f64,
+        depth_summary: FrostDepthSummary,
+    ) -> f64 {
+        if hourly_air_temp_c < 0.0 {
+            return Self::tmpadj_freezing_gradient_depth_m(depth_summary);
+        }
+        if depth_summary.thdp > 0.001
+            && (depth_summary.tfrdp > 0.001 || depth_summary.frdp > 0.001)
+        {
+            depth_summary.thdp
+        } else {
+            0.0
+        }
+    }
+
+    fn tmpadj_freezing_gradient_depth_m(depth_summary: FrostDepthSummary) -> f64 {
+        if depth_summary.tfrdp > 0.001 {
+            if depth_summary.thdp > 0.001 {
+                0.0
+            } else {
+                depth_summary.tfrdp
+            }
+        } else if depth_summary.frdp > 0.001 && depth_summary.thdp <= 0.001 {
+            depth_summary.frdp
+        } else {
+            0.0
+        }
+    }
+
+    fn tmpadj_split_gradient_depth(gradient_depth_m: f64) -> TmpadjGradientDepths {
+        let (mut tilled_m, mut untilled_m) =
+            if gradient_depth_m <= FROST_RUNTIME_TILLAGE_DEPTH_M {
+                (gradient_depth_m, 0.0)
+            } else {
+                (
+                    FROST_RUNTIME_TILLAGE_DEPTH_M,
+                    gradient_depth_m - FROST_RUNTIME_TILLAGE_DEPTH_M,
+                )
+            };
+        if tilled_m < 0.001 {
+            tilled_m = 0.0;
+        }
+        if untilled_m < 0.001 {
+            untilled_m = 0.0;
+        }
+        TmpadjGradientDepths {
+            total_m: if gradient_depth_m < 0.001 {
+                0.0
+            } else {
+                gradient_depth_m
+            },
+            tilled_m,
+            untilled_m,
         }
     }
 }

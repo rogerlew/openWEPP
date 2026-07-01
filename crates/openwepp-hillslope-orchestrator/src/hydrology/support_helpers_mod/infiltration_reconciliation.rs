@@ -1,6 +1,132 @@
 #[allow(clippy::wildcard_imports)]
 use super::super::*;
 
+#[derive(Debug, Clone, Copy)]
+struct ActiveSnowBoundaryState {
+    depth_m: f64,
+    density_kg_m3: f64,
+    settle_day_count: f64,
+}
+
+#[cfg(test)]
+mod cqr_row5_tests {
+    use super::*;
+
+    const PHASE: HillslopeKernelPhaseClass =
+        HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+
+    fn simimpl29_melt(
+        vwind_m_s: f64,
+        hrrain_m: f64,
+        tdpt_c: f64,
+        snow_depth_m: f64,
+        snow_density_kg_m3: f64,
+        hrad_mj_m2: f64,
+        hrtemp_c: f64,
+    ) -> Result<SnowMeltComputation, Wb11HydrologyKernelGuardError> {
+        Wb11HydrologyKernel::compute_simimpl29_melt_hour(
+            PHASE,
+            0.25,
+            hrad_mj_m2,
+            0.4,
+            hrtemp_c,
+            tdpt_c,
+            vwind_m_s,
+            hrrain_m,
+            snow_depth_m,
+            snow_density_kg_m3,
+            0.7,
+        )
+    }
+
+    #[test]
+    fn simimpl29_melt_hour_covers_zero_wind_rain_and_cap_paths() {
+        let no_pack = simimpl29_melt(0.0, 0.0, -4.0, 0.0, 120.0, 0.0, -2.0).unwrap();
+        assert!(no_pack.wmelt_m.abs() <= 1.0e-12);
+
+        let zero_wind = simimpl29_melt(0.0, 0.0, -2.0, 0.4, 240.0, 0.2, 1.0).unwrap();
+        assert!(zero_wind.wmelt_m.is_finite());
+
+        let windy_rain = simimpl29_melt(4.0, 0.004, 1.5, 0.4, 240.0, 0.2, 3.0).unwrap();
+        assert!(windy_rain.wmelt_m.is_finite());
+
+        let capped = simimpl29_melt(8.0, 0.03, 6.0, 0.01, 100.0, 80.0, 12.0).unwrap();
+        let maximum_melt_m =
+            openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                0.01, 100.0,
+            )
+            .unwrap();
+        assert!(capped.wmelt_m <= maximum_melt_m + 1.0e-12);
+
+        let error = Wb11HydrologyKernel::compute_simimpl29_melt_hour(
+            PHASE, -0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 100.0, 1.0,
+        )
+        .unwrap_err();
+        assert!(matches!(
+            error,
+            Wb11HydrologyKernelGuardError::StateSymbolOutOfRange { .. }
+        ));
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct ActiveSnowPackState {
+    depth_m: f64,
+    density_kg_m3: f64,
+    settle_day_count: f64,
+    liquid_water_retained_m: f64,
+    snow_albedo_state_after: Option<SnowAlbedoState>,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+#[allow(clippy::struct_field_names)]
+struct ActiveSnowHourlyFluxes {
+    rain_retained_m: f64,
+    rain_released_m: f64,
+    liquid_holding_capacity_m: f64,
+    liquid_water_released_m: f64,
+    sublimation_m: f64,
+    melt_raw_m: f64,
+    melt_m: f64,
+}
+
+impl ActiveSnowHourlyFluxes {
+    fn into_hourly_state(self, liquid_water_retained_before_m: f64, liquid_water_retained_after_m: f64) -> SnowHourlyState {
+        SnowHourlyState {
+            rain_released_m: self.rain_released_m,
+            liquid_holding_capacity_m: self.liquid_holding_capacity_m,
+            liquid_water_retained_before_m,
+            liquid_water_retained_after_m,
+            liquid_water_released_m: self.liquid_water_released_m,
+            sublimation_m: self.sublimation_m,
+            melt_raw_m: self.melt_raw_m,
+            melt_m: self.melt_m,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+#[allow(clippy::struct_field_names)]
+struct ActiveSnowDailyTotals {
+    accumulation_water_m: f64,
+    rain_retained_m: f64,
+    rain_released_m: f64,
+    liquid_water_released_m: f64,
+    sublimation_m: f64,
+    final_liquid_holding_capacity_m: f64,
+}
+
+impl ActiveSnowDailyTotals {
+    fn add_fluxes(&mut self, snowfall_m: f64, fluxes: ActiveSnowHourlyFluxes) {
+        self.accumulation_water_m += snowfall_m * 0.1;
+        self.rain_retained_m += fluxes.rain_retained_m;
+        self.rain_released_m += fluxes.rain_released_m;
+        self.liquid_water_released_m += fluxes.liquid_water_released_m;
+        self.sublimation_m += fluxes.sublimation_m;
+        self.final_liquid_holding_capacity_m = fluxes.liquid_holding_capacity_m;
+    }
+}
+
 impl Wb11HydrologyKernel {
     #[allow(clippy::too_many_arguments)]
     fn update_hourly_opt_in_snow_albedo_state(
@@ -310,7 +436,7 @@ impl Wb11HydrologyKernel {
     }
 
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-pub(crate) fn compute_simimpl29_melt_hour(
+    pub(crate) fn compute_simimpl29_melt_hour(
         phase_class: HillslopeKernelPhaseClass,
         cancov: f64,
         hrad_mj_m2: f64,
@@ -323,6 +449,63 @@ pub(crate) fn compute_simimpl29_melt_hour(
         snow_density_kg_m3: f64,
         shortwave_absorbed_fraction: f64,
     ) -> Result<SnowMeltComputation, Wb11HydrologyKernelGuardError> {
+        Self::validate_simimpl29_melt_inputs(
+            phase_class,
+            cancov,
+            hrad_mj_m2,
+            cloud_fraction,
+            vwind_m_s,
+            hrrain_m,
+            snow_depth_m,
+            snow_density_kg_m3,
+            shortwave_absorbed_fraction,
+        )?;
+
+        if snow_depth_m <= WB11_ZERO_THRESHOLD || snow_density_kg_m3 <= WB11_ZERO_THRESHOLD {
+            return Ok(SnowMeltComputation { wmelt_m: 0.0 });
+        }
+
+        let melt_inches = Self::simimpl29_hourly_melt_inches(
+            phase_class,
+            cancov,
+            hrad_mj_m2,
+            cloud_fraction,
+            hrtemp_c,
+            tdpt_c,
+            vwind_m_s,
+            hrrain_m,
+            shortwave_absorbed_fraction,
+        )?;
+        let wmelt_m =
+            openwepp_unit_boundary::conversions::legacy_inches_to_meters(melt_inches).map_err(
+                |error| {
+                    Self::unit_conversion_guard_error(
+                        phase_class,
+                        BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                        &error,
+                    )
+                },
+            )?;
+        Self::cap_simimpl29_melt_to_snowpack(
+            phase_class,
+            wmelt_m,
+            snow_depth_m,
+            snow_density_kg_m3,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn validate_simimpl29_melt_inputs(
+        phase_class: HillslopeKernelPhaseClass,
+        cancov: f64,
+        hrad_mj_m2: f64,
+        cloud_fraction: f64,
+        vwind_m_s: f64,
+        hrrain_m: f64,
+        snow_depth_m: f64,
+        snow_density_kg_m3: f64,
+        shortwave_absorbed_fraction: f64,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
         Self::require_dynamic_state_range(
             phase_class,
             BoundarySymbol::from("cancov"),
@@ -378,12 +561,21 @@ pub(crate) fn compute_simimpl29_melt_hour(
             shortwave_absorbed_fraction,
             Some(0.0),
             Some(1.0),
-        )?;
+        )
+    }
 
-        if snow_depth_m <= WB11_ZERO_THRESHOLD || snow_density_kg_m3 <= WB11_ZERO_THRESHOLD {
-            return Ok(SnowMeltComputation { wmelt_m: 0.0 });
-        }
-
+    #[allow(clippy::too_many_arguments)]
+    fn simimpl29_hourly_melt_inches(
+        phase_class: HillslopeKernelPhaseClass,
+        cancov: f64,
+        hrad_mj_m2: f64,
+        cloud_fraction: f64,
+        hrtemp_c: f64,
+        tdpt_c: f64,
+        vwind_m_s: f64,
+        hrrain_m: f64,
+        shortwave_absorbed_fraction: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let hrtef =
             openwepp_unit_boundary::conversions::celsius_delta_to_fahrenheit_delta(hrtemp_c)
                 .map_err(|error| {
@@ -446,17 +638,15 @@ pub(crate) fn compute_simimpl29_melt_hour(
         } else {
             0.007 * rainin * hrtef
         };
-        let mut wmelt_m =
-            openwepp_unit_boundary::conversions::legacy_inches_to_meters(
-                amelt + bmelt + cmelt + dmelt,
-            )
-            .map_err(|error| {
-                Self::unit_conversion_guard_error(
-                    phase_class,
-                    BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
-                    &error,
-                )
-            })?;
+        Ok(amelt + bmelt + cmelt + dmelt)
+    }
+
+    fn cap_simimpl29_melt_to_snowpack(
+        phase_class: HillslopeKernelPhaseClass,
+        mut wmelt_m: f64,
+        snow_depth_m: f64,
+        snow_density_kg_m3: f64,
+    ) -> Result<SnowMeltComputation, Wb11HydrologyKernelGuardError> {
         if !wmelt_m.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -517,11 +707,55 @@ pub(crate) fn compute_simimpl29_melt_hour(
         Ok(SnowMeltComputation { wmelt_m })
     }
 
-    #[allow(clippy::too_many_lines)]
     pub(crate) fn compute_active_snow_coupling_from_typed(
         phase_class: HillslopeKernelPhaseClass,
         inputs: &DirectActiveSnowPartitionInputs,
     ) -> Result<SnowCouplingOutcome, Wb11HydrologyKernelGuardError> {
+        Self::validate_active_snow_coupling_inputs(phase_class, inputs)?;
+        let boundary = Self::resolve_active_snow_boundary_state(phase_class, inputs)?;
+        let capacity_drainage_opt_in = Self::snow_capacity_drainage_opt_in(inputs.snow_melt_model);
+        let mut state = ActiveSnowPackState {
+            depth_m: boundary.depth_m,
+            density_kg_m3: boundary.density_kg_m3,
+            settle_day_count: boundary.settle_day_count,
+            liquid_water_retained_m: if capacity_drainage_opt_in {
+                inputs.liquid_water_retained_m
+            } else {
+                0.0
+            },
+            snow_albedo_state_after: inputs.snow_albedo_state,
+        };
+        let daily_mean_temp = f64::midpoint(inputs.tmax_c, inputs.tmin_c);
+        let mut totals = ActiveSnowDailyTotals::default();
+        let mut hourly_state = Vec::with_capacity(SIMIMPL29_HOURS_PER_DAY);
+
+        for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
+            let (hour_state, fluxes) = Self::compute_active_snow_coupling_hour(
+                phase_class,
+                inputs,
+                hour,
+                daily_mean_temp,
+                capacity_drainage_opt_in,
+                &mut state,
+            )?;
+            totals.add_fluxes(inputs.hourly[hour - 1].snowfall_m, fluxes);
+            hourly_state.push(hour_state);
+        }
+
+        Self::finalize_active_snow_coupling(
+            phase_class,
+            inputs,
+            capacity_drainage_opt_in,
+            state,
+            totals,
+            hourly_state,
+        )
+    }
+
+    fn validate_active_snow_coupling_inputs(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
         Self::require_direct_typed_snow_value(
             phase_class,
             BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
@@ -601,7 +835,13 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 maximum: Some(inputs.ssd_kg_m3),
             });
         }
+        Ok(())
+    }
 
+    fn resolve_active_snow_boundary_state(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+    ) -> Result<ActiveSnowBoundaryState, Wb11HydrologyKernelGuardError> {
         Self::require_direct_typed_snow_value(
             phase_class,
             BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
@@ -656,7 +896,7 @@ pub(crate) fn compute_simimpl29_melt_hour(
             } else {
                 inputs.coe_boundary_density_kg_m3
             };
-        let mut settle_day_count = if inputs.snow_density_model == SnowDensityModel::LegacyWepp {
+        let settle_day_count = if inputs.snow_density_model == SnowDensityModel::LegacyWepp {
             inputs.runtime_settle_day_count
         } else {
             inputs.coe_boundary_settle_day_count
@@ -688,460 +928,782 @@ pub(crate) fn compute_simimpl29_melt_hour(
             boundary_depth_m = 0.0;
             boundary_density_kg_m3 = 0.0;
         }
+        Ok(ActiveSnowBoundaryState {
+            depth_m: boundary_depth_m,
+            density_kg_m3: boundary_density_kg_m3,
+            settle_day_count,
+        })
+    }
 
-        let mut snodep = boundary_depth_m;
-        let mut dens = boundary_density_kg_m3;
-        let daily_mean_temp = f64::midpoint(inputs.tmax_c, inputs.tmin_c);
-
-        let mut accumulation_water_m = 0.0;
-        let mut total_rain_retained_m = 0.0;
-        let mut total_rain_released_m = 0.0;
-        let capacity_drainage_opt_in = matches!(
-            inputs.snow_melt_model,
+    fn snow_capacity_drainage_opt_in(snow_melt_model: SnowMeltModel) -> bool {
+        matches!(
+            snow_melt_model,
             SnowMeltModel::CoeLiquidHoldingCapacityV1
                 | SnowMeltModel::CoeOpenSublimationStageAV1
                 | SnowMeltModel::CoeOpenSublimationStageBV1
-        );
-        let mut liquid_water_retained_m = if capacity_drainage_opt_in {
-            inputs.liquid_water_retained_m
-        } else {
-            0.0
-        };
-        let mut total_liquid_water_released_m = 0.0;
-        let mut total_sublimation_m = 0.0;
-        let mut final_liquid_holding_capacity_m = 0.0;
-        let mut snow_albedo_state_after = inputs.snow_albedo_state;
-        let mut hourly_state = Vec::with_capacity(SIMIMPL29_HOURS_PER_DAY);
+        )
+    }
 
-        for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
-            let hourly = inputs.hourly[hour - 1];
-            let hrrain = hourly.rain_m;
-            let hrsnow = hourly.snowfall_m;
-            let hrad_mj_m2 = hourly.radiation_mj_m2;
-            let hrtemp_c = hourly.air_temperature_c;
-            let cloud_fraction = hourly.cloud_fraction;
-            let future_snowfall_this_day = inputs.hourly[hour..]
-                .iter()
-                .any(|future| future.snowfall_m > WB11_ZERO_THRESHOLD);
+    fn compute_active_snow_coupling_hour(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        hour: usize,
+        daily_mean_temp: f64,
+        capacity_drainage_opt_in: bool,
+        state: &mut ActiveSnowPackState,
+    ) -> Result<(SnowHourlyState, ActiveSnowHourlyFluxes), Wb11HydrologyKernelGuardError> {
+        let hourly = inputs.hourly[hour - 1];
+        Self::validate_active_snow_hour(phase_class, hour, hourly)?;
+        let future_snowfall_this_day = inputs.hourly[hour..]
+            .iter()
+            .any(|future| future.snowfall_m > WB11_ZERO_THRESHOLD);
 
-            Self::require_direct_typed_snow_value(
-                phase_class,
-                Self::hourly_symbol(SNOW_HOURLY_RAIN_ROOT, hour),
-                hrrain,
-                Some(0.0),
-                None,
-            )?;
-            Self::require_direct_typed_snow_value(
-                phase_class,
-                Self::hourly_symbol(SNOW_HOURLY_SNOWFALL_ROOT, hour),
-                hrsnow,
-                Some(0.0),
-                None,
-            )?;
-            Self::require_direct_typed_snow_value(
-                phase_class,
-                Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour),
-                hrad_mj_m2,
-                Some(0.0),
-                None,
-            )?;
-            Self::require_direct_typed_snow_value(
-                phase_class,
-                Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour),
-                hrtemp_c,
-                None,
-                None,
-            )?;
-            Self::require_direct_typed_snow_value(
-                phase_class,
-                Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour),
-                cloud_fraction,
-                Some(0.0),
-                Some(1.0),
-            )?;
+        Self::advance_active_snow_settle_clock(state, hour, hourly.snowfall_m);
+        let depth_before_m = state.depth_m.max(0.0);
+        let liquid_water_retained_before_m = state.liquid_water_retained_m;
+        let mut fluxes = ActiveSnowHourlyFluxes::default();
+        let albedo_updated_this_hour = Self::advance_active_snowpack_for_hour(
+            phase_class,
+            inputs,
+            hourly,
+            daily_mean_temp,
+            capacity_drainage_opt_in,
+            state,
+            &mut fluxes,
+        )?;
 
-            if hour == 1 {
-                settle_day_count += 1.0;
-            }
-            if hrsnow > WB11_ZERO_THRESHOLD {
-                settle_day_count = 1.0;
-            }
-
-            let depth_before_m = snodep.max(0.0);
-            let mut rain_retained_m = 0.0;
-            let mut rain_released_m = 0.0;
-            let liquid_water_retained_before_m = liquid_water_retained_m;
-            let mut liquid_holding_capacity_m = 0.0;
-            let mut liquid_water_released_m = 0.0;
-            let mut sublimation_m = 0.0;
-            let mut melt_raw_m = 0.0;
-            let mut melt_m = 0.0;
-            let mut albedo_updated_this_hour = false;
-
-            if snodep <= WB11_ZERO_THRESHOLD {
-                if hrsnow <= WB11_ZERO_THRESHOLD {
-                    snodep = 0.0;
-                    dens = 0.0;
-                } else {
-                    snodep = hrsnow;
-                    dens = inputs.newsnw_kg_m3;
-                }
-            } else if daily_mean_temp < 0.0 {
-                let mut snodpt = snodep;
-                let mut densgt;
-
-                let mut setf = ((-(settle_day_count * 2.0)).exp()
-                    * SIMIMPL29_SNOWPACK_SETTLE_BASE)
-                    + 1.0;
-                if dens > inputs.ssd_kg_m3 {
-                    setf = 1.0;
-                }
-                densgt = dens * setf;
-                if densgt > SIMIMPL29_SNOW_DENSITY_CAP_KG_M3 {
-                    densgt = SIMIMPL29_SNOW_DENSITY_CAP_KG_M3;
-                }
-                if densgt > WB11_ZERO_THRESHOLD {
-                    snodpt = snodpt * dens / densgt;
-                }
-
-                if hrsnow <= WB11_ZERO_THRESHOLD {
-                    snodep = snodpt;
-                    dens = densgt;
-                } else {
-                    snodep = snodpt + hrsnow;
-                    if snodep > WB11_ZERO_THRESHOLD {
-                        dens = ((densgt * snodpt) + (inputs.newsnw_kg_m3 * hrsnow)) / snodep;
-                    } else {
-                        dens = 0.0;
-                    }
-                }
-            } else {
-                let snodpt = snodep;
-                if hrsnow > WB11_ZERO_THRESHOLD {
-                    snodep += hrsnow;
-                    if snodep > WB11_ZERO_THRESHOLD {
-                        dens = ((dens * snodpt) + (inputs.newsnw_kg_m3 * hrsnow)) / snodep;
-                    } else {
-                        dens = 0.0;
-                    }
-                }
-
-                if snodep > WB11_ZERO_THRESHOLD {
-                    let positive_temperature_c_day_increment = hrtemp_c.max(0.0) / 24.0;
-                    snow_albedo_state_after = Self::update_hourly_opt_in_snow_albedo_state(
-                        phase_class,
-                        inputs.snow_melt_model,
-                        inputs.snow_albedo_model,
-                        snow_albedo_state_after,
-                        snodep,
-                        dens,
-                        hrsnow,
-                        inputs.newsnw_kg_m3,
-                        positive_temperature_c_day_increment,
-                        inputs.underlying_surface_albedo,
-                    )?;
-                    albedo_updated_this_hour = true;
-                    let shortwave_absorbed_fraction = match inputs.snow_melt_model {
-                        SnowMeltModel::LegacyCoe
-                        | SnowMeltModel::CoeWinterThawStateLossV1
-                        | SnowMeltModel::CoeLiquidHoldingCapacityV1
-                        | SnowMeltModel::CoeOpenSublimationStageAV1
-                        | SnowMeltModel::CoeOpenSublimationStageBV1 => 1.0,
-                        SnowMeltModel::CoeShortwaveAlbedoV1 => snow_albedo_state_after
-                            .ok_or(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
-                                phase_class,
-                                symbol: BoundarySymbol::from("snow_albedo"),
-                            })?
-                            .shortwave_absorbed_fraction(),
-                    };
-                    let melt_computation = Self::compute_simimpl29_melt_hour(
-                        phase_class,
-                        inputs.canopy_cover_fraction,
-                        hrad_mj_m2,
-                        cloud_fraction,
-                        hrtemp_c,
-                        inputs.dewpoint_c,
-                        inputs.wind_m_s,
-                        hrrain,
-                        snodep,
-                        dens,
-                        shortwave_absorbed_fraction,
-                    )?;
-                    let wmelt = melt_computation.wmelt_m;
-                    melt_raw_m = wmelt;
-                    let smelt = if wmelt > WB11_ZERO_THRESHOLD {
-                        openwepp_unit_boundary::conversions::water_equivalent_meters_to_snow_depth_meters(
-                            wmelt,
-                            dens,
-                        )
-                        .map_err(|error| {
-                            Self::unit_conversion_guard_error(
-                                phase_class,
-                                BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
-                                &error,
-                            )
-                        })?
-                    } else {
-                        0.0
-                    };
-                    let snodpt_after_inputs = snodep;
-                    snodep = snodpt_after_inputs - smelt;
-                    if snodep <= WB11_ZERO_THRESHOLD {
-                        if smelt > 0.0 {
-                            melt_m =
-                                openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
-                                    snodpt_after_inputs,
-                                    dens,
-                                )
-                                .map_err(|error| {
-                                    Self::unit_conversion_guard_error(
-                                        phase_class,
-                                        BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
-                                        &error,
-                                    )
-                                })?;
-                        }
-                        if capacity_drainage_opt_in
-                            && liquid_water_retained_m > WB11_ZERO_THRESHOLD
-                        {
-                            melt_m += liquid_water_retained_m;
-                            liquid_water_released_m += liquid_water_retained_m;
-                            liquid_water_retained_m = 0.0;
-                        }
-                        snodep = 0.0;
-                        dens = 0.0;
-                    } else if dens >= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
-                        if smelt > 0.0 {
-                            melt_m =
-                                openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
-                                    smelt,
-                                    dens,
-                                )
-                                .map_err(|error| {
-                                    Self::unit_conversion_guard_error(
-                                        phase_class,
-                                        BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
-                                        &error,
-                                    )
-                                })?;
-                        } else {
-                            melt_m = wmelt.min(0.0);
-                        }
-                    } else {
-                        let thaw_state_loss_opt_in =
-                            inputs.snow_melt_model == SnowMeltModel::CoeWinterThawStateLossV1
-                                && wmelt > WB11_ZERO_THRESHOLD;
-                        let capacity_drainage_melt_opt_in =
-                            capacity_drainage_opt_in && wmelt > WB11_ZERO_THRESHOLD;
-                        let mut densgt = if thaw_state_loss_opt_in
-                            || capacity_drainage_melt_opt_in
-                        {
-                            dens
-                        } else {
-                            dens * (snodpt_after_inputs / snodep)
-                        };
-                        if densgt <= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
-                            if capacity_drainage_melt_opt_in {
-                                liquid_holding_capacity_m =
-                                    Self::snow_liquid_holding_capacity_m(snodep, densgt);
-                                let mut available_capacity_m = (liquid_holding_capacity_m
-                                    - liquid_water_retained_m)
-                                    .max(0.0);
-                                let retained_melt_m = wmelt.min(available_capacity_m);
-                                let released_melt_m = (wmelt - retained_melt_m).max(0.0);
-                                available_capacity_m -= retained_melt_m;
-                                rain_retained_m = hrrain.min(available_capacity_m);
-                                rain_released_m = (hrrain - rain_retained_m).max(0.0);
-                                liquid_water_retained_m += retained_melt_m + rain_retained_m;
-                                liquid_water_released_m += released_melt_m;
-                                melt_m = released_melt_m;
-                                let pack_water_after_m =
-                                    openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
-                                        snodpt_after_inputs,
-                                        dens,
-                                    )
-                                    .map_err(|error| {
-                                        Self::unit_conversion_guard_error(
-                                            phase_class,
-                                            BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
-                                            &error,
-                                        )
-                                    })?
-                                        + rain_retained_m
-                                        - released_melt_m;
-                                densgt =
-                                    openwepp_unit_boundary::conversions::water_depth_meters_to_snow_density_increment(
-                                        pack_water_after_m.max(0.0),
-                                        snodep,
-                                    )
-                                    .map_err(|error| {
-                                        Self::unit_conversion_guard_error(
-                                            phase_class,
-                                            BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
-                                            &error,
-                                        )
-                                    })?;
-                            } else {
-                                melt_m = if thaw_state_loss_opt_in {
-                                wmelt
-                            } else {
-                                wmelt.min(0.0)
-                            };
-                            }
-                            if hrrain > WB11_ZERO_THRESHOLD && !capacity_drainage_melt_opt_in {
-                                let densic = openwepp_unit_boundary::conversions::water_depth_meters_to_snow_density_increment(
-                                    hrrain,
-                                    snodep,
-                                )
-                                .map_err(|error| {
-                                    Self::unit_conversion_guard_error(
-                                        phase_class,
-                                        BoundarySymbol::from(SNOW_HOURLY_RAIN_ROOT),
-                                        &error,
-                                    )
-                                })?;
-                                if densic
-                                    <= (SIMIMPL29_DENSITY_MELT_GATE_KG_M3 - densgt)
-                                        + WB11_ZERO_THRESHOLD
-                                {
-                                    rain_retained_m = hrrain;
-                                    densgt += densic;
-                                } else {
-                                    rain_retained_m =
-                                        openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
-                                            snodep,
-                                            SIMIMPL29_DENSITY_MELT_GATE_KG_M3 - densgt,
-                                        )
-                                        .map_err(|error| {
-                                            Self::unit_conversion_guard_error(
-                                                phase_class,
-                                                BoundarySymbol::from(SNOW_HOURLY_RAIN_ROOT),
-                                                &error,
-                                            )
-                                        })?;
-                                    densgt = SIMIMPL29_DENSITY_MELT_GATE_KG_M3;
-                                }
-                            }
-                        } else {
-                            melt_m =
-                                openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
-                                    snodep,
-                                    densgt - SIMIMPL29_DENSITY_MELT_GATE_KG_M3,
-                                )
-                                .map_err(|error| {
-                                    Self::unit_conversion_guard_error(
-                                        phase_class,
-                                        BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
-                                        &error,
-                                    )
-                                })?;
-                            densgt = SIMIMPL29_DENSITY_MELT_GATE_KG_M3;
-                        }
-                        dens = densgt;
-                    }
-                }
-            }
-
-            if !albedo_updated_this_hour
-                && (snodep > WB11_ZERO_THRESHOLD
-                    || hrsnow > WB11_ZERO_THRESHOLD
-                    || !future_snowfall_this_day)
-            {
-                let positive_temperature_c_day_increment = hrtemp_c.max(0.0) / 24.0;
-                snow_albedo_state_after = Self::update_hourly_opt_in_snow_albedo_state(
-                    phase_class,
-                    inputs.snow_melt_model,
-                    inputs.snow_albedo_model,
-                    snow_albedo_state_after,
-                    snodep,
-                    dens,
-                    hrsnow,
-                    inputs.newsnw_kg_m3,
-                    positive_temperature_c_day_increment,
-                    inputs.underlying_surface_albedo,
-                )?;
-            }
-
-            if dens > SIMIMPL29_SNOW_DENSITY_CAP_KG_M3 {
-                dens = SIMIMPL29_SNOW_DENSITY_CAP_KG_M3;
-            }
-            if snodep > WB11_ZERO_THRESHOLD {
-                sublimation_m = match inputs.snow_melt_model {
-                    SnowMeltModel::CoeOpenSublimationStageAV1 => {
-                        Self::coe_open_sublimation_stage_a_hour_m(
-                            phase_class,
-                            inputs.canopy_cover_fraction,
-                            inputs.wind_m_s,
-                            hrtemp_c,
-                            inputs.dewpoint_c,
-                            snodep,
-                        )?
-                    }
-                    SnowMeltModel::CoeOpenSublimationStageBV1 => {
-                        Self::coe_open_sublimation_stage_b_hour_m(
-                            phase_class,
-                            inputs.canopy_cover_fraction,
-                            inputs.wind_m_s,
-                            hrtemp_c,
-                            inputs.dewpoint_c,
-                            snodep,
-                            dens,
-                        )?
-                    }
-                    SnowMeltModel::LegacyCoe
-                    | SnowMeltModel::CoeShortwaveAlbedoV1
-                    | SnowMeltModel::CoeWinterThawStateLossV1
-                    | SnowMeltModel::CoeLiquidHoldingCapacityV1 => 0.0,
-                };
-            }
-            if snodep <= WB11_ZERO_THRESHOLD {
-                snodep = 0.0;
-                dens = 0.0;
-                if capacity_drainage_opt_in && liquid_water_retained_m > WB11_ZERO_THRESHOLD {
-                    melt_m += liquid_water_retained_m;
-                    liquid_water_released_m += liquid_water_retained_m;
-                    liquid_water_retained_m = 0.0;
-                }
-            } else if capacity_drainage_opt_in {
-                liquid_holding_capacity_m = Self::snow_liquid_holding_capacity_m(snodep, dens);
-                if liquid_water_retained_m
-                    > liquid_holding_capacity_m + WB11_ZERO_THRESHOLD
-                {
-                    let excess_m = liquid_water_retained_m - liquid_holding_capacity_m;
-                    melt_m += excess_m;
-                    liquid_water_released_m += excess_m;
-                    liquid_water_retained_m = liquid_holding_capacity_m;
-                }
-            }
-            if depth_before_m > WB11_ZERO_THRESHOLD
-                && hrrain > rain_retained_m + WB11_ZERO_THRESHOLD
-            {
-                rain_released_m = hrrain - rain_retained_m;
-            }
-
-            accumulation_water_m += hrsnow * 0.1;
-            total_rain_retained_m += rain_retained_m;
-            total_rain_released_m += rain_released_m;
-            total_liquid_water_released_m += liquid_water_released_m;
-            total_sublimation_m += sublimation_m;
-            final_liquid_holding_capacity_m = liquid_holding_capacity_m;
-
-            hourly_state.push(SnowHourlyState {
-                rain_released_m,
-                liquid_holding_capacity_m,
-                liquid_water_retained_before_m,
-                liquid_water_retained_after_m: liquid_water_retained_m,
-                liquid_water_released_m,
-                sublimation_m,
-                melt_raw_m,
-                melt_m,
-            });
+        Self::maybe_update_idle_hourly_snow_albedo(
+            phase_class,
+            inputs,
+            hourly,
+            future_snowfall_this_day,
+            albedo_updated_this_hour,
+            state,
+        )?;
+        Self::apply_active_snow_sublimation_and_liquid_limits(
+            phase_class,
+            inputs,
+            hourly,
+            capacity_drainage_opt_in,
+            state,
+            &mut fluxes,
+        )?;
+        if depth_before_m > WB11_ZERO_THRESHOLD
+            && hourly.rain_m > fluxes.rain_retained_m + WB11_ZERO_THRESHOLD
+        {
+            fluxes.rain_released_m = hourly.rain_m - fluxes.rain_retained_m;
         }
 
+        Ok((
+            fluxes.into_hourly_state(
+                liquid_water_retained_before_m,
+                state.liquid_water_retained_m,
+            ),
+            fluxes,
+        ))
+    }
+
+    fn validate_active_snow_hour(
+        phase_class: HillslopeKernelPhaseClass,
+        hour: usize,
+        hourly: DirectSnowHourlyForcing,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            Self::hourly_symbol(SNOW_HOURLY_RAIN_ROOT, hour),
+            hourly.rain_m,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            Self::hourly_symbol(SNOW_HOURLY_SNOWFALL_ROOT, hour),
+            hourly.snowfall_m,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour),
+            hourly.radiation_mj_m2,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour),
+            hourly.air_temperature_c,
+            None,
+            None,
+        )?;
+        Self::require_direct_typed_snow_value(
+            phase_class,
+            Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour),
+            hourly.cloud_fraction,
+            Some(0.0),
+            Some(1.0),
+        )
+    }
+
+    fn advance_active_snow_settle_clock(
+        state: &mut ActiveSnowPackState,
+        hour: usize,
+        snowfall_m: f64,
+    ) {
+        if hour == 1 {
+            state.settle_day_count += 1.0;
+        }
+        if snowfall_m > WB11_ZERO_THRESHOLD {
+            state.settle_day_count = 1.0;
+        }
+    }
+
+    fn advance_active_snowpack_for_hour(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        hourly: DirectSnowHourlyForcing,
+        daily_mean_temp: f64,
+        capacity_drainage_opt_in: bool,
+        state: &mut ActiveSnowPackState,
+        fluxes: &mut ActiveSnowHourlyFluxes,
+    ) -> Result<bool, Wb11HydrologyKernelGuardError> {
+        if state.depth_m <= WB11_ZERO_THRESHOLD {
+            Self::reset_or_start_snowpack_from_hourly_snow(state, hourly.snowfall_m, inputs);
+            return Ok(false);
+        }
+        if daily_mean_temp < 0.0 {
+            Self::advance_cold_snowpack_density(state, hourly.snowfall_m, inputs);
+            return Ok(false);
+        }
+
+        Self::advance_warm_snowpack_new_snow(state, hourly.snowfall_m, inputs);
+        if state.depth_m > WB11_ZERO_THRESHOLD {
+            Self::apply_active_snowpack_melt_for_hour(
+                phase_class,
+                inputs,
+                hourly,
+                capacity_drainage_opt_in,
+                state,
+                fluxes,
+            )?;
+            return Ok(true);
+        }
+        Ok(false)
+    }
+
+    fn reset_or_start_snowpack_from_hourly_snow(
+        state: &mut ActiveSnowPackState,
+        snowfall_m: f64,
+        inputs: &DirectActiveSnowPartitionInputs,
+    ) {
+        if snowfall_m <= WB11_ZERO_THRESHOLD {
+            state.depth_m = 0.0;
+            state.density_kg_m3 = 0.0;
+        } else {
+            state.depth_m = snowfall_m;
+            state.density_kg_m3 = inputs.newsnw_kg_m3;
+        }
+    }
+
+    fn advance_cold_snowpack_density(
+        state: &mut ActiveSnowPackState,
+        snowfall_m: f64,
+        inputs: &DirectActiveSnowPartitionInputs,
+    ) {
+        let mut compacted_depth_m = state.depth_m;
+        let mut setf =
+            ((-(state.settle_day_count * 2.0)).exp() * SIMIMPL29_SNOWPACK_SETTLE_BASE) + 1.0;
+        if state.density_kg_m3 > inputs.ssd_kg_m3 {
+            setf = 1.0;
+        }
+        let mut compacted_density_kg_m3 = state.density_kg_m3 * setf;
+        if compacted_density_kg_m3 > SIMIMPL29_SNOW_DENSITY_CAP_KG_M3 {
+            compacted_density_kg_m3 = SIMIMPL29_SNOW_DENSITY_CAP_KG_M3;
+        }
+        if compacted_density_kg_m3 > WB11_ZERO_THRESHOLD {
+            compacted_depth_m = compacted_depth_m * state.density_kg_m3 / compacted_density_kg_m3;
+        }
+
+        if snowfall_m <= WB11_ZERO_THRESHOLD {
+            state.depth_m = compacted_depth_m;
+            state.density_kg_m3 = compacted_density_kg_m3;
+        } else {
+            state.depth_m = compacted_depth_m + snowfall_m;
+            state.density_kg_m3 = if state.depth_m > WB11_ZERO_THRESHOLD {
+                ((compacted_density_kg_m3 * compacted_depth_m)
+                    + (inputs.newsnw_kg_m3 * snowfall_m))
+                    / state.depth_m
+            } else {
+                0.0
+            };
+        }
+    }
+
+    fn advance_warm_snowpack_new_snow(
+        state: &mut ActiveSnowPackState,
+        snowfall_m: f64,
+        inputs: &DirectActiveSnowPartitionInputs,
+    ) {
+        let depth_before_snowfall_m = state.depth_m;
+        if snowfall_m > WB11_ZERO_THRESHOLD {
+            state.depth_m += snowfall_m;
+            state.density_kg_m3 = if state.depth_m > WB11_ZERO_THRESHOLD {
+                ((state.density_kg_m3 * depth_before_snowfall_m)
+                    + (inputs.newsnw_kg_m3 * snowfall_m))
+                    / state.depth_m
+            } else {
+                0.0
+            };
+        }
+    }
+
+    fn apply_active_snowpack_melt_for_hour(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        hourly: DirectSnowHourlyForcing,
+        capacity_drainage_opt_in: bool,
+        state: &mut ActiveSnowPackState,
+        fluxes: &mut ActiveSnowHourlyFluxes,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let positive_temperature_c_day_increment = hourly.air_temperature_c.max(0.0) / 24.0;
+        state.snow_albedo_state_after = Self::update_hourly_opt_in_snow_albedo_state(
+            phase_class,
+            inputs.snow_melt_model,
+            inputs.snow_albedo_model,
+            state.snow_albedo_state_after,
+            state.depth_m,
+            state.density_kg_m3,
+            hourly.snowfall_m,
+            inputs.newsnw_kg_m3,
+            positive_temperature_c_day_increment,
+            inputs.underlying_surface_albedo,
+        )?;
+        let shortwave_absorbed_fraction =
+            Self::active_snow_shortwave_absorbed_fraction(phase_class, inputs, state)?;
+        let wmelt = Self::compute_simimpl29_melt_hour(
+            phase_class,
+            inputs.canopy_cover_fraction,
+            hourly.radiation_mj_m2,
+            hourly.cloud_fraction,
+            hourly.air_temperature_c,
+            inputs.dewpoint_c,
+            inputs.wind_m_s,
+            hourly.rain_m,
+            state.depth_m,
+            state.density_kg_m3,
+            shortwave_absorbed_fraction,
+        )?
+        .wmelt_m;
+        fluxes.melt_raw_m = wmelt;
+        let smelt = Self::active_snow_melt_depth_m(phase_class, wmelt, state.density_kg_m3)?;
+        let depth_after_inputs_m = state.depth_m;
+        state.depth_m = depth_after_inputs_m - smelt;
+        Self::apply_active_snow_melt_to_pack(
+            phase_class,
+            inputs,
+            hourly.rain_m,
+            wmelt,
+            smelt,
+            depth_after_inputs_m,
+            capacity_drainage_opt_in,
+            state,
+            fluxes,
+        )
+    }
+
+    fn active_snow_shortwave_absorbed_fraction(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        state: &ActiveSnowPackState,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        match inputs.snow_melt_model {
+            SnowMeltModel::LegacyCoe
+            | SnowMeltModel::CoeWinterThawStateLossV1
+            | SnowMeltModel::CoeLiquidHoldingCapacityV1
+            | SnowMeltModel::CoeOpenSublimationStageAV1
+            | SnowMeltModel::CoeOpenSublimationStageBV1 => Ok(1.0),
+            SnowMeltModel::CoeShortwaveAlbedoV1 => state
+                .snow_albedo_state_after
+                .ok_or(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class,
+                    symbol: BoundarySymbol::from("snow_albedo"),
+                })
+                .map(SnowAlbedoState::shortwave_absorbed_fraction),
+        }
+    }
+
+    fn active_snow_melt_depth_m(
+        phase_class: HillslopeKernelPhaseClass,
+        wmelt_m: f64,
+        snow_density_kg_m3: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        if wmelt_m <= WB11_ZERO_THRESHOLD {
+            return Ok(0.0);
+        }
+        openwepp_unit_boundary::conversions::water_equivalent_meters_to_snow_depth_meters(
+            wmelt_m,
+            snow_density_kg_m3,
+        )
+        .map_err(|error| {
+            Self::unit_conversion_guard_error(
+                phase_class,
+                BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                &error,
+            )
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn apply_active_snow_melt_to_pack(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        hourly_rain_m: f64,
+        wmelt_m: f64,
+        smelt_m: f64,
+        depth_after_inputs_m: f64,
+        capacity_drainage_opt_in: bool,
+        state: &mut ActiveSnowPackState,
+        fluxes: &mut ActiveSnowHourlyFluxes,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if state.depth_m <= WB11_ZERO_THRESHOLD {
+            return Self::apply_pack_exhausting_melt(
+                phase_class,
+                depth_after_inputs_m,
+                smelt_m,
+                capacity_drainage_opt_in,
+                state,
+                fluxes,
+            );
+        }
+        if state.density_kg_m3 >= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
+            return Self::apply_high_density_pack_melt(
+                phase_class,
+                smelt_m,
+                wmelt_m,
+                state.density_kg_m3,
+                fluxes,
+            );
+        }
+        Self::apply_low_density_pack_melt(
+            phase_class,
+            inputs,
+            hourly_rain_m,
+            wmelt_m,
+            depth_after_inputs_m,
+            capacity_drainage_opt_in,
+            state,
+            fluxes,
+        )
+    }
+
+    fn apply_pack_exhausting_melt(
+        phase_class: HillslopeKernelPhaseClass,
+        depth_after_inputs_m: f64,
+        smelt_m: f64,
+        capacity_drainage_opt_in: bool,
+        state: &mut ActiveSnowPackState,
+        fluxes: &mut ActiveSnowHourlyFluxes,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if smelt_m > 0.0 {
+            fluxes.melt_m =
+                openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                    depth_after_inputs_m,
+                    state.density_kg_m3,
+                )
+                .map_err(|error| {
+                    Self::unit_conversion_guard_error(
+                        phase_class,
+                        BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                        &error,
+                    )
+                })?;
+        }
+        if capacity_drainage_opt_in && state.liquid_water_retained_m > WB11_ZERO_THRESHOLD {
+            fluxes.melt_m += state.liquid_water_retained_m;
+            fluxes.liquid_water_released_m += state.liquid_water_retained_m;
+            state.liquid_water_retained_m = 0.0;
+        }
+        state.depth_m = 0.0;
+        state.density_kg_m3 = 0.0;
+        Ok(())
+    }
+
+    fn apply_high_density_pack_melt(
+        phase_class: HillslopeKernelPhaseClass,
+        smelt_m: f64,
+        wmelt_m: f64,
+        snow_density_kg_m3: f64,
+        fluxes: &mut ActiveSnowHourlyFluxes,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if smelt_m > 0.0 {
+            fluxes.melt_m =
+                openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                    smelt_m,
+                    snow_density_kg_m3,
+                )
+                .map_err(|error| {
+                    Self::unit_conversion_guard_error(
+                        phase_class,
+                        BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                        &error,
+                    )
+                })?;
+        } else {
+            fluxes.melt_m = wmelt_m.min(0.0);
+        }
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn apply_low_density_pack_melt(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        hourly_rain_m: f64,
+        wmelt_m: f64,
+        depth_after_inputs_m: f64,
+        capacity_drainage_opt_in: bool,
+        state: &mut ActiveSnowPackState,
+        fluxes: &mut ActiveSnowHourlyFluxes,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        let thaw_state_loss_opt_in =
+            inputs.snow_melt_model == SnowMeltModel::CoeWinterThawStateLossV1
+                && wmelt_m > WB11_ZERO_THRESHOLD;
+        let capacity_drainage_melt_opt_in =
+            capacity_drainage_opt_in && wmelt_m > WB11_ZERO_THRESHOLD;
+        let mut density_after_melt_kg_m3 =
+            if thaw_state_loss_opt_in || capacity_drainage_melt_opt_in {
+                state.density_kg_m3
+            } else {
+                state.density_kg_m3 * (depth_after_inputs_m / state.depth_m)
+            };
+
+        if density_after_melt_kg_m3 <= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
+            if capacity_drainage_melt_opt_in {
+                density_after_melt_kg_m3 = Self::apply_capacity_drainage_melt(
+                    phase_class,
+                    hourly_rain_m,
+                    wmelt_m,
+                    depth_after_inputs_m,
+                    state,
+                    fluxes,
+                )?;
+            } else {
+                fluxes.melt_m = if thaw_state_loss_opt_in {
+                    wmelt_m
+                } else {
+                    wmelt_m.min(0.0)
+                };
+                if hourly_rain_m > WB11_ZERO_THRESHOLD {
+                    density_after_melt_kg_m3 = Self::apply_low_density_rain_retention(
+                        phase_class,
+                        hourly_rain_m,
+                        density_after_melt_kg_m3,
+                        state,
+                        fluxes,
+                    )?;
+                }
+            }
+        } else {
+            fluxes.melt_m =
+                openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                    state.depth_m,
+                    density_after_melt_kg_m3 - SIMIMPL29_DENSITY_MELT_GATE_KG_M3,
+                )
+                .map_err(|error| {
+                    Self::unit_conversion_guard_error(
+                        phase_class,
+                        BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                        &error,
+                    )
+                })?;
+            density_after_melt_kg_m3 = SIMIMPL29_DENSITY_MELT_GATE_KG_M3;
+        }
+        state.density_kg_m3 = density_after_melt_kg_m3;
+        Ok(())
+    }
+
+    fn apply_capacity_drainage_melt(
+        phase_class: HillslopeKernelPhaseClass,
+        hourly_rain_m: f64,
+        wmelt_m: f64,
+        depth_after_inputs_m: f64,
+        state: &mut ActiveSnowPackState,
+        fluxes: &mut ActiveSnowHourlyFluxes,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        fluxes.liquid_holding_capacity_m =
+            Self::snow_liquid_holding_capacity_m(state.depth_m, state.density_kg_m3);
+        let mut available_capacity_m =
+            (fluxes.liquid_holding_capacity_m - state.liquid_water_retained_m).max(0.0);
+        let retained_melt_m = wmelt_m.min(available_capacity_m);
+        let released_melt_m = (wmelt_m - retained_melt_m).max(0.0);
+        available_capacity_m -= retained_melt_m;
+        fluxes.rain_retained_m = hourly_rain_m.min(available_capacity_m);
+        fluxes.rain_released_m = (hourly_rain_m - fluxes.rain_retained_m).max(0.0);
+        state.liquid_water_retained_m += retained_melt_m + fluxes.rain_retained_m;
+        fluxes.liquid_water_released_m += released_melt_m;
+        fluxes.melt_m = released_melt_m;
+        let pack_water_after_m =
+            openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                depth_after_inputs_m,
+                state.density_kg_m3,
+            )
+            .map_err(|error| {
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+                    &error,
+                )
+            })?
+                + fluxes.rain_retained_m
+                - released_melt_m;
+        openwepp_unit_boundary::conversions::water_depth_meters_to_snow_density_increment(
+            pack_water_after_m.max(0.0),
+            state.depth_m,
+        )
+        .map_err(|error| {
+            Self::unit_conversion_guard_error(
+                phase_class,
+                BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+                &error,
+            )
+        })
+    }
+
+    fn apply_low_density_rain_retention(
+        phase_class: HillslopeKernelPhaseClass,
+        hourly_rain_m: f64,
+        mut density_after_melt_kg_m3: f64,
+        state: &ActiveSnowPackState,
+        fluxes: &mut ActiveSnowHourlyFluxes,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let density_increment_kg_m3 =
+            openwepp_unit_boundary::conversions::water_depth_meters_to_snow_density_increment(
+                hourly_rain_m,
+                state.depth_m,
+            )
+            .map_err(|error| {
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    BoundarySymbol::from(SNOW_HOURLY_RAIN_ROOT),
+                    &error,
+                )
+            })?;
+        if density_increment_kg_m3
+            <= (SIMIMPL29_DENSITY_MELT_GATE_KG_M3 - density_after_melt_kg_m3)
+                + WB11_ZERO_THRESHOLD
+        {
+            fluxes.rain_retained_m = hourly_rain_m;
+            density_after_melt_kg_m3 += density_increment_kg_m3;
+        } else {
+            fluxes.rain_retained_m =
+                openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                    state.depth_m,
+                    SIMIMPL29_DENSITY_MELT_GATE_KG_M3 - density_after_melt_kg_m3,
+                )
+                .map_err(|error| {
+                    Self::unit_conversion_guard_error(
+                        phase_class,
+                        BoundarySymbol::from(SNOW_HOURLY_RAIN_ROOT),
+                        &error,
+                    )
+                })?;
+            density_after_melt_kg_m3 = SIMIMPL29_DENSITY_MELT_GATE_KG_M3;
+        }
+        Ok(density_after_melt_kg_m3)
+    }
+
+    fn maybe_update_idle_hourly_snow_albedo(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        hourly: DirectSnowHourlyForcing,
+        future_snowfall_this_day: bool,
+        albedo_updated_this_hour: bool,
+        state: &mut ActiveSnowPackState,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if albedo_updated_this_hour
+            || (state.depth_m <= WB11_ZERO_THRESHOLD
+                && hourly.snowfall_m <= WB11_ZERO_THRESHOLD
+                && future_snowfall_this_day)
+        {
+            return Ok(());
+        }
+        let positive_temperature_c_day_increment = hourly.air_temperature_c.max(0.0) / 24.0;
+        state.snow_albedo_state_after = Self::update_hourly_opt_in_snow_albedo_state(
+            phase_class,
+            inputs.snow_melt_model,
+            inputs.snow_albedo_model,
+            state.snow_albedo_state_after,
+            state.depth_m,
+            state.density_kg_m3,
+            hourly.snowfall_m,
+            inputs.newsnw_kg_m3,
+            positive_temperature_c_day_increment,
+            inputs.underlying_surface_albedo,
+        )?;
+        Ok(())
+    }
+
+    fn apply_active_snow_sublimation_and_liquid_limits(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        hourly: DirectSnowHourlyForcing,
+        capacity_drainage_opt_in: bool,
+        state: &mut ActiveSnowPackState,
+        fluxes: &mut ActiveSnowHourlyFluxes,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if state.density_kg_m3 > SIMIMPL29_SNOW_DENSITY_CAP_KG_M3 {
+            state.density_kg_m3 = SIMIMPL29_SNOW_DENSITY_CAP_KG_M3;
+        }
+        if state.depth_m > WB11_ZERO_THRESHOLD {
+            fluxes.sublimation_m = Self::active_snow_sublimation_for_hour(
+                phase_class,
+                inputs,
+                hourly,
+                state.depth_m,
+                state.density_kg_m3,
+            )?;
+        }
+        if state.depth_m <= WB11_ZERO_THRESHOLD {
+            state.depth_m = 0.0;
+            state.density_kg_m3 = 0.0;
+            if capacity_drainage_opt_in && state.liquid_water_retained_m > WB11_ZERO_THRESHOLD {
+                fluxes.melt_m += state.liquid_water_retained_m;
+                fluxes.liquid_water_released_m += state.liquid_water_retained_m;
+                state.liquid_water_retained_m = 0.0;
+            }
+        } else if capacity_drainage_opt_in {
+            fluxes.liquid_holding_capacity_m =
+                Self::snow_liquid_holding_capacity_m(state.depth_m, state.density_kg_m3);
+            if state.liquid_water_retained_m
+                > fluxes.liquid_holding_capacity_m + WB11_ZERO_THRESHOLD
+            {
+                let excess_m = state.liquid_water_retained_m - fluxes.liquid_holding_capacity_m;
+                fluxes.melt_m += excess_m;
+                fluxes.liquid_water_released_m += excess_m;
+                state.liquid_water_retained_m = fluxes.liquid_holding_capacity_m;
+            }
+        }
+        Ok(())
+    }
+
+    fn active_snow_sublimation_for_hour(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        hourly: DirectSnowHourlyForcing,
+        snow_depth_m: f64,
+        snow_density_kg_m3: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        match inputs.snow_melt_model {
+            SnowMeltModel::CoeOpenSublimationStageAV1 => Self::coe_open_sublimation_stage_a_hour_m(
+                phase_class,
+                inputs.canopy_cover_fraction,
+                inputs.wind_m_s,
+                hourly.air_temperature_c,
+                inputs.dewpoint_c,
+                snow_depth_m,
+            ),
+            SnowMeltModel::CoeOpenSublimationStageBV1 => Self::coe_open_sublimation_stage_b_hour_m(
+                phase_class,
+                inputs.canopy_cover_fraction,
+                inputs.wind_m_s,
+                hourly.air_temperature_c,
+                inputs.dewpoint_c,
+                snow_depth_m,
+                snow_density_kg_m3,
+            ),
+            SnowMeltModel::LegacyCoe
+            | SnowMeltModel::CoeShortwaveAlbedoV1
+            | SnowMeltModel::CoeWinterThawStateLossV1
+            | SnowMeltModel::CoeLiquidHoldingCapacityV1 => Ok(0.0),
+        }
+    }
+
+    fn finalize_active_snow_coupling(
+        phase_class: HillslopeKernelPhaseClass,
+        inputs: &DirectActiveSnowPartitionInputs,
+        capacity_drainage_opt_in: bool,
+        mut state: ActiveSnowPackState,
+        totals: ActiveSnowDailyTotals,
+        mut hourly_state: Vec<SnowHourlyState>,
+    ) -> Result<SnowCouplingOutcome, Wb11HydrologyKernelGuardError> {
+        let mut final_liquid_holding_capacity_m = totals.final_liquid_holding_capacity_m;
+        let mut liquid_water_retained_m = state.liquid_water_retained_m;
         if let Some(last_hour) = hourly_state.last() {
             final_liquid_holding_capacity_m = last_hour.liquid_holding_capacity_m;
             liquid_water_retained_m = last_hour.liquid_water_retained_after_m;
         }
+        Self::validate_active_snow_hourly_totals(phase_class, &hourly_state, totals)?;
+
+        let raw_melt_total_m = hourly_state
+            .iter()
+            .map(|hourly| hourly.melt_raw_m)
+            .sum::<f64>();
+        let melt_redistribution = Self::redistribute_daily_signed_snowmelt(&mut hourly_state);
+        Self::add_released_rain_to_hourly_melt(&mut hourly_state);
+        let available_runtime_swe_for_state_loss =
+            inputs.runtime_swe_m + totals.accumulation_water_m + totals.rain_retained_m;
+        let bounded_state_loss_m = Self::bounded_active_snow_state_loss(
+            phase_class,
+            available_runtime_swe_for_state_loss,
+            melt_redistribution.snowpack_state_loss_m,
+        )?;
+        let bounded_sublimation_m = Self::bounded_active_snow_sublimation(
+            phase_class,
+            available_runtime_swe_for_state_loss,
+            bounded_state_loss_m,
+            totals.sublimation_m,
+        )?;
+        let runtime_swe_after = Self::active_snow_runtime_swe_after(
+            phase_class,
+            available_runtime_swe_for_state_loss,
+            bounded_state_loss_m,
+            bounded_sublimation_m,
+        )?;
+        if Self::update_active_snow_runtime_geometry(phase_class, runtime_swe_after, &mut state)? {
+            liquid_water_retained_m = 0.0;
+            final_liquid_holding_capacity_m = 0.0;
+        }
+        let routed_snowpack_m = if capacity_drainage_opt_in {
+            bounded_state_loss_m
+        } else {
+            melt_redistribution.routed_melt_total_m
+        };
+        let signed_s = routed_snowpack_m - totals.accumulation_water_m - totals.rain_retained_m;
+        let routed_melt_total_m = routed_snowpack_m + totals.rain_released_m;
+        Self::validate_active_snow_final_outputs(
+            phase_class,
+            signed_s,
+            routed_melt_total_m,
+            runtime_swe_after,
+            state.depth_m,
+            state.density_kg_m3,
+        )?;
+
+        Ok(SnowCouplingOutcome {
+            signed_s,
+            accumulation: totals.accumulation_water_m,
+            rain_retained: totals.rain_retained_m,
+            rain_released: totals.rain_released_m,
+            liquid_holding_capacity: final_liquid_holding_capacity_m,
+            liquid_water_retained: liquid_water_retained_m,
+            liquid_water_released: totals.liquid_water_released_m,
+            sublimation: bounded_sublimation_m,
+            raw_melt: raw_melt_total_m,
+            redistributed_melt: melt_redistribution.routed_melt_total_m,
+            snowpack_state_loss: bounded_state_loss_m,
+            runtime_swe: runtime_swe_after,
+            runtime_depth_m: state.depth_m,
+            runtime_density_kg_m3: state.density_kg_m3,
+            runtime_settle_day_count: state.settle_day_count,
+            snow_albedo_state_after: state.snow_albedo_state_after,
+        })
+    }
+
+    fn validate_active_snow_hourly_totals(
+        phase_class: HillslopeKernelPhaseClass,
+        hourly_state: &[SnowHourlyState],
+        totals: ActiveSnowDailyTotals,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
         let hourly_liquid_released_total_m = hourly_state
             .iter()
             .map(|hourly| hourly.liquid_water_released_m)
@@ -1150,43 +1712,55 @@ pub(crate) fn compute_simimpl29_melt_hour(
             .iter()
             .map(|hourly| hourly.liquid_water_retained_before_m)
             .fold(0.0, f64::max);
-        if (hourly_liquid_released_total_m - total_liquid_water_released_m).abs()
-            > WB11_ZERO_THRESHOLD
-        {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: BoundarySymbol::from("snow_liquid_water_released_m"),
-                value: hourly_liquid_released_total_m - total_liquid_water_released_m,
-                minimum: Some(-WB11_ZERO_THRESHOLD),
-                maximum: Some(WB11_ZERO_THRESHOLD),
-            });
-        }
+        Self::require_active_snow_total_closure(
+            phase_class,
+            "snow_liquid_water_released_m",
+            hourly_liquid_released_total_m,
+            totals.liquid_water_released_m,
+        )?;
         let hourly_sublimation_total_m = hourly_state
             .iter()
             .map(|hourly| hourly.sublimation_m)
             .sum::<f64>();
-        if (hourly_sublimation_total_m - total_sublimation_m).abs() > WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: BoundarySymbol::from(SNOW_HOURLY_SUBLIMATION_ROOT),
-                value: hourly_sublimation_total_m - total_sublimation_m,
-                minimum: Some(-WB11_ZERO_THRESHOLD),
-                maximum: Some(WB11_ZERO_THRESHOLD),
-            });
-        }
+        Self::require_active_snow_total_closure(
+            phase_class,
+            SNOW_HOURLY_SUBLIMATION_ROOT,
+            hourly_sublimation_total_m,
+            totals.sublimation_m,
+        )
+    }
 
-        let raw_melt_total_m = hourly_state
-            .iter()
-            .map(|hourly| hourly.melt_raw_m)
-            .sum::<f64>();
-        let melt_redistribution = Self::redistribute_daily_signed_snowmelt(&mut hourly_state);
-        for hourly in &mut hourly_state {
+    fn require_active_snow_total_closure(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+        observed_m: f64,
+        expected_m: f64,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if (observed_m - expected_m).abs() <= WB11_ZERO_THRESHOLD {
+            return Ok(());
+        }
+        Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+            phase_class,
+            symbol: BoundarySymbol::from(symbol),
+            value: observed_m - expected_m,
+            minimum: Some(-WB11_ZERO_THRESHOLD),
+            maximum: Some(WB11_ZERO_THRESHOLD),
+        })
+    }
+
+    fn add_released_rain_to_hourly_melt(hourly_state: &mut [SnowHourlyState]) {
+        for hourly in hourly_state {
             if hourly.rain_released_m > WB11_ZERO_THRESHOLD {
                 hourly.melt_m += hourly.rain_released_m;
             }
         }
-        let available_runtime_swe_for_state_loss =
-            inputs.runtime_swe_m + accumulation_water_m + total_rain_retained_m;
+    }
+
+    fn bounded_active_snow_state_loss(
+        phase_class: HillslopeKernelPhaseClass,
+        available_runtime_swe_for_state_loss: f64,
+        snowpack_state_loss_m: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         if !available_runtime_swe_for_state_loss.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
                 phase_class,
@@ -1194,30 +1768,34 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 value: available_runtime_swe_for_state_loss,
             });
         }
-        if !melt_redistribution.snowpack_state_loss_m.is_finite() {
+        if !snowpack_state_loss_m.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
                 phase_class,
                 symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
-                value: melt_redistribution.snowpack_state_loss_m,
+                value: snowpack_state_loss_m,
             });
         }
-        let bounded_state_loss_m = if melt_redistribution.snowpack_state_loss_m
+        if snowpack_state_loss_m
             > available_runtime_swe_for_state_loss
                 + SIMIMPL29_SNOWPACK_STATE_LOSS_OVERDRAW_TOLERANCE_M
         {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
                 symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
-                value: available_runtime_swe_for_state_loss
-                    - melt_redistribution.snowpack_state_loss_m,
+                value: available_runtime_swe_for_state_loss - snowpack_state_loss_m,
                 minimum: Some(0.0),
                 maximum: None,
             });
-        } else if melt_redistribution.snowpack_state_loss_m > available_runtime_swe_for_state_loss {
-            available_runtime_swe_for_state_loss
-        } else {
-            melt_redistribution.snowpack_state_loss_m
-        };
+        }
+        Ok(snowpack_state_loss_m.min(available_runtime_swe_for_state_loss))
+    }
+
+    fn bounded_active_snow_sublimation(
+        phase_class: HillslopeKernelPhaseClass,
+        available_runtime_swe_for_state_loss: f64,
+        bounded_state_loss_m: f64,
+        total_sublimation_m: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         if !total_sublimation_m.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
                 phase_class,
@@ -1235,6 +1813,15 @@ pub(crate) fn compute_simimpl29_melt_hour(
             Some(0.0),
             Some(available_swe_after_state_loss_m),
         )?;
+        Ok(bounded_sublimation_m)
+    }
+
+    fn active_snow_runtime_swe_after(
+        phase_class: HillslopeKernelPhaseClass,
+        available_runtime_swe_for_state_loss: f64,
+        bounded_state_loss_m: f64,
+        bounded_sublimation_m: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let runtime_swe_after_raw =
             available_runtime_swe_for_state_loss - bounded_state_loss_m - bounded_sublimation_m;
         if !runtime_swe_after_raw.is_finite() {
@@ -1244,21 +1831,28 @@ pub(crate) fn compute_simimpl29_melt_hour(
                 value: runtime_swe_after_raw,
             });
         }
-        let runtime_swe_after = if runtime_swe_after_raw <= WB11_ZERO_THRESHOLD {
+        Ok(if runtime_swe_after_raw <= WB11_ZERO_THRESHOLD {
             0.0
         } else {
             runtime_swe_after_raw
-        };
+        })
+    }
+
+    fn update_active_snow_runtime_geometry(
+        phase_class: HillslopeKernelPhaseClass,
+        runtime_swe_after: f64,
+        state: &mut ActiveSnowPackState,
+    ) -> Result<bool, Wb11HydrologyKernelGuardError> {
         if runtime_swe_after <= WB11_ZERO_THRESHOLD {
-            snodep = 0.0;
-            dens = 0.0;
-            liquid_water_retained_m = 0.0;
-            final_liquid_holding_capacity_m = 0.0;
-        } else if dens > WB11_ZERO_THRESHOLD {
-            snodep =
+            state.depth_m = 0.0;
+            state.density_kg_m3 = 0.0;
+            return Ok(true);
+        }
+        if state.density_kg_m3 > WB11_ZERO_THRESHOLD {
+            state.depth_m =
                 openwepp_unit_boundary::conversions::water_equivalent_meters_to_snow_depth_meters(
                     runtime_swe_after,
-                    dens,
+                    state.density_kg_m3,
                 )
                 .map_err(|error| {
                     Self::unit_conversion_guard_error(
@@ -1268,13 +1862,17 @@ pub(crate) fn compute_simimpl29_melt_hour(
                     )
                 })?;
         }
-        let routed_snowpack_m = if capacity_drainage_opt_in {
-            bounded_state_loss_m
-        } else {
-            melt_redistribution.routed_melt_total_m
-        };
-        let signed_s = routed_snowpack_m - accumulation_water_m - total_rain_retained_m;
-        let routed_melt_total_m = routed_snowpack_m + total_rain_released_m;
+        Ok(false)
+    }
+
+    fn validate_active_snow_final_outputs(
+        phase_class: HillslopeKernelPhaseClass,
+        signed_s: f64,
+        routed_melt_total_m: f64,
+        runtime_swe_after: f64,
+        runtime_depth_after_m: f64,
+        runtime_density_after_kg_m3: f64,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
         if !signed_s.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -1301,35 +1899,17 @@ pub(crate) fn compute_simimpl29_melt_hour(
         Self::require_direct_typed_snow_value(
             phase_class,
             BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
-            snodep,
+            runtime_depth_after_m,
             Some(0.0),
             None,
         )?;
         Self::require_direct_typed_snow_value(
             phase_class,
             BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
-            dens,
+            runtime_density_after_kg_m3,
             Some(0.0),
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
         )?;
-
-        Ok(SnowCouplingOutcome {
-            signed_s,
-            accumulation: accumulation_water_m,
-            rain_retained: total_rain_retained_m,
-            rain_released: total_rain_released_m,
-            liquid_holding_capacity: final_liquid_holding_capacity_m,
-            liquid_water_retained: liquid_water_retained_m,
-            liquid_water_released: total_liquid_water_released_m,
-            sublimation: bounded_sublimation_m,
-            raw_melt: raw_melt_total_m,
-            redistributed_melt: melt_redistribution.routed_melt_total_m,
-            snowpack_state_loss: bounded_state_loss_m,
-            runtime_swe: runtime_swe_after,
-            runtime_depth_m: snodep,
-            runtime_density_kg_m3: dens,
-            runtime_settle_day_count: settle_day_count,
-            snow_albedo_state_after,
-        })
+        Ok(())
     }
 }

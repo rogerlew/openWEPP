@@ -1166,3 +1166,63 @@ impl Wb11HydrologyKernel {
         value
     }
 }
+
+#[cfg(test)]
+mod cqr_row5_tests {
+    use super::*;
+
+    #[test]
+    fn snow_density_guard_error_maps_all_error_variants() {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        let cases = [
+            SnowDensityError::NonFiniteInput {
+                symbol: "row5.nonfinite",
+                value: f64::NAN,
+            },
+            SnowDensityError::OutOfRangeInput {
+                symbol: "row5.range",
+                value: -1.0,
+                minimum: Some(0.0),
+                maximum: Some(1.0),
+            },
+            SnowDensityError::MissingClimateClassAssignment {
+                model: "sturm2010",
+            },
+            SnowDensityError::MissingSturmDayOfYear {
+                model: "sturm2010",
+            },
+            SnowDensityError::MissingClimateClassDensityParameters { class: "alpine" },
+            SnowDensityError::LayerAggregateMismatch {
+                symbol: "row5.layers",
+                value: 0.4,
+                expected: 0.5,
+            },
+        ];
+
+        let mapped = cases
+            .iter()
+            .map(|error| Wb11HydrologyKernel::snow_density_guard_error(phase_class, error))
+            .collect::<Vec<_>>();
+
+        assert!(matches!(
+            mapped[0],
+            Wb11HydrologyKernelGuardError::NonFiniteStateSymbol { .. }
+        ));
+        assert!(matches!(
+            mapped[1],
+            Wb11HydrologyKernelGuardError::StateSymbolOutOfRange { .. }
+        ));
+        assert!(matches!(
+            mapped[2],
+            Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol { .. }
+        ));
+        assert!(mapped[2].to_string().contains("snow_climate_class"));
+        assert!(mapped[3]
+            .to_string()
+            .contains("sturm2010_density_day_of_year"));
+        assert!(mapped[4]
+            .to_string()
+            .contains("sturm2010_density_parameters"));
+        assert!(mapped[5].to_string().contains("row5.layers=0.4 outside"));
+    }
+}

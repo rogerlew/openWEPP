@@ -150,6 +150,55 @@ impl fmt::Display for SnowAlbedoError {
 
 impl Error for SnowAlbedoError {}
 
+#[cfg(test)]
+mod cqr_row5_snow_albedo_tests {
+    use super::*;
+
+    #[test]
+    fn snow_albedo_error_display_covers_all_variants() {
+        let cases = [
+            (
+                SnowAlbedoError::MissingRequiredAlbedoModel,
+                "missing required opt-in snow albedo model id",
+            ),
+            (
+                SnowAlbedoError::MissingRequiredAlbedoState,
+                "missing required opt-in snow albedo state",
+            ),
+            (
+                SnowAlbedoError::AlbedoModelMismatch {
+                    expected: SnowAlbedoModel::Brock2000TemperatureAgeV1,
+                    actual: SnowAlbedoModel::Brock2000TemperatureAgeV1,
+                },
+                "snow albedo model mismatch",
+            ),
+            (
+                SnowAlbedoError::NonFiniteInput {
+                    symbol: "row5.albedo",
+                    value: f64::NAN,
+                },
+                "non-finite snow albedo input row5.albedo",
+            ),
+            (
+                SnowAlbedoError::OutOfRangeInput {
+                    symbol: "row5.albedo",
+                    value: 2.0,
+                    minimum: 0.0,
+                    maximum: 1.0,
+                },
+                "snow albedo input row5.albedo=2 outside [0, 1]",
+            ),
+        ];
+
+        for (error, expected_fragment) in cases {
+            assert!(
+                error.to_string().contains(expected_fragment),
+                "{error:?} rendered as {error}"
+            );
+        }
+    }
+}
+
 pub fn update_snow_albedo_state(
     inputs: SnowAlbedoUpdateInputs,
 ) -> Result<SnowAlbedoUpdateOutcome, SnowAlbedoError> {
