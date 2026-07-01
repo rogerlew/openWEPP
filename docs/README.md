@@ -23,6 +23,7 @@
 | [work-packages/README.md](work-packages/README.md) | All | Dated initiative tracking convention |
 | [codex_exec_plans.md](codex_exec_plans.md) | All contributors | ExecPlan authoring requirements (self-contained, living, milestone-driven autonomous specs) |
 | [defect_closure_execplans.md](defect_closure_execplans.md) | All contributors | Authoring Defect-Closure ExecPlans: the diagnose-and-correct package shape and the rationale for why it replaces diagnostic-only relay packages |
+| [../usersum/documentation-agent.md](../usersum/documentation-agent.md) | End users | End-user documentation agent entrypoint for CLI documentation discoverability |
 | [planning/wepp-input-file-parser-survey.md](planning/wepp-input-file-parser-survey.md) | Maintainers | Survey of parser coverage in `wepppy`/`wepppyo3`/`wepp-forest` and roadmap for hillslope, watershed, and sidecar input contracts |
 | [planning/openwepp-observability-subsystem-assessment.md](planning/openwepp-observability-subsystem-assessment.md) | Maintainers | Decision to replace ad-hoc `wepp_observe*` sidecar flags with a first-class observability subsystem |
 | [work-packages/20260520-obs01-observability-subsystem-foundation/package.md](work-packages/20260520-obs01-observability-subsystem-foundation/package.md) | Maintainers | OBS01 scope, deliverables, and promotion targets for observability subsystem foundation |

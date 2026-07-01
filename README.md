@@ -299,6 +299,18 @@ all roles (watershed, hillslope, replay). See:
 - [docs/contracts/openwepp-binary-release-contract.md](docs/contracts/openwepp-binary-release-contract.md)
 - [docs/governance/openwepp-release-procedure-draft.md](docs/governance/openwepp-release-procedure-draft.md)
 
+## CLI documentation landing
+
+Official command-line documentation and quick run references are in `usersum`:
+
+- [Documentation agent](usersum/documentation-agent.md)
+- [usersum CLI index](usersum/cli-run-index.md)
+- [openwepp-cli-hill](usersum/openwepp-cli-hill.md)
+- [openwepp-cli-watershed](usersum/openwepp-cli-watershed.md)
+- [openwepp-cli-totalwatsed3](usersum/openwepp-cli-totalwatsed3.md)
+- [open_wepp_runner](usersum/open_wepp_runner.md)
+- [openwepp-snowbench](usersum/openwepp-snowbench.md)
+
 ## Relationship to other repos
 
 | Repo | Role |
