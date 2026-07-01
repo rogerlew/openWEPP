@@ -50,6 +50,13 @@ Kernels are pure functions over typed state. Orchestrators own time-stepping and
 > design authority for the perf re-architecture ratified by ADR-0025. It fulfils the "pure
 > functions over typed state" boundary above; the string-keyed maps were a scaffolding compromise.
 
+> **Watershed runtime architecture (draft):** watershed performance is specified
+> as a ground-up runtime rewrite and deletion of the existing watershed runtime.
+> It scales first by supervising multiple single-threaded hillslope subprocesses
+> with a bounded worker pool, typed run plan, deterministic pass inventory, and
+> typed network-frame routing replacement. See
+> [watershed-runtime-architecture-specification.md](watershed-runtime-architecture-specification.md).
+
 ## State files
 - **Inputs**: WEPP soil, management, climate (cligen), watershed structure, plus the formalized `.run`. See [../contracts/README.md](../contracts/README.md).
 - **HBP shards**: per-hillslope binary pass files; format authoritative in wepp-palimpsest.

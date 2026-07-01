@@ -1,11 +1,15 @@
 # WSHEDPERF01 Watershed Baseline Performance Characterization
 
-Status: `EXECUTING-DISPATCHED`
+Status: `EXECUTED-COMPLETE-WSHEDPERF01`
 
 Date opened: `2026-07-01`
 
-Dispatched runner: `comparator_suite_runner` agent
-`019f1e3c-8794-7da3-87e7-bd21878c4c56` (`Ramanujan`).
+Date completed: `2026-07-01`
+
+Execution note: initial `comparator_suite_runner` dispatch
+`019f1e3c-8794-7da3-87e7-bd21878c4c56` (`Ramanujan`) errored because the
+selected model was at capacity. Benchmark execution then completed locally with
+command-level evidence in package artifacts.
 
 ## Objective
 
