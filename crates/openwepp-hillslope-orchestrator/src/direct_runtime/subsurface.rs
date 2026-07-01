@@ -108,17 +108,18 @@ fn maybe_write_r7h_percolation_trace(event: &DirectPercolationTraceEvent) {
     let Some(config) = r7h_percolation_trace_config() else {
         return;
     };
-    if let Some(exact_day_index) = config.exact_day_index
-        && event.day_index != exact_day_index
-    {
+    if !r7h_subsurface_trace_matches_filter(
+        event.day_index,
+        event.lane_index,
+        config.exact_day_index,
+        config.exact_lane_index,
+    ) {
         return;
     }
-    if let Some(exact_lane_index) = config.exact_lane_index
-        && event.lane_index != exact_lane_index
-    {
-        return;
-    }
+    r7h_append_trace_line(&config.path, &r7h_percolation_trace_line(event));
+}
 
+fn r7h_percolation_trace_line(event: &DirectPercolationTraceEvent) -> String {
     let mut line = String::new();
     line.push('{');
     line.push_str("\"schema\":\"openwepp-r7h-percolation-trace-v1\"");
@@ -172,34 +173,25 @@ fn maybe_write_r7h_percolation_trace(event: &DirectPercolationTraceEvent) {
     ));
     line.push('}');
     line.push('\n');
-
-    if let Some(parent) = config.path.parent() {
-        let _ = std::fs::create_dir_all(parent);
-    }
-    if let Ok(mut file) = std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&config.path)
-    {
-        let _ = std::io::Write::write_all(&mut file, line.as_bytes());
-    }
+    line
 }
 
 fn maybe_write_r7h_subsurface_saturation_trace(event: &DirectSubsurfaceSaturationTraceEvent) {
     let Some(config) = r7h_subsurface_saturation_trace_config() else {
         return;
     };
-    if let Some(exact_day_index) = config.exact_day_index
-        && event.day_index != exact_day_index
-    {
+    if !r7h_subsurface_trace_matches_filter(
+        event.day_index,
+        event.lane_index,
+        config.exact_day_index,
+        config.exact_lane_index,
+    ) {
         return;
     }
-    if let Some(exact_lane_index) = config.exact_lane_index
-        && event.lane_index != exact_lane_index
-    {
-        return;
-    }
+    r7h_append_trace_line(&config.path, &r7h_subsurface_saturation_trace_line(event));
+}
 
+fn r7h_subsurface_saturation_trace_line(event: &DirectSubsurfaceSaturationTraceEvent) -> String {
     let mut line = String::new();
     line.push('{');
     line.push_str("\"schema\":\"openwepp-r7h-subsurface-saturation-trace-v1\"");
@@ -237,16 +229,135 @@ fn maybe_write_r7h_subsurface_saturation_trace(event: &DirectSubsurfaceSaturatio
     line.push_str(&r7h_subsurface_trace_number(event.theta_after_m));
     line.push('}');
     line.push('\n');
+    line
+}
 
-    if let Some(parent) = config.path.parent() {
+fn r7h_subsurface_trace_matches_filter(
+    day_index: usize,
+    lane_index: usize,
+    exact_day_index: Option<usize>,
+    exact_lane_index: Option<usize>,
+) -> bool {
+    if let Some(exact_day_index) = exact_day_index
+        && day_index != exact_day_index
+    {
+        return false;
+    }
+    if let Some(exact_lane_index) = exact_lane_index
+        && lane_index != exact_lane_index
+    {
+        return false;
+    }
+    true
+}
+
+fn r7h_append_trace_line(path: &std::path::Path, line: &str) {
+    if let Some(parent) = path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
     if let Ok(mut file) = std::fs::OpenOptions::new()
         .create(true)
         .append(true)
-        .open(&config.path)
+        .open(path)
     {
         let _ = std::io::Write::write_all(&mut file, line.as_bytes());
+    }
+}
+
+#[cfg(test)]
+mod cqr_row8_trace_tests {
+    use super::*;
+
+    fn trace_layer(
+        theta_m: f64,
+        upper_limit_m: f64,
+        frozen_water_m: f64,
+    ) -> DirectSubsurfaceLayerState {
+        DirectSubsurfaceLayerState {
+            theta_m,
+            upper_limit_m,
+            frozen_water_m,
+            ..DirectSubsurfaceLayerState::neutral()
+        }
+    }
+
+    #[test]
+    fn cqr_row8_trace_filter_covers_day_and_lane_selectors() {
+        assert!(r7h_subsurface_trace_matches_filter(2, 3, None, None));
+        assert!(r7h_subsurface_trace_matches_filter(2, 3, Some(2), None));
+        assert!(r7h_subsurface_trace_matches_filter(2, 3, None, Some(3)));
+        assert!(r7h_subsurface_trace_matches_filter(2, 3, Some(2), Some(3)));
+        assert!(!r7h_subsurface_trace_matches_filter(2, 3, Some(1), Some(3)));
+        assert!(!r7h_subsurface_trace_matches_filter(2, 3, Some(2), Some(4)));
+    }
+
+    #[test]
+    fn cqr_row8_percolation_trace_line_serializes_vectors_and_null_numbers() {
+        let event = DirectPercolationTraceEvent {
+            day_index: 2,
+            lane_index: 3,
+            lane_substeps: 24,
+            same_pass_infiltration_m: f64::NAN,
+            same_pass_infiltration_lineage: true,
+            tillage_depth_m: 0.5,
+            soil_water_before_m: 1.0,
+            computed_soil_water_before_m: 1.125,
+            soil_water_after_m: 0.75,
+            deep_seepage_m: 0.03125,
+            per_layer_flux_m: vec![0.25, f64::NAN],
+            layer_state_after: vec![
+                trace_layer(0.125, 0.5, 0.0),
+                trace_layer(0.25, 0.75, 0.0625),
+            ],
+        };
+
+        let line = r7h_percolation_trace_line(&event);
+
+        assert!(line.ends_with('\n'));
+        assert!(line.contains("\"schema\":\"openwepp-r7h-percolation-trace-v1\""));
+        assert!(line.contains("\"day_index\":2"));
+        assert!(line.contains("\"lane_index\":3"));
+        assert!(line.contains("\"same_pass_infiltration_m\":null"));
+        assert!(line.contains("\"same_pass_infiltration_lineage\":true"));
+        assert!(line.contains("\"per_layer_flux_m\":[0.25000000000000000,null]"));
+        assert!(line.contains("\"layer_theta_after_m\":[0.12500000000000000,0.25000000000000000]"));
+        assert!(line.contains("\"layer_upper_limit_m\":[0.50000000000000000,0.75000000000000000]"));
+        assert!(
+            line.contains("\"layer_frozen_water_m\":[0.00000000000000000,0.06250000000000000]")
+        );
+    }
+
+    #[test]
+    fn cqr_row8_subsurface_saturation_trace_line_serializes_filter_fields() {
+        let event = DirectSubsurfaceSaturationTraceEvent {
+            day_index: 4,
+            lane_index: 5,
+            substep_index: 6,
+            lane_substeps: 24,
+            mofe_hourly_carry_arrays_enabled: true,
+            solwpv_mode: 2006,
+            theta_before_m: 0.5,
+            upper_limit_m: 0.75,
+            frozen_water_m: 0.125,
+            effective_upper_limit_m: 0.625,
+            saturation_excess_m: f64::NAN,
+            current_saturation_runoff_m: 0.03125,
+            theta_after_m: 0.46875,
+        };
+
+        let line = r7h_subsurface_saturation_trace_line(&event);
+
+        assert!(line.ends_with('\n'));
+        assert!(line.contains("\"schema\":\"openwepp-r7h-subsurface-saturation-trace-v1\""));
+        assert!(line.contains("\"day_index\":4"));
+        assert!(line.contains("\"lane_index\":5"));
+        assert!(line.contains("\"substep_index\":6"));
+        assert!(line.contains("\"mofe_hourly_carry_arrays_enabled\":true"));
+        assert!(line.contains("\"solwpv_mode\":2006"));
+        assert!(line.contains("\"theta_before_m\":0.50000000000000000"));
+        assert!(line.contains("\"effective_upper_limit_m\":0.62500000000000000"));
+        assert!(line.contains("\"saturation_excess_m\":null"));
+        assert!(line.contains("\"theta_after_m\":0.46875000000000000"));
     }
 }
 

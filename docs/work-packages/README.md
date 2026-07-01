@@ -54,6 +54,17 @@ State as of `2026-06-30`:
 
 ## Execution Log
 
+- `20260701-kernel-boundary-cqr-row8-per-ofe-mofe-001/` is complete as
+  KERNEL-BOUNDARY CQR ROW 8 PER-OFE MOFE. Result:
+  `EXECUTED-COMPLETE-ROW8-CQR`. It executed row #8 of
+  `kernel-boundary-cqr-burndown-execplan.md`, reducing row #8 owned production
+  offenders from 2 unique entries (`4` duplicated report rows) to `0` entries
+  above CRAP 30. It added typed assertions for R7H trace day/lane filtering,
+  percolation JSON-line serialization, and subsurface saturation JSON-line
+  serialization while preserving trace schema and best-effort append behavior.
+  Full gates passed (`1260` nextest passed); H2637 measured `1:07.23` /
+  `79420 KiB`, protected H2637 outputs were byte-identical, and
+  `compatibility_edge_invocations=0`.
 - `20260701-kernel-boundary-cqr-row6-growth-decomposition-001/` is complete as
   KERNEL-BOUNDARY CQR ROW 6 GROWTH DECOMPOSITION. Result:
   `EXECUTED-COMPLETE-ROW6-CQR`. It executed row #6 of
