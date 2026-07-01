@@ -112,7 +112,7 @@ pub use direct_runtime::{
     DirectWaterLedgerState, DirectWaterState, DirectWb14HyetographInterval,
     DirectWb14InfiltrationProducerInputs, compute_direct_canopy_interception,
     direct_runtime_audit_snapshot, record_direct_runtime_compatibility_edge_invocation,
-    reset_direct_runtime_audit_counters,
+    reset_direct_runtime_audit_counters, wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
 };
 pub use hydrology::{
     DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs, DirectFrostControlInputs,

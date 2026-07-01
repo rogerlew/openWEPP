@@ -161,6 +161,77 @@ fn r7h_runoff_append_trace_line(path: &std::path::Path, line: &str) {
     }
 }
 
+// WP-2 (frost single-solve) paired-solve diagnostic: both frost partition
+// call sites — the runner day-input builder and this R4A span — emit one
+// JSONL row per solve when OPENWEPP_WP2_FROST_PAIR_TRACE_PATH is set, so the
+// two outcomes for the same (lane, day) can be diffed offline. Inert (no
+// construction, no I/O) when the variable is unset.
+static WP2_FROST_PAIR_TRACE_PATH: std::sync::OnceLock<Option<std::path::PathBuf>> =
+    std::sync::OnceLock::new();
+
+pub fn wp2_frost_pair_trace_path() -> Option<&'static std::path::PathBuf> {
+    WP2_FROST_PAIR_TRACE_PATH
+        .get_or_init(|| {
+            let path = std::env::var_os("OPENWEPP_WP2_FROST_PAIR_TRACE_PATH")?;
+            if path.is_empty() {
+                return None;
+            }
+            Some(std::path::PathBuf::from(path))
+        })
+        .as_ref()
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn write_wp2_frost_pair_trace(
+    path: &std::path::Path,
+    source: &str,
+    lane_index: usize,
+    day_index: usize,
+    in_soil_water_m: f64,
+    in_layer_theta_sum_m: f64,
+    in_layer_frozen_water_sum_m: f64,
+    in_prior_dfrost_m: f64,
+    in_prior_ws_frz_m: f64,
+    outcome: &crate::hydrology::DirectWinterFrostPartitionOutcome,
+) {
+    let n = r7h_runoff_trace_number;
+    let line = format!(
+        concat!(
+            "{{\"schema\":\"openwepp-wp2-frost-pair-trace-v1\",\"source\":\"{}\",",
+            "\"lane_index\":{},\"day_index\":{},",
+            "\"in_soil_water_m\":{},\"in_layer_theta_sum_m\":{},",
+            "\"in_layer_frozen_water_sum_m\":{},\"in_prior_dfrost_m\":{},",
+            "\"in_prior_ws_frz_m\":{},\"out_active\":{},",
+            "\"out_infcap_frz_m_s\":{},\"out_frost_depth_after_m\":{},",
+            "\"out_frozen_water_after_m\":{},\"out_thdp_after_m\":{},",
+            "\"out_dthaw_after_m\":{},\"out_tfrdp_after_m\":{},",
+            "\"out_tthawd_after_m\":{},\"out_fgthwd_flag_after\":{},",
+            "\"out_frwatc_net_liquid_delta_m\":{},",
+            "\"out_total_fine_layer_count\":{}}}\n"
+        ),
+        source,
+        lane_index,
+        day_index,
+        n(in_soil_water_m),
+        n(in_layer_theta_sum_m),
+        n(in_layer_frozen_water_sum_m),
+        n(in_prior_dfrost_m),
+        n(in_prior_ws_frz_m),
+        outcome.active_frost_coupling,
+        n(outcome.infcap_frz_m_s),
+        n(outcome.frost_depth_after_m),
+        n(outcome.frozen_water_after_m),
+        n(outcome.thdp_after_m),
+        n(outcome.dthaw_after_m),
+        n(outcome.tfrdp_after_m),
+        n(outcome.tthawd_after_m),
+        n(outcome.fgthwd_flag_after),
+        n(outcome.frwatc_net_liquid_delta_m),
+        n(outcome.total_fine_layer_count),
+    );
+    r7h_runoff_append_trace_line(path, &line);
+}
+
 impl DirectDayFrame {
     pub fn run_r4i_liquid_input_span(
         &mut self,
@@ -914,6 +985,21 @@ impl DirectDayFrame {
         let base_layers = self.latest_r4a_frost_layers()?;
         let layers = self.r4a_frost_layers_with_local_partition_excess(&base_layers)?;
         let frost_outcome = self.compute_r4a_winter_frost_partition(compute_inputs, &layers)?;
+        if let Some(trace_path) = wp2_frost_pair_trace_path() {
+            let prior = self.r4a_typed_frost_prior_state();
+            write_wp2_frost_pair_trace(
+                trace_path,
+                "r4a",
+                self.lane_index,
+                self.day_index,
+                r4a_aggregate_liquid_soil_water(&layers).unwrap_or(f64::NAN),
+                layers.iter().map(|layer| layer.theta_m).sum(),
+                layers.iter().map(|layer| layer.frozen_water_m).sum(),
+                prior.dfrost_m,
+                prior.ws_frz_m,
+                &frost_outcome,
+            );
+        }
         self.runoff_partition_inputs.frost_retained_local_liquid_m =
             self.r4a_deferred_local_partition_excess_m()?;
         self.apply_r4a_winter_frost_outcome(layers, &frost_outcome)?;

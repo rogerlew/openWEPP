@@ -134,6 +134,23 @@ impl DirectProductionSnowFrostAuthority {
         let compute_inputs = Self::typed_winter_frost_compute_inputs(&typed_context)?;
         let frost_outcome =
             Self::compute_typed_winter_frost_outcome(&typed_context, &compute_inputs)?;
+        if let Some(trace_path) = openwepp_hillslope_orchestrator::wp2_frost_pair_trace_path() {
+            openwepp_hillslope_orchestrator::write_wp2_frost_pair_trace(
+                trace_path,
+                "builder",
+                lane_index,
+                day_index,
+                lane.water.soil_water_m,
+                lane.subsurface_layers.iter().map(|layer| layer.theta_m).sum(),
+                lane.subsurface_layers
+                    .iter()
+                    .map(|layer| layer.frozen_water_m)
+                    .sum(),
+                frost_lane_state.dfrost_m,
+                frost_lane_state.ws_frz_m,
+                &frost_outcome,
+            );
+        }
         let target_soil_water_m = direct_production_lane_soil_water(lane, lane_index)?;
         let hydrology_layers = direct_production_same_day_frost_hydrology_layers(
             lane_index,

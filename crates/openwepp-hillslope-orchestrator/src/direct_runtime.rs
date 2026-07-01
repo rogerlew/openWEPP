@@ -211,6 +211,7 @@ pub use runoff::{
     DirectSaturationAddbackInputs, DirectSaturationAddbackShadowProjection,
     DirectSaturationAddbackSpanReport, DirectSaturationAddbackState, DirectWb14HyetographInterval,
     DirectWb14InfiltrationProducerInputs, compute_direct_canopy_interception,
+    wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
 };
 pub use storage::{
     DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
