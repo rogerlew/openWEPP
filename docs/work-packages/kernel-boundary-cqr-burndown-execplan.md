@@ -78,6 +78,40 @@ Each row is an independent CQR package **dispatched on `main`**, with dual revie
 `deny`/authority guards), and a re-measured CRAP-after in its artifacts proving every owned
 `>30` function is ≤30 or dispositioned.
 
+## Autonomous execution protocol
+
+This burndown is run by Codex **autonomously, end to end, on `main`** — run the rows in the
+sequenced order (tier 1 → tier 3), one CQR package at a time, committing each before the next.
+
+**Per-package definition of done** (all required before moving on):
+1. **Primary (CRAP):** every production function in the owned scope with CRAP > 30 is ≤ 30,
+   or carries an explicit ADR-0021 `complete-with-warnings` disposition with named rationale
+   (inherently-uncoverable error/guard/formatting variant). A **CRAP-after** re-measure (same
+   `cargo llvm-cov` → `cargo crap` method) sits in the package artifacts, diffed against the
+   baseline above.
+2. **Secondary (coverage):** the module's deleted ratified-contract assertions are restored at
+   the stable contract surface; no net line-coverage regression on any touched file.
+3. **Behavior-preserving:** **H2637 byte/value output identity holds.** CRAP-reduction refactors
+   must not change physics/publication output — this is the hard guard for the physics rows
+   (5/6/7/9). A refactor that cannot preserve H2637 identity is a stop condition, not a commit.
+4. **Gates:** `fmt` / `clippy -D warnings` / `nextest --workspace --profile full` / `deny` /
+   authority guards green; `.rs` line-count governance dispositioned; dual review with every
+   finding dispositioned.
+5. Commit on `main` with the CRAP-before→after delta in the message.
+
+**Continue autonomously** through all rows. **Stop and surface only on a genuine blocker:** a
+CRAP target unreachable without a science/contract decision; an H2637 identity break a
+behavior-preserving refactor cannot avoid; an unresolvable gate failure; or a genuine design
+gap. Do **not** stop on scope, entanglement, or a large diff.
+
+**Completion:** when every row is done, re-measure workspace CRAP (no production function > 30
+remains un-dispositioned), then close the burndown — flip ROADMAP item K to closed and update
+`docs/backlog/TRACKER.md`.
+
+**Safety / rollback:** the regression net is the surviving suite (`--profile full`) + H2637
+identity, per package, with git rollback. Restored coverage only strengthens it. Roll back a
+package on a genuine regression rather than forcing it.
+
 ## Retired with justification (delete, do NOT restore)
 
 Symbol-map-runtime tests, genuinely obsolete:
