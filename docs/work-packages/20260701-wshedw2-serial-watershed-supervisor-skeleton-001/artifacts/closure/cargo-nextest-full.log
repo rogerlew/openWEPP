@@ -1,0 +1,9 @@
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.57s
+────────────
+ Nextest run ID d2a77f06-c5fa-4fd2-b930-4f8bcfd32440 with nextest profile: full
+    Starting 1280 tests across 158 binaries (1 test skipped)
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+────────────
+     Summary [ 636.543s] 1280 tests run: 1280 passed (1 slow), 1 skipped

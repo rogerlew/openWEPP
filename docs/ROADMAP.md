@@ -258,11 +258,11 @@ ADR-0032 ratifies the entrypoint, `--jobs` default, and canonical benchmark
 mode. WSHED-FIXTURE01 adopted the committed 32-hillslope carnivorous-adobo
 development fixture under `tests/fixtures/watershed/carnivorous-adobo/`. The
 remaining implementation, deletion, and large-scaling rungs stay queued pending
-package evidence.
+package evidence. WSHED-W2 is complete; WSHED-W3 is the next watershed runtime
+implementation rung.
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
-| WSHED-W2 | **Serial watershed supervisor skeleton** | Implement `WatershedRunPlan`, `HillslopeJob`, and `PassInventory` for `--jobs 1` without shell-loop/shared-output orchestration | Output identity, per-job evidence, fail-closed pass validation, contract-first `EventPayload`/`NoEvent` handling, and consumer-path proof | Handoff package scaffolded at `20260701-wshedw2-serial-watershed-supervisor-skeleton-001/`; execute next |
 | WSHED-W3 | **Bounded worker pool** | Run multiple single-threaded hillslope subprocesses concurrently under `--jobs N` | `--jobs 1`/`--jobs N` output identity, fail-closed child/pass failures, sidecar-mode-labeled scaling curve, and consumer-path proof | Draft queue |
 | WSHED-W4 | **Typed watershed network frame** | Replace production routing reads/writes through `WatershedWritebackSurface` with typed channel, impoundment, contribution, and publication frame fields | No production routing-loop symbol lookup, no routed-stage regression, protected output identity or contract-governed deltas | Draft queue |
 | WSHED-W5 | **Old watershed runtime deletion** | Delete the old production runtime and obsolete old-surface tests after replacement | No public old-runtime selector, no production `WatershedWritebackSurface` routing path, deletion manifest, protected-coverage restoration, full gates or named hold | Draft queue |

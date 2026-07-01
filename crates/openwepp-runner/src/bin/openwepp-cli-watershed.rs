@@ -3,9 +3,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use openwepp_input_contract::parsers::chaninp::{ChaninpParseOptions, parse_chaninp_from_path};
-use openwepp_input_contract::parsers::hbp::{
-    HbpParseOptions, parse_hbp_from_path_with_latest_event_payload,
-};
 use openwepp_input_contract::parsers::slope::{SlopeParserOptions, parse_slope_file};
 use openwepp_input_contract::parsers::watershed_channel::{
     WatershedChannelParseMode, WatershedChannelParseOptions, parse_watershed_channel_from_path,
@@ -26,7 +23,7 @@ use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
     SidecarRequirement, adapt_sidecar_bindings,
 };
-use openwepp_runner::SidecarPolicy;
+use openwepp_runner::{HillslopeJob, PassInventoryExpectation, SidecarPolicy, WatershedRunPlan};
 use openwepp_topology::{
     ContributorTriplet, TopologyContributors, TopologyGraph, TopologyNode, TopologyNodeKey,
     TopologyNodeKind, validate_pre_execution_topology,
@@ -78,6 +75,8 @@ fn run() -> Result<(), String> {
     let mut output_dir: Option<PathBuf> = None;
     let mut sidecar_policy = SidecarPolicy::Compat;
     let mut legacy_sidecar_discovery = false;
+    let mut jobs = 1usize;
+    let mut hillslope_binary: Option<PathBuf> = None;
 
     let args: Vec<String> = std::env::args().collect();
     let mut cursor = 1usize;
@@ -116,6 +115,20 @@ fn run() -> Result<(), String> {
             "--legacy-sidecar-discovery" => {
                 legacy_sidecar_discovery = true;
             }
+            "--jobs" => {
+                cursor += 1;
+                let Some(value) = args.get(cursor) else {
+                    return Err("CLIWAT-E-001 missing value for --jobs".to_string());
+                };
+                jobs = parse_jobs_arg(value)?;
+            }
+            "--hillslope-binary" => {
+                cursor += 1;
+                let Some(value) = args.get(cursor) else {
+                    return Err("CLIWAT-E-001 missing value for --hillslope-binary".to_string());
+                };
+                hillslope_binary = Some(PathBuf::from(value));
+            }
             "--help" | "-h" => {
                 print_help();
                 return Ok(());
@@ -136,6 +149,7 @@ fn run() -> Result<(), String> {
     let Some(output_dir) = output_dir else {
         return Err("CLIWAT-E-001 missing --output-dir".to_string());
     };
+    let output_dir = resolve_cli_output_dir(&output_dir)?;
 
     if !run_dir.is_dir() {
         return Err(format!(
@@ -165,6 +179,12 @@ fn run() -> Result<(), String> {
         &run_dir,
         &output_dir,
     )?;
+    let hillslope_binary = match hillslope_binary {
+        Some(path) => path,
+        None => default_hillslope_binary()?,
+    };
+    let run_plan =
+        build_watershed_run_plan(runfile.run_name.as_str(), jobs, hillslope_binary, &runfile)?;
 
     let structure_line_count = logical_watershed_structure_line_count(
         &runfile.watershed_structure_path,
@@ -325,87 +345,43 @@ fn run() -> Result<(), String> {
         }
     }
 
-    for (hillslope_id, block) in &runfile.hillslope_blocks_by_id {
-        let hbp_options = HbpParseOptions {
-            expected_hillslope_id: Some(*hillslope_id),
-        };
-        let (hbp, latest_event_payload) = parse_hbp_from_path_with_latest_event_payload(
-            &block.pass_file_path,
-            hbp_options,
-        )
-        .map_err(|error| {
-            format!(
-                "CLIWAT-E-017 failed parsing hillslope pass file {} for hillslope {}: {error}",
-                block.pass_file_path.display(),
-                hillslope_id
-            )
-        })?;
+    run_plan.execute_hillslope_jobs_serial(sidecar_policy, legacy_sidecar_discovery)?;
+    let pass_inventory = run_plan.validate_pass_inventory()?;
 
-        let class_count = usize::from(hbp.npart);
-        if class_count == 0 {
-            return Err(format!(
-                "CLIWAT-E-018 pass file {} reports npart=0 for hillslope {}",
-                block.pass_file_path.display(),
-                hillslope_id
-            ));
-        }
+    for entry in pass_inventory.entries() {
+        let hillslope_id = entry.hillslope_id;
+        let class_count = usize::from(entry.npart);
         validate_contributor_mofe_metadata(
-            *hillslope_id,
-            hbp.nofe,
-            block.manifest_file_path.as_deref(),
+            hillslope_id,
+            entry.nofe,
+            entry.manifest_file_path.as_deref(),
         )?;
 
-        let peak = latest_event_payload
-            .as_ref()
-            .map_or(0.0, |payload| payload.peak_runoff_m3_s);
-        let duration = latest_event_payload
-            .as_ref()
-            .map_or(0.0, |payload| payload.duration_seconds);
-        let total_detachment = latest_event_payload
-            .as_ref()
-            .map_or(0.0, |payload| payload.total_detachment_kg);
-        let total_deposition = latest_event_payload
-            .as_ref()
-            .map_or(0.0, |payload| payload.total_deposition_kg);
-        let sediment_concentrations = latest_event_payload.as_ref().map_or_else(
-            || vec![0.0; class_count],
-            |payload| payload.sediment_concentration_kg_m3.clone(),
-        );
-        let particle_diameters = latest_event_payload.as_ref().map_or_else(
-            || hbp.particle_diameter_m.clone(),
-            |payload| payload.particle_diameter_m.clone(),
-        );
-        let particle_flow_fractions = latest_event_payload.as_ref().map_or_else(
-            || vec![0.0; class_count],
-            |payload| payload.particle_flow_fraction.clone(),
-        );
-        if particle_diameters.len() != class_count {
-            return Err(format!(
-                "CLIWAT-E-018 particle_diameter_m length {} does not match npart={} for hillslope {}",
-                particle_diameters.len(),
-                class_count,
-                hillslope_id
-            ));
-        }
+        let payload = &entry.latest_event_payload;
+        let peak = payload.peak_runoff_m3_s;
+        let duration = payload.duration_seconds;
+        let total_detachment = payload.total_detachment_kg;
+        let total_deposition = payload.total_deposition_kg;
+        let sediment_concentrations = &payload.sediment_concentration_kg_m3;
+        let particle_diameters = &payload.particle_diameter_m;
+        let particle_flow_fractions = &payload.particle_flow_fraction;
 
         runtime_surface.state_surface.insert(
             BoundarySymbol::from(WatershedProductionStateSymbol::HillslopeContributorPeak {
-                hillslope_id: *hillslope_id,
+                hillslope_id,
             }),
             BoundaryValue::scalar(peak),
         );
         runtime_surface.state_surface.insert(
             BoundarySymbol::from(
-                WatershedProductionStateSymbol::HillslopeContributorDuration {
-                    hillslope_id: *hillslope_id,
-                },
+                WatershedProductionStateSymbol::HillslopeContributorDuration { hillslope_id },
             ),
             BoundaryValue::scalar(duration),
         );
         runtime_surface.state_surface.insert(
             BoundarySymbol::from(
                 WatershedProductionStateSymbol::HillslopeContributorTotalDetachmentKg {
-                    hillslope_id: *hillslope_id,
+                    hillslope_id,
                 },
             ),
             BoundaryValue::scalar(total_detachment),
@@ -413,7 +389,7 @@ fn run() -> Result<(), String> {
         runtime_surface.state_surface.insert(
             BoundarySymbol::from(
                 WatershedProductionStateSymbol::HillslopeContributorTotalDepositionKg {
-                    hillslope_id: *hillslope_id,
+                    hillslope_id,
                 },
             ),
             BoundaryValue::scalar(total_deposition),
@@ -421,17 +397,21 @@ fn run() -> Result<(), String> {
         runtime_surface.state_surface.insert(
             BoundarySymbol::from(
                 WatershedProductionStateSymbol::HillslopeContributorParticleClassCount {
-                    hillslope_id: *hillslope_id,
+                    hillslope_id,
                 },
             ),
-            BoundaryValue::scalar(f64::from(hbp.npart)),
+            BoundaryValue::scalar(f64::from(entry.npart)),
         );
 
         for class_index in 1..=class_count {
             let concentration = sediment_concentrations
                 .get(class_index - 1)
                 .copied()
-                .unwrap_or(0.0);
+                .ok_or_else(|| {
+                    format!(
+                        "CLIWAT-E-018 missing sediment_concentration_kg_m3 class={class_index} for hillslope {hillslope_id}"
+                    )
+                })?;
             let particle_diameter = particle_diameters
                 .get(class_index - 1)
                 .copied()
@@ -443,11 +423,15 @@ fn run() -> Result<(), String> {
             let fraction = particle_flow_fractions
                 .get(class_index - 1)
                 .copied()
-                .unwrap_or(0.0);
+                .ok_or_else(|| {
+                    format!(
+                        "CLIWAT-E-018 missing particle_flow_fraction class={class_index} for hillslope {hillslope_id}"
+                    )
+                })?;
             runtime_surface.state_surface.insert(
                 BoundarySymbol::from(
                     WatershedProductionStateSymbol::HillslopeContributorSedimentConcentrationKgM3 {
-                        hillslope_id: *hillslope_id,
+                        hillslope_id,
                         class_index,
                     },
                 ),
@@ -456,7 +440,7 @@ fn run() -> Result<(), String> {
             runtime_surface.state_surface.insert(
                 BoundarySymbol::from(
                     WatershedProductionStateSymbol::HillslopeContributorParticleDiameterMeters {
-                        hillslope_id: *hillslope_id,
+                        hillslope_id,
                         class_index,
                     },
                 ),
@@ -465,7 +449,7 @@ fn run() -> Result<(), String> {
             runtime_surface.state_surface.insert(
                 BoundarySymbol::from(
                     WatershedProductionStateSymbol::HillslopeContributorParticleFlowFraction {
-                        hillslope_id: *hillslope_id,
+                        hillslope_id,
                         class_index,
                     },
                 ),
@@ -506,6 +490,120 @@ fn resolve_run_file(run_dir: &Path, run_file: &Path) -> PathBuf {
     } else {
         run_dir.join(run_file)
     }
+}
+
+fn resolve_cli_output_dir(output_dir: &Path) -> Result<PathBuf, String> {
+    if output_dir.is_absolute() {
+        Ok(output_dir.to_path_buf())
+    } else {
+        let current_dir = std::env::current_dir()
+            .map_err(|error| format!("CLIWAT-E-003 failed resolving current directory: {error}"))?;
+        Ok(current_dir.join(output_dir))
+    }
+}
+
+fn parse_jobs_arg(value: &str) -> Result<usize, String> {
+    let jobs = value
+        .parse::<usize>()
+        .map_err(|_| format!("CLIWAT-E-041 invalid --jobs value '{value}'"))?;
+    if jobs == 0 {
+        return Err("CLIWAT-E-041 --jobs must be greater than zero".to_string());
+    }
+    if jobs > 1 {
+        return Err(
+            "CLIWAT-E-041 --jobs values greater than 1 require the W3 worker-pool package"
+                .to_string(),
+        );
+    }
+    Ok(jobs)
+}
+
+fn default_hillslope_binary() -> Result<PathBuf, String> {
+    let current_exe = std::env::current_exe()
+        .map_err(|error| format!("CLIWAT-E-042 failed resolving current executable: {error}"))?;
+    let binary_name = if cfg!(windows) {
+        "openwepp-cli-hill.exe"
+    } else {
+        "openwepp-cli-hill"
+    };
+    let Some(parent) = current_exe.parent() else {
+        return Err(format!(
+            "CLIWAT-E-042 current executable has no parent directory: {}",
+            current_exe.display()
+        ));
+    };
+    Ok(parent.join(binary_name))
+}
+
+fn generated_hillslope_output_root(output_dir: &Path, hillslope_id: u32) -> PathBuf {
+    output_dir
+        .join("hillslope-jobs")
+        .join(format!("H{hillslope_id}"))
+}
+
+fn build_watershed_run_plan(
+    run_id: &str,
+    jobs: usize,
+    hillslope_binary: PathBuf,
+    runfile: &WatershedRunfileResolved,
+) -> Result<WatershedRunPlan, String> {
+    let mut hillslope_jobs = Vec::new();
+    let mut expected_passes = Vec::new();
+    for (hillslope_id, block) in &runfile.hillslope_blocks_by_id {
+        if !block.use_existing_pass_file {
+            let Some(source_run_file_path) = block.run_file_path.as_ref() else {
+                return Err(format!(
+                    "CLIWAT-E-042 generated hillslope block {hillslope_id} is missing run_file"
+                ));
+            };
+            let output_root = block
+                .pass_file_path
+                .parent()
+                .map_or_else(|| PathBuf::from("."), Path::to_path_buf);
+            let Some(expected_manifest_file) = block.manifest_file_path.clone() else {
+                return Err(format!(
+                    "CLIWAT-E-042 generated hillslope block {hillslope_id} is missing manifest path"
+                ));
+            };
+            hillslope_jobs.push(HillslopeJob {
+                hillslope_id: *hillslope_id,
+                source_run_file_path: source_run_file_path.clone(),
+                generated_run_file_path: output_root.join(format!("H{hillslope_id}.run.toml")),
+                output_root: output_root.clone(),
+                expected_pass_file: block.pass_file_path.clone(),
+                expected_manifest_file,
+                stdout_log_path: output_root.join(format!("H{hillslope_id}.stdout.log")),
+                stderr_log_path: output_root.join(format!("H{hillslope_id}.stderr.log")),
+                timing_path: output_root.join(format!("H{hillslope_id}.timing.json")),
+                freshness_marker_path: output_root.join(format!("H{hillslope_id}.freshness")),
+            });
+        }
+        let generated_output_root = generated_hillslope_output_root_for_pass(&block.pass_file_path);
+        expected_passes.push(PassInventoryExpectation {
+            hillslope_id: *hillslope_id,
+            pass_file_path: block.pass_file_path.clone(),
+            manifest_file_path: block.manifest_file_path.clone(),
+            produced_by_job: !block.use_existing_pass_file,
+            freshness_marker_path: (!block.use_existing_pass_file)
+                .then(|| generated_output_root.join(format!("H{hillslope_id}.freshness"))),
+            timing_path: (!block.use_existing_pass_file)
+                .then(|| generated_output_root.join(format!("H{hillslope_id}.timing.json"))),
+        });
+    }
+
+    WatershedRunPlan::new(
+        run_id.to_string(),
+        jobs,
+        hillslope_binary,
+        hillslope_jobs,
+        expected_passes,
+    )
+}
+
+fn generated_hillslope_output_root_for_pass(pass_file_path: &Path) -> PathBuf {
+    pass_file_path
+        .parent()
+        .map_or_else(|| PathBuf::from("."), Path::to_path_buf)
 }
 
 fn resolve_runfile_relative_path(run_file_path: &Path, candidate: &str) -> PathBuf {
@@ -627,9 +725,12 @@ struct WatershedRunfileOutputs {
 #[derive(Debug, Deserialize)]
 struct WatershedHillslopeBlock {
     hillslope_id: u32,
-    pass_file: String,
+    #[serde(default)]
+    pass_file: Option<String>,
     #[serde(default)]
     manifest_file: Option<String>,
+    #[serde(default)]
+    run_file: Option<String>,
     #[serde(default)]
     unit_system: Option<String>,
     #[serde(default)]
@@ -640,12 +741,15 @@ struct WatershedHillslopeBlock {
 struct WatershedHillslopeBlockResolved {
     pass_file_path: PathBuf,
     manifest_file_path: Option<PathBuf>,
+    run_file_path: Option<PathBuf>,
+    use_existing_pass_file: bool,
 }
 
 type WatershedOutputsResolved = WatershedOutputConfig;
 
 #[derive(Debug)]
 struct WatershedRunfileResolved {
+    run_name: String,
     watershed_structure_path: PathBuf,
     watershed_channel_path: PathBuf,
     watershed_impoundment_path: PathBuf,
@@ -750,41 +854,84 @@ fn parse_watershed_runfile(
             }
         }
 
-        if let Some(use_existing_pass_file) = block.use_existing_pass_file
-            && !use_existing_pass_file
-        {
+        let Some(use_existing_pass_file) = block.use_existing_pass_file else {
             return Err(format!(
-                "CLIWAT-E-026 hillslopes_block[{id}] use_existing_pass_file=false is unsupported",
+                "CLIWAT-E-026 hillslopes_block[{id}] use_existing_pass_file must be explicit",
                 id = block.hillslope_id
             ));
-        }
+        };
+        let hillslope_run_file_path = resolve_optional_runfile_path(
+            run_file_path,
+            block.run_file.as_deref(),
+            "inputs.hillslopes_block[].run_file",
+        )?;
 
-        let pass_file_path = resolve_required_runfile_path(
-            run_file_path,
-            &block.pass_file,
-            "inputs.hillslopes_block[].pass_file",
-        )?;
-        if !pass_file_path.is_file() {
-            return Err(format!(
-                "CLIWAT-E-027 hillslopes_block[{id}] pass file '{}' is not a readable file",
-                pass_file_path.display(),
-                id = block.hillslope_id
-            ));
-        }
-        let manifest_file_path = resolve_optional_runfile_path(
-            run_file_path,
-            block.manifest_file.as_deref(),
-            "inputs.hillslopes_block[].manifest_file",
-        )?;
-        if let Some(path) = manifest_file_path.as_ref()
-            && !path.is_file()
-        {
-            return Err(format!(
-                "CLIWAT-E-036 hillslopes_block[{id}] manifest file '{}' is not a readable file",
-                path.display(),
-                id = block.hillslope_id
-            ));
-        }
+        let (pass_file_path, manifest_file_path) = if use_existing_pass_file {
+            if hillslope_run_file_path.is_some() {
+                return Err(format!(
+                    "CLIWAT-E-026 hillslopes_block[{id}] cannot combine run_file with use_existing_pass_file=true",
+                    id = block.hillslope_id
+                ));
+            }
+            let Some(pass_file) = block.pass_file.as_deref() else {
+                return Err(format!(
+                    "CLIWAT-E-026 hillslopes_block[{id}] pass_file is required when use_existing_pass_file=true",
+                    id = block.hillslope_id
+                ));
+            };
+            let pass_file_path = resolve_required_runfile_path(
+                run_file_path,
+                pass_file,
+                "inputs.hillslopes_block[].pass_file",
+            )?;
+            if !pass_file_path.is_file() {
+                return Err(format!(
+                    "CLIWAT-E-027 hillslopes_block[{id}] pass file '{}' is not a readable file",
+                    pass_file_path.display(),
+                    id = block.hillslope_id
+                ));
+            }
+            let manifest_file_path = resolve_optional_runfile_path(
+                run_file_path,
+                block.manifest_file.as_deref(),
+                "inputs.hillslopes_block[].manifest_file",
+            )?;
+            if let Some(path) = manifest_file_path.as_ref()
+                && !path.is_file()
+            {
+                return Err(format!(
+                    "CLIWAT-E-036 hillslopes_block[{id}] manifest file '{}' is not a readable file",
+                    path.display(),
+                    id = block.hillslope_id
+                ));
+            }
+            (pass_file_path, manifest_file_path)
+        } else {
+            let Some(hillslope_run_file_path) = hillslope_run_file_path.as_ref() else {
+                return Err(format!(
+                    "CLIWAT-E-026 hillslopes_block[{id}] run_file is required when use_existing_pass_file=false",
+                    id = block.hillslope_id
+                ));
+            };
+            if !hillslope_run_file_path.is_file() {
+                return Err(format!(
+                    "CLIWAT-E-026 hillslopes_block[{id}] run_file '{}' is not a readable file",
+                    hillslope_run_file_path.display(),
+                    id = block.hillslope_id
+                ));
+            }
+            if block.pass_file.is_some() || block.manifest_file.is_some() {
+                return Err(format!(
+                    "CLIWAT-E-026 hillslopes_block[{id}] generated hillslope mode lets the supervisor own pass_file and manifest_file paths",
+                    id = block.hillslope_id
+                ));
+            }
+            let output_root = generated_hillslope_output_root(output_dir, block.hillslope_id);
+            (
+                output_root.join(format!("H{}.hbp", block.hillslope_id)),
+                Some(output_root.join(format!("H{}.manifest.json", block.hillslope_id))),
+            )
+        };
 
         if hillslope_blocks_by_id
             .insert(
@@ -792,6 +939,8 @@ fn parse_watershed_runfile(
                 WatershedHillslopeBlockResolved {
                     pass_file_path,
                     manifest_file_path,
+                    run_file_path: hillslope_run_file_path,
+                    use_existing_pass_file,
                 },
             )
             .is_some()
@@ -970,6 +1119,7 @@ fn parse_watershed_runfile(
         .map_err(|error| format!("CLIWAT-E-034 invalid watershed output contract: {error}"))?;
 
     Ok(WatershedRunfileResolved {
+        run_name: runfile.run_name,
         watershed_structure_path,
         watershed_channel_path,
         watershed_impoundment_path,
@@ -1643,6 +1793,19 @@ fn validate_manifest_mofe_hourly_carry_metadata(
                 manifest_file_path.display()
             )
         })?;
+    if contributor_nofe == 1 && !active && substep_count == 0 {
+        validate_manifest_mofe_hourly_carry_inactive_single_ofe(
+            hillslope_id,
+            manifest_file_path,
+            carry_metadata,
+        )?;
+        validate_manifest_mofe_hourly_carry_totals(
+            hillslope_id,
+            manifest_file_path,
+            carry_metadata,
+        )?;
+        return Ok(());
+    }
     if substep_count != MOFE_HOURLY_CARRY_ARRAY_COUNT {
         return Err(format!(
             "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has mofe_hourly_carry substep_count={} (expected {})",
@@ -1659,6 +1822,29 @@ fn validate_manifest_mofe_hourly_carry_metadata(
     )?;
     validate_manifest_mofe_hourly_carry_totals(hillslope_id, manifest_file_path, carry_metadata)?;
 
+    Ok(())
+}
+
+fn validate_manifest_mofe_hourly_carry_inactive_single_ofe(
+    hillslope_id: u32,
+    manifest_file_path: &Path,
+    carry_metadata: &Value,
+) -> Result<(), String> {
+    let required_arrays = carry_metadata
+        .pointer("/required_arrays")
+        .and_then(Value::as_array)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing array /mofe_hourly_carry/required_arrays",
+                manifest_file_path.display()
+            )
+        })?;
+    if !required_arrays.is_empty() {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' inactive single-OFE mofe_hourly_carry must have empty required_arrays",
+            manifest_file_path.display()
+        ));
+    }
     Ok(())
 }
 
@@ -2057,6 +2243,6 @@ where
 
 fn print_help() {
     println!(
-        "openwepp-cli-watershed --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery]"
+        "openwepp-cli-watershed --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--jobs 1] [--hillslope-binary <path>]"
     );
 }

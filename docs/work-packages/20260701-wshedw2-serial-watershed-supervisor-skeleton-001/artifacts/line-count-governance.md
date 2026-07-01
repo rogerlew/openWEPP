@@ -1,12 +1,28 @@
 # Line-Count Governance
 
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE`
 
-W2 execution must record touched `.rs` line counts before closure.
+Ran:
 
-Governance:
+```text
+wc -l crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs \
+  crates/openwepp-runner/src/watershed_supervisor.rs \
+  crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs
+```
 
-- 2000+ lines is `WARN`;
-- 3000+ non-exempt files require refactor or an explicit hold before closure;
-- do not grow monolithic runner files without recording a split/debt
-  disposition.
+Result:
+
+| File | Lines | Governance |
+| --- | ---: | --- |
+| `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs` | 2248 | `WARN` (`2000+`) |
+| `crates/openwepp-runner/src/watershed_supervisor.rs` | 730 | OK |
+| `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs` | 1977 | OK |
+
+Disposition:
+
+- The watershed CLI binary was already near the warning band before W2 and now
+  remains above `2000` lines. W2 avoided pushing the supervisor implementation
+  into that monolith by adding `crates/openwepp-runner/src/watershed_supervisor.rs`.
+- No touched Rust file is above the `3000`-line refactor-required threshold.
+- Follow-on W3/W4 work should continue moving supervisor and typed frame logic
+  out of `openwepp-cli-watershed.rs` rather than growing the binary body.

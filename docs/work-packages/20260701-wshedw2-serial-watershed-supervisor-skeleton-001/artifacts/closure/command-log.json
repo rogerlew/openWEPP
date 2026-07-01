@@ -1,0 +1,36 @@
+{
+  "package": "20260701-wshedw2-serial-watershed-supervisor-skeleton-001",
+  "root": "/home/workdir/openWEPP",
+  "commands": [
+    {
+      "command": "cargo fmt --check",
+      "exit_code": 0,
+      "status": "PASS",
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260701-wshedw2-serial-watershed-supervisor-skeleton-001/artifacts/closure/cargo-fmt-check.log"
+    },
+    {
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "exit_code": 0,
+      "status": "PASS",
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260701-wshedw2-serial-watershed-supervisor-skeleton-001/artifacts/closure/cargo-clippy-full.log"
+    },
+    {
+      "command": "cargo nextest run --workspace --profile full",
+      "exit_code": 0,
+      "status": "PASS",
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260701-wshedw2-serial-watershed-supervisor-skeleton-001/artifacts/closure/cargo-nextest-full.log"
+    },
+    {
+      "command": "cargo deny check",
+      "exit_code": 0,
+      "status": "PASS",
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260701-wshedw2-serial-watershed-supervisor-skeleton-001/artifacts/closure/cargo-deny-check.log"
+    },
+    {
+      "command": "cargo test -p openwepp-runner --test watershed_cli_behavior_contract -- --nocapture",
+      "exit_code": 0,
+      "status": "PASS",
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260701-wshedw2-serial-watershed-supervisor-skeleton-001/artifacts/closure/focused-w2-gate.log"
+    }
+  ]
+}

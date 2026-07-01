@@ -1,10 +1,27 @@
 # WSHED-W2 Serial Watershed Supervisor Skeleton
 
-Status: `QUEUED-HANDOFF-AUTHORED`
+Status: `EXECUTED-COMPLETE-WSHED-W2`
 
 Date opened: `2026-07-01`
 
+Date closed: `2026-07-01`
+
 Package type: implementation package; watershed runtime architecture rung W2.
+
+## Outcome
+
+W2 completed. The public `openwepp-cli-watershed` path now supports the serial
+`--jobs 1` supervisor skeleton with `WatershedRunPlan`, `HillslopeJob`, and
+`PassInventory`. Generated hillslope jobs run serially with isolated
+per-hillslope output/log/timing paths, validated pass inventory gates routing,
+missing latest-event payloads fail closed, and routed-stage reuse remains
+available only through explicit `use_existing_pass_file = true` runfile blocks.
+
+Focused W2 coverage proves invalid job values, explicit reuse gating,
+ambiguous-block rejection, relative output-dir generated mode, stale generated
+artifact cleanup/fail-closed behavior, generated public CLI handoff, and
+latest-event payload fail-closed behavior. Final closure gates passed; see
+`artifacts/closure/summary.md`.
 
 ## Objective
 

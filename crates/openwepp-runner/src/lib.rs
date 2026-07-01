@@ -11,6 +11,7 @@ mod release;
 mod role;
 mod shared;
 mod totalwatsed3;
+mod watershed_supervisor;
 mod watershed_wat;
 
 pub use api::{
@@ -53,5 +54,8 @@ pub use release::{
 pub use role::BinaryRole;
 pub use totalwatsed3::{
     Totalwatsed3Config, Totalwatsed3Error, Totalwatsed3WriteSummary, write_totalwatsed3,
+};
+pub use watershed_supervisor::{
+    HillslopeJob, PassInventory, PassInventoryEntry, PassInventoryExpectation, WatershedRunPlan,
 };
 pub use watershed_wat::{WatershedWatPublicationError, build_watershed_daily_rows_from_wat};

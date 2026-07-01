@@ -8,7 +8,10 @@
     clippy::unreadable_literal
 )]
 
+use std::fmt::Write as _;
 use std::fs::{self, File};
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Mutex, OnceLock};
@@ -115,6 +118,326 @@ fn watershed_cli_emits_watershed_output_parquet_files() {
         String::from_utf8_lossy(&output.stderr)
     );
     assert_all_watershed_outputs_exist(&output_dir);
+}
+
+#[test]
+fn wshedw2_watershed_cli_rejects_invalid_jobs_values() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw2_invalid_jobs");
+    write_hbp_fixture(
+        run_dir.join("H1.hbp"),
+        1,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile(&run_dir, &[1]);
+
+    let output_dir = run_dir.join("out");
+    let zero = run_watershed_cli_with_options(
+        &run_dir,
+        &output_dir,
+        Some("compat"),
+        false,
+        Some("0"),
+        None,
+    );
+    assert!(
+        !zero.status.success(),
+        "watershed CLI should reject --jobs 0"
+    );
+    let zero_stderr = String::from_utf8_lossy(&zero.stderr);
+    assert!(
+        zero_stderr.contains("CLIWAT-E-041"),
+        "expected jobs validator code for --jobs 0, observed: {zero_stderr}"
+    );
+
+    let invalid = run_watershed_cli_with_options(
+        &run_dir,
+        &output_dir,
+        Some("compat"),
+        false,
+        Some("not-a-number"),
+        None,
+    );
+    assert!(
+        !invalid.status.success(),
+        "watershed CLI should reject non-integer --jobs"
+    );
+    let invalid_stderr = String::from_utf8_lossy(&invalid.stderr);
+    assert!(
+        invalid_stderr.contains("CLIWAT-E-041"),
+        "expected jobs validator code for invalid --jobs, observed: {invalid_stderr}"
+    );
+
+    let too_many = run_watershed_cli_with_options(
+        &run_dir,
+        &output_dir,
+        Some("compat"),
+        false,
+        Some("2"),
+        None,
+    );
+    assert!(
+        !too_many.status.success(),
+        "watershed CLI should reject --jobs > 1 until W3"
+    );
+    let too_many_stderr = String::from_utf8_lossy(&too_many.stderr);
+    assert!(
+        too_many_stderr.contains("CLIWAT-E-041"),
+        "expected jobs validator code for --jobs > 1, observed: {too_many_stderr}"
+    );
+}
+
+#[test]
+fn wshedw2_watershed_cli_serial_supervisor_generates_pass_inventory_and_routes() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw2_serial_supervisor");
+    prepare_output_guard_fixture(&run_dir);
+    write_hillslope_source_runfile_fixture(&run_dir, 1);
+    write_generated_watershed_runfile(&run_dir, &[1]);
+
+    let output_dir = run_dir.join("out");
+    let hill_binary = Path::new(env!("CARGO_BIN_EXE_openwepp-cli-hill"));
+    let output = run_watershed_cli_with_options(
+        &run_dir,
+        &output_dir,
+        Some("compat"),
+        false,
+        Some("1"),
+        Some(hill_binary),
+    );
+    assert!(
+        output.status.success(),
+        "watershed CLI should execute generated hillslope job, validate pass inventory, and route; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let job_root = output_dir.join("hillslope-jobs/H1");
+    for relative in [
+        "H1.run.toml",
+        "H1.hbp",
+        "H1.manifest.json",
+        "H1.stdout.log",
+        "H1.stderr.log",
+        "H1.timing.json",
+    ] {
+        let path = job_root.join(relative);
+        assert!(
+            path.is_file(),
+            "serial supervisor should write per-job artifact {}",
+            path.display()
+        );
+    }
+    assert!(
+        !run_dir.join("H1.hbp").exists(),
+        "generated mode should not rely on a pre-existing pass in the shared run directory"
+    );
+    assert_all_watershed_outputs_exist(&output_dir);
+
+    let ebe_row = read_first_parquet_row(&output_dir.join("interchange/ebe_pw0.parquet"));
+    let emitted_peak = row_f64_value(&ebe_row, "peak_runoff");
+    let emitted_runoff_volume = row_f64_value(&ebe_row, "runoff_volume");
+    assert!(
+        emitted_peak > 0.0 && emitted_runoff_volume > 0.0,
+        "watershed output should consume non-zero generated pass payload; peak={emitted_peak}, runoff_volume={emitted_runoff_volume}"
+    );
+}
+
+#[test]
+fn wshedw2_watershed_cli_generated_mode_accepts_relative_output_dir() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw2_relative_output_dir");
+    prepare_output_guard_fixture(&run_dir);
+    write_hillslope_source_runfile_fixture(&run_dir, 1);
+    write_generated_watershed_runfile(&run_dir, &[1]);
+
+    let relative_output_dir = Path::new("relative-out");
+    let hill_binary = Path::new(env!("CARGO_BIN_EXE_openwepp-cli-hill"));
+    let output = run_watershed_cli_with_current_dir(
+        &run_dir,
+        relative_output_dir,
+        Some("compat"),
+        false,
+        Some("1"),
+        Some(hill_binary),
+        &run_dir,
+    );
+    assert!(
+        output.status.success(),
+        "generated watershed run should accept relative --output-dir; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_all_watershed_outputs_exist(&run_dir.join(relative_output_dir));
+}
+
+#[test]
+#[cfg(unix)]
+fn wshedw2_watershed_cli_rejects_stale_generated_pass_when_child_does_not_publish() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw2_stale_generated_pass");
+    prepare_output_guard_fixture(&run_dir);
+    write_hillslope_source_runfile_fixture(&run_dir, 1);
+    write_generated_watershed_runfile(&run_dir, &[1]);
+
+    let output_dir = run_dir.join("out");
+    let job_root = output_dir.join("hillslope-jobs/H1");
+    fs::create_dir_all(&job_root).expect("stale job root should be writable");
+    write_hbp_fixture(
+        job_root.join("H1.hbp"),
+        1,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_hillslope_manifest_fixture(job_root.join("H1.manifest.json"), 1, 1_800.0);
+    let fake_child = write_successful_noop_hillslope_binary(&run_dir);
+
+    let output = run_watershed_cli_with_options(
+        &run_dir,
+        &output_dir,
+        Some("compat"),
+        false,
+        Some("1"),
+        Some(&fake_child),
+    );
+    assert!(
+        !output.status.success(),
+        "generated mode should remove stale pass artifacts and fail when child publishes no pass"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-045") && stderr.contains("missing"),
+        "expected missing generated pass inventory failure after stale cleanup, observed: {stderr}"
+    );
+}
+
+#[test]
+fn wshedw2_watershed_cli_requires_explicit_reuse_mode() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw2_explicit_reuse");
+    write_hbp_fixture(
+        run_dir.join("H1.hbp"),
+        1,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile(&run_dir, &[1]);
+    prepare_output_guard_fixture(&run_dir);
+    let runfile_path = run_dir.join("case.run");
+    let runfile_payload =
+        fs::read_to_string(&runfile_path).expect("reuse runfile should be readable");
+    fs::write(
+        &runfile_path,
+        runfile_payload.replace("use_existing_pass_file = true\n", ""),
+    )
+    .expect("reuse runfile should be mutable");
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        !output.status.success(),
+        "watershed CLI should require explicit use_existing_pass_file for reuse mode"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-026") && stderr.contains("use_existing_pass_file"),
+        "expected explicit reuse selector failure, observed: {stderr}"
+    );
+}
+
+#[test]
+fn wshedw2_watershed_cli_rejects_ambiguous_reuse_block_with_run_file() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw2_ambiguous_reuse");
+    write_hbp_fixture(
+        run_dir.join("H1.hbp"),
+        1,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_hillslope_source_runfile_fixture(&run_dir, 1);
+    write_watershed_runfile(&run_dir, &[1]);
+    prepare_output_guard_fixture(&run_dir);
+    let runfile_path = run_dir.join("case.run");
+    let runfile_payload =
+        fs::read_to_string(&runfile_path).expect("reuse runfile should be readable");
+    fs::write(
+        &runfile_path,
+        runfile_payload.replace(
+            "use_existing_pass_file = true\n",
+            "use_existing_pass_file = true\nrun_file = \"H1.source.run\"\n",
+        ),
+    )
+    .expect("reuse runfile should be mutable");
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        !output.status.success(),
+        "watershed CLI should reject reuse blocks that also declare a run_file"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-026") && stderr.contains("cannot combine run_file"),
+        "expected ambiguous reuse failure, observed: {stderr}"
+    );
+}
+
+#[test]
+fn wshedw2_watershed_cli_rejects_pass_without_latest_event_payload() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw2_no_latest_event_payload");
+    write_hbp_no_event_fixture(run_dir.join("H1.hbp"), 1);
+    write_watershed_runfile(&run_dir, &[1]);
+    prepare_output_guard_fixture(&run_dir);
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        !output.status.success(),
+        "watershed CLI should fail closed when pass inventory lacks latest EventPayload"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-045") && stderr.contains("NoEvent"),
+        "expected pass-inventory NoEvent authority failure, observed: {stderr}"
+    );
 }
 
 #[test]
@@ -547,7 +870,46 @@ fn run_watershed_cli(
     policy: Option<&str>,
     legacy_sidecar_discovery: bool,
 ) -> std::process::Output {
+    run_watershed_cli_with_options(
+        run_dir,
+        output_dir,
+        policy,
+        legacy_sidecar_discovery,
+        None,
+        None,
+    )
+}
+
+fn run_watershed_cli_with_options(
+    run_dir: &Path,
+    output_dir: &Path,
+    policy: Option<&str>,
+    legacy_sidecar_discovery: bool,
+    jobs: Option<&str>,
+    hillslope_binary: Option<&Path>,
+) -> std::process::Output {
+    run_watershed_cli_with_current_dir(
+        run_dir,
+        output_dir,
+        policy,
+        legacy_sidecar_discovery,
+        jobs,
+        hillslope_binary,
+        Path::new(env!("CARGO_MANIFEST_DIR")),
+    )
+}
+
+fn run_watershed_cli_with_current_dir(
+    run_dir: &Path,
+    output_dir: &Path,
+    policy: Option<&str>,
+    legacy_sidecar_discovery: bool,
+    jobs: Option<&str>,
+    hillslope_binary: Option<&Path>,
+    current_dir: &Path,
+) -> std::process::Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_openwepp-cli-watershed"));
+    command.current_dir(current_dir);
     command
         .arg("--run-dir")
         .arg(run_dir)
@@ -560,6 +922,12 @@ fn run_watershed_cli(
     }
     if legacy_sidecar_discovery {
         command.arg("--legacy-sidecar-discovery");
+    }
+    if let Some(jobs) = jobs {
+        command.arg("--jobs").arg(jobs);
+    }
+    if let Some(hillslope_binary) = hillslope_binary {
+        command.arg("--hillslope-binary").arg(hillslope_binary);
     }
     command
         .output()
@@ -900,6 +1268,18 @@ fn copy_fixture_file(source: &Path, destination: &Path) {
     });
 }
 
+#[cfg(unix)]
+fn write_successful_noop_hillslope_binary(run_dir: &Path) -> PathBuf {
+    let path = run_dir.join("noop-openwepp-cli-hill.sh");
+    fs::write(&path, "#!/bin/sh\nexit 0\n").expect("fake hillslope binary should be writable");
+    let mut permissions = fs::metadata(&path)
+        .expect("fake hillslope binary metadata should be readable")
+        .permissions();
+    permissions.set_mode(0o755);
+    fs::set_permissions(&path, permissions).expect("fake hillslope binary should be executable");
+    path
+}
+
 fn prepare_output_guard_fixture(run_dir: &Path) {
     fs::write(run_dir.join("pw0.str"), "94.301\n2 1 0 0 0 0 0 0 0 0\n")
         .expect("channel-only structure fixture should be writable");
@@ -909,6 +1289,67 @@ fn prepare_output_guard_fixture(run_dir: &Path) {
 
 fn write_watershed_runfile(run_dir: &Path, hillslope_ids: &[u32]) {
     write_watershed_runfile_with_manifest(run_dir, hillslope_ids, false);
+}
+
+fn write_generated_watershed_runfile(run_dir: &Path, hillslope_ids: &[u32]) {
+    let mut runfile_payload = String::from(
+        r#"
+schema = "openwepp-watershed-runfile-v1"
+run_name = "wshedw2-serial-supervisor-contract"
+unit_system = "metric"
+
+[inputs]
+pw0_str = "pw0.str"
+pw0_chn = "pw0.chn"
+pw0_imp = "pw0.imp"
+pw0_man = "pw0.man"
+pw0_slp = "pw0.slp"
+pw0_cli = "pw0.cli"
+pw0_sol = "pw0.sol"
+chaninp = "chan.inp"
+
+[inputs.applicability]
+chapter13_small_watershed_intent = true
+allow_partial_area_response = false
+allow_headcutting = false
+allow_bank_sloughing = false
+allow_perennial_streams = false
+"#,
+    );
+
+    for hillslope_id in hillslope_ids {
+        write!(
+            &mut runfile_payload,
+            r#"
+[[inputs.hillslopes_block]]
+hillslope_id = {hillslope_id}
+run_file = "H{hillslope_id}.source.run"
+use_existing_pass_file = false
+"#
+        )
+        .expect("generated watershed runfile block should format");
+    }
+
+    runfile_payload.push_str(
+        r#"
+[outputs]
+ebe_pw0 = "interchange/ebe_pw0.parquet"
+chan_out = "interchange/chan.out.parquet"
+chanwb = "interchange/chanwb.parquet"
+chnwb = "interchange/chnwb.parquet"
+soil_pw0 = "interchange/soil_pw0.parquet"
+totalwatsed3 = "interchange/totalwatsed3.parquet"
+loss_hill = "interchange/loss_pw0.hill.parquet"
+loss_chn = "interchange/loss_pw0.chn.parquet"
+loss_out = "interchange/loss_pw0.out.parquet"
+loss_class_data = "interchange/loss_pw0.class_data.parquet"
+loss_all_years_hill = "interchange/loss_pw0.all_years.hill.parquet"
+loss_all_years_chn = "interchange/loss_pw0.all_years.chn.parquet"
+loss_all_years_out = "interchange/loss_pw0.all_years.out.parquet"
+loss_all_years_class_data = "interchange/loss_pw0.all_years.class_data.parquet"
+"#,
+    );
+    fs::write(run_dir.join("case.run"), runfile_payload).expect("runfile should be writable");
 }
 
 fn write_watershed_runfile_with_manifest(
@@ -947,6 +1388,7 @@ allow_perennial_streams = false
 [[inputs.hillslopes_block]]
 hillslope_id = {hillslope_id}
 pass_file = "H{hillslope_id}.hbp"
+use_existing_pass_file = true
 "#
         );
         if include_manifest_file {
@@ -977,6 +1419,47 @@ loss_all_years_class_data = "interchange/loss_pw0.all_years.class_data.parquet"
 "#,
     );
     fs::write(run_dir.join("case.run"), runfile_payload).expect("runfile should be writable");
+}
+
+fn write_hillslope_source_runfile_fixture(run_dir: &Path, hillslope_id: u32) {
+    let fixture_root =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/cli01/hillslope_run_dir");
+    for (source, destination) in [
+        ("case.man", format!("H{hillslope_id}.man")),
+        ("case.slp", format!("H{hillslope_id}.slp")),
+        ("case.cli", format!("H{hillslope_id}.cli")),
+        ("case.sol", format!("H{hillslope_id}.sol")),
+        ("pmetpara.txt", "pmetpara.txt".to_string()),
+        ("snow.txt", "snow.txt".to_string()),
+        ("frost.txt", "frost.txt".to_string()),
+        ("wepp_ui.txt", "wepp_ui.txt".to_string()),
+    ] {
+        copy_fixture_file(&fixture_root.join(source), &run_dir.join(destination));
+    }
+
+    let payload = format!(
+        r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "wshedw2-hillslope-{hillslope_id}"
+unit_system = "metric"
+
+[inputs]
+soil = "H{hillslope_id}.sol"
+management = "H{hillslope_id}.man"
+slope = "H{hillslope_id}.slp"
+climate = "H{hillslope_id}.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "unused/H{hillslope_id}.hbp"
+loss = "unused/H{hillslope_id}.loss.json"
+wat = "unused/H{hillslope_id}.wat.parquet"
+plot = "unused/H{hillslope_id}.plot.parquet"
+"#
+    );
+    fs::write(run_dir.join(format!("H{hillslope_id}.source.run")), payload)
+        .expect("hillslope source runfile should be writable");
 }
 
 fn write_hillslope_manifest_fixture(path: PathBuf, contributor_ofe_count: usize, area_m2: f64) {
@@ -1331,6 +1814,32 @@ fn build_event_payload(
     payload
 }
 
+fn build_no_event_payload(
+    nofe: u16,
+    sim_year_index: u32,
+    calendar_year: i32,
+    julian_day: u16,
+) -> Vec<u8> {
+    let nofe = u32::from(nofe);
+    let max_layers = 1u32;
+
+    let mut payload = Vec::new();
+    put_u32(&mut payload, sim_year_index);
+    put_i32(&mut payload, calendar_year);
+    put_u16(&mut payload, julian_day);
+    put_u8(&mut payload, 0);
+    put_u16(&mut payload, 0);
+    put_u16(&mut payload, REQUIRED_STATE_IDS.len() as u16);
+    put_i64(&mut payload, 0);
+    put_i64(&mut payload, 0);
+
+    for state_id in REQUIRED_STATE_IDS {
+        payload.extend_from_slice(&build_state_entry(*state_id, nofe, max_layers));
+    }
+
+    payload
+}
+
 fn build_schema1_event_fixture(
     hillslope_id: u32,
     nofe: u16,
@@ -1365,6 +1874,38 @@ fn build_schema1_event_fixture(
     put_i32(&mut directory, 2004);
     put_u16(&mut directory, 1);
     put_u8(&mut directory, 2);
+    put_u64(&mut directory, payload_offset as u64);
+    put_u32(&mut directory, payload.len() as u32);
+    put_u32(&mut directory, payload_crc);
+
+    file.extend_from_slice(&directory);
+    file.extend_from_slice(&payload);
+
+    let directory_crc = crc32c(&directory);
+    put_u32(&mut file, directory_crc);
+    let file_crc_pos = file.len();
+    put_u32(&mut file, 0);
+    put_u32(&mut file, 1);
+    file.extend_from_slice(FOOTER_MAGIC);
+    let file_crc = crc32c(&file);
+    put_u32_at(&mut file, file_crc_pos, file_crc);
+    file
+}
+
+fn build_schema1_no_event_fixture(hillslope_id: u32, nofe: u16) -> Vec<u8> {
+    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, hillslope_id, nofe, 1, 2004, 1);
+    let payload = build_no_event_payload(nofe, 1, 2004, 1);
+    let payload_crc = crc32c(&payload);
+
+    let directory_start = file.len();
+    let directory_len = 4 + 27;
+    let payload_offset = directory_start + directory_len;
+    let mut directory = Vec::new();
+    put_u32(&mut directory, 1);
+    put_u32(&mut directory, 1);
+    put_i32(&mut directory, 2004);
+    put_u16(&mut directory, 1);
+    put_u8(&mut directory, 0);
     put_u64(&mut directory, payload_offset as u64);
     put_u32(&mut directory, payload.len() as u32);
     put_u32(&mut directory, payload_crc);
@@ -1428,4 +1969,9 @@ fn write_hbp_fixture_with_nofe(
         total_deposition_kg,
     );
     fs::write(path, bytes).expect("HBP fixture should be writable");
+}
+
+fn write_hbp_no_event_fixture(path: PathBuf, hillslope_id: u32) {
+    let bytes = build_schema1_no_event_fixture(hillslope_id, 1);
+    fs::write(path, bytes).expect("HBP no-event fixture should be writable");
 }

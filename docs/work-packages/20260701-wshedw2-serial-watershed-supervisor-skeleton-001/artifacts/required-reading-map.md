@@ -1,6 +1,28 @@
 # Required Reading Map
 
-Status: `QUEUED`
+Status: `EXECUTED`
+
+Read during W2 execution:
+
+- `AGENTS.md`
+- `docs/work-packages/AGENTS.md`
+- `crates/AGENTS.md`
+- `tests/AGENTS.md`
+- `docs/standards/prompt-wording-guidance.md`
+- `docs/decisions/0004-subprocess-hillslope-orchestration.md`
+- `docs/decisions/0032-watershed-runtime-ratification.md`
+- `docs/architecture/watershed-runtime-architecture-specification.md`
+- `docs/work-packages/20260701-wshedfixture01-committed-watershed-fixture-adoption-001/package.md`
+- `tests/fixtures/watershed/carnivorous-adobo/README.md`
+- `docs/work-packages/20260701-wshedw2-serial-watershed-supervisor-skeleton-001/package.md`
+- `docs/work-packages/20260701-wshedw2-serial-watershed-supervisor-skeleton-001/prompts/active/kickoff.md`
+- `docs/specifications/science-contracts/AGENTS.md`
+
+Conditional disposition:
+
+- No `SC-*` contract was amended.
+- No canonical `NoEvent` authority was admitted. Missing latest-event payloads
+  therefore fail closed with `CLIWAT-E-045`.
 
 ## Core
 

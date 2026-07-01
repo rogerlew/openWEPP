@@ -1,0 +1,26 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running tests/watershed_cli_behavior_contract.rs (target/debug/deps/watershed_cli_behavior_contract-b19df54121827fe0)
+
+running 20 tests
+test watershed_cli_accepts_explicit_zero_impoundment_file_when_structure_has_none ... ok
+test watershed_cli_legacy_discovery_matches_hillslope_unknown_sidecar_behavior ... ok
+test watershed_cli_emits_watershed_output_parquet_files ... ok
+test watershed_cli_mf_accepts_valid_per_ofe_publication_metadata ... ok
+test watershed_cli_mofe05_accepts_valid_multiofe_metadata_and_emits_outputs ... ok
+test watershed_cli_mofe05_rejects_multiofe_contributor_manifest_shape_violation ... ok
+test watershed_cli_mofe05_rejects_multiofe_contributor_without_manifest_metadata ... ok
+test watershed_cli_mofe05_rejects_multiofe_manifest_count_mismatch ... ok
+test watershed_cli_rejects_disallowed_perennial_stream_selector ... ok
+test watershed_cli_rejects_missing_applicability_selector_block ... ok
+test watershed_cli_rejects_negative_hbp_payload_via_ws10_domain_guards ... ok
+test wshed03_watershed_cli_end_to_end_vector_requires_non_stub_parquet_emission ... ok
+test wshedw2_watershed_cli_generated_mode_accepts_relative_output_dir ... ok
+test wshedimpl14_baseline_authoritative_cli_lane_replays_baseline_ebe_signature ... ok
+test wshedw2_watershed_cli_rejects_ambiguous_reuse_block_with_run_file ... ok
+test wshedw2_watershed_cli_rejects_invalid_jobs_values ... ok
+test wshedw2_watershed_cli_rejects_pass_without_latest_event_payload ... ok
+test wshedw2_watershed_cli_rejects_stale_generated_pass_when_child_does_not_publish ... ok
+test wshedw2_watershed_cli_requires_explicit_reuse_mode ... ok
+test wshedw2_watershed_cli_serial_supervisor_generates_pass_inventory_and_routes ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 22.44s

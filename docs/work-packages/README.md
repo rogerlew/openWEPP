@@ -51,15 +51,21 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
-- `20260701-wshedw2-serial-watershed-supervisor-skeleton-001/` is queued as
-  WSHED-W2 SERIAL WATERSHED SUPERVISOR SKELETON. Result:
-  `QUEUED-HANDOFF-AUTHORED`. It contains the active handoff prompt for
-  implementing `--jobs 1` serial watershed supervision with `WatershedRunPlan`,
-  `HillslopeJob`, `PassInventory`, fail-closed pass validation, and
-  consumer-path proof.
-
 ## Execution Log
 
+- `20260701-wshedw2-serial-watershed-supervisor-skeleton-001/` is complete as
+  WSHED-W2 SERIAL WATERSHED SUPERVISOR SKELETON. Result:
+  `EXECUTED-COMPLETE-WSHED-W2`. It implemented the public
+  `openwepp-cli-watershed --jobs 1` serial supervisor skeleton with
+  `WatershedRunPlan`, `HillslopeJob`, and `PassInventory`; generated
+  hillslope jobs now use isolated per-job output/log/timing paths, stale
+  generated artifacts fail closed before routing, missing latest-event payloads
+  fail closed, and routed-stage reuse remains explicit through
+  `use_existing_pass_file = true`. Focused watershed CLI coverage passed
+  (`20` tests), and final gates passed: `cargo fmt --check`,
+  `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo nextest run --workspace --profile full` (`1280` passed, `1` skipped),
+  and `cargo deny check`.
 - `20260701-wshedfixture01-committed-watershed-fixture-adoption-001/` is
   complete as WSHED-FIXTURE01 COMMITTED WATERSHED FIXTURE ADOPTION. Result:
   `EXECUTED-COMPLETE-WSHED-FIXTURE01`. It adopted the 32-hillslope
