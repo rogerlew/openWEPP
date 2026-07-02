@@ -63,10 +63,13 @@ authority, pinned-baseline provenance, or a contract-authorized physical
 invariant, proceed through contract amendment, contract-derived tests,
 pre-implementation gate, production edit, validation, dual review, and
 disposition in the same package. It may close in `HOLD` only at a declared
-boundary, and its handoff's first actionable item must be "close defect `<id>`",
-not a next inspection step. Reviews for DC-ExecPlans must check `HOLD`
-legitimacy, envelope adequacy, and protected-boundary integrity. Authoring
-details live in `docs/defect_closure_execplans.md`.
+boundary after recording a hold legitimacy audit; implementation effort,
+diagnostic uncertainty, or a partial compatibility route are not boundaries. Its
+handoff's first actionable item must be "close defect `<id>`", not a next
+inspection step. Reviews for DC-ExecPlans must check `HOLD` legitimacy, envelope
+adequacy, protected-boundary integrity, production-correction adequacy, and the
+absence of surrogate/provisional/proxy/heuristic process physics in production
+kernel paths. Authoring details live in `docs/defect_closure_execplans.md`.
 
 ## `AGENTS.md`
 

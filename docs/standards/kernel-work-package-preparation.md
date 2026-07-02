@@ -19,6 +19,10 @@ requirement, not optional package style guidance.
   route label, or single-surface diagnostic, widen it to include the adjacent
   source-line classification, contract/test update, or implementation/evidence
   step when those share the same authority domain and validation surface.
+- For DC-ExecPlans, bias toward the smallest envelope that can actually close
+  the defect, not the smallest envelope that can justify a hold. If the likely
+  correction surface is adjacent and shares the same authority domain and
+  validation surface, include it up front.
 - Split into a smaller package only when adjacent work crosses a distinct
   canonical contract authority, touches unrelated write sets, requires
   materially different validation, or is blocked by evidence that cannot be
@@ -58,7 +62,12 @@ requirement, not optional package style guidance.
   that same package/phase/increment. If evidence requires a later increment,
   encode the current increment as a hold boundary, not as completable.
 - For DC-ExecPlans, encode the Correction Authority Envelope, conversion rule,
-  seven-gate bar, `HOLD`-legitimacy boundaries, and defect-shaped handoff.
+  seven-gate bar, `HOLD`-legitimacy boundaries, required hold legitimacy audit,
+  and defect-shaped handoff.
+- For DC-ExecPlans, explicitly state that `HOLD` is exceptional. Diagnostic
+  uncertainty, implementation effort, large edit size, or a partial compatibility
+  route do not justify stopping while contract amendment, tests, production
+  edits, or validation remain possible inside the envelope.
 - Explicitly encode autonomous execution intent: the package must contain enough
   context, sequencing, and validation detail for no-intervention execution.
 - Explicitly state contract-first sequence:
@@ -98,6 +107,11 @@ requirement, not optional package style guidance.
   `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` unless explicitly justified.
 - Do not invent physics: every equation, constant, guard, and invariant must
   trace to canonical contract text plus provenance citations.
+- Do not authorize surrogate, provisional, proxy, empirical stand-in, or
+  heuristic process physics in production code. If actual physics authority is
+  missing or contradictory, encode a hold-for-authority boundary. If actual
+  physics authority is present and the routine is in scope, encode direct
+  re-implementation of that physics as the required correction.
 - Migration completeness is required for touched process families (for example
   ET, infiltration, snow/frost, runoff, routing): do not merge or disposition
   as complete with placeholder/proxy equations when baseline-authoritative
@@ -176,8 +190,20 @@ requirement, not optional package style guidance.
   list authorized role(s), scope, expected outputs, and read/write limits.
 - DC-ExecPlan kickoff prompts must say `Close defect <id> end-to-end`, include
   the Correction Authority Envelope, require conversion to a contract-first fix
-  when the seven-gate bar is met, and prohibit relaying intermediate diagnostic
-  steps into a new package.
+  when the seven-gate bar is met, prohibit relaying intermediate diagnostic
+  steps into a new package, and prohibit `HOLD` while source reading,
+  implementation, or validation remains possible inside the envelope.
+- DC-ExecPlan kickoff prompts must include a `HOLD legitimacy audit:` line
+  requiring the agent to name the boundary, cite the evidence proving it, list
+  the in-envelope correction route considered, and explain why that route cannot
+  close the defect in the current package.
+- Kernel/process-physics kickoff prompts must include a `No surrogate physics:`
+  line requiring actual contract-backed or baseline-authoritative physics in
+  production code and banning surrogate/provisional/proxy/heuristic stand-ins.
+- Direct-path/publication kickoff prompts must include a `Real consumer proof:`
+  line requiring the public or downstream consumer to read the corrected path,
+  with negative proof that wrappers, adapters, skeletons, shadow paths, and old
+  compatibility paths are not carrying the closure claim.
 - Kickoff prompt must include a `Required reading` section with explicit path
   references so onboarding/orientation does not require independent discovery.
   Structure this section as `Core`, `Conditional`, and `On-demand` lists.

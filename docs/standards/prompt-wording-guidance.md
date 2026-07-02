@@ -57,8 +57,15 @@ scope.
 - Contract-first sequencing.
 - Canonical `SC-*` authority requirements.
 - Legacy baseline provenance requirement when migration applies.
-- Explicit prohibition on heuristic/proxy process-physics substitutions in
-  production code for migration packages.
+- Explicit prohibition on surrogate, provisional, proxy, empirical stand-in, or
+  heuristic process-physics substitutions in production code for all
+  kernel/process-physics packages.
+- Explicit direct production-path requirement for direct-kernel, publication, or
+  cutover packages: the real downstream consumer must read the corrected path,
+  and wrappers/adapters/skeleton/shadow paths cannot carry the closure claim.
+- DC-ExecPlan autonomous closure expectation: no `HOLD` while source reading,
+  implementation, contract/test work, or validation remains possible inside the
+  declared envelope.
 - Dual review and dual verification requirements where applicable.
 - Autonomous execution expectation for the full assigned scope (no user
   intervention unless hard-blocked).
@@ -127,6 +134,18 @@ scope.
 - `Constraints: contract-first sequencing; canonical SC authority;`
   `baseline provenance (<if applicable>); typed guards; no silent defaults;`
   `no canonicalize-and-proceed for domain violations.`
+- `DC closure (<if applicable>): close defect <id> end-to-end; do not hold while`
+  `source reading, implementation, contract/test work, or validation remains`
+  `possible inside the declared envelope; if HOLD is claimed, record a HOLD`
+  `legitimacy audit naming the boundary, evidence, considered in-envelope`
+  `correction route, and why it cannot close now.`
+- `No surrogate physics (<if applicable>): production code must implement actual`
+  `contract-backed or baseline-authoritative physics; surrogate/provisional/`
+  `proxy/heuristic stand-ins are forbidden. Missing authority is a hold-for-`
+  `authority boundary; known in-scope physics is an implementation obligation.`
+- `Real consumer proof (<if applicable>): move the public/downstream consumer to`
+  `the corrected path and prove wrappers, adapters, skeletons, shadow paths, and`
+  `old compatibility paths are not carrying the closure claim.`
 - `Conservation/output acceptance (<if applicable>): record operand lineage;`
   `separate plausible aliases in fixtures; reject known wrong formulas; run`
   `independent reconstruction plus real closure/magnitude audit; align`

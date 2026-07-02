@@ -9,6 +9,9 @@
 - Preserve package governance: scope, evidence, gates, review, verification, line-count disposition, and closure truthfulness.
 - Keep package artifacts as evidence, not replacement authority for canonical `SC-*` contracts.
 - Make packages right-sized: coherent closure slices, not one-symbol diagnostic relays.
+- Treat defect-closure (`DC`) packages as autonomous closure work by default:
+  diagnose, correct, validate, review, and disposition inside the declared
+  authority envelope unless a proven boundary prevents correction.
 
 ## Primary Assets / Key Files
 - `docs/work-packages/README.md` — package catalog and process map.
@@ -34,6 +37,10 @@
 - If a required gate can be proven only by a later phase/increment, the current
   phase is not complete. It must be marked `HOLD` / `executed-hold` with the
   later dependency named as the blocker.
+- For DC-ExecPlans, this rule is not permission to stop early. If a gate is
+  unmet because implementation, validation, or source reading remains inside
+  the declared envelope, continue executing. `HOLD` is valid only after the
+  package records why the missing evidence cannot be produced in-envelope.
 - Do not reclassify an unmet current gate as "next increment scope" after
   execution has started. Allowed alternatives are:
   1. execute the missing evidence in the current scope,
@@ -132,7 +139,24 @@
 - Use a Defect-Closure ExecPlan when closing an observed invariant violation, fail-closed event on valid input, or conservation residual.
 - Declare the Correction Authority Envelope: defect IDs, observed failures, in-scope contracts/source files, allowed edit classes, validation surfaces, acceptance criteria, and protected boundaries.
 - If the root cause is in-envelope and expected behavior is supported by canonical `SC-*` authority, pinned-baseline provenance, or a contract-authorized physical invariant, land the contract-first correction in the same package.
-- Close in `HOLD` only at a declared boundary: out-of-envelope mechanism, missing/contradictory authority, invalid upstream input with correct typed guard, unavailable evidence, or different process family/contract authority.
+- Close in `HOLD` only at a declared boundary: out-of-envelope mechanism,
+  missing/contradictory authority, invalid upstream input with correct typed
+  guard, unavailable evidence, or different process family/contract authority.
+  Diagnostic uncertainty, implementation effort, large edit size, or a
+  partially working compatibility path are not hold boundaries.
+- Before a DC package may hold, record a `HOLD legitimacy audit` artifact or
+  section that names the boundary, cites the evidence proving it, lists the
+  in-envelope correction route that was considered, and explains why that route
+  cannot close the defect in the current package.
+- If review finds that the package used a shortcut, wrapper, skeleton, shadow
+  path, compatibility bridge, or incomplete direct path while an authority-backed
+  production correction was in scope, the finding is closure-blocking and must
+  be fixed before disposition.
+- For kernel/process-physics defects, the acceptable production correction is
+  baseline-authoritative or contract-authorized physics. Do not introduce
+  surrogate, provisional, proxy, empirical stand-in, or heuristic process
+  physics into production paths. If actual physics authority is missing, hold
+  for authority; if it is present and in scope, implement the actual physics.
 - The handoff's first actionable item must be `close defect <id>`, not a vague trace/inspect step.
 
 ## Mechanical Refactor Requirements
@@ -158,6 +182,15 @@
 - Do not mark gates as run when they were reasoned about or partially executed.
 - Do not mark an increment complete when one of its required acceptance gates is
   waiting on a later increment's evidence.
+- Do not convert a DC package into a diagnostic relay because the direct fix is
+  larger than expected. Widen within the declared envelope or amend the package
+  before implementation; after execution starts, continue to closure unless a
+  legitimate boundary is proven.
+- Do not implement compatibility wrappers, adapter detours, or skeleton paths
+  when the package objective is direct production adoption and the actual
+  consumer can be moved.
+- Do not add surrogate or proxy physics to production code. Missing authority is
+  a hold boundary; known in-scope physics is an implementation obligation.
 - Do not close conservation-sensitive output work on exact self-consistency,
   one-sided bounds, or tests where wrong formulas alias the expected value.
 - Do not use package artifacts to override canonical contract authority.

@@ -38,6 +38,13 @@ of exactly three honest ends:
 "Produced more diagnostic evidence and deferred" is not a terminal state for a
 DC-ExecPlan. That is the failure this shape is built to prevent.
 
+**Autonomous closure presumption.** A DC-ExecPlan starts from the assumption
+that the agent will close the defect inside the declared envelope. `HOLD` is an
+exception that must be earned by evidence, not a normal stopping point when the
+work becomes larger than expected. If source reading, contract amendment,
+test-writing, production editing, or validation remains possible inside the
+envelope, the package continues.
+
 ## 2. Why they are needed
 
 This is the load-bearing section. The shape is a reaction to a concrete,
@@ -155,6 +162,14 @@ only by a *cited* authority, roadmap, or ownership boundary (for example the
 suspended snow route), never by silence. A reviewer must reject an envelope that
 excludes the evidence's most likely correction surface without such a citation.
 
+**Implementation adequacy.** The envelope must authorize the correction route
+needed to remove the defect from the real production path, not merely enough
+surface area to add a wrapper, adapter, skeleton, shadow path, or diagnostic
+counter. If the observed defect is on a direct kernel, publication, or consumer
+path, the package must move the real consumer to the corrected path and prove
+the old path is not used for the claim. A convenience bridge is not a correction
+when a direct production implementation is in scope.
+
 **Grouping and splitting.** One DC-ExecPlan may carry multiple symptoms only when
 they share the same authority envelope, write-set, and validation surface.
 Symptoms that cross process-family authority must be split into separate
@@ -218,6 +233,14 @@ comparator without independent authority). Gates 1–3, 6, 7 forbid eternal
 deferral (if a defect is reproduced, named, owned, authorized, testable, and
 measurable, you must close it). Both failure modes are blocked by the same list.
 
+For process-physics defects, gate 5 is strict: production code may not contain
+surrogate, provisional, proxy, empirical stand-in, or heuristic physics. The
+correction must implement canonical `SC-*` authority backed by pinned-baseline
+provenance, literature authority encoded in the contract, or a
+contract-authorized physical invariant. If that authority is absent or
+contradictory, the package may hold for authority. If the authority is present
+and the routine is in scope, the package must implement the actual physics.
+
 ## 6. Legitimate HOLD versus grind-HOLD
 
 `HOLD` remains a correct outcome — but only at a boundary, never as a rest stop.
@@ -233,12 +256,22 @@ measurable, you must close it). Both failure modes are blocked by the same list.
 - The fix requires a **different process family or contract authority** not
   declared in this envelope.
 
+Before recording `HOLD`, the package must add a **HOLD legitimacy audit** that
+names the boundary, cites the evidence proving it, lists the in-envelope
+correction route that was available or considered, and explains why that route
+cannot close the defect in the current package. A hold without this audit is
+undispositioned work, not closure.
+
 **Grind-HOLD** (forbidden — these are the §2 attractor in disguise):
 
 - "The next package should inspect the next function."
 - "The next package should trace variable X one level deeper."
 - "Root cause is in the declared files, but implementation is deferred."
 - "Another package should add the contract test this package already specified."
+- "The direct fix is larger than expected, so this package leaves a wrapper or
+  compatibility bridge."
+- "A surrogate formula keeps the path running while actual physics is left for
+  later."
 
 The test: a legitimate branch produces a **new defect-closure target** with its
 own acceptance; a grind-HOLD produces a **diagnostic breadcrumb**.
@@ -273,7 +306,10 @@ The kickoff is correspondingly defect-shaped:
 > mechanism is owned and contract-supported, amend contracts and tests, record
 > the pre-implementation gate, implement the correction, validate, and complete
 > dual review and disposition. Do not request a new package for intermediate
-> diagnostic steps.
+> diagnostic steps. Do not stop at `HOLD` while source reading, implementation,
+> or validation remains possible inside the declared envelope. Do not introduce
+> surrogate physics or compatibility wrappers as substitutes for the direct
+> production correction.
 
 ## 8. Diagnostic-first defects and protected boundaries
 
@@ -334,7 +370,8 @@ shields an in-scope, authority-backed fix from the conversion rule (§4).
   §5 carries ADR-0017's like-for-like burden into the fix decision.
 - **Dual review and disposition.** Unchanged and required. Four review
   obligations are added: a reviewer must check (a) **`HOLD` legitimacy** — that no
-  in-scope, authority-backed defect was diagnosed and then deferred (§6);
+  in-scope, authority-backed defect was diagnosed and then deferred, and that
+  any hold includes the required legitimacy audit (§6);
   (b) **envelope adequacy** — that the envelope was not drawn to exclude the
   evidence's most likely correction surface without a cited boundary (§3); and
   (c) **protected-boundary integrity** — that no negative boundary merely shields
@@ -342,6 +379,12 @@ shields an in-scope, authority-backed fix from the conversion rule (§4).
   **conservation/output anti-tautology**, when applicable — that validation uses
   independent produced operands, rejects tempting aliases/formulas, and keeps
   metadata/schema lineage aligned with the accepted surface (§5).
+- **Production-correction review.** For kernel/process-physics packages, review
+  must explicitly check that production code implements actual contract-backed
+  physics and contains no surrogate/provisional/proxy/heuristic stand-in. For
+  direct-path or publication packages, review must explicitly check that the real
+  downstream consumer reads the corrected path and that wrappers/adapters are
+  not masking an incomplete correction.
 - **Line-count governance disposition.** Required. Review artifacts must
    explicitly evaluate `.rs` file thresholds (2000=`WARN`, 3000=`required
    refactor`) and disposition any exception. Any approved 3000+ generated/fixture
@@ -368,7 +411,7 @@ standard ExecPlan sections:
    review/disposition), plus an attribution milestone if the defect is
    diagnostic-first (§8).
 6. **HOLD-legitimacy conditions** (§6) — the specific boundaries at which this
-   package may legitimately stop.
+   package may legitimately stop, plus the required hold legitimacy audit fields.
 7. **Defect-shaped handoff** (§7) — what the next package, if any, must close.
 
 ## 11. Provenance
