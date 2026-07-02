@@ -727,6 +727,13 @@ fn rewrite_required_input_path(
             resolved.display()
         ));
     }
+    let resolved = fs::canonicalize(&resolved).map_err(|error| {
+        format!(
+            "CLIWAT-E-044 failed canonicalizing hillslope source runfile {} inputs.{key} path {}: {error}",
+            source_run_file.display(),
+            resolved.display()
+        )
+    })?;
     inputs.insert(
         key.to_string(),
         Value::String(resolved.display().to_string()),
@@ -753,6 +760,13 @@ fn rewrite_optional_input_path(
             resolved.display()
         ));
     }
+    let resolved = fs::canonicalize(&resolved).map_err(|error| {
+        format!(
+            "CLIWAT-E-044 failed canonicalizing hillslope source runfile {} inputs.{key} path {}: {error}",
+            source_run_file.display(),
+            resolved.display()
+        )
+    })?;
     inputs.insert(
         key.to_string(),
         Value::String(resolved.display().to_string()),
