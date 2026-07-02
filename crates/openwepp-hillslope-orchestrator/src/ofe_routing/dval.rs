@@ -78,7 +78,11 @@ pub fn run_iwagaki(ko: f64) -> Result<DvalRun, RoutingError> {
         }
     };
     let inflow = |_t: f64| 0.0;
-    let intensity = |t: f64| if t <= dur { 0.108e-2 } else { 0.0 };
+    // Iwagaki supplies water LATERALLY, not as rainfall: there is no raindrop
+    // impact, so the skin-resistance rainfall intensity I is zero (the lateral
+    // supply enters as rainfall-excess, above). Feeding the lateral rate into
+    // I would spuriously inflate f_s = (3393 I^0.407 + k_o)/Re.
+    let intensity = |_t: f64| 0.0;
     let forcing = Forcing {
         rainfall_excess_m_s: &excess,
         upstream_inflow_m2_s: &inflow,
@@ -238,32 +242,36 @@ mod tests {
     const CITED_ENHANCED_PEAK_CASE1: f64 = 9.451e-5; // Abban, col 11
     const CITED_ENHANCED_PEAK_CASE4: f64 = 8.132e-3; // Iwagaki, col 1
 
-    // Case 1 (bare) REPRODUCES the enhanced-WEPP peak at the literature Ks
-    // (NS_trace 0.868 offline; see artifacts/execution-report.md). The fit is
-    // operand-sensitive, so this test asserts the magnitude band that the
-    // reproducing verdict rests on, not a robust tolerance.
+    // Case 1 (bare) reproduces the enhanced-WEPP steady-state MAGNITUDE at the
+    // literature Ks (peak +7%; `NS_trace` 0.868, plateau-dominated), but is a
+    // PARTIAL verdict: the rising-limb 10-90% rise time is ~40% slow (5000 s vs
+    // 3580 s), so it fails the shape co-condition and the fit is Ks-sensitive.
+    // This test pins the magnitude reproduction only — see
+    // artifacts/execution-report.md for the rise-limb shape gap.
     #[test]
-    fn case1_bare_reproduces_cited_enhanced_peak() {
+    fn case1_bare_reproduces_steady_magnitude() {
         let run = run_rain_case(&case1_bare()).expect("case1 runs");
         let ratio = run.peak_m2_s / CITED_ENHANCED_PEAK_CASE1;
         assert!(
             (0.9..=1.2).contains(&ratio),
-            "Case1 peak {:.3e} vs cited enhanced {:.3e} (ratio {ratio:.2}) outside reproduce band",
+            "Case1 peak {:.3e} vs cited enhanced {:.3e} (ratio {ratio:.2}) outside magnitude band",
             run.peak_m2_s,
             CITED_ENHANCED_PEAK_CASE1
         );
         assert!(run.max_courant <= 1.0 + 1.0e-9);
     }
 
-    // Case 4 (Iwagaki) does NOT reproduce enhanced-WEPP (NS_trace 0.13-0.18).
-    // The peak is the right order of magnitude but numerically NOISY
-    // (non-monotonic in k_o — shock-capture sensitivity), and the outlet lags
-    // the cited ~26 s peak (shock at 23 s) by ~5-6 s (lag-corrected NS ~0.52).
-    // Carried as GAP-OFEROUTE-D7-SHOCK-LAG. This test pins the two ROBUST
-    // facts (order-of-magnitude peak + persistent timing lag) so a future
-    // shock-capture fix that closes the lag becomes visible as a test failure.
+    // Case 4 (Iwagaki) — NO rain: water is supplied laterally, so the
+    // skin-term rainfall intensity is ZERO (see run_iwagaki). Under that
+    // correct forcing, openWEPP does not cleanly reproduce enhanced-WEPP
+    // (best `NS_trace` ~0.30 at k_o~200), but at that k_o the TIMING and rise
+    // shape do reproduce (t_peak ~28 s vs 26 s; rise ~20.6 s vs 20.9 s) — the
+    // earlier "solver-side ~5-6 s shock lag" was an ARTIFACT of feeding the
+    // lateral rate into I, now withdrawn. The residual (peak ~20% low, moderate
+    // NS) is operand-limited on the unspecified flume k_o. This test pins the
+    // order-of-magnitude peak and that the timing is NOT grossly lagged.
     #[test]
-    fn case4_iwagaki_does_not_reproduce_shock_timing() {
+    fn case4_iwagaki_timing_reproduces_operand_limited_peak() {
         let run = run_iwagaki(200.0).expect("iwagaki runs");
         let ratio = run.peak_m2_s / CITED_ENHANCED_PEAK_CASE4;
         assert!(
@@ -272,12 +280,24 @@ mod tests {
             run.peak_m2_s,
             CITED_ENHANCED_PEAK_CASE4
         );
-        // The documented gap: openWEPP peaks LATE. If this drops to <= 28 s,
-        // GAP-OFEROUTE-D7-SHOCK-LAG may be closing — re-run the D-val harness.
+        // Sampled-hydrograph peak time (matches the offline harness metric; the
+        // solver's internal `time_to_peak_s` disagrees by ~9 s for Iwagaki — a
+        // shock-capture multi-modality noted in the execution report). Under the
+        // corrected zero-intensity forcing this is close to the ref ~26 s.
+        let sampled_t_peak = run
+            .hydrograph
+            .iter()
+            .fold((0.0_f64, 0.0_f64), |(bt, bq), s| {
+                if s.q_m2_s > bq {
+                    (s.time_s, s.q_m2_s)
+                } else {
+                    (bt, bq)
+                }
+            })
+            .0;
         assert!(
-            run.time_to_peak_s > 28.0,
-            "Case4 t_peak {:.1}s no longer lags — revisit GAP-OFEROUTE-D7-SHOCK-LAG",
-            run.time_to_peak_s
+            (20.0..=34.0).contains(&sampled_t_peak),
+            "Case4 sampled t_peak {sampled_t_peak:.1}s outside the near-reference band"
         );
         assert!(run.max_courant <= 1.0 + 1.0e-9);
     }

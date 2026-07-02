@@ -3,14 +3,16 @@
 Status: **EXECUTED — REVIEW-READY** (2026-07-02)
 
 **Execution outcome (per-case verdicts; see `artifacts/execution-report.md`):**
-Case 1 bare **REPRODUCES** (`NS_trace` 0.868 at literature Ks, operand-sensitive);
-Case 2 isolated **operand-limited** (NS 0.45); Case 3 vegetation
-**does-not-reproduce** + S0 magnitude caveat (NS 0.54); Case 4 shock **GAP**
-(`GAP-OFEROUTE-004`, ~5-6 s phase lag, solver-side). Deliverables: committed
+Case 1 bare **PARTIAL** (steady magnitude reproduces `NS_trace` 0.868, but the
+rising-limb shape gate fails ~40%); Case 2 isolated **operand-limited** (NS
+0.45); Case 3 vegetation **does-not-reproduce** + S0 magnitude caveat (NS 0.54);
+Case 4 shock **operand-limited** (corrected `I=0`: timing/rise reproduce at
+k_o~200, peak −20%, NS ~0.30 — the earlier solver-lag `GAP-OFEROUTE-004` was
+WITHDRAWN as a forcing-bug artifact). **Zero cases cleanly reproduce.** Deliverables: committed
 copyright-safe harness (`ofe_routing::dval` + `examples/dval_case` +
 `tools/dval/compare_dval.py`), S0 cut-point map, S1 operands, `SC-OFEROUTE-001`
-rev 7 (`INV-OFEROUTE-011` partial; Zone taxonomy deferred). 1/4 reproduces
-(qualified) — per the success criterion (*truthful per-case verdicts, not all
+rev 8 (`INV-OFEROUTE-011` partial, GAP-004 withdrawn, skin-convention audit
+open; Zone taxonomy deferred). Zero clean reproductions — per the success criterion (*truthful per-case verdicts, not all
 four pass*), D7 is executed. Shadow-first preserved; no production wiring.
 Campaign: [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D,
 validation stage. Contract: `SC-OFEROUTE-001` (`INV-OFEROUTE-011` acceptance;

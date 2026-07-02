@@ -34,17 +34,18 @@ are looser (sand/gravel and Miami series unspecified in-fixture).
 ## Case 4 flume k_o (operand gap, unresolved)
 
 The paper gives **no** friction coefficient for the smooth Iwagaki flume.
-A k_o scan (100-300) never reproduces both peak magnitude and timing, and the
-peak is non-monotonic in k_o (numerically noisy — a shock-capture property,
-not an operand effect). Because the ~5-6 s timing lag **survives the entire
-k_o scan**, the Case-4 shortfall is attributable to the solver, not to the
-unknown operand (see S4 in execution-report). Verdict class: solver-side gap,
-not operand-limited.
+A k_o scan under the CORRECTED zero-intensity forcing (Iwagaki has no rain;
+the earlier runs wrongly fed the lateral rate into the skin-term `I`) shows the
+timing and rise shape reproduce at k_o ~ 200 (t_peak 28 s vs 26 s; rise 20.6 s
+vs 20.9 s), with the residual being peak magnitude (~20% low) and moderate
+`NS_trace` (~0.30). The shortfall tracks the unspecified flume `k_o`. Verdict
+class: **operand-limited** (the earlier solver-side attribution was withdrawn
+as a forcing-bug artifact — see execution-report).
 
 ## Verdict-class rule applied (package acceptance §S1)
 
 - Case 1: operand-sensitive (Ks) → verdict qualified, not robust.
 - Case 2: operand-loose (Ks/gravel) → `operand-limited`.
 - Case 3: operand-loose + S0 magnitude caveat → `operand-limited` / shape-only.
-- Case 4: operand gap (k_o) is **not** load-bearing for the timing verdict
-  (lag survives the scan) → solver-side gap.
+- Case 4: operand gap (unspecified flume k_o) **is** load-bearing — at k_o~200
+  the timing/rise reproduce; residual peak/NS tracks k_o → `operand-limited`.

@@ -6,85 +6,94 @@ only). Committed cited-scalar tests in `ofe_routing::dval`. `NS_trace` =
 openWEPP vs enhanced-WEPP **model trace** (method fidelity); the paper's
 `Ef_obs` (enhanced-vs-observed) is **not** recomputed and stays a citation.
 
-## Results
+> **Correction (Codex execution review).** The first execution had a Case-4
+> forcing bug (`run_iwagaki` fed the lateral-supply rate into the skin-term
+> rainfall intensity `I`, but Iwagaki has no rain → `I` must be 0). That
+> inflated the skin friction and produced a spurious ~5-6 s "shock lag" that
+> was wrongly attributed to the solver (`GAP-OFEROUTE-004`, now **WITHDRAWN**).
+> All Case-4 numbers below are the corrected `I = 0` results. The Case-1
+> verdict is also corrected: the required rise-limb shape gate is now applied
+> and it **fails**, so Case 1 is downgraded to PARTIAL.
 
-| Case | `NS_trace` | peak ratio (ow/enh) | t_peak ow / ref | verdict |
+## Results (corrected)
+
+| Case | `NS_trace` | peak ratio | rise 10-90% ow/ref | verdict |
 |---|---|---|---|---|
-| 1 bare | **0.868** (@ Ks 6.8) | 1.07 | ~steady plateau | **REPRODUCES (operand-sensitive)** |
-| 2 isolated | 0.454 | 0.75 | 10800 / 10620 s | operand-limited (under-predicts −25%) |
-| 3 vegetation | 0.538 | 0.55 | 3600 / 3603 s | does-not-reproduce (−45%; S0 magnitude caveat) |
-| 4 shock | 0.13–0.18 | ~0.6–1.2 (noisy) | 31 / 26 s | **GAP — shock timing (`GAP-OFEROUTE-D7-SHOCK-LAG`)** |
+| 1 bare | 0.868 | 1.07 | **5000 / 3580 s (~40% slow)** | **PARTIAL** — steady magnitude reproduces, rise-limb shape fails |
+| 2 isolated | 0.454 | 0.75 | — | operand-limited (−25%) |
+| 3 vegetation | 0.538 | 0.55 | — | does-not-reproduce (−45%) + S0 magnitude caveat |
+| 4 shock (`I=0`) | ~0.30 (@k_o 200) | 0.79 | 20.6 / 20.9 s (**matches**) | operand-limited (unspecified k_o) |
 
-Shape co-conditions (package acceptance §5) applied per case; details below.
+**Zero cases cleanly reproduce** (NS ≥ 0.85 **and** shape gate). Per the
+package success criterion — *truthful per-case verdicts, not all four pass* —
+D7 is executed.
 
-## Case 1 (bare) — REPRODUCES, operand-sensitive
+## Case 1 (bare) — PARTIAL
 
-At the literature Ks = 6.8 mm/h (Rawls silt-loam, chosen before the comparison,
-**not tuned**), `NS_trace = 0.868 ≥ 0.85` with peak +7% and matching
-rise-to-steady shape. **But the fit is knife-edge in Ks:**
+At the literature Ks = 6.8 mm/h (Rawls silt-loam, untuned), `NS_trace = 0.868`
+with peak +7%. But `NS` is **plateau-dominated** (5 h steady rain fills the
+comparison window), and the **rising-limb shape gate fails**: openWEPP's 10-90%
+rise time is ~5000 s vs the enhanced ~3580 s (~40% slow). So the steady
+magnitude reproduces but the transient does not, and the fit is knife-edge in
+Ks (`NS` −0.51 @ Ks 2, 0.868 @ 6.8, 0.37 @ 10). Verdict: **PARTIAL** — not a
+clean reproduction under the NS-**and**-shape acceptance model. (This is the
+NS-necessary-not-sufficient failure mode the scaffold review CX-D7-002
+anticipated.)
 
-| Ks (mm/h) | 2 | 5 | 6.8 | 10 | 14 | 20 |
-|---|---|---|---|---|---|---|
-| `NS_trace` | −0.51 | 0.76 | **0.868** | 0.37 | −1.04 | −4.28 |
+## Case 2 (isolated) — operand-limited
 
-That the independent literature value coincides with the NS-optimum is a real
-method-fidelity signal — openWEPP + textbook soil params reproduces the
-enhanced-WEPP bare-surface trace. The verdict is **qualified** (operand-
-sensitive), not robust, and rests on the S0 col-11 physical-column choice.
-
-## Case 2 (isolated roughness) — operand-limited
-
-`NS_trace 0.454`, peak −25%. openWEPP under-predicts; the sandy/gravel soil
-Ks and the isolated-roughness form/wave friction operands are loosely
-constrained. Not certifiable as a solver defect without tighter operands.
+`NS_trace 0.454`, peak −25%. Sandy/gravel Ks and the isolated-roughness
+form/wave operands are loosely constrained; not certifiable without tighter
+operands.
 
 ## Case 3 (vegetation) — does-not-reproduce (caveated)
 
-`NS_trace 0.538`, peak −45% (openWEPP 9.2e-5 vs enhanced 1.685e-4). Carries the
-S0 magnitude anomaly (enhanced peak exceeds the plot's I·L). Under-prediction
-is consistent with the vegetation resistance over-attenuating, but the S0
-caveat blocks a clean magnitude verdict — shape-only, does-not-reproduce.
+`NS_trace 0.538`, peak −45%, plus the S0 magnitude anomaly (enhanced col-8
+peak exceeds the plot's I·L). Shape-only; does-not-reproduce.
 
-## Case 4 (Iwagaki shock) — GAP-OFEROUTE-D7-SHOCK-LAG
+## Case 4 (Iwagaki shock) — operand-limited (corrected)
 
-Attribution (S4):
-- **Magnitude**: right order of magnitude but **numerically noisy** —
-  peak non-monotonic in k_o (9.5→12.0→8.9→8.8e-3 for k_o 150→175→200→250) —
-  a shock-capture sensitivity, not an operand effect.
-- **Timing**: outlet t_peak lags the cited ~26 s (observed shock at 23 s) by
-  ~5-6 s; `NS_trace 0.13-0.18`. A **lag-corrected** NS peaks at ~0.52 at a
-  −5.5 s shift → the gap is **dominantly a phase lag** with residual shape.
-- **Operand-independent**: the lag survives the full k_o scan and is **worse**
-  as a 3-OFE cascade (handoff smears the front). So it is **solver-side**, not
-  operand-limited or method-decomposition.
-- **Interpretation**: openWEPP behaves like the paper's *Original* WEPP
-  ("~5 s slower") — it does not sharpen the concave-curvature shock catch-up
-  that enhanced-WEPP captures. Candidate root cause: TVD-MacCormack front
-  diffusion / celerity at the section interfaces.
+With the corrected `I = 0` forcing (lateral supply is excess, not rain):
 
-**Disposition:** promote the package-local provisional gap to a contract
-`GAP-OFEROUTE` (shock-capture fidelity). Per package split-rule, a solver
-correction is a **separate future package** (write-set exceeds D-val analysis)
-— open only after this attribution, which now exists.
+| k_o | 50 | 100 | 150 | 200 | 300 |
+|---|---|---|---|---|---|
+| `NS_trace` | 0.115 | 0.157 | 0.298 | **0.301** | 0.063 |
+| peak ratio | 0.54 | 0.62 | 0.85 | 0.79 | 0.61 |
+| t_peak (s) | 33 | 36 | 38 | **28** | 28 |
+| rise 10-90% (s) | 28.3 | 30.4 | 31.1 | **20.6** | 20.3 |
 
-## S2 (skin I-unit convention, `INV-OFEROUTE-002`)
+At k_o ~ 200 the **timing (28 s vs 26 s) and rise shape (20.6 s vs 20.9 s)
+reproduce**; the residual is peak magnitude (~20% low) and moderate `NS_trace`
+(~0.30). The shortfall tracks the **unspecified flume k_o** (operand-limited),
+not a solver defect. The earlier solver-lag attribution is **withdrawn**.
 
-Not independently audited. Case 1 reproduces the enhanced trace with the
-current `f_s = (3393 I^0.407 + k_o)/Re` implementation, so the convention is
-**not grossly wrong**, but an explicit unit audit is **deferred** (recorded as
-still-open, not closed by D7).
+Two residual solver observations (noted, not GAP-promoted):
+- The peak is **k_o-noisy** (non-monotonic peak ratio), and the solver's
+  internal `time_to_peak_s` disagrees with the sampled-hydrograph peak by ~9 s
+  — a shock-capture multi-modality worth a look if Case 4 is revisited with a
+  known k_o.
 
-## S5 contract disposition
+## S2 — skin `I`/`ν` unit convention (`INV-OFEROUTE-002`) — OPEN, not confirmed
 
-- `INV-OFEROUTE-011`: D7 supplies **partial** method-fidelity evidence — Case 1
-  reproduces (qualified); Cases 2-3 operand-limited/caveated; Case 4 gap. The
-  invariant is **not** closed; evidence row updated to cite this report.
-- New `GAP-OFEROUTE-004` (shock-capture / phase-lag) opened.
-- Zone 1/Zone 2 taxonomy (named by `INV-OFEROUTE-011`): **not run** — explicitly
-  deferred in the contract so D7 does not appear to close an unrun obligation.
+D7 did **not** audit the skin-term convention, and the intensity-usage bug
+above shows the `I` path was not exercised correctly. The skin term
+`f_s = (3393 I^0.407 + k_o)/Re` is **k_o-dominated** for Cases 1-3 (k_o = 500;
+the `I` term ≈ 60 for Case 1), so Case-1 reproduction does **not** validate the
+convention. `INV-OFEROUTE-002` / `GAP-OFEROUTE-002` are corrected to mark the
+convention **unconfirmed / audit open** — D7 does not close it.
+
+## S5 contract disposition (corrected)
+
+- `INV-OFEROUTE-011`: **PARTIAL, not closed** — Case 1 partial, Cases 2-3
+  operand-limited/caveated, Case 4 operand-limited. Zero clean reproductions.
+- `GAP-OFEROUTE-004`: **WITHDRAWN** (forcing-bug artifact).
+- `INV-OFEROUTE-002` / `GAP-OFEROUTE-002`: skin convention unconfirmed, open.
+- Zone 1/2 taxonomy: **not run**, explicitly deferred.
 
 ## Honesty summary
 
-1 of 4 cases reproduces (qualified); 3 carry distinct, attributed shortfalls.
-Per the package success criterion — *truthful per-case verdicts, not all four
-pass* — D7 is executed. No result is reported as validation against nature.
+The first pass over-claimed (a solver GAP from a forcing bug; a "REPRODUCES"
+that skipped its shape gate). Corrected: **zero cases cleanly reproduce**;
+each shortfall is attributed (operand-limited, shape-gap, or open convention)
+without a manufactured solver defect. No result is reported as validation
+against nature.
