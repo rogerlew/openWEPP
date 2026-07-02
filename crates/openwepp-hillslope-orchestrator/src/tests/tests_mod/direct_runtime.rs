@@ -3137,3 +3137,36 @@ fn dc01_wb14_supply_admission_increases_infiltration_with_runon() {
         "supply must split exactly into infiltration + excess"
     );
 }
+
+#[test]
+fn dc01_dry_runon_day_still_infiltrates() {
+    use crate::DirectWb14InfiltrationProducerInputs;
+    let mut inputs = DirectWb14InfiltrationProducerInputs {
+        runon_hourly_supply_m: [0.0; 24],
+        hyetograph: vec![DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 3_600.0,
+            intensity_m_s: 0.0,
+        }],
+        effective_conductivity_m_s: 1.0e-6,
+        matric_potential_m: 0.2,
+        storage_capacity_m: 0.5,
+        depression_storage_capacity_m: 0.0,
+    };
+    let dry =
+        crate::direct_runtime::dc01_test_wb14_with_profile(&inputs).expect("dry day computes");
+    assert_eq!(dry.state.cumulative_infiltration_m, 0.0);
+    inputs.runon_hourly_supply_m[6] = 0.005;
+    let with_runon = crate::direct_runtime::dc01_test_wb14_with_profile(&inputs)
+        .expect("dry-runon day computes");
+    assert!(
+        with_runon.state.cumulative_infiltration_m > 0.0,
+        "acceptance criterion 1: a dry-runon day must infiltrate, got {}",
+        with_runon.state.cumulative_infiltration_m
+    );
+    let excess: f64 = with_runon.hourly_excess_m.iter().sum();
+    assert!(
+        (0.005 - with_runon.state.cumulative_infiltration_m - excess).abs() < 1.0e-12,
+        "runon must split exactly into infiltration + excess on a dry day"
+    );
+}

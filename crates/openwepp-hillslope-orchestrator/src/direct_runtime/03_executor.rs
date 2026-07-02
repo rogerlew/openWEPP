@@ -546,7 +546,7 @@ impl DirectFrameExecutor {
             raw_total_m += raw;
         }
         if raw_total_m <= 0.0 {
-            let uniform = 1.0 / DIRECT_TRANSFER_HOUR_COUNT as f64;
+            let uniform = 1.0 / crate::direct_runtime::runoff::DC01_HOUR_BIN_COUNT_F64;
             return [uniform; DIRECT_TRANSFER_HOUR_COUNT];
         }
         for weight in &mut weights {

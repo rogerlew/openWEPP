@@ -651,7 +651,7 @@ impl DirectDayFrame {
         surface_hourly_weights: &[f64; DC01_HOUR_BIN_COUNT],
         lateral_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
     ) -> [f64; DC01_HOUR_BIN_COUNT] {
-        let uniform = 1.0 / DC01_HOUR_BIN_COUNT as f64;
+        let uniform = 1.0 / DC01_HOUR_BIN_COUNT_F64;
         let mut supply = [0.0_f64; DC01_HOUR_BIN_COUNT];
         let weight_total: f64 = surface_hourly_weights.iter().map(|w| w.max(0.0)).sum();
         if surface_total_m > 0.0 {
@@ -1385,6 +1385,7 @@ fn normalize_r4a_nonnegative_depth(
 
 pub(crate) const DC01_HOUR_BIN_COUNT: usize = 24;
 pub(crate) const DC01_HOUR_BIN_SECONDS: f64 = 3_600.0;
+pub(crate) const DC01_HOUR_BIN_COUNT_F64: f64 = 24.0;
 
 /// DC01 (INV-RUNOFFPART-031): WB14 outcome carrying the per-hour
 /// infiltration-excess profile alongside the classic state. The profile is
@@ -1406,40 +1407,14 @@ fn dc01_add_depth_to_hour_bins(
         return;
     }
     for (hour, bin) in bins.iter_mut().enumerate() {
-        let bin_start_s = hour as f64 * DC01_HOUR_BIN_SECONDS;
+        let bin_start_s =
+            f64::from(u32::try_from(hour).unwrap_or(u32::MAX)) * DC01_HOUR_BIN_SECONDS;
         let bin_end_s = bin_start_s + DC01_HOUR_BIN_SECONDS;
         let overlap_s = (end_s.min(bin_end_s) - start_s.max(bin_start_s)).max(0.0);
         if overlap_s > 0.0 {
             *bin += depth_m * overlap_s / duration_s;
         }
     }
-}
-
-fn dc01_diag_interval_basis_enabled() -> bool {
-    static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-    *ENABLED.get_or_init(|| {
-        std::env::var("OPENWEPP_DC01_DIAG_INTERVAL_BASIS")
-            .map(|value| value == "1")
-            .unwrap_or(false)
-    })
-}
-
-fn dc01_appended_runon_basis(
-    hyetograph: &[DirectWb14HyetographInterval],
-    runon_hourly_supply_m: &[f64; DC01_HOUR_BIN_COUNT],
-) -> Vec<DirectWb14HyetographInterval> {
-    let mut merged: Vec<DirectWb14HyetographInterval> = hyetograph.to_vec();
-    for (hour, runon_m) in runon_hourly_supply_m.iter().enumerate() {
-        if *runon_m > 0.0 {
-            merged.push(DirectWb14HyetographInterval {
-                start_s: hour as f64 * DC01_HOUR_BIN_SECONDS,
-                end_s: (hour + 1) as f64 * DC01_HOUR_BIN_SECONDS,
-                intensity_m_s: runon_m / DC01_HOUR_BIN_SECONDS,
-            });
-        }
-    }
-    merged.sort_by(|a, b| a.start_s.total_cmp(&b.start_s));
-    merged
 }
 
 pub(crate) fn dc01_hourly_supply_basis(
@@ -1464,8 +1439,8 @@ pub(crate) fn dc01_hourly_supply_basis(
     bins.iter()
         .enumerate()
         .map(|(hour, depth_m)| DirectWb14HyetographInterval {
-            start_s: hour as f64 * DC01_HOUR_BIN_SECONDS,
-            end_s: (hour + 1) as f64 * DC01_HOUR_BIN_SECONDS,
+            start_s: f64::from(u32::try_from(hour).unwrap_or(u32::MAX)) * DC01_HOUR_BIN_SECONDS,
+            end_s: f64::from(u32::try_from(hour + 1).unwrap_or(u32::MAX)) * DC01_HOUR_BIN_SECONDS,
             intensity_m_s: depth_m / DC01_HOUR_BIN_SECONDS,
         })
         .collect()
@@ -1496,11 +1471,7 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
         // appended hourly intervals WITHOUT re-binning the local rain, to
         // separate the admission effect from the hourly-basis intensity
         // effect. Default path re-bins everything (baseline hourly shape).
-        hourly_basis = if dc01_diag_interval_basis_enabled() {
-            dc01_appended_runon_basis(&inputs.hyetograph, &inputs.runon_hourly_supply_m)
-        } else {
-            dc01_hourly_supply_basis(&inputs.hyetograph, &inputs.runon_hourly_supply_m)
-        };
+        hourly_basis = dc01_hourly_supply_basis(&inputs.hyetograph, &inputs.runon_hourly_supply_m);
         &hourly_basis
     } else {
         &inputs.hyetograph
