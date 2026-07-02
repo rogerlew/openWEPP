@@ -1,5 +1,5 @@
 {
-  "schema": "openwepp-w6-onshore-xenophobia-scaling-v2",
+  "schema": "openwepp-w6-onshore-xenophobia-scaling-v3",
   "status": "PASS",
   "fixture": "tests/fixtures/watershed/onshore-xenophobia",
   "fixture_class": "full-1305-hillslope",
@@ -10,14 +10,14 @@
     1,
     48
   ],
-  "stage_root": "/tmp/wshedw6_onshore_scaling_rerun",
+  "stage_root": "/tmp/wshedw6_onshore_scaling_final",
   "runs": [
     {
-      "label": "onshore-jobs1-repo-full",
+      "label": "onshore-xenophobia-jobs1-repo-full",
       "jobs": 1,
-      "stage_root": "/tmp/wshedw6_onshore_scaling_rerun/jobs1-full",
-      "output_dir": "/tmp/wshedw6_onshore_scaling_rerun/jobs1-full/out",
-      "interchange_dir": "/tmp/wshedw6_onshore_scaling_rerun/jobs1-full/out/interchange",
+      "stage_root": "/tmp/wshedw6_onshore_scaling_final/jobs1-full",
+      "output_dir": "/tmp/wshedw6_onshore_scaling_final/jobs1-full/out",
+      "interchange_dir": "/tmp/wshedw6_onshore_scaling_final/jobs1-full/out/interchange",
       "command": [
         "/home/workdir/openWEPP/target/release/openwepp-cli-watershed",
         "--run-dir",
@@ -25,7 +25,7 @@
         "--run-file",
         "case.run",
         "--output-dir",
-        "/tmp/wshedw6_onshore_scaling_rerun/jobs1-full/out",
+        "/tmp/wshedw6_onshore_scaling_final/jobs1-full/out",
         "--policy",
         "compat",
         "--jobs",
@@ -34,28 +34,28 @@
         "/home/workdir/openWEPP/target/release/openwepp-cli-hill"
       ],
       "exit_code": 0,
-      "elapsed_seconds_python": 5421.988582372665,
+      "elapsed_seconds_python": 5511.4130674581975,
       "time_v": {
-        "user_seconds": 5366.86,
-        "system_seconds": 54.82,
+        "user_seconds": 5453.36,
+        "system_seconds": 57.71,
         "cpu_percent": "99%",
-        "wall_time_text": "1:30:21",
         "max_rss_kib": 44128,
-        "time_exit_status": 0
+        "time_exit_status": 0,
+        "wall_time_text": "1:31:51"
       },
       "supervisor_timing": {
         "legacy_sidecar_discovery": false,
-        "output_publication_elapsed_ms": 64,
-        "pass_inventory_elapsed_ms": 87,
-        "routing_input_elapsed_ms": 151,
+        "output_publication_elapsed_ms": 62,
+        "pass_inventory_elapsed_ms": 86,
+        "routing_input_elapsed_ms": 143,
         "run_name": "onshore-xenophobia-w6-full",
         "schema": "openwepp-watershed-supervisor-timing-v1",
         "sidecar_policy": "Compat",
-        "total_elapsed_ms": 5421979,
+        "total_elapsed_ms": 5511405,
         "watershed_dispatch_elapsed_ms": 2,
         "worker_pool": {
           "completed_jobs": 1305,
-          "elapsed_ms": 5421433,
+          "elapsed_ms": 5510853,
           "launched_jobs": 1305,
           "requested_jobs": 1,
           "skipped_jobs": 0,
@@ -64,18 +64,45 @@
       },
       "job_timing_distribution": {
         "count": 1305,
-        "min_ms": 3012,
-        "median_ms": 4154,
-        "mean_ms": 4153.248275862069,
-        "max_ms": 4977
+        "min_ms": 3088,
+        "median_ms": 4235,
+        "mean_ms": 4221.757854406131,
+        "max_ms": 5003
+      },
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "selected_publication_values": {
+        "totalwatsed3": {
+          "Area": 118391327.80000003,
+          "Runoff": 7.623926319373555e-06,
+          "Q": 0.9026067600000023,
+          "runvol": 0.9026067600000022,
+          "tdet": 0.0,
+          "tdep": 0.0,
+          "sed_del": -0.0,
+          "sbrunv": null,
+          "seddep_1": null,
+          "sed_vol_conc": null
+        },
+        "chanwb": {
+          "Inflow (m^3)": 0.9026067600000022,
+          "Outflow (m^3)": null,
+          "Storage (m^3)": null,
+          "Baseflow (m^3)": null,
+          "Loss (m^3)": null,
+          "Balance (m^3)": null
+        },
+        "ebe_pw0": {
+          "precip": null
+        }
       }
     },
     {
-      "label": "onshore-jobs48-repo-full",
+      "label": "onshore-xenophobia-jobs48-repo-full",
       "jobs": 48,
-      "stage_root": "/tmp/wshedw6_onshore_scaling_rerun/jobs48-full",
-      "output_dir": "/tmp/wshedw6_onshore_scaling_rerun/jobs48-full/out",
-      "interchange_dir": "/tmp/wshedw6_onshore_scaling_rerun/jobs48-full/out/interchange",
+      "stage_root": "/tmp/wshedw6_onshore_scaling_final/jobs48-full",
+      "output_dir": "/tmp/wshedw6_onshore_scaling_final/jobs48-full/out",
+      "interchange_dir": "/tmp/wshedw6_onshore_scaling_final/jobs48-full/out/interchange",
       "command": [
         "/home/workdir/openWEPP/target/release/openwepp-cli-watershed",
         "--run-dir",
@@ -83,7 +110,7 @@
         "--run-file",
         "case.run",
         "--output-dir",
-        "/tmp/wshedw6_onshore_scaling_rerun/jobs48-full/out",
+        "/tmp/wshedw6_onshore_scaling_final/jobs48-full/out",
         "--policy",
         "compat",
         "--jobs",
@@ -92,28 +119,28 @@
         "/home/workdir/openWEPP/target/release/openwepp-cli-hill"
       ],
       "exit_code": 0,
-      "elapsed_seconds_python": 207.10146164894104,
+      "elapsed_seconds_python": 207.55416897311807,
       "time_v": {
-        "user_seconds": 9334.72,
-        "system_seconds": 99.82,
-        "cpu_percent": "4555%",
-        "wall_time_text": "3:27.09",
-        "max_rss_kib": 44188,
-        "time_exit_status": 0
+        "user_seconds": 9429.66,
+        "system_seconds": 93.02,
+        "cpu_percent": "4588%",
+        "max_rss_kib": 44128,
+        "time_exit_status": 0,
+        "wall_time_text": "3:27.55"
       },
       "supervisor_timing": {
         "legacy_sidecar_discovery": false,
-        "output_publication_elapsed_ms": 62,
-        "pass_inventory_elapsed_ms": 90,
-        "routing_input_elapsed_ms": 149,
+        "output_publication_elapsed_ms": 65,
+        "pass_inventory_elapsed_ms": 86,
+        "routing_input_elapsed_ms": 150,
         "run_name": "onshore-xenophobia-w6-full",
         "schema": "openwepp-watershed-supervisor-timing-v1",
         "sidecar_policy": "Compat",
-        "total_elapsed_ms": 207092,
-        "watershed_dispatch_elapsed_ms": 2,
+        "total_elapsed_ms": 207545,
+        "watershed_dispatch_elapsed_ms": 3,
         "worker_pool": {
           "completed_jobs": 1305,
-          "elapsed_ms": 206535,
+          "elapsed_ms": 206975,
           "launched_jobs": 1305,
           "requested_jobs": 48,
           "skipped_jobs": 0,
@@ -122,10 +149,37 @@
       },
       "job_timing_distribution": {
         "count": 1305,
-        "min_ms": 4141,
-        "median_ms": 7492,
-        "mean_ms": 7485.665900383142,
-        "max_ms": 9311
+        "min_ms": 4065,
+        "median_ms": 7527,
+        "mean_ms": 7502.324137931035,
+        "max_ms": 8749
+      },
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "selected_publication_values": {
+        "totalwatsed3": {
+          "Area": 118391327.80000003,
+          "Runoff": 7.623926319373555e-06,
+          "Q": 0.9026067600000023,
+          "runvol": 0.9026067600000022,
+          "tdet": 0.0,
+          "tdep": 0.0,
+          "sed_del": -0.0,
+          "sbrunv": null,
+          "seddep_1": null,
+          "sed_vol_conc": null
+        },
+        "chanwb": {
+          "Inflow (m^3)": 0.9026067600000022,
+          "Outflow (m^3)": null,
+          "Storage (m^3)": null,
+          "Baseflow (m^3)": null,
+          "Loss (m^3)": null,
+          "Balance (m^3)": null
+        },
+        "ebe_pw0": {
+          "precip": null
+        }
       }
     }
   ],
@@ -144,7 +198,23 @@
       "rows_jobs48": 1,
       "columns": 14,
       "same_schema": true,
-      "same_rows": true
+      "same_rows": true,
+      "selected_values_jobs1": {
+        "Inflow (m^3)": 0.9026067600000022,
+        "Outflow (m^3)": null,
+        "Storage (m^3)": null,
+        "Baseflow (m^3)": null,
+        "Loss (m^3)": null,
+        "Balance (m^3)": null
+      },
+      "selected_values_jobs48": {
+        "Inflow (m^3)": 0.9026067600000022,
+        "Outflow (m^3)": null,
+        "Storage (m^3)": null,
+        "Baseflow (m^3)": null,
+        "Loss (m^3)": null,
+        "Balance (m^3)": null
+      }
     },
     {
       "file": "chnwb.parquet",
@@ -160,7 +230,13 @@
       "rows_jobs48": 1,
       "columns": 15,
       "same_schema": true,
-      "same_rows": true
+      "same_rows": true,
+      "selected_values_jobs1": {
+        "precip": null
+      },
+      "selected_values_jobs48": {
+        "precip": null
+      }
     },
     {
       "file": "loss_pw0.all_years.chn.parquet",
@@ -241,15 +317,36 @@
       "columns": 79,
       "same_schema": true,
       "same_rows": true,
-      "area_values_jobs1": [
-        118391327.80000003
-      ],
-      "runoff_depth_values_jobs1": [
-        7.623926319373555e-06
-      ],
-      "tdet_values_jobs1": [
-        0.0
-      ]
+      "selected_values_jobs1": {
+        "Area": 118391327.80000003,
+        "Runoff": 7.623926319373555e-06,
+        "Q": 0.9026067600000023,
+        "runvol": 0.9026067600000022,
+        "tdet": 0.0,
+        "tdep": 0.0,
+        "sed_del": -0.0,
+        "sbrunv": null,
+        "seddep_1": null,
+        "sed_vol_conc": null
+      },
+      "selected_values_jobs48": {
+        "Area": 118391327.80000003,
+        "Runoff": 7.623926319373555e-06,
+        "Q": 0.9026067600000023,
+        "runvol": 0.9026067600000022,
+        "tdet": 0.0,
+        "tdep": 0.0,
+        "sed_del": -0.0,
+        "sbrunv": null,
+        "seddep_1": null,
+        "sed_vol_conc": null
+      }
     }
+  ],
+  "identity_all_same": true,
+  "notes": [
+    "Full committed fixture run; no subset or representative slice.",
+    "Output identity compares jobs=1 versus the parallel job count within this same release build.",
+    "Current values may differ from earlier W6 artifacts because hillslope work landed before this rebuild."
   ]
 }

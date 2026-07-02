@@ -11,6 +11,7 @@ use arrow_array::{
 };
 use arrow_schema::{DataType, Field, Schema};
 use openwepp_sim_contract::units::{OutputUnitRegistryError, validate_output_schema_unit};
+use openwepp_watershed_orchestrator::WatershedPublicationFrame;
 use parquet::arrow::ArrowWriter;
 use parquet::basic::Compression;
 use parquet::file::properties::WriterProperties;
@@ -172,7 +173,7 @@ impl Default for WatershedInterchangeRowSeed {
             channel_storage_m3: 0.0,
             channel_baseflow_m3: 0.0,
             channel_loss_m3: 0.0,
-            area_m2: 1.0,
+            area_m2: 0.0,
             subsurface_runoff_volume_m3: 0.0,
             total_detachment_kg: 0.0,
             total_deposition_kg: 0.0,
@@ -210,6 +211,487 @@ impl Default for WatershedInterchangeRowSeed {
     }
 }
 
+trait WatershedOutputRecord {
+    fn year(&self) -> i16;
+    fn simulation_year(&self) -> i16;
+    fn sim_day_index(&self) -> i32;
+    fn julian(&self) -> i16;
+    fn month(&self) -> i8;
+    fn day_of_month(&self) -> i8;
+    fn water_year(&self) -> i16;
+    fn element_id(&self) -> i32;
+    fn channel_id(&self) -> i32;
+    fn runoff_volume_m3(&self) -> Option<f64>;
+    fn peak_discharge_m3_s(&self) -> Option<f64>;
+    fn sediment_yield_kg(&self) -> Option<f64>;
+    fn soluble_pollutant_kg(&self) -> Option<f64>;
+    fn particulate_pollutant_kg(&self) -> Option<f64>;
+    fn channel_outflow_m3(&self) -> Option<f64>;
+    fn channel_storage_m3(&self) -> Option<f64>;
+    fn channel_baseflow_m3(&self) -> Option<f64>;
+    fn channel_loss_m3(&self) -> Option<f64>;
+    fn area_m2(&self) -> Option<f64>;
+    fn subsurface_runoff_volume_m3(&self) -> Option<f64>;
+    fn total_detachment_kg(&self) -> Option<f64>;
+    fn total_deposition_kg(&self) -> Option<f64>;
+    fn sediment_class_deposition_kg(&self, class_index: usize) -> Option<f64>;
+    fn sediment_volume_concentration_m3_m3(&self) -> Option<f64>;
+    fn precipitation_mm(&self) -> Option<f64>;
+    fn rain_melt_mm(&self) -> Option<f64>;
+    fn runoff_mm(&self) -> Option<f64>;
+    fn q_diagnostic_mm(&self) -> Option<f64>;
+    fn deep_percolation_mm(&self) -> Option<f64>;
+    fn lateral_flow_mm(&self) -> Option<f64>;
+    fn qofe_mm(&self) -> Option<f64>;
+    fn transpiration_mm(&self) -> Option<f64>;
+    fn evaporation_soil_mm(&self) -> Option<f64>;
+    fn evaporation_residue_mm(&self) -> Option<f64>;
+    fn upstream_q_mm(&self) -> Option<f64>;
+    fn subsurface_runon_mm(&self) -> Option<f64>;
+    fn total_soil_water_mm(&self) -> Option<f64>;
+    fn soil_water_total_mm(&self) -> Option<f64>;
+    fn profile_depth_mm(&self) -> Option<f64>;
+    fn profile_porosity_cap_mm(&self) -> Option<f64>;
+    fn profile_fc_store_mm(&self) -> Option<f64>;
+    fn profile_wp_store_mm(&self) -> Option<f64>;
+    fn interception_mm(&self) -> Option<f64>;
+    fn interception_storage_mm(&self) -> Option<f64>;
+    fn frozen_water_mm(&self) -> Option<f64>;
+    fn snow_water_mm(&self) -> Option<f64>;
+    fn tile_mm(&self) -> Option<f64>;
+    fn irrigation_mm(&self) -> Option<f64>;
+    fn baseflow_mm(&self) -> Option<f64>;
+    fn tsmf_fraction(&self) -> Option<f64>;
+    fn qrain_mm(&self) -> Option<f64>;
+    fn qsnow_mm(&self) -> Option<f64>;
+}
+
+impl WatershedOutputRecord for WatershedInterchangeRowSeed {
+    fn year(&self) -> i16 {
+        self.year
+    }
+
+    fn simulation_year(&self) -> i16 {
+        self.simulation_year
+    }
+
+    fn sim_day_index(&self) -> i32 {
+        self.sim_day_index
+    }
+
+    fn julian(&self) -> i16 {
+        self.julian
+    }
+
+    fn month(&self) -> i8 {
+        self.month
+    }
+
+    fn day_of_month(&self) -> i8 {
+        self.day_of_month
+    }
+
+    fn water_year(&self) -> i16 {
+        self.water_year
+    }
+
+    fn element_id(&self) -> i32 {
+        self.element_id
+    }
+
+    fn channel_id(&self) -> i32 {
+        self.channel_id
+    }
+
+    fn runoff_volume_m3(&self) -> Option<f64> {
+        Some(self.runoff_volume_m3)
+    }
+
+    fn peak_discharge_m3_s(&self) -> Option<f64> {
+        Some(self.peak_discharge_m3_s)
+    }
+
+    fn sediment_yield_kg(&self) -> Option<f64> {
+        Some(self.sediment_yield_kg)
+    }
+
+    fn soluble_pollutant_kg(&self) -> Option<f64> {
+        Some(self.soluble_pollutant_kg)
+    }
+
+    fn particulate_pollutant_kg(&self) -> Option<f64> {
+        Some(self.particulate_pollutant_kg)
+    }
+
+    fn channel_outflow_m3(&self) -> Option<f64> {
+        Some(self.channel_outflow_m3)
+    }
+
+    fn channel_storage_m3(&self) -> Option<f64> {
+        Some(self.channel_storage_m3)
+    }
+
+    fn channel_baseflow_m3(&self) -> Option<f64> {
+        Some(self.channel_baseflow_m3)
+    }
+
+    fn channel_loss_m3(&self) -> Option<f64> {
+        Some(self.channel_loss_m3)
+    }
+
+    fn area_m2(&self) -> Option<f64> {
+        Some(self.area_m2)
+    }
+
+    fn precipitation_mm(&self) -> Option<f64> {
+        Some(self.precipitation_mm)
+    }
+
+    fn rain_melt_mm(&self) -> Option<f64> {
+        Some(self.rain_melt_mm)
+    }
+
+    fn runoff_mm(&self) -> Option<f64> {
+        Some(self.runoff_mm)
+    }
+
+    fn deep_percolation_mm(&self) -> Option<f64> {
+        Some(self.deep_percolation_mm)
+    }
+
+    fn lateral_flow_mm(&self) -> Option<f64> {
+        Some(self.lateral_flow_mm)
+    }
+
+    fn qofe_mm(&self) -> Option<f64> {
+        Some(self.qofe_mm)
+    }
+
+    fn transpiration_mm(&self) -> Option<f64> {
+        Some(self.transpiration_mm)
+    }
+
+    fn evaporation_soil_mm(&self) -> Option<f64> {
+        Some(self.evaporation_soil_mm)
+    }
+
+    fn evaporation_residue_mm(&self) -> Option<f64> {
+        Some(self.evaporation_residue_mm)
+    }
+
+    fn upstream_q_mm(&self) -> Option<f64> {
+        Some(self.upstream_q_mm)
+    }
+
+    fn subsurface_runon_mm(&self) -> Option<f64> {
+        Some(self.subsurface_runon_mm)
+    }
+
+    fn total_soil_water_mm(&self) -> Option<f64> {
+        Some(self.total_soil_water_mm)
+    }
+
+    fn soil_water_total_mm(&self) -> Option<f64> {
+        Some(self.soil_water_total_mm)
+    }
+
+    fn profile_depth_mm(&self) -> Option<f64> {
+        Some(self.profile_depth_mm)
+    }
+
+    fn profile_porosity_cap_mm(&self) -> Option<f64> {
+        Some(self.profile_porosity_cap_mm)
+    }
+
+    fn profile_fc_store_mm(&self) -> Option<f64> {
+        Some(self.profile_fc_store_mm)
+    }
+
+    fn profile_wp_store_mm(&self) -> Option<f64> {
+        Some(self.profile_wp_store_mm)
+    }
+
+    fn interception_mm(&self) -> Option<f64> {
+        Some(self.interception_mm)
+    }
+
+    fn interception_storage_mm(&self) -> Option<f64> {
+        Some(self.interception_storage_mm)
+    }
+
+    fn frozen_water_mm(&self) -> Option<f64> {
+        Some(self.frozen_water_mm)
+    }
+
+    fn snow_water_mm(&self) -> Option<f64> {
+        Some(self.snow_water_mm)
+    }
+
+    fn tile_mm(&self) -> Option<f64> {
+        Some(self.tile_mm)
+    }
+
+    fn irrigation_mm(&self) -> Option<f64> {
+        Some(self.irrigation_mm)
+    }
+
+    fn baseflow_mm(&self) -> Option<f64> {
+        Some(self.baseflow_mm)
+    }
+
+    fn q_diagnostic_mm(&self) -> Option<f64> {
+        self.q_diagnostic_mm
+    }
+
+    fn subsurface_runoff_volume_m3(&self) -> Option<f64> {
+        Some(self.subsurface_runoff_volume_m3)
+    }
+
+    fn total_detachment_kg(&self) -> Option<f64> {
+        Some(self.total_detachment_kg)
+    }
+
+    fn total_deposition_kg(&self) -> Option<f64> {
+        Some(self.total_deposition_kg)
+    }
+
+    fn sediment_class_deposition_kg(&self, class_index: usize) -> Option<f64> {
+        Some(
+            self.sediment_class_deposition_kg
+                .get(class_index)
+                .copied()
+                .unwrap_or(0.0),
+        )
+    }
+
+    fn sediment_volume_concentration_m3_m3(&self) -> Option<f64> {
+        Some(self.sediment_volume_concentration_m3_m3)
+    }
+
+    fn tsmf_fraction(&self) -> Option<f64> {
+        Some(self.tsmf_fraction)
+    }
+
+    fn qrain_mm(&self) -> Option<f64> {
+        Some(self.qrain_mm)
+    }
+
+    fn qsnow_mm(&self) -> Option<f64> {
+        Some(self.qsnow_mm)
+    }
+}
+
+impl WatershedOutputRecord for WatershedPublicationFrame {
+    fn year(&self) -> i16 {
+        self.year
+    }
+
+    fn simulation_year(&self) -> i16 {
+        self.simulation_year
+    }
+
+    fn sim_day_index(&self) -> i32 {
+        self.sim_day_index
+    }
+
+    fn julian(&self) -> i16 {
+        self.julian
+    }
+
+    fn month(&self) -> i8 {
+        self.month
+    }
+
+    fn day_of_month(&self) -> i8 {
+        self.day_of_month
+    }
+
+    fn water_year(&self) -> i16 {
+        self.water_year
+    }
+
+    fn element_id(&self) -> i32 {
+        self.element_id
+    }
+
+    fn channel_id(&self) -> i32 {
+        self.channel_id
+    }
+
+    fn runoff_volume_m3(&self) -> Option<f64> {
+        Some(self.runoff_volume_m3)
+    }
+
+    fn peak_discharge_m3_s(&self) -> Option<f64> {
+        Some(self.peak_discharge_m3_s)
+    }
+
+    fn sediment_yield_kg(&self) -> Option<f64> {
+        Some(self.sediment_yield_kg)
+    }
+
+    fn soluble_pollutant_kg(&self) -> Option<f64> {
+        self.soluble_pollutant_kg
+    }
+
+    fn particulate_pollutant_kg(&self) -> Option<f64> {
+        self.particulate_pollutant_kg
+    }
+
+    fn channel_outflow_m3(&self) -> Option<f64> {
+        self.channel_outflow_m3
+    }
+
+    fn channel_storage_m3(&self) -> Option<f64> {
+        self.channel_storage_m3
+    }
+
+    fn channel_baseflow_m3(&self) -> Option<f64> {
+        self.channel_baseflow_m3
+    }
+
+    fn channel_loss_m3(&self) -> Option<f64> {
+        self.channel_loss_m3
+    }
+
+    fn area_m2(&self) -> Option<f64> {
+        self.area_m2
+    }
+
+    fn precipitation_mm(&self) -> Option<f64> {
+        self.precipitation_mm
+    }
+
+    fn rain_melt_mm(&self) -> Option<f64> {
+        self.rain_melt_mm
+    }
+
+    fn runoff_mm(&self) -> Option<f64> {
+        self.runoff_mm
+    }
+
+    fn deep_percolation_mm(&self) -> Option<f64> {
+        self.deep_percolation_mm
+    }
+
+    fn lateral_flow_mm(&self) -> Option<f64> {
+        self.lateral_flow_mm
+    }
+
+    fn qofe_mm(&self) -> Option<f64> {
+        self.qofe_mm
+    }
+
+    fn transpiration_mm(&self) -> Option<f64> {
+        self.transpiration_mm
+    }
+
+    fn evaporation_soil_mm(&self) -> Option<f64> {
+        self.evaporation_soil_mm
+    }
+
+    fn evaporation_residue_mm(&self) -> Option<f64> {
+        self.evaporation_residue_mm
+    }
+
+    fn upstream_q_mm(&self) -> Option<f64> {
+        self.upstream_q_mm
+    }
+
+    fn subsurface_runon_mm(&self) -> Option<f64> {
+        self.subsurface_runon_mm
+    }
+
+    fn total_soil_water_mm(&self) -> Option<f64> {
+        self.total_soil_water_mm
+    }
+
+    fn soil_water_total_mm(&self) -> Option<f64> {
+        self.soil_water_total_mm
+    }
+
+    fn profile_depth_mm(&self) -> Option<f64> {
+        self.profile_depth_mm
+    }
+
+    fn profile_porosity_cap_mm(&self) -> Option<f64> {
+        self.profile_porosity_cap_mm
+    }
+
+    fn profile_fc_store_mm(&self) -> Option<f64> {
+        self.profile_fc_store_mm
+    }
+
+    fn profile_wp_store_mm(&self) -> Option<f64> {
+        self.profile_wp_store_mm
+    }
+
+    fn interception_mm(&self) -> Option<f64> {
+        self.interception_mm
+    }
+
+    fn interception_storage_mm(&self) -> Option<f64> {
+        self.interception_storage_mm
+    }
+
+    fn frozen_water_mm(&self) -> Option<f64> {
+        self.frozen_water_mm
+    }
+
+    fn snow_water_mm(&self) -> Option<f64> {
+        self.snow_water_mm
+    }
+
+    fn tile_mm(&self) -> Option<f64> {
+        self.tile_mm
+    }
+
+    fn irrigation_mm(&self) -> Option<f64> {
+        self.irrigation_mm
+    }
+
+    fn baseflow_mm(&self) -> Option<f64> {
+        self.baseflow_mm
+    }
+
+    fn q_diagnostic_mm(&self) -> Option<f64> {
+        self.q_diagnostic_mm
+    }
+
+    fn subsurface_runoff_volume_m3(&self) -> Option<f64> {
+        self.subsurface_runoff_volume_m3
+    }
+
+    fn total_detachment_kg(&self) -> Option<f64> {
+        Some(self.total_detachment_kg)
+    }
+
+    fn total_deposition_kg(&self) -> Option<f64> {
+        Some(self.total_deposition_kg)
+    }
+
+    fn sediment_class_deposition_kg(&self, class_index: usize) -> Option<f64> {
+        self.sediment_class_deposition_kg
+            .and_then(|values| values.get(class_index).copied())
+    }
+
+    fn sediment_volume_concentration_m3_m3(&self) -> Option<f64> {
+        self.sediment_volume_concentration_m3_m3
+    }
+
+    fn tsmf_fraction(&self) -> Option<f64> {
+        self.tsmf_fraction
+    }
+
+    fn qrain_mm(&self) -> Option<f64> {
+        self.qrain_mm
+    }
+
+    fn qsnow_mm(&self) -> Option<f64> {
+        self.qsnow_mm
+    }
+}
+
 pub fn write_interchange_parquet_outputs(
     outputs: &WatershedOutputConfig,
     row_seed: WatershedInterchangeRowSeed,
@@ -221,55 +703,72 @@ pub fn write_interchange_parquet_outputs_from_rows(
     outputs: &WatershedOutputConfig,
     row_seeds: &[WatershedInterchangeRowSeed],
 ) -> Result<(), WatershedWriterError> {
-    write_single_output(&outputs.ebe_pw0, watershed_ebe_schema()?, row_seeds)?;
-    write_single_output(&outputs.chan_out, watershed_chan_peak_schema()?, row_seeds)?;
-    write_single_output(&outputs.chanwb, watershed_chanwb_schema()?, row_seeds)?;
-    write_single_output(&outputs.chnwb, watershed_chnwb_schema()?, row_seeds)?;
-    write_single_output(&outputs.soil_pw0, watershed_soil_schema()?, row_seeds)?;
+    write_output_record_parquet_outputs(outputs, row_seeds)
+}
+
+pub fn write_typed_publication_parquet_outputs(
+    outputs: &WatershedOutputConfig,
+    publication_frames: &[WatershedPublicationFrame],
+) -> Result<(), WatershedWriterError> {
+    write_output_record_parquet_outputs(outputs, publication_frames)
+}
+
+fn write_output_record_parquet_outputs<T>(
+    outputs: &WatershedOutputConfig,
+    records: &[T],
+) -> Result<(), WatershedWriterError>
+where
+    T: WatershedOutputRecord,
+{
+    write_single_output(&outputs.ebe_pw0, watershed_ebe_schema()?, records)?;
+    write_single_output(&outputs.chan_out, watershed_chan_peak_schema()?, records)?;
+    write_single_output(&outputs.chanwb, watershed_chanwb_schema()?, records)?;
+    write_single_output(&outputs.chnwb, watershed_chnwb_schema()?, records)?;
+    write_single_output(&outputs.soil_pw0, watershed_soil_schema()?, records)?;
     write_single_output(
         &outputs.totalwatsed3,
         watershed_totalwatsed3_schema()?,
-        row_seeds,
+        records,
     )?;
     write_single_output(
         &outputs.loss_hill,
         watershed_loss_average_hill_schema()?,
-        row_seeds,
+        records,
     )?;
     write_single_output(
         &outputs.loss_chn,
         watershed_loss_average_chn_schema()?,
-        row_seeds,
+        records,
     )?;
     write_single_output(
         &outputs.loss_out,
         watershed_loss_average_out_schema()?,
-        row_seeds,
+        records,
     )?;
     write_single_output(
         &outputs.loss_class_data,
         watershed_loss_average_class_schema()?,
-        row_seeds,
+        records,
     )?;
     write_single_output(
         &outputs.loss_all_years_hill,
         watershed_loss_all_years_hill_schema()?,
-        row_seeds,
+        records,
     )?;
     write_single_output(
         &outputs.loss_all_years_chn,
         watershed_loss_all_years_chn_schema()?,
-        row_seeds,
+        records,
     )?;
     write_single_output(
         &outputs.loss_all_years_out,
         watershed_loss_all_years_out_schema()?,
-        row_seeds,
+        records,
     )?;
     write_single_output(
         &outputs.loss_all_years_class_data,
         watershed_loss_all_years_class_schema()?,
-        row_seeds,
+        records,
     )?;
     Ok(())
 }
@@ -1557,9 +2056,9 @@ fn loss_table_metadata(table: &str) -> HashMap<String, String> {
 fn write_single_output(
     path: &Path,
     schema: Schema,
-    row_seeds: &[WatershedInterchangeRowSeed],
+    records: &[impl WatershedOutputRecord],
 ) -> Result<(), WatershedWriterError> {
-    if row_seeds.is_empty() {
+    if records.is_empty() {
         return Err(WatershedWriterError::Parquet {
             code: "OWSOUT-E-004",
             path: path.to_path_buf(),
@@ -1575,7 +2074,7 @@ fn write_single_output(
         })?;
     }
 
-    let batch = build_row_batch(&schema, row_seeds)?;
+    let batch = build_row_batch(&schema, records)?;
     let file = File::create(path).map_err(|source| WatershedWriterError::Io {
         code: "OWSOUT-E-003",
         path: path.to_path_buf(),
@@ -1611,38 +2110,38 @@ fn write_single_output(
 
 fn build_row_batch(
     schema: &Schema,
-    row_seeds: &[WatershedInterchangeRowSeed],
+    records: &[impl WatershedOutputRecord],
 ) -> Result<RecordBatch, WatershedWriterError> {
     let mut columns: Vec<ArrayRef> = Vec::with_capacity(schema.fields().len());
 
     for field in schema.fields() {
         let column: ArrayRef = match field.data_type() {
             DataType::Int8 => Arc::new(Int8Array::from(
-                row_seeds
+                records
                     .iter()
-                    .map(|row_seed| int8_value(field.name(), row_seed))
+                    .map(|record| int8_value(field.name(), record))
                     .collect::<Vec<_>>(),
             )),
             DataType::Int16 => Arc::new(Int16Array::from(
-                row_seeds
+                records
                     .iter()
-                    .map(|row_seed| int16_value(field.name(), row_seed))
+                    .map(|record| int16_value(field.name(), record))
                     .collect::<Vec<_>>(),
             )),
             DataType::Int32 => Arc::new(Int32Array::from(
-                row_seeds
+                records
                     .iter()
-                    .map(|row_seed| int32_value(field.name(), row_seed))
+                    .map(|record| int32_value(field.name(), record))
                     .collect::<Vec<_>>(),
             )),
             DataType::Float64 => Arc::new(Float64Array::from(
-                row_seeds
+                records
                     .iter()
-                    .map(|row_seed| float64_value(field.name(), row_seed))
-                    .collect::<Vec<_>>(),
+                    .map(|record| float64_value(field.name(), record))
+                    .collect::<Vec<Option<f64>>>(),
             )),
             DataType::Utf8 => Arc::new(StringArray::from(
-                row_seeds
+                records
                     .iter()
                     .map(|_| utf8_value(field.name()))
                     .collect::<Vec<_>>(),
@@ -1666,118 +2165,148 @@ fn build_row_batch(
     })
 }
 
-fn int8_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> i8 {
+fn int8_value(field_name: &str, record: &impl WatershedOutputRecord) -> i8 {
     match field_name {
-        "month" => row_seed.month,
-        "day_of_month" => row_seed.day_of_month,
+        "month" => record.month(),
+        "day_of_month" => record.day_of_month(),
         "Class" => 1,
         _ => 0,
     }
 }
 
-fn int16_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> i16 {
+fn int16_value(field_name: &str, record: &impl WatershedOutputRecord) -> i16 {
     match field_name {
-        "year" => row_seed.year,
-        "simulation_year" | "Y" => row_seed.simulation_year,
-        "day" | "julian" | "J" => row_seed.julian,
-        "water_year" => row_seed.water_year,
+        "year" => record.year(),
+        "simulation_year" | "Y" => record.simulation_year(),
+        "day" | "julian" | "J" => record.julian(),
+        "water_year" => record.water_year(),
         "ofe_id" | "OFE" => 1,
         _ => 0,
     }
 }
 
-fn int32_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> i32 {
+fn int32_value(field_name: &str, record: &impl WatershedOutputRecord) -> i32 {
     match field_name {
-        "sim_day_index" => row_seed.sim_day_index,
-        "element_id" | "Elmt_ID" | "wepp_id" => row_seed.element_id,
-        "Chan_ID" | "chn_enum" => row_seed.channel_id,
+        "sim_day_index" => record.sim_day_index(),
+        "element_id" | "Elmt_ID" | "wepp_id" => record.element_id(),
+        "Chan_ID" | "chn_enum" => record.channel_id(),
         _ => 0,
     }
 }
 
-fn float64_value(field_name: &str, row_seed: &WatershedInterchangeRowSeed) -> f64 {
-    let total_pollutant = row_seed.soluble_pollutant_kg + row_seed.particulate_pollutant_kg;
-    let sediment_yield_tonnes = row_seed.sediment_yield_kg / 1_000.0;
-    let volume_from_depth = |depth_mm: f64| depth_mm * row_seed.area_m2 / 1_000.0;
-    let q_diagnostic_mm = row_seed.q_diagnostic_mm.unwrap_or(row_seed.runoff_mm);
+fn float64_value(field_name: &str, record: &impl WatershedOutputRecord) -> Option<f64> {
+    let total_pollutant = option_sum2(
+        record.soluble_pollutant_kg(),
+        record.particulate_pollutant_kg(),
+    );
+    let sediment_yield_tonnes = record.sediment_yield_kg().map(|value| value / 1_000.0);
+    let volume_from_depth = |depth_mm: Option<f64>| {
+        option_product2(depth_mm, record.area_m2()).map(|depth_area| depth_area / 1_000.0)
+    };
+    let q_diagnostic_mm = record.q_diagnostic_mm().or_else(|| record.runoff_mm());
 
     match field_name {
         "runoff_volume" | "runvol" | "Runoff Volume" | "Discharge Volume" => {
-            row_seed.runoff_volume_m3
+            record.runoff_volume_m3()
         }
-        "sbrunv" => row_seed.subsurface_runoff_volume_m3,
-        "tdet" => row_seed.total_detachment_kg,
-        "tdep" => row_seed.total_deposition_kg,
-        "seddep_1" => row_seed.sediment_class_deposition_kg[0],
-        "seddep_2" => row_seed.sediment_class_deposition_kg[1],
-        "seddep_3" => row_seed.sediment_class_deposition_kg[2],
-        "seddep_4" => row_seed.sediment_class_deposition_kg[3],
-        "seddep_5" => row_seed.sediment_class_deposition_kg[4],
-        "sed_vol_conc" => row_seed.sediment_volume_concentration_m3_m3,
-        "peak_runoff" | "Peak_Discharge (m^3/s)" => row_seed.peak_discharge_m3_s,
-        "sediment_yield" | "sed_del" => row_seed.sediment_yield_kg,
+        "sbrunv" => record.subsurface_runoff_volume_m3(),
+        "tdet" => record.total_detachment_kg(),
+        "tdep" => record.total_deposition_kg(),
+        "seddep_1" => record.sediment_class_deposition_kg(0),
+        "seddep_2" => record.sediment_class_deposition_kg(1),
+        "seddep_3" => record.sediment_class_deposition_kg(2),
+        "seddep_4" => record.sediment_class_deposition_kg(3),
+        "seddep_5" => record.sediment_class_deposition_kg(4),
+        "sed_vol_conc" => record.sediment_volume_concentration_m3_m3(),
+        "peak_runoff" | "Peak_Discharge (m^3/s)" => record.peak_discharge_m3_s(),
+        "sediment_yield" | "sed_del" => record.sediment_yield_kg(),
         "Sediment Yield" => sediment_yield_tonnes,
-        "soluble_pollutant" | "Solub. React. Pollutant" => row_seed.soluble_pollutant_kg,
-        "particulate_pollutant" | "Particulate Pollutant" => row_seed.particulate_pollutant_kg,
+        "soluble_pollutant" | "Solub. React. Pollutant" => record.soluble_pollutant_kg(),
+        "particulate_pollutant" | "Particulate Pollutant" => record.particulate_pollutant_kg(),
         "total_pollutant" | "Total Pollutant" => total_pollutant,
-        "P" => volume_from_depth(row_seed.precipitation_mm),
-        "RM" => volume_from_depth(row_seed.rain_melt_mm),
+        "P" => volume_from_depth(record.precipitation_mm()),
+        "RM" => volume_from_depth(record.rain_melt_mm()),
         "Q" => volume_from_depth(q_diagnostic_mm),
-        "Dp" => volume_from_depth(row_seed.deep_percolation_mm),
-        "latqcc" => volume_from_depth(row_seed.lateral_flow_mm),
-        "QOFE" => volume_from_depth(row_seed.qofe_mm),
-        "Ep" => volume_from_depth(row_seed.transpiration_mm),
-        "Es" => volume_from_depth(row_seed.evaporation_soil_mm),
-        "Er" => volume_from_depth(row_seed.evaporation_residue_mm),
-        "P (mm)" | "Precipitation" => row_seed.precipitation_mm,
-        "RM (mm)" | "Rain+Melt" => row_seed.rain_melt_mm,
+        "Dp" => volume_from_depth(record.deep_percolation_mm()),
+        "latqcc" => volume_from_depth(record.lateral_flow_mm()),
+        "QOFE" => volume_from_depth(record.qofe_mm()),
+        "Ep" => volume_from_depth(record.transpiration_mm()),
+        "Es" => volume_from_depth(record.evaporation_soil_mm()),
+        "Er" => volume_from_depth(record.evaporation_residue_mm()),
+        "P (mm)" | "Precipitation" | "precip" => record.precipitation_mm(),
+        "RM (mm)" | "Rain+Melt" => record.rain_melt_mm(),
         "Q (mm)" => q_diagnostic_mm,
-        "Runoff" => row_seed.runoff_mm,
-        "Dp (mm)" | "Percolation" => row_seed.deep_percolation_mm,
-        "latqcc (mm)" | "Lateral Flow" => row_seed.lateral_flow_mm,
-        "QOFE (mm)" => row_seed.qofe_mm,
-        "Ep (mm)" | "Transpiration" => row_seed.transpiration_mm,
-        "Es (mm)" => row_seed.evaporation_soil_mm,
-        "Er (mm)" => row_seed.evaporation_residue_mm,
-        "Evaporation" => row_seed.evaporation_soil_mm + row_seed.evaporation_residue_mm,
-        "ET" => {
-            row_seed.transpiration_mm
-                + row_seed.evaporation_soil_mm
-                + row_seed.evaporation_residue_mm
-        }
-        "UpStrmQ" | "UpStrmQ (mm)" => row_seed.upstream_q_mm,
-        "SubRIn" | "SubRIn (mm)" => row_seed.subsurface_runon_mm,
-        "Total-Soil Water" | "Total Soil Water (mm)" | "TSW" => row_seed.total_soil_water_mm,
-        "SoilWaterTotal" => row_seed.soil_water_total_mm,
-        "ProfileDepth" => row_seed.profile_depth_mm,
-        "ProfilePorosityCap" => row_seed.profile_porosity_cap_mm,
-        "ProfileFCStore" => row_seed.profile_fc_store_mm,
-        "ProfileWPStore" => row_seed.profile_wp_store_mm,
-        "Interception" => row_seed.interception_mm,
-        "InterceptionStorage" => row_seed.interception_storage_mm,
-        "frozwt" | "frozwt (mm)" => row_seed.frozen_water_mm,
-        "Snow-Water" | "Snow Water (mm)" => row_seed.snow_water_mm,
-        "TSMF" => row_seed.tsmf_fraction,
-        "QRain" => row_seed.qrain_mm,
-        "QSnow" => row_seed.qsnow_mm,
-        "Tile" | "Tile (mm)" => row_seed.tile_mm,
-        "Irr" | "Irr (mm)" => row_seed.irrigation_mm,
-        "Baseflow" | "Base (mm)" => row_seed.baseflow_mm,
-        "Inflow (m^3)" | "value" => row_seed.runoff_volume_m3,
-        "Outflow (m^3)" => row_seed.channel_outflow_m3,
-        "Storage (m^3)" => row_seed.channel_storage_m3,
-        "Baseflow (m^3)" => row_seed.channel_baseflow_m3,
-        "Loss (m^3)" => row_seed.channel_loss_m3,
-        "Balance (m^3)" => {
-            row_seed.runoff_volume_m3 - row_seed.channel_outflow_m3 - row_seed.channel_loss_m3
-        }
-        "Specific Gravity" => 2.65,
-        "Fraction In Flow Exiting" => 1.0,
-        "Area" | "Area (m^2)" => row_seed.area_m2,
-        "Hillslope Area" | "Contributing Area" => row_seed.area_m2 / 10_000.0,
-        "Diameter" => 0.25,
-        _ => 0.0,
+        "Runoff" => record.runoff_mm(),
+        "Dp (mm)" | "Percolation" => record.deep_percolation_mm(),
+        "latqcc (mm)" | "Lateral Flow" => record.lateral_flow_mm(),
+        "QOFE (mm)" => record.qofe_mm(),
+        "Ep (mm)" | "Transpiration" => record.transpiration_mm(),
+        "Es (mm)" => record.evaporation_soil_mm(),
+        "Er (mm)" => record.evaporation_residue_mm(),
+        "Evaporation" => option_sum2(
+            record.evaporation_soil_mm(),
+            record.evaporation_residue_mm(),
+        ),
+        "ET" => option_sum3(
+            record.transpiration_mm(),
+            record.evaporation_soil_mm(),
+            record.evaporation_residue_mm(),
+        ),
+        "UpStrmQ" | "UpStrmQ (mm)" => record.upstream_q_mm(),
+        "SubRIn" | "SubRIn (mm)" => record.subsurface_runon_mm(),
+        "Total-Soil Water" | "Total Soil Water (mm)" | "TSW" => record.total_soil_water_mm(),
+        "SoilWaterTotal" => record.soil_water_total_mm(),
+        "ProfileDepth" => record.profile_depth_mm(),
+        "ProfilePorosityCap" => record.profile_porosity_cap_mm(),
+        "ProfileFCStore" => record.profile_fc_store_mm(),
+        "ProfileWPStore" => record.profile_wp_store_mm(),
+        "Interception" => record.interception_mm(),
+        "InterceptionStorage" => record.interception_storage_mm(),
+        "frozwt" | "frozwt (mm)" => record.frozen_water_mm(),
+        "Snow-Water" | "Snow Water (mm)" => record.snow_water_mm(),
+        "TSMF" => record.tsmf_fraction(),
+        "QRain" => record.qrain_mm(),
+        "QSnow" => record.qsnow_mm(),
+        "Tile" | "Tile (mm)" => record.tile_mm(),
+        "Irr" | "Irr (mm)" => record.irrigation_mm(),
+        "Baseflow" | "Base (mm)" => record.baseflow_mm(),
+        "Inflow (m^3)" | "value" => record.runoff_volume_m3(),
+        "Outflow (m^3)" => record.channel_outflow_m3(),
+        "Storage (m^3)" => record.channel_storage_m3(),
+        "Baseflow (m^3)" => record.channel_baseflow_m3(),
+        "Loss (m^3)" => record.channel_loss_m3(),
+        "Balance (m^3)" => option_balance(
+            record.runoff_volume_m3(),
+            record.channel_outflow_m3(),
+            record.channel_loss_m3(),
+        ),
+        "Specific Gravity" => Some(2.65),
+        "Fraction In Flow Exiting" => Some(1.0),
+        "Area" | "Area (m^2)" => record.area_m2(),
+        "Hillslope Area" | "Contributing Area" => record.area_m2().map(|area| area / 10_000.0),
+        "Diameter" => Some(0.25),
+        _ => None,
     }
+}
+
+fn option_sum2(left: Option<f64>, right: Option<f64>) -> Option<f64> {
+    Some(left? + right?)
+}
+
+fn option_sum3(first: Option<f64>, second: Option<f64>, third: Option<f64>) -> Option<f64> {
+    Some(first? + second? + third?)
+}
+
+fn option_product2(left: Option<f64>, right: Option<f64>) -> Option<f64> {
+    Some(left? * right?)
+}
+
+fn option_balance(
+    inflow_m3: Option<f64>,
+    outflow_m3: Option<f64>,
+    loss_m3: Option<f64>,
+) -> Option<f64> {
+    Some(inflow_m3? - outflow_m3? - loss_m3?)
 }
 
 fn utf8_value(field_name: &str) -> &'static str {
@@ -1792,6 +2321,7 @@ fn utf8_value(field_name: &str) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use arrow_array::Array;
     use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
     use std::fs::{self, File};
     use std::path::{Path, PathBuf};
@@ -1849,6 +2379,158 @@ mod tests {
                 "{name}[{row}] expected {expected_value}, observed {}",
                 column.value(row)
             );
+        }
+    }
+
+    fn assert_float64_nulls(batch: &RecordBatch, names: &[&str]) {
+        for name in names {
+            let column = float64_column(batch, name);
+            assert_eq!(column.len(), 1, "{name} should have one test row");
+            assert!(column.is_null(0), "{name}[0] should be null");
+        }
+    }
+
+    fn temp_config(prefix: &str) -> (PathBuf, WatershedOutputConfig) {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock should be monotonic")
+            .as_nanos();
+        let base = std::env::temp_dir().join(format!("{prefix}_{timestamp}"));
+        let config = sample_config(&base);
+        (base, config)
+    }
+
+    fn first_batch(path: &Path, label: &str) -> RecordBatch {
+        let file = File::open(path).unwrap_or_else(|_| panic!("{label} should be readable"));
+        let builder = ParquetRecordBatchReaderBuilder::try_new(file)
+            .unwrap_or_else(|_| panic!("{label} should include readable parquet footer"));
+        let mut reader = builder
+            .build()
+            .unwrap_or_else(|_| panic!("{label} parquet reader should build"));
+        reader
+            .next()
+            .unwrap_or_else(|| panic!("{label} should include a batch"))
+            .unwrap_or_else(|_| panic!("{label} batch should decode"))
+    }
+
+    fn sample_typed_publication_frame() -> WatershedPublicationFrame {
+        WatershedPublicationFrame {
+            year: 2026,
+            simulation_year: 3,
+            sim_day_index: 77,
+            julian: 121,
+            month: 4,
+            day_of_month: 30,
+            water_year: 2026,
+            element_id: 44,
+            channel_id: 12,
+            runoff_volume_m3: 25.0,
+            peak_discharge_m3_s: 1.5,
+            sediment_yield_kg: 6.0,
+            soluble_pollutant_kg: Some(0.25),
+            particulate_pollutant_kg: Some(0.75),
+            channel_outflow_m3: Some(20.0),
+            channel_storage_m3: Some(2.0),
+            channel_baseflow_m3: Some(1.0),
+            channel_loss_m3: Some(3.0),
+            area_m2: Some(5_000.0),
+            subsurface_runoff_volume_m3: Some(0.75),
+            total_detachment_kg: 9.0,
+            total_deposition_kg: 3.0,
+            sediment_class_deposition_kg: Some([0.1, 0.2, 0.3, 0.4, 0.5]),
+            sediment_volume_concentration_m3_m3: Some(0.015),
+            precipitation_mm: Some(10.0),
+            rain_melt_mm: Some(8.0),
+            runoff_mm: Some(5.0),
+            q_diagnostic_mm: Some(5.0),
+            deep_percolation_mm: Some(2.0),
+            lateral_flow_mm: Some(1.0),
+            qofe_mm: Some(4.0),
+            transpiration_mm: Some(3.0),
+            evaporation_soil_mm: Some(0.5),
+            evaporation_residue_mm: Some(0.25),
+            upstream_q_mm: Some(0.75),
+            subsurface_runon_mm: Some(0.5),
+            total_soil_water_mm: Some(180.0),
+            soil_water_total_mm: Some(175.0),
+            profile_depth_mm: Some(900.0),
+            profile_porosity_cap_mm: Some(410.0),
+            profile_fc_store_mm: Some(250.0),
+            profile_wp_store_mm: Some(125.0),
+            interception_mm: Some(0.4),
+            interception_storage_mm: Some(0.2),
+            frozen_water_mm: Some(12.0),
+            snow_water_mm: Some(7.5),
+            tile_mm: Some(0.1),
+            irrigation_mm: Some(0.0),
+            baseflow_mm: Some(0.2),
+            tsmf_fraction: Some(0.6),
+            qrain_mm: Some(2.5),
+            qsnow_mm: Some(1.5),
+        }
+    }
+
+    #[test]
+    fn typed_publication_writer_reads_publication_frame_directly() {
+        let (base, config) = temp_config("openwepp_typed_publication");
+        let frame = sample_typed_publication_frame();
+
+        write_typed_publication_parquet_outputs(&config, &[frame])
+            .expect("typed publication writer should emit watershed parquet outputs");
+
+        for output in required_paths(&config) {
+            assert!(output.exists(), "expected output file {}", output.display());
+        }
+
+        let batch = first_batch(&config.totalwatsed3, "totalwatsed3");
+        assert_int32_values(&batch, "sim_day_index", &[77]);
+        assert_float64_values(&batch, "runvol", &[25.0]);
+        assert_float64_values(&batch, "Runoff", &[5.0]);
+        assert_float64_values(&batch, "P", &[50.0]);
+        assert_float64_values(&batch, "Q", &[25.0]);
+        assert_float64_values(&batch, "Dp", &[10.0]);
+        assert_float64_values(&batch, "latqcc", &[5.0]);
+        assert_float64_values(&batch, "tdet", &[9.0]);
+        assert_float64_values(&batch, "tdep", &[3.0]);
+        assert_float64_values(&batch, "sed_del", &[6.0]);
+
+        let batch = first_batch(&config.ebe_pw0, "ebe_pw0");
+        assert_float64_values(&batch, "precip", &[10.0]);
+
+        let batch = first_batch(&config.chan_out, "chan.out");
+        assert_int32_values(&batch, "Elmt_ID", &[44]);
+        assert_int32_values(&batch, "Chan_ID", &[12]);
+        assert_float64_values(&batch, "Peak_Discharge (m^3/s)", &[1.5]);
+
+        if base.exists() {
+            fs::remove_dir_all(base).expect("temp directory cleanup should succeed");
+        }
+    }
+
+    #[test]
+    fn typed_publication_writer_keeps_unavailable_operands_null() {
+        let (base, config) = temp_config("openwepp_typed_publication_nulls");
+
+        write_typed_publication_parquet_outputs(&config, &[WatershedPublicationFrame::default()])
+            .expect("typed publication writer should emit watershed parquet outputs");
+
+        let batch = first_batch(&config.totalwatsed3, "totalwatsed3");
+        assert_float64_nulls(&batch, &["sbrunv", "seddep_1", "sed_vol_conc", "Q", "Area"]);
+
+        let batch = first_batch(&config.chanwb, "chanwb");
+        assert_float64_nulls(
+            &batch,
+            &[
+                "Outflow (m^3)",
+                "Storage (m^3)",
+                "Baseflow (m^3)",
+                "Loss (m^3)",
+                "Balance (m^3)",
+            ],
+        );
+
+        if base.exists() {
+            fs::remove_dir_all(base).expect("temp directory cleanup should succeed");
         }
     }
 

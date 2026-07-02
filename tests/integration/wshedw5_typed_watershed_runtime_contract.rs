@@ -79,6 +79,7 @@ fn contribution_with_diameters(
 ) -> HillslopeContribution {
     HillslopeContribution {
         hillslope_id,
+        area_m2: Some(1_800.0),
         peak_runoff_m3_s,
         duration_seconds,
         total_detachment_kg: peak_runoff_m3_s * duration_seconds * 0.01,
@@ -191,7 +192,9 @@ fn typed_frame_dispatch_records_and_publishes_direct_routed_state() {
         .expect("typed routed state should publish");
     assert_eq!(publication.channel_id, 1);
     assert!(publication.runoff_volume_m3 > 0.0);
-    assert!(publication.particulate_pollutant_kg > 0.0);
+    assert_eq!(publication.particulate_pollutant_kg, None);
+    assert!(publication.total_detachment_kg > 0.0);
+    assert!(publication.total_deposition_kg > 0.0);
 }
 
 #[test]

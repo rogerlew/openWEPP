@@ -842,6 +842,7 @@ dependencies = [
  "arrow-array",
  "arrow-schema",
  "openwepp-sim-contract",
+ "openwepp-watershed-orchestrator",
  "parquet",
 ]
 

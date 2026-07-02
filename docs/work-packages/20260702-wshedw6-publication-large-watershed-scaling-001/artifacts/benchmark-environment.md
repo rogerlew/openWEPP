@@ -21,7 +21,7 @@ Release binaries built with:
 cargo build --release -p openwepp-runner --bins
 ```
 
-Result: `PASS`, release build completed in `1:08.65`.
+Result: `PASS`, final post-fix release build completed in `1:06.84`.
 
 W6 scaling binaries:
 

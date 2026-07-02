@@ -109,7 +109,7 @@ fn cli03_watershed_cli_surface_uses_runfile_pattern_with_legacy_discovery_flag()
         "inputs.hillslopes_block",
         "manifest_file",
         "outputs.loss_all_years_class_data",
-        "write_watershed_interchange_outputs",
+        "write_typed_publication_parquet_outputs",
     ] {
         assert!(
             WATERSHED_CLI_SOURCE.contains(expected),

@@ -1,4 +1,4 @@
 # Artifacts
 
-Queued evidence artifacts for WSHED-W6. Execution must update each artifact
-truthfully with `Static:` or `Ran:` evidence before disposition.
+Evidence artifacts for WSHED-W6. Each artifact records `Static:` or `Ran:`
+evidence before final package disposition.

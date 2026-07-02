@@ -14,4 +14,5 @@ workspace = true
 arrow-array = "54.3.1"
 arrow-schema = "54.3.1"
 openwepp-sim-contract = { path = "../openwepp-sim-contract", version = "0.1.0" }
+openwepp-watershed-orchestrator = { path = "../openwepp-watershed-orchestrator", version = "0.1.0" }
 parquet = { version = "54.3.1", default-features = false, features = ["arrow", "snap"] }

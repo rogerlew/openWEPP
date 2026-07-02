@@ -683,7 +683,7 @@ fn wshedw5_public_cli_uses_typed_network_and_publication_frames() {
         "network_frame.add_hillslope_contribution",
         "execute_watershed_dispatch_with_frame",
         "publish_typed_routing_report",
-        "publication_frame_to_row_seed",
+        "write_typed_publication_parquet_outputs",
     ] {
         assert!(
             cli_source.contains(required),
@@ -699,6 +699,9 @@ fn wshedw5_public_cli_uses_typed_network_and_publication_frames() {
         "harvest_compatibility_routing_report",
         "execute_watershed_dispatch_with_kernel",
         "build_watershed_output_row_seed",
+        "publication_frame_to_row_seed",
+        "write_watershed_interchange_outputs",
+        "WatershedInterchangeRowSeed",
         "build_default_chaninp_surface",
         ".writeback_surface",
         "state_surface.insert",
@@ -1607,6 +1610,22 @@ fn watershed_cli_mofe05_accepts_valid_multiofe_metadata_and_emits_outputs() {
         "valid contributor metadata should not trigger MOFE05 intake guard codes, observed: {stderr}"
     );
     assert_all_watershed_outputs_exist(&output_dir);
+
+    let totalwatsed3_row =
+        read_first_parquet_row(&output_dir.join("interchange/totalwatsed3.parquet"));
+    let area = row_f64_value(&totalwatsed3_row, "Area");
+    let runoff = row_f64_value(&totalwatsed3_row, "Runoff");
+    let q = row_f64_value(&totalwatsed3_row, "Q");
+    let runvol = row_f64_value(&totalwatsed3_row, "runvol");
+    assert_relative_close(area, 3_600.0, 0.0, 1.0e-12, "manifest publication area");
+    assert_relative_close(q, runvol, 0.0, 1.0e-12, "manifest-area totalwatsed3 Q");
+    assert_relative_close(
+        runoff,
+        runvol / 3_600.0 * 1_000.0,
+        1.0e-12,
+        1.0e-18,
+        "manifest-area totalwatsed3 Runoff",
+    );
 }
 
 #[test]

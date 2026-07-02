@@ -1,0 +1,15 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "onshore-xenophobia-H790"
+unit_system = "metric"
+
+[inputs]
+soil = "p790.sol"
+management = "p790.man"
+slope = "p790.slp"
+climate = "p790.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "unused/H790.hbp"
+loss = "unused/H790.loss.json"

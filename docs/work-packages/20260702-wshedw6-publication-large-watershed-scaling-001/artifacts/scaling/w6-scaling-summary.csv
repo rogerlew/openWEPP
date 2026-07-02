@@ -1,5 +1,5 @@
 fixture,label,jobs,exit_code,wall_time,elapsed_seconds_python,user_seconds,system_seconds,cpu_percent,max_rss_kib,worker_elapsed_ms,publication_ms,dispatch_ms,job_count,job_median_ms,job_mean_ms,identity_all_same
-onshore-xenophobia,onshore-jobs1-repo-full,1,0,1:30:21,5421.988582372665,5366.86,54.82,99%,44128,5421433,64,2,1305,4154,4153.248275862069,True
-onshore-xenophobia,onshore-jobs48-repo-full,48,0,3:27.09,207.10146164894104,9334.72,99.82,4555%,44188,206535,62,2,1305,7492,7485.665900383142,True
-carnivorous-adobo,carnivorous-jobs1-repo-full,1,0,0:17.48,,16.9,0.49,99%,18060,17384,80,0,32,528.5,542.25,True
-carnivorous-adobo,carnivorous-jobs32-repo-full,32,0,0:00.99,,22.35,0.52,2308%,18048,900,72,0,32,719.0,711.03125,True
+carnivorous-adobo,carnivorous-adobo-jobs1-repo-full,1,0,0:19.11,19.113370506092906,18.05,0.54,97%,18444,18970,67,0,32,574.0,591.78125,True
+carnivorous-adobo,carnivorous-adobo-jobs32-repo-full,32,0,0:01.07,1.0802821218967438,24.04,0.52,2278%,18048,983,77,0,32,796.0,763.8125,True
+onshore-xenophobia,onshore-xenophobia-jobs1-repo-full,1,0,1:31:51,5511.4130674581975,5453.36,57.71,99%,44128,5510853,62,2,1305,4235,4221.757854406131,True
+onshore-xenophobia,onshore-xenophobia-jobs48-repo-full,48,0,3:27.55,207.55416897311807,9429.66,93.02,4588%,44128,206975,65,3,1305,7527,7502.324137931035,True

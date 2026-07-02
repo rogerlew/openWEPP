@@ -1,0 +1,15 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "onshore-xenophobia-H168"
+unit_system = "metric"
+
+[inputs]
+soil = "p168.sol"
+management = "p168.man"
+slope = "p168.slp"
+climate = "p168.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "unused/H168.hbp"
+loss = "unused/H168.loss.json"

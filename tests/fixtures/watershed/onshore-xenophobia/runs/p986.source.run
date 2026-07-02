@@ -1,0 +1,15 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "onshore-xenophobia-H986"
+unit_system = "metric"
+
+[inputs]
+soil = "p986.sol"
+management = "p986.man"
+slope = "p986.slp"
+climate = "p986.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "unused/H986.hbp"
+loss = "unused/H986.loss.json"

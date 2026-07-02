@@ -1,0 +1,15 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "onshore-xenophobia-H660"
+unit_system = "metric"
+
+[inputs]
+soil = "p660.sol"
+management = "p660.man"
+slope = "p660.slp"
+climate = "p660.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "unused/H660.hbp"
+loss = "unused/H660.loss.json"

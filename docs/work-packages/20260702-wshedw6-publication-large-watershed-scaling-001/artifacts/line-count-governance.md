@@ -20,14 +20,14 @@ wc -l \
 Result:
 
 ```text
-  2716 crates/openwepp-watershed-output/src/writers.rs
-  2126 crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs
+  2684 crates/openwepp-watershed-output/src/writers.rs
+  2135 crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs
    751 crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs
-  2468 crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs
+  2484 crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs
   1374 tests/integration/cli03_runner_contract_derived_tests.rs
    536 tests/integration/wshedw5_typed_watershed_runtime_contract.rs
    864 tests/integration/infile_watershed_structure_parser_contract.rs
- 10835 total
+ 10828 total
 ```
 
 Disposition:
@@ -37,13 +37,15 @@ Disposition:
   Follow-on split target is separating schema builders/value projection from
   writer tests after the watershed publication arc closes.
 - `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`: existing `WARN`,
-  below `3000`. W6 reduced public publication staging but did not split the CLI.
-  Follow-on split target remains extracting runfile parsing/topology setup from
-  the binary.
+  below `3000`. W6 reduced public publication staging and carried manifest
+  publication area for existing-pass mode, but did not split the CLI. Follow-on
+  split target remains extracting runfile parsing/topology setup from the
+  binary.
 - `crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs`: below
   `2000`; no closure blocker.
 - `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs`: test file
-  `WARN`, below `3000`; no closure blocker.
+  `WARN`, below `3000`; no closure blocker. W6 added focused existing-pass
+  manifest-area regression coverage here.
 - `tests/integration/cli03_runner_contract_derived_tests.rs`: below `2000`; no
   closure blocker.
 - `tests/integration/wshedw5_typed_watershed_runtime_contract.rs`: below
