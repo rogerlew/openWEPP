@@ -30,7 +30,7 @@ use openwepp_topology::{
 };
 use openwepp_watershed_orchestrator::{
     HillslopeContribution, WatershedNetworkFrame, WatershedPublicationFrame,
-    Ws10ChannelImpoundmentKernel, execute_watershed_dispatch_with_kernel,
+    execute_watershed_dispatch_with_frame,
 };
 use openwepp_watershed_output::contracts::{WatershedOutputConfig, validate_output_contract};
 use openwepp_watershed_output::writers::{
@@ -400,22 +400,9 @@ fn run() -> Result<(), String> {
     }
     let routing_input_elapsed_ms = routing_input_started.elapsed().as_millis();
 
-    let mut kernel = Ws10ChannelImpoundmentKernel;
     let watershed_dispatch_started = Instant::now();
-    let compatibility_surface = network_frame
-        .compatibility_writeback_surface()
-        .map_err(|error| {
-            format!(
-                "CLIWAT-E-019 failed projecting typed watershed network frame for compatibility routing: {error}"
-            )
-        })?;
-    let report = execute_watershed_dispatch_with_kernel(
-        network_frame.topology(),
-        &topology_validation,
-        &mut kernel,
-        compatibility_surface,
-    )
-    .map_err(|error| format!("CLIWAT-E-019 watershed execution failed: {error}"))?;
+    let report = execute_watershed_dispatch_with_frame(&mut network_frame, &topology_validation)
+        .map_err(|error| format!("CLIWAT-E-019 watershed execution failed: {error}"))?;
     let watershed_dispatch_elapsed_ms = watershed_dispatch_started.elapsed().as_millis();
 
     if !report.dispatch_report.is_success() {
@@ -429,7 +416,9 @@ fn run() -> Result<(), String> {
         eprintln!("sidecar-warning: {warning}");
     }
 
-    let publication_frame = network_frame.harvest_compatibility_routing_report(&report);
+    let publication_frame = network_frame
+        .publish_typed_routing_report(&report)
+        .map_err(|error| format!("CLIWAT-E-019 watershed publication failed: {error}"))?;
     let row_seed = publication_frame_to_row_seed(&publication_frame);
     let output_publication_started = Instant::now();
     write_watershed_interchange_outputs(&runfile.outputs, &[row_seed])?;

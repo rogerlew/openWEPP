@@ -71,6 +71,7 @@ struct Ws20RouteContext<'a> {
     flagct: i32,
     crsh: f64,
     chnk: f64,
+    crfrac: Option<&'a [f64]>,
 }
 
 #[derive(Debug, Clone, Copy)]

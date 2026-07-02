@@ -112,6 +112,21 @@ pub struct WatershedKernelExecutionReport {
     pub writeback_surface: WatershedWritebackSurface,
 }
 
+/// Per-step frame-native watershed execution evidence.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WatershedFrameStepReport {
+    pub step: DispatchStep,
+    pub kernel_status: SimulationStatus,
+    pub routed_state_applied: bool,
+}
+
+/// Frame-native watershed execution report.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WatershedFrameExecutionReport {
+    pub dispatch_report: WatershedDispatchReport,
+    pub step_reports: Vec<WatershedFrameStepReport>,
+}
+
 /// Error surface for watershed dispatch scheduler orchestration.
 #[derive(Debug)]
 pub enum WatershedDispatchError {

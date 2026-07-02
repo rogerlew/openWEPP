@@ -641,12 +641,20 @@ fn wshedw4_public_cli_handoff_uses_typed_network_and_publication_frames() {
         repo_root.join("crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs"),
     )
     .expect("watershed network frame source should be readable");
+    let dispatch_source = fs::read_to_string(
+        repo_root.join("crates/openwepp-watershed-orchestrator/src/lib_mod/dispatch.rs"),
+    )
+    .expect("watershed dispatch source should be readable");
+    let direct_kernel_source = fs::read_to_string(
+        repo_root.join("crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs"),
+    )
+    .expect("direct watershed kernel source should be readable");
 
     for required in [
         "WatershedNetworkFrame::from_parsed_inputs",
         "network_frame.add_hillslope_contribution",
-        "compatibility_writeback_surface",
-        "harvest_compatibility_routing_report",
+        "execute_watershed_dispatch_with_frame",
+        "publish_typed_routing_report",
         "publication_frame_to_row_seed",
     ] {
         assert!(
@@ -659,6 +667,9 @@ fn wshedw4_public_cli_handoff_uses_typed_network_and_publication_frames() {
         "BoundarySymbol",
         "BoundaryValue",
         "WatershedWritebackSurface",
+        "compatibility_writeback_surface",
+        "harvest_compatibility_routing_report",
+        "execute_watershed_dispatch_with_kernel",
         "build_watershed_output_row_seed",
         "build_default_chaninp_surface",
         ".writeback_surface",
@@ -675,12 +686,52 @@ fn wshedw4_public_cli_handoff_uses_typed_network_and_publication_frames() {
         "pub struct WatershedNetworkFrame",
         "pub struct WatershedPublicationFrame",
         "pub struct HillslopeContribution",
+        "pub fn publish_typed_routing_report",
         "compatibility_writeback_surface",
         "named W4 migration edge",
     ] {
         assert!(
             frame_source.contains(required),
             "typed watershed frame source should contain migration marker {required}"
+        );
+    }
+
+    let typed_dispatch_body = source_body(
+        &dispatch_source,
+        "pub fn execute_watershed_dispatch_with_frame",
+        "/// Execute topology validation gate + watershed dispatch + kernel writeback",
+    );
+    for forbidden in [
+        "WatershedWritebackSurface",
+        "BoundarySymbol",
+        "BoundaryValue",
+        "KernelWritebackPayload",
+        "WatershedKernelRequest",
+        "state_surface",
+        "flux_surface",
+    ] {
+        assert!(
+            !typed_dispatch_body.contains(forbidden),
+            "typed production dispatch body should not use old surface marker {forbidden}"
+        );
+        assert!(
+            !direct_kernel_source.contains(forbidden),
+            "direct watershed kernel source should not use old surface marker {forbidden}"
+        );
+    }
+
+    for required in [
+        "compute_muskingum_cunge_state",
+        "compute_variable_muskingum_cunge_state",
+        "route_impoundment_stage_over_duration",
+        "impoundment_outflow_at_stage",
+        "ws18_trncap",
+        "ws20_route_case12_segment_family_core",
+        "direct_ws20_crfrac",
+    ] {
+        assert!(
+            direct_kernel_source.contains(required),
+            "direct watershed kernel should call actual routing physics marker {required}"
         );
     }
 }
@@ -948,6 +999,17 @@ fn watershed_cli_rejects_disallowed_perennial_stream_selector() {
 fn watershed_execution_lock() -> &'static Mutex<()> {
     static RUN_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
     RUN_LOCK.get_or_init(|| Mutex::new(()))
+}
+
+fn source_body<'a>(source: &'a str, start_marker: &str, end_marker: &str) -> &'a str {
+    let start = source
+        .find(start_marker)
+        .unwrap_or_else(|| panic!("source should contain start marker {start_marker}"));
+    let tail = &source[start..];
+    let end = tail
+        .find(end_marker)
+        .unwrap_or_else(|| panic!("source should contain end marker {end_marker}"));
+    &tail[..end]
 }
 
 fn parse_baseline_ebe_first_row(path: &Path) -> BaselineEbeDailyRow {

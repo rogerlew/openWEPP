@@ -447,7 +447,6 @@ impl Ws10ChannelImpoundmentKernel {
     }
 
     fn ws20_route_one_segment(
-        request: &WatershedKernelRequest<'_>,
         ctx: &Ws20RouteContext<'_>,
         segment_index: usize,
         profile: &mut Ws20ChannelProfile,
@@ -458,7 +457,6 @@ impl Ws10ChannelImpoundmentKernel {
         let snapshot = Self::ws20_transport_snapshot(ctx, &segment, state);
         if snapshot.excess > 0.0 {
             return Self::ws20_route_case34_segment(
-                request,
                 ctx,
                 profile,
                 state,
@@ -469,7 +467,6 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         Self::ws20_route_case12_segment(
-            request,
             ctx,
             profile,
             state,
@@ -479,10 +476,9 @@ impl Ws10ChannelImpoundmentKernel {
         )
     }
 
-    fn ws20_segment_crfrac(
-        request: &WatershedKernelRequest<'_>,
-        ctx: &Ws20RouteContext<'_>,
-    ) -> Result<Vec<f64>, Ws10GuardError> {
+    fn ws20_segment_crfrac<'a>(
+        ctx: &'a Ws20RouteContext<'a>,
+    ) -> Result<&'a [f64], Ws10GuardError> {
         if !ctx.ws21_case34_enabled {
             return Err(Self::domain_violation(
                 ctx.node_class,
@@ -490,12 +486,13 @@ impl Ws10ChannelImpoundmentKernel {
                 0.0,
             ));
         }
-        Self::ws22_require_crfrac_vector(request, ctx.node_class, ctx.class_numbers)
+        ctx.crfrac.ok_or_else(|| {
+            Self::missing_required(ctx.node_class, BoundarySymbol::from("ws20_crfrac"))
+        })
     }
 
     #[allow(clippy::needless_range_loop, clippy::similar_names)]
     fn ws20_route_case34_segment(
-        request: &WatershedKernelRequest<'_>,
         ctx: &Ws20RouteContext<'_>,
         profile: &mut Ws20ChannelProfile,
         state: &mut Ws20ClassTransportState,
@@ -503,7 +500,7 @@ impl Ws10ChannelImpoundmentKernel {
         segment: &Ws20SegmentHydraulics,
         snapshot: &Ws20TransportSnapshot,
     ) -> Result<(), Ws10GuardError> {
-        let crfrac = Self::ws20_segment_crfrac(request, ctx)?;
+        let crfrac = Self::ws20_segment_crfrac(ctx)?;
         let depsid_ft = ctx.sediment_controls.chneds * WS15_DEPTH_FROM_METERS_TO_FEET;
         let tb_s = 2.0 * ctx.event_duration;
         let depmid_ft = profile.depth_b_points_ft[segment.segment_index - 1];
@@ -527,7 +524,7 @@ impl Ws10ChannelImpoundmentKernel {
             ctx.chnk,
             ctx.sediment_controls.chnnbr,
             WS22_DCAP_MAXE,
-            &crfrac,
+            crfrac,
         )?;
         let depmid_ft = dcap_outcome.depmid_ft;
         profile.depth_b_points_ft[segment.segment_index - 1] = dcap_outcome.depmid_ft;
@@ -559,7 +556,7 @@ impl Ws10ChannelImpoundmentKernel {
             state,
             diagnostics,
             segment,
-            &crfrac,
+            crfrac,
             &du_lbs_s_ft,
             depsid_ft,
             depmid_ft,
@@ -831,7 +828,6 @@ impl Ws10ChannelImpoundmentKernel {
     }
 
     fn ws20_route_case12_segment(
-        request: &WatershedKernelRequest<'_>,
         ctx: &Ws20RouteContext<'_>,
         profile: &mut Ws20ChannelProfile,
         state: &mut Ws20ClassTransportState,
@@ -874,7 +870,6 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         if Self::ws20_try_case12_transition(
-            request,
             ctx,
             profile,
             state,
@@ -999,7 +994,6 @@ impl Ws10ChannelImpoundmentKernel {
 
     #[allow(clippy::similar_names, clippy::too_many_arguments)]
     fn ws20_try_case12_transition(
-        request: &WatershedKernelRequest<'_>,
         ctx: &Ws20RouteContext<'_>,
         profile: &mut Ws20ChannelProfile,
         state: &mut Ws20ClassTransportState,
@@ -1028,7 +1022,7 @@ impl Ws10ChannelImpoundmentKernel {
                 state.dlat_lbs_s_ft[class_offset] * (xdemax_ft - xde_ft[class_offset]);
         }
 
-        let crfrac = Self::ws22_require_crfrac_vector(request, ctx.node_class, ctx.class_numbers)?;
+        let crfrac = Self::ws20_segment_crfrac(ctx)?;
         let depmid_ft = ctx.sediment_controls.chnedm * WS15_DEPTH_FROM_METERS_TO_FEET;
         let depsid_ft = ctx.sediment_controls.chneds * WS15_DEPTH_FROM_METERS_TO_FEET;
         let tb_s = 2.0 * ctx.event_duration;
@@ -1049,7 +1043,7 @@ impl Ws10ChannelImpoundmentKernel {
             segment.lower_flagc,
             ctx.chnk,
             ctx.sediment_controls.chnnbr,
-            &crfrac,
+            crfrac,
             &gstde_transition_lbs_s,
             &state.dlat_lbs_s_ft,
             dx_remaining_ft,
@@ -1122,6 +1116,60 @@ impl Ws10ChannelImpoundmentKernel {
         class_diameters_m: &[f64],
         class_numbers: &[usize],
     ) -> Result<Ws20SegmentRoutingResult, Ws10GuardError> {
+        let profile = Self::ws20_load_channel_profile(request, node_class, nslpts)?;
+        let chnk = Self::ws20_channel_chnk(request, node_class)?;
+        let crfrac = if ws21_case34_enabled {
+            Some(Self::ws22_require_crfrac_vector(
+                request,
+                node_class,
+                class_numbers,
+            )?)
+        } else {
+            None
+        };
+        Self::ws20_route_case12_segment_family_core(
+            request.node_id,
+            node_class,
+            ws21_case34_enabled,
+            event_duration,
+            qpo,
+            roughness,
+            sediment_controls,
+            nslpts,
+            peak_partition,
+            top_class_mass_kg,
+            lateral_class_mass_kg,
+            class_diameters_m,
+            class_numbers,
+            profile,
+            chnk,
+            crfrac.as_deref(),
+        )
+    }
+
+    #[allow(
+        clippy::too_many_arguments,
+        clippy::many_single_char_names,
+        clippy::similar_names
+    )]
+    fn ws20_route_case12_segment_family_core(
+        node_id: u32,
+        node_class: Ws10NodeClass,
+        ws21_case34_enabled: bool,
+        event_duration: f64,
+        qpo: f64,
+        roughness: f64,
+        sediment_controls: Ws15ChannelSedimentControls,
+        nslpts: usize,
+        peak_partition: Ws20IncomingPeakPartition,
+        top_class_mass_kg: &[f64],
+        lateral_class_mass_kg: &[f64],
+        class_diameters_m: &[f64],
+        class_numbers: &[usize],
+        mut profile: Ws20ChannelProfile,
+        chnk: f64,
+        crfrac: Option<&[f64]>,
+    ) -> Result<Ws20SegmentRoutingResult, Ws10GuardError> {
         if class_diameters_m.is_empty() {
             return Ok(Self::ws20_empty_segment_result());
         }
@@ -1135,7 +1183,6 @@ impl Ws10ChannelImpoundmentKernel {
             class_numbers,
         )?;
 
-        let mut profile = Self::ws20_load_channel_profile(request, node_class, nslpts)?;
         let leff_ft = Self::ws20_effective_length(node_class, &profile)?;
         let (qu_top_cfs, qlat_cfs_per_ft) =
             Self::ws20_flow_partition(node_class, qpo, peak_partition, leff_ft)?;
@@ -1151,11 +1198,10 @@ impl Ws10ChannelImpoundmentKernel {
 
         let flagct = Self::ws30_shape_flag_from_ishape(
             node_class,
-            request.node_id,
+            node_id,
             sediment_controls.ishape,
         )?;
         let crsh = sediment_controls.chntcr * WS15_CRSH_FROM_CHNTCR_SCALE;
-        let chnk = Self::ws20_channel_chnk(request, node_class)?;
         let ctx = Ws20RouteContext {
             node_class,
             ws21_case34_enabled,
@@ -1168,12 +1214,12 @@ impl Ws10ChannelImpoundmentKernel {
             flagct,
             crsh,
             chnk,
+            crfrac,
         };
 
         let mut diagnostics = Ws20SegmentRoutingDiagnostics::default();
         for segment_index in 1..nslpts {
             Self::ws20_route_one_segment(
-                request,
                 &ctx,
                 segment_index,
                 &mut profile,

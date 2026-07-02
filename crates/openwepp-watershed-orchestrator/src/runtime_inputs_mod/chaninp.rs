@@ -12,7 +12,7 @@ use openwepp_input_contract::parsers::{
 };
 use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue, WatershedProductionStateSymbol};
 
-type Ws12ImpoundmentProjectionTuple = (&'static str, f64, Option<f64>, bool);
+pub(crate) type Ws12ImpoundmentProjectionTuple = (&'static str, f64, Option<f64>, bool);
 
 const STANDARD_GRAVITY_M_S2: f64 = 9.806_65;
 const ACTIVE_PROJECTION_STAGE_DELTA_M: f64 = 0.01;
@@ -34,7 +34,7 @@ struct Ws12ActiveProjection {
 }
 
 #[derive(Debug, Clone)]
-struct Ws12OutflowFunctionFamilies {
+pub(crate) struct Ws12OutflowFunctionFamilies {
     a: [f64; WS12_FUNCTION_COUNT],
     b: [f64; WS12_FUNCTION_COUNT],
     c: [f64; WS12_FUNCTION_COUNT],
@@ -55,7 +55,7 @@ impl Ws12OutflowFunctionFamilies {
         }
     }
 
-    fn coefficient_at(&self, family_index: usize, suffix: &'static str) -> f64 {
+    pub(crate) fn coefficient_at(&self, family_index: usize, suffix: &'static str) -> f64 {
         let index = family_index - 1;
         match suffix {
             "a" => self.a[index],
@@ -508,7 +508,7 @@ pub fn seed_watershed_runtime_surface_from_watershed_impoundment(
     Ok(())
 }
 
-fn derive_ws12_impoundment_coefficients(
+pub(crate) fn derive_ws12_impoundment_coefficients(
     node_id: usize,
     record: &ImpoundmentRecord,
 ) -> Result<[Ws12ImpoundmentProjectionTuple; 14], WatershedRuntimeInputError> {
@@ -579,7 +579,7 @@ fn derive_ws12_impoundment_coefficients(
 }
 
 #[allow(clippy::too_many_lines)]
-fn derive_ws12_outflow_function_families(
+pub(crate) fn derive_ws12_outflow_function_families(
     node_id: usize,
     record: &ImpoundmentRecord,
 ) -> Result<Ws12OutflowFunctionFamilies, WatershedRuntimeInputError> {

@@ -7,14 +7,16 @@ mod lib_mod;
 pub use lib_mod::{
     DispatchDiagnostic, DispatchDiagnosticCode, DispatchStep, HillslopeContribution,
     MESSAGE_CYCLE_DETECTED, MESSAGE_DISPATCH_OK, MESSAGE_MISSING_DEPENDENCY,
-    MESSAGE_PRECONDITION_FAILED, RoutedChannelState, RoutedImpoundmentState,
-    WatershedChannelControlRecord, WatershedChannelRatingCurveControl,
-    WatershedChannelSegmentPoint, WatershedDispatchError, WatershedDispatchReport,
+    MESSAGE_PRECONDITION_FAILED, RoutedChannelSedimentState, RoutedChannelState,
+    RoutedChannelWaveState, RoutedImpoundmentState, WatershedChannelControlRecord,
+    WatershedChannelRatingCurveControl, WatershedChannelSegmentPoint, WatershedDispatchError,
+    WatershedDispatchReport, WatershedFrameExecutionReport, WatershedFrameStepReport,
     WatershedImpoundmentControlRecord, WatershedKernelExecutionReport, WatershedKernelStepReport,
     WatershedNetworkFrame, WatershedNetworkFrameError, WatershedPublicationFrame,
     WatershedRoutingGlobals, WatershedWritebackSurface, Ws10ChannelImpoundmentKernel,
-    execute_watershed_dispatch_with_gate_and_kernel, execute_watershed_dispatch_with_kernel,
-    schedule_watershed_dispatch, schedule_watershed_dispatch_with_gate,
+    execute_watershed_dispatch_with_frame, execute_watershed_dispatch_with_gate_and_kernel,
+    execute_watershed_dispatch_with_kernel, schedule_watershed_dispatch,
+    schedule_watershed_dispatch_with_gate,
 };
 
 #[cfg(test)]

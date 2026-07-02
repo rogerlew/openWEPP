@@ -122,6 +122,21 @@ pub(crate) struct Ws26DcapOutcome {
     pub(crate) werod_ft: f64,
 }
 
+pub(crate) struct DirectWatershedKernelInput<'a> {
+    pub(crate) step: &'a DispatchStep,
+    pub(crate) frame: &'a WatershedNetworkFrame,
+}
+
+pub(crate) enum DirectWatershedKernelOutput {
+    Channel(RoutedChannelState),
+    Impoundment(RoutedImpoundmentState),
+}
+
+pub(crate) struct DirectWatershedKernelResponse {
+    pub(crate) status: SimulationStatus,
+    pub(crate) output: Option<DirectWatershedKernelOutput>,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 struct Ws23DetachClosureOutcome {
     next_gstu_lbs_s: Vec<f64>,
@@ -177,4 +192,3 @@ impl Ws10GuardError {
 /// WS10 production watershed kernel for channel and impoundment execution.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Ws10ChannelImpoundmentKernel;
-

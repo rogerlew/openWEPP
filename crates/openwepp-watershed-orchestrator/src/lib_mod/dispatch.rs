@@ -11,11 +11,16 @@ use openwepp_topology::{
     validate_pre_execution_topology,
 };
 
+use super::kernel::{
+    DirectWatershedKernelInput, DirectWatershedKernelOutput, Ws10ChannelImpoundmentKernel,
+};
+use super::network_frame::WatershedNetworkFrame;
 use super::types::{
     DispatchDiagnostic, DispatchDiagnosticCode, DispatchStep, MESSAGE_CYCLE_DETECTED,
     MESSAGE_DISPATCH_OK, MESSAGE_MISSING_DEPENDENCY, MESSAGE_PRECONDITION_FAILED,
-    WatershedDispatchError, WatershedDispatchReport, WatershedKernelExecutionReport,
-    WatershedKernelStepReport, WatershedWritebackSurface,
+    WatershedDispatchError, WatershedDispatchReport, WatershedFrameExecutionReport,
+    WatershedFrameStepReport, WatershedKernelExecutionReport, WatershedKernelStepReport,
+    WatershedWritebackSurface,
 };
 
 /// Schedule deterministic watershed dispatch order using an explicit topology
@@ -262,6 +267,81 @@ where
         dispatch_report,
         step_reports,
         writeback_surface,
+    })
+}
+
+/// Execute watershed dispatch directly against typed `WatershedNetworkFrame`
+/// state.
+///
+/// This is the production W4 frame-native path. It schedules the validated
+/// topology, invokes typed WS10/WS11/WS12/WS18 routing, and writes routed
+/// channel/impoundment state back to the frame without materializing the old
+/// symbol-map writeback surface.
+///
+/// # Errors
+///
+/// Returns `WatershedDispatchError` when scheduler/status construction fails.
+pub fn execute_watershed_dispatch_with_frame(
+    frame: &mut WatershedNetworkFrame,
+    topology_validation: &TopologyValidationReport,
+) -> Result<WatershedFrameExecutionReport, WatershedDispatchError> {
+    let mut dispatch_report = schedule_watershed_dispatch(frame.topology(), topology_validation)?;
+
+    if !dispatch_report.is_success() {
+        return Ok(WatershedFrameExecutionReport {
+            dispatch_report,
+            step_reports: Vec::new(),
+        });
+    }
+
+    let mut step_reports = Vec::new();
+
+    for step in dispatch_report.steps.iter().cloned() {
+        let response =
+            Ws10ChannelImpoundmentKernel::run_direct_watershed_node(&DirectWatershedKernelInput {
+                step: &step,
+                frame: &*frame,
+            });
+        let kernel_status = response.status.clone();
+        let mut routed_state_applied = false;
+
+        if kernel_status.classification() == StatusClassification::Failure {
+            step_reports.push(WatershedFrameStepReport {
+                step,
+                kernel_status: kernel_status.clone(),
+                routed_state_applied,
+            });
+            dispatch_report.dispatch_status = kernel_status;
+            break;
+        }
+
+        if let Some(output) = response.output {
+            match output {
+                DirectWatershedKernelOutput::Channel(state) => {
+                    frame.record_routed_channel_state(state);
+                    routed_state_applied = true;
+                }
+                DirectWatershedKernelOutput::Impoundment(state) => {
+                    frame.record_routed_impoundment_state(state);
+                    routed_state_applied = true;
+                }
+            }
+        }
+
+        step_reports.push(WatershedFrameStepReport {
+            step,
+            kernel_status: kernel_status.clone(),
+            routed_state_applied,
+        });
+
+        if kernel_status.classification() == StatusClassification::Advisory {
+            dispatch_report.dispatch_status = kernel_status;
+        }
+    }
+
+    Ok(WatershedFrameExecutionReport {
+        dispatch_report,
+        step_reports,
     })
 }
 

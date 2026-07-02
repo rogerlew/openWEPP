@@ -1,38 +1,39 @@
 # Correction Authority Envelope
 
-Status: `QUEUED`
+Status: `EXECUTED`
 
 Defect ID: `WSHED-W4-HOLD-001`.
 
 Observed failure:
 
-- Public watershed CLI still routes through
+- Public watershed CLI routed through
   `WatershedNetworkFrame::compatibility_writeback_surface()`.
-- Production routing still calls `execute_watershed_dispatch_with_kernel`.
-- Orchestrator dispatch/kernel code still reads/writes
-  `WatershedWritebackSurface`, `BoundarySymbol`, `BoundaryValue`, and
-  `KernelWritebackPayload`.
-- Typed publication still harvests from compatibility report state and can
-  inherit compatibility zero-default behavior.
+- Production dispatch called `execute_watershed_dispatch_with_kernel`.
+- Publication harvested compatibility report state instead of typed routed
+  frame state.
 
-In-scope correction:
+Correction:
 
-- Replace the production compatibility projection with frame-native dispatch.
-- Replace symbol-map request/writeback routing internals with typed
-  frame/request/response values.
-- Replace compatibility-harvested publication operands with typed routed-state
-  operands and fail-closed missing-operand handling.
+- Added `execute_watershed_dispatch_with_frame`.
+- Added direct typed WS10/WS11/WS12/WS18/WS20 kernel execution over
+  `WatershedNetworkFrame`.
+- Refactored WS20 segment routing into a shared core used by both legacy and
+  direct typed routes.
+- Added `publish_typed_routing_report` with fail-closed missing-routed-state
+  checks.
+- Switched public watershed CLI to the frame-native dispatch and publication
+  path.
 
 Protected boundaries:
 
-- No physics changes for performance.
-- No silent clamps or guard loosening.
 - No output schema redesign.
-- No W5 full deletion claim.
+- No silent domain clamp or guard loosening.
+- No W5 deletion claim for old compatibility code.
+- No carnivorous-adobo output identity claim, because that fixture is not a
+  current CLI E2E fixture with TOML/HBP bindings.
 
 Acceptance:
 
 - Public CLI routes without `compatibility_writeback_surface`.
-- Production routing loops no longer read/write old symbol-map surfaces.
-- Protected outputs are identity-equivalent or contract-governed.
-- Conservation reconstruction and magnitude audit are recorded.
+- Direct production route does not use old surface/request/writeback markers.
+- Public output behavior tests and full workspace gates passed.
