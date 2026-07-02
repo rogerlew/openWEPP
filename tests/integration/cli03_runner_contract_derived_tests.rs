@@ -829,9 +829,15 @@ fn assert_mf_multiofe_publication_wat_rows(wat_output: &Path) {
         .collect::<Vec<_>>();
     assert_eq!(sim_day_indices, vec![1, 1, 1, 2, 2, 2]);
     assert_mf_multiofe_publication_surface_handoff(&wat_rows[0..3]);
-    assert_mfredo2_qofe_local_depth_geometry(&wat_rows[0..3]);
+    assert_b02_qofe_equals_q_all_rows(&wat_rows[0..3]);
     assert_mf_multiofe_publication_not_cloned(&wat_rows[0..3]);
 }
+
+/// Local-length QOFE/Q ratios of the fixture (OFE 1/2/3). Pre-MOFEFID-B02 the
+/// published `QOFE` carried this local-length depth; post-B02 the published
+/// `QOFE == Q` (INV-RUNOFFPART-032) and the local-length runoff basis is
+/// internal, so the handoff is reconstructed as `Q * local_ratio`.
+const QOFE_LOCAL_LENGTH_RATIOS: [f64; 3] = [1.0, 2.5, 6.0];
 
 fn assert_mf_multiofe_publication_surface_handoff(day_rows: &[Row]) {
     assert_eq!(
@@ -841,13 +847,18 @@ fn assert_mf_multiofe_publication_surface_handoff(day_rows: &[Row]) {
     );
     let upstream_to_downstream_area_ratios = [1.5, 2.0];
     for ofe_offset in 1..day_rows.len() {
-        let upstream_qofe = row_f64_value(&day_rows[ofe_offset - 1], "QOFE");
+        // MOFEFID-B02: `UpStrmQ` (routed runon) still reflects the upstream
+        // OFE's LOCAL-length runoff depth, but the published `QOFE == Q` no
+        // longer carries it; reconstruct the local runoff from published `Q`
+        // and the known local-length ratio.
+        let upstream_q = row_f64_value(&day_rows[ofe_offset - 1], "Q");
+        let upstream_local_runoff = upstream_q * QOFE_LOCAL_LENGTH_RATIOS[ofe_offset - 1];
         let downstream_upstrmq = row_f64_value(&day_rows[ofe_offset], "UpStrmQ");
         let expected_downstream_upstrmq =
-            upstream_qofe * upstream_to_downstream_area_ratios[ofe_offset - 1];
+            upstream_local_runoff * upstream_to_downstream_area_ratios[ofe_offset - 1];
         assert!(
-            upstream_qofe > 1.0e-9,
-            "M-F-REDO requires nonzero upstream QOFE on active handoff rows"
+            upstream_q > 1.0e-9,
+            "M-F-REDO requires nonzero upstream Q on active handoff rows"
         );
         assert!(
             downstream_upstrmq > 1.0e-9,
@@ -855,35 +866,28 @@ fn assert_mf_multiofe_publication_surface_handoff(day_rows: &[Row]) {
         );
         assert!(
             (downstream_upstrmq - expected_downstream_upstrmq).abs() <= 1.0e-6,
-            "downstream UpStrmQ ({downstream_upstrmq}) must equal previous OFE QOFE ({upstream_qofe}) scaled by area ratio {}",
+            "downstream UpStrmQ ({downstream_upstrmq}) must equal upstream local runoff (Q {upstream_q} * local ratio {}) scaled by area ratio {}",
+            QOFE_LOCAL_LENGTH_RATIOS[ofe_offset - 1],
             upstream_to_downstream_area_ratios[ofe_offset - 1]
         );
     }
 }
 
-fn assert_mfredo2_qofe_local_depth_geometry(day_rows: &[Row]) {
-    let expected_qofe_to_q_ratios = [1.0, 2.5, 6.0];
-    for (row, expected_ratio) in day_rows.iter().zip(expected_qofe_to_q_ratios) {
+fn assert_b02_qofe_equals_q_all_rows(day_rows: &[Row]) {
+    // MOFEFID-B02 (INV-RUNOFFPART-032): the published `QOFE` adopts the
+    // post-wepp_260516 convention `QOFE == Q` on ALL rows, including multi-OFE.
+    // The pre-B02 anti-clone requirement that `QOFE` use the OFE-local length
+    // (so `QOFE != Q`) is SUPERSEDED; per-OFE genuineness is proven by the
+    // surface-handoff and not-cloned checks, not by `QOFE != Q`.
+    for row in day_rows {
         let ofe = row_i32_value(row, "OFE");
         let q = row_f64_value(row, "Q");
         let qofe = row_f64_value(row, "QOFE");
-        if qofe <= 1.0e-9 {
-            continue;
-        }
         assert!(
-            q > 1.0e-9,
-            "M-F-REDO2 expects positive cumulative Q when OFE {ofe} has positive QOFE"
-        );
-        let ratio = qofe / q;
-        assert!(
-            (ratio - expected_ratio).abs() <= 1.0e-6,
-            "M-F-REDO2 QOFE/Q ratio for OFE {ofe} must reflect local vs cumulative length normalization; expected {expected_ratio}, observed {ratio}"
+            (qofe - q).abs() <= 1.0e-9,
+            "MOFEFID-B02 requires published QOFE == Q on every WB13 row; OFE {ofe} has QOFE {qofe} vs Q {q}"
         );
     }
-    assert!(
-        (row_f64_value(&day_rows[1], "QOFE") - row_f64_value(&day_rows[1], "Q")).abs() > 1.0e-9,
-        "M-F-REDO2 requires downstream public QOFE to stop aliasing cumulative public Q"
-    );
 }
 
 fn assert_mf_multiofe_publication_not_cloned(day_rows: &[Row]) {
