@@ -33,7 +33,10 @@ un-acquired primary).
   no default-path call — default H2637 byte-flat by construction).
 - fmt/clippy clean.
 
-## Next (post-ratification)
+## Next (gated)
+
+**D4 solver is gated on SC-OFEROUTE-001 being authored + ratified first**
+(ADR-0033 narrowed scope-of-ratification; top-down contract order).
 
 D4 single-OFE KWE/TVD solver (eqs. 8-14, CFL) validated on Cases 1/2/4
 (Case 4 = Iwagaki shock capture); D5 OFE-by-OFE cascade (Case 3 vegetation

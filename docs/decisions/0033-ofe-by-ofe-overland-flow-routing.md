@@ -35,12 +35,30 @@ Green-Ampt of the routed excess); Lane D makes that hourly-faithful.
    The default hillslope runtime stays byte-flat; **default activation is a
    separate later gate** with its own no-regression + endpoint-timing +
    magnitude re-adjudication (operator decision 2026-07-02).
-2. Author **SC-OFEROUTE-001** as the governing contract (hillslope overland
-   routing; distinct from the watershed-channel SC-ROUTE-001).
-3. Structure: friction-factor kernels (D3, pure functions — landed) ->
-   single-OFE KWE/TVD solver -> OFE-by-OFE cascade handoff over the
-   INV-RUNOFFPART-029 seam, each stage shadow-first with per-increment
-   conservation stops.
+2. **SC-OFEROUTE-001** will be the governing contract (hillslope overland
+   routing; distinct from the watershed-channel SC-ROUTE-001). It does not
+   yet exist; authoring + ratifying it is the **prerequisite gate for D4**
+   (see scope-of-ratification below).
+3. Structure: friction-factor kernels (D3, pure functions — landed,
+   shadow-first) -> single-OFE KWE/TVD solver -> OFE-by-OFE cascade handoff
+   over the INV-RUNOFFPART-029 seam, each stage shadow-first with
+   per-increment conservation stops.
+
+## Scope of ratification (narrowed per D01 review)
+
+Ratifying THIS ADR authorizes ONLY:
+- the **representation decision** (equivalent-plane -> OFE-by-OFE
+  kinematic-wave routing as the openWEPP direction), and
+- the **activation policy** (opt-in-validated; default activation deferred
+  to a separate later gate), and
+- the retention of the **shadow-first D3 friction kernels** already landed.
+
+Ratification does **NOT** authorize the D4 solver or D5 cascade
+implementation. Those are gated on **SC-OFEROUTE-001 being authored and
+ratified first** — the canonical contract must define the KWE/TVD/CFL
+invariants, the friction-menu operand bounds, and the per-OFE hydrograph
+handoff before solver code is written (top-down science-contract order,
+ADR-0011). D3 kernels are contract-anchored retroactively by that contract.
 
 ## Consequences
 
@@ -50,7 +68,9 @@ Green-Ampt of the routed excess); Lane D makes that hourly-faithful.
   via R-63; eq. 4/5/6 primaries (R-77/72/78) in hand; unit conventions
   confirmed by the D-val fixtures (Ef 0.91/0.75/0.87/0.88).
 - Ratification pending: the friction kernels (D3) are shadow-first and
-  reversible; ratifying this ADR authorizes the solver + cascade stages.
+  reversible; ratifying this ADR authorizes the representation + activation
+  decision only (see Scope of ratification) — the solver/cascade stages
+  remain gated on SC-OFEROUTE-001.
 
 ## Open questions (for ratification)
 
