@@ -53,3 +53,68 @@ with dispositions. Evidence classes marked per claim.
   *validator* of an externally supplied `case_value`. Producer trace in
   progress — if no runoff-path computation exists, this is a spec-vs-code
   consistency finding. [Static, open]
+
+## S1 — transfer lineage (swept)
+
+Explorer sweep + my verification of the F-A1 chain. Mechanics confirmed
+sound: per-day dynamic transfer publishes the upstream lane's outputs into
+the downstream lane's inbox between commit and the downstream seed
+(day-major, lane-ascending loop; `03_executor.rs:128-153`); inbox
+overwritten daily (no accumulation defect surface); surface (slot-0 lump,
+`q_runoff_m`) and lateral (24-slot hourly) carried separately; area ratio
+`A_upstream/A_current` computed in the runner
+(`05_runner_execution_and_outputs.rs:156`) and applied at R4J consumption
+with a raw>0⇒ratio>0 guard; immediate-neighbor ratio is correct because
+each lane's `q_runoff` already folds its own runon (cascade accumulates).
+Topology adjacency validated at both the static ledger and the dynamic
+publish. **No defect found** (consistent with FARPOINT01's three closed
+identities at 19 OFEs).
+
+**F-A1 (CONFIRMED — spec-vs-code divergence, within declared hold):**
+`INV-RUNOFFPART-029` mandates the lane state carry a
+"runoff-continuation/case-classifier outcome." What exists: `case_value`
+is computed **once at seed time** from seed `qout = 0.0`
+(`build_mofe03_wave2_case_scalars`,
+`direct_seed_projections/02_mofe03_wave2_projection.rs:250` — case 2.0 for
+positive seed qout, else 4.0, with **synthetic** companion scalars
+`vj = 0.25·qout, qj = 0.5·qout, fh = qout, fp = 0.5·qout`), and the
+runtime **never recomputes it** — the erosion span updates
+qout/qin/peak/qostar but leaves `case_value` and its companions seeded
+(`erosion.rs:386-436`), so `validate_erod14_case` (`erosion.rs:749-796`)
+checks seeded values against seeded values every day. Mitigations
+verified: (a) consumption is **validator-only** — no kernel branch selects
+equations by `case_value`; (b) the water path never reads it; (c) this is
+inside the declared `INV-RUNOFFPART-030` governance-hold (sediment
+coupling not accepted), and the hold's manifest-labeling requirement is
+met via `erod14_qin_source_policy` derived from the wave2 flag
+(`05_runner_execution_and_outputs.rs:332,343`); (d) wave2 seed guards
+fail closed (`02_output_and_climate_helpers.rs:887-930`). Disposition:
+**recorded; routed to the INV-RUNOFFPART-030 hold-closure package** — the
+real per-day case classifier is part of accepting MOFE sediment coupling
+(and Lane D's hydrograph work supplies the missing hydraulic operands).
+Evidence: Ran (all sites read this package).
+
+## S2 — hourly carry arrays (swept)
+
+Same-day working arrays, freshly zeroed per day inside `LateralRun`
+(`subsurface.rs:1666`), populated per substep under
+`mofe_hourly_carry_arrays_enabled` (= `lane_substeps == 24`, forced by
+`contributor_ofe_count > 1`; `00_wb11_projection.rs:23`), consumed
+same-day (saturation → R4L addback) or published downstream (lateral →
+transfer inbox). No cross-day carry surface exists to leak. Single-OFE
+daily runs keep them inactive with a manifest guard
+(`openwepp-cli-watershed.rs:1823-1843`). **No defect found.** One note:
+MOFE forces 24 subsurface substeps even on otherwise-daily lanes — an
+intentional activation documented in the projection; behavior difference
+single-vs-multi is by construction, not leakage.
+
+## S6 — single-OFE specialization (swept)
+
+No master `lane_count == 1` branch; single-OFE is a natural zero-upstream/
+zero-downstream specialization: static ledger yields (0,0) received for
+`upstream_lane_id == 0`; dynamic publish early-returns for
+`downstream_lane_id == 0`; erosion `qin` zeroed for lane 0; wave2 and
+carry arrays gated off; runner short-circuits per-OFE slicing. The
+zero-feed design means MOFE machinery cannot perturb single-OFE results
+except through the substep gate, which is itself single-OFE-inactive.
+**No defect found.**
