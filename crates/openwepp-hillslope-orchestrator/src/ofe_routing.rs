@@ -5,3 +5,4 @@
 //! D3 lands the friction-factor kernels only; no phase-span wiring.
 
 pub mod friction;
+pub mod kinematic_wave;
