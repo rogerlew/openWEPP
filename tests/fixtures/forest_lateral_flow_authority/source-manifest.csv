@@ -1,0 +1,44 @@
+source,local_path,upstream_url,notes
+hjandrews_ws10_hf024,metadata/HF024_3.eml.xml,https://pasta.lternet.edu/package/eml/knb-lter-and/4542/3,EML metadata for HF024 version 3
+hjandrews_ws10_hf024,metadata/pasta_entity_name_map.csv,https://pasta.lternet.edu/package/name/eml/knb-lter-and/4542/3,PASTA data object ID to entity-name map
+hjandrews_ws10_hf024,metadata/pasta_quality_report.xml,https://pasta.lternet.edu/package/report/eml/knb-lter-and/4542/3,PASTA quality report
+hjandrews_ws10_hf024,metadata/andlter_hf024_abstract.html,https://andlter.forestry.oregonstate.edu/data/abstract.aspx?dbcode=HF024,H.J. Andrews HF024 landing page
+hjandrews_ws10_hf024,metadata/HF02409_attributes.html,https://andlter.forestry.oregonstate.edu/data/attributes.aspx?dbcode=HF024&entnum=9,Entity 9 attribute metadata
+hjandrews_ws10_hf024,data/HF02403_aga_tracer_breakthrough.csv,https://pasta.lternet.edu/package/data/eml/knb-lter-and/4542/3/cb7ac34408c7c66e47a4563a6b258586,Amino G tracer breakthrough with discharge
+hjandrews_ws10_hf024,data/HF02407_rainfall_ec_watertemp.csv,https://pasta.lternet.edu/package/data/eml/knb-lter-and/4542/3/9b56255d0d4e05ae09f8a0cdf033e38c,Rainfall/electrical conductivity/water temperature
+hjandrews_ws10_hf024,data/HF02409_hillslope_discharge.csv,https://pasta.lternet.edu/package/data/eml/knb-lter-and/4542/3/4462e008ec2c595a8be2d84ee9844969,WS10 hillslope discharge data
+hjandrews_ws10_hf024,data/HF02411_bromide_tracer_discharge_rainfall.csv,https://pasta.lternet.edu/package/data/eml/knb-lter-and/4542/3/f1f8df4de7f1651b96a22195251eba02,Bromide tracer with discharge and rainfall
+hjandrews_ws10_hf024,data/HF02412_raw_tipping_bucket.csv,https://pasta.lternet.edu/package/data/eml/knb-lter-and/4542/3/9094180fb6a54a6683f79a8c7fe4e198,Raw WS10 hillslope tipping-bucket data
+panola_pmrw_2002,data/Trench_Flow.XLS,https://www.sfu.ca/PanolaData/Trench_Flow.XLS,Precipitation and trench flow data
+panola_pmrw_2002,data/Panola_Hillslope_DEM.XLS,https://www.sfu.ca/PanolaData/Panola_Hillslope_DEM.XLS,PMRW hillslope DEM
+panola_pmrw_2002,data/Max_Water_Table_Maps.xls,https://www.sfu.ca/PanolaData/Max_Water_Table_Maps.xls,Maximum water table surveys
+panola_pmrw_2002,data/Water_Table_Recording_Wells.XLS,https://www.sfu.ca/PanolaData/Water_Table_Recording_Wells.XLS,Water-table recording wells
+panola_pmrw_2002,data/Soil_Moisture_Surveys.XLS,https://www.sfu.ca/PanolaData/Soil_Moisture_Surveys.XLS,Soil-moisture surveys
+panola_pmrw_2002,data/Soil_Moisture_Retention_Curves.XLS,https://www.sfu.ca/PanolaData/Soil_Moisture_Retention_Curves.XLS,Soil-moisture retention curves
+panola_pmrw_2002,metadata/index.htm,https://www.sfu.ca/PanolaData/,Panola data-note landing page
+panola_pmrw_2002,metadata/Panola_rainfallrunoff.html,https://www.sfu.ca/PanolaData/Panola_rainfallrunoff.html,Rainfall-runoff data description
+panola_pmrw_2002,metadata/Panola_process.html,https://www.sfu.ca/PanolaData/Panola_process.html,Site process description
+panola_pmrw_2002,metadata/Panola_physical.html,https://www.sfu.ca/PanolaData/Panola_physical.html,Site physical description
+panola_pmrw_2002,metadata/Panola_DEM.html,https://www.sfu.ca/PanolaData/Panola_DEM.html,DEM description
+panola_pmrw_2002,metadata/Panola_watertable.html,https://www.sfu.ca/PanolaData/Panola_watertable.html,Water-table data description
+panola_pmrw_2002,metadata/Panola_soilmoisture.html,https://www.sfu.ca/PanolaData/Panola_soilmoisture.html,Soil-moisture data description
+panola_pmrw_2002,metadata/Panola_motivation.html,https://www.sfu.ca/PanolaData/Panola_motivation.html,Data-note motivation
+panola_pmrw_2002,metadata/Panola_references.html,https://www.sfu.ca/PanolaData/Panola_references.html,References
+panola_pmrw_2002,metadata/Contact_info.html,https://www.sfu.ca/PanolaData/Contact_info.html,Contact information
+maimai_m8,metadata/hydroshare_scimeta_elements.json,https://www.hydroshare.org/hsapi/resource/a292cb65a5d24a31a60978b2ab390266/scimeta/elements/,HydroShare science metadata
+maimai_m8,metadata/hydroshare_files.json,https://www.hydroshare.org/hsapi/resource/a292cb65a5d24a31a60978b2ab390266/files/,HydroShare file listing
+maimai_m8,metadata/hydroshare_landing_page.html,https://www.hydroshare.org/resource/a292cb65a5d24a31a60978b2ab390266/,HydroShare landing page
+maimai_m8,metadata/Abstract_References.pdf,https://www.hydroshare.org/resource/a292cb65a5d24a31a60978b2ab390266/data/contents/Abstract_References.pdf,Reference list for Maimai data note
+maimai_m8,metadata/Hillslope_flow_and_rain_metadata_Report.pdf,https://www.hydroshare.org/resource/a292cb65a5d24a31a60978b2ab390266/data/contents/Phase%202%3A%20Hillslope%20scale%20trenching%2C%20forensic%20analysis%20and%20tracing%20%281993-2010%29/Hillslope_flow_and_rain_metadata_Report.pdf,Hillslope flow/rain metadata report
+maimai_m8,metadata/Phase_1_Metadata_Report.pdf,https://www.hydroshare.org/resource/a292cb65a5d24a31a60978b2ab390266/data/contents/Phase%201%3A%20Early%20M8%20catchment-scale%20research%20and%20observations%201975%20to%201988/Phase_1_Metadata_Report.pdf,Phase 1 metadata report
+maimai_m8,metadata/Phase_3_Meta_Data_Report.pdf,https://www.hydroshare.org/resource/a292cb65a5d24a31a60978b2ab390266/data/contents/Phase%203%3A%20Drilling%20the%20critical%20zone%20%282014%20-%20present%29/Phase_3_Meta_Data_Report.pdf,Phase 3 metadata report
+maimai_m8,data/M8_hillslope_Trench_Discharge_Data_1993.xlsx,https://www.hydroshare.org/resource/a292cb65a5d24a31a60978b2ab390266/data/contents/Phase%202%3A%20Hillslope%20scale%20trenching%2C%20forensic%20analysis%20and%20tracing%20%281993-2010%29/Hillslope%20Survey%20and%20Trench%20Runoff%20Data/M8_hillslope_Trench_Discharge_Data_1993.xlsx,M8 hillslope trench discharge data
+maimai_m8,data/M8_hillslope_Trench_Survey_Data_1993.xlsx,https://www.hydroshare.org/resource/a292cb65a5d24a31a60978b2ab390266/data/contents/Phase%202%3A%20Hillslope%20scale%20trenching%2C%20forensic%20analysis%20and%20tracing%20%281993-2010%29/Hillslope%20Survey%20and%20Trench%20Runoff%20Data/M8_hillslope_Trench_Survey_Data_1993.xlsx,M8 hillslope trench survey data
+maimai_m8,data/M8_Hillslope_Bromide_Tracer_Experiment_Discharge_and_Bromide_Concentration_1995.xls,https://www.hydroshare.org/resource/a292cb65a5d24a31a60978b2ab390266/data/contents/Phase%202%3A%20Hillslope%20scale%20trenching%2C%20forensic%20analysis%20and%20tracing%20%281993-2010%29/Hillslope%20Tracer%20Data/M8_Hillslope_Bromide_Tracer_Experiment_Discharge_and_Bromide_Concentration_1995.xls,M8 bromide tracer discharge and concentration
+maimai_m8,data/M8_Rainfall_Runoff_1975_to_1988.xlsx,https://www.hydroshare.org/resource/a292cb65a5d24a31a60978b2ab390266/data/contents/Phase%201%3A%20Early%20M8%20catchment-scale%20research%20and%20observations%201975%20to%201988/Rainfall%20Runoff%201975%20to%2087/M8_Rainfall_Runoff_1975_to_1988.xlsx,M8 rainfall-runoff series
+maimai_m8,data/M8_Rainfall_Runoff_2015.xlsx,https://www.hydroshare.org/resource/a292cb65a5d24a31a60978b2ab390266/data/contents/Phase%203%3A%20Drilling%20the%20critical%20zone%20%282014%20-%20present%29/M8%20Rainfall%20Runoff%202015/M8_Rainfall_Runoff_2015.xlsx,M8 rainfall-runoff 2015
+coweeta_streamflow,metadata/fs_rds_catalog_RDS-2016-0025-2.html,https://www.fs.usda.gov/rds/archive/catalog/RDS-2016-0025-2,Forest Service RDS catalog page
+coweeta_streamflow,metadata/_fileindex_RDS-2016-0025-2.html,https://www.fs.usda.gov/rds/archive/products/RDS-2016-0025-2/_fileindex_RDS-2016-0025-2.html,Forest Service RDS file index
+coweeta_streamflow,metadata/ag_data_commons_figshare_article_27006778.json,https://api.figshare.com/v2/articles/27006778,Ag Data Commons/Figshare article metadata
+coweeta_streamflow,archives/RDS-2016-0025-2_Metadata_Fileindex.zip,https://www.fs.usda.gov/rds/archive/products/RDS-2016-0025-2/RDS-2016-0025-2_Metadata_Fileindex.zip,Metadata and file index archive
+coweeta_streamflow,archives/RDS-2016-0025-2.zip,https://www.fs.usda.gov/rds/archive/products/RDS-2016-0025-2/RDS-2016-0025-2.zip,Source archive for daily watershed streamflow CSVs

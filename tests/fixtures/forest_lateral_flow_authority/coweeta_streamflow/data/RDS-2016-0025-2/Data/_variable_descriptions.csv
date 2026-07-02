@@ -1,0 +1,6 @@
+﻿Filename,Variable,Units,Precision,Description
+Coweeta_WS[##]_DailyFlow.csv,YEAR,,,Year
+Coweeta_WS[##]_DailyFlow.csv,MO,,,Month of year (1-12)
+Coweeta_WS[##]_DailyFlow.csv,DAY,,,Day of month (1-31)
+Coweeta_WS[##]_DailyFlow.csv,DOY,,,Day of year (1-366)
+Coweeta_WS[##]_DailyFlow.csv,CSM,cubic feet per second per square mile,0.01,Watershed total daily streamflow (csm or ft³/sec/mile²)
