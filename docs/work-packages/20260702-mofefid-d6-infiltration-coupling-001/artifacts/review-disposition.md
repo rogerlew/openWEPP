@@ -12,3 +12,18 @@ All four findings **accepted and fixed**:
 Post-fix gates (Ran): `ofe_routing::infiltration` 11 tests; full orchestrator
 suite 182/182; clippy `-D warnings` 0; fmt clean; BEI PASS-DEFERRED; authority
 guards PASS; `ofe_routing` shadow-first (grep-verified).
+
+## Re-check disposition (Codex re-review `92a4c7a6`)
+
+CX-D6-004 closed at re-check. The three partial closures completed — all were
+the same "fixed one site, missed a sibling" pattern:
+
+| # | Residual | Action |
+|---|---|---|
+| CX-D6-001 | `green_ampt_step` / `InfiltrationState` still public and normalized invalid direct inputs | Made the stateful step-level API **private** (`green_ampt_step`, `InfiltrationState`, `InfiltrationStep`) — the offered "make it internal" option. The public surface is now only the validated entry points (`green_ampt_excess_hyetograph`, `run_infiltrated_cascade`, both fail-closed) plus pure data/query types (`GreenAmptSoil`/`is_valid`, `RainfallInterval`, `ExcessHyetograph`, `infiltration_capacity_m_s`). In-module tests still exercise the private step. |
+| CX-D6-002 | `cascade.rs` module header still had the D5 compose/re-infiltrate text | Rewrote the header GAP-OFEROUTE-003 note to the SUPERSEDE model (surface routing, per-OFE infiltration on rainfall, runon NOT re-infiltrated). Repo-wide sweep of `ofe_routing/` + D6 docs confirms no non-historical stale text. |
+| CX-D6-003 | `package.md` still said "rev 4" in two places | Both corrected to rev 6 (the contract line and the correction sentence). |
+
+Post-fix gates (Ran): full orchestrator suite 182/182; `ofe_routing` 34/34;
+clippy `-D warnings` 0; fmt clean; BEI PASS-DEFERRED; authority guards PASS;
+step-level API grep-confirmed private.

@@ -5,14 +5,15 @@
 //! assumption 1: route sequentially summit -> outlet). Shadow-first / opt-in;
 //! not wired into any production phase span.
 //!
-//! GAP-OFEROUTE-003 (runon re-infiltration reconciliation with DC01): this
-//! cascade routes SURFACE runon as an hourly hydrograph. When the routing
-//! subsystem is active it OWNS the hourly runon supply and supersedes DC01's
-//! daily-lump admission (`SC-RUNOFFPART-001#INV-RUNOFFPART-031`) to avoid
-//! double-counting; re-infiltration of the routed runon is then the downstream
-//! OFE's per-OFE hourly infiltration acting on the routed hydrograph
-//! (compose with SC-RUNOFFPART at the hourly step). This module implements the
-//! routing + handoff; the infiltration composition is integration scope.
+//! GAP-OFEROUTE-003 (runon reconciliation with DC01, resolved D6 = SUPERSEDE):
+//! this cascade routes SURFACE runon as an hourly hydrograph. When the routing
+//! subsystem is active it OWNS the hourly runon supply and SUPERSEDES DC01's
+//! daily-lump runon re-infiltration (`SC-RUNOFFPART-001#INV-RUNOFFPART-031`)
+//! with hydraulic surface routing. The upstream OFE's outlet hydrograph is a
+//! downstream surface boundary condition and is NOT re-infiltrated; per-OFE
+//! Green-Ampt infiltration (see `super::infiltration`) acts on the RAINFALL
+//! only (Papanicolaou assumption 2). This module implements the routing +
+//! handoff; the rainfall->excess coupling is `super::infiltration`.
 
 use super::kinematic_wave::{
     Forcing, HydrographSample, KinematicWaveMesh, KinematicWaveSolver, RoutingError,

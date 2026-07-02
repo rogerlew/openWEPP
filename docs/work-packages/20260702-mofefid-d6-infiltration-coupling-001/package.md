@@ -2,7 +2,7 @@
 
 Status: **EXECUTED — REVIEW-READY** (2026-07-02; Codex review dispositioned, `artifacts/review-disposition.md`)
 Campaign: [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D
-integration. Contract: `SC-OFEROUTE-001` (rev 4). Owner: Claude Code.
+integration. Contract: `SC-OFEROUTE-001` (rev 6). Owner: Claude Code.
 Worktree: `mofefid-d6`. Activation: **opt-in / shadow-first**.
 
 ## What landed
@@ -28,7 +28,7 @@ hillslope path byte-flat (`INV-OFEROUTE-010`).
 ## GAP-OFEROUTE-003 physics corrected (D5 -> D6)
 
 The D5 resolution said "supersede-then-compose (re-infiltrate the routed
-hydrograph)". That was a **misread** and D6 corrects it (contract rev 4):
+hydrograph)". That was a **misread** and D6 corrects it (contract rev 6):
 faithful Papanicolaou is **SUPERSEDE** — infiltration acts on **rainfall**
 (assumption 2); the upstream hydrograph is a **surface boundary condition**
 (assumption 1) that is **NOT re-infiltrated**. The routing supersedes DC01's

@@ -58,14 +58,16 @@ impl GreenAmptSoil {
 
 /// Cumulative infiltration state (m) for one point, carried across steps.
 #[derive(Debug, Clone, Copy, Default)]
-pub struct InfiltrationState {
+struct InfiltrationState {
     /// Cumulative infiltrated depth `F` (m).
     pub cumulative_m: f64,
 }
 
 /// Result of one infiltration step.
+// The shared `_m` suffix is a metre unit tag, not a redundant field name.
+#[allow(clippy::struct_field_names)]
 #[derive(Debug, Clone, Copy)]
-pub struct InfiltrationStep {
+struct InfiltrationStep {
     /// Infiltrated depth this step (m).
     pub infiltrated_m: f64,
     /// Rainfall-excess depth this step (m) = `rainfall - infiltrated`.
@@ -123,7 +125,7 @@ fn green_ampt_integrate_ponded(f_start: f64, ks: f64, s: f64, tau_s: f64) -> f64
 /// remainder infiltrates at capacity via the implicit Green-Ampt integration;
 /// an already-ponded step integrates from `F0` directly.
 #[must_use]
-pub fn green_ampt_step(
+fn green_ampt_step(
     soil: &GreenAmptSoil,
     state: InfiltrationState,
     rainfall_rate_m_s: f64,
