@@ -50,6 +50,27 @@ pub struct CellParameters {
 }
 
 impl CellParameters {
+    /// Validate the parameter domain (finite; non-negative physical fields).
+    fn validate(&self) -> Result<(), RoutingError> {
+        let fields = [
+            self.slope,
+            self.friction_coefficient_ko,
+            self.drag_coefficient,
+            self.element_tip_height_m,
+            self.roughness_concentration,
+            self.leaf_area_index,
+            self.canopy_height_m,
+            self.vegetation_drag_coefficient,
+        ];
+        if fields.iter().any(|v| !v.is_finite() || *v < 0.0) {
+            return Err(RoutingError::InvalidCellParameter);
+        }
+        if self.roughness_concentration > 1.0 {
+            return Err(RoutingError::InvalidCellParameter);
+        }
+        Ok(())
+    }
+
     /// A bare-surface (skin-only) cell: only `slope` + `k_o` active.
     #[must_use]
     pub fn bare(slope: f64, friction_coefficient_ko: f64) -> Self {
@@ -248,8 +269,14 @@ pub enum RoutingError {
     NonFiniteState,
     /// A negative depth was produced (scheme positivity failure).
     NegativeDepth,
-    /// Degenerate configuration (empty mesh, non-positive spacing/end time).
+    /// Degenerate configuration (empty mesh, non-positive spacing/end time,
+    /// non-positive sample or max sub-timestep).
     DegenerateConfiguration,
+    /// Forcing (rainfall excess / intensity / upstream inflow) returned a
+    /// non-finite value.
+    NonFiniteForcing,
+    /// A cell parameter is out of domain (non-finite, negative slope/ko/etc.).
+    InvalidCellParameter,
 }
 
 /// Single-OFE TVD-MacCormack kinematic-wave solver state.
@@ -341,7 +368,12 @@ impl KinematicWaveSolver {
         let n = self.mesh.cell_count();
         let dx = self.mesh.cell_length_m;
         let intensity = (forcing.rainfall_intensity_m_s)(time_s);
-        let q_up = (forcing.upstream_inflow_m2_s)(time_s).max(0.0);
+        let q_up_raw = (forcing.upstream_inflow_m2_s)(time_s);
+        let intensity_raw = intensity;
+        if !q_up_raw.is_finite() || !intensity_raw.is_finite() {
+            return Err(RoutingError::NonFiniteForcing);
+        }
+        let q_up = q_up_raw.max(0.0);
         let mut clamp_injected_m2 = 0.0_f64;
 
         // Per-cell alpha and rainfall excess for this step.
@@ -349,7 +381,11 @@ impl KinematicWaveSolver {
         let mut v = vec![0.0_f64; n];
         for i in 0..n {
             alpha[i] = self.mesh.cells[i].alpha(self.depth_m[i], self.discharge_m2_s[i], intensity);
-            v[i] = (forcing.rainfall_excess_m_s)(i, time_s).max(0.0);
+            let v_raw = (forcing.rainfall_excess_m_s)(i, time_s);
+            if !v_raw.is_finite() {
+                return Err(RoutingError::NonFiniteForcing);
+            }
+            v[i] = v_raw.max(0.0);
         }
 
         // Predictor (eqs. 8-9): forward flux difference; upstream flux = q_up.
@@ -370,6 +406,9 @@ impl KinematicWaveSolver {
                 self.discharge_m2_s[i]
             };
             let h_new = self.depth_m[i] - (dt / dx) * (q_ip1 - q_i) + v[i] * dt;
+            if h_new < 0.0 {
+                clamp_injected_m2 += (-h_new) * dx;
+            }
             h_pred[i] = h_new.max(0.0);
             q_pred[i] = alpha[i] * h_pred[i].powf(DEPTH_DISCHARGE_EXPONENT);
         }
@@ -380,6 +419,9 @@ impl KinematicWaveSolver {
         for i in 0..n {
             let q_im1 = if i == 0 { q_up } else { q_pred[i - 1] };
             let h_new = self.depth_m[i] - (dt / dx) * (q_pred[i] - q_im1) + v[i] * dt;
+            if h_new < 0.0 {
+                clamp_injected_m2 += (-h_new) * dx;
+            }
             h_corr[i] = h_new.max(0.0);
         }
 
@@ -449,11 +491,19 @@ impl KinematicWaveSolver {
         max_dt_s: f64,
     ) -> Result<RoutingResult, RoutingError> {
         if self.mesh.cell_count() == 0
+            || !self.mesh.cell_length_m.is_finite()
             || self.mesh.cell_length_m <= 0.0
+            || !end_time_s.is_finite()
             || end_time_s <= 0.0
+            || !max_dt_s.is_finite()
             || max_dt_s <= 0.0
+            || !sample_dt_s.is_finite()
+            || sample_dt_s <= 0.0
         {
             return Err(RoutingError::DegenerateConfiguration);
+        }
+        for cell in &self.mesh.cells {
+            cell.validate()?;
         }
         let dx = self.mesh.cell_length_m;
         let storage_initial = self.total_storage_m2();
@@ -791,5 +841,78 @@ mod tests {
             r_fine < 2.0e-3,
             "fine-resolution residual {r_fine} should be small"
         );
+    }
+    #[test]
+    fn nan_forcing_fails_closed() {
+        let mesh = KinematicWaveMesh::uniform(10.0, 10, CellParameters::bare(0.05, 100.0));
+        let mut solver = KinematicWaveSolver::new(mesh);
+        let excess = |_i: usize, _t: f64| f64::NAN;
+        let inflow = |_t: f64| 0.0;
+        let intensity = |_t: f64| 0.0;
+        let forcing = Forcing {
+            rainfall_excess_m_s: &excess,
+            upstream_inflow_m2_s: &inflow,
+            rainfall_intensity_m_s: &intensity,
+        };
+        assert!(matches!(
+            solver.run(&forcing, 100.0, 10.0, 2.0),
+            Err(RoutingError::NonFiniteForcing)
+        ));
+    }
+
+    #[test]
+    fn nan_inflow_fails_closed() {
+        let mesh = KinematicWaveMesh::uniform(10.0, 10, CellParameters::bare(0.05, 100.0));
+        let mut solver = KinematicWaveSolver::new(mesh);
+        let excess = |_i: usize, _t: f64| 0.0;
+        let inflow = |_t: f64| f64::INFINITY;
+        let intensity = |_t: f64| 0.0;
+        let forcing = Forcing {
+            rainfall_excess_m_s: &excess,
+            upstream_inflow_m2_s: &inflow,
+            rainfall_intensity_m_s: &intensity,
+        };
+        assert!(matches!(
+            solver.run(&forcing, 100.0, 10.0, 2.0),
+            Err(RoutingError::NonFiniteForcing)
+        ));
+    }
+
+    #[test]
+    fn invalid_cell_parameter_fails_closed() {
+        let mut params = CellParameters::bare(-0.1, 100.0); // negative slope
+        params.slope = -0.1;
+        let mesh = KinematicWaveMesh::uniform(10.0, 5, params);
+        let mut solver = KinematicWaveSolver::new(mesh);
+        let excess = |_i: usize, _t: f64| 0.0;
+        let inflow = |_t: f64| 0.0;
+        let intensity = |_t: f64| 0.0;
+        let forcing = Forcing {
+            rainfall_excess_m_s: &excess,
+            upstream_inflow_m2_s: &inflow,
+            rainfall_intensity_m_s: &intensity,
+        };
+        assert!(matches!(
+            solver.run(&forcing, 100.0, 10.0, 2.0),
+            Err(RoutingError::InvalidCellParameter)
+        ));
+    }
+
+    #[test]
+    fn nonpositive_sample_dt_fails_closed_not_hang() {
+        let mesh = KinematicWaveMesh::uniform(10.0, 5, CellParameters::bare(0.05, 100.0));
+        let mut solver = KinematicWaveSolver::new(mesh);
+        let excess = |_i: usize, _t: f64| 0.0;
+        let inflow = |_t: f64| 0.0;
+        let intensity = |_t: f64| 0.0;
+        let forcing = Forcing {
+            rainfall_excess_m_s: &excess,
+            upstream_inflow_m2_s: &inflow,
+            rainfall_intensity_m_s: &intensity,
+        };
+        assert!(matches!(
+            solver.run(&forcing, 100.0, 0.0, 2.0),
+            Err(RoutingError::DegenerateConfiguration)
+        ));
     }
 }

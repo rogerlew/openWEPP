@@ -65,8 +65,11 @@ and does not manufacture an Ef it cannot faithfully compute.
 
 ## Gates
 
-- `ofe_routing` 13/13; full orchestrator suite green; fmt/clippy `-D warnings`
-  clean; solver shadow-first (default path byte-flat).
+- `ofe_routing` 17/17 (13 physics + 4 fail-closed); full orchestrator suite
+  green; fmt/clippy `-D warnings` clean; solver shadow-first (default byte-flat).
+- Codex review dispositioned (`artifacts/review-disposition.md`): fail-closed
+  forcing/params, all-sites clamp tracking, sample-dt guard, SC-OFEROUTE-001
+  rev 2 Ef stage-assignment fix.
 
 ## Next
 
