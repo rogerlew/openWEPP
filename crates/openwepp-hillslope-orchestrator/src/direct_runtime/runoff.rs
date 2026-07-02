@@ -214,6 +214,9 @@ impl DirectDayFrame {
         phase_entry_count += 1;
         let infiltration_depression = self.compute_r4k_infiltration_depression()?;
         DIRECT_AUDIT.record_direct_compute_operation();
+        // DC01: the WB14 hourly excess profile feeds the downstream surface
+        // transfer publication (INV-RUNOFFPART-031 / M2).
+        self.wb14_hourly_excess_m = self.compute_r4k_hourly_excess_profile()?;
 
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
@@ -580,6 +583,17 @@ impl DirectDayFrame {
             runon_input_m,
             subsurface_carry_m,
         })
+    }
+
+    fn compute_r4k_hourly_excess_profile(
+        &self,
+    ) -> Result<[f64; DC01_HOUR_BIN_COUNT], DirectRuntimeError> {
+        if let Some(producer_inputs) = &self.infiltration_depression_inputs.producer_inputs {
+            return Ok(
+                compute_wb14_infiltration_depression_with_profile(producer_inputs)?.hourly_excess_m,
+            );
+        }
+        Ok([0.0; DC01_HOUR_BIN_COUNT])
     }
 
     fn compute_r4k_infiltration_depression(
@@ -1346,12 +1360,51 @@ fn normalize_r4a_nonnegative_depth(
     Ok(value)
 }
 
+pub(crate) const DC01_HOUR_BIN_COUNT: usize = 24;
+pub(crate) const DC01_HOUR_BIN_SECONDS: f64 = 3_600.0;
+
+/// DC01 (INV-RUNOFFPART-031): WB14 outcome carrying the per-hour
+/// infiltration-excess profile alongside the classic state. The profile is
+/// the hourly distribution of non-infiltrated supply, used to publish an
+/// hourly surface-transfer profile to the downstream lane.
+pub(crate) struct DirectWb14OutcomeWithProfile {
+    pub state: DirectInfiltrationDepressionState,
+    pub hourly_excess_m: [f64; DC01_HOUR_BIN_COUNT],
+}
+
+fn dc01_add_depth_to_hour_bins(
+    bins: &mut [f64; DC01_HOUR_BIN_COUNT],
+    start_s: f64,
+    end_s: f64,
+    depth_m: f64,
+) {
+    let duration_s = end_s - start_s;
+    if duration_s <= 0.0 || depth_m <= 0.0 {
+        return;
+    }
+    for (hour, bin) in bins.iter_mut().enumerate() {
+        let bin_start_s = hour as f64 * DC01_HOUR_BIN_SECONDS;
+        let bin_end_s = bin_start_s + DC01_HOUR_BIN_SECONDS;
+        let overlap_s = (end_s.min(bin_end_s) - start_s.max(bin_start_s)).max(0.0);
+        if overlap_s > 0.0 {
+            *bin += depth_m * overlap_s / duration_s;
+        }
+    }
+}
+
 fn compute_wb14_infiltration_depression(
     inputs: &DirectWb14InfiltrationProducerInputs,
 ) -> Result<DirectInfiltrationDepressionState, DirectRuntimeError> {
+    Ok(compute_wb14_infiltration_depression_with_profile(inputs)?.state)
+}
+
+fn compute_wb14_infiltration_depression_with_profile(
+    inputs: &DirectWb14InfiltrationProducerInputs,
+) -> Result<DirectWb14OutcomeWithProfile, DirectRuntimeError> {
     validate_wb14_infiltration_inputs(inputs)?;
     let mut cumulative_infiltration_m = 0.0_f64;
     let mut total_rainfall_m = 0.0_f64;
+    let mut hourly_excess_m = [0.0_f64; DC01_HOUR_BIN_COUNT];
 
     for interval in &inputs.hyetograph {
         let duration_s = interval.end_s - interval.start_s;
@@ -1382,6 +1435,7 @@ fn compute_wb14_infiltration_depression(
                 field: "infiltration_depression.interval_infiltration_m",
             });
         }
+        let cumulative_before_m = cumulative_infiltration_m;
         cumulative_infiltration_m += interval_infiltration_m.min(rainfall_m);
         cumulative_infiltration_m = cumulative_infiltration_m
             .min(inputs.storage_capacity_m)
@@ -1390,6 +1444,14 @@ fn compute_wb14_infiltration_depression(
             "infiltration_depression.cumulative_infiltration_m",
             cumulative_infiltration_m,
         )?;
+        let interval_excess_m =
+            (rainfall_m - (cumulative_infiltration_m - cumulative_before_m)).max(0.0);
+        dc01_add_depth_to_hour_bins(
+            &mut hourly_excess_m,
+            interval.start_s,
+            interval.end_s,
+            interval_excess_m,
+        );
     }
 
     let rainfall_excess_m = (total_rainfall_m - cumulative_infiltration_m).max(0.0);
@@ -1398,9 +1460,12 @@ fn compute_wb14_infiltration_depression(
         "infiltration_depression.depression_storage_delta_m",
         depression_storage_delta_m,
     )?;
-    Ok(DirectInfiltrationDepressionState {
-        cumulative_infiltration_m,
-        depression_storage_delta_m,
+    Ok(DirectWb14OutcomeWithProfile {
+        state: DirectInfiltrationDepressionState {
+            cumulative_infiltration_m,
+            depression_storage_delta_m,
+        },
+        hourly_excess_m,
     })
 }
 

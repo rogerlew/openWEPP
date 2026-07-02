@@ -135,17 +135,28 @@ magnitude adjudication (to Lane C).
 
 ## Progress
 
-- 2026-07-01: scaffolded; M1 starting.
+- 2026-07-01: scaffolded. M1 complete (INV-RUNOFFPART-031 + REF anchor, rev 19).
+- 2026-07-01: M2 complete after one redesign — WB14 hourly excess profile +
+  transfer shape channel; H2637 byte-flat on all five outputs; suite 146/146.
 
 ## Surprises & Discoveries
 
-- (running)
+- M2's first design (reshape `surface_carry_m` slots, force the fold-sum
+  bitwise-equal to `q_runoff_m`) is a dead end: floating-point
+  non-associativity leaves 1-ulp residuals (~181k drifted WAT rows from a
+  single day-2 ulp). Redesign: totals keep the exact slot-0 lump; the hourly
+  DISTRIBUTION rides a separate unit-normalized `surface_hourly_weights`
+  channel that only M3's consumer reads. Byte-flat then holds by
+  construction, not by numerical heroics.
 
 ## Decision Log
 
-- Hourly profile normalized to `q_runoff_m` (not raw WB14 excess) so the
-  transferred surface water equals today's transferred total exactly —
-  M2 stays byte-flat and mass-exact.
+- ~~Hourly profile normalized to `q_runoff_m`~~ superseded: totals stay the
+  exact slot-0 lump; shape rides `surface_hourly_weights` (see Surprises).
+- R7B type-size bounds raised with DC01 justification comments
+  (lane ctor 1024→1216, lane frame 1216→1408, day frame 12416→12800).
+- M3 admission uses the **R4J-resolved totals** distributed by the shape
+  channels — consistency with the partition identity by construction.
 
 ## Outcomes & Retrospective
 

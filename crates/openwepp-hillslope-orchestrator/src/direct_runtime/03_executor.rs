@@ -526,6 +526,35 @@ impl DirectFrameExecutor {
         Ok(())
     }
 
+    /// DC01: unit-normalized hourly distribution of the day's surface runoff
+    /// (WB14 excess profile + saturation carry). Uniform fallback when the day
+    /// has runoff without a profile shape; all-zero when there is no runoff.
+    fn dc01_surface_transfer_weights(
+        q_runoff_m: f64,
+        wb14_hourly_excess_m: &[f64; DIRECT_TRANSFER_HOUR_COUNT],
+        hourly_saturation_carry_m: &[f64; DIRECT_TRANSFER_HOUR_COUNT],
+    ) -> [f64; DIRECT_TRANSFER_HOUR_COUNT] {
+        let mut weights = [0.0_f64; DIRECT_TRANSFER_HOUR_COUNT];
+        if q_runoff_m <= 0.0 {
+            return weights;
+        }
+        let mut raw_total_m = 0.0_f64;
+        for hour in 0..DIRECT_TRANSFER_HOUR_COUNT {
+            let raw = wb14_hourly_excess_m[hour].max(0.0)
+                + hourly_saturation_carry_m[hour].max(0.0);
+            weights[hour] = raw;
+            raw_total_m += raw;
+        }
+        if raw_total_m <= 0.0 {
+            let uniform = 1.0 / DIRECT_TRANSFER_HOUR_COUNT as f64;
+            return [uniform; DIRECT_TRANSFER_HOUR_COUNT];
+        }
+        for weight in &mut weights {
+            *weight /= raw_total_m;
+        }
+        weights
+    }
+
     fn publish_dynamic_transfer_to_downstream(
         frame: &mut DirectRunFrame,
         day_frame: &DirectDayFrame,
@@ -584,6 +613,16 @@ impl DirectFrameExecutor {
         let mut lateral_carry_m = [0.0; DIRECT_TRANSFER_HOUR_COUNT];
         validate_nonnegative_direct_m("dynamic_transfer.surface_runoff_m", runoff.q_runoff_m)?;
         surface_carry_m[0] = runoff.q_runoff_m;
+        // DC01 (INV-RUNOFFPART-031 / M2): the transferred TOTAL stays the exact
+        // slot-0 lump (bitwise-identical R4J totals); the hourly DISTRIBUTION
+        // rides separately as unit-normalized weights shaped by the WB14
+        // infiltration-excess profile plus the hourly saturation carry. Nothing
+        // consumes the weights until M3 supply admission.
+        let surface_hourly_weights = Self::dc01_surface_transfer_weights(
+            runoff.q_runoff_m,
+            &day_frame.wb14_hourly_excess_m,
+            &subsurface.hourly_saturation_carry_m,
+        );
         for (target, source) in lateral_carry_m
             .iter_mut()
             .zip(subsurface.hourly_lateral_carry_m.iter())
@@ -595,6 +634,7 @@ impl DirectFrameExecutor {
             *target = *source;
         }
         downstream_lane.transfer.surface_carry_m = surface_carry_m;
+        downstream_lane.transfer.surface_hourly_weights = surface_hourly_weights;
         downstream_lane.transfer.lateral_carry_m = lateral_carry_m;
         downstream_lane.transfer.upstream_flow_m = 0.0;
         downstream_lane.transfer.subsurface_input_m = 0.0;

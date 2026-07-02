@@ -1508,15 +1508,21 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     );
 
     assert!(run_constructor <= 128);
-    assert!(lane_constructor <= 1_024);
+    // DC01 (INV-RUNOFFPART-031): lane constructor inputs also carry the 24-slot
+    // surface hourly-weights transfer channel (+192 B).
+    assert!(lane_constructor <= 1_216);
     assert!(day_constructor <= 4_096);
     assert!(run_frame <= 512);
     // R7G carries typed snow runtime state plus SNOWDENSITY-07 CoE boundary carry and
     // SNOWDENSITY-10.3.8 retained-liquid storage at lane scope.
-    assert!(lane_frame <= 1_216);
+    // DC01 (INV-RUNOFFPART-031) adds the 24-slot surface hourly-weights channel
+    // to the transfer buffers carried at lane scope (+192 B).
+    assert!(lane_frame <= 1_408);
     // FROST RESIDUE-COVER IMPLEMENTATION carries dynamic residue-depth operands;
     // the direct-cutover correction carries PMET storage-return closure operands.
-    assert!(day_frame <= 12_416);
+    // DC01 (INV-RUNOFFPART-031) adds the WB14 hourly excess profile plus the
+    // transfer weights channel at day-frame scope (+384 B).
+    assert!(day_frame <= 12_800);
 }
 
 fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
