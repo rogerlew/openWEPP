@@ -1152,3 +1152,30 @@ openWEPP note (2026-05-11):
 **Topic**: Modern SMR-lineage application (Brooks co-author) with lateral-flow routing over restrictive layers in Palouse-type topography.
 **MOFEFID Lane C role**: current-generation SMR lineage context; documents present-day parameterization practice of the model family WEPP-forest's lateral additions descend from.
 **Notes / caveats**: Open access (AIMS).
+
+## R-99: Shen & Li (1973) rainfall sheet-flow resistance — secondary-cited
+
+**Citation**: Shen, H. W., and R.-M. Li (1973). *Rainfall effect on sheet flow over smooth surface*. Journal of the Hydraulics Division ASCE, 99(HY5), 771–792. https://doi.org/10.1061/JYCEAJ.0003646
+**Local path**: `not-acquired` (library freeze 2026-07-01).
+**Reference quality**: `secondary-via-R-63`
+**Topic**: Empirical rain/grain skin-resistance regression for laminar sheet flow.
+**MOFEFID Lane D role**: origin of eqs. (2)–(3) in R-63; **cite through R-63**, whose stated form + the supplemental validation fixtures serve as the constant/unit authority.
+**OAR-6 compliance status**: Companion-only; cannot be sole constant authority.
+
+## R-100: Abrahams (1998) discussion of Lawrence, + Lawrence reply — secondary-cited
+
+**Citation**: Abrahams, A. D. (1998). *Discussion: 'Macroscale surface roughness and frictional resistance in overland flow'*. Earth Surface Processes and Landforms, 23(9), 857–859 (reply: Lawrence, 861–862).
+**Local path**: `not-acquired` (library freeze 2026-07-01).
+**Reference quality**: `secondary-via-R-63`
+**Topic**: Critique of the regime limits underlying the R-77 inundation-ratio resistance model.
+**MOFEFID Lane D role**: eq. (4) applicability limits are instead handled by a documented-uncertainty note in D1 contracts, grounded in R-77 (primary, in hand) and R-63's simplified form.
+**OAR-6 compliance status**: Companion-only.
+
+## R-101: Woolhiser (1975) laminar friction coefficient tables — secondary-cited
+
+**Citation**: Woolhiser, D. A. (1975). *Simulation of unsteady overland flow*. In Mahmood & Yevjevich (eds.), Unsteady Flow in Open Channels, Vol. II, 485–508. Water Resources Publications.
+**Local path**: `not-acquired` (library freeze 2026-07-01).
+**Reference quality**: `secondary-via-KINEROS`
+**Topic**: Tabulated k₀ laminar friction coefficients by surface type.
+**MOFEFID Lane D role**: coefficients taken from the KINEROS documentation reproduction (Smith 1990, in repo) with R-63 as the usage context.
+**OAR-6 compliance status**: Companion-only.

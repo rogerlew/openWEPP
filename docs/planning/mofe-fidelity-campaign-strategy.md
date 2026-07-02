@@ -442,18 +442,23 @@ SMR-lineage extras (Hasan/Troch/Boll 2006; O'Keeffe et al. 2023).
 Transcription companions exist for Harr 1977, Dunne & Black 1970,
 Mosley 1979, and Woods & Rowe 1996.
 
-### 11.2 Operator track-down list (remaining)
+### 11.2 Library freeze (2026-07-01, operator decision)
 
-The operator acquired the bulk of the 2026-07-01 list same-day (indexed as
-R-77..R-98, including the two hardest: Woods & Rowe 1996 with transcription,
-and Lawrence 1997). Still outstanding:
+The reference library is **frozen at the current holdings**; the seven
+remaining items are **cited as secondary** through in-hand carriers rather
+than acquired:
 
-| Paper | DOI / note | Tier |
+| Un-acquired primary | Cite via (in hand) | Consequence |
 |---|---|---|
-| Shen & Li (1973) rainfall sheet-flow resistance, JHD ASCE 99(HY5) | `10.1061/JYCEAJ.0003646` | **formulation (eqs. 2–3)** |
-| Abrahams (1998) discussion of Lawrence + Lawrence reply, ESPL 23(9) | `10.1002/(SICI)1096-9837(199809)23:9<857::AID-ESP932>3.0.CO;2-#` (encode `#` as `%23`); reply `…<861::AID-ESP933>3.0.CO;2-D` | **formulation (eq. 4 applicability bounds)** |
-| Woolhiser (1975) k₀ tables, in *Unsteady Flow in Open Channels* v.II, Water Resources Publications | book chapter, no DOI — KINEROS docs in-repo reproduce the laminar coefficients as fallback | formulation (degrades gracefully) |
-| Hewlett & Hibbert (1967) variable source area, in Sopper & Lull *Forest Hydrology* | book chapter, no DOI | Lane C foundation (conceptual) |
-| Frankenberger et al. (1999) SMR VSA model, Hydrol. Process. 13(6) | `10.1002/(SICI)1099-1085(19990430)13:6<805::AID-HYP754>3.0.CO;2-M` | Lane C lineage |
-| Zaslavsky & Sinai (1981) causes of lateral flow, JHD ASCE 107(1) | `10.1061/JYCEAJ.0005605` | Lane C anisotropy theory |
-| Neibling & Alberts (1979) sod strips, ASAE Paper 79-2065 | no digital trace; ASABE library or ILL — Case 3 series also in supplemental `Figure_4.xlsx` | Lane D validation (optional) |
+| Shen & Li (1973) | Papanicolaou 2018 (R-63) eqs. (2)–(3) statement | eq. 2–3 constants/regime bounds taken from R-63; unit convention confirmed empirically when the D2 fixtures reproduce the Figure-4/Ef targets |
+| Abrahams (1998) discussion + Lawrence reply | Lawrence 1997 (R-77, primary in hand) + R-63's simplified eq. (4) | form-resistance applicability limits carry a documented-uncertainty note in D1 instead of the published critique |
+| Woolhiser (1975) k₀ tables | KINEROS documentation (Smith 1990, in repo) + R-63 | laminar coefficients from the KINEROS reproduction |
+| Hewlett & Hibbert (1967) | McGlynn 2002 (R-88), Weiler 2005 (R-68), Bachmair & Weiler 2011 (R-90) | conceptual VSA framing only; fully covered by held syntheses |
+| Frankenberger et al. (1999) | Brooks 2007 (R-91), Dun 2009 (R-21), O'Keeffe 2023 (R-98) | SMR lineage adequately documented by descendants |
+| Zaslavsky & Sinai (1981) | Brooks 2004 (R-62), Pirastru 2017 (R-71), Wigmosta 1994 (R-92) | anisotropy anchored empirically rather than theoretically |
+| Neibling & Alberts (1979) | supplemental `Figure_4.xlsx` series + R-63 §3.1.3 | Case-3 fixture built from the supplemental data with R-63 as provenance |
+
+Rule: any `SC-*` invariant that leans on one of these must cite the in-hand
+carrier (e.g. `R-63`), not the un-held primary, and mark the anchor
+`secondary` — the standing bibliography convention for print-source
+companions (cf. R-02/R-03).
