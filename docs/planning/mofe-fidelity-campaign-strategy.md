@@ -346,7 +346,7 @@ timings.
 | 3 | `MOFEFID-C02` rubric harness | C | C01 envelope ratified |
 | 3 | `MOFEFID-D01` routing contracts + ADR | D | — (authoring can start now) |
 | 3 | `MOFEFID-D02` supplemental fixtures | D | D01 drafted |
-| 4 | `MOFEFID-C03` evaluation + disposition | C | C02 green |
+| ✅ | `MOFEFID-C03` evaluation + verdict | C | **complete 2026-07-02** (`b2807d5d`): H2637 not-contradicted on all four tiers; FARPOINT01 magnitude flag RESOLVED against field data. Load-bearing finding: event tiers need quickflow separation (INV-SUBHYD-033 rev 14) |
 | 4 | `MOFEFID-D03..` staged implementation | D | A01 + B01 findings dispositioned; D01 ratified |
 | 5 | `MOFEFID-D-val` validation acceptance | D | D3..Dn conservation stops green |
 
