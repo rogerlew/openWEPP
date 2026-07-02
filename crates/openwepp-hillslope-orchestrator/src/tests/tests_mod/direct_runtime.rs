@@ -3057,3 +3057,53 @@ fn r4eh_storage_budget_handoff_producers_reject_invalid_inputs() {
 
 #[path = "direct_runtime_r3c_r4b.rs"]
 mod direct_runtime_r3c_r4b;
+
+#[test]
+fn mofefid_a02_hyetograph_augmentation_spreads_depth_uniformly() {
+    use crate::direct_runtime::mofefid_a02_augment_hyetograph_with_uniform_depth;
+    let mut hyetograph = vec![
+        DirectWb14HyetographInterval {
+            start_s: 0.0,
+            end_s: 1_800.0,
+            intensity_m_s: 2.0e-6,
+        },
+        DirectWb14HyetographInterval {
+            start_s: 1_800.0,
+            end_s: 5_400.0,
+            intensity_m_s: 1.0e-6,
+        },
+    ];
+    let augmented = mofefid_a02_augment_hyetograph_with_uniform_depth(&mut hyetograph, 0.0054);
+    assert!(augmented);
+    let added_intensity = 0.0054 / 5_400.0;
+    assert!((hyetograph[0].intensity_m_s - (2.0e-6 + added_intensity)).abs() < 1.0e-15);
+    assert!((hyetograph[1].intensity_m_s - (1.0e-6 + added_intensity)).abs() < 1.0e-15);
+    let depth_total: f64 = hyetograph
+        .iter()
+        .map(|interval| interval.intensity_m_s * (interval.end_s - interval.start_s))
+        .sum();
+    let baseline_depth = 2.0e-6 * 1_800.0 + 1.0e-6 * 3_600.0;
+    assert!(
+        (depth_total - (baseline_depth + 0.0054)).abs() < 1.0e-12,
+        "augmented hyetograph must add exactly the requested depth"
+    );
+}
+
+#[test]
+fn mofefid_a02_hyetograph_augmentation_skips_dry_and_zero_cases() {
+    use crate::direct_runtime::mofefid_a02_augment_hyetograph_with_uniform_depth;
+    let mut empty: Vec<DirectWb14HyetographInterval> = Vec::new();
+    assert!(!mofefid_a02_augment_hyetograph_with_uniform_depth(
+        &mut empty, 0.01
+    ));
+    let mut hyetograph = vec![DirectWb14HyetographInterval {
+        start_s: 0.0,
+        end_s: 3_600.0,
+        intensity_m_s: 1.0e-6,
+    }];
+    assert!(!mofefid_a02_augment_hyetograph_with_uniform_depth(
+        &mut hyetograph,
+        0.0
+    ));
+    assert!((hyetograph[0].intensity_m_s - 1.0e-6).abs() < 1.0e-18);
+}
