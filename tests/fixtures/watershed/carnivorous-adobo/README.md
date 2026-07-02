@@ -31,12 +31,16 @@ Status: committed development fixture for WSHED-FIXTURE01.
 The fixture commits the input/runfile set under `runs/` and records checksums in
 `input-manifest.sha256`.
 
-- Total committed input files: `175`.
+- Total committed input files: `208`.
 - Hillslope count: `32`.
 - Hillslope input sets: `p1` through `p32`, each with `.run`, `.man`, `.slp`,
   `.cli`, and `.sol`.
+- Hillslope launch files: `p1.source.run` through `p32.source.run`, schema
+  `openwepp-hillslope-runfile-v1`; these bind committed hillslope inputs for
+  generated-pass watershed supervisor runs.
 - Watershed input set: `pw0.run`, `pw0.str`, `pw0.chn`, `pw0.imp`, `pw0.slp`,
   `pw0.cli`, `pw0.sol`, and `pw0.man`.
+- Watershed launch file: `case.run`, schema `openwepp-watershed-runfile-v1`.
 - Shared sidecars: `chan.inp`, `chntyp.txt`, `gwcoeff.txt`, `pmetpara.txt`,
   `snow.txt`, `tc.txt`, and `wepp_ui.txt`.
 - Excluded generated/transient files: source `.err` files and `plots/*.tif`.
@@ -60,6 +64,6 @@ openWEPP gates must read this committed path, not `/wc1`, `/tmp`, scratch
 outputs, or wepppy files.
 
 WSHED-FIXTURE01 adopts the source input/runfile substrate and parser contract
-fixture. It does not claim current `openwepp-cli-watershed` end-to-end execution;
-that CLI surface requires a schema-versioned TOML watershed `.run` with HBP
-pass bindings, which are outside this fixture-adoption package.
+fixture. WSHED-W6 adds schema-versioned TOML watershed and hillslope launch
+files so `openwepp-cli-watershed` can execute the committed fixture directly
+without `/wc1`, `/tmp`, scratch, or wepppy inputs.

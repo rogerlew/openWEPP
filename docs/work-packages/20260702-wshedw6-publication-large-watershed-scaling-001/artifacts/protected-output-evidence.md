@@ -24,8 +24,8 @@ Result: `PASS`, all `14` required watershed parquet outputs matched.
 
 Evidence:
 
-- `/tmp/wshedw6_onshore_scaling_rerun/jobs1-full/out/interchange`
-- `/tmp/wshedw6_onshore_scaling_rerun/jobs48-full/out/interchange`
+- `/tmp/wshedw6_onshore_scaling_final/jobs1-full/out/interchange`
+- `/tmp/wshedw6_onshore_scaling_final/jobs48-full/out/interchange`
 - `artifacts/scaling/onshore-xenophobia-scaling-summary.json`
 
 ## Carnivorous-Adobo
@@ -38,6 +38,6 @@ Result: `PASS`, all `14` required watershed parquet outputs matched.
 
 Evidence:
 
-- `/tmp/wshedw6_carnivorous_scaling_rerun/jobs1-full/out/interchange`
-- `/tmp/wshedw6_carnivorous_scaling_rerun/jobs32-full/out/interchange`
+- `/tmp/wshedw6_carnivorous_scaling_final/jobs1-full/out/interchange`
+- `/tmp/wshedw6_carnivorous_scaling_final/jobs32-full/out/interchange`
 - `artifacts/scaling/carnivorous-adobo-scaling-summary.json`

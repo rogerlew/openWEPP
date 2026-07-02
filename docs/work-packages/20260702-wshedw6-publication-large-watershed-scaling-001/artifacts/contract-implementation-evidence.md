@@ -19,7 +19,8 @@ No canonical `SC-*` amendments were required because:
 - `chanwb` channel-balance volume fields are not backfilled from impoundment
   outflow, routed runoff aliases, or the `cbase` routing global;
 - W6 area normalization uses committed source hillslope slope geometry when
-  available instead of a fake unit area;
+  available, and validated manifest `publication_area_m2` in existing-pass
+  manifest mode, instead of a fake unit area;
 - conservation-sensitive touched fields have operand lineage in
   `artifacts/publication-operand-lineage.md` and reconstruction evidence in
   `artifacts/conservation-reconstruction.md`.

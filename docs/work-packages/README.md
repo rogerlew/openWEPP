@@ -51,16 +51,26 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
-- `20260702-wshedw6-publication-large-watershed-scaling-001/` is queued as
-  WSHED-W6 PUBLICATION AND LARGE-WATERSHED SCALING. Result:
-  `QUEUED-HANDOFF-AUTHORED`. It is the next watershed runtime package after
-  W5, with the first actionable item to inventory the typed publication path,
-  implement direct typed publication/streaming, adopt a full large committed
-  watershed fixture, and record strict committed-fixture scaling plus honest
-  same-fixture legacy/openWEPP comparison evidence where runnable.
 
 ## Execution Log
 
+- `20260702-wshedw6-publication-large-watershed-scaling-001/` is complete as
+  WSHED-W6 PUBLICATION AND LARGE-WATERSHED SCALING. Result:
+  `EXECUTED-COMPLETE`. It moved public watershed publication directly onto
+  `WatershedPublicationFrame` via `write_typed_publication_parquet_outputs`,
+  kept unavailable process operands null rather than fabricated, carried
+  source-runfile or manifest area operands into typed publication, adopted the
+  full `1305`-hillslope `onshore-xenophobia` committed fixture, and retained
+  `carnivorous-adobo` as the full `32`-hillslope development gate. Full
+  scaling passed for `onshore-xenophobia` `--jobs 1/48`
+  (`1:31:51` -> `3:27.55`) and `carnivorous-adobo` `--jobs 1/32`
+  (`0:19.11` -> `0:01.07`), with all `14` required watershed parquet outputs
+  schema/row-identical across job counts. Pinned legacy same-fixture full runs
+  also completed for both fixtures. Final gates passed:
+  `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo nextest run --workspace --profile full` (`1205` passed, `1` skipped),
+  `cargo deny check`, fixture manifests, authority anti-evasion guards, docs
+  lint, and `git diff --check`.
 - `20260701-hillperf-frost-single-solve-001/` is complete as the sub-5×
   program's WP-2 (finding F1). Result: `EXECUTED-COMPLETE`, rubric bar
   passed. The winter frost partition is solved exactly once per (lane, day)

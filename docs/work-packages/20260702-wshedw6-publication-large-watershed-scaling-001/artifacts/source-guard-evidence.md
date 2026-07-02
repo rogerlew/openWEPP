@@ -46,8 +46,8 @@ Result:
   W6 closure path.
 - `onshore-xenophobia` fixture README and artifacts explicitly state that no
   watershed subsetting was applied.
-- Stale scaffold wording remains only in `gate-results.md` until final gate
-  table update.
+- Scaling artifacts record full committed fixture execution for both accepted
+  fixtures.
 
 ## Operator-Path Guard
 

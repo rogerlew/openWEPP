@@ -256,16 +256,16 @@ The watershed runtime performance direction is queued by
 [watershed-runtime-architecture-specification.md](architecture/watershed-runtime-architecture-specification.md).
 ADR-0032 ratifies the entrypoint, `--jobs` default, and canonical benchmark
 mode. WSHED-FIXTURE01 adopted the committed 32-hillslope carnivorous-adobo
-development fixture under `tests/fixtures/watershed/carnivorous-adobo/`. The
-remaining large-scaling rung stays queued pending package evidence. WSHED-W2,
-WSHED-W3, WSHED-W4, WSHED-W4DC01, and WSHED-W5 are complete. WSHED-W5 deleted
-the old watershed request/writeback runtime and restored protected typed-route
-coverage. The next forward item is publication and large-watershed scaling.
+development fixture under `tests/fixtures/watershed/carnivorous-adobo/`.
+WSHED-W2, WSHED-W3, WSHED-W4, WSHED-W4DC01, WSHED-W5, and WSHED-W6 are
+complete. WSHED-W6 adopted the full `1305`-hillslope
+`onshore-xenophobia` fixture, cut public publication to the typed frame path,
+and recorded strict committed-fixture scaling plus pinned legacy completion
+evidence.
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
 | **M** | **MOFEFID — MOFE fidelity campaign** | Four lanes on the closed MOFE routing foundation: (A) proactive MOFE defect-review sweep; (B) adjudication-first audit against the eleven defect classes in the wepp-forest stakeholder water-balance brief — **the brief is a flag, not an authority** (operator: wepp-forest conclusions not fully trusted); each claim is independently graded (conservation-forced / source-intent / convention / unverified) before any openWEPP verdict, with a dual brief-claim × openWEPP disposition per row (incl. the known `QOFE` pre-`wepp_260516` convention adjudication — openWEPP publishes the legacy inflated identity, Ran-verified at `01_publication.rs:370`); (C) lateral-flow observed-authority rubric from `tests/fixtures/forest_lateral_flow_authority/` (HJ Andrews WS10 / Panola / Maimai M8; Coweeta context-only) — the FARPOINT01 external-authority continuation; (D) Papanicolaou 2018 OFE-by-OFE routing (space/time-variant resistance, TVD-MacCormack KWE) implemented opt-in and validated against the in-repo supplemental (Ef 0.91/0.75/0.87/0.88 targets). | Strategy: [planning/mofe-fidelity-campaign-strategy.md](planning/mofe-fidelity-campaign-strategy.md). A/B verdict artifacts with per-class evidence; C envelope ratified before judgment; D contract-first, default path byte-flat, activation out of campaign scope. | ▶️ **active 2026-07-01** — strategy authored; `MOFEFID-A01`/`B01` ready to scaffold. |
-| WSHED-W6 | **Publication and large-watershed scaling** | Stream publication from typed projection state and adopt larger committed scaling fixtures | Larger fixture coverage includes a 1,000+ hillslope class case or justified representative reduction; output contracts and scaling evidence recorded | Scaffolded at `20260702-wshedw6-publication-large-watershed-scaling-001/`; execute next |
 
 ---
 

@@ -1,7 +1,8 @@
 {
-  "schema": "openwepp-w6-carnivorous-adobo-scaling-v2",
+  "schema": "openwepp-w6-carnivorous-adobo-scaling-v3",
   "status": "PASS",
   "fixture": "tests/fixtures/watershed/carnivorous-adobo",
+  "fixture_class": "full-32-hillslope",
   "run_dir": "tests/fixtures/watershed/carnivorous-adobo/runs",
   "sidecar_policy": "compat",
   "legacy_sidecar_discovery": false,
@@ -9,13 +10,14 @@
     1,
     32
   ],
+  "stage_root": "/tmp/wshedw6_carnivorous_scaling_final",
   "runs": [
     {
-      "label": "carnivorous-jobs1-repo-full",
+      "label": "carnivorous-adobo-jobs1-repo-full",
       "jobs": 1,
-      "stage_root": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs1-full",
-      "output_dir": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs1-full/out",
-      "interchange_dir": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs1-full/out/interchange",
+      "stage_root": "/tmp/wshedw6_carnivorous_scaling_final/jobs1-full",
+      "output_dir": "/tmp/wshedw6_carnivorous_scaling_final/jobs1-full/out",
+      "interchange_dir": "/tmp/wshedw6_carnivorous_scaling_final/jobs1-full/out/interchange",
       "command": [
         "/home/workdir/openWEPP/target/release/openwepp-cli-watershed",
         "--run-dir",
@@ -23,7 +25,7 @@
         "--run-file",
         "case.run",
         "--output-dir",
-        "/tmp/wshedw6_carnivorous_scaling_rerun/jobs1-full/out",
+        "/tmp/wshedw6_carnivorous_scaling_final/jobs1-full/out",
         "--policy",
         "compat",
         "--jobs",
@@ -32,27 +34,28 @@
         "/home/workdir/openWEPP/target/release/openwepp-cli-hill"
       ],
       "exit_code": 0,
+      "elapsed_seconds_python": 19.113370506092906,
       "time_v": {
-        "user_seconds": 16.9,
-        "system_seconds": 0.49,
-        "cpu_percent": "99%",
-        "wall_time_text": "0:17.48",
-        "max_rss_kib": 18060,
-        "time_exit_status": 0
+        "user_seconds": 18.05,
+        "system_seconds": 0.54,
+        "cpu_percent": "97%",
+        "max_rss_kib": 18444,
+        "time_exit_status": 0,
+        "wall_time_text": "0:19.11"
       },
       "supervisor_timing": {
         "legacy_sidecar_discovery": false,
-        "output_publication_elapsed_ms": 80,
+        "output_publication_elapsed_ms": 67,
         "pass_inventory_elapsed_ms": 2,
-        "routing_input_elapsed_ms": 5,
+        "routing_input_elapsed_ms": 4,
         "run_name": "carnivorous-adobo-w6-scaling",
         "schema": "openwepp-watershed-supervisor-timing-v1",
         "sidecar_policy": "Compat",
-        "total_elapsed_ms": 17480,
+        "total_elapsed_ms": 19109,
         "watershed_dispatch_elapsed_ms": 0,
         "worker_pool": {
           "completed_jobs": 32,
-          "elapsed_ms": 17384,
+          "elapsed_ms": 18970,
           "launched_jobs": 32,
           "requested_jobs": 1,
           "skipped_jobs": 0,
@@ -61,18 +64,45 @@
       },
       "job_timing_distribution": {
         "count": 32,
-        "min_ms": 471,
-        "median_ms": 528.5,
-        "mean_ms": 542.25,
-        "max_ms": 713
+        "min_ms": 534,
+        "median_ms": 574.0,
+        "mean_ms": 591.78125,
+        "max_ms": 739
+      },
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "selected_publication_values": {
+        "totalwatsed3": {
+          "Area": 3333484.6800000006,
+          "Runoff": 9.539206881850737e-07,
+          "Q": 0.003179880000000001,
+          "runvol": 0.0031798800000000004,
+          "tdet": 0.0,
+          "tdep": 0.0,
+          "sed_del": -0.0,
+          "sbrunv": null,
+          "seddep_1": null,
+          "sed_vol_conc": null
+        },
+        "chanwb": {
+          "Inflow (m^3)": 0.0031798800000000004,
+          "Outflow (m^3)": null,
+          "Storage (m^3)": null,
+          "Baseflow (m^3)": null,
+          "Loss (m^3)": null,
+          "Balance (m^3)": null
+        },
+        "ebe_pw0": {
+          "precip": null
+        }
       }
     },
     {
-      "label": "carnivorous-jobs32-repo-full",
+      "label": "carnivorous-adobo-jobs32-repo-full",
       "jobs": 32,
-      "stage_root": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs32-full",
-      "output_dir": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs32-full/out",
-      "interchange_dir": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs32-full/out/interchange",
+      "stage_root": "/tmp/wshedw6_carnivorous_scaling_final/jobs32-full",
+      "output_dir": "/tmp/wshedw6_carnivorous_scaling_final/jobs32-full/out",
+      "interchange_dir": "/tmp/wshedw6_carnivorous_scaling_final/jobs32-full/out/interchange",
       "command": [
         "/home/workdir/openWEPP/target/release/openwepp-cli-watershed",
         "--run-dir",
@@ -80,7 +110,7 @@
         "--run-file",
         "case.run",
         "--output-dir",
-        "/tmp/wshedw6_carnivorous_scaling_rerun/jobs32-full/out",
+        "/tmp/wshedw6_carnivorous_scaling_final/jobs32-full/out",
         "--policy",
         "compat",
         "--jobs",
@@ -89,27 +119,28 @@
         "/home/workdir/openWEPP/target/release/openwepp-cli-hill"
       ],
       "exit_code": 0,
+      "elapsed_seconds_python": 1.0802821218967438,
       "time_v": {
-        "user_seconds": 22.35,
+        "user_seconds": 24.04,
         "system_seconds": 0.52,
-        "cpu_percent": "2308%",
-        "wall_time_text": "0:00.99",
+        "cpu_percent": "2278%",
         "max_rss_kib": 18048,
-        "time_exit_status": 0
+        "time_exit_status": 0,
+        "wall_time_text": "0:01.07"
       },
       "supervisor_timing": {
         "legacy_sidecar_discovery": false,
-        "output_publication_elapsed_ms": 72,
+        "output_publication_elapsed_ms": 77,
         "pass_inventory_elapsed_ms": 2,
-        "routing_input_elapsed_ms": 4,
+        "routing_input_elapsed_ms": 5,
         "run_name": "carnivorous-adobo-w6-scaling",
         "schema": "openwepp-watershed-supervisor-timing-v1",
         "sidecar_policy": "Compat",
-        "total_elapsed_ms": 987,
+        "total_elapsed_ms": 1075,
         "watershed_dispatch_elapsed_ms": 0,
         "worker_pool": {
           "completed_jobs": 32,
-          "elapsed_ms": 900,
+          "elapsed_ms": 983,
           "launched_jobs": 32,
           "requested_jobs": 32,
           "skipped_jobs": 0,
@@ -118,10 +149,37 @@
       },
       "job_timing_distribution": {
         "count": 32,
-        "min_ms": 543,
-        "median_ms": 719.0,
-        "mean_ms": 711.03125,
-        "max_ms": 899
+        "min_ms": 553,
+        "median_ms": 796.0,
+        "mean_ms": 763.8125,
+        "max_ms": 982
+      },
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "selected_publication_values": {
+        "totalwatsed3": {
+          "Area": 3333484.6800000006,
+          "Runoff": 9.539206881850737e-07,
+          "Q": 0.003179880000000001,
+          "runvol": 0.0031798800000000004,
+          "tdet": 0.0,
+          "tdep": 0.0,
+          "sed_del": -0.0,
+          "sbrunv": null,
+          "seddep_1": null,
+          "sed_vol_conc": null
+        },
+        "chanwb": {
+          "Inflow (m^3)": 0.0031798800000000004,
+          "Outflow (m^3)": null,
+          "Storage (m^3)": null,
+          "Baseflow (m^3)": null,
+          "Loss (m^3)": null,
+          "Balance (m^3)": null
+        },
+        "ebe_pw0": {
+          "precip": null
+        }
       }
     }
   ],
@@ -140,7 +198,23 @@
       "rows_jobs32": 1,
       "columns": 14,
       "same_schema": true,
-      "same_rows": true
+      "same_rows": true,
+      "selected_values_jobs1": {
+        "Inflow (m^3)": 0.0031798800000000004,
+        "Outflow (m^3)": null,
+        "Storage (m^3)": null,
+        "Baseflow (m^3)": null,
+        "Loss (m^3)": null,
+        "Balance (m^3)": null
+      },
+      "selected_values_jobs32": {
+        "Inflow (m^3)": 0.0031798800000000004,
+        "Outflow (m^3)": null,
+        "Storage (m^3)": null,
+        "Baseflow (m^3)": null,
+        "Loss (m^3)": null,
+        "Balance (m^3)": null
+      }
     },
     {
       "file": "chnwb.parquet",
@@ -156,7 +230,13 @@
       "rows_jobs32": 1,
       "columns": 15,
       "same_schema": true,
-      "same_rows": true
+      "same_rows": true,
+      "selected_values_jobs1": {
+        "precip": null
+      },
+      "selected_values_jobs32": {
+        "precip": null
+      }
     },
     {
       "file": "loss_pw0.all_years.chn.parquet",
@@ -237,15 +317,36 @@
       "columns": 79,
       "same_schema": true,
       "same_rows": true,
-      "area_values_jobs1": [
-        3333484.6800000006
-      ],
-      "runoff_depth_values_jobs1": [
-        9.539206881850737e-07
-      ],
-      "tdet_values_jobs1": [
-        0.0
-      ]
+      "selected_values_jobs1": {
+        "Area": 3333484.6800000006,
+        "Runoff": 9.539206881850737e-07,
+        "Q": 0.003179880000000001,
+        "runvol": 0.0031798800000000004,
+        "tdet": 0.0,
+        "tdep": 0.0,
+        "sed_del": -0.0,
+        "sbrunv": null,
+        "seddep_1": null,
+        "sed_vol_conc": null
+      },
+      "selected_values_jobs32": {
+        "Area": 3333484.6800000006,
+        "Runoff": 9.539206881850737e-07,
+        "Q": 0.003179880000000001,
+        "runvol": 0.0031798800000000004,
+        "tdet": 0.0,
+        "tdep": 0.0,
+        "sed_del": -0.0,
+        "sbrunv": null,
+        "seddep_1": null,
+        "sed_vol_conc": null
+      }
     }
+  ],
+  "identity_all_same": true,
+  "notes": [
+    "Full committed fixture run; no subset or representative slice.",
+    "Output identity compares jobs=1 versus the parallel job count within this same release build.",
+    "Current values may differ from earlier W6 artifacts because hillslope work landed before this rebuild."
   ]
 }

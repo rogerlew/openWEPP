@@ -1,0 +1,15 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "carnivorous-adobo-w6-H9"
+unit_system = "metric"
+
+[inputs]
+soil = "p9.sol"
+management = "p9.man"
+slope = "p9.slp"
+climate = "p9.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "unused/H9.hbp"
+loss = "unused/H9.loss.json"

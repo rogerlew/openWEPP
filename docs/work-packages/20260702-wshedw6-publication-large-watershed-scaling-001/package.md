@@ -1,6 +1,6 @@
 # WSHED-W6 Publication and Large-Watershed Scaling
 
-Status: `QUEUED-HANDOFF-AUTHORED`
+Status: `EXECUTED-COMPLETE`
 
 Date opened: `2026-07-02`
 

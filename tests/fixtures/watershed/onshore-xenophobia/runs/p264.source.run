@@ -1,0 +1,15 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "onshore-xenophobia-H264"
+unit_system = "metric"
+
+[inputs]
+soil = "p264.sol"
+management = "p264.man"
+slope = "p264.slp"
+climate = "p264.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "unused/H264.hbp"
+loss = "unused/H264.loss.json"

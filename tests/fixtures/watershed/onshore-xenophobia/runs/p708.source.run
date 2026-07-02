@@ -1,0 +1,15 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "onshore-xenophobia-H708"
+unit_system = "metric"
+
+[inputs]
+soil = "p708.sol"
+management = "p708.man"
+slope = "p708.slp"
+climate = "p708.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "unused/H708.hbp"
+loss = "unused/H708.loss.json"

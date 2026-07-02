@@ -26,10 +26,10 @@ write_typed_publication_parquet_outputs(&runfile.outputs, &[publication_frame])
 This is the real downstream consumer path for W6 scaling runs:
 
 - `tests/fixtures/watershed/onshore-xenophobia/runs/case.run`
-- `/tmp/wshedw6_onshore_scaling_rerun/jobs1-full/out`
-- `/tmp/wshedw6_onshore_scaling_rerun/jobs48-full/out`
-- `/tmp/wshedw6_carnivorous_scaling_rerun/jobs1-full/out`
-- `/tmp/wshedw6_carnivorous_scaling_rerun/jobs32-full/out`
+- `/tmp/wshedw6_onshore_scaling_final/jobs1-full/out`
+- `/tmp/wshedw6_onshore_scaling_final/jobs48-full/out`
+- `/tmp/wshedw6_carnivorous_scaling_final/jobs1-full/out`
+- `/tmp/wshedw6_carnivorous_scaling_final/jobs32-full/out`
 
 All runs emitted the `14` required watershed parquet outputs.
 
@@ -58,3 +58,7 @@ remain inside the output crate for existing non-public/edge writer coverage.
 `artifacts/scaling/carnivorous-adobo-scaling-summary.json` record successful
 public CLI runs and row/content identity across job counts for all required
 watershed outputs.
+
+The public CLI writes nulls for unavailable typed operands rather than routing
+through a compatibility row seed or filling channel-balance fields from
+unrelated routing scalars.

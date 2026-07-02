@@ -185,6 +185,7 @@ pub struct WatershedImpoundmentControlRecord {
 #[derive(Debug, Clone, PartialEq)]
 pub struct HillslopeContribution {
     pub hillslope_id: u32,
+    pub area_m2: Option<f64>,
     pub peak_runoff_m3_s: f64,
     pub duration_seconds: f64,
     pub total_detachment_kg: f64,
@@ -266,37 +267,46 @@ pub struct WatershedPublicationFrame {
     pub runoff_volume_m3: f64,
     pub peak_discharge_m3_s: f64,
     pub sediment_yield_kg: f64,
-    pub soluble_pollutant_kg: f64,
-    pub particulate_pollutant_kg: f64,
-    pub channel_outflow_m3: f64,
-    pub channel_storage_m3: f64,
-    pub channel_baseflow_m3: f64,
-    pub channel_loss_m3: f64,
-    pub area_m2: f64,
-    pub precipitation_mm: f64,
-    pub rain_melt_mm: f64,
-    pub runoff_mm: f64,
-    pub deep_percolation_mm: f64,
-    pub lateral_flow_mm: f64,
-    pub qofe_mm: f64,
-    pub transpiration_mm: f64,
-    pub evaporation_soil_mm: f64,
-    pub evaporation_residue_mm: f64,
-    pub upstream_q_mm: f64,
-    pub subsurface_runon_mm: f64,
-    pub total_soil_water_mm: f64,
-    pub soil_water_total_mm: f64,
-    pub profile_depth_mm: f64,
-    pub profile_porosity_cap_mm: f64,
-    pub profile_fc_store_mm: f64,
-    pub profile_wp_store_mm: f64,
-    pub interception_mm: f64,
-    pub interception_storage_mm: f64,
-    pub frozen_water_mm: f64,
-    pub snow_water_mm: f64,
-    pub tile_mm: f64,
-    pub irrigation_mm: f64,
-    pub baseflow_mm: f64,
+    pub soluble_pollutant_kg: Option<f64>,
+    pub particulate_pollutant_kg: Option<f64>,
+    pub channel_outflow_m3: Option<f64>,
+    pub channel_storage_m3: Option<f64>,
+    pub channel_baseflow_m3: Option<f64>,
+    pub channel_loss_m3: Option<f64>,
+    pub area_m2: Option<f64>,
+    pub subsurface_runoff_volume_m3: Option<f64>,
+    pub total_detachment_kg: f64,
+    pub total_deposition_kg: f64,
+    pub sediment_class_deposition_kg: Option<[f64; 5]>,
+    pub sediment_volume_concentration_m3_m3: Option<f64>,
+    pub precipitation_mm: Option<f64>,
+    pub rain_melt_mm: Option<f64>,
+    pub runoff_mm: Option<f64>,
+    pub q_diagnostic_mm: Option<f64>,
+    pub deep_percolation_mm: Option<f64>,
+    pub lateral_flow_mm: Option<f64>,
+    pub qofe_mm: Option<f64>,
+    pub transpiration_mm: Option<f64>,
+    pub evaporation_soil_mm: Option<f64>,
+    pub evaporation_residue_mm: Option<f64>,
+    pub upstream_q_mm: Option<f64>,
+    pub subsurface_runon_mm: Option<f64>,
+    pub total_soil_water_mm: Option<f64>,
+    pub soil_water_total_mm: Option<f64>,
+    pub profile_depth_mm: Option<f64>,
+    pub profile_porosity_cap_mm: Option<f64>,
+    pub profile_fc_store_mm: Option<f64>,
+    pub profile_wp_store_mm: Option<f64>,
+    pub interception_mm: Option<f64>,
+    pub interception_storage_mm: Option<f64>,
+    pub frozen_water_mm: Option<f64>,
+    pub snow_water_mm: Option<f64>,
+    pub tile_mm: Option<f64>,
+    pub irrigation_mm: Option<f64>,
+    pub baseflow_mm: Option<f64>,
+    pub tsmf_fraction: Option<f64>,
+    pub qrain_mm: Option<f64>,
+    pub qsnow_mm: Option<f64>,
 }
 
 impl Default for WatershedPublicationFrame {
@@ -314,37 +324,46 @@ impl Default for WatershedPublicationFrame {
             runoff_volume_m3: 0.0,
             peak_discharge_m3_s: 0.0,
             sediment_yield_kg: 0.0,
-            soluble_pollutant_kg: 0.0,
-            particulate_pollutant_kg: 0.0,
-            channel_outflow_m3: 0.0,
-            channel_storage_m3: 0.0,
-            channel_baseflow_m3: 0.0,
-            channel_loss_m3: 0.0,
-            area_m2: 1.0,
-            precipitation_mm: 0.0,
-            rain_melt_mm: 0.0,
-            runoff_mm: 0.0,
-            deep_percolation_mm: 0.0,
-            lateral_flow_mm: 0.0,
-            qofe_mm: 0.0,
-            transpiration_mm: 0.0,
-            evaporation_soil_mm: 0.0,
-            evaporation_residue_mm: 0.0,
-            upstream_q_mm: 0.0,
-            subsurface_runon_mm: 0.0,
-            total_soil_water_mm: 0.0,
-            soil_water_total_mm: 0.0,
-            profile_depth_mm: 0.0,
-            profile_porosity_cap_mm: 0.0,
-            profile_fc_store_mm: 0.0,
-            profile_wp_store_mm: 0.0,
-            interception_mm: 0.0,
-            interception_storage_mm: 0.0,
-            frozen_water_mm: 0.0,
-            snow_water_mm: 0.0,
-            tile_mm: 0.0,
-            irrigation_mm: 0.0,
-            baseflow_mm: 0.0,
+            soluble_pollutant_kg: None,
+            particulate_pollutant_kg: None,
+            channel_outflow_m3: None,
+            channel_storage_m3: None,
+            channel_baseflow_m3: None,
+            channel_loss_m3: None,
+            area_m2: None,
+            subsurface_runoff_volume_m3: None,
+            total_detachment_kg: 0.0,
+            total_deposition_kg: 0.0,
+            sediment_class_deposition_kg: None,
+            sediment_volume_concentration_m3_m3: None,
+            precipitation_mm: None,
+            rain_melt_mm: None,
+            runoff_mm: None,
+            q_diagnostic_mm: None,
+            deep_percolation_mm: None,
+            lateral_flow_mm: None,
+            qofe_mm: None,
+            transpiration_mm: None,
+            evaporation_soil_mm: None,
+            evaporation_residue_mm: None,
+            upstream_q_mm: None,
+            subsurface_runon_mm: None,
+            total_soil_water_mm: None,
+            soil_water_total_mm: None,
+            profile_depth_mm: None,
+            profile_porosity_cap_mm: None,
+            profile_fc_store_mm: None,
+            profile_wp_store_mm: None,
+            interception_mm: None,
+            interception_storage_mm: None,
+            frozen_water_mm: None,
+            snow_water_mm: None,
+            tile_mm: None,
+            irrigation_mm: None,
+            baseflow_mm: None,
+            tsmf_fraction: None,
+            qrain_mm: None,
+            qsnow_mm: None,
         }
     }
 }
@@ -469,6 +488,20 @@ impl WatershedNetworkFrame {
             .filter_map(|node_id| self.routed_channels.get(node_id))
             .map(|state| state.runoff_volume_m3)
             .sum::<f64>();
+        let area_m2 = sum_contributing_area_m2(&self.hillslope_contributions, dispatch_ids);
+        let runoff_mm = area_m2.map(|area| runoff_volume_m3 / area * 1_000.0);
+        let total_detachment_kg = dispatch_ids
+            .contributor_hillslopes
+            .iter()
+            .filter_map(|hillslope_id| self.hillslope_contributions.get(hillslope_id))
+            .map(|contribution| contribution.total_detachment_kg)
+            .sum::<f64>();
+        let total_deposition_kg = dispatch_ids
+            .contributor_hillslopes
+            .iter()
+            .filter_map(|hillslope_id| self.hillslope_contributions.get(hillslope_id))
+            .map(|contribution| contribution.total_deposition_kg)
+            .sum::<f64>();
 
         Ok(WatershedPublicationFrame {
             sim_day_index: i32::try_from(report.dispatch_report.steps.len().max(1))
@@ -486,24 +519,33 @@ impl WatershedNetworkFrame {
                 .filter_map(|node_id| self.routed_channels.get(node_id))
                 .map(|state| state.sediment_yield_kg)
                 .sum::<f64>(),
-            particulate_pollutant_kg: dispatch_ids
-                .contributor_hillslopes
-                .iter()
-                .filter_map(|hillslope_id| self.hillslope_contributions.get(hillslope_id))
-                .map(|contribution| contribution.total_detachment_kg)
-                .sum::<f64>(),
-            channel_outflow_m3: dispatch_ids
-                .impoundment_ids
-                .iter()
-                .filter_map(|node_id| self.routed_impoundments.get(node_id))
-                .map(|state| state.outflow_volume_m3)
-                .sum::<f64>(),
-            channel_baseflow_m3: self.routing_globals.cbase,
-            runoff_mm: runoff_volume_m3 * 1_000.0,
-            area_m2: 1.0,
+            channel_outflow_m3: None,
+            channel_baseflow_m3: None,
+            area_m2,
+            runoff_mm,
+            total_detachment_kg,
+            total_deposition_kg,
             ..WatershedPublicationFrame::default()
         })
     }
+}
+
+fn sum_contributing_area_m2(
+    contributions: &BTreeMap<u32, HillslopeContribution>,
+    dispatch_ids: &TypedDispatchIds,
+) -> Option<f64> {
+    let mut area_m2 = 0.0_f64;
+    let mut observed = false;
+    for hillslope_id in &dispatch_ids.contributor_hillslopes {
+        let contribution = contributions.get(hillslope_id)?;
+        let area = contribution.area_m2?;
+        if !area.is_finite() || area <= 0.0 {
+            return None;
+        }
+        area_m2 += area;
+        observed = true;
+    }
+    (observed && area_m2.is_finite() && area_m2 > 0.0).then_some(area_m2)
 }
 
 struct TypedDispatchIds {

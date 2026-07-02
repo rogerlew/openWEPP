@@ -29,14 +29,10 @@ use openwepp_topology::{
     TopologyNodeKind, validate_pre_execution_topology,
 };
 use openwepp_watershed_orchestrator::{
-    HillslopeContribution, WatershedNetworkFrame, WatershedPublicationFrame,
-    execute_watershed_dispatch_with_frame,
+    HillslopeContribution, WatershedNetworkFrame, execute_watershed_dispatch_with_frame,
 };
 use openwepp_watershed_output::contracts::{WatershedOutputConfig, validate_output_contract};
-use openwepp_watershed_output::writers::{
-    WatershedInterchangeRowSeed, write_interchange_parquet_outputs,
-    write_interchange_parquet_outputs_from_rows,
-};
+use openwepp_watershed_output::writers::write_typed_publication_parquet_outputs;
 use serde::Deserialize;
 use serde_json::{Value, json};
 
@@ -44,6 +40,7 @@ const WATERSHED_RUNFILE_SCHEMA_ID: &str = "openwepp-watershed-runfile-v1";
 const HILLSLOPE_RUN_MANIFEST_SCHEMA_ID: &str = "openwepp-hillslope-run-manifest-v1";
 const DEFAULT_DTCHR_SECONDS: f64 = 3_600.0;
 const DEFAULT_NTCHR: f64 = 24.0;
+const SQUARE_FEET_TO_SQUARE_METERS: f64 = 0.092_903_04;
 const MOFE04_PUBLICATION_OFE_POLICY: &str = "single-row-canonicalized-hillslope-aggregate";
 const MF_PUBLICATION_OFE_POLICY: &str = "per-ofe-dynamic-water-balance-state";
 const MOFE04_PUBLICATION_AREA_POLICY: &str = "sum-ofe-geometry-area";
@@ -339,13 +336,26 @@ fn run() -> Result<(), String> {
     for entry in pass_inventory.entries() {
         let hillslope_id = entry.hillslope_id;
         let class_count = usize::from(entry.npart);
-        validate_contributor_mofe_metadata(
+        let manifest_area_m2 = validate_contributor_mofe_metadata(
             hillslope_id,
             entry.nofe,
             entry.manifest_file_path.as_deref(),
         )?;
 
         let payload = &entry.latest_event_payload;
+        let block = runfile
+            .hillslope_blocks_by_id
+            .get(&hillslope_id)
+            .ok_or_else(|| {
+                format!(
+                    "CLIWAT-E-016 missing hillslopes_block entry for hillslope id {hillslope_id}"
+                )
+            })?;
+        let area_m2 = if let Some(source_runfile) = block.run_file_path.as_deref() {
+            Some(hillslope_area_m2_from_source_runfile(source_runfile)?)
+        } else {
+            manifest_area_m2
+        };
         let peak = payload.peak_runoff_m3_s;
         let duration = payload.duration_seconds;
         let total_detachment = payload.total_detachment_kg;
@@ -389,6 +399,7 @@ fn run() -> Result<(), String> {
 
         network_frame.add_hillslope_contribution(HillslopeContribution {
             hillslope_id,
+            area_m2,
             peak_runoff_m3_s: peak,
             duration_seconds: duration,
             total_detachment_kg: total_detachment,
@@ -419,9 +430,9 @@ fn run() -> Result<(), String> {
     let publication_frame = network_frame
         .publish_typed_routing_report(&report)
         .map_err(|error| format!("CLIWAT-E-019 watershed publication failed: {error}"))?;
-    let row_seed = publication_frame_to_row_seed(&publication_frame);
     let output_publication_started = Instant::now();
-    write_watershed_interchange_outputs(&runfile.outputs, &[row_seed])?;
+    write_typed_publication_parquet_outputs(&runfile.outputs, &[publication_frame])
+        .map_err(|error| format!("CLIWAT-E-034 watershed output writer failure: {error}"))?;
     let output_publication_elapsed_ms = output_publication_started.elapsed().as_millis();
     write_watershed_supervisor_timing(
         &output_dir,
@@ -597,6 +608,71 @@ fn build_watershed_run_plan(
         hillslope_jobs,
         expected_passes,
     )
+}
+
+fn hillslope_area_m2_from_source_runfile(source_runfile: &Path) -> Result<f64, String> {
+    let payload = fs::read_to_string(source_runfile).map_err(|error| {
+        format!(
+            "CLIWAT-E-035 failed reading hillslope source runfile {} for area publication: {error}",
+            source_runfile.display()
+        )
+    })?;
+    let document = payload.parse::<toml::Value>().map_err(|error| {
+        format!(
+            "CLIWAT-E-035 invalid TOML in hillslope source runfile {} for area publication: {error}",
+            source_runfile.display()
+        )
+    })?;
+    let unit_system = document
+        .get("unit_system")
+        .and_then(toml::Value::as_str)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-035 hillslope source runfile {} missing string unit_system",
+                source_runfile.display()
+            )
+        })?;
+    let slope_path = document
+        .get("inputs")
+        .and_then(toml::Value::as_table)
+        .and_then(|inputs| inputs.get("slope"))
+        .and_then(toml::Value::as_str)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-035 hillslope source runfile {} missing string inputs.slope",
+                source_runfile.display()
+            )
+        })
+        .map(|slope| resolve_runfile_relative_path(source_runfile, slope))?;
+    let slope = parse_slope_file(&slope_path, SlopeParserOptions::compatibility()).map_err(|error| {
+        format!(
+            "CLIWAT-E-035 failed parsing hillslope source slope {} for area publication: {error}",
+            slope_path.display()
+        )
+    })?;
+    let area_native = slope
+        .ofes
+        .iter()
+        .map(|ofe| ofe.fwidth * ofe.slplen)
+        .sum::<f64>();
+    let area_m2 = match unit_system.trim().to_ascii_lowercase().as_str() {
+        "metric" | "m" => area_native,
+        "english" | "e" => area_native * SQUARE_FEET_TO_SQUARE_METERS,
+        other => {
+            return Err(format!(
+                "CLIWAT-E-035 hillslope source runfile {} has unsupported unit_system '{}' for area publication",
+                source_runfile.display(),
+                other
+            ));
+        }
+    };
+    if !area_m2.is_finite() || area_m2 <= 0.0 {
+        return Err(format!(
+            "CLIWAT-E-035 hillslope source runfile {} produced invalid area_m2 {area_m2}",
+            source_runfile.display()
+        ));
+    }
+    Ok(area_m2)
 }
 
 fn generated_hillslope_output_root_for_pass(pass_file_path: &Path) -> PathBuf {
@@ -1346,19 +1422,21 @@ fn validate_contributor_mofe_metadata(
     hillslope_id: u32,
     contributor_nofe: u16,
     manifest_file_path: Option<&Path>,
-) -> Result<(), String> {
+) -> Result<Option<f64>, String> {
     if contributor_nofe > 1 {
         let Some(path) = manifest_file_path else {
             return Err(format!(
                 "CLIWAT-E-036 hillslope {hillslope_id} requires inputs.hillslopes_block[].manifest_file when pass nofe={contributor_nofe} > 1"
             ));
         };
-        validate_manifest_publication_metadata(hillslope_id, contributor_nofe, path)?;
+        return validate_manifest_publication_metadata(hillslope_id, contributor_nofe, path)
+            .map(Some);
     } else if let Some(path) = manifest_file_path {
-        validate_manifest_publication_metadata(hillslope_id, contributor_nofe, path)?;
+        return validate_manifest_publication_metadata(hillslope_id, contributor_nofe, path)
+            .map(Some);
     }
 
-    Ok(())
+    Ok(None)
 }
 
 #[allow(clippy::too_many_lines)]
@@ -1366,7 +1444,7 @@ fn validate_manifest_publication_metadata(
     hillslope_id: u32,
     contributor_nofe: u16,
     manifest_file_path: &Path,
-) -> Result<(), String> {
+) -> Result<f64, String> {
     let manifest_text = fs::read_to_string(manifest_file_path).map_err(|error| {
         format!(
             "CLIWAT-E-036 failed reading hillslope {hillslope_id} manifest_file '{}': {error}",
@@ -1493,7 +1571,7 @@ fn validate_manifest_publication_metadata(
         &manifest,
     )?;
 
-    Ok(())
+    Ok(publication_area_m2)
 }
 
 fn validate_manifest_per_ofe_wb13_publication_metadata(
@@ -2048,69 +2126,6 @@ fn resolve_structure_contributor_local_id(
     }
 
     Ok(node_key.id)
-}
-
-fn write_watershed_interchange_outputs(
-    outputs: &WatershedOutputsResolved,
-    row_seeds: &[WatershedInterchangeRowSeed],
-) -> Result<(), String> {
-    if row_seeds.len() == 1 {
-        write_interchange_parquet_outputs(outputs, row_seeds[0])
-    } else {
-        write_interchange_parquet_outputs_from_rows(outputs, row_seeds)
-    }
-    .map_err(|error| format!("CLIWAT-E-034 watershed output writer failure: {error}"))
-}
-
-fn publication_frame_to_row_seed(
-    publication_frame: &WatershedPublicationFrame,
-) -> WatershedInterchangeRowSeed {
-    WatershedInterchangeRowSeed {
-        year: publication_frame.year,
-        simulation_year: publication_frame.simulation_year,
-        sim_day_index: publication_frame.sim_day_index,
-        julian: publication_frame.julian,
-        month: publication_frame.month,
-        day_of_month: publication_frame.day_of_month,
-        water_year: publication_frame.water_year,
-        element_id: publication_frame.element_id,
-        channel_id: publication_frame.channel_id,
-        runoff_volume_m3: publication_frame.runoff_volume_m3,
-        peak_discharge_m3_s: publication_frame.peak_discharge_m3_s,
-        sediment_yield_kg: publication_frame.sediment_yield_kg,
-        soluble_pollutant_kg: publication_frame.soluble_pollutant_kg,
-        particulate_pollutant_kg: publication_frame.particulate_pollutant_kg,
-        channel_outflow_m3: publication_frame.channel_outflow_m3,
-        channel_storage_m3: publication_frame.channel_storage_m3,
-        channel_baseflow_m3: publication_frame.channel_baseflow_m3,
-        channel_loss_m3: publication_frame.channel_loss_m3,
-        area_m2: publication_frame.area_m2,
-        precipitation_mm: publication_frame.precipitation_mm,
-        rain_melt_mm: publication_frame.rain_melt_mm,
-        runoff_mm: publication_frame.runoff_mm,
-        deep_percolation_mm: publication_frame.deep_percolation_mm,
-        lateral_flow_mm: publication_frame.lateral_flow_mm,
-        qofe_mm: publication_frame.qofe_mm,
-        transpiration_mm: publication_frame.transpiration_mm,
-        evaporation_soil_mm: publication_frame.evaporation_soil_mm,
-        evaporation_residue_mm: publication_frame.evaporation_residue_mm,
-        upstream_q_mm: publication_frame.upstream_q_mm,
-        subsurface_runon_mm: publication_frame.subsurface_runon_mm,
-        total_soil_water_mm: publication_frame.total_soil_water_mm,
-        soil_water_total_mm: publication_frame.soil_water_total_mm,
-        profile_depth_mm: publication_frame.profile_depth_mm,
-        profile_porosity_cap_mm: publication_frame.profile_porosity_cap_mm,
-        profile_fc_store_mm: publication_frame.profile_fc_store_mm,
-        profile_wp_store_mm: publication_frame.profile_wp_store_mm,
-        interception_mm: publication_frame.interception_mm,
-        interception_storage_mm: publication_frame.interception_storage_mm,
-        frozen_water_mm: publication_frame.frozen_water_mm,
-        snow_water_mm: publication_frame.snow_water_mm,
-        tile_mm: publication_frame.tile_mm,
-        irrigation_mm: publication_frame.irrigation_mm,
-        baseflow_mm: publication_frame.baseflow_mm,
-        ..WatershedInterchangeRowSeed::default()
-    }
 }
 
 fn print_help() {
