@@ -1,8 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use openwepp_kernel_contract::{
-    WatershedKernel, WatershedKernelRequest, apply_kernel_writeback, evaluate_kernel_writeback,
-};
 use openwepp_sim_contract::status::{
     BoundaryClass, SimulationPhase, SimulationStatus, StatusClassification, StatusError,
 };
@@ -19,8 +16,7 @@ use super::types::{
     DispatchDiagnostic, DispatchDiagnosticCode, DispatchStep, MESSAGE_CYCLE_DETECTED,
     MESSAGE_DISPATCH_OK, MESSAGE_MISSING_DEPENDENCY, MESSAGE_PRECONDITION_FAILED,
     WatershedDispatchError, WatershedDispatchReport, WatershedFrameExecutionReport,
-    WatershedFrameStepReport, WatershedKernelExecutionReport, WatershedKernelStepReport,
-    WatershedWritebackSurface,
+    WatershedFrameStepReport,
 };
 
 /// Schedule deterministic watershed dispatch order using an explicit topology
@@ -147,136 +143,12 @@ pub fn schedule_watershed_dispatch_with_gate(
     schedule_watershed_dispatch(graph, &topology_validation)
 }
 
-/// Execute watershed dispatch scheduling and invoke watershed kernels through
-/// the typed ARCH07 boundary.
-///
-/// Kernel writeback proposals are accepted/rejected/applied by orchestrator
-/// policy. Kernel code never mutates orchestrator state directly.
-///
-/// # Errors
-///
-/// Returns `WatershedDispatchError` when scheduler/status construction fails or
-/// when writeback apply surfaces return typed errors.
-pub fn execute_watershed_dispatch_with_kernel<K>(
-    graph: &TopologyGraph,
-    topology_validation: &TopologyValidationReport,
-    kernel: &mut K,
-    mut writeback_surface: WatershedWritebackSurface,
-) -> Result<WatershedKernelExecutionReport, WatershedDispatchError>
-where
-    K: WatershedKernel,
-{
-    let mut dispatch_report = schedule_watershed_dispatch(graph, topology_validation)?;
-
-    if !dispatch_report.is_success() {
-        return Ok(WatershedKernelExecutionReport {
-            dispatch_report,
-            step_reports: Vec::new(),
-            writeback_surface,
-        });
-    }
-
-    let mode_mismatch_status = SimulationStatus::failure(
-        SimulationPhase::WatershedKernel,
-        true,
-        false,
-        BoundaryClass::ModeMismatch,
-        "WKERNEL-E-STATUS-PHASE-MISMATCH",
-    )?;
-
-    let mut step_reports = Vec::new();
-
-    for step in dispatch_report.steps.iter().cloned() {
-        let response = {
-            let request = WatershedKernelRequest::new(
-                step.node.kind.as_str(),
-                step.node.id,
-                step.dependency_nodes
-                    .iter()
-                    .map(|node| format_node_key(*node))
-                    .collect::<Vec<String>>(),
-                &step.contributor_hillslopes,
-                &writeback_surface.state_surface,
-                &writeback_surface.flux_surface,
-            );
-
-            kernel.run_watershed_node(&request)
-        };
-        let kernel_status = response.status.clone();
-
-        if kernel_status.phase() != SimulationPhase::WatershedKernel {
-            step_reports.push(WatershedKernelStepReport {
-                step,
-                kernel_status,
-                decision_outcome: openwepp_kernel_contract::WritebackDecisionOutcome::Reject,
-                decision_status: mode_mismatch_status.clone(),
-                apply_result: None,
-            });
-            dispatch_report.dispatch_status = mode_mismatch_status.clone();
-            break;
-        }
-
-        if kernel_status.classification() == StatusClassification::Failure {
-            step_reports.push(WatershedKernelStepReport {
-                step,
-                kernel_status: kernel_status.clone(),
-                decision_outcome: openwepp_kernel_contract::WritebackDecisionOutcome::Reject,
-                decision_status: kernel_status.clone(),
-                apply_result: None,
-            });
-            dispatch_report.dispatch_status = kernel_status;
-            break;
-        }
-
-        let decision =
-            evaluate_kernel_writeback(SimulationPhase::WatershedKernel, &response.writeback)?;
-        if decision.outcome == openwepp_kernel_contract::WritebackDecisionOutcome::Reject {
-            step_reports.push(WatershedKernelStepReport {
-                step,
-                kernel_status,
-                decision_outcome: openwepp_kernel_contract::WritebackDecisionOutcome::Reject,
-                decision_status: decision.status.clone(),
-                apply_result: None,
-            });
-            dispatch_report.dispatch_status = decision.status;
-            break;
-        }
-
-        let apply_result = apply_kernel_writeback(
-            SimulationPhase::WatershedKernel,
-            &decision,
-            &response.writeback,
-            &mut writeback_surface.state_surface,
-            &mut writeback_surface.flux_surface,
-        )?;
-
-        step_reports.push(WatershedKernelStepReport {
-            step,
-            kernel_status: kernel_status.clone(),
-            decision_outcome: apply_result.outcome,
-            decision_status: apply_result.status.clone(),
-            apply_result: Some(apply_result),
-        });
-
-        if kernel_status.classification() == StatusClassification::Advisory {
-            dispatch_report.dispatch_status = kernel_status;
-        }
-    }
-
-    Ok(WatershedKernelExecutionReport {
-        dispatch_report,
-        step_reports,
-        writeback_surface,
-    })
-}
-
 /// Execute watershed dispatch directly against typed `WatershedNetworkFrame`
 /// state.
 ///
-/// This is the production W4 frame-native path. It schedules the validated
+/// This is the production frame-native path. It schedules the validated
 /// topology, invokes typed WS10/WS11/WS12/WS18 routing, and writes routed
-/// channel/impoundment state back to the frame without materializing the old
-/// symbol-map writeback surface.
+/// channel/impoundment state back to the frame.
 ///
 /// # Errors
 ///
@@ -343,25 +215,6 @@ pub fn execute_watershed_dispatch_with_frame(
         dispatch_report,
         step_reports,
     })
-}
-
-/// Execute topology validation gate + watershed dispatch + kernel writeback
-/// protocol in one helper surface.
-///
-/// # Errors
-///
-/// Returns `WatershedDispatchError` when topology validation, dispatch status
-/// construction, or writeback apply surfaces return typed errors.
-pub fn execute_watershed_dispatch_with_gate_and_kernel<K>(
-    graph: &TopologyGraph,
-    kernel: &mut K,
-    writeback_surface: WatershedWritebackSurface,
-) -> Result<WatershedKernelExecutionReport, WatershedDispatchError>
-where
-    K: WatershedKernel,
-{
-    let topology_validation = validate_pre_execution_topology(graph)?;
-    execute_watershed_dispatch_with_kernel(graph, &topology_validation, kernel, writeback_surface)
 }
 
 type DependencyMap = BTreeMap<TopologyNodeKey, BTreeSet<TopologyNodeKey>>;

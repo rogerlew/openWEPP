@@ -51,15 +51,22 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
-- `20260701-wshedw5-old-watershed-runtime-deletion-001/` is queued as
-  WSHED-W5 OLD WATERSHED RUNTIME DELETION. Result:
-  `QUEUED-HANDOFF-AUTHORED`. It is the next watershed runtime package after
-  W4DC01, with the first actionable item to delete the watershed-specific old
-  compatibility runtime and obsolete old-surface tests while preserving typed
-  public routing and protected output behavior.
 
 ## Execution Log
 
+- `20260701-wshedw5-old-watershed-runtime-deletion-001/` is complete as
+  WSHED-W5 OLD WATERSHED RUNTIME DELETION. Result: `EXECUTED-COMPLETE`. It
+  deleted the watershed-specific old request/writeback runtime, removed
+  obsolete old-surface WS10/WS11/WS12 tests, trimmed stale runtime-input
+  taxonomy, and kept public routing on `WatershedNetworkFrame` plus
+  `execute_watershed_dispatch_with_frame`. Replacement typed coverage now
+  proves direct dispatch/publication, WS11 branch closure, WS18/WS20
+  transport-capacity sensitivity, WS12 inactive and active min-controller
+  behavior, and WS12 non-finite/domain guard taxonomy. Source guards forbid the
+  deleted old runtime in production watershed routing. Final gates passed:
+  `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo nextest run --workspace --profile full` (`1196` passed, `1` skipped),
+  and `cargo deny check`.
 - `20260701-wshedw4dc01-typed-routing-kernel-writeback-closure-001/` is
   complete as WSHED-W4DC01 TYPED ROUTING KERNEL WRITEBACK CLOSURE. Result:
   `EXECUTED-COMPLETE`. It closed `WSHED-W4-HOLD-001` for the production public

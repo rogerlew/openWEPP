@@ -1,22 +1,22 @@
 # Gate Results
 
-Status: `queued`
+Status: `executed`
 
-Evidence mode: `not-run`
+Evidence mode: `static + ran`
 
 | Gate | Result | Evidence |
 | --- | --- | --- |
 | Package scaffold authored | `PASS` | `package.md` |
 | Handoff prompt authored | `PASS` | `prompts/active/wshedw5_kickoff_agent_prompt.md` |
-| Deletion inventory | `NOT RUN` | queued |
-| Old-runtime deletion manifest | `NOT RUN` | queued |
-| Source guards | `NOT RUN` | queued |
-| Protected coverage restoration | `NOT RUN` | queued |
-| Protected outputs | `NOT RUN` | queued |
-| `cargo fmt --check` | `NOT RUN` | queued |
-| `cargo clippy --workspace --all-targets -- -D warnings` | `NOT RUN` | queued |
-| `cargo nextest run --workspace --profile full` | `NOT RUN` | queued |
-| `cargo deny check` | `NOT RUN` | queued |
-| Docs lint | `PASS` | Scaffold validation: `32 files validated, 0 errors, 0 warnings` |
-| `git diff --check` | `PASS` | Scaffold validation over package, roadmap, index, and W4DC01 package status |
-| Final disposition | `NOT RUN` | queued |
+| Deletion inventory | `PASS` | `deletion-inventory.md`; post-edit source scan has no deleted old-runtime symbols |
+| Old-runtime deletion manifest | `PASS` | `old-runtime-deletion-manifest.md` |
+| Source guards | `PASS` | `cargo nextest run -p openwepp-runner --test watershed_cli_behavior_contract wshedw5_public_cli_uses_typed_network_and_publication_frames` |
+| Protected coverage restoration | `PASS` | `cargo nextest run --test wshedw5_typed_watershed_runtime_contract` (`8` passed) |
+| Protected outputs | `PASS` | Typed publication test plus full runner/profile coverage |
+| `cargo fmt --check` | `PASS` | Ran after final edits |
+| `cargo clippy --workspace --all-targets -- -D warnings` | `PASS` | Ran after final production/test edits |
+| `cargo nextest run --workspace --profile full` | `PASS` | `1196` tests run: `1196` passed, `1` skipped |
+| `cargo deny check` | `PASS` | `advisories ok, bans ok, licenses ok, sources ok` |
+| Docs lint | `PASS` | `markdown-doc lint --path ...`: `31 files validated, 0 errors, 0 warnings` |
+| `git diff --check` | `PASS` | Ran after final edits |
+| Final disposition | `PASS` | `EXECUTED-COMPLETE` |

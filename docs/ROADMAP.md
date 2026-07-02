@@ -257,17 +257,14 @@ The watershed runtime performance direction is queued by
 ADR-0032 ratifies the entrypoint, `--jobs` default, and canonical benchmark
 mode. WSHED-FIXTURE01 adopted the committed 32-hillslope carnivorous-adobo
 development fixture under `tests/fixtures/watershed/carnivorous-adobo/`. The
-remaining implementation, deletion, and large-scaling rungs stay queued pending
-package evidence. WSHED-W2, WSHED-W3, WSHED-W4, and WSHED-W4DC01 are complete.
-WSHED-W4DC01 lifted the W4 hold by moving the public watershed CLI onto
-frame-native typed dispatch and typed publication without the old
-`compatibility_writeback_surface` production route. The next forward item is
-old-runtime deletion.
+remaining large-scaling rung stays queued pending package evidence. WSHED-W2,
+WSHED-W3, WSHED-W4, WSHED-W4DC01, and WSHED-W5 are complete. WSHED-W5 deleted
+the old watershed request/writeback runtime and restored protected typed-route
+coverage. The next forward item is publication and large-watershed scaling.
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
-| WSHED-W5 | **Old watershed runtime deletion** | Delete the old compatibility runtime and obsolete old-surface tests after typed production routing replacement | No public old-runtime selector, no production `WatershedWritebackSurface` routing path, deletion manifest, protected-coverage restoration, full gates or named hold | Scaffolded at `20260701-wshedw5-old-watershed-runtime-deletion-001/`; execute next |
-| WSHED-W6 | **Publication and large-watershed scaling** | Stream publication from typed projection state and adopt larger committed scaling fixtures | Larger fixture coverage includes a 1,000+ hillslope class case or justified representative reduction; output contracts and scaling evidence recorded | Draft queue; follows WSHED-W5 deletion closure |
+| WSHED-W6 | **Publication and large-watershed scaling** | Stream publication from typed projection state and adopt larger committed scaling fixtures | Larger fixture coverage includes a 1,000+ hillslope class case or justified representative reduction; output contracts and scaling evidence recorded | Draft queue; next watershed runtime rung |
 
 ---
 

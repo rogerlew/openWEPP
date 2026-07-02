@@ -207,16 +207,8 @@ name = "wb13_daily_water_balance_output_surface_contract"
 path = "tests/integration/wb13_daily_water_balance_output_surface_contract.rs"
 
 [[test]]
-name = "ws10_watershed_kernel_contract"
-path = "tests/integration/ws10_watershed_kernel_contract.rs"
-
-[[test]]
-name = "ws11_channel_routing_physics_equivalence_contract"
-path = "tests/integration/ws11_channel_routing_physics_equivalence_contract.rs"
-
-[[test]]
-name = "ws12_impoundment_physics_equivalence_contract"
-path = "tests/integration/ws12_impoundment_physics_equivalence_contract.rs"
+name = "wshedw5_typed_watershed_runtime_contract"
+path = "tests/integration/wshedw5_typed_watershed_runtime_contract.rs"
 
 [[test]]
 name = "arch22_typed_state_surface_contract"

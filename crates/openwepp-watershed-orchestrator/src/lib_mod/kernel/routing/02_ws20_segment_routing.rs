@@ -28,106 +28,6 @@ impl Ws10ChannelImpoundmentKernel {
         Ok(())
     }
 
-    #[allow(clippy::similar_names)]
-    fn ws20_load_channel_profile(
-        request: &WatershedKernelRequest<'_>,
-        node_class: Ws10NodeClass,
-        nslpts: usize,
-    ) -> Result<Ws20ChannelProfile, Ws10GuardError> {
-        let node_id = request.node_id;
-        let mut profile = Ws20ChannelProfile {
-            x_points_ft: Vec::with_capacity(nslpts),
-            slopes: Vec::with_capacity(nslpts),
-            depth_a_points_ft: Vec::with_capacity(nslpts),
-            depth_b_points_ft: Vec::with_capacity(nslpts),
-            width_a_points_ft: Vec::with_capacity(nslpts),
-            width_b_points_ft: Vec::with_capacity(nslpts),
-        };
-
-        for point_number in 1..=nslpts {
-            let x_symbol =
-                BoundarySymbol::from(format!("ws10_channel_{node_id}_x_{point_number:04}"));
-            let slope_symbol =
-                BoundarySymbol::from(format!("ws10_channel_{node_id}_slope_{point_number:04}"));
-            let depth_a_symbol =
-                BoundarySymbol::from(format!("ws10_channel_{node_id}_depa_{point_number:04}"));
-            let depth_b_symbol =
-                BoundarySymbol::from(format!("ws10_channel_{node_id}_depb_{point_number:04}"));
-            let width_a_symbol =
-                BoundarySymbol::from(format!("ws10_channel_{node_id}_wida_{point_number:04}"));
-            let width_b_symbol =
-                BoundarySymbol::from(format!("ws10_channel_{node_id}_widb_{point_number:04}"));
-
-            let x_ft =
-                Self::require_channel_state_symbol_scalar(request, node_class, x_symbol.clone())?;
-            let slope = Self::require_channel_state_symbol_scalar(
-                request,
-                node_class,
-                slope_symbol.clone(),
-            )?;
-            let depth_a_ft = Self::require_channel_state_symbol_scalar(
-                request,
-                node_class,
-                depth_a_symbol.clone(),
-            )?;
-            let depth_b_ft = Self::require_channel_state_symbol_scalar(
-                request,
-                node_class,
-                depth_b_symbol.clone(),
-            )?;
-            let width_a_ft = Self::require_channel_state_symbol_scalar(
-                request,
-                node_class,
-                width_a_symbol.clone(),
-            )?;
-            let width_b_ft = Self::require_channel_state_symbol_scalar(
-                request,
-                node_class,
-                width_b_symbol.clone(),
-            )?;
-
-            Self::require_channel_control_range(node_class, x_symbol, x_ft, Some(0.0), None)?;
-            Self::require_channel_control_range(node_class, slope_symbol, slope, Some(0.0), None)?;
-            Self::require_channel_control_range(
-                node_class,
-                depth_a_symbol,
-                depth_a_ft,
-                Some(0.0),
-                None,
-            )?;
-            Self::require_channel_control_range(
-                node_class,
-                depth_b_symbol,
-                depth_b_ft,
-                Some(0.0),
-                None,
-            )?;
-            Self::require_channel_control_range(
-                node_class,
-                width_a_symbol,
-                width_a_ft,
-                Some(WS10_ZERO_THRESHOLD),
-                None,
-            )?;
-            Self::require_channel_control_range(
-                node_class,
-                width_b_symbol,
-                width_b_ft,
-                Some(WS10_ZERO_THRESHOLD),
-                None,
-            )?;
-
-            profile.x_points_ft.push(x_ft);
-            profile.slopes.push(slope.max(WS18_MIN_CHANNEL_SLOPE));
-            profile.depth_a_points_ft.push(depth_a_ft);
-            profile.depth_b_points_ft.push(depth_b_ft);
-            profile.width_a_points_ft.push(width_a_ft);
-            profile.width_b_points_ft.push(width_b_ft);
-        }
-
-        Ok(profile)
-    }
-
     fn ws20_effective_length(
         node_class: Ws10NodeClass,
         profile: &Ws20ChannelProfile,
@@ -258,18 +158,6 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         Ok(state)
-    }
-
-    fn ws20_channel_chnk(
-        request: &WatershedKernelRequest<'_>,
-        node_class: Ws10NodeClass,
-    ) -> Result<f64, Ws10GuardError> {
-        let node_id = request.node_id;
-        let chnk_symbol = BoundarySymbol::from(format!("ws10_channel_{node_id}_chnk"));
-        let chnk =
-            Self::require_channel_state_symbol_scalar(request, node_class, chnk_symbol.clone())?;
-        Self::require_channel_control_range(node_class, chnk_symbol, chnk, Some(0.0), None)?;
-        Ok(chnk)
     }
 
     #[allow(clippy::similar_names)]
@@ -1094,57 +982,6 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         Ok(outgoing_class_mass_kg)
-    }
-
-    #[allow(
-        clippy::too_many_arguments,
-        clippy::many_single_char_names,
-        clippy::similar_names
-    )]
-    fn ws20_route_case12_segment_family(
-        request: &WatershedKernelRequest<'_>,
-        node_class: Ws10NodeClass,
-        ws21_case34_enabled: bool,
-        event_duration: f64,
-        qpo: f64,
-        roughness: f64,
-        sediment_controls: Ws15ChannelSedimentControls,
-        nslpts: usize,
-        peak_partition: Ws20IncomingPeakPartition,
-        top_class_mass_kg: &[f64],
-        lateral_class_mass_kg: &[f64],
-        class_diameters_m: &[f64],
-        class_numbers: &[usize],
-    ) -> Result<Ws20SegmentRoutingResult, Ws10GuardError> {
-        let profile = Self::ws20_load_channel_profile(request, node_class, nslpts)?;
-        let chnk = Self::ws20_channel_chnk(request, node_class)?;
-        let crfrac = if ws21_case34_enabled {
-            Some(Self::ws22_require_crfrac_vector(
-                request,
-                node_class,
-                class_numbers,
-            )?)
-        } else {
-            None
-        };
-        Self::ws20_route_case12_segment_family_core(
-            request.node_id,
-            node_class,
-            ws21_case34_enabled,
-            event_duration,
-            qpo,
-            roughness,
-            sediment_controls,
-            nslpts,
-            peak_partition,
-            top_class_mass_kg,
-            lateral_class_mass_kg,
-            class_diameters_m,
-            class_numbers,
-            profile,
-            chnk,
-            crfrac.as_deref(),
-        )
     }
 
     #[allow(

@@ -1,5 +1,6 @@
 use crate::runtime_inputs::{
-    derive_ws12_impoundment_coefficients, derive_ws12_outflow_function_families,
+    WatershedRuntimeInputError, derive_ws12_impoundment_coefficients,
+    derive_ws12_outflow_function_families,
 };
 use openwepp_topology::TopologyNodeKey;
 
@@ -1368,11 +1369,10 @@ impl Ws10ChannelImpoundmentKernel {
         let node_id = usize::try_from(control.node_id)
             .map_err(|_| Self::domain_violation(node_class, "impoundment_node_id", 0.0))?;
         let coefficients =
-            derive_ws12_impoundment_coefficients(node_id, &control.source_record).map_err(|_| {
-                Self::domain_violation(node_class, "ws12_impoundment_projection", 0.0)
-            })?;
+            derive_ws12_impoundment_coefficients(node_id, &control.source_record)
+                .map_err(|error| Self::runtime_input_guard_error(node_class, &error))?;
         let families = derive_ws12_outflow_function_families(node_id, &control.source_record)
-            .map_err(|_| Self::domain_violation(node_class, "ws12_function_projection", 0.0))?;
+            .map_err(|error| Self::runtime_input_guard_error(node_class, &error))?;
 
         let mut family_a = [0.0_f64; 15];
         let mut family_b = [0.0_f64; 15];
@@ -1413,5 +1413,19 @@ impl Ws10ChannelImpoundmentKernel {
             a1: a1.ok_or_else(|| Self::missing_required(node_class, "a1"))?,
             a2: a2.ok_or_else(|| Self::missing_required(node_class, "a2"))?,
         })
+    }
+
+    fn runtime_input_guard_error(
+        node_class: Ws10NodeClass,
+        error: &WatershedRuntimeInputError,
+    ) -> Ws10GuardError {
+        match error {
+            WatershedRuntimeInputError::ImpoundmentSymbolNonFinite { value, .. } => {
+                Self::non_finite(node_class, "runtime_input", *value)
+            }
+            WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain { value, .. } => {
+                Self::domain_violation(node_class, "runtime_input", *value)
+            }
+        }
     }
 }

@@ -1,12 +1,17 @@
 # Worker Handoff
 
-Status: `queued`
+Status: `executed`
 
-Evidence mode: `not-run`
+Evidence mode: `static + ran`
 
-First actionable item: delete the watershed-specific old compatibility runtime
-and obsolete old-surface tests now that W4DC01 moved production public routing
-onto typed frame-native dispatch.
+W5 deletion work is implemented. No handoff blocker remains in current scope.
 
-If execution holds, name the boundary, cite evidence, and route to a
-defect-shaped follow-on rather than another diagnostic relay.
+If a future package touches watershed physics, start from the typed direct path:
+
+- `WatershedNetworkFrame`
+- `execute_watershed_dispatch_with_frame`
+- `Ws10ChannelImpoundmentKernel::run_direct_watershed_node`
+- `publish_typed_routing_report`
+
+Do not resurrect the deleted request/writeback watershed runtime. Generic or
+hillslope writeback infrastructure is outside W5 and remains separately owned.

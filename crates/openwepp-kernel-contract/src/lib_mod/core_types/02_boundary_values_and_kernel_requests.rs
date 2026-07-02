@@ -1108,47 +1108,7 @@ impl<'a> HillslopeKernelRequest<'a> {
     }
 }
 
-/// Watershed kernel invocation request.
-///
-/// State/flux surfaces are borrowed from orchestrator-owned writeback maps to
-/// reduce scheduler hot-path allocation pressure.
-#[derive(Debug, Clone, PartialEq)]
-pub struct WatershedKernelRequest<'a> {
-    pub node_kind: &'a str,
-    pub node_id: u32,
-    pub dependency_nodes: Vec<String>,
-    pub contributor_hillslopes: &'a [u32],
-    pub state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
-    pub flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
-}
-
-impl<'a> WatershedKernelRequest<'a> {
-    #[must_use]
-    pub fn new(
-        node_kind: &'a str,
-        node_id: u32,
-        dependency_nodes: Vec<String>,
-        contributor_hillslopes: &'a [u32],
-        state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
-        flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
-    ) -> Self {
-        Self {
-            node_kind,
-            node_id,
-            dependency_nodes,
-            contributor_hillslopes,
-            state_surface,
-            flux_surface,
-        }
-    }
-}
-
 /// Hillslope kernel trait boundary.
 pub trait HillslopeKernel {
     fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse;
-}
-
-/// Watershed kernel trait boundary.
-pub trait WatershedKernel {
-    fn run_watershed_node(&mut self, request: &WatershedKernelRequest<'_>) -> KernelRunResponse;
 }

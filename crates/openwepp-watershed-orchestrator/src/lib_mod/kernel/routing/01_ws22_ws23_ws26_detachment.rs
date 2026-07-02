@@ -66,37 +66,6 @@ impl Ws10ChannelImpoundmentKernel {
         }
     }
 
-    fn ws22_require_crfrac_vector(
-        request: &WatershedKernelRequest<'_>,
-        node_class: Ws10NodeClass,
-        class_numbers: &[usize],
-    ) -> Result<Vec<f64>, Ws10GuardError> {
-        let mut crfrac = Vec::with_capacity(class_numbers.len());
-        for class_number in class_numbers {
-            let symbol = BoundarySymbol::from(format!(
-                "ws10_channel_{}_crfrac_{:04}",
-                request.node_id, class_number
-            ));
-            let value =
-                Self::require_channel_state_symbol_scalar(request, node_class, symbol.clone())?;
-            Self::require_channel_control_range(node_class, symbol, value, Some(0.0), Some(1.0))?;
-            crfrac.push(value);
-        }
-
-        let sum = crfrac.iter().copied().sum::<f64>();
-        if !sum.is_finite() || sum <= WS10_ZERO_THRESHOLD {
-            return Err(Self::domain_violation(
-                node_class,
-                BoundarySymbol::from(format!("ws10_channel_{}_crfrac_sum", request.node_id)),
-                sum,
-            ));
-        }
-        for value in &mut crfrac {
-            *value /= sum;
-        }
-        Ok(crfrac)
-    }
-
     fn ws22_table_column2_to_column1(
         col1: &[f64],
         col2: &[f64],

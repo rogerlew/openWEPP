@@ -1,0 +1,16 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+     Running tests/integration/wshedw5_typed_watershed_runtime_contract.rs (target/debug/deps/wshedw5_typed_watershed_runtime_contract-fa7e2803b939bd15)
+
+running 8 tests
+test typed_frame_dispatch_fails_closed_on_non_finite_hillslope_payload ... ok
+test typed_frame_dispatch_fails_closed_on_impoundment_domain_violation ... ok
+test typed_frame_active_impoundment_matches_drop_spillway_min_controller_composition ... ok
+test typed_frame_dispatch_records_and_publishes_direct_routed_state ... ok
+test typed_frame_impoundment_projection_preserves_domain_guard_class ... ok
+test typed_frame_impoundment_projection_preserves_non_finite_guard_class ... ok
+test typed_frame_channel_transport_capacity_responds_to_particle_diameter ... ok
+test typed_frame_dispatch_executes_ws11_ipeak_branches_with_closure ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT_CODE=0

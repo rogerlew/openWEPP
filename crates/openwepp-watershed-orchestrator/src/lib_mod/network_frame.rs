@@ -8,24 +8,11 @@ use openwepp_input_contract::parsers::{
     watershed_channel::{ChannelRatingCurve, WatershedChannelFile},
     watershed_impoundment::{ImpoundmentRecord, WatershedImpoundmentFile},
 };
-use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, WatershedChannelFluxField, WatershedChannelStateField,
-    WatershedImpoundmentFluxField, WatershedImpoundmentStateField, WatershedProductionFluxSymbol,
-    WatershedProductionStateSymbol,
-};
 use openwepp_topology::{TopologyGraph, TopologyNodeKind};
 
-use crate::runtime_inputs::{
-    WatershedRuntimeInputError, build_watershed_runtime_surface_from_chaninp,
-    seed_watershed_runtime_surface_from_slope_channel_profile,
-    seed_watershed_runtime_surface_from_watershed_channel,
-    seed_watershed_runtime_surface_from_watershed_impoundment,
-};
+use crate::runtime_inputs::WatershedRuntimeInputError;
 
-use super::types::{
-    DispatchStep, WatershedFrameExecutionReport, WatershedKernelExecutionReport,
-    WatershedWritebackSurface,
-};
+use super::types::{DispatchStep, WatershedFrameExecutionReport};
 
 const METERS_TO_FEET: f64 = 3.281;
 
@@ -80,10 +67,9 @@ impl fmt::Display for WatershedNetworkFrameError {
                 formatter,
                 "WSHEDFRAME-E-005 missing slope profile for channel {channel_id}; profile_count={slope_profile_count}"
             ),
-            Self::RuntimeInput(source) => write!(
-                formatter,
-                "WSHEDFRAME-E-006 compatibility projection failed: {source}"
-            ),
+            Self::RuntimeInput(source) => {
+                write!(formatter, "WSHEDFRAME-E-006 runtime input failed: {source}")
+            }
             Self::MissingRoutedChannelState { node_id } => write!(
                 formatter,
                 "WSHEDFRAME-E-007 missing routed channel state for node {node_id}"
@@ -183,8 +169,8 @@ pub struct WatershedChannelControlRecord {
 }
 
 /// Typed impoundment control record. The full parsed record is retained so the
-/// compatibility projection can preserve existing WS12 coefficient derivation
-/// until typed impoundment kernel execution is completed.
+/// direct WS12 kernel can derive the same coefficient families from parsed
+/// impoundment input.
 #[derive(Debug, Clone, PartialEq)]
 pub struct WatershedImpoundmentControlRecord {
     pub node_id: u32,
@@ -364,8 +350,7 @@ impl Default for WatershedPublicationFrame {
 }
 
 /// Typed watershed routing frame. Parsed inputs are retained as private source
-/// records solely for the explicit compatibility projection while W4 migrates
-/// the public runner away from direct symbol-map construction.
+/// records for frame-native routing and publication.
 #[derive(Debug, Clone, PartialEq)]
 pub struct WatershedNetworkFrame {
     topology: TopologyGraph,
@@ -434,56 +419,6 @@ impl WatershedNetworkFrame {
             .insert(contribution.hillslope_id, contribution);
     }
 
-    /// Explicit compatibility projection to the old watershed writeback
-    /// surface. This method is a named W4 migration edge, not destination
-    /// production routing architecture.
-    ///
-    /// # Errors
-    ///
-    /// Returns `WatershedNetworkFrameError` when the legacy projection helpers
-    /// reject parsed input or projection values.
-    pub fn compatibility_writeback_surface(
-        &self,
-    ) -> Result<WatershedWritebackSurface, WatershedNetworkFrameError> {
-        let mut surface = if let Some(chaninp) = &self.chaninp_source {
-            build_watershed_runtime_surface_from_chaninp(chaninp)?
-        } else {
-            self.default_compatibility_surface()
-        };
-
-        seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &self.channel_source)?;
-        seed_watershed_runtime_surface_from_slope_channel_profile(
-            &mut surface,
-            &self.channel_source,
-            &self.slope_source,
-        )?;
-        seed_watershed_runtime_surface_from_watershed_impoundment(
-            &mut surface,
-            &self.impoundment_source,
-        )?;
-
-        for contribution in self.hillslope_contributions.values() {
-            insert_hillslope_contribution(&mut surface, contribution);
-        }
-
-        Ok(surface)
-    }
-
-    /// Harvest current compatibility kernel results into typed routed-state and
-    /// publication-frame records.
-    #[must_use]
-    pub fn harvest_compatibility_routing_report(
-        &mut self,
-        report: &WatershedKernelExecutionReport,
-    ) -> WatershedPublicationFrame {
-        let dispatch_ids = collect_compatibility_dispatch_ids(report);
-        self.harvest_compatibility_channel_states(report, &dispatch_ids.channel_ids);
-        self.harvest_compatibility_impoundment_states(report, &dispatch_ids.impoundment_ids);
-        let publication_frame = self.build_publication_frame(report, &dispatch_ids);
-        self.publication_frame = Some(publication_frame.clone());
-        publication_frame
-    }
-
     pub(crate) fn record_routed_channel_state(&mut self, state: RoutedChannelState) {
         self.routed_channels.insert(state.node_id, state);
     }
@@ -508,188 +443,10 @@ impl WatershedNetworkFrame {
         Ok(publication_frame)
     }
 
-    fn harvest_compatibility_channel_states(
-        &mut self,
-        report: &WatershedKernelExecutionReport,
-        channel_ids: &BTreeSet<u32>,
-    ) {
-        self.routed_channels.clear();
-        for node_id in channel_ids {
-            self.routed_channels.insert(
-                *node_id,
-                RoutedChannelState {
-                    node_id: *node_id,
-                    runoff_volume_m3: compatibility_flux_scalar(
-                        &report.writeback_surface,
-                        WatershedProductionFluxSymbol::ChannelNode {
-                            node_id: *node_id,
-                            field: WatershedChannelFluxField::Roff,
-                        },
-                    ),
-                    peak_discharge_m3_s: compatibility_state_scalar(
-                        &report.writeback_surface,
-                        WatershedProductionStateSymbol::ChannelNode {
-                            node_id: *node_id,
-                            field: WatershedChannelStateField::Qpo,
-                        },
-                    ),
-                    duration_seconds: compatibility_state_scalar(
-                        &report.writeback_surface,
-                        WatershedProductionStateSymbol::ChannelNode {
-                            node_id: *node_id,
-                            field: WatershedChannelStateField::Durrof,
-                        },
-                    ),
-                    sediment_yield_kg: compatibility_state_scalar(
-                        &report.writeback_surface,
-                        BoundarySymbol::from(format!("ws10_channel_{node_id}_qsed")),
-                    ),
-                    wave_state: None,
-                    sediment_state: RoutedChannelSedimentState {
-                        qsed_kg_s: compatibility_state_scalar(
-                            &report.writeback_surface,
-                            BoundarySymbol::from(format!("ws10_channel_{node_id}_qsed")),
-                        ),
-                        transport_capacity_kg_s: compatibility_state_scalar(
-                            &report.writeback_surface,
-                            BoundarySymbol::from(format!("ws10_channel_{node_id}_tc")),
-                        ),
-                        particle_flow_fraction: Vec::new(),
-                        particle_diameter_m: Vec::new(),
-                        ws20_case1_segments: compatibility_count_scalar(
-                            &report.writeback_surface,
-                            BoundarySymbol::from(format!(
-                                "ws10_channel_{node_id}_ws20_case1_segment_count"
-                            )),
-                        ),
-                        ws20_case2_segments: compatibility_count_scalar(
-                            &report.writeback_surface,
-                            BoundarySymbol::from(format!(
-                                "ws10_channel_{node_id}_ws20_case2_segment_count"
-                            )),
-                        ),
-                        ws24_case2_detach_segments: compatibility_count_scalar(
-                            &report.writeback_surface,
-                            BoundarySymbol::from(format!(
-                                "ws10_channel_{node_id}_ws24_case2_detach_segment_count"
-                            )),
-                        ),
-                        ws21_case3_segments: compatibility_count_scalar(
-                            &report.writeback_surface,
-                            BoundarySymbol::from(format!(
-                                "ws10_channel_{node_id}_ws21_case3_segment_count"
-                            )),
-                        ),
-                        ws21_case4_segments: compatibility_count_scalar(
-                            &report.writeback_surface,
-                            BoundarySymbol::from(format!(
-                                "ws10_channel_{node_id}_ws21_case4_segment_count"
-                            )),
-                        ),
-                        ws21_enddet_segments: compatibility_count_scalar(
-                            &report.writeback_surface,
-                            BoundarySymbol::from(format!(
-                                "ws10_channel_{node_id}_ws21_enddet_segment_count"
-                            )),
-                        ),
-                    },
-                },
-            );
-        }
-    }
-
-    fn harvest_compatibility_impoundment_states(
-        &mut self,
-        report: &WatershedKernelExecutionReport,
-        impoundment_ids: &BTreeSet<u32>,
-    ) {
-        self.routed_impoundments.clear();
-        for node_id in impoundment_ids {
-            self.routed_impoundments.insert(
-                *node_id,
-                RoutedImpoundmentState {
-                    node_id: *node_id,
-                    outflow_volume_m3: compatibility_flux_scalar(
-                        &report.writeback_surface,
-                        WatershedProductionFluxSymbol::ImpoundmentNode {
-                            node_id: *node_id,
-                            field: WatershedImpoundmentFluxField::OutflowVolume,
-                        },
-                    ),
-                    outflow_rate_m3_s: compatibility_state_scalar(
-                        &report.writeback_surface,
-                        WatershedProductionStateSymbol::ImpoundmentNode {
-                            node_id: *node_id,
-                            field: WatershedImpoundmentStateField::Qo,
-                        },
-                    ),
-                    duration_seconds: compatibility_state_scalar(
-                        &report.writeback_surface,
-                        WatershedProductionStateSymbol::ImpoundmentNode {
-                            node_id: *node_id,
-                            field: WatershedImpoundmentStateField::Durout,
-                        },
-                    ),
-                    hnext_m: compatibility_state_scalar(
-                        &report.writeback_surface,
-                        WatershedProductionStateSymbol::ImpoundmentNode {
-                            node_id: *node_id,
-                            field: WatershedImpoundmentStateField::Hnext,
-                        },
-                    ),
-                },
-            );
-        }
-    }
-
-    fn build_publication_frame(
-        &self,
-        report: &WatershedKernelExecutionReport,
-        dispatch_ids: &CompatibilityDispatchIds,
-    ) -> WatershedPublicationFrame {
-        let runoff_volume_m3 = self
-            .routed_channels
-            .values()
-            .map(|state| state.runoff_volume_m3)
-            .sum::<f64>();
-
-        WatershedPublicationFrame {
-            sim_day_index: i32::try_from(report.dispatch_report.steps.len().max(1))
-                .unwrap_or(i32::MAX),
-            element_id: first_i32_or_default(&dispatch_ids.channel_ids, 1),
-            channel_id: first_i32_or_default(&dispatch_ids.channel_ids, 1),
-            runoff_volume_m3,
-            peak_discharge_m3_s: first_channel_peak(
-                &self.routed_channels,
-                &dispatch_ids.channel_ids,
-            ),
-            sediment_yield_kg: self
-                .routed_channels
-                .values()
-                .map(|state| state.sediment_yield_kg)
-                .sum::<f64>(),
-            particulate_pollutant_kg: dispatch_ids
-                .contributor_hillslopes
-                .iter()
-                .filter_map(|hillslope_id| self.hillslope_contributions.get(hillslope_id))
-                .map(|contribution| contribution.total_detachment_kg)
-                .sum::<f64>(),
-            channel_outflow_m3: self
-                .routed_impoundments
-                .values()
-                .map(|state| state.outflow_volume_m3)
-                .sum::<f64>(),
-            channel_baseflow_m3: self.routing_globals.cbase,
-            runoff_mm: runoff_volume_m3 * 1_000.0,
-            area_m2: 1.0,
-            ..WatershedPublicationFrame::default()
-        }
-    }
-
     fn build_typed_publication_frame(
         &self,
         report: &WatershedFrameExecutionReport,
-        dispatch_ids: &CompatibilityDispatchIds,
+        dispatch_ids: &TypedDispatchIds,
     ) -> Result<WatershedPublicationFrame, WatershedNetworkFrameError> {
         for node_id in &dispatch_ids.channel_ids {
             if !self.routed_channels.contains_key(node_id) {
@@ -747,56 +504,15 @@ impl WatershedNetworkFrame {
             ..WatershedPublicationFrame::default()
         })
     }
-
-    fn default_compatibility_surface(&self) -> WatershedWritebackSurface {
-        let mut state_surface = BTreeMap::new();
-        state_surface.insert(
-            BoundarySymbol::from(WatershedProductionStateSymbol::Ipeak),
-            BoundaryValue::scalar(f64::from(self.routing_globals.ipeak)),
-        );
-        state_surface.insert(
-            BoundarySymbol::from("nchan"),
-            BoundaryValue::scalar(f64::from(self.routing_globals.nchan)),
-        );
-        state_surface.insert(
-            BoundarySymbol::from("dtchr"),
-            BoundaryValue::scalar(self.routing_globals.dtchr_seconds),
-        );
-        state_surface.insert(
-            BoundarySymbol::from("ntchr"),
-            BoundaryValue::scalar(self.routing_globals.ntchr),
-        );
-        state_surface.insert(
-            BoundarySymbol::from("nchnum"),
-            BoundaryValue::scalar(self.routing_globals.nchnum),
-        );
-
-        let mut flux_surface = BTreeMap::new();
-        flux_surface.insert(
-            BoundarySymbol::from("cbase"),
-            BoundaryValue::scalar(self.routing_globals.cbase),
-        );
-
-        WatershedWritebackSurface {
-            state_surface,
-            flux_surface,
-        }
-    }
 }
 
-struct CompatibilityDispatchIds {
+struct TypedDispatchIds {
     channel_ids: BTreeSet<u32>,
     impoundment_ids: BTreeSet<u32>,
     contributor_hillslopes: BTreeSet<u32>,
 }
 
-fn collect_compatibility_dispatch_ids(
-    report: &WatershedKernelExecutionReport,
-) -> CompatibilityDispatchIds {
-    collect_dispatch_ids_from_steps(&report.dispatch_report.steps)
-}
-
-fn collect_dispatch_ids_from_steps(steps: &[DispatchStep]) -> CompatibilityDispatchIds {
+fn collect_dispatch_ids_from_steps(steps: &[DispatchStep]) -> TypedDispatchIds {
     let mut channel_ids = BTreeSet::new();
     let mut impoundment_ids = BTreeSet::new();
     let mut contributor_hillslopes = BTreeSet::new();
@@ -814,7 +530,7 @@ fn collect_dispatch_ids_from_steps(steps: &[DispatchStep]) -> CompatibilityDispa
         contributor_hillslopes.extend(step.contributor_hillslopes.iter().copied());
     }
 
-    CompatibilityDispatchIds {
+    TypedDispatchIds {
         channel_ids,
         impoundment_ids,
         contributor_hillslopes,
@@ -990,128 +706,4 @@ fn build_impoundment_controls(
     }
 
     Ok(controls)
-}
-
-fn insert_hillslope_contribution(
-    surface: &mut WatershedWritebackSurface,
-    contribution: &HillslopeContribution,
-) {
-    let hillslope_id = contribution.hillslope_id;
-    surface.state_surface.insert(
-        BoundarySymbol::from(WatershedProductionStateSymbol::HillslopeContributorPeak {
-            hillslope_id,
-        }),
-        BoundaryValue::scalar(contribution.peak_runoff_m3_s),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from(
-            WatershedProductionStateSymbol::HillslopeContributorDuration { hillslope_id },
-        ),
-        BoundaryValue::scalar(contribution.duration_seconds),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from(
-            WatershedProductionStateSymbol::HillslopeContributorTotalDetachmentKg { hillslope_id },
-        ),
-        BoundaryValue::scalar(contribution.total_detachment_kg),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from(
-            WatershedProductionStateSymbol::HillslopeContributorTotalDepositionKg { hillslope_id },
-        ),
-        BoundaryValue::scalar(contribution.total_deposition_kg),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from(
-            WatershedProductionStateSymbol::HillslopeContributorParticleClassCount { hillslope_id },
-        ),
-        BoundaryValue::scalar(match u32::try_from(contribution.particle_class_count()) {
-            Ok(value) => f64::from(value),
-            Err(_) => f64::from(u32::MAX),
-        }),
-    );
-
-    for class_index in 1..=contribution.particle_class_count() {
-        if let Some(value) = contribution
-            .sediment_concentration_kg_m3
-            .get(class_index - 1)
-            .copied()
-        {
-            surface.state_surface.insert(
-                BoundarySymbol::from(
-                    WatershedProductionStateSymbol::HillslopeContributorSedimentConcentrationKgM3 {
-                        hillslope_id,
-                        class_index,
-                    },
-                ),
-                BoundaryValue::scalar(value),
-            );
-        }
-        if let Some(value) = contribution
-            .particle_diameter_m
-            .get(class_index - 1)
-            .copied()
-        {
-            surface.state_surface.insert(
-                BoundarySymbol::from(
-                    WatershedProductionStateSymbol::HillslopeContributorParticleDiameterMeters {
-                        hillslope_id,
-                        class_index,
-                    },
-                ),
-                BoundaryValue::scalar(value),
-            );
-        }
-        if let Some(value) = contribution
-            .particle_flow_fraction
-            .get(class_index - 1)
-            .copied()
-        {
-            surface.state_surface.insert(
-                BoundarySymbol::from(
-                    WatershedProductionStateSymbol::HillslopeContributorParticleFlowFraction {
-                        hillslope_id,
-                        class_index,
-                    },
-                ),
-                BoundaryValue::scalar(value),
-            );
-        }
-    }
-}
-
-fn compatibility_state_scalar<T>(surface: &WatershedWritebackSurface, symbol: T) -> f64
-where
-    T: Into<BoundarySymbol>,
-{
-    surface
-        .state_surface
-        .get(&symbol.into())
-        .map_or(0.0, |value| value.as_f64())
-}
-
-fn compatibility_flux_scalar<T>(surface: &WatershedWritebackSurface, symbol: T) -> f64
-where
-    T: Into<BoundarySymbol>,
-{
-    surface
-        .flux_surface
-        .get(&symbol.into())
-        .map_or(0.0, |value| value.as_f64())
-}
-
-fn compatibility_count_scalar<T>(surface: &WatershedWritebackSurface, symbol: T) -> u32
-where
-    T: Into<BoundarySymbol>,
-{
-    let value = compatibility_state_scalar(surface, symbol);
-    if !value.is_finite() || value <= 0.0 {
-        return 0;
-    }
-    let rounded = value.round();
-    if rounded > f64::from(u32::MAX) {
-        return u32::MAX;
-    }
-    let text = format!("{rounded:.0}");
-    text.parse::<u32>().unwrap_or(u32::MAX)
 }

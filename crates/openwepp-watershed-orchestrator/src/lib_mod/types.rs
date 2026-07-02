@@ -1,11 +1,6 @@
-use std::collections::BTreeMap;
 use std::error::Error;
 use std::fmt;
 
-use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, KernelWritebackApplyResult, WritebackDecisionOutcome,
-    WritebackError,
-};
 use openwepp_sim_contract::status::{SimulationStatus, StatusClassification, StatusError};
 use openwepp_topology::{TopologyNodeKey, TopologyValidationError};
 
@@ -87,31 +82,6 @@ impl WatershedDispatchReport {
     }
 }
 
-/// Mutable state/flux maps owned by the watershed orchestrator.
-#[derive(Debug, Clone, Default, PartialEq)]
-pub struct WatershedWritebackSurface {
-    pub state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
-    pub flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
-}
-
-/// Per-step watershed kernel/writeback execution evidence.
-#[derive(Debug, Clone, PartialEq)]
-pub struct WatershedKernelStepReport {
-    pub step: DispatchStep,
-    pub kernel_status: SimulationStatus,
-    pub decision_outcome: WritebackDecisionOutcome,
-    pub decision_status: SimulationStatus,
-    pub apply_result: Option<KernelWritebackApplyResult>,
-}
-
-/// Kernel-integrated watershed execution report.
-#[derive(Debug, Clone, PartialEq)]
-pub struct WatershedKernelExecutionReport {
-    pub dispatch_report: WatershedDispatchReport,
-    pub step_reports: Vec<WatershedKernelStepReport>,
-    pub writeback_surface: WatershedWritebackSurface,
-}
-
 /// Per-step frame-native watershed execution evidence.
 #[derive(Debug, Clone, PartialEq)]
 pub struct WatershedFrameStepReport {
@@ -132,7 +102,6 @@ pub struct WatershedFrameExecutionReport {
 pub enum WatershedDispatchError {
     Status(StatusError),
     TopologyValidation(TopologyValidationError),
-    Writeback(WritebackError),
 }
 
 impl fmt::Display for WatershedDispatchError {
@@ -145,9 +114,6 @@ impl fmt::Display for WatershedDispatchError {
                     "failed constructing topology validation gate report: {source}"
                 )
             }
-            Self::Writeback(source) => {
-                write!(f, "failed applying watershed kernel writeback: {source}")
-            }
         }
     }
 }
@@ -157,7 +123,6 @@ impl Error for WatershedDispatchError {
         match self {
             Self::Status(source) => Some(source),
             Self::TopologyValidation(source) => Some(source),
-            Self::Writeback(source) => Some(source),
         }
     }
 }
@@ -171,11 +136,5 @@ impl From<StatusError> for WatershedDispatchError {
 impl From<TopologyValidationError> for WatershedDispatchError {
     fn from(value: TopologyValidationError) -> Self {
         Self::TopologyValidation(value)
-    }
-}
-
-impl From<WritebackError> for WatershedDispatchError {
-    fn from(value: WritebackError) -> Self {
-        Self::Writeback(value)
     }
 }

@@ -1,9 +1,17 @@
 # Contract Implementation Evidence
 
-Status: `queued`
+Status: `not-applicable`
 
-Evidence mode: `not-run`
+Evidence mode: `static`
 
-Record canonical `SC-*` amendments if W5 discovers semantic authority changes.
-If W5 remains behavior-preserving deletion, record `not-applicable` with static
-evidence.
+No canonical `SC-*` amendment was required. W5 is a deletion/cutover cleanup
+after W4DC01 and keeps production watershed physics on the direct typed WS10,
+WS11, WS12, WS18, and WS20 helpers.
+
+Review disposition confirmed:
+
+- no new surrogate/provisional production physics;
+- WS12 projection error taxonomy now preserves non-finite versus domain guard
+  classes;
+- stale deleted-runtime error variants were removed rather than retained as
+  public dead API.

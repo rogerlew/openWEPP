@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: `queued`
+Status: `executed`
 
 Evidence mode: `Static`
 

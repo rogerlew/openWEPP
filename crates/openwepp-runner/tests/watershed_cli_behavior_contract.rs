@@ -631,7 +631,7 @@ fn wshedw3_worker_pool_removes_stale_generated_passes_and_fails_inventory_before
 }
 
 #[test]
-fn wshedw4_public_cli_handoff_uses_typed_network_and_publication_frames() {
+fn wshedw5_public_cli_uses_typed_network_and_publication_frames() {
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let cli_source = fs::read_to_string(
         repo_root.join("crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs"),
@@ -649,6 +649,34 @@ fn wshedw4_public_cli_handoff_uses_typed_network_and_publication_frames() {
         repo_root.join("crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs"),
     )
     .expect("direct watershed kernel source should be readable");
+    let kernel_helpers_source = fs::read_to_string(
+        repo_root.join("crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs"),
+    )
+    .expect("watershed kernel helper source should be readable");
+    let kernel_diagnostics_source = fs::read_to_string(
+        repo_root.join("crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs"),
+    )
+    .expect("watershed kernel diagnostic source should be readable");
+    let kernel_validation_source = fs::read_to_string(
+        repo_root.join("crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/validation.rs"),
+    )
+    .expect("watershed kernel validation source should be readable");
+    let kernel_routing_source = fs::read_to_string(
+        repo_root.join("crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing.rs"),
+    )
+    .expect("watershed kernel routing source should be readable");
+    let types_source = fs::read_to_string(
+        repo_root.join("crates/openwepp-watershed-orchestrator/src/lib_mod/types.rs"),
+    )
+    .expect("watershed type source should be readable");
+    let kernel_core_source = fs::read_to_string(
+        repo_root.join("crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/kernel_core.rs"),
+    )
+    .expect("watershed kernel core source should be readable");
+    let runtime_inputs_source = fs::read_to_string(
+        repo_root.join("crates/openwepp-watershed-orchestrator/src/runtime_inputs.rs"),
+    )
+    .expect("watershed runtime input source should be readable");
 
     for required in [
         "WatershedNetworkFrame::from_parsed_inputs",
@@ -659,7 +687,7 @@ fn wshedw4_public_cli_handoff_uses_typed_network_and_publication_frames() {
     ] {
         assert!(
             cli_source.contains(required),
-            "public watershed CLI should contain typed W4 handoff marker {required}"
+            "public watershed CLI should contain typed watershed handoff marker {required}"
         );
     }
 
@@ -687,19 +715,18 @@ fn wshedw4_public_cli_handoff_uses_typed_network_and_publication_frames() {
         "pub struct WatershedPublicationFrame",
         "pub struct HillslopeContribution",
         "pub fn publish_typed_routing_report",
-        "compatibility_writeback_surface",
-        "named W4 migration edge",
+        "collect_dispatch_ids_from_steps",
     ] {
         assert!(
             frame_source.contains(required),
-            "typed watershed frame source should contain migration marker {required}"
+            "typed watershed frame source should contain frame-native marker {required}"
         );
     }
 
     let typed_dispatch_body = source_body(
         &dispatch_source,
         "pub fn execute_watershed_dispatch_with_frame",
-        "/// Execute topology validation gate + watershed dispatch + kernel writeback",
+        "type DependencyMap",
     );
     for forbidden in [
         "WatershedWritebackSurface",
@@ -718,6 +745,39 @@ fn wshedw4_public_cli_handoff_uses_typed_network_and_publication_frames() {
             !direct_kernel_source.contains(forbidden),
             "direct watershed kernel source should not use old surface marker {forbidden}"
         );
+    }
+
+    for (label, source) in [
+        ("frame", frame_source.as_str()),
+        ("dispatch", dispatch_source.as_str()),
+        ("types", types_source.as_str()),
+        ("kernel_core", kernel_core_source.as_str()),
+        ("kernel_helpers", kernel_helpers_source.as_str()),
+        ("kernel_diagnostics", kernel_diagnostics_source.as_str()),
+        ("kernel_validation", kernel_validation_source.as_str()),
+        ("kernel_routing", kernel_routing_source.as_str()),
+        ("kernel_direct", direct_kernel_source.as_str()),
+        ("runtime_inputs", runtime_inputs_source.as_str()),
+    ] {
+        for forbidden in [
+            "WatershedWritebackSurface",
+            "WatershedKernelExecutionReport",
+            "WatershedKernelStepReport",
+            "WatershedKernelRequest",
+            "impl WatershedKernel for Ws10ChannelImpoundmentKernel",
+            "execute_watershed_dispatch_with_kernel",
+            "execute_watershed_dispatch_with_gate_and_kernel",
+            "compatibility_writeback_surface",
+            "harvest_compatibility_routing_report",
+            "build_watershed_runtime_surface",
+            "seed_watershed_runtime_surface",
+            "WatershedClimateRuntime",
+        ] {
+            assert!(
+                !source.contains(forbidden),
+                "{label} source should not retain deleted watershed runtime marker {forbidden}"
+            );
+        }
     }
 
     for required in [
