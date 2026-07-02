@@ -13,7 +13,7 @@ Evidence class: Ran (`wc -l` on touched `.rs` files at closure).
 | `00_builders_and_authority.rs` | 4141 | 4143 | 2 |
 | `00a_snow_frost_authority_impl.rs` | 667 | 668 | 1 |
 
-The pre-existing 3000+ file (`00_builders_and_authority.rs`, 4,141 → 4,148,
-+7 for the outcome carry) keeps the WP-1 `follow-up` disposition
+The pre-existing 3000+ file (`00_builders_and_authority.rs`, 4,141 → 4,143,
++2 for the outcome carry) keeps the WP-1 `follow-up` disposition
 (mechanical-refactor split queued); `runoff.rs` shrank materially with the
 second-solve deletion. No file crossed a governance band in this package.
