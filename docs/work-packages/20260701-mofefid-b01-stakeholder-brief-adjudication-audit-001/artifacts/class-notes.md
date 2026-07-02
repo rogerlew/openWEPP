@@ -60,3 +60,65 @@ predates the 2026-05 fixes, so pre-fix semantics are triangulated from
   the write (B2's input-basis column still published; the B2 "fix" was to
   the audit definition, not the outputs — consistent with grading it
   `convention`).
+
+## openWEPP-side evidence — closure basis cluster (B2/B3/B4/B9)
+
+Sources: explorer sweep + my own verification reads of the two load-bearing
+sites (**Ran**: `storage.rs:800-845`, `projection.rs:167-204`).
+
+### The enforced identity (basis for B2/B4/B9)
+Per-(lane, day) R4B reconciliation (`direct_runtime/storage.rs:804-814`):
+
+```
+storage_reconciled = storage_initial
+  + precip_input + snow_coupling + runon_input
+  + frost_liquid_delta + et_storage_return
+  - interception - q_runoff - evapotranspiration
+  - deep_seepage - subsurface_loss
+```
+
+- **External atmospheric input = precipitation only**; irrigation absent
+  from the identity and hardcoded `0.0` at publication
+  (`01_publication.rs:301`). Snowmelt enters as the **typed signed flux**
+  `snow_coupling_m` (producer `snow_coupling_signed_s_m`); SWE is a
+  parallel reservoir reconciled inside the snow producer and published as
+  the `Snow-Water` state column. **No term is counted both as input and as
+  storage-delta** — the RM double-count is structurally absent.
+- **Guard structure (verified):** the R4B `closure_residual_m` re-evaluates
+  the same RHS minus `storage_reconciled_m` — algebraically zero; it can
+  only catch non-finite arithmetic. The **substantive** conservation
+  guards are (a) `validate_nonnegative_direct_m(storage_reconciled_m)`
+  (`storage.rs:819-822`) — a zero-input day with outputs exceeding
+  available storage fails here; (b) the projection-side **ledger-vs-state**
+  check `|Σ layers − storage_reconciled| ≤ tol` plus the frozen-layer
+  bound (`projection.rs:179-204`) — a flux ledger that doesn't move the
+  layer state fails here. This two-basis shape is exactly the class of
+  check that caught the brief's WB-05F defect on their side.
+- **Granularity:** enforced per OFE-day by construction (day×lane frames,
+  `03_executor.rs:128-136`; failures name lane/day). Dry days run the same
+  identity — no special-casing to audit (B9).
+- Hardening note (→ A01): the tautological `closure_residual_m` naming
+  invites false confidence in contract citations; the real guards are the
+  nonnegativity + ledger-vs-state pair. Not a defect.
+
+### B3 — interception storage (openWEPP side)
+- **openWEPP has no interception-storage state at all.** Interception is a
+  same-day flux (`compute_direct_canopy_interception` from cover/LAI/live
+  biomass, `00_builders_and_authority.rs:2054-2065`), subtracted as a loss
+  in R4B; throughfall feeds liquid input. The WAT `InterceptionStorage`
+  column exists in the schema but the direct producer always emits `None`
+  (`01_publication.rs:340-343`).
+- Consequence: the legacy defect (real persisted state invisible to
+  audits) **cannot occur** here — there is no hidden reservoir. The
+  *fidelity* question (legacy `pintlv`/`resint` carry across days and
+  evaporate later; openWEPP loses interception same-day) is a known
+  deferred backlog item
+  (`docs/backlog/20260512-residue-moisture-storage-full-state.md`), not a
+  closure defect.
+
+### B2 consumer note
+openWEPP's WAT still publishes the legacy `RM` column alongside `P`. Any
+downstream reader computing closure with `RM` as external input while also
+differencing `Snow-Water` inherits the legacy double-count *in their own
+audit*. Worth a one-line consumer caveat in usersum WAT documentation
+(follow-up, not a model change).
