@@ -138,6 +138,21 @@ magnitude adjudication (to Lane C).
 - 2026-07-01: scaffolded. M1 complete (INV-RUNOFFPART-031 + REF anchor, rev 19).
 - 2026-07-01: M2 complete after one redesign — WB14 hourly excess profile +
   transfer shape channel; H2637 byte-flat on all five outputs; suite 146/146.
+- 2026-07-01: M3+M4 landed (default semantics). Gates: **single-OFE
+  byte-identity PASSES** (marcell_conifer_mn + hubbardbrook_mixed_nh, all
+  five outputs, old-main binary vs DC01 binary); H2637 exit 0, closure
+  green, 34.3 s; suites 147/147 + 101/101; fmt/clippy clean. Erosion
+  decreasing-flow clamp + `erod14_qin_clamped_events` manifest counter in
+  place. **Open adjudication (M5): H2637 `runvol_pct_precip` = 46.98% —
+  moved past legacy's ~55.5% (A02 daily-lump lower bound was 62.2%).**
+  Suspected driver: on runon days the local rain is re-binned to the
+  hourly basis along with runon, lowering peak intensities vs the
+  breakpoint basis and increasing LOCAL infiltration beyond the runon
+  admission itself. Decomposition diagnostic queued (runon admitted onto
+  the unmodified breakpoint interval basis). Magnitude remains a flag —
+  legacy is not the target (ADR-0017); Lane C's envelope is the bar —
+  but the basis question is an implementation-fidelity question we owe
+  an answer.
 
 ## Surprises & Discoveries
 

@@ -197,7 +197,18 @@ pub use projection::{
     DirectHydrologyProjectionState,
 };
 #[cfg(test)]
-pub(crate) use runoff::mofefid_a02_augment_hyetograph_with_uniform_depth;
+pub(crate) fn dc01_test_hourly_supply_basis(
+    hyetograph: &[DirectWb14HyetographInterval],
+    runon_hourly_supply_m: &[f64; 24],
+) -> Vec<DirectWb14HyetographInterval> {
+    runoff::dc01_hourly_supply_basis(hyetograph, runon_hourly_supply_m)
+}
+#[cfg(test)]
+pub(crate) fn dc01_test_wb14_with_profile(
+    inputs: &DirectWb14InfiltrationProducerInputs,
+) -> Result<runoff::DirectWb14OutcomeWithProfile, DirectRuntimeError> {
+    runoff::compute_wb14_infiltration_depression_with_profile(inputs)
+}
 pub use runoff::{
     DirectCanopyInterceptionInputs, DirectCanopyInterceptionState,
     DirectInfiltrationDepressionDownstreamOperands, DirectInfiltrationDepressionInputs,
