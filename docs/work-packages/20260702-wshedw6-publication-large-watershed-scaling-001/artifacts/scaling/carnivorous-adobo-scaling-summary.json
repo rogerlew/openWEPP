@@ -1,0 +1,251 @@
+{
+  "schema": "openwepp-w6-carnivorous-adobo-scaling-v2",
+  "status": "PASS",
+  "fixture": "tests/fixtures/watershed/carnivorous-adobo",
+  "run_dir": "tests/fixtures/watershed/carnivorous-adobo/runs",
+  "sidecar_policy": "compat",
+  "legacy_sidecar_discovery": false,
+  "jobs_counts": [
+    1,
+    32
+  ],
+  "runs": [
+    {
+      "label": "carnivorous-jobs1-repo-full",
+      "jobs": 1,
+      "stage_root": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs1-full",
+      "output_dir": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs1-full/out",
+      "interchange_dir": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs1-full/out/interchange",
+      "command": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-watershed",
+        "--run-dir",
+        "/home/workdir/openWEPP/tests/fixtures/watershed/carnivorous-adobo/runs",
+        "--run-file",
+        "case.run",
+        "--output-dir",
+        "/tmp/wshedw6_carnivorous_scaling_rerun/jobs1-full/out",
+        "--policy",
+        "compat",
+        "--jobs",
+        "1",
+        "--hillslope-binary",
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill"
+      ],
+      "exit_code": 0,
+      "time_v": {
+        "user_seconds": 16.9,
+        "system_seconds": 0.49,
+        "cpu_percent": "99%",
+        "wall_time_text": "0:17.48",
+        "max_rss_kib": 18060,
+        "time_exit_status": 0
+      },
+      "supervisor_timing": {
+        "legacy_sidecar_discovery": false,
+        "output_publication_elapsed_ms": 80,
+        "pass_inventory_elapsed_ms": 2,
+        "routing_input_elapsed_ms": 5,
+        "run_name": "carnivorous-adobo-w6-scaling",
+        "schema": "openwepp-watershed-supervisor-timing-v1",
+        "sidecar_policy": "Compat",
+        "total_elapsed_ms": 17480,
+        "watershed_dispatch_elapsed_ms": 0,
+        "worker_pool": {
+          "completed_jobs": 32,
+          "elapsed_ms": 17384,
+          "launched_jobs": 32,
+          "requested_jobs": 1,
+          "skipped_jobs": 0,
+          "worker_count": 1
+        }
+      },
+      "job_timing_distribution": {
+        "count": 32,
+        "min_ms": 471,
+        "median_ms": 528.5,
+        "mean_ms": 542.25,
+        "max_ms": 713
+      }
+    },
+    {
+      "label": "carnivorous-jobs32-repo-full",
+      "jobs": 32,
+      "stage_root": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs32-full",
+      "output_dir": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs32-full/out",
+      "interchange_dir": "/tmp/wshedw6_carnivorous_scaling_rerun/jobs32-full/out/interchange",
+      "command": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-watershed",
+        "--run-dir",
+        "/home/workdir/openWEPP/tests/fixtures/watershed/carnivorous-adobo/runs",
+        "--run-file",
+        "case.run",
+        "--output-dir",
+        "/tmp/wshedw6_carnivorous_scaling_rerun/jobs32-full/out",
+        "--policy",
+        "compat",
+        "--jobs",
+        "32",
+        "--hillslope-binary",
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill"
+      ],
+      "exit_code": 0,
+      "time_v": {
+        "user_seconds": 22.35,
+        "system_seconds": 0.52,
+        "cpu_percent": "2308%",
+        "wall_time_text": "0:00.99",
+        "max_rss_kib": 18048,
+        "time_exit_status": 0
+      },
+      "supervisor_timing": {
+        "legacy_sidecar_discovery": false,
+        "output_publication_elapsed_ms": 72,
+        "pass_inventory_elapsed_ms": 2,
+        "routing_input_elapsed_ms": 4,
+        "run_name": "carnivorous-adobo-w6-scaling",
+        "schema": "openwepp-watershed-supervisor-timing-v1",
+        "sidecar_policy": "Compat",
+        "total_elapsed_ms": 987,
+        "watershed_dispatch_elapsed_ms": 0,
+        "worker_pool": {
+          "completed_jobs": 32,
+          "elapsed_ms": 900,
+          "launched_jobs": 32,
+          "requested_jobs": 32,
+          "skipped_jobs": 0,
+          "worker_count": 32
+        }
+      },
+      "job_timing_distribution": {
+        "count": 32,
+        "min_ms": 543,
+        "median_ms": 719.0,
+        "mean_ms": 711.03125,
+        "max_ms": 899
+      }
+    }
+  ],
+  "identity": [
+    {
+      "file": "chan.out.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 10,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "chanwb.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 14,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "chnwb.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 29,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "ebe_pw0.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 15,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.all_years.chn.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 12,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.all_years.class_data.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 9,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.all_years.hill.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 12,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.all_years.out.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 4,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.chn.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 12,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.class_data.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 8,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.hill.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 12,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.out.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 3,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "soil_pw0.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 21,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "totalwatsed3.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs32": 1,
+      "columns": 79,
+      "same_schema": true,
+      "same_rows": true,
+      "area_values_jobs1": [
+        3333484.6800000006
+      ],
+      "runoff_depth_values_jobs1": [
+        9.539206881850737e-07
+      ],
+      "tdet_values_jobs1": [
+        0.0
+      ]
+    }
+  ]
+}

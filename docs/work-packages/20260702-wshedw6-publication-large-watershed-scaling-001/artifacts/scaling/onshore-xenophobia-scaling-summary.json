@@ -1,0 +1,255 @@
+{
+  "schema": "openwepp-w6-onshore-xenophobia-scaling-v2",
+  "status": "PASS",
+  "fixture": "tests/fixtures/watershed/onshore-xenophobia",
+  "fixture_class": "full-1305-hillslope",
+  "run_dir": "tests/fixtures/watershed/onshore-xenophobia/runs",
+  "sidecar_policy": "compat",
+  "legacy_sidecar_discovery": false,
+  "jobs_counts": [
+    1,
+    48
+  ],
+  "stage_root": "/tmp/wshedw6_onshore_scaling_rerun",
+  "runs": [
+    {
+      "label": "onshore-jobs1-repo-full",
+      "jobs": 1,
+      "stage_root": "/tmp/wshedw6_onshore_scaling_rerun/jobs1-full",
+      "output_dir": "/tmp/wshedw6_onshore_scaling_rerun/jobs1-full/out",
+      "interchange_dir": "/tmp/wshedw6_onshore_scaling_rerun/jobs1-full/out/interchange",
+      "command": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-watershed",
+        "--run-dir",
+        "/home/workdir/openWEPP/tests/fixtures/watershed/onshore-xenophobia/runs",
+        "--run-file",
+        "case.run",
+        "--output-dir",
+        "/tmp/wshedw6_onshore_scaling_rerun/jobs1-full/out",
+        "--policy",
+        "compat",
+        "--jobs",
+        "1",
+        "--hillslope-binary",
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds_python": 5421.988582372665,
+      "time_v": {
+        "user_seconds": 5366.86,
+        "system_seconds": 54.82,
+        "cpu_percent": "99%",
+        "wall_time_text": "1:30:21",
+        "max_rss_kib": 44128,
+        "time_exit_status": 0
+      },
+      "supervisor_timing": {
+        "legacy_sidecar_discovery": false,
+        "output_publication_elapsed_ms": 64,
+        "pass_inventory_elapsed_ms": 87,
+        "routing_input_elapsed_ms": 151,
+        "run_name": "onshore-xenophobia-w6-full",
+        "schema": "openwepp-watershed-supervisor-timing-v1",
+        "sidecar_policy": "Compat",
+        "total_elapsed_ms": 5421979,
+        "watershed_dispatch_elapsed_ms": 2,
+        "worker_pool": {
+          "completed_jobs": 1305,
+          "elapsed_ms": 5421433,
+          "launched_jobs": 1305,
+          "requested_jobs": 1,
+          "skipped_jobs": 0,
+          "worker_count": 1
+        }
+      },
+      "job_timing_distribution": {
+        "count": 1305,
+        "min_ms": 3012,
+        "median_ms": 4154,
+        "mean_ms": 4153.248275862069,
+        "max_ms": 4977
+      }
+    },
+    {
+      "label": "onshore-jobs48-repo-full",
+      "jobs": 48,
+      "stage_root": "/tmp/wshedw6_onshore_scaling_rerun/jobs48-full",
+      "output_dir": "/tmp/wshedw6_onshore_scaling_rerun/jobs48-full/out",
+      "interchange_dir": "/tmp/wshedw6_onshore_scaling_rerun/jobs48-full/out/interchange",
+      "command": [
+        "/home/workdir/openWEPP/target/release/openwepp-cli-watershed",
+        "--run-dir",
+        "/home/workdir/openWEPP/tests/fixtures/watershed/onshore-xenophobia/runs",
+        "--run-file",
+        "case.run",
+        "--output-dir",
+        "/tmp/wshedw6_onshore_scaling_rerun/jobs48-full/out",
+        "--policy",
+        "compat",
+        "--jobs",
+        "48",
+        "--hillslope-binary",
+        "/home/workdir/openWEPP/target/release/openwepp-cli-hill"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds_python": 207.10146164894104,
+      "time_v": {
+        "user_seconds": 9334.72,
+        "system_seconds": 99.82,
+        "cpu_percent": "4555%",
+        "wall_time_text": "3:27.09",
+        "max_rss_kib": 44188,
+        "time_exit_status": 0
+      },
+      "supervisor_timing": {
+        "legacy_sidecar_discovery": false,
+        "output_publication_elapsed_ms": 62,
+        "pass_inventory_elapsed_ms": 90,
+        "routing_input_elapsed_ms": 149,
+        "run_name": "onshore-xenophobia-w6-full",
+        "schema": "openwepp-watershed-supervisor-timing-v1",
+        "sidecar_policy": "Compat",
+        "total_elapsed_ms": 207092,
+        "watershed_dispatch_elapsed_ms": 2,
+        "worker_pool": {
+          "completed_jobs": 1305,
+          "elapsed_ms": 206535,
+          "launched_jobs": 1305,
+          "requested_jobs": 48,
+          "skipped_jobs": 0,
+          "worker_count": 48
+        }
+      },
+      "job_timing_distribution": {
+        "count": 1305,
+        "min_ms": 4141,
+        "median_ms": 7492,
+        "mean_ms": 7485.665900383142,
+        "max_ms": 9311
+      }
+    }
+  ],
+  "identity": [
+    {
+      "file": "chan.out.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 10,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "chanwb.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 14,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "chnwb.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 29,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "ebe_pw0.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 15,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.all_years.chn.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 12,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.all_years.class_data.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 9,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.all_years.hill.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 12,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.all_years.out.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 4,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.chn.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 12,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.class_data.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 8,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.hill.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 12,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "loss_pw0.out.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 3,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "soil_pw0.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 21,
+      "same_schema": true,
+      "same_rows": true
+    },
+    {
+      "file": "totalwatsed3.parquet",
+      "rows_jobs1": 1,
+      "rows_jobs48": 1,
+      "columns": 79,
+      "same_schema": true,
+      "same_rows": true,
+      "area_values_jobs1": [
+        118391327.80000003
+      ],
+      "runoff_depth_values_jobs1": [
+        7.623926319373555e-06
+      ],
+      "tdet_values_jobs1": [
+        0.0
+      ]
+    }
+  ]
+}

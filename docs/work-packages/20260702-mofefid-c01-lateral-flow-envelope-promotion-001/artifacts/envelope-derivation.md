@@ -23,8 +23,11 @@ forest, 2,825 mm/yr, no modeled overland-flow pathway.
 
 ## ENV-Y — Annual combined water-yield fraction
 
-Comparand: `Y = (Σ runvol + Σ latqcc·A_ofe) / (Σ P·A_total)` (streams
-collect surface + lateral export, so both channels must be summed).
+Comparand: `Y = (Σ runvol + Σ latqcc_outlet·A_outlet) / (Σ P·A_total)` —
+lateral term is `latqcc` at the OUTLET OFE (water leaving the hillslope
+toe), not summed over internal OFEs (internal lateral is re-received
+downslope under INV-RUNOFFPART-031 and would double-count). Streams collect
+both channels, so both are in the numerator.
 
 Observed streamflow ratios: WS10 **0.56** of 2,220 mm (McGuire & McDonnell
 2010 p.2); Maimai **0.54–0.60** — 1,320–1,550 mm of 2,450–2,610 mm,

@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: `queued`
+Status: `passed`
 
 Evidence mode: `Static`
 
@@ -11,6 +11,7 @@ Core required-reading budget: `364434` bytes, `OK` (`<=400000` bytes).
 | `AGENTS.md` | Core | Root repository governance. | Always. |
 | `crates/AGENTS.md` | Core | Rust crate governance. | Always. |
 | `tests/AGENTS.md` | Core | Test and fixture governance. | Always. |
+| `tests/fixtures/AGENTS.md` | Core | Fixture installation and provenance rules. | Fixture edits. |
 | `docs/codex_exec_plans.md` | Core | ExecPlan requirements. | Always. |
 | `docs/work-packages/AGENTS.md` | Core | Work-package closure rules. | Always. |
 | `docs/work-packages/README.md` | Core | Package index and execution log. | Always. |
@@ -24,6 +25,7 @@ Core required-reading budget: `364434` bytes, `OK` (`<=400000` bytes).
 | `docs/work-packages/20260701-wshedw5-old-watershed-runtime-deletion-001/artifacts/old-runtime-deletion-manifest.md` | Core | Deleted runtime boundary. | Always. |
 | `docs/work-packages/20260701-wshedw3-bounded-worker-pool-001/artifacts/scaling-evidence.md` | Core | Prior scaling baseline and fixture behavior. | Always. |
 | `tests/fixtures/watershed/carnivorous-adobo/README.md` | Core | Existing committed fixture boundary. | Always. |
+| `tests/fixtures/watershed/onshore-xenophobia/README.md` | Core | Adopted full large-fixture boundary. | W6 fixture adoption and scaling. |
 | `docs/work-packages/20260702-wshedw6-publication-large-watershed-scaling-001/package.md` | Core | Active package authority. | Always. |
 | `docs/specifications/science-contract-authoring-procedure.md` | Conditional | Contract amendment procedure. | Contract edits. |
 | `docs/specifications/science-contracts/kernel-process-contract-profile.md` | Conditional | Kernel contract profile. | Contract edits. |

@@ -58,15 +58,14 @@ benchmark evidence.
   normalization basis, area/volume basis, source authority, and
   authoritative-vs-diagnostic status.
 - Adopt at least one larger committed watershed fixture. Target fixture class is
-  `>=1000` hillslopes. If repository-size, source-quality, or validation-cost
-  constraints make that impractical inside W6, adopt a committed representative
-  reduction and record a fixture-choice justification plus an explicit
-  large-fixture follow-on blocker.
+  full `>=1000` hillslope coverage. User clarification during execution removed
+  representative reduction as a closure path; if full fixture execution cannot
+  close in W6, record an executed hold with the exact blocker.
 - Ensure every fixture used as an acceptance gate is committed to this
   repository with provenance, README, topology summary, and checksum manifest.
   `/wc1`, scratch, or wepppy paths may be source substrates only.
 - Run canonical strict-committed-fixture scaling evidence after W5, including
-  at least carnivorous-adobo and the adopted large or representative fixture.
+  at least carnivorous-adobo and the adopted full large fixture.
 - Record fresh same-fixture legacy/openWEPP timing where runnable. If pinned
   legacy cannot run the committed fixture without an additional bridge, record
   the exact blocker and do not claim legacy-relative speedup for that fixture.
@@ -140,8 +139,8 @@ W6 complete closure requires at least:
 
 - carnivorous-adobo post-W5 scaling matrix, including `--jobs 1` and a high
   CPU-count `--jobs N` appropriate for the host;
-- one adopted large or justified representative committed fixture with
-  topology summary and checksum manifest;
+- one adopted full `>=1000` hillslope committed fixture with topology summary
+  and checksum manifest;
 - output row/content identity between `--jobs 1` and `--jobs N`;
 - fresh legacy/openWEPP comparison on any fixture where both surfaces are
   runnable and comparable, with non-comparable surfaces labeled honestly.
@@ -179,14 +178,14 @@ are compact metrics/findings plus log or artifact paths.
      it exists;
    - preserve required parquet schemas and metadata.
 4. Fixture adoption:
-   - select a `>=1000` hillslope source substrate or record why only a
-     representative reduction can be committed in W6;
+   - select a full `>=1000` hillslope source substrate or record an executed
+     hold if no full substrate can be committed and run in W6;
    - commit fixture inputs/manifests under `tests/fixtures/watershed/`;
    - add fixture-contract tests proving gates read committed paths only.
 5. Scaling and comparison evidence:
    - build release binaries;
    - run carnivorous-adobo post-W5 scaling matrix;
-   - run large/representative fixture scaling matrix;
+   - run full large fixture scaling matrix;
    - run same-fixture legacy/openWEPP comparison where runnable;
    - record output identity, CPU inventory, timing scope, and RSS.
 6. Review and closure:
@@ -204,9 +203,9 @@ are compact metrics/findings plus log or artifact paths.
   contract-governed schema migration evidence.
 - Operand lineage and independent reconstruction are recorded for
   conservation-sensitive touched outputs.
-- A larger committed fixture exists under `tests/fixtures/watershed/`, or W6
-  records a justified representative committed fixture plus a named blocker for
-  the full 1,000+ fixture.
+- A full `>=1000` hillslope committed fixture exists under
+  `tests/fixtures/watershed/`, or W6 records an executed hold with the named
+  blocker preventing full fixture adoption/execution.
 - Fixture manifests validate from committed files.
 - `--jobs 1` and `--jobs N` outputs are row/content identical for required
   fixtures unless a contract-governed delta is accepted.

@@ -94,9 +94,11 @@ Files:
 - `docs/work-packages/README.md`
 
 Task: execute WSHED-W6 end to end. Stream/directly write watershed publication
-from typed projection state, adopt committed large or representative watershed
-fixtures, run strict committed-fixture scaling, and record fresh same-scope
-legacy/openWEPP timing where runnable.
+from typed projection state, adopt a committed full large watershed fixture,
+run strict committed-fixture scaling, and record fresh same-scope
+legacy/openWEPP timing where runnable. User clarification during execution
+removed representative reduction as a closure path; if a full large fixture
+cannot close, record an executed hold with the exact blocker.
 
 Constraints:
 

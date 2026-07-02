@@ -26,16 +26,37 @@ separation on the total-export series) — see the methodological finding.
 | 80+ | 329 | 0.419 | 0.392 | 0.894 |
 
 *0–10 mm mean inflated by snowmelt (median 0.000; only 25% produce >1 mm
-quickflow). Median ratio and response frequency both ascend monotonically —
-the commencement-threshold shape. Transition (median 0 → positive) between
-the 0–10 and 10–20 bins places commencement ~10–20 mm.
+quickflow). Median ratio is **near-monotonic** — ascending overall with one
+minor reversal (0.095 → 0.092 across the 10–20/20–30 bins, inside noise);
+response frequency (frac >1 mm) ascends cleanly 0.25 → 0.89. The
+commencement signal is the median transition from 0.000 (0–10) to positive
+(10–20), placing commencement **~10–20 mm**. The script's mean-based
+step-fit returns 5 mm, but that estimator is **rejected as a snowmelt
+artifact** — snowmelt injects export on small-rain days, inflating the
+small-bin mean; the median- and frequency-based transition at 10–20 mm is
+the reliable commencement, and it is what the verdict uses.
 
-## ENV-E band + shape (post-DC01, quickflow)
+## ENV-E band + shape (post-DC01) — robust to the separation parameter
 
-- Large storms (>50 mm): mean quickflow ratio 0.41.
-- Large + wet antecedent (AP14 >20 mm, n=371): **0.46 ∈ [0.25, 0.80]**.
-- Ascending shape: Spearman ratio vs storm size **+0.29**, vs AP14 **+0.65**
-  (both positive — the observed law; total-export gave −0.51, the trap).
+Codex-flagged: the quickflow baseflow-separation slope must not decide the
+verdict. Sensitivity sweep (`c03_sensitivity.py`), large + wet-antecedent
+(AP14>20 mm, n=371) event ratio vs daily baseflow-rise slope:
+
+| slope (mm/day) | ENV-E ratio | Spearman vs P | vs AP14 |
+|---|---:|---:|---:|
+| 0.005 | 0.583 | −0.01 | +0.58 |
+| **0.0475 (Hewlett–Hibbert canonical)** | **~0.40** | +0.38 | +0.63 |
+| 0.10 | 0.365 | +0.47 | +0.59 |
+| 0.50 (10× H–H, excessive) | 0.297 | +0.55 | +0.51 |
+| **surface-only (no separation param)** | **0.482** | +0.10 | +0.52 |
+
+Hewlett–Hibbert canonical slope: 0.55 L s⁻¹ km⁻² h⁻¹ = 0.0475 mm/day rise.
+**ENV-E stays inside [0.25, 0.80] across the entire range** (0.30–0.58), and
+the parameter-free surface-runoff anchor (0.48) confirms it independent of
+any separation choice. The ascending shape (positive Spearman vs antecedent,
++0.51 to +0.65) holds at every slope. The verdict does not hinge on the
+separation parameter. *Headline figure: H–H-canonical **0.40**, not the
+earlier arbitrary-slope 0.46.*
 
 ## Annual tiers (re-confirmed, Ran)
 
