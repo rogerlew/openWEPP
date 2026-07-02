@@ -1,6 +1,6 @@
 # MOFEFID-OFERGATE — SC-OFEROUTE-001 Authoring
 
-Status: **EXECUTED — REVIEW-READY** (2026-07-02)
+Status: **RATIFIED — CLOSED** (2026-07-02)
 Campaign: [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D.
 Owner: Claude Code. Worktree: `mofefid-ofergate`. Scope: **contract text only**.
 
@@ -15,9 +15,11 @@ cascade) are blocked until this contract is authored **and ratified**.
 
 - `SC-OFEROUTE-001.md`: purpose/scope (hillslope overland routing, distinct
   from watershed-channel `SC-ROUTE-001`); 11 authority anchors; variables +
-  units; algorithm spec (friction menu eqs. 2-7, KWE A1-A2, TVD-MacCormack
-  8-14, CFL 12); 11 invariants (`INV-OFEROUTE-001..011`); guard map; 3 gaps;
-  revision history v1.
+  units; algorithm state surfaces; algorithm spec (friction menu eqs. 2-7, KWE
+  A1-A2, TVD-MacCormack 8-14, CFL 12); branch/guard table; 11 invariants
+  (`INV-OFEROUTE-001..011`); guard map; producer/consumer obligations; symbol
+  alias and unit-governance maps; constants; tolerance notes; test-vector
+  obligations; Binding Exposure Index; 3 gaps; revision history v2.
 - Registered in `science-contracts/index.md`.
 
 ## Design anchors
@@ -46,4 +48,8 @@ runon supply without double-counting DC01's daily-lump admission
 
 - Contract-text only; no production code/test change.
 - Registered; internally consistent; the D3 kernels are now contract-anchored.
-- Codex review + ratification decision at close (ratification unblocks D4).
+- Codex review artifact: `artifacts/review-codex.md`.
+- Ratified as the D4 prerequisite. D4 may build the single-OFE KWE/TVD solver
+  under `INV-OFEROUTE-005..007`.
+- D5 remains blocked on `GAP-OFEROUTE-003` until the runon ownership design is
+  dispositioned and guarded.
