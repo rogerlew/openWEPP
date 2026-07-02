@@ -145,10 +145,16 @@ Explorer sweep + my verification of the two load-bearing sites (legacy
   afterward as a pure addition in the runoff partition
   (`runoff.rs:652-688`), so upslope water can only become runoff or be
   absorbed by depression/frost-retention — it can never re-infiltrate into
-  downslope soil storage. Legacy hourly source does the opposite:
-  `fin = fin + (ui_HUrunf·efflen(i−1) − ui_Hcrunf·efflen(i))/slplen(i)`
-  (**Ran**, `watbal_hourly.for:411-413`) — net upstream runon joins the
-  water available to infiltrate. Consequences: on runon-bearing days
+  downslope soil storage. Legacy hourly source does the opposite,
+  **at both granularities** (**Ran**, verified in the pinned ADR-0024
+  baseline `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for`
+  and unchanged in current source at `:411-413`):
+  daily supply `fin = fin + (ui_HUrunf·efflen(i−1) −
+  ui_Hcrunf·efflen(i))/slplen(i)` (baseline `:361-363`), and hourly supply
+  `xfin = fin/ui_LFtstpF + (ui_LfUrf(ii) + ui_SUrunf(ii)) ×
+  (fwidth(i−1)·slplen(i−1))/(fwidth(i)·slplen(i))` (baseline `:471-473`) —
+  the hourly upstream carry arrays, **surface and lateral both**, join the
+  water available to infiltrate each hour. Consequences: on runon-bearing days
   openWEPP systematically over-routes surface runoff and under-wets
   downslope soils relative to legacy intent; downslope re-infiltration is
   the first-order process behind vegetated filter strips (Neibling &
