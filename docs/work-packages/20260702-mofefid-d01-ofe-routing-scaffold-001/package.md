@@ -1,15 +1,16 @@
 # MOFEFID-D01 — OFE-by-OFE Routing Scaffold + Friction Kernels
 
-Status: **EXECUTED (D1+D2+D3) — REVIEW-READY** (2026-07-02)
+Status: **EXECUTED (D1+D2+D3) — REVIEWED; ADR-0033 RATIFIED** (2026-07-02)
 Campaign: [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D.
 Owner: Claude Code. Worktree: `mofefid-d01`. Activation: **opt-in-validated
 only** (operator decision 2026-07-02; default activation deferred).
 
 ## What landed
 
-- **D1 (contracts/ADR):** ADR-0033 (Proposed) — equivalent-plane ->
+- **D1 (contracts/ADR):** ADR-0033 (Accepted; narrowed scope) — equivalent-plane ->
   OFE-by-OFE routing, opt-in, F-A2/DC01 tie-in, SC-OFEROUTE-001 as the
-  contract home. Ratification pending (authorizes the solver stages).
+  contract home. ADR ratification authorizes representation + activation
+  only; D4/D5 remain gated on SC-OFEROUTE-001 being authored + ratified.
 - **D2 (fixtures):** `artifacts/validation-cases.json` — the four
   Papanicolaou validation-case inputs (from R-63 Table 1 + 3.1 docx) with
   Ef targets; observed series referenced in Figure_4.xlsx (copyright

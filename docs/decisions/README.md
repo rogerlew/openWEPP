@@ -36,6 +36,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0030](0030-r7-terminal-contract-and-compatibility-runtime-deletion.md) | R7 terminal contract and compatibility runtime deletion | Accepted |
 | [0031](0031-delete-compatibility-runtime-single-authority-terminal.md) | Delete the compatibility runtime - single-authority terminal state | Accepted |
 | [0032](0032-watershed-runtime-ratification.md) | Watershed runtime entrypoint, job default, and canonical benchmark mode | Accepted |
+| [0033](0033-ofe-by-ofe-overland-flow-routing.md) | OFE-by-OFE overland-flow routing (Papanicolaou 2018) | Accepted |
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further
@@ -77,6 +78,10 @@ the full watershed supervisor remains under `openwepp-cli-watershed`,
 `--jobs` defaults to deterministic serial `1`, CPU scaling is explicit through
 `--jobs N`, and canonical benchmark/ratification evidence uses
 `strict-committed-fixture` mode with legacy sidecar discovery disabled.
+ADR-0033 accepts the OFE-by-OFE routing representation and opt-in activation
+policy for Papanicolaou-style hillslope overland-flow routing. Its ratification
+does not authorize D4/D5 solver or cascade implementation; those stages remain
+gated on authoring and ratifying `SC-OFEROUTE-001`.
 
 ## ADR template
 

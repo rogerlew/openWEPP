@@ -1,7 +1,9 @@
 # ADR-0033: OFE-by-OFE Overland-Flow Routing (Papanicolaou 2018)
 
-Status: **Proposed** (2026-07-02, MOFEFID Lane D / D1)
-Deciders: maintainers (operator-directed; ratification pending)
+Status: **Accepted** (ratified 2026-07-02 by Codex after MOFEFID-D01 review disposition)
+Deciders: Roger Lew, Codex
+Ratification provenance:
+`docs/work-packages/20260702-mofefid-d01-ofe-routing-scaffold-001/`
 Supersedes/relates: extends the runoff-partition surface (SC-RUNOFFPART-001),
 consumes the inter-OFE transfer seam (INV-RUNOFFPART-029), builds on the
 DC01 runon re-infiltration semantics (INV-RUNOFFPART-031).
@@ -28,7 +30,7 @@ topology. MOFEFID-A01's F-A2 finding and DC01 established that per-OFE
 runon **re-infiltrates** downslope (Papanicolaou assumption 2 — per-OFE
 Green-Ampt of the routed excess); Lane D makes that hourly-faithful.
 
-## Decision (proposed)
+## Decision
 
 1. Adopt OFE-by-OFE kinematic-wave routing with space/time-variant
    resistance as an **opt-in** hillslope subsystem behind a policy flag.
@@ -44,7 +46,7 @@ Green-Ampt of the routed excess); Lane D makes that hourly-faithful.
    over the INV-RUNOFFPART-029 seam, each stage shadow-first with
    per-increment conservation stops.
 
-## Scope of ratification (narrowed per D01 review)
+## Scope of ratification
 
 Ratifying THIS ADR authorizes ONLY:
 - the **representation decision** (equivalent-plane -> OFE-by-OFE
@@ -67,12 +69,12 @@ ADR-0011). D3 kernels are contract-anchored retroactively by that contract.
 - Frozen-library posture: eq. 2-3 constants + eq. 4 bounds cited secondary
   via R-63; eq. 4/5/6 primaries (R-77/72/78) in hand; unit conventions
   confirmed by the D-val fixtures (Ef 0.91/0.75/0.87/0.88).
-- Ratification pending: the friction kernels (D3) are shadow-first and
-  reversible; ratifying this ADR authorizes the representation + activation
-  decision only (see Scope of ratification) — the solver/cascade stages
-  remain gated on SC-OFEROUTE-001.
+- Ratification authorizes the representation + activation decision only
+  (see Scope of ratification). The friction kernels (D3) are shadow-first
+  and reversible; the solver/cascade stages remain gated on
+  SC-OFEROUTE-001.
 
-## Open questions (for ratification)
+## Open questions for SC-OFEROUTE-001
 
 - Exact kinematic-viscosity / rainfall-intensity unit convention (pinned by
   D-val Case 1/2 reproduction).
