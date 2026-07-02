@@ -792,3 +792,35 @@ openWEPP note (2026-05-11):
 **Kernel mapping**: Paradigm 1 alternative/cross-check threshold authority; SNOWDENSITY-10.3.22.
 **Notes / caveats**: For openWEPP, Sturm 1995 (R-59) is the cleaner pairing (matching class names); use 2021 to validate/extend the thresholds, with name-mapping documented.
 **OAR-6 compliance status**: Updated classification-threshold authority.
+
+## R-62: Brooks, Boll & McDaniel (2004) hillslope-scale lateral saturated hydraulic conductivity
+
+**Citation**: Brooks, E. S., J. Boll, and P. A. McDaniel (2004). *A hillslope-scale experiment to measure lateral saturated hydraulic conductivity*. Water Resources Research, 40, W04208. https://doi.org/10.1029/2003WR002858
+**Local path**: `references/copyrighted/brooks2004.pdf` (local-only copyrighted cache).
+**Reference quality**: `verified-primary`
+**Topic**: Direct hillslope-scale (18 × 35 m plot) measurement of lateral saturated hydraulic conductivity above a fragipan restrictive layer (eastern Palouse, Troy, ID), via perched water-level and drain-tile outflow analysis (Parlange et al. 1989 methodology + Childs 1971 sloping-bed solution).
+**Key equations / concepts for MOFEFID Lane C**:
+- `[DIRECT]` Hillslope-scale lateral `Ks` measured **13.7× / 4.1× / 3.2×** larger than small-core `Ks` in the A / B / E horizons respectively — direct field evidence that core-derived vertical `Ks` understates effective lateral conductivity at the modeling scale.
+- `[DIRECT]` `Ks(depth)` best described by a **double-exponential** decline (sharp drop in the first 0.1 m, exponential below); the transmissivity-profile *shape* matters as much as its magnitude.
+- `[DIRECT]` Macroporosity identified as the dominant control on hillslope-scale lateral `Ks`; the small-core vs hillslope gap framed as a **measurement-scale problem**, not parameter error.
+- `[INFERENCE]` Bears directly on the H2637 71% `runvol` lateral-magnitude flag: physically defensible lateral/vertical effective-conductivity ratios of order 3–14× at hillslope scale bound what the provisional forest `ksatadj`/anisotropy inputs may legitimately encode.
+- `[INFERENCE]` Author lineage (Brooks/Boll, U. Idaho) is the same lineage behind WEPP's forest lateral-flow adaptations (Dun et al. 2009, R-21; Srivastava 2013, R-22) — this is the parameter-scale companion to those model papers.
+**Kernel mapping**: WB19 lateral flow (`latqcc`), `SC-SUBHYD-001` conductivity anchors; MOFEFID Lane C envelope derivation (`[INFERENCE]`).
+**Notes / caveats**: Single site, agricultural-region fragipan soil (not forest); relevance to H2637-like forest hillslopes is via the scale-gap mechanism and the anisotropy bound, not a site-transferable `Ks` value. Applicability mapping is Lane C1 work.
+**OAR-6 compliance status**: Primary field authority; combines with site-specific observed datasets (`tests/fixtures/forest_lateral_flow_authority/`) rather than replacing them.
+
+## R-63: Papanicolaou et al. (2018) space/time-variant flow resistance on heterogeneous hillslopes
+
+**Citation**: Papanicolaou, A. N., B. K. B. Abban, D. C. Dermisis, C. P. Giannopoulos, D. C. Flanagan, J. R. Frankenberger, and K. M. Wacha (2018). *Flow resistance interactions on hillslopes with heterogeneous attributes: Effects on runoff hydrograph characteristics*. Water Resources Research, 54, 359–380. https://doi.org/10.1002/2017WR021109
+**Local path**: `references/copyrighted/Papanicolaou2018.pdf` (+ full-text markdown `Papanicolaou2018.md`; supplemental data `references/copyrighted/Papanicolaou2018-supplemental/` — validation-case input docx + Figure 4–9 xlsx series).
+**Reference quality**: `verified-primary`
+**Topic**: Enhanced-WEPP framework routing overland flow OFE-by-OFE (removing the equivalent-plane/equilibrium-storage aggregation) with additive, per-timestep friction factors for grain/raindrop, form, wave, and vegetation resistance, and TVD-MacCormack shock-capturing kinematic-wave solution; stream-power Zone 1/Zone 2 taxonomy for when roughness detail matters.
+**Key equations / concepts for MOFEFID Lane D**:
+- `[DIRECT]` Friction-factor menu eqs. (2)–(6): skin (Shen & Li `Re<1000`; Hirsch `Re>1000`), form (Abrahams/Lawrence), wave (Hu & Abrahams, `Fr`-gated), vegetation (Katul/Thompson), additive `f_eq` (eq. 7).
+- `[DIRECT]` TVD-MacCormack predictor/corrector scheme eqs. (8)–(14) with CFL condition (eq. 12) for the 1-D KWE (Appendix A).
+- `[DIRECT]` Four validation cases with published `Ef`: bare 0.91, rock fragments 0.75, vegetation patchiness 0.87, concave/shock (Iwagaki) 0.88 — the Lane D acceptance targets; supplemental carries the series.
+- `[DIRECT]` Stream-power threshold taxonomy (`Ψ* = q*·S₀*` vs `I*`, Zone 1 nonlinear / Zone 2 linear) — the scoping instrument for when OFE-by-OFE routing changes answers.
+- `[INFERENCE]` WEPP-lineage authority (Flanagan, Frankenberger co-authors); the equivalent-plane limitation it removes is the representation openWEPP inherited via its legacy anchor.
+**Kernel mapping**: MOFEFID Lane D (`SC-OFEROUTE` candidate contracts, per-OFE hydrograph transfer over the `INV-RUNOFFPART-029` seam).
+**Notes / caveats**: Copyrighted (AGU/WRR) — in-repo for internal validation only; supplemental-derived fixtures follow the campaign §8 governance. Original WEPP v2012.8 basis; friction formulations are semitheoretical with stated applicability regimes (`Re`, `Fr`, submergence).
+**OAR-6 compliance status**: Primary physics authority for Lane D; primary-source acquisitions for eqs. (2)–(6) originals tracked separately.

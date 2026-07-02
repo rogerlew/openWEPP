@@ -374,7 +374,8 @@ activates by default inside this campaign.
 |---|---|---|
 | Stakeholder brief | `/workdir/wepp-forest/docs/20260504-stakeholder-watbalance.md` | Lane B defect census; QOFE canonical definitions; audit-formula reference |
 | Lateral-flow observed data | `tests/fixtures/forest_lateral_flow_authority/` (HJ Andrews WS10, Panola 2002, Maimai M8, Coweeta) | Lane C authority candidates (README use-limits binding) |
-| Papanicolaou 2018 paper | `references/copyrighted/Papanicolaou2018.md` | Lane D physics authority |
+| Papanicolaou 2018 paper | `references/copyrighted/Papanicolaou2018.md` (bibliography R-63) | Lane D physics authority |
+| Brooks, Boll & McDaniel 2004 | `references/copyrighted/brooks2004.pdf` (bibliography R-62) | Lane C parameter-scale authority: hillslope-scale lateral `Ks` 3.2–13.7× core-scale; double-exponential `Ks(depth)`; macropore control — bounds what `ksatadj`/anisotropy may encode |
 | Papanicolaou supplemental | `references/copyrighted/Papanicolaou2018-supplemental/` (case inputs docx, Figure 4–9 xlsx) | Lane D validation inputs + series |
 | MOFE contract surface | `SC-RUNOFFPART-001` INV-028/029/030, `SC-WATBAL-001` INV-096/097/099 | Lanes A/B/D contract anchors |
 | Snowfreeze observed harness | `tools/snowfreeze_observed/` | Lane C rubric template |
@@ -401,7 +402,11 @@ activates by default inside this campaign.
 
 - Papanicolaou, A. N., et al. (2018). Flow resistance interactions on
   hillslopes with heterogeneous attributes. *WRR*, 54, 359–380.
-  doi:10.1002/2017WR021109 (+ supporting information, in-repo).
+  doi:10.1002/2017WR021109 (+ supporting information, in-repo;
+  bibliography R-63).
+- Brooks, E. S., J. Boll, and P. A. McDaniel (2004). A hillslope-scale
+  experiment to measure lateral saturated hydraulic conductivity. *WRR*,
+  40, W04208. doi:10.1029/2003WR002858 (in-repo; bibliography R-62).
 - wepp-forest stakeholder brief (2026-05-04, updated 2026-05-16) — legacy
   water-balance program record, QOFE canonical definitions, defect census.
 - `docs/backlog/20260618-forest-lateral-flow-absolute-magnitude-authority.md`
