@@ -266,7 +266,7 @@ old-runtime deletion.
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
-| WSHED-W5 | **Old watershed runtime deletion** | Delete the old compatibility runtime and obsolete old-surface tests after typed production routing replacement | No public old-runtime selector, no production `WatershedWritebackSurface` routing path, deletion manifest, protected-coverage restoration, full gates or named hold | Ready to scaffold; WSHED-W4 typed routing hold is lifted by `20260701-wshedw4dc01-typed-routing-kernel-writeback-closure-001/` |
+| WSHED-W5 | **Old watershed runtime deletion** | Delete the old compatibility runtime and obsolete old-surface tests after typed production routing replacement | No public old-runtime selector, no production `WatershedWritebackSurface` routing path, deletion manifest, protected-coverage restoration, full gates or named hold | Scaffolded at `20260701-wshedw5-old-watershed-runtime-deletion-001/`; execute next |
 | WSHED-W6 | **Publication and large-watershed scaling** | Stream publication from typed projection state and adopt larger committed scaling fixtures | Larger fixture coverage includes a 1,000+ hillslope class case or justified representative reduction; output contracts and scaling evidence recorded | Draft queue; follows WSHED-W5 deletion closure |
 
 ---

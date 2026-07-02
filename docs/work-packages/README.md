@@ -51,25 +51,33 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
+- `20260701-wshedw5-old-watershed-runtime-deletion-001/` is queued as
+  WSHED-W5 OLD WATERSHED RUNTIME DELETION. Result:
+  `QUEUED-HANDOFF-AUTHORED`. It is the next watershed runtime package after
+  W4DC01, with the first actionable item to delete the watershed-specific old
+  compatibility runtime and obsolete old-surface tests while preserving typed
+  public routing and protected output behavior.
+
+## Execution Log
+
+- `20260701-wshedw4dc01-typed-routing-kernel-writeback-closure-001/` is
+  complete as WSHED-W4DC01 TYPED ROUTING KERNEL WRITEBACK CLOSURE. Result:
+  `EXECUTED-COMPLETE`. It closed `WSHED-W4-HOLD-001` for the production public
+  watershed CLI path by replacing compatibility writeback routing with
+  `execute_watershed_dispatch_with_frame` over `WatershedNetworkFrame` and
+  typed routed-state publication. It added direct typed channel/impoundment
+  execution over frame records, reused actual WS11, WS12, WS18, and WS20 helper
+  physics, preserved W2/W3 public behavior, and recorded that
+  carnivorous-adobo remains an input/parser fixture rather than a current CLI
+  output-identity fixture.
 - `20260701-wshedw4-typed-watershed-network-frame-001/` is held as WSHED-W4
   TYPED WATERSHED NETWORK FRAME. Result:
   `EXECUTED-HOLD-TYPED-ROUTING-KERNEL-WRITEBACK-REMAINS-COMPATIBILITY-EDGE`.
   It landed typed `WatershedNetworkFrame` and `WatershedPublicationFrame`
   handoff in the public watershed CLI path, including typed hillslope
-  contribution collection and typed publication consumption, but cannot close
-  complete because routing still projects through `compatibility_writeback_surface`
-  into `execute_watershed_dispatch_with_kernel` and the WS10 dispatch/kernel
-  writeback path still reads/writes `WatershedWritebackSurface`.
-- `20260701-wshedw4dc01-typed-routing-kernel-writeback-closure-001/` is queued
-  as WSHED-W4DC01 TYPED ROUTING KERNEL WRITEBACK CLOSURE. Result:
-  `QUEUED-HANDOFF-AUTHORED`. It is a defect-closure hold-lift package for
-  `WSHED-W4-HOLD-001`, with the first actionable item to replace production
-  `compatibility_writeback_surface` + `execute_watershed_dispatch_with_kernel`
-  routing with `WatershedNetworkFrame`-native dispatch before WSHED-W5 can
-  proceed.
-
-## Execution Log
-
+  contribution collection and typed publication consumption, but could not
+  close complete until W4DC01 replaced routing through
+  `compatibility_writeback_surface` and `execute_watershed_dispatch_with_kernel`.
 - `20260701-wshedw3-bounded-worker-pool-001/` is complete as WSHED-W3 BOUNDED
   WORKER POOL. Result: `EXECUTED-COMPLETE-WSHED-W3`. It added
   `HillslopeWorkerPool`, removed the temporary public `--jobs > 1` rejection,
