@@ -21,7 +21,10 @@
   (contract-first new physics),
   [ADR-0017](../decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md)
   (legacy is reference, not target),
+  [ADR-0033](../decisions/0033-ofe-by-ofe-overland-flow-routing.md)
+  (OFE-by-OFE routing, opt-in activation),
   `SC-SNOWFREEZE-001` / `GAP-SNOWFREEZE-002` (canopy → CoE melt attenuation),
+  `SC-OFEROUTE-001` (Papanicolaou routing friction operands),
   [snow-frost-fidelity-strategy](../planning/snow-frost-fidelity-strategy.md)
 - `provenance (cross-repo)`: wepppy work-package
   `docs/work-packages/20260626_deciduous_mixed_forest_managements/`,
@@ -72,6 +75,43 @@ senescence date** (`jdharv=286`, ~Oct 13). That is **Northern-Hemisphere-only**
 (day 286 is SH mid-spring) and **not climate-adaptive** (one leaf-off day for
 every site, whereas real leaf-off spans late-September to early-November across
 CONUS). See wepppy ADR-0009 for the full record.
+
+## Management-file authority — first-class `lanuse` modes
+
+The same structural lesson applies to Lane D routing: legacy WEPP and WEPPcloud
+often encode forests and rangeland as `lanuse=1` cropland records because the
+legacy input grammar and branch coverage made that the least-bad workaround.
+openWEPP should not perpetuate that workaround for new physics. For openWEPP
+native managements, the **management file** must be the opt-in authority, and
+`lanuse` must select the physical landuse mode. The `.run` file should point to
+the management sidecar and remain reproducibility metadata; it should not carry
+hidden physics selectors that are lost when only the input sidecars are archived.
+
+Required direction:
+
+- Define a first-class openWEPP forest `lanuse` mode instead of requiring forest
+  canopies, litter, and hydraulic roughness to masquerade as cropland
+  perennial records.
+- Carry forest phenology parameters in that landuse record: evergreen floor,
+  deciduous fraction, leaf-off frost/photoperiod controls, leaf-on thermal-time
+  or chilling controls, and litter/residue-pool parameters.
+- Carry OFE-routing roughness parameters in the landuse/OFE record when routing
+  is active: `k_o`, optional form/wave operands (`C_d`, `D_r`, `lambda`), and
+  optional hydraulic vegetation operands (`LAI`, `h_c`, vegetation `C_d`) under
+  `SC-OFEROUTE-001`.
+- Treat cropland-encoded forest/range fixtures as **compatibility inputs**. They
+  may be migrated or interpreted by an explicit adapter, but they must not be
+  the authority for new forest/rangeland physics.
+
+Activation rule: opt-in routing/phenology behavior should come from a complete
+and typed `lanuse` block in the management file. A runfile-level flag may be
+useful for diagnostics or forced disabling, but it must not be the source of the
+physical parameters or the only record that the run used the enhanced path.
+
+This also resolves the Papanicolaou roughness gap. It is not sensible to infer
+hydraulic vegetation or isolated-element drag from legacy cropland fields such
+as row width, rill spacing, or `rrinit` without a bridge contract. Put the
+Papanicolaou operands where they belong: first-class landuse/OFE parameters.
 
 ## Mechanism (legacy reference, minimal abstraction)
 
@@ -278,6 +318,14 @@ residue-cover backlog item is implemented.
 - **Landuse-agnostic:** the mechanism must be available to the
   forest/perennial path, not gated behind a rangeland branch — the explicit
   break from the legacy limitation.
+- **Management-file opt-in:** new forest/rangeland behavior must be selected and
+  parameterized by a first-class management `lanuse` mode. The runfile must not
+  be the sole opt-in authority for canopy phenology, litter physics, or
+  Papanicolaou routing operands.
+- **First-class routing roughness:** Papanicolaou operands (`k_o`, `C_d`, `D_r`,
+  `lambda`, `LAI`, `h_c`) belong in the management landuse/OFE record when
+  routing is active. Do not infer them from legacy cropland row/ridge workarounds
+  unless a separate bridge contract ratifies that mapping.
 - **Conservation:** the biomass decrement must respect the growth/biomass
   ledger (decline removes live biomass to litter/residue; no canopy created or
   destroyed without a matching state change).
@@ -306,6 +354,9 @@ residue-cover backlog item is implemented.
 6. **Conservation:** the biomass/canopy ledger balances across **both** the
    decline and the green-up (no canopy created or destroyed without a matching
    biomass state change).
+7. **Management-file provenance:** an activated forest/rangeland run is
+   reproducible from its sidecars alone: the `.man`/landuse record declares the
+   physical mode and the Papanicolaou/canopy/litter operands used by the run.
 
 ## Promotion criteria
 
@@ -314,6 +365,9 @@ residue-cover backlog item is implemented.
   limiting term), **and**
 - a growth–canopy science contract surface is identified to host the decline
   invariant, **and**
+- the openWEPP management parser/runtime has a first-class forest `lanuse` mode
+  capable of carrying canopy phenology, litter, and OFE-routing roughness
+  operands, **and**
 - an SH validation climate is available (or the SH gate is explicitly deferred
   with NH-only interim scope).
 
@@ -353,6 +407,17 @@ route the new physics through top-down contract authoring.
 - Interaction with snow interception: leafless deciduous still retains branch/
   stem area (~0.1–0.3 effective cover) that the live-canopy `cancov` misses
   (noted in wepppy ADR-0009) — decide whether a bare-canopy floor belongs here.
+- Exact native management-file shape: extend legacy `.man` syntax with an
+  openWEPP datver/section, or introduce an openWEPP-native management sidecar
+  that preserves `lanuse` semantics while avoiding legacy parser ambiguity.
+- Migration policy for existing WEPPcloud forest/range inputs that are encoded
+  as cropland: whether to require explicit conversion to the new `lanuse` mode
+  for enhanced routing/phenology, or allow a temporary compatibility adapter
+  that emits a manifest warning and refuses ambiguous Papanicolaou operands.
+- Forest/rangeland Papanicolaou defaults: whether any default `k_o`, hydraulic
+  vegetation height, or form/wave parameters are defensible by landuse class, or
+  whether active routing should fail closed until the management file supplies
+  them explicitly.
 
 ## References
 
@@ -377,5 +442,8 @@ route the new physics through top-down contract authoring.
   and photoperiod thresholds in an ecosystem-model context.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/06_growth_state.rs` —
   the openWEPP canopy state (`cancov`, `canopy_decline`) this would extend.
+- `SC-OFEROUTE-001` and ADR-0033 — the opt-in OFE-by-OFE routing contract and
+  Papanicolaou friction operands that should be carried by native landuse/OFE
+  management records, not by a runfile-only selector.
 - [snow-frost-fidelity-strategy](../planning/snow-frost-fidelity-strategy.md) —
   the consuming program (canopy → CoE melt attenuation).
