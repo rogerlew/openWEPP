@@ -58,14 +58,21 @@ turn the paper's `Ef_obs` into an openWEPP observed-data verdict.
 
 ## Framing — this is an investigation, not a rubber-stamp
 
-The feasibility spike already falsifies a naive "show it's close" scope:
+> **Execution governs.** The bullets below are the pre-execution *feasibility-
+> spike* framing. Where they conflict with the executed result, the status
+> banner + `artifacts/execution-report.md` are authoritative. In particular
+> the spike's "Iwagaki shock lag" was later found to be a **forcing-bug
+> artifact and is WITHDRAWN** (see the corrected bullet).
 
-- **Iwagaki (Case 4, shock) does NOT currently reproduce enhanced-WEPP.**
-  openWEPP matches the peak *magnitude* (~3% at a plausible `k_o`) but **lags
-  the shock timing ~5 s** (t_peak 31 s vs 26 s), giving NS ≈ 0.15 vs
-  enhanced-WEPP — nowhere near Ef 0.88. It behaves like the paper's
-  *Original* WEPP ("~5 s slower"). Running it as the 3-OFE cascade is *worse*
-  (more front smearing). This is a genuine shock-capture / celerity gap.
+The feasibility spike motivated an investigation (not a rubber-stamp) scope:
+
+- **Iwagaki (Case 4, shock) — spike saw a ~5 s "lag" that EXECUTION
+  WITHDREW.** The spike (and the first execution) fed the lateral-supply rate
+  into the skin-term rainfall intensity `I`, but Iwagaki has no rain. With
+  `I = 0` corrected, the timing and rise **reproduce** at `k_o ~ 200`; the
+  residual is peak magnitude / moderate NS, **operand-limited** on the
+  unspecified flume `k_o`. There is **no** shock-capture GAP
+  (`GAP-OFEROUTE-004` withdrawn).
 - **The figure→case→geometry→unit mapping is not pinned.** Figure_5's
   enhanced-WEPP peak (0.0028 m²/s) is ~24× too large for a 60 mm/h × 7.5 m
   Case-1 plot — it is almost certainly the Walnut Creek *hillslope*, not the
@@ -96,25 +103,28 @@ reproduce, some are gaps — not to reach a preordained pass.
   load-bearing operands are sourced, frozen, or bounded tightly enough that the
   verdict is invariant across the declared bound. Otherwise the verdict class
   is `operand-limited`.
-- **D7-S2 — Skin-term unit convention (`INV-OFEROUTE-002`).** The contract
-  flags the `I`/`ν` unit convention of `f_s = (3393 I^0.407 + k_o)/Re` as
-  "confirmed empirically by D-val." Pin it here against a case whose operands
-  are fully known; record the convention.
+- **D7-S2 — Skin-term unit convention (`INV-OFEROUTE-002`).** *(planned)* Pin
+  the `I`/`ν` convention of `f_s = (3393 I^0.407 + k_o)/Re` against a
+  fully-known case. **Execution outcome: NOT closed.** The skin term is
+  `k_o`-dominated for Cases 1-3 (`k_o = 500`; the `I` term ≈ 60 for Case 1), so
+  Case-1 reproduction does not validate the convention, and D7 found + fixed an
+  `I`-usage bug (Iwagaki). `INV-OFEROUTE-002` / `GAP-OFEROUTE-002` are corrected
+  to **unconfirmed / audit OPEN**; the audit is a follow-up, not closed by D7.
 - **D7-S3 — Non-shock validation cases (expected tractable).** Cases 1–3
   exercise grain roughness, isolated roughness, and vegetation patchiness.
   The rise-to-steady cases should align with D4's steady-state evidence; Case 3
   must additionally exercise the D5/D6 vegetation-strip / infiltration-cascade
   composition. Compute `NS_trace` vs enhanced-WEPP only after S0/S1 pass.
-- **D7-S4 — Shock case (the fidelity investigation).** Attribute the Iwagaki
-  ~5 s lag: numerical front-diffusion (TVD limiter) vs friction-model regime
-  (laminar/turbulent dispatch, unknown `k_o`) vs celerity. Outcome may be a
-  documented `GAP-OFEROUTE` (shock-capture fidelity), **not** a forced pass.
-  Start S4 with a package-local provisional gap (`GAP-OFEROUTE-D7-SHOCK-LAG`)
-  because the feasibility spike already observed a material lag; S4 either
-  closes it, narrows it to an operand-limited finding, or promotes it to an
-  `SC-OFEROUTE-001` GAP in S5.
+- **D7-S4 — Shock case (attribution).** *(planned: attribute the spike's
+  Iwagaki lag.)* **Execution outcome: the "lag" was a forcing-bug artifact**
+  (lateral rate mis-fed into the skin `I`; Iwagaki has no rain). With `I = 0`
+  the timing/rise reproduce at `k_o ~ 200`; the residual peak/NS is
+  **operand-limited** on the unspecified flume `k_o`. **No shock-capture GAP** —
+  the provisional `GAP-OFEROUTE-004` was **WITHDRAWN**. Two residual solver
+  observations (peak `k_o`-noise; internal vs sampled `t_peak` disagree ~9 s)
+  are noted for a possible future look, not GAP-promoted.
 - **D7-S5 — Verdict + contract disposition.** Per-case NS + verdict; update
-  `INV-OFEROUTE-011` evidence; resolve the provisional shock gap; and either
+  `INV-OFEROUTE-011` evidence (**executed: PARTIAL, not closed** — zero clean reproductions); the provisional shock gap was **withdrawn**, not promoted; and either
   reproduce or explicitly defer the Zone 1/Zone 2 stream-power taxonomy row
   that `INV-OFEROUTE-011` currently names. If taxonomy is deferred, amend the
   contract so D7 does not appear to close an unrun obligation.
@@ -185,15 +195,15 @@ compute comparisons, never vendored**:
    solver defect. S1/S4 must separate these.
 2. Green-Ampt params for Cases 1–3 are texture-derived (uncertain) — the
    steady discharge depends on `Ks`; report the sensitivity.
-3. The ~5 s shock lag may be numerical (TVD diffusion) — a solver-fidelity
-   finding that could feed back to D4, out of D-val's remit to *fix* but in
-   its remit to *attribute*.
+3. *(resolved)* The spike's ~5 s shock lag was a forcing-bug artifact, not a
+   solver finding; withdrawn on correction. Residual Iwagaki solver notes
+   (peak `k_o`-noise; internal vs sampled `t_peak` ~9 s) remain observations,
+   not attributed defects.
 4. Figure→hillslope mapping (Fig 5–8 appear to be the Walnut Creek hillslope
    thought-experiments, not the plot cases) — S0 must resolve before use.
-5. If S4 attributes the shock lag to the D4 solver or D5 cascade rather than
-   to operands, open a separate solver/cascade correction package. Do not split
-   the shock investigation preemptively; split only when D7 has produced the
-   attribution evidence and the required write set exceeds D-val analysis.
+5. *(n/a — S4 attributed the shortfall to operands, not the solver, so no
+   solver/cascade correction package is opened. The split-rule stands for any
+   future shock work if a known `k_o` reveals a genuine solver gap.)*
 
 ## References
 
