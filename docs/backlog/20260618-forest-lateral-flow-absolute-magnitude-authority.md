@@ -1,6 +1,6 @@
 # Backlog - Forest Lateral-Flow Absolute Magnitude Authority
 
-Status: concept (deferred future work; not scheduled)
+Status: **PROMOTED 2026-07-02** — envelope ratified as `SC-SUBHYD-001#INV-SUBHYD-033` via MOFEFID-C01; judgment run is MOFEFID-C03. This note is now a prune candidate (detail migrated to the C01 package).
 Date: 2026-06-18
 Owner: maintainers
 Origin: POST-BASECOND01-H2637-MAGNITUDE-DISPOSITION; FARPOINT01 H2637 71%
