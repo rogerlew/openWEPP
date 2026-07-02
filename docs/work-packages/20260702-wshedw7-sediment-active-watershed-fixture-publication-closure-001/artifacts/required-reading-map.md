@@ -1,8 +1,8 @@
 # Required Reading Map
 
-Status: `queued`
+Status: `passed`
 
-Evidence mode: not-run
+Evidence mode: `Static:` required reading completed before edits.
 
 ## Reading Budget
 
@@ -51,3 +51,4 @@ Thresholds use the canonical limits in
 | UTC | Agent | Change |
 |-----|-------|--------|
 | `2026-07-02T17:07:59Z` | Codex | Initialized required-reading map from canonical template for WSHED-W7. |
+| `2026-07-02T17:33:01Z` | Codex | Executed W7 through hold disposition; required core governance, W6 residual-risk, architecture, ADR-0032, and fixture docs were read before production edits. |

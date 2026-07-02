@@ -13,13 +13,20 @@
 
 State as of `2026-07-02`:
 
+- `20260702-wshedw7dc01-hillslope-sediment-production-hold-lift-001/` is
+  queued as WSHED-W7DC01 HILLSLOPE SEDIMENT PRODUCTION HOLD LIFT. Result:
+  `QUEUED`. It is the next concrete watershed hold-lift action from
+  `docs/ROADMAP.md`, scoped to closing `WSHED-W7-HOLD-001`: production
+  hillslope HBP sediment remains zero for inspected real multi-OFE source
+  substrates even when EROD14 is enabled.
 - `20260702-wshedw7-sediment-active-watershed-fixture-publication-closure-001/`
-  is queued as WSHED-W7 SEDIMENT-ACTIVE WATERSHED FIXTURE AND PUBLICATION
-  CLOSURE. Result: `QUEUED`. It is the next watershed runtime follow-on from
-  `docs/ROADMAP.md`, scoped to a committed full watershed fixture with actual
-  nonzero sediment response, serial/parallel public watershed output identity,
-  independent sediment-publication reconstruction, and no surrogate sediment
-  physics.
+  is held as WSHED-W7 SEDIMENT-ACTIVE WATERSHED FIXTURE AND PUBLICATION
+  CLOSURE. Result: `EXECUTED-HOLD-HILLSLOPE-SEDIMENT-PRODUCTION-MISSING`. It
+  fixed relative `--run-dir` generated child input canonicalization and proved
+  the public watershed path still runs, but no inspected committed or local
+  candidate produced production-generated nonzero openWEPP sediment. The
+  package holds before fixture adoption, serial/parallel identity, and
+  conservation reconstruction.
 - `20260630-typed-direct-setup-symbol-map-elimination-001/` is held after Stage
   0. Result: `EXECUTED-HOLD-STAGE0-PREMISE-CORRECTED`.
 - `20260630-typed-direct-setup-symbol-map-carrier-deletion-001/` is held as

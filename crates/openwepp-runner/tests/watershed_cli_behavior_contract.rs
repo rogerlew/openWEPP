@@ -284,6 +284,44 @@ fn wshedw2_watershed_cli_generated_mode_accepts_relative_output_dir() {
 }
 
 #[test]
+fn wshedw7_watershed_cli_generated_mode_accepts_relative_run_dir() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw7_relative_run_dir");
+    prepare_output_guard_fixture(&run_dir);
+    write_hillslope_source_runfile_fixture(&run_dir, 1);
+    write_generated_watershed_runfile(&run_dir, &[1]);
+
+    let parent = run_dir
+        .parent()
+        .expect("temporary fixture directory should have a parent");
+    let relative_run_dir = Path::new(
+        run_dir
+            .file_name()
+            .expect("temporary fixture directory should have a final component"),
+    );
+    let output_dir = run_dir.join("out-relative-run-dir");
+    let hill_binary = Path::new(env!("CARGO_BIN_EXE_openwepp-cli-hill"));
+    let output = run_watershed_cli_with_current_dir(
+        relative_run_dir,
+        &output_dir,
+        Some("compat"),
+        false,
+        Some("1"),
+        Some(hill_binary),
+        parent,
+    );
+    assert!(
+        output.status.success(),
+        "generated watershed run should accept relative --run-dir and canonicalize child inputs; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_all_watershed_outputs_exist(&output_dir);
+}
+
+#[test]
 #[cfg(unix)]
 fn wshedw2_watershed_cli_rejects_stale_generated_pass_when_child_does_not_publish() {
     let _execution_guard = watershed_execution_lock()

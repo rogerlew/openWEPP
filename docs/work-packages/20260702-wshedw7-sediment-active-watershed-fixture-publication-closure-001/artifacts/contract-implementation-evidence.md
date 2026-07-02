@@ -1,9 +1,15 @@
 # Contract Implementation Evidence
 
-Status: `queued`
+Status: `passed`
 
-Evidence mode: not-run
+Evidence mode: `Static:`
 
-Record canonical `SC-*` amendments here if W7 changes sediment, routing,
-publication, guard, unit, or output authority. If W7 is schema/semantics
-preserving, record the static evidence supporting that disposition.
+No canonical `SC-*` amendments were made.
+
+Disposition: W7 is schema-preserving and physics-preserving. The only
+production edit is path canonicalization for generated child runfiles in the
+watershed supervisor. It does not change sediment authority, routing authority,
+publication formulas, unit lineage, or output schema.
+
+The sediment-production blocker is recorded as a hold rather than patched with
+surrogate physics or package-local authority.

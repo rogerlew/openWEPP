@@ -1,9 +1,16 @@
 # Pre-Implementation Contract Gate
 
-Status: `queued`
+Status: `passed`
 
-Evidence mode: not-run
+Evidence mode: `Static:`
 
-Before production edits, record whether W7 changes canonical authority. Kernel
-or publication semantics may not be changed until required contracts and
-contract-derived tests are in place.
+W7 did not change canonical sediment, routing, publication, guard, unit, or
+output semantics. No `SC-*` amendment was triggered before the implemented
+supervisor path-resolution fix.
+
+The code change canonicalizes generated hillslope child input paths. It does
+not alter physics, output formulas, output schemas, process guards, or
+publication units.
+
+The missing nonzero sediment signal is not corrected in W7 because the package
+explicitly excludes hillslope erosion/sediment physics changes for convenience.

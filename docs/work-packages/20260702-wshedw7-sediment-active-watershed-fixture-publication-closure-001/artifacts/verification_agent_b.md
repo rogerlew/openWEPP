@@ -1,8 +1,16 @@
 # Verification Agent B
 
-Status: `queued`
+Status: `completed-local-substitution`
 
-Evidence mode: not-run
+Evidence mode: `Static:` local verification.
 
-Verify final gate evidence, fixture provenance, output identity, independent
-sediment reconstruction, review disposition, and no-surrogate-physics claims.
+Verification result: package must not close complete.
+
+The evidence distinguishes:
+
+- valid code fix: relative `--run-dir` generated-mode path resolution;
+- blocked package objective: sediment-active full watershed publication closure.
+
+The W7 artifacts correctly avoid claiming serial/parallel identity or
+independent sediment reconstruction on a zero-only fixture. The handoff names
+the first actionable hold-lift task.
