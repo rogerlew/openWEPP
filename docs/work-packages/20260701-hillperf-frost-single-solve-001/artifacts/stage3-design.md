@@ -96,3 +96,32 @@ classification at branch `39061021`. Headline (classify_residuals, Ran):
 quantities to hold no-worse after the change: matched rows
 392/200/10,643/83/4,356; max abs frost residual 0.247/0.390/–/0.787/– m;
 isotherm exceedances 0/0/3,658/0/125; snow-control failures 218/72/–/20/–.
+
+## Implementation correction (recorded for review)
+
+An interim implementation shrank the rewire on a **misread**: the claim that
+"the builder already applies the frost layer effects via
+`same_day_frost_hydrology_layers`" is false — that helper returns the lane
+layers unchanged except for the stale-clear on thaw-complete days (Static:
+`01_frost_and_layer_helpers.rs:214-234`). Only the deleted R4A apply ever
+applied the layer projection. The shrunken shape therefore shipped freeze-day
+deltas into R4B with no layer basis carrying them, and the in-run guard
+caught it exactly as designed (Ran: seven snowbench-family tests failed with
+`storage_reconciliation.frost_storage_projection_theta_m must be nonnegative`
+at site1 day 6 — the first material freeze day).
+
+Corrected to the design's original shape: `apply_r4w_winter_frost_ingress`
+applies the carried outcome to the day's layer-input basis
+(`percolation_inputs.layers`, mirrored to `subsurface_compute_inputs.layers`)
+**between R4C and R4I** — R4C captures the pre-frost `storage_initial`
+scalar, so the daily identity `initial + fluxes + frost_delta = final`
+closes by construction; all water-moving phases then operate on post-frost
+stores (the legacy frsoil-before-infiltration ordering). The ingress carries
+the relocated apply semantics wholesale (material/no-material paths,
+1e-9 outcome/layer self-consistency asserts — valid by construction on the
+solve's own basis — and the frozen-water bound). R4A retains only the
+retained-local-liquid bookkeeping.
+
+Verification lesson: the snowbench harness tests acted as the effective
+mini-endpoint for this failure class — they run real multi-year site
+fixtures in seconds and fired before H2637 was ever attempted.
