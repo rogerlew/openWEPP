@@ -29,8 +29,14 @@ pub struct Sample {
 #[derive(Debug, Clone)]
 pub struct DvalRun {
     pub hydrograph: Vec<Sample>,
+    /// Sampled-hydrograph peak (D-val comparison metric).
     pub peak_m2_s: f64,
+    /// Sampled-hydrograph peak time (D-val comparison metric).
     pub time_to_peak_s: f64,
+    /// Solver sub-step peak diagnostic, when exposed by the underlying run.
+    pub diagnostic_substep_peak_m2_s: Option<f64>,
+    /// Solver sub-step peak-time diagnostic, when exposed by the underlying run.
+    pub diagnostic_substep_time_to_peak_s: Option<f64>,
     pub max_courant: f64,
     /// Event runoff coefficient (Cases 1-3; `None` for the impermeable flume).
     pub runoff_coefficient: Option<f64>,
@@ -40,12 +46,69 @@ fn mm_h_to_m_s(v: f64) -> f64 {
     v / 3.6e6
 }
 
+fn sampled_peak(hydrograph: &[Sample]) -> (f64, f64) {
+    hydrograph.iter().fold((0.0_f64, 0.0_f64), |best, s| {
+        if s.q_m2_s > best.1 {
+            (s.time_s, s.q_m2_s)
+        } else {
+            best
+        }
+    })
+}
+
+fn sampled_crossing(samples: &[Sample], target: f64) -> Option<f64> {
+    for w in samples.windows(2) {
+        let a = w[0];
+        let b = w[1];
+        if (a.q_m2_s <= target && b.q_m2_s >= target) || (a.q_m2_s >= target && b.q_m2_s <= target)
+        {
+            let dq = b.q_m2_s - a.q_m2_s;
+            if dq.abs() <= f64::EPSILON {
+                return Some(a.time_s);
+            }
+            let frac = (target - a.q_m2_s) / dq;
+            return Some(a.time_s + frac * (b.time_s - a.time_s));
+        }
+    }
+    None
+}
+
+/// Sampled-hydrograph 10-90% rising-limb duration for D-val diagnostics.
+#[must_use]
+pub fn sampled_rise_time_10_90(hydrograph: &[Sample]) -> Option<f64> {
+    let (t_peak, q_peak) = sampled_peak(hydrograph);
+    if q_peak <= 0.0 {
+        return None;
+    }
+    let rising: Vec<Sample> = hydrograph
+        .iter()
+        .copied()
+        .take_while(|s| s.time_s <= t_peak)
+        .collect();
+    if rising.len() < 2 {
+        return None;
+    }
+    let t10 = sampled_crossing(&rising, 0.1 * q_peak)?;
+    let t90 = sampled_crossing(&rising, 0.9 * q_peak)?;
+    Some(t90 - t10)
+}
+
 /// Case 4 (Iwagaki 1955, shock): impermeable 24 m flume, three 8 m sections at
 /// 2/1.5/1 %, per-section lateral inflow 0.108/0.0638/0.08 cm/s for 10 s.
 /// Single mesh with per-cell slope. `k_o` is unspecified in the paper (operand
 /// gap); the caller supplies it.
 pub fn run_iwagaki(ko: f64) -> Result<DvalRun, RoutingError> {
-    let n = 120usize;
+    run_iwagaki_with_options(ko, 120, 1.0, 0.5)
+}
+
+/// Case 4 with explicit numerical controls for D8 diagnostics.
+pub fn run_iwagaki_with_options(
+    ko: f64,
+    cell_count: usize,
+    sample_dt_s: f64,
+    max_dt_s: f64,
+) -> Result<DvalRun, RoutingError> {
+    let n = cell_count;
     let dx = 24.0 / f64::from(u32::try_from(n).unwrap_or(u32::MAX));
     let mut cells = Vec::with_capacity(n);
     for i in 0..n {
@@ -88,18 +151,22 @@ pub fn run_iwagaki(ko: f64) -> Result<DvalRun, RoutingError> {
         upstream_inflow_m2_s: &inflow,
         rainfall_intensity_m_s: &intensity,
     };
-    let res = solver.run(&forcing, 80.0, 1.0, 0.5)?;
+    let res = solver.run(&forcing, 80.0, sample_dt_s, max_dt_s)?;
+    let hydrograph: Vec<Sample> = res
+        .hydrograph
+        .iter()
+        .map(|s| Sample {
+            time_s: s.time_s,
+            q_m2_s: s.outlet_unit_discharge_m2_s,
+        })
+        .collect();
+    let (time_to_peak_s, peak_m2_s) = sampled_peak(&hydrograph);
     Ok(DvalRun {
-        hydrograph: res
-            .hydrograph
-            .iter()
-            .map(|s| Sample {
-                time_s: s.time_s,
-                q_m2_s: s.outlet_unit_discharge_m2_s,
-            })
-            .collect(),
-        peak_m2_s: res.peak_unit_discharge_m2_s,
-        time_to_peak_s: res.time_to_peak_s,
+        hydrograph,
+        peak_m2_s,
+        time_to_peak_s,
+        diagnostic_substep_peak_m2_s: Some(res.peak_unit_discharge_m2_s),
+        diagnostic_substep_time_to_peak_s: Some(res.time_to_peak_s),
         max_courant: res.max_courant,
         runoff_coefficient: None,
     })
@@ -222,9 +289,16 @@ pub fn run_rain_case(c: &RainCase) -> Result<DvalRun, RoutingError> {
             q_m2_s: s.outlet_unit_discharge_m2_s,
         })
         .collect();
+    let (time_to_peak_s, peak_m2_s) = sampled_peak(&hydro);
     Ok(DvalRun {
-        peak_m2_s: res.cascade.per_ofe_peak_unit_discharge_m2_s[0],
-        time_to_peak_s: res.cascade.time_to_peak_s,
+        peak_m2_s,
+        time_to_peak_s,
+        diagnostic_substep_peak_m2_s: res
+            .cascade
+            .per_ofe_peak_unit_discharge_m2_s
+            .first()
+            .copied(),
+        diagnostic_substep_time_to_peak_s: None,
         max_courant: res.cascade.max_courant,
         runoff_coefficient: Some(res.per_ofe_runoff_coefficient[0]),
         hydrograph: hydro,
@@ -240,7 +314,10 @@ mod tests {
     // (sha256 2bf68787…d2fe8), physically-consistent columns per the S0
     // cut-point map. Provenance: published values, not vendored series.
     const CITED_ENHANCED_PEAK_CASE1: f64 = 9.451e-5; // Abban, col 11
+    const CITED_ENHANCED_PEAK_CASE2: f64 = 1.06098e-4; // Jomaa, col 17
+    const CITED_ENHANCED_PEAK_CASE3: f64 = 1.685_100_6e-4; // Neibling, col 8 (S0 caveat)
     const CITED_ENHANCED_PEAK_CASE4: f64 = 8.132e-3; // Iwagaki, col 1
+    const CITED_ENHANCED_RISE_CASE1_S: f64 = 3_579.914_381_755_707_4; // derived scalar, Fig 4
 
     // Case 1 (bare) reproduces the enhanced-WEPP steady-state MAGNITUDE at the
     // literature Ks (peak +7%; `NS_trace` 0.868, plateau-dominated), but is a
@@ -262,16 +339,13 @@ mod tests {
     }
 
     // Case 4 (Iwagaki) — NO rain: water is supplied laterally, so the
-    // skin-term rainfall intensity is ZERO (see run_iwagaki). Under that
-    // correct forcing, openWEPP does not cleanly reproduce enhanced-WEPP
-    // (best `NS_trace` ~0.30 at k_o~200), but at that k_o the TIMING and rise
-    // shape do reproduce (t_peak ~28 s vs 26 s; rise ~20.6 s vs 20.9 s) — the
-    // earlier "solver-side ~5-6 s shock lag" was an ARTIFACT of feeding the
-    // lateral rate into I, now withdrawn. The residual (peak ~20% low, moderate
-    // NS) is operand-limited on the unspecified flume k_o. This test pins the
-    // order-of-magnitude peak and that the timing is NOT grossly lagged.
+    // skin-term rainfall intensity is ZERO (see run_iwagaki). D8 corrected
+    // sampled-hydrograph attribution: sample values are interpolated to their
+    // actual sample times instead of stamped with the step-end value. Under that
+    // corrected metric the prior "timing reproduces" claim no longer holds;
+    // Case 4 remains a shock-capture / operand boundary, not a clean pass.
     #[test]
-    fn case4_iwagaki_timing_reproduces_operand_limited_peak() {
+    fn case4_iwagaki_sampling_correction_exposes_timing_boundary() {
         let run = run_iwagaki(200.0).expect("iwagaki runs");
         let ratio = run.peak_m2_s / CITED_ENHANCED_PEAK_CASE4;
         assert!(
@@ -280,25 +354,92 @@ mod tests {
             run.peak_m2_s,
             CITED_ENHANCED_PEAK_CASE4
         );
-        // Sampled-hydrograph peak time (matches the offline harness metric; the
-        // solver's internal `time_to_peak_s` disagrees by ~9 s for Iwagaki — a
-        // shock-capture multi-modality noted in the execution report). Under the
-        // corrected zero-intensity forcing this is close to the ref ~26 s.
-        let sampled_t_peak = run
-            .hydrograph
-            .iter()
-            .fold((0.0_f64, 0.0_f64), |(bt, bq), s| {
-                if s.q_m2_s > bq {
-                    (s.time_s, s.q_m2_s)
-                } else {
-                    (bt, bq)
-                }
-            })
-            .0;
         assert!(
-            (20.0..=34.0).contains(&sampled_t_peak),
-            "Case4 sampled t_peak {sampled_t_peak:.1}s outside the near-reference band"
+            (34.0..=40.0).contains(&run.time_to_peak_s),
+            "Case4 corrected sampled t_peak {:.1}s should expose the D8 timing boundary",
+            run.time_to_peak_s
+        );
+        let substep_t = run.diagnostic_substep_time_to_peak_s.unwrap();
+        assert!(
+            (substep_t - run.time_to_peak_s).abs() <= 1.0,
+            "D8-2 sampling correction should reconcile sub-step and sampled t_peak within one sample: substep {substep_t}, sampled {}",
+            run.time_to_peak_s
         );
         assert!(run.max_courant <= 1.0 + 1.0e-9);
+    }
+
+    #[test]
+    fn case4_iwagaki_peak_is_resolution_sensitive_boundary() {
+        let baseline = run_iwagaki_with_options(200.0, 120, 1.0, 0.5).expect("baseline runs");
+        let refined = run_iwagaki_with_options(200.0, 240, 0.25, 0.25).expect("refined runs");
+        let peak_shift = (refined.peak_m2_s - baseline.peak_m2_s).abs() / baseline.peak_m2_s;
+        assert!(
+            peak_shift > 0.20,
+            "D8-2 boundary evidence: Case4 shock peak must remain flagged as resolution-sensitive, shift={peak_shift}"
+        );
+        assert!(
+            (refined.time_to_peak_s - baseline.time_to_peak_s).abs() >= 2.0,
+            "D8-2 boundary evidence: Case4 shock timing must remain resolution-sensitive"
+        );
+    }
+
+    #[test]
+    fn case2_underprediction_is_ks_operand_limited() {
+        let default = run_rain_case(&case2_isolated()).expect("case2 default runs");
+        let mut tighter_ks = case2_isolated();
+        tighter_ks.ks_mm_h = 10.0;
+        let adjusted = run_rain_case(&tighter_ks).expect("case2 adjusted runs");
+
+        let default_ratio = default.peak_m2_s / CITED_ENHANCED_PEAK_CASE2;
+        let adjusted_ratio = adjusted.peak_m2_s / CITED_ENHANCED_PEAK_CASE2;
+        assert!(
+            (0.70..=0.80).contains(&default_ratio),
+            "D7 default Case2 ratio should remain the operand-limited shortfall: {default_ratio}"
+        );
+        assert!(
+            (0.90..=0.95).contains(&adjusted_ratio),
+            "a plausible lower sandy/gravel Ks materially closes Case2 peak: {adjusted_ratio}"
+        );
+        assert!(
+            adjusted_ratio > default_ratio + 0.15,
+            "Case2 shortfall must be materially Ks-sensitive"
+        );
+    }
+
+    #[test]
+    fn case3_enhanced_peak_exceeds_recorded_rainfall_length_ceiling() {
+        let c = case3_vegetation();
+        let rainfall_length_ceiling = mm_h_to_m_s(c.intensity_mm_h) * c.length_m;
+        assert!(
+            CITED_ENHANCED_PEAK_CASE3 > rainfall_length_ceiling,
+            "Case3 cited enhanced peak must remain flagged as an S0 magnitude caveat"
+        );
+
+        let mut impermeable = c;
+        impermeable.ks_mm_h = 0.0;
+        let run = run_rain_case(&impermeable).expect("case3 impermeable runs");
+        assert!(
+            run.peak_m2_s <= rainfall_length_ceiling * 1.10,
+            "even impermeable openWEPP should remain bounded by the recorded rainfall-length ceiling"
+        );
+    }
+
+    #[test]
+    fn case1_rising_limb_lag_is_green_ampt_operand_limited() {
+        let default = run_rain_case(&case1_bare()).expect("case1 default runs");
+        let default_rise = sampled_rise_time_10_90(&default.hydrograph).expect("default rise");
+        assert!(
+            default_rise > CITED_ENHANCED_RISE_CASE1_S * 1.30,
+            "D8-4 baseline lag should remain visible: default rise {default_rise}"
+        );
+
+        let mut impermeable = case1_bare();
+        impermeable.ks_mm_h = 0.0;
+        let routing_only = run_rain_case(&impermeable).expect("case1 impermeable runs");
+        let routing_rise = sampled_rise_time_10_90(&routing_only.hydrograph).expect("routing rise");
+        assert!(
+            routing_rise < CITED_ENHANCED_RISE_CASE1_S * 0.10,
+            "routing-only response is fast, so the slow D7 limb is not a routing-celerity defect"
+        );
     }
 }

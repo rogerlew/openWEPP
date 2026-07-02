@@ -10,10 +10,13 @@
 //! SECONDARY via R-63 (Papanicolaou 2018) per the campaign's citation rule;
 //! eq. (4) form (Lawrence 1997, R-77), eq. (5) wave (Hu & Abrahams 2006,
 //! R-72), and eq. (6) vegetation (Katul et al. 2011, R-78) are primary in
-//! hand. Unit conventions are confirmed empirically by the D-val fixtures.
+//! hand. The local SI unit convention for the Shen & Li intensity term is
+//! confirmed against R-63's stated equation by D8 low-`k_o` regression tests;
+//! primary-source coefficient provenance remains frozen-library.
 
-/// Kinematic viscosity of water at ~15 C (m^2 s^-1). Papanicolaou uses a
-/// single representative value; the D-val fixtures pin the exact convention.
+/// Kinematic viscosity of water at ~15 C (m^2 s^-1). Papanicolaou states the
+/// `Re = q / nu` unit relation; the exact representative value remains
+/// frozen-library provenance.
 pub const KINEMATIC_VISCOSITY_M2_S: f64 = 1.14e-6;
 /// Gravitational acceleration (m s^-2).
 pub const GRAVITY_M_S2: f64 = 9.81;
@@ -37,6 +40,8 @@ pub fn froude_number(unit_discharge_m2_s: f64, flow_depth_m: f64, gravity_m_s2: 
 /// Skin (grain + raindrop) resistance, laminar regime `Re < 1000`
 /// (Papanicolaou eq. (2); Shen & Li 1973 via R-63):
 /// `f_s = (3393 * I^0.407 + k_o) / Re`, with rainfall intensity `I` in m s^-1.
+/// Active routing callers validate `I >= 0` before this pure equation helper is
+/// called; invalid negative values are not normalized here.
 #[must_use]
 pub fn skin_resistance_shen_li(
     rainfall_intensity_m_s: f64,
@@ -46,8 +51,7 @@ pub fn skin_resistance_shen_li(
     if reynolds_number <= 0.0 {
         return 0.0;
     }
-    (3393.0 * rainfall_intensity_m_s.max(0.0).powf(0.407) + friction_coefficient_ko)
-        / reynolds_number
+    (3393.0 * rainfall_intensity_m_s.powf(0.407) + friction_coefficient_ko) / reynolds_number
 }
 
 /// Skin resistance, turbulent regime `Re > 1000` (eq. (3); Hirsch 1996 via
@@ -220,6 +224,34 @@ mod tests {
         assert!(approx(f_lam, expected, 1e-12));
         // Hirsch at Re=2000
         assert!(approx(f_turb, 3.19 / 2000.0_f64.powf(0.45), 1e-12));
+    }
+
+    #[test]
+    fn shen_li_low_ko_vector_pins_si_rainfall_intensity() {
+        // D8-1: exercise a rain-driven, low-k_o regime where the I term is not
+        // hidden by k_o. R-63 states I in m/s; passing 100 mm/h as the raw
+        // number would inflate the numerator by >400x and fail this test.
+        let i_m_s = 100.0 / 3.6e6;
+        let ko = 1.0;
+        let re = 100.0;
+        let got = skin_resistance_shen_li(i_m_s, ko, re);
+        let expected = (3393.0 * i_m_s.powf(0.407) + ko) / re;
+        assert!(approx(got, expected, 1e-14));
+
+        let wrong_mmh = (3393.0 * 100.0_f64.powf(0.407) + ko) / re;
+        assert!(
+            (wrong_mmh / got) > 400.0,
+            "unit regression must distinguish m/s from raw mm/h: got {got}, wrong {wrong_mmh}"
+        );
+    }
+
+    #[test]
+    fn shen_li_negative_intensity_is_not_silently_zeroed() {
+        // Active callers fail closed before negative forcing reaches the pure
+        // equation helper. The helper itself must not normalize a negative
+        // rainfall intensity to zero because that would mask an invalid
+        // forcing path.
+        assert!(skin_resistance_shen_li(-1.0e-6, 1.0, 100.0).is_nan());
     }
 
     #[test]

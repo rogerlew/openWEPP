@@ -260,7 +260,9 @@ impl MassBalance {
 pub struct RoutingResult {
     pub hydrograph: Vec<HydrographSample>,
     pub mass_balance: MassBalance,
-    /// Peak outlet unit discharge (m^2/s) and its time (s).
+    /// Peak outlet unit discharge (m^2/s) and its time (s) at solver sub-step
+    /// endpoints. Validation harnesses that compare against sampled external
+    /// traces should compute their peak from the sampled hydrograph instead.
     pub peak_unit_discharge_m2_s: f64,
     pub time_to_peak_s: f64,
     /// Max Courant number observed (CFL evidence; must stay <= 1).
@@ -555,6 +557,9 @@ impl KinematicWaveSolver {
                 }
             }
 
+            let t_before = t;
+            let q_before = self.discharge_m2_s[self.mesh.cell_count() - 1];
+            let h_before = self.depth_m[self.mesh.cell_count() - 1];
             let (q_out, h_out) = self.step(t, dt, forcing, &mut mass)?;
             t += dt;
 
@@ -563,10 +568,17 @@ impl KinematicWaveSolver {
                 time_to_peak = t;
             }
             while next_sample <= t + 1.0e-12 && next_sample <= end_time_s {
+                let frac = if dt > 0.0 {
+                    ((next_sample - t_before) / dt).clamp(0.0, 1.0)
+                } else {
+                    1.0
+                };
+                let q_sample = q_before + frac * (q_out - q_before);
+                let h_sample = h_before + frac * (h_out - h_before);
                 hydrograph.push(HydrographSample {
                     time_s: next_sample,
-                    outlet_unit_discharge_m2_s: q_out,
-                    outlet_depth_m: h_out,
+                    outlet_unit_discharge_m2_s: q_sample,
+                    outlet_depth_m: h_sample,
                 });
                 next_sample += sample_dt_s;
             }
@@ -760,6 +772,33 @@ mod tests {
         // (INV-OFEROUTE-006), independent of dt/slope.
         assert!(
             res.mass_balance.residual_m2().abs() / res.mass_balance.rainfall_excess_m2 < 1.0e-2
+        );
+    }
+
+    #[test]
+    fn hydrograph_sampling_interpolates_within_large_solver_steps() {
+        // D8-2: sample times crossed by one solver step must receive the
+        // interpolated outlet value at that sample time, not the step-end
+        // value. A dry-start run takes a large first step when celerity is
+        // zero; the old sampler stamped the same q onto all samples crossed by
+        // that step.
+        let mesh = KinematicWaveMesh::uniform(7.5, 20, CellParameters::bare(0.09, 500.0));
+        let mut solver = KinematicWaveSolver::new(mesh);
+        let v = 60.0 / 3.6e6;
+        let excess = |_i: usize, _t: f64| v;
+        let inflow = constant(0.0);
+        let intensity = constant(v);
+        let forcing = Forcing {
+            rainfall_excess_m_s: &excess,
+            upstream_inflow_m2_s: &inflow,
+            rainfall_intensity_m_s: &intensity,
+        };
+        let res = solver.run(&forcing, 20.0, 1.0, 5.0).expect("run ok");
+        let q6 = res.hydrograph[6].outlet_unit_discharge_m2_s;
+        let q10 = res.hydrograph[10].outlet_unit_discharge_m2_s;
+        assert!(
+            q6 < q10,
+            "interpolated samples should rise within the first wet step: q6={q6}, q10={q10}"
         );
     }
 

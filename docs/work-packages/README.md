@@ -13,6 +13,14 @@
 
 State as of `2026-07-02`:
 
+- `20260702-mofefid-d8-routing-fidelity-defect-closure-001/` is executed and
+  review-ready as MOFEFID-D8 ROUTING FIDELITY DEFECT CLOSURE. Result:
+  `EXECUTED-REVIEW-READY`. It closed the four D7 D-val discrepancies under
+  `SC-OFEROUTE-001` rev 9: skin SI `I` convention corrected/pinned, sampled
+  hydrograph timing corrected, Case 2 classified `Ks` operand-limited, Case 3
+  classified comparator-surface/operand boundary, Case 1 classified Green-Ampt
+  operand-limited, and Case 4 carried as `GAP-OFEROUTE-005` shock-capture
+  resolution sensitivity. Routing remains shadow-first; no production wiring.
 - `20260702-wshedw7dc01-hillslope-sediment-production-hold-lift-001/` is
   queued as WSHED-W7DC01 HILLSLOPE SEDIMENT PRODUCTION HOLD LIFT. Result:
   `QUEUED`. It is the next concrete watershed hold-lift action from
