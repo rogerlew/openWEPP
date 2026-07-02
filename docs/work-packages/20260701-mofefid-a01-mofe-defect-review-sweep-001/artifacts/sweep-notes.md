@@ -118,3 +118,45 @@ carry arrays gated off; runner short-circuits per-OFE slicing. The
 zero-feed design means MOFE machinery cannot perturb single-OFE results
 except through the substep gate, which is itself single-OFE-inactive.
 **No defect found.**
+
+## S5 — winter column × MOFE (swept)
+
+Explorer sweep + my verification of the two load-bearing sites (legacy
+`watbal_hourly.for:377-420`; `runoff.rs:168,540-582`).
+
+- **Per-lane independence confirmed:** no lane reads another lane's winter
+  state anywhere; the only inter-lane channel is the four liquid scalars in
+  `DirectTransferBuffers`. Snow/frost state never crosses lanes; no active
+  drifting (consistent with `GAP-SNOWFREEZE-003`). Melt/rain reaches the
+  downstream lane only as already-liquefied runoff.
+- **F-A6 (positive + watch-item):** the FARPOINT01 `watbtm`-into-`Dp`
+  double-count class is **structurally absent** — `watbtm`/`watpdg` are
+  internal frost-partition closure terms with no arithmetic consumer
+  besides the frost residual (`frost.rs:520-524`); storage couples frost
+  through `frwatc_net_liquid_delta_m` only. Watch: the FDHP01 design
+  artifact documents a `Dp += watbtm` identity that is *not wired* today;
+  if that coupling is ever activated, re-audit this seam first. Note also:
+  HBP frost provenance publishes from the outlet lane only
+  (`05_runner_execution_and_outputs.rs:257-269`) — a convention, recorded.
+- **F-A2 (CONFIRMED — source-intent divergence, fidelity-shaped):**
+  **runon is excluded from the infiltration supply.** openWEPP WB14
+  infiltration consumes the hyetograph only (rain + routed melt, frost-
+  gated via effective conductivity; `runoff.rs:1315-1371`); runon enters
+  afterward as a pure addition in the runoff partition
+  (`runoff.rs:652-688`), so upslope water can only become runoff or be
+  absorbed by depression/frost-retention — it can never re-infiltrate into
+  downslope soil storage. Legacy hourly source does the opposite:
+  `fin = fin + (ui_HUrunf·efflen(i−1) − ui_Hcrunf·efflen(i))/slplen(i)`
+  (**Ran**, `watbal_hourly.for:411-413`) — net upstream runon joins the
+  water available to infiltrate. Consequences: on runon-bearing days
+  openWEPP systematically over-routes surface runoff and under-wets
+  downslope soils relative to legacy intent; downslope re-infiltration is
+  the first-order process behind vegetated filter strips (Neibling &
+  Alberts; Dermisis 2010), so this is central to MOFE fidelity even though
+  the INV-RUNOFFPART-028 event-closure identity holds either way (it is a
+  partition question, not a conservation question). The combined
+  surface+lateral runon pool (`runon_input = UpStrmQ + SubRIn`,
+  `runoff.rs:168`) is itself contract-ratified by INV-028. Scope note: on
+  the wet-forest H2637 fixture surface runon is small (lateral-dominated),
+  which is consistent with MOFE01/FARPOINT01/MAGPARITY01 closing without
+  meeting this seam.

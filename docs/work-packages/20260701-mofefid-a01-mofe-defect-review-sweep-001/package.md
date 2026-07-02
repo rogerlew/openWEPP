@@ -1,6 +1,6 @@
 # MOFEFID-A01 — Proactive MOFE Defect-Review Sweep
 
-Status: **SCAFFOLDED** (2026-07-01)
+Status: **EXECUTED — REVIEW-READY** (2026-07-01). Six surfaces swept; six findings (headline: F-A2 runon re-infiltration source-intent divergence → Lane D contract stage); no conservation defect. See `artifacts/findings.md`.
 Campaign: [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane A.
 Owner: Claude Code (operator-directed role break; review is Claude's native
 lane). Reviewer at close: Codex (operator dispatches).
