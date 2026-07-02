@@ -199,6 +199,47 @@ written down and checked.
 `topology-validation-gate`; types `TopologyValidationReport`,
 `HillslopeSchedulerReport`, `SchedulerOutcomeClass`.
 
+### Watershed throughput and parallelism
+
+openWEPP does not claim novelty for running independent hillslopes in parallel;
+legacy WEPP workflows already used that shape. The performance claim here is
+about the full watershed run: faster direct hillslope execution feeds typed pass
+files, watershed routing consumes those passes directly, and parquet publication
+stays deterministic after the parallel work finishes.
+
+Highlights for modelers and operators:
+
+- Single-hillslope direct runtime is now within the project's practical
+  viability budget while preserving protected outputs.
+- Full watershed timing should be judged from launch through completed watershed
+  outputs, not from process fanout alone.
+- Parallel watershed runs are checked against serial runs for identical parquet
+  schemas, row order, and values.
+- Typed publication is not the scaling bottleneck in the current large-fixture
+  evidence; the dominant cost is the actual hillslope physics.
+- Exact benchmark tables, fixture descriptions, and legacy completion
+  comparisons live in the linked evidence artifacts rather than in this summary.
+
+Speedup expectations are intentionally end-to-end rather than theoretical. Large
+watersheds with many hillslopes should see substantial wall-clock improvement
+when hillslope physics dominates the run and there are enough hillslopes to keep
+cores busy. The gain is not expected to be perfectly linear with `--jobs`: it is
+bounded by the number of hillslopes, available physical CPU cores, the slowest
+hillslope jobs, process and file-I/O overhead, and the serial watershed stages
+that still happen after hillslope workers finish.
+
+For small watersheds, or for job counts above the useful core count, extra
+workers quickly hit diminishing returns. On large watersheds, useful speedup
+comes from reducing the hillslope portion of the full run while keeping routing
+and publication overhead small. The correctness expectation is unchanged at every
+worker count: parallel execution must publish the same rows as the serial run.
+
+*In the repo:* `openwepp-cli-hill`, `openwepp-cli-watershed --jobs N`,
+`crates/openwepp-runner/src/watershed_supervisor.rs`; evidence in
+[docs/backlog/20260701-hillslope-sub5x-performance-assessment.md](docs/backlog/20260701-hillslope-sub5x-performance-assessment.md)
+and
+[docs/work-packages/20260702-wshedw6-publication-large-watershed-scaling-001/artifacts/scaling-matrix-evidence.md](docs/work-packages/20260702-wshedw6-publication-large-watershed-scaling-001/artifacts/scaling-matrix-evidence.md).
+
 ### The orchestrator decides what gets saved
 
 In `COMMON`-block Fortran any routine can write any shared variable at any time.
