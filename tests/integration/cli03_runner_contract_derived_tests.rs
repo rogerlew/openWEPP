@@ -829,7 +829,7 @@ fn assert_mf_multiofe_publication_wat_rows(wat_output: &Path) {
         .collect::<Vec<_>>();
     assert_eq!(sim_day_indices, vec![1, 1, 1, 2, 2, 2]);
     assert_mf_multiofe_publication_surface_handoff(&wat_rows[0..3]);
-    assert_b02_qofe_equals_q_all_rows(&wat_rows[0..3]);
+    assert_b02_qofe_equals_q_all_rows(&wat_rows);
     assert_mf_multiofe_publication_not_cloned(&wat_rows[0..3]);
 }
 
@@ -873,13 +873,13 @@ fn assert_mf_multiofe_publication_surface_handoff(day_rows: &[Row]) {
     }
 }
 
-fn assert_b02_qofe_equals_q_all_rows(day_rows: &[Row]) {
+fn assert_b02_qofe_equals_q_all_rows(rows: &[Row]) {
     // MOFEFID-B02 (INV-RUNOFFPART-032): the published `QOFE` adopts the
     // post-wepp_260516 convention `QOFE == Q` on ALL rows, including multi-OFE.
     // The pre-B02 anti-clone requirement that `QOFE` use the OFE-local length
     // (so `QOFE != Q`) is SUPERSEDED; per-OFE genuineness is proven by the
     // surface-handoff and not-cloned checks, not by `QOFE != Q`.
-    for row in day_rows {
+    for row in rows {
         let ofe = row_i32_value(row, "OFE");
         let q = row_f64_value(row, "Q");
         let qofe = row_f64_value(row, "QOFE");
