@@ -244,8 +244,9 @@ Out of scope:
 | Obligation | Minimum vectors | Expected evidence |
 |---|---|---|
 | Friction menu | Unit vectors for skin laminar/turbulent dispatch, form resistance, wave gating/ramp, vegetation beta cap, additivity, and no-flow degeneracy. | D3/D4 unit tests grounded in eqs. (2)-(7). |
-| Single-OFE solver | Papanicolaou Cases 1, 2, and 4, including Iwagaki shock behavior. | D4 KWE/TVD/CFL closure, non-negativity, and `Ef` evidence. |
+| Single-OFE solver (D4) | Physics vectors: mass conservation (discretization-only, resolution-convergent, positivity-clamp = 0), CFL stability, Case-1 steady-state, Case-4 shock structure, fail-closed forcing/parameter/timestep domains. | D4 KWE/TVD/CFL closure + non-negativity + fail-closed tests. Formal `Ef`-vs-observed is NOT a D4 vector; see the D-val row. |
 | Multi-OFE cascade | Case 3 plus an explicit upstream-hydrograph handoff vector. | D5 seam proof and `GAP-OFEROUTE-003` disposition. |
+| D-val Ef acceptance (INV-OFEROUTE-011) | Papanicolaou Cases 1-4 Nash-Sutcliffe reproduction + Zone taxonomy. | D5/integration: infiltration-coupled forcing (Cases 1-3, SC-RUNOFFPART) + digitized observed series; the D4 Nash-Sutcliffe harness executed against those. NOT a D4 vector. |
 | Default path | H2637 or equivalent protected-output run with subsystem off. | Byte-identical protected outputs and no routed side effects. |
 | Source provenance | D01 source manifest plus any newly acquired primary references. | Hash/source checks before D-val acceptance. |
 

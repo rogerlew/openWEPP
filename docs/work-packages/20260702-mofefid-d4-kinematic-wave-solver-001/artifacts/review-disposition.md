@@ -13,3 +13,16 @@ and fixed**:
 Post-fix gates (Ran): `ofe_routing` 17/17 (13 + 4 fail-closed); full
 orchestrator suite green; clippy `-D warnings` 0; fmt clean; BEI
 PASS-DEFERRED; authority guards PASS; solver still shadow-first.
+
+## Re-check disposition (Codex re-review `f7850cc4`)
+
+Two accepted at re-check (clamp ledger-complete; `sample_dt_s<=0` fails
+closed). Two partial closures completed:
+
+| # | Residual | Action |
+|---|---|---|
+| CX-001 | Finite negative excess/inflow/intensity silently normalized to zero | `RoutingError::NonFiniteForcing` renamed to `InvalidForcing`; `is_valid_forcing(x) = finite && x >= 0`; all three forcing channels now fail closed on negative OR non-finite, with the `.max(0.0)` normalization removed (values are validated non-negative). Test `negative_forcing_fails_closed_not_zeroed` (negative excess and negative inflow). |
+| CX-004 | Test-Vector Obligations "Single-OFE solver" row still assigned `Ef` evidence to D4 | Row rewritten to D4 physics vectors (conservation/CFL/steady-state/shock/fail-closed); a new "D-val Ef acceptance" row assigns the `Ef` reproduction to D5/integration (infiltration-coupled forcing + digitized observed series). The `INV-OFEROUTE-011` row and `OFEROUTE-KWE-TVD-SOLVER` BEI note (rev 2) already carried the stage boundary; the obligations table now matches. |
+
+Post-fix gates (Ran): `ofe_routing` 18/18; orchestrator 166/166; clippy
+`-D warnings` 0; fmt clean; BEI PASS-DEFERRED; authority guards PASS.

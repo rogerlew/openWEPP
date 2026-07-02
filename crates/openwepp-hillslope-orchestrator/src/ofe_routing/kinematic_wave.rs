@@ -26,6 +26,13 @@ pub const CFL_TARGET: f64 = 0.9;
 /// Minimum positive depth used to guard divisions; below this a cell is dry.
 const DRY_DEPTH_M: f64 = 1.0e-9;
 
+/// A forcing value is valid iff finite and non-negative (rainfall excess,
+/// rainfall intensity, and upstream inflow are physically non-negative).
+#[must_use]
+fn is_valid_forcing(value: f64) -> bool {
+    value.is_finite() && value >= 0.0
+}
+
 /// Per-cell space-variant friction + geometry parameters. A single-OFE mesh
 /// with uniform roughness repeats one value across cells; Case 4 varies
 /// `slope` per section.
@@ -273,8 +280,8 @@ pub enum RoutingError {
     /// non-positive sample or max sub-timestep).
     DegenerateConfiguration,
     /// Forcing (rainfall excess / intensity / upstream inflow) returned a
-    /// non-finite value.
-    NonFiniteForcing,
+    /// non-finite OR negative value (all three are physically non-negative).
+    InvalidForcing,
     /// A cell parameter is out of domain (non-finite, negative slope/ko/etc.).
     InvalidCellParameter,
 }
@@ -368,12 +375,13 @@ impl KinematicWaveSolver {
         let n = self.mesh.cell_count();
         let dx = self.mesh.cell_length_m;
         let intensity = (forcing.rainfall_intensity_m_s)(time_s);
-        let q_up_raw = (forcing.upstream_inflow_m2_s)(time_s);
-        let intensity_raw = intensity;
-        if !q_up_raw.is_finite() || !intensity_raw.is_finite() {
-            return Err(RoutingError::NonFiniteForcing);
+        let q_up = (forcing.upstream_inflow_m2_s)(time_s);
+        // Rainfall excess, intensity, and upstream inflow are physically
+        // non-negative; a non-finite OR negative value is invalid input and
+        // fails closed (it is not silently normalized to zero).
+        if !is_valid_forcing(q_up) || !is_valid_forcing(intensity) {
+            return Err(RoutingError::InvalidForcing);
         }
-        let q_up = q_up_raw.max(0.0);
         let mut clamp_injected_m2 = 0.0_f64;
 
         // Per-cell alpha and rainfall excess for this step.
@@ -382,10 +390,10 @@ impl KinematicWaveSolver {
         for i in 0..n {
             alpha[i] = self.mesh.cells[i].alpha(self.depth_m[i], self.discharge_m2_s[i], intensity);
             let v_raw = (forcing.rainfall_excess_m_s)(i, time_s);
-            if !v_raw.is_finite() {
-                return Err(RoutingError::NonFiniteForcing);
+            if !is_valid_forcing(v_raw) {
+                return Err(RoutingError::InvalidForcing);
             }
-            v[i] = v_raw.max(0.0);
+            v[i] = v_raw;
         }
 
         // Predictor (eqs. 8-9): forward flux difference; upstream flux = q_up.
@@ -856,7 +864,7 @@ mod tests {
         };
         assert!(matches!(
             solver.run(&forcing, 100.0, 10.0, 2.0),
-            Err(RoutingError::NonFiniteForcing)
+            Err(RoutingError::InvalidForcing)
         ));
     }
 
@@ -874,7 +882,44 @@ mod tests {
         };
         assert!(matches!(
             solver.run(&forcing, 100.0, 10.0, 2.0),
-            Err(RoutingError::NonFiniteForcing)
+            Err(RoutingError::InvalidForcing)
+        ));
+    }
+
+    #[test]
+    fn negative_forcing_fails_closed_not_zeroed() {
+        let mesh = KinematicWaveMesh::uniform(10.0, 10, CellParameters::bare(0.05, 100.0));
+        let mut solver = KinematicWaveSolver::new(mesh);
+        // finite but negative rainfall excess is invalid (must fail closed,
+        // not silently normalize to zero).
+        let excess = |_i: usize, _t: f64| -1.0e-6;
+        let inflow = |_t: f64| 0.0;
+        let intensity = |_t: f64| 0.0;
+        let forcing = Forcing {
+            rainfall_excess_m_s: &excess,
+            upstream_inflow_m2_s: &inflow,
+            rainfall_intensity_m_s: &intensity,
+        };
+        assert!(matches!(
+            solver.run(&forcing, 100.0, 10.0, 2.0),
+            Err(RoutingError::InvalidForcing)
+        ));
+        // negative upstream inflow likewise
+        let excess2 = |_i: usize, _t: f64| 0.0;
+        let inflow2 = |_t: f64| -1.0e-4;
+        let mut solver2 = KinematicWaveSolver::new(KinematicWaveMesh::uniform(
+            10.0,
+            10,
+            CellParameters::bare(0.05, 100.0),
+        ));
+        let forcing2 = Forcing {
+            rainfall_excess_m_s: &excess2,
+            upstream_inflow_m2_s: &inflow2,
+            rainfall_intensity_m_s: &intensity,
+        };
+        assert!(matches!(
+            solver2.run(&forcing2, 100.0, 10.0, 2.0),
+            Err(RoutingError::InvalidForcing)
         ));
     }
 
