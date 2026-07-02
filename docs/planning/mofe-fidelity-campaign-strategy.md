@@ -22,12 +22,17 @@ lanes:
 - **Lane A — proactive MOFE defect-review sweep.** Adversarial review of the
   whole MOFE surface (transfer, carry arrays, publication geometry, per-OFE
   closure, winter-on-MOFE) for defects nobody has reported.
-- **Lane B — stakeholder-brief defect audit.** The wepp-forest water-balance
-  program found eleven concrete defect classes in legacy MOFE-relevant
-  accounting (`/workdir/wepp-forest/docs/20260504-stakeholder-watbalance.md`).
-  Audit openWEPP against every class with evidence, not assumption. One class
-  is already known defect-shaped for us: our `QOFE` publication follows the
-  pre-`wepp_260516` legacy convention while the ecosystem has moved.
+- **Lane B — stakeholder-brief defect audit, adjudication-first.** The
+  wepp-forest water-balance program reported eleven defect classes in legacy
+  MOFE-relevant accounting
+  (`/workdir/wepp-forest/docs/20260504-stakeholder-watbalance.md`). **The
+  brief is a flag list, not an authority** — each claim is independently
+  re-adjudicated (graded `conservation-forced` / `source-intent` /
+  `convention` / `unverified`) before openWEPP is audited against the
+  adjudicated ground truth, and every row carries a dual verdict (brief
+  claim × openWEPP). One row is already known contract-decision-shaped for
+  us: our `QOFE` publication follows the pre-`wepp_260516` convention while
+  the ecosystem has moved.
 - **Lane C — lateral-flow observed-authority rubric.** Promote the landed
   field datasets (`tests/fixtures/forest_lateral_flow_authority/`: HJ Andrews
   WS10, Panola, Maimai M8, Coweeta) into an acceptance envelope and a
@@ -126,12 +131,53 @@ evidence and an explicit disposition; confirmed defects convert to
 Defect-Closure ExecPlans per ADR-0018. A clean sweep is a valid outcome and
 is recorded as one.
 
-## 4. Lane B — stakeholder-brief defect audit
+## 4. Lane B — stakeholder-brief defect audit (adjudication-first)
 
-Audit openWEPP against each defect class the wepp-forest program observed.
-For each: locate the openWEPP analog surface, produce evidence (**Ran**
-where a test/run can decide, **Static** otherwise), and disposition as
-`correct-by-construction` / `defect` / `not-applicable` / `contract-decision`.
+**Posture (operator directive, 2026-07-01): the brief is a flag list, not
+an authority.** The wepp-forest program's conclusions are not fully trusted
+— its own record shows why: the U1–U7F patch ladder traded defect families
+at every promotion boundary; `wepp_260501` was released and failed on a
+second project two days later; R01 passed tri-hillslope validation and then
+regressed 30/40 at cohort scale; acceptance gates were governance-widened
+mid-campaign. Several "defects" are on inspection *convention choices*
+(audit input basis, column denominator semantics) rather than physical
+errors. Lane B therefore applies to the brief the same discipline ADR-0017
+applies to the legacy binary: each claim earns its authority; none inherits
+it from the narrative.
+
+**Adjudication protocol — run per class, before any openWEPP verdict:**
+
+1. **Restate the brief's claim and separate its parts.** The *problem
+   observation* and the *repair conclusion* are distinct claims with
+   distinct evidence (R01 is the type case: the observation — reported
+   runoff exceeding precipitation — is conservation-forced and solid; the
+   repair failed its own cohort gate).
+2. **Grade the claim's authority:**
+   - `conservation-forced` — violating it breaks a mass/closure identity
+     that holds independent of anyone's narrative (runoff > precipitation;
+     flux with no compensating Δstorage). Strongest grade.
+   - `source-intent` — backed by legacy source intent (ADR-0024 A0
+     anchor). Valid only after **we re-read the cited source ourselves**;
+     the brief's source reading is not accepted secondhand.
+   - `convention` — a definitional/basis choice (what counts as external
+     input; which denominator a column uses). Here "defect" can only mean
+     "inconsistent with a declared contract," and the right contract for
+     openWEPP is adjudicated from ADR-0019 consumer closure semantics —
+     not from what wepp-forest chose.
+   - `unverified` — asserted in the brief but not reproducible from
+     evidence we hold. Recorded as such; generates no openWEPP obligation.
+3. **Derive the openWEPP-native correct behavior** from our own authority
+   chain (`SC-*` invariants, conservation identities, ADR-0024 source
+   intent, ADR-0019 schema ownership). "Because wepp-forest concluded X"
+   is never a justification.
+4. **Then** audit openWEPP against the adjudicated ground truth, with
+   evidence (**Ran** where a test/run can decide, **Static** otherwise).
+
+**Dual verdict per class:** a *brief-claim disposition* (`upheld` /
+`partially-upheld` / `convention-not-defect` / `unsubstantiated`) **and**
+an *openWEPP disposition* (`correct-by-construction` / `defect` /
+`not-applicable` / `contract-decision`). A class where the brief is wrong
+and openWEPP is fine is a legitimate, valuable outcome — record it.
 
 | # | Brief defect class | openWEPP audit question |
 |---|---|---|
@@ -147,9 +193,34 @@ where a test/run can decide, **Static** otherwise), and disposition as
 | B10 | Winter day-end mixed-melt aggregation math defect (legacy fix `03fee455`; branch empirically unreachable in their cohort) | Does our melt-day aggregation carry the corrected math, and is the mixed-sign branch reachable/tested? |
 | B11 | Audit-tooling over-reach: surface-pulse check firing on `latqcc`-only days | Do our diagnostics distinguish surface-runoff-absent lateral-cascade days? |
 
-**Acceptance:** one artifact with an eleven-row verdict table, each row
-carrying its evidence class and disposition. B7 is expected to spawn the
-campaign's first contract package (`QOFE` ecosystem-contract adjudication);
+Known skepticism hooks going in (to be tested, not assumed):
+
+- **B2 (RM double-count):** the "defect" was in the *audit's* input-basis
+  definition, not the model — production outputs were unchanged. Likely
+  grade `convention`; openWEPP's obligation is that *our* closure gates use
+  a self-consistent basis, which we verify directly.
+- **B6 (Shape A clamp+preserve):** scaling baseflow with the shortfall is
+  *one* resolution consistent with closure, not the uniquely forced one;
+  the invariant worth keeping is "clamp+preserve without compensation is
+  non-conserving," not their specific partition choice.
+- **B7 (QOFE):** the physical volume was never wrong — the question is
+  column *semantics*. The ecosystem's move to `QOFE = Q` matters to us as a
+  consumer-contract fact (wepppy re-anchoring), and the adjudication weighs
+  that against our own schema ownership; the brief's "18-year defect"
+  framing is not itself the authority. Grade `convention`, resolved by
+  contract decision.
+- **B8 (R01):** observation `conservation-forced`; repair `unsubstantiated`
+  (failed its own cohort gate). openWEPP is audited against the
+  observation only.
+- **B10 (winter mixed-melt):** verify the sign/magnitude math against the
+  Dun-dissertation source intent ourselves; the brief reports the branch
+  empirically unreachable in their cohort, which caps its practical weight.
+
+**Acceptance:** one artifact with an eleven-row verdict table carrying the
+**dual verdict** (brief-claim disposition + openWEPP disposition), the
+authority grade, and the evidence class per row. B7 is expected to spawn
+the campaign's first contract package (`QOFE` ecosystem-contract
+adjudication) — as a contract decision, not an inherited defect;
 B8/B9 produce comparator-hygiene entries even if openWEPP is clean.
 
 ## 5. Lane C — lateral-flow observed-authority rubric and fidelity evaluation
@@ -274,6 +345,12 @@ activates by default inside this campaign.
   brief proves legacy MOFE production *currently carries known unfixed
   defects* (B8, B9). Comparator deltas on those surfaces are expected and
   must be recorded as such, not chased.
+- **The wepp-forest program's conclusions are also a flag, not an
+  authority** (operator directive, 2026-07-01). Its problem observations
+  are leads; its repair conclusions and convention choices carry no
+  authority in openWEPP until independently adjudicated under the Lane B
+  protocol (§4). This extends the ADR-0017 posture from the legacy binary
+  to the legacy-side *program record*.
 - **Closure first, magnitude last** (ROADMAP ordering principle). Lane C
   judges magnitude only because the closure prerequisites already hold.
 - **Like-for-like cut-points** before any divergence is called a defect
