@@ -87,10 +87,41 @@ pub fn infiltration_capacity_m_s(soil: &GreenAmptSoil, cumulative_m: f64) -> f64
     soil.saturated_conductivity_m_s * (1.0 + soil.suction_storage_m() / cumulative_m)
 }
 
+/// Integrate the implicit Green-Ampt relation
+/// `F - F_start - s*ln((F+s)/(F_start+s)) = Ks*tau` for the ponded cumulative
+/// depth `F` after time `tau` (s) of capacity-limited infiltration from
+/// `f_start`. Newton iteration; `s = psi*dtheta`. Returns `F >= f_start`.
+#[must_use]
+fn green_ampt_integrate_ponded(f_start: f64, ks: f64, s: f64, tau_s: f64) -> f64 {
+    let f_start_eff = if f_start <= 0.0 { 1.0e-9 } else { f_start };
+    let target = ks * tau_s;
+    let mut f = f_start_eff + ks * tau_s; // initial guess
+    for _ in 0..50 {
+        let g = (f - f_start_eff) - s * ((f + s) / (f_start_eff + s)).ln() - target;
+        let dg = 1.0 - s / (f + s);
+        if dg.abs() < 1.0e-15 {
+            break;
+        }
+        let step = g / dg;
+        f -= step;
+        if f <= f_start_eff {
+            f = f_start_eff;
+        }
+        if step.abs() <= 1.0e-14 {
+            break;
+        }
+    }
+    f.max(f_start)
+}
+
 /// Advance Green-Ampt-Mein-Larsen one step of duration `dt` (s) under a
-/// constant rainfall rate `rainfall_rate_m_s` over the step. Handles the
-/// unponded -> ponded transition and integrates the implicit Green-Ampt
-/// relation by Newton iteration once ponded. Returns infiltration + excess.
+/// constant rainfall rate `rainfall_rate_m_s`. Implements the explicit
+/// unponded -> ponded transition: rainfall below `Ks` never ponds; otherwise
+/// ponding starts when the cumulative depth reaches `Fp = s / (r/Ks - 1)`
+/// (Mein-Larsen). If ponding falls mid-step, the pre-ponding portion
+/// infiltrates ALL rainfall (`F0 -> Fp` over `t_p = (Fp - F0)/r`) and the
+/// remainder infiltrates at capacity via the implicit Green-Ampt integration;
+/// an already-ponded step integrates from `F0` directly.
 #[must_use]
 pub fn green_ampt_step(
     soil: &GreenAmptSoil,
@@ -107,7 +138,8 @@ pub fn green_ampt_step(
         };
     }
     let rain_depth = rainfall_rate_m_s * dt_s;
-    if soil.saturated_conductivity_m_s <= 0.0 {
+    let ks = soil.saturated_conductivity_m_s;
+    if ks <= 0.0 {
         // impermeable: all rainfall is excess
         return InfiltrationStep {
             infiltrated_m: 0.0,
@@ -115,45 +147,35 @@ pub fn green_ampt_step(
             cumulative_m: f0,
         };
     }
-    let ks = soil.saturated_conductivity_m_s;
-    let s = soil.suction_storage_m();
-
-    // Capacity if all rainfall infiltrated this step (test for ponding).
-    let f_all = f0 + rain_depth;
-    let cap_at_f_all = infiltration_capacity_m_s(soil, f_all);
-    if rainfall_rate_m_s <= cap_at_f_all {
-        // rainfall rate never exceeds capacity over the step: no ponding,
-        // all rainfall infiltrates.
+    // Rainfall at or below Ks never ponds: capacity fc = Ks(1 + s/F) > Ks >= r
+    // for all finite F, so all rainfall infiltrates.
+    if rainfall_rate_m_s <= ks {
         return InfiltrationStep {
             infiltrated_m: rain_depth,
             excess_m: 0.0,
-            cumulative_m: f_all,
+            cumulative_m: f0 + rain_depth,
         };
     }
+    let s = soil.suction_storage_m();
+    // Ponding cumulative depth Fp where capacity == rainfall rate (r > Ks).
+    let fp = s / (rainfall_rate_m_s / ks - 1.0);
 
-    // Ponded (rainfall exceeds capacity). Integrate the implicit Green-Ampt
-    // relation over the step: F - F0 - s*ln((F+s)/(F0+s)) = Ks*dt.
-    // (When F0 = 0 the suction term uses a small floor to avoid ln(0).)
-    let f0_eff = if f0 <= 0.0 { 1.0e-9 } else { f0 };
-    let target = ks * dt_s;
-    let mut f = f0_eff + ks * dt_s; // initial guess
-    for _ in 0..50 {
-        let g = (f - f0_eff) - s * ((f + s) / (f0_eff + s)).ln() - target;
-        let dg = 1.0 - s / (f + s);
-        if dg.abs() < 1.0e-15 {
-            break;
+    let f_end = if f0 >= fp {
+        // already ponded at step start: capacity-limited over the whole step.
+        green_ampt_integrate_ponded(f0, ks, s, dt_s)
+    } else {
+        // unponded at start; time to reach Fp infiltrating all rainfall.
+        let t_p = (fp - f0) / rainfall_rate_m_s;
+        if t_p >= dt_s {
+            // never ponds this step: all rainfall infiltrates.
+            f0 + rain_depth
+        } else {
+            // ponds mid-step: F0 -> Fp (all rain), then capacity-limited for
+            // the remaining tau = dt - t_p.
+            green_ampt_integrate_ponded(fp, ks, s, dt_s - t_p)
         }
-        let step = g / dg;
-        f -= step;
-        if f <= f0_eff {
-            f = f0_eff;
-        }
-        if step.abs() <= 1.0e-14 {
-            break;
-        }
-    }
-    // Infiltration cannot exceed the available rainfall over the step.
-    let infiltrated = (f - f0).clamp(0.0, rain_depth);
+    };
+    let infiltrated = (f_end - f0).clamp(0.0, rain_depth);
     let excess = (rain_depth - infiltrated).max(0.0);
     InfiltrationStep {
         infiltrated_m: infiltrated,
@@ -208,24 +230,41 @@ impl ExcessHyetograph {
 /// Apply Green-Ampt-Mein-Larsen to a rainfall series, sub-stepping each
 /// interval at `substep_s`, to produce the rainfall-excess hyetograph one OFE
 /// routes (Papanicolaou assumption 2: infiltration on rainfall, per OFE).
-#[must_use]
+///
+/// Fails closed: an invalid soil, a non-finite/non-positive `substep_s`, or
+/// any malformed rainfall interval (non-finite bound/rate, `end < start`, or
+/// negative rate) returns an error rather than being silently normalized or
+/// skipped. A zero-duration interval (`end == start`) is a no-op (no rain).
 pub fn green_ampt_excess_hyetograph(
     soil: &GreenAmptSoil,
     rainfall: &[RainfallInterval],
     substep_s: f64,
-) -> ExcessHyetograph {
+) -> Result<ExcessHyetograph, super::kinematic_wave::RoutingError> {
+    use super::kinematic_wave::RoutingError;
+    if !soil.is_valid() {
+        return Err(RoutingError::InvalidCellParameter);
+    }
+    if !substep_s.is_finite() || substep_s <= 0.0 {
+        return Err(RoutingError::DegenerateConfiguration);
+    }
+    for interval in rainfall {
+        if !interval.start_s.is_finite()
+            || !interval.end_s.is_finite()
+            || !interval.rate_m_s.is_finite()
+            || interval.end_s < interval.start_s
+            || interval.rate_m_s < 0.0
+        {
+            return Err(RoutingError::InvalidForcing);
+        }
+    }
+
     let mut state = InfiltrationState::default();
     let mut intervals = Vec::new();
     let mut rainfall_depth = 0.0;
     let mut infiltrated_depth = 0.0;
     let mut excess_depth = 0.0;
-    let substep_s = if substep_s > 0.0 { substep_s } else { 1.0 };
 
     for interval in rainfall {
-        let duration = interval.end_s - interval.start_s;
-        if duration <= 0.0 || interval.rate_m_s < 0.0 {
-            continue;
-        }
         // March a fixed sub-step across the interval, taking a partial final
         // step to land exactly on `end_s` (avoids an f64 -> integer count).
         let mut start = interval.start_s;
@@ -246,12 +285,12 @@ pub fn green_ampt_excess_hyetograph(
         }
     }
 
-    ExcessHyetograph {
+    Ok(ExcessHyetograph {
         intervals,
         rainfall_depth_m: rainfall_depth,
         infiltrated_depth_m: infiltrated_depth,
         excess_depth_m: excess_depth,
-    }
+    })
 }
 
 /// Combined rainfall-to-runoff result: per-OFE Green-Ampt infiltration
@@ -307,12 +346,13 @@ pub fn run_infiltrated_cascade(
         }
     }
 
-    // Per-OFE Green-Ampt rainfall -> excess hyetographs.
+    // Per-OFE Green-Ampt rainfall -> excess hyetographs (fail closed on any
+    // invalid soil / substep / rainfall interval).
     let hyetos: Vec<ExcessHyetograph> = soils
         .iter()
         .zip(rainfall.iter())
         .map(|(soil, rain)| green_ampt_excess_hyetograph(soil, rain, infiltration_substep_s))
-        .collect();
+        .collect::<Result<Vec<_>, _>>()?;
 
     // Cascade forcing: excess routes; the skin-resistance term uses the
     // RAINFALL intensity (Papanicolaou eq. 2 depends on I, not excess).
@@ -416,7 +456,7 @@ mod tests {
             end_s: 5.0 * 3600.0,
             rate_m_s: r,
         }];
-        let hyeto = green_ampt_excess_hyetograph(&soil, &rainfall, 10.0);
+        let hyeto = green_ampt_excess_hyetograph(&soil, &rainfall, 10.0).expect("valid hyetograph");
         // some rainfall infiltrates, some runs off
         assert!(hyeto.infiltrated_depth_m > 0.0);
         assert!(hyeto.excess_depth_m > 0.0);
@@ -446,7 +486,7 @@ mod tests {
             end_s: 3600.0,
             rate_m_s: r,
         }];
-        let hyeto = green_ampt_excess_hyetograph(&soil, &rainfall, 10.0);
+        let hyeto = green_ampt_excess_hyetograph(&soil, &rainfall, 10.0).expect("valid hyetograph");
         assert!(approx(hyeto.runoff_coefficient(), 1.0, 1.0e-12));
         assert!(approx(hyeto.infiltrated_depth_m, 0.0, 1.0e-15));
     }
@@ -475,7 +515,7 @@ mod tests {
                 rate_m_s: 20.0 / 3.6e6,
             },
         ];
-        let hyeto = green_ampt_excess_hyetograph(&soil, &rainfall, 5.0);
+        let hyeto = green_ampt_excess_hyetograph(&soil, &rainfall, 5.0).expect("valid hyetograph");
         assert!(approx(
             hyeto.rainfall_depth_m,
             hyeto.infiltrated_depth_m + hyeto.excess_depth_m,
@@ -617,5 +657,94 @@ mod tests {
             run_infiltrated_cascade(&segments, &rainfall, &bad_soil, 10.0, 100.0, 10.0, 2.0),
             Err(RoutingError::InvalidCellParameter)
         ));
+    }
+    #[test]
+    fn hyetograph_fails_closed_on_invalid_inputs() {
+        use super::super::kinematic_wave::RoutingError;
+        let soil = GreenAmptSoil {
+            saturated_conductivity_m_s: 2.0e-6,
+            suction_head_m: 0.1,
+            moisture_deficit: 0.3,
+        };
+        let good = vec![RainfallInterval {
+            start_s: 0.0,
+            end_s: 100.0,
+            rate_m_s: 1.0e-5,
+        }];
+        // non-positive substep
+        assert!(matches!(
+            green_ampt_excess_hyetograph(&soil, &good, 0.0),
+            Err(RoutingError::DegenerateConfiguration)
+        ));
+        // non-finite substep
+        assert!(matches!(
+            green_ampt_excess_hyetograph(&soil, &good, f64::NAN),
+            Err(RoutingError::DegenerateConfiguration)
+        ));
+        // negative rainfall rate
+        let neg_rate = vec![RainfallInterval {
+            start_s: 0.0,
+            end_s: 100.0,
+            rate_m_s: -1.0e-6,
+        }];
+        assert!(matches!(
+            green_ampt_excess_hyetograph(&soil, &neg_rate, 10.0),
+            Err(RoutingError::InvalidForcing)
+        ));
+        // end before start
+        let backwards = vec![RainfallInterval {
+            start_s: 100.0,
+            end_s: 0.0,
+            rate_m_s: 1.0e-5,
+        }];
+        assert!(matches!(
+            green_ampt_excess_hyetograph(&soil, &backwards, 10.0),
+            Err(RoutingError::InvalidForcing)
+        ));
+        // non-finite bound
+        let naninterval = vec![RainfallInterval {
+            start_s: 0.0,
+            end_s: f64::INFINITY,
+            rate_m_s: 1.0e-5,
+        }];
+        assert!(matches!(
+            green_ampt_excess_hyetograph(&soil, &naninterval, 10.0),
+            Err(RoutingError::InvalidForcing)
+        ));
+        // invalid soil (deficit > 1)
+        let bad_soil = GreenAmptSoil {
+            saturated_conductivity_m_s: 1.0e-6,
+            suction_head_m: 0.1,
+            moisture_deficit: 2.0,
+        };
+        assert!(matches!(
+            green_ampt_excess_hyetograph(&bad_soil, &good, 10.0),
+            Err(RoutingError::InvalidCellParameter)
+        ));
+    }
+
+    #[test]
+    fn explicit_ponding_split_conserves_and_delays_excess() {
+        // Ponding must begin only after the cumulative reaches Fp; a coarse
+        // single step spanning the transition must conserve mass and produce
+        // LESS excess than a naive full-step-ponded treatment.
+        let soil = GreenAmptSoil {
+            saturated_conductivity_m_s: 3.0e-6,
+            suction_head_m: 0.12,
+            moisture_deficit: 0.3,
+        };
+        let r = 50.0 / 3.6e6; // > Ks -> ponds once F reaches Fp
+        // Fp = s/(r/Ks - 1) ~ 9.9 mm here, reached at t_p ~ 714 s; use a step
+        // long enough to cross that transition (t_p < dt).
+        let dt = 1800.0;
+        let step = green_ampt_step(&soil, InfiltrationState::default(), r, dt);
+        // conservation within the step
+        assert!(approx(step.infiltrated_m + step.excess_m, r * dt, 1.0e-12));
+        // dry start with r>Ks over a step that crosses ponding: some
+        // infiltration AND some excess.
+        assert!(step.infiltrated_m > 0.0 && step.excess_m > 0.0);
+        // pre-ponding infiltrates all rain: infiltration exceeds the naive
+        // full-step capacity-limited amount (Ks*dt lower bound is beaten).
+        assert!(step.infiltrated_m > soil.saturated_conductivity_m_s * dt);
     }
 }

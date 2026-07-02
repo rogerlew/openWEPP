@@ -1,6 +1,6 @@
 # MOFEFID-D6 — Infiltration Coupling (Rainfall-to-Runoff)
 
-Status: **EXECUTED — REVIEW-READY** (2026-07-02)
+Status: **EXECUTED — REVIEW-READY** (2026-07-02; Codex review dispositioned, `artifacts/review-disposition.md`)
 Campaign: [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D
 integration. Contract: `SC-OFEROUTE-001` (rev 4). Owner: Claude Code.
 Worktree: `mofefid-d6`. Activation: **opt-in / shadow-first**.
@@ -36,7 +36,7 @@ daily-lump runon re-infiltration with hydraulic surface routing; there is no
 second re-infiltration of the runon. Production wiring + DC01-disable is the
 activation gate.
 
-## Validation (9 tests, no copyrighted data)
+## Validation (11 tests, no copyrighted data)
 
 Green-Ampt kernel (5): capacity diverges at dry / decays with F / asymptotes
 to Ks; rainfall below Ks never ponds (zero excess); high rainfall ponds and
@@ -44,7 +44,9 @@ produces excess with decaying infiltration; impermeable -> all excess;
 mass conservation across variable rainfall. Coupled cascade (4): Case-1-like
 rainfall-to-runoff conserves end-to-end (rainfall = infiltration + outlet +
 storage) with 0<RC<1 and CFL held; impermeable routes all rainfall;
-two-OFE lower-Ks-downslope runs off more; config/soil domain fail-closed.
+two-OFE lower-Ks-downslope runs off more; config/soil domain fail-closed;
+hyetograph fail-closed on invalid rainfall/substep (6 cases); explicit
+ponding-transition split conservation.
 
 ## D-val Ef status (INV-OFEROUTE-011)
 
@@ -58,7 +60,7 @@ run is D-val with observed data.
 
 ## Gates
 
-- `ofe_routing` 32/32 (23 D3-D5 + 9 D6); full orchestrator suite 180/180;
+- `ofe_routing` 34/34 (23 D3-D5 + 11 D6); full orchestrator suite 182/182;
   clippy `-D warnings` 0; fmt clean; BEI PASS-DEFERRED; authority guards
   PASS; `ofe_routing` shadow-first (not called by production).
 
