@@ -165,6 +165,7 @@ impl DirectProductionSnowFrostAuthority {
             storage_liquid_delta_m: direct_production_frost_storage_liquid_delta(&frost_outcome),
             layer_carry_projection: self.frost_layer_carry_projection.clone(),
             hydrology_layers,
+            frost_outcome,
         }))
     }
 

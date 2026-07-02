@@ -54,6 +54,9 @@ pub struct DirectPublicationDayInput {
     pub erosion_inputs: Option<DirectErosionInputs>,
     pub frost_storage_liquid_delta_m: Option<f64>,
     pub winter_frost_compute_inputs: Option<crate::hydrology::DirectWinterFrostComputeInputs>,
+    // Single-solve authority (WP-2): the day's frost partition outcome,
+    // solved once by the runner authority from start-of-day lane state.
+    pub winter_frost_outcome: Option<Box<crate::hydrology::DirectWinterFrostPartitionOutcome>>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
 }
@@ -85,6 +88,7 @@ impl DirectPublicationDayInput {
             erosion_inputs: None,
             frost_storage_liquid_delta_m: None,
             winter_frost_compute_inputs: None,
+            winter_frost_outcome: None,
             frost_layer_carry_projection: None,
             frost_runtime_carry: None,
         }

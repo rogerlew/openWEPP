@@ -164,7 +164,7 @@ pub use decomposition::{
 };
 pub use diagnostic_events::{
     DirectEvapotranspirationTraceEvent, DirectPercolationTraceEvent,
-    DirectRunoffRebalanceTraceEvent, DirectSubsurfaceSaturationTraceEvent,
+    DirectSubsurfaceSaturationTraceEvent,
 };
 pub use erosion::{
     DirectErod13Inputs, DirectErod13State, DirectErod14ClassInputs, DirectErod14ClassState,
@@ -741,28 +741,5 @@ mod cqr_row9_direct_runtime_tests {
         let mut wrong_lane_day = day;
         wrong_lane_day.lane_index = 1;
         assert!(lane.commit_day(&wrong_lane_day).is_err());
-    }
-
-    #[test]
-    fn cqr_row9_r4a_frost_projection_rebalance_covers_noop_and_adjustment() {
-        let identity = DirectRunIdentity::new(903, 2637, 1, 1).expect("identity");
-        let mut day = DirectDayFrame::seed(identity, 0, 0).expect("day frame");
-        day.rebalance_r4a_frost_projection_to_storage_target()
-            .expect("missing storage input shadow should be a no-op");
-
-        let layer = row9_layer(0.020, 0.10);
-        let aggregate_m = layer.theta_m + layer.residual_theta * layer.depth_m;
-        day.percolation.layer_state_after = vec![layer];
-        day.storage_input_shadow_projection = Some(DirectStorageInputShadowProjection {
-            lane_index: 0,
-            day_index: 0,
-            storage_initial_m: aggregate_m + 5.0e-8,
-            precip_input_m: 0.0,
-        });
-        day.storage_reconciliation_inputs.storage_initial_m = aggregate_m + 5.0e-8;
-
-        day.rebalance_r4a_frost_projection_to_storage_target()
-            .expect("small aggregate delta should rebalance into the first layer");
-        assert_close(day.percolation.layer_state_after[0].theta_m, 0.020 + 5.0e-8);
     }
 }

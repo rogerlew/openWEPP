@@ -1,0 +1,22 @@
+# Snowfreeze Observed Frost-Depth Comparison
+
+- Site: `site5_reynolds_creek_us_rls_id`
+- Verdict: `UNRESOLVED`
+- Snow control: `MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW`
+- Observation rows: `4356`
+- Matched rows: `4356`
+- Modeled snow-depth days: `16437`
+- Observed snow-depth rows: `0`
+- Paired snow-depth control rows: `0`
+- Snow-depth control failures: `0`
+- Modeled snow deeper than observed rows: `0`
+- Modeled snow shallower than observed rows: `0`
+- Mean signed snow-depth residual (m): `n/a`
+- Median signed snow-depth residual (m): `n/a`
+- Adjacent-day timing/stage rescue rows: `0`
+- Snow-Water alias better rows: `0`
+- Frost-depth residual rows: `0`
+- Isotherm upper-bound rows: `4356`
+- Censored rows excluded: `0`
+- Max absolute snow-depth residual (m): `n/a`
+- Max absolute frost-depth residual (m): `n/a`

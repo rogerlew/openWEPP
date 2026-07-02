@@ -286,6 +286,7 @@ struct DirectProductionFrostTypedAuthority {
 
 struct DirectProductionFrostDayContext {
     compute_inputs: DirectWinterFrostComputeInputs,
+    frost_outcome: DirectWinterFrostPartitionOutcome,
     frozen_infiltration_capacity_m_s: f64,
     storage_liquid_delta_m: Option<f64>,
     layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
@@ -2912,6 +2913,7 @@ fn apply_direct_production_frost_context(
 ) {
     if let Some(frost_context) = frost_context {
         day_input.winter_frost_compute_inputs = Some(frost_context.compute_inputs);
+        day_input.winter_frost_outcome = Some(Box::new(frost_context.frost_outcome));
         day_input.frost_storage_liquid_delta_m = frost_context.storage_liquid_delta_m;
         day_input.frost_layer_carry_projection = frost_context.layer_carry_projection;
     }
