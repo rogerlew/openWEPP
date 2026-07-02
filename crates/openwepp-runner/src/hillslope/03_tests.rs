@@ -920,7 +920,7 @@ mod tests {
             .expect("direct manifest projection should build");
 
         assert_eq!(wat_rows[0].q.to_bits(), 12.5_f64.to_bits());
-        assert_eq!(wat_rows[0].qofe.to_bits(), 10.0_f64.to_bits());
+        assert_eq!(wat_rows[0].qofe.to_bits(), 12.5_f64.to_bits()); // MOFEFID-B02: QOFE == Q
         assert_eq!(wat_rows[0].rm.to_bits(), 8.25_f64.to_bits());
         assert_eq!(pass_rows[0].runvol_m3.to_bits(), 4.0_f64.to_bits());
         assert_eq!(pass_rows[0].peakro_m3_s.to_bits(), 0.75_f64.to_bits());
@@ -958,7 +958,7 @@ mod tests {
             },
             runoff: DirectPublicationRunoffOperands {
                 q_mm: 12.5,
-                qofe_mm: 10.0,
+                qofe_mm: 12.5,
                 runvol_m3: 4.0,
                 peak_runoff_m3_s: Some(0.75),
                 runoff_duration_s: Some(1800.0),
@@ -1100,7 +1100,7 @@ mod tests {
             },
             runoff: DirectPublicationRunoffOperands {
                 q_mm: 12.5 + offset,
-                qofe_mm: 10.0 + offset,
+                qofe_mm: 12.5 + offset,
                 runvol_m3: 4.0 + offset,
                 peak_runoff_m3_s: Some(0.75 + offset),
                 runoff_duration_s: Some(1800.0 + offset),

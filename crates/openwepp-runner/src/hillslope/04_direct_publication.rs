@@ -810,6 +810,25 @@ fn validate_retained_direct_publication_frame(
                 ),
             });
         }
+        validate_publication_qofe_equals_q(row)?;
+    }
+    Ok(())
+}
+
+// MOFEFID-B02 (INV-RUNOFFPART-032): QOFE is published as Q on every WB13 row.
+// Enforce it at the publication boundary so no producer path (retained or
+// streamed) can emit QOFE != Q, independent of how the operands were built.
+fn validate_publication_qofe_equals_q(
+    row: &DirectPublicationDayRow,
+) -> Result<(), HillslopeCliError> {
+    if row.runoff.qofe_mm.to_bits() != row.runoff.q_mm.to_bits() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_publication_frame",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} INV-RUNOFFPART-032 requires published QOFE == Q, observed QOFE={} Q={}",
+                row.runoff.qofe_mm, row.runoff.q_mm
+            ),
+        });
     }
     Ok(())
 }
@@ -857,6 +876,7 @@ fn validate_streamed_direct_publication(
                 ),
             });
         }
+        validate_publication_qofe_equals_q(row)?;
     }
     Ok(())
 }
