@@ -1,9 +1,13 @@
 # Hillslope direct runtime: sub-5× performance assessment
 
-State: `executed (WP-1)` — the identity-preserving lane landed via
-`docs/work-packages/20260701-hillperf-mechanical-winter-overhead-001/`
-(2026-07-01, same day); measured outcomes per finding below. F1 remains
-open in `20260701-hillperf-frost-single-solve-001` (scaffolded).
+State: `executed (WP-1 + WP-2, program complete)` — both lanes landed
+2026-07-01, same day as the assessment: the identity-preserving sweep via
+`docs/work-packages/20260701-hillperf-mechanical-winter-overhead-001/` and
+the frost single-solve (F1) via
+`docs/work-packages/20260701-hillperf-frost-single-solve-001/` (rubric bar
+passed). Final endpoint: **32.77 s median quiet 3-rep vs 9.30 s same-window
+legacy = 3.52×** — the `<=5x` viability question is answered with ~30%
+margin. Prune candidate once the detail below is no longer being consulted.
 Author: Claude Code, 2026-07-01.
 
 ## 0a. Measured outcome (WP-1, 2026-07-01)
@@ -25,7 +29,7 @@ Per-finding measured outcomes (details in the package's
 | F5 curve hoist | landed `2398ed44` (field replacement, once-per-lane fit) | 45.9 s |
 | F3 forcing dedupe | **non-viable as specified** (contexts differ: frost hardcodes `LegacyRst`; snow uses configured phase model); narrowed variant dropped post-re-profile | — |
 | F8 telemetry | skipped (manifest snapshots `phase_view_constructions`) | — |
-| F1 double frost solve | open → WP-2 (exit re-profile confirms the two-solve structure; `derived_frost_depths`+`round` at 12.4% promoted within WP-2 contingency) | — |
+| F1 double frost solve | **executed** in WP-2: single start-of-day solve applied at frost ingress (R4C→R4I); rubric no-worse in every verdict-bearing cell; F4 (`derived_frost_depths`+`round`, 3.7% at exit) left as the untaken contingency | **32.8 s (3.52×)** |
 Evidence class: **Ran** for all timings and the profile (commands in §6);
 **Static** for source-mechanism attribution (file:line cited per finding).
 Disposition of each finding (fix shape, sequencing, contract adjudication)

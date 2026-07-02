@@ -106,6 +106,17 @@ whether openWEPP is viable as the Rust simulation engine.
 | PERFDEEP07 retained HOLD run | `685.85 s` | `2907` | `75.20x` | `229004 KB` |
 | <=10x budget | `91.2 s` | `386` | `10x` | - |
 | <=5x budget | `45.6 s` | `193` | `5x` | - |
+| hillperf WP-1 exit (2026-07-01, byte-identical) | `46.69 s` | `198` | `4.80x` | about `80 MB` |
+| **hillperf WP-2 exit (2026-07-01, frost single-solve)** | **`32.77 s`** | **`139`** | **`3.52x`** | about `77 MB` |
+
+**Status (2026-07-01): both budgets are met.** The `<=10x` viability gate and
+the `<=5x` aspirational budget are cleared on the production default path
+(quiet-window 3-rep medians, same-window legacy re-anchors; evidence in
+`docs/work-packages/20260701-hillperf-mechanical-winter-overhead-001/` and
+`20260701-hillperf-frost-single-solve-001/`). The dominant remaining profile
+is physics; the largest identified non-physics leaf is `round` inside
+`derived_frost_depths_from_fine_state` (~3.7% self), held as WP-2's untaken
+contingency.
 
 H2637 has `235,961` OFE-days. The PERFDEEP07 row is the best single retained
 HOLD run, not an accepted three-run median and not a passing baseline. The

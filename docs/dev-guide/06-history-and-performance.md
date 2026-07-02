@@ -88,12 +88,17 @@ representation trap of §6.2.
 
 ## 6.4 Where performance stands, and what's next
 
-Measured 2026-07-01 (this repo, dual Xeon E5-2697 v2): H2637 direct
-**~71.4 s vs 9.65 s legacy = 7.40×**, RSS ~82 MiB. Inside the ≤10× gate;
-the ≤5× goal (~48 s) is open. A fresh profile attributes ~64% of wall to the
-winter snow/frost subsystem, with concrete non-physics overheads identified —
-the evidence-ranked refactor queue lives in
-[the sub-5× assessment](../backlog/20260701-hillslope-sub5x-performance-assessment.md).
+Measured 2026-07-01 (this repo, dual Xeon E5-2697 v2), a single day's arc:
+the morning baseline was **71.4 s vs 9.65 s legacy = 7.40×**; the
+mechanical sweep (guard-symbol deferral, curve hoisting — byte-identical
+outputs) brought it to **46.7 s = 4.80×**, and the frost single-solve rewire
+(one partition per day, applied at ingress; accepted by the frost
+observation rubric rather than output identity) landed at
+**32.8 s = 3.52×**, RSS ~77 MiB. **Both the ≤10× viability gate and the ≤5×
+aspirational budget are met**, and the remaining profile is dominated by
+physics for the first time in the program's history. The evidence trail is
+[the sub-5× assessment](../backlog/20260701-hillslope-sub5x-performance-assessment.md)
+and the two `20260701-hillperf-*` work packages.
 
 On the watershed tier the same playbook is repeating deliberately: measure
 first (WSHEDPERF01 showed routing is ~0.08 s and hillslope fan-out is

@@ -54,6 +54,25 @@ State as of `2026-07-01`:
 
 ## Execution Log
 
+- `20260701-hillperf-frost-single-solve-001/` is complete as the sub-5×
+  program's WP-2 (finding F1). Result: `EXECUTED-COMPLETE`, rubric bar
+  passed. The winter frost partition is solved exactly once per (lane, day)
+  from start-of-day lane state and applied at the `r4w` frost ingress
+  (between R4C and R4I); the R4A re-solve, layer overwrite, and rebalance
+  bridges are deleted. Acceptance = frost observation rubric no-worse in
+  every verdict-bearing cell (frost-tube sites improved, Morris −4.9 cm max
+  residual; snow columns bit-identical; one non-verdict Mandan isotherm cell
+  +57 recorded as bounded). H2637 46.69 → 32.77 s (3.52× legacy, quiet
+  3-rep); first-divergence and paired-solve diagnostics archived;
+  Codex-reviewed, findings dispositioned.
+- `20260701-hillperf-mechanical-winter-overhead-001/` is complete as the
+  sub-5× program's WP-1 (identity-preserving lane: F2/F3/F5/F6/F7/F8).
+  Result: `EXECUTED-COMPLETE`, byte-identical on all five H2637 protected
+  outputs at every commit. Guard-symbol construction deferred to failure
+  branches (~85 sites), seasonal frost curve fit hoisted to once-per-lane,
+  construct-behind-the-gate fixes; F3 verified non-viable (like-for-like
+  rule), F8 skipped (manifest-entangled). H2637 71.4 → 46.69 s (4.80×,
+  quiet 3-rep); Codex-reviewed, findings dispositioned.
 - `20260701-wshedw5-old-watershed-runtime-deletion-001/` is complete as
   WSHED-W5 OLD WATERSHED RUNTIME DELETION. Result: `EXECUTED-COMPLETE`. It
   deleted the watershed-specific old request/writeback runtime, removed

@@ -108,7 +108,8 @@ The production order, with the module that owns each:
 | 4 | `r5c_residue_partition` | `decomposition.rs` | residue mass partition |
 | 5 | `r5d_annual_growth` | `growth.rs` | annual crop growth |
 | 6 | `r5d_perennial_growth` | `growth.rs` | perennial growth |
-| 7 | `r4c_storage_input` | `storage.rs` | storage input accounting |
+| 7 | `r4c_storage_input` | `storage.rs` | storage input accounting (captures the pre-frost storage-initial scalar) |
+| — | `r4w_frost_ingress` | `runoff.rs` | applies the day's single frost-partition outcome to the layer basis (see §3.5) |
 | 8 | `r4i_liquid_input` | `runoff.rs` | liquid water input (rain + melt handoff) |
 | 9 | `r4j_runon_carry` | `runoff.rs` | run-on carry from upslope |
 | 10 | `r4k_infiltration_depression` | `runoff.rs` | Green–Ampt infiltration + depression storage |
@@ -164,10 +165,15 @@ and [ADR-0029](../decisions/0029-commit-paradigm-2-multilayer-snow.md)):
   computing frost depth, frozen water, and frozen infiltration capacity, which
   gates infiltration and runoff partition on frozen days.
 
-The day-input builder (next section) runs these winter authorities to produce
-the day's typed winter inputs; the runoff-partition span re-evaluates the
-frost partition against the day's evolved layer state. The winter column state
-carries in the lane frame like all other carry state.
+The day-input builder (next section) runs these winter authorities once per
+(lane, day) — the frost partition is solved exactly once, from start-of-day
+lane state, and its outcome rides the day input into the frame, where the
+`r4w` ingress step applies it to the layer basis before any water-moving
+phase. That mirrors the legacy daily order (frost before infiltration) and
+the contract's once-at-hour-1 water handoff (`INV-SNOWFREEZE-012`), and it
+makes infiltration gating, publication, and the carried frost state
+consistent by construction: they all read the same solve. The winter column
+state carries in the lane frame like all other carry state.
 
 ## 3.6 Per-day inputs: the production builder
 
