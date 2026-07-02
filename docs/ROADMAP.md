@@ -1,7 +1,7 @@
 # openWEPP Engine Roadmap
 
 Status: living — **canonical**, **forward-only planning queue**
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 Audience: all contributors
 Owner: maintainers (Claude Code maintains this document)
 
@@ -261,10 +261,18 @@ WSHED-W2, WSHED-W3, WSHED-W4, WSHED-W4DC01, WSHED-W5, and WSHED-W6 are
 complete. WSHED-W6 adopted the full `1305`-hillslope
 `onshore-xenophobia` fixture, cut public publication to the typed frame path,
 and recorded strict committed-fixture scaling plus pinned legacy completion
-evidence.
+evidence. The post-W6 queue is follow-on hardening and authority completion, not
+another watershed runtime rewrite. Physics-bearing work must implement actual
+authoritative operands and retain null/fail-closed behavior when authority is
+absent.
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
+| **WSHED-W7** | **Sediment-active watershed fixture and publication closure** | Adopt or generate a committed full watershed fixture with actual nonzero sediment response from hillslope pass artifacts, then run the full watershed supervisor through typed dispatch and typed publication. No subsets, no synthetic sediment fills, no surrogate physics. | Full committed fixture evidence; `--jobs 1` vs parallel parquet schema/row identity across all required outputs; nonzero detachment/deposition/sediment-yield rows; independent reconstruction of sediment/publication operands where conservation-sensitive; source guards proving public publication remains on the typed frame path. | ▶️ **queued next** — closes W6 residual coverage risk before broader watershed claims. |
+| **WSHED-W8** | **Channel-balance operand authority** | Contract-first implementation of real channel-balance publication operands (`Outflow`, `Storage`, `Baseflow`, `Loss`, `Balance`) from authoritative routed channel state. Existing nulls remain correct until the operands are actually available. | Science-contract or architecture authority for each volume operand; typed routing/publication state carries the operands directly; `chanwb` closure evidence uses independent operand reconstruction; tests reject aliasing inflow as outflow or otherwise filling unavailable fields. | queued after W7 unless a consumer need makes it the active watershed package. |
+| **WSHED-W9** | **Canonical `NoEvent` pass semantics** | Define and implement contract-backed handling for pass artifacts that contain no latest `EventPayload`. The current hard fail remains the production behavior until the no-event state has explicit authority. | Contract cites parser evidence and physical meaning; typed no-event representation distinguishes no runoff/no sediment from missing data; pass-inventory tests cover valid no-event, malformed no-event, and stale/missing payload cases; no zero-synthesis path is accepted. | queued. |
+| **WSHED-W10** | **`chan.inp` absence/default authority** | Adjudicate the current deterministic `chan.inp`-absent defaults and either ratify them as explicit runfile/contract defaults or replace them with fail-closed required input. | Documented authority for `dtchr`, `ntchr`, `nchnum`, and `cbase` behavior; CLI tests prove warning/default or required-input behavior intentionally; no hidden modeling defaults remain. | queued. |
+| **WSHED-CQR** | **Watershed CQR burndown ExecPlan** | Author a watershed CQR burndown ExecPlan, then execute row-scoped behavior-preserving CQR packages over the watershed CLI, typed publication writer, watershed behavior tests, and any measured high-complexity watershed parser/orchestrator scopes. This is the maintenance track; it is not a feature package and must not introduce adapters, compatibility wrappers, or physics changes. | ExecPlan defines rows, owned files, CRAP/cyclomatic/line-count targets, validation gates, and fixture identity requirements; each row package records before/after metrics, full relevant watershed output identity, and no behavior change; WARN-band files move toward maintainable size without weakening source guards. | queued; author the ExecPlan before the next broad watershed maintenance pass. |
 | **M** | **MOFEFID — MOFE fidelity campaign** | Four lanes on the closed MOFE routing foundation: (A) proactive MOFE defect-review sweep; (B) adjudication-first audit against the eleven defect classes in the wepp-forest stakeholder water-balance brief — **the brief is a flag, not an authority** (operator: wepp-forest conclusions not fully trusted); each claim is independently graded (conservation-forced / source-intent / convention / unverified) before any openWEPP verdict, with a dual brief-claim × openWEPP disposition per row (incl. the known `QOFE` pre-`wepp_260516` convention adjudication — openWEPP publishes the legacy inflated identity, Ran-verified at `01_publication.rs:370`); (C) lateral-flow observed-authority rubric from `tests/fixtures/forest_lateral_flow_authority/` (HJ Andrews WS10 / Panola / Maimai M8; Coweeta context-only) — the FARPOINT01 external-authority continuation; (D) Papanicolaou 2018 OFE-by-OFE routing (space/time-variant resistance, TVD-MacCormack KWE) implemented opt-in and validated against the in-repo supplemental (Ef 0.91/0.75/0.87/0.88 targets). | Strategy: [planning/mofe-fidelity-campaign-strategy.md](planning/mofe-fidelity-campaign-strategy.md). A/B verdict artifacts with per-class evidence; C envelope ratified before judgment; D contract-first, default path byte-flat, activation out of campaign scope. | ▶️ **active 2026-07-01** — strategy authored; `MOFEFID-A01`/`B01` ready to scaffold. |
 
 ---
