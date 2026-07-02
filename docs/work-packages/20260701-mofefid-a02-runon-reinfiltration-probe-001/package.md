@@ -1,6 +1,6 @@
 # MOFEFID-A02 — Runon Re-Infiltration Probe
 
-Status: **IN EXECUTION** (2026-07-01)
+Status: **EXECUTED — VERDICT: CONFIRMED (material)** (2026-07-01). Probe moved `runvol_pct_precip` 72.33% → 62.23% (−10.1 pp, 2× the CONFIRMED threshold, lower-bound probe); ET +34%, outlet latqcc +133%, Dp flat; default path byte-identical; closure green. See `artifacts/verdict.md`.
 Campaign: [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) §7
 (operator-directed). Owner: Claude Code. Worktree: `mofefid-a02-probe`.
 

@@ -618,7 +618,7 @@ impl DirectDayFrame {
     // effect. Runs before the WB14 compute; the R4A partition subtracts the
     // enlarged cumulative infiltration from the same liquid+runon supply, so
     // conservation identities are unchanged. Default (env unset) is a no-op.
-    fn mofefid_a02_runon_infiltration_probe_enabled() -> bool {
+    pub(crate) fn mofefid_a02_runon_infiltration_probe_enabled() -> bool {
         static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
         *ENABLED.get_or_init(|| {
             std::env::var("OPENWEPP_MOFEFID_A02_RUNON_INFILTRATION")
@@ -1817,7 +1817,7 @@ pub struct DirectWb14InfiltrationProducerInputs {
 // builder's added-daily-depth helper uses for routed melt). No-op when the
 // depth is non-positive/non-finite or the hyetograph has no positive
 // duration (the probe's documented dry-runon lower-bound skip).
-pub fn mofefid_a02_augment_hyetograph_with_uniform_depth(
+pub(crate) fn mofefid_a02_augment_hyetograph_with_uniform_depth(
     hyetograph: &mut [DirectWb14HyetographInterval],
     added_depth_m: f64,
 ) -> bool {
