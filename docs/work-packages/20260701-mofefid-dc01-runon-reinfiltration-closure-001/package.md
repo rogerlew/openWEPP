@@ -153,6 +153,20 @@ magnitude adjudication (to Lane C).
   legacy is not the target (ADR-0017); Lane C's envelope is the bar —
   but the basis question is an implementation-fidelity question we owe
   an answer.
+- 2026-07-01: **M5 decomposition run (Ran): the re-binning hypothesis is
+  REFUTED.** Env-gated diagnostic admitting runon as appended hourly
+  intervals with the local breakpoint basis untouched yields 46.9992% vs
+  46.9800% for full re-binning — Δ0.02 pp. The magnitude is the runon
+  admission itself (surface + lateral at hourly granularity), not a basis
+  artifact. Terminal disposition: **correction landed per INV-031
+  (baseline-intent semantics); H2637 47.0% vs legacy 55.5% recorded as a
+  comparator flag (ADR-0017 — legacy is not the target); the magnitude
+  bar routes to Lane C's observed envelope (C01→C03), which was already
+  this campaign's plan.** The `latqcc` growth (0.98→4.03M m³ at outlet)
+  and ET growth (13.5→29.3k mm) are the physically coherent counterpart
+  and land squarely in what the HJ Andrews/Panola/Maimai envelope will
+  judge. Status: M1–M5 complete; M6 (Codex review) pending; **merge held
+  on the worktree branch until review** (production-semantics change).
 
 ## Surprises & Discoveries
 

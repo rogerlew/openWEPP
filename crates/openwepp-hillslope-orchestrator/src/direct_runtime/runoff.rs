@@ -1415,6 +1415,33 @@ fn dc01_add_depth_to_hour_bins(
     }
 }
 
+fn dc01_diag_interval_basis_enabled() -> bool {
+    static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *ENABLED.get_or_init(|| {
+        std::env::var("OPENWEPP_DC01_DIAG_INTERVAL_BASIS")
+            .map(|value| value == "1")
+            .unwrap_or(false)
+    })
+}
+
+fn dc01_appended_runon_basis(
+    hyetograph: &[DirectWb14HyetographInterval],
+    runon_hourly_supply_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> Vec<DirectWb14HyetographInterval> {
+    let mut merged: Vec<DirectWb14HyetographInterval> = hyetograph.to_vec();
+    for (hour, runon_m) in runon_hourly_supply_m.iter().enumerate() {
+        if *runon_m > 0.0 {
+            merged.push(DirectWb14HyetographInterval {
+                start_s: hour as f64 * DC01_HOUR_BIN_SECONDS,
+                end_s: (hour + 1) as f64 * DC01_HOUR_BIN_SECONDS,
+                intensity_m_s: runon_m / DC01_HOUR_BIN_SECONDS,
+            });
+        }
+    }
+    merged.sort_by(|a, b| a.start_s.total_cmp(&b.start_s));
+    merged
+}
+
 pub(crate) fn dc01_hourly_supply_basis(
     hyetograph: &[DirectWb14HyetographInterval],
     runon_hourly_supply_m: &[f64; DC01_HOUR_BIN_COUNT],
@@ -1465,7 +1492,15 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
     let runon_total_m: f64 = inputs.runon_hourly_supply_m.iter().sum();
     let hourly_basis: Vec<DirectWb14HyetographInterval>;
     let intervals: &[DirectWb14HyetographInterval] = if runon_total_m > WB11_ZERO_THRESHOLD {
-        hourly_basis = dc01_hourly_supply_basis(&inputs.hyetograph, &inputs.runon_hourly_supply_m);
+        // DC01 M5 decomposition diagnostic (env-gated): admit runon as
+        // appended hourly intervals WITHOUT re-binning the local rain, to
+        // separate the admission effect from the hourly-basis intensity
+        // effect. Default path re-bins everything (baseline hourly shape).
+        hourly_basis = if dc01_diag_interval_basis_enabled() {
+            dc01_appended_runon_basis(&inputs.hyetograph, &inputs.runon_hourly_supply_m)
+        } else {
+            dc01_hourly_supply_basis(&inputs.hyetograph, &inputs.runon_hourly_supply_m)
+        };
         &hourly_basis
     } else {
         &inputs.hyetograph
