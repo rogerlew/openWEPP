@@ -1713,4 +1713,115 @@ mod tests {
             .unwrap_or_else(|| panic!("missing integer JSON pointer {pointer}"));
         assert_eq!(observed, expected, "unexpected value at {pointer}");
     }
+
+    fn zero_winter_frost_outcome() -> openwepp_hillslope_orchestrator::DirectWinterFrostPartitionOutcome {
+        openwepp_hillslope_orchestrator::DirectWinterFrostPartitionOutcome {
+            active_frost_coupling: false,
+            dthaw_after_m: 0.0,
+            nft_after: 0.0,
+            infcap_frz_m_s: 0.0,
+            soil_water_after_frwatc_m: None,
+            frwatc_soil_water_before_m: 0.0,
+            frwatc_soil_water_after_m: 0.0,
+            frwatc_frozen_water_before_m: 0.0,
+            frwatc_frozen_water_after_m: 0.0,
+            frwatc_freeze_debit_m: 0.0,
+            frwatc_thaw_credit_m: 0.0,
+            frwatc_net_liquid_delta_m: 0.0,
+            frozen_water_after_m: 0.0,
+            frost_depth_after_m: 0.0,
+            thdp_after_m: 0.0,
+            tfrdp_after_m: 0.0,
+            tthawd_after_m: 0.0,
+            fgthwd_flag_after: 0.0,
+            total_fine_layer_count: 0.0,
+            conductivity_tilled_w_m_k: 0.0,
+            conductivity_untilled_w_m_k: 0.0,
+            conductivity_residue_w_m_k: 0.0,
+            shadow_total_water_before_m: 0.0,
+            shadow_total_water_after_m: 0.0,
+            shadow_wb_delta_m: 0.0,
+            shadow_frwatc_residual_m: 0.0,
+            watpdg_m: 0.0,
+            watbtm_m: 0.0,
+            layer_projection: Vec::new(),
+            layer_shadow_projection: Vec::new(),
+            fine_layer_projection: Vec::new(),
+        }
+    }
+
+    fn stale_frost_layer() -> openwepp_hillslope_orchestrator::DirectSubsurfaceLayerState {
+        openwepp_hillslope_orchestrator::DirectSubsurfaceLayerState {
+            theta_m: 0.180,
+            field_capacity_m: 0.200,
+            upper_limit_m: 0.500,
+            conductivity_m_s: 1.0e-6,
+            depth_m: 0.400,
+            residual_theta: 0.050,
+            frozen_depth_m: 0.100,
+            frozen_water_m: 0.005,
+            porosity: 0.5,
+            field_capacity_theta: 0.25,
+            coca: 1.0,
+            lateral_conductivity_m_s: 1.0e-6,
+        }
+    }
+
+    // WP-2 relocated contract (Codex review, accepted candidate): with the
+    // single-solve rewire, clearing stale coarse-layer frost projections on
+    // no-final-frost days is the runner authority channel's job
+    // (same_day_frost_hydrology_layers with clear_no_final_hydrology_layers),
+    // no longer R4A's. Pin it here at its owning boundary.
+    #[test]
+    fn same_day_frost_hydrology_layers_clear_stale_projection_and_preserve_target() {
+        let layers = vec![stale_frost_layer()];
+        let target_soil_water_m = 0.230;
+        let outcome = zero_winter_frost_outcome();
+
+        let cleared = direct_production_same_day_frost_hydrology_layers(
+            0,
+            &layers,
+            &outcome,
+            target_soil_water_m,
+            true,
+        )
+        .expect("no-final-frost clear should succeed");
+        assert_eq!(cleared.len(), 1);
+        assert_eq!(cleared[0].frozen_depth_m.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(cleared[0].frozen_water_m.to_bits(), 0.0_f64.to_bits());
+        let aggregate_m: f64 = cleared
+            .iter()
+            .map(|layer| layer.theta_m + layer.residual_theta * layer.depth_m)
+            .sum();
+        assert!(
+            (aggregate_m - target_soil_water_m).abs() <= 1.0e-9,
+            "cleared layers must rebalance liquid aggregate to the lane target: {aggregate_m} vs {target_soil_water_m}"
+        );
+    }
+
+    #[test]
+    fn same_day_frost_hydrology_layers_keep_stale_projection_when_frost_is_final() {
+        let layers = vec![stale_frost_layer()];
+        let mut outcome = zero_winter_frost_outcome();
+        outcome.frost_depth_after_m = 0.050;
+        outcome.frozen_water_after_m = 0.002;
+
+        let unchanged = direct_production_same_day_frost_hydrology_layers(
+            0,
+            &layers,
+            &outcome,
+            0.230,
+            true,
+        )
+        .expect("final-frozen outcome must not clear the layer projection");
+        assert_eq!(
+            unchanged[0].frozen_depth_m.to_bits(),
+            layers[0].frozen_depth_m.to_bits()
+        );
+        assert_eq!(
+            unchanged[0].frozen_water_m.to_bits(),
+            layers[0].frozen_water_m.to_bits()
+        );
+        assert_eq!(unchanged[0].theta_m.to_bits(), layers[0].theta_m.to_bits());
+    }
 }

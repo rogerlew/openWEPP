@@ -498,6 +498,7 @@ pub struct DirectDayConstructorInputs {
     pub erosion_inputs: DirectErosionInputs,
     pub frost_storage_liquid_delta_m: Option<f64>,
     pub winter_frost_compute_inputs: Option<crate::hydrology::DirectWinterFrostComputeInputs>,
+    pub winter_frost_outcome: Option<Box<crate::hydrology::DirectWinterFrostPartitionOutcome>>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
     pub snow_runtime_carry: Option<Box<DirectSnowRuntimeCarry>>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
@@ -534,6 +535,7 @@ impl DirectDayConstructorInputs {
             erosion_inputs: DirectErosionInputs::zero(),
             frost_storage_liquid_delta_m: None,
             winter_frost_compute_inputs: None,
+            winter_frost_outcome: None,
             frost_layer_carry_projection: None,
             snow_runtime_carry: None,
             frost_runtime_carry: None,
@@ -1170,6 +1172,9 @@ pub struct DirectDayFrame {
     pub winter_column: Box<DirectWinterColumnState>,
     pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
+    // Single-solve authority (WP-2): carried frost outcome consumed by
+    // the R4W ingress step; None on non-winter days.
+    pub winter_frost_outcome: Option<Box<crate::hydrology::DirectWinterFrostPartitionOutcome>>,
     pub water_ledger: DirectWaterLedgerState,
     pub ledger_downstream_operands: DirectLedgerDownstreamOperands,
     pub ledger_shadow_projection: Option<DirectLedgerShadowProjection>,
@@ -1307,6 +1312,7 @@ impl DirectDayFrame {
             winter_column: Box::new(DirectWinterColumnState::zero()),
             snow_runtime_carry: None,
             frost_runtime_carry: None,
+            winter_frost_outcome: None,
             water_ledger: DirectWaterLedgerState::zero(),
             ledger_downstream_operands: DirectLedgerDownstreamOperands::zero(),
             ledger_shadow_projection: None,
@@ -1354,6 +1360,7 @@ impl DirectDayFrame {
         self.storage_reconciliation_inputs = inputs.storage_reconciliation_inputs;
         self.storage_reconciliation_inputs.interception_m = inputs.interception_m;
         self.frost_storage_liquid_delta_m = inputs.frost_storage_liquid_delta_m;
+        self.winter_frost_outcome = inputs.winter_frost_outcome;
         self.hydrology_projection_inputs = inputs.hydrology_projection_inputs;
         self.erosion_inputs = inputs.erosion_inputs;
         self.frost_layer_carry_projection = inputs.frost_layer_carry_projection;

@@ -1,0 +1,216 @@
+{
+  "defect_attribution_eligible_count": 0,
+  "measurement_contract": "SC-SNOWFREEZE-001 INV-SNOWFREEZE-047",
+  "openwepp_defective_count": 0,
+  "schema": "snowfreeze-observed-residual-classification-v1",
+  "site_count": 5,
+  "sites": [
+    {
+      "defect_attribution_eligible": false,
+      "fixture": "site1_sleepers_south_field_vt",
+      "harness_verdict": "UNRESOLVED",
+      "has_modeled_snow_depth": true,
+      "method_counts": {
+        "frost_tube": 392
+      },
+      "metrics": {
+        "frost_depth_residual_count": 392,
+        "isotherm_upper_bound_count": 0,
+        "isotherm_upper_bound_exceedance_count": 0,
+        "matched_count": 392,
+        "max_abs_residual_m": 0.24686706611591228,
+        "max_abs_snow_depth_residual_m": 0.7897087938117313,
+        "max_isotherm_upper_bound_margin_m": null,
+        "mean_abs_residual_m": 0.06168336128246636,
+        "mean_signed_snow_depth_residual_m": 0.1560690183510679,
+        "median_signed_snow_depth_residual_m": 0.13661465153804614,
+        "observation_count": 392,
+        "snow_depth_best_offset_rescue_count": 25,
+        "snow_depth_control_count": 384,
+        "snow_depth_control_fail_count": 218,
+        "snow_depth_modeled_over_observed_count": 315,
+        "snow_depth_modeled_under_observed_count": 56,
+        "snow_water_alias_abs_better_count": 188
+      },
+      "observed_snow_depth_row_count": 384,
+      "primary_classification": "SNOW-CONTROL-FAILED",
+      "reason": "Modeled snow depth is available but fails paired TOL-SNOWFREEZE-009 snow-depth control; frost residuals remain snow-confounded.",
+      "report_path": "target/wp2-rubric-before/site1_sleepers_south_field_vt/comparison_report.json",
+      "residual_family": "snow-confounded",
+      "runtime": "direct-production-executor",
+      "site_id": "site1_sleepers_south_field_vt",
+      "snow_control_status": "SNOW_CONTROL_FAILED",
+      "source_id": "usgs_sleepers_p96753gi"
+    },
+    {
+      "defect_attribution_eligible": false,
+      "fixture": "site2_sleepers_w9_hardwood_vt",
+      "harness_verdict": "UNRESOLVED",
+      "has_modeled_snow_depth": true,
+      "method_counts": {
+        "frost_tube": 200
+      },
+      "metrics": {
+        "frost_depth_residual_count": 200,
+        "isotherm_upper_bound_count": 0,
+        "isotherm_upper_bound_exceedance_count": 0,
+        "matched_count": 200,
+        "max_abs_residual_m": 0.390313712420475,
+        "max_abs_snow_depth_residual_m": 0.5825943749751785,
+        "max_isotherm_upper_bound_margin_m": null,
+        "mean_abs_residual_m": 0.09839187316969265,
+        "mean_signed_snow_depth_residual_m": 0.08137700789858286,
+        "median_signed_snow_depth_residual_m": 0.07135798002990856,
+        "observation_count": 200,
+        "snow_depth_best_offset_rescue_count": 15,
+        "snow_depth_control_count": 193,
+        "snow_depth_control_fail_count": 72,
+        "snow_depth_modeled_over_observed_count": 134,
+        "snow_depth_modeled_under_observed_count": 54,
+        "snow_water_alias_abs_better_count": 35
+      },
+      "observed_snow_depth_row_count": 193,
+      "primary_classification": "SNOW-CONTROL-FAILED",
+      "reason": "Modeled snow depth is available but fails paired TOL-SNOWFREEZE-009 snow-depth control; frost residuals remain snow-confounded.",
+      "report_path": "target/wp2-rubric-before/site2_sleepers_w9_hardwood_vt/comparison_report.json",
+      "residual_family": "snow-confounded",
+      "runtime": "direct-production-executor",
+      "site_id": "site2_sleepers_w9_hardwood_vt",
+      "snow_control_status": "SNOW_CONTROL_FAILED",
+      "source_id": "usgs_sleepers_p96753gi"
+    },
+    {
+      "defect_attribution_eligible": false,
+      "fixture": "site3_scan_mandan_nd",
+      "harness_verdict": "UNRESOLVED",
+      "has_modeled_snow_depth": true,
+      "method_counts": {
+        "soil_temperature_zero_c_isotherm": 10643
+      },
+      "metrics": {
+        "frost_depth_residual_count": 0,
+        "isotherm_upper_bound_count": 10583,
+        "isotherm_upper_bound_exceedance_count": 3658,
+        "matched_count": 10643,
+        "max_abs_residual_m": null,
+        "max_abs_snow_depth_residual_m": null,
+        "max_isotherm_upper_bound_margin_m": 0.9206796675913164,
+        "mean_abs_residual_m": null,
+        "mean_signed_snow_depth_residual_m": null,
+        "median_signed_snow_depth_residual_m": null,
+        "observation_count": 10643,
+        "snow_depth_best_offset_rescue_count": 0,
+        "snow_depth_control_count": 0,
+        "snow_depth_control_fail_count": 0,
+        "snow_depth_modeled_over_observed_count": 0,
+        "snow_depth_modeled_under_observed_count": 0,
+        "snow_water_alias_abs_better_count": 0
+      },
+      "observed_snow_depth_row_count": 0,
+      "primary_classification": "INCONCLUSIVE",
+      "reason": "Modeled snow depth is available, but this source has no paired observed snow-depth rows for TOL-SNOWFREEZE-009.",
+      "report_path": "target/wp2-rubric-before/site3_scan_mandan_nd/comparison_report.json",
+      "residual_family": "snow-control-unavailable",
+      "runtime": "direct-production-executor",
+      "site_id": "site3_scan_mandan_nd",
+      "snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW",
+      "source_id": "nrcs_scan_mandan_2020"
+    },
+    {
+      "defect_attribution_eligible": false,
+      "fixture": "site4_ggd498_morris_mn",
+      "harness_verdict": "UNRESOLVED",
+      "has_modeled_snow_depth": true,
+      "method_counts": {
+        "frost_tube": 232
+      },
+      "metrics": {
+        "frost_depth_residual_count": 83,
+        "isotherm_upper_bound_count": 0,
+        "isotherm_upper_bound_exceedance_count": 0,
+        "matched_count": 83,
+        "max_abs_residual_m": 0.7868649477045688,
+        "max_abs_snow_depth_residual_m": 0.22323340797447816,
+        "max_isotherm_upper_bound_margin_m": null,
+        "mean_abs_residual_m": 0.3072246184629287,
+        "mean_signed_snow_depth_residual_m": 0.04400065299290993,
+        "median_signed_snow_depth_residual_m": 0.0,
+        "observation_count": 232,
+        "snow_depth_best_offset_rescue_count": 3,
+        "snow_depth_control_count": 83,
+        "snow_depth_control_fail_count": 20,
+        "snow_depth_modeled_over_observed_count": 39,
+        "snow_depth_modeled_under_observed_count": 3,
+        "snow_water_alias_abs_better_count": 35
+      },
+      "observed_snow_depth_row_count": 232,
+      "primary_classification": "SNOW-CONTROL-FAILED",
+      "reason": "Modeled snow depth is available but fails paired TOL-SNOWFREEZE-009 snow-depth control; frost residuals remain snow-confounded.",
+      "report_path": "target/wp2-rubric-before/site4_ggd498_morris_mn/comparison_report.json",
+      "residual_family": "snow-confounded",
+      "runtime": "direct-production-executor",
+      "site_id": "site4_ggd498_morris_mn",
+      "snow_control_status": "SNOW_CONTROL_FAILED",
+      "source_id": "nsidc_ggd498_morris_10"
+    },
+    {
+      "defect_attribution_eligible": false,
+      "fixture": "site5_reynolds_creek_us_rls_id",
+      "harness_verdict": "UNRESOLVED",
+      "has_modeled_snow_depth": true,
+      "method_counts": {
+        "soil_temperature_zero_c_isotherm": 4356
+      },
+      "metrics": {
+        "frost_depth_residual_count": 0,
+        "isotherm_upper_bound_count": 4356,
+        "isotherm_upper_bound_exceedance_count": 125,
+        "matched_count": 4356,
+        "max_abs_residual_m": null,
+        "max_abs_snow_depth_residual_m": null,
+        "max_isotherm_upper_bound_margin_m": 0.12531318751510023,
+        "mean_abs_residual_m": null,
+        "mean_signed_snow_depth_residual_m": null,
+        "median_signed_snow_depth_residual_m": null,
+        "observation_count": 4356,
+        "snow_depth_best_offset_rescue_count": 0,
+        "snow_depth_control_count": 0,
+        "snow_depth_control_fail_count": 0,
+        "snow_depth_modeled_over_observed_count": 0,
+        "snow_depth_modeled_under_observed_count": 0,
+        "snow_water_alias_abs_better_count": 0
+      },
+      "observed_snow_depth_row_count": 0,
+      "primary_classification": "INCONCLUSIVE",
+      "reason": "Modeled snow depth is available, but this source has no paired observed snow-depth rows for TOL-SNOWFREEZE-009.",
+      "report_path": "target/wp2-rubric-before/site5_reynolds_creek_us_rls_id/comparison_report.json",
+      "residual_family": "snow-control-unavailable",
+      "runtime": "direct-production-executor",
+      "site_id": "site5_reynolds_creek_us_rls_id",
+      "snow_control_status": "MODELED_SNOW_DEPTH_DIAGNOSTIC_PRESENT_NO_PAIRED_OBSERVED_SNOW",
+      "source_id": "usda_ars_reynolds_creek_soil_temperature"
+    }
+  ],
+  "snow_control_tolerance": "TOL-SNOWFREEZE-009",
+  "summary": {
+    "inconclusive_sites": [
+      "site3_scan_mandan_nd",
+      "site5_reynolds_creek_us_rls_id"
+    ],
+    "next_action": "Where snow control passes, use SNOWFROST-FIDELITY-B/C evidence to adjudicate heat-flow versus frozen-K mechanisms. Where snow control fails or lacks paired rows, apply SC-SNOWFREEZE-001 INV-SNOWFREEZE-048 snow-depth correspondence and anti-alias checks before attributing frost residuals. No Qwet, SFCC, frozen-K, or heat-flow tuning is authorized by these classifications.",
+    "primary_classification_counts": {
+      "INCONCLUSIVE": 2,
+      "SNOW-CONTROL-FAILED": 3
+    },
+    "residual_family_counts": {
+      "snow-confounded": 3,
+      "snow-control-unavailable": 2
+    },
+    "snow_control_blocked_sites": [],
+    "snow_control_failed_sites": [
+      "site1_sleepers_south_field_vt",
+      "site2_sleepers_w9_hardwood_vt",
+      "site4_ggd498_morris_mn"
+    ]
+  }
+}

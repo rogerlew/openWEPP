@@ -447,6 +447,9 @@ impl DirectFrameExecutor {
         if let Some(erosion_inputs) = &day_input.erosion_inputs {
             day_frame.erosion_inputs = erosion_inputs.clone();
         }
+        day_frame
+            .winter_frost_outcome
+            .clone_from(&day_input.winter_frost_outcome);
         if let Some(frost_storage_liquid_delta_m) = day_input.frost_storage_liquid_delta_m {
             validate_finite(
                 "publication_input.frost_storage_liquid_delta_m",
@@ -708,6 +711,9 @@ impl DirectFrameExecutor {
         record_direct_span_report!(counters, day_frame.run_r5d_annual_growth_phase());
         record_direct_span_report!(counters, day_frame.run_r5d_perennial_growth_phase());
         record_direct_span_report!(counters, day_frame.run_r4c_storage_input_span());
+        if day_frame.apply_r4w_winter_frost_ingress()? {
+            counters.record_dynamic_transfer_publication();
+        }
         record_direct_span_report!(counters, day_frame.run_r4i_liquid_input_span());
         record_direct_span_report!(counters, day_frame.run_r4j_runon_carry_span());
         record_direct_span_report!(counters, day_frame.run_r4k_infiltration_depression_span());

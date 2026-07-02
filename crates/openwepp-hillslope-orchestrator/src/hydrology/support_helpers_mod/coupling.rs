@@ -64,13 +64,6 @@ struct FrostDepthSummary {
 }
 
 #[derive(Debug, Clone, Copy)]
-struct FrostSeasonalTemperatureCurve {
-    annual_mean_c: f64,
-    amplitude_c: f64,
-    phase_shift_days: f64,
-}
-
-#[derive(Debug, Clone, Copy)]
 struct ActiveFrostTmpadjContext {
     wind_m_s: f64,
     albedo: f64,

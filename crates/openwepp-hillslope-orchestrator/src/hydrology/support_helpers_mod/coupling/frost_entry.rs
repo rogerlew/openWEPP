@@ -528,7 +528,6 @@ impl Wb11HydrologyKernel {
 
     fn frost_fine_layer_count_for_layer(
         phase_class: HillslopeKernelPhaseClass,
-        dg_symbol: &BoundarySymbol,
         dg_m: f64,
         layer_index: usize,
         layer_count: usize,
@@ -550,14 +549,18 @@ impl Wb11HydrologyKernel {
         };
         let dg_mm =
             openwepp_unit_boundary::conversions::meters_to_millimeters(dg_m).map_err(|error| {
-                Self::unit_conversion_guard_error(phase_class, dg_symbol.clone(), &error)
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    Self::wb19_dg_symbol(layer_index),
+                    &error,
+                )
             })?;
         let dg_mm_trunc = dg_mm.trunc();
         let ratio_trunc = (dg_mm / spacing_mm).trunc();
         let mut count = format!("{ratio_trunc:.0}").parse::<usize>().map_err(|_| {
             Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
-                symbol: dg_symbol.clone(),
+                symbol: Self::wb19_dg_symbol(layer_index),
                 value: ratio_trunc,
                 minimum: Some(0.0),
                 maximum: Some(Self::diagnostic_count_to_f64(usize::MAX)),
@@ -639,67 +642,58 @@ impl Wb11HydrologyKernel {
                 maximum: Some(Self::diagnostic_count_to_f64(layer_count)),
             });
         }
-        let dg_symbol = Self::wb19_dg_symbol(layer.layer_index);
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &dg_symbol,
+            || Self::wb19_dg_symbol(layer.layer_index),
             layer.depth_m,
             Some(WB11_ZERO_THRESHOLD),
             None,
         )?;
         let fine_layer_count = Self::frost_fine_layer_count_for_layer(
             phase_class,
-            &dg_symbol,
             layer.depth_m,
             layer.layer_index,
             layer_count,
             controls,
         )?;
-        let theta_symbol = Self::wb18_perc_state_symbol("theta", layer.layer_index);
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &theta_symbol,
+            || Self::wb18_perc_state_symbol("theta", layer.layer_index),
             layer.theta_m,
             Some(0.0),
             None,
         )?;
-        let upper_limit_symbol = Self::wb18_perc_state_symbol("ul", layer.layer_index);
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &upper_limit_symbol,
+            || Self::wb18_perc_state_symbol("ul", layer.layer_index),
             layer.upper_limit_m,
             Some(0.0),
             None,
         )?;
-        let thetdr_symbol = Self::wb19_thetdr_symbol(layer.layer_index);
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &thetdr_symbol,
+            || Self::wb19_thetdr_symbol(layer.layer_index),
             layer.residual_theta,
             Some(0.0),
             Some(1.0),
         )?;
-        let bulk_density_symbol = Self::wb19_bulk_density_kg_m3_symbol(layer.layer_index);
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &bulk_density_symbol,
+            || Self::wb19_bulk_density_kg_m3_symbol(layer.layer_index),
             layer.bulk_density_kg_m3,
             Some(WB11_ZERO_THRESHOLD),
             Some(2_650.0),
         )?;
-        let frozen_depth_symbol =
-            Self::wb18_perc_state_symbol("frozen_depth", layer.layer_index);
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &frozen_depth_symbol,
+            || Self::wb18_perc_state_symbol("frozen_depth", layer.layer_index),
             layer.frozen_depth_m,
             Some(0.0),
             Some(layer.depth_m),
         )?;
-        let frzw_symbol = Self::wb18_perc_state_symbol("frzw", layer.layer_index);
-        Self::require_state_range_for_symbol(
+        Self::require_state_range_with(
             phase_class,
-            &frzw_symbol,
+            || Self::wb18_perc_state_symbol("frzw", layer.layer_index),
             layer.frozen_water_m,
             Some(0.0),
             Some(layer.upper_limit_m),
@@ -753,10 +747,9 @@ impl Wb11HydrologyKernel {
         layer_water_state: &[FrostLayerWaterState],
     ) -> Result<(FrostFineShadowState, ActiveFrostProfileShadowContext), Wb11HydrologyKernelGuardError>
     {
-        let profile_depth_symbol = BoundarySymbol::from(PL_GROWTH_SOIL_DEPTH_SYMBOL);
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            profile_depth_symbol,
+            || BoundarySymbol::from(PL_GROWTH_SOIL_DEPTH_SYMBOL),
             inputs.profile_depth_m,
             Some(WB11_ZERO_THRESHOLD),
             None,
@@ -802,10 +795,9 @@ impl Wb11HydrologyKernel {
         value: f64,
         profile_depth_m: f64,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let symbol = BoundarySymbol::from(symbol_name);
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            symbol,
+            || BoundarySymbol::from(symbol_name),
             value,
             Some(0.0),
             Some(profile_depth_m),
@@ -869,16 +861,16 @@ impl Wb11HydrologyKernel {
         } else {
             prior_frdp_m
         };
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(FROST_RUNTIME_FRDP_M_SYMBOL),
+            || BoundarySymbol::from(FROST_RUNTIME_FRDP_M_SYMBOL),
             effective_prior_frdp_m,
             Some(0.0),
             Some(profile.profile_depth_m),
         )?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(FROST_RUNTIME_FGTHWD_FLAG_SYMBOL),
+            || BoundarySymbol::from(FROST_RUNTIME_FGTHWD_FLAG_SYMBOL),
             inputs.prior_state.fgthwd_flag,
             Some(0.0),
             Some(1.0),
@@ -1000,23 +992,23 @@ impl Wb11HydrologyKernel {
     ) -> Result<ActiveFrostThermalContext, Wb11HydrologyKernelGuardError> {
         let kfactor_selected =
             Self::resolve_frozen_soil_kfactor_from_typed(phase_class, inputs.controls)?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(FROST_RUNTIME_SNOW_DEPTH_SYMBOL),
+            || BoundarySymbol::from(FROST_RUNTIME_SNOW_DEPTH_SYMBOL),
             inputs.thermal.snow_depth_m,
             Some(0.0),
             None,
         )?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+            || BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
             inputs.thermal.snow_density_kg_m3,
             Some(0.0),
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
         )?;
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(FROST_RUNTIME_RESIDUE_DEPTH_SYMBOL),
+            || BoundarySymbol::from(FROST_RUNTIME_RESIDUE_DEPTH_SYMBOL),
             inputs.thermal.residue_depth_m,
             Some(0.0),
             None,
@@ -1044,15 +1036,15 @@ impl Wb11HydrologyKernel {
                 maximum: Some(366.0),
             });
         }
-        Self::require_dynamic_state_range(
+        Self::require_dynamic_state_range_with(
             phase_class,
-            BoundarySymbol::from(PL_RUNTIME_DAY_SYMBOL),
+            || BoundarySymbol::from(PL_RUNTIME_DAY_SYMBOL),
             sdate,
             Some(1.0),
             Some(366.0),
         )?;
         let seasonal_temperature_curve =
-            Self::fit_legacy_tmpcft_curve(&inputs.thermal.monthly_max_c, &inputs.thermal.monthly_min_c);
+            inputs.thermal.seasonal_temperature_curve;
         Ok(ActiveFrostThermalContext {
             snow_depth_m: inputs.thermal.snow_depth_m,
             snow_density_kg_m3: inputs.thermal.snow_density_kg_m3,

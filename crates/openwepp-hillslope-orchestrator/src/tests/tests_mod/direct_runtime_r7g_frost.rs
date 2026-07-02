@@ -11,7 +11,8 @@ use crate::{
     DirectPublicationRunMetadata, DirectRunConstructorInputs, DirectRunFrame, DirectRunIdentity,
     DirectSnowCouplingInputs, DirectSubsurfaceComputeInputs, DirectSubsurfaceLayerInputs,
     DirectSubsurfaceLayerState, DirectWb14HyetographInterval, DirectWb14InfiltrationProducerInputs,
-    DirectWinterFrostComputeInputs, Wb11HydrologyKernel, reset_direct_runtime_audit_counters,
+    DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome, Wb11HydrologyKernel,
+    reset_direct_runtime_audit_counters,
 };
 
 #[test]
@@ -92,8 +93,15 @@ fn r7g_r4a_frost_partition_mutates_winter_column_frost_state() {
     day.run_r4l_saturation_addback_span()
         .expect("zero saturation addback upstream span should execute");
 
+    day.winter_frost_outcome = Some(Box::new(solve_test_winter_frost_outcome(
+        &day,
+        &winter_frost_compute_inputs,
+    )));
+    day.percolation_inputs.layers = day.percolation.layer_state_after.clone();
+    day.apply_r4w_winter_frost_ingress()
+        .expect("frost ingress should apply the single-solve outcome");
     day.run_r4a_runoff_partition_span_with_winter_frost(Some(&winter_frost_compute_inputs))
-        .expect("typed winter frost compute should mutate direct frost state");
+        .expect("carried single-solve frost outcome should mutate direct frost state");
 
     assert!(day.winter_column.frost.active_frost_coupling);
     assert_eq!(
@@ -154,8 +162,15 @@ fn r7g_inactive_no_material_frost_clears_stale_coarse_projection_without_storage
     day.run_r4l_saturation_addback_span()
         .expect("zero saturation addback upstream span should execute");
 
+    day.winter_frost_outcome = Some(Box::new(solve_test_winter_frost_outcome(
+        &day,
+        &winter_frost_compute_inputs,
+    )));
+    day.percolation_inputs.layers = day.percolation.layer_state_after.clone();
+    day.apply_r4w_winter_frost_ingress()
+        .expect("frost ingress should apply the single-solve outcome");
     day.run_r4a_runoff_partition_span_with_winter_frost(Some(&winter_frost_compute_inputs))
-        .expect("inactive no-material frost should clear stale coarse projection");
+        .expect("inactive no-material frost outcome should clear the frost carry");
 
     assert!(!day.winter_column.frost.active_frost_coupling);
     assert_eq!(
@@ -175,14 +190,18 @@ fn r7g_inactive_no_material_frost_clears_stale_coarse_projection_without_storage
         day.hydrology_projection_inputs.frost_depth_m.to_bits(),
         0.0_f64.to_bits()
     );
-    let cleared_layer = &day.percolation.layer_state_after[0];
-    assert_eq!(cleared_layer.frozen_depth_m.to_bits(), 0.0_f64.to_bits());
-    assert_eq!(cleared_layer.frozen_water_m.to_bits(), 0.0_f64.to_bits());
+    // Since the single-solve rewire, stale coarse-layer frost projections are
+    // cleared by the runner authority channel
+    // (direct_production_same_day_frost_hydrology_layers with
+    // clear_no_final_hydrology_layers), not by R4A: the frame's layer basis
+    // is untouched here and the aggregate is preserved by construction.
+    let untouched_layer = &day.percolation.layer_state_after[0];
     assert!(
-        (aggregate_test_layer_storage(cleared_layer) - storage_before_no_material_frost).abs()
+        (aggregate_test_layer_storage(untouched_layer) - storage_before_no_material_frost).abs()
             <= 1.0e-12,
-        "inactive no-material frost clear must preserve aggregate layer storage"
+        "inactive no-material frost must preserve aggregate layer storage"
     );
+    assert!(day.frost_runtime_carry.is_none());
 }
 
 #[test]
@@ -220,60 +239,44 @@ fn r7g_r4a_prior_frozen_water_thaw_credits_liquid_storage() {
     day.run_r4l_saturation_addback_span()
         .expect("zero saturation addback upstream span should execute");
 
+    // Single-solve rewire: the warm-thaw physics is the kernel outcome's
+    // contract; the frame consumes the outcome's carry, and the storage delta
+    // rides the runner day-input channel (frost_storage_liquid_delta_m).
+    let outcome = solve_test_winter_frost_outcome(&day, &winter_frost_compute_inputs);
+    assert_eq!(
+        outcome.frwatc_thaw_credit_m.to_bits(),
+        prior_frozen_water_m.to_bits(),
+        "warm active frost solve must thaw the prior frozen water"
+    );
+    for projection in &outcome.layer_projection {
+        assert_eq!(projection.frozen_depth_m.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(projection.frozen_water_m.to_bits(), 0.0_f64.to_bits());
+    }
+    // The runner channel consumes the same outcome for the storage delta.
+    day.frost_storage_liquid_delta_m = Some(outcome.frwatc_net_liquid_delta_m);
+    day.winter_frost_outcome = Some(Box::new(outcome));
+    day.percolation_inputs.layers = day.percolation.layer_state_after.clone();
+    day.apply_r4w_winter_frost_ingress()
+        .expect("frost ingress should apply the warm-thaw outcome");
+
     day.run_r4a_runoff_partition_span_with_winter_frost(Some(&winter_frost_compute_inputs))
-        .expect("warm active frost step should thaw prior frozen water into liquid storage");
+        .expect("warm active frost outcome should clear the frost carry");
 
     assert_eq!(
         day.winter_column.frost.ws_frz_m.to_bits(),
         0.0_f64.to_bits()
     );
     assert_eq!(
-        day.hydrology_projection_inputs
-            .frozen_soil_water_m
-            .to_bits(),
-        0.0_f64.to_bits()
-    );
-    assert!(
-        (day.storage_reconciliation_inputs.frost_liquid_delta_m
-            - day.winter_column.frost.frwatc_net_liquid_delta_m)
-            .abs()
-            <= 1.0e-12,
-        "WB12 liquid storage delta must consume the frwatc net ledger: delta={} thaw={} net={} soil_after={} before={}",
-        day.storage_reconciliation_inputs.frost_liquid_delta_m,
-        day.winter_column.frost.frwatc_thaw_credit_m,
-        day.winter_column.frost.frwatc_net_liquid_delta_m,
-        day.water.soil_water_m,
-        liquid_storage_before_thaw
-    );
-    assert!(
-        (day.water.soil_water_m
-            - liquid_storage_before_thaw
-            - day.winter_column.frost.frwatc_net_liquid_delta_m)
-            .abs()
-            <= 1.0e-12,
-        "liquid storage must include the frwatc net liquid delta after frost clears"
-    );
-    assert_eq!(
         day.winter_column.frost.frwatc_thaw_credit_m.to_bits(),
         prior_frozen_water_m.to_bits()
     );
-    assert_eq!(
-        day.winter_column.frost.frwatc_net_liquid_delta_m.to_bits(),
-        day.storage_reconciliation_inputs
-            .frost_liquid_delta_m
-            .to_bits()
-    );
-    let thawed_layer = &day.percolation.layer_state_after[0];
-    assert_eq!(thawed_layer.frozen_depth_m.to_bits(), 0.0_f64.to_bits());
-    assert_eq!(thawed_layer.frozen_water_m.to_bits(), 0.0_f64.to_bits());
-    assert!(
-        (aggregate_test_layer_storage(thawed_layer) - day.water.soil_water_m).abs() <= 1.0e-12,
-        "thawed/no-final-frost layer projection must clear before it can seed the next day"
-    );
+    // The day-input delta is the storage phase's sole frost authority;
+    // R4B's consumption is exercised by the integration publication path.
+    let _ = liquid_storage_before_thaw;
 }
 
 #[test]
-fn r7h_explicit_frost_storage_source_does_not_rewrite_r4a_layer_projection() {
+fn r7h_explicit_frost_storage_source_is_preserved_for_the_storage_phase() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -310,28 +313,32 @@ fn r7h_explicit_frost_storage_source_does_not_rewrite_r4a_layer_projection() {
     day.run_r4l_saturation_addback_span()
         .expect("zero saturation addback upstream span should execute");
 
+    day.winter_frost_outcome = Some(Box::new(solve_test_winter_frost_outcome(
+        &day,
+        &winter_frost_compute_inputs,
+    )));
+    day.percolation_inputs.layers = day.percolation.layer_state_after.clone();
+    day.apply_r4w_winter_frost_ingress()
+        .expect("frost ingress should apply the single-solve outcome");
     day.run_r4a_runoff_partition_span_with_winter_frost(Some(&winter_frost_compute_inputs))
-        .expect("typed frost partition should accept explicit storage source");
+        .expect("typed frost carry should accept explicit storage source");
 
-    let local_projection_delta_m = day.water.soil_water_m - liquid_storage_before_thaw;
-    assert!(
-        (local_projection_delta_m - day.winter_column.frost.frwatc_net_liquid_delta_m).abs()
-            <= 1.0e-12,
-        "layer/state projection must remain tied to the local frost partition"
-    );
-    assert!(
-        (day.storage_reconciliation_inputs.frost_liquid_delta_m - local_projection_delta_m).abs()
-            <= 1.0e-12,
-        "R4A must keep the local frost partition delta for projection rebalance"
-    );
-    assert!(
-        (explicit_storage_source_m - local_projection_delta_m).abs() > 1.0e-6,
-        "test setup must distinguish storage-source authority from layer projection authority"
-    );
     assert_eq!(
         day.frost_storage_liquid_delta_m,
         Some(explicit_storage_source_m),
         "R4A must preserve the explicit WB12 frost source for the later storage phase"
+    );
+    // Single-solve rewire: the frost ingress writes the same-solve delta into
+    // the storage inputs, and R4B's day-input override (the explicit source,
+    // preserved above) is the final authority — exercised by the integration
+    // publication path on every frost day. There is no competing second-solve
+    // writer anymore; the in-frame delta must tie to the applied outcome.
+    assert!(
+        (day.storage_reconciliation_inputs.frost_liquid_delta_m
+            - (day.water.soil_water_m - liquid_storage_before_thaw))
+            .abs()
+            <= 1.0e-12,
+        "the ingress frost delta must equal the applied outcome's storage change"
     );
 }
 
@@ -388,6 +395,13 @@ fn r7h_r4a_frost_uses_local_partition_excess_without_rewriting_wb14_capacity() {
     day.run_r4l_saturation_addback_span()
         .expect("zero saturation addback upstream span should execute");
 
+    day.winter_frost_outcome = Some(Box::new(solve_test_winter_frost_outcome(
+        &day,
+        &winter_frost_compute_inputs,
+    )));
+    day.percolation_inputs.layers = day.percolation.layer_state_after.clone();
+    day.apply_r4w_winter_frost_ingress()
+        .expect("frost ingress should apply the single-solve outcome");
     day.run_r4a_runoff_partition_span_with_winter_frost(Some(&winter_frost_compute_inputs))
         .expect("runoff-stage frost should retain local liquid and partition runoff");
 
@@ -415,13 +429,13 @@ fn r7h_r4a_frost_uses_local_partition_excess_without_rewriting_wb14_capacity() {
         local_partition_excess_m > 0.0,
         "test setup should retain local pre-partition liquid excess"
     );
+    // Single-solve rewire (INV-SNOWFREEZE-012 hour-1 ingress): the frost
+    // solve consumes the start-of-day soil-water basis; same-day partition
+    // excess is retained for the runoff partition and reaches frost on the
+    // next day's solve, matching the legacy frsoil-before-infiltration order.
     assert!(
-        (day.winter_column.frost.frwatc_soil_water_before_m
-            - base_soil_water_m
-            - local_partition_excess_m)
-            .abs()
-            <= 1.0e-12,
-        "runoff-stage frost must consume local pre-partition liquid before final Q"
+        (day.winter_column.frost.frwatc_soil_water_before_m - base_soil_water_m).abs() <= 1.0e-12,
+        "the frost solve basis must be start-of-day soil water, not same-day excess"
     );
     assert!(
         (day.runoff_partition.q_runoff_m
@@ -834,10 +848,16 @@ fn r7h_r4a_no_material_rainfall_excess_remains_runoff() {
     day.run_r4l_saturation_addback_span()
         .expect("zero saturation addback upstream span should execute");
 
-    day.run_r4a_runoff_partition_span_with_winter_frost(Some(&sample_winter_frost_compute_inputs(
-        false,
-    )))
-    .expect("ordinary no-material rainfall excess should remain runoff");
+    let winter_frost_compute_inputs = sample_winter_frost_compute_inputs(false);
+    day.winter_frost_outcome = Some(Box::new(solve_test_winter_frost_outcome(
+        &day,
+        &winter_frost_compute_inputs,
+    )));
+    day.percolation_inputs.layers = day.percolation.layer_state_after.clone();
+    day.apply_r4w_winter_frost_ingress()
+        .expect("frost ingress should apply the single-solve outcome");
+    day.run_r4a_runoff_partition_span_with_winter_frost(Some(&winter_frost_compute_inputs))
+        .expect("ordinary no-material rainfall excess should remain runoff");
 
     let retained_liquid_m = day.runoff_partition_inputs.frost_retained_local_liquid_m;
     assert_eq!(
@@ -894,10 +914,16 @@ fn r7h_r4a_material_frost_retained_liquid_projects_to_storage_layers() {
     day.run_r4l_saturation_addback_span()
         .expect("zero saturation addback upstream span should execute");
 
-    day.run_r4a_runoff_partition_span_with_winter_frost(Some(&sample_winter_frost_compute_inputs(
-        false,
-    )))
-    .expect("material prior frost path should retain local winter liquid");
+    let winter_frost_compute_inputs = sample_winter_frost_compute_inputs(false);
+    day.winter_frost_outcome = Some(Box::new(solve_test_winter_frost_outcome(
+        &day,
+        &winter_frost_compute_inputs,
+    )));
+    day.percolation_inputs.layers = day.percolation.layer_state_after.clone();
+    day.apply_r4w_winter_frost_ingress()
+        .expect("frost ingress should apply the single-solve outcome");
+    day.run_r4a_runoff_partition_span_with_winter_frost(Some(&winter_frost_compute_inputs))
+        .expect("material prior frost path should retain local winter liquid");
 
     let retained_liquid_m = day.runoff_partition_inputs.frost_retained_local_liquid_m;
     assert!(
@@ -912,17 +938,15 @@ fn r7h_r4a_material_frost_retained_liquid_projects_to_storage_layers() {
         0.0_f64.to_bits(),
         "retained snowmelt is already a storage input, not a freeze/thaw delta"
     );
+    // Single-solve rewire: retained winter liquid projects into typed layer
+    // storage at R4X (after surface ET, before saturation), pinned by
+    // r7h_winter_local_liquid_projects_after_surface_et_before_saturation.
+    // R4A itself must leave the layer basis untouched.
     assert!(
-        (aggregate_test_layer_storage(&day.percolation.layer_state_after[0])
-            - storage_before_m
-            - retained_liquid_m)
+        (aggregate_test_layer_storage(&day.percolation.layer_state_after[0]) - storage_before_m)
             .abs()
             <= 1.0e-12,
-        "R4A must project retained winter liquid into typed layer storage even without material freeze/thaw"
-    );
-    assert!(
-        (day.water.soil_water_m - storage_before_m - retained_liquid_m).abs() <= 1.0e-12,
-        "frame soil water must match retained-liquid layer projection"
+        "R4A must not project retained liquid into the layer basis"
     );
 }
 
@@ -940,6 +964,12 @@ fn r7g_executor_commits_r4a_winter_column_frost_state_to_lane() {
     frame.lanes[0].area_m2 = 100.0;
     let mut day_input = sample_publication_day_input();
     day_input.winter_frost_compute_inputs = Some(sample_winter_frost_compute_inputs(true));
+    day_input.winter_frost_outcome = Some(Box::new(
+        Wb11HydrologyKernel::compute_direct_winter_frost_partition(&no_freeze_typed_frost_inputs(
+            true,
+        ))
+        .expect("active no-freeze outcome should solve"),
+    ));
     let metadata = DirectPublicationRunMetadata {
         run_name: "r7g_frost_state_commit".to_string(),
         runtime_selection: "direct-publication-frame-cutover-candidate".to_string(),
@@ -1026,8 +1056,9 @@ fn no_freeze_typed_frost_inputs(wint_red_enabled: bool) -> DirectActiveFrostPart
             canopy_height_m: 0.0,
             random_roughness_m: 0.0,
             day_of_year: 5.0,
-            monthly_max_c: [8.0; 12],
-            monthly_min_c: [2.0; 12],
+            seasonal_temperature_curve: Wb11HydrologyKernel::fit_seasonal_temperature_curve(
+                &[8.0; 12], &[2.0; 12],
+            ),
         },
         profile_depth_m: 0.400,
         soil_water_m: 0.220,
@@ -1208,4 +1239,138 @@ fn sample_layer_inputs(theta_m: f64) -> DirectSubsurfaceLayerInputs {
         coca: 1.0,
         lateral_conductivity_m_s: 1.0e-6,
     }
+}
+
+#[test]
+fn diagnostic_count_to_f64_matches_decimal_string_parse_bit_for_bit() {
+    // The former implementation round-tripped through a decimal string; the
+    // cast must stay bit-identical across the whole usize range, including
+    // values above 2^53 where nearest-rounding is exercised.
+    let samples: [usize; 8] = [
+        0,
+        1,
+        365,
+        4_038,
+        (1_usize << 53) - 1,
+        1_usize << 53,
+        (1_usize << 53) + 1,
+        usize::MAX,
+    ];
+    for value in samples {
+        let via_cast = Wb11HydrologyKernel::diagnostic_count_to_f64(value);
+        let via_parse = value.to_string().parse::<f64>().unwrap();
+        assert_eq!(
+            via_cast.to_bits(),
+            via_parse.to_bits(),
+            "diagnostic_count_to_f64({value}) diverged from decimal parse"
+        );
+    }
+}
+
+// Test-local mirror of the runner authority's prior-state assembly (the
+// production copy lives in the runner since the single-solve rewire).
+fn test_frost_prior_state(state: &DirectFrostLaneState) -> DirectFrostPriorStateInput {
+    DirectFrostPriorStateInput {
+        active_frost_coupling: state.active_frost_coupling,
+        dfrost_m: state.dfrost_m,
+        dthaw_m: state.dthaw_m,
+        nft: state.nft,
+        ws_frz_m: state.ws_frz_m,
+        infcap_frz_m_s: state.infcap_frz_m_s,
+        frwatc_soil_water_before_m: state.frwatc_soil_water_before_m,
+        frwatc_soil_water_after_m: state.frwatc_soil_water_after_m,
+        frwatc_frozen_water_before_m: state.frwatc_frozen_water_before_m,
+        frwatc_frozen_water_after_m: state.frwatc_frozen_water_after_m,
+        frwatc_freeze_debit_m: state.frwatc_freeze_debit_m,
+        frwatc_thaw_credit_m: state.frwatc_thaw_credit_m,
+        frwatc_net_liquid_delta_m: state.frwatc_net_liquid_delta_m,
+        frdp_m: state.frdp_m,
+        thdp_m: state.thdp_m,
+        tfrdp_m: state.tfrdp_m,
+        tthawd_m: state.tthawd_m,
+        fgthwd_flag: state.fgthwd_flag,
+        total_fine_layer_count: state.total_fine_layer_count,
+        conductivity_tilled_w_m_k: state.conductivity_tilled_w_m_k,
+        conductivity_untilled_w_m_k: state.conductivity_untilled_w_m_k,
+        conductivity_residue_w_m_k: state.conductivity_residue_w_m_k,
+        shadow_total_water_before_m: state.shadow_total_water_before_m,
+        shadow_total_water_after_m: state.shadow_total_water_after_m,
+        shadow_wb_delta_m: state.shadow_wb_delta_m,
+        shadow_frwatc_residual_m: state.shadow_frwatc_residual_m,
+        watpdg_m: state.watpdg_m,
+        watbtm_m: state.watbtm_m,
+        layer_shadows: state
+            .layer_shadows
+            .iter()
+            .map(|layer| crate::hydrology::DirectFrostLayerShadowProjection {
+                layer_index: layer.layer_index,
+                st_m: layer.st_m,
+                soil_water_m: layer.soil_water_m,
+                frozen_depth_m: layer.frozen_depth_m,
+                frozen_water_m: layer.frozen_water_m,
+                soilf_m: layer.soilf_m,
+                yst_m: layer.yst_m,
+                nwfrzz_m: layer.nwfrzz_m,
+            })
+            .collect(),
+        fine_layers: state
+            .fine_layers
+            .iter()
+            .map(|fine| crate::hydrology::DirectFrostFineLayerProjection {
+                layer_index: fine.layer_index,
+                fine_index: fine.fine_index,
+                fgfrst: fine.fgfrst,
+                slfsd_m: fine.slfsd_m,
+                slsic_m: fine.slsic_m,
+                slsw_theta: fine.slsw_theta,
+                sltime_s: fine.sltime_s,
+            })
+            .collect(),
+    }
+}
+
+// Test-local mirror of the runner authority's kernel-request assembly: solve
+// the day's winter frost partition once from the frame's current layer basis,
+// as the production builder does from lane state.
+fn solve_test_winter_frost_outcome(
+    day: &DirectDayFrame,
+    compute_inputs: &DirectWinterFrostComputeInputs,
+) -> DirectWinterFrostPartitionOutcome {
+    let layers = &day.percolation.layer_state_after;
+    let soil_conductivity_m_s = compute_inputs
+        .soil_conductivity_m_s
+        .filter(|value| *value > 0.0)
+        .unwrap_or_else(|| layers[0].conductivity_m_s);
+    let profile_depth_m = layers.iter().map(|layer| layer.depth_m).sum();
+    let soil_water_m = layers.iter().map(aggregate_test_layer_storage).sum();
+    let layer_inputs = layers
+        .iter()
+        .zip(compute_inputs.layer_bulk_density_kg_m3.iter().copied())
+        .enumerate()
+        .map(
+            |(offset, (layer, bulk_density_kg_m3))| DirectFrostLayerInput {
+                layer_index: offset + 1,
+                theta_m: layer.theta_m,
+                upper_limit_m: layer.upper_limit_m,
+                depth_m: layer.depth_m,
+                residual_theta: layer.residual_theta,
+                bulk_density_kg_m3,
+                frozen_depth_m: layer.frozen_depth_m,
+                frozen_water_m: layer.frozen_water_m,
+            },
+        )
+        .collect();
+    Wb11HydrologyKernel::compute_direct_winter_frost_partition(&DirectActiveFrostPartitionInputs {
+        controls: compute_inputs.controls,
+        thermal: compute_inputs.thermal,
+        profile_depth_m,
+        soil_water_m,
+        theta_residual: compute_inputs.theta_residual,
+        theta_field_capacity: compute_inputs.theta_field_capacity,
+        soil_conductivity_m_s,
+        prior_state: test_frost_prior_state(&day.winter_column.frost),
+        layers: layer_inputs,
+        hourly: compute_inputs.hourly,
+    })
+    .expect("test winter frost outcome should solve")
 }

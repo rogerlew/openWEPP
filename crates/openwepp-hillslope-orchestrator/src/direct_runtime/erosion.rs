@@ -349,10 +349,12 @@ impl DirectDayFrame {
     }
 
     fn compute_r7d6_erosion(&self) -> Result<DirectErosionState, DirectRuntimeError> {
-        let erosion_inputs = self.r7d8_erosion_inputs_with_runoff_authority()?;
-        if !erosion_inputs.wave1_enabled && !erosion_inputs.wave2_enabled {
+        // Check the enable flags before r7d8 clones the inputs (the Wave-2
+        // class Vec makes that clone a per-OFE-day allocation).
+        if !self.erosion_inputs.wave1_enabled && !self.erosion_inputs.wave2_enabled {
             return Ok(DirectErosionState::inactive());
         }
+        let erosion_inputs = self.r7d8_erosion_inputs_with_runoff_authority()?;
 
         let wave1 = if erosion_inputs.wave1_enabled {
             Some(compute_direct_erod13(&erosion_inputs.wave1)?)

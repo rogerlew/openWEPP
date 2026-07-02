@@ -3,60 +3,17 @@ use crate::constants::{
     WB15_INTERCEPT_LINEAR_COEFF, WB15_INTERCEPT_MM_TO_M, WB15_INTERCEPT_QUADRATIC_COEFF,
     WB16_MAX_DURATION_S, WB16_PEAKRO_FLOOR, WB16_RUNOFF_NEAR_ZERO_THRESHOLD,
 };
-use crate::hydrology::{
-    DirectActiveFrostPartitionInputs, DirectFrostLayerInput, DirectFrostPriorStateInput,
-    DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome, Wb11HydrologyKernel,
-};
+use crate::hydrology::{DirectWinterFrostComputeInputs, DirectWinterFrostPartitionOutcome};
 use crate::winter_column::DirectFrostLaneState;
 
 use super::{
     DIRECT_AUDIT, DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4I_PHASE_SPAN_COUNT,
     DIRECT_R4J_PHASE_SPAN_COUNT, DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT,
     DIRECT_R7D6_PEAK_RUNOFF_PHASE_SPAN_COUNT, DirectDayFrame, DirectFrostFineLayerCarry,
-    DirectFrostLayerShadowCarry, DirectFrostRuntimeCarry, DirectRunoffRebalanceTraceEvent,
-    DirectRuntimeError, DirectSubsurfaceLayerState, scaled_direct_transfer_total_m,
-    sum_nonnegative_direct_m, validate_finite, validate_nonnegative_direct_m,
+    DirectFrostLayerShadowCarry, DirectFrostRuntimeCarry, DirectRuntimeError,
+    DirectSubsurfaceLayerState, scaled_direct_transfer_total_m, sum_nonnegative_direct_m,
+    validate_finite, validate_nonnegative_direct_m,
 };
-
-#[derive(Debug, Clone)]
-struct R7hRunoffRebalanceTraceConfig {
-    path: std::path::PathBuf,
-    exact_day_index: Option<usize>,
-    exact_lane_index: Option<usize>,
-}
-
-static R7H_RUNOFF_REBALANCE_TRACE_CONFIG: std::sync::OnceLock<
-    Option<R7hRunoffRebalanceTraceConfig>,
-> = std::sync::OnceLock::new();
-
-fn r7h_runoff_rebalance_trace_config() -> Option<&'static R7hRunoffRebalanceTraceConfig> {
-    R7H_RUNOFF_REBALANCE_TRACE_CONFIG
-        .get_or_init(|| {
-            let path = std::env::var_os("OPENWEPP_R7H_RUNOFF_REBALANCE_TRACE_PATH")?;
-            if path.is_empty() {
-                return None;
-            }
-            Some(R7hRunoffRebalanceTraceConfig {
-                path: std::path::PathBuf::from(path),
-                exact_day_index: r7h_runoff_trace_env_usize(
-                    "OPENWEPP_R7H_RUNOFF_REBALANCE_TRACE_DAY_INDEX",
-                ),
-                exact_lane_index: r7h_runoff_trace_env_usize(
-                    "OPENWEPP_R7H_RUNOFF_REBALANCE_TRACE_LANE_INDEX",
-                ),
-            })
-        })
-        .as_ref()
-}
-
-fn r7h_runoff_trace_env_usize(name: &str) -> Option<usize> {
-    let value = std::env::var(name).ok()?;
-    let trimmed = value.trim();
-    if trimmed.is_empty() {
-        return None;
-    }
-    trimmed.parse::<usize>().ok()
-}
 
 fn r7h_runoff_trace_number(value: f64) -> String {
     if value.is_finite() {
@@ -64,88 +21,6 @@ fn r7h_runoff_trace_number(value: f64) -> String {
     } else {
         "null".to_string()
     }
-}
-
-fn maybe_write_r7h_runoff_rebalance_trace(event: &DirectRunoffRebalanceTraceEvent) {
-    let Some(config) = r7h_runoff_rebalance_trace_config() else {
-        return;
-    };
-    if !r7h_runoff_rebalance_trace_allows(config, event) {
-        return;
-    }
-
-    let mut line = String::new();
-    line.push('{');
-    line.push_str("\"schema\":\"openwepp-r7h-runoff-rebalance-trace-v1\"");
-    line.push_str(",\"day_index\":");
-    line.push_str(&event.day_index.to_string());
-    line.push_str(",\"lane_index\":");
-    line.push_str(&event.lane_index.to_string());
-    line.push_str(",\"target_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.target_m));
-    line.push_str(",\"aggregate_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.aggregate_m));
-    line.push_str(",\"delta_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.delta_m));
-    line.push_str(",\"tolerance_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.tolerance_m));
-    line.push_str(",\"accepted\":");
-    line.push_str(if event.accepted { "true" } else { "false" });
-    line.push_str(",\"storage_initial_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.storage_initial_m));
-    line.push_str(",\"precip_input_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.precip_input_m));
-    line.push_str(",\"snow_coupling_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.snow_coupling_m));
-    line.push_str(",\"runon_input_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.runon_input_m));
-    line.push_str(",\"frost_liquid_delta_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.frost_liquid_delta_m));
-    line.push_str(",\"interception_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.interception_m));
-    line.push_str(",\"q_runoff_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.q_runoff_m));
-    line.push_str(",\"evapotranspiration_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.evapotranspiration_m));
-    line.push_str(",\"evapotranspiration_storage_return_m\":");
-    line.push_str(&r7h_runoff_trace_number(
-        event.evapotranspiration_storage_return_m,
-    ));
-    line.push_str(",\"deep_seepage_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.deep_seepage_m));
-    line.push_str(",\"subsurface_loss_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.subsurface_loss_m));
-    line.push_str(",\"liquid_input_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.liquid_input_m));
-    line.push_str(",\"cumulative_infiltration_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.cumulative_infiltration_m));
-    line.push_str(",\"depression_storage_delta_m\":");
-    line.push_str(&r7h_runoff_trace_number(event.depression_storage_delta_m));
-    line.push_str(",\"frost_retained_local_liquid_m\":");
-    line.push_str(&r7h_runoff_trace_number(
-        event.frost_retained_local_liquid_m,
-    ));
-    line.push('}');
-    line.push('\n');
-
-    r7h_runoff_append_trace_line(&config.path, &line);
-}
-
-fn r7h_runoff_rebalance_trace_allows(
-    config: &R7hRunoffRebalanceTraceConfig,
-    event: &DirectRunoffRebalanceTraceEvent,
-) -> bool {
-    if let Some(exact_day_index) = config.exact_day_index
-        && event.day_index != exact_day_index
-    {
-        return false;
-    }
-    if let Some(exact_lane_index) = config.exact_lane_index
-        && event.lane_index != exact_lane_index
-    {
-        return false;
-    }
-    true
 }
 
 fn r7h_runoff_append_trace_line(path: &std::path::Path, line: &str) {
@@ -159,6 +34,77 @@ fn r7h_runoff_append_trace_line(path: &std::path::Path, line: &str) {
     {
         let _ = std::io::Write::write_all(&mut file, line.as_bytes());
     }
+}
+
+// WP-2 frost-solve diagnostic trace: since the single-solve rewire the only
+// writer is the runner day-input builder (the R4A-side hook died with the
+// deleted re-solve); one JSONL row per (lane, day) solve when
+// OPENWEPP_WP2_FROST_PAIR_TRACE_PATH is set. Inert (no construction, no I/O)
+// when the variable is unset.
+static WP2_FROST_PAIR_TRACE_PATH: std::sync::OnceLock<Option<std::path::PathBuf>> =
+    std::sync::OnceLock::new();
+
+pub fn wp2_frost_pair_trace_path() -> Option<&'static std::path::PathBuf> {
+    WP2_FROST_PAIR_TRACE_PATH
+        .get_or_init(|| {
+            let path = std::env::var_os("OPENWEPP_WP2_FROST_PAIR_TRACE_PATH")?;
+            if path.is_empty() {
+                return None;
+            }
+            Some(std::path::PathBuf::from(path))
+        })
+        .as_ref()
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn write_wp2_frost_pair_trace(
+    path: &std::path::Path,
+    source: &str,
+    lane_index: usize,
+    day_index: usize,
+    in_soil_water_m: f64,
+    in_layer_theta_sum_m: f64,
+    in_layer_frozen_water_sum_m: f64,
+    in_prior_dfrost_m: f64,
+    in_prior_ws_frz_m: f64,
+    outcome: &crate::hydrology::DirectWinterFrostPartitionOutcome,
+) {
+    let n = r7h_runoff_trace_number;
+    let line = format!(
+        concat!(
+            "{{\"schema\":\"openwepp-wp2-frost-pair-trace-v1\",\"source\":\"{}\",",
+            "\"lane_index\":{},\"day_index\":{},",
+            "\"in_soil_water_m\":{},\"in_layer_theta_sum_m\":{},",
+            "\"in_layer_frozen_water_sum_m\":{},\"in_prior_dfrost_m\":{},",
+            "\"in_prior_ws_frz_m\":{},\"out_active\":{},",
+            "\"out_infcap_frz_m_s\":{},\"out_frost_depth_after_m\":{},",
+            "\"out_frozen_water_after_m\":{},\"out_thdp_after_m\":{},",
+            "\"out_dthaw_after_m\":{},\"out_tfrdp_after_m\":{},",
+            "\"out_tthawd_after_m\":{},\"out_fgthwd_flag_after\":{},",
+            "\"out_frwatc_net_liquid_delta_m\":{},",
+            "\"out_total_fine_layer_count\":{}}}\n"
+        ),
+        source,
+        lane_index,
+        day_index,
+        n(in_soil_water_m),
+        n(in_layer_theta_sum_m),
+        n(in_layer_frozen_water_sum_m),
+        n(in_prior_dfrost_m),
+        n(in_prior_ws_frz_m),
+        outcome.active_frost_coupling,
+        n(outcome.infcap_frz_m_s),
+        n(outcome.frost_depth_after_m),
+        n(outcome.frozen_water_after_m),
+        n(outcome.thdp_after_m),
+        n(outcome.dthaw_after_m),
+        n(outcome.tfrdp_after_m),
+        n(outcome.tthawd_after_m),
+        n(outcome.fgthwd_flag_after),
+        n(outcome.frwatc_net_liquid_delta_m),
+        n(outcome.total_fine_layer_count),
+    );
+    r7h_runoff_append_trace_line(path, &line);
 }
 
 impl DirectDayFrame {
@@ -449,12 +395,6 @@ impl DirectDayFrame {
         self.water.runoff_m = runoff_partition.q_runoff_m;
         DIRECT_AUDIT.record_direct_state_mutation();
         state_mutation_count += 1;
-
-        if frost_reconciled {
-            self.rebalance_r4a_frost_projection_to_storage_target()?;
-            DIRECT_AUDIT.record_direct_state_mutation();
-            state_mutation_count += 1;
-        }
 
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
@@ -908,104 +848,117 @@ impl DirectDayFrame {
         &mut self,
         winter_frost_compute_inputs: Option<&DirectWinterFrostComputeInputs>,
     ) -> Result<bool, DirectRuntimeError> {
-        let Some(compute_inputs) = winter_frost_compute_inputs else {
+        if winter_frost_compute_inputs.is_none() {
             return Ok(false);
-        };
-        let base_layers = self.latest_r4a_frost_layers()?;
-        let layers = self.r4a_frost_layers_with_local_partition_excess(&base_layers)?;
-        let frost_outcome = self.compute_r4a_winter_frost_partition(compute_inputs, &layers)?;
+        }
+        // Single-solve authority (WP-2): the frost partition solved once at
+        // day ingress (apply_r4w_winter_frost_ingress) owns every frost
+        // mutation; R4A keeps only the retained-local-liquid bookkeeping for
+        // the runoff partition.
         self.runoff_partition_inputs.frost_retained_local_liquid_m =
             self.r4a_deferred_local_partition_excess_m()?;
-        self.apply_r4a_winter_frost_outcome(layers, &frost_outcome)?;
         Ok(true)
     }
 
-    fn compute_r4a_winter_frost_partition(
-        &self,
-        compute_inputs: &DirectWinterFrostComputeInputs,
-        layers: &[DirectSubsurfaceLayerState],
-    ) -> Result<DirectWinterFrostPartitionOutcome, DirectRuntimeError> {
-        let soil_conductivity_m_s = r4a_typed_frost_soil_conductivity(compute_inputs, layers)?;
-        let profile_depth_m = r4a_frost_profile_depth(layers)?;
-        let soil_water_m = r4a_aggregate_liquid_soil_water(layers)?;
-        Wb11HydrologyKernel::compute_direct_winter_frost_partition(
-            &DirectActiveFrostPartitionInputs {
-                controls: compute_inputs.controls,
-                thermal: compute_inputs.thermal,
-                profile_depth_m,
-                soil_water_m,
-                theta_residual: compute_inputs.theta_residual,
-                theta_field_capacity: compute_inputs.theta_field_capacity,
-                soil_conductivity_m_s,
-                prior_state: self.r4a_typed_frost_prior_state(),
-                layers: r4a_typed_frost_layer_inputs(compute_inputs, layers)?,
-                hourly: compute_inputs.hourly,
-            },
-        )
-        .map_err(|source| DirectRuntimeError::DirectKernelGuardFailure {
-            phase: "runoff_partition.winter_frost_partition",
-            detail: source.to_string(),
-        })
-    }
-
-    fn latest_r4a_frost_layers(
-        &self,
-    ) -> Result<Vec<DirectSubsurfaceLayerState>, DirectRuntimeError> {
-        if !self
-            .evapotranspiration_compute
-            .layer_state_after_root_uptake
-            .is_empty()
-        {
-            return Ok(self
-                .evapotranspiration_compute
-                .layer_state_after_root_uptake
-                .clone());
-        }
-        if !self.subsurface_compute.layer_state_after.is_empty() {
-            return Ok(self.subsurface_compute.layer_state_after.clone());
-        }
-        if !self.percolation.layer_state_after.is_empty() {
-            return Ok(self.percolation.layer_state_after.clone());
-        }
-        Err(DirectRuntimeError::MissingDirectUpstream {
-            upstream: "R4A frost layer state",
-        })
-    }
-
-    fn r4a_frost_layers_with_local_partition_excess(
-        &self,
-        layers: &[DirectSubsurfaceLayerState],
-    ) -> Result<Vec<DirectSubsurfaceLayerState>, DirectRuntimeError> {
-        let mut layers = layers.to_vec();
-        let deferred_local_liquid_m = self.r4a_deferred_local_partition_excess_m()?;
-        let unprojected_local_excess_m = deferred_local_liquid_m
-            - self
-                .runoff_partition_inputs
-                .frost_preprojected_local_liquid_m;
-        validate_finite(
-            "runoff_partition.frost_unprojected_local_liquid_m",
-            unprojected_local_excess_m,
-        )?;
-        if unprojected_local_excess_m < -WB11_ZERO_THRESHOLD {
-            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-                field: "runoff_partition.frost_preprojected_local_liquid_m",
-            });
-        }
-        if unprojected_local_excess_m <= WB11_ZERO_THRESHOLD {
-            return Ok(layers);
-        }
-        let Some(top_layer) = layers.first_mut() else {
-            return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "runoff_partition.frost_layers",
-            });
+    // Single-solve authority (WP-2): apply the day's frost partition outcome
+    // (solved once by the runner authority from start-of-day lane state) to
+    // the day's layer-input basis before any water-moving phase — the legacy
+    // frsoil-before-infiltration ordering and the INV-SNOWFREEZE-012 hour-1
+    // ingress handoff. Runs between R4C (which captures the pre-frost
+    // storage-initial scalar) and R4I, so the daily identity
+    // initial + fluxes + frost_delta = final closes by construction.
+    pub(crate) fn apply_r4w_winter_frost_ingress(&mut self) -> Result<bool, DirectRuntimeError> {
+        let Some(frost_partition) = self.winter_frost_outcome.take() else {
+            return Ok(false);
         };
-        top_layer.theta_m += unprojected_local_excess_m;
-        validate_nonnegative_direct_m(
-            "runoff_partition.frost_local_partition_excess_m",
-            deferred_local_liquid_m,
+        let mut layers = self.percolation_inputs.layers.clone();
+        let liquid_storage_before_frost_m = r4w_aggregate_liquid_soil_water(&layers)?;
+        let has_material_storage_state =
+            r4w_frost_partition_has_material_storage_state(&frost_partition);
+        if frost_partition.active_frost_coupling {
+            let carry = direct_frost_runtime_carry(&frost_partition);
+            self.winter_column.frost = carry.clone().into();
+            self.frost_runtime_carry = Some(carry);
+        } else {
+            self.winter_column.frost = DirectFrostLaneState::zero();
+            self.frost_runtime_carry = None;
+        }
+        if !has_material_storage_state {
+            if r4a_layers_have_coarse_frost_projection(&layers)? {
+                clear_r4w_nonmaterial_frost_layer_projection(&mut layers)?;
+                let liquid_storage_after_clear_m = r4w_aggregate_liquid_soil_water(&layers)?;
+                if (liquid_storage_after_clear_m - liquid_storage_before_frost_m).abs() > 1.0e-9 {
+                    return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                        field: "frost_ingress.no_material_frost_storage_clear",
+                    });
+                }
+                self.apply_r4w_frost_layers(layers, liquid_storage_before_frost_m);
+            }
+            self.storage_reconciliation_inputs.frost_liquid_delta_m = 0.0;
+            self.hydrology_projection_inputs.frozen_soil_water_m = 0.0;
+            self.hydrology_projection_inputs.frost_depth_m = 0.0;
+            return Ok(true);
+        }
+        apply_r4w_frost_layer_projection(&mut layers, &frost_partition)?;
+        let soil_water_m = r4w_aggregate_liquid_soil_water(&layers)?;
+        let soil_water_m =
+            if let Some(soil_water_after_frwatc_m) = frost_partition.soil_water_after_frwatc_m {
+                if (soil_water_after_frwatc_m - soil_water_m).abs() > 1.0e-9 {
+                    return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                        field: "frost_ingress.frost_soil_water_after",
+                    });
+                }
+                soil_water_after_frwatc_m
+            } else {
+                soil_water_m
+            };
+        if !r4w_frost_partition_has_final_frozen_projection(&frost_partition)
+            && r4a_layers_have_coarse_frost_projection(&layers)?
+        {
+            clear_r4w_nonmaterial_frost_layer_projection(&mut layers)?;
+            let soil_water_after_clear_m = r4w_aggregate_liquid_soil_water(&layers)?;
+            if (soil_water_after_clear_m - soil_water_m).abs() > 1.0e-9 {
+                return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                    field: "frost_ingress.thawed_frost_storage_clear",
+                });
+            }
+        }
+        let frozen_water_m =
+            layers
+                .iter()
+                .map(|layer| layer.frozen_water_m)
+                .try_fold(0.0_f64, |total, value| {
+                    validate_nonnegative_direct_m("frost_ingress.frost_frozen_water_m", value)?;
+                    let total = total + value;
+                    validate_finite("frost_ingress.frost_frozen_water_total_m", total)?;
+                    Ok::<f64, DirectRuntimeError>(total)
+                })?;
+        if frost_partition.frozen_water_after_m - frozen_water_m < -1.0e-9 {
+            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "frost_ingress.frost_frozen_water_after",
+            });
+        }
+        self.storage_reconciliation_inputs.frost_liquid_delta_m =
+            soil_water_m - liquid_storage_before_frost_m;
+        validate_finite(
+            "frost_ingress.frost_liquid_delta_m",
+            self.storage_reconciliation_inputs.frost_liquid_delta_m,
         )?;
-        validate_nonnegative_direct_m("runoff_partition.frost_layer_theta_m", top_layer.theta_m)?;
-        Ok(layers)
+        self.hydrology_projection_inputs.frozen_soil_water_m = frost_partition.frozen_water_after_m;
+        self.hydrology_projection_inputs.frost_depth_m = frost_partition.frost_depth_after_m;
+        self.apply_r4w_frost_layers(layers, soil_water_m);
+        Ok(true)
+    }
+
+    fn apply_r4w_frost_layers(
+        &mut self,
+        layers: Vec<DirectSubsurfaceLayerState>,
+        soil_water_m: f64,
+    ) {
+        self.subsurface_compute_inputs.layers = layers.iter().cloned().map(Into::into).collect();
+        self.percolation_inputs.layers = layers;
+        self.percolation_inputs.soil_water_initial_m = soil_water_m;
+        self.water.soil_water_m = soil_water_m;
     }
 
     fn r4a_local_partition_excess_m(&self) -> Result<f64, DirectRuntimeError> {
@@ -1044,6 +997,30 @@ impl DirectDayFrame {
         Ok(deferred_local_liquid_m)
     }
 
+    fn latest_r4a_frost_layers(
+        &self,
+    ) -> Result<Vec<DirectSubsurfaceLayerState>, DirectRuntimeError> {
+        if !self
+            .evapotranspiration_compute
+            .layer_state_after_root_uptake
+            .is_empty()
+        {
+            return Ok(self
+                .evapotranspiration_compute
+                .layer_state_after_root_uptake
+                .clone());
+        }
+        if !self.subsurface_compute.layer_state_after.is_empty() {
+            return Ok(self.subsurface_compute.layer_state_after.clone());
+        }
+        if !self.percolation.layer_state_after.is_empty() {
+            return Ok(self.percolation.layer_state_after.clone());
+        }
+        Err(DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R4A frost layer state",
+        })
+    }
+
     fn r4a_has_material_winter_local_liquid_context(&self) -> Result<bool, DirectRuntimeError> {
         if self.snow_coupling_inputs.active_snow_coupling
             && self.snow_coupling_inputs.routed_melt_m > WB11_ZERO_THRESHOLD
@@ -1059,239 +1036,6 @@ impl DirectDayFrame {
             return Ok(false);
         };
         r4a_layers_have_coarse_frost_projection(&layers)
-    }
-
-    fn r4a_typed_frost_prior_state(&self) -> DirectFrostPriorStateInput {
-        direct_frost_prior_state_input(&self.winter_column.frost)
-    }
-
-    fn apply_r4a_winter_frost_outcome(
-        &mut self,
-        mut layers: Vec<DirectSubsurfaceLayerState>,
-        frost_partition: &DirectWinterFrostPartitionOutcome,
-    ) -> Result<(), DirectRuntimeError> {
-        let liquid_storage_before_frost_m = r4a_aggregate_liquid_soil_water(&layers)?;
-        let has_material_storage_state =
-            r4a_frost_partition_has_material_storage_state(frost_partition);
-        if frost_partition.active_frost_coupling {
-            let carry = direct_frost_runtime_carry(frost_partition);
-            self.winter_column.frost = carry.clone().into();
-            self.frost_runtime_carry = Some(carry);
-        } else {
-            self.winter_column.frost = DirectFrostLaneState::zero();
-            self.frost_runtime_carry = None;
-        }
-        if !has_material_storage_state {
-            if r4a_layers_have_coarse_frost_projection(&layers)? {
-                clear_r4a_nonmaterial_frost_layer_projection(&mut layers)?;
-                let liquid_storage_after_clear_m = r4a_aggregate_liquid_soil_water(&layers)?;
-                if (liquid_storage_after_clear_m - liquid_storage_before_frost_m).abs() > 1.0e-9 {
-                    return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-                        field: "runoff_partition.no_material_frost_storage_clear",
-                    });
-                }
-                self.apply_r4a_frost_layers(&layers, liquid_storage_before_frost_m);
-                self.water.soil_water_m = liquid_storage_before_frost_m;
-            } else if self.runoff_partition_inputs.frost_retained_local_liquid_m
-                > WB11_ZERO_THRESHOLD
-            {
-                self.apply_r4a_frost_layers(&layers, liquid_storage_before_frost_m);
-                self.water.soil_water_m = liquid_storage_before_frost_m;
-            }
-            self.storage_reconciliation_inputs.frost_liquid_delta_m = 0.0;
-            self.hydrology_projection_inputs.frozen_soil_water_m = 0.0;
-            self.hydrology_projection_inputs.frost_depth_m = 0.0;
-            validate_finite(
-                "runoff_partition.frost_liquid_delta_m",
-                self.storage_reconciliation_inputs.frost_liquid_delta_m,
-            )?;
-            return Ok(());
-        }
-        apply_r4a_frost_layer_projection(&mut layers, frost_partition)?;
-        let soil_water_m = r4a_aggregate_liquid_soil_water(&layers)?;
-        let soil_water_m =
-            if let Some(soil_water_after_frwatc_m) = frost_partition.soil_water_after_frwatc_m {
-                if (soil_water_after_frwatc_m - soil_water_m).abs() > 1.0e-9 {
-                    return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-                        field: "runoff_partition.frost_soil_water_after",
-                    });
-                }
-                soil_water_after_frwatc_m
-            } else {
-                soil_water_m
-            };
-        if !r4a_frost_partition_has_final_frozen_projection(frost_partition)
-            && r4a_layers_have_coarse_frost_projection(&layers)?
-        {
-            clear_r4a_nonmaterial_frost_layer_projection(&mut layers)?;
-            let soil_water_after_clear_m = r4a_aggregate_liquid_soil_water(&layers)?;
-            if (soil_water_after_clear_m - soil_water_m).abs() > 1.0e-9 {
-                return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-                    field: "runoff_partition.thawed_frost_storage_clear",
-                });
-            }
-        }
-        let frozen_water_m =
-            layers
-                .iter()
-                .map(|layer| layer.frozen_water_m)
-                .try_fold(0.0_f64, |total, value| {
-                    validate_nonnegative_direct_m("runoff_partition.frost_frozen_water_m", value)?;
-                    let total = total + value;
-                    validate_finite("runoff_partition.frost_frozen_water_total_m", total)?;
-                    Ok::<f64, DirectRuntimeError>(total)
-                })?;
-        if frost_partition.frozen_water_after_m - frozen_water_m < -1.0e-9 {
-            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-                field: "runoff_partition.frost_frozen_water_after",
-            });
-        }
-        self.apply_r4a_frost_layers(&layers, soil_water_m);
-        self.water.soil_water_m = soil_water_m;
-        self.storage_reconciliation_inputs.frost_liquid_delta_m =
-            soil_water_m - liquid_storage_before_frost_m;
-        validate_finite(
-            "runoff_partition.frost_liquid_delta_m",
-            self.storage_reconciliation_inputs.frost_liquid_delta_m,
-        )?;
-        self.hydrology_projection_inputs.frozen_soil_water_m = frost_partition.frozen_water_after_m;
-        self.hydrology_projection_inputs.frost_depth_m = frost_partition.frost_depth_after_m;
-        Ok(())
-    }
-
-    fn apply_r4a_frost_layers(&mut self, layers: &[DirectSubsurfaceLayerState], soil_water_m: f64) {
-        if !self
-            .evapotranspiration_compute
-            .layer_state_after_root_uptake
-            .is_empty()
-        {
-            self.evapotranspiration_compute.soil_water_after_m = soil_water_m;
-            replace_r4a_frost_layers(
-                &mut self
-                    .evapotranspiration_compute
-                    .layer_state_after_root_uptake,
-                layers,
-            );
-            self.evapotranspiration_compute_downstream_operands
-                .soil_water_after_m = soil_water_m;
-            replace_r4a_frost_layers(
-                &mut self
-                    .evapotranspiration_compute_downstream_operands
-                    .layer_state_after_root_uptake,
-                layers,
-            );
-            if let Some(shadow) = &mut self.evapotranspiration_compute_shadow_projection {
-                shadow.soil_water_after_m = soil_water_m;
-                replace_r4a_frost_layers(&mut shadow.layer_state_after_root_uptake, layers);
-            }
-            return;
-        }
-        if !self.subsurface_compute.layer_state_after.is_empty() {
-            replace_r4a_frost_layers(&mut self.subsurface_compute.layer_state_after, layers);
-            replace_r4a_frost_layers(
-                &mut self
-                    .subsurface_compute_downstream_operands
-                    .layer_state_after,
-                layers,
-            );
-            if let Some(shadow) = &mut self.subsurface_compute_shadow_projection {
-                replace_r4a_frost_layers(&mut shadow.layer_state_after, layers);
-            }
-            return;
-        }
-        replace_r4a_frost_layers(&mut self.percolation.layer_state_after, layers);
-        replace_r4a_frost_layers(
-            &mut self.percolation_downstream_operands.layer_state_after,
-            layers,
-        );
-        if let Some(shadow) = &mut self.percolation_shadow_projection {
-            replace_r4a_frost_layers(&mut shadow.layer_state_after, layers);
-        }
-    }
-
-    pub(super) fn rebalance_r4a_frost_projection_to_storage_target(
-        &mut self,
-    ) -> Result<(), DirectRuntimeError> {
-        const R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M: f64 = 1.0e-7;
-        // R7H keeps this as a tiny aggregate-closure bridge only. Frost-depth
-        // layer fidelity is governed by GAP-SNOWFREEZE-002, not compatibility
-        // bit-parity tuning in the direct runtime.
-        if self.storage_input_shadow_projection.is_none() {
-            return Ok(());
-        }
-        let target_m = self.r4a_storage_reconciliation_target_m()?;
-        let mut layers = self.latest_r4a_frost_layers()?;
-        let aggregate_m = r4a_aggregate_liquid_soil_water(&layers)?;
-        let delta_m = target_m - aggregate_m;
-        if delta_m.abs() <= WB11_ZERO_THRESHOLD {
-            maybe_write_r7h_runoff_rebalance_trace(
-                &DirectRunoffRebalanceTraceEvent::from_day_frame(
-                    self,
-                    target_m,
-                    aggregate_m,
-                    delta_m,
-                    R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M,
-                    true,
-                ),
-            );
-            return Ok(());
-        }
-        maybe_write_r7h_runoff_rebalance_trace(&DirectRunoffRebalanceTraceEvent::from_day_frame(
-            self,
-            target_m,
-            aggregate_m,
-            delta_m,
-            R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M,
-            delta_m.abs() <= R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M,
-        ));
-        if delta_m.abs() > R4A_FROST_PROJECTION_REBALANCE_TOLERANCE_M {
-            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-                field: "runoff_partition.frost_projection_rebalance_m",
-            });
-        }
-        let Some(layer) = layers.first_mut() else {
-            return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "runoff_partition.frost_projection_layers",
-            });
-        };
-        layer.theta_m += delta_m;
-        validate_nonnegative_direct_m(
-            "runoff_partition.frost_projection_rebalanced_theta_m",
-            layer.theta_m,
-        )?;
-        let aggregate_after_m = r4a_aggregate_liquid_soil_water(&layers)?;
-        if (aggregate_after_m - target_m).abs() > WB11_ZERO_THRESHOLD {
-            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
-                field: "runoff_partition.frost_projection_rebalance_m",
-            });
-        }
-        self.apply_r4a_frost_layers(&layers, target_m);
-        self.water.soil_water_m = target_m;
-        Ok(())
-    }
-
-    fn r4a_storage_reconciliation_target_m(&self) -> Result<f64, DirectRuntimeError> {
-        let inputs = self.storage_reconciliation_inputs;
-        let storage_reconciled_m = inputs.storage_initial_m
-            + inputs.precip_input_m
-            + inputs.snow_coupling_m
-            + inputs.runon_input_m
-            + inputs.frost_liquid_delta_m
-            + inputs.evapotranspiration_storage_return_m
-            - inputs.interception_m
-            - self.runoff_partition.q_runoff_m
-            - inputs.evapotranspiration_m
-            - inputs.deep_seepage_m
-            - inputs.subsurface_loss_m;
-        validate_finite(
-            "runoff_partition.storage_reconciliation_target_m",
-            storage_reconciled_m,
-        )?;
-        validate_nonnegative_direct_m(
-            "runoff_partition.storage_reconciliation_target_m",
-            storage_reconciled_m,
-        )?;
-        Ok(storage_reconciled_m)
     }
 }
 
@@ -1332,23 +1076,76 @@ fn r4a_layers_have_coarse_frost_projection(
     Ok(false)
 }
 
-fn clear_r4a_nonmaterial_frost_layer_projection(
-    layers: &mut [DirectSubsurfaceLayerState],
-) -> Result<(), DirectRuntimeError> {
+fn r4w_aggregate_liquid_soil_water(
+    layers: &[DirectSubsurfaceLayerState],
+) -> Result<f64, DirectRuntimeError> {
+    let mut soil_water_m = 0.0_f64;
     for layer in layers {
-        validate_nonnegative_direct_m("runoff_partition.frost_layer_theta_m", layer.theta_m)?;
+        validate_nonnegative_direct_m("frost_ingress.frost_layer_theta_m", layer.theta_m)?;
         validate_nonnegative_direct_m(
-            "runoff_partition.frost_layer_residual_theta",
+            "frost_ingress.frost_layer_residual_theta",
             layer.residual_theta,
         )?;
-        validate_nonnegative_direct_m("runoff_partition.frost_layer_depth_m", layer.depth_m)?;
+        validate_nonnegative_direct_m("frost_ingress.frost_layer_depth_m", layer.depth_m)?;
         validate_nonnegative_direct_m(
-            "runoff_partition.frost_layer_frozen_depth_m",
+            "frost_ingress.frost_layer_frozen_depth_m",
             layer.frozen_depth_m,
         )?;
         if layer.frozen_depth_m > layer.depth_m + WB11_ZERO_THRESHOLD {
             return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "runoff_partition.frost_layer_frozen_depth_m",
+                field: "frost_ingress.frost_layer_frozen_depth_m",
+            });
+        }
+        let unfrozen_depth_m = (layer.depth_m - layer.frozen_depth_m).max(0.0);
+        soil_water_m += layer.theta_m + layer.residual_theta * unfrozen_depth_m;
+        validate_finite("runoff_partition.frost_soil_water_m", soil_water_m)?;
+    }
+    Ok(soil_water_m.max(0.0))
+}
+
+fn r4w_frost_partition_has_material_storage_state(
+    frost_partition: &DirectWinterFrostPartitionOutcome,
+) -> bool {
+    const DIRECT_FROST_MATERIAL_THRESHOLD_M: f64 = 1.0e-12;
+    frost_partition.frost_depth_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.frozen_water_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.frwatc_freeze_debit_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.frwatc_thaw_credit_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.frwatc_net_liquid_delta_m.abs() > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.watpdg_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.watbtm_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.soil_water_after_frwatc_m.is_some()
+        || frost_partition.layer_projection.iter().any(|layer| {
+            layer.frozen_depth_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+                || layer.frozen_water_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        })
+}
+
+fn r4w_frost_partition_has_final_frozen_projection(
+    frost_partition: &DirectWinterFrostPartitionOutcome,
+) -> bool {
+    const DIRECT_FROST_MATERIAL_THRESHOLD_M: f64 = 1.0e-12;
+    frost_partition.frost_depth_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+        || frost_partition.frozen_water_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
+}
+
+fn clear_r4w_nonmaterial_frost_layer_projection(
+    layers: &mut [DirectSubsurfaceLayerState],
+) -> Result<(), DirectRuntimeError> {
+    for layer in layers {
+        validate_nonnegative_direct_m("frost_ingress.frost_layer_theta_m", layer.theta_m)?;
+        validate_nonnegative_direct_m(
+            "frost_ingress.frost_layer_residual_theta",
+            layer.residual_theta,
+        )?;
+        validate_nonnegative_direct_m("frost_ingress.frost_layer_depth_m", layer.depth_m)?;
+        validate_nonnegative_direct_m(
+            "frost_ingress.frost_layer_frozen_depth_m",
+            layer.frozen_depth_m,
+        )?;
+        if layer.frozen_depth_m > layer.depth_m + WB11_ZERO_THRESHOLD {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "frost_ingress.frost_layer_frozen_depth_m",
             });
         }
         if layer.frozen_depth_m <= WB11_ZERO_THRESHOLD
@@ -1378,137 +1175,7 @@ fn clear_r4a_nonmaterial_frost_layer_projection(
     Ok(())
 }
 
-fn replace_r4a_frost_layers(
-    target: &mut Vec<DirectSubsurfaceLayerState>,
-    layers: &[DirectSubsurfaceLayerState],
-) {
-    target.clear();
-    target.extend_from_slice(layers);
-}
-
-fn r4a_typed_frost_soil_conductivity(
-    compute_inputs: &DirectWinterFrostComputeInputs,
-    layers: &[DirectSubsurfaceLayerState],
-) -> Result<f64, DirectRuntimeError> {
-    if let Some(value) = compute_inputs.soil_conductivity_m_s
-        && value > 0.0
-    {
-        validate_nonnegative_direct_m("runoff_partition.frost_soil_conductivity_m_s", value)?;
-        return Ok(value);
-    }
-    let value = layers.first().map(|layer| layer.conductivity_m_s).ok_or(
-        DirectRuntimeError::DirectDomainViolation {
-            field: "runoff_partition.frost_layers",
-        },
-    )?;
-    validate_nonnegative_direct_m("runoff_partition.frost_layer_conductivity_m_s", value)?;
-    Ok(value)
-}
-
-fn r4a_frost_profile_depth(
-    layers: &[DirectSubsurfaceLayerState],
-) -> Result<f64, DirectRuntimeError> {
-    layers.iter().try_fold(0.0_f64, |total, layer| {
-        validate_positive_direct("runoff_partition.frost_layer_depth_m", layer.depth_m)?;
-        let total = total + layer.depth_m;
-        validate_finite("runoff_partition.frost_profile_depth_m", total)?;
-        Ok::<f64, DirectRuntimeError>(total)
-    })
-}
-
-fn r4a_typed_frost_layer_inputs(
-    compute_inputs: &DirectWinterFrostComputeInputs,
-    layers: &[DirectSubsurfaceLayerState],
-) -> Result<Vec<DirectFrostLayerInput>, DirectRuntimeError> {
-    if compute_inputs.layer_bulk_density_kg_m3.len() != layers.len() {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "runoff_partition.frost_layer_bulk_density_count",
-        });
-    }
-    layers
-        .iter()
-        .zip(compute_inputs.layer_bulk_density_kg_m3.iter().copied())
-        .enumerate()
-        .map(|(offset, (layer, bulk_density_kg_m3))| {
-            validate_positive_direct(
-                "runoff_partition.frost_layer_bulk_density_kg_m3",
-                bulk_density_kg_m3,
-            )?;
-            Ok(DirectFrostLayerInput {
-                layer_index: offset + 1,
-                theta_m: layer.theta_m,
-                upper_limit_m: layer.upper_limit_m,
-                depth_m: layer.depth_m,
-                residual_theta: layer.residual_theta,
-                bulk_density_kg_m3,
-                frozen_depth_m: layer.frozen_depth_m,
-                frozen_water_m: layer.frozen_water_m,
-            })
-        })
-        .collect()
-}
-
-fn direct_frost_prior_state_input(state: &DirectFrostLaneState) -> DirectFrostPriorStateInput {
-    DirectFrostPriorStateInput {
-        active_frost_coupling: state.active_frost_coupling,
-        dfrost_m: state.dfrost_m,
-        dthaw_m: state.dthaw_m,
-        nft: state.nft,
-        ws_frz_m: state.ws_frz_m,
-        infcap_frz_m_s: state.infcap_frz_m_s,
-        frwatc_soil_water_before_m: state.frwatc_soil_water_before_m,
-        frwatc_soil_water_after_m: state.frwatc_soil_water_after_m,
-        frwatc_frozen_water_before_m: state.frwatc_frozen_water_before_m,
-        frwatc_frozen_water_after_m: state.frwatc_frozen_water_after_m,
-        frwatc_freeze_debit_m: state.frwatc_freeze_debit_m,
-        frwatc_thaw_credit_m: state.frwatc_thaw_credit_m,
-        frwatc_net_liquid_delta_m: state.frwatc_net_liquid_delta_m,
-        frdp_m: state.frdp_m,
-        thdp_m: state.thdp_m,
-        tfrdp_m: state.tfrdp_m,
-        tthawd_m: state.tthawd_m,
-        fgthwd_flag: state.fgthwd_flag,
-        total_fine_layer_count: state.total_fine_layer_count,
-        conductivity_tilled_w_m_k: state.conductivity_tilled_w_m_k,
-        conductivity_untilled_w_m_k: state.conductivity_untilled_w_m_k,
-        conductivity_residue_w_m_k: state.conductivity_residue_w_m_k,
-        shadow_total_water_before_m: state.shadow_total_water_before_m,
-        shadow_total_water_after_m: state.shadow_total_water_after_m,
-        shadow_wb_delta_m: state.shadow_wb_delta_m,
-        shadow_frwatc_residual_m: state.shadow_frwatc_residual_m,
-        watpdg_m: state.watpdg_m,
-        watbtm_m: state.watbtm_m,
-        layer_shadows: state
-            .layer_shadows
-            .iter()
-            .map(|layer| crate::hydrology::DirectFrostLayerShadowProjection {
-                layer_index: layer.layer_index,
-                st_m: layer.st_m,
-                soil_water_m: layer.soil_water_m,
-                frozen_depth_m: layer.frozen_depth_m,
-                frozen_water_m: layer.frozen_water_m,
-                soilf_m: layer.soilf_m,
-                yst_m: layer.yst_m,
-                nwfrzz_m: layer.nwfrzz_m,
-            })
-            .collect(),
-        fine_layers: state
-            .fine_layers
-            .iter()
-            .map(|fine| crate::hydrology::DirectFrostFineLayerProjection {
-                layer_index: fine.layer_index,
-                fine_index: fine.fine_index,
-                fgfrst: fine.fgfrst,
-                slfsd_m: fine.slfsd_m,
-                slsic_m: fine.slsic_m,
-                slsw_theta: fine.slsw_theta,
-                sltime_s: fine.sltime_s,
-            })
-            .collect(),
-    }
-}
-
-fn apply_r4a_frost_layer_projection(
+fn apply_r4w_frost_layer_projection(
     layers: &mut [DirectSubsurfaceLayerState],
     frost_partition: &DirectWinterFrostPartitionOutcome,
 ) -> Result<(), DirectRuntimeError> {
@@ -1516,13 +1183,13 @@ fn apply_r4a_frost_layer_projection(
     for projection in &frost_partition.layer_projection {
         if projection.layer_index == 0 || projection.layer_index > layer_count {
             return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "runoff_partition.frost_layer_projection",
+                field: "frost_ingress.frost_layer_projection",
             });
         }
         let layer = layers
             .get_mut(projection.layer_index.saturating_sub(1))
             .ok_or(DirectRuntimeError::DirectDomainViolation {
-                field: "runoff_partition.frost_layer_projection",
+                field: "frost_ingress.frost_layer_projection",
             })?;
         layer.theta_m = projection.theta_after_m;
         layer.frozen_depth_m = projection.frozen_depth_m;
@@ -1533,59 +1200,6 @@ fn apply_r4a_frost_layer_projection(
         };
     }
     Ok(())
-}
-
-fn r4a_aggregate_liquid_soil_water(
-    layers: &[DirectSubsurfaceLayerState],
-) -> Result<f64, DirectRuntimeError> {
-    let mut soil_water_m = 0.0_f64;
-    for layer in layers {
-        validate_nonnegative_direct_m("runoff_partition.frost_layer_theta_m", layer.theta_m)?;
-        validate_nonnegative_direct_m(
-            "runoff_partition.frost_layer_residual_theta",
-            layer.residual_theta,
-        )?;
-        validate_nonnegative_direct_m("runoff_partition.frost_layer_depth_m", layer.depth_m)?;
-        validate_nonnegative_direct_m(
-            "runoff_partition.frost_layer_frozen_depth_m",
-            layer.frozen_depth_m,
-        )?;
-        if layer.frozen_depth_m > layer.depth_m + WB11_ZERO_THRESHOLD {
-            return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "runoff_partition.frost_layer_frozen_depth_m",
-            });
-        }
-        let unfrozen_depth_m = (layer.depth_m - layer.frozen_depth_m).max(0.0);
-        soil_water_m += layer.theta_m + layer.residual_theta * unfrozen_depth_m;
-        validate_finite("runoff_partition.frost_soil_water_m", soil_water_m)?;
-    }
-    Ok(soil_water_m.max(0.0))
-}
-
-fn r4a_frost_partition_has_material_storage_state(
-    frost_partition: &DirectWinterFrostPartitionOutcome,
-) -> bool {
-    const DIRECT_FROST_MATERIAL_THRESHOLD_M: f64 = 1.0e-12;
-    frost_partition.frost_depth_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
-        || frost_partition.frozen_water_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
-        || frost_partition.frwatc_freeze_debit_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
-        || frost_partition.frwatc_thaw_credit_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
-        || frost_partition.frwatc_net_liquid_delta_m.abs() > DIRECT_FROST_MATERIAL_THRESHOLD_M
-        || frost_partition.watpdg_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
-        || frost_partition.watbtm_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
-        || frost_partition.soil_water_after_frwatc_m.is_some()
-        || frost_partition.layer_projection.iter().any(|layer| {
-            layer.frozen_depth_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
-                || layer.frozen_water_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
-        })
-}
-
-fn r4a_frost_partition_has_final_frozen_projection(
-    frost_partition: &DirectWinterFrostPartitionOutcome,
-) -> bool {
-    const DIRECT_FROST_MATERIAL_THRESHOLD_M: f64 = 1.0e-12;
-    frost_partition.frost_depth_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
-        || frost_partition.frozen_water_after_m > DIRECT_FROST_MATERIAL_THRESHOLD_M
 }
 
 fn r4a_frost_lane_has_material_storage_state(frost_state: &DirectFrostLaneState) -> bool {

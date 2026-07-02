@@ -134,6 +134,23 @@ impl DirectProductionSnowFrostAuthority {
         let compute_inputs = Self::typed_winter_frost_compute_inputs(&typed_context)?;
         let frost_outcome =
             Self::compute_typed_winter_frost_outcome(&typed_context, &compute_inputs)?;
+        if let Some(trace_path) = openwepp_hillslope_orchestrator::wp2_frost_pair_trace_path() {
+            openwepp_hillslope_orchestrator::write_wp2_frost_pair_trace(
+                trace_path,
+                "builder",
+                lane_index,
+                day_index,
+                lane.water.soil_water_m,
+                lane.subsurface_layers.iter().map(|layer| layer.theta_m).sum(),
+                lane.subsurface_layers
+                    .iter()
+                    .map(|layer| layer.frozen_water_m)
+                    .sum(),
+                frost_lane_state.dfrost_m,
+                frost_lane_state.ws_frz_m,
+                &frost_outcome,
+            );
+        }
         let target_soil_water_m = direct_production_lane_soil_water(lane, lane_index)?;
         let hydrology_layers = direct_production_same_day_frost_hydrology_layers(
             lane_index,
@@ -148,6 +165,7 @@ impl DirectProductionSnowFrostAuthority {
             storage_liquid_delta_m: direct_production_frost_storage_liquid_delta(&frost_outcome),
             layer_carry_projection: self.frost_layer_carry_projection.clone(),
             hydrology_layers,
+            frost_outcome,
         }))
     }
 
@@ -242,8 +260,7 @@ impl DirectProductionSnowFrostAuthority {
             canopy_height_m: context.typed_authority.canopy_height_m,
             random_roughness_m: context.typed_authority.random_roughness_m,
             day_of_year: f64::from(context.day.julian_day),
-            monthly_max_c: context.typed_authority.monthly_max_c,
-            monthly_min_c: context.typed_authority.monthly_min_c,
+            seasonal_temperature_curve: context.typed_authority.seasonal_temperature_curve,
         })
     }
 

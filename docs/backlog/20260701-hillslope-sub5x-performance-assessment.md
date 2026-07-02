@@ -1,8 +1,31 @@
 # Hillslope direct runtime: sub-5× performance assessment
 
-State: `concept` — evidence-ranked refactor assessment; promotable to a
-work-package series.
+State: `executed (WP-1)` — the identity-preserving lane landed via
+`docs/work-packages/20260701-hillperf-mechanical-winter-overhead-001/`
+(2026-07-01, same day); measured outcomes per finding below. F1 remains
+open in `20260701-hillperf-frost-single-solve-001` (scaffolded).
 Author: Claude Code, 2026-07-01.
+
+## 0a. Measured outcome (WP-1, 2026-07-01)
+
+H2637 direct endpoint: **71.4 s → 46.69 s median quiet-window 3-rep**
+(46.78 / 46.63 / 46.69 s, same-window legacy 9.72 s → **4.80×**;
+loaded-window 3-rep 50.19–50.99 s vs same-window legacy 10.52 s → 4.80×) —
+**under the 5× viability target in both load conditions**, protected
+outputs byte-identical throughout, full suite 1284/1284.
+
+Per-finding measured outcomes (details in the package's
+`artifacts/finding-dispositions.md` and `gate-log.md`):
+
+| Finding | Outcome | Endpoint after (indicative) |
+|---|---|---|
+| F7 cast | landed `06f5dc0a` | 67.6 s |
+| F2 guard-symbol deferral | landed `db5d38fb` — the dominant win; estimate was ~7–11 s, measured ~16 s (its cost was smeared across format/allocator bins the sampled profile under-attributed) | 51.6 s |
+| F6 construct-behind-gate (3 items) | landed `61fa1bbd`; tail deferred then re-profile-dispositioned | — |
+| F5 curve hoist | landed `2398ed44` (field replacement, once-per-lane fit) | 45.9 s |
+| F3 forcing dedupe | **non-viable as specified** (contexts differ: frost hardcodes `LegacyRst`; snow uses configured phase model); narrowed variant dropped post-re-profile | — |
+| F8 telemetry | skipped (manifest snapshots `phase_view_constructions`) | — |
+| F1 double frost solve | open → WP-2 (exit re-profile confirms the two-solve structure; `derived_frost_depths`+`round` at 12.4% promoted within WP-2 contingency) | — |
 Evidence class: **Ran** for all timings and the profile (commands in §6);
 **Static** for source-mechanism attribution (file:line cited per finding).
 Disposition of each finding (fix shape, sequencing, contract adjudication)
