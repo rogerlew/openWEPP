@@ -47,3 +47,24 @@ review rather than silently absorbed.
   year 1 / OFE 2, broadening as the single frost trajectory propagates
   (235,939 / 235,961 WAT rows differ somewhere; `frdp` max delta 0.244 m,
   consistent with the Stage-1 paired-solve divergence scale of 0.245 m).
+
+## Exit timing and re-profile (quiet window, load 1.6–3.5)
+
+| Measure | Value |
+|---|---|
+| H2637 3-rep | 33.74 / 32.77 / 32.58 s (median **32.77 s**) |
+| Same-window legacy `wepp_260430_hill` | 9.30 s |
+| **Ratio** | **3.52×** |
+| Max RSS | ~76.6 MiB |
+
+Day's arc on the same fixture and host: 71.4 s (7.40×) at the program's
+start → 46.69 s (4.80×) after WP-1 → **32.77 s (3.52×)** after WP-2 —
+under the 45.6 s `<=5x` viability budget with ~30% margin.
+
+Exit re-profile (perf-wp2exit.data): the double-solve structure is gone —
+`compute_direct_winter_frost_partition` shows one caller at 4.0% self;
+frost hourly machinery 8.3% (was 11.7%); the distribution is now
+physics-dominated (percolation 4.3%, lateral 3.3%, Harder–Pomeroy phase
+4.0%, transcendentals ~4%). Top remaining non-physics candidates for any
+future work: `round` inside `derived_frost_depths_from_fine_state`
+(3.7% — the F4 target, unchanged in this package) and memmove 6.1%.
