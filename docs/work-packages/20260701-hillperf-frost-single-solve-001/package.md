@@ -1,8 +1,9 @@
 # Frost Single-Solve (sub-5× WP-2, finding F1)
 
-Status: SCAFFOLDED — blocked on WP-1
-(`20260701-hillperf-mechanical-winter-overhead-001`) merging, and on a WP-1
-exit re-profile confirming F1's residual weight.
+Status: STAGE 3 EXECUTED — rubric bar PASSED (artifacts/rubric-verdict.md);
+Codex review + merge pending. Entry-gate amendment (operator-directed):
+executed on the WP-1 branch state rather than post-merge, with the WP-1 exit
+baseline (46.69 s quiet 3-rep) and exit re-profile as the entry evidence.
 
 Package id: `20260701-hillperf-frost-single-solve-001`
 
