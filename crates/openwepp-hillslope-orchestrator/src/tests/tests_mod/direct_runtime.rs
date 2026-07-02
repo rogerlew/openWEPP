@@ -296,7 +296,7 @@ fn r6f_publication_capture_accepts_typed_process_inputs_and_carries_layers() {
 }
 
 #[test]
-fn r7d4_publication_q_uses_runoff_geometry_scale_independently_from_qofe() {
+fn r7d4_publication_qofe_equals_q_with_independent_runvol_basis() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -327,9 +327,20 @@ fn r7d4_publication_q_uses_runoff_geometry_scale_independently_from_qofe() {
         .first_day()
         .expect("capture should include first row");
 
+    // MOFEFID-B02 (INV-RUNOFFPART-032): QOFE is published as Q (both
+    // cumulative-length normalized) — no longer the per-OFE local-length
+    // value. With ofe_length (1.0) != cumulative_length (4.0), the retained
+    // runvol basis is independent of the published QOFE=Q, so runvol_m3 is
+    // NOT the naive QOFE x area (it reflects the per-OFE ofe_length geometry).
     assert!(row.runoff.qofe_mm > 0.0);
-    assert_ne!(row.runoff.q_mm.to_bits(), row.runoff.qofe_mm.to_bits());
-    assert!((row.runoff.q_mm - row.runoff.qofe_mm * 0.25).abs() < 1.0e-12);
+    assert_eq!(row.runoff.q_mm.to_bits(), row.runoff.qofe_mm.to_bits());
+    let naive_qofe_volume_m3 = row.runoff.qofe_mm * 0.001 * 100.0;
+    assert!(
+        (row.runoff.runvol_m3 - naive_qofe_volume_m3).abs() > 1.0e-9,
+        "runvol must retain the independent per-OFE basis, not QOFE=Q x area: runvol={} naive={}",
+        row.runoff.runvol_m3,
+        naive_qofe_volume_m3
+    );
     assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
 }
 

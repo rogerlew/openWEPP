@@ -367,21 +367,29 @@ fn direct_publication_runoff_operands(
     let q_publication_m = q_publication_mm / 1_000.0;
     validate_finite("publication.runoff.q_publication_m", q_publication_m)?;
     validate_nonnegative_direct_m("publication.runoff.q_publication_m", q_publication_m)?;
-    let qofe_publication_mm = day_frame.hydrology_projection.q_ofe_m
+    // MOFEFID-B02 (INV-RUNOFFPART-032): the published QOFE column adopts the
+    // post-wepp_260516 ecosystem convention QOFE == Q (cumulative-length
+    // normalization). The per-OFE local-length basis is retained ONLY as the
+    // internal runoff volume/peak basis so H.pass.runvol and peak stay
+    // byte-invariant (the wepp_260516 fix's preserved property). On single-OFE
+    // lanes cumulative_length == ofe_length so QOFE already equalled Q and this
+    // is a no-op (single-OFE byte-identity).
+    let runvol_basis_mm = day_frame.hydrology_projection.q_ofe_m
         * 1_000.0
         * lane.runoff_publication_efflen_m
         / lane.runoff_publication_ofe_length_m;
-    let qofe_publication_m = qofe_publication_mm / 1_000.0;
-    validate_finite("publication.runoff.qofe_publication_m", qofe_publication_m)?;
-    validate_nonnegative_direct_m("publication.runoff.qofe_publication_m", qofe_publication_m)?;
+    let runvol_basis_m = runvol_basis_mm / 1_000.0;
+    validate_finite("publication.runoff.runvol_basis_m", runvol_basis_m)?;
+    validate_nonnegative_direct_m("publication.runoff.runvol_basis_m", runvol_basis_m)?;
+    let qofe_publication_mm = q_publication_mm;
     let (peak_runoff_m3_s, runoff_duration_s) =
-        direct_publication_peak_runoff_operands(day_frame, qofe_publication_m)?;
+        direct_publication_peak_runoff_operands(day_frame, runvol_basis_m)?;
     Ok(DirectPublicationRunoffOperands {
         q_mm: q_publication_mm,
         qofe_mm: qofe_publication_mm,
         runvol_m3: publication_mm_to_volume_m3(
             "publication.runoff.runvol_m3",
-            qofe_publication_mm,
+            runvol_basis_mm,
             lane.area_m2,
         )?,
         peak_runoff_m3_s,
