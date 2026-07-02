@@ -21,7 +21,7 @@ identity gates' standing Ran evidence is cited).
 | B7 | `QOFE = n × Q` denominators | `convention` (column semantics; physical volume correct on both sides via the cancellation) | **convention-not-defect** — the 2008 half-applied parallel edit is real (`source-intent` for the *inconsistency*), but "18-year defect" framing overstates: it is a denominator-semantics choice the ecosystem has now standardized | **contract-decision → `MOFEFID-B02`** — openWEPP publishes the pre-fix convention (`01_publication.rs:370-376`, matches our `wepp_260430` anchor); ecosystem + wepppy consumers moved to `QOFE = Q`; adjudicate openWEPP-native contract under ADR-0019 with `H.pass`-runvol invariance as the hard gate | Ran: both sources read |
 | B8 | R01 cascade-tail rain-event over-counting | observation (`runoff > precipitation`) `conservation-forced`; repair `unsubstantiated` (failed its own 30/40 cohort gate; **unfixed in legacy production**) | **upheld (observation) / unsubstantiated (repair)** | **not-applicable** — openWEPP has no event counter (`RM` is an additive depth bucket; totals are depth sums, never event-gated). **Comparator hygiene:** legacy production still over-counts on H347-class cascades; totals deltas expected | Ran: summary-accumulator sweep (no counter exists) |
 | B9 | Dry-day per-OFE residual | `unverified` (mechanism not on record; their package still active) | **unverified** | **correct-by-construction** on the enforced-identity basis — same per-OFE-day identity + guard pair on dry days, no special-casing. **Comparator hygiene:** legacy carries an open dry-day residual | Ran: guard reads |
-| B10 | Winter mixed-melt day-end aggregation | `source-intent` (math defect real; fix dated in source; branch empirically unreachable — 0 mixed days / 21.7M rows in their cohort) | **upheld** (latent legacy defect, fixed) | **contract-decision (follow-up)** — `INV-SNOWFREEZE-015` ratifies the corrected *net* algebra while the implementation routes the *positive-parts sum* under SNOWSCI-S1 single-source rationale; these disagree on (empirically doubtful) mixed-sign days. Reconcile invariant text with implementation. Not a proven runtime defect | Ran: `winter.for:430-466`, `runoff_reconciliation.rs:1133-1162`, INV-015 text |
+| B10 | Winter mixed-melt day-end aggregation | `source-intent` (math defect real; fix dated in source; branch empirically unreachable — 0 mixed days / 21.7M rows in their cohort) | **upheld** (latent legacy defect, fixed) | **contract-decision (follow-up)** — `INV-SNOWFREEZE-015` ratifies the corrected *net* algebra while the implementation routes the *positive-parts sum* under SNOWSCI-S1 single-source rationale; these disagree on (empirically doubtful) mixed-sign days. Reconcile invariant text with implementation → **`MOFEFID-B03`**. Not a proven runtime defect | Ran: `winter.for:430-466`, `runoff_reconciliation.rs:1133-1162`, INV-015 text |
 | B11 | Surface-pulse audit over-reach on `latqcc`-only days | `convention` (audit-tool design lesson) | **upheld** (their tool over-reached; they hardened it) | **not-applicable today** (no external WAT/PASS closure-audit tool exists) — carried as a **binding design constraint** on Lane C2 and any future exported-surface audit. Related A01-S4 gap: per-OFE closure is not externally reconstructable from our exports | Ran: tools sweep |
 
 ## Summary
@@ -29,7 +29,7 @@ identity gates' standing Ran evidence is cited).
 - **No openWEPP production defect was found in any of the eleven classes.**
   Seven classes are correct-by-construction or without an existing surface;
   two are contract decisions (B7 → `MOFEFID-B02` QOFE adjudication; B10 →
-  SC-SNOWFREEZE-015 text/implementation reconciliation); two produce
+  `MOFEFID-B03` SC-SNOWFREEZE-015 text/implementation reconciliation); two produce
   standing comparator-hygiene entries (B8, B9 — legacy production carries
   those defects unfixed, so deltas are expected).
 - **The skepticism directive earned its keep.** Three brief claims did not
@@ -39,7 +39,7 @@ identity gates' standing Ran evidence is cited).
   (legacy-lineage) choice with the conservation hazard neutralized
   structurally; B7's "defect" framing reduces to column semantics.
 - **Follow-ups spawned:** `MOFEFID-B02` (QOFE ecosystem-contract
-  adjudication); SC-SNOWFREEZE-015 reconciliation note; usersum WAT `RM`
+  adjudication); `MOFEFID-B03` (SC-SNOWFREEZE-015 reconciliation); usersum WAT `RM`
   consumer caveat; Lane C2 audit-tool design constraints (B11); A01 seeds
   (dormant `QcapSoftLimit`, tautological `closure_residual_m` naming,
   `INV-RUNOFFPART-029` case-classifier spec-vs-code question, external

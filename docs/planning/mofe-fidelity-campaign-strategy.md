@@ -326,6 +326,7 @@ timings.
 | 1 | `MOFEFID-A01` defect-review sweep | A | — (start now) |
 | 1 | `MOFEFID-B01` brief-audit (11 classes) | B | — (start now, parallel with A01) |
 | 2 | `MOFEFID-B02` QOFE ecosystem-contract adjudication | B | B01 confirms B7 shape (already Ran-verified; B02 can scaffold immediately after B01 lands) |
+| 2 | `MOFEFID-B03` SC-SNOWFREEZE-015 melt-aggregation reconciliation | B | B01 B10 verdict (contract-text net-algebra vs SNOWSCI-S1 positive-parts implementation; amend the invariant to ratify positive-parts-under-single-source or demonstrate equivalence on the reachable domain) |
 | 2 | `MOFEFID-C01` authority promotion (metric/envelope/applicability) | C | — (independent) |
 | 3 | `MOFEFID-C02` rubric harness | C | C01 envelope ratified |
 | 3 | `MOFEFID-D01` routing contracts + ADR | D | — (authoring can start now) |
