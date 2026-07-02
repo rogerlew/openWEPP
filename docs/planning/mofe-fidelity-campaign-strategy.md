@@ -13,6 +13,18 @@ ADR-0011/0017/0024, and `docs/ROADMAP.md`.
 
 ## 0. TL;DR
 
+> **CAMPAIGN SUBSTANTIVELY COMPLETE (2026-07-02).** All lanes executed and
+> dual-reviewed. The FARPOINT01 magnitude arc is closed end-to-end:
+> mechanism found (A01 F-A2) → confirmed first-order (A02) → corrected in
+> production (DC01, runon re-infiltration) → validated against field
+> authority (C01/C03, H2637 not-contradicted on all four tiers) → ecosystem
+> convention aligned (B02, QOFE=Q). Contract reconciliations B03 closed.
+> Legacy is no longer the reference for H2637 forest lateral flow; the
+> observed wet-forest field band is. Remaining: routine merges of the B02/B03
+> branches and the optional Lane D (Papanicolaou OFE-by-OFE routing), which
+> was always a separate opt-in build, not a FARPOINT01 blocker.
+
+
 The MOFE **closure** rung is complete: MOFE01/FARPOINT01 closed inter-OFE
 water routing through 19 OFEs, MAGPARITY01 cleared transfer/area-scaling/
 export, and the winter column runs on MOFE lanes in direct production. What
@@ -340,8 +352,8 @@ timings.
 | ✅ | `MOFEFID-A02` runon re-infiltration probe | A→C/D | **complete 2026-07-01** (`db301bcd`): CONFIRMED — −10.1 pp toward legacy from a lower-bound probe; erod14 qin≤qout monotonicity exposed as a structural witness |
 | ✅ | `MOFEFID-DC01` runon re-infiltration defect closure | DC | **complete 2026-07-02** (`91273392`): INV-RUNOFFPART-031 ratified + default WB14 runon admission; single-OFE byte-identity held; H2637 72.33%→46.98% (comparator flag — overshoots legacy; re-binning hypothesis refuted Δ0.02 pp); **magnitude bar routes to Lane C, making C01 the urgent next package**; erosion decreasing-flow in the INV-030 hold (clamp + manifest counter); Codex-reviewed, 4 findings dispositioned |
 | 1 | ~~`MOFEFID-A02`~~ (superseded by rows above) | — | env-gated opt-in admitting inter-OFE runon into the WB14 infiltration supply on H2637; default path byte-flat. **Hypothesis under test:** F-A2 explains a large share of the FARPOINT01 71%-vs-55.5% `runvol` gap (mechanism-consistent with MAGPARITY01's ~99%-routed-lateral decomposition; never examined by the magnitude arc). Outcome reorders C01 interpretation and the D01 runon-semantics contract |
-| 2 | `MOFEFID-B02` QOFE ecosystem-contract adjudication | B | B01 confirms B7 shape (already Ran-verified; B02 can scaffold immediately after B01 lands) |
-| 2 | `MOFEFID-B03` SC-SNOWFREEZE-015 melt-aggregation reconciliation | B | B01 B10 verdict (contract-text net-algebra vs SNOWSCI-S1 positive-parts implementation; amend the invariant to ratify positive-parts-under-single-source or demonstrate equivalence on the reachable domain) |
+| ✅ | `MOFEFID-B02` QOFE = Q convention switch | B | **complete 2026-07-02** (`4aa069bb`, merged): QOFE=Q on all rows, H.pass.runvol byte-invariant, per-row boundary guard (INV-RUNOFFPART-032), single-OFE byte-identical; 2 Codex review rounds |
+| ✅ | `MOFEFID-B03` SC-SNOWFREEZE-015 melt-aggregation reconciliation | B | **complete 2026-07-02** (branch `worktree-mofefid-b03`): INV-019 already superseded INV-015 for the coexist case — B10 was a missing cross-reference, not a defect; INV-015 text now defers to INV-019 (positive-parts = storage loss, density-gate-grounded). Contract-text only |
 | 2 | `MOFEFID-C01` authority promotion (metric/envelope/applicability) | C | — (independent) |
 | 3 | `MOFEFID-C02` rubric harness | C | C01 envelope ratified |
 | 3 | `MOFEFID-D01` routing contracts + ADR | D | — (authoring can start now) |
