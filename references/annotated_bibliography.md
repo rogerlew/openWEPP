@@ -824,3 +824,133 @@ openWEPP note (2026-05-11):
 **Kernel mapping**: MOFEFID Lane D (`SC-OFEROUTE` candidate contracts, per-OFE hydrograph transfer over the `INV-RUNOFFPART-029` seam).
 **Notes / caveats**: Copyrighted (AGU/WRR) — in-repo for internal validation only; supplemental-derived fixtures follow the campaign §8 governance. Original WEPP v2012.8 basis; friction formulations are semitheoretical with stated applicability regimes (`Re`, `Fr`, submergence).
 **OAR-6 compliance status**: Primary physics authority for Lane D; primary-source acquisitions for eqs. (2)–(6) originals tracked separately.
+
+## R-64: Tromp-van Meerveld & McDonnell (2006) Panola 147-storm threshold analysis
+
+**Citation**: Tromp-van Meerveld, H. J., and J. J. McDonnell (2006). *Threshold relations in subsurface stormflow: 1. A 147-storm analysis of the Panola hillslope*. Water Resources Research, 42, W02410. https://doi.org/10.1029/2004WR003778
+**Local path**: `references/copyrighted/TrompvanMeerveld_McDonnell2006_panola_threshold_1.pdf` (author-archive copy; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: 147-storm record from the Panola trenched hillslope: subsurface stormflow is threshold-gated (~55 mm event precipitation), with roughly two orders of magnitude more lateral flow above the threshold.
+**MOFEFID Lane C role**: the richest per-event lateral-flow distribution for a site whose observed data we hold (`tests/fixtures/forest_lateral_flow_authority/panola_pmrw_2002/`); primary evidence that event lateral fraction is nonlinear/threshold-shaped, so the acceptance envelope must be conditioned on event size and antecedent state, not a fixed ratio.
+**Kernel mapping**: Lane C1 envelope derivation; WB19 lateral magnitude judgment (`[INFERENCE]`).
+**Notes / caveats**: Deep annotation (key equations/threshold parameters) deferred to Lane C1 close reading — only abstract/first page verified at intake.
+
+## R-65: Tromp-van Meerveld & McDonnell (2006) fill-and-spill hypothesis
+
+**Citation**: Tromp-van Meerveld, H. J., and J. J. McDonnell (2006). *Threshold relations in subsurface stormflow: 2. The fill and spill hypothesis*. Water Resources Research, 42, W02411. https://doi.org/10.1029/2004WR003800
+**Local path**: `references/copyrighted/TrompvanMeerveld_McDonnell2006_fill_and_spill_2.pdf` (author-archive copy; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Mechanistic companion to R-64: bedrock-depression storage must fill before downslope connectivity establishes ("fill and spill"); connected conditions deliver >75× more subsurface flow.
+**MOFEFID Lane C role**: mechanism authority for the threshold shape in the Panola envelope; cautions that a smooth-restrictive-layer model (WEPP-style) will not reproduce the connectivity discontinuity — an expected structural divergence to declare, not a defect signal.
+**Kernel mapping**: Lane C1 applicability limits (`[INFERENCE]`).
+**Notes / caveats**: Intake-level annotation; deep read in Lane C1.
+
+## R-66: Freer et al. (2002) bedrock topography control on subsurface stormflow
+
+**Citation**: Freer, J., J. J. McDonnell, K. J. Beven, N. E. Peters, D. A. Burns, R. P. Hooper, B. Aulenbach, and C. Kendall (2002). *The role of bedrock topography on subsurface storm flow*. Water Resources Research, 38(12), 1269. https://doi.org/10.1029/2001WR000872
+**Local path**: `references/copyrighted/Freer2002_panola_bedrock_topography.pdf` (author-archive copy; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Panola trench + digital terrain analysis: subsurface flow delivery is organized by bedrock-surface topography, not ground-surface topography.
+**MOFEFID Lane C role**: spatial-organization caveat for envelope construction — trench-section observations sample an impeding-surface flow net, so site-to-model mapping must aggregate to scales where that organization averages out.
+**Kernel mapping**: Lane C1 applicability limits (`[INFERENCE]`).
+**Notes / caveats**: Intake-level annotation.
+
+## R-67: McGuire & McDonnell (2010) WS10 hillslope-stream connectivity
+
+**Citation**: McGuire, K. J., and J. J. McDonnell (2010). *Hydrological connectivity of hillslopes and streams: Characteristic time scales and nonlinearities*. Water Resources Research, 46, W10543. https://doi.org/10.1029/2010WR009341
+**Local path**: `references/copyrighted/McGuire_McDonnell2010_ws10_connectivity.pdf` (USDA Treesearch scan; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: HJ Andrews WS10 hillslope response analysis: threshold-linear behavior with an average hillslope quick-flow ratio of ~0.58 above ~20 mm antecedent rainfall.
+**MOFEFID Lane C role**: **highest-value envelope anchor** — an explicit event lateral-flow ratio with threshold conditioning for the exact hillslope whose observed record we hold (`hjandrews_ws10_hf024/`); candidate central value for the primary Lane C site.
+**Kernel mapping**: Lane C1 envelope derivation; H2637 applicability mapping (`[INFERENCE]`).
+**Notes / caveats**: Ratio/threshold numbers above are from the research-agent read; Lane C1 must re-derive them from the paper + HF024 data before they enter the envelope.
+
+## R-68: Weiler, McDonnell, Tromp-van Meerveld & Uchida (2005) subsurface stormflow synthesis
+
+**Citation**: Weiler, M., J. J. McDonnell, H. J. Tromp-van Meerveld, and T. Uchida (2005). *Subsurface Stormflow* (Ch. 112). In M. G. Anderson (ed.), Encyclopedia of Hydrological Sciences, Vol. 3, 1719–1732. Wiley. https://doi.org/10.1002/0470848944.hsa119
+**Local path**: `references/copyrighted/Weiler2005_subsurface_stormflow_encyclopedia.pdf` (free-access Wiley copy; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Cross-site synthesis of trench/hillslope subsurface-stormflow studies: mechanisms, controls, and observed magnitudes.
+**MOFEFID Lane C role**: the cross-site assembly source — lets single-site numbers (R-64, R-67, Maimai, Panola) be combined into one envelope with defensible spread.
+**Kernel mapping**: Lane C1 envelope derivation (`[INFERENCE]`).
+**Notes / caveats**: Intake-level annotation.
+
+## R-69: Blume & van Meerveld (2015) subsurface connectivity methods review
+
+**Citation**: Blume, T., and H. J. van Meerveld (2015). *From hillslope to stream: methods to investigate subsurface connectivity*. WIREs Water, 2(3), 177–198. https://doi.org/10.1002/wat2.1071
+**Local path**: `references/copyrighted/Blume_vanMeerveld2015_subsurface_connectivity_methods.pdf` (GFZ repository copy; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Methods review for measuring/interpreting subsurface lateral connectivity and flow.
+**MOFEFID Lane C role**: measurement-artifact guard for the rubric — how trench/well observations can mislead when compared to model output (the Lane C analog of the comparator like-for-like discipline).
+**Kernel mapping**: Lane C2 rubric design (`[INFERENCE]`).
+**Notes / caveats**: Intake-level annotation.
+
+## R-70: Srivastava et al. (2017) WEPP streamflow with baseflow, snow-dominated forest watershed
+
+**Citation**: Srivastava, A., J. Q. Wu, W. J. Elliot, E. S. Brooks, and D. C. Flanagan (2017). *Modeling streamflow in a snow-dominated forest watershed using the Water Erosion Prediction Project (WEPP) model*. Transactions of the ASABE, 60(4), 1171–1187. https://doi.org/10.13031/trans.12035
+**Local path**: `references/copyrighted/Srivastava2017_ToASABE_wepp_streamflow.pdf` (USDA Treesearch; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Adds nonlinear groundwater baseflow to WEPP v2012.8 and evaluates streamflow on an Upper Cedar River (PNW) subwatershed; WEPP-Cur vs WEPP-Mod NSE 0.55→0.76.
+**MOFEFID Lane C role**: the WEPP-lineage calibration precedent for partitioning lateral flow vs baseflow at watershed scale — context for what magnitude the lateral channel is *expected* to carry when baseflow is represented vs absent (bears on interpreting H2637's 71% routed-lateral share).
+**Kernel mapping**: WB19/baseflow boundary; Lane C3 interpretation (`[INFERENCE]`).
+**Notes / caveats**: Extends the held R-21 (Dun 2009) and R-22 (Srivastava 2013 dissertation) lineage.
+
+## R-71: Pirastru et al. (2017) lateral saturated conductivity of soil horizons in large monoliths
+
+**Citation**: Pirastru, M., R. Marrosu, S. Di Prima, S. Keesstra, F. Giadrossich, and M. Niedda (2017). *Lateral saturated hydraulic conductivity of soil horizons evaluated in large-volume soil monoliths*. Water, 9(11), 862. https://doi.org/10.3390/w9110862
+**Local path**: `references/copyrighted/Pirastru2017_lateral_ks_monoliths.pdf` (MDPI, gold OA CC-BY; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: In-situ ~0.12 m³ monolith drainage experiments measuring horizon lateral Ks on a shallow hillslope: median 2450 mm/h (A) and 552 mm/h (B), halving near the restrictive layer; consistent with drain-data hillslope-scale values — macropore network captured at monolith scale.
+**MOFEFID Lane C role**: independent, freely-licensed cross-check on the R-62 (Brooks 2004) scale argument and on lateral-Ks magnitudes over restrictive layers; CC-BY license permits vendoring if needed.
+**Kernel mapping**: Lane C1 conductivity envelope (`[INFERENCE]`).
+**Notes / caveats**: Mediterranean hillslope; applicability mapping needed like all sites.
+
+## R-72: Hu & Abrahams (2006) partitioning resistance to overland flow
+
+**Citation**: Hu, S., and A. D. Abrahams (2006). *Partitioning resistance to overland flow on rough mobile beds*. Earth Surface Processes and Landforms, 31(10), 1280–1291. https://doi.org/10.1002/esp.1333
+**Local path**: `references/copyrighted/Hu_Abrahams2006_partitioning_resistance.pdf` (USDA Jornada bibliography copy; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Flume-derived partition of total overland-flow resistance into surface (grain), form, wave, and bed-mobility components; source of the Froude-gated wave-resistance regression.
+**MOFEFID Lane D role**: **formulation-tier** — primary source for Papanicolaou eq. (5) (`f_w = 3.32 λ / Fr^0.5`, `Fr > 0.5` regime) and for the additive-partition assumption (eq. 7); carries the unit conventions and regime bounds the implementation must honor.
+**Kernel mapping**: Lane D1 contracts (wave-resistance invariants), D3 friction kernels.
+**Notes / caveats**: Intake-level annotation; regime-bound extraction is D1 work.
+
+## R-73: Wu, Yevjevich & Woolhiser (1978) surface roughness spatial distribution — CSU Hydrology Paper 96
+
+**Citation**: Wu, Y.-H., V. Yevjevich, and D. A. Woolhiser (1978). *Effects of Surface Roughness and Its Spatial Distribution on Runoff Hydrographs*. Hydrology Paper No. 96, Colorado State University, Fort Collins, CO.
+**Local path**: `references/copyrighted/Wu_Yevjevich_Woolhiser1978_CSU_HP96_equivalent_plane.pdf` (USDA-ARS Tucson archive scan, 57 pp.; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: The equivalent-plane / equilibrium-storage treatment of spatially distributed roughness for runoff hydrographs.
+**MOFEFID Lane D role**: **the legacy baseline** — this is the representation WEPP's original overland routing inherited and that the OFE-by-OFE enhancement replaces; the Lane D ADR must characterize legacy behavior against this source (ADR-0024 source-intent anchor for the *old* routing).
+**Kernel mapping**: Lane D1 ADR (representation decision); comparator-hygiene reference.
+**Notes / caveats**: Public USDA-ARS-hosted scan.
+
+## R-74: Iwagaki (1955) runoff analysis by characteristics — DPRI Bulletin 10
+
+**Citation**: Iwagaki, Y. (1955). *Fundamental Studies on the Runoff Analysis by Characteristics*. Bulletins — Disaster Prevention Research Institute, Kyoto University, No. 10, 1–25.
+**Local path**: `references/copyrighted/Iwagaki1955_runoff_characteristics_DPRI10.pdf` (KURENAI open-access repository copy, hdl:2433/123659; 28 pp.).
+**Reference quality**: `verified-primary`
+**Topic**: Method-of-characteristics kinematic-wave solutions on a cascade of planes, with the three-section laterally-fed flume experiments (2%/1.5%/1% gradients).
+**MOFEFID Lane D role**: validation Case 4 primary source — the shock-formation dataset (the near-vertical rising limb at ~23 s) that tests the TVD-MacCormack scheme's shock capture; Papanicolaou's Ef 0.88 target is against this data.
+**Kernel mapping**: Lane D2 fixtures (Case 4), D-val acceptance.
+**Notes / caveats**: Scanned document; OCR quality limited — numeric extraction should prefer the supplemental `Figure_4.xlsx` series with this as provenance.
+
+## R-75: Abban et al. (2017) rainfall-driven microroughness change
+
+**Citation**: Abban, B. K. B., A. N. Papanicolaou, C. P. Giannopoulos, D. C. Dermisis, K. M. Wacha, C. G. Wilson, and M. Elhakeem (2017). *Quantifying the changes of soil surface microroughness due to rainfall impact on a smooth surface*. Nonlinear Processes in Geophysics, 24(3), 569–579. https://doi.org/10.5194/npg-24-569-2017
+**Local path**: `references/copyrighted/Abban2017_microroughness_rainfall_NPG.pdf` (Copernicus, gold OA CC-BY 3.0; DOI verified from PDF).
+**Reference quality**: `verified-primary`
+**Topic**: Field quantification of sub-5 mm soil-surface microroughness evolution under rainfall.
+**MOFEFID Lane D role**: validation Case 1 provenance (the bare-surface plot experiments) and the empirical basis for treating grain roughness as time-variant; CC-BY license permits vendoring.
+**Kernel mapping**: Lane D2 fixtures (Case 1).
+**Notes / caveats**: Intake-level annotation.
+
+## R-76: Helmers et al. (2012) prairie filter strips, Walnut Creek
+
+**Citation**: Helmers, M. J., X. Zhou, H. Asbjornsen, R. Kolka, M. D. Tomer, and R. M. Cruse (2012). *Sediment removal by prairie filter strips in row-cropped ephemeral watersheds*. Journal of Environmental Quality, 41(5), 1531–1539. https://doi.org/10.2134/jeq2011.0473
+**Local path**: `references/copyrighted/Helmers2012_prairie_filter_strips.pdf` (USDA Treesearch copy; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Hillslope-scale prairie/vegetated-strip observations in Walnut Creek, IA (Neal Smith NWR).
+**MOFEFID Lane D role**: the field hillslope behind Papanicolaou §3.2 (the 65% space/time-invariant underprediction case) — the heterogeneous-OFE, S-profile validation target for the full OFE-by-OFE routing.
+**Kernel mapping**: Lane D2 fixtures (§3.2 case), D-val.
+**Notes / caveats**: Papanicolaou cites this for the observed hydrograph/hillslope configuration; the exact storm series is in the supplemental Figure_5.xlsx.

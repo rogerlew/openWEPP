@@ -415,3 +415,68 @@ activates by default inside this campaign.
   reference-implementation-intent authority.
 - FARPOINT01 / MAGPARITY01 / STAGE2-LATQCC / BASECOND01 packages — the
   magnitude arc Lane C completes.
+
+### 11.1 Acquired literature (2026-07-01 sweep; bibliography R-62..R-76)
+
+Deep-research sweep (three parallel research passes, DOIs Crossref-verified,
+PDFs title-verified at intake) acquired into `references/copyrighted/`:
+Brooks 2004 (R-62), Papanicolaou 2018 + supplemental (R-63), Tromp-van
+Meerveld & McDonnell 2006 parts 1+2 (R-64/65), Freer 2002 (R-66), McGuire &
+McDonnell 2010 WS10 (R-67, the prime Lane C envelope anchor: quick-flow
+ratio ≈0.58 above ~20 mm antecedent on the exact held hillslope), Weiler et
+al. 2005 synthesis (R-68), Blume & van Meerveld 2015 (R-69), Srivastava et
+al. 2017 (R-70), Pirastru et al. 2017 (R-71, CC-BY), Hu & Abrahams 2006
+(R-72, formulation-tier for eq. 5), Wu/Yevjevich/Woolhiser 1978 CSU HP96
+(R-73, the equivalent-plane legacy baseline), Iwagaki 1955 (R-74, Case 4
+shock data), Abban 2017 (R-75, CC-BY), Helmers 2012 (R-76). Already held:
+Dun 2009 (R-21), Srivastava 2013 dissertation (R-22), NSERL Report 10
+chapter set (`references/50201000/`).
+
+### 11.2 Operator track-down list (paywalled / print-only)
+
+**Formulation-tier (Lane D blockers for eqs. 2–6 dimensional fidelity):**
+
+| Paper | DOI |
+|---|---|
+| Shen & Li (1973) rainfall sheet-flow resistance, JHD ASCE 99(HY5) | `10.1061/JYCEAJ.0003646` |
+| Lawrence (1997) macroscale roughness resistance, ESPL 22(4) | `10.1002/(SICI)1096-9837(199704)22:4<365::AID-ESP693>3.0.CO;2-6` |
+| Abrahams (1998) discussion of Lawrence (+ Lawrence reply), ESPL 23(9) | `10.1002/(SICI)1096-9837(199809)23:9<857::AID-ESP932>3.0.CO;2-#` (encode trailing `#` as `%23`) |
+| Woolhiser (1975) k₀ tables, in *Unsteady Flow in Open Channels* v.II | none (book chapter; KINEROS docs in-repo reproduce the laminar coefficients as fallback) |
+| Katul, Poggi & Ridolfi (2011) vegetation resistance, WRR 47 W08533 | `10.1029/2010WR010278` (free-to-read in a browser per AGU policy; automated fetch blocked) |
+
+**Lane C observational foundations:**
+
+| Paper | DOI |
+|---|---|
+| Whipkey (1965) subsurface stormflow, IASH Bull. 10(2) | `10.1080/02626666509493392` |
+| Hewlett & Hibbert (1963) sloping soil mass drainage, JGR 68(4) | `10.1029/JZ068i004p01081` |
+| Hewlett & Hibbert (1967) variable source area, *Forest Hydrology* | none (book chapter) |
+| Dunne & Black (1970) partial area contributions, WRR 6(5) | `10.1029/WR006i005p01296` |
+| Harr (1977) water flux on a steep forested slope (HJ Andrews), J. Hydrol. 33 | `10.1016/0022-1694(77)90097-X` |
+| Mosley (1979) streamflow generation Maimai, WRR 15(4) | `10.1029/WR015i004p00795` |
+| McGlynn, McDonnell & Brammer (2002) Maimai perceptual model, J. Hydrol. 257 | `10.1016/S0022-1694(01)00559-5` |
+| Woods & Rowe (1996) Maimai M8 trench spatial variability, J. Hydrol. (NZ) 35(1) | none (NZ Hydrological Society journal; archive may be free — **the M8 trench dataset paper, highest Lane C priority of this list**) |
+| Bachmair & Weiler (2011) hillslope hydrology review, Ecol. Studies 216 | `10.1007/978-94-007-1363-5_23` |
+
+**Lane C model-lineage / parameter-scale:**
+
+| Paper | DOI |
+|---|---|
+| Frankenberger et al. (1999) SMR VSA model, Hydrol. Process. 13(6) | `10.1002/(SICI)1099-1085(19990430)13:6<805::AID-HYP754>3.0.CO;2-M` |
+| Brooks, Boll & McDaniel (2007) SMR eastern Palouse, Hydrol. Process. 21(1) | `10.1002/hyp.6230` |
+| Wigmosta, Vail & Lettenmaier (1994) DHSVM, WRR 30(6) | `10.1029/94WR00436` |
+| Beven & Germann (1982) macropores, WRR 18(5) | `10.1029/WR018i005p01311` |
+| Beven & Germann (2013) macropores revisited, WRR 49(6) | `10.1002/wrcr.20156` |
+| McDaniel et al. (2001) perched water tables SSSAJ 65(3) | `10.2136/sssaj2001.653805x` |
+| McDaniel et al. (2008) fragipans/perched water tables, Catena 73(2) | `10.1016/j.catena.2007.05.011` |
+| Zaslavsky & Sinai (1981) causes of lateral flow, JHD ASCE 107(1) | `10.1061/JYCEAJ.0005605` |
+
+**Lane D validation/numerics (optional tier):**
+
+| Paper | DOI |
+|---|---|
+| Jomaa et al. (2012) rock-fragment flume, WRR 48 W05535 | `10.1029/2011WR011255` (EPFL Infoscience record hosts the PDF behind a session; browser fetch likely works) |
+| Neibling & Alberts (1979) sod strips, ASAE Paper 79-2065 | none (no digital trace; ASABE library or ILL — Case 3 series also in supplemental Figure_4.xlsx) |
+| Thompson et al. (2011) permeability contrasts, Adv. Water Resour. 34(8) | `10.1016/j.advwatres.2011.05.012` |
+| García-Navarro et al. (1992) TVD-MacCormack, JHE 118(10) | `10.1061/(ASCE)0733-9429(1992)118:10(1359)` |
+| Mingham et al. (2001) TVD MacCormack transcritical, ICE WME 148(3) | `10.1680/wame.2001.148.3.167` (scheme re-derivable from open sources if unavailable) |
