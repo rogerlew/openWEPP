@@ -11,8 +11,15 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-01`:
+State as of `2026-07-02`:
 
+- `20260702-wshedw7-sediment-active-watershed-fixture-publication-closure-001/`
+  is queued as WSHED-W7 SEDIMENT-ACTIVE WATERSHED FIXTURE AND PUBLICATION
+  CLOSURE. Result: `QUEUED`. It is the next watershed runtime follow-on from
+  `docs/ROADMAP.md`, scoped to a committed full watershed fixture with actual
+  nonzero sediment response, serial/parallel public watershed output identity,
+  independent sediment-publication reconstruction, and no surrogate sediment
+  physics.
 - `20260630-typed-direct-setup-symbol-map-elimination-001/` is held after Stage
   0. Result: `EXECUTED-HOLD-STAGE0-PREMISE-CORRECTED`.
 - `20260630-typed-direct-setup-symbol-map-carrier-deletion-001/` is held as
