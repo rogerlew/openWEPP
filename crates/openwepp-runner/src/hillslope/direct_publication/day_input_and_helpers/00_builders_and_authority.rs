@@ -3307,6 +3307,7 @@ impl DirectProductionInfiltrationAuthority {
             cumulative_infiltration_handoff_m: 0.0,
             depression_storage_delta_handoff_m: 0.0,
             producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
+            runon_hourly_supply_m: [0.0; 24],
                 hyetograph,
                 effective_conductivity_m_s,
                 matric_potential_m,

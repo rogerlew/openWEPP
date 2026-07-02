@@ -153,6 +153,7 @@ struct HillslopeDirectRuntimeCounterProvenance {
     skeleton_runs: u64,
     publication_capture_runs: u64,
     phase_view_constructions: u64,
+    erod14_qin_clamped_events: u64,
     phase_span_runs: u64,
     direct_phase_entries: u64,
     direct_compute_operations: u64,

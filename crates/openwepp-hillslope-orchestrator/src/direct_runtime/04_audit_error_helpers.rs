@@ -7,6 +7,8 @@ pub struct DirectRuntimeAuditSnapshot {
     pub skeleton_runs: u64,
     pub publication_capture_runs: u64,
     pub phase_view_constructions: u64,
+    /// DC01: erod14 decreasing-flow qin clamps (INV-RUNOFFPART-030 hold).
+    pub erod14_qin_clamped_events: u64,
     pub phase_span_runs: u64,
     pub direct_phase_entries: u64,
     pub direct_compute_operations: u64,
@@ -37,6 +39,7 @@ struct DirectRuntimeAuditCounters {
     skeleton_runs: AtomicU64,
     publication_capture_runs: AtomicU64,
     phase_view_constructions: AtomicU64,
+    erod14_qin_clamped_events: AtomicU64,
     phase_span_runs: AtomicU64,
     direct_phase_entries: AtomicU64,
     direct_compute_operations: AtomicU64,
@@ -56,6 +59,7 @@ impl DirectRuntimeAuditCounters {
             skeleton_runs: AtomicU64::new(0),
             publication_capture_runs: AtomicU64::new(0),
             phase_view_constructions: AtomicU64::new(0),
+            erod14_qin_clamped_events: AtomicU64::new(0),
             phase_span_runs: AtomicU64::new(0),
             direct_phase_entries: AtomicU64::new(0),
             direct_compute_operations: AtomicU64::new(0),
@@ -113,6 +117,10 @@ impl DirectRuntimeAuditCounters {
         self.direct_state_mutations.fetch_add(1, Ordering::Relaxed);
     }
 
+    fn record_erod14_qin_clamped_event(&self) {
+        self.erod14_qin_clamped_events.fetch_add(1, Ordering::Relaxed);
+    }
+
     fn record_downstream_operand_production(&self) {
         self.downstream_operand_productions
             .fetch_add(1, Ordering::Relaxed);
@@ -136,6 +144,9 @@ impl DirectRuntimeAuditCounters {
             skeleton_runs: self.skeleton_runs.load(Ordering::Relaxed),
             publication_capture_runs: self.publication_capture_runs.load(Ordering::Relaxed),
             phase_view_constructions: self.phase_view_constructions.load(Ordering::Relaxed),
+            erod14_qin_clamped_events: self
+                .erod14_qin_clamped_events
+                .load(std::sync::atomic::Ordering::Relaxed),
             phase_span_runs: self.phase_span_runs.load(Ordering::Relaxed),
             direct_phase_entries: self.direct_phase_entries.load(Ordering::Relaxed),
             direct_compute_operations: self.direct_compute_operations.load(Ordering::Relaxed),

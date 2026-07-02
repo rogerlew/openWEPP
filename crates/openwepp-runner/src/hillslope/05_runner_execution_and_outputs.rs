@@ -956,6 +956,7 @@ fn direct_runtime_counter_provenance(
         skeleton_runs: snapshot.skeleton_runs,
         publication_capture_runs: snapshot.publication_capture_runs,
         phase_view_constructions: snapshot.phase_view_constructions,
+        erod14_qin_clamped_events: snapshot.erod14_qin_clamped_events,
         phase_span_runs: snapshot.phase_span_runs,
         direct_phase_entries: snapshot.direct_phase_entries,
         direct_compute_operations: snapshot.direct_compute_operations,
@@ -990,6 +991,9 @@ fn direct_runtime_audit_delta(
         phase_view_constructions: current
             .phase_view_constructions
             .saturating_sub(baseline.phase_view_constructions),
+        erod14_qin_clamped_events: current
+            .erod14_qin_clamped_events
+            .saturating_sub(baseline.erod14_qin_clamped_events),
         phase_span_runs: current
             .phase_span_runs
             .saturating_sub(baseline.phase_span_runs),

@@ -1061,6 +1061,9 @@ pub struct DirectDayFrame {
     pub interception_m: f64,
     pub water: DirectWaterState,
     pub transfer: DirectTransferBuffers,
+    /// DC01: WB14 per-hour infiltration-excess profile (INV-RUNOFFPART-031),
+    /// set at R4K, consumed by the downstream surface-transfer publication.
+    pub wb14_hourly_excess_m: [f64; 24],
     pub publication: DirectPublicationFrame,
     pub normalization_inputs: DirectNormalizationInputs,
     pub normalization: DirectNormalizationState,
@@ -1199,6 +1202,7 @@ impl DirectDayFrame {
             interception_m: 0.0,
             water: DirectWaterState::zero(),
             transfer: DirectTransferBuffers::zero(),
+            wb14_hourly_excess_m: [0.0; 24],
             publication: DirectPublicationFrame::empty(),
             normalization_inputs: DirectNormalizationInputs::zero(),
             normalization: DirectNormalizationState::zero(),

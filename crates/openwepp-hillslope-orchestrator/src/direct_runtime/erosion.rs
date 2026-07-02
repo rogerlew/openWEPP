@@ -423,20 +423,15 @@ impl DirectDayFrame {
                     upstream: "R7D8 prior-lane erosion qout for EROD14 qin",
                 });
             };
-            // MOFEFID-A02 probe: with runon re-infiltration active a downslope
-            // OFE can absorb upstream inflow, so qout < qin is physically
-            // expected (the filter-strip case). The erod14 seam's monotone
-            // qin <= qout assumption holds in production only because runon
-            // never re-infiltrates; under the diagnostic flag, clamp qin to
-            // qout so the water probe can proceed (sediment operands are
-            // diagnostic-only under the probe and carry no water feedback).
-            if Self::mofefid_a02_runon_infiltration_probe_enabled() {
-                inputs.wave2.qin_m3_s = inputs.wave2.qin_m3_s.min(inputs.wave2.qout_m3_s);
-            }
+            // DC01 (INV-RUNOFFPART-031 / INV-RUNOFFPART-030 hold): with runon
+            // re-infiltration, a downslope OFE can absorb upstream inflow, so
+            // qout < qin is physically expected (decreasing-flow case). Full
+            // decreasing-flow sediment cases remain in the INV-030 hold; the
+            // bounded interim behavior clamps qin to qout and counts the
+            // occurrence for the manifest.
             if inputs.wave2.qin_m3_s > inputs.wave2.qout_m3_s + WB11_ZERO_THRESHOLD {
-                return Err(DirectRuntimeError::DirectDomainViolation {
-                    field: "erosion.erod14.qin_m3_s",
-                });
+                DIRECT_AUDIT.record_erod14_qin_clamped_event();
+                inputs.wave2.qin_m3_s = inputs.wave2.qout_m3_s;
             }
             apply_erod14_prior_particle_flow_fraction(
                 &mut inputs.wave2,

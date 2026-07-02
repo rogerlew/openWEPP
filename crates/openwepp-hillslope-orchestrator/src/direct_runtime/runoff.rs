@@ -205,7 +205,7 @@ impl DirectDayFrame {
     pub fn run_r4k_infiltration_depression_span(
         &mut self,
     ) -> Result<DirectInfiltrationDepressionSpanReport, DirectRuntimeError> {
-        self.apply_mofefid_a02_runon_infiltration_probe();
+        self.apply_dc01_runon_supply_admission();
         DIRECT_AUDIT.record_phase_span_run();
         let phase_count = DIRECT_R4K_PHASE_SPAN_COUNT;
         let mut phase_entry_count = 0_u64;
@@ -214,6 +214,9 @@ impl DirectDayFrame {
         phase_entry_count += 1;
         let infiltration_depression = self.compute_r4k_infiltration_depression()?;
         DIRECT_AUDIT.record_direct_compute_operation();
+        // DC01: the WB14 hourly excess profile feeds the downstream surface
+        // transfer publication (INV-RUNOFFPART-031 / M2).
+        self.wb14_hourly_excess_m = self.compute_r4k_hourly_excess_profile()?;
 
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
@@ -582,6 +585,17 @@ impl DirectDayFrame {
         })
     }
 
+    fn compute_r4k_hourly_excess_profile(
+        &self,
+    ) -> Result<[f64; DC01_HOUR_BIN_COUNT], DirectRuntimeError> {
+        if let Some(producer_inputs) = &self.infiltration_depression_inputs.producer_inputs {
+            return Ok(
+                compute_wb14_infiltration_depression_with_profile(producer_inputs)?.hourly_excess_m,
+            );
+        }
+        Ok([0.0; DC01_HOUR_BIN_COUNT])
+    }
+
     fn compute_r4k_infiltration_depression(
         &self,
     ) -> Result<DirectInfiltrationDepressionState, DirectRuntimeError> {
@@ -608,37 +622,60 @@ impl DirectDayFrame {
         })
     }
 
-    // MOFEFID-A02 diagnostic probe (opt-in via OPENWEPP_MOFEFID_A02_RUNON_INFILTRATION=1):
-    // admit the day's inter-OFE runon (surface + lateral carry, already
-    // area-scaled by R4J) into the WB14 infiltration supply, approximating the
-    // legacy-baseline `fin`/`xfin` runon re-infiltration semantics
-    // (wepp-forest_260430_baseline/src/watbal_hourly.for:361-363, :471-473) at
-    // daily granularity. Dry-runon days (no positive-duration hyetograph) are
-    // skipped, so the probe measures a LOWER BOUND on the re-infiltration
-    // effect. Runs before the WB14 compute; the R4A partition subtracts the
-    // enlarged cumulative infiltration from the same liquid+runon supply, so
-    // conservation identities are unchanged. Default (env unset) is a no-op.
-    pub(crate) fn mofefid_a02_runon_infiltration_probe_enabled() -> bool {
-        static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-        *ENABLED.get_or_init(|| {
-            std::env::var("OPENWEPP_MOFEFID_A02_RUNON_INFILTRATION")
-                .map(|value| value == "1")
-                .unwrap_or(false)
-        })
-    }
-
-    fn apply_mofefid_a02_runon_infiltration_probe(&mut self) {
-        if !Self::mofefid_a02_runon_infiltration_probe_enabled() {
+    /// DC01 (INV-RUNOFFPART-031): distribute the R4J-resolved runon totals
+    /// onto hour bins — surface via the published upstream hourly weights
+    /// (uniform fallback), lateral via the hourly lateral-carry shape — and
+    /// inject them into the WB14 producer inputs before the R4K compute.
+    /// Using the R4J-resolved totals keeps the partition identity consistent
+    /// by construction. Zero-runon (single-OFE) lanes are untouched.
+    fn apply_dc01_runon_supply_admission(&mut self) {
+        let surface_total_m = self.runon_carry_downstream_operands.runon_input_m;
+        let lateral_total_m = self.runon_carry_downstream_operands.subsurface_carry_m;
+        if surface_total_m + lateral_total_m <= WB11_ZERO_THRESHOLD {
             return;
         }
-        let runon_total_m = self.runon_carry_downstream_operands.runon_input_m
-            + self.runon_carry_downstream_operands.subsurface_carry_m;
+        let supply = Self::dc01_distribute_runon_supply(
+            surface_total_m,
+            lateral_total_m,
+            &self.transfer.surface_hourly_weights,
+            &self.transfer.lateral_carry_m,
+        );
         if let Some(producer_inputs) = &mut self.infiltration_depression_inputs.producer_inputs {
-            mofefid_a02_augment_hyetograph_with_uniform_depth(
-                &mut producer_inputs.hyetograph,
-                runon_total_m,
-            );
+            producer_inputs.runon_hourly_supply_m = supply;
         }
+    }
+
+    pub(crate) fn dc01_distribute_runon_supply(
+        surface_total_m: f64,
+        lateral_total_m: f64,
+        surface_hourly_weights: &[f64; DC01_HOUR_BIN_COUNT],
+        lateral_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
+    ) -> [f64; DC01_HOUR_BIN_COUNT] {
+        let uniform = 1.0 / DC01_HOUR_BIN_COUNT_F64;
+        let mut supply = [0.0_f64; DC01_HOUR_BIN_COUNT];
+        let weight_total: f64 = surface_hourly_weights.iter().map(|w| w.max(0.0)).sum();
+        if surface_total_m > 0.0 {
+            for (hour, slot) in supply.iter_mut().enumerate() {
+                let weight = if weight_total > 0.0 {
+                    surface_hourly_weights[hour].max(0.0) / weight_total
+                } else {
+                    uniform
+                };
+                *slot += surface_total_m * weight;
+            }
+        }
+        let lateral_shape_total_m: f64 = lateral_carry_m.iter().map(|value| value.max(0.0)).sum();
+        if lateral_total_m > 0.0 {
+            for (hour, slot) in supply.iter_mut().enumerate() {
+                let weight = if lateral_shape_total_m > 0.0 {
+                    lateral_carry_m[hour].max(0.0) / lateral_shape_total_m
+                } else {
+                    uniform
+                };
+                *slot += lateral_total_m * weight;
+            }
+        }
+        supply
     }
 
     fn compute_r4l_saturation_addback(
@@ -1346,14 +1383,101 @@ fn normalize_r4a_nonnegative_depth(
     Ok(value)
 }
 
+pub(crate) const DC01_HOUR_BIN_COUNT: usize = 24;
+pub(crate) const DC01_HOUR_BIN_SECONDS: f64 = 3_600.0;
+pub(crate) const DC01_HOUR_BIN_COUNT_F64: f64 = 24.0;
+
+/// DC01 (INV-RUNOFFPART-031): WB14 outcome carrying the per-hour
+/// infiltration-excess profile alongside the classic state. The profile is
+/// the hourly distribution of non-infiltrated supply, used to publish an
+/// hourly surface-transfer profile to the downstream lane.
+pub(crate) struct DirectWb14OutcomeWithProfile {
+    pub state: DirectInfiltrationDepressionState,
+    pub hourly_excess_m: [f64; DC01_HOUR_BIN_COUNT],
+}
+
+fn dc01_add_depth_to_hour_bins(
+    bins: &mut [f64; DC01_HOUR_BIN_COUNT],
+    start_s: f64,
+    end_s: f64,
+    depth_m: f64,
+) {
+    let duration_s = end_s - start_s;
+    if duration_s <= 0.0 || depth_m <= 0.0 {
+        return;
+    }
+    for (hour, bin) in bins.iter_mut().enumerate() {
+        let bin_start_s =
+            f64::from(u32::try_from(hour).unwrap_or(u32::MAX)) * DC01_HOUR_BIN_SECONDS;
+        let bin_end_s = bin_start_s + DC01_HOUR_BIN_SECONDS;
+        let overlap_s = (end_s.min(bin_end_s) - start_s.max(bin_start_s)).max(0.0);
+        if overlap_s > 0.0 {
+            *bin += depth_m * overlap_s / duration_s;
+        }
+    }
+}
+
+pub(crate) fn dc01_hourly_supply_basis(
+    hyetograph: &[DirectWb14HyetographInterval],
+    runon_hourly_supply_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> Vec<DirectWb14HyetographInterval> {
+    let mut bins = [0.0_f64; DC01_HOUR_BIN_COUNT];
+    for interval in hyetograph {
+        let duration_s = interval.end_s - interval.start_s;
+        if duration_s > 0.0 && interval.intensity_m_s > 0.0 {
+            dc01_add_depth_to_hour_bins(
+                &mut bins,
+                interval.start_s,
+                interval.end_s,
+                interval.intensity_m_s * duration_s,
+            );
+        }
+    }
+    for (bin, runon_m) in bins.iter_mut().zip(runon_hourly_supply_m.iter()) {
+        *bin += runon_m.max(0.0);
+    }
+    bins.iter()
+        .enumerate()
+        .map(|(hour, depth_m)| DirectWb14HyetographInterval {
+            start_s: f64::from(u32::try_from(hour).unwrap_or(u32::MAX)) * DC01_HOUR_BIN_SECONDS,
+            end_s: f64::from(u32::try_from(hour + 1).unwrap_or(u32::MAX)) * DC01_HOUR_BIN_SECONDS,
+            intensity_m_s: depth_m / DC01_HOUR_BIN_SECONDS,
+        })
+        .collect()
+}
+
 fn compute_wb14_infiltration_depression(
     inputs: &DirectWb14InfiltrationProducerInputs,
 ) -> Result<DirectInfiltrationDepressionState, DirectRuntimeError> {
+    Ok(compute_wb14_infiltration_depression_with_profile(inputs)?.state)
+}
+
+pub(crate) fn compute_wb14_infiltration_depression_with_profile(
+    inputs: &DirectWb14InfiltrationProducerInputs,
+) -> Result<DirectWb14OutcomeWithProfile, DirectRuntimeError> {
     validate_wb14_infiltration_inputs(inputs)?;
     let mut cumulative_infiltration_m = 0.0_f64;
     let mut total_rainfall_m = 0.0_f64;
+    let mut hourly_excess_m = [0.0_f64; DC01_HOUR_BIN_COUNT];
 
-    for interval in &inputs.hyetograph {
+    // DC01 (INV-RUNOFFPART-031): with material runon, the supply is re-binned
+    // to a 24 x 1 h basis (local hyetograph depth per hour + runon per hour) —
+    // the baseline's hourly xfin loop shape. Zero-runon lanes keep the exact
+    // interval basis, preserving single-OFE behavior bit-identically.
+    let runon_total_m: f64 = inputs.runon_hourly_supply_m.iter().sum();
+    let hourly_basis: Vec<DirectWb14HyetographInterval>;
+    let intervals: &[DirectWb14HyetographInterval] = if runon_total_m > WB11_ZERO_THRESHOLD {
+        // DC01 M5 decomposition diagnostic (env-gated): admit runon as
+        // appended hourly intervals WITHOUT re-binning the local rain, to
+        // separate the admission effect from the hourly-basis intensity
+        // effect. Default path re-bins everything (baseline hourly shape).
+        hourly_basis = dc01_hourly_supply_basis(&inputs.hyetograph, &inputs.runon_hourly_supply_m);
+        &hourly_basis
+    } else {
+        &inputs.hyetograph
+    };
+
+    for interval in intervals {
         let duration_s = interval.end_s - interval.start_s;
         if duration_s <= WB11_ZERO_THRESHOLD || interval.intensity_m_s <= WB11_ZERO_THRESHOLD {
             continue;
@@ -1382,6 +1506,7 @@ fn compute_wb14_infiltration_depression(
                 field: "infiltration_depression.interval_infiltration_m",
             });
         }
+        let cumulative_before_m = cumulative_infiltration_m;
         cumulative_infiltration_m += interval_infiltration_m.min(rainfall_m);
         cumulative_infiltration_m = cumulative_infiltration_m
             .min(inputs.storage_capacity_m)
@@ -1390,6 +1515,14 @@ fn compute_wb14_infiltration_depression(
             "infiltration_depression.cumulative_infiltration_m",
             cumulative_infiltration_m,
         )?;
+        let interval_excess_m =
+            (rainfall_m - (cumulative_infiltration_m - cumulative_before_m)).max(0.0);
+        dc01_add_depth_to_hour_bins(
+            &mut hourly_excess_m,
+            interval.start_s,
+            interval.end_s,
+            interval_excess_m,
+        );
     }
 
     let rainfall_excess_m = (total_rainfall_m - cumulative_infiltration_m).max(0.0);
@@ -1398,9 +1531,12 @@ fn compute_wb14_infiltration_depression(
         "infiltration_depression.depression_storage_delta_m",
         depression_storage_delta_m,
     )?;
-    Ok(DirectInfiltrationDepressionState {
-        cumulative_infiltration_m,
-        depression_storage_delta_m,
+    Ok(DirectWb14OutcomeWithProfile {
+        state: DirectInfiltrationDepressionState {
+            cumulative_infiltration_m,
+            depression_storage_delta_m,
+        },
+        hourly_excess_m,
     })
 }
 
@@ -1806,42 +1942,14 @@ impl DirectCanopyInterceptionState {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectWb14InfiltrationProducerInputs {
     pub hyetograph: Vec<DirectWb14HyetographInterval>,
+    /// DC01 (INV-RUNOFFPART-031): the day's inter-OFE runon distributed onto
+    /// hour bins; admitted into the WB14 supply when non-zero. Injected at
+    /// R4K from the R4J-resolved totals; zero on single-OFE lanes.
+    pub runon_hourly_supply_m: [f64; DC01_HOUR_BIN_COUNT],
     pub effective_conductivity_m_s: f64,
     pub matric_potential_m: f64,
     pub storage_capacity_m: f64,
     pub depression_storage_capacity_m: f64,
-}
-
-// MOFEFID-A02 probe core: spread an added daily depth uniformly over the
-// hyetograph's positive-duration intervals (the same distribution the
-// builder's added-daily-depth helper uses for routed melt). No-op when the
-// depth is non-positive/non-finite or the hyetograph has no positive
-// duration (the probe's documented dry-runon lower-bound skip).
-pub(crate) fn mofefid_a02_augment_hyetograph_with_uniform_depth(
-    hyetograph: &mut [DirectWb14HyetographInterval],
-    added_depth_m: f64,
-) -> bool {
-    if !added_depth_m.is_finite() || added_depth_m <= WB11_ZERO_THRESHOLD {
-        return false;
-    }
-    let mut total_duration_s = 0.0_f64;
-    for interval in hyetograph.iter() {
-        let duration_s = interval.end_s - interval.start_s;
-        if duration_s > 0.0 {
-            total_duration_s += duration_s;
-        }
-    }
-    if !total_duration_s.is_finite() || total_duration_s <= 0.0 {
-        return false;
-    }
-    let added_intensity_m_s = added_depth_m / total_duration_s;
-    for interval in hyetograph.iter_mut() {
-        let duration_s = interval.end_s - interval.start_s;
-        if duration_s > 0.0 {
-            interval.intensity_m_s += added_intensity_m_s;
-        }
-    }
-    true
 }
 
 pub fn compute_direct_canopy_interception(

@@ -366,6 +366,7 @@ fn r7h_r4a_frost_uses_local_partition_excess_without_rewriting_wb14_capacity() {
     day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
     day.infiltration_depression_inputs.producer_inputs =
         Some(DirectWb14InfiltrationProducerInputs {
+            runon_hourly_supply_m: [0.0; 24],
             hyetograph: vec![DirectWb14HyetographInterval {
                 start_s: 0.0,
                 end_s: 3_600.0,
@@ -474,6 +475,7 @@ fn r7h_winter_local_liquid_projects_after_surface_et_before_saturation() {
     day.liquid_input_inputs.liquid_input_handoff_m = liquid_input_m;
     day.infiltration_depression_inputs.producer_inputs =
         Some(DirectWb14InfiltrationProducerInputs {
+            runon_hourly_supply_m: [0.0; 24],
             hyetograph: vec![DirectWb14HyetographInterval {
                 start_s: 0.0,
                 end_s: 3_600.0,
@@ -609,6 +611,7 @@ fn r7h_active_snowmelt_local_liquid_routes_through_wb18_same_pass() {
     };
     day.infiltration_depression_inputs.producer_inputs =
         Some(DirectWb14InfiltrationProducerInputs {
+            runon_hourly_supply_m: [0.0; 24],
             hyetograph: vec![DirectWb14HyetographInterval {
                 start_s: 0.0,
                 end_s: 3_600.0,
@@ -732,6 +735,7 @@ fn r7h_mixed_rain_snowmelt_uses_wb14_same_pass_infiltration() {
     };
     day.infiltration_depression_inputs.producer_inputs =
         Some(DirectWb14InfiltrationProducerInputs {
+            runon_hourly_supply_m: [0.0; 24],
             hyetograph: vec![DirectWb14HyetographInterval {
                 start_s: 0.0,
                 end_s: 3_600.0,

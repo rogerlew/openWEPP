@@ -71,6 +71,9 @@ impl DirectDayForcing {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectTransferBuffers {
     pub surface_carry_m: [f64; DIRECT_TRANSFER_HOUR_COUNT],
+    /// DC01: unit-normalized hourly distribution of `surface_carry_m` totals
+    /// (INV-RUNOFFPART-031); consumed by WB14 supply admission.
+    pub surface_hourly_weights: [f64; DIRECT_TRANSFER_HOUR_COUNT],
     pub lateral_carry_m: [f64; DIRECT_TRANSFER_HOUR_COUNT],
     pub upstream_flow_m: f64,
     pub subsurface_input_m: f64,
@@ -81,6 +84,7 @@ impl DirectTransferBuffers {
     pub const fn zero() -> Self {
         Self {
             surface_carry_m: [0.0; DIRECT_TRANSFER_HOUR_COUNT],
+            surface_hourly_weights: [0.0; DIRECT_TRANSFER_HOUR_COUNT],
             lateral_carry_m: [0.0; DIRECT_TRANSFER_HOUR_COUNT],
             upstream_flow_m: 0.0,
             subsurface_input_m: 0.0,
