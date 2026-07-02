@@ -2,7 +2,7 @@
 
 Status: **EXECUTED — REVIEW-READY** (2026-07-02)
 Campaign: [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D.
-Contract: `SC-OFEROUTE-001` (rev 3). Owner: Claude Code. Worktree: `mofefid-d5`.
+Contract: `SC-OFEROUTE-001` (rev 5). Owner: Claude Code. Worktree: `mofefid-d5`.
 Activation: **opt-in / shadow-first**.
 
 ## What landed
@@ -24,7 +24,7 @@ default hillslope path byte-flat (`INV-OFEROUTE-010`).
 ## GAP-OFEROUTE-003 resolved: supersede-then-compose
 
 The runon re-infiltration reconciliation with DC01 is **design-resolved**
-(contract rev 3): when the routing subsystem is active it **owns the hourly
+(contract rev 5): when the routing subsystem is active it **owns the hourly
 inter-OFE runon** and **supersedes** DC01's daily-lump admission
 (`INV-RUNOFFPART-031`) so nothing double-counts; re-infiltration of the
 routed runon is then the downstream OFE's **per-OFE hourly infiltration**
@@ -32,7 +32,7 @@ routed runon is then the downstream OFE's **per-OFE hourly infiltration**
 hourly step). D5 implements the routing + handoff; the runtime infiltration
 composition + DC01-disable guard is the remaining **integration** scope.
 
-## Validation (6 tests, no copyrighted data)
+## Validation (5 cascade tests, no copyrighted data)
 
 - **Cascade conservation (INV-006 across the cascade):** total rainfall
   excess = terminal outlet + total storage (width-aware), clamp-adjusted, to
@@ -57,7 +57,7 @@ mechanism the Ef stage will exercise once infiltration is composed.
 
 ## Gates
 
-- `ofe_routing` 23/23 (6 friction + 12 solver + ... ); full orchestrator
+- `ofe_routing` 23/23 (18 existing OFE-routing tests + 5 D5 cascade tests); full orchestrator
   suite 171/171; clippy `-D warnings` 0; BEI PASS-DEFERRED; authority guards
   PASS; cascade shadow-first.
 

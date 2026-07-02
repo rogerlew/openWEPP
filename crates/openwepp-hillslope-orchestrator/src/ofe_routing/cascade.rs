@@ -208,13 +208,6 @@ pub fn run_cascade(
     let terminal_width = segments[segments.len() - 1].width_m;
     mass.outlet_m3 = hydrograph_volume_m2(&outlet_hydrograph) * terminal_width;
 
-    // Cascade conservation on the WHOLE cascade: the interior handoffs cancel
-    // (each OFE's outlet is the next OFE's inflow), so total rainfall excess
-    // must equal the terminal outlet plus total storage (modulo clamp). The
-    // per-OFE received/rainfall sum is used only for the handoff assertions.
-    let peak_total = per_ofe_outlet_m3.last().copied().unwrap_or(0.0);
-    let _ = peak_total; // outlet volume already recorded
-
     // Peak total discharge (m^3/s) at the cascade outlet.
     let mut peak_total_discharge = 0.0_f64;
     let mut time_to_peak = 0.0_f64;
