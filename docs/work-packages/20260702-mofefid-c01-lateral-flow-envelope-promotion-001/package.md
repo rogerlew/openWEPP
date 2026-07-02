@@ -1,6 +1,6 @@
 # MOFEFID-C01 — Lateral-Flow Observed-Authority Envelope Promotion
 
-Status: **EXECUTED — REVIEW-READY** (2026-07-02). Four-tier envelope ratified as `SC-SUBHYD-001#INV-SUBHYD-033`; H2637 post-DC01 sits inside all four tiers (DC01 moved ENV-Y+ENV-ET from out-of-band to in-band). Verdict run = C03. See `artifacts/`.
+Status: **EXECUTED — REVIEW-READY** (2026-07-02). Four-tier envelope ratified as `SC-SUBHYD-001#INV-SUBHYD-033`. C01 evaluated the two ANNUAL tiers: H2637 post-DC01 in-band on ENV-Y (Y≈0.67) and ENV-ET (ET≈863 mm/yr), with DC01 the cause of the move into band. The two EVENT tiers (ENV-T/ENV-E) require per-storm decomposition and are C03's scope — C01 makes no event-tier in-band claim. See `artifacts/`.
 Campaign: [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane C
 (stage C1). Owner: Claude Code. Urgency: adjudicates the live post-DC01
 production numbers.

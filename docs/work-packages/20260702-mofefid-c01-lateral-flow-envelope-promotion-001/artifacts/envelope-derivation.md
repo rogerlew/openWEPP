@@ -104,11 +104,23 @@ sits between the dry-season 0.13 and wet-season 0.40) but do not gate.
 - Directional biases recorded: Woods 0.13 dry-season regrowth low; WS10
   0.58 marginal-with-intercept; Maimai 2015 series post-weir-rebuild.
 
-## What this buys the campaign
+## What C01 establishes vs. what C03 must judge
 
-H2637's live post-DC01 numbers (Y≈0.67, ET≈863 mm/yr, latqcc share ≈0.20,
-4× lateral growth) sit **inside all four tiers**, and DC01 is what moved
-ENV-Y and ENV-ET from out-of-band to in-band. This is the first time the
-FARPOINT01 magnitude has been judged against external authority rather than
-legacy, and the judgment is *consistent* — pending the formal C03 run that
-re-verifies the anchors and issues the verdict.
+**C01 evaluated only the two ANNUAL tiers** (scalars computable from the
+existing run without per-event decomposition):
+- **ENV-Y** — H2637 post-DC01 **Y≈0.67 ∈ [0.55, 0.72]**: in-band (pre-DC01
+  0.77 was out; DC01 moved it in).
+- **ENV-ET** — H2637 post-DC01 **ET≈863 mm/yr ∈ [500, 1,000]**: in-band
+  (pre-DC01 397 was out; DC01 moved it in).
+
+**The two EVENT tiers (ENV-T, ENV-E) are NOT yet evaluated.** They require
+per-storm decomposition of H2637 (storm delineation, per-event combined
+export vs precipitation, antecedent conditioning) that this package did not
+run — that decomposition and its verdict are **C03's** scope, as the
+package objective states. C01 makes no in-band claim for ENV-T/ENV-E.
+
+So the accurate summary: on the two annual tiers, H2637's DC01-corrected
+magnitude is judged against external field authority (not legacy) and is
+**not-contradicted**, with DC01 the demonstrated cause of the move into
+band. Whether the event-scale threshold and conditioned-ratio laws also
+hold is open, pending C03.
