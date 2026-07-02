@@ -196,6 +196,8 @@ pub use projection::{
     DirectHydrologyProjectionShadowProjection, DirectHydrologyProjectionSpanReport,
     DirectHydrologyProjectionState,
 };
+#[cfg(test)]
+pub(crate) use runoff::mofefid_a02_augment_hyetograph_with_uniform_depth;
 pub use runoff::{
     DirectCanopyInterceptionInputs, DirectCanopyInterceptionState,
     DirectInfiltrationDepressionDownstreamOperands, DirectInfiltrationDepressionInputs,

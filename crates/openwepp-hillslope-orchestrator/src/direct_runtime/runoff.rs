@@ -205,6 +205,7 @@ impl DirectDayFrame {
     pub fn run_r4k_infiltration_depression_span(
         &mut self,
     ) -> Result<DirectInfiltrationDepressionSpanReport, DirectRuntimeError> {
+        self.apply_mofefid_a02_runon_infiltration_probe();
         DIRECT_AUDIT.record_phase_span_run();
         let phase_count = DIRECT_R4K_PHASE_SPAN_COUNT;
         let mut phase_entry_count = 0_u64;
@@ -605,6 +606,39 @@ impl DirectDayFrame {
                 .infiltration_depression_inputs
                 .depression_storage_delta_handoff_m,
         })
+    }
+
+    // MOFEFID-A02 diagnostic probe (opt-in via OPENWEPP_MOFEFID_A02_RUNON_INFILTRATION=1):
+    // admit the day's inter-OFE runon (surface + lateral carry, already
+    // area-scaled by R4J) into the WB14 infiltration supply, approximating the
+    // legacy-baseline `fin`/`xfin` runon re-infiltration semantics
+    // (wepp-forest_260430_baseline/src/watbal_hourly.for:361-363, :471-473) at
+    // daily granularity. Dry-runon days (no positive-duration hyetograph) are
+    // skipped, so the probe measures a LOWER BOUND on the re-infiltration
+    // effect. Runs before the WB14 compute; the R4A partition subtracts the
+    // enlarged cumulative infiltration from the same liquid+runon supply, so
+    // conservation identities are unchanged. Default (env unset) is a no-op.
+    pub(crate) fn mofefid_a02_runon_infiltration_probe_enabled() -> bool {
+        static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+        *ENABLED.get_or_init(|| {
+            std::env::var("OPENWEPP_MOFEFID_A02_RUNON_INFILTRATION")
+                .map(|value| value == "1")
+                .unwrap_or(false)
+        })
+    }
+
+    fn apply_mofefid_a02_runon_infiltration_probe(&mut self) {
+        if !Self::mofefid_a02_runon_infiltration_probe_enabled() {
+            return;
+        }
+        let runon_total_m = self.runon_carry_downstream_operands.runon_input_m
+            + self.runon_carry_downstream_operands.subsurface_carry_m;
+        if let Some(producer_inputs) = &mut self.infiltration_depression_inputs.producer_inputs {
+            mofefid_a02_augment_hyetograph_with_uniform_depth(
+                &mut producer_inputs.hyetograph,
+                runon_total_m,
+            );
+        }
     }
 
     fn compute_r4l_saturation_addback(
@@ -1776,6 +1810,38 @@ pub struct DirectWb14InfiltrationProducerInputs {
     pub matric_potential_m: f64,
     pub storage_capacity_m: f64,
     pub depression_storage_capacity_m: f64,
+}
+
+// MOFEFID-A02 probe core: spread an added daily depth uniformly over the
+// hyetograph's positive-duration intervals (the same distribution the
+// builder's added-daily-depth helper uses for routed melt). No-op when the
+// depth is non-positive/non-finite or the hyetograph has no positive
+// duration (the probe's documented dry-runon lower-bound skip).
+pub(crate) fn mofefid_a02_augment_hyetograph_with_uniform_depth(
+    hyetograph: &mut [DirectWb14HyetographInterval],
+    added_depth_m: f64,
+) -> bool {
+    if !added_depth_m.is_finite() || added_depth_m <= WB11_ZERO_THRESHOLD {
+        return false;
+    }
+    let mut total_duration_s = 0.0_f64;
+    for interval in hyetograph.iter() {
+        let duration_s = interval.end_s - interval.start_s;
+        if duration_s > 0.0 {
+            total_duration_s += duration_s;
+        }
+    }
+    if !total_duration_s.is_finite() || total_duration_s <= 0.0 {
+        return false;
+    }
+    let added_intensity_m_s = added_depth_m / total_duration_s;
+    for interval in hyetograph.iter_mut() {
+        let duration_s = interval.end_s - interval.start_s;
+        if duration_s > 0.0 {
+            interval.intensity_m_s += added_intensity_m_s;
+        }
+    }
+    true
 }
 
 pub fn compute_direct_canopy_interception(
