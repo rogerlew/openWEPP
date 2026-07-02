@@ -6,4 +6,5 @@
 
 pub mod cascade;
 pub mod friction;
+pub mod infiltration;
 pub mod kinematic_wave;
