@@ -1,6 +1,17 @@
 # MOFEFID-D7 — Lane D D-val: Reproduce Papanicolaou Enhanced-WEPP
 
-Status: **SCAFFOLDED — NOT EXECUTED** (2026-07-02)
+Status: **EXECUTED — REVIEW-READY** (2026-07-02)
+
+**Execution outcome (per-case verdicts; see `artifacts/execution-report.md`):**
+Case 1 bare **REPRODUCES** (`NS_trace` 0.868 at literature Ks, operand-sensitive);
+Case 2 isolated **operand-limited** (NS 0.45); Case 3 vegetation
+**does-not-reproduce** + S0 magnitude caveat (NS 0.54); Case 4 shock **GAP**
+(`GAP-OFEROUTE-004`, ~5-6 s phase lag, solver-side). Deliverables: committed
+copyright-safe harness (`ofe_routing::dval` + `examples/dval_case` +
+`tools/dval/compare_dval.py`), S0 cut-point map, S1 operands, `SC-OFEROUTE-001`
+rev 7 (`INV-OFEROUTE-011` partial; Zone taxonomy deferred). 1/4 reproduces
+(qualified) — per the success criterion (*truthful per-case verdicts, not all
+four pass*), D7 is executed. Shadow-first preserved; no production wiring.
 Campaign: [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D,
 validation stage. Contract: `SC-OFEROUTE-001` (`INV-OFEROUTE-011` acceptance;
 `INV-OFEROUTE-002` I-unit convention). Owner: Claude Code (scaffold);

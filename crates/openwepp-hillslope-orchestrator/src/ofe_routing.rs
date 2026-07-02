@@ -5,6 +5,7 @@
 //! phase-span wiring exists yet.
 
 pub mod cascade;
+pub mod dval;
 pub mod friction;
 pub mod infiltration;
 pub mod kinematic_wave;
