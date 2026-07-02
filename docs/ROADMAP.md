@@ -264,7 +264,7 @@ coverage. The next forward item is publication and large-watershed scaling.
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
-| WSHED-W6 | **Publication and large-watershed scaling** | Stream publication from typed projection state and adopt larger committed scaling fixtures | Larger fixture coverage includes a 1,000+ hillslope class case or justified representative reduction; output contracts and scaling evidence recorded | Draft queue; next watershed runtime rung |
+| WSHED-W6 | **Publication and large-watershed scaling** | Stream publication from typed projection state and adopt larger committed scaling fixtures | Larger fixture coverage includes a 1,000+ hillslope class case or justified representative reduction; output contracts and scaling evidence recorded | Scaffolded at `20260702-wshedw6-publication-large-watershed-scaling-001/`; execute next |
 
 ---
 

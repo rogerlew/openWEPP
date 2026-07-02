@@ -51,6 +51,13 @@ State as of `2026-07-01`:
   `20260630-kernel-boundary-typed-phase-runoff-family-001/` are superseded by
   `20260630-kernel-boundary-terminal-typing-001/`, which completed the
   coordinated terminal deletion instead of continuing the held slices.
+- `20260702-wshedw6-publication-large-watershed-scaling-001/` is queued as
+  WSHED-W6 PUBLICATION AND LARGE-WATERSHED SCALING. Result:
+  `QUEUED-HANDOFF-AUTHORED`. It is the next watershed runtime package after
+  W5, with the first actionable item to inventory the typed publication path,
+  implement direct typed publication/streaming, adopt large or representative
+  committed watershed fixtures, and record strict committed-fixture scaling plus
+  honest same-fixture legacy/openWEPP comparison evidence where runnable.
 
 ## Execution Log
 
