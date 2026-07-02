@@ -36,11 +36,11 @@ fn r7h_runoff_append_trace_line(path: &std::path::Path, line: &str) {
     }
 }
 
-// WP-2 (frost single-solve) paired-solve diagnostic: both frost partition
-// call sites — the runner day-input builder and this R4A span — emit one
-// JSONL row per solve when OPENWEPP_WP2_FROST_PAIR_TRACE_PATH is set, so the
-// two outcomes for the same (lane, day) can be diffed offline. Inert (no
-// construction, no I/O) when the variable is unset.
+// WP-2 frost-solve diagnostic trace: since the single-solve rewire the only
+// writer is the runner day-input builder (the R4A-side hook died with the
+// deleted re-solve); one JSONL row per (lane, day) solve when
+// OPENWEPP_WP2_FROST_PAIR_TRACE_PATH is set. Inert (no construction, no I/O)
+// when the variable is unset.
 static WP2_FROST_PAIR_TRACE_PATH: std::sync::OnceLock<Option<std::path::PathBuf>> =
     std::sync::OnceLock::new();
 
