@@ -356,7 +356,7 @@ timings.
 | ✅ | `MOFEFID-B03` SC-SNOWFREEZE-015 melt-aggregation reconciliation | B | **complete 2026-07-02** (branch `worktree-mofefid-b03`): INV-019 already superseded INV-015 for the coexist case — B10 was a missing cross-reference, not a defect; INV-015 text now defers to INV-019 (positive-parts = storage loss, density-gate-grounded). Contract-text only |
 | 2 | `MOFEFID-C01` authority promotion (metric/envelope/applicability) | C | — (independent) |
 | 3 | `MOFEFID-C02` rubric harness | C | C01 envelope ratified |
-| 3 | `MOFEFID-D01` routing contracts + ADR | D | — (authoring can start now) |
+| ▶️ | `MOFEFID-D01` routing scaffold + friction kernels | D | **opened 2026-07-02** (branch `worktree-mofefid-d01`): ADR-0033 (Proposed), SC-OFEROUTE-001 scope, D2 case fixtures, D3 friction kernels (eqs. 2-7, shadow-first, 6/6 tests). Activation = opt-in-validated only. Next: ratify ADR-0033 → D4 KWE/TVD solver |
 | 3 | `MOFEFID-D02` supplemental fixtures | D | D01 drafted |
 | ✅ | `MOFEFID-C03` evaluation + verdict | C | **complete 2026-07-02** (`b2807d5d`): H2637 not-contradicted on all four tiers; FARPOINT01 magnitude flag RESOLVED against field data. Load-bearing finding: event tiers need quickflow separation (INV-SUBHYD-033 rev 14) |
 | 4 | `MOFEFID-D03..` staged implementation | D | A01 + B01 findings dispositioned; D01 ratified |

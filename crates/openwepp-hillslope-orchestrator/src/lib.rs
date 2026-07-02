@@ -5,6 +5,7 @@ pub mod runtime_inputs;
 mod constants;
 mod direct_runtime;
 mod hydrology;
+pub mod ofe_routing;
 mod winter_column;
 
 #[cfg(test)]
