@@ -69,3 +69,30 @@ and the contract's once-at-ingress handoff (`INV-SNOWFREEZE-012`).
 5. Endpoint timing (expected ~40 s from the halved dominant block; the
    solve runs on every OFE-day — Stage-1 finding).
 6. `compatibility_edge_invocations=0`; fmt/clippy/deny; Codex review.
+
+## Scope amendment (pre-implementation read of the R4A span)
+
+The R4A frost block is three coupled steps, not one:
+`reconcile_r4a_frost_runtime` (solve+apply) → runoff partition compute →
+`rebalance_r4a_frost_projection_to_storage_target` (only when frost
+reconciled). The rebalance exists because the late apply perturbs storage
+after the day's fluxes have run; under ingress application the perturbation
+precedes the fluxes, so the rebalance is expected to become structurally
+unnecessary — its deletion is in 3a's scope, with the in-run closure gates
+as the check. The deferred-partition-excess lineage
+(`r4a_deferred_local_partition_excess_m`,
+`frost_preprojected_local_liquid_m`, R4X's mid-day retained-liquid
+injection) is calibrated around the current two-solve shape and must be
+re-derived against the ingress shape rather than assumed unchanged — it is
+the most likely source of first closure failures during bring-up.
+
+## Before-state rubric (captured, archived)
+
+`artifacts/rubric-before/`: five-site comparison reports + residual
+classification at branch `39061021`. Headline (classify_residuals, Ran):
+0 defect-attribution-eligible sites, 0 `OPENWEPP-DEFECTIVE`; primaries
+`SNOW-CONTROL-FAILED` ×3 (sites 1/2/4, snow-confounded) and
+`INCONCLUSIVE` ×2 (sites 3/5, no paired observed snow). Per-site
+quantities to hold no-worse after the change: matched rows
+392/200/10,643/83/4,356; max abs frost residual 0.247/0.390/–/0.787/– m;
+isotherm exceedances 0/0/3,658/0/125; snow-control failures 218/72/–/20/–.
