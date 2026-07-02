@@ -76,6 +76,10 @@ impl DirectPublicationStreamingSink {
         row: &DirectPublicationDayRow,
     ) -> Result<(), HillslopeCliError> {
         require_direct_publication_output_family_authority_row(row)?;
+        // MOFEFID-B02 (INV-RUNOFFPART-032): guard EVERY streamed production row
+        // (not just the summary sample rows) before it becomes a WAT row, so a
+        // middle row cannot bypass the QOFE == Q publication boundary.
+        validate_publication_qofe_equals_q(row)?;
         let simulation_start_year = *self
             .simulation_start_year
             .get_or_insert(row.calendar.year);

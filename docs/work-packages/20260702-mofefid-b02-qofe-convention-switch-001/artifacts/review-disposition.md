@@ -13,3 +13,16 @@ candidates **accepted**:
 
 Post-disposition gates (Ran): clippy `-D warnings` 0; orchestrator 148/148;
 runner 101/101; authority guards below.
+
+## Re-check disposition (Codex re-review, 2026-07-02)
+
+Both partial closures completed:
+
+| # | Residual | Action |
+|---|---|---|
+| CX-001 | Guard-map rows + addendum text still carried the old `QOFE = runoff * efflen / slplen` / reject-`QOFE == Q` language | Fixed **all active text**: `SC-SYSTEM-001` guard-map row (185) + addendum item 5 (§842-845) + a stray `and and` typo; `SC-WATBAL-001` guard-map row (494) + addendum item 7 (§2187). All now state `QOFE == Q` as canonical (MOFEFID-B02 / INV-RUNOFFPART-032) with the retained OFE-local basis feeding only byte-invariant runvol/peak. Revision-history rows (SC-SYSTEM 993, SC-WATBAL 2460) left as historical record. |
+| CX-003 | Guard covered retained frames + streamed summary sample rows, but not every production streamed row | Guard moved to `observe_row` — the complete per-streamed-row path — so **every** WAT row is checked before write, not just samples. Verified end-to-end: H2637 streaming run (235,961 rows) exit 0 with the guard active; `H.pass` byte-invariant. |
+
+Post-recheck gates (Ran): clippy `-D warnings` 0; runner 101/101; H2637
+streaming endpoint exit 0, `H.pass` byte-invariant. CX-002 was already
+closed at re-check (reviewer reproduced the 53,298/87,791 split).
