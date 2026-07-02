@@ -954,3 +954,201 @@ openWEPP note (2026-05-11):
 **MOFEFID Lane D role**: the field hillslope behind Papanicolaou §3.2 (the 65% space/time-invariant underprediction case) — the heterogeneous-OFE, S-profile validation target for the full OFE-by-OFE routing.
 **Kernel mapping**: Lane D2 fixtures (§3.2 case), D-val.
 **Notes / caveats**: Papanicolaou cites this for the observed hydrograph/hillslope configuration; the exact storm series is in the supplemental Figure_5.xlsx.
+
+## R-77: Lawrence (1997) macroscale surface roughness and frictional resistance
+
+**Citation**: Lawrence, D. S. L. (1997). *Macroscale surface roughness and frictional resistance in overland flow*. Earth Surface Processes and Landforms, 22(4), 365–382. https://doi.org/10.1002/(SICI)1096-9837(199704)22:4<365::AID-ESP693>3.0.CO;2-6
+**Local path**: `references/copyrighted/lawrence1997.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Three-regime (partially/marginally/well-inundated) frictional resistance as a function of inundation ratio and roughness concentration.
+**MOFEFID Lane D role**: **formulation-tier** — primary source behind Papanicolaou eq. (4) form resistance; must be read together with the Abrahams (1998) discussion (still operator-tracked) for the contested applicability limits.
+**Notes / caveats**: Intake-level annotation; regime-bound extraction is Lane D1 work.
+
+## R-78: Katul, Poggi & Ridolfi (2011) vegetation flow resistance
+
+**Citation**: Katul, G. G., D. Poggi, and L. Ridolfi (2011). *A flow resistance model for assessing the impact of vegetation on flood routing mechanics*. Water Resources Research, 47, W08533. https://doi.org/10.1029/2010WR010278
+**Local path**: `references/copyrighted/Water Resources Research - 2011 - Katul - A flow resistance model for assessing the impact of vegetation on flood routing.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Vegetation drag resistance from canonical length scales (adjustment length `L_c`, canopy height `h_c`, depth `h`), with momentum absorption coefficient `β`.
+**MOFEFID Lane D role**: **formulation-tier** — primary source for Papanicolaou eq. (6) `f_veg` including the `β = min(0.135√(LAI/h_c), 0.33)` estimate.
+**Notes / caveats**: Intake-level annotation.
+
+## R-79: Jomaa et al. (2012) rock-fragment coverage flume experiments
+
+**Citation**: Jomaa, S., D. A. Barry, B. C. P. Heng, A. Brovelli, G. C. Sander, and J.-Y. Parlange (2012). *Influence of rock fragment coverage on soil erosion and hydrological response: Laboratory flume experiments and modeling*. Water Resources Research, 48, W05535. https://doi.org/10.1029/2011WR011255
+**Local path**: `references/copyrighted/jomaa2012.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: EPFL 6 m flume with controlled rock-fragment cover under 74 mm/h rainfall.
+**MOFEFID Lane D role**: validation Case 2 primary source (isolated roughness elements, Ef 0.75 target).
+**Notes / caveats**: Case series also in supplemental `Figure_4.xlsx`.
+
+## R-80: Thompson et al. (2011) unsteady overland flow over permeability contrasts
+
+**Citation**: Thompson, S., G. Katul, A. Konings, and L. Ridolfi (2011). *Unsteady overland flow on flat surfaces induced by spatial permeability contrasts*. Advances in Water Resources, 34(8), 1049–1058. https://doi.org/10.1016/j.advwatres.2011.05.012
+**Local path**: `references/copyrighted/thompson2011.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Unsteady overland-flow routing with the Katul resistance formulation over spatially heterogeneous surfaces.
+**MOFEFID Lane D role**: companion application of eq. (6); the heterogeneous-surface routing pattern Papanicolaou generalizes OFE-by-OFE.
+**Notes / caveats**: Intake-level annotation.
+
+## R-81: García-Navarro, Alcrudo & Savirón (1992) TVD-MacCormack for 1-D open-channel flow
+
+**Citation**: García-Navarro, P., F. Alcrudo, and J. M. Savirón (1992). *1-D open-channel flow simulation using TVD-McCormack scheme*. Journal of Hydraulic Engineering, 118(10), 1359–1372. https://doi.org/10.1061/(ASCE)0733-9429(1992)118:10(1359)
+**Local path**: `references/copyrighted/10.1061@ASCE0733-94291992118@101359.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: TVD-corrected MacCormack predictor–corrector applied to 1-D Saint-Venant flow.
+**MOFEFID Lane D role**: numerics lineage for Papanicolaou eqs. (8)–(14); source for the TVD-term construction and stability treatment.
+**Notes / caveats**: Intake-level annotation.
+
+## R-82: Mingham, Causon & Ingram (2001) TVD MacCormack for transcritical flow
+
+**Citation**: Mingham, C. G., D. M. Causon, and D. M. Ingram (2001). *A TVD MacCormack scheme for transcritical flow*. Proceedings of the Institution of Civil Engineers — Water and Maritime Engineering, 148(3), 167–175. https://doi.org/10.1680/wame.2001.148.3.167
+**Local path**: `references/copyrighted/mingham2001.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: The TVD-term-appended-to-corrector MacCormack variant (explicit, second-order).
+**MOFEFID Lane D role**: the specific scheme variant the enhanced-WEPP solver follows, including the flux-limiter/`Cf(Cr)` construction in Papanicolaou eqs. (11a–f).
+**Notes / caveats**: Intake-level annotation.
+
+## R-83: Whipkey (1965) subsurface stormflow from forested slopes
+
+**Citation**: Whipkey, R. Z. (1965). *Subsurface stormflow from forested slopes*. Bulletin of the International Association of Scientific Hydrology, 10(2), 74–85. https://doi.org/10.1080/02626666509493392
+**Local path**: `references/copyrighted/whipkey1965.pdf` (T&F copy; identity verified).
+**Reference quality**: `verified-primary`
+**Topic**: The foundational forested-slope trench demonstration of lateral subsurface stormflow.
+**MOFEFID Lane C role**: historical foundation of the trench-measurement lineage all four fixture sites descend from.
+**Notes / caveats**: Intake-level annotation.
+
+## R-84: Hewlett & Hibbert (1963) sloping soil mass drainage
+
+**Citation**: Hewlett, J. D., and A. R. Hibbert (1963). *Moisture and energy conditions within a sloping soil mass during drainage*. Journal of Geophysical Research, 68(4), 1081–1087. https://doi.org/10.1029/JZ068i004p01081
+**Local path**: `references/copyrighted/hewlett1963.pdf` (JGR header verified).
+**Reference quality**: `verified-primary`
+**Topic**: The Coweeta artificial-hillslope drainage experiment; origin of translatory-flow/variable-source-area thinking.
+**MOFEFID Lane C role**: Coweeta-context foundation; frames what the Coweeta water-yield records can and cannot say about hillslope lateral flow (context-only per fixture README).
+**Notes / caveats**: The 1967 variable-source-area chapter remains operator-tracked.
+
+## R-85: Dunne & Black (1970) partial area contributions
+
+**Citation**: Dunne, T., and R. D. Black (1970). *Partial area contributions to storm runoff in a small New England watershed*. Water Resources Research, 6(5), 1296–1311. https://doi.org/10.1029/WR006i005p01296
+**Local path**: `references/copyrighted/dunne1970.pdf` (+ transcription `dunne1970.md`).
+**Reference quality**: `verified-primary`
+**Topic**: Field demonstration that limited saturated areas produce most storm runoff.
+**MOFEFID Lane C role**: bounds the contributing-area dimension of the lateral-flow envelope.
+**Notes / caveats**: Intake-level annotation.
+
+## R-86: Harr (1977) water flux in soil and subsoil on a steep forested slope
+
+**Citation**: Harr, R. D. (1977). *Water flux in soil and subsoil on a steep forested slope*. Journal of Hydrology, 33(1–2), 37–58. https://doi.org/10.1016/0022-1694(77)90097-X
+**Local path**: `references/copyrighted/harr1977.pdf` (+ transcription `harr1977.md`).
+**Reference quality**: `verified-primary`
+**Topic**: HJ Andrews steep-slope measured soil/subsoil water fluxes.
+**MOFEFID Lane C role**: site-matched physical bound on lateral flux rates for the primary Lane C site (WS10's neighborhood); pairs with R-67.
+**Notes / caveats**: Intake-level annotation; flux magnitudes to be re-derived in C1.
+
+## R-87: Mosley (1979) streamflow generation Maimai
+
+**Citation**: Mosley, M. P. (1979). *Streamflow generation in a forested watershed, New Zealand*. Water Resources Research, 15(4), 795–806. https://doi.org/10.1029/WR015i004p00795
+**Local path**: `references/copyrighted/mosley1979.pdf` (+ transcription `mosley1979.md`).
+**Reference quality**: `verified-primary`
+**Topic**: Foundational Maimai subsurface-flow study.
+**MOFEFID Lane C role**: Maimai lateral-flow foundation; lower anchor of the M8 evidence lineage completed by R-88/R-89.
+**Notes / caveats**: Intake-level annotation.
+
+## R-88: McGlynn, McDonnell & Brammer (2002) Maimai perceptual model review
+
+**Citation**: McGlynn, B. L., J. J. McDonnell, and D. D. Brammer (2002). *A review of the evolving perceptual model of hillslope flowpaths at the Maimai catchments, New Zealand*. Journal of Hydrology, 257(1–4), 1–26. https://doi.org/10.1016/S0022-1694(01)00559-5
+**Local path**: `references/copyrighted/mcglynn2002.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: ~25-year synthesis of Maimai trench/tracer flowpath evidence.
+**MOFEFID Lane C role**: the quantitative perceptual model against which the Maimai bracket of the envelope is constructed.
+**Notes / caveats**: Intake-level annotation.
+
+## R-89: Woods & Rowe (1996) Maimai M8 trench spatial variability
+
+**Citation**: Woods, R., and L. Rowe (1996). *The changing spatial variability of subsurface flow across a hillside*. Journal of Hydrology (New Zealand), 35(1), 51–86.
+**Local path**: `references/copyrighted/JoHNZ_1996_v35_1_Woods.pdf` (scan, no text layer) + transcription `JoHNZ_1996_v35_1_Woods.md` (title/abstract verified from transcription).
+**Reference quality**: `verified-primary`
+**Topic**: The Maimai M8 30-trough trench dataset: per-unit-area subsurface flow distribution and its convergence toward spatial uniformity in large wet events.
+**MOFEFID Lane C role**: **the observed M8 trench-dataset paper itself** — pairs directly with the held `maimai_m8/` fixture; a primary envelope source.
+**Notes / caveats**: No DOI (NZHS journal). Numeric extraction should use the transcription with the scan as provenance.
+
+## R-90: Bachmair & Weiler (2011) new dimensions of hillslope hydrology
+
+**Citation**: Bachmair, S., and M. Weiler (2011). *New Dimensions of Hillslope Hydrology* (Ch. 23). In Levia, Carlyle-Moses & Tanaka (eds.), Forest Hydrology and Biogeochemistry, Ecological Studies 216, Springer. https://doi.org/10.1007/978-94-007-1363-5_23
+**Local path**: `references/copyrighted/bachmair2011.pdf` (chapter title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Review of forest-hillslope subsurface-flow partitioning, thresholds, and connectivity across trench studies.
+**MOFEFID Lane C role**: cross-study framing for how lateral fraction varies with structure and antecedent state; complements R-68.
+**Notes / caveats**: Intake-level annotation.
+
+## R-91: Brooks, Boll & McDaniel (2007) SMR distributed response, eastern Palouse
+
+**Citation**: Brooks, E. S., J. Boll, and P. A. McDaniel (2007; online 2006). *Distributed and integrated response of a geographic information system-based hydrologic model in the eastern Palouse region, Idaho*. Hydrological Processes, 21(1), 110–122. https://doi.org/10.1002/hyp.6230
+**Local path**: `references/copyrighted/brooks2006.pdf` (journal header verified).
+**Reference quality**: `verified-primary`
+**Topic**: SMR model applied across the Palouse with measured horizon lateral Ks/anisotropy over fragipan soils.
+**MOFEFID Lane C role**: the field-measured Palouse lateral-Ks/anisotropy companion to R-62 — empirical center of the conductivity envelope for that soil class.
+**Notes / caveats**: Intake-level annotation.
+
+## R-92: Wigmosta, Vail & Lettenmaier (1994) DHSVM
+
+**Citation**: Wigmosta, M. S., L. W. Vail, and D. P. Lettenmaier (1994). *A distributed hydrology-vegetation model for complex terrain*. Water Resources Research, 30(6), 1665–1679. https://doi.org/10.1029/94WR00436
+**Local path**: `references/copyrighted/wigmosta1994.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: DHSVM formulation; the distributed-model precedent of effective lateral Ks calibrated ~100× vertical.
+**MOFEFID Lane C role**: anisotropy-multiplier precedent for the upper edge of the conductivity envelope.
+**Notes / caveats**: Intake-level annotation.
+
+## R-93: Beven & Germann (1982) macropores and water flow in soils
+
+**Citation**: Beven, K., and P. Germann (1982). *Macropores and water flow in soils*. Water Resources Research, 18(5), 1311–1325. https://doi.org/10.1029/WR018i005p01311
+**Local path**: `references/copyrighted/beven1982.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Foundational statement of macropore-dominated departures from Darcian matrix conductivity in structured field soils.
+**MOFEFID Lane C role**: physical basis for a lateral-Ks envelope wider than lab core values (with R-94).
+**Notes / caveats**: Intake-level annotation.
+
+## R-94: Beven & Germann (2013) macropores revisited
+
+**Citation**: Beven, K., and P. Germann (2013). *Macropores and water flow in soils revisited*. Water Resources Research, 49(6), 3071–3092. https://doi.org/10.1002/wrcr.20156
+**Local path**: `references/copyrighted/beven2013.pdf` (accepted-manuscript copy; title verified).
+**Reference quality**: `verified-primary`
+**Topic**: 30-year synthesis updating the macropore/effective-conductivity argument.
+**MOFEFID Lane C role**: modern uncertainty framing for upscaled lateral Ks.
+**Notes / caveats**: Accepted-manuscript version (no journal typesetting).
+
+## R-95: McDaniel et al. (2001) perched water tables on Argixeroll/Fragixeralf hillslopes
+
+**Citation**: McDaniel, P. A., R. W. Gabehart, A. L. Falen, J. E. Hammel, and R. J. Reuter (2001). *Perched Water Tables on Argixeroll and Fragixeralf Hillslopes*. Soil Science Society of America Journal, 65(3), 805–810. https://doi.org/10.2136/sssaj2001.653805x
+**Local path**: `references/copyrighted/mcdaniel2001.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Direct hillslope observations of perched water tables over fragipans in Palouse-class soils.
+**MOFEFID Lane C role**: constrains when/where lateral saturated flow is physically active in the R-62/R-91 soil class.
+**Notes / caveats**: Intake-level annotation.
+
+## R-96: McDaniel et al. (2008) fragipans, perched water tables, catchment processes
+
+**Citation**: McDaniel, P. A., M. P. Regan, E. Brooks, J. Boll, S. Barndt, A. Falen, S. K. Young, and J. E. Hammel (2008). *Linking fragipans, perched water tables, and catchment-scale hydrological processes*. Catena, 73(2), 166–173. https://doi.org/10.1016/j.catena.2007.05.011
+**Local path**: `references/copyrighted/mcdaniel2008.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Hydropedology linking restrictive layers to perched water tables and lateral throughflow at catchment scale.
+**MOFEFID Lane C role**: process authority that restrictive-layer lateral throughflow is real and dominant — keeps the magnitude bound physically honest.
+**Notes / caveats**: Intake-level annotation.
+
+## R-97: Hasan, Troch & Boll (2006) hillslope hydrology via local gravity, Moxa
+
+**Citation**: Hasan, S., P. A. Troch, J. Boll, and C. Kroner (2006). *Modeling the hydrological effect on local gravity at Moxa, Germany*. Journal of Hydrometeorology, 7(3), 346–354. https://doi.org/10.1175/JHM488.1
+**Local path**: `references/copyrighted/hydr-jhm488_1.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Hillslope-storage modeling of subsurface flow constrained by superconducting-gravimeter observations (Boll lineage).
+**MOFEFID Lane C role**: peripheral — an independent-observable check on hillslope storage dynamics; low priority for the envelope.
+**Notes / caveats**: Operator-supplied; tangential to the core Lane C metric.
+
+## R-98: O'Keeffe et al. (2023) SMR biochar streamflow modeling
+
+**Citation**: O'Keeffe, A., E. Brooks, C. Dunkel, and D. S. Shrestha (2023). *Soil moisture routing modeling of targeted biochar amendment in undulating topographies: an analysis of biochar's effects on streamflow*. AIMS Environmental Science, 10(4), 529–546. https://doi.org/10.3934/environsci.2023030
+**Local path**: `references/copyrighted/10.3934_environsci.2023030.pdf` (title verified).
+**Reference quality**: `verified-primary`
+**Topic**: Modern SMR-lineage application (Brooks co-author) with lateral-flow routing over restrictive layers in Palouse-type topography.
+**MOFEFID Lane C role**: current-generation SMR lineage context; documents present-day parameterization practice of the model family WEPP-forest's lateral additions descend from.
+**Notes / caveats**: Open access (AIMS).
