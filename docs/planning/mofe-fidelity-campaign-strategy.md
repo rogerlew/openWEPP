@@ -131,6 +131,15 @@ evidence and an explicit disposition; confirmed defects convert to
 Defect-Closure ExecPlans per ADR-0018. A clean sweep is a valid outcome and
 is recorded as one.
 
+**Executed 2026-07-01** — see the §7 queue rows and
+`docs/work-packages/20260701-mofefid-a01-mofe-defect-review-sweep-001/`.
+F-A2 is the campaign's pivotal finding: legacy re-infiltrates upstream
+carry (surface **and lateral**) into downslope soil at both daily and
+hourly granularity; openWEPP excludes runon from the infiltration supply
+and folds lateral carry into the surface partition — conservation holds
+either way, but the partition fidelity diverges and plausibly drives the
+FARPOINT01 magnitude gap. The `MOFEFID-A02` probe tests that hypothesis.
+
 ## 4. Lane B — stakeholder-brief defect audit (adjudication-first)
 
 **Posture (operator directive, 2026-07-01): the brief is a flag list, not
@@ -215,6 +224,9 @@ Known skepticism hooks going in (to be tested, not assumed):
 - **B10 (winter mixed-melt):** verify the sign/magnitude math against the
   Dun-dissertation source intent ourselves; the brief reports the branch
   empirically unreachable in their cohort, which caps its practical weight.
+
+**Executed 2026-07-01** — see the §7 queue rows and
+`docs/work-packages/20260701-mofefid-b01-stakeholder-brief-adjudication-audit-001/`.
 
 **Acceptance:** one artifact with an eleven-row verdict table carrying the
 **dual verdict** (brief-claim disposition + openWEPP disposition), the
@@ -323,8 +335,9 @@ timings.
 
 | Order | Package (proposed) | Lane | Gate to proceed |
 |---|---|---|---|
-| 1 | `MOFEFID-A01` defect-review sweep | A | — (start now) |
-| 1 | `MOFEFID-B01` brief-audit (11 classes) | B | — (start now, parallel with A01) |
+| ✅ | `MOFEFID-A01` defect-review sweep | A | **complete 2026-07-01** (`ddafa24d`): six surfaces swept, six findings, no conservation defect; headline F-A2 (runon re-infiltration source-intent divergence, both granularities, surface+lateral — pinned baseline `watbal_hourly.for:361-363`, `:471-473`); Codex-reviewed, dispositioned |
+| ✅ | `MOFEFID-B01` brief-audit (11 classes) | B | **complete 2026-07-01** (`5ad1c961`): eleven dual verdicts, no openWEPP defect; three brief claims failed face-value (B1/B5/B7); spawned `MOFEFID-B02`, `MOFEFID-B03`; comparator-hygiene entries B8/B9; Codex-reviewed twice, dispositioned |
+| 1 | `MOFEFID-A02` runon re-infiltration probe (**operator-directed 2026-07-01**) | A→C/D | env-gated opt-in admitting inter-OFE runon into the WB14 infiltration supply on H2637; default path byte-flat. **Hypothesis under test:** F-A2 explains a large share of the FARPOINT01 71%-vs-55.5% `runvol` gap (mechanism-consistent with MAGPARITY01's ~99%-routed-lateral decomposition; never examined by the magnitude arc). Outcome reorders C01 interpretation and the D01 runon-semantics contract |
 | 2 | `MOFEFID-B02` QOFE ecosystem-contract adjudication | B | B01 confirms B7 shape (already Ran-verified; B02 can scaffold immediately after B01 lands) |
 | 2 | `MOFEFID-B03` SC-SNOWFREEZE-015 melt-aggregation reconciliation | B | B01 B10 verdict (contract-text net-algebra vs SNOWSCI-S1 positive-parts implementation; amend the invariant to ratify positive-parts-under-single-source or demonstrate equivalence on the reachable domain) |
 | 2 | `MOFEFID-C01` authority promotion (metric/envelope/applicability) | C | — (independent) |
