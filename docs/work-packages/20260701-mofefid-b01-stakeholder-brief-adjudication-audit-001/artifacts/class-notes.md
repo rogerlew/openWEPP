@@ -122,3 +122,74 @@ downstream reader computing closure with `RM` as external input while also
 differencing `Snow-Water` inherits the legacy double-count *in their own
 audit*. Worth a one-line consumer caveat in usersum WAT documentation
 (follow-up, not a model change).
+
+## openWEPP-side evidence — runoff/event/diagnostics cluster (B1/B8/B9/B11)
+
+- **B1:** openWEPP has **no q-cap of any kind** — and needs none for the
+  legacy failure mode: `compute_r4a_runoff_partition` (`runoff.rs:652-688`)
+  computes runoff **as the conservation residual** `liquid + runon −
+  infiltration − Δdepression − frost_retained (≥0) + saturation_excess`.
+  Runoff structurally cannot exceed supplied water; legacy's hourly path
+  computed `qofe` from independent hydrograph machinery that could (hence
+  its patch). The legacy cap itself (my source read,
+  `watbal_hourly.for:1009`) is an *availability* bound, not the hydraulic
+  transport capacity the brief narrates. Dormant `QcapSoftLimit` taxonomy
+  value exists but is never emitted (`status.rs:113`) → A01 note.
+- **B8:** openWEPP has **no event counter at all** — no `sumrun` analog;
+  `RM` is an additive rain+melt depth bucket (`01_publication.rs:300`), and
+  totals are sums of daily depths, never event-gated accumulations. The
+  legacy over-counting mechanism has no surface to exist on.
+- **B9:** no dry-day special-casing anywhere; the per-OFE-day identity +
+  nonnegativity + ledger-vs-state guards run identically on dry days.
+  "No-flux-without-storage-change" as contract text lives in
+  `INV-PERC-016/017`; runtime enforcement is via the verified guard pair.
+- **B11:** openWEPP currently has **no external WAT/PASS closure-audit
+  tool** (owcmp is per-column diff; snow tools audit internal traces), so
+  the over-reach cannot occur today — but the lesson (distinguish
+  `latqcc`-only days from surface pulses) becomes a **design constraint on
+  Lane C2 and any future exported-surface audit**. Related gap → A01-S4:
+  per-OFE closure is not currently reconstructable from exports by an
+  external reader (`INV-WATBAL-096` warns row aliases are structural only).
+
+## openWEPP-side evidence — winter cluster (B5/B6/B10)
+
+- **B5:** openWEPP **deliberately ratifies the legacy rain-into-melt
+  lineage** the brief calls defect #6: rain retained/released by the pack
+  is promoted into `routed_melt_m`; only pack-untouched rain survives as
+  `post_winter_rain_m` (`runoff_reconciliation.rs:143-158`, finalize
+  `infiltration_reconciliation.rs:1671-1672`). This is contract, not
+  accident: `INV-SNOWFREEZE-015/021/023`, `INV-WATBAL-055`,
+  `REF-SNOWFREEZE-LEGACY-WINTER-RAINRELEASE`. The conservation hazard that
+  broke wepp-forest's kernel is neutralized structurally: the melt-cap
+  availability basis **includes retained rain** (`swe + accumulation +
+  rain_retained`, `:1643-1644`), overdraw **hard-fails** rather than
+  silently clamping (`:1778-1789`), and closure is enforced by the
+  ledger-vs-state guard. Channel attribution on rain-on-snow days differs
+  from post-Candidate-1 legacy **by design** (our anchor `wepp_260430`
+  predates Candidate 1) → comparator-hygiene entry.
+- **B6:** the clamp-plus-preserve pattern is structurally absent: outputs
+  derive *from* the bounded quantities (SWE-after computed from bounded
+  losses), raw uncapped values survive only as diagnostics that "cannot
+  create a second SWE debit", and overdraw is a hard-fail (correctness-
+  over-completion, the same posture as their Phase-3 gate). No
+  baseflow-preservation machinery exists to interact with a cap.
+- **B10 — FINDING (contract-vs-implementation tension).** Verified reads:
+  `INV-SNOWFREEZE-015` ratifies the **corrected legacy net algebra**
+  ("compares net daily melt (pstvML + ngtvML) and, when positive, scales
+  positive hourly melt by 1 + ngtvML/pstvML"; original branch rejected as
+  bug-compatible archaeology). The implementation
+  (`redistribute_daily_signed_snowmelt`,
+  `runoff_reconciliation.rs:1133-1162`) instead routes the
+  **positive-parts sum** (per-hour `max(0)`, then sum) under the
+  SNOWSCI-S1 single-source rationale (routed melt must equal the positive
+  water-equivalent loss already applied to the depth/density store;
+  negative raw melt is diagnostic-only). On a mixed-sign day these
+  disagree: net-algebra routes `pstv+ngtv` (or zero), positive-parts
+  routes `pstv`. Empirical reachability is doubtful (the brief's own
+  cohort scan found 0 mixed-melt days in 21.7M winter OFE-day rows, and
+  months of H2637 byte-identity never tripped), and conservation holds
+  either way (single-source store + closure guards). Disposition:
+  **contract-consistency follow-up** — reconcile the INV-SNOWFREEZE-015
+  text with the SNOWSCI-S1 implementation (amend the invariant to ratify
+  positive-parts-under-single-source, or demonstrate equivalence on the
+  reachable domain). Not a proven runtime defect.

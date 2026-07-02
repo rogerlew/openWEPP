@@ -1,6 +1,6 @@
 # MOFEFID-B01 — Stakeholder-Brief Adjudication-First Audit
 
-Status: **SCAFFOLDED** (2026-07-01)
+Status: **EXECUTED — REVIEW-READY** (2026-07-01). Eleven dual verdicts issued; no openWEPP production defect found; two contract-decision follow-ups spawned (B07→MOFEFID-B02 QOFE; B10 SC-text reconciliation). See `artifacts/verdict-table.md`.
 Campaign: [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane B.
 Owner: Claude Code (operator-directed role break). Reviewer at close: Codex.
 
