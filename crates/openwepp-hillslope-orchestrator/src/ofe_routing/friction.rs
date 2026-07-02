@@ -1,4 +1,4 @@
-//! MOFEFID Lane D (SC-OFEROUTE-001, ADR-0033 Proposed): space/time-variant
+//! MOFEFID Lane D (SC-OFEROUTE-001, ADR-0033 ratified): space/time-variant
 //! overland-flow friction-factor kernels from Papanicolaou et al. (2018),
 //! WRR 54, eqs. (2)-(7). Pure functions over typed SI inputs; shadow-first
 //! (not wired into any phase span). Opt-in subsystem — the default hillslope

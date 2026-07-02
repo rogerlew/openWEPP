@@ -25,7 +25,7 @@ Shadow-first: **not wired into any production phase span** (grep-verified);
 the default hillslope runtime does not reference it (`INV-OFEROUTE-010`;
 default path byte-flat by construction).
 
-## Validation (13 committed tests, no copyrighted data)
+## Validation (18 committed tests, no copyrighted data)
 
 Contract-anchored to `INV-OFEROUTE-005/006/007` and the D3 kernels:
 
@@ -65,7 +65,7 @@ and does not manufacture an Ef it cannot faithfully compute.
 
 ## Gates
 
-- `ofe_routing` 17/17 (13 physics + 4 fail-closed); full orchestrator suite
+- `ofe_routing` 18/18 (13 physics + 5 fail-closed); full orchestrator suite
   green; fmt/clippy `-D warnings` clean; solver shadow-first (default byte-flat).
 - Codex review dispositioned (`artifacts/review-disposition.md`): fail-closed
   forcing/params, all-sites clamp tracking, sample-dt guard, SC-OFEROUTE-001
