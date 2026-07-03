@@ -20,7 +20,8 @@ after the Codex round-1 finding (activation gates now precede the
 routed-operand validator, matching the legacy `contin.for` ordering;
 regression-tested at solver and frame/r7d8 level). Production outputs
 are unchanged this increment; the DFF-WS3 sediment HOLD stands until
-1b.**
+1b. Increment-1b SCAFFOLDED 2026-07-03 (entry gate + handoff prompt in
+artifacts/), ready for execution.**
 Governing authority:
 [`SC-SED-001`](../../specifications/science-contracts/contracts/SC-SED-001.md)
 (Hillslope Erosion Process Contract, v41, 56 invariants);
@@ -70,17 +71,36 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
   **DONE 2026-07-03 except the production seed flip** (solver + wiring +
   publication + conservation gates landed and validated on real McKenzie
   clay-loam storm forcing; see `artifacts/implementation.md`).
-- **Increment 1b — Wave-1 operand production (NEW, declared boundary from
-  Increment-1).** Port the operand-producer chain the Increment-0 gate
-  assumed existed: `prtcmp`/`falvel`/`yalin`/`trcoef` (particle classes,
-  `veleff`, `kt/kt2/ktrato/tcend`), `frcfac`+`shears` (`shrsol`, rill
-  width, friction — closes `EROD-BND-002`), `irs` `effint`/`effdrr`
-  exposure, `detinr` assembly, and the `soil.for` daily
-  `kiadjf/kradjf/tcadjf` chain (largest; may split again); then flip
-  `direct_production_typed_erosion_authority` to a populated
-  `DirectWave1ContinuityInputs`, unhardcode the pass-parquet
-  `tdet`/`tdep` writer (Wave-1-sourced totals only), and flip the
-  DFF-WS3 sediment HOLD assertions.
+- **Increment 1b — Wave-1 operand production + activation (SCAFFOLDED
+  2026-07-03; declared boundary from Increment-1).** Design + full
+  operand→producer lineage map in
+  [`artifacts/increment-1b-entry-gate.md`](artifacts/increment-1b-entry-gate.md);
+  executor prompt in
+  [`artifacts/increment-1b-handoff-prompt.md`](artifacts/increment-1b-handoff-prompt.md).
+  Three gated stages, production flip last:
+  - **1b-A — event/transport operands (no new daily state):**
+    `prtcmp`/`falvel` particle classes + `veleff`; `shield`/`yalin`/
+    `trcoef` → `kt/kt2/ktrato/tcend`; `frcfac`+`shears` rill
+    hydraulics (`shrsol`/`shrend`, persistent Gilley width — closes
+    `EROD-BND-002`); `effdrr`/`effint` export from the WB14/WB16 excess
+    machinery; `detinr` assembly; activation flags (`beta`,
+    `surface_frozen`, `theta_suppressed`). Gate: producer unit tests +
+    the erod16 fixture test swaps its temporary harness chain for the
+    production producers.
+  - **1b-B — daily erodibility adjustments (new daily state,
+    shadow-first):** `scon.for` consolidation baselines (corrected
+    `thetfc` lineage), `rfcum`/`daydis`/`fcycle` accumulators, the
+    `soil.for` subfactor chain → `kiadjf`/`kradjf`/`tcadjf` with typed
+    bound guards. Gate: shadow factor-trajectory sanity on the
+    no-tillage forest fixture.
+  - **1b-C — activation:** seed flip
+    (`direct_production_typed_erosion_authority` → populated
+    `DirectWave1ContinuityInputs`, single-OFE), pass-parquet writer
+    unhardcode (Wave-1-sourced totals only; Wave-2 placeholder router
+    must not publish), DFF-WS3 sediment HOLD → live directional law.
+    Hard gate: the ADR-0035 conservation + INV-SED gate end-to-end on
+    McKenzie clay-loam through the production path, inert-day
+    regression, and byte-stability of all non-sediment surfaces.
 - **Increment 2 — multi-OFE integration.** Wire Wave-1 across OFEs and reconcile
   with the existing EROD14 routing (`qin/qout`, particle handoff).
 - **Increment 3 — particle-class + enrichment completeness** (`sedia`/`sedist`)
