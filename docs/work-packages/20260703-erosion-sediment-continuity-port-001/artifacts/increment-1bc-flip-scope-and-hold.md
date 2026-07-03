@@ -33,6 +33,17 @@ floor/cap. The **actively-thawing** (`ifrost == 2`) branch is
 `fcycle` counter — implementing the recommended safe design directly in
 the producer.
 
+Codex review round 1 (Medium, fixed on this branch):
+`erosion_consolidation_baselines` was not fully fail-closed at its
+producer boundary — the `ki`/`kr`/`shcrit` `<= 0.0` check missed NaN
+(which would divide to a NaN ratio), and the texture / `thetfc` / `rfg`
+inputs were only finite-checked, so out-of-range values were silently
+absorbed by the `scon` clamps. Now: the fraction inputs are
+domain-validated to `[0, 1]`, the baseline erodibilities are validated
+finite **and** strictly positive, and the three output ratios are
+re-validated finite. Regressions added for NaN `ki`/`kr`/`shcrit` and the
+out-of-range texture/`rfg` domains (adjustment producer suite 8 → 9).
+
 Both are pure producers **not yet consumed** — like the rest of 1b-A/1b-B
 they sit behind the disabled seed. Making them observable IS the flip.
 This is why the `effint`/`effdrr` "export" is coupled to 1b-C, not

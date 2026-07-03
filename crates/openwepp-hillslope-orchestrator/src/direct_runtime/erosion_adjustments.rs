@@ -93,19 +93,25 @@ pub struct ErosionConsolidationInputs {
 }
 
 /// `scon.for`: compute the consolidation baselines from texture + `thetfc`.
+///
+/// Fail-closed at the producer boundary: the texture / field-capacity /
+/// rock-fraction inputs are fraction-domain-validated to `[0, 1]` (NaN or
+/// out-of-range is a typed error, not silently absorbed by the `scon`
+/// clamps); the baseline erodibilities `ki`/`kr`/`shcrit` are validated
+/// finite **and** strictly positive (the earlier `<= 0.0` check missed
+/// NaN, which would divide to a NaN ratio); and the three output ratios
+/// are re-validated finite.
 pub fn erosion_consolidation_baselines(
     inputs: &ErosionConsolidationInputs,
 ) -> Result<ErosionConsolidationBaselines, DirectRuntimeError> {
-    validate_finite("erosion.scon.sand", inputs.sand)?;
-    validate_finite("erosion.scon.silt", inputs.silt)?;
-    validate_finite("erosion.scon.orgmat", inputs.orgmat)?;
-    validate_finite("erosion.scon.thetfc", inputs.thetfc)?;
-    validate_finite("erosion.scon.rfg", inputs.rock_fragment_fraction)?;
-    if inputs.ki <= 0.0 || inputs.kr <= 0.0 || inputs.shcrit <= 0.0 {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "erosion.scon.nonpositive_baseline_erodibility",
-        });
-    }
+    validate_fraction_domain("erosion.scon.sand", inputs.sand)?;
+    validate_fraction_domain("erosion.scon.silt", inputs.silt)?;
+    validate_fraction_domain("erosion.scon.orgmat", inputs.orgmat)?;
+    validate_fraction_domain("erosion.scon.thetfc", inputs.thetfc)?;
+    validate_fraction_domain("erosion.scon.rfg", inputs.rock_fragment_fraction)?;
+    validate_positive_baseline("erosion.scon.ki", inputs.ki)?;
+    validate_positive_baseline("erosion.scon.kr", inputs.kr)?;
+    validate_positive_baseline("erosion.scon.shcrit", inputs.shcrit)?;
 
     // Interrill: kconsd = 1000·(3042 − 3166·sand − 8816·orgmat − 2477·fc).
     let kconsd_ki = (1000.0
@@ -124,6 +130,10 @@ pub fn erosion_consolidation_baselines(
     let kconsd_tc =
         (8.37 - 11.8 * inputs.thetfc - 4.9 * inputs.sand).clamp(KCONSD_TC_MIN, KCONSD_TC_MAX);
     let tccrat = (kconsd_tc / inputs.shcrit).clamp(TCCRAT_MIN, TCCRAT_MAX);
+
+    validate_finite("erosion.scon.kicrat", kicrat)?;
+    validate_finite("erosion.scon.krcrat", krcrat)?;
+    validate_finite("erosion.scon.tccrat", tccrat)?;
 
     Ok(ErosionConsolidationBaselines {
         kicrat,
@@ -287,6 +297,27 @@ fn erosion_interrill_slope_factor(inputs: &ErosionAdjustmentInputs) -> f64 {
         denom = SLOPE_FACTOR_DENOM_CAP;
     }
     1.05 - 0.85 * (-4.0 * denom).exp()
+}
+
+/// Fraction-domain guard for a `[0, 1]` texture / field-capacity /
+/// rock-fraction input: finite (NaN → typed error) and within `[0, 1]`.
+fn validate_fraction_domain(field: &'static str, value: f64) -> Result<(), DirectRuntimeError> {
+    validate_finite(field, value)?;
+    if !(0.0..=1.0).contains(&value) {
+        return Err(DirectRuntimeError::DirectDomainViolation { field });
+    }
+    Ok(())
+}
+
+/// Baseline-erodibility guard: finite (NaN → typed error) and strictly
+/// positive (a zero/negative divisor would poison the consolidation
+/// ratio).
+fn validate_positive_baseline(field: &'static str, value: f64) -> Result<(), DirectRuntimeError> {
+    validate_finite(field, value)?;
+    if value <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation { field });
+    }
+    Ok(())
 }
 
 fn validate_adjustment_inputs(inputs: &ErosionAdjustmentInputs) -> Result<(), DirectRuntimeError> {

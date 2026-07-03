@@ -45,18 +45,66 @@ fn consolidation_baselines_match_legacy_scon_clamps() {
 
 #[test]
 fn consolidation_baselines_fail_closed_on_invalid_erodibility() {
-    let mut inputs = clay_loam_consolidation_inputs();
-    inputs.ki = 0.0;
-    assert!(matches!(
-        erosion_consolidation_baselines(&inputs),
-        Err(DirectRuntimeError::DirectDomainViolation { .. })
-    ));
+    // Non-positive baseline erodibility is a typed domain error.
+    for zero_field in ["ki", "kr", "shcrit"] {
+        let mut inputs = clay_loam_consolidation_inputs();
+        match zero_field {
+            "ki" => inputs.ki = 0.0,
+            "kr" => inputs.kr = 0.0,
+            _ => inputs.shcrit = 0.0,
+        }
+        assert!(matches!(
+            erosion_consolidation_baselines(&inputs),
+            Err(DirectRuntimeError::DirectDomainViolation { .. })
+        ));
+    }
+    // NaN baseline erodibility must be a typed error, not a NaN ratio
+    // (the `<= 0.0` check alone misses NaN).
+    for nan_field in ["ki", "kr", "shcrit"] {
+        let mut inputs = clay_loam_consolidation_inputs();
+        match nan_field {
+            "ki" => inputs.ki = f64::NAN,
+            "kr" => inputs.kr = f64::NAN,
+            _ => inputs.shcrit = f64::NAN,
+        }
+        assert!(matches!(
+            erosion_consolidation_baselines(&inputs),
+            Err(DirectRuntimeError::NonFiniteDirectValue { .. })
+        ));
+    }
+    // NaN field capacity is a typed error.
     let mut nan_inputs = clay_loam_consolidation_inputs();
     nan_inputs.thetfc = f64::NAN;
     assert!(matches!(
         erosion_consolidation_baselines(&nan_inputs),
         Err(DirectRuntimeError::NonFiniteDirectValue { .. })
     ));
+}
+
+#[test]
+fn consolidation_baselines_fail_closed_on_out_of_range_texture() {
+    // Texture / rock-fraction / field-capacity inputs outside [0, 1] must
+    // be typed errors, not silently absorbed by the scon clamps.
+    type Mutator = fn(&mut ErosionConsolidationInputs);
+    let cases: [(&str, Mutator); 6] = [
+        ("sand>1", |i| i.sand = 1.5),
+        ("sand<0", |i| i.sand = -0.1),
+        ("silt<0", |i| i.silt = -0.1),
+        ("orgmat>1", |i| i.orgmat = 2.0),
+        ("thetfc>1", |i| i.thetfc = 1.5),
+        ("rfg<0", |i| i.rock_fragment_fraction = -0.2),
+    ];
+    for (label, mutate) in cases {
+        let mut inputs = clay_loam_consolidation_inputs();
+        mutate(&mut inputs);
+        assert!(
+            matches!(
+                erosion_consolidation_baselines(&inputs),
+                Err(DirectRuntimeError::DirectDomainViolation { .. })
+            ),
+            "out-of-range texture case {label} must fail closed"
+        );
+    }
 }
 
 fn bare_forest_adjustment_inputs(
