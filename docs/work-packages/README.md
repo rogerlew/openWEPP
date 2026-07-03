@@ -11,8 +11,23 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-02`:
+State as of `2026-07-03`:
 
+- `20260703-dff-ws3-directional-burn-validation-001/` is held as DFF WS-3
+  DIRECTIONAL BURN VALIDATION + PEAKFLOW MAGNITUDE ADJUDICATION. Result:
+  `EXECUTED-HOLD-DFF-WS3-SEDIMENT-PRODUCTION`. It installed the full McKenzie
+  Bridge 80-cell disturbed-burn matrix fixture, proved representative p1/p4
+  runoff and peakflow direction under direct production, and confirmed openWEPP
+  does not reproduce the legacy river-scale peakflow artifact. It holds before
+  sediment ordering because production direct erosion still disables Wave-1 and
+  publishes zero `tdet`, `tdep`, and `sedcon_*`.
+- `20260703-dff-ws3a-wave1-wave2-sediment-production-001/` is queued as DFF
+  WS-3A WAVE-1/WAVE-2 SEDIMENT PRODUCTION. Result: `QUEUED`. It is the
+  dedicated hold-lift package for `HOLD-DFF-WS3-SEDIMENT-PRODUCTION`: implement
+  real contract-backed EROD13 Wave-1 and EROD14 Wave-2 production in the direct
+  runtime, prove the downstream HBP parquet consumer path, and then resume WS-3
+  sediment ordering. It should coordinate with
+  `20260702-wshedw7dc01-hillslope-sediment-production-hold-lift-001/`.
 - `20260702-mofefid-d8-routing-fidelity-defect-closure-001/` is executed and
   review-ready as MOFEFID-D8 ROUTING FIDELITY DEFECT CLOSURE. Result:
   `EXECUTED-REVIEW-READY`. It closed the four D7 D-val discrepancies under

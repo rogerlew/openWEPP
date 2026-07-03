@@ -1,0 +1,16 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "dff-ws3-forest-high-severity-clay-loam-4"
+unit_system = "metric"
+
+[inputs]
+soil = "p4.sol"
+management = "p4.man"
+slope = "p4.slp"
+climate = "p4.cli"
+wepp_ui = false
+
+[outputs]
+pass = "output/H4.hbp"
+pass_parquet = "output/H4.pass.parquet"
+loss = "output/H4.loss.json"
+wat = "output/H4.wat.parquet"

@@ -12,7 +12,7 @@ the physically impossible legacy burned-forest peakflow that the
 | Management | `UnDisturbed/High_Severity_Fire.man` (100-yr expansion) |
 | Soil | `Forest clay loam.sol` → 9002 disturbed (`forest high sev fire`, clay loam) |
 | Slope | 201.68 m single OFE, ~43% avg grade (canonical steep forest hillslope) |
-| Climate | McKenzie Bridge RS, OR — 100 yr, ~1194 mm/yr (`p4.cli`, CLIGEN) |
+| Climate | McKenzie Bridge RS, OR — 2,192 executable days, 2020-01-01 through 2025-12-31 (`p4.cli`, CLIGEN/GridMET-observed source) |
 
 ## Why this fixture exists — the artifact
 
@@ -63,10 +63,14 @@ openWEPP decouple target (`ksflag = 1`, frost on, `ksatadj` re-ported) is a
 
 ## Contents & provenance
 
-`p4.{run,man,slp,sol,cli}`; checksums in `SHA256SUMS`. No `snow.txt` /
+`p4.{run,man,slp,sol,cli}` plus the WS-3 `p4.run.toml` openWEPP binding;
+checksums in `SHA256SUMS`. No `snow.txt` /
 `pmetpara.txt` / `gwcoeff.txt` sidecars — the disturbed test matrix did not
 generate them; supply openWEPP defaults or document derivation if a run needs
 them. The line-oriented `p4.run` is wepp.cloud provenance and is **not** directly
-runnable by `openwepp-cli-hill`; a schema-versioned TOML runfile
-(`schema = "openwepp-hillslope-runfile-v1"`) binding these inputs is required to
-execute the cell (see `tests/fixtures/AGENTS.md`).
+runnable by `openwepp-cli-hill`; `p4.run.toml` is the openWEPP-native binding
+added by WS-3. The legacy `p4.cli` is preserved as-built and carries trailing
+`nan` dewpoint tokens on the final 22 rows; WS-3 tests normalize those tokens
+only in their temporary run directories before execution. The climate header
+reports "Years simulated 100"; the daily body currently contains 2,192 rows and
+that is the execution span asserted by WS-3.

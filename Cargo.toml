@@ -287,6 +287,10 @@ name = "dff_ws2_ksatadj_direct_runtime"
 path = "tests/integration/dff_ws2_ksatadj_direct_runtime.rs"
 
 [[test]]
+name = "dff_ws3_directional_burn_validation"
+path = "tests/integration/dff_ws3_directional_burn_validation.rs"
+
+[[test]]
 name = "cli03_runner_contract_derived_tests"
 path = "tests/integration/cli03_runner_contract_derived_tests.rs"
 

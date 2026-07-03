@@ -1,0 +1,81 @@
+wepp_id,texture,veg_type,severity,severity_name,disturbed_class,management_file
+1,clay loam,forest,0,unburned,forest,UnDisturbed/Old_Forest.man
+5,clay loam,deciduous forest,0,unburned,deciduous forest,UnDisturbed/Deciduous_Forest.man
+9,clay loam,mixed forest,0,unburned,mixed forest,UnDisturbed/Mixed_Forest.man
+13,clay loam,shrub,0,unburned,shrub,UnDisturbed/Shrub.man
+17,clay loam,tall grass,0,unburned,tall grass,UnDisturbed/Tall_Grass.man
+2,clay loam,forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+6,clay loam,deciduous forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+10,clay loam,mixed forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+14,clay loam,shrub,1,low,shrub low sev fire,UnDisturbed/Shrub_Low_Severity_Fire.man
+18,clay loam,tall grass,1,low,grass low sev fire,UnDisturbed/Grass_Low_Severity_Fire.man
+3,clay loam,forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+7,clay loam,deciduous forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+11,clay loam,mixed forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+15,clay loam,shrub,2,moderate,shrub moderate sev fire,UnDisturbed/Shrub_Moderate_Severity_Fire.man
+19,clay loam,tall grass,2,moderate,grass moderate sev fire,UnDisturbed/Grass_Moderate_Severity_Fire.man
+4,clay loam,forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+8,clay loam,deciduous forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+12,clay loam,mixed forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+16,clay loam,shrub,3,high,shrub high sev fire,UnDisturbed/Shrub_High_Severity_Fire.man
+20,clay loam,tall grass,3,high,grass high sev fire,UnDisturbed/Grass_High_Severity_Fire.man
+21,loam,forest,0,unburned,forest,UnDisturbed/Old_Forest.man
+25,loam,deciduous forest,0,unburned,deciduous forest,UnDisturbed/Deciduous_Forest.man
+29,loam,mixed forest,0,unburned,mixed forest,UnDisturbed/Mixed_Forest.man
+33,loam,shrub,0,unburned,shrub,UnDisturbed/Shrub.man
+37,loam,tall grass,0,unburned,tall grass,UnDisturbed/Tall_Grass.man
+22,loam,forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+26,loam,deciduous forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+30,loam,mixed forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+34,loam,shrub,1,low,shrub low sev fire,UnDisturbed/Shrub_Low_Severity_Fire.man
+38,loam,tall grass,1,low,grass low sev fire,UnDisturbed/Grass_Low_Severity_Fire.man
+23,loam,forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+27,loam,deciduous forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+31,loam,mixed forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+35,loam,shrub,2,moderate,shrub moderate sev fire,UnDisturbed/Shrub_Moderate_Severity_Fire.man
+39,loam,tall grass,2,moderate,grass moderate sev fire,UnDisturbed/Grass_Moderate_Severity_Fire.man
+24,loam,forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+28,loam,deciduous forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+32,loam,mixed forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+36,loam,shrub,3,high,shrub high sev fire,UnDisturbed/Shrub_High_Severity_Fire.man
+40,loam,tall grass,3,high,grass high sev fire,UnDisturbed/Grass_High_Severity_Fire.man
+41,sand loam,forest,0,unburned,forest,UnDisturbed/Old_Forest.man
+45,sand loam,deciduous forest,0,unburned,deciduous forest,UnDisturbed/Deciduous_Forest.man
+49,sand loam,mixed forest,0,unburned,mixed forest,UnDisturbed/Mixed_Forest.man
+53,sand loam,shrub,0,unburned,shrub,UnDisturbed/Shrub.man
+57,sand loam,tall grass,0,unburned,tall grass,UnDisturbed/Tall_Grass.man
+42,sand loam,forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+46,sand loam,deciduous forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+50,sand loam,mixed forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+54,sand loam,shrub,1,low,shrub low sev fire,UnDisturbed/Shrub_Low_Severity_Fire.man
+58,sand loam,tall grass,1,low,grass low sev fire,UnDisturbed/Grass_Low_Severity_Fire.man
+43,sand loam,forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+47,sand loam,deciduous forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+51,sand loam,mixed forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+55,sand loam,shrub,2,moderate,shrub moderate sev fire,UnDisturbed/Shrub_Moderate_Severity_Fire.man
+59,sand loam,tall grass,2,moderate,grass moderate sev fire,UnDisturbed/Grass_Moderate_Severity_Fire.man
+44,sand loam,forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+48,sand loam,deciduous forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+52,sand loam,mixed forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+56,sand loam,shrub,3,high,shrub high sev fire,UnDisturbed/Shrub_High_Severity_Fire.man
+60,sand loam,tall grass,3,high,grass high sev fire,UnDisturbed/Grass_High_Severity_Fire.man
+61,silt loam,forest,0,unburned,forest,UnDisturbed/Old_Forest.man
+65,silt loam,deciduous forest,0,unburned,deciduous forest,UnDisturbed/Deciduous_Forest.man
+69,silt loam,mixed forest,0,unburned,mixed forest,UnDisturbed/Mixed_Forest.man
+73,silt loam,shrub,0,unburned,shrub,UnDisturbed/Shrub.man
+77,silt loam,tall grass,0,unburned,tall grass,UnDisturbed/Tall_Grass.man
+62,silt loam,forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+66,silt loam,deciduous forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+70,silt loam,mixed forest,1,low,forest low sev fire,UnDisturbed/Low_Severity_Fire.man
+74,silt loam,shrub,1,low,shrub low sev fire,UnDisturbed/Shrub_Low_Severity_Fire.man
+78,silt loam,tall grass,1,low,grass low sev fire,UnDisturbed/Grass_Low_Severity_Fire.man
+63,silt loam,forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+67,silt loam,deciduous forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+71,silt loam,mixed forest,2,moderate,forest moderate sev fire,UnDisturbed/Moderate_Severity_Fire.man
+75,silt loam,shrub,2,moderate,shrub moderate sev fire,UnDisturbed/Shrub_Moderate_Severity_Fire.man
+79,silt loam,tall grass,2,moderate,grass moderate sev fire,UnDisturbed/Grass_Moderate_Severity_Fire.man
+64,silt loam,forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+68,silt loam,deciduous forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+72,silt loam,mixed forest,3,high,forest high sev fire,UnDisturbed/High_Severity_Fire.man
+76,silt loam,shrub,3,high,shrub high sev fire,UnDisturbed/Shrub_High_Severity_Fire.man
+80,silt loam,tall grass,3,high,grass high sev fire,UnDisturbed/Grass_High_Severity_Fire.man
