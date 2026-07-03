@@ -1,0 +1,15 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "dff-ws2-forest-high-sev-fire-loam-313"
+unit_system = "metric"
+
+[inputs]
+soil = "p313.sol"
+management = "p313.man"
+slope = "p313.slp"
+climate = "p313.cli"
+wepp_ui = false
+
+[outputs]
+pass = "output/H313.hbp"
+loss = "output/H313.loss.json"
+wat = "output/H313.wat.parquet"
