@@ -20,15 +20,18 @@ after the Codex round-1 finding (activation gates now precede the
 routed-operand validator, matching the legacy `contin.for` ordering;
 regression-tested at solver and frame/r7d8 level). Production outputs
 are unchanged; the DFF-WS3 sediment HOLD stands until the 1b activation.
-**INCREMENT-1b IN PROGRESS 2026-07-03 (branch
-`erosion-inc1b-operand-production`, awaiting Codex review, NOT on main):
-the 1b-A pure-producer subset is landed and gated (the `frcfac`/`shears`,
-`prtcmp`/`falvel`/`yalin`/`trcoef`, and `detinr` producers now EXIST in
-`direct_runtime/erosion_operands.rs` — superseding this header's original
-"no producer exists" premise for those chains); the `effint`/`effdrr`
-runtime export + activation-flag wiring (also 1b-A) are HELD, and 1b-B/1b-C
-are blocked at the winter freeze-thaw coupling. See the staged status
-below and [`artifacts/implementation-1b.md`](artifacts/implementation-1b.md).**
+**INCREMENT-1b-A (pure-producer subset) MERGED TO MAIN 2026-07-03
+(`820377eb`, operator-directed merge after Codex review: round-1
+truthfulness + fail-closed findings fixed, round-2 no blocking findings,
+merge-ready). The `frcfac`/`shears`, `prtcmp`/`falvel`/`yalin`/`trcoef`,
+and `detinr` producers now EXIST in
+`direct_runtime/erosion_operands.rs` (superseding this header's original
+"no producer exists" premise for those chains). STILL OPEN, sequenced
+separately: the 1b-A runtime-surface hold-lift (`effint`/`effdrr` export
++ activation-flag wiring) and 1b-B/1b-C (blocked at the winter freeze-thaw
+coupling). See the staged status below and
+[`artifacts/implementation-1b.md`](artifacts/implementation-1b.md). The
+production seed stays disabled; production outputs are unchanged.**
 Governing authority:
 [`SC-SED-001`](../../specifications/science-contracts/contracts/SC-SED-001.md)
 (Hillslope Erosion Process Contract, v41, 56 invariants);
