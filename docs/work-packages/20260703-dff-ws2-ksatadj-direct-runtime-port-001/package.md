@@ -117,13 +117,11 @@ starts from a clear runway:
 hillslope **313** (`honeyed-marathoner`), a **`ksatadj = 1`** /
 `forest high sev fire` / `loam` burned forest (9002 policy row, `lkeff = 0.1`,
 `keffflag = 1`), 6 sim-years. This is the missing `ksatadj = 1` input: the prior
-fix was **byte-inert on H2637** (`ksatadj = 0` there). Parsing + projection +
-PMET (`Tah_6892`) are clean end-to-end. **Caveat:** a full CLI run of this
-hillslope currently trips an **unrelated** climate radiation-domain guard
-(`CLIM-RUNTIME-E-017 radly out of domain`) — so its WS-2 role is the `ksatadj`
-parse/projection + real conformance-vector operands; a full-run gate needs the
-radiation guard resolved or a radiation-clean climate paired with this soil (see
-the fixture `manifest.md`).
+fix was **byte-inert on H2637** (`ksatadj = 0` there). It **runs end-to-end**
+through the production CLI (exit 0 → HBP/loss/wat), giving WS-2 a live
+`ksatadj = 1` baseline to re-anchor against. (`p313.cli` was `rad`-clamped with
+`tools/clamp_cli_radly.py` to the sunmap potential — this old CLIGEN output
+predated the generator clamp; see the fixture `manifest.md`.)
 
 ## Scope / increments (staged, contract-first)
 
