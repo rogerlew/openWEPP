@@ -26,11 +26,22 @@ truthfulness + fail-closed findings fixed, round-2 no blocking findings,
 merge-ready). The `frcfac`/`shears`, `prtcmp`/`falvel`/`yalin`/`trcoef`,
 and `detinr` producers now EXIST in
 `direct_runtime/erosion_operands.rs` (superseding this header's original
-"no producer exists" premise for those chains). STILL OPEN, sequenced
-separately: the 1b-A runtime-surface hold-lift (`effint`/`effdrr` export
-+ activation-flag wiring) and 1b-B/1b-C (blocked at the winter freeze-thaw
-coupling). See the staged status below and
-[`artifacts/implementation-1b.md`](artifacts/implementation-1b.md). The
+"no producer exists" premise for those chains).**
+**INCREMENT-1b-A-lift + 1b-B-portable MERGED TO MAIN 2026-07-03
+(`bc4fd660`, operator-directed after Codex 2-round review: round-1 Medium
+consolidation-baseline fail-closed hole fixed, round-2 stale-count Low
+fixed). Landed: the faithful `effint`/`effdrr` producer
+(`erosion_effective_intensity`) and the 1b-B portable adjustment
+producers (`direct_runtime/erosion_adjustments.rs`: `scon` baselines +
+`soil.for` subfactor chain → `kiadjf`/`kradjf`/`tcadjf`, `ifrost==2` thaw
+branch fail-closed). Both pure/typed/fail-closed behind the disabled
+seed. STILL OPEN: the 1b-C production flip (per-day operand threading +
+`daydis`/`rfcum` accumulators + `effint`/`effdrr` WB14 surfacing + enable
++ pass-writer unhardcode + DFF-WS3 HOLD flip + full-run byte-stability),
+held with a no-intervention spec in
+[`artifacts/increment-1bc-flip-scope-and-hold.md`](artifacts/increment-1bc-flip-scope-and-hold.md);
+the winter `fcycle` coupling inside 1b-B's thaw branch stays a
+winter-subsystem prerequisite (out of the erosion write set). The
 production seed stays disabled; production outputs are unchanged.**
 Governing authority:
 [`SC-SED-001`](../../specifications/science-contracts/contracts/SC-SED-001.md)
