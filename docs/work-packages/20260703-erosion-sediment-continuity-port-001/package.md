@@ -78,29 +78,31 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
   executor prompt in
   [`artifacts/increment-1b-handoff-prompt.md`](artifacts/increment-1b-handoff-prompt.md).
   Three gated stages, production flip last:
-  - **1b-A — event/transport operands (no new daily state):**
-    `prtcmp`/`falvel` particle classes + `veleff`; `shield`/`yalin`/
-    `trcoef` → `kt/kt2/ktrato/tcend`; `frcfac`+`shears` rill
-    hydraulics (`shrsol`/`shrend`, persistent Gilley width — closes
-    `EROD-BND-002`); `effdrr`/`effint` export from the WB14/WB16 excess
-    machinery; `detinr` assembly; activation flags (`beta`,
-    `surface_frozen`, `theta_suppressed`). Gate: producer unit tests +
-    the erod16 fixture test swaps its temporary harness chain for the
-    production producers.
-  - **1b-B — daily erodibility adjustments (new daily state,
-    shadow-first):** `scon.for` consolidation baselines (corrected
-    `thetfc` lineage), `rfcum`/`daydis`/`fcycle` accumulators, the
-    `soil.for` subfactor chain → `kiadjf`/`kradjf`/`tcadjf` with typed
-    bound guards. Gate: shadow factor-trajectory sanity on the
-    no-tillage forest fixture.
-  - **1b-C — activation:** seed flip
-    (`direct_production_typed_erosion_authority` → populated
-    `DirectWave1ContinuityInputs`, single-OFE), pass-parquet writer
-    unhardcode (Wave-1-sourced totals only; Wave-2 placeholder router
-    must not publish), DFF-WS3 sediment HOLD → live directional law.
-    Hard gate: the ADR-0035 conservation + INV-SED gate end-to-end on
-    McKenzie clay-loam through the production path, inert-day
-    regression, and byte-stability of all non-sediment surfaces.
+  - **1b-A — event/transport operands (no new daily state): DONE +
+    GATED 2026-07-03** (branch `erosion-inc1b-operand-production`,
+    awaiting Codex review). `prtcmp`/`falvel` particle classes +
+    `veleff`; `shield`/`yalin`/`trcoef` → `kt/kt2/ktrato/tcend`;
+    `frcfac`+`shears` rill hydraulics (`shrsol`/`shrend`, Gilley width);
+    `detinr` assembly; cropland/non-cropland interrill delivery — all in
+    `direct_runtime/erosion_operands.rs`, typed + fail-closed, 14 unit
+    tests + the `erod16` fixture test swapped to the production
+    producers. `effint`/`effdrr` (a WB14/WB16 runtime export, not a pure
+    producer) and the `kiadjf/kradjf/tcadjf` chain (1b-B) remain
+    documented deferrals. Seed stays disabled; production outputs
+    unchanged. See [`artifacts/implementation-1b.md`](artifacts/implementation-1b.md).
+  - **1b-B — daily erodibility adjustments: BLOCKED at a confirmed
+    stop-condition.** The `soil.for` chain is portable (consolidation
+    via `scon` baselines + `rfcum`/`daydis` accumulators; cover/root/
+    residue factors from the growth/decomposition state; slope factor)
+    EXCEPT the freeze-thaw factors, whose `ifrost == 2` thawing branch
+    needs the winter `fcycle` cycle counter — **absent from the direct
+    runtime** (0 occurrences; produced only in the legacy winter
+    subsystem `watdst.for`/`wshdrv.for`). Recommended: port the portable
+    chain and fail-closed the thaw branch; surfacing `fcycle`/`frara` is
+    a winter-subsystem WP (out of the erosion write set).
+  - **1b-C — activation: gated behind 1b-B + the winter coupling.** Not
+    started; the seed flip cannot be safe generally until the freeze-thaw
+    branch is either produced or fail-closed. Seed remains disabled.
 - **Increment 2 — multi-OFE integration.** Wire Wave-1 across OFEs and reconcile
   with the existing EROD14 routing (`qin/qout`, particle handoff).
 - **Increment 3 — particle-class + enrichment completeness** (`sedia`/`sedist`)

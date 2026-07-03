@@ -1,53 +1,57 @@
 //! EROD16 Wave-1 continuity fixture-forcing conservation gate
-//! (SC-SED-001, erosion port Increment-1).
+//! (SC-SED-001, erosion port Increment-1b-A integration).
 //!
 //! Drives the Wave-1 single-OFE sediment-continuity solver with **real
-//! McKenzie Bridge OR forcing**: the `forest_high_severity_clay_loam`
-//! fixture is run end-to-end through `openwepp-cli-hill` (direct
-//! production runtime), its storm-day runoff forcing (`runvol`,
-//! `peakro`) is read back from the published pass parquet, and each
-//! storm day above the legacy event-size gate is solved with operands
-//! built from the fixture's own soil erodibility (`ki`/`kr`/`shcrit`),
-//! texture-derived particle classes, and slope profile.
+//! McKenzie Bridge OR forcing** through the **production operand
+//! producers** (`openwepp_hillslope_orchestrator::erosion_*`): the
+//! `forest_high_severity_clay_loam` fixture is run end-to-end through
+//! `openwepp-cli-hill`, its storm-day runoff forcing (`runvol`,
+//! `peakro`) is read back from the published pass parquet, and each storm
+//! day above the legacy event-size gate is solved with operands built by
+//! the production producers from the fixture's own soil erodibility
+//! (`ki`/`kr`/`shcrit`), texture-derived particle classes, and slope
+//! profile.
 //!
-//! Evidence class: **Ran** for the fixture execution and the solver;
-//! the operand-construction chain in this file is a **test-harness
-//! Static port** of the legacy `prtcmp.for`/`falvel.for`/`shield.for`/
-//! `yalin.for`/`trcoef.for`/`shears.for`/`param.for` lineage used ONLY
-//! to build test forcing. Production operand producers are the declared
-//! Increment-1b scope (see the work-package implementation record).
-//! Documented harness assumptions (labeled, not production math):
-//!   - `kiadjf = kradjf = tcadjf = 1.0` (legacy `inidat.for:424`
-//!     initialization values; the daily `soil.for` adjustment chain has
-//!     no openWEPP producer yet),
-//!   - bare-burn rill friction `frcsol = frctrl = 1.11`
-//!     (`frcfac.for:222` Gilley bare-soil value, zero residue/live cover),
-//!   - `rspace = 1.0 m`, rill width from Gilley `1.13 q^0.303`,
-//!   - `effdrr = effdrn` and `effint = qi` (rainfall-excess surfaces are
-//!     not yet exported by the runtime; conservative lower bound).
+//! Evidence class: **Ran** for the fixture execution, the production
+//! operand producers, and the solver. This test replaced the earlier
+//! test-harness operand port (Increment-1) with the 1b-A production
+//! producers; the two operands still built here as documented test inputs
+//! are the ones whose production producers are NOT pure functions and are
+//! deferred within the WP:
+//!   - `effint`/`effdrr` (rainfall-excess mean intensity / duration) —
+//!     a runtime export from the WB14/WB16 excess machinery, not a pure
+//!     producer; approximated here by `effint = runoff/effdrn`,
+//!     `effdrr = effdrn` (conservative). Its runtime export is 1b-A's
+//!     runtime-integration item.
+//!   - `kiadjf`/`kradjf`/`tcadjf` (daily erodibility adjustments) — the
+//!     `soil.for` daily chain is Increment-1b-B; held at the day-zero
+//!     initialization value 1.0 here (legacy `inidat.for:424`).
 //!
-//! Gate (hard): every storm day must solve fail-closed-clean; the
+//! The fixture is a forest high-severity burn (physically non-cropland
+//! even though it masquerades as `lanuse = 1`), so the non-cropland
+//! interrill delivery branch (`intdr = 1`) is the correct one.
+//!
+//! Gate (hard): every storm day solves fail-closed-clean; the
 //! telescoping conservation identity `exported - inflow =
-//! detachment - deposition` must hold on every active day; the fixture
-//! must actually generate detachment (nonzero exported sediment on storm
-//! days) — the McKenzie-class activation proof required by the handoff.
+//! detachment - deposition` holds on every active day; the fixture
+//! generates nonzero detachment and exports sediment at the toe (the
+//! McKenzie-class activation proof). Magnitudes are not asserted
+//! (ADR-0017).
 
-// Legacy naming continuity (`effdrr`/`effdrn`, `frac`/`fracs`, `frclyt`),
-// legacy-table literals (the `cdre` drag table sits at ln(10) decades),
-// and the single long fixture-driver function mirror the `.for` sources.
-#![allow(
-    clippy::similar_names,
-    clippy::too_many_lines,
-    clippy::approx_constant,
-    clippy::doc_markdown
-)]
+// Legacy naming continuity (`effdrr`/`effdrn`) and prose fixture-name
+// tokens mirror the `.for` sources and the WP artifacts; the single
+// end-to-end fixture driver is one long function by design.
+#![allow(clippy::similar_names, clippy::doc_markdown, clippy::too_many_lines)]
 
 use std::fs;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 
 use openwepp_hillslope_orchestrator::{
-    DirectWave1ContinuityInputs, compute_direct_wave1_continuity, derive_wave1_slope_segments,
+    DirectWave1ContinuityInputs, ErosionRillCoverInputs, ErosionShearSlopes, ErosionTextureInputs,
+    compute_direct_wave1_continuity, derive_wave1_slope_segments, erosion_detinr,
+    erosion_effective_particle, erosion_falvel, erosion_interrill_delivery_ratio,
+    erosion_particle_composition, erosion_rill_hydraulics, erosion_transport_coefficients,
 };
 use openwepp_input_contract::parsers::slope::{SlopeParserOptions, parse_slope_file};
 use openwepp_input_contract::parsers::soil::{ParserMode, SoilParserOptions, parse_soil};
@@ -55,25 +59,14 @@ use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run}
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
 
-// Legacy physical constants (`inidat.for:1054-1151`).
-const ACCGAV: f64 = 9.807;
-const WTDENS: f64 = 9807.0;
-const KINVIS: f64 = 1.0e-6;
-const MSDENS: f64 = 1000.0;
 // `contin.for:977` event-size bypass bounds.
 const PASSBY_RUNOFF_M: f64 = 0.010;
 const PASSBY_PEAKRO_M_S: f64 = 2.78e-6;
-// Harness assumptions (documented in the module header).
-const HARNESS_ADJUSTMENT_FACTOR: f64 = 1.0;
-const HARNESS_RILL_FRICTION: f64 = 1.11;
-const HARNESS_RSPACE_M: f64 = 1.0;
-
-#[derive(Debug, Clone, Copy)]
-struct ParticleClass {
-    dia_m: f64,
-    spg: f64,
-    frac: f64,
-}
+// Increment-1b-B pending: daily erodibility adjustments held at the
+// `inidat.for:424` day-zero initialization value.
+const ADJUSTMENT_FACTOR_INIT: f64 = 1.0;
+// Cropland rill spacing default (`xinflo.for:132` context; 1.0 m).
+const RSPACE_M: f64 = 1.0;
 
 #[derive(Debug, Clone, Copy)]
 struct StormDay {
@@ -127,18 +120,12 @@ fn erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing() {
     let clay = layer.clay_pct / 100.0;
     let silt = 1.0 - sand - clay;
     let orgmat = layer.orgmat_pct / 100.0;
-    assert!(
-        (0.0..1.0).contains(&sand) && (0.0..1.0).contains(&clay) && silt > 0.0,
-        "clay-loam texture must be a valid fraction triple"
-    );
 
     let slope = parse_slope_file(&run_dir.join("p4.slp"), SlopeParserOptions::strict())
         .expect("fixture slope should parse");
     let slope_ofe = slope.ofes.first().expect("fixture slope has one OFE");
     let slplen_m = slope_ofe.slplen;
     let fwidth_m = slope_ofe.fwidth;
-    // Fixture points carry normalized distances; scale to meters for the
-    // `profil.for` fit.
     let points_m: Vec<(f64, f64)> = slope_ofe
         .points
         .iter()
@@ -154,21 +141,37 @@ fn erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing() {
     assert!(avgslp > 0.3, "canonical steep forest hillslope expected");
     let segments = derive_wave1_slope_segments(&points_m, slplen_m, avgslp)
         .expect("fixture slope profile must fit");
-    // Normalized slope at the toe for the `param.for:168` end-slope shear.
     let last = segments.last().expect("segments exist");
     let slpend = (last.a + last.b) * avgslp;
 
-    // Texture-derived particle classes (`prtcmp.for` core) and the
-    // effective particle surface (`param.for:558-579`).
-    let classes = particle_composition(sand, clay, silt, orgmat);
-    let frac_sum: f64 = classes.iter().map(|class| class.frac).sum();
-    assert!(
-        (frac_sum - 1.0).abs() < 1.0e-6,
-        "particle class fractions must sum to 1, observed {frac_sum}"
-    );
-    let (diaeff, spgeff) = effective_particle(&classes);
-    let veleff = falvel(spgeff, diaeff);
+    // Production particle classes and effective particle (1b-A producers).
+    let texture = ErosionTextureInputs {
+        sand,
+        clay,
+        silt,
+        orgmat,
+    };
+    let classes = erosion_particle_composition(&texture).expect("production particle composition");
+    let (diaeff, spgeff) =
+        erosion_effective_particle(&classes).expect("production effective particle");
+    let veleff = erosion_falvel(spgeff, diaeff);
     assert!(veleff > 0.0);
+    // Forest burn: non-cropland interrill delivery (`intdr = 1`).
+    let intdr = erosion_interrill_delivery_ratio(false, 0.0, &classes)
+        .expect("production interrill delivery");
+
+    // Bare-burn rill cover: no residue/live cover, so frccov = frlive = 0
+    // and frctrl = frcsol = 1.11 (`frcfac.for:222`).
+    let cover = ErosionRillCoverInputs {
+        rilcov: 0.0,
+        canhgt_m: 0.0,
+        hmax_m: 0.0,
+        flivmx: 0.0,
+    };
+    let slopes = ErosionShearSlopes {
+        cnslp: avgslp,
+        slpend,
+    };
 
     // Storm-day forcing from the fixture's own published pass parquet.
     let storm_days = read_storm_days(pass_parquet, fwidth_m, slplen_m);
@@ -183,24 +186,47 @@ fn erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing() {
     let mut total_deposition_kg = 0.0;
     let mut days_with_export = 0_usize;
     for storm in &storm_days {
+        // Production rill hydraulics + transport coefficients (1b-A).
         let qout = storm.peakro_m_s * slplen_m;
-        let qshear = qout * HARNESS_RSPACE_M;
-        let width_m = 1.13 * qshear.powf(0.303);
-        let shrsol = shears(qshear, avgslp, width_m);
-        let shrend = shears(qshear, slpend, width_m);
-        let kt = trcoef(shrsol, &classes, sand);
-        let kt2 = trcoef(0.5 * (shrend + shrsol), &classes, sand);
-        let ktrato = kt2 / kt;
-        let tcend = (kt * shrsol.powf(1.5)).max(1.0e-10);
+        let qshear = qout * RSPACE_M;
+        let hydraulics = erosion_rill_hydraulics(qshear, &slopes, &cover, 0.0, RSPACE_M)
+            .unwrap_or_else(|error| {
+                panic!(
+                    "production rill hydraulics must resolve for storm day {}: {error:?}",
+                    storm.sim_day_index
+                )
+            });
+        let transport = erosion_transport_coefficients(
+            hydraulics.shrsol_pa,
+            hydraulics.shrend_pa,
+            &classes,
+            sand,
+        )
+        .unwrap_or_else(|error| {
+            panic!(
+                "production transport coefficients must resolve for storm day {}: {error:?}",
+                storm.sim_day_index
+            )
+        });
 
+        // effint/effdrr: WB14/WB16 export deferred (documented above);
+        // approximated by the runoff-duration surface.
         let effdrn_s = (storm.runoff_depth_m / storm.peakro_m_s).min(86_400.0);
         let effdrr_s = effdrn_s;
-        let qi = storm.runoff_depth_m / effdrr_s;
-        let effint = qi;
-        // `param.for:482` with intdr = 1 (rif clamps to 1 at the smooth
-        // rrc bound) and the harness `kiadjf`.
-        let detinr =
-            soil_ofe.ki * HARNESS_ADJUSTMENT_FACTOR * effint * qi * HARNESS_RSPACE_M / width_m;
+        let effint = storm.runoff_depth_m / effdrr_s;
+
+        // Production detinr (1b-A); kiadjf at the 1b-B-pending init value.
+        let detinr = erosion_detinr(
+            soil_ofe.ki,
+            ADJUSTMENT_FACTOR_INIT,
+            effint,
+            storm.runoff_depth_m,
+            effdrr_s,
+            intdr,
+            RSPACE_M,
+            hydraulics.width_m,
+        )
+        .expect("production detinr must resolve");
 
         let inputs = DirectWave1ContinuityInputs {
             enabled: true,
@@ -211,19 +237,19 @@ fn erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing() {
             efflen_m: slplen_m,
             slplen_m,
             cntlen_m: slplen_m,
-            rspace_m: HARNESS_RSPACE_M,
-            width_m,
+            rspace_m: RSPACE_M,
+            width_m: hydraulics.width_m,
             field_width_m: fwidth_m,
             effdrn_s,
             effdrr_s,
             kr_s_m: soil_ofe.kr,
-            kradjf: HARNESS_ADJUSTMENT_FACTOR,
+            kradjf: ADJUSTMENT_FACTOR_INIT,
             shcrit_pa: soil_ofe.shcrit,
-            tcadjf: HARNESS_ADJUSTMENT_FACTOR,
+            tcadjf: ADJUSTMENT_FACTOR_INIT,
             detinr_kg_s_m2: detinr,
-            shrsol_pa: shrsol,
-            tcend_kg_s_m: tcend,
-            ktrato,
+            shrsol_pa: hydraulics.shrsol_pa,
+            tcend_kg_s_m: transport.tcend_kg_s_m,
+            ktrato: transport.ktrato,
             veleff_m_s: veleff,
             beta: 0.5,
             strldn: 0.0,
@@ -381,258 +407,4 @@ fn row_f64_value(row: &Row, column_name: &str) -> f64 {
         return f64::from(value);
     }
     panic!("column '{column_name}' does not decode as numeric");
-}
-
-// ---------------------------------------------------------------------
-// Test-harness Static ports of the legacy operand chain (forcing
-// construction only; production producers are Increment-1b).
-// ---------------------------------------------------------------------
-
-/// `prtcmp.for`: five-class particle composition from soil texture,
-/// including the large-aggregate clay-enrichment correction re-entry.
-fn particle_composition(sand: f64, clay: f64, silt: f64, _orgmat: f64) -> Vec<ParticleClass> {
-    let mut dia_mm = [0.002_f64, 0.010, 0.030, 0.300, 0.200];
-    let spg = [2.60_f64, 2.65, 1.80, 1.60, 2.65];
-    if clay > 0.15 {
-        dia_mm[3] = 2.0 * clay;
-    }
-
-    let frac1 = if clay > 0.0 && clay < 1.0 {
-        0.26 * clay
-    } else if clay <= 0.0 {
-        0.0001
-    } else {
-        0.9996
-    };
-    let mut frac5 = sand * (1.0 - clay).powi(5);
-    if frac5 <= 0.0 {
-        frac5 = 0.0001;
-    }
-
-    // Small-aggregate class 3 diameter/fraction by clay band.
-    let mut frac3;
-    if clay >= 1.0 {
-        dia_mm[2] = 0.180;
-        frac3 = 0.0001;
-    } else if clay <= 0.25 {
-        dia_mm[2] = 0.030;
-        frac3 = 1.8 * clay;
-        if frac3 <= 0.0 {
-            frac3 = 0.0001;
-        }
-    } else if clay < 0.60 {
-        dia_mm[2] = 0.20 * (clay - 0.25) + 0.030;
-        if clay >= 0.50 {
-            frac3 = 0.6 * clay;
-        } else {
-            frac3 = 0.45 - 0.6 * (clay - 0.25);
-        }
-    } else {
-        dia_mm[2] = 0.1;
-        frac3 = 0.6 * clay;
-    }
-
-    let frcly3 = if clay > 0.0 && silt > 0.0 {
-        clay / (clay + silt)
-    } else {
-        0.0
-    };
-
-    // Label-20 block with the single legacy `jflag` re-entry.
-    let mut fracs = [0.0_f64; 5];
-    for pass in 0..2 {
-        let mut frac2 = silt - frac3;
-        let mut frac3_local = frac3;
-        if frac2 <= 0.0 {
-            frac2 = 0.0001;
-            frac3_local = silt - frac2;
-            if frac3_local <= 0.0 {
-                frac3_local = 0.0001;
-            }
-        }
-        let mut frac4 = 1.0 - frac1 - frac2 - frac3_local - frac5;
-        fracs = [frac1, frac2, frac3_local, frac4, frac5];
-        if frac4 <= 0.0 {
-            let crct = 1.0 / (1.0 + frac4.abs() + 0.0001);
-            fracs[3] = 0.0001;
-            for value in &mut fracs {
-                *value *= crct;
-            }
-            frac4 = fracs[3];
-        }
-
-        if pass == 1 {
-            break;
-        }
-        // Large-aggregate clay-content correction (`prtcmp.for:288-300`).
-        let frcly4 = if frac4 > 0.0001 {
-            let value = (clay - fracs[0] - frcly3 * fracs[2]) / frac4;
-            if (0.0..=1.0).contains(&value) {
-                value
-            } else {
-                0.0
-            }
-        } else {
-            0.0
-        };
-        let frclyt = 0.5 * clay;
-        let frcly1 = 0.95 * frclyt;
-        if clay < 1.0 && frcly4 < frcly1 && (frcly3 - frclyt).abs() > 0.0 {
-            let f1f2f5 = fracs[0] + fracs[1] + fracs[4];
-            frac3 = (clay - frclyt - fracs[0] + frclyt * f1f2f5) / (frcly3 - frclyt);
-            if frac3 <= 0.0 {
-                frac3 = 0.0001;
-            }
-            continue;
-        }
-        break;
-    }
-
-    (0..5)
-        .map(|k| ParticleClass {
-            dia_m: dia_mm[k] / 1000.0,
-            spg: spg[k],
-            frac: fracs[k],
-        })
-        .collect()
-}
-
-/// `param.for:558-579`: effective particle diameter and specific gravity
-/// as the fraction-weighted log means of the three smallest classes.
-fn effective_particle(classes: &[ParticleClass]) -> (f64, f64) {
-    let mut diaeff = 0.0;
-    let mut spgeff = 0.0;
-    let mut sumf = 0.0;
-    for class in classes.iter().take(3) {
-        diaeff += class.frac * class.dia_m.ln();
-        spgeff += class.frac * class.spg.ln();
-        sumf += class.frac;
-    }
-    ((diaeff / sumf).exp(), (spgeff / sumf).exp())
-}
-
-/// `falvel.for`: particle fall velocity from the drag-coefficient table
-/// (`inidat.for:1017-1034`) with the Stokes small-particle branch.
-fn falvel(spg: f64, dia_m: f64) -> f64 {
-    const CDRE: [f64; 9] = [
-        -6.907_75, -4.605_17, -2.302_58, 0.0, 2.302_58, 4.605_17, 6.907_75, 9.210_34, 11.512_92,
-    ];
-    const CDRE2: [f64; 9] = [
-        -4.509_86, -1.514_13, 0.788_46, 3.126_76, 6.040_25, 9.305_65, 13.081_54, 17.504_39,
-        22.291_88,
-    ];
-    let rtsid = ((spg - 1.0) * ACCGAV * dia_m.powi(3) / (KINVIS * KINVIS)) * (8.0 / 6.0);
-    if rtsid >= 0.024 {
-        let target = rtsid.ln();
-        for i in 1..9 {
-            if CDRE2[i] > target {
-                let rey = ((target - CDRE2[i - 1]) / (CDRE2[i] - CDRE2[i - 1])
-                    * (CDRE[i] - CDRE[i - 1])
-                    + CDRE[i - 1])
-                    .exp();
-                return rey * KINVIS / dia_m;
-            }
-        }
-        CDRE[8].exp() * KINVIS / dia_m
-    } else {
-        (dia_m * dia_m * (spg - 1.0) * ACCGAV) / (KINVIS * 18.0)
-    }
-}
-
-/// `shield.for`: dimensionless critical shear from the Shields diagram
-/// (including the legacy mixed linear/log extrapolation above the table).
-fn shield(reyn: f64) -> f64 {
-    const Y: [f64; 8] = [0.0772, 0.0579, 0.04, 0.035, 0.034, 0.045, 0.055, 0.057];
-    const R: [f64; 8] = [1.0, 2.0, 4.0, 8.0, 12.0, 100.0, 400.0, 1000.0];
-    let ycr = if reyn < R[0] {
-        let slope = (Y[1].ln() - Y[0].ln()) / (R[1].ln() - R[0].ln());
-        Y[0].ln() - slope * (R[0].ln() - reyn.ln())
-    } else if reyn > R[7] {
-        let slope = (Y[7].ln() - Y[6].ln()) / (R[7].ln() - R[6].ln());
-        Y[7] + slope * (reyn.ln() - R[7].ln())
-    } else {
-        let mut value = Y[7].ln();
-        for i in 1..8 {
-            if reyn >= R[i - 1] && reyn <= R[i] {
-                let slope = (Y[i].ln() - Y[i - 1].ln()) / (R[i].ln() - R[i - 1].ln());
-                value = Y[i - 1].ln() + slope * (reyn.ln() - R[i - 1].ln());
-                break;
-            }
-        }
-        value
-    };
-    ycr.exp()
-}
-
-/// `yalin.for`: total transport capacity at a shear (kg m^-1 s^-1) with
-/// the class-fraction weighting and the sandy-soil adjustment.
-fn yalin(effsh: f64, classes: &[ParticleClass], sand: f64) -> f64 {
-    let yalcon = 0.635;
-    let vstar = (effsh / MSDENS).sqrt();
-    let mut t = 0.0;
-    let mut deltas = vec![0.0_f64; classes.len()];
-    let mut p = vec![0.0_f64; classes.len()];
-    for (k, class) in classes.iter().enumerate() {
-        let reyn = vstar * class.dia_m / KINVIS;
-        let ycrit = shield(reyn);
-        let delta = vstar * vstar / ((class.spg - 1.0) * ACCGAV * class.dia_m * ycrit) - 1.0;
-        if delta > 0.0 {
-            let sigma = delta * 2.45 * class.spg.powf(-0.4) * ycrit.sqrt();
-            deltas[k] = delta;
-            p[k] = yalcon * delta * (1.0 - (1.0 + sigma).ln() / sigma);
-            t += delta;
-        }
-    }
-    if t == 0.0 {
-        t = 1000.0;
-    }
-    let mut tottc = 0.0;
-    #[allow(clippy::cast_precision_loss)]
-    let npart = classes.len() as f64;
-    for (k, class) in classes.iter().enumerate() {
-        let coef = vstar * MSDENS * class.dia_m * class.spg;
-        let ws = p[k] * (deltas[k] / t) * coef * (class.frac * npart);
-        tottc += ws;
-    }
-    // Sandy transport adjustment (`yalin.for:141-145`, INV-SED-006 floor).
-    if sand > 0.5 {
-        let adjtc = (0.3 + 0.7 * (-12.52 * (sand - 0.5)).exp()).max(0.30);
-        tottc *= adjtc;
-    }
-    tottc
-}
-
-/// `trcoef.for`: transport coefficient `kt = tottc / shear^1.5`.
-fn trcoef(shear: f64, classes: &[ParticleClass], sand: f64) -> f64 {
-    let kt = yalin(shear, classes, sand) / shear.powf(1.5);
-    if kt == 0.0 { 1.0e-9 } else { kt }
-}
-
-/// `shears.for`: rill flow shear at the end of the slope via the Chezy
-/// uniform-flow depth iteration (harness friction assumptions in the
-/// module header).
-fn shears(q: f64, sslope: f64, width_m: f64) -> f64 {
-    let q = q.abs();
-    let sslope = sslope.max(1.0e-6);
-    let chezch = (8.0 * ACCGAV / HARNESS_RILL_FRICTION).sqrt();
-    let mut depth = 0.2 * q.powf(0.36);
-    if q > 0.0 {
-        let u = (q / chezch / sslope.sqrt()).powf(2.0 / 3.0) / width_m;
-        loop {
-            let dz = depth;
-            depth = u * (width_m + dz + dz).powf(1.0 / 3.0);
-            if (dz / depth - 1.0).abs() <= 5.0e-6 {
-                break;
-            }
-        }
-    } else {
-        depth = 0.0;
-    }
-    let xsarea = depth * width_m;
-    let wp = width_m + 2.0 * depth;
-    let hydrad = if wp > 1.0e-12 { xsarea / wp } else { 0.0 };
-    let sinang = sslope.atan().sin();
-    // `shears.for:134` multiplies by frcsol/frctrl; under the bare-burn
-    // harness assumption (frcsol == frctrl) the partition ratio is 1.
-    WTDENS * sinang * hydrad
 }

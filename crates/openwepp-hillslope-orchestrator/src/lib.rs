@@ -121,6 +121,13 @@ pub use direct_runtime::{
     wave1_depeqs, wave1_runge_step, wave1_xcrit, wp2_frost_pair_trace_path,
     write_wp2_frost_pair_trace,
 };
+pub use direct_runtime::{
+    EROSION_PARTICLE_CLASS_COUNT, ErosionParticleClass, ErosionRillCoverInputs,
+    ErosionRillHydraulics, ErosionShearSlopes, ErosionTextureInputs, ErosionTransportCoefficients,
+    erosion_detinr, erosion_effective_particle, erosion_falvel, erosion_interrill_delivery_ratio,
+    erosion_particle_composition, erosion_rill_hydraulics, erosion_shield,
+    erosion_transport_coefficients, erosion_trcoef, erosion_yalin,
+};
 pub use hydrology::{
     DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs, DirectFrostControlInputs,
     DirectFrostFineLayerProjection, DirectFrostHourlyForcing, DirectFrostLayerInput,

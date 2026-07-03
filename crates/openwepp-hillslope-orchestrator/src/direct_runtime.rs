@@ -147,6 +147,7 @@ mod decomposition;
 mod diagnostic_events;
 mod erosion;
 mod erosion_continuity;
+mod erosion_operands;
 mod evapotranspiration;
 mod growth;
 mod normalization;
@@ -177,6 +178,13 @@ pub use erosion_continuity::{
     DirectWave1SlopeSegment, Wave1ShearClassification, Wave1ShearRegime,
     compute_direct_wave1_continuity, derive_wave1_slope_segments, wave1_classifier_shear,
     wave1_depc, wave1_depend, wave1_depeqs, wave1_runge_step, wave1_xcrit,
+};
+pub use erosion_operands::{
+    EROSION_PARTICLE_CLASS_COUNT, ErosionParticleClass, ErosionRillCoverInputs,
+    ErosionRillHydraulics, ErosionShearSlopes, ErosionTextureInputs, ErosionTransportCoefficients,
+    erosion_detinr, erosion_effective_particle, erosion_falvel, erosion_interrill_delivery_ratio,
+    erosion_particle_composition, erosion_rill_hydraulics, erosion_shield,
+    erosion_transport_coefficients, erosion_trcoef, erosion_yalin,
 };
 pub use evapotranspiration::{
     DirectEvapotranspirationComputeDownstreamOperands, DirectEvapotranspirationComputeInputs,
