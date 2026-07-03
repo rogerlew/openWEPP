@@ -304,6 +304,52 @@ fn wave1_continuity_inactive_without_runoff_or_below_event_gate() {
 }
 
 #[test]
+fn wave1_continuity_inert_days_do_not_require_routed_operands() {
+    // Production 1b shape (Codex review finding): on non-routed days the
+    // runtime supplies zeroed sediment operands — WB16 publishes
+    // `runoff_duration_s = 0` without runoff — and the solver must return
+    // the inactive state, not a typed operand error. Legacy ordering:
+    // `contin.for` gates on norun/passby BEFORE frcfac/xinflo/param run.
+
+    // Plain no-runoff day: everything zeroed except the enable flag.
+    let no_runoff_day = DirectWave1ContinuityInputs {
+        enabled: true,
+        ..DirectWave1ContinuityInputs::zero()
+    };
+    let state = compute_direct_wave1_continuity(&no_runoff_day)
+        .expect("no-runoff day with zeroed routed operands must be inert");
+    assert!(!state.active);
+    assert_eq!(state.total_detachment_kg, 0.0);
+
+    // WB16 tiny-average-rate floor shape: q_runoff = 1e-8 m,
+    // peakro = 3.63e-8 m/s, runoff_duration_s = 0 (the real WB16 floor
+    // branch output) — below both passby bounds, so inert.
+    let wb16_floor_day = DirectWave1ContinuityInputs {
+        enabled: true,
+        runoff_depth_m: 1.0e-8,
+        peakro_m_s: 3.63e-8,
+        effdrn_s: 0.0,
+        ..DirectWave1ContinuityInputs::zero()
+    };
+    let state = compute_direct_wave1_continuity(&wb16_floor_day)
+        .expect("WB16 floor-rate day with zeroed routed operands must be inert");
+    assert!(!state.active);
+
+    // The activation operands themselves stay fail-closed even on days
+    // that would gate to inert: a NaN runoff is a typed error, never a
+    // silent pass through the `<= 0` activation branch.
+    let nan_runoff_day = DirectWave1ContinuityInputs {
+        enabled: true,
+        runoff_depth_m: f64::NAN,
+        ..DirectWave1ContinuityInputs::zero()
+    };
+    assert!(matches!(
+        compute_direct_wave1_continuity(&nan_runoff_day),
+        Err(DirectRuntimeError::NonFiniteDirectValue { .. })
+    ));
+}
+
+#[test]
 fn wave1_continuity_fails_closed_on_missing_operands() {
     // Missing transport normalization (ktrato) must be a typed hard error,
     // not a defaulted solve.
@@ -419,6 +465,52 @@ fn wave1_span_publishes_continuity_totals_through_the_frame() {
         .expect("continuity state must be committed to the frame");
     assert!(state.active);
     assert!((state.total_detachment_kg - total_detachment).abs() < 1.0e-12);
+}
+
+#[test]
+fn wave1_span_dry_day_publishes_zero_authority_without_routed_operands() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    // The 1b production dry-day shape (Codex review finding): continuity
+    // enabled, routed sediment operands zeroed, and the WB16 projection
+    // reporting no runoff (`runoff_duration_s = 0`). The span must
+    // complete and publish zero totals with authority — not fail on the
+    // routed-operand validator.
+    let identity = DirectRunIdentity::new(7, 2637, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut day = DirectDayFrame::seed(identity, 0, 0).expect("valid direct day should construct");
+    day.erosion_inputs.wave1_continuity.enabled = true;
+    day.peak_runoff_shadow_projection = Some(DirectPeakRunoffShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        q_runoff_m: 0.0,
+        peak_runoff_m3_s: 0.0,
+        runoff_duration_s: 0.0,
+        method_branch: 0.0,
+        tstar: 0.0,
+        qpstar: 0.0,
+        vstar: 0.0,
+    });
+
+    let report = day
+        .run_r7d6_erosion_span()
+        .expect("dry day with zeroed routed operands must complete the span");
+    assert!(report.erosion_shadow_projection.publication_authority);
+    assert_eq!(
+        report
+            .erosion_shadow_projection
+            .publication
+            .total_detachment_kg,
+        Some(0.0)
+    );
+    let state = day
+        .erosion
+        .wave1_continuity
+        .as_ref()
+        .expect("continuity state must be committed even on inert days");
+    assert!(!state.active);
 }
 
 #[test]

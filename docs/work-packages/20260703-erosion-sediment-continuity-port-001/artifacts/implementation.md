@@ -122,9 +122,16 @@ production consumer). The production seed keeps
 `wave1_enabled = false` + `DirectWave1ContinuityInputs::zero()` with the
 gap documented at the seed site (`00_builders_and_authority.rs`).
 **Operand production is Increment-1b** — flipping the seed to a populated
-payload activates the solver with no further orchestrator changes.
-Production outputs are unchanged this increment (the DFF-WS3 sediment
-HOLD assertions still pass in the full suite — Ran).
+payload activates the solver with no further orchestrator changes. That
+claim is now backed by the dry-day contract (Codex review round 1, fixed
+on this branch): non-routed days require only valid activation operands
+(`runoff_depth_m`, `peakro_m_s`) and return the inactive state without
+inspecting the routed sediment payload, matching the legacy
+`contin.for` gate-before-`param` ordering — regression-tested at both
+the solver and the frame/r7d8 level with the exact zeroed-operand WB16
+shapes the production runtime supplies. Production outputs are unchanged
+this increment (the DFF-WS3 sediment HOLD assertions still pass in the
+full suite — Ran).
 
 Also recorded for Increment-1b: the pass-parquet row builder
 (`build_hillslope_pass_row_from_direct_publication`) currently hardcodes
@@ -272,3 +279,36 @@ branch state — **1275/1275 passed, 1 skipped, 568 s** (nextest run
 pre-existing `dff_ws3` failures verified on `main` and left untouched),
 nextest full, `cargo deny`, `git diff --check`, authority-suite
 anti-evasion, SC-unit lint (in-suite).
+
+## Codex review disposition (2026-07-03)
+
+**Finding (High, CONFIRMED): routed-event operand validation ran before
+the no-runoff/`passby` inactive gates.** With the Increment-1b seed
+flipped, valid dry / tiny-runoff days would have hit the fail-closed
+operand validator (WB16 publishes `runoff_duration_s = 0` without
+runoff, so `effdrn_s = 0` plus zeroed sediment operands is the
+legitimate dry-day runtime shape) and errored instead of returning the
+inactive state — contradicting this record's "flipping the seed
+activates the solver unchanged" claim.
+
+**Fix (Ran, this branch):** validation split to match the legacy call
+order (`contin.for` gates on `norun`/`passby` BEFORE
+`frcfac`/`xinflo`/`param` ever run): the activation operands
+(`runoff_depth_m`, `peakro_m_s`) are validated finite/nonnegative even
+on inert days (a NaN runoff is still a typed error, never a silent pass
+through the `<= 0` branch), the inactive gates run next, and the full
+routed-event payload validator runs only after the event routes.
+Regressions added per the review's specification: a zeroed-operand
+no-runoff day and the real WB16 tiny-rate floor shape
+(`q_runoff = 1e-8 m`, `peakro = 3.63e-8 m/s`, `runoff_duration_s = 0`)
+both return inactive; a NaN activation operand still fails typed; and a
+frame-level span test drives the exact 1b dry-day shape through r7d8
+(zero-runoff WB16 projection + zeroed routed operands) and asserts the
+span completes with zero-total publication authority. 15/15 Wave-1
+tests green.
+
+**Post-fix full-suite re-run (Ran):**
+`cargo nextest run --workspace --profile full` — **1277/1277 passed,
+1 skipped, 561 s** (the two review regressions included in the count).
+`cargo fmt --check`, clippy on the touched crates, and
+`git diff --check` re-verified clean.

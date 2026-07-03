@@ -1503,8 +1503,11 @@ fn wave1_route(
     Ok(grid)
 }
 
-/// Validate the Wave-1 continuity operand payload (fail-closed; INV-SED-004
-/// hydrology surfaces, INV-SED-006 `tcadjf`, INV-SED-007 denominators).
+/// Validate the **routed-event** Wave-1 operand payload (fail-closed;
+/// INV-SED-004 hydrology surfaces, INV-SED-006 `tcadjf`, INV-SED-007
+/// denominators). Called only after the runoff-day/`passby` activation
+/// gates: on non-routed days the sediment operands are legitimately
+/// zeroed and never inspected (legacy `contin.for` ordering).
 fn validate_wave1_inputs(inputs: &DirectWave1ContinuityInputs) -> Result<(), DirectRuntimeError> {
     if inputs.segments.is_empty() {
         return Err(DirectRuntimeError::DirectDomainViolation {
@@ -1857,13 +1860,25 @@ fn wave1_totals(
 /// Compute the Wave-1 single-OFE sediment-continuity solve for one runoff
 /// day. Returns the inactive state on non-runoff days and on events below
 /// the legacy sediment-routing size gate (`contin.for:977` `passby`).
+///
+/// Validation is split to match the legacy call order: `contin.for` gates
+/// on `norun`/`passby` BEFORE `frcfac`/`xinflo`/`param` ever run, so the
+/// routed-event operand payload (`effdrn`, `shrsol`, `tcend`, ...) is
+/// only required on days the event actually routes. On non-routed days
+/// the runtime legitimately supplies zeroed sediment operands (WB16
+/// publishes `runoff_duration_s = 0` without runoff), and this function
+/// must return the inactive state, not a typed operand error.
 pub fn compute_direct_wave1_continuity(
     inputs: &DirectWave1ContinuityInputs,
 ) -> Result<DirectWave1ContinuityState, DirectRuntimeError> {
     if !inputs.enabled {
         return Ok(DirectWave1ContinuityState::inactive());
     }
-    validate_wave1_inputs(inputs)?;
+
+    // Activation operands are validated fail-closed even on inert days (a
+    // NaN runoff must never silently pass the `<= 0` activation branch).
+    wave1_validate_min("erosion.wave1.peakro_m_s", inputs.peakro_m_s, 0.0)?;
+    wave1_validate_min("erosion.wave1.runoff_depth_m", inputs.runoff_depth_m, 0.0)?;
 
     // Activation: legacy routes sediment only on runoff days
     // (`contin.for` `norun == 1`) above the event-size bypass.
@@ -1875,6 +1890,9 @@ pub fn compute_direct_wave1_continuity(
     {
         return Ok(DirectWave1ContinuityState::inactive());
     }
+
+    // Routed event: the full sediment operand payload is now required.
+    validate_wave1_inputs(inputs)?;
 
     // `xinflo.for:150`: unit outflow discharge.
     let qout = inputs.peakro_m_s * inputs.efflen_m;

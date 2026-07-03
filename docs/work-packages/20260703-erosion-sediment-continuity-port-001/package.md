@@ -14,8 +14,12 @@ the `frcfac`/`shears`, `soil.for` daily-adjustment, `irs` `effint`, or
 `prtcmp`/`yalin`/`trcoef` operand chains, and fabricating them would
 violate the no-provisional-math rule. Operand production is
 **Increment-1b** (queue in `artifacts/implementation.md`); flipping the
-seed activates the solver unchanged. Production outputs are unchanged
-this increment; the DFF-WS3 sediment HOLD stands until 1b.**
+seed activates the solver unchanged — validated for the dry-day shape
+after the Codex round-1 finding (activation gates now precede the
+routed-operand validator, matching the legacy `contin.for` ordering;
+regression-tested at solver and frame/r7d8 level). Production outputs
+are unchanged this increment; the DFF-WS3 sediment HOLD stands until
+1b.**
 Governing authority:
 [`SC-SED-001`](../../specifications/science-contracts/contracts/SC-SED-001.md)
 (Hillslope Erosion Process Contract, v41, 56 invariants);
