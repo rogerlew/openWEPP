@@ -48,6 +48,90 @@ const YALIN_SANDY_ADJ_FLOOR: f64 = 0.30;
 const RIF_SLOPE: f64 = -23.0;
 const RIF_INTERCEPT: f64 = 1.14;
 
+/// One rainfall hyetograph interval resolved against its infiltration
+/// excess, for the effective-intensity/duration producer (`reid.for`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ErosionExcessInterval {
+    /// Interval duration (s).
+    pub duration_s: f64,
+    /// Raw rainfall intensity over the interval (m/s) — the `rrate` that
+    /// drives interrill detachment energy (`reid.for` `sumint`).
+    pub rainfall_intensity_m_s: f64,
+    /// Infiltration excess generated in the interval (m); `> 0` marks an
+    /// excess period (`reid.for` `re(i) > 0`).
+    pub excess_m: f64,
+    /// Whether snowmelt drove the interval; on snowmelt intervals the
+    /// rainfall intensity is excluded from `sumint` (`reid.for:69`
+    /// `if (smrate.le.0.0)`), but the interval still counts toward
+    /// `durre`.
+    pub snowmelt_active: bool,
+}
+
+/// Effective rainfall intensity and rainfall-excess duration
+/// (`reid.for`/`grna.for:607`): `effdrr = durre` = Σ durations of
+/// excess-producing intervals; `effint = sumint/durre` = the mean
+/// rainfall intensity over excess periods excluding snowmelt intervals.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ErosionEffectiveIntensity {
+    pub effint_m_s: f64,
+    pub effdrr_s: f64,
+}
+
+/// `reid.for`: accumulate `durre`/`sumint` over the rainfall-excess
+/// intervals and return `effint = sumint/durre`, `effdrr = durre`.
+///
+/// This is the faithful production form of the operands that the
+/// Increment-1b-A integration test previously approximated as
+/// `effint = runoff/effdrr`, `effdrr = effdrn` — that approximation
+/// substituted the mean *excess* rate for the mean *rainfall* intensity,
+/// which understates the interrill `Di = Ki·I·q` driver. Here `sumint`
+/// uses the raw rainfall intensity (`rrate`) over excess periods, matching
+/// legacy. Returns zeros when there is no excess period (no interrill
+/// supply). Fail-closed on NaN / negative inputs.
+pub fn erosion_effective_intensity(
+    intervals: &[ErosionExcessInterval],
+) -> Result<ErosionEffectiveIntensity, DirectRuntimeError> {
+    let mut durre = 0.0_f64;
+    let mut sumint = 0.0_f64;
+    for interval in intervals {
+        validate_finite("erosion.effint.duration_s", interval.duration_s)?;
+        validate_finite(
+            "erosion.effint.rainfall_intensity_m_s",
+            interval.rainfall_intensity_m_s,
+        )?;
+        validate_finite("erosion.effint.excess_m", interval.excess_m)?;
+        if interval.duration_s < 0.0
+            || interval.rainfall_intensity_m_s < 0.0
+            || interval.excess_m < 0.0
+        {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "erosion.effint.negative_input",
+            });
+        }
+        // Excess period (`reid.for:52` `if (re(i).gt.0.)`).
+        if interval.excess_m > 0.0 {
+            durre += interval.duration_s;
+            // Rainfall intensity contributes to sumint only when snowmelt
+            // is not driving the interval (`reid.for:69`).
+            if !interval.snowmelt_active {
+                sumint += interval.duration_s * interval.rainfall_intensity_m_s;
+            }
+        }
+    }
+    if durre <= 0.0 {
+        return Ok(ErosionEffectiveIntensity {
+            effint_m_s: 0.0,
+            effdrr_s: 0.0,
+        });
+    }
+    let effint_m_s = sumint / durre;
+    validate_finite("erosion.effint.effint_m_s", effint_m_s)?;
+    Ok(ErosionEffectiveIntensity {
+        effint_m_s,
+        effdrr_s: durre,
+    })
+}
+
 /// One erosion particle-size class (`prtcmp.for` surface).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ErosionParticleClass {

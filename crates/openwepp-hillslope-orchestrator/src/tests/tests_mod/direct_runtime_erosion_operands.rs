@@ -7,8 +7,9 @@
 #![allow(clippy::doc_markdown)]
 
 use crate::{
-    DirectRuntimeError, EROSION_PARTICLE_CLASS_COUNT, ErosionRillCoverInputs, ErosionShearSlopes,
-    ErosionTextureInputs, erosion_detinr, erosion_effective_particle, erosion_falvel,
+    DirectRuntimeError, EROSION_PARTICLE_CLASS_COUNT, ErosionExcessInterval,
+    ErosionRillCoverInputs, ErosionShearSlopes, ErosionTextureInputs, erosion_detinr,
+    erosion_effective_intensity, erosion_effective_particle, erosion_falvel,
     erosion_interrill_delivery_ratio, erosion_particle_composition, erosion_rill_hydraulics,
     erosion_shield, erosion_transport_coefficients, erosion_trcoef, erosion_yalin,
 };
@@ -326,4 +327,82 @@ fn detinr_matches_the_legacy_product_form() {
         .expect("detinr must resolve");
     assert!((observed - expected).abs() < 1.0e-6 * expected.abs());
     assert!(observed > 0.0);
+}
+
+fn excess_interval(
+    duration_s: f64,
+    rainfall_intensity_m_s: f64,
+    excess_m: f64,
+    snowmelt_active: bool,
+) -> ErosionExcessInterval {
+    ErosionExcessInterval {
+        duration_s,
+        rainfall_intensity_m_s,
+        excess_m,
+        snowmelt_active,
+    }
+}
+
+#[test]
+fn effint_effdrr_are_the_excess_weighted_sumint_over_durre() {
+    // Three intervals; only the middle two produce excess. effdrr = Σ dur
+    // over excess intervals; effint = Σ dur·rate / effdrr (rainfall rate,
+    // not excess rate).
+    let intervals = [
+        excess_interval(600.0, 1.0e-5, 0.0, false), // no excess: excluded
+        excess_interval(600.0, 2.0e-5, 0.004, false),
+        excess_interval(600.0, 3.0e-5, 0.006, false),
+    ];
+    let result = erosion_effective_intensity(&intervals).expect("effint must resolve");
+    assert!((result.effdrr_s - 1200.0).abs() < 1.0e-9);
+    let expected_effint = (600.0 * 2.0e-5 + 600.0 * 3.0e-5) / 1200.0;
+    assert!((result.effint_m_s - expected_effint).abs() < 1.0e-15);
+    // The faithful effint uses rainfall intensity, so it differs from the
+    // mean excess rate (the earlier approximation): mean excess rate here
+    // is (0.004+0.006)/1200 = 8.33e-6, well below effint = 2.5e-5.
+    assert!(result.effint_m_s > 2.0e-5);
+}
+
+#[test]
+fn effint_excludes_snowmelt_intervals_from_sumint_but_not_durre() {
+    // A snowmelt-driven excess interval contributes to durre (it is an
+    // excess period) but not to sumint (rainfall intensity is not the
+    // driver): reid.for `if (smrate.le.0.0)`.
+    let intervals = [
+        excess_interval(600.0, 2.0e-5, 0.004, false),
+        excess_interval(600.0, 5.0e-5, 0.010, true), // snowmelt: durre only
+    ];
+    let result = erosion_effective_intensity(&intervals).expect("effint must resolve");
+    assert!((result.effdrr_s - 1200.0).abs() < 1.0e-9);
+    // sumint counts only the rain interval; the snowmelt interval's
+    // intensity is excluded.
+    let expected_effint = (600.0 * 2.0e-5) / 1200.0;
+    assert!((result.effint_m_s - expected_effint).abs() < 1.0e-15);
+}
+
+#[test]
+fn effint_effdrr_are_zero_without_any_excess_period() {
+    let intervals = [
+        excess_interval(600.0, 1.0e-5, 0.0, false),
+        excess_interval(600.0, 1.0e-5, 0.0, false),
+    ];
+    let result = erosion_effective_intensity(&intervals).expect("no-excess day is inert");
+    assert_eq!(result.effdrr_s, 0.0);
+    assert_eq!(result.effint_m_s, 0.0);
+}
+
+#[test]
+fn effint_fails_closed_on_nan_and_negative_inputs() {
+    assert!(matches!(
+        erosion_effective_intensity(&[excess_interval(600.0, f64::NAN, 0.004, false)]),
+        Err(DirectRuntimeError::NonFiniteDirectValue { .. })
+    ));
+    assert!(matches!(
+        erosion_effective_intensity(&[excess_interval(-600.0, 1.0e-5, 0.004, false)]),
+        Err(DirectRuntimeError::DirectDomainViolation { .. })
+    ));
+    assert!(matches!(
+        erosion_effective_intensity(&[excess_interval(600.0, 1.0e-5, -0.004, false)]),
+        Err(DirectRuntimeError::DirectDomainViolation { .. })
+    ));
 }

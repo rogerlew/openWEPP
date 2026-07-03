@@ -146,6 +146,7 @@ static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::ne
 mod decomposition;
 mod diagnostic_events;
 mod erosion;
+mod erosion_adjustments;
 mod erosion_continuity;
 mod erosion_operands;
 mod evapotranspiration;
@@ -173,6 +174,11 @@ pub use erosion::{
     DirectErod14Inputs, DirectErod14State, DirectErosionDownstreamOperands, DirectErosionInputs,
     DirectErosionShadowProjection, DirectErosionSpanReport, DirectErosionState,
 };
+pub use erosion_adjustments::{
+    ErosionAdjustmentFactors, ErosionAdjustmentInputs, ErosionConsolidationBaselines,
+    ErosionConsolidationInputs, ErosionFrostRegime, erosion_adjustment_factors,
+    erosion_consolidation_baselines,
+};
 pub use erosion_continuity::{
     DIRECT_WAVE1_GRID_POINTS, DirectWave1ContinuityInputs, DirectWave1ContinuityState,
     DirectWave1SlopeSegment, Wave1ShearClassification, Wave1ShearRegime,
@@ -180,11 +186,12 @@ pub use erosion_continuity::{
     wave1_depc, wave1_depend, wave1_depeqs, wave1_runge_step, wave1_xcrit,
 };
 pub use erosion_operands::{
-    EROSION_PARTICLE_CLASS_COUNT, ErosionParticleClass, ErosionRillCoverInputs,
-    ErosionRillHydraulics, ErosionShearSlopes, ErosionTextureInputs, ErosionTransportCoefficients,
-    erosion_detinr, erosion_effective_particle, erosion_falvel, erosion_interrill_delivery_ratio,
-    erosion_particle_composition, erosion_rill_hydraulics, erosion_shield,
-    erosion_transport_coefficients, erosion_trcoef, erosion_yalin,
+    EROSION_PARTICLE_CLASS_COUNT, ErosionEffectiveIntensity, ErosionExcessInterval,
+    ErosionParticleClass, ErosionRillCoverInputs, ErosionRillHydraulics, ErosionShearSlopes,
+    ErosionTextureInputs, ErosionTransportCoefficients, erosion_detinr,
+    erosion_effective_intensity, erosion_effective_particle, erosion_falvel,
+    erosion_interrill_delivery_ratio, erosion_particle_composition, erosion_rill_hydraulics,
+    erosion_shield, erosion_transport_coefficients, erosion_trcoef, erosion_yalin,
 };
 pub use evapotranspiration::{
     DirectEvapotranspirationComputeDownstreamOperands, DirectEvapotranspirationComputeInputs,

@@ -101,21 +101,40 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
     runtime export (a WB14/WB16 excess-surface integration, not a pure
     producer) and the activation-flag wiring (`beta`/`surface_frozen`
     trivial; `theta_suppressed`'s `frara` melt-branch shares the winter
-    block). Seed stays disabled; production outputs unchanged. See
+    block). Seed stays disabled; production outputs unchanged. Merged to
+    main `1887092b`. See
     [`artifacts/implementation-1b.md`](artifacts/implementation-1b.md).
-  - **1b-B — daily erodibility adjustments: BLOCKED at a confirmed
-    stop-condition.** The `soil.for` chain is portable (consolidation
-    via `scon` baselines + `rfcum`/`daydis` accumulators; cover/root/
-    residue factors from the growth/decomposition state; slope factor)
-    EXCEPT the freeze-thaw factors, whose `ifrost == 2` thawing branch
-    needs the winter `fcycle` cycle counter — **absent from the direct
-    runtime** (0 occurrences; produced only in the legacy winter
-    subsystem `watdst.for`/`wshdrv.for`). Recommended: port the portable
-    chain and fail-closed the thaw branch; surfacing `fcycle`/`frara` is
-    a winter-subsystem WP (out of the erosion write set).
-  - **1b-C — activation: gated behind 1b-B + the winter coupling.** Not
-    started; the seed flip cannot be safe generally until the freeze-thaw
-    branch is either produced or fail-closed. Seed remains disabled.
+  - **1b-A hold-lift — faithful `effint`/`effdrr` producer: DONE + GATED**
+    (branch `erosion-inc1bc-activation`). `erosion_effective_intensity`
+    (`reid.for`): `effdrr = durre`, `effint = sumint/durre` (mean
+    **rainfall** intensity over excess periods, snowmelt excluded) — the
+    faithful form of the operand the `erod16` test approximated as
+    `runoff/effdrr` (which understated the interrill `Di = Ki·I·q`
+    driver). 4 unit tests. The **export** (making it observable) is
+    coupled to the flip — see 1b-C.
+  - **1b-B — daily erodibility adjustments: PORTABLE PRODUCERS DONE +
+    GATED; thaw branch fail-closed** (branch `erosion-inc1bc-activation`).
+    `direct_runtime/erosion_adjustments.rs`: `scon.for` consolidation
+    baselines (`kicrat`/`krcrat`/`tccrat`) + the `soil.for` cropland
+    subfactor chain → `kiadjf`/`kradjf`/`tcadjf` (cover/root/residue,
+    sealing via `produc`, slope factor, floors/cap), pure + typed +
+    fail-closed, 8 unit tests. The **actively-thawing** (`ifrost == 2`)
+    branch is **fail-closed** (typed error naming the missing winter
+    `fcycle` counter — 0 occurrences in the direct runtime). The
+    **stateful** parts (the `daydis`/`rfcum` accumulators + the
+    prior-`ifrost` frost-regime resolution) are runtime wiring, part of
+    the flip.
+  - **1b-C — activation: HELD (spec'd no-intervention).** The seed flip
+    is a distinct stateful integration (per-day operand threading + new
+    persistent daily accumulators + `effint`/`effdrr` WB14 surfacing +
+    enable + pass-writer unhardcode + DFF-WS3 HOLD flip + full-run
+    byte-stability). Held rather than forced in a single rushed pass:
+    the winter `fcycle` coupling is a confirmed hard boundary inside it
+    (bounded by the 1b-B fail-closed thaw guard, which makes the enable
+    safe by construction), and the byte-stability gate needs a full
+    shadow-run diff. Complete no-intervention spec in
+    [`artifacts/increment-1bc-flip-scope-and-hold.md`](artifacts/increment-1bc-flip-scope-and-hold.md).
+    Seed remains disabled; production outputs unchanged.
 - **Increment 2 — multi-OFE integration.** Wire Wave-1 across OFEs and reconcile
   with the existing EROD14 routing (`qin/qout`, particle handoff).
 - **Increment 3 — particle-class + enrichment completeness** (`sedia`/`sedist`)
