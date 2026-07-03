@@ -1,8 +1,9 @@
 # Erosion Sediment-Continuity Direct-Runtime Port (SC-SED-001, Wave-1 first)
 
-Status: **INCREMENT-1 BUILT + GATED, 2026-07-03 — solver landed on branch
-`origin/erosion-inc1-wave1-continuity`, awaiting Codex review (not on
-main). The normalized single-OFE Wave-1 continuity solver
+Status: **INCREMENT-1 MERGED TO MAIN, 2026-07-03 (`12038179`,
+operator-directed merge after Codex review: round-1 High
+activation-ordering finding fixed and re-verified, round-2 merge-ready).
+The normalized single-OFE Wave-1 continuity solver
 (route/erod/runge/xcrit/depc/depeqs/depend/depos + param/xinflo/sloss),
 shadow-first runtime wiring, publication projection, and the hard
 conservation gates are live and validated (15 unit tests + the McKenzie
