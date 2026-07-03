@@ -118,7 +118,7 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
     baselines (`kicrat`/`krcrat`/`tccrat`) + the `soil.for` cropland
     subfactor chain → `kiadjf`/`kradjf`/`tcadjf` (cover/root/residue,
     sealing via `produc`, slope factor, floors/cap), pure + typed +
-    fail-closed, 8 unit tests. The **actively-thawing** (`ifrost == 2`)
+    fail-closed, 9 unit tests. The **actively-thawing** (`ifrost == 2`)
     branch is **fail-closed** (typed error naming the missing winter
     `fcycle` counter — 0 occurrences in the direct runtime). The
     **stateful** parts (the `daydis`/`rfcum` accumulators + the

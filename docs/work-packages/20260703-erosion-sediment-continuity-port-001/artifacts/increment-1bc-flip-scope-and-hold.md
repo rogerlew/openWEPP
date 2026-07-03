@@ -26,7 +26,7 @@ went 16 → 20.
 (`scon.for` `kicrat`/`krcrat`/`tccrat`, corrected-`thetfc` lineage) and
 `erosion_adjustment_factors` (the `soil.for` cropland subfactor chain →
 `kiadjf`/`kradjf`/`tcadjf`: cover/root/residue, sealing via `produc`,
-slope factor, `0.03` floors, `2.0` cap). Pure, typed, fail-closed; 8 unit
+slope factor, `0.03` floors, `2.0` cap). Pure, typed, fail-closed; 9 unit
 tests including the consolidation-toward-baselines trajectory and the
 floor/cap. The **actively-thawing** (`ifrost == 2`) branch is
 **fail-closed** — a typed `MissingDirectUpstream` naming the winter
