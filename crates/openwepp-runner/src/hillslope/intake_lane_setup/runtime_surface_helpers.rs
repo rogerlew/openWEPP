@@ -48,24 +48,30 @@ pub(crate) fn project_typed_pmetpara_runtime(
     }
 
     let active_crop_name = active_management_crop_name(management)?;
-    // Native forest fails closed on a PMET lookup miss (`LANUSE-AUTH-2`): it must
-    // not inherit the compatibility first-row-fallback coefficients of an
-    // unrelated crop. Force strict lookup for forest; cropland keeps its
-    // configured (compatibility) mode.
-    let effective_mode = if active_management_is_native_forest(management) {
-        PmetparaParseMode::Strict
-    } else {
-        mode
-    };
+    let native_forest = active_management_is_native_forest(management);
+    // Look up in the configured mode so query normalization matches how the
+    // sidecar records were parsed (mixing modes would spuriously miss). The
+    // lookup records whether it took the compatibility first-row fallback.
     let (kcb, rawp, line_index) = {
         let record = pmetpara
-            .lookup_record(active_crop_name, effective_mode)
+            .lookup_record(active_crop_name, mode)
             .map_err(|error| HillslopeCliError::ParseFailure {
                 surface: "pmetpara",
                 detail: error.to_string(),
             })?;
         (record.kcb, record.rawp, record.line_index)
     };
+    // Native forest fails closed on a PMET miss (`LANUSE-AUTH-2`): it must not
+    // inherit the compatibility first-row-fallback coefficients of an unrelated
+    // crop. A genuine forest PMET-record hit is unaffected.
+    if native_forest && pmetpara.lookup.fallback_first_row_used {
+        return Err(HillslopeCliError::ParseFailure {
+            surface: "pmetpara",
+            detail: format!(
+                "native forest requires an explicit PMET record for crop '{active_crop_name}'; refusing the compatibility first-row fallback"
+            ),
+        });
+    }
 
     Ok(TypedPmetparaRuntimeProjection {
         sidecar_present: pmetpara.sidecar_present,
@@ -294,18 +300,19 @@ d3
         let mut pmetpara = sidecar();
         // Compatibility mode is what the runner always supplies; forest must
         // still fail closed rather than take the first-row fallback.
-        let result = project_typed_pmetpara_runtime(
+        let error = project_typed_pmetpara_runtime(
             &management,
             &mut pmetpara,
             PmetparaParseMode::Compatibility,
-        );
+        )
+        .expect_err("native forest with a PMET sidecar miss must fail closed, not fall back");
+        // The compatibility lookup internally flags the fallback; forest rejects
+        // it instead of returning those coefficients.
+        assert!(pmetpara.lookup.fallback_first_row_used);
+        let detail = error.to_string();
         assert!(
-            result.is_err(),
-            "native forest with a PMET sidecar miss must fail closed, not fall back"
-        );
-        assert!(
-            !pmetpara.lookup.fallback_first_row_used,
-            "forest must not trigger the first-row fallback"
+            detail.contains("native forest requires an explicit PMET record"),
+            "error should identify the refused forest fallback: {detail}"
         );
     }
 

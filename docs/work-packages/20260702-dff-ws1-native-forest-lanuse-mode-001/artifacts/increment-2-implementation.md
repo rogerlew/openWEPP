@@ -146,6 +146,33 @@ Still recommended (Codex): one focused full-CLI forest `.man` + `.sol` run,
 including a PMET-sidecar case, as end-to-end verification. The PMET no-fallback
 behaviour now has unit coverage; the full-CLI run remains a follow-on.
 
+## End-to-end CLI verification (`Ran:` — Codex's requested full run)
+
+Built a native-forest run dir and ran it through the production hillslope CLI
+(`openwepp-cli-hill`), fixture
+`tests/fixtures/dff_ws1_native_forest/hjandrews_conifer_forest/` (derived from
+`cancov_forest/hjandrews_conifer_or`: `.sol`/`.slp`/`.cli`/`pmetpara.txt`/etc.
+copied verbatim; `p2.man` converted from the cropland masquerade to a native
+`ow-lanuse-1` forest `.man`, `forest_class=forest`, plant name kept `Tah_4899`).
+Committed test: `tests/integration/dff_ws1_native_forest_cli.rs`.
+
+Result: **the native forest hillslope runs end-to-end** (exit 0, 45-yr run,
+~31s). Manifest evidence: `scheduler_status_message_id:
+R7C-DIRECT-PRODUCTION-EXECUTOR` (ran on the direct path where reconciliation +
+PMET authority live — so the `.man` forest_class↔`.sol` `DisturbedPolicy`
+reconciliation **passed**), explicit `Tah_4899` PMET record resolved (no fallback
+warning), and `output/H2.hbp` + `H2.loss.json` + `H2.wat.parquet` produced.
+
+**This run caught a real bug in the round-1 PMET fix** (exactly why the
+end-to-end matters): forcing *strict* PMET mode for forest also changed the
+query **normalization** to a different mode than the sidecar records were parsed
+with (compat), producing a spurious miss on a record that exists. Corrected: run
+the lookup in the configured mode (correct normalization) and, for native
+forest, reject the result **only if it took the compatibility first-row
+fallback**. A genuine forest PMET hit is unaffected; a genuine miss still fails
+closed. Unit tests updated accordingly (`native_forest_pmet_miss_fails_closed_...`
+now asserts the typed refusal, `cropland_..._keeps_...fallback` unchanged).
+
 ## Line-count governance (WARN, documented per crates/AGENTS.md)
 The forest additions pushed two files across the 2000-line `WARN` threshold
 (neither reaches the 3000-line `BLOCK`):
