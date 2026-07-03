@@ -1,6 +1,7 @@
 # DFF-WS2 — `ksatadj` Effective-Conductivity Re-Port (SUBHYD, direct runtime)
 
-Status: **SCAFFOLDED (scope + entry gate), 2026-07-03 — awaiting execution.**
+Status: **EXECUTED, 2026-07-03 — direct-runtime port complete; local Codex
+review, verification, and line-count governance recorded.**
 Campaign: [disturbed-forest-fidelity](../../planning/disturbed-forest-fidelity-strategy.md)
 WS-2. Governing authority:
 [`SC-SUBHYD-001`](../../specifications/science-contracts/contracts/SC-SUBHYD-001.md)
@@ -35,11 +36,11 @@ with that lane — the direct lane never got the port.
   `SC-SUBHYD-001` fully specifies the model — `INV-SUBHYD-032` (hard-fail), the
   source-intent algorithm (§"Reference-Intent `ksatadj` Effective-Conductivity
   Authority"), `BR-SUBHYD-KSATADJ-EXECUTE` (operand set) / `-GUARD` (typed
-  hard-fail **or** governance `HOLD`), boundary exports (`Keff_ksatadj` →
-  `wb14_soil_conductivity_m_s` / `wb14_effective_conductivity_m_s` when
-  `ksatadj = 1`), and the conformance-vector obligation. WS-2 **implements** this;
-  the only contract edit expected is updating the `HOLD` disposition once the
-  lineage lands.
+  hard-fail after WS-2), boundary exports (`Keff_ksatadj` →
+  `wb14_soil_conductivity_m_s`, with `wb14_effective_conductivity_m_s`
+  frost-cap composition when `ksatadj = 1`), and the conformance-vector
+  obligation. WS-2 **implements** this and records the v34 guard-disposition and
+  alias update in `SC-SUBHYD-001`.
 - **Deleted kernel is git-recoverable (the re-port reference):** the corrected
   kernel lived at
   `crates/.../hydrology/kernel_phases_mod/hydrology_phase_lateral_drainage/02_ksat_adjustment.rs`,
@@ -102,14 +103,16 @@ starts from a clear runway:
    from **frost + base top-layer only** (`frost_infcap` → frost-seeded
    `effective_conductivity_m_s` → `layers.first().conductivity_m_s`), consumed by
    the Green-Ampt solver (`direct_runtime/runoff.rs:1595-1636`). `ksatadj` is
-   genuinely absent. WS-2 overwrites this with `Keff_ksatadj` when `ksatadj = 1`.
+   genuinely absent. WS-2 supplies `Keff_ksatadj` when `ksatadj = 1` and keeps
+   the final WB14 conductivity frost-limited when a positive frost cap is
+   present.
 4. **Deleted kernel** recovered as the port reference
    (`a381702b^:…/02_ksat_adjustment.rs`, 677 lines) — the contract is authority
    where it differs.
 5. **Contract lifecycle note:** `SC-SUBHYD-001` is `in_review`; `GAP-SUBHYD-002`
-   (openWEPP runtime-field aliases not yet fixed) is **non-promotable** — WS-2
-   must land the `Keff_ksatadj → wb14_effective_conductivity_m_s` alias map, which
-   helps clear it.
+   (openWEPP runtime-field aliases not yet fixed) is narrowed by WS-2: the
+   `Keff_ksatadj` direct-runtime aliases and frost-cap composition are now fixed,
+   while remaining non-`ksatadj` alias work stays pending boundary finalization.
 
 ## Validation anchor (WS-2 fixture)
 
@@ -132,16 +135,18 @@ predated the generator clamp; see the fixture `manifest.md`.)
   fail-closed guards (`BR-SUBHYD-KSATADJ-GUARD`). Non-aliased: `sat_frac` must be
   the rock-corrected form, not `theta_sum/ul_sum`.
 - **Increment 2 — branch evaluator + WB14 wiring:** the 9001 / 9002+ / 9003
-  formulas with `mm h^-1 ↔ m s^-1` conversion, overwriting the WB14 effective
-  conductivity when `ksatadj = 1`; export `Keff_ksatadj` →
-  `wb14_effective_conductivity_m_s`. Frost-on.
+  formulas with `mm h^-1 ↔ m s^-1` conversion, supplying the WB14 pre-frost
+  conductivity when `ksatadj = 1`; export `Keff_ksatadj` and compose the final
+  `wb14_effective_conductivity_m_s` as the lower of `Keff_ksatadj` and any
+  positive active frost cap. Frost-on.
 - **Increment 3 — conformance vectors:** re-create the non-aliased conformance
   vectors that died with the old kernel — at least one `solwpv ≥ 9002` and one
   where `avsat/(avpor*avcpm)` differs from a storage-over-upper-limit surrogate
   (per `SC-SUBHYD-001` §obligation). Contract-derived, source-intent — **not**
   legacy-magnitude.
-- **Contract disposition:** update `BR-SUBHYD-KSATADJ-GUARD`'s `HOLD` to the
-  implemented state; record the `INV-SUBHYD-032` closure.
+- **Contract disposition:** `BR-SUBHYD-KSATADJ-GUARD` is updated from `HOLD` to
+  the implemented runtime typed-hard-fail state; `INV-SUBHYD-032` closure is
+  recorded in `SC-SUBHYD-001` v34.
 
 ## Guardrails (challenging inherited framings)
 

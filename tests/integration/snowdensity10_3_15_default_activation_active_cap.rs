@@ -9,6 +9,10 @@ const PACKAGE: &str = concat!(
 );
 const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
+    "00c_day_input_builder_impl.rs"
+);
+const STATIC_AUTHORITY_BUILDER: &str = concat!(
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00_builders_and_authority.rs"
 );
 const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
@@ -49,7 +53,7 @@ fn contract_and_package_bind_default_activation_authority() {
 
 #[test]
 fn implementation_selects_activated_default_without_user_surface() {
-    let builder = read(BUILDER);
+    let builder = format!("{}\n{}", read(BUILDER), read(STATIC_AUTHORITY_BUILDER));
     for marker in [
         "OPENWEPP_SNOWDENSITY1038_MELT_MODEL",
         "OPENWEPP_SNOWDENSITY09_DENSITY_MODEL",

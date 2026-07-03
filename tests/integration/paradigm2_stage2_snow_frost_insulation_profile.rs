@@ -2,7 +2,7 @@ use std::fs;
 use std::path::Path;
 
 const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
-const BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";
+const BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs";
 const SNOW_FROST_IMPL: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs";
 const RUNNER_BINS: &str = "crates/openwepp-runner/src/bin";
 const PACKAGE: &str =
@@ -45,7 +45,7 @@ fn stage2_contract_package_and_trace_are_bound() {
     assert_contains(&tool, "snow_layer_density_gradient_after_kg_m3", TOOL);
     assert_contains(&tool, "physics_bulk_multilayer_density_v1", TOOL);
 
-    let builder = read(BUILDER);
+    let builder = format!("{}\n{}", read(BUILDER), read(SNOW_FROST_IMPL));
     assert_contains(
         &builder,
         "OPENWEPP_SNOWFROST_STAGE2_INSULATION_MODEL",

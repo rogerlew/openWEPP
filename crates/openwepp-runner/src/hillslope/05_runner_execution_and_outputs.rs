@@ -964,6 +964,8 @@ fn direct_runtime_counter_provenance(
         downstream_operand_productions: snapshot.downstream_operand_productions,
         shadow_projections: snapshot.shadow_projections,
         compatibility_edge_invocations: snapshot.compatibility_edge_invocations,
+        ksatadj_effective_conductivity_evaluations: snapshot
+            .ksatadj_effective_conductivity_evaluations,
     }
 }
 
@@ -1015,6 +1017,9 @@ fn direct_runtime_audit_delta(
         compatibility_edge_invocations: current
             .compatibility_edge_invocations
             .saturating_sub(baseline.compatibility_edge_invocations),
+        ksatadj_effective_conductivity_evaluations: current
+            .ksatadj_effective_conductivity_evaluations
+            .saturating_sub(baseline.ksatadj_effective_conductivity_evaluations),
     }
 }
 

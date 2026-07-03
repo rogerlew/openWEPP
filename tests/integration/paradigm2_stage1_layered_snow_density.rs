@@ -8,7 +8,7 @@ use openwepp_hillslope_orchestrator::{
 };
 
 const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
-const BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";
+const BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs";
 const RUNNER_BINS: &str = "crates/openwepp-runner/src/bin";
 const PACKAGE: &str =
     "docs/work-packages/20260628-paradigm-2-stage-1-layered-snow-density-001/package.md";

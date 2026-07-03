@@ -9,6 +9,10 @@ const PACKAGE: &str = concat!(
 );
 const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
+    "00c_day_input_builder_impl.rs"
+);
+const STATIC_AUTHORITY_BUILDER: &str = concat!(
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
     "00_builders_and_authority.rs"
 );
 const AUTHORITY_IMPL: &str = concat!(
@@ -56,7 +60,7 @@ fn contract_and_package_bind_harder_pomeroy_default_activation() {
 
 #[test]
 fn implementation_selects_harder_pomeroy_without_env_and_preserves_rollback() {
-    let builder = read(BUILDER);
+    let builder = format!("{}\n{}", read(BUILDER), read(STATIC_AUTHORITY_BUILDER));
     for marker in [
         "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL",
         "\"\" | \"harder_pomeroy_hourly\"",

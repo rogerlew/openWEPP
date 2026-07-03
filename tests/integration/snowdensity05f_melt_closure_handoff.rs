@@ -4,7 +4,7 @@ const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWF
 const PACKAGE: &str =
     "docs/work-packages/20260626-snowdensity-05f-melt-closure-density-handoff-001/package.md";
 const HANDOFF: &str = "docs/work-packages/20260626-snowdensity-05f-melt-closure-density-handoff-001/artifacts/worker-handoff.md";
-const BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";
+const BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs";
 const SNOW_FROST_IMPL: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs";
 const SNOWBENCH: &str = "crates/openwepp-runner/src/bin/openwepp-snowbench.rs";
 const PRODUCTION_BINS: &[&str] = &[

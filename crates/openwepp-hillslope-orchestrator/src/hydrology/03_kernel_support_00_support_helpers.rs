@@ -608,3 +608,7 @@ const SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M: f64 = 0.001;
 
 
 mod support_helpers_mod;
+pub use support_helpers_mod::{
+    DirectKsatadjEffectiveConductivityInputs, DirectKsatadjEffectiveConductivityOutcome,
+    DirectKsatadjLayerInputs,
+};

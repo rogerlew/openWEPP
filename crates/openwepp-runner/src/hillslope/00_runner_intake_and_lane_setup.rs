@@ -28,7 +28,8 @@ use openwepp_hillslope_orchestrator::{
     FrostSeasonalTemperatureCurve,
     DirectDecompositionAction, DirectDecompositionActiveContext, DirectDecompositionInputs,
     DirectGrowthAction, DirectGrowthActiveContext, DirectGrowthInputs, DirectGrowthStateSurface,
-    DirectHydrologyProjectionInputs, DirectWinterFrostComputeInputs,
+    DirectHydrologyProjectionInputs, DirectKsatadjEffectiveConductivityInputs,
+    DirectKsatadjLayerInputs, DirectWinterFrostComputeInputs,
     DirectWinterFrostPartitionOutcome,
     DirectInfiltrationDepressionInputs, DirectLaneConstructorInputs, DirectLaneFrame,
     DirectLiquidInputInputs,
@@ -161,6 +162,7 @@ struct HillslopeDirectRuntimeCounterProvenance {
     downstream_operand_productions: u64,
     shadow_projections: u64,
     compatibility_edge_invocations: u64,
+    ksatadj_effective_conductivity_evaluations: u64,
 }
 
 #[derive(Debug, Serialize)]

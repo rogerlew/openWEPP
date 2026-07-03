@@ -11,7 +11,7 @@ const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWF
 const PACKAGE: &str = "docs/work-packages/20260627-snowdensity-10-3-11-spring-compaction-densification-candidate-001/package.md";
 const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
-    "00_builders_and_authority.rs"
+    "00c_day_input_builder_impl.rs"
 );
 const TOOL: &str = "tools/snowfreeze_observed/spring_compaction_densification_candidate.py";
 const REPORT: &str = concat!(

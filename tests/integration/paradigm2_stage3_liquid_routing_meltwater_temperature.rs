@@ -9,7 +9,7 @@ use openwepp_hillslope_orchestrator::{
 
 const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const PACKAGE: &str = "docs/work-packages/20260629-paradigm-2-stage-3-liquid-routing-meltwater-temperature-001/package.md";
-const RUNNER_BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";
+const RUNNER_BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs";
 const RUNNER_IMPL: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs";
 const HYDROLOGY_IMPL: &str = "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs";
 const RUNNER_BINS: &str = "crates/openwepp-runner/src/bin";

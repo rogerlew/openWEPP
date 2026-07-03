@@ -8,7 +8,7 @@ const PACKAGE: &str =
     "docs/work-packages/20260626-snowdensity-10-3-1a-per-day-cancov-direct-runtime-001/package.md";
 const SNOWBENCH: &str = "crates/openwepp-runner/src/hillslope/snowbench.rs";
 const COE_MELT: &str = "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs";
-const DAY_INPUT_BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs";
+const DAY_INPUT_BUILDER: &str = "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs";
 
 #[test]
 fn snowdensity10_3_1a_contract_and_package_bind_daily_cancov() {

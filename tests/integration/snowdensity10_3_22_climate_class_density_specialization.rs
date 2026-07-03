@@ -28,7 +28,7 @@ const AUTHORITY_GAP: &str = concat!(
 );
 const BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
-    "00_builders_and_authority.rs"
+    "00c_day_input_builder_impl.rs"
 );
 const CLI: &str = "crates/openwepp-runner/src/bin/openwepp-cli-hill.rs";
 const TOL: f64 = 1.0e-12;

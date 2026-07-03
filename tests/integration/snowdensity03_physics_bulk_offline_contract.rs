@@ -46,7 +46,7 @@ fn physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces() {
         "crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs",
         "crates/openwepp-runner/src/hillslope/mod.rs",
         "crates/openwepp-runner/src/lib.rs",
-        "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs",
+        "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs",
         "crates/openwepp-runner/src/bin/openwepp-snowbench.rs",
         "tests/integration/snowdensity02_contract_adr_guard.rs",
         "tests/integration/snowdensity03_physics_bulk_offline_contract.rs",

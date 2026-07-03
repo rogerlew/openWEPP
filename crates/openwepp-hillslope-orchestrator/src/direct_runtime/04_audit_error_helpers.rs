@@ -16,6 +16,7 @@ pub struct DirectRuntimeAuditSnapshot {
     pub downstream_operand_productions: u64,
     pub shadow_projections: u64,
     pub compatibility_edge_invocations: u64,
+    pub ksatadj_effective_conductivity_evaluations: u64,
 }
 
 #[must_use]
@@ -29,6 +30,10 @@ pub fn reset_direct_runtime_audit_counters() {
 
 pub fn record_direct_runtime_compatibility_edge_invocation() {
     DIRECT_AUDIT.record_compatibility_edge_invocation();
+}
+
+pub fn record_direct_runtime_ksatadj_effective_conductivity_evaluation() {
+    DIRECT_AUDIT.record_ksatadj_effective_conductivity_evaluation();
 }
 
 struct DirectRuntimeAuditCounters {
@@ -47,6 +52,7 @@ struct DirectRuntimeAuditCounters {
     downstream_operand_productions: AtomicU64,
     shadow_projections: AtomicU64,
     compatibility_edge_invocations: AtomicU64,
+    ksatadj_effective_conductivity_evaluations: AtomicU64,
 }
 
 impl DirectRuntimeAuditCounters {
@@ -67,6 +73,7 @@ impl DirectRuntimeAuditCounters {
             downstream_operand_productions: AtomicU64::new(0),
             shadow_projections: AtomicU64::new(0),
             compatibility_edge_invocations: AtomicU64::new(0),
+            ksatadj_effective_conductivity_evaluations: AtomicU64::new(0),
         }
     }
 
@@ -135,6 +142,11 @@ impl DirectRuntimeAuditCounters {
             .fetch_add(1, Ordering::Relaxed);
     }
 
+    fn record_ksatadj_effective_conductivity_evaluation(&self) {
+        self.ksatadj_effective_conductivity_evaluations
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
     fn snapshot(&self) -> DirectRuntimeAuditSnapshot {
         DirectRuntimeAuditSnapshot {
             run_frame_constructions: self.run_frame_constructions.load(Ordering::Relaxed),
@@ -158,6 +170,9 @@ impl DirectRuntimeAuditCounters {
             compatibility_edge_invocations: self
                 .compatibility_edge_invocations
                 .load(Ordering::Relaxed),
+            ksatadj_effective_conductivity_evaluations: self
+                .ksatadj_effective_conductivity_evaluations
+                .load(Ordering::Relaxed),
         }
     }
 
@@ -177,6 +192,8 @@ impl DirectRuntimeAuditCounters {
             .store(0, Ordering::Relaxed);
         self.shadow_projections.store(0, Ordering::Relaxed);
         self.compatibility_edge_invocations
+            .store(0, Ordering::Relaxed);
+        self.ksatadj_effective_conductivity_evaluations
             .store(0, Ordering::Relaxed);
     }
 }

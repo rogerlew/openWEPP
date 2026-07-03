@@ -10,7 +10,7 @@ const CONTRACT: &str = "docs/specifications/science-contracts/contracts/SC-SNOWF
 const PACKAGE: &str = "docs/work-packages/20260626-snowdensity-07-runtime-opt-in-001/package.md";
 const DIRECT_PUBLICATION_BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
-    "00_builders_and_authority.rs"
+    "00c_day_input_builder_impl.rs"
 );
 const DIRECT_PUBLICATION_SNOW_FROST_IMPL: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",

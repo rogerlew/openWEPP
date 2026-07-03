@@ -1,3 +1,6 @@
+const SNOWFROST_STAGE2_INSULATION_MODEL_ENV: &str =
+    "OPENWEPP_SNOWFROST_STAGE2_INSULATION_MODEL";
+
 impl DirectProductionSnowFrostAuthority {
     fn initial_snow_lane_state(&self) -> DirectSnowLaneState {
         DirectSnowLaneState::from_runtime_values(

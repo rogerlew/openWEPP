@@ -16,7 +16,7 @@ const REPORT_MD: &str = "docs/work-packages/20260627-snowdensity-10-3-7-winter-t
 const COUPLED_REPORT_JSON: &str = "docs/work-packages/20260627-snowdensity-10-3-7-winter-thaw-melt-response-correction-001/artifacts/coupled-wat-melt-response.json";
 const DIRECT_PUBLICATION_BUILDER: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
-    "00_builders_and_authority.rs"
+    "00c_day_input_builder_impl.rs"
 );
 const DIRECT_PUBLICATION_SNOW_FROST_IMPL: &str = concat!(
     "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/",
