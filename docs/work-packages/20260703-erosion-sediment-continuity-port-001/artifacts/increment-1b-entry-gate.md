@@ -23,6 +23,14 @@ The operand chain divides cleanly by state requirements:
   derivable from already-parsed inputs plus the runoff event:
   particle classes, fall velocities, transport coefficients, rill
   hydraulics/shear, effective-intensity surfaces, `detinr`.
+  **Execution note (2026-07-03):** 1b-A split in practice into the
+  **pure-producer subset** (particle/transport/hydraulics/delivery/detinr —
+  landed) and the **runtime-surface subset** (`effint`/`effdrr` export
+  from the WB14/WB16 excess machinery + the activation-flag wiring), which
+  are runtime integrations rather than pure producers and are **held**.
+  The `effint`/`effdrr` export is bounded but real (a new typed
+  peak-runoff shadow surface carrying the `sumint`/`durre` integral); the
+  `theta_suppressed` `frara` sub-branch shares the 1b-B winter block.
 - **1b-B — daily erodibility adjustment chain (new daily state).**
   `kiadjf`/`kradjf`/`tcadjf` from `soil.for` — consolidation
   accumulators, cover/root subfactors, sealing, freeze-thaw. Shadow

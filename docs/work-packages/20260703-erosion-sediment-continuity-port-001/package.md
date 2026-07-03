@@ -19,9 +19,16 @@ seed activates the solver unchanged — validated for the dry-day shape
 after the Codex round-1 finding (activation gates now precede the
 routed-operand validator, matching the legacy `contin.for` ordering;
 regression-tested at solver and frame/r7d8 level). Production outputs
-are unchanged this increment; the DFF-WS3 sediment HOLD stands until
-1b. Increment-1b SCAFFOLDED 2026-07-03 (entry gate + handoff prompt in
-artifacts/), ready for execution.**
+are unchanged; the DFF-WS3 sediment HOLD stands until the 1b activation.
+**INCREMENT-1b IN PROGRESS 2026-07-03 (branch
+`erosion-inc1b-operand-production`, awaiting Codex review, NOT on main):
+the 1b-A pure-producer subset is landed and gated (the `frcfac`/`shears`,
+`prtcmp`/`falvel`/`yalin`/`trcoef`, and `detinr` producers now EXIST in
+`direct_runtime/erosion_operands.rs` — superseding this header's original
+"no producer exists" premise for those chains); the `effint`/`effdrr`
+runtime export + activation-flag wiring (also 1b-A) are HELD, and 1b-B/1b-C
+are blocked at the winter freeze-thaw coupling. See the staged status
+below and [`artifacts/implementation-1b.md`](artifacts/implementation-1b.md).**
 Governing authority:
 [`SC-SED-001`](../../specifications/science-contracts/contracts/SC-SED-001.md)
 (Hillslope Erosion Process Contract, v41, 56 invariants);
@@ -78,18 +85,21 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
   executor prompt in
   [`artifacts/increment-1b-handoff-prompt.md`](artifacts/increment-1b-handoff-prompt.md).
   Three gated stages, production flip last:
-  - **1b-A — event/transport operands (no new daily state): DONE +
-    GATED 2026-07-03** (branch `erosion-inc1b-operand-production`,
-    awaiting Codex review). `prtcmp`/`falvel` particle classes +
-    `veleff`; `shield`/`yalin`/`trcoef` → `kt/kt2/ktrato/tcend`;
-    `frcfac`+`shears` rill hydraulics (`shrsol`/`shrend`, Gilley width);
-    `detinr` assembly; cropland/non-cropland interrill delivery — all in
-    `direct_runtime/erosion_operands.rs`, typed + fail-closed, 14 unit
-    tests + the `erod16` fixture test swapped to the production
-    producers. `effint`/`effdrr` (a WB14/WB16 runtime export, not a pure
-    producer) and the `kiadjf/kradjf/tcadjf` chain (1b-B) remain
-    documented deferrals. Seed stays disabled; production outputs
-    unchanged. See [`artifacts/implementation-1b.md`](artifacts/implementation-1b.md).
+  - **1b-A — event/transport operands (no new daily state): PURE-PRODUCER
+    SUBSET DONE + GATED; remaining runtime surfaces HELD** (branch
+    `erosion-inc1b-operand-production`, awaiting Codex review). Landed
+    (production, typed, fail-closed, in `direct_runtime/erosion_operands.rs`,
+    16 unit tests + the `erod16` fixture test swapped onto them):
+    `prtcmp`/`falvel` particle classes + `veleff`; `shield`/`yalin`/
+    `trcoef` → `kt/kt2/ktrato/tcend`; `frcfac`+`shears` rill hydraulics
+    (`shrsol`/`shrend`, Gilley width); cropland/non-cropland interrill
+    delivery; `detinr`. **HELD (in-scope-1b-A but not delivered — this is
+    why the stage is a subset, not complete):** the `effint`/`effdrr`
+    runtime export (a WB14/WB16 excess-surface integration, not a pure
+    producer) and the activation-flag wiring (`beta`/`surface_frozen`
+    trivial; `theta_suppressed`'s `frara` melt-branch shares the winter
+    block). Seed stays disabled; production outputs unchanged. See
+    [`artifacts/implementation-1b.md`](artifacts/implementation-1b.md).
   - **1b-B — daily erodibility adjustments: BLOCKED at a confirmed
     stop-condition.** The `soil.for` chain is portable (consolidation
     via `scon` baselines + `rfcum`/`daydis` accumulators; cover/root/

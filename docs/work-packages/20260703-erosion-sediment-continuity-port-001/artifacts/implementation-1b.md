@@ -10,17 +10,26 @@ source; **Ran** = command executed in this session on this branch.
 
 ## Summary
 
-**Stage 1b-A (event/transport operand producers) is COMPLETE and gated.**
+**The 1b-A pure-producer subset is COMPLETE and gated.** The full 1b-A
+stage as scoped in the entry gate is **NOT** complete: it also includes
+the `effint`/`effdrr` runtime export and the activation-flag wiring, which
+are runtime-surface integration items (not pure producers) and are held —
+see "1b-A remaining runtime surfaces (HELD)" below. This is an
+**executed-hold of the pure-producer subset**, not a full-stage
+completion; the earlier "DONE + GATED" framing was corrected after Codex
+review round 1 (High finding: it overclaimed stage completion while those
+surfaces were still test-built/deferred).
+
 **Stages 1b-B and 1b-C are BLOCKED at a confirmed, evidence-backed
 stop-condition** (the winter freeze-thaw coupling) and are handed back to
 review with the boundary characterized, per the handoff's explicit
 instruction ("if a stage's gate cannot close … stop at the declared
 boundary, record it defect-shaped, and hand off — do not force"). The
-production seed enable is therefore **not flipped** this increment; 1b-A
-lands the pure producers behind the still-disabled seed, exactly as the
-1b-A gate specifies ("producers exist but the seed stays disabled").
+production seed enable is therefore **not flipped** this increment; the
+pure producers land behind the still-disabled seed, exactly as the 1b-A
+gate specifies ("producers exist but the seed stays disabled").
 
-## 1b-A — what landed (COMPLETE)
+## 1b-A — what landed (pure-producer subset)
 
 New module `crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_operands.rs`:
 production, typed, fail-closed source-intent ports (ADR-0024, baseline
@@ -38,33 +47,67 @@ production, typed, fail-closed source-intent ports (ADR-0024, baseline
 | `erosion_interrill_delivery_ratio` | `param.for:412-459` | cropland `rif`/`drinti`/`intdr` model + the non-cropland `intdr = 1` branch |
 | `erosion_detinr` | `param.for:463-518` | `ki·kiadjf·effint·(runoff/effdrr)·intdr·rspace/width`; zero on no-width / no-excess-duration |
 
-**Fail-closed posture:** every producer surfaces NaN / non-positive
-domains / invalid texture as typed `DirectRuntimeError`, never defaults.
+**Fail-closed posture:** every producer validates its inputs finite
+(NaN → typed `NonFiniteDirectValue`) and rejects invalid domains (negative
+erodibility/geometry, non-positive shear/transport, out-of-range texture)
+as typed `DirectRuntimeError`, never silent defaults. The legacy
+exact-zero branches are preserved **only** for exact zeros and are
+distinguished from invalid negative/NaN inputs: `erosion_detinr` returns
+`0.0` for exact-zero rill width or excess duration (the legacy
+`width.gt.0.0` / `effdrr.gt.0.0` else-branches) but errors on
+negative/NaN; `erosion_rill_friction` keeps the exact-zero cover/height
+branches but errors on negative/NaN cover inputs. (This uniform posture
+was completed after Codex review round 1, Medium finding: the first cut
+let `erosion_detinr` and the rill-friction helper treat NaN/negative
+inputs as the zero case through plain `> 0.0` comparisons; both now
+validate-then-branch, with regression tests.)
 
-**Gate 1b-A (Ran):**
-- 14 producer unit tests (`tests_mod/direct_runtime_erosion_operands.rs`),
+**Gate — pure-producer subset (Ran):**
+- 16 producer unit tests (`tests_mod/direct_runtime_erosion_operands.rs`),
   each hand-checked against the legacy equation on the McKenzie
   clay-loam texture (Stokes closed form to 1e-15, `prtcmp` unity + clay
   fraction, effective-particle log-mean, Shields on-table + extrapolation,
   yalin sandy-adjustment identity, transport `ktrato`/`tcend`, Gilley
   width growth + `rspace` cap, cropland/non-cropland delivery branches,
-  detinr product form + zero cases, fail-closed domains). **14/14 green.**
+  detinr product form + exact-zero cases, and the fail-closed NaN/negative
+  domain regressions for `detinr` and rill hydraulics). **16/16 green.**
 - The `erod16` fixture-forcing conservation test now consumes the
-  **production producers** (its Increment-1 test-harness operand chain is
-  deleted). It still runs `forest_high_severity_clay_loam` end-to-end
-  through `openwepp-cli-hill`, solves every storm day above the `passby`
-  gate with the production particle/transport/hydraulics/detinr operands,
-  and asserts conservation + nonzero detachment + toe export on the
-  McKenzie storm population. **Green (Ran, ~22 s).**
-- Two operands remain documented test inputs in `erod16` because their
-  production producer is **not a pure function** and is a separate
-  runtime-integration item, not part of the 1b-A pure-producer set:
-  - `effint`/`effdrr` — a runtime export from the WB14/WB16
-    rainfall-excess machinery (`grna.for:607`/`reid.for` `sumint`/`durre`
-    semantics). WB16 already computes an excess duration internally
-    (`runoff.rs:792`); exposing `effint`/`effdrr` as typed shadow
-    surfaces is a bounded runtime change queued for the flip.
-  - `kiadjf`/`kradjf`/`tcadjf` — the 1b-B daily chain (see below).
+  **production producers** for the pure-producer surface (its Increment-1
+  test-harness operand chain is deleted). It runs
+  `forest_high_severity_clay_loam` end-to-end through `openwepp-cli-hill`,
+  solves every storm day above the `passby` gate with the production
+  particle/transport/hydraulics/detinr operands, and asserts conservation
+  + nonzero detachment + toe export on the McKenzie storm population.
+  **Green (Ran, ~22 s).** It is **not fully through production producers**:
+  `effint`/`effdrr` and the daily adjustment factors are still test-built
+  (see the held/blocked items) — this test remains an integration probe
+  of the pure-producer subset, not a full-stage production gate.
+
+### 1b-A remaining runtime surfaces (HELD — the reason this is a subset)
+
+The entry gate scopes two more items into 1b-A that are **runtime-surface
+integrations, not pure producers**, and are held:
+
+- **`effint`/`effdrr` export** — the rainfall-excess mean intensity /
+  duration from the WB14/WB16 excess machinery
+  (`grna.for:607`/`reid.for` `sumint`/`durre`: `effdrr = Σ` excess-period
+  durations, `effint = Σ dur·rate / effdrr`). WB16 computes an excess
+  duration internally (`runoff.rs:792`), but `effint` needs the `sumint`
+  intensity integral over the WB14 hyetograph excess intervals — a new
+  typed shadow surface on the peak-runoff projection, not an existing
+  scalar. Held pending that runtime export. In `erod16` these are the
+  documented approximation `effdrr = effdrn`, `effint = runoff/effdrr`.
+- **Activation flags** — `beta` (rain-today → 0.5, input available),
+  `surface_frozen` (`frdp>0 && thdp<=0`, frost depth/thaw available), and
+  `theta_suppressed` (snow cover available **+ the `frara` melt-only
+  branch, which is winter-subsystem state — same block as 1b-B**). These
+  are a per-day wiring step gated by the same runtime integration.
+
+Because these two items are in-scope-1b-A but not delivered, this branch
+is an **executed-hold of the 1b-A pure-producer subset**, and the seed
+stays disabled. The remaining runtime surfaces (`effint`/`effdrr` export
++ activation-flag wiring) lift when the runtime integration lands —
+tracked in `package.md` under 1b-A.
 
 The seed stays `wave1_enabled = false` +
 `DirectWave1ContinuityInputs::zero()`; production outputs are unchanged
@@ -142,22 +185,28 @@ edits it substantially (the seed-flip stage will).
 
 ## Deliverables status
 
-1. 1b-A production producers + unit tests + `erod16` production swap —
-   **DONE, gated.**
-2. 1b-B daily adjustment chain — **portable majority specified; blocked
+1. 1b-A **pure-producer subset** (particle/transport/hydraulics/delivery/
+   detinr) + unit tests + `erod16` production swap — **DONE, gated
+   (executed-hold).**
+2. 1b-A **remaining runtime surfaces** (`effint`/`effdrr` export +
+   activation-flag wiring) — **HELD** pending the WB14/WB16 excess-surface
+   runtime integration (the `frara` sub-branch shares the winter block).
+3. 1b-B daily adjustment chain — **portable majority specified; blocked
    at the winter freeze-thaw coupling (fail-closed design recommended).**
-3. 1b-C activation — **not started; gated behind 1b-B + the winter
-   coupling.** Seed remains disabled; production outputs unchanged.
-4. This record + `package.md` update; branch pushed for Codex review.
+4. 1b-C activation — **not started; gated behind items 2+3.** Seed
+   remains disabled; production outputs unchanged.
+5. This record + `package.md` update; branch pushed for Codex review.
    **Not merged to main.**
 
 ## Full-suite result (recorded at close)
 
-**Ran:** `cargo nextest run --workspace --profile full` on the final
-branch state — **1291/1291 passed, 1 skipped, 533 s** (nextest run
-`1612f765`; +15 tests vs `main`'s 1276 — the 14 new producer tests plus
-the retained `erod16` fixture test). `cargo deny check`
-(advisories/bans/licenses/sources ok), `git diff --check` (clean), and
-the authority-suite anti-evasion check (PASS) all green. Clippy clean on
-every touched surface; the five pre-existing `dff_ws3` failures are
-untouched (verified on `main`).
+**Ran (round-1 state):** `cargo nextest run --workspace --profile full` —
+1291/1291 passed, 1 skipped, 533 s (nextest run `1612f765`).
+
+**Ran (final, post-Codex-round-1-fixes):** `cargo nextest run --workspace
+--profile full` — **1293/1293 passed, 1 skipped, 572 s** (+2 vs round-1:
+the two fail-closed NaN/negative regressions for `detinr` and rill
+hydraulics). `cargo deny check` (advisories/bans/licenses/sources ok),
+`git diff --check` (clean), and the authority-suite anti-evasion check
+(PASS) all green. Clippy clean on every touched surface; the five
+pre-existing `dff_ws3` failures are untouched (verified on `main`).

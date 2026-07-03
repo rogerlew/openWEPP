@@ -234,7 +234,8 @@ fn interrill_delivery_ratio_branches_on_lanuse() {
 }
 
 #[test]
-fn detinr_is_zero_without_width_or_excess_duration() {
+fn detinr_is_zero_only_for_exact_zero_width_or_duration() {
+    // Legacy exact-zero branches: no rill area or no excess period.
     assert_eq!(
         erosion_detinr(1.5e6, 1.0, 1.0e-5, 0.02, 1000.0, 1.0, 1.0, 0.0)
             .expect("zero width -> zero detinr"),
@@ -245,6 +246,74 @@ fn detinr_is_zero_without_width_or_excess_duration() {
             .expect("zero effdrr -> zero detinr"),
         0.0
     );
+}
+
+#[test]
+fn detinr_fails_closed_on_nan_and_negative_inputs() {
+    // NaN in any argument is a typed error, never a silent zero.
+    assert!(matches!(
+        erosion_detinr(1.5e6, 1.0, 1.0e-5, 0.02, f64::NAN, 1.0, 1.0, 0.05),
+        Err(DirectRuntimeError::NonFiniteDirectValue { .. })
+    ));
+    assert!(matches!(
+        erosion_detinr(1.5e6, 1.0, 1.0e-5, 0.02, 1000.0, 1.0, 1.0, f64::NAN),
+        Err(DirectRuntimeError::NonFiniteDirectValue { .. })
+    ));
+    // Negative width/duration is an invalid domain, distinct from the
+    // legacy exact-zero branch (which would return 0.0).
+    assert!(matches!(
+        erosion_detinr(1.5e6, 1.0, 1.0e-5, 0.02, 1000.0, 1.0, 1.0, -0.05),
+        Err(DirectRuntimeError::DirectDomainViolation { .. })
+    ));
+    assert!(matches!(
+        erosion_detinr(1.5e6, 1.0, 1.0e-5, 0.02, -1000.0, 1.0, 1.0, 0.05),
+        Err(DirectRuntimeError::DirectDomainViolation { .. })
+    ));
+    assert!(matches!(
+        erosion_detinr(-1.5e6, 1.0, 1.0e-5, 0.02, 1000.0, 1.0, 1.0, 0.05),
+        Err(DirectRuntimeError::DirectDomainViolation { .. })
+    ));
+}
+
+#[test]
+fn rill_hydraulics_fails_closed_on_nan_and_negative_inputs() {
+    let classes_cover = ErosionRillCoverInputs {
+        rilcov: 0.0,
+        canhgt_m: 0.0,
+        hmax_m: 0.0,
+        flivmx: 0.0,
+    };
+    let slopes = ErosionShearSlopes {
+        cnslp: 0.3,
+        slpend: 0.3,
+    };
+    // NaN cover input is a typed error, not a silent zero-cover friction.
+    let nan_cover = ErosionRillCoverInputs {
+        rilcov: f64::NAN,
+        ..classes_cover
+    };
+    assert!(matches!(
+        erosion_rill_hydraulics(0.01, &slopes, &nan_cover, 0.0, 1.0),
+        Err(DirectRuntimeError::NonFiniteDirectValue { .. })
+    ));
+    // Negative cover is an invalid domain.
+    let negative_cover = ErosionRillCoverInputs {
+        rilcov: -0.1,
+        ..classes_cover
+    };
+    assert!(matches!(
+        erosion_rill_hydraulics(0.01, &slopes, &negative_cover, 0.0, 1.0),
+        Err(DirectRuntimeError::DirectDomainViolation { .. })
+    ));
+    // NaN discharge and negative seed width fail closed.
+    assert!(matches!(
+        erosion_rill_hydraulics(f64::NAN, &slopes, &classes_cover, 0.0, 1.0),
+        Err(DirectRuntimeError::NonFiniteDirectValue { .. })
+    ));
+    assert!(matches!(
+        erosion_rill_hydraulics(0.01, &slopes, &classes_cover, -0.1, 1.0),
+        Err(DirectRuntimeError::DirectDomainViolation { .. })
+    ));
 }
 
 #[test]

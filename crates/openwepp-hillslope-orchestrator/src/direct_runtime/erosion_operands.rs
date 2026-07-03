@@ -414,8 +414,26 @@ pub struct ErosionRillHydraulics {
 
 /// Cropland rill friction (`frcfac.for:218-236`): `frcsol = 1.11`,
 /// `frccov = 4.5*rilcov^1.5544`, `frlive = (canhgt/hmax)*flivmx`,
-/// `frctrl = frccov + frlive + frcsol`.
-fn erosion_rill_friction(rilcov: f64, canhgt: f64, hmax: f64, flivmx: f64) -> (f64, f64) {
+/// `frctrl = frccov + frlive + frcsol`. Fail-closed: cover inputs must be
+/// finite and nonnegative (NaN / negative cover or height is a typed
+/// domain error, not a silent zero-cover fallthrough). The legacy zero
+/// branches (`rilcov <= 0` → no cover friction; `hmax <= 0` → no live
+/// friction) are preserved for the exact-zero case only.
+fn erosion_rill_friction(
+    rilcov: f64,
+    canhgt: f64,
+    hmax: f64,
+    flivmx: f64,
+) -> Result<(f64, f64), DirectRuntimeError> {
+    validate_finite("erosion.frcfac.rilcov", rilcov)?;
+    validate_finite("erosion.frcfac.canhgt", canhgt)?;
+    validate_finite("erosion.frcfac.hmax", hmax)?;
+    validate_finite("erosion.frcfac.flivmx", flivmx)?;
+    if rilcov < 0.0 || canhgt < 0.0 || hmax < 0.0 || flivmx < 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.frcfac.negative_cover",
+        });
+    }
     let frcsol = 1.11_f64;
     let frccov = if rilcov > 0.0 {
         4.5 * rilcov.powf(1.5544)
@@ -427,7 +445,7 @@ fn erosion_rill_friction(rilcov: f64, canhgt: f64, hmax: f64, flivmx: f64) -> (f
     } else {
         0.0
     };
-    (frcsol, frccov + frlive + frcsol)
+    Ok((frcsol, frccov + frlive + frcsol))
 }
 
 /// `shears.for`: rill flow shear via the Chezy uniform-flow depth
@@ -535,13 +553,21 @@ pub fn erosion_rill_hydraulics(
     rspace_m: f64,
 ) -> Result<ErosionRillHydraulics, DirectRuntimeError> {
     validate_finite("erosion.rill.qshear", qshear_m2_s)?;
+    validate_finite("erosion.rill.width_seed", width_seed_m)?;
+    validate_finite("erosion.rill.cnslp", slopes.cnslp)?;
+    validate_finite("erosion.rill.slpend", slopes.slpend)?;
+    if width_seed_m < 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.rill.width_seed",
+        });
+    }
     if rspace_m.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater) {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: "erosion.rill.rspace",
         });
     }
     let (frcsol, frctrl) =
-        erosion_rill_friction(cover.rilcov, cover.canhgt_m, cover.hmax_m, cover.flivmx);
+        erosion_rill_friction(cover.rilcov, cover.canhgt_m, cover.hmax_m, cover.flivmx)?;
     // Grow the rill width at the shear discharge (`shears.for` rwflag=1),
     // then evaluate both shears on the grown width.
     let (shrsol_raw, width_m) = erosion_shears(
@@ -603,8 +629,17 @@ pub fn erosion_interrill_delivery_ratio(
 
 /// `param.for:463-518`: interrill detachment rate
 /// `detinr = ki*kiadjf*effint*qi*intdr*rspace/width`, with
-/// `qi = runoff/effdrr`. Returns 0 when there is no rill width or no
-/// rainfall-excess duration (both physically imply no interrill supply).
+/// `qi = runoff/effdrr`.
+///
+/// Fail-closed domain handling, distinguishing the legacy exact-zero
+/// cases from invalid inputs: every argument must be finite (NaN is a
+/// typed error), the erodibility/geometry inputs must be nonnegative
+/// (negative width, duration, `ki`, `rspace`, delivery, runoff, or
+/// intensity is a typed domain violation — not a silent zero). Only an
+/// **exact** zero rill width or zero rainfall-excess duration returns
+/// `0.0` (the legacy `width.gt.0.0` / `effdrr.gt.0.0` else-branches:
+/// no rill area or no excess period physically implies no interrill
+/// supply).
 #[allow(clippy::too_many_arguments)]
 pub fn erosion_detinr(
     ki: f64,
@@ -616,18 +651,35 @@ pub fn erosion_detinr(
     rspace_m: f64,
     width_m: f64,
 ) -> Result<f64, DirectRuntimeError> {
-    if width_m.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater)
-        || effdrr_s.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater)
+    validate_finite("erosion.detinr.ki", ki)?;
+    validate_finite("erosion.detinr.kiadjf", kiadjf)?;
+    validate_finite("erosion.detinr.effint_m_s", effint_m_s)?;
+    validate_finite("erosion.detinr.runoff_depth_m", runoff_depth_m)?;
+    validate_finite("erosion.detinr.effdrr_s", effdrr_s)?;
+    validate_finite("erosion.detinr.intdr", intdr)?;
+    validate_finite("erosion.detinr.rspace_m", rspace_m)?;
+    validate_finite("erosion.detinr.width_m", width_m)?;
+    // Negative inputs are invalid domains (fail-closed), distinct from the
+    // legacy exact-zero width/duration branches.
+    if width_m < 0.0
+        || effdrr_s < 0.0
+        || ki < 0.0
+        || kiadjf < 0.0
+        || rspace_m < 0.0
+        || intdr < 0.0
+        || runoff_depth_m < 0.0
+        || effint_m_s < 0.0
     {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.detinr.negative_input",
+        });
+    }
+    // Legacy exact-zero cases: no rill area or no excess period.
+    if width_m == 0.0 || effdrr_s == 0.0 {
         return Ok(0.0);
     }
     let qi = runoff_depth_m / effdrr_s;
     let detinr = ki * kiadjf * effint_m_s * qi * intdr * rspace_m / width_m;
     validate_finite("erosion.detinr", detinr)?;
-    if detinr < 0.0 {
-        return Err(DirectRuntimeError::NegativeDirectValue {
-            field: "erosion.detinr",
-        });
-    }
     Ok(detinr)
 }
