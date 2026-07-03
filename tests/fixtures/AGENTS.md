@@ -75,6 +75,16 @@ openwepp-cli-hill \
 - If an as-built input is changed after extraction, document the exact line-level
   change and why. Examples include deliberate `ksflag` activation for frost
   observations. Do not leave silent model edits.
+- **CLIGEN `.cli` radiation clamp.** An older `.cli` (produced before the
+  generator-side clamp) can carry a daily `rad` (Langleys/day) above the openWEPP
+  sunmap horizontal daily potential, which aborts a run with
+  `CLIM-RUNTIME-E-017: radly ... out of domain (0 <= radly <= rpoth/r3)`.
+  Normalize it with `tools/clamp_cli_radly.py <file.cli> --in-place`: it caps each
+  out-of-domain day to `floor(r3)` (the same potential the runtime guard uses — a
+  faithful port of `06_simimpl28_hourly_forcing.rs` `simimpl28_sunmap` /
+  `simimpl28_day_of_year`), leaves compliant days byte-identical, and is
+  idempotent. Record the clamp in the site manifest
+  (example: `disturbed_burn/forest_high_severity_loam/`).
 - Include a one-line run recipe in the family README or site manifest.
 
 ## wepp.cloud Watershed Model Fixtures
@@ -150,6 +160,9 @@ cargo nextest run --test auth11_required_suite_obligation_guards_contract
 - Confirm no HTML error pages were saved as data: use `file`, row counts, archive
   tests, or workbook readability checks appropriate to the format.
 - For wepp.cloud model fixtures, run the intended CLI/harness path when practical.
+  If a hillslope run aborts with `CLIM-RUNTIME-E-017` (`radly` out of domain),
+  clamp the `.cli` with `tools/clamp_cli_radly.py` (see the hillslope-fixtures
+  section) and document it in the site manifest.
 - For observed-data fixtures, run the relevant harness classification or parser
   test when one exists.
 - Record skipped validation plainly in the family README, package artifact, or
