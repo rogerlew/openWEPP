@@ -2,19 +2,23 @@
 
 ## Status
 
-- `state`: **backlog (concept)** — not promotable before deciduous/mixed-forest
-  canopy fidelity becomes load-bearing for the snow program (SNOWDENSITY is
-  currently on conifer / high-cancov; this matters once the mixed-forest
-  fixtures are active) and before a growth/canopy science contract is authored.
-  Scope covers the **full deciduous/mixed canopy cycle** — autumn leaf-off
-  (frost/daylength decline) **and** spring leaf-on (thermal-time green-up) —
-  since a hemisphere-robust canopy needs both limbs physically driven. Scope
-  **also covered the ground-side complement: seasonal surface residue / litter
-  cover** (autumn leaf-drop → litter → soil thermal insulation → frost), added
-  2026-06-29 from the frost Step-3 diagnosis. That residue-cover dimension has
-  now been implemented by
+- `state`: **OPENING — promoted for implementation** (2026-07-02, operator
+  decision to open and move forward). Implementation is **sequenced
+  foundation-first** (see *Implementation Sequencing* below). The key reframe:
+  the first-class management-file `lanuse` mode — previously listed as an unmet
+  *promotion precondition* — becomes **Increment 1**, and it is the shared
+  input-authority foundation that ALSO unblocks the deferred Lane D routing
+  activation gate (`SC-OFEROUTE-001`, currently shadow-first). The canopy
+  phenology limbs (leaf-off, leaf-on) build on it under a growth–canopy
+  contract. Scope covers the **full deciduous/mixed canopy cycle** — autumn
+  leaf-off (frost/daylength decline) **and** spring leaf-on (thermal-time
+  green-up) — since a hemisphere-robust canopy needs both limbs physically
+  driven. The ground-side complement (**seasonal surface residue / litter
+  cover**: autumn leaf-drop → litter → soil thermal insulation → frost, added
+  2026-06-29 from the frost Step-3 diagnosis) is **already implemented** by
   `docs/work-packages/20260629-frost-residue-cover-implementation-001/`; the
-  remaining backlog scope is the canopy leaf-off/leaf-on cycle.
+  remaining scope is the canopy leaf-off/leaf-on cycle on the Increment-1
+  foundation.
 - `date`: 2026-06-26 (created, Claude Code)
 - `relates`:
   [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md)
@@ -51,6 +55,74 @@ leaf-off. This item therefore covers the **whole phenology**: a hemisphere-robus
 canopy needs both the cold/short-day **leaf-off** and the thermal-time
 **leaf-on** driven by physical forcing, with **no fixed Julian dates** in either
 limb.
+
+## Implementation Sequencing (foundation-first)
+
+Opening this program does **not** mean implementing the whole cycle at once. The
+work decomposes into a shared foundation plus the two physics limbs; the
+foundation is the enabling increment and also advances the deferred Lane D
+routing activation gate.
+
+### Increment 1 (foundation, the opening move) — first-class forest `lanuse` mode + management-file authority
+
+A typed `lanuse` block in the management file that carries forest phenology,
+litter, and Papanicolaou routing operands as **first-class** parameters, plus the
+parser/runtime plumbing and the compatibility-adapter posture (cropland-encoded
+forest/range fixtures are compatibility inputs; ambiguous Papanicolaou operands
+are refused / fail closed).
+
+- **Serves two programs.** It is the input-authority foundation both this
+  canopy-phenology program **and** the `SC-OFEROUTE-001` routing activation gate
+  need. **Recommend authoring it as its own work-package** (not buried in this
+  phenology doc), so Lane D activation and canopy phenology build on one
+  foundation. This doc is its physics *consumer*, not its owner.
+- **Contract surface:** ratify the *Management-file authority* principle (below)
+  into a contract — an extension of `SC-OFEROUTE-001`'s activation section or a
+  small management-input / bridge contract — so the intent is not stranded in a
+  backlog. `SC-OFEROUTE-001` rev 9 says routing is opt-in but does **not** yet
+  say *where* the opt-in authority and operands live; this closes that.
+- **Fail-closed default (resolves an open question):** active routing/phenology
+  fails closed until the management file supplies the required operands; **no**
+  silent inference from legacy cropland `row`/`ridge`/`rrinit` fields without a
+  ratified bridge contract. Consistent with the D4/D6 kernel fail-closed guards
+  and the D8 finding that these operands are load-bearing (Case 2 swung
+  `NS_trace` 0.45 → 0.96 on `Ks` alone).
+- **Depends on** the existing management parser/runtime (extends it).
+  **Blocks** Increments 2–3 **and** Lane D routing activation.
+
+### Increment 2 — canopy leaf-off (frost/daylength decline)
+
+The cold/short-day senescence physics (the `dec`/`fhr`/`frst` abstraction below),
+driven by **signed-latitude** photoperiod + frost, **no fixed Julian dates**,
+under a ratified growth–canopy science contract. **Depends on** Increment 1 (to
+carry the phenology operands) + the growth–canopy contract.
+
+### Increment 3 — canopy leaf-on (spring thermal-time green-up)
+
+The complementary limb: spring GDD threshold (+ optional chilling/photoperiod),
+warm-first ordering, signed-latitude. **Depends on** Increment 1 + Increment 2's
+contract.
+
+### Already delivered — ground-side litter / residue
+
+The autumn-leaf-drop → litter → frost-insulation complement is implemented
+(`20260629-frost-residue-cover-implementation-001`). Residual frost cells and the
+`jdharv`-anchored fall-drop window remain, to be replaced when Increment 2's
+physical phenology lands.
+
+### Cross-cutting rules (Increments 2–3)
+
+- **No fixed Julian dates anywhere**; timing emerges from signed-latitude
+  photoperiod + local temperature (hemisphere-robust by construction).
+- **SH validation** is deferrable to an NH-only interim if no SH climate source
+  is available (see open questions).
+
+### Recommended first step
+
+Spin up the **Increment-1 foundation work-package** (forest `lanuse` mode +
+management authority + the input-authority contract). It is the highest-leverage
+opening move: one foundation unblocks both the canopy limbs here and the Lane D
+routing activation gate the routing program has been deferring since D6.
 
 ## Origin (the structural finding)
 
@@ -358,21 +430,27 @@ residue-cover backlog item is implemented.
    reproducible from its sidecars alone: the `.man`/landuse record declares the
    physical mode and the Papanicolaou/canopy/litter operands used by the run.
 
-## Promotion criteria
+## Promotion criteria — status at opening (2026-07-02)
 
-- Mixed/deciduous-forest canopy fidelity is on the critical path for the snow
-  program (the SNOWDENSITY mixed-forest fixtures are active and canopy is the
-  limiting term), **and**
-- a growth–canopy science contract surface is identified to host the decline
-  invariant, **and**
-- the openWEPP management parser/runtime has a first-class forest `lanuse` mode
-  capable of carrying canopy phenology, litter, and OFE-routing roughness
-  operands, **and**
-- an SH validation climate is available (or the SH gate is explicitly deferred
-  with NH-only interim scope).
+Re-framed as **increment entry-gates** now that the program is opened. The
+operator opened it foundation-first, so the previously-blocking "first-class
+`lanuse` mode" precondition is now the deliverable of Increment 1, not a gate.
 
-When all hold, spin up a dated work-package under `docs/work-packages/` and
-route the new physics through top-down contract authoring.
+- **Increment 1 (foundation) — READY NOW.** Needs only the existing management
+  parser/runtime to extend; no prerequisite unmet. This is the opening
+  work-package.
+- **Increment 2 (leaf-off) — gated on** Increment 1 + a ratified growth–canopy
+  science contract surface (candidate: the plant-growth canopy contract that
+  governs `06_growth_state.rs` `cancov`).
+- **Increment 3 (leaf-on) — gated on** Increment 1 + Increment 2's contract.
+- **Snow-program criticality** (SNOWDENSITY mixed-forest fixtures active, canopy
+  limiting) sharpens the *priority* of Increments 2–3 but does not gate
+  Increment 1, which stands on the routing-activation need alone.
+- **SH validation climate** available, or the SH gate explicitly deferred with
+  NH-only interim scope (applies to Increments 2–3 acceptance).
+
+Each increment spins up its own dated work-package under `docs/work-packages/`
+and routes the new physics through top-down contract authoring.
 
 ## Open questions
 
