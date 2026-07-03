@@ -94,33 +94,36 @@ surface boundary symbols. Plus:
 - the authoritative-lookup ingestion plan (the `(texture × class)` operand values;
   `LANUSE-AUTH-6` single-source-of-truth) and the drifted-file reconciliation list.
 
-## Increment 2 — SCOPED (parser/runtime code, next) — expanded after Codex review
+## Increment 2 — DELIVERED (parser/runtime code)
 
-The Rust build (scope widened per the review — the projection path and *all*
-sections, not just Plant/Initial):
-- **Parser (`parsers/management.rs`):** native datver in `ALLOWED_DATVERS` +
-  `DatverFamily` arm; forest sentinel semantics; `PlantScenarioData::Forest` /
-  `InitialScenarioData::Forest` + parse. **Section policy for the other
-  sections** — operation / surface / contour / drain / yearly currently reject
-  non-cropland (e.g. `management.rs:704`, `:1057`); define explicit **no-op /
-  forest-supported** branches for each, plus blank-description-slot handling
-  (`normalize_lines` `#landuse` markers) and tests.
+Implemented on branch `dff-ws1-inc2-native-forest-lanuse` (gated; Codex-reviewed,
+round-1 + round-2 findings addressed). Full build summary, decisions, and open
+items: [`artifacts/increment-2-implementation.md`](artifacts/increment-2-implementation.md).
+Summary of what landed:
+- **Parser (`parsers/management.rs`):** `ow-lanuse-1` native datver +
+  `DatverFamily::OwLanuse1`; forest sentinel (`landuse=3`);
+  `PlantScenarioData::Forest` / `InitialScenarioData::Forest` /
+  `YearlyScenarioData::Forest`; all-section policy (supported plant/initial/
+  yearly; `ForestSectionNotApplicable` fail-closed for op/surface/contour/drain);
+  blank-slot handling; per-section tests.
 - **Projection (`runtime_inputs/01_management.rs` + `05_projection_helpers.rs`):**
-  add forest arms to the currently cropland-gated **yearly projection**
-  (`:635`), **growth projection** (`05_projection_helpers.rs:158`), and
-  **initial canopy seeding** (`:259`) — emit the growth symbols the kernel reads.
-- **Tier-A physics authority (High):** do **not** run on unnamed "forest
-  defaults." Either name a forest parameter authority, require explicit values,
-  or ship a clearly-labeled **default-off / placeholder mode** with manifest
-  warnings and **no fidelity claim**. Active growth symbols drive canopy / LAI /
-  roots / ET / interception / runoff, so silent defaults would just rebrand the
-  cropland masquerade.
-- **Soil/management reconciliation (Medium):** a manifest requirement tying the
-  `.man` class, the lookup row, `openwepp-disturbed.json`, and the `.sol`
-  `DisturbedPolicy` together, **failing closed on mismatch** (not a deferred
-  "may").
-- Fail-closed per `LANUSE-AUTH-2`; parser-contract + projection tests; no
-  daily-kernel change. Large; natural Codex handoff or a dedicated worktree.
+  forest arms at the yearly / growth-equation / initial-canopy-seed sites,
+  emitting the same growth symbols the daily kernel reads; kernel unchanged.
+- **Tier-A physics authority:** resolved as **explicit, required, fail-closed
+  values** (`LANUSE-AUTH-2`) — no cropland/rangeland defaults. Lookup-owned
+  operands are authored in the `.man` as of-record values that MUST equal the
+  authoritative `(texture × class)` lookup row.
+- **Reconciliation (`08_forest_lanuse_reconciliation.rs`):** the **`.man` forest
+  class ↔ `.sol` `DisturbedPolicy`** leg, fail-closed on mismatch, wired into the
+  production seed authority and scoped to schedule-referenced forest classes.
+  **Scope note (corrected):** automated ingestion of the authoritative
+  `(texture × class)` lookup table and the `openwepp-disturbed.json` class→
+  management binding into the reconciliation is a **follow-on** (`MAN-GAP-005`),
+  not part of this increment.
+- **End-to-end:** a native forest `.man`+`.sol` run
+  (`tests/fixtures/dff_ws1_native_forest/`, test
+  `tests/integration/dff_ws1_native_forest_cli.rs`) runs through the production
+  CLI with a PMET hit + reconciliation pass.
 
 ## Later (not WS-1)
 

@@ -146,6 +146,21 @@ Still recommended (Codex): one focused full-CLI forest `.man` + `.sol` run,
 including a PMET-sidecar case, as end-to-end verification. The PMET no-fallback
 behaviour now has unit coverage; the full-CLI run remains a follow-on.
 
+## Codex review response (round 2 — both findings addressed)
+
+- **Medium — PMET guard only checked the first scheduled slot:** the forest PMET
+  discipline keyed off `active_yearly_scenario` (first slot / first yearly ref),
+  so a mixed cropland-first/forest-later schedule could dodge it. **Fix:**
+  replaced with `management_schedules_native_forest`, which scans **every**
+  scheduled yearly ref — any forest scenario present ⇒ forest PMET discipline
+  (fail closed on a lookup fallback). Test:
+  `cropland_first_forest_later_schedule_applies_forest_pmet_discipline`
+  (year-1 cropland `Corn` active, year-2 forest; sidecar miss ⇒ fail closed).
+- **Low — stale package wording:** rewrote package.md's "Increment 2 — SCOPED …
+  next" section to "DELIVERED", and corrected the reconciliation description to
+  the implemented `.man`↔`.sol` leg with lookup/`openwepp-disturbed.json`
+  ingestion deferred to `MAN-GAP-005`.
+
 ## End-to-end CLI verification (`Ran:` — Codex's requested full run)
 
 Built a native-forest run dir and ran it through the production hillslope CLI

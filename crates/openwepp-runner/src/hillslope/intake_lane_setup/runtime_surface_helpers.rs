@@ -48,7 +48,7 @@ pub(crate) fn project_typed_pmetpara_runtime(
     }
 
     let active_crop_name = active_management_crop_name(management)?;
-    let native_forest = active_management_is_native_forest(management);
+    let native_forest = management_schedules_native_forest(management);
     // Look up in the configured mode so query normalization matches how the
     // sidecar records were parsed (mixing modes would spuriously miss). The
     // lookup records whether it took the compatibility first-row fallback.
@@ -139,14 +139,23 @@ pub(crate) fn active_management_crop_name(
     Ok(management.registries.plants[itype - 1].meta.name.as_str())
 }
 
-/// Whether the active management scenario is the openWEPP-native forest
-/// `lanuse` mode. Native forest fails closed on a PMET lookup miss
-/// (`LANUSE-AUTH-2`), never the compatibility first-row fallback.
-pub(crate) fn active_management_is_native_forest(management: &ManagementParseOutput) -> bool {
-    matches!(
-        active_yearly_scenario(management).map(|yearly| &yearly.data),
-        Ok(YearlyScenarioData::Forest(_))
-    )
+/// Whether the management schedule references **any** native forest
+/// (`ow-lanuse-1`) yearly scenario — scanning every scheduled slot, not just the
+/// first, so a mixed cropland-first/forest-later schedule still gets the forest
+/// PMET discipline (fail closed on a lookup fallback, `LANUSE-AUTH-2`).
+pub(crate) fn management_schedules_native_forest(management: &ManagementParseOutput) -> bool {
+    management.schedule.slots.iter().any(|slot| {
+        slot.yearly_refs.iter().any(|&yearly_ref| {
+            matches!(
+                management
+                    .registries
+                    .yearlies
+                    .get(yearly_ref.wrapping_sub(1))
+                    .map(|yearly| &yearly.data),
+                Some(YearlyScenarioData::Forest(_))
+            )
+        })
+    })
 }
 
 #[cfg(test)]
@@ -333,6 +342,129 @@ d3
         assert!(
             selected.fallback_first_row_used,
             "cropland compatibility behaviour (first-row fallback) is preserved"
+        );
+    }
+
+    // A mixed `ow-lanuse-1` schedule: year 1 is a cropland scenario (plant
+    // `Corn`, the first-slot "active" crop), year 2 is a forest scenario. A
+    // first-slot-only check would miss the forest and take the compatibility
+    // fallback; the schedule-wide check must apply forest PMET discipline.
+    const CROPLAND_FIRST_FOREST_LATER_MAN: &str = "ow-lanuse-1
+1
+2
+2
+Corn
+d1
+d2
+d3
+1 # Landuse - <Cropland>
+WeppWillSet
+14.0 3.0 0.0 2.0 5.0 5.0 0.0 0.3 1.0 0.005
+0.5 1.0 0.45 0.99 17.0 0.0 0.42 0.2
+2
+0.0 0.0 20.0 0.1 0.5 0.3 0.33 0.2 90 40.0
+-40.0 2.0 0.0
+Forest_Plant
+d1
+d2
+d3
+3 # Landuse - <Forest>
+forest
+14.0 3.0 0.0 2.0 0.45
+17.0 0.2 0.42 0.0 0.5
+20.0 0.1 90.0 0.33 0.2
+2.0 0.3 1.0 1.0
+5.0 0.005
+0.0 0.0
+-5.0 5.0 0.2 0.1
+0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
+0.02 2.0 8.0 500.0
+0
+1
+Ini
+d1
+d2
+d3
+1 # Landuse - <Cropland>
+1.1 0.4 330 1000 0.0 0.3
+1
+2
+400.0 0.06 0.3 0.06 0.0
+1
+0.0 0.0 0.0 0.0 0.0
+0.2 0.2
+0
+0
+0
+2
+Year_Crop
+d1
+d2
+d3
+1 # Landuse - <Cropland>
+1
+0
+0
+0
+2
+0
+0
+0
+0.0
+3
+Year_Forest
+d1
+d2
+d3
+3 # Landuse - <Forest>
+2
+0
+0
+0
+2
+0
+0
+0
+0.0
+3
+Manage
+d1
+d2
+d3
+1
+1
+1
+2
+1
+1
+1
+2
+";
+
+    #[test]
+    fn cropland_first_forest_later_schedule_applies_forest_pmet_discipline() {
+        let management =
+            parse_management_from_str(CROPLAND_FIRST_FOREST_LATER_MAN, ParseMode::Strict)
+                .expect("mixed cropland-first/forest-later man parses");
+        // The forest scenario is scheduled in year 2, not the first slot.
+        assert!(
+            management_schedules_native_forest(&management),
+            "schedule-wide forest detection must find the year-2 forest scenario"
+        );
+        // The active (year-1) crop is cropland `Corn`, absent from the sidecar,
+        // so the compatibility lookup would fall back — forest discipline rejects it.
+        let mut pmetpara = sidecar();
+        let error = project_typed_pmetpara_runtime(
+            &management,
+            &mut pmetpara,
+            PmetparaParseMode::Compatibility,
+        )
+        .expect_err("a schedule containing forest must fail closed on a PMET fallback");
+        assert!(
+            error
+                .to_string()
+                .contains("native forest requires an explicit PMET record")
         );
     }
 }
