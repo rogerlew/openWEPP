@@ -1,11 +1,11 @@
 # Erosion Sediment-Continuity Direct-Runtime Port (SC-SED-001, Wave-1 first)
 
 Status: **INCREMENT-1 BUILT + GATED, 2026-07-03 — solver landed on branch
-`worktree-erosion-inc1-wave1-continuity`, awaiting Codex review (not on
+`origin/erosion-inc1-wave1-continuity`, awaiting Codex review (not on
 main). The normalized single-OFE Wave-1 continuity solver
 (route/erod/runge/xcrit/depc/depeqs/depend/depos + param/xinflo/sloss),
 shadow-first runtime wiring, publication projection, and the hard
-conservation gates are live and validated (13 unit tests + the McKenzie
+conservation gates are live and validated (15 unit tests + the McKenzie
 clay-loam fixture-forcing conservation test, real storm forcing,
 nonzero detachment proven). SCOPE DEVIATION (declared boundary): the
 production seed enable is HELD — the Increment-0 premise that the Wave-1

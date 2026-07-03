@@ -1,8 +1,9 @@
 # Increment-1 — Implementation Record (single-OFE Wave-1 sediment-continuity solve)
 
 Author: Claude Code (ADR-0035 executor exception), 2026-07-03.
-Branch: `worktree-erosion-inc1-wave1-continuity` (not merged to `main`;
-awaiting Codex review per the WP non-negotiables).
+Branch: `origin/erosion-inc1-wave1-continuity` (local worktree branch
+`worktree-erosion-inc1-wave1-continuity`; not merged to `main`, awaiting
+Codex review per the WP non-negotiables).
 
 Evidence classes are labeled per claim: **Static** = read/derived from
 source; **Ran** = command executed in this session on this branch.
@@ -199,7 +200,8 @@ replacements for legacy UB/quirks, none reachable on the single-OFE
 - SC-unit lint — runs inside the full nextest profile
   (`hphys0279_sc_unit_compliance_lint_contract`).
 
-**Unit tests** (Ran, 13/13 green,
+**Unit tests** (Ran, 15/15 green — 13 from the original increment plus
+the two Codex round-1 dry-day regressions,
 `tests_mod/direct_runtime_wave1_continuity.rs`): RK4 vs analytic
 constant-coefficient solution (≤1e-9 over the 101-point march); interrill
 floor exact clamp; all five `mshear` regimes with hand-solved crossings;
