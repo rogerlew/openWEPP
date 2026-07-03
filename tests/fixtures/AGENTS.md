@@ -3,7 +3,7 @@
 
 ## Authorship
 **This document and all AGENTS.md documents are maintained by GitHub Copilot /
-Codex, which retain full authorship rights for all AGENTS.md content revisions.**
+Codex / Claude Code, which retain full authorship rights for all AGENTS.md content revisions.**
 Revisions must preserve applicable user direction, package scope, review
 expectations, and higher-precedence governance.
 
