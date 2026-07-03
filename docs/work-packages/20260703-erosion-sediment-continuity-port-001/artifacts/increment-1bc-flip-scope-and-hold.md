@@ -52,6 +52,54 @@ claim. The stateful parts of 1b-B (the `daydis`/`rfcum` accumulators and
 the prior-`ifrost` frost-regime resolution) are runtime wiring, part of
 the flip (item 4 below).
 
+## Integration-surface audit (2026-07-03, Static) — de-risks the flip
+
+Concrete findings from reading the frame + seed-authority surfaces, so the
+flip is executable no-intervention:
+
+- **Byte-stability risk is LOW.** The erosion span is a pure downstream
+  consumer: `run_r7d6_erosion_span` reads runoff/frost/cover state and
+  writes only `self.erosion` + `erosion_downstream_operands` +
+  `erosion_shadow_projection`. It mutates no shared water/growth state, so
+  enabling it cannot perturb non-sediment publication surfaces (wat, water
+  balance, runoff). The byte-stability gate should therefore pass by
+  construction for non-sediment columns; the shadow-run diff is a
+  confirmation, not a debugging tool.
+- **Most daily operand inputs are already frame-reachable at erosion-span
+  time** (`DirectDayFrame`): `wb14_hourly_excess_m[24]` (hourly excess),
+  `frost_runtime_carry` (`dfrost_m`/`dthaw_m` → `surface_frozen` + the
+  frost-regime split), `winter_column` (snow depth → `theta_suppressed`
+  snow-cover part), the `decomposition`/`residue_partition`/`growth`
+  states (cover/root/residue masses → 1b-B adjustment factors), and
+  `peak_runoff_shadow_projection` (peakro/runoff). So the per-day assembly
+  reads existing frame state — no new plumbing for these.
+- **Genuine new plumbing (the real work):**
+  1. **Seed-authority signature.** `direct_production_typed_erosion_authority`
+     currently receives only the WB11 soil projection (thetfc/thetdr, **no
+     texture**), the slope projection (slplen/avgslp, **no points**), and
+     peak-runoff. The static seed needs surface-layer **texture/rfg** (from
+     the parsed `SoilProfile` or a new texture projection), the **slope
+     points** (for `derive_wave1_slope_segments`), and the **cover
+     surfaces** (from the PL management projection). Threading these to the
+     seed authority is the first change.
+  2. **`daydis`/`rfcum` accumulators.** New **persistent daily state** (no
+     existing analog carries it) — add to the lane frame, initialize from
+     the management `daydi1` (fire-reset for the disturbed fixture),
+     update each day (`rfcum += precip+irr` when `tave > 0`;
+     `daydis += 1` when `rfcum > 0.01`). Precedent exists (frost/snow
+     carries, decomposition mass evolve daily), but it is a real threaded
+     accumulator.
+  3. **Raw-rainfall surface for `effint`.** `wb14_hourly_excess_m` gives
+     the hourly excess, but `effint`'s `sumint` needs the raw **rainfall**
+     rate per interval. Add a parallel `wb14_hourly_rainfall_m[24]` (the
+     WB14 loop already has `interval.intensity_m_s`; bin it like the
+     excess) so `erosion_effective_intensity` can be evaluated from the two
+     hourly arrays. Isolated additive surface.
+  4. **Frost-regime resolution.** Map `frost_runtime_carry` + the layer-1
+     water-vs-`thetfc` test + prior-`ifrost` (new 1-bit carry) to
+     `ErosionFrostRegime` (`Unfrozen`/`FrozenSurface`/`Thawing`). The
+     `Thawing` case fail-closes (1b-B) — see the hold below.
+
 ## Why the flip is a distinct large integration
 
 The Wave-1 operands are **per-OFE-day** (they flow from the daily
