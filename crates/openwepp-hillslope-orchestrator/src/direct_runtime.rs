@@ -149,6 +149,7 @@ mod erosion;
 mod erosion_adjustments;
 mod erosion_continuity;
 mod erosion_operands;
+mod erosion_seed;
 mod evapotranspiration;
 mod growth;
 mod normalization;
@@ -192,6 +193,9 @@ pub use erosion_operands::{
     erosion_effective_intensity, erosion_effective_particle, erosion_falvel,
     erosion_interrill_delivery_ratio, erosion_particle_composition, erosion_rill_hydraulics,
     erosion_shield, erosion_transport_coefficients, erosion_trcoef, erosion_yalin,
+};
+pub use erosion_seed::{
+    DirectWave1DailyState, DirectWave1OperandSeed, assemble_wave1_continuity_inputs,
 };
 pub use evapotranspiration::{
     DirectEvapotranspirationComputeDownstreamOperands, DirectEvapotranspirationComputeInputs,

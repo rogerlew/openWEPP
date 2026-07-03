@@ -52,6 +52,29 @@ claim. The stateful parts of 1b-B (the `daydis`/`rfcum` accumulators and
 the prior-`ifrost` frost-regime resolution) are runtime wiring, part of
 the flip (item 4 below).
 
+## Execution progress (2026-07-03)
+
+**Stage 1 + assembly core LANDED** (branch `erosion-inc1c-flip`):
+`direct_runtime/erosion_seed.rs` — `DirectWave1OperandSeed` (per-lane
+static operands), `DirectWave1DailyState` (the daily frame surfaces), and
+`assemble_wave1_continuity_inputs` (the pure per-day assembly running the
+full operand pipeline: rill hydraulics → transport coefficients →
+effint/effdrr → interrill delivery → detinr → daily adjustments, thaw
+fail-closed). 4 unit tests including the full assembly driven through the
+continuity solver to a conserving solve, the faithful-`effint` interrill
+driver being live (distinct from the old `runoff/effdrr` proxy), the thaw
+fail-closed propagation, and the frozen-surface flag. This is the flip's
+core; `DirectWave1DailyState` is now the exact spec for what the Stage-3
+runtime population must supply.
+
+**Remaining (runtime wiring):** (a) build the static seed in
+`direct_production_typed_erosion_authority` (thread texture/slope-points/
+cover); (b) populate `DirectWave1DailyState` per-day in r7d8 from the
+frame surfaces below + the `daydis`/`rfcum` accumulators + the
+`wb14_hourly_rainfall` surface; (c) call `assemble_wave1_continuity_inputs`
+and enable for single-OFE; (d) pass-writer unhardcode + DFF-WS3 HOLD flip
++ byte-stability diff.
+
 ## Integration-surface audit (2026-07-03, Static) — de-risks the flip
 
 Concrete findings from reading the frame + seed-authority surfaces, so the

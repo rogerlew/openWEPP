@@ -3,6 +3,7 @@ use std::sync::{Mutex, OnceLock};
 mod direct_runtime;
 mod direct_runtime_erosion_adjustments;
 mod direct_runtime_erosion_operands;
+mod direct_runtime_erosion_seed;
 mod direct_runtime_r4il;
 mod direct_runtime_r4mo;
 mod direct_runtime_r4n;

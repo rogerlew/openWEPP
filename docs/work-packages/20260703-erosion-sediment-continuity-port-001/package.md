@@ -135,11 +135,18 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
     **stateful** parts (the `daydis`/`rfcum` accumulators + the
     prior-`ifrost` frost-regime resolution) are runtime wiring, part of
     the flip.
-  - **1b-C — activation: HELD (spec'd no-intervention).** The seed flip
-    is a distinct stateful integration (per-day operand threading + new
-    persistent daily accumulators + `effint`/`effdrr` WB14 surfacing +
+  - **1b-C — activation: IN EXECUTION 2026-07-03 (staged, branch
+    `erosion-inc1c-flip`).** Operator-directed after the
+    integration-surface audit (byte-stability risk LOW — pure consumer;
+    most daily inputs frame-reachable). Stages: (1) static erosion
+    operand seed; (2) `daydis`/`rfcum` accumulators + `wb14_hourly_rainfall`
+    surface + frost-regime resolution; (3) per-day operand assembly in
+    r7d8; (4) enable single-OFE + pass-writer unhardcode + DFF-WS3 HOLD
+    flip + full-run byte-stability. Each stage gated. The seed flip
+    remains a distinct stateful integration (per-day operand threading +
+    new persistent daily accumulators + `effint`/`effdrr` WB14 surfacing +
     enable + pass-writer unhardcode + DFF-WS3 HOLD flip + full-run
-    byte-stability). Held rather than forced in a single rushed pass:
+    byte-stability), previously held rather than forced in a single pass:
     the winter `fcycle` coupling is a confirmed hard boundary inside it
     (bounded by the 1b-B fail-closed thaw guard, which makes the enable
     safe by construction), and the byte-stability gate needs a full

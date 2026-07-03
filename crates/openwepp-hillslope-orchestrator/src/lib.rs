@@ -122,6 +122,9 @@ pub use direct_runtime::{
     write_wp2_frost_pair_trace,
 };
 pub use direct_runtime::{
+    DirectWave1DailyState, DirectWave1OperandSeed, assemble_wave1_continuity_inputs,
+};
+pub use direct_runtime::{
     EROSION_PARTICLE_CLASS_COUNT, ErosionEffectiveIntensity, ErosionExcessInterval,
     ErosionParticleClass, ErosionRillCoverInputs, ErosionRillHydraulics, ErosionShearSlopes,
     ErosionTextureInputs, ErosionTransportCoefficients, erosion_detinr,

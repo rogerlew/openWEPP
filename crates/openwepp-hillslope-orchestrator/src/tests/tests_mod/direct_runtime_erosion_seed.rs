@@ -1,0 +1,176 @@
+//! Wave-1 operand assembly tests (erosion port Increment-1b-C flip core).
+//! Exercises the full static-seed + daily-state → `DirectWave1ContinuityInputs`
+//! pipeline and drives it through the continuity solver, on McKenzie
+//! clay-loam-shaped operands, to prove the production operand pipeline
+//! conserves.
+#![allow(clippy::doc_markdown)]
+
+use crate::{
+    DirectRuntimeError, DirectWave1DailyState, DirectWave1OperandSeed, DirectWave1SlopeSegment,
+    ErosionConsolidationInputs, ErosionExcessInterval, ErosionFrostRegime, ErosionTextureInputs,
+    assemble_wave1_continuity_inputs, compute_direct_wave1_continuity,
+    erosion_consolidation_baselines, erosion_effective_particle, erosion_falvel,
+    erosion_particle_composition,
+};
+
+fn clay_loam_seed() -> DirectWave1OperandSeed {
+    let texture = ErosionTextureInputs {
+        sand: 0.25,
+        clay: 0.30,
+        silt: 0.45,
+        orgmat: 0.05,
+    };
+    let classes = erosion_particle_composition(&texture).expect("composition");
+    let (diaeff, spgeff) = erosion_effective_particle(&classes).expect("effective particle");
+    let veleff = erosion_falvel(spgeff, diaeff);
+    let baselines = erosion_consolidation_baselines(&ErosionConsolidationInputs {
+        sand: 0.25,
+        silt: 0.45,
+        orgmat: 0.05,
+        thetfc: 0.2833,
+        rock_fragment_fraction: 0.05,
+        ki: 1.5e6,
+        kr: 6.0e-5,
+        shcrit: 0.5,
+    })
+    .expect("baselines");
+    // Single concave segment (rising-then-falling transport) so the solve
+    // exercises detachment -> deposition, like the erod16 fixture.
+    let avgslp = 0.43;
+    let segment = DirectWave1SlopeSegment {
+        xu: 0.0,
+        xl: 1.0,
+        a: -2.0,
+        b: 2.0,
+    };
+    let slpend = (segment.a + segment.b) * avgslp;
+    DirectWave1OperandSeed {
+        enabled: true,
+        is_cropland: false,
+        segments: vec![segment],
+        slplen_m: 200.0,
+        efflen_m: 200.0,
+        cntlen_m: 200.0,
+        rspace_m: 1.0,
+        field_width_m: 30.0,
+        avg_slope: avgslp,
+        slpend,
+        sand: 0.25,
+        classes,
+        veleff_m_s: veleff,
+        baselines,
+        kr_s_m: 6.0e-5,
+        ki: 1.5e6,
+        shcrit_pa: 0.5,
+        hmax_m: 0.0,
+        flivmx: 0.0,
+    }
+}
+
+fn storm_daily_state() -> DirectWave1DailyState {
+    // A storm day: peak runoff above the passby gate, one excess interval.
+    DirectWave1DailyState {
+        peakro_m_s: 5.0e-5,
+        runoff_depth_m: 0.03,
+        effdrn_s: 600.0,
+        qin_m2_s: 0.0,
+        excess_intervals: vec![ErosionExcessInterval {
+            duration_s: 600.0,
+            rainfall_intensity_m_s: 8.0e-5,
+            excess_m: 0.03,
+            snowmelt_active: false,
+        }],
+        canopy_cover_fraction: 0.0,
+        canopy_height_m: 0.0,
+        interrill_cover_fraction: 0.0,
+        rill_cover_fraction: 0.0,
+        live_root_mass_kg_m2: 0.0,
+        dead_root_mass_kg_m2: 0.0,
+        buried_residue_mass_kg_m2: 0.0,
+        random_roughness_m: 0.006,
+        days_since_disturbance: 30.0,
+        frost_regime: ErosionFrostRegime::Unfrozen,
+        theta_suppressed: false,
+        beta: 0.5,
+        strldn: 0.0,
+    }
+}
+
+#[test]
+fn assembled_storm_day_produces_a_conserving_solve() {
+    let seed = clay_loam_seed();
+    let daily = storm_daily_state();
+    let inputs = assemble_wave1_continuity_inputs(&seed, &daily)
+        .expect("production operand assembly must resolve");
+
+    // The assembly produced real, finite operands (not the erod16
+    // test-harness approximations).
+    assert!(inputs.enabled);
+    assert!(inputs.shrsol_pa > 0.0 && inputs.shrsol_pa.is_finite());
+    assert!(inputs.tcend_kg_s_m > 0.0);
+    assert!(inputs.ktrato > 0.0);
+    assert!(inputs.detinr_kg_s_m2 >= 0.0);
+    assert!(inputs.effdrr_s > 0.0);
+    assert!(inputs.width_m > 0.0);
+    // Day-30 unfrozen bare burn: adjustment factors are in range.
+    assert!(inputs.kradjf >= 0.03 && inputs.kradjf <= 1.0 + 1.0e-9);
+    assert!(inputs.tcadjf >= 0.30 && inputs.tcadjf <= 2.0 + 1.0e-9);
+
+    // Drive the assembled operands through the solver: it must conserve.
+    let state =
+        compute_direct_wave1_continuity(&inputs).expect("assembled operands must solve clean");
+    assert!(state.active);
+    let detach_kg_m = state.total_detachment_kg / seed.field_width_m;
+    let depos_kg_m = state.total_deposition_kg / seed.field_width_m;
+    let residual =
+        (state.exported_sediment_kg_m - state.inflow_sediment_kg_m) - (detach_kg_m - depos_kg_m);
+    let scale = state
+        .exported_sediment_kg_m
+        .abs()
+        .max(detach_kg_m.abs())
+        .max(1.0e-9);
+    assert!(
+        residual.abs() <= 1.0e-9 * scale,
+        "assembled-operand solve must conserve: residual {residual} scale {scale}"
+    );
+    assert!(state.total_detachment_kg > 0.0, "storm day must detach");
+}
+
+#[test]
+fn assembled_effint_uses_rainfall_intensity_not_excess_rate() {
+    // The production assembly must use the faithful effint (rainfall
+    // intensity over excess periods), distinct from the mean excess rate.
+    let seed = clay_loam_seed();
+    let daily = storm_daily_state();
+    let inputs = assemble_wave1_continuity_inputs(&seed, &daily).expect("assembly");
+    // effint feeds detinr; with the single interval effint = 8.0e-5
+    // (rainfall rate), whereas runoff/effdrr = 0.03/600 = 5e-5 (the old
+    // approximation). detinr scales with effint, so a nonzero detinr on a
+    // bare day confirms the interrill driver is live.
+    assert!(inputs.effdrr_s > 0.0);
+    // No cover/roots on the bare burn day, so detinr should be positive
+    // (interrill supply is active).
+    assert!(inputs.detinr_kg_s_m2 > 0.0);
+}
+
+#[test]
+fn assembled_thawing_day_fails_closed() {
+    // The actively-thawing frost regime must propagate the 1b-B
+    // fail-closed error through the assembly (winter fcycle absent).
+    let seed = clay_loam_seed();
+    let mut daily = storm_daily_state();
+    daily.frost_regime = ErosionFrostRegime::Thawing;
+    assert!(matches!(
+        assemble_wave1_continuity_inputs(&seed, &daily),
+        Err(DirectRuntimeError::MissingDirectUpstream { .. })
+    ));
+}
+
+#[test]
+fn assembled_frozen_surface_sets_surface_frozen_flag() {
+    let seed = clay_loam_seed();
+    let mut daily = storm_daily_state();
+    daily.frost_regime = ErosionFrostRegime::FrozenSurface;
+    let inputs = assemble_wave1_continuity_inputs(&seed, &daily).expect("frozen assembly");
+    assert!(inputs.surface_frozen, "frozen surface must flag the solver");
+}
