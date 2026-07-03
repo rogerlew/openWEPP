@@ -2,7 +2,7 @@
    1   0   0
   Station:  MC KENZIE BRIDGE RS OR                         CLIGEN VER. 5.32300 -r:    0 -I: 2
  Latitude Longitude Elevation (m) Obs. Years   Beginning year  Years simulated Command Line:
-    44.17  -122.17         420          40        1980             100          -ior355362.par -Ows.prn -owepp.cli -t6 -I2 
+    44.17  -122.17         420          40        1980             100          -ior355362.par -Ows.prn -owepp.cli -t6 -I2
  Observed monthly ave max temperature (C)
    5.9   8.8  12.6  16.8  21.7  25.5  29.9  29.6  25.1  16.5   9.0   5.1
  Observed monthly ave min temperature (C)

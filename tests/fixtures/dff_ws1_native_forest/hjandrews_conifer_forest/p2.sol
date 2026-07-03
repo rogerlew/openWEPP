@@ -1,14 +1,14 @@
 9002
-# 
+#
 # WEPPcloud v.0.1.0 (c) University of Idaho
-# 
+#
 # Build Date: 2026-06-26 20:26:41.938609
 # Source Data: Surgo
-# 
+#
 # Mukey: 3385510
 # Major Component: 27353091 (comppct_r = 50.0)
 # Texture: loam
-# 
+#
 # Chkey   hzname  mask hzdepb_r(cm) ksat_r(um/s) fraggt10_r frag3to10_r dbthirdbar_r    clay    sand     vfs      om
 # ------------------------------------------------------------------------------------------------------------
 # 81653761   Oi     X        4.0   400.0        0.0         0.0          0.2     7.0    66.8    10.0    75.0
@@ -17,12 +17,12 @@
 # 81653758   BA             67.0    15.0        0.0         0.0          1.0    24.0    30.0    11.0     3.0
 # 81653757   Bw1           105.0     5.0        0.0         0.0         1.15    30.0    25.0     9.0     1.5
 # 81653756   Bw2           150.0     5.0        0.0        12.0          1.3    30.0    22.0     8.0    0.75
-# 
+#
 # Restricting Layer:
 # ksat threshold (um/s): 2.00000
 # type: -
 # ksat: -
-# 
+#
 # defaults applied to missing chorizon data:
 # sandtotal_r  ->      66.800
 # claytotal_r  ->       7.000
@@ -30,7 +30,7 @@
 # cec7_r       ->      11.300
 # sandvf_r     ->      10.000
 # smr          ->      55.500
-# 
+#
 # Build Notes:
 # 81653760::wilt_pt estimated from wfifteenbar_r and rock
 # 81653760::field_cap estimated from wthirdbar_r and rock
@@ -43,7 +43,7 @@
 # 81653756::wilt_pt estimated from wfifteenbar_r and rock
 # 81653756::field_cap estimated from wthirdbar_r and rock
 # res_lyr_i None
-# 
+#
 # THIS FILE AND THE CONTAINED DATA IS PROVIDED BY THE UNIVERSITY OF IDAHO
 # 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 # TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -55,17 +55,17 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS FILE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# 
-# 
+#
+#
 # If you change the original contexts of this file please
 # indicate it by putting an 'X' in the box here -> [ ]
-# 
-# 
-# 
+#
+#
+#
 # wepppy.wepp.soils.utils.WeppSoilUtil::9002.0migration
 # Build Date: 2026-06-26 20:26:42.410230
 # Source File: :/wc1/runs/jo/joyous-armchair/soils/3385510.sol
-# 
+#
 # Replacements
 # --------------------------
 # luse -> forest
@@ -87,10 +87,10 @@
 # lkeff -> -9999
 # plant.data.decfct -> 1
 # plant.data.dropfc -> 1
-# 
+#
 # h0_min_depth = None
 # h0_max_om = None
-# 
+#
 # wepppy.wepp.soils.utils.WeppSoilUtil::modify_initial_sat(initial_sat=0.75)
 Any comments:
 1 1

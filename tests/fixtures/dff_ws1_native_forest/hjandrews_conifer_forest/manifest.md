@@ -7,7 +7,9 @@ End-to-end verification fixture for the openWEPP-native forest `lanuse` mode
 ## Provenance
 Derived from `tests/fixtures/cancov_forest/hjandrews_conifer_or/` (unburned
 `forest` / `loam`). The `.sol`, `.slp`, `.cli`, `pmetpara.txt`, `snow.txt`, and
-`gwcoeff.txt` are copied verbatim from that fixture. `p2.man` is **converted** from
+`gwcoeff.txt` are copied from that fixture (trailing whitespace / EOF blank lines
+normalized for `git diff --check`; token content unchanged, parsing verified by
+the run). `p2.man` is **converted** from
 the cropland-encoded (`landuse=1`) masquerade to a first-class native forest
 `.man`:
 - datver `ow-lanuse-1`, `landuse=3` forest sentinel, `PlantScenarioData::Forest`

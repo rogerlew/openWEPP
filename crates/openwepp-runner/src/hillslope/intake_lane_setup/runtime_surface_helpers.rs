@@ -37,6 +37,22 @@ pub(crate) fn project_typed_pmetpara_runtime(
     pmetpara: &mut PmetparaFile,
     mode: PmetparaParseMode,
 ) -> Result<TypedPmetparaRuntimeProjection, HillslopeCliError> {
+    let native_forest = management_schedules_native_forest(management);
+    // The PMET surface is a single per-hillslope authority resolved from the
+    // active (first-slot) crop. A schedule mixing cropland and forest cannot be
+    // represented by it (a single kcb/rawp would be applied to both), so fail
+    // closed rather than silently using the active crop's coefficients for the
+    // other landuse. Schedule-aware / per-record PMET selection is a WS-4
+    // follow-on.
+    if native_forest && management_schedules_cropland(management) {
+        return Err(HillslopeCliError::ParseFailure {
+            surface: "pmetpara",
+            detail:
+                "mixed cropland/forest management schedules are not supported by the single PMET authority surface (schedule-aware PMET selection is a WS-4 follow-on)"
+                    .to_string(),
+        });
+    }
+
     if !pmetpara.sidecar_present {
         return Ok(TypedPmetparaRuntimeProjection {
             sidecar_present: pmetpara.sidecar_present,
@@ -48,7 +64,6 @@ pub(crate) fn project_typed_pmetpara_runtime(
     }
 
     let active_crop_name = active_management_crop_name(management)?;
-    let native_forest = management_schedules_native_forest(management);
     // Look up in the configured mode so query normalization matches how the
     // sidecar records were parsed (mixing modes would spuriously miss). The
     // lookup records whether it took the compatibility first-row fallback.
@@ -144,16 +159,29 @@ pub(crate) fn active_management_crop_name(
 /// first, so a mixed cropland-first/forest-later schedule still gets the forest
 /// PMET discipline (fail closed on a lookup fallback, `LANUSE-AUTH-2`).
 pub(crate) fn management_schedules_native_forest(management: &ManagementParseOutput) -> bool {
+    schedule_references_landuse(management, |data| {
+        matches!(data, YearlyScenarioData::Forest(_))
+    })
+}
+
+/// Whether the management schedule references any cropland yearly scenario.
+pub(crate) fn management_schedules_cropland(management: &ManagementParseOutput) -> bool {
+    schedule_references_landuse(management, |data| {
+        matches!(data, YearlyScenarioData::Cropland(_))
+    })
+}
+
+fn schedule_references_landuse(
+    management: &ManagementParseOutput,
+    predicate: impl Fn(&YearlyScenarioData) -> bool,
+) -> bool {
     management.schedule.slots.iter().any(|slot| {
         slot.yearly_refs.iter().any(|&yearly_ref| {
-            matches!(
-                management
-                    .registries
-                    .yearlies
-                    .get(yearly_ref.wrapping_sub(1))
-                    .map(|yearly| &yearly.data),
-                Some(YearlyScenarioData::Forest(_))
-            )
+            management
+                .registries
+                .yearlies
+                .get(yearly_ref.wrapping_sub(1))
+                .is_some_and(|yearly| predicate(&yearly.data))
         })
     })
 }
@@ -443,28 +471,29 @@ d3
 ";
 
     #[test]
-    fn cropland_first_forest_later_schedule_applies_forest_pmet_discipline() {
+    fn mixed_cropland_forest_schedule_is_rejected_by_single_pmet_surface() {
         let management =
             parse_management_from_str(CROPLAND_FIRST_FOREST_LATER_MAN, ParseMode::Strict)
                 .expect("mixed cropland-first/forest-later man parses");
-        // The forest scenario is scheduled in year 2, not the first slot.
-        assert!(
-            management_schedules_native_forest(&management),
-            "schedule-wide forest detection must find the year-2 forest scenario"
-        );
-        // The active (year-1) crop is cropland `Corn`, absent from the sidecar,
-        // so the compatibility lookup would fall back — forest discipline rejects it.
+        // Schedule-wide detection sees both landuses.
+        assert!(management_schedules_native_forest(&management));
+        assert!(management_schedules_cropland(&management));
+        // The single PMET authority cannot serve both landuses, so even if the
+        // active (year-1) cropland crop had an explicit PMET row, the run must
+        // fail closed rather than apply the cropland coefficients to the forest
+        // year.
         let mut pmetpara = sidecar();
         let error = project_typed_pmetpara_runtime(
             &management,
             &mut pmetpara,
             PmetparaParseMode::Compatibility,
         )
-        .expect_err("a schedule containing forest must fail closed on a PMET fallback");
+        .expect_err("mixed cropland/forest schedule must fail closed");
         assert!(
             error
                 .to_string()
-                .contains("native forest requires an explicit PMET record")
+                .contains("mixed cropland/forest management schedules are not supported"),
+            "error should identify the mixed-schedule rejection: {error}"
         );
     }
 }

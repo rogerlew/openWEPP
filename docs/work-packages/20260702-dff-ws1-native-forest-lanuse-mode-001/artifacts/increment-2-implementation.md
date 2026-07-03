@@ -161,6 +161,23 @@ behaviour now has unit coverage; the full-CLI run remains a follow-on.
   the implemented `.man`↔`.sol` leg with lookup/`openwepp-disturbed.json`
   ingestion deferred to `MAN-GAP-005`.
 
+## Codex review response (round 3 — both findings addressed)
+
+- **Medium — mixed schedule could apply a non-forest PMET hit to forest years:**
+  the round-2 fix only rejected the *fallback*; a schedule with year-1 cropland
+  (explicit PMET **hit**) + year-2 forest would still apply the single cropland
+  `kcb/rawp` to the forest year. Since PMET is a single per-hillslope authority
+  (schedule-aware/per-record PMET is a WS-4 change), the fix **rejects mixed
+  cropland/forest schedules** outright at the PMET projection (fail closed,
+  before the sidecar early-return). Added `management_schedules_cropland`; the
+  mixed-schedule test now asserts the mixed rejection
+  (`mixed_cropland_forest_schedule_is_rejected_by_single_pmet_surface`).
+- **Medium — `git diff --check` failed** on the new fixture files (trailing
+  whitespace / EOF blank lines inherited from the copied `cancov_forest`
+  sources: `gwcoeff.txt`, `p2.cli`, `p2.slp`, `p2.sol`). Normalized trailing
+  whitespace + collapsed EOF blank lines; token content unchanged and the CLI run
+  was re-verified (exit 0). `git diff --check main..HEAD` is now clean.
+
 ## End-to-end CLI verification (`Ran:` — Codex's requested full run)
 
 Built a native-forest run dir and ran it through the production hillslope CLI
