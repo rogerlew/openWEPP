@@ -38,6 +38,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0032](0032-watershed-runtime-ratification.md) | Watershed runtime entrypoint, job default, and canonical benchmark mode | Accepted |
 | [0033](0033-ofe-by-ofe-overland-flow-routing.md) | OFE-by-OFE overland-flow routing (Papanicolaou 2018) | Accepted |
 | [0034](0034-management-file-lanuse-input-authority.md) | Management-file `lanuse` input authority (first-class landuse modes) | Accepted |
+| [0035](0035-hillslope-erosion-sediment-continuity-port.md) | Hillslope erosion sediment-continuity direct-runtime port | Accepted |
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further
@@ -94,6 +95,16 @@ which routing/soil/canopy science contracts reference for provenance as concrete
 operands are bound — not folded into a physics contract. Ratification covers the
 authority model and `LANUSE-AUTH-1..6`, not a concrete `lanuse` operand schema;
 WS-1 populates and promotes `openwepp-management-lanuse-v1`.
+ADR-0035 accepts the direct-runtime port of the `SC-SED-001` hillslope erosion
+sediment-continuity **source physics**, on the finding that the spatial
+detachment/deposition solve never existed in openWEPP (only a reduced,
+disabled Wave-1 detachment check plus multi-OFE routing). Because SC-SED-001
+already specifies the full model, this is a contract-exists/implement port
+(WS-2 `ksatadj` shape) with the legacy `.for` chain as source-intent authority
+(ADR-0024), not a magnitude oracle (ADR-0017). Staged single-OFE Wave-1 first,
+shadow-state + conservation-gated per increment; Claude Code executes as an
+operator-authorized exception to the Codex-authors-code default. Unblocks the
+held WS-3 sediment ordering law.
 
 ## ADR template
 
