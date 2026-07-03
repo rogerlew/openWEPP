@@ -20,8 +20,13 @@ Management-file authority: `plant-file.spec.md` /
 Give openWEPP a **first-class, openWEPP-native forest `lanuse` mode** so that
 forest / shrub / grass landuse no longer has to masquerade as WEPP cropland
 (`landuse=1`). Populate the `openwepp-management-lanuse-v1` schema under the
-ADR-0034 authority contract, and ingest the authoritative `(texture × class)`
-land-soil parameterization as the single source of truth.
+ADR-0034 authority contract, with the authoritative `(texture × class)`
+land-soil parameterization as the single source of truth for the operands it
+owns. **Increment-2 status:** the lookup-owned operands are authored explicitly
+in the `.man` (of record, fail-closed) and MUST equal the authoritative lookup
+row; automated ingestion of that lookup + the `openwepp-disturbed.json` binding
+into the reconciliation is a follow-on (`MAN-GAP-005`). The `.man`↔`.sol`
+`DisturbedPolicy` reconciliation leg is implemented and wired.
 
 ## The blocker, and the resolved design (operator, 2026-07-02)
 

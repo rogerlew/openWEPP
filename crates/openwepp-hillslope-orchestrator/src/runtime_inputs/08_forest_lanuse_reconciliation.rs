@@ -73,15 +73,12 @@ pub fn reconcile_forest_lanuse_authority(
     management: &ManagementParseOutput,
     soil: &SoilProfile,
 ) -> Result<(), ForestLanuseReconciliationError> {
-    let forest_classes: Vec<&str> = management
-        .registries
-        .plants
-        .iter()
-        .filter_map(|plant| match &plant.data {
-            PlantScenarioData::Forest(forest) => Some(forest.forest_class.as_str()),
-            PlantScenarioData::Cropland(_) => None,
-        })
-        .collect();
+    // Scope to the forest classes the (lane) schedule actually references, not
+    // the whole plant registry. Lane slicing filters the schedule but clones the
+    // full registries, so a registry-wide scan would false-fail a valid MOFE
+    // case where each lane carries a single soil policy but the registry holds
+    // multiple forest classes.
+    let forest_classes = active_forest_classes(management);
     if forest_classes.is_empty() {
         return Ok(());
     }
@@ -111,6 +108,53 @@ pub fn reconcile_forest_lanuse_authority(
     }
 
     Ok(())
+}
+
+/// Forest classes referenced by the schedule actually in scope — the forest
+/// plants pointed to by the schedule's yearly slots (`itype`) and its per-OFE
+/// initial conditions (`iresd`), deduplicated. Refs are already index-validated
+/// at parse (`validate_cross_section_references`); out-of-range refs are skipped
+/// here and surfaced by the projection.
+fn forest_class_of_plant_ref(
+    management: &ManagementParseOutput,
+    plant_ref: usize,
+) -> Option<&str> {
+    let index = plant_ref.checked_sub(1)?;
+    let plant = management.registries.plants.get(index)?;
+    match &plant.data {
+        PlantScenarioData::Forest(forest) => Some(forest.forest_class.as_str()),
+        PlantScenarioData::Cropland(_) => None,
+    }
+}
+
+fn push_unique_class<'a>(class: Option<&'a str>, out: &mut Vec<&'a str>) {
+    if let Some(class) = class {
+        if !out.contains(&class) {
+            out.push(class);
+        }
+    }
+}
+
+fn active_forest_classes(management: &ManagementParseOutput) -> Vec<&str> {
+    let mut classes: Vec<&str> = Vec::new();
+
+    for slot in &management.schedule.slots {
+        for &yearly_ref in &slot.yearly_refs {
+            if let Some(yearly) = management.registries.yearlies.get(yearly_ref.wrapping_sub(1)) {
+                if let YearlyScenarioData::Forest(forest) = &yearly.data {
+                    push_unique_class(forest_class_of_plant_ref(management, forest.itype), &mut classes);
+                }
+            }
+        }
+    }
+    for &initial_ref in &management.schedule.ofe_initial_refs {
+        if let Some(initial) = management.registries.initials.get(initial_ref.wrapping_sub(1)) {
+            if let InitialScenarioData::Forest(forest) = &initial.data {
+                push_unique_class(forest_class_of_plant_ref(management, forest.iresd), &mut classes);
+            }
+        }
+    }
+    classes
 }
 
 /// The `luse` (class) token carried by a disturbed soil policy, independent of
@@ -263,6 +307,99 @@ SOIL_A SILT_LOAM 2 0.23 0.60 1200000 0.004 3.5 12.0
         let error = reconcile_forest_lanuse_authority(&management, &soil)
             .expect_err("forest management without a disturbed soil policy must fail closed");
         assert_eq!(error.code(), "LANUSE-RECON-E-001");
+    }
+
+    // Two forest plants in the registry (classes A=forest_high_sev_fire and
+    // B=young_forest) but the schedule references only plant 1 (class A). A
+    // registry-wide scan would false-fail against a single class-A soil policy;
+    // the lane-scoped reconciler must pass.
+    const FOREST_MAN_TWO_CLASSES_ONE_ACTIVE: &str = "ow-lanuse-1
+1
+1
+2
+Forest_A
+d1
+d2
+d3
+3 # Landuse - <Forest>
+forest_high_sev_fire
+14.0 3.0 0.0 2.0 0.45
+17.0 0.2 0.42 0.0 0.5
+20.0 0.1 90.0 0.33 0.2
+2.0 0.3 1.0 1.0
+5.0 0.005
+0.0 0.0
+-5.0 5.0 0.2 0.1
+0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
+0.02 2.0 8.0 500.0
+Forest_B
+d1
+d2
+d3
+3 # Landuse - <Forest>
+young_forest
+14.0 3.0 0.0 2.0 0.45
+17.0 0.2 0.42 0.0 0.5
+20.0 0.1 90.0 0.33 0.2
+10.0 1.0 1.0 1.0
+5.0 0.005
+0.0 0.0
+-5.0 5.0 0.2 0.1
+0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
+0.02 2.0 8.0 500.0
+0
+1
+Forest_Initial
+d1
+d2
+d3
+3 # Landuse - <Forest>
+0.4 0.3 0.3 0.06
+1
+2
+0.0 0.0
+0.2 0.2
+0
+0
+0
+1
+Forest_Year
+d1
+d2
+d3
+3 # Landuse - <Forest>
+1
+0
+0
+0
+2
+0
+0
+0
+0.0
+3
+Forest_Management
+d1
+d2
+d3
+1
+1
+1
+1
+1
+1
+";
+
+    #[test]
+    fn reconciliation_is_scoped_to_scheduled_forest_class() {
+        let management = parsed_management(FOREST_MAN_TWO_CLASSES_ONE_ACTIVE);
+        // Only class A (forest_high_sev_fire) is referenced by the schedule; the
+        // class-B plant is unreferenced, so a class-A soil policy reconciles.
+        let soil = parsed_soil(&disturbed_soil("'forest high sev fire'"));
+        reconcile_forest_lanuse_authority(&management, &soil)
+            .expect("reconciler should scope to the scheduled forest class only");
     }
 
     #[test]

@@ -1361,7 +1361,7 @@ fn parse_contour_section(
                 expected: "4 or 5",
             });
         }
-        if tokens.len() == 5 && datver_family != DatverFamily::V2016Plus {
+        if tokens.len() == 5 && datver_family.legacy_option_family() != DatverFamily::V2016Plus {
             return Err(ManagementParseError::InvalidOptionDomain {
                 field: "contours_perm",
                 value: 1,
@@ -1595,7 +1595,8 @@ fn validate_yearly_annual_resmgt(
     datver_family: DatverFamily,
     resmgt: usize,
 ) -> Result<(), ManagementParseError> {
-    let valid_resmgt = match datver_family {
+    // `ow-lanuse-1` follows the 2016.3+ legacy option domain (§1.4).
+    let valid_resmgt = match datver_family.legacy_option_family() {
         DatverFamily::V2016Plus => (1, 7),
         _ => (1, 6),
     };
@@ -1729,6 +1730,8 @@ fn validate_yearly_perennial_mgtopt(
     datver_family: DatverFamily,
     mgtopt: usize,
 ) -> Result<(), ManagementParseError> {
+    // `ow-lanuse-1` follows the 2016.3+ legacy option domain (§1.4).
+    let datver_family = datver_family.legacy_option_family();
     let allowed = match datver_family {
         DatverFamily::V2016Plus => "1..7",
         _ => "1..3",

@@ -77,10 +77,13 @@ mode**. This is distinct from the abandoned legacy forest branch
 - **Typed presence / fail-closed.** Every Tier-A forest operand is explicit and
   required; a missing or non-numeric value fails closed at parse
   (`MAN-E-001`/`MAN-E-002`), never a silent default (`LANUSE-AUTH-2`). The
-  lookup-owned operands (`xmxlai`, `rdmax`, `decfct`, `dropfc`) carry the
-  authoritative `(texture × class)` values reconciled against the `.man` forest
-  class (`LANUSE-AUTH-6`); the remaining Tier-A operands are the explicit forest
-  authority. No cropland or rangeland numeric defaults are used.
+  lookup-owned operands (`xmxlai`, `rdmax`, `decfct`, `dropfc`) are authored in
+  the `.man` as the of-record values and MUST equal the authoritative
+  `(texture × class)` lookup row for the forest class (`LANUSE-AUTH-6`); the
+  automated `.man`↔lookup cross-check awaits lookup ingestion (`MAN-GAP-005`).
+  The remaining Tier-A operands are the explicit forest authority. No cropland or
+  rangeland numeric defaults are used. The implemented reconciliation covers the
+  `.man` forest class ↔ `.sol` `DisturbedPolicy` leg (fail-closed on mismatch).
 - **Kernel compatibility.** The forest projection emits the same growth-surface
   boundary symbols the daily growth kernel already consumes (the 19 growth
   symbols + decomposition), so the kernel is unchanged (`LANUSE-AUTH-1`). The

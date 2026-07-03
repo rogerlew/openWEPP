@@ -112,6 +112,40 @@ registered `MAN-GAP-004` (Tier-B WS-4 consumption) and `MAN-GAP-005`
   wepppy-produced `.sol`). Confirm this is desired vs. allowing forest managements
   paired with non-disturbed soils.
 
+## Codex review response (round 1 — all 4 findings addressed)
+
+All findings verified against source and fixed on the same branch.
+
+- **High — PMET compatibility fallback for native forest** (confirmed): a native
+  forest management whose plant name misses the PMET sidecar could inherit the
+  first-row fallback coefficients (compatibility mode always on). **Fix:**
+  `project_typed_pmetpara_runtime` now forces **strict** PMET lookup when the
+  active scenario is native forest (`active_management_is_native_forest`), so a
+  miss fails closed (`LANUSE-AUTH-2`); cropland keeps its compatibility fallback.
+  Tests: `native_forest_pmet_miss_fails_closed_no_first_row_fallback` +
+  `cropland_pmet_miss_keeps_compatibility_first_row_fallback`.
+- **Medium — `ow-lanuse-1` legacy option domain only on pcode** (confirmed):
+  applied `legacy_option_family()` consistently so annual `resmgt`, perennial
+  `mgtopt`, and permanent-contour parsing all treat `ow-lanuse-1` as `2016.3+`
+  (matching the contract), not just operation `pcode`.
+- **Medium — reconciliation not lane-scoped** (confirmed, latent for MOFE):
+  `reconcile_forest_lanuse_authority` now derives forest classes from the
+  schedule's active references (`active_forest_classes`: yearly `itype` + initial
+  `iresd`), not the whole registry — so a lane's single soil policy no longer
+  false-fails against unreferenced registry classes. Test:
+  `reconciliation_is_scoped_to_scheduled_forest_class` (two registry classes, one
+  scheduled).
+- **Medium — docs overstate lookup reconciliation** (confirmed): softened
+  `SC-INFILE-MANAGEMENT-001` §1.4 and the package objective to say the
+  lookup-owned operands are authored explicitly in the `.man` (of record,
+  fail-closed) and MUST equal the lookup row, with automated `.man`↔lookup
+  ingestion as the `MAN-GAP-005` follow-on. The implemented reconciliation is the
+  `.man`↔`.sol` leg.
+
+Still recommended (Codex): one focused full-CLI forest `.man` + `.sol` run,
+including a PMET-sidecar case, as end-to-end verification. The PMET no-fallback
+behaviour now has unit coverage; the full-CLI run remains a follow-on.
+
 ## Line-count governance (WARN, documented per crates/AGENTS.md)
 The forest additions pushed two files across the 2000-line `WARN` threshold
 (neither reaches the 3000-line `BLOCK`):
