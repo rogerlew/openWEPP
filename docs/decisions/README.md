@@ -37,6 +37,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0031](0031-delete-compatibility-runtime-single-authority-terminal.md) | Delete the compatibility runtime - single-authority terminal state | Accepted |
 | [0032](0032-watershed-runtime-ratification.md) | Watershed runtime entrypoint, job default, and canonical benchmark mode | Accepted |
 | [0033](0033-ofe-by-ofe-overland-flow-routing.md) | OFE-by-OFE overland-flow routing (Papanicolaou 2018) | Accepted |
+| [0034](0034-management-file-lanuse-input-authority.md) | Management-file `lanuse` input authority (first-class landuse modes) | Accepted |
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further
@@ -82,6 +83,17 @@ ADR-0033 accepts the OFE-by-OFE routing representation and opt-in activation
 policy for Papanicolaou-style hillslope overland-flow routing. Its ratification
 does not authorize D4/D5 solver or cascade implementation; those stages remain
 gated on authoring and ratifying `SC-OFEROUTE-001`.
+ADR-0034 accepts that the management-file `lanuse` block — not the `.run` — is
+the opt-in authority for first-class landuse-physics operands, quarantines
+cropland-encoded forest/range fixtures as compatibility inputs, and disallows
+inferring new-physics operands from legacy cropland fields without a bridge
+contract. By the contract-boundary test (coherent invariants + multi-consumer +
+distinct concern-layer) the input authority is governed by a **standalone
+interface contract** (`docs/contracts/openwepp-management-lanuse-authority-contract.md`),
+which routing/soil/canopy science contracts reference for provenance as concrete
+operands are bound — not folded into a physics contract. Ratification covers the
+authority model and `LANUSE-AUTH-1..6`, not a concrete `lanuse` operand schema;
+WS-1 populates and promotes `openwepp-management-lanuse-v1`.
 
 ## ADR template
 
