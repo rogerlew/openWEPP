@@ -146,6 +146,7 @@ static DIRECT_AUDIT: DirectRuntimeAuditCounters = DirectRuntimeAuditCounters::ne
 mod decomposition;
 mod diagnostic_events;
 mod erosion;
+mod erosion_continuity;
 mod evapotranspiration;
 mod growth;
 mod normalization;
@@ -170,6 +171,12 @@ pub use erosion::{
     DirectErod13Inputs, DirectErod13State, DirectErod14ClassInputs, DirectErod14ClassState,
     DirectErod14Inputs, DirectErod14State, DirectErosionDownstreamOperands, DirectErosionInputs,
     DirectErosionShadowProjection, DirectErosionSpanReport, DirectErosionState,
+};
+pub use erosion_continuity::{
+    DIRECT_WAVE1_GRID_POINTS, DirectWave1ContinuityInputs, DirectWave1ContinuityState,
+    DirectWave1SlopeSegment, Wave1ShearClassification, Wave1ShearRegime,
+    compute_direct_wave1_continuity, derive_wave1_slope_segments, wave1_classifier_shear,
+    wave1_depc, wave1_depend, wave1_depeqs, wave1_runge_step, wave1_xcrit,
 };
 pub use evapotranspiration::{
     DirectEvapotranspirationComputeDownstreamOperands, DirectEvapotranspirationComputeInputs,

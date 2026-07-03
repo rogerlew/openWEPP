@@ -2,7 +2,8 @@ use crate::constants::WB11_ZERO_THRESHOLD;
 
 use super::{
     DIRECT_AUDIT, DIRECT_R7D6_EROSION_PHASE_SPAN_COUNT, DirectDayFrame,
-    DirectPublicationErosionOperands, DirectRuntimeError, validate_finite,
+    DirectPublicationErosionOperands, DirectRuntimeError, DirectWave1ContinuityInputs,
+    DirectWave1ContinuityState, compute_direct_wave1_continuity, validate_finite,
     validate_nonnegative_direct_m,
 };
 
@@ -23,6 +24,13 @@ pub struct DirectErosionInputs {
     pub wave1_enabled: bool,
     pub wave2_enabled: bool,
     pub wave1: DirectErod13Inputs,
+    /// Wave-1 spatial sediment-continuity payload (SC-SED-001, single-OFE
+    /// `route`/`erod`/`runge` lineage). `wave1_continuity.enabled` gates the
+    /// spatial solve independently of the pointwise `wave1_enabled` check.
+    /// Boxed to keep `DirectDayConstructorInputs` inside its R7B type-size
+    /// bound; the box is only cloned on days where an erosion wave is
+    /// enabled (the pre-r7d8 flag check short-circuits otherwise).
+    pub wave1_continuity: Box<DirectWave1ContinuityInputs>,
     pub wave2: DirectErod14Inputs,
 }
 
@@ -33,6 +41,7 @@ impl DirectErosionInputs {
             wave1_enabled: false,
             wave2_enabled: false,
             wave1: DirectErod13Inputs::zero(),
+            wave1_continuity: Box::new(DirectWave1ContinuityInputs::zero()),
             wave2: DirectErod14Inputs::zero(),
         }
     }
@@ -218,6 +227,9 @@ pub struct DirectErod14ClassState {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectErosionState {
     pub wave1: Option<DirectErod13State>,
+    /// Boxed for the same R7B day-frame type-size reason as the input
+    /// payload; `None` on lanes/days without the Wave-1 spatial solve.
+    pub wave1_continuity: Option<Box<DirectWave1ContinuityState>>,
     pub wave2: Option<DirectErod14State>,
     pub publication_authority: bool,
     pub publication: DirectPublicationErosionOperands,
@@ -228,6 +240,7 @@ impl DirectErosionState {
     pub fn inactive() -> Self {
         Self {
             wave1: None,
+            wave1_continuity: None,
             wave2: None,
             publication_authority: false,
             publication: DirectPublicationErosionOperands::zero_authority(),
@@ -326,7 +339,7 @@ impl DirectDayFrame {
         let erosion_shadow_projection = DirectErosionShadowProjection {
             lane_index: self.lane_index,
             day_index: self.day_index,
-            wave1_active: self.erosion.wave1.is_some(),
+            wave1_active: self.erosion.wave1.is_some() || self.erosion.wave1_continuity.is_some(),
             wave2_active: self.erosion.wave2.is_some(),
             publication_authority: self.erosion_downstream_operands.publication_authority,
             publication: self.erosion_downstream_operands.publication,
@@ -351,13 +364,23 @@ impl DirectDayFrame {
     fn compute_r7d6_erosion(&self) -> Result<DirectErosionState, DirectRuntimeError> {
         // Check the enable flags before r7d8 clones the inputs (the Wave-2
         // class Vec makes that clone a per-OFE-day allocation).
-        if !self.erosion_inputs.wave1_enabled && !self.erosion_inputs.wave2_enabled {
+        if !self.erosion_inputs.wave1_enabled
+            && !self.erosion_inputs.wave2_enabled
+            && !self.erosion_inputs.wave1_continuity.enabled
+        {
             return Ok(DirectErosionState::inactive());
         }
         let erosion_inputs = self.r7d8_erosion_inputs_with_runoff_authority()?;
 
         let wave1 = if erosion_inputs.wave1_enabled {
             Some(compute_direct_erod13(&erosion_inputs.wave1)?)
+        } else {
+            None
+        };
+        let wave1_continuity = if erosion_inputs.wave1_continuity.enabled {
+            Some(Box::new(compute_direct_wave1_continuity(
+                &erosion_inputs.wave1_continuity,
+            )?))
         } else {
             None
         };
@@ -371,14 +394,18 @@ impl DirectDayFrame {
         };
         let publication = if let Some(wave2) = &wave2 {
             direct_erod15_publication_projection(wave2, &erosion_inputs.wave2)?
+        } else if let Some(continuity) = wave1_continuity.as_deref().filter(|state| state.active) {
+            direct_wave1_publication_projection(continuity, &erosion_inputs.wave1_continuity)?
         } else {
             DirectPublicationErosionOperands::zero_authority()
         };
 
         Ok(DirectErosionState {
             wave1,
+            wave1_continuity,
             wave2,
-            publication_authority: erosion_inputs.wave2_enabled,
+            publication_authority: erosion_inputs.wave2_enabled
+                || erosion_inputs.wave1_continuity.enabled,
             publication,
         })
     }
@@ -387,7 +414,7 @@ impl DirectDayFrame {
         &self,
     ) -> Result<DirectErosionInputs, DirectRuntimeError> {
         let mut inputs = self.erosion_inputs.clone();
-        if !inputs.wave1_enabled && !inputs.wave2_enabled {
+        if !inputs.wave1_enabled && !inputs.wave2_enabled && !inputs.wave1_continuity.enabled {
             return Ok(inputs);
         }
         let peak_runoff = self.peak_runoff_shadow_projection.as_ref().ok_or(
@@ -399,6 +426,17 @@ impl DirectDayFrame {
             inputs.wave1.q_runoff_m = peak_runoff.q_runoff_m;
             inputs.wave1.peakro_m3_s = peak_runoff.peak_runoff_m3_s;
             inputs.wave1.watdur_s = peak_runoff.runoff_duration_s;
+        }
+        if inputs.wave1_continuity.enabled {
+            // Runoff authority for the spatial solve: `peakro` and the
+            // event runoff depth drive activation and `qout`; `effdrn`
+            // is the legacy `runoff/peakro` duration, which is the WB16
+            // `runoff_duration_s` surface (`irs.for:725`). `effdrr`
+            // (rainfall-excess duration) remains a seed-supplied operand
+            // until the Increment-1b operand-production port exposes it.
+            inputs.wave1_continuity.peakro_m_s = peak_runoff.peak_runoff_m3_s;
+            inputs.wave1_continuity.runoff_depth_m = peak_runoff.q_runoff_m;
+            inputs.wave1_continuity.effdrn_s = peak_runoff.runoff_duration_s;
         }
         if inputs.wave2_enabled {
             inputs.wave2.peak_runoff_m3_s = peak_runoff.peak_runoff_m3_s;
@@ -1109,6 +1147,38 @@ fn direct_erod14_final_class_states(
         });
     }
     Ok(states)
+}
+
+/// Publication projection for the single-OFE Wave-1 continuity solve
+/// (INV-SED-010 totals; per-class concentration fields are Increment-3 —
+/// the class array publishes zeros and the scalar HBP concentration
+/// carries the total-toe concentration from `sloss.for:314`).
+fn direct_wave1_publication_projection(
+    state: &DirectWave1ContinuityState,
+    inputs: &DirectWave1ContinuityInputs,
+) -> Result<DirectPublicationErosionOperands, DirectRuntimeError> {
+    validate_nonnegative_direct_m(
+        "erosion.wave1.publication.total_detachment_kg",
+        state.total_detachment_kg,
+    )?;
+    validate_nonnegative_direct_m(
+        "erosion.wave1.publication.total_deposition_kg",
+        state.total_deposition_kg,
+    )?;
+    validate_nonnegative_direct_m(
+        "erosion.wave1.publication.sediment_concentration_kg_m3",
+        state.sediment_concentration_kg_m3,
+    )?;
+    Ok(DirectPublicationErosionOperands {
+        peak_runoff_m3_s: Some(inputs.peakro_m_s),
+        runoff_duration_s: Some(inputs.effdrn_s),
+        total_detachment_kg: Some(state.total_detachment_kg),
+        total_deposition_kg: Some(state.total_deposition_kg),
+        hbp_total_detachment_kg: Some(state.total_detachment_kg),
+        hbp_total_deposition_kg: Some(state.total_deposition_kg),
+        hbp_sediment_concentration_kg_m3: Some(state.sediment_concentration_kg_m3),
+        sediment_concentration_kg_m3: Some([0.0; DIRECT_EROSION_CLASS_LIMIT]),
+    })
 }
 
 fn direct_erod15_publication_projection(

@@ -9,6 +9,7 @@ mod direct_runtime_r5c;
 mod direct_runtime_r5d;
 mod direct_runtime_r7g_frost;
 mod direct_runtime_r7g_snow;
+mod direct_runtime_wave1_continuity;
 
 fn direct_runtime_test_lock() -> &'static Mutex<()> {
     static DIRECT_RUNTIME_TEST_LOCK: OnceLock<Mutex<()>> = OnceLock::new();

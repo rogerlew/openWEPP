@@ -932,6 +932,21 @@ fn direct_production_typed_erosion_authority(
     peak_runoff: &DirectProductionPeakRunoffAuthority,
     contributor_ofe_count: usize,
 ) -> Result<DirectProductionErosionAuthority, HillslopeCliError> {
+    // Wave-1 (SC-SED-001 sediment continuity): the spatial solver is
+    // implemented and gated in the orchestrator
+    // (`direct_runtime/erosion_continuity.rs`), but the production seed
+    // cannot yet construct its required operand payload — the legacy
+    // `frcfac`/`shears` hydraulics chain (`shrsol`, rill width, friction
+    // factors), the `soil.for` daily erodibility adjustments
+    // (`kiadjf`/`kradjf`/`tcadjf`), the `irs.for` `effint`/`effdrr`
+    // surfaces, and the `sedia`/`falvel`/`trcoef` transport operands
+    // (`tcend`/`ktrato`/`veleff`) have no openWEPP producers. Enabling
+    // Wave-1 here without them would require fabricated operands, which
+    // the no-provisional-math rule forbids. Operand production is the
+    // declared Increment-1b scope of
+    // `docs/work-packages/20260703-erosion-sediment-continuity-port-001`;
+    // flipping this seed to a populated `DirectWave1ContinuityInputs`
+    // activates the solver.
     let wave1_enabled = false;
     let wave2_enabled = contributor_ofe_count > 1;
     let first_ofe = slope.ofes.first().ok_or_else(|| {
@@ -958,6 +973,9 @@ fn direct_production_typed_erosion_authority(
             wave1_enabled,
             wave2_enabled,
             wave1: DirectErod13Inputs::zero(),
+            wave1_continuity: Box::new(
+                openwepp_hillslope_orchestrator::DirectWave1ContinuityInputs::zero(),
+            ),
             wave2: direct_production_erod14_inputs_from_typed_projection(
                 &wave2_projection,
                 peak_runoff.efflen_m,

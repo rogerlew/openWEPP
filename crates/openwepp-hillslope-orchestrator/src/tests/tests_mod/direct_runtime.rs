@@ -42,7 +42,7 @@ use crate::{
     DirectSubsurfaceLayerInputs, DirectSubsurfaceLayerState,
     DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
     DirectSubsurfaceLossShadowProjection, DirectSubsurfaceLossState, DirectWaterLedgerState,
-    DirectWb14HyetographInterval, reset_direct_runtime_audit_counters,
+    DirectWave1ContinuityInputs, DirectWb14HyetographInterval, reset_direct_runtime_audit_counters,
 };
 
 fn r5c_day_span_run_count() -> u64 {
@@ -885,6 +885,7 @@ fn r7d6_typed_erosion_inputs() -> DirectErosionInputs {
     DirectErosionInputs {
         wave1_enabled: true,
         wave2_enabled: true,
+        wave1_continuity: Box::new(DirectWave1ContinuityInputs::zero()),
         wave1: DirectErod13Inputs {
             ie_m_s: 0.000_01,
             te_s: 60.0,

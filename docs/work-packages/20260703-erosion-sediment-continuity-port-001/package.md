@@ -1,7 +1,21 @@
 # Erosion Sediment-Continuity Direct-Runtime Port (SC-SED-001, Wave-1 first)
 
-Status: **SCAFFOLDED, 2026-07-03 — foundation ratified (ADR-0035); Increment-1
-(single-OFE Wave-1) in execution by Claude Code.**
+Status: **INCREMENT-1 BUILT + GATED, 2026-07-03 — solver landed on branch
+`worktree-erosion-inc1-wave1-continuity`, awaiting Codex review (not on
+main). The normalized single-OFE Wave-1 continuity solver
+(route/erod/runge/xcrit/depc/depeqs/depend/depos + param/xinflo/sloss),
+shadow-first runtime wiring, publication projection, and the hard
+conservation gates are live and validated (13 unit tests + the McKenzie
+clay-loam fixture-forcing conservation test, real storm forcing,
+nonzero detachment proven). SCOPE DEVIATION (declared boundary): the
+production seed enable is HELD — the Increment-0 premise that the Wave-1
+operand projection exists was struct-fields-only; no producer exists for
+the `frcfac`/`shears`, `soil.for` daily-adjustment, `irs` `effint`, or
+`prtcmp`/`yalin`/`trcoef` operand chains, and fabricating them would
+violate the no-provisional-math rule. Operand production is
+**Increment-1b** (queue in `artifacts/implementation.md`); flipping the
+seed activates the solver unchanged. Production outputs are unchanged
+this increment; the DFF-WS3 sediment HOLD stands until 1b.**
 Governing authority:
 [`SC-SED-001`](../../specifications/science-contracts/contracts/SC-SED-001.md)
 (Hillslope Erosion Process Contract, v41, 56 invariants);
@@ -48,6 +62,20 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
   conservation `Σ detach − Σ deposition = exported sediment` + the SC-SED-001
   invariants, on a runoff+sediment-generating fixture (McKenzie Bridge class,
   NOT MORAN-WY p313).
+  **DONE 2026-07-03 except the production seed flip** (solver + wiring +
+  publication + conservation gates landed and validated on real McKenzie
+  clay-loam storm forcing; see `artifacts/implementation.md`).
+- **Increment 1b — Wave-1 operand production (NEW, declared boundary from
+  Increment-1).** Port the operand-producer chain the Increment-0 gate
+  assumed existed: `prtcmp`/`falvel`/`yalin`/`trcoef` (particle classes,
+  `veleff`, `kt/kt2/ktrato/tcend`), `frcfac`+`shears` (`shrsol`, rill
+  width, friction — closes `EROD-BND-002`), `irs` `effint`/`effdrr`
+  exposure, `detinr` assembly, and the `soil.for` daily
+  `kiadjf/kradjf/tcadjf` chain (largest; may split again); then flip
+  `direct_production_typed_erosion_authority` to a populated
+  `DirectWave1ContinuityInputs`, unhardcode the pass-parquet
+  `tdet`/`tdep` writer (Wave-1-sourced totals only), and flip the
+  DFF-WS3 sediment HOLD assertions.
 - **Increment 2 — multi-OFE integration.** Wire Wave-1 across OFEs and reconcile
   with the existing EROD14 routing (`qin/qout`, particle handoff).
 - **Increment 3 — particle-class + enrichment completeness** (`sedia`/`sedist`)
