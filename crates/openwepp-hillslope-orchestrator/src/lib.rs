@@ -168,7 +168,7 @@ pub use hydrology::{
 };
 pub use runtime_inputs::{
     DIRECT_WINTER_HOURLY_FORCING_COUNT, DirectWinterHourlyContext, DirectWinterHourlyForcing,
-    SnowPhasePartitionModel,
+    ForestLanuseReconciliationError, SnowPhasePartitionModel, reconcile_forest_lanuse_authority,
 };
 pub use winter_column::{
     DIRECT_WINTER_HOURS_PER_DAY, DirectFrostFineLayerState, DirectFrostLaneState,

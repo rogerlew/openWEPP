@@ -4,9 +4,9 @@ title: Management Input Parser Contract (.man)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.2.0
+contract_version: 0.3.0
 evidence_mode: Static
-last_updated_utc: 2026-05-21T19:00:00Z
+last_updated_utc: 2026-07-02T00:00:00Z
 ---
 
 # SC-INFILE-MANAGEMENT-001 Management Input Parser Contract
@@ -37,6 +37,7 @@ This contract governs parser behavior for surface `infile-management-man` (`.man
 | `98.4` | Accept. | Parse baseline structure and legacy-compatible option subsets. | `[DIRECT][E-SPEC-MAN-01]` |
 | `2016.3` | Accept. | Parse extended residue/understory/permanent-contour option fields. | `[DIRECT][E-SPEC-MAN-01]` |
 | `2017.1` | Accept. | Parse as `2016.3`-family extension until stricter divergence is identified. | `[DIRECT][E-SPEC-MAN-01]`, `[INFERENCE][E-WP-MAN-01]` |
+| `ow-lanuse-1` | Accept (openWEPP-native). | Parse the first-class forest `lanuse` carve (see §1.4); legacy option domains follow the `2016.3+` family. | ADR-0034; `openwepp-management-lanuse-authority-contract.md` (`LANUSE-AUTH-1..6`) |
 | unknown | Strict reject. Compat reject unless explicitly allowlisted. | Emit typed `UnsupportedDatver`. | `[INFERENCE][E-SPEC-MAN-01]` |
 
 ### 1.3 Executable Parser Profile (INIMPL09)
@@ -48,6 +49,43 @@ This contract governs parser behavior for surface `infile-management-man` (`.man
   - perennial management option (`mgtopt`) currently executes `1..3`; higher `2016.3+` options (`4..7`) are typed `MAN-E-004`.
 - Rangeland (`landuse=2`) paths are explicitly unsupported for openWEPP `.man` execution and rejected with typed `MAN-E-004`.
 - Date-domain guard `G-MAN-008` is executable for parsed cropland surface/yearly date fields (`1..366`, with explicit `0` sentinel support only for perennial `jdharv`, `jdplt`, `jdstop`).
+- Rangeland (`landuse=2`) remains explicitly unsupported for openWEPP `.man` execution under **every** datver (abandoned legacy model; ADR-0017), rejected with typed `MAN-E-004`.
+
+### 1.4 openWEPP-Native Forest `lanuse` Branch (`ow-lanuse-1`, INIMPL forest carve)
+
+Under ADR-0034 and the management-`lanuse` authority contract
+(`openwepp-management-lanuse-authority-contract.md`, `LANUSE-AUTH-1..6`), the
+openWEPP-native datver `ow-lanuse-1` unlocks a **first-class forest `lanuse`
+mode**. This is distinct from the abandoned legacy forest branch
+(`iplant=3`, empty in legacy WEPP) and from the rejected rangeland branch.
+
+- **Sentinel.** `landuse = 3` (the legacy forest code) selects the native
+  forest carve **only** under the `ow-lanuse-1` datver. Under every legacy
+  datver `landuse=3` stays rejected with `MAN-E-004`
+  (`InvalidOptionDomain{iplant/lanuse/iscen}`), preserving the
+  compatibility-input quarantine (`LANUSE-AUTH-4`).
+- **Supported sections.** `plant` (`PlantScenarioData::Forest`, Tier-A growth +
+  Tier-A decomposition + Tier-B community operands), `initial`
+  (`InitialScenarioData::Forest`, first-class cover/roughness), and `yearly`
+  (`YearlyScenarioData::Forest`, established perennial: `tilseq=conset=drset=0`,
+  `imngmt=2`, `mgtopt=3` idle).
+- **Not-applicable sections.** A forest sentinel in `operation`, `surface`,
+  `contour`, or `drain` fails closed with typed
+  `MAN-E-004`/`ForestSectionNotApplicable` — forest defines no tillage, contour,
+  or drain scenario, so the parser does not invent an empty one
+  (`LANUSE-AUTH-2`).
+- **Typed presence / fail-closed.** Every Tier-A forest operand is explicit and
+  required; a missing or non-numeric value fails closed at parse
+  (`MAN-E-001`/`MAN-E-002`), never a silent default (`LANUSE-AUTH-2`). The
+  lookup-owned operands (`xmxlai`, `rdmax`, `decfct`, `dropfc`) carry the
+  authoritative `(texture × class)` values reconciled against the `.man` forest
+  class (`LANUSE-AUTH-6`); the remaining Tier-A operands are the explicit forest
+  authority. No cropland or rangeland numeric defaults are used.
+- **Kernel compatibility.** The forest projection emits the same growth-surface
+  boundary symbols the daily growth kernel already consumes (the 19 growth
+  symbols + decomposition), so the kernel is unchanged (`LANUSE-AUTH-1`). The
+  concrete operand schema is `openwepp-management-lanuse-v1`
+  (`docs/work-packages/20260702-dff-ws1-native-forest-lanuse-mode-001/artifacts/lanuse-v1-schema.md`).
 
 ## 2. Source Grammar and Source-vs-Simulation Model
 
@@ -335,7 +373,7 @@ Closure hooks:
 | `MAN-E-001` | syntax | token parse failure for required numeric fields |
 | `MAN-E-002` | syntax | missing section/record before expected count closure |
 | `MAN-E-003` | semantic | unsupported datver |
-| `MAN-E-004` | semantic | invalid enum/options domain (`lanuse`, `iplant`, `iop`, `mgtopt`, etc.) and explicit unsupported `landuse=2` execution paths |
+| `MAN-E-004` | semantic | invalid enum/options domain (`lanuse`, `iplant`, `iop`, `mgtopt`, etc.); explicit unsupported `landuse=2` (rangeland) execution paths; legacy-datver `landuse=3` (forest sentinel is supported **only** under `ow-lanuse-1`, §1.4); and a forest sentinel appearing in a not-applicable section (`ForestSectionNotApplicable`). The native forest branch under `ow-lanuse-1` is **not** swept by this reject. |
 | `MAN-E-005` | semantic | negative or invalid section counts |
 | `MAN-E-006` | semantic | section ordering violation |
 | `MAN-E-007` | cross-file | topology mismatch with slope/soil/watershed surfaces |
@@ -408,11 +446,14 @@ openWEPP names are explicit aliases only (Section 3 table).
 | `MAN-GAP-001` | Full non-zero section parsing and executable fixture coverage for canonical cropland `.man` structures is implemented; remaining branch gap is only `mgtopt 4..7` execution coverage. | `[DIRECT][E-SPEC-MAN-01]`, `[DIRECT][E-WP-MAN-01]` | `amended` |
 | `MAN-GAP-002` | Formal openWEPP policy for accepting/translating 2016.3+ extended operation codes in strict mode vs external downgrade workflows is not fully ratified. | `[DIRECT][E-SPEC-MAN-01]`, `[DIRECT][E-WP-MAN-01]` | `HOLD` |
 | `MAN-GAP-003` | Cross-file governance for management-schedule year closure against run-control surfaces is not yet codified in a dedicated run-surface parser contract. | `[INFERENCE][E-SURVEY-MAN-01]` | `HOLD` |
+| `MAN-GAP-004` | Native forest `lanuse` Tier-B plant-community operands (`tempmn`, `gtemp`, `plive`, `wood`, grass/shrub/tree structure) are parsed and stored but not yet consumed; the plant-community canopy/decline growth model is WS-4 under the growth–canopy contract. | ADR-0034; DFF-WS1 | `HOLD` (WS-4) |
+| `MAN-GAP-005` | Full ingestion of the authoritative `(texture × class)` land-soil lookup and the `openwepp-disturbed.json` class→management binding into the reconciliation manifest is a follow-on; DFF-WS1 Increment-2 lands the `.man` forest_class ↔ `.sol` `DisturbedPolicy` reconciliation leg and carries the `.man` lookup-owned operands explicitly for reconciliation. | ADR-0034 (`LANUSE-AUTH-6`); DFF-WS1 | `HOLD` (follow-on) |
 
 ## 14. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-07-02` | `0.3.0` | DFF-WS1 Increment-2: registered the openWEPP-native forest `lanuse` branch under the `ow-lanuse-1` datver (§1.2 matrix, §1.4). Un-swept the native forest branch from the generic `MAN-E-004` reject; added `ForestSectionNotApplicable` and the legacy-datver forest-sentinel reject to the `MAN-E-004` trigger. Registered `MAN-GAP-004` (Tier-B WS-4 consumption) and `MAN-GAP-005` (lookup/`disturbed.json` ingestion follow-on). Governed by ADR-0034 + `openwepp-management-lanuse-authority-contract.md`. |
 | `2026-05-28` | `0.2.1` | HILLSTAB02 amendment: compatibility-mode authority now permits `tilseq=0` as explicit no-surface-effect sentinel even when `nseq>0`, while strict mode keeps full positive index-domain enforcement. |
 | `2026-05-21` | `0.2.0` | Ratified executable INIMPL09 parser profile: canonical section-order non-zero parsing, typed registry/schedule output, explicit rangeland unsupported policy, and executable date-domain guard linkage. |
 | `2026-05-21` | `0.1.2` | Replaced grouped payload rows in Section 3 with explicit per-symbol field rows for all externally relevant management inputs across plant/operation/initial/surface/contour/drain/yearly branches. |

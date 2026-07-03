@@ -1,0 +1,94 @@
+ow-lanuse-1
+1 # number of ofes or channels
+1 # total_years (nrots * nyears)
+
+#############################
+#   Plant Growth Section    #
+#############################
+1 # ncrop
+Forest_High_Severity_Fire
+Native forest lanuse mode (disturbed class: forest high sev fire)
+openWEPP DFF-WS1 native forest lanuse-v1
+(null)
+3 # Landuse - <Forest>
+forest_high_sev_fire
+14.00000 3.00000 0.00000 2.00000 0.45000    # growth: bb bbb beinp btemp extnct
+17.00000 0.20000 0.42000 0.00000 0.50000    # growth: flivmx hmax hi gddmax dlai
+20.00000 0.10000 90.00000 0.33000 0.20000   # growth: otemp pltol spriod rsr rtmmax
+2.00000 0.30000 1.00000 1.00000             # lookup-owned: xmxlai rdmax decfct dropfc
+5.00000 0.00500                             # residue seed: cf diam
+0.00000 0.00000                             # decomposition: oratea orater
+-5.00000 5.00000 0.20000 0.10000            # community: tempmn gtemp plive wood
+0.00000 0.00000 0.00000 0.00000             # grass: coeff diam hgt pop
+0.00000 0.00000 0.00000 0.00000             # shrub: coeff diam hgt pop
+0.02000 2.00000 8.00000 500.00000           # tree: coeff diam hgt pop
+
+#############################
+#     Operation Section     #
+#############################
+0 # nop
+
+#############################
+# Initial Condition Section
+#############################
+1 # nini
+Forest_Initial
+Established forest initial condition
+openWEPP DFF-WS1 native forest lanuse-v1
+(null)
+3 # Landuse - <Forest>
+0.40000 0.30000 0.30000 0.06000             # cover: cancov inrcov rilcov rrinit
+1                                           # iresd (forest plant reference)
+2                                           # imngmt (established perennial)
+0.00000 0.00000                             # thermal: tillay1 tillay2
+0.20000 0.20000                             # terminal: sumrtm sumsrm
+
+#############################
+#  Surface Effects Section  #
+#############################
+0 # nseq
+
+#############################
+#      Contour Section      #
+#############################
+0 # ncnt
+
+#############################
+#      Drainage Section     #
+#############################
+0 # ndrain
+
+#############################
+#       Yearly Section      #
+#############################
+1 # nscen
+Forest_Year
+(null)
+(null)
+(null)
+3 # Landuse - <Forest>
+1     # Plant Growth Scenario index (itype)
+0     # Surface Effect Scenario index (tilseq)
+0     # Contour Scenario index (conset)
+0     # Drainage Scenario index (drset)
+2     # Cropping system (imngmt: forest perennial)
+0     # Harvest / stand-removal date (jdharv)
+0     # Planting / establishment date (jdplt)
+0     # Growth-stop date (jdstop)
+0.00000   # Row width (rw)
+3     # Management option (mgtopt: forest idle)
+
+#############################
+#     Management Section    #
+#############################
+Forest_Management
+description 1
+description 2
+description 3
+1 # number of ofes in the rotation (nofe)
+# Initial Condition Scenario indices used for each OFE
+  1
+1 # number of times the rotation is repeated (nrots)
+1 # number of years in a single rotation (nyears)
+   1     # plants/year; <Year: 1 - OFE: 1>  (nycrop)
+      1     # yearly index <Year 1>

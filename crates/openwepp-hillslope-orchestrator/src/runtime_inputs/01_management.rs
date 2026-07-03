@@ -31,6 +31,9 @@ impl HillslopePlRuntimeSurfaces {
 type ManagementInitialScenario = openwepp_input_contract::parsers::management::InitialScenario;
 type ManagementInitialCroplandData =
     openwepp_input_contract::parsers::management::InitialCroplandData;
+type ManagementInitialForestData = openwepp_input_contract::parsers::management::InitialForestData;
+type ManagementYearlyForestData = openwepp_input_contract::parsers::management::YearlyForestData;
+type ManagementPlantForestData = openwepp_input_contract::parsers::management::PlantForestData;
 type ManagementScheduleSlotData =
     openwepp_input_contract::parsers::management::ManagementScheduleSlot;
 type ManagementYearlyAnnualFallowData =
@@ -60,6 +63,9 @@ impl PlRuntimeSurfaceBuilder {
 
 #[derive(Debug, Clone, PartialEq)]
 struct InitialSeedProjection {
+    imngmt: usize,
+    rtyp: usize,
+    iresd: usize,
     cancov: f64,
     inrcov: f64,
     rilcov: f64,
@@ -203,39 +209,29 @@ fn project_initial_seed_surfaces(
     for (ofe_position, initial_ref) in management.schedule.ofe_initial_refs.iter().enumerate() {
         let ofe_index = ofe_position + 1;
         let initial = initial_scenario_for_ofe(management, ofe_index, *initial_ref)?;
-        if initial.meta.landuse != 1 {
-            return Err(HillslopeRuntimeInputError::UnsupportedPlLanduse {
-                section: "initial",
-                value: initial.meta.landuse,
-            });
-        }
-        let InitialScenarioData::Cropland(initial_data) = &initial.data;
-        let seed = build_initial_seed_projection(management, initial.meta.landuse, initial_data)?;
+        // The scenario-data variant is the authoritative landuse discriminant
+        // (the parser couples `Cropland`⇒`landuse=1`, `Forest`⇒`landuse=3`);
+        // rangeland is already rejected at parse.
+        let landuse = initial.meta.landuse;
+        let (seed, understory_line) = match &initial.data {
+            InitialScenarioData::Cropland(initial_data) => (
+                build_initial_seed_projection(management, landuse, initial_data)?,
+                initial_data.understory_line,
+            ),
+            InitialScenarioData::Forest(forest_data) => (
+                build_initial_seed_projection_forest(management, landuse, forest_data)?,
+                forest_data.understory_line,
+            ),
+        };
 
-        insert_initial_seed_symbols(
-            surfaces,
-            ofe_index,
-            *initial_ref,
-            initial.meta.landuse,
-            initial_data,
-            &seed,
-        )?;
+        insert_initial_seed_symbols(surfaces, ofe_index, *initial_ref, landuse, &seed)?;
 
-        if let Some(understory) = initial_data.understory_line {
-            project_initial_understory_symbols(
-                &mut surfaces.decomp,
-                ofe_index,
-                understory,
-            )?;
+        if let Some(understory) = understory_line {
+            project_initial_understory_symbols(&mut surfaces.decomp, ofe_index, understory)?;
         }
 
         if ofe_index == 1 {
-            insert_primary_initial_seed_aliases(
-                surfaces,
-                initial.meta.landuse,
-                initial_data,
-                &seed,
-            )?;
+            insert_primary_initial_seed_aliases(surfaces, landuse, &seed)?;
         }
     }
 
@@ -278,8 +274,16 @@ fn build_initial_seed_projection(
         validate_projection_non_negative("tillay2_seed", 0, 0, initial_data.thaw_line[3])?;
     let width = validate_projection_non_negative("width_seed", 0, 0, initial_data.thaw_line[4])?;
 
-    let residue_plant = residue_plant_for_initial(management, initial_data)?;
-    let PlantScenarioData::Cropland(residue_plant_cropland) = &residue_plant.data;
+    let residue_plant = residue_plant_for_iresd(management, initial_data.iresd)?;
+    let PlantScenarioData::Cropland(residue_plant_cropland) = &residue_plant.data else {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "iresd_seed",
+            slot_index: 0,
+            crop_slot_index: 0,
+            value: usize_to_f64("iresd_seed", initial_data.iresd)?,
+            allowed: "cropland initial must reference a cropland plant scenario",
+        });
+    };
     let residue_depth_m = legacy_initial_residue_depth_m(
         landuse,
         residue_plant_cropland.canopy_line[4],
@@ -323,6 +327,9 @@ fn build_initial_seed_projection(
     )?;
 
     Ok(InitialSeedProjection {
+        imngmt: initial_data.imngmt,
+        rtyp: initial_data.rtyp,
+        iresd: initial_data.iresd,
         cancov,
         inrcov,
         rilcov,
@@ -342,25 +349,109 @@ fn build_initial_seed_projection(
     })
 }
 
-fn residue_plant_for_initial<'a>(
-    management: &'a ManagementParseOutput,
-    initial_data: &ManagementInitialCroplandData,
+/// Ridge type sentinel for forest initial seeds. Forest has no ridge geometry
+/// (`LANUSE-AUTH-3`); the `rtyp` boundary symbol is inert for forest, so it is
+/// fixed to the flat-ridge sentinel rather than inferred from a legacy field.
+const FOREST_INITIAL_RTYP_SENTINEL: usize = 1;
+
+/// Build the initial-condition seed projection for the openWEPP-native forest
+/// mode. Emits the same seed operands as the cropland path, sourced from the
+/// first-class `InitialForestData` and the referenced forest plant scenario;
+/// ridge geometry (`rspace`/`width`/`rtyp`) is forest-inert (`LANUSE-AUTH-3`).
+fn build_initial_seed_projection_forest(
+    management: &ManagementParseOutput,
+    landuse: usize,
+    forest_data: &ManagementInitialForestData,
+) -> Result<InitialSeedProjection, HillslopeRuntimeInputError> {
+    let cancov = validate_projection_fraction("cancov_seed", 0, 0, forest_data.cancov)?;
+    let inrcov = validate_projection_fraction("inrcov_seed", 0, 0, forest_data.inrcov)?;
+    let rilcov = validate_projection_fraction("rilcov_seed", 0, 0, forest_data.rilcov)?;
+    let rrinit = validate_projection_non_negative("rrinit_seed", 0, 0, forest_data.rrinit)?;
+    let tillay1 = validate_projection_non_negative("tillay1_seed", 0, 0, forest_data.tillay1)?;
+    let tillay2 = validate_projection_non_negative("tillay2_seed", 0, 0, forest_data.tillay2)?;
+
+    let residue_plant = residue_plant_forest_for_initial(management, forest_data)?;
+    let residue_depth_m = legacy_initial_residue_depth_m(
+        landuse,
+        residue_plant.cf,
+        residue_plant.diam,
+        inrcov,
+        rilcov,
+        // Forest carries no ridge spacing or row width; both are inert for the
+        // residue-depth seed (rspace defaults to 1.0 downstream).
+        0.0,
+        0.0,
+    )?;
+    let canopy_cover_coeff =
+        validate_projection_non_negative("bb_seed", 0, 0, residue_plant.growth.bb)?;
+    let canopy_height_curve =
+        validate_projection_non_negative("bbb_seed", 0, 0, residue_plant.growth.bbb)?;
+    let flivmx = validate_projection_non_negative("flivmx_seed", 0, 0, residue_plant.growth.flivmx)?;
+    let hmax = validate_projection_non_negative("hmax_seed", 0, 0, residue_plant.growth.hmax)?;
+    let sumrtm = validate_initial_terminal_seed("sumrtm_seed", forest_data.sumrtm)?;
+    let sumsrm = validate_initial_terminal_seed("sumsrm_seed", forest_data.sumsrm)?;
+
+    Ok(InitialSeedProjection {
+        imngmt: forest_data.imngmt,
+        rtyp: FOREST_INITIAL_RTYP_SENTINEL,
+        iresd: forest_data.iresd,
+        cancov,
+        inrcov,
+        rilcov,
+        rrinit,
+        rspace: 0.0,
+        tillay1,
+        tillay2,
+        width: 0.0,
+        residue_depth_m,
+        canopy_cover_coeff,
+        canopy_height_curve,
+        flivmx,
+        hmax,
+        sumrtm,
+        sumsrm,
+    })
+}
+
+fn residue_plant_for_iresd(
+    management: &ManagementParseOutput,
+    iresd: usize,
 ) -> Result<
-    &'a openwepp_input_contract::parsers::management::PlantScenario,
+    &openwepp_input_contract::parsers::management::PlantScenario,
     HillslopeRuntimeInputError,
 >
 {
-    if initial_data.iresd == 0 || initial_data.iresd > management.registries.plants.len() {
+    if iresd == 0 || iresd > management.registries.plants.len() {
         return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
             field: "iresd_seed",
             slot_index: 0,
             crop_slot_index: 0,
-            value: usize_to_f64("iresd_seed", initial_data.iresd)?,
+            value: usize_to_f64("iresd_seed", iresd)?,
             allowed: "1..=plant_scenario_count",
         });
     }
 
-    Ok(&management.registries.plants[initial_data.iresd - 1])
+    Ok(&management.registries.plants[iresd - 1])
+}
+
+/// Resolve the forest residue plant scenario referenced by a forest initial
+/// condition. Fails closed if the reference is dangling or points at a
+/// non-forest plant scenario.
+fn residue_plant_forest_for_initial<'a>(
+    management: &'a ManagementParseOutput,
+    forest_data: &ManagementInitialForestData,
+) -> Result<&'a ManagementPlantForestData, HillslopeRuntimeInputError> {
+    let residue_plant = residue_plant_for_iresd(management, forest_data.iresd)?;
+    let PlantScenarioData::Forest(forest_plant) = &residue_plant.data else {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "iresd_seed",
+            slot_index: 0,
+            crop_slot_index: 0,
+            value: usize_to_f64("iresd_seed", forest_data.iresd)?,
+            allowed: "forest initial must reference a forest plant scenario",
+        });
+    };
+    Ok(forest_plant)
 }
 
 fn validate_initial_terminal_seed(
@@ -383,7 +474,6 @@ fn insert_initial_seed_symbols(
     ofe_index: usize,
     initial_ref: usize,
     landuse: usize,
-    initial_data: &ManagementInitialCroplandData,
     seed: &InitialSeedProjection,
 ) -> Result<(), HillslopeRuntimeInputError> {
     surfaces.schedule.insert(
@@ -395,34 +485,23 @@ fn insert_initial_seed_symbols(
         BoundaryValue::scalar(usize_to_f64("lanuse", landuse)?),
     );
 
-    insert_initial_growth_seed_symbols(
-        &mut surfaces.growth,
-        ofe_index,
-        initial_data,
-        seed,
-    )?;
-    insert_initial_decomp_seed_symbols(
-        &mut surfaces.decomp,
-        ofe_index,
-        initial_data,
-        seed,
-    )
+    insert_initial_growth_seed_symbols(&mut surfaces.growth, ofe_index, seed)?;
+    insert_initial_decomp_seed_symbols(&mut surfaces.decomp, ofe_index, seed)
 }
 
 fn insert_initial_growth_seed_symbols(
     surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
     ofe_index: usize,
-    initial_data: &ManagementInitialCroplandData,
     seed: &InitialSeedProjection,
 ) -> Result<(), HillslopeRuntimeInputError> {
     for (symbol, value) in [
         (
             pl_growth_ofe_symbol("imngmt_seed", ofe_index),
-            usize_to_f64("imngmt_seed", initial_data.imngmt)?,
+            usize_to_f64("imngmt_seed", seed.imngmt)?,
         ),
         (
             pl_growth_ofe_symbol("rtyp_seed", ofe_index),
-            usize_to_f64("rtyp_seed", initial_data.rtyp)?,
+            usize_to_f64("rtyp_seed", seed.rtyp)?,
         ),
         (pl_growth_ofe_symbol("cancov_seed", ofe_index), seed.cancov),
         (
@@ -448,7 +527,7 @@ fn insert_initial_growth_seed_symbols(
         (slope_ofe_symbol("width", ofe_index), seed.width),
         (
             slope_ofe_symbol("rtyp", ofe_index),
-            usize_to_f64("rtyp_seed", initial_data.rtyp)?,
+            usize_to_f64("rtyp_seed", seed.rtyp)?,
         ),
     ] {
         surface.insert(symbol, BoundaryValue::scalar(value));
@@ -459,13 +538,12 @@ fn insert_initial_growth_seed_symbols(
 fn insert_initial_decomp_seed_symbols(
     surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
     ofe_index: usize,
-    initial_data: &ManagementInitialCroplandData,
     seed: &InitialSeedProjection,
 ) -> Result<(), HillslopeRuntimeInputError> {
     for (symbol, value) in [
         (
             pl_decomp_ofe_symbol("iresd_seed", ofe_index),
-            usize_to_f64("iresd_seed", initial_data.iresd)?,
+            usize_to_f64("iresd_seed", seed.iresd)?,
         ),
         (pl_decomp_ofe_symbol("sumrtm_seed", ofe_index), seed.sumrtm),
         (pl_decomp_ofe_symbol("sumsrm_seed", ofe_index), seed.sumsrm),
@@ -500,27 +578,22 @@ fn project_initial_understory_symbols(
 fn insert_primary_initial_seed_aliases(
     surfaces: &mut PlRuntimeSurfaceBuilder,
     landuse: usize,
-    initial_data: &ManagementInitialCroplandData,
     seed: &InitialSeedProjection,
 ) -> Result<(), HillslopeRuntimeInputError> {
     surfaces.schedule.insert(
         BoundarySymbol::from("lanuse"),
         BoundaryValue::scalar(usize_to_f64("lanuse", landuse)?),
     );
-    insert_primary_initial_growth_aliases(&mut surfaces.growth, initial_data, seed)?;
-    insert_primary_initial_decomp_aliases(&mut surfaces.decomp, initial_data, seed)
+    insert_primary_initial_growth_aliases(&mut surfaces.growth, seed)?;
+    insert_primary_initial_decomp_aliases(&mut surfaces.decomp, seed)
 }
 
 fn insert_primary_initial_growth_aliases(
     surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
-    initial_data: &ManagementInitialCroplandData,
     seed: &InitialSeedProjection,
 ) -> Result<(), HillslopeRuntimeInputError> {
     for (symbol, value) in [
-        (
-            "imngmt_seed",
-            usize_to_f64("imngmt_seed", initial_data.imngmt)?,
-        ),
+        ("imngmt_seed", usize_to_f64("imngmt_seed", seed.imngmt)?),
         ("cancov", seed.cancov),
         ("inrcov", seed.inrcov),
         ("residue_cover_factor_cf", seed.residue_cover_factor),
@@ -530,7 +603,7 @@ fn insert_primary_initial_growth_aliases(
         ("management.initial.params.tillay1_m", seed.tillay1),
         ("management.initial.params.tillay2_m", seed.tillay2),
         ("width", seed.width),
-        ("rtyp", usize_to_f64("rtyp_seed", initial_data.rtyp)?),
+        ("rtyp", usize_to_f64("rtyp_seed", seed.rtyp)?),
         ("bb_seed", seed.canopy_cover_coeff),
         ("bbb_seed", seed.canopy_height_curve),
         ("flivmx_seed", seed.flivmx),
@@ -543,11 +616,10 @@ fn insert_primary_initial_growth_aliases(
 
 fn insert_primary_initial_decomp_aliases(
     surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
-    initial_data: &ManagementInitialCroplandData,
     seed: &InitialSeedProjection,
 ) -> Result<(), HillslopeRuntimeInputError> {
     for (symbol, value) in [
-        ("iresd_seed", usize_to_f64("iresd_seed", initial_data.iresd)?),
+        ("iresd_seed", usize_to_f64("iresd_seed", seed.iresd)?),
         ("sumrtm_seed", seed.sumrtm),
         ("sumsrm_seed", seed.sumsrm),
         ("frost.runtime_residue_depth_m", seed.residue_depth_m),
@@ -656,20 +728,46 @@ fn project_yearly_crop_slot_surfaces(
     yearly_ref: usize,
 ) -> Result<(), HillslopeRuntimeInputError> {
     let yearly = yearly_scenario_for_slot(management, slot_index, crop_slot_index, yearly_ref)?;
-    if yearly.meta.landuse != 1 {
-        return Err(HillslopeRuntimeInputError::UnsupportedPlLanduse {
-            section: "yearly",
-            value: yearly.meta.landuse,
-        });
+    // The scenario-data variant is the authoritative landuse discriminant;
+    // rangeland is already rejected at parse.
+    let landuse = yearly.meta.landuse;
+    match &yearly.data {
+        YearlyScenarioData::Cropland(cropland) => project_yearly_cropland_slot(
+            surfaces,
+            management,
+            slot_index,
+            crop_slot_index,
+            yearly_ref,
+            landuse,
+            cropland,
+        ),
+        YearlyScenarioData::Forest(forest) => project_yearly_forest_slot(
+            surfaces,
+            management,
+            slot_index,
+            crop_slot_index,
+            yearly_ref,
+            landuse,
+            forest,
+        ),
     }
-    let YearlyScenarioData::Cropland(cropland) = &yearly.data;
+}
 
+fn project_yearly_cropland_slot(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    management: &ManagementParseOutput,
+    slot_index: usize,
+    crop_slot_index: usize,
+    yearly_ref: usize,
+    landuse: usize,
+    cropland: &ManagementYearlyCroplandData,
+) -> Result<(), HillslopeRuntimeInputError> {
     insert_yearly_schedule_symbols(
         &mut surfaces.schedule,
         slot_index,
         crop_slot_index,
         yearly_ref,
-        yearly.meta.landuse,
+        landuse,
         cropland,
     )?;
     insert_yearly_growth_identity_symbols(
@@ -719,6 +817,188 @@ fn project_yearly_crop_slot_surfaces(
     }
 
     Ok(())
+}
+
+/// Cropping-system flag for a forest yearly slot: established perennial.
+const FOREST_PERENNIAL_IMNGMT: usize = 2;
+/// Perennial management option for a forest yearly slot: idle (no cut/graze;
+/// stand management is deferred to WS-4).
+const FOREST_IDLE_MGTOPT: usize = 3;
+
+/// Project a forest yearly schedule slot. Emits the same schedule / growth /
+/// decomposition symbol roots as the cropland perennial path (so the daily
+/// growth kernel is unchanged) with forest-native operands: no surface-effect /
+/// contour / drain references, established perennial `imngmt=2`, idle
+/// `mgtopt=3`.
+fn project_yearly_forest_slot(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    management: &ManagementParseOutput,
+    slot_index: usize,
+    crop_slot_index: usize,
+    yearly_ref: usize,
+    landuse: usize,
+    forest: &ManagementYearlyForestData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (symbol, value) in [
+        (
+            pl_schedule_slot_crop_symbol("yearly_ref", slot_index, crop_slot_index),
+            usize_to_f64("yearly_ref", yearly_ref)?,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("lanuse", slot_index, crop_slot_index),
+            usize_to_f64("lanuse", landuse)?,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("itype", slot_index, crop_slot_index),
+            usize_to_f64("itype", forest.itype)?,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("tilseq", slot_index, crop_slot_index),
+            0.0,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("conset", slot_index, crop_slot_index),
+            0.0,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("drset", slot_index, crop_slot_index),
+            0.0,
+        ),
+        (
+            pl_schedule_slot_crop_symbol("imngmt", slot_index, crop_slot_index),
+            usize_to_f64("imngmt", FOREST_PERENNIAL_IMNGMT)?,
+        ),
+    ] {
+        surfaces.schedule.insert(symbol, BoundaryValue::scalar(value));
+    }
+
+    for (symbol, value) in [
+        (
+            pl_growth_slot_crop_symbol("itype", slot_index, crop_slot_index),
+            usize_to_f64("itype", forest.itype)?,
+        ),
+        (
+            pl_growth_slot_crop_symbol("imngmt", slot_index, crop_slot_index),
+            usize_to_f64("imngmt", FOREST_PERENNIAL_IMNGMT)?,
+        ),
+    ] {
+        surfaces.growth.insert(symbol, BoundaryValue::scalar(value));
+    }
+
+    let plant_forest = plant_forest_for_yearly(management, slot_index, crop_slot_index, forest)?;
+    project_growth_equation_symbols_forest(
+        &mut surfaces.growth,
+        slot_index,
+        crop_slot_index,
+        plant_forest,
+    )?;
+    project_decomposition_equation_symbols_forest(
+        &mut surfaces.decomp,
+        slot_index,
+        crop_slot_index,
+        plant_forest,
+    )?;
+
+    project_forest_perennial_schedule_symbols(surfaces, slot_index, crop_slot_index, forest)?;
+
+    if slot_index == 1 && crop_slot_index == 1 {
+        project_primary_growth_equation_aliases_forest(&mut surfaces.growth, plant_forest)?;
+        project_primary_decomposition_equation_aliases_forest(&mut surfaces.decomp, plant_forest)?;
+        // Forest carries no drain scenario; project the disabled drain controls.
+        project_primary_drain_controls(
+            &mut surfaces.schedule,
+            management,
+            slot_index,
+            crop_slot_index,
+            0,
+        )?;
+    }
+
+    Ok(())
+}
+
+/// Emit the perennial-style schedule symbols for a forest slot (`jdharv`,
+/// `jdplt`, `jdstop`, `rw`, `mgtopt`) plus the idle-management payload counts
+/// (`ncut=0`, `ncycle=0`), matching the cropland perennial projection.
+fn project_forest_perennial_schedule_symbols(
+    surfaces: &mut PlRuntimeSurfaceBuilder,
+    slot_index: usize,
+    crop_slot_index: usize,
+    forest: &ManagementYearlyForestData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let jdharv = validate_projection_day("jdharv", slot_index, crop_slot_index, forest.jdharv, true)?;
+    let jdplt = validate_projection_day("jdplt", slot_index, crop_slot_index, forest.jdplt, true)?;
+    let jdstop = validate_projection_day("jdstop", slot_index, crop_slot_index, forest.jdstop, true)?;
+    let rw = validate_projection_finite("rw", slot_index, crop_slot_index, forest.rw)?;
+
+    for (symbol, value) in [
+        (
+            pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index),
+            usize_to_f64("jdharv", jdharv)?,
+        ),
+        (
+            pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index),
+            usize_to_f64("jdplt", jdplt)?,
+        ),
+        (
+            pl_growth_slot_crop_symbol("jdstop", slot_index, crop_slot_index),
+            usize_to_f64("jdstop", jdstop)?,
+        ),
+        (
+            pl_growth_slot_crop_symbol("rw", slot_index, crop_slot_index),
+            rw,
+        ),
+        (
+            pl_growth_slot_crop_symbol("mgtopt", slot_index, crop_slot_index),
+            usize_to_f64("mgtopt", FOREST_IDLE_MGTOPT)?,
+        ),
+    ] {
+        surfaces.growth.insert(symbol, BoundaryValue::scalar(value));
+    }
+
+    for (root, value) in [
+        ("mgtopt", usize_to_f64("mgtopt", FOREST_IDLE_MGTOPT)?),
+        ("ncut", 0.0),
+        ("ncycle", 0.0),
+    ] {
+        surfaces.decomp.insert(
+            pl_decomp_slot_crop_symbol(root, slot_index, crop_slot_index),
+            BoundaryValue::scalar(value),
+        );
+    }
+
+    Ok(())
+}
+
+/// Resolve the forest plant scenario referenced by a forest yearly slot
+/// (`itype`). Fails closed on a dangling reference or a non-forest plant.
+fn plant_forest_for_yearly<'a>(
+    management: &'a ManagementParseOutput,
+    slot_index: usize,
+    crop_slot_index: usize,
+    forest: &ManagementYearlyForestData,
+) -> Result<&'a ManagementPlantForestData, HillslopeRuntimeInputError> {
+    if forest.itype == 0 || forest.itype > management.registries.plants.len() {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "itype",
+            slot_index,
+            crop_slot_index,
+            value: usize_to_f64("itype", forest.itype)?,
+            allowed: "1..=plant_scenario_count",
+        });
+    }
+
+    let plant = &management.registries.plants[forest.itype - 1];
+    let PlantScenarioData::Forest(plant_forest) = &plant.data else {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "itype",
+            slot_index,
+            crop_slot_index,
+            value: usize_to_f64("itype", forest.itype)?,
+            allowed: "forest yearly slot must reference a forest plant scenario",
+        });
+    };
+    Ok(plant_forest)
 }
 
 fn yearly_scenario_for_slot(
@@ -823,7 +1103,15 @@ fn plant_cropland_for_yearly<'a>(
     }
 
     let plant = &management.registries.plants[cropland.itype - 1];
-    let PlantScenarioData::Cropland(plant_cropland) = &plant.data;
+    let PlantScenarioData::Cropland(plant_cropland) = &plant.data else {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "itype",
+            slot_index,
+            crop_slot_index,
+            value: usize_to_f64("itype", cropland.itype)?,
+            allowed: "cropland yearly slot must reference a cropland plant scenario",
+        });
+    };
     Ok(plant_cropland)
 }
 
@@ -1698,5 +1986,168 @@ mod cqr_row3_management_tests {
                 allowed: "> 0.0 when wb19_drain_enabled=1"
             }
         ));
+    }
+
+    const FOREST_MAN: &str = "ow-lanuse-1
+1
+1
+1
+Forest_High_Severity_Fire
+Native forest lanuse mode
+openWEPP DFF-WS1
+(null)
+3 # Landuse - <Forest>
+forest_high_sev_fire
+14.0 3.0 0.0 2.0 0.45
+17.0 0.2 0.42 0.0 0.5
+20.0 0.1 90.0 0.33 0.2
+2.0 0.3 1.0 1.0
+5.0 0.005
+0.0 0.0
+-5.0 5.0 0.2 0.1
+0.0 0.0 0.0 0.0
+0.0 0.0 0.0 0.0
+0.02 2.0 8.0 500.0
+0
+1
+Forest_Initial
+Established forest initial condition
+openWEPP DFF-WS1
+(null)
+3 # Landuse - <Forest>
+0.4 0.3 0.3 0.06
+1
+2
+0.0 0.0
+0.2 0.2
+0
+0
+0
+1
+Forest_Year
+(null)
+(null)
+(null)
+3 # Landuse - <Forest>
+1
+0
+0
+0
+2
+0
+0
+0
+0.0
+3
+Forest_Management
+description 1
+description 2
+description 3
+1
+1
+1
+1
+1
+1
+";
+
+    fn forest_growth_scalar(
+        surfaces: &HillslopePlRuntimeSurfaces,
+        root: &str,
+    ) -> f64 {
+        let symbol = pl_growth_slot_crop_symbol(root, 1, 1);
+        surfaces
+            .pl_growth_surface
+            .get(&symbol)
+            .unwrap_or_else(|| panic!("missing forest growth symbol {symbol}"))
+            .as_f64()
+    }
+
+    #[test]
+    fn forest_lanuse_projects_full_growth_symbol_surface() {
+        let management = openwepp_input_contract::parsers::management::parse_management_from_str(
+            FOREST_MAN,
+            openwepp_input_contract::parsers::management::ParseMode::Strict,
+        )
+        .expect("native forest management should parse");
+
+        let surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect("forest management should project the runtime surfaces");
+
+        // The 19 growth-kernel symbols are emitted at slot 1 / crop 1 with the
+        // forest operands (lookup-owned values reconciled with the authoritative
+        // `forest high sev fire` row).
+        assert_scalar_close(forest_growth_scalar(&surfaces, "bb"), 14.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "bbb"), 3.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "btemp"), 2.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "otemp"), 20.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "gddmax"), 0.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "dlai"), 0.5);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "dropfc"), 1.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "decfct"), 1.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "xmxlai"), 2.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "rdmax"), 0.3);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "rsr"), 0.33);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "rtmmax"), 0.2);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "spriod"), 90.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "flivmx"), 17.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "hmax"), 0.2);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "hi"), 0.42);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "extnct"), 0.45);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "beinp"), 0.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "pltol"), 0.1);
+
+        // Perennial schedule identity (imngmt=2, mgtopt=3 idle).
+        assert_scalar_close(forest_growth_scalar(&surfaces, "imngmt"), 2.0);
+        assert_scalar_close(forest_growth_scalar(&surfaces, "mgtopt"), 3.0);
+
+        // Decomposition surface.
+        assert_scalar_close(
+            scalar_at(&surfaces.pl_decomp_surface, &pl_decomp_slot_crop_symbol("oratea", 1, 1)),
+            0.0,
+        );
+
+        // Initial-condition seed symbols (cover/roughness first-class).
+        assert_scalar_close(
+            scalar_at(&surfaces.pl_growth_surface, &pl_growth_ofe_symbol("cancov_seed", 1)),
+            0.4,
+        );
+        assert_scalar_close(
+            scalar_at(&surfaces.pl_growth_surface, &pl_growth_ofe_symbol("bb_seed", 1)),
+            14.0,
+        );
+        assert_scalar_close(
+            scalar_at(&surfaces.pl_growth_surface, &pl_growth_ofe_symbol("hmax_seed", 1)),
+            0.2,
+        );
+
+        // Primary (non-slotted) growth aliases and the assimilated cancov state.
+        assert_scalar_close(
+            scalar_at(&surfaces.pl_growth_surface, &BoundarySymbol::from("xmxlai")),
+            2.0,
+        );
+        assert!(
+            surfaces
+                .pl_growth_surface
+                .contains_key(&BoundarySymbol::from("cancov")),
+            "primary cancov state should be present after live-canopy assimilation"
+        );
+    }
+
+    fn scalar_at(
+        surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+        symbol: &BoundarySymbol,
+    ) -> f64 {
+        surface
+            .get(symbol)
+            .unwrap_or_else(|| panic!("missing symbol {symbol}"))
+            .as_f64()
+    }
+
+    fn assert_scalar_close(actual: f64, expected: f64) {
+        assert!(
+            (actual - expected).abs() <= 1.0e-9,
+            "expected {expected}, observed {actual}"
+        );
     }
 }

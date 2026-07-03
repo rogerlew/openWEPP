@@ -2,8 +2,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use openwepp_input_contract::parsers::management::{
-    ManagementParseError, ParseMode, YearlyAnnualExtension, YearlyAnnualFallowData,
-    YearlyCroplandBranch, YearlyScenarioData, parse_management_from_path,
+    InitialScenarioData, ManagementParseError, ParseMode, PlantScenarioData, YearlyAnnualExtension,
+    YearlyAnnualFallowData, YearlyCroplandBranch, YearlyScenarioData, parse_management_from_path,
     parse_management_from_str,
 };
 
@@ -40,7 +40,9 @@ fn fixture_with_yearly_branch(name: &str, branch: &str) -> String {
 
 fn parse_annual_branch_from_fixture(name: &str, branch: &str) -> YearlyAnnualFallowData {
     let parsed = parse_strict_fixture_text(&fixture_with_yearly_branch(name, branch));
-    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data;
+    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data else {
+        panic!("expected cropland yearly scenario");
+    };
     match &cropland.branch {
         YearlyCroplandBranch::AnnualOrFallow(annual) => annual.clone(),
         YearlyCroplandBranch::Perennial(other) => {
@@ -143,7 +145,9 @@ fn strict_mode_parses_perennial_cutday_yearly_branch() {
     );
 
     let parsed = parse_strict_fixture_text(&fixture);
-    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data;
+    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data else {
+        panic!("expected cropland yearly scenario");
+    };
     match &cropland.branch {
         YearlyCroplandBranch::Perennial(perennial) => {
             assert_eq!(perennial.jdharv, 288);
@@ -180,7 +184,9 @@ fn strict_mode_parses_perennial_grazing_yearly_branch() {
     );
 
     let parsed = parse_strict_fixture_text(&fixture);
-    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data;
+    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data else {
+        panic!("expected cropland yearly scenario");
+    };
     match &cropland.branch {
         YearlyCroplandBranch::Perennial(perennial) => {
             assert_eq!(perennial.mgtopt, 2);
@@ -218,7 +224,9 @@ fn strict_mode_parses_perennial_no_action_yearly_branch() {
     );
 
     let parsed = parse_strict_fixture_text(&fixture);
-    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data;
+    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data else {
+        panic!("expected cropland yearly scenario");
+    };
     match &cropland.branch {
         YearlyCroplandBranch::Perennial(perennial) => {
             assert_eq!(perennial.mgtopt, 3);
@@ -654,7 +662,9 @@ fn compatibility_mode_accepts_tilseq_zero_when_nseq_nonzero() {
     )
     .expect("compatibility mode should accept tilseq=0 sentinel");
 
-    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data;
+    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data else {
+        panic!("expected cropland yearly scenario");
+    };
     assert_eq!(cropland.tilseq, 0);
 }
 
@@ -832,4 +842,180 @@ fn open_failure_is_typed() {
         }
         other => panic!("unexpected error variant: {other:?}"),
     }
+}
+
+// ---------------------------------------------------------------------------
+// DFF-WS1 Increment-2: openWEPP-native forest `lanuse` mode (`ow-lanuse-1`).
+// ---------------------------------------------------------------------------
+
+const FOREST_FIXTURE: &str = "canonical_forest_nonzero_ow_lanuse_1.man";
+
+fn assert_f64_close(actual: f64, expected: f64) {
+    assert!(
+        (actual - expected).abs() <= 1.0e-9,
+        "expected {expected}, observed {actual}"
+    );
+}
+
+#[test]
+fn native_ow_lanuse_1_datver_parses_forest_scenarios() {
+    let parsed = parse_management_from_path(fixture_path(FOREST_FIXTURE), ParseMode::Strict)
+        .expect("native forest fixture should parse under the ow-lanuse-1 datver");
+
+    assert_eq!(parsed.datver, "ow-lanuse-1");
+    assert_eq!(parsed.registries.plants.len(), 1);
+    assert_eq!(parsed.registries.initials.len(), 1);
+    assert_eq!(parsed.registries.yearlies.len(), 1);
+
+    // Plant: first-class forest block with Tier-A operands.
+    let PlantScenarioData::Forest(plant) = &parsed.registries.plants[0].data else {
+        panic!("expected forest plant scenario");
+    };
+    assert_eq!(plant.forest_class, "forest_high_sev_fire");
+    assert_f64_close(plant.growth.bb, 14.0);
+    assert_f64_close(plant.growth.bbb, 3.0);
+    assert_f64_close(plant.growth.btemp, 2.0);
+    assert_f64_close(plant.growth.extnct, 0.45);
+    assert_f64_close(plant.growth.flivmx, 17.0);
+    assert_f64_close(plant.growth.hmax, 0.2);
+    assert_f64_close(plant.growth.hi, 0.42);
+    assert_f64_close(plant.growth.dlai, 0.5);
+    assert_f64_close(plant.growth.otemp, 20.0);
+    assert_f64_close(plant.growth.spriod, 90.0);
+    assert_f64_close(plant.growth.rsr, 0.33);
+    assert_f64_close(plant.growth.rtmmax, 0.2);
+    // Lookup-owned Tier-A operands (authoritative `forest high sev fire` row).
+    assert_f64_close(plant.growth.xmxlai, 2.0);
+    assert_f64_close(plant.growth.rdmax, 0.3);
+    assert_f64_close(plant.growth.decfct, 1.0);
+    assert_f64_close(plant.growth.dropfc, 1.0);
+    assert_f64_close(plant.cf, 5.0);
+    assert_f64_close(plant.diam, 0.005);
+    assert_f64_close(plant.decomposition.oratea, 0.0);
+    // Tier-B community structure (stored now; WS-4 consumes it).
+    assert_f64_close(plant.community.tempmn, -5.0);
+    assert_f64_close(plant.community.tree.pop, 500.0);
+
+    // Initial: first-class forest cover/roughness.
+    let InitialScenarioData::Forest(initial) = &parsed.registries.initials[0].data else {
+        panic!("expected forest initial scenario");
+    };
+    assert_f64_close(initial.cancov, 0.4);
+    assert_f64_close(initial.inrcov, 0.3);
+    assert_f64_close(initial.rilcov, 0.3);
+    assert_f64_close(initial.rrinit, 0.06);
+    assert_eq!(initial.iresd, 1);
+    assert_eq!(initial.imngmt, 2);
+
+    // Yearly: established perennial forest slot.
+    let YearlyScenarioData::Forest(yearly) = &parsed.registries.yearlies[0].data else {
+        panic!("expected forest yearly scenario");
+    };
+    assert_eq!(yearly.itype, 1);
+    assert_eq!(yearly.jdharv, 0);
+    assert_eq!(yearly.jdplt, 0);
+    assert_eq!(yearly.jdstop, 0);
+    assert_f64_close(yearly.rw, 0.0);
+}
+
+#[test]
+fn forest_sentinel_rejected_under_legacy_datver() {
+    // Same fixture but with a legacy datver: the forest sentinel (landuse 3)
+    // stays rejected (compatibility quarantine, LANUSE-AUTH-4).
+    let native = fixture_text(FOREST_FIXTURE);
+    let legacy = native.replacen("ow-lanuse-1", "98.4", 1);
+    let err = parse_management_from_str(&legacy, ParseMode::Strict)
+        .expect_err("forest sentinel must be rejected under a legacy datver");
+    match err {
+        ManagementParseError::InvalidOptionDomain {
+            field: "iplant", ..
+        } => {
+            assert_eq!(err.contract_error_id(), "MAN-E-004");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn forest_scenario_in_operation_section_fails_closed() {
+    // Inject a forest operation scenario (nop=1) into the native fixture; the
+    // operation section has no forest payload and must fail closed.
+    let native = fixture_text(FOREST_FIXTURE);
+    let with_forest_op = native.replace(
+        "0 # nop",
+        "1 # nop\nForest_Op\n(null)\n(null)\n(null)\n3 # Landuse - <Forest>",
+    );
+    let err = parse_management_from_str(&with_forest_op, ParseMode::Strict)
+        .expect_err("forest scenario in the operation section must fail closed");
+    match err {
+        ManagementParseError::ForestSectionNotApplicable {
+            section: "operation",
+        } => {
+            assert_eq!(err.contract_error_id(), "MAN-E-004");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn forest_yearly_rejects_nonzero_surface_effect_reference() {
+    // A forest yearly slot must carry `tilseq = 0` (no surface effect).
+    let native = fixture_text(FOREST_FIXTURE);
+    let tampered = native.replace(
+        "0     # Surface Effect Scenario index (tilseq)",
+        "1     # Surface Effect Scenario index (tilseq)",
+    );
+    let err = parse_management_from_str(&tampered, ParseMode::Strict)
+        .expect_err("forest yearly tilseq must be the 0 sentinel");
+    match err {
+        ManagementParseError::InvalidOptionDomain {
+            field: "tilseq", ..
+        } => {
+            assert_eq!(err.contract_error_id(), "MAN-E-004");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn forest_plant_block_missing_operand_fails_closed() {
+    // Drop a value from the lookup-owned Tier-A line: parse must fail closed
+    // (LANUSE-AUTH-2 typed presence), not substitute a default.
+    let native = fixture_text(FOREST_FIXTURE);
+    let tampered = native.replace(
+        "2.00000 0.30000 1.00000 1.00000             # lookup-owned: xmxlai rdmax decfct dropfc",
+        "2.00000 0.30000 1.00000                     # lookup-owned: missing dropfc",
+    );
+    let err = parse_management_from_str(&tampered, ParseMode::Strict)
+        .expect_err("missing forest Tier-A operand must fail closed");
+    match err {
+        ManagementParseError::RecordArityError { .. } => {}
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn forest_scenario_blank_description_slots_preserved() {
+    // The `#landuse` blank-slot keep logic in `normalize_lines` is landuse
+    // agnostic: a forest scenario authored with genuinely blank description
+    // lines and a lowercase `#landuse` marker parses with its slots aligned.
+    let native = fixture_text(FOREST_FIXTURE);
+    let with_blank_desc = native.replace(
+        "Forest_High_Severity_Fire
+Native forest lanuse mode (disturbed class: forest high sev fire)
+openWEPP DFF-WS1 native forest lanuse-v1
+(null)
+3 # Landuse - <Forest>",
+        "Forest_High_Severity_Fire\n\n\n\n3 #landuse forest",
+    );
+    let parsed = parse_management_from_str(&with_blank_desc, ParseMode::Strict)
+        .expect("forest scenario with blank description slots should parse");
+    let PlantScenarioData::Forest(plant) = &parsed.registries.plants[0].data else {
+        panic!("expected forest plant scenario");
+    };
+    assert_eq!(plant.forest_class, "forest_high_sev_fire");
+    assert_eq!(
+        parsed.registries.plants[0].meta.description,
+        [String::new(), String::new(), String::new()]
+    );
 }

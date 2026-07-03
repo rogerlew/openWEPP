@@ -524,6 +524,21 @@ fn direct_production_day_input_authority_from_typed_seed(
     }
 }
 
+/// Forest `lanuse` authority reconciliation (ADR-0034, `LANUSE-AUTH-6`): a
+/// native forest management must be backed by a matching disturbed soil policy.
+/// Fails closed on mismatch; cropland-only managements are a no-op.
+fn reconcile_forest_lanuse_or_fail(
+    management: &ManagementParseOutput,
+    soil: &SoilProfile,
+) -> Result<(), HillslopeCliError> {
+    openwepp_hillslope_orchestrator::reconcile_forest_lanuse_authority(management, soil).map_err(
+        |error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "forest_lanuse_reconciliation",
+            detail: error.to_string(),
+        },
+    )
+}
+
 // Large orchestration seed-builder: assembles every typed lane authority
 // (soil / slope / management / snow / frost / peak-runoff / erosion / ...)
 // from the parsed inputs. The line count is inherent to the fan-out.
@@ -556,6 +571,7 @@ fn direct_production_typed_lane_seed_authority(
             detail: error.to_string(),
         })?;
     let layer_seed = direct_production_typed_layer_seed(&soil_projection, execution_lane)?;
+    reconcile_forest_lanuse_or_fail(management, soil)?;
     let management_projection = build_hillslope_pl_runtime_surfaces_from_management(management)
         .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_typed_seed",

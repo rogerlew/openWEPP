@@ -207,6 +207,59 @@ fn project_primary_decomposition_equation_aliases(
     Ok(())
 }
 
+fn project_growth_equation_symbols_forest(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    plant: &openwepp_input_contract::parsers::management::PlantForestData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (root, value) in growth_equation_parameter_values_forest(slot_index, crop_slot_index, plant)?
+    {
+        surface.insert(
+            pl_growth_slot_crop_symbol(root, slot_index, crop_slot_index),
+            BoundaryValue::scalar(value),
+        );
+    }
+    Ok(())
+}
+
+fn project_primary_growth_equation_aliases_forest(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    plant: &openwepp_input_contract::parsers::management::PlantForestData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (root, value) in growth_equation_parameter_values_forest(1, 1, plant)? {
+        surface.insert(BoundarySymbol::from(root), BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
+fn project_decomposition_equation_symbols_forest(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    plant: &openwepp_input_contract::parsers::management::PlantForestData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (root, value) in
+        decomposition_equation_parameter_values_forest(slot_index, crop_slot_index, plant)?
+    {
+        surface.insert(
+            pl_decomp_slot_crop_symbol(root, slot_index, crop_slot_index),
+            BoundaryValue::scalar(value),
+        );
+    }
+    Ok(())
+}
+
+fn project_primary_decomposition_equation_aliases_forest(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    plant: &openwepp_input_contract::parsers::management::PlantForestData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (root, value) in decomposition_equation_parameter_values_forest(1, 1, plant)? {
+        surface.insert(BoundarySymbol::from(root), BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
 #[allow(clippy::too_many_lines)]
 fn growth_equation_parameter_values(
     slot_index: usize,
@@ -332,6 +385,110 @@ fn growth_equation_parameter_values(
         ("rtmmax", rtmmax),
         ("rdmax", rdmax),
     ])
+}
+
+/// Forest analogue of [`growth_equation_parameter_values`]: emits the same 19
+/// growth-kernel symbols in the same order and applies the same domain
+/// validation, sourced from the first-class `PlantForestData.growth` block so
+/// the daily growth kernel is unchanged (`LANUSE-AUTH-1`). Lookup-owned symbols
+/// (`xmxlai`, `rdmax`, `decfct`, `dropfc`) carry the reconciled `(texture ×
+/// class)` values; the remainder are the explicit forest-authority operands.
+fn growth_equation_parameter_values_forest(
+    slot_index: usize,
+    crop_slot_index: usize,
+    plant: &openwepp_input_contract::parsers::management::PlantForestData,
+) -> Result<[(&'static str, f64); 19], HillslopeRuntimeInputError> {
+    let growth = &plant.growth;
+    let bb = validate_projection_non_negative("bb", slot_index, crop_slot_index, growth.bb)?;
+    let bbb = validate_projection_non_negative("bbb", slot_index, crop_slot_index, growth.bbb)?;
+    let beinp =
+        validate_projection_non_negative("beinp", slot_index, crop_slot_index, growth.beinp)?;
+    let btemp = validate_projection_finite("btemp", slot_index, crop_slot_index, growth.btemp)?;
+    let decfct =
+        validate_projection_fraction("decfct", slot_index, crop_slot_index, growth.decfct)?;
+
+    let dlai = validate_projection_fraction("dlai", slot_index, crop_slot_index, growth.dlai)?;
+    if dlai <= 0.0 {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "dlai",
+            slot_index,
+            crop_slot_index,
+            value: dlai,
+            allowed: ">0.0 and <=1.0",
+        });
+    }
+    let dropfc =
+        validate_projection_fraction("dropfc", slot_index, crop_slot_index, growth.dropfc)?;
+    let extnct =
+        validate_projection_non_negative("extnct", slot_index, crop_slot_index, growth.extnct)?;
+    let flivmx =
+        validate_projection_non_negative("flivmx", slot_index, crop_slot_index, growth.flivmx)?;
+    let gddmax =
+        validate_projection_non_negative("gddmax", slot_index, crop_slot_index, growth.gddmax)?;
+    let hmax = validate_projection_non_negative("hmax", slot_index, crop_slot_index, growth.hmax)?;
+    let hi = validate_projection_fraction("hi", slot_index, crop_slot_index, growth.hi)?;
+
+    let otemp = validate_projection_finite("otemp", slot_index, crop_slot_index, growth.otemp)?;
+    if otemp <= btemp {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "otemp",
+            slot_index,
+            crop_slot_index,
+            value: otemp,
+            allowed: "> btemp",
+        });
+    }
+    let pltol = validate_projection_finite("pltol", slot_index, crop_slot_index, growth.pltol)?;
+    let rdmax = validate_projection_positive("rdmax", slot_index, crop_slot_index, growth.rdmax)?;
+    let rsr = validate_projection_non_negative("rsr", slot_index, crop_slot_index, growth.rsr)?;
+    let rtmmax =
+        validate_projection_non_negative("rtmmax", slot_index, crop_slot_index, growth.rtmmax)?;
+    let spriod =
+        validate_projection_non_negative("spriod", slot_index, crop_slot_index, growth.spriod)?;
+    let xmxlai =
+        validate_projection_non_negative("xmxlai", slot_index, crop_slot_index, growth.xmxlai)?;
+
+    Ok([
+        ("btemp", btemp),
+        ("otemp", otemp),
+        ("gddmax", gddmax),
+        ("dlai", dlai),
+        ("dropfc", dropfc),
+        ("decfct", decfct),
+        ("spriod", spriod),
+        ("bb", bb),
+        ("bbb", bbb),
+        ("beinp", beinp),
+        ("extnct", extnct),
+        ("flivmx", flivmx),
+        ("hmax", hmax),
+        ("hi", hi),
+        ("pltol", pltol),
+        ("xmxlai", xmxlai),
+        ("rsr", rsr),
+        ("rtmmax", rtmmax),
+        ("rdmax", rdmax),
+    ])
+}
+
+fn decomposition_equation_parameter_values_forest(
+    slot_index: usize,
+    crop_slot_index: usize,
+    plant: &openwepp_input_contract::parsers::management::PlantForestData,
+) -> Result<[(&'static str, f64); 2], HillslopeRuntimeInputError> {
+    let annual_decay_rate = validate_projection_non_negative(
+        "oratea",
+        slot_index,
+        crop_slot_index,
+        plant.decomposition.oratea,
+    )?;
+    let root_decay_rate = validate_projection_non_negative(
+        "orater",
+        slot_index,
+        crop_slot_index,
+        plant.decomposition.orater,
+    )?;
+    Ok([("oratea", annual_decay_rate), ("orater", root_decay_rate)])
 }
 
 fn decomposition_equation_parameter_values(

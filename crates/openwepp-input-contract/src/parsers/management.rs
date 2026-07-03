@@ -6,7 +6,19 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
-const ALLOWED_DATVERS: &[&str] = &["95.7", "98.4", "2016.3", "2017.1"];
+const ALLOWED_DATVERS: &[&str] = &["95.7", "98.4", "2016.3", "2017.1", OW_LANUSE_1_DATVER];
+
+/// openWEPP-native management datver that unlocks first-class `lanuse` modes
+/// (currently the forest branch) under ADR-0034 / the management-`lanuse`
+/// authority contract (`LANUSE-AUTH-1..6`). Deliberately not a legacy WEPP
+/// datver token, so no legacy `.man` collides with the native carve.
+pub const OW_LANUSE_1_DATVER: &str = "ow-lanuse-1";
+
+/// Native forest `lanuse` sentinel (legacy WEPP forest code). Under the
+/// `ow-lanuse-1` datver this selects the first-class `PlantScenarioData::Forest`
+/// / `InitialScenarioData::Forest` / `YearlyScenarioData::Forest` carve; under
+/// every legacy datver it stays rejected (`LANUSE-AUTH-4` quarantine).
+const FOREST_LANUSE_SENTINEL: usize = 3;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParseMode {
@@ -41,6 +53,10 @@ pub struct PlantScenario {
 #[derive(Debug, Clone, PartialEq)]
 pub enum PlantScenarioData {
     Cropland(PlantCroplandData),
+    /// openWEPP-native forest `lanuse` mode (`ow-lanuse-1` datver, forest
+    /// sentinel). First-class typed operands per `LANUSE-AUTH-1/-2`, not a
+    /// cropland masquerade.
+    Forest(PlantForestData),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -52,6 +68,91 @@ pub struct PlantCroplandData {
     pub residue_line: [f64; 10],
     pub terminal_line: [f64; 3],
     pub rcc: Option<f64>,
+}
+
+/// First-class forest plant-growth operand block for the openWEPP-native forest
+/// `lanuse` mode. Tier A (`growth`/`decomposition`) carries the shared
+/// growth-kernel symbols; Tier B (`community`) mirrors the abandoned legacy
+/// rangeland grammar as a **structural reference only** (ADR-0017) and is parsed
+/// and stored now but consumed by the WS-4 plant-community growth model, not this
+/// increment.
+///
+/// Authority: the operands are explicit and typed (`LANUSE-AUTH-2`
+/// fail-closed); the `(texture × class)` land-soil lookup remains the single
+/// source of truth for the parameters it owns (`LANUSE-AUTH-6`), reconciled
+/// against `forest_class` by the orchestrator reconciliation manifest.
+#[derive(Debug, Clone, PartialEq)]
+pub struct PlantForestData {
+    /// Disturbed/forest class key (e.g. `young_forest`, `high_severity_fire`)
+    /// joining the `.man` scenario to its authoritative lookup row, the
+    /// `openwepp-disturbed.json` binding, and the `.sol` `DisturbedPolicy`.
+    pub forest_class: String,
+    pub growth: PlantForestGrowth,
+    /// Flat residue-cover equation coefficient (m^2/kg) — litter cover→mass
+    /// inversion for the initial residue-depth seed (cropland `cf` analogue).
+    pub cf: f64,
+    /// Mean stem/branch diameter at maturity (m) — residue-depth seed operand.
+    pub diam: f64,
+    pub decomposition: PlantForestDecomposition,
+    pub community: PlantForestCommunity,
+}
+
+/// Tier-A shared growth-kernel operands (the 19 symbols the daily growth kernel
+/// consumes). Explicit and required; missing/untyped values fail closed
+/// (`LANUSE-AUTH-2`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PlantForestGrowth {
+    pub bb: f64,
+    pub bbb: f64,
+    pub beinp: f64,
+    pub btemp: f64,
+    pub otemp: f64,
+    pub gddmax: f64,
+    pub dlai: f64,
+    pub dropfc: f64,
+    pub decfct: f64,
+    pub spriod: f64,
+    pub extnct: f64,
+    pub flivmx: f64,
+    pub hmax: f64,
+    pub hi: f64,
+    pub pltol: f64,
+    pub xmxlai: f64,
+    pub rsr: f64,
+    pub rtmmax: f64,
+    pub rdmax: f64,
+}
+
+/// Tier-A decomposition-surface operands.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PlantForestDecomposition {
+    pub oratea: f64,
+    pub orater: f64,
+}
+
+/// Tier-B plant-community operands. Field structure mirrors the legacy
+/// rangeland (`iplant=2`) grammar as a structural reference only; values and the
+/// consuming plant-community canopy/decline model are re-derived under the
+/// growth–canopy contract at WS-4. Stored now, no current kernel reads them.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PlantForestCommunity {
+    pub tempmn: f64,
+    pub gtemp: f64,
+    pub plive: f64,
+    pub wood: f64,
+    pub grass: PlantForestStratum,
+    pub shrub: PlantForestStratum,
+    pub tree: PlantForestStratum,
+}
+
+/// Tier-B structural stratum (grass / shrub / tree) — projected-area
+/// coefficient, mean canopy diameter, mean height, belt-transect population.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PlantForestStratum {
+    pub coeff: f64,
+    pub diam: f64,
+    pub hgt: f64,
+    pub pop: f64,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -85,6 +186,8 @@ pub struct InitialScenario {
 #[derive(Debug, Clone, PartialEq)]
 pub enum InitialScenarioData {
     Cropland(InitialCroplandData),
+    /// openWEPP-native forest initial-condition block (`ow-lanuse-1`).
+    Forest(InitialForestData),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -96,6 +199,40 @@ pub struct InitialCroplandData {
     pub rtyp: usize,
     pub thaw_line: [f64; 5],
     pub terminal_line: [f64; 2],
+    pub understory_line: Option<[f64; 2]>,
+}
+
+/// First-class forest initial-condition block. Cover/roughness
+/// (`cancov/inrcov/rilcov/rrinit`) are promoted to first-class forest fields
+/// (`LANUSE-AUTH-6` single-source-of-truth) rather than read through the cropland
+/// `IniLoopCropland` template. Ridge geometry (`rspace`/`rtyp`) is deliberately
+/// **not** carried — forest has no ridge, and `LANUSE-AUTH-3` forbids inferring
+/// routing roughness from ridge fields.
+#[derive(Debug, Clone, PartialEq)]
+pub struct InitialForestData {
+    /// Initial canopy cover fraction (0-1).
+    pub cancov: f64,
+    /// Interrill ground cover fraction (0-1).
+    pub inrcov: f64,
+    /// Rill ground cover fraction (0-1).
+    pub rilcov: f64,
+    /// Initial random roughness (m).
+    pub rrinit: f64,
+    /// Residue plant-scenario reference (1-based `ncrop` index) supplying the
+    /// litter operands for the residue-depth seed.
+    pub iresd: usize,
+    /// Cropping-system flag (perennial forest uses `imngmt = 2`).
+    pub imngmt: usize,
+    /// Initial total root mass (kg/m^2).
+    pub sumrtm: f64,
+    /// Initial standing residue mass (kg/m^2).
+    pub sumsrm: f64,
+    /// Thermal-conductivity layer-1 depth (m).
+    pub tillay1: f64,
+    /// Thermal-conductivity layer-2 depth (m).
+    pub tillay2: f64,
+    /// Optional understory interrill/rill cover fractions (`usinrcol`,
+    /// `usrilcol`).
     pub understory_line: Option<[f64; 2]>,
 }
 
@@ -142,6 +279,28 @@ pub struct YearlyScenario {
 #[derive(Debug, Clone, PartialEq)]
 pub enum YearlyScenarioData {
     Cropland(YearlyCroplandData),
+    /// openWEPP-native forest yearly schedule (`ow-lanuse-1`): an established
+    /// perennial-vegetation slot with no tillage/cut/graze management.
+    Forest(YearlyForestData),
+}
+
+/// First-class forest yearly-schedule block. Forest is an established perennial
+/// stand: no surface-effect (`tilseq`), contour (`conset`), or drain (`drset`)
+/// scenario, and no annual cut/graze management. The schedule days default to
+/// the established-perennial sentinel (`0`) unless a stand-replacing event is
+/// modelled.
+#[derive(Debug, Clone, PartialEq)]
+pub struct YearlyForestData {
+    /// Forest plant-scenario reference (1-based `ncrop` index).
+    pub itype: usize,
+    /// Harvest / stand-removal day-of-year (`0` = established, no harvest).
+    pub jdharv: usize,
+    /// Planting / establishment day-of-year (`0` = established).
+    pub jdplt: usize,
+    /// Growth-stop day-of-year (`0` = no explicit stop).
+    pub jdstop: usize,
+    /// Row width (m) — `0` for a natural forest stand.
+    pub rw: f64,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -293,6 +452,13 @@ pub enum ManagementParseError {
         section: &'static str,
         landuse: usize,
     },
+    /// A forest (`ow-lanuse-1`) scenario appeared in a section that carries no
+    /// forest payload (operation / surface / contour / drain). Forest defines no
+    /// tillage, contour, or drain physics, so this fails closed rather than
+    /// inventing an empty scenario (`LANUSE-AUTH-2`).
+    ForestSectionNotApplicable {
+        section: &'static str,
+    },
     DanglingScenarioReference {
         field: &'static str,
         value: usize,
@@ -321,7 +487,9 @@ impl ManagementParseError {
             | Self::MissingRecord { .. }
             | Self::RecordArityError { .. } => "MAN-E-002",
             Self::UnsupportedDatver { .. } => "MAN-E-003",
-            Self::InvalidOptionDomain { .. } | Self::UnsupportedLanduse { .. } => "MAN-E-004",
+            Self::InvalidOptionDomain { .. }
+            | Self::UnsupportedLanduse { .. }
+            | Self::ForestSectionNotApplicable { .. } => "MAN-E-004",
             Self::InvalidCount { .. } => "MAN-E-005",
             Self::TrailingInput { .. } => "MAN-E-006",
             Self::TotalYearMismatch { .. } => "MAN-E-008",
@@ -381,6 +549,11 @@ impl fmt::Display for ManagementParseError {
             Self::UnsupportedLanduse { section, landuse } => write!(
                 f,
                 "{}: unsupported landuse {landuse} in {section}; rangeland simulation is not supported in openWEPP",
+                self.contract_error_id()
+            ),
+            Self::ForestSectionNotApplicable { section } => write!(
+                f,
+                "{}: forest lanuse is not applicable in the {section} section; forest defines no tillage/contour/drain scenario",
                 self.contract_error_id()
             ),
             Self::DanglingScenarioReference {
@@ -475,22 +648,22 @@ pub fn parse_management_from_str(
     let datver_family = datver_family(&datver);
 
     let ncrop = cursor.parse_non_negative_required("ncrop")?;
-    let plants = parse_plant_section(&mut cursor, ncrop)?;
+    let plants = parse_plant_section(&mut cursor, ncrop, datver_family)?;
 
     let nop = cursor.parse_non_negative_required("nop")?;
     let operations = parse_operation_section(&mut cursor, nop, datver_family)?;
 
     let nini = cursor.parse_non_negative_required("nini")?;
-    let initials = parse_initial_section(&mut cursor, nini)?;
+    let initials = parse_initial_section(&mut cursor, nini, datver_family)?;
 
     let nseq = cursor.parse_non_negative_required("nseq")?;
-    let surfaces = parse_surface_section(&mut cursor, nseq)?;
+    let surfaces = parse_surface_section(&mut cursor, nseq, datver_family)?;
 
     let ncnt = cursor.parse_non_negative_required("ncnt")?;
     let contours = parse_contour_section(&mut cursor, ncnt, datver_family)?;
 
     let ndrain = cursor.parse_non_negative_required("ndrain")?;
-    let drains = parse_drain_section(&mut cursor, ndrain)?;
+    let drains = parse_drain_section(&mut cursor, ndrain, datver_family)?;
 
     let nscen = cursor.parse_non_negative_required("nscen")?;
     let yearlies = parse_yearly_section(&mut cursor, nscen, datver_family)?;
@@ -624,23 +797,68 @@ enum DatverFamily {
     V95_7,
     V98_4,
     V2016Plus,
+    /// openWEPP-native `ow-lanuse-1` family: first-class `lanuse` modes (forest)
+    /// unlocked; legacy option extensions parse as the `2016.3+` family.
+    OwLanuse1,
+}
+
+impl DatverFamily {
+    /// The `ow-lanuse-1` native family unlocks the first-class forest carve.
+    const fn forest_mode_enabled(self) -> bool {
+        matches!(self, Self::OwLanuse1)
+    }
+
+    /// Legacy option domains (operation pcode, resmgt, mgtopt) for the native
+    /// family follow the `2016.3+` datver superset.
+    const fn legacy_option_family(self) -> Self {
+        match self {
+            Self::OwLanuse1 => Self::V2016Plus,
+            other => other,
+        }
+    }
 }
 
 fn datver_family(datver: &str) -> DatverFamily {
     match datver {
         "95.7" => DatverFamily::V95_7,
         "98.4" => DatverFamily::V98_4,
+        OW_LANUSE_1_DATVER => DatverFamily::OwLanuse1,
         _ => DatverFamily::V2016Plus,
     }
+}
+
+/// Forest section policy for operation / surface / contour / drain: forest
+/// defines no tillage, contour, or drain scenario, so a forest sentinel in
+/// these sections fails closed (`LANUSE-AUTH-2`) rather than inventing an empty
+/// scenario. Under legacy datvers the forest sentinel never reaches this guard
+/// (it is rejected earlier by the per-section `landuse != 1` gate).
+fn forest_section_not_applicable_guard(
+    datver_family: DatverFamily,
+    landuse: usize,
+    section: &'static str,
+) -> Result<(), ManagementParseError> {
+    if datver_family.forest_mode_enabled() && landuse == FOREST_LANUSE_SENTINEL {
+        return Err(ManagementParseError::ForestSectionNotApplicable { section });
+    }
+    Ok(())
 }
 
 fn parse_plant_section(
     cursor: &mut Cursor<'_>,
     count: usize,
+    datver_family: DatverFamily,
 ) -> Result<Vec<PlantScenario>, ManagementParseError> {
     let mut scenarios = Vec::with_capacity(count);
     for _ in 0..count {
         let meta = parse_scenario_meta(cursor, "plant")?;
+        if datver_family.forest_mode_enabled() && meta.landuse == FOREST_LANUSE_SENTINEL {
+            let data = parse_plant_forest(cursor)?;
+            scenarios.push(PlantScenario {
+                meta,
+                data: PlantScenarioData::Forest(data),
+            });
+            continue;
+        }
         if meta.landuse == 2 {
             return Err(ManagementParseError::UnsupportedLanduse {
                 section: "plant",
@@ -701,14 +919,99 @@ fn parse_plant_section(
     Ok(scenarios)
 }
 
+/// Parse the openWEPP-native forest plant block (`ow-lanuse-1`, forest
+/// sentinel). Fixed-arity numeric lines make every Tier-A operand explicit and
+/// required; a missing or non-numeric value fails closed at parse
+/// (`LANUSE-AUTH-2`). Domain validation (fraction/positive bounds) is enforced
+/// downstream in the runtime projection, mirroring the cropland parser.
+fn parse_plant_forest(cursor: &mut Cursor<'_>) -> Result<PlantForestData, ManagementParseError> {
+    let class_raw = cursor.next_required("plant.forest.class")?;
+    let forest_class = cursor.parse_token("plant.forest.class", class_raw)?;
+
+    // Tier-A growth operands (openWEPP forest authority; explicit, fail-closed).
+    let growth_a = parse_f64_array::<5>(cursor, "plant.forest.growth_bb_bbb_beinp_btemp_extnct")?;
+    let growth_b = parse_f64_array::<5>(cursor, "plant.forest.growth_flivmx_hmax_hi_gddmax_dlai")?;
+    let growth_c =
+        parse_f64_array::<5>(cursor, "plant.forest.growth_otemp_pltol_spriod_rsr_rtmmax")?;
+    // Tier-A lookup-owned operands (authoritative `(texture × class)` table;
+    // reconciled by the orchestrator against `forest_class`, `LANUSE-AUTH-6`).
+    let lookup = parse_f64_array::<4>(cursor, "plant.forest.lookup_xmxlai_rdmax_decfct_dropfc")?;
+    // Residue-depth seed operands.
+    let residue = parse_f64_array::<2>(cursor, "plant.forest.residue_cf_diam")?;
+    // Tier-A decomposition operands.
+    let decomposition = parse_f64_array::<2>(cursor, "plant.forest.decomposition_oratea_orater")?;
+    // Tier-B plant-community operands (WS-4; rangeland-shaped structural reference).
+    let community = parse_f64_array::<4>(cursor, "plant.forest.community_tempmn_gtemp_plive_wood")?;
+    let grass = parse_f64_array::<4>(cursor, "plant.forest.grass_coeff_diam_hgt_pop")?;
+    let shrub = parse_f64_array::<4>(cursor, "plant.forest.shrub_coeff_diam_hgt_pop")?;
+    let tree = parse_f64_array::<4>(cursor, "plant.forest.tree_coeff_diam_hgt_pop")?;
+
+    Ok(PlantForestData {
+        forest_class,
+        growth: PlantForestGrowth {
+            bb: growth_a[0],
+            bbb: growth_a[1],
+            beinp: growth_a[2],
+            btemp: growth_a[3],
+            extnct: growth_a[4],
+            flivmx: growth_b[0],
+            hmax: growth_b[1],
+            hi: growth_b[2],
+            gddmax: growth_b[3],
+            dlai: growth_b[4],
+            otemp: growth_c[0],
+            pltol: growth_c[1],
+            spriod: growth_c[2],
+            rsr: growth_c[3],
+            rtmmax: growth_c[4],
+            xmxlai: lookup[0],
+            rdmax: lookup[1],
+            decfct: lookup[2],
+            dropfc: lookup[3],
+        },
+        cf: residue[0],
+        diam: residue[1],
+        decomposition: PlantForestDecomposition {
+            oratea: decomposition[0],
+            orater: decomposition[1],
+        },
+        community: PlantForestCommunity {
+            tempmn: community[0],
+            gtemp: community[1],
+            plive: community[2],
+            wood: community[3],
+            grass: PlantForestStratum {
+                coeff: grass[0],
+                diam: grass[1],
+                hgt: grass[2],
+                pop: grass[3],
+            },
+            shrub: PlantForestStratum {
+                coeff: shrub[0],
+                diam: shrub[1],
+                hgt: shrub[2],
+                pop: shrub[3],
+            },
+            tree: PlantForestStratum {
+                coeff: tree[0],
+                diam: tree[1],
+                hgt: tree[2],
+                pop: tree[3],
+            },
+        },
+    })
+}
+
 fn parse_operation_section(
     cursor: &mut Cursor<'_>,
     count: usize,
     datver_family: DatverFamily,
 ) -> Result<Vec<OperationScenario>, ManagementParseError> {
+    let pcode_family = datver_family.legacy_option_family();
     let mut scenarios = Vec::with_capacity(count);
     for _ in 0..count {
         let meta = parse_scenario_meta(cursor, "operation")?;
+        forest_section_not_applicable_guard(datver_family, meta.landuse, "operation")?;
         if meta.landuse == 2 {
             return Err(ManagementParseError::UnsupportedLanduse {
                 section: "operation",
@@ -744,10 +1047,12 @@ fn parse_operation_section(
             });
         }
         let pcode = parse_usize_token("op.pcode", &pcode_tokens[0])?;
-        let valid_pcodes = match datver_family {
+        let valid_pcodes = match pcode_family {
             DatverFamily::V95_7 => &[1, 2, 3, 4][..],
             DatverFamily::V98_4 => &[1, 2, 3, 4, 10, 11, 12, 13][..],
-            DatverFamily::V2016Plus => &[1, 2, 3, 4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19][..],
+            DatverFamily::V2016Plus | DatverFamily::OwLanuse1 => {
+                &[1, 2, 3, 4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19][..]
+            }
         };
         if !valid_pcodes.contains(&pcode) {
             return Err(ManagementParseError::InvalidOptionDomain {
@@ -831,10 +1136,19 @@ fn parse_operation_section(
 fn parse_initial_section(
     cursor: &mut Cursor<'_>,
     count: usize,
+    datver_family: DatverFamily,
 ) -> Result<Vec<InitialScenario>, ManagementParseError> {
     let mut scenarios = Vec::with_capacity(count);
     for _ in 0..count {
         let meta = parse_scenario_meta(cursor, "initial")?;
+        if datver_family.forest_mode_enabled() && meta.landuse == FOREST_LANUSE_SENTINEL {
+            let data = parse_initial_forest(cursor)?;
+            scenarios.push(InitialScenario {
+                meta,
+                data: InitialScenarioData::Forest(data),
+            });
+            continue;
+        }
         if meta.landuse == 2 {
             return Err(ManagementParseError::UnsupportedLanduse {
                 section: "initial",
@@ -908,13 +1222,68 @@ fn parse_initial_section(
     Ok(scenarios)
 }
 
+/// Parse the openWEPP-native forest initial-condition block (`ow-lanuse-1`).
+/// Cover/roughness are first-class (`LANUSE-AUTH-6`); ridge geometry
+/// (`rspace`/`rtyp`) is intentionally absent (`LANUSE-AUTH-3`). Forest is an
+/// established perennial stand, so `imngmt` must be `2`.
+fn parse_initial_forest(
+    cursor: &mut Cursor<'_>,
+) -> Result<InitialForestData, ManagementParseError> {
+    let cover = parse_f64_array::<4>(cursor, "ini.forest.cover_cancov_inrcov_rilcov_rrinit")?;
+    let iresd = cursor.parse_non_negative_required("ini.forest.iresd")?;
+    let imngmt = cursor.parse_non_negative_required("ini.forest.imngmt")?;
+    if imngmt != 2 {
+        return Err(ManagementParseError::InvalidOptionDomain {
+            field: "imngmt",
+            value: i64::try_from(imngmt).unwrap_or(i64::MAX),
+            allowed: "2 (forest established perennial)",
+        });
+    }
+    let thermal = parse_f64_array::<2>(cursor, "ini.forest.thermal_tillay1_tillay2")?;
+
+    let terminal_tokens = cursor.parse_tokens_required("ini.forest.terminal_line")?;
+    if terminal_tokens.len() != 2 && terminal_tokens.len() != 4 {
+        return Err(ManagementParseError::RecordArityError {
+            field: "ini.forest.terminal_line",
+            observed: terminal_tokens.len(),
+            expected: "2 or 4",
+        });
+    }
+    let sumrtm = parse_f64_token("ini.forest.sumrtm", &terminal_tokens[0])?;
+    let sumsrm = parse_f64_token("ini.forest.sumsrm", &terminal_tokens[1])?;
+    let understory_line = if terminal_tokens.len() == 4 {
+        Some([
+            parse_f64_token("ini.forest.usinrcol", &terminal_tokens[2])?,
+            parse_f64_token("ini.forest.usrilcol", &terminal_tokens[3])?,
+        ])
+    } else {
+        None
+    };
+
+    Ok(InitialForestData {
+        cancov: cover[0],
+        inrcov: cover[1],
+        rilcov: cover[2],
+        rrinit: cover[3],
+        iresd,
+        imngmt,
+        sumrtm,
+        sumsrm,
+        tillay1: thermal[0],
+        tillay2: thermal[1],
+        understory_line,
+    })
+}
+
 fn parse_surface_section(
     cursor: &mut Cursor<'_>,
     count: usize,
+    datver_family: DatverFamily,
 ) -> Result<Vec<SurfaceScenario>, ManagementParseError> {
     let mut scenarios = Vec::with_capacity(count);
     for _ in 0..count {
         let meta = parse_scenario_meta(cursor, "surface")?;
+        forest_section_not_applicable_guard(datver_family, meta.landuse, "surface")?;
         if meta.landuse == 2 {
             return Err(ManagementParseError::UnsupportedLanduse {
                 section: "surface",
@@ -969,6 +1338,7 @@ fn parse_contour_section(
     let mut scenarios = Vec::with_capacity(count);
     for _ in 0..count {
         let meta = parse_scenario_meta(cursor, "contour")?;
+        forest_section_not_applicable_guard(datver_family, meta.landuse, "contour")?;
         if meta.landuse == 2 {
             return Err(ManagementParseError::UnsupportedLanduse {
                 section: "contour",
@@ -1024,10 +1394,12 @@ fn parse_contour_section(
 fn parse_drain_section(
     cursor: &mut Cursor<'_>,
     count: usize,
+    datver_family: DatverFamily,
 ) -> Result<Vec<DrainScenario>, ManagementParseError> {
     let mut scenarios = Vec::with_capacity(count);
     for _ in 0..count {
         let meta = parse_scenario_meta(cursor, "drain")?;
+        forest_section_not_applicable_guard(datver_family, meta.landuse, "drain")?;
         if meta.landuse == 2 {
             return Err(ManagementParseError::UnsupportedLanduse {
                 section: "drain",
@@ -1062,6 +1434,14 @@ fn parse_yearly_section(
     let mut scenarios = Vec::with_capacity(count);
     for _ in 0..count {
         let meta = parse_scenario_meta(cursor, "yearly")?;
+        if datver_family.forest_mode_enabled() && meta.landuse == FOREST_LANUSE_SENTINEL {
+            let data = parse_yearly_forest(cursor)?;
+            scenarios.push(YearlyScenario {
+                meta,
+                data: YearlyScenarioData::Forest(data),
+            });
+            continue;
+        }
         if meta.landuse == 2 {
             return Err(ManagementParseError::UnsupportedLanduse {
                 section: "yearly",
@@ -1108,6 +1488,66 @@ fn parse_yearly_section(
         });
     }
     Ok(scenarios)
+}
+
+/// Parse the openWEPP-native forest yearly schedule (`ow-lanuse-1`): an
+/// established perennial stand. Forest carries no surface-effect / contour /
+/// drain reference (`tilseq/conset/drset` must be `0`), is perennial
+/// (`imngmt = 2`), and has no annual cut/graze management (`mgtopt = 3` idle;
+/// stand management is deferred to WS-4). Fails closed on any other combination.
+fn parse_yearly_forest(cursor: &mut Cursor<'_>) -> Result<YearlyForestData, ManagementParseError> {
+    let itype = cursor.parse_non_negative_required("yearly.forest.itype")?;
+    forest_yearly_zero_ref_guard(cursor, "tilseq")?;
+    forest_yearly_zero_ref_guard(cursor, "conset")?;
+    forest_yearly_zero_ref_guard(cursor, "drset")?;
+
+    let imngmt = cursor.parse_non_negative_required("yearly.forest.imngmt")?;
+    if imngmt != 2 {
+        return Err(ManagementParseError::InvalidOptionDomain {
+            field: "imngmt",
+            value: i64::try_from(imngmt).unwrap_or(i64::MAX),
+            allowed: "2 (forest established perennial)",
+        });
+    }
+
+    let jdharv = parse_julian_day(cursor, "yearly.forest.jdharv", true)?;
+    let jdplt = parse_julian_day(cursor, "yearly.forest.jdplt", true)?;
+    let jdstop = parse_julian_day(cursor, "yearly.forest.jdstop", true)?;
+    let rw = cursor.parse_f64_required("yearly.forest.rw")?;
+
+    let mgtopt = cursor.parse_non_negative_required("yearly.forest.mgtopt")?;
+    if mgtopt != 3 {
+        return Err(ManagementParseError::InvalidOptionDomain {
+            field: "mgtopt",
+            value: i64::try_from(mgtopt).unwrap_or(i64::MAX),
+            allowed: "3 (forest idle perennial; cut/graze management is WS-4)",
+        });
+    }
+
+    Ok(YearlyForestData {
+        itype,
+        jdharv,
+        jdplt,
+        jdstop,
+        rw,
+    })
+}
+
+/// Forest yearly schedule references no surface-effect / contour / drain
+/// scenario, so the corresponding index must be the `0` sentinel.
+fn forest_yearly_zero_ref_guard(
+    cursor: &mut Cursor<'_>,
+    field: &'static str,
+) -> Result<(), ManagementParseError> {
+    let value = cursor.parse_non_negative_required(field)?;
+    if value != 0 {
+        return Err(ManagementParseError::InvalidOptionDomain {
+            field,
+            value: i64::try_from(value).unwrap_or(i64::MAX),
+            allowed: "0 (forest has no surface-effect/contour/drain scenario)",
+        });
+    }
+    Ok(())
 }
 
 fn parse_yearly_annual_fallow(
@@ -1432,8 +1872,11 @@ fn validate_cross_section_references(
     }
 
     for initial in initials {
-        let InitialScenarioData::Cropland(data) = &initial.data;
-        validate_reference("iresd", data.iresd, counts.ncrop)?;
+        let iresd = match &initial.data {
+            InitialScenarioData::Cropland(data) => data.iresd,
+            InitialScenarioData::Forest(data) => data.iresd,
+        };
+        validate_reference("iresd", iresd, counts.ncrop)?;
     }
 
     for surface in surfaces {
@@ -1443,16 +1886,25 @@ fn validate_cross_section_references(
     }
 
     for yearly in yearlies {
-        let YearlyScenarioData::Cropland(data) = &yearly.data;
-        validate_reference("itype", data.itype, counts.ncrop)?;
-        // Legacy 98.x payloads may use `tilseq=0` to indicate no surface-effect scenario.
-        let compat_tilseq_zero_sentinel =
-            mode == ParseMode::Compatibility && counts.nseq > 0 && data.tilseq == 0;
-        if !compat_tilseq_zero_sentinel {
-            validate_reference("tilseq", data.tilseq, counts.nseq)?;
+        match &yearly.data {
+            YearlyScenarioData::Cropland(data) => {
+                validate_reference("itype", data.itype, counts.ncrop)?;
+                // Legacy 98.x payloads may use `tilseq=0` to indicate no surface-effect scenario.
+                let compat_tilseq_zero_sentinel =
+                    mode == ParseMode::Compatibility && counts.nseq > 0 && data.tilseq == 0;
+                if !compat_tilseq_zero_sentinel {
+                    validate_reference("tilseq", data.tilseq, counts.nseq)?;
+                }
+                validate_reference("conset", data.conset, counts.ncnt)?;
+                validate_reference("drset", data.drset, counts.ndrain)?;
+            }
+            YearlyScenarioData::Forest(data) => {
+                // Forest itype references a forest plant scenario; the
+                // surface/contour/drain references are the `0` sentinel already
+                // enforced at parse (`parse_yearly_forest`).
+                validate_reference("itype", data.itype, counts.ncrop)?;
+            }
         }
-        validate_reference("conset", data.conset, counts.ncnt)?;
-        validate_reference("drset", data.drset, counts.ndrain)?;
     }
 
     Ok(())

@@ -101,19 +101,20 @@ pub(crate) fn active_management_crop_name(
     }
 
     let yearly = &management.registries.yearlies[yearly_ref - 1];
-    let YearlyScenarioData::Cropland(cropland) = &yearly.data;
-    if cropland.itype == 0 || cropland.itype > management.registries.plants.len() {
+    // The PMET crop name is the referenced plant scenario's name, resolved the
+    // same way for cropland and native forest yearly slots.
+    let itype = match &yearly.data {
+        YearlyScenarioData::Cropland(cropland) => cropland.itype,
+        YearlyScenarioData::Forest(forest) => forest.itype,
+    };
+    if itype == 0 || itype > management.registries.plants.len() {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "pmetpara",
             detail: format!(
-                "{SIMPIPE_GUARD_ID} plant ref {} out of range for PMET crop lookup",
-                cropland.itype
+                "{SIMPIPE_GUARD_ID} plant ref {itype} out of range for PMET crop lookup"
             ),
         });
     }
 
-    Ok(management.registries.plants[cropland.itype - 1]
-        .meta
-        .name
-        .as_str())
+    Ok(management.registries.plants[itype - 1].meta.name.as_str())
 }

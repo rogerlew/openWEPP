@@ -1,10 +1,13 @@
 # DFF-WS1 — Native Forest `lanuse` Mode Foundation
 
 Status: **INCREMENT 1 (schema design) — Codex-reviewed, revisions incorporated;
-INCREMENT 2 (parser/runtime code) SCOPED** (2026-07-02). See
-`artifacts/review-codex.md` — 5 findings dispositioned (2 High: seam claim
-corrected + Tier-A physics authority requirement; 2 Medium: all-section carve
-policy + soil/mgmt reconciliation; 1 Low: rangeland-shaped wording).
+INCREMENT 2 (parser/runtime code) IMPLEMENTED on branch
+`dff-ws1-inc2-native-forest-lanuse`, gated, awaiting Codex review** (2026-07-02).
+See `artifacts/increment-2-implementation.md` for the build summary + open items,
+and `artifacts/review-codex.md` for the 5 dispositioned Increment-1 findings (2
+High: seam claim corrected + Tier-A physics authority requirement; 2 Medium:
+all-section carve policy + soil/mgmt reconciliation; 1 Low: rangeland-shaped
+wording).
 Campaign: [disturbed-forest-fidelity](../../planning/disturbed-forest-fidelity-strategy.md)
 WS-1. Governing authority:
 [ADR-0034](../../decisions/0034-management-file-lanuse-input-authority.md) +
