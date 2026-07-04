@@ -155,9 +155,13 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
     [`artifacts/increment-1bc-flip-scope-and-hold.md`](artifacts/increment-1bc-flip-scope-and-hold.md);
     forward sequence in [`docs/ROADMAP.md`](../../ROADMAP.md) §E.
 - **Increment 1c-fidelity (ROADMAP §E.1) — single-OFE surface completeness:
-  BUILT + GATED on branch `erosion-e1-inc1c-fidelity`, 2026-07-04 (Claude-
-  executed, operator-directed "scaffold and execute E.1"); AWAITING CODEX
-  REVIEW.** All three items landed, each resolved against fresh legacy
+  COMPLETE, MERGED TO MAIN `3885069e` 2026-07-04** (Claude-executed,
+  operator-directed "scaffold and execute E.1"; Codex 2-round review —
+  round-1 2 Medium + 1 Low all confirmed + fixed (`TOL-SED-005` 1e-9 guard
+  + normalized split; p61 output-level `tdet = Σ sedcon × runvol` width
+  reconstruction verified in both directions; stale builder comment);
+  re-check merge-ready with 1 Low wording fix; operator-authorized
+  fast-forward merge). All three items landed, each resolved against fresh legacy
   source-intent recon (SC-SED-001 v42 anchors): (1) **`field_width_m`** now
   sourced from the parsed slope `fwidth` through a new typed
   `TypedSlopeOfeRuntimeProjection.fwidth_m` (fail-closed finite/positive) —
