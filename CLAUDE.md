@@ -142,4 +142,6 @@ When proactively scanning openWEPP for vulnerabilities:
 | `docs/standards/` | Maintainers | Rust coding, comments, QA standards |
 | `docs/backlog/` | Maintainers | Concept-stage ideas; promotion criteria before work-package activation |
 | `docs/work-packages/` | All | Initiative tracking convention |
+| `docs/planning/` | All | Strategy & sequencing notes: planning guidance, not science authority |
+| `docs/audits/` | Claude Code | Point-in-time static/executional audits: current-state findings, not plans or decisions (see `docs/audits/CLAUDE.md`) |
 | `usersum/` | End users | User-facing documentation |
