@@ -26,13 +26,27 @@ This is the load-bearing point for sequencing: **the correct fix is architectura
 
 So the water-magnitude question is no longer "why doesn't openWEPP match legacy" — it is "is the replacement complete, and does it land inside the field envelope." On H2637 post-DC01 it already does: not-contradicted on all four `INV-SUBHYD-033` tiers (annual yield 0.673, ET 863 mm/yr, event ratio 0.46 ascending, threshold shape present).
 
-## 3. The reframe
+## 3. Provenance: the revision WEPP declined (operator-relayed)
+
+The OFE-by-OFE routing openWEPP implements in Lane D is not a novel openWEPP invention — it is the MOFE revision the model's own author intended for WEPP, which WEPP never adopted.
+
+> **Operator-relayed (2026-07-04), secondhand and undetailed — context, not authority.** From a conversation Erin Brooks and Anurag Srivastava had with Thanos Papanicolaou (~2026-05) and reported to the operator within a couple of days: Papanicolaou described his MOFE revisions, which he gave to Dennis Flanagan around 2018 to incorporate into WEPP; they were never incorporated. Brooks characterized the revisions as having *"fixed the MOFE issue"* — no further detail was relayed.
+
+This is consistent with the audit's findings and sharpens the program framing:
+
+- It confirms the root cause at the **institutional** level: a corrected model existed and was available to WEPP for ~8 years, yet legacy stayed on the unsound equivalent-plane construction and patched its symptoms instead (audit Finding 4). A concrete instance of the ADR-0017 posture — legacy is a flag, not authority.
+- **openWEPP's Lane D is built on Papanicolaou et al. 2018** (frozen-library `R-63`) — i.e. it is that intended-but-never-incorporated revision. This strengthens the case for prioritizing Lane D's production activation over the WB16-estimator default (§5).
+- Notable: the baseline `efflen/totlen` `peakro` band-aid (`irs.for:745`, *"A. Srivastava 4/17/2026"*, audit §3.2) is authored by the **same Anurag Srivastava** — the symptom-patch and the Papanicolaou conversation are the same person and time window.
+
+**Open opportunity (not yet acted on):** the revisions Papanicolaou gave Flanagan may be more or newer than the 2018 paper. If the actual artifact (code / notes) can be obtained via Brooks or Srivastava, it would be a stronger external authority for `SC-OFEROUTE-001` than the published paper alone — and could inform the open shock-timing numerics gap (`GAP-OFEROUTE-005`).
+
+## 4. The reframe
 
 1. **Legacy is a flag, not a target** (ADR-0017). Legacy's own MOFE paths are non-conserving (`with_ui` = 127.7% of precip = the WB-05A `q-cap` blow-up) and carry undocumented closure debt (CONFLICT-008). Chasing parity to a known-unsound model is a category error.
 2. **The magnitude bar is the field-observed envelope** `SC-SUBHYD-001#INV-SUBHYD-033`, judged on quickflow-separated components, only after conservation/routing/export closure hold. Not legacy 55.5%.
 3. **"Complete the replacement," not "patch the symptom."** Every legacy band-aid in the audit (the `efflen/totlen` `peakro` rescale, the withdrawn U6C water cap, the `q-cap` clamp) is a consumer-side intervention on bad state produced by the equivalent-plane collapse. openWEPP's per-OFE lanes + relief valve remove the *producer* of the bad state; do not re-introduce the band-aids to mimic legacy numbers.
 
-## 4. Sequencing implications
+## 5. Sequencing implications
 
 The existing MOFE program (roadmap §E for erosion; the MOFEFID campaign for water; Lane D for hydraulic routing) already carries most of this. Two things this note pins:
 
@@ -45,15 +59,15 @@ Suggested order (all already on the roadmap; this note only asserts the *framing
 2. Erosion side — at §E.3, define the multi-OFE discharge hand-off natively (cut-point 1); retire the legacy EROD14/Wave-2 arm rather than porting its normalization.
 3. Magnitude — judge against `INV-SUBHYD-033` (water) then the erosion envelope (§E.5), never legacy parity.
 
-## 5. What NOT to do
+## 6. What NOT to do
 
 - **Do not** port the legacy `efflen/totlen` `peakro` rescale into the multi-OFE erosion path to "match legacy" — it is a band-aid for an abstraction openWEPP rejected.
 - **Do not** re-derive the blowup — it is attributed (audit Findings 1–4). Time spent re-confirming the >1000 mm cohort is spent on a known model-class limitation.
 - **Do not** treat legacy 55.5% / 127.7% as a bar. The bar is `INV-SUBHYD-033`.
 - **Do not** collapse per-OFE lanes back to an aggregate `Q` for any consumer (publication, erosion, watershed hand-off) — that silently re-introduces the equivalent-plane amplification (`INV-RUNOFFPART-029`).
-- **Do not** publish the WB16 `vave·qpstar` peak while Papanicolaou routing is active — the published peak (pass parquet, HBP EVENT) must be the resolved kinematic peak, or the watershed router and erosion detachment consume a peak the routing never produced (see §4).
+- **Do not** publish the WB16 `vave·qpstar` peak while Papanicolaou routing is active — the published peak (pass parquet, HBP EVENT) must be the resolved kinematic peak, or the watershed router and erosion detachment consume a peak the routing never produced (see §5).
 
-## 6. Cross-references
+## 7. Cross-references
 
 - Diagnosis: [`docs/audits/20260704_mofe_effective_length_transport_capacity_audit.md`](../audits/20260704_mofe_effective_length_transport_capacity_audit.md)
 - Water campaign: [`docs/planning/mofe-fidelity-campaign-strategy.md`](mofe-fidelity-campaign-strategy.md)
