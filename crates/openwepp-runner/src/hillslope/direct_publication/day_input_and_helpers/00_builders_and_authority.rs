@@ -511,7 +511,10 @@ fn direct_production_day_input_authority_from_typed_seed(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+// Large orchestration seed-builder: assembles every typed lane authority
+// (soil / slope / management / snow / frost / peak-runoff / erosion / ...)
+// from the parsed inputs. The line count is inherent to the fan-out.
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn direct_production_typed_lane_seed_authority(
     climate_request: &HillslopeClimateRuntimeRequest,
     soil: &SoilProfile,
@@ -568,8 +571,10 @@ fn direct_production_typed_lane_seed_authority(
     let peak_runoff =
         direct_production_typed_peak_runoff_authority(&slope_projection, &management_projection)?;
     let erosion = direct_production_typed_erosion_authority(
+        soil,
         &soil_projection,
         &slope_projection,
+        &management_projection,
         &peak_runoff,
         contributor_ofe_count,
     )?;
@@ -926,9 +931,136 @@ fn direct_production_pl_projection_required_ofe_scalar(
     )
 }
 
+/// SC-SED-001 1b-C: build the per-lane **static** Wave-1 operand seed from
+/// the parsed soil texture, the slope geometry, and the management cover
+/// constants. Sources the real operands (particle classes + `veleff`,
+/// `scon` consolidation baselines, normalized slope segments, geometry,
+/// `hmax`/`flivmx`); the per-day assembly combines them with the daily
+/// frame state. `enabled` is forced `false` here — the seed stays inert
+/// until the production flip (Stage 4).
+///
+/// Two operands have no clean single-OFE runtime source yet and are
+/// **provisional behind the disabled seed**, to be adjudicated at the
+/// enable (they only affect an active solve):
+/// - `is_cropland` selects the interrill delivery branch. Set `false`
+///   (non-cropland, `intdr = 1`), matching the reviewed `erod16` forest
+///   fixture; the legacy lanuse-as-cropland nuance is an enable-time
+///   science item.
+/// - `field_width_m` denormalizes per-width sediment to total mass. Set to
+///   unit width (`1.0`) — single-hillslope per-width reporting — pending
+///   the hillslope-geometry width source at enable.
+fn direct_production_wave1_operand_seed(
+    parsed_soil: &SoilProfile,
+    soil_projection: &TypedSoilWb11RuntimeProjection,
+    slope: &openwepp_hillslope_orchestrator::runtime_inputs::TypedSlopeRuntimeProjection,
+    management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
+    peak_runoff: &DirectProductionPeakRunoffAuthority,
+) -> Result<openwepp_hillslope_orchestrator::DirectWave1OperandSeed, HillslopeCliError> {
+    let seed_blocked = |detail: String| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_production_wave1_operand_seed",
+        detail: format!("{SIMOUT_GUARD_ID} {detail}"),
+    };
+
+    let soil_ofe = parsed_soil
+        .ofes
+        .first()
+        .ok_or_else(|| seed_blocked("erosion seed requires at least one soil OFE".to_string()))?;
+    let surface_layer = soil_ofe.layers.first().ok_or_else(|| {
+        seed_blocked("erosion seed requires at least one soil layer".to_string())
+    })?;
+    let slope_ofe = slope
+        .ofes
+        .first()
+        .ok_or_else(|| seed_blocked("erosion seed requires at least one slope OFE".to_string()))?;
+    let corrected_layer = soil_projection.layers.first().ok_or_else(|| {
+        seed_blocked("erosion seed requires at least one WB11 soil layer".to_string())
+    })?;
+
+    // Texture fractions (parser stores validated percents).
+    let sand = surface_layer.sand_pct / 100.0;
+    let clay = surface_layer.clay_pct / 100.0;
+    let silt = (1.0 - sand - clay).clamp(0.0, 1.0);
+    let orgmat = surface_layer.orgmat_pct / 100.0;
+    let rfg = surface_layer.rock_frag_pct / 100.0;
+
+    let texture = openwepp_hillslope_orchestrator::ErosionTextureInputs {
+        sand,
+        clay,
+        silt,
+        orgmat,
+    };
+    let classes = openwepp_hillslope_orchestrator::erosion_particle_composition(&texture)
+        .map_err(|e| seed_blocked(format!("erosion particle composition failed: {e}")))?;
+    let (diaeff, spgeff) =
+        openwepp_hillslope_orchestrator::erosion_effective_particle(&classes)
+            .map_err(|e| seed_blocked(format!("erosion effective particle failed: {e}")))?;
+    let veleff_m_s = openwepp_hillslope_orchestrator::erosion_falvel(spgeff, diaeff);
+
+    let baselines = openwepp_hillslope_orchestrator::erosion_consolidation_baselines(
+        &openwepp_hillslope_orchestrator::ErosionConsolidationInputs {
+            sand,
+            silt,
+            orgmat,
+            thetfc: corrected_layer.thetfc,
+            rock_fragment_fraction: rfg,
+            ki: soil_ofe.ki,
+            kr: soil_ofe.kr,
+            shcrit: soil_ofe.shcrit,
+        },
+    )
+    .map_err(|e| seed_blocked(format!("erosion consolidation baselines failed: {e}")))?;
+
+    // Normalized slope segments (`profil.for` fit).
+    let points: Vec<(f64, f64)> = slope_ofe
+        .points
+        .iter()
+        .map(|p| (p.xinput, p.slpinp))
+        .collect();
+    let segments = openwepp_hillslope_orchestrator::derive_wave1_slope_segments(
+        &points,
+        slope_ofe.slplen_m,
+        slope_ofe.avgslp,
+    )
+    .map_err(|e| seed_blocked(format!("erosion slope-segment fit failed: {e}")))?;
+    let slpend = segments
+        .last()
+        .map_or(0.0, |seg| (seg.a + seg.b) * slope_ofe.avgslp);
+
+    // Static rill-friction cover constants (`hmax`/`flivmx`); a burned
+    // forest with no live canopy has neither, so absent defaults to 0.
+    let hmax_m =
+        direct_production_typed_wb16_canopy_scalar(management_projection, 0, "hmax").unwrap_or(0.0);
+    let flivmx =
+        direct_production_typed_wb16_canopy_scalar(management_projection, 0, "flivmx").unwrap_or(0.0);
+
+    Ok(openwepp_hillslope_orchestrator::DirectWave1OperandSeed {
+        enabled: false,
+        is_cropland: false,
+        segments,
+        slplen_m: slope_ofe.slplen_m,
+        efflen_m: peak_runoff.efflen_m,
+        cntlen_m: slope_ofe.slplen_m,
+        rspace_m: 1.0,
+        field_width_m: 1.0,
+        avg_slope: slope_ofe.avgslp,
+        slpend,
+        sand,
+        classes,
+        veleff_m_s,
+        baselines,
+        kr_s_m: soil_ofe.kr,
+        ki: soil_ofe.ki,
+        shcrit_pa: soil_ofe.shcrit,
+        hmax_m,
+        flivmx,
+    })
+}
+
 fn direct_production_typed_erosion_authority(
+    parsed_soil: &SoilProfile,
     soil: &TypedSoilWb11RuntimeProjection,
     slope: &openwepp_hillslope_orchestrator::runtime_inputs::TypedSlopeRuntimeProjection,
+    management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     peak_runoff: &DirectProductionPeakRunoffAuthority,
     contributor_ofe_count: usize,
 ) -> Result<DirectProductionErosionAuthority, HillslopeCliError> {
@@ -967,6 +1099,16 @@ fn direct_production_typed_erosion_authority(
             theta: 0.5 * (first_layer.thetdr + first_layer.thetfc),
         },
     )?;
+    // SC-SED-001 1b-C: build the static Wave-1 operand seed on every lane
+    // (the disabled seed is validated against real parsed inputs across the
+    // full fixture suite). The per-day assembly consumes it once enabled.
+    let wave1_operand_seed = direct_production_wave1_operand_seed(
+        parsed_soil,
+        soil,
+        slope,
+        management_projection,
+        peak_runoff,
+    )?;
     Ok(DirectProductionErosionAuthority {
         wave2_enabled,
         erosion_inputs: DirectErosionInputs {
@@ -976,6 +1118,7 @@ fn direct_production_typed_erosion_authority(
             wave1_continuity: Box::new(
                 openwepp_hillslope_orchestrator::DirectWave1ContinuityInputs::zero(),
             ),
+            wave1_operand_seed: Box::new(wave1_operand_seed),
             wave2: direct_production_erod14_inputs_from_typed_projection(
                 &wave2_projection,
                 peak_runoff.efflen_m,

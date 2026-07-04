@@ -3,8 +3,8 @@ use crate::constants::WB11_ZERO_THRESHOLD;
 use super::{
     DIRECT_AUDIT, DIRECT_R7D6_EROSION_PHASE_SPAN_COUNT, DirectDayFrame,
     DirectPublicationErosionOperands, DirectRuntimeError, DirectWave1ContinuityInputs,
-    DirectWave1ContinuityState, compute_direct_wave1_continuity, validate_finite,
-    validate_nonnegative_direct_m,
+    DirectWave1ContinuityState, DirectWave1OperandSeed, compute_direct_wave1_continuity,
+    validate_finite, validate_nonnegative_direct_m,
 };
 
 const DIRECT_EROSION_CLASS_LIMIT: usize = 5;
@@ -31,6 +31,13 @@ pub struct DirectErosionInputs {
     /// bound; the box is only cloned on days where an erosion wave is
     /// enabled (the pre-r7d8 flag check short-circuits otherwise).
     pub wave1_continuity: Box<DirectWave1ContinuityInputs>,
+    /// Per-lane **static** Wave-1 operand seed (SC-SED-001 1b-C): the
+    /// texture / geometry / cover-constant operands the per-day assembly
+    /// (`assemble_wave1_continuity_inputs`) combines with the daily frame
+    /// state to build `wave1_continuity`. Boxed with `wave1_continuity` to
+    /// stay inside the R7B type-size bound; `seed.enabled` gates the
+    /// assembly (disabled until the production flip).
+    pub wave1_operand_seed: Box<DirectWave1OperandSeed>,
     pub wave2: DirectErod14Inputs,
 }
 
@@ -42,6 +49,7 @@ impl DirectErosionInputs {
             wave2_enabled: false,
             wave1: DirectErod13Inputs::zero(),
             wave1_continuity: Box::new(DirectWave1ContinuityInputs::zero()),
+            wave1_operand_seed: Box::new(DirectWave1OperandSeed::disabled()),
             wave2: DirectErod14Inputs::zero(),
         }
     }

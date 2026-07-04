@@ -157,6 +157,40 @@ frame surfaces below + the `daydis`/`rfcum` accumulators + the
 and enable for single-OFE; (d) pass-writer unhardcode + DFF-WS3 HOLD flip
 + byte-stability diff.
 
+## Stage 3 progress (2026-07-03) — frame threading
+
+**Sub-piece 1: static-seed builder LANDED** (branch `erosion-inc1c-flip`):
+`DirectErosionInputs` now carries a Boxed `wave1_operand_seed`
+(`DirectWave1OperandSeed`, disabled). `direct_production_wave1_operand_seed`
+in the runner builds it on **every** lane from the real parsed inputs —
+texture (`sand`/`clay`/`silt`/`orgmat`/`rfg` from the parsed soil, percent
+→ fraction) → particle classes + `veleff`, `scon` consolidation baselines
+(with the WB11-corrected `thetfc`), normalized slope segments
+(`derive_wave1_slope_segments`), geometry (`slplen`/`efflen`/`cntlen`/
+`avgslp`/`slpend`), and the `hmax`/`flivmx` cover constants. Because the
+builder runs on every direct-production fixture, the full suite is its
+integration test (the static operand chain resolves on all production
+soils/slopes). Seed stays disabled; production outputs unchanged.
+
+**Two enable-time adjudication items (provisional behind the disabled
+seed — they only affect an active solve):**
+- `is_cropland = false` (non-cropland interrill branch, `intdr = 1`),
+  matching the reviewed `erod16` forest fixture. The legacy
+  lanuse-as-cropland nuance ([[reference-legacy-all-landuse-run-as-cropland]])
+  is an enable-time science item.
+- `field_width_m = 1.0` (unit width; single-hillslope per-width sediment
+  reporting) pending the hillslope-geometry width source. Only scales the
+  denormalized total mass, not the per-width physics.
+Both are flagged for adjudication at the Stage-4 enable, before the
+magnitude / byte-stability check.
+
+**Remaining Stage 3:** the persistent carries
+(`DirectErosionConsolidationCarry`/`ErosionIfrostCarry`/rill-width) on the
+lane frame + daily advance, and the per-day `DirectWave1DailyState`
+population in r7d8 (cover/roots/residue from the growth/decomposition
+states, frost regime, the `wb14_hourly_rainfall` surface) calling
+`assemble_wave1_continuity_inputs`.
+
 ## Integration-surface audit (2026-07-03, Static) — de-risks the flip
 
 Concrete findings from reading the frame + seed-authority surfaces, so the
