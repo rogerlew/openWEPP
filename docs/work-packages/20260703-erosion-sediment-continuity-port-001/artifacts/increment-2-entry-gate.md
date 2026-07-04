@@ -183,6 +183,17 @@ standalone parallel item — see the HR backlog §E — not required for 2c/2d.)
 - **Two-physics inconsistency** if Wave-1 and Wave-2 both persist long-term; resolve the
   ownership (§3) early so multi-OFE fidelity is not aliased by which solver ran.
 
+**Downstream consumer this unblocks:** the watershed sediment hold **`WSHED-W7DC01`**
+(`work-packages/20260702-wshedw7dc01-hillslope-sediment-production-hold-lift-001/`) held
+because production multi-OFE hillslopes publish **zero HBP sediment on the EROD14 Wave-2
+path** even when enabled (substrate `/wc1/runs/in/insensible-aliquot/wepp`). Verified
+2026-07-04: the 1b-C single-OFE Wave-1 flip carries nonzero HBP sediment (p61 shard
+`tdet=20.9`, `sedcon=[19.08]`) but does **not** touch EROD14, so the multi-OFE path is
+still zero. **W7DC01 is a downstream consumer of this increment (E.3), not a
+watershed-side defect** — its "before/after pass parquet on a real multi-OFE substrate"
+evidence is exactly what E.3 produces. Hand W7DC01 back to W7 fixture adoption once E.3
+closes.
+
 ## 9. Contract & doc deliverables for kickoff
 
 1. ADR — hydrograph-resolved sediment transport + routing (supersede-vs-coexist,
