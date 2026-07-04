@@ -1,12 +1,14 @@
 # ADR-0036: Hydrograph-Resolved Sediment Transport and Channel Routing
 
-Status: **Proposed** (authored 2026-07-04 by Claude Code on operator direction
-"scaffold the E.2 ADR"; revised same day for the four Codex design-review
-findings — hourly **sediment** co-serialization, the hourly unit definition,
-the hydraulically-active-hour activation rule, and the
-`INV-RUNOFFPART-030/031` attribution; pending operator ratification).
-Contract-first sequencing binds: the SC-SED-001 / SC-INFILE-HBP-001 /
-SC-ROUTE-001 amendments this ADR mandates are authored **before** any code.
+Status: **Accepted** (ratified 2026-07-04 by operator direction — Roger Lew:
+"cleanup and ratify" — after a two-round Codex design review. Authored
+2026-07-04 by Claude Code on operator direction "scaffold the E.2 ADR";
+round-1 revision closed the four design findings — hourly **sediment**
+co-serialization, the hourly unit definition, the hydraulically-active-hour
+activation rule, and the `INV-RUNOFFPART-030/031` attribution; round-2 was
+wording-only). Contract-first sequencing binds: the SC-SED-001 /
+SC-INFILE-HBP-001 / SC-ROUTE-001 amendments this ADR mandates are authored
+**before** any code.
 
 Deciders: Roger Lew, Claude Code
 
@@ -210,11 +212,13 @@ peak-based arm (D1) is the transition cross-check inside openWEPP itself.
   ordinary hour-resolved solves; the `INV-RUNOFFPART-031` interim clamp is retired as a
   fix. This is the substrate E.3 (multi-OFE chaining) and, later, Hairsine-Rose
   (`d_i = v_s·c`, an hour-resolvable settling term) build on.
-- **Contract work precedes code:** amendments to SC-SED-001 (hourly-discharge
-  operand + the narrowed steady-state label + per-hour mass-closure
-  invariants), SC-INFILE-HBP-001 + `hbp-file.spec.md` (the additive EVENT
-  extension, per-class surfaces, peak units), and SC-ROUTE-001 (conditional
-  `INV-ROUTE-005`, hydrograph intake). Then the staged 2b execution per the
+- **Contract work precedes code:** amendments to SC-SED-001 (the
+  hydraulically-active-hour operand basis per D1, the narrowed steady-state
+  label, per-hour mass-closure invariants, and the GAP-labeled uniform
+  class-fraction timing rule), SC-INFILE-HBP-001 + `hbp-file.spec.md` (the
+  additive EVENT extension: the **paired `V_h`/`S_h` hourly surfaces** per
+  D2, per-class surfaces, peak units), and SC-ROUTE-001 (conditional
+  `INV-ROUTE-005`, paired water+sediment hydrograph intake). Then the staged 2b execution per the
   Increment-2 entry gate §7 (shadow-first, conservation-hard-stop, non-hourly
   consumers byte-stable via the fallback until the flip).
 - **Single-OFE production numbers change** when the hourly form becomes the
@@ -241,7 +245,7 @@ peak-based arm (D1) is the transition cross-check inside openWEPP itself.
    the status-quo collapse with extra steps. (Kept only as the shape of the
    *step-hydrograph* fallback if per-hour proves untenable, which preserves
    the limb.)
-2. **Keep the peak solve + the INV-030 clamp.** Rejected: leaves a standing
+2. **Keep the peak solve + the `INV-RUNOFFPART-031` interim clamp.** Rejected: leaves a standing
    structural gap the roadmap ordering (structure before magnitude) exists to
    close; the clamp discards mass-carrying flow information.
 3. **Sub-hourly / dynamic-wave hydraulics.** Rejected as a non-goal: the

@@ -1,19 +1,19 @@
 # Modeled Hourly Flow Through the Erosion → HBP → Routing Stack (Hydrograph-Resolved Sediment)
 
 ## Status
-- `state`: backlog → **ADR authored**:
+- `state`: backlog → **ADR-0036 RATIFIED**:
   [ADR-0036](../decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md)
-  (Proposed 2026-07-04, revised same day for the 4 Codex design-review
-  findings) resolves the open decisions below: per-hour quasi-steady form on
-  hydraulically-active hours (`excess_h > 0 ∨ qin_h > 0`); one additive HBP
-  EVENT extension carrying PAIRED hourly runoff volume `V_h` (m³) + sediment
-  mass `S_h` (kg) — hourly water alone would force an implicit sediment-timing
-  rule in the channel — designed once with the per-class + peak-units items;
-  conditional `INV-ROUTE-005`; integral closures `Σ V_h = runvol` /
-  `Σ S_h = event mass`; Investigation-tier comparator. Pending operator
-  ratification; contract amendments before code.
+  (Accepted 2026-07-04 after a two-round Codex design review) resolves the
+  open decisions below: per-hour quasi-steady form on hydraulically-active
+  hours (`excess_h > 0 ∨ qin_h > 0`); one additive HBP EVENT extension
+  carrying PAIRED hourly runoff volume `V_h` (m³) + sediment mass `S_h` (kg)
+  — hourly water alone would force an implicit sediment-timing rule in the
+  channel — designed once with the per-class + peak-units items; conditional
+  `INV-ROUTE-005`; integral closures `Σ V_h = runvol` / `Σ S_h = event mass`;
+  Investigation-tier comparator. Next: the three contract amendments
+  (SC-SED-001, SC-INFILE-HBP-001 + hbp spec, SC-ROUTE-001) before code.
 - `maturity`: concept / architecture direction (operator-directed 2026-07-04)
-- `default_path`: not eligible (needs ADR ratification + contract sequencing before code)
+- `default_path`: not eligible until the ADR-0036 contract amendments land (contract sequencing before code)
 - `evidence_mode`: Static (read SC-SED-001, SC-ROUTE-001, the HBP format, and the
   direct-runtime hourly surfaces; no execution)
 
@@ -26,7 +26,8 @@ limb**, or where a downslope OFE **reinfiltrates runon** (`qout < qin`), the flo
 and therefore transport capacity — drops, and the correct response is **deposition**
 (`load > Tc`). A single peak discharge cannot represent that recession: it has no
 falling limb, so the recession deposition is not captured, and the multi-OFE
-reinfiltration case is currently handled by the interim **INV-030 `qin`-clamp** (the
+reinfiltration case is currently handled by the bounded interim `qin`-clamp
+(`INV-RUNOFFPART-031` compatibility scope under the `INV-RUNOFFPART-030` hold) — (the
 clamp discards the flow decrease rather than depositing the sediment the lost flow was
 carrying).
 
@@ -69,15 +70,17 @@ Concretely:
 - **Erosion (SC-SED-001):** solve the sediment continuity against the **hourly-resolved
   discharge** rather than a single peak, so the falling limb deposits naturally and the
   multi-OFE `qin/qout` accumulation is an hour-by-hour balance (the reinfiltration case
-  becomes ordinary hour-resolved deposition, retiring the INV-030 clamp as a real fix,
-  not a bound). The *design* of how the continuity consumes the hydrograph (per-hour
-  solve, time-integrated transport, or a reduced hydrograph parameterization) is the
-  Increment-2 entry-gate's job — see
-  [`increment-2-entry-gate.md`](../work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2-entry-gate.md).
-- **HBP:** add a versioned **hourly-flow surface** to the EVENT payload (a bounded
-  `[f64; 24]`-class channel, same basis as `wb14_hourly_excess_m`), so the interchange
-  carries the modeled shape, not just peak+volume+duration. Schema **extension**, not a
-  break — migrated per the HBP contract's versioning.
+  becomes ordinary hour-resolved deposition, retiring the bounded interim
+  `INV-RUNOFFPART-031` clamp — held under the `INV-RUNOFFPART-030` governance hold — as
+  a real fix, not a bound). *Resolved by ADR-0036 D1:* per-hour quasi-steady solves on
+  **hydraulically-active hours** (`excess_h > 0 ∨ qin_h > 0`, covering the
+  full-reinfiltration `qout = 0 / qin > 0` hour), daily totals = hour sums.
+- **HBP:** add the versioned **paired hourly surfaces** to the EVENT payload
+  (*ADR-0036 D2*): hour-integrated runoff **volume** `V_h` (m³) + exported sediment
+  **mass** `S_h` (kg) on one shared 24-slot time base — hourly water alone would force
+  an implicit sediment-timing rule in the channel. Schema **extension**, not a break —
+  migrated once per the HBP contract's versioning, bundled with the per-class and
+  peak-units items.
 - **Routing (SC-ROUTE-001):** route the **serialized modeled hydrograph** instead of a
   triangular reconstruction, superposing real per-hour inflows at channel inlets. The
   triangular method remains the fallback for legacy shards that lack the hourly surface.
@@ -85,7 +88,7 @@ Concretely:
 ## Why it is worth doing (and why now)
 
 - **It is the *structural* fix for the decreasing-flow deposition**, which is otherwise
-  a standing interim clamp (INV-030). Structure-before-magnitude (ADR-0011 ordering):
+  a standing interim clamp (`INV-RUNOFFPART-031`). Structure-before-magnitude (ADR-0011 ordering):
   this closes a structural gap, independent of magnitude.
 - **It is a genuine improvement over legacy**, not a port — legacy never had the hourly
   profile; openWEPP does, and discards it. Triangular hydrograph superposition is a
@@ -101,13 +104,14 @@ Concretely:
 
 ## Contract-first sequencing (non-negotiable per ADR-0011)
 
-1. **ADR** on hydrograph-resolved sediment transport + routing: whether the hourly-flow
-   surface supersedes the peak collapse or coexists (peak retained as a diagnostic/
+1. **ADR** on hydrograph-resolved sediment transport + routing: whether the hourly
+   surfaces supersede the peak collapse or coexist (peak retained as a diagnostic/
    fallback), and the comparator-tier posture (routing the modeled hydrograph will not
    match the legacy triangular result even when both are correct — Investigation-tier,
-   ADR-0017).
+   ADR-0017). *Done: ADR-0036 (supersede, peak-arm retained-as-flag then deleted;
+   D1–D5).*
 2. **Contract amendments:** SC-SED-001 (erosion consumes hourly discharge), the HBP
-   format + SC-INFILE-HBP-001 (versioned hourly-flow EVENT surface), SC-ROUTE-001
+   format + SC-INFILE-HBP-001 (versioned paired `V_h`/`S_h` EVENT surfaces), SC-ROUTE-001
    (route serialized hydrograph, triangular fallback). Author before code.
 3. **Conservation gate:** the hourly surface must close to the existing runoff **volume**
    (`Σ hourly = volume`), so the extension is a refinement of the closed water balance,
@@ -117,7 +121,7 @@ Concretely:
    reject or distort a valid modeled hydrograph. WB16 `peakro` stays a **diagnostic /
    fallback** surface; whether the hourly profile is rescaled to reconcile with it is an
    explicit **ADR policy** choice, not a conservation requirement.
-4. **HBP schema migration:** the hourly-flow surface is designed **once** and versioned;
+4. **HBP schema migration:** the paired hourly surfaces are designed **once** and versioned;
    a premature commit before the per-OFE / per-event serialization semantics are settled
    risks a costly migration (same discipline the HR backlog flags for its deposited-layer
    state).
@@ -137,7 +141,8 @@ Concretely:
    time-integrated transport derived from the hydrograph? (Cost vs. fidelity; the
    Increment-2 entry gate decides, with the recession-deposition case as the acceptance
    driver.)
-2. HBP hourly-flow surface: per-OFE-exit, hillslope-exit only, or both? Routing needs
+2. HBP hourly surfaces: per-OFE-exit, hillslope-exit only, or both? (*Resolved by
+   ADR-0036 D2: hillslope-exit serialized; per-OFE stays frame-internal.*) Routing needs
    the hillslope-exit hydrograph; multi-OFE erosion needs per-OFE. Design the payload
    for the routing consumer first, per-OFE as an internal (non-serialized) surface if
    that suffices.
@@ -152,7 +157,7 @@ Concretely:
   — the multi-OFE erosion design that this substrate feeds.
 - [`20260627-stream-water-temperature-surface-energy-balance.md`](20260627-stream-water-temperature-surface-energy-balance.md)
   — its open pickup question is *exactly* this: "can hourly water+temperature
-  serialize across HBP and be consumed by `openwepp-cli-watershed`." The hourly-flow
+  serialize across HBP and be consumed by `openwepp-cli-watershed`." The hourly
   EVENT surface designed here is the shared vehicle — design it once so both the
   sediment hydrograph and an optional hourly water-temperature channel ride the same
   versioned schema extension rather than two separate migrations.
