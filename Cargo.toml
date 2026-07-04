@@ -72,6 +72,7 @@ openwepp-runner = { path = "crates/openwepp-runner", version = "0.1.0" }
 
 [dev-dependencies]
 flate2 = "1.1.0"
+arrow-array = "54.2.1"
 arrow-schema = "54.2.1"
 parquet = "54.2.1"
 serde = { version = "1", features = ["derive"] }
@@ -293,6 +294,10 @@ path = "tests/integration/dff_ws3_directional_burn_validation.rs"
 [[test]]
 name = "erod16_wave1_continuity_fixture_conservation"
 path = "tests/integration/erod16_wave1_continuity_fixture_conservation.rs"
+
+[[test]]
+name = "erosion_single_ofe_p61_sediment"
+path = "tests/integration/erosion_single_ofe_p61_sediment.rs"
 
 [[test]]
 name = "cli03_runner_contract_derived_tests"

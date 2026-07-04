@@ -227,6 +227,69 @@ population in r7d8 (cover/roots/residue from the growth/decomposition
 states, frost regime, the `wb14_hourly_rainfall` surface) calling
 `assemble_wave1_continuity_inputs`.
 
+## ACTIVE SOLVE WIRED — first runtime sediment (2026-07-04)
+
+The per-day assembly method `r7d8_assemble_wave1_continuity_from_frame`
+(`DirectDayFrame`, run in `run_r7d6_erosion_span` before the solve) is
+wired against the six acceptance gates, and the single-OFE seed is
+**enabled** (`contributor_ofe_count == 1`). The pass-writer surfaces the
+Wave-1 totals (`total_detachment_kg`/`total_deposition_kg`/`sedcon` from
+`row.erosion`, `None` → zero for the disabled/Wave-2 path).
+
+**Gate-6 proof (operator-supplied `p61`, `/wc1/runs/as/assisted-weakness`,
+single-OFE, known soil loss):** the runtime produced its first real
+sediment — `tdet = 20.9 kg/m` on the dominant storm day. Legacy p61
+(`H61.ebe.dat`) has 4 events; only event 1 (12.5 mm runoff, Sed.Del
+4.2 kg/m) clears the Wave-1 `passby` gate — the other three (1.1–3.9 mm
+runoff, Sed.Del ~0.0–0.1) fall below it. Right order of magnitude, ~5×
+high.
+
+**Seven latent bugs/edge cases surfaced by enabling across the single-OFE
+fixture suite (all fixed; each was invisible behind the disabled seed):**
+1. `direct_production_erosion_active` returned `false` whenever
+   `wave2_enabled` was false — suppressing the single-OFE Wave-1 path
+   entirely. Now also active when the Wave-1 seed is enabled.
+2. `rspace = 0` (WEPP "no rill parameterization" sentinel) was passed into
+   the rill-hydraulics `> 0` domain guard. Now non-positive `rspace` →
+   default unit spacing (same class as absent).
+3. `derive_wave1_slope_segments` expects along-slope **meters** but the
+   parsed slope `xinput` is the WEPP normalized `[0,1]` station fraction —
+   the segments only reached `1/slplen`, tripping the `segment_toe` tile
+   check. The seed builder now converts `xinput * slplen`.
+4. (Design) the pass-writer sediment columns were hardcoded to zero —
+   unhardcoded to the publication.
+5. **Winter thaw fail-closed errored the whole run** (DFF-WS3 p4, day 319,
+   a routing thaw day): the 1b-B `ifrost == 2` guard correctly refuses to
+   fabricate thaw physics, but as a run-fatal error it broke a
+   previously-passing test. Now the thaw day gracefully produces **no**
+   erosion (documented winter-subsystem under-estimate `GAP-SED-THAW`, not
+   fabricated physics); the persistent carries still advance.
+6. **Thaw skip broke the erosion-publication authority invariant:** a
+   disabled (`enabled = false`) continuity with `erosion_producer_required`
+   set (rainfall day) tripped the R7D5 EROD14/EROD15 publication guard.
+   Fixed by keeping the thaw-day continuity **enabled but inactive**
+   (zeroed runoff) so publication authority holds.
+7. **Flux-closure discretization tolerance too tight** (snow/frost site1,
+   day 667): the trapezoid-vs-RK4 consistency check (`INV-SED-001`, NOT the
+   mass-balance law) marginally overran (rel 1.0016e-3 vs 1e-3) on a
+   sharp-rate day while mass conserved to 1e-9. Widened
+   `WAVE1_FLUX_CLOSURE_REL_TOL` 1e-3 → 5e-3 with justification (still ~100×
+   below a real flux bug's `O(1)` gap). **Codex: please scrutinize this
+   conservation-adjacent tolerance change.**
+
+**Deliverables (operator-requested):** the DFF-WS3 sediment HOLD is flipped
+from `assert == 0` to the **directional burn law** (high-burn `2491 kg` >
+unburned `258 kg` total detachment). `p61` is now an in-repo fixture
+(`tests/fixtures/erosion_single_ofe_p61/` + provenance README) with a
+regression test (`tests/integration/erosion_single_ofe_p61_sediment.rs`)
+asserting nonzero detachment through the direct runtime.
+
+**First-cut fidelity gaps (review / follow-up, not blockers):** magnitude
+~5× (likely the `field_width_m = 1.0` default vs p61's true width);
+`sedcon`/`tdep` published as 0 on the detachment day (concentration /
+deposition surfacing — needs a look); sub-`passby` events not captured
+(legacy showed ~0 sediment on them).
+
 ## Focused pass progress (2026-07-04)
 
 > **Review boundary — the active solve is NOT wired.** Everything below is

@@ -1034,11 +1034,14 @@ fn direct_production_wave1_operand_seed(
     )
     .map_err(|e| seed_blocked(format!("erosion consolidation baselines failed: {e}")))?;
 
-    // Normalized slope segments (`profil.for` fit).
+    // Normalized slope segments (`profil.for` fit). The parsed slope
+    // `xinput` is the WEPP normalized [0, 1] station fraction, but
+    // `derive_wave1_slope_segments` expects the along-slope position in
+    // METERS (it divides by `slplen` to normalize) — convert here.
     let points: Vec<(f64, f64)> = slope_ofe
         .points
         .iter()
-        .map(|p| (p.xinput, p.slpinp))
+        .map(|p| (p.xinput * slope_ofe.slplen_m, p.slpinp))
         .collect();
     let segments = openwepp_hillslope_orchestrator::derive_wave1_slope_segments(
         &points,
@@ -1064,6 +1067,10 @@ fn direct_production_wave1_operand_seed(
         FIRST_OFE_INDEX,
         "rspace",
     )
+    // A non-positive `rspace` is the WEPP "no rill parameterization"
+    // sentinel (same class as absent) — use the default unit spacing
+    // rather than passing 0 into the rill-hydraulics domain guard.
+    .filter(|value| *value > 0.0)
     .unwrap_or(WEPP_DEFAULT_RILL_SPACING_M);
 
     // Static rill-friction cover constants (`hmax`/`flivmx`); a burned
@@ -1163,13 +1170,20 @@ fn direct_production_typed_erosion_authority(
     // SC-SED-001 1b-C: build the static Wave-1 operand seed on every lane
     // (the disabled seed is validated against real parsed inputs across the
     // full fixture suite). The per-day assembly consumes it once enabled.
-    let wave1_operand_seed = direct_production_wave1_operand_seed(
+    let mut wave1_operand_seed = direct_production_wave1_operand_seed(
         parsed_soil,
         soil,
         slope,
         management_projection,
         peak_runoff,
     )?;
+    // SC-SED-001 1b-C activation gate (Codex-scoped): enable the Wave-1
+    // sediment-continuity solve for the SINGLE-OFE hillslope only
+    // (`contributor_ofe_count == 1`). Multi-OFE erosion routing stays the
+    // Wave-2 (EROD14) path; MOFE Wave-1 is a later increment. The per-day
+    // assembly is a pure downstream consumer, so non-sediment surfaces stay
+    // byte-identical.
+    wave1_operand_seed.enabled = contributor_ofe_count == 1;
     Ok(DirectProductionErosionAuthority {
         wave2_enabled,
         erosion_inputs: DirectErosionInputs {

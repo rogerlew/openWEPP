@@ -2,10 +2,42 @@ use crate::constants::WB11_ZERO_THRESHOLD;
 
 use super::{
     DIRECT_AUDIT, DIRECT_R7D6_EROSION_PHASE_SPAN_COUNT, DirectDayFrame,
-    DirectPublicationErosionOperands, DirectRuntimeError, DirectWave1ContinuityInputs,
-    DirectWave1ContinuityState, DirectWave1OperandSeed, compute_direct_wave1_continuity,
-    validate_finite, validate_nonnegative_direct_m,
+    DirectErosionConsolidationCarry, DirectPublicationErosionOperands, DirectRuntimeError,
+    DirectWave1ContinuityInputs, DirectWave1ContinuityState, DirectWave1DailyState,
+    DirectWave1OperandSeed, ErosionExcessInterval, ErosionFrostInputs, ErosionFrostRegime,
+    ErosionRfcumInputs, advance_erosion_consolidation, assemble_wave1_continuity_inputs,
+    compute_direct_wave1_continuity, resolve_erosion_frost_regime, validate_finite,
+    validate_nonnegative_direct_m,
 };
+
+// SC-SED-001 1b-C: one hourly bin (`DC01_HOUR_BIN_COUNT` × 1 h).
+const EROSION_HOUR_BIN_S: f64 = 3600.0;
+
+/// Build the erosion rainfall-excess intervals for one day from the WB14
+/// per-hour excess + rainfall surfaces (`reid.for` basis for `effint`/
+/// `effdrr`). One 1 h interval per hour that saw excess or rainfall; the
+/// `effint` producer selects the excess-period hours itself. Snowmelt
+/// exclusion is a recorded follow-up (`snowmelt_active = false` first cut).
+fn build_erosion_excess_intervals(
+    hourly_excess_m: &[f64; 24],
+    hourly_rainfall_m: &[f64; 24],
+) -> Vec<ErosionExcessInterval> {
+    let mut intervals = Vec::new();
+    for hour in 0..24 {
+        let excess_m = hourly_excess_m[hour];
+        let rainfall_m = hourly_rainfall_m[hour];
+        if excess_m <= 0.0 && rainfall_m <= 0.0 {
+            continue;
+        }
+        intervals.push(ErosionExcessInterval {
+            duration_s: EROSION_HOUR_BIN_S,
+            rainfall_intensity_m_s: rainfall_m / EROSION_HOUR_BIN_S,
+            excess_m,
+            snowmelt_active: false,
+        });
+    }
+    intervals
+}
 
 const DIRECT_EROSION_CLASS_LIMIT: usize = 5;
 const DIRECT_EROD13_CONTINUITY_TOLERANCE: f64 = 1.0e-9;
@@ -328,6 +360,11 @@ impl DirectDayFrame {
         let phase_count = DIRECT_R7D6_EROSION_PHASE_SPAN_COUNT;
         let mut phase_entry_count = 0_u64;
 
+        // SC-SED-001 1b-C: assemble the per-day Wave-1 continuity inputs
+        // (advancing the persistent carry) before the solve. No-op when the
+        // seed is disabled.
+        self.r7d8_assemble_wave1_continuity_from_frame()?;
+
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
         let erosion = self.compute_r7d6_erosion()?;
@@ -367,6 +404,145 @@ impl DirectDayFrame {
             compatibility_edge_invocation_count: 0,
             erosion_shadow_projection,
         })
+    }
+
+    /// SC-SED-001 1b-C: assemble the per-day Wave-1 continuity inputs from
+    /// the static operand seed + the daily frame surfaces + the persistent
+    /// carry, advancing the carry. Runs every day when the seed is enabled
+    /// (the consolidation age advances daily per `soil.for`, independent of
+    /// runoff); the assembly itself gates internally on routing days. No-op
+    /// when the seed is disabled.
+    fn r7d8_assemble_wave1_continuity_from_frame(&mut self) -> Result<(), DirectRuntimeError> {
+        if !self.erosion_inputs.wave1_operand_seed.enabled {
+            return Ok(());
+        }
+
+        let mut carry = self.erosion_runtime_carry;
+
+        // Seed the consolidation age from `daydi1` on the first day (the
+        // lane carry starts inert); it advances daily thereafter.
+        if self.day_index == 0 {
+            carry.consolidation = DirectErosionConsolidationCarry::seed(
+                self.erosion_inputs.wave1_operand_seed.initial_daydis,
+            )?;
+        }
+
+        // Gate 1: advance `rfcum`/`daydis` EVERY day (`soil.for` runs daily,
+        // independent of runoff). Forest: no irrigation, no tillage.
+        carry.consolidation = advance_erosion_consolidation(
+            carry.consolidation,
+            &ErosionRfcumInputs {
+                precipitation_m: self.forcing.precipitation_m,
+                irrigation_depth_m: 0.0,
+                mean_temperature_c: self.forcing.effective_temperature_c,
+                irrigation_is_furrow: false,
+                tillage_surface_disturbance: None,
+            },
+        )?;
+
+        // Gate 2: resolve `ifrost` from DIMENSIONLESS top-layer water
+        // (`theta_m / depth_m`) vs field-capacity theta, typed-guarded.
+        let (surface_layer_water, surface_layer_thetfc) = self
+            .subsurface_compute
+            .layer_state_after
+            .first()
+            .map_or((0.0, 1.0), |layer| {
+                let volumetric = if layer.depth_m > 0.0 {
+                    layer.theta_m / layer.depth_m
+                } else {
+                    0.0
+                };
+                (volumetric.max(0.0), layer.field_capacity_theta.max(0.0))
+            });
+        let (frost_depth_m, thaw_depth_m) = self
+            .frost_runtime_carry
+            .as_ref()
+            .map_or((0.0, 0.0), |frost| {
+                (frost.dfrost_m.max(0.0), frost.dthaw_m.max(0.0))
+            });
+        let (frost_regime, new_ifrost) = resolve_erosion_frost_regime(
+            &ErosionFrostInputs {
+                frost_depth_m,
+                thaw_depth_m,
+                surface_layer_water,
+                surface_layer_thetfc,
+            },
+            carry.ifrost,
+        )?;
+        carry.ifrost = new_ifrost;
+
+        // Winter boundary (confirmed hold): the actively-thawing regime
+        // (`soil.for ifrost == 2`) needs the winter `fcycle` freeze-thaw
+        // cycle counter, which the direct runtime does not produce. Rather
+        // than fabricate it (forbidden) or fail the whole run, produce NO
+        // erosion on a thaw day — a documented winter-subsystem
+        // under-estimate, not fabricated physics. The persistent carries
+        // still advanced above (so the age/ifrost lineage stays faithful);
+        // only this day's sediment is skipped. Surfacing thaw-day erosion
+        // is a winter-subsystem work package (`GAP-SED-THAW`).
+        if frost_regime == ErosionFrostRegime::Thawing {
+            // Keep the continuity ENABLED (so the erosion publication
+            // authority holds — `erosion_producer_required` is set on
+            // rainfall days) but zero the runoff so the solver gates
+            // inactive: enabled + no runoff => no sediment, no fabricated
+            // thaw physics, run completes.
+            let mut inert = DirectWave1ContinuityInputs::zero();
+            inert.enabled = self.erosion_inputs.wave1_operand_seed.enabled;
+            *self.erosion_inputs.wave1_continuity = inert;
+            self.erosion_runtime_carry = carry;
+            return Ok(());
+        }
+
+        // Gate 3: build `DirectWave1DailyState` ONLY from verified frame
+        // surfaces.
+        let peak = self.peak_runoff_shadow_projection.as_ref();
+        let growth = if self.perennial_growth_inputs.active_context.is_active() {
+            &self.perennial_growth.state_after
+        } else {
+            &self.annual_growth.state_after
+        };
+        let canopy_height_m = self
+            .evapotranspiration_compute_inputs
+            .pmet_compute
+            .as_ref()
+            .map_or(0.0, |pmet| pmet.canopy_height_m);
+        let residue = &self.residue_partition;
+        let seed = &self.erosion_inputs.wave1_operand_seed;
+        let precipitation_m = self.forcing.precipitation_m;
+
+        let daily = DirectWave1DailyState {
+            peakro_m_s: peak.map_or(0.0, |p| p.peak_runoff_m3_s),
+            runoff_depth_m: peak.map_or(0.0, |p| p.q_runoff_m),
+            effdrn_s: peak.map_or(0.0, |p| p.runoff_duration_s),
+            qin_m2_s: 0.0,
+            excess_intervals: build_erosion_excess_intervals(
+                &self.wb14_hourly_excess_m,
+                &self.wb14_hourly_rainfall_m,
+            ),
+            canopy_cover_fraction: growth.canopy_cover_fraction,
+            canopy_height_m,
+            interrill_cover_fraction: residue.cover_fraction,
+            rill_cover_fraction: residue.cover_fraction,
+            live_root_mass_kg_m2: growth.root_mass_kg_m2,
+            dead_root_mass_kg_m2: residue.root_residue_kg_m2,
+            buried_residue_mass_kg_m2: residue.buried_residue_kg_m2,
+            random_roughness_m: seed.random_roughness_m,
+            rill_width_prior_m: carry.rill_width_m,
+            days_since_disturbance: carry.consolidation.daydis,
+            frost_regime,
+            // Snow-cover interrill suppression is a recorded follow-up.
+            theta_suppressed: false,
+            beta: if precipitation_m > 0.0 { 0.5 } else { 1.0 },
+            strldn: 0.0,
+        };
+
+        let continuity = assemble_wave1_continuity_inputs(seed, &daily)?;
+        // Gate 5: persist the rill width from the assembled/solved day
+        // result (unchanged on non-routing days; grown on routing days).
+        carry.rill_width_m = continuity.width_m;
+        *self.erosion_inputs.wave1_continuity = continuity;
+        self.erosion_runtime_carry = carry;
+        Ok(())
     }
 
     fn compute_r7d6_erosion(&self) -> Result<DirectErosionState, DirectRuntimeError> {
@@ -435,17 +611,11 @@ impl DirectDayFrame {
             inputs.wave1.peakro_m3_s = peak_runoff.peak_runoff_m3_s;
             inputs.wave1.watdur_s = peak_runoff.runoff_duration_s;
         }
-        if inputs.wave1_continuity.enabled {
-            // Runoff authority for the spatial solve: `peakro` and the
-            // event runoff depth drive activation and `qout`; `effdrn`
-            // is the legacy `runoff/peakro` duration, which is the WB16
-            // `runoff_duration_s` surface (`irs.for:725`). `effdrr`
-            // (rainfall-excess duration) remains a seed-supplied operand
-            // until the Increment-1b operand-production port exposes it.
-            inputs.wave1_continuity.peakro_m_s = peak_runoff.peak_runoff_m3_s;
-            inputs.wave1_continuity.runoff_depth_m = peak_runoff.q_runoff_m;
-            inputs.wave1_continuity.effdrn_s = peak_runoff.runoff_duration_s;
-        }
+        // SC-SED-001 1b-C: `wave1_continuity` is now fully populated by the
+        // per-day assembly (`r7d8_assemble_wave1_continuity_from_frame`,
+        // run before this in the erosion span), which sources the runoff
+        // authority itself. The Increment-1 runoff-only threading stopgap
+        // is removed.
         if inputs.wave2_enabled {
             inputs.wave2.peak_runoff_m3_s = peak_runoff.peak_runoff_m3_s;
             inputs.wave2.runoff_duration_s = peak_runoff.runoff_duration_s;

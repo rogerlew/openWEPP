@@ -98,7 +98,7 @@ fn dff_ws3_mckenzie_bridge_matrix_fixture_catalog_is_complete() {
 }
 
 #[test]
-fn dff_ws3_representative_clay_loam_documents_runoff_peak_and_sediment_hold() {
+fn dff_ws3_representative_clay_loam_documents_runoff_peak_and_directional_sediment() {
     let unburned = run_matrix_cell(1, "dff_ws3_p1_unburned");
     let high_burn = run_matrix_cell(4, "dff_ws3_p4_high_burn");
 
@@ -126,26 +126,32 @@ fn dff_ws3_representative_clay_loam_documents_runoff_peak_and_sediment_hold() {
         unburned.metrics.max_daily_runoff_m3
     );
 
-    assert_eq!(
-        high_burn.metrics.total_detachment_kg, 0.0,
-        "HOLD-DFF-WS3-SEDIMENT-PRODUCTION: sediment ordering waits on proper Wave-1/Wave-2 production"
+    // SC-SED-001 1b-C: the sediment HOLD is FLIPPED — the single-OFE Wave-1
+    // continuity solve now produces erosion, and the WS-3 directional burn
+    // law extends to sediment: the high-severity burn detaches far more
+    // than the unburned cell (cover loss -> higher erodibility).
+    assert!(
+        high_burn.metrics.total_detachment_kg > 0.0,
+        "WS-3 flipped hold: high-burn cell must produce detachment, got {}",
+        high_burn.metrics.total_detachment_kg
     );
-    assert_eq!(
-        unburned.metrics.total_detachment_kg, 0.0,
-        "HOLD-DFF-WS3-SEDIMENT-PRODUCTION: sediment ordering waits on proper Wave-1/Wave-2 production"
+    assert!(
+        unburned.metrics.total_detachment_kg > 0.0,
+        "WS-3 flipped hold: unburned cell must produce detachment, got {}",
+        unburned.metrics.total_detachment_kg
     );
-    assert_eq!(
-        high_burn.metrics.total_deposition_kg, 0.0,
-        "HOLD-DFF-WS3-SEDIMENT-PRODUCTION: sediment ordering waits on proper Wave-1/Wave-2 production"
+    assert!(
+        high_burn.metrics.total_detachment_kg > unburned.metrics.total_detachment_kg,
+        "WS-3 directional sediment law: high burn {} kg must exceed unburned {} kg",
+        high_burn.metrics.total_detachment_kg,
+        unburned.metrics.total_detachment_kg
     );
-    assert_eq!(
-        unburned.metrics.total_deposition_kg, 0.0,
-        "HOLD-DFF-WS3-SEDIMENT-PRODUCTION: sediment ordering waits on proper Wave-1/Wave-2 production"
-    );
-    assert_eq!(
-        high_burn.metrics.max_sediment_concentration_kg_m3, 0.0,
-        "HOLD-DFF-WS3-SEDIMENT-PRODUCTION: sediment ordering waits on proper Wave-1/Wave-2 production"
-    );
+    // First-cut gaps (recorded follow-up, not yet surfaced by the single-OFE
+    // Wave-1 publication): deposition and the 5-class sediment
+    // concentration. Assert finite / nonnegative for now.
+    assert!(high_burn.metrics.total_deposition_kg >= 0.0);
+    assert!(unburned.metrics.total_deposition_kg >= 0.0);
+    assert!(high_burn.metrics.max_sediment_concentration_kg_m3 >= 0.0);
 }
 
 struct FixtureRun {

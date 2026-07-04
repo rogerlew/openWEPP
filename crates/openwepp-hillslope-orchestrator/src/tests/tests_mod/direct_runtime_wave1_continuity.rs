@@ -422,12 +422,16 @@ fn wave1_span_publishes_continuity_totals_through_the_frame() {
         .expect("valid direct publication identity should construct");
     let mut day = DirectDayFrame::seed(identity, 0, 0).expect("valid direct day should construct");
 
-    // The runoff authority overrides peakro/runoff/effdrn from the WB16
-    // shadow projection (r7d8); leave them zeroed in the seed payload.
+    // SC-SED-001 1b-C: the per-day assembly now owns the full
+    // `wave1_continuity` population (including the runoff authority), and it
+    // no-ops when the operand seed is disabled (as here). This test crafts
+    // the continuity directly, so the storm runoff authority is set on the
+    // crafted payload (matching the shadow projection below) rather than
+    // relying on the removed Increment-1 r7d8 runoff-threading stopgap.
     let mut continuity = crafted_wave1_inputs();
-    continuity.peakro_m_s = 0.0;
-    continuity.runoff_depth_m = 0.0;
-    continuity.effdrn_s = 0.0;
+    continuity.peakro_m_s = 1.0e-5;
+    continuity.runoff_depth_m = 0.02;
+    continuity.effdrn_s = 2000.0;
     *day.erosion_inputs.wave1_continuity = continuity;
     day.peak_runoff_shadow_projection = Some(DirectPeakRunoffShadowProjection {
         lane_index: 0,

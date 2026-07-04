@@ -750,9 +750,16 @@ fn build_hillslope_pass_row_from_direct_publication(
                 .peak_runoff_m3_s
                 .or(row.erosion.peak_runoff_m3_s),
         )?,
-        total_detachment_kg: 0.0,
-        total_deposition_kg: 0.0,
-        sediment_concentration_kg_m3: [0.0; 5],
+        // SC-SED-001 1b-C: surface the Wave-1 sediment-continuity totals
+        // when the single-OFE solve is active; `None` (disabled / multi-OFE
+        // Wave-2 path) keeps the prior zeroed sediment columns, so
+        // non-sediment columns stay byte-identical.
+        total_detachment_kg: row.erosion.total_detachment_kg.unwrap_or(0.0),
+        total_deposition_kg: row.erosion.total_deposition_kg.unwrap_or(0.0),
+        sediment_concentration_kg_m3: row
+            .erosion
+            .sediment_concentration_kg_m3
+            .unwrap_or([0.0; 5]),
     })
 }
 

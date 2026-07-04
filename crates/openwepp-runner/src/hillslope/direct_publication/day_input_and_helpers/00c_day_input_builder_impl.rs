@@ -975,7 +975,14 @@ fn direct_production_erosion_active(
     authority: &DirectProductionLaneDayInputAuthority,
     day_input: &DirectPublicationDayInput,
 ) -> Result<bool, HillslopeCliError> {
-    if !authority.erosion.wave2_enabled {
+    // SC-SED-001 1b-C: erosion is active when EITHER the multi-OFE Wave-2
+    // router is on OR the single-OFE Wave-1 sediment-continuity seed is
+    // enabled. The prior `wave2_enabled`-only gate suppressed the
+    // single-OFE Wave-1 path entirely (`wave2_enabled` is false for one OFE),
+    // so the seed never reached the day frame.
+    if !authority.erosion.wave2_enabled
+        && !authority.erosion.erosion_inputs.wave1_operand_seed.enabled
+    {
         return Ok(false);
     }
     let rainfall_m = direct_publication_hyetograph_rainfall_m(
