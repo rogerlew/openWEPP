@@ -714,15 +714,25 @@ fn payload_validator_header_guards_are_typed() {
         "payload and directory key mismatch",
     );
 
+    // SC-INFILE-HBP-001 v0.2.0: payload minor 1 is now SUPPORTED (the
+    // ADR-0036 hourly extension), so the unsupported-minor guard probes
+    // the new boundary (minor 2) — a newer payload is still rejected
+    // loudly, never silently mis-parsed.
     let mut bytes = build_schema1_fixture(1);
     mutate_schema1_payload(&mut bytes, |payload| {
-        put_u16_at(payload, 11, 1);
+        put_u16_at(payload, 11, 2);
     });
     assert_layout_format_error(
         &bytes,
         HbpFormatErrorCode::HbpE013,
         "unsupported payload minor",
     );
+
+    // A NO-EVENT payload claiming minor 1 parses (there is no runoff body
+    // to mis-read); the runoff-body fail-closed behavior for a minor-1
+    // claim without the hourly block is exercised by the strict
+    // count-prefixed reads (count-mismatch on the reserved i64 region) —
+    // covered end-to-end by the p61 minor-1 round-trip.
 }
 
 #[test]
@@ -770,8 +780,11 @@ fn layout_header_control_fields_fail_closed_with_specific_codes() {
         "unsupported schema major",
     );
 
+    // SC-INFILE-HBP-001 v0.2.0: header minor 1 is now supported (the
+    // ADR-0036 hourly extension); the unsupported-minor guards probe the
+    // new boundary (minor 2).
     let mut bytes = build_schema1_fixture(1);
-    put_u16_at(&mut bytes, 10, 1);
+    put_u16_at(&mut bytes, 10, 2);
     assert_layout_format_error(
         &bytes,
         HbpFormatErrorCode::HbpE004,
@@ -779,7 +792,7 @@ fn layout_header_control_fields_fail_closed_with_specific_codes() {
     );
 
     let mut bytes = build_schema2_fixture(1);
-    put_u16_at(&mut bytes, 10, 1);
+    put_u16_at(&mut bytes, 10, 2);
     assert_layout_format_error(
         &bytes,
         HbpFormatErrorCode::HbpE004,

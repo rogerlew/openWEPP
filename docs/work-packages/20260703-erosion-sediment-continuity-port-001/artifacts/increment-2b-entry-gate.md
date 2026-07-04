@@ -156,7 +156,54 @@ lands.
   + reconstruction identity); full AGENTS battery; branch push, no
   self-merge.
 
-## 4. Hold criteria
+## 4. Execution record (Ran, 2026-07-04, branch `erosion-e2-hydrograph-substrate`)
+
+Executed 2b-1 → 2b-4 in one pass; no hold criteria hit.
+
+- **2b-1 contracts** (`26714982`): SC-SED-001 v43 (INV-SED-013/014/015,
+  GAP-SED-008, the DC01 shape-authority REF), SC-INFILE-HBP-001 v0.2.0 +
+  spec v0.2.0 (§3a field block), SC-ROUTE-001 v46 (conditional
+  INV-ROUTE-005).
+- **2b-2 hourly solve** (`6029e76b` + `30a9fd02`): shared
+  `dc01_surface_runoff_hourly_weights` authority (transfer path
+  byte-identical — same pure fn); per-hydraulically-active-hour plan +
+  quantum solve entries (solver AND assembly passby-exempt — the
+  Increment-1 gate-mismatch class re-caught at hour scale during
+  bring-up when the day-gated assembly fed inert payloads to the
+  exempt solver); trace hours excluded below the WB16 negligible-runoff
+  bound (documented: cannot route, CAN underflow the routed-operand
+  domain — first-storm Gilley width); hourly chain owns the persistent
+  width; day aggregates = hour sums; paired publication surfaces.
+  **Latent gate fix**: the publication-closure scale omitted
+  inflow/deposition — degenerate (absolute ~1e-18) on the first
+  pure-deposition quantum ever reachable; scale now spans all four
+  identity operands. **Acceptance driver Ran**: the full-reinfiltration
+  quantum (`qout = 0`, `qin > 0`, `xinflo.for:206` basis) deposits the
+  incoming load with zero export and exact telescoping closure; the
+  falling-limb quantum (`qin > qout > 0`) deposits — no clamp anywhere.
+  p61 hourly-form `tdet = 18,180.5 kg` (peak-form was 15,148.1 — the
+  expected solve-form magnitude shift, structure-gated); DFF-WS3
+  directional law and the E.1 reconstruction identity hold.
+- **2b-3 HBP minor-1** (`e929f0fb`): writer/parser/intake per §1.2;
+  **amendment correction made during implementation** — the §8.5 intake
+  closure was re-specified from concentration×volume (embeds the
+  producer's `efflen`/`slplen` geometry) to the volume-free sediment
+  telescoping `Σ S_h = tdet − tdep`; contract text updated with the
+  code. Round-trip Ran on p61: minor 1, npart 5, `Σ V_h = runvol` at
+  1e-9, `Σ S_h = tdet − tdep`, normalized fractions, real composition
+  diameters. Minor-0 lanes byte-stable.
+- **2b-4 watershed** (`a9690af2`): WS20 hourly superposition
+  (`max_h Σ V_h / 3600` peak, exact volume integral, active-span time
+  base) behind the whole-inlet INV-ROUTE-005 eligibility; rectangular
+  fallback for any minor-0 contributor or dependency-carrying inlet;
+  provenance flag. Note the entry-gate §1.3 latent watershed defect
+  (depth-scale volume aggregation) is FIXED on the hourly path (true-m³
+  `V_h`) and remains on the fallback path for minor-0 shards — a
+  documented fallback-scope caveat, not a regression.
+- Frame growth documented at the R7B guard (lane 1408→1760, day
+  13248→15448; the paired publication surfaces + weights + plan).
+
+## 5. Hold criteria
 
 1. The weight-based closure fails materially on real fixtures
    (`|Σ V_h − runvol|` beyond rounding) — would falsify the shared-shape

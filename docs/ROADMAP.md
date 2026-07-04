@@ -746,17 +746,18 @@ falling-limb deposition and the multi-OFE `qin/qout` become ordinary hour-resolv
 balances (retiring the clamp as a *fix*, not a bound), and the watershed routes the
 real shape, not a triangle. Cross-cutting (SC-SED-001 + HBP + SC-ROUTE-001);
 contract-first (ADR + amendments before code). **ADR-0036 RATIFIED
-([Accepted 2026-07-04](decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md)
-after a two-round Codex design review): per-hour quasi-steady Wave-1 on
-hydraulically-active hours (`excess_h > 0 ∨ qin_h > 0`, covering
-full-reinfiltration hours); one additive HBP EVENT extension carrying the
-PAIRED hourly surfaces `V_h` (runoff volume, m³) + `S_h` (sediment mass, kg)
-so routing never reconstructs sediment timing implicitly, bundled with the
-npart-resolved per-class sedcon/frcflw + the peak-units fix; conditional
-`INV-ROUTE-005` with triangular fallback; integral closures `Σ V_h = runvol` /
-`Σ S_h = event mass` as the hard ties, no peakro rescale; Investigation-tier
-comparator. NEXT: the three contract amendments (SC-SED-001,
-SC-INFILE-HBP-001 + hbp spec, SC-ROUTE-001), then staged 2b execution.** Concept:
+([Accepted 2026-07-04](decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md))
+and 2b EXECUTED the same day — BUILT + GATED on branch
+`erosion-e2-hydrograph-substrate`, AWAITING CODEX REVIEW:** the three
+contract amendments landed first (SC-SED-001 v43, SC-INFILE-HBP-001
+v0.2.0 + spec, SC-ROUTE-001 v46), then the per-hydraulically-active-hour
+Wave-1 solve on the shared DC01 shape authority (the
+full-reinfiltration and falling-limb quanta deposit with NO clamp — the
+acceptance driver, Ran), the HBP minor-1 paired `V_h`/`S_h` EVENT
+extension (p61 round-trip: `Σ V_h = runvol` at 1e-9,
+`Σ S_h = tdet − tdep`), and hour-resolved watershed inlet superposition
+with the whole-inlet triangular fallback. Detail:
+[`increment-2b-entry-gate.md`](work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2b-entry-gate.md). Concept:
 [`backlog/20260704-hydrograph-resolved-sediment-and-routing.md`](backlog/20260704-hydrograph-resolved-sediment-and-routing.md).
 *Structural, and the natural substrate for E.3 and for Hairsine-Rose.*
 

@@ -189,13 +189,26 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
   once with E.2's hourly redesign, which also inherits the
   `peak_runoff_m3_s` depth-rate unit question). Design + adjudications in
   [`artifacts/increment-1c-entry-gate.md`](artifacts/increment-1c-entry-gate.md).
-- **Increment 2 — multi-OFE integration.** Wire **Wave-1** across OFEs as the
-  per-OFE continuity engine (`G_out→ldtop` load, `qout→qin` discharge, particle
-  handoff), reusing the existing EROD14/Wave-2 routing plumbing, then retire Wave-2
-  as a separate physics arm. Coupled to the **hourly-flow substrate** (the
-  decreasing-flow/`qout<qin` deposition is per-hour) — carry the modeled hourly
-  flow through erosion → HBP → routing instead of the single-peak collapse. Full
-  architecture + open-decision resolution in
+- **Increment 2b (ROADMAP §E.2, ADR-0036) — hydrograph substrate: BUILT +
+  GATED on branch `erosion-e2-hydrograph-substrate`, 2026-07-04
+  (Claude-executed, operator-directed "scaffold and execute E.2");
+  AWAITING CODEX REVIEW.** Contracts-then-code in one staged pass: the
+  three amendments (SC-SED-001 v43, SC-INFILE-HBP-001 v0.2.0 + spec,
+  SC-ROUTE-001 v46) → the per-hydraulically-active-hour Wave-1 solve on
+  the shared DC01 shape authority (day totals = hour sums; the
+  full-reinfiltration and falling-limb quanta DEPOSIT with no clamp —
+  the ADR acceptance driver, Ran) → the HBP minor-1 paired `V_h`/`S_h`
+  EVENT extension (npart = 5 per-class, true-volumetric peak; p61
+  round-trip with both integral closures) → hour-resolved watershed
+  inlet superposition with the whole-inlet triangular fallback. Detail +
+  the in-flight corrections (closure-scale latent gate fix, the §8.5
+  intake-closure re-specification) in
+  [`artifacts/increment-2b-entry-gate.md`](artifacts/increment-2b-entry-gate.md).
+- **Increment 2c/2d — multi-OFE integration (NEXT).** Wire **Wave-1** across
+  OFEs as the per-OFE continuity engine (`G_out→ldtop` load, `qout→qin`
+  discharge — now hour-resolved on the 2b substrate — particle handoff),
+  reusing the existing EROD14/Wave-2 routing plumbing, then retire Wave-2
+  as a separate physics arm. Full architecture + open-decision resolution in
   [`artifacts/increment-2-entry-gate.md`](artifacts/increment-2-entry-gate.md);
   cross-cutting substrate concept in
   [`docs/backlog/20260704-hydrograph-resolved-sediment-and-routing.md`](../../backlog/20260704-hydrograph-resolved-sediment-and-routing.md).
@@ -223,6 +236,14 @@ production authority.
 - Push branch for Codex review before merge; do not self-merge to main.
 
 ## Line-count governance dispositions
+
+- **`crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_continuity.rs`
+  crossed the 2000-line WARN threshold (1977 → 2031) in E.2/2b-2**, from the
+  quantum solve entry + the qin-activation limbs. WARN, not BLOCK.
+  Disposition: **accepted; the split rides E.3** — the Increment-1 notes
+  already scheduled "split with Increment-2", and E.3's multi-OFE chaining
+  is the natural seam (solver core vs. inter-OFE orchestration) rather
+  than a mechanical mid-increment cut.
 
 - **`crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs`
   crossed the 2000-line WARN threshold (1941 → ~2105) in Stage 3a**, from
