@@ -1,7 +1,10 @@
 # ADR-0036: Hydrograph-Resolved Sediment Transport and Channel Routing
 
 Status: **Proposed** (authored 2026-07-04 by Claude Code on operator direction
-"scaffold the E.2 ADR"; pending operator ratification + Codex design review).
+"scaffold the E.2 ADR"; revised same day for the four Codex design-review
+findings — hourly **sediment** co-serialization, the hourly unit definition,
+the hydraulically-active-hour activation rule, and the
+`INV-RUNOFFPART-030/031` attribution; pending operator ratification).
 Contract-first sequencing binds: the SC-SED-001 / SC-INFILE-HBP-001 /
 SC-ROUTE-001 amendments this ADR mandates are authored **before** any code.
 
@@ -17,8 +20,9 @@ Provenance:
 Relates: `SC-SED-001` (erosion consumes the discharge surface), `SC-ROUTE-001`
 (`REF-ROUTE-CH13-PEAKIN` / `INV-ROUTE-005`, the triangular reconstruction being
 demoted), `SC-INFILE-HBP-001` + `hbp-file.spec.md` (the interchange being
-extended), `SC-RUNOFFPART-001` (`wb14_hourly_excess_m`, `INV-RUNOFFPART-030`
-clamp / `INV-RUNOFFPART-031` hourly basis), ADR-0011 (contract-first), ADR-0017
+extended), `SC-RUNOFFPART-001` (`wb14_hourly_excess_m` hourly basis;
+`INV-RUNOFFPART-031` bounded interim clamp under the `INV-RUNOFFPART-030`
+governance hold), ADR-0011 (contract-first), ADR-0017
 (comparator-as-flag), ADR-0033 (OFE-by-OFE overland routing — the per-OFE lane
 this rides), ADR-0035 (the erosion port this continues).
 
@@ -34,9 +38,10 @@ information is discarded three times:
 1. **Erosion (SC-SED-001):** the Wave-1 solve consumes WB16 `peakro` +
    duration; the hourly profile is not an operand. A single peak has no falling
    limb, so recession deposition cannot be represented, and the multi-OFE
-   reinfiltration case (`qout < qin`) is held by the interim
-   `INV-RUNOFFPART-030` clamp — which discards the flow decrease instead of
-   depositing the sediment the lost flow was carrying.
+   reinfiltration case (`qout < qin`) is held by the bounded interim erosion
+   `qin`-to-`qout` clamp (`INV-RUNOFFPART-031` compatibility scope, operating
+   under the `INV-RUNOFFPART-030` governance hold) — which discards the flow
+   decrease instead of depositing the sediment the lost flow was carrying.
 2. **HBP interchange:** the EVENT payload serializes peak + volume + duration —
    a lossy scalar summary of a modeled shape.
 3. **Channel routing (SC-ROUTE-001):** having only the scalars, routing
@@ -67,11 +72,29 @@ channel routing.** Five sub-decisions:
 
 ### D1 — The erosion solve form: per-hour quasi-steady Wave-1
 
-The Wave-1 continuity solve runs **per excess hour** (≤ 24 quasi-steady solves
-per OFE-day, only on hours with excess), consuming that hour's mean discharge
-from the hourly basis; daily totals are the hour sums
-(`tdet/tdep/export = Σ_h`). This — not a hydrograph-integrated transport — is
-the production form, for single-OFE and (in E.3) multi-OFE alike.
+The Wave-1 continuity solve runs **per hydraulically-active hour** (≤ 24
+quasi-steady solves per OFE-day), consuming that hour's mean discharge;
+daily totals are the hour sums (`tdet/tdep/export = Σ_h`). This — not a
+hydrograph-integrated transport — is the production form, for single-OFE and
+(in E.3) multi-OFE alike.
+
+**Activation rule:** an hour is hydraulically active when its **local excess
+is positive OR its inflow discharge is positive** (`excess_h > 0 ∨
+qin_h > 0`). Excess-only activation would skip exactly the case this ADR
+exists to fix: an hour whose incoming runon **fully reinfiltrates** has
+`qout_h = 0` with `qin_h > 0`, and must still solve so the incoming sediment
+load deposits — the legacy `xinflo.for` carries this as its explicit
+`qout <= 0 / qin > 0` branch (`qshear = qin·rspace`, `xinflo.for:150`), and
+the ported solver's `qout <= 0` / negative-`qostar` machinery already
+handles it. Single-OFE lanes are unaffected (`qin ≡ 0` ⇒ active = excess
+hours).
+
+**Hour operand basis:** the frame-internal hourly surfaces are
+hour-integrated **depths** (`wb14_hourly_excess_m[24]`, m per hour slot over
+the OFE). The per-hour solve consumes the hour's **mean depth-rate**
+(`excess_h / 3600 s`, m/s — the same operand slot the daily solve fills with
+WB16 `peakro` today), from which the unit discharge derives as
+`q_h = rate_h · efflen` (m²/s), exactly the existing `xinflo` form.
 
 Rationale:
 - A time-integrated form **cannot represent a falling limb by construction** —
@@ -80,7 +103,9 @@ Rationale:
 - Hour resolution turns the reinfiltration case into the solver's **existing**
   decreasing-flow case: an hour where a downslope OFE absorbs runon
   (`qout < qin`) is an ordinary negative-`qostar` solve that deposits, retiring
-  the `INV-RUNOFFPART-030` clamp as a *fix*, not a bound.
+  the `INV-RUNOFFPART-031` interim clamp as a *fix*, not a bound (and
+  supplying, with E.3's handoff lineage, what the `INV-RUNOFFPART-030`
+  governance hold requires).
 - Cost is bounded and small: excess hours are sparse (storm days, a few hours),
   the solve is a 101-point march over ~5 particle-blind coefficients, and the
   per-OFE-day physics budget is sub-µs-class in the array-native runtime.
@@ -99,19 +124,47 @@ The daily peak-based solve is retired as a physics arm but **retained behind a
 comparator flag** for one transition window (cross-check, then delete),
 mirroring the EROD14 retirement pattern in the Increment-2 entry gate §3.
 
-### D2 — HBP: one additive, versioned EVENT extension
+### D2 — HBP: one additive EVENT extension — paired hourly water + sediment, exact units
 
-The HBP EVENT payload gains a versioned **hourly-discharge surface at the
-hillslope exit** (a bounded 24-slot channel on the same basis as
-`wb14_hourly_excess_m`), added **together with** the other EVENT-schema items
-so the interchange migrates once:
+The HBP EVENT payload gains **two paired 24-slot hourly surfaces at the
+hillslope exit**, serialized on one shared time base:
 
-- the npart-resolved `sedcon`/`frcflw` per-class surfaces (E.1 deferral);
+- **Hourly runoff volume** `V_h` in **m³** (hour-integrated volume, not a
+  rate): unit-unambiguous across the binary boundary, closure
+  `Σ_h V_h = runvol` **exactly** (no Δt convention to mis-apply). Consumers
+  needing a discharge derive the hour-mean `q_h = V_h / 3600 s` (m³/s).
+  (The frame-internal basis remains the per-OFE depth surface; the exit
+  volume is `depth_h × hillslope area`, the same conversion `runvol`
+  already carries.)
+- **Hourly sediment mass** `S_h` in **kg** (hour-integrated exported mass —
+  the D1 per-hour solves produce these natively), closure
+  `Σ_h S_h =` the event exported sediment mass. **Routing must never
+  receive an hourly hydrograph with only event-aggregate sediment**: that
+  would force an implicit sediment-timing reconstruction inside the
+  channel model, where deposition could go wrong while water conservation
+  still passes. Serializing the pair makes the sediment timing an explicit
+  produced surface, not a consumer-side guess.
+
+**Per-class time resolution — explicit first-cut rule:** the per-class
+breakdown of `S_h` is the event-level class-fraction surface (`frcflw`,
+npart-resolved — the E.1 deferral) applied **uniformly across the event's
+hours**. This is a labeled reconstruction rule (recorded as a GAP in the
+SC-SED-001 amendment), not an implicit one: true within-event class
+dynamics only exist once E.4 enrichment makes per-hour deposition vary the
+fractions, at which point a per-class-hourly channel is an **additive**
+extension decided with E.4 — the container is generic precisely so that
+addition is not a schema redesign.
+
+Bundled into the same single migration:
+
+- the npart-resolved `sedcon`/`frcflw` per-class event surfaces (E.1
+  deferral);
 - the peak-discharge unit clarification (serialize a true m³/s or an
-  explicitly-named depth-rate — resolved in the SC-INFILE-HBP-001 amendment,
-  with the frame-side misnomer renamed at the same boundary);
-- a generic hourly-surface container shape, so the stream-temperature backlog
-  (`20260627`) rides the same extension rather than a second migration.
+  explicitly-named depth-rate — resolved in the SC-INFILE-HBP-001
+  amendment, with the frame-side misnomer renamed at the same boundary);
+- a generic hourly-surface container shape (named channels over a shared
+  24-slot base), so the stream-temperature backlog (`20260627`) rides the
+  same extension rather than a second migration.
 
 The extension is **additive** under the HBP spec's versioning (consumers
 feature-detect; schema major/minor mechanics are the SC-INFILE-HBP-001
@@ -120,25 +173,28 @@ serialized): the routing consumer needs the hillslope-exit shape; E.3's per-OFE
 chaining consumes the frame directly. If E.3 falsifies that, extending the
 payload is a second additive minor — not a redesign.
 
-### D3 — Routing: route the serialized modeled hydrograph
+### D3 — Routing: route the serialized modeled hydrograph + sediment pair
 
-`openwepp-cli-watershed` routes the **serialized hourly hydrograph** when the
-shard carries it — superposing real per-hour inflows at channel inlets — and
-falls back to the triangular reconstruction only for shards lacking the
-surface. `INV-ROUTE-005` is amended from "the triangular procedure must be
+`openwepp-cli-watershed` routes the **serialized hourly pair** (`V_h`, `S_h`)
+when the shard carries it — superposing real per-hour water and sediment
+inflows at channel inlets on the shared time base — and falls back to the
+triangular reconstruction (with event-aggregate sediment) only for shards
+lacking the surfaces. `INV-ROUTE-005` is amended from "the triangular procedure must be
 used" (hard-fail) to a **conditional**: modeled-hydrograph superposition when
 the surface is present, triangular as the explicit legacy-shard fallback. The
 peak/volume summaries remain serialized (diagnostics + fallback inputs).
 
-### D4 — Conservation policy: volume ties, peak does not
+### D4 — Conservation policy: the integrals tie, the peak does not
 
-The **only** hard gate tying the hourly surface to the closed water balance is
-`Σ hourly = runoff volume` (the extension refines a closed balance; it adds no
-degree of freedom). WB16 `peakro` is a **separate analytical estimator**
-(`vave·qpstar`), not the max of the hourly profile: `max(hourly) ≠ peakro` is
-**not** an error, and the hourly profile is **not rescaled** to reconcile with
-it — a rescale would fabricate flow to match a diagnostic. `peakro` remains a
-diagnostic / fallback surface with its own WB16 lineage.
+The hard gates tying the hourly surfaces to the closed balances are the two
+**integral closures**: `Σ_h V_h = runvol` (m³, exact) and `Σ_h S_h =` the
+event exported sediment mass (kg). The extension refines closed balances; it
+adds no degree of freedom. WB16 `peakro` is a **separate analytical
+estimator** (`vave·qpstar`), not the max of the hourly profile:
+`max(V_h/3600) ≠ peakro` is **not** an error, and the hourly profile is
+**not rescaled** to reconcile with it — a rescale would fabricate flow to
+match a diagnostic. `peakro` remains a diagnostic / fallback surface with its
+own WB16 lineage.
 
 ### D5 — Comparator posture: Investigation tier
 
@@ -151,7 +207,7 @@ peak-based arm (D1) is the transition cross-check inside openWEPP itself.
 ## Consequences
 
 - **Structural closure:** falling-limb and reinfiltration deposition become
-  ordinary hour-resolved solves; the `INV-RUNOFFPART-030` clamp is retired as a
+  ordinary hour-resolved solves; the `INV-RUNOFFPART-031` interim clamp is retired as a
   fix. This is the substrate E.3 (multi-OFE chaining) and, later, Hairsine-Rose
   (`d_i = v_s·c`, an hour-resolvable settling term) build on.
 - **Contract work precedes code:** amendments to SC-SED-001 (hourly-discharge
@@ -197,7 +253,14 @@ peak-based arm (D1) is the transition cross-check inside openWEPP itself.
 5. **Serialize per-OFE hydrographs now.** Deferred: the serialized consumer
    (routing) needs the hillslope exit only; per-OFE stays on the frame. An
    additive minor extension remains open if E.3 falsifies this.
-6. **Bundle Hairsine-Rose adoption.** Rejected: HR benefits from the substrate
+6. **Hourly water with event-aggregate sediment only.** Rejected (Codex
+   design-review High): routing a real hydrograph against aggregate sediment
+   forces an implicit sediment-timing reconstruction inside the channel
+   model — channel deposition can be wrong while water conservation passes.
+   The sediment timing must be a produced, serialized surface (`S_h`), with
+   the only reconstruction rule that remains (uniform per-event class
+   fractions across hours) explicit and GAP-labeled until E.4.
+7. **Bundle Hairsine-Rose adoption.** Rejected: HR benefits from the substrate
    but does not gate it (backlog `20260526` stands alone, concept-stage).
 
 ## Execution note
