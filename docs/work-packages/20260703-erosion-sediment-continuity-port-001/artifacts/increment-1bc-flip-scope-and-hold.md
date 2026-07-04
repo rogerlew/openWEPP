@@ -227,6 +227,54 @@ population in r7d8 (cover/roots/residue from the growth/decomposition
 states, frost regime, the `wb14_hourly_rainfall` surface) calling
 `assemble_wave1_continuity_inputs`.
 
+## Remaining Stage-3 + Stage-4: complete integration map (2026-07-03, Static)
+
+Scoped against the real orchestrator architecture. **Key finding: the
+remaining threading and the enable are tightly coupled** — the carry
+advance and per-day assembly are only exercisable/testable once the seed
+is enabled, so they cannot be cleanly staged/gated behind the disabled
+seed the way Stages 1–3a were. The remaining work is the flip's coupled
+culminating integration, best done as one focused pass.
+
+**Executor.** `impl DirectDayFrame` (`direct_runtime/erosion.rs`):
+`r7d8_erosion_inputs_with_runoff_authority` is where the per-day assembly
+replaces today's runoff-only threading — it already holds the full daily
+frame. `compute_r7d6_erosion` solves `wave1_continuity` when
+`.enabled`.
+
+**Persistent carries (model: snow/frost `*_runtime_carry`).** Add
+`erosion_consolidation_carry` (`DirectErosionConsolidationCarry`),
+`erosion_ifrost_carry` (`ErosionIfrostCarry`), and
+`erosion_rill_width_carry_m` to `DirectLaneFrame` **and** `DirectDayFrame`,
+threaded lane→day each day exactly like `snow_runtime_carry`/
+`frost_runtime_carry` (`00_core_frames.rs:654-659`), advanced in the
+erosion span, written back to the lane at day end. `daydis` seeds from the
+management `daydi1`.
+
+**Daily `DirectWave1DailyState` → frame surface map (all on
+`DirectDayFrame`):**
+- `peakro`/`runoff`/`effdrn` ← `peak_runoff_shadow_projection` (already used).
+- `excess_intervals` ← `wb14_hourly_excess_m[24]` + a NEW parallel
+  `wb14_hourly_rainfall_m[24]` surface (populated from the WB14
+  `hyetograph_rainfall_m` alongside `compute_r4k_hourly_excess_profile`);
+  byte-stable to add (new field, unread until enable).
+- `canopy_cover`/`canhgt`/`interrill_cover`/`rill_cover`,
+  `live_root`/`dead_root`/`buried_residue` ← `annual_growth`/
+  `perennial_growth` + `decomposition`/`residue_partition` states
+  (**several science-adjacent symbol/pool choices** — which growth symbol,
+  which root/residue pools).
+- `random_roughness` ← management/residue roughness state.
+- `frost_regime` ← `resolve_erosion_frost_regime(frost carry + surface
+  layer water)` + `ifrost` carry.
+- `theta_suppressed` ← `snow_coupling` (melt/cover), `beta` ← rainfall
+  presence, `strldn = 0` (single-OFE).
+
+**Then Stage-4:** enable for single-OFE, unhardcode the pass writer to the
+Wave-1 totals, flip the DFF-WS3 HOLD, and the full-run byte-stability diff
+(non-sediment surfaces must be byte-identical — expected by construction
+since erosion is a pure consumer), plus adjudicate `is_cropland`,
+`field_width_m`, and `rspace`-when-defaulted.
+
 ## Integration-surface audit (2026-07-03, Static) — de-risks the flip
 
 Concrete findings from reading the frame + seed-authority surfaces, so the
