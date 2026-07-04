@@ -108,6 +108,13 @@ pub struct DirectWave1OperandSeed {
     /// daily state.
     pub hmax_m: f64,
     pub flivmx: f64,
+    /// Random roughness (m) — management `rrinit`. First-cut static value
+    /// (no daily rainfall decay; decay is a recorded follow-up).
+    pub random_roughness_m: f64,
+    /// Initial days-since-disturbance (`daydi1`, management). Seeds the
+    /// consolidation carry so the enable is faithful for both fresh
+    /// (`daydi1 = 0`) and aged starts, not just fresh disturbance.
+    pub initial_daydis: f64,
 }
 
 impl DirectWave1OperandSeed {
@@ -143,6 +150,8 @@ impl DirectWave1OperandSeed {
             shcrit_pa: 0.0,
             hmax_m: 0.0,
             flivmx: 0.0,
+            random_roughness_m: 0.0,
+            initial_daydis: 0.0,
         }
     }
 }

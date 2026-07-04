@@ -258,6 +258,35 @@ construction" is qualified to *runtime* outputs, not the frame layout):
 - `daydis`/`rill_width_prior` ← the carry; `theta_suppressed` ← snow;
   `beta` ← rainfall presence; `strldn = 0`.
 
+**Codex adjudication (2026-07-04): proceed with the recommended mappings
+for a McKenzie-scoped single-OFE active solve**, with three guardrails, all
+now handled or scoped:
+- *Pure rainfall (fixed):* `wb14_hourly_rainfall_m` is now binned from the
+  **local** hyetograph directly, not the runon-combined excess basis, so a
+  downstream OFE's runon can't contaminate `effint` (a MOFE prerequisite).
+- *Frost water (to implement in the assembly):* use dimensionless
+  top-layer volumetric water (`theta_m / depth_m`) vs `field_capacity_theta`,
+  not the raw `theta_m` depth. Frozen-fraction adjustment = recorded
+  follow-up.
+- *`daydi1` (robustified):* the static seed now **sources** `daydi1` (and
+  `rrinit`) from the management projection; the consolidation carry seeds
+  from `initial_daydis` rather than assuming a fresh disturbance, so the
+  enable is not silently mis-scaled for aged/non-disturbed single-OFE
+  starts.
+
+**Assembly-prep checkpoint (seed still disabled, byte-stable):** the
+static seed now carries `random_roughness_m` (`rrinit`) and `initial_daydis`
+(`daydi1`), sourced 1-based from the management projection (absent →
+documented defaults). Accepted first cuts: `rrc = rrinit` static;
+`interrill = rill = residue cover_fraction`; frost water volumetric.
+
+**Remaining: the active-solve assembly method** (`DirectDayFrame`, in
+`run_r7d6_erosion_span`): advance the consolidation carry every day
+(forcing precip/tave), resolve `ifrost` (frost carry + volumetric water),
+build `DirectWave1DailyState` from the mapped surfaces + carry, assemble,
+update the rill-width carry, and enable for single-OFE — then the McKenzie
+sediment + conservation + byte-stability gates.
+
 **Remaining science-adjacent decisions before the assembly is wired (a
 wrong choice conserves but mis-scales sediment — no gate catches it):**
 1. `random_roughness` (`rrc`) — no daily decayed source in the direct

@@ -1470,7 +1470,25 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
     let mut cumulative_infiltration_m = 0.0_f64;
     let mut total_rainfall_m = 0.0_f64;
     let mut hourly_excess_m = [0.0_f64; DC01_HOUR_BIN_COUNT];
+
+    // SC-SED-001 1b-C: the erosion rainfall surface is PURE local rainfall
+    // (the erosion `effint` is a rainfall-intensity driver, not a supply
+    // driver). Bin it from the local hyetograph directly, independent of
+    // the runon-combined excess basis below — otherwise a downstream OFE's
+    // runon would contaminate `effint` (a MOFE-erosion prerequisite).
     let mut hourly_rainfall_m = [0.0_f64; DC01_HOUR_BIN_COUNT];
+    for interval in &inputs.hyetograph {
+        let duration_s = interval.end_s - interval.start_s;
+        if duration_s <= WB11_ZERO_THRESHOLD || interval.intensity_m_s <= WB11_ZERO_THRESHOLD {
+            continue;
+        }
+        dc01_add_depth_to_hour_bins(
+            &mut hourly_rainfall_m,
+            interval.start_s,
+            interval.end_s,
+            interval.intensity_m_s * duration_s,
+        );
+    }
 
     // DC01 (INV-RUNOFFPART-031): with material runon, the supply is re-binned
     // to a 24 x 1 h basis (local hyetograph depth per hour + runon per hour) —
@@ -1501,14 +1519,6 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
             "infiltration_depression.hyetograph_rainfall_m",
             total_rainfall_m,
         )?;
-        // SC-SED-001 1b-C: bin ALL interval rainfall (the erosion `effint`
-        // producer later selects the excess-period hours itself).
-        dc01_add_depth_to_hour_bins(
-            &mut hourly_rainfall_m,
-            interval.start_s,
-            interval.end_s,
-            rainfall_m,
-        );
         let remaining_storage_m = (inputs.storage_capacity_m - cumulative_infiltration_m).max(0.0);
         if remaining_storage_m <= WB11_ZERO_THRESHOLD {
             continue;

@@ -1075,6 +1075,23 @@ fn direct_production_wave1_operand_seed(
         direct_production_typed_wb16_canopy_scalar(management_projection, FIRST_OFE_INDEX, "flivmx")
             .unwrap_or(0.0);
 
+    // Random roughness (`rrinit`) — first-cut static value (no daily decay).
+    // Days-since-disturbance (`daydi1`) seeds the consolidation carry;
+    // absent (rill-unparameterized managements) defaults to a
+    // freshly-disturbed 0. Both are behind the disabled seed here.
+    let random_roughness_m = direct_production_pl_projection_optional_ofe_scalar(
+        management_projection,
+        FIRST_OFE_INDEX,
+        "rrinit",
+    )
+    .unwrap_or(0.0);
+    let initial_daydis = direct_production_pl_projection_optional_ofe_scalar(
+        management_projection,
+        FIRST_OFE_INDEX,
+        "daydis",
+    )
+    .unwrap_or(0.0);
+
     Ok(openwepp_hillslope_orchestrator::DirectWave1OperandSeed {
         enabled: false,
         is_cropland: false,
@@ -1095,6 +1112,8 @@ fn direct_production_wave1_operand_seed(
         shcrit_pa: soil_ofe.shcrit,
         hmax_m,
         flivmx,
+        random_roughness_m,
+        initial_daydis,
     })
 }
 

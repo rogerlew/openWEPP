@@ -64,6 +64,8 @@ fn clay_loam_seed() -> DirectWave1OperandSeed {
         shcrit_pa: 0.5,
         hmax_m: 0.0,
         flivmx: 0.0,
+        random_roughness_m: 0.006,
+        initial_daydis: 30.0,
     }
 }
 
