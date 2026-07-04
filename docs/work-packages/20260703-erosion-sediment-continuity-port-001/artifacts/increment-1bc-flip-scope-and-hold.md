@@ -172,6 +172,29 @@ builder runs on every direct-production fixture, the full suite is its
 integration test (the static operand chain resolves on all production
 soils/slopes). Seed stays disabled; production outputs unchanged.
 
+**Codex Stage-3a review (2 Medium + 1 Low, fixed):**
+- *Medium — `rspace` hidden hardcode:* the builder set `rspace_m = 1.0`
+  while the management PL projection carries `rspace` where a management is
+  parameterized with rills (`rspace` feeds `qshear`/hydraulics/adjustments/
+  `detinr`). Now **sourced** from the projection where present. Managements
+  without the residue/rill parameterization (the same ones for which the
+  WB16 canopy authority itself degrades to `None`, e.g. the minimal `cli01`
+  management) do not carry `rspace`; there it defaults to the WEPP unit
+  spacing and is a **third enable-time adjudication item** (with
+  `is_cropland`/`field_width_m`), documented and behind the disabled seed —
+  a fail-closed-required `rspace` would break those fixtures.
+- *Medium — silt clamp masked invalid texture:* the parser validates
+  `sand`/`clay` individually but not `sand + clay <= 100`, so the silt
+  remainder can be negative; the old `.clamp(0, 1)` masked it before the
+  particle producer's own reject. Now computes the raw remainder and
+  fails closed on negative / non-finite.
+- *Low — file crossed the 2000-line WARN:* recorded a line-count
+  disposition in `package.md` (WARN not BLOCK; extraction deferred to a
+  post-flip refactor).
+Provisional-behind-disabled (enable-time adjudication): `is_cropland`,
+`field_width_m`, and `rspace` **only when the management carries no rill
+parameterization** (sourced otherwise).
+
 **Two enable-time adjudication items (provisional behind the disabled
 seed — they only affect an active solve):**
 - `is_cropland = false` (non-cropland interrill branch, `intdr = 1`),

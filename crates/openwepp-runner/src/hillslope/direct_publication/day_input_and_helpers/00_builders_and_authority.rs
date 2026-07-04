@@ -1,5 +1,9 @@
 const FOREST_LITTER_FALLBACK_DECAY_RATE_PER_DAY: f64 = 0.5 / 365.25;
 const FOREST_LITTER_DROP_WINDOW_DAYS: usize = 45;
+// WEPP default rill spacing (m) for managements that carry no rill
+// parameterization; used only behind the disabled Wave-1 seed and flagged
+// for enable-time adjudication.
+const WEPP_DEFAULT_RILL_SPACING_M: f64 = 1.0;
 
 struct DirectProductionDayInputBuilder<'a> {
     climate_request: &'a HillslopeClimateRuntimeRequest,
@@ -976,10 +980,20 @@ fn direct_production_wave1_operand_seed(
         seed_blocked("erosion seed requires at least one WB11 soil layer".to_string())
     })?;
 
-    // Texture fractions (parser stores validated percents).
+    // Texture fractions (parser stores validated percents). The parser
+    // validates sand and clay individually but NOT sand + clay <= 100, so
+    // the silt remainder can be negative; fail closed on that invalid
+    // texture state rather than clamping it away (the particle producer
+    // would otherwise reject the masked negative silt downstream).
     let sand = surface_layer.sand_pct / 100.0;
     let clay = surface_layer.clay_pct / 100.0;
-    let silt = (1.0 - sand - clay).clamp(0.0, 1.0);
+    let silt = 1.0 - sand - clay;
+    if !silt.is_finite() || silt < 0.0 {
+        return Err(seed_blocked(format!(
+            "erosion seed surface-layer silt remainder invalid (sand {sand}, clay {clay}, \
+             silt {silt}): sand + clay exceeds 100%"
+        )));
+    }
     let orgmat = surface_layer.orgmat_pct / 100.0;
     let rfg = surface_layer.rock_frag_pct / 100.0;
 
@@ -1026,6 +1040,19 @@ fn direct_production_wave1_operand_seed(
         .last()
         .map_or(0.0, |seg| (seg.a + seg.b) * slope_ofe.avgslp);
 
+    // Rill spacing (`rspace`) is a real operand (it materially feeds
+    // `qshear`, the rill hydraulics, the adjustment factors, and `detinr`).
+    // Source it from the management PL projection where present. Managements
+    // without the residue/rill parameterization (the same ones for which
+    // the WB16 canopy authority itself degrades to `None`, e.g. the minimal
+    // `cli01` management) do not carry it; there the rill spacing is a
+    // Stage-4 enable-time adjudication item (like `is_cropland` /
+    // `field_width_m`), defaulted to the WEPP unit spacing behind the
+    // disabled seed.
+    let rspace_m =
+        direct_production_pl_projection_optional_ofe_scalar(management_projection, 0, "rspace")
+            .unwrap_or(WEPP_DEFAULT_RILL_SPACING_M);
+
     // Static rill-friction cover constants (`hmax`/`flivmx`); a burned
     // forest with no live canopy has neither, so absent defaults to 0.
     let hmax_m =
@@ -1040,7 +1067,7 @@ fn direct_production_wave1_operand_seed(
         slplen_m: slope_ofe.slplen_m,
         efflen_m: peak_runoff.efflen_m,
         cntlen_m: slope_ofe.slplen_m,
-        rspace_m: 1.0,
+        rspace_m,
         field_width_m: 1.0,
         avg_slope: slope_ofe.avgslp,
         slpend,

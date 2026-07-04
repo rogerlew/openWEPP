@@ -174,3 +174,17 @@ production authority.
   the authority-suite anti-evasion check, SC-unit lint. Line-count governance
   (2000 WARN / 3000 BLOCK).
 - Push branch for Codex review before merge; do not self-merge to main.
+
+## Line-count governance dispositions
+
+- **`crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs`
+  crossed the 2000-line WARN threshold (1941 → ~2105) in Stage 3a**, from
+  the `direct_production_wave1_operand_seed` static-seed builder. WARN, not
+  BLOCK (< 3000). Disposition: **accepted for now, extraction deferred.**
+  The seed builder is self-contained (its only in-module couplings are the
+  PL/WB16 projection accessors and `SIMOUT_GUARD_ID`) and is a clean
+  extraction target; this builders file is already in scope for the
+  `openwepp-runner-hillslope` modularization family (refactor007-class).
+  Splitting it now would be an unrelated mechanical refactor mid-flip; the
+  erosion seed/assembly wiring is extracted as a follow-up once Stage 3
+  lands, keeping the flip diff reviewable.
