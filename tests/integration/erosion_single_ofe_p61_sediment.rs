@@ -15,6 +15,10 @@ use arrow_array::{Array, Float64Array};
 use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 
+// One end-to-end fixture driver validating the E.1 + E.2 publication
+// surfaces off a single run; splitting it would re-run the fixture per
+// assertion group.
+#[allow(clippy::too_many_lines)]
 #[test]
 fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
     let fixture = fixture_path("erosion_single_ofe_p61");
@@ -112,6 +116,65 @@ fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
         reconstructed_days >= 1,
         "the width reconstruction must exercise at least one \
          zero-deposition event day (found {reconstructed_days})"
+    );
+
+    // E.2 (ADR-0036 / SC-INFILE-HBP-001 v0.2.0) round-trip: the emitted
+    // HBP shard is a minor-1 payload carrying the paired hourly surfaces
+    // with their integral closures, npart = 5 per-class arrays, and the
+    // true-volumetric peak.
+    let hbp_path = &report.output_pass;
+    assert!(
+        hbp_path.file_name().and_then(|name| name.to_str()) == Some("H61.hbp"),
+        "output_pass must be the HBP shard, observed {}",
+        hbp_path.display()
+    );
+    let (parsed, latest_event) =
+        openwepp_input_contract::parsers::hbp::parse_hbp_from_path_with_latest_event_payload(
+            hbp_path,
+            openwepp_input_contract::parsers::hbp::HbpParseOptions::strict(),
+        )
+        .expect("the emitted minor-1 shard must round-trip through the parser");
+    assert_eq!(parsed.schema_major, 1);
+    assert_eq!(parsed.schema_minor, 1, "hydrograph lane must write minor 1");
+    assert_eq!(parsed.npart, 5, "production per-class arrays are npart = 5");
+    let event = latest_event.expect("p61 has runoff events");
+    assert_eq!(event.hourly_runoff_volume_m3.len(), 24);
+    assert_eq!(event.hourly_sediment_mass_kg.len(), 24);
+    let volume_sum: f64 = event.hourly_runoff_volume_m3.iter().sum();
+    assert!(volume_sum > 0.0, "the event day carries hourly volume");
+    // Writer-side water closure (SC-INFILE-HBP-001 §8.5): Σ V_h equals the
+    // pass parquet's runvol on the serialized event day (the max-tdet row).
+    let event_row = read_sediment_rows(pass_parquet)
+        .into_iter()
+        .max_by(|a, b| a.tdet_kg.total_cmp(&b.tdet_kg))
+        .expect("pass parquet has rows");
+    assert!(
+        (volume_sum - event_row.runvol_m3).abs() <= 1.0e-9 * event_row.runvol_m3.max(1.0e-9),
+        "Σ V_h must equal the event day's runvol          (Σ={volume_sum}, runvol={})",
+        event_row.runvol_m3
+    );
+    let sediment_sum: f64 = event.hourly_sediment_mass_kg.iter().sum();
+    let exported_kg = event.total_detachment_kg - event.total_deposition_kg;
+    assert!(
+        (sediment_sum - exported_kg).abs() <= 1.0e-6 * exported_kg.abs().max(1.0e-9),
+        "Σ S_h must close on the event exported mass \
+         (Σ={sediment_sum}, tdet-tdep={exported_kg})"
+    );
+    assert_eq!(event.sediment_concentration_kg_m3.len(), 5);
+    assert_eq!(event.particle_flow_fraction.len(), 5);
+    let fraction_sum: f64 = event.particle_flow_fraction.iter().sum();
+    assert!(
+        (fraction_sum - 1.0).abs() < 1.0e-9,
+        "exiting class fractions must be normalized on a sediment event \
+         (sum {fraction_sum})"
+    );
+    assert_eq!(event.particle_diameter_m.len(), 5);
+    assert!(
+        event
+            .particle_diameter_m
+            .iter()
+            .all(|diameter| *diameter > 0.0),
+        "per-class diameters must be the real prtcmp composition"
     );
 }
 

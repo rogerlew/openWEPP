@@ -278,6 +278,28 @@ fn parse_runoff_event_payload(
         "event particle fraction count mismatch",
     )?;
 
+    // SC-INFILE-HBP-001 §3a (ADR-0036): payload minor >= 1 carries the
+    // paired hourly surfaces BEFORE the reserved trailing i64s. Strict
+    // consumption makes any writer/parser placement divergence a typed
+    // failure, never a silent shift.
+    let (hourly_runoff_volume_m3, hourly_sediment_mass_kg) = if header.payload_schema_minor >= 1 {
+        let volumes = read_counted_payload_f64_values(
+            cursor,
+            HOURLY_SURFACE_SLOT_COUNT,
+            "event hourly runoff-volume count mismatch",
+        )?;
+        let sediment = read_counted_payload_f64_values(
+            cursor,
+            HOURLY_SURFACE_SLOT_COUNT,
+            "event hourly sediment-mass count mismatch",
+        )?;
+        validate_hourly_surface(&volumes, "hourly_runoff_volume_m3")?;
+        validate_hourly_surface(&sediment, "hourly_sediment_mass_kg")?;
+        (volumes, sediment)
+    } else {
+        (Vec::new(), Vec::new())
+    };
+
     read_payload_i64_values(cursor, 2)?;
 
     Ok(Some(HbpLatestEventPayload {
@@ -291,7 +313,26 @@ fn parse_runoff_event_payload(
         particle_diameter_m: layout.particle_diameter_m.clone(),
         sediment_concentration_kg_m3,
         particle_flow_fraction,
+        hourly_runoff_volume_m3,
+        hourly_sediment_mass_kg,
     }))
+}
+
+/// SC-INFILE-HBP-001 §3a hourly-surface time base (24 × 1 h).
+const HOURLY_SURFACE_SLOT_COUNT: usize = 24;
+
+/// `G-HBP-011`: minor-1 hourly-surface structural closure — every element
+/// finite and non-negative (`HBP-E-015`).
+fn validate_hourly_surface(values: &[f64], surface: &str) -> Result<(), HbpParseError> {
+    for value in values {
+        if !value.is_finite() || *value < 0.0 {
+            return Err(format_violation(
+                HbpFormatErrorCode::HbpE015,
+                format!("{surface} elements must be finite and non-negative"),
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn read_payload_i64(cursor: &mut Cursor<'_>) -> Result<i64, HbpParseError> {

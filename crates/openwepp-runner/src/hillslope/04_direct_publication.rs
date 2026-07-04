@@ -309,9 +309,19 @@ impl DirectPublicationOutputSummary {
     }
 }
 
+struct HbpEventSedimentSurfaces {
+    sediment_concentration_classes: Vec<f64>,
+    particle_flow_fraction: Vec<f64>,
+    particle_diameter_m: Vec<f64>,
+    hourly_runoff_volume_m3: Option<[f64; 24]>,
+    hourly_sediment_mass_kg: Option<[f64; 24]>,
+    peak_scale_m2: f64,
+}
+
 fn build_hbp_output_from_direct_publication_summary(
     output_pass: &Path,
     summary: &DirectPublicationOutputSummary,
+    inputs: &ParsedHillslopeRunInputs,
 ) -> Result<Vec<u8>, HillslopeCliError> {
     let latest_row = summary.last_row()?;
     let sediment_row = summary.hbp_sediment_row().unwrap_or(latest_row);
@@ -326,23 +336,30 @@ fn build_hbp_output_from_direct_publication_summary(
             "direct publication lane count must be >= 1",
         ));
     }
-    let sediment_concentration_kg_m3 = sediment_row
-        .erosion
-        .hbp_sediment_concentration_kg_m3
-        .map_or_else(
-            || {
-                direct_publication_required_sediment_concentration(
-                    sediment_row.erosion.sediment_concentration_kg_m3,
-                )
-                .map(|values| values[0])
-            },
-            |value| {
-                direct_publication_required_erosion_scalar(
-                    "erosion.hbp_sediment_concentration_kg_m3",
-                    Some(value),
-                )
-            },
-        )?;
+    // ADR-0036 D2 (SC-INFILE-HBP-001 v0.2.0): a hydrograph-resolved lane
+    // (the paired hourly publication surfaces present on the EVENT row)
+    // serializes payload minor 1 — npart = 5 per-class arrays, true-m3
+    // hourly volumes `V_h = w_h * runvol` (the SAME runvol basis the pass
+    // parquet publishes, so `SUM V_h = runvol` closes by construction),
+    // hour-integrated sediment mass, and a TRUE volumetric peak
+    // (depth-rate * hillslope area — the minor-0 depth-rate basis is a
+    // labeled legacy caveat). Lanes without the surfaces (Wave-2 multi-OFE
+    // or disabled seeds) keep the byte-stable minor-0 single-class shape.
+    let hourly_pair = match (
+        sediment_row.erosion.hourly_runoff_fraction,
+        sediment_row.erosion.hourly_sediment_mass_kg,
+    ) {
+        (Some(fractions), Some(sediment)) => Some((fractions, sediment)),
+        (None, None) => None,
+        _ => {
+            return Err(direct_publication_output_failure(
+                "erosion hourly publication surfaces must be present as a pair",
+            ));
+        }
+    };
+
+    let surfaces =
+        assemble_hbp_event_sediment_surfaces(summary, sediment_row, inputs, hourly_pair.as_ref())?;
 
     build_schema1_hbp_event_fixture(HbpEventFixtureInput {
         hillslope_id: parse_hillslope_id_from_output_pass_path(output_pass)?,
@@ -354,7 +371,7 @@ fn build_hbp_output_from_direct_publication_summary(
                 .runoff
                 .peak_runoff_m3_s
                 .or(latest_row.erosion.peak_runoff_m3_s),
-        )?,
+        )? * surfaces.peak_scale_m2,
         duration_seconds: direct_publication_required_erosion_scalar(
             "runoff.runoff_duration_s or erosion.runoff_duration_s",
             latest_row
@@ -376,9 +393,96 @@ fn build_hbp_output_from_direct_publication_summary(
                 .hbp_total_deposition_kg
                 .or(sediment_row.erosion.total_deposition_kg),
         )?,
-        sediment_concentration_kg_m3,
-        particle_flow_fraction: 1.0,
-        particle_diameter_m: HBP_DEFAULT_PARTICLE_DIAMETER_M,
+        sediment_concentration_kg_m3: surfaces.sediment_concentration_classes,
+        particle_flow_fraction: surfaces.particle_flow_fraction,
+        particle_diameter_m: surfaces.particle_diameter_m,
+        hourly_runoff_volume_m3: surfaces.hourly_runoff_volume_m3,
+        hourly_sediment_mass_kg: surfaces.hourly_sediment_mass_kg,
+    })
+}
+
+/// ADR-0036 D2 sediment-surface assembly for the HBP EVENT: minor-1 lanes
+/// get the npart = 5 arrays, `V_h = w_h * runvol`, and the true-volumetric
+/// peak scale; minor-0 lanes keep the byte-stable single-class shape.
+fn assemble_hbp_event_sediment_surfaces(
+    summary: &DirectPublicationOutputSummary,
+    sediment_row: &DirectPublicationDayRow,
+    inputs: &ParsedHillslopeRunInputs,
+    hourly_pair: Option<&([f64; 24], [f64; 24])>,
+) -> Result<HbpEventSedimentSurfaces, HillslopeCliError> {
+    let (
+        sediment_concentration_classes,
+        particle_flow_fraction,
+        particle_diameter_m,
+        hourly_runoff_volume_m3,
+        hourly_sediment_mass_kg,
+        peak_scale_m2,
+    ) = if let Some((fractions, hourly_sediment)) = hourly_pair.copied() {
+        let sedcon = direct_publication_required_sediment_concentration(
+            sediment_row.erosion.sediment_concentration_kg_m3,
+        )?;
+        let sedcon_total: f64 = sedcon.iter().sum();
+        let frcflw: Vec<f64> = if sedcon_total > 0.0 {
+            sedcon.iter().map(|value| value / sedcon_total).collect()
+        } else {
+            // Legacy `route.for:158`: no exiting flow-load => zero
+            // fractions, never a fabricated composition.
+            vec![0.0; sedcon.len()]
+        };
+        let classes = direct_production_erosion_particle_classes(&inputs.soil)?;
+        let runvol_m3 = sediment_row.runoff.runvol_m3;
+        if !runvol_m3.is_finite() || runvol_m3 < 0.0 {
+            return Err(direct_publication_output_failure(format!(
+                "hourly EVENT volume basis runoff.runvol_m3 must be finite and >= 0, \
+                 observed {runvol_m3}"
+            )));
+        }
+        let mut hourly_volume = [0.0_f64; 24];
+        for (slot, fraction) in hourly_volume.iter_mut().zip(fractions.iter()) {
+            *slot = fraction * runvol_m3;
+        }
+        (
+            sedcon.to_vec(),
+            frcflw,
+            classes.iter().map(|class| class.dia_m).collect(),
+            Some(hourly_volume),
+            Some(hourly_sediment),
+            summary.publication_area_m2(),
+        )
+    } else {
+        let scalar = sediment_row
+            .erosion
+            .hbp_sediment_concentration_kg_m3
+            .map_or_else(
+                || {
+                    direct_publication_required_sediment_concentration(
+                        sediment_row.erosion.sediment_concentration_kg_m3,
+                    )
+                    .map(|values| values[0])
+                },
+                |value| {
+                    direct_publication_required_erosion_scalar(
+                        "erosion.hbp_sediment_concentration_kg_m3",
+                        Some(value),
+                    )
+                },
+            )?;
+        (
+            vec![scalar],
+            vec![1.0],
+            vec![HBP_DEFAULT_PARTICLE_DIAMETER_M],
+            None,
+            None,
+            1.0,
+        )
+    };
+    Ok(HbpEventSedimentSurfaces {
+        sediment_concentration_classes,
+        particle_flow_fraction,
+        particle_diameter_m,
+        hourly_runoff_volume_m3,
+        hourly_sediment_mass_kg,
+        peak_scale_m2,
     })
 }
 
@@ -442,7 +546,8 @@ fn build_direct_publication_artifacts(
     })?;
     validate_streamed_direct_publication(&retained.execution, &retained.stream)?;
     let summary = retained.stream.summary;
-    let hbp_bytes = build_hbp_output_from_direct_publication_summary(&targets.output_pass, &summary)?;
+    let hbp_bytes =
+        build_hbp_output_from_direct_publication_summary(&targets.output_pass, &summary, inputs)?;
     let loss_text = build_loss_output_json_from_direct_publication_summary(
         &summary,
         inputs.soil.ofes.len(),

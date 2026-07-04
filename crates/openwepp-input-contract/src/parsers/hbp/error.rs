@@ -17,6 +17,7 @@ pub enum HbpFormatErrorCode {
     HbpE012,
     HbpE013,
     HbpE014,
+    HbpE015,
 }
 
 impl HbpFormatErrorCode {
@@ -36,6 +37,7 @@ impl HbpFormatErrorCode {
             Self::HbpE012 => "HBP-E-012",
             Self::HbpE013 => "HBP-E-013",
             Self::HbpE014 => "HBP-E-014",
+            Self::HbpE015 => "HBP-E-015",
         }
     }
 }

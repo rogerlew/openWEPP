@@ -1,4 +1,8 @@
-#[derive(Clone, Copy)]
+/// SC-INFILE-HBP-001 v0.2.0: the per-class arrays are `npart`-long
+/// (production minor-1 writes `npart = 5`; the minor-0 legacy shape stays
+/// single-class), and the paired ADR-0036 hourly surfaces select the
+/// payload minor (`Some` => minor 1).
+#[derive(Clone)]
 struct HbpEventFixtureInput {
     hillslope_id: u32,
     nofe: u16,
@@ -7,12 +11,14 @@ struct HbpEventFixtureInput {
     duration_seconds: f64,
     total_detachment_kg: f64,
     total_deposition_kg: f64,
-    sediment_concentration_kg_m3: f64,
-    particle_flow_fraction: f64,
-    particle_diameter_m: f64,
+    sediment_concentration_kg_m3: Vec<f64>,
+    particle_flow_fraction: Vec<f64>,
+    particle_diameter_m: Vec<f64>,
+    hourly_runoff_volume_m3: Option<[f64; 24]>,
+    hourly_sediment_mass_kg: Option<[f64; 24]>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 struct HbpEventPayloadInput {
     nofe: u16,
     sim_year_index: u32,
@@ -22,11 +28,13 @@ struct HbpEventPayloadInput {
     duration_seconds: f64,
     total_detachment_kg: f64,
     total_deposition_kg: f64,
-    sediment_concentration_kg_m3: f64,
-    particle_flow_fraction: f64,
+    sediment_concentration_kg_m3: Vec<f64>,
+    particle_flow_fraction: Vec<f64>,
+    hourly_runoff_volume_m3: Option<[f64; 24]>,
+    hourly_sediment_mass_kg: Option<[f64; 24]>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 struct HbpHeaderInput {
     schema_major: u16,
     schema_minor: u16,
@@ -35,7 +43,7 @@ struct HbpHeaderInput {
     nyear: u32,
     begin_year: i32,
     julian_day: u16,
-    particle_diameter_m: f64,
+    particle_diameter_m: Vec<f64>,
 }
 
 const DIRECT_WAT_WEPP_ID: i32 = 1;
@@ -124,17 +132,45 @@ fn parse_hillslope_id_from_output_pass_path(path: &Path) -> Result<u32, Hillslop
 fn build_schema1_hbp_event_fixture(
     input: HbpEventFixtureInput,
 ) -> Result<Vec<u8>, HillslopeCliError> {
-    let mut file = append_hbp_common_prefix(HbpHeaderInput {
+    // ADR-0036 D2: the paired hourly surfaces select payload minor 1; a
+    // half-present pair is a writer defect, fail closed.
+    let schema_minor = match (
+        input.hourly_runoff_volume_m3.is_some(),
+        input.hourly_sediment_mass_kg.is_some(),
+    ) {
+        (true, true) => 1,
+        (false, false) => 0,
+        _ => {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.pass",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} HBP hourly surfaces must be written as a pair"
+                ),
+            });
+        }
+    };
+    if input.sediment_concentration_kg_m3.len() != input.particle_flow_fraction.len()
+        || input.sediment_concentration_kg_m3.len() != input.particle_diameter_m.len()
+        || input.sediment_concentration_kg_m3.is_empty()
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} HBP per-class arrays must be equal-length and non-empty"
+            ),
+        });
+    }
+    let mut file = append_hbp_common_prefix(&HbpHeaderInput {
         schema_major: HBP_SUPPORTED_MAJOR_V1,
-        schema_minor: 0,
+        schema_minor,
         hillslope_id: input.hillslope_id,
         nofe: input.nofe,
         nyear: 1,
         begin_year: HBP_DEFAULT_CALENDAR_YEAR,
         julian_day: input.julian_day,
-        particle_diameter_m: input.particle_diameter_m,
+        particle_diameter_m: input.particle_diameter_m.clone(),
     })?;
-    let payload = build_hbp_event_payload(HbpEventPayloadInput {
+    let payload = build_hbp_event_payload(&HbpEventPayloadInput {
         nofe: input.nofe,
         sim_year_index: 1,
         calendar_year: HBP_DEFAULT_CALENDAR_YEAR,
@@ -145,6 +181,8 @@ fn build_schema1_hbp_event_fixture(
         total_deposition_kg: input.total_deposition_kg,
         sediment_concentration_kg_m3: input.sediment_concentration_kg_m3,
         particle_flow_fraction: input.particle_flow_fraction,
+        hourly_runoff_volume_m3: input.hourly_runoff_volume_m3,
+        hourly_sediment_mass_kg: input.hourly_sediment_mass_kg,
     })?;
     let payload_crc = crc32c(&payload);
 
@@ -188,7 +226,7 @@ fn build_schema1_hbp_event_fixture(
     Ok(file)
 }
 
-fn build_hbp_event_payload(input: HbpEventPayloadInput) -> Result<Vec<u8>, HillslopeCliError> {
+fn build_hbp_event_payload(input: &HbpEventPayloadInput) -> Result<Vec<u8>, HillslopeCliError> {
     let nofe = u32::from(input.nofe);
     let max_layers = 1u32;
 
@@ -197,7 +235,16 @@ fn build_hbp_event_payload(input: HbpEventPayloadInput) -> Result<Vec<u8>, Hills
     put_i32(&mut payload, input.calendar_year);
     put_u16(&mut payload, input.julian_day);
     put_u8(&mut payload, 2);
-    put_u16(&mut payload, 0);
+    put_u16(
+        &mut payload,
+        match (
+            input.hourly_runoff_volume_m3.is_some(),
+            input.hourly_sediment_mass_kg.is_some(),
+        ) {
+            (true, true) => 1,
+            _ => 0,
+        },
+    );
     put_u16(
         &mut payload,
         u16::try_from(HBP_REQUIRED_STATE_IDS.len()).map_err(|_| {
@@ -222,10 +269,40 @@ fn build_hbp_event_payload(input: HbpEventPayloadInput) -> Result<Vec<u8>, Hills
     put_f64(&mut payload, input.peak_runoff_m3_s);
     put_i64(&mut payload, scaled_i64(input.total_detachment_kg)?);
     put_i64(&mut payload, scaled_i64(input.total_deposition_kg)?);
-    put_u32(&mut payload, 1);
-    put_f64(&mut payload, input.sediment_concentration_kg_m3);
-    put_u32(&mut payload, 1);
-    put_f64(&mut payload, input.particle_flow_fraction);
+    let npart_u32 = u32::try_from(input.sediment_concentration_kg_m3.len()).map_err(|_| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} HBP per-class count exceeds u32: {}",
+                input.sediment_concentration_kg_m3.len()
+            ),
+        }
+    })?;
+    put_u32(&mut payload, npart_u32);
+    for value in &input.sediment_concentration_kg_m3 {
+        put_f64(&mut payload, *value);
+    }
+    put_u32(&mut payload, npart_u32);
+    for value in &input.particle_flow_fraction {
+        put_f64(&mut payload, *value);
+    }
+    // ADR-0036 D2 (SC-INFILE-HBP-001 §3a): the paired hourly surfaces sit
+    // BEFORE the reserved trailing i64s, written only at payload minor >= 1
+    // (strict-consumption parsing requires writer/parser placement
+    // identity).
+    if let (Some(hourly_volume), Some(hourly_sediment)) = (
+        &input.hourly_runoff_volume_m3,
+        &input.hourly_sediment_mass_kg,
+    ) {
+        put_u32(&mut payload, 24);
+        for value in hourly_volume {
+            put_f64(&mut payload, *value);
+        }
+        put_u32(&mut payload, 24);
+        for value in hourly_sediment {
+            put_f64(&mut payload, *value);
+        }
+    }
     put_i64(&mut payload, 0);
     put_i64(&mut payload, 0);
 
@@ -236,7 +313,7 @@ fn build_hbp_event_payload(input: HbpEventPayloadInput) -> Result<Vec<u8>, Hills
     Ok(payload)
 }
 
-fn append_hbp_common_prefix(input: HbpHeaderInput) -> Result<Vec<u8>, HillslopeCliError> {
+fn append_hbp_common_prefix(input: &HbpHeaderInput) -> Result<Vec<u8>, HillslopeCliError> {
     let mut file = Vec::new();
 
     let mut header = Vec::new();
@@ -268,7 +345,15 @@ fn append_hbp_common_prefix(input: HbpHeaderInput) -> Result<Vec<u8>, HillslopeC
     put_u32_at(&mut header, header_crc_pos, header_crc);
     file.extend_from_slice(&header);
 
-    let npart = 1u16;
+    let npart = u16::try_from(input.particle_diameter_m.len()).map_err(|_| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} HBP npart exceeds u16: {}",
+                input.particle_diameter_m.len()
+            ),
+        }
+    })?;
     let max_layers = 1u16;
 
     put_u32(&mut file, input.hillslope_id);
@@ -284,7 +369,9 @@ fn append_hbp_common_prefix(input: HbpHeaderInput) -> Result<Vec<u8>, HillslopeC
     put_string(&mut file, "p1.cli")?;
     put_i64(&mut file, 0);
     put_u32(&mut file, u32::from(npart));
-    put_f64(&mut file, input.particle_diameter_m);
+    for diameter_m in &input.particle_diameter_m {
+        put_f64(&mut file, *diameter_m);
+    }
     put_f64(&mut file, 0.0);
     put_f64(&mut file, 0.0);
     put_f64(&mut file, 0.0);
@@ -570,9 +657,11 @@ fn build_hbp_output_from_direct_publication(
                 .hbp_total_deposition_kg
                 .or(sediment_row.erosion.total_deposition_kg),
         )?,
-        sediment_concentration_kg_m3,
-        particle_flow_fraction: 1.0,
-        particle_diameter_m: HBP_DEFAULT_PARTICLE_DIAMETER_M,
+        sediment_concentration_kg_m3: vec![sediment_concentration_kg_m3],
+        particle_flow_fraction: vec![1.0],
+        particle_diameter_m: vec![HBP_DEFAULT_PARTICLE_DIAMETER_M],
+        hourly_runoff_volume_m3: None,
+        hourly_sediment_mass_kg: None,
     })
 }
 

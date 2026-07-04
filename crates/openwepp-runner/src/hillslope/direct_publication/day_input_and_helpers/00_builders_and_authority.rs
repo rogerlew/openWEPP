@@ -957,6 +957,46 @@ fn direct_production_pl_projection_required_ofe_scalar(
 /// published `total_detachment_kg`/`total_deposition_kg` and the HBP
 /// payload carry true kilograms (INV-SED-010 units). The toe
 /// concentration is width-independent (`sloss.for:305-317`).
+/// Shared `prtcmp`-lineage particle-class derivation from the parsed soil
+/// surface layer (single-OFE scope). One producer, two consumers: the
+/// Wave-1 operand seed and the HBP minor-1 EVENT writer (per-class
+/// diameters) — the run-level composition is a pure function of the
+/// texture, so both see identical classes by construction.
+fn direct_production_erosion_particle_classes(
+    parsed_soil: &SoilProfile,
+) -> Result<[openwepp_hillslope_orchestrator::ErosionParticleClass; 5], HillslopeCliError> {
+    let blocked = |detail: String| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_production_erosion_particle_classes",
+        detail: format!("{SIMOUT_GUARD_ID} {detail}"),
+    };
+    let soil_ofe = parsed_soil
+        .ofes
+        .first()
+        .ok_or_else(|| blocked("erosion particle classes require at least one soil OFE".to_string()))?;
+    let surface_layer = soil_ofe
+        .layers
+        .first()
+        .ok_or_else(|| blocked("erosion particle classes require at least one soil layer".to_string()))?;
+    let sand = surface_layer.sand_pct / 100.0;
+    let clay = surface_layer.clay_pct / 100.0;
+    let silt = 1.0 - sand - clay;
+    if !silt.is_finite() || silt < 0.0 {
+        return Err(blocked(format!(
+            "surface-layer silt remainder invalid (sand {sand}, clay {clay}, silt {silt}): \
+             sand + clay exceeds 100%"
+        )));
+    }
+    let orgmat = surface_layer.orgmat_pct / 100.0;
+    let texture = openwepp_hillslope_orchestrator::ErosionTextureInputs {
+        sand,
+        clay,
+        silt,
+        orgmat,
+    };
+    openwepp_hillslope_orchestrator::erosion_particle_composition(&texture)
+        .map_err(|e| blocked(format!("erosion particle composition failed: {e}")))
+}
+
 // Multi-operand sourcing builder: sources texture / classes / baselines /
 // segments / geometry / cover constants from the parsed inputs. The line
 // count is inherent to the per-field fail-closed sourcing.
@@ -1011,14 +1051,7 @@ fn direct_production_wave1_operand_seed(
     let orgmat = surface_layer.orgmat_pct / 100.0;
     let rfg = surface_layer.rock_frag_pct / 100.0;
 
-    let texture = openwepp_hillslope_orchestrator::ErosionTextureInputs {
-        sand,
-        clay,
-        silt,
-        orgmat,
-    };
-    let classes = openwepp_hillslope_orchestrator::erosion_particle_composition(&texture)
-        .map_err(|e| seed_blocked(format!("erosion particle composition failed: {e}")))?;
+    let classes = direct_production_erosion_particle_classes(parsed_soil)?;
     let (diaeff, spgeff) =
         openwepp_hillslope_orchestrator::erosion_effective_particle(&classes)
             .map_err(|e| seed_blocked(format!("erosion effective particle failed: {e}")))?;

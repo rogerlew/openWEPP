@@ -927,5 +927,43 @@ fn validate_latest_event_vectors(
             ));
         }
     }
+
+    // SC-INFILE-HBP-001 §8.5 (ADR-0036 D4): minor-1 hourly surfaces must
+    // arrive as a 24-slot pair whose sediment timing is self-consistent
+    // with the event's own concentration × volume mass
+    // (`Σ S_h = Σ sedcon_i × Σ V_h`), failing closed on material
+    // violation. Minor-0 payloads carry empty vectors and skip cleanly.
+    let hourly_volume = &payload.hourly_runoff_volume_m3;
+    let hourly_sediment = &payload.hourly_sediment_mass_kg;
+    if !hourly_volume.is_empty() || !hourly_sediment.is_empty() {
+        if hourly_volume.len() != 24 || hourly_sediment.len() != 24 {
+            return Err(format!(
+                "CLIWAT-E-046 pass inventory file {} hourly surfaces must be a 24-slot pair \
+                 (volumes={}, sediment={}) for hillslope {}",
+                pass_file_path.display(),
+                hourly_volume.len(),
+                hourly_sediment.len(),
+                hillslope_id
+            ));
+        }
+        let sediment_total_kg: f64 = hourly_sediment.iter().sum();
+        // The sediment-side telescoping identity (SC-SED-001#INV-SED-014):
+        // the hour-integrated exported mass equals detachment minus
+        // deposition (zero-inflow single-OFE producers; E.3 adds the
+        // inflow term with the multi-OFE handoff). This is deliberately
+        // volume-free — a concentration x volume reconstruction would
+        // embed the producer's efflen/slplen geometry in the intake gate.
+        let exported_kg = payload.total_detachment_kg - payload.total_deposition_kg;
+        let scale = sediment_total_kg.abs().max(exported_kg.abs()).max(1.0e-9);
+        if (sediment_total_kg - exported_kg).abs() > 1.0e-6 * scale {
+            return Err(format!(
+                "CLIWAT-E-047 pass inventory file {} hourly sediment timing is inconsistent \
+                 with the event mass: Σ S_h = {sediment_total_kg} kg vs \
+                 tdet - tdep = {exported_kg} kg for hillslope {}",
+                pass_file_path.display(),
+                hillslope_id
+            ));
+        }
+    }
     Ok(())
 }

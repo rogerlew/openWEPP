@@ -41,9 +41,11 @@ pub use types::{
 pub(super) const MAGIC: &[u8; 8] = b"WFPHBP01";
 pub(super) const FOOTER_MAGIC: &[u8; 8] = b"ENDHBP01";
 pub(super) const SUPPORTED_MAJOR_V1: u16 = 1;
-pub(super) const SUPPORTED_MINOR_V1: u16 = 0;
+// SC-INFILE-HBP-001 v0.2.0 / ADR-0036: minor 1 adds the paired hourly
+// EVENT surfaces (`hourly_runoff_volume_m3[24]` + `hourly_sediment_mass_kg[24]`).
+pub(super) const SUPPORTED_MINOR_V1: u16 = 1;
 pub(super) const SUPPORTED_MAJOR_V2: u16 = 2;
-pub(super) const SUPPORTED_MINOR_V2: u16 = 0;
+pub(super) const SUPPORTED_MINOR_V2: u16 = 1;
 pub(super) const PAYLOAD_CODEC_ZLIB: u8 = 1;
 pub(super) const DIM_SCALAR: u8 = 0;
 pub(super) const DIM_NOFE: u8 = 1;

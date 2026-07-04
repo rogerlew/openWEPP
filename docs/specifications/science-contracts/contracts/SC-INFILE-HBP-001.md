@@ -202,12 +202,16 @@ No silent fallback to legacy text pass family is permitted.
 4. Schema2 day slices must be contiguous, non-overlapping, and complete inside
    each decompressed payload block.
 5. Minor-1 intake closure (run-level, ADR-0036 D4 / `SC-SED-001#INV-SED-014`):
-   the shard-set intake validator must check `Σ event.hourly_runoff_volume_m3`
-   against the event runoff volume and
-   `Σ event.hourly_sediment_mass_kg` against the event exported sediment mass
-   (`Σ sediment_concentration_kg_m3_i × Σ hourly_runoff_volume_m3`) within the
-   declared tolerance, failing closed on material violation. Parser-local
-   validation stays structural (`HBP-E-015`).
+   the shard-set intake validator must check the sediment-side telescoping
+   identity `Σ event.hourly_sediment_mass_kg = total_detachment_kg −
+   total_deposition_kg` (the event exported mass; zero-inflow single-OFE
+   producers — the inflow term joins with the E.3 multi-OFE handoff) within
+   the declared tolerance, failing closed on material violation. The
+   water-side closure `Σ hourly_runoff_volume_m3 = runvol` is a
+   **producer-side** (writer) obligation on the same `runvol` basis the pass
+   parquet publishes; a concentration × volume reconstruction is NOT a valid
+   intake gate (it would embed the producer's `efflen`/`slplen` geometry).
+   Parser-local validation stays structural (`HBP-E-015`).
 
 ## 9. Boundary Export Mapping
 

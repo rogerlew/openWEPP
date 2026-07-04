@@ -112,6 +112,12 @@ pub struct HbpLatestEventPayload {
     pub particle_diameter_m: Vec<f64>,
     pub sediment_concentration_kg_m3: Vec<f64>,
     pub particle_flow_fraction: Vec<f64>,
+    /// SC-INFILE-HBP-001 §3a (payload minor >= 1): hour-integrated exit
+    /// runoff volume (m³); empty on minor-0 payloads.
+    pub hourly_runoff_volume_m3: Vec<f64>,
+    /// SC-INFILE-HBP-001 §3a (payload minor >= 1): hour-integrated exported
+    /// sediment mass (kg) on the same time base; empty on minor-0 payloads.
+    pub hourly_sediment_mass_kg: Vec<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
