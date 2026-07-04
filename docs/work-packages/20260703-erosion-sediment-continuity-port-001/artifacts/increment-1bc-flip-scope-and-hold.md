@@ -54,6 +54,31 @@ the flip (item 4 below).
 
 ## Execution progress (2026-07-03)
 
+**Stage 2 pure stateful logic LANDED** (branch `erosion-inc1c-flip`):
+`direct_runtime/erosion_adjustments.rs` —
+- `resolve_erosion_frost_regime` + `ErosionIfrostCarry` + `ErosionFrostInputs`
+  (`soil.for:866`): resolves the frost regime
+  (`Unfrozen`/`FrozenSurface`/`Thawing`) and the new `ifrost` carry from
+  the frost/thaw depths, surface-layer water vs field capacity, and the
+  prior `ifrost`. The `Thawing` (`ifrost == 2`) regime fail-closes
+  downstream (winter `fcycle` block).
+- `DirectErosionConsolidationCarry` + `advance_erosion_consolidation`
+  (`soil.for`): the persistent `rfcum`/`daydis` carry — `daydis`
+  increments when prior `rfcum > 0.01`, `rfcum` accumulates warm-day
+  liquid input, tillage scales `daydis` by `(1 - surdis)` and resets
+  `rfcum` (forest never tills).
+3 unit tests (the three frost branches; accumulate-and-age; tillage
+reset). These are the pure state-transition functions Stage 3 threads
+into the frame; the `wb14_hourly_rainfall` surface and the frame
+threading itself are folded into Stage 3 (they are only meaningful with
+their consumer, avoiding a populated-but-unread field). The
+Stage-1 rill-width carry is already returned by the assembly.
+**Ran:** `cargo nextest run --workspace --profile full` — **1315/1315
+passed, 1 skipped**; fmt/clippy on the touched surfaces and diff-check
+clean. Checkpoint held for focused review of the state-machine logic
+before Stage-3 frame threading.
+
+
 **Stage 1 + assembly core LANDED** (branch `erosion-inc1c-flip`):
 `direct_runtime/erosion_seed.rs` — `DirectWave1OperandSeed` (per-lane
 static operands), `DirectWave1DailyState` (the daily frame surfaces), and

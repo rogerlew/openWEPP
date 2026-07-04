@@ -226,3 +226,100 @@ fn adjustment_factors_fail_closed_on_nan_and_negative_inputs() {
         Err(DirectRuntimeError::DirectDomainViolation { .. })
     ));
 }
+
+use crate::{
+    DirectErosionConsolidationCarry, ErosionFrostInputs, ErosionIfrostCarry,
+    advance_erosion_consolidation, resolve_erosion_frost_regime,
+};
+
+#[test]
+fn frost_regime_resolves_the_three_soil_for_branches() {
+    // Frozen surface: frdp > 0, thdp <= 0.
+    let (regime, ifrost) = resolve_erosion_frost_regime(
+        &ErosionFrostInputs {
+            frost_depth_m: 0.05,
+            thaw_depth_m: 0.0,
+            surface_layer_water: 0.4,
+            surface_layer_thetfc: 0.28,
+        },
+        ErosionIfrostCarry::unfrozen(),
+    );
+    assert_eq!(regime, ErosionFrostRegime::FrozenSurface);
+    assert_eq!(ifrost, ErosionIfrostCarry(1));
+
+    // Unfrozen and dry (pwater <= thetfc): factors are 1.0.
+    let (regime, ifrost) = resolve_erosion_frost_regime(
+        &ErosionFrostInputs {
+            frost_depth_m: 0.0,
+            thaw_depth_m: 0.0,
+            surface_layer_water: 0.2,
+            surface_layer_thetfc: 0.28,
+        },
+        ErosionIfrostCarry(1),
+    );
+    assert_eq!(regime, ErosionFrostRegime::Unfrozen);
+    assert_eq!(ifrost, ErosionIfrostCarry(0));
+
+    // Thawing: not frozen, wet (pwater > thetfc), and the prior surface
+    // was frozen -> the ifrost==2 branch (fail-closed downstream).
+    let (regime, ifrost) = resolve_erosion_frost_regime(
+        &ErosionFrostInputs {
+            frost_depth_m: 0.02,
+            thaw_depth_m: 0.03,
+            surface_layer_water: 0.4,
+            surface_layer_thetfc: 0.28,
+        },
+        ErosionIfrostCarry(1),
+    );
+    assert_eq!(regime, ErosionFrostRegime::Thawing);
+    assert_eq!(ifrost, ErosionIfrostCarry(2));
+
+    // Wet but prior unfrozen -> stays unfrozen (thaw only from frozen).
+    let (regime, _) = resolve_erosion_frost_regime(
+        &ErosionFrostInputs {
+            frost_depth_m: 0.0,
+            thaw_depth_m: 0.0,
+            surface_layer_water: 0.4,
+            surface_layer_thetfc: 0.28,
+        },
+        ErosionIfrostCarry::unfrozen(),
+    );
+    assert_eq!(regime, ErosionFrostRegime::Unfrozen);
+}
+
+#[test]
+fn consolidation_carry_accumulates_and_ages() {
+    // Seed from a management initial daydis.
+    let mut carry = DirectErosionConsolidationCarry::seed(0.0);
+    assert_eq!(carry.rfcum_m, 0.0);
+    assert_eq!(carry.daydis, 0.0);
+
+    // Warm rainy day: rfcum accumulates; daydis does NOT increment yet
+    // (prior rfcum was 0, below the 0.01 onset).
+    carry = advance_erosion_consolidation(carry, 0.02, 10.0, None);
+    assert!((carry.rfcum_m - 0.02).abs() < 1.0e-12);
+    assert_eq!(carry.daydis, 0.0);
+
+    // Next warm day: prior rfcum (0.02) > 0.01, so daydis increments.
+    carry = advance_erosion_consolidation(carry, 0.0, 10.0, None);
+    assert!((carry.daydis - 1.0).abs() < 1.0e-12);
+
+    // A sub-freezing day does not accumulate rain but still ages.
+    let before = carry;
+    carry = advance_erosion_consolidation(carry, 0.05, -3.0, None);
+    assert!((carry.rfcum_m - before.rfcum_m).abs() < 1.0e-12);
+    assert!((carry.daydis - (before.daydis + 1.0)).abs() < 1.0e-12);
+}
+
+#[test]
+fn consolidation_carry_tillage_resets_age_and_rfcum() {
+    let mut carry = DirectErosionConsolidationCarry {
+        rfcum_m: 0.5,
+        daydis: 200.0,
+    };
+    // A tillage day with surdis = 0.75 scales daydis by (1 - 0.75) and
+    // resets rfcum (then accumulates today's warm rain).
+    carry = advance_erosion_consolidation(carry, 0.01, 8.0, Some(0.75));
+    assert!((carry.daydis - 50.0).abs() < 1.0e-9);
+    assert!((carry.rfcum_m - 0.01).abs() < 1.0e-12);
+}

@@ -176,9 +176,10 @@ pub use erosion::{
     DirectErosionShadowProjection, DirectErosionSpanReport, DirectErosionState,
 };
 pub use erosion_adjustments::{
-    ErosionAdjustmentFactors, ErosionAdjustmentInputs, ErosionConsolidationBaselines,
-    ErosionConsolidationInputs, ErosionFrostRegime, erosion_adjustment_factors,
-    erosion_consolidation_baselines,
+    DirectErosionConsolidationCarry, ErosionAdjustmentFactors, ErosionAdjustmentInputs,
+    ErosionConsolidationBaselines, ErosionConsolidationInputs, ErosionFrostInputs,
+    ErosionFrostRegime, ErosionIfrostCarry, advance_erosion_consolidation,
+    erosion_adjustment_factors, erosion_consolidation_baselines, resolve_erosion_frost_regime,
 };
 pub use erosion_continuity::{
     DIRECT_WAVE1_GRID_POINTS, DirectWave1ContinuityInputs, DirectWave1ContinuityState,

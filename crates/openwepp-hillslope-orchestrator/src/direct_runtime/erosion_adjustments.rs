@@ -156,6 +156,64 @@ pub enum ErosionFrostRegime {
     Thawing,
 }
 
+/// The `ifrost` state carried between days (`soil.for` `ifrost(iplane)`).
+/// `0` = unfrozen, `1` = frozen surface, `2` = actively thawing. The
+/// frost regime for a day is resolved from the frost/thaw depths, the
+/// surface-layer water vs field capacity, and the **prior** day's
+/// `ifrost` (the thaw regime is only entered from a previously-frozen
+/// surface).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ErosionIfrostCarry(pub u8);
+
+impl ErosionIfrostCarry {
+    /// Day-zero seed (unfrozen).
+    #[must_use]
+    pub const fn unfrozen() -> Self {
+        Self(0)
+    }
+}
+
+/// Surface-layer state needed to resolve the frost regime
+/// (`soil.for:858-872`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ErosionFrostInputs {
+    /// Frost depth (m) — `frdp`.
+    pub frost_depth_m: f64,
+    /// Thaw depth (m) — `thdp`.
+    pub thaw_depth_m: f64,
+    /// Effective surface-layer water content — legacy `pwater`
+    /// (`soil.for:858-865`, frozen-fraction-adjusted).
+    pub surface_layer_water: f64,
+    /// Surface-layer field capacity — `thetfc(1)`.
+    pub surface_layer_thetfc: f64,
+}
+
+/// `soil.for:866-872`: resolve the erosion frost regime and the new
+/// `ifrost` carry from the surface-layer frost state and the prior
+/// `ifrost`. Pure: the caller tracks and threads the carry.
+///
+/// - `frdp > 0 && thdp <= 0` → `FrozenSurface` (`ifrost = 1`).
+/// - else `pwater <= thetfc` → `Unfrozen` (`ifrost = 0`).
+/// - else if the prior surface was frozen/thawing (`ifrost > 0`) →
+///   `Thawing` (`ifrost = 2`, the winter-`fcycle` branch — fail-closed
+///   downstream in [`erosion_adjustment_factors`]).
+/// - else → `Unfrozen`.
+#[must_use]
+pub fn resolve_erosion_frost_regime(
+    inputs: &ErosionFrostInputs,
+    prior_ifrost: ErosionIfrostCarry,
+) -> (ErosionFrostRegime, ErosionIfrostCarry) {
+    if inputs.frost_depth_m > 0.0 && inputs.thaw_depth_m <= 0.0 {
+        (ErosionFrostRegime::FrozenSurface, ErosionIfrostCarry(1))
+    } else if inputs.surface_layer_water <= inputs.surface_layer_thetfc {
+        (ErosionFrostRegime::Unfrozen, ErosionIfrostCarry(0))
+    } else if prior_ifrost.0 > 0 {
+        (ErosionFrostRegime::Thawing, ErosionIfrostCarry(2))
+    } else {
+        (ErosionFrostRegime::Unfrozen, ErosionIfrostCarry(0))
+    }
+}
+
 /// Freeze-thaw adjustment factors `(ckiaft, ckraft, tcaft)`.
 fn erosion_freeze_thaw_factors(
     regime: ErosionFrostRegime,
@@ -169,6 +227,73 @@ fn erosion_freeze_thaw_factors(
         ErosionFrostRegime::Thawing => Err(DirectRuntimeError::MissingDirectUpstream {
             upstream: "winter fcycle freeze-thaw cycle counter (soil.for ifrost==2 thaw branch)",
         }),
+    }
+}
+
+// `soil.for:356` consolidation-onset threshold: `daydis` increments only
+// once cumulative rain-since-disturbance exceeds 0.01 m.
+const RFCUM_CONSOLIDATION_ONSET_M: f64 = 0.01;
+
+/// Persistent consolidation-age carry (`soil.for` `rfcum`/`daydis`): the
+/// cumulative rain since the last disturbance and the day count that ages
+/// the consolidation. Threaded per-lane across days.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectErosionConsolidationCarry {
+    /// Cumulative rain-since-disturbance (m) — `rfcum`.
+    pub rfcum_m: f64,
+    /// Days since disturbance — `daydis` (feeds `produc = bconsd·daydis`).
+    pub daydis: f64,
+}
+
+impl DirectErosionConsolidationCarry {
+    /// Day-zero seed from the management initial condition (`daydi1`);
+    /// `rfcum` starts at 0.
+    #[must_use]
+    pub fn seed(initial_daydis: f64) -> Self {
+        Self {
+            rfcum_m: 0.0,
+            daydis: initial_daydis.max(0.0),
+        }
+    }
+}
+
+/// `soil.for`: advance the consolidation carry one day. On a non-tillage
+/// day `daydis` increments when the **prior** `rfcum` exceeds the onset
+/// threshold (the legacy increment uses `rfcum` before today's rainfall is
+/// added, `soil.for:356` before `:833`), then today's liquid input is
+/// accumulated when the mean temperature is above freezing. A tillage day
+/// scales `daydis` by `(1 - surdis)` and resets `rfcum` (`soil.for:324`,
+/// `:413`). Forest managements never till, so the common path is the
+/// non-tillage branch.
+#[must_use]
+pub fn advance_erosion_consolidation(
+    prior: DirectErosionConsolidationCarry,
+    daily_liquid_input_m: f64,
+    mean_temperature_c: f64,
+    tillage_surface_disturbance: Option<f64>,
+) -> DirectErosionConsolidationCarry {
+    let today_rain_m = if mean_temperature_c > 0.0 {
+        daily_liquid_input_m.max(0.0)
+    } else {
+        0.0
+    };
+    if let Some(surdis) = tillage_surface_disturbance {
+        // Tillage: age-reset (`daydis *= 1 - surdis`) and `rfcum` reset,
+        // then today's rain accumulates onto the reset.
+        DirectErosionConsolidationCarry {
+            rfcum_m: today_rain_m,
+            daydis: ((1.0 - surdis).max(0.0) * prior.daydis).max(0.0),
+        }
+    } else {
+        let daydis = if prior.rfcum_m > RFCUM_CONSOLIDATION_ONSET_M {
+            prior.daydis + 1.0
+        } else {
+            prior.daydis
+        };
+        DirectErosionConsolidationCarry {
+            rfcum_m: prior.rfcum_m + today_rain_m,
+            daydis,
+        }
     }
 }
 

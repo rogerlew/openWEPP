@@ -122,6 +122,12 @@ pub use direct_runtime::{
     wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
 };
 pub use direct_runtime::{
+    DirectErosionConsolidationCarry, ErosionAdjustmentFactors, ErosionAdjustmentInputs,
+    ErosionConsolidationBaselines, ErosionConsolidationInputs, ErosionFrostInputs,
+    ErosionFrostRegime, ErosionIfrostCarry, advance_erosion_consolidation,
+    erosion_adjustment_factors, erosion_consolidation_baselines, resolve_erosion_frost_regime,
+};
+pub use direct_runtime::{
     DirectWave1DailyState, DirectWave1OperandSeed, assemble_wave1_continuity_inputs,
 };
 pub use direct_runtime::{
@@ -131,11 +137,6 @@ pub use direct_runtime::{
     erosion_effective_intensity, erosion_effective_particle, erosion_falvel,
     erosion_interrill_delivery_ratio, erosion_particle_composition, erosion_rill_hydraulics,
     erosion_shield, erosion_transport_coefficients, erosion_trcoef, erosion_yalin,
-};
-pub use direct_runtime::{
-    ErosionAdjustmentFactors, ErosionAdjustmentInputs, ErosionConsolidationBaselines,
-    ErosionConsolidationInputs, ErosionFrostRegime, erosion_adjustment_factors,
-    erosion_consolidation_baselines,
 };
 pub use hydrology::{
     DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs, DirectFrostControlInputs,
