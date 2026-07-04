@@ -153,10 +153,25 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
     shadow-run diff. Complete no-intervention spec in
     [`artifacts/increment-1bc-flip-scope-and-hold.md`](artifacts/increment-1bc-flip-scope-and-hold.md).
     Seed remains disabled; production outputs unchanged.
-- **Increment 2 — multi-OFE integration.** Wire Wave-1 across OFEs and reconcile
-  with the existing EROD14 routing (`qin/qout`, particle handoff).
+- **Increment 1c-fidelity — single-OFE surface completeness (structural, hard
+  prerequisite for Increment 2).** Publish `tdep` deposition, the 5-class `sedcon`
+  concentration (both 0 in the 1b-C first cut), and a real `field_width_m` from
+  hillslope geometry — the surfaces multi-OFE routing must transport.
+- **Increment 2 — multi-OFE integration.** Wire **Wave-1** across OFEs as the
+  per-OFE continuity engine (`G_out→ldtop` load, `qout→qin` discharge, particle
+  handoff), reusing the existing EROD14/Wave-2 routing plumbing, then retire Wave-2
+  as a separate physics arm. Coupled to the **hourly-flow substrate** (the
+  decreasing-flow/`qin<qout` deposition is per-hour) — carry the modeled hourly
+  flow through erosion → HBP → routing instead of the single-peak collapse. Full
+  architecture + open-decision resolution in
+  [`artifacts/increment-2-entry-gate.md`](artifacts/increment-2-entry-gate.md);
+  cross-cutting substrate concept in
+  [`docs/backlog/20260704-hydrograph-resolved-sediment-and-routing.md`](../../backlog/20260704-hydrograph-resolved-sediment-and-routing.md).
 - **Increment 3 — particle-class + enrichment completeness** (`sedia`/`sedist`)
-  and per-class concentration/fraction publication.
+  and per-class concentration/fraction publication. Folds into Increment 2d
+  (deposition is not faithful without the size classes enriching) — merge the entry
+  gates. Erosion **magnitude fidelity** is judged last, gated on the water-magnitude
+  contract-gap (roadmap §E.5).
 
 ## Validation posture
 

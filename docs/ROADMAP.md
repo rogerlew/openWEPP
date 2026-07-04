@@ -1,7 +1,7 @@
 # openWEPP Engine Roadmap
 
 Status: living — **canonical**, **forward-only planning queue**
-Last updated: 2026-07-02
+Last updated: 2026-07-04
 Audience: all contributors
 Owner: maintainers (Claude Code maintains this document)
 
@@ -705,6 +705,81 @@ items 1–2.
 
 (Frost depth was a Stage-2 candidate; the FDMC01 verdict + the settle-vertical-before-routing
 principle promoted it to active queue item 1 on 2026-06-07.)
+
+---
+
+## E. Hillslope erosion sediment sequence
+
+**Current position:** single-OFE **Wave-1 sediment continuity is live** — the erosion
+1b-C flip (SC-SED-001, ADR-0035) made the direct runtime a sediment producer for
+single-OFE no-tillage (forest/disturbed) hillslopes: `route`/`erod`/`runge` RK4
+continuity, conservation-gated, first runtime sediment (p61 `tdet=20.9 kg/m`; DFF-WS3
+directional burn law `2491 ≫ 258 kg`). Detail in
+[`work-packages/20260703-erosion-sediment-continuity-port-001/`](work-packages/20260703-erosion-sediment-continuity-port-001/).
+The forward queue below is **structure-first, magnitude-last** (ADR-0011): each rung
+adds one mechanism on a closed foundation; erosion **magnitude** is judged last and is
+**gated on the water-magnitude** item (rill detachment ∝ discharge, so multi-OFE
+runoff magnitude must be trustworthy before erosion magnitude is — otherwise water
+error aliases into erosion error).
+
+Full architecture + open-decision resolution:
+[`increment-2-entry-gate.md`](work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2-entry-gate.md).
+
+### E.1 Single-OFE surface completeness (structural — hard prerequisite)
+Publish the surfaces multi-OFE routing must transport: **`tdep` deposition**, the
+**5-class `sedcon` concentration** (both currently 0 in the 1b-C first cut), and a real
+**`field_width_m`** from hillslope geometry (currently unit-width). Gate: single-OFE
+closure unchanged; p61/DFF-WS3 directional law intact; the now-nonzero surfaces
+conserve. *Structural — comes before the multi-OFE mechanism.*
+
+### E.2 Hourly-flow substrate — resolve the "core awkwardness" (structural)
+The Wave-1 solve collapses the modeled hourly flow to a single **peak discharge**, the
+HBP serializes only **peak+volume+duration**, and watershed routing **reconstructs a
+triangular hydrograph** (SC-ROUTE-001 `REF-ROUTE-CH13-PEAKIN`). That collapse is the
+root of the decreasing-flow/reinfiltration awkwardness (a single peak has no falling
+limb, so recession deposition and the `qout<qin` case are handled by the interim
+INV-030 clamp). openWEPP already models the hourly profile (`wb14_hourly_excess_m`) and
+spends it nowhere. **Carry the modeled hourly flow through the stack** —
+hillslope hydrograph → erosion solve → HBP EVENT surface → channel routing — so the
+falling-limb deposition and the multi-OFE `qin/qout` become ordinary hour-resolved
+balances (retiring the clamp as a *fix*, not a bound), and the watershed routes the
+real shape, not a triangle. Cross-cutting (SC-SED-001 + HBP + SC-ROUTE-001);
+contract-first (ADR + amendments before code). Concept:
+[`backlog/20260704-hydrograph-resolved-sediment-and-routing.md`](backlog/20260704-hydrograph-resolved-sediment-and-routing.md).
+*Structural, and the natural substrate for E.3 and for Hairsine-Rose.*
+
+### E.3 Multi-OFE Wave-1 chaining (Increment 2 — structural)
+Make **Wave-1 the per-OFE continuity engine** for every OFE, chained by the
+`G_out→ldtop` load, `qout→qin` discharge, and particle-fraction handoff (reusing the
+existing EROD14/Wave-2 routing plumbing); retire Wave-2 as a *separate physics arm*.
+Gate: per-OFE + hillslope-exit mass closure; the OFE-boundary handoff identity;
+directional (burn-ratio) checks; EROD14 retained behind a comparator flag for
+cross-check, then deleted.
+
+### E.4 Enrichment + particle routing (Increment 3 — folds into E.3)
+Class-resolved deposition and `enrich.for`-lineage fraction update at deposition
+transitions and OFE exits; ER emerges as a diagnostic. Coupled to E.3 (deposition is
+not faithful without the size classes enriching) — merge their entry gates.
+
+### E.5 Erosion magnitude fidelity ⏸️ (deferred, judged last)
+Absolute-magnitude fidelity (p61's ~5×), judged on the closed+routed erosion system
+**after** the water-magnitude judgment closes — the forest-lateral magnitude authority
+is now the four-tier observed envelope `SC-SUBHYD-001#INV-SUBHYD-033`
+(WS10/Maimai/Panola/Weiler; judgment run MOFEFID-C03), so erosion magnitude waits on
+that field-data judgment rather than a legacy comparator. Untangles water-magnitude vs
+`field_width` vs first-cut-operand contributions.
+
+**Parallel arms (not in the critical path):**
+- **Customizable sediment class table + post-fire ash class** — standalone value for
+  the disturbed-forest target (the fixed 5-class scheme cannot represent ash); HBP
+  `npart` is already variable. Independent of Hairsine-Rose. Promote as its own small
+  backlog item.
+- **Hairsine-Rose multi-class model** — long-horizon alternative authority arm (explicit
+  deposited-layer + settling-velocity deposition `d_i=v_s·c` — the cleaner deposition
+  physics for exactly the reinfiltration/footslope/post-fire regimes). Concept-stage,
+  contract-first (references-intake HRREF01 active), disabled-by-default. Benefits from
+  E.2 but does not gate it.
+  [`backlog/20260526-hairsine-rose-multiclass-sediment-model.md`](backlog/20260526-hairsine-rose-multiclass-sediment-model.md).
 
 ---
 
