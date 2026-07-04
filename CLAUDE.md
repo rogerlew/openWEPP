@@ -41,6 +41,16 @@ architecture-first strategy with top-down science contracts, orchestrated by
 two production CLIs (single-hillslope, watershed) plus one debug/comparator CLI
 (replay).
 
+**Domain orientation (on record):** where legacy WEPP is an *agricultural* model
+with forests bolted on as flag-gated partitions (`ksflag`/`ksatadj` frost-off,
+`wepp_ui.txt` hourly balance — maintained by the forest/UI contributors, never
+run by NSERL/ag), openWEPP **inverts** it: a **forest** hydrology and erosion
+model with scaffolding for agricultural hydrology. Fidelity investment and
+validation authority are forest-first (`SC-SUBHYD-001#INV-SUBHYD-033`
+steep-wet-forest envelope, disturbed-forest, MOFE / hourly / subsurface); the ag
+paths are structurally supported but secondary. See README "Scientific
+orientation."
+
 Key references:
 - [README.md](README.md) — project identity, scope, repo layout
 - [docs/decisions/0011-architecture-first-top-down-science-contracts.md](docs/decisions/0011-architecture-first-top-down-science-contracts.md) — strategy authority: architecture-first, top-down contracts, comparator-tier policy
