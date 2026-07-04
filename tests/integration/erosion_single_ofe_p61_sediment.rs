@@ -81,6 +81,92 @@ fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
         "per-class sedcon must publish a nonzero composition split \
          (total={sedcon_total}, nonzero_columns={sedcon_nonzero_columns})"
     );
+
+    // E.1 `field_width_m` output-level reconstruction (Codex round-1): on a
+    // zero-deposition event day the exported mass equals the detached mass,
+    // so the width-scaled total must reconstruct from two INDEPENDENTLY
+    // produced surfaces: `tdet = Σ_i sedcon_i × runvol`. `sedcon` is
+    // width-independent (`sloss.for:305-317`) and `runvol` carries the
+    // water-path hillslope area, so a seed reverted to unit width (or fed a
+    // width alias that disagrees with the water-path geometry) breaks this
+    // identity by the width factor (~724× on p61). Observed residual on the
+    // real run is machine epsilon (~2.4e-16 rel).
+    let mut reconstructed_days = 0_usize;
+    for row in read_sediment_rows(pass_parquet) {
+        if row.tdet_kg <= 0.0 || row.tdep_kg != 0.0 {
+            continue;
+        }
+        let sedcon_sum: f64 = row.sedcon_kg_m3.iter().sum();
+        let reconstructed_kg = sedcon_sum * row.runvol_m3;
+        let residual = (row.tdet_kg - reconstructed_kg).abs();
+        assert!(
+            residual <= 1.0e-9 * row.tdet_kg,
+            "field-width reconstruction failed: tdet={} kg must equal \
+             Σ sedcon × runvol = {} kg (residual {residual})",
+            row.tdet_kg,
+            reconstructed_kg
+        );
+        reconstructed_days += 1;
+    }
+    assert!(
+        reconstructed_days >= 1,
+        "the width reconstruction must exercise at least one \
+         zero-deposition event day (found {reconstructed_days})"
+    );
+}
+
+struct SedimentRow {
+    tdet_kg: f64,
+    tdep_kg: f64,
+    runvol_m3: f64,
+    sedcon_kg_m3: [f64; 5],
+}
+
+/// Per-row read of the pass-parquet sediment reconstruction columns.
+fn read_sediment_rows(path: &Path) -> Vec<SedimentRow> {
+    let file = File::open(path).expect("open pass parquet");
+    let reader = ParquetRecordBatchReaderBuilder::try_new(file)
+        .expect("parquet reader builder")
+        .build()
+        .expect("build parquet reader");
+    let mut rows = Vec::new();
+    for batch in reader {
+        let batch = batch.expect("read record batch");
+        let column = |name: &str| -> Vec<f64> {
+            let index = batch
+                .schema()
+                .index_of(name)
+                .unwrap_or_else(|_| panic!("pass parquet must carry the `{name}` column"));
+            let array = batch
+                .column(index)
+                .as_any()
+                .downcast_ref::<Float64Array>()
+                .unwrap_or_else(|| panic!("`{name}` must be Float64"));
+            (0..array.len()).map(|i| array.value(i)).collect()
+        };
+        let detachment = column("tdet");
+        let deposition = column("tdep");
+        let runvol = column("runvol");
+        let sedcon: Vec<Vec<f64>> = ["sedcon_1", "sedcon_2", "sedcon_3", "sedcon_4", "sedcon_5"]
+            .iter()
+            .map(|name| column(name))
+            .collect();
+        for i in 0..detachment.len() {
+            rows.push(SedimentRow {
+                tdet_kg: detachment[i],
+                tdep_kg: deposition[i],
+                runvol_m3: runvol[i],
+                sedcon_kg_m3: [
+                    sedcon[0][i],
+                    sedcon[1][i],
+                    sedcon[2][i],
+                    sedcon[3][i],
+                    sedcon[4][i],
+                ],
+            });
+        }
+    }
+    rows
 }
 
 /// Sum, max, and nonzero-count of a `f64` parquet column.

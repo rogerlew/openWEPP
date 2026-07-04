@@ -94,8 +94,14 @@ Publish `sedcon_i = frac_i × scalar_concentration` on all routed days.
   surface for consumers); porting `enrich.for` now (that is 2d's coupled
   particle work per the Increment-2 entry gate — deposition re-proportioning
   without per-class deposition state would be a half-port).
-- Guard: fail-closed validation that the seeded `Σ frac_i ≈ 1` before the
-  split publishes (a zeroed class table must error, not publish zeros).
+- Guard: fail-closed validation that the seeded composition closes at the
+  SC-SED-001 `TOL-SED-005` tolerance (`|Σ frac − 1| ≤ 1e-9`) before the
+  split publishes (a zeroed class table must error, not publish zeros);
+  the split is then normalized by the validated sum so the published
+  class sum equals the scalar toe concentration to f64 rounding
+  *(round-1 hardening — the initial cut gated at 1e-6 without
+  normalization, which admitted up to 1e-6 relative drift between the
+  class sum and the scalar; see §6)*.
 
 ### 3.2 `field_width_m` source = parsed slope `fwidth`, threaded typed
 
@@ -197,3 +203,31 @@ inherits it as an explicit intake item.
   production fixture — the production-path depositing fixture is
   deliberately deferred to E.2, whose hourly substrate changes the
   deposition forcing representation.
+
+## 6. Codex review round 1 (2026-07-04) — all three findings fixed
+
+1. **Medium — Σ frac tolerance vs the mass-exact claim (CONFIRMED).** The
+   guard admitted `|Σ frac − 1| ≤ 1e-6` while the contract's class-fraction
+   closure is `TOL-SED-005` (`≤ 1e-9`) and the GAP-SED-007 text claimed the
+   class sum "exact" — a seeded table summing to `1.0000005` would have
+   published a class sum ≠ the scalar concentration. Fix: guard tightened
+   to `TOL-SED-005` (1e-9) **and** the split normalizes by the validated
+   sum, making `Σ sedcon_i =` scalar to f64 rounding by construction (the
+   division is a ≤ 1e-9 adjustment inside the closure tolerance, not a
+   correction of an invalid composition — those fail the gate). Contract +
+   code docs re-worded from "exact" to the constructive form.
+2. **Medium — `field_width_m` had no executable regression (CONFIRMED).**
+   The p61 test asserted only `tdet > 0`/finite; a revert to unit width
+   would have passed. Fix: output-level reconstruction in the p61 test —
+   on zero-deposition event days, `tdet = Σ_i sedcon_i × runvol` ties the
+   erosion-seed width to the water-path area through two independently
+   produced surfaces (`sedcon` width-independent, `runvol` area-scaled).
+   **Ran** both directions: green on the real path (residual ~2.4e-16
+   rel, gated at 1e-9), and a deliberate temporary unit-width revert
+   fails it by the width factor (`20.91` vs `15,148.1 kg`) — restored
+   after the negative check.
+3. **Low — stale pre-1b-C comment in the erosion authority builder
+   (CONFIRMED).** The "production seed cannot yet construct its operand
+   payload" block predated 1b-C. Rewritten: the continuity solve is
+   production-active via the operand-seed path; `wave1_enabled` there is
+   the separate (still-disabled) Increment-1 pointwise EROD13 check.

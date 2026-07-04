@@ -14,9 +14,12 @@ use super::{
 const EROSION_HOUR_BIN_S: f64 = 3600.0;
 
 // E.1 per-class publication: the seeded `prtcmp` composition must sum to
-// unity before it can split the toe concentration; the tolerance covers
-// f64 rounding across the five-class normalization, nothing physical.
-const WAVE1_CLASS_FRACTION_SUM_TOL: f64 = 1.0e-6;
+// unity before it can split the toe concentration. The bound is the
+// SC-SED-001 `TOL-SED-005` class-fraction closure tolerance
+// (`abs(Σ frac - 1) <= 1e-9`); the split below then normalizes by the
+// validated sum so the published class sum equals the scalar toe
+// concentration to f64 rounding regardless of the admitted drift.
+const WAVE1_CLASS_FRACTION_SUM_TOL: f64 = 1.0e-9;
 
 /// Build the erosion rainfall-excess intervals for one day from the WB14
 /// per-hour excess + rainfall surfaces (`reid.for` basis for `effint`/
@@ -1353,8 +1356,10 @@ fn direct_erod14_final_class_states(
 /// `fidel = frac`, `param.for:452-458`) is exact whenever the profile
 /// does not deposit. On depositing days the class *distribution* is the
 /// un-enriched first cut (labeled INV-SED-011 scope limit; the class
-/// *sum* — the mass the watershed consumer reconstructs — is exact
-/// because `Σ frac = 1`).
+/// *sum* — the mass the watershed consumer reconstructs — equals the
+/// scalar toe concentration to f64 rounding: the composition is gated at
+/// the `TOL-SED-005` closure tolerance and the split is normalized by
+/// the validated sum).
 pub(crate) fn direct_wave1_publication_projection(
     state: &DirectWave1ContinuityState,
     inputs: &DirectWave1ContinuityInputs,
@@ -1386,9 +1391,13 @@ pub(crate) fn direct_wave1_publication_projection(
         });
     }
 
+    // Normalize by the TOL-SED-005-validated sum: the published class sum
+    // equals the scalar toe concentration to f64 rounding (the division is
+    // a <= 1e-9 adjustment inside the closure tolerance, not a correction
+    // of an invalid composition — those already failed above).
     let mut sediment_concentration_kg_m3 = [0.0; DIRECT_EROSION_CLASS_LIMIT];
     for (index, class) in classes.iter().enumerate() {
-        let concentration = class.frac * state.sediment_concentration_kg_m3;
+        let concentration = (class.frac / frac_sum) * state.sediment_concentration_kg_m3;
         validate_nonnegative_direct_m(
             "erosion.wave1.publication.class_concentration",
             concentration,

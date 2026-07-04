@@ -1171,21 +1171,17 @@ fn direct_production_typed_erosion_authority(
     contributor_ofe_count: usize,
     management_has_active_tillage: bool,
 ) -> Result<DirectProductionErosionAuthority, HillslopeCliError> {
-    // Wave-1 (SC-SED-001 sediment continuity): the spatial solver is
-    // implemented and gated in the orchestrator
-    // (`direct_runtime/erosion_continuity.rs`), but the production seed
-    // cannot yet construct its required operand payload — the legacy
-    // `frcfac`/`shears` hydraulics chain (`shrsol`, rill width, friction
-    // factors), the `soil.for` daily erodibility adjustments
-    // (`kiadjf`/`kradjf`/`tcadjf`), the `irs.for` `effint`/`effdrr`
-    // surfaces, and the `sedia`/`falvel`/`trcoef` transport operands
-    // (`tcend`/`ktrato`/`veleff`) have no openWEPP producers. Enabling
-    // Wave-1 here without them would require fabricated operands, which
-    // the no-provisional-math rule forbids. Operand production is the
-    // declared Increment-1b scope of
-    // `docs/work-packages/20260703-erosion-sediment-continuity-port-001`;
-    // flipping this seed to a populated `DirectWave1ContinuityInputs`
-    // activates the solver.
+    // Wave-1 (SC-SED-001 sediment continuity): the spatial continuity
+    // solve is PRODUCTION-ACTIVE post-1b-C via the operand-seed path
+    // below — `direct_production_wave1_operand_seed` sources the full
+    // static payload from real parsed inputs (1b-A/1b-B producers:
+    // `frcfac`/`shears` hydraulics, `soil.for` daily adjustments,
+    // `reid.for` `effint`/`effdrr`, `prtcmp`/`falvel`/`trcoef`
+    // transport), the per-day assembly builds the daily state from the
+    // frame, and the enable is gated at the end of this function
+    // (single-OFE, no active tillage). `wave1_enabled` here is the
+    // SEPARATE Increment-1 pointwise EROD13 coefficient check, which
+    // stays disabled — it is not the continuity solve.
     let wave1_enabled = false;
     let wave2_enabled = contributor_ofe_count > 1;
     let first_ofe = slope.ofes.first().ok_or_else(|| {
