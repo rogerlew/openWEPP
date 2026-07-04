@@ -154,13 +154,37 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
     concentration = Increment 3); thaw-day erosion skipped. Detail in
     [`artifacts/increment-1bc-flip-scope-and-hold.md`](artifacts/increment-1bc-flip-scope-and-hold.md);
     forward sequence in [`docs/ROADMAP.md`](../../ROADMAP.md) §E.
-- **Increment 1c-fidelity — single-OFE surface completeness (structural, hard
-  prerequisite for Increment 2).** Compute the 5-class `sedcon` array (the
-  genuinely-zeroed surface; `tdep`/`total_deposition_kg` is already published and
-  solver-computed — read 0 only on detachment-dominated fixtures, so its gap is
-  nonzero-deposition validation coverage + per-OFE semantics), and source a real
-  `field_width_m` from hillslope geometry — the surfaces multi-OFE routing must
-  transport.
+- **Increment 1c-fidelity (ROADMAP §E.1) — single-OFE surface completeness:
+  BUILT + GATED on branch `erosion-e1-inc1c-fidelity`, 2026-07-04 (Claude-
+  executed, operator-directed "scaffold and execute E.1"); AWAITING CODEX
+  REVIEW.** All three items landed, each resolved against fresh legacy
+  source-intent recon (SC-SED-001 v42 anchors): (1) **`field_width_m`** now
+  sourced from the parsed slope `fwidth` through a new typed
+  `TypedSlopeOfeRuntimeProjection.fwidth_m` (fail-closed finite/positive) —
+  a payload-semantics correction, since legacy `tdet`/`tdep` are total kg
+  (`sedseg.for` ×`fwidth`) and the HBP contract already declared kg
+  (p61 verified: `tdet = 15,148.1 kg = 20.91 kg/m × 724.3 m`, per-width
+  magnitude unchanged); (2) **5-class `sedcon`** published as the
+  `sloss.for:305-317` composition split `frac_i × toe-concentration`
+  (Σ-fraction fail-closed guard; concentration verified width-independent,
+  p61 class sum = the prior scalar `19.077 kg/m³`); the pre-enrichment
+  basis is labeled `GAP-SED-007` (legacy-exact on the non-depositing
+  enabled scope — non-cropland `fidel = frac` collapse; un-enriched
+  distribution on depositing days until E.4/2d); (3) **depositing-limb
+  coverage** via a concave validation-instrument profile under the real
+  227-storm McKenzie population + production producers: 190/190 clean
+  solves deposit (`tdep = 52,444 kg`, per-day conservation asserted), 37
+  slowest-peak storms refuse via the named `flux_closure` discretization
+  gate (bounded ≤ 20%, no other error class permitted — fail-closed where
+  legacy's identical 100-point grid silently integrates). **Record
+  correction:** the p61 "~5×" magnitude gap is NOT `field_width` — the
+  legacy comparand (`Sed.Del 4.2 kg/m`) is per-width AND a
+  detachment-vs-delivery cut-point mismatch; E.5 decomposition should
+  compare `exported_kg_m`. HBP EVENT schema deliberately untouched
+  (single-class schema1 payload; the npart-resolved surface is designed
+  once with E.2's hourly redesign, which also inherits the
+  `peak_runoff_m3_s` depth-rate unit question). Design + adjudications in
+  [`artifacts/increment-1c-entry-gate.md`](artifacts/increment-1c-entry-gate.md).
 - **Increment 2 — multi-OFE integration.** Wire **Wave-1** across OFEs as the
   per-OFE continuity engine (`G_out→ldtop` load, `qout→qin` discharge, particle
   handoff), reusing the existing EROD14/Wave-2 routing plumbing, then retire Wave-2

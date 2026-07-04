@@ -710,32 +710,28 @@ principle promoted it to active queue item 1 on 2026-06-07.)
 
 ## E. Hillslope erosion sediment sequence
 
-**Current position:** single-OFE **Wave-1 sediment continuity is live** — the erosion
-1b-C flip (SC-SED-001, ADR-0035) made the direct runtime a sediment producer for
-single-OFE no-tillage (forest/disturbed) hillslopes: `route`/`erod`/`runge` RK4
-continuity, conservation-gated, first runtime sediment (p61 `tdet=20.9 kg/m`; DFF-WS3
-directional burn law `2491 ≫ 258 kg`). Detail in
+**Current position:** single-OFE **Wave-1 sediment continuity is live and its
+publication surfaces are complete** — the erosion 1b-C flip (SC-SED-001, ADR-0035)
+made the direct runtime a sediment producer for single-OFE no-tillage
+(forest/disturbed) hillslopes (`route`/`erod`/`runge` RK4 continuity,
+conservation-gated; DFF-WS3 directional burn law holds), and E.1 (Increment
+1c-fidelity, branch `erosion-e1-inc1c-fidelity`, awaiting Codex review) completed
+the single-OFE surfaces: geometry-sourced `field_width_m` (total-kg payload
+semantics, p61 `tdet = 15,148 kg = 20.91 kg/m × 724.3 m`), the 5-class `sedcon`
+composition split (pre-enrichment basis labeled `GAP-SED-007`), and conserving
+nonzero-deposition coverage (190 depositing storm solves on the concave
+validation instrument). Detail in
 [`work-packages/20260703-erosion-sediment-continuity-port-001/`](work-packages/20260703-erosion-sediment-continuity-port-001/).
 The forward queue below is **structure-first, magnitude-last** (ADR-0011): each rung
 adds one mechanism on a closed foundation; erosion **magnitude** is judged last and is
 **gated on the water-magnitude** item (rill detachment ∝ discharge, so multi-OFE
 runoff magnitude must be trustworthy before erosion magnitude is — otherwise water
-error aliases into erosion error).
+error aliases into erosion error). Note for E.5: the p61 "~5×" is per-width and a
+detachment-vs-delivery cut-point mismatch (compare `exported_kg_m` to legacy
+`Sed.Del`) — it is NOT a `field_width` artifact.
 
 Full architecture + open-decision resolution:
 [`increment-2-entry-gate.md`](work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2-entry-gate.md).
-
-### E.1 Single-OFE surface completeness (structural — hard prerequisite)
-Complete the surfaces multi-OFE routing must transport. `tdep` (total deposition) is
-**already published** and solver-computed — it read 0 on p61/DFF-WS3 only because those
-profiles are detachment-dominated (a value, not a missing surface); the gap is
-**nonzero-deposition validation coverage** + per-OFE deposition semantics. The **5-class
-`sedcon` array** is the genuinely-zeroed surface (single-OFE Wave-1 carries a scalar
-concentration, not the per-class breakdown — the Increment-3 particle work). And source
-a real **`field_width_m`** from hillslope geometry (currently unit-width). Gate:
-single-OFE closure unchanged; p61/DFF-WS3 directional law intact; a depositing fixture
-gives conserving nonzero `tdep`; `sedcon` conserves per class. *Structural — before the
-multi-OFE mechanism.*
 
 ### E.2 Hourly-flow substrate — resolve the "core awkwardness" (structural)
 The Wave-1 solve collapses the modeled hourly flow to a single **peak discharge**, the
