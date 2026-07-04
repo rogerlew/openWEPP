@@ -4,7 +4,7 @@ title: Hillslope Binary Pass Input Parser Contract (H<hillslope_id>.hbp)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.0
+contract_version: 0.2.0
 evidence_mode: Static
 last_updated_utc: 2026-05-29T00:00:00Z
 ---
@@ -41,10 +41,14 @@ directory mappings, and payload-block metadata.
 
 | Case | Input schema | Source-model stance | Simulation-model stance | Evidence |
 | --- | --- | --- | --- | --- |
-| A | `schema_major=1`, `schema_minor<=0` | Accept. | Parse and validate schema `1.x` daily payload layout. | `[DIRECT][E-SPEC-HBP-01]`, `[DIRECT][E-WF-HBP-01]` |
-| B | `schema_major=2`, `schema_minor<=0` | Accept. | Parse and validate schema `2.x` block-directory layout. | `[DIRECT][E-SPEC-HBP-01]`, `[DIRECT][E-WF-HBP-01]` |
+| A | `schema_major=1`, `schema_minor<=1` | Accept. | Parse and validate schema `1.x` daily payload layout; runoff-EVENT payloads carry the minor-gated field set (Section 3a). | `[DIRECT][E-SPEC-HBP-01]`, `[DIRECT][E-WF-HBP-01]` |
+| B | `schema_major=2`, `schema_minor<=1` | Accept. | Parse and validate schema `2.x` block-directory layout; day-slice payload encoding shares the Section 3a minor gating. | `[DIRECT][E-SPEC-HBP-01]`, `[DIRECT][E-WF-HBP-01]` |
 | C | unsupported major | Reject. | Emit typed unsupported-schema failure. | `[DIRECT][E-WF-HBP-01]` |
-| D | supported major but higher unsupported minor | Reject. | Emit typed unsupported-minor failure. | `[DIRECT][E-WF-HBP-01]` |
+| D | supported major but higher unsupported minor (file header **or** per-payload `payload_schema_minor`) | Reject. | Emit typed unsupported-minor failure — a newer payload is rejected loudly, never silently mis-parsed. | `[DIRECT][E-WF-HBP-01]` |
+
+Minor `1` is the ADR-0036/E.2 additive EVENT extension (Section 3a). Minor-`0`
+payloads remain fully parseable (the minor-1 fields are absent by definition);
+minor-`1` payloads are rejected by pre-E.2 readers via Case D.
 
 ## 2. Source Grammar and Source-vs-Simulation Model
 
@@ -99,6 +103,33 @@ schema2_tail = payload_block_table payload_block_region footer_v2 ;
 | `payload_block_table[]` | `schema2.block_entries[]` | `hbp.payload_blocks[]` | mixed | struct[] | `nyear` when schema2 | conditional | schema2 | omitted for schema1 | `payload_blocks` |
 | derived `path_resolution` | naming/policy branch | `hbp.path_resolution` | enum | string | 1 | yes | all | direct canonical `.hbp` only | `path_resolution` |
 | derived `warnings[]` | naming/policy branch | `hbp.warnings[]` | list | warning[] | 0..n | yes | all | must be empty; no compatibility warnings allowed | `warnings` |
+
+## 3a. Runoff-EVENT Payload Field Block (minor-gated)
+
+The runoff-EVENT payload (`event_kind = 2`) is strict-consumption: every field
+must be explicitly read in writer order and the cursor must land exactly at
+the payload end (no silent skip of unknown bytes). Fields by
+`payload_schema_minor`:
+
+| Canonical symbol | Minor | Units | Type / encoding | Semantics |
+| --- | --- | --- | --- | --- |
+| `event.duration_seconds` | >=0 | s | f64 | event/storm duration |
+| `event.time_of_concentration_hours` | >=0 | h | f64 | reserved/fixed on the direct writer |
+| `event.overland_flow_alpha` | >=0 | none | f64 | reserved/fixed on the direct writer |
+| `event.peak_runoff_m3_s` | >=0 | m³/s | f64 | **minor >= 1: true volumetric discharge** (`depth_rate × hillslope area`). Minor-0 payloads from the direct writer carried the WB16 depth-rate basis (m/s) under this name — a labeled legacy-basis caveat for minor-0 consumers. |
+| `event.total_detachment_kg` / `event.total_deposition_kg` | >=0 | kg | i64 ×1e9 | event totals (true kg per `SC-SED-001` E.1) |
+| `event.sediment_concentration_kg_m3[npart]` | >=0 | kg/m³ | u32 count + f64[] | per-class exit concentration; count must equal `npart` (production writes `npart = 5` from minor 1; earlier direct shards wrote `npart = 1`) |
+| `event.particle_flow_fraction[npart]` | >=0 | none | u32 count + f64[] | per-class exiting fractions (`SC-SED-001` GAP-SED-007 basis) |
+| `event.hourly_runoff_volume_m3[24]` | >=1 | m³ | u32 count (= 24) + f64[24] | hour-integrated runoff volume at the hillslope exit; `Σ = ` event runoff volume (`SC-SED-001#INV-SED-014`) |
+| `event.hourly_sediment_mass_kg[24]` | >=1 | kg | u32 count (= 24) + f64[24] | hour-integrated exported sediment mass on the same time base; `Σ = ` event exported mass |
+| reserved trailing `2 × i64` | >=0 | none | i64 | zero; retained after the minor-1 arrays |
+
+Minor-1 fields are inserted **before** the reserved trailing `2 × i64`,
+identically in writer and parser (strict consumption makes any divergence a
+typed `HBP-E-013`/`HBP-E-015` failure, not a silent shift). Structural
+validation for the hourly arrays: count exactly `24`, every element finite
+and non-negative. Integral-closure checks against runoff volume / sediment
+mass are **run-level intake validation** (Section 8), not parser-local.
 
 ## 4. Propagation Map Table
 
@@ -157,6 +188,7 @@ Closure hooks:
 | `HBP-E-012` | checksum | footer/directory/table/file CRC closure mismatch |
 | `HBP-E-013` | syntax | truncated payload or malformed payload/state encoding |
 | `HBP-E-014` | cross-file | expected hillslope id mismatch |
+| `HBP-E-015` | semantic | minor-1 hourly-surface structural violation (count != 24, non-finite, or negative element) |
 No silent fallback to legacy text pass family is permitted.
 
 ## 8. Cross-File Consistency Constraints
@@ -169,6 +201,13 @@ No silent fallback to legacy text pass family is permitted.
    declarations and required-state catalog.
 4. Schema2 day slices must be contiguous, non-overlapping, and complete inside
    each decompressed payload block.
+5. Minor-1 intake closure (run-level, ADR-0036 D4 / `SC-SED-001#INV-SED-014`):
+   the shard-set intake validator must check `Σ event.hourly_runoff_volume_m3`
+   against the event runoff volume and
+   `Σ event.hourly_sediment_mass_kg` against the event exported sediment mass
+   (`Σ sediment_concentration_kg_m3_i × Σ hourly_runoff_volume_m3`) within the
+   declared tolerance, failing closed on material violation. Parser-local
+   validation stays structural (`HBP-E-015`).
 
 ## 9. Boundary Export Mapping
 
@@ -204,6 +243,7 @@ No silent fallback to legacy text pass family is permitted.
 | `G-HBP-008` | schema2 payload-block and day-slice closure | block-table + slice validators | `HBP-E-011`/`HBP-E-013` |
 | `G-HBP-009` | footer and file-level CRC closure | footer validator | `HBP-E-012` |
 | `G-HBP-010` | strict naming/path observability closure | path resolver | `HBP-E-001` |
+| `G-HBP-011` | minor-1 hourly-surface structural closure (count = 24, finite, non-negative) | runoff-EVENT payload validator | `HBP-E-015` |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -223,5 +263,6 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-07-04` | `0.2.0` | E.2/ADR-0036 minor-1 EVENT extension: schema/payload minor `<=1` accepted (Section 1.2), new Section 3a runoff-EVENT payload field block (paired `hourly_runoff_volume_m3[24]` m³ + `hourly_sediment_mass_kg[24]` kg before the reserved trailing i64s; `npart = 5` per-class production from minor 1; `peak_runoff_m3_s` true-volumetric from minor 1 with the minor-0 depth-rate caveat labeled), `HBP-E-015`/`G-HBP-011` structural validation, and the Section 8.5 run-level integral-closure intake rule. |
 | `2026-05-29` | `0.1.1` | WSHEDIMPL43 amendment: retired `.pass.dat` compatibility derivation and warning branch; parser naming policy is strict canonical `.hbp` only with no ASCII fallback support. |
 | `2026-05-22` | `0.1.0` | Initial HBP parser contract authored and aligned to openWEPP parser implementation surface. |

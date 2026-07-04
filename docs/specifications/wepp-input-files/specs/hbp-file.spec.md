@@ -6,7 +6,7 @@
 - `title`: `WEPP Hillslope Binary Pass Input Surface (HBP)`
 - `status`: `draft`
 - `owner`: `openWEPP`
-- `spec_version`: `0.1.0`
+- `spec_version`: `0.2.0`
 - `last_updated_utc`: `2026-05-29T00:00:00Z`
 - `evidence_mode`: `Static`
 
@@ -32,10 +32,10 @@ Evidence: `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-c
 
 | Case | File schema | Source behavior | openWEPP parser stance |
 | --- | --- | --- | --- |
-| A | `schema_major=1`, `schema_minor<=0` | [DIRECT] daily payload region (`schema 1.x`) supported. | accept under strict structural/invariant validation. |
-| B | `schema_major=2`, `schema_minor<=0` | [DIRECT] compressed yearly payload blocks (`schema 2.x`) supported. | accept under strict structural/invariant validation. |
+| A | `schema_major=1`, `schema_minor<=1` | [DIRECT] daily payload region (`schema 1.x`) supported; minor `1` adds the ADR-0036 hourly EVENT surfaces. | accept under strict structural/invariant validation. |
+| B | `schema_major=2`, `schema_minor<=1` | [DIRECT] compressed yearly payload blocks (`schema 2.x`) supported; day-slice payloads share the minor-gated EVENT field set. | accept under strict structural/invariant validation. |
 | C | unsupported major | [DIRECT] rejected. | typed `UnsupportedSchemaMajor` failure. |
-| D | supported major, higher unsupported minor | [DIRECT] rejected. | typed `UnsupportedSchemaMinor` failure. |
+| D | supported major, higher unsupported minor (header or per-payload) | [DIRECT] rejected. | typed `UnsupportedSchemaMinor` failure. |
 
 [DIRECT] Supported schema rules are explicitly defined in file-family contract and reader implementation.
 Evidence: `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md`, `/workdir/wepppyo3/wepp_interchange/src/hill_hbp.rs`.
@@ -114,6 +114,15 @@ Evidence: `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` 
 | `day_directory[]` | day directory | mixed | struct[] | yes | strict deterministic ordering | `hbp.day_directory` |
 | `payload_block_table[]` | schema `2.x` | mixed | struct[] | conditional | required for `schema_major=2` | `hbp.payload_blocks` |
 | `footer` | file footer | mixed | struct | yes | CRC + record-count + magic closure | `hbp.footer` |
+| `event.hourly_runoff_volume_m3[24]` | runoff-EVENT payload (`payload_schema_minor >= 1`) | m³ | u32 count + f64[24] | conditional | hour-integrated exit runoff volume; `Σ =` event runoff volume; count exactly 24, finite, non-negative | `hbp.event.hourly_runoff_volume_m3` |
+| `event.hourly_sediment_mass_kg[24]` | runoff-EVENT payload (`payload_schema_minor >= 1`) | kg | u32 count + f64[24] | conditional | hour-integrated exported sediment mass on the same time base; `Σ =` event exported mass | `hbp.event.hourly_sediment_mass_kg` |
+
+Minor-1 EVENT placement: both hourly arrays sit immediately before the
+reserved trailing `2 × i64` of the runoff-EVENT payload, written and read in
+identical order (strict cursor consumption). Full field-block semantics:
+`SC-INFILE-HBP-001` Section 3a (including the `npart = 5` per-class
+production basis and the `peak_runoff_m3_s` true-volumetric basis from
+minor 1).
 
 ## 7. Conditional branches and mode-specific requirements
 1. Schema branch:
