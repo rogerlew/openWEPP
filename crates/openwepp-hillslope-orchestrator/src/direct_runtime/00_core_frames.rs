@@ -1088,6 +1088,14 @@ pub struct DirectDayFrame {
     /// SC-SED-001 1b-C: persistent erosion carry threaded from the lane,
     /// advanced in the erosion span, committed back at day end.
     pub erosion_runtime_carry: DirectErosionRuntimeCarry,
+    /// ADR-0036 / INV-SED-013: the day's unit-normalized hourly runoff
+    /// weights (`REF-SED-DC01-SHAPE`), set in the erosion span from the
+    /// shared shape authority. All-zero on no-runoff days.
+    pub wave1_hourly_weights: [f64; 24],
+    /// ADR-0036 / INV-SED-013: the per-hydraulically-active-hour Wave-1
+    /// solve plan — `(hour, assembled continuity inputs)`. Empty on
+    /// non-routed days; built in R7D8, consumed by the R7D6 solve.
+    pub wave1_hourly_plan: Vec<(usize, DirectWave1ContinuityInputs)>,
     pub publication: DirectPublicationFrame,
     pub normalization_inputs: DirectNormalizationInputs,
     pub normalization: DirectNormalizationState,
@@ -1229,6 +1237,8 @@ impl DirectDayFrame {
             wb14_hourly_excess_m: [0.0; 24],
             wb14_hourly_rainfall_m: [0.0; 24],
             erosion_runtime_carry: DirectErosionRuntimeCarry::inert(),
+            wave1_hourly_weights: [0.0; 24],
+            wave1_hourly_plan: Vec::new(),
             publication: DirectPublicationFrame::empty(),
             normalization_inputs: DirectNormalizationInputs::zero(),
             normalization: DirectNormalizationState::zero(),

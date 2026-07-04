@@ -1007,6 +1007,8 @@ mod tests {
                 hbp_total_deposition_kg: Some(1.25),
                 hbp_sediment_concentration_kg_m3: Some(0.1),
                 sediment_concentration_kg_m3: Some([0.1, 0.2, 0.3, 0.4, 0.5]),
+                hourly_runoff_fraction: None,
+                hourly_sediment_mass_kg: None,
             },
         };
         DirectRunPublicationFrame {
@@ -1149,6 +1151,8 @@ mod tests {
                 hbp_total_deposition_kg: Some(1.25 + offset),
                 hbp_sediment_concentration_kg_m3: Some(0.1 + offset),
                 sediment_concentration_kg_m3: Some([0.1, 0.2, 0.3, 0.4, 0.5]),
+                hourly_runoff_fraction: None,
+                hourly_sediment_mass_kg: None,
             },
         }
     }

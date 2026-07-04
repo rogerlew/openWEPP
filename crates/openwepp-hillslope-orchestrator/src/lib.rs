@@ -114,12 +114,12 @@ pub use direct_runtime::{
     DirectWave1ContinuityState, DirectWave1SlopeSegment, DirectWb14HyetographInterval,
     DirectWb14InfiltrationProducerInputs, Wave1ShearClassification, Wave1ShearRegime,
     compute_direct_canopy_interception, compute_direct_wave1_continuity,
-    derive_wave1_slope_segments, direct_runtime_audit_snapshot,
-    record_direct_runtime_compatibility_edge_invocation,
+    compute_direct_wave1_continuity_quantum, derive_wave1_slope_segments,
+    direct_runtime_audit_snapshot, record_direct_runtime_compatibility_edge_invocation,
     record_direct_runtime_ksatadj_effective_conductivity_evaluation,
     reset_direct_runtime_audit_counters, wave1_classifier_shear, wave1_day_routes_sediment,
-    wave1_depc, wave1_depend, wave1_depeqs, wave1_runge_step, wave1_xcrit,
-    wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
+    wave1_depc, wave1_depend, wave1_depeqs, wave1_quantum_is_hydraulically_active,
+    wave1_runge_step, wave1_xcrit, wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
 };
 pub use direct_runtime::{
     DirectErosionConsolidationCarry, ErosionAdjustmentFactors, ErosionAdjustmentInputs,
@@ -129,7 +129,7 @@ pub use direct_runtime::{
 };
 pub use direct_runtime::{
     DirectErosionRuntimeCarry, DirectWave1DailyState, DirectWave1OperandSeed,
-    assemble_wave1_continuity_inputs,
+    assemble_wave1_continuity_inputs, assemble_wave1_continuity_inputs_quantum,
 };
 pub use direct_runtime::{
     EROSION_PARTICLE_CLASS_COUNT, ErosionEffectiveIntensity, ErosionExcessInterval,

@@ -1531,7 +1531,11 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // SNOWDENSITY-10.3.8 retained-liquid storage at lane scope.
     // DC01 (INV-RUNOFFPART-031) adds the 24-slot surface hourly-weights channel
     // to the transfer buffers carried at lane scope (+192 B).
-    assert!(lane_frame <= 1_408);
+    // ADR-0036 (E.2): the erosion publication operands gain the paired
+    // hourly surfaces (`hourly_runoff_fraction` + `hourly_sediment_mass_kg`,
+    // two Option<[f64; 24]>), which ride the lane-scope publication/
+    // downstream-operand embeddings (+352 B observed).
+    assert!(lane_frame <= 1_760);
     // FROST RESIDUE-COVER IMPLEMENTATION carries dynamic residue-depth operands;
     // the direct-cutover correction carries PMET storage-return closure operands.
     // DC01 (INV-RUNOFFPART-031) adds the WB14 hourly excess profile plus the
@@ -1540,7 +1544,11 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // SC-SED-001 1b-C adds the parallel WB14 hourly RAINFALL profile
     // (24-slot, +192 B, feeds the erosion `effint`) and the persistent
     // erosion runtime carry (`rfcum`/`daydis`/`ifrost`/rill width, +~32 B).
-    assert!(day_frame <= 13_248);
+    // ADR-0036 (E.2): the day frame gains the hourly-runoff weights
+    // (`wave1_hourly_weights`, +192 B), the hourly solve plan Vec header
+    // (+24 B), and the paired hourly publication surfaces embedded in the
+    // erosion operand/shadow/publication rows (+2,200 B total observed).
+    assert!(day_frame <= 15_448);
 }
 
 fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {

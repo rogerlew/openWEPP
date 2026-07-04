@@ -2,16 +2,39 @@ use crate::constants::WB11_ZERO_THRESHOLD;
 
 use super::{
     DIRECT_AUDIT, DIRECT_R7D6_EROSION_PHASE_SPAN_COUNT, DirectDayFrame,
-    DirectErosionConsolidationCarry, DirectPublicationErosionOperands, DirectRuntimeError,
-    DirectWave1ContinuityInputs, DirectWave1ContinuityState, DirectWave1DailyState,
-    DirectWave1OperandSeed, ErosionExcessInterval, ErosionFrostInputs, ErosionFrostRegime,
-    ErosionParticleClass, ErosionRfcumInputs, advance_erosion_consolidation,
-    assemble_wave1_continuity_inputs, compute_direct_wave1_continuity,
+    DirectErosionConsolidationCarry, DirectErosionRuntimeCarry, DirectPublicationErosionOperands,
+    DirectRuntimeError, DirectWave1ContinuityInputs, DirectWave1ContinuityState,
+    DirectWave1DailyState, DirectWave1OperandSeed, ErosionExcessInterval, ErosionFrostInputs,
+    ErosionFrostRegime, ErosionParticleClass, ErosionRfcumInputs, advance_erosion_consolidation,
+    assemble_wave1_continuity_inputs, assemble_wave1_continuity_inputs_quantum,
+    compute_direct_wave1_continuity, compute_direct_wave1_continuity_quantum,
     resolve_erosion_frost_regime, validate_finite, validate_nonnegative_direct_m,
+    wave1_day_routes_sediment,
 };
 
 // SC-SED-001 1b-C: one hourly bin (`DC01_HOUR_BIN_COUNT` × 1 h).
 const EROSION_HOUR_BIN_S: f64 = 3600.0;
+
+/// ADR-0036: the single-hour interval slice of the WB14 surfaces for one
+/// solve quantum — the hour's excess/rainfall depths on the hour's own
+/// time base (`reid.for` operand basis, hour-filtered).
+fn build_erosion_hour_interval(
+    hourly_excess_m: &[f64; 24],
+    hourly_rainfall_m: &[f64; 24],
+    hour: usize,
+) -> Vec<ErosionExcessInterval> {
+    let excess_m = hourly_excess_m[hour];
+    let rainfall_m = hourly_rainfall_m[hour];
+    if excess_m <= 0.0 && rainfall_m <= 0.0 {
+        return Vec::new();
+    }
+    vec![ErosionExcessInterval {
+        duration_s: EROSION_HOUR_BIN_S,
+        rainfall_intensity_m_s: rainfall_m.max(0.0) / EROSION_HOUR_BIN_S,
+        excess_m: excess_m.max(0.0),
+        snowmelt_active: false,
+    }]
+}
 
 // E.1 per-class publication: the seeded `prtcmp` composition must sum to
 // unity before it can split the toe concentration. The bound is the
@@ -420,41 +443,17 @@ impl DirectDayFrame {
     /// (the consolidation age advances daily per `soil.for`, independent of
     /// runoff); the assembly itself gates internally on routing days. No-op
     /// when the seed is disabled.
-    fn r7d8_assemble_wave1_continuity_from_frame(&mut self) -> Result<(), DirectRuntimeError> {
-        if !self.erosion_inputs.wave1_operand_seed.enabled {
-            return Ok(());
-        }
-
-        let mut carry = self.erosion_runtime_carry;
-
-        // Seed the consolidation age from `daydi1` on the first day (the
-        // lane carry starts inert); it advances daily thereafter.
-        if self.day_index == 0 {
-            carry.consolidation = DirectErosionConsolidationCarry::seed(
-                self.erosion_inputs.wave1_operand_seed.initial_daydis,
-            )?;
-        }
-
-        // Gate 1: advance `rfcum`/`daydis` EVERY day (`soil.for` runs daily,
-        // independent of runoff). Forest: no irrigation, no tillage.
-        carry.consolidation = advance_erosion_consolidation(
-            carry.consolidation,
-            &ErosionRfcumInputs {
-                precipitation_m: self.forcing.precipitation_m,
-                irrigation_depth_m: 0.0,
-                mean_temperature_c: self.forcing.effective_temperature_c,
-                irrigation_is_furrow: false,
-                tillage_surface_disturbance: None,
-            },
-        )?;
-
-        // Gate 2: resolve `ifrost` from DIMENSIONLESS top-layer water
-        // (`theta_m / depth_m`) vs field-capacity theta. The surface soil
-        // layer is REQUIRED on an active-erosion day — a missing one is a
-        // real missing upstream, not silently unfrozen — and the RAW
-        // (non-canonicalized) values pass to `resolve_erosion_frost_regime`,
-        // which fail-closes on non-finite / negative rather than letting a
-        // `.max(0.0)` mask them into a plausible unfrozen state.
+    /// Gate 2 of the R7D8 assembly: resolve `ifrost` from DIMENSIONLESS
+    /// top-layer water (`theta_m / depth_m`) vs field-capacity theta. The
+    /// surface soil layer is REQUIRED on an active-erosion day — a missing
+    /// one is a real missing upstream, not silently unfrozen — and the RAW
+    /// (non-canonicalized) values pass to `resolve_erosion_frost_regime`,
+    /// which fail-closes on non-finite / negative rather than letting a
+    /// `.max(0.0)` mask them into a plausible unfrozen state.
+    fn r7d8_resolve_erosion_frost_regime(
+        &self,
+        carry: &mut DirectErosionRuntimeCarry,
+    ) -> Result<ErosionFrostRegime, DirectRuntimeError> {
         let surface_layer = self.subsurface_compute.layer_state_after.first().ok_or(
             DirectRuntimeError::MissingDirectUpstream {
                 upstream: "R7D erosion frost-regime surface soil layer",
@@ -483,6 +482,69 @@ impl DirectDayFrame {
             carry.ifrost,
         )?;
         carry.ifrost = new_ifrost;
+        Ok(frost_regime)
+    }
+
+    /// GAP-SED-THAW: the actively-thawing regime (`soil.for ifrost == 2`)
+    /// needs the winter `fcycle` freeze-thaw cycle counter, which the
+    /// direct runtime does not produce. Rather than fabricate it
+    /// (forbidden) or fail the run, produce NO erosion on a thaw day —
+    /// a documented winter-subsystem under-estimate, not fabricated
+    /// physics. The continuity stays ENABLED (publication authority
+    /// holds) with zero runoff so the solver gates inactive; the
+    /// persistent carries stay advanced (age/ifrost lineage faithful).
+    /// ADR-0036: the hourly WATER surface still publishes on a thaw
+    /// runoff day (the hydrograph exists; only the sediment is skipped) —
+    /// otherwise the serialized `Σ V_h = runvol` closure would fail
+    /// exactly on GAP-SED-THAW days.
+    fn r7d8_thaw_day_skip(&mut self, carry: DirectErosionRuntimeCarry) {
+        let mut inert = DirectWave1ContinuityInputs::zero();
+        inert.enabled = self.erosion_inputs.wave1_operand_seed.enabled;
+        *self.erosion_inputs.wave1_continuity = inert;
+        let thaw_saturation_carry_m = self
+            .subsurface_compute_shadow_projection
+            .as_ref()
+            .map_or([0.0; 24], |subsurface| subsurface.hourly_saturation_carry_m);
+        self.wave1_hourly_weights = super::runoff::dc01_surface_runoff_hourly_weights(
+            self.peak_runoff_shadow_projection
+                .as_ref()
+                .map_or(0.0, |peak| peak.q_runoff_m),
+            &self.wb14_hourly_excess_m,
+            &thaw_saturation_carry_m,
+        );
+        self.wave1_hourly_plan.clear();
+        self.erosion_runtime_carry = carry;
+    }
+
+    fn r7d8_assemble_wave1_continuity_from_frame(&mut self) -> Result<(), DirectRuntimeError> {
+        if !self.erosion_inputs.wave1_operand_seed.enabled {
+            return Ok(());
+        }
+
+        let mut carry = self.erosion_runtime_carry;
+
+        // Seed the consolidation age from `daydi1` on the first day (the
+        // lane carry starts inert); it advances daily thereafter.
+        if self.day_index == 0 {
+            carry.consolidation = DirectErosionConsolidationCarry::seed(
+                self.erosion_inputs.wave1_operand_seed.initial_daydis,
+            )?;
+        }
+
+        // Gate 1: advance `rfcum`/`daydis` EVERY day (`soil.for` runs daily,
+        // independent of runoff). Forest: no irrigation, no tillage.
+        carry.consolidation = advance_erosion_consolidation(
+            carry.consolidation,
+            &ErosionRfcumInputs {
+                precipitation_m: self.forcing.precipitation_m,
+                irrigation_depth_m: 0.0,
+                mean_temperature_c: self.forcing.effective_temperature_c,
+                irrigation_is_furrow: false,
+                tillage_surface_disturbance: None,
+            },
+        )?;
+
+        let frost_regime = self.r7d8_resolve_erosion_frost_regime(&mut carry)?;
 
         // Winter boundary (confirmed hold): the actively-thawing regime
         // (`soil.for ifrost == 2`) needs the winter `fcycle` freeze-thaw
@@ -494,15 +556,7 @@ impl DirectDayFrame {
         // only this day's sediment is skipped. Surfacing thaw-day erosion
         // is a winter-subsystem work package (`GAP-SED-THAW`).
         if frost_regime == ErosionFrostRegime::Thawing {
-            // Keep the continuity ENABLED (so the erosion publication
-            // authority holds — `erosion_producer_required` is set on
-            // rainfall days) but zero the runoff so the solver gates
-            // inactive: enabled + no runoff => no sediment, no fabricated
-            // thaw physics, run completes.
-            let mut inert = DirectWave1ContinuityInputs::zero();
-            inert.enabled = self.erosion_inputs.wave1_operand_seed.enabled;
-            *self.erosion_inputs.wave1_continuity = inert;
-            self.erosion_runtime_carry = carry;
+            self.r7d8_thaw_day_skip(carry);
             return Ok(());
         }
 
@@ -550,10 +604,54 @@ impl DirectDayFrame {
         };
 
         let continuity = assemble_wave1_continuity_inputs(seed, &daily)?;
-        // Gate 5: persist the rill width from the assembled/solved day
-        // result (unchanged on non-routing days; grown on routing days).
-        carry.rill_width_m = continuity.width_m;
-        *self.erosion_inputs.wave1_continuity = continuity;
+
+        // ADR-0036 / INV-SED-013: the hydrograph-resolved hourly plan. The
+        // weights (the shared DC01 shape authority) are a WATER surface —
+        // populated on every runoff day, sub-`passby` included, because the
+        // serialized `V_h` hydrograph exists independently of whether the
+        // day routes sediment. The PLAN is sediment-gated: the day-level
+        // `passby` event gate runs on the DAY totals, and active days then
+        // assemble one solve quantum per hydraulically-active hour
+        // (`w_h > 0`; production `qin_h = 0` until the E.3 handoff).
+        let saturation_carry_m = self
+            .subsurface_compute_shadow_projection
+            .as_ref()
+            .map_or([0.0; 24], |subsurface| subsurface.hourly_saturation_carry_m);
+        let weights = super::runoff::dc01_surface_runoff_hourly_weights(
+            daily.runoff_depth_m,
+            &self.wb14_hourly_excess_m,
+            &saturation_carry_m,
+        );
+        self.wave1_hourly_weights = weights;
+        let hourly_width_m = Self::build_wave1_hourly_plan(
+            seed,
+            &daily,
+            &self.wb14_hourly_excess_m,
+            &self.wb14_hourly_rainfall_m,
+            &weights,
+            carry.rill_width_m,
+            &mut self.wave1_hourly_plan,
+        )?;
+        carry.rill_width_m = if self.wave1_hourly_plan.is_empty() {
+            // Non-routed day: the inert daily payload carries the prior
+            // width unchanged (same value either way).
+            continuity.width_m
+        } else {
+            hourly_width_m
+        };
+        // INV-SED-015: on a production lane the hourly plan is the ONLY
+        // publication authority. A routed day whose every hour fell below
+        // the negligibility floor must not fall through to the daily
+        // peak-form solve — degrade it to the inert (zero-sediment) day.
+        if self.wave1_hourly_plan.is_empty()
+            && wave1_day_routes_sediment(daily.runoff_depth_m, daily.peakro_m_s)
+        {
+            let mut inert = DirectWave1ContinuityInputs::zero();
+            inert.enabled = seed.enabled;
+            *self.erosion_inputs.wave1_continuity = inert;
+        } else {
+            *self.erosion_inputs.wave1_continuity = continuity;
+        }
         self.erosion_runtime_carry = carry;
         Ok(())
     }
@@ -574,10 +672,29 @@ impl DirectDayFrame {
         } else {
             None
         };
+        // ADR-0036 D1: the hydrograph-resolved plan is the production solve
+        // when present (a routed day always builds a non-empty plan, so the
+        // daily-payload solve below stays reachable only for crafted/test
+        // payloads and the INV-SED-015 comparator arm — never as production
+        // publication authority on a routed day).
+        let mut wave1_hourly_sediment_kg: Option<[f64; 24]> = None;
         let wave1_continuity = if erosion_inputs.wave1_continuity.enabled {
-            Some(Box::new(compute_direct_wave1_continuity(
-                &erosion_inputs.wave1_continuity,
-            )?))
+            if self.wave1_hourly_plan.is_empty() {
+                let state = compute_direct_wave1_continuity(&erosion_inputs.wave1_continuity)?;
+                if erosion_inputs.wave1_operand_seed.enabled {
+                    // Enabled production lane, non-routed day: the hourly
+                    // sediment surface is authoritatively zero.
+                    wave1_hourly_sediment_kg = Some([0.0; 24]);
+                }
+                Some(Box::new(state))
+            } else {
+                let (aggregate, hourly_sediment) = self.solve_wave1_hourly_plan(
+                    &erosion_inputs.wave1_continuity,
+                    erosion_inputs.wave1_operand_seed.field_width_m,
+                )?;
+                wave1_hourly_sediment_kg = Some(hourly_sediment);
+                Some(Box::new(aggregate))
+            }
         } else {
             None
         };
@@ -589,7 +706,7 @@ impl DirectDayFrame {
         } else {
             None
         };
-        let publication = if let Some(wave2) = &wave2 {
+        let mut publication = if let Some(wave2) = &wave2 {
             direct_erod15_publication_projection(wave2, &erosion_inputs.wave2)?
         } else if let Some(continuity) = wave1_continuity.as_deref().filter(|state| state.active) {
             direct_wave1_publication_projection(
@@ -600,6 +717,15 @@ impl DirectDayFrame {
         } else {
             DirectPublicationErosionOperands::zero_authority()
         };
+        // ADR-0036 D2: the hourly surfaces ride the Wave-1 publication —
+        // the runoff fraction is the shared water shape (populated on every
+        // enabled-lane day, sub-passby and thaw days included), the
+        // sediment surface comes from the plan solve (all-zero when no
+        // sediment routed). Wave-2 multi-OFE lanes stay `None` (minor-0).
+        if erosion_inputs.wave1_operand_seed.enabled && !erosion_inputs.wave2_enabled {
+            publication.hourly_runoff_fraction = Some(self.wave1_hourly_weights);
+            publication.hourly_sediment_mass_kg = wave1_hourly_sediment_kg.or(Some([0.0; 24]));
+        }
 
         Ok(DirectErosionState {
             wave1,
@@ -609,6 +735,133 @@ impl DirectDayFrame {
                 || erosion_inputs.wave1_continuity.enabled,
             publication,
         })
+    }
+
+    /// ADR-0036 / INV-SED-013: build the per-hydraulically-active-hour
+    /// solve plan on the shared shape authority. The hourly chain owns the
+    /// persistent rill width: hour `h` seeds hour `h+1`; the end-of-chain
+    /// width is returned for the carry (the daily-assembled payload keeps
+    /// the legacy day-basis width for the comparator arm only).
+    #[allow(clippy::too_many_arguments)]
+    fn build_wave1_hourly_plan(
+        seed: &DirectWave1OperandSeed,
+        daily: &DirectWave1DailyState,
+        hourly_excess_m: &[f64; 24],
+        hourly_rainfall_m: &[f64; 24],
+        weights: &[f64; 24],
+        start_width_m: f64,
+        plan: &mut Vec<(usize, DirectWave1ContinuityInputs)>,
+    ) -> Result<f64, DirectRuntimeError> {
+        plan.clear();
+        let mut hourly_width_m = start_width_m;
+        if !wave1_day_routes_sediment(daily.runoff_depth_m, daily.peakro_m_s) {
+            return Ok(hourly_width_m);
+        }
+        for (hour, weight) in weights.iter().enumerate() {
+            // Plan inclusion: positive-weight hours above the runtime's own
+            // negligible-runoff bound (the WB16 "too small to produce a
+            // peak" class). A trace-weight hour cannot route sediment but
+            // CAN underflow the routed-operand domain (e.g. a first-storm
+            // Gilley width below the zero threshold at ~1e-12 m2/s shear
+            // discharge); excluding it contributes exactly zero to the day
+            // sums and leaves the published water weights untouched.
+            if *weight <= 0.0
+                || daily.runoff_depth_m * weight
+                    <= crate::constants::WB16_RUNOFF_NEAR_ZERO_THRESHOLD
+            {
+                continue;
+            }
+            let mut hour_state = daily.clone();
+            hour_state.peakro_m_s = daily.runoff_depth_m * weight / EROSION_HOUR_BIN_S;
+            hour_state.runoff_depth_m = daily.runoff_depth_m * weight;
+            hour_state.effdrn_s = EROSION_HOUR_BIN_S;
+            hour_state.excess_intervals =
+                build_erosion_hour_interval(hourly_excess_m, hourly_rainfall_m, hour);
+            hour_state.beta = if hourly_rainfall_m[hour] > 0.0 {
+                0.5
+            } else {
+                1.0
+            };
+            hour_state.rill_width_prior_m = hourly_width_m;
+            let hour_inputs = assemble_wave1_continuity_inputs_quantum(seed, &hour_state, true)?;
+            hourly_width_m = hour_inputs.width_m;
+            plan.push((hour, hour_inputs));
+        }
+        Ok(hourly_width_m)
+    }
+
+    /// ADR-0036 D1: solve every hydraulically-active hour quantum
+    /// (passby-exempt — the day-level event gate already ran) and fold the
+    /// results into the day-aggregate continuity state (`INV-SED-014`:
+    /// daily totals are the hour sums). The per-point diagnostic grids on
+    /// the aggregate come from the max-export hour (a representative
+    /// profile; the totals are sums, never the representative's own).
+    fn solve_wave1_hourly_plan(
+        &self,
+        day_inputs: &DirectWave1ContinuityInputs,
+        field_width_m: f64,
+    ) -> Result<(DirectWave1ContinuityState, [f64; 24]), DirectRuntimeError> {
+        let mut hourly_sediment_kg = [0.0_f64; 24];
+        let mut aggregate: Option<DirectWave1ContinuityState> = None;
+        let mut exported_kg_m_sum = 0.0_f64;
+        let mut inflow_kg_m_sum = 0.0_f64;
+        let mut detach_kg_sum = 0.0_f64;
+        let mut depos_kg_sum = 0.0_f64;
+        let mut interrill_kg_m2_sum = 0.0_f64;
+        let mut closure_residual_sum = 0.0_f64;
+        let mut flux_residual_sum = 0.0_f64;
+        let mut flux_scale_sum = 0.0_f64;
+        let mut max_export_kg_m = -1.0_f64;
+
+        for (hour, hour_inputs) in &self.wave1_hourly_plan {
+            let state = compute_direct_wave1_continuity_quantum(hour_inputs, true)?;
+            if !state.active {
+                // A planned quantum is active by construction (`w_h > 0`
+                // implies positive hour flow); an inactive return means the
+                // plan and the solver disagree — fail closed.
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "erosion.wave1.hourly_plan_inactive_quantum",
+                });
+            }
+            hourly_sediment_kg[*hour] = state.exported_sediment_kg_m * field_width_m;
+            exported_kg_m_sum += state.exported_sediment_kg_m;
+            inflow_kg_m_sum += state.inflow_sediment_kg_m;
+            detach_kg_sum += state.total_detachment_kg;
+            depos_kg_sum += state.total_deposition_kg;
+            interrill_kg_m2_sum += state.interrill_contribution_kg_m2;
+            closure_residual_sum += state.publication_closure_residual_kg_m;
+            flux_residual_sum += state.flux_closure_residual;
+            flux_scale_sum += state.flux_closure_scale;
+            if state.exported_sediment_kg_m > max_export_kg_m {
+                max_export_kg_m = state.exported_sediment_kg_m;
+                aggregate = Some(state);
+            }
+        }
+
+        let mut aggregate = aggregate.ok_or(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.wave1.hourly_plan_empty",
+        })?;
+        aggregate.exported_sediment_kg_m = exported_kg_m_sum;
+        aggregate.inflow_sediment_kg_m = inflow_kg_m_sum;
+        aggregate.total_detachment_kg = detach_kg_sum;
+        aggregate.total_deposition_kg = depos_kg_sum;
+        aggregate.interrill_contribution_kg_m2 = interrill_kg_m2_sum;
+        aggregate.publication_closure_residual_kg_m = closure_residual_sum;
+        aggregate.flux_closure_residual = flux_residual_sum;
+        aggregate.flux_closure_scale = flux_scale_sum;
+        // The day toe concentration re-forms on the DAY totals
+        // (`sloss.for:314` basis, preserving the E.1 reconstruction
+        // identity `tdet = Σ sedcon × runvol` on zero-deposition days).
+        aggregate.sediment_concentration_kg_m3 = if day_inputs.peakro_m_s <= 0.0 {
+            0.0
+        } else {
+            exported_kg_m_sum / (day_inputs.runoff_depth_m * day_inputs.efflen_m)
+        };
+        validate_finite(
+            "erosion.wave1.hourly_day_concentration",
+            aggregate.sediment_concentration_kg_m3,
+        )?;
+        Ok((aggregate, hourly_sediment_kg))
     }
 
     fn r7d8_erosion_inputs_with_runoff_authority(
@@ -1414,6 +1667,8 @@ pub(crate) fn direct_wave1_publication_projection(
         hbp_total_deposition_kg: Some(state.total_deposition_kg),
         hbp_sediment_concentration_kg_m3: Some(state.sediment_concentration_kg_m3),
         sediment_concentration_kg_m3: Some(sediment_concentration_kg_m3),
+        hourly_runoff_fraction: None,
+        hourly_sediment_mass_kg: None,
     })
 }
 
@@ -1451,6 +1706,8 @@ fn direct_erod15_publication_projection(
         hbp_total_deposition_kg: Some(wave2.lddend_kg),
         hbp_sediment_concentration_kg_m3: Some(hbp_sediment_concentration_kg_m3),
         sediment_concentration_kg_m3: Some(sediment_concentration_kg_m3),
+        hourly_runoff_fraction: None,
+        hourly_sediment_mass_kg: None,
     })
 }
 

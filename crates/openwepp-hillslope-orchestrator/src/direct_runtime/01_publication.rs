@@ -574,6 +574,15 @@ pub struct DirectPublicationErosionOperands {
     pub hbp_total_deposition_kg: Option<f64>,
     pub hbp_sediment_concentration_kg_m3: Option<f64>,
     pub sediment_concentration_kg_m3: Option<[f64; 5]>,
+    /// ADR-0036 D2: the day's unit-normalized hourly runoff distribution
+    /// (`REF-SED-DC01-SHAPE` weights). `Some` on hydrograph-resolved Wave-1
+    /// lanes (the HBP writer forms `V_h = runvol · w_h`); `None` on lanes
+    /// without the hourly surfaces (Wave-2 multi-OFE — minor-0 payloads).
+    pub hourly_runoff_fraction: Option<[f64; 24]>,
+    /// ADR-0036 D2: hour-integrated exported sediment mass (kg) on the
+    /// same time base (`Σ = ` the day's exported mass; all-zero on
+    /// non-routed days so the closure holds trivially).
+    pub hourly_sediment_mass_kg: Option<[f64; 24]>,
 }
 
 impl DirectPublicationErosionOperands {
@@ -588,6 +597,8 @@ impl DirectPublicationErosionOperands {
             hbp_total_deposition_kg: None,
             hbp_sediment_concentration_kg_m3: None,
             sediment_concentration_kg_m3: None,
+            hourly_runoff_fraction: None,
+            hourly_sediment_mass_kg: None,
         }
     }
 
@@ -602,6 +613,8 @@ impl DirectPublicationErosionOperands {
             hbp_total_deposition_kg: Some(0.0),
             hbp_sediment_concentration_kg_m3: Some(0.0),
             sediment_concentration_kg_m3: Some([0.0; 5]),
+            hourly_runoff_fraction: None,
+            hourly_sediment_mass_kg: None,
         }
     }
 }

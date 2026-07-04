@@ -1799,9 +1799,16 @@ fn wave1_totals(
     // signed per-cell sums and the boundary loads (INV-SED-010 payload
     // consistency).
     let closure_residual = (exported_kg_m - inflow_kg_m) - (total_detach_kg_m - total_depos_kg_m);
+    // The identity's scale must span EVERY operand in it: a pure-deposition
+    // quantum (ADR-0036 full-reinfiltration hour: exported = detach = 0,
+    // inflow = deposition > 0) would otherwise degenerate the relative gate
+    // to an absolute 1e-18 and reject f64 accumulation noise on a closed
+    // balance (latent pre-E.2: single-OFE zero-qin days always detached).
     let closure_scale = exported_kg_m
         .abs()
+        .max(inflow_kg_m.abs())
         .max(total_detach_kg_m.abs())
+        .max(total_depos_kg_m.abs())
         .max(WAVE1_CLOSURE_ABS_FLOOR);
     if closure_residual.abs() > WAVE1_PUBLICATION_CLOSURE_REL_TOL * closure_scale {
         return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
@@ -1919,6 +1926,19 @@ pub fn wave1_quantum_is_hydraulically_active(
 pub fn compute_direct_wave1_continuity(
     inputs: &DirectWave1ContinuityInputs,
 ) -> Result<DirectWave1ContinuityState, DirectRuntimeError> {
+    compute_direct_wave1_continuity_quantum(inputs, false)
+}
+
+/// The passby-exempt solve entry (ADR-0036 D1 / `INV-SED-013`): hour
+/// quanta of a day that already passed the day-level `passby` event-size
+/// gate must NOT re-apply that event-scale bound at hour scale (a routed
+/// 12 mm day spread over hours would otherwise never route an hour).
+/// `passby_exempt = false` preserves the legacy day/event semantics for
+/// the daily form and every existing caller.
+pub fn compute_direct_wave1_continuity_quantum(
+    inputs: &DirectWave1ContinuityInputs,
+    passby_exempt: bool,
+) -> Result<DirectWave1ContinuityState, DirectRuntimeError> {
     if !inputs.enabled {
         return Ok(DirectWave1ContinuityState::inactive());
     }
@@ -1933,12 +1953,18 @@ pub fn compute_direct_wave1_continuity(
     // legacy event-size bypass (`contin.for` `norun == 1`), OR positive
     // upstream inflow — the full-reinfiltration quantum (`qout <= 0`,
     // `qin > 0`) must still solve so the incoming load deposits
-    // (`xinflo.for:206` `qshear = qin·rspace` branch).
-    if !wave1_quantum_is_hydraulically_active(
-        inputs.runoff_depth_m,
-        inputs.peakro_m_s,
-        inputs.qin_m2_s,
-    ) {
+    // (`xinflo.for:206` `qshear = qin·rspace` branch). Passby-exempt
+    // quanta still require positive flow or inflow.
+    let active = if passby_exempt {
+        (inputs.runoff_depth_m > 0.0 && inputs.peakro_m_s > 0.0) || inputs.qin_m2_s > 0.0
+    } else {
+        wave1_quantum_is_hydraulically_active(
+            inputs.runoff_depth_m,
+            inputs.peakro_m_s,
+            inputs.qin_m2_s,
+        )
+    };
+    if !active {
         return Ok(DirectWave1ContinuityState::inactive());
     }
 

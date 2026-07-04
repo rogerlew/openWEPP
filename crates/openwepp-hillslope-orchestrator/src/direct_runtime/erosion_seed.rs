@@ -224,6 +224,27 @@ pub fn assemble_wave1_continuity_inputs(
     seed: &DirectWave1OperandSeed,
     daily: &DirectWave1DailyState,
 ) -> Result<DirectWave1ContinuityInputs, DirectRuntimeError> {
+    assemble_wave1_continuity_inputs_quantum(seed, daily, false)
+}
+
+/// The passby-exempt assembly entry (ADR-0036 D1 / `INV-SED-013`): hour
+/// quanta of a day that already passed the day-level `passby` gate must
+/// assemble their routed operands even below the event-size bounds —
+/// otherwise the plan would carry an inert payload into a solver that
+/// (correctly) exempts the quantum from `passby`, and the routed-operand
+/// validation would fail on zeroed operands (the Increment-1 round-1
+/// gate-mismatch class, at the hour scale). `passby_exempt = false`
+/// preserves the day/event semantics for every existing caller.
+// One coherent operand pipeline mirroring the legacy
+// `contin.for`->`frcfac`->`xinflo`->`param` call order; splitting it would
+// scatter the gate-before-routed-operand ordering the reviews keep
+// protecting.
+#[allow(clippy::too_many_lines)]
+pub fn assemble_wave1_continuity_inputs_quantum(
+    seed: &DirectWave1OperandSeed,
+    daily: &DirectWave1DailyState,
+    passby_exempt: bool,
+) -> Result<DirectWave1ContinuityInputs, DirectRuntimeError> {
     validate_finite("erosion.assemble.peakro", daily.peakro_m_s)?;
     validate_finite("erosion.assemble.runoff_depth", daily.runoff_depth_m)?;
     validate_finite("erosion.assemble.qin", daily.qin_m2_s)?;
@@ -232,13 +253,16 @@ pub fn assemble_wave1_continuity_inputs(
     // Non-routed quanta return the inert payload; the solver gates
     // inactive. A positive-inflow quantum stays active even without local
     // runoff (ADR-0036 D1 / INV-SED-013 — the full-reinfiltration case).
-    if !seed.enabled
-        || !wave1_quantum_is_hydraulically_active(
+    let quantum_active = if passby_exempt {
+        (daily.runoff_depth_m > 0.0 && daily.peakro_m_s > 0.0) || daily.qin_m2_s > 0.0
+    } else {
+        wave1_quantum_is_hydraulically_active(
             daily.runoff_depth_m,
             daily.peakro_m_s,
             daily.qin_m2_s,
         )
-    {
+    };
+    if !seed.enabled || !quantum_active {
         return Ok(inert_continuity_inputs(seed, daily));
     }
 

@@ -10,10 +10,77 @@ use super::direct_runtime_test_lock;
 use crate::direct_runtime::direct_wave1_publication_projection;
 use crate::{
     DIRECT_WAVE1_GRID_POINTS, DirectDayFrame, DirectPeakRunoffShadowProjection, DirectRunIdentity,
-    DirectRuntimeError, DirectWave1ContinuityInputs, DirectWave1SlopeSegment, ErosionParticleClass,
-    Wave1ShearRegime, compute_direct_wave1_continuity, derive_wave1_slope_segments, wave1_depc,
-    wave1_depend, wave1_depeqs, wave1_runge_step, wave1_xcrit,
+    DirectRuntimeError, DirectWave1ContinuityInputs, DirectWave1DailyState, DirectWave1OperandSeed,
+    DirectWave1SlopeSegment, ErosionConsolidationBaselines, ErosionFrostRegime,
+    ErosionParticleClass, Wave1ShearRegime, assemble_wave1_continuity_inputs_quantum,
+    compute_direct_wave1_continuity, compute_direct_wave1_continuity_quantum,
+    derive_wave1_slope_segments, wave1_depc, wave1_depend, wave1_depeqs, wave1_runge_step,
+    wave1_xcrit,
 };
+
+/// Crafted ENABLED operand seed (real-shaped forest-class operands) for
+/// assembly-level quantum tests: uniform 30% slope, clay-loam-class
+/// erodibility, the crafted composition.
+fn crafted_enabled_seed() -> DirectWave1OperandSeed {
+    DirectWave1OperandSeed {
+        enabled: true,
+        is_cropland: false,
+        segments: vec![DirectWave1SlopeSegment {
+            xu: 0.0,
+            xl: 1.0,
+            a: 0.0,
+            b: 1.0,
+        }],
+        slplen_m: 100.0,
+        efflen_m: 100.0,
+        cntlen_m: 100.0,
+        rspace_m: 1.0,
+        field_width_m: 30.0,
+        avg_slope: 0.30,
+        slpend: 0.30,
+        sand: 0.25,
+        classes: crafted_particle_classes(),
+        veleff_m_s: 0.005,
+        baselines: ErosionConsolidationBaselines {
+            kicrat: 1.0,
+            krcrat: 1.0,
+            tccrat: 1.0,
+            bconsd: 0.02,
+        },
+        kr_s_m: 5.0e-4,
+        ki: 1.0e6,
+        shcrit_pa: 1.0,
+        hmax_m: 0.0,
+        flivmx: 0.0,
+        random_roughness_m: 0.01,
+        initial_daydis: 100.0,
+    }
+}
+
+/// Bare-cover daily state skeleton for quantum-assembly tests.
+fn crafted_daily_state() -> DirectWave1DailyState {
+    DirectWave1DailyState {
+        peakro_m_s: 0.0,
+        runoff_depth_m: 0.0,
+        effdrn_s: 3600.0,
+        qin_m2_s: 0.0,
+        excess_intervals: Vec::new(),
+        canopy_cover_fraction: 0.0,
+        canopy_height_m: 0.0,
+        interrill_cover_fraction: 0.0,
+        rill_cover_fraction: 0.0,
+        live_root_mass_kg_m2: 0.0,
+        dead_root_mass_kg_m2: 0.0,
+        buried_residue_mass_kg_m2: 0.0,
+        random_roughness_m: 0.01,
+        rill_width_prior_m: 0.0,
+        days_since_disturbance: 100.0,
+        frost_regime: ErosionFrostRegime::Unfrozen,
+        theta_suppressed: false,
+        beta: 1.0,
+        strldn: 0.0,
+    }
+}
 
 /// Crafted five-class `prtcmp`-shaped composition (fractions sum to 1);
 /// diameters/densities/fall velocities are physically-shaped fillers —
@@ -515,6 +582,165 @@ fn wave1_span_publishes_continuity_totals_through_the_frame() {
         "per-class concentrations must conserve the scalar toe concentration \
          (sum={class_sum}, scalar={scalar_concentration})"
     );
+}
+
+#[test]
+fn wave1_full_reinfiltration_quantum_deposits_incoming_load_without_clamp() {
+    // ADR-0036 D1 acceptance driver: an hour whose incoming runon fully
+    // reinfiltrates (`qout = 0`, `qin > 0`) must SOLVE and deposit the
+    // incoming sediment load — the legacy `xinflo.for:206` branch — with
+    // no clamp anywhere in the path.
+    let seed = crafted_enabled_seed();
+    let mut daily = crafted_daily_state();
+    daily.qin_m2_s = 1.0e-4;
+    daily.strldn = 1.5;
+
+    let inputs = assemble_wave1_continuity_inputs_quantum(&seed, &daily, true)
+        .expect("full-reinfiltration quantum must assemble routed operands");
+    assert!(
+        inputs.shrsol_pa > 0.0,
+        "qin-basis rill hydraulics must resolve (xinflo.for:206 qshear = qin*rspace)"
+    );
+    let state = compute_direct_wave1_continuity_quantum(&inputs, true)
+        .expect("full-reinfiltration quantum must solve fail-closed-clean");
+    assert!(state.active, "qin > 0 must activate the solve");
+    assert!(
+        state.total_deposition_kg > 0.0,
+        "the reinfiltrating quantum must deposit incoming load, got tdep={}",
+        state.total_deposition_kg
+    );
+    assert!(
+        state.exported_sediment_kg_m <= state.inflow_sediment_kg_m,
+        "full reinfiltration cannot export more than flowed in \
+         (export={}, inflow={})",
+        state.exported_sediment_kg_m,
+        state.inflow_sediment_kg_m
+    );
+    // Telescoping conservation (the in-solve 1e-9 gate already enforced it;
+    // restate externally).
+    let residual = (state.exported_sediment_kg_m - state.inflow_sediment_kg_m)
+        - (state.total_detachment_kg - state.total_deposition_kg) / seed.field_width_m;
+    assert!(
+        residual.abs() <= 1.0e-9 * state.inflow_sediment_kg_m.max(1.0e-9),
+        "conservation identity must hold on the reinfiltration quantum \
+         (residual {residual})"
+    );
+}
+
+#[test]
+fn wave1_decreasing_flow_quantum_deposits_on_falling_limb() {
+    // The recession case: positive local flow smaller than the inflow
+    // (`0 < qout < qin`) — the falling-limb hour deposits through the
+    // solver's negative-qostar machinery, without the INV-RUNOFFPART-031
+    // interim clamp semantics anywhere.
+    let seed = crafted_enabled_seed();
+    let mut daily = crafted_daily_state();
+    daily.runoff_depth_m = 0.004; // below the day-level passby: hour semantics
+    daily.peakro_m_s = 1.0e-6; // qout = 1e-4 m2/s
+    daily.qin_m2_s = 3.0e-4; // qin > qout: decreasing flow
+    daily.strldn = 1.5;
+
+    let inputs = assemble_wave1_continuity_inputs_quantum(&seed, &daily, true)
+        .expect("decreasing-flow quantum must assemble routed operands");
+    // theta-suppressed regime (`qout <= qin`, param.for:540): the interrill
+    // supply operands are legitimately zero.
+    assert!(inputs.detinr_kg_s_m2 == 0.0);
+    let state = compute_direct_wave1_continuity_quantum(&inputs, true)
+        .expect("decreasing-flow quantum must solve fail-closed-clean");
+    assert!(state.active);
+    assert!(
+        state.total_deposition_kg > 0.0,
+        "the falling-limb quantum must deposit, got tdep={}",
+        state.total_deposition_kg
+    );
+}
+
+#[test]
+fn wave1_span_hourly_plan_aggregates_and_publishes_paired_surfaces() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    // Production-shaped hourly path: an ENABLED seed + a two-hour excess
+    // profile through the R7D8 assembly and the R7D6 hourly solve. The
+    // publication must carry the paired hourly surfaces with their
+    // integral closures (INV-SED-014).
+    let identity = DirectRunIdentity::new(7, 2637, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut day = DirectDayFrame::seed(identity, 0, 0).expect("valid direct day should construct");
+    *day.erosion_inputs.wave1_operand_seed = crafted_enabled_seed();
+    day.wb14_hourly_excess_m[10] = 0.012;
+    day.wb14_hourly_excess_m[11] = 0.006;
+    day.wb14_hourly_rainfall_m[10] = 0.015;
+    day.wb14_hourly_rainfall_m[11] = 0.008;
+    day.forcing.precipitation_m = 0.023;
+    day.peak_runoff_shadow_projection = Some(DirectPeakRunoffShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        q_runoff_m: 0.018,
+        peak_runoff_m3_s: 1.0e-5,
+        runoff_duration_s: 2000.0,
+        method_branch: 1.0,
+        tstar: 0.0,
+        qpstar: 0.0,
+        vstar: 0.0,
+    });
+    // The frost gate requires a valid surface soil layer.
+    day.subsurface_compute.layer_state_after = vec![crate::DirectSubsurfaceLayerState {
+        depth_m: 0.2,
+        theta_m: 0.04,
+        field_capacity_theta: 0.25,
+        ..crate::DirectSubsurfaceLayerState::neutral()
+    }];
+
+    let report = day
+        .run_r7d6_erosion_span()
+        .expect("hourly wave1 span should run");
+    assert!(report.erosion_shadow_projection.publication_authority);
+    let publication = report.erosion_shadow_projection.publication;
+
+    let weights = publication
+        .hourly_runoff_fraction
+        .expect("hourly runoff fraction must publish on the enabled lane");
+    let weight_sum: f64 = weights.iter().sum();
+    assert!(
+        (weight_sum - 1.0).abs() < 1.0e-9,
+        "weights must be unit-normalized (sum {weight_sum})"
+    );
+    assert!(weights[10] > 0.0 && weights[11] > 0.0);
+    assert_eq!(
+        weights.iter().filter(|w| **w > 0.0).count(),
+        2,
+        "only the excess hours carry weight"
+    );
+
+    let hourly_sediment = publication
+        .hourly_sediment_mass_kg
+        .expect("hourly sediment mass must publish on the enabled lane");
+    let sediment_sum: f64 = hourly_sediment.iter().sum();
+    assert!(sediment_sum > 0.0, "the storm hours must export sediment");
+    let state = day
+        .erosion
+        .wave1_continuity
+        .as_ref()
+        .expect("continuity state must be committed");
+    assert!(state.active);
+    let exported_kg =
+        state.exported_sediment_kg_m * day.erosion_inputs.wave1_operand_seed.field_width_m;
+    assert!(
+        (sediment_sum - exported_kg).abs() <= 1.0e-9 * exported_kg.max(1.0e-9),
+        "Σ S_h must equal the day's exported mass (Σ={sediment_sum}, day={exported_kg})"
+    );
+    // Day totals are the hour sums; on this zero-deposition profile the
+    // E.1 reconstruction identity holds in hourly form too.
+    let tdet = publication.total_detachment_kg.expect("tdet published");
+    assert!(tdet > 0.0);
+    if state.total_deposition_kg == 0.0 {
+        assert!(
+            (tdet - exported_kg).abs() <= 1.0e-9 * tdet.max(1.0e-9),
+            "zero-deposition day: detached mass equals exported mass"
+        );
+    }
 }
 
 #[test]
