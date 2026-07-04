@@ -199,23 +199,31 @@ pub struct ErosionFrostInputs {
 ///   downstream in [`erosion_adjustment_factors`]).
 /// - else → `Unfrozen`.
 ///
-/// Fail-closed: the depths / water / field capacity must be finite
-/// (NaN is a typed error, never a silently mis-branched regime) and the
-/// prior `ifrost` must be a valid `0..=2` carry.
+/// Fail-closed: the depths / water / field capacity must be finite **and
+/// nonnegative** (a negative depth or water content is a typed error, never
+/// a silently mis-branched regime) and the prior `ifrost` must be a valid
+/// `0..=2` carry.
 pub fn resolve_erosion_frost_regime(
     inputs: &ErosionFrostInputs,
     prior_ifrost: ErosionIfrostCarry,
 ) -> Result<(ErosionFrostRegime, ErosionIfrostCarry), DirectRuntimeError> {
-    validate_finite("erosion.frost.frost_depth_m", inputs.frost_depth_m)?;
-    validate_finite("erosion.frost.thaw_depth_m", inputs.thaw_depth_m)?;
-    validate_finite(
-        "erosion.frost.surface_layer_water",
-        inputs.surface_layer_water,
-    )?;
-    validate_finite(
-        "erosion.frost.surface_layer_thetfc",
-        inputs.surface_layer_thetfc,
-    )?;
+    for (field, value) in [
+        ("erosion.frost.frost_depth_m", inputs.frost_depth_m),
+        ("erosion.frost.thaw_depth_m", inputs.thaw_depth_m),
+        (
+            "erosion.frost.surface_layer_water",
+            inputs.surface_layer_water,
+        ),
+        (
+            "erosion.frost.surface_layer_thetfc",
+            inputs.surface_layer_thetfc,
+        ),
+    ] {
+        validate_finite(field, value)?;
+        if value < 0.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation { field });
+        }
+    }
     if prior_ifrost.0 > 2 {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: "erosion.frost.prior_ifrost",
@@ -266,13 +274,20 @@ pub struct DirectErosionConsolidationCarry {
 
 impl DirectErosionConsolidationCarry {
     /// Day-zero seed from the management initial condition (`daydi1`);
-    /// `rfcum` starts at 0.
-    #[must_use]
-    pub fn seed(initial_daydis: f64) -> Self {
-        Self {
-            rfcum_m: 0.0,
-            daydis: initial_daydis.max(0.0),
+    /// `rfcum` starts at 0. Fail-closed: the initial `daydis` must be
+    /// finite and nonnegative (a NaN / negative `daydi1` is a typed error,
+    /// not silently canonicalized to 0).
+    pub fn seed(initial_daydis: f64) -> Result<Self, DirectRuntimeError> {
+        validate_finite("erosion.rfcum.initial_daydis", initial_daydis)?;
+        if initial_daydis < 0.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "erosion.rfcum.initial_daydis",
+            });
         }
+        Ok(Self {
+            rfcum_m: 0.0,
+            daydis: initial_daydis,
+        })
     }
 }
 

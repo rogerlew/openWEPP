@@ -314,12 +314,41 @@ fn frost_regime_fails_closed_on_nan_and_invalid_ifrost() {
         resolve_erosion_frost_regime(&frost_inputs(0.0, 0.0, 0.4, 0.28), ErosionIfrostCarry(7)),
         Err(AdjustError::DirectDomainViolation { .. })
     ));
+    // Negative physical inputs (depth / water) are typed domain errors,
+    // not a plausible regime.
+    for inputs in [
+        frost_inputs(-0.01, 0.0, 0.4, 0.28),
+        frost_inputs(0.0, -0.01, 0.4, 0.28),
+        frost_inputs(0.0, 0.0, -0.1, 0.28),
+        frost_inputs(0.0, 0.0, 0.4, -0.28),
+    ] {
+        assert!(matches!(
+            resolve_erosion_frost_regime(&inputs, ErosionIfrostCarry::unfrozen()),
+            Err(AdjustError::DirectDomainViolation { .. })
+        ));
+    }
+}
+
+#[test]
+fn consolidation_carry_seed_fails_closed_on_invalid_initial_daydis() {
+    assert!(matches!(
+        DirectErosionConsolidationCarry::seed(f64::NAN),
+        Err(AdjustError::NonFiniteDirectValue { .. })
+    ));
+    assert!(matches!(
+        DirectErosionConsolidationCarry::seed(-1.0),
+        Err(AdjustError::DirectDomainViolation { .. })
+    ));
+    // A valid nonnegative initial daydis seeds cleanly.
+    let carry = DirectErosionConsolidationCarry::seed(42.0).expect("valid seed");
+    assert_eq!(carry.daydis, 42.0);
+    assert_eq!(carry.rfcum_m, 0.0);
 }
 
 #[test]
 fn consolidation_carry_accumulates_and_ages() {
     // Seed from a management initial daydis.
-    let mut carry = DirectErosionConsolidationCarry::seed(0.0);
+    let mut carry = DirectErosionConsolidationCarry::seed(0.0).expect("seed");
     assert_eq!(carry.rfcum_m, 0.0);
     assert_eq!(carry.daydis, 0.0);
 
@@ -368,7 +397,7 @@ fn consolidation_carry_irrigation_split_matches_legacy() {
     // Sprinkler / none (irsyst <= 1): irrigation always adds to rfcum even
     // on a sub-freezing day, while precipitation is temperature-gated
     // (soil.for:837-845).
-    let carry = DirectErosionConsolidationCarry::seed(0.0);
+    let carry = DirectErosionConsolidationCarry::seed(0.0).expect("seed");
     let cold_irrigated = advance_erosion_consolidation(
         carry,
         &ErosionRfcumInputs {
@@ -386,7 +415,7 @@ fn consolidation_carry_irrigation_split_matches_legacy() {
     // Furrow (irsyst == 2): irrigation water is excluded from rfcum; only
     // warm-day precipitation counts.
     let furrow = advance_erosion_consolidation(
-        DirectErosionConsolidationCarry::seed(0.0),
+        DirectErosionConsolidationCarry::seed(0.0).expect("seed"),
         &ErosionRfcumInputs {
             precipitation_m: 0.03,
             irrigation_depth_m: 0.01,
@@ -402,7 +431,7 @@ fn consolidation_carry_irrigation_split_matches_legacy() {
 
 #[test]
 fn consolidation_carry_fails_closed_on_nan_and_negative() {
-    let carry = DirectErosionConsolidationCarry::seed(0.0);
+    let carry = DirectErosionConsolidationCarry::seed(0.0).expect("seed");
     assert!(matches!(
         advance_erosion_consolidation(carry, &forest_rfcum(f64::NAN, 10.0)),
         Err(AdjustError::NonFiniteDirectValue { .. })

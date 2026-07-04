@@ -96,6 +96,19 @@ After the fixes: adjustment producer suite 12 → 15; `cargo nextest run
 --workspace --profile full` **1318/1318 passed, 1 skipped**; fmt/clippy
 on the touched surfaces and diff-check clean.
 
+**Codex review round 2 (2 Medium, fixed on this branch):** the
+fail-closed surface was not fully closed —
+- `resolve_erosion_frost_regime` finite-checked but did not reject
+  **negative** depths / water / field capacity (a negative depth could
+  still pick a plausible regime). Now rejects negatives as a typed
+  domain error; regression added for all four fields.
+- `DirectErosionConsolidationCarry::seed` still canonicalized an invalid
+  initial `daydis` via `.max(0.0)` (NaN / negative `daydi1` → 0). Now
+  returns `Result` and validates finite + nonnegative; regression added.
+Adjustment producer suite 15 → 16; `cargo nextest run --workspace
+--profile full` **1319/1319 passed, 1 skipped**; fmt/clippy on the
+touched surfaces and diff-check clean.
+
 
 **Stage 1 + assembly core LANDED** (branch `erosion-inc1c-flip`):
 `direct_runtime/erosion_seed.rs` — `DirectWave1OperandSeed` (per-lane
