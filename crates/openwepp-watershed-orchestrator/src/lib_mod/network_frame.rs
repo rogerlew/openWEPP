@@ -193,6 +193,11 @@ pub struct HillslopeContribution {
     pub sediment_concentration_kg_m3: Vec<f64>,
     pub particle_diameter_m: Vec<f64>,
     pub particle_flow_fraction: Vec<f64>,
+    /// SC-INFILE-HBP-001 §3a minor-1 paired hourly surfaces (empty on
+    /// minor-0 shards): hour-integrated exit runoff volume (m³) and
+    /// exported sediment mass (kg) on a shared 24-slot time base.
+    pub hourly_runoff_volume_m3: Vec<f64>,
+    pub hourly_sediment_mass_kg: Vec<f64>,
 }
 
 impl HillslopeContribution {

@@ -407,6 +407,8 @@ fn run() -> Result<(), String> {
             sediment_concentration_kg_m3: typed_sediment_concentrations,
             particle_diameter_m: typed_particle_diameters,
             particle_flow_fraction: typed_particle_flow_fractions,
+            hourly_runoff_volume_m3: payload.hourly_runoff_volume_m3.clone(),
+            hourly_sediment_mass_kg: payload.hourly_sediment_mass_kg.clone(),
         });
     }
     let routing_input_elapsed_ms = routing_input_started.elapsed().as_millis();

@@ -87,6 +87,8 @@ fn contribution_with_diameters(
         sediment_concentration_kg_m3: vec![0.35, 0.45, 0.55],
         particle_diameter_m,
         particle_flow_fraction: vec![0.2, 0.3, 0.5],
+        hourly_runoff_volume_m3: Vec::new(),
+        hourly_sediment_mass_kg: Vec::new(),
     }
 }
 

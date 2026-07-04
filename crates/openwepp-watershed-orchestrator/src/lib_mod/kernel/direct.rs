@@ -604,6 +604,10 @@ impl Ws10ChannelImpoundmentKernel {
         Ok(channel_length)
     }
 
+    // One pass over the contributor set feeding BOTH superposition bases
+    // (hourly + rectangular fallback); splitting would loop contributors
+    // twice or scatter the INV-ROUTE-005 whole-inlet rule.
+    #[allow(clippy::too_many_lines)]
     fn assemble_direct_incoming_peak_partition(
         input: &DirectWatershedKernelInput<'_>,
         node_class: Ws10NodeClass,
@@ -615,6 +619,19 @@ impl Ws10ChannelImpoundmentKernel {
         let mut hillslope_duration_s = 0.0_f64;
         let mut dependency_duration_s = 0.0_f64;
 
+        // INV-ROUTE-005 (ADR-0036 D3): the hillslope limb superposes the
+        // serialized minor-1 hourly pair when EVERY contributor carries it
+        // and the inlet has no dependency nodes (routed channel outputs
+        // carry no hourly surfaces yet); otherwise the WHOLE inlet uses the
+        // Eq. [13.4.1]-[13.4.2] rectangular fallback — mixed-basis
+        // superposition at one inlet is invalid.
+        let hourly_resolved = input.step.dependency_nodes.is_empty()
+            && Self::hourly_pair_carried_by_all(
+                &input.frame.hillslope_contributions,
+                &input.step.contributor_hillslopes,
+            );
+        let mut summed_hourly_volume_m3 = [0.0_f64; 24];
+
         for &hillslope_id in &input.step.contributor_hillslopes {
             let contribution = input
                 .frame
@@ -624,6 +641,22 @@ impl Ws10ChannelImpoundmentKernel {
             let (peak, duration) =
                 Self::read_direct_hillslope_peak_payload(contribution, node_class)?;
             let _ = Self::read_direct_hillslope_sediment_payload(contribution, node_class)?;
+            if hourly_resolved {
+                for (slot, volume_m3) in summed_hourly_volume_m3
+                    .iter_mut()
+                    .zip(contribution.hourly_runoff_volume_m3.iter())
+                {
+                    if !volume_m3.is_finite() || *volume_m3 < 0.0 {
+                        return Err(Self::domain_violation(
+                            node_class,
+                            "hillslope_hourly_runoff_volume_m3",
+                            *volume_m3,
+                        ));
+                    }
+                    *slot += volume_m3;
+                }
+                continue;
+            }
             let volume = peak * duration;
             if !volume.is_finite() {
                 return Err(Self::non_finite(node_class, "hillslope_runon_volume", volume));
@@ -638,6 +671,14 @@ impl Ws10ChannelImpoundmentKernel {
             hillslope_peak += peak;
             hillslope_volume_m3 += volume;
             hillslope_duration_s = hillslope_duration_s.max(duration);
+        }
+
+        if hourly_resolved {
+            let (peak_cms, volume_m3, duration_s) =
+                Self::superposed_hourly_limb(&summed_hourly_volume_m3);
+            hillslope_peak = peak_cms;
+            hillslope_volume_m3 = volume_m3;
+            hillslope_duration_s = duration_s;
         }
 
         for dependency in &input.step.dependency_nodes {
@@ -693,6 +734,7 @@ impl Ws10ChannelImpoundmentKernel {
             dependency_volume_m3,
             hillslope_duration_s,
             dependency_duration_s,
+            hourly_resolved,
         })
     }
 
@@ -707,6 +749,52 @@ impl Ws10ChannelImpoundmentKernel {
                 .hillslope_duration_s
                 .max(partition.dependency_duration_s),
         ))
+    }
+
+    /// INV-ROUTE-005(a) eligibility: every contributor carries the paired
+    /// minor-1 24-slot hourly surfaces.
+    pub(crate) fn hourly_pair_carried_by_all(
+        contributions: &std::collections::BTreeMap<u32, HillslopeContribution>,
+        contributor_ids: &[u32],
+    ) -> bool {
+        !contributor_ids.is_empty()
+            && contributor_ids.iter().all(|id| {
+                contributions.get(id).is_some_and(|contribution| {
+                    contribution.hourly_runoff_volume_m3.len() == 24
+                        && contribution.hourly_sediment_mass_kg.len() == 24
+                })
+            })
+    }
+
+    /// INV-ROUTE-005(a): the superposed modeled hydrograph — inlet peak =
+    /// the maximum hour-mean discharge (`max_h(Σ V_h) / 3600 s`), volume =
+    /// the exact hour-integral, time base = the active-hour span of the
+    /// summed shape (0 when no hour is active).
+    pub(crate) fn superposed_hourly_limb(
+        summed_hourly_volume_m3: &[f64; 24],
+    ) -> (f64, f64, f64) {
+        let mut first_active_hour: Option<usize> = None;
+        let mut last_active_hour: Option<usize> = None;
+        for (hour, volume_m3) in summed_hourly_volume_m3.iter().enumerate() {
+            if *volume_m3 > 0.0 {
+                if first_active_hour.is_none() {
+                    first_active_hour = Some(hour);
+                }
+                last_active_hour = Some(hour);
+            }
+        }
+        let volume_m3: f64 = summed_hourly_volume_m3.iter().sum();
+        let peak_cms = summed_hourly_volume_m3
+            .iter()
+            .fold(0.0_f64, |acc, slot| acc.max(*slot))
+            / 3600.0;
+        let duration_s = match (first_active_hour, last_active_hour) {
+            // Span is bounded by the 24-slot base; u32 conversion is lossless.
+            #[allow(clippy::cast_precision_loss)]
+            (Some(first), Some(last)) => ((last - first + 1) as f64) * 3600.0,
+            _ => 0.0,
+        };
+        (peak_cms, volume_m3, duration_s)
     }
 
     fn read_direct_hillslope_peak_payload(

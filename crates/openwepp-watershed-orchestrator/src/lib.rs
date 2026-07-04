@@ -374,4 +374,72 @@ mod tests {
 
         TopologyNode::new(key(kind, id), contributors)
     }
+
+    #[test]
+    fn inv_route_005a_superposed_hourly_limb_peak_volume_and_span() {
+        // Two contributors' hour volumes summed upstream of the call; the
+        // limb must report peak = max-hour-sum / 3600, the exact volume
+        // integral, and the active-hour span (hours 9..=12 inclusive).
+        let mut summed = [0.0_f64; 24];
+        summed[9] = 360.0;
+        summed[10] = 7200.0;
+        summed[12] = 1800.0;
+        let (peak_cms, volume_m3, duration_s) =
+            Ws10ChannelImpoundmentKernel::superposed_hourly_limb(&summed);
+        assert!((peak_cms - 2.0).abs() < 1.0e-12, "peak {peak_cms}");
+        assert!((volume_m3 - 9360.0).abs() < 1.0e-9, "volume {volume_m3}");
+        assert!(
+            (duration_s - 4.0 * 3600.0).abs() < 1.0e-9,
+            "span {duration_s}"
+        );
+
+        let zeros = [0.0_f64; 24];
+        let (peak_cms, volume_m3, duration_s) =
+            Ws10ChannelImpoundmentKernel::superposed_hourly_limb(&zeros);
+        assert!(peak_cms.abs() < f64::EPSILON);
+        assert!(volume_m3.abs() < f64::EPSILON);
+        assert!(duration_s.abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn inv_route_005a_hourly_eligibility_requires_every_contributor_pair() {
+        use super::HillslopeContribution;
+        use std::collections::BTreeMap;
+
+        let with_pair = |id: u32| HillslopeContribution {
+            hillslope_id: id,
+            area_m2: None,
+            peak_runoff_m3_s: 1.0,
+            duration_seconds: 100.0,
+            total_detachment_kg: 1.0,
+            total_deposition_kg: 0.0,
+            sediment_concentration_kg_m3: vec![0.1],
+            particle_diameter_m: vec![0.001],
+            particle_flow_fraction: vec![1.0],
+            hourly_runoff_volume_m3: vec![0.0; 24],
+            hourly_sediment_mass_kg: vec![0.0; 24],
+        };
+        let mut without_pair = with_pair(2);
+        without_pair.hourly_runoff_volume_m3 = Vec::new();
+        without_pair.hourly_sediment_mass_kg = Vec::new();
+
+        let mut contributions: BTreeMap<u32, HillslopeContribution> = BTreeMap::new();
+        contributions.insert(1, with_pair(1));
+        contributions.insert(2, without_pair);
+
+        // Mixed set: any minor-0 contributor demotes the WHOLE inlet to
+        // the triangular fallback (no mixed-basis superposition).
+        assert!(!Ws10ChannelImpoundmentKernel::hourly_pair_carried_by_all(
+            &contributions,
+            &[1, 2]
+        ));
+        assert!(Ws10ChannelImpoundmentKernel::hourly_pair_carried_by_all(
+            &contributions,
+            &[1]
+        ));
+        assert!(!Ws10ChannelImpoundmentKernel::hourly_pair_carried_by_all(
+            &contributions,
+            &[]
+        ));
+    }
 }

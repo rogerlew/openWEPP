@@ -87,6 +87,10 @@ struct Ws20IncomingPeakPartition {
     dependency_volume_m3: f64,
     hillslope_duration_s: f64,
     dependency_duration_s: f64,
+    /// INV-ROUTE-005(a): whether the hillslope limb was superposed on the
+    /// minor-1 hourly pair (all contributors carried it, no dependency
+    /// nodes at the inlet); `false` = the Eq. [13.4.1]-[13.4.2] fallback.
+    hourly_resolved: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
