@@ -73,10 +73,28 @@ into the frame; the `wb14_hourly_rainfall` surface and the frame
 threading itself are folded into Stage 3 (they are only meaningful with
 their consumer, avoiding a populated-but-unread field). The
 Stage-1 rill-width carry is already returned by the assembly.
-**Ran:** `cargo nextest run --workspace --profile full` — **1315/1315
-passed, 1 skipped**; fmt/clippy on the touched surfaces and diff-check
-clean. Checkpoint held for focused review of the state-machine logic
-before Stage-3 frame threading.
+**Ran:** `cargo nextest run --workspace --profile full` — 1315/1315
+(initial state logic). Checkpoint held for focused review before Stage-3
+threading; the review is the right sequence for a small state machine
+whose bugs hide until amplified across thousands of days.
+
+**Codex review round 1 (2 Medium, fixed on this branch):**
+- *Medium — fail-closed:* both `resolve_erosion_frost_regime` and
+  `advance_erosion_consolidation` returned directly and silently
+  canonicalized NaN via `.max(0.0)` (`f64::NAN.max(0.0) == 0.0`). Both now
+  return `Result` and validate finite/nonnegative fields, `ifrost` in
+  `0..=2`, and `surdis` in `[0, 1]`. Regressions added.
+- *Medium — irrigation split:* `advance_erosion_consolidation` gated the
+  whole liquid input on `tave > 0`, which cannot reproduce the legacy
+  split (`soil.for:837-845`: sprinkler/none `irsyst <= 1` adds `irdept`
+  even when cold; furrow `irsyst == 2` excludes irrigation). The API now
+  takes `ErosionRfcumInputs` with separate `precipitation_m` /
+  `irrigation_depth_m` / `irrigation_is_furrow`, faithful to the split;
+  the forest path passes zero irrigation. Regression asserts the cold
+  sprinkler-irrigated and cold-furrow cases.
+After the fixes: adjustment producer suite 12 → 15; `cargo nextest run
+--workspace --profile full` **1318/1318 passed, 1 skipped**; fmt/clippy
+on the touched surfaces and diff-check clean.
 
 
 **Stage 1 + assembly core LANDED** (branch `erosion-inc1c-flip`):

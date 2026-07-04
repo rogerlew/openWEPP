@@ -124,7 +124,7 @@ pub use direct_runtime::{
 pub use direct_runtime::{
     DirectErosionConsolidationCarry, ErosionAdjustmentFactors, ErosionAdjustmentInputs,
     ErosionConsolidationBaselines, ErosionConsolidationInputs, ErosionFrostInputs,
-    ErosionFrostRegime, ErosionIfrostCarry, advance_erosion_consolidation,
+    ErosionFrostRegime, ErosionIfrostCarry, ErosionRfcumInputs, advance_erosion_consolidation,
     erosion_adjustment_factors, erosion_consolidation_baselines, resolve_erosion_frost_regime,
 };
 pub use direct_runtime::{

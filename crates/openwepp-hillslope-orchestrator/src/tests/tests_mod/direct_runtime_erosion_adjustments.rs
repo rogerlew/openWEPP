@@ -228,63 +228,92 @@ fn adjustment_factors_fail_closed_on_nan_and_negative_inputs() {
 }
 
 use crate::{
-    DirectErosionConsolidationCarry, ErosionFrostInputs, ErosionIfrostCarry,
-    advance_erosion_consolidation, resolve_erosion_frost_regime,
+    DirectErosionConsolidationCarry, DirectRuntimeError as AdjustError, ErosionFrostInputs,
+    ErosionIfrostCarry, ErosionRfcumInputs, advance_erosion_consolidation,
+    resolve_erosion_frost_regime,
 };
+
+fn frost_inputs(
+    frost_depth_m: f64,
+    thaw_depth_m: f64,
+    surface_layer_water: f64,
+    surface_layer_thetfc: f64,
+) -> ErosionFrostInputs {
+    ErosionFrostInputs {
+        frost_depth_m,
+        thaw_depth_m,
+        surface_layer_water,
+        surface_layer_thetfc,
+    }
+}
+
+/// Forest rfcum inputs: precip only (no irrigation, no tillage).
+fn forest_rfcum(precipitation_m: f64, mean_temperature_c: f64) -> ErosionRfcumInputs {
+    ErosionRfcumInputs {
+        precipitation_m,
+        irrigation_depth_m: 0.0,
+        mean_temperature_c,
+        irrigation_is_furrow: false,
+        tillage_surface_disturbance: None,
+    }
+}
 
 #[test]
 fn frost_regime_resolves_the_three_soil_for_branches() {
     // Frozen surface: frdp > 0, thdp <= 0.
     let (regime, ifrost) = resolve_erosion_frost_regime(
-        &ErosionFrostInputs {
-            frost_depth_m: 0.05,
-            thaw_depth_m: 0.0,
-            surface_layer_water: 0.4,
-            surface_layer_thetfc: 0.28,
-        },
+        &frost_inputs(0.05, 0.0, 0.4, 0.28),
         ErosionIfrostCarry::unfrozen(),
-    );
+    )
+    .expect("frozen regime");
     assert_eq!(regime, ErosionFrostRegime::FrozenSurface);
     assert_eq!(ifrost, ErosionIfrostCarry(1));
 
     // Unfrozen and dry (pwater <= thetfc): factors are 1.0.
-    let (regime, ifrost) = resolve_erosion_frost_regime(
-        &ErosionFrostInputs {
-            frost_depth_m: 0.0,
-            thaw_depth_m: 0.0,
-            surface_layer_water: 0.2,
-            surface_layer_thetfc: 0.28,
-        },
-        ErosionIfrostCarry(1),
-    );
+    let (regime, ifrost) =
+        resolve_erosion_frost_regime(&frost_inputs(0.0, 0.0, 0.2, 0.28), ErosionIfrostCarry(1))
+            .expect("unfrozen regime");
     assert_eq!(regime, ErosionFrostRegime::Unfrozen);
     assert_eq!(ifrost, ErosionIfrostCarry(0));
 
     // Thawing: not frozen, wet (pwater > thetfc), and the prior surface
     // was frozen -> the ifrost==2 branch (fail-closed downstream).
-    let (regime, ifrost) = resolve_erosion_frost_regime(
-        &ErosionFrostInputs {
-            frost_depth_m: 0.02,
-            thaw_depth_m: 0.03,
-            surface_layer_water: 0.4,
-            surface_layer_thetfc: 0.28,
-        },
-        ErosionIfrostCarry(1),
-    );
+    let (regime, ifrost) =
+        resolve_erosion_frost_regime(&frost_inputs(0.02, 0.03, 0.4, 0.28), ErosionIfrostCarry(1))
+            .expect("thawing regime");
     assert_eq!(regime, ErosionFrostRegime::Thawing);
     assert_eq!(ifrost, ErosionIfrostCarry(2));
 
     // Wet but prior unfrozen -> stays unfrozen (thaw only from frozen).
     let (regime, _) = resolve_erosion_frost_regime(
-        &ErosionFrostInputs {
-            frost_depth_m: 0.0,
-            thaw_depth_m: 0.0,
-            surface_layer_water: 0.4,
-            surface_layer_thetfc: 0.28,
-        },
+        &frost_inputs(0.0, 0.0, 0.4, 0.28),
         ErosionIfrostCarry::unfrozen(),
-    );
+    )
+    .expect("unfrozen regime");
     assert_eq!(regime, ErosionFrostRegime::Unfrozen);
+}
+
+#[test]
+fn frost_regime_fails_closed_on_nan_and_invalid_ifrost() {
+    assert!(matches!(
+        resolve_erosion_frost_regime(
+            &frost_inputs(f64::NAN, 0.0, 0.4, 0.28),
+            ErosionIfrostCarry::unfrozen()
+        ),
+        Err(AdjustError::NonFiniteDirectValue { .. })
+    ));
+    assert!(matches!(
+        resolve_erosion_frost_regime(
+            &frost_inputs(0.0, 0.0, f64::NAN, 0.28),
+            ErosionIfrostCarry(1)
+        ),
+        Err(AdjustError::NonFiniteDirectValue { .. })
+    ));
+    // An out-of-range ifrost carry (> 2) is a typed error.
+    assert!(matches!(
+        resolve_erosion_frost_regime(&frost_inputs(0.0, 0.0, 0.4, 0.28), ErosionIfrostCarry(7)),
+        Err(AdjustError::DirectDomainViolation { .. })
+    ));
 }
 
 #[test]
@@ -296,30 +325,104 @@ fn consolidation_carry_accumulates_and_ages() {
 
     // Warm rainy day: rfcum accumulates; daydis does NOT increment yet
     // (prior rfcum was 0, below the 0.01 onset).
-    carry = advance_erosion_consolidation(carry, 0.02, 10.0, None);
+    carry = advance_erosion_consolidation(carry, &forest_rfcum(0.02, 10.0)).expect("warm day");
     assert!((carry.rfcum_m - 0.02).abs() < 1.0e-12);
     assert_eq!(carry.daydis, 0.0);
 
     // Next warm day: prior rfcum (0.02) > 0.01, so daydis increments.
-    carry = advance_erosion_consolidation(carry, 0.0, 10.0, None);
+    carry = advance_erosion_consolidation(carry, &forest_rfcum(0.0, 10.0)).expect("next warm day");
     assert!((carry.daydis - 1.0).abs() < 1.0e-12);
 
     // A sub-freezing day does not accumulate rain but still ages.
     let before = carry;
-    carry = advance_erosion_consolidation(carry, 0.05, -3.0, None);
+    carry = advance_erosion_consolidation(carry, &forest_rfcum(0.05, -3.0)).expect("cold day");
     assert!((carry.rfcum_m - before.rfcum_m).abs() < 1.0e-12);
     assert!((carry.daydis - (before.daydis + 1.0)).abs() < 1.0e-12);
 }
 
 #[test]
 fn consolidation_carry_tillage_resets_age_and_rfcum() {
-    let mut carry = DirectErosionConsolidationCarry {
+    let carry = DirectErosionConsolidationCarry {
         rfcum_m: 0.5,
         daydis: 200.0,
     };
     // A tillage day with surdis = 0.75 scales daydis by (1 - 0.75) and
     // resets rfcum (then accumulates today's warm rain).
-    carry = advance_erosion_consolidation(carry, 0.01, 8.0, Some(0.75));
-    assert!((carry.daydis - 50.0).abs() < 1.0e-9);
-    assert!((carry.rfcum_m - 0.01).abs() < 1.0e-12);
+    let tilled = advance_erosion_consolidation(
+        carry,
+        &ErosionRfcumInputs {
+            precipitation_m: 0.01,
+            irrigation_depth_m: 0.0,
+            mean_temperature_c: 8.0,
+            irrigation_is_furrow: false,
+            tillage_surface_disturbance: Some(0.75),
+        },
+    )
+    .expect("tillage day");
+    assert!((tilled.daydis - 50.0).abs() < 1.0e-9);
+    assert!((tilled.rfcum_m - 0.01).abs() < 1.0e-12);
+}
+
+#[test]
+fn consolidation_carry_irrigation_split_matches_legacy() {
+    // Sprinkler / none (irsyst <= 1): irrigation always adds to rfcum even
+    // on a sub-freezing day, while precipitation is temperature-gated
+    // (soil.for:837-845).
+    let carry = DirectErosionConsolidationCarry::seed(0.0);
+    let cold_irrigated = advance_erosion_consolidation(
+        carry,
+        &ErosionRfcumInputs {
+            precipitation_m: 0.03,
+            irrigation_depth_m: 0.01,
+            mean_temperature_c: -2.0,
+            irrigation_is_furrow: false,
+            tillage_surface_disturbance: None,
+        },
+    )
+    .expect("cold sprinkler-irrigated day");
+    // Cold: precip excluded, irrigation included -> rfcum = 0.01.
+    assert!((cold_irrigated.rfcum_m - 0.01).abs() < 1.0e-12);
+
+    // Furrow (irsyst == 2): irrigation water is excluded from rfcum; only
+    // warm-day precipitation counts.
+    let furrow = advance_erosion_consolidation(
+        DirectErosionConsolidationCarry::seed(0.0),
+        &ErosionRfcumInputs {
+            precipitation_m: 0.03,
+            irrigation_depth_m: 0.01,
+            mean_temperature_c: -2.0,
+            irrigation_is_furrow: true,
+            tillage_surface_disturbance: None,
+        },
+    )
+    .expect("cold furrow-irrigated day");
+    // Cold + furrow: neither precip nor irrigation -> rfcum = 0.
+    assert_eq!(furrow.rfcum_m, 0.0);
+}
+
+#[test]
+fn consolidation_carry_fails_closed_on_nan_and_negative() {
+    let carry = DirectErosionConsolidationCarry::seed(0.0);
+    assert!(matches!(
+        advance_erosion_consolidation(carry, &forest_rfcum(f64::NAN, 10.0)),
+        Err(AdjustError::NonFiniteDirectValue { .. })
+    ));
+    assert!(matches!(
+        advance_erosion_consolidation(carry, &forest_rfcum(-0.01, 10.0)),
+        Err(AdjustError::DirectDomainViolation { .. })
+    ));
+    // surdis out of [0, 1] is a typed error.
+    assert!(matches!(
+        advance_erosion_consolidation(
+            carry,
+            &ErosionRfcumInputs {
+                precipitation_m: 0.01,
+                irrigation_depth_m: 0.0,
+                mean_temperature_c: 8.0,
+                irrigation_is_furrow: false,
+                tillage_surface_disturbance: Some(1.5),
+            },
+        ),
+        Err(AdjustError::DirectDomainViolation { .. })
+    ));
 }

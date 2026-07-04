@@ -178,7 +178,7 @@ pub use erosion::{
 pub use erosion_adjustments::{
     DirectErosionConsolidationCarry, ErosionAdjustmentFactors, ErosionAdjustmentInputs,
     ErosionConsolidationBaselines, ErosionConsolidationInputs, ErosionFrostInputs,
-    ErosionFrostRegime, ErosionIfrostCarry, advance_erosion_consolidation,
+    ErosionFrostRegime, ErosionIfrostCarry, ErosionRfcumInputs, advance_erosion_consolidation,
     erosion_adjustment_factors, erosion_consolidation_baselines, resolve_erosion_frost_regime,
 };
 pub use erosion_continuity::{

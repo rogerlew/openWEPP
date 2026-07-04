@@ -198,12 +198,30 @@ pub struct ErosionFrostInputs {
 ///   `Thawing` (`ifrost = 2`, the winter-`fcycle` branch — fail-closed
 ///   downstream in [`erosion_adjustment_factors`]).
 /// - else → `Unfrozen`.
-#[must_use]
+///
+/// Fail-closed: the depths / water / field capacity must be finite
+/// (NaN is a typed error, never a silently mis-branched regime) and the
+/// prior `ifrost` must be a valid `0..=2` carry.
 pub fn resolve_erosion_frost_regime(
     inputs: &ErosionFrostInputs,
     prior_ifrost: ErosionIfrostCarry,
-) -> (ErosionFrostRegime, ErosionIfrostCarry) {
-    if inputs.frost_depth_m > 0.0 && inputs.thaw_depth_m <= 0.0 {
+) -> Result<(ErosionFrostRegime, ErosionIfrostCarry), DirectRuntimeError> {
+    validate_finite("erosion.frost.frost_depth_m", inputs.frost_depth_m)?;
+    validate_finite("erosion.frost.thaw_depth_m", inputs.thaw_depth_m)?;
+    validate_finite(
+        "erosion.frost.surface_layer_water",
+        inputs.surface_layer_water,
+    )?;
+    validate_finite(
+        "erosion.frost.surface_layer_thetfc",
+        inputs.surface_layer_thetfc,
+    )?;
+    if prior_ifrost.0 > 2 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.frost.prior_ifrost",
+        });
+    }
+    let resolved = if inputs.frost_depth_m > 0.0 && inputs.thaw_depth_m <= 0.0 {
         (ErosionFrostRegime::FrozenSurface, ErosionIfrostCarry(1))
     } else if inputs.surface_layer_water <= inputs.surface_layer_thetfc {
         (ErosionFrostRegime::Unfrozen, ErosionIfrostCarry(0))
@@ -211,7 +229,8 @@ pub fn resolve_erosion_frost_regime(
         (ErosionFrostRegime::Thawing, ErosionIfrostCarry(2))
     } else {
         (ErosionFrostRegime::Unfrozen, ErosionIfrostCarry(0))
-    }
+    };
+    Ok(resolved)
 }
 
 /// Freeze-thaw adjustment factors `(ckiaft, ckraft, tcaft)`.
@@ -257,44 +276,95 @@ impl DirectErosionConsolidationCarry {
     }
 }
 
+/// Daily inputs for the consolidation-carry advance (`soil.for:833-846`
+/// `rfcum` accumulation + `:324`/`:413` tillage reset).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ErosionRfcumInputs {
+    /// Daily precipitation depth (m) — temperature-gated into `rfcum`.
+    pub precipitation_m: f64,
+    /// Daily irrigation depth (m) — `irdept`. 0 for forest.
+    pub irrigation_depth_m: f64,
+    /// Mean daily temperature (C) — gates precipitation (`tave > 0`).
+    pub mean_temperature_c: f64,
+    /// Whether irrigation is furrow (`irsyst == 2`): furrow water is
+    /// **excluded** from `rfcum` (`soil.for:840`); sprinkler / none
+    /// (`irsyst <= 1`) always adds `irdept` regardless of temperature.
+    pub irrigation_is_furrow: bool,
+    /// `Some(surdis)` on a tillage day: age-scale `daydis` by
+    /// `(1 - surdis)` and reset `rfcum`. Forest never tills.
+    pub tillage_surface_disturbance: Option<f64>,
+}
+
 /// `soil.for`: advance the consolidation carry one day. On a non-tillage
 /// day `daydis` increments when the **prior** `rfcum` exceeds the onset
 /// threshold (the legacy increment uses `rfcum` before today's rainfall is
 /// added, `soil.for:356` before `:833`), then today's liquid input is
-/// accumulated when the mean temperature is above freezing. A tillage day
-/// scales `daydis` by `(1 - surdis)` and resets `rfcum` (`soil.for:324`,
-/// `:413`). Forest managements never till, so the common path is the
-/// non-tillage branch.
-#[must_use]
+/// accumulated: precipitation only when `tave > 0`, and (non-furrow)
+/// irrigation always. A tillage day scales `daydis` by `(1 - surdis)` and
+/// resets `rfcum` (`soil.for:324`, `:413`).
+///
+/// Fail-closed: all inputs must be finite and nonnegative (NaN would be
+/// silently canonicalized by `.max(0.0)`), `surdis` must be in `[0, 1]`,
+/// and the prior carry must be finite.
 pub fn advance_erosion_consolidation(
     prior: DirectErosionConsolidationCarry,
-    daily_liquid_input_m: f64,
-    mean_temperature_c: f64,
-    tillage_surface_disturbance: Option<f64>,
-) -> DirectErosionConsolidationCarry {
-    let today_rain_m = if mean_temperature_c > 0.0 {
-        daily_liquid_input_m.max(0.0)
-    } else {
-        0.0
-    };
-    if let Some(surdis) = tillage_surface_disturbance {
-        // Tillage: age-reset (`daydis *= 1 - surdis`) and `rfcum` reset,
-        // then today's rain accumulates onto the reset.
-        DirectErosionConsolidationCarry {
-            rfcum_m: today_rain_m,
-            daydis: ((1.0 - surdis).max(0.0) * prior.daydis).max(0.0),
-        }
-    } else {
-        let daydis = if prior.rfcum_m > RFCUM_CONSOLIDATION_ONSET_M {
-            prior.daydis + 1.0
-        } else {
-            prior.daydis
-        };
-        DirectErosionConsolidationCarry {
-            rfcum_m: prior.rfcum_m + today_rain_m,
-            daydis,
-        }
+    inputs: &ErosionRfcumInputs,
+) -> Result<DirectErosionConsolidationCarry, DirectRuntimeError> {
+    validate_finite("erosion.rfcum.prior_rfcum", prior.rfcum_m)?;
+    validate_finite("erosion.rfcum.prior_daydis", prior.daydis)?;
+    validate_finite("erosion.rfcum.precipitation_m", inputs.precipitation_m)?;
+    validate_finite(
+        "erosion.rfcum.irrigation_depth_m",
+        inputs.irrigation_depth_m,
+    )?;
+    validate_finite(
+        "erosion.rfcum.mean_temperature_c",
+        inputs.mean_temperature_c,
+    )?;
+    if inputs.precipitation_m < 0.0
+        || inputs.irrigation_depth_m < 0.0
+        || prior.rfcum_m < 0.0
+        || prior.daydis < 0.0
+    {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.rfcum.negative_input",
+        });
     }
+
+    // `soil.for:833-845`: precipitation only when warm; irrigation always
+    // for sprinkler/none, never for furrow.
+    let mut today_input_m = 0.0;
+    if inputs.mean_temperature_c > 0.0 {
+        today_input_m += inputs.precipitation_m;
+    }
+    if !inputs.irrigation_is_furrow {
+        today_input_m += inputs.irrigation_depth_m;
+    }
+
+    if let Some(surdis) = inputs.tillage_surface_disturbance {
+        validate_finite("erosion.rfcum.surdis", surdis)?;
+        if !(0.0..=1.0).contains(&surdis) {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "erosion.rfcum.surdis",
+            });
+        }
+        // Tillage: age-reset (`daydis *= 1 - surdis`) and `rfcum` reset,
+        // then today's input accumulates onto the reset.
+        return Ok(DirectErosionConsolidationCarry {
+            rfcum_m: today_input_m,
+            daydis: (1.0 - surdis) * prior.daydis,
+        });
+    }
+
+    let daydis = if prior.rfcum_m > RFCUM_CONSOLIDATION_ONSET_M {
+        prior.daydis + 1.0
+    } else {
+        prior.daydis
+    };
+    Ok(DirectErosionConsolidationCarry {
+        rfcum_m: prior.rfcum_m + today_input_m,
+        daydis,
+    })
 }
 
 /// Resolved daily inputs for the cropland erodibility adjustment chain
