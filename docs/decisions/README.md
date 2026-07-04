@@ -39,6 +39,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0033](0033-ofe-by-ofe-overland-flow-routing.md) | OFE-by-OFE overland-flow routing (Papanicolaou 2018) | Accepted |
 | [0034](0034-management-file-lanuse-input-authority.md) | Management-file `lanuse` input authority (first-class landuse modes) | Accepted |
 | [0035](0035-hillslope-erosion-sediment-continuity-port.md) | Hillslope erosion sediment-continuity direct-runtime port | Accepted |
+| [0036](0036-hydrograph-resolved-sediment-transport-and-routing.md) | Hydrograph-resolved sediment transport and channel routing | Proposed |
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further

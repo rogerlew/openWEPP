@@ -1,9 +1,15 @@
 # Modeled Hourly Flow Through the Erosion → HBP → Routing Stack (Hydrograph-Resolved Sediment)
 
 ## Status
-- `state`: backlog
+- `state`: backlog → **ADR authored**:
+  [ADR-0036](../decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md)
+  (Proposed, 2026-07-04) resolves the open decisions below (per-hour
+  quasi-steady form; additive HBP EVENT extension designed once with the
+  per-class + peak-units items; conditional `INV-ROUTE-005`; Σhourly=volume
+  only; Investigation-tier comparator). Pending ratification + Codex design
+  review; contract amendments before code.
 - `maturity`: concept / architecture direction (operator-directed 2026-07-04)
-- `default_path`: not eligible (needs ADR + contract sequencing before code)
+- `default_path`: not eligible (needs ADR ratification + contract sequencing before code)
 - `evidence_mode`: Static (read SC-SED-001, SC-ROUTE-001, the HBP format, and the
   direct-runtime hourly surfaces; no execution)
 
