@@ -99,6 +99,49 @@ These are structural (closure), so they precede the multi-OFE mechanism per the
 closure-before-magnitude ordering. Call this **Increment 1c-fidelity** (single-OFE
 surface completion) — a short rung in front of Increment 2.
 
+## 4a. Particle-size distributions must be per-OFE (legacy `partsize.dat` is a MOFE gap)
+
+The 5-class particle-size distribution — the base `frac`/`dia`/`spg`/`frcly`/`frslt`/
+`frsnd`/`frorg` surface that seeds `sedcon` and every deposition/enrichment transition —
+**must be sourced per-OFE from that OFE's own soil**, not from a single hillslope-global
+distribution. This is a hard input-authority requirement for the multi-OFE chain, and it
+is a place where legacy must **not** be inherited faithfully.
+
+**Legacy source-intent (verified 2026-07-04, operator-flagged; static read of
+`wepp-forest`/DEP `wepp20240930`).** WEPP's *default* particle-size computation is already
+per-OFE — `prtcmp.for` derives the class distribution from each element's clay/silt/sand/
+organic-matter (`clay(1,ielmt)`, `silt(1,ielmt)`, …), indexed by `ielmt`. **That per-OFE
+default is the correct, faithful basis to port.** But Dennis Flanagan's late user-override
+`usr_partsize` (tagged `DCF - March 14, 2024`, one of his last additions before
+retirement) reads a **single** particle-size block from `partsize.dat` (`main.for:106`
+opens unit 9; `prtcmp.for:90-101` reads one `npart` block into the *current* element) —
+there is no per-OFE keying, and the sequential single-file read cannot supply a distinct
+distribution per OFE. On a multi-OFE hillslope where OFEs differ in soil, one global
+`partsize.dat` cannot represent the per-OFE variation, and the read mechanics degrade for
+`ofe_count > 1`. This is a concrete instance of the program-wide finding that **legacy
+MOFE was never a maintained path** (Dennis was ag / single-field focused as he approached
+retirement) — the same class as EROD14 emitting zero HBP sediment. Treat the single-global
+`usr_partsize` semantics as a legacy MOFE gap (ADR-0017 flag); do not port them.
+
+**openWEPP requirement.**
+- **Base per-OFE distributions:** derive each OFE's 5-class distribution from *that OFE's*
+  soil texture / organic matter (the `prtcmp` per-element default lineage), per-OFE by
+  construction. The downslope particle-fraction handoff (§2c/§2d) and enrichment (§2d)
+  are only meaningful on top of correct per-OFE *base* classes.
+- **User override, if supported at all, MUST be keyed per-OFE.** A single hillslope-global
+  override is **rejected fail-closed**, not silently broadcast — a broadcast global
+  distribution would misattribute one soil's classes to every OFE and corrupt both the
+  particle-fraction handoff and the enrichment ratio downslope.
+- **Gate.** A fixture with **soil-contrasting OFEs** (e.g. a coarse OFE above a fine one)
+  is the validation vector: the per-class `sedcon` and the exit fractions must reflect
+  per-OFE sourcing + enrichment, not a single distribution; size-class mass conservation
+  (SC-SED-001 §11.5 / `INV-SED-0(08–11)`) is only a real check if each OFE's base classes
+  are its own.
+
+Stated here (ahead of the §2d/Increment-3 particle-class work) because it is an
+**input-authority** decision that must be settled *before* the particle handoff is wired —
+inheriting the single-global `partsize.dat` would bake a MOFE defect into the foundation.
+
 ## 5. The hourly-flow substrate (coupled, structural)
 
 Per the operator direction (2026-07-04) and
@@ -160,9 +203,12 @@ deposition case governs the form.
 - **2c — multi-OFE Wave-1 chaining:** run Wave-1 per OFE with the `G_out→ldtop`,
   `qout→qin`, particle-fraction handoff (reusing the Wave-2 plumbing). Gate: per-OFE +
   hillslope-exit conservation; EROD14 retained behind a comparator flag for cross-check.
-- **2d — enrichment + particle routing (folds Increment 3):** class-resolved deposition
-  and `enrich.for`-lineage fraction update at deposition/OFE-exit. Gate: size-class mass
-  conservation; enrichment ratio ER emerges as a diagnostic.
+- **2d — enrichment + particle routing (folds Increment 3):** per-OFE base particle-size
+  distributions (§4a — `prtcmp` per-element lineage, **not** the single-global
+  `partsize.dat`/`usr_partsize` which is MOFE-broken), then class-resolved deposition and
+  `enrich.for`-lineage fraction update at deposition/OFE-exit. Gate: size-class mass
+  conservation; enrichment ratio ER emerges as a diagnostic; soil-contrasting-OFE fixture
+  (§4a) exercises per-OFE sourcing.
 - **2e — retire Wave-2 / EROD14** as a separate physics arm (delete or flag-off) once
   Wave-1 multi-OFE is conservation-closed and cross-checked.
 
@@ -182,6 +228,11 @@ standalone parallel item — see the HR backlog §E — not required for 2c/2d.)
   costly migration (same discipline the HR deposited-layer state carries).
 - **Two-physics inconsistency** if Wave-1 and Wave-2 both persist long-term; resolve the
   ownership (§3) early so multi-OFE fidelity is not aliased by which solver ran.
+- **Legacy `partsize.dat` is a MOFE gap — do not inherit (§4a).** The per-OFE base
+  particle-size distributions must come from each OFE's soil (`prtcmp` lineage); Dennis's
+  single-global `usr_partsize` override (`DCF - March 14, 2024`) cannot key per-OFE and
+  would corrupt the particle-fraction handoff/enrichment. A user override, if supported,
+  is per-OFE-keyed or fail-closed. Foundational to §2d — settle before the handoff is wired.
 
 **Downstream consumer this unblocks:** the watershed sediment hold **`WSHED-W7DC01`**
 (`work-packages/20260702-wshedw7dc01-hillslope-sediment-production-hold-lift-001/`) held
