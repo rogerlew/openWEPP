@@ -985,6 +985,15 @@ fn direct_production_erosion_active(
     {
         return Ok(false);
     }
+    // SC-SED-001 1b-C: the single-OFE Wave-1 seed must attach EVERY day so
+    // the persistent consolidation carry (`rfcum`/`daydis`) advances daily
+    // per `soil.for` (aging on dry days after `rfcum > 0.01`), not only on
+    // rainfall days. The solve still gates itself inactive on non-runoff
+    // days, so this changes no sediment output — only the carry lineage.
+    if authority.erosion.erosion_inputs.wave1_operand_seed.enabled {
+        return Ok(true);
+    }
+    // Wave-2 (EROD14) multi-OFE path keeps the rainfall activation gate.
     let rainfall_m = direct_publication_hyetograph_rainfall_m(
         day_input
             .peak_runoff_inputs

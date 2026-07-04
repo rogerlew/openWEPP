@@ -227,6 +227,35 @@ population in r7d8 (cover/roots/residue from the growth/decomposition
 states, frost regime, the `wb14_hourly_rainfall` surface) calling
 `assemble_wave1_continuity_inputs`.
 
+## Codex review round 1 (2 High + 1 Medium + 1 Low — all resolved, 2026-07-04)
+
+- *High — daily carry advance:* the `rfcum`/`daydis` advance lived inside
+  the assembly, which the runner only attached on rainfall days, so the
+  carry aged only on rainy days (violating acceptance gate 1 / `soil.for`).
+  Fixed: `direct_production_erosion_active` returns true **every day** when
+  the Wave-1 seed is enabled, so the carry advances daily; the solve still
+  gates inactive on dry days (no sediment-output change).
+- *High — over-broad enable (the landuse masquerade):* both validated
+  targets (`p61`, DFF-WS3) declare `Landuse = 1` (Cropland) but are forest
+  physics with Surface-Effect index 0 (**no tillage**). Gating on
+  `landuse != 1` would disable them; sourcing `is_cropland` from `landuse`
+  would flip them to the cropland interrill branch and change the
+  validated results. **Operator-chosen resolution:** narrow via the
+  no-tillage signal — enable only for single-OFE managements with **no
+  active tillage sequence** (`direct_production_management_has_active_tillage`:
+  any yearly `tilseq` referencing a surface scenario with a `tildep > 0`
+  operation). Keeps `p61` + DFF-WS3 enabled with the correct forest
+  first-cut; genuine tilled cropland stays disabled until its operands are
+  sourced.
+- *Medium — frost canonicalization:* the assembly `.max(0.0)`/`map_or`
+  masked missing/negative/NaN frost state into plausible-unfrozen before
+  the fail-closed resolver. Fixed: the surface soil layer is required
+  (fail-closed if absent), depth validated, and RAW values pass to
+  `resolve_erosion_frost_regime` (which rejects non-finite/negative).
+- *Low — diff-check whitespace:* the legacy fixed-column p61 fixtures
+  carry format-significant trailing whitespace; added a fixture-local
+  `.gitattributes` (`-whitespace`) so `git diff --check` is clean.
+
 ## ACTIVE SOLVE WIRED — first runtime sediment (2026-07-04)
 
 The per-day assembly method `r7d8_assemble_wave1_continuity_from_frame`

@@ -441,25 +441,30 @@ impl DirectDayFrame {
         )?;
 
         // Gate 2: resolve `ifrost` from DIMENSIONLESS top-layer water
-        // (`theta_m / depth_m`) vs field-capacity theta, typed-guarded.
-        let (surface_layer_water, surface_layer_thetfc) = self
-            .subsurface_compute
-            .layer_state_after
-            .first()
-            .map_or((0.0, 1.0), |layer| {
-                let volumetric = if layer.depth_m > 0.0 {
-                    layer.theta_m / layer.depth_m
-                } else {
-                    0.0
-                };
-                (volumetric.max(0.0), layer.field_capacity_theta.max(0.0))
+        // (`theta_m / depth_m`) vs field-capacity theta. The surface soil
+        // layer is REQUIRED on an active-erosion day — a missing one is a
+        // real missing upstream, not silently unfrozen — and the RAW
+        // (non-canonicalized) values pass to `resolve_erosion_frost_regime`,
+        // which fail-closes on non-finite / negative rather than letting a
+        // `.max(0.0)` mask them into a plausible unfrozen state.
+        let surface_layer = self.subsurface_compute.layer_state_after.first().ok_or(
+            DirectRuntimeError::MissingDirectUpstream {
+                upstream: "R7D erosion frost-regime surface soil layer",
+            },
+        )?;
+        if surface_layer.depth_m <= 0.0 || !surface_layer.depth_m.is_finite() {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "erosion.frost.surface_layer_depth_m",
             });
+        }
+        let surface_layer_water = surface_layer.theta_m / surface_layer.depth_m;
+        let surface_layer_thetfc = surface_layer.field_capacity_theta;
+        // An absent frost carry means no frost coupling (non-winter) — that
+        // is legitimately unfrozen (0 depths); a present carry passes raw.
         let (frost_depth_m, thaw_depth_m) = self
             .frost_runtime_carry
             .as_ref()
-            .map_or((0.0, 0.0), |frost| {
-                (frost.dfrost_m.max(0.0), frost.dthaw_m.max(0.0))
-            });
+            .map_or((0.0, 0.0), |frost| (frost.dfrost_m, frost.dthaw_m));
         let (frost_regime, new_ifrost) = resolve_erosion_frost_regime(
             &ErosionFrostInputs {
                 frost_depth_m,

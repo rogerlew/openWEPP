@@ -581,6 +581,7 @@ fn direct_production_typed_lane_seed_authority(
         &management_projection,
         &peak_runoff,
         contributor_ofe_count,
+        direct_production_management_has_active_tillage(management),
     )?;
 
     Ok(DirectProductionTypedLaneSeedAuthority {
@@ -1124,6 +1125,29 @@ fn direct_production_wave1_operand_seed(
     })
 }
 
+/// SC-SED-001 1b-C activation scope: whether the management schedules an
+/// active tillage sequence (a real soil-disturbance operation). The
+/// single-OFE Wave-1 first cut hardcodes the NON-TILLED (forest /
+/// disturbed) operand assumptions (`is_cropland = false`, no tillage /
+/// irrigation), which are correct for the validated forest-masquerade
+/// targets — declared `Landuse = 1` (Cropland) but with Surface-Effect
+/// index 0 (no tillage), e.g. `p61` and the DFF-WS3 disturbed-forest
+/// cells. A management that applies a real tillage sequence is genuine
+/// cropland whose operands are NOT yet sourced, so Wave-1 stays disabled
+/// for it (narrowing the enable to the reviewed scope) until the cropland
+/// operand port lands.
+fn direct_production_management_has_active_tillage(management: &ManagementParseOutput) -> bool {
+    let surfaces = &management.registries.surfaces;
+    management.registries.yearlies.iter().any(|yearly| {
+        let openwepp_input_contract::parsers::management::YearlyScenarioData::Cropland(data) =
+            &yearly.data;
+        data.tilseq != 0
+            && surfaces
+                .get(data.tilseq - 1)
+                .is_some_and(|surface| surface.operations.iter().any(|op| op.tildep > 0.0))
+    })
+}
+
 fn direct_production_typed_erosion_authority(
     parsed_soil: &SoilProfile,
     soil: &TypedSoilWb11RuntimeProjection,
@@ -1131,6 +1155,7 @@ fn direct_production_typed_erosion_authority(
     management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     peak_runoff: &DirectProductionPeakRunoffAuthority,
     contributor_ofe_count: usize,
+    management_has_active_tillage: bool,
 ) -> Result<DirectProductionErosionAuthority, HillslopeCliError> {
     // Wave-1 (SC-SED-001 sediment continuity): the spatial solver is
     // implemented and gated in the orchestrator
@@ -1178,12 +1203,15 @@ fn direct_production_typed_erosion_authority(
         peak_runoff,
     )?;
     // SC-SED-001 1b-C activation gate (Codex-scoped): enable the Wave-1
-    // sediment-continuity solve for the SINGLE-OFE hillslope only
-    // (`contributor_ofe_count == 1`). Multi-OFE erosion routing stays the
-    // Wave-2 (EROD14) path; MOFE Wave-1 is a later increment. The per-day
-    // assembly is a pure downstream consumer, so non-sediment surfaces stay
-    // byte-identical.
-    wave1_operand_seed.enabled = contributor_ofe_count == 1;
+    // sediment-continuity solve for a SINGLE-OFE hillslope
+    // (`contributor_ofe_count == 1`) that applies NO active tillage. Multi-
+    // OFE erosion routing stays the Wave-2 (EROD14) path; MOFE Wave-1 is a
+    // later increment. The no-tillage gate narrows the enable to the
+    // reviewed forest/disturbed first-cut scope (the seed hardcodes
+    // non-cropland/non-tilled operands); genuine tilled cropland stays
+    // disabled until its operands are sourced. The per-day assembly is a
+    // pure downstream consumer, so non-sediment surfaces stay byte-identical.
+    wave1_operand_seed.enabled = contributor_ofe_count == 1 && !management_has_active_tillage;
     Ok(DirectProductionErosionAuthority {
         wave2_enabled,
         erosion_inputs: DirectErosionInputs {
