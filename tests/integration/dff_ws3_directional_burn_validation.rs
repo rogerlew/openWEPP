@@ -93,7 +93,11 @@ fn dff_ws3_mckenzie_bridge_matrix_fixture_catalog_is_complete() {
             cell.wepp_id
         );
         assert!(!cell.disturbed_class.trim().is_empty());
-        assert!(cell.management_file.ends_with(".man"));
+        assert!(
+            Path::new(&cell.management_file)
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("man"))
+        );
     }
 }
 
@@ -146,12 +150,19 @@ fn dff_ws3_representative_clay_loam_documents_runoff_peak_and_directional_sedime
         high_burn.metrics.total_detachment_kg,
         unburned.metrics.total_detachment_kg
     );
-    // First-cut gaps (recorded follow-up, not yet surfaced by the single-OFE
-    // Wave-1 publication): deposition and the 5-class sediment
-    // concentration. Assert finite / nonnegative for now.
+    // Deposition stays a value, not a missing surface: these profiles are
+    // detachment-dominated (the depositing-limb coverage lives in the
+    // concave-profile conservation test). E.1 surfaced the 5-class
+    // `sedcon` split (the detached composition × toe concentration), so a
+    // detaching cell must now publish a nonzero per-class concentration.
     assert!(high_burn.metrics.total_deposition_kg >= 0.0);
     assert!(unburned.metrics.total_deposition_kg >= 0.0);
-    assert!(high_burn.metrics.max_sediment_concentration_kg_m3 >= 0.0);
+    assert!(
+        high_burn.metrics.max_sediment_concentration_kg_m3 > 0.0,
+        "E.1 per-class sedcon: a detaching cell must publish nonzero per-class \
+         concentration, got {}",
+        high_burn.metrics.max_sediment_concentration_kg_m3
+    );
 }
 
 struct FixtureRun {

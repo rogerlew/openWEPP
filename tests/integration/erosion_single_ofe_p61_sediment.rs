@@ -61,6 +61,26 @@ fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
 
     // Total detachment must be finite and mass-nonnegative.
     assert!(tdet_sum.is_finite(), "total detachment must be finite");
+
+    // E.1 per-class publication: the detaching event days must carry a
+    // nonzero 5-class concentration split (detached composition × toe
+    // concentration) through to the pass parquet.
+    let mut sedcon_total = 0.0;
+    let mut sedcon_nonzero_columns = 0_usize;
+    for column in ["sedcon_1", "sedcon_2", "sedcon_3", "sedcon_4", "sedcon_5"] {
+        let (sum, _, _) = column_summary(pass_parquet, column);
+        assert!(sum.is_finite(), "{column} must be finite");
+        assert!(sum >= 0.0, "{column} must be nonnegative");
+        if sum > 0.0 {
+            sedcon_nonzero_columns += 1;
+        }
+        sedcon_total += sum;
+    }
+    assert!(
+        sedcon_total > 0.0 && sedcon_nonzero_columns >= 2,
+        "per-class sedcon must publish a nonzero composition split \
+         (total={sedcon_total}, nonzero_columns={sedcon_nonzero_columns})"
+    );
 }
 
 /// Sum, max, and nonzero-count of a `f64` parquet column.

@@ -316,6 +316,205 @@ fn erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing() {
         total_deposition_kg >= 0.0,
         "deposition totals must be nonnegative"
     );
+
+    // ------------------------------------------------------------------
+    // E.1 (Increment 1c-fidelity) depositing-limb coverage: the same real
+    // storm forcing and production operand chain, on a crafted CONCAVE
+    // validation profile (steep upper reach, near-flat toe). Transport
+    // capacity collapses on the toe, so the load built upslope must
+    // deposit — proving the deposition surfaces (`tdep`) conserve under
+    // producer-built operands, not only under crafted unit payloads.
+    //
+    // The profile is a validation INSTRUMENT, deliberately near the
+    // 101-point grid's resolution envelope: toe flatness is calibrated to
+    // this fixture's weak rill erodibility (`kr = 6e-5`, the load is
+    // mostly interrill supply), and a flat toe also makes the
+    // detachment relaxation stiff (`eata ∝ shrsol/tcend` grows as the
+    // end shear collapses). On the slowest-peak storms that stiffness
+    // exceeds what the fixed grid can resolve, and the solver REFUSES
+    // via the named `flux_closure` discretization gate rather than
+    // mis-integrating — the fail-closed design working as intended
+    // (legacy's identical 100-point grid has no such gate and integrates
+    // those days silently). The loop below therefore classifies
+    // outcomes: clean solves must conserve and (in aggregate) deposit;
+    // `flux_closure` refusals are permitted only as a bounded tail; any
+    // OTHER error class fails the test.
+    // ------------------------------------------------------------------
+    let concave_points_norm: [(f64, f64); 6] = [
+        (0.0, 0.85),
+        (0.30, 0.70),
+        (0.55, 0.18),
+        (0.75, 0.03),
+        (0.88, 0.008),
+        (1.0, 0.003),
+    ];
+    let concave_points_m: Vec<(f64, f64)> = concave_points_norm
+        .iter()
+        .map(|(x, s)| (x * slplen_m, *s))
+        .collect();
+    let concave_avgslp = average_slope(concave_points_norm.as_ref());
+    let concave_segments = derive_wave1_slope_segments(&concave_points_m, slplen_m, concave_avgslp)
+        .expect("concave depositing profile must fit");
+    let concave_last = concave_segments.last().expect("segments exist");
+    let concave_slopes = ErosionShearSlopes {
+        cnslp: concave_avgslp,
+        slpend: (concave_last.a + concave_last.b) * concave_avgslp,
+    };
+
+    let mut depositing_days = 0_usize;
+    let mut concave_clean_days = 0_usize;
+    let mut concave_flux_refusals = 0_usize;
+    let mut concave_detachment_kg = 0.0;
+    let mut concave_deposition_kg = 0.0;
+    for storm in &storm_days {
+        let qout = storm.peakro_m_s * slplen_m;
+        let qshear = qout * RSPACE_M;
+        let hydraulics = erosion_rill_hydraulics(qshear, &concave_slopes, &cover, 0.0, RSPACE_M)
+            .unwrap_or_else(|error| {
+                panic!(
+                    "concave rill hydraulics must resolve for storm day {}: {error:?}",
+                    storm.sim_day_index
+                )
+            });
+        let transport = erosion_transport_coefficients(
+            hydraulics.shrsol_pa,
+            hydraulics.shrend_pa,
+            &classes,
+            sand,
+        )
+        .unwrap_or_else(|error| {
+            panic!(
+                "concave transport coefficients must resolve for storm day {}: {error:?}",
+                storm.sim_day_index
+            )
+        });
+        let effdrn_s = (storm.runoff_depth_m / storm.peakro_m_s).min(86_400.0);
+        let effdrr_s = effdrn_s;
+        let effint = storm.runoff_depth_m / effdrr_s;
+        let detinr = erosion_detinr(
+            soil_ofe.ki,
+            ADJUSTMENT_FACTOR_INIT,
+            effint,
+            storm.runoff_depth_m,
+            effdrr_s,
+            intdr,
+            RSPACE_M,
+            hydraulics.width_m,
+        )
+        .expect("concave detinr must resolve");
+
+        let inputs = DirectWave1ContinuityInputs {
+            enabled: true,
+            segments: concave_segments.clone(),
+            peakro_m_s: storm.peakro_m_s,
+            runoff_depth_m: storm.runoff_depth_m,
+            qin_m2_s: 0.0,
+            efflen_m: slplen_m,
+            slplen_m,
+            cntlen_m: slplen_m,
+            rspace_m: RSPACE_M,
+            width_m: hydraulics.width_m,
+            field_width_m: fwidth_m,
+            effdrn_s,
+            effdrr_s,
+            kr_s_m: soil_ofe.kr,
+            kradjf: ADJUSTMENT_FACTOR_INIT,
+            shcrit_pa: soil_ofe.shcrit,
+            tcadjf: ADJUSTMENT_FACTOR_INIT,
+            detinr_kg_s_m2: detinr,
+            shrsol_pa: hydraulics.shrsol_pa,
+            tcend_kg_s_m: transport.tcend_kg_s_m,
+            ktrato: transport.ktrato,
+            veleff_m_s: veleff,
+            beta: 0.5,
+            strldn: 0.0,
+            surface_frozen: false,
+            theta_suppressed: false,
+        };
+
+        let state = match compute_direct_wave1_continuity(&inputs) {
+            Ok(state) => state,
+            Err(error) => {
+                let detail = format!("{error:?}");
+                assert!(
+                    detail.contains("flux_closure"),
+                    "concave storm day {}: only the named flux-closure \
+                     discretization refusal is permitted on the crafted-stiff \
+                     instrument profile, got {detail}",
+                    storm.sim_day_index
+                );
+                concave_flux_refusals += 1;
+                continue;
+            }
+        };
+        assert!(state.active);
+        concave_clean_days += 1;
+
+        // The same hard conservation identity on the depositing profile.
+        let detach_kg_m = state.total_detachment_kg / fwidth_m;
+        let depos_kg_m = state.total_deposition_kg / fwidth_m;
+        let residual = (state.exported_sediment_kg_m - state.inflow_sediment_kg_m)
+            - (detach_kg_m - depos_kg_m);
+        let scale = state
+            .exported_sediment_kg_m
+            .abs()
+            .max(detach_kg_m.abs())
+            .max(1.0e-9);
+        assert!(
+            residual.abs() <= 1.0e-9 * scale,
+            "concave storm day {} conservation residual {residual} exceeds gate",
+            storm.sim_day_index
+        );
+
+        if state.total_deposition_kg > 0.0 {
+            depositing_days += 1;
+            // Net accounting on a depositing day: the toe export cannot
+            // exceed what detachment supplied minus what deposited (the
+            // telescoping identity, restated as an export bound).
+            assert!(
+                state.exported_sediment_kg_m <= detach_kg_m - depos_kg_m + 1.0e-9 * scale,
+                "concave storm day {} export must respect the deposition debit",
+                storm.sim_day_index
+            );
+        }
+
+        concave_detachment_kg += state.total_detachment_kg;
+        concave_deposition_kg += state.total_deposition_kg;
+    }
+
+    // The depositing-limb proof: the concave toe must actually deposit on
+    // real storm forcing (nonzero `tdep` is a produced value, not a
+    // structural zero), while the profile still detaches upslope. The
+    // discretization refusals must stay a bounded tail of the storm
+    // population (the instrument must not degrade into refusing its way
+    // past the coverage it exists to provide).
+    println!(
+        "concave depositing instrument: storms={} clean={concave_clean_days} \
+         flux_refusals={concave_flux_refusals} depositing={depositing_days} \
+         tdet={concave_detachment_kg:.1} kg tdep={concave_deposition_kg:.1} kg",
+        storm_days.len()
+    );
+    assert!(
+        concave_detachment_kg > 0.0,
+        "concave profile must still detach on its steep upper reach"
+    );
+    assert!(
+        depositing_days > 0 && concave_deposition_kg > 0.0,
+        "concave near-flat toe must produce nonzero conserving deposition \
+         on real storm forcing (days={depositing_days}, tdep={concave_deposition_kg} kg)"
+    );
+    assert!(
+        concave_clean_days > 0 && depositing_days * 4 >= concave_clean_days,
+        "the depositing limb must engage on a substantial share of clean \
+         solves (depositing={depositing_days}, clean={concave_clean_days})"
+    );
+    assert!(
+        concave_flux_refusals * 5 <= storm_days.len(),
+        "flux-closure refusals must stay a bounded tail (<= 20%) of the \
+         storm population (refusals={concave_flux_refusals}, \
+         storms={})",
+        storm_days.len()
+    );
 }
 
 fn fixture_path() -> PathBuf {
