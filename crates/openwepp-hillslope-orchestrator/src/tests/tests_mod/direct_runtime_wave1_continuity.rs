@@ -7,12 +7,29 @@
 //! the frame-level erosion span consuming the new state.
 
 use super::direct_runtime_test_lock;
+use crate::direct_runtime::direct_wave1_publication_projection;
 use crate::{
     DIRECT_WAVE1_GRID_POINTS, DirectDayFrame, DirectPeakRunoffShadowProjection, DirectRunIdentity,
-    DirectRuntimeError, DirectWave1ContinuityInputs, DirectWave1SlopeSegment, Wave1ShearRegime,
-    compute_direct_wave1_continuity, derive_wave1_slope_segments, wave1_depc, wave1_depend,
-    wave1_depeqs, wave1_runge_step, wave1_xcrit,
+    DirectRuntimeError, DirectWave1ContinuityInputs, DirectWave1SlopeSegment, ErosionParticleClass,
+    Wave1ShearRegime, compute_direct_wave1_continuity, derive_wave1_slope_segments, wave1_depc,
+    wave1_depend, wave1_depeqs, wave1_runge_step, wave1_xcrit,
 };
+
+/// Crafted five-class `prtcmp`-shaped composition (fractions sum to 1);
+/// diameters/densities/fall velocities are physically-shaped fillers —
+/// the publication split reads only `frac`.
+fn crafted_particle_classes() -> [ErosionParticleClass; 5] {
+    let dia_m = [2.0e-6, 1.0e-5, 3.0e-5, 3.0e-4, 2.0e-4];
+    let spg = [2.60, 2.65, 1.80, 1.60, 2.65];
+    let frac = [0.05, 0.35, 0.25, 0.20, 0.15];
+    let fall_m_s = [1.0e-6, 5.0e-5, 4.0e-4, 2.0e-2, 2.5e-2];
+    core::array::from_fn(|i| ErosionParticleClass {
+        dia_m: dia_m[i],
+        spg: spg[i],
+        frac: frac[i],
+        fall_m_s: fall_m_s[i],
+    })
+}
 
 /// Crafted single-segment concave OFE: normalized slope `s*(x) = -2x + 2`
 /// (unit average), `qostar = 0`, so the shear polynomial is
@@ -433,6 +450,10 @@ fn wave1_span_publishes_continuity_totals_through_the_frame() {
     continuity.runoff_depth_m = 0.02;
     continuity.effdrn_s = 2000.0;
     *day.erosion_inputs.wave1_continuity = continuity;
+    // E.1: an active continuity payload implies a seeded class table in
+    // production (the assembly builds `enabled` from the seed); the
+    // publication projection fail-closes on an unseeded composition.
+    day.erosion_inputs.wave1_operand_seed.classes = crafted_particle_classes();
     day.peak_runoff_shadow_projection = Some(DirectPeakRunoffShadowProjection {
         lane_index: 0,
         day_index: 0,
@@ -469,6 +490,80 @@ fn wave1_span_publishes_continuity_totals_through_the_frame() {
         .expect("continuity state must be committed to the frame");
     assert!(state.active);
     assert!((state.total_detachment_kg - total_detachment).abs() < 1.0e-12);
+
+    // E.1 per-class publication: `sedcon_i = frac_i * conc` (the
+    // `sloss.for:305-317` composition split) and the class sum conserves
+    // the scalar toe concentration.
+    let scalar_concentration = publication
+        .hbp_sediment_concentration_kg_m3
+        .expect("wave1 continuity must publish the scalar toe concentration");
+    assert!(scalar_concentration > 0.0);
+    let per_class = publication
+        .sediment_concentration_kg_m3
+        .expect("wave1 continuity must publish the per-class concentrations");
+    let classes = crafted_particle_classes();
+    let mut class_sum = 0.0;
+    for (index, concentration) in per_class.iter().enumerate() {
+        assert!(
+            (concentration - classes[index].frac * scalar_concentration).abs() < 1.0e-12,
+            "class {index} concentration must be frac * scalar concentration"
+        );
+        class_sum += concentration;
+    }
+    assert!(
+        (class_sum - scalar_concentration).abs() < 1.0e-9 * scalar_concentration.max(1.0),
+        "per-class concentrations must conserve the scalar toe concentration \
+         (sum={class_sum}, scalar={scalar_concentration})"
+    );
+}
+
+#[test]
+fn wave1_publication_splits_concentration_by_detached_composition() {
+    let inputs = crafted_wave1_inputs();
+    let state = compute_direct_wave1_continuity(&inputs)
+        .expect("crafted storm-day inputs must produce an active solve");
+    assert!(state.active);
+    assert!(state.sediment_concentration_kg_m3 > 0.0);
+
+    let classes = crafted_particle_classes();
+    let publication = direct_wave1_publication_projection(&state, &inputs, &classes)
+        .expect("seeded composition must project the per-class split");
+    let per_class = publication
+        .sediment_concentration_kg_m3
+        .expect("projection must publish the per-class array");
+    let mut class_sum = 0.0;
+    for (index, concentration) in per_class.iter().enumerate() {
+        assert!(
+            (concentration - classes[index].frac * state.sediment_concentration_kg_m3).abs()
+                < 1.0e-12
+        );
+        class_sum += concentration;
+    }
+    assert!((class_sum - state.sediment_concentration_kg_m3).abs() < 1.0e-12);
+}
+
+#[test]
+fn wave1_publication_fails_closed_on_unseeded_class_composition() {
+    let inputs = crafted_wave1_inputs();
+    let state = compute_direct_wave1_continuity(&inputs)
+        .expect("crafted storm-day inputs must produce an active solve");
+    assert!(state.active);
+
+    // A zeroed class table (the `DirectWave1OperandSeed::disabled()` shape)
+    // must be a typed error, never a silent all-zero "composition".
+    let zeroed = [ErosionParticleClass {
+        dia_m: 0.0,
+        spg: 0.0,
+        frac: 0.0,
+        fall_m_s: 0.0,
+    }; 5];
+    let result = direct_wave1_publication_projection(&state, &inputs, &zeroed);
+    assert!(matches!(
+        result,
+        Err(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.wave1.publication.class_fraction_sum"
+        })
+    ));
 }
 
 #[test]

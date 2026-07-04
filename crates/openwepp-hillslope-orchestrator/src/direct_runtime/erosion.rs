@@ -5,13 +5,18 @@ use super::{
     DirectErosionConsolidationCarry, DirectPublicationErosionOperands, DirectRuntimeError,
     DirectWave1ContinuityInputs, DirectWave1ContinuityState, DirectWave1DailyState,
     DirectWave1OperandSeed, ErosionExcessInterval, ErosionFrostInputs, ErosionFrostRegime,
-    ErosionRfcumInputs, advance_erosion_consolidation, assemble_wave1_continuity_inputs,
-    compute_direct_wave1_continuity, resolve_erosion_frost_regime, validate_finite,
-    validate_nonnegative_direct_m,
+    ErosionParticleClass, ErosionRfcumInputs, advance_erosion_consolidation,
+    assemble_wave1_continuity_inputs, compute_direct_wave1_continuity,
+    resolve_erosion_frost_regime, validate_finite, validate_nonnegative_direct_m,
 };
 
 // SC-SED-001 1b-C: one hourly bin (`DC01_HOUR_BIN_COUNT` × 1 h).
 const EROSION_HOUR_BIN_S: f64 = 3600.0;
+
+// E.1 per-class publication: the seeded `prtcmp` composition must sum to
+// unity before it can split the toe concentration; the tolerance covers
+// f64 rounding across the five-class normalization, nothing physical.
+const WAVE1_CLASS_FRACTION_SUM_TOL: f64 = 1.0e-6;
 
 /// Build the erosion rainfall-excess intervals for one day from the WB14
 /// per-hour excess + rainfall surfaces (`reid.for` basis for `effint`/
@@ -584,7 +589,11 @@ impl DirectDayFrame {
         let publication = if let Some(wave2) = &wave2 {
             direct_erod15_publication_projection(wave2, &erosion_inputs.wave2)?
         } else if let Some(continuity) = wave1_continuity.as_deref().filter(|state| state.active) {
-            direct_wave1_publication_projection(continuity, &erosion_inputs.wave1_continuity)?
+            direct_wave1_publication_projection(
+                continuity,
+                &erosion_inputs.wave1_continuity,
+                &erosion_inputs.wave1_operand_seed.classes,
+            )?
         } else {
             DirectPublicationErosionOperands::zero_authority()
         };
@@ -1333,12 +1342,23 @@ fn direct_erod14_final_class_states(
 }
 
 /// Publication projection for the single-OFE Wave-1 continuity solve
-/// (INV-SED-010 totals; per-class concentration fields are Increment-3 —
-/// the class array publishes zeros and the scalar HBP concentration
-/// carries the total-toe concentration from `sloss.for:314`).
-fn direct_wave1_publication_projection(
+/// (INV-SED-010 totals; the scalar HBP concentration carries the
+/// total-toe concentration from `sloss.for:314`).
+///
+/// The per-class array follows the legacy composition
+/// `sedcon(i) = conc_total · frcflw(i)` (`sloss.for:305-317`). Pre-
+/// enrichment (E.4/2d), the exiting fractions are the `prtcmp` detached
+/// composition `frac` — the `route.for:142-160` initialization, which on
+/// the enabled scope (single-OFE, zero inflow, non-cropland
+/// `fidel = frac`, `param.for:452-458`) is exact whenever the profile
+/// does not deposit. On depositing days the class *distribution* is the
+/// un-enriched first cut (labeled INV-SED-011 scope limit; the class
+/// *sum* — the mass the watershed consumer reconstructs — is exact
+/// because `Σ frac = 1`).
+pub(crate) fn direct_wave1_publication_projection(
     state: &DirectWave1ContinuityState,
     inputs: &DirectWave1ContinuityInputs,
+    classes: &[ErosionParticleClass; DIRECT_EROSION_CLASS_LIMIT],
 ) -> Result<DirectPublicationErosionOperands, DirectRuntimeError> {
     validate_nonnegative_direct_m(
         "erosion.wave1.publication.total_detachment_kg",
@@ -1352,6 +1372,30 @@ fn direct_wave1_publication_projection(
         "erosion.wave1.publication.sediment_concentration_kg_m3",
         state.sediment_concentration_kg_m3,
     )?;
+
+    // Fail-closed: an unseeded/zeroed class table must error, not publish
+    // zeros as if it were a composition (`prtcmp` guarantees Σ frac = 1).
+    let mut frac_sum = 0.0;
+    for class in classes {
+        validate_nonnegative_direct_m("erosion.wave1.publication.class_fraction", class.frac)?;
+        frac_sum += class.frac;
+    }
+    if (frac_sum - 1.0).abs() > WAVE1_CLASS_FRACTION_SUM_TOL {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.wave1.publication.class_fraction_sum",
+        });
+    }
+
+    let mut sediment_concentration_kg_m3 = [0.0; DIRECT_EROSION_CLASS_LIMIT];
+    for (index, class) in classes.iter().enumerate() {
+        let concentration = class.frac * state.sediment_concentration_kg_m3;
+        validate_nonnegative_direct_m(
+            "erosion.wave1.publication.class_concentration",
+            concentration,
+        )?;
+        sediment_concentration_kg_m3[index] = concentration;
+    }
+
     Ok(DirectPublicationErosionOperands {
         peak_runoff_m3_s: Some(inputs.peakro_m_s),
         runoff_duration_s: Some(inputs.effdrn_s),
@@ -1360,7 +1404,7 @@ fn direct_wave1_publication_projection(
         hbp_total_detachment_kg: Some(state.total_detachment_kg),
         hbp_total_deposition_kg: Some(state.total_deposition_kg),
         hbp_sediment_concentration_kg_m3: Some(state.sediment_concentration_kg_m3),
-        sediment_concentration_kg_m3: Some([0.0; DIRECT_EROSION_CLASS_LIMIT]),
+        sediment_concentration_kg_m3: Some(sediment_concentration_kg_m3),
     })
 }
 

@@ -175,6 +175,9 @@ pub use erosion::{
     DirectErod14Inputs, DirectErod14State, DirectErosionDownstreamOperands, DirectErosionInputs,
     DirectErosionShadowProjection, DirectErosionSpanReport, DirectErosionState,
 };
+// E.1 per-class publication: crate-visible for the contract tests only.
+#[cfg(test)]
+pub(crate) use erosion::direct_wave1_publication_projection;
 pub use erosion_adjustments::{
     DirectErosionConsolidationCarry, ErosionAdjustmentFactors, ErosionAdjustmentInputs,
     ErosionConsolidationBaselines, ErosionConsolidationInputs, ErosionFrostInputs,
