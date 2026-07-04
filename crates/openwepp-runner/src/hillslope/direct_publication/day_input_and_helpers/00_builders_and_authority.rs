@@ -953,6 +953,10 @@ fn direct_production_pl_projection_required_ofe_scalar(
 /// - `field_width_m` denormalizes per-width sediment to total mass. Set to
 ///   unit width (`1.0`) — single-hillslope per-width reporting — pending
 ///   the hillslope-geometry width source at enable.
+// Multi-operand sourcing builder: sources texture / classes / baselines /
+// segments / geometry / cover constants from the parsed inputs. The line
+// count is inherent to the per-field fail-closed sourcing.
+#[allow(clippy::too_many_lines)]
 fn direct_production_wave1_operand_seed(
     parsed_soil: &SoilProfile,
     soil_projection: &TypedSoilWb11RuntimeProjection,
@@ -960,6 +964,12 @@ fn direct_production_wave1_operand_seed(
     management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     peak_runoff: &DirectProductionPeakRunoffAuthority,
 ) -> Result<openwepp_hillslope_orchestrator::DirectWave1OperandSeed, HillslopeCliError> {
+    // The management PL projection indexes OFEs 1-based (`ofe1_*` / primary
+    // symbol for the first OFE); the accessors only alias to the primary /
+    // `_seed` symbols at `ofe_index == 1`, so the single-OFE Wave-1 seed
+    // reads the first OFE as index 1 (index 0 would always miss and default).
+    const FIRST_OFE_INDEX: usize = 1;
+
     let seed_blocked = |detail: String| HillslopeCliError::RuntimeSurfaceFailure {
         surface: "direct_production_wave1_operand_seed",
         detail: format!("{SIMOUT_GUARD_ID} {detail}"),
@@ -1049,16 +1059,21 @@ fn direct_production_wave1_operand_seed(
     // Stage-4 enable-time adjudication item (like `is_cropland` /
     // `field_width_m`), defaulted to the WEPP unit spacing behind the
     // disabled seed.
-    let rspace_m =
-        direct_production_pl_projection_optional_ofe_scalar(management_projection, 0, "rspace")
-            .unwrap_or(WEPP_DEFAULT_RILL_SPACING_M);
+    let rspace_m = direct_production_pl_projection_optional_ofe_scalar(
+        management_projection,
+        FIRST_OFE_INDEX,
+        "rspace",
+    )
+    .unwrap_or(WEPP_DEFAULT_RILL_SPACING_M);
 
     // Static rill-friction cover constants (`hmax`/`flivmx`); a burned
     // forest with no live canopy has neither, so absent defaults to 0.
     let hmax_m =
-        direct_production_typed_wb16_canopy_scalar(management_projection, 0, "hmax").unwrap_or(0.0);
+        direct_production_typed_wb16_canopy_scalar(management_projection, FIRST_OFE_INDEX, "hmax")
+            .unwrap_or(0.0);
     let flivmx =
-        direct_production_typed_wb16_canopy_scalar(management_projection, 0, "flivmx").unwrap_or(0.0);
+        direct_production_typed_wb16_canopy_scalar(management_projection, FIRST_OFE_INDEX, "flivmx")
+            .unwrap_or(0.0);
 
     Ok(openwepp_hillslope_orchestrator::DirectWave1OperandSeed {
         enabled: false,

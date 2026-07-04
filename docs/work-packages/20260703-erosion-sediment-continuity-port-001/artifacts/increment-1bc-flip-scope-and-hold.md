@@ -195,6 +195,19 @@ Provisional-behind-disabled (enable-time adjudication): `is_cropland`,
 `field_width_m`, and `rspace` **only when the management carries no rill
 parameterization** (sourced otherwise).
 
+**Codex Stage-3a re-review (1 Medium, fixed):** the `rspace` read used OFE
+index 0, but the PL accessor only aliases to the primary `rspace` /
+`rspace_seed` symbols at `ofe_index == 1` (there are no `ofe0_*` symbols),
+so it **always** missed and defaulted, even for rill-parameterized
+managements. Fixed: the single-OFE seed reads the first OFE as **1-based**
+(`FIRST_OFE_INDEX = 1`), matching the working peak-runoff/`ealpha` builder
+(`ofe_index = ofe_offset + 1`) on the same accessor; `hmax`/`flivmx`
+aligned to the same convention. Now `rspace` is genuinely sourced where
+present, defaulted only when truly absent. **Stage-4 verification:** the
+seed is still unread, so whether the McKenzie forest target itself sources
+vs defaults `rspace` is confirmed at enable (its `.man` did not obviously
+carry a rill line).
+
 **Two enable-time adjudication items (provisional behind the disabled
 seed — they only affect an active solve):**
 - `is_cropland = false` (non-cropland interrill branch, `intdr = 1`),
