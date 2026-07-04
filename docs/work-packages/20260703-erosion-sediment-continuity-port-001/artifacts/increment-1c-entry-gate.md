@@ -175,8 +175,10 @@ inherits it as an explicit intake item.
   `sloss.for` requires).
 - **5-class `sedcon`**: `direct_wave1_publication_projection` publishes
   `frac_i × toe-concentration` with a fail-closed `Σ frac ≈ 1` guard
-  (`WAVE1_CLASS_FRACTION_SUM_TOL = 1e-6`; a zeroed/unseeded class table is
-  a typed error, never a silent zero split). Basis labeled `GAP-SED-007`
+  (`WAVE1_CLASS_FRACTION_SUM_TOL = 1e-9`, the SC-SED-001 `TOL-SED-005`
+  closure bound, with the split normalized by the validated sum — the
+  round-1 hardening of §6; a zeroed/unseeded class table is a typed
+  error, never a silent zero split). Basis labeled `GAP-SED-007`
   (SC-SED-001 v42) with three new provenance anchors
   (`REF-SED-LEGACY-SLOSS-SEDCON`, `-SEDSEG-WIDTH`, `-FRCFLW-INIT`).
   **Ran** (p61): class sum `19.077 kg/m³` = the prior scalar exactly; all
