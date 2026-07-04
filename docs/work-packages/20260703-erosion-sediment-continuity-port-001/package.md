@@ -135,33 +135,37 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
     **stateful** parts (the `daydis`/`rfcum` accumulators + the
     prior-`ifrost` frost-regime resolution) are runtime wiring, part of
     the flip.
-  - **1b-C — activation: IN EXECUTION 2026-07-03 (staged, branch
-    `erosion-inc1c-flip`).** Operator-directed after the
-    integration-surface audit (byte-stability risk LOW — pure consumer;
-    most daily inputs frame-reachable). Stages: (1) static erosion
-    operand seed; (2) `daydis`/`rfcum` accumulators + `wb14_hourly_rainfall`
-    surface + frost-regime resolution; (3) per-day operand assembly in
-    r7d8; (4) enable single-OFE + pass-writer unhardcode + DFF-WS3 HOLD
-    flip + full-run byte-stability. Each stage gated. The seed flip
-    remains a distinct stateful integration (per-day operand threading +
-    new persistent daily accumulators + `effint`/`effdrr` WB14 surfacing +
-    enable + pass-writer unhardcode + DFF-WS3 HOLD flip + full-run
-    byte-stability), previously held rather than forced in a single pass:
-    the winter `fcycle` coupling is a confirmed hard boundary inside it
-    (bounded by the 1b-B fail-closed thaw guard, which makes the enable
-    safe by construction), and the byte-stability gate needs a full
-    shadow-run diff. Complete no-intervention spec in
-    [`artifacts/increment-1bc-flip-scope-and-hold.md`](artifacts/increment-1bc-flip-scope-and-hold.md).
-    Seed remains disabled; production outputs unchanged.
+  - **1b-C — activation: COMPLETE, MERGED TO MAIN `9c54837b` 2026-07-04**
+    (operator-authorized after Codex 2-round review). **The direct runtime
+    now produces single-OFE hillslope sediment.** The staged flip landed
+    the static operand seed, the persistent carry lifecycle
+    (`rfcum`/`daydis`/`ifrost`/rill-width) + the `wb14_hourly_rainfall`
+    surface, the per-day operand assembly in the erosion span, the
+    single-OFE enable (scoped to no-tillage / forest-masquerade), the
+    pass-writer unhardcode, and the DFF-WS3 HOLD flip to the directional
+    burn law. First runtime sediment: **p61 `tdet=20.9 kg/m`**; **DFF-WS3
+    directional burn law `2491 kg` burn ≫ `258 kg` unburned**. Enabling on
+    the real fixture suite surfaced + fixed 7 latent bugs (activation gate,
+    `rspace=0` sentinel, fractional-vs-meter slope-x, hardcoded writer,
+    winter-thaw graceful skip = `GAP-SED-THAW`, thaw publication-authority,
+    flux-closure discretization tolerance 1e-3→5e-3). Full suite 1321/1321.
+    First-cut fidelity gaps (follow-up, roadmap §E): p61 magnitude ~5×
+    (likely `field_width=1.0`); the 5-class `sedcon` publishes 0 (per-class
+    concentration = Increment 3); thaw-day erosion skipped. Detail in
+    [`artifacts/increment-1bc-flip-scope-and-hold.md`](artifacts/increment-1bc-flip-scope-and-hold.md);
+    forward sequence in [`docs/ROADMAP.md`](../../ROADMAP.md) §E.
 - **Increment 1c-fidelity — single-OFE surface completeness (structural, hard
-  prerequisite for Increment 2).** Publish `tdep` deposition, the 5-class `sedcon`
-  concentration (both 0 in the 1b-C first cut), and a real `field_width_m` from
-  hillslope geometry — the surfaces multi-OFE routing must transport.
+  prerequisite for Increment 2).** Compute the 5-class `sedcon` array (the
+  genuinely-zeroed surface; `tdep`/`total_deposition_kg` is already published and
+  solver-computed — read 0 only on detachment-dominated fixtures, so its gap is
+  nonzero-deposition validation coverage + per-OFE semantics), and source a real
+  `field_width_m` from hillslope geometry — the surfaces multi-OFE routing must
+  transport.
 - **Increment 2 — multi-OFE integration.** Wire **Wave-1** across OFEs as the
   per-OFE continuity engine (`G_out→ldtop` load, `qout→qin` discharge, particle
   handoff), reusing the existing EROD14/Wave-2 routing plumbing, then retire Wave-2
   as a separate physics arm. Coupled to the **hourly-flow substrate** (the
-  decreasing-flow/`qin<qout` deposition is per-hour) — carry the modeled hourly
+  decreasing-flow/`qout<qin` deposition is per-hour) — carry the modeled hourly
   flow through erosion → HBP → routing instead of the single-peak collapse. Full
   architecture + open-decision resolution in
   [`artifacts/increment-2-entry-gate.md`](artifacts/increment-2-entry-gate.md);

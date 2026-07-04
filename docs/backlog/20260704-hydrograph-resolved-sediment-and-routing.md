@@ -99,10 +99,14 @@ Concretely:
 2. **Contract amendments:** SC-SED-001 (erosion consumes hourly discharge), the HBP
    format + SC-INFILE-HBP-001 (versioned hourly-flow EVENT surface), SC-ROUTE-001
    (route serialized hydrograph, triangular fallback). Author before code.
-3. **Conservation gates:** the hourly surface must close to the existing peak/volume
-   summary (`Σ hourly = volume`; the peak of the hourly profile ties to WB16 `peakro`
-   within tolerance) so the extension is a refinement, not a new degree of freedom that
-   can drift from the closed water balance.
+3. **Conservation gate:** the hourly surface must close to the existing runoff **volume**
+   (`Σ hourly = volume`), so the extension is a refinement of the closed water balance,
+   not a new degree of freedom. Note the WB16 `peakro` is a **separate** analytical peak
+   estimator (`vave·qpstar` via the `tstar`/`vstar` branch), **not** the max of the
+   hourly profile — the two need not be equal, and forcing `max(hourly) = peakro` would
+   reject or distort a valid modeled hydrograph. WB16 `peakro` stays a **diagnostic /
+   fallback** surface; whether the hourly profile is rescaled to reconcile with it is an
+   explicit **ADR policy** choice, not a conservation requirement.
 4. **HBP schema migration:** the hourly-flow surface is designed **once** and versioned;
    a premature commit before the per-OFE / per-event serialization semantics are settled
    risks a costly migration (same discipline the HR backlog flags for its deposited-layer

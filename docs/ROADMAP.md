@@ -726,11 +726,16 @@ Full architecture + open-decision resolution:
 [`increment-2-entry-gate.md`](work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2-entry-gate.md).
 
 ### E.1 Single-OFE surface completeness (structural — hard prerequisite)
-Publish the surfaces multi-OFE routing must transport: **`tdep` deposition**, the
-**5-class `sedcon` concentration** (both currently 0 in the 1b-C first cut), and a real
-**`field_width_m`** from hillslope geometry (currently unit-width). Gate: single-OFE
-closure unchanged; p61/DFF-WS3 directional law intact; the now-nonzero surfaces
-conserve. *Structural — comes before the multi-OFE mechanism.*
+Complete the surfaces multi-OFE routing must transport. `tdep` (total deposition) is
+**already published** and solver-computed — it read 0 on p61/DFF-WS3 only because those
+profiles are detachment-dominated (a value, not a missing surface); the gap is
+**nonzero-deposition validation coverage** + per-OFE deposition semantics. The **5-class
+`sedcon` array** is the genuinely-zeroed surface (single-OFE Wave-1 carries a scalar
+concentration, not the per-class breakdown — the Increment-3 particle work). And source
+a real **`field_width_m`** from hillslope geometry (currently unit-width). Gate:
+single-OFE closure unchanged; p61/DFF-WS3 directional law intact; a depositing fixture
+gives conserving nonzero `tdep`; `sedcon` conserves per class. *Structural — before the
+multi-OFE mechanism.*
 
 ### E.2 Hourly-flow substrate — resolve the "core awkwardness" (structural)
 The Wave-1 solve collapses the modeled hourly flow to a single **peak discharge**, the

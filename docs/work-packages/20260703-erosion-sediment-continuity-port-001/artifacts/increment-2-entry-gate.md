@@ -24,7 +24,7 @@ Two erosion paths currently coexist in the runtime:
 | Path | What | Scope now |
 |---|---|---|
 | **Wave-1** (`route`/`erod`/`runge`) | Full point-by-point RK4 continuity over `x∈[0,1]` | single-OFE only (the 1b-C flip) |
-| **Wave-2** (EROD14/EROD15) | Boundary/case-based OFE-level sediment router (`ldtop`/`ldbot`/`lddend`, `qin`/`qout`, `case_value` 1–5, per-class `frcflw`) | the *only* path for `ofe_count > 1` |
+| **Wave-2** (EROD14/EROD15) | Boundary/case-based OFE-level sediment router (`ldtop`/`ldbot`/`lddend`, `qin`/`qout`, `case_value` 1–4, per-class `frcflw`) | the *only* path for `ofe_count > 1` |
 
 **The central Increment-2 question is the relationship between these two.** *(Inference,
 to confirm against the kernel at kickoff: EROD14 is a coarser boundary/analytic
@@ -79,14 +79,19 @@ is the low-risk path.
 
 ## 4. Hard prerequisite: single-OFE completeness (before any multi-OFE work)
 
-Multi-OFE routing **transports deposition and per-class concentration** — you cannot
-route what the single-OFE surface does not yet publish. The 1b-C first-cut gaps are
-therefore in-scope *before* Increment 2 proper:
+Multi-OFE routing **transports deposition and per-class concentration**. The 1b-C
+first-cut gaps here are therefore in-scope *before* Increment 2 proper — but they are
+different in kind:
 
-- **`tdep` (deposition) publication** — currently 0; multi-OFE handoff needs the real
-  per-OFE deposition (the whole point of downstream OFEs).
-- **5-class `sedcon` (sediment concentration) publication** — currently 0; the particle
-  handoff and enrichment need per-class concentration.
+- **`tdep` (total deposition) is already published** (`total_deposition_kg` /
+  HBP `tdep`) and the solver computes it; it read 0 on p61/DFF-WS3 because those
+  profiles are detachment-dominated (a *value*, not a missing surface). The real gap is
+  **nonzero-deposition validation coverage** (a depositing fixture) and the **per-OFE
+  deposition semantics** the multi-OFE handoff needs.
+- **The 5-class `sediment_concentration_kg_m3` array is the genuinely-zeroed surface** —
+  the single-OFE Wave-1 carries a scalar concentration but not the per-class breakdown;
+  computing it is the particle-class work (Increment 3), which the particle handoff and
+  enrichment require.
 - **`field_width_m`** — sourced from hillslope geometry (currently the unit-width
   default), so the denormalized total mass is right at the OFE and hillslope exits.
 
@@ -108,8 +113,11 @@ designed on the **modeled hourly flow** (`wb14_hourly_excess_m`), not a single p
 - the HBP EVENT payload gains a versioned **hourly-flow surface** so the watershed routes
   the modeled hydrograph instead of a triangular reconstruction (SC-ROUTE-001
   `REF-ROUTE-CH13-PEAKIN`);
-- the peak/volume summaries remain (diagnostics, legacy fallback, conservation tie:
-  `Σ hourly = volume`, hourly peak ↔ WB16 `peakro`).
+- the peak/volume summaries remain (diagnostics, legacy fallback). The conservation
+  gate is `Σ hourly = volume` **only**; WB16 `peakro` is a *separate* analytical peak
+  estimator (`vave·qpstar`), not the hourly max, so `max(hourly) = peakro` is **not** a
+  gate (it would reject/distort a valid hydrograph) — any rescaling to reconcile them is
+  an ADR policy choice.
 
 **Entry-gate decision to resolve:** does the Wave-1 continuity solve per-hour (24
 solves/OFE-day) or consume a hydrograph-integrated transport? The **acceptance driver**
@@ -140,9 +148,11 @@ deposition case governs the form.
 
 ## 7. Staged plan (each stage shadow-first + conservation-hard-stop)
 
-- **2a — single-OFE completeness (Increment 1c-fidelity):** publish `tdep`, 5-class
-  `sedcon`, real `field_width_m`. Gate: single-OFE closure unchanged; p61/DFF-WS3
-  directional law intact; the two now-nonzero surfaces conserve.
+- **2a — single-OFE completeness (Increment 1c-fidelity):** compute the 5-class
+  `sedcon` array (the zeroed surface), source `field_width_m` from geometry, and add
+  **nonzero-deposition validation coverage** for the already-published `tdep`. Gate:
+  single-OFE closure unchanged; p61/DFF-WS3 directional law intact; a depositing fixture
+  produces conserving nonzero `tdep`; the now-nonzero `sedcon` conserves per class.
 - **2b — hourly-flow substrate:** ADR + SC-SED-001/HBP/SC-ROUTE-001 amendments; add the
   hourly-flow EVENT surface; Wave-1 consumes the hourly discharge (form per §5). Gate:
   `Σ hourly = volume`; single-OFE recession-deposition case produces deposition without
