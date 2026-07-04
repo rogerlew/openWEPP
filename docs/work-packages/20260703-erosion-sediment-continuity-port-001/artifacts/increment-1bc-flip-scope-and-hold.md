@@ -227,6 +227,50 @@ population in r7d8 (cover/roots/residue from the growth/decomposition
 states, frost regime, the `wb14_hourly_rainfall` surface) calling
 `assemble_wave1_continuity_inputs`.
 
+## Focused pass progress (2026-07-04)
+
+**Mechanical infrastructure LANDED** (branch `erosion-inc1c-flip`,
+runtime-byte-stable — the new state is threaded/populated but **unread**
+until enable, so no simulation output changes; the `DirectDayFrame`
+type-size layout grew +224 B (rainfall array + carry), handled with a
+documented raise of the R7B `day_frame` bound 13_056 → 13_248 — the R7B
+guard correctly flagged the growth, which is why "byte-stable by
+construction" is qualified to *runtime* outputs, not the frame layout):
+- **Persistent erosion carry lifecycle.** `DirectErosionRuntimeCarry`
+  (`consolidation` `rfcum`/`daydis` + `ifrost` + `rill_width_m`) on
+  `DirectLaneFrame` **and** `DirectDayFrame`, threaded lane→day in the
+  day-frame seed and committed day→lane in `commit_day`, exactly like the
+  snow/frost `*_runtime_carry`. Seeds `inert()` (daydis 0); `daydi1`
+  seeding is an enable-time item.
+- **`wb14_hourly_rainfall_m[24]` surface.** The WB14 producer
+  (`compute_wb14_infiltration_depression_with_profile`) now bins per-hour
+  rainfall alongside the excess, on the same basis; populated at R4K into
+  the new frame field. Feeds the erosion `effint`.
+
+**Surface map resolved (for the per-day `DirectWave1DailyState`):**
+- `peakro`/`runoff`/`effdrn` ← `peak_runoff_shadow_projection`.
+- `excess_intervals` ← `wb14_hourly_excess_m` + `wb14_hourly_rainfall_m`.
+- `canopy_cover` ← `plant_growth_state.canopy_cover_fraction`.
+- `canopy_height` ← ET compute `pmet…canopy_height_m`.
+- `live_root` ← `plant_growth_state.root_mass_kg_m2`.
+- `dead_root` ← `residue_partition.root_residue_kg_m2`.
+- `buried_residue` ← `residue_partition.buried_residue_kg_m2`.
+- `daydis`/`rill_width_prior` ← the carry; `theta_suppressed` ← snow;
+  `beta` ← rainfall presence; `strldn = 0`.
+
+**Remaining science-adjacent decisions before the assembly is wired (a
+wrong choice conserves but mis-scales sediment — no gate catches it):**
+1. `random_roughness` (`rrc`) — no daily decayed source in the direct
+   runtime; candidates: management `rrinit` (static seed) or a decay model.
+2. `interrill_cover` vs `rill_cover` — both from
+   `residue_partition.cover_fraction`, or a distinct split?
+3. Frost-regime surface-layer water source for
+   `resolve_erosion_frost_regime`.
+4. `daydi1` consolidation-age seeding.
+Then: enable single-OFE, pass-writer unhardcode, DFF-WS3 flip,
+byte-stability, and the earlier `is_cropland`/`field_width_m`/`rspace`
+adjudications.
+
 ## Remaining Stage-3 + Stage-4: complete integration map (2026-07-03, Static)
 
 Scoped against the real orchestrator architecture. **Key finding: the

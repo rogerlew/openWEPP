@@ -197,7 +197,8 @@ pub use erosion_operands::{
     erosion_shield, erosion_transport_coefficients, erosion_trcoef, erosion_yalin,
 };
 pub use erosion_seed::{
-    DirectWave1DailyState, DirectWave1OperandSeed, assemble_wave1_continuity_inputs,
+    DirectErosionRuntimeCarry, DirectWave1DailyState, DirectWave1OperandSeed,
+    assemble_wave1_continuity_inputs,
 };
 pub use evapotranspiration::{
     DirectEvapotranspirationComputeDownstreamOperands, DirectEvapotranspirationComputeInputs,

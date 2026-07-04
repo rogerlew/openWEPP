@@ -215,8 +215,13 @@ impl DirectDayFrame {
         let infiltration_depression = self.compute_r4k_infiltration_depression()?;
         DIRECT_AUDIT.record_direct_compute_operation();
         // DC01: the WB14 hourly excess profile feeds the downstream surface
-        // transfer publication (INV-RUNOFFPART-031 / M2).
-        self.wb14_hourly_excess_m = self.compute_r4k_hourly_excess_profile()?;
+        // transfer publication (INV-RUNOFFPART-031 / M2). The parallel
+        // hourly rainfall profile (SC-SED-001 1b-C) feeds the erosion
+        // `effint`; both are on the same WB14 binning basis.
+        let (wb14_hourly_excess_m, wb14_hourly_rainfall_m) =
+            self.compute_r4k_hourly_excess_and_rainfall_profile()?;
+        self.wb14_hourly_excess_m = wb14_hourly_excess_m;
+        self.wb14_hourly_rainfall_m = wb14_hourly_rainfall_m;
 
         DIRECT_AUDIT.record_direct_phase_entry();
         phase_entry_count += 1;
@@ -585,15 +590,17 @@ impl DirectDayFrame {
         })
     }
 
-    fn compute_r4k_hourly_excess_profile(
+    /// SC-SED-001 1b-C: the WB14 per-hour (excess, rainfall) profiles on the
+    /// same basis — the excess feeds the surface-transfer publication, the
+    /// rainfall feeds the erosion `effint`.
+    fn compute_r4k_hourly_excess_and_rainfall_profile(
         &self,
-    ) -> Result<[f64; DC01_HOUR_BIN_COUNT], DirectRuntimeError> {
+    ) -> Result<([f64; DC01_HOUR_BIN_COUNT], [f64; DC01_HOUR_BIN_COUNT]), DirectRuntimeError> {
         if let Some(producer_inputs) = &self.infiltration_depression_inputs.producer_inputs {
-            return Ok(
-                compute_wb14_infiltration_depression_with_profile(producer_inputs)?.hourly_excess_m,
-            );
+            let outcome = compute_wb14_infiltration_depression_with_profile(producer_inputs)?;
+            return Ok((outcome.hourly_excess_m, outcome.hourly_rainfall_m));
         }
-        Ok([0.0; DC01_HOUR_BIN_COUNT])
+        Ok(([0.0; DC01_HOUR_BIN_COUNT], [0.0; DC01_HOUR_BIN_COUNT]))
     }
 
     fn compute_r4k_infiltration_depression(
@@ -1394,6 +1401,10 @@ pub(crate) const DC01_HOUR_BIN_COUNT_F64: f64 = 24.0;
 pub(crate) struct DirectWb14OutcomeWithProfile {
     pub state: DirectInfiltrationDepressionState,
     pub hourly_excess_m: [f64; DC01_HOUR_BIN_COUNT],
+    /// SC-SED-001 1b-C: per-hour RAINFALL depth (m), binned on the same
+    /// basis as `hourly_excess_m`. Feeds the erosion `effint`; unread
+    /// until the Wave-1 seed is enabled.
+    pub hourly_rainfall_m: [f64; DC01_HOUR_BIN_COUNT],
 }
 
 fn dc01_add_depth_to_hour_bins(
@@ -1459,6 +1470,7 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
     let mut cumulative_infiltration_m = 0.0_f64;
     let mut total_rainfall_m = 0.0_f64;
     let mut hourly_excess_m = [0.0_f64; DC01_HOUR_BIN_COUNT];
+    let mut hourly_rainfall_m = [0.0_f64; DC01_HOUR_BIN_COUNT];
 
     // DC01 (INV-RUNOFFPART-031): with material runon, the supply is re-binned
     // to a 24 x 1 h basis (local hyetograph depth per hour + runon per hour) —
@@ -1489,6 +1501,14 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
             "infiltration_depression.hyetograph_rainfall_m",
             total_rainfall_m,
         )?;
+        // SC-SED-001 1b-C: bin ALL interval rainfall (the erosion `effint`
+        // producer later selects the excess-period hours itself).
+        dc01_add_depth_to_hour_bins(
+            &mut hourly_rainfall_m,
+            interval.start_s,
+            interval.end_s,
+            rainfall_m,
+        );
         let remaining_storage_m = (inputs.storage_capacity_m - cumulative_infiltration_m).max(0.0);
         if remaining_storage_m <= WB11_ZERO_THRESHOLD {
             continue;
@@ -1537,6 +1557,7 @@ pub(crate) fn compute_wb14_infiltration_depression_with_profile(
             depression_storage_delta_m,
         },
         hourly_excess_m,
+        hourly_rainfall_m,
     })
 }
 

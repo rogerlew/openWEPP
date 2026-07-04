@@ -657,6 +657,9 @@ impl DirectRunFrame {
         day_frame.frost_runtime_carry =
             direct_frost_runtime_carry_from_winter_state(&lane.winter_column.frost)
                 .or_else(|| lane.frost_runtime_carry.clone());
+        // SC-SED-001 1b-C: carry the persistent erosion state into the day
+        // (advanced in the erosion span, committed back at day end).
+        day_frame.erosion_runtime_carry = lane.erosion_runtime_carry;
         Ok(day_frame)
     }
 
@@ -881,6 +884,9 @@ pub struct DirectLaneFrame {
     pub winter_column: Box<DirectWinterColumnState>,
     pub snow_runtime_carry: Option<Box<DirectSnowRuntimeCarry>>,
     pub frost_runtime_carry: Option<DirectFrostRuntimeCarry>,
+    /// SC-SED-001 1b-C persistent erosion carry (`rfcum`/`daydis`/`ifrost`/
+    /// rill width), threaded day→day like the snow/frost carries.
+    pub erosion_runtime_carry: DirectErosionRuntimeCarry,
     pub day_inputs: Vec<DirectDayConstructorInputs>,
 }
 
@@ -917,6 +923,7 @@ impl DirectLaneFrame {
             winter_column: Box::new(DirectWinterColumnState::zero()),
             snow_runtime_carry: None,
             frost_runtime_carry: None,
+            erosion_runtime_carry: DirectErosionRuntimeCarry::inert(),
             day_inputs: Vec::new(),
         })
     }
@@ -963,6 +970,12 @@ impl DirectLaneFrame {
             winter_column: Box::new(winter_column),
             snow_runtime_carry,
             frost_runtime_carry,
+            // Consolidation age seeds inert (daydis = 0). Seeding from the
+            // management `daydi1` is an enable-time adjudication item (it
+            // ages the erodibility-adjustment factors); inert is faithful
+            // for a freshly-disturbed start and inert behind the disabled
+            // seed regardless.
+            erosion_runtime_carry: DirectErosionRuntimeCarry::inert(),
             day_inputs: inputs.day_inputs,
         }
     }
@@ -1047,6 +1060,9 @@ impl DirectLaneFrame {
         self.frost_runtime_carry =
             direct_frost_runtime_carry_from_winter_state(&self.winter_column.frost)
                 .or_else(|| day_frame.frost_runtime_carry.clone());
+        // SC-SED-001 1b-C: persist the erosion carry advanced in the day's
+        // erosion span (`rfcum`/`daydis`/`ifrost`/rill width) to the lane.
+        self.erosion_runtime_carry = day_frame.erosion_runtime_carry;
         Ok(())
     }
 }
@@ -1064,6 +1080,14 @@ pub struct DirectDayFrame {
     /// DC01: WB14 per-hour infiltration-excess profile (INV-RUNOFFPART-031),
     /// set at R4K, consumed by the downstream surface-transfer publication.
     pub wb14_hourly_excess_m: [f64; 24],
+    /// SC-SED-001 1b-C: WB14 per-hour RAINFALL depth (m), the parallel of
+    /// `wb14_hourly_excess_m`, set at R4K. Feeds the erosion `effint`
+    /// (mean rainfall intensity over excess periods); unread until the
+    /// Wave-1 seed is enabled.
+    pub wb14_hourly_rainfall_m: [f64; 24],
+    /// SC-SED-001 1b-C: persistent erosion carry threaded from the lane,
+    /// advanced in the erosion span, committed back at day end.
+    pub erosion_runtime_carry: DirectErosionRuntimeCarry,
     pub publication: DirectPublicationFrame,
     pub normalization_inputs: DirectNormalizationInputs,
     pub normalization: DirectNormalizationState,
@@ -1203,6 +1227,8 @@ impl DirectDayFrame {
             water: DirectWaterState::zero(),
             transfer: DirectTransferBuffers::zero(),
             wb14_hourly_excess_m: [0.0; 24],
+            wb14_hourly_rainfall_m: [0.0; 24],
+            erosion_runtime_carry: DirectErosionRuntimeCarry::inert(),
             publication: DirectPublicationFrame::empty(),
             normalization_inputs: DirectNormalizationInputs::zero(),
             normalization: DirectNormalizationState::zero(),

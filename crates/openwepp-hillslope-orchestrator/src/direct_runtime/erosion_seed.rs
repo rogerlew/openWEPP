@@ -12,13 +12,55 @@
 //! order. Fail-closed throughout (no fabricated operands).
 
 use super::{
-    DirectRuntimeError, DirectWave1ContinuityInputs, DirectWave1SlopeSegment,
-    ErosionAdjustmentInputs, ErosionConsolidationBaselines, ErosionExcessInterval,
-    ErosionFrostRegime, ErosionParticleClass, ErosionRillCoverInputs, ErosionShearSlopes,
-    erosion_adjustment_factors, erosion_detinr, erosion_effective_intensity,
-    erosion_interrill_delivery_ratio, erosion_rill_hydraulics, erosion_transport_coefficients,
-    validate_finite, wave1_day_routes_sediment,
+    DirectErosionConsolidationCarry, DirectRuntimeError, DirectWave1ContinuityInputs,
+    DirectWave1SlopeSegment, ErosionAdjustmentInputs, ErosionConsolidationBaselines,
+    ErosionExcessInterval, ErosionFrostRegime, ErosionIfrostCarry, ErosionParticleClass,
+    ErosionRillCoverInputs, ErosionShearSlopes, erosion_adjustment_factors, erosion_detinr,
+    erosion_effective_intensity, erosion_interrill_delivery_ratio, erosion_rill_hydraulics,
+    erosion_transport_coefficients, validate_finite, wave1_day_routes_sediment,
 };
+
+/// Per-lane **persistent** erosion runtime carry (SC-SED-001 1b-C): the
+/// day-to-day state the per-day assembly threads across the run, modeled on
+/// the snow/frost `*_runtime_carry` lifecycle (`DirectLaneFrame` ↔
+/// `DirectDayFrame`). Held on both frames; advanced in the erosion span,
+/// written back to the lane at day end.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectErosionRuntimeCarry {
+    /// `rfcum`/`daydis` consolidation age carry (`soil.for`).
+    pub consolidation: DirectErosionConsolidationCarry,
+    /// Prior-day `ifrost` frost-regime carry (`soil.for`).
+    pub ifrost: ErosionIfrostCarry,
+    /// Persistent Gilley rill width (m) grown by `shears`, reset at
+    /// disturbance (0 before the first storm after a disturbance).
+    pub rill_width_m: f64,
+}
+
+impl DirectErosionRuntimeCarry {
+    /// Day-zero seed: consolidation from the management initial `daydi1`
+    /// (0 for the disabled seed), unfrozen surface, zero rill width.
+    pub fn seed(initial_daydis: f64) -> Result<Self, DirectRuntimeError> {
+        Ok(Self {
+            consolidation: DirectErosionConsolidationCarry::seed(initial_daydis)?,
+            ifrost: ErosionIfrostCarry::unfrozen(),
+            rill_width_m: 0.0,
+        })
+    }
+
+    /// Inert default (no consolidation age) for lanes built before the
+    /// typed seed authority supplies `daydi1`.
+    #[must_use]
+    pub fn inert() -> Self {
+        Self {
+            consolidation: DirectErosionConsolidationCarry {
+                rfcum_m: 0.0,
+                daydis: 0.0,
+            },
+            ifrost: ErosionIfrostCarry::unfrozen(),
+            rill_width_m: 0.0,
+        }
+    }
+}
 
 /// Per-lane **static** erosion operand seed — everything that does not
 /// vary day to day. Built once at seed time from the parsed soil / slope /

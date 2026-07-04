@@ -1537,7 +1537,10 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // DC01 (INV-RUNOFFPART-031) adds the WB14 hourly excess profile plus the
     // transfer weights channel at day-frame scope, and the WB14 producer inputs
     // gain the 24-slot runon hourly supply (+576 B total).
-    assert!(day_frame <= 13_056);
+    // SC-SED-001 1b-C adds the parallel WB14 hourly RAINFALL profile
+    // (24-slot, +192 B, feeds the erosion `effint`) and the persistent
+    // erosion runtime carry (`rfcum`/`daydis`/`ifrost`/rill width, +~32 B).
+    assert!(day_frame <= 13_248);
 }
 
 fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
