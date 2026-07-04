@@ -88,6 +88,7 @@ fn storm_daily_state() -> DirectWave1DailyState {
         dead_root_mass_kg_m2: 0.0,
         buried_residue_mass_kg_m2: 0.0,
         random_roughness_m: 0.006,
+        rill_width_prior_m: 0.0,
         days_since_disturbance: 30.0,
         frost_regime: ErosionFrostRegime::Unfrozen,
         theta_suppressed: false,
@@ -173,4 +174,103 @@ fn assembled_frozen_surface_sets_surface_frozen_flag() {
     daily.frost_regime = ErosionFrostRegime::FrozenSurface;
     let inputs = assemble_wave1_continuity_inputs(&seed, &daily).expect("frozen assembly");
     assert!(inputs.surface_frozen, "frozen surface must flag the solver");
+}
+
+#[test]
+fn assembled_dry_day_gates_before_operands_and_solves_inactive() {
+    // Codex round-1 High: a no-runoff day (peakro = 0) must NOT hit the
+    // routed-operand pipeline (zero-width rill hydraulics would hard-error).
+    // The assembly gates first and returns the inert payload; the solver
+    // returns inactive.
+    let seed = clay_loam_seed();
+    let dry = DirectWave1DailyState {
+        peakro_m_s: 0.0,
+        runoff_depth_m: 0.0,
+        effdrn_s: 0.0,
+        excess_intervals: Vec::new(),
+        ..storm_daily_state()
+    };
+    let inputs = assemble_wave1_continuity_inputs(&seed, &dry)
+        .expect("dry day must assemble without touching routed operands");
+    let state = compute_direct_wave1_continuity(&inputs).expect("dry day must solve inactive");
+    assert!(!state.active);
+
+    // A tiny sub-passby event (both bounds below the gate) is also inert.
+    let tiny = DirectWave1DailyState {
+        peakro_m_s: 1.0e-6,
+        runoff_depth_m: 0.005,
+        effdrn_s: 5000.0,
+        excess_intervals: Vec::new(),
+        ..storm_daily_state()
+    };
+    let inputs = assemble_wave1_continuity_inputs(&seed, &tiny).expect("sub-gate assembly");
+    assert!(!compute_direct_wave1_continuity(&inputs).unwrap().active);
+
+    // A NaN activation operand still fails closed.
+    let nan_day = DirectWave1DailyState {
+        peakro_m_s: f64::NAN,
+        ..storm_daily_state()
+    };
+    assert!(matches!(
+        assemble_wave1_continuity_inputs(&seed, &nan_day),
+        Err(DirectRuntimeError::NonFiniteDirectValue { .. })
+    ));
+}
+
+#[test]
+fn assembled_rill_width_carries_persistent_state() {
+    // Codex round-1 High: the Gilley width is persistent state grown by
+    // shears, reset only at disturbance. A later smaller storm must NOT
+    // shrink the width below the prior storm's grown value.
+    let seed = clay_loam_seed();
+
+    // A large storm grows the width from a zero seed.
+    let big = DirectWave1DailyState {
+        peakro_m_s: 1.0e-4,
+        runoff_depth_m: 0.05,
+        effdrn_s: 500.0,
+        rill_width_prior_m: 0.0,
+        ..storm_daily_state()
+    };
+    let big_inputs = assemble_wave1_continuity_inputs(&seed, &big).expect("big storm");
+    let grown_width = big_inputs.width_m;
+    assert!(grown_width > 0.0);
+
+    // A later smaller storm, carrying the grown width, must retain it
+    // (the smaller storm's own Gilley width would be narrower).
+    let small_fresh = DirectWave1DailyState {
+        peakro_m_s: 2.0e-5,
+        runoff_depth_m: 0.02,
+        effdrn_s: 800.0,
+        rill_width_prior_m: 0.0,
+        ..storm_daily_state()
+    };
+    let small_fresh_width = assemble_wave1_continuity_inputs(&seed, &small_fresh)
+        .expect("small fresh")
+        .width_m;
+    let small_carried = DirectWave1DailyState {
+        rill_width_prior_m: grown_width,
+        ..small_fresh.clone()
+    };
+    let small_carried_width = assemble_wave1_continuity_inputs(&seed, &small_carried)
+        .expect("small carried")
+        .width_m;
+    assert!(
+        small_fresh_width < grown_width,
+        "the small storm's own width must be narrower than the big storm's"
+    );
+    assert!(
+        (small_carried_width - grown_width).abs() < 1.0e-12,
+        "carrying the prior width must retain it (monotone growth): \
+         carried {small_carried_width}, grown {grown_width}"
+    );
+    // detinr scales with 1/width, so the carried (wider) width yields a
+    // smaller detinr than the fresh (narrower) width — the fidelity point.
+    let fresh_detinr = assemble_wave1_continuity_inputs(&seed, &small_fresh)
+        .unwrap()
+        .detinr_kg_s_m2;
+    let carried_detinr = assemble_wave1_continuity_inputs(&seed, &small_carried)
+        .unwrap()
+        .detinr_kg_s_m2;
+    assert!(carried_detinr < fresh_detinr);
 }

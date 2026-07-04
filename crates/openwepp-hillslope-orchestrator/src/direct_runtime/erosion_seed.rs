@@ -17,7 +17,7 @@ use super::{
     ErosionFrostRegime, ErosionParticleClass, ErosionRillCoverInputs, ErosionShearSlopes,
     erosion_adjustment_factors, erosion_detinr, erosion_effective_intensity,
     erosion_interrill_delivery_ratio, erosion_rill_hydraulics, erosion_transport_coefficients,
-    validate_finite,
+    validate_finite, wave1_day_routes_sediment,
 };
 
 /// Per-lane **static** erosion operand seed — everything that does not
@@ -135,6 +135,13 @@ pub struct DirectWave1DailyState {
     pub buried_residue_mass_kg_m2: f64,
     /// Daily random roughness (m) (`rrc`).
     pub random_roughness_m: f64,
+    /// **Persistent** rill width from the prior storm day (m) — the Gilley
+    /// width is state grown by `shears` and reset only at tillage /
+    /// disturbance (`shears.for:83-89`; legacy `width(iplane)`). The
+    /// assembly grows it at today's shear discharge and returns the grown
+    /// value in `DirectWave1ContinuityInputs.width_m` for the caller to
+    /// carry forward. 0.0 at the first storm after a disturbance.
+    pub rill_width_prior_m: f64,
     /// Days since the last disturbance (`daydis`; runtime accumulator).
     pub days_since_disturbance: f64,
     /// Resolved frost regime for the freeze-thaw factors.
@@ -153,17 +160,36 @@ pub struct DirectWave1DailyState {
 /// rill hydraulics -> transport coefficients -> effint/effdrr -> interrill
 /// delivery -> detinr -> daily erodibility adjustments. Fail-closed: any
 /// producer's typed error propagates (no fabricated operands).
+///
+/// **Activation ordering (legacy `contin.for`):** the routed-operand
+/// pipeline (`frcfac`/`shears`/`param`) runs only on days that actually
+/// route sediment. On non-routed days (no runoff / below the `passby`
+/// gate) the assembly returns early with the activation operands and
+/// zeroed routed operands — the solver then gates to inactive without
+/// requiring them. This mirrors [`compute_direct_wave1_continuity`]'s own
+/// split so the assembly never hard-errors on ordinary dry days (e.g.
+/// `peakro = 0` would otherwise fail the zero-width rill-hydraulics guard).
 pub fn assemble_wave1_continuity_inputs(
     seed: &DirectWave1OperandSeed,
     daily: &DirectWave1DailyState,
 ) -> Result<DirectWave1ContinuityInputs, DirectRuntimeError> {
+    validate_finite("erosion.assemble.peakro", daily.peakro_m_s)?;
+    validate_finite("erosion.assemble.runoff_depth", daily.runoff_depth_m)?;
+
+    // Gate BEFORE computing routed operands (legacy gate-before-`param`).
+    // Non-routed days return the inert payload; the solver gates inactive.
+    if !seed.enabled || !wave1_day_routes_sediment(daily.runoff_depth_m, daily.peakro_m_s) {
+        return Ok(inert_continuity_inputs(seed, daily));
+    }
+
     // Unit outflow discharge (`xinflo.for:150`) and shear discharge
     // (`xinflo.for:186`).
-    validate_finite("erosion.assemble.peakro", daily.peakro_m_s)?;
     let qout_m2_s = daily.peakro_m_s * seed.efflen_m;
     let qshear_m2_s = qout_m2_s * seed.rspace_m;
 
     // Rill hydraulics (frcfac + shears) -> shrsol/shrend + grown width.
+    // The width seed is the PERSISTENT prior-storm width (`shears.for`
+    // grows it monotonically between disturbances), not 0.0 each day.
     let cover = ErosionRillCoverInputs {
         rilcov: daily.rill_cover_fraction,
         canhgt_m: daily.canopy_height_m,
@@ -174,7 +200,13 @@ pub fn assemble_wave1_continuity_inputs(
         cnslp: seed.avg_slope,
         slpend: seed.slpend,
     };
-    let hydraulics = erosion_rill_hydraulics(qshear_m2_s, &slopes, &cover, 0.0, seed.rspace_m)?;
+    let hydraulics = erosion_rill_hydraulics(
+        qshear_m2_s,
+        &slopes,
+        &cover,
+        daily.rill_width_prior_m,
+        seed.rspace_m,
+    )?;
 
     // Transport coefficients (shield/yalin/trcoef).
     let transport = erosion_transport_coefficients(
@@ -255,4 +287,44 @@ pub fn assemble_wave1_continuity_inputs(
         surface_frozen,
         theta_suppressed: daily.theta_suppressed,
     })
+}
+
+/// The inert-day continuity payload: static geometry + the activation
+/// operands (`peakro`/`runoff`) that the solver gates on, with the routed
+/// operands zeroed. `compute_direct_wave1_continuity` returns the inactive
+/// state from these without inspecting the zeroed routed fields (the
+/// gate-before-validation split), so no fabricated operands are required.
+fn inert_continuity_inputs(
+    seed: &DirectWave1OperandSeed,
+    daily: &DirectWave1DailyState,
+) -> DirectWave1ContinuityInputs {
+    DirectWave1ContinuityInputs {
+        enabled: seed.enabled,
+        segments: seed.segments.clone(),
+        peakro_m_s: daily.peakro_m_s,
+        runoff_depth_m: daily.runoff_depth_m,
+        qin_m2_s: daily.qin_m2_s,
+        efflen_m: seed.efflen_m,
+        slplen_m: seed.slplen_m,
+        cntlen_m: seed.cntlen_m,
+        rspace_m: seed.rspace_m,
+        // Carry the prior width unchanged (no growth on a non-routed day).
+        width_m: daily.rill_width_prior_m,
+        field_width_m: seed.field_width_m,
+        effdrn_s: 0.0,
+        effdrr_s: 0.0,
+        kr_s_m: 0.0,
+        kradjf: 0.0,
+        shcrit_pa: 0.0,
+        tcadjf: 0.0,
+        detinr_kg_s_m2: 0.0,
+        shrsol_pa: 0.0,
+        tcend_kg_s_m: 0.0,
+        ktrato: 0.0,
+        veleff_m_s: 0.0,
+        beta: 0.0,
+        strldn: 0.0,
+        surface_frozen: false,
+        theta_suppressed: false,
+    }
 }

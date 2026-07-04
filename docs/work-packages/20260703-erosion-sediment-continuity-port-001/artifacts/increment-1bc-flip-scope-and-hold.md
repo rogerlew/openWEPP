@@ -60,12 +60,38 @@ static operands), `DirectWave1DailyState` (the daily frame surfaces), and
 `assemble_wave1_continuity_inputs` (the pure per-day assembly running the
 full operand pipeline: rill hydraulics → transport coefficients →
 effint/effdrr → interrill delivery → detinr → daily adjustments, thaw
-fail-closed). 4 unit tests including the full assembly driven through the
+fail-closed). 6 unit tests including the full assembly driven through the
 continuity solver to a conserving solve, the faithful-`effint` interrill
 driver being live (distinct from the old `runoff/effdrr` proxy), the thaw
-fail-closed propagation, and the frozen-surface flag. This is the flip's
-core; `DirectWave1DailyState` is now the exact spec for what the Stage-3
-runtime population must supply.
+fail-closed propagation, the frozen-surface flag, the dry-day activation
+gate (below), and the persistent rill-width carry (below). This is the
+flip's core; `DirectWave1DailyState` is now the exact spec for what the
+Stage-3 runtime population must supply.
+
+**Ran (Stage-1 checkpoint):** `cargo nextest run --workspace --profile
+full` — initial core 1310/1310 (4 assembly tests); after the Codex
+round-1 fixes below (2 High + 1 Low → 6 assembly tests) **1312/1312
+passed, 1 skipped**. `git diff --check` and clippy on the touched
+surfaces clean.
+
+**Codex review round 1 (2 High + 1 Low, fixed on this branch):**
+- *High — dry-day ordering:* `assemble_wave1_continuity_inputs` computed
+  the routed operands (rill hydraulics) before any activation gate, so a
+  `peakro = 0` day hard-errored on the zero-width guard — the same
+  ordering bug as the Increment-1 round-1 finding, reintroduced at the
+  assembly layer. Fixed: the assembly now gates via the shared
+  `wave1_day_routes_sediment` **before** any operand computation and
+  returns the inert payload on non-routed days (matching the legacy
+  `contin.for` gate-before-`param` order); the solver gates inactive.
+- *High — persistent rill width:* the assembly passed `width_seed = 0.0`
+  every day, dropping the Gilley rill-width state that `shears.for` grows
+  monotonically between disturbances; a later smaller storm would shrink
+  the width and mis-scale `detinr`/sediment. Fixed: `DirectWave1DailyState`
+  carries `rill_width_prior_m`, the assembly seeds `shears` with it and
+  returns the grown width for the caller to carry forward (the persistent
+  update + disturbance reset is Stage-2 wiring).
+- *Low — evidence line:* the 1310/1310 full-suite count is now recorded
+  here.
 
 **Remaining (runtime wiring):** (a) build the static seed in
 `direct_production_typed_erosion_authority` (thread texture/slope-points/

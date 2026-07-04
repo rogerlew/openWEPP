@@ -117,9 +117,9 @@ pub use direct_runtime::{
     derive_wave1_slope_segments, direct_runtime_audit_snapshot,
     record_direct_runtime_compatibility_edge_invocation,
     record_direct_runtime_ksatadj_effective_conductivity_evaluation,
-    reset_direct_runtime_audit_counters, wave1_classifier_shear, wave1_depc, wave1_depend,
-    wave1_depeqs, wave1_runge_step, wave1_xcrit, wp2_frost_pair_trace_path,
-    write_wp2_frost_pair_trace,
+    reset_direct_runtime_audit_counters, wave1_classifier_shear, wave1_day_routes_sediment,
+    wave1_depc, wave1_depend, wave1_depeqs, wave1_runge_step, wave1_xcrit,
+    wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
 };
 pub use direct_runtime::{
     DirectWave1DailyState, DirectWave1OperandSeed, assemble_wave1_continuity_inputs,

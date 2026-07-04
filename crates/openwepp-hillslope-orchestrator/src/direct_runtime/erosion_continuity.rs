@@ -1857,6 +1857,20 @@ fn wave1_totals(
     })
 }
 
+/// Whether a day routes sediment (`contin.for` `norun == 1` above the
+/// `passby` event-size bypass): `false` on non-runoff and sub-gate days.
+/// Single-sources the legacy activation gate so operand assembly can gate
+/// **before** computing routed operands (matching the legacy
+/// gate-before-`frcfac`/`param` call order). `runoff_depth_m`/`peakro_m_s`
+/// are assumed already finite-validated by the caller.
+#[must_use]
+pub fn wave1_day_routes_sediment(runoff_depth_m: f64, peakro_m_s: f64) -> bool {
+    if runoff_depth_m <= 0.0 || peakro_m_s <= 0.0 {
+        return false;
+    }
+    !(runoff_depth_m <= WAVE1_PASSBY_RUNOFF_M && peakro_m_s <= WAVE1_PASSBY_PEAKRO_M_S)
+}
+
 /// Compute the Wave-1 single-OFE sediment-continuity solve for one runoff
 /// day. Returns the inactive state on non-runoff days and on events below
 /// the legacy sediment-routing size gate (`contin.for:977` `passby`).
