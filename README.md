@@ -2,7 +2,7 @@
 
 > Rust reimplementation of the WEPP (Water Erosion Prediction Project) hillslope and watershed simulation engine.
 
-> **What it models:** a **forest** hydrology and erosion model with scaffolding for agricultural hydrology — inverting legacy WEPP, an agricultural model with forests bolted on as flag-gated partitions. See [Scientific orientation](#scientific-orientation-a-forest-model-with-agricultural-scaffolding).
+> **What it models:** forest-first hydrology and erosion with agricultural scaffolding — openWEPP prioritizes the forest hot path while keeping **core processes universal** (landuse partitions only real ag processes like irrigation and tillage, never core physics), inverting legacy WEPP's agriculture-first design where forest behavior was bolted on as flag-gated partitions. See [Scientific orientation](#scientific-orientation-forest-first-attention-universal-core-processes).
 
 > **Status:** Pre-alpha. In development in the open
 
@@ -41,44 +41,55 @@ See [ADR-0011](docs/decisions/0011-architecture-first-top-down-science-contracts
 
 openWEPP is the simulation engine only. GUI, GIS preprocessing, climate generation (cligen), DEM-to-watershed delineation (TOPAZ / WhiteboxTools), and run orchestration remain [wepppy](https://github.com/rogerlew/wepppy) concerns. openWEPP plugs into wepppy as a subprocess-per-hillslope replacement for the legacy WEPP binary, emitting parquet via the existing `wepppyo3` interchange schemas.
 
-### Scientific orientation: a forest model with agricultural scaffolding
+### Scientific orientation: forest-first attention, universal core processes
 
-Legacy WEPP is an **agricultural** hydrology and erosion model that has been
-*applied* to forests. It did not so much ignore forests as **partition** them:
-forest and non-agricultural behavior lives in flag- and file-gated branches
-bolted onto an agricultural trunk. Frost is switched off for non-agricultural
-land and the `ksatadj` saturated-conductivity model is switched on through
-`ksflag` (a provisional forest adaptation with no physical derivation on record);
-the sub-daily **hourly water balance** is gated behind `wepp_ui.txt` — a
-University-of-Idaho path that the NSERL agricultural lab and cropland runs never
-exercise. Those forest partitions were maintained, when they were maintained at
-all, by the forest / hydrology contributors rather than the agricultural lab —
-which is precisely why they carry the model's undocumented closure debt: the
-multi-OFE (MOFE) routing, the hourly water balance, the subsurface-dominated
-(lateral-flow) hydrology, frost, snow, and the inter-element handoffs. Where the
-partition ran out, forests were simply run as cropland (`landuse = 1`; the forest
-management block was never finished).
+Legacy WEPP is an **agricultural** hydrology and erosion model that was *applied*
+to forests by **partitioning** them — forest and non-agricultural behavior added
+as flag- and file-gated branches on an agricultural trunk. Anurag Srivastava's
+`ksflag` switches frost off and the `ksatadj` saturated-conductivity model on for
+non-agricultural land (a provisional forest adaptation with no physical
+derivation on record); the sub-daily **hourly water balance** is gated behind
+`wepp_ui.txt`, a University-of-Idaho path the NSERL agricultural lab and cropland
+runs never exercise. Maintained by the forest / hydrology contributors rather
+than the agricultural lab, those branches are where the model's undocumented
+closure debt accumulated: multi-OFE (MOFE) routing, the hourly water balance,
+subsurface-dominated (lateral-flow) hydrology, frost, snow, the inter-element
+handoffs. Where the partition ran out, forests were run as cropland
+(`landuse = 1`; the forest management block was never finished).
 
-openWEPP inverts the partition. It is a **forest** hydrology and erosion model
-with **scaffolding for agricultural hydrology**. Forest is the trunk: fidelity
-investment and validation authority are forest-first — absolute lateral-flow
-magnitude judged against a steep-wet-forest *observed* envelope
-(`SC-SUBHYD-001#INV-SUBHYD-033`; HJ Andrews WS10, Maimai, Panola) rather than
-legacy output; first-class forest landuse and disturbed / burned-forest
-parameterization instead of the cropland masquerade; the subsurface water
-balance, frost, and snow that legacy left to under-maintained partitions; and the
-MOFE, hourly-flow, and OFE-by-OFE routing (including the Papanicolaou revision
-WEPP itself never incorporated) that the agricultural trunk could not carry.
-Agricultural hydrology is **scaffolded** — the cropland, tillage, and management
-paths are structurally supported and exercised, and legacy agricultural inputs
-run through a compatibility bridge — but it is the secondary surface, not where
-fidelity is spent.
+openWEPP has **prioritized the forest hot path**. Attention, performance, and
+validation authority are forest-first: absolute lateral-flow magnitude judged
+against a steep-wet-forest *observed* envelope (`SC-SUBHYD-001#INV-SUBHYD-033`; HJ
+Andrews WS10, Maimai, Panola) rather than legacy output; first-class forest
+landuse and disturbed / burned-forest parameterization; the subsurface balance,
+frost, snow, MOFE, hourly-flow, and OFE-by-OFE routing (including the Papanicolaou
+revision WEPP itself never incorporated) that the agricultural trunk could not
+carry. Agricultural hydrology is **scaffolded** — structurally supported and
+input-compatible, but not where the fidelity effort is spent.
 
-This is where the effort goes, not a rebranding. Every hard problem in this
-project — the MOFE water blow-up, subsurface lateral magnitude, disturbed-forest
-runoff, frost-depth fidelity, snow — is a forest problem the agricultural model
-was never built to get right, and several were partitioned off precisely so the
-agricultural path would not have to carry them.
+**But the core processes are not differentiated on agriculture vs. non-agriculture.**
+A hillslope's infiltration, runoff, water balance, percolation, frost, snow, and
+erosion continuity are universal physics — they do not branch on whether the land
+is a cornfield or a forest. Legacy's ag/non-ag partitions of *core* processes —
+the `ksflag` frost switch, the `wepp_ui.txt` hourly gate — are workarounds around
+**symptoms**: a universal process that misbehaved or was mistrusted in one regime,
+walled off rather than repaired. **A partition placed around a symptom is a red
+flag for a fundamental issue, not a real physical distinction.** openWEPP treats
+such partitions as defects to resolve in the universal process, not distinctions
+to carry forward — frost runs universally (the `ksflag` decouple lever is not
+kept); the water balance is one path, not a UI-gated fork.
+
+The legitimate `lanuse` partitions are the ones that gate genuinely
+landuse-specific **processes** — irrigation, tillage, non-GDD-driven senescence —
+which run only when management declares them. That is the real content of the
+agricultural scaffolding: actual processes partitioned by their presence, never a
+global ag/non-ag branch on physics that should be universal.
+
+So: forest-first in effort and validation, **universal in core physics**,
+partitioned only by real process. openWEPP inverts legacy's *priority*
+(agriculture-first attention becomes forest-first) and repairs its *category
+error* (core processes partitioned by landuse when the physics does not
+distinguish).
 
 ### Why Rust
 

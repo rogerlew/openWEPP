@@ -41,14 +41,19 @@ architecture-first strategy with top-down science contracts, orchestrated by
 two production CLIs (single-hillslope, watershed) plus one debug/comparator CLI
 (replay).
 
-**Domain orientation (on record):** where legacy WEPP is an *agricultural* model
-with forests bolted on as flag-gated partitions (`ksflag`/`ksatadj` frost-off,
-`wepp_ui.txt` hourly balance — maintained by the forest/UI contributors, never
-run by NSERL/ag), openWEPP **inverts** it: a **forest** hydrology and erosion
-model with scaffolding for agricultural hydrology. Fidelity investment and
-validation authority are forest-first (`SC-SUBHYD-001#INV-SUBHYD-033`
-steep-wet-forest envelope, disturbed-forest, MOFE / hourly / subsurface); the ag
-paths are structurally supported but secondary. See README "Scientific
+**Domain orientation (on record):** openWEPP has **prioritized the forest hot
+path** over the agricultural subroutines — validation authority forest-first
+(`SC-SUBHYD-001#INV-SUBHYD-033` steep-wet-forest envelope, disturbed-forest, MOFE
+/ hourly / subsurface / Papanicolaou). **But core processes are NOT differentiated
+ag vs non-ag** — infiltration, water balance, frost, snow, percolation, erosion
+are universal physics. Legacy partitioned *core* processes by ag/non-ag
+(`ksflag` frost-off + `ksatadj`, `wepp_ui.txt` hourly gate — forest/UI-maintained,
+never run by NSERL/ag); those are workarounds around **symptoms**, and **a
+partition around a symptom is a red flag for a fundamental issue** — so openWEPP
+repairs the universal process rather than replicating the partition (frost runs
+universally; no `ksflag` decouple lever; one water-balance path, not a UI-gated
+fork). The only legitimate `lanuse` partitions gate real landuse-specific
+*processes* — irrigation, tillage, non-GDD senescence. See README "Scientific
 orientation."
 
 Key references:
