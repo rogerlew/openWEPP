@@ -658,6 +658,8 @@ impl DirectDayFrame {
         surface_hourly_weights: &[f64; DC01_HOUR_BIN_COUNT],
         lateral_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
     ) -> [f64; DC01_HOUR_BIN_COUNT] {
+        // (shared-shape note: the SURFACE weights consumed here are produced
+        // by `dc01_surface_runoff_hourly_weights` below — one authority.)
         let uniform = 1.0 / DC01_HOUR_BIN_COUNT_F64;
         let mut supply = [0.0_f64; DC01_HOUR_BIN_COUNT];
         let weight_total: f64 = surface_hourly_weights.iter().map(|w| w.max(0.0)).sum();
@@ -1388,6 +1390,41 @@ fn normalize_r4a_nonnegative_depth(
         return Ok(0.0);
     }
     Ok(value)
+}
+
+/// ADR-0036 `REF-SED-DC01-SHAPE`: the SINGLE hourly-runoff shape authority.
+/// Unit-normalized hourly distribution of the day's surface runoff (WB14
+/// infiltration-excess profile + hourly saturation carry). Uniform fallback
+/// when the day has runoff without a profile shape (the ratified
+/// INV-RUNOFFPART-031 synthesized-time-base case); all-zero when there is no
+/// runoff. Consumed by (1) the MOFE dynamic-transfer publication, (2) the
+/// hydrograph-resolved Wave-1 erosion substrate (`INV-SED-013`), and (3) the
+/// serialized `V_h` HBP surface (`V_h = runvol · w_h`) — one shape, three
+/// consumers, so the solve, the interchange, and downstream runon admission
+/// see the same hydrograph.
+pub(crate) fn dc01_surface_runoff_hourly_weights(
+    q_runoff_m: f64,
+    wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
+    hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> [f64; DC01_HOUR_BIN_COUNT] {
+    let mut weights = [0.0_f64; DC01_HOUR_BIN_COUNT];
+    if q_runoff_m <= 0.0 {
+        return weights;
+    }
+    let mut raw_total_m = 0.0_f64;
+    for hour in 0..DC01_HOUR_BIN_COUNT {
+        let raw = wb14_hourly_excess_m[hour].max(0.0) + hourly_saturation_carry_m[hour].max(0.0);
+        weights[hour] = raw;
+        raw_total_m += raw;
+    }
+    if raw_total_m <= 0.0 {
+        let uniform = 1.0 / DC01_HOUR_BIN_COUNT_F64;
+        return [uniform; DC01_HOUR_BIN_COUNT];
+    }
+    for weight in &mut weights {
+        *weight /= raw_total_m;
+    }
+    weights
 }
 
 pub(crate) const DC01_HOUR_BIN_COUNT: usize = 24;

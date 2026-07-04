@@ -1575,11 +1575,22 @@ fn validate_wave1_inputs(inputs: &DirectWave1ContinuityInputs) -> Result<(), Dir
         inputs.effdrn_s,
         WB11_ZERO_THRESHOLD,
     )?;
-    wave1_validate_min(
-        "erosion.wave1.effdrr_s",
-        inputs.effdrr_s,
-        WB11_ZERO_THRESHOLD,
-    )?;
+    // Interrill-supply operands: strict-positive on interrill-active
+    // quanta, but a theta-suppressed quantum (`qout <= qin`, the
+    // decreasing-flow / full-reinfiltration case where `param.for:540`
+    // zeroes theta) legitimately carries zero rainfall-excess operands —
+    // there `effdrr` may be 0 (still finite/non-negative, fail-closed).
+    let theta_suppressed_quantum =
+        inputs.theta_suppressed || inputs.peakro_m_s * inputs.efflen_m <= inputs.qin_m2_s;
+    if theta_suppressed_quantum {
+        wave1_validate_min("erosion.wave1.effdrr_s", inputs.effdrr_s, 0.0)?;
+    } else {
+        wave1_validate_min(
+            "erosion.wave1.effdrr_s",
+            inputs.effdrr_s,
+            WB11_ZERO_THRESHOLD,
+        )?;
+    }
     wave1_validate_min("erosion.wave1.kr_s_m", inputs.kr_s_m, WB11_ZERO_THRESHOLD)?;
     wave1_validate_min("erosion.wave1.kradjf", inputs.kradjf, WB11_ZERO_THRESHOLD)?;
     wave1_validate_min("erosion.wave1.shcrit_pa", inputs.shcrit_pa, 0.0)?;
@@ -1880,6 +1891,20 @@ pub fn wave1_day_routes_sediment(runoff_depth_m: f64, peakro_m_s: f64) -> bool {
     !(runoff_depth_m <= WAVE1_PASSBY_RUNOFF_M && peakro_m_s <= WAVE1_PASSBY_PEAKRO_M_S)
 }
 
+/// ADR-0036 D1 / `INV-SED-013`: whether a solve quantum is hydraulically
+/// active — local outflow routes sediment OR upstream inflow is positive.
+/// The `qin > 0` limb covers the full-reinfiltration case (`qout <= 0`
+/// with incoming load that must deposit — the legacy `xinflo.for:206`
+/// `qshear = qin·rspace` branch); excess-only activation would skip it.
+#[must_use]
+pub fn wave1_quantum_is_hydraulically_active(
+    runoff_depth_m: f64,
+    peakro_m_s: f64,
+    qin_m2_s: f64,
+) -> bool {
+    wave1_day_routes_sediment(runoff_depth_m, peakro_m_s) || qin_m2_s > 0.0
+}
+
 /// Compute the Wave-1 single-OFE sediment-continuity solve for one runoff
 /// day. Returns the inactive state on non-runoff days and on events below
 /// the legacy sediment-routing size gate (`contin.for:977` `passby`).
@@ -1902,15 +1927,18 @@ pub fn compute_direct_wave1_continuity(
     // NaN runoff must never silently pass the `<= 0` activation branch).
     wave1_validate_min("erosion.wave1.peakro_m_s", inputs.peakro_m_s, 0.0)?;
     wave1_validate_min("erosion.wave1.runoff_depth_m", inputs.runoff_depth_m, 0.0)?;
+    wave1_validate_min("erosion.wave1.qin_m2_s", inputs.qin_m2_s, 0.0)?;
 
-    // Activation: legacy routes sediment only on runoff days
-    // (`contin.for` `norun == 1`) above the event-size bypass.
-    if inputs.runoff_depth_m <= 0.0 || inputs.peakro_m_s <= 0.0 {
-        return Ok(DirectWave1ContinuityState::inactive());
-    }
-    if inputs.runoff_depth_m <= WAVE1_PASSBY_RUNOFF_M
-        && inputs.peakro_m_s <= WAVE1_PASSBY_PEAKRO_M_S
-    {
+    // Activation (ADR-0036 D1 / INV-SED-013): local runoff above the
+    // legacy event-size bypass (`contin.for` `norun == 1`), OR positive
+    // upstream inflow — the full-reinfiltration quantum (`qout <= 0`,
+    // `qin > 0`) must still solve so the incoming load deposits
+    // (`xinflo.for:206` `qshear = qin·rspace` branch).
+    if !wave1_quantum_is_hydraulically_active(
+        inputs.runoff_depth_m,
+        inputs.peakro_m_s,
+        inputs.qin_m2_s,
+    ) {
         return Ok(DirectWave1ContinuityState::inactive());
     }
 

@@ -17,7 +17,7 @@ use super::{
     ErosionExcessInterval, ErosionFrostRegime, ErosionIfrostCarry, ErosionParticleClass,
     ErosionRillCoverInputs, ErosionShearSlopes, erosion_adjustment_factors, erosion_detinr,
     erosion_effective_intensity, erosion_interrill_delivery_ratio, erosion_rill_hydraulics,
-    erosion_transport_coefficients, validate_finite, wave1_day_routes_sediment,
+    erosion_transport_coefficients, validate_finite, wave1_quantum_is_hydraulically_active,
 };
 
 /// Per-lane **persistent** erosion runtime carry (SC-SED-001 1b-C): the
@@ -226,17 +226,32 @@ pub fn assemble_wave1_continuity_inputs(
 ) -> Result<DirectWave1ContinuityInputs, DirectRuntimeError> {
     validate_finite("erosion.assemble.peakro", daily.peakro_m_s)?;
     validate_finite("erosion.assemble.runoff_depth", daily.runoff_depth_m)?;
+    validate_finite("erosion.assemble.qin", daily.qin_m2_s)?;
 
     // Gate BEFORE computing routed operands (legacy gate-before-`param`).
-    // Non-routed days return the inert payload; the solver gates inactive.
-    if !seed.enabled || !wave1_day_routes_sediment(daily.runoff_depth_m, daily.peakro_m_s) {
+    // Non-routed quanta return the inert payload; the solver gates
+    // inactive. A positive-inflow quantum stays active even without local
+    // runoff (ADR-0036 D1 / INV-SED-013 — the full-reinfiltration case).
+    if !seed.enabled
+        || !wave1_quantum_is_hydraulically_active(
+            daily.runoff_depth_m,
+            daily.peakro_m_s,
+            daily.qin_m2_s,
+        )
+    {
         return Ok(inert_continuity_inputs(seed, daily));
     }
 
-    // Unit outflow discharge (`xinflo.for:150`) and shear discharge
-    // (`xinflo.for:186`).
+    // Unit outflow discharge (`xinflo.for:150`) and shear discharge:
+    // `qshear = qout·rspace` while flow leaves the OFE (`xinflo.for:186`),
+    // `qshear = qin·rspace` on the full-reinfiltration branch
+    // (`xinflo.for:206`, `qout <= 0` with positive inflow).
     let qout_m2_s = daily.peakro_m_s * seed.efflen_m;
-    let qshear_m2_s = qout_m2_s * seed.rspace_m;
+    let qshear_m2_s = if qout_m2_s > 0.0 {
+        qout_m2_s * seed.rspace_m
+    } else {
+        daily.qin_m2_s * seed.rspace_m
+    };
 
     // Rill hydraulics (frcfac + shears) -> shrsol/shrend + grown width.
     // The width seed is the PERSISTENT prior-storm width (`shears.for`
@@ -289,22 +304,34 @@ pub fn assemble_wave1_continuity_inputs(
     })?;
 
     // Interrill delivery ratio + detinr (param.for). `effint`/`effdrr`
-    // and `kiadjf` are the daily-varying interrill drivers.
+    // and `kiadjf` are the daily-varying interrill drivers. A
+    // theta-suppressed quantum (`qout <= qin`, incl. the
+    // full-reinfiltration `qout = 0` case) carries no interrill supply:
+    // `param.for:540` zeroes theta there, so `detinr` is inert-zero and
+    // the producer (whose operands would be 0/0) is not invoked.
     let intdr = erosion_interrill_delivery_ratio(
         seed.is_cropland,
         daily.random_roughness_m,
         &seed.classes,
     )?;
-    let detinr = erosion_detinr(
-        seed.ki,
-        adjustments.kiadjf,
-        effective.effint_m_s,
-        daily.runoff_depth_m,
-        effective.effdrr_s,
-        intdr,
-        seed.rspace_m,
-        hydraulics.width_m,
-    )?;
+    let interrill_active = qout_m2_s > daily.qin_m2_s
+        && !daily.theta_suppressed
+        && effective.effdrr_s > 0.0
+        && daily.runoff_depth_m > 0.0;
+    let detinr = if interrill_active {
+        erosion_detinr(
+            seed.ki,
+            adjustments.kiadjf,
+            effective.effint_m_s,
+            daily.runoff_depth_m,
+            effective.effdrr_s,
+            intdr,
+            seed.rspace_m,
+            hydraulics.width_m,
+        )?
+    } else {
+        0.0
+    };
 
     // `param.for:396`: surface frozen to the top zeros rill erodibility
     // via the solver's `surface_frozen` flag.

@@ -529,30 +529,20 @@ impl DirectFrameExecutor {
     /// DC01: unit-normalized hourly distribution of the day's surface runoff
     /// (WB14 excess profile + saturation carry). Uniform fallback when the day
     /// has runoff without a profile shape; all-zero when there is no runoff.
+    /// Delegates to the shared shape authority
+    /// (`runoff::dc01_surface_runoff_hourly_weights`, ADR-0036
+    /// `REF-SED-DC01-SHAPE`) so the transfer publication and the
+    /// hydrograph-resolved erosion substrate consume ONE hourly shape.
     fn dc01_surface_transfer_weights(
         q_runoff_m: f64,
         wb14_hourly_excess_m: &[f64; DIRECT_TRANSFER_HOUR_COUNT],
         hourly_saturation_carry_m: &[f64; DIRECT_TRANSFER_HOUR_COUNT],
     ) -> [f64; DIRECT_TRANSFER_HOUR_COUNT] {
-        let mut weights = [0.0_f64; DIRECT_TRANSFER_HOUR_COUNT];
-        if q_runoff_m <= 0.0 {
-            return weights;
-        }
-        let mut raw_total_m = 0.0_f64;
-        for hour in 0..DIRECT_TRANSFER_HOUR_COUNT {
-            let raw = wb14_hourly_excess_m[hour].max(0.0)
-                + hourly_saturation_carry_m[hour].max(0.0);
-            weights[hour] = raw;
-            raw_total_m += raw;
-        }
-        if raw_total_m <= 0.0 {
-            let uniform = 1.0 / crate::direct_runtime::runoff::DC01_HOUR_BIN_COUNT_F64;
-            return [uniform; DIRECT_TRANSFER_HOUR_COUNT];
-        }
-        for weight in &mut weights {
-            *weight /= raw_total_m;
-        }
-        weights
+        crate::direct_runtime::runoff::dc01_surface_runoff_hourly_weights(
+            q_runoff_m,
+            wb14_hourly_excess_m,
+            hourly_saturation_carry_m,
+        )
     }
 
     fn publish_dynamic_transfer_to_downstream(
