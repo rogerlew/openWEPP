@@ -944,16 +944,19 @@ fn direct_production_pl_projection_required_ofe_scalar(
 /// frame state. `enabled` is forced `false` here — the seed stays inert
 /// until the production flip (Stage 4).
 ///
-/// Two operands have no clean single-OFE runtime source yet and are
-/// **provisional behind the disabled seed**, to be adjudicated at the
-/// enable (they only affect an active solve):
+/// One operand remains an adjudicated first cut (it only affects an
+/// active solve):
 /// - `is_cropland` selects the interrill delivery branch. Set `false`
 ///   (non-cropland, `intdr = 1`), matching the reviewed `erod16` forest
-///   fixture; the legacy lanuse-as-cropland nuance is an enable-time
-///   science item.
-/// - `field_width_m` denormalizes per-width sediment to total mass. Set to
-///   unit width (`1.0`) — single-hillslope per-width reporting — pending
-///   the hillslope-geometry width source at enable.
+///   fixture and the 1b-C no-tillage enable scope; the legacy
+///   lanuse-as-cropland nuance is a recorded science item.
+///
+/// `field_width_m` (E.1 / Increment 1c-fidelity) is sourced from the
+/// parsed slope-file profile width (`fwidth`), matching the legacy
+/// `sedseg.for` total-mass scaling (`tdet = sum2*fwidth*filoss`) so the
+/// published `total_detachment_kg`/`total_deposition_kg` and the HBP
+/// payload carry true kilograms (INV-SED-010 units). The toe
+/// concentration is width-independent (`sloss.for:305-317`).
 // Multi-operand sourcing builder: sources texture / classes / baselines /
 // segments / geometry / cover constants from the parsed inputs. The line
 // count is inherent to the per-field fail-closed sourcing.
@@ -1108,7 +1111,7 @@ fn direct_production_wave1_operand_seed(
         efflen_m: peak_runoff.efflen_m,
         cntlen_m: slope_ofe.slplen_m,
         rspace_m,
-        field_width_m: 1.0,
+        field_width_m: slope_ofe.fwidth_m,
         avg_slope: slope_ofe.avgslp,
         slpend,
         sand,

@@ -153,6 +153,14 @@ pub enum HillslopeRuntimeInputError {
         ofe_index: usize,
         value_m: f64,
     },
+    NonFiniteProfileWidth {
+        ofe_index: usize,
+        value_m: f64,
+    },
+    NonPositiveProfileWidth {
+        ofe_index: usize,
+        value_m: f64,
+    },
     NonFiniteXinput {
         ofe_index: usize,
         point_index: usize,
@@ -347,7 +355,9 @@ impl HillslopeRuntimeInputError {
             | Self::SlopePointCountOutOfRange { .. }
             | Self::InsufficientSlopePoints { .. }
             | Self::NonFiniteSlopeLength { .. }
-            | Self::NonPositiveSlopeLength { .. } => self.slope_shape_code(),
+            | Self::NonPositiveSlopeLength { .. }
+            | Self::NonFiniteProfileWidth { .. }
+            | Self::NonPositiveProfileWidth { .. } => self.slope_shape_code(),
             Self::NonFiniteXinput { .. }
             | Self::NonFiniteSlpinp { .. }
             | Self::NonMonotoneXinput { .. }
@@ -435,6 +445,8 @@ impl HillslopeRuntimeInputError {
             Self::InsufficientSlopePoints { .. } => "HS-RUNTIME-E-016",
             Self::NonFiniteSlopeLength { .. } => "HS-RUNTIME-E-017",
             Self::NonPositiveSlopeLength { .. } => "HS-RUNTIME-E-018",
+            Self::NonFiniteProfileWidth { .. } => "HS-RUNTIME-E-065",
+            Self::NonPositiveProfileWidth { .. } => "HS-RUNTIME-E-066",
             _ => panic!("routed HillslopeRuntimeInputError family mismatch"),
         }
     }
@@ -770,6 +782,20 @@ impl HillslopeRuntimeInputError {
             Self::NonFiniteSlopeLength { ofe_index, value_m } => write!(
                 f,
                 "{}: OFE {} has non-finite slplen value {}",
+                self.code(),
+                ofe_index,
+                value_m
+            ),
+            Self::NonFiniteProfileWidth { ofe_index, value_m } => write!(
+                f,
+                "{}: OFE {} has non-finite fwidth value {}",
+                self.code(),
+                ofe_index,
+                value_m
+            ),
+            Self::NonPositiveProfileWidth { ofe_index, value_m } => write!(
+                f,
+                "{}: OFE {} has non-positive fwidth value {}",
                 self.code(),
                 ofe_index,
                 value_m
@@ -1211,7 +1237,9 @@ impl fmt::Display for HillslopeRuntimeInputError {
             | Self::SlopePointCountOutOfRange { .. }
             | Self::InsufficientSlopePoints { .. }
             | Self::NonFiniteSlopeLength { .. }
-            | Self::NonPositiveSlopeLength { .. } => self.fmt_slope_shape(f),
+            | Self::NonPositiveSlopeLength { .. }
+            | Self::NonFiniteProfileWidth { .. }
+            | Self::NonPositiveProfileWidth { .. } => self.fmt_slope_shape(f),
             Self::NonFiniteXinput { .. }
             | Self::NonFiniteSlpinp { .. }
             | Self::NonMonotoneXinput { .. }
@@ -1453,6 +1481,20 @@ mod cqr_row4_runtime_input_error_tests {
                     value_m: 0.0,
                 },
                 "HS-RUNTIME-E-018",
+            ),
+            (
+                HillslopeRuntimeInputError::NonFiniteProfileWidth {
+                    ofe_index: 1,
+                    value_m: f64::NAN,
+                },
+                "HS-RUNTIME-E-065",
+            ),
+            (
+                HillslopeRuntimeInputError::NonPositiveProfileWidth {
+                    ofe_index: 1,
+                    value_m: 0.0,
+                },
+                "HS-RUNTIME-E-066",
             ),
             (
                 HillslopeRuntimeInputError::NonFiniteXinput {

@@ -1336,6 +1336,10 @@ pub struct TypedSlopeOfeRuntimeProjection {
     pub avgslp: f64,
     pub avgslp_floor_applied: bool,
     pub azimuth_deg: f64,
+    /// Representative profile width `fwidth` (m) from the slope file —
+    /// denormalizes per-unit-width sediment surfaces to total mass
+    /// (legacy `sedseg.for` `tdet = sum2*fwidth*filoss` lineage).
+    pub fwidth_m: f64,
     pub points: Vec<TypedSlopePointRuntimeProjection>,
 }
 
@@ -1392,6 +1396,20 @@ pub fn project_typed_slope_runtime_with_options(
             });
         }
 
+        let fwidth_m = ofe.fwidth;
+        if !fwidth_m.is_finite() {
+            return Err(HillslopeRuntimeInputError::NonFiniteProfileWidth {
+                ofe_index,
+                value_m: fwidth_m,
+            });
+        }
+        if fwidth_m <= 0.0 {
+            return Err(HillslopeRuntimeInputError::NonPositiveProfileWidth {
+                ofe_index,
+                value_m: fwidth_m,
+            });
+        }
+
         let (avgslp, avgslp_floor_applied) =
             derive_avgslp(ofe_index, &ofe.points, options.non_positive_avgslp_floor)?;
         ofes.push(TypedSlopeOfeRuntimeProjection {
@@ -1400,6 +1418,7 @@ pub fn project_typed_slope_runtime_with_options(
             avgslp,
             avgslp_floor_applied,
             azimuth_deg: ofe.azm,
+            fwidth_m,
             points: ofe
                 .points
                 .iter()
