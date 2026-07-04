@@ -1137,15 +1137,26 @@ fn direct_production_wave1_operand_seed(
 /// for it (narrowing the enable to the reviewed scope) until the cropland
 /// operand port lands.
 fn direct_production_management_has_active_tillage(management: &ManagementParseOutput) -> bool {
-    let surfaces = &management.registries.surfaces;
     management.registries.yearlies.iter().any(|yearly| {
         let openwepp_input_contract::parsers::management::YearlyScenarioData::Cropland(data) =
             &yearly.data;
-        data.tilseq != 0
-            && surfaces
-                .get(data.tilseq - 1)
-                .is_some_and(|surface| surface.operations.iter().any(|op| op.tildep > 0.0))
+        direct_production_tilseq_disturbs_surface(data.tilseq, &management.registries.surfaces)
     })
+}
+
+/// A yearly plan applies active tillage when it references a non-zero
+/// surface-effect sequence (`tilseq`) whose surface scenario schedules at
+/// least one operation with a positive tillage depth (`tildep > 0`). A
+/// `tilseq` of 0, an out-of-range reference, or a surface with no
+/// soil-disturbing operation is NOT active tillage.
+fn direct_production_tilseq_disturbs_surface(
+    tilseq: usize,
+    surfaces: &[openwepp_input_contract::parsers::management::SurfaceScenario],
+) -> bool {
+    tilseq != 0
+        && surfaces
+            .get(tilseq - 1)
+            .is_some_and(|surface| surface.operations.iter().any(|op| op.tildep > 0.0))
 }
 
 fn direct_production_typed_erosion_authority(
@@ -2184,4 +2195,50 @@ fn direct_production_frost_storage_liquid_delta(
         return None;
     }
     Some(frost_outcome.frwatc_net_liquid_delta_m)
+}
+
+#[cfg(test)]
+mod erosion_tillage_scope_tests {
+    use super::direct_production_tilseq_disturbs_surface;
+    use openwepp_input_contract::parsers::management::{
+        ScenarioMeta, SurfaceOperation, SurfaceScenario,
+    };
+
+    fn surface_with_tillage_depth(tildep: f64) -> SurfaceScenario {
+        SurfaceScenario {
+            meta: ScenarioMeta {
+                name: String::new(),
+                description: [String::new(), String::new(), String::new()],
+                landuse: 1,
+            },
+            ntill: 1,
+            operations: vec![SurfaceOperation {
+                mdate: 100,
+                op_ref: 1,
+                tildep,
+                typtil: 1,
+            }],
+        }
+    }
+
+    #[test]
+    fn no_tillage_scope_disables_wave1_for_tilled_cropland_only() {
+        let tilled = [surface_with_tillage_depth(0.1)];
+
+        // tilseq 0 (the WEPP "no surface effect" sentinel, as p61 / the
+        // DFF-WS3 forest-masquerade cells carry) is NOT active tillage.
+        assert!(!direct_production_tilseq_disturbs_surface(0, &tilled));
+
+        // A real tilseq referencing a soil-disturbing operation (tildep > 0)
+        // IS active tillage -> Wave-1 stays disabled for it.
+        assert!(direct_production_tilseq_disturbs_surface(1, &tilled));
+
+        // A referenced surface whose only operation has zero tillage depth
+        // does not disturb the soil -> not active tillage.
+        let flat = [surface_with_tillage_depth(0.0)];
+        assert!(!direct_production_tilseq_disturbs_surface(1, &flat));
+
+        // An out-of-range tilseq (dangling reference) is not active tillage.
+        assert!(!direct_production_tilseq_disturbs_surface(9, &tilled));
+    }
 }
