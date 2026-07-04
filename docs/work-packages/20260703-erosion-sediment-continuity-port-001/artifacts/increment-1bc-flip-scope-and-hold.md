@@ -229,6 +229,30 @@ states, frost regime, the `wb14_hourly_rainfall` surface) calling
 
 ## Focused pass progress (2026-07-04)
 
+> **Review boundary — the active solve is NOT wired.** Everything below is
+> **seed + infrastructure** only: the Wave-1 seed is `enabled = false`, no
+> per-day assembly runs, and no simulation output changes (full suite
+> 1319/1319). "Active solve wired" is the *separate* next pass (acceptance
+> gates below). Do not read any statement here as claiming sediment is
+> produced.
+
+### Next pass — active-solve assembly acceptance gates (operator-set, before coding)
+
+The final assembly is small in surface area but high-risk in semantics
+(daily carry advance, active-day solve, rill-width persistence, and
+publication gating all meet in one method). Explicit acceptance gates:
+1. Advance `rfcum`/`daydis` **every day**, not only routed erosion days.
+2. Resolve and carry `ifrost` from **volumetric** top-layer water, with
+   typed guards.
+3. Build `DirectWave1DailyState` **only** from verified frame surfaces.
+4. Keep the **single-OFE / McKenzie** activation gate explicit.
+5. Update persistent rill width **only** from the assembled/solved day
+   result.
+6. Prove **conservation** + **nonzero McKenzie sediment** +
+   **non-sediment byte-stability**.
+
+
+
 **Mechanical infrastructure LANDED** (branch `erosion-inc1c-flip`,
 runtime-byte-stable — the new state is threaded/populated but **unread**
 until enable, so no simulation output changes; the `DirectDayFrame`
