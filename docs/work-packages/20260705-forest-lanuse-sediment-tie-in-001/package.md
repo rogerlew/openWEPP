@@ -1,6 +1,6 @@
 # FOREST-LANUSE SEDIMENT TIE-IN
 
-Status: `EXECUTED — AWAITING CODEX REVIEW` (Claude-executed, operator path direction
+Status: `COMPLETE — MERGED TO MAIN `e3015f5b` 2026-07-05` (Codex 2-round review: the no-lanuse fail-closed boundary + comment alignment) (Claude-executed, operator path direction
 2026-07-05: "stay on the hillslope sediment in forest lanuse
 Papanicolaou path"). Branch: `forest-lanuse-sediment-tie-in`.
 

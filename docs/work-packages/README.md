@@ -12,6 +12,12 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-05`:
+- `20260705-forest-lanuse-sediment-tie-in-001/` — COMPLETE, MERGED TO MAIN
+  `e3015f5b` 2026-07-05: `is_cropland` resolves from the schedule-scoped
+  parsed lanuse (cropland ⇒ the legacy `drinti` branch, forest ⇒
+  `intdr = 1`, mixed/missing fails closed); first native-forest sediment
+  proof (HJ Andrews `ow-lanuse-1`: minor-1 event + intake closure);
+  evidence in band (p61 0.93×, p102 0.76× legacy). SC-SED-001 rev 52.
 - `20260705-erosion-ground-cover-authority-defect-closure-001/` — COMPLETE,
   MERGED TO MAIN `f7b82dcd` 2026-07-05 after Codex 3-round review: closes
   `GAP-SED-009` (erosion ground-cover authority — pools seeded from the
