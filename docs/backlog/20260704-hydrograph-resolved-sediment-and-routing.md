@@ -1,7 +1,9 @@
 # Modeled Hourly Flow Through the Erosion → HBP → Routing Stack (Hydrograph-Resolved Sediment)
 
 ## Status
-- `state`: backlog → **ADR-0036 RATIFIED**:
+- `state`: **hillslope side EXECUTED (E.2–E.4 merged 2026-07-04/05)**;
+  what remains in this entry is the CHANNEL-side consumption — see
+  "Remaining scope" below. Originally: backlog → **ADR-0036 RATIFIED**:
   [ADR-0036](../decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md)
   (Accepted 2026-07-04 after a two-round Codex design review) resolves the
   open decisions below: per-hour quasi-steady form on hydraulically-active
@@ -166,3 +168,28 @@ Concretely:
 - `SC-SED-001`, `SC-ROUTE-001`, `SC-INFILE-HBP-001`, `docs/specifications/wepp-input-files/specs/hbp-file.spec.md`.
 - [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md) (contract-first),
   [ADR-0017](../decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md) (comparator-as-flag).
+
+## Remaining scope (updated 2026-07-05 — the channel-side remainder)
+
+The hillslope half of this entry is DONE: per-hour Wave-1 (E.2), the
+paired `V_h`/`S_h` HBP surfaces, hour-resolved inlet superposition, the
+multi-OFE chain on the hourly substrate (E.3), and per-quantum enriched
+compositions (E.4). What remains, pulled together as ONE future unit
+(designed once, per the original "designed once with the per-class +
+peak-units items" note):
+
+1. **Channel-hourly routing:** replace the `SC-ROUTE-001#INV-ROUTE-005`
+   (d) labeled single-rate reduction with true hour-resolved channel
+   sediment routing. The per-hour inlet sediment array
+   (`hourly_sediment_inlet_kg`) is ALREADY carried on the inlet
+   partition — the consumer is the missing half.
+2. **Per-class-hourly interchange channel** (the E.4 `GAP-SED-008`
+   remainder): the additive HBP extension carrying hour-resolved class
+   composition. Explicitly CONSUMER-PULLED — build it with (1), never
+   before: the solver already has per-quantum enriched compositions,
+   so the producer side is a serialization once a channel consumer
+   exists.
+
+Promotion trigger: watershed channel-routing fidelity work (the
+triangular-reconstruction retirement) or a downstream consumer needing
+sub-daily class composition.

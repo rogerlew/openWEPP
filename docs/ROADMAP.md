@@ -702,6 +702,7 @@ items 1–2.
 | Item | What | Provenance | Backlog |
 |---|---|---|---|
 | Snow magnitude | `snowd.for` melt/settling/density/partition equation fidelity (CRM Ch. 3.7) | legacy physics adjudication | [backlog/20260605-snow-code-deferred-science-review.md](backlog/20260605-snow-code-deferred-science-review.md) (Stage 2) |
+| WB16 peak trace-events | The analytical peak estimator (`vave·qpstar`) undershoots legacy on trace runoff events (1–4 mm): p61 yr-10, openWEPP `peakro` 1.1–1.4e-6 vs the legacy passby threshold 2.78e-6 m/s — the legacy-exact erosion day gate then under-routes events legacy routes (`Sed.Del ~0.1 kg/m` class). Bounded; erosion-side adjudicated faithful (cover-closure WP §4). | E.5 adjudication + the ground-cover closure WP (2026-07-05) | fold into the next WB16/peak fidelity investigation — the instruments (p61 + `H61.ebe.dat`) are staged |
 
 (Frost depth was a Stage-2 candidate; the FDMC01 verdict + the settle-vertical-before-routing
 principle promoted it to active queue item 1 on 2026-06-07.)
@@ -766,11 +767,22 @@ volume matches legacy within ~1% — and **not structural** (every
 E.1–E.4 closure holds). Record:
 WP `20260703-…/artifacts/increment-4-magnitude-adjudication.md`;
 `SC-SED-001` `GAP-SED-009`. **The cover-pathway defect-closure
-EXECUTED (WP `20260705-erosion-ground-cover-authority-defect-closure-001`,
-awaiting Codex review): `GAP-SED-009` CLOSED at SC-SED-001 rev 50 —
-p61 dominant event 3.97 vs legacy 4.2 kg/m, p102 17.4 vs ~19.4 kg/m/yr;
-the small-event day gate adjudicated legacy-exact (the trace-event
-divergence is the WB16 `peakro` operand, a bounded water-side flag).**
+COMPLETE (WP `20260705-erosion-ground-cover-authority-defect-closure-001`,
+merged `f7b82dcd`): `GAP-SED-009` CLOSED — p61 dominant event 3.97 vs
+legacy 4.2 kg/m, p102 17.4 vs ~19.4 kg/m/yr; the small-event day gate
+adjudicated legacy-exact.**
+
+**The remaining erosion ledger is slotted into the existing sequence
+(2026-07-05), not queued as work:** the `strcov` standing-mat term and
+the other labeled cropland deferrals collect in
+[backlog/20260705-cropland-tillage-erosion-enable.md](backlog/20260705-cropland-tillage-erosion-enable.md)
+(promoted by a cropland validation driver); the WB16 `peakro`
+trace-event flag rides the Stage-2 Physics-Magnitude table (fold into
+the next WB16/peak fidelity investigation); the per-class-hourly
+interchange channel stays in
+[backlog/20260704-hydrograph-resolved-sediment-and-routing.md](backlog/20260704-hydrograph-resolved-sediment-and-routing.md)
+"Remaining scope" as the consumer-pulled companion of channel-hourly
+routing.
 
 Original scope:
 Absolute-magnitude fidelity (p61's ~5×), judged on the closed+routed erosion system
