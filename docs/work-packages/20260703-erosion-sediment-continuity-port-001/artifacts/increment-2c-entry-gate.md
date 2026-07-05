@@ -210,7 +210,46 @@ EVENT row to the exit lane's rows.
     per-day lifecycle; plan-builder consumption incl. inflow-active
     hours on locally-dry days). Single-OFE byte-identical throughout.
 
-## 6. 2c-3 continuation spec (pinned, next)
+## 5a. Execution record — 2c-3 + 2c-4 (COMPLETE, 2026-07-04)
+
+- **2c-3a (`1feac488`):** enable de-narrowed (every no-tillage lane);
+  `wave2_enabled = false` (EROD14 retired to a test-reachable comparator
+  arm until stage 2e); D5 manifest lift
+  (`wave1-hourly-sediment-coupled-handoff`,
+  `erod14_qin_sediment_coupled = true`, both wave2 provenance fields
+  false, the water-transfer-only warning retired). **Ran:** first real
+  multi-OFE run (W7DC01 substrate p102, 2 OFEs) end-to-end — the FIRST
+  multi-OFE sediment the runtime has ever produced. Three production
+  findings fixed en route: (1) no-rainfall-excess flow hours
+  theta-suppressed (`reid.for` basis — zero `effdrr` hit the
+  non-suppressed validator); (2) inflow-only exit days: day
+  toe-concentration denominator guarded to a defined 0; (3)
+  stiff-quantum flux-consistency refusals skip that quantum's sediment
+  with the surfaced `flux_refused_quanta` count (1 in 5,155 lane-days;
+  the 1e-9 mass law stays hard).
+- **2c-3b (`d3e727d0`):** the chain EVENT — EXIT-scoped with
+  CHAIN-AGGREGATED `tdet`/`tdep` (per-day lane sums in the streaming
+  summary), one intake rule for single- and multi-OFE shards; D4
+  inflow-day exit-fraction blend (labeled GAP-SED-007 extension);
+  contracts SC-SED-001 rev 44 (`INV-SED-016`, `INV-SED-012`
+  DISPOSITION, blend extension, QSOUT/REID anchors), SC-RUNOFFPART-001
+  rev 45 (030 SATISFIED on the chain; 031 erosion-side interim-clamp
+  scope superseded), SC-INFILE-HBP-001 0.2.1 (§8.5 chain form).
+  **Ran:** p102 event closes at rel 1.8e-13.
+- **2c-4:** in-repo fixture `tests/fixtures/erosion_multi_ofe_p102/`
+  (real W7DC01 2-OFE hillslope, climate truncated to 10 years) +
+  `erosion_multi_ofe_p102_chain` integration test (multi-OFE sediment
+  proof incl. material outlet deposition; chain-form `Σ S_h` and
+  `Σ V_h` closures; manifest disposition surfaces; the §4a observable
+  via an in-test OFE-2 texture coarsening that must move the exit
+  composition). One further production finding: full-deposition days
+  carry ±1e-13 chain-export accumulation dust — the EVENT capture
+  qualifies on MATERIAL export (`> 1e-9 ×` the day's own mass scale,
+  TOL-SED-005 basis), so a numerically-zero-export day is never
+  serialized as the routed event; an env-gated capture debug probe
+  (`OPENWEPP_DEBUG_HBP_CAPTURE`) remains for diagnosis.
+
+## 6. 2c-3 continuation spec (superseded by §5a — retained for the design record)
 
 1. **Enable:** 00_builders:1257 drops `contributor_ofe_count == 1` (the
    no-tillage narrowing stays). Wave-2 retires as authority:

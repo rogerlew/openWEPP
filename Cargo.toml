@@ -300,6 +300,10 @@ name = "erosion_single_ofe_p61_sediment"
 path = "tests/integration/erosion_single_ofe_p61_sediment.rs"
 
 [[test]]
+name = "erosion_multi_ofe_p102_chain"
+path = "tests/integration/erosion_multi_ofe_p102_chain.rs"
+
+[[test]]
 name = "cli03_runner_contract_derived_tests"
 path = "tests/integration/cli03_runner_contract_derived_tests.rs"
 

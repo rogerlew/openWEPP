@@ -213,12 +213,12 @@ impl DirectPublicationOutputSummary {
         // generalizes to its chain form Σ S_h(exit) = Σ_lanes(tdet − tdep)
         // (per-lane inflows telescope out). Single-OFE degenerates to the
         // row's own totals — byte-identical to the E.2 shape.
-        let row_tdet_kg = row
+        let row_detach_kg = row
             .erosion
             .hbp_total_detachment_kg
             .or(row.erosion.total_detachment_kg)
             .unwrap_or(0.0);
-        let row_tdep_kg = row
+        let row_deposit_kg = row
             .erosion
             .hbp_total_deposition_kg
             .or(row.erosion.total_deposition_kg)
@@ -228,17 +228,44 @@ impl DirectPublicationOutputSummary {
             self.hbp_current_day_tdet_kg = 0.0;
             self.hbp_current_day_tdep_kg = 0.0;
         }
-        self.hbp_current_day_tdet_kg += row_tdet_kg;
-        self.hbp_current_day_tdep_kg += row_tdep_kg;
+        self.hbp_current_day_tdet_kg += row_detach_kg;
+        self.hbp_current_day_tdep_kg += row_deposit_kg;
         let outlet_ofe_id = u32::try_from(self.identity.lane_count).map_err(|_| {
             direct_publication_output_failure(format!(
                 "direct publication lane count out of u32 range: {}",
                 self.identity.lane_count
             ))
         })?;
-        if row.ofe_id == outlet_ofe_id
-            && (self.hbp_current_day_tdet_kg > 0.0 || direct_publication_row_has_hbp_sediment(row))
-        {
+        // The serialized EVENT is the latest EXPORTING day — a
+        // full-deposition day (chain tdet == tdep exactly, the telescoped
+        // zero-export case) delivers nothing to the channel and is not a
+        // routed event. Minor-0 sediment presence keeps the legacy arm.
+        let chain_exported_kg = self.hbp_current_day_tdet_kg - self.hbp_current_day_tdep_kg;
+        // Material-export qualification (TOL-SED-005 relative basis): a
+        // full-deposition day's chain export is ±1e-13 accumulation dust —
+        // `> 0.0` would serialize a numerically-zero-export "event". The
+        // day qualifies only when the export is material against its own
+        // mass scale.
+        let chain_scale_kg = self
+            .hbp_current_day_tdet_kg
+            .max(self.hbp_current_day_tdep_kg);
+        let qualifies = if row.erosion.hourly_runoff_fraction.is_some() {
+            chain_exported_kg > 1.0e-9 * chain_scale_kg && chain_exported_kg > 0.0
+        } else {
+            direct_publication_row_has_hbp_sediment(row)
+        };
+        if row.ofe_id == outlet_ofe_id && qualifies {
+            if std::env::var("OPENWEPP_DEBUG_HBP_CAPTURE").is_ok() {
+                eprintln!(
+                    "DBG capture: day={} julian={} chain_tdet={:.10} chain_tdep={:.10} exported={:e} minor1={}",
+                    row.sim_day_index,
+                    row.calendar.julian_day,
+                    self.hbp_current_day_tdet_kg,
+                    self.hbp_current_day_tdep_kg,
+                    chain_exported_kg,
+                    row.erosion.hourly_runoff_fraction.is_some()
+                );
+            }
             self.hbp_sediment_row = Some(row.clone());
             self.hbp_event_chain_totals_kg =
                 Some((self.hbp_current_day_tdet_kg, self.hbp_current_day_tdep_kg));

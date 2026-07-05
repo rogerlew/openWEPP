@@ -189,6 +189,24 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
   once with E.2's hourly redesign, which also inherits the
   `peak_runoff_m3_s` depth-rate unit question). Design + adjudications in
   [`artifacts/increment-1c-entry-gate.md`](artifacts/increment-1c-entry-gate.md).
+- **Increment 2c (ROADMAP §E.3) — multi-OFE Wave-1 chaining: BUILT + GATED
+  on branch `erosion-e3-multi-ofe-chaining`, 2026-07-04 (Claude-executed,
+  operator-directed "merge and proceed with E.3"); AWAITING CODEX REVIEW.**
+  The Wave-1 chain is the multi-OFE production path: per-lane per-OFE seeds
+  (entry-gate §4a by construction via the intake slicing), the
+  EROSION-lineage hourly handoff (`qout_h`/`qsout_h`/fractions/continuity
+  end state) with receiver-side legacy derivations (`strldn`, `sheart`
+  boundary shears, the `param.for:249-390` Eq. [11.4.x] coefficient
+  continuity), the EXIT-scoped chain EVENT
+  (`Σ S_h(exit) = Σ_lanes(tdet − tdep)`, one intake rule for single- and
+  multi-OFE shards), the D4 inflow-day fraction blend, EROD14 retired to a
+  comparator arm, and the INV-RUNOFFPART-030 / INV-SED-012 dispositions
+  (manifests publish `erod14_qin_sediment_coupled = true` on the chain).
+  **First multi-OFE sediment the runtime has ever produced** (real W7DC01
+  substrate H102; the retired EROD14 path published zero). Contracts:
+  SC-SED-001 rev 44, SC-RUNOFFPART-001 rev 45, SC-INFILE-HBP-001 0.2.1.
+  Fixture + `erosion_multi_ofe_p102_chain` test landed. Execution record:
+  `artifacts/increment-2c-entry-gate.md` §2a/§2b/§5/§5a.
 - **Increment 2b (ROADMAP §E.2, ADR-0036) — hydrograph substrate: COMPLETE,
   MERGED TO MAIN `7abf2e86` 2026-07-04** (Claude-executed,
   operator-directed "scaffold and execute E.2"; Codex 2-round review —
