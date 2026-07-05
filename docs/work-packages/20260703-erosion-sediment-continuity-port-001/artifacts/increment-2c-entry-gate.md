@@ -191,7 +191,49 @@ EVENT row to the exit lane's rows.
   substrate proof (multi-OFE HBP sediment nonzero, minor-1). Full AGENTS
   battery; push for Codex review.
 
-## 4. Hold criteria
+## 5. Execution record (in progress, branch `erosion-e3-multi-ofe-chaining`)
+
+- **2c-0 recon: COMPLETE** (§2a/§2b — R1/R2/R4 resolved, both hold
+  criteria cleared; R3 fixture selection rides 2c-4).
+- **2c-2: COMPLETE, three commits, 260/260 + clippy clean each:**
+  - `5ecc1d90` — the INV-SED-008 continuity rewrite in the solver
+    (`Wave1InterOfeContinuity`, applied between `xinflo` and `route`
+    behind the legacy triple guard; solve-final coefficient sets exposed
+    on the state).
+  - `331ef169` — `Wave1InflowOperands` (the RAW handoff) + receiver-side
+    derivations in the assembly (`strldn` per `param.for:243` after own
+    hydraulics/transport; `shrspv/shrtp1` via the new `erosion_sheart`
+    no-growth producer — a width-growing first cut was caught and
+    corrected pre-commit; `tcprev`/`ktrprv` via `erosion_trcoef`).
+  - `f34201ba` — `DirectErosionInflowIntake` carry (publisher in the
+    executor beside the water transfer; clone-at-seed / clear-at-commit
+    per-day lifecycle; plan-builder consumption incl. inflow-active
+    hours on locally-dry days). Single-OFE byte-identical throughout.
+
+## 6. 2c-3 continuation spec (pinned, next)
+
+1. **Enable:** 00_builders:1257 drops `contributor_ofe_count == 1` (the
+   no-tillage narrowing stays). Wave-2 retires as authority:
+   `wave2_enabled = false` at :1219 (code retained as the comparator arm
+   reachable from tests — the INV-SED-015 pattern; deletion = stage 2e).
+   Check the knock-ons: the erosion-activation day gate (00c:984), the
+   `erod14_wave2_enabled` manifest flag (:348), and `compute_r7d6`'s
+   `!wave2_enabled` condition on the hourly publication fields.
+2. **Hillslope EVENT on multi-OFE:** the HBP event = the EXIT lane's
+   `V_h`/`S_h`/per-class surfaces + CHAIN-AGGREGATED `tdet`/`tdep`
+   (Σ lanes, same day). The intake closure generalizes to the chain form
+   `Σ S_h(exit) = Σ_lanes(tdet − tdep)` (the per-lane inflows telescope
+   out) — CLIWAT-E-047 + SC-INFILE-HBP-001 §8.5 amend accordingly.
+3. **D4 blend** in the publication projection (inflow-weighted exit
+   fractions; per-OFE `frac_own` from the sliced seeds).
+4. **Contracts:** SC-SED-001 (multi-OFE chaining invariant, INV-SED-012
+   disposition, GAP-SED-007 blend extension); SC-RUNOFFPART-001 (030
+   hold disposition + 031 clamp retirement).
+5. **2c-4 gates:** soil-contrasting-OFE fixture (§4a observable);
+   per-OFE + handoff-identity + hillslope-exit conservation; W7DC01
+   substrate proof; full battery; push for Codex review.
+
+## 7. Hold criteria
 
 1. R2 cannot pin the legacy `strldn` normalization basis unambiguously —
    stop and present the candidates (the receiver-scale inversion must be
