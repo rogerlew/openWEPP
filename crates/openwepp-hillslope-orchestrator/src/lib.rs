@@ -139,6 +139,7 @@ pub use direct_runtime::{
     erosion_effective_intensity, erosion_effective_particle, erosion_falvel,
     erosion_interrill_delivery_ratio, erosion_particle_composition, erosion_rill_hydraulics,
     erosion_shield, erosion_transport_coefficients, erosion_trcoef, erosion_yalin,
+    erosion_yalin_with_class_shares,
 };
 pub use hydrology::{
     DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs, DirectFrostControlInputs,

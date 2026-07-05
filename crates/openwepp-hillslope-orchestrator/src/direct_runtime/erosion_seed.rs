@@ -138,6 +138,10 @@ impl DirectWave1OperandSeed {
                 spg: 0.0,
                 frac: 0.0,
                 fall_m_s: 0.0,
+                frcly: 0.0,
+                frslt: 0.0,
+                frsnd: 0.0,
+                frorg: 0.0,
             }; 5],
             veleff_m_s: 0.0,
             baselines: ErosionConsolidationBaselines {

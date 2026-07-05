@@ -12,6 +12,7 @@ use crate::{
     erosion_effective_intensity, erosion_effective_particle, erosion_falvel,
     erosion_interrill_delivery_ratio, erosion_particle_composition, erosion_rill_hydraulics,
     erosion_shield, erosion_transport_coefficients, erosion_trcoef, erosion_yalin,
+    erosion_yalin_with_class_shares,
 };
 
 const ACCGAV: f64 = 9.807;
@@ -405,4 +406,88 @@ fn effint_fails_closed_on_nan_and_negative_inputs() {
         erosion_effective_intensity(&[excess_interval(600.0, 1.0e-5, -0.004, false)]),
         Err(DirectRuntimeError::DirectDomainViolation { .. })
     ));
+}
+
+#[test]
+fn prtcmp_per_class_mineralogy_matches_legacy_assignments() {
+    // E.4 (`prtcmp.for:100-106` + `:208-286`) on the clay-loam texture
+    // (clay 0.30, silt 0.45, sand 0.25, orgmat 0.05):
+    //   ratiom = orgmat/clay = 1/6
+    //   c1 = pure clay, frorg = ratiom
+    //   c2 = pure silt, frorg = 0 (clay > 0)
+    //   c3: frcly = clay/(clay+silt) = 0.4, frslt = 0.6,
+    //       frorg = 0.4·ratiom
+    //   c4: back-out from the converged fracs with [0,1] clamps,
+    //       frorg = frcly4·ratiom
+    //   c5 = pure sand, frorg = 0
+    let classes =
+        erosion_particle_composition(&clay_loam_texture()).expect("clay-loam composition");
+    let ratiom = 0.05 / 0.30;
+
+    assert!((classes[0].frcly - 1.0).abs() < 1.0e-12);
+    assert!((classes[0].frorg - ratiom).abs() < 1.0e-12);
+    assert!((classes[1].frslt - 1.0).abs() < 1.0e-12);
+    assert!(classes[1].frorg.abs() < 1.0e-12);
+    assert!((classes[2].frcly - 0.4).abs() < 1.0e-12);
+    assert!((classes[2].frslt - 0.6).abs() < 1.0e-12);
+    assert!((classes[2].frorg - 0.4 * ratiom).abs() < 1.0e-12);
+    // class 4 back-out identities against the published fractions
+    let frac = [
+        classes[0].frac,
+        classes[1].frac,
+        classes[2].frac,
+        classes[3].frac,
+        classes[4].frac,
+    ];
+    let expected_frcly4 = ((0.30 - frac[0] - 0.4 * frac[2]) / frac[3]).clamp(0.0, 1.0);
+    let expected_frslt4 = ((0.45 - frac[1] - 0.6 * frac[2]) / frac[3]).clamp(0.0, 1.0);
+    let expected_frsnd4 = ((0.25 - frac[4]) / frac[3]).clamp(0.0, 1.0);
+    assert!((classes[3].frcly - expected_frcly4).abs() < 1.0e-12);
+    assert!((classes[3].frslt - expected_frslt4).abs() < 1.0e-12);
+    assert!((classes[3].frsnd - expected_frsnd4).abs() < 1.0e-12);
+    assert!((classes[3].frorg - expected_frcly4 * ratiom).abs() < 1.0e-12);
+    assert!((classes[4].frsnd - 1.0).abs() < 1.0e-12);
+    assert!(classes[4].frorg.abs() < 1.0e-12);
+
+    // Whole-soil closure: Σ_i frac_i·frcly_i ≈ clay (and silt) — the
+    // mineralogy re-composes the texture (the class-4 clamps make this
+    // approximate only when a clamp fires; it must not here).
+    let clay_back: f64 = classes.iter().map(|c| c.frac * c.frcly).sum();
+    let silt_back: f64 = classes.iter().map(|c| c.frac * c.frslt).sum();
+    assert!(
+        (clay_back - 0.30).abs() < 1.0e-6 && (silt_back - 0.45).abs() < 1.0e-6,
+        "class mineralogy must re-compose the surface texture \
+         (clay {clay_back}, silt {silt_back})"
+    );
+}
+
+#[test]
+fn yalin_class_shares_sum_to_one_and_survive_the_sandy_adjustment() {
+    // `yalin.for:150-160`: tcf1 are the per-class shares of the
+    // pre-adjustment transport; the sandy adjustment scales the total
+    // and redistributes ws proportionally, so the shares are invariant.
+    let classes =
+        erosion_particle_composition(&clay_loam_texture()).expect("clay-loam composition");
+    let (total, shares) =
+        erosion_yalin_with_class_shares(2.0, &classes, 0.25).expect("yalin with shares");
+    assert!(total > 0.0);
+    let share_sum: f64 = shares.iter().sum();
+    assert!(
+        (share_sum - 1.0).abs() < 1.0e-12,
+        "tcf1 must be a unit-sum share vector (Σ = {share_sum})"
+    );
+    // Sandy invariance: same classes, sand > 0.5 forces the adjustment;
+    // the total drops, the shares must not move.
+    let (sandy_total, sandy_shares) =
+        erosion_yalin_with_class_shares(2.0, &classes, 0.80).expect("sandy yalin");
+    assert!(sandy_total < total);
+    for (share, sandy_share) in shares.iter().zip(sandy_shares.iter()) {
+        assert!(
+            (share - sandy_share).abs() < 1.0e-12,
+            "the sandy adjustment must not change the class shares"
+        );
+    }
+    // And the scalar entry point stays consistent with the pair form.
+    let scalar = erosion_yalin(2.0, &classes, 0.25).expect("scalar yalin");
+    assert!((scalar - total).abs() < 1.0e-15);
 }

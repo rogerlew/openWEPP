@@ -143,6 +143,14 @@ pub struct ErosionParticleClass {
     pub frac: f64,
     /// Still-water fall velocity (m/s).
     pub fall_m_s: f64,
+    /// Primary-clay mass fraction of this class (`prtcmp.for:208-…`).
+    pub frcly: f64,
+    /// Primary-silt mass fraction of this class.
+    pub frslt: f64,
+    /// Primary-sand mass fraction of this class.
+    pub frsnd: f64,
+    /// Organic-matter mass fraction of this class.
+    pub frorg: f64,
 }
 
 /// Soil texture triple (mass fractions of the surface layer) plus the
@@ -312,21 +320,110 @@ pub fn erosion_particle_composition(
         break;
     }
 
+    // Per-class mineralogy (`prtcmp.for:100-106` ratiom guard chain +
+    // `:208-286` class assignments, evaluated on the CONVERGED fractions
+    // — matching the legacy flow where the final pass's fractions feed
+    // the assignments). E.4: drives the SSA enrichment ratio
+    // (`enrich.for` iendfg arm).
+    let ratiom = if clay > 0.0 {
+        texture.orgmat / clay
+    } else if silt > 0.0 {
+        texture.orgmat / silt
+    } else {
+        texture.orgmat / sand
+    };
+    validate_finite("erosion.prtcmp.ratiom", ratiom)?;
+    let clamp_unit = |value: f64| {
+        if (0.0..=1.0).contains(&value) {
+            value
+        } else {
+            0.0
+        }
+    };
+    let (frcly4, frslt4, frsnd4) = if fracs[3] > 0.0001 {
+        (
+            clamp_unit((clay - fracs[0] - frcly3 * fracs[2]) / fracs[3]),
+            clamp_unit(
+                (silt
+                    - fracs[1]
+                    - (if clay > 0.0 && silt > 0.0 {
+                        silt / (clay + silt)
+                    } else {
+                        0.0
+                    }) * fracs[2])
+                    / fracs[3],
+            ),
+            clamp_unit((sand - fracs[4]) / fracs[3]),
+        )
+    } else {
+        (0.0, 0.0, 0.0)
+    };
+    let mineralogy: [(f64, f64, f64, f64); EROSION_PARTICLE_CLASS_COUNT] = [
+        // class 1 — primary clay
+        (1.0, 0.0, 0.0, if clay > 0.0 { ratiom } else { 0.0 }),
+        // class 2 — primary silt
+        (
+            0.0,
+            1.0,
+            0.0,
+            if clay > 0.0 {
+                0.0
+            } else if silt > 0.0 {
+                ratiom
+            } else {
+                0.0
+            },
+        ),
+        // class 3 — small aggregate
+        if clay > 0.0 && silt > 0.0 {
+            (
+                clay / (clay + silt),
+                silt / (clay + silt),
+                0.0,
+                (clay / (clay + silt)) * ratiom,
+            )
+        } else {
+            (0.0, 0.0, 0.0, 0.0)
+        },
+        // class 4 — large aggregate (back-out from the converged fracs)
+        (frcly4, frslt4, frsnd4, frcly4 * ratiom),
+        // class 5 — primary sand
+        (
+            0.0,
+            0.0,
+            1.0,
+            if clay > 0.0 || silt > 0.0 {
+                0.0
+            } else {
+                ratiom
+            },
+        ),
+    ];
+
     let mut classes = [ErosionParticleClass {
         dia_m: 0.0,
         spg: 0.0,
         frac: 0.0,
         fall_m_s: 0.0,
+        frcly: 0.0,
+        frslt: 0.0,
+        frsnd: 0.0,
+        frorg: 0.0,
     }; EROSION_PARTICLE_CLASS_COUNT];
     for (index, class) in classes.iter_mut().enumerate() {
         let dia_m = dia_mm[index] / 1000.0;
         let fall = erosion_falvel(spg[index], dia_m);
         validate_finite("erosion.prtcmp.fall", fall)?;
+        let (frcly_class, frslt_class, frsnd_class, frorg_class) = mineralogy[index];
         *class = ErosionParticleClass {
             dia_m,
             spg: spg[index],
             frac: fracs[index],
             fall_m_s: fall,
+            frcly: frcly_class,
+            frslt: frslt_class,
+            frsnd: frsnd_class,
+            frorg: frorg_class,
         };
     }
     Ok(classes)
@@ -392,6 +489,20 @@ pub fn erosion_yalin(
     classes: &[ErosionParticleClass; EROSION_PARTICLE_CLASS_COUNT],
     sand: f64,
 ) -> Result<f64, DirectRuntimeError> {
+    Ok(erosion_yalin_with_class_shares(effsh, classes, sand)?.0)
+}
+
+/// `yalin.for` with the per-class transport shares exposed
+/// (`tcf1(k) = ws(k)/tottc`, `yalin.for:150-160`). The sandy adjustment
+/// scales the total AND redistributes `ws` proportionally
+/// (`yalin.for:141-148`), so the shares are the pre-adjustment
+/// per-class proportions — matching legacy exactly. E.4: `tcf1` drives
+/// the per-class deposition re-proportion (`enrich.for` do-30).
+pub fn erosion_yalin_with_class_shares(
+    effsh: f64,
+    classes: &[ErosionParticleClass; EROSION_PARTICLE_CLASS_COUNT],
+    sand: f64,
+) -> Result<(f64, [f64; EROSION_PARTICLE_CLASS_COUNT]), DirectRuntimeError> {
     if effsh.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater) {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: "erosion.yalin.effsh",
@@ -416,20 +527,31 @@ pub fn erosion_yalin(
     if t == 0.0 {
         t = YALIN_ZERO_TOTAL;
     }
+    let mut ws = [0.0_f64; EROSION_PARTICLE_CLASS_COUNT];
     let mut tottc = 0.0;
     #[allow(clippy::cast_precision_loss)]
     let npart = EROSION_PARTICLE_CLASS_COUNT as f64;
     for (index, class) in classes.iter().enumerate() {
         let coef = vstar * MSDENS * class.dia_m * class.spg;
-        tottc += p[index] * (deltas[index] / t) * coef * (class.frac * npart);
+        ws[index] = p[index] * (deltas[index] / t) * coef * (class.frac * npart);
+        tottc += ws[index];
     }
-    // Sandy transport adjustment (`yalin.for:141-145`, INV-SED-006).
+    // Sandy transport adjustment (`yalin.for:141-148`, INV-SED-006):
+    // scales the total; `ws` redistributes proportionally, so the class
+    // shares are unchanged by it.
     if sand > 0.5 {
         let adjtc = (0.3 + 0.7 * (-12.52 * (sand - 0.5)).exp()).max(YALIN_SANDY_ADJ_FLOOR);
         tottc *= adjtc;
     }
     validate_finite("erosion.yalin.tottc", tottc)?;
-    Ok(tottc.max(0.0))
+    let ws_total: f64 = ws.iter().sum();
+    let mut tcf1 = [0.0_f64; EROSION_PARTICLE_CLASS_COUNT];
+    if ws_total > 0.0 {
+        for (share, value) in tcf1.iter_mut().zip(ws.iter()) {
+            *share = value / ws_total;
+        }
+    }
+    Ok((tottc.max(0.0), tcf1))
 }
 
 /// `trcoef.for`: transport coefficient `kt = tottc / shear^1.5`, floored.

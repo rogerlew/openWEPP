@@ -91,11 +91,18 @@ fn crafted_particle_classes() -> [ErosionParticleClass; 5] {
     let spg = [2.60, 2.65, 1.80, 1.60, 2.65];
     let frac = [0.05, 0.35, 0.25, 0.20, 0.15];
     let fall_m_s = [1.0e-6, 5.0e-5, 4.0e-4, 2.0e-2, 2.5e-2];
+    // Crafted mineralogy: clay/silt/aggregate/sand split summing to 1
+    // per class (unit-plausible; exact legacy values are covered by the
+    // prtcmp producer tests).
     core::array::from_fn(|i| ErosionParticleClass {
         dia_m: dia_m[i],
         spg: spg[i],
         frac: frac[i],
         fall_m_s: fall_m_s[i],
+        frcly: [1.0, 0.0, 0.4, 0.2, 0.0][i],
+        frslt: [0.0, 1.0, 0.6, 0.4, 0.0][i],
+        frsnd: [0.0, 0.0, 0.0, 0.4, 1.0][i],
+        frorg: [0.02, 0.0, 0.008, 0.004, 0.0][i],
     })
 }
 
@@ -784,6 +791,10 @@ fn wave1_publication_fails_closed_on_unseeded_class_composition() {
         spg: 0.0,
         frac: 0.0,
         fall_m_s: 0.0,
+        frcly: 0.0,
+        frslt: 0.0,
+        frsnd: 0.0,
+        frorg: 0.0,
     }; 5];
     let result = direct_wave1_publication_projection(&state, &inputs, &zeroed, None);
     assert!(matches!(
