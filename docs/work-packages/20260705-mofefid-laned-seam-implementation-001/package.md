@@ -70,3 +70,23 @@ Gates per the local-ci standard; full at branch head; Codex review.
 - SC-OFEROUTE-001 rev 5: INV-OFEROUTE-012 status records the tier
   honestly; the activation BLOCK stands (runtime wiring + real-H2637
   executed vector = the activation increment).
+
+## Codex review round 1 — response record (2026-07-05)
+
+Four findings (3 Medium + 1 Low), all CONFIRMED and fixed
+(SC-OFEROUTE-001 rev 14):
+1. **Versioning non-monotonic:** the frontmatter had lagged at 2 while
+   the history ran to 10, and my 2026-07-05 amendments (3/4/5) collided
+   with the 2026-07-02 rows. Renumbered 3/4/5 → 11/12/13; frontmatter
+   → 14 with the correction row; in-body rev citations updated.
+2. **Seam status contradictions:** the INV-012 evidence cell, the
+   OBL-OFEROUTE-P-006 obligation, and the activation BEI row all
+   reconciled to design-RESOLVED (rev 11) + machinery/fixtures landed
+   at the solver/identity tier (rev 13) + runtime wiring outstanding.
+3. **`latqcc` unit governance:** corrected to mm (the SC-SUBHYD-001
+   publication unit; the earlier `m` was wrong) with the
+   `mm/1000 × A_outlet` closure-operand conversion RECORDED so the
+   activation wiring cannot double-convert the bypass term; the
+   `seam.rs` closure-operand doc carries the same note.
+4. **Stale rev-4 citations in `seam.rs`:** updated to the corrected
+   numbering.

@@ -1,4 +1,4 @@
-//! GAP-OFEROUTE-006 subsurface-coupling seam (`SC-OFEROUTE-001` rev 4,
+//! GAP-OFEROUTE-006 subsurface-coupling seam (`SC-OFEROUTE-001` rev 11-14,
 //! `INV-OFEROUTE-012`): the routed source-rate series from the two
 //! contract-governed hourly carries, the hourly-lane activation
 //! precondition, the DC01 mutual-exclusion rule, and the activation
@@ -104,7 +104,11 @@ pub fn seam_rate_at(rates: &[f64; SEAM_HOUR_BINS], time_s: f64) -> f64 {
 /// (c), GAP-006 D4), all in m³ over the accounting window:
 /// `P + Q_surface_in = Q_surface_out + latqcc_outlet + ET + ΔS + deep_perc`.
 /// `latqcc_outlet` is the D3 bypass term — the router neither consumes
-/// nor converts it; it appears here ONLY so conservation is auditable.
+/// nor converts the published value; it appears here ONLY so
+/// conservation is auditable. NOTE the units seam: `SC-SUBHYD-001`
+/// publishes `latqcc` in mm — the operand here is the CONVERTED volume
+/// `latqcc_mm / 1000 × A_outlet_m2` (the recorded rev-14 helper), and
+/// the activation wiring must apply it exactly once.
 #[derive(Debug, Clone, Copy)]
 pub struct SeamClosureOperands {
     pub precipitation_m3: f64,
