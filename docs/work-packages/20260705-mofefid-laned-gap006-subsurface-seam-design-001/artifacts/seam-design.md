@@ -17,9 +17,11 @@ clip: inflow raises `st(1)` beyond `fzul` and exits as saturation
 excess. There is no second exfiltration surface to design.
 
 **Seam rule:** when the router is active, each OFE's kinematic-wave
-lateral source is
-`s_h = wb14_hourly_excess_m[h] + ui_SCrunf[h]` (per hour, uniform over
-the routing substeps within the hour) — the SAME two limbs the DC01
+lateral source RATE is
+`s_h = (wb14_hourly_excess_m[h] + ui_SCrunf[h]) / 3600 s` (m s⁻¹ —
+both carries are DEPTHS per hour slot; the depth→rate conversion is
+the seam's one required, recorded unit helper), uniform over the
+routing substeps within the hour — the SAME two limbs the DC01
 transfer weights already unify (`runoff.rs`
 `dc01_surface_runoff_hourly_weights`: `excess + saturation carry`),
 now consumed as a rate series instead of a day-shape. No new physics,
@@ -91,3 +93,16 @@ No new exfiltration physics (the `ui_SCrunf` clip is the model class);
 no router ownership of subsurface transfer; no daily-lane synthesis;
 no change to the D-val (`INV-OFEROUTE-011`) posture — the four-case
 non-reproduction dispositions are a separate item.
+
+## Codex review round 1 — response record (2026-07-05)
+
+One Medium (three parts), CONFIRMED and fixed in SC-OFEROUTE-001
+rev 4: the seam surfaces are now carried through the contract's
+structural maps — a subsurface-seam required-inputs row (with the
+depth-per-hour → m s⁻¹ rate conversion recorded as the required unit
+helper, and `ui_LfCrf`/outlet `latqcc` explicitly listed as
+NON-inputs), unit-governance rows for `ui_SCrunf`/
+`wb14_hourly_excess_m`/`latqcc`, and the missing `INV-OFEROUTE-012`
+guard-map row. This artifact's D1 seam rule is corrected to state the
+rate conversion explicitly. Binding-exposure lint: PASS-DEFERRED
+(pre-existing follow-on rows, unchanged count).

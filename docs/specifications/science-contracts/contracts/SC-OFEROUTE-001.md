@@ -4,7 +4,7 @@ title: Hillslope OFE-by-OFE Overland-Flow Routing Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Space/time-variant overland-flow resistance (skin/form/wave/vegetation) surfaces
   - 1-D kinematic-wave routing state (depth, unit discharge) per OFE per sub-timestep
@@ -117,6 +117,7 @@ Out of scope:
 | Surface class | Required surfaces | Owner / boundary | Notes |
 |---|---|---|---|
 | Required inputs | Rainfall-excess rate `v`, upstream boundary unit discharge, OFE geometry (`Delta x`, OFE length, `S_o`), mesh depth/discharge initial state, and friction operands (`I`, `k_o`, `C_d`, `D_r`, `lambda`, `LAI`, `h_c`, `nu`, `g`) | `SC-RUNOFFPART-001` for rainfall excess and inter-OFE transfer; SC-OFEROUTE for routed state and friction operands | D4/D5 must name exact Rust/API boundary fields before runtime binding. |
+| Required inputs (subsurface seam, ACTIVE routing — `GAP-OFEROUTE-006` design) | Per-hour exfiltration depth `ui_SCrunf[h]` (m per hour slot, `SC-SUBHYD-001#INV-SUBHYD-023`) combined with `wb14_hourly_excess_m[h]` into the routed source RATE `s_h = (wb14_hourly_excess_m[h] + ui_SCrunf[h]) / 3600 s` (m s⁻¹, uniform over the hour's routing substeps) | `SC-SUBHYD-001` produces the carries; SC-OFEROUTE owns the rate conversion and consumption | Depth-per-hour → rate conversion is a REQUIRED recorded helper (unit-governance row below). `ui_LfCrf` is deliberately NOT a router input (stays subsurface); outlet `latqcc` is NOT a router input (bypasses on the subsurface export, carried only in the `INV-OFEROUTE-012` closure identity). Hourly lane required — daily lanes fail closed. |
 | Required outputs | Cell/sub-timestep `h`, `q`, `f_s`, `f_f`, `f_w`, `f_veg`, `f_eq`, `C`, `alpha`, `Cr`, OFE outlet hydrograph, conservation residual, and validation diagnostics | SC-OFEROUTE | Published output metadata is required before any user-visible or retained artifact publication. |
 | Mutated state | Transient OFE routing mesh state and, when active, the downstream OFE hourly runon supply carried over `INV-RUNOFFPART-029` | SC-OFEROUTE + `SC-RUNOFFPART-001` seam | With subsystem off, no routed state is allocated into the default hillslope phase path and no protected output may change. |
 
@@ -181,6 +182,7 @@ Out of scope:
 | `INV-OFEROUTE-008..009` | per-OFE hydrograph handoff over the transfer seam; DC01 double-count reconciliation | runtime + governance | hard error for malformed handoff; integration hard error if routed hourly runon double-counts DC01 daily-lump admission | D5 cascade; `GAP-OFEROUTE-003` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-OFEROUTE-010` | default-path byte-identity gate with subsystem off | runtime + promotion | protected-output diff | every stage | `[DIRECT][Static]` |
 | `INV-OFEROUTE-011` | D-val Ef + Zone taxonomy vs the four cases | validation | Ef out of tolerance -> investigate | D-val | `[DIRECT][Static]` |
+| `INV-OFEROUTE-012` | subsurface seam activation gate: `ui_SCrunf`-sourced KWE source term + `latqcc` bypass conservation + the D4 closure identity; hourly-lane precondition check | runtime + governance + fixtures | production activation BLOCKED until the seam is implemented + the two gate fixtures pass; typed hard fail on daily-lane activation or material closure non-closure when active | `GAP-OFEROUTE-006` seam-design artifact (WP `20260705-mofefid-laned-gap006-…`); the crafted exfiltration fixture + the H2637-class closure vector | `[INFERENCE][Static] + [DIRECT][Static]` (seam surfaces verified) |
 
 ## Producer Obligations
 
@@ -240,6 +242,8 @@ Out of scope:
 | `C`, `alpha` | m^(1/2) s^-1 | pending D4 if exposed | none if internal SI | allowed only for internal non-public scalar | required before publication |
 | `Re`, `Fr`, `Cr`, `f_*` | dimensionless | none for internal pure kernels; pending if published | none | allowed for internal scalar diagnostics | required before publication |
 | `Delta t`, `Delta x`, `S_o` | s, m, m m^-1 | pending D4 | required if sourced from hourly/day or length sidecar units | not allowed for active boundary without recorded helper | not published by default |
+| `ui_SCrunf[h]`, `wb14_hourly_excess_m[h]` | m (depth per hour slot) | `SC-SUBHYD-001#INV-SUBHYD-023` / `SC-RUNOFFPART-001` hourly surfaces | REQUIRED: `s_h = depth / 3600 s` → m s⁻¹ before entering the KWE source term (the seam's only unit conversion) | not allowed — the depth→rate helper must be recorded at the activation seam | not published by the router (the carries publish under their owning contracts) |
+| `latqcc` (outlet) | m (daily aggregate, `SC-SUBHYD-001` publication) | owned by `SC-SUBHYD-001`; the router neither consumes nor converts it | none in this contract (closure-identity term only) | n/a | published by `SC-SUBHYD-001`, unchanged by activation |
 
 ## Tolerance and Numeric Notes
 
@@ -300,6 +304,7 @@ satisfied by an un-implemented subsystem.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-05` | `4` | `Claude Code` | Codex round-1 (seam-design review): the seam surfaces carried through the contract's structural maps — a subsurface-seam required-inputs row (`ui_SCrunf`/`wb14_hourly_excess` with the REQUIRED depth-per-hour → m s⁻¹ rate conversion recorded; `ui_LfCrf` and outlet `latqcc` explicitly NON-inputs), unit-governance rows for the seam symbols, and the missing `INV-OFEROUTE-012` guard-map row. |
 | `2026-07-05` | `3` | `Claude Code` | GAP-OFEROUTE-006 design-RESOLVED (Lane D contract-first continuation): the subsurface-coupling seam binds to existing contract-governed surfaces — exfiltration = the `ui_SCrunf` hourly saturation-excess clip (return flow surfaces through it; no new physics), `ui_LfCrf` stays subsurface, outlet `latqcc` baseflow bypasses the router, hourly-lane activation precondition; `INV-OFEROUTE-012` rewritten with the concrete bindings; gate-fixture specifications in the WP seam-design artifact. Implementation remains the activation work. |
 | `2026-07-02` | `1` | `Claude Code` | Initial authoring (MOFEFID Lane D / D-gate): friction menu (eqs. 2-7), KWE + TVD-MacCormack + CFL (eqs. 8-14, A1-A2), per-OFE hydrograph handoff, runon re-infiltration coupling, opt-in activation, and D-val acceptance. `INV-OFEROUTE-001` anchors the landed shadow-first friction kernels; solver/cascade invariants (005-009) gate D4/D5. Frozen-library citation posture recorded (`GAP-OFEROUTE-001/002`). Authored for ratification per ADR-0033 narrowed scope. |
 | `2026-07-02` | `2` | `Codex` | Ratification review amendment: added missing kernel-process profile sections, guard/failure-posture invariant fields, symbol alias and unit-governance maps, producer/consumer obligations, constants, tolerance notes, and test-vector obligations; moved gaps after the Binding Exposure Index; ratified the contract as the D4 prerequisite while preserving `GAP-OFEROUTE-003` as a D5 `HOLD`. |
