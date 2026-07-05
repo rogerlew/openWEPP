@@ -12,11 +12,11 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-05`:
-- `20260705-erosion-ground-cover-authority-defect-closure-001/` — EXECUTED,
-  awaiting Codex review on branch `erosion-cover-authority-defect-closure`:
-  closes `GAP-SED-009` (erosion ground-cover authority — pools seeded from
-  the declared IC covers per `init1.for`, covers re-derived per
-  `covcal.for`; p61 3.97 vs legacy 4.2 kg/m, p102 17.4 vs ~19.4 kg/m/yr).
+- `20260705-erosion-ground-cover-authority-defect-closure-001/` — COMPLETE,
+  MERGED TO MAIN `f7b82dcd` 2026-07-05 after Codex 3-round review: closes
+  `GAP-SED-009` (erosion ground-cover authority — pools seeded from the
+  declared IC covers per `init1.for`, covers re-derived per `covcal.for`;
+  p61 3.97 vs legacy 4.2 kg/m, p102 17.4 vs ~19.4 kg/m/yr).
 
 - `20260703-dff-ws3-directional-burn-validation-001/` is held as DFF WS-3
   DIRECTIONAL BURN VALIDATION + PEAKFLOW MAGNITUDE ADJUDICATION. Result:
