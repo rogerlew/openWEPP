@@ -4,7 +4,7 @@ title: Hillslope Binary Pass Input Parser Contract (H<hillslope_id>.hbp)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.2.0
+contract_version: 0.2.1
 evidence_mode: Static
 last_updated_utc: 2026-05-29T00:00:00Z
 ---
@@ -201,12 +201,16 @@ No silent fallback to legacy text pass family is permitted.
    declarations and required-state catalog.
 4. Schema2 day slices must be contiguous, non-overlapping, and complete inside
    each decompressed payload block.
-5. Minor-1 intake closure (run-level, ADR-0036 D4 / `SC-SED-001#INV-SED-014`):
-   the shard-set intake validator must check the sediment-side telescoping
-   identity `Σ event.hourly_sediment_mass_kg = total_detachment_kg −
-   total_deposition_kg` (the event exported mass; zero-inflow single-OFE
-   producers — the inflow term joins with the E.3 multi-OFE handoff) within
-   the declared tolerance, failing closed on material violation. The
+5. Minor-1 intake closure (run-level, ADR-0036 D4 / `SC-SED-001#INV-SED-014`,
+   chain form per `SC-SED-001#INV-SED-016` (e)): the shard-set intake
+   validator must check the sediment-side telescoping identity
+   `Σ event.hourly_sediment_mass_kg = total_detachment_kg −
+   total_deposition_kg` within the declared tolerance, failing closed on
+   material violation. On multi-OFE producers the EVENT totals are
+   CHAIN-AGGREGATED (Σ across the hillslope's OFEs for the event day) and
+   the hourly sediment surface is EXIT-scoped, so the same identity holds
+   with the chain-internal inflows telescoped out — one intake rule for
+   single- and multi-OFE shards. The
    water-side closure `Σ hourly_runoff_volume_m3 = runvol` is a
    **producer-side** (writer) obligation on the same `runvol` basis the pass
    parquet publishes; a concentration × volume reconstruction is NOT a valid
@@ -267,6 +271,7 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-07-04` | `0.2.1` | E.3 chain-form amendment: Section 8.5 intake closure generalized — multi-OFE EVENT totals are chain-aggregated (Σ across OFEs, event day) with the EXIT-scoped hourly sediment surface, keeping the single identity `Σ S_h = tdet − tdep` valid for both single- and multi-OFE shards (`SC-SED-001#INV-SED-016` (e)). |
 | `2026-07-04` | `0.2.0` | E.2/ADR-0036 minor-1 EVENT extension: schema/payload minor `<=1` accepted (Section 1.2), new Section 3a runoff-EVENT payload field block (paired `hourly_runoff_volume_m3[24]` m³ + `hourly_sediment_mass_kg[24]` kg before the reserved trailing i64s; `npart = 5` per-class production from minor 1; `peak_runoff_m3_s` true-volumetric from minor 1 with the minor-0 depth-rate caveat labeled), `HBP-E-015`/`G-HBP-011` structural validation, and the Section 8.5 run-level integral-closure intake rule. |
 | `2026-05-29` | `0.1.1` | WSHEDIMPL43 amendment: retired `.pass.dat` compatibility derivation and warning branch; parser naming policy is strict canonical `.hbp` only with no ASCII fallback support. |
 | `2026-05-22` | `0.1.0` | Initial HBP parser contract authored and aligned to openWEPP parser implementation surface. |

@@ -190,6 +190,10 @@ impl DirectPublicationOutputSummary {
             first_row: None,
             last_row: None,
             hbp_sediment_row: None,
+            hbp_event_chain_totals_kg: None,
+            hbp_current_day_index: None,
+            hbp_current_day_tdet_kg: 0.0,
+            hbp_current_day_tdep_kg: 0.0,
             parity_grade_row_seen: false,
             area_by_ofe: BTreeMap::new(),
             sim_day_index_monotonic: true,
@@ -203,8 +207,41 @@ impl DirectPublicationOutputSummary {
         if self.row_count == 0 {
             self.first_row = Some(row.clone());
         }
-        if direct_publication_row_has_hbp_sediment(row) {
+        // E.3 (2c-3b): the HBP EVENT describes the hillslope EXIT — the
+        // candidate is the OUTLET lane's row, carrying CHAIN-AGGREGATED
+        // tdet/tdep (the per-day sums across lanes), so the intake closure
+        // generalizes to its chain form Σ S_h(exit) = Σ_lanes(tdet − tdep)
+        // (per-lane inflows telescope out). Single-OFE degenerates to the
+        // row's own totals — byte-identical to the E.2 shape.
+        let row_tdet_kg = row
+            .erosion
+            .hbp_total_detachment_kg
+            .or(row.erosion.total_detachment_kg)
+            .unwrap_or(0.0);
+        let row_tdep_kg = row
+            .erosion
+            .hbp_total_deposition_kg
+            .or(row.erosion.total_deposition_kg)
+            .unwrap_or(0.0);
+        if self.hbp_current_day_index != Some(row.sim_day_index) {
+            self.hbp_current_day_index = Some(row.sim_day_index);
+            self.hbp_current_day_tdet_kg = 0.0;
+            self.hbp_current_day_tdep_kg = 0.0;
+        }
+        self.hbp_current_day_tdet_kg += row_tdet_kg;
+        self.hbp_current_day_tdep_kg += row_tdep_kg;
+        let outlet_ofe_id = u32::try_from(self.identity.lane_count).map_err(|_| {
+            direct_publication_output_failure(format!(
+                "direct publication lane count out of u32 range: {}",
+                self.identity.lane_count
+            ))
+        })?;
+        if row.ofe_id == outlet_ofe_id
+            && (self.hbp_current_day_tdet_kg > 0.0 || direct_publication_row_has_hbp_sediment(row))
+        {
             self.hbp_sediment_row = Some(row.clone());
+            self.hbp_event_chain_totals_kg =
+                Some((self.hbp_current_day_tdet_kg, self.hbp_current_day_tdep_kg));
         }
         if !direct_publication_row_lacks_parity_grade_output_producers(row) {
             self.parity_grade_row_seen = true;
@@ -390,20 +427,29 @@ fn build_hbp_output_from_direct_publication_summary(
                 .runoff_duration_s
                 .or(event_row.erosion.runoff_duration_s),
         )?,
-        total_detachment_kg: direct_publication_required_erosion_scalar(
-            "erosion.hbp_total_detachment_kg or erosion.total_detachment_kg",
-            sediment_row
-                .erosion
-                .hbp_total_detachment_kg
-                .or(sediment_row.erosion.total_detachment_kg),
-        )?,
-        total_deposition_kg: direct_publication_required_erosion_scalar(
-            "erosion.hbp_total_deposition_kg or erosion.total_deposition_kg",
-            sediment_row
-                .erosion
-                .hbp_total_deposition_kg
-                .or(sediment_row.erosion.total_deposition_kg),
-        )?,
+        // E.3: a minor-1 EVENT publishes the CHAIN totals (Σ across lanes
+        // for the event day) — single-OFE chains degenerate to the row's
+        // own values; minor-0 lanes keep the row-sourced legacy shape.
+        total_detachment_kg: match (hourly_pair.as_ref(), summary.hbp_event_chain_totals_kg) {
+            (Some(_), Some((chain_tdet_kg, _))) => chain_tdet_kg,
+            _ => direct_publication_required_erosion_scalar(
+                "erosion.hbp_total_detachment_kg or erosion.total_detachment_kg",
+                sediment_row
+                    .erosion
+                    .hbp_total_detachment_kg
+                    .or(sediment_row.erosion.total_detachment_kg),
+            )?,
+        },
+        total_deposition_kg: match (hourly_pair.as_ref(), summary.hbp_event_chain_totals_kg) {
+            (Some(_), Some((_, chain_tdep_kg))) => chain_tdep_kg,
+            _ => direct_publication_required_erosion_scalar(
+                "erosion.hbp_total_deposition_kg or erosion.total_deposition_kg",
+                sediment_row
+                    .erosion
+                    .hbp_total_deposition_kg
+                    .or(sediment_row.erosion.total_deposition_kg),
+            )?,
+        },
         sediment_concentration_kg_m3: surfaces.sediment_concentration_classes,
         particle_flow_fraction: surfaces.particle_flow_fraction,
         particle_diameter_m: surfaces.particle_diameter_m,

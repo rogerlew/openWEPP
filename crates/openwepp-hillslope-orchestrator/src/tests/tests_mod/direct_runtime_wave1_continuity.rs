@@ -754,7 +754,7 @@ fn wave1_publication_splits_concentration_by_detached_composition() {
     assert!(state.sediment_concentration_kg_m3 > 0.0);
 
     let classes = crafted_particle_classes();
-    let publication = direct_wave1_publication_projection(&state, &inputs, &classes)
+    let publication = direct_wave1_publication_projection(&state, &inputs, &classes, None)
         .expect("seeded composition must project the per-class split");
     let per_class = publication
         .sediment_concentration_kg_m3
@@ -785,7 +785,7 @@ fn wave1_publication_fails_closed_on_unseeded_class_composition() {
         frac: 0.0,
         fall_m_s: 0.0,
     }; 5];
-    let result = direct_wave1_publication_projection(&state, &inputs, &zeroed);
+    let result = direct_wave1_publication_projection(&state, &inputs, &zeroed, None);
     assert!(matches!(
         result,
         Err(DirectRuntimeError::DirectDomainViolation {

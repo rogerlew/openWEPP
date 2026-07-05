@@ -928,11 +928,14 @@ fn validate_latest_event_vectors(
         }
     }
 
-    // SC-INFILE-HBP-001 §8.5 (ADR-0036 D4): minor-1 hourly surfaces must
-    // arrive as a 24-slot pair satisfying the volume-free sediment-side
-    // telescoping identity `Σ S_h = tdet − tdep` (the event exported
-    // mass; zero-inflow single-OFE producers), failing closed on material
-    // violation. Minor-0 payloads carry empty vectors and skip cleanly.
+    // SC-INFILE-HBP-001 §8.5 (ADR-0036 D4, chain form per
+    // SC-SED-001#INV-SED-016 (e)): minor-1 hourly surfaces must arrive as
+    // a 24-slot pair satisfying the volume-free sediment-side telescoping
+    // identity `Σ S_h = tdet − tdep`. Multi-OFE producers serialize
+    // CHAIN-AGGREGATED totals with the EXIT-scoped hourly surface, so the
+    // same identity holds with chain-internal inflows telescoped out —
+    // one rule for single- and multi-OFE shards. Fails closed on material
+    // violation; minor-0 payloads carry empty vectors and skip cleanly.
     let hourly_volume = &payload.hourly_runoff_volume_m3;
     let hourly_sediment = &payload.hourly_sediment_mass_kg;
     if !hourly_volume.is_empty() || !hourly_sediment.is_empty() {

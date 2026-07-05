@@ -712,10 +712,41 @@ impl DirectDayFrame {
         let mut publication = if let Some(wave2) = &wave2 {
             direct_erod15_publication_projection(wave2, &erosion_inputs.wave2)?
         } else if let Some(continuity) = wave1_continuity.as_deref().filter(|state| state.active) {
+            // E.3 D4 (GAP-SED-007 extension, labeled un-enriched): on
+            // inflow days the exiting composition is the mass-weighted
+            // blend of the UPSTREAM flow composition and the LOCAL
+            // detached composition (`enrich.for:205-213` terminal blend
+            // with the non-cropland `fidel = frac`), under proportional
+            // depletion through deposition and the legacy equal-width
+            // chain assumption. No-inflow days keep the local `frac`.
+            let exit_fractions_override =
+                self.erosion_inflow_intake.as_deref().and_then(|intake| {
+                    let inflow_kg: f64 = intake
+                        .hourly_qsout_kg_m_s
+                        .iter()
+                        .map(|qsout| qsout * 3600.0)
+                        .sum::<f64>()
+                        * erosion_inputs.wave1_operand_seed.field_width_m;
+                    let local_detach_kg = continuity.total_detachment_kg;
+                    let total_kg = inflow_kg + local_detach_kg;
+                    if total_kg > 0.0 && inflow_kg > 0.0 {
+                        let mut blended = [0.0_f64; DIRECT_EROSION_CLASS_LIMIT];
+                        for (index, blend) in blended.iter_mut().enumerate() {
+                            let frac_own = erosion_inputs.wave1_operand_seed.classes[index].frac;
+                            *blend = (inflow_kg * intake.exit_fractions[index]
+                                + local_detach_kg * frac_own)
+                                / total_kg;
+                        }
+                        Some(blended)
+                    } else {
+                        None
+                    }
+                });
             direct_wave1_publication_projection(
                 continuity,
                 &erosion_inputs.wave1_continuity,
                 &erosion_inputs.wave1_operand_seed.classes,
+                exit_fractions_override,
             )?
         } else {
             DirectPublicationErosionOperands::zero_authority()
@@ -1693,6 +1724,7 @@ pub(crate) fn direct_wave1_publication_projection(
     state: &DirectWave1ContinuityState,
     inputs: &DirectWave1ContinuityInputs,
     classes: &[ErosionParticleClass; DIRECT_EROSION_CLASS_LIMIT],
+    exit_fractions_override: Option<[f64; DIRECT_EROSION_CLASS_LIMIT]>,
 ) -> Result<DirectPublicationErosionOperands, DirectRuntimeError> {
     validate_nonnegative_direct_m(
         "erosion.wave1.publication.total_detachment_kg",
@@ -1709,10 +1741,17 @@ pub(crate) fn direct_wave1_publication_projection(
 
     // Fail-closed: an unseeded/zeroed class table must error, not publish
     // zeros as if it were a composition (`prtcmp` guarantees Σ frac = 1).
+    // E.3 D4: an inflow-day blend (a convex combination of two
+    // compositions) substitutes for the local `frac` when present, under
+    // the same Σ = 1 gate.
+    let fractions: [f64; DIRECT_EROSION_CLASS_LIMIT] = match exit_fractions_override {
+        Some(blended) => blended,
+        None => core::array::from_fn(|index| classes[index].frac),
+    };
     let mut frac_sum = 0.0;
-    for class in classes {
-        validate_nonnegative_direct_m("erosion.wave1.publication.class_fraction", class.frac)?;
-        frac_sum += class.frac;
+    for fraction in &fractions {
+        validate_nonnegative_direct_m("erosion.wave1.publication.class_fraction", *fraction)?;
+        frac_sum += fraction;
     }
     if (frac_sum - 1.0).abs() > WAVE1_CLASS_FRACTION_SUM_TOL {
         return Err(DirectRuntimeError::DirectDomainViolation {
@@ -1725,8 +1764,8 @@ pub(crate) fn direct_wave1_publication_projection(
     // a <= 1e-9 adjustment inside the closure tolerance, not a correction
     // of an invalid composition — those already failed above).
     let mut sediment_concentration_kg_m3 = [0.0; DIRECT_EROSION_CLASS_LIMIT];
-    for (index, class) in classes.iter().enumerate() {
-        let concentration = (class.frac / frac_sum) * state.sediment_concentration_kg_m3;
+    for (index, fraction) in fractions.iter().enumerate() {
+        let concentration = (fraction / frac_sum) * state.sediment_concentration_kg_m3;
         validate_nonnegative_direct_m(
             "erosion.wave1.publication.class_concentration",
             concentration,

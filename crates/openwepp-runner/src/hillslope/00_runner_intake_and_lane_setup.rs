@@ -618,6 +618,13 @@ struct DirectPublicationOutputSummary {
     first_row: Option<DirectPublicationDayRow>,
     last_row: Option<DirectPublicationDayRow>,
     hbp_sediment_row: Option<DirectPublicationDayRow>,
+    /// E.3: the CHAIN-AGGREGATED (Σ across lanes, same day) tdet/tdep for
+    /// the captured EVENT day — the minor-1 EVENT totals, so the intake
+    /// closure holds in its chain form Σ S_h(exit) = Σ_lanes(tdet − tdep).
+    hbp_event_chain_totals_kg: Option<(f64, f64)>,
+    hbp_current_day_index: Option<i32>,
+    hbp_current_day_tdet_kg: f64,
+    hbp_current_day_tdep_kg: f64,
     parity_grade_row_seen: bool,
     area_by_ofe: BTreeMap<u32, f64>,
     sim_day_index_monotonic: bool,
