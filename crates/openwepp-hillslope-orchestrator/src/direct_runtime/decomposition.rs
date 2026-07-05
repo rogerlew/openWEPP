@@ -154,8 +154,10 @@ impl DirectDayFrame {
         )?;
 
         // `covcal.for:176`: the published composite is the legacy
-        // `rescov` area-weighted blend of the two covers.
-        let weight = inputs.rescov_interrill_weight.clamp(0.0, 1.0);
+        // `rescov` area-weighted blend of the two covers. The weight is
+        // fail-closed to [0, 1] at the input boundary (`validate`), so no
+        // silent canonicalization happens here.
+        let weight = inputs.rescov_interrill_weight;
         let composite_cover_fraction =
             weight * interrill_cover_fraction + (1.0 - weight) * rill_cover_fraction;
 
@@ -470,8 +472,8 @@ impl DirectDecompositionInputs {
         // Ground pools (`decomp.for` applies the identical decay law to
         // `rigrm`/`rilrm`; surface-litter fall lands on interrill and
         // rill areas alike): litter + decay + the ground-affecting
-        // actions (Burn/Remove/Grazing fractions; Cut moves standing
-        // material and leaves the ground pools unchanged — labeled).
+        // actions (Burn/Remove/Grazing fractions; Cut ADDS the cut
+        // mass to both pools, `decomp.for:689-693`).
         let ground_cut_mass_kg_m2 = if self.active_action == DirectDecompositionAction::Cut {
             surface_after_decay * self.cut_transfer_fraction
         } else {
@@ -836,7 +838,11 @@ impl DirectResiduePartitionInputs {
             "residue_partition.buried_residue_kg_m2",
             self.buried_residue_kg_m2,
         )?;
-        validate_unit_fraction("residue_partition.cover_fraction", self.cover_fraction)
+        validate_unit_fraction("residue_partition.cover_fraction", self.cover_fraction)?;
+        validate_unit_fraction(
+            "residue_partition.rescov_interrill_weight",
+            self.rescov_interrill_weight,
+        )
     }
 }
 

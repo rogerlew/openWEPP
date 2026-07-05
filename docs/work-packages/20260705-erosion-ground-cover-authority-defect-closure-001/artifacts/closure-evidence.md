@@ -99,3 +99,18 @@ Five findings (3 Medium, 2 Low), all CONFIRMED and fixed:
 5. **Low — line-count WARN:** disposition recorded in `package.md`
    (the seed-authority fan-out file; split rides the next structural
    runner refactor).
+
+## 8. Codex review round 2 — response record (2026-07-05)
+
+Two findings, both CONFIRMED and fixed:
+1. **Medium — `rescov_interrill_weight` not fail-closed at the direct
+   runtime input boundary:** confirmed — my round-1 trace claimed the
+   downstream state validation would catch a NaN, but the partition
+   state is copied downstream without a post-construction validate; the
+   clamp silently canonicalized out-of-range weights. Fixed: the weight
+   validates as a unit fraction at `DirectResiduePartitionInputs::
+   validate()` (typed error, same boundary as the other partition
+   operands) and the silent clamp is removed.
+2. **Low — stale Cut comment:** the `compute_state` comment still
+   carried the superseded no-op rule; corrected to the source-true
+   addition (`decomp.for:689-693`).
