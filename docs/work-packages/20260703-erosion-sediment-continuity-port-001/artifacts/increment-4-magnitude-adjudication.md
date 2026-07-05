@@ -46,7 +46,13 @@ field-width-scaled totals; water cut FIRST):
   openWEPP's counterpart (4.4 mm) publishes zero sediment — small-event
   gate divergence (secondary; bounded UNDER-routing).
 
-### Attribution (operand probe, `OPENWEPP_DEBUG_EROSION_OPERANDS`)
+### Attribution (ephemeral operand probe — REMOVED after evidence capture)
+An env-gated stderr probe (`OPENWEPP_DEBUG_EROSION_OPERANDS`) was added
+to the quantum assembly for this adjudication and removed in the same
+branch after capturing the evidence below (Codex round-1: ad-hoc stderr
+in the kernel hot path is not the governed trace style; the follow-on
+WP re-instruments through the established trace-path mechanism when it
+re-runs the instruments).
 On every routed p61 event day: **`rilcov = 0.000`, `inrcov = 0.000`** —
 zero ground cover reaching the erosion assembly on a forest hillslope
 (canopy is correct at 0.75). The erosion daily covers consume ONLY the
@@ -66,7 +72,7 @@ declared covers) — but NOT the erosion cover operands. Bare-soil vs
 
 | # | Finding | Verdict | Disposition |
 |---|---|---|---|
-| 1 | ~4–6× over-detachment on both forest instruments | **CONFIRMED DEFECT — erosion ground-cover pathway** (input authority: the management IC's declared `inrcov`/`rilcov` never reach the erosion cover operands; mass-derived cover is ~0 on forest no-decomp ICs) | Follow-on defect-closure item (below); NOT fixed in E.5 — the correct fix requires resolving legacy's daily cover-update semantics (`cvrcal.for`: recomputed-from-pools vs carried-state) from source, which crosses into the SC-RESIDUE-001 system |
+| 1 | ~6× over-delivery at matched cut-points (p61); the same ~4–6× class at outlet-aggregate scope (p102, order-of-magnitude corroboration) | **CONFIRMED DEFECT — erosion ground-cover pathway** (input authority: the management IC's declared `inrcov`/`rilcov` never reach the erosion cover operands; mass-derived cover is ~0 on forest no-decomp ICs) | Follow-on defect-closure item (below); NOT fixed in E.5 — the correct fix requires resolving legacy's daily cover-update semantics (`cvrcal.for`: recomputed-from-pools vs carried-state) from source, which crosses into the SC-RESIDUE-001 system |
 | 2 | Small-event routing divergence (legacy routes 3.9 mm; openWEPP gates) | Secondary divergence — bounded UNDER-routing on trace events | Recorded; adjudicate the day-gate threshold against `contin.for` in the same follow-on |
 | 3 | Water magnitude at p102 | **NEAR-PARITY (~1% over 50 years)** — water is not the erosion-magnitude driver at these sites | On record as a positive water datapoint (does not generalize to the H2637 lateral-magnitude gap — different regime) |
 | 4 | Absolute erosion magnitude overall | **OPEN-BUT-ATTRIBUTED**: cover-dominated, not water-dominated, not structural (the E.1–E.4 closures all hold; the solve chain is conservation-exact) | `GAP-SED-009` (SC-SED-001 rev 48): magnitude validation blocked behind the cover-pathway fix, then re-judged |
@@ -96,3 +102,17 @@ without the `cvrcal` semantics resolved (no provisional math); no
 per-event p102 chain-export series (needs either per-day chain sums on
 an interchange surface or replay instrumentation — noted as a tooling
 gap, not blocking the attribution).
+
+## 6. Codex review round 1 — response record (2026-07-05)
+
+Three findings, all CONFIRMED and fixed:
+1. **Medium — p102 overclaimed as matched cut-point evidence:** the
+   artifact's own §1 caveat was correct but SC-SED-001/ROADMAP flattened
+   it. `GAP-SED-009` (rev 49) and the ROADMAP now distinguish p61
+   (matched per-event, per-width delivery) from p102 (outlet-aggregate
+   corroboration, order-of-magnitude only); verdict row 1 reworded.
+2. **Medium — the operand probe in the production hot path:** removed
+   after evidence capture (recorded above); the follow-on WP
+   re-instruments via the governed trace style.
+3. **Low — nonstandard evidence label:** normalized to
+   `[DIRECT][Static] + [Ran]`.

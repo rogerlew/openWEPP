@@ -754,9 +754,11 @@ Full architecture + open-decision resolution:
 [`increment-2-entry-gate.md`](work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2-entry-gate.md).
 
 ### E.5 Erosion magnitude fidelity — ADJUDICATED 2026-07-05 (GAP-SED-009); forward item = the cover-pathway defect-closure
-**Verdict (Investigation tier, ADR-0017):** both forest comparator
-instruments over-detach ~4–6× at matched per-width delivery cut-points,
-**attributed to the erosion ground-cover pathway** (the management IC's
+**Verdict (Investigation tier, ADR-0017):** p61 over-detaches ~6× at
+MATCHED per-event, per-width delivery cut-points; p102 corroborates the
+same ~4–6× class at outlet-aggregate scope (order-of-magnitude evidence
+— no per-day chain-export series exists yet). **Attributed to the
+erosion ground-cover pathway** (the management IC's
 declared `inrcov`/`rilcov` never reach the erosion cover operands;
 mass-derived residue cover is ~0 on forest no-decomp ICs — legacy holds
 the declared 0.85 covers). **NOT water-driven** — p102's 50-year runoff

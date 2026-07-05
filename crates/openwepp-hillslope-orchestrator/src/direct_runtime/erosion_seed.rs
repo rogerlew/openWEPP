@@ -511,31 +511,6 @@ pub fn assemble_wave1_continuity_inputs_quantum(
         inflow_fractions: daily.inflow.map(|inflow| inflow.exit_fractions),
     });
 
-    // E.5 magnitude-adjudication probe (env-gated, inert in production):
-    // dump the routed detachment/transport operands per quantum.
-    if std::env::var("OPENWEPP_DEBUG_EROSION_OPERANDS").is_ok() {
-        eprintln!(
-            "DBG operands: q={:.6e} peakro={:.3e} effint={:.3e} effdrr={:.0} \
-             detinr={:.3e} kradjf={:.3} tcadjf={:.3} shrsol={:.3} \
-             tcend={:.3e} rilcov={:.3} inrcov={:.3} canopy={:.3} \
-             kiadjf={:.3} width={:.3}",
-            daily.runoff_depth_m,
-            daily.peakro_m_s,
-            effective.effint_m_s,
-            effective.effdrr_s,
-            detinr,
-            adjustments.kradjf,
-            adjustments.tcadjf,
-            hydraulics.shrsol_pa,
-            transport.tcend_kg_s_m,
-            daily.rill_cover_fraction,
-            daily.interrill_cover_fraction,
-            daily.canopy_cover_fraction,
-            adjustments.kiadjf,
-            hydraulics.width_m,
-        );
-    }
-
     Ok(DirectWave1ContinuityInputs {
         enabled: seed.enabled,
         inter_ofe,
