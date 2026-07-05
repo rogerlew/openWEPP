@@ -710,8 +710,19 @@ principle promoted it to active queue item 1 on 2026-06-07.)
 
 ## E. Hillslope erosion sediment sequence
 
-**Current position:** single-OFE **Wave-1 sediment continuity is live on the
-hydrograph-resolved substrate** — E.2 (ADR-0036, merged `7abf2e86`) made the
+**Current position:** **the Wave-1 chain is the sole erosion engine, single-
+and multi-OFE** — E.3 (merged `07856444`, stage-2e deletion merged
+`5628f5a0`) chained Wave-1 per OFE on the hourly substrate (per-OFE seeds via
+lane slicing, the EROSION-lineage hourly handoff with the `param.for`
+Eq. [11.4.x] coefficient continuity, the EXIT-scoped chain EVENT with
+`Σ S_h(exit) = Σ_lanes(tdet − tdep)`), produced the **first multi-OFE
+sediment in openWEPP's history** (real W7DC01-substrate H102; the deleted
+EROD14 path published zero — the `WSHED-W7DC01` producer-side cause is
+gone), recorded the INV-RUNOFFPART-030/INV-SED-012 dispositions
+(`multi_ofe_wave1_chained` requires the actual seed enable — no-tillage
+scope), and DELETED the EROD14/Wave-2 arm outright (SC-SED-001 rev 45 +
+companion registry dispositions). Before that, single-OFE Wave-1 went live on
+the hydrograph-resolved substrate — E.2 (ADR-0036, merged `7abf2e86`) made the
 per-hydraulically-active-hour solve the production form on the shared DC01
 shape authority, serialized the paired hourly `V_h`/`S_h` EVENT surfaces (HBP
 minor 1, npart = 5, true-volumetric peak), and made the watershed route the
@@ -738,31 +749,6 @@ detachment-vs-delivery cut-point mismatch (compare `exported_kg_m` to legacy
 
 Full architecture + open-decision resolution:
 [`increment-2-entry-gate.md`](work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2-entry-gate.md).
-
-### E.3 Multi-OFE Wave-1 chaining (Increment 2 — structural) — MERGED; remaining: 2e EROD14 deletion
-**Status 2026-07-04: MERGED TO MAIN `07856444`** after Codex 2-round
-review (entry gate: WP `20260703-…/artifacts/increment-2c-entry-gate.md`).
-The Wave-1 chain is the multi-OFE production path — per-OFE seeds, the
-hourly erosion handoff with the `param.for` coefficient-continuity port,
-the EXIT-scoped chain EVENT, EROD14 retired to a comparator arm, the
-INV-RUNOFFPART-030/INV-SED-012 dispositions, and the **first multi-OFE
-sediment the runtime has ever produced** (real W7DC01-substrate H102 —
-the retired EROD14 path published zero; the `WSHED-W7DC01` hold's
-producer-side cause is gone). **Stage-2e EROD14/Wave-2
-deletion EXECUTED (branch `erosion-e3-2e-erod14-deletion`, awaiting
-Codex review) — E.3 fully closes on its merge.**
-
-Original scope:
-Make **Wave-1 the per-OFE continuity engine** for every OFE, chained by the
-`G_out→ldtop` load, `qout→qin` discharge, and particle-fraction handoff (reusing the
-existing EROD14/Wave-2 routing plumbing); retire Wave-2 as a *separate physics arm*.
-Gate: per-OFE + hillslope-exit mass closure; the OFE-boundary handoff identity;
-directional (burn-ratio) checks; EROD14 retained behind a comparator flag for
-cross-check, then deleted. **This is the rung that lifts the watershed sediment hold
-`WSHED-W7DC01`** — that hold is zero HBP sediment on the *multi-OFE* EROD14 path (the
-1b-C single-OFE Wave-1 flip does **not** touch it, verified 2026-07-04: single-OFE p61
-HBP carries `tdet=20.9`, but the multi-OFE EROD14 path is unchanged/zero). W7DC01 is a
-downstream consumer of E.3, not a watershed-side defect.
 
 ### E.4 Enrichment + particle routing (Increment 3 — folds into E.3)
 Class-resolved deposition and `enrich.for`-lineage fraction update at deposition
