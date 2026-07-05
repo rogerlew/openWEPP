@@ -66,3 +66,15 @@ lanuse declarations.
   lanuse-sourced branch selection; the roughness-delivery universality
   question flagged for external authority, per the identity doc's
   partition heuristic).
+
+## Codex review round 1 — response record (2026-07-05)
+
+Two findings, both CONFIRMED and fixed:
+1. **(Medium) no-lanuse schedules silently selected the non-cropland
+   branch:** the resolution now fails closed when the schedule
+   references no cropland or forest yearly — no silent branch selection
+   at the exact authority boundary this package closes. Regression:
+   scheduled cropland resolves `true`; the same registries with cleared
+   `yearly_refs` error.
+2. **(Low) stale seed-builder comment:** rewritten to the resolved
+   lanuse-sourcing rule (rev 52), retiring the 1b-C first-cut text.

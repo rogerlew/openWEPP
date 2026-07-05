@@ -1020,12 +1020,14 @@ fn direct_production_pl_projection_required_ofe_scalar(
 /// frame state. `enabled` is forced `false` here — the seed stays inert
 /// until the production flip (Stage 4).
 ///
-/// One operand remains an adjudicated first cut (it only affects an
-/// active solve):
-/// - `is_cropland` selects the interrill delivery branch. Set `false`
-///   (non-cropland, `intdr = 1`), matching the reviewed `erod16` forest
-///   fixture and the 1b-C no-tillage enable scope; the legacy
-///   lanuse-as-cropland nuance is a recorded science item.
+/// `is_cropland` selects the interrill delivery branch and is RESOLVED
+/// from the schedule-scoped parsed lanuse by the caller
+/// (`direct_production_schedule_lanuse_is_cropland`, SC-SED-001 rev 52
+/// `INV-SED-017` (f)): Cropland ⇒ the legacy `drinti` branch, Forest ⇒
+/// `intdr = 1`, mixed or missing lanuse fails closed. The former 1b-C
+/// hardcoded-false first cut is retired; the roughness-delivery
+/// universality question remains a flagged science item in the
+/// contract.
 ///
 /// `field_width_m` (E.1 / Increment 1c-fidelity) is sourced from the
 /// parsed slope-file profile width (`fwidth`), matching the legacy
@@ -1292,7 +1294,19 @@ fn direct_production_schedule_lanuse_is_cropland(
     }
     if saw_cropland && saw_forest {
         return Err(direct_production_executor_blocked(
-            "erosion lanuse resolution requires a single lanuse class per lane;              the schedule references both cropland and forest yearlies",
+            "erosion lanuse resolution requires a single lanuse class per lane; \
+             the schedule references both cropland and forest yearlies",
+        ));
+    }
+    // Codex tie-in round-1: a schedule referencing NO lanuse-bearing
+    // yearly has no authority for either interrill branch — fail closed
+    // rather than silently selecting the non-cropland branch at the
+    // exact boundary this resolution owns.
+    if !saw_cropland && !saw_forest {
+        return Err(direct_production_executor_blocked(
+            "erosion lanuse resolution found no cropland or forest yearly \
+             referenced by the schedule; the interrill branch has no \
+             lanuse authority",
         ));
     }
     Ok(saw_cropland)
@@ -2352,6 +2366,34 @@ mod erosion_tillage_scope_tests {
 
         // An out-of-range tilseq (dangling reference) is not active tillage.
         assert!(!direct_production_tilseq_disturbs_surface(9, &tilled));
+    }
+
+    #[test]
+    fn lanuse_resolution_is_schedule_scoped_and_fails_closed_without_authority() {
+        // Codex tie-in round-1: a cropland-scheduled management resolves
+        // cropland; the SAME registries with no referenced yearlies have
+        // no lanuse authority and must fail closed (never a silent
+        // non-cropland branch selection).
+        let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/fixtures/infile/management/canonical_rotation_nonzero_98_4.man");
+        let mut management =
+            openwepp_input_contract::parsers::management::parse_management_from_path(
+                &fixture,
+                openwepp_input_contract::parsers::management::ParseMode::Compatibility,
+            )
+            .expect("tilled rotation fixture parses");
+        assert!(
+            super::direct_production_schedule_lanuse_is_cropland(&management)
+                .expect("scheduled cropland resolves"),
+            "cropland yearlies resolve is_cropland = true"
+        );
+        for slot in &mut management.schedule.slots {
+            slot.yearly_refs.clear();
+        }
+        assert!(
+            super::direct_production_schedule_lanuse_is_cropland(&management).is_err(),
+            "no referenced lanuse-bearing yearly must fail closed"
+        );
     }
 
     #[test]
