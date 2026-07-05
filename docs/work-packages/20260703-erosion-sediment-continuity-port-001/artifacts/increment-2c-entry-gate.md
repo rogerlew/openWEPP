@@ -91,6 +91,32 @@ SC-RUNOFFPART-001 amendment (030 hold disposition, 031 clamp retirement).
 Manifest: `erod14_qin_sediment_coupled` truthfully publishable on the
 Wave-1 chain (naming per the amendment).
 
+## 2a. Recon R2 — RESOLVED (Ran static, 2026-07-04)
+
+**The `strldn` basis is source-pinned and matches D2 exactly.** The inter-OFE
+handoff quantity is a **sediment discharge per unit width**:
+`sloss.for:333` `qsout = dslod2 / effdrn(iplane)` (the prior OFE's exit,
+kg·m⁻¹·s⁻¹), and the RECEIVER normalizes by its own scale at
+`param.for:243`: `strldn = qsout · rspace / tcend / width` (all receiver
+operands; `width > 0` guard, else 0). The per-hour form
+`strldn_h = (G_out_h / 3600 s) · rspace_{i+1} / (tcend_{i+1} · width_{i+1})`
+is algebraically identical. Hold criterion 1 is cleared.
+
+**Additional required machinery found (D2 expansion):** `param.for:249-390`
+carries the **inter-OFE shear/transport continuity adjustment** (the
+`INV-SED-008` Eq. [11.4.x] downslope-variability family): for `iplane > 1`
+with `qout > 0 ∧ qin > 0`, the receiving OFE's normalized shear/transport
+coefficient polynomials are re-derived so shear and transport capacity are
+**continuous across the OFE boundary**, using the PRIOR OFE's end state —
+`shrspv` (end shear), `anflst/bnflst/cnflst` (end shear coefficients),
+`atclst/btclst/ctclst`, `tcprev`, `ktrprv` — with the documented singular
+guards (`sratio`/`tcrati` floors, the zero-slope `qostar` substitution, the
+2012 `shrati` overflow cap). **The handoff carry therefore includes the
+prior lane's end-shear/transport state**, not only `(qin_h, qsout_h,
+fractions)`. Without this block, transport capacity jumps at OFE boundaries
+and deposition artifacts alias into every boundary — it is required scope
+for 2c-2, not a refinement.
+
 ## 3. Stage plan
 
 - **2c-0 recon completion (FIRST):** R1 lane↔OFE index mapping (how
