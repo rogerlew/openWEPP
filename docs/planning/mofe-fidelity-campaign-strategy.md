@@ -1,6 +1,7 @@
 # MOFE Fidelity Campaign Strategy
 
-Status: **active strategy** (2026-07-01). Campaign code: **MOFEFID**.
+Status: **active strategy** (2026-07-01; activation sequence refreshed
+2026-07-05). Campaign code: **MOFEFID**.
 Owner: maintainers (operator-directed campaign; Claude Code authored this plan).
 
 Evidence mode: **Static** synthesis of three grounding documents (the
@@ -13,16 +14,20 @@ ADR-0011/0017/0024, and `docs/ROADMAP.md`.
 
 ## 0. TL;DR
 
-> **CAMPAIGN SUBSTANTIVELY COMPLETE (2026-07-02).** All lanes executed and
-> dual-reviewed. The FARPOINT01 magnitude arc is closed end-to-end:
-> mechanism found (A01 F-A2) → confirmed first-order (A02) → corrected in
-> production (DC01, runon re-infiltration) → validated against field
-> authority (C01/C03, H2637 not-contradicted on all four tiers) → ecosystem
-> convention aligned (B02, QOFE=Q). Contract reconciliations B03 closed.
-> Legacy is no longer the reference for H2637 forest lateral flow; the
-> observed wet-forest field band is. Remaining: routine merges of the B02/B03
-> branches and the optional Lane D (Papanicolaou OFE-by-OFE routing), which
-> was always a separate opt-in build, not a FARPOINT01 blocker.
+> **MOFEFID A-C complete; Lane D is in activation-gate closure (2026-07-05).**
+> The FARPOINT01 magnitude arc is closed end-to-end: mechanism found (A01
+> F-A2) → confirmed first-order (A02) → corrected in production (DC01,
+> runon re-infiltration) → validated against field authority (C01/C03,
+> H2637 not-contradicted on all four tiers) → ecosystem convention aligned
+> (B02, QOFE=Q). Contract reconciliations B03 closed. Legacy is no longer
+> the reference for H2637 forest lateral flow; the observed wet-forest field
+> band is. Lane D has advanced beyond "optional scaffold": D1-D8, the
+> subsurface seam design, the solver/identity seam implementation, and the
+> opt-in runtime SHADOW + real-H2637 executed vector are merged. **Production
+> activation is not one remaining task.** It is blocked by the enumerated
+> `SC-OFEROUTE-001` flip preconditions: `INV-OFEROUTE-011`,
+> `GAP-OFEROUTE-005`, melt-limb hourly-source coverage,
+> `GAP-OFEROUTE-007`, and the ADR-0036 erosion hourly-shape switch.
 
 
 The MOFE **closure** rung is complete: MOFE01/FARPOINT01 closed inter-OFE
@@ -109,16 +114,16 @@ Lane A (defect sweep)  ──┐
 Lane B (brief audit)   ──┘         │
                                    └─→ defect-closure ExecPlans as found
 Lane C (authority rubric) ── independent; needs only closed MOFE WB (done)
-Lane D (routing model)    ── contracts/fixtures first; implementation after A/B
+Lane D (routing model)    ── contracts/fixtures → shadow → activation gates
 ```
 
-Lanes A and B are review-shaped and cheap; they establish the defect posture
-of the surface the other two lanes will judge and extend. Lane C is the
+Lanes A and B were review-shaped and cheap; they established the defect
+posture of the surface the other two lanes judge and extend. Lane C is the
 FARPOINT01 continuation and does not depend on A/B outcomes (it judges
 magnitude against observations, not against internal structure). Lane D is
-the large build; its contract/fixture stages can start immediately, its
-runtime stages wait for A/B dispositions so new routing is not built on an
-undiagnosed defect.
+the large build; its contract/fixture, solver, cascade, infiltration, seam,
+and runtime-shadow stages are now merged. What remains is the D9-D15
+activation-gate sequence in §6.1.
 
 ## 3. Lane A — proactive MOFE defect-review sweep
 
@@ -331,17 +336,42 @@ topology.
    taxonomy reproduced qualitatively (thresholds within stated tolerance of
    the paper's k/l fits); H2637 default path byte-flat while the feature is
    opt-in.
-5. **D-scope (explicitly out, this campaign):** sediment coupling of the
-   routed hydrograph (the `INV-RUNOFFPART-030` erosion-`qin` hold) — Lane D
-   produces the hydraulics that a later sediment package consumes; curvature
-   *input* surfaces beyond what slope files already carry; watershed-tier
-   consumption of hillslope hydrographs.
+5. **D-scope boundary:** the original D-val scaffold did not include
+   sediment coupling. The current production-activation gate now requires
+   the narrower ADR-0036 touchpoint: in active routed-water mode, erosion's
+   hourly sediment substrate must consume the routed hydrograph rather than
+   the DC01 shape authority. Full channel-hourly sediment routing,
+   per-class-hourly interchange expansion, curvature input surfaces beyond
+   what slope files already carry, and watershed-tier consumption of
+   hillslope hydrographs remain separate packages.
 
 **Perf guardrail:** hourly-per-OFE PDE solving is compute-bearing. The
 opt-in path carries its own budget (target: within the current legacy-anchor
 envelope on event days, measured at D-val); the default path must remain
 unchanged (byte-flat) until an activation decision with fresh endpoint
 timings.
+
+### 6.1 Remaining Lane D production-activation sequence (2026-07-05)
+
+The merged runtime shadow closed the "can the real frame surfaces drive the
+real cascade without changing outputs?" question. It did **not** close
+production activation. The remaining scope splits cleanly by authority and
+validation surface:
+
+| Seq | Proposed package | Closure slice | Why this boundary | Exit / handoff |
+|---|---|---|---|---|
+| D9 | `20260705-mofefid-d9-dval-disposition-001` | Close the non-numerics pieces of `INV-OFEROUTE-011`: re-run/adjudicate Cases 1-3 with the D8 corrections, execute the deferred Zone 1/Zone 2 taxonomy, and write the exact acceptance surface for Case 4. | This is validation/adjudication, not production wiring. It should not be bundled with new runtime code. | Cases 1-3 + Zone taxonomy either satisfy the contract or carry named, contract-backed dispositions; any remaining blocker is isolated to `GAP-OFEROUTE-005`. |
+| D10 | `20260705-mofefid-d10-shock-numerics-gap005-001` | Close `GAP-OFEROUTE-005`: TVD/shock numerics authority, convergence criteria, Iwagaki Case-4 evidence, and the real-H2637 resolution-sensitivity reproduction. | This is the numerical-method defect class. It must finish before active routing can use H2637 conservation diagnostics as acceptance rather than as a diagnostic bound. | `GAP-OFEROUTE-005` closed or held with primary-source evidence; `INV-OFEROUTE-011` can no longer be blocked by Case 4 / H2637 resolution sensitivity. |
+| D11 | `20260705-mofefid-d11-friction-operand-authority-001` | Close `GAP-OFEROUTE-007`: source, default-authorize, or fail-close the active friction operands (`k_o`, rainfall-intensity `I`, `C_d`, `D_r`, `lambda`, `LAI`, `h_c`) and wire the active operand builder. | The shadow's `k_o=500`, bare-cell, `I=0` first cut is intentionally not production authority for vegetated/rough hillslopes. This is an input-authority package, not a solver package. | Active routing no longer depends on hardcoded shadow friction. Missing unsupported operands fail closed or are covered by a ratified default/sourcing rule. |
+| D12 | `20260705-mofefid-d12-melt-limb-hourly-shape-001` | Close the melt-limb coverage gap: add the snowmelt/routed-liquid hourly source limb to the activation source series or formally prove it is already represented, with exact daily-sum closure to lane-local supply. | The shadow found `10/731` H2637 runoff days with no hourly shape from the two D1 limbs. Uniform fallback is acceptable diagnostic plumbing; it is not an activation source-authority rule. | H2637 activation candidate has no unexplained uniform-shape event days, or any residual class has a contract-backed non-routing disposition. |
+| D13 | `20260705-mofefid-d13-routed-hydrograph-erosion-shape-001` | Amend/implement the ADR-0036 touchpoint: when Lane D routing owns the water path, erosion's hourly sediment substrate consumes the routed hydrograph rather than the DC01 shape authority. | This crosses `SC-OFEROUTE-001`/ADR-0036/`SC-SED-001`; keeping it separate prevents a water-router activation package from silently leaving sediment timed to the old hydrograph. | Active routed-water mode has an erosion hourly-shape consumer-path proof; default-off remains byte-flat. |
+| D14 | `20260705-mofefid-d14-opt-in-production-activation-001` | The opt-in production flip: routing owns the surface-water path, DC01 daily-lump runon is disabled for active lanes, the `INV-OFEROUTE-012` runtime closure hard-fail is live, `latqcc` bypass is included in closure, active outputs are published from the routed path, and subsystem-off protected outputs remain byte-identical. | This is the first package allowed to claim production activation, because D9-D13 remove the known blockers and define the active consumer surfaces. | Opt-in active H2637/real-vector evidence, default-off byte identity, closure hard-fails, manifest provenance, and performance evidence. No default promotion. |
+| D15 | `20260705-mofefid-d15-default-promotion-adjudication-001` | Decide whether the opt-in active router becomes default for any policy slice. | Default activation is a policy/performance/release gate, not the same as opt-in production correctness. | Default promotion, non-promotion, or policy-scoped activation with full endpoint timing and protected-output evidence. |
+
+The ordering is strict at D14: production activation must not start while D9-D13
+remain open. D9-D13 can run in parallel where their write sets are independent
+(for example D11 and D12), but D14 consumes their dispositions. D15 is
+explicitly outside the opt-in activation package.
 
 ## 7. Sequencing and gates
 
@@ -354,18 +384,18 @@ timings.
 | 1 | ~~`MOFEFID-A02`~~ (superseded by rows above) | — | env-gated opt-in admitting inter-OFE runon into the WB14 infiltration supply on H2637; default path byte-flat. **Hypothesis under test:** F-A2 explains a large share of the FARPOINT01 71%-vs-55.5% `runvol` gap (mechanism-consistent with MAGPARITY01's ~99%-routed-lateral decomposition; never examined by the magnitude arc). Outcome reorders C01 interpretation and the D01 runon-semantics contract |
 | ✅ | `MOFEFID-B02` QOFE = Q convention switch | B | **complete 2026-07-02** (`4aa069bb`, merged): QOFE=Q on all rows, H.pass.runvol byte-invariant, per-row boundary guard (INV-RUNOFFPART-032), single-OFE byte-identical; 2 Codex review rounds |
 | ✅ | `MOFEFID-B03` SC-SNOWFREEZE-015 melt-aggregation reconciliation | B | **complete 2026-07-02** (branch `worktree-mofefid-b03`): INV-019 already superseded INV-015 for the coexist case — B10 was a missing cross-reference, not a defect; INV-015 text now defers to INV-019 (positive-parts = storage loss, density-gate-grounded). Contract-text only |
-| 2 | `MOFEFID-C01` authority promotion (metric/envelope/applicability) | C | — (independent) |
-| 3 | `MOFEFID-C02` rubric harness | C | C01 envelope ratified |
-| ▶️ | `MOFEFID-D01` routing scaffold + friction kernels | D | **opened 2026-07-02** (branch `worktree-mofefid-d01`): ADR-0033 (Proposed), SC-OFEROUTE-001 scope, D2 case fixtures, D3 friction kernels (eqs. 2-7, shadow-first, 6/6 tests). Activation = opt-in-validated only. Next: ratify ADR-0033 → D4 KWE/TVD solver |
-| 3 | `MOFEFID-D02` supplemental fixtures | D | D01 drafted |
+| ✅ | `MOFEFID-C01` authority promotion (metric/envelope/applicability) | C | complete 2026-07-02; envelope ratified |
 | ✅ | `MOFEFID-C03` evaluation + verdict | C | **complete 2026-07-02** (`b2807d5d`): H2637 not-contradicted on all four tiers; FARPOINT01 magnitude flag RESOLVED against field data. Load-bearing finding: event tiers need quickflow separation (INV-SUBHYD-033 rev 14) |
-| 4 | `MOFEFID-D03..` staged implementation | D | A01 + B01 findings dispositioned; D01 ratified |
-| 5 | `MOFEFID-D-val` validation acceptance | D | D3..Dn conservation stops green |
+| ✅ | `MOFEFID-D01` through `MOFEFID-D8` | D | complete through scaffold, contract, friction kernels, KWE/TVD solver, cascade, infiltration coupling, D-val execution, and routing-fidelity defect closure. `INV-OFEROUTE-011` remains open; `GAP-OFEROUTE-005` carries shock/resolution sensitivity. |
+| ✅ | `20260705-mofefid-laned-gap006-subsurface-seam-design-001` | D | `GAP-OFEROUTE-006` design resolved: active seam sources `ui_SCrunf` + hourly excess; `ui_LfCrf` stays subsurface; outlet `latqcc` bypasses the router. |
+| ✅ | `20260705-mofefid-laned-seam-implementation-001` | D | seam machinery + both `INV-OFEROUTE-012` fixtures pass at solver/identity tier; production activation block stands. |
+| ✅ | `20260705-mofefid-laned-activation-increment-001` | D | runtime SHADOW + real-H2637 executed vector merged 2026-07-05; protected outputs byte-identical; review found and fixed the `QOFE` alias trap by moving source depth to `runvol/area`. |
+| ▶️ | D9-D15 sequence in §6.1 | D | remaining production-activation scope, ordered by dependency and authority surface. |
 
-Stop conditions (campaign-wide): a confirmed Lane A/B defect in a surface a
-later stage depends on halts that stage until the Defect-Closure ExecPlan
-lands; Lane C never proceeds past an unratified envelope; Lane D never
-activates by default inside this campaign.
+Stop conditions (current): A/B findings are dispositioned and Lane C proceeded
+only after its envelope was ratified. Lane D opt-in production activation
+cannot start until the §6.1 D9-D13 blockers close; Lane D default activation
+is D15 or later.
 
 ## 8. Guardrails
 
@@ -410,21 +440,26 @@ activates by default inside this campaign.
 | Backlog note | `docs/backlog/20260618-forest-lateral-flow-absolute-magnitude-authority.md` | Lane C promotion criteria (now satisfiable) |
 | H2637 fixture + closure gates | staged WB05A replay inputs; direct-runtime closure guards | Cross-lane regression net |
 
-## 10. Open decisions (operator)
+## 10. Decision status
 
-1. **B7/QOFE posture:** switch `QOFE` to the post-fix `QOFE = Q` convention
-   outright, or publish both (legacy-shaped column + canonical) during a
-   wepppy consumer-migration window? Recommendation: switch outright with an
-   ADR + change-control entry; the ecosystem brief already documents the
-   post-fix recipes and wepppy consumers are being re-anchored.
-2. **Lane D activation ambition:** is the target of this campaign
-   opt-in-validated only (recommended), or default activation?
-3. **Lane C tuning ownership:** if C3 lands out-of-envelope and attributes
-   to input parameters (`ksatadj` coefficients, anisotropy), does openWEPP
-   host the parameter-authority work or hand off to wepppy?
-4. **Supplemental-derived fixture governance:** approve the minimal-numeric-
-   content-with-citation approach in §8, or keep all derived series inside
-   `references/copyrighted/`?
+Resolved since the original strategy:
+
+- **B7/QOFE posture:** switched outright to the post-fix `QOFE = Q`
+  convention in `MOFEFID-B02`; canonical `runvol` stayed invariant.
+- **Lane C tuning ownership:** C03 found H2637 not-contradicted by the
+  observed envelope; no tuning-owner package is opened by this campaign.
+- **Supplemental-derived fixture governance:** Lane D packages use internal,
+  minimal derived fixtures with citation and do not republish the copyrighted
+  source documents.
+
+Current open decisions are package-local in §6.1:
+
+1. **D11 friction authority:** source every active friction operand from WEPP
+   inputs, ratify a bounded default set, or fail closed by policy slice.
+2. **D14 opt-in surface:** exact user/runtime selector and output-publication
+   scope for production-active routed water.
+3. **D15 default ambition:** whether any policy slice promotes from opt-in to
+   default after D14 evidence.
 
 ## 11. References / authority
 
