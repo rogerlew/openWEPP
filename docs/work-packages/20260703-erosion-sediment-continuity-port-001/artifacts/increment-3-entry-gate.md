@@ -119,7 +119,41 @@ point, not silent reuse.
   enriched intake fractions), erod16 instrument, DFF-WS3; `--profile
   erosion` in-loop, `full` at branch head.
 
-## 5. Hold criteria
+## 5. Execution record (2026-07-05, branch `erosion-e4-enrichment`)
+
+- **4a (`58bac1b2`):** per-class mineralogy exposed from `prtcmp`
+  (ratiom guard chain + the five class assignments on the converged
+  fractions, hand-computed clay-loam test + the whole-soil
+  re-composition closure `Σ frac_i·frcly_i = clay`);
+  `erosion_yalin_with_class_shares` (`tcf1_k = ws_k/Σws`; sandy
+  adjustment share-invariance asserted). Ran: 264/264, crate clippy.
+- **4b (`9363a0e1`):** the full `enrich.for` port
+  (`erosion_enrichment.rs`) — initialization / do-10 blend / do-30
+  per-class deposition re-proportion with every legacy guard / the
+  label-50 reproportion BOUNDED at 64 iterations (documented deviation)
+  / the `iendfg` ER; `Wave1Drivers` retains `pkro`/`beta`; the route
+  threads the state through the three `route.for` depos sites + the
+  terminal call (incl. the `:443` `loadup ≥ lddend` floor); the
+  assembly builds the operand bundle (`tcf1` at the kt2 shear —
+  legacy's last-yalin-call basis; `fidel = frac`; per-OFE `ssasol`
+  seeded runner-side); the intake handoff carries `exit_fractions`
+  into the initialization; day aggregation is export-mass-weighted;
+  publication prefers the enriched composition (E.3 D4 = fallback) and
+  publishes `enrichment_ratio`. Total-load closures untouched by
+  construction (do-40 normalization).
+- **4c behavior tests (this commit):** the zero-deposition identity
+  (exit == detached `frac` to 1e-9; ER == the detached-composition SSA
+  ratio), the directional fining law (coarse classes deplete, primary
+  clay enriches, depositing-ER > detached-ER), and the
+  inflow-composition seeding. **Ran:** orchestrator 267/267; the
+  required erosion fixture gates p61 + p102 chain + erod16 + DFF-WS3
+  all green with enrichment live (the chain closure survives because
+  the class solve normalizes to the total); runner 105/105.
+  Contracts: SC-SED-001 rev 46 (`REF-SED-LEGACY-ENRICH`,
+  `INV-SED-017`, GAP-SED-007 CLOSED, GAP-SED-008 narrowed to the
+  interchange surface).
+
+## 6. Hold criteria
 
 1. The do-30 analytic form cannot be reconciled with our deposition-region
    bookkeeping (region boundaries/qostar basis mismatch) — stop, present.

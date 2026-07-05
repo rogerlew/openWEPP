@@ -11,8 +11,8 @@ use crate::direct_runtime::direct_wave1_publication_projection;
 use crate::{
     DIRECT_WAVE1_GRID_POINTS, DirectDayFrame, DirectPeakRunoffShadowProjection, DirectRunIdentity,
     DirectRuntimeError, DirectWave1ContinuityInputs, DirectWave1DailyState, DirectWave1OperandSeed,
-    DirectWave1SlopeSegment, ErosionConsolidationBaselines, ErosionFrostRegime,
-    ErosionParticleClass, Wave1InterOfeContinuity, Wave1ShearRegime,
+    DirectWave1SlopeSegment, ErosionConsolidationBaselines, ErosionExcessInterval,
+    ErosionFrostRegime, ErosionParticleClass, Wave1InterOfeContinuity, Wave1ShearRegime,
     assemble_wave1_continuity_inputs_quantum, compute_direct_wave1_continuity,
     compute_direct_wave1_continuity_quantum, derive_wave1_slope_segments, wave1_depc, wave1_depend,
     wave1_depeqs, wave1_runge_step, wave1_xcrit,
@@ -954,5 +954,157 @@ fn inter_ofe_continuity_zero_prior_state_takes_the_qostar_substitution() {
     assert_eq!(
         gated_state.end_shear_coefficients, no_payload_state.end_shear_coefficients,
         "with qin = 0 the continuity payload must be inert (legacy triple guard)"
+    );
+}
+
+#[test]
+fn enrichment_zero_deposition_exit_composition_is_the_detached_frac() {
+    // INV-SED-017 identity: a pure-detachment profile has no deposition
+    // region, so the terminal do-10 blend reduces to the detached
+    // composition exactly (`ldtop = rillod + intlod`, `lddend = 0`) and
+    // the ER is the detached-composition SSA ratio.
+    let seed = crafted_enabled_seed();
+    let mut daily = crafted_daily_state();
+    daily.runoff_depth_m = 0.02;
+    daily.peakro_m_s = 1.0e-5;
+    daily.beta = 0.5;
+    daily.excess_intervals = vec![ErosionExcessInterval {
+        duration_s: 3600.0,
+        rainfall_intensity_m_s: 8.0e-6,
+        excess_m: 0.02,
+        snowmelt_active: false,
+    }];
+    let inputs = assemble_wave1_continuity_inputs_quantum(&seed, &daily, true)
+        .expect("storm quantum must assemble");
+    let state =
+        compute_direct_wave1_continuity_quantum(&inputs, true).expect("storm quantum must solve");
+    assert!(state.active);
+    assert!(
+        state.total_deposition_kg == 0.0,
+        "this instrument profile must be pure detachment (tdep = {})",
+        state.total_deposition_kg
+    );
+    let exit = state
+        .exit_class_fractions
+        .expect("production assembly always supplies enrichment");
+    for (index, class) in seed.classes.iter().enumerate() {
+        assert!(
+            (exit[index] - class.frac).abs() < 1.0e-9,
+            "zero-deposition exit composition must equal the detached \
+             frac (class {index}: {} vs {})",
+            exit[index],
+            class.frac
+        );
+    }
+    let enrichment = inputs.enrichment.as_deref().expect("enrichment inputs");
+    let expected_ratio = seed
+        .classes
+        .iter()
+        .map(|class| {
+            class.frac
+                * ((class.frsnd * 0.05 + class.frslt * 4.0 + class.frcly * 20.0)
+                    / (1.0 + class.frorg)
+                    + class.frorg * 1000.0 / 1.73)
+        })
+        .sum::<f64>()
+        / enrichment.ssasol
+        + 0.005;
+    let ratio = state.enrichment_ratio.expect("terminal ER");
+    assert!(
+        (ratio - expected_ratio).abs() < 1.0e-9,
+        "zero-deposition ER must be the detached-composition SSA ratio \
+         ({ratio} vs {expected_ratio})"
+    );
+}
+
+#[test]
+fn enrichment_depositing_quantum_fines_the_exit_composition() {
+    // INV-SED-017 directional law: deposition preferentially settles the
+    // fast-falling coarse classes (`φ_i = β·fall_i/pkro` grows with
+    // fall velocity), so the exit composition shifts toward fines and
+    // the SSA enrichment ratio exceeds the detached-composition ratio.
+    let seed = crafted_enabled_seed();
+    let mut daily = crafted_daily_state();
+    daily.runoff_depth_m = 0.004;
+    daily.peakro_m_s = 1.0e-6; // qout = 1e-4 m2/s
+    daily.qin_m2_s = 3.0e-4; // decreasing flow: deposition
+    daily.strldn = 1.5;
+    let inputs = assemble_wave1_continuity_inputs_quantum(&seed, &daily, true)
+        .expect("depositing quantum must assemble");
+    let state = compute_direct_wave1_continuity_quantum(&inputs, true)
+        .expect("depositing quantum must solve");
+    assert!(state.total_deposition_kg > 0.0);
+    let exit = state.exit_class_fractions.expect("enriched exit");
+    let sum: f64 = exit.iter().sum();
+    assert!((sum - 1.0).abs() < 1.0e-6, "unit-sum (Σ = {sum})");
+
+    // Coarse depletion: the two fast-falling classes (fall ≥ 2e-2 m/s)
+    // must lose share relative to the flowing composition they entered
+    // with (the detached frac — no inflow fractions on this quantum).
+    let coarse_in: f64 = seed.classes[3].frac + seed.classes[4].frac;
+    let coarse_out: f64 = exit[3] + exit[4];
+    assert!(
+        coarse_out < coarse_in,
+        "deposition must deplete the coarse classes ({coarse_out} vs {coarse_in})"
+    );
+    // Fine enrichment: the slowest-falling class gains share.
+    assert!(
+        exit[0] > seed.classes[0].frac,
+        "the primary-clay share must enrich ({} vs {})",
+        exit[0],
+        seed.classes[0].frac
+    );
+
+    // The ER reflects the fining: above the detached-composition ratio.
+    let mut storm = crafted_daily_state();
+    storm.runoff_depth_m = 0.02;
+    storm.peakro_m_s = 1.0e-5;
+    storm.beta = 0.5;
+    storm.excess_intervals = vec![ErosionExcessInterval {
+        duration_s: 3600.0,
+        rainfall_intensity_m_s: 8.0e-6,
+        excess_m: 0.02,
+        snowmelt_active: false,
+    }];
+    let detachment_state = compute_direct_wave1_continuity_quantum(
+        &assemble_wave1_continuity_inputs_quantum(&seed, &storm, true).expect("storm assembly"),
+        true,
+    )
+    .expect("storm solve");
+    let depositing_ratio = state.enrichment_ratio.expect("ER");
+    let detached_ratio = detachment_state.enrichment_ratio.expect("ER");
+    assert!(
+        depositing_ratio > detached_ratio,
+        "the depositing quantum's ER must exceed the detached-composition \
+         ratio ({depositing_ratio} vs {detached_ratio})"
+    );
+}
+
+#[test]
+fn enrichment_inflow_composition_seeds_the_flow_state() {
+    // `route.for:142-160`: with upstream inflow the flow composition
+    // initializes from the UPSTREAM exit fractions, not the local frac —
+    // the multi-OFE lineage the E.3 intake carries.
+    let seed = crafted_enabled_seed();
+    let mut daily = crafted_daily_state();
+    daily.runoff_depth_m = 0.004;
+    daily.peakro_m_s = 1.0e-6;
+    daily.strldn = 0.0;
+    daily.inflow = Some(crate::Wave1InflowOperands {
+        qin_m2_s: 3.0e-4,
+        qsout_kg_m_s: 0.0,
+        prior_slpend: 0.30,
+        prior_cnslp: 0.25,
+        prior_end_shear: (0.5, 0.5, 0.0),
+        prior_end_transport: (0.5, 0.5, 0.0),
+        exit_fractions: [0.9, 0.05, 0.03, 0.01, 0.01],
+    });
+    let inputs = assemble_wave1_continuity_inputs_quantum(&seed, &daily, true)
+        .expect("inflow quantum must assemble");
+    let enrichment = inputs.enrichment.as_deref().expect("enrichment inputs");
+    assert_eq!(
+        enrichment.inflow_fractions,
+        Some([0.9, 0.05, 0.03, 0.01, 0.01]),
+        "the upstream exit composition must reach the initialization"
     );
 }
