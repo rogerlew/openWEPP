@@ -1,0 +1,152 @@
+{
+  "sections": {
+    "bare": {
+      "published_threshold": {
+        "I_star": 0.16,
+        "Psi_star": 0.004
+      },
+      "rows": 64,
+      "slope_count": 8,
+      "threshold_support": {
+        "nearest_i_star": 0.16666666666666666,
+        "nearest_i_star_abs_error": 0.006666666666666654,
+        "nearest_i_star_p_mm_h": 25.0,
+        "nearest_psi_star": 0.004124242188714442,
+        "nearest_psi_star_abs_error": 0.00012424218871444175,
+        "nearest_psi_star_rel_error": 0.031060547178610436,
+        "nearest_psi_star_s_pct": 1.0
+      },
+      "workbook_label": "Bare",
+      "zone1_fit_s_pct": [],
+      "zone1_fit_summary": {
+        "fit_count": 0
+      },
+      "zone2_fit_s_pct": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        7.0,
+        10.0,
+        20.0,
+        40.0
+      ],
+      "zone2_fit_summary": {
+        "fit_count": 8,
+        "l_max": 1.0022601971006624,
+        "l_mean": 1.001363658679195,
+        "l_min": 0.9996607716182855,
+        "r2_min": 0.9995431962417967
+      }
+    },
+    "isolated": {
+      "published_threshold": {
+        "I_star": 0.33,
+        "Psi_star": 0.017
+      },
+      "rows": 64,
+      "slope_count": 8,
+      "threshold_support": {
+        "nearest_i_star": 0.3333333333333333,
+        "nearest_i_star_abs_error": 0.0033333333333332993,
+        "nearest_i_star_p_mm_h": 50.0,
+        "nearest_psi_star": 0.016897054251515626,
+        "nearest_psi_star_abs_error": 0.0001029457484843753,
+        "nearest_psi_star_rel_error": 0.0060556322637867815,
+        "nearest_psi_star_s_pct": 10.0
+      },
+      "workbook_label": "Clods",
+      "zone1_fit_s_pct": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        7.0,
+        10.0,
+        20.0,
+        40.0
+      ],
+      "zone1_fit_summary": {
+        "fit_count": 8,
+        "l_max": 1.7165969447395608,
+        "l_mean": 1.3352968624130117,
+        "l_min": 1.0090160811248428,
+        "r2_min": 0.9945247710175048
+      },
+      "zone2_fit_s_pct": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        7.0,
+        10.0,
+        20.0,
+        40.0
+      ],
+      "zone2_fit_summary": {
+        "fit_count": 8,
+        "l_max": 1.0514846080959688,
+        "l_mean": 1.0106356657796858,
+        "l_min": 0.9876973225126132,
+        "r2_min": 0.9979318968274842
+      }
+    },
+    "vegetation": {
+      "published_threshold": {
+        "I_star": 0.68,
+        "Psi_star": 0.022
+      },
+      "rows": 56,
+      "slope_count": 7,
+      "threshold_support": {
+        "nearest_i_star": 0.6866666666666666,
+        "nearest_i_star_abs_error": 0.006666666666666599,
+        "nearest_i_star_p_mm_h": 103.0,
+        "nearest_psi_star": 0.024014845328773515,
+        "nearest_psi_star_abs_error": 0.0020148453287735166,
+        "nearest_psi_star_rel_error": 0.0915838785806144,
+        "nearest_psi_star_s_pct": 4.0
+      },
+      "workbook_label": "Vegetation",
+      "zone1_fit_s_pct": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        7.0,
+        10.0,
+        20.0
+      ],
+      "zone1_fit_summary": {
+        "fit_count": 7,
+        "l_max": 1.673548547797992,
+        "l_mean": 1.4439222493720438,
+        "l_min": 1.2122447503713278,
+        "r2_min": 0.9953732094951041
+      },
+      "zone2_fit_s_pct": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        7.0,
+        10.0,
+        20.0
+      ],
+      "zone2_fit_summary": {
+        "fit_count": 7,
+        "l_max": 1.1292545148968307,
+        "l_mean": 1.0661784595011772,
+        "l_min": 0.9975855154978328,
+        "r2_min": 0.9873338945428871
+      }
+    }
+  },
+  "source": {
+    "fig9_sha256": "ec198018d34414298b08419ba1b303de86ebd11b642a03731a0e68e2b04b8f28",
+    "normalizing_discharge_m2_s_m": 0.0051464,
+    "normalizing_intensity_mm_h": 150.0,
+    "normalizing_slope_pct": 40.0,
+    "sheet": "Results"
+  }
+}

@@ -13,11 +13,10 @@
 
 State as of `2026-07-05`:
 - `20260705-mofefid-d9-dval-disposition-001/` —
-  QUEUED: Lane D D-val disposition package. Scope is the non-numerics
-  closure surface for `SC-OFEROUTE-001#INV-OFEROUTE-011`: re-run and
-  adjudicate Cases 1-3 after D8, execute the deferred Zone 1/Zone 2
-  taxonomy, and write the exact Case-4 acceptance handoff to
-  `GAP-OFEROUTE-005` / D10. No production activation.
+  EXECUTED-COMPLETE: Lane D D-val disposition package. Cases 1-3 were re-run
+  after D8 and retain named non-numerics dispositions, the Figure 9 Zone 1/Zone
+  2 taxonomy is executed, and the exact Case-4 acceptance handoff is isolated
+  to `GAP-OFEROUTE-005` / D10. No production activation.
 - `20260705-mofefid-laned-activation-increment-001/` —
   EXECUTED-REVIEWED: Lane D runtime SHADOW landed under
   `OPENWEPP_LANED_SHADOW=1`; live publication surfaces feed the real

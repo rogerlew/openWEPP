@@ -1,6 +1,7 @@
 # MOFEFID-D9 - D-val Disposition
 
-Status: **QUEUED** (scaffolded 2026-07-05). Campaign:
+Status: **EXECUTED-COMPLETE** (scaffolded 2026-07-05;
+executed 2026-07-05). Campaign:
 [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D.
 Contract focus: `SC-OFEROUTE-001#INV-OFEROUTE-011`.
 
@@ -213,16 +214,28 @@ that route cannot close in D9.
 ## Progress
 
 - [x] 2026-07-05: Package scaffolded from the MOFEFID §6.1 D9 row.
-- [ ] Execute D9-S0 intake and baseline.
-- [ ] Execute D9-S1 Case 1-3 disposition.
-- [ ] Execute D9-S2 Zone taxonomy.
-- [ ] Execute D9-S3 Case 4 handoff.
-- [ ] Execute D9-S4 contract/tests/artifacts.
-- [ ] Complete D9-S5 reviews, verification, and disposition.
+- [x] 2026-07-05T22:25Z: Executed D9-S0 intake and baseline from D8 artifacts,
+      `SC-OFEROUTE-001` rev 16, and package-local required reading.
+- [x] 2026-07-05T22:33Z: Executed D9-S1 Case 1-3 disposition via
+      `compare_dval.py` reruns and Case 2 `Ks=10 mm/h` sensitivity.
+- [x] 2026-07-05T22:36Z: Executed D9-S2 Zone taxonomy from supplemental
+      Figure 9 using the copyright-safe `tools/dval/zone_taxonomy.py` harness.
+- [x] 2026-07-05T22:40Z: Executed D9-S3 Case 4 handoff to D10 /
+      `GAP-OFEROUTE-005`.
+- [x] 2026-07-05T22:42Z: Executed D9-S4 contract/tests/artifacts:
+      `SC-OFEROUTE-001` rev 17, registry date, taxonomy harness, and required
+      package evidence artifacts.
+- [x] 2026-07-05T23:24Z: Completed D9-S5 reviews, verification, and
+      disposition. All accepted findings are closed; final disposition is
+      `EXECUTED-COMPLETE`.
 
 ## Surprises & Discoveries
 
-- None yet; update as execution proceeds.
+- Figure 9 uses workbook label `Clods` for the isolated-roughness taxonomy
+  block. The D9 harness maps this to the contract's isolated-roughness class.
+- Bare roughness has only one sub-threshold workbook intensity grid point under
+  the published `I*=0.16` threshold, so D9 checks bare taxonomy through
+  threshold support and Zone 2 near-linearity rather than a Zone 1 fit.
 
 ## Decision Log
 
@@ -231,7 +244,24 @@ that route cannot close in D9.
   D-val disposition with D14 would hide unresolved acceptance surfaces inside
   a runtime flip.
   Date/Author: 2026-07-05 / Codex.
+- Decision: Add a small Figure 9 taxonomy harness instead of recording manual
+  spreadsheet calculations only.
+  Rationale: The package requires focused harness commands for Zone taxonomy,
+  and the script can verify sha256 and emit scalar summaries without vendoring
+  copyrighted workbook rows.
+  Date/Author: 2026-07-05 / Codex.
+- Decision: Amend `SC-OFEROUTE-001` rev 17.
+  Rationale: D9 changes the canonical status of `INV-OFEROUTE-011` by moving
+  Zone taxonomy from deferred to executed and narrowing the open blocker to
+  Case 4 / `GAP-OFEROUTE-005`.
+  Date/Author: 2026-07-05 / Codex.
 
 ## Outcomes & Retrospective
 
-- Pending execution.
+- D9 closes the non-numerics `INV-OFEROUTE-011` surface. Cases 1-3 retain
+  named dispositions, Zone taxonomy is executed and passing, and Case 4 is
+  isolated to D10 / `GAP-OFEROUTE-005`.
+- No production/default activation, `OPENWEPP_LANED_SHADOW` activation, D10
+  shock-numerics implementation, D11 friction sourcing/default promotion, D12
+  melt-limb work, D13 erosion-shape implementation, or surrogate process
+  physics was added.

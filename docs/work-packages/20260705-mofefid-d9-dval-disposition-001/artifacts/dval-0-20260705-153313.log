@@ -1,0 +1,23 @@
+{
+  "case": 3,
+  "ko": null,
+  "ks_mm_h": null,
+  "window_s": [
+    41.699,
+    5400.0
+  ],
+  "NS_trace": 0.5377266190386509,
+  "ref_peak_m2s": 0.00016851006,
+  "ref_t_peak_s": 3602.7,
+  "openwepp_peak_m2s": 9.22499872e-05,
+  "openwepp_t_peak_s": 3600.0,
+  "peak_ratio": 0.5474449845902375,
+  "ref_rise_10_90_s": 1631.4795799830456,
+  "openwepp_rise_10_90_s": 1449.263174327261,
+  "provenance": {
+    "fig4_sha256": "2bf68787de6a715049ee635c154c640214936fd1181d08c8f7da7a34892d2fe8",
+    "sheet": "Enhanced_WEPP",
+    "t_col": 5,
+    "q_col": 8
+  }
+}
