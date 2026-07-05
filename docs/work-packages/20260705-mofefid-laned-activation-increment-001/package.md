@@ -1,7 +1,8 @@
 # MOFEFID LANE D — ACTIVATION INCREMENT (runtime seam shadow + real-H2637 vector)
 
-Status: `EXECUTED — AWAITING CODEX REVIEW` (Claude-executed; operator:
-"scaffold and execute the activation increment", 2026-07-05). Branch:
+Status: `EXECUTED — CODEX SUBAGENT REVIEW COMPLETE` (Claude-executed;
+operator: "scaffold and execute the activation increment", 2026-07-05;
+Codex subagent review dispositioned 2026-07-05). Branch:
 `laned-activation-increment`. SC-OFEROUTE-001 rev 15 + the rev-16
 terminology disambiguation (Codex framing review): the runtime SHADOW
 (landed, fixture-exercised) and the ACTIVATION wiring (outstanding:
@@ -15,14 +16,16 @@ wiring exists and is fixture-exercised," NOT activation.
 1. **Publication-side seam forcing from LIVE surfaces**: the day row
    gains an in-memory `dc01_surface_hourly_weights` field — the lane's
    OWN M2 distribution recomputed at publication over
-   `wb14_hourly_excess` + the `ui_SCrunf`-lineage carry. (The first cut
+   `wb14_hourly_excess` + the `ui_SCrunf`-lineage carry — paired with
+   the lane-local source depth `runvol/area`, not published `QOFE`
+   (which intentionally aliases cumulative `Q`). (The first cut
    read `lane.transfer.surface_hourly_weights` — the DOWNSTREAM INFLOW
    distribution — and the H2637 run caught it immediately: supply
    reconstruction 1.0 → ≤1e-15 after the own-weights fix. The shadow
    validated its own wiring.)
 2. **`hillslope::laned_shadow`** (runner): opt-in
    (`OPENWEPP_LANED_SHADOW=1`) collector — per lane-day depth series
-   (`weights × qofe`, the ADR-0036 weights-times-total authority),
+   (`weights × runvol/area`, the ADR-0036 weights-times-total authority),
    event-day cascade over the real `ofe_routing` machinery (bare-cell
    `k_o = 500` labeled first cut → `GAP-OFEROUTE-007`), day-window
    clipped to the active span, diagnostics-only manifest block.
@@ -64,3 +67,35 @@ enumerates the full flip-precondition set). No runtime closure
 hard-fail wiring (that engages when routing OWNS water — under shadow,
 DC01's kernel closure gates remain the authority). No friction
 fidelity (GAP-007).
+
+## Codex subagent review and disposition (2026-07-05)
+
+Subagent authorization: operator requested Codex subagent review after
+fixing the initial Codex findings. Review was read-only; it ran
+`cargo nextest run --test laned_shadow_h2637` and
+`git diff --check origin/main...HEAD`.
+
+Findings:
+
+1. **High — source depth used published `QOFE` alias. CONFIRMED and
+   fixed.** Published `QOFE` intentionally aliases cumulative `Q`
+   (`INV-RUNOFFPART-032`), so the shadow now uses the independent
+   lane-local volume basis `row.runoff.runvol_m3 / row.area_m2`.
+   Supply reconstruction now compares `Σ weights×runvol/area×area`
+   against `runvol_m3`, not against the same `QOFE` scalar.
+2. **Medium — initial review-closure files were dirty/untracked.
+   CONFIRMED and fixed.** The fixture-local `.gitattributes` is in the
+   branch write set and `docs/work-packages/README.md` lists this active
+   package.
+
+Post-disposition gates (Ran): `git diff --check origin/main`,
+`cargo fmt --check`, `cargo test -p openwepp-hillslope-orchestrator seam
+-- --nocapture`, `cargo test --test laned_shadow_h2637 -- --nocapture`,
+`cargo clippy -p openwepp-runner -p openwepp-hillslope-orchestrator
+--all-targets -- -D warnings`, `cargo deny check`, and
+`python3 tools/check_sc_binding_exposure.py
+docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md`.
+Docs: `wctl doc-lint --path docs/work-packages/README.md` and
+`markdown-doc lint --path
+docs/work-packages/20260705-mofefid-laned-activation-increment-001/package.md
+--no-ignore`.

@@ -12,6 +12,16 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-05`:
+- `20260705-mofefid-laned-activation-increment-001/` —
+  EXECUTED-REVIEWED: Lane D runtime SHADOW landed under
+  `OPENWEPP_LANED_SHADOW=1`; live publication surfaces feed the real
+  `ofe_routing` cascade diagnostics on the lane-local `runvol/area`
+  source-depth basis, the real H2637 vector executes, protected outputs
+  remain byte-identical, and Codex subagent review findings are
+  dispositioned. Production activation remains blocked by the enumerated
+  flip preconditions (`INV-OFEROUTE-011`,
+  `GAP-OFEROUTE-005`, melt-limb coverage, `GAP-OFEROUTE-007`, and the
+  ADR-0036 erosion hourly-shape switch).
 - `20260705-mofefid-laned-seam-implementation-001/` — COMPLETE, MERGED TO
   MAIN `0cccf263` 2026-07-05: `ofe_routing::seam` lands the GAP-006
   machinery (rate series + `/3600` helper, hourly-lane precondition, DC01

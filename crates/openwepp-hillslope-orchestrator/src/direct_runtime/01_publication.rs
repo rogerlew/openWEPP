@@ -267,8 +267,9 @@ pub struct DirectPublicationDayRow {
     /// `ui_SCrunf`-lineage carry — NOT `lane.transfer`, which carries the
     /// downstream INFLOW distribution). In-memory only (the parquet sink
     /// maps named columns); consumed by the Lane D seam shadow to
-    /// reconstruct the routed source series (`weights[h] × qofe`) per the
-    /// ADR-0036 weights-times-total hourly-flow authority.
+    /// reconstruct the routed source series (`weights[h] × runvol/area`,
+    /// deliberately NOT published `QOFE`, which aliases cumulative `Q`) per
+    /// the ADR-0036 weights-times-total hourly-flow authority.
     pub dc01_surface_hourly_weights: [f64; DIRECT_TRANSFER_HOUR_COUNT],
 }
 

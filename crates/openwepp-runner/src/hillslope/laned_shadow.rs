@@ -1,9 +1,10 @@
 //! Lane D runtime seam SHADOW (`SC-OFEROUTE-001#INV-OFEROUTE-012`
 //! activation increment, opt-in via `OPENWEPP_LANED_SHADOW=1`):
 //! reconstructs each lane-day's routed source series from the LIVE
-//! published surfaces (`dc01_surface_hourly_weights × qofe` — the
-//! ADR-0036 weights-times-total hourly-flow authority over exactly the
-//! two GAP-006 D1 limbs), routes event days through the real
+//! published surfaces (`dc01_surface_hourly_weights × runvol/area` — the
+//! ADR-0036 weights-times-total hourly-flow authority on the lane-local
+//! runoff-volume basis over exactly the two GAP-006 D1 limbs), routes event
+//! days through the real
 //! `ofe_routing::cascade`, and accumulates conservation diagnostics
 //! into the manifest. DIAGNOSTIC ONLY: water authority stays DC01;
 //! protected outputs are byte-identical with the shadow on or off;
@@ -123,13 +124,29 @@ impl LanedShadowCollector {
                 self.geometry.len()
             ));
         }
-        // The seam depth series: weights x the lane's own runoff depth
-        // (qofe pairs with the OFE area — the exported-volume dual that
-        // matches the per-lane supply; Q/hillslope-area is the other
-        // dual and must NOT be mixed in here).
-        let qofe_m = row.runoff.qofe_mm / 1000.0;
+        let area_m2 = row.area_m2;
+        if !area_m2.is_finite() || area_m2 <= 0.0 {
+            return Err(format!(
+                "laned shadow: lane {} day {} area must be finite and > 0, observed {area_m2}",
+                lane + 1,
+                row.day_index + 1
+            ));
+        }
+        if !row.runoff.runvol_m3.is_finite() || row.runoff.runvol_m3 < 0.0 {
+            return Err(format!(
+                "laned shadow: lane {} day {} runvol must be finite and nonnegative, observed {}",
+                lane + 1,
+                row.day_index + 1,
+                row.runoff.runvol_m3
+            ));
+        }
+        // The seam depth series: weights x the lane-local runoff-volume
+        // basis. Published QOFE intentionally aliases cumulative Q
+        // (INV-RUNOFFPART-032), so the shadow must reconstruct from
+        // runvol/area instead.
+        let local_runoff_m = row.runoff.runvol_m3 / area_m2;
         let mut depths = [0.0_f64; SEAM_HOUR_BINS];
-        if qofe_m > 0.0 {
+        if local_runoff_m > 0.0 {
             // Uniform weights = the DC01 lump-only fallback (runoff with
             // no hourly shape from the two D1 limbs — e.g. melt-sourced):
             // count the day-class; the routed series still consumes it.
@@ -145,14 +162,13 @@ impl LanedShadowCollector {
                 .iter_mut()
                 .zip(row.dc01_surface_hourly_weights.iter())
             {
-                *depth = weight * qofe_m;
+                *depth = weight * local_runoff_m;
             }
         }
         let depth_sum: f64 = depths.iter().sum();
-        let area_m2 = row.area_m2;
         self.day_depths[lane] = depths;
         self.day_source_m3 += depth_sum * area_m2;
-        self.day_supply_reference_m3 += qofe_m * area_m2;
+        self.day_supply_reference_m3 += row.runoff.runvol_m3;
         self.lanes_seen_today += 1;
         Ok(())
     }
@@ -163,9 +179,8 @@ impl LanedShadowCollector {
         self.summary.days_seen += 1;
         let source_m3 = self.day_source_m3;
         let reference_m3 = self.day_supply_reference_m3;
-        // Supply-reconstruction faithfulness: the weights are
-        // unit-normalized, so the reconstructed series must resum to
-        // qofe per lane (hard law; weights are zero when runoff is 0).
+        // Supply-reconstruction faithfulness: the weights are unit-normalized,
+        // so the reconstructed series must resum to lane-local runvol.
         if reference_m3 > 0.0 {
             let rel = (source_m3 - reference_m3).abs() / reference_m3;
             self.summary.max_supply_reconstruction_rel =
