@@ -144,6 +144,29 @@ lane-agnostic today; under the chain the hillslope EVENT basis must be the
 max-sediment-row heuristic no longer guarantees on multi-OFE — 2c-3 pins the
 EVENT row to the exit lane's rows.
 
+## 2c. Continuity-block port design (pinned)
+
+- **Prior-state derivation is receiver-side** (`param.for:184-196`):
+  `qtop = qin·rspace_i`; `shrtp1 = sheart(qtop, slpend_{i-1})`;
+  `shrspv = sheart(qtop, cnslp_{i-1})`; `tcprev = trcoef(shrtp1)·shrspv^1.5`;
+  `ktrprv = trcoef((shrtp1+shrspv)/2)/trcoef(shrtp1)` — only the prior
+  lane's STATIC slopes plus `qin` are needed for these; the ported
+  `erosion_shears(q, slope, width, rspace, grow=false, …)` is the `sheart`
+  equivalent (no width growth, receiver friction/width context).
+- **Carried prior state** (Fortran `save` in `param.for`): the prior OFE's
+  final shear/transport coefficient values (`anflst/bnflst/cnflst`,
+  `atclst/btclst/ctclst` — the last segment's xinflo/continuity-adjusted
+  coefficients, set at `param.for:368-374` and the `qin <= 0` do-20 reset).
+- **Wiring shape:** the ASSEMBLY computes `shrspv/shrtp1/tcprev/ktrprv`
+  (it owns the hydraulics context) and passes them + the carried prior
+  coefficient sets into `DirectWave1ContinuityInputs` as an
+  `Option<Wave1InterOfeContinuity>`; the solver applies the
+  `param.for:249-390` coefficient rewrite (with every documented singular
+  guard: `sratio`/`tcrati` 1e-5 floors, zero-slope `qostar` substitution,
+  the 2012 `shrati <= 1e12` cap, the ±0.001 denominator floors) between
+  `xinflo` and `route` when the option is present. Per-hour quanta each
+  carry their own hour's `qin_h`-derived continuity operands.
+
 ## 3. Stage plan
 
 - **2c-0 recon completion (FIRST):** R1 lane↔OFE index mapping (how
