@@ -9,6 +9,9 @@ pub struct DirectRuntimeAuditSnapshot {
     pub phase_view_constructions: u64,
     /// DC01: erod14 decreasing-flow qin clamps (INV-RUNOFFPART-030 hold).
     pub erod14_qin_clamped_events: u64,
+    /// E.3 (SC-SED-001 INV-SED-016 (f)): Wave-1 hour quanta refused by the
+    /// flux-consistency diagnostic and skipped (zero sediment contribution).
+    pub wave1_flux_refused_quanta: u64,
     pub phase_span_runs: u64,
     pub direct_phase_entries: u64,
     pub direct_compute_operations: u64,
@@ -45,6 +48,7 @@ struct DirectRuntimeAuditCounters {
     publication_capture_runs: AtomicU64,
     phase_view_constructions: AtomicU64,
     erod14_qin_clamped_events: AtomicU64,
+    wave1_flux_refused_quanta: AtomicU64,
     phase_span_runs: AtomicU64,
     direct_phase_entries: AtomicU64,
     direct_compute_operations: AtomicU64,
@@ -66,6 +70,7 @@ impl DirectRuntimeAuditCounters {
             publication_capture_runs: AtomicU64::new(0),
             phase_view_constructions: AtomicU64::new(0),
             erod14_qin_clamped_events: AtomicU64::new(0),
+            wave1_flux_refused_quanta: AtomicU64::new(0),
             phase_span_runs: AtomicU64::new(0),
             direct_phase_entries: AtomicU64::new(0),
             direct_compute_operations: AtomicU64::new(0),
@@ -128,6 +133,10 @@ impl DirectRuntimeAuditCounters {
         self.erod14_qin_clamped_events.fetch_add(1, Ordering::Relaxed);
     }
 
+    fn record_wave1_flux_refused_quantum(&self) {
+        self.wave1_flux_refused_quanta.fetch_add(1, Ordering::Relaxed);
+    }
+
     fn record_downstream_operand_production(&self) {
         self.downstream_operand_productions
             .fetch_add(1, Ordering::Relaxed);
@@ -159,6 +168,9 @@ impl DirectRuntimeAuditCounters {
             erod14_qin_clamped_events: self
                 .erod14_qin_clamped_events
                 .load(std::sync::atomic::Ordering::Relaxed),
+            wave1_flux_refused_quanta: self
+                .wave1_flux_refused_quanta
+                .load(std::sync::atomic::Ordering::Relaxed),
             phase_span_runs: self.phase_span_runs.load(Ordering::Relaxed),
             direct_phase_entries: self.direct_phase_entries.load(Ordering::Relaxed),
             direct_compute_operations: self.direct_compute_operations.load(Ordering::Relaxed),
@@ -184,6 +196,7 @@ impl DirectRuntimeAuditCounters {
         self.skeleton_runs.store(0, Ordering::Relaxed);
         self.publication_capture_runs.store(0, Ordering::Relaxed);
         self.phase_view_constructions.store(0, Ordering::Relaxed);
+        self.wave1_flux_refused_quanta.store(0, Ordering::Relaxed);
         self.phase_span_runs.store(0, Ordering::Relaxed);
         self.direct_phase_entries.store(0, Ordering::Relaxed);
         self.direct_compute_operations.store(0, Ordering::Relaxed);

@@ -898,6 +898,7 @@ impl DirectDayFrame {
                     field: "erosion.wave1.flux_closure",
                 }) => {
                     flux_refused_quanta += 1;
+                    DIRECT_AUDIT.record_wave1_flux_refused_quantum();
                     continue;
                 }
                 Err(error) => return Err(error),

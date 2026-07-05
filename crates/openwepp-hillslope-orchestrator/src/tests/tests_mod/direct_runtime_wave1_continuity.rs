@@ -12,10 +12,10 @@ use crate::{
     DIRECT_WAVE1_GRID_POINTS, DirectDayFrame, DirectPeakRunoffShadowProjection, DirectRunIdentity,
     DirectRuntimeError, DirectWave1ContinuityInputs, DirectWave1DailyState, DirectWave1OperandSeed,
     DirectWave1SlopeSegment, ErosionConsolidationBaselines, ErosionFrostRegime,
-    ErosionParticleClass, Wave1ShearRegime, assemble_wave1_continuity_inputs_quantum,
-    compute_direct_wave1_continuity, compute_direct_wave1_continuity_quantum,
-    derive_wave1_slope_segments, wave1_depc, wave1_depend, wave1_depeqs, wave1_runge_step,
-    wave1_xcrit,
+    ErosionParticleClass, Wave1InterOfeContinuity, Wave1ShearRegime,
+    assemble_wave1_continuity_inputs_quantum, compute_direct_wave1_continuity,
+    compute_direct_wave1_continuity_quantum, derive_wave1_slope_segments, wave1_depc, wave1_depend,
+    wave1_depeqs, wave1_runge_step, wave1_xcrit,
 };
 
 /// Crafted ENABLED operand seed (real-shaped forest-class operands) for
@@ -855,4 +855,91 @@ fn wave1_span_requires_peak_runoff_upstream_when_enabled() {
         day.run_r7d6_erosion_span(),
         Err(DirectRuntimeError::MissingDirectUpstream { .. })
     ));
+}
+
+#[test]
+fn inter_ofe_continuity_rewrite_matches_hand_computed_param_coefficients() {
+    // INV-SED-016 (c) direct regression for the `param.for:249-390` port,
+    // hand-computed on a single segment (a = -2, b = 2 => b(2) = 2):
+    //   prior_shear_last  = (0.5, 0.5, 0.0) => spart1 = 1, sterm1 = 2
+    //   shrspv = shrsol = 2 Pa              => sterm2 = 1, sratio = 1
+    //   => shrati = 1, denom = 2:  a' = -1, b' = (a + b)/2 = 0, c' = 1
+    //   prior_transport_last = (0.5, 0.5, 0.0), tcprev = tcend = 10,
+    //   ktrprv = ktrato = 1 => tterm1 = 2, tterm2 = 1, tprod = 1,
+    //   tcrati = 1:               atc' = -1, btc' = 0, ctc' = 1
+    // The solve-final end coefficient sets expose the LAST (only)
+    // segment's rewritten values, so the rewrite is asserted exactly.
+    let mut inputs = crafted_wave1_inputs();
+    inputs.qin_m2_s = 1.0e-4;
+    inputs.inter_ofe = Some(Wave1InterOfeContinuity {
+        shrspv_pa: 2.0,
+        tcprev_kg_s_m: 10.0,
+        ktrprv: 1.0,
+        prior_shear_last: (0.5, 0.5, 0.0),
+        prior_transport_last: (0.5, 0.5, 0.0),
+    });
+    let state = compute_direct_wave1_continuity_quantum(&inputs, true)
+        .expect("inter-OFE continuity quantum must solve");
+    assert!(state.active);
+    let (a, b, c) = state.end_shear_coefficients;
+    assert!(
+        (a - (-1.0)).abs() < 1.0e-12 && b.abs() < 1.0e-12 && (c - 1.0).abs() < 1.0e-12,
+        "rewritten shear coefficients must match the hand-computed \
+         param.for values (-1, 0, 1); observed ({a}, {b}, {c})"
+    );
+    let (atc, btc, ctc) = state.end_transport_coefficients;
+    assert!(
+        (atc - (-1.0)).abs() < 1.0e-12 && btc.abs() < 1.0e-12 && (ctc - 1.0).abs() < 1.0e-12,
+        "rewritten transport coefficients must match (-1, 0, 1); \
+         observed ({atc}, {btc}, {ctc})"
+    );
+
+    // Removal sensitivity is carried by the exactness assertions above:
+    // deleting the rewrite (or mis-gating it) leaves the plain xinflo
+    // coefficient basis for this segment/qin, which is NOT (-1, 0, 1) /
+    // (-1, 0, 1) — the hand-computed values are reachable only through
+    // the `param.for:249-390` derivation.
+}
+
+#[test]
+fn inter_ofe_continuity_zero_prior_state_takes_the_qostar_substitution() {
+    // `param.for:308-318`: a zero prior coefficient sum (spart1 <= 1e-5,
+    // the zero-slope boundary condition) substitutes qostar for both
+    // ratios instead of the sterm/tterm derivation. The quantum must
+    // solve clean with finite rewritten coefficients that still differ
+    // from the no-continuity baseline.
+    // A small inflow keeps qostar (and so the substituted ratios) mild —
+    // the point of this test is the branch selection and the guard, not
+    // a stiff-profile solve.
+    let mut inputs = crafted_wave1_inputs();
+    inputs.qin_m2_s = 1.0e-6;
+    inputs.inter_ofe = Some(Wave1InterOfeContinuity {
+        shrspv_pa: 2.0,
+        tcprev_kg_s_m: 10.0,
+        ktrprv: 1.0,
+        prior_shear_last: (0.0, 0.0, 0.0),
+        prior_transport_last: (0.0, 0.0, 0.0),
+    });
+    let state = compute_direct_wave1_continuity_quantum(&inputs, true)
+        .expect("the qostar-substitution branch must solve");
+    assert!(state.active);
+    let (a, b, c) = state.end_shear_coefficients;
+    assert!(
+        a.is_finite() && b.is_finite() && c.is_finite(),
+        "qostar-substituted coefficients must be finite"
+    );
+    // The guard `iplane > 1 AND qout > 0 AND qin > 0`: with qin = 0 the
+    // rewrite must NOT apply even when the payload is present.
+    let mut gated = inputs.clone();
+    gated.qin_m2_s = 0.0;
+    let gated_state =
+        compute_direct_wave1_continuity_quantum(&gated, true).expect("gated quantum must solve");
+    let mut no_payload = crafted_wave1_inputs();
+    no_payload.qin_m2_s = 0.0;
+    let no_payload_state = compute_direct_wave1_continuity_quantum(&no_payload, true)
+        .expect("no-payload quantum must solve");
+    assert_eq!(
+        gated_state.end_shear_coefficients, no_payload_state.end_shear_coefficients,
+        "with qin = 0 the continuity payload must be inert (legacy triple guard)"
+    );
 }

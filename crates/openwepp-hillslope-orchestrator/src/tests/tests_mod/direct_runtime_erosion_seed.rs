@@ -8,7 +8,7 @@
 use crate::{
     DirectRuntimeError, DirectWave1DailyState, DirectWave1OperandSeed, DirectWave1SlopeSegment,
     ErosionConsolidationInputs, ErosionExcessInterval, ErosionFrostRegime, ErosionTextureInputs,
-    assemble_wave1_continuity_inputs, compute_direct_wave1_continuity,
+    Wave1InflowOperands, assemble_wave1_continuity_inputs, compute_direct_wave1_continuity,
     erosion_consolidation_baselines, erosion_effective_particle, erosion_falvel,
     erosion_particle_composition,
 };
@@ -276,4 +276,65 @@ fn assembled_rill_width_carries_persistent_state() {
         .unwrap()
         .detinr_kg_s_m2;
     assert!(carried_detinr < fresh_detinr);
+}
+
+#[test]
+fn assembled_inflow_derivations_use_the_receiver_basis() {
+    // INV-SED-016 (c) alias-separation: the receiver-side derivations
+    // must use the RECEIVER's scales for `strldn` (`param.for:243`) and
+    // the PRIOR lane's slopes for the boundary shear (`param.for:187-189`)
+    // — aliasing either to the wrong OFE basis is the regression class.
+    let seed = clay_loam_seed();
+    let mut daily = storm_daily_state();
+    daily.inflow = Some(Wave1InflowOperands {
+        qin_m2_s: 2.0e-4,
+        qsout_kg_m_s: 1.0e-3,
+        prior_slpend: 0.30,
+        prior_cnslp: 0.25,
+        prior_end_shear: (0.5, 0.5, 0.0),
+        prior_end_transport: (0.5, 0.5, 0.0),
+    });
+    let inputs = assemble_wave1_continuity_inputs(&seed, &daily).expect("inflow assembly");
+    assert!(
+        (inputs.qin_m2_s - 2.0e-4).abs() < 1.0e-18,
+        "qin must come from the handoff"
+    );
+    // Receiver-basis strldn identity against the SAME assembled payload's
+    // own tcend/width/rspace (`strldn = qsout * rspace / (tcend * width)`).
+    let expected_strldn =
+        1.0e-3 * inputs.rspace_m / inputs.tcend_kg_s_m.max(1.0e-10) / inputs.width_m;
+    assert!(
+        (inputs.strldn - expected_strldn).abs() <= 1.0e-12 * expected_strldn.abs().max(1.0e-12),
+        "strldn must be normalized on the receiver's scales \
+         (observed {}, expected {expected_strldn})",
+        inputs.strldn
+    );
+    let inter_ofe = inputs
+        .inter_ofe
+        .expect("an inflow assembly must derive the continuity operands");
+    assert_eq!(inter_ofe.prior_shear_last, (0.5, 0.5, 0.0));
+
+    // The boundary shear derives from the PRIOR lane's slopes: changing
+    // ONLY `prior_cnslp` must move `shrspv`; a receiver-slope alias
+    // would leave it unchanged.
+    let mut steeper = storm_daily_state();
+    steeper.inflow = Some(Wave1InflowOperands {
+        qin_m2_s: 2.0e-4,
+        qsout_kg_m_s: 1.0e-3,
+        prior_slpend: 0.30,
+        prior_cnslp: 0.55,
+        prior_end_shear: (0.5, 0.5, 0.0),
+        prior_end_transport: (0.5, 0.5, 0.0),
+    });
+    let steeper_inputs =
+        assemble_wave1_continuity_inputs(&seed, &steeper).expect("steeper inflow assembly");
+    let steeper_inter_ofe = steeper_inputs.inter_ofe.expect("continuity operands");
+    assert!(
+        (steeper_inter_ofe.shrspv_pa - inter_ofe.shrspv_pa).abs()
+            > 1.0e-9 * inter_ofe.shrspv_pa.abs(),
+        "shrspv must respond to the PRIOR lane's average slope \
+         ({} vs {})",
+        steeper_inter_ofe.shrspv_pa,
+        inter_ofe.shrspv_pa
+    );
 }

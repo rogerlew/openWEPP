@@ -162,6 +162,10 @@ struct HillslopeDirectRuntimeCounterProvenance {
     publication_capture_runs: u64,
     phase_view_constructions: u64,
     erod14_qin_clamped_events: u64,
+    /// E.3 (SC-SED-001 INV-SED-016 (f)): Wave-1 hour quanta refused by the
+    /// flux-consistency diagnostic and skipped with zero sediment — the
+    /// surfaced under-estimate count.
+    wave1_flux_refused_quanta: u64,
     phase_span_runs: u64,
     direct_phase_entries: u64,
     direct_compute_operations: u64,

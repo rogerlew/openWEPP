@@ -114,6 +114,13 @@ fn erosion_multi_ofe_p102_wave1_chain_routes_sediment() {
         manifest.contains("wave1-hourly-sediment-coupled-handoff"),
         "the qin source policy must be the Wave-1 coupled handoff"
     );
+    // INV-SED-016 (f): the flux-diagnostic skip count is a SURFACED
+    // manifest counter (zero on runs with no refusals), never
+    // internal-only.
+    assert!(
+        manifest.contains("\"wave1_flux_refused_quanta\""),
+        "the flux_refused_quanta count must surface in the manifest"
+    );
 
     // 4. §4a per-OFE particle-class sourcing observable: coarsen OFE-2's
     // surface texture and the published event composition must move.

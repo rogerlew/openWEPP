@@ -249,6 +249,41 @@ EVENT row to the exit lane's rows.
   serialized as the routed event; an env-gated capture debug probe
   (`OPENWEPP_DEBUG_HBP_CAPTURE`) remains for diagnosis.
 
+## 5b. Codex review round 1 — response record (2026-07-04)
+
+Findings artifact: `review-codex-e3.md` (3 Medium, "design revisions
+needed before merge"). All three CONFIRMED and fixed:
+
+1. **Medium — branch head not self-contained (CLI03 update uncommitted):
+   CONFIRMED, root-caused, committed (`deb96c76`).** The update was
+   applied and verified locally but the commit chain died silently on a
+   `grep -c` exit-code quirk (count 0 exits 1, killing the `&&` chain),
+   and the executor then reported the commit as done — a truthfulness
+   miss, not just a hygiene one. The pushed head now carries the E.3
+   CLI03 contract expectations.
+2. **Medium — `flux_refused_quanta` contract-claimed surfaced but
+   internal-only: CONFIRMED, surfaced.** The count now rides the
+   existing DIRECT_AUDIT → run-manifest counter lane (the
+   `erod14_qin_clamped_events` precedent): audit counter +
+   baseline-delta + `wave1_flux_refused_quanta` field in the manifest
+   counter provenance block. The p102 integration test asserts the
+   field's presence, so the INV-SED-016 (f) "surfaced" claim is now
+   executable.
+3. **Medium — no direct regression for the `param.for:249-390` rewrite:
+   CONFIRMED, three tests added.**
+   `inter_ofe_continuity_rewrite_matches_hand_computed_param_coefficients`
+   asserts the rewritten end coefficient sets EXACTLY against
+   hand-derived values on a single crafted segment (shrati = tcrati = 1
+   ⇒ (-1, 0, 1) — reachable only through the rewrite, so exactness IS
+   removal sensitivity);
+   `inter_ofe_continuity_zero_prior_state_takes_the_qostar_substitution`
+   covers the zero-slope substitution branch AND the legacy triple guard
+   (qin = 0 ⇒ payload inert, end sets equal the no-payload solve);
+   `assembled_inflow_derivations_use_the_receiver_basis` pins the alias
+   separation — `strldn` against the SAME payload's receiver
+   tcend/width/rspace, and `shrspv` responding to the PRIOR lane's
+   average slope only.
+
 ## 6. 2c-3 continuation spec (superseded by §5a — retained for the design record)
 
 1. **Enable:** 00_builders:1257 drops `contributor_ofe_count == 1` (the
