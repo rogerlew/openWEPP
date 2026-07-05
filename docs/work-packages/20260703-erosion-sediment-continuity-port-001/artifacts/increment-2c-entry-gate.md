@@ -325,6 +325,34 @@ typed guard-code enum variants remain defined with no raisers
 DELETED-historical; the `INV-SED-015`/`INV-SED-016` comparator-arm
 deletion clauses executed.
 
+## 5d. Stage 2e — Codex review round 1 response (2026-07-04)
+
+Three findings (High/Medium/Low), all CONFIRMED and fixed:
+
+1. **High — manifest overclaimed the Wave-1 chain on tilled multi-OFE
+   runs: CONFIRMED, real truthfulness defect.** The flag derivation was
+   OFE-count-only while the Wave-1 seed enable is no-tillage-scoped —
+   a tilled multi-OFE run (no erosion producer at all) published
+   `erod14_qin_sediment_coupled = true`. Fix:
+   `multi_ofe_wave1_chained = ofe_count > 1 ∧ ¬active-tillage` (the
+   seed-enable predicate). The CLI03 multi-OFE test split into two
+   arms: the TILLED arm (the original fixture has positive tillage
+   depths) now asserts the chain is NOT claimed — the regression for
+   this finding — and a new NO-TILL arm (in-test `tildep → 0` patch)
+   asserts the positive disposition surfaces.
+2. **Medium — companion contracts still carried ACTIVE Wave-2
+   obligations: CONFIRMED.** DELETED-historical disposition banners
+   (mirroring SC-SED-001 rev 45) added to the EROD14 addenda in
+   SC-HYDRAULICS-001 (rev 14), SC-WATBAL-001 (rev 163), SC-ROUTE-001
+   (rev 48), SC-SYSTEM-001 (rev 84), and SC-RUNOFFPART-001 (rev 46),
+   each with a changelog row. The closure contract test now requires
+   BOTH the historical section AND its banner, so canonical authority
+   cannot silently drift back to "active".
+3. **Low — stale "R7D5 direct EROD14/EROD15 sediment producer"
+   diagnostic: CONFIRMED.** Renamed to "R7D5 direct Wave-1 sediment
+   producer" (fail-closed behavior unchanged); pinned test string
+   updated.
+
 ## 6. 2c-3 continuation spec (superseded by §5a — retained for the design record)
 
 1. **Enable:** 00_builders:1257 drops `contributor_ofe_count == 1` (the

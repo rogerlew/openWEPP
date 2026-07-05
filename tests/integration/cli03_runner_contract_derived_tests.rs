@@ -537,13 +537,12 @@ loss = "output/H1.loss.json"
 }
 
 #[test]
-// E.3 (SC-SED-001 rev 44 / SC-RUNOFFPART-001 rev 45): multi-OFE hillslopes
-// execute the Wave-1 chain — EROD14/Wave-2 is retired as publication
-// authority, and the manifest publishes the INV-RUNOFFPART-030 DISPOSITION
-// surfaces (true sediment-coupled qin via the hourly erosion handoff).
-// This test previously asserted the MOFE03 Wave-2 enablement + the
-// water-transfer-only compatibility posture.
-fn cli03_mofe03_multiofe_runfile_executes_wave1_chain_without_manual_symbol_injection() {
+// E.3 stage 2e (Codex round-1 High regression): this management fixture
+// applies ACTIVE TILLAGE, so the Wave-1 seed is disabled and the run has
+// NO erosion producer — the manifest must NOT claim the Wave-1 chain or
+// sediment-coupled qin for it. (The no-till companion test below asserts
+// the positive chain surfaces.)
+fn cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"
 run_name = "cli03-mofe03-wave1-chain"
@@ -582,12 +581,74 @@ loss = "output/H1.loss.json"
         fs::read_to_string(&report.manifest_path).expect("manifest file should be readable");
     assert!(
         manifest.contains("\"erod14_wave2_enabled\": false"),
-        "Wave-2 is retired as multi-OFE authority (E.3), observed manifest: {manifest}"
+        "Wave-2 is deleted (E.3 2e), observed manifest: {manifest}"
+    );
+    assert!(
+        manifest.contains("\"multi_ofe_wave1_chained\": false"),
+        "a tilled multi-OFE run has no Wave-1 chain and must not claim it, observed manifest: {manifest}"
+    );
+    assert!(
+        manifest.contains("\"erod14_qin_sediment_coupled\": false"),
+        "a run without an erosion producer must not claim sediment-coupled qin, observed manifest: {manifest}"
+    );
+}
+
+#[test]
+// E.3: the NO-TILL multi-OFE arm — the Wave-1 chain is the erosion
+// authority and the manifest publishes the INV-RUNOFFPART-030
+// DISPOSITION surfaces truthfully.
+fn cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-mofe03-wave1-chain-no-till"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = false
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#;
+
+    let (report, _temp_run_dir) = execute_fixture_with_runfile_report_with_mode_and_customizer(
+        runfile,
+        "cli03_mofe03_wave1_chain_no_till",
+        false,
+        |run_dir| {
+            let _ = fs::remove_file(run_dir.join("wepp_ui.txt"));
+            write_three_ofe_slope(&run_dir.join("case.slp"));
+            write_soil_with_ntemp_low_conductivity(&run_dir.join("case.sol"), 3);
+            write_high_runoff_climate(&run_dir.join("case.cli"));
+            write_three_ofe_management(&run_dir.join("case.man"));
+            // Zero the fixture's tillage depths: `tildep > 0` is the
+            // active-tillage detector, so this variant runs the no-till
+            // scope with the SAME rotation structure.
+            let management_path = run_dir.join("case.man");
+            let contents = fs::read_to_string(&management_path)
+                .expect("three-OFE management should be readable");
+            let no_till = contents.replace("0.050  # depth", "0.000  # depth");
+            assert_ne!(no_till, contents, "the depth patch must apply");
+            fs::write(&management_path, no_till)
+                .expect("no-till management variant should be writable");
+        },
+    )
+    .expect("no-till multi-OFE fixture should execute through the Wave-1 chain");
+
+    assert!(report.output_pass.is_file());
+    let manifest =
+        fs::read_to_string(&report.manifest_path).expect("manifest file should be readable");
+    assert!(
+        manifest.contains("\"erod14_wave2_enabled\": false"),
+        "Wave-2 is deleted (E.3 2e), observed manifest: {manifest}"
     );
     assert!(
         manifest.contains("\"multi_ofe_wave1_chained\": true"),
-        "multi-OFE manifests publish the Wave-1 chain flag (2e replaces the \
-         dead kernel-status field), observed manifest: {manifest}"
+        "the no-till multi-OFE run publishes the Wave-1 chain flag, observed manifest: {manifest}"
     );
     assert!(
         manifest

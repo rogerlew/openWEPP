@@ -30,12 +30,22 @@ fn erod14_wave2_addenda_are_present_in_required_contracts() {
         ),
     ];
 
+    // E.3 stage 2e: the EROD14/Wave-2 runtime arm is DELETED — every
+    // addendum must remain (historical specification) AND carry the
+    // deleted-historical disposition banner so the canonical authority
+    // is consistent with the runtime.
     for (path, section) in required_sections {
         let content =
             fs::read_to_string(format!("{repo_root}/{path}")).expect("contract should be readable");
         assert!(
             content.contains(section),
-            "{path} must include EROD14 authority section: {section}"
+            "{path} must retain the historical EROD14 section: {section}"
+        );
+        let section_start = content.find(section).expect("section located");
+        let banner_window = &content[section_start..(section_start + 1200).min(content.len())];
+        assert!(
+            banner_window.contains("DELETED — E.3 stage 2e"),
+            "{path} section {section} must carry the E.3 stage-2e deleted-historical banner"
         );
     }
 

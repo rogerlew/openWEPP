@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 47
+contract_version: 48
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -394,6 +394,17 @@ Minimum WS11 routing conformance vectors:
 
 ## EROD14 Wave-2 Active Consumer-Coupling Addendum
 
+> **DELETED — E.3 stage 2e (2026-07-04, SC-SED-001 rev 45).** The
+> EROD14/Wave-2 runtime arm is removed from the codebase; the Wave-1
+> chain (`SC-SED-001#INV-SED-016`) is the sole multi-OFE erosion engine
+> and its intake carry the sole inter-OFE erosion coupling. This
+> addendum is retained as the historical specification of the deleted
+> arm; its obligations bind nothing at runtime. Manifest lineage:
+> `erod14_wave2_enabled` publishes `false` permanently;
+> `erod14_wave2_kernel_status_seen` is replaced by
+> `multi_ofe_wave1_chained` (true only when the run is multi-OFE AND the
+> Wave-1 seed enables — the no-tillage scope).
+
 1. Routing consumers of hillslope sediment exports must preserve Wave-2 class
    enrichment payload semantics for:
    - `sed_frac_*` class-fraction exports,
@@ -551,6 +562,7 @@ Minimum WS11 routing conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-04` | `48` | `Claude Code` | E.3 stage 2e disposition: the EROD14 Wave-2 addendum is marked DELETED-historical (the runtime arm is removed; the Wave-1 chain `SC-SED-001#INV-SED-016` is the sole multi-OFE erosion engine); manifest lineage noted (`erod14_wave2_enabled` permanently false; kernel-status field replaced by `multi_ofe_wave1_chained`, true only on no-tillage multi-OFE runs). |
 | `2026-07-04` | `47` | `Claude Code` | E.2 Codex round-1 High: `INV-ROUTE-005` extended with (c) per-contribution `Σ S_h` sediment-mass authority on both branches and (d) the labeled single-rate reduction — the quasi-steady channel sediment-rate time base on hourly-resolved inlets is the superposed `S_h` active-hour span, with the per-hour inlet array carried for the future channel-hourly extension. |
 | `2026-07-04` | `46` | `Claude Code` | E.2/ADR-0036 amendment: `INV-ROUTE-005` made conditional (hour-resolved inlet superposition on the paired minor-1 `V_h`/`S_h` surfaces when all contributors carry them; Eq. [13.4.1]-[13.4.2] triangular procedure as the whole-inlet fallback, no mixed-basis superposition), added `REF-ROUTE-ADR0036-HOURLY`, and extended `INV-ROUTE-011` coupling completeness with the minor-1 hourly pair + intake integral-closure requirement. |
 | `2026-06-14` | `45` | `Codex` | WSHED01 W-C amendment: clarified EROD15 routing-intake semantics for complete zero-sediment contributor payloads and pinned `chan.inp` `nchnum=0` as valid output-disabled routing input rather than a positive channel-routing operand. |

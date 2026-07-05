@@ -2070,9 +2070,12 @@ fn direct_growth_state_surface_from_pl_projection(
     })
 }
 
-/// E.3: multi-OFE-ness for the manifest qin-policy surfaces — the Wave-1
-/// chain is the inter-OFE erosion authority on `ofe_count > 1` runs
-/// (`SC-RUNOFFPART-001#INV-RUNOFFPART-030` disposition).
+/// E.3: the Wave-1 chain is the inter-OFE erosion authority ONLY when the
+/// run is multi-OFE AND the Wave-1 seed actually enables (the no-tillage
+/// scope) — a tilled multi-OFE run has NO erosion producer, and the
+/// manifest must not claim sediment-coupled qin for it
+/// (`SC-RUNOFFPART-001#INV-RUNOFFPART-030` disposition truthfulness;
+/// Codex 2e round-1 High).
 fn direct_production_typed_multi_ofe_wave1_chained(
     inputs: &ParsedHillslopeRunInputs,
     lane_count: usize,
@@ -2087,7 +2090,8 @@ fn direct_production_typed_multi_ofe_wave1_chained(
             "the typed erosion seed requires at least one OFE",
         ));
     }
-    Ok(ofe_count > 1)
+    let wave1_seed_enabled = !direct_production_management_has_active_tillage(&inputs.management);
+    Ok(ofe_count > 1 && wave1_seed_enabled)
 }
 
 fn direct_production_typed_layer_seed(

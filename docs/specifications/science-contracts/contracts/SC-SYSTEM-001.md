@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 83
+contract_version: 84
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -934,6 +934,17 @@ Minimum WS12 integration vectors:
 
 ## EROD14 Wave-2 Active Boundary-Carry Addendum
 
+> **DELETED — E.3 stage 2e (2026-07-04, SC-SED-001 rev 45).** The
+> EROD14/Wave-2 runtime arm is removed from the codebase; the Wave-1
+> chain (`SC-SED-001#INV-SED-016`) is the sole multi-OFE erosion engine
+> and its intake carry the sole inter-OFE erosion coupling. This
+> addendum is retained as the historical specification of the deleted
+> arm; its obligations bind nothing at runtime. Manifest lineage:
+> `erod14_wave2_enabled` publishes `false` permanently;
+> `erod14_wave2_kernel_status_seen` is replaced by
+> `multi_ofe_wave1_chained` (true only when the run is multi-OFE AND the
+> Wave-1 seed enables — the no-tillage scope).
+
 1. System integration boundaries carrying hillslope erosion outputs must
    preserve Wave-2 enrichment/class-conservation exports
    (`sed_frac_*`, `ER`, `erod14_sumg`, and class-wise closure surfaces)
@@ -989,6 +1000,7 @@ Minimum WS12 integration vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-04` | `84` | `Claude Code` | E.3 stage 2e disposition: the EROD14 Wave-2 addendum is marked DELETED-historical (the runtime arm is removed; the Wave-1 chain `SC-SED-001#INV-SED-016` is the sole multi-OFE erosion engine); manifest lineage noted (`erod14_wave2_enabled` permanently false; kernel-status field replaced by `multi_ofe_wave1_chained`, true only on no-tillage multi-OFE runs). |
 | `2026-06-14` | `83` | `Codex` | MOFE01 M-G amendment: added `INV-SYSTEM-032` and manifest-boundary authority requiring `erod14_qin_source_policy` / `erod14_qin_sediment_coupled` provenance so water-transfer-only Wave-2 continuity is not mistaken for sediment-coupled `qin` closure. |
 | `2026-06-14` | `82` | `Codex` | MOFE01 M-F-REDO2 amendment: required per-OFE publication evidence for public `QOFE = runoff * efflen / slplen` and public `Q = runoff * efflen / totlen`, rejecting downstream `QOFE == Q` aliases while keeping conservation identities on raw transfer operands. |
 | `2026-06-13` | `81` | `Codex` | MOFE01 M-F-REDO-CLONE amendment: tightened `INV-SYSTEM-031` to require raw local-runoff anti-clone evidence and reject seeded/stale WB14 multistep infiltration acceptance at publication/consumer gates. |

@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 162
+contract_version: 163
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -1891,6 +1891,17 @@ signals.
 
 ## EROD14 Wave-2 Active Producer-Coupling Addendum
 
+> **DELETED — E.3 stage 2e (2026-07-04, SC-SED-001 rev 45).** The
+> EROD14/Wave-2 runtime arm is removed from the codebase; the Wave-1
+> chain (`SC-SED-001#INV-SED-016`) is the sole multi-OFE erosion engine
+> and its intake carry the sole inter-OFE erosion coupling. This
+> addendum is retained as the historical specification of the deleted
+> arm; its obligations bind nothing at runtime. Manifest lineage:
+> `erod14_wave2_enabled` publishes `false` permanently;
+> `erod14_wave2_kernel_status_seen` is replaced by
+> `multi_ofe_wave1_chained` (true only when the run is multi-OFE AND the
+> Wave-1 seed enables — the no-tillage scope).
+
 1. When `erod14_wave2_enabled = 1`, water-balance-owned runoff/runon closure
    exports required by Wave-2 (`erod14_qout`, `erod14_qin`) must remain
    finite, domain-valid, and provenance-consistent with WB12/WB16 closure
@@ -2454,6 +2465,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-04` | `163` | `Claude Code` | E.3 stage 2e disposition: the EROD14 Wave-2 addendum is marked DELETED-historical (the runtime arm is removed; the Wave-1 chain `SC-SED-001#INV-SED-016` is the sole multi-OFE erosion engine); manifest lineage noted (`erod14_wave2_enabled` permanently false; kernel-status field replaced by `multi_ofe_wave1_chained`, true only on no-tillage multi-OFE runs). |
 | `2026-06-16` | `162` | `Claude Code` | FARPOINT01 F-B (DC-ExecPlan) amendment: removed `watbtm` (frost lower overflow) from the M-E4-REDO named internal frost adjustment formula. `watbtm` is owned solely by the WB13 `Dp` deep-percolation outflow lineage (`SC-SNOWFREEZE-001`); counting it on the per-element inflow side double-counted it against `Dp` and reopened the per-element/hillslope-total residual by exactly `watbtm` on frost-overflow days (reproduced on the H2637 19-OFE substrate, OFE5 1996-02-06). `watpdg` retained pending a `watpdg>0` fixture. |
 | `2026-06-14` | `161` | `Codex` | MOFE01 M-I amendment: added `INV-WATBAL-100`, `TOL-WATBAL-008`, hillslope-total identity provenance requirements, and the multi-OFE scheduler-lifecycle exclusivity gate. |
 | `2026-06-14` | `160` | `Codex` | MOFE01 M-G amendment: added `INV-WATBAL-099` and water-balance boundary authority separating water-transfer-only `erod14_qin` provenance from accepted downstream sediment-coupled `qin` closure. |

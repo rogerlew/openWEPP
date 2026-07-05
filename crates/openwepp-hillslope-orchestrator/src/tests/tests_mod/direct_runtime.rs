@@ -662,7 +662,7 @@ fn r7d5_erosion_active_publication_fails_closed_without_direct_sediment_producer
     assert_eq!(
         error,
         DirectRuntimeError::MissingDirectUpstream {
-            upstream: "R7D5 direct EROD14/EROD15 sediment producer"
+            upstream: "R7D5 direct Wave-1 sediment producer"
         }
     );
 }

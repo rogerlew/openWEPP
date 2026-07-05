@@ -4,7 +4,7 @@ title: Overland Hydraulics Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 13
+contract_version: 14
 producer_scope:
   - Overland-flow friction-factor and rill-geometry state surfaces
   - Shear-partition semantics coupling hydraulics to hillslope erosion
@@ -351,6 +351,17 @@ Minimum WS12 coupling vectors:
 
 ## EROD14 Wave-2 Active Companion-Coupling Addendum
 
+> **DELETED — E.3 stage 2e (2026-07-04, SC-SED-001 rev 45).** The
+> EROD14/Wave-2 runtime arm is removed from the codebase; the Wave-1
+> chain (`SC-SED-001#INV-SED-016`) is the sole multi-OFE erosion engine
+> and its intake carry the sole inter-OFE erosion coupling. This
+> addendum is retained as the historical specification of the deleted
+> arm; its obligations bind nothing at runtime. Manifest lineage:
+> `erod14_wave2_enabled` publishes `false` permanently;
+> `erod14_wave2_kernel_status_seen` is replaced by
+> `multi_ofe_wave1_chained` (true only when the run is multi-OFE AND the
+> Wave-1 seed enables — the no-tillage scope).
+
 1. When `erod14_wave2_enabled = 1`, hydraulics-coupled deposition-routing
    surfaces consumed by Wave-2 (`erod14_qout`, `erod14_qin`, `erod14_qostar`,
    `erod14_slplen`, `erod14_tcf1_*`, `erod14_fall_*`) must be present, finite,
@@ -377,6 +388,7 @@ Minimum WS12 coupling vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-04` | `14` | `Claude Code` | E.3 stage 2e disposition: the EROD14 Wave-2 addendum is marked DELETED-historical (the runtime arm is removed; the Wave-1 chain `SC-SED-001#INV-SED-016` is the sole multi-OFE erosion engine); manifest lineage noted (`erod14_wave2_enabled` permanently false; kernel-status field replaced by `multi_ofe_wave1_chained`, true only on no-tillage multi-OFE runs). |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-12 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-10/11 authority anchors, invariants, guard map, alias map, obligations, boundary dispositions, tolerances, and gap register for SCI-12 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode token casing, standardized Chapter-10 source-path anchors, added missing `τfe` alias coverage, and evidence-tagged degenerate/tolerance claims. |

@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 45
+contract_version: 46
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -808,6 +808,17 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 ## EROD14 Wave-2 Active Producer-Coupling Addendum
 
+> **DELETED — E.3 stage 2e (2026-07-04, SC-SED-001 rev 45).** The
+> EROD14/Wave-2 runtime arm is removed from the codebase; the Wave-1
+> chain (`SC-SED-001#INV-SED-016`) is the sole multi-OFE erosion engine
+> and its intake carry the sole inter-OFE erosion coupling. This
+> addendum is retained as the historical specification of the deleted
+> arm; its obligations bind nothing at runtime. Manifest lineage:
+> `erod14_wave2_enabled` publishes `false` permanently;
+> `erod14_wave2_kernel_status_seen` is replaced by
+> `multi_ofe_wave1_chained` (true only when the run is multi-OFE AND the
+> Wave-1 seed enables — the no-tillage scope).
+
 1. When `erod14_wave2_enabled = 1`, runoff-partition producer surfaces needed
    for multi-OFE routing-classification and enrichment transitions are
    mandatory:
@@ -976,6 +987,7 @@ row requiring new binding promotion.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-04` | `46` | `Claude Code` | E.3 stage 2e disposition: the EROD14 Wave-2 addendum is marked DELETED-historical (the runtime arm is removed; the Wave-1 chain `SC-SED-001#INV-SED-016` is the sole multi-OFE erosion engine); manifest lineage noted (`erod14_wave2_enabled` permanently false; kernel-status field replaced by `multi_ofe_wave1_chained`, true only on no-tillage multi-OFE runs). |
 | `2026-07-04` | `45` | `Claude Code` | E.3 disposition amendment: `INV-RUNOFFPART-030` recorded SATISFIED on the Wave-1 multi-OFE chain (the `SC-SED-001#INV-SED-016` hourly erosion handoff carries the required prior-OFE erosion `qout` + sediment/class-fraction lineage; manifests publish `erod14_qin_sediment_coupled = true` / `wave1-hourly-sediment-coupled-handoff`), remaining binding for any non-Wave-1 path; `INV-RUNOFFPART-031`'s erosion-side interim-clamp scope superseded (decreasing-flow hours are ordinary deposition quanta on the chain — no clamp present). Water-side runon re-infiltration unchanged. |
 | `2026-06-14` | `44` | `Codex` | MOFE01 M-G amendment: added `INV-RUNOFFPART-030` and producer-boundary authority separating water-transfer evidence from accepted sediment-coupled EROD14 downstream `qin`, requiring compatibility provenance until the sediment handoff follow-on closes. |
 | `2026-06-13` | `43` | `Codex` | MOFE01 M-E0 amendment: added `INV-RUNOFFPART-029` and per-OFE runoff lane-state addendum requiring typed OFE lane transfer payloads, rejecting aggregate handoff synthesis, and binding single-OFE anchors before publication reshaping. |

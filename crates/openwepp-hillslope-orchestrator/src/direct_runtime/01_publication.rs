@@ -469,7 +469,7 @@ fn direct_publication_erosion_operands(
     }
     if day_input.erosion_producer_required {
         return Err(DirectRuntimeError::MissingDirectUpstream {
-            upstream: "R7D5 direct EROD14/EROD15 sediment producer",
+            upstream: "R7D5 direct Wave-1 sediment producer",
         });
     }
     Ok(DirectPublicationErosionOperands::zero_authority())
