@@ -710,8 +710,14 @@ principle promoted it to active queue item 1 on 2026-06-07.)
 
 ## E. Hillslope erosion sediment sequence
 
-**Current position:** single-OFE **Wave-1 sediment continuity is live and its
-publication surfaces are complete** — the erosion 1b-C flip (SC-SED-001, ADR-0035)
+**Current position:** single-OFE **Wave-1 sediment continuity is live on the
+hydrograph-resolved substrate** — E.2 (ADR-0036, merged `7abf2e86`) made the
+per-hydraulically-active-hour solve the production form on the shared DC01
+shape authority, serialized the paired hourly `V_h`/`S_h` EVENT surfaces (HBP
+minor 1, npart = 5, true-volumetric peak), and made the watershed route the
+pair (hour-resolved inlet superposition; `S_h` is the sediment mass/timing
+authority). The full-reinfiltration and falling-limb quanta deposit with no
+clamp. Before that, E.1 completed the single-OFE publication surfaces — the erosion 1b-C flip (SC-SED-001, ADR-0035)
 made the direct runtime a sediment producer for single-OFE no-tillage
 (forest/disturbed) hillslopes (`route`/`erod`/`runge` RK4 continuity,
 conservation-gated; DFF-WS3 directional burn law holds), and E.1 (Increment
@@ -732,34 +738,6 @@ detachment-vs-delivery cut-point mismatch (compare `exported_kg_m` to legacy
 
 Full architecture + open-decision resolution:
 [`increment-2-entry-gate.md`](work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2-entry-gate.md).
-
-### E.2 Hourly-flow substrate — resolve the "core awkwardness" (structural)
-The Wave-1 solve collapses the modeled hourly flow to a single **peak discharge**, the
-HBP serializes only **peak+volume+duration**, and watershed routing **reconstructs a
-triangular hydrograph** (SC-ROUTE-001 `REF-ROUTE-CH13-PEAKIN`). That collapse is the
-root of the decreasing-flow/reinfiltration awkwardness (a single peak has no falling
-limb, so recession deposition and the `qout<qin` case are handled by the interim
-INV-030 clamp). openWEPP already models the hourly profile (`wb14_hourly_excess_m`) and
-spends it nowhere. **Carry the modeled hourly flow through the stack** —
-hillslope hydrograph → erosion solve → HBP EVENT surface → channel routing — so the
-falling-limb deposition and the multi-OFE `qin/qout` become ordinary hour-resolved
-balances (retiring the clamp as a *fix*, not a bound), and the watershed routes the
-real shape, not a triangle. Cross-cutting (SC-SED-001 + HBP + SC-ROUTE-001);
-contract-first (ADR + amendments before code). **ADR-0036 RATIFIED
-([Accepted 2026-07-04](decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md))
-and 2b EXECUTED the same day — BUILT + GATED on branch
-`erosion-e2-hydrograph-substrate`, AWAITING CODEX REVIEW:** the three
-contract amendments landed first (SC-SED-001 v43, SC-INFILE-HBP-001
-v0.2.0 + spec, SC-ROUTE-001 v46), then the per-hydraulically-active-hour
-Wave-1 solve on the shared DC01 shape authority (the
-full-reinfiltration and falling-limb quanta deposit with NO clamp — the
-acceptance driver, Ran), the HBP minor-1 paired `V_h`/`S_h` EVENT
-extension (p61 round-trip: `Σ V_h = runvol` at 1e-9,
-`Σ S_h = tdet − tdep`), and hour-resolved watershed inlet superposition
-with the whole-inlet triangular fallback. Detail:
-[`increment-2b-entry-gate.md`](work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2b-entry-gate.md). Concept:
-[`backlog/20260704-hydrograph-resolved-sediment-and-routing.md`](backlog/20260704-hydrograph-resolved-sediment-and-routing.md).
-*Structural, and the natural substrate for E.3 and for Hairsine-Rose.*
 
 ### E.3 Multi-OFE Wave-1 chaining (Increment 2 — structural)
 Make **Wave-1 the per-OFE continuity engine** for every OFE, chained by the

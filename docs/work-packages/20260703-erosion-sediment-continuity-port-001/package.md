@@ -189,10 +189,14 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
   once with E.2's hourly redesign, which also inherits the
   `peak_runoff_m3_s` depth-rate unit question). Design + adjudications in
   [`artifacts/increment-1c-entry-gate.md`](artifacts/increment-1c-entry-gate.md).
-- **Increment 2b (ROADMAP §E.2, ADR-0036) — hydrograph substrate: BUILT +
-  GATED on branch `erosion-e2-hydrograph-substrate`, 2026-07-04
-  (Claude-executed, operator-directed "scaffold and execute E.2");
-  AWAITING CODEX REVIEW.** Contracts-then-code in one staged pass: the
+- **Increment 2b (ROADMAP §E.2, ADR-0036) — hydrograph substrate: COMPLETE,
+  MERGED TO MAIN `7abf2e86` 2026-07-04** (Claude-executed,
+  operator-directed "scaffold and execute E.2"; Codex 2-round review —
+  round-1 High (routing must CONSUME `S_h`: per-contribution mass
+  authority + the labeled S-span single-rate reduction, SC-ROUTE-001
+  v47) + Medium (single-row-sourced minor-1 EVENT) both fixed; re-check
+  merge-ready with 1 Low comment fix; operator-authorized rebase +
+  ff-merge). Contracts-then-code in one staged pass: the
   three amendments (SC-SED-001 v43, SC-INFILE-HBP-001 v0.2.0 + spec,
   SC-ROUTE-001 v46) → the per-hydraulically-active-hour Wave-1 solve on
   the shared DC01 shape authority (day totals = hour sums; the
