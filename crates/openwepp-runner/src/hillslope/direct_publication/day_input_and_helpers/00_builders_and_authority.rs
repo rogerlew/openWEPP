@@ -1147,6 +1147,17 @@ fn direct_production_wave1_operand_seed(
         avg_slope: slope_ofe.avgslp,
         slpend,
         sand,
+        ssasol: openwepp_hillslope_orchestrator::erosion_surface_soil_ssa(
+            sand,
+            silt,
+            clay,
+            orgmat,
+        )
+        .map_err(|e| {
+            direct_production_executor_blocked(format!(
+                "erosion surface-soil SSA failed: {e}"
+            ))
+        })?,
         classes,
         veleff_m_s,
         baselines,

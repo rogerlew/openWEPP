@@ -583,6 +583,9 @@ pub struct DirectPublicationErosionOperands {
     /// same time base (`Σ = ` the day's exported mass; all-zero on
     /// non-routed days so the closure holds trivially).
     pub hourly_sediment_mass_kg: Option<[f64; 24]>,
+    /// E.4: the specific-surface-area enrichment ratio (`enrich.for`
+    /// `enrato`, exit-lane day diagnostic).
+    pub enrichment_ratio: Option<f64>,
 }
 
 impl DirectPublicationErosionOperands {
@@ -599,6 +602,7 @@ impl DirectPublicationErosionOperands {
             sediment_concentration_kg_m3: None,
             hourly_runoff_fraction: None,
             hourly_sediment_mass_kg: None,
+            enrichment_ratio: None,
         }
     }
 
@@ -615,6 +619,7 @@ impl DirectPublicationErosionOperands {
             sediment_concentration_kg_m3: Some([0.0; 5]),
             hourly_runoff_fraction: None,
             hourly_sediment_mass_kg: None,
+            enrichment_ratio: None,
         }
     }
 }

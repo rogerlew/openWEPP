@@ -56,6 +56,7 @@ fn clay_loam_seed() -> DirectWave1OperandSeed {
         avg_slope: avgslp,
         slpend,
         sand: 0.25,
+        ssasol: 6.0,
         classes,
         veleff_m_s: veleff,
         baselines,
@@ -293,6 +294,7 @@ fn assembled_inflow_derivations_use_the_receiver_basis() {
         prior_cnslp: 0.25,
         prior_end_shear: (0.5, 0.5, 0.0),
         prior_end_transport: (0.5, 0.5, 0.0),
+        exit_fractions: [0.3, 0.3, 0.2, 0.1, 0.1],
     });
     let inputs = assemble_wave1_continuity_inputs(&seed, &daily).expect("inflow assembly");
     assert!(
@@ -325,6 +327,7 @@ fn assembled_inflow_derivations_use_the_receiver_basis() {
         prior_cnslp: 0.55,
         prior_end_shear: (0.5, 0.5, 0.0),
         prior_end_transport: (0.5, 0.5, 0.0),
+        exit_fractions: [0.3, 0.3, 0.2, 0.1, 0.1],
     });
     let steeper_inputs =
         assemble_wave1_continuity_inputs(&seed, &steeper).expect("steeper inflow assembly");

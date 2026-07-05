@@ -1009,6 +1009,7 @@ mod tests {
                 sediment_concentration_kg_m3: Some([0.1, 0.2, 0.3, 0.4, 0.5]),
                 hourly_runoff_fraction: None,
                 hourly_sediment_mass_kg: None,
+                enrichment_ratio: None,
             },
         };
         DirectRunPublicationFrame {
@@ -1153,6 +1154,7 @@ mod tests {
                 sediment_concentration_kg_m3: Some([0.1, 0.2, 0.3, 0.4, 0.5]),
                 hourly_runoff_fraction: None,
                 hourly_sediment_mass_kg: None,
+                enrichment_ratio: None,
             },
         }
     }

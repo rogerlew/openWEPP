@@ -39,6 +39,7 @@ fn crafted_enabled_seed() -> DirectWave1OperandSeed {
         avg_slope: 0.30,
         slpend: 0.30,
         sand: 0.25,
+        ssasol: 6.0,
         classes: crafted_particle_classes(),
         veleff_m_s: 0.005,
         baselines: ErosionConsolidationBaselines {
@@ -114,6 +115,7 @@ fn crafted_wave1_inputs() -> DirectWave1ContinuityInputs {
     DirectWave1ContinuityInputs {
         enabled: true,
         inter_ofe: None,
+        enrichment: None,
         segments: vec![DirectWave1SlopeSegment {
             xu: 0.0,
             xl: 1.0,

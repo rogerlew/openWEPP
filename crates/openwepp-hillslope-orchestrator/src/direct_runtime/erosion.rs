@@ -576,7 +576,13 @@ impl DirectDayFrame {
             // with the non-cropland `fidel = frac`), under proportional
             // depletion through deposition and the legacy equal-width
             // chain assumption. No-inflow days keep the local `frac`.
-            let exit_fractions_override =
+            // E.4: the solver's ENRICHED exit composition supersedes the
+            // D4 mass-weighted approximation whenever present; the D4
+            // blend remains only for the None-enrichment fallback.
+            let enriched_exit_fractions = continuity
+                .exit_class_fractions
+                .filter(|fractions| fractions.iter().sum::<f64>() > 0.0);
+            let d4_exit_fractions_override =
                 self.erosion_inflow_intake.as_deref().and_then(|intake| {
                     let inflow_kg: f64 = intake
                         .hourly_qsout_kg_m_s
@@ -599,12 +605,14 @@ impl DirectDayFrame {
                         None
                     }
                 });
-            direct_wave1_publication_projection(
+            let mut projected = direct_wave1_publication_projection(
                 continuity,
                 &erosion_inputs.wave1_continuity,
                 &erosion_inputs.wave1_operand_seed.classes,
-                exit_fractions_override,
-            )?
+                enriched_exit_fractions.or(d4_exit_fractions_override),
+            )?;
+            projected.enrichment_ratio = continuity.enrichment_ratio;
+            projected
         } else {
             DirectPublicationErosionOperands::zero_authority()
         };
@@ -704,6 +712,7 @@ impl DirectDayFrame {
                         prior_cnslp: intake.prior_cnslp,
                         prior_end_shear: intake.prior_end_shear,
                         prior_end_transport: intake.prior_end_transport,
+                        exit_fractions: intake.exit_fractions,
                     })
                 } else {
                     None
@@ -722,6 +731,10 @@ impl DirectDayFrame {
     /// daily totals are the hour sums). The per-point diagnostic grids on
     /// the aggregate come from the max-export hour (a representative
     /// profile; the totals are sums, never the representative's own).
+    // Day-aggregation over the hour quanta: the E.4 weighted-composition
+    // accumulators push it just past the line bound; the flow is a single
+    // fold, not divisible without obscuring the aggregation identity.
+    #[allow(clippy::too_many_lines)]
     fn solve_wave1_hourly_plan(
         &self,
         day_inputs: &DirectWave1ContinuityInputs,
@@ -739,6 +752,9 @@ impl DirectDayFrame {
         let mut flux_scale_sum = 0.0_f64;
         let mut max_export_kg_m = -1.0_f64;
 
+        let mut weighted_exit_fractions = [0.0_f64; DIRECT_EROSION_CLASS_LIMIT];
+        let mut weighted_enrichment_ratio = 0.0_f64;
+        let mut enrichment_weight = 0.0_f64;
         let mut flux_refused_quanta = 0_u32;
         for (hour, hour_inputs) in &self.wave1_hourly_plan {
             let state = match compute_direct_wave1_continuity_quantum(hour_inputs, true) {
@@ -775,6 +791,17 @@ impl DirectDayFrame {
             closure_residual_sum += state.publication_closure_residual_kg_m;
             flux_residual_sum += state.flux_closure_residual;
             flux_scale_sum += state.flux_closure_scale;
+            // E.4: export-mass-weighted day composition + enrichment ratio.
+            if let Some(fractions) = state.exit_class_fractions {
+                for (weighted, fraction) in weighted_exit_fractions.iter_mut().zip(fractions.iter())
+                {
+                    *weighted += fraction * state.exported_sediment_kg_m;
+                }
+            }
+            if let Some(ratio) = state.enrichment_ratio {
+                weighted_enrichment_ratio += ratio * state.exported_sediment_kg_m;
+                enrichment_weight += state.exported_sediment_kg_m;
+            }
             if state.exported_sediment_kg_m > max_export_kg_m {
                 max_export_kg_m = state.exported_sediment_kg_m;
                 aggregate = Some(state);
@@ -797,6 +824,20 @@ impl DirectDayFrame {
             }
         };
         aggregate.flux_refused_quanta = flux_refused_quanta;
+        // E.4: the day exit composition is the export-mass-weighted blend
+        // across quanta (each hour exits with its own enriched
+        // composition); the ER aggregates on the same weight.
+        if exported_kg_m_sum > 0.0 {
+            let weighted_sum: f64 = weighted_exit_fractions.iter().sum();
+            if weighted_sum > 0.0 {
+                aggregate.exit_class_fractions = Some(core::array::from_fn(|index| {
+                    weighted_exit_fractions[index] / weighted_sum
+                }));
+            }
+        }
+        if enrichment_weight > 0.0 {
+            aggregate.enrichment_ratio = Some(weighted_enrichment_ratio / enrichment_weight);
+        }
         aggregate.exported_sediment_kg_m = exported_kg_m_sum;
         aggregate.inflow_sediment_kg_m = inflow_kg_m_sum;
         aggregate.total_detachment_kg = detach_kg_sum;
@@ -1085,6 +1126,7 @@ pub(crate) fn direct_wave1_publication_projection(
         sediment_concentration_kg_m3: Some(sediment_concentration_kg_m3),
         hourly_runoff_fraction: None,
         hourly_sediment_mass_kg: None,
+        enrichment_ratio: None,
     })
 }
 

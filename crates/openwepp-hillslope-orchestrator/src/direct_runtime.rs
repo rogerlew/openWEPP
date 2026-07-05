@@ -148,6 +148,7 @@ mod diagnostic_events;
 mod erosion;
 mod erosion_adjustments;
 mod erosion_continuity;
+mod erosion_enrichment;
 mod erosion_operands;
 mod erosion_seed;
 mod evapotranspiration;
@@ -183,6 +184,7 @@ pub use erosion_adjustments::{
     ErosionFrostRegime, ErosionIfrostCarry, ErosionRfcumInputs, advance_erosion_consolidation,
     erosion_adjustment_factors, erosion_consolidation_baselines, resolve_erosion_frost_regime,
 };
+pub(crate) use erosion_continuity::wave1_undflo;
 pub use erosion_continuity::{
     DIRECT_WAVE1_GRID_POINTS, DirectWave1ContinuityInputs, DirectWave1ContinuityState,
     DirectWave1SlopeSegment, Wave1InterOfeContinuity, Wave1ShearClassification, Wave1ShearRegime,
@@ -190,6 +192,10 @@ pub use erosion_continuity::{
     derive_wave1_slope_segments, wave1_classifier_shear, wave1_day_routes_sediment, wave1_depc,
     wave1_depend, wave1_depeqs, wave1_quantum_is_hydraulically_active, wave1_runge_step,
     wave1_xcrit,
+};
+pub use erosion_enrichment::{
+    Wave1EnrichmentInputs, Wave1EnrichmentRegionOperands, Wave1EnrichmentState,
+    erosion_surface_soil_ssa,
 };
 pub use erosion_operands::{
     EROSION_PARTICLE_CLASS_COUNT, ErosionEffectiveIntensity, ErosionExcessInterval,

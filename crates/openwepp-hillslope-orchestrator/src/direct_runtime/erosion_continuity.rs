@@ -147,6 +147,10 @@ pub struct DirectWave1ContinuityInputs {
     /// (the coefficient rewrite is skipped, matching the legacy
     /// `iplane > 1 ∧ qout > 0 ∧ qin > 0` guard).
     pub inter_ofe: Option<Wave1InterOfeContinuity>,
+    /// E.4 enrichment operands; `None` skips the class-composition state
+    /// entirely (crafted/legacy-instrument quanta) — the production
+    /// assembly always supplies them.
+    pub enrichment: Option<Box<super::Wave1EnrichmentInputs>>,
     /// Normalized slope segments from the slope profile (`profil.for` fit).
     pub segments: Vec<DirectWave1SlopeSegment>,
     /// Peak runoff rate (m/s) — legacy `peakro(iplane)`.
@@ -211,6 +215,7 @@ impl DirectWave1ContinuityInputs {
         Self {
             enabled: false,
             inter_ofe: None,
+            enrichment: None,
             segments: Vec::new(),
             peakro_m_s: 0.0,
             runoff_depth_m: 0.0,
@@ -255,6 +260,11 @@ enum Wave1PointRegion {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectWave1ContinuityState {
     pub active: bool,
+    /// E.4: the ENRICHED exit flow composition (`enrich.for` lineage);
+    /// `None` when the quantum ran without enrichment operands.
+    pub exit_class_fractions: Option<[f64; 5]>,
+    /// E.4: the specific-surface-area enrichment ratio (diagnostic).
+    pub enrichment_ratio: Option<f64>,
     /// Hour quanta refused by the FLUX-consistency diagnostic gate
     /// (`erosion.wave1.flux_closure`, the trapezoid-vs-RK4 discretization
     /// check — NOT the 1e-9 mass-balance law, which stays hard). Refused
@@ -301,6 +311,8 @@ impl DirectWave1ContinuityState {
     pub fn inactive() -> Self {
         Self {
             active: false,
+            exit_class_fractions: None,
+            enrichment_ratio: None,
             flux_refused_quanta: 0,
             end_shear_coefficients: (0.0, 0.0, 0.0),
             end_transport_coefficients: (0.0, 0.0, 0.0),
@@ -367,6 +379,11 @@ struct Wave1Drivers {
     ktrato: f64,
     qostar: f64,
     qout_m2_s: f64,
+    /// E.4: the deposition driver `(qout − qin)/slplen` retained for the
+    /// per-class `φ_i = β·fall_i/pkro` (`enrich.for` do-30).
+    pkro: f64,
+    /// E.4: the rainfall-presence factor for the per-class `φ_i`.
+    beta: f64,
 }
 
 /// Mutable 101-point grid state for one OFE solve.
@@ -481,7 +498,7 @@ fn wave1_cross(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
 }
 
 /// `undflo.for`: zero the base when `|expon * log10(factor)| > 30`.
-fn wave1_undflo(factor: f64, expon: f64) -> (f64, f64) {
+pub(crate) fn wave1_undflo(factor: f64, expon: f64) -> (f64, f64) {
     if factor > 0.0 && (expon * factor.log10()).abs() > WAVE1_UNDFLO_POWER {
         (0.0, 1.0)
     } else {
@@ -1396,6 +1413,10 @@ fn wave1_route(
     segments: &[Wave1SegmentCoefficients],
     drivers: &Wave1Drivers,
     strldn: f64,
+    mut enrichment: Option<(
+        &super::Wave1EnrichmentInputs,
+        &mut super::Wave1EnrichmentState,
+    )>,
 ) -> Result<Wave1RouteGrid, DirectRuntimeError> {
     let mut grid = Wave1RouteGrid::new();
     let first = segments
@@ -1465,6 +1486,7 @@ fn wave1_route(
             if xdend >= seg.xl {
                 // Deposition does not end within the segment.
                 xdend = seg.xl;
+                let loadup = ldlast;
                 wave1_depos(
                     &mut grid,
                     seg.xu,
@@ -1475,8 +1497,24 @@ fn wave1_route(
                     &mut dl,
                     &mut ldlast,
                 );
+                // `route.for:235-238`: enrichment at the region end.
+                if let Some((enrichment_inputs, state)) = enrichment.as_mut() {
+                    if ldlast > 0.0 && drivers.qout_m2_s > 0.0 {
+                        state.deposition_region(
+                            enrichment_inputs,
+                            &wave1_enrichment_region_operands(seg, drivers),
+                            seg.xu,
+                            xdend,
+                            loadup,
+                            ldlast,
+                        )?;
+                        state.lddend = ldlast;
+                        state.xdetst = xdend;
+                    }
+                }
             } else {
                 // Deposition ends inside the segment; detachment follows.
+                let loadup = ldlast;
                 wave1_depos(
                     &mut grid,
                     seg.xu,
@@ -1487,6 +1525,21 @@ fn wave1_route(
                     &mut dl,
                     &mut ldlast,
                 );
+                // `route.for:250-253`.
+                if let Some((enrichment_inputs, state)) = enrichment.as_mut() {
+                    if ldlast > 0.0 && drivers.qout_m2_s > 0.0 {
+                        state.deposition_region(
+                            enrichment_inputs,
+                            &wave1_enrichment_region_operands(seg, drivers),
+                            seg.xu,
+                            xdend,
+                            loadup,
+                            ldlast,
+                        )?;
+                        state.lddend = ldlast;
+                        state.xdetst = xdend;
+                    }
+                }
                 let outcome = wave1_dispatch_detachment(
                     &mut grid,
                     seg,
@@ -1531,6 +1584,11 @@ fn wave1_route(
                 drivers.ktrato,
                 drivers.qostar,
             );
+            // `route.for:443`: the entering load is floored at `lddend`.
+            let loadup = match enrichment.as_ref() {
+                Some((_, state)) => ldlast.max(state.lddend),
+                None => ldlast,
+            };
             wave1_depos(
                 &mut grid,
                 xdbeg,
@@ -1541,6 +1599,21 @@ fn wave1_route(
                 &mut dl,
                 &mut ldlast,
             );
+            // `route.for:448-451`.
+            if let Some((enrichment_inputs, state)) = enrichment.as_mut() {
+                if ldlast > 0.0 && drivers.qout_m2_s > 0.0 {
+                    state.deposition_region(
+                        enrichment_inputs,
+                        &wave1_enrichment_region_operands(seg, drivers),
+                        xdbeg,
+                        seg.xl,
+                        loadup,
+                        ldlast,
+                    )?;
+                    state.lddend = ldlast;
+                    state.xdetst = seg.xl;
+                }
+            }
         }
     }
 
@@ -1552,7 +1625,36 @@ fn wave1_route(
             field: "erosion.wave1.route_toe_uncomputed",
         });
     }
+
+    // Terminal enrichment call (`route.for:473`, `iendfg = 1`): the
+    // OFE-end blend + the SSA enrichment ratio.
+    if let Some((enrichment_inputs, state)) = enrichment.as_mut() {
+        state.terminal(
+            enrichment_inputs,
+            drivers.theta,
+            ldlast,
+            drivers.qout_m2_s > 0.0,
+        )?;
+    }
     Ok(grid)
+}
+
+/// The per-region operand bundle at an enrichment call point.
+fn wave1_enrichment_region_operands(
+    seg: &Wave1SegmentCoefficients,
+    drivers: &Wave1Drivers,
+) -> super::Wave1EnrichmentRegionOperands {
+    super::Wave1EnrichmentRegionOperands {
+        atc: seg.atc,
+        btc: seg.btc,
+        ctc: seg.ctc,
+        ktrato: drivers.ktrato,
+        qostar: drivers.qostar,
+        theta: drivers.theta,
+        beta: drivers.beta,
+        pkro: drivers.pkro,
+        qout_m2_s: drivers.qout_m2_s,
+    }
 }
 
 /// Validate the **routed-event** Wave-1 operand payload (fail-closed;
@@ -1802,6 +1904,8 @@ fn wave1_param_drivers(
         ktrato: inputs.ktrato,
         qostar,
         qout_m2_s: qout,
+        pkro,
+        beta: inputs.beta,
     })
 }
 
@@ -1819,6 +1923,7 @@ fn wave1_totals(
     drivers: &Wave1Drivers,
     grid: &Wave1RouteGrid,
     coefficients: &[Wave1SegmentCoefficients],
+    enrichment: Option<&super::Wave1EnrichmentState>,
 ) -> Result<DirectWave1ContinuityState, DirectRuntimeError> {
     // Dimensional per-point load scale (kg per m of hillslope width):
     // `dslod = load * effdrn * tcend * width / rspace` (`sloss.for:166`).
@@ -1923,6 +2028,8 @@ fn wave1_totals(
 
     Ok(DirectWave1ContinuityState {
         active: true,
+        exit_class_fractions: enrichment.as_ref().map(|state| state.frcflw),
+        enrichment_ratio: enrichment.as_ref().and_then(|state| state.enrichment_ratio),
         flux_refused_quanta: 0,
         end_shear_coefficients,
         end_transport_coefficients,
@@ -2056,8 +2163,32 @@ pub fn compute_direct_wave1_continuity_quantum(
     }
 
     let drivers = wave1_param_drivers(inputs, qout, qostar)?;
-    let grid = wave1_route(&coefficients, &drivers, inputs.strldn)?;
-    wave1_totals(inputs, &drivers, &grid, &coefficients)
+    // E.4: initialize the per-quantum class-composition state
+    // (`route.for:117-160`) when the enrichment operands are supplied.
+    let mut enrichment_state = inputs.enrichment.as_deref().map(|enrichment_inputs| {
+        super::Wave1EnrichmentState::initialize(
+            enrichment_inputs,
+            qout > 0.0,
+            inputs.qin_m2_s > 0.0,
+            inputs.strldn,
+        )
+    });
+    let grid = wave1_route(
+        &coefficients,
+        &drivers,
+        inputs.strldn,
+        inputs.enrichment.as_deref().zip(enrichment_state.as_mut()),
+    )?;
+    if let Some(state) = &enrichment_state {
+        state.validate_unit_sum(qout > 0.0)?;
+    }
+    wave1_totals(
+        inputs,
+        &drivers,
+        &grid,
+        &coefficients,
+        enrichment_state.as_ref(),
+    )
 }
 
 /// `param.for:249-390`: re-derive the receiving OFE's normalized shear and

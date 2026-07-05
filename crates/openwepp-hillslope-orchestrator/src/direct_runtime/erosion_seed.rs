@@ -92,6 +92,9 @@ pub struct DirectWave1OperandSeed {
     pub slpend: f64,
     /// Surface-layer sand fraction (for the yalin sandy adjustment).
     pub sand: f64,
+    /// Surface-soil specific surface area (`enrich.for:148-151`
+    /// `ssasol`), per-OFE — the enrichment-ratio denominator.
+    pub ssasol: f64,
     /// Five erosion particle classes + per-class fall velocity.
     pub classes: [ErosionParticleClass; 5],
     /// Effective particle fall velocity (`veleff`).
@@ -133,6 +136,7 @@ impl DirectWave1OperandSeed {
             avg_slope: 0.0,
             slpend: 0.0,
             sand: 0.0,
+            ssasol: 0.0,
             classes: [ErosionParticleClass {
                 dia_m: 0.0,
                 spg: 0.0,
@@ -208,6 +212,9 @@ pub struct Wave1InflowOperands {
     /// Prior lane's solve-final transport coefficient set (`atclst`
     /// family).
     pub prior_end_transport: (f64, f64, f64),
+    /// Prior lane's exiting class fractions (`route.for:142-160`
+    /// initialization; E.4: enriched upstream composition).
+    pub exit_fractions: [f64; 5],
 }
 
 /// The **daily** hydrology / cover / frost state the per-day assembly
@@ -485,9 +492,29 @@ pub fn assemble_wave1_continuity_inputs_quantum(
         _ => (daily.strldn, None),
     };
 
+    // E.4: the enrichment operand bundle. `tcf1` uses the kt2 shear
+    // (`0.5·(shrend+shrsol)`) — in legacy the LAST `yalin` call inside
+    // `param.for` (the `kt2 = trcoef(...)` evaluation) writes the
+    // persistent `tcf1`, so that shear is the faithful basis. Non-
+    // cropland `fidel = frac` (`param.for:452-458`) is exact on the
+    // enabled no-tillage scope.
+    let (_, tcf1) = super::erosion_yalin_with_class_shares(
+        f64::midpoint(hydraulics.shrend_pa, hydraulics.shrsol_pa),
+        &seed.classes,
+        seed.sand,
+    )?;
+    let enrichment = Box::new(super::Wave1EnrichmentInputs {
+        classes: seed.classes,
+        tcf1,
+        fidel: core::array::from_fn(|index| seed.classes[index].frac),
+        ssasol: seed.ssasol,
+        inflow_fractions: daily.inflow.map(|inflow| inflow.exit_fractions),
+    });
+
     Ok(DirectWave1ContinuityInputs {
         enabled: seed.enabled,
         inter_ofe,
+        enrichment: Some(enrichment),
         segments: seed.segments.clone(),
         peakro_m_s: daily.peakro_m_s,
         runoff_depth_m: daily.runoff_depth_m,
@@ -528,6 +555,7 @@ fn inert_continuity_inputs(
     DirectWave1ContinuityInputs {
         enabled: seed.enabled,
         inter_ofe: None,
+        enrichment: None,
         segments: seed.segments.clone(),
         peakro_m_s: daily.peakro_m_s,
         runoff_depth_m: daily.runoff_depth_m,
