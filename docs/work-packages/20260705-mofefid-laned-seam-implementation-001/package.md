@@ -1,0 +1,53 @@
+# MOFEFID LANE D — SUBSURFACE SEAM IMPLEMENTATION (INV-OFEROUTE-012, solver tier)
+
+Status: `IN-EXECUTION` (Claude-executed; operator: "scaffold and execute
+with that scope", 2026-07-05). Branch: `laned-seam-implementation`.
+
+## Scope adjustment vs the recommendation (entry recon, on record)
+
+Recon found D4–D6 landed the router as PURE + D-val layers only —
+`ofe_routing::` has NO runtime invocation (shadow or otherwise), so
+"runtime shadow wiring" is necessarily its own increment regardless of
+this package. THIS package therefore implements the GAP-006 seam at the
+tier that exists:
+
+- the seam machinery (`ofe_routing::seam`): the source-rate series
+  (`(wb14_hourly_excess + ui_SCrunf-lineage carry)/3600`, the recorded
+  unit helper), the hourly-lane precondition, the DC01
+  mutual-exclusion assertion, the cascade-forcing adapter, and the
+  INV-012 (c) closure-identity computation;
+- gate fixture A at the SOLVER tier (crafted exfiltration-to-runoff
+  through `run_cascade` with seam forcing);
+- gate fixture B at the IDENTITY tier (H2637-class subsurface-dominated
+  closure vector, operands drawn to the MAGPARITY01 class profile);
+- SC-OFEROUTE-001 rev 5 recording the status honestly: seam implemented
+  + fixtures passing at the solver/identity tier; RUNTIME wiring (and
+  the real-H2637 executed vector, staged inputs located at
+  `/home/workdir/wepp-forest/docs/ablation/20260430_…_h2637_…/artifacts/repro/staged/runs/`)
+  remain the activation increment — INV-012's production-activation
+  BLOCK stays.
+
+## Recon items (resolved)
+
+- **ui_SCrunf runtime surface** = `hourly_saturation_carry_m` (24-slot,
+  `subsurface.rs` lateral tail → `runoff.rs` DC01 weights at `:1416` —
+  the same limb, confirming the D1 "same two limbs" claim in code).
+- **Erosion-coupling touchpoint (recorded, decided later):** the E.2
+  sediment substrate takes its hourly shape from the DC01 weights,
+  which unify the SAME two limbs this seam consumes. At routing
+  activation the erosion hourly shape should derive from the ROUTED
+  hydrograph (ADR-0036's "modeled hourly flow" becoming the actual
+  routed flow) — an activation-increment design note, NOT this package.
+- **H2637 inputs**: located (above); execution rides activation.
+
+## Stages
+
+1. `ofe_routing::seam` module (pure; typed fail-closed).
+2. Closure-identity machinery + DC01 exclusion assertion.
+3. Fixture A: 2-OFE cascade, downslope hours with zero rainfall excess
+   and positive saturation carry → routed toe flow on those hours +
+   cascade conservation.
+4. Fixture B: H2637-class closure vector (identity closes; surface
+   share ≈1%; ENV-Y inside [0.55, 0.72]).
+
+Gates per the local-ci standard; full at branch head; Codex review.
