@@ -12,6 +12,12 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-05`:
+- `20260705-mofefid-d10-shock-numerics-gap005-001/` —
+  QUEUED: Lane D shock-numerics defect-closure package. Scope is
+  `SC-OFEROUTE-001#GAP-OFEROUTE-005`: TVD/shock numerical-method authority,
+  convergence criteria, Iwagaki Case-4 evidence, and the real-H2637
+  resolution-sensitivity reproduction. It must close the Case-4 blocker or
+  hold with primary/source evidence; no production activation or D11-D13 work.
 - `20260705-mofefid-d9-dval-disposition-001/` —
   EXECUTED-COMPLETE: Lane D D-val disposition package. Cases 1-3 were re-run
   after D8 and retain named non-numerics dispositions, the Figure 9 Zone 1/Zone
