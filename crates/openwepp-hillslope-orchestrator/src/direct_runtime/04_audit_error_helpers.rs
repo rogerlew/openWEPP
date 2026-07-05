@@ -129,10 +129,6 @@ impl DirectRuntimeAuditCounters {
         self.direct_state_mutations.fetch_add(1, Ordering::Relaxed);
     }
 
-    fn record_erod14_qin_clamped_event(&self) {
-        self.erod14_qin_clamped_events.fetch_add(1, Ordering::Relaxed);
-    }
-
     fn record_wave1_flux_refused_quantum(&self) {
         self.wave1_flux_refused_quanta.fetch_add(1, Ordering::Relaxed);
     }

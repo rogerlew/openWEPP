@@ -17,11 +17,11 @@ use crate::{
     DirectDayConstructorInputs, DirectDayForcing, DirectDayFrame,
     DirectDeepSeepageDownstreamOperands, DirectDeepSeepageInputs,
     DirectDeepSeepageShadowProjection, DirectDeepSeepageState, DirectDownstreamOperands,
-    DirectErod13Inputs, DirectErod14ClassInputs, DirectErod14Inputs, DirectErosionInputs,
-    DirectEvapotranspirationComputeInputs, DirectEvapotranspirationDownstreamOperands,
-    DirectEvapotranspirationInputs, DirectEvapotranspirationPmetInputs,
-    DirectEvapotranspirationShadowProjection, DirectEvapotranspirationState, DirectExecutorMode,
-    DirectFrameExecutor, DirectFrostLayerCarryProjection, DirectHydrologyProjectionInputs,
+    DirectErod13Inputs, DirectErosionInputs, DirectEvapotranspirationComputeInputs,
+    DirectEvapotranspirationDownstreamOperands, DirectEvapotranspirationInputs,
+    DirectEvapotranspirationPmetInputs, DirectEvapotranspirationShadowProjection,
+    DirectEvapotranspirationState, DirectExecutorMode, DirectFrameExecutor,
+    DirectFrostLayerCarryProjection, DirectHydrologyProjectionInputs,
     DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneConstructorInputs,
     DirectLaneTransferLedger, DirectLedgerDownstreamOperands, DirectLedgerShadowProjection,
     DirectLiquidInputInputs, DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
@@ -668,67 +668,6 @@ fn r7d5_erosion_active_publication_fails_closed_without_direct_sediment_producer
 }
 
 #[test]
-fn r7d6_typed_erosion_producer_populates_publication_operands() {
-    let _audit_guard = direct_runtime_test_lock()
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
-    reset_direct_runtime_audit_counters();
-
-    let identity = DirectRunIdentity::new(7, 2637, 1, 1)
-        .expect("valid direct publication identity should construct");
-    let mut frame =
-        DirectRunFrame::skeleton(identity).expect("direct publication frame should construct");
-    frame.lanes[0].area_m2 = 100.0;
-    let mut day_input = r6f_typed_publication_day_inputs()[0].clone();
-    day_input.erosion_producer_required = true;
-    day_input.erosion_inputs = Some(r7d6_typed_erosion_inputs());
-    let metadata = DirectPublicationRunMetadata {
-        run_name: "r7d6_typed_erosion".to_string(),
-        runtime_selection: "direct-production-executor".to_string(),
-        output_policy: "test".to_string(),
-    };
-
-    let execution = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
-        .run_publication_capture_with_day_inputs(&mut frame, metadata, &[day_input])
-        .expect("typed direct erosion producer should satisfy active publication");
-
-    assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
-    let row = execution
-        .publication_frame
-        .first_day()
-        .expect("one direct publication row should be emitted");
-    let total_detachment = row
-        .erosion
-        .total_detachment_kg
-        .expect("R7D6 should publish total detachment");
-    let total_deposition = row
-        .erosion
-        .total_deposition_kg
-        .expect("R7D6 should publish total deposition");
-    assert!(
-        total_detachment > 0.0,
-        "typed erosion producer must not fall back to zero detachment"
-    );
-    assert_r7b_close(total_deposition, 0.10);
-    assert_eq!(row.erosion.hbp_total_detachment_kg, Some(total_detachment));
-    assert_eq!(row.erosion.hbp_total_deposition_kg, Some(total_deposition));
-    let class_concentrations = row
-        .erosion
-        .sediment_concentration_kg_m3
-        .expect("R7D6 should publish class concentrations");
-    assert!(
-        class_concentrations[0] > 0.0 && class_concentrations[1] > 0.0,
-        "R7D6 must emit producer-computed class concentrations"
-    );
-    assert_r7b_close(
-        row.erosion
-            .hbp_sediment_concentration_kg_m3
-            .expect("R7D6 should publish HBP scalar concentration"),
-        class_concentrations[0],
-    );
-}
-
-#[test]
 fn r7g_peak_runoff_tiny_average_rate_uses_floor_instead_of_domain_error() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
@@ -771,7 +710,12 @@ fn r7g_peak_runoff_tiny_average_rate_uses_floor_instead_of_domain_error() {
 }
 
 #[test]
-fn r7g_committed_zero_upstream_erosion_qout_feeds_downstream_erod14_qin() {
+// E.3 2e: this test previously proved the EROD14 qin accepted a committed
+// typed zero qout from an inactive upstream lane. With the Wave-2 arm
+// deleted, the equivalent inter-OFE guarantee is that an inactive upstream
+// lane publishes NO erosion inflow intake (the Wave-1 chain never
+// fabricates a handoff) and the run completes with the committed zero.
+fn r7g_zero_upstream_lane_publishes_no_erosion_inflow_intake() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -786,7 +730,8 @@ fn r7g_committed_zero_upstream_erosion_qout_feeds_downstream_erod14_qin() {
     let base_day = r6f_typed_publication_day_inputs()[0].clone();
     let lane0_day = base_day.clone();
     let mut lane1_day = base_day;
-    lane1_day.erosion_producer_required = true;
+    // 2e: no Wave-2 producer exists; the crafted inputs carry a disabled
+    // Wave-1 seed, so this lane publishes zero-authority erosion.
     lane1_day.erosion_inputs = Some(r7d6_typed_erosion_inputs());
     let lane_days = [lane0_day, lane1_day];
     let metadata = DirectPublicationRunMetadata {
@@ -801,23 +746,16 @@ fn r7g_committed_zero_upstream_erosion_qout_feeds_downstream_erod14_qin() {
             metadata,
             |_frame, _day_index, lane_index| Ok(lane_days[lane_index].clone()),
         )
-        .expect("downstream EROD14 should accept committed typed zero qout from upstream lane");
+        .expect(
+            "the chain must accept a committed typed zero handoff from an inactive upstream lane",
+        );
 
     assert_eq!(execution.report.compatibility_edge_invocation_count, 0);
     assert!(
-        frame.lanes[0]
-            .erosion_downstream_operands
-            .qout_handoff_authority,
-        "upstream lane must commit explicit qout handoff authority even when erosion is inactive"
+        frame.lanes[1].erosion_inflow_intake.is_none(),
+        "an erosion-inactive upstream lane must not publish an inflow intake"
     );
     assert_eq!(execution.publication_frame.rows().len(), 2);
-    assert!(
-        execution.publication_frame.rows()[1]
-            .erosion
-            .total_detachment_kg
-            .expect("downstream active erosion should publish detachment")
-            > 0.0
-    );
 }
 
 fn r7d4_mofe_carry_publication_day(theta_m: f64, carry_enabled: bool) -> DirectPublicationDayInput {
@@ -885,7 +823,6 @@ fn r7d4_peak_runoff_inputs() -> DirectPeakRunoffInputs {
 fn r7d6_typed_erosion_inputs() -> DirectErosionInputs {
     DirectErosionInputs {
         wave1_enabled: true,
-        wave2_enabled: true,
         wave1_continuity: Box::new(DirectWave1ContinuityInputs::zero()),
         wave1_operand_seed: Box::new(DirectWave1OperandSeed::disabled()),
         wave1: DirectErod13Inputs {
@@ -917,52 +854,6 @@ fn r7d6_typed_erosion_inputs() -> DirectErosionInputs {
             q_runoff_m: 0.01,
             peakro_m3_s: 0.001,
             watdur_s: 10.0,
-        },
-        wave2: DirectErod14Inputs {
-            xtop_m: 0.0,
-            xbot_m: 10.0,
-            xdetst_m: 0.0,
-            ldtop_kg_s_m: 0.4,
-            ldbot_kg_s_m: 0.2,
-            lddend_kg: 0.10,
-            qout_m3_s: 1.0,
-            qin_m3_s: 0.5,
-            qostar_m: 1.0,
-            hbp_sediment_concentration_scale: 1.0,
-            slplen_m: 10.0,
-            ktrato: 1.0,
-            aintc: 0.001,
-            bintc: 0.001,
-            cintc: 0.001,
-            beta: 0.5,
-            qj_minus_1_m3_s: 1.0,
-            vj_m: 0.10,
-            qj_m3_s: 1.0,
-            fh_m: 0.0,
-            fp_m: 0.0,
-            case_value: 2.0,
-            peak_runoff_m3_s: 0.001,
-            runoff_duration_s: 10.0,
-            ssa_soil: 1.0,
-            theta: 0.001,
-            classes: vec![
-                DirectErod14ClassInputs {
-                    fall_m_s: 0.001,
-                    frcflw: 0.5,
-                    frac: 0.5,
-                    fidel: 0.5,
-                    tcf1: 0.5,
-                    ssa_class: 2.0,
-                },
-                DirectErod14ClassInputs {
-                    fall_m_s: 0.002,
-                    frcflw: 0.5,
-                    frac: 0.5,
-                    fidel: 0.5,
-                    tcf1: 0.5,
-                    ssa_class: 3.0,
-                },
-            ],
         },
     }
 }

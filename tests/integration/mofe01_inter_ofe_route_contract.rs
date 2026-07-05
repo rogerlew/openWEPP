@@ -106,12 +106,18 @@ fn mofe01_mg_erosion_qin_boundary_contract_authority_is_present() {
     })
     .collect::<Vec<_>>()
     .join("\n");
+    // E.3 stage 2e: the water-transfer-only compatibility posture
+    // (EROD14_QIN_POLICY_WATER_TRANSFER_ONLY + MOFE01-MG-W-001) is
+    // DELETED with the Wave-2 arm; the guard now pins the
+    // INV-RUNOFFPART-030 disposition surfaces — the Wave-1 coupled
+    // handoff policy and the chain flag.
     assert!(
-        runner.contains("EROD14_QIN_POLICY_WATER_TRANSFER_ONLY")
-            && runner.contains("MOFE01-MG-W-001")
+        runner.contains("EROD14_QIN_POLICY_WAVE1_SEDIMENT_COUPLED")
+            && runner.contains("wave1-hourly-sediment-coupled-handoff")
             && runner.contains("erod14_qin_source_policy")
-            && runner.contains("erod14_qin_sediment_coupled"),
-        "runner manifest provenance must expose M-G qin policy fields"
+            && runner.contains("erod14_qin_sediment_coupled")
+            && runner.contains("multi_ofe_wave1_chained"),
+        "runner manifest provenance must expose the M-G disposition qin policy fields"
     );
 }
 

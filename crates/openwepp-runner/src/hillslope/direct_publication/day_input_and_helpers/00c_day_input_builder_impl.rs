@@ -246,7 +246,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             authority.hydrology_projection_inputs(hydrology_layers);
         hydrology_projection_inputs.snow_water_m = snow_liquid.runtime_swe_after_m;
         day_input.hydrology_projection_inputs = Some(hydrology_projection_inputs);
-        let erosion_active = direct_production_erosion_active(authority, &day_input)?;
+        let erosion_active = direct_production_erosion_active(authority);
         apply_direct_production_erosion_inputs(&mut day_input, authority, erosion_active);
         apply_direct_production_frost_context(&mut day_input, frost_context);
         day_input.frost_runtime_carry =
@@ -971,36 +971,14 @@ fn snowdensity1015_default_snow_melt_model(
     }
 }
 
-fn direct_production_erosion_active(
-    authority: &DirectProductionLaneDayInputAuthority,
-    day_input: &DirectPublicationDayInput,
-) -> Result<bool, HillslopeCliError> {
-    // SC-SED-001 1b-C: erosion is active when EITHER the multi-OFE Wave-2
-    // router is on OR the single-OFE Wave-1 sediment-continuity seed is
-    // enabled. The prior `wave2_enabled`-only gate suppressed the
-    // single-OFE Wave-1 path entirely (`wave2_enabled` is false for one OFE),
-    // so the seed never reached the day frame.
-    if !authority.erosion.wave2_enabled
-        && !authority.erosion.erosion_inputs.wave1_operand_seed.enabled
-    {
-        return Ok(false);
-    }
-    // SC-SED-001 1b-C: the single-OFE Wave-1 seed must attach EVERY day so
-    // the persistent consolidation carry (`rfcum`/`daydis`) advances daily
-    // per `soil.for` (aging on dry days after `rfcum > 0.01`), not only on
-    // rainfall days. The solve still gates itself inactive on non-runoff
-    // days, so this changes no sediment output — only the carry lineage.
-    if authority.erosion.erosion_inputs.wave1_operand_seed.enabled {
-        return Ok(true);
-    }
-    // Wave-2 (EROD14) multi-OFE path keeps the rainfall activation gate.
-    let rainfall_m = direct_publication_hyetograph_rainfall_m(
-        day_input
-            .peak_runoff_inputs
-            .as_ref()
-            .map_or(&[][..], |inputs| inputs.hyetograph.as_slice()),
-    )?;
-    Ok(rainfall_m >= DIRECT_PUBLICATION_EROSION_MIN_POST_INTERCEPTION_RAINFALL_M)
+// E.3 stage 2e (Wave-2 deleted): erosion activation is the Wave-1 seed
+// alone. SC-SED-001 1b-C: the seed must attach EVERY day so the
+// persistent consolidation carry (`rfcum`/`daydis`) advances daily per
+// `soil.for` (aging on dry days after `rfcum > 0.01`), not only on
+// rainfall days. The solve still gates itself inactive on non-runoff
+// days. A disabled seed (active-tillage scope) has no erosion producer.
+fn direct_production_erosion_active(authority: &DirectProductionLaneDayInputAuthority) -> bool {
+    authority.erosion.erosion_inputs.wave1_operand_seed.enabled
 }
 
 fn apply_direct_production_erosion_inputs(

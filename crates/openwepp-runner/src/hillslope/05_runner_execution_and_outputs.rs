@@ -60,13 +60,13 @@ fn execute_hillslope_direct_production_days(
         &retained_direct_publication.stream.summary,
     )?;
     let executed_day_count = climate_span.days.len();
-    let erod14_wave2_enabled = seed_authority.erod14_wave2_enabled;
+    let multi_ofe_wave1_chained = seed_authority.multi_ofe_wave1_chained;
 
     Ok(HillslopeClimateExecution {
         selected_lane: lane_context.lane,
         climate_span,
         coupling_vectors,
-        erod14_wave2_kernel_status_seen: erod14_wave2_enabled,
+        multi_ofe_wave1_chained,
         scheduler_outcome_class: "completed",
         scheduler_status_message_id: "R7C-DIRECT-PRODUCTION-EXECUTOR".to_string(),
         kernel_phase_message_ids: Vec::new(),
@@ -329,10 +329,11 @@ fn build_hillslope_execution_provenance(
     );
     let wb16_ealpha_compatibility_seed_used = false;
     let _ = sidecar_warnings;
-    // E.3: the seed-level flag now carries multi-OFE-ness only (Wave-2
-    // itself is retired — it never runs, so both wave2 provenance fields
-    // publish false); the qin policy reports the Wave-1 coupled handoff.
-    let multi_ofe_wave1_chained = execution.erod14_wave2_kernel_status_seen;
+    // E.3 stage 2e: the EROD14/Wave-2 kernel is DELETED — both wave2
+    // provenance fields publish false permanently (field names retained
+    // for manifest lineage); the qin policy reports the Wave-1 coupled
+    // handoff on multi-OFE runs.
+    let multi_ofe_wave1_chained = execution.multi_ofe_wave1_chained;
     let erod14_qin_source_policy = erod14_qin_source_policy(multi_ofe_wave1_chained);
     HillslopeExecutionProvenance {
         scheduler_kernel_executed: false,
@@ -345,7 +346,7 @@ fn build_hillslope_execution_provenance(
         executed_day_count: execution.executed_day_count,
         kernel_phase_message_ids: execution.kernel_phase_message_ids.clone(),
         erod14_wave2_enabled: false,
-        erod14_wave2_kernel_status_seen: false,
+        multi_ofe_wave1_chained,
         erod14_qin_source_policy: erod14_qin_source_policy.to_string(),
         erod14_qin_sediment_coupled: multi_ofe_wave1_chained,
         wb16_ealpha_compatibility_seed_used,
@@ -354,12 +355,9 @@ fn build_hillslope_execution_provenance(
 }
 
 fn erod14_qin_source_policy(multi_ofe_wave1_chained: bool) -> &'static str {
-    // E.3: Wave-2 is retired as the multi-OFE authority; on multi-OFE
+    // E.3 stage 2e: the EROD14/Wave-2 arm is deleted; on multi-OFE
     // hillslopes the Wave-1 chain supplies TRUE sediment-coupled qin
-    // (INV-SED-012 lineage: prior-lane erosion qout/qsout/fractions/
-    // continuity state) — the water-transfer-only compatibility posture
-    // and its warning are gone with it.
-    let _ = EROD14_QIN_POLICY_WATER_TRANSFER_ONLY;
+    // (INV-SED-012 lineage).
     if multi_ofe_wave1_chained {
         EROD14_QIN_POLICY_WAVE1_SEDIMENT_COUPLED
     } else {

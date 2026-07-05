@@ -18,7 +18,7 @@ struct DirectProductionDayInputBuilder<'a> {
 struct DirectProductionSeedAuthority {
     lanes: Vec<DirectProductionLaneSeedAuthority>,
     winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
-    erod14_wave2_enabled: bool,
+    multi_ofe_wave1_chained: bool,
 }
 
 struct DirectProductionSnowbenchExportSeed {
@@ -198,7 +198,6 @@ struct DirectProductionSurfaceLitterProjection {
 
 #[derive(Clone, Debug, PartialEq)]
 struct DirectProductionErosionAuthority {
-    wave2_enabled: bool,
     erosion_inputs: DirectErosionInputs,
 }
 
@@ -345,12 +344,13 @@ impl DirectProductionSeedAuthority {
             .collect::<Vec<_>>();
         let winter_hourly_geometry =
             DirectProductionWinterHourlyGeometry::from_typed_inputs(inputs, lane_count)?;
-        let erod14_wave2_enabled = direct_production_typed_erod14_wave2_enabled(inputs, lane_count)?;
+        let multi_ofe_wave1_chained =
+            direct_production_typed_multi_ofe_wave1_chained(inputs, lane_count)?;
 
         Ok(Self {
             lanes,
             winter_hourly_geometry,
-            erod14_wave2_enabled,
+            multi_ofe_wave1_chained,
         })
     }
 
@@ -580,7 +580,6 @@ fn direct_production_typed_lane_seed_authority(
         &slope_projection,
         &management_projection,
         &peak_runoff,
-        contributor_ofe_count,
         direct_production_management_has_active_tillage(management),
     )?;
 
@@ -1201,10 +1200,6 @@ fn direct_production_typed_erosion_authority(
     slope: &openwepp_hillslope_orchestrator::runtime_inputs::TypedSlopeRuntimeProjection,
     management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     peak_runoff: &DirectProductionPeakRunoffAuthority,
-    // E.3: the enable no longer keys on OFE count (Wave-1 chains on every
-    // lane) and Wave-2 retirement removed its other consumer; the param
-    // stays for the call-site shape until the stage-2e EROD14 deletion.
-    _contributor_ofe_count: usize,
     management_has_active_tillage: bool,
 ) -> Result<DirectProductionErosionAuthority, HillslopeCliError> {
     // Wave-1 (SC-SED-001 sediment continuity): the spatial continuity
@@ -1219,30 +1214,8 @@ fn direct_production_typed_erosion_authority(
     // SEPARATE Increment-1 pointwise EROD13 coefficient check, which
     // stays disabled — it is not the continuity solve.
     let wave1_enabled = false;
-    // E.3 (Increment-2 entry gate §3): Wave-1 is the per-OFE continuity
-    // engine on EVERY lane; EROD14/Wave-2 is retired as the multi-OFE
-    // publication authority (the router code is retained as a
-    // test-reachable comparator arm — the INV-SED-015 pattern — until its
-    // stage-2e deletion).
-    let wave2_enabled = false;
-    let first_ofe = slope.ofes.first().ok_or_else(|| {
-        direct_production_executor_blocked("typed erosion seed requires at least one slope OFE")
-    })?;
-    let first_layer = soil.layers.first().ok_or_else(|| {
-        direct_production_executor_blocked("typed erosion seed requires at least one soil layer")
-    })?;
-    let wave2_projection = direct_seed_projections::project_typed_mofe03_wave2(
-        direct_seed_projections::TypedMofe03Wave2Input {
-            wave2_enabled,
-            slplen_m: first_ofe.slplen_m,
-            qout_m3_s: 0.0,
-            qin_m3_s: 0.0,
-            efflen_m: Some(peak_runoff.efflen_m),
-            ssa_soil: None,
-            beta: direct_seed_projections::MOFE03_WAVE2_DEFAULT_BETA,
-            theta: 0.5 * (first_layer.thetdr + first_layer.thetfc),
-        },
-    )?;
+    // E.3 stage 2e: the EROD14/Wave-2 arm is DELETED — Wave-1 is the
+    // erosion engine on every lane, single- and multi-OFE alike.
     // SC-SED-001 1b-C: build the static Wave-1 operand seed on every lane
     // (the disabled seed is validated against real parsed inputs across the
     // full fixture suite). The per-day assembly consumes it once enabled.
@@ -1262,74 +1235,17 @@ fn direct_production_typed_erosion_authority(
     // disabled until its operands are sourced.
     wave1_operand_seed.enabled = !management_has_active_tillage;
     Ok(DirectProductionErosionAuthority {
-        wave2_enabled,
         erosion_inputs: DirectErosionInputs {
             wave1_enabled,
-            wave2_enabled,
             wave1: DirectErod13Inputs::zero(),
             wave1_continuity: Box::new(
                 openwepp_hillslope_orchestrator::DirectWave1ContinuityInputs::zero(),
             ),
             wave1_operand_seed: Box::new(wave1_operand_seed),
-            wave2: direct_production_erod14_inputs_from_typed_projection(
-                &wave2_projection,
-                peak_runoff.efflen_m,
-            ),
         },
     })
 }
 
-fn direct_production_erod14_inputs_from_typed_projection(
-    projection: &direct_seed_projections::TypedMofe03Wave2Projection,
-    efflen_m: f64,
-) -> DirectErod14Inputs {
-    if !projection.wave2_enabled {
-        return DirectErod14Inputs::zero();
-    }
-    let classes = projection
-        .classes
-        .iter()
-        .map(|class| DirectErod14ClassInputs {
-            fall_m_s: class.fall_m_s,
-            frcflw: class.frcflw,
-            frac: class.frac,
-            fidel: class.fidel,
-            tcf1: class.tcf1,
-            ssa_class: class.ssa_class,
-        })
-        .collect::<Vec<_>>();
-    DirectErod14Inputs {
-        xtop_m: projection.xtop_m,
-        xbot_m: projection.xbot_m,
-        xdetst_m: projection.xdetst_m,
-        ldtop_kg_s_m: projection.ldtop_kg_s_m,
-        ldbot_kg_s_m: projection.ldbot_kg_s_m,
-        lddend_kg: projection.lddend_kg,
-        qout_m3_s: projection.qout_m3_s,
-        qin_m3_s: projection.qin_m3_s,
-        qostar_m: projection
-            .qostar_m
-            .max(direct_seed_projections::MOFE03_WAVE2_DEFAULT_QOSTAR),
-        hbp_sediment_concentration_scale: efflen_m / projection.slplen_m,
-        slplen_m: projection.slplen_m,
-        ktrato: projection.ktrato,
-        aintc: projection.aintc,
-        bintc: projection.bintc,
-        cintc: projection.cintc,
-        beta: projection.beta,
-        qj_minus_1_m3_s: projection.qj_minus_1_m3_s,
-        vj_m: projection.vj_m,
-        qj_m3_s: projection.qj_m3_s,
-        fh_m: projection.fh_m,
-        fp_m: projection.fp_m,
-        case_value: projection.case_value,
-        peak_runoff_m3_s: 0.0,
-        runoff_duration_s: 0.0,
-        ssa_soil: projection.ssa_soil,
-        theta: projection.theta,
-        classes,
-    }
-}
 
 fn direct_production_typed_growth_authority(
     management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
@@ -2154,7 +2070,10 @@ fn direct_growth_state_surface_from_pl_projection(
     })
 }
 
-fn direct_production_typed_erod14_wave2_enabled(
+/// E.3: multi-OFE-ness for the manifest qin-policy surfaces — the Wave-1
+/// chain is the inter-OFE erosion authority on `ofe_count > 1` runs
+/// (`SC-RUNOFFPART-001#INV-RUNOFFPART-030` disposition).
+fn direct_production_typed_multi_ofe_wave1_chained(
     inputs: &ParsedHillslopeRunInputs,
     lane_count: usize,
 ) -> Result<bool, HillslopeCliError> {
@@ -2165,7 +2084,7 @@ fn direct_production_typed_erod14_wave2_enabled(
     };
     if ofe_count == 0 {
         return Err(direct_production_executor_blocked(
-            "typed Wave-2 seed requires at least one OFE",
+            "the typed erosion seed requires at least one OFE",
         ));
     }
     Ok(ofe_count > 1)

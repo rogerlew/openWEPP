@@ -585,8 +585,9 @@ loss = "output/H1.loss.json"
         "Wave-2 is retired as multi-OFE authority (E.3), observed manifest: {manifest}"
     );
     assert!(
-        manifest.contains("\"erod14_wave2_kernel_status_seen\": false"),
-        "the retired Wave-2 kernel must never run, observed manifest: {manifest}"
+        manifest.contains("\"multi_ofe_wave1_chained\": true"),
+        "multi-OFE manifests publish the Wave-1 chain flag (2e replaces the \
+         dead kernel-status field), observed manifest: {manifest}"
     );
     assert!(
         manifest
@@ -635,7 +636,7 @@ loss = "output/H1.loss.json"
         "single-OFE policy should keep Wave-2 disabled, observed manifest: {manifest}"
     );
     assert!(
-        manifest.contains("\"erod14_wave2_kernel_status_seen\": false"),
+        manifest.contains("\"multi_ofe_wave1_chained\": false"),
         "single-OFE policy should keep Wave-2 kernel status absent, observed manifest: {manifest}"
     );
     assert!(

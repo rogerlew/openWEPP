@@ -980,52 +980,9 @@ fn derive_mofe04_publication_area_from_slope(
     Ok(area)
 }
 
-fn require_mofe03_non_negative_seed_scalar(
-    value: f64,
-    symbol: &str,
-) -> Result<f64, HillslopeCliError> {
-    if !value.is_finite() {
-        return Err(mofe03_wave2_seed_failure(format!(
-            "{symbol} seed value must be finite, observed {value}"
-        )));
-    }
-    if value < 0.0 {
-        return Err(mofe03_wave2_seed_failure(format!(
-            "{symbol} seed value must be >= 0.0, observed {value}"
-        )));
-    }
-    Ok(value)
-}
 
-fn require_mofe03_seed_scalar(value: f64, symbol: &str) -> Result<f64, HillslopeCliError> {
-    if !value.is_finite() {
-        return Err(mofe03_wave2_seed_failure(format!(
-            "{symbol} seed value must be finite, observed {value}"
-        )));
-    }
-    Ok(value)
-}
 
-fn require_mofe03_positive_seed_scalar(value: f64, symbol: &str) -> Result<f64, HillslopeCliError> {
-    if !value.is_finite() {
-        return Err(mofe03_wave2_seed_failure(format!(
-            "{symbol} seed value must be finite, observed {value}"
-        )));
-    }
-    if value <= 0.0 {
-        return Err(mofe03_wave2_seed_failure(format!(
-            "{symbol} seed value must be > 0.0, observed {value}"
-        )));
-    }
-    Ok(value)
-}
 
-fn mofe03_wave2_seed_failure(detail: impl Into<String>) -> HillslopeCliError {
-    HillslopeCliError::RuntimeSurfaceFailure {
-        surface: "mofe03_wave2_seed",
-        detail: format!("{SIMPIPE_GUARD_ID} {}", detail.into()),
-    }
-}
 
 fn scalar_to_i32(symbol: &str, value: f64) -> Result<i32, HillslopeCliError> {
     if !value.is_finite() {

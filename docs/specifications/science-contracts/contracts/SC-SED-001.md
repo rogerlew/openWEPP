@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 44
+contract_version: 45
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -355,6 +355,17 @@ Minimum vectors required by EROD13 contract-derived tests:
 
 ## EROD14 Wave-2 Multi-OFE and Enrichment Runtime Addendum
 
+> **DELETED — E.3 stage 2e (2026-07-04).** The EROD14/Wave-2 runtime arm
+> (kernel, seed projection, and plumbing) is removed from the codebase;
+> the Wave-1 chain (`INV-SED-016`) is the sole multi-OFE erosion engine.
+> This addendum is retained as the historical specification of the
+> deleted arm. Manifest lineage: `erod14_wave2_enabled` (permanently
+> `false`) and the `erod14_qin_*` policy surfaces remain;
+> `erod14_wave2_kernel_status_seen` is REPLACED by
+> `multi_ofe_wave1_chained` (the dead forever-false kernel-status field
+> gave way to the informative chain flag). The `Erod14*` typed guard
+> codes remain defined (error-code lineage) with no remaining raisers.
+
 ### Runtime Integration Point
 
 1. Wave-2 executes in the hillslope `closure_diagnostics` scheduler phase
@@ -462,6 +473,11 @@ Minimum vectors required by EROD14 contract-derived tests:
    `HKERNEL-EROD14-WAVE2-E-003`.
 
 ## EROD15 Wave-3 HBP Routing-Boundary Export Addendum
+
+> **DELETED — E.3 stage 2e (2026-07-04).** The EROD15 projection served
+> only the deleted Wave-2 arm; the Wave-1 publication projection
+> (`INV-SED-010`/`INV-SED-016`) owns the HBP export surface. Retained as
+> historical specification.
 
 ### Wave-3 Export Symbols and Alias Family
 
@@ -589,6 +605,7 @@ canonical `SC-*` contracts before production migration packages.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-04` | `45` | `Claude Code` | E.3 stage 2e: the EROD14/Wave-2 arm DELETED from the runtime (kernel `compute_direct_erod14`, EROD15 projection, MOFE03 Wave-2 seed projection, qin clamp + water-transfer-only policy plumbing, the dead downstream qout/fraction handoff channel); the EROD14/EROD15 addenda are marked deleted-historical. Manifest: `erod14_wave2_kernel_status_seen` replaced by `multi_ofe_wave1_chained`; `erod14_wave2_enabled` (false) + `erod14_qin_*` retained for lineage. `INV-SED-015`/`INV-SED-016` comparator-arm deletion clauses executed. |
 | `2026-07-04` | `44` | `Claude Code` | E.3/Increment-2c multi-OFE chaining amendment: added `INV-SED-016` (per-lane per-OFE seeds with the fail-closed global-particle-override rule; the EROSION-lineage hourly handoff; receiver-side `strldn`/`sheart`/Eq.[11.4.x]-continuity derivations; inflow-active locally-dry solves + no-excess-hour theta suppression; the EXIT-scoped chain EVENT with `Σ S_h(exit) = Σ_lanes(tdet − tdep)`; the `flux_refused_quanta` diagnostic-skip policy; the inflow-only-day concentration guard; EROD14 retirement to a comparator arm), recorded the `INV-SED-012` DISPOSITION (satisfied by the Wave-1 handoff lineage; `erod14_qin_sediment_coupled = true` truthful on the chain), and extended `GAP-SED-007` with the labeled inflow-day blend. |
 | `2026-07-04` | `43` | `Claude Code` | E.2/ADR-0036 hydrograph-substrate amendment: added `REF-SED-ADR0036` + `REF-SED-DC01-SHAPE` (the DC01 transfer-weight hourly-shape authority), `INV-SED-013` (per-hydraulically-active-hour solve basis + operand table + day-level `passby` precedence), `INV-SED-014` (per-hour and integral closures `Σ V_h = runvol` / `Σ S_h = exported mass`; no `peakro` rescale), `INV-SED-015` (peak-form arm comparator-only after the flip), and `GAP-SED-008` (uniform per-event class-fraction timing across hours pending E.4). |
 | `2026-07-04` | `42` | `Claude Code` | E.1/Increment-1c-fidelity amendment: added `REF-SED-LEGACY-SLOSS-SEDCON` / `REF-SED-LEGACY-SEDSEG-WIDTH` / `REF-SED-LEGACY-FRCFLW-INIT` provenance anchors (per-class exit-concentration formula, `fwidth` total-mass scaling, exiting-fraction lineage) and opened `GAP-SED-007` labeling the pre-enrichment per-class publication basis (detached-composition split; exact on the non-depositing enabled scope, un-enriched distribution on depositing days, class sum always mass-exact) pending the E.4/2d `enrich.for`-lineage port. |

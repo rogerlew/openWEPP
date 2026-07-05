@@ -17,8 +17,7 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
 };
 use openwepp_hillslope_orchestrator::{
     DirectActiveFrostPartitionInputs, DirectActiveSnowPartitionInputs, DirectCanopyInterceptionInputs, DirectErod13Inputs,
-    DirectErod14ClassInputs,
-    DirectErod14Inputs, DirectErosionInputs, DirectEvapotranspirationComputeInputs,
+    DirectErosionInputs, DirectEvapotranspirationComputeInputs,
     DirectEvapotranspirationPmetInputs, DirectEvapotranspirationStageState,
     DirectExecutorMode, DirectFrameExecutor,
     DirectFrostControlInputs, DirectFrostFineLayerProjection, DirectFrostHourlyForcing,
@@ -115,12 +114,7 @@ const EROD14_QIN_POLICY_WAVE2_DISABLED: &str = "wave2-disabled";
 // Wave-1 hourly sediment-coupled handoff (prior-lane erosion qout + qsout +
 // class fractions + continuity state), never a water-transfer substitute.
 const EROD14_QIN_POLICY_WAVE1_SEDIMENT_COUPLED: &str = "wave1-hourly-sediment-coupled-handoff";
-const EROD14_QIN_POLICY_WATER_TRANSFER_ONLY: &str =
-    "water-transfer-only-mofe01-mg-sediment-coupling-follow-on";
-// E.3: the water-transfer-only warning retired with the Wave-1 coupled
-// handoff; the id is kept for the contract lineage until stage 2e.
-#[allow(dead_code)]
-const EROD14_QIN_WARNING_ID: &str = "MOFE01-MG-W-001";
+
 
 #[derive(Debug, Serialize)]
 struct HillslopeRunManifest {
@@ -240,7 +234,10 @@ struct HillslopeExecutionProvenance {
     executed_day_count: usize,
     kernel_phase_message_ids: Vec<String>,
     erod14_wave2_enabled: bool,
-    erod14_wave2_kernel_status_seen: bool,
+    /// E.3 stage 2e: replaces `erod14_wave2_kernel_status_seen` (dead
+    /// forever-false with the kernel deleted) — true when the Wave-1
+    /// chain is the inter-OFE erosion authority (`ofe_count > 1`).
+    multi_ofe_wave1_chained: bool,
     erod14_qin_source_policy: String,
     erod14_qin_sediment_coupled: bool,
     wb16_ealpha_compatibility_seed_used: bool,
@@ -584,7 +581,7 @@ struct HillslopeClimateExecution {
     selected_lane: ExecutionLane,
     climate_span: ClimateRunSpanSummary,
     coupling_vectors: HillslopeCouplingVectorProvenance,
-    erod14_wave2_kernel_status_seen: bool,
+    multi_ofe_wave1_chained: bool,
     scheduler_outcome_class: &'static str,
     scheduler_status_message_id: String,
     kernel_phase_message_ids: Vec<String>,

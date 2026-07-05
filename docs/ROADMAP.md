@@ -748,9 +748,9 @@ the EXIT-scoped chain EVENT, EROD14 retired to a comparator arm, the
 INV-RUNOFFPART-030/INV-SED-012 dispositions, and the **first multi-OFE
 sediment the runtime has ever produced** (real W7DC01-substrate H102 —
 the retired EROD14 path published zero; the `WSHED-W7DC01` hold's
-producer-side cause is gone). **Remaining in-section scope: the stage-2e
-EROD14/Wave-2 deletion (the comparator arm + its seed projection and
-retired policy plumbing).**
+producer-side cause is gone). **Stage-2e EROD14/Wave-2
+deletion EXECUTED (branch `erosion-e3-2e-erod14-deletion`, awaiting
+Codex review) — E.3 fully closes on its merge.**
 
 Original scope:
 Make **Wave-1 the per-OFE continuity engine** for every OFE, chained by the

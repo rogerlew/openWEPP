@@ -284,6 +284,47 @@ needed before merge"). All three CONFIRMED and fixed:
    tcend/width/rspace, and `shrspv` responding to the PRIOR lane's
    average slope only.
 
+## 5c. Stage 2e execution record — EROD14/Wave-2 deletion (2026-07-04)
+
+Operator: "merge and proceed with E.3 re-check scope" (post-merge, the
+remaining in-section item). Branch `erosion-e3-2e-erod14-deletion`.
+
+**Deleted:** `compute_direct_erod14` + its working/class state and
+validation/case helpers, the `DirectErod14Inputs`/`State`/`Class*`
+structs, the EROD15 publication projection (it served only Wave-2), the
+MOFE03 Wave-2 seed projection module
+(`02_mofe03_wave2_projection.rs`, 269 lines) with its `require_mofe03_*`
+validators, the builder Wave-2 seed path + `wave2_enabled` plumbing,
+the r7d8 Wave-2 qin threading (incl. the INV-RUNOFFPART-031 interim
+clamp site and its `record_erod14_qin_clamped_event` recorder — the
+audit/manifest counter FIELD stays at 0 for lineage), the
+water-transfer-only policy constant + warning id, and the dead
+downstream qout/fraction handoff channel
+(`qout_handoff_authority`/`qout_m3_s`/lane `particle_flow_fraction` on
+the downstream operands + shadow projection — the Wave-1 intake carry
+is the inter-OFE authority). `erosion.rs` 1741 → 1113 lines.
+
+**Manifest surface decision:** `erod14_wave2_kernel_status_seen`
+(forever-false with the kernel gone) is REPLACED by
+`multi_ofe_wave1_chained` (informative: the Wave-1 chain is the
+inter-OFE authority on `ofe_count > 1`); `erod14_wave2_enabled`
+(false) + the `erod14_qin_*` policy surfaces stay for lineage. CLI03
+contract tests updated both arms.
+
+**Test dispositions:** the two Wave-2-behavior executor tests —
+`r7g_committed_zero_upstream_erosion_qout_feeds_downstream_erod14_qin`
+repurposed to the chain guarantee (an erosion-inactive upstream lane
+publishes NO inflow intake);
+`r7d6_typed_erosion_producer_populates_publication_operands` deleted
+(it asserted Wave-2 publication values; the Wave-1 publication path is
+covered by the wave1 unit tests + p61/p102 end-to-end). The `Erod14*`
+typed guard-code enum variants remain defined with no raisers
+(error-code lineage; noted in SC-SED-001 rev 45).
+
+**Contract:** SC-SED-001 rev 45 — EROD14/EROD15 addenda marked
+DELETED-historical; the `INV-SED-015`/`INV-SED-016` comparator-arm
+deletion clauses executed.
+
 ## 6. 2c-3 continuation spec (superseded by §5a — retained for the design record)
 
 1. **Enable:** 00_builders:1257 drops `contributor_ofe_count == 1` (the

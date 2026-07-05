@@ -171,8 +171,7 @@ pub use diagnostic_events::{
     DirectSubsurfaceSaturationTraceEvent,
 };
 pub use erosion::{
-    DirectErod13Inputs, DirectErod13State, DirectErod14ClassInputs, DirectErod14ClassState,
-    DirectErod14Inputs, DirectErod14State, DirectErosionDownstreamOperands, DirectErosionInputs,
+    DirectErod13Inputs, DirectErod13State, DirectErosionDownstreamOperands, DirectErosionInputs,
     DirectErosionShadowProjection, DirectErosionSpanReport, DirectErosionState,
 };
 // E.1 per-class publication: crate-visible for the contract tests only.
