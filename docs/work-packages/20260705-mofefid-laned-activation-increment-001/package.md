@@ -2,7 +2,13 @@
 
 Status: `EXECUTED — AWAITING CODEX REVIEW` (Claude-executed; operator:
 "scaffold and execute the activation increment", 2026-07-05). Branch:
-`laned-activation-increment`. SC-OFEROUTE-001 rev 15.
+`laned-activation-increment`. SC-OFEROUTE-001 rev 15 + the rev-16
+terminology disambiguation (Codex framing review): the runtime SHADOW
+(landed, fixture-exercised) and the ACTIVATION wiring (outstanding:
+routing owning the water path, runtime closure hard-fail, DC01-disable,
+the enumerated flip preconditions) are now distinct claims at every
+contract site — the acceptance verb this increment closes is "runtime
+wiring exists and is fixture-exercised," NOT activation.
 
 ## What landed
 
