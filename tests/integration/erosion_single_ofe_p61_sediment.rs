@@ -63,6 +63,25 @@ fn erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime() {
          (sum={tdet_sum}, max={tdet_max}, nonzero_days={nonzero_days})"
     );
 
+    // GAP-SED-009 closure band (the ground-cover authority fix): the
+    // dominant event's per-width export must sit in the legacy ORDER —
+    // legacy `Sed.Del` is 4.2 kg/m, the fixed runtime lands ~3.97, and
+    // the bare-soil defect produced ~25. The band is generous (the
+    // magnitude is not an acceptance oracle, ADR-0017) but excludes the
+    // zero-cover regression class by a wide margin.
+    let fwidth_m = 724.3;
+    let max_export_kg_m = read_sediment_rows(pass_parquet)
+        .into_iter()
+        .map(|row| (row.tdet_kg - row.tdep_kg) / fwidth_m)
+        .fold(0.0_f64, f64::max)
+        .max(0.0);
+    assert!(
+        (0.5..=12.0).contains(&max_export_kg_m),
+        "the dominant-event per-width export must stay in the legacy \
+         order (observed {max_export_kg_m} kg/m; bare-soil regression \
+         was ~25, legacy is 4.2)"
+    );
+
     // Total detachment must be finite and mass-nonnegative.
     assert!(tdet_sum.is_finite(), "total detachment must be finite");
 

@@ -41,6 +41,8 @@ impl DirectProductionResidueCoverAuthority {
         DirectProductionResidueCoverState {
             surface_residue_kg_m2: self.initial_surface_residue_kg_m2,
             root_residue_kg_m2: self.initial_root_residue_kg_m2,
+            interrill_ground_residue_kg_m2: self.initial_interrill_ground_kg_m2,
+            rill_ground_residue_kg_m2: self.initial_rill_ground_kg_m2,
             pending_surface_litter_kg_m2: 0.0,
             residue_depth_m: self.initial_surface_residue_kg_m2
                 * self.residue_depth_conversion_m_per_kg_m2,
@@ -94,6 +96,8 @@ impl DirectProductionResidueCoverAuthority {
         let state_after = DirectProductionResidueCoverState {
             surface_residue_kg_m2: decomposition_state.surface_residue_kg_m2,
             root_residue_kg_m2: decomposition_state.root_residue_kg_m2,
+            interrill_ground_residue_kg_m2: decomposition_state.interrill_ground_residue_kg_m2,
+            rill_ground_residue_kg_m2: decomposition_state.rill_ground_residue_kg_m2,
             pending_surface_litter_kg_m2: surface_litter_projection
                 .pending_surface_litter_after_kg_m2,
             residue_depth_m: decomposition_state.residue_depth_m,
@@ -137,6 +141,9 @@ impl DirectProductionResidueCoverAuthority {
             return Ok(DirectDecompositionInputs {
                 surface_residue_seed_kg_m2: state_before.surface_residue_kg_m2,
                 root_residue_seed_kg_m2: state_before.root_residue_kg_m2,
+                interrill_ground_seed_kg_m2: state_before.interrill_ground_residue_kg_m2,
+                rill_ground_seed_kg_m2: state_before.rill_ground_residue_kg_m2,
+                residue_cover_factor: self.residue_cover_factor,
                 surface_litter_input_kg_m2,
                 residue_depth_conversion_m_per_kg_m2: self
                     .residue_depth_conversion_m_per_kg_m2,
@@ -171,6 +178,9 @@ impl DirectProductionResidueCoverAuthority {
             residue_type_selector: self.residue_type_selector,
             surface_residue_seed_kg_m2: state_before.surface_residue_kg_m2,
             root_residue_seed_kg_m2: state_before.root_residue_kg_m2,
+            interrill_ground_seed_kg_m2: state_before.interrill_ground_residue_kg_m2,
+            rill_ground_seed_kg_m2: state_before.rill_ground_residue_kg_m2,
+            residue_cover_factor: self.residue_cover_factor,
             surface_litter_input_kg_m2,
             residue_depth_conversion_m_per_kg_m2: self.residue_depth_conversion_m_per_kg_m2,
             temperature_max_c: forcing.tmax_c,

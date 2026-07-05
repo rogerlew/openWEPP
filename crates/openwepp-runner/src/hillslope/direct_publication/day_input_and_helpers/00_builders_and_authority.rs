@@ -167,6 +167,9 @@ struct DirectProductionGrowthCropAuthority {
 #[derive(Clone, Copy)]
 struct DirectProductionResidueCoverAuthority {
     initial_surface_residue_kg_m2: f64,
+    initial_interrill_ground_kg_m2: f64,
+    initial_rill_ground_kg_m2: f64,
+    residue_cover_factor: f64,
     initial_root_residue_kg_m2: f64,
     residue_type_selector: f64,
     residue_depth_conversion_m_per_kg_m2: f64,
@@ -176,6 +179,11 @@ struct DirectProductionResidueCoverAuthority {
 struct DirectProductionResidueCoverState {
     surface_residue_kg_m2: f64,
     root_residue_kg_m2: f64,
+    /// GAP-SED-009 closure: the covcal ground pools (day-0 back-derived
+    /// from the declared IC covers per `init1.for:295-297`; carried
+    /// through the decomposition state thereafter).
+    interrill_ground_residue_kg_m2: f64,
+    rill_ground_residue_kg_m2: f64,
     pending_surface_litter_kg_m2: f64,
     residue_depth_m: f64,
 }
@@ -848,8 +856,42 @@ fn direct_production_typed_residue_cover_authority(
             ),
         });
     }
+    // GAP-SED-009 closure: seed the covcal ground pools from the
+    // DECLARED IC covers (`init1.for:295-297` inverse) with the residue
+    // plant's cover factor. Zero declared cover or zero `cf` seeds zero
+    // pools — the pre-fix behavior, so non-forest managements are
+    // unchanged unless they declare cover.
+    let declared_inrcov = direct_production_pl_projection_optional_nonnegative_scalar(
+        management_projection,
+        "inrcov",
+    )?
+    .unwrap_or(0.0);
+    let declared_rilcov = direct_production_pl_projection_optional_nonnegative_scalar(
+        management_projection,
+        "rilcov",
+    )?
+    .unwrap_or(0.0);
+    let residue_cover_factor = direct_production_pl_projection_optional_nonnegative_scalar(
+        management_projection,
+        "residue_cover_factor_cf",
+    )?
+    .unwrap_or(0.0);
+    let ground_pool_from_declared_cover = |cover: f64| -> f64 {
+        let cover = cover.min(0.999);
+        if cover <= 0.0 || residue_cover_factor <= 0.0 {
+            0.0
+        } else {
+            (1.0 - cover).ln() / -residue_cover_factor
+        }
+    };
+    let initial_interrill_ground_kg_m2 = ground_pool_from_declared_cover(declared_inrcov);
+    let initial_rill_ground_kg_m2 = ground_pool_from_declared_cover(declared_rilcov);
+
     Ok(DirectProductionResidueCoverAuthority {
         initial_surface_residue_kg_m2,
+        initial_interrill_ground_kg_m2,
+        initial_rill_ground_kg_m2,
+        residue_cover_factor,
         initial_root_residue_kg_m2,
         residue_type_selector,
         residue_depth_conversion_m_per_kg_m2,

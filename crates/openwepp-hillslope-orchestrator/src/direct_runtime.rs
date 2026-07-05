@@ -165,7 +165,7 @@ pub use decomposition::{
     DirectDecompositionShadowProjection, DirectDecompositionSpanReport, DirectDecompositionState,
     DirectResiduePartitionDownstreamOperands, DirectResiduePartitionInputs,
     DirectResiduePartitionShadowProjection, DirectResiduePartitionSpanReport,
-    DirectResiduePartitionState,
+    DirectResiduePartitionState, residue_ground_cover_fraction,
 };
 pub use diagnostic_events::{
     DirectEvapotranspirationTraceEvent, DirectPercolationTraceEvent,

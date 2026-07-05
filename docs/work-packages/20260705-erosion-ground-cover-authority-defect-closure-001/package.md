@@ -1,6 +1,6 @@
 # EROSION GROUND-COVER AUTHORITY — DEFECT CLOSURE
 
-Status: `IN-EXECUTION` (Claude-executed, operator-directed 2026-07-05:
+Status: `EXECUTED — AWAITING CODEX REVIEW` (Claude-executed, operator-directed 2026-07-05:
 "scaffold and execute the follow-on defect closure work-package").
 Branch: `erosion-cover-authority-defect-closure`. Shape: defect-closure
 ExecPlan — diagnose AND correct in one pass; the diagnosis is inherited

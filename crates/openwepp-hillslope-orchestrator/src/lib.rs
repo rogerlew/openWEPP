@@ -117,9 +117,10 @@ pub use direct_runtime::{
     direct_runtime_audit_snapshot, erosion_sheart,
     record_direct_runtime_compatibility_edge_invocation,
     record_direct_runtime_ksatadj_effective_conductivity_evaluation,
-    reset_direct_runtime_audit_counters, wave1_classifier_shear, wave1_day_routes_sediment,
-    wave1_depc, wave1_depend, wave1_depeqs, wave1_quantum_is_hydraulically_active,
-    wave1_runge_step, wave1_xcrit, wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
+    reset_direct_runtime_audit_counters, residue_ground_cover_fraction, wave1_classifier_shear,
+    wave1_day_routes_sediment, wave1_depc, wave1_depend, wave1_depeqs,
+    wave1_quantum_is_hydraulically_active, wave1_runge_step, wave1_xcrit,
+    wp2_frost_pair_trace_path, write_wp2_frost_pair_trace,
 };
 pub use direct_runtime::{
     DirectErosionConsolidationCarry, ErosionAdjustmentFactors, ErosionAdjustmentInputs,

@@ -1498,6 +1498,8 @@ mod tests {
         assert!(direct_production_typed_growth_crop_authority(&missing_scalar, 1, 1).is_err());
 
         let residue = DirectProductionResidueCoverState {
+            interrill_ground_residue_kg_m2: 0.0,
+            rill_ground_residue_kg_m2: 0.0,
             surface_residue_kg_m2: 0.0,
             root_residue_kg_m2: 0.0,
             pending_surface_litter_kg_m2: 0.2,

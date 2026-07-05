@@ -458,8 +458,10 @@ impl DirectDayFrame {
             ),
             canopy_cover_fraction: growth.canopy_cover_fraction,
             canopy_height_m,
-            interrill_cover_fraction: residue.cover_fraction,
-            rill_cover_fraction: residue.cover_fraction,
+            // GAP-SED-009 closure: the covcal covers from the evolved
+            // ground pools (formerly both read a zero composite).
+            interrill_cover_fraction: residue.interrill_cover_fraction,
+            rill_cover_fraction: residue.rill_cover_fraction,
             live_root_mass_kg_m2: growth.root_mass_kg_m2,
             dead_root_mass_kg_m2: residue.root_residue_kg_m2,
             buried_residue_mass_kg_m2: residue.buried_residue_kg_m2,

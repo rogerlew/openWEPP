@@ -7,7 +7,7 @@ use crate::{
     DirectDecompositionShadowProjection, DirectDecompositionState, DirectPhaseKind,
     DirectResiduePartitionDownstreamOperands, DirectResiduePartitionInputs,
     DirectResiduePartitionShadowProjection, DirectResiduePartitionState, DirectRunIdentity,
-    DirectRuntimeError, reset_direct_runtime_audit_counters,
+    DirectRuntimeError, reset_direct_runtime_audit_counters, residue_ground_cover_fraction,
 };
 
 const EPS: f64 = 1.0e-12;
@@ -96,6 +96,9 @@ fn r5c_decomposition_phase_supports_perennial_grazing_and_zero_decay() {
 
     let mut day = r5c_day_after_storage_bounds();
     let inputs = DirectDecompositionInputs {
+        interrill_ground_seed_kg_m2: 0.0,
+        rill_ground_seed_kg_m2: 0.0,
+        residue_cover_factor: 0.0,
         active_context: DirectDecompositionActiveContext::Perennial {
             active_slot_index: 2,
             active_crop_slot_index: 1,
@@ -258,6 +261,8 @@ fn r5c_residue_partition_consumes_decomposition_and_shadow_projects() {
     let root_residue_kg_m2 = expected_annual_cut_state(inputs).root_residue_kg_m2;
     let total_residue_kg_m2 = 0.12 + flat_residue_kg_m2 + 0.03 + root_residue_kg_m2;
     let expected_state = DirectResiduePartitionState {
+        interrill_cover_fraction: 0.0,
+        rill_cover_fraction: 0.0,
         standing_residue_kg_m2: 0.12,
         flat_residue_kg_m2,
         buried_residue_kg_m2: 0.03,
@@ -370,6 +375,9 @@ fn r5c_day_after_storage_bounds() -> DirectDayFrame {
 
 fn annual_cut_inputs() -> DirectDecompositionInputs {
     DirectDecompositionInputs {
+        interrill_ground_seed_kg_m2: 0.0,
+        rill_ground_seed_kg_m2: 0.0,
+        residue_cover_factor: 0.0,
         active_context: DirectDecompositionActiveContext::AnnualOrFallow {
             active_slot_index: 1,
             active_crop_slot_index: 2,
@@ -407,6 +415,9 @@ fn expected_annual_cut_state(inputs: DirectDecompositionInputs) -> DirectDecompo
     let root_after_decay = inputs.root_residue_seed_kg_m2 * root_decay_factor;
     let cut_transfer = surface_after_decay * inputs.cut_transfer_fraction;
     DirectDecompositionState {
+        interrill_ground_residue_kg_m2: 0.0,
+        rill_ground_residue_kg_m2: 0.0,
+        residue_cover_factor: 0.0,
         active_context: inputs.active_context,
         active_action: inputs.active_action,
         residue_type_selector: inputs.residue_type_selector,
@@ -641,5 +652,66 @@ fn assert_close(observed: f64, expected: f64) {
     assert!(
         (observed - expected).abs() <= EPS,
         "observed {observed}, expected {expected}"
+    );
+}
+
+#[test]
+fn ground_cover_seed_round_trips_the_declared_cover() {
+    // GAP-SED-009 closure identity: seeding a pool by the `init1.for`
+    // inverse and re-deriving cover by the `covcal.for` forward form
+    // reproduces the declared cover exactly (the 0.999 clamp bounds it).
+    let cover_factor = 3.5;
+    for declared in [0.10_f64, 0.5, 0.85, 0.999] {
+        let pool = (1.0 - declared).ln() / -cover_factor;
+        let cover = residue_ground_cover_fraction(cover_factor, pool).expect("covcal forward form");
+        assert!(
+            (cover - declared).abs() < 1.0e-12,
+            "seed/derive round trip must be exact ({cover} vs {declared})"
+        );
+    }
+    // Zero pool and zero factor both yield zero cover (pre-fix behavior
+    // for managements that declare no cover).
+    assert_eq!(residue_ground_cover_fraction(3.5, 0.0).unwrap(), 0.0);
+    assert_eq!(residue_ground_cover_fraction(0.0, 5.0).unwrap(), 0.0);
+    // Clamp: enormous mass caps at the legacy 0.999.
+    assert_eq!(residue_ground_cover_fraction(3.5, 1.0e6).unwrap(), 0.999);
+}
+
+#[test]
+fn ground_pools_hold_constant_without_decay_or_litter() {
+    // The no-decomp forest scenario: decay factor 1 and no litter input
+    // must carry the pools (and therefore the covers) unchanged — the
+    // legacy behavior that holds declared covers constant for decades.
+    let inputs = DirectDecompositionInputs {
+        interrill_ground_seed_kg_m2: 0.542,
+        rill_ground_seed_kg_m2: 0.542,
+        residue_cover_factor: 3.5,
+        active_context: DirectDecompositionActiveContext::AnnualOrFallow {
+            active_slot_index: 1,
+            active_crop_slot_index: 1,
+            runtime_day_of_year: 210,
+        },
+        active_action: DirectDecompositionAction::None,
+        residue_type_selector: 1.0,
+        surface_residue_seed_kg_m2: 0.1,
+        root_residue_seed_kg_m2: 0.1,
+        surface_litter_input_kg_m2: 0.0,
+        residue_depth_conversion_m_per_kg_m2: 0.0,
+        temperature_max_c: 5.0,
+        temperature_min_c: 1.0,
+        precipitation_m: 0.01,
+        water_stress_fraction: 1.0,
+        surface_decomposition_rate: 0.0,
+        root_decomposition_rate: 0.0,
+        burn_surface_fraction: 0.0,
+        remove_surface_fraction: 0.0,
+        cut_transfer_fraction: 0.0,
+        grazing_digest_fraction: 0.0,
+    };
+    let state = inputs.compute_state().expect("no-decay state");
+    assert!(
+        (state.interrill_ground_residue_kg_m2 - 0.542).abs() < 1.0e-12
+            && (state.rill_ground_residue_kg_m2 - 0.542).abs() < 1.0e-12,
+        "zero decay + zero litter must hold the ground pools"
     );
 }

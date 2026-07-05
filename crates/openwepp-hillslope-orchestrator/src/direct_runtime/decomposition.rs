@@ -143,8 +143,20 @@ impl DirectDayFrame {
             total_residue_kg_m2,
         )?;
 
+        let downstream = &self.decomposition_downstream_operands;
+        let interrill_cover_fraction = residue_ground_cover_fraction(
+            downstream.residue_cover_factor,
+            downstream.interrill_ground_residue_kg_m2,
+        )?;
+        let rill_cover_fraction = residue_ground_cover_fraction(
+            downstream.residue_cover_factor,
+            downstream.rill_ground_residue_kg_m2,
+        )?;
+
         Ok(DirectResiduePartitionState {
             standing_residue_kg_m2: inputs.standing_residue_kg_m2,
+            interrill_cover_fraction,
+            rill_cover_fraction,
             flat_residue_kg_m2,
             buried_residue_kg_m2: inputs.buried_residue_kg_m2,
             root_residue_kg_m2,
@@ -257,6 +269,52 @@ fn apply_decomposition_action(
     Ok((surface_residue_kg_m2, root_residue_kg_m2))
 }
 
+/// The subset of decomposition actions that remove GROUND residue
+/// (`decomp.for`: burn/remove/graze fractions apply to `rigrm`/`rilrm`);
+/// Cut moves standing material and leaves the ground pools unchanged.
+fn apply_ground_pool_action(
+    inputs: DirectDecompositionInputs,
+    mut pool_kg_m2: f64,
+) -> Result<f64, DirectRuntimeError> {
+    match inputs.active_action {
+        DirectDecompositionAction::Burn => {
+            pool_kg_m2 *= 1.0 - inputs.burn_surface_fraction;
+        }
+        DirectDecompositionAction::Remove => {
+            pool_kg_m2 *= 1.0 - inputs.remove_surface_fraction;
+        }
+        DirectDecompositionAction::Grazing => {
+            pool_kg_m2 *= 1.0 - inputs.grazing_digest_fraction;
+        }
+        DirectDecompositionAction::None
+        | DirectDecompositionAction::Cut
+        | DirectDecompositionAction::Herbicide
+        | DirectDecompositionAction::Silage => {}
+    }
+    validate_nonnegative_direct_m("decomposition.ground_pool_kg_m2", pool_kg_m2)?;
+    Ok(pool_kg_m2)
+}
+
+/// `covcal.for:160-176`: cover from a ground pool —
+/// `1 − exp(−cf·mass)`, clamped to `[0, 0.999]`. The standing-mat
+/// `strcov` term is 0 (the standing pool is not yet modeled; the term is
+/// additive-only, so its absence is conservative in the fail-direction
+/// of the `GAP-SED-009` defect).
+pub fn residue_ground_cover_fraction(
+    cover_factor: f64,
+    ground_residue_kg_m2: f64,
+) -> Result<f64, DirectRuntimeError> {
+    validate_finite("residue_cover.cover_factor", cover_factor)?;
+    validate_nonnegative_direct_m("residue_cover.ground_residue_kg_m2", ground_residue_kg_m2)?;
+    if cover_factor < 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "residue_cover.cover_factor",
+        });
+    }
+    let cover = 1.0 - (-cover_factor * ground_residue_kg_m2).exp();
+    Ok(cover.clamp(0.0, 0.999))
+}
+
 fn validate_unit_fraction(field: &'static str, value: f64) -> Result<(), DirectRuntimeError> {
     validate_finite(field, value)?;
     if (0.0..=1.0).contains(&value) {
@@ -302,6 +360,14 @@ pub struct DirectDecompositionInputs {
     pub active_action: DirectDecompositionAction,
     pub residue_type_selector: f64,
     pub surface_residue_seed_kg_m2: f64,
+    /// Ground-cover authority (E.5 `GAP-SED-009` closure): the interrill
+    /// and rill ground-residue pools (`init1.for:295-297` lineage — day-0
+    /// back-derived from the declared IC covers; day-N carried from the
+    /// prior day's state) and the residue-type cover factor
+    /// (`cf(iresd)`), the `covcal.for` operands.
+    pub interrill_ground_seed_kg_m2: f64,
+    pub rill_ground_seed_kg_m2: f64,
+    pub residue_cover_factor: f64,
     pub root_residue_seed_kg_m2: f64,
     pub surface_litter_input_kg_m2: f64,
     pub residue_depth_conversion_m_per_kg_m2: f64,
@@ -325,6 +391,9 @@ impl DirectDecompositionInputs {
             active_action: DirectDecompositionAction::None,
             residue_type_selector: 0.0,
             surface_residue_seed_kg_m2: 0.0,
+            interrill_ground_seed_kg_m2: 0.0,
+            rill_ground_seed_kg_m2: 0.0,
+            residue_cover_factor: 0.0,
             root_residue_seed_kg_m2: 0.0,
             surface_litter_input_kg_m2: 0.0,
             residue_depth_conversion_m_per_kg_m2: 0.0,
@@ -386,6 +455,20 @@ impl DirectDecompositionInputs {
         let root_after_decay = self.root_residue_seed_kg_m2 * root_decay_factor;
         let (surface_residue_kg_m2, root_residue_kg_m2) =
             apply_decomposition_action(self, surface_after_decay, root_after_decay)?;
+        // Ground pools (`decomp.for` applies the identical decay law to
+        // `rigrm`/`rilrm`; surface-litter fall lands on interrill and
+        // rill areas alike): litter + decay + the ground-affecting
+        // actions (Burn/Remove/Grazing fractions; Cut moves standing
+        // material and leaves the ground pools unchanged — labeled).
+        let interrill_ground_residue_kg_m2 = apply_ground_pool_action(
+            self,
+            (self.interrill_ground_seed_kg_m2 + self.surface_litter_input_kg_m2)
+                * surface_decay_factor,
+        )?;
+        let rill_ground_residue_kg_m2 = apply_ground_pool_action(
+            self,
+            (self.rill_ground_seed_kg_m2 + self.surface_litter_input_kg_m2) * surface_decay_factor,
+        )?;
         let residue_depth_m = surface_residue_kg_m2 * self.residue_depth_conversion_m_per_kg_m2;
 
         validate_nonnegative_direct_m(
@@ -411,6 +494,9 @@ impl DirectDecompositionInputs {
             root_decay_factor,
             surface_residue_kg_m2,
             root_residue_kg_m2,
+            interrill_ground_residue_kg_m2,
+            rill_ground_residue_kg_m2,
+            residue_cover_factor: self.residue_cover_factor,
             residue_depth_m,
         })
     }
@@ -523,6 +609,10 @@ pub struct DirectDecompositionState {
     pub root_decay_factor: f64,
     pub surface_residue_kg_m2: f64,
     pub root_residue_kg_m2: f64,
+    /// Evolved ground pools + the cover factor (`covcal` operands).
+    pub interrill_ground_residue_kg_m2: f64,
+    pub rill_ground_residue_kg_m2: f64,
+    pub residue_cover_factor: f64,
     pub residue_depth_m: f64,
 }
 
@@ -545,6 +635,9 @@ impl DirectDecompositionState {
             root_decay_factor: 1.0,
             surface_residue_kg_m2: 0.0,
             root_residue_kg_m2: 0.0,
+            interrill_ground_residue_kg_m2: 0.0,
+            rill_ground_residue_kg_m2: 0.0,
+            residue_cover_factor: 0.0,
             residue_depth_m: 0.0,
         }
     }
@@ -567,6 +660,9 @@ impl DirectDecompositionState {
             root_decay_factor: 1.0,
             surface_residue_kg_m2: inputs.surface_residue_seed_kg_m2,
             root_residue_kg_m2: inputs.root_residue_seed_kg_m2,
+            interrill_ground_residue_kg_m2: inputs.interrill_ground_seed_kg_m2,
+            rill_ground_residue_kg_m2: inputs.rill_ground_seed_kg_m2,
+            residue_cover_factor: inputs.residue_cover_factor,
             residue_depth_m: inputs.surface_residue_seed_kg_m2
                 * inputs.residue_depth_conversion_m_per_kg_m2,
         }
@@ -581,6 +677,9 @@ pub struct DirectDecompositionDownstreamOperands {
     pub surface_litter_input_kg_m2: f64,
     pub surface_residue_kg_m2: f64,
     pub root_residue_kg_m2: f64,
+    pub interrill_ground_residue_kg_m2: f64,
+    pub rill_ground_residue_kg_m2: f64,
+    pub residue_cover_factor: f64,
     pub residue_depth_m: f64,
     pub temperature_factor: f64,
     pub surface_water_factor: f64,
@@ -594,6 +693,9 @@ impl DirectDecompositionDownstreamOperands {
     #[must_use]
     pub const fn zero() -> Self {
         Self {
+            interrill_ground_residue_kg_m2: 0.0,
+            rill_ground_residue_kg_m2: 0.0,
+            residue_cover_factor: 0.0,
             active_context: DirectDecompositionActiveContext::Inactive,
             active_action: DirectDecompositionAction::None,
             residue_type_selector: 0.0,
@@ -620,6 +722,9 @@ impl From<DirectDecompositionState> for DirectDecompositionDownstreamOperands {
             surface_litter_input_kg_m2: state.surface_litter_input_kg_m2,
             surface_residue_kg_m2: state.surface_residue_kg_m2,
             root_residue_kg_m2: state.root_residue_kg_m2,
+            interrill_ground_residue_kg_m2: state.interrill_ground_residue_kg_m2,
+            rill_ground_residue_kg_m2: state.rill_ground_residue_kg_m2,
+            residue_cover_factor: state.residue_cover_factor,
             residue_depth_m: state.residue_depth_m,
             temperature_factor: state.temperature_factor,
             surface_water_factor: state.surface_water_factor,
@@ -702,6 +807,10 @@ impl DirectResiduePartitionInputs {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectResiduePartitionState {
     pub standing_residue_kg_m2: f64,
+    /// `covcal.for` covers from the evolved ground pools (E.5
+    /// `GAP-SED-009` closure): the erosion interrill/rill operands.
+    pub interrill_cover_fraction: f64,
+    pub rill_cover_fraction: f64,
     pub flat_residue_kg_m2: f64,
     pub buried_residue_kg_m2: f64,
     pub root_residue_kg_m2: f64,
@@ -713,6 +822,8 @@ impl DirectResiduePartitionState {
     #[must_use]
     pub const fn zero() -> Self {
         Self {
+            interrill_cover_fraction: 0.0,
+            rill_cover_fraction: 0.0,
             standing_residue_kg_m2: 0.0,
             flat_residue_kg_m2: 0.0,
             buried_residue_kg_m2: 0.0,

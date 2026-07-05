@@ -75,6 +75,10 @@ struct InitialSeedProjection {
     hmax: f64,
     sumrtm: f64,
     sumsrm: f64,
+    /// Residue-type cover factor `cf(iresd)` (`canopy_line[4]` of the
+    /// residue plant) — the `covcal.for`/`init1.for` covers↔mass operand
+    /// (GAP-SED-009 closure).
+    residue_cover_factor: f64,
 }
 
 /// Build strict typed PL runtime projection surfaces from parsed management
@@ -311,6 +315,12 @@ fn build_initial_seed_projection(
     )?;
     let sumrtm = validate_initial_terminal_seed("sumrtm_seed", initial_data.terminal_line[0])?;
     let sumsrm = validate_initial_terminal_seed("sumsrm_seed", initial_data.terminal_line[1])?;
+    let residue_cover_factor = validate_projection_non_negative(
+        "residue_cover_factor_cf",
+        0,
+        0,
+        residue_plant_cropland.canopy_line[4],
+    )?;
 
     Ok(InitialSeedProjection {
         cancov,
@@ -328,6 +338,7 @@ fn build_initial_seed_projection(
         hmax,
         sumrtm,
         sumsrm,
+        residue_cover_factor,
     })
 }
 
@@ -426,6 +437,10 @@ fn insert_initial_growth_seed_symbols(
         (pl_growth_ofe_symbol("hmax_seed", ofe_index), seed.hmax),
         (slope_ofe_symbol("inrcov", ofe_index), seed.inrcov),
         (slope_ofe_symbol("rilcov", ofe_index), seed.rilcov),
+        (
+            slope_ofe_symbol("residue_cover_factor_cf", ofe_index),
+            seed.residue_cover_factor,
+        ),
         (slope_ofe_symbol("rrinit", ofe_index), seed.rrinit),
         (slope_ofe_symbol("rspace", ofe_index), seed.rspace),
         (pl_growth_ofe_symbol("tillay1_m", ofe_index), seed.tillay1),
@@ -508,6 +523,7 @@ fn insert_primary_initial_growth_aliases(
         ),
         ("cancov", seed.cancov),
         ("inrcov", seed.inrcov),
+        ("residue_cover_factor_cf", seed.residue_cover_factor),
         ("rilcov", seed.rilcov),
         ("rrinit", seed.rrinit),
         ("rspace", seed.rspace),
