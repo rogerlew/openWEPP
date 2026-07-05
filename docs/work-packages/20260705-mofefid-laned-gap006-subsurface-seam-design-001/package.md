@@ -1,6 +1,6 @@
 # MOFEFID LANE D — GAP-OFEROUTE-006 SUBSURFACE-COUPLING SEAM DESIGN
 
-Status: `EXECUTED — AWAITING CODEX REVIEW` (docs-only: the seam-design artifact + SC-OFEROUTE-001 rev 3) (Claude-executed; operator: "scaffold and execute
+Status: `COMPLETE — MERGED TO MAIN `bce8da7a` 2026-07-05` (Codex 2-round: the structural-map carry-through in rev 4; docs-only) (Claude-executed; operator: "scaffold and execute
 Lane D Papanicolaou contract-first", 2026-07-05). Branch:
 `laned-gap006-subsurface-seam-design`. CONTRACT-FIRST: this package
 resolves the DESIGN gap and amends the contract; implementation remains

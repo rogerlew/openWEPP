@@ -12,6 +12,13 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-05`:
+- `20260705-mofefid-laned-gap006-subsurface-seam-design-001/` — COMPLETE,
+  MERGED TO MAIN `bce8da7a` 2026-07-05 (docs-only): `GAP-OFEROUTE-006`
+  design-RESOLVED — the Lane D activation seam binds to existing surfaces
+  (`ui_SCrunf` exfiltration with the recorded depth→rate helper,
+  `ui_LfCrf` stays subsurface, outlet `latqcc` bypasses, hourly-lane
+  precondition); SC-OFEROUTE-001 rev 4; both `INV-OFEROUTE-012` gate
+  fixtures specified.
 - `20260705-forest-lanuse-sediment-tie-in-001/` — COMPLETE, MERGED TO MAIN
   `e3015f5b` 2026-07-05: `is_cropland` resolves from the schedule-scoped
   parsed lanuse (cropland ⇒ the legacy `drinti` branch, forest ⇒
