@@ -195,8 +195,13 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
   CLI03 update root-caused, `wave1_flux_refused_quanta` surfaced through
   the audit→manifest lane, three direct regressions for the
   `param.for:249-390` rewrite); re-check merge-ready, no findings;
-  operator-authorized merge. Remaining E.3 scope: stage-2e EROD14
-  deletion, next.)**
+  operator-authorized merge. Stage-2e EROD14/Wave-2 DELETION MERGED TO
+  MAIN `5628f5a0` 2026-07-04 after Codex 2-round review — round-1 High
+  (manifest overclaimed the chain on tilled multi-OFE runs; the flag now
+  requires the actual seed enable) + Medium (companion-contract
+  dispositions) + Low (stale diagnostic), round-2 Medium (registry rows
+  must match the body banners, now test-guarded) all fixed. E.3 is FULLY
+  CLOSED; next rung: E.4 enrichment (entry gates merge with 2d).)**
   The Wave-1 chain is the multi-OFE production path: per-lane per-OFE seeds
   (entry-gate §4a by construction via the intake slicing), the
   EROSION-lineage hourly handoff (`qout_h`/`qsout_h`/fractions/continuity
