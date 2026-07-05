@@ -153,7 +153,32 @@ point, not silent reuse.
   `INV-SED-017`, GAP-SED-007 CLOSED, GAP-SED-008 narrowed to the
   interchange surface).
 
-## 6. Hold criteria
+## 6. Codex review round 1 — response record (2026-07-05)
+
+Two findings (Medium + Low/Medium), both contract-alignment,
+both CONFIRMED and adjudicated in SC-SED-001 rev 47:
+
+1. **Medium — dual tolerance authority: CONFIRMED, split by surface.**
+   The two numbers were governing two DIFFERENT surfaces without saying
+   so. `TOL-SED-005` (1e-9, unchanged) is now scoped to the publication
+   normalize-then-split closure — division-rounding-tight by
+   construction. New `TOL-SED-006` (1e-6) owns the in-route enrichment
+   unit-sum: the do-10 blend floors `rillod` at 0 (`enrich.for:134`),
+   so at the RK4-vs-analytic seam the blend denominator legitimately
+   mismatches its numerator mass beyond division rounding — legacy has
+   the IDENTICAL floored blend with no gate at all; 1e-6 bounds the
+   seam without false-failing it, and a do-30 re-proportion
+   re-normalizes exactly. `INV-SED-017` (c) names both; the runtime
+   gate comment cites `TOL-SED-006`.
+2. **Low/Medium — ER over-described: CONFIRMED, contract honesty fix.**
+   The intent was internal-only (design D4: "no output-schema additions
+   in E.4") but the catalog row read as an external boundary surface.
+   The catalog row and `INV-SED-017` (g) now state the ratio is an
+   INTERNAL publication surface (the direct-runtime erosion publication
+   operands), not serialized to the pass/HBP interchange; external
+   exposure is a future additive schema extension.
+
+## 7. Hold criteria
 
 1. The do-30 analytic form cannot be reconciled with our deposition-region
    bookkeeping (region boundaries/qostar basis mismatch) — stop, present.

@@ -273,8 +273,12 @@ impl Wave1EnrichmentState {
         Ok(())
     }
 
-    /// Unit-sum diagnostic: while flow exists the composition must stay a
-    /// probability vector (INV-SED class-conservation family).
+    /// Unit-sum gate (`TOL-SED-006`, `INV-SED-017` (c)): while flow
+    /// exists the composition must stay a probability vector within
+    /// 1e-6 — the do-10 blend's floored-`rillod` seam legitimately
+    /// exceeds division rounding (legacy has no gate at all there); a
+    /// do-30 re-proportion re-normalizes exactly. The publication split
+    /// keeps its own tighter `TOL-SED-005` closure.
     pub fn validate_unit_sum(&self, qout_positive: bool) -> Result<(), DirectRuntimeError> {
         if !qout_positive {
             return Ok(());
