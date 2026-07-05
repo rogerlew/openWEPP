@@ -9,3 +9,4 @@ pub mod dval;
 pub mod friction;
 pub mod infiltration;
 pub mod kinematic_wave;
+pub mod seam;

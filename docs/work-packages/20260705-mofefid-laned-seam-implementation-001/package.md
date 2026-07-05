@@ -1,6 +1,6 @@
 # MOFEFID LANE D — SUBSURFACE SEAM IMPLEMENTATION (INV-OFEROUTE-012, solver tier)
 
-Status: `IN-EXECUTION` (Claude-executed; operator: "scaffold and execute
+Status: `EXECUTED — AWAITING CODEX REVIEW` (Claude-executed; operator: "scaffold and execute
 with that scope", 2026-07-05). Branch: `laned-seam-implementation`.
 
 ## Scope adjustment vs the recommendation (entry recon, on record)
@@ -51,3 +51,22 @@ tier that exists:
    share ≈1%; ENV-Y inside [0.55, 0.72]).
 
 Gates per the local-ci standard; full at branch head; Codex review.
+
+## Execution record (2026-07-05)
+
+- `ofe_routing::seam` (new module): `seam_source_rate_series` (the
+  recorded `/3600` unit helper; fail-closed on non-finite/negative
+  depths), `seam_require_hourly_lane`, `seam_assert_dc01_superseded`,
+  `seam_rate_at` (the cascade-forcing sampler), and
+  `seam_closure_residual_m3` (the D4 identity) with typed `SeamError`.
+- **Gate fixture A (solver tier, Ran):** 2-OFE cascade, downslope OFE
+  with exfiltration-only hours (zero rainfall excess) — the routed toe
+  carries the exfiltrated volume (outlet > 0.5× injected), cascade
+  conservation < 1e-2 relative, and NO flow before the pulse.
+- **Gate fixture B (identity tier, Ran):** H2637-class operands
+  (P 2,400 mm, ~99% lateral share of a 62% yield, ET 830 mm) — the D4
+  identity closes to 1e-12 relative, surface share < 2%, ENV-Y inside
+  [0.55, 0.72], ENV-ET in-band.
+- SC-OFEROUTE-001 rev 5: INV-OFEROUTE-012 status records the tier
+  honestly; the activation BLOCK stands (runtime wiring + real-H2637
+  executed vector = the activation increment).
