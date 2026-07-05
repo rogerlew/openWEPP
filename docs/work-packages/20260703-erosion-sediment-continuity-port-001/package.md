@@ -189,9 +189,14 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
   once with E.2's hourly redesign, which also inherits the
   `peak_runoff_m3_s` depth-rate unit question). Design + adjudications in
   [`artifacts/increment-1c-entry-gate.md`](artifacts/increment-1c-entry-gate.md).
-- **Increment 2c (ROADMAP §E.3) — multi-OFE Wave-1 chaining: BUILT + GATED
-  on branch `erosion-e3-multi-ofe-chaining`, 2026-07-04 (Claude-executed,
-  operator-directed "merge and proceed with E.3"); AWAITING CODEX REVIEW.**
+- **Increment 2c (ROADMAP §E.3) — multi-OFE Wave-1 chaining: COMPLETE,
+  MERGED TO MAIN `07856444` 2026-07-04** (Claude-executed; Codex 2-round
+  review — round-1 three Medium findings all confirmed+fixed (uncommitted
+  CLI03 update root-caused, `wave1_flux_refused_quanta` surfaced through
+  the audit→manifest lane, three direct regressions for the
+  `param.for:249-390` rewrite); re-check merge-ready, no findings;
+  operator-authorized merge. Remaining E.3 scope: stage-2e EROD14
+  deletion, next.)**
   The Wave-1 chain is the multi-OFE production path: per-lane per-OFE seeds
   (entry-gate §4a by construction via the intake slicing), the
   EROSION-lineage hourly handoff (`qout_h`/`qsout_h`/fractions/continuity

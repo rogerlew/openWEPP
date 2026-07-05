@@ -739,17 +739,18 @@ detachment-vs-delivery cut-point mismatch (compare `exported_kg_m` to legacy
 Full architecture + open-decision resolution:
 [`increment-2-entry-gate.md`](work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2-entry-gate.md).
 
-### E.3 Multi-OFE Wave-1 chaining (Increment 2 — structural) — BUILT + GATED, awaiting Codex review
-**Status 2026-07-04:** executed on branch `erosion-e3-multi-ofe-chaining`
-(entry gate: WP `20260703-…/artifacts/increment-2c-entry-gate.md`). The
-Wave-1 chain is the multi-OFE production path — per-OFE seeds, the hourly
-erosion handoff with the `param.for` coefficient-continuity port, the
-EXIT-scoped chain EVENT, EROD14 retired to a comparator arm, the
+### E.3 Multi-OFE Wave-1 chaining (Increment 2 — structural) — MERGED; remaining: 2e EROD14 deletion
+**Status 2026-07-04: MERGED TO MAIN `07856444`** after Codex 2-round
+review (entry gate: WP `20260703-…/artifacts/increment-2c-entry-gate.md`).
+The Wave-1 chain is the multi-OFE production path — per-OFE seeds, the
+hourly erosion handoff with the `param.for` coefficient-continuity port,
+the EXIT-scoped chain EVENT, EROD14 retired to a comparator arm, the
 INV-RUNOFFPART-030/INV-SED-012 dispositions, and the **first multi-OFE
 sediment the runtime has ever produced** (real W7DC01-substrate H102 —
-the retired EROD14 path published zero, so the `WSHED-W7DC01` hold's
-producer-side cause is gone; the watershed-side lift rides the merge).
-Remaining in-section scope after merge: the stage-2e EROD14 deletion.
+the retired EROD14 path published zero; the `WSHED-W7DC01` hold's
+producer-side cause is gone). **Remaining in-section scope: the stage-2e
+EROD14/Wave-2 deletion (the comparator arm + its seed projection and
+retired policy plumbing).**
 
 Original scope:
 Make **Wave-1 the per-OFE continuity engine** for every OFE, chained by the
