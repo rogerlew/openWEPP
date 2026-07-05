@@ -368,6 +368,28 @@ fn r5c_residue_partition_rejects_missing_decomposition_and_invalid_inputs() {
             field: "residue_partition.cover_fraction"
         }
     );
+
+    // The rescov weight fails closed at the same boundary — out-of-range
+    // and NaN both reject (guarding against a return of the silent
+    // clamp-canonicalization path).
+    for bad_weight in [1.5, -0.1, f64::NAN] {
+        let mut invalid_weight_day = r5c_day_after_decomposition();
+        invalid_weight_day.residue_partition_inputs = DirectResiduePartitionInputs {
+            rescov_interrill_weight: bad_weight,
+            standing_residue_kg_m2: 0.0,
+            flat_residue_offset_kg_m2: 0.0,
+            buried_residue_kg_m2: 0.0,
+            cover_fraction: 0.0,
+        };
+        assert_eq!(
+            invalid_weight_day
+                .run_r5c_residue_partition_phase()
+                .expect_err("invalid rescov weight should fail closed"),
+            DirectRuntimeError::DirectDomainViolation {
+                field: "residue_partition.rescov_interrill_weight"
+            }
+        );
+    }
 }
 
 fn r5c_day_after_decomposition() -> DirectDayFrame {
