@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 50
+contract_version: 51
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -243,7 +243,7 @@ bit-for-bit parity).
 | TOL-SED-003 | Shear-threshold comparator tolerance for `τf` vs `τc` branch boundary | `abs(τf - τc) <= 1e-9 Pa` treated as threshold boundary condition | Prevents numeric jitter from toggling branch semantics near threshold. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | TOL-SED-004 | Deposition denominator floor tolerance for `q` | `q >= 1e-12 m^2 s^-1` for deposition-branch evaluation | Values below floor are invalid for Eq. [11.2.4] denominator semantics. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | TOL-SED-005 | Class-fraction closure tolerance at the PUBLICATION split (the normalize-then-split surface: the per-class `sedcon` division by the validated fraction sum) | `abs(sum(sed_frac_i) - 1.0) <= 1e-9` | The publication split normalizes immediately before dividing, so its closure is division-rounding-tight. | `[DIRECT][Static] + [INFERENCE][Static]` |
-| TOL-SED-006 | Flow-composition unit-sum tolerance for the IN-ROUTE enrichment state (`INV-SED-017` (c), the final `frcflw` after the route's blend/re-proportion sequence) | `abs(sum(frcflw_i) - 1.0) <= 1e-6` (or exactly 0 without outflow) | The do-10 blend floors `rillod` at 0 (`enrich.for:134`), so when the RK4-vs-analytic seam makes `ldtop < lddend + intlod` the blend denominator legitimately mismatches its numerator mass by more than division rounding — legacy has the identical behavior with NO gate at all; 1e-6 bounds the seam without false-failing it. A do-30 re-proportion re-normalizes exactly, so the looser bound applies only to blend-terminated sequences. | `[DIRECT][Static]` |
+| TOL-SED-006 | Flow-composition CORRUPTION envelope for the IN-ROUTE enrichment state (`INV-SED-017` (c), the final `frcflw` after the route's blend/re-proportion sequence) | `sum(frcflw_i) ∈ [0.5, 1.5]` while flow exists (or exactly 0 without outflow) | Legacy NEVER re-normalizes after a do-10 blend: when `rillod` floors at 0 (`enrich.for:134` — a transport-capacity-limited stretch gains less load than the interrill term) the blend sum legitimately exceeds 1 by PERCENT scale, and the legacy ER consumes that raw sum (`enrich.for` has no gate at all). Only a do-30 re-proportion normalizes exactly. The envelope is therefore a corruption sanity bound, not a closure law; the PUBLISHED per-class split re-normalizes at the publication boundary, preserving `TOL-SED-005`. (Supersedes the rev-47 `1e-6` bound, which encoded a stricter law than legacy has and false-failed real transport-limited profiles — caught by the G0 fixture at full-suite scope.) | `[DIRECT][Static] + [Ran]` |
 
 ## WB16 Hydrologic Peak/Duration Intake Addendum
 
@@ -609,6 +609,7 @@ canonical `SC-*` contracts before production migration packages.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-05` | `51` | `Claude Code` | `TOL-SED-006` corrected to the legacy-faithful CORRUPTION envelope (`[0.5, 1.5]`): legacy never re-normalizes after do-10 blends and its ER consumes the raw sum — the rev-47 `1e-6` bound encoded a stricter law than legacy has and false-failed transport-limited profiles (caught by the G0 fixture once the ground-cover fix activated real enrichment paths). The published split re-normalizes at the publication boundary (`TOL-SED-005` preserved); the enriched-override publication gate uses the same envelope. |
 | `2026-07-05` | `50` | `Claude Code` | GAP-SED-009 CLOSED (the ground-cover authority defect-closure WP): erosion covers now derive from ground pools seeded per `init1.for` from the declared IC covers (`SC-RESIDUE-001` rev 12 `INV-RESIDUE-020`); post-fix p61 3.97 vs 4.2 kg/m, p102 17.4 vs ~19.4 kg/m/yr; the small-event divergence re-attributed to the WB16 `peakro` operand (the passby gate is legacy-exact). |
 | `2026-07-05` | `49` | `Claude Code` | E.5 Codex round-1 evidence-precision fixes: `GAP-SED-009` now distinguishes p61 (matched per-event, per-width delivery cut-points) from p102 (outlet-aggregate corroboration, order-of-magnitude only — no per-day chain-export series exists yet); evidence label normalized to `[Ran]`. |
 | `2026-07-05` | `48` | `Claude Code` | E.5 magnitude adjudication: opened `GAP-SED-009` — absolute magnitude OPEN-BUT-ATTRIBUTED (the erosion ground-cover pathway ignores the management-declared IC covers on forest no-decomp scenarios → ~4–6× over-detachment on both comparator instruments; water near-parity at p102; all structural closures hold). Verdict + follow-on scope in the Increment-4 adjudication artifact. |

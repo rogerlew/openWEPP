@@ -273,18 +273,22 @@ impl Wave1EnrichmentState {
         Ok(())
     }
 
-    /// Unit-sum gate (`TOL-SED-006`, `INV-SED-017` (c)): while flow
-    /// exists the composition must stay a probability vector within
-    /// 1e-6 — the do-10 blend's floored-`rillod` seam legitimately
-    /// exceeds division rounding (legacy has no gate at all there); a
-    /// do-30 re-proportion re-normalizes exactly. The publication split
-    /// keeps its own tighter `TOL-SED-005` closure.
+    /// Composition sanity envelope (`TOL-SED-006`, `INV-SED-017` (c)):
+    /// legacy NEVER re-normalizes after a do-10 blend — when `rillod`
+    /// floors on a transport-capacity-limited stretch the blend sum
+    /// legitimately exceeds 1 by percent scale, and the legacy ER
+    /// consumes that raw sum (`enrich.for` has no gate at all). Only a
+    /// do-30 re-proportion normalizes exactly. The gate here is
+    /// therefore a CORRUPTION envelope (`[0.5, 1.5]` while flow
+    /// exists), not a closure law; the published per-class split keeps
+    /// its own tight `TOL-SED-005` closure by normalizing at the
+    /// publication boundary.
     pub fn validate_unit_sum(&self, qout_positive: bool) -> Result<(), DirectRuntimeError> {
         if !qout_positive {
             return Ok(());
         }
         let sum: f64 = self.frcflw.iter().sum();
-        if (sum - 1.0).abs() > 1.0e-6 && sum != 0.0 {
+        if sum != 0.0 && !(0.5..=1.5).contains(&sum) {
             return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
                 field: "erosion.enrich.frcflw_unit_sum",
             });

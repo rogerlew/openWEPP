@@ -57,3 +57,18 @@ an erosion gate defect. Recorded; not fixed here (water scope).
 `SC-RESIDUE-001` rev 12 (`INV-RESIDUE-020`); `SC-SED-001` rev 50 —
 **`GAP-SED-009` CLOSED** with the re-judgment text carrying both
 instruments' numbers and the re-attribution.
+
+## 6. Full-suite finding: the TOL-SED-006 envelope correction
+
+The branch-head full suite caught a REAL fidelity error in my rev-47
+tolerance: the G0 pysnobal fixture (once the cover fix activated real
+enrichment paths) hit `frcflw_unit_sum` at a transport-capacity-limited
+profile — where the do-10 blend's floored `rillod` legitimately pushes
+the composition sum above 1 by percent scale. Legacy NEVER
+re-normalizes after blends and its ER consumes the raw sum
+(`enrich.for` has no gate). `TOL-SED-006` is corrected (SC-SED-001
+rev 51) to the corruption envelope `[0.5, 1.5]`; the published
+per-class split re-normalizes at the publication boundary, preserving
+the `TOL-SED-005` closure; the enriched-override publication gate uses
+the same envelope. p61/p102 evidence unchanged (3.965 kg/m re-verified
+post-correction).

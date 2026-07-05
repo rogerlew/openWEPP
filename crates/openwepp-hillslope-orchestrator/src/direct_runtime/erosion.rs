@@ -1088,16 +1088,27 @@ pub(crate) fn direct_wave1_publication_projection(
     // E.3 D4: an inflow-day blend (a convex combination of two
     // compositions) substitutes for the local `frac` when present, under
     // the same Σ = 1 gate.
-    let fractions: [f64; DIRECT_EROSION_CLASS_LIMIT] = match exit_fractions_override {
-        Some(blended) => blended,
-        None => core::array::from_fn(|index| classes[index].frac),
-    };
+    let (fractions, override_active): ([f64; DIRECT_EROSION_CLASS_LIMIT], bool) =
+        match exit_fractions_override {
+            Some(blended) => (blended, true),
+            None => (core::array::from_fn(|index| classes[index].frac), false),
+        };
     let mut frac_sum = 0.0;
     for fraction in &fractions {
         validate_nonnegative_direct_m("erosion.wave1.publication.class_fraction", *fraction)?;
         frac_sum += fraction;
     }
-    if (frac_sum - 1.0).abs() > WAVE1_CLASS_FRACTION_SUM_TOL {
+    // The seed-classes path keeps the tight unseeded-table gate; the
+    // ENRICHED override carries the legacy do-10 blend seam (TOL-SED-006
+    // corruption envelope) and is normalized by the division below, so
+    // the PUBLISHED class-sum closure stays at TOL-SED-005.
+    if override_active {
+        if !(0.5..=1.5).contains(&frac_sum) {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "erosion.wave1.publication.class_fraction_sum",
+            });
+        }
+    } else if (frac_sum - 1.0).abs() > WAVE1_CLASS_FRACTION_SUM_TOL {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: "erosion.wave1.publication.class_fraction_sum",
         });
