@@ -189,6 +189,18 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
   once with E.2's hourly redesign, which also inherits the
   `peak_runoff_m3_s` depth-rate unit question). Design + adjudications in
   [`artifacts/increment-1c-entry-gate.md`](artifacts/increment-1c-entry-gate.md).
+- **Increment 4 (ROADMAP §E.5) — magnitude adjudication: COMPLETE,
+  MERGED TO MAIN `8bf79353` 2026-07-05** (Claude-executed; Investigation-
+  tier comparator adjudication, no code change — verdict `GAP-SED-009`
+  OPEN-BUT-ATTRIBUTED: p61 ~6× over-delivery at matched per-event
+  per-width cut-points, p102 outlet-aggregate corroboration; attributed
+  to the erosion ground-cover pathway (declared IC covers never reach
+  the erosion cover operands; forest no-decomp ICs carry ~zero residue
+  mass); NOT water (p102 50-year runoff within ~1% of legacy) and NOT
+  structural. Codex 2-round review: evidence-precision + probe-removal
+  fixes. **The ADR-0035 §E sequence is COMPLETE (E.1–E.5)**; the
+  forward erosion item is the cover-pathway defect-closure WP scoped in
+  `artifacts/increment-4-magnitude-adjudication.md` §4.)
 - **Increment 3 (ROADMAP §E.4) — enrichment + particle routing: COMPLETE,
   MERGED TO MAIN `55163073` 2026-07-05** (Claude-executed; the full
   `enrich.for` port — per-OFE mineralogy + `tcf1` producers, per-quantum
