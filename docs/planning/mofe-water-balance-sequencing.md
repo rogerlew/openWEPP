@@ -38,7 +38,7 @@ This is consistent with the audit's findings and sharpens the program framing:
 - **openWEPP's Lane D is built on Papanicolaou et al. 2018** (frozen-library `R-63`) — i.e. it is that intended-but-never-incorporated revision. This strengthens the case for prioritizing Lane D's production activation over the WB16-estimator default (§5).
 - Notable: the baseline `efflen/totlen` `peakro` band-aid (`irs.for:745`, *"A. Srivastava 4/17/2026"*, audit §3.2) is authored by the **same Anurag Srivastava** — the symptom-patch and the Papanicolaou conversation are the same person and time window.
 
-**Open opportunity (not yet acted on):** the revisions Papanicolaou gave Flanagan may be more or newer than the 2018 paper. If the actual artifact (code / notes) can be obtained via Brooks or Srivastava, it would be a stronger external authority for `SC-OFEROUTE-001` than the published paper alone — and could inform the open shock-timing numerics gap (`GAP-OFEROUTE-005`).
+**Provenance posture (deliberate).** Lane D is implemented **clean-room from the published Papanicolaou (2018) paper** and open literature — openWEPP does not seek or use the author's unpublished revisions, which remain his protected research IP. (This is source-specific: openWEPP is non-clean-room with respect to public-domain legacy WEPP, which it reads freely, but clean-room with respect to Papanicolaou's protected work.) The published paper is the authority — hence the `SC-OFEROUTE-001` frozen-library citation posture. Where the published record does not resolve a question — e.g. the shock-timing numerics gap `GAP-OFEROUTE-005` — the honest posture is to **bound it and keep it visible**, not to close it with material openWEPP was not given.
 
 ## 4. The reframe
 
