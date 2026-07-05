@@ -537,10 +537,16 @@ loss = "output/H1.loss.json"
 }
 
 #[test]
-fn cli03_mofe03_multiofe_runfile_executes_wave2_without_manual_symbol_injection() {
+// E.3 (SC-SED-001 rev 44 / SC-RUNOFFPART-001 rev 45): multi-OFE hillslopes
+// execute the Wave-1 chain — EROD14/Wave-2 is retired as publication
+// authority, and the manifest publishes the INV-RUNOFFPART-030 DISPOSITION
+// surfaces (true sediment-coupled qin via the hourly erosion handoff).
+// This test previously asserted the MOFE03 Wave-2 enablement + the
+// water-transfer-only compatibility posture.
+fn cli03_mofe03_multiofe_runfile_executes_wave1_chain_without_manual_symbol_injection() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"
-run_name = "cli03-mofe03-wave2-enabled"
+run_name = "cli03-mofe03-wave1-chain"
 unit_system = "metric"
 
 [inputs]
@@ -557,7 +563,7 @@ loss = "output/H1.loss.json"
 
     let (report, _temp_run_dir) = execute_fixture_with_runfile_report_with_mode_and_customizer(
         runfile,
-        "cli03_mofe03_wave2_enabled",
+        "cli03_mofe03_wave1_chain",
         false,
         |run_dir| {
             let _ = fs::remove_file(run_dir.join("wepp_ui.txt"));
@@ -567,7 +573,7 @@ loss = "output/H1.loss.json"
             write_three_ofe_management(&run_dir.join("case.man"));
         },
     )
-    .expect("aligned multi-OFE fixture should execute through Wave-2");
+    .expect("aligned multi-OFE fixture should execute through the Wave-1 chain");
 
     assert!(report.output_pass.is_file());
     assert!(report.output_loss.is_file());
@@ -575,22 +581,21 @@ loss = "output/H1.loss.json"
     let manifest =
         fs::read_to_string(&report.manifest_path).expect("manifest file should be readable");
     assert!(
-        manifest.contains("\"erod14_wave2_enabled\": true"),
-        "multi-OFE run should enable Wave-2 under MOFE03 policy, observed manifest: {manifest}"
+        manifest.contains("\"erod14_wave2_enabled\": false"),
+        "Wave-2 is retired as multi-OFE authority (E.3), observed manifest: {manifest}"
     );
     assert!(
-        manifest.contains("\"erod14_wave2_kernel_status_seen\": true"),
-        "multi-OFE run should observe Wave-2 kernel status, observed manifest: {manifest}"
+        manifest.contains("\"erod14_wave2_kernel_status_seen\": false"),
+        "the retired Wave-2 kernel must never run, observed manifest: {manifest}"
     );
     assert!(
-        manifest.contains(
-            "\"erod14_qin_source_policy\": \"water-transfer-only-mofe01-mg-sediment-coupling-follow-on\""
-        ),
-        "multi-OFE manifest should expose M-G qin source policy, observed manifest: {manifest}"
+        manifest
+            .contains("\"erod14_qin_source_policy\": \"wave1-hourly-sediment-coupled-handoff\""),
+        "multi-OFE qin policy is the Wave-1 coupled handoff, observed manifest: {manifest}"
     );
     assert!(
-        manifest.contains("\"erod14_qin_sediment_coupled\": false"),
-        "multi-OFE manifest should not claim sediment-coupled qin closure, observed manifest: {manifest}"
+        manifest.contains("\"erod14_qin_sediment_coupled\": true"),
+        "the Wave-1 chain closes sediment-coupled qin (INV-RUNOFFPART-030 disposition), observed manifest: {manifest}"
     );
 }
 
