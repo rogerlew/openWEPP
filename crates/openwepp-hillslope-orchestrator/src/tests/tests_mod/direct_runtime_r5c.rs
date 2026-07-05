@@ -372,7 +372,26 @@ fn r5c_residue_partition_rejects_missing_decomposition_and_invalid_inputs() {
     // The rescov weight fails closed at the same boundary — out-of-range
     // and NaN both reject (guarding against a return of the silent
     // clamp-canonicalization path).
-    for bad_weight in [1.5, -0.1, f64::NAN] {
+    for (bad_weight, expected) in [
+        (
+            1.5,
+            DirectRuntimeError::DirectDomainViolation {
+                field: "residue_partition.rescov_interrill_weight",
+            },
+        ),
+        (
+            -0.1,
+            DirectRuntimeError::NegativeDirectValue {
+                field: "residue_partition.rescov_interrill_weight",
+            },
+        ),
+        (
+            f64::NAN,
+            DirectRuntimeError::NonFiniteDirectValue {
+                field: "residue_partition.rescov_interrill_weight",
+            },
+        ),
+    ] {
         let mut invalid_weight_day = r5c_day_after_decomposition();
         invalid_weight_day.residue_partition_inputs = DirectResiduePartitionInputs {
             rescov_interrill_weight: bad_weight,
@@ -385,9 +404,7 @@ fn r5c_residue_partition_rejects_missing_decomposition_and_invalid_inputs() {
             invalid_weight_day
                 .run_r5c_residue_partition_phase()
                 .expect_err("invalid rescov weight should fail closed"),
-            DirectRuntimeError::DirectDomainViolation {
-                field: "residue_partition.rescov_interrill_weight"
-            }
+            expected
         );
     }
 }
