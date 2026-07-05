@@ -20,7 +20,7 @@ tier that exists:
   through `run_cascade` with seam forcing);
 - gate fixture B at the IDENTITY tier (H2637-class subsurface-dominated
   closure vector, operands drawn to the MAGPARITY01 class profile);
-- SC-OFEROUTE-001 rev 5 recording the status honestly: seam implemented
+- SC-OFEROUTE-001 rev 13 (under the rev-14 frontmatter) recording the status honestly: seam implemented
   + fixtures passing at the solver/identity tier; RUNTIME wiring (and
   the real-H2637 executed vector, staged inputs located at
   `/home/workdir/wepp-forest/docs/ablation/20260430_…_h2637_…/artifacts/repro/staged/runs/`)
@@ -67,7 +67,7 @@ Gates per the local-ci standard; full at branch head; Codex review.
   (P 2,400 mm, ~99% lateral share of a 62% yield, ET 830 mm) — the D4
   identity closes to 1e-12 relative, surface share < 2%, ENV-Y inside
   [0.55, 0.72], ENV-ET in-band.
-- SC-OFEROUTE-001 rev 5: INV-OFEROUTE-012 status records the tier
+- SC-OFEROUTE-001 rev 13: INV-OFEROUTE-012 status records the tier
   honestly; the activation BLOCK stands (runtime wiring + real-H2637
   executed vector = the activation increment).
 
