@@ -2119,6 +2119,18 @@ description 3
             scalar_at(&surfaces.pl_growth_surface, &pl_growth_ofe_symbol("cancov_seed", 1)),
             0.4,
         );
+        // GAP-SED-009 ground-cover authority: the forest residue plant's
+        // `cf` must project as `residue_cover_factor_cf` (fixture value
+        // 5.0) — the erosion cover-seeding consumer defaults a missing
+        // symbol to 0.0 (zero ground pools), so this surface must never
+        // silently vanish.
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_growth_surface,
+                &slope_ofe_symbol("residue_cover_factor_cf", 1),
+            ),
+            5.0,
+        );
         assert_scalar_close(
             scalar_at(&surfaces.pl_growth_surface, &pl_growth_ofe_symbol("bb_seed", 1)),
             14.0,

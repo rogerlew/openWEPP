@@ -1259,13 +1259,32 @@ fn direct_production_wave1_operand_seed(
 /// for it (narrowing the enable to the reviewed scope) until the cropland
 /// operand port lands.
 fn direct_production_management_has_active_tillage(management: &ManagementParseOutput) -> bool {
-    management.registries.yearlies.iter().any(|yearly| match &yearly.data {
-        openwepp_input_contract::parsers::management::YearlyScenarioData::Cropland(data) => {
-            direct_production_tilseq_disturbs_surface(data.tilseq, &management.registries.surfaces)
-        }
-        // Native forest yearly scenarios carry no surface-effect sequence
-        // (LANUSE-AUTH-3: no tillage on the forest lanuse) — never active.
-        openwepp_input_contract::parsers::management::YearlyScenarioData::Forest(_) => false,
+    // SCHEDULE-scoped (the PMET shape, Codex WS1-rebase round-1): only
+    // yearlies the schedule actually references count. A registry-wide
+    // scan would let an UNREFERENCED tilled yearly — or, on lane-sliced
+    // MOFE managements (which filter the schedule per lane but clone the
+    // full registries), ANOTHER OFE's yearly — disable a valid
+    // native-forest/no-till lane.
+    management.schedule.slots.iter().any(|slot| {
+        slot.yearly_refs.iter().any(|&yearly_ref| {
+            management
+                .registries
+                .yearlies
+                .get(yearly_ref.wrapping_sub(1))
+                .is_some_and(|yearly| match &yearly.data {
+                    openwepp_input_contract::parsers::management::YearlyScenarioData::Cropland(
+                        data,
+                    ) => direct_production_tilseq_disturbs_surface(
+                        data.tilseq,
+                        &management.registries.surfaces,
+                    ),
+                    // Native forest yearlies carry no surface-effect
+                    // sequence (LANUSE-AUTH-3) — never active tillage.
+                    openwepp_input_contract::parsers::management::YearlyScenarioData::Forest(
+                        _,
+                    ) => false,
+                })
+        })
     })
 }
 
@@ -2291,5 +2310,35 @@ mod erosion_tillage_scope_tests {
 
         // An out-of-range tilseq (dangling reference) is not active tillage.
         assert!(!direct_production_tilseq_disturbs_surface(9, &tilled));
+    }
+
+    #[test]
+    fn tillage_detector_is_schedule_scoped_not_registry_scoped() {
+        // Codex WS1-rebase round-1 (Medium): an UNREFERENCED tilled
+        // yearly in the registry must not disable a no-till lane — on
+        // lane-sliced MOFE managements the schedule is per-lane but the
+        // registries are cloned whole, so registry scanning would let
+        // another OFE's tillage leak across lanes.
+        let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/fixtures/infile/management/canonical_rotation_nonzero_98_4.man");
+        let mut management =
+            openwepp_input_contract::parsers::management::parse_management_from_path(
+                &fixture,
+                openwepp_input_contract::parsers::management::ParseMode::Compatibility,
+            )
+            .expect("tilled rotation fixture parses");
+        assert!(
+            super::direct_production_management_has_active_tillage(&management),
+            "the schedule references the tilled yearly: active"
+        );
+        // Same registries, but no slot references any yearly: the tilled
+        // scenario is now registry-resident-only and must NOT count.
+        for slot in &mut management.schedule.slots {
+            slot.yearly_refs.clear();
+        }
+        assert!(
+            !super::direct_production_management_has_active_tillage(&management),
+            "an unreferenced tilled yearly must not disable the lane"
+        );
     }
 }
