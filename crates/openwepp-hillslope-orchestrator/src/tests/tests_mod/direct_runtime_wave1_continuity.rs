@@ -64,7 +64,7 @@ fn crafted_daily_state() -> DirectWave1DailyState {
         runoff_depth_m: 0.0,
         effdrn_s: 3600.0,
         qin_m2_s: 0.0,
-        inter_ofe: None,
+        inflow: None,
         excess_intervals: Vec::new(),
         canopy_cover_fraction: 0.0,
         canopy_height_m: 0.0,

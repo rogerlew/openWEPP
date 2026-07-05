@@ -17,7 +17,8 @@ use super::{
     ErosionExcessInterval, ErosionFrostRegime, ErosionIfrostCarry, ErosionParticleClass,
     ErosionRillCoverInputs, ErosionShearSlopes, erosion_adjustment_factors, erosion_detinr,
     erosion_effective_intensity, erosion_interrill_delivery_ratio, erosion_rill_hydraulics,
-    erosion_transport_coefficients, validate_finite, wave1_quantum_is_hydraulically_active,
+    erosion_transport_coefficients, erosion_trcoef, validate_finite,
+    wave1_quantum_is_hydraulically_active,
 };
 
 /// Per-lane **persistent** erosion runtime carry (SC-SED-001 1b-C): the
@@ -156,6 +157,32 @@ impl DirectWave1OperandSeed {
     }
 }
 
+/// The RAW per-quantum inter-OFE inflow handoff (E.3 / INV-SED-012): the
+/// prior lane's hour outflow discharge and sediment discharge (the
+/// `sloss.for:333` `qsout` basis), its exiting class fractions, its static
+/// slopes, and its solve-final coefficient sets (the Fortran-`save`
+/// `param.for` state). The receiving assembly derives `strldn`
+/// (`param.for:243`) and the `Wave1InterOfeContinuity` operands
+/// (`param.for:184-196`) — all receiver-side, matching legacy.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Wave1InflowOperands {
+    /// Prior lane's unit outflow discharge this quantum (m²/s) — becomes
+    /// the receiver's `qin` (`xinflo` `qin = qout` handoff idiom).
+    pub qin_m2_s: f64,
+    /// Prior lane's exported sediment discharge per unit width this
+    /// quantum (kg·m⁻¹·s⁻¹) — the `qsout` basis for `strldn`.
+    pub qsout_kg_m_s: f64,
+    /// Prior lane's end-of-profile slope (`slpend_{i-1}`).
+    pub prior_slpend: f64,
+    /// Prior lane's average slope (`cnslp_{i-1}`).
+    pub prior_cnslp: f64,
+    /// Prior lane's solve-final shear coefficient set (`anflst` family).
+    pub prior_end_shear: (f64, f64, f64),
+    /// Prior lane's solve-final transport coefficient set (`atclst`
+    /// family).
+    pub prior_end_transport: (f64, f64, f64),
+}
+
 /// The **daily** hydrology / cover / frost state the per-day assembly
 /// reads from the frame.
 #[derive(Debug, Clone, PartialEq)]
@@ -168,10 +195,11 @@ pub struct DirectWave1DailyState {
     pub effdrn_s: f64,
     /// Unit inflow discharge from the upstream OFE (m^2/s); 0 for OFE-1.
     pub qin_m2_s: f64,
-    /// Inter-OFE continuity operands (E.3 handoff); `None` on OFE-1 /
-    /// single-OFE lanes and until the multi-OFE handoff wiring populates
-    /// them.
-    pub inter_ofe: Option<super::Wave1InterOfeContinuity>,
+    /// The RAW inter-OFE inflow handoff from the prior lane (E.3);
+    /// `None` on OFE-1 / single-OFE lanes. The assembly derives the
+    /// continuity operands and `strldn` from it (the legacy `param.for`
+    /// receiver-side derivation order).
+    pub inflow: Option<Wave1InflowOperands>,
     /// Rainfall-excess intervals for `effint`/`effdrr` (`reid.for`).
     pub excess_intervals: Vec<ErosionExcessInterval>,
     /// Daily canopy cover fraction.
@@ -251,20 +279,32 @@ pub fn assemble_wave1_continuity_inputs_quantum(
 ) -> Result<DirectWave1ContinuityInputs, DirectRuntimeError> {
     validate_finite("erosion.assemble.peakro", daily.peakro_m_s)?;
     validate_finite("erosion.assemble.runoff_depth", daily.runoff_depth_m)?;
-    validate_finite("erosion.assemble.qin", daily.qin_m2_s)?;
+    // E.3: the handoff supplies `qin`; the standalone field remains for
+    // crafted quanta. Both present and disagreeing is a wiring defect.
+    let qin_m2_s = if let Some(inflow) = &daily.inflow {
+        validate_finite("erosion.assemble.inflow_qin", inflow.qin_m2_s)?;
+        // A nonzero standalone qin alongside a handoff is a wiring defect
+        // (two authorities); exact-zero is the untouched default.
+        #[allow(clippy::float_cmp)]
+        if daily.qin_m2_s != 0.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "erosion.assemble.qin_conflict",
+            });
+        }
+        inflow.qin_m2_s
+    } else {
+        validate_finite("erosion.assemble.qin", daily.qin_m2_s)?;
+        daily.qin_m2_s
+    };
 
     // Gate BEFORE computing routed operands (legacy gate-before-`param`).
     // Non-routed quanta return the inert payload; the solver gates
     // inactive. A positive-inflow quantum stays active even without local
     // runoff (ADR-0036 D1 / INV-SED-013 — the full-reinfiltration case).
     let quantum_active = if passby_exempt {
-        (daily.runoff_depth_m > 0.0 && daily.peakro_m_s > 0.0) || daily.qin_m2_s > 0.0
+        (daily.runoff_depth_m > 0.0 && daily.peakro_m_s > 0.0) || qin_m2_s > 0.0
     } else {
-        wave1_quantum_is_hydraulically_active(
-            daily.runoff_depth_m,
-            daily.peakro_m_s,
-            daily.qin_m2_s,
-        )
+        wave1_quantum_is_hydraulically_active(daily.runoff_depth_m, daily.peakro_m_s, qin_m2_s)
     };
     if !seed.enabled || !quantum_active {
         return Ok(inert_continuity_inputs(seed, daily));
@@ -278,7 +318,7 @@ pub fn assemble_wave1_continuity_inputs_quantum(
     let qshear_m2_s = if qout_m2_s > 0.0 {
         qout_m2_s * seed.rspace_m
     } else {
-        daily.qin_m2_s * seed.rspace_m
+        qin_m2_s * seed.rspace_m
     };
 
     // Rill hydraulics (frcfac + shears) -> shrsol/shrend + grown width.
@@ -342,7 +382,7 @@ pub fn assemble_wave1_continuity_inputs_quantum(
         daily.random_roughness_m,
         &seed.classes,
     )?;
-    let interrill_active = qout_m2_s > daily.qin_m2_s
+    let interrill_active = qout_m2_s > qin_m2_s
         && !daily.theta_suppressed
         && effective.effdrr_s > 0.0
         && daily.runoff_depth_m > 0.0;
@@ -365,13 +405,66 @@ pub fn assemble_wave1_continuity_inputs_quantum(
     // via the solver's `surface_frozen` flag.
     let surface_frozen = daily.frost_regime == ErosionFrostRegime::FrozenSurface;
 
+    // E.3 receiver-side inflow derivations (`param.for:184-196` + `:243`):
+    // `strldn = qsout · rspace / (tcend · width)` on the RECEIVER's scale,
+    // and the continuity operands from `qin` + the prior lane's static
+    // slopes evaluated with the receiver's no-growth shear (`sheart`).
+    let (strldn, inter_ofe) = match &daily.inflow {
+        Some(inflow) if qin_m2_s > 0.0 => {
+            validate_finite("erosion.assemble.inflow_qsout", inflow.qsout_kg_m_s)?;
+            if inflow.qsout_kg_m_s < 0.0 {
+                return Err(DirectRuntimeError::NegativeDirectValue {
+                    field: "erosion.assemble.inflow_qsout",
+                });
+            }
+            let tcend = transport.tcend_kg_s_m.max(1.0e-10);
+            let strldn = if hydraulics.width_m > 0.0 {
+                inflow.qsout_kg_m_s * seed.rspace_m / tcend / hydraulics.width_m
+            } else {
+                0.0
+            };
+            // `sheart` = the no-growth shear at the inflow discharge on the
+            // PRIOR lane's slopes, in the receiver's friction/width context.
+            let qtop = qin_m2_s * seed.rspace_m;
+            let shrtp1 = super::erosion_sheart(
+                qtop,
+                inflow.prior_slpend,
+                &cover,
+                hydraulics.width_m,
+                seed.rspace_m,
+            )?;
+            let shrspv = super::erosion_sheart(
+                qtop,
+                inflow.prior_cnslp,
+                &cover,
+                hydraulics.width_m,
+                seed.rspace_m,
+            )?;
+            let ktop1 = erosion_trcoef(shrtp1, &seed.classes, seed.sand)?;
+            let ktop2 = erosion_trcoef(f64::midpoint(shrtp1, shrspv), &seed.classes, seed.sand)?;
+            let inter_ofe = super::Wave1InterOfeContinuity {
+                shrspv_pa: shrspv,
+                tcprev_kg_s_m: ktop1 * shrspv.powf(1.5),
+                ktrprv: if ktop1.abs() > 1.0e-10 {
+                    ktop2 / ktop1
+                } else {
+                    1.0
+                },
+                prior_shear_last: inflow.prior_end_shear,
+                prior_transport_last: inflow.prior_end_transport,
+            };
+            (strldn, Some(inter_ofe))
+        }
+        _ => (daily.strldn, None),
+    };
+
     Ok(DirectWave1ContinuityInputs {
         enabled: seed.enabled,
-        inter_ofe: daily.inter_ofe,
+        inter_ofe,
         segments: seed.segments.clone(),
         peakro_m_s: daily.peakro_m_s,
         runoff_depth_m: daily.runoff_depth_m,
-        qin_m2_s: daily.qin_m2_s,
+        qin_m2_s,
         efflen_m: seed.efflen_m,
         slplen_m: seed.slplen_m,
         cntlen_m: seed.cntlen_m,
@@ -390,7 +483,7 @@ pub fn assemble_wave1_continuity_inputs_quantum(
         ktrato: transport.ktrato,
         veleff_m_s: seed.veleff_m_s,
         beta: daily.beta,
-        strldn: daily.strldn,
+        strldn,
         surface_frozen,
         theta_suppressed: daily.theta_suppressed,
     })

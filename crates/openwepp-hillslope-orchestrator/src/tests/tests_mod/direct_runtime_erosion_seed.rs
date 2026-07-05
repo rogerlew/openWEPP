@@ -72,7 +72,7 @@ fn clay_loam_seed() -> DirectWave1OperandSeed {
 fn storm_daily_state() -> DirectWave1DailyState {
     // A storm day: peak runoff above the passby gate, one excess interval.
     DirectWave1DailyState {
-        inter_ofe: None,
+        inflow: None,
         peakro_m_s: 5.0e-5,
         runoff_depth_m: 0.03,
         effdrn_s: 600.0,

@@ -503,6 +503,23 @@ pub struct ErosionRillHydraulics {
 /// domain error, not a silent zero-cover fallthrough). The legacy zero
 /// branches (`rilcov <= 0` → no cover friction; `hmax <= 0` → no live
 /// friction) are preserved for the exact-zero case only.
+/// `sheart.for`: shear at a given discharge/slope in the CURRENT rill
+/// width and friction context, with NO width growth — the inter-OFE
+/// boundary shear basis (`param.for:187-189`). Returns the shear floored
+/// at the legacy 1e-6 Pa.
+pub fn erosion_sheart(
+    q_m2_s: f64,
+    slope: f64,
+    cover: &ErosionRillCoverInputs,
+    width_m: f64,
+    rspace_m: f64,
+) -> Result<f64, DirectRuntimeError> {
+    let (frcsol, frctrl) =
+        erosion_rill_friction(cover.rilcov, cover.canhgt_m, cover.hmax_m, cover.flivmx)?;
+    let (shear_pa, _) = erosion_shears(q_m2_s, slope, width_m, rspace_m, false, frcsol, frctrl)?;
+    Ok(shear_pa.max(1.0e-6))
+}
+
 fn erosion_rill_friction(
     rilcov: f64,
     canhgt: f64,
