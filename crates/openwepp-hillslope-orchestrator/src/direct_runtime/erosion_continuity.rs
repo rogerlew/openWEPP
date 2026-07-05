@@ -255,6 +255,12 @@ enum Wave1PointRegion {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectWave1ContinuityState {
     pub active: bool,
+    /// Hour quanta refused by the FLUX-consistency diagnostic gate
+    /// (`erosion.wave1.flux_closure`, the trapezoid-vs-RK4 discretization
+    /// check — NOT the 1e-9 mass-balance law, which stays hard). Refused
+    /// quanta contribute zero sediment (a surfaced under-estimate, the
+    /// GAP-SED-THAW pattern), never fabricated values.
+    pub flux_refused_quanta: u32,
     /// The solve-final shear/transport coefficient sets (the legacy
     /// Fortran-`save` `anflst`/`atclst` families) — the inter-OFE carry
     /// the NEXT lane's continuity rewrite consumes (`param.for:368-390`).
@@ -295,6 +301,7 @@ impl DirectWave1ContinuityState {
     pub fn inactive() -> Self {
         Self {
             active: false,
+            flux_refused_quanta: 0,
             end_shear_coefficients: (0.0, 0.0, 0.0),
             end_transport_coefficients: (0.0, 0.0, 0.0),
             eta: 0.0,
@@ -1916,6 +1923,7 @@ fn wave1_totals(
 
     Ok(DirectWave1ContinuityState {
         active: true,
+        flux_refused_quanta: 0,
         end_shear_coefficients,
         end_transport_coefficients,
         eta: drivers.eta,

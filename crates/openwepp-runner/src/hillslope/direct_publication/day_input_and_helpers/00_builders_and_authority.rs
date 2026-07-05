@@ -1201,7 +1201,10 @@ fn direct_production_typed_erosion_authority(
     slope: &openwepp_hillslope_orchestrator::runtime_inputs::TypedSlopeRuntimeProjection,
     management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     peak_runoff: &DirectProductionPeakRunoffAuthority,
-    contributor_ofe_count: usize,
+    // E.3: the enable no longer keys on OFE count (Wave-1 chains on every
+    // lane) and Wave-2 retirement removed its other consumer; the param
+    // stays for the call-site shape until the stage-2e EROD14 deletion.
+    _contributor_ofe_count: usize,
     management_has_active_tillage: bool,
 ) -> Result<DirectProductionErosionAuthority, HillslopeCliError> {
     // Wave-1 (SC-SED-001 sediment continuity): the spatial continuity
@@ -1216,7 +1219,12 @@ fn direct_production_typed_erosion_authority(
     // SEPARATE Increment-1 pointwise EROD13 coefficient check, which
     // stays disabled — it is not the continuity solve.
     let wave1_enabled = false;
-    let wave2_enabled = contributor_ofe_count > 1;
+    // E.3 (Increment-2 entry gate §3): Wave-1 is the per-OFE continuity
+    // engine on EVERY lane; EROD14/Wave-2 is retired as the multi-OFE
+    // publication authority (the router code is retained as a
+    // test-reachable comparator arm — the INV-SED-015 pattern — until its
+    // stage-2e deletion).
+    let wave2_enabled = false;
     let first_ofe = slope.ofes.first().ok_or_else(|| {
         direct_production_executor_blocked("typed erosion seed requires at least one slope OFE")
     })?;
@@ -1245,16 +1253,14 @@ fn direct_production_typed_erosion_authority(
         management_projection,
         peak_runoff,
     )?;
-    // SC-SED-001 1b-C activation gate (Codex-scoped): enable the Wave-1
-    // sediment-continuity solve for a SINGLE-OFE hillslope
-    // (`contributor_ofe_count == 1`) that applies NO active tillage. Multi-
-    // OFE erosion routing stays the Wave-2 (EROD14) path; MOFE Wave-1 is a
-    // later increment. The no-tillage gate narrows the enable to the
-    // reviewed forest/disturbed first-cut scope (the seed hardcodes
+    // E.3 activation gate: Wave-1 enables on EVERY no-tillage lane —
+    // single- and multi-OFE alike (each lane's seed is per-OFE by
+    // construction via the intake slicing; the inter-OFE handoff supplies
+    // qin/strldn/continuity). The no-tillage gate keeps the reviewed
+    // forest/disturbed operand scope (the seed hardcodes
     // non-cropland/non-tilled operands); genuine tilled cropland stays
-    // disabled until its operands are sourced. The per-day assembly is a
-    // pure downstream consumer, so non-sediment surfaces stay byte-identical.
-    wave1_operand_seed.enabled = contributor_ofe_count == 1 && !management_has_active_tillage;
+    // disabled until its operands are sourced.
+    wave1_operand_seed.enabled = !management_has_active_tillage;
     Ok(DirectProductionErosionAuthority {
         wave2_enabled,
         erosion_inputs: DirectErosionInputs {

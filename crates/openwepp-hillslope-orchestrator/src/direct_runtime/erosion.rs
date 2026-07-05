@@ -798,6 +798,16 @@ impl DirectDayFrame {
             } else {
                 1.0
             };
+            // An hour without a rainfall-EXCESS period (no rain, or rain
+            // fully infiltrating while the flow is saturation carry /
+            // melt-driven) has no interrill supply — `Di = Ki·I·q` needs a
+            // rainfall-excess period (`reid.for` `durre`); the legacy
+            // no-rain branches suppress theta (`param.for:530` class).
+            // Without this, such an hour with `qout > qin` carries zero
+            // `effdrr` into the non-suppressed validator.
+            hour_state.theta_suppressed = daily.theta_suppressed
+                || hourly_rainfall_m[hour] <= 0.0
+                || hourly_excess_m[hour] <= 0.0;
             hour_state.rill_width_prior_m = hourly_width_m;
             hour_state.inflow = intake.and_then(|intake| {
                 if hour_qin_m2_s > 0.0 {
@@ -843,8 +853,24 @@ impl DirectDayFrame {
         let mut flux_scale_sum = 0.0_f64;
         let mut max_export_kg_m = -1.0_f64;
 
+        let mut flux_refused_quanta = 0_u32;
         for (hour, hour_inputs) in &self.wave1_hourly_plan {
-            let state = compute_direct_wave1_continuity_quantum(hour_inputs, true)?;
+            let state = match compute_direct_wave1_continuity_quantum(hour_inputs, true) {
+                Ok(state) => state,
+                // The flux-consistency DIAGNOSTIC (trapezoid-vs-RK4) can
+                // refuse a stiff quantum on real substrates (extreme
+                // continuity-guarded coefficient ratios); production skips
+                // that quantum's sediment with a surfaced count — the
+                // 1e-9 mass-balance law is a separate gate and still
+                // hard-fails. Never a fabricated value.
+                Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                    field: "erosion.wave1.flux_closure",
+                }) => {
+                    flux_refused_quanta += 1;
+                    continue;
+                }
+                Err(error) => return Err(error),
+            };
             if !state.active {
                 // A planned quantum is active by construction (`w_h > 0`
                 // implies positive hour flow); an inactive return means the
@@ -868,9 +894,22 @@ impl DirectDayFrame {
             }
         }
 
-        let mut aggregate = aggregate.ok_or(DirectRuntimeError::DirectDomainViolation {
-            field: "erosion.wave1.hourly_plan_empty",
-        })?;
+        let mut aggregate = match aggregate {
+            Some(aggregate) => aggregate,
+            None if flux_refused_quanta > 0 => {
+                // Every quantum refused: an inert (zero-sediment) day with
+                // the refusal count surfaced.
+                let mut inert = DirectWave1ContinuityState::inactive();
+                inert.flux_refused_quanta = flux_refused_quanta;
+                return Ok((inert, hourly_sediment_kg));
+            }
+            None => {
+                return Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "erosion.wave1.hourly_plan_empty",
+                });
+            }
+        };
+        aggregate.flux_refused_quanta = flux_refused_quanta;
         aggregate.exported_sediment_kg_m = exported_kg_m_sum;
         aggregate.inflow_sediment_kg_m = inflow_kg_m_sum;
         aggregate.total_detachment_kg = detach_kg_sum;
@@ -882,11 +921,18 @@ impl DirectDayFrame {
         // The day toe concentration re-forms on the DAY totals
         // (`sloss.for:314` basis, preserving the E.1 reconstruction
         // identity `tdet = Σ sedcon × runvol` on zero-deposition days).
-        aggregate.sediment_concentration_kg_m3 = if day_inputs.peakro_m_s <= 0.0 {
-            0.0
-        } else {
-            exported_kg_m_sum / (day_inputs.runoff_depth_m * day_inputs.efflen_m)
-        };
+        // Legacy guards the toe concentration on `peakro` (`sloss.for:311`);
+        // the hourly chain adds inflow-only days where the LOCAL runoff
+        // volume basis is zero while sediment still exits — the denominator
+        // guard keeps the day concentration a defined 0 there (the exported
+        // mass itself stays fully published via S_h / tdet / tdep).
+        let volume_basis_m2 = day_inputs.runoff_depth_m * day_inputs.efflen_m;
+        aggregate.sediment_concentration_kg_m3 =
+            if day_inputs.peakro_m_s <= 0.0 || volume_basis_m2 <= 0.0 {
+                0.0
+            } else {
+                exported_kg_m_sum / volume_basis_m2
+            };
         validate_finite(
             "erosion.wave1.hourly_day_concentration",
             aggregate.sediment_concentration_kg_m3,

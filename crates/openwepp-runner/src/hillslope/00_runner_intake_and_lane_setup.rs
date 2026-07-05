@@ -111,8 +111,15 @@ use crate::shared::{
 };
 
 const EROD14_QIN_POLICY_WAVE2_DISABLED: &str = "wave2-disabled";
+// E.3 (INV-SED-012 / INV-RUNOFFPART-030 lift): multi-OFE erosion qin is the
+// Wave-1 hourly sediment-coupled handoff (prior-lane erosion qout + qsout +
+// class fractions + continuity state), never a water-transfer substitute.
+const EROD14_QIN_POLICY_WAVE1_SEDIMENT_COUPLED: &str = "wave1-hourly-sediment-coupled-handoff";
 const EROD14_QIN_POLICY_WATER_TRANSFER_ONLY: &str =
     "water-transfer-only-mofe01-mg-sediment-coupling-follow-on";
+// E.3: the water-transfer-only warning retired with the Wave-1 coupled
+// handoff; the id is kept for the contract lineage until stage 2e.
+#[allow(dead_code)]
 const EROD14_QIN_WARNING_ID: &str = "MOFE01-MG-W-001";
 
 #[derive(Debug, Serialize)]

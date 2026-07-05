@@ -328,8 +328,12 @@ fn build_hillslope_execution_provenance(
         HillslopeRuntimeSelection::DirectProductionExecutor
     );
     let wb16_ealpha_compatibility_seed_used = false;
-    let erod14_wave2_enabled = execution.erod14_wave2_kernel_status_seen;
-    let erod14_qin_source_policy = erod14_qin_source_policy(erod14_wave2_enabled, sidecar_warnings);
+    let _ = sidecar_warnings;
+    // E.3: the seed-level flag now carries multi-OFE-ness only (Wave-2
+    // itself is retired — it never runs, so both wave2 provenance fields
+    // publish false); the qin policy reports the Wave-1 coupled handoff.
+    let multi_ofe_wave1_chained = execution.erod14_wave2_kernel_status_seen;
+    let erod14_qin_source_policy = erod14_qin_source_policy(multi_ofe_wave1_chained);
     HillslopeExecutionProvenance {
         scheduler_kernel_executed: false,
         publication_source: DIRECT_PUBLICATION_FRAME_PUBLICATION_SOURCE.to_string(),
@@ -340,24 +344,24 @@ fn build_hillslope_execution_provenance(
         climate_day_count: execution.climate_span.days.len(),
         executed_day_count: execution.executed_day_count,
         kernel_phase_message_ids: execution.kernel_phase_message_ids.clone(),
-        erod14_wave2_enabled,
-        erod14_wave2_kernel_status_seen: execution.erod14_wave2_kernel_status_seen,
+        erod14_wave2_enabled: false,
+        erod14_wave2_kernel_status_seen: false,
         erod14_qin_source_policy: erod14_qin_source_policy.to_string(),
-        erod14_qin_sediment_coupled: false,
+        erod14_qin_sediment_coupled: multi_ofe_wave1_chained,
         wb16_ealpha_compatibility_seed_used,
         wb16_ealpha_seed_policy: wb16_ealpha_seed_policy(wb16_ealpha_compatibility_seed_used),
     }
 }
 
-fn erod14_qin_source_policy(
-    erod14_wave2_enabled: bool,
-    sidecar_warnings: &mut Vec<String>,
-) -> &'static str {
-    if erod14_wave2_enabled {
-        sidecar_warnings.push(format!(
-            "{EROD14_QIN_WARNING_ID} EROD14 Wave-2 qin is seeded from water-transfer provenance only; true sediment-coupled qin/qout and particle-fraction handoff remains MOFE01 M-G follow-on scope."
-        ));
-        EROD14_QIN_POLICY_WATER_TRANSFER_ONLY
+fn erod14_qin_source_policy(multi_ofe_wave1_chained: bool) -> &'static str {
+    // E.3: Wave-2 is retired as the multi-OFE authority; on multi-OFE
+    // hillslopes the Wave-1 chain supplies TRUE sediment-coupled qin
+    // (INV-SED-012 lineage: prior-lane erosion qout/qsout/fractions/
+    // continuity state) — the water-transfer-only compatibility posture
+    // and its warning are gone with it.
+    let _ = EROD14_QIN_POLICY_WATER_TRANSFER_ONLY;
+    if multi_ofe_wave1_chained {
+        EROD14_QIN_POLICY_WAVE1_SEDIMENT_COUPLED
     } else {
         EROD14_QIN_POLICY_WAVE2_DISABLED
     }
