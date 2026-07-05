@@ -14,6 +14,39 @@ struct DirectProductionDayInputBuilder<'a> {
     sturm_climate_class: Option<openwepp_hillslope_orchestrator::SnowClimateClass>,
 }
 
+impl DirectProductionDayInputBuilder<'_> {
+    /// Per-lane static geometry for the Lane D seam shadow (from the
+    /// Wave-1 operand seeds): slope length, hillslope field width, and
+    /// the mean profile gradient (integral of the normalized `a·x + b`
+    /// segment fit), floored at 0.001 m/m so degenerate flat fits keep
+    /// the bare-cell mesh valid.
+    pub(crate) fn laned_shadow_geometry(
+        &self,
+    ) -> Vec<crate::hillslope::laned_shadow::LanedShadowLaneGeometry> {
+        self.lane_authority
+            .iter()
+            .map(|lane| {
+                let seed = &lane.erosion.erosion_inputs.wave1_operand_seed;
+                let mean_gradient = seed
+                    .segments
+                    .iter()
+                    .map(|segment| {
+                        segment.a / 2.0
+                            * (segment.xl * segment.xl - segment.xu * segment.xu)
+                            + segment.b * (segment.xl - segment.xu)
+                    })
+                    .sum::<f64>()
+                    .max(0.001);
+                crate::hillslope::laned_shadow::LanedShadowLaneGeometry {
+                    slplen_m: seed.slplen_m,
+                    width_m: seed.field_width_m,
+                    mean_gradient,
+                }
+            })
+            .collect()
+    }
+}
+
 #[derive(Clone)]
 struct DirectProductionSeedAuthority {
     lanes: Vec<DirectProductionLaneSeedAuthority>,

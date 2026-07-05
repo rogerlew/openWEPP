@@ -27,6 +27,8 @@ pub use snowbench_physics_bulk::{
     run_physics_bulk_snowbench,
 };
 
+pub(crate) mod laned_shadow;
+
 include!("00_runner_intake_and_lane_setup.rs");
 include!("01_scheduler_and_trace.rs");
 include!("02_output_and_climate_helpers.rs");

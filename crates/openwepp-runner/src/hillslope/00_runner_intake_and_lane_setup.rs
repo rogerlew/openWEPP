@@ -242,6 +242,22 @@ struct HillslopeExecutionProvenance {
     erod14_qin_sediment_coupled: bool,
     wb16_ealpha_compatibility_seed_used: bool,
     wb16_ealpha_seed_policy: String,
+    /// Lane D seam shadow diagnostics — present ONLY when the opt-in
+    /// shadow ran (`INV-OFEROUTE-012` activation increment).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    laned_shadow: Option<LanedShadowProvenance>,
+}
+
+#[derive(Debug, Serialize)]
+struct LanedShadowProvenance {
+    days_seen: u64,
+    days_routed: u64,
+    days_uniform_shape: u64,
+    max_router_conservation_rel: f64,
+    aggregate_router_conservation_rel: f64,
+    max_supply_reconstruction_rel: f64,
+    total_source_m3: f64,
+    total_routed_outlet_m3: f64,
 }
 
 #[derive(Debug, Serialize)]
@@ -582,6 +598,7 @@ struct HillslopeClimateExecution {
     climate_span: ClimateRunSpanSummary,
     coupling_vectors: HillslopeCouplingVectorProvenance,
     multi_ofe_wave1_chained: bool,
+    laned_shadow: Option<crate::hillslope::laned_shadow::LanedShadowSummary>,
     scheduler_outcome_class: &'static str,
     scheduler_status_message_id: String,
     kernel_phase_message_ids: Vec<String>,
@@ -603,6 +620,10 @@ struct DirectPublicationArtifacts {
 struct RetainedDirectPublication {
     execution: DirectStreamingPublicationExecution,
     stream: DirectPublicationStreamResult,
+    /// Lane D seam shadow summary (`OPENWEPP_LANED_SHADOW=1` opt-in);
+    /// `None` when the shadow is off — the manifest then carries no
+    /// shadow keys (`INV-OFEROUTE-010` byte-identity posture).
+    laned_shadow: Option<crate::hillslope::laned_shadow::LanedShadowSummary>,
 }
 
 struct DirectPublicationStreamResult {

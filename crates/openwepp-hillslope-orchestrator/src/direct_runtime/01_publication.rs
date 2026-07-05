@@ -261,6 +261,41 @@ pub struct DirectPublicationDayRow {
     pub profile: DirectPublicationProfileOperands,
     pub interception: DirectPublicationInterceptionOperands,
     pub erosion: DirectPublicationErosionOperands,
+    /// DC01 unit-normalized hourly weights of THIS lane's OWN surface
+    /// runoff (`INV-RUNOFFPART-031` M2 distribution recomputed at
+    /// publication over the lane's own `wb14_hourly_excess` +
+    /// `ui_SCrunf`-lineage carry — NOT `lane.transfer`, which carries the
+    /// downstream INFLOW distribution). In-memory only (the parquet sink
+    /// maps named columns); consumed by the Lane D seam shadow to
+    /// reconstruct the routed source series (`weights[h] × qofe`) per the
+    /// ADR-0036 weights-times-total hourly-flow authority.
+    pub dc01_surface_hourly_weights: [f64; DIRECT_TRANSFER_HOUR_COUNT],
+}
+
+/// The lane's OWN surface-runoff hourly weights for the seam shadow:
+/// the DC01 M2 distribution over the lane's own WB14 excess + saturation
+/// carry, against its own runoff total. Zero-vector on no-runoff days;
+/// uniform when runoff exists with no hourly shape (the DC01 lump-only
+/// day class — e.g. melt-sourced runoff outside the two D1 limbs).
+fn direct_publication_own_surface_hourly_weights(
+    day_frame: &DirectDayFrame,
+) -> Result<[f64; DIRECT_TRANSFER_HOUR_COUNT], DirectRuntimeError> {
+    let runoff = day_frame.runoff_shadow_projection.as_ref().ok_or(
+        DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R4A runoff partition producer (publication weights)",
+        },
+    )?;
+    let subsurface = day_frame
+        .subsurface_compute_shadow_projection
+        .as_ref()
+        .ok_or(DirectRuntimeError::MissingDirectUpstream {
+            upstream: "R4O subsurface compute producer (publication weights)",
+        })?;
+    Ok(crate::direct_runtime::runoff::dc01_surface_runoff_hourly_weights(
+        runoff.q_runoff_m,
+        &day_frame.wb14_hourly_excess_m,
+        &subsurface.hourly_saturation_carry_m,
+    ))
 }
 
 impl DirectPublicationDayRow {
@@ -286,6 +321,9 @@ impl DirectPublicationDayRow {
         Ok(Self {
             run_id: day_frame.identity.run_id,
             hillslope_id: day_frame.identity.hillslope_id,
+            dc01_surface_hourly_weights: direct_publication_own_surface_hourly_weights(
+                day_frame,
+            )?,
             lane_id: lane.lane_id,
             ofe_id: lane.lane_id,
             lane_index: day_frame.lane_index,

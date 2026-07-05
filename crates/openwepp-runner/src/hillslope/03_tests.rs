@@ -760,6 +760,7 @@ mod tests {
         let identity =
             DirectRunIdentity::new(19, 2637, 1, 1).expect("valid direct identity should construct");
         let zero_row = DirectPublicationDayRow {
+            dc01_surface_hourly_weights: [0.0; 24],
             run_id: 19,
             hillslope_id: 2637,
             lane_id: 1,
@@ -934,6 +935,7 @@ mod tests {
         let identity =
             DirectRunIdentity::new(19, 2637, 1, 1).expect("valid direct identity should construct");
         let row = DirectPublicationDayRow {
+            dc01_surface_hourly_weights: [0.0; 24],
             run_id: 19,
             hillslope_id: 2637,
             lane_id: 1,
@@ -1079,6 +1081,7 @@ mod tests {
         let day_index = usize::try_from(sim_day_index - 1).expect("test day should fit usize");
         let offset = f64::from(ofe_id) + f64::from(sim_day_index) / 10.0;
         DirectPublicationDayRow {
+            dc01_surface_hourly_weights: [0.0; 24],
             run_id: 42,
             hillslope_id: 2637,
             lane_id: ofe_id,

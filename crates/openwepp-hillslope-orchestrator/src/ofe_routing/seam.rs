@@ -59,6 +59,28 @@ pub fn seam_source_rate_series(
     Ok(rates)
 }
 
+/// Build the routed source-rate series from an already-combined hourly
+/// DEPTH series (m per hour slot). This is the PUBLICATION-SIDE form of
+/// the seam rule: the DC01 weights are unit-normalized over exactly
+/// `wb14_hourly_excess + ui_SCrunf` (the two D1 limbs), so
+/// `weights[h] × day_total` reconstructs the combined depth series and
+/// this helper applies the same recorded `/3600` conversion as
+/// `seam_source_rate_series` (ADR-0036 weights-times-total authority).
+pub fn seam_source_rates_from_hourly_depths(
+    depths_m: &[f64; SEAM_HOUR_BINS],
+) -> Result<[f64; SEAM_HOUR_BINS], SeamError> {
+    let mut rates = [0.0_f64; SEAM_HOUR_BINS];
+    for (rate, depth) in rates.iter_mut().zip(depths_m.iter()) {
+        if !depth.is_finite() || *depth < 0.0 {
+            return Err(SeamError::InvalidOperand {
+                what: "seam combined hourly depth (weights x total reconstruction)",
+            });
+        }
+        *rate = depth / SEAM_SECONDS_PER_HOUR;
+    }
+    Ok(rates)
+}
+
 /// Hourly-lane activation precondition (`INV-OFEROUTE-012`): the seam
 /// consumes the `INV-SUBHYD-023` hourly carries; a daily-lane hillslope
 /// does not publish them and MUST fail closed at activation — never a

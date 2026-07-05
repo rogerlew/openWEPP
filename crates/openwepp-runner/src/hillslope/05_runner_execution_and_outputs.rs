@@ -61,12 +61,14 @@ fn execute_hillslope_direct_production_days(
     )?;
     let executed_day_count = climate_span.days.len();
     let multi_ofe_wave1_chained = seed_authority.multi_ofe_wave1_chained;
+    let laned_shadow = retained_direct_publication.laned_shadow;
 
     Ok(HillslopeClimateExecution {
         selected_lane: lane_context.lane,
         climate_span,
         coupling_vectors,
         multi_ofe_wave1_chained,
+        laned_shadow,
         scheduler_outcome_class: "completed",
         scheduler_status_message_id: "R7C-DIRECT-PRODUCTION-EXECUTOR".to_string(),
         kernel_phase_message_ids: Vec::new(),
@@ -84,6 +86,16 @@ fn execute_direct_publication_stream(
 ) -> Result<RetainedDirectPublication, HillslopeCliError> {
     let mut stream_sink =
         DirectPublicationStreamingSink::create(frame.identity, metadata.clone(), streaming_targets)?;
+    // Lane D seam shadow (INV-OFEROUTE-012 activation increment):
+    // opt-in, diagnostics-only; geometry from the Wave-1 operand seeds.
+    let mut laned_shadow = if crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled()
+    {
+        Some(crate::hillslope::laned_shadow::LanedShadowCollector::new(
+            day_input_builder.laned_shadow_geometry(),
+        ))
+    } else {
+        None
+    };
     let execution = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
         .run_publication_stream_with_interleaved_day_inputs(
             frame,
@@ -94,6 +106,11 @@ fn execute_direct_publication_stream(
                     .map_err(|error| direct_publication_day_input_build_error(&error))
             },
             |row| {
+                if let Some(collector) = laned_shadow.as_mut() {
+                    collector.observe_row(row).map_err(|detail| {
+                        DirectRuntimeError::PublicationSinkFailure { detail }
+                    })?;
+                }
                 stream_sink.observe_row(row).map_err(|error| {
                     DirectRuntimeError::PublicationSinkFailure {
                         detail: error.to_string(),
@@ -103,7 +120,19 @@ fn execute_direct_publication_stream(
         )
         .map_err(|source| direct_production_runtime_error(&source))?;
     let stream = stream_sink.finish()?;
-    Ok(RetainedDirectPublication { execution, stream })
+    let laned_shadow = laned_shadow
+        .map(crate::hillslope::laned_shadow::LanedShadowCollector::finalize)
+        .transpose()
+        .map_err(|detail| {
+            direct_production_runtime_error(&DirectRuntimeError::PublicationSinkFailure {
+                detail,
+            })
+        })?;
+    Ok(RetainedDirectPublication {
+        execution,
+        stream,
+        laned_shadow,
+    })
 }
 
 struct DirectProductionRunFrameBuildInputs<'a> {
@@ -351,6 +380,16 @@ fn build_hillslope_execution_provenance(
         erod14_qin_sediment_coupled: multi_ofe_wave1_chained,
         wb16_ealpha_compatibility_seed_used,
         wb16_ealpha_seed_policy: wb16_ealpha_seed_policy(wb16_ealpha_compatibility_seed_used),
+        laned_shadow: execution.laned_shadow.map(|summary| LanedShadowProvenance {
+            days_seen: summary.days_seen,
+            days_routed: summary.days_routed,
+            days_uniform_shape: summary.days_uniform_shape,
+            max_router_conservation_rel: summary.max_router_conservation_rel,
+            aggregate_router_conservation_rel: summary.aggregate_router_conservation_rel,
+            max_supply_reconstruction_rel: summary.max_supply_reconstruction_rel,
+            total_source_m3: summary.total_source_m3,
+            total_routed_outlet_m3: summary.total_routed_outlet_m3,
+        }),
     }
 }
 
