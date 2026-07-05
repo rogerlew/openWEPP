@@ -929,9 +929,9 @@ fn validate_latest_event_vectors(
     }
 
     // SC-INFILE-HBP-001 §8.5 (ADR-0036 D4): minor-1 hourly surfaces must
-    // arrive as a 24-slot pair whose sediment timing is self-consistent
-    // with the event's own concentration × volume mass
-    // (`Σ S_h = Σ sedcon_i × Σ V_h`), failing closed on material
+    // arrive as a 24-slot pair satisfying the volume-free sediment-side
+    // telescoping identity `Σ S_h = tdet − tdep` (the event exported
+    // mass; zero-inflow single-OFE producers), failing closed on material
     // violation. Minor-0 payloads carry empty vectors and skip cleanly.
     let hourly_volume = &payload.hourly_runoff_volume_m3;
     let hourly_sediment = &payload.hourly_sediment_mass_kg;
