@@ -11,7 +11,7 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-03`:
+State as of `2026-07-05`:
 
 - `20260703-dff-ws3-directional-burn-validation-001/` is held as DFF WS-3
   DIRECTIONAL BURN VALIDATION + PEAKFLOW MAGNITUDE ADJUDICATION. Result:
@@ -91,6 +91,20 @@ State as of `2026-07-03`:
 
 ## Execution Log
 
+- `20260705-local-ci-timing-profile-optimization-001/` is complete as LOCAL CI
+  TIMING AND PROFILE OPTIMIZATION. Result: `EXECUTED-COMPLETE`. It added
+  persistent local nextest timing diagnostics under `tools/local_ci/`, installed
+  the local-CI gate-selection standard, added an erosion domain nextest profile,
+  and empirically tuned `forest` fixture concurrency. Measured cap decisions:
+  `cli-fixture 2 -> 4` (`245.884 s -> 120.590 s`), `runner-fixture 2 -> 4`
+  (`71.948 s -> 31.159 s`), `frost-fixture 2 -> 4`
+  (`1.878 s -> 0.929 s` on the non-snowbench subset), and `snowbench` remains
+  serial because cap 2 did not improve the representative subset
+  (`262.323 s` vs `263.345 s`). Bernoulli's review findings were accepted and
+  fixed; Bernoulli re-check plus Locke second review found no remaining
+  blockers. Full-suite closure remains required for branch-head implementation
+  gates; the package changes local iteration and review-response gate
+  selection.
 - `20260702-wshedw6-publication-large-watershed-scaling-001/` is complete as
   WSHED-W6 PUBLICATION AND LARGE-WATERSHED SCALING. Result:
   `EXECUTED-COMPLETE`. It moved public watershed publication directly onto

@@ -31,7 +31,7 @@ commands):
 ```bash
 cargo fmt --check
 cargo clippy --workspace --all-targets   # warnings denied
-cargo nextest run --workspace            # full suite
+cargo nextest run --workspace --profile full
 cargo deny check                         # licenses + advisories (no copyleft)
 ```
 
@@ -46,6 +46,13 @@ plus, depending on the surface touched:
   before/after (chapter 5, "identity gate").
 - **Conservation/closure checks** — kernel-affecting changes carry
   contract-derived invariant tests, not just unit tests.
+
+For local iteration and review-response fixes, use the cheapest gate that
+actually covers the changed surface: focused nextest filters, `quick`, or a
+domain profile such as `frost` or `erosion`. The full suite remains the
+branch-head closure gate for implementation packages. See
+[local-ci-gate-selection.md](../standards/local-ci-gate-selection.md) and record
+expensive nextest timing with `tools/local_ci/nextest_timing.py`.
 
 ## 7.3 Work packages: the unit of execution
 

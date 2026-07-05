@@ -4,7 +4,7 @@
 # - keep ordinary contract/unit tests highly parallel;
 # - keep subprocess-heavy CLI, snowbench, SNOTEL, PySnobal, and frost fixtures
 #   from saturating CPU and parquet I/O at the same time;
-# - provide explicit quick/full/frost profiles for local and CI gate selection.
+# - provide explicit quick/full/domain profiles for local and CI gate selection.
 
 [store]
 dir = "target/nextest"
@@ -83,17 +83,35 @@ report-name = "openwepp-nextest-frost"
 store-success-output = false
 store-failure-output = true
 
+# Erosion/sediment/routing-focused gate. This is the default local confidence
+# profile for SC-SED, HBP sediment, runoff partition, and routing handoff work.
+# Use `cargo nextest run --workspace --profile erosion`.
+[profile.erosion]
+inherits = "default"
+default-filter = '''
+binary(/(erosion|erod|sediment|hbp|route|routing|runoffpart)/)
+| test(/(erosion|erod|sediment|wave1|sedcon|tdet|tdep|hbp|route|routing|runoffpart|p61|p102|dff_ws3)/)
+'''
+fail-fast = false
+slow-timeout = { period = "90s", terminate-after = 8 }
+
+[profile.erosion.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-erosion"
+store-success-output = false
+store-failure-output = true
+
 [test-groups.snowbench]
 max-threads = 1
 
 [test-groups.cli-fixture]
-max-threads = 2
+max-threads = 4
 
 [test-groups.frost-fixture]
-max-threads = 2
+max-threads = 4
 
 [test-groups.runner-fixture]
-max-threads = 2
+max-threads = 4
 
 # The snowbench/PySnobal tests are the observed top wall-time offenders. Keep
 # them serial to avoid multiple full WAT/PySnobal export pipelines competing for
@@ -110,7 +128,9 @@ threads-required = 4
 slow-timeout = { period = "90s", terminate-after = 8 }
 
 # CLI integration fixtures spawn openwepp binaries and write parquet/manifest
-# output. Let a couple run concurrently, but do not let them occupy every CPU.
+# output. `forest` local-CI sweep on 2026-07-05 selected group cap 4
+# (`245.884s -> 120.590s` versus cap 2). With `threads-required = 2`, this
+# permits two matching fixture tests at once while still avoiding full CPU fanout.
 [[profile.default.overrides]]
 filter = '''
 binary(/^(cli01_runner_hillslope_integration|cli03_runner_contract_derived_tests|cli04_runner_wat_parquet_contract_derived_tests)$/)
@@ -121,8 +141,9 @@ threads-required = 2
 slow-timeout = { period = "90s", terminate-after = 6 }
 
 # Snow/frost observation and mechanism diagnostics can be expensive even when
-# they are not snowbench exports. Cap their concurrency separately from general
-# CLI tests so the frost profile remains usable on developer machines.
+# they are not snowbench exports. The snowbench override above remains serial.
+# `forest` local-CI sweep selected group cap 4 for the non-snowbench frost
+# subset; with `threads-required = 2`, this permits two matching tests at once.
 [[profile.default.overrides]]
 filter = '''
 binary(/^(snowdensity.*|snowfrost.*|paradigm2.*|cancov_stratified_observations)$/)
@@ -134,7 +155,9 @@ slow-timeout = { period = "90s", terminate-after = 6 }
 
 # Runner library fixture tests are individual libtest cases under the
 # openwepp_runner binary. Nextest can split them, so cap them by test name rather
-# than serializing the whole runner unit-test suite.
+# than serializing the whole runner unit-test suite. `forest` local-CI sweep on
+# 2026-07-05 selected group cap 4 (`71.948s -> 31.159s` versus cap 2). With
+# `threads-required = 2`, this permits two matching fixture tests at once.
 [[profile.default.overrides]]
 filter = '''
 package(openwepp-runner)

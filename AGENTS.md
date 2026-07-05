@@ -70,9 +70,11 @@ Before declaring Rust kernel implementation complete, run and record:
 7. For conservation-sensitive outputs, independent operand reconstruction and
    real closure evidence per `docs/standards/kernel-work-package-preparation.md`.
 - Use `cargo nextest run --workspace --profile quick` for fast local loops and
-  `cargo nextest run --workspace --profile frost` for snow/frost-focused gates.
-  Fall back to `cargo test --workspace` only for libtest-specific behavior or an
-  explicitly required legacy harness check.
+  domain profiles such as `cargo nextest run --workspace --profile frost` or
+  `cargo nextest run --workspace --profile erosion` for focused local CI.
+  Follow `docs/standards/local-ci-gate-selection.md` for tier selection and
+  persistent timing diagnostics. Fall back to `cargo test --workspace` only for
+  libtest-specific behavior or an explicitly required legacy harness check.
 
 ## Error Handling and Numerics
 - No broad `Result<_, Box<dyn Error>>` swallowing in production paths; use typed error enums per crate.
@@ -86,7 +88,8 @@ Before declaring Rust kernel implementation complete, run and record:
 - Work packages: `docs/work-packages/AGENTS.md`, `docs/work-packages/README.md`, `docs/codex_exec_plans.md`, `docs/defect_closure_execplans.md`.
 - Array-native burn-down ExecPlans: R4 hydrology direct paths in `docs/work-packages/r4-burndown-execplan.md`; R5 full OFE-day direct path in `docs/work-packages/r5-burndown-execplan.md`.
 - Science contracts: `docs/specifications/science-contracts/AGENTS.md`, `docs/specifications/science-contract-authoring-procedure.md`, `docs/specifications/science-contracts/kernel-process-contract-profile.md`, `docs/specifications/science-contracts/index.md`.
-- Standards and prompt wording: `docs/standards/AGENTS.md`, `docs/standards/kernel-work-package-preparation.md`, `docs/standards/prompt-wording-guidance.md`, `docs/standards/mechanical-refactor-authoring-guide.md`.
+- Standards and prompt wording: `docs/standards/AGENTS.md`, `docs/standards/kernel-work-package-preparation.md`, `docs/standards/prompt-wording-guidance.md`, `docs/standards/mechanical-refactor-authoring-guide.md`, `docs/standards/local-ci-gate-selection.md`.
+- Local CI timing tooling: `tools/local_ci/README.md`.
 - Rust crates: `crates/AGENTS.md`.
 - Tests: `tests/AGENTS.md`.
 - Numerics: `docs/numerics/README.md`.

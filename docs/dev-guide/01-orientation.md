@@ -129,8 +129,13 @@ Two habits make this system navigable:
 
 ```bash
 cargo build --release            # rust-toolchain.toml pins the channel
-cargo nextest run --workspace    # the test suite (~1,900 tests)
+cargo nextest run --workspace --profile quick  # fast local confidence loop
 ```
+
+Use `cargo nextest run --workspace --profile full` for branch-head closure when
+the package or change class requires the full suite. Local gate tiering and
+timing diagnostics are described in
+[local-ci-gate-selection.md](../standards/local-ci-gate-selection.md).
 
 A hillslope run needs a run directory of WEPP inputs and a TOML runfile
 (schema `openwepp-hillslope-runfile-v1`, see the

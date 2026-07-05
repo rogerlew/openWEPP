@@ -29,10 +29,14 @@
 - Focused test for changed area when practical: `cargo nextest run --test <integration_test_name>` or `cargo nextest run -p <package>`.
 - Fast local loop: `cargo nextest run --workspace --profile quick`.
 - Snow/frost fidelity loop: `cargo nextest run --workspace --profile frost`.
+- Erosion sediment/routing loop: `cargo nextest run --workspace --profile erosion`.
 - Full handoff gate when package requires it: `cargo nextest run --workspace --profile full`.
 - Full Rust closure loop when package or implementation scope requires it: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo nextest run --workspace --profile full`, `cargo deny check`.
 - Fall back to `cargo test --workspace` only when validating libtest-specific behavior or when a package explicitly requires the legacy harness.
 - Expensive fixture families are scheduled in `.config/nextest.toml` groups: `snowbench`, `cli-fixture`, `frost-fixture`, and `runner-fixture`.
+- Use `docs/standards/local-ci-gate-selection.md` for gate-tier selection and
+  `tools/local_ci/nextest_timing.py` to record persistent local timing evidence
+  for expensive nextest runs.
 - For external-authority suite posture/cohort/required-case binding edits: `bash tools/release/check_authority_suite_antievasion.sh` and `cargo nextest run --test auth11_required_suite_obligation_guards_contract`.
 
 ## Doc-Coupled Test Rules

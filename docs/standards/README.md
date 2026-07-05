@@ -11,6 +11,7 @@ implementation work.
 | [prompt-wording-guidance.md](prompt-wording-guidance.md) | Kernel/science kickoff prompt wording, required-reading tiers, subagent and acceptance-gate wording | Active |
 | [mechanical-refactor-authoring-guide.md](mechanical-refactor-authoring-guide.md) | Mechanical refactor package authoring, tool usage, split patterns, compile/test validation flow | Active |
 | [code-quality-refactor-authoring-guide.md](code-quality-refactor-authoring-guide.md) | Metric-driven behavior-preserving refactors (CRAP/complexity decomposition, dead code, duplication, lint debt); numeric-equivalence guard; lint ratchet | Active |
+| [local-ci-gate-selection.md](local-ci-gate-selection.md) | Local agent/maintainer gate tiering, timing diagnostics, and empirical nextest scheduling changes | Active |
 | [usersum-authoring-style-guide.md](usersum-authoring-style-guide.md) | End-user documentation under `usersum/`: document shapes, audience/register, narrative structure, style rules, claims/evidence register, vendoring mechanics, pre-landing checklist | Active |
 
 ## Change control
