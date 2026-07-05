@@ -1,19 +1,13 @@
 # DFF-WS1 — Native Forest `lanuse` Mode Foundation
 
-Status: **INCREMENT 1 (schema design) — Codex-reviewed, revisions incorporated;
-INCREMENT 2 (parser/runtime code) IMPLEMENTED on branch
-`dff-ws1-inc2-native-forest-lanuse`, gated, awaiting Codex review** (2026-07-02).
-See `artifacts/increment-2-implementation.md` for the build summary + open items,
-and `artifacts/review-codex.md` for the 5 dispositioned Increment-1 findings (2
-High: seam claim corrected + Tier-A physics authority requirement; 2 Medium:
-all-section carve policy + soil/mgmt reconciliation; 1 Low: rangeland-shaped
-wording).
-Campaign: [disturbed-forest-fidelity](../../planning/disturbed-forest-fidelity-strategy.md)
-WS-1. Governing authority:
-[ADR-0034](../../decisions/0034-management-file-lanuse-input-authority.md) +
-[`openwepp-management-lanuse-authority-contract.md`](../../contracts/openwepp-management-lanuse-authority-contract.md).
-Management-file authority: `plant-file.spec.md` /
-`SC-INFILE-MANAGEMENT-001`. Owner: Claude Code.
+Status: **INCREMENT 2 — rebased onto post-E-sequence main 2026-07-05
+(head `a4c43e16`, full suite 1356/1356); three Codex review rounds
+addressed pre-rebase; AWAITING the post-rebase re-check.** The rebase
+reconciliation composes WS1 with the erosion E-sequence: the forest
+initial seed supplies `residue_cover_factor` (the GAP-SED-009
+declared-cover fix applies to native forest lanuse), and the tillage
+detector treats Forest yearlies as never-tilled (Wave-1 erosion enabled
+by construction on native forest managements).
 
 ## Objective
 
