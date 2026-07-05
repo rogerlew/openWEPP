@@ -9,3 +9,7 @@ tests/fixtures/forest_lateral_flow_authority/**/*.zip filter=lfs diff=lfs merge=
 tests/fixtures/forest_lateral_flow_authority/**/*.pdf filter=lfs diff=lfs merge=lfs -text
 tests/fixtures/forest_lateral_flow_authority/**/*.xls filter=lfs diff=lfs merge=lfs -text
 tests/fixtures/forest_lateral_flow_authority/**/*.XLS filter=lfs diff=lfs merge=lfs -text
+# Verbatim WEPP-format input fixtures: whitespace (incl. trailing) is part
+# of the faithful upstream bytes — exempt from diff --check whitespace.
+tests/fixtures/erosion_multi_ofe_p102/* -whitespace
+tests/fixtures/erosion_single_ofe_p61/* -whitespace
