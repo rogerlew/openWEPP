@@ -631,6 +631,7 @@ impl Ws10ChannelImpoundmentKernel {
                 &input.step.contributor_hillslopes,
             );
         let mut summed_hourly_volume_m3 = [0.0_f64; 24];
+        let mut hourly_sediment_inlet_kg = [0.0_f64; 24];
 
         for &hillslope_id in &input.step.contributor_hillslopes {
             let contribution = input
@@ -654,6 +655,19 @@ impl Ws10ChannelImpoundmentKernel {
                         ));
                     }
                     *slot += volume_m3;
+                }
+                for (slot, sediment_kg) in hourly_sediment_inlet_kg
+                    .iter_mut()
+                    .zip(contribution.hourly_sediment_mass_kg.iter())
+                {
+                    if !sediment_kg.is_finite() || *sediment_kg < 0.0 {
+                        return Err(Self::domain_violation(
+                            node_class,
+                            "hillslope_hourly_sediment_mass_kg",
+                            *sediment_kg,
+                        ));
+                    }
+                    *slot += sediment_kg;
                 }
                 continue;
             }
@@ -735,6 +749,7 @@ impl Ws10ChannelImpoundmentKernel {
             hillslope_duration_s,
             dependency_duration_s,
             hourly_resolved,
+            hourly_sediment_inlet_kg,
         })
     }
 
@@ -868,7 +883,27 @@ impl Ws10ChannelImpoundmentKernel {
             fraction_sum += fraction;
         }
 
-        let mass_kg = (total_detachment - total_deposition).max(0.0);
+        // INV-ROUTE-005(a) / ADR-0036 D3: when the contribution carries the
+        // serialized minor-1 hourly sediment surface, that surface IS the
+        // sediment authority (mass = Σ S_h) — never a reconstruction from
+        // the event aggregates. Minor-0 contributions keep the aggregate
+        // basis (the labeled fallback scope).
+        let mass_kg = if contribution.hourly_sediment_mass_kg.len() == 24 {
+            let mut hourly_mass_kg = 0.0_f64;
+            for slot_kg in &contribution.hourly_sediment_mass_kg {
+                if !slot_kg.is_finite() || *slot_kg < 0.0 {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        "hourly_sediment_mass_kg",
+                        *slot_kg,
+                    ));
+                }
+                hourly_mass_kg += slot_kg;
+            }
+            hourly_mass_kg
+        } else {
+            (total_detachment - total_deposition).max(0.0)
+        };
         if fraction_sum <= WS10_ZERO_THRESHOLD
             && (mass_kg > WS10_ZERO_THRESHOLD || concentration_sum > WS10_ZERO_THRESHOLD)
         {
@@ -1209,7 +1244,24 @@ impl Ws10ChannelImpoundmentKernel {
             ws31_wida_points_ft = Some(routing_result.wida_points_ft);
         }
 
-        let qsed = outgoing_class_mass_kg.iter().copied().sum::<f64>() / event_duration;
+        // INV-ROUTE-005(a): on an hourly-resolved inlet the quasi-steady
+        // sediment-rate time base is the superposed S_h active span — the
+        // serialized sediment TIMING, not the event duration (the
+        // single-rate reduction itself is the labeled SC-ROUTE-001 scope
+        // limit until channels carry hourly surfaces).
+        let sediment_rate_duration_s = if peak_partition.hourly_resolved {
+            let (_, _, span_s) =
+                Self::superposed_hourly_limb(&peak_partition.hourly_sediment_inlet_kg);
+            if span_s > WS10_ZERO_THRESHOLD {
+                span_s
+            } else {
+                event_duration
+            }
+        } else {
+            event_duration
+        };
+        let qsed =
+            outgoing_class_mass_kg.iter().copied().sum::<f64>() / sediment_rate_duration_s;
         if !qsed.is_finite() || qsed < 0.0 {
             return Err(Self::domain_violation(node_class, "qsed", qsed));
         }

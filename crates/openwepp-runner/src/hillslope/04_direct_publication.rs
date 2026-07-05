@@ -361,23 +361,34 @@ fn build_hbp_output_from_direct_publication_summary(
     let surfaces =
         assemble_hbp_event_sediment_surfaces(summary, sediment_row, inputs, hourly_pair.as_ref())?;
 
+    // Codex E.2 round-1 (Medium): a minor-1 EVENT is single-row-sourced —
+    // julian day, peak, duration, water volume, sediment totals, and the
+    // hourly pair ALL come from the sediment event row, so the serialized
+    // payload is internally consistent. Minor-0 lanes keep the legacy
+    // latest-row peak/duration pairing byte-stable.
+    let event_row = if hourly_pair.is_some() {
+        sediment_row
+    } else {
+        latest_row
+    };
+
     build_schema1_hbp_event_fixture(HbpEventFixtureInput {
         hillslope_id: parse_hillslope_id_from_output_pass_path(output_pass)?,
         nofe,
-        julian_day: latest_row.calendar.julian_day,
+        julian_day: event_row.calendar.julian_day,
         peak_runoff_m3_s: direct_publication_required_erosion_scalar(
             "runoff.peak_runoff_m3_s or erosion.peak_runoff_m3_s",
-            latest_row
+            event_row
                 .runoff
                 .peak_runoff_m3_s
-                .or(latest_row.erosion.peak_runoff_m3_s),
+                .or(event_row.erosion.peak_runoff_m3_s),
         )? * surfaces.peak_scale_m2,
         duration_seconds: direct_publication_required_erosion_scalar(
             "runoff.runoff_duration_s or erosion.runoff_duration_s",
-            latest_row
+            event_row
                 .runoff
                 .runoff_duration_s
-                .or(latest_row.erosion.runoff_duration_s),
+                .or(event_row.erosion.runoff_duration_s),
         )?,
         total_detachment_kg: direct_publication_required_erosion_scalar(
             "erosion.hbp_total_detachment_kg or erosion.total_detachment_kg",

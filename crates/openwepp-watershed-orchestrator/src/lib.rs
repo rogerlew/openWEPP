@@ -442,4 +442,30 @@ mod tests {
             &[]
         ));
     }
+
+    #[test]
+    fn inv_route_005d_sediment_rate_time_base_is_distribution_sensitive() {
+        // The Codex round-1 invariance counter-example as a regression:
+        // two S_h distributions with the SAME sum must produce different
+        // quasi-steady sediment-rate time bases when their active spans
+        // differ (1 h spike vs a 5 h spread).
+        let mut spike = [0.0_f64; 24];
+        spike[10] = 500.0;
+        let (_, spike_mass, spike_span) =
+            Ws10ChannelImpoundmentKernel::superposed_hourly_limb(&spike);
+        let mut spread = [0.0_f64; 24];
+        for slot in spread.iter_mut().take(13).skip(8) {
+            *slot = 100.0;
+        }
+        let (_, spread_mass, spread_span) =
+            Ws10ChannelImpoundmentKernel::superposed_hourly_limb(&spread);
+        assert!(
+            (spike_mass - spread_mass).abs() < 1.0e-12,
+            "same total mass"
+        );
+        assert!((spike_span - 3600.0).abs() < 1.0e-9);
+        assert!((spread_span - 5.0 * 3600.0).abs() < 1.0e-9);
+        // qsed = mass / span: the spike routes 5x the rate of the spread.
+        assert!(((spike_mass / spike_span) / (spread_mass / spread_span) - 5.0).abs() < 1.0e-9);
+    }
 }

@@ -203,6 +203,35 @@ Executed 2b-1 → 2b-4 in one pass; no hold criteria hit.
 - Frame growth documented at the R7B guard (lane 1408→1760, day
   13248→15448; the paired publication surfaces + weights + plan).
 
+## 4a. Codex review round 1 (2026-07-04) — both findings fixed
+
+1. **High — routing did not actually consume `S_h` (CONFIRMED).** The 2b-4
+   superposition used `V_h` for peak/volume/duration but only checked
+   `S_h`'s presence: sediment stayed on the `tdet − tdep` reconstruction
+   and `qsed = mass / event_duration` — exactly the half-consumed-pair
+   trap ADR-0036 D2 names (a distribution change preserving `Σ S_h` would
+   not have changed channel routing). Fix, contract-first: SC-ROUTE-001
+   v47 extends `INV-ROUTE-005` with (c) per-contribution `Σ S_h`
+   sediment-mass authority on BOTH branches (any contribution carrying
+   the surface uses it — never the aggregate reconstruction) and (d) the
+   **labeled single-rate reduction**: the channel sediment solve remains
+   quasi-steady per event until channels carry hourly surfaces, so on
+   hourly-resolved inlets its sediment-rate time base is the superposed
+   `S_h` **active-hour span** (the serialized sediment timing), with the
+   per-hour inlet array carried on the partition for the future
+   channel-hourly extension. Implementation: `Σ S_h` mass authority in
+   the sediment payload reader; `S_inlet[h]` superposed in the peak
+   partition; `qsed` divides by the S-span on hourly inlets. Regression:
+   the review's invariance counter-example is now a test (same-`Σ` spike
+   vs 5-hour spread ⇒ 5× different `qsed` basis).
+2. **Medium — mixed event rows in the minor-1 EVENT (CONFIRMED).** The
+   1b-C-era latest-row/sediment-row split made a minor-1 payload
+   internally inconsistent (peak/duration/julian vs sediment/hourly from
+   different days). Fix: a minor-1 EVENT is **single-row-sourced** from
+   the sediment event row (julian, peak, duration, sediment, hourly pair
+   — one day, internally consistent); minor-0 lanes keep the legacy
+   pairing byte-stable.
+
 ## 5. Hold criteria
 
 1. The weight-based closure fails materially on real fixtures

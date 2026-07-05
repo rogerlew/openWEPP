@@ -91,6 +91,11 @@ struct Ws20IncomingPeakPartition {
     /// minor-1 hourly pair (all contributors carried it, no dependency
     /// nodes at the inlet); `false` = the Eq. [13.4.1]-[13.4.2] fallback.
     hourly_resolved: bool,
+    /// INV-ROUTE-005(a): the superposed inlet sediment timing
+    /// (`Σ_contributors S_h`, kg per hour slot); all-zero when not
+    /// hourly-resolved. Sets the quasi-steady sediment-rate time base and
+    /// is carried for the future channel-hourly extension.
+    hourly_sediment_inlet_kg: [f64; 24],
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
