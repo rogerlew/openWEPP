@@ -1259,10 +1259,13 @@ fn direct_production_wave1_operand_seed(
 /// for it (narrowing the enable to the reviewed scope) until the cropland
 /// operand port lands.
 fn direct_production_management_has_active_tillage(management: &ManagementParseOutput) -> bool {
-    management.registries.yearlies.iter().any(|yearly| {
-        let openwepp_input_contract::parsers::management::YearlyScenarioData::Cropland(data) =
-            &yearly.data;
-        direct_production_tilseq_disturbs_surface(data.tilseq, &management.registries.surfaces)
+    management.registries.yearlies.iter().any(|yearly| match &yearly.data {
+        openwepp_input_contract::parsers::management::YearlyScenarioData::Cropland(data) => {
+            direct_production_tilseq_disturbs_surface(data.tilseq, &management.registries.surfaces)
+        }
+        // Native forest yearly scenarios carry no surface-effect sequence
+        // (LANUSE-AUTH-3: no tillage on the forest lanuse) — never active.
+        openwepp_input_contract::parsers::management::YearlyScenarioData::Forest(_) => false,
     })
 }
 

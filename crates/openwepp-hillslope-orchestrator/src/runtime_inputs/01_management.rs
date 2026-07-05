@@ -390,6 +390,12 @@ fn build_initial_seed_projection_forest(
     let hmax = validate_projection_non_negative("hmax_seed", 0, 0, residue_plant.growth.hmax)?;
     let sumrtm = validate_initial_terminal_seed("sumrtm_seed", forest_data.sumrtm)?;
     let sumsrm = validate_initial_terminal_seed("sumsrm_seed", forest_data.sumsrm)?;
+    // GAP-SED-009 ground-cover authority: the forest residue plant's `cf`
+    // is the covers↔mass operand — the same lineage the depth seed above
+    // already consumes, so the declared-cover erosion fix applies to
+    // native forest lanuse identically.
+    let residue_cover_factor =
+        validate_projection_non_negative("residue_cover_factor_cf", 0, 0, residue_plant.cf)?;
 
     Ok(InitialSeedProjection {
         imngmt: forest_data.imngmt,
@@ -410,7 +416,8 @@ fn build_initial_seed_projection_forest(
         hmax,
         sumrtm,
         sumsrm,
-    })
+        residue_cover_factor,
+})
 }
 
 fn residue_plant_for_iresd(
