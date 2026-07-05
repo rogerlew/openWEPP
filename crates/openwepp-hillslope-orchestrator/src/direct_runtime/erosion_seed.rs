@@ -168,6 +168,10 @@ pub struct DirectWave1DailyState {
     pub effdrn_s: f64,
     /// Unit inflow discharge from the upstream OFE (m^2/s); 0 for OFE-1.
     pub qin_m2_s: f64,
+    /// Inter-OFE continuity operands (E.3 handoff); `None` on OFE-1 /
+    /// single-OFE lanes and until the multi-OFE handoff wiring populates
+    /// them.
+    pub inter_ofe: Option<super::Wave1InterOfeContinuity>,
     /// Rainfall-excess intervals for `effint`/`effdrr` (`reid.for`).
     pub excess_intervals: Vec<ErosionExcessInterval>,
     /// Daily canopy cover fraction.
@@ -363,6 +367,7 @@ pub fn assemble_wave1_continuity_inputs_quantum(
 
     Ok(DirectWave1ContinuityInputs {
         enabled: seed.enabled,
+        inter_ofe: daily.inter_ofe,
         segments: seed.segments.clone(),
         peakro_m_s: daily.peakro_m_s,
         runoff_depth_m: daily.runoff_depth_m,
@@ -402,6 +407,7 @@ fn inert_continuity_inputs(
 ) -> DirectWave1ContinuityInputs {
     DirectWave1ContinuityInputs {
         enabled: seed.enabled,
+        inter_ofe: None,
         segments: seed.segments.clone(),
         peakro_m_s: daily.peakro_m_s,
         runoff_depth_m: daily.runoff_depth_m,

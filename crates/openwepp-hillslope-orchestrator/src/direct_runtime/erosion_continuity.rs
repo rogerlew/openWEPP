@@ -113,12 +113,40 @@ pub struct DirectWave1SlopeSegment {
     pub b: f64,
 }
 
+/// Inter-OFE shear/transport continuity operands (`param.for:184-196` +
+/// `:249-390`, the `INV-SED-008` Eq. [11.4.x] family): the receiving OFE's
+/// coefficient polynomials are re-derived so shear and transport capacity
+/// are continuous across the OFE boundary. `shrspv`/`tcprev`/`ktrprv` are
+/// receiver-side derivations from `qin` + the PRIOR lane's static slopes;
+/// the `*lst` coefficient sets are the prior lane's solve-final values
+/// (the legacy Fortran-`save` state).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Wave1InterOfeContinuity {
+    /// Shear at the inflow discharge on the prior OFE's AVERAGE slope
+    /// (`sheart(qin·rspace, cnslp_{i-1})`, floored 1e-6 Pa).
+    pub shrspv_pa: f64,
+    /// Prior-boundary transport capacity `trcoef(shrtp1)·shrspv^1.5`.
+    pub tcprev_kg_s_m: f64,
+    /// Prior-boundary transport-coefficient ratio
+    /// `trcoef((shrtp1+shrspv)/2) / trcoef(shrtp1)`.
+    pub ktrprv: f64,
+    /// Prior lane's final shear coefficients (`anflst`, `bnflst`, `cnflst`).
+    pub prior_shear_last: (f64, f64, f64),
+    /// Prior lane's final transport coefficients
+    /// (`atclst`, `btclst`, `ctclst`).
+    pub prior_transport_last: (f64, f64, f64),
+}
+
 /// Typed operand payload for the Wave-1 continuity solve. Every field is a
 /// required operand with a legacy lineage (`param.for`/`xinflo.for`); absent
 /// or invalid operands are typed hard errors (no defaults, no proxies).
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectWave1ContinuityInputs {
     pub enabled: bool,
+    /// Inter-OFE continuity operands; `None` on OFE-1 / single-OFE lanes
+    /// (the coefficient rewrite is skipped, matching the legacy
+    /// `iplane > 1 ∧ qout > 0 ∧ qin > 0` guard).
+    pub inter_ofe: Option<Wave1InterOfeContinuity>,
     /// Normalized slope segments from the slope profile (`profil.for` fit).
     pub segments: Vec<DirectWave1SlopeSegment>,
     /// Peak runoff rate (m/s) — legacy `peakro(iplane)`.
@@ -182,6 +210,7 @@ impl DirectWave1ContinuityInputs {
     pub fn zero() -> Self {
         Self {
             enabled: false,
+            inter_ofe: None,
             segments: Vec::new(),
             peakro_m_s: 0.0,
             runoff_depth_m: 0.0,
@@ -226,6 +255,11 @@ enum Wave1PointRegion {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectWave1ContinuityState {
     pub active: bool,
+    /// The solve-final shear/transport coefficient sets (the legacy
+    /// Fortran-`save` `anflst`/`atclst` families) — the inter-OFE carry
+    /// the NEXT lane's continuity rewrite consumes (`param.for:368-390`).
+    pub end_shear_coefficients: (f64, f64, f64),
+    pub end_transport_coefficients: (f64, f64, f64),
     pub eta: f64,
     pub taucn: f64,
     pub theta: f64,
@@ -261,6 +295,8 @@ impl DirectWave1ContinuityState {
     pub fn inactive() -> Self {
         Self {
             active: false,
+            end_shear_coefficients: (0.0, 0.0, 0.0),
+            end_transport_coefficients: (0.0, 0.0, 0.0),
             eta: 0.0,
             taucn: 0.0,
             theta: 0.0,
@@ -1775,6 +1811,7 @@ fn wave1_totals(
     inputs: &DirectWave1ContinuityInputs,
     drivers: &Wave1Drivers,
     grid: &Wave1RouteGrid,
+    coefficients: &[Wave1SegmentCoefficients],
 ) -> Result<DirectWave1ContinuityState, DirectRuntimeError> {
     // Dimensional per-point load scale (kg per m of hillslope width):
     // `dslod = load * effdrn * tcend * width / rspace` (`sloss.for:166`).
@@ -1861,8 +1898,26 @@ fn wave1_totals(
     validate_wave1_nonnegative("erosion.wave1.total_detachment", total_detach_kg_m)?;
     validate_wave1_nonnegative("erosion.wave1.total_deposition", total_depos_kg_m)?;
 
+    // The legacy Fortran-`save` end state (`param.for:368-390`): the LAST
+    // segment's final coefficient values; with no inflow the transport set
+    // mirrors the shear set (the `qin <= 0` do-20 reset).
+    let (end_shear_coefficients, end_transport_coefficients) =
+        coefficients
+            .last()
+            .map_or(((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)), |last| {
+                let shear = (last.a, last.b, last.c);
+                let transport = if inputs.qin_m2_s > 0.0 {
+                    (last.atc, last.btc, last.ctc)
+                } else {
+                    shear
+                };
+                (shear, transport)
+            });
+
     Ok(DirectWave1ContinuityState {
         active: true,
+        end_shear_coefficients,
+        end_transport_coefficients,
         eta: drivers.eta,
         taucn: drivers.taucn,
         theta: drivers.theta,
@@ -1982,9 +2037,138 @@ pub fn compute_direct_wave1_continuity_quantum(
     );
     validate_finite("erosion.wave1.qostar", qostar)?;
 
+    // Inter-OFE continuity rewrite (`param.for:249-390`, INV-SED-008):
+    // applied only for a downstream OFE with positive local outflow AND
+    // positive inflow — the legacy `iplane > 1 ∧ qout > 0 ∧ qin > 0` guard.
+    let mut coefficients = coefficients;
+    if let Some(inter_ofe) = &inputs.inter_ofe {
+        if qout > 0.0 && inputs.qin_m2_s > 0.0 {
+            wave1_apply_inter_ofe_continuity(&mut coefficients, inputs, inter_ofe, qostar)?;
+        }
+    }
+
     let drivers = wave1_param_drivers(inputs, qout, qostar)?;
     let grid = wave1_route(&coefficients, &drivers, inputs.strldn)?;
-    wave1_totals(inputs, &drivers, &grid)
+    wave1_totals(inputs, &drivers, &grid, &coefficients)
+}
+
+/// `param.for:249-390`: re-derive the receiving OFE's normalized shear and
+/// transport coefficient polynomials so both are continuous across the OFE
+/// boundary, from the prior lane's end state. Every legacy singular guard
+/// is preserved: the `spart1`/`shrspv` validity test (fall back to the
+/// plain `xinflo` coefficients via the zero-slope `qostar` substitution),
+/// the `sratio`/`tprod` 1e-5 floors, the 2012 `shrati <= 1e12` overflow
+/// cap, and the ±0.001 denominator floors.
+fn wave1_apply_inter_ofe_continuity(
+    coefficients: &mut [Wave1SegmentCoefficients],
+    inputs: &DirectWave1ContinuityInputs,
+    inter_ofe: &Wave1InterOfeContinuity,
+    qostar: f64,
+) -> Result<(), DirectRuntimeError> {
+    validate_finite("erosion.wave1.inter_ofe.shrspv", inter_ofe.shrspv_pa)?;
+    validate_finite("erosion.wave1.inter_ofe.tcprev", inter_ofe.tcprev_kg_s_m)?;
+    validate_finite("erosion.wave1.inter_ofe.ktrprv", inter_ofe.ktrprv)?;
+    let (anflst, bnflst, cnflst) = inter_ofe.prior_shear_last;
+    let (atclst, btclst, ctclst) = inter_ofe.prior_transport_last;
+    validate_finite("erosion.wave1.inter_ofe.anflst", anflst)?;
+    validate_finite("erosion.wave1.inter_ofe.bnflst", bnflst)?;
+    validate_finite("erosion.wave1.inter_ofe.cnflst", cnflst)?;
+    validate_finite("erosion.wave1.inter_ofe.atclst", atclst)?;
+    validate_finite("erosion.wave1.inter_ofe.btclst", btclst)?;
+    validate_finite("erosion.wave1.inter_ofe.ctclst", ctclst)?;
+
+    // The receiver's shrsol/tcend/ktrato are the same operands the drivers
+    // consume; the first segment's raw slope intercept `b(2)` comes from
+    // the un-normalized profile segments.
+    let first_segment_b = inputs
+        .segments
+        .first()
+        .map(|segment| segment.a * segment.xu + segment.b)
+        .ok_or(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.wave1.inter_ofe.first_segment",
+        })?;
+    let tcend = inputs.tcend_kg_s_m.max(WAVE1_TCEND_FLOOR);
+
+    let spart1 = anflst + bnflst + cnflst;
+    let (shrati, tcrati) = if spart1 > 1.0e-5 && inter_ofe.shrspv_pa > 0.0 {
+        // Shear continuity ratio (`param.for:260-282`).
+        let sterm1 = first_segment_b / spart1;
+        let sterm2 = (inter_ofe.shrspv_pa / inputs.shrsol_pa).powf(1.5);
+        let sratio = if sterm2.abs() > 1.0e-10 {
+            (sterm1 / sterm2) - 1.0
+        } else if sterm1 >= 0.0 {
+            1.0e-5
+        } else {
+            -1.0e-5
+        };
+        let shrati = if sratio.abs() > 1.0e-5 {
+            1.0 / sratio
+        } else if sratio >= 0.0 {
+            1.0 / 1.0e-5
+        } else {
+            -1.0 / 1.0e-5
+        };
+
+        // Transport continuity ratio (`param.for:284-303`).
+        let tpart1 = atclst + btclst + ctclst;
+        let tterm1 = if tpart1 > 1.0e-5 {
+            first_segment_b / tpart1
+        } else {
+            first_segment_b / 1.0e-5
+        };
+        let tcprev = if inter_ofe.tcprev_kg_s_m.abs() > 1.0e-10 {
+            inter_ofe.tcprev_kg_s_m
+        } else {
+            1.0e-10
+        };
+        let ktrprv = if inter_ofe.ktrprv.abs() > 1.0e-10 {
+            inter_ofe.ktrprv
+        } else {
+            1.0e-10
+        };
+        let tterm2 = (tcend / tcprev) * (inputs.ktrato / ktrprv);
+        let tprod = (tterm1 * tterm2) - 1.0;
+        let tcrati = if tprod.abs() > 1.0e-5 {
+            1.0 / tprod
+        } else if tprod >= 0.0 {
+            1.0 / 1.0e-5
+        } else {
+            -1.0 / 1.0e-5
+        };
+        (shrati, tcrati)
+    } else {
+        // Zero transport capacity at the boundary (zero-slope condition):
+        // `qostar` keeps shear/transport continuous (`param.for:308-318`).
+        (qostar, qostar)
+    };
+
+    // Coefficient rewrite (`param.for:322-390`), per segment, with the
+    // overflow cap and denominator floors.
+    let shrati = if shrati > 1.0e12 { 1.0e12 } else { shrati };
+    for (segment, coefficient) in inputs.segments.iter().zip(coefficients.iter_mut()) {
+        let raw_a = segment.a;
+        let raw_b = segment.b;
+
+        let mut denom = shrati + 1.0;
+        if denom.abs() < 1.0e-3 {
+            denom = if denom >= 0.0 { 0.001 } else { -0.001 };
+        }
+        coefficient.a = raw_a / denom;
+        coefficient.b = (raw_a * shrati + raw_b) / denom;
+        coefficient.c = raw_b * shrati / denom;
+
+        let mut denom = tcrati + 1.0;
+        if denom.abs() < 1.0e-3 {
+            denom = if denom >= 0.0 { 0.001 } else { -0.001 };
+        }
+        coefficient.atc = raw_a / denom;
+        coefficient.btc = (raw_a * tcrati + raw_b) / denom;
+        coefficient.ctc = raw_b * tcrati / denom;
+
+        validate_finite("erosion.wave1.inter_ofe.coefficient_a", coefficient.a)?;
+        validate_finite("erosion.wave1.inter_ofe.coefficient_atc", coefficient.atc)?;
+    }
+    Ok(())
 }
 
 /// `profil.for`: derive the normalized slope-segment fit from the slope

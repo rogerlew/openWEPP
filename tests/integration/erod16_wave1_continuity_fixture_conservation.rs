@@ -230,6 +230,7 @@ fn erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing() {
 
         let inputs = DirectWave1ContinuityInputs {
             enabled: true,
+            inter_ofe: None,
             segments: segments.clone(),
             peakro_m_s: storm.peakro_m_s,
             runoff_depth_m: storm.runoff_depth_m,
@@ -405,6 +406,7 @@ fn erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing() {
 
         let inputs = DirectWave1ContinuityInputs {
             enabled: true,
+            inter_ofe: None,
             segments: concave_segments.clone(),
             peakro_m_s: storm.peakro_m_s,
             runoff_depth_m: storm.runoff_depth_m,

@@ -186,7 +186,7 @@ pub use erosion_adjustments::{
 };
 pub use erosion_continuity::{
     DIRECT_WAVE1_GRID_POINTS, DirectWave1ContinuityInputs, DirectWave1ContinuityState,
-    DirectWave1SlopeSegment, Wave1ShearClassification, Wave1ShearRegime,
+    DirectWave1SlopeSegment, Wave1InterOfeContinuity, Wave1ShearClassification, Wave1ShearRegime,
     compute_direct_wave1_continuity, compute_direct_wave1_continuity_quantum,
     derive_wave1_slope_segments, wave1_classifier_shear, wave1_day_routes_sediment, wave1_depc,
     wave1_depend, wave1_depeqs, wave1_quantum_is_hydraulically_active, wave1_runge_step,

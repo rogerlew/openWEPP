@@ -582,6 +582,7 @@ impl DirectDayFrame {
             runoff_depth_m: peak.map_or(0.0, |p| p.q_runoff_m),
             effdrn_s: peak.map_or(0.0, |p| p.runoff_duration_s),
             qin_m2_s: 0.0,
+            inter_ofe: None,
             excess_intervals: build_erosion_excess_intervals(
                 &self.wb14_hourly_excess_m,
                 &self.wb14_hourly_rainfall_m,
