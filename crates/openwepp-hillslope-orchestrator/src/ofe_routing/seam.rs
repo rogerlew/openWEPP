@@ -19,7 +19,7 @@ pub enum SeamError {
 
 /// Hour-bin count shared with the runtime carries.
 pub const SEAM_HOUR_BINS: usize = 24;
-/// The seam's one recorded unit helper (`SC-OFEROUTE-001` rev 4 unit
+/// The seam's one recorded unit helper (`SC-OFEROUTE-001` rev 12 unit
 /// map): depth per hour slot (m) → rate (m s⁻¹).
 pub const SEAM_SECONDS_PER_HOUR: f64 = 3600.0;
 
