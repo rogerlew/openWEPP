@@ -710,8 +710,11 @@ principle promoted it to active queue item 1 on 2026-06-07.)
 
 ## E. Hillslope erosion sediment sequence
 
-**Current position:** **the Wave-1 chain is the sole erosion engine, single-
-and multi-OFE** — E.3 (merged `07856444`, stage-2e deletion merged
+**Current position:** **the erosion system is closed, routed, and
+class-enriched** — E.4 (merged `55163073`) ported `enrich.for` end-to-end
+(per-quantum `frcflw` composition through every deposition region and OFE
+exit, per-OFE class operands, the SSA enrichment-ratio diagnostic;
+GAP-SED-007 closed), on top of the E.3 Wave-1 chain — E.3 (merged `07856444`, stage-2e deletion merged
 `5628f5a0`) chained Wave-1 per OFE on the hourly substrate (per-OFE seeds via
 lane slicing, the EROSION-lineage hourly handoff with the `param.for`
 Eq. [11.4.x] coefficient continuity, the EXIT-scoped chain EVENT with
@@ -749,11 +752,6 @@ detachment-vs-delivery cut-point mismatch (compare `exported_kg_m` to legacy
 
 Full architecture + open-decision resolution:
 [`increment-2-entry-gate.md`](work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2-entry-gate.md).
-
-### E.4 Enrichment + particle routing (Increment 3 — folds into E.3)
-Class-resolved deposition and `enrich.for`-lineage fraction update at deposition
-transitions and OFE exits; ER emerges as a diagnostic. Coupled to E.3 (deposition is
-not faithful without the size classes enriching) — merge their entry gates.
 
 ### E.5 Erosion magnitude fidelity ⏸️ (deferred, judged last)
 Absolute-magnitude fidelity (p61's ~5×), judged on the closed+routed erosion system

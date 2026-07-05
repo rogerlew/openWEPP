@@ -189,6 +189,16 @@ it staged, shadow-state-first, conservation-gated, single-OFE Wave-1 first.
   once with E.2's hourly redesign, which also inherits the
   `peak_runoff_m3_s` depth-rate unit question). Design + adjudications in
   [`artifacts/increment-1c-entry-gate.md`](artifacts/increment-1c-entry-gate.md).
+- **Increment 3 (ROADMAP §E.4) — enrichment + particle routing: COMPLETE,
+  MERGED TO MAIN `55163073` 2026-07-05** (Claude-executed; the full
+  `enrich.for` port — per-OFE mineralogy + `tcf1` producers, per-quantum
+  `frcflw` state through all four `route.for` call points, bounded
+  label-50 reproportion, internal ER diagnostic; GAP-SED-007 CLOSED,
+  GAP-SED-008 narrowed; SC-SED-001 rev 47 with the TOL-SED-005/006
+  surface split. Codex 2-round review: round-1 tolerance-authority +
+  ER-honesty alignments fixed; re-check merge-ready after a table typo.
+  1338/1338 at branch head. Remaining §E scope: E.5 magnitude
+  adjudication, next.)
 - **Increment 2c (ROADMAP §E.3) — multi-OFE Wave-1 chaining: COMPLETE,
   MERGED TO MAIN `07856444` 2026-07-04** (Claude-executed; Codex 2-round
   review — round-1 three Medium findings all confirmed+fixed (uncommitted
