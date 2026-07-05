@@ -117,6 +117,33 @@ fractions)`. Without this block, transport capacity jumps at OFE boundaries
 and deposition artifacts alias into every boundary — it is required scope
 for 2c-2, not a refinement.
 
+## 2b. Recon R1 + R4 — RESOLVED (Ran static, 2026-07-04)
+
+**R1: lane = OFE 1:1, and per-OFE seeds already exist by construction.**
+For `lane_count > 1`, `direct_production_typed_lane_seed_authorities`
+(00_builders:432-499) slices the parsed inputs per OFE
+(`build_static_per_ofe_lane_slices` → `build_lane_soil_profile` /
+`build_lane_slope_profile` / `build_lane_management_output`) and builds each
+lane's seed authority from its OWN single-OFE-shaped profiles — so the seed
+builder's `.first()` indexing resolves to the lane's own OFE on multi-OFE
+runs. **D1 (per-OFE particle classes, per-OFE `fwidth`/segments/erodibility)
+is therefore already satisfied by the slicing** — §4a's requirement holds by
+construction, and stage 2c-1 collapses into 2c-3's enable. Hold criterion 2
+cleared. What actually blocks multi-OFE Wave-1: (a) the enable narrowing
+(`contributor_ofe_count == 1`, 00_builders:1228), (b)
+`wave2_enabled = contributor_ofe_count > 1` keeps EROD14 the multi-OFE
+publication authority (the `compute_r7d6` branch order), (c) the unwired
+handoff (`qin_h`/`strldn`/fractions zeros), (d) the un-ported
+`param.for:249-390` continuity block.
+
+**R4: the authority switch points** are `wave2_enabled` at 00_builders:1219
+(+ the erod14 lane flag at :348) and the `compute_r7d6` publication branch
+(Wave-2 first). The HBP event row selection (`hbp_sediment_row`) is
+lane-agnostic today; under the chain the hillslope EVENT basis must be the
+**exit-lane** surfaces (the chain's last OFE), which is what the
+max-sediment-row heuristic no longer guarantees on multi-OFE — 2c-3 pins the
+EVENT row to the exit lane's rows.
+
 ## 3. Stage plan
 
 - **2c-0 recon completion (FIRST):** R1 lane↔OFE index mapping (how
