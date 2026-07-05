@@ -753,7 +753,23 @@ detachment-vs-delivery cut-point mismatch (compare `exported_kg_m` to legacy
 Full architecture + open-decision resolution:
 [`increment-2-entry-gate.md`](work-packages/20260703-erosion-sediment-continuity-port-001/artifacts/increment-2-entry-gate.md).
 
-### E.5 Erosion magnitude fidelity ⏸️ (deferred, judged last)
+### E.5 Erosion magnitude fidelity — ADJUDICATED 2026-07-05 (GAP-SED-009); forward item = the cover-pathway defect-closure
+**Verdict (Investigation tier, ADR-0017):** both forest comparator
+instruments over-detach ~4–6× at matched per-width delivery cut-points,
+**attributed to the erosion ground-cover pathway** (the management IC's
+declared `inrcov`/`rilcov` never reach the erosion cover operands;
+mass-derived residue cover is ~0 on forest no-decomp ICs — legacy holds
+the declared 0.85 covers). **NOT water-driven** — p102's 50-year runoff
+volume matches legacy within ~1% — and **not structural** (every
+E.1–E.4 closure holds). Record:
+WP `20260703-…/artifacts/increment-4-magnitude-adjudication.md`;
+`SC-SED-001` `GAP-SED-009`. **Forward item:** the cover-pathway
+defect-closure WP (resolve `cvrcal.for` daily cover semantics, wire the
+declared-cover authority into the erosion covers, re-run the
+instruments, re-judge the gap; the small-event day gate adjudicates in
+the same pass).
+
+Original scope:
 Absolute-magnitude fidelity (p61's ~5×), judged on the closed+routed erosion system
 **after** the water-magnitude judgment closes — the forest-lateral magnitude authority
 is now the four-tier observed envelope `SC-SUBHYD-001#INV-SUBHYD-033`
