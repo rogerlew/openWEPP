@@ -84,3 +84,13 @@ RESOLVED: legacy is (a) recomputed-from-pools.**
 - `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/01_management.rs` (if a new symbol export is needed)
 - `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/*`
 - erosion fixture tests; SC-RESIDUE-001; SC-SED-001; this package
+
+## Line-count disposition
+
+`00_builders_and_authority.rs` is over the 2,000-line WARN (2,258+ after
+this branch's authority additions). The file is the known
+seed-authority fan-out (every typed lane authority builds here); this
+package adds ~60 lines to the existing shape rather than a new concern.
+Disposition: WARN acknowledged; the split rides the next structural
+runner refactor (the module is already sectioned by authority family) —
+not this defect-closure's scope.

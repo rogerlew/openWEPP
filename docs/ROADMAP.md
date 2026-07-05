@@ -765,11 +765,12 @@ the declared 0.85 covers). **NOT water-driven** — p102's 50-year runoff
 volume matches legacy within ~1% — and **not structural** (every
 E.1–E.4 closure holds). Record:
 WP `20260703-…/artifacts/increment-4-magnitude-adjudication.md`;
-`SC-SED-001` `GAP-SED-009`. **Forward item:** the cover-pathway
-defect-closure WP (resolve `cvrcal.for` daily cover semantics, wire the
-declared-cover authority into the erosion covers, re-run the
-instruments, re-judge the gap; the small-event day gate adjudicates in
-the same pass).
+`SC-SED-001` `GAP-SED-009`. **The cover-pathway defect-closure
+EXECUTED (WP `20260705-erosion-ground-cover-authority-defect-closure-001`,
+awaiting Codex review): `GAP-SED-009` CLOSED at SC-SED-001 rev 50 —
+p61 dominant event 3.97 vs legacy 4.2 kg/m, p102 17.4 vs ~19.4 kg/m/yr;
+the small-event day gate adjudicated legacy-exact (the trace-event
+divergence is the WB16 `peakro` operand, a bounded water-side flag).**
 
 Original scope:
 Absolute-magnitude fidelity (p61's ~5×), judged on the closed+routed erosion system

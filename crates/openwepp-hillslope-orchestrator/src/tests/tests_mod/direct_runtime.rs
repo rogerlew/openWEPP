@@ -1510,6 +1510,7 @@ fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
         pmet_compute: None,
     };
     day.residue_partition_inputs = crate::DirectResiduePartitionInputs {
+        rescov_interrill_weight: 0.0,
         standing_residue_kg_m2: 0.02,
         flat_residue_offset_kg_m2: 0.01,
         buried_residue_kg_m2: 0.005,

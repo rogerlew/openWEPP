@@ -72,3 +72,30 @@ per-class split re-normalizes at the publication boundary, preserving
 the `TOL-SED-005` closure; the enriched-override publication gate uses
 the same envelope. p61/p102 evidence unchanged (3.965 kg/m re-verified
 post-correction).
+
+## 7. Codex review round 1 — response record (2026-07-05)
+
+Five findings (3 Medium, 2 Low), all CONFIRMED and fixed:
+1. **Medium — the Cut ground-pool rule was source-inaccurate:**
+   `decomp.for:689-693` ADDS the cut standing-mat mass to `rilrm`/
+   `rigrm`/`rmogt`; my "Cut does not apply" no-op encoded the wrong
+   source rule. Fixed: Cut adds the cut mass to both ground pools; our
+   topology has no standing mat, so the cut-mass basis is the
+   surface-pool transfer (`surface·cut_transfer_fraction`) — the
+   labeled mapping with the source-true addition rule. SC-RESIDUE-001
+   rev 13. (The production builder drives actions `None`, so the p61
+   evidence is unaffected — as the review noted.)
+2. **Medium — new operands unvalidated at the input boundary:** the
+   ground-pool seeds and `cf` now fail closed in
+   `validate_pool_and_rate_domain` (nonnegative-finite).
+3. **Medium — the composite `cover_fraction` claim:** now COMPUTED as
+   the `covcal.for:176` `rescov` area-weighted blend
+   (`w = (rspace − width)/rspace` threaded from the projection through
+   the authority); the input pass-through is superseded (the partition
+   consumer test asserts the computed blend).
+4. **Low — stale roadmap/catalog:** ROADMAP's E.5 forward-item text now
+   records the executed closure; the WP is listed in
+   `docs/work-packages/README.md` Current Active/Held.
+5. **Low — line-count WARN:** disposition recorded in `package.md`
+   (the seed-authority fan-out file; split rides the next structural
+   runner refactor).

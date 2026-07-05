@@ -170,6 +170,7 @@ struct DirectProductionResidueCoverAuthority {
     initial_interrill_ground_kg_m2: f64,
     initial_rill_ground_kg_m2: f64,
     residue_cover_factor: f64,
+    rescov_interrill_weight: f64,
     initial_root_residue_kg_m2: f64,
     residue_type_selector: f64,
     residue_depth_conversion_m_per_kg_m2: f64,
@@ -886,12 +887,29 @@ fn direct_production_typed_residue_cover_authority(
     };
     let initial_interrill_ground_kg_m2 = ground_pool_from_declared_cover(declared_inrcov);
     let initial_rill_ground_kg_m2 = ground_pool_from_declared_cover(declared_rilcov);
+    // `covcal.for:176` composite weight `(rspace − width)/rspace`
+    // (the `init1.for:130-133` `wght1` rule; `rspace <= 0` defaults to
+    // 1 m, `width` capped at `rspace`).
+    let rescov_rspace = direct_production_pl_projection_optional_nonnegative_scalar(
+        management_projection,
+        "rspace",
+    )?
+    .unwrap_or(0.0);
+    let rescov_width = direct_production_pl_projection_optional_nonnegative_scalar(
+        management_projection,
+        "width",
+    )?
+    .unwrap_or(0.0);
+    let rescov_rspace = if rescov_rspace <= 0.0 { 1.0 } else { rescov_rspace };
+    let rescov_width = rescov_width.min(rescov_rspace);
+    let rescov_interrill_weight = (rescov_rspace - rescov_width) / rescov_rspace;
 
     Ok(DirectProductionResidueCoverAuthority {
         initial_surface_residue_kg_m2,
         initial_interrill_ground_kg_m2,
         initial_rill_ground_kg_m2,
         residue_cover_factor,
+        rescov_interrill_weight,
         initial_root_residue_kg_m2,
         residue_type_selector,
         residue_depth_conversion_m_per_kg_m2,

@@ -108,7 +108,11 @@ impl DirectProductionResidueCoverAuthority {
                 standing_residue_kg_m2: 0.0,
                 flat_residue_offset_kg_m2: 0.0,
                 buried_residue_kg_m2: 0.0,
+                // Superseded input: the partition computes its covers
+                // from the decomposition ground pools; the composite is
+                // the `rescov` blend on the weight below.
                 cover_fraction: 0.0,
+                rescov_interrill_weight: self.rescov_interrill_weight,
             },
             state_before,
             state_after,

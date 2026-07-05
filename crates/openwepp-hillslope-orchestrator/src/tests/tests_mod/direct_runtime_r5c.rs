@@ -243,11 +243,17 @@ fn r5c_residue_partition_consumes_decomposition_and_shadow_projects() {
     );
 
     let mut day = r5c_day_after_storage_bounds();
-    let inputs = annual_cut_inputs();
+    let mut inputs = annual_cut_inputs();
+    // INV-RESIDUE-020: give the ground-cover pathway real operands so the
+    // computed covers are nonzero and the composite blend is meaningful.
+    inputs.interrill_ground_seed_kg_m2 = 0.2;
+    inputs.rill_ground_seed_kg_m2 = 0.1;
+    inputs.residue_cover_factor = 3.5;
     day.decomposition_inputs = inputs;
     day.run_r5c_decomposition_phase()
         .expect("decomposition should execute before residue partition");
     day.residue_partition_inputs = DirectResiduePartitionInputs {
+        rescov_interrill_weight: 0.4,
         standing_residue_kg_m2: 0.12,
         flat_residue_offset_kg_m2: 0.07,
         buried_residue_kg_m2: 0.03,
@@ -260,15 +266,27 @@ fn r5c_residue_partition_consumes_decomposition_and_shadow_projects() {
     let flat_residue_kg_m2 = 0.07 + expected_annual_cut_state(inputs).surface_residue_kg_m2;
     let root_residue_kg_m2 = expected_annual_cut_state(inputs).root_residue_kg_m2;
     let total_residue_kg_m2 = 0.12 + flat_residue_kg_m2 + 0.03 + root_residue_kg_m2;
+    // INV-RESIDUE-020: the partition covers derive from the evolved
+    // ground pools (the decomposition phase above owns their evolution;
+    // this test checks the partition CONSUMES them) and the composite is
+    // the `rescov` blend — the input `cover_fraction` pass-through is
+    // superseded.
+    let expected_interrill_cover =
+        residue_ground_cover_fraction(3.5, day.decomposition.interrill_ground_residue_kg_m2)
+            .expect("interrill cover");
+    let expected_rill_cover =
+        residue_ground_cover_fraction(3.5, day.decomposition.rill_ground_residue_kg_m2)
+            .expect("rill cover");
+    assert!(expected_interrill_cover > 0.0 && expected_rill_cover > 0.0);
     let expected_state = DirectResiduePartitionState {
-        interrill_cover_fraction: 0.0,
-        rill_cover_fraction: 0.0,
+        interrill_cover_fraction: expected_interrill_cover,
+        rill_cover_fraction: expected_rill_cover,
         standing_residue_kg_m2: 0.12,
         flat_residue_kg_m2,
         buried_residue_kg_m2: 0.03,
         root_residue_kg_m2,
         total_residue_kg_m2,
-        cover_fraction: 0.41,
+        cover_fraction: 0.4 * expected_interrill_cover + 0.6 * expected_rill_cover,
     };
     let expected_operands = DirectResiduePartitionDownstreamOperands::from(expected_state);
     let expected_shadow = DirectResiduePartitionShadowProjection {
@@ -279,7 +297,7 @@ fn r5c_residue_partition_consumes_decomposition_and_shadow_projects() {
         buried_residue_kg_m2: 0.03,
         root_residue_kg_m2,
         total_residue_kg_m2,
-        cover_fraction: 0.41,
+        cover_fraction: 0.4 * expected_interrill_cover + 0.6 * expected_rill_cover,
     };
 
     assert_residue_state_close(day.residue_partition, expected_state);
@@ -319,6 +337,7 @@ fn r5c_residue_partition_rejects_missing_decomposition_and_invalid_inputs() {
 
     let mut negative_standing_day = r5c_day_after_decomposition();
     negative_standing_day.residue_partition_inputs = DirectResiduePartitionInputs {
+        rescov_interrill_weight: 0.0,
         standing_residue_kg_m2: -0.1,
         flat_residue_offset_kg_m2: 0.0,
         buried_residue_kg_m2: 0.0,
@@ -335,6 +354,7 @@ fn r5c_residue_partition_rejects_missing_decomposition_and_invalid_inputs() {
 
     let mut invalid_cover_day = r5c_day_after_decomposition();
     invalid_cover_day.residue_partition_inputs = DirectResiduePartitionInputs {
+        rescov_interrill_weight: 0.0,
         standing_residue_kg_m2: 0.0,
         flat_residue_offset_kg_m2: 0.0,
         buried_residue_kg_m2: 0.0,

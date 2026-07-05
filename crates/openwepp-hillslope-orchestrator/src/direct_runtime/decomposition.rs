@@ -153,6 +153,12 @@ impl DirectDayFrame {
             downstream.rill_ground_residue_kg_m2,
         )?;
 
+        // `covcal.for:176`: the published composite is the legacy
+        // `rescov` area-weighted blend of the two covers.
+        let weight = inputs.rescov_interrill_weight.clamp(0.0, 1.0);
+        let composite_cover_fraction =
+            weight * interrill_cover_fraction + (1.0 - weight) * rill_cover_fraction;
+
         Ok(DirectResiduePartitionState {
             standing_residue_kg_m2: inputs.standing_residue_kg_m2,
             interrill_cover_fraction,
@@ -161,7 +167,7 @@ impl DirectDayFrame {
             buried_residue_kg_m2: inputs.buried_residue_kg_m2,
             root_residue_kg_m2,
             total_residue_kg_m2,
-            cover_fraction: inputs.cover_fraction,
+            cover_fraction: composite_cover_fraction,
         })
     }
 }
@@ -269,12 +275,16 @@ fn apply_decomposition_action(
     Ok((surface_residue_kg_m2, root_residue_kg_m2))
 }
 
-/// The subset of decomposition actions that remove GROUND residue
-/// (`decomp.for`: burn/remove/graze fractions apply to `rigrm`/`rilrm`);
-/// Cut moves standing material and leaves the ground pools unchanged.
+/// Ground-pool action rules (`decomp.for`): burn/remove/graze fractions
+/// apply to `rigrm`/`rilrm`; **Cut ADDS the cut material to both ground
+/// pools** (`decomp.for:689-693` — `rilrm/rigrm/rmogt += tmpvr4`). Our
+/// pool topology has no standing mat, so the cut-mass basis is the
+/// surface-pool transfer (`surface·cut_transfer_fraction`) — a labeled
+/// mapping; the ground-pool RULE (addition to both) is source-true.
 fn apply_ground_pool_action(
     inputs: DirectDecompositionInputs,
     mut pool_kg_m2: f64,
+    cut_mass_kg_m2: f64,
 ) -> Result<f64, DirectRuntimeError> {
     match inputs.active_action {
         DirectDecompositionAction::Burn => {
@@ -286,8 +296,10 @@ fn apply_ground_pool_action(
         DirectDecompositionAction::Grazing => {
             pool_kg_m2 *= 1.0 - inputs.grazing_digest_fraction;
         }
+        DirectDecompositionAction::Cut => {
+            pool_kg_m2 += cut_mass_kg_m2;
+        }
         DirectDecompositionAction::None
-        | DirectDecompositionAction::Cut
         | DirectDecompositionAction::Herbicide
         | DirectDecompositionAction::Silage => {}
     }
@@ -460,14 +472,21 @@ impl DirectDecompositionInputs {
         // rill areas alike): litter + decay + the ground-affecting
         // actions (Burn/Remove/Grazing fractions; Cut moves standing
         // material and leaves the ground pools unchanged — labeled).
+        let ground_cut_mass_kg_m2 = if self.active_action == DirectDecompositionAction::Cut {
+            surface_after_decay * self.cut_transfer_fraction
+        } else {
+            0.0
+        };
         let interrill_ground_residue_kg_m2 = apply_ground_pool_action(
             self,
             (self.interrill_ground_seed_kg_m2 + self.surface_litter_input_kg_m2)
                 * surface_decay_factor,
+            ground_cut_mass_kg_m2,
         )?;
         let rill_ground_residue_kg_m2 = apply_ground_pool_action(
             self,
             (self.rill_ground_seed_kg_m2 + self.surface_litter_input_kg_m2) * surface_decay_factor,
+            ground_cut_mass_kg_m2,
         )?;
         let residue_depth_m = surface_residue_kg_m2 * self.residue_depth_conversion_m_per_kg_m2;
 
@@ -569,6 +588,18 @@ impl DirectDecompositionInputs {
         validate_nonnegative_direct_m(
             "decomposition.surface_litter_input_kg_m2",
             self.surface_litter_input_kg_m2,
+        )?;
+        validate_nonnegative_direct_m(
+            "decomposition.interrill_ground_seed_kg_m2",
+            self.interrill_ground_seed_kg_m2,
+        )?;
+        validate_nonnegative_direct_m(
+            "decomposition.rill_ground_seed_kg_m2",
+            self.rill_ground_seed_kg_m2,
+        )?;
+        validate_nonnegative_direct_m(
+            "decomposition.residue_cover_factor",
+            self.residue_cover_factor,
         )?;
         validate_nonnegative_direct_m(
             "decomposition.residue_depth_conversion_m_per_kg_m2",
@@ -769,6 +800,10 @@ pub struct DirectResiduePartitionInputs {
     pub flat_residue_offset_kg_m2: f64,
     pub buried_residue_kg_m2: f64,
     pub cover_fraction: f64,
+    /// `covcal.for:176` `rescov` interrill area weight
+    /// `(rspace − width)/rspace`; the composite cover is
+    /// `w·inrcov + (1−w)·rilcov`.
+    pub rescov_interrill_weight: f64,
 }
 
 impl DirectResiduePartitionInputs {
@@ -779,6 +814,7 @@ impl DirectResiduePartitionInputs {
             flat_residue_offset_kg_m2: 0.0,
             buried_residue_kg_m2: 0.0,
             cover_fraction: 0.0,
+            rescov_interrill_weight: 0.0,
         }
     }
 
